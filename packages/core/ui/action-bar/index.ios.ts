@@ -359,7 +359,7 @@ export class ActionBar extends ActionBarBase {
 		if (color) {
 			const titleTextColor = NSDictionary.dictionaryWithObjectForKey(color.ios, NSForegroundColorAttributeName);
 			if (majorVersion >= 15) {
-				const appearance = navBar.standardAppearance ?? UINavigationBarAppearance.new();
+				const appearance = this._getAppearance(navBar);
 				appearance.titleTextAttributes = titleTextColor;
 			}
 			navBar.titleTextAttributes = titleTextColor;
@@ -379,12 +379,10 @@ export class ActionBar extends ActionBarBase {
 
 		const color_ = color instanceof Color ? color.ios : color;
 		if (majorVersion >= 15) {
-			const appearance = navBar.standardAppearance ?? UINavigationBarAppearance.new();
+			const appearance = this._getAppearance(navBar);
 			// appearance.configureWithOpaqueBackground();
 			appearance.backgroundColor = color_;
-			navBar.standardAppearance = appearance;
-			navBar.compactAppearance = appearance;
-			navBar.scrollEdgeAppearance = appearance;
+			this._updateAppearance(navBar, appearance);
 		} else {
 			// legacy styling
 			navBar.barTintColor = color_;
@@ -406,31 +404,23 @@ export class ActionBar extends ActionBarBase {
 	}
 
 	private updateFlatness(navBar: UINavigationBar) {
-
 		if (this.flat) {
-
 			if (majorVersion >= 15) {
-				const appearance = navBar.standardAppearance ?? UINavigationBarAppearance.new();
+				const appearance = this._getAppearance(navBar);
 				appearance.shadowColor = UIColor.clearColor;
-				
-				navBar.standardAppearance = appearance;
-				navBar.compactAppearance = appearance;
-				navBar.scrollEdgeAppearance = appearance;
-			} else { 
-
+				this._updateAppearance(navBar, appearance);
+			} else {
 				navBar.setBackgroundImageForBarMetrics(UIImage.new(), UIBarMetrics.Default);
 				navBar.shadowImage = UIImage.new();
 				navBar.translucent = false;
 			}
 		} else {
 			if (majorVersion >= 15) {
-				if(navBar.standardAppearance){ // Not flat and never been set do nothing.
+				if (navBar.standardAppearance) {
+					// Not flat and never been set do nothing.
 					const appearance = navBar.standardAppearance;
-					appearance.shadowColor =  UINavigationBarAppearance.new().shadowColor;
-					
-					navBar.standardAppearance = appearance;
-					navBar.compactAppearance = appearance;
-					navBar.scrollEdgeAppearance = appearance;
+					appearance.shadowColor = UINavigationBarAppearance.new().shadowColor;
+					this._updateAppearance(navBar, appearance);
 				}
 			} else {
 				navBar.setBackgroundImageForBarMetrics(null, null);
@@ -438,6 +428,16 @@ export class ActionBar extends ActionBarBase {
 				navBar.translucent = true;
 			}
 		}
+	}
+
+	private _getAppearance(navBar: UINavigationBar) {
+		return navBar.standardAppearance ?? UINavigationBarAppearance.new();
+	}
+
+	private _updateAppearance(navBar: UINavigationBar, appearance: UINavigationBarAppearance) {
+		navBar.standardAppearance = appearance;
+		navBar.compactAppearance = appearance;
+		navBar.scrollEdgeAppearance = appearance;
 	}
 
 	public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number) {

@@ -242,8 +242,9 @@ export function openUrl(url: string): boolean;
 /**
  * Opens file.
  * @param filePath The file.
+ * @param title Optional title for Android. Default is: 'Open File...'
  */
-export function openFile(filePath: string): boolean;
+export function openFile(filePath: string, title?: string): boolean;
 
 /**
  * Escapes special regex symbols (., *, ^, $ and so on) in string in order to create a valid regex from it.
