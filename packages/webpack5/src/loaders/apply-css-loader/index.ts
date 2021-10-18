@@ -16,6 +16,13 @@ export default function loader(content, map) {
 	const tagCode =
 		this.mode === 'development' ? `, ${JSON.stringify(this.resourcePath)}` : '';
 
+	const options = Object.assign(
+		{
+			apply: true,
+		},
+		this.query
+	);
+
 	const hmrCode = this.hot
 		? dedent`
 			if(module.hot) {
@@ -29,15 +36,20 @@ export default function loader(content, map) {
 		: ``;
 
 	if (hasLoader('css2json-loader')) {
-		content = dedent`
-			${content}
+		const applyCode = options.apply
+			? dedent`
 			const { addTaggedAdditionalCSS } = require("@nativescript/core/ui/styling/style-scope");
 			addTaggedAdditionalCSS(___CSS2JSON_LOADER_EXPORT___${tagCode})
+		`
+			: ``;
+		content = dedent`
+			${content}
+			${applyCode}
 			${hmrCode}
 		`;
 	} else if (hasLoader('css-loader')) {
-		content = dedent`
-			${content}
+		const applyCode = options.apply
+			? dedent`
 			const { addTaggedAdditionalCSS } = require("@nativescript/core/ui/styling/style-scope");
 			if (___CSS_LOADER_EXPORT___ && typeof ___CSS_LOADER_EXPORT___.forEach === "function") {
 				___CSS_LOADER_EXPORT___.forEach(cssExport => {
@@ -47,6 +59,11 @@ export default function loader(content, map) {
 					}
 				});
 			}
+		`
+			: ``;
+		content = dedent`
+			${content}
+			${applyCode}
 			${hmrCode}
 		`;
 	} else {
