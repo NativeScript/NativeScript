@@ -25,6 +25,16 @@ export class Image extends ImageBase {
 	}
 
 	private setTintColor(value: Color) {
+		const alpha = value?.a;
+		if (0 <= alpha && alpha < 255) {
+			let overlay = UIView.new();
+			overlay.frame = this.nativeViewProtected.bounds;
+			overlay.backgroundColor = value.ios;
+			overlay.alpha = alpha;
+			this.nativeViewProtected.addSubview(overlay);
+			return;
+		}
+
 		if (value && this.nativeViewProtected.image && !this._templateImageWasCreated) {
 			this.nativeViewProtected.image = this.nativeViewProtected.image.imageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
 			this._templateImageWasCreated = true;
