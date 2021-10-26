@@ -8,6 +8,17 @@ body:
       value: |
         Thanks for taking the time to report an issue.
 
+        > ## Important! :warning:
+        > 
+        > The issue list is reserved exclusively for bug reports and feature requests. That means we do not accept usage questions. If you open an issue that does not conform to the requirements, it will be closed.
+        >
+        > For usage questions, please refer to the following resources:
+        > * Search the [docs](https://docs.nativescript.org/)
+        > * Search or ask in [Discord](https://nativescript.org/discord)
+        > * Search or ask in [Discussions](https://github.com/NativeScript/NativeScript/discussions)
+        > * Search or ask on [StackOverflow](https://stackoverflow.com/questions/tagged/nativescript)
+        > * Watch [video tutorials](https://nativescripting.com/)
+
   - type: textarea
     validations:
       required: true
@@ -48,9 +59,9 @@ body:
       label: Relevant log output (if applicable)
       description: |
         Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
-        
+
         Using the `--log trace` flag will usuall print more verbose logs that will help identify the issue quicker.
-        
+
         When pasting verbose logs, please make sure you remove any sensitive information.
       render: shell
 
@@ -74,17 +85,6 @@ body:
     attributes:
       value: |
         ---
-
-        > ## Important! :warning:
-        > 
-        > The issue list is reserved exclusively for bug reports and feature requests. That means we do not accept usage questions. If you open an issue that does not conform to the requirements, it will be closed.
-
-        For usage questions, please refer to the following resources:
-        * Search the [docs](https://docs.nativescript.org/)
-        * Search or ask in [Discord](https://nativescript.org/discord)
-        * Search or ask in [Discussions](https://github.com/NativeScript/NativeScript/discussions)
-        * Search or ask on [StackOverflow](https://stackoverflow.com/questions/tagged/nativescript)
-        * Watch [video tutorials](https://nativescripting.com/)
 
         Before you submit this issue, please confirm the following:
 
