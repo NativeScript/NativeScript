@@ -1,90 +1,112 @@
 name: 🐞 Bug report
 description: Create a bug report to help us improve NativeScript
-labels: [bug]
+labels: [bug-pending-triage]
+
 body:
-- type: markdown
-  attributes:
-    value: |
-      Thanks for taking the time to fill out this bug report! If you have usage questions, please use [Discussions](https://github.com/NativeScript/NativeScript/discussions).
-- type: checkboxes
-  attributes:
-    label: Is there an existing issue for this?
-    description: Please search to see if an issue already exists for the bug you encountered or is not already reported in StackOverflow as a question..
-    options:
-    - label: I have searched the existing issues as well as StackOverflow and this has not been posted before
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report an issue.
+
+  - type: textarea
+    validations:
       required: true
-- type: checkboxes
-  id: terms_issues
-  attributes:
-    label: Confirm you are submitting a bug report.
-    description: Please confirm you are submitting a bug report and not a usage question. For usage questions, please use [Discussions](https://github.com/NativeScript/NativeScript/discussions).
-    options:
-      - label: Yes, this is a bug report
-        required: true
-- type: textarea
-  attributes:
-    label: Current Behavior
-    description: |
-      A clear and concise description of what the bug is. 
-      Please, explain whether it's a build time error or a runtime error. 
-    placeholder: |
-      When I do <X>, <Y> happens and I see the error message attached below:
-      ```...```
-  validations:
-    required: false
-- type: textarea
-  attributes:
-    label: Expected Behavior
-    description: A concise description of what you expected to happen.
-    placeholder: When I do <X>, <Z> should happen instead.
-  validations:
-    required: false
-- type: textarea
-  attributes:
-    label: Steps To Reproduce
-    description: Add commands used or steps taken to reproduce the behaviour.
-    placeholder: |
-      1. Go to '...'
-      2. Click on '....'
-      3. Scroll down to '....'
-      4. See error
-    render: markdown
-  validations:
-    required: false
-- type: textarea
-  attributes:
-    label: Environment
-    description: |
-      Provide version numbers for the following components (information can be retrieved by running `ns info` in your project folder or by inspecting the `package.json` of the project):
-    value: |
-      - CLI Version (ns -v): 
-      - Core Version (@nativescript/core - 8.x, 7.x, 6.x etc.): 
-      - Android Runtime (@nativescript/android): 
-      - iOS Runtime (@nativescript/ios): 
-      - XCode Version (xcodebuild -version): 
-      - Plugin(s) (dependencies and devDependencies in package.json): 
-    render: markdown
-  validations:
-    required: false
-- type: textarea
-  id: logs
-  attributes:
-    label: Relevant log output
-    description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
-    render: shell
-- type: textarea
-  attributes:
-    label: Anything else?
-    description: |
-      Links? References? Anything that will give us more context about the issue you are encountering!
-  validations:
-    required: false
-- type: checkboxes
-  id: terms
-  attributes:
-    label: Code of Conduct
-    description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/NativeScript/NativeScript/blob/master/tools/notes/CONTRIBUTING.md#coc)
-    options:
-    - label: I agree to follow this project's Code of Conduct
-  validations:
-    required: true
+    attributes:
+      label: Issue Description
+      description: |
+        A clear and concise description of what the bug is.
+        Please, explain whether it's a build-time error or a runtime error.
+
+        If you intend to submit a PR for this issue, tell us in the description.
+      placeholder: |
+        When I do <X>, <Y> happens and I see the following error message:
+
+        ```
+        <error message>
+        ```
+
+        Expected behavior:
+
+        When I do <X>, <Z> should happen instead.
+
+  - type: textarea
+    attributes:
+      label: Reproduction
+      description: |
+        Add commands used or steps taken to reproduce the behaviour.
+        Include links, references or anything else that will give us more context about the issue you are encountering.
+      placeholder: |
+        e.g: 
+        https://github.com/NativeScript/Nativescript
+
+        1. clone, and run with `ns run ios`
+        2. Click on '...'
+        3. See error
+
+  - type: textarea
+    attributes:
+      label: Relevant log output (if applicable)
+      description: |
+        Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+        
+        Using the `--log trace` flag will usuall print more verbose logs that will help identify the issue quicker.
+        
+        When pasting verbose logs, please make sure you remove any sensitive information.
+      render: shell
+
+  - type: textarea
+    attributes:
+      label: Environment
+      description: |
+        Provide information about your environment. Run
+
+        ```shell
+        npx -y nativescript-envinfo
+        ```
+
+        inside the project and paste the output directly without manual formatting.
+      placeholder: |
+        Paste the result of
+
+          npx -y nativescript-envinfo
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+
+        > ## Important! :warning:
+        > 
+        > The issue list is reserved exclusively for bug reports and feature requests. That means we do not accept usage questions. If you open an issue that does not conform to the requirements, it will be closed.
+
+        For usage questions, please refer to the following resources:
+        * Search the [docs](https://docs.nativescript.org/)
+        * Search or ask in [Discord](https://nativescript.org/discord)
+        * Search or ask in [Discussions](https://github.com/NativeScript/NativeScript/discussions)
+        * Search or ask on [StackOverflow](https://stackoverflow.com/questions/tagged/nativescript)
+        * Watch [video tutorials](https://nativescripting.com/)
+
+        Before you submit this issue, please confirm the following:
+
+        **1. Is there an existing issue for this?**
+
+        Please search to see if an issue already exists for the bug you encountered or is not already reported on [StackOverflow](https://stackoverflow.com/questions/tagged/nativescript) as a question.
+
+        **2. Confirm you are submitting a bug report**
+
+        Please confirm you are submitting a bug report and not a usage question.
+
+        **3. Code of Conduct**
+
+        By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/NativeScript/NativeScript/blob/master/tools/notes/CONTRIBUTING.md#coc)
+
+        ---
+  - type: checkboxes
+    attributes:
+      options:
+        - label: I have searched the [existing issues](https://github.com/NativeScript/NativeScript/issues) as well as [StackOverflow](https://stackoverflow.com/questions/tagged/nativescript) and this has not been posted before
+          required: true
+        - label: This is a bug report
+          required: true
+        - label: I agree to follow this project's [Code of Conduct](https://github.com/NativeScript/NativeScript/blob/master/tools/notes/CONTRIBUTING.md#coc)
+          required: true

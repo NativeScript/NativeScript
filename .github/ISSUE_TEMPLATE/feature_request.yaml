@@ -1,18 +1,13 @@
 name: 🚀 Feature request
 description: Suggest an idea for NativeScript
-labels: [feature] 
+labels: ['enhacement-pending-triage'] 
+
 body:
 - type: markdown
   attributes:
     value: |
       Thanks for taking the time to request a feature for NativeScript!
-- type: checkboxes
-  attributes:
-    label: Is there an existing issue for this?
-    description: Please search to see if an issue related to this feature request already exists.
-    options:
-    - label: I have searched the existing issues, and this is a new request
-      required: true
+
 - type: textarea
   attributes:
     label: Is your feature request related to a problem? Please describe.
@@ -21,23 +16,43 @@ body:
       I wish I could use NativeScript to do [...]
       or
       I'm always frustrated when [...]
-  validations:
-    required: false
+
 - type: textarea
   attributes:
     label: Describe the solution you'd like
     description: A clear and concise description of what you want to happen.
-  validations:
-    required: false
+
 - type: textarea
   attributes:
     label: Describe alternatives you've considered
     description: A clear and concise description of any alternative solutions or features you've considered.
-  validations:
-    required: false
+
 - type: textarea
   attributes:
     label: Anything else?
     description: Add any other context, code examples, or references to existing implementations about the feature request here.
-  validations:
-    required: false
+
+- type: markdown
+  attributes:
+    value: |
+      ---
+
+      Before you submit this feature request, please confirm the following:
+
+      **1. Is there an existing issue for this?**
+
+      Please search to see if an issue related to this feature request already exists.
+
+      **3. Code of Conduct**
+
+      By submitting this feature request, you agree to follow our [Code of Conduct](https://github.com/NativeScript/NativeScript/blob/master/tools/notes/CONTRIBUTING.md#coc)
+
+      ---
+
+- type: checkboxes
+  attributes:
+    options:
+      - label: I have searched the [existing issues](https://github.com/NativeScript/NativeScript/issues) as well as [StackOverflow](https://stackoverflow.com/questions/tagged/nativescript) and this has not been posted before
+        required: true
+      - label: I agree to follow this project's [Code of Conduct](https://github.com/NativeScript/NativeScript/blob/master/tools/notes/CONTRIBUTING.md#coc)
+        required: true
