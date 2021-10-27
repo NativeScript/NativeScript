@@ -94,6 +94,26 @@ interface IConfigAndroid extends IConfigPlatform {
 	enableMultithreadedJavascript?: boolean;
 }
 
+interface IConfigCLI {
+	/**
+	 * Set the package manager to use for this project.
+	 * Defaults to the CLI set package manager, or `npm` if not set globally
+	 */
+	packageManager: 'yarn' | 'pnpm' | 'npm';
+}
+
+interface IConfigHook {
+	/**
+	 * Event name for when to run the hook
+	 */
+	type: string;
+
+	/**
+	 * Path to the hook script file to run
+	 */
+	script: string;
+}
+
 export interface NativeScriptConfig {
 	/**
 	 * App's bundle id
@@ -147,4 +167,14 @@ export interface NativeScriptConfig {
 	 * Optionally specify a list of npm package names for which you would like the NativeScript CLI to ignore when attaching native dependencies to the build
 	 */
 	ignoredNativeDependencies?: string[];
+
+	/**
+	 * Set cli options
+	 */
+	cli?: IConfigCLI;
+
+	/**
+	 * Set project persistent hooks to run
+	 */
+	hooks?: IConfigHook[];
 }
