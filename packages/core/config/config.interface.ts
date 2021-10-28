@@ -123,16 +123,16 @@ interface IConfigHook {
 	 */
 	type:
 		| 'before-buildAndroidPlugin'	| 'after-buildAndroidPlugin'
-		| 'before-buildAndroid'			| 'after-buildAndroid'
-		| 'before-buildIOS'				| 'after-buildIOS'
+		| 'before-buildAndroid'				| 'after-buildAndroid'
+		| 'before-buildIOS'						| 'after-buildIOS'
 		| 'before-checkEnvironment'		| 'after-checkEnvironment'
 		| 'before-checkForChanges'		| 'after-checkForChanges'
-		| 'before-install'				| 'after-install'
-		| 'before-prepare'				| 'after-prepare'
+		| 'before-install'						| 'after-install'
+		| 'before-prepare'						| 'after-prepare'
 		| 'before-prepareNativeApp'		| 'after-prepareNativeApp'
-		| 'before-resolveCommand'		| 'after-resolveCommand'
-		| 'before-watch'				| 'after-watch'
-		| 'before-watchPatterns'		| 'after-watchPatterns';
+		| 'before-resolveCommand'			| 'after-resolveCommand'
+		| 'before-watch'							| 'after-watch'
+		| 'before-watchPatterns'			| 'after-watchPatterns';
 
 	/**
 	 * Path to the hook script file to run
