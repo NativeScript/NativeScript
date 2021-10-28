@@ -102,20 +102,6 @@ interface IConfigCLI {
 	packageManager: 'yarn' | 'pnpm' | 'npm';
 }
 
-// prettier-ignore
-type hookPhases =
-	| 'buildAndroidPlugin' // Builds aar file for Android plugin, runs during prepareNativeApp
-	| 'buildAndroid' // Builds Android app
-	| 'buildIOS' // builds iOS app
-	| 'checkEnvironment' // Validate project env, runs during ns doctor, clean, and most build commands
-	| 'checkForChanges' // Changes occured during watch
-	| 'install' // Application installed to device/emulator
-	| 'prepare' // Compiles webpack and prepares native app in platforms folder
-	| 'prepareNativeApp' // Preparing the actual native app, runs during prepare/watch hook
-	| 'resolveCommand' // Resolves command and arguments, runs before all cli commands
-	| 'watch' // Setup watchers for live sync, runs during prepare hook
-	| 'watchPatterns'; // Setup watch patterns, runs during watch hook
-
 interface IConfigHook {
 	// prettier-ignore
 	/**
@@ -123,14 +109,30 @@ interface IConfigHook {
 	 * Possible event names are any of the following with the pattern
 	 * `before-*` and `after-*`
 	 *
-	 * `buildAndroidPlugin`, `buildAndroid`, `buildIOS`,
-	 * `checkEnvironment`, `checkForChanges`,
-	 * `install`,
-	 * `prepare`, `prepareNativeApp`,
-	 * `resolveCommand`,
-	 * `watch`, `watchPatterns`
+	 *	* `buildAndroidPlugin` - Builds aar file for Android plugin, runs during prepareNativeApp
+	 *	* `buildAndroid` - Builds Android app
+	 *	* `buildIOS` - Builds iOS app
+	 *	* `checkEnvironment` - Validate project env, runs during ns doctor, clean, and most build commands
+	 *	* `checkForChanges` - Changes occured during watch
+	 *	* `install` - Application installed to device/emulator
+	 *	* `prepare` - Compiles webpack and prepares native app in platforms folder
+	 *	* `prepareNativeApp` - Preparing the actual native app, runs during prepare/watch hook
+	 *	* `resolveCommand` - Resolves command and arguments, runs before all cli commands
+	 *	* `watch` - Setup watchers for live sync, runs during prepare hook
+	 *	* `watchPatterns` - Setup watch patterns, runs during watch hook
 	 */
-	type: `${'before' | 'after'}-${hookPhases}`;
+	type:
+		| 'before-buildAndroidPlugin'	| 'after-buildAndroidPlugin'
+		| 'before-buildAndroid'			| 'after-buildAndroid'
+		| 'before-buildIOS'				| 'after-buildIOS'
+		| 'before-checkEnvironment'		| 'after-checkEnvironment'
+		| 'before-checkForChanges'		| 'after-checkForChanges'
+		| 'before-install'				| 'after-install'
+		| 'before-prepare'				| 'after-prepare'
+		| 'before-prepareNativeApp'		| 'after-prepareNativeApp'
+		| 'before-resolveCommand'		| 'after-resolveCommand'
+		| 'before-watch'				| 'after-watch'
+		| 'before-watchPatterns'		| 'after-watchPatterns';
 
 	/**
 	 * Path to the hook script file to run
