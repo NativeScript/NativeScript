@@ -103,10 +103,52 @@ interface IConfigCLI {
 }
 
 interface IConfigHook {
+	// prettier-ignore
 	/**
-	 * Event name for when to run the hook
+	 * Event name for when to run the hook.
+	 * Possible event names are any of the following with the pattern
+	 * `before-*` and `after-*`
+	 *
+	 * `buildAndroidPlugin`, `buildAndroid`, `buildIOS`,
+	 * `checkEnvironment`, `checkForChanges`,
+	 * `install`,
+	 * `prepare`, `prepareNativeApp`,
+	 * `watch`, `watchPatterns`
 	 */
-	type: string;
+	type:
+		// Builds aar file for Android plugin
+		| 'before-buildAndroidPlugin'
+		| 'after-buildAndroidPlugin'
+		// Builds Android app
+		| 'before-buildAndroid'
+		| 'after-buildAndroid'
+		// builds iOS app
+		| 'before-buildIOS'
+		| 'after-buildIOS'
+		// Validate project env, runs during ns doctor, clean, and most build commands
+		| 'before-checkEnvironment'
+		| 'after-checkEnvironment'
+		// Changes occured during watch
+		| 'before-checkForChanges'
+		| 'after-checkForChanges'
+		// Application installed to device/emulator
+		| 'before-install'
+		| 'after-install'
+		// Compiles webpack and prepares native app in platforms folder
+		| 'before-prepare'
+		| 'after-prepare'
+		// Preparing the actual native app, runs during prepare/watch hook
+		| 'before-prepareNativeApp'
+		| 'after-prepareNativeApp'
+		// Resolves command and arguments, runs before all cli commands
+		| 'before-resolveCommand'
+		| 'after-resolveCommand'
+		// Setup watchers for live sync, runs during prepare hook
+		| 'before-watch'
+		| 'after-watch'
+		// Setup watch patterns, runs during watch hook
+		| 'before-watchPatterns'
+		| 'after-watchPatterns';
 
 	/**
 	 * Path to the hook script file to run
