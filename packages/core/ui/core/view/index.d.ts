@@ -4,7 +4,7 @@ import { EventData } from '../../../data/observable';
 import { Color } from '../../../color';
 import { Animation, AnimationDefinition, AnimationPromise } from '../../animation';
 import { GestureTypes, GesturesObserver } from '../../gestures';
-import { LinearGradient } from '../../styling/gradient';
+import { LinearGradient } from '../../styling/linear-gradient';
 import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait, AccessibilityEventOptions } from '../../../accessibility/accessibility-types';
 import { CoreTypes } from '../../../core-types';
 import { CSSShadow } from '../../styling/css-shadow';
