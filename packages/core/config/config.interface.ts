@@ -102,6 +102,20 @@ interface IConfigCLI {
 	packageManager: 'yarn' | 'pnpm' | 'npm';
 }
 
+// prettier-ignore
+type hookPhases =
+	| 'buildAndroidPlugin' // Builds aar file for Android plugin, runs during prepareNativeApp
+	| 'buildAndroid' // Builds Android app
+	| 'buildIOS' // builds iOS app
+	| 'checkEnvironment' // Validate project env, runs during ns doctor, clean, and most build commands
+	| 'checkForChanges' // Changes occured during watch
+	| 'install' // Application installed to device/emulator
+	| 'prepare' // Compiles webpack and prepares native app in platforms folder
+	| 'prepareNativeApp' // Preparing the actual native app, runs during prepare/watch hook
+	| 'resolveCommand' // Resolves command and arguments, runs before all cli commands
+	| 'watch' // Setup watchers for live sync, runs during prepare hook
+	| 'watchPatterns'; // Setup watch patterns, runs during watch hook
+
 interface IConfigHook {
 	// prettier-ignore
 	/**
@@ -113,42 +127,10 @@ interface IConfigHook {
 	 * `checkEnvironment`, `checkForChanges`,
 	 * `install`,
 	 * `prepare`, `prepareNativeApp`,
+	 * `resolveCommand`,
 	 * `watch`, `watchPatterns`
 	 */
-	type:
-		// Builds aar file for Android plugin
-		| 'before-buildAndroidPlugin'
-		| 'after-buildAndroidPlugin'
-		// Builds Android app
-		| 'before-buildAndroid'
-		| 'after-buildAndroid'
-		// builds iOS app
-		| 'before-buildIOS'
-		| 'after-buildIOS'
-		// Validate project env, runs during ns doctor, clean, and most build commands
-		| 'before-checkEnvironment'
-		| 'after-checkEnvironment'
-		// Changes occured during watch
-		| 'before-checkForChanges'
-		| 'after-checkForChanges'
-		// Application installed to device/emulator
-		| 'before-install'
-		| 'after-install'
-		// Compiles webpack and prepares native app in platforms folder
-		| 'before-prepare'
-		| 'after-prepare'
-		// Preparing the actual native app, runs during prepare/watch hook
-		| 'before-prepareNativeApp'
-		| 'after-prepareNativeApp'
-		// Resolves command and arguments, runs before all cli commands
-		| 'before-resolveCommand'
-		| 'after-resolveCommand'
-		// Setup watchers for live sync, runs during prepare hook
-		| 'before-watch'
-		| 'after-watch'
-		// Setup watch patterns, runs during watch hook
-		| 'before-watchPatterns'
-		| 'after-watchPatterns';
+	type: `${'before' | 'after'}-${hookPhases}`;
 
 	/**
 	 * Path to the hook script file to run
