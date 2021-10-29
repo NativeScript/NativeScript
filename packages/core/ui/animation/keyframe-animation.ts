@@ -241,7 +241,9 @@ export class KeyframeAnimation {
 				.play(isLastIteration)
 				.then(
 					() => {
-						this.animate(view, index + 1, iterations);
+						if (!global.isAndroid) {
+							this.animate(view, index + 1, iterations);
+						}
 					},
 					(error: any) => {
 						Trace.write(typeof error === 'string' ? error : error.message, Trace.categories.Animation, Trace.messageType.warn);
