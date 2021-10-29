@@ -117,7 +117,6 @@ export class KeyframeAnimation {
 			startDuration += duration;
 		}
 		animation.duration = info.isReverse ? info.duration - duration : duration;
-		animation.iterations = info.iterations;
 		animation.curve = keyframe.curve;
 		animation.forceLayer = true;
 		animation.valueSource = 'keyframe';
@@ -229,7 +228,7 @@ export class KeyframeAnimation {
 			if (cachedAnimation) {
 				animation = cachedAnimation;
 			} else {
-				const animationDef = this.animations[index];
+				const animationDef = {...this.animations[index], iterations};
 				(<any>animationDef).target = view;
 				animation = new Animation([animationDef]);
 				this._nativeAnimations.push(animation);
