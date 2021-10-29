@@ -228,8 +228,7 @@ export class KeyframeAnimation {
 			if (cachedAnimation) {
 				animation = cachedAnimation;
 			} else {
-				const animationDef = {...this.animations[index], iterations};
-				(<any>animationDef).target = view;
+				const animationDef = {...this.animations[index], iterations, target: view};
 				animation = new Animation([animationDef]);
 				this._nativeAnimations.push(animation);
 			}
