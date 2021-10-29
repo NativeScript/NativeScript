@@ -228,7 +228,7 @@ export class KeyframeAnimation {
 			if (cachedAnimation) {
 				animation = cachedAnimation;
 			} else {
-				const animationDef = {...this.animations[index], iterations, target: view};
+				const animationDef = { ...this.animations[index], iterations, target: view };
 				animation = new Animation([animationDef]);
 				this._nativeAnimations.push(animation);
 			}
@@ -240,6 +240,7 @@ export class KeyframeAnimation {
 				.play(isLastIteration)
 				.then(
 					() => {
+						// In android, animation iteration is done natively using AnimatorSet
 						if (!global.isAndroid) {
 							this.animate(view, index + 1, iterations);
 						}
