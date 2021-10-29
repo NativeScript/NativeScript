@@ -117,6 +117,7 @@ export class KeyframeAnimation {
 			startDuration += duration;
 		}
 		animation.duration = info.isReverse ? info.duration - duration : duration;
+		animation.iterations = info.iterations;
 		animation.curve = keyframe.curve;
 		animation.forceLayer = true;
 		animation.valueSource = 'keyframe';
