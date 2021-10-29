@@ -10,7 +10,7 @@ const ANIMATION_PROPERTY_HANDLERS = Object.freeze({
 	'animation-duration': (info: any, value: any) => (info.duration = timeConverter(value)),
 	'animation-delay': (info: any, value: any) => (info.delay = timeConverter(value)),
 	'animation-timing-function': (info: any, value: any) => (info.curve = animationTimingFunctionConverter(value)),
-	'animation-iteration-count': (info: any, value: any) => (info.iterations = value === 'infinite' ? Number.MAX_VALUE : parseFloat(value)),
+	'animation-iteration-count': (info: any, value: any) => (info.iterations = value === 'infinite' ? Number.POSITIVE_INFINITY : parseFloat(value)),
 	'animation-direction': (info: any, value: any) => (info.isReverse = value === 'reverse'),
 	'animation-fill-mode': (info: any, value: any) => (info.isForwards = value === 'forwards'),
 });
