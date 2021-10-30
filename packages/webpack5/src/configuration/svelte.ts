@@ -1,4 +1,3 @@
-import { merge } from 'webpack-merge';
 import Config from 'webpack-chain';
 
 import { getProjectFilePath } from '../helpers/project';
@@ -18,6 +17,10 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// target('node') is the default but causes svelte-loader to detect it as a "server" render, disabling HMR
 	// electron-main sneaks us past the target == 'node' check and gets us HMR
 	config.target('electron-main');
+
+	// turns out this isn't enough now. svelte uses "node" of which "electron-main" is a subset in its export map forcing imports
+	// for 'svelte' to 'ssr.mjs'. We define an alias here to force it back.
+	config.resolve.alias.set('svelte$', 'svelte/internal');
 
 	// svelte-hmr still references tns-core-modules, so we shim it here for compat.
 	config.resolve.alias.set('tns-core-modules', '@nativescript/core');
