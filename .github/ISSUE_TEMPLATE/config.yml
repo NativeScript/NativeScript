@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Search the Docs
+    url: https://docs.nativescript.org
+    about: Refer to the docs and search for what you are looking for.
+  - name: Search or ask in Discord
+    url: https://nativescript.org/discord
+    about: Ask questions and discuss with other NativeScript users in real-time.
+  - name: Search or ask in Discussions
+    url: https://github.com/NativeScript/NativeScript/discussions
+    about: Use GitHub discussions for message-board style questions and discussions.
+  - name: Search or ask on StackOverflow
+    url: https://stackoverflow.com/questions/tagged/nativescript
+    about: Use StackOverflow to look for answered questions that may be similar to yours.
