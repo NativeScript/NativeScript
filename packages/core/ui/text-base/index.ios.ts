@@ -171,6 +171,9 @@ export class TextBase extends TextBaseCommon {
 			case 'right':
 				nativeView.textAlignment = NSTextAlignment.Right;
 				break;
+			case 'justify':
+				nativeView.textAlignment = NSTextAlignment.Justified;
+			break;
 		}
 	}
 

@@ -1018,13 +1018,6 @@ declare class CAValueFunction extends NSObject implements NSSecureCoding {
 	initWithCoder(coder: NSCoder): this;
 }
 
-interface _CALayerIvars {
-	refcount: number;
-	magic: number;
-	layer: interop.Pointer | interop.Reference<any>;
-}
-declare var _CALayerIvars: interop.StructType<_CALayerIvars>;
-
 declare var kCAAlignmentCenter: string;
 
 declare var kCAAlignmentJustified: string;

@@ -4,6 +4,7 @@ import { getEntryDirPath, getEntryPath } from '../helpers/platform';
 import { addVirtualEntry } from '../helpers/virtualModules';
 import { chainedSetAddAfter } from '../helpers/chain';
 import { env as _env, IWebpackEnv } from '../index';
+import { ContextExclusionPlugin } from 'webpack';
 import base from './base';
 
 export default function (config: Config, env: IWebpackEnv = _env): Config {
@@ -21,6 +22,11 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		// VIRTUAL ENTRY END
 	`
 	);
+
+	// exclude files starting with _ from require.context
+	config
+		.plugin(`ContextExclusionPlugin|exclude_files`)
+		.use(ContextExclusionPlugin, [/\b_.+\./]);
 
 	chainedSetAddAfter(
 		config.entry('bundle'),

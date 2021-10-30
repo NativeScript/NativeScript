@@ -158,6 +158,23 @@
 				}
 			}
 		},
+		"core-api-docs": {
+			"root": "tools/scripts",
+			"sourceRoot": "tools/scripts",
+			"projectType": "library",
+			"schematics": {},
+			"architect": {
+				"build": {
+					"builder": "@nrwl/workspace:run-commands",
+					"outputs": ["tools/scripts/dist"],
+					"options": {
+						"commands": ["./build-docs.sh"],
+						"cwd": "tools/scripts",
+						"parallel": false
+					}
+				}
+			}
+		},
 		"types": {
 			"root": "packages/types",
 			"sourceRoot": "packages/types",
@@ -271,9 +288,7 @@
 					"builder": "@nrwl/workspace:run-commands",
 					"outputs": ["dist/packages"],
 					"options": {
-						"commands": [
-							"npm run build"
-						],
+						"commands": ["npm run build"],
 						"cwd": "packages/webpack5",
 						"parallel": false
 					}

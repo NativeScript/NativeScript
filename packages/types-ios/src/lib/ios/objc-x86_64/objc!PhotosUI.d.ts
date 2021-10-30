@@ -65,6 +65,8 @@ declare class PHLivePhotoView extends UIView {
 
 interface PHLivePhotoViewDelegate extends NSObjectProtocol {
 
+	livePhotoViewCanBeginPlaybackWithStyle?(livePhotoView: PHLivePhotoView, playbackStyle: PHLivePhotoViewPlaybackStyle): boolean;
+
 	livePhotoViewDidEndPlaybackWithStyle?(livePhotoView: PHLivePhotoView, playbackStyle: PHLivePhotoViewPlaybackStyle): void;
 
 	livePhotoViewWillBeginPlaybackWithStyle?(livePhotoView: PHLivePhotoView, playbackStyle: PHLivePhotoViewPlaybackStyle): void;
@@ -93,6 +95,10 @@ declare class PHPickerConfiguration extends NSObject implements NSCopying {
 
 	preferredAssetRepresentationMode: PHPickerConfigurationAssetRepresentationMode;
 
+	preselectedAssetIdentifiers: NSArray<string>;
+
+	selection: PHPickerConfigurationSelection;
+
 	selectionLimit: number;
 
 	constructor(o: { photoLibrary: PHPhotoLibrary; });
@@ -109,6 +115,13 @@ declare const enum PHPickerConfigurationAssetRepresentationMode {
 	Current = 1,
 
 	Compatible = 2
+}
+
+declare const enum PHPickerConfigurationSelection {
+
+	Default = 0,
+
+	Ordered = 1
 }
 
 declare class PHPickerFilter extends NSObject implements NSCopying {

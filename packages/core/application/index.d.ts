@@ -632,7 +632,7 @@ export class AndroidApplication extends Observable {
 	 * Get a registered BroadcastReceiver, then you can get the result code of BroadcastReceiver in onReceiveCallback method.
 	 * @param intentFilter A string containing the intent filter.
 	 */
-	public getRegisteredBroadcastReceiver(intentFilter: string): android.content.BroadcastReceiver | undefined;
+	public getRegisteredBroadcastReceiver(intentFilter: string): any; /* android.content.BroadcastReceiver */
 
 	/**
 	 * Register a BroadcastReceiver to be run in the main activity thread. The receiver will be called with any broadcast Intent that matches filter, in the main application thread.

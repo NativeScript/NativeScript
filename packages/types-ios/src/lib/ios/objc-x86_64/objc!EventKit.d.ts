@@ -247,7 +247,9 @@ declare const enum EKErrorCode {
 
 	NotificationSavedWithoutCollection = 35,
 
-	Last = 36
+	ReminderAlarmContainsEmailOrUrl = 36,
+
+	Last = 37
 }
 
 declare var EKErrorDomain: string;
@@ -684,6 +686,100 @@ declare class EKStructuredLocation extends EKObject implements NSCopying {
 	title: string;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare class EKVirtualConferenceDescriptor extends NSObject {
+
+	static alloc(): EKVirtualConferenceDescriptor; // inherited from NSObject
+
+	static new(): EKVirtualConferenceDescriptor; // inherited from NSObject
+
+	readonly URLDescriptors: NSArray<EKVirtualConferenceURLDescriptor>;
+
+	readonly conferenceDetails: string;
+
+	readonly title: string;
+
+	constructor(o: { title: string; URLDescriptors: NSArray<EKVirtualConferenceURLDescriptor> | EKVirtualConferenceURLDescriptor[]; conferenceDetails: string; });
+
+	initWithTitleURLDescriptorsConferenceDetails(title: string, URLDescriptors: NSArray<EKVirtualConferenceURLDescriptor> | EKVirtualConferenceURLDescriptor[], conferenceDetails: string): this;
+}
+
+declare class EKVirtualConferenceProvider extends NSObject implements NSExtensionRequestHandling {
+
+	static alloc(): EKVirtualConferenceProvider; // inherited from NSObject
+
+	static new(): EKVirtualConferenceProvider; // inherited from NSObject
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	beginRequestWithExtensionContext(context: NSExtensionContext): void;
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	fetchAvailableRoomTypesWithCompletionHandler(completionHandler: (p1: NSArray<EKVirtualConferenceRoomTypeDescriptor>, p2: NSError) => void): void;
+
+	fetchVirtualConferenceForIdentifierCompletionHandler(identifier: string, completionHandler: (p1: EKVirtualConferenceDescriptor, p2: NSError) => void): void;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
+declare class EKVirtualConferenceRoomTypeDescriptor extends NSObject {
+
+	static alloc(): EKVirtualConferenceRoomTypeDescriptor; // inherited from NSObject
+
+	static new(): EKVirtualConferenceRoomTypeDescriptor; // inherited from NSObject
+
+	readonly identifier: string;
+
+	readonly title: string;
+
+	constructor(o: { title: string; identifier: string; });
+
+	initWithTitleIdentifier(title: string, identifier: string): this;
+}
+
+declare class EKVirtualConferenceURLDescriptor extends NSObject {
+
+	static alloc(): EKVirtualConferenceURLDescriptor; // inherited from NSObject
+
+	static new(): EKVirtualConferenceURLDescriptor; // inherited from NSObject
+
+	readonly URL: NSURL;
+
+	readonly title: string;
+
+	constructor(o: { title: string; URL: NSURL; });
+
+	initWithTitleURL(title: string, URL: NSURL): this;
 }
 
 declare const enum EKWeekday {

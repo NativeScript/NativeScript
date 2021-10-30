@@ -108,6 +108,8 @@ declare const kDNSServiceErr_NoSuchRecord: number;
 
 declare const kDNSServiceErr_NotInitialized: number;
 
+declare const kDNSServiceErr_NotPermitted: number;
+
 declare const kDNSServiceErr_PolicyDenied: number;
 
 declare const kDNSServiceErr_PollingMode: number;

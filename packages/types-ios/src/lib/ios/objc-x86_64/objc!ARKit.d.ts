@@ -346,7 +346,9 @@ declare const enum ARCoachingGoal {
 
 	VerticalPlane = 2,
 
-	AnyPlane = 3
+	AnyPlane = 3,
+
+	GeoTracking = 4
 }
 
 declare class ARCoachingOverlayView extends UIView {
@@ -532,8 +534,6 @@ declare const enum ARErrorCode {
 	InvalidWorldMap = 302,
 
 	InvalidConfiguration = 303,
-
-	CollaborationDataUnavailable = 304,
 
 	InvalidCollaborationData = 304,
 
@@ -1895,6 +1895,8 @@ declare class ARVideoFormat extends NSObject implements NSCopying {
 	static new(): ARVideoFormat; // inherited from NSObject
 
 	readonly captureDevicePosition: AVCaptureDevicePosition;
+
+	readonly captureDeviceType: string;
 
 	readonly framesPerSecond: number;
 

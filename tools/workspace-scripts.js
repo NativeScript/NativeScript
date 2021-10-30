@@ -99,6 +99,13 @@ module.exports = {
 					},
 				},
 			},
+      // @nativescript/core API Reference Docs
+      'core-api-docs': {
+				build: {
+          script: 'nx run core-api-docs:build',
+          description: '@nativescript/core: API Reference Docs Build'
+        }
+      },
 			// @nativescript/ui-mobile-base
 			'ui-mobile-base': {
 				build: {

@@ -286,18 +286,22 @@ export class TextBase extends TextBaseCommon {
 	[textAlignmentProperty.setNative](value: CoreTypes.TextAlignmentType) {
 		const verticalGravity = this.nativeTextViewProtected.getGravity() & android.view.Gravity.VERTICAL_GRAVITY_MASK;
 		switch (value) {
-			case 'initial':
-			case 'left':
-				this.nativeTextViewProtected.setGravity(android.view.Gravity.START | verticalGravity);
-				break;
-
 			case 'center':
 				this.nativeTextViewProtected.setGravity(android.view.Gravity.CENTER_HORIZONTAL | verticalGravity);
 				break;
-
 			case 'right':
 				this.nativeTextViewProtected.setGravity(android.view.Gravity.END | verticalGravity);
 				break;
+			default: // initial | left | justify
+				this.nativeTextViewProtected.setGravity(android.view.Gravity.START | verticalGravity);
+				break;
+		}
+		if (android.os.Build.VERSION.SDK_INT >= 26) {
+			if (value === 'justify') {
+				this.nativeTextViewProtected.setJustificationMode(android.text.Layout.JUSTIFICATION_MODE_INTER_WORD);
+			} else {
+				this.nativeTextViewProtected.setJustificationMode(android.text.Layout.JUSTIFICATION_MODE_NONE);
+			}
 		}
 	}
 
@@ -345,10 +349,10 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	[lineHeightProperty.getDefault](): number {
-		return this.nativeView.getLineSpacingExtra() / layout.getDisplayDensity();
+		return this.nativeTextViewProtected.getLineSpacingExtra() / layout.getDisplayDensity();
 	}
 	[lineHeightProperty.setNative](value: number) {
-		this.nativeView.setLineSpacing(value * layout.getDisplayDensity(), 1);
+		this.nativeTextViewProtected.setLineSpacing(value * layout.getDisplayDensity(), 1);
 	}
 
 	[fontInternalProperty.getDefault](): android.graphics.Typeface {
@@ -395,7 +399,7 @@ export class TextBase extends TextBaseCommon {
 
 	[textShadowProperty.setNative](value: CSSShadow) {
 		// prettier-ignore
-		this.nativeViewProtected.setShadowLayer(
+		this.nativeTextViewProtected.setShadowLayer(
 			Length.toDevicePixels(value.blurRadius, java.lang.Float.MIN_VALUE),
 			Length.toDevicePixels(value.offsetX, 0),
 			Length.toDevicePixels(value.offsetY, 0),
@@ -437,7 +441,7 @@ export class TextBase extends TextBaseCommon {
 	[paddingLeftProperty.setNative](value: CoreTypes.LengthType) {
 		org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeTextViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderLeftWidth, 0));
 	}
-	
+
 	[accessibilityIdentifierProperty.setNative](value: string): void {
 		// we override the default setter to apply it on nativeTextViewProtected
 		const id = Utils.ad.resources.getId(':id/nativescript_accessibility_id');
@@ -471,10 +475,10 @@ export class TextBase extends TextBaseCommon {
 		if (this._tappable !== tappable) {
 			this._tappable = tappable;
 			if (this._tappable) {
-				this.nativeViewProtected.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
-				this.nativeViewProtected.setHighlightColor(null);
+				this.nativeTextViewProtected.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
+				this.nativeTextViewProtected.setHighlightColor(null);
 			} else {
-				this.nativeViewProtected.setMovementMethod(this._defaultMovementMethod);
+				this.nativeTextViewProtected.setMovementMethod(this._defaultMovementMethod);
 			}
 		}
 	}

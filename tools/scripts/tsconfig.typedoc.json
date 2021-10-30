@@ -23,7 +23,7 @@
 	],
 	"typedocOptions": {
 		"entryPoints": ["../../packages/core/index.d.ts", "../../packages/core"],
-		"out": "dist/apiref",
+		"out": "dist/api-reference",
 		"name": "NativeScript",
 		"theme": "../../node_modules/nativescript-typedoc-theme",
 		"excludeExternals": true,

@@ -22,7 +22,7 @@ export class LinearGradient {
 			}
 
 			return {
-				color: new Color(color.argb),
+				color: color.color,
 				offset: offsetUnit,
 			};
 		});

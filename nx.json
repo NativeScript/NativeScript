@@ -28,6 +28,9 @@
 		"core": {
 			"tags": []
 		},
+		"core-api-docs": {
+			"tags": []
+		},
 		"types": {
 			"tags": []
 		},

@@ -41,6 +41,12 @@ export namespace CoreTypes {
 		export const email = 'email';
 		export const integer = 'integer';
 	}
+	export type AutofillType = 'username' | 'password' | 'none' | string;
+	export module AutofillType {
+		export const username = 'username';
+		export const password = 'password';
+		export const none = 'none';
+	}
 
 	export type ReturnKeyButtonType = 'done' | 'next' | 'go' | 'search' | 'send';
 	export module ReturnKeyType {
@@ -51,11 +57,12 @@ export namespace CoreTypes {
 		export const send = 'send';
 	}
 
-	export type TextAlignmentType = 'initial' | 'left' | 'center' | 'right';
+	export type TextAlignmentType = 'initial' | 'left' | 'center' | 'right' | 'justify';
 	export module TextAlignment {
 		export const left = 'left';
 		export const center = 'center';
 		export const right = 'right';
+		export const justify = 'justify';
 	}
 
 	export type TextDecorationType = 'none' | 'underline' | 'line-through' | 'underline line-through';

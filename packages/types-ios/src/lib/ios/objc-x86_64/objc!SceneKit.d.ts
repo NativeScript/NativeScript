@@ -153,6 +153,8 @@ interface SCNAnimatable extends NSObjectProtocol {
 
 	removeAllAnimations(): void;
 
+	removeAllAnimationsWithBlendOutDuration(duration: number): void;
+
 	removeAnimationForKey(key: string): void;
 
 	removeAnimationForKeyBlendOutDuration(key: string, duration: number): void;
@@ -343,6 +345,8 @@ declare class SCNAnimationPlayer extends NSObject implements NSCopying, NSSecure
 	play(): void;
 
 	removeAllAnimations(): void;
+
+	removeAllAnimationsWithBlendOutDuration(duration: number): void;
 
 	removeAnimationForKey(key: string): void;
 
@@ -756,6 +760,8 @@ declare class SCNCamera extends NSObject implements NSCopying, NSSecureCoding, S
 
 	removeAllAnimations(): void;
 
+	removeAllAnimationsWithBlendOutDuration(duration: number): void;
+
 	removeAnimationForKey(key: string): void;
 
 	removeAnimationForKeyBlendOutDuration(key: string, duration: number): void;
@@ -1025,6 +1031,8 @@ declare class SCNConstraint extends NSObject implements NSCopying, NSSecureCodin
 
 	removeAllAnimations(): void;
 
+	removeAllAnimationsWithBlendOutDuration(duration: number): void;
+
 	removeAnimationForKey(key: string): void;
 
 	removeAnimationForKeyBlendOutDuration(key: string, duration: number): void;
@@ -1211,6 +1219,8 @@ declare class SCNGeometry extends NSObject implements NSCopying, NSSecureCoding,
 
 	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
+	minimumLanguageVersion: number; // inherited from SCNShadable
+
 	program: SCNProgram; // inherited from SCNShadable
 
 	shaderModifiers: NSDictionary<string, string>; // inherited from SCNShadable
@@ -1274,6 +1284,8 @@ declare class SCNGeometry extends NSObject implements NSCopying, NSSecureCoding,
 	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 
 	removeAllAnimations(): void;
+
+	removeAllAnimationsWithBlendOutDuration(duration: number): void;
 
 	removeAnimationForKey(key: string): void;
 
@@ -1725,6 +1737,8 @@ declare class SCNLight extends NSObject implements NSCopying, NSSecureCoding, SC
 
 	removeAllAnimations(): void;
 
+	removeAllAnimationsWithBlendOutDuration(duration: number): void;
+
 	removeAnimationForKey(key: string): void;
 
 	removeAnimationForKeyBlendOutDuration(key: string, duration: number): void;
@@ -1892,6 +1906,8 @@ declare class SCNMaterial extends NSObject implements NSCopying, NSSecureCoding,
 
 	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
+	minimumLanguageVersion: number; // inherited from SCNShadable
+
 	program: SCNProgram; // inherited from SCNShadable
 
 	shaderModifiers: NSDictionary<string, string>; // inherited from SCNShadable
@@ -1943,6 +1959,8 @@ declare class SCNMaterial extends NSObject implements NSCopying, NSSecureCoding,
 	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 
 	removeAllAnimations(): void;
+
+	removeAllAnimationsWithBlendOutDuration(duration: number): void;
 
 	removeAnimationForKey(key: string): void;
 
@@ -2044,6 +2062,8 @@ declare class SCNMaterialProperty extends NSObject implements NSSecureCoding, SC
 	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 
 	removeAllAnimations(): void;
+
+	removeAllAnimationsWithBlendOutDuration(duration: number): void;
 
 	removeAnimationForKey(key: string): void;
 
@@ -2169,6 +2189,8 @@ declare class SCNMorpher extends NSObject implements NSSecureCoding, SCNAnimatab
 	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 
 	removeAllAnimations(): void;
+
+	removeAllAnimationsWithBlendOutDuration(duration: number): void;
 
 	removeAnimationForKey(key: string): void;
 
@@ -2345,7 +2367,11 @@ declare class SCNNode extends NSObject implements NSCopying, NSSecureCoding, SCN
 
 	readonly description: string; // inherited from NSObjectProtocol
 
+	readonly focusEffect: UIFocusEffect; // inherited from UIFocusItem
+
 	readonly focusGroupIdentifier: string; // inherited from UIFocusEnvironment
+
+	readonly focusGroupPriority: number; // inherited from UIFocusItem
 
 	readonly focusItemContainer: UIFocusItemContainer; // inherited from UIFocusEnvironment
 
@@ -2356,6 +2382,8 @@ declare class SCNNode extends NSObject implements NSCopying, NSSecureCoding, SCN
 	readonly hash: number; // inherited from NSObjectProtocol
 
 	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly isTransparentFocusItem: boolean; // inherited from UIFocusItem
 
 	readonly parentFocusEnvironment: UIFocusEnvironment; // inherited from UIFocusEnvironment
 
@@ -2462,6 +2490,8 @@ declare class SCNNode extends NSObject implements NSCopying, NSSecureCoding, SCN
 	removeAllActions(): void;
 
 	removeAllAnimations(): void;
+
+	removeAllAnimationsWithBlendOutDuration(duration: number): void;
 
 	removeAllAudioPlayers(): void;
 
@@ -2848,6 +2878,8 @@ declare class SCNParticleSystem extends NSObject implements NSCopying, NSSecureC
 
 	warmupDuration: number;
 
+	writesToDepthBuffer: boolean;
+
 	readonly animationKeys: NSArray<string>; // inherited from SCNAnimatable
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
@@ -2905,6 +2937,8 @@ declare class SCNParticleSystem extends NSObject implements NSCopying, NSSecureC
 	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 
 	removeAllAnimations(): void;
+
+	removeAllAnimationsWithBlendOutDuration(duration: number): void;
 
 	removeAllModifiers(): void;
 
@@ -4034,6 +4068,8 @@ declare var SCNSceneUpAxisAttributeKey: string;
 
 interface SCNShadable extends NSObjectProtocol {
 
+	minimumLanguageVersion?: number;
+
 	program?: SCNProgram;
 
 	shaderModifiers?: NSDictionary<string, string>;
@@ -4227,6 +4263,8 @@ declare class SCNTechnique extends NSObject implements NSCopying, NSSecureCoding
 	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 
 	removeAllAnimations(): void;
+
+	removeAllAnimationsWithBlendOutDuration(duration: number): void;
 
 	removeAnimationForKey(key: string): void;
 

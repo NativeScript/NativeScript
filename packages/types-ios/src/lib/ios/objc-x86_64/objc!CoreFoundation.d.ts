@@ -2316,6 +2316,8 @@ declare const enum CFURLBookmarkCreationOptions {
 
 	kCFURLBookmarkCreationSecurityScopeAllowOnlyReadAccess = 4096,
 
+	kCFURLBookmarkCreationWithoutImplicitSecurityScope = 536870912,
+
 	kCFURLBookmarkCreationPreferFileIDResolutionMask = 256
 }
 
@@ -2326,6 +2328,8 @@ declare const enum CFURLBookmarkResolutionOptions {
 	kCFURLBookmarkResolutionWithoutMountingMask = 512,
 
 	kCFURLBookmarkResolutionWithSecurityScope = 1024,
+
+	kCFURLBookmarkResolutionWithoutImplicitStartAccessing = 32768,
 
 	kCFBookmarkResolutionWithoutUIMask = 256,
 
@@ -3289,6 +3293,8 @@ declare var kCFURLUbiquitousItemHasUnresolvedConflictsKey: string;
 declare var kCFURLUbiquitousItemIsDownloadedKey: string;
 
 declare var kCFURLUbiquitousItemIsDownloadingKey: string;
+
+declare var kCFURLUbiquitousItemIsExcludedFromSyncKey: string;
 
 declare var kCFURLUbiquitousItemIsUploadedKey: string;
 

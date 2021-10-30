@@ -320,6 +320,10 @@ declare class ICDeviceBrowser extends NSObject {
 
 	requestControlAuthorizationWithCompletion(completion: (p1: string) => void): void;
 
+	resetContentsAuthorizationWithCompletion(completion: (p1: string) => void): void;
+
+	resetControlAuthorizationWithCompletion(completion: (p1: string) => void): void;
+
 	start(): void;
 
 	stop(): void;

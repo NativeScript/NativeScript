@@ -3,8 +3,6 @@ import { ViewBase } from '../core/view-base';
 import { View } from '../core/view';
 import { unsetValue, _evaluateCssVariableExpression, _evaluateCssCalcExpression, isCssVariable, isCssVariableExpression, isCssCalcExpression } from '../core/properties';
 import { SyntaxTree, Keyframes as KeyframesDefinition, parse as parseCss, Node as CssNode } from '../../css';
-import { CSS3Parser, CSSNativeScript } from '../../css/parser';
-import { cssTreeParse } from '../../css/css-tree-parser';
 
 import { RuleSet, SelectorsMap, SelectorCore, SelectorsMatch, ChangeMap, fromAstNodes, Node } from './css-selector';
 import { Trace } from '../../trace';
@@ -218,23 +216,19 @@ class CSSSource {
 	@profile
 	private parseCSSAst() {
 		if (this._source) {
-			switch (parser) {
-				case 'css-tree':
-					this._ast = cssTreeParse(this._source, this._file);
-
-					return;
-				case 'nativescript': {
-					const cssparser = new CSS3Parser(this._source);
-					const stylesheet = cssparser.parseAStylesheet();
-					const cssNS = new CSSNativeScript();
-					this._ast = cssNS.parseStylesheet(stylesheet);
-
-					return;
-				}
-				case 'rework':
-					this._ast = parseCss(this._source, { source: this._file });
-
-					return;
+			if (__CSS_PARSER__ === 'css-tree') {
+				const cssTreeParse = require('../../css/css-tree-parser').cssTreeParse;
+				this._ast = cssTreeParse(this._source, this._file);
+			} else if (__CSS_PARSER__ === 'nativescript') {
+				const CSS3Parser = require('../../css/CSS3Parser').CSS3Parser;
+				const CSSNativeScript = require('../../css/CSSNativeScript').CSSNativeScript;
+				const cssparser = new CSS3Parser(this._source);
+				const stylesheet = cssparser.parseAStylesheet();
+				const cssNS = new CSSNativeScript();
+				this._ast = cssNS.parseStylesheet(stylesheet);
+			} else if (__CSS_PARSER__ === 'rework') {
+				const parseCss = require('../../css').parse;
+				this._ast = parseCss(this._source, { source: this._file });
 			}
 		}
 	}

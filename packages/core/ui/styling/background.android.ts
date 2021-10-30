@@ -175,7 +175,7 @@ function refreshBorderDrawable(this: void, view: View, borderDrawable: org.nativ
 		const blackColor = -16777216; //android.graphics.Color.BLACK;
 
 		let imageUri: string;
-		if (background.image && typeof background.image === 'string') {
+		if (background.image && typeof background.image === 'string' && background.image !== 'none') {
 			imageUri = background.image;
 			const match = imageUri.match(pattern);
 			if (match && match[2]) {
