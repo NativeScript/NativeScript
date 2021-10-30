@@ -1,3 +1,13 @@
+## [8.1.5](https://github.com/NativeScript/NativeScript/compare/8.1.4-core...8.1.5) (2021-10-28)
+
+
+### Bug Fixes
+
+* **android:** autofillType on apiLevel < 26 ([#9610](https://github.com/NativeScript/NativeScript/issues/9610)) ([8878c3b](https://github.com/NativeScript/NativeScript/commit/8878c3bc6be5c061e95da74249998b51797d71d9))
+* **android:** version Android text-align justify ([#9620](https://github.com/NativeScript/NativeScript/issues/9620)) ([2ad280d](https://github.com/NativeScript/NativeScript/commit/2ad280deb0e9b6098d4ad76ccf703e257196a023))
+
+
+
 ## [8.1.4](https://github.com/NativeScript/NativeScript/compare/8.1.3-core...8.1.4) (2021-10-09)
 
 
