@@ -3,7 +3,7 @@ name: '@nativescript/types -> npm'
 
 on:
   push:
-    branches: [ 'master' ]
+    branches: [ 'masterfile' ]
     paths:
       - 'packages/types/**'
 
