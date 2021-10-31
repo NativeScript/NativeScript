@@ -1,7 +1,7 @@
 ***e2e tests execution***
 
 1. Local setup
-    - install appium and all requirments related to `nativescript-dev-appium` plugin usage
+    - install appium and all requirements related to `nativescript-dev-appium` plugin usage
     - download images:
 
         ```npm run load-images Emulator-Api23-Default "iPhone X 12"```
@@ -36,7 +36,7 @@
     - Run:
 
         `npm run e2e-debug [android|ios]`
-run in separate console and don't kill it. This command will start appium server and driver and use the installed app on the device but it will not execute tests.
+run in separate console and don't kill it. This command will start appium server and driver and use the installed app on the device, but it will not execute tests.
     - Go to vs code debugging and use a config like:
 
     ```
