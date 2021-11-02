@@ -10,7 +10,7 @@ The `tns-core-modules/trace` utility module provides a good way to streamline er
 Here are the guidelines how to use this when contributing to core-modules or creating your own plugins.
 
 ### Use `trace.write()`
-Use trace.write() with the appropriate type to log non critical errors. 
+Use trace.write() with the appropriate type to log non-critical errors. 
 
 >Note: For the `error` message level all loggers will be notified unconditionally, for all other levels (`log`,`info`,`warn`), tracing should be enabled and the corresponding categories should be added.
 
@@ -21,7 +21,7 @@ Use the `error()` when an error has occurred which compromises the stability of 
 
 After calling `trace.error()` consider just returning from the function you are currently in without completing. 
 
-There are cases when code execution jumps between native code (ex. Android/iOS SDKs) and JavaScript trough callbacks. In those cases it is most difficult to determine if an error (ex. expected argument is `undefined` or current state of components is invalid) is critical or not. Although, it seems that error is unrecoverable, it might be the case that the callback is called when the app has gone to the background or trough activity/window that is not longer visible. So just reporting the error with `write()` or `error()` is a good option in such cases.
+There are cases when code execution jumps between native code (ex. Android/iOS SDKs) and JavaScript trough callbacks. In those cases it is most difficult to determine if an error (ex. expected argument is `undefined` or current state of components is invalid) is critical or not. Although, it seems that error is unrecoverable, it might be the case that the callback is called when the app has gone to the background or trough activity/window that is no longer visible. So just reporting the error with `write()` or `error()` is a good option in such cases.
 
 
 ## Throw the Error directly in code
@@ -31,6 +31,6 @@ Avoid throwing errors directly, especially in code that is not directly called f
 2. Obviously misused public APIs (ex. wrong arguments types) which developers will call directly.  
 
 ## Clearing Legacy Code
-Not all the code in the `tns-core-modules` might conform to this guide as it might be written before some of the improvements of the trace modules (ex. `error()`). If you came across to such code you can always [give us a PR](CONTRIBUTING.md) referencing [this issue](https://github.com/NativeScript/NativeScript/issues/5914).
+Not all the code in the `tns-core-modules` might conform to this guide as it might be written before some improvements of the trace modules (ex. `error()`). If you came across to such code you can always [give us a PR](CONTRIBUTING.md) referencing [this issue](https://github.com/NativeScript/NativeScript/issues/5914).
 
  
