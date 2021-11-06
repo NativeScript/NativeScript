@@ -1,9 +1,3 @@
-import groovy.json.JsonSlurper //used to parse package.json
-import groovy.json.JsonBuilder
-import groovy.json.JsonOutput
-
-def isWinOs = System.properties['os.name'].toLowerCase().contains('windows')
-
 apply plugin: 'com.android.library'
 
 def computeCompileSdkVersion () {
@@ -20,25 +14,7 @@ def computeBuildToolsVersion() {
         return buildToolsVersion
     }
     else {
-        return "28.0.2"
-    }
-}
-
-def computeAndroidXVersion() {
-    if(project.hasProperty("androidxVersion")) {
-        return androidxVersion
-    }
-    else {
-        return "1.0.0"
-    }
-}
-
-def computeSupportVersion() {
-    if(project.hasProperty("supportVersion")) {
-        return supportVersion
-    }
-    else {
-        return "28.0.0"
+        return "31.0.0"
     }
 }
 
@@ -56,7 +32,7 @@ android {
     buildToolsVersion computeBuildToolsVersion()
 
     defaultConfig {
-        minSdkVersion 16
+        minSdkVersion 19
         targetSdkVersion computeTargetSdkVersion()
         versionCode 1
         versionName "1.0"
@@ -72,18 +48,31 @@ android {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
 
-    if(project.hasProperty("useAndroidX")) {
-        println 'Using android X'
-        def androidxVersion = computeAndroidXVersion()
-        implementation 'androidx.viewpager:viewpager:' + androidxVersion
-        implementation 'androidx.fragment:fragment:' + androidxVersion
-        implementation 'androidx.transition:transition:' + androidxVersion
-				implementation "androidx.exifinterface:exifinterface:1.3.2"
-				implementation "androidx.appcompat:appcompat:1.1.0"
-    } else {
-        println 'Using support library'
-        implementation 'com.android.support:support-v4:' + computeSupportVersion()
-    }
+		def androidXAppCompatVersion = "1.3.1"
+		if (project.hasProperty("androidXAppCompat")) {
+			androidXAppCompatVersion = androidXAppCompat
+		}
+		def androidXExifInterfaceVersion = "1.3.2"
+		if (project.hasProperty("androidXExifInterface")) {
+			androidXExifInterfaceVersion = androidXExifInterface
+		}
+		def androidXFragmentVersion = "1.3.6"
+		if (project.hasProperty("androidXFragment")) {
+			androidXFragmentVersion = androidXFragment
+		}
+		def androidXTransitionVersion = "1.4.1"
+		if (project.hasProperty("androidXTransition")) {
+			androidXTransitionVersion = androidXTransition
+		}
+		def androidXViewPagerVersion = "1.0.0"
+		if (project.hasProperty("androidXViewPager")) {
+			androidXViewPagerVersion = androidXViewPager
+		}
+		implementation "androidx.viewpager:viewpager:$androidXViewPagerVersion"
+		implementation "androidx.fragment:fragment:$androidXFragmentVersion"
+		implementation "androidx.transition:transition:$androidXTransitionVersion"
+		implementation "androidx.exifinterface:exifinterface:$androidXExifInterfaceVersion"
+		implementation "androidx.appcompat:appcompat:$androidXAppCompatVersion"
 }
 
 task cleanBuildDir (type: Delete) {

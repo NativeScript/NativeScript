@@ -638,6 +638,10 @@ declare module org {
                 public static saveToFileAsync(param0: globalAndroid.graphics.Bitmap, param1: string, param2: string, param3: number, param4: org.nativescript.widgets.Utils.AsyncImageCallback): void;
                 public static toBase64StringAsync(param0: globalAndroid.graphics.Bitmap, param1: string, param2: number, param3: org.nativescript.widgets.Utils.AsyncImageCallback): void;
                 public static resizeAsync(param0: globalAndroid.graphics.Bitmap, param1: number, param2: string, param3: org.nativescript.widgets.Utils.AsyncImageCallback): void;
+                public static getFileInputStream( param0: android.content.Context, param1: string): java.io.FileInputStream;
+                public static getFileOutputStream( param0: android.content.Context, param1: string): java.io.FileOutputStream;
+                public static getBytes(param0: android.content.Context, param1: string): any;
+                public static getText(param0: android.content.Context, param1: string, param2: string): string;
 				public constructor();
 			}
 			export module Utils {

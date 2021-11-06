@@ -11,23 +11,17 @@ import android.util.Log;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
-import java.io.DataInputStream;
 import java.io.FileOutputStream;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -38,6 +32,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPInputStream;
+
+import androidx.core.content.res.ResourcesCompat;
 
 public class Async {
     static final String TAG = "Async";
@@ -53,7 +49,7 @@ public class Async {
                     NUMBER_OF_CORES * 2,
                     60L,
                     TimeUnit.SECONDS,
-                    new LinkedBlockingQueue<Runnable>(),
+                    new LinkedBlockingQueue<>(),
                     backgroundPriorityThreadFactory
             );
         }
@@ -76,17 +72,14 @@ public class Async {
 
         @Override
         public Thread newThread(final Runnable runnable) {
-            Runnable wrapperRunnable = new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        android.os.Process.setThreadPriority(mThreadPriority);
-                    } catch (Throwable t) {
+            Runnable wrapperRunnable = () -> {
+								try {
+										android.os.Process.setThreadPriority(mThreadPriority);
+								} catch (Throwable ignored) {
 
-                    }
-                    runnable.run();
-                }
-            };
+								}
+								runnable.run();
+						};
             return new Thread(wrapperRunnable);
         }
     }
@@ -100,75 +93,43 @@ public class Async {
          */
         public static void fromResource(final String name, final Context context, final int requestId, final CompleteCallback callback) {
             final android.os.Handler mHandler = new android.os.Handler();
-            threadPoolExecutor().execute(new Runnable() {
-                @Override
-                public void run() {
-                    final LoadImageFromResourceTask task = new LoadImageFromResourceTask(context, requestId, callback);
-                    final Bitmap result = task.doInBackground(name);
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            task.onPostExecute(result);
-                        }
-                    });
-                }
-            });
+            threadPoolExecutor().execute(() -> {
+								final LoadImageFromResourceTask task = new LoadImageFromResourceTask(context, requestId, callback);
+								final Bitmap result = task.doInBackground(name);
+								mHandler.post(() -> task.onPostExecute(result));
+						});
         }
 
         public static void fromFile(final String fileName, final int requestId, final CompleteCallback callback) {
             final android.os.Handler mHandler = new android.os.Handler();
-            threadPoolExecutor().execute(new Runnable() {
-                @Override
-                public void run() {
-                    final LoadImageFromFileTask task = new LoadImageFromFileTask(requestId, callback);
-                    final Bitmap result = task.doInBackground(fileName);
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            task.onPostExecute(result);
-                        }
-                    });
-                }
-            });
+            threadPoolExecutor().execute(() -> {
+								final LoadImageFromFileTask task = new LoadImageFromFileTask(requestId, callback);
+								final Bitmap result = task.doInBackground(fileName);
+								mHandler.post(() -> task.onPostExecute(result));
+						});
         }
 
         public static void fromBase64(final String source, final int requestId, final CompleteCallback callback) {
             final android.os.Handler mHandler = new android.os.Handler();
-            threadPoolExecutor().execute(new Runnable() {
-                @Override
-                public void run() {
-                    final LoadImageFromBase64StringTask task = new LoadImageFromBase64StringTask(requestId, callback);
-                    final Bitmap result = task.doInBackground(source);
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            task.onPostExecute(result);
-                        }
-                    });
-                }
-            });
+            threadPoolExecutor().execute(() -> {
+								final LoadImageFromBase64StringTask task = new LoadImageFromBase64StringTask(requestId, callback);
+								final Bitmap result = task.doInBackground(source);
+								mHandler.post(() -> task.onPostExecute(result));
+						});
         }
 
         public static void download(final String url, final CompleteCallback callback, final Object context) {
             final android.os.Handler mHandler = new android.os.Handler();
-            threadPoolExecutor().execute(new Runnable() {
-                @Override
-                public void run() {
-                    final DownloadImageTask task = new DownloadImageTask(callback, context);
-                    final Bitmap result = task.doInBackground(url);
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            task.onPostExecute(result);
-                        }
-                    });
-                }
-            });
+            threadPoolExecutor().execute(() -> {
+								final DownloadImageTask task = new DownloadImageTask(callback, context);
+								final Bitmap result = task.doInBackground(url);
+								mHandler.post(() -> task.onPostExecute(result));
+						});
         }
 
         static class DownloadImageTask {
-            private CompleteCallback callback;
-            private Object context;
+            private final CompleteCallback callback;
+            private final Object context;
 
             public DownloadImageTask(CompleteCallback callback, Object context) {
                 this.callback = callback;
@@ -179,8 +140,7 @@ public class Async {
                 InputStream stream = null;
                 try {
                     stream = new java.net.URL(params[0]).openStream();
-                    Bitmap bmp = BitmapFactory.decodeStream(stream);
-                    return bmp;
+									return BitmapFactory.decodeStream(stream);
                 } catch (Throwable t) {
                     Log.e(TAG, "Failed to decode stream, Throwable: " + t.getMessage());
                     return null;
@@ -205,9 +165,9 @@ public class Async {
         }
 
         static class LoadImageFromResourceTask {
-            private CompleteCallback callback;
-            private Context context;
-            private int requestId;
+            private final CompleteCallback callback;
+            private final Context context;
+            private final int requestId;
 
             public LoadImageFromResourceTask(Context context, int requestId, CompleteCallback callback) {
                 this.callback = callback;
@@ -238,8 +198,8 @@ public class Async {
         }
 
         static class LoadImageFromFileTask {
-            private CompleteCallback callback;
-            private int requestId;
+            private final CompleteCallback callback;
+            private final int requestId;
 
             public LoadImageFromFileTask(int requestId, CompleteCallback callback) {
                 this.callback = callback;
@@ -261,8 +221,8 @@ public class Async {
         }
 
         static class LoadImageFromBase64StringTask {
-            private CompleteCallback callback;
-            private int requestId;
+            private final CompleteCallback callback;
+            private final int requestId;
 
             public LoadImageFromBase64StringTask(int requestId, CompleteCallback callback) {
                 this.callback = callback;
@@ -298,19 +258,11 @@ public class Async {
             }
 
             final android.os.Handler mHandler = new android.os.Handler();
-            threadPoolExecutor().execute(new Runnable() {
-                @Override
-                public void run() {
-                    final HttpRequestTask task = new HttpRequestTask(callback, context);
-                    final RequestResult result = task.doInBackground(options);
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            task.onPostExecute(result);
-                        }
-                    });
-                }
-            });
+            threadPoolExecutor().execute(() -> {
+								final HttpRequestTask task = new HttpRequestTask(callback, context);
+								final RequestResult result = task.doInBackground(options);
+								mHandler.post(() -> task.onPostExecute(result));
+						});
         }
 
         public static class KeyValuePair {
@@ -340,8 +292,8 @@ public class Async {
                 boolean hasAcceptHeader = false;
 
                 for (KeyValuePair pair : this.headers) {
-                    String key = pair.key.toString();
-                    connection.addRequestProperty(key, pair.value.toString());
+                    String key = pair.key;
+                    connection.addRequestProperty(key, pair.value);
                     if (key.toLowerCase().contentEquals("accept-encoding")) {
                         hasAcceptHeader = true;
                     }
@@ -374,7 +326,7 @@ public class Async {
 
         public static class RequestResult {
             public ByteArrayOutputStream raw;
-            public ArrayList<KeyValuePair> headers = new ArrayList<KeyValuePair>();
+            public ArrayList<KeyValuePair> headers = new ArrayList<>();
             public int statusCode;
             public String responseAsString;
             public Bitmap responseAsImage;
@@ -433,15 +385,14 @@ public class Async {
                 openedStreams.push(responseStream);
 
                 byte[] buff = new byte[4096];
-                int read = -1;
+                int read;
                 while ((read = buffer.read(buff, 0, buff.length)) != -1) {
                     responseStream.write(buff, 0, read);
                 }
 
                 this.raw = responseStream;
-                buff = null;
 
-                // make the byte array conversion here, not in the JavaScript
+							// make the byte array conversion here, not in the JavaScript
                 // world for better performance
                 // since we do not have some explicit way to determine whether
                 // the content-type is image
@@ -503,8 +454,8 @@ public class Async {
         }
 
         static class HttpRequestTask {
-            private CompleteCallback callback;
-            private Object context;
+            private final CompleteCallback callback;
+            private final Object context;
 
             public HttpRequestTask(CompleteCallback callback, Object context) {
                 this.callback = callback;
@@ -513,7 +464,7 @@ public class Async {
 
             protected RequestResult doInBackground(RequestOptions... params) {
                 RequestResult result = new RequestResult();
-                Stack<Closeable> openedStreams = new Stack<Closeable>();
+                Stack<Closeable> openedStreams = new Stack<>();
 
                 try {
                     RequestOptions options = params[0];
@@ -598,121 +549,63 @@ public class Async {
 
     public static class File {
 
-        public static void readText(final String path, final String encoding, final CompleteCallback callback, final Object context) {
+        public static void readText(final String path, final String encoding, final CompleteCallback callback, final Context context) {
             final android.os.Handler mHandler = new android.os.Handler();
-            threadPoolExecutor().execute(new Runnable() {
-                @Override
-                public void run() {
-                    final ReadTextTask task = new ReadTextTask(callback, context);
-                    final String result = task.doInBackground(path, encoding);
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            task.onPostExecute(result);
-                        }
-                    });
-                }
-            });
+            threadPoolExecutor().execute(() -> {
+								final ReadTextTask task = new ReadTextTask(callback, context);
+								final String result = task.doInBackground(path, encoding);
+								mHandler.post(() -> task.onPostExecute(result));
+						});
         }
 
-        public static void read(final String path, final CompleteCallback callback, final Object context) {
+        public static void read(final String path, final CompleteCallback callback, final Context context) {
             final android.os.Handler mHandler = new android.os.Handler();
-            threadPoolExecutor().execute(new Runnable() {
-                @Override
-                public void run() {
-                    final ReadTask task = new ReadTask(callback, context);
-                    final byte[] result = task.doInBackground(path);
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            task.onPostExecute(result);
-                        }
-                    });
-                }
-            });
+            threadPoolExecutor().execute(() -> {
+								final ReadTask task = new ReadTask(callback, context);
+								final byte[] result = task.doInBackground(path);
+								mHandler.post(() -> task.onPostExecute(result));
+						});
         }
 
-        public static void writeText(final String path, final String content, final String encoding, final CompleteCallback callback, final Object context) {
+        public static void writeText(final String path, final String content, final String encoding, final CompleteCallback callback, final Context context) {
             final android.os.Handler mHandler = new android.os.Handler();
-            threadPoolExecutor().execute(new Runnable() {
-                @Override
-                public void run() {
-                    final WriteTextTask task = new WriteTextTask(callback, context);
-                    final boolean result = task.doInBackground(path, content, encoding);
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            task.onPostExecute(result);
-                        }
-                    });
-                }
-            });
+            threadPoolExecutor().execute(() -> {
+								final WriteTextTask task = new WriteTextTask(callback, context);
+								final boolean result = task.doInBackground(path, content, encoding);
+								mHandler.post(() -> task.onPostExecute(result));
+						});
         }
 
-        public static void write(final String path, final byte[] content, final CompleteCallback callback, final Object context) {
+        public static void write(final String path, final byte[] content, final CompleteCallback callback, final Context context) {
             final android.os.Handler mHandler = new android.os.Handler();
-            threadPoolExecutor().execute(new Runnable() {
-                @Override
-                public void run() {
-                    final WriteTask task = new WriteTask(callback, context);
-                    final boolean result = task.doInBackground(path, content);
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            task.onPostExecute(result);
-                        }
-                    });
-                }
-            });
+            threadPoolExecutor().execute(() -> {
+								final WriteTask task = new WriteTask(callback, context);
+								final boolean result = task.doInBackground(path, content);
+								mHandler.post(() -> task.onPostExecute(result));
+						});
         }
 
         static class ReadTextTask {
-            private CompleteCallback callback;
-            private Object context;
+            private final CompleteCallback callback;
+            private final Context context;
 
-            public ReadTextTask(CompleteCallback callback, Object context) {
+            public ReadTextTask(CompleteCallback callback, Context context) {
                 this.callback = callback;
                 this.context = context;
             }
 
             protected String doInBackground(String... params) {
-                java.io.File javaFile = new java.io.File(params[0]);
-                FileInputStream stream = null;
-
                 try {
-                    stream = new FileInputStream(javaFile);
-
-                    InputStreamReader reader = new InputStreamReader(stream, params[1]);
-
-                    CharBuffer buffer = CharBuffer.allocate(81920);
-                    StringBuilder sb = new StringBuilder();
-
-                    while (reader.read(buffer) != -1) {
-                        buffer.flip();
-                        sb.append(buffer);
-                        buffer.clear();
-                    }
-
-                    reader.close();
-
-                    return sb.toString();
+                    return Utils.getText(this.context, params[0], params[1]);
                 } catch (FileNotFoundException e) {
                     Log.e(TAG, "Failed to read file, FileNotFoundException: " + e.getMessage());
                     return null;
                 } catch (UnsupportedEncodingException e) {
                     Log.e(TAG, "Failed to read file, UnsupportedEncodingException: " + e.getMessage());
                     return null;
-                } catch (IOException e) {
-                    Log.e(TAG, "Failed to read file, IOException: " + e.getMessage());
+                } catch (Exception e) {
+                    Log.e(TAG, "Failed to read file, Exception: " + e.getMessage());
                     return null;
-                } finally {
-                    if (stream != null) {
-                        try {
-                            stream.close();
-                        } catch (IOException e) {
-                            Log.e(TAG, "Failed to close stream, IOException: " + e.getMessage());
-                        }
-                    }
                 }
             }
 
@@ -726,41 +619,24 @@ public class Async {
         }
 
         static class ReadTask {
-            private CompleteCallback callback;
-            private Object context;
+            private final CompleteCallback callback;
+            private final Context context;
 
-            public ReadTask(CompleteCallback callback, Object context) {
+            public ReadTask(CompleteCallback callback, Context context) {
                 this.callback = callback;
                 this.context = context;
             }
 
             protected byte[] doInBackground(String... params) {
-                java.io.File javaFile = new java.io.File(params[0]);
-                FileInputStream stream = null;
-
                 try {
-                    stream = new FileInputStream(javaFile);
+                    return Utils.getBytes(this.context, params[0]);
 
-                    byte[] result = new byte[(int)javaFile.length()];
-
-                    DataInputStream dataInputStream = new DataInputStream(stream);
-                    dataInputStream.readFully(result);
-
-                    return result;
                 } catch (FileNotFoundException e) {
                     Log.e(TAG, "Failed to read file, FileNotFoundException: " + e.getMessage());
                     return null;
-                } catch (IOException e) {
-                    Log.e(TAG, "Failed to read file, IOException: " + e.getMessage());
+                } catch (Exception e) {
+                    Log.e(TAG, "Failed to read file, Exception: " + e.getMessage());
                     return null;
-                } finally {
-                    if (stream != null) {
-                        try {
-                            stream.close();
-                        } catch (IOException e) {
-                            Log.e(TAG, "Failed to close stream, IOException: " + e.getMessage());
-                        }
-                    }
                 }
             }
 
@@ -774,19 +650,18 @@ public class Async {
         }
 
         static class WriteTextTask {
-            private CompleteCallback callback;
-            private Object context;
+            private final CompleteCallback callback;
+            private final Context context;
 
-            public WriteTextTask(CompleteCallback callback, Object context) {
+            public WriteTextTask(CompleteCallback callback, Context context) {
                 this.callback = callback;
                 this.context = context;
             }
 
             protected boolean doInBackground(String... params) {
-                java.io.File javaFile = new java.io.File(params[0]);
                 FileOutputStream stream = null;
                 try {
-                    stream = new FileOutputStream(javaFile);
+                    stream = Utils.getFileOutputStream(this.context, params[0]);
 
                     OutputStreamWriter writer = new OutputStreamWriter(stream, params[2]);
 
@@ -800,8 +675,8 @@ public class Async {
                 } catch (UnsupportedEncodingException e) {
                     Log.e(TAG, "Failed to write file, UnsupportedEncodingException: " + e.getMessage());
                     return false;
-                } catch (IOException e) {
-                    Log.e(TAG, "Failed to write file, IOException: " + e.getMessage());
+                } catch (Exception e) {
+                    Log.e(TAG, "Failed to write file, Exception: " + e.getMessage());
                     return false;
                 } finally {
                     if (stream != null) {
@@ -824,29 +699,28 @@ public class Async {
         }
 
         static class WriteTask {
-            private CompleteCallback callback;
-            private Object context;
+            private final CompleteCallback callback;
+            private final Context context;
 
-            public WriteTask(CompleteCallback callback, Object context) {
+            public WriteTask(CompleteCallback callback, Context context) {
                 this.callback = callback;
                 this.context = context;
             }
 
             protected boolean doInBackground(Object... params) {
-                java.io.File javaFile = new java.io.File((String)params[0]);
                 FileOutputStream stream = null;
                 byte[] content = (byte[])params[1];
 
                 try {
-                    stream = new FileOutputStream(javaFile);
+										stream = Utils.getFileOutputStream(this.context, (String)params[0]);
                     stream.write(content, 0, content.length);
 
                     return true;
                 } catch (FileNotFoundException e) {
                     Log.e(TAG, "Failed to write file, FileNotFoundException: " + e.getMessage());
                     return false;
-                } catch (IOException e) {
-                    Log.e(TAG, "Failed to write file, IOException: " + e.getMessage());
+                } catch (Exception e) {
+                    Log.e(TAG, "Failed to write file, Exception: " + e.getMessage());
                     return false;
                 } finally {
                     if (stream != null) {
