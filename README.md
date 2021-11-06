@@ -54,7 +54,7 @@ We love you and your PR's 🤗. Please follow our [contributing guide](https://g
 
 ## Other source repos
 
-Outside of the source centralized in this repo, NativeScript consists of a few other source repos. Here are the major ones:
+Outside the source centralized in this repo, NativeScript consists of a few other source repos. Here are the major ones:
 
 - **[iOS runtime](https://github.com/NativeScript/ns-v8ios-runtime)**
 	- [![npm](https://img.shields.io/npm/dm/tns-ios.svg)](https://www.npmjs.com/package/@nativescript/ios) 
