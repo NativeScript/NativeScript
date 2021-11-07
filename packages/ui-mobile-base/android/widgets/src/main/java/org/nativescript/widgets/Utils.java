@@ -118,6 +118,53 @@ public class Utils {
 		}
 	}
 
+	public static long getFileLastModified(Context context, String path) {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+			File file = new File(path);
+			if (!file.exists()) {
+				return 0;
+			}
+			return file.lastModified();
+		} else {
+			Uri uri = Uri.parse(path);
+			Uri docUri = DocumentsContract.buildDocumentUriUsingTree(uri, DocumentsContract.getTreeDocumentId(uri));
+			Cursor cursor;
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+				cursor = context.getContentResolver().query(docUri, null, null, null);
+			} else {
+				cursor = context.getContentResolver().query(docUri, null, null, null, null);
+			}
+			if (cursor == null || !cursor.moveToFirst()) {
+				return 0;
+			}
+			int dci = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_LAST_MODIFIED);
+			return cursor.getLong(dci);
+		}
+	}
+	public static long getFileLength(Context context, String path) {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+			File file = new File(path);
+			if (!file.exists()) {
+				return 0;
+			}
+			return file.length();
+		} else {
+			Uri uri = Uri.parse(path);
+			Uri docUri = DocumentsContract.buildDocumentUriUsingTree(uri, DocumentsContract.getTreeDocumentId(uri));
+			Cursor cursor;
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+				cursor = context.getContentResolver().query(docUri, null, null, null);
+			} else {
+				cursor = context.getContentResolver().query(docUri, null, null, null, null);
+			}
+			if (cursor == null || !cursor.moveToFirst()) {
+				return 0;
+			}
+			int dci = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_SIZE);
+			return cursor.getLong(dci);
+		}
+	}
+
 	public static String getFileStats(Context context, String path) throws JSONException {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
 			File file = new File(path);
@@ -126,8 +173,6 @@ public class Utils {
 			}
 			JSONObject json = new JSONObject();
 			json.put("name", file.getName());
-			json.put("size", file.length());
-			json.put("lastModified", file.lastModified());
 			json.put("isFolder", file.isDirectory());
 			return json.toString();
 		} else {
@@ -139,24 +184,18 @@ public class Utils {
 			} else {
 				cursor = context.getContentResolver().query(docUri, null, null, null, null);
 			}
-			if (cursor != null) {
-				int nci  = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_DISPLAY_NAME);
-				int sci = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_SIZE);
-				int mci = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_MIME_TYPE);
-				int dci = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_LAST_MODIFIED);
-				if (!cursor.moveToFirst()) {
-					return null;
-				}
-				JSONObject json = new JSONObject();
-				String mimeType = cursor.getString(mci);
-				json.put("name", cursor.getString(nci));
-				json.put("size", cursor.getLong(sci));
-				json.put("lastModified", cursor.getLong(dci));
-				json.put("isFolder", mimeType.equals(DocumentsContract.Document.MIME_TYPE_DIR));
-				cursor.close();
-				return json.toString();
+			if (cursor == null || !cursor.moveToFirst()) {
+				return null;
 			}
-			return null;
+			int nci  = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_DISPLAY_NAME);
+			int mci = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_MIME_TYPE);
+
+			JSONObject json = new JSONObject();
+			String mimeType = cursor.getString(mci);
+			json.put("name", cursor.getString(nci));
+			json.put("isFolder", mimeType.equals(DocumentsContract.Document.MIME_TYPE_DIR));
+			cursor.close();
+			return json.toString();
 
 		}
 	}

@@ -10,19 +10,23 @@ function getApplicationContext() {
 	return applicationContext;
 }
 
+let Utils: typeof org.nativescript.widgets.Utils;
+function getUtils() {
+	if (!Utils) {
+		Utils = org.nativescript.widgets.Utils;
+	}
+	return Utils;
+}
+
 export class FileSystemAccess {
 	private _pathSeparator = '/';
 
 	public getLastModified(path: string): Date {
-		const javaFile = new java.io.File(path);
-
-		return new Date(javaFile.lastModified());
+		return new Date(getUtils().getFileLastModified(getApplicationContext(), path));
 	}
 
 	public getFileSize(path: string): number {
-		const javaFile = new java.io.File(path);
-
-		return javaFile.length();
+		return getUtils().getFileLength(getApplicationContext(), path);
 	}
 
 	public getParent(path: string, onError?: (error: any) => any): { path: string; name: string } {
@@ -253,7 +257,7 @@ export class FileSystemAccess {
 
 	public readSync(path: string, onError?: (error: any) => any) {
 		try {
-			return org.nativescript.widgets.Utils.getBytes(getApplicationContext(), path);
+			return getUtils().getBytes(getApplicationContext(), path);
 		} catch (exception) {
 			if (onError) {
 				onError(exception);
@@ -337,7 +341,7 @@ export class FileSystemAccess {
 			if (!actualEncoding) {
 				actualEncoding = textModule.encoding.UTF_8;
 			}
-			return org.nativescript.widgets.Utils.getText(getApplicationContext(), path, actualEncoding);
+			return getUtils().getText(getApplicationContext(), path, actualEncoding);
 		} catch (exception) {
 			if (onError) {
 				onError(exception);
