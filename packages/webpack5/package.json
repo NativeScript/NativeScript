@@ -52,6 +52,7 @@
 		"webpack-virtual-modules": "^0.4.0"
 	},
 	"devDependencies": {
+		"@pmmmwh/react-refresh-webpack-plugin": "0.5.1",
 		"@types/css": "0.0.33",
 		"@types/jest": "27.0.1",
 		"@types/loader-utils": "2.0.3",
@@ -64,7 +65,8 @@
 		"jest-matcher-utils": "27.1.1",
 		"nativescript-vue-template-compiler": "2.9.0",
 		"ts-jest": "27.0.5",
-		"typescript": "4.4.2"
+		"typescript": "4.4.2",
+		"vue-loader": "15.9.8"
 	},
 	"peerDependencies": {
 		"@pmmmwh/react-refresh-webpack-plugin": "^0.4.0",
