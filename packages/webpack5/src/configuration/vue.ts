@@ -1,4 +1,4 @@
-import { VueLoaderPlugin } from 'vue-loader';
+import type { VueLoaderPlugin } from 'vue-loader';
 import { merge } from 'webpack-merge';
 import Config from 'webpack-chain';
 import fs from 'fs';
@@ -8,6 +8,10 @@ import { getPlatformName } from '../helpers/platform';
 import { env as _env, IWebpackEnv } from '../index';
 import { error } from '../helpers/log';
 import base from './base';
+
+function getVueLoaderPlugin(): VueLoaderPlugin {
+	return require('vue-loader').VueLoaderPlugin;
+}
 
 export default function (config: Config, env: IWebpackEnv = _env): Config {
 	base(config, env);
@@ -83,7 +87,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.plugin('VueLoaderPlugin')
 		// @ts-ignore
 		.before(config.plugins.values()[0].name)
-		.use(VueLoaderPlugin);
+		.use(getVueLoaderPlugin());
 
 	// add an alias for vue, since some plugins may try to import it
 	config.resolve.alias.set('vue', 'nativescript-vue');

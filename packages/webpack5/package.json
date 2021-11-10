@@ -18,7 +18,6 @@
 	},
 	"dependencies": {
 		"@babel/core": "^7.0.0",
-		"@pmmmwh/react-refresh-webpack-plugin": "^0.4.0",
 		"acorn": "^8.0.0",
 		"acorn-stage3": "^4.0.0",
 		"babel-loader": "^8.0.0",
@@ -45,7 +44,6 @@
 		"terser-webpack-plugin": "^5.0.0",
 		"ts-dedent": "^2.0.0",
 		"ts-loader": "^9.0.0",
-		"vue-loader": "^15.0.0",
 		"webpack": "^5.30.0 <= 5.50.0 || ^5.51.2",
 		"webpack-bundle-analyzer": "^4.0.0",
 		"webpack-chain": "^6.0.0",
@@ -69,10 +67,18 @@
 		"typescript": "4.4.2"
 	},
 	"peerDependencies": {
-		"nativescript-vue-template-compiler": "^2.8.1"
+		"@pmmmwh/react-refresh-webpack-plugin": "^0.4.0",
+		"nativescript-vue-template-compiler": "^2.8.1",
+		"vue-loader": "^15.0.0"
 	},
 	"peerDependenciesMeta": {
+		"@pmmmwh/react-refresh-webpack-plugin": {
+			"optional": true
+		},
 		"nativescript-vue-template-compiler": {
+			"optional": true
+		},
+		"vue-loader": {
 			"optional": true
 		}
 	}
