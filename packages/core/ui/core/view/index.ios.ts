@@ -853,7 +853,7 @@ export class View extends ViewCommon implements ViewDefinition {
 
 	_setNativeClipToBounds() {
 		const backgroundInternal = this.style.backgroundInternal;
-		this.nativeViewProtected.clipsToBounds = this.nativeViewProtected instanceof UIScrollView || backgroundInternal.hasBorderWidth() || backgroundInternal.hasBorderRadius();
+		this.nativeViewProtected.clipsToBounds = (this.nativeViewProtected instanceof UIScrollView || backgroundInternal.hasBorderWidth() || backgroundInternal.hasBorderRadius()) && !backgroundInternal.hasBoxShadow();
 	}
 
 	private _setupPopoverControllerDelegate(controller: UIViewController, parent: View) {
