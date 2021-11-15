@@ -29,7 +29,6 @@ import org.json.JSONObject;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -45,14 +44,24 @@ public class Utils {
 
 	public static FileInputStream getFileInputStream(Context context, String path) throws Exception {
 		Uri uri = android.net.Uri.parse(path);
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || !File.isTreeOrDocumentUri(uri)) {
+			java.io.File javaFile = new java.io.File(path);
+			return new FileInputStream(javaFile);
+		}
 		ParcelFileDescriptor pfd = context.getContentResolver().openFileDescriptor(uri, "r");
 		return new FileInputStream(pfd.getFileDescriptor());
 	}
 
-	public static java.io.FileOutputStream getFileOutputStream(Context context, String path) throws Exception {
+	public static java.io.FileOutputStream getFileOutputStream(Context context, String path) throws
+		Exception {
 		Uri uri = android.net.Uri.parse(path);
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || !File.isTreeOrDocumentUri(uri)) {
+			java.io.File javaFile = new java.io.File(path);
+			return new FileOutputStream(javaFile);
+		}
 		ParcelFileDescriptor pfd = context.getContentResolver().openFileDescriptor(uri, "w");
-		return new FileOutputStream(pfd.getFileDescriptor());
+		return new java.io.FileOutputStream(pfd.getFileDescriptor());
+
 	}
 
 	public static byte[] getBytes(Context context, String path) throws Exception {
@@ -106,6 +115,10 @@ public class Utils {
 				result = result.substring(1);
 			}
 			return result;
+		} catch (Exception exception) {
+			exception.printStackTrace();
+//			Log.e("Utils", Log.getStackTraceString(exception));
+			return null;
 		} finally {
 			// close the stream
 			try {
@@ -120,7 +133,7 @@ public class Utils {
 
 	public static long getFileLastModified(Context context, String path) {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-			File file = new File(path);
+			java.io.File file = new java.io.File(path);
 			if (!file.exists()) {
 				return 0;
 			}
@@ -141,9 +154,10 @@ public class Utils {
 			return cursor.getLong(dci);
 		}
 	}
+
 	public static long getFileLength(Context context, String path) {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-			File file = new File(path);
+			java.io.File file = new java.io.File(path);
 			if (!file.exists()) {
 				return 0;
 			}
@@ -167,7 +181,7 @@ public class Utils {
 
 	public static String getFileStats(Context context, String path) throws JSONException {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-			File file = new File(path);
+			java.io.File file = new java.io.File(path);
 			if (!file.exists()) {
 				return null;
 			}
@@ -187,7 +201,7 @@ public class Utils {
 			if (cursor == null || !cursor.moveToFirst()) {
 				return null;
 			}
-			int nci  = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_DISPLAY_NAME);
+			int nci = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_DISPLAY_NAME);
 			int mci = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_MIME_TYPE);
 
 			JSONObject json = new JSONObject();
@@ -201,7 +215,7 @@ public class Utils {
 	}
 
 
-	public static Drawable getDrawable(String uri, Context context){
+	public static Drawable getDrawable(String uri, Context context) {
 		int resId = 0;
 		int resPrefixLength = "res://".length();
 
@@ -217,6 +231,7 @@ public class Utils {
 			return null;
 		}
 	}
+
 	public static void drawBoxShadow(View view, String value) {
 		if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M) {
 			return;
@@ -275,7 +290,8 @@ public class Utils {
 	private static final Executor executors = Executors.newCachedThreadPool();
 
 
-	private static Pair<Integer, Integer> getAspectSafeDimensions(float sourceWidth, float sourceHeight, float reqWidth, float reqHeight) {
+	private static Pair<Integer, Integer> getAspectSafeDimensions(float sourceWidth,
+																																float sourceHeight, float reqWidth, float reqHeight) {
 		float widthCoef = sourceWidth / reqWidth;
 		float heightCoef = sourceHeight / reqHeight;
 		float aspectCoef = Math.min(widthCoef, heightCoef);
@@ -284,7 +300,8 @@ public class Utils {
 	}
 
 
-	private static Pair<Integer, Integer> getRequestedImageSize(Pair<Integer, Integer> src, Pair<Integer, Integer> maxSize, ImageAssetOptions options) {
+	private static Pair<Integer, Integer> getRequestedImageSize
+		(Pair<Integer, Integer> src, Pair<Integer, Integer> maxSize, ImageAssetOptions options) {
 		int reqWidth = options.width;
 		if (reqWidth <= 0) {
 			reqWidth = Math.min(src.first, maxSize.first);
@@ -364,7 +381,8 @@ public class Utils {
 
 	private static final Handler mainHandler = new Handler(Looper.getMainLooper());
 
-	public static void loadImageAsync(final Context context, final String src, final String options, final int maxWidth, final int maxHeight, final AsyncImageCallback callback) {
+	public static void loadImageAsync(final Context context, final String src,
+																		final String options, final int maxWidth, final int maxHeight, final AsyncImageCallback callback) {
 		executors.execute(() -> {
 			BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
 			bitmapOptions.inJustDecodeBounds = true;
@@ -470,7 +488,8 @@ public class Utils {
 	}
 
 
-	public static void saveToFileAsync(final Bitmap bitmap, final String path, final String format, final int quality, final AsyncImageCallback callback) {
+	public static void saveToFileAsync(final Bitmap bitmap, final String path,
+																		 final String format, final int quality, final AsyncImageCallback callback) {
 		executors.execute(() -> {
 			boolean isSuccess = false;
 			Exception exception = null;
@@ -495,7 +514,8 @@ public class Utils {
 		});
 	}
 
-	public static void toBase64StringAsync(final Bitmap bitmap, final String format, final int quality, final AsyncImageCallback callback) {
+	public static void toBase64StringAsync(final Bitmap bitmap, final String format,
+																				 final int quality, final AsyncImageCallback callback) {
 		executors.execute(() -> {
 			String result = null;
 			Exception exception = null;
@@ -547,7 +567,8 @@ public class Utils {
 
 	}
 
-	public static void resizeAsync(final Bitmap bitmap, final float maxSize, final String options, final AsyncImageCallback callback) {
+	public static void resizeAsync(final Bitmap bitmap, final float maxSize, final String options,
+																 final AsyncImageCallback callback) {
 		executors.execute(() -> {
 			Bitmap result = null;
 			Exception exception = null;

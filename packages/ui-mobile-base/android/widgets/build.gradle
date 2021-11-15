@@ -79,7 +79,7 @@ task cleanBuildDir (type: Delete) {
     delete "../build/"
 }
 
-task copyAar << {
+task copyAar {
     copy {
         from "build/outputs/aar/widgets-release.aar"
         into "../build/"
