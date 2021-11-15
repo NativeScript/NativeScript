@@ -102,6 +102,7 @@ body:
 
         ---
   - type: checkboxes
+    id: terms
     attributes:
       options:
         - label: I have searched the [existing issues](https://github.com/NativeScript/NativeScript/issues) as well as [StackOverflow](https://stackoverflow.com/questions/tagged/nativescript) and this has not been posted before
