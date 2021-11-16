@@ -1032,12 +1032,11 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 		// view.layout(0, 0, width, height);
 		// view.draw(canvas);
 
-		view.setDrawingCacheEnabled(true);
-		const drawCache = view.getDrawingCache();
-		const bitmap = android.graphics.Bitmap.createBitmap(drawCache);
-		view.setDrawingCacheEnabled(false);
-
-		return bitmap;
+		// view.setDrawingCacheEnabled(true);
+		// const drawCache = view.getDrawingCache();
+		// const bitmap = android.graphics.Bitmap.createBitmap(drawCache);
+		// view.setDrawingCacheEnabled(false);
+		return org.nativescript.widgets.Utils.getBitmapFromView(view);
 	}
 }
 
