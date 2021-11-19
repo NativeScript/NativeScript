@@ -9,12 +9,12 @@ import * as lib from '../index';
 /**
  * @internal
  */
-export function applyExternalConfigs() {
-	getAllDependencies().forEach((dependency) => {
+export async function applyExternalConfigs() {
+	for (const dependency of getAllDependencies()) {
 		const packagePath = getDependencyPath(dependency);
 
 		if (!packagePath) {
-			return;
+			continue;
 		}
 
 		const configPath = path.join(packagePath, 'nativescript.webpack.js');
@@ -27,7 +27,7 @@ export function applyExternalConfigs() {
 
 				if (typeof externalConfig === 'function') {
 					info('Applying external config...');
-					externalConfig(lib);
+					await externalConfig(lib);
 				} else if (externalConfig) {
 					info('Merging external config...');
 					lib.mergeWebpack(externalConfig);
@@ -43,7 +43,7 @@ export function applyExternalConfigs() {
 				`);
 			}
 		}
-	});
+	}
 
 	clearCurrentPlugin();
 }

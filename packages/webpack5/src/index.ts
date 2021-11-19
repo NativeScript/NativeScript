@@ -159,7 +159,7 @@ export function mergeWebpack(
 /**
  * Resolve a new instance of the internal chain config with all chain functions applied.
  */
-export function resolveChainableConfig(): Config {
+export async function resolveChainableConfig(): Promise<Config> {
 	const config = new Config();
 
 	if (!explicitUseConfig) {
@@ -168,7 +168,7 @@ export function resolveChainableConfig(): Config {
 
 	// apply configs from dependencies
 	// todo: allow opt-out
-	applyExternalConfigs();
+	await applyExternalConfigs();
 
 	webpackChains
 		.splice(0)
@@ -206,12 +206,13 @@ export function resolveChainableConfig(): Config {
  *
  * @param chainableConfig Optional chain config to use.
  */
-export function resolveConfig(
-	chainableConfig = resolveChainableConfig()
-): webpack.Configuration {
+export async function resolveConfig(
+	chainableConfig: Config | Promise<Config> = resolveChainableConfig()
+): Promise<webpack.Configuration> {
 	if (!hasInitialized) {
 		throw error('resolveConfig() must be called after init()');
 	}
+	chainableConfig = await chainableConfig;
 
 	let config = chainableConfig.toConfig();
 
