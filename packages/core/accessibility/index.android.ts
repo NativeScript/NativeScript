@@ -565,7 +565,7 @@ function setAccessibilityDelegate(view: Partial<View>): void {
 
 function applyContentDescription(view: Partial<View>, forceUpdate?: boolean) {
 	let androidView = view.nativeViewProtected as android.view.View;
-	if (!androidView || androidView instanceof android.widget.TextView) {
+	if (!androidView || (androidView instanceof android.widget.TextView && !view._androidContentDescriptionUpdated)) {
 		return null;
 	}
 
