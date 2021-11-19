@@ -34,6 +34,7 @@ exports[`svelte configuration for android 1`] = `
     alias: {
       '~': '__jest__/src',
       '@': '__jest__/src',
+      svelte$: 'svelte/internal',
       'tns-core-modules': '@nativescript/core'
     },
     extensions: [
@@ -365,6 +366,7 @@ exports[`svelte configuration for ios 1`] = `
     alias: {
       '~': '__jest__/src',
       '@': '__jest__/src',
+      svelte$: 'svelte/internal',
       'tns-core-modules': '@nativescript/core'
     },
     extensions: [
