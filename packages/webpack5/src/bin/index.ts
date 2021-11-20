@@ -8,6 +8,7 @@ import path from 'path';
 import fs from 'fs';
 
 import { parseEnvFlags } from '../cli/parseEnvFlags';
+import { tryRequireThenImport } from '../helpers/dynamicImports';
 
 const defaultConfig = path.resolve(
 	__dirname,
@@ -47,7 +48,7 @@ program
 	.option('--config [path]', 'config path')
 	.option('--watch', 'watch for changes')
 	.allowUnknownOption()
-	.action((options, command) => {
+	.action(async (options, command) => {
 		const env = parseEnvFlags(command.args);
 		// add --env <val> into the env object
 		// for example if we use --env prod
@@ -75,7 +76,7 @@ program
 		// todo: guard against invalid config
 		let configuration: webpack.Configuration;
 		try {
-			configuration = require(configPath)(env);
+			configuration = await (await tryRequireThenImport(configPath))(env);
 		} catch (err) {
 			console.log(err);
 		}

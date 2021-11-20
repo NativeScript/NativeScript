@@ -170,28 +170,26 @@ export async function resolveChainableConfig(): Promise<Config> {
 	// todo: allow opt-out
 	await applyExternalConfigs();
 
-	webpackChains
-		.splice(0)
-		.sort((a, b) => {
-			return a.order - b.order;
-		})
-		.forEach(({ chainFn, plugin }) => {
-			try {
-				chainFn(config, env);
-			} catch (err) {
-				if (plugin) {
-					// catch and print errors from plugins
-					return error(`
+	for (const { chainFn, plugin } of webpackChains.splice(0).sort((a, b) => {
+		return a.order - b.order;
+	})) {
+		try {
+			await chainFn(config, env);
+		} catch (err) {
+			if (plugin) {
+				// catch and print errors from plugins
+				error(`
 						Unable to apply chain function from: ${plugin}.
 						Error is: ${err}
 					`);
-				}
-
-				// otherwise throw - as the error is likely from the user config
-				// or missing env flags (eg. missing platform)
-				throw err;
+				continue;
 			}
-		});
+
+			// otherwise throw - as the error is likely from the user config
+			// or missing env flags (eg. missing platform)
+			throw err;
+		}
+	}
 
 	if (env.verbose) {
 		info('Resolved chainable config (before merges):');
