@@ -1,4 +1,9 @@
-export function dynamicImportLoaderFactory() {
+type ModuleLoader = (id: string) => Promise<any>;
+
+/**
+ * @internal
+ */
+function dynamicImportLoaderFactory(): ModuleLoader | null {
 	let importESM;
 
 	try {
@@ -10,6 +15,13 @@ export function dynamicImportLoaderFactory() {
 	return importESM;
 }
 
+/**
+ * Utility to interop with both cjs and esm modules, using require() before
+ * falling back to import() in case the target is an esm module.
+ *
+ * @param module String
+ * @returns
+ */
 export async function tryRequireThenImport(module: string) {
 	let result;
 
