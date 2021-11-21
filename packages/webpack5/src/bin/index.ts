@@ -7,8 +7,8 @@ import webpack from 'webpack';
 import path from 'path';
 import fs from 'fs';
 
-import { parseEnvFlags } from '../cli/parseEnvFlags';
 import { tryRequireThenImport } from '../helpers/dynamicImports';
+import { parseEnvFlags } from '../cli/parseEnvFlags';
 
 const defaultConfig = path.resolve(
 	__dirname,
