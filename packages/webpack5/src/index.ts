@@ -170,18 +170,20 @@ export async function resolveChainableConfig(): Promise<Config> {
 	// todo: allow opt-out
 	await applyExternalConfigs();
 
-	for (const { chainFn, plugin } of webpackChains.splice(0).sort((a, b) => {
+	const chains = webpackChains.splice(0).sort((a, b) => {
 		return a.order - b.order;
-	})) {
+	});
+
+	for (const { chainFn, plugin } of chains) {
 		try {
 			await chainFn(config, env);
 		} catch (err) {
 			if (plugin) {
 				// catch and print errors from plugins
 				error(`
-						Unable to apply chain function from: ${plugin}.
-						Error is: ${err}
-					`);
+					Unable to apply chain function from: ${plugin}.
+					Error is: ${err}
+				`);
 				continue;
 			}
 
