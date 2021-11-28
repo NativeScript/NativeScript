@@ -85,6 +85,16 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
           }
         ]
       },
+      /* config.module.rule('workers') */
+      {
+        test: /\\\\.(js|ts)$/,
+        use: [
+          /* config.module.rule('workers').use('nativescript-worker-loader') */
+          {
+            loader: 'nativescript-worker-loader'
+          }
+        ]
+      },
       /* config.module.rule('ts') */
       {
         test: [
@@ -123,16 +133,6 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
         test: /\\\\.js$/,
         exclude: [
           /node_modules/
-        ]
-      },
-      /* config.module.rule('workers') */
-      {
-        test: /\\\\.(js|ts)$/,
-        use: [
-          /* config.module.rule('workers').use('nativescript-worker-loader') */
-          {
-            loader: 'nativescript-worker-loader'
-          }
         ]
       },
       /* config.module.rule('xml') */
@@ -411,6 +411,16 @@ exports[`react configuration > android > base config 1`] = `
           }
         ]
       },
+      /* config.module.rule('workers') */
+      {
+        test: /\\\\.(js|ts)$/,
+        use: [
+          /* config.module.rule('workers').use('nativescript-worker-loader') */
+          {
+            loader: 'nativescript-worker-loader'
+          }
+        ]
+      },
       /* config.module.rule('ts') */
       {
         test: [
@@ -438,16 +448,6 @@ exports[`react configuration > android > base config 1`] = `
         test: /\\\\.js$/,
         exclude: [
           /node_modules/
-        ]
-      },
-      /* config.module.rule('workers') */
-      {
-        test: /\\\\.(js|ts)$/,
-        use: [
-          /* config.module.rule('workers').use('nativescript-worker-loader') */
-          {
-            loader: 'nativescript-worker-loader'
-          }
         ]
       },
       /* config.module.rule('xml') */
@@ -722,6 +722,16 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
           }
         ]
       },
+      /* config.module.rule('workers') */
+      {
+        test: /\\\\.(js|ts)$/,
+        use: [
+          /* config.module.rule('workers').use('nativescript-worker-loader') */
+          {
+            loader: 'nativescript-worker-loader'
+          }
+        ]
+      },
       /* config.module.rule('ts') */
       {
         test: [
@@ -760,16 +770,6 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
         test: /\\\\.js$/,
         exclude: [
           /node_modules/
-        ]
-      },
-      /* config.module.rule('workers') */
-      {
-        test: /\\\\.(js|ts)$/,
-        use: [
-          /* config.module.rule('workers').use('nativescript-worker-loader') */
-          {
-            loader: 'nativescript-worker-loader'
-          }
         ]
       },
       /* config.module.rule('xml') */
@@ -1049,6 +1049,16 @@ exports[`react configuration > ios > base config 1`] = `
           }
         ]
       },
+      /* config.module.rule('workers') */
+      {
+        test: /\\\\.(js|ts)$/,
+        use: [
+          /* config.module.rule('workers').use('nativescript-worker-loader') */
+          {
+            loader: 'nativescript-worker-loader'
+          }
+        ]
+      },
       /* config.module.rule('ts') */
       {
         test: [
@@ -1076,16 +1086,6 @@ exports[`react configuration > ios > base config 1`] = `
         test: /\\\\.js$/,
         exclude: [
           /node_modules/
-        ]
-      },
-      /* config.module.rule('workers') */
-      {
-        test: /\\\\.(js|ts)$/,
-        use: [
-          /* config.module.rule('workers').use('nativescript-worker-loader') */
-          {
-            loader: 'nativescript-worker-loader'
-          }
         ]
       },
       /* config.module.rule('xml') */

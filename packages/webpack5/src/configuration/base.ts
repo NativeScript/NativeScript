@@ -209,6 +209,14 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			});
 	});
 
+	// worker loader should be before ts-loader
+	// we're not using .before because "ts" might not exist in all configurations
+	config.module
+		.rule('workers')
+		.test(/\.(js|ts)$/)
+		.use('nativescript-worker-loader')
+		.loader('nativescript-worker-loader');
+
 	// set up ts support
 	config.module
 		.rule('ts')
@@ -252,12 +260,6 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.test(/\.js$/)
 		.exclude.add(/node_modules/)
 		.end();
-
-	config.module
-		.rule('workers')
-		.test(/\.(js|ts)$/)
-		.use('nativescript-worker-loader')
-		.loader('nativescript-worker-loader');
 
 	// config.resolve.extensions.add('.xml');
 	// set up xml

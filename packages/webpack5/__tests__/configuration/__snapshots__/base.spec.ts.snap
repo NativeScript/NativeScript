@@ -75,6 +75,16 @@ exports[`base configuration for android 1`] = `
           }
         ]
       },
+      /* config.module.rule('workers') */
+      {
+        test: /\\\\.(js|ts)$/,
+        use: [
+          /* config.module.rule('workers').use('nativescript-worker-loader') */
+          {
+            loader: 'nativescript-worker-loader'
+          }
+        ]
+      },
       /* config.module.rule('ts') */
       {
         test: [
@@ -101,16 +111,6 @@ exports[`base configuration for android 1`] = `
         test: /\\\\.js$/,
         exclude: [
           /node_modules/
-        ]
-      },
-      /* config.module.rule('workers') */
-      {
-        test: /\\\\.(js|ts)$/,
-        use: [
-          /* config.module.rule('workers').use('nativescript-worker-loader') */
-          {
-            loader: 'nativescript-worker-loader'
-          }
         ]
       },
       /* config.module.rule('xml') */
@@ -379,6 +379,16 @@ exports[`base configuration for ios 1`] = `
           }
         ]
       },
+      /* config.module.rule('workers') */
+      {
+        test: /\\\\.(js|ts)$/,
+        use: [
+          /* config.module.rule('workers').use('nativescript-worker-loader') */
+          {
+            loader: 'nativescript-worker-loader'
+          }
+        ]
+      },
       /* config.module.rule('ts') */
       {
         test: [
@@ -405,16 +415,6 @@ exports[`base configuration for ios 1`] = `
         test: /\\\\.js$/,
         exclude: [
           /node_modules/
-        ]
-      },
-      /* config.module.rule('workers') */
-      {
-        test: /\\\\.(js|ts)$/,
-        use: [
-          /* config.module.rule('workers').use('nativescript-worker-loader') */
-          {
-            loader: 'nativescript-worker-loader'
-          }
         ]
       },
       /* config.module.rule('xml') */

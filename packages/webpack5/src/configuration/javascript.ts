@@ -38,6 +38,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		// set up core HMR
 		config.module
 			.rule('hmr-core')
+			.before('js')
 			.test(/\.js$/)
 			.exclude.add(/node_modules/)
 			.add(entryPath)
