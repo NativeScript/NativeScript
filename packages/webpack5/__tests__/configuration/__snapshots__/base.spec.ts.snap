@@ -72,13 +72,6 @@ exports[`base configuration for android 1`] = `
             options: {
               platform: 'android'
             }
-          },
-          /* config.module.rule('bundle').use('nativescript-hot-loader') */
-          {
-            loader: 'nativescript-hot-loader',
-            options: {
-              injectHMRRuntime: true
-            }
           }
         ]
       },
@@ -382,13 +375,6 @@ exports[`base configuration for ios 1`] = `
             loader: 'app-css-loader',
             options: {
               platform: 'ios'
-            }
-          },
-          /* config.module.rule('bundle').use('nativescript-hot-loader') */
-          {
-            loader: 'nativescript-hot-loader',
-            options: {
-              injectHMRRuntime: true
             }
           }
         ]

@@ -198,12 +198,16 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.options({
 			platform,
 		})
-		.end()
-		.use('nativescript-hot-loader')
-		.loader('nativescript-hot-loader')
-		.options({
-			injectHMRRuntime: true,
-		});
+		.end();
+	config.when(env.hmr, (config) => {
+		config.module
+			.rule('bundle')
+			.use('nativescript-hot-loader')
+			.loader('nativescript-hot-loader')
+			.options({
+				injectHMRRuntime: true,
+			});
+	});
 
 	// set up ts support
 	config.module

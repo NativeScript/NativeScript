@@ -72,13 +72,6 @@ exports[`javascript configuration for android 1`] = `
             options: {
               platform: 'android'
             }
-          },
-          /* config.module.rule('bundle').use('nativescript-hot-loader') */
-          {
-            loader: 'nativescript-hot-loader',
-            options: {
-              injectHMRRuntime: true
-            }
           }
         ]
       },
@@ -181,23 +174,6 @@ exports[`javascript configuration for android 1`] = `
           /* config.module.rule('scss').use('sass-loader') */
           {
             loader: 'sass-loader'
-          }
-        ]
-      },
-      /* config.module.rule('hmr-core') */
-      {
-        test: /\\\\.js$/,
-        exclude: [
-          /node_modules/,
-          '__jest__/src/app.js'
-        ],
-        use: [
-          /* config.module.rule('hmr-core').use('nativescript-hot-loader') */
-          {
-            loader: 'nativescript-hot-loader',
-            options: {
-              appPath: '__jest__/src'
-            }
           }
         ]
       }
@@ -409,13 +385,6 @@ exports[`javascript configuration for ios 1`] = `
             options: {
               platform: 'ios'
             }
-          },
-          /* config.module.rule('bundle').use('nativescript-hot-loader') */
-          {
-            loader: 'nativescript-hot-loader',
-            options: {
-              injectHMRRuntime: true
-            }
           }
         ]
       },
@@ -518,23 +487,6 @@ exports[`javascript configuration for ios 1`] = `
           /* config.module.rule('scss').use('sass-loader') */
           {
             loader: 'sass-loader'
-          }
-        ]
-      },
-      /* config.module.rule('hmr-core') */
-      {
-        test: /\\\\.js$/,
-        exclude: [
-          /node_modules/,
-          '__jest__/src/app.js'
-        ],
-        use: [
-          /* config.module.rule('hmr-core').use('nativescript-hot-loader') */
-          {
-            loader: 'nativescript-hot-loader',
-            options: {
-              appPath: '__jest__/src'
-            }
           }
         ]
       }
