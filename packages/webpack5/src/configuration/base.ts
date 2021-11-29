@@ -199,6 +199,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			platform,
 		})
 		.end();
+
 	config.when(env.hmr, (config) => {
 		config.module
 			.rule('bundle')
@@ -209,8 +210,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			});
 	});
 
-	// worker loader should be before ts-loader
-	// we're not using .before because "ts" might not exist in all configurations
+	// worker-loader should be declared before ts-loader
 	config.module
 		.rule('workers')
 		.test(/\.(js|ts)$/)
