@@ -198,12 +198,24 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.options({
 			platform,
 		})
-		.end()
-		.use('nativescript-hot-loader')
-		.loader('nativescript-hot-loader')
-		.options({
-			injectHMRRuntime: true,
-		});
+		.end();
+
+	config.when(env.hmr, (config) => {
+		config.module
+			.rule('bundle')
+			.use('nativescript-hot-loader')
+			.loader('nativescript-hot-loader')
+			.options({
+				injectHMRRuntime: true,
+			});
+	});
+
+	// worker-loader should be declared before ts-loader
+	config.module
+		.rule('workers')
+		.test(/\.(js|ts)$/)
+		.use('nativescript-worker-loader')
+		.loader('nativescript-worker-loader');
 
 	// set up ts support
 	config.module
@@ -248,12 +260,6 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.test(/\.js$/)
 		.exclude.add(/node_modules/)
 		.end();
-
-	config.module
-		.rule('workers')
-		.test(/\.(js|ts)$/)
-		.use('nativescript-worker-loader')
-		.loader('nativescript-worker-loader');
 
 	// config.resolve.extensions.add('.xml');
 	// set up xml
