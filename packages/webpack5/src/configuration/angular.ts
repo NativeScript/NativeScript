@@ -179,11 +179,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			.end()
 			.before('angular')
 			.use('webpack-loader')
-			.loader(
-				require.resolve(
-					'@angular-devkit/build-angular/src/babel/webpack-loader'
-				)
-			)
+			.loader('@angular-devkit/build-angular/src/babel/webpack-loader')
 			.options({
 				scriptTarget: ScriptTarget.ESNext,
 				aot: true,
