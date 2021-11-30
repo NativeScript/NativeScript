@@ -41,6 +41,13 @@ export function getPlatform(): INativeScriptPlatform {
 }
 
 /**
+ * Utility to get all registered/available platforms
+ */
+export function getAvailablePlatforms(): string[] {
+	return Object.keys(platforms);
+}
+
+/**
  * Utility to get the currently targeted platform name
  */
 export function getPlatformName(): Platform {
@@ -61,7 +68,7 @@ export function getPlatformName(): Platform {
 		throw error(`
 			Invalid platform: ${env.platform}
 
-			Valid platforms: ${Object.keys(platforms).join(', ')}
+			Valid platforms: ${getAvailablePlatforms().join(', ')}
 		`);
 	}
 

@@ -232,6 +232,10 @@ exports[`javascript configuration for android 1`] = `
     new ContextExclusionPlugin(
       /(.*)App_Resources(.*)/
     ),
+    /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
+    new ContextExclusionPlugin(
+      /\\\\.(ios)\\\\.(\\\\w+)$/
+    ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
@@ -544,6 +548,10 @@ exports[`javascript configuration for ios 1`] = `
     /* config.plugin('ContextExclusionPlugin|App_Resources') */
     new ContextExclusionPlugin(
       /(.*)App_Resources(.*)/
+    ),
+    /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
+    new ContextExclusionPlugin(
+      /\\\\.(android)\\\\.(\\\\w+)$/
     ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
