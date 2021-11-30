@@ -21,11 +21,11 @@ import { env as _env, IWebpackEnv } from '../index';
 import { getValue } from '../helpers/config';
 import { getIPS } from '../helpers/host';
 import {
-	getPlatformName,
+	getAvailablePlatforms,
 	getAbsoluteDistPath,
+	getPlatformName,
 	getEntryDirPath,
 	getEntryPath,
-	getAvailablePlatforms,
 } from '../helpers/platform';
 
 export default function (config: Config, env: IWebpackEnv = _env): Config {
