@@ -1,6 +1,5 @@
-import { extname, resolve } from 'path';
-import { merge } from 'webpack-merge';
 import { ScriptTarget } from 'typescript';
+import { extname, resolve } from 'path';
 import Config from 'webpack-chain';
 import { existsSync } from 'fs';
 
@@ -13,10 +12,7 @@ import {
 } from '../helpers/platform';
 import base from './base';
 
-export default async function (
-	config: Config,
-	env: IWebpackEnv = _env
-): Promise<Config> {
+export default function (config: Config, env: IWebpackEnv = _env): Config {
 	base(config, env);
 
 	const platform = getPlatformName();
