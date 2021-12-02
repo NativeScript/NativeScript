@@ -1,5 +1,5 @@
+import { ScriptTarget } from 'typescript';
 import { extname, resolve } from 'path';
-import { merge } from 'webpack-merge';
 import Config from 'webpack-chain';
 import { existsSync } from 'fs';
 
@@ -167,6 +167,23 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				.use('angular-hot-loader')
 				.loader('angular-hot-loader');
 		});
+		// zone + async/await
+		config.module
+			.rule('angular-webpack-loader')
+			.test(/\.[cm]?[tj]sx?$/)
+			.exclude.add(
+				/[/\\](?:core-js|@babel|tslib|web-animations-js|web-streams-polyfill)[/\\]/
+			)
+			.end()
+			.resolve.set('fullySpecified', false)
+			.end()
+			.before('angular')
+			.use('webpack-loader')
+			.loader('@angular-devkit/build-angular/src/babel/webpack-loader')
+			.options({
+				scriptTarget: ScriptTarget.ESNext,
+				aot: true,
+			});
 	}
 
 	// look for platform specific polyfills first
