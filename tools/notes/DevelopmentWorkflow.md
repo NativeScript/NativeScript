@@ -50,7 +50,7 @@ You can do changes in the test app and `nativescript-core` and rely on HMR to re
 
 ## Running the `e2e` Test Apps
 
-There are couple of application used for development and testing.
+There are a couple of application used for development and testing.
 The `ui-test-app` is the more frequently used for development and validation. It is an ordinary NativeScript app that logs the test results on the go.
 
 After the [initial setup](#initial-setup) run the e2e apps with:

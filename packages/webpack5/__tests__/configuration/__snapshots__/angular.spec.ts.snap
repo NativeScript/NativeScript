@@ -84,21 +84,7 @@ exports[`angular configuration for android 1`] = `
             options: {
               platform: 'android'
             }
-          },
-          /* config.module.rule('bundle').use('nativescript-hot-loader') */
-          {
-            loader: 'nativescript-hot-loader',
-            options: {
-              injectHMRRuntime: true
-            }
           }
-        ]
-      },
-      /* config.module.rule('js') */
-      {
-        test: /\\\\.js$/,
-        exclude: [
-          /node_modules/
         ]
       },
       /* config.module.rule('workers') */
@@ -109,6 +95,13 @@ exports[`angular configuration for android 1`] = `
           {
             loader: 'nativescript-worker-loader'
           }
+        ]
+      },
+      /* config.module.rule('js') */
+      {
+        test: /\\\\.js$/,
+        exclude: [
+          /node_modules/
         ]
       },
       /* config.module.rule('xml') */
@@ -184,6 +177,26 @@ exports[`angular configuration for android 1`] = `
             loader: 'sass-loader'
           }
         ]
+      },
+      /* config.module.rule('angular-webpack-loader') */
+      {
+        test: /\\\\.[cm]?[tj]sx?$/,
+        exclude: [
+          /[/\\\\\\\\](?:core-js|@babel|tslib|web-animations-js|web-streams-polyfill)[/\\\\\\\\]/
+        ],
+        use: [
+          /* config.module.rule('angular-webpack-loader').use('webpack-loader') */
+          {
+            loader: '@angular-devkit/build-angular/src/babel/webpack-loader',
+            options: {
+              scriptTarget: 99,
+              aot: true
+            }
+          }
+        ],
+        resolve: {
+          fullySpecified: false
+        }
       },
       /* config.module.rule('angular') */
       {
@@ -472,21 +485,7 @@ exports[`angular configuration for ios 1`] = `
             options: {
               platform: 'ios'
             }
-          },
-          /* config.module.rule('bundle').use('nativescript-hot-loader') */
-          {
-            loader: 'nativescript-hot-loader',
-            options: {
-              injectHMRRuntime: true
-            }
           }
-        ]
-      },
-      /* config.module.rule('js') */
-      {
-        test: /\\\\.js$/,
-        exclude: [
-          /node_modules/
         ]
       },
       /* config.module.rule('workers') */
@@ -497,6 +496,13 @@ exports[`angular configuration for ios 1`] = `
           {
             loader: 'nativescript-worker-loader'
           }
+        ]
+      },
+      /* config.module.rule('js') */
+      {
+        test: /\\\\.js$/,
+        exclude: [
+          /node_modules/
         ]
       },
       /* config.module.rule('xml') */
@@ -572,6 +578,26 @@ exports[`angular configuration for ios 1`] = `
             loader: 'sass-loader'
           }
         ]
+      },
+      /* config.module.rule('angular-webpack-loader') */
+      {
+        test: /\\\\.[cm]?[tj]sx?$/,
+        exclude: [
+          /[/\\\\\\\\](?:core-js|@babel|tslib|web-animations-js|web-streams-polyfill)[/\\\\\\\\]/
+        ],
+        use: [
+          /* config.module.rule('angular-webpack-loader').use('webpack-loader') */
+          {
+            loader: '@angular-devkit/build-angular/src/babel/webpack-loader',
+            options: {
+              scriptTarget: 99,
+              aot: true
+            }
+          }
+        ],
+        resolve: {
+          fullySpecified: false
+        }
       },
       /* config.module.rule('angular') */
       {

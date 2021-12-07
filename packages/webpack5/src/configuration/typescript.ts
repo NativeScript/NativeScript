@@ -34,18 +34,21 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		virtualEntryPath
 	);
 
-	// set up core HMR
-	config.module
-		.rule('hmr-core')
-		.test(/\.(js|ts)$/)
-		.exclude.add(/node_modules/)
-		.add(entryPath)
-		.end()
-		.use('nativescript-hot-loader')
-		.loader('nativescript-hot-loader')
-		.options({
-			appPath: getEntryDirPath(),
-		});
+	config.when(env.hmr, (config) => {
+		// set up core HMR
+		config.module
+			.rule('hmr-core')
+			.before('ts')
+			.test(/\.(js|ts)$/)
+			.exclude.add(/node_modules/)
+			.add(entryPath)
+			.end()
+			.use('nativescript-hot-loader')
+			.loader('nativescript-hot-loader')
+			.options({
+				appPath: getEntryDirPath(),
+			});
+	});
 
 	return config;
 }
