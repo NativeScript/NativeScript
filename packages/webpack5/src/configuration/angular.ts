@@ -148,7 +148,9 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			if (!transformers.before) {
 				transformers.before = [];
 			}
-			transformers.before.push(require('../transformers/NativeClass').default);
+			transformers.before.unshift(
+				require('../transformers/NativeClass').default
+			);
 			args[1] = transformers;
 			return originalCreateFileEmitter.apply(this, args);
 		};
