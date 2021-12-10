@@ -317,7 +317,7 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
         overlay: false,
         forceEnable: false,
         exclude: /node_modules/i,
-        include: /\\\\.([jt]sx?|flow)$/i
+        include: /\\\\.([cm]js|[jt]sx?|flow)$/i
       }
     )
   ],
@@ -954,7 +954,7 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
         overlay: false,
         forceEnable: false,
         exclude: /node_modules/i,
-        include: /\\\\.([jt]sx?|flow)$/i
+        include: /\\\\.([cm]js|[jt]sx?|flow)$/i
       }
     )
   ],
