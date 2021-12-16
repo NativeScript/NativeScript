@@ -34,6 +34,7 @@ exports[`svelte configuration for android 1`] = `
     alias: {
       '~': '__jest__/src',
       '@': '__jest__/src',
+      svelte$: 'svelte/internal',
       'tns-core-modules': '@nativescript/core'
     },
     extensions: [
@@ -75,13 +76,16 @@ exports[`svelte configuration for android 1`] = `
             options: {
               platform: 'android'
             }
-          },
-          /* config.module.rule('bundle').use('nativescript-hot-loader') */
+          }
+        ]
+      },
+      /* config.module.rule('workers') */
+      {
+        test: /\\\\.(js|ts|svelte)$/,
+        use: [
+          /* config.module.rule('workers').use('nativescript-worker-loader') */
           {
-            loader: 'nativescript-hot-loader',
-            options: {
-              injectHMRRuntime: true
-            }
+            loader: 'nativescript-worker-loader'
           }
         ]
       },
@@ -111,16 +115,6 @@ exports[`svelte configuration for android 1`] = `
         test: /\\\\.js$/,
         exclude: [
           /node_modules/
-        ]
-      },
-      /* config.module.rule('workers') */
-      {
-        test: /\\\\.(js|ts|svelte)$/,
-        use: [
-          /* config.module.rule('workers').use('nativescript-worker-loader') */
-          {
-            loader: 'nativescript-worker-loader'
-          }
         ]
       },
       /* config.module.rule('xml') */
@@ -365,6 +359,7 @@ exports[`svelte configuration for ios 1`] = `
     alias: {
       '~': '__jest__/src',
       '@': '__jest__/src',
+      svelte$: 'svelte/internal',
       'tns-core-modules': '@nativescript/core'
     },
     extensions: [
@@ -406,13 +401,16 @@ exports[`svelte configuration for ios 1`] = `
             options: {
               platform: 'ios'
             }
-          },
-          /* config.module.rule('bundle').use('nativescript-hot-loader') */
+          }
+        ]
+      },
+      /* config.module.rule('workers') */
+      {
+        test: /\\\\.(js|ts|svelte)$/,
+        use: [
+          /* config.module.rule('workers').use('nativescript-worker-loader') */
           {
-            loader: 'nativescript-hot-loader',
-            options: {
-              injectHMRRuntime: true
-            }
+            loader: 'nativescript-worker-loader'
           }
         ]
       },
@@ -442,16 +440,6 @@ exports[`svelte configuration for ios 1`] = `
         test: /\\\\.js$/,
         exclude: [
           /node_modules/
-        ]
-      },
-      /* config.module.rule('workers') */
-      {
-        test: /\\\\.(js|ts|svelte)$/,
-        use: [
-          /* config.module.rule('workers').use('nativescript-worker-loader') */
-          {
-            loader: 'nativescript-worker-loader'
-          }
         ]
       },
       /* config.module.rule('xml') */

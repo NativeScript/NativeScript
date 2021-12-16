@@ -94,12 +94,12 @@ When you click on the button, you will be redirected to the report page. On the 
 
 > Note: Each item name consists of the application name, type of device and platform version: `pr-e2e-tests-[application-name]-[device-type]-[platform-version]`. Usually, the test applications, that are executed for PRs are part of NativeScript repository.
 
-Based on the executed suite, one of the following or all of the following files will be generated: `mochawesome.html` | `index.html` | `unit-tests.log`. Some of the reports also might include `*.png`, `*.logs` or `[page source].xml` files that can help in understanding where is the problem.
+Based on the executed suite, one of the following or all of the following files will be generated: `mochawesome.html` | `index.html` | `unit-tests.log`. Some reports also might include `*.png`, `*.logs` or `[page source].xml` files that can help in understanding where is the problem.
 
 For example:
 1. When you select the `index.html` page, an additional `TestNG Results` sidebar will be displayed. There you can find a list of all failures. 
 2. When you select one of them, you will see on the right side all tests, that have been executed. The problematic ones will be coloured in red. 
-3. If you click on one of them, detailed info or error log will be displayed. As we've mentioned above in some of the test reports, you will also find screenshots, that demonstrates the problem visually. Those images can be found below the info/ error log.
+3. If you click on one of them, detailed info or error log will be displayed. As we've mentioned above in some test reports, you will also find screenshots, that demonstrates the problem visually. Those images can be found below the info/ error log.
 
 ## <a name="commit-messages"></a> Commit Message Guidelines
 
@@ -248,7 +248,7 @@ git checkout release
 git merge --ff-only origin/master
 ```
 *** Note: If there are commits in release branch which are not merged in master branch '-ff-merge' command will fail. 
-In this case the commits should be merge firstly from release in master branch as explained in section 'Merge changes from release into master' and then repeat step 1.
+In this case the commits should be merged firstly from release in master branch as explained in section 'Merge changes from release into master' and then repeat step 1.
 
 2. Execute `npm i` to install dependencies:
 ```
@@ -277,7 +277,7 @@ npm --no-git-tag-version version [major|minor|patch] -m "release: cut the %s rel
 cd ..
 ```
 6. Set correct version of **tns-core-modules-widgets** in tns-core-modules/package.json.
-Usually tns-core-modules-widgets should already have been released and we need to set the official version.
+Usually tns-core-modules-widgets should already have been released, and we need to set the official version.
 
 7. Create release-branch with change log
 ```
@@ -333,7 +333,7 @@ git commit
 git push
 ```
 
-6. Create pull request. Replace replace env ${MERGE_BRANCH} with its value
+6. Create pull request. Replace env ${MERGE_BRANCH} with its value
 ```
 curl -d '{"title": "chore: merge release in master","body": "chore: merge release in master","head": "merge-release-in-master","base": "master"}' -X POST https://api.github.com/repos/NativeScript/NativeScript/pulls -H "Authorization: token ${GIT_TOKEN}"
 ```
@@ -344,4 +344,4 @@ git checkout origin/master tns-platform-declarations/package.json tns-core-modul
 git commit --amend
 git push --force-with-lease
 ```
-This will require to repeat steps from 1 to 4, since we need to keep the branches with the same history
+This will require repeating steps from 1 to 4, since we need to keep the branches with the same history
