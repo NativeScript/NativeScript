@@ -127,6 +127,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	config.optimization.minimizer('TerserPlugin').use(TerserPlugin, [
 		{
 			terserOptions: {
+				// @ts-ignore - https://github.com/webpack-contrib/terser-webpack-plugin/pull/463 broke the types?
 				compress: {
 					collapse_vars: platform !== 'android',
 					sequences: platform !== 'android',
