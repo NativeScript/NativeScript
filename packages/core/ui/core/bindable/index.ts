@@ -164,9 +164,9 @@ export class Binding {
 
 		this.propertyChangeListeners.clear();
 
-		if (this.source) {
-			this.source.clear();
-		}
+		// if (this.source) {
+		// 	this.source.clear();
+		// }
 
 		if (this.sourceOptions) {
 			this.sourceOptions.instance.clear();

@@ -7,7 +7,7 @@
     "setup": "npm run clean && npm install --legacy-peer-deps",
     "setup:yarn": "yarn clean && yarn",
     "setup:pnpm": "pnpm run clean && pnpm install",
-    "postinstall": "ts-patch install && husky install && nx run core:setup",
+    "postinstall": "ts-patch install && husky install && nx run webpack5:build",
     "start": "nps",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s"
   },
@@ -70,7 +70,8 @@
     "typedoc": "^0.20.14",
     "typescript": "4.1.4",
     "webpack": "~4.44.1",
-    "webpack-cli": "~3.3.12"
+    "webpack-cli": "~3.3.12",
+    "zx": "^4.2.0"
   },
   "lint-staged": {
     "**/*": [

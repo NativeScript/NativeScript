@@ -78,6 +78,10 @@ async function parseXML(content: string): Promise<ParseResult> {
 			`${localModulePath}.xml`,
 			moduleName,
 			namespace,
+			`${moduleName}.xml`,
+			`~/${moduleName}`,
+			`~/${namespace}`,
+			`~/${moduleName}.xml`,
 		];
 		DEBUG && console.log({ resolvePaths });
 		let resolvedPath;
@@ -118,12 +122,13 @@ async function parseXML(content: string): Promise<ParseResult> {
 				this.addDependency(xml);
 				namespaces.push({ name: `${moduleName}.xml`, path: xml });
 			})
-			.catch(() => {
-				// if there is no XML file, fall back to namespace as the path
-				// will become require(<namespace>)
-				namespaces.push({ name: namespace, path: namespace });
-				namespaces.push({ name: moduleName, path: namespace });
-			});
+			.catch(noop);
+		// .catch(() => {
+		// 	// if there is no XML file, fall back to namespace as the path
+		// 	// will become require(<namespace>)
+		// 	namespaces.push({ name: namespace, path: namespace });
+		// 	namespaces.push({ name: moduleName, path: namespace });
+		// });
 
 		// look for css files with the same name
 		await resolveAsync(this.context, `${noExtFilename}.css`)
@@ -162,6 +167,8 @@ async function parseXML(content: string): Promise<ParseResult> {
 	namespaces.forEach(({ name, path }) => {
 		distinctNamespaces.set(name, path.replace(/\\/g, '/'));
 	});
+
+	DEBUG && console.log({ distinctNamespaces });
 
 	distinctNamespaces.forEach((path, name) => {
 		moduleRegisters.push(dedent`

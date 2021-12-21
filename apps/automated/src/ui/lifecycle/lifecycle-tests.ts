@@ -75,26 +75,29 @@ export function test_setting_one_property_while_suspedned_does_not_call_other_pr
 	TKUnit.assertEqual(btn1.fontInternalSetNativeCount, 2, 'fontInternal.setNative at step4');
 }
 
-export function test_css_properties_reset_only_once() {
-	const page = helper.navigateToModule('ui/lifecycle/pages/page-one');
-	const btn2 = page.getViewById<btnCounter.Button>('btn2');
+//
+// Commented out because in webpack5 css loading has been rewritten, and does not use page.css
+//
+// export function test_css_properties_reset_only_once() {
+// 	const page = helper.navigateToModule('ui/lifecycle/pages/page-one');
+// 	const btn2 = page.getViewById<btnCounter.Button>('btn2');
 
-	TKUnit.assertEqual(btn2.backgroundInternalSetNativeCount, 1, `Expected ${btn2.id}'s backgroundInternal.setNative to be exactly once when inflating from xml.`);
-	TKUnit.assertEqual(btn2.fontInternalSetNativeCount, 1, `Expected ${btn2.id}'s fontInternal.setNative to be called exactly once when inflating from xml.`);
-	TKUnit.assertEqual(btn2.nativeBackgroundRedraws, 1, `Expected ${btn2.id}'s native background to propagated exactly once when inflating from xml.`);
+// 	TKUnit.assertEqual(btn2.backgroundInternalSetNativeCount, 1, `1: Expected ${btn2.id}'s backgroundInternal.setNative to be exactly once when inflating from xml.`);
+// 	TKUnit.assertEqual(btn2.fontInternalSetNativeCount, 1, `1: Expected ${btn2.id}'s fontInternal.setNative to be called exactly once when inflating from xml.`);
+// 	TKUnit.assertEqual(btn2.nativeBackgroundRedraws, 1, `1: Expected ${btn2.id}'s native background to propagated exactly once when inflating from xml.`);
 
-	page.css = '';
+// 	page.css = '';
 
-	TKUnit.assertEqual(btn2.backgroundInternalSetNativeCount, 2, `Expected ${btn2.id}'s backgroundInternal.setNative to be exactly once when inflating from xml.`);
-	TKUnit.assertEqual(btn2.fontInternalSetNativeCount, 2, `Expected ${btn2.id}'s fontInternal.setNative to be called exactly once when inflating from xml.`);
-	TKUnit.assertEqual(btn2.nativeBackgroundRedraws, isIOS ? 1 : 2, `Expected ${btn2.id}'s native background to propagated exactly once when inflating from xml.`);
+// 	TKUnit.assertEqual(btn2.backgroundInternalSetNativeCount, 2, `2: Expected ${btn2.id}'s backgroundInternal.setNative to be exactly once when inflating from xml.`);
+// 	TKUnit.assertEqual(btn2.fontInternalSetNativeCount, 2, `2: Expected ${btn2.id}'s fontInternal.setNative to be called exactly once when inflating from xml.`);
+// 	TKUnit.assertEqual(btn2.nativeBackgroundRedraws, isIOS ? 1 : 2, `2: Expected ${btn2.id}'s native background to propagated exactly once when inflating from xml.`);
 
-	helper.waitUntilLayoutReady(btn2);
+// 	helper.waitUntilLayoutReady(btn2);
 
-	TKUnit.assertEqual(btn2.backgroundInternalSetNativeCount, 2, `Expected ${btn2.id}'s backgroundInternal.setNative to be exactly once when inflating from xml.`);
-	TKUnit.assertEqual(btn2.fontInternalSetNativeCount, 2, `Expected ${btn2.id}'s fontInternal.setNative to be called exactly once when inflating from xml.`);
-	TKUnit.assertEqual(btn2.nativeBackgroundRedraws, 2, `Expected ${btn2.id}'s native background to propagated exactly once when inflating from xml.`);
-}
+// 	TKUnit.assertEqual(btn2.backgroundInternalSetNativeCount, 2, `3: Expected ${btn2.id}'s backgroundInternal.setNative to be exactly once when inflating from xml.`);
+// 	TKUnit.assertEqual(btn2.fontInternalSetNativeCount, 2, `3: Expected ${btn2.id}'s fontInternal.setNative to be called exactly once when inflating from xml.`);
+// 	TKUnit.assertEqual(btn2.nativeBackgroundRedraws, 2, `3: Expected ${btn2.id}'s native background to propagated exactly once when inflating from xml.`);
+// }
 
 export function test_navigating_away_does_not_excessively_reset() {
 	const page = helper.navigateToModule('ui/lifecycle/pages/page-one');
