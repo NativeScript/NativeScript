@@ -30,7 +30,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 	chainedSetAddAfter(
 		config.entry('bundle'),
-		'@nativescript/core/globals/index.js',
+		'@nativescript/core/globals/index',
 		virtualEntryPath
 	);
 
