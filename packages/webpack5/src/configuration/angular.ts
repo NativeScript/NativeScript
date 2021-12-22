@@ -3,17 +3,17 @@ import { extname, resolve } from 'path';
 import Config from 'webpack-chain';
 import { existsSync } from 'fs';
 
+import { getDependencyPath } from '../helpers/dependencies';
 import { getProjectFilePath } from '../helpers/project';
 import { env as _env, IWebpackEnv } from '../index';
+import { readTsConfig } from '../helpers/tsconfig';
+import { warnOnce } from '../helpers/log';
 import {
 	getEntryDirPath,
 	getEntryPath,
 	getPlatformName,
 } from '../helpers/platform';
 import base from './base';
-import { getDependencyPath } from '../helpers/dependencies';
-import { warnOnce } from '../helpers/log';
-import { readTsConfig } from '../helpers/tsconfig';
 
 export default function (config: Config, env: IWebpackEnv = _env): Config {
 	base(config, env);
@@ -175,6 +175,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				.use('angular-hot-loader')
 				.loader('angular-hot-loader');
 		});
+
 		const buildAngularPath = getDependencyPath('@angular-devkit/build-angular');
 		if (buildAngularPath) {
 			const tsConfig = readTsConfig(tsConfigPath);
@@ -204,9 +205,8 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			warnOnce(
 				'build-angular-missing',
 				`
-				@angular-devkit/build-angular is missing!
-				Please install it to be able to use Angular to it's full potential.
-			`
+				@angular-devkit/build-angular is missing! Some features may not work as expected. Please install it manually to get rid of this warning.
+				`
 			);
 		}
 	}

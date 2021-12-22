@@ -1,5 +1,5 @@
-import { dirname } from 'path';
 import { readConfigFile, parseJsonConfigFileContent, sys } from 'typescript';
+import { dirname } from 'path';
 
 export function readTsConfig(path: string) {
 	const f = readConfigFile(path, sys.readFile);
