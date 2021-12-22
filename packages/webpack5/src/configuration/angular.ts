@@ -3,8 +3,11 @@ import { extname, resolve } from 'path';
 import Config from 'webpack-chain';
 import { existsSync } from 'fs';
 
+import { getDependencyPath } from '../helpers/dependencies';
 import { getProjectFilePath } from '../helpers/project';
 import { env as _env, IWebpackEnv } from '../index';
+import { readTsConfig } from '../helpers/tsconfig';
+import { warnOnce } from '../helpers/log';
 import {
 	getEntryDirPath,
 	getEntryPath,
@@ -21,6 +24,8 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		getProjectFilePath('tsconfig.app.json'),
 		getProjectFilePath('tsconfig.json'),
 	].find((path) => existsSync(path));
+
+	const disableAOT = !!env.disableAOT;
 
 	// remove default ts rule
 	config.module.rules.delete('ts');
@@ -158,6 +163,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			{
 				tsconfig: tsConfigPath,
 				directTemplateLoading: false,
+				jitMode: disableAOT,
 			},
 		]);
 
@@ -169,23 +175,40 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				.use('angular-hot-loader')
 				.loader('angular-hot-loader');
 		});
-		// zone + async/await
-		config.module
-			.rule('angular-webpack-loader')
-			.test(/\.[cm]?[tj]sx?$/)
-			.exclude.add(
-				/[/\\](?:core-js|@babel|tslib|web-animations-js|web-streams-polyfill)[/\\]/
-			)
-			.end()
-			.resolve.set('fullySpecified', false)
-			.end()
-			.before('angular')
-			.use('webpack-loader')
-			.loader('@angular-devkit/build-angular/src/babel/webpack-loader')
-			.options({
-				scriptTarget: ScriptTarget.ESNext,
-				aot: true,
-			});
+
+		const buildAngularPath = getDependencyPath('@angular-devkit/build-angular');
+		if (buildAngularPath) {
+			const tsConfig = readTsConfig(tsConfigPath);
+			const scriptTarget = tsConfig.options.target ?? ScriptTarget.ESNext;
+			const buildAngularOptions: any = {
+				scriptTarget,
+				aot: !disableAOT,
+			};
+			if (disableAOT) {
+				buildAngularOptions.optimize = false;
+			}
+			// zone + async/await
+			config.module
+				.rule('angular-webpack-loader')
+				.test(/\.[cm]?[tj]sx?$/)
+				.exclude.add(
+					/[/\\](?:core-js|@babel|tslib|web-animations-js|web-streams-polyfill)[/\\]/
+				)
+				.end()
+				.resolve.set('fullySpecified', false)
+				.end()
+				.before('angular')
+				.use('webpack-loader')
+				.loader('@angular-devkit/build-angular/src/babel/webpack-loader')
+				.options(buildAngularOptions);
+		} else {
+			warnOnce(
+				'build-angular-missing',
+				`
+				@angular-devkit/build-angular is missing! Some features may not work as expected. Please install it manually to get rid of this warning.
+				`
+			);
+		}
 	}
 
 	// look for platform specific polyfills first
