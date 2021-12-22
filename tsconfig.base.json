@@ -1,0 +1,28 @@
+{
+	"compileOnSave": false,
+	"compilerOptions": {
+		"rootDir": ".",
+		"target": "ES2017",
+		"module": "esnext",
+		"sourceMap": true,
+		"declaration": true,
+		"moduleResolution": "node",
+		"emitDecoratorMetadata": true,
+		"experimentalDecorators": true,
+		"noEmitOnError": true,
+		"noEmitHelpers": true,
+		"diagnostics": true,
+		"skipLibCheck": true,
+		"skipDefaultLibCheck": true,
+		"lib": ["es2017", "dom"],
+		"types": ["node", "jest"],
+		"baseUrl": ".",
+		"paths": {
+			"@nativescript/core": ["packages/core/index.ts"],
+			"@nativescript/core/*": ["packages/core/*"],
+			"@nativescript/types-android": ["packages/types-android/src/index.ts"],
+			"@nativescript/types-ios": ["packages/types-ios/src/index.ts"]
+		}
+	},
+	"exclude": ["node_modules", "tmp", "platforms", "__tests__"]
+}

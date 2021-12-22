@@ -44,41 +44,43 @@ function getContext(
 	return {
 		rootContext: 'app',
 		context: 'app/component',
-		async: () => (error, source: string) => {
-			if (callbackCalled) {
-				done.fail('Callback called more than once!');
-			}
-			callbackCalled = true;
+		async() {
+			return (error, source: string) => {
+				if (callbackCalled) {
+					throw new Error('Callback called more than once!');
+				}
+				callbackCalled = true;
 
-			expectedDeps.forEach((expectedDep) => {
-				expect(actualDeps).toContain(expectedDep);
-			});
+				expectedDeps.forEach((expectedDep) => {
+					expect(actualDeps).toContain(expectedDep);
+				});
 
-			expectedRegs.forEach(({ name, path }) => {
-				expect(source).toContain(dedent`
+				expectedRegs.forEach(({ name, path }) => {
+					expect(source).toContain(dedent`
 					global.registerModule(
 						'${name}',
 						() => require("${path}")
 					)
 				`);
-			});
+				});
 
-			if (assureNoDeps) {
-				expect(actualDeps.length).toBe(0);
-				expect(source).not.toContain('global.registerModule');
-			}
+				if (assureNoDeps) {
+					expect(actualDeps.length).toBe(0);
+					expect(source).not.toContain('global.registerModule');
+				}
 
-			if (expectWarnings) {
-				expect(actualWarnings.length).toEqual(expectWarnings);
-			}
+				if (expectWarnings) {
+					expect(actualWarnings.length).toEqual(expectWarnings);
+				}
 
-			if (error && !expectError) {
-				done.fail(error);
-			} else if (!error && expectError) {
-				done.fail('Error expected here');
-			} else {
-				done();
-			}
+				if (error && !expectError) {
+					throw error;
+				} else if (!error && expectError) {
+					throw new Error('Error expected here');
+				} else {
+					done();
+				}
+			};
 		},
 		resolve: (
 			context: string,
@@ -272,10 +274,13 @@ describe('xml-namespace-loader', () => {
 		const expectedDeps = [];
 
 		const expectedRegs = [
-			{ name: 'nativescript-ui-chart', path: 'nativescript-ui-chart' },
+			{
+				name: 'nativescript-ui-chart',
+				path: 'node_modules/nativescript-ui-chart/ui-chart.js',
+			},
 			{
 				name: 'nativescript-ui-chart/RadCartesianChart',
-				path: 'nativescript-ui-chart',
+				path: 'node_modules/nativescript-ui-chart/ui-chart.js',
 			},
 		];
 
@@ -392,25 +397,16 @@ describe('xml-namespace-loader', () => {
 	});
 
 	it("with '&&', '||', '<=' and '>=' in binding expression, emits warnings, but does not fail", (done) => {
-		const resolveMap = {
-			'nativescript-ui-chart': 'node_modules/nativescript-ui-chart/ui-chart.js',
-		};
+		const resolveMap = {};
 
 		const expectedDeps = [];
 
-		const expectedRegs = [
-			{ name: 'nativescript-ui-chart', path: 'nativescript-ui-chart' },
-			{
-				name: 'nativescript-ui-chart/RadCartesianChart',
-				path: 'nativescript-ui-chart',
-			},
-		];
+		const expectedRegs = [];
 
 		const testXml = `
         <Page xmlns="http://www.nativescript.org/tns.xsd">
             <StackLayout xmlns:chart="nativescript-ui-chart">
                 <TextField text="{{ var1 && var2 || var1 >= var2 || var2 <= var1 }}" />
-                <chart:RadCartesianChart></chart:RadCartesianChart>
             </StackLayout>
         </Page>`;
 

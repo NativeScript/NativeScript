@@ -56,6 +56,11 @@ export class WebView extends View {
 	canGoForward: boolean;
 
 	/**
+	 *  Disable scrolling in the WebView
+	 */
+	disableZoom: boolean;
+
+	/**
 	 * Stops loading the current content (if any).
 	 */
 	stopLoading(): void;
