@@ -186,22 +186,6 @@
 				}
 			}
 		},
-		"types-ios": {
-			"root": "packages/types-ios",
-			"sourceRoot": "packages/types-ios/src",
-			"projectType": "library",
-			"schematics": {},
-			"architect": {
-				"build": {
-					"builder": "@nrwl/workspace:run-commands",
-					"outputs": ["dist/packages"],
-					"options": {
-						"commands": ["./tools/scripts/typings-gen.sh latest", "mkdir -p dist/packages/types-ios", "cp -R packages/types-ios/src/* dist/packages/types-ios", "cp packages/types-ios/package.json dist/packages/types-ios", "cp packages/types-ios/README.md dist/packages/types-ios/README.md"],
-						"parallel": false
-					}
-				}
-			}
-		},
 		"types-android": {
 			"root": "packages/types-android",
 			"sourceRoot": "packages/types-android/src",
@@ -214,6 +198,22 @@
 					"options": {
 						"commands": ["mkdir -p ../../dist/packages/types-android", "cp -R src/* ../../dist/packages/types-android", "cp package.json *.md ../../dist/packages/types-android"],
 						"cwd": "packages/types-android",
+						"parallel": false
+					}
+				}
+			}
+		},
+		"types-ios": {
+			"root": "packages/types-ios",
+			"sourceRoot": "packages/types-ios/src",
+			"projectType": "library",
+			"schematics": {},
+			"architect": {
+				"build": {
+					"builder": "@nrwl/workspace:run-commands",
+					"outputs": ["dist/packages"],
+					"options": {
+						"commands": ["./tools/scripts/typings-gen.sh latest", "mkdir -p dist/packages/types-ios", "cp -R packages/types-ios/src/* dist/packages/types-ios", "cp packages/types-ios/package.json dist/packages/types-ios", "cp packages/types-ios/README.md dist/packages/types-ios/README.md"],
 						"parallel": false
 					}
 				}
@@ -285,65 +285,6 @@
 						"command": "npx zx ./tools/scripts/pack-webpack5.mjs"
 					}
 				}
-			}
-		}
-	},
-	"cli": {
-		"defaultCollection": "@nrwl/workspace"
-	},
-	"schematics": {
-		"@nrwl/workspace": {
-			"library": {
-				"linter": "eslint"
-			}
-		},
-		"@nrwl/cypress": {
-			"cypress-project": {
-				"linter": "eslint"
-			}
-		},
-		"@nrwl/react": {
-			"application": {
-				"linter": "eslint"
-			},
-			"library": {
-				"linter": "eslint"
-			}
-		},
-		"@nrwl/next": {
-			"application": {
-				"linter": "eslint"
-			}
-		},
-		"@nrwl/web": {
-			"application": {
-				"linter": "eslint"
-			}
-		},
-		"@nrwl/node": {
-			"application": {
-				"linter": "eslint"
-			},
-			"library": {
-				"linter": "eslint"
-			}
-		},
-		"@nrwl/nx-plugin": {
-			"plugin": {
-				"linter": "eslint"
-			}
-		},
-		"@nrwl/nest": {
-			"application": {
-				"linter": "eslint"
-			}
-		},
-		"@nrwl/express": {
-			"application": {
-				"linter": "eslint"
-			},
-			"library": {
-				"linter": "eslint"
 			}
 		}
 	}
