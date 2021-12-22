@@ -175,7 +175,7 @@ export class DOMNode {
 
 	dispose() {
 		unregisterNode(this);
-		this.viewRef.clear();
+		// this.viewRef.clear();
 	}
 
 	public toObject() {

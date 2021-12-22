@@ -151,7 +151,12 @@ exports[`vue configuration for android 1`] = `
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -180,7 +185,12 @@ exports[`vue configuration for android 1`] = `
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -328,8 +338,8 @@ exports[`vue configuration for android 1`] = `
   ],
   entry: {
     bundle: [
-      '@nativescript/core/globals/index.js',
-      '@nativescript/core/bundle-entry-points.js',
+      '@nativescript/core/globals/index',
+      '@nativescript/core/bundle-entry-points',
       '__jest__/src/app.js',
       '@nativescript/core/ui/frame',
       '@nativescript/core/ui/frame/activity'
@@ -489,7 +499,12 @@ exports[`vue configuration for ios 1`] = `
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -518,7 +533,12 @@ exports[`vue configuration for ios 1`] = `
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -666,8 +686,8 @@ exports[`vue configuration for ios 1`] = `
   ],
   entry: {
     bundle: [
-      '@nativescript/core/globals/index.js',
-      '@nativescript/core/bundle-entry-points.js',
+      '@nativescript/core/globals/index',
+      '@nativescript/core/bundle-entry-points',
       '__jest__/src/app.js'
     ],
     'tns_modules/inspector_modules': [
