@@ -508,15 +508,15 @@ export var testNativeTextAlignmentFromLocal = function () {
 	});
 };
 
-export var testMemoryLeak = function (done) {
-	helper.buildUIWithWeakRefAndInteract(
-		_createTextViewFunc,
-		function (textView) {
-			textViewTestsNative.typeTextNatively(textView, 'Hello, world!');
-		},
-		done
-	);
-};
+// export var testMemoryLeak = function (done) {
+// 	helper.buildUIWithWeakRefAndInteract(
+// 		_createTextViewFunc,
+// 		function (textView) {
+// 			textViewTestsNative.typeTextNatively(textView, 'Hello, world!');
+// 		},
+// 		done
+// 	);
+// };
 
 export function test_watch_listerer_is_removed_at_onDetach() {
 	if (platform.isAndroid) {

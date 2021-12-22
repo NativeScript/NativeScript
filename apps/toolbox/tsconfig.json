@@ -1,9 +1,9 @@
 {
-  "extends": "../../tsconfig.json",
-  "compilerOptions": {
-    "diagnostics": false,
-    "paths": {
-      "~/*": ["src/*"]
-    }
-  }
+	"extends": "../../tsconfig.base.json",
+	"compilerOptions": {
+		"diagnostics": false,
+		"paths": {
+			"~/*": ["src/*"]
+		}
+	}
 }
