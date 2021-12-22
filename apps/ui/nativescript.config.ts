@@ -7,4 +7,7 @@ export default {
 	android: {
 		v8Flags: '--expose_gc',
 	},
+	cli: {
+		packageManager: 'npm',
+	},
 } as NativeScriptConfig;
