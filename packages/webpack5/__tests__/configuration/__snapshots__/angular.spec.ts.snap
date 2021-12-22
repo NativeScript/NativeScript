@@ -400,7 +400,8 @@ exports[`angular configuration for android 1`] = `
     new AngularWebpackPlugin(
       {
         tsconfig: '__jest__/tsconfig.json',
-        directTemplateLoading: false
+        directTemplateLoading: false,
+        jitMode: false
       }
     )
   ],
@@ -816,7 +817,8 @@ exports[`angular configuration for ios 1`] = `
     new AngularWebpackPlugin(
       {
         tsconfig: '__jest__/tsconfig.json',
-        directTemplateLoading: false
+        directTemplateLoading: false,
+        jitMode: false
       }
     )
   ],
