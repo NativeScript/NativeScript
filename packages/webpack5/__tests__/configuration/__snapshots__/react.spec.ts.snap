@@ -163,7 +163,12 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -188,7 +193,12 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -321,14 +331,14 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
         overlay: false,
         forceEnable: false,
         exclude: /node_modules/i,
-        include: /\\\\.([jt]sx?|flow)$/i
+        include: /\\\\.([cm]js|[jt]sx?|flow)$/i
       }
     )
   ],
   entry: {
     bundle: [
-      '@nativescript/core/globals/index.js',
-      '@nativescript/core/bundle-entry-points.js',
+      '@nativescript/core/globals/index',
+      '@nativescript/core/bundle-entry-points',
       '__jest__/src/app.js',
       '@nativescript/core/ui/frame',
       '@nativescript/core/ui/frame/activity'
@@ -482,7 +492,12 @@ exports[`react configuration > android > base config 1`] = `
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -507,7 +522,12 @@ exports[`react configuration > android > base config 1`] = `
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -635,8 +655,8 @@ exports[`react configuration > android > base config 1`] = `
   ],
   entry: {
     bundle: [
-      '@nativescript/core/globals/index.js',
-      '@nativescript/core/bundle-entry-points.js',
+      '@nativescript/core/globals/index',
+      '@nativescript/core/bundle-entry-points',
       '__jest__/src/app.js',
       '@nativescript/core/ui/frame',
       '@nativescript/core/ui/frame/activity'
@@ -808,7 +828,12 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -833,7 +858,12 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -966,14 +996,14 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
         overlay: false,
         forceEnable: false,
         exclude: /node_modules/i,
-        include: /\\\\.([jt]sx?|flow)$/i
+        include: /\\\\.([cm]js|[jt]sx?|flow)$/i
       }
     )
   ],
   entry: {
     bundle: [
-      '@nativescript/core/globals/index.js',
-      '@nativescript/core/bundle-entry-points.js',
+      '@nativescript/core/globals/index',
+      '@nativescript/core/bundle-entry-points',
       '__jest__/src/app.js'
     ],
     'tns_modules/inspector_modules': [
@@ -1128,7 +1158,12 @@ exports[`react configuration > ios > base config 1`] = `
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -1153,7 +1188,12 @@ exports[`react configuration > ios > base config 1`] = `
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -1281,8 +1321,8 @@ exports[`react configuration > ios > base config 1`] = `
   ],
   entry: {
     bundle: [
-      '@nativescript/core/globals/index.js',
-      '@nativescript/core/bundle-entry-points.js',
+      '@nativescript/core/globals/index',
+      '@nativescript/core/bundle-entry-points',
       '__jest__/src/app.js'
     ],
     'tns_modules/inspector_modules': [

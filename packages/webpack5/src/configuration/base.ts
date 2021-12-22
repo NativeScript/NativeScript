@@ -1,10 +1,11 @@
+import { extname, resolve } from 'path';
 import {
 	ContextExclusionPlugin,
 	DefinePlugin,
 	HotModuleReplacementPlugin,
 } from 'webpack';
 import Config from 'webpack-chain';
-import { resolve } from 'path';
+import { existsSync } from 'fs';
 
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
@@ -87,8 +88,8 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	config
 		.entry('bundle')
 		// ensure we load nativescript globals first
-		.add('@nativescript/core/globals/index.js')
-		.add('@nativescript/core/bundle-entry-points.js')
+		.add('@nativescript/core/globals/index')
+		.add('@nativescript/core/bundle-entry-points')
 		.add(entryPath);
 
 	// Add android app components to the bundle to SBG can generate the java classes
@@ -127,6 +128,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	config.optimization.minimizer('TerserPlugin').use(TerserPlugin, [
 		{
 			terserOptions: {
+				// @ts-ignore - https://github.com/webpack-contrib/terser-webpack-plugin/pull/463 broke the types?
 				compress: {
 					collapse_vars: platform !== 'android',
 					sequences: platform !== 'android',
@@ -277,7 +279,36 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		postcssOptions: {
 			plugins: [
 				// inlines @imported stylesheets
-				'postcss-import',
+				[
+					'postcss-import',
+					{
+						// custom resolver to resolve platform extensions in @import statements
+						// ie. @import "foo.css" would import "foo.ios.css" if the platform is ios and it exists
+						resolve(id, baseDir, importOptions) {
+							const ext = extname(id);
+							const platformExt = ext ? `.${platform}${ext}` : '';
+
+							if (!id.includes(platformExt)) {
+								const platformRequest = id.replace(ext, platformExt);
+								const extPath = resolve(baseDir, platformRequest);
+
+								try {
+									return require.resolve(platformRequest, {
+										paths: [baseDir],
+									});
+								} catch {}
+
+								if (existsSync(extPath)) {
+									console.log(`resolving "${id}" to "${platformRequest}"`);
+									return extPath;
+								}
+							}
+
+							// fallback to postcss-import default resolution
+							return id;
+						},
+					},
+				],
 			],
 		},
 	};

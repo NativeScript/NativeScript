@@ -141,7 +141,12 @@ exports[`typescript configuration for android 1`] = `
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -166,7 +171,12 @@ exports[`typescript configuration for android 1`] = `
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -306,9 +316,9 @@ exports[`typescript configuration for android 1`] = `
   ],
   entry: {
     bundle: [
-      '@nativescript/core/globals/index.js',
+      '@nativescript/core/globals/index',
       '__jest__/src/__@nativescript_webpack_virtual_entry_typescript__',
-      '@nativescript/core/bundle-entry-points.js',
+      '@nativescript/core/bundle-entry-points',
       '__jest__/src/app.js',
       '@nativescript/core/ui/frame',
       '@nativescript/core/ui/frame/activity'
@@ -458,7 +468,12 @@ exports[`typescript configuration for ios 1`] = `
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -483,7 +498,12 @@ exports[`typescript configuration for ios 1`] = `
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -623,9 +643,9 @@ exports[`typescript configuration for ios 1`] = `
   ],
   entry: {
     bundle: [
-      '@nativescript/core/globals/index.js',
+      '@nativescript/core/globals/index',
       '__jest__/src/__@nativescript_webpack_virtual_entry_typescript__',
-      '@nativescript/core/bundle-entry-points.js',
+      '@nativescript/core/bundle-entry-points',
       '__jest__/src/app.js'
     ],
     'tns_modules/inspector_modules': [
