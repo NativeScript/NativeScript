@@ -137,7 +137,12 @@ exports[`angular configuration for android 1`] = `
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -167,7 +172,12 @@ exports[`angular configuration for android 1`] = `
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -259,7 +269,12 @@ exports[`angular configuration for android 1`] = `
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -391,8 +406,8 @@ exports[`angular configuration for android 1`] = `
   ],
   entry: {
     bundle: [
-      '@nativescript/core/globals/index.js',
-      '@nativescript/core/bundle-entry-points.js',
+      '@nativescript/core/globals/index',
+      '@nativescript/core/bundle-entry-points',
       '__jest__/src/app.js',
       '@nativescript/core/ui/frame',
       '@nativescript/core/ui/frame/activity'
@@ -538,7 +553,12 @@ exports[`angular configuration for ios 1`] = `
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -568,7 +588,12 @@ exports[`angular configuration for ios 1`] = `
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -660,7 +685,12 @@ exports[`angular configuration for ios 1`] = `
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -792,8 +822,8 @@ exports[`angular configuration for ios 1`] = `
   ],
   entry: {
     bundle: [
-      '@nativescript/core/globals/index.js',
-      '@nativescript/core/bundle-entry-points.js',
+      '@nativescript/core/globals/index',
+      '@nativescript/core/bundle-entry-points',
       '__jest__/src/app.js'
     ],
     'tns_modules/inspector_modules': [
@@ -806,7 +836,7 @@ exports[`angular configuration for ios 1`] = `
 exports[`angular configuration loads polyfills.android.ts into the bundle entry if it exists  1`] = `
 Array [
   "__jest__/src/polyfills.android.ts",
-  "@nativescript/core/bundle-entry-points.js",
+  "@nativescript/core/bundle-entry-points",
   "__jest__/src/app.js",
   "@nativescript/core/ui/frame",
   "@nativescript/core/ui/frame/activity",
@@ -816,7 +846,7 @@ Array [
 exports[`angular configuration loads polyfills.ios.ts into the bundle entry if it exists  1`] = `
 Array [
   "__jest__/src/polyfills.ios.ts",
-  "@nativescript/core/bundle-entry-points.js",
+  "@nativescript/core/bundle-entry-points",
   "__jest__/src/app.js",
 ]
 `;
@@ -824,7 +854,7 @@ Array [
 exports[`angular configuration loads polyfills.ts into the bundle entry if it exists  1`] = `
 Array [
   "__jest__/src/polyfills.ts",
-  "@nativescript/core/bundle-entry-points.js",
+  "@nativescript/core/bundle-entry-points",
   "__jest__/src/app.js",
 ]
 `;

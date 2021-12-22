@@ -15,39 +15,74 @@
 		"nx.json": "*",
 		".eslintrc.json": "*"
 	},
-	"projects": {
-		"apps-automated": {
-			"tags": []
+	"targetDependencies": {
+		"build": [
+			{
+				"target": "build",
+				"projects": "dependencies"
+			}
+		]
+	},
+	"cli": {
+		"defaultCollection": "@nrwl/workspace"
+	},
+	"generators": {
+		"@nrwl/workspace": {
+			"library": {
+				"linter": "eslint"
+			}
 		},
-		"apps-toolbox": {
-			"tags": []
+		"@nrwl/cypress": {
+			"cypress-project": {
+				"linter": "eslint"
+			}
 		},
-		"apps-ui": {
-			"tags": []
+		"@nrwl/react": {
+			"application": {
+				"linter": "eslint"
+			},
+			"library": {
+				"linter": "eslint"
+			}
 		},
-		"core": {
-			"tags": []
+		"@nrwl/next": {
+			"application": {
+				"linter": "eslint"
+			}
 		},
-		"core-api-docs": {
-			"tags": []
+		"@nrwl/web": {
+			"application": {
+				"linter": "eslint"
+			}
 		},
-		"types": {
-			"tags": []
+		"@nrwl/node": {
+			"application": {
+				"linter": "eslint"
+			},
+			"library": {
+				"linter": "eslint"
+			}
 		},
-		"types-ios": {
-			"tags": []
+		"@nrwl/nx-plugin": {
+			"plugin": {
+				"linter": "eslint"
+			}
 		},
-		"types-android": {
-			"tags": []
+		"@nrwl/nest": {
+			"application": {
+				"linter": "eslint"
+			}
 		},
-		"ui-mobile-base": {
-			"tags": []
-		},
-		"webpack": {
-			"tags": []
-		},
-		"webpack5": {
-			"tags": []
+		"@nrwl/express": {
+			"application": {
+				"linter": "eslint"
+			},
+			"library": {
+				"linter": "eslint"
+			}
 		}
+	},
+	"affected": {
+		"defaultBase": "master"
 	}
 }
