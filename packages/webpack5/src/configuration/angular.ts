@@ -201,10 +201,8 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		// replace globals with the polyfills file which
 		// should handle loading the correct globals
 		// and any additional polyfills required.
-		if (paths.includes('@nativescript/core/globals/index.js')) {
-			paths[
-				paths.indexOf('@nativescript/core/globals/index.js')
-			] = polyfillsPath;
+		if (paths.includes('@nativescript/core/globals/index')) {
+			paths[paths.indexOf('@nativescript/core/globals/index')] = polyfillsPath;
 
 			// replace paths with the updated paths
 			config.entry('bundle').clear().merge(paths);
