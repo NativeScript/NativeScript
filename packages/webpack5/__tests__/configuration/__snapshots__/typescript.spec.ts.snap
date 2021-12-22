@@ -72,13 +72,16 @@ exports[`typescript configuration for android 1`] = `
             options: {
               platform: 'android'
             }
-          },
-          /* config.module.rule('bundle').use('nativescript-hot-loader') */
+          }
+        ]
+      },
+      /* config.module.rule('workers') */
+      {
+        test: /\\\\.(js|ts)$/,
+        use: [
+          /* config.module.rule('workers').use('nativescript-worker-loader') */
           {
-            loader: 'nativescript-hot-loader',
-            options: {
-              injectHMRRuntime: true
-            }
+            loader: 'nativescript-worker-loader'
           }
         ]
       },
@@ -110,16 +113,6 @@ exports[`typescript configuration for android 1`] = `
           /node_modules/
         ]
       },
-      /* config.module.rule('workers') */
-      {
-        test: /\\\\.(js|ts)$/,
-        use: [
-          /* config.module.rule('workers').use('nativescript-worker-loader') */
-          {
-            loader: 'nativescript-worker-loader'
-          }
-        ]
-      },
       /* config.module.rule('xml') */
       {
         test: /\\\\.xml$/,
@@ -148,7 +141,12 @@ exports[`typescript configuration for android 1`] = `
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -173,7 +171,12 @@ exports[`typescript configuration for android 1`] = `
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -181,23 +184,6 @@ exports[`typescript configuration for android 1`] = `
           /* config.module.rule('scss').use('sass-loader') */
           {
             loader: 'sass-loader'
-          }
-        ]
-      },
-      /* config.module.rule('hmr-core') */
-      {
-        test: /\\\\.(js|ts)$/,
-        exclude: [
-          /node_modules/,
-          '__jest__/src/app.js'
-        ],
-        use: [
-          /* config.module.rule('hmr-core').use('nativescript-hot-loader') */
-          {
-            loader: 'nativescript-hot-loader',
-            options: {
-              appPath: '__jest__/src'
-            }
           }
         ]
       }
@@ -326,9 +312,9 @@ exports[`typescript configuration for android 1`] = `
   ],
   entry: {
     bundle: [
-      '@nativescript/core/globals/index.js',
+      '@nativescript/core/globals/index',
       '__jest__/src/__@nativescript_webpack_virtual_entry_typescript__',
-      '@nativescript/core/bundle-entry-points.js',
+      '@nativescript/core/bundle-entry-points',
       '__jest__/src/app.js',
       '@nativescript/core/ui/frame',
       '@nativescript/core/ui/frame/activity'
@@ -409,13 +395,16 @@ exports[`typescript configuration for ios 1`] = `
             options: {
               platform: 'ios'
             }
-          },
-          /* config.module.rule('bundle').use('nativescript-hot-loader') */
+          }
+        ]
+      },
+      /* config.module.rule('workers') */
+      {
+        test: /\\\\.(js|ts)$/,
+        use: [
+          /* config.module.rule('workers').use('nativescript-worker-loader') */
           {
-            loader: 'nativescript-hot-loader',
-            options: {
-              injectHMRRuntime: true
-            }
+            loader: 'nativescript-worker-loader'
           }
         ]
       },
@@ -447,16 +436,6 @@ exports[`typescript configuration for ios 1`] = `
           /node_modules/
         ]
       },
-      /* config.module.rule('workers') */
-      {
-        test: /\\\\.(js|ts)$/,
-        use: [
-          /* config.module.rule('workers').use('nativescript-worker-loader') */
-          {
-            loader: 'nativescript-worker-loader'
-          }
-        ]
-      },
       /* config.module.rule('xml') */
       {
         test: /\\\\.xml$/,
@@ -485,7 +464,12 @@ exports[`typescript configuration for ios 1`] = `
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -510,7 +494,12 @@ exports[`typescript configuration for ios 1`] = `
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -518,23 +507,6 @@ exports[`typescript configuration for ios 1`] = `
           /* config.module.rule('scss').use('sass-loader') */
           {
             loader: 'sass-loader'
-          }
-        ]
-      },
-      /* config.module.rule('hmr-core') */
-      {
-        test: /\\\\.(js|ts)$/,
-        exclude: [
-          /node_modules/,
-          '__jest__/src/app.js'
-        ],
-        use: [
-          /* config.module.rule('hmr-core').use('nativescript-hot-loader') */
-          {
-            loader: 'nativescript-hot-loader',
-            options: {
-              appPath: '__jest__/src'
-            }
           }
         ]
       }
@@ -663,9 +635,9 @@ exports[`typescript configuration for ios 1`] = `
   ],
   entry: {
     bundle: [
-      '@nativescript/core/globals/index.js',
+      '@nativescript/core/globals/index',
       '__jest__/src/__@nativescript_webpack_virtual_entry_typescript__',
-      '@nativescript/core/bundle-entry-points.js',
+      '@nativescript/core/bundle-entry-points',
       '__jest__/src/app.js'
     ],
     'tns_modules/inspector_modules': [
