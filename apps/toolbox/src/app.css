@@ -1,5 +1,5 @@
-@import '~nativescript-theme-core/css/core.light.css';
-@import './app-platform.css';
+@import 'nativescript-theme-core/css/core.light.css';
+@import './_app-platform.css';
 
 /*
 The following CSS rule changes the font size of all UI
