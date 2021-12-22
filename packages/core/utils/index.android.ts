@@ -81,7 +81,7 @@ function getMimeTypeNameFromExtension(filePath: string): string {
  * @param {string} filePath
  * @returns {boolean} whether opening the file succeeded or not
  */
-export function openFile(filePath: string): boolean {
+export function openFile(filePath: string, title: string = 'Open File...'): boolean {
 	const context = ad.getApplicationContext();
 	try {
 		// Ensure external storage is available
@@ -108,7 +108,7 @@ Applications cannot access internal storage of other application on Android (see
 		// Determine file mimetype & start creating intent
 		const mimeType = getMimeTypeNameFromExtension(filePath);
 		const intent = new android.content.Intent(android.content.Intent.ACTION_VIEW);
-		const chooserIntent = android.content.Intent.createChooser(intent, 'Open File...');
+		const chooserIntent = android.content.Intent.createChooser(intent, title);
 
 		intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
 		chooserIntent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);

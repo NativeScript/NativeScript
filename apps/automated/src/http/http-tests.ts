@@ -689,15 +689,14 @@ export var test_request_jsonAsContentSentAndReceivedProperly = function (done) {
 };
 
 export var test_getString_WorksProperlyInWorker = function (done) {
-	const HttpStringWorker = require('nativescript-worker-loader!./http-string-worker');
-	let worker = new HttpStringWorker();
+	const worker = new Worker('./http-string-worker');
 	console.log('Worker Created');
 	worker.onmessage = function (msg) {
 		console.log('Message received');
 		done();
 	};
 	worker.onerror = function (e) {
-		console.log('error received');
+		console.log('Error received');
 		done(e);
 	};
 };

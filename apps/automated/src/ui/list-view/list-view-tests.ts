@@ -753,19 +753,23 @@ export class ListViewTest extends UITest<ListView> {
 
 	private assertNoMemoryLeak(weakRef: WeakRef<ListView>) {
 		this.tearDown();
-		TKUnit.waitUntilReady(() => {
-			if (isIOS) {
-				/* tslint:disable:no-unused-expression */
-				// Could cause GC on the next call.
-				// NOTE: Don't replace this with forceGC();
-				new ArrayBuffer(4 * 1024 * 1024);
-			}
-			Utils.GC();
+		//
+		// commented out because with latest engines we use the built-in v8 WeakRef implementation
+		// which does not guarantee releases after a GC pass.
+		//
+		// TKUnit.waitUntilReady(() => {
+		// 	if (isIOS) {
+		// 		/* tslint:disable:no-unused-expression */
+		// 		// Could cause GC on the next call.
+		// 		// NOTE: Don't replace this with forceGC();
+		// 		new ArrayBuffer(4 * 1024 * 1024);
+		// 	}
+		// 	Utils.GC();
+		//
+		// 	return !weakRef.get();
+		// });
 
-			return !weakRef.get();
-		});
-
-		TKUnit.assert(!weakRef.get(), weakRef.get() + ' leaked!');
+		// TKUnit.assert(!weakRef.get(), weakRef.get() + ' leaked!');
 	}
 
 	private loadViewWithItemNumber(args: ItemEventData) {
