@@ -1,6 +1,6 @@
 {
 	"name": "@nativescript/webpack",
-	"version": "5.0.0",
+	"version": "5.0.4",
 	"private": false,
 	"main": "dist/index.js",
 	"files": [
@@ -18,7 +18,7 @@
 	},
 	"dependencies": {
 		"@babel/core": "^7.0.0",
-		"@pmmmwh/react-refresh-webpack-plugin": "^0.4.0",
+		"@pmmmwh/react-refresh-webpack-plugin": "^0.5.2",
 		"acorn": "^8.0.0",
 		"acorn-stage3": "^4.0.0",
 		"babel-loader": "^8.0.0",
@@ -37,7 +37,7 @@
 		"postcss-import": "^14.0.0",
 		"postcss-loader": "^6.0.0",
 		"raw-loader": "^4.0.0",
-		"react-refresh": "~0.8.3",
+		"react-refresh": "~0.11.0",
 		"sass": "^1.0.0",
 		"sass-loader": "^12.0.0",
 		"sax": "^1.0.0",
@@ -54,6 +54,7 @@
 		"webpack-virtual-modules": "^0.4.0"
 	},
 	"devDependencies": {
+		"@angular-devkit/build-angular": "^13.1.2",
 		"@types/css": "0.0.33",
 		"@types/jest": "27.0.1",
 		"@types/loader-utils": "2.0.3",

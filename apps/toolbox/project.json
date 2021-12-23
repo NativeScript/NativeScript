@@ -1,0 +1,42 @@
+{
+	"root": "apps/toolbox/",
+	"sourceRoot": "apps/toolbox/src",
+	"projectType": "application",
+	"prefix": "nativescript",
+	"targets": {
+		"build": {
+			"executor": "@nativescript/nx:build",
+			"options": {
+				"noHmr": true,
+				"production": true,
+				"uglify": true,
+				"release": true,
+				"forDevice": true
+			}
+		},
+		"ios": {
+			"executor": "@nativescript/nx:build",
+			"options": {
+				"platform": "ios"
+			}
+		},
+		"android": {
+			"executor": "@nativescript/nx:build",
+			"options": {
+				"platform": "android"
+			}
+		},
+		"clean": {
+			"executor": "@nativescript/nx:build",
+			"options": {
+				"clean": true
+			}
+		},
+		"lint": {
+			"executor": "@nrwl/linter:eslint",
+			"options": {
+				"lintFilePatterns": ["apps/toolbox/**/*.ts", "apps/toolbox/src/**/*.html"]
+			}
+		}
+	}
+}
