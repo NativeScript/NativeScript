@@ -26,6 +26,7 @@ import {
 	getPlatform,
 	getPlatformName,
 } from './platform';
+import { readTsConfig } from './typescript';
 
 // intentionally populated manually
 // as this generates nicer typings
@@ -74,5 +75,8 @@ export default {
 	virtualModules: {
 		addVirtualEntry,
 		addVirtualModule,
+	},
+	tsconfig: {
+		readTsConfig,
 	},
 };
