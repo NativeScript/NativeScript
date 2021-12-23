@@ -1,4 +1,4 @@
-﻿Timer module. Functions also can be availble in the global context if you require *globals* module.
+﻿Timer module. Functions also can be available in the global context if you require *globals* module.
 ```js
     require("globals");
 
