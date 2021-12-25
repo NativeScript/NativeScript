@@ -34,6 +34,8 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		virtualEntryPath
 	);
 
+	config.module.rules.delete('ts');
+
 	config.when(env.hmr, (config) => {
 		// set up core HMR
 		config.module
