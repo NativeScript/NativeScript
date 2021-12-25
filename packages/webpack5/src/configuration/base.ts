@@ -224,8 +224,6 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	config.module
 		.rule('ts')
 		.test([/\.ts$/])
-		.exclude.add(/\.d.ts$/)
-		.end()
 		.use('ts-loader')
 		.loader('ts-loader')
 		.options({

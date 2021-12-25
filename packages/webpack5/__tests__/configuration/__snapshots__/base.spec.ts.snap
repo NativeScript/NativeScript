@@ -90,9 +90,6 @@ exports[`base configuration for android 1`] = `
         test: [
           /\\\\.ts$/
         ],
-        exclude: [
-          /\\\\.d.ts$/
-        ],
         use: [
           /* config.module.rule('ts').use('ts-loader') */
           {
@@ -406,9 +403,6 @@ exports[`base configuration for ios 1`] = `
       {
         test: [
           /\\\\.ts$/
-        ],
-        exclude: [
-          /\\\\.d.ts$/
         ],
         use: [
           /* config.module.rule('ts').use('ts-loader') */
