@@ -22,6 +22,9 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		// VIRTUAL ENTRY END
 	`
 	);
+	
+	// remove default ts rule
+	config.module.rules.delete('ts');
 
 	// exclude files starting with _ from require.context
 	config
@@ -33,8 +36,6 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		'@nativescript/core/globals/index',
 		virtualEntryPath
 	);
-
-	config.module.rules.delete('ts');
 
 	config.when(env.hmr, (config) => {
 		// set up core HMR
