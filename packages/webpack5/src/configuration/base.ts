@@ -220,6 +220,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.loader('nativescript-worker-loader');
 
 	// set up ts support
+	// exclude definition files since they can cause issues in apps that don't use ts
 	config.module
 		.rule('ts')
 		.test([/\.ts$/])
