@@ -70,6 +70,6 @@ Outside the source centralized in this repo, NativeScript consists of a few othe
 	- This repo contains the NativeScript framework documentation, which is available at <http://docs.nativescript.org/>. The docs are written in Markdown.
 
 ## License
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/NativeScript/NativeScript/blob/master/LICENSE)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/NativeScript/NativeScript/blob/master/LICENSE)
 
 <h3 align="center">Made with ❤️</h3>
