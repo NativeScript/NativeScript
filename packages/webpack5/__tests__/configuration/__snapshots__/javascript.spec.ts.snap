@@ -85,27 +85,6 @@ exports[`javascript configuration for android 1`] = `
           }
         ]
       },
-      /* config.module.rule('ts') */
-      {
-        test: [
-          /\\\\.ts$/
-        ],
-        use: [
-          /* config.module.rule('ts').use('ts-loader') */
-          {
-            loader: 'ts-loader',
-            options: {
-              transpileOnly: true,
-              allowTsInNodeModules: true,
-              compilerOptions: {
-                sourceMap: true,
-                declaration: false
-              },
-              getCustomTransformers: function () { /* omitted long function */ }
-            }
-          }
-        ]
-      },
       /* config.module.rule('js') */
       {
         test: /\\\\.js$/,
@@ -405,27 +384,6 @@ exports[`javascript configuration for ios 1`] = `
           /* config.module.rule('workers').use('nativescript-worker-loader') */
           {
             loader: 'nativescript-worker-loader'
-          }
-        ]
-      },
-      /* config.module.rule('ts') */
-      {
-        test: [
-          /\\\\.ts$/
-        ],
-        use: [
-          /* config.module.rule('ts').use('ts-loader') */
-          {
-            loader: 'ts-loader',
-            options: {
-              transpileOnly: true,
-              allowTsInNodeModules: true,
-              compilerOptions: {
-                sourceMap: true,
-                declaration: false
-              },
-              getCustomTransformers: function () { /* omitted long function */ }
-            }
           }
         ]
       },
