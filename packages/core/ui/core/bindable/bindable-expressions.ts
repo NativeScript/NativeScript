@@ -1,4 +1,5 @@
 import { parse } from 'esprima';
+import { isFunction, isNullOrUndefined, isObject } from '../../../utils/types';
 
 const expressionsCache = {};
 
@@ -40,25 +41,24 @@ const expressionParsers = {
 	},
 	BinaryExpression: (expression, model, isBackConvert, changedModel) => {
 		if (!leftRightOperators[expression.operator]) {
-			throw Error('Disallowed operator: ' + expression.operator);
+			throw new Error('Disallowed operator: ' + expression.operator);
 		}
 
 		const left = convertExpressionToValue(expression.left, model, isBackConvert, changedModel);
 		const right = convertExpressionToValue(expression.right, model, isBackConvert, changedModel);
 
 		if (expression.operator == '|') {
-			if (right.formatter && right.arguments) {
-				right.arguments.unshift(left);
-				return right.formatter.apply(changedModel, right.arguments);
+			if (right.converterArgs) {
+				return right(left, ...right.converterArgs);
 			}
-			throw Error('Failed to find a valid converter after ' + expression.operator + ' operator');
+			throw new Error('Invalid converter after ' + expression.operator + ' operator');
 		}
 
 		return leftRightOperators[expression.operator](left, right);
 	},
 	CallExpression: (expression, model, isBackConvert, changedModel) => {
 		const callback = convertExpressionToValue(expression.callee, model, isBackConvert, changedModel);
-		let context = changedModel[expression.callee.name] ? changedModel : model;
+		const isConverter = isObject(callback) && (isFunction(callback.toModel) || isFunction(callback.toView));
 
 		const parsedArgs = [];
 		for (let argument of expression.arguments) {
@@ -66,8 +66,11 @@ const expressionParsers = {
 			argument.type === 'SpreadElement' ? parsedArgs.push(...value) : parsedArgs.push(value);
 		}
 
-		const converter = getConverterCallback(callback, parsedArgs, isBackConvert);
-		return converter ? converter : callback.apply(model, parsedArgs);
+		if (isNullOrUndefined(callback) || (!isFunction(callback) && !isConverter)) {
+			throw new Error('Cannot perform a call using a non-function property');
+		}
+
+		return isConverter ? getConverterCallback(callback, parsedArgs, isBackConvert) : callback(...parsedArgs);
 	},
 	ConditionalExpression: (expression, model, isBackConvert, changedModel) => {
 		const test = convertExpressionToValue(expression.test, model, isBackConvert, changedModel);
@@ -76,7 +79,8 @@ const expressionParsers = {
 		return test ? consequent : alternate;
 	},
 	Identifier: (expression, model, isBackConvert, changedModel) => {
-		return changedModel[expression.name] ? changedModel[expression.name] : model[expression.name];
+		const context = changedModel[expression.name] ? changedModel : model;
+		return getValueWithContext(expression.name, context);
 	},
 	Literal: (expression, model, isBackConvert, changedModel) => {
 		return expression.value;
@@ -92,14 +96,12 @@ const expressionParsers = {
 		return leftRightOperators[expression.operator](left, right);
 	},
 	MemberExpression: (expression, model, isBackConvert, changedModel) => {
-		let object = convertExpressionToValue(expression.object, model, isBackConvert, changedModel);
-		let property = convertExpressionToValue(expression.property, object, isBackConvert, object);
-		return property;
+		const object = convertExpressionToValue(expression.object, model, isBackConvert, changedModel);
+		const property = convertExpressionToValue(expression.property, object, isBackConvert, object);
+		return expression.computed ? getValueWithContext(property, object) : property;
 	},
 	NewExpression: (expression, model, isBackConvert, changedModel) => {
 		const callback = convertExpressionToValue(expression.callee, model, isBackConvert, changedModel);
-		let context = changedModel[expression.callee.name] ? changedModel : model;
-
 		const parsedArgs = [];
 		for (let argument of expression.arguments) {
 			let value = convertExpressionToValue(argument, model, isBackConvert, changedModel);
@@ -144,18 +146,22 @@ const expressionParsers = {
 	},
 };
 
-function getConverterCallback(callback, args, isBackConvert) {
-	let converter = null;
-	if (typeof callback !== 'function') {
-		if (typeof callback.toModel === 'function' || typeof callback.toView === 'function') {
-			if (isBackConvert) {
-				converter = { formatter: callback.toModel || Function.prototype, arguments: args };
-			} else {
-				converter = { formatter: callback.toView || Function.prototype, arguments: args };
-			}
-		}
+function getConverterCallback(context, args, isBackConvert) {
+	let callback = isBackConvert ? context.toModel : context.toView;
+	if (!callback) {
+		callback = Function.prototype;
 	}
-	return converter;
+	callback = callback.bind(context);
+	callback.converterArgs = args;
+	return callback;
+}
+
+function getValueWithContext(key, context, isBackConvert) {
+	let value = context[key];
+	if (isFunction(value)) {
+		value = value.bind(context);
+	}
+	return value;
 }
 
 export function parseExpression(expressionText) {
