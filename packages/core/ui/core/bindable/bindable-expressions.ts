@@ -76,8 +76,7 @@ const expressionParsers = {
 		return test ? consequent : alternate;
 	},
 	Identifier: (expression, model, isBackConvert, changedModel) => {
-		let context = changedModel[expression.name] ? changedModel : model;
-		return context[expression.name];
+		return changedModel[expression.name] ? changedModel[expression.name] : model[expression.name];
 	},
 	Literal: (expression, model, isBackConvert, changedModel) => {
 		return expression.value;
