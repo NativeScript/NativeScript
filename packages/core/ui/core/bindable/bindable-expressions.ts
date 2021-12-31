@@ -120,6 +120,20 @@ const expressionParsers = {
 		const argument = convertExpressionToValue(expression.argument, model, isBackConvert, changedModel);
 		return argument;
 	},
+	TemplateElement: (expression, model, isBackConvert, changedModel) => {
+		return expression.value.cooked;
+	},
+	TemplateLiteral: (expression, model, isBackConvert, changedModel) => {
+		let parsedText = '';
+		for (let q of expression.quasis) {
+			parsedText += convertExpressionToValue(q, model, isBackConvert, changedModel);
+		}
+
+		for (let ex of expression.expressions) {
+			parsedText += convertExpressionToValue(ex, model, isBackConvert, changedModel);
+		}
+		return parsedText;
+	},
 	UnaryExpression: (expression, model, isBackConvert, changedModel) => {
 		if (!unaryOperators[expression.operator]) {
 			throw Error('Disallowed operator: ' + expression.operator);
