@@ -359,9 +359,9 @@ export class Binding {
 			}
 
 			const updateExpression = this.prepareExpressionForUpdate();
-			const isContextPrepared = this.prepareContextForExpression(changedModel, updateExpression);
+			this.prepareContextForExpression(changedModel, updateExpression);
 
-			const expressionValue = isContextPrepared ? this._getExpressionValue(updateExpression, true, changedModel) : '';
+			const expressionValue = this._getExpressionValue(updateExpression, true, changedModel);
 			if (expressionValue instanceof Error) {
 				Trace.write((<Error>expressionValue).message, Trace.categories.Binding, Trace.messageType.error);
 			}
@@ -392,7 +392,11 @@ export class Binding {
 						}
 					}
 
+					// For expressions, there are also cases when binding must be updated after component is loaded (e.g. ListView)
 					if (!this.prepareContextForExpression(model, expression)) {
+						const targetInstance = this.target.get();
+						targetInstance.off('loaded', this.loadedHandlerVisualTreeBinding, this);
+						targetInstance.on('loaded', this.loadedHandlerVisualTreeBinding, this);
 						return '';
 					}
 					return convertExpressionToValue(exp, model, isBackConvert, changedModel ? changedModel : model);
@@ -469,6 +473,8 @@ export class Binding {
 	}
 
 	private prepareContextForExpression(model: Object, expression: string) {
+		const targetInstance = this.target.get();
+
 		let success = true;
 		let parentViewAndIndex: { view: ViewBase; index: number };
 		let parentView;
@@ -483,7 +489,7 @@ export class Binding {
 			for (let i = 0; i < parentsArray.length; i++) {
 				// This prevents later checks to mistake $parents[] for $parent
 				expressionCP = expressionCP.replace(parentsArray[i], '');
-				parentViewAndIndex = this.getParentView(this.target.get(), parentsArray[i]);
+				parentViewAndIndex = this.getParentView(targetInstance, parentsArray[i]);
 				if (parentViewAndIndex.view) {
 					model[bc.parentsValueKey] = model[bc.parentsValueKey] || {};
 					model[bc.parentsValueKey][parentViewAndIndex.index] = parentViewAndIndex.view.bindingContext;
@@ -494,19 +500,12 @@ export class Binding {
 		}
 
 		if (expressionCP.indexOf(bc.parentValueKey) > -1) {
-			parentView = this.getParentView(this.target.get(), bc.parentValueKey).view;
+			parentView = this.getParentView(targetInstance, bc.parentValueKey).view;
 			if (parentView) {
 				model[bc.parentValueKey] = parentView.bindingContext;
 			} else {
 				success = false;
 			}
-		}
-
-		// For expressions, there are also cases when binding must be updated after component is loaded (e.g. ListView)
-		if (!success) {
-			const targetInstance = this.target.get();
-			targetInstance.off('loaded', this.loadedHandlerVisualTreeBinding, this);
-			targetInstance.on('loaded', this.loadedHandlerVisualTreeBinding, this);
 		}
 		return success;
 	}
