@@ -156,7 +156,7 @@ function getConverterCallback(context, args, isBackConvert) {
 	return callback;
 }
 
-function getValueWithContext(key, context, isBackConvert) {
+function getValueWithContext(key, context) {
 	let value = context[key];
 	if (isFunction(value)) {
 		value = value.bind(context);

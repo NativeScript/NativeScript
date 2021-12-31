@@ -359,7 +359,7 @@ export class Binding {
 			}
 
 			const updateExpression = this.prepareExpressionForUpdate();
-			this.prepareContextForExpression(changedModel, updateExpression, undefined);
+			this.prepareContextForExpression(changedModel, updateExpression);
 
 			const expressionValue = this._getExpressionValue(updateExpression, true, changedModel);
 			if (expressionValue instanceof Error) {
@@ -384,25 +384,18 @@ export class Binding {
 
 				if (exp) {
 					const context = (this.source && this.source.get && this.source.get()) || global;
-					const addedProps = [];
+					const model = { ...context };
 					const resources = bindableResources.get();
 					for (const prop in resources) {
-						if (resources.hasOwnProperty(prop) && !context.hasOwnProperty(prop)) {
-							context[prop] = resources[prop];
-							addedProps.push(prop);
+						if (resources.hasOwnProperty(prop) && !model.hasOwnProperty(prop)) {
+							model[prop] = resources[prop];
 						}
 					}
 
-					this.prepareContextForExpression(context, expression, addedProps);
-					const result = convertExpressionToValue(exp, context, isBackConvert, changedModel ? changedModel : context);
-					// clear added props
-					const addedPropsLength = addedProps.length;
-					for (let i = 0; i < addedPropsLength; i++) {
-						delete context[addedProps[i]];
+					if (!this.prepareContextForExpression(model, expression)) {
+						return '';
 					}
-					addedProps.length = 0;
-
-					return result;
+					return convertExpressionToValue(exp, model, isBackConvert, changedModel ? changedModel : model);
 				}
 
 				return new Error(expression + ' is not a valid expression.');
@@ -475,17 +468,15 @@ export class Binding {
 		}
 	}
 
-	private prepareContextForExpression(model: Object, expression: string, newProps: Array<string>) {
+	private prepareContextForExpression(model: Object, expression: string) {
+		let success = true;
 		let parentViewAndIndex: { view: ViewBase; index: number };
 		let parentView;
-		const addedProps = newProps || [];
+
 		let expressionCP = expression;
 		if (expressionCP.indexOf(bc.bindingValueKey) > -1) {
 			model[bc.bindingValueKey] = model;
-			addedProps.push(bc.bindingValueKey);
 		}
-
-		let success = true;
 
 		const parentsArray = expressionCP.match(parentsRegex);
 		if (parentsArray) {
@@ -496,7 +487,6 @@ export class Binding {
 				if (parentViewAndIndex.view) {
 					model[bc.parentsValueKey] = model[bc.parentsValueKey] || {};
 					model[bc.parentsValueKey][parentViewAndIndex.index] = parentViewAndIndex.view.bindingContext;
-					addedProps.push(bc.parentsValueKey);
 				} else {
 					success = false;
 				}
@@ -507,7 +497,6 @@ export class Binding {
 			parentView = this.getParentView(this.target.get(), bc.parentValueKey).view;
 			if (parentView) {
 				model[bc.parentValueKey] = parentView.bindingContext;
-				addedProps.push(bc.parentValueKey);
 			} else {
 				success = false;
 			}
@@ -519,6 +508,7 @@ export class Binding {
 			targetInstance.off('loaded', this.loadedHandlerVisualTreeBinding, this);
 			targetInstance.on('loaded', this.loadedHandlerVisualTreeBinding, this);
 		}
+		return success;
 	}
 
 	private getSourcePropertyValue() {
