@@ -359,9 +359,9 @@ export class Binding {
 			}
 
 			const updateExpression = this.prepareExpressionForUpdate();
-			this.prepareContextForExpression(changedModel, updateExpression);
+			const isContextPrepared = this.prepareContextForExpression(changedModel, updateExpression);
 
-			const expressionValue = this._getExpressionValue(updateExpression, true, changedModel);
+			const expressionValue = isContextPrepared ? this._getExpressionValue(updateExpression, true, changedModel) : '';
 			if (expressionValue instanceof Error) {
 				Trace.write((<Error>expressionValue).message, Trace.categories.Binding, Trace.messageType.error);
 			}
