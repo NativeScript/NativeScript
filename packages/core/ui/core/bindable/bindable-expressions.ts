@@ -94,7 +94,7 @@ const expressionParsers = {
 	},
 	MemberExpression: (expression, model, isBackConvert, changedModel) => {
 		let object = convertExpressionToValue(expression.object, model, isBackConvert, changedModel);
-		let property = convertExpressionToValue(expression.property, { context: object }, isBackConvert, object);
+		let property = convertExpressionToValue(expression.property, object, isBackConvert, object);
 		return property;
 	},
 	NewExpression: (expression, model, isBackConvert, changedModel) => {
