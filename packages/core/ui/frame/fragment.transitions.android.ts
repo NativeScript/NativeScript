@@ -51,6 +51,7 @@ export interface ExpandedEntry extends BackstackEntry {
 	frameId: number;
 
 	isNestedDefaultTransition: boolean;
+	isAnimationRunning: boolean;
 }
 
 export function _setAndroidFragmentTransitions(animated: boolean, navigationTransition: NavigationTransition, currentEntry: ExpandedEntry, newEntry: ExpandedEntry, frameId: number, fragmentTransaction: androidx.fragment.app.FragmentTransaction, isNestedDefaultTransition?: boolean): void {
@@ -60,6 +61,7 @@ export function _setAndroidFragmentTransitions(animated: boolean, navigationTran
 	if (entries && entries.size > 0) {
 		throw new Error('Calling navigation before previous navigation finish.');
 	}
+	newEntry.isAnimationRunning = false;
 
 	allowTransitionOverlap(currentFragment);
 	allowTransitionOverlap(newFragment);
@@ -227,6 +229,7 @@ function getAnimationListener(): android.animation.Animator.AnimatorListener {
 				if (Trace.isEnabled()) {
 					Trace.write(`START ${animator.transitionType} for ${entry.fragmentTag}`, Trace.categories.Transition);
 				}
+				entry.isAnimationRunning = true;
 			}
 
 			onAnimationRepeat(animator: ExpandedAnimator): void {
@@ -239,6 +242,7 @@ function getAnimationListener(): android.animation.Animator.AnimatorListener {
 				if (Trace.isEnabled()) {
 					Trace.write(`END ${animator.transitionType} for ${animator.entry.fragmentTag}`, Trace.categories.Transition);
 				}
+				animator.entry.isAnimationRunning = false;
 				transitionOrAnimationCompleted(animator.entry, animator.backEntry);
 			}
 
@@ -246,6 +250,7 @@ function getAnimationListener(): android.animation.Animator.AnimatorListener {
 				if (Trace.isEnabled()) {
 					Trace.write(`CANCEL ${animator.transitionType} for ${animator.entry.fragmentTag}`, Trace.categories.Transition);
 				}
+				animator.entry.isAnimationRunning = false;
 			}
 		}
 
