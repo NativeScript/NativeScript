@@ -1,5 +1,4 @@
 import { parse } from 'esprima';
-import { Trace } from '../../../trace';
 
 const expressionsCache = {};
 
