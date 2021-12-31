@@ -8,10 +8,9 @@ import { addWeakEventListener, removeWeakEventListener } from '../weak-event-lis
 import { bindingConstants, parentsRegex } from '../../builder/binding-builder';
 import { escapeRegexSymbols } from '../../../utils';
 import { Trace } from '../../../trace';
+import { parseExpression, convertExpressionToValue } from './bindable-expressions';
 import * as types from '../../../utils/types';
 import * as bindableResources from './bindable-resources';
-const polymerExpressions = require('../../../js-libs/polymer-expressions');
-import { PolymerExpressions } from '../../../js-libs/polymer-expressions';
 
 const contextKey = 'context';
 // this regex is used to get parameters inside [] for example:
@@ -376,10 +375,15 @@ export class Binding {
 	private _getExpressionValue(expression: string, isBackConvert: boolean, changedModel: any): any {
 		if (!__UI_USE_EXTERNAL_RENDERER__) {
 			try {
-				const exp = PolymerExpressions.getExpression(expression);
+				let exp;
+				try {
+					exp = parseExpression(expression);
+				} catch (e) {
+					return e;
+				}
+
 				if (exp) {
 					const context = (this.source && this.source.get && this.source.get()) || global;
-					const model = {};
 					const addedProps = [];
 					const resources = bindableResources.get();
 					for (const prop in resources) {
@@ -390,8 +394,7 @@ export class Binding {
 					}
 
 					this.prepareContextForExpression(context, expression, addedProps);
-					model[contextKey] = context;
-					const result = exp.getValue(model, isBackConvert, changedModel ? changedModel : model);
+					const result = convertExpressionToValue(exp, context, isBackConvert, changedModel ? changedModel : context);
 					// clear added props
 					const addedPropsLength = addedProps.length;
 					for (let i = 0; i < addedPropsLength; i++) {
