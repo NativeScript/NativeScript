@@ -27,6 +27,7 @@ const leftRightOperators = {
 	'&&': (l, r) => l && r,
 	'|': (l, r) => l | r,
 	'||': (l, r) => l || r,
+	'??': (l, r) => l ?? r,
 	'in': (l, r) => l in r,
 	'instanceof': (l, r) => l instanceof r,
 };
