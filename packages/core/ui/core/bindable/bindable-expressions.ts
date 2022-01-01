@@ -9,6 +9,7 @@ const unaryOperators = {
 	'!': (v) => !v,
 };
 
+// prettier-ignore
 const leftRightOperators = {
 	'+': (l, r) => l + r,
 	'-': (l, r) => l - r,
@@ -26,8 +27,8 @@ const leftRightOperators = {
 	'&&': (l, r) => l && r,
 	'|': (l, r) => l | r,
 	'||': (l, r) => l || r,
-	in: (l, r) => l in r,
-	instanceof: (l, r) => l instanceof r,
+	'in': (l, r) => l in r,
+	'instanceof': (l, r) => l instanceof r,
 };
 
 const expressionParsers = {
