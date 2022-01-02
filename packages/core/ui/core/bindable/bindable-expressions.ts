@@ -3,10 +3,13 @@ import { isFunction, isNullOrUndefined, isObject } from '../../../utils/types';
 
 const expressionsCache = {};
 
+// prettier-ignore
 const unaryOperators = {
 	'+': (v) => +v,
 	'-': (v) => -v,
 	'!': (v) => !v,
+	'void': (v) => void v,
+	'typeof': (v) => typeof v
 };
 
 // prettier-ignore
@@ -29,7 +32,7 @@ const leftRightOperators = {
 	'||': (l, r) => l || r,
 	'??': (l, r) => l ?? r,
 	'in': (l, r) => l in r,
-	'instanceof': (l, r) => l instanceof r,
+	'instanceof': (l, r) => l instanceof r
 };
 
 // prettier-ignore
@@ -43,7 +46,7 @@ const expressionParsers = {
 		return parsed;
 	},
 	'BinaryExpression': (expression, model, isBackConvert, changedModel) => {
-		if (!leftRightOperators[expression.operator]) {
+		if (leftRightOperators[expression.operator] == null) {
 			throw new Error('Disallowed operator: ' + expression.operator);
 		}
 
@@ -51,7 +54,7 @@ const expressionParsers = {
 		const right = convertExpressionToValue(expression.right, model, isBackConvert, changedModel);
 
 		if (expression.operator == '|') {
-			if (right.converterArgs) {
+			if (isFunction(right) && right.converterArgs != null) {
 				return right(left, ...right.converterArgs);
 			}
 			throw new Error('Invalid converter after ' + expression.operator + ' operator');
@@ -89,7 +92,7 @@ const expressionParsers = {
 		return expression.value;
 	},
 	'LogicalExpression': (expression, model, isBackConvert, changedModel) => {
-		if (!leftRightOperators[expression.operator]) {
+		if (leftRightOperators[expression.operator] == null) {
 			throw Error('Disallowed operator: ' + expression.operator);
 		}
 
@@ -140,18 +143,18 @@ const expressionParsers = {
 		return parsedText;
 	},
 	'UnaryExpression': (expression, model, isBackConvert, changedModel) => {
-		if (!unaryOperators[expression.operator]) {
+		if (unaryOperators[expression.operator] == null) {
 			throw Error('Disallowed operator: ' + expression.operator);
 		}
 
 		const argument = convertExpressionToValue(expression.argument, model, isBackConvert, changedModel);
 		return unaryOperators[expression.operator](argument);
-	},
+	}
 };
 
 function getConverterCallback(context, args, isBackConvert) {
 	let callback = isBackConvert ? context.toModel : context.toView;
-	if (!callback) {
+	if (callback == null) {
 		callback = Function.prototype;
 	}
 	callback = callback.bind(context);
@@ -169,7 +172,7 @@ function getValueWithContext(key, context) {
 
 export function parseExpression(expressionText) {
 	let expression = expressionsCache[expressionText];
-	if (!expression) {
+	if (expression == null) {
 		let syntax = parse(expressionText);
 		let statements = syntax.body;
 		for (let statement of statements) {
