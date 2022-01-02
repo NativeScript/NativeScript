@@ -18,7 +18,7 @@ const unaryOperators = {
 };
 
 // prettier-ignore
-const leftRightOperators = {
+const binaryOperators = {
 	'+': (l, r) => l + r,
 	'-': (l, r) => l - r,
 	'*': (l, r) => l * r,
@@ -32,12 +32,16 @@ const leftRightOperators = {
 	'!=': (l, r) => l != r,
 	'===': (l, r) => l === r,
 	'!==': (l, r) => l !== r,
-	'&&': (l, r) => l && r,
 	'|': (l, r) => l | r,
-	'||': (l, r) => l || r,
-	'??': (l, r) => l ?? r,
 	'in': (l, r) => l in r,
 	'instanceof': (l, r) => l instanceof r
+};
+
+// prettier-ignore
+const logicalOperators = {
+	'&&': (l, r) => l && r(),
+	'||': (l, r) => l || r(),
+	'??': (l, r) => l ?? r()
 };
 
 // prettier-ignore
@@ -51,8 +55,8 @@ const expressionParsers = {
 		return parsed;
 	},
 	'BinaryExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
-		if (leftRightOperators[expression.operator] == null) {
-			throw new Error('Disallowed operator: ' + expression.operator);
+		if (binaryOperators[expression.operator] == null) {
+			throw new Error('Disallowed binary operator: ' + expression.operator);
 		}
 
 		const left = convertExpressionToValue(expression.left, model, isBackConvert, changedModel);
@@ -65,7 +69,7 @@ const expressionParsers = {
 			throw new Error('Invalid converter after ' + expression.operator + ' operator');
 		}
 
-		return leftRightOperators[expression.operator](left, right);
+		return binaryOperators[expression.operator](left, right);
 	},
 	'CallExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		const callback = convertExpressionToValue(expression.callee, model, isBackConvert, changedModel);
@@ -85,9 +89,7 @@ const expressionParsers = {
 	},
 	'ConditionalExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		const test = convertExpressionToValue(expression.test, model, isBackConvert, changedModel);
-		const consequent = convertExpressionToValue(expression.consequent, model, isBackConvert, changedModel);
-		const alternate = convertExpressionToValue(expression.alternate, model, isBackConvert, changedModel);
-		return test ? consequent : alternate;
+		return convertExpressionToValue(expression[test ? 'consequent' : 'alternate'], model, isBackConvert, changedModel);
 	},
 	'Identifier': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		const context = changedModel[expression.name] ? changedModel : model;
@@ -97,14 +99,11 @@ const expressionParsers = {
 		return expression.regex != null ? new RegExp(expression.regex.pattern, expression.regex.flags) : expression.value;
 	},
 	'LogicalExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
-		if (leftRightOperators[expression.operator] == null) {
-			throw Error('Disallowed operator: ' + expression.operator);
+		if (logicalOperators[expression.operator] == null) {
+			throw new Error('Disallowed logical operator: ' + expression.operator);
 		}
-
 		const left = convertExpressionToValue(expression.left, model, isBackConvert, changedModel);
-		const right = convertExpressionToValue(expression.right, model, isBackConvert, changedModel);
-
-		return leftRightOperators[expression.operator](left, right);
+		return logicalOperators[expression.operator](left, () => convertExpressionToValue(expression.right, model, isBackConvert, changedModel));
 	},
 	'MemberExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		const object = convertExpressionToValue(expression.object, model, isBackConvert, changedModel);
@@ -149,7 +148,7 @@ const expressionParsers = {
 	},
 	'UnaryExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		if (unaryOperators[expression.operator] == null) {
-			throw Error('Disallowed operator: ' + expression.operator);
+			throw Error('Disallowed unary operator: ' + expression.operator);
 		}
 
 		const argument = convertExpressionToValue(expression.argument, model, isBackConvert, changedModel);
