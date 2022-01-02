@@ -1,6 +1,11 @@
 import { parse } from 'esprima';
 import { isFunction, isNullOrUndefined, isObject } from '../../../utils/types';
 
+interface ASTExpression {
+	readonly type: string;
+	readonly [prop: string]: any;
+}
+
 const expressionsCache = {};
 
 // prettier-ignore
@@ -37,7 +42,7 @@ const leftRightOperators = {
 
 // prettier-ignore
 const expressionParsers = {
-	'ArrayExpression': (expression, model, isBackConvert: boolean, changedModel) => {
+	'ArrayExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		const parsed = [];
 		for (let element of expression.elements) {
 			let value = convertExpressionToValue(element, model, isBackConvert, changedModel);
@@ -45,7 +50,7 @@ const expressionParsers = {
 		}
 		return parsed;
 	},
-	'BinaryExpression': (expression, model, isBackConvert: boolean, changedModel) => {
+	'BinaryExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		if (leftRightOperators[expression.operator] == null) {
 			throw new Error('Disallowed operator: ' + expression.operator);
 		}
@@ -62,7 +67,7 @@ const expressionParsers = {
 
 		return leftRightOperators[expression.operator](left, right);
 	},
-	'CallExpression': (expression, model, isBackConvert: boolean, changedModel) => {
+	'CallExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		const callback = convertExpressionToValue(expression.callee, model, isBackConvert, changedModel);
 		const isConverter = isObject(callback) && (isFunction(callback.toModel) || isFunction(callback.toView));
 
@@ -78,20 +83,20 @@ const expressionParsers = {
 
 		return isConverter ? getConverterCallback(callback, parsedArgs, isBackConvert) : callback(...parsedArgs);
 	},
-	'ConditionalExpression': (expression, model, isBackConvert: boolean, changedModel) => {
+	'ConditionalExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		const test = convertExpressionToValue(expression.test, model, isBackConvert, changedModel);
 		const consequent = convertExpressionToValue(expression.consequent, model, isBackConvert, changedModel);
 		const alternate = convertExpressionToValue(expression.alternate, model, isBackConvert, changedModel);
 		return test ? consequent : alternate;
 	},
-	'Identifier': (expression, model, isBackConvert: boolean, changedModel) => {
+	'Identifier': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		const context = changedModel[expression.name] ? changedModel : model;
 		return getValueWithContext(expression.name, context);
 	},
-	'Literal': (expression, model, isBackConvert: boolean, changedModel) => {
+	'Literal': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		return expression.regex != null ? new RegExp(expression.regex.pattern, expression.regex.flags) : expression.value;
 	},
-	'LogicalExpression': (expression, model, isBackConvert: boolean, changedModel) => {
+	'LogicalExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		if (leftRightOperators[expression.operator] == null) {
 			throw Error('Disallowed operator: ' + expression.operator);
 		}
@@ -101,12 +106,12 @@ const expressionParsers = {
 
 		return leftRightOperators[expression.operator](left, right);
 	},
-	'MemberExpression': (expression, model, isBackConvert: boolean, changedModel) => {
+	'MemberExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		const object = convertExpressionToValue(expression.object, model, isBackConvert, changedModel);
 		const property = convertExpressionToValue(expression.property, object, isBackConvert, object);
 		return expression.computed ? getValueWithContext(property, object) : property;
 	},
-	'NewExpression': (expression, model, isBackConvert: boolean, changedModel) => {
+	'NewExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		const callback = convertExpressionToValue(expression.callee, model, isBackConvert, changedModel);
 		const parsedArgs = [];
 		for (let argument of expression.arguments) {
@@ -115,7 +120,7 @@ const expressionParsers = {
 		}
 		return new callback(...parsedArgs);
 	},
-	'ObjectExpression': (expression, model, isBackConvert: boolean, changedModel) => {
+	'ObjectExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		const parsed = {};
 		for (let property of expression.properties) {
 			const key = convertExpressionToValue(expression.key, model, isBackConvert, changedModel);
@@ -124,14 +129,14 @@ const expressionParsers = {
 		}
 		return parsed;
 	},
-	'SpreadElement': (expression, model, isBackConvert: boolean, changedModel) => {
+	'SpreadElement': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		const argument = convertExpressionToValue(expression.argument, model, isBackConvert, changedModel);
 		return argument;
 	},
-	'TemplateElement': (expression, model, isBackConvert: boolean, changedModel) => {
+	'TemplateElement': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		return expression.value.cooked;
 	},
-	'TemplateLiteral': (expression, model, isBackConvert: boolean, changedModel) => {
+	'TemplateLiteral': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		let parsedText = '';
 		for (let q of expression.quasis) {
 			parsedText += convertExpressionToValue(q, model, isBackConvert, changedModel);
@@ -142,7 +147,7 @@ const expressionParsers = {
 		}
 		return parsedText;
 	},
-	'UnaryExpression': (expression, model, isBackConvert: boolean, changedModel) => {
+	'UnaryExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		if (unaryOperators[expression.operator] == null) {
 			throw Error('Disallowed operator: ' + expression.operator);
 		}
@@ -170,7 +175,7 @@ function getValueWithContext(key, context) {
 	return value;
 }
 
-export function parseExpression(expressionText: string) {
+export function parseExpression(expressionText: string): ASTExpression {
 	let expression = expressionsCache[expressionText];
 	if (expression == null) {
 		let syntax = parse(expressionText);
@@ -186,6 +191,6 @@ export function parseExpression(expressionText: string) {
 	return expression;
 }
 
-export function convertExpressionToValue(expression, model, isBackConvert: boolean, changedModel) {
+export function convertExpressionToValue(expression: ASTExpression, model, isBackConvert: boolean, changedModel) {
 	return expressionParsers[expression.type](expression, model, isBackConvert, changedModel);
 }
