@@ -37,7 +37,7 @@ const leftRightOperators = {
 
 // prettier-ignore
 const expressionParsers = {
-	'ArrayExpression': (expression, model, isBackConvert, changedModel) => {
+	'ArrayExpression': (expression, model, isBackConvert: boolean, changedModel) => {
 		const parsed = [];
 		for (let element of expression.elements) {
 			let value = convertExpressionToValue(element, model, isBackConvert, changedModel);
@@ -45,7 +45,7 @@ const expressionParsers = {
 		}
 		return parsed;
 	},
-	'BinaryExpression': (expression, model, isBackConvert, changedModel) => {
+	'BinaryExpression': (expression, model, isBackConvert: boolean, changedModel) => {
 		if (leftRightOperators[expression.operator] == null) {
 			throw new Error('Disallowed operator: ' + expression.operator);
 		}
@@ -62,7 +62,7 @@ const expressionParsers = {
 
 		return leftRightOperators[expression.operator](left, right);
 	},
-	'CallExpression': (expression, model, isBackConvert, changedModel) => {
+	'CallExpression': (expression, model, isBackConvert: boolean, changedModel) => {
 		const callback = convertExpressionToValue(expression.callee, model, isBackConvert, changedModel);
 		const isConverter = isObject(callback) && (isFunction(callback.toModel) || isFunction(callback.toView));
 
@@ -78,20 +78,20 @@ const expressionParsers = {
 
 		return isConverter ? getConverterCallback(callback, parsedArgs, isBackConvert) : callback(...parsedArgs);
 	},
-	'ConditionalExpression': (expression, model, isBackConvert, changedModel) => {
+	'ConditionalExpression': (expression, model, isBackConvert: boolean, changedModel) => {
 		const test = convertExpressionToValue(expression.test, model, isBackConvert, changedModel);
 		const consequent = convertExpressionToValue(expression.consequent, model, isBackConvert, changedModel);
 		const alternate = convertExpressionToValue(expression.alternate, model, isBackConvert, changedModel);
 		return test ? consequent : alternate;
 	},
-	'Identifier': (expression, model, isBackConvert, changedModel) => {
+	'Identifier': (expression, model, isBackConvert: boolean, changedModel) => {
 		const context = changedModel[expression.name] ? changedModel : model;
 		return getValueWithContext(expression.name, context);
 	},
-	'Literal': (expression, model, isBackConvert, changedModel) => {
+	'Literal': (expression, model, isBackConvert: boolean, changedModel) => {
 		return expression.regex != null ? new RegExp(expression.regex.pattern, expression.regex.flags) : expression.value;
 	},
-	'LogicalExpression': (expression, model, isBackConvert, changedModel) => {
+	'LogicalExpression': (expression, model, isBackConvert: boolean, changedModel) => {
 		if (leftRightOperators[expression.operator] == null) {
 			throw Error('Disallowed operator: ' + expression.operator);
 		}
@@ -101,12 +101,12 @@ const expressionParsers = {
 
 		return leftRightOperators[expression.operator](left, right);
 	},
-	'MemberExpression': (expression, model, isBackConvert, changedModel) => {
+	'MemberExpression': (expression, model, isBackConvert: boolean, changedModel) => {
 		const object = convertExpressionToValue(expression.object, model, isBackConvert, changedModel);
 		const property = convertExpressionToValue(expression.property, object, isBackConvert, object);
 		return expression.computed ? getValueWithContext(property, object) : property;
 	},
-	'NewExpression': (expression, model, isBackConvert, changedModel) => {
+	'NewExpression': (expression, model, isBackConvert: boolean, changedModel) => {
 		const callback = convertExpressionToValue(expression.callee, model, isBackConvert, changedModel);
 		const parsedArgs = [];
 		for (let argument of expression.arguments) {
@@ -115,7 +115,7 @@ const expressionParsers = {
 		}
 		return new callback(...parsedArgs);
 	},
-	'ObjectExpression': (expression, model, isBackConvert, changedModel) => {
+	'ObjectExpression': (expression, model, isBackConvert: boolean, changedModel) => {
 		const parsed = {};
 		for (let property of expression.properties) {
 			const key = convertExpressionToValue(expression.key, model, isBackConvert, changedModel);
@@ -124,14 +124,14 @@ const expressionParsers = {
 		}
 		return parsed;
 	},
-	'SpreadElement': (expression, model, isBackConvert, changedModel) => {
+	'SpreadElement': (expression, model, isBackConvert: boolean, changedModel) => {
 		const argument = convertExpressionToValue(expression.argument, model, isBackConvert, changedModel);
 		return argument;
 	},
-	'TemplateElement': (expression, model, isBackConvert, changedModel) => {
+	'TemplateElement': (expression, model, isBackConvert: boolean, changedModel) => {
 		return expression.value.cooked;
 	},
-	'TemplateLiteral': (expression, model, isBackConvert, changedModel) => {
+	'TemplateLiteral': (expression, model, isBackConvert: boolean, changedModel) => {
 		let parsedText = '';
 		for (let q of expression.quasis) {
 			parsedText += convertExpressionToValue(q, model, isBackConvert, changedModel);
@@ -142,7 +142,7 @@ const expressionParsers = {
 		}
 		return parsedText;
 	},
-	'UnaryExpression': (expression, model, isBackConvert, changedModel) => {
+	'UnaryExpression': (expression, model, isBackConvert: boolean, changedModel) => {
 		if (unaryOperators[expression.operator] == null) {
 			throw Error('Disallowed operator: ' + expression.operator);
 		}
@@ -152,7 +152,7 @@ const expressionParsers = {
 	}
 };
 
-function getConverterCallback(context, args, isBackConvert) {
+function getConverterCallback(context, args, isBackConvert: boolean) {
 	let callback = isBackConvert ? context.toModel : context.toView;
 	if (callback == null) {
 		callback = Function.prototype;
@@ -170,7 +170,7 @@ function getValueWithContext(key, context) {
 	return value;
 }
 
-export function parseExpression(expressionText) {
+export function parseExpression(expressionText: string) {
 	let expression = expressionsCache[expressionText];
 	if (expression == null) {
 		let syntax = parse(expressionText);
@@ -186,6 +186,6 @@ export function parseExpression(expressionText) {
 	return expression;
 }
 
-export function convertExpressionToValue(expression, model, isBackConvert, changedModel) {
+export function convertExpressionToValue(expression, model, isBackConvert: boolean, changedModel) {
 	return expressionParsers[expression.type](expression, model, isBackConvert, changedModel);
 }
