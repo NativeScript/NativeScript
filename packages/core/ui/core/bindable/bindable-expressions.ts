@@ -63,9 +63,9 @@ const expressionParsers = {
 		const right = convertExpressionToValue(expression.right, model, isBackConvert, changedModel);
 
 		if (expression.operator == '|') {
-			if (isFunction(right.callback) && right.context != null && right.args != null) {
+			if (right != null && isFunction(right.callback) && right.context != null && right.args != null) {
 				right.args.unshift(left);
-				return right.apply(right.context, right.args);
+				return right.callback.apply(right.context, right.args);
 			}
 			throw new Error('Invalid converter after ' + expression.operator + ' operator');
 		}
