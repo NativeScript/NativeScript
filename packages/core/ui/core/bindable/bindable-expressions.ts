@@ -63,8 +63,9 @@ const expressionParsers = {
 		const right = convertExpressionToValue(expression.right, model, isBackConvert, changedModel);
 
 		if (expression.operator == '|') {
-			if (isFunction(right) && right.converterArgs != null) {
-				return right(left, ...right.converterArgs);
+			if (isFunction(right.callback) && right.context != null && right.args != null) {
+				right.args.unshift(left);
+				return right.apply(right.context, right.args);
 			}
 			throw new Error('Invalid converter after ' + expression.operator + ' operator');
 		}
@@ -85,7 +86,7 @@ const expressionParsers = {
 			throw new Error('Cannot perform a call using a non-function property');
 		}
 
-		return isConverter ? getConverterCallback(callback, parsedArgs, isBackConvert) : callback(...parsedArgs);
+		return isConverter ? getConverter(callback, parsedArgs, isBackConvert) : callback(...parsedArgs);
 	},
 	'ConditionalExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		const test = convertExpressionToValue(expression.test, model, isBackConvert, changedModel);
@@ -156,14 +157,14 @@ const expressionParsers = {
 	}
 };
 
-function getConverterCallback(context, args, isBackConvert: boolean) {
+function getConverter(context, args, isBackConvert: boolean) {
+	const converter = { callback: null, context, args };
 	let callback = isBackConvert ? context.toModel : context.toView;
 	if (callback == null) {
 		callback = Function.prototype;
 	}
-	callback = callback.bind(context);
-	callback.converterArgs = args;
-	return callback;
+	converter.callback = callback;
+	return converter;
 }
 
 function getValueWithContext(key, context) {
