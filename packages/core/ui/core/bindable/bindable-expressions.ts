@@ -89,7 +89,7 @@ const expressionParsers = {
 		return getValueWithContext(expression.name, context);
 	},
 	'Literal': (expression, model, isBackConvert, changedModel) => {
-		return expression.value;
+		return expression.regex != null ? new RegExp(expression.regex.pattern, expression.regex.flags) : expression.value;
 	},
 	'LogicalExpression': (expression, model, isBackConvert, changedModel) => {
 		if (leftRightOperators[expression.operator] == null) {
