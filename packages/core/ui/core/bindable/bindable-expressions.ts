@@ -73,7 +73,16 @@ const expressionParsers = {
 		return binaryOperators[expression.operator](left, right);
 	},
 	'CallExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
-		const callback = convertExpressionToValue(expression.callee, model, isBackConvert, changedModel);
+		let object;
+		let property;
+		if (expression.callee.type == 'MemberExpression') {
+			property = convertExpressionToValue(expression.callee.property, model, isBackConvert, changedModel);
+			object = convertExpressionToValue(expression.callee.object, model, isBackConvert, changedModel);
+		} else {
+			property = expression.callee.name;
+			object = getContext(property, model, changedModel);
+		}
+		const callback = object?.[property];
 		const isConverter = isObject(callback) && (isFunction(callback.toModel) || isFunction(callback.toView));
 
 		const parsedArgs = [];
@@ -86,15 +95,18 @@ const expressionParsers = {
 			throw new Error('Cannot perform a call using a non-function property');
 		}
 
-		return isConverter ? getConverter(callback, parsedArgs, isBackConvert) : callback(...parsedArgs);
+		return isConverter ? getConverter(callback, parsedArgs, isBackConvert) : callback.apply(object, parsedArgs);
+	},
+	'ChainExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
+		return convertExpressionToValue(expression.expression, model, isBackConvert, changedModel);
 	},
 	'ConditionalExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		const test = convertExpressionToValue(expression.test, model, isBackConvert, changedModel);
 		return convertExpressionToValue(expression[test ? 'consequent' : 'alternate'], model, isBackConvert, changedModel);
 	},
 	'Identifier': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
-		const context = changedModel[expression.name] ? changedModel : model;
-		return getValueWithContext(expression.name, context);
+		const context = getContext(expression.name, model, changedModel);
+		return context[expression.name];
 	},
 	'Literal': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		return expression.regex != null ? new RegExp(expression.regex.pattern, expression.regex.flags) : expression.value;
@@ -108,8 +120,8 @@ const expressionParsers = {
 	},
 	'MemberExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		const object = convertExpressionToValue(expression.object, model, isBackConvert, changedModel);
-		const property = convertExpressionToValue(expression.property, object, isBackConvert, object);
-		return expression.computed ? getValueWithContext(property, object) : property;
+		const property = expression.property.type == 'Identifier' ? expression.property.name : convertExpressionToValue(expression.property, object, isBackConvert, object);
+		return expression.optional ? object?.[property] : object[property];
 	},
 	'NewExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		const callback = convertExpressionToValue(expression.callee, model, isBackConvert, changedModel);
@@ -157,6 +169,10 @@ const expressionParsers = {
 	}
 };
 
+function getContext(key, model, changedModel) {
+	return key in changedModel ? changedModel : model;
+}
+
 function getConverter(context, args, isBackConvert: boolean) {
 	const converter = { callback: null, context, args };
 	let callback = isBackConvert ? context.toModel : context.toView;
@@ -165,14 +181,6 @@ function getConverter(context, args, isBackConvert: boolean) {
 	}
 	converter.callback = callback;
 	return converter;
-}
-
-function getValueWithContext(key, context) {
-	let value = context[key];
-	if (isFunction(value)) {
-		value = value.bind(context);
-	}
-	return value;
 }
 
 export function parseExpression(expressionText: string): ASTExpression {
