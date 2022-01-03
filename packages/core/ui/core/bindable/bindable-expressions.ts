@@ -120,7 +120,7 @@ const expressionParsers = {
 	},
 	'MemberExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		const object = convertExpressionToValue(expression.object, model, isBackConvert, changedModel);
-		const property = expression.property.type == 'Identifier' ? expression.property.name : convertExpressionToValue(expression.property, object, isBackConvert, object);
+		const property = expression.computed ? convertExpressionToValue(expression.property, object, isBackConvert, object) : expression.property?.name;
 		return expression.optional ? object?.[property] : object[property];
 	},
 	'NewExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
