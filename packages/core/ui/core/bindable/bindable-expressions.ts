@@ -76,7 +76,7 @@ const expressionParsers = {
 		let object;
 		let property;
 		if (expression.callee.type == 'MemberExpression') {
-			property = convertExpressionToValue(expression.callee.property, model, isBackConvert, changedModel);
+			property = expression.callee.computed ? convertExpressionToValue(expression.callee.property, model, isBackConvert, changedModel) : expression.callee.property?.name;
 			object = convertExpressionToValue(expression.callee.object, model, isBackConvert, changedModel);
 		} else {
 			property = expression.callee.name;
