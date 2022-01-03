@@ -50,7 +50,7 @@ const expressionParsers = {
 		const parsed = [];
 		for (let element of expression.elements) {
 			let value = convertExpressionToValue(element, model, isBackConvert, changedModel);
-			element.type === 'SpreadElement' ? parsed.push(...value) : parsed.push(value);
+			element.type == 'SpreadElement' ? parsed.push(...value) : parsed.push(value);
 		}
 		return parsed;
 	},
@@ -82,13 +82,13 @@ const expressionParsers = {
 			property = expression.callee.name;
 			object = getContext(property, model, changedModel);
 		}
-		const callback = object?.[property];
+		const callback = expression.callee.optional ? object?.[property] : object[property];
 		const isConverter = isObject(callback) && (isFunction(callback.toModel) || isFunction(callback.toView));
 
 		const parsedArgs = [];
 		for (let argument of expression.arguments) {
 			let value = convertExpressionToValue(argument, model, isBackConvert, changedModel);
-			argument.type === 'SpreadElement' ? parsedArgs.push(...value) : parsedArgs.push(value);
+			argument.type == 'SpreadElement' ? parsedArgs.push(...value) : parsedArgs.push(value);
 		}
 
 		if (isNullOrUndefined(callback) || (!isFunction(callback) && !isConverter)) {
@@ -128,18 +128,22 @@ const expressionParsers = {
 		const parsedArgs = [];
 		for (let argument of expression.arguments) {
 			let value = convertExpressionToValue(argument, model, isBackConvert, changedModel);
-			argument.type === 'SpreadElement' ? parsedArgs.push(...value) : parsedArgs.push(value);
+			argument.type == 'SpreadElement' ? parsedArgs.push(...value) : parsedArgs.push(value);
 		}
 		return new callback(...parsedArgs);
 	},
 	'ObjectExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
-		const parsed = {};
+		const parsedObject = {};
 		for (let property of expression.properties) {
-			const key = convertExpressionToValue(expression.key, model, isBackConvert, changedModel);
-			const value = convertExpressionToValue(expression.value, model, isBackConvert, changedModel);
-			parsed[key] = value;
+			const value = convertExpressionToValue(property, model, isBackConvert, changedModel);
+			Object.assign(parsedObject, value);
 		}
-		return parsed;
+		return parsedObject;
+	},
+	'Property': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
+		const key = convertExpressionToValue(expression.key, model, isBackConvert, changedModel);
+		const value = convertExpressionToValue(expression.value, model, isBackConvert, changedModel);
+		return {[key]: value};
 	},
 	'SpreadElement': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		const argument = convertExpressionToValue(expression.argument, model, isBackConvert, changedModel);
