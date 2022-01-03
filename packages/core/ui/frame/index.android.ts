@@ -158,7 +158,7 @@ export class Frame extends FrameBase {
 		this._attachedToWindow = false;
 	}
 
-	protected _processNextNavigationEntry(): void {
+	protected async _processNextNavigationEntry(): Promise<void> {
 		// In case activity was destroyed because of back button pressed (e.g. app exit)
 		// and application is restored from recent apps, current fragment isn't recreated.
 		// In this case call _navigateCore in order to recreate the current fragment.
@@ -176,7 +176,28 @@ export class Frame extends FrameBase {
 			}
 		}
 
-		const manager = this._getFragmentManager();
+		let manager = this._getFragmentManager();
+		const lifecycle: androidx.lifecycle.Lifecycle = this._getFragmentLifecycle();
+		if (lifecycle && !lifecycle.getCurrentState().isAtLeast(androidx.lifecycle.Lifecycle.State.STARTED)) {
+			const success = await new Promise<boolean>((resolve) => {
+				const observer = new androidx.lifecycle.LifecycleEventObserver({
+					onStateChanged: (source: androidx.lifecycle.LifecycleOwner, event: androidx.lifecycle.Lifecycle.Event) => {
+						if (event === androidx.lifecycle.Lifecycle.Event.ON_START) {
+							lifecycle.removeObserver(observer);
+							resolve(true);
+						}
+						if (event === androidx.lifecycle.Lifecycle.Event.ON_DESTROY) {
+							lifecycle.removeObserver(observer);
+							resolve(false);
+						}
+					},
+				});
+				lifecycle.addObserver(observer);
+			});
+			if (!success) {
+				manager = null;
+			}
+		}
 		const entry = this._currentEntry;
 		const isNewEntry = !this._cachedTransitionState || entry !== this._cachedTransitionState.entry;
 
@@ -208,6 +229,10 @@ export class Frame extends FrameBase {
 	}
 
 	public _getChildFragmentManager() {
+		return this._getFragment()?.getChildFragmentManager?.();
+	}
+
+	public _getFragment() {
 		let backstackEntry;
 		if (this._executingContext && this._executingContext.entry) {
 			backstackEntry = this._executingContext.entry;
@@ -216,7 +241,7 @@ export class Frame extends FrameBase {
 		}
 
 		if (backstackEntry && backstackEntry.fragment && backstackEntry.fragment.isAdded()) {
-			return backstackEntry.fragment.getChildFragmentManager();
+			return backstackEntry.fragment;
 		}
 
 		return null;

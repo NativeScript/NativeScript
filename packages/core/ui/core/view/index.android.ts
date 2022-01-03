@@ -307,6 +307,7 @@ export class View extends ViewCommon {
 
 	public _dialogFragment: androidx.fragment.app.DialogFragment;
 	public _manager: androidx.fragment.app.FragmentManager;
+	public _parentFragment: androidx.fragment.app.Fragment;
 	private _isClickable: boolean;
 	private touchListenerIsSet: boolean;
 	private touchListener: android.view.View.OnTouchListener;
@@ -354,12 +355,24 @@ export class View extends ViewCommon {
 		return null;
 	}
 
+	public _getFragment(): androidx.fragment.app.Fragment {
+		return null;
+	}
+
 	public _getRootFragmentManager(): androidx.fragment.app.FragmentManager {
 		if (!this._rootManager && this._context) {
 			this._rootManager = (<androidx.fragment.app.FragmentActivity>this._context).getSupportFragmentManager();
 		}
 
 		return this._rootManager;
+	}
+
+	public _getFragmentLifecycle() {
+		// ensure we get the parent fragment
+		this._getFragmentManager();
+		if (this._parentFragment) {
+			return this._parentFragment.getLifecycle();
+		}
 	}
 
 	public _getFragmentManager(): androidx.fragment.app.FragmentManager {
@@ -377,6 +390,7 @@ export class View extends ViewCommon {
 				const dialogFragment = view._dialogFragment;
 				if (dialogFragment) {
 					manager = dialogFragment.getChildFragmentManager();
+					this._parentFragment = dialogFragment;
 					break;
 				}
 
@@ -387,6 +401,7 @@ export class View extends ViewCommon {
 				if (view._hasFragments) {
 					if (frameOrTabViewItemFound) {
 						manager = view._getChildFragmentManager();
+						this._parentFragment = view._getFragment();
 						break;
 					}
 
@@ -400,6 +415,7 @@ export class View extends ViewCommon {
 
 			if (!manager) {
 				manager = this._getRootFragmentManager();
+				this._parentFragment = null;
 			}
 
 			this._manager = manager;
