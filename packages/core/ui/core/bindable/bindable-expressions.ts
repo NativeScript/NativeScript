@@ -1,4 +1,4 @@
-import { parse } from 'esprima';
+import { parse } from 'acorn';
 import { isFunction, isNullOrUndefined, isObject } from '../../../utils/types';
 
 interface ASTExpression {
@@ -141,7 +141,7 @@ const expressionParsers = {
 		return parsedObject;
 	},
 	'Property': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
-		const key = convertExpressionToValue(expression.key, model, isBackConvert, changedModel);
+		const key = expression.computed ? convertExpressionToValue(expression.key, model, isBackConvert, changedModel) : expression.key?.name;
 		const value = convertExpressionToValue(expression.value, model, isBackConvert, changedModel);
 		return {[key]: value};
 	},
@@ -190,8 +190,8 @@ function getConverter(context, args, isBackConvert: boolean) {
 export function parseExpression(expressionText: string): ASTExpression {
 	let expression = expressionsCache[expressionText];
 	if (expression == null) {
-		let syntax = parse(expressionText);
-		let statements = syntax.body;
+		const program: any = parse(expressionText, { ecmaVersion: 'latest' });
+		const statements = program.body;
 		for (let statement of statements) {
 			if (statement.type == 'ExpressionStatement') {
 				expression = statement.expression;
