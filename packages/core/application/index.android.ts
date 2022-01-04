@@ -159,14 +159,18 @@ export interface AndroidApplication {
 	on(event: 'activityRequestPermissions', callback: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any);
 }
 
-const androidApp = new AndroidApplication();
+let androidApp: AndroidApplication;
 export { androidApp as android };
-appCommon.setApplication(androidApp);
 
 let mainEntry: NavigationEntry;
 let started = false;
 
 export function run(entry?: NavigationEntry | string) {
+	if (!androidApp) {
+		androidApp = new AndroidApplication();
+		appCommon.setApplication(androidApp);
+	}
+
 	if (started) {
 		throw new Error('Application is already started.');
 	}
