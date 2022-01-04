@@ -24,49 +24,27 @@ declare class VNBarcodeObservation extends VNRectangleObservation {
 
 declare var VNBarcodeSymbologyAztec: string;
 
-declare var VNBarcodeSymbologyAztec_SwiftDeprecated: string;
-
 declare var VNBarcodeSymbologyCodabar: string;
 
 declare var VNBarcodeSymbologyCode128: string;
-
-declare var VNBarcodeSymbologyCode128_SwiftDeprecated: string;
 
 declare var VNBarcodeSymbologyCode39: string;
 
 declare var VNBarcodeSymbologyCode39Checksum: string;
 
-declare var VNBarcodeSymbologyCode39Checksum_SwiftDeprecated: string;
-
 declare var VNBarcodeSymbologyCode39FullASCII: string;
 
 declare var VNBarcodeSymbologyCode39FullASCIIChecksum: string;
 
-declare var VNBarcodeSymbologyCode39FullASCIIChecksum_SwiftDeprecated: string;
-
-declare var VNBarcodeSymbologyCode39FullASCII_SwiftDeprecated: string;
-
-declare var VNBarcodeSymbologyCode39_SwiftDeprecated: string;
-
 declare var VNBarcodeSymbologyCode93: string;
-
-declare var VNBarcodeSymbologyCode93_SwiftDeprecated: string;
 
 declare var VNBarcodeSymbologyCode93i: string;
 
-declare var VNBarcodeSymbologyCode93i_SwiftDeprecated: string;
-
 declare var VNBarcodeSymbologyDataMatrix: string;
-
-declare var VNBarcodeSymbologyDataMatrix_SwiftDeprecated: string;
 
 declare var VNBarcodeSymbologyEAN13: string;
 
-declare var VNBarcodeSymbologyEAN13_SwiftDeprecated: string;
-
 declare var VNBarcodeSymbologyEAN8: string;
-
-declare var VNBarcodeSymbologyEAN8_SwiftDeprecated: string;
 
 declare var VNBarcodeSymbologyGS1DataBar: string;
 
@@ -78,13 +56,7 @@ declare var VNBarcodeSymbologyI2of5: string;
 
 declare var VNBarcodeSymbologyI2of5Checksum: string;
 
-declare var VNBarcodeSymbologyI2of5Checksum_SwiftDeprecated: string;
-
-declare var VNBarcodeSymbologyI2of5_SwiftDeprecated: string;
-
 declare var VNBarcodeSymbologyITF14: string;
-
-declare var VNBarcodeSymbologyITF14_SwiftDeprecated: string;
 
 declare var VNBarcodeSymbologyMicroPDF417: string;
 
@@ -92,15 +64,9 @@ declare var VNBarcodeSymbologyMicroQR: string;
 
 declare var VNBarcodeSymbologyPDF417: string;
 
-declare var VNBarcodeSymbologyPDF417_SwiftDeprecated: string;
-
 declare var VNBarcodeSymbologyQR: string;
 
-declare var VNBarcodeSymbologyQR_SwiftDeprecated: string;
-
 declare var VNBarcodeSymbologyUPCE: string;
-
-declare var VNBarcodeSymbologyUPCE_SwiftDeprecated: string;
 
 declare var VNBodyLandmarkKeyLeftAnkle: string;
 
