@@ -133,6 +133,8 @@ declare class SFSafariViewControllerConfiguration extends NSObject implements NS
 
 	entersReaderIfAvailable: boolean;
 
+	eventAttribution: UIEventAttribution;
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 

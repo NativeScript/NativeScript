@@ -2408,6 +2408,8 @@ declare const enum MTLGPUFamily {
 
 	Apple7 = 1007,
 
+	Apple8 = 1008,
+
 	Mac1 = 2001,
 
 	Mac2 = 2002,
@@ -4472,6 +4474,8 @@ interface MTLTexture extends MTLResource {
 
 	bufferOffset: number;
 
+	compressionType: MTLTextureCompressionType;
+
 	depth: number;
 
 	firstMipmapInTail: number;
@@ -4529,6 +4533,13 @@ declare var MTLTexture: {
 	prototype: MTLTexture;
 };
 
+declare const enum MTLTextureCompressionType {
+
+	Lossless = 0,
+
+	Lossy = 1
+}
+
 declare class MTLTextureDescriptor extends NSObject implements NSCopying {
 
 	static alloc(): MTLTextureDescriptor; // inherited from NSObject
@@ -4544,6 +4555,8 @@ declare class MTLTextureDescriptor extends NSObject implements NSCopying {
 	allowGPUOptimizedContents: boolean;
 
 	arrayLength: number;
+
+	compressionType: MTLTextureCompressionType;
 
 	cpuCacheMode: MTLCPUCacheMode;
 
