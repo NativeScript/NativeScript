@@ -349,10 +349,9 @@ export class iOSApplication implements iOSApplicationDefinition {
 }
 
 /* tslint:disable */
-const iosApp = new iOSApplication();
+let iosApp: iOSApplication;
 /* tslint:enable */
 export { iosApp as ios };
-setApplication(iosApp);
 
 // attach on global, so it can be overwritten in NativeScript Angular
 (<any>global).__onLiveSyncCore = function (context?: ModuleContext) {
@@ -389,6 +388,11 @@ export function getRootView() {
 
 let started = false;
 export function run(entry?: string | NavigationEntry) {
+	if (!iosApp) {
+		iosApp = new iOSApplication();
+		setApplication(iosApp);
+	}
+
 	mainEntry = typeof entry === 'string' ? { moduleName: entry } : entry;
 	started = true;
 
