@@ -254,7 +254,9 @@ declare const enum CLSErrorCode {
 
 	InvalidUpdate = 8,
 
-	PartialFailure = 9
+	PartialFailure = 9,
+
+	InvalidAccountCredentials = 10
 }
 
 declare var CLSErrorCodeDomain: string;

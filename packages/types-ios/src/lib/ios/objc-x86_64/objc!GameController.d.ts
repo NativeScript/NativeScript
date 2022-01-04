@@ -1527,6 +1527,28 @@ declare class GCPhysicalInputProfile extends NSObject {
 	setStateFromPhysicalInput(physicalInput: GCPhysicalInputProfile): void;
 }
 
+declare var GCProductCategoryCoalescedRemote: string;
+
+declare var GCProductCategoryControlCenterRemote: string;
+
+declare var GCProductCategoryDualSense: string;
+
+declare var GCProductCategoryDualShock4: string;
+
+declare var GCProductCategoryKeyboard: string;
+
+declare var GCProductCategoryMFi: string;
+
+declare var GCProductCategoryMouse: string;
+
+declare var GCProductCategorySiriRemote1stGen: string;
+
+declare var GCProductCategorySiriRemote2ndGen: string;
+
+declare var GCProductCategoryUniversalElectronicsRemote: string;
+
+declare var GCProductCategoryXboxOne: string;
+
 interface GCQuaternion {
 	x: number;
 	y: number;

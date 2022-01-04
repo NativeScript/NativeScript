@@ -5221,10 +5221,6 @@ declare class NSLocale extends NSObject implements NSCopying, NSSecureCoding {
 
 	static localeWithLocaleIdentifier(ident: string): NSLocale;
 
-	static mdf_isDefaultLanguageLTR(): boolean;
-
-	static mdf_isDefaultLanguageRTL(): boolean;
-
 	static new(): NSLocale; // inherited from NSObject
 
 	static windowsLocaleCodeFromLocaleIdentifier(localeIdentifier: string): number;
@@ -9490,14 +9486,6 @@ declare class NSString extends NSObject implements CKRecordValue, CNKeyDescripto
 	lowercaseStringWithLocale(locale: NSLocale): string;
 
 	maximumLengthOfBytesUsingEncoding(enc: number): number;
-
-	mdf_calculatedLanguageDirection(): NSLocaleLanguageDirection;
-
-	mdf_stringWithBidiEmbedding(languageDirection: NSLocaleLanguageDirection): string;
-
-	mdf_stringWithBidiMarkersStripped(): string;
-
-	mdf_stringWithStereoResetContext(direction: NSLocaleLanguageDirection, contextDirection: NSLocaleLanguageDirection): string;
 
 	mutableCopyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 

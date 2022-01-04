@@ -271,6 +271,10 @@ declare var AVAssetExportPreset960x540: string;
 
 declare var AVAssetExportPresetAppleM4A: string;
 
+declare var AVAssetExportPresetAppleProRes422LPCM: string;
+
+declare var AVAssetExportPresetAppleProRes4444LPCM: string;
+
 declare var AVAssetExportPresetHEVC1920x1080: string;
 
 declare var AVAssetExportPresetHEVC1920x1080WithAlpha: string;
@@ -1587,6 +1591,12 @@ declare class AVCaptureDevice extends NSObject {
 
 	activeMaxExposureDuration: CMTime;
 
+	readonly activePrimaryConstituentDevice: AVCaptureDevice;
+
+	readonly activePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions: AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions;
+
+	readonly activePrimaryConstituentDeviceSwitchingBehavior: AVCapturePrimaryConstituentDeviceSwitchingBehavior;
+
 	activeVideoMaxFrameDuration: CMTime;
 
 	activeVideoMinFrameDuration: CMTime;
@@ -1628,6 +1638,8 @@ declare class AVCaptureDevice extends NSObject {
 	readonly exposureTargetBias: number;
 
 	readonly exposureTargetOffset: number;
+
+	fallbackPrimaryConstituentDevices: NSArray<AVCaptureDevice>;
 
 	readonly flashActive: boolean;
 
@@ -1689,6 +1701,10 @@ declare class AVCaptureDevice extends NSObject {
 
 	readonly position: AVCaptureDevicePosition;
 
+	readonly primaryConstituentDeviceRestrictedSwitchingBehaviorConditions: AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions;
+
+	readonly primaryConstituentDeviceSwitchingBehavior: AVCapturePrimaryConstituentDeviceSwitchingBehavior;
+
 	readonly rampingVideoZoom: boolean;
 
 	smoothAutoFocusEnabled: boolean;
@@ -1696,6 +1712,8 @@ declare class AVCaptureDevice extends NSObject {
 	readonly smoothAutoFocusSupported: boolean;
 
 	subjectAreaChangeMonitoringEnabled: boolean;
+
+	readonly supportedFallbackPrimaryConstituentDevices: NSArray<AVCaptureDevice>;
 
 	readonly suspended: boolean;
 
@@ -1761,6 +1779,8 @@ declare class AVCaptureDevice extends NSObject {
 
 	setFocusModeLockedWithLensPositionCompletionHandler(lensPosition: number, handler: (p1: CMTime) => void): void;
 
+	setPrimaryConstituentDeviceSwitchingBehaviorRestrictedSwitchingBehaviorConditions(switchingBehavior: AVCapturePrimaryConstituentDeviceSwitchingBehavior, restrictedSwitchingBehaviorConditions: AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions): void;
+
 	setTorchModeOnWithLevelError(torchLevel: number): boolean;
 
 	setWhiteBalanceModeLockedWithDeviceWhiteBalanceGainsCompletionHandler(whiteBalanceGains: AVCaptureWhiteBalanceGains, handler: (p1: CMTime) => void): void;
@@ -1819,6 +1839,8 @@ declare class AVCaptureDeviceFormat extends NSObject {
 
 	readonly multiCamSupported: boolean;
 
+	readonly portraitEffectSupported: boolean;
+
 	readonly portraitEffectsMatteStillImageDeliverySupported: boolean;
 
 	readonly supportedColorSpaces: NSArray<number>;
@@ -1832,6 +1854,8 @@ declare class AVCaptureDeviceFormat extends NSObject {
 	readonly videoFieldOfView: number;
 
 	readonly videoFrameRateRangeForCenterStage: AVFrameRateRange;
+
+	readonly videoFrameRateRangeForPortraitEffect: AVFrameRateRange;
 
 	readonly videoHDRSupported: boolean;
 
@@ -2105,11 +2129,19 @@ declare class AVCaptureMovieFileOutput extends AVCaptureFileOutput {
 
 	movieFragmentInterval: CMTime;
 
+	readonly primaryConstituentDeviceRestrictedSwitchingBehaviorConditionsForRecording: AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions;
+
+	readonly primaryConstituentDeviceSwitchingBehaviorForRecording: AVCapturePrimaryConstituentDeviceSwitchingBehavior;
+
+	primaryConstituentDeviceSwitchingBehaviorForRecordingEnabled: boolean;
+
 	outputSettingsForConnection(connection: AVCaptureConnection): NSDictionary<string, any>;
 
 	recordsVideoOrientationAndMirroringChangesAsMetadataTrackForConnection(connection: AVCaptureConnection): boolean;
 
 	setOutputSettingsForConnection(outputSettings: NSDictionary<string, any>, connection: AVCaptureConnection): void;
+
+	setPrimaryConstituentDeviceSwitchingBehaviorForRecordingRestrictedSwitchingBehaviorConditions(switchingBehavior: AVCapturePrimaryConstituentDeviceSwitchingBehavior, restrictedSwitchingBehaviorConditions: AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions): void;
 
 	setRecordsVideoOrientationAndMirroringChangesAsMetadataTrackForConnection(doRecordChanges: boolean, connection: AVCaptureConnection): void;
 
@@ -2472,6 +2504,28 @@ declare class AVCapturePhotoSettings extends NSObject implements NSCopying {
 	virtualDeviceConstituentPhotoDeliveryEnabledDevices: NSArray<AVCaptureDevice>;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare const enum AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions {
+
+	None = 0,
+
+	VideoZoomChanged = 1,
+
+	FocusModeChanged = 2,
+
+	ExposureModeChanged = 4
+}
+
+declare const enum AVCapturePrimaryConstituentDeviceSwitchingBehavior {
+
+	Unsupported = 0,
+
+	Auto = 1,
+
+	Restricted = 2,
+
+	Locked = 3
 }
 
 declare class AVCaptureResolvedPhotoSettings extends NSObject {
