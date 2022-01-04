@@ -28,6 +28,8 @@ declare class CAAnimation extends NSObject implements CAAction, CAMediaTiming, N
 
 	fadeOutDuration: number;
 
+	preferredFrameRateRange: CAFrameRateRange;
+
 	removedOnCompletion: boolean;
 
 	timingFunction: CAMediaTimingFunction;
@@ -164,6 +166,8 @@ declare class CADisplayLink extends NSObject {
 	frameInterval: number;
 
 	paused: boolean;
+
+	preferredFrameRateRange: CAFrameRateRange;
 
 	preferredFramesPerSecond: number;
 
@@ -347,6 +351,19 @@ declare class CAEmitterLayer extends CALayer {
 
 	velocity: number;
 }
+
+interface CAFrameRateRange {
+	minimum: number;
+	maximum: number;
+	preferred: number;
+}
+declare var CAFrameRateRange: interop.StructType<CAFrameRateRange>;
+
+declare var CAFrameRateRangeDefault: CAFrameRateRange;
+
+declare function CAFrameRateRangeIsEqualToRange(range: CAFrameRateRange, other: CAFrameRateRange): boolean;
+
+declare function CAFrameRateRangeMake(minimum: number, maximum: number, preferred: number): CAFrameRateRange;
 
 declare class CAGradientLayer extends CALayer {
 
@@ -672,7 +689,6 @@ declare class CAMediaTimingFunction extends NSObject implements NSSecureCoding {
 	static functionWithControlPoints(c1x: number, c1y: number, c2x: number, c2y: number): CAMediaTimingFunction;
 
 	static functionWithName(name: string): CAMediaTimingFunction;
-
 
 	static new(): CAMediaTimingFunction; // inherited from NSObject
 

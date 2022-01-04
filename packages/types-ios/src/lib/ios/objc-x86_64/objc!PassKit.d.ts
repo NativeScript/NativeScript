@@ -731,6 +731,8 @@ declare var PKPassLibraryDidChangeNotification: string;
 
 declare var PKPassLibraryPassTypeIdentifierUserInfoKey: string;
 
+declare var PKPassLibraryRecoveredPassesUserInfoKey: string;
+
 declare var PKPassLibraryRemotePaymentPassesDidChangeNotification: string;
 
 declare var PKPassLibraryRemovedPassInfosUserInfoKey: string;
