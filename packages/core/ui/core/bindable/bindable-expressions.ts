@@ -190,7 +190,7 @@ function getConverter(context, args, isBackConvert: boolean) {
 export function parseExpression(expressionText: string): ASTExpression {
 	let expression = expressionsCache[expressionText];
 	if (expression == null) {
-		const program: any = parse(expressionText, { ecmaVersion: 'latest' });
+		const program: any = parse(expressionText, { ecmaVersion: 2020 });
 		const statements = program.body;
 		for (let statement of statements) {
 			if (statement.type == 'ExpressionStatement') {
