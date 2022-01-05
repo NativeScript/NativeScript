@@ -669,7 +669,7 @@ export function test_BindingConverterCalledEvenWithNullValue() {
 
 	const testFunc = function (views: Array<View>) {
 		const testLabel = <Label>views[0];
-		testLabel.bind({ sourceProperty: 'testProperty', targetProperty: 'text', expression: 'testProperty | converter' });
+		testLabel.bind({ sourceProperty: 'testProperty', targetProperty: 'text', expression: 'testProperty | converter()' });
 
 		const page = <Page>views[1];
 		page.bindingContext = pageViewModel;
