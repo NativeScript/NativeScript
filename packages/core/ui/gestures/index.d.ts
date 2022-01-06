@@ -2,6 +2,17 @@ import { View } from '../core/view';
 import { EventData } from '../../data/observable';
 
 /**
+ * Events emitted during gesture lifecycle
+ */
+export enum GestureEvents {
+	/**
+	 * When the gesture is attached to the view
+	 * Provides access to the native gesture recognizer for further customization
+	 */
+	gestureAttached = 'gestureAttached',
+}
+
+/**
  * Defines an enum with supported gesture types.
  */
 export enum GestureTypes {
