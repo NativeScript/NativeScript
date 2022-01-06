@@ -373,41 +373,50 @@ export class Binding {
 	}
 
 	private _getExpressionValue(expression: string, isBackConvert: boolean, changedModel: any): any {
+		let result;
+		let context;
+		const tempModel = {};
+
 		if (!__UI_USE_EXTERNAL_RENDERER__) {
 			try {
 				let exp;
 				try {
 					exp = parseExpression(expression);
 				} catch (e) {
-					return e;
+					result = e;
 				}
 
 				if (exp) {
-					const context = (this.source && this.source.get && this.source.get()) || global;
-					const model = { ...context };
+					context = (this.source && this.source.get && this.source.get()) || global;
 					const resources = bindableResources.get();
 					for (const prop in resources) {
-						if (resources.hasOwnProperty(prop) && !model.hasOwnProperty(prop)) {
-							model[prop] = resources[prop];
+						if (resources.hasOwnProperty(prop) && !context.hasOwnProperty(prop)) {
+							tempModel[prop] = resources[prop];
 						}
 					}
 
 					// For expressions, there are also cases when binding must be updated after component is loaded (e.g. ListView)
-					if (!this.prepareContextForExpression(model, expression)) {
+					if (this.prepareContextForExpression(tempModel, expression)) {
+						Object.assign(context, tempModel);
+						result = convertExpressionToValue(exp, context, isBackConvert, changedModel ? changedModel : context);
+					} else {
 						const targetInstance = this.target.get();
 						targetInstance.off('loaded', this.loadedHandlerVisualTreeBinding, this);
 						targetInstance.on('loaded', this.loadedHandlerVisualTreeBinding, this);
-						return '';
+						context = null;
 					}
-					return convertExpressionToValue(exp, model, isBackConvert, changedModel ? changedModel : model);
 				}
-
-				return new Error(expression + ' is not a valid expression.');
 			} catch (e) {
 				const errorMessage = 'Run-time error occured in file: ' + e.sourceURL + ' at line: ' + e.line + ' and column: ' + e.column;
-
-				return new Error(errorMessage);
+				result = new Error(errorMessage);
 			}
+
+			if (context != null) {
+				for (let key in tempModel) {
+					delete context[key];
+				}
+			}
+			return result;
 		}
 	}
 
