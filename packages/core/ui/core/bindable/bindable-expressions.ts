@@ -77,14 +77,10 @@ const expressionParsers = {
 		let property;
 		if (expression.callee.type == 'MemberExpression') {
 			object = convertExpressionToValue(expression.callee.object, model, isBackConvert, changedModel);
-			if (expression.callee.property.type == 'Identifier') {
-				property = expression.callee.computed ? convertExpressionToValue(expression.callee.property, model, isBackConvert, changedModel) : expression.callee.property.name;
-			} else {
-				property = convertExpressionToValue(expression.callee.property, model, isBackConvert, changedModel);
-			}
+			property = expression.callee.computed ? convertExpressionToValue(expression.callee.property, model, isBackConvert, changedModel) : expression.callee.property?.name;
 		} else {
 			object = getContext(expression.callee.name, model, changedModel);
-			property = expression.callee.name;
+			property = expression.callee?.name;
 		}
 		const callback = expression.callee.optional ? object?.[property] : object[property];
 		const isConverter = isObject(callback) && (isFunction(callback.toModel) || isFunction(callback.toView));
@@ -124,12 +120,7 @@ const expressionParsers = {
 	},
 	'MemberExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		const object = convertExpressionToValue(expression.object, model, isBackConvert, changedModel);
-		let property;
-		if (expression.property.type == 'Identifier') {
-			property = expression.computed ? convertExpressionToValue(expression.property, model, isBackConvert, changedModel) : expression.property.name;
-		} else {
-			property = convertExpressionToValue(expression.property, model, isBackConvert, changedModel);
-		}
+		const property = expression.computed ? convertExpressionToValue(expression.property, model, isBackConvert, changedModel) : expression.property?.name;
 		return expression.optional ? object?.[property] : object[property];
 	},
 	'NewExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
@@ -150,12 +141,7 @@ const expressionParsers = {
 		return parsedObject;
 	},
 	'Property': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
-		let key;
-		if (expression.key.type == 'Identifier') {
-			key = expression.computed ? convertExpressionToValue(expression.key, model, isBackConvert, changedModel) : expression.key.name;
-		} else {
-			key = convertExpressionToValue(expression.key, model, isBackConvert, changedModel);
-		}
+		const key = expression.computed ? convertExpressionToValue(expression.key, model, isBackConvert, changedModel) : expression.key?.name;
 		const value = convertExpressionToValue(expression.value, model, isBackConvert, changedModel);
 		return {[key]: value};
 	},
