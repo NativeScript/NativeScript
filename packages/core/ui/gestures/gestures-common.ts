@@ -1,6 +1,10 @@
 ﻿import { GestureEventData, GesturesObserver as GesturesObserverDefinition } from '.';
 import { View } from '../core/view';
 
+export enum GestureEvents {
+	gestureAttached = 'gestureAttached',
+}
+
 export enum GestureTypes {
 	tap = 1 << 0,
 	doubleTap = 1 << 1,
