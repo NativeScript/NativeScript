@@ -5,7 +5,7 @@ import { View } from '../core/view';
 import { EventData } from '../../data/observable';
 
 // Types.
-import { GesturesObserverBase, toString, TouchAction, GestureStateTypes, GestureTypes, SwipeDirection } from './gestures-common';
+import { GesturesObserverBase, toString, TouchAction, GestureStateTypes, GestureTypes, SwipeDirection, GestureEvents } from './gestures-common';
 
 // Import layout from utils directly to avoid circular references
 import { layout } from '../../utils';
@@ -306,6 +306,14 @@ export class GesturesObserver extends GesturesObserverBase {
 					target: target,
 				};
 			}
+
+			this.target.notify({
+				eventName: GestureEvents.gestureAttached,
+				object: this.target,
+				type,
+				view: this.target,
+				ios: recognizer,
+			});
 		}
 
 		return recognizer;
@@ -348,7 +356,7 @@ function _getUIGestureRecognizerType(type: GestureTypes): any {
 function getState(recognizer: UIGestureRecognizer) {
 	if (recognizer.state === UIGestureRecognizerState.Began) {
 		return GestureStateTypes.began;
-	} else if (recognizer.state === UIGestureRecognizerState.Cancelled) {
+	} else if (recognizer.state === UIGestureRecognizerState.Cancelled || recognizer.state === UIGestureRecognizerState.Failed) {
 		return GestureStateTypes.cancelled;
 	} else if (recognizer.state === UIGestureRecognizerState.Changed) {
 		return GestureStateTypes.changed;
