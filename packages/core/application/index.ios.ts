@@ -464,6 +464,7 @@ export function _resetRootView(entry?: NavigationEntry | string) {
 	mainEntry = typeof entry === 'string' ? { moduleName: entry } : entry;
 	iosApp.setWindowContent();
 }
+export const resetRootView = _resetRootView;
 
 export function getNativeApplication(): UIApplication {
 	return iosApp.nativeApp;

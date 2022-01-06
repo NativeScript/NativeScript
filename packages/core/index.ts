@@ -5,44 +5,7 @@ import './globals';
 export { iOSApplication, AndroidApplication } from './application';
 export type { ApplicationEventData, LaunchEventData, OrientationChangedEventData, UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData, AndroidActivityEventData, AndroidActivityBundleEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, AndroidActivityNewIntentEventData, AndroidActivityBackPressedEventData, SystemAppearanceChangedEventData } from './application';
 
-import { fontScaleChangedEvent, launchEvent, displayedEvent, uncaughtErrorEvent, discardedErrorEvent, suspendEvent, resumeEvent, exitEvent, lowMemoryEvent, orientationChangedEvent, systemAppearanceChanged, systemAppearanceChangedEvent, getMainEntry, getRootView, _resetRootView, getResources, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, notify, hasListeners, run, orientation, getNativeApplication, hasLaunched, android as appAndroid, ios as iosApp, systemAppearance, setAutoSystemAppearanceChanged } from './application';
-export const Application = {
-	launchEvent,
-	displayedEvent,
-	uncaughtErrorEvent,
-	discardedErrorEvent,
-	suspendEvent,
-	resumeEvent,
-	exitEvent,
-	lowMemoryEvent,
-	orientationChangedEvent,
-	systemAppearanceChangedEvent,
-	systemAppearanceChanged,
-	fontScaleChangedEvent,
-
-	getMainEntry,
-	getRootView,
-	resetRootView: _resetRootView,
-	getResources,
-	setResources,
-	setCssFileName,
-	getCssFileName,
-	loadAppCss,
-	addCss,
-	on,
-	off,
-	notify,
-	hasListeners,
-	run,
-	orientation,
-	getNativeApplication,
-	hasLaunched,
-	systemAppearance,
-	setAutoSystemAppearanceChanged,
-
-	android: appAndroid,
-	ios: iosApp,
-};
+export * as Application from './application';
 
 // Export all methods from "application-settings" as ApplicationSettings
 import { setString, getString, clear, flush, getAllKeys, getBoolean, getNumber, hasKey, remove, setBoolean, setNumber } from './application-settings';

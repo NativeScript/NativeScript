@@ -215,6 +215,7 @@ export function _resetRootView(entry?: NavigationEntry | string): void {
 	}
 	callbacks.resetActivityContent(activity);
 }
+export const resetRootView = _resetRootView;
 
 export function getMainEntry() {
 	return mainEntry;
