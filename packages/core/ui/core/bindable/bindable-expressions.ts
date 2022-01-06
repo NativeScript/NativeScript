@@ -76,11 +76,15 @@ const expressionParsers = {
 		let object;
 		let property;
 		if (expression.callee.type == 'MemberExpression') {
-			property = expression.callee.computed ? convertExpressionToValue(expression.callee.property, model, isBackConvert, changedModel) : expression.callee.property?.name;
 			object = convertExpressionToValue(expression.callee.object, model, isBackConvert, changedModel);
+			if (expression.callee.property.type == 'Identifier') {
+				property = expression.callee.computed ? convertExpressionToValue(expression.callee.property, model, isBackConvert, changedModel) : expression.callee.property.name;
+			} else {
+				property = convertExpressionToValue(expression.callee.property, model, isBackConvert, changedModel);
+			}
 		} else {
+			object = getContext(expression.callee.name, model, changedModel);
 			property = expression.callee.name;
-			object = getContext(property, model, changedModel);
 		}
 		const callback = expression.callee.optional ? object?.[property] : object[property];
 		const isConverter = isObject(callback) && (isFunction(callback.toModel) || isFunction(callback.toView));
@@ -120,7 +124,12 @@ const expressionParsers = {
 	},
 	'MemberExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		const object = convertExpressionToValue(expression.object, model, isBackConvert, changedModel);
-		const property = expression.computed ? convertExpressionToValue(expression.property, object, isBackConvert, object) : expression.property?.name;
+		let property;
+		if (expression.property.type == 'Identifier') {
+			property = expression.computed ? convertExpressionToValue(expression.property, model, isBackConvert, changedModel) : expression.property.name;
+		} else {
+			property = convertExpressionToValue(expression.property, model, isBackConvert, changedModel);
+		}
 		return expression.optional ? object?.[property] : object[property];
 	},
 	'NewExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
@@ -141,7 +150,12 @@ const expressionParsers = {
 		return parsedObject;
 	},
 	'Property': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
-		const key = expression.computed ? convertExpressionToValue(expression.key, model, isBackConvert, changedModel) : expression.key?.name;
+		let key;
+		if (expression.key.type == 'Identifier') {
+			key = expression.computed ? convertExpressionToValue(expression.key, model, isBackConvert, changedModel) : expression.key.name;
+		} else {
+			key = convertExpressionToValue(expression.key, model, isBackConvert, changedModel);
+		}
 		const value = convertExpressionToValue(expression.value, model, isBackConvert, changedModel);
 		return {[key]: value};
 	},
