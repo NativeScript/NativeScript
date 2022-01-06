@@ -277,7 +277,7 @@ export function test_usingAppLevelConvertersInRepeaterItems() {
 
 		TKUnit.waitUntilReady(() => repeater.isLayoutValid);
 
-		TKUnit.assertEqual(getChildAtText(repeater, 0), dateConverter(new Date(), 'DD.MM.YYYY'), 'element');
+		TKUnit.assertEqual(getChildAtText(repeater, 0), dateConverter.toView(new Date(), 'DD.MM.YYYY'), 'element');
 	}
 
 	helper.buildUIAndRunTest(repeater, testAction);
