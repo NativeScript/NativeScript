@@ -82,20 +82,23 @@ const expressionParsers = {
 			object = getContext(expression.callee.name, model, changedModel);
 			property = expression.callee?.name;
 		}
+
 		const callback = expression.callee.optional ? object?.[property] : object[property];
+		if (isNullOrUndefined(callback)) {
+			throw new Error('Cannot perform a call using a null or undefined property');
+		}
+
 		const isConverter = isObject(callback) && (isFunction(callback.toModel) || isFunction(callback.toView));
+		if (!isFunction(callback) && !isConverter) {
+			throw new Error('Cannot perform a call using a non-callable property');
+		}
 
 		const parsedArgs = [];
 		for (let argument of expression.arguments) {
 			let value = convertExpressionToValue(argument, model, isBackConvert, changedModel);
 			argument.type == 'SpreadElement' ? parsedArgs.push(...value) : parsedArgs.push(value);
 		}
-
-		if (isNullOrUndefined(callback) || (!isFunction(callback) && !isConverter)) {
-			throw new Error('Cannot perform a call using a non-function property');
-		}
-
-		return isConverter ? getConverter(callback, parsedArgs, isBackConvert) : callback.apply(object, parsedArgs);
+		return isConverter ? getConverter(callback, object, parsedArgs, isBackConvert) : callback.apply(object, parsedArgs);
 	},
 	'ChainExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		return convertExpressionToValue(expression.expression, model, isBackConvert, changedModel);
@@ -177,9 +180,9 @@ function getContext(key, model, changedModel) {
 	return key in changedModel ? changedModel : model;
 }
 
-function getConverter(context, args, isBackConvert: boolean) {
+function getConverter(converterSchema, context, args, isBackConvert: boolean) {
 	const converter = { callback: null, context, args };
-	let callback = isBackConvert ? context.toModel : context.toView;
+	let callback = isBackConvert ? converterSchema.toModel : converterSchema.toView;
 	if (callback == null) {
 		callback = Function.prototype;
 	}
