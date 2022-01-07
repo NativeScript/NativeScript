@@ -178,7 +178,7 @@ const expressionParsers = {
 
 function getContext(key, model, changedModel) {
 	let context = key in changedModel ? changedModel : model;
-	if (!context && key in global) {
+	if (!(key in context)) {
 		context = global;
 	}
 	return context;
