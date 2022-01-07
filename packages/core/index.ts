@@ -39,9 +39,12 @@ export const Application = {
 	hasLaunched,
 	systemAppearance,
 	setAutoSystemAppearanceChanged,
-
-	android: appAndroid,
-	ios: iosApp,
+	get android() {
+		return appAndroid;
+	},
+	get ios() {
+		return iosApp;
+	},
 };
 
 // Export all methods from "application-settings" as ApplicationSettings
