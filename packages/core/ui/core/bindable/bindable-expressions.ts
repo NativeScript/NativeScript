@@ -177,7 +177,11 @@ const expressionParsers = {
 };
 
 function getContext(key, model, changedModel) {
-	return key in changedModel ? changedModel : model;
+	let context = key in changedModel ? changedModel : model;
+	if (!context && key in global) {
+		context = global;
+	}
+	return context;
 }
 
 function getConverter(converterSchema, context, args, isBackConvert: boolean) {
