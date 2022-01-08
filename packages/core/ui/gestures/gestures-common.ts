@@ -1,8 +1,12 @@
 ﻿import { GestureEventData, GesturesObserver as GesturesObserverDefinition } from '.';
 import { View } from '../core/view';
 
+export * from './touch-manager';
+
 export enum GestureEvents {
 	gestureAttached = 'gestureAttached',
+	touchDown = 'touchDown',
+	touchUp = 'touchUp',
 }
 
 export enum GestureTypes {
