@@ -1191,6 +1191,7 @@ const ignoreTouchAnimationProperty = new Property<ViewCommon, boolean>({
 });
 ignoreTouchAnimationProperty.register(ViewCommon);
 
+accessibilityIdentifierProperty.register(ViewCommon);
 accessibilityLabelProperty.register(ViewCommon);
 accessibilityValueProperty.register(ViewCommon);
 accessibilityHintProperty.register(ViewCommon);
