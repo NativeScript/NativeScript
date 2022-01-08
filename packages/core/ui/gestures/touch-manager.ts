@@ -55,7 +55,7 @@ export class TouchManager {
 		if (global.isIOS) {
 			if (view?.ios?.addTargetActionForControlEvents) {
 				// can use UIControlEvents
-				console.log('added UIControlEvents!');
+				// console.log('added UIControlEvents!');
 				if (!TouchManager.touchHandlers) {
 					TouchManager.touchHandlers = [];
 				}
@@ -67,20 +67,19 @@ export class TouchManager {
 				if (handleDown) {
 					(<UIControl>view.ios).addTargetActionForControlEvents(TouchManager.touchHandlers[TouchManager.touchHandlers.length - 1].handler, GestureEvents.touchDown, UIControlEvents.TouchDown | UIControlEvents.TouchDragEnter);
 					view.on(GestureEvents.touchDown, (args) => {
-						console.log('touchDown {N} event');
+						// console.log('touchDown {N} event');
 						TouchManager.startAnimationForType(view, TouchAnimationTypes.down);
 					});
 				}
 				if (handleUp) {
 					(<UIControl>view.ios).addTargetActionForControlEvents(TouchManager.touchHandlers[TouchManager.touchHandlers.length - 1].handler, GestureEvents.touchUp, UIControlEvents.TouchDragExit | UIControlEvents.TouchCancel | UIControlEvents.TouchUpInside | UIControlEvents.TouchUpOutside);
 					view.on(GestureEvents.touchUp, (args) => {
-						console.log('touchUp {N} event');
+						// console.log('touchUp {N} event');
 						TouchManager.startAnimationForType(view, TouchAnimationTypes.up);
 					});
 				}
 			} else {
-				// console.log("use UILongPressGestureRecognizer!");
-				console.log('added longPress to:', view.id);
+				// console.log('added longPress to:', view.id);
 
 				if (handleDown || handleUp) {
 					view.on(GestureEvents.gestureAttached, (args: GestureEventData) => {
@@ -92,7 +91,7 @@ export class TouchManager {
 						switch (args.state) {
 							case GestureStateTypes.began:
 								if (handleDown) {
-									console.log('longPress began:', args.view.id, args.state);
+									// console.log('longPress began:', args.view.id, args.state);
 									TouchManager.startAnimationForType(<View>args.view, TouchAnimationTypes.down);
 								}
 								break;
@@ -133,13 +132,13 @@ export class TouchManager {
 				});
 				if (handleDown) {
 					view.on(GestureEvents.touchDown, (args) => {
-						console.log('touchDown {N} event');
+						// console.log('touchDown {N} event');
 						TouchManager.startAnimationForType(view, TouchAnimationTypes.down);
 					});
 				}
 				if (handleUp) {
 					view.on(GestureEvents.touchUp, (args) => {
-						console.log('touchUp {N} event');
+						// console.log('touchUp {N} event');
 						TouchManager.startAnimationForType(view, TouchAnimationTypes.up);
 					});
 				}
@@ -147,14 +146,14 @@ export class TouchManager {
 		}
 
 		view.on(View.disposeNativeViewEvent, (args) => {
-			console.log('calling disposeNativeView:', args.eventName, 'TouchManager.touchHandlers.length:', TouchManager.touchHandlers.length);
+			// console.log('calling disposeNativeView:', args.eventName, 'TouchManager.touchHandlers.length:', TouchManager.touchHandlers.length);
 			const index = TouchManager.touchHandlers?.findIndex((handler) => handler.view === args.object);
 			if (index > -1) {
 				TouchManager.touchHandlers.splice(index, 1);
 			}
 			TouchManager.touchAnimationDefinitions = TouchManager.touchAnimationDefinitions?.filter((d) => d.view !== args.object);
-			console.log('after clearing with disposeNativeView:', args.eventName, 'TouchManager.touchHandlers.length:', TouchManager.touchHandlers.length);
-			console.log('TouchManager.touchAnimationDefinitions.length:', TouchManager.touchAnimationDefinitions.length);
+			// console.log('after clearing with disposeNativeView:', args.eventName, 'TouchManager.touchHandlers.length:', TouchManager.touchHandlers.length);
+			// console.log('TouchManager.touchAnimationDefinitions.length:', TouchManager.touchAnimationDefinitions.length);
 		});
 	}
 
