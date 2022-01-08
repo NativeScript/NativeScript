@@ -1,6 +1,8 @@
 import { View } from '../core/view';
 import { EventData } from '../../data/observable';
 
+export * from './touch-manager';
+
 /**
  * Events emitted during gesture lifecycle
  */
@@ -10,6 +12,14 @@ export enum GestureEvents {
 	 * Provides access to the native gesture recognizer for further customization
 	 */
 	gestureAttached = 'gestureAttached',
+	/**
+	 * When a touch down was detected
+	 */
+	touchDown = 'touchDown',
+	/**
+	 * When a touch up was detected
+	 */
+	touchUp = 'touchUp',
 }
 
 /**
