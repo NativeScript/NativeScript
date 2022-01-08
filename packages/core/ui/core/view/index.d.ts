@@ -8,7 +8,9 @@ import { LinearGradient } from '../../styling/linear-gradient';
 import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait, AccessibilityEventOptions } from '../../../accessibility/accessibility-types';
 import { CoreTypes } from '../../../core-types';
 import { CSSShadow } from '../../styling/css-shadow';
+import { ViewCommon } from './view-common';
 
+export * from './view-common';
 // helpers (these are okay re-exported here)
 export * from './view-helper';
 
@@ -99,7 +101,7 @@ export interface ShownModallyData extends EventData {
  * This class is the base class for all UI components.
  * A View occupies a rectangular area on the screen and is responsible for drawing and layouting of all UI components within.
  */
-export abstract class View extends ViewBase {
+export abstract class View extends ViewCommon {
 	/**
 	 * String value used when hooking to layoutChanged event.
 	 */
