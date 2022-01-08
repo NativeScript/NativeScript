@@ -1174,7 +1174,7 @@ const touchAnimationProperty = new Property<ViewCommon, boolean | TouchAnimation
 	},
 	valueConverter(value) {
 		if (isObject(value)) {
-			return <any>value;
+			return <TouchAnimationOptions>value;
 		} else {
 			return booleanConverter(value);
 		}
