@@ -199,7 +199,7 @@ export class TouchManager {
 			};
 			// always use instance defined animation over global
 			if (isObject(view.touchAnimation) && view.touchAnimation[type]) {
-				animate((<any>view).touchAnimation[type]);
+				animate(view.touchAnimation[type]);
 			} else if (TouchManager.animations?.[type]) {
 				// fallback to globally defined
 				animate(TouchManager.animations?.[type]);

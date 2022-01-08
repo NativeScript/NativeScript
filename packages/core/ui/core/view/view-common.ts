@@ -161,7 +161,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		if (!this.isLoaded) {
 			const enableTapAnimations = TouchManager.enableGlobalTapAnimations && (this.hasListeners('tap') || this.hasListeners('tapChange') || this.getGestureObservers(GestureTypes.tap));
 			if (!this.ignoreTouchAnimation && (this.touchAnimation || enableTapAnimations)) {
-				console.log('view:', Object.keys((<any>this)._observers));
+				// console.log('view:', Object.keys((<any>this)._observers));
 				TouchManager.addAnimations(this);
 			}
 		}
