@@ -53,9 +53,37 @@ export class TouchAnimationsModel extends Observable {
 
 	touchAnimationNative: TouchAnimationOptions = {
 		down: (view: View) => {
+			const shakeIt = () => {
+				// shake when all the way down
+				view
+					.animate({ translate: { x: -20, y: 0 }, scale: { x: 0.95, y: 0.95 }, duration: 60, curve: CoreTypes.AnimationCurve.linear })
+					.then(function () {
+						return view.animate({ translate: { x: 20, y: 0 }, duration: 60, curve: CoreTypes.AnimationCurve.linear });
+					})
+					.then(function () {
+						return view.animate({ translate: { x: -20, y: 0 }, duration: 60, curve: CoreTypes.AnimationCurve.linear });
+					})
+					.then(function () {
+						return view.animate({ translate: { x: 20, y: 0 }, duration: 60, curve: CoreTypes.AnimationCurve.linear });
+					})
+					.then(function () {
+						return view.animate({ translate: { x: -10, y: 0 }, duration: 60, curve: CoreTypes.AnimationCurve.linear });
+					})
+					.then(function () {
+						return view.animate({ translate: { x: 10, y: 0 }, duration: 60, curve: CoreTypes.AnimationCurve.linear });
+					})
+					.then(function () {
+						return view.animate({ translate: { x: -5, y: 0 }, duration: 60, curve: CoreTypes.AnimationCurve.linear });
+					})
+					.then(function () {
+						return view.animate({ translate: { x: 5, y: 0 }, duration: 60, curve: CoreTypes.AnimationCurve.linear });
+					})
+					.then(function () {
+						return view.animate({ translate: { x: 0, y: 0 }, duration: 60, curve: CoreTypes.AnimationCurve.linear });
+					})
+					.then(function () {});
+			};
 			if (global.isIOS) {
-				// (<UIButton>view.ios).setTitleColorForState(new Color('white').ios, UIControlState.Selected | UIControlState.Normal | UIControlState.Highlighted);
-				// 		(<UIButton>view.ios).titleLabel.textColor = new Color('white').ios;
 				UIView.animateWithDurationDelayUsingSpringWithDampingInitialSpringVelocityOptionsAnimationsCompletion(
 					0.4,
 					0,
@@ -69,37 +97,22 @@ export class TouchAnimationsModel extends Observable {
 						view.color = new Color('white');
 					},
 					() => {
-						// shake when all the way down
-						view
-							.animate({ translate: { x: -20, y: 0 }, scale: { x: 0.95, y: 0.95 }, duration: 60, curve: CoreTypes.AnimationCurve.linear })
-							.then(function () {
-								return view.animate({ translate: { x: 20, y: 0 }, duration: 60, curve: CoreTypes.AnimationCurve.linear });
-							})
-							.then(function () {
-								return view.animate({ translate: { x: -20, y: 0 }, duration: 60, curve: CoreTypes.AnimationCurve.linear });
-							})
-							.then(function () {
-								return view.animate({ translate: { x: 20, y: 0 }, duration: 60, curve: CoreTypes.AnimationCurve.linear });
-							})
-							.then(function () {
-								return view.animate({ translate: { x: -10, y: 0 }, duration: 60, curve: CoreTypes.AnimationCurve.linear });
-							})
-							.then(function () {
-								return view.animate({ translate: { x: 10, y: 0 }, duration: 60, curve: CoreTypes.AnimationCurve.linear });
-							})
-							.then(function () {
-								return view.animate({ translate: { x: -5, y: 0 }, duration: 60, curve: CoreTypes.AnimationCurve.linear });
-							})
-							.then(function () {
-								return view.animate({ translate: { x: 5, y: 0 }, duration: 60, curve: CoreTypes.AnimationCurve.linear });
-							})
-							.then(function () {
-								return view.animate({ translate: { x: 0, y: 0 }, duration: 60, curve: CoreTypes.AnimationCurve.linear });
-							})
-							.then(function () {});
+						shakeIt();
 					}
 				);
 			} else {
+				view
+					.animate({
+						scale: { x: 0.95, y: 0.95 },
+						opacity: 0.5,
+						backgroundColor: new Color('red'),
+						duration: 400,
+					})
+					.then(() => {
+						view.color = new Color('white');
+						shakeIt();
+					})
+					.catch(() => {});
 			}
 		},
 		up: (view: View) => {
@@ -133,6 +146,24 @@ export class TouchAnimationsModel extends Observable {
 					}
 				);
 			} else {
+				view
+					.animate({
+						scale: { x: 1.2, y: 1.2 },
+						duration: 400,
+					})
+					.then(() => {
+						view.color = new Color('black');
+						view
+							.animate({
+								scale: { x: 1, y: 1 },
+								opacity: 1,
+								backgroundColor: new Color('#aee406'),
+								duration: 200,
+							})
+							.then(() => {})
+							.catch(() => {});
+					})
+					.catch(() => {});
 			}
 		},
 	};
@@ -171,6 +202,80 @@ export class TouchAnimationsModel extends Observable {
 		},
 	};
 
+	touchAnimationBlowAway: TouchAnimationOptions = {
+		down: (view: View) => {
+			let rotate = 3;
+			const shiftAway = (viewInstance: View, delay = 0) => {
+				setTimeout(() => {
+					viewInstance.animate({ translate: { x: 0, y: -10 }, scale: { x: 1.1, y: 1.1 }, opacity: 0.8, rotate, duration: 200, curve: CoreTypes.AnimationCurve.easeInOut }).catch(function () {});
+					rotate = rotate * -1;
+				}, delay);
+			};
+			let cnt = 0;
+			for (const id of this.elementIds) {
+				shiftAway(this.page.getViewById(id), cnt);
+				cnt += 10;
+			}
+			if (global.isIOS) {
+				UIView.animateWithDurationDelayUsingSpringWithDampingInitialSpringVelocityOptionsAnimationsCompletion(
+					0.4,
+					0,
+					0.5,
+					3,
+					UIViewAnimationOptions.CurveEaseInOut,
+					() => {
+						view.ios.transform = CGAffineTransformMakeScale(0.95, 0.95);
+						view.opacity = 0.5;
+					},
+					() => {}
+				);
+			} else {
+				view
+					.animate({
+						scale: { x: 0.95, y: 0.95 },
+						opacity: 0.5,
+						duration: 400,
+					})
+					.catch(() => {});
+			}
+		},
+		up: (view: View) => {
+			const shiftBack = (viewInstance: View, delay = 0) => {
+				setTimeout(() => {
+					viewInstance.animate({ translate: { x: 0, y: 0 }, scale: { x: 1, y: 1 }, opacity: 1, rotate: 0, duration: 200, curve: CoreTypes.AnimationCurve.easeInOut }).catch(function () {});
+				}, delay);
+			};
+			let cnt = 0;
+			for (const id of this.elementIds) {
+				shiftBack(this.page.getViewById(id), cnt);
+				cnt += 10;
+			}
+			if (global.isIOS) {
+				UIView.animateWithDurationDelayUsingSpringWithDampingInitialSpringVelocityOptionsAnimationsCompletion(
+					0.3,
+					0,
+					0.5,
+					3,
+					UIViewAnimationOptions.CurveEaseInOut,
+					() => {
+						view.ios.transform = CGAffineTransformIdentity;
+					},
+					() => {}
+				);
+			} else {
+				view
+					.animate({
+						scale: { x: 1, y: 1 },
+						opacity: 1,
+						duration: 300,
+					})
+					.catch(() => {});
+			}
+		},
+	};
+
+	elementIds = ['label', 'buttonTop', 'grid1', 'buttonShake', 'stack1', 'button2', 'button3', 'button4', 'button5'];
+
 	constructor(private page: Page) {
 		super();
 		TouchManager.enableGlobalTapAnimations = true;
@@ -190,6 +295,17 @@ export class TouchAnimationsModel extends Observable {
 				duration: 150,
 			},
 		};
+	}
+
+	loadedContainer(args) {
+		if (global.isAndroid) {
+			if (args.object.android.setClipToPadding) {
+				args.object.android.setClipToPadding(false);
+			}
+			if (args.object.android.setClipChildren) {
+				args.object.android.setClipChildren(false);
+			}
+		}
 	}
 
 	onTapAnything() {
