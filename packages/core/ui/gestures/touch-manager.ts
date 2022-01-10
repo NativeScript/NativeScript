@@ -31,6 +31,20 @@ export class TouchManager {
 	/**
 	 * Define reusable touch animations to use on views with touchAnimation defined or with enableGlobalTapAnimations on.
 	 */
+	// Note: In the future, we may expand this to allow an Array of "named" animations to collect an entire suite of custom app animations. Combined with a new 'touch-action' CSS property which could indicate them by name, for example:
+	// .touch-grow {
+	//   touch-action: down-grow up-grow
+	// }
+	// TouchManager.animations = {
+	//   down: [
+	//      { name: grow, (view: View) => { /* animations */ } },
+	//      { name: pop, (view: View) => { /* animations */ } }
+	//   ],
+	//   up: [
+	//      { name: grow, (view: View) => { /* animations */ } },
+	//      { name: pop, (view: View) => { /* animations */ } }
+	//   ]
+	// }
 	static animations: TouchAnimationOptions;
 	/**
 	 * Native Touch handlers (iOS only) registered with the view through the TouchManager.

@@ -1,0 +1,40 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+    <Page.actionBar>
+        <ActionBar title="Touch Animations" class="action-bar">
+        </ActionBar>
+    </Page.actionBar>
+
+    <!-- <ScrollView> -->
+    
+      <StackLayout class="p-x-20" loaded="{{ loadedContainer }}">
+          <Label id="label" tap="{{ onTapAnything }}" text="Touchable label" class="t-18 c-black text-center m-t-5" touchAnimation="{{ touchAnimationLabel }}" />
+          <Button id="buttonTop" text="Touch me for puple vibes" tap="{{ onTapAnything }}" class="btn btn-primary btn-view-demo" touchAnimation="{{ touchAnimation }}" />
+          <GridLayout id="grid1" rows="auto" columns="*,auto,auto,*" class="p-10 m-y-10" tap="{{ onTapAnything }}" touchAnimation="{{ touchAnimationLayout }}" borderRadius="8" borderWidth="1" borderColor="#999">
+              <ContentView col="1" backgroundColor="gray" borderRadius="15" width="30" height="30" verticalAlignment="middle" />
+              <Label col="2" text="Touchable GridLayout" class="t-18 m-l-10" verticalAlignment="middle" />
+          </GridLayout>
+
+          <Button id="buttonShake" text="Tap to shake, rattle n' pop" tap="{{ onTapAnything }}" class="btn btn-primary btn-view-demo btn-lime" touchAnimation="{{ touchAnimationNative }}" />
+          <StackLayout id="stack1" rows="auto" columns="*,auto,auto,*" class="p-10 m-y-10" tap="{{ onTapAnything }}" touchAnimation="{{ touchAnimationLayout }}" borderRadius="8" borderWidth="1" borderColor="#999">
+              <ContentView col="1" backgroundColor="orange" borderRadius="10" width="20" height="20" verticalAlignment="middle" />
+              <Label col="2" text="Touchable StackLayout" class="t-18 text-center" verticalAlignment="middle" />
+          </StackLayout>
+          <Button id="button2" text="Auto animation w/ TouchManager" tap="{{ onTapAnything }}" class="btn btn-primary btn-view-demo" touchAnimation="true" />
+          <Button id="button3" text="Touch animation ignored" tap="{{ onTapAnything }}" class="btn btn-primary btn-view-demo" ignoreTouchAnimation="true" isEnabled="false" />
+          <Button id="button4" text="Touch rotate" tap="{{ onTapAnything }}" class="btn btn-primary btn-view-demo btn-ruby" touchAnimation="{{ touchAnimationRotate }}" />
+          <Button id="button5" text="Touch grow, slow return" tap="{{ onTapAnything }}" class="btn btn-primary btn-view-demo btn-forest" touchAnimation="{{ touchAnimationGrow }}" />
+          <Button id="button6" text="Touch me, I'm a lil' shifty!" tap="{{ onTapAnything }}" class="btn btn-primary btn-view-demo btn-orange" touchAnimation="{{ touchAnimationBlowAway }}" />
+
+          <!-- uncomment the following along with ScrollView to test behavior in ScrollView -->
+          <!-- <Button text="TAP" tap="{{ onTapAnything }}" class="btn btn-primary btn-view-demo" touchAnimation="true" />
+          <Button text="TAP" tap="{{ onTapAnything }}" class="btn btn-primary btn-view-demo" touchAnimation="true" />
+          <Button text="TAP" tap="{{ onTapAnything }}" class="btn btn-primary btn-view-demo" touchAnimation="true" />
+          <Button text="TAP" tap="{{ onTapAnything }}" class="btn btn-primary btn-view-demo" touchAnimation="true" />
+          <Button text="TAP" tap="{{ onTapAnything }}" class="btn btn-primary btn-view-demo" touchAnimation="true" />
+          <Button text="TAP" tap="{{ onTapAnything }}" class="btn btn-primary btn-view-demo" touchAnimation="true" />
+          <Button text="TAP" tap="{{ onTapAnything }}" class="btn btn-primary btn-view-demo" touchAnimation="true" />
+          <Button text="TAP" tap="{{ onTapAnything }}" class="btn btn-primary btn-view-demo" touchAnimation="true" /> -->
+          
+      </StackLayout>
+    <!-- </ScrollView> -->
+</Page>
