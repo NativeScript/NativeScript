@@ -46,9 +46,15 @@ export class AndroidApplication extends Observable implements AndroidApplication
 	private _systemAppearance: 'light' | 'dark';
 	public paused: boolean;
 	public nativeApp: android.app.Application;
+	/**
+	 * @deprecated Use Utils.android.getApplicationContext() instead.
+	 */
 	public context: android.content.Context;
 	public foregroundActivity: androidx.appcompat.app.AppCompatActivity;
 	public startActivity: androidx.appcompat.app.AppCompatActivity;
+	/**
+	 * @deprecated Use Utils.android.getPackageName() instead.
+	 */
 	public packageName: string;
 	// we are using these property to store the callbacks to avoid early GC collection which would trigger MarkReachableObjects
 	private callbacks: any = {};
@@ -165,7 +171,7 @@ export { androidApp as android };
 let mainEntry: NavigationEntry;
 let started = false;
 
-function ensureNativeApplication() {
+export function ensureNativeApplication() {
 	if (!androidApp) {
 		androidApp = new AndroidApplication();
 		appCommon.setApplication(androidApp);
@@ -207,6 +213,7 @@ export function addCss(cssText: string, attributeScoped?: boolean): void {
 const CALLBACKS = '_callbacks';
 
 export function _resetRootView(entry?: NavigationEntry | string): void {
+	ensureNativeApplication();
 	const activity = androidApp.foregroundActivity || androidApp.startActivity;
 	if (!activity) {
 		throw new Error('Cannot find android activity.');
@@ -225,6 +232,7 @@ export function getMainEntry() {
 }
 
 export function getRootView(): View {
+	ensureNativeApplication();
 	// Use start activity as a backup when foregroundActivity is still not set
 	// in cases when we are getting the root view before activity.onResumed event is fired
 	const activity = androidApp.foregroundActivity || androidApp.startActivity;
@@ -269,14 +277,17 @@ export function getNativeApplication(): android.app.Application {
 }
 
 export function orientation(): 'portrait' | 'landscape' | 'unknown' {
+	ensureNativeApplication();
 	return androidApp.orientation;
 }
 
 export function systemAppearance(): 'dark' | 'light' {
+	ensureNativeApplication();
 	return androidApp.systemAppearance;
 }
 
 global.__onLiveSync = function __onLiveSync(context?: ModuleContext) {
+	ensureNativeApplication();
 	if (androidApp && androidApp.paused) {
 		return;
 	}
