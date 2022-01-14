@@ -406,12 +406,14 @@ function isHsvOrHsva(value: string): boolean {
 }
 
 function parseColorWithAlpha(value: string): any {
+	const separator = value.indexOf(',') !== -1 ? ',' : ' ';
 	const parts = value
 		.replace(/(rgb|hsl|hsv)a?\(/, '')
 		.replace(')', '')
+		.replace(/\//, ' ')
 		.replace(/%/g, '')
-		.trim()
-		.split(',');
+		.split(separator)
+		.filter((part) => Boolean(part.length));
 
 	let f = 255;
 	let s = 255;
