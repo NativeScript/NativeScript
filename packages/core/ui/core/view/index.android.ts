@@ -1210,11 +1210,13 @@ export class View extends ViewCommon {
 		const topPadding = Math.ceil(this.effectiveBorderTopWidth + this.effectivePaddingTop);
 		const rightPadding = Math.ceil(this.effectiveBorderRightWidth + this.effectivePaddingRight);
 		const bottomPadding = Math.ceil(this.effectiveBorderBottomWidth + this.effectivePaddingBottom);
+
 		if (this._isPaddingRelative) {
 			nativeView.setPaddingRelative(leftPadding, topPadding, rightPadding, bottomPadding);
 		} else {
 			nativeView.setPadding(leftPadding, topPadding, rightPadding, bottomPadding);
 		}
+
 		// reset clear flags
 		background.clearFlags = BackgroundClearFlags.NONE;
 	}
