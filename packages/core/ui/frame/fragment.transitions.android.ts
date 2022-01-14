@@ -8,6 +8,8 @@ import { FlipTransition } from '../transition/flip-transition';
 import { _resolveAnimationCurve } from '../animation';
 import lazy from '../../utils/lazy';
 import { Trace } from '../../trace';
+import { FadeTransition } from '../transition/fade-transition';
+import { SlideTransition } from '../transition/slide-transition';
 
 interface TransitionListener {
 	new (entry: ExpandedEntry, transition: androidx.transition.Transition): ExpandedTransitionListener;
@@ -26,6 +28,7 @@ let AnimationListener: android.animation.Animator.AnimatorListener;
 
 interface ExpandedTransitionListener extends androidx.transition.Transition.TransitionListener {
 	entry: ExpandedEntry;
+	backEntry?: BackstackEntry;
 	transition: androidx.transition.Transition;
 }
 
@@ -67,43 +70,39 @@ export function _setAndroidFragmentTransitions(animated: boolean, navigationTran
 	allowTransitionOverlap(newFragment);
 
 	let name = '';
-	let transition: Transition;
+	let customTransition: Transition;
 
 	if (navigationTransition) {
-		transition = navigationTransition.instance;
+		customTransition = navigationTransition.instance;
 		name = navigationTransition.name ? navigationTransition.name.toLowerCase() : '';
 	}
 
 	if (!animated) {
 		name = 'none';
-	} else if (transition) {
+	} else if (customTransition) {
 		name = 'custom';
-	} else if (name.indexOf('slide') !== 0 && name !== 'fade' && name.indexOf('flip') !== 0 && name.indexOf('explode') !== 0) {
+	} else if (name.indexOf('slide') !== 0 && name !== 'fade' && name.indexOf('flip') !== 0) {
 		// If we are given name that doesn't match any of ours - fallback to default.
 		name = 'default';
 	}
-
 	let currentFragmentNeedsDifferentAnimation = false;
 	if (currentEntry) {
 		_updateTransitions(currentEntry);
-		if (currentEntry.transitionName !== name || currentEntry.transition !== transition || isNestedDefaultTransition) {
+		if (currentEntry.transitionName !== name || currentEntry.transition !== customTransition || isNestedDefaultTransition) {
 			clearExitAndReenterTransitions(currentEntry, true);
 			currentFragmentNeedsDifferentAnimation = true;
 		}
 	}
-
+	let transition: Transition;
 	if (name === 'none') {
 		const noTransition = new NoTransition(0, null);
-
-		// Setup empty/immediate animator when transitioning to nested frame for first time.
-		// Also setup empty/immediate transition to be executed when navigating back to this page.
-		// TODO: Consider removing empty/immediate animator when migrating to official androidx.fragment.app.Fragment:1.2.
 		if (isNestedDefaultTransition) {
-			fragmentTransaction.setCustomAnimations(animFadeIn, animFadeOut);
-			setupAllAnimation(newEntry, noTransition);
-			setupNewFragmentCustomTransition({ duration: 0, curve: null }, newEntry, noTransition);
-		} else {
-			setupNewFragmentCustomTransition({ duration: 0, curve: null }, newEntry, noTransition);
+			// with androidx.fragment 1.3.0 the first fragment animation is not triggered
+			// so let's simulate a transition end
+			setTimeout(() => {
+				addToWaitingQueue(newEntry);
+				transitionOrAnimationCompleted(newEntry, null);
+			});
 		}
 
 		newEntry.isNestedDefaultTransition = isNestedDefaultTransition;
@@ -111,52 +110,40 @@ export function _setAndroidFragmentTransitions(animated: boolean, navigationTran
 		if (currentFragmentNeedsDifferentAnimation) {
 			setupCurrentFragmentCustomTransition({ duration: 0, curve: null }, currentEntry, noTransition);
 		}
-	} else if (name === 'custom') {
+	} else if (customTransition) {
 		setupNewFragmentCustomTransition(
 			{
-				duration: transition.getDuration(),
-				curve: transition.getCurve(),
+				duration: customTransition.getDuration(),
+				curve: customTransition.getCurve(),
 			},
 			newEntry,
-			transition
+			customTransition
 		);
 		if (currentFragmentNeedsDifferentAnimation) {
 			setupCurrentFragmentCustomTransition(
 				{
-					duration: transition.getDuration(),
-					curve: transition.getCurve(),
+					duration: customTransition.getDuration(),
+					curve: customTransition.getCurve(),
 				},
 				currentEntry,
-				transition
+				customTransition
 			);
 		}
 	} else if (name === 'default') {
-		setupNewFragmentFadeTransition({ duration: 150, curve: null }, newEntry);
-		if (currentFragmentNeedsDifferentAnimation) {
-			setupCurrentFragmentFadeTransition({ duration: 150, curve: null }, currentEntry);
-		}
+		transition = new FadeTransition(150, null);
 	} else if (name.indexOf('slide') === 0) {
-		setupNewFragmentSlideTransition(navigationTransition, newEntry, name);
-		if (currentFragmentNeedsDifferentAnimation) {
-			setupCurrentFragmentSlideTransition(navigationTransition, currentEntry, name);
-		}
+		const direction = name.substring('slide'.length) || 'left'; //Extract the direction from the string
+		transition = new SlideTransition(direction, navigationTransition.duration, navigationTransition.curve);
 	} else if (name === 'fade') {
-		setupNewFragmentFadeTransition(navigationTransition, newEntry);
-		if (currentFragmentNeedsDifferentAnimation) {
-			setupCurrentFragmentFadeTransition(navigationTransition, currentEntry);
-		}
-	} else if (name === 'explode') {
-		setupNewFragmentExplodeTransition(navigationTransition, newEntry);
-		if (currentFragmentNeedsDifferentAnimation) {
-			setupCurrentFragmentExplodeTransition(navigationTransition, currentEntry);
-		}
+		transition = new FadeTransition(navigationTransition.duration, navigationTransition.curve);
 	} else if (name.indexOf('flip') === 0) {
-		const direction = name.substr('flip'.length) || 'right'; //Extract the direction from the string
-		const flipTransition = new FlipTransition(direction, navigationTransition.duration, navigationTransition.curve);
-
-		setupNewFragmentCustomTransition(navigationTransition, newEntry, flipTransition);
+		const direction = name.substring('flip'.length) || 'right'; //Extract the direction from the string
+		transition = new FlipTransition(direction, navigationTransition.duration, navigationTransition.curve);
+	}
+	if (transition) {
+		setupNewFragmentCustomTransition(navigationTransition, newEntry, transition);
 		if (currentFragmentNeedsDifferentAnimation) {
-			setupCurrentFragmentCustomTransition(navigationTransition, currentEntry, flipTransition);
+			setupCurrentFragmentCustomTransition(navigationTransition, currentEntry, transition);
 		}
 	}
 
@@ -225,6 +212,7 @@ function getAnimationListener(): android.animation.Animator.AnimatorListener {
 
 			onAnimationStart(animator: ExpandedAnimator): void {
 				const entry = animator.entry;
+				const backEntry = animator.backEntry;
 				addToWaitingQueue(entry);
 				if (Trace.isEnabled()) {
 					Trace.write(`START ${animator.transitionType} for ${entry.fragmentTag}`, Trace.categories.Transition);
@@ -239,11 +227,16 @@ function getAnimationListener(): android.animation.Animator.AnimatorListener {
 			}
 
 			onAnimationEnd(animator: ExpandedAnimator): void {
+				const entry = animator.entry;
+				const backEntry = animator.backEntry;
 				if (Trace.isEnabled()) {
-					Trace.write(`END ${animator.transitionType} for ${animator.entry.fragmentTag}`, Trace.categories.Transition);
+					Trace.write(`END ${animator.transitionType} for ${entry.fragmentTag} backEntry:${backEntry ? backEntry.fragmentTag : 'none'}`, Trace.categories.Transition);
 				}
-				animator.entry.isAnimationRunning = false;
-				transitionOrAnimationCompleted(animator.entry, animator.backEntry);
+				if (entry) {
+					entry.isAnimationRunning = false;
+				}
+				transitionOrAnimationCompleted(entry, backEntry);
+				animator.backEntry = null;
 			}
 
 			onAnimationCancel(animator: ExpandedAnimator): void {
@@ -350,10 +343,12 @@ function getTransitionListener(entry: ExpandedEntry, transition: androidx.transi
 
 			onTransitionEnd(transition: androidx.transition.Transition): void {
 				const entry = this.entry;
+				const backEntry = this.backEntry;
 				if (Trace.isEnabled()) {
-					Trace.write(`END ${toShortString(transition)} transition for ${entry.fragmentTag}`, Trace.categories.Transition);
+					Trace.write(`END ${toShortString(transition)} transition for ${entry.fragmentTag} backEntry:${backEntry ? backEntry.fragmentTag : 'none'}`, Trace.categories.Transition);
 				}
-				transitionOrAnimationCompleted(entry, this.backEntry);
+				transitionOrAnimationCompleted(entry, backEntry);
+				this.backEntry = null;
 			}
 
 			onTransitionResume(transition: androidx.transition.Transition): void {
@@ -627,19 +622,10 @@ function setupCurrentFragmentFadeTransition(navTransition: NavigationTransition,
 	setReenterTransition(navTransition, entry, fadeInReenter);
 }
 
-function setupCurrentFragmentExplodeTransition(navTransition: NavigationTransition, entry: ExpandedEntry): void {
-	setExitTransition(navTransition, entry, new androidx.transition.Explode());
-	setReenterTransition(navTransition, entry, new androidx.transition.Explode());
-}
-
-function setupNewFragmentExplodeTransition(navTransition: NavigationTransition, entry: ExpandedEntry): void {
-	setupCurrentFragmentExplodeTransition(navTransition, entry);
-
-	setEnterTransition(navTransition, entry, new androidx.transition.Explode());
-	setReturnTransition(navTransition, entry, new androidx.transition.Explode());
-}
-
 function setUpNativeTransition(navigationTransition: NavigationTransition, nativeTransition: androidx.transition.Transition) {
+	if (!navigationTransition) {
+		return;
+	}
 	if (navigationTransition.duration) {
 		nativeTransition.setDuration(navigationTransition.duration);
 	}
@@ -669,22 +655,23 @@ function transitionOrAnimationCompleted(entry: ExpandedEntry, backEntry: Backsta
 	entries.delete(entry);
 	if (entries.size === 0) {
 		const frame = entry.resolvedPage.frame;
+		if (frame) {
+			// We have 0 or 1 entry per frameId in completedEntries
+			// So there is no need to make it to Set like waitingQueue
+			const previousCompletedAnimationEntry = completedEntries.get(frameId);
+			completedEntries.delete(frameId);
+			waitingQueue.delete(frameId);
 
-		// We have 0 or 1 entry per frameId in completedEntries
-		// So there is no need to make it to Set like waitingQueue
-		const previousCompletedAnimationEntry = completedEntries.get(frameId);
-		completedEntries.delete(frameId);
-		waitingQueue.delete(frameId);
-
-		const navigationContext = frame._executingContext || {
-			navigationType: NavigationType.back,
-		};
-		let current = frame.isCurrent(entry) ? previousCompletedAnimationEntry : entry;
-		current = current || entry;
-		// Will be null if Frame is shown modally...
-		// transitionOrAnimationCompleted fires again (probably bug in android).
-		if (current) {
-			setTimeout(() => frame.setCurrent(backEntry || current, navigationContext.navigationType));
+			const navigationContext = frame._executingContext || {
+				navigationType: NavigationType.back,
+			};
+			let current = frame.isCurrent(entry) ? previousCompletedAnimationEntry : entry;
+			current = current || entry;
+			// Will be null if Frame is shown modally...
+			// transitionOrAnimationCompleted fires again (probably bug in android).
+			if (current) {
+				setTimeout(() => frame.setCurrent(backEntry || current, navigationContext.navigationType));
+			}
 		}
 	} else {
 		completedEntries.set(frameId, entry);

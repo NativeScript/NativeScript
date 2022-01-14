@@ -72,6 +72,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public static layoutChangedEvent = 'layoutChanged';
 	public static shownModallyEvent = 'shownModally';
 	public static showingModallyEvent = 'showingModally';
+	public static closingModallyEvent = 'closingModally';
 	public static accessibilityBlurEvent = accessibilityBlurEvent;
 	public static accessibilityFocusEvent = accessibilityFocusEvent;
 	public static accessibilityFocusChangedEvent = accessibilityFocusChangedEvent;
@@ -440,6 +441,13 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 			object: this,
 			context: this._modalContext,
 			closeCallback: this._closeModalCallback,
+		};
+		this.notify(args);
+	}
+	protected _raiseClosingModallyEvent() {
+		const args: EventData = {
+			eventName: ViewCommon.closingModallyEvent,
+			object: this,
 		};
 		this.notify(args);
 	}

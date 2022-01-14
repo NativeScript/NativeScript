@@ -11,16 +11,16 @@ const FragmentClass = (<any>org.nativescript.widgets.FragmentBase).extend('com.t
 		return this._callbacks.onCreateAnimator(this, transit, enter, nextAnim, superProto.onCreateAnimator);
 	},
 
+	onCreateAnimation(transit: number, enter: boolean, nextAnim: number): android.view.animation.Animation {
+		return this._callbacks.onCreateAnimation(this, transit, enter, nextAnim, superProto.onCreateAnimation);
+	},
+
 	onStop(): void {
 		this._callbacks.onStop(this, superProto.onStop);
 	},
 
 	onPause(): void {
 		this._callbacks.onPause(this, superProto.onPause);
-	},
-
-	onResume(): void {
-		this._callbacks.onResume(this, superProto.onResume);
 	},
 
 	onCreate(savedInstanceState: android.os.Bundle) {
