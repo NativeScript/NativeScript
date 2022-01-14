@@ -832,6 +832,12 @@ export abstract class View extends ViewCommon {
 	_redrawNativeBackground(value: any): void;
 	/**
 	 * @private
+	 *  method called on Android to apply the background. This allows custom handling
+	 */
+	_applyBackground(background: Background, isBorderDrawable: boolean, onlyColor: boolean, backgroundDrawable: any);
+
+	/**
+	 * @private
 	 */
 	_removeAnimation(animation: Animation): boolean;
 	/**
