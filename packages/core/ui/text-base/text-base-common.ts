@@ -15,9 +15,7 @@ import { TextBase as TextBaseDefinition } from '.';
 import { Color } from '../../color';
 import { CSSShadow, parseCSSShadow } from '../styling/css-shadow';
 
-const CHILD_SPAN = 'Span';
 const CHILD_FORMATTED_TEXT = 'formattedText';
-const CHILD_FORMATTED_STRING = 'FormattedString';
 
 export abstract class TextBaseCommon extends View implements TextBaseDefinition {
 	public _isSingleLine: boolean;
@@ -168,7 +166,7 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 	}
 
 	public _addChildFromBuilder(name: string, value: any): void {
-		if (name === CHILD_SPAN) {
+		if (name === Span.name) {
 			if (!this.formattedText) {
 				const formattedText = new FormattedString();
 				formattedText.spans.push(value);
@@ -176,7 +174,7 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 			} else {
 				this.formattedText.spans.push(value);
 			}
-		} else if (name === CHILD_FORMATTED_TEXT || name === CHILD_FORMATTED_STRING) {
+		} else if (name === CHILD_FORMATTED_TEXT || name === FormattedString.name) {
 			this.formattedText = value;
 		}
 	}
