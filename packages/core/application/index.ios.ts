@@ -353,8 +353,16 @@ let iosApp: iOSApplication;
 /* tslint:enable */
 export { iosApp as ios };
 
+export function ensureNativeApplication() {
+	if (!iosApp) {
+		iosApp = new iOSApplication();
+		setApplication(iosApp);
+	}
+}
+
 // attach on global, so it can be overwritten in NativeScript Angular
 (<any>global).__onLiveSyncCore = function (context?: ModuleContext) {
+	ensureNativeApplication();
 	iosApp._onLivesync(context);
 };
 
@@ -383,15 +391,13 @@ export function getMainEntry() {
 }
 
 export function getRootView() {
+	ensureNativeApplication();
 	return iosApp.rootView;
 }
 
 let started = false;
 export function run(entry?: string | NavigationEntry) {
-	if (!iosApp) {
-		iosApp = new iOSApplication();
-		setApplication(iosApp);
-	}
+	ensureNativeApplication();
 
 	mainEntry = typeof entry === 'string' ? { moduleName: entry } : entry;
 	started = true;
@@ -461,11 +467,13 @@ export function addCss(cssText: string, attributeScoped?: boolean): void {
 }
 
 export function _resetRootView(entry?: NavigationEntry | string) {
+	ensureNativeApplication();
 	mainEntry = typeof entry === 'string' ? { moduleName: entry } : entry;
 	iosApp.setWindowContent();
 }
 
 export function getNativeApplication(): UIApplication {
+	ensureNativeApplication();
 	return iosApp.nativeApp;
 }
 
@@ -506,6 +514,7 @@ function setViewControllerView(view: View): void {
 }
 
 function setRootViewsCssClasses(rootView: View): void {
+	ensureNativeApplication();
 	const deviceType = Device.deviceType.toLowerCase();
 
 	CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${IOS_PLATFORM}`);
@@ -518,6 +527,7 @@ function setRootViewsCssClasses(rootView: View): void {
 }
 
 function setRootViewsSystemAppearanceCssClass(rootView: View): void {
+	ensureNativeApplication();
 	if (majorVersion >= 13) {
 		const systemAppearanceCssClass = `${CSSUtils.CLASS_PREFIX}${iosApp.systemAppearance}`;
 		CSSUtils.pushToSystemCssClasses(systemAppearanceCssClass);
@@ -526,10 +536,12 @@ function setRootViewsSystemAppearanceCssClass(rootView: View): void {
 }
 
 export function orientation(): 'portrait' | 'landscape' | 'unknown' {
+	ensureNativeApplication();
 	return iosApp.orientation;
 }
 
 export function systemAppearance(): 'dark' | 'light' {
+	ensureNativeApplication();
 	return iosApp.systemAppearance;
 }
 
