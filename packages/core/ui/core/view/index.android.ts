@@ -22,7 +22,7 @@ import { AndroidActivityBackPressedEventData, android as androidApp } from '../.
 import { Device } from '../../../platform';
 import lazy from '../../../utils/lazy';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty } from '../../../accessibility/accessibility-properties';
-import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, setupAccessibleView, isAccessibilityServiceEnabled, sendAccessibilityEvent, updateAccessibilityProperties, updateContentDescription, AccessibilityState } from '../../../accessibility';
+import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, isAccessibilityServiceEnabled, sendAccessibilityEvent, updateAccessibilityProperties, updateContentDescription, AccessibilityState } from '../../../accessibility';
 import * as Utils from '../../../utils';
 import { CSSShadow } from '../../styling/css-shadow';
 
@@ -244,6 +244,8 @@ function initializeDialogFragment() {
 			if (this._fullscreen) {
 				const window = this.getDialog().getWindow();
 				const length = android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+				// set the animations to use on showing and hiding the dialog
+				// window.setWindowAnimations(16973826); //android.R.style.Animation_Dialog
 				window.setLayout(length, length);
 				// This removes the default backgroundDrawable so there are no margins.
 				window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.WHITE));
@@ -321,12 +323,6 @@ export class View extends ViewCommon {
 	private _rootManager: androidx.fragment.app.FragmentManager;
 
 	nativeViewProtected: android.view.View;
-
-	constructor() {
-		super();
-
-		this.on(View.loadedEvent, () => setupAccessibleView(this));
-	}
 
 	// TODO: Implement unobserve that detach the touchListener.
 	_observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
@@ -495,7 +491,6 @@ export class View extends ViewCommon {
 		this.nativeViewProtected.setOnTouchListener(this.touchListener);
 
 		this.touchListenerIsSet = true;
-
 		if (this.nativeViewProtected.setClickable) {
 			this.nativeViewProtected.setClickable(this.isUserInteractionEnabled);
 		}
@@ -543,6 +538,11 @@ export class View extends ViewCommon {
 
 	@profile
 	public requestLayout(): void {
+		// if (this._suspendRequestLayout) {
+		// 	this._requetLayoutNeeded = true;
+		// 	return;
+		// }
+		// this._requetLayoutNeeded = false;
 		super.requestLayout();
 		if (this.nativeViewProtected) {
 			this.nativeViewProtected.requestLayout();
@@ -722,6 +722,7 @@ export class View extends ViewCommon {
 	}
 
 	protected _hideNativeModalView(parent: View, whenClosedCallback: () => void) {
+		this._raiseClosingModallyEvent();
 		const manager = this._dialogFragment.getFragmentManager();
 		if (manager) {
 			this._dialogFragment.dismissAllowingStateLoss();
@@ -814,7 +815,9 @@ export class View extends ViewCommon {
 
 	[accessibilityRoleProperty.setNative](value: AccessibilityRole): void {
 		this.accessibilityRole = value;
-		updateAccessibilityProperties(this);
+		if (this.accessible) {
+			updateAccessibilityProperties(this);
+		}
 
 		if (android.os.Build.VERSION.SDK_INT >= 28) {
 			this.nativeViewProtected?.setAccessibilityHeading(value === AccessibilityRole.Header);
@@ -1214,7 +1217,7 @@ export class View extends ViewCommon {
 		} else {
 			nativeView.setPadding(leftPadding, topPadding, rightPadding, bottomPadding);
 		}
-		
+
 		// reset clear flags
 		background.clearFlags = BackgroundClearFlags.NONE;
 	}

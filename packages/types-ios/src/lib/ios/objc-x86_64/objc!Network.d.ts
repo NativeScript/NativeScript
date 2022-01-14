@@ -434,7 +434,7 @@ declare function nw_content_context_get_is_final(context: NSObject): boolean;
 
 declare function nw_content_context_get_relative_priority(context: NSObject): number;
 
-declare function nw_content_context_set_antecedent(context: NSObject, antecendent_context: NSObject): void;
+declare function nw_content_context_set_antecedent(context: NSObject, antecedent_context: NSObject): void;
 
 declare function nw_content_context_set_expiration_milliseconds(context: NSObject, expiration_milliseconds: number): void;
 

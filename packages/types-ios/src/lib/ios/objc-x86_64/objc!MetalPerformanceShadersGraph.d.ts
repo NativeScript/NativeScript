@@ -231,6 +231,34 @@ declare class MPSGraph extends NSObject {
 
 	powerWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	randomPhiloxStateTensorWithCounterLowCounterHighKeyName(counterLow: number, counterHigh: number, key: number, name: string): MPSGraphTensor;
+
+	randomPhiloxStateTensorWithSeedName(seed: number, name: string): MPSGraphTensor;
+
+	randomTensorWithShapeDescriptorName(shape: NSArray<number> | number[], descriptor: MPSGraphRandomOpDescriptor, name: string): MPSGraphTensor;
+
+	randomTensorWithShapeDescriptorSeedName(shape: NSArray<number> | number[], descriptor: MPSGraphRandomOpDescriptor, seed: number, name: string): MPSGraphTensor;
+
+	randomTensorWithShapeDescriptorStateTensorName(shape: NSArray<number> | number[], descriptor: MPSGraphRandomOpDescriptor, state: MPSGraphTensor, name: string): NSArray<MPSGraphTensor>;
+
+	randomTensorWithShapeTensorDescriptorName(shapeTensor: MPSGraphTensor, descriptor: MPSGraphRandomOpDescriptor, name: string): MPSGraphTensor;
+
+	randomTensorWithShapeTensorDescriptorSeedName(shapeTensor: MPSGraphTensor, descriptor: MPSGraphRandomOpDescriptor, seed: number, name: string): MPSGraphTensor;
+
+	randomTensorWithShapeTensorDescriptorStateTensorName(shapeTensor: MPSGraphTensor, descriptor: MPSGraphRandomOpDescriptor, state: MPSGraphTensor, name: string): NSArray<MPSGraphTensor>;
+
+	randomUniformTensorWithShapeName(shape: NSArray<number> | number[], name: string): MPSGraphTensor;
+
+	randomUniformTensorWithShapeSeedName(shape: NSArray<number> | number[], seed: number, name: string): MPSGraphTensor;
+
+	randomUniformTensorWithShapeStateTensorName(shape: NSArray<number> | number[], state: MPSGraphTensor, name: string): NSArray<MPSGraphTensor>;
+
+	randomUniformTensorWithShapeTensorName(shapeTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+
+	randomUniformTensorWithShapeTensorSeedName(shapeTensor: MPSGraphTensor, seed: number, name: string): MPSGraphTensor;
+
+	randomUniformTensorWithShapeTensorStateTensorName(shapeTensor: MPSGraphTensor, state: MPSGraphTensor, name: string): NSArray<MPSGraphTensor>;
+
 	reLUGradientWithIncomingGradientSourceTensorName(gradient: MPSGraphTensor, source: MPSGraphTensor, name: string): MPSGraphTensor;
 
 	reLUWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
@@ -243,9 +271,17 @@ declare class MPSGraph extends NSObject {
 
 	reductionArgMinimumWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
 
+	reductionMaximumPropagateNaNWithTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string): MPSGraphTensor;
+
+	reductionMaximumPropagateNaNWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
+
 	reductionMaximumWithTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string): MPSGraphTensor;
 
 	reductionMaximumWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
+
+	reductionMinimumPropagateNaNWithTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string): MPSGraphTensor;
+
+	reductionMinimumPropagateNaNWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
 
 	reductionMinimumWithTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string): MPSGraphTensor;
 
@@ -693,6 +729,47 @@ declare class MPSGraphPooling4DOpDescriptor extends NSObject implements NSCopyin
 	paddingValues: NSArray<number>;
 
 	strides: NSArray<number>;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare const enum MPSGraphRandomDistribution {
+
+	Uniform = 0,
+
+	Normal = 1,
+
+	TruncatedNormal = 2
+}
+
+declare const enum MPSGraphRandomNormalSamplingMethod {
+
+	InvCDF = 0,
+
+	BoxMuller = 1
+}
+
+declare class MPSGraphRandomOpDescriptor extends NSObject implements NSCopying {
+
+	static alloc(): MPSGraphRandomOpDescriptor; // inherited from NSObject
+
+	static new(): MPSGraphRandomOpDescriptor; // inherited from NSObject
+
+	distribution: MPSGraphRandomDistribution;
+
+	max: number;
+
+	maxInteger: number;
+
+	mean: number;
+
+	min: number;
+
+	minInteger: number;
+
+	samplingMethod: MPSGraphRandomNormalSamplingMethod;
+
+	standardDeviation: number;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }

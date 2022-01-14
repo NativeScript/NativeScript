@@ -5,6 +5,7 @@ import { View, Point } from '../core/view';
 import { LinearGradient } from './linear-gradient';
 import { Color } from '../../color';
 import { iOSNativeHelper, isDataURI, isFileOrResourcePath, layout } from '../../utils';
+import { ios as iosViewUtils, NativeScriptUIView } from '../utils';
 import { ImageSource } from '../../image-source';
 import { CSSValue, parse as cssParse } from '../../css-value';
 import { CSSShadow } from './css-shadow';
@@ -12,23 +13,6 @@ import { Length } from './style-properties';
 import { BackgroundClearFlags } from './background-common';
 
 export * from './background-common';
-
-interface NativeView extends UIView {
-	hasNonUniformBorder: boolean;
-
-	borderLayer: CALayer;
-
-	hasBorderMask: boolean;
-	borderOriginalMask: CALayer;
-
-	topBorderLayer: CALayer;
-	rightBorderLayer: CALayer;
-	bottomBorderLayer: CALayer;
-	leftBorderLayer: CALayer;
-
-	gradientLayer: CAGradientLayer;
-	boxShadowLayer: CALayer;
-}
 
 interface Rect {
 	left: number;
@@ -47,7 +31,7 @@ export enum CacheMode {
 export namespace ios {
 	export function createBackgroundUIColor(view: View, callback: (uiColor: UIColor) => void, flip?: boolean): void {
 		const background = view.style.backgroundInternal;
-		const nativeView = <NativeView>view.nativeViewProtected;
+		const nativeView = <NativeScriptUIView>view.nativeViewProtected;
 
 		if (background.clearFlags & BackgroundClearFlags.CLEAR_BOX_SHADOW) {
 			// clear box shadow if it has been removed!
@@ -60,9 +44,9 @@ export namespace ios {
 			clearNonUniformBorders(nativeView);
 		}
 
-		clearGradient(nativeView);
+		iosViewUtils.clearGradient(nativeView);
 		if (background.image instanceof LinearGradient) {
-			drawGradient(nativeView, background.image);
+			iosViewUtils.drawGradient(nativeView, background.image);
 		}
 
 		const hasNonUniformBorderWidths = background.hasBorderWidth() && !background.hasUniformBorder();
@@ -113,7 +97,7 @@ function onScroll(this: void, args: ScrollEventData): void {
 	}
 }
 
-function adjustLayersForScrollView(nativeView: UIScrollView & NativeView) {
+function adjustLayersForScrollView(nativeView: UIScrollView & NativeScriptUIView) {
 	const layer = nativeView.borderLayer;
 	if (layer instanceof CALayer) {
 		// Compensates with transition for the background layers for scrolling in ScrollView based controls.
@@ -149,7 +133,7 @@ function subscribeForScrollNotifications(view: View) {
 	}
 }
 
-function clearNonUniformBorders(nativeView: NativeView): void {
+function clearNonUniformBorders(nativeView: NativeScriptUIView): void {
 	if (nativeView.borderLayer) {
 		nativeView.borderLayer.removeFromSuperlayer();
 	}
@@ -459,7 +443,7 @@ function cssValueToDeviceIndependentPixels(source: string, total: number): numbe
 	}
 }
 
-function drawUniformColorNonUniformBorders(nativeView: NativeView, background: BackgroundDefinition) {
+function drawUniformColorNonUniformBorders(nativeView: NativeScriptUIView, background: BackgroundDefinition) {
 	const layer = nativeView.layer;
 	layer.backgroundColor = undefined;
 	layer.borderColor = undefined;
@@ -587,7 +571,7 @@ function drawUniformColorNonUniformBorders(nativeView: NativeView, background: B
 	nativeView.hasNonUniformBorder = true;
 }
 
-function drawNoRadiusNonUniformBorders(nativeView: NativeView, background: BackgroundDefinition) {
+function drawNoRadiusNonUniformBorders(nativeView: NativeScriptUIView, background: BackgroundDefinition) {
 	const borderLayer = CALayer.layer();
 	nativeView.layer.addSublayer(borderLayer);
 	nativeView.borderLayer = borderLayer;
@@ -726,7 +710,7 @@ function drawNoRadiusNonUniformBorders(nativeView: NativeView, background: Backg
 }
 
 // TODO: use sublayer if its applied to a layout
-function drawBoxShadow(nativeView: NativeView, view: View, boxShadow: CSSShadow, background: BackgroundDefinition, useSubLayer: boolean = false) {
+function drawBoxShadow(nativeView: NativeScriptUIView, view: View, boxShadow: CSSShadow, background: BackgroundDefinition, useSubLayer: boolean = false) {
 	const layer: CALayer = iOSNativeHelper.getShadowLayer(nativeView, 'ns-box-shadow');
 
 	layer.masksToBounds = false;
@@ -765,7 +749,7 @@ function drawBoxShadow(nativeView: NativeView, view: View, boxShadow: CSSShadow,
 	layer.shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(bounds, cornerRadius).CGPath;
 }
 
-function clearBoxShadow(nativeView: NativeView) {
+function clearBoxShadow(nativeView: NativeScriptUIView) {
 	nativeView.clipsToBounds = true;
 	const layer: CALayer = iOSNativeHelper.getShadowLayer(nativeView, 'ns-box-shadow', false);
 	if (!layer) {
@@ -777,46 +761,6 @@ function clearBoxShadow(nativeView: NativeView) {
 	layer.cornerRadius = 0.0;
 	layer.shadowRadius = 0.0;
 	layer.shadowOpacity = 0.0;
-}
-
-function drawGradient(nativeView: NativeView, gradient: LinearGradient) {
-	const gradientLayer = CAGradientLayer.layer();
-	gradientLayer.frame = nativeView.bounds;
-	nativeView.gradientLayer = gradientLayer;
-
-	const iosColors = NSMutableArray.alloc().initWithCapacity(gradient.colorStops.length);
-	const iosStops = NSMutableArray.alloc<number>().initWithCapacity(gradient.colorStops.length);
-	let hasStops = false;
-
-	gradient.colorStops.forEach((stop) => {
-		iosColors.addObject(stop.color.ios.CGColor);
-		if (stop.offset) {
-			iosStops.addObject(stop.offset.value);
-			hasStops = true;
-		}
-	});
-
-	gradientLayer.colors = iosColors;
-
-	if (hasStops) {
-		gradientLayer.locations = iosStops;
-	}
-
-	const alpha = gradient.angle / (Math.PI * 2);
-	const startX = Math.pow(Math.sin(Math.PI * (alpha + 0.75)), 2);
-	const startY = Math.pow(Math.sin(Math.PI * (alpha + 0.5)), 2);
-	const endX = Math.pow(Math.sin(Math.PI * (alpha + 0.25)), 2);
-	const endY = Math.pow(Math.sin(Math.PI * alpha), 2);
-	gradientLayer.startPoint = { x: startX, y: startY };
-	gradientLayer.endPoint = { x: endX, y: endY };
-
-	nativeView.layer.insertSublayerAtIndex(gradientLayer, 0);
-}
-
-function clearGradient(nativeView: NativeView): void {
-	if (nativeView.gradientLayer) {
-		nativeView.gradientLayer.removeFromSuperlayer();
-	}
 }
 
 function drawClipPath(nativeView: UIView, background: BackgroundDefinition) {

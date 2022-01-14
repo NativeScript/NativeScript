@@ -27,6 +27,8 @@ declare class MXAppLaunchMetric extends MXMetric {
 
 	readonly histogrammedApplicationResumeTime: MXHistogram<NSUnitDuration>;
 
+	readonly histogrammedOptimizedTimeToFirstDraw: MXHistogram<NSUnitDuration>;
+
 	readonly histogrammedTimeToFirstDraw: MXHistogram<NSUnitDuration>;
 }
 
