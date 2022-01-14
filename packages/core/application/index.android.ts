@@ -165,11 +165,15 @@ export { androidApp as android };
 let mainEntry: NavigationEntry;
 let started = false;
 
-export function run(entry?: NavigationEntry | string) {
+function ensureNativeApplication() {
 	if (!androidApp) {
 		androidApp = new AndroidApplication();
 		appCommon.setApplication(androidApp);
 	}
+}
+
+export function run(entry?: NavigationEntry | string) {
+	ensureNativeApplication();
 
 	if (started) {
 		throw new Error('Application is already started.');
@@ -233,6 +237,8 @@ export function getRootView(): View {
 }
 
 export function getNativeApplication(): android.app.Application {
+	ensureNativeApplication();
+
 	// Try getting it from module - check whether application.android.init has been explicitly called
 	let nativeApp = androidApp.nativeApp;
 	if (!nativeApp) {
