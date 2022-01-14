@@ -135,7 +135,6 @@ export function parseColorKeyword(value, start: number, keyword = parseKeyword(v
 	const parseColor = keyword && getKnownColor(keyword.value);
 	if (parseColor != null) {
 		const end = keyword.end;
-		const value = parseColor;
 		return { start, end, value: new Color(parseColor) };
 	}
 	return null;
