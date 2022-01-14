@@ -1,7 +1,11 @@
 import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
-import { ColorStop } from './gradient';
 import { LinearGradient as CSSLinearGradient } from '../../css/parser';
+
+export interface ColorStop {
+	color: Color;
+	offset?: CoreTypes.LengthPercentUnit;
+}
 
 export class LinearGradient {
 	public angle: number;
