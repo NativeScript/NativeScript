@@ -1,4 +1,4 @@
-import { initAccessibilityFontScale } from 'accessibility';
+import { initAccessibilityFontScale } from './font-scale';
 import * as Application from '../application';
 import { Trace } from '../trace';
 import type { View } from '../ui/core/view';
