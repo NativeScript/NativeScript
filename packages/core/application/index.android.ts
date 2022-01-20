@@ -336,6 +336,9 @@ function initLifecycleCallbacks() {
 
 	const lifecycleCallbacks = new android.app.Application.ActivityLifecycleCallbacks(<any>{
 		onActivityCreated: <any>profile('onActivityCreated', function (activity: androidx.appcompat.app.AppCompatActivity, savedInstanceState: android.os.Bundle) {
+			if (!androidApp.foregroundActivity) {
+				androidApp.foregroundActivity = activity;
+			}
 			setThemeOnLaunch(activity, undefined, undefined);
 
 			if (!androidApp.startActivity) {
