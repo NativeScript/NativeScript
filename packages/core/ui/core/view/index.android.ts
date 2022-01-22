@@ -13,8 +13,7 @@ import { EventData } from '../../../data/observable';
 import { perspectiveProperty, visibilityProperty, opacityProperty, horizontalAlignmentProperty, verticalAlignmentProperty, minWidthProperty, minHeightProperty, widthProperty, heightProperty, marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, androidElevationProperty, androidDynamicElevationOffsetProperty } from '../../styling/style-properties';
 import { CoreTypes } from '../../../core-types';
 
-import { Background, ad as androidBackground } from '../../styling/background';
-import { BackgroundClearFlags, refreshBorderDrawable } from '../../styling/background.android';
+import { Background, BackgroundClearFlags, refreshBorderDrawable } from '../../styling/background';
 import { profile } from '../../../profiling';
 import { topmost } from '../../frame/frame-stack';
 import { Screen } from '../../../platform';
