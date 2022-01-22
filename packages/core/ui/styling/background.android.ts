@@ -34,7 +34,7 @@ function fromGradient(gradient: LinearGradient): org.nativescript.widgets.Linear
 }
 
 const pattern = /url\(('|")(.*?)\1\)/;
-function refreshBorderDrawable(this: void, view: View, borderDrawable: org.nativescript.widgets.BorderDrawable) {
+export function refreshBorderDrawable(view: View, borderDrawable: org.nativescript.widgets.BorderDrawable) {
 	const nativeView = <android.view.View>view.nativeViewProtected;
 	const context = nativeView.getContext();
 
