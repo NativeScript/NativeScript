@@ -95,15 +95,25 @@ export function _setAndroidFragmentTransitions(animated: boolean, navigationTran
 	if (name === 'none') {
 		const noTransition = new NoTransition(0, null);
 
-		// Setup empty/immediate animator when transitioning to nested frame for first time.
-		// Also setup empty/immediate transition to be executed when navigating back to this page.
-		// TODO: Consider removing empty/immediate animator when migrating to official androidx.fragment.app.Fragment:1.2.
-		if (isNestedDefaultTransition) {
-			fragmentTransaction.setCustomAnimations(animFadeIn, animFadeOut);
-			setupAllAnimation(newEntry, noTransition);
-			setupNewFragmentCustomTransition({ duration: 0, curve: null }, newEntry, noTransition);
+		if ((<any>androidx.fragment.app.FragmentManager).enableNewStateManager) {
+			// androidx.fragment 1.3.0+
+			if (isNestedDefaultTransition) {
+				setTimeout(() => {
+					addToWaitingQueue(newEntry);
+					transitionOrAnimationCompleted(newEntry, null);
+				});
+			}
 		} else {
-			setupNewFragmentCustomTransition({ duration: 0, curve: null }, newEntry, noTransition);
+			// Setup empty/immediate animator when transitioning to nested frame for first time.
+			// Also setup empty/immediate transition to be executed when navigating back to this page.
+			// TODO: Consider removing empty/immediate animator when migrating to official androidx.fragment.app.Fragment:1.2.
+			if (isNestedDefaultTransition) {
+				fragmentTransaction.setCustomAnimations(animFadeIn, animFadeOut);
+				setupAllAnimation(newEntry, noTransition);
+				setupNewFragmentCustomTransition({ duration: 0, curve: null }, newEntry, noTransition);
+			} else {
+				setupNewFragmentCustomTransition({ duration: 0, curve: null }, newEntry, noTransition);
+			}
 		}
 
 		newEntry.isNestedDefaultTransition = isNestedDefaultTransition;
@@ -669,22 +679,23 @@ function transitionOrAnimationCompleted(entry: ExpandedEntry, backEntry: Backsta
 	entries.delete(entry);
 	if (entries.size === 0) {
 		const frame = entry.resolvedPage.frame;
+		if (frame) {
+			// We have 0 or 1 entry per frameId in completedEntries
+			// So there is no need to make it to Set like waitingQueue
+			const previousCompletedAnimationEntry = completedEntries.get(frameId);
+			completedEntries.delete(frameId);
+			waitingQueue.delete(frameId);
 
-		// We have 0 or 1 entry per frameId in completedEntries
-		// So there is no need to make it to Set like waitingQueue
-		const previousCompletedAnimationEntry = completedEntries.get(frameId);
-		completedEntries.delete(frameId);
-		waitingQueue.delete(frameId);
-
-		const navigationContext = frame._executingContext || {
-			navigationType: NavigationType.back,
-		};
-		let current = frame.isCurrent(entry) ? previousCompletedAnimationEntry : entry;
-		current = current || entry;
-		// Will be null if Frame is shown modally...
-		// transitionOrAnimationCompleted fires again (probably bug in android).
-		if (current) {
-			setTimeout(() => frame.setCurrent(backEntry || current, navigationContext.navigationType));
+			const navigationContext = frame._executingContext || {
+				navigationType: NavigationType.back,
+			};
+			let current = frame.isCurrent(entry) ? previousCompletedAnimationEntry : entry;
+			current = current || entry;
+			// Will be null if Frame is shown modally...
+			// transitionOrAnimationCompleted fires again (probably bug in android).
+			if (current) {
+				setTimeout(() => frame.setCurrent(backEntry || current, navigationContext.navigationType));
+			}
 		}
 	} else {
 		completedEntries.set(frameId, entry);
