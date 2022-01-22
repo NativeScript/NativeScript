@@ -5,6 +5,9 @@
 The following CSS rule changes the font size of all UI
 components that have the btn class name.
 */
+Button {
+    text-transform: none;
+}
 .btn-view-demo {
   background-color: #65ADF1;
   border-radius: 5;

@@ -659,17 +659,19 @@ export function test_BindingConverterCalledEvenWithNullValue() {
 	const testPropertyValue = null;
 	const expectedValue = 'collapsed';
 	pageViewModel.set('testProperty', testPropertyValue);
-	appModule.getResources()['converter'] = function (value) {
-		if (value) {
-			return 'visible';
-		} else {
-			return 'collapsed';
-		}
+	appModule.getResources()['converter'] = {
+		toView: function (value) {
+			if (value) {
+				return 'visible';
+			} else {
+				return 'collapsed';
+			}
+		},
 	};
 
 	const testFunc = function (views: Array<View>) {
 		const testLabel = <Label>views[0];
-		testLabel.bind({ sourceProperty: 'testProperty', targetProperty: 'text', expression: 'testProperty | converter' });
+		testLabel.bind({ sourceProperty: 'testProperty', targetProperty: 'text', expression: 'testProperty | converter()' });
 
 		const page = <Page>views[1];
 		page.bindingContext = pageViewModel;

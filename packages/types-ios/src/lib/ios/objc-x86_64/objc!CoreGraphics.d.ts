@@ -1596,11 +1596,15 @@ declare var kCGColorSpaceITUR_2020_PQ: string;
 
 declare var kCGColorSpaceITUR_2020_PQ_EOTF: string;
 
+declare var kCGColorSpaceITUR_2020_sRGBGamma: string;
+
 declare var kCGColorSpaceITUR_2100_HLG: string;
 
 declare var kCGColorSpaceITUR_2100_PQ: string;
 
 declare var kCGColorSpaceITUR_709: string;
+
+declare var kCGColorSpaceITUR_709_PQ: string;
 
 declare var kCGColorSpaceLinearDisplayP3: string;
 

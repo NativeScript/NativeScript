@@ -19,6 +19,10 @@ const FragmentClass = (<any>org.nativescript.widgets.FragmentBase).extend('com.t
 		this._callbacks.onPause(this, superProto.onPause);
 	},
 
+	onResume(): void {
+		this._callbacks.onResume(this, superProto.onResume);
+	},
+
 	onCreate(savedInstanceState: android.os.Bundle) {
 		if (!this._callbacks) {
 			setFragmentCallbacks(this);

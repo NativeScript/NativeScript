@@ -361,6 +361,13 @@ export function systemAppearance(): 'dark' | 'light' | null;
 export let android: AndroidApplication;
 
 /**
+ * Used internally for backwards compatibility, will be removed in the future.
+ * Allowed Application.android.context to work (or Application.ios). Instead use Utils.android.getApplicationContext() or Utils.android.getPackageName()
+ * @internal
+ */
+export function ensureNativeApplication(): void;
+
+/**
  * This is the iOS-specific application object instance.
  * Encapsulates methods and properties specific to the iOS platform.
  * Will be undefined when TargetOS is Android.
@@ -468,6 +475,7 @@ export class AndroidApplication extends Observable {
 
 	/**
 	 * The application's [android Context](http://developer.android.com/reference/android/content/Context.html) object instance.
+	 * @deprecated Use Utils.android.getApplicationContext() instead.
 	 */
 	context: any /* android.content.Context */;
 
@@ -495,6 +503,7 @@ export class AndroidApplication extends Observable {
 
 	/**
 	 * The name of the application package.
+	 * @deprecated Use Utils.android.getPackageName() instead.
 	 */
 	packageName: string;
 
