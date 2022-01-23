@@ -633,6 +633,7 @@ declare module org {
 		export module widgets {
 			export class Utils {
 				public static class: java.lang.Class<org.nativescript.widgets.Utils>;
+                public static getBitmapFromView(param0: globalAndroid.view.View): globalAndroid.graphics.Bitmap;
 				public static loadImageAsync(param0: globalAndroid.content.Context, param1: string, param2: string, param3: number, param4: number, param5: org.nativescript.widgets.Utils.AsyncImageCallback): void;
 				public static drawBoxShadow(param0: globalAndroid.view.View, param1: string): void;
                 public static saveToFileAsync(param0: globalAndroid.graphics.Bitmap, param1: string, param2: string, param3: number, param4: org.nativescript.widgets.Utils.AsyncImageCallback): void;
