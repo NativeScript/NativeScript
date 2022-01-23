@@ -565,8 +565,8 @@ function setAccessibilityDelegate(view: Partial<View>): void {
 
 function applyContentDescription(view: Partial<View>, forceUpdate?: boolean) {
 	let androidView = view.nativeViewProtected as android.view.View;
-	if (!androidView) {
-		return;
+	if (!androidView || (androidView instanceof android.widget.TextView && !view._androidContentDescriptionUpdated)) {
+		return null;
 	}
 
 	if (androidView instanceof androidx.appcompat.widget.Toolbar) {
@@ -582,9 +582,6 @@ function applyContentDescription(view: Partial<View>, forceUpdate?: boolean) {
 	}
 
 	const cls = `applyContentDescription(${view})`;
-	if (!androidView) {
-		return null;
-	}
 
 	const titleValue = view['title'] as string;
 	const textValue = view['text'] as string;
