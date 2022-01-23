@@ -158,7 +158,7 @@ export class ScrollView extends ScrollViewBase {
 	}
 
 	protected dettachNative() {
-		this.nativeViewProtected.getViewTreeObserver().removeOnScrollChangedListener(this.handler);
+		this.nativeViewProtected?.getViewTreeObserver().removeOnScrollChangedListener(this.handler);
 		this.handler = null;
 	}
 }
