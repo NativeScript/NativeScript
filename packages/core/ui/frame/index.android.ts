@@ -77,6 +77,26 @@ function getAttachListener(): android.view.View.OnAttachStateChangeListener {
 	return attachStateChangeListener;
 }
 
+function waitUntilReady(lifecycle: androidx.lifecycle.Lifecycle, resolve: (v: boolean) => unknown, targetState = androidx.lifecycle.Lifecycle.State.RESUMED) {
+	if (!lifecycle || lifecycle.getCurrentState().isAtLeast(targetState)) {
+		resolve(true);
+		return;
+	}
+	const observer = new androidx.lifecycle.LifecycleEventObserver({
+		onStateChanged: (source: androidx.lifecycle.LifecycleOwner, event: androidx.lifecycle.Lifecycle.Event) => {
+			if (lifecycle.getCurrentState().isAtLeast(targetState)) {
+				lifecycle.removeObserver(observer);
+				resolve(true);
+			}
+			if (event === androidx.lifecycle.Lifecycle.Event.ON_DESTROY) {
+				lifecycle.removeObserver(observer);
+				resolve(false);
+			}
+		},
+	});
+	lifecycle.addObserver(observer);
+}
+
 export class Frame extends FrameBase {
 	public _originalBackground: any;
 	private _android: AndroidFrame;
@@ -158,7 +178,7 @@ export class Frame extends FrameBase {
 		this._attachedToWindow = false;
 	}
 
-	protected _processNextNavigationEntry(): void {
+	protected _processNextNavigationEntry(): any {
 		// In case activity was destroyed because of back button pressed (e.g. app exit)
 		// and application is restored from recent apps, current fragment isn't recreated.
 		// In this case call _navigateCore in order to recreate the current fragment.
@@ -176,7 +196,7 @@ export class Frame extends FrameBase {
 			}
 		}
 
-		const manager = this._getFragmentManager();
+		let manager = this._getFragmentManager();
 		const entry = this._currentEntry;
 		const isNewEntry = !this._cachedTransitionState || entry !== this._cachedTransitionState.entry;
 
@@ -208,6 +228,10 @@ export class Frame extends FrameBase {
 	}
 
 	public _getChildFragmentManager() {
+		return this._getFragment()?.getChildFragmentManager?.();
+	}
+
+	public _getFragment() {
 		let backstackEntry;
 		if (this._executingContext && this._executingContext.entry) {
 			backstackEntry = this._executingContext.entry;
@@ -216,7 +240,7 @@ export class Frame extends FrameBase {
 		}
 
 		if (backstackEntry && backstackEntry.fragment && backstackEntry.fragment.isAdded()) {
-			return backstackEntry.fragment.getChildFragmentManager();
+			return backstackEntry.fragment;
 		}
 
 		return null;
@@ -231,12 +255,13 @@ export class Frame extends FrameBase {
 		this.disposeCurrentFragment();
 	}
 
-	onLoaded(): void {
+	onLoaded() {
 		if (this._originalBackground) {
 			this.backgroundColor = null;
 			this.backgroundColor = this._originalBackground;
 			this._originalBackground = null;
 		}
+
 		setTimeout(() => {
 			// there's a bug with nested frames where sometimes the nested fragment is not recreated at all
 			// so we manually check on loaded event if the fragment is not recreated and recreate it
@@ -404,6 +429,8 @@ export class Frame extends FrameBase {
 		}
 
 		const manager: androidx.fragment.app.FragmentManager = this._getFragmentManager();
+		const lifecycle = this._getFragmentLifecycle();
+
 		const clearHistory = newEntry.entry.clearHistory;
 		const currentEntry = this._currentEntry;
 
@@ -420,30 +447,35 @@ export class Frame extends FrameBase {
 		fragmentId++;
 		const newFragmentTag = `fragment${fragmentId}[${navDepth}]`;
 		const newFragment = this.createFragment(newEntry, newFragmentTag);
-		const transaction = manager.beginTransaction();
-		let animated = currentEntry ? this._getIsAnimatedNavigation(newEntry.entry) : false;
-		// NOTE: Don't use transition for the initial navigation (same as on iOS)
-		// On API 21+ transition won't be triggered unless there was at least one
-		// layout pass so we will wait forever for transitionCompleted handler...
-		// https://github.com/NativeScript/NativeScript/issues/4895
-		let navigationTransition: NavigationTransition;
-		if (this._currentEntry) {
-			navigationTransition = this._getNavigationTransition(newEntry.entry);
-		} else {
-			navigationTransition = null;
-		}
+		waitUntilReady(lifecycle, (started: boolean) => {
+			if (!started) {
+				return;
+			}
+			const transaction = manager.beginTransaction();
+			let animated = currentEntry ? this._getIsAnimatedNavigation(newEntry.entry) : false;
+			// NOTE: Don't use transition for the initial navigation (same as on iOS)
+			// On API 21+ transition won't be triggered unless there was at least one
+			// layout pass so we will wait forever for transitionCompleted handler...
+			// https://github.com/NativeScript/NativeScript/issues/4895
+			let navigationTransition: NavigationTransition;
+			if (this._currentEntry) {
+				navigationTransition = this._getNavigationTransition(newEntry.entry);
+			} else {
+				navigationTransition = null;
+			}
 
-		const isNestedDefaultTransition = !currentEntry;
+			const isNestedDefaultTransition = !currentEntry;
 
-		_setAndroidFragmentTransitions(animated, navigationTransition, currentEntry, newEntry, this._android.frameId, transaction, isNestedDefaultTransition);
+			_setAndroidFragmentTransitions(animated, navigationTransition, currentEntry, newEntry, this._android.frameId, transaction, isNestedDefaultTransition);
 
-		if (currentEntry && animated && !navigationTransition) {
-			//TODO: Check whether or not this is still necessary. For Modal views?
-			//transaction.setTransition(androidx.fragment.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-		}
+			if (currentEntry && animated && !navigationTransition) {
+				//TODO: Check whether or not this is still necessary. For Modal views?
+				//transaction.setTransition(androidx.fragment.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+			}
 
-		transaction.replace(this.containerViewId, newFragment, newFragmentTag);
-		transaction.commitAllowingStateLoss();
+			transaction.replace(this.containerViewId, newFragment, newFragmentTag);
+			transaction.commitAllowingStateLoss();
+		});
 	}
 
 	public _goBackCore(backstackEntry: BackstackEntry) {

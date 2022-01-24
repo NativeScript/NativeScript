@@ -324,6 +324,13 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		return undefined;
 	}
 
+	public _getFragmentLifecycle(): any {
+		return undefined;
+	}
+	public _getFragment(): any {
+		return undefined;
+	}
+
 	private getModalOptions(args: any[]): { view: ViewCommon; options: ShowModalOptions } {
 		if (args.length === 0) {
 			throw new Error('showModal without parameters is deprecated. Please call showModal on a view instance instead.');

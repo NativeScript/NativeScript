@@ -848,6 +848,17 @@ export abstract class View extends ViewCommon {
 	 * @private
 	 */
 	_getFragmentManager(): any; /* androidx.fragment.app.FragmentManager */
+
+	/**
+	 * @private
+	 */
+	_getFragmentLifecycle(): any; /* androidx.fragment.app.FragmentManager */
+
+	/**
+	 * @private
+	 */
+	_getFragment(): any; /* androidx.fragment.app.FragmentManager */
+
 	_handleLivesync(context?: { type: string; path: string }): boolean;
 
 	/**
