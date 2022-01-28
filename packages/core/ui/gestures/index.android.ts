@@ -455,10 +455,6 @@ class CustomPanGestureDetector {
 	public onTouchEvent(event: android.view.MotionEvent) {
 		switch (event.getActionMasked()) {
 			case android.view.MotionEvent.ACTION_UP:
-			case android.view.MotionEvent.ACTION_CANCEL:
-				this.trackStop(event, false);
-				break;
-
 			case android.view.MotionEvent.ACTION_DOWN:
 			case android.view.MotionEvent.ACTION_POINTER_DOWN:
 			case android.view.MotionEvent.ACTION_POINTER_UP:
