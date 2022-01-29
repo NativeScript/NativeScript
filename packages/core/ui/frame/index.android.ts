@@ -448,7 +448,7 @@ export class Frame extends FrameBase {
 		if (this._currentEntry && this._currentEntry.entry.backstackVisible === false) {
 			transaction.remove(this._currentEntry.fragment);
 		}
-		transaction.commitAllowingStateLoss();
+		transaction.commitNowAllowingStateLoss();
 	}
 
 	public _goBackCore(backstackEntry: BackstackEntry) {
@@ -490,7 +490,7 @@ export class Frame extends FrameBase {
 			transaction.hide(this._currentEntry.fragment);
 		}
 
-		transaction.commitAllowingStateLoss();
+		transaction.commitNowAllowingStateLoss();
 	}
 
 	public _removeEntry(removed: BackstackEntry): void {
@@ -501,7 +501,7 @@ export class Frame extends FrameBase {
 			const manager: androidx.fragment.app.FragmentManager = this._getFragmentManager();
 			const transaction = manager.beginTransaction();
 			transaction.remove(removed.fragment);
-			transaction.commitAllowingStateLoss();
+			transaction.commitNowAllowingStateLoss();
 			_clearEntry(removed);
 		}
 
