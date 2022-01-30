@@ -553,9 +553,10 @@ export class TabView extends TabViewBase {
 	}
 
 	public onUnloaded(): void {
-		super.onUnloaded();
-
+		// clear fragments before calling super to ensure the fragmentManager is the
+		// same as the one used during item instantiation
 		this.setAdapterItems(null);
+		super.onUnloaded();
 	}
 
 	public disposeNativeView() {
