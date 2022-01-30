@@ -501,8 +501,9 @@ export class Frame extends FrameBase {
 			const manager: androidx.fragment.app.FragmentManager = this._getFragmentManager();
 			const transaction = manager.beginTransaction();
 			transaction.remove(removed.fragment);
-			transaction.commitNowAllowingStateLoss();
+			// clear entry before commit because commit now will release the fragment right away
 			_clearEntry(removed);
+			transaction.commitNowAllowingStateLoss();
 		}
 
 		removed.fragment = null;
