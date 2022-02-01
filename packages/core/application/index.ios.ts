@@ -4,7 +4,7 @@ import { ApplicationEventData, CssChangedEventData, LaunchEventData, LoadAppCSSE
 
 // TODO: explain why we need to this or remov it
 // Use requires to ensure order of imports is maintained
-const { displayedEvent, exitEvent, getCssFileName, launchEvent, livesync, lowMemoryEvent, notify, on, orientationChanged, orientationChangedEvent, resumeEvent, setApplication, suspendEvent, systemAppearanceChanged, systemAppearanceChangedEvent } = require('./application-common');
+const { backgroundEvent, displayedEvent, exitEvent, foregroundEvent, getCssFileName, launchEvent, livesync, lowMemoryEvent, notify, on, orientationChanged, orientationChangedEvent, resumeEvent, setApplication, suspendEvent, systemAppearanceChanged, systemAppearanceChangedEvent } = require('./application-common');
 // First reexport so that app module is initialized.
 export * from './application-common';
 
@@ -222,6 +222,7 @@ export class iOSApplication implements iOSApplicationDefinition {
 		const ios = UIApplication.sharedApplication;
 		const object = this;
 		notify(<ApplicationEventData>{ eventName: resumeEvent, object, ios });
+		notify(<ApplicationEventData>{ eventName: foregroundEvent, object, ios });
 		const rootView = this._rootView;
 		if (rootView && !rootView.isLoaded) {
 			rootView.callLoaded();
@@ -229,11 +230,10 @@ export class iOSApplication implements iOSApplicationDefinition {
 	}
 
 	private didEnterBackground(notification: NSNotification) {
-		notify(<ApplicationEventData>{
-			eventName: suspendEvent,
-			object: this,
-			ios: UIApplication.sharedApplication,
-		});
+		const ios = UIApplication.sharedApplication;
+		const object = this;
+		notify(<ApplicationEventData>{ eventName: suspendEvent, object, ios });
+		notify(<ApplicationEventData>{ eventName: backgroundEvent, object, ios });
 		const rootView = this._rootView;
 		if (rootView && rootView.isLoaded) {
 			rootView.callUnloaded();
