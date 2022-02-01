@@ -378,7 +378,7 @@ function initLifecycleCallbacks() {
 			if ((<any>activity).isNativeScriptActivity) {
 				androidApp.paused = true;
 				appCommon.notify(<ApplicationEventData>{
-					eventName: appCommon.backgroundEvent,
+					eventName: appCommon.suspendEvent,
 					object: androidApp,
 					android: activity,
 				});
