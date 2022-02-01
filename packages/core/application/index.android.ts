@@ -43,6 +43,7 @@ export class AndroidApplication extends Observable implements AndroidApplication
 	private _orientation: 'portrait' | 'landscape' | 'unknown';
 	private _systemAppearance: 'light' | 'dark';
 	public paused: boolean;
+	public backgrounded: boolean;
 	public nativeApp: android.app.Application;
 	public context: android.content.Context;
 	public foregroundActivity: androidx.appcompat.app.AppCompatActivity;
@@ -334,6 +335,9 @@ function initLifecycleCallbacks() {
 		rootView.getViewTreeObserver().addOnGlobalLayoutListener(global.onGlobalLayoutListener);
 	});
 
+
+	let activitiesStarted = 0;
+
 	const lifecycleCallbacks = new android.app.Application.ActivityLifecycleCallbacks(<any>{
 		onActivityCreated: <any>profile('onActivityCreated', function (activity: androidx.appcompat.app.AppCompatActivity, savedInstanceState: android.os.Bundle) {
 			if (!androidApp.foregroundActivity) {
@@ -374,7 +378,7 @@ function initLifecycleCallbacks() {
 			if ((<any>activity).isNativeScriptActivity) {
 				androidApp.paused = true;
 				appCommon.notify(<ApplicationEventData>{
-					eventName: appCommon.suspendEvent,
+					eventName: appCommon.backgroundEvent,
 					object: androidApp,
 					android: activity,
 				});
@@ -407,6 +411,15 @@ function initLifecycleCallbacks() {
 		}),
 
 		onActivityStarted: <any>profile('onActivityStarted', function (activity: androidx.appcompat.app.AppCompatActivity) {
+			activitiesStarted++;
+			if (activitiesStarted === 1) {
+				androidApp.backgrounded = true;
+				appCommon.notify(<ApplicationEventData>{
+					eventName: appCommon.foregroundEvent,
+					object: androidApp,
+					android: activity,
+				});
+			}
 			androidApp.notify(<AndroidActivityEventData>{
 				eventName: ActivityStarted,
 				object: androidApp,
@@ -415,6 +428,15 @@ function initLifecycleCallbacks() {
 		}),
 
 		onActivityStopped: <any>profile('onActivityStopped', function (activity: androidx.appcompat.app.AppCompatActivity) {
+			activitiesStarted--;
+			if (activitiesStarted === 0) {
+				androidApp.backgrounded = true;
+				appCommon.notify(<ApplicationEventData>{
+					eventName: appCommon.backgroundEvent,
+					object: androidApp,
+					android: activity,
+				});
+			}
 			androidApp.notify(<AndroidActivityEventData>{
 				eventName: ActivityStopped,
 				object: androidApp,
