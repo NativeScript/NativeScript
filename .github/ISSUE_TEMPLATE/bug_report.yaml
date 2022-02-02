@@ -72,14 +72,14 @@ body:
         Provide information about your environment. Run
 
         ```shell
-        npx -y nativescript-envinfo
+        npx nativescript-envinfo -y
         ```
 
         inside the project and paste the output directly without manual formatting.
       placeholder: |
         Paste the result of
 
-          npx -y nativescript-envinfo
+          npx nativescript-envinfo -y
 
   - type: markdown
     attributes:
