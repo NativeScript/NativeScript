@@ -234,9 +234,13 @@ function getAnimationListener(): android.animation.Animator.AnimatorListener {
 			}
 
 			onAnimationCancel(animator: ExpandedAnimator): void {
+				// if cancel onAnimationEnd will not be called
+				const entry = animator.entry;
+				const backEntry = animator.backEntry;
 				if (Trace.isEnabled()) {
-					Trace.write(`CANCEL ${animator.transitionType} for ${animator.entry.fragmentTag}`, Trace.categories.Transition);
+					Trace.write(`CANCEL ${animator.transitionType} for ${animator.entry.fragmentTag} backEntry:${backEntry ? backEntry.fragmentTag : 'none'}`, Trace.categories.Transition);
 				}
+				transitionOrAnimationCompleted(entry, backEntry);
 			}
 		}
 
@@ -358,9 +362,13 @@ function getTransitionListener(entry: ExpandedEntry, transition: androidx.transi
 			}
 
 			onTransitionCancel(transition: androidx.transition.Transition): void {
+				// if cancel onTransitionEnd will not be called
+				const entry = this.entry;
+				const backEntry = this.backEntry;
 				if (Trace.isEnabled()) {
-					Trace.write(`CANCEL ${toShortString(transition)} transition for ${this.entry.fragmentTag}`, Trace.categories.Transition);
+					Trace.write(`CANCEL ${toShortString(transition)} transition for ${this.entry.fragmentTag} backEntry:${backEntry ? backEntry.fragmentTag : 'none'}`, Trace.categories.Transition);
 				}
+				transitionOrAnimationCompleted(entry, backEntry);
 			}
 		}
 
