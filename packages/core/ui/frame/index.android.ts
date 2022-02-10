@@ -440,7 +440,13 @@ export class Frame extends FrameBase {
 		}
 
 		if (clearHistory || isReplace) {
-		transaction.replace(this.containerViewId, newFragment, newFragmentTag);
+			// we need to ensure we dont listen for animations of
+			// in between fragments or they could break our transition end handling
+			// and set the wrong current entry
+			for (let index = 0; index < this.backStack.length; index++) {
+				_clearEntry(this.backStack[index]);
+			}
+			transaction.replace(this.containerViewId, newFragment, newFragmentTag);
 		} else {
 			transaction.add(this.containerViewId, newFragment, newFragmentTag);
 		}
@@ -473,6 +479,10 @@ export class Frame extends FrameBase {
 		// the order is important so that the last transition listener called be
         // the one from the current entry we are going back from
         for (let index = goBackToIndex + 1; index < currentIndex; index++) {
+			// we need to ensure we dont listen for animations of
+			// in between fragments or they could break our transition end handling
+			// and set the wrong current entry
+			_clearEntry(this.backStack[index]);
             transaction.remove(this.backStack[index].fragment);
         }
 		if (this._currentEntry !== backstackEntry) {
