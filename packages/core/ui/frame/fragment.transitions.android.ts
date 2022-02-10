@@ -520,56 +520,6 @@ function setReturnTransition(navigationTransition: NavigationTransition, entry: 
 	fragment.setReturnTransition(transition);
 }
 
-function setupNewFragmentSlideTransition(navTransition: NavigationTransition, entry: ExpandedEntry, name: string): void {
-	setupCurrentFragmentSlideTransition(navTransition, entry, name);
-	const direction = name.substr('slide'.length) || 'left'; //Extract the direction from the string
-	switch (direction) {
-		case 'left':
-			setEnterTransition(navTransition, entry, new androidx.transition.Slide(android.view.Gravity.RIGHT));
-			setReturnTransition(navTransition, entry, new androidx.transition.Slide(android.view.Gravity.RIGHT));
-			break;
-
-		case 'right':
-			setEnterTransition(navTransition, entry, new androidx.transition.Slide(android.view.Gravity.LEFT));
-			setReturnTransition(navTransition, entry, new androidx.transition.Slide(android.view.Gravity.LEFT));
-			break;
-
-		case 'top':
-			setEnterTransition(navTransition, entry, new androidx.transition.Slide(android.view.Gravity.BOTTOM));
-			setReturnTransition(navTransition, entry, new androidx.transition.Slide(android.view.Gravity.BOTTOM));
-			break;
-
-		case 'bottom':
-			setEnterTransition(navTransition, entry, new androidx.transition.Slide(android.view.Gravity.TOP));
-			setReturnTransition(navTransition, entry, new androidx.transition.Slide(android.view.Gravity.TOP));
-			break;
-	}
-}
-
-function setupCurrentFragmentSlideTransition(navTransition: NavigationTransition, entry: ExpandedEntry, name: string): void {
-	const direction = name.substr('slide'.length) || 'left'; //Extract the direction from the string
-	switch (direction) {
-		case 'left':
-			setExitTransition(navTransition, entry, new androidx.transition.Slide(android.view.Gravity.LEFT));
-			setReenterTransition(navTransition, entry, new androidx.transition.Slide(android.view.Gravity.LEFT));
-			break;
-
-		case 'right':
-			setExitTransition(navTransition, entry, new androidx.transition.Slide(android.view.Gravity.RIGHT));
-			setReenterTransition(navTransition, entry, new androidx.transition.Slide(android.view.Gravity.RIGHT));
-			break;
-
-		case 'top':
-			setExitTransition(navTransition, entry, new androidx.transition.Slide(android.view.Gravity.TOP));
-			setReenterTransition(navTransition, entry, new androidx.transition.Slide(android.view.Gravity.TOP));
-			break;
-
-		case 'bottom':
-			setExitTransition(navTransition, entry, new androidx.transition.Slide(android.view.Gravity.BOTTOM));
-			setReenterTransition(navTransition, entry, new androidx.transition.Slide(android.view.Gravity.BOTTOM));
-			break;
-	}
-}
 
 function setupCurrentFragmentCustomTransition(navTransition: NavigationTransition, entry: ExpandedEntry, transition: Transition): void {
 	const exitAnimator = transition.createAndroidAnimator(Transition.AndroidTransitionType.exit);
