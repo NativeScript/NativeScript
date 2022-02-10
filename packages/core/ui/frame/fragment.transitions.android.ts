@@ -537,7 +537,26 @@ function setupNewFragmentCustomTransition(navTransition: NavigationTransition, e
 	setupCurrentFragmentCustomTransition(navTransition, entry, transition);
 
 	const enterAnimator = transition.createAndroidAnimator(Transition.AndroidTransitionType.enter);
+	
 	const enterTransition = new org.nativescript.widgets.CustomTransition(enterAnimator, transition.constructor.name + Transition.AndroidTransitionType.enter.toString());
+
+
+	// if the animation is cancelled during the transition
+	// the fragment will get stuck in an in-between state
+	// use that listener to force to go to the end position
+	enterAnimator.addListener(
+		new android.animation.Animator.AnimatorListener({
+			onAnimationStart: function (animator: android.animation.Animator): void {},
+			onAnimationEnd:  (animator: android.animation.Animator)=> {},
+			onAnimationRepeat: function (animator: android.animation.Animator): void {},
+			onAnimationCancel:  (animator: android.animation.Animator)=> {
+				const immediateAnimatorSet = animator.clone();
+				immediateAnimatorSet.setDuration(0);
+				immediateAnimatorSet.start();
+			},
+		})
+	);
+
 	setEnterTransition(navTransition, entry, enterTransition);
 
 	const returnAnimator = transition.createAndroidAnimator(Transition.AndroidTransitionType.popExit);
