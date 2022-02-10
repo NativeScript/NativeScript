@@ -439,6 +439,11 @@ export class Frame extends FrameBase {
 			//transaction.setTransition(androidx.fragment.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
 		}
 
+		if (this._currentEntry && this._currentEntry.entry.backstackVisible === false) {
+			// we only hide the fragment to fix some black blick issues with GLSurfaceView and GLTextureView
+			// it will be removed once the navigation is done
+			transaction.hide(this._currentEntry.fragment);
+		}
 		if (clearHistory || isReplace) {
 			// we need to ensure we dont listen for animations of
 			// in between fragments or they could break our transition end handling
@@ -449,9 +454,6 @@ export class Frame extends FrameBase {
 			transaction.replace(this.containerViewId, newFragment, newFragmentTag);
 		} else {
 			transaction.add(this.containerViewId, newFragment, newFragmentTag);
-		}
-		if (this._currentEntry && this._currentEntry.entry.backstackVisible === false) {
-			transaction.remove(this._currentEntry.fragment);
 		}
 		transaction.commitNowAllowingStateLoss();
 	}
