@@ -381,8 +381,7 @@ export class Frame extends FrameBase {
 	// HACK: This @profile decorator creates a circular dependency
 	// HACK: because the function parameter type is evaluated with 'typeof'
 	@profile
-	public _navigateCore(newEntry: any) {
-		// should be (newEntry: BackstackEntry)
+	public _navigateCore(newEntry: BackstackEntry) {
 		super._navigateCore(newEntry);
 
 		// set frameId here so that we could use it in fragment.transitions
