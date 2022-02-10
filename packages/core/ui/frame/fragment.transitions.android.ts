@@ -241,6 +241,7 @@ function getAnimationListener(): android.animation.Animator.AnimatorListener {
 					Trace.write(`CANCEL ${animator.transitionType} for ${animator.entry.fragmentTag} backEntry:${backEntry ? backEntry.fragmentTag : 'none'}`, Trace.categories.Transition);
 				}
 				transitionOrAnimationCompleted(entry, backEntry);
+				animator.backEntry = null;
 			}
 		}
 
@@ -369,6 +370,7 @@ function getTransitionListener(entry: ExpandedEntry, transition: androidx.transi
 					Trace.write(`CANCEL ${toShortString(transition)} transition for ${this.entry.fragmentTag} backEntry:${backEntry ? backEntry.fragmentTag : 'none'}`, Trace.categories.Transition);
 				}
 				transitionOrAnimationCompleted(entry, backEntry);
+				this.backEntry = null;
 			}
 		}
 
