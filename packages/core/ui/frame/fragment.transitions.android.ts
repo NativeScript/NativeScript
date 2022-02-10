@@ -234,14 +234,9 @@ function getAnimationListener(): android.animation.Animator.AnimatorListener {
 			}
 
 			onAnimationCancel(animator: ExpandedAnimator): void {
-				// if cancel onAnimationEnd will not be called
-				const entry = animator.entry;
-				const backEntry = animator.backEntry;
 				if (Trace.isEnabled()) {
-					Trace.write(`CANCEL ${animator.transitionType} for ${animator.entry.fragmentTag} backEntry:${backEntry ? backEntry.fragmentTag : 'none'}`, Trace.categories.Transition);
+					Trace.write(`CANCEL ${animator.transitionType} for ${animator.entry.fragmentTag} backEntry:${animator.backEntry?.fragmentTag ?? 'none'}`, Trace.categories.Transition);
 				}
-				transitionOrAnimationCompleted(entry, backEntry);
-				animator.backEntry = null;
 			}
 		}
 
@@ -363,14 +358,9 @@ function getTransitionListener(entry: ExpandedEntry, transition: androidx.transi
 			}
 
 			onTransitionCancel(transition: androidx.transition.Transition): void {
-				// if cancel onTransitionEnd will not be called
-				const entry = this.entry;
-				const backEntry = this.backEntry;
 				if (Trace.isEnabled()) {
-					Trace.write(`CANCEL ${toShortString(transition)} transition for ${this.entry.fragmentTag} backEntry:${backEntry ? backEntry.fragmentTag : 'none'}`, Trace.categories.Transition);
+					Trace.write(`CANCEL ${toShortString(transition)} transition for ${this.entry.fragmentTag} backEntry:${this.backEntry?.fragmentTag ?? 'none'}`, Trace.categories.Transition);
 				}
-				transitionOrAnimationCompleted(entry, backEntry);
-				this.backEntry = null;
 			}
 		}
 
@@ -601,6 +591,7 @@ function transitionOrAnimationCompleted(entry: ExpandedEntry, backEntry: Backsta
 	// https://github.com/NativeScript/NativeScript/issues/5780
 	// transitionOrAnimationCompleted fires again (probably bug in android)
 	// NOTE: we cannot reproduce this issue so this is a blind fix
+	console.log('transitionOrAnimationCompleted', entry && entry.fragmentTag, backEntry && backEntry.fragmentTag, entries?.size);
 	if (!entries) {
 		return;
 	}
@@ -622,6 +613,7 @@ function transitionOrAnimationCompleted(entry: ExpandedEntry, backEntry: Backsta
 		current = current || entry;
 		// Will be null if Frame is shown modally...
 		// transitionOrAnimationCompleted fires again (probably bug in android).
+		console.log('transitionOrAnimationCompleted setCurrent', backEntry && backEntry.fragmentTag, current && current.fragmentTag);
 		if (current) {
 			setTimeout(() => frame.setCurrent(backEntry || current, navigationContext.navigationType));
 		}
