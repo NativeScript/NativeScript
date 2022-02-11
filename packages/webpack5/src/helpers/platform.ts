@@ -2,6 +2,7 @@ import { dirname, resolve } from 'path';
 
 import { getPackageJson, getProjectRootPath } from './project';
 import { error, info, warnOnce } from './log';
+import { getValue } from './config';
 import { env } from '../';
 
 import AndroidPlatform from '../platforms/android';
@@ -90,6 +91,13 @@ export function getEntryPath() {
 	// use platform specific entry path
 	if (platform.getEntryPath) {
 		return platform.getEntryPath();
+	}
+
+	// try main from nativescript.config.ts
+	const main = getValue('main');
+
+	if (main) {
+		return resolve(getProjectRootPath(), main);
 	}
 
 	// fallback to main field in package.json
