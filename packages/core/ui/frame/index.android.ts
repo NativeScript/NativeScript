@@ -426,7 +426,14 @@ export class Frame extends FrameBase {
 			//TODO: Check whether or not this is still necessary. For Modal views?
 			//transaction.setTransition(androidx.fragment.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
 		}
-
+		if (clearHistory || isReplace) {
+			// we need to ensure we dont listen for animations of
+			// in between fragments or they could break our transition end handling
+			// and set the wrong current entry
+			for (let index = 0; index < this.backStack.length; index++) {
+				_clearEntry(this.backStack[index]);
+			}
+		}
 		transaction.replace(this.containerViewId, newFragment, newFragmentTag);
 		transaction.commitAllowingStateLoss();
 	}
@@ -448,7 +455,14 @@ export class Frame extends FrameBase {
 		}
 
 		_reverseTransitions(backstackEntry, this._currentEntry);
-
+		const currentIndex = this.backStack.length;
+		const goBackToIndex = this.backStack.indexOf(backstackEntry);
+		for (let index = goBackToIndex + 1; index < currentIndex; index++) {
+			// we need to ensure we dont listen for animations of
+			// in between fragments or they could break our transition end handling
+			// and set the wrong current entry
+			_clearEntry(this.backStack[index]);
+		}
 		transaction.replace(this.containerViewId, backstackEntry.fragment, backstackEntry.fragmentTag);
 
 		transaction.commitAllowingStateLoss();
