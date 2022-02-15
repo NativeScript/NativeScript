@@ -11,5 +11,6 @@
 +(NSMutableAttributedString*)createMutableStringWithDetails:(NSDictionary*)details;
 +(NSMutableAttributedString*)createMutableStringForSpan:(NSString*)text font:(UIFont*)font color:(UIColor*)color backgroundColor:(UIColor*)backgroundColor textDecoration:(NSString*)textDecoration baselineOffset:(CGFloat)baselineOffset;
 +(UIImage*)scaleImage:(UIImage*)image width:(CGFloat)width height:(CGFloat)height scaleFactor:(CGFloat)scaleFactor;
++(NSData*)getImageData:(UIImage*)image format:(NSString*)format quality:(CGFloat)quality;
 
 @end

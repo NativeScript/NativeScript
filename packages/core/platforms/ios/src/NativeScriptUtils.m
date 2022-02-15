@@ -14,7 +14,7 @@
     UIFont *result;
     
     CGFloat size = [[font valueForKey:@"fontSize"] floatValue];
-      
+    
     UIFontDescriptorSymbolicTraits symbolicTraits = 0;
     if ([[font valueForKey:@"isBold"] boolValue]) {
         symbolicTraits = symbolicTraits | UIFontDescriptorTraitBold;
@@ -117,6 +117,18 @@
         UIGraphicsEndImageContext();
     }
     return resultImage;
+}
+
++(NSData*)getImageData:(UIImage*)image format:(NSString*)format quality:(CGFloat)quality {
+    NSData *data;
+    @autoreleasepool {
+        if ([format.lowercaseString isEqualToString:@"png"]) {
+            data = UIImagePNGRepresentation(image);
+        } else {
+            data = UIImageJPEGRepresentation(image, quality);
+        }
+    }
+    return data;
 }
 
 @end

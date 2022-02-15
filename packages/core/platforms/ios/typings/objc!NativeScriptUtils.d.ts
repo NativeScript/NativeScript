@@ -9,6 +9,8 @@ declare class NativeScriptUtils extends NSObject {
 
 	static createUIFont(font: NSDictionary<any, any>): UIFont;
 
+	static getImageDataFormatQuality(image: UIImage, format: string, quality: number): NSData;
+
 	static getSystemFontWeightItalicSymbolicTraits(size: number, weight: number, italic: boolean, symbolicTraits: number): UIFont;
 
 	static new(): NativeScriptUtils; // inherited from NSObject
