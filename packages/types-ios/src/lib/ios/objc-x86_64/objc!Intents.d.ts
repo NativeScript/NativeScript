@@ -2438,6 +2438,8 @@ declare class INFile extends NSObject implements NSSecureCoding {
 
 	filename: string;
 
+	removedOnCompletion: boolean;
+
 	readonly typeIdentifier: string;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding

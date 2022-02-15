@@ -2,6 +2,8 @@ import { Color } from '../../../color';
 import { View } from '../../core/view';
 import { RootLayoutBase, defaultShadeCoverOptions } from './root-layout-common';
 import { TransitionAnimation, ShadeCoverOptions } from '.';
+import { parseLinearGradient } from '../../../css/parser';
+import { LinearGradient } from '../../styling/linear-gradient';
 
 export * from './root-layout-common';
 
@@ -74,14 +76,28 @@ export class RootLayout extends RootLayoutBase {
 	}
 
 	private _getAnimationSet(view: View, shadeCoverAnimation: TransitionAnimation, backgroundColor: string = defaultShadeCoverOptions.color): Array<android.animation.Animator> {
-		const animationSet = Array.create(android.animation.Animator, 7);
+		const backgroundIsGradient = backgroundColor.startsWith('linear-gradient');
+
+		const animationSet = Array.create(android.animation.Animator, backgroundIsGradient ? 6 : 7);
 		animationSet[0] = android.animation.ObjectAnimator.ofFloat(view.nativeViewProtected, 'translationX', [shadeCoverAnimation.translateX]);
 		animationSet[1] = android.animation.ObjectAnimator.ofFloat(view.nativeViewProtected, 'translationY', [shadeCoverAnimation.translateY]);
 		animationSet[2] = android.animation.ObjectAnimator.ofFloat(view.nativeViewProtected, 'scaleX', [shadeCoverAnimation.scaleX]);
 		animationSet[3] = android.animation.ObjectAnimator.ofFloat(view.nativeViewProtected, 'scaleY', [shadeCoverAnimation.scaleY]);
 		animationSet[4] = android.animation.ObjectAnimator.ofFloat(view.nativeViewProtected, 'rotation', [shadeCoverAnimation.rotate]);
 		animationSet[5] = android.animation.ObjectAnimator.ofFloat(view.nativeViewProtected, 'alpha', [shadeCoverAnimation.opacity]);
-		animationSet[6] = this._getBackgroundColorAnimator(view, backgroundColor);
+
+		if (backgroundIsGradient) {
+			if (view.backgroundColor) {
+				view.backgroundColor = undefined;
+			}
+			const parsedGradient = parseLinearGradient(backgroundColor);
+			view.backgroundImage = LinearGradient.parse(parsedGradient.value);
+		} else {
+			if (view.backgroundImage) {
+				view.backgroundImage = undefined;
+			}
+			animationSet[6] = this._getBackgroundColorAnimator(view, backgroundColor);
+		}
 		return animationSet;
 	}
 

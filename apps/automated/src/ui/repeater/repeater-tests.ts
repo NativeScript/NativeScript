@@ -252,15 +252,17 @@ export function test_splice_observable_array_refreshes_the_Repeater() {
 export function test_usingAppLevelConvertersInRepeaterItems() {
 	var repeater = new Repeater();
 
-	var dateConverter = function (value, format) {
-		var result = format;
-		var day = value.getDate();
-		result = result.replace('DD', month < 10 ? '0' + day : day);
-		var month = value.getMonth() + 1;
-		result = result.replace('MM', month < 10 ? '0' + month : month);
-		result = result.replace('YYYY', value.getFullYear());
+	var dateConverter = {
+		toView: function (value, format) {
+			var result = format;
+			var day = value.getDate();
+			result = result.replace('DD', month < 10 ? '0' + day : day);
+			var month = value.getMonth() + 1;
+			result = result.replace('MM', month < 10 ? '0' + month : month);
+			result = result.replace('YYYY', value.getFullYear());
 
-		return result;
+			return result;
+		},
 	};
 
 	Application.getResources()['dateConverter'] = dateConverter;
@@ -275,7 +277,7 @@ export function test_usingAppLevelConvertersInRepeaterItems() {
 
 		TKUnit.waitUntilReady(() => repeater.isLayoutValid);
 
-		TKUnit.assertEqual(getChildAtText(repeater, 0), dateConverter(new Date(), 'DD.MM.YYYY'), 'element');
+		TKUnit.assertEqual(getChildAtText(repeater, 0), dateConverter.toView(new Date(), 'DD.MM.YYYY'), 'element');
 	}
 
 	helper.buildUIAndRunTest(repeater, testAction);
