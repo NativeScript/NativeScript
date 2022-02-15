@@ -108,7 +108,6 @@ export function setMaxRefreshRate(options?: { min?: number; max?: number; prefer
 				if (iOSNativeHelper.MajorVersion >= 15) {
 					const min = options?.min || max / 2;
 					const preferred = options?.preferred || max;
-					console.log('min:', min, ' max:', max, ' preferred:', preferred);
 					displayedLink.preferredFrameRateRange = CAFrameRateRangeMake(min, max, preferred);
 				} else {
 					displayedLink.preferredFramesPerSecond = max;
