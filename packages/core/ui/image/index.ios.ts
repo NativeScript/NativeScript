@@ -24,6 +24,21 @@ export class Image extends ImageBase {
 		this._setNativeClipToBounds();
 	}
 
+	public disposeNativeView(): void {
+		super.disposeNativeView();
+
+		if (this.imageSource?.ios) {
+			// release the native UIImage
+			CFRelease(this.imageSource.ios);
+		}
+
+		this.imageSource = null;
+
+		if (this.nativeViewProtected?.image) {
+			this.nativeViewProtected.image = null;
+		}
+	}
+
 	private setTintColor(value: Color) {
 		if (value && this.nativeViewProtected.image && !this._templateImageWasCreated) {
 			this.nativeViewProtected.image = this.nativeViewProtected.image.imageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
