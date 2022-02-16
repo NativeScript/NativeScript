@@ -610,7 +610,6 @@ function transitionOrAnimationCompleted(entry: ExpandedEntry, backEntry: Backsta
 	// https://github.com/NativeScript/NativeScript/issues/5780
 	// transitionOrAnimationCompleted fires again (probably bug in android)
 	// NOTE: we cannot reproduce this issue so this is a blind fix
-	console.log('transitionOrAnimationCompleted', entry && entry.fragmentTag, backEntry && backEntry.fragmentTag, entries?.size);
 	if (!entries) {
 		return;
 	}
@@ -632,7 +631,6 @@ function transitionOrAnimationCompleted(entry: ExpandedEntry, backEntry: Backsta
 		current = current || entry;
 		// Will be null if Frame is shown modally...
 		// transitionOrAnimationCompleted fires again (probably bug in android).
-		console.log('transitionOrAnimationCompleted setCurrent', backEntry && backEntry.fragmentTag, current && current.fragmentTag);
 		if (current) {
 			setTimeout(() => frame.setCurrent(backEntry || current, navigationContext.navigationType));
 		}
