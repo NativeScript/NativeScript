@@ -29,6 +29,10 @@ const ActivityBackPressed = 'activityBackPressed';
 const ActivityNewIntent = 'activityNewIntent';
 const ActivityRequestPermissions = 'activityRequestPermissions';
 
+export function setMaxRefreshRate(options?: { min?: number; max?: number; preferred?: number }): void {
+	// ignore on android, ios only
+}
+
 export class AndroidApplication extends Observable implements AndroidApplicationDefinition {
 	public static activityCreatedEvent = ActivityCreated;
 	public static activityDestroyedEvent = ActivityDestroyed;
