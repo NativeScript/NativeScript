@@ -8,7 +8,7 @@
 export type { NativeScriptConfig } from './config';
 export { iOSApplication, AndroidApplication } from './application';
 export type { ApplicationEventData, LaunchEventData, OrientationChangedEventData, UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData, AndroidActivityEventData, AndroidActivityBundleEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, AndroidActivityNewIntentEventData, AndroidActivityBackPressedEventData, SystemAppearanceChangedEventData } from './application';
-import { AndroidApplication, iOSApplication, systemAppearanceChanged, getMainEntry, getRootView, _resetRootView, getResources, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, notify, hasListeners, run, orientation, getNativeApplication, hasLaunched, systemAppearance, setAutoSystemAppearanceChanged } from './application';
+import { AndroidApplication, iOSApplication, systemAppearanceChanged, getMainEntry, getRootView, _resetRootView, getResources, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, notify, hasListeners, run, orientation, getNativeApplication, hasLaunched, systemAppearance, setAutoSystemAppearanceChanged, setMaxRefreshRate } from './application';
 export declare const Application: {
 	launchEvent: string;
 	displayedEvent: string;
@@ -22,6 +22,7 @@ export declare const Application: {
 	systemAppearanceChangedEvent: string;
 	fontScaleChangedEvent: string;
 	systemAppearanceChanged: typeof systemAppearanceChanged;
+	setMaxRefreshRate: typeof setMaxRefreshRate;
 	getMainEntry: typeof getMainEntry;
 	getRootView: typeof getRootView;
 	resetRootView: typeof _resetRootView;
