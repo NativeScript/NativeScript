@@ -1,6 +1,3 @@
-/**
- *
- */
 package org.nativescript.widgets;
 
 import android.content.Context;
@@ -14,9 +11,10 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.FrameLayout;
 
+import androidx.annotation.NonNull;
+
 /**
  * @author hhristov
- *
  */
 public class HorizontalScrollView extends android.widget.HorizontalScrollView {
 
@@ -284,7 +282,7 @@ public class HorizontalScrollView extends android.widget.HorizontalScrollView {
 		public SavedState(Parcel source) {
 			super(source);
 			scrollPosition = source.readInt();
-			isLayoutRtl = (source.readInt() == 0) ? true : false;
+			isLayoutRtl = source.readInt() == 0;
 		}
 
 		@Override
@@ -294,6 +292,7 @@ public class HorizontalScrollView extends android.widget.HorizontalScrollView {
 			dest.writeInt(isLayoutRtl ? 1 : 0);
 		}
 
+		@NonNull
 		@Override
 		public String toString() {
 			return "HorizontalScrollView.SavedState{"

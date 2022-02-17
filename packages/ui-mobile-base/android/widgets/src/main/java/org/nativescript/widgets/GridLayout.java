@@ -1,6 +1,3 @@
-/**
- *
- */
 package org.nativescript.widgets;
 
 import android.content.Context;
@@ -16,13 +13,13 @@ import java.util.HashMap;
  */
 public class GridLayout extends LayoutBase {
 
-	private MeasureHelper helper = new MeasureHelper(this);
+	private final MeasureHelper helper = new MeasureHelper(this);
 
-	private ArrayList<ItemSpec> _rows = new ArrayList<ItemSpec>();
-	private ArrayList<ItemSpec> _cols = new ArrayList<ItemSpec>();
-	private ArrayList<Integer> columnOffsets = new ArrayList<Integer>();
-	private ArrayList<Integer> rowOffsets = new ArrayList<Integer>();
-	private HashMap<View, MeasureSpecs> map = new HashMap<View, MeasureSpecs>();
+	private final ArrayList<ItemSpec> _rows = new ArrayList<>();
+	private final ArrayList<ItemSpec> _cols = new ArrayList<>();
+	private final ArrayList<Integer> columnOffsets = new ArrayList<>();
+	private final ArrayList<Integer> rowOffsets = new ArrayList<>();
+	private final HashMap<View, MeasureSpecs> map = new HashMap<>();
 
 	public GridLayout(Context context) {
 		super(context);

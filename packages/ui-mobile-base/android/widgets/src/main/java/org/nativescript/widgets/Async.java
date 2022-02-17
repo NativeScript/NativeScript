@@ -5,6 +5,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.Looper;
 import android.util.Base64;
 import android.util.Log;
 
@@ -97,7 +98,7 @@ public class Async {
 		 * When the async task completes it will pass back this id to JavaScript.
 		 */
 		public static void fromResource(final String name, final Context context, final int requestId, final CompleteCallback callback) {
-			final android.os.Handler mHandler = new android.os.Handler();
+			final android.os.Handler mHandler = new android.os.Handler(Looper.getMainLooper());
 			threadPoolExecutor().execute(new Runnable() {
 				@Override
 				public void run() {
@@ -114,7 +115,7 @@ public class Async {
 		}
 
 		public static void fromFile(final String fileName, final int requestId, final CompleteCallback callback) {
-			final android.os.Handler mHandler = new android.os.Handler();
+			final android.os.Handler mHandler = new android.os.Handler(Looper.getMainLooper());
 			threadPoolExecutor().execute(new Runnable() {
 				@Override
 				public void run() {
@@ -131,7 +132,7 @@ public class Async {
 		}
 
 		public static void fromBase64(final String source, final int requestId, final CompleteCallback callback) {
-			final android.os.Handler mHandler = new android.os.Handler();
+			final android.os.Handler mHandler = new android.os.Handler(Looper.getMainLooper());
 			threadPoolExecutor().execute(new Runnable() {
 				@Override
 				public void run() {
@@ -148,7 +149,7 @@ public class Async {
 		}
 
 		public static void download(final String url, final CompleteCallback callback, final Object context) {
-			final android.os.Handler mHandler = new android.os.Handler();
+			final android.os.Handler mHandler = new android.os.Handler(Looper.getMainLooper());
 			threadPoolExecutor().execute(new Runnable() {
 				@Override
 				public void run() {
@@ -295,7 +296,7 @@ public class Async {
 				CookieHandler.setDefault(cookieManager);
 			}
 
-			final android.os.Handler mHandler = new android.os.Handler();
+			final android.os.Handler mHandler = new android.os.Handler(Looper.getMainLooper());
 			threadPoolExecutor().execute(new Runnable() {
 				@Override
 				public void run() {
@@ -597,7 +598,7 @@ public class Async {
 	public static class File {
 
 		public static void readText(final String path, final String encoding, final CompleteCallback callback, final Object context) {
-			final android.os.Handler mHandler = new android.os.Handler();
+			final android.os.Handler mHandler = new android.os.Handler(Looper.getMainLooper());
 			threadPoolExecutor().execute(new Runnable() {
 				@Override
 				public void run() {
@@ -614,7 +615,7 @@ public class Async {
 		}
 
 		public static void read(final String path, final CompleteCallback callback, final Object context) {
-			final android.os.Handler mHandler = new android.os.Handler();
+			final android.os.Handler mHandler = new android.os.Handler(Looper.getMainLooper());
 			threadPoolExecutor().execute(new Runnable() {
 				@Override
 				public void run() {
@@ -631,7 +632,7 @@ public class Async {
 		}
 
 		public static void writeText(final String path, final String content, final String encoding, final CompleteCallback callback, final Object context) {
-			final android.os.Handler mHandler = new android.os.Handler();
+			final android.os.Handler mHandler = new android.os.Handler(Looper.getMainLooper());
 			threadPoolExecutor().execute(new Runnable() {
 				@Override
 				public void run() {
@@ -648,7 +649,7 @@ public class Async {
 		}
 
 		public static void write(final String path, final byte[] content, final CompleteCallback callback, final Object context) {
-			final android.os.Handler mHandler = new android.os.Handler();
+			final android.os.Handler mHandler = new android.os.Handler(Looper.getMainLooper());
 			threadPoolExecutor().execute(new Runnable() {
 				@Override
 				public void run() {

@@ -1,16 +1,12 @@
-/**
- *
- */
 package org.nativescript.widgets;
 
 /**
  * @author hhristov
- *
  */
 public class ItemSpec {
 
-	private int _value;
-	private GridUnitType _unitType;
+	private final int _value;
+	private final GridUnitType _unitType;
 
 	public ItemSpec() {
 		this(1, GridUnitType.star);

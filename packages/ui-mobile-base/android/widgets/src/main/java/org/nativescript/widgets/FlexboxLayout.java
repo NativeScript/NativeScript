@@ -620,8 +620,7 @@ public class FlexboxLayout extends LayoutBase {
 				// less than the min width after the first measurement.
 				checkSizeConstraints(child);
 
-				childState = ViewCompat
-					.combineMeasuredStates(childState, ViewCompat.getMeasuredState(child));
+				childState = View.combineMeasuredStates(childState, child.getMeasuredState());
 				largestHeightInRow = Math.max(largestHeightInRow,
 					child.getMeasuredHeight() + lp.topMargin + lp.bottomMargin);
 
@@ -783,8 +782,8 @@ public class FlexboxLayout extends LayoutBase {
 			// less than the min height after the first measurement.
 			checkSizeConstraints(child);
 
-			childState = ViewCompat
-				.combineMeasuredStates(childState, ViewCompat.getMeasuredState(child));
+			childState = View
+				.combineMeasuredStates(childState, child.getMeasuredState());
 			largestWidthInColumn = Math.max(largestWidthInColumn,
 				child.getMeasuredWidth() + lp.leftMargin + lp.rightMargin);
 
@@ -964,7 +963,7 @@ public class FlexboxLayout extends LayoutBase {
 			return childIndex;
 		}
 		int sizeBeforeExpand = flexLine.mMainSize;
-		boolean needsReexpand = false;
+		boolean needsReExpand = false;
 		float unitSpace = (maxMainSize - flexLine.mMainSize) / flexLine.mTotalFlexGrow;
 		flexLine.mMainSize = paddingAlongMainAxis + flexLine.mDividerLengthInMainSize;
 		float accumulatedRoundError = 0;
@@ -988,7 +987,7 @@ public class FlexboxLayout extends LayoutBase {
 						// positive free space needs to be re-distributed to other flex items
 						// (children views). In that case, invoke this method again with the same
 						// startIndex.
-						needsReexpand = true;
+						needsReExpand = true;
 						roundedCalculatedWidth = lp.maxWidth;
 						mChildrenFrozen[childIndex] = true;
 						flexLine.mTotalFlexGrow -= lp.flexGrow;
@@ -1013,7 +1012,7 @@ public class FlexboxLayout extends LayoutBase {
 						// positive free space needs to be re-distributed to other flex items
 						// (children views). In that case, invoke this method again with the same
 						// startIndex.
-						needsReexpand = true;
+						needsReExpand = true;
 						roundedCalculatedHeight = lp.maxHeight;
 						mChildrenFrozen[childIndex] = true;
 						flexLine.mTotalFlexGrow -= lp.flexGrow;
@@ -1029,7 +1028,7 @@ public class FlexboxLayout extends LayoutBase {
 			childIndex++;
 		}
 
-		if (needsReexpand && sizeBeforeExpand != flexLine.mMainSize) {
+		if (needsReExpand && sizeBeforeExpand != flexLine.mMainSize) {
 			// Re-invoke the method with the same startIndex to distribute the positive free space
 			// that wasn't fully distributed (because of maximum length constraint)
 			expandFlexItems(flexLine, flexDirection, maxMainSize, paddingAlongMainAxis, startIndex);
@@ -1061,7 +1060,7 @@ public class FlexboxLayout extends LayoutBase {
 			childIndex += flexLine.mItemCount;
 			return childIndex;
 		}
-		boolean needsReshrink = false;
+		boolean needsReShrink = false;
 		float unitShrink = (flexLine.mMainSize - maxMainSize) / flexLine.mTotalFlexShrink;
 		float accumulatedRoundError = 0;
 		flexLine.mMainSize = paddingAlongMainAxis + flexLine.mDividerLengthInMainSize;
@@ -1080,7 +1079,7 @@ public class FlexboxLayout extends LayoutBase {
 					float rawCalculatedWidth = child.getMeasuredWidth() - unitShrink * lp.flexShrink + accumulatedRoundError;
 					int roundedCalculatedWidth = Math.round(rawCalculatedWidth);
 					if (roundedCalculatedWidth < lp.minWidth) {
-						needsReshrink = true;
+						needsReShrink = true;
 						roundedCalculatedWidth = lp.minWidth;
 						mChildrenFrozen[childIndex] = true;
 						flexLine.mTotalFlexShrink -= lp.flexShrink;
@@ -1113,7 +1112,7 @@ public class FlexboxLayout extends LayoutBase {
 					float rawCalculatedHeight = child.getMeasuredHeight() - unitShrink * lp.flexShrink + accumulatedRoundError;
 					int roundedCalculatedHeight = Math.round(rawCalculatedHeight);
 					if (roundedCalculatedHeight < lp.minHeight) {
-						needsReshrink = true;
+						needsReShrink = true;
 						roundedCalculatedHeight = lp.minHeight;
 						mChildrenFrozen[childIndex] = true;
 						flexLine.mTotalFlexShrink -= lp.flexShrink;
@@ -1129,7 +1128,7 @@ public class FlexboxLayout extends LayoutBase {
 			childIndex++;
 		}
 
-		if (needsReshrink && sizeBeforeShrink != flexLine.mMainSize) {
+		if (needsReShrink && sizeBeforeShrink != flexLine.mMainSize) {
 			// Re-invoke the method with the same startIndex to distribute the negative free space
 			// that wasn't fully distributed (because some views length were not enough)
 			shrinkFlexItems(flexLine, flexDirection, maxMainSize, paddingAlongMainAxis, startIndex);
@@ -1417,25 +1416,25 @@ public class FlexboxLayout extends LayoutBase {
 		switch (widthMode) {
 			case MeasureSpec.EXACTLY:
 				if (widthSize < calculatedMaxWidth) {
-					childState = ViewCompat
-						.combineMeasuredStates(childState, ViewCompat.MEASURED_STATE_TOO_SMALL);
+					childState = View
+						.combineMeasuredStates(childState, View.MEASURED_STATE_TOO_SMALL);
 				}
-				widthSizeAndState = ViewCompat.resolveSizeAndState(widthSize, widthMeasureSpec,
+				widthSizeAndState = View.resolveSizeAndState(widthSize, widthMeasureSpec,
 					childState);
 				break;
 			case MeasureSpec.AT_MOST: {
 				if (widthSize < calculatedMaxWidth) {
-					childState = ViewCompat
-						.combineMeasuredStates(childState, ViewCompat.MEASURED_STATE_TOO_SMALL);
+					childState = View
+						.combineMeasuredStates(childState, View.MEASURED_STATE_TOO_SMALL);
 				} else {
 					widthSize = calculatedMaxWidth;
 				}
-				widthSizeAndState = ViewCompat.resolveSizeAndState(widthSize, widthMeasureSpec,
+				widthSizeAndState = View.resolveSizeAndState(widthSize, widthMeasureSpec,
 					childState);
 				break;
 			}
 			case MeasureSpec.UNSPECIFIED: {
-				widthSizeAndState = ViewCompat
+				widthSizeAndState = View
 					.resolveSizeAndState(calculatedMaxWidth, widthMeasureSpec, childState);
 				break;
 			}
@@ -1446,27 +1445,27 @@ public class FlexboxLayout extends LayoutBase {
 		switch (heightMode) {
 			case MeasureSpec.EXACTLY:
 				if (heightSize < calculatedMaxHeight) {
-					childState = ViewCompat.combineMeasuredStates(childState,
-						ViewCompat.MEASURED_STATE_TOO_SMALL
-							>> ViewCompat.MEASURED_HEIGHT_STATE_SHIFT);
+					childState = View.combineMeasuredStates(childState,
+						View.MEASURED_STATE_TOO_SMALL
+							>> View.MEASURED_HEIGHT_STATE_SHIFT);
 				}
-				heightSizeAndState = ViewCompat.resolveSizeAndState(heightSize, heightMeasureSpec,
+				heightSizeAndState = View.resolveSizeAndState(heightSize, heightMeasureSpec,
 					childState);
 				break;
 			case MeasureSpec.AT_MOST: {
 				if (heightSize < calculatedMaxHeight) {
-					childState = ViewCompat.combineMeasuredStates(childState,
-						ViewCompat.MEASURED_STATE_TOO_SMALL
-							>> ViewCompat.MEASURED_HEIGHT_STATE_SHIFT);
+					childState = View.combineMeasuredStates(childState,
+						View.MEASURED_STATE_TOO_SMALL
+							>> View.MEASURED_HEIGHT_STATE_SHIFT);
 				} else {
 					heightSize = calculatedMaxHeight;
 				}
-				heightSizeAndState = ViewCompat.resolveSizeAndState(heightSize, heightMeasureSpec,
+				heightSizeAndState = View.resolveSizeAndState(heightSize, heightMeasureSpec,
 					childState);
 				break;
 			}
 			case MeasureSpec.UNSPECIFIED: {
-				heightSizeAndState = ViewCompat.resolveSizeAndState(calculatedMaxHeight,
+				heightSizeAndState = View.resolveSizeAndState(calculatedMaxHeight,
 					heightMeasureSpec, childState);
 				break;
 			}
@@ -2054,16 +2053,14 @@ public class FlexboxLayout extends LayoutBase {
 				if (mFlexWrap == FLEX_WRAP_WRAP_REVERSE) {
 					isRtl = !isRtl;
 				}
-				fromBottomToTop = false;
-				drawDividersVertical(canvas, isRtl, fromBottomToTop);
+				drawDividersVertical(canvas, isRtl, false /* fromBottomToTop */);
 				break;
 			case FLEX_DIRECTION_COLUMN_REVERSE:
 				isRtl = layoutDirection == ViewCompat.LAYOUT_DIRECTION_RTL;
 				if (mFlexWrap == FLEX_WRAP_WRAP_REVERSE) {
 					isRtl = !isRtl;
 				}
-				fromBottomToTop = true;
-				drawDividersVertical(canvas, isRtl, fromBottomToTop);
+				drawDividersVertical(canvas, isRtl, true /* fromBottomToTop */);
 				break;
 		}
 	}
@@ -2472,11 +2469,7 @@ public class FlexboxLayout extends LayoutBase {
 	}
 
 	private void setWillNotDrawFlag() {
-		if (mDividerDrawableHorizontal == null && mDividerDrawableVertical == null) {
-			setWillNotDraw(true);
-		} else {
-			setWillNotDraw(false);
-		}
+		setWillNotDraw(mDividerDrawableHorizontal == null && mDividerDrawableVertical == null);
 	}
 
 	/**
@@ -2598,7 +2591,7 @@ public class FlexboxLayout extends LayoutBase {
 
 		public static final int ALIGN_SELF_STRETCH = ALIGN_ITEMS_STRETCH;
 
-		private static final int MAX_SIZE = Integer.MAX_VALUE & ViewCompat.MEASURED_SIZE_MASK;
+		private static final int MAX_SIZE = Integer.MAX_VALUE & View.MEASURED_SIZE_MASK;
 
 		/**
 		 * This attribute can change the ordering of the children views are laid out.
@@ -2732,6 +2725,7 @@ public class FlexboxLayout extends LayoutBase {
 			return index - another.index;
 		}
 
+		@NonNull
 		@Override
 		public String toString() {
 			return "Order{" +

@@ -4,12 +4,12 @@ package org.nativescript.widgets;
  * Created by Vultix on 3/12/2018.
  */
 public class LinearGradientDefinition {
-	private float startX;
-	private float startY;
-	private float endX;
-	private float endY;
-	private int[] colors;
-	private float[] stops;
+	private final float startX;
+	private final float startY;
+	private final float endX;
+	private final float endY;
+	private final int[] colors;
+	private final float[] stops;
 
 	public float getStartX() {
 		return startX;

@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
  * Created by hristov on 6/15/2016.
  */
 public class BorderDrawable extends ColorDrawable implements BitmapOwner {
-	private float density;
+	private final float density;
 	private String id;
 
 	private int borderTopColor;
@@ -536,8 +536,8 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 		path1.op(path2, Path.Op.INTERSECT);
 	}
 
-	private static Pattern spaceAndComma = Pattern.compile("[\\s,]+");
-	private static Pattern space = Pattern.compile("\\s+");
+	private final static Pattern spaceAndComma = Pattern.compile("[\\s,]+");
+	private final static Pattern space = Pattern.compile("\\s+");
 
 	private static void drawClipPath(String clipPath, Canvas canvas, Paint paint, RectF bounds, float density) {
 		// Sample string is polygon(20% 0%, 0% 20%, 30% 50%, 0% 80%, 20% 100%, 50% 70%, 80% 100%, 100% 80%, 70% 50%, 100% 20%, 80% 0%, 50% 30%);
@@ -591,7 +591,7 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 				break;
 			case "circle":
 				arr = space.split(value);
-				float radius = cssValueToDevicePixels(arr[0], (bounds.width() > bounds.height() ? bounds.height() : bounds.width()) / 2, density);
+				float radius = cssValueToDevicePixels(arr[0], (Math.min(bounds.width(), bounds.height())) / 2, density);
 				float y = cssValueToDevicePixels(arr[2], bounds.height(), density);
 				float x = cssValueToDevicePixels(arr[3], bounds.width(), density);
 				canvas.drawCircle(x, y, radius, paint);
@@ -753,12 +753,18 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 			if ("ident".equals(values[0].getType())) {
 				String val = values[0].getString().toLowerCase(Locale.ENGLISH);
 
-				if ("left".equals(val) || "right".equals(val)) {
-					result = new CSSValue[]{values[0], center};
-				} else if ("top".equals(val) || "bottom".equals(val)) {
-					result = new CSSValue[]{center, values[0]};
-				} else if ("center".equals(val)) {
-					result = new CSSValue[]{center, center};
+				switch (val) {
+					case "left":
+					case "right":
+						result = new CSSValue[]{values[0], center};
+						break;
+					case "top":
+					case "bottom":
+						result = new CSSValue[]{center, values[0]};
+						break;
+					case "center":
+						result = new CSSValue[]{center, center};
+						break;
 				}
 			} else if ("number".equals(values[0].getType())) {
 				result = new CSSValue[]{values[0], center};
@@ -843,7 +849,7 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 		}
 	}
 
-	private class BackgroundDrawParams {
+	private static class BackgroundDrawParams {
 		private boolean repeatX = true;
 		private boolean repeatY = true;
 		private float posX;

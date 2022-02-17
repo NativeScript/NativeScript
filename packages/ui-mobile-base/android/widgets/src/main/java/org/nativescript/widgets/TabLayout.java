@@ -39,7 +39,7 @@ import androidx.viewpager.widget.ViewPager;
  * constant feedback as to the user's scroll progress.
  * <p>
  * To use the component, simply add it to your view hierarchy. Then in your
- * {@link android.app.Activity} or {@link android.support.v4.app.Fragment} call
+ * {@link android.app.Activity} or {@link android.app.Fragment} call
  * {@link #setViewPager(ViewPager)} providing it the ViewPager this layout is
  * being used for.
  * <p>
@@ -71,13 +71,13 @@ public class TabLayout extends HorizontalScrollView {
 	private static final int SMALL_MIN_HEIGHT = 48;
 	private static final int LARGE_MIN_HEIGHT = 72;
 
-	private int mTitleOffset;
+	private final int mTitleOffset;
 
 	private boolean mDistributeEvenly = true;
 
 	private TabItemSpec[] mTabItems;
 	private ViewPager mViewPager;
-	private SparseArray<String> mContentDescriptions = new SparseArray<String>();
+	private final SparseArray<String> mContentDescriptions = new SparseArray<>();
 	private ViewPager.OnPageChangeListener mViewPagerPageChangeListener;
 
 	private final TabStrip mTabStrip;

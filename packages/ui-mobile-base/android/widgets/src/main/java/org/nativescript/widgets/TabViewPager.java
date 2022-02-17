@@ -5,6 +5,7 @@ import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 
+import androidx.annotation.NonNull;
 import androidx.viewpager.widget.ViewPager;
 
 // See this thread for more information https://stackoverflow.com/questions/9650265
@@ -47,7 +48,7 @@ public class TabViewPager extends ViewPager {
 	}
 
 	@Override
-	public boolean executeKeyEvent(KeyEvent event) {
+	public boolean executeKeyEvent(@NonNull KeyEvent event) {
 		if (this.swipePageEnabled) {
 			return super.executeKeyEvent(event);
 		}

@@ -1,6 +1,3 @@
-/**
- *
- */
 package org.nativescript.widgets;
 
 import android.content.Context;
@@ -13,7 +10,6 @@ import android.widget.FrameLayout;
 
 /**
  * @author hhristov
- *
  */
 public abstract class LayoutBase extends ViewGroup {
 	private boolean passThroughParent;

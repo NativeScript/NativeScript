@@ -1,6 +1,3 @@
-/**
- *
- */
 package org.nativescript.widgets;
 
 import android.content.Context;
@@ -27,15 +24,15 @@ import org.nativescript.widgets.image.Worker;
 public class ImageView extends androidx.appcompat.widget.AppCompatImageView implements BitmapOwner {
 	private static final double EPSILON = 1E-05;
 
-	private Path path = new Path();
-	private RectF rect = new RectF();
+	private final Path path = new Path();
+	private final RectF rect = new RectF();
 
 	private double scaleW = 1;
 	private double scaleH = 1;
 
 	private float rotationAngle;
 
-	private Matrix mMatrix;
+	private final Matrix mMatrix;
 	private Bitmap mBitmap;
 	private String mUri;
 	private int mDecodeWidth;
@@ -162,11 +159,11 @@ public class ImageView extends androidx.appcompat.widget.AppCompatImageView impl
 				// No infinite dimensions.
 				switch (scale) {
 					case FIT_CENTER:
-						this.scaleH = this.scaleW < this.scaleH ? this.scaleW : this.scaleH;
+						this.scaleH = Math.min(this.scaleW, this.scaleH);
 						this.scaleW = this.scaleH;
 						break;
 					case CENTER_CROP:
-						this.scaleH = this.scaleW > this.scaleH ? this.scaleW : this.scaleH;
+						this.scaleH = Math.max(this.scaleW, this.scaleH);
 						this.scaleW = this.scaleH;
 						break;
 					default:
@@ -190,7 +187,7 @@ public class ImageView extends androidx.appcompat.widget.AppCompatImageView impl
 
 		// Clear current bitmap only if we set empty URI.
 		// We support setting bitmap through ImageSource (e.g. Bitmap).
-		if (uri == null || uri.trim() == "") {
+		if (uri == null || uri.trim().equals("")) {
 			this.setImageBitmap(null);
 		}
 

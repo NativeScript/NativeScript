@@ -1,6 +1,3 @@
-/**
- *
- */
 package org.nativescript.widgets;
 
 import android.content.Context;
@@ -10,14 +7,13 @@ import java.util.ArrayList;
 
 /**
  * @author hhristov
- *
  */
 public class WrapLayout extends LayoutBase {
 
 	private int _itemWidth = -1;
 	private int _itemHeight = -1;
 	private Orientation _orientation = Orientation.horizontal;
-	private ArrayList<Integer> _lengths = new ArrayList<Integer>();
+	private final ArrayList<Integer> _lengths = new ArrayList<>();
 
 	public WrapLayout(Context context) {
 		super(context);

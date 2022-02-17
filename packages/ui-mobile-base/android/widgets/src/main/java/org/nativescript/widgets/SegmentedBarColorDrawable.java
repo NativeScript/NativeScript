@@ -11,7 +11,7 @@ import androidx.annotation.ColorInt;
 
 public class SegmentedBarColorDrawable extends ColorDrawable {
 
-	private float thickness;
+	private final float thickness;
 
 	public SegmentedBarColorDrawable(@ColorInt int color, float thickness) {
 		super(color);

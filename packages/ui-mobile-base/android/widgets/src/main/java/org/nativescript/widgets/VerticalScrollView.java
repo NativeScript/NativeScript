@@ -1,6 +1,3 @@
-/**
- *
- */
 package org.nativescript.widgets;
 
 import android.content.Context;
@@ -17,7 +14,6 @@ import org.nativescript.widgets.HorizontalScrollView.SavedState;
 
 /**
  * @author hhristov
- *
  */
 public class VerticalScrollView extends ScrollView {
 

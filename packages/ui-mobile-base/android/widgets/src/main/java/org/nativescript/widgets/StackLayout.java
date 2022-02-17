@@ -1,6 +1,3 @@
-/**
- *
- */
 package org.nativescript.widgets;
 
 import android.annotation.SuppressLint;
@@ -11,7 +8,6 @@ import android.view.View;
 
 /**
  * @author hhristov
- *
  */
 public class StackLayout extends LayoutBase {
 	static final String TAG = "JS";
@@ -223,10 +219,6 @@ public class StackLayout extends LayoutBase {
 	private boolean isUnsizedScrollableView(View child) {
 		LayoutParams childLayoutParams = child.getLayoutParams();
 
-		if (childLayoutParams.height == -1 && (child instanceof android.widget.ListView || child instanceof org.nativescript.widgets.VerticalScrollView)) {
-			return true;
-		}
-
-		return false;
+		return childLayoutParams.height == -1 && (child instanceof android.widget.ListView || child instanceof VerticalScrollView);
 	}
 }
