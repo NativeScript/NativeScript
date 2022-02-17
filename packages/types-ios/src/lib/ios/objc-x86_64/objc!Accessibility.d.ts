@@ -1,4 +1,40 @@
 
+declare class AXBrailleMap extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): AXBrailleMap; // inherited from NSObject
+
+	static new(): AXBrailleMap; // inherited from NSObject
+
+	readonly dimensions: CGSize;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	heightAtPoint(point: CGPoint): number;
+
+	initWithCoder(coder: NSCoder): this;
+
+	presentImage(image: any): void;
+
+	setHeightAtPoint(status: number, point: CGPoint): void;
+}
+
+interface AXBrailleMapRenderer extends NSObjectProtocol {
+
+	accessibilityBrailleMapRenderRegion: CGRect;
+
+	accessibilityBrailleMapRenderer: (p1: AXBrailleMap) => void;
+}
+declare var AXBrailleMapRenderer: {
+
+	prototype: AXBrailleMapRenderer;
+};
+
 declare class AXCategoricalDataAxisDescriptor extends NSObject implements AXDataAxisDescriptor {
 
 	static alloc(): AXCategoricalDataAxisDescriptor; // inherited from NSObject

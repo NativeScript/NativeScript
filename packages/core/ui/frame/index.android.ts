@@ -237,6 +237,21 @@ export class Frame extends FrameBase {
 			this.backgroundColor = this._originalBackground;
 			this._originalBackground = null;
 		}
+		setTimeout(() => {
+			// there's a bug with nested frames where sometimes the nested fragment is not recreated at all
+			// so we manually check on loaded event if the fragment is not recreated and recreate it
+			const currentEntry = this._currentEntry || this._executingContext?.entry;
+			if (currentEntry) {
+				if (!currentEntry.fragment) {
+					const manager = this._getFragmentManager();
+					const transaction = manager.beginTransaction();
+					currentEntry.fragment = this.createFragment(currentEntry, currentEntry.fragmentTag);
+					_updateTransitions(currentEntry);
+					transaction.replace(this.containerViewId, currentEntry.fragment, currentEntry.fragmentTag);
+					transaction.commitAllowingStateLoss();
+				}
+			}
+		}, 0);
 
 		super.onLoaded();
 	}
@@ -1003,6 +1018,19 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 	}
 
 	@profile
+	public onResume(fragment: org.nativescript.widgets.FragmentBase, superFunc: Function): void {
+		const frame = this.entry.resolvedPage.frame;
+		// on some cases during the first navigation on nested frames the animation doesn't trigger
+		// we depend on the animation (even None animation) to set the entry as the current entry
+		// animation should start between start and resume, so if we have an executing navigation here it probably means the animation was skipped
+		// so we manually set the entry
+		if (frame._executingContext && !(<any>this.entry).isAnimationRunning) {
+			frame.setCurrent(this.entry, frame._executingContext.navigationType);
+		}
+		superFunc.call(fragment);
+	}
+
+	@profile
 	public onStop(fragment: androidx.fragment.app.Fragment, superFunc: Function): void {
 		superFunc.call(fragment);
 	}
@@ -1032,12 +1060,11 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 		// view.layout(0, 0, width, height);
 		// view.draw(canvas);
 
-		view.setDrawingCacheEnabled(true);
-		const drawCache = view.getDrawingCache();
-		const bitmap = android.graphics.Bitmap.createBitmap(drawCache);
-		view.setDrawingCacheEnabled(false);
-
-		return bitmap;
+		// view.setDrawingCacheEnabled(true);
+		// const drawCache = view.getDrawingCache();
+		// const bitmap = android.graphics.Bitmap.createBitmap(drawCache);
+		// view.setDrawingCacheEnabled(false);
+		return org.nativescript.widgets.Utils.getBitmapFromView(view);
 	}
 }
 

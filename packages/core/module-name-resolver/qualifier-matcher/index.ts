@@ -119,20 +119,21 @@ const supportedQualifiers: Array<QualifierSpec> = [minWidthHeightQualifier, minW
 
 function checkQualifiers(path: string, context: PlatformContext): number {
 	let result = 0;
+	let value: number;
 	for (let i = 0; i < supportedQualifiers.length; i++) {
 		const qualifier = supportedQualifiers[i];
 		if (qualifier.isMatch(path)) {
 			const occurences = qualifier.getMatchOccurences(path);
 			// Always get the last qualifier among identical occurences
-			result = qualifier.getMatchValue(occurences[occurences.length - 1], context);
-			if (result < 0) {
+			value = qualifier.getMatchValue(occurences[occurences.length - 1], context);
+			if (value < 0) {
 				// Non of the supported qualifiers matched this or the match was not satisfied
 				return -1;
 			}
 
-			result += (supportedQualifiers.length - i) * PRIORITY_STEP;
-
-			return result;
+			if (value > 0) {
+				result += value + (supportedQualifiers.length - i) * PRIORITY_STEP;
+			}
 		}
 	}
 
