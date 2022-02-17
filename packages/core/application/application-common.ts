@@ -22,6 +22,8 @@ export function hasLaunched(): boolean {
 export const launchEvent = 'launch';
 export const suspendEvent = 'suspend';
 export const displayedEvent = 'displayed';
+export const backgroundEvent = 'background';
+export const foregroundEvent = 'foreground';
 export const resumeEvent = 'resume';
 export const exitEvent = 'exit';
 export const lowMemoryEvent = 'lowMemory';

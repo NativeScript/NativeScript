@@ -35,6 +35,16 @@ export const suspendEvent: string;
 export const resumeEvent: string;
 
 /**
+ * String value used when hooking to foreground event.
+ */
+export const foregroundEvent: string;
+
+/**
+ * String value used when hooking to background event.
+ */
+export const backgroundEvent: string;
+
+/**
  * String value used when hooking to exit event.
  */
 export const exitEvent: string;
@@ -524,6 +534,11 @@ export class AndroidApplication extends Observable {
 	 * True if the main application activity is not running (suspended), false otherwise.
 	 */
 	paused: boolean;
+
+	/**
+	 * True if the main application activity is in background, false otherwise.
+	 */
+	backgrounded: boolean;
 
 	/**
 	 * Initialized the android-specific application object with the native android.app.Application instance.
