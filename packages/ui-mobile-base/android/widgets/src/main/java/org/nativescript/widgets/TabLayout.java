@@ -131,6 +131,14 @@ public class TabLayout extends HorizontalScrollView {
         return this.mSelectedIndicatorColors;
     }
 
+    public void setIconRenderingMode(TabIconRenderingMode mode) {
+        mTabStrip.setIconRenderingMode(mode);
+    }
+
+    public TabIconRenderingMode getIconRenderingMode() {
+        return mTabStrip.getIconRenderingMode();
+    }
+
     public void setTabTextColor(int color){
         mTabStrip.setTabTextColor(color);
     }
