@@ -18,6 +18,7 @@ package org.nativescript.widgets;
 
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -26,6 +27,9 @@ import android.util.TypedValue;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.ImageView;
+
+import androidx.core.widget.ImageViewCompat;
 
 class TabStrip extends LinearLayout {
 
@@ -51,6 +55,7 @@ class TabStrip extends LinearLayout {
     private int mTabTextColor;
     private int mSelectedTabTextColor;
     private float mTabTextFontSize;
+    private TabIconRenderingMode mIconRenderingMode;
 
     private boolean mShouldUpdateTabsTextColor;
 
@@ -88,6 +93,7 @@ class TabStrip extends LinearLayout {
 
         // Default selected color is the same as mTabTextColor
         mSelectedTabTextColor = mTabTextColor;
+        mIconRenderingMode = TabIconRenderingMode.original;
 
         mShouldUpdateTabsTextColor = true;
 
@@ -104,6 +110,15 @@ class TabStrip extends LinearLayout {
         mCustomTabColorizer = null;
         mDefaultTabColorizer.setIndicatorColors(colors);
         invalidate();
+    }
+
+    void setIconRenderingMode(TabIconRenderingMode mode) {
+        mIconRenderingMode = mode;
+        updateTabsTextColor();
+    }
+
+    TabIconRenderingMode getIconRenderingMode() {
+        return mIconRenderingMode;
     }
 
     void setTabTextColor(int color){
@@ -128,16 +143,31 @@ class TabStrip extends LinearLayout {
         mShouldUpdateTabsTextColor = value;
     }
 
-    private void updateTabsTextColor(){
+    private void updateTabsTextColor() {
         if (mShouldUpdateTabsTextColor) {
             final int childCount = getChildCount();
+            int greyColor = Color.parseColor("#A2A2A2");
             for (int i = 0; i < childCount; i++){
                 LinearLayout linearLayout = (LinearLayout)getChildAt(i);
+                ImageView imageView = (ImageView)linearLayout.getChildAt(0);
                 TextView textView = (TextView)linearLayout.getChildAt(1);
-                if (i == mSelectedPosition){
-                    textView.setTextColor(mSelectedTabTextColor);
+
+                if (mIconRenderingMode == TabIconRenderingMode.template) {
+                    ColorStateList tint;
+                    if (i == mSelectedPosition) {
+                        tint = ColorStateList.valueOf(mSelectedTabTextColor);
+                    } else {
+                        tint = ColorStateList.valueOf(greyColor);
+                    }
+
+                    ImageViewCompat.setImageTintList(imageView, tint);
+                } else {
+                    ImageViewCompat.setImageTintList(imageView, null);
                 }
-                else {
+
+                if (i == mSelectedPosition) {
+                    textView.setTextColor(mSelectedTabTextColor);
+                } else {
                     textView.setTextColor(mTabTextColor);
                 }
             }

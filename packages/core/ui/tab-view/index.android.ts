@@ -1,7 +1,7 @@
 import { TabViewItem as TabViewItemDefinition } from '.';
 import { Font } from '../styling/font';
 
-import { TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty, tabTextColorProperty, tabBackgroundColorProperty, tabTextFontSizeProperty, selectedTabTextColorProperty, androidSelectedTabHighlightColorProperty, androidOffscreenTabLimitProperty, traceCategory, traceMissingIcon } from './tab-view-common';
+import { TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty, tabTextColorProperty, tabBackgroundColorProperty, tabTextFontSizeProperty, selectedTabTextColorProperty, androidSelectedTabHighlightColorProperty, androidOffscreenTabLimitProperty, traceCategory, traceMissingIcon, androidIconRenderingModeProperty } from './tab-view-common';
 import { textTransformProperty, getTransformedText } from '../text-base';
 import { CoreTypes } from '../../core-types';
 import { ImageSource } from '../../image-source';
@@ -699,6 +699,16 @@ export class TabView extends TabViewBase {
 		}
 	}
 
+	private getNativeRenderingMode(mode: 'alwaysOriginal' | 'alwaysTemplate'): number {
+		switch (mode) {
+			case 'alwaysTemplate':
+				return org.nativescript.widgets.TabIconRenderingMode.template;
+			default:
+			case 'alwaysOriginal':
+				return org.nativescript.widgets.TabIconRenderingMode.original;
+		}
+	}
+
 	public updateAndroidItemAt(index: number, spec: org.nativescript.widgets.TabItemSpec) {
 		this._tabLayout.updateItemAt(index, spec);
 	}
@@ -708,6 +718,13 @@ export class TabView extends TabViewBase {
 	}
 	[androidOffscreenTabLimitProperty.setNative](value: number) {
 		this._viewPager.setOffscreenPageLimit(value);
+	}
+
+	[androidIconRenderingModeProperty.getDefault](): 'alwaysOriginal' | 'alwaysTemplate' {
+		return 'alwaysOriginal';
+	}
+	[androidIconRenderingModeProperty.setNative](value: 'alwaysOriginal' | 'alwaysTemplate') {
+		this._tabLayout.setIconRenderingMode(this.getNativeRenderingMode(value));
 	}
 
 	[selectedIndexProperty.setNative](value: number) {
