@@ -28,8 +28,10 @@ export class Image extends ImageBase {
 		super.disposeNativeView();
 
 		if (this.imageSource?.ios) {
+			this.imageSource.ios = null;
+			// causes crash currently:
 			// release the native UIImage
-			CFRelease(this.imageSource.ios);
+			// CFRelease(this.imageSource.ios);
 		}
 
 		this.imageSource = null;
