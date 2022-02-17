@@ -13,6 +13,20 @@ export function GC() {
 	gc();
 }
 
+let hasQueuedGC = false;
+export function queueGC() {
+	if (hasQueuedGC) {
+		return;
+	}
+
+	hasQueuedGC = true;
+
+	setTimeout(() => {
+		hasQueuedGC = false;
+		GC();
+	}, 1000);
+}
+
 export function releaseNativeObject(object: java.lang.Object) {
 	__releaseNativeCounterpart(object);
 }

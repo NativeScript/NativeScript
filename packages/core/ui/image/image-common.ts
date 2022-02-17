@@ -28,10 +28,15 @@ export abstract class ImageBase extends View implements ImageDefinition {
 		this.style.tintColor = value;
 	}
 
+	// override in subclass
+	public abstract disposeImageSource(): void;
+
 	/**
 	 * @internal
 	 */
 	public _createImageSourceFromSrc(value: string | ImageSource | ImageAsset): void {
+		this.disposeImageSource();
+
 		const originalValue = value;
 		const sync = this.loadMode === 'sync';
 		if (typeof value === 'string' || value instanceof String) {

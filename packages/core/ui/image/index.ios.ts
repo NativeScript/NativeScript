@@ -2,7 +2,7 @@ import { ImageBase, stretchProperty, imageSourceProperty, tintColorProperty, src
 import { ImageSource } from '../../image-source';
 import { Color } from '../../color';
 import { Trace } from '../../trace';
-import { layout } from '../../utils';
+import { layout, queueGC } from '../../utils';
 
 export * from './image-common';
 
@@ -24,37 +24,56 @@ export class Image extends ImageBase {
 		this._setNativeClipToBounds();
 	}
 
-	public disposeNativeView(): void {
-		super.disposeNativeView();
+	public disposeImageSource() {
+		if (this.nativeViewProtected?.image === this.imageSource?.ios) {
+			this.nativeViewProtected.image = null;
+		}
 
 		if (this.imageSource?.ios) {
 			this.imageSource.ios = null;
-			// causes crash currently:
-			// release the native UIImage
-			// CFRelease(this.imageSource.ios);
 		}
 
 		this.imageSource = null;
 
+		queueGC();
+	}
+
+	public disposeNativeView(): void {
+		super.disposeNativeView();
+
 		if (this.nativeViewProtected?.image) {
 			this.nativeViewProtected.image = null;
 		}
+
+		this.disposeImageSource();
 	}
 
 	private setTintColor(value: Color) {
 		if (this.nativeViewProtected) {
 			if (value && this.nativeViewProtected.image && !this._templateImageWasCreated) {
-				this.nativeViewProtected.image = this.nativeViewProtected.image.imageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+				const newImage = this.nativeViewProtected.image.imageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+				this.nativeViewProtected.image = null;
+				this.nativeViewProtected.image = newImage;
 				this._templateImageWasCreated = true;
 			} else if (!value && this.nativeViewProtected.image && this._templateImageWasCreated) {
 				this._templateImageWasCreated = false;
-				this.nativeViewProtected.image = this.nativeViewProtected.image.imageWithRenderingMode(UIImageRenderingMode.Automatic);
+				const newImage = this.nativeViewProtected.image.imageWithRenderingMode(UIImageRenderingMode.Automatic);
+				this.nativeViewProtected.image = null;
+				this.nativeViewProtected.image = newImage;
 			}
 			this.nativeViewProtected.tintColor = value ? value.ios : null;
+
+			queueGC();
 		}
 	}
 
 	public _setNativeImage(nativeImage: UIImage) {
+		if (this.nativeViewProtected?.image) {
+			this.nativeViewProtected.image = null;
+
+			queueGC();
+		}
+
 		if (this.nativeViewProtected) {
 			this.nativeViewProtected.image = nativeImage;
 		}
@@ -169,6 +188,10 @@ export class Image extends ImageBase {
 	}
 
 	[imageSourceProperty.setNative](value: ImageSource) {
+		if (value !== this.imageSource) {
+			this.disposeImageSource();
+		}
+
 		this._setNativeImage(value ? value.ios : null);
 	}
 
