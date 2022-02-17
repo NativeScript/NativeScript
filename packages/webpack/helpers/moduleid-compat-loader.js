@@ -6,7 +6,7 @@
 module.exports = function (source, map) {
     this.cacheable();
 
-    // Strips occurences of `moduleId: module.id,`, since it is no longer needed for webpack builds
+    // Strips occurrences of `moduleId: module.id,`, since it is no longer needed for webpack builds
     const noModuleIdsSource = source.replace(/moduleId\:\s*module\.id\s*(\,)?/g, result =>
         // Try to preserve char count so sourcemaps may remain intact
         "/*" + result.substring(2, result.length - 2) + "*/"
