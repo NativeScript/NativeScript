@@ -19,9 +19,9 @@ import java.util.ArrayList;
 
 public class CustomTransition extends Visibility {
 	private boolean resetOnTransitionEnd;
-	private AnimatorSet animatorSet;
+	private final AnimatorSet animatorSet;
 	private AnimatorSet immediateAnimatorSet;
-	private String transitionName;
+	private final String transitionName;
 
 	public CustomTransition(AnimatorSet animatorSet, String transitionName) {
 		this.animatorSet = animatorSet;

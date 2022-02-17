@@ -11,7 +11,7 @@ import android.text.style.TypefaceSpan;
 
 @SuppressLint("ParcelCreator")
 public class CustomTypefaceSpan extends TypefaceSpan {
-	private Typeface typeface;
+	private final Typeface typeface;
 
 	public CustomTypefaceSpan(String family, Typeface typeface) {
 		super(family);

@@ -98,13 +98,13 @@ public class GridLayout extends LayoutBase {
 	}
 
 	public ItemSpec[] getColumns() {
-		ItemSpec copy[] = new ItemSpec[this._cols.size()];
+		ItemSpec[] copy = new ItemSpec[this._cols.size()];
 		copy = this._cols.toArray(copy);
 		return copy;
 	}
 
 	public ItemSpec[] getRows() {
-		ItemSpec copy[] = new ItemSpec[this._rows.size()];
+		ItemSpec[] copy = new ItemSpec[this._rows.size()];
 		copy = this._rows.toArray(copy);
 		return copy;
 	}
@@ -605,8 +605,8 @@ class MeasureHelper {
 		}
 	}
 
-	private ItemGroup singleRowGroup = new ItemGroup(singleRow);
-	private ItemGroup singleColumnGroup = new ItemGroup(singleColumn);
+	private final ItemGroup singleRowGroup = new ItemGroup(singleRow);
+	private final ItemGroup singleColumnGroup = new ItemGroup(singleColumn);
 
 	void init() {
 

@@ -207,7 +207,7 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
 			sb.setLength(0);
 			sb.append(child.getParent().toString());
 			sb.append(" :layoutChild: ");
-			sb.append(child.toString());
+			sb.append(child);
 			sb.append(" ");
 			sb.append(childLeft);
 			sb.append(", ");
@@ -233,7 +233,7 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
 				Context context = child.getContext();
 				ApplicationInfo ai = context.getPackageManager().getApplicationInfo(context.getPackageName(), android.content.pm.PackageManager.GET_META_DATA);
 				android.os.Bundle bundle = ai.metaData;
-				Boolean debugLayouts = bundle != null ? bundle.getBoolean("debugLayouts", false) : false;
+				Boolean debugLayouts = bundle != null && bundle.getBoolean("debugLayouts", false);
 				debuggable = debugLayouts ? 1 : 0;
 			} catch (NameNotFoundException e) {
 				debuggable = 0;
@@ -251,7 +251,7 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
 			sb.setLength(0);
 			sb.append(child.getParent().toString());
 			sb.append(" :measureChild: ");
-			sb.append(child.toString());
+			sb.append(child);
 			sb.append(" ");
 			sb.append(MeasureSpec.toString(childWidthMeasureSpec));
 			sb.append(", ");

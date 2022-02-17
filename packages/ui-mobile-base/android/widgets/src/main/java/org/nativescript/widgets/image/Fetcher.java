@@ -56,7 +56,7 @@ public class Fetcher extends Worker {
 	private static int mDeviceWidthPixels;
 	private static int mDeviceHeightPixels;
 
-	private File mHttpCacheDir;
+	private final File mHttpCacheDir;
 	private DiskLruCache mHttpDiskCache;
 	private boolean mHttpDiskCacheStarting = true;
 	private final Object mHttpDiskCacheLock = new Object();
@@ -82,8 +82,8 @@ public class Fetcher extends Worker {
 		super(context);
 		mHttpCacheDir = Cache.getDiskCacheDir(context, HTTP_CACHE_DIR);
 		mPackageName = context.getPackageName();
-		mDeviceWidthPixels = (int) context.getResources().getDisplayMetrics().widthPixels;
-		mDeviceHeightPixels = (int) context.getResources().getDisplayMetrics().heightPixels;
+		mDeviceWidthPixels = context.getResources().getDisplayMetrics().widthPixels;
+		mDeviceHeightPixels = context.getResources().getDisplayMetrics().heightPixels;
 	}
 
 	@Override

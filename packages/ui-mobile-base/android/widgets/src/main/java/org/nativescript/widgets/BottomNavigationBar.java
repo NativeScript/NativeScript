@@ -51,7 +51,7 @@ public class BottomNavigationBar extends LinearLayout {
 	private static final int ITEM_TEXT_MAX_WIDTH = 144;
 
 	private TabItemSpec[] mTabItems;
-	private SparseArray<String> mContentDescriptions = new SparseArray<String>();
+	private final SparseArray<String> mContentDescriptions = new SparseArray<String>();
 
 	private final TabStrip mTabStrip;
 	private int mMaxImageHeight;

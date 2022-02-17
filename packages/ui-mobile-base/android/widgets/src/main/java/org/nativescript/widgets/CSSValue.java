@@ -4,10 +4,10 @@ package org.nativescript.widgets;
  * Created by hristov on 6/16/2016.
  */
 public class CSSValue {
-	private String type;
-	private String str;
-	private String unit;
-	private float value;
+	private final String type;
+	private final String str;
+	private final String unit;
+	private final float value;
 
 	public String getType() {
 		return type;

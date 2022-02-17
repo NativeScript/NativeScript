@@ -71,7 +71,7 @@ public abstract class Worker {
 			try {
 				ApplicationInfo ai = context.getPackageManager().getApplicationInfo(context.getPackageName(), android.content.pm.PackageManager.GET_META_DATA);
 				android.os.Bundle bundle = ai.metaData;
-				Boolean debugLayouts = bundle != null ? bundle.getBoolean("debugImageCache", false) : false;
+				Boolean debugLayouts = bundle != null && bundle.getBoolean("debugImageCache", false);
 				debuggable = debugLayouts ? 1 : 0;
 			} catch (PackageManager.NameNotFoundException e) {
 				debuggable = 0;
@@ -285,8 +285,8 @@ public abstract class Worker {
 	 * Create cache key depending on image uri and decode properties.
 	 */
 	private static String createCacheUri(String uri, int decodeHeight, int decodeWidth) {
-		uri += decodeHeight != 0 ? "height%%" + String.valueOf(decodeHeight) : "";
-		uri += decodeWidth != 0 ? "width%%" + String.valueOf(decodeWidth) : "";
+		uri += decodeHeight != 0 ? "height%%" + decodeHeight : "";
+		uri += decodeWidth != 0 ? "width%%" + decodeWidth : "";
 
 		return uri;
 	}
@@ -295,12 +295,12 @@ public abstract class Worker {
 	 * The actual AsyncTask that will asynchronously process the image.
 	 */
 	private class BitmapWorkerTask extends AsyncTask<Void, Void, Object> {
-		private int mDecodeWidth;
-		private int mDecodeHeight;
-		private boolean mKeepAspectRatio;
-		private String mUri;
-		private String mCacheUri;
-		private boolean mCacheImage;
+		private final int mDecodeWidth;
+		private final int mDecodeHeight;
+		private final boolean mKeepAspectRatio;
+		private final String mUri;
+		private final String mCacheUri;
+		private final boolean mCacheImage;
 		private final WeakReference<BitmapOwner> imageViewReference;
 		private final OnImageLoadedListener mOnImageLoadedListener;
 

@@ -166,8 +166,8 @@ public class Async {
 		}
 
 		static class DownloadImageTask {
-			private CompleteCallback callback;
-			private Object context;
+			private final CompleteCallback callback;
+			private final Object context;
 
 			public DownloadImageTask(CompleteCallback callback, Object context) {
 				this.callback = callback;
@@ -204,9 +204,9 @@ public class Async {
 		}
 
 		static class LoadImageFromResourceTask {
-			private CompleteCallback callback;
-			private Context context;
-			private int requestId;
+			private final CompleteCallback callback;
+			private final Context context;
+			private final int requestId;
 
 			public LoadImageFromResourceTask(Context context, int requestId, CompleteCallback callback) {
 				this.callback = callback;
@@ -237,8 +237,8 @@ public class Async {
 		}
 
 		static class LoadImageFromFileTask {
-			private CompleteCallback callback;
-			private int requestId;
+			private final CompleteCallback callback;
+			private final int requestId;
 
 			public LoadImageFromFileTask(int requestId, CompleteCallback callback) {
 				this.callback = callback;
@@ -260,8 +260,8 @@ public class Async {
 		}
 
 		static class LoadImageFromBase64StringTask {
-			private CompleteCallback callback;
-			private int requestId;
+			private final CompleteCallback callback;
+			private final int requestId;
 
 			public LoadImageFromBase64StringTask(int requestId, CompleteCallback callback) {
 				this.callback = callback;
@@ -339,8 +339,8 @@ public class Async {
 				boolean hasAcceptHeader = false;
 
 				for (KeyValuePair pair : this.headers) {
-					String key = pair.key.toString();
-					connection.addRequestProperty(key, pair.value.toString());
+					String key = pair.key;
+					connection.addRequestProperty(key, pair.value);
 					if (key.toLowerCase().contentEquals("accept-encoding")) {
 						hasAcceptHeader = true;
 					}
@@ -502,8 +502,8 @@ public class Async {
 		}
 
 		static class HttpRequestTask {
-			private CompleteCallback callback;
-			private Object context;
+			private final CompleteCallback callback;
+			private final Object context;
 
 			public HttpRequestTask(CompleteCallback callback, Object context) {
 				this.callback = callback;
@@ -666,8 +666,8 @@ public class Async {
 		}
 
 		static class ReadTextTask {
-			private CompleteCallback callback;
-			private Object context;
+			private final CompleteCallback callback;
+			private final Object context;
 
 			public ReadTextTask(CompleteCallback callback, Object context) {
 				this.callback = callback;
@@ -725,8 +725,8 @@ public class Async {
 		}
 
 		static class ReadTask {
-			private CompleteCallback callback;
-			private Object context;
+			private final CompleteCallback callback;
+			private final Object context;
 
 			public ReadTask(CompleteCallback callback, Object context) {
 				this.callback = callback;
@@ -773,8 +773,8 @@ public class Async {
 		}
 
 		static class WriteTextTask {
-			private CompleteCallback callback;
-			private Object context;
+			private final CompleteCallback callback;
+			private final Object context;
 
 			public WriteTextTask(CompleteCallback callback, Object context) {
 				this.callback = callback;
@@ -823,8 +823,8 @@ public class Async {
 		}
 
 		static class WriteTask {
-			private CompleteCallback callback;
-			private Object context;
+			private final CompleteCallback callback;
+			private final Object context;
 
 			public WriteTask(CompleteCallback callback, Object context) {
 				this.callback = callback;
