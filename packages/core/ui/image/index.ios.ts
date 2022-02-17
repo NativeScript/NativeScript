@@ -40,20 +40,24 @@ export class Image extends ImageBase {
 	}
 
 	private setTintColor(value: Color) {
-		if (value && this.nativeViewProtected.image && !this._templateImageWasCreated) {
-			this.nativeViewProtected.image = this.nativeViewProtected.image.imageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
-			this._templateImageWasCreated = true;
-		} else if (!value && this.nativeViewProtected.image && this._templateImageWasCreated) {
-			this._templateImageWasCreated = false;
-			this.nativeViewProtected.image = this.nativeViewProtected.image.imageWithRenderingMode(UIImageRenderingMode.Automatic);
+		if (this.nativeViewProtected) {
+			if (value && this.nativeViewProtected.image && !this._templateImageWasCreated) {
+				this.nativeViewProtected.image = this.nativeViewProtected.image.imageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+				this._templateImageWasCreated = true;
+			} else if (!value && this.nativeViewProtected.image && this._templateImageWasCreated) {
+				this._templateImageWasCreated = false;
+				this.nativeViewProtected.image = this.nativeViewProtected.image.imageWithRenderingMode(UIImageRenderingMode.Automatic);
+			}
+			this.nativeViewProtected.tintColor = value ? value.ios : null;
 		}
-		this.nativeViewProtected.tintColor = value ? value.ios : null;
 	}
 
 	public _setNativeImage(nativeImage: UIImage) {
-		this.nativeViewProtected.image = nativeImage;
+		if (this.nativeViewProtected) {
+			this.nativeViewProtected.image = nativeImage;
+		}
 		this._templateImageWasCreated = false;
-		this.setTintColor(this.style.tintColor);
+		this.setTintColor(this.style?.tintColor);
 
 		if (this._imageSourceAffectsLayout) {
 			this.requestLayout();
@@ -61,8 +65,10 @@ export class Image extends ImageBase {
 	}
 
 	_setNativeClipToBounds() {
-		// Always set clipsToBounds for images
-		this.nativeViewProtected.clipsToBounds = true;
+		if (this.nativeViewProtected) {
+			// Always set clipsToBounds for images
+			this.nativeViewProtected.clipsToBounds = true;
+		}
 	}
 
 	public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
@@ -134,23 +140,25 @@ export class Image extends ImageBase {
 	}
 
 	[stretchProperty.setNative](value: 'none' | 'aspectFill' | 'aspectFit' | 'fill') {
-		switch (value) {
-			case 'aspectFit':
-				this.nativeViewProtected.contentMode = UIViewContentMode.ScaleAspectFit;
-				break;
+		if (this.nativeViewProtected) {
+			switch (value) {
+				case 'aspectFit':
+					this.nativeViewProtected.contentMode = UIViewContentMode.ScaleAspectFit;
+					break;
 
-			case 'aspectFill':
-				this.nativeViewProtected.contentMode = UIViewContentMode.ScaleAspectFill;
-				break;
+				case 'aspectFill':
+					this.nativeViewProtected.contentMode = UIViewContentMode.ScaleAspectFill;
+					break;
 
-			case 'fill':
-				this.nativeViewProtected.contentMode = UIViewContentMode.ScaleToFill;
-				break;
+				case 'fill':
+					this.nativeViewProtected.contentMode = UIViewContentMode.ScaleToFill;
+					break;
 
-			case 'none':
-			default:
-				this.nativeViewProtected.contentMode = UIViewContentMode.TopLeft;
-				break;
+				case 'none':
+				default:
+					this.nativeViewProtected.contentMode = UIViewContentMode.TopLeft;
+					break;
+			}
 		}
 	}
 
