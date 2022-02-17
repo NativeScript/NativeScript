@@ -566,7 +566,7 @@ function test_font_shorthand_property(short: string, family: string, size: numbe
 	TKUnit.assertEqual(testView.style.fontSize, size, 'style.fontSize');
 }
 export function test_setting_font_properties_sets_native_font() {
-	if (fontModule.ios) {
+	if (global.isIOS) {
 		const basePath = 'fonts';
 		fontModule.ios.registerFont(basePath + '/Roboto-Regular.ttf');
 		fontModule.ios.registerFont(basePath + '/Roboto-Bold.ttf');
