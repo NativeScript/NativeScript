@@ -571,7 +571,15 @@ export class TabView extends TabViewBase {
 		return this._ios.tabBar.barTintColor;
 	}
 	[tabBackgroundColorProperty.setNative](value: UIColor | Color) {
-		this._ios.tabBar.barTintColor = value instanceof Color ? value.ios : value;
+		if (majorVersion >= 15) {
+			let appearance = UITabBarAppearance.new();
+			appearance.backgroundColor = value instanceof Color ? value.ios : value;
+
+			this._ios.tabBar.scrollEdgeAppearance = appearance;
+			this._ios.tabBar.standardAppearance = appearance;
+		} else {
+			this._ios.tabBar.barTintColor = value instanceof Color ? value.ios : value;
+		}
 	}
 
 	[selectedTabTextColorProperty.getDefault](): UIColor {
