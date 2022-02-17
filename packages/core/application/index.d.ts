@@ -77,6 +77,19 @@ export function setAutoSystemAppearanceChanged(value: boolean): void;
 export function systemAppearanceChanged(rootView: View, newSystemAppearance: 'dark' | 'light'): void;
 
 /**
+ * iOS Only
+ * Dynamically change the preferred frame rate
+ * For devices (iOS 15+) which support min/max/preferred frame rate you can specify ranges
+ * For devices (iOS < 15), you can specify the max frame rate
+ * see: https://developer.apple.com/documentation/quartzcore/optimizing_promotion_refresh_rates_for_iphone_13_pro_and_ipad_pro
+ * To use, ensure your Info.plist has:
+ *   <key>CADisableMinimumFrameDurationOnPhone</key>
+ *   <true/>
+ * @param options { min?: number; max?: number; preferred?: number }
+ */
+export function setMaxRefreshRate(options?: { min?: number; max?: number; preferred?: number }): void;
+
+/**
  * Event data containing information for the application events.
  */
 export interface ApplicationEventData extends EventData {
