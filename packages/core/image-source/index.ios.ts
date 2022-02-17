@@ -440,18 +440,7 @@ function getFileName(path: string): string {
 }
 
 function getImageData(instance: UIImage, format: 'png' | 'jpeg' | 'jpg', quality = 0.9): NSData {
-	let data = null;
-	switch (format) {
-		case 'png':
-			data = UIImagePNGRepresentation(instance);
-			break;
-		case 'jpeg':
-		case 'jpg':
-			data = UIImageJPEGRepresentation(instance, quality);
-			break;
-	}
-
-	return data;
+	return NativeScriptUtils.getImageDataFormatQuality(instance, format, quality);
 }
 
 export function fromAsset(asset: ImageAsset): Promise<ImageSource> {
