@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.nativescript.widgets;
 
@@ -8,7 +8,7 @@ package org.nativescript.widgets;
  *
  */
 public enum GridUnitType {
-    auto,
-    pixel,
-    star
+	auto,
+	pixel,
+	star
 }

@@ -2,14 +2,15 @@ package org.nativescript.widgets;
 
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.ParcelFileDescriptor;
@@ -20,6 +21,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.core.view.ViewCompat;
 import androidx.exifinterface.media.ExifInterface;
 
 import org.json.JSONException;
@@ -32,12 +34,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-
-import android.graphics.Canvas;
-
-import androidx.core.view.ViewCompat;
-
-import android.os.Build;
 
 public class Utils {
 	public static Drawable getDrawable(String uri, Context context) {
