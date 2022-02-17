@@ -123,6 +123,13 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		],
 	});
 
+	// allow watching node_modules
+	config.when(env.watchNodeModules, (config) => {
+		config.set('snapshot', {
+			managedPaths: [],
+		});
+	});
+
 	// Set up Terser options
 	config.optimization.minimizer('TerserPlugin').use(TerserPlugin, [
 		{
