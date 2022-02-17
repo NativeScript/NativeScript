@@ -17,8 +17,8 @@ export abstract class Font implements FontDefinition {
 
 	protected constructor(public readonly fontFamily: string, public readonly fontSize: number, public readonly fontStyle: FontStyleType, public readonly fontWeight: FontWeightType, public readonly fontScale: number) {}
 
-	public abstract getAndroidTypeface(): any /* android.graphics.Typeface */;
-	public abstract getUIFont(defaultFont: any /* UIFont */): any /* UIFont */;
+	public abstract getAndroidTypeface(): any; /* android.graphics.Typeface */
+	public abstract getUIFont(defaultFont: any /* UIFont */): any; /* UIFont */
 	public abstract withFontFamily(family: string): Font;
 	public abstract withFontStyle(style: string): Font;
 	public abstract withFontWeight(weight: string): Font;
@@ -64,20 +64,14 @@ export namespace FontWeight {
 }
 
 export function parseFontFamily(value: string): Array<string> {
-	const result = new Array<string>();
 	if (!value) {
-		return result;
+		return [];
 	}
 
-	const split = value.split(',');
-	for (let i = 0; i < split.length; i++) {
-		const str = split[i].trim().replace(/['"]+/g, '');
-		if (str) {
-			result.push(str);
-		}
-	}
-
-	return result;
+	return value
+		.split(',')
+		.map((v) => (v || '').trim().replace(/['"]+/g, ''))
+		.filter((v) => !!v);
 }
 
 export namespace genericFontFamilies {

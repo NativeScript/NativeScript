@@ -62,14 +62,6 @@ export class ImageAsset extends ImageAssetBase {
 	}
 
 	private scaleImage(image: UIImage, requestedSize: { width: number; height: number }): UIImage {
-		// scaleFactor = 0 takes the scale factor of the devices's main screen.
-		const scaleFactor = this.options && this.options.autoScaleFactor === false ? 1.0 : 0.0;
-
-		UIGraphicsBeginImageContextWithOptions(requestedSize, false, scaleFactor);
-		image.drawInRect(CGRectMake(0, 0, requestedSize.width, requestedSize.height));
-		const resultImage = UIGraphicsGetImageFromCurrentImageContext();
-		UIGraphicsEndImageContext();
-
-		return resultImage;
+		return NativeScriptUtils.scaleImageWidthHeightScaleFactor(image, requestedSize.width, requestedSize.height, this.options?.autoScaleFactor === false ? 1.0 : 0.0);
 	}
 }
