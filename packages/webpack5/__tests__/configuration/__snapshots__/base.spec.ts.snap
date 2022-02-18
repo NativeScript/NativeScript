@@ -244,6 +244,10 @@ exports[`base configuration for android 1`] = `
     new ContextExclusionPlugin(
       /(.*)App_Resources(.*)/
     ),
+    /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
+    new ContextExclusionPlugin(
+      /\\\\.(ios)\\\\.(\\\\w+)$/
+    ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
@@ -560,6 +564,10 @@ exports[`base configuration for ios 1`] = `
     new ContextExclusionPlugin(
       /(.*)App_Resources(.*)/
     ),
+    /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
+    new ContextExclusionPlugin(
+      /\\\\.(android)\\\\.(\\\\w+)$/
+    ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
@@ -631,4 +639,10 @@ exports[`base configuration for ios 1`] = `
     ]
   }
 }"
+`;
+
+exports[`base configuration support env.watchNodeModules 1`] = `
+Object {
+  "managedPaths": Array [],
+}
 `;

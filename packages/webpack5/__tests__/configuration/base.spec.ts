@@ -22,6 +22,14 @@ describe('base configuration', () => {
 		});
 	}
 
+	it('support env.watchNodeModules', () => {
+		init({
+			ios: true,
+			watchNodeModules: true,
+		});
+		expect(base(new Config()).get('snapshot')).toMatchSnapshot();
+	});
+
 	it('supports dotenv', () => {
 		const fsSpy = jest.spyOn(fs, 'existsSync');
 		fsSpy.mockReturnValue(true);
