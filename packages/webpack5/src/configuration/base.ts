@@ -22,8 +22,9 @@ import { env as _env, IWebpackEnv } from '../index';
 import { getValue } from '../helpers/config';
 import { getIPS } from '../helpers/host';
 import {
-	getPlatformName,
+	getAvailablePlatforms,
 	getAbsoluteDistPath,
+	getPlatformName,
 	getEntryDirPath,
 	getEntryPath,
 } from '../helpers/platform';
@@ -364,6 +365,18 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	config
 		.plugin('ContextExclusionPlugin|App_Resources')
 		.use(ContextExclusionPlugin, [new RegExp(`(.*)App_Resources(.*)`)]);
+
+	// Makes sure that require.context will never include code from
+	// another platform (ie .android.ts when building for ios)
+	const otherPlatformsRE = getAvailablePlatforms()
+		.filter((platform) => platform !== getPlatformName())
+		.join('|');
+
+	config
+		.plugin('ContextExclusionPlugin|Other_Platforms')
+		.use(ContextExclusionPlugin, [
+			new RegExp(`\\.(${otherPlatformsRE})\\.(\\w+)$`),
+		]);
 
 	// Filter common undesirable warnings
 	config.set(
