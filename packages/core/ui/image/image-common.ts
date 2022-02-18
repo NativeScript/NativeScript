@@ -28,8 +28,9 @@ export abstract class ImageBase extends View implements ImageDefinition {
 		this.style.tintColor = value;
 	}
 
-	// override in subclass
-	public abstract disposeImageSource(): void;
+	public disposeImageSource() {
+		// override in subclass
+	}
 
 	/**
 	 * @internal

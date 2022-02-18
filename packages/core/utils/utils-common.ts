@@ -3,6 +3,8 @@ import { dispatchToMainThread, isMainThread } from './mainthread-helper';
 import { sanitizeModuleName } from '../ui/builder/module-name-sanitizer';
 import * as layout from './layout-helper';
 
+import { GC } from './index';
+
 export { layout };
 export * from './mainthread-helper';
 export * from './macrotask-scheduler';
@@ -128,4 +130,18 @@ export function mainThreadify(func: Function): (...args: any[]) => void {
 		const argsToPass = args;
 		executeOnMainThread(() => func.apply(this, argsToPass));
 	};
+}
+
+let hasQueuedGC = false;
+export function queueGC() {
+	if (hasQueuedGC) {
+		return;
+	}
+
+	hasQueuedGC = true;
+
+	setTimeout(() => {
+		hasQueuedGC = false;
+		GC();
+	}, 1000);
 }

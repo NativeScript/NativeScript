@@ -51,19 +51,15 @@ export class Image extends ImageBase {
 	private setTintColor(value: Color) {
 		if (this.nativeViewProtected) {
 			if (value && this.nativeViewProtected.image && !this._templateImageWasCreated) {
-				const newImage = this.nativeViewProtected.image.imageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
-				this.nativeViewProtected.image = null;
-				this.nativeViewProtected.image = newImage;
+				this.nativeViewProtected.image = this.nativeViewProtected.image.imageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
 				this._templateImageWasCreated = true;
+				queueGC();
 			} else if (!value && this.nativeViewProtected.image && this._templateImageWasCreated) {
 				this._templateImageWasCreated = false;
-				const newImage = this.nativeViewProtected.image.imageWithRenderingMode(UIImageRenderingMode.Automatic);
-				this.nativeViewProtected.image = null;
-				this.nativeViewProtected.image = newImage;
+				this.nativeViewProtected.image = this.nativeViewProtected.image.imageWithRenderingMode(UIImageRenderingMode.Automatic);
+				queueGC();
 			}
 			this.nativeViewProtected.tintColor = value ? value.ios : null;
-
-			queueGC();
 		}
 	}
 

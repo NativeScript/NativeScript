@@ -25,20 +25,6 @@ export function GC() {
 	__collect();
 }
 
-let hasQueuedGC = false;
-export function queueGC() {
-	if (hasQueuedGC) {
-		return;
-	}
-
-	hasQueuedGC = true;
-
-	setTimeout(() => {
-		hasQueuedGC = false;
-		GC();
-	}, 1000);
-}
-
 export function releaseNativeObject(object: NSObject) {
 	__releaseNativeCounterpart(object);
 }
