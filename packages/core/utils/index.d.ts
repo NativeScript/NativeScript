@@ -188,6 +188,11 @@ export namespace ad {
 export function GC();
 
 /**
+ * An utility function that queues a garbage collection, subseqent calls will be throttled and only one gc will be executed.
+ */
+export function queueGC();
+
+/**
  * Releases the reference to the wrapped native object
  * @param object The Java/Objective-C object to release.
  */
