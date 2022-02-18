@@ -1024,9 +1024,13 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 		// we depend on the animation (even None animation) to set the entry as the current entry
 		// animation should start between start and resume, so if we have an executing navigation here it probably means the animation was skipped
 		// so we manually set the entry
-		if (frame._executingContext && !(<any>this.entry).isAnimationRunning) {
-			frame.setCurrent(this.entry, frame._executingContext.navigationType);
-		}
+		// also, to be compatible with fragments 1.2.x we need this setTimeout as animations haven't run on onResume yet
+		setTimeout(() => {
+			if (frame._executingContext && !(<any>this.entry).isAnimationRunning) {
+				frame.setCurrent(this.entry, frame._executingContext.navigationType);
+			}
+		}, 0);
+
 		superFunc.call(fragment);
 	}
 

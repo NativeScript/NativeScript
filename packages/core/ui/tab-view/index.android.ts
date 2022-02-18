@@ -136,6 +136,9 @@ function initializeNativeClasses() {
 		public items: Array<TabViewItemDefinition>;
 		private mCurTransaction: androidx.fragment.app.FragmentTransaction;
 		private mCurrentPrimaryItem: androidx.fragment.app.Fragment;
+		// in fragments 1.3+, committing a transaction may call the adapter's methods and trigger another commit
+		// we prevent that here.
+		private transactionRunning = false;
 
 		constructor(public owner: TabView) {
 			super();
@@ -270,8 +273,10 @@ function initializeNativeClasses() {
 		}
 
 		private _commitCurrentTransaction() {
-			if (this.mCurTransaction != null) {
+			if (this.mCurTransaction != null && !this.transactionRunning) {
+				this.transactionRunning = true;
 				this.mCurTransaction.commitNowAllowingStateLoss();
+				this.transactionRunning = false;
 				this.mCurTransaction = null;
 			}
 		}
