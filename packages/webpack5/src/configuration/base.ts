@@ -180,6 +180,8 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.add('.ts')
 		.add(`.${platform}.js`)
 		.add('.js')
+		.add(`.${platform}.mjs`)
+		.add('.mjs')
 		.add(`.${platform}.css`)
 		.add('.css')
 		.add(`.${platform}.scss`)
@@ -223,7 +225,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// worker-loader should be declared before ts-loader
 	config.module
 		.rule('workers')
-		.test(/\.(js|ts)$/)
+		.test(/\.(mjs|js|ts)$/)
 		.use('nativescript-worker-loader')
 		.loader('nativescript-worker-loader');
 
