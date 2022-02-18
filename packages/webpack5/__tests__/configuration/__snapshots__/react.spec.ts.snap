@@ -264,6 +264,10 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
     new ContextExclusionPlugin(
       /(.*)App_Resources(.*)/
     ),
+    /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
+    new ContextExclusionPlugin(
+      /\\\\.(ios)\\\\.(\\\\w+)$/
+    ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
@@ -588,6 +592,10 @@ exports[`react configuration > android > base config 1`] = `
     /* config.plugin('ContextExclusionPlugin|App_Resources') */
     new ContextExclusionPlugin(
       /(.*)App_Resources(.*)/
+    ),
+    /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
+    new ContextExclusionPlugin(
+      /\\\\.(ios)\\\\.(\\\\w+)$/
     ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
@@ -921,6 +929,10 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
     new ContextExclusionPlugin(
       /(.*)App_Resources(.*)/
     ),
+    /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
+    new ContextExclusionPlugin(
+      /\\\\.(android)\\\\.(\\\\w+)$/
+    ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
@@ -1246,6 +1258,10 @@ exports[`react configuration > ios > base config 1`] = `
     /* config.plugin('ContextExclusionPlugin|App_Resources') */
     new ContextExclusionPlugin(
       /(.*)App_Resources(.*)/
+    ),
+    /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
+    new ContextExclusionPlugin(
+      /\\\\.(android)\\\\.(\\\\w+)$/
     ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
