@@ -373,7 +373,7 @@ export class Binding {
 	}
 
 	private _getExpressionValue(expression: string, isBackConvert: boolean, changedModel: any): any {
-		let result: any = '';
+		let result: any = null;
 
 		if (!__UI_USE_EXTERNAL_RENDERER__) {
 			let context;
