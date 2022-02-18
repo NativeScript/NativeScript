@@ -6,22 +6,10 @@
 	},
 	"implicitDependencies": {
 		"workspace.json": "*",
-		"package.json": {
-			"dependencies": "*",
-			"devDependencies": "*"
-		},
 		"tsconfig.json": "*",
 		"tslint.json": "*",
 		"nx.json": "*",
 		".eslintrc.json": "*"
-	},
-	"targetDependencies": {
-		"build": [
-			{
-				"target": "build",
-				"projects": "dependencies"
-			}
-		]
 	},
 	"cli": {
 		"defaultCollection": "@nrwl/workspace"
