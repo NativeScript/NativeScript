@@ -97,6 +97,8 @@ exports[`base configuration for android 1`] = `
           {
             loader: 'ts-loader',
             options: {
+              configFile: '__jest__/node_modules/@nativescript/webpack/dist/stubs/tsconfig.default.json',
+              context: '__jest__',
               transpileOnly: true,
               allowTsInNodeModules: true,
               compilerOptions: {
@@ -230,6 +232,8 @@ exports[`base configuration for android 1`] = `
       {
         async: false,
         typescript: {
+          configFile: '__jest__/node_modules/@nativescript/webpack/dist/stubs/tsconfig.default.json',
+          context: '__jest__',
           memoryLimit: 4096
         }
       }
@@ -417,6 +421,8 @@ exports[`base configuration for ios 1`] = `
           {
             loader: 'ts-loader',
             options: {
+              configFile: '__jest__/node_modules/@nativescript/webpack/dist/stubs/tsconfig.default.json',
+              context: '__jest__',
               transpileOnly: true,
               allowTsInNodeModules: true,
               compilerOptions: {
@@ -550,6 +556,8 @@ exports[`base configuration for ios 1`] = `
       {
         async: false,
         typescript: {
+          configFile: '__jest__/node_modules/@nativescript/webpack/dist/stubs/tsconfig.default.json',
+          context: '__jest__',
           memoryLimit: 4096
         }
       }

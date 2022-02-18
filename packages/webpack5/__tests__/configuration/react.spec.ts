@@ -1,10 +1,25 @@
 import Config from 'webpack-chain';
 
+import {
+	mockExistsSync,
+	restoreExistsSync,
+	setHasTSConfig,
+} from '../../scripts/jest.utils';
+
 import react from '../../src/configuration/react';
 import { init } from '../../src';
 
 describe('react configuration', () => {
 	const platforms = ['ios', 'android'];
+
+	beforeAll(() => {
+		mockExistsSync();
+		setHasTSConfig(true);
+	});
+
+	afterAll(() => {
+		restoreExistsSync();
+	});
 
 	for (let platform of platforms) {
 		describe(`> ${platform} >`, () => {
