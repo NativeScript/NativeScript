@@ -342,6 +342,7 @@ function getTransitionListener(entry: ExpandedEntry, transition: androidx.transi
 
 			public onTransitionStart(transition: androidx.transition.Transition): void {
 				const entry = this.entry;
+				entry.isAnimationRunning = true;
 				addToWaitingQueue(entry);
 				if (Trace.isEnabled()) {
 					Trace.write(`START ${toShortString(transition)} transition for ${entry.fragmentTag}`, Trace.categories.Transition);
@@ -353,6 +354,7 @@ function getTransitionListener(entry: ExpandedEntry, transition: androidx.transi
 				if (Trace.isEnabled()) {
 					Trace.write(`END ${toShortString(transition)} transition for ${entry.fragmentTag}`, Trace.categories.Transition);
 				}
+				entry.isAnimationRunning = false;
 				transitionOrAnimationCompleted(entry, this.backEntry);
 			}
 
@@ -370,6 +372,8 @@ function getTransitionListener(entry: ExpandedEntry, transition: androidx.transi
 			}
 
 			onTransitionCancel(transition: androidx.transition.Transition): void {
+				const entry = this.entry;
+				entry.isAnimationRunning = false;
 				if (Trace.isEnabled()) {
 					Trace.write(`CANCEL ${toShortString(transition)} transition for ${this.entry.fragmentTag}`, Trace.categories.Transition);
 				}
