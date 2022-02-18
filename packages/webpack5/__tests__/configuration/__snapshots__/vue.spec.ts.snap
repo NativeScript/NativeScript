@@ -43,6 +43,8 @@ exports[`vue configuration for android 1`] = `
       '.ts',
       '.android.js',
       '.js',
+      '.android.mjs',
+      '.mjs',
       '.android.css',
       '.css',
       '.android.scss',
@@ -80,7 +82,7 @@ exports[`vue configuration for android 1`] = `
       },
       /* config.module.rule('workers') */
       {
-        test: /\\\\.(js|ts)$/,
+        test: /\\\\.(mjs|js|ts)$/,
         use: [
           /* config.module.rule('workers').use('nativescript-worker-loader') */
           {
@@ -391,6 +393,8 @@ exports[`vue configuration for ios 1`] = `
       '.ts',
       '.ios.js',
       '.js',
+      '.ios.mjs',
+      '.mjs',
       '.ios.css',
       '.css',
       '.ios.scss',
@@ -428,7 +432,7 @@ exports[`vue configuration for ios 1`] = `
       },
       /* config.module.rule('workers') */
       {
-        test: /\\\\.(js|ts)$/,
+        test: /\\\\.(mjs|js|ts)$/,
         use: [
           /* config.module.rule('workers').use('nativescript-worker-loader') */
           {
