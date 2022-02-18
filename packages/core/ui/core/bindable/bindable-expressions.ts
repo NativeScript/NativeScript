@@ -113,6 +113,16 @@ const expressionParsers = {
 	},
 	'Identifier': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		const context = getContext(expression.name, model, changedModel);
+		/**
+		 * Certain components do not load context in time, resulting in warnings.
+		 * To get rid of this issue, first expression identifier will throw error in case it's undefined.
+		 * Later, this will be handled in bindable's main file to prevent warnings.
+		 */
+		if (!(expression.name in context)) {
+			let error = new Error();
+			error.name = 'FirstIdentifierUndefinedError';
+			throw error;
+		}
 		return context[expression.name];
 	},
 	'Literal': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
