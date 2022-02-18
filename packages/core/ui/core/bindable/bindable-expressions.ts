@@ -98,7 +98,11 @@ const expressionParsers = {
 			let value = convertExpressionToValue(argument, model, isBackConvert, changedModel);
 			argument.type == 'SpreadElement' ? parsedArgs.push(...value) : parsedArgs.push(value);
 		}
-		return isConverter ? getConverter(callback, object, parsedArgs, isBackConvert) : callback.apply(object, parsedArgs);
+
+		if (isConverter) {
+			return getConverter(callback, object, parsedArgs, isBackConvert);
+		}
+		return expression.optional ? object[property]?.(...parsedArgs) : object[property](...parsedArgs);
 	},
 	'ChainExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		return convertExpressionToValue(expression.expression, model, isBackConvert, changedModel);
