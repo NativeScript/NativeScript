@@ -1,5 +1,4 @@
 import Config from 'webpack-chain';
-import fs from 'fs';
 
 import {
 	mockExistsSync,
@@ -8,10 +7,10 @@ import {
 	fsExistsSyncSpy,
 } from '../../scripts/jest.utils';
 
-import base from '../../src/configuration/base';
-import { init } from '../../src';
 import { applyFileReplacements } from '../../src/helpers/fileReplacements';
 import { additionalCopyRules } from '../../src/helpers/copyRules';
+import base from '../../src/configuration/base';
+import { init } from '../../src';
 
 describe('base configuration', () => {
 	const platforms = ['ios', 'android'];
