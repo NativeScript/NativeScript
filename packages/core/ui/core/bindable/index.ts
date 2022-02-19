@@ -406,9 +406,7 @@ export class Binding {
 					}
 				}
 			} catch (e) {
-				if (e.name != 'FirstIdentifierUndefinedError') {
-					result = new Error('Run-time error occured in file: ' + e.sourceURL + ' at line: ' + e.line + ' and column: ' + e.column);
-				}
+				result = new Error('Run-time error occured in file: ' + e.sourceURL + ' at line: ' + e.line + ' and column: ' + e.column);
 			}
 
 			// Clear added props

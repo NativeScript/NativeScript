@@ -113,16 +113,6 @@ const expressionParsers = {
 	},
 	'Identifier': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		const context = getContext(expression.name, model, changedModel);
-		/**
-		 * Certain components do not load context in time, resulting in warnings.
-		 * To get rid of this issue, first expression identifier will throw error in case it's undefined.
-		 * Later, this will be handled in bindable's main file to prevent warnings.
-		 */
-		if (!(expression.name in context)) {
-			let error = new Error();
-			error.name = 'FirstIdentifierUndefinedError';
-			throw error;
-		}
 		return context[expression.name];
 	},
 	'Literal': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
@@ -136,7 +126,28 @@ const expressionParsers = {
 		return logicalOperators[expression.operator](left, () => convertExpressionToValue(expression.right, model, isBackConvert, changedModel));
 	},
 	'MemberExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
+		if (expression.object.type == 'MemberExpression') {
+			expression.object.isChained = true;
+		}
+
 		const object = convertExpressionToValue(expression.object, model, isBackConvert, changedModel);
+		/**
+		 * If first member is undefined, make sure that no error is thrown later but return undefined instead.
+		 * This behaviour is kept in order to cope with components whose binding context takes a bit long to load.
+		 * Old parser would return undefined for an expression like 'property1.property2.property3'
+		 * even if expression as a whole consisted of undefined properties.
+		 * The new one will keep the same principle only if first member is undefined for safety reasons.
+		 * It meddles with members specifically, so that it will not affect expression result as a whole.
+		 * For example, an 'isLoading || isBusy' expression will be validated as 'undefined || undefined'
+		 * if context is not ready.
+		 */
+		if (object === undefined && expression.object.type == 'Identifier') {
+			return expression.isChained ? 'forceChain' : object;
+    }
+    if (object == 'forceChain' && !expression.isChained) {
+			return;
+    }
+
 		const property = expression.computed ? convertExpressionToValue(expression.property, model, isBackConvert, changedModel) : expression.property?.name;
 		return expression.optional ? object?.[property] : object[property];
 	},
