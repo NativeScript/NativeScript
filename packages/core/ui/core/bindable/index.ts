@@ -377,6 +377,7 @@ export class Binding {
 
 		if (!__UI_USE_EXTERNAL_RENDERER__) {
 			let context;
+			const targetInstance = this.target.get();
 			const addedProps = [];
 			try {
 				let exp;
@@ -400,13 +401,12 @@ export class Binding {
 					if (this.prepareContextForExpression(context, expression, addedProps)) {
 						result = convertExpressionToValue(exp, context, isBackConvert, changedModel ? changedModel : context);
 					} else {
-						const targetInstance = this.target.get();
 						targetInstance.off('loaded', this.loadedHandlerVisualTreeBinding, this);
 						targetInstance.on('loaded', this.loadedHandlerVisualTreeBinding, this);
 					}
 				}
 			} catch (e) {
-				result = new Error('Run-time error occured in file: ' + e.sourceURL + ' at line: ' + e.line + ' and column: ' + e.column);
+				result = new Error('Run-time error occured on: ' + targetInstance + ' for expression: ' + expression);
 			}
 
 			// Clear added props
