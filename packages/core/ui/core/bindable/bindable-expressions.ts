@@ -60,6 +60,10 @@ const expressionParsers = {
 		}
 
 		const left = convertExpressionToValue(expression.left, model, isBackConvert, changedModel);
+
+		if (expression.operator == '|') {
+			expression.right.requiresConverter = true;
+		}
 		const right = convertExpressionToValue(expression.right, model, isBackConvert, changedModel);
 
 		if (expression.operator == '|') {
@@ -69,7 +73,6 @@ const expressionParsers = {
 			}
 			throw new Error('Invalid converter after ' + expression.operator + ' operator');
 		}
-
 		return binaryOperators[expression.operator](left, right);
 	},
 	'CallExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
@@ -83,14 +86,21 @@ const expressionParsers = {
 			property = expression.callee?.name;
 		}
 
-		const callback = expression.callee.optional ? object?.[property] : object[property];
+		let callback = expression.callee.optional ? object?.[property] : object[property];
 		if (isNullOrUndefined(callback)) {
 			throw new Error('Cannot perform a call using a null or undefined property');
 		}
 
-		const isConverter = isObject(callback) && (isFunction(callback.toModel) || isFunction(callback.toView));
-		if (!isFunction(callback) && !isConverter) {
-			throw new Error('Cannot perform a call using a non-callable property');
+		if (expression.requiresConverter) {
+			if (isFunction(callback)) {
+				callback = {toView: callback};
+			} else if (!isObject(callback) || !isFunction(callback.toModel) && !isFunction(callback.toView)) {
+				throw new Error('Cannot perform a call using a non-callable property');
+			}
+		} else {
+			if (!isFunction(callback)) {
+				throw new Error('Cannot perform a call using a non-callable property');
+			}
 		}
 
 		const parsedArgs = [];
@@ -99,7 +109,7 @@ const expressionParsers = {
 			argument.type == 'SpreadElement' ? parsedArgs.push(...value) : parsedArgs.push(value);
 		}
 
-		if (isConverter) {
+		if (expression.requiresConverter) {
 			return getConverter(callback, object, parsedArgs, isBackConvert);
 		}
 		return expression.optional ? object[property]?.(...parsedArgs) : object[property](...parsedArgs);
