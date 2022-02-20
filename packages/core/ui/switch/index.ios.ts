@@ -111,7 +111,7 @@ export class Switch extends SwitchBase {
 		const color: UIColor = value instanceof Color ? value.ios : value;
 		this.nativeViewProtected.thumbTintColor = color;
 
-		if (this.nativeViewProtected.subviews.count > 0) {
+		if (color && this.nativeViewProtected.subviews.count > 0) {
 			const alpha = new interop.Reference(1.0);
 			const res = color.getRedGreenBlueAlpha(null, null, null, alpha);
 
