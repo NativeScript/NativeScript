@@ -86,7 +86,6 @@ const expressionParsers = {
 		} else {
 			callback = expression.callee.optional ? object?.[property] : object[property];
 		}
-			
 
 		if ((!expression.optional || expression.requiresConverter) && isNullOrUndefined(callback)) {
 			throw new Error('Cannot perform a call using a null or undefined property');
