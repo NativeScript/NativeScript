@@ -356,7 +356,10 @@ export class Binding {
 			const updateExpression = this.prepareExpressionForUpdate();
 			this.prepareContextForExpression(targetInstance, changedModel, updateExpression);
 
-			// Wait for 'prepareContextForExpression' to assign keys first, in order to avoid circular references
+			/**
+			 * Wait for 'prepareContextForExpression' to assign keys first and override any possible occurences.
+			 * For example, 'bindingValueKey' key can result in a circular reference if it's set in both cases.
+			 */
 			changedModel[bc.bindingValueKey] = value;
 			changedModel[bc.newPropertyValueKey] = value;
 			if (sourcePropertyName !== '') {
