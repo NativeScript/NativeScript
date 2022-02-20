@@ -76,30 +76,28 @@ const expressionParsers = {
 		return binaryOperators[expression.operator](left, right);
 	},
 	'CallExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
-		let object;
-		let property;
-		if (expression.callee.type == 'MemberExpression') {
-			object = convertExpressionToValue(expression.callee.object, model, isBackConvert, changedModel);
-			property = expression.callee.computed ? convertExpressionToValue(expression.callee.property, model, isBackConvert, changedModel) : expression.callee.property?.name;
-		} else {
-			object = getContext(expression.callee.name, model, changedModel);
-			property = expression.callee?.name;
-		}
+		expression.callee.requiresObjectAndProperty = true;
 
-		let callback = expression.callee.optional ? object?.[property] : object[property];
-		if (isNullOrUndefined(callback)) {
-			throw new Error('Cannot perform a function call using a null or undefined property');
+		const { object, property } = convertExpressionToValue(expression.callee, model, isBackConvert, changedModel);
+
+		let callback;
+		if (expression.callee.optional) {
+			callback = object?.[property];
+		} else {
+			if (object == '$forceChain') {
+				callback = undefined;
+			} else {
+				object[property];
+			}
 		}
 
 		if (expression.requiresConverter) {
-			if (isFunction(callback)) {
+			if (isNullOrUndefined(callback)) {
+				throw new Error('Cannot use a null or undefined property as converter');
+			} else if (isFunction(callback)) {
 				callback = {toView: callback};
 			} else if (!isObject(callback) || !isFunction(callback.toModel) && !isFunction(callback.toView)) {
 				throw new Error('Invalid converter call');
-			}
-		} else {
-			if (!isFunction(callback)) {
-				throw new Error('Cannot perform a function call using a non-callable property');
 			}
 		}
 
@@ -123,6 +121,9 @@ const expressionParsers = {
 	},
 	'Identifier': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		const context = getContext(expression.name, model, changedModel);
+		if (expression.requiresObjectAndProperty) {
+			return { object: context, property: expression.name };
+		}
 		return context[expression.name];
 	},
 	'Literal': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
@@ -141,6 +142,13 @@ const expressionParsers = {
 		}
 
 		const object = convertExpressionToValue(expression.object, model, isBackConvert, changedModel);
+		const property = expression.computed ? convertExpressionToValue(expression.property, model, isBackConvert, changedModel) : expression.property?.name;
+		const propertyInfo = { object, property };
+
+		if (expression.requiresObjectAndProperty) {
+			return propertyInfo;
+		}
+
 		/**
 		 * If first member is undefined, make sure that no error is thrown later but return undefined instead.
 		 * This behaviour is kept in order to cope with components whose binding context takes a bit long to load.
@@ -152,13 +160,11 @@ const expressionParsers = {
 		 * if context is not ready.
 		 */
 		if (object === undefined && expression.object.type == 'Identifier') {
-			return expression.isChained ? 'forceChain' : object;
+			return expression.isChained ? '$forceChain' : object;
     }
-    if (object == 'forceChain' && !expression.isChained) {
+    if (object == '$forceChain' && !expression.isChained) {
 			return;
     }
-
-		const property = expression.computed ? convertExpressionToValue(expression.property, model, isBackConvert, changedModel) : expression.property?.name;
 		return expression.optional ? object?.[property] : object[property];
 	},
 	'NewExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
