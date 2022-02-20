@@ -87,14 +87,16 @@ const expressionParsers = {
 			if (object == '$forceChain') {
 				callback = undefined;
 			} else {
-				object[property];
+				callback = object[property];
 			}
 		}
 
+		if ((!expression.optional || expression.requiresConverter) && isNullOrUndefined(callback)) {
+			throw new Error('Cannot perform a call using a null or undefined property');
+		}
+
 		if (expression.requiresConverter) {
-			if (isNullOrUndefined(callback)) {
-				throw new Error('Cannot use a null or undefined property as converter');
-			} else if (isFunction(callback)) {
+			if (isFunction(callback)) {
 				callback = {toView: callback};
 			} else if (!isObject(callback) || !isFunction(callback.toModel) && !isFunction(callback.toView)) {
 				throw new Error('Invalid converter call');
@@ -110,7 +112,7 @@ const expressionParsers = {
 		if (expression.requiresConverter) {
 			return getConverter(callback, object, parsedArgs, isBackConvert);
 		}
-		return expression.optional ? object[property]?.(...parsedArgs) : object[property](...parsedArgs);
+		return expression.optional ? callback?.apply(object, parsedArgs) : callback.apply(object, parsedArgs);
 	},
 	'ChainExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		return convertExpressionToValue(expression.expression, model, isBackConvert, changedModel);
