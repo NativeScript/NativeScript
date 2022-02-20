@@ -81,15 +81,12 @@ const expressionParsers = {
 		const { object, property } = convertExpressionToValue(expression.callee, model, isBackConvert, changedModel);
 
 		let callback;
-		if (expression.callee.optional) {
-			callback = object?.[property];
+		if (object == '$forceChain') {
+			callback = undefined;
 		} else {
-			if (object == '$forceChain') {
-				callback = undefined;
-			} else {
-				callback = object[property];
-			}
+			callback = expression.callee.optional ? object?.[property] : object[property];
 		}
+			
 
 		if ((!expression.optional || expression.requiresConverter) && isNullOrUndefined(callback)) {
 			throw new Error('Cannot perform a call using a null or undefined property');
