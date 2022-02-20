@@ -97,7 +97,7 @@ const expressionParsers = {
 
 		if (expression.requiresConverter) {
 			if (isFunction(callback)) {
-				callback = {toView: callback};
+				callback = { toView: callback };
 			} else if (!isObject(callback) || !isFunction(callback.toModel) && !isFunction(callback.toView)) {
 				throw new Error('Invalid converter call');
 			}
