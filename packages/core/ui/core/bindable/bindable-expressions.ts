@@ -61,13 +61,13 @@ const expressionParsers = {
 
 		const left = convertExpressionToValue(expression.left, model, isBackConvert, changedModel);
 
-		if (expression.operator == '|') {
+		if (expression.operator == '|' && expression.right.type == 'CallExpression') {
 			expression.right.requiresConverter = true;
 		}
 		const right = convertExpressionToValue(expression.right, model, isBackConvert, changedModel);
 
 		if (expression.operator == '|') {
-			if (right != null && isFunction(right.callback) && right.context != null && right.args != null) {
+			if (expression.right.requiresConverter && right != null) {
 				right.args.unshift(left);
 				return right.callback.apply(right.context, right.args);
 			}
@@ -88,18 +88,18 @@ const expressionParsers = {
 
 		let callback = expression.callee.optional ? object?.[property] : object[property];
 		if (isNullOrUndefined(callback)) {
-			throw new Error('Cannot perform a call using a null or undefined property');
+			throw new Error('Cannot perform a function call using a null or undefined property');
 		}
 
 		if (expression.requiresConverter) {
 			if (isFunction(callback)) {
 				callback = {toView: callback};
 			} else if (!isObject(callback) || !isFunction(callback.toModel) && !isFunction(callback.toView)) {
-				throw new Error('Cannot perform a call using a non-callable property');
+				throw new Error('Invalid converter call');
 			}
 		} else {
 			if (!isFunction(callback)) {
-				throw new Error('Cannot perform a call using a non-callable property');
+				throw new Error('Cannot perform a function call using a non-callable property');
 			}
 		}
 
@@ -246,5 +246,8 @@ export function parseExpression(expressionText: string): ASTExpression {
 }
 
 export function convertExpressionToValue(expression: ASTExpression, model, isBackConvert: boolean, changedModel) {
+	if (!(expression.type in expressionParsers)) {
+		throw Error('Invalid expression syntax');
+	}
 	return expressionParsers[expression.type](expression, model, isBackConvert, changedModel);
 }
