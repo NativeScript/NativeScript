@@ -65,7 +65,7 @@ export class Switch extends SwitchBase {
 			this.nativeViewProtected.onTintColor = null;
 			this.nativeViewProtected.tintColor = null;
 			this.nativeViewProtected.backgroundColor = null;
-			this.nativeViewProtected.layer.cornerRadius = 0; //this.nativeViewProtected.frame.size.height / 2;
+			this.nativeViewProtected.layer.cornerRadius = 0;
 		}
 	}
 
