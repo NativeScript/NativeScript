@@ -8,6 +8,8 @@ interface ASTExpression {
 
 const expressionsCache = {};
 
+const FORCED_CHAIN_VALUE = Symbol('forcedChain');
+
 // prettier-ignore
 const unaryOperators = {
 	'+': (v) => +v,
@@ -60,37 +62,43 @@ const expressionParsers = {
 		}
 
 		const left = convertExpressionToValue(expression.left, model, isBackConvert, changedModel);
+
+		if (expression.operator == '|' && expression.right.type == 'CallExpression') {
+			expression.right.requiresConverter = true;
+		}
 		const right = convertExpressionToValue(expression.right, model, isBackConvert, changedModel);
 
 		if (expression.operator == '|') {
-			if (right != null && isFunction(right.callback) && right.context != null && right.args != null) {
+			if (expression.right.requiresConverter && right != null) {
 				right.args.unshift(left);
 				return right.callback.apply(right.context, right.args);
 			}
 			throw new Error('Invalid converter after ' + expression.operator + ' operator');
 		}
-
 		return binaryOperators[expression.operator](left, right);
 	},
 	'CallExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
-		let object;
-		let property;
-		if (expression.callee.type == 'MemberExpression') {
-			object = convertExpressionToValue(expression.callee.object, model, isBackConvert, changedModel);
-			property = expression.callee.computed ? convertExpressionToValue(expression.callee.property, model, isBackConvert, changedModel) : expression.callee.property?.name;
+		expression.callee.requiresObjectAndProperty = true;
+
+		const { object, property } = convertExpressionToValue(expression.callee, model, isBackConvert, changedModel);
+
+		let callback;
+		if (object == FORCED_CHAIN_VALUE) {
+			callback = undefined;
 		} else {
-			object = getContext(expression.callee.name, model, changedModel);
-			property = expression.callee?.name;
+			callback = expression.callee.optional ? object?.[property] : object[property];
 		}
 
-		const callback = expression.callee.optional ? object?.[property] : object[property];
-		if (isNullOrUndefined(callback)) {
+		if ((!expression.optional || expression.requiresConverter) && isNullOrUndefined(callback)) {
 			throw new Error('Cannot perform a call using a null or undefined property');
 		}
 
-		const isConverter = isObject(callback) && (isFunction(callback.toModel) || isFunction(callback.toView));
-		if (!isFunction(callback) && !isConverter) {
-			throw new Error('Cannot perform a call using a non-callable property');
+		if (expression.requiresConverter) {
+			if (isFunction(callback)) {
+				callback = { toView: callback };
+			} else if (!isObject(callback) || !isFunction(callback.toModel) && !isFunction(callback.toView)) {
+				throw new Error('Invalid converter call');
+			}
 		}
 
 		const parsedArgs = [];
@@ -98,7 +106,11 @@ const expressionParsers = {
 			let value = convertExpressionToValue(argument, model, isBackConvert, changedModel);
 			argument.type == 'SpreadElement' ? parsedArgs.push(...value) : parsedArgs.push(value);
 		}
-		return isConverter ? getConverter(callback, object, parsedArgs, isBackConvert) : callback.apply(object, parsedArgs);
+
+		if (expression.requiresConverter) {
+			return getConverter(callback, object, parsedArgs, isBackConvert);
+		}
+		return expression.optional ? callback?.apply(object, parsedArgs) : callback.apply(object, parsedArgs);
 	},
 	'ChainExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		return convertExpressionToValue(expression.expression, model, isBackConvert, changedModel);
@@ -109,6 +121,9 @@ const expressionParsers = {
 	},
 	'Identifier': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		const context = getContext(expression.name, model, changedModel);
+		if (expression.requiresObjectAndProperty) {
+			return { object: context, property: expression.name };
+		}
 		return context[expression.name];
 	},
 	'Literal': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
@@ -122,8 +137,34 @@ const expressionParsers = {
 		return logicalOperators[expression.operator](left, () => convertExpressionToValue(expression.right, model, isBackConvert, changedModel));
 	},
 	'MemberExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
+		if (expression.object.type == 'MemberExpression') {
+			expression.object.isChained = true;
+		}
+
 		const object = convertExpressionToValue(expression.object, model, isBackConvert, changedModel);
 		const property = expression.computed ? convertExpressionToValue(expression.property, model, isBackConvert, changedModel) : expression.property?.name;
+		const propertyInfo = { object, property };
+
+		if (expression.requiresObjectAndProperty) {
+			return propertyInfo;
+		}
+
+		/**
+		 * If first member is undefined, make sure that no error is thrown later but return undefined instead.
+		 * This behaviour is kept in order to cope with components whose binding context takes a bit long to load.
+		 * Old parser would return undefined for an expression like 'property1.property2.property3'
+		 * even if expression as a whole consisted of undefined properties.
+		 * The new one will keep the same principle only if first member is undefined for safety reasons.
+		 * It meddles with members specifically, so that it will not affect expression result as a whole.
+		 * For example, an 'isLoading || isBusy' expression will be validated as 'undefined || undefined'
+		 * if context is not ready.
+		 */
+		if (object === undefined && expression.object.type == 'Identifier') {
+			return expression.isChained ? FORCED_CHAIN_VALUE : object;
+    }
+    if (object == FORCED_CHAIN_VALUE) {
+			return expression.isChained ? object : undefined;
+    }
 		return expression.optional ? object?.[property] : object[property];
 	},
 	'NewExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
@@ -211,5 +252,8 @@ export function parseExpression(expressionText: string): ASTExpression {
 }
 
 export function convertExpressionToValue(expression: ASTExpression, model, isBackConvert: boolean, changedModel) {
+	if (!(expression.type in expressionParsers)) {
+		throw Error('Invalid expression syntax');
+	}
 	return expressionParsers[expression.type](expression, model, isBackConvert, changedModel);
 }

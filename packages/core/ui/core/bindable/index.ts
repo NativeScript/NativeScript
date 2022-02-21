@@ -345,8 +345,7 @@ export class Binding {
 		if (__UI_USE_EXTERNAL_RENDERER__) {
 		} else if (this.options.expression) {
 			const changedModel = {};
-			changedModel[bc.bindingValueKey] = value;
-			changedModel[bc.newPropertyValueKey] = value;
+			const targetInstance = this.target.get();
 			let sourcePropertyName = '';
 			if (this.sourceOptions) {
 				sourcePropertyName = this.sourceOptions.property;
@@ -354,12 +353,18 @@ export class Binding {
 				sourcePropertyName = this.options.sourceProperty;
 			}
 
+			const updateExpression = this.prepareExpressionForUpdate();
+			this.prepareContextForExpression(targetInstance, changedModel, updateExpression);
+
+			/**
+			 * Wait for 'prepareContextForExpression' to assign keys first and override any possible occurences.
+			 * For example, 'bindingValueKey' key can result in a circular reference if it's set in both cases.
+			 */
+			changedModel[bc.bindingValueKey] = value;
+			changedModel[bc.newPropertyValueKey] = value;
 			if (sourcePropertyName !== '') {
 				changedModel[sourcePropertyName] = value;
 			}
-
-			const updateExpression = this.prepareExpressionForUpdate();
-			this.prepareContextForExpression(changedModel, updateExpression);
 
 			const expressionValue = this._getExpressionValue(updateExpression, true, changedModel);
 			if (expressionValue instanceof Error) {
@@ -373,17 +378,18 @@ export class Binding {
 	}
 
 	private _getExpressionValue(expression: string, isBackConvert: boolean, changedModel: any): any {
-		let result: any = '';
+		let result: any = null;
 
 		if (!__UI_USE_EXTERNAL_RENDERER__) {
 			let context;
+			const targetInstance = this.target.get();
 			const addedProps = [];
 			try {
 				let exp;
 				try {
 					exp = parseExpression(expression);
 				} catch (e) {
-					result = e;
+					result = new Error(e + ' at ' + targetInstance);
 				}
 
 				if (exp) {
@@ -397,17 +403,15 @@ export class Binding {
 					}
 
 					// For expressions, there are also cases when binding must be updated after component is loaded (e.g. ListView)
-					if (this.prepareContextForExpression(context, expression, addedProps)) {
+					if (this.prepareContextForExpression(targetInstance, context, expression, addedProps)) {
 						result = convertExpressionToValue(exp, context, isBackConvert, changedModel ? changedModel : context);
 					} else {
-						const targetInstance = this.target.get();
 						targetInstance.off('loaded', this.loadedHandlerVisualTreeBinding, this);
 						targetInstance.on('loaded', this.loadedHandlerVisualTreeBinding, this);
 					}
 				}
 			} catch (e) {
-				const errorMessage = 'Run-time error occured in file: ' + e.sourceURL + ' at line: ' + e.line + ' and column: ' + e.column;
-				result = new Error(errorMessage);
+				result = new Error(e + ' at ' + targetInstance);
 			}
 
 			// Clear added props
@@ -480,9 +484,7 @@ export class Binding {
 		}
 	}
 
-	private prepareContextForExpression(model: Object, expression: string, addedProps = []) {
-		const targetInstance = this.target.get();
-
+	private prepareContextForExpression(target: any, model: Object, expression: string, addedProps = []) {
 		let success = true;
 		let parentViewAndIndex: { view: ViewBase; index: number };
 		let parentView;
@@ -497,7 +499,7 @@ export class Binding {
 			for (let i = 0; i < parentsArray.length; i++) {
 				// This prevents later checks to mistake $parents[] for $parent
 				expressionCP = expressionCP.replace(parentsArray[i], '');
-				parentViewAndIndex = this.getParentView(targetInstance, parentsArray[i]);
+				parentViewAndIndex = this.getParentView(target, parentsArray[i]);
 				if (parentViewAndIndex.view) {
 					model[bc.parentsValueKey] = model[bc.parentsValueKey] || {};
 					model[bc.parentsValueKey][parentViewAndIndex.index] = parentViewAndIndex.view.bindingContext;
@@ -509,7 +511,7 @@ export class Binding {
 		}
 
 		if (expressionCP.indexOf(bc.parentValueKey) > -1) {
-			parentView = this.getParentView(targetInstance, bc.parentValueKey).view;
+			parentView = this.getParentView(target, bc.parentValueKey).view;
 			if (parentView) {
 				model[bc.parentValueKey] = parentView.bindingContext;
 				addedProps.push(bc.parentValueKey);
