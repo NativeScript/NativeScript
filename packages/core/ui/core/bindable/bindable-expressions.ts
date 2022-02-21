@@ -8,6 +8,8 @@ interface ASTExpression {
 
 const expressionsCache = {};
 
+const FORCED_CHAIN_VALUE = Symbol('forcedChain');
+
 // prettier-ignore
 const unaryOperators = {
 	'+': (v) => +v,
@@ -81,7 +83,7 @@ const expressionParsers = {
 		const { object, property } = convertExpressionToValue(expression.callee, model, isBackConvert, changedModel);
 
 		let callback;
-		if (object == '$forceChain') {
+		if (object == FORCED_CHAIN_VALUE) {
 			callback = undefined;
 		} else {
 			callback = expression.callee.optional ? object?.[property] : object[property];
@@ -158,9 +160,9 @@ const expressionParsers = {
 		 * if context is not ready.
 		 */
 		if (object === undefined && expression.object.type == 'Identifier') {
-			return expression.isChained ? '$forceChain' : object;
+			return expression.isChained ? FORCED_CHAIN_VALUE : object;
     }
-    if (object == '$forceChain') {
+    if (object == FORCED_CHAIN_VALUE) {
 			return expression.isChained ? object : undefined;
     }
 		return expression.optional ? object?.[property] : object[property];
