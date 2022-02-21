@@ -6,15 +6,16 @@
   <StackLayout class="p-20">
     <ScrollView class="h-full">
       <StackLayout>
-        <Button text="list-page" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
-        <Button text="box-shadow" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
-        <Button text="root-layout" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="a11y" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
+        <Button text="box-shadow" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="css-playground" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
-        <Button text="visibility-vs-hidden" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="image-async" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
-        <Button text="vector-image" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
+        <Button text="list-page" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
+        <Button text="root-layout" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
+        <Button text="switch" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="touch-animations" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
+        <Button text="vector-image" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
+        <Button text="visibility-vs-hidden" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
       </StackLayout>
     </ScrollView>
   </StackLayout>

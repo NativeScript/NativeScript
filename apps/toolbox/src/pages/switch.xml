@@ -1,0 +1,75 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+    <Page.actionBar>
+        <ActionBar title="Switch" icon="" class="action-bar">
+        </ActionBar>
+    </Page.actionBar>
+
+    <GridLayout padding="20" class="switch-demo-page">   
+      <ScrollView>
+          <StackLayout>
+
+            <GridLayout columns="*, auto" marginTop="24">
+                <Label text="Default + Checked + Enabled" />
+                <Switch checked="true" col="1" />
+            </GridLayout>
+
+            <GridLayout columns="*, auto" marginTop="24">
+                <Label text="Default + UnChecked + Enabled" />
+                <Switch checked="false" col="1" />
+            </GridLayout>
+
+            <GridLayout columns="*, auto" marginTop="24">
+                <Label text="Default + Checked + Disabled" />
+                <Switch checked="true" isEnabled="false" col="1" />
+            </GridLayout>
+            
+            <GridLayout columns="*, auto" marginTop="24">
+                <Label text="Default + UnChecked + Disabled" />
+                <Switch checked="false" isEnabled="false" col="1" />
+            </GridLayout>
+
+            <GridLayout columns="*, auto" marginTop="24">
+                <Label text="Custom + Checked + Enabled" />
+                <Switch class="custom-switch" checked="true" col="1" />
+            </GridLayout>
+
+            <GridLayout columns="*, auto" marginTop="24">
+                <Label text="Custom + UnChecked + Enabled" />
+                <Switch class="custom-switch" checked="false" col="1" />
+            </GridLayout>
+
+            <GridLayout columns="*, auto" marginTop="24">
+                <Label text="Custom + Checked + Disabled" />
+                <Switch class="custom-switch" checked="true" isEnabled="false" col="1" />
+            </GridLayout>
+            
+            <GridLayout columns="*, auto" marginTop="24">
+                <Label text="Custom + UnChecked + Disabled" />
+                <Switch class="custom-switch" checked="false" isEnabled="false" col="1" />
+            </GridLayout>
+            
+             <GridLayout columns="*, auto" marginTop="24">
+                <Label text="Custom + Checked + Enabled + offBgColor" />
+                <Switch class="custom-switch" checked="true" backgroundColor="blue" offBackgroundColor="red" col="1" />
+            </GridLayout>
+
+            <GridLayout columns="*, auto" marginTop="24">
+                <Label text="Custom + UnChecked + Enabled + offBgColor" />
+                <Switch class="custom-switch" checked="false" offBackgroundColor="red" col="1" />
+            </GridLayout>
+
+            <GridLayout columns="*, auto" marginTop="24">
+                <Label text="Custom + Checked + Disabled + offBgColor" />
+                <Switch class="custom-switch" checked="true" isEnabled="false" offBackgroundColor="red" col="1" />
+            </GridLayout>
+
+
+            <GridLayout columns="*, auto" marginTop="24">
+                <Label text="Custom + UnChecked + Disabled + offBgColor" />
+                <Switch class="custom-switch" checked="false" isEnabled="false" offBackgroundColor="red" col="1" />
+            </GridLayout>
+
+          </StackLayout>
+      </ScrollView>
+    </GridLayout>
+</Page>
