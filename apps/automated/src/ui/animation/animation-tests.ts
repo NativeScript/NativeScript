@@ -5,10 +5,10 @@ import { Label } from '@nativescript/core/ui/label';
 import { StackLayout } from '@nativescript/core/ui/layouts/stack-layout';
 import * as colorModule from '@nativescript/core/color';
 import { CoreTypes, PercentLength } from '@nativescript/core';
-import { AnimationPromise } from '@nativescript/core/ui/animation';
+import { AnimationPromise, AnimationDefinition, Animation } from '@nativescript/core/ui/animation';
 
 // >> animation-require
-import * as animation from '@nativescript/core/ui/animation';
+// import * as animation from '@nativescript/core/ui/animation';
 // << animation-require
 
 function prepareTest(parentHeight?: number, parentWidth?: number): Label {
@@ -228,12 +228,12 @@ export function test_AnimatingMultipleViews(done) {
 	TKUnit.waitUntilReady(() => label3.isLoaded);
 
 	// >> animation-multiple-views
-	var animations: Array<animation.AnimationDefinition> = [
+	var animations: Array<AnimationDefinition> = [
 		{ target: label1, translate: { x: 200, y: 200 }, duration: 5, delay: 0 },
 		{ target: label2, translate: { x: 200, y: 200 }, duration: 5, delay: 2 },
 		{ target: label3, translate: { x: 200, y: 200 }, duration: 5, delay: 4 },
 	];
-	var a = new animation.Animation(animations);
+	var a = new Animation(animations);
 	a.play()
 		.then(() => {
 			//console.log("Animations finished");
@@ -634,8 +634,8 @@ export function test_PlayPromiseIsRejectedWhenAnimationIsCancelled(done) {
 }
 
 function assertIOSNativeTransformIsCorrect(view: viewModule.View) {
-	if (view.ios) {
-		var errorMessage = (<any>animation)._getTransformMismatchErrorMessage(view);
+	if (global.isIOS) {
+		var errorMessage = (<any>require('@nativescript/core/ui/animation'))._getTransformMismatchErrorMessage(view);
 		if (errorMessage) {
 			TKUnit.assert(false, errorMessage);
 		}

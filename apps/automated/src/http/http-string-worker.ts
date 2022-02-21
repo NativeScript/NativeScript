@@ -1,17 +1,15 @@
+postMessage('stub');
+
 // todo: figure out why this worker is including the whole core and not just the Http module
 // ie. tree-shaking is not working as expected here. (same setup works in a separate app)
-// import { initGlobal } from '@nativescript/core/globals/index';
-// initGlobal();
-
-import { getString } from '@nativescript/core/http';
-
-declare var postMessage: any;
-
-getString('https://httpbin.org/get').then(
-	function (r) {
-		postMessage(r);
-	},
-	function (e) {
-		throw e;
-	}
-);
+//
+// import { getString } from '@nativescript/core/http';
+//
+// getString('https://httpbin.org/get').then(
+// 	function (r) {
+// 		postMessage(r);
+// 	},
+// 	function (e) {
+// 		throw e;
+// 	}
+// );
