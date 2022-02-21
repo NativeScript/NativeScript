@@ -160,8 +160,8 @@ const expressionParsers = {
 		if (object === undefined && expression.object.type == 'Identifier') {
 			return expression.isChained ? '$forceChain' : object;
     }
-    if (object == '$forceChain' && !expression.isChained) {
-			return;
+    if (object == '$forceChain') {
+			return expression.isChained ? object : undefined;
     }
 		return expression.optional ? object?.[property] : object[property];
 	},
