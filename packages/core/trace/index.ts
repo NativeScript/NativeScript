@@ -201,9 +201,10 @@ export namespace Trace {
 		export const Transition = 'Transition';
 		export const Livesync = 'Livesync';
 		export const ModuleNameResolver = 'ModuleNameResolver';
+		export const Permissions = 'Permissions';
 
 		export const separator = ',';
-		export const All: string = [VisualTreeEvents, Layout, Style, ViewHierarchy, NativeLifecycle, Debug, Navigation, Test, Binding, Error, Animation, Transition, Livesync, ModuleNameResolver].join(separator);
+		export const All: string = [VisualTreeEvents, Layout, Style, ViewHierarchy, NativeLifecycle, Debug, Navigation, Test, Binding, Error, Animation, Transition, Livesync, ModuleNameResolver, Permissions].join(separator);
 
 		export function concat(...args: any): string {
 			let result: string;

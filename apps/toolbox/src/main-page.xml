@@ -19,6 +19,7 @@
         <Button text="vector-image" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="visibility-vs-hidden" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="fs-helper" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
+        <Button text="permissions" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
       </StackLayout>
     </ScrollView>
   </StackLayout>

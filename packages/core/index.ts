@@ -123,6 +123,9 @@ export type { ImageAssetOptions } from './image-asset';
 export { ImageSource } from './image-source';
 export { ModuleNameResolver, _setResolver } from './module-name-resolver';
 export type { ModuleListProvider, PlatformContext } from './module-name-resolver';
+
+// Permissions
+export { Permissions, PermissionStatus } from './permissions';
 export { isAndroid, isIOS, Screen, Device, platformNames } from './platform';
 export type { IDevice } from './platform';
 

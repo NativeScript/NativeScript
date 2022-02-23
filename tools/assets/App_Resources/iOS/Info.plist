@@ -26,6 +26,16 @@
 	<string>LaunchScreen</string>
 	<key>UIRequiresFullScreen</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Can we use your camera?</string>
+	<key>NSContactsUsageDescription</key>
+    <string>Can we access your contacts?</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Can we use your photo library?</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Can we use your photo library?</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Can we use your microphone?</string>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>armv7</string>

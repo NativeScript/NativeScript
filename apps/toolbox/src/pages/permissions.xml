@@ -1,0 +1,16 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+    <Page.actionBar>
+        <ActionBar title="Permissions" icon="" class="action-bar">
+        </ActionBar>
+    </Page.actionBar>
+
+    <ListView items="{{ permissions }}">
+        <ListView.itemTemplate>
+            <GridLayout columns="*,auto,10,auto" padding="10" class="item" orientation="horizontal">
+                <Label text="{{ name }}" fontSize="17" verticalAlignment="center" />
+                <Button col="1" text="check" fontSize="17" verticalAlignment="center" tap="{{ checkPermission }}" />
+                <Button col="3" text="request" fontSize="17" verticalAlignment="center" tap="{{ requestPermission }}" />
+            </GridLayout>
+        </ListView.itemTemplate>
+    </ListView>
+</Page>
