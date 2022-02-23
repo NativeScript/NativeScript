@@ -82,6 +82,8 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public accessibilityValue: string;
 	public accessibilityHint: string;
 
+	public testID: string;
+
 	public touchAnimation: boolean | TouchAnimationOptions;
 	public ignoreTouchAnimation: boolean;
 
@@ -1195,6 +1197,11 @@ const ignoreTouchAnimationProperty = new Property<ViewCommon, boolean>({
 	valueConverter: booleanConverter,
 });
 ignoreTouchAnimationProperty.register(ViewCommon);
+
+export const testIDProperty = new Property<ViewCommon, string>({
+	name: 'testID',
+});
+testIDProperty.register(ViewCommon);
 
 accessibilityIdentifierProperty.register(ViewCommon);
 accessibilityLabelProperty.register(ViewCommon);

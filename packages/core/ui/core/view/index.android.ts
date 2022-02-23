@@ -3,7 +3,7 @@ import type { Point, CustomLayoutView as CustomLayoutViewDefinition } from '.';
 import type { GestureTypes, GestureEventData } from '../../gestures';
 
 // Types.
-import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty } from './view-common';
+import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty } from './view-common';
 import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length } from '../../styling/style-properties';
 import { layout } from '../../../utils';
 import { Trace } from '../../../trace';
@@ -794,6 +794,10 @@ export class View extends ViewCommon {
 	}
 	[opacityProperty.setNative](value: number) {
 		this.nativeViewProtected.setAlpha(float(value));
+	}
+
+	[testIDProperty.setNative](value: string) {
+		this.nativeViewProtected.setContentDescription(value);
 	}
 
 	[accessibilityEnabledProperty.setNative](value: boolean): void {

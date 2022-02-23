@@ -2,7 +2,7 @@
 import { Point, View as ViewDefinition } from '.';
 
 // Requires
-import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty } from './view-common';
+import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty } from './view-common';
 import { ShowModalOptions, hiddenProperty } from '../view-base';
 import { Trace } from '../../../trace';
 import { layout, iOSNativeHelper } from '../../../utils';
@@ -570,6 +570,10 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 	[originYProperty.setNative](value: number) {
 		this.updateOriginPoint(this.originX, value);
+	}
+
+	[testIDProperty.setNative](value: string) {
+		this.nativeViewProtected.accessibilityIdentifier = value;
 	}
 
 	[accessibilityEnabledProperty.setNative](value: boolean): void {
