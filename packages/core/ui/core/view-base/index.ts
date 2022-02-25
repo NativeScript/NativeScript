@@ -25,7 +25,7 @@ import { ViewBase as ViewBaseDefinition } from '.';
 let domNodeModule: typeof dnm;
 
 function ensuredomNodeModule(): void {
-	if (global.__inspector && !domNodeModule) {
+	if (!domNodeModule) {
 		domNodeModule = require('../../../debugger/dom-node');
 	}
 }
