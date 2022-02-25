@@ -108,6 +108,10 @@ program
 				// Set the process exit code depending on errors
 				process.exitCode = stats.hasErrors() ? 1 : 0;
 
+				// if webpack profile is enabled we write the stats to a JSON file
+				if (configuration.profile ===  true) {
+					fs.writeFileSync(path.join(process.cwd(), 'webpack.stats.json'), JSON.stringify(stats.toJson()));
+				}
 				console.log(
 					stats.toString({
 						chunks: false,
