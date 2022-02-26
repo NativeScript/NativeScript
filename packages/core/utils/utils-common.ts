@@ -132,16 +132,33 @@ export function mainThreadify(func: Function): (...args: any[]) => void {
 	};
 }
 
-let hasQueuedGC = false;
-export function queueGC() {
-	if (hasQueuedGC) {
-		return;
+export function debounce(fn: any, delay = 300) {
+	let timer: NodeJS.Timeout;
+	return (...args: Array<any>) => {
+		clearTimeout(timer);
+		timer = setTimeout(() => {
+			fn.apply(this, args);
+		}, delay);
+	};
+}
+
+export function throttle(fn: any, delay = 300) {
+	let waiting = false;
+	return function () {
+		if (!waiting) {
+			fn.apply(this, arguments);
+			waiting = true;
+			setTimeout(function () {
+				waiting = false;
+			}, delay);
+		}
+	};
+}
+
+export function queueGC(delay = 900, useThrottle?: boolean) {
+	if (useThrottle) {
+		throttle(() => GC(), delay);
+	} else {
+		debounce(() => GC(), delay);
 	}
-
-	hasQueuedGC = true;
-
-	setTimeout(() => {
-		hasQueuedGC = false;
-		GC();
-	}, 1000);
 }
