@@ -40,6 +40,8 @@ exports[`base configuration for android 1`] = `
       '.ts',
       '.android.js',
       '.js',
+      '.android.mjs',
+      '.mjs',
       '.android.css',
       '.css',
       '.android.scss',
@@ -77,7 +79,7 @@ exports[`base configuration for android 1`] = `
       },
       /* config.module.rule('workers') */
       {
-        test: /\\\\.(js|ts)$/,
+        test: /\\\\.(mjs|js|ts)$/,
         use: [
           /* config.module.rule('workers').use('nativescript-worker-loader') */
           {
@@ -242,6 +244,10 @@ exports[`base configuration for android 1`] = `
     new ContextExclusionPlugin(
       /(.*)App_Resources(.*)/
     ),
+    /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
+    new ContextExclusionPlugin(
+      /\\\\.(ios)\\\\.(\\\\w+)$/
+    ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
@@ -354,6 +360,8 @@ exports[`base configuration for ios 1`] = `
       '.ts',
       '.ios.js',
       '.js',
+      '.ios.mjs',
+      '.mjs',
       '.ios.css',
       '.css',
       '.ios.scss',
@@ -391,7 +399,7 @@ exports[`base configuration for ios 1`] = `
       },
       /* config.module.rule('workers') */
       {
-        test: /\\\\.(js|ts)$/,
+        test: /\\\\.(mjs|js|ts)$/,
         use: [
           /* config.module.rule('workers').use('nativescript-worker-loader') */
           {
@@ -556,6 +564,10 @@ exports[`base configuration for ios 1`] = `
     new ContextExclusionPlugin(
       /(.*)App_Resources(.*)/
     ),
+    /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
+    new ContextExclusionPlugin(
+      /\\\\.(android)\\\\.(\\\\w+)$/
+    ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
@@ -627,4 +639,10 @@ exports[`base configuration for ios 1`] = `
     ]
   }
 }"
+`;
+
+exports[`base configuration support env.watchNodeModules 1`] = `
+Object {
+  "managedPaths": Array [],
+}
 `;
