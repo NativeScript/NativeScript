@@ -1,5 +1,6 @@
 import { ImageAssetBase, getRequestedImageSize } from './image-asset-common';
 import { path as fsPath, knownFolders } from '../file-system';
+import { queueGC } from '../utils';
 
 export * from './image-asset-common';
 
@@ -40,10 +41,8 @@ export class ImageAsset extends ImageAssetBase {
 		const requestedSize = getRequestedImageSize({ width: srcWidth, height: srcHeight }, this.options);
 
 		if (this.nativeImage) {
-			const newSize = CGSizeMake(requestedSize.width, requestedSize.height);
-			const resizedImage = this.scaleImage(this.nativeImage, newSize);
-			callback(resizedImage, null);
-
+			callback(this.scaleImage(this.nativeImage, CGSizeMake(requestedSize.width, requestedSize.height)), null);
+			queueGC();
 			return;
 		}
 
@@ -53,11 +52,11 @@ export class ImageAsset extends ImageAssetBase {
 
 		PHImageManager.defaultManager().requestImageForAssetTargetSizeContentModeOptionsResultHandler(this.ios, requestedSize, PHImageContentMode.AspectFit, imageRequestOptions, (image, imageResultInfo) => {
 			if (image) {
-				const resultImage = this.scaleImage(image, requestedSize);
-				callback(resultImage, null);
+				callback(this.scaleImage(image, requestedSize), null);
 			} else {
 				callback(null, imageResultInfo.valueForKey(PHImageErrorKey));
 			}
+			queueGC();
 		});
 	}
 
