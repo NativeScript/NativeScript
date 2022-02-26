@@ -1,0 +1,34 @@
+{
+    "name": "@nativescript/permissions",
+    "version": "8.2.0",
+    "description": "A JavaScript library providing an easy to use api for interacting with iOS and Android permission handling.",
+    "sideEffects": false,
+    "main": "index",
+    "types": "index.d.ts",
+    "nativescript": {
+        "platforms": {
+            "ios": "6.0.0",
+            "android": "6.0.0"
+        }
+    },
+    "homepage": "https://nativescript.org",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/NativeScript/NativeScript"
+    },
+    "keywords": [
+        "NativeScript",
+        "JavaScript",
+        "Android",
+        "iOS",
+        "permissions"
+    ],
+    "author": {
+        "name": "NativeScript",
+        "email": "oss@nativescript.org"
+    },
+    "bugs": {
+        "url": "https://github.com/NativeScript/plugins/issues"
+    },
+    "license": "Apache-2.0"
+}

@@ -1,0 +1,15 @@
+{
+	"root": "packages/permissions",
+	"sourceRoot": "packages/permissions/src",
+	"projectType": "library",
+	"targets": {
+		"lint": {
+			"executor": "@nrwl/linter:eslint",
+			"outputs": ["{options.outputFile}"],
+			"options": {
+				"lintFilePatterns": ["packages/permissions/**/*.ts"]
+			}
+		}
+	},
+	"tags": []
+}

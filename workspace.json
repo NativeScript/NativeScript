@@ -6,6 +6,7 @@
 		"apps-ui": "apps/ui",
 		"core": "packages/core",
 		"core-api-docs": "tools/scripts",
+		"permissions": "packages/permissions",
 		"types": "packages/types",
 		"types-android": "packages/types-android",
 		"types-ios": "packages/types-ios",
