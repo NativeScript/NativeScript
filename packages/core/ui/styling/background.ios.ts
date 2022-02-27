@@ -60,8 +60,7 @@ export namespace ios {
 			layer.borderColor = !borderColor ? undefined : borderColor.ios.CGColor;
 			layer.borderWidth = layout.toDeviceIndependentPixels(background.getUniformBorderWidth());
 			const renderSize = view.getActualSize() || { width: 0, height: 0 };
-			const cornerRadius = layout.toDeviceIndependentPixels(background.getUniformBorderRadius());
-			layer.cornerRadius = Math.min(Math.min(renderSize.width / 2, renderSize.height / 2), cornerRadius);
+			layer.cornerRadius = Math.min(Math.min(renderSize.width / 2, renderSize.height / 2), layout.toDeviceIndependentPixels(background.getUniformBorderRadius()));
 		} else {
 			drawNoRadiusNonUniformBorders(nativeView, background);
 			subscribeForScrollNotifications(view);

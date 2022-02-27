@@ -16,7 +16,7 @@ export class BoxShadowModel extends Observable {
 
 	background: string;
 	borderWidth: number;
-	borderRadius: number;
+	borderRadius: number | string;
 	appliedBoxShadow: string;
 
 	get boxShadow(): string {
@@ -72,10 +72,13 @@ export class BoxShadowModel extends Observable {
 		this.notifyPropertyChange('selectedBorderType', value);
 		switch (value) {
 			case 'solid':
-				this.borderWidth = this.borderWidth ? 0 : 2;
+				this.borderWidth = 2;
 				break;
 			case 'rounded':
-				this.borderRadius = this.borderRadius ? 0 : 10;
+				this.borderRadius = 10;
+				break;
+			case 'partial':
+				this.borderRadius = '10 0 0 0';
 				break;
 			case 'none':
 				this.borderRadius = 0;
