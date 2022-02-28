@@ -1,5 +1,4 @@
-import { Device } from '../platform';
-import { Trace } from '../trace';
+import { Device, Trace } from '@nativescript/core';
 import { PermissionStatus } from './common';
 import { PermissionCheckOptions, PermissionsType, PermissionRequestOptions } from '.';
 

@@ -20,7 +20,7 @@
 		"paths": {
 			"@nativescript/core": ["packages/core/index.ts"],
 			"@nativescript/core/*": ["packages/core/*"],
-			"@nativescript/permissions": ["packages/permissions/src/index.ts"],
+			"@nativescript/permissions": ["packages/permissions/index.ts"],
 			"@nativescript/types-android": ["packages/types-android/src/index.ts"],
 			"@nativescript/types-ios": ["packages/types-ios/src/index.ts"]
 		}

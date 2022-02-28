@@ -1,4 +1,5 @@
-import { Observable, EventData, Page, Permissions, Trace } from '@nativescript/core';
+import { Observable, EventData, Page, Trace } from '@nativescript/core';
+import { Permissions } from '@nativescript/permissions';
 
 let page: Page;
 
@@ -10,31 +11,50 @@ export function navigatingTo(args: EventData) {
 }
 
 export class PermissionsModel extends Observable {
-	permissions = ['location', 'camera', 'microphone', 'photo', 'contacts', 'event', 'reminder', 'bluetooth', 'bluetoothScan', 'notification', 'backgroundRefresh', 'speechRecognition', 'mediaLibrary', 'motion', 'location', 'callPhone', 'readSms', 'receiveSms'].map((v) => {
-		return {
-			name: v,
-			checkPermission: this.checkPermission.bind(this),
-			requestPermission: this.requestPermission.bind(this),
-		};
+	permissions = ['location', 'camera', 'microphone', 'photo', 'contacts', 'event', 'reminder', 'bluetooth', 'bluetoothScan', 'notification', 'backgroundRefresh', 'speechRecognition', 'mediaLibrary', 'motion', 'location', 'callPhone', 'readSms', 'receiveSms', 'requestMultiple'].map((v) => {
+		if (v === 'requestMultiple') {
+			return {
+				name: 'Request Multiple Permissions',
+				checkPermission: (args) => {
+					this.checkPermission(args, ['camera', 'contacts']);
+				},
+				requestPermission: (args) => {
+					this.requestPermission(args, ['camera', 'contacts']);
+				},
+			};
+		} else {
+			return {
+				name: v,
+				checkPermission: this.checkPermission.bind(this),
+				requestPermission: this.requestPermission.bind(this),
+			};
+		}
 	});
 
 	constructor() {
 		super();
 	}
 
-	async checkPermission(args) {
+	async checkPermission(args, multiple?: Array<string>) {
 		const perm = args.object.bindingContext.name;
 		try {
 			console.log('checkPermission', perm);
-			const result = await Permissions.check(perm, { type: 'none' });
-			alert(JSON.stringify(result));
+			if (multiple) {
+				for (const p of multiple) {
+					const result = await Permissions.check(p, { type: 'none' });
+					alert(JSON.stringify(result));
+				}
+			} else {
+				const result = await Permissions.check(perm, { type: 'none' });
+				alert(JSON.stringify(result));
+			}
 		} catch (err) {
 			console.error(err);
 			alert(err);
 		}
 	}
-	async requestPermission(args) {
-		const perm = args.object.bindingContext.name;
+	async requestPermission(args, multiple?: Array<string>) {
+		const perm = multiple || args.object.bindingContext.name;
 		try {
 			console.log('requestPermission', perm);
 			const result = await Permissions.request(perm, { type: 'none' });

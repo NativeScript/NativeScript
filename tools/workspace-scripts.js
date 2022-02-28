@@ -104,6 +104,13 @@ module.exports = {
           description: '@nativescript/core: API Reference Docs Build'
         }
       },
+      // @nativescript/permissions
+      'permissions': {
+				build: {
+          script: 'nx run permissions:build',
+          description: '@nativescript/permissions: Build for npm'
+        },
+			},
 			// @nativescript/ui-mobile-base
 			'ui-mobile-base': {
 				build: {
@@ -138,6 +145,10 @@ module.exports = {
       core: {
         script: 'nx g @nstudio/focus:mode core',
         description: 'Focus on @nativescript/core'
+      },
+      permissions: {
+        script: 'nx g @nstudio/focus:mode permissions',
+        description: 'Focus on @nativescript/permissions'
       },
       types: {
         script: 'nx g @nstudio/focus:mode types-android,types-ios',

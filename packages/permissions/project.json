@@ -1,8 +1,17 @@
 {
 	"root": "packages/permissions",
-	"sourceRoot": "packages/permissions/src",
+	"sourceRoot": "packages/permissions",
 	"projectType": "library",
 	"targets": {
+		"build": {
+			"executor": "@nrwl/workspace:run-commands",
+			"outputs": ["dist/packages"],
+			"options": {
+				"commands": ["npx rimraf dist/packages/permissions", "./node_modules/.bin/tsc -p packages/permissions/tsconfig.lib.json", "cp packages/permissions/index.d.ts dist/packages/permissions", "cp packages/permissions/package.json dist/packages/permissions", "cp packages/permissions/README.md dist/packages/permissions", "cp LICENSE dist/packages/permissions"],
+				"cwd": ".",
+				"parallel": false
+			}
+		},
 		"lint": {
 			"executor": "@nrwl/linter:eslint",
 			"outputs": ["{options.outputFile}"],

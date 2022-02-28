@@ -1,10 +1,27 @@
 {
 	"extends": "./tsconfig.json",
 	"compilerOptions": {
-		"outDir": "../../dist/out-tsc",
+		"noEmitOnError": true,
+		"noEmitHelpers": true,
 		"declaration": true,
-		"types": []
+		"noImplicitAny": false,
+		"noImplicitUseStrict": true,
+		"removeComments": false,
+		"emitDecoratorMetadata": true,
+		"experimentalDecorators": true,
+		"diagnostics": true,
+		"sourceMap": true,
+		"inlineSourceMap": false,
+		"baseUrl": ".",
+		"outDir": "../../dist",
+		"types": ["node"],
+		"plugins": [
+			{
+				"transform": "../webpack/transformers/ns-transform-native-classes.ts",
+				"type": "raw"
+			}
+		]
 	},
-	"include": ["**/*.ts"],
-	"exclude": ["**/*.spec.ts"]
+	"exclude": ["**/*.spec.ts", "**/*.test.ts", "dist", "__tests__"],
+	"include": ["**/*.ts", "./references.d.ts"]
 }

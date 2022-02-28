@@ -1,16 +1,11 @@
 {
 	"extends": "../../tsconfig.base.json",
-	"files": [],
-	"include": [],
-	"references": [
-		{
-			"path": "./tsconfig.lib.json"
-		}
-	],
 	"compilerOptions": {
-		"forceConsistentCasingInFileNames": true,
-		"strict": true,
-		"noImplicitReturns": true,
-		"noFallthroughCasesInSwitch": true
-	}
+		"baseUrl": ".",
+		"paths": {
+			"@nativescript/core": ["../core/index.ts"]
+		}
+	},
+	"include": ["**/*.ts", "./references.d.ts"],
+	"exclude": ["dist", "__tests__"]
 }

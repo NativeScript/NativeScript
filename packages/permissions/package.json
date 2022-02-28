@@ -1,7 +1,7 @@
 {
     "name": "@nativescript/permissions",
     "version": "8.2.0",
-    "description": "A JavaScript library providing an easy to use api for interacting with iOS and Android permission handling.",
+    "description": "Android and iOS permission handling with NativeScript.",
     "sideEffects": false,
     "main": "index",
     "types": "index.d.ts",
