@@ -1,6 +1,6 @@
 import { AndroidActivityRequestPermissionsEventData, AndroidApplication, Application, Trace, ApplicationSettings } from '@nativescript/core';
 import { PermissionStatus } from './common';
-import { PermissionCheckOptions, PermissionsType, PermissionRationale, PermissionRequestOptions } from '.';
+import { PermissionCheckOptions, PermissionsType, PermissionRationale, PermissionRequestOptions, PermissionResult } from '.';
 
 export * from './common';
 
@@ -23,7 +23,7 @@ function getAndroidActivity() {
 const NativePermissionsTypes: PermissionsType[] = ['location', 'camera', 'mediaLocation', 'microphone', 'contacts', 'event', 'storage', 'photo', 'callPhone', 'readSms', 'receiveSms', 'bluetoothScan', 'bluetoothConnect', 'bluetooth'];
 type NativePermissionsNames = typeof NativePermissionsTypes; // type Names = readonly ['Mike', 'Jeff', 'Ben']
 type NativePermissions = NativePermissionsNames[number];
-function getNativePermissions(permission: NativePermissions, options?) {
+function getNativePermissions(permission: NativePermissions, options?: PermissionCheckOptions | PermissionRequestOptions) {
 	switch (permission) {
 		case 'location': {
 			const result = [android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION];
@@ -139,7 +139,7 @@ namespace PermissionsAndroid {
 	 *
 	 * See https://facebook.github.io/react-native/docs/permissionsandroid.html#check
 	 */
-	export async function check(permission: string | string[]) {
+	export async function check(permission: string | string[]): Promise<PermissionResult> {
 		const context: android.content.Context = getAndroidActivity();
 		let result = true;
 		const granted = android.content.pm.PackageManager.PERMISSION_GRANTED;
@@ -160,7 +160,7 @@ namespace PermissionsAndroid {
 	 *
 	 * See https://facebook.github.io/react-native/docs/permissionsandroid.html#request
 	 */
-	export async function request(permission: string, rationale?: PermissionRationale): Promise<PermissionStatus> {
+	export async function request(permission: string, rationale?: PermissionRationale): Promise<PermissionResult> {
 		// if (rationale) {
 		//     const shouldShowRationale = await shouldShowRequestPermissionRationale(permission);
 
@@ -181,7 +181,7 @@ namespace PermissionsAndroid {
 	 *
 	 * See https://facebook.github.io/react-native/docs/permissionsandroid.html#requestmultiple
 	 */
-	export function requestMultiple(permissions: string[]): Promise<{ [permission: string]: PermissionStatus }> {
+	export function requestMultiple(permissions: string[]): Promise<PermissionResult> {
 		return requestMultiplePermissions(permissions);
 	}
 }
@@ -226,7 +226,7 @@ function requestPermission(permission: string): Promise<PermissionStatus> {
 	});
 }
 
-async function requestMultiplePermissions(permissions: string[], options?: PermissionRequestOptions): Promise<{ [permission: string]: PermissionStatus }> {
+async function requestMultiplePermissions(permissions: string[], options?: PermissionRequestOptions): Promise<PermissionResult> {
 	const grantedPermissions = {};
 	const permissionsToCheck = [];
 	let checkedPermissionsCount = 0;
@@ -332,7 +332,7 @@ export class Permissions {
 		return NativePermissionsTypes;
 	}
 
-	static async check(permission: PermissionsType, options?: PermissionCheckOptions): Promise<[PermissionStatus, boolean]> {
+	static async check(permission: PermissionsType, options?: PermissionCheckOptions): Promise<PermissionResult> {
 		if (Trace.isEnabled()) {
 			Trace.write(`check ${permission}`, Trace.categories.Permissions, Trace.messageType.info);
 		}
@@ -365,7 +365,7 @@ export class Permissions {
 		});
 	}
 
-	static request(permission: PermissionsType | PermissionsType[] | string[], options?: PermissionRequestOptions): Promise<[PermissionStatus, boolean] | { [permission: string]: PermissionStatus }> {
+	static request(permission: PermissionsType | PermissionsType[] | string[], options?: PermissionRequestOptions): Promise<PermissionResult> {
 		if (Trace.isEnabled()) {
 			Trace.write(`request ${permission}`, Trace.categories.Permissions, Trace.messageType.info);
 		}

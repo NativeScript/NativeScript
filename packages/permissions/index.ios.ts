@@ -729,15 +729,7 @@ export class Permissions {
 			return Promise.resolve([PermissionStatus.authorized, true]);
 		}
 
-		let type: PermissionCheckOptions;
-
-		if (typeof options === 'string') {
-			type = options;
-		} else if (options && options.type) {
-			type = options.type;
-		}
-
-		return PermissionsIOS.getPermissionStatus(permission, type || DEFAULTS[permission]);
+		return PermissionsIOS.getPermissionStatus(permission, options?.type || DEFAULTS[permission]);
 	}
 	static async request<T extends IOSPermissionTypes | IOSPermissionTypes[]>(permission: T, options?: PermissionRequestOptions): Promise<Result<T>> {
 		if (Trace.isEnabled()) {
@@ -764,16 +756,8 @@ export class Permissions {
 			throw new Error('You cannot request backgroundRefresh');
 		}
 
-		let type: PermissionRequestOptions;
-
-		if (typeof options === 'string') {
-			type = options;
-		} else if (options && options.type) {
-			type = options.type;
-		}
-
 		//@ts-ignore
-		return PermissionsIOS.requestPermission(permission, type || DEFAULTS[permission]);
+		return PermissionsIOS.requestPermission(permission, options?.type || DEFAULTS[permission]);
 	}
 	static checkMultiple(permissions: PermissionsType[]) {
 		return Promise.all(permissions.map((permission) => Permissions.check(<any>permission))).then((result) =>
