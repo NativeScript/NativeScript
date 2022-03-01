@@ -14,7 +14,7 @@ import { decompose2DTransformMatrix, getTransformMatrix, matrixArrayToCssMatrix,
 import { Trace } from '../../trace';
 import { CoreTypes } from '../../core-types';
 
-import * as parser from '../../css/parser';
+import { parseBackground } from '../../css/parser';
 import { LinearGradient } from './linear-gradient';
 import { CSSShadow, parseCSSShadow } from './css-shadow';
 
@@ -785,7 +785,7 @@ export const backgroundImageProperty = new CssProperty<Style, string | LinearGra
 	},
 	valueConverter: (value: any) => {
 		if (typeof value === 'string') {
-			const parsed = parser.parseBackground(value);
+			const parsed = parseBackground(value);
 			if (parsed) {
 				value = typeof parsed.value.image === 'object' ? LinearGradient.parse(parsed.value.image) : value;
 			}
@@ -837,7 +837,7 @@ backgroundPositionProperty.register(Style);
 
 function convertToBackgrounds(this: void, value: string): [CssProperty<any, any>, any][] {
 	if (typeof value === 'string') {
-		const backgrounds = parser.parseBackground(value).value;
+		const backgrounds = parseBackground(value).value;
 		let backgroundColor = unsetValue;
 		if (backgrounds.color) {
 			backgroundColor = backgrounds.color instanceof Color ? backgrounds.color : new Color(backgrounds.color);

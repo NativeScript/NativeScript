@@ -1,6 +1,6 @@
 import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
-import { LinearGradient as CSSLinearGradient } from '../../css/parser';
+import type { LinearGradient as CSSLinearGradient } from '../../css/parser';
 
 export interface ColorStop {
 	color: Color;
