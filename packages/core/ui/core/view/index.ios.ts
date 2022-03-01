@@ -350,7 +350,7 @@ export class View extends ViewCommon implements ViewDefinition {
 		}
 
 		const background = this.style.backgroundInternal;
-		const backgroundDependsOnSize = background.image || !background.hasUniformBorder() || background.hasBorderRadius();
+		const backgroundDependsOnSize = (background.image && background.image !== 'none') || !background.hasUniformBorder() || background.hasBorderRadius();
 
 		if (this._nativeBackgroundState === 'invalid' || (this._nativeBackgroundState === 'drawn' && backgroundDependsOnSize)) {
 			this._redrawNativeBackground(background);
