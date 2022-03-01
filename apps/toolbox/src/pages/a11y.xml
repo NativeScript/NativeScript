@@ -7,6 +7,9 @@
     <GridLayout padding="20" class="a11y-demo-page">   
       <ScrollView>
           <StackLayout>
+            <Button text="Open Modal Page" class="view-item" tap="{{openModal}}" />
+            <Button text="Open Normal Page" class="view-item" tap="{{openNormal}}" />
+
             <Label text="Accessible Label" class="view-item a11y text-center" accessibilityLabel="Accessible Label" accessibilityHint="Just a label" accessibilityRole="{{accessibilityRole.StaticText}}" accessibilityValue="Accessible Label" />
             <Button text="Accessible Button" class="view-item a11y" accessibilityLabel="Accessible Button" accessibilityHint="Tapping this really does nothing" />
             
@@ -30,7 +33,6 @@
               <Label row="1" text="With another item in a row" class="view-item text-center" />
               <Label rowSpan="2" col="1" text="Hi" />
             </GridLayout>
-            <Button text="Open Modal" class="view-item" tap="{{openModal}}" />
             <Slider value="10" minValue="0" maxValue="100" class="view-item a11y" accessibilityLabel="Slider" accessibilityHint="A smooth slider" accessibilityValue="10" />
           </StackLayout>
       </ScrollView>
