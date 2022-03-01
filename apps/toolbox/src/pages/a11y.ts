@@ -35,7 +35,11 @@ export class AccessibilityModel extends Observable {
 	}
 
 	openModal() {
-		page.showModal('pages/sample-modal');
+		page.showModal('pages/sample-modal', {
+			closeCallback(args) {
+				console.log('close modal callback', args);
+			},
+		} as ShowModalOptions);
 	}
 
 	openNormal() {

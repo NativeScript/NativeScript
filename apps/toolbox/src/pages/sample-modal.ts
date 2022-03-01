@@ -3,6 +3,8 @@ import { Page, ShownModallyData, Observable, LoadEventData } from '@nativescript
 let page: Page;
 let closeCallback: Function;
 export function onShownModally(args: ShownModallyData) {
+	console.log('page shown modally');
+
 	closeCallback = args.closeCallback;
 
 	if (args.context) {
@@ -11,6 +13,8 @@ export function onShownModally(args: ShownModallyData) {
 }
 
 export function onLoaded(args: LoadEventData) {
+	console.log('page loaded');
+
 	page = args.object as Page;
 	page.bindingContext = new SampleModal();
 
@@ -31,7 +35,9 @@ export class SampleModal extends Observable {
 		//   (<UIViewController>page.ios).view.accessibilityPerformEscape();
 		// }
 		if (typeof closeCallback === 'function') {
-			closeCallback();
+			closeCallback('data from modal');
+			// reset callback...
+			closeCallback = undefined;
 		} else {
 			// fallback to regular nav back...
 			page.frame.goBack();
