@@ -37,4 +37,8 @@ export class AccessibilityModel extends Observable {
 	openModal() {
 		page.showModal('pages/sample-modal');
 	}
+
+	openNormal() {
+		page.frame.navigate('pages/sample-modal');
+	}
 }

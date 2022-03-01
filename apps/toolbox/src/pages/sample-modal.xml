@@ -1,4 +1,4 @@
-<Page xmlns="http://schemas.nativescript.org/tns.xsd" shownModally="onShownModally" class="page">
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="onLoaded" shownModally="onShownModally" class="page">
 
     <GridLayout padding="20">   
       <ScrollView>
