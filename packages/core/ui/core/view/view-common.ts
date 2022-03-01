@@ -407,6 +407,8 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 					if (typeof options.closeCallback === 'function') {
 						options.closeCallback.apply(undefined, originalArgs);
 					}
+
+					that._tearDownUI(true);
 				};
 
 				that._hideNativeModalView(parent, whenClosedCallback);
