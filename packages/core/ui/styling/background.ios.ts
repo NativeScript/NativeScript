@@ -33,13 +33,16 @@ export namespace ios {
 		const background = view.style.backgroundInternal;
 		const nativeView = <NativeScriptUIView>view.nativeViewProtected;
 
+		console.log('here');
 		if (background.clearFlags & BackgroundClearFlags.CLEAR_BOX_SHADOW) {
+			console.log('here 2');
 			// clear box shadow if it has been removed!
 			view.setProperty('clipToBounds', true);
 			clearBoxShadow(nativeView);
 		}
 
 		if (nativeView.hasNonUniformBorder) {
+			console.log('here 3');
 			unsubscribeFromScrollNotifications(view);
 			clearNonUniformBorders(nativeView);
 		}
@@ -52,23 +55,41 @@ export namespace ios {
 		const hasNonUniformBorderWidths = background.hasBorderWidth() && !background.hasUniformBorder();
 		const hasNonUniformBorderRadiuses = background.hasBorderRadius() && !background.hasUniformBorderRadius();
 		if (background.hasUniformBorderColor() && (hasNonUniformBorderWidths || hasNonUniformBorderRadiuses)) {
-			drawUniformColorNonUniformBorders(nativeView, background);
+			console.log('here 4');
+			if (background.hasBoxShadow()) {
+				console.log('hasboxshadow 1');
+				drawBoxShadow(nativeView, view, background.getBoxShadow(), background);
+			} else {
+				drawUniformColorNonUniformBorders(nativeView, background);
+			}
 			subscribeForScrollNotifications(view);
 		} else if (background.hasUniformBorder()) {
-			const layer = nativeView.layer;
-			const borderColor = background.getUniformBorderColor();
-			layer.borderColor = !borderColor ? undefined : borderColor.ios.CGColor;
-			layer.borderWidth = layout.toDeviceIndependentPixels(background.getUniformBorderWidth());
-			const renderSize = view.getActualSize() || { width: 0, height: 0 };
-			layer.cornerRadius = Math.min(Math.min(renderSize.width / 2, renderSize.height / 2), layout.toDeviceIndependentPixels(background.getUniformBorderRadius()));
+			console.log('here 5');
+			if (background.hasBoxShadow()) {
+				drawBoxShadow(nativeView, view, background.getBoxShadow(), background);
+			} else {
+				const layer = nativeView.layer;
+				const borderColor = background.getUniformBorderColor();
+				layer.borderColor = !borderColor ? undefined : borderColor.ios.CGColor;
+				layer.borderWidth = layout.toDeviceIndependentPixels(background.getUniformBorderWidth());
+				const renderSize = view.getActualSize() || { width: 0, height: 0 };
+				layer.cornerRadius = Math.min(Math.min(renderSize.width / 2, renderSize.height / 2), layout.toDeviceIndependentPixels(background.getUniformBorderRadius()));
+			}
 		} else {
-			drawNoRadiusNonUniformBorders(nativeView, background);
+			if (background.hasBoxShadow()) {
+				console.log('here 6');
+				drawBoxShadow(nativeView, view, background.getBoxShadow(), background);
+			} else {
+				console.log('here 7');
+				drawNoRadiusNonUniformBorders(nativeView, background);
+			}
 			subscribeForScrollNotifications(view);
 		}
 
 		// Clip-path should be called after borders are applied.
 		// It will eventually move them to different layer if uniform.
 		if (background.clipPath) {
+			console.log('here 8');
 			drawClipPath(nativeView, background);
 		}
 
@@ -77,10 +98,6 @@ export namespace ios {
 			callback(uiColor);
 		} else {
 			setUIColorFromImage(view, nativeView, callback, flip);
-		}
-
-		if (background.hasBoxShadow()) {
-			drawBoxShadow(nativeView, view, background.getBoxShadow(), background);
 		}
 
 		// reset clear flags
@@ -158,6 +175,12 @@ function clearNonUniformBorders(nativeView: NativeScriptUIView): void {
 	if (nativeView.leftBorderLayer) {
 		nativeView.leftBorderLayer.removeFromSuperlayer();
 	}
+
+	// const layer = iOSNativeHelper.getShadowLayer(nativeView, 'ns-box-shadow');
+	// if (layer) {
+	// 	layer.removeFromSuperlayer();
+	// }
+	clearBoxShadow(nativeView);
 }
 
 const pattern = /url\(('|")(.*?)\1\)/;
@@ -710,42 +733,120 @@ function drawNoRadiusNonUniformBorders(nativeView: NativeScriptUIView, backgroun
 
 // TODO: use sublayer if its applied to a layout
 function drawBoxShadow(nativeView: NativeScriptUIView, view: View, boxShadow: CSSShadow, background: BackgroundDefinition, useSubLayer: boolean = false) {
-	const layer: CALayer = iOSNativeHelper.getShadowLayer(nativeView, 'ns-box-shadow');
+	console.log('drawBoxShadow!');
+	// const drawLayer = CALayer.layer();
+	// nativeView.layer.addSublayer(drawLayer);
+	let layer: CALayer = iOSNativeHelper.getShadowLayer(nativeView, 'ns-box-shadow');
 
-	layer.masksToBounds = false;
-	nativeView.clipsToBounds = false;
+	// // this should match the view's border radius
+	console.log('background.getUniformBorderRadius():', background.getUniformBorderRadius());
+	let cornerRadius = layout.toDeviceIndependentPixels(background.getUniformBorderRadius());
 
-	// this is required (if not, shadow will get cutoff at parent's dimensions)
-	// nativeView.clipsToBounds doesn't work
-	view.setProperty('clipToBounds', false);
+	if (isNaN(cornerRadius)) {
+		// ensure a valid value
+		cornerRadius = 0;
+	}
+	console.log('cornerRadius:', cornerRadius);
 
+	// // apply spreadRadius by expanding shadow layer bounds
+	// // prettier-ignore
+	// const bounds = CGRectInset(nativeView.bounds,
+	// 	-Length.toDevicePixels(boxShadow.spreadRadius, 0.0),
+	// 	-Length.toDevicePixels(boxShadow.spreadRadius, 0.0)
+	// );
+
+	// // This has the nice glow with box shadow of 0,0
+
+	// layer.shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(bounds, cornerRadius).CGPath;
+
+	let corners: UIRectCorner;
+	// const borderTopLeftRadius = Length.toDevicePixels(view.borderTopLeftRadius, 0.0);
+	// const borderTopRightRadius = Length.toDevicePixels(view.borderTopRightRadius, 0.0);
+	// const borderBottomLeftRadius = Length.toDevicePixels(view.borderBottomLeftRadius, 0.0);
+	// const borderBottomRightRadius = Length.toDevicePixels(view.borderBottomRightRadius, 0.0);
+	const borderTopLeftRadius = layout.toDeviceIndependentPixels(Length.toDevicePixels(view.borderTopLeftRadius, 0.0));
+	const borderTopRightRadius = layout.toDeviceIndependentPixels(Length.toDevicePixels(view.borderTopRightRadius, 0.0));
+	const borderBottomLeftRadius = layout.toDeviceIndependentPixels(Length.toDevicePixels(view.borderBottomLeftRadius, 0.0));
+	const borderBottomRightRadius = layout.toDeviceIndependentPixels(Length.toDevicePixels(view.borderBottomRightRadius, 0.0));
+	console.log('borderTopLeftRadius:', borderTopLeftRadius);
+	console.log('borderTopRightRadius:', borderTopRightRadius);
+	console.log('borderBottomLeftRadius:', borderBottomLeftRadius);
+	console.log('borderBottomRightRadius:', borderBottomRightRadius);
+
+	if (borderTopLeftRadius) {
+		corners = UIRectCorner.TopLeft;
+		console.log('borderTopLeftRadius corners:', corners);
+	}
+	if (borderTopRightRadius) {
+		corners = corners | UIRectCorner.TopRight;
+		console.log('borderTopRightRadius corners:', corners);
+	}
+	if (borderBottomLeftRadius) {
+		corners = corners | UIRectCorner.BottomLeft;
+		console.log('borderBottomLeftRadius corners:', corners);
+	}
+	if (borderBottomRightRadius) {
+		corners = corners | UIRectCorner.BottomRight;
+		console.log('borderBottomRightRadius corners:', corners);
+	}
+
+	if (!cornerRadius) {
+		// consider max value from non-uniform radius
+		// cornerRadius = Math.max(borderTopLeftRadius, borderTopRightRadius, borderBottomLeftRadius, borderBottomRightRadius);
+
+		const renderSize = view.getActualSize() || { width: 0, height: 0 };
+		cornerRadius = Math.min(Math.min(renderSize.width / 2, renderSize.height / 2), Math.max(borderTopLeftRadius, borderTopRightRadius, borderBottomLeftRadius, borderBottomRightRadius));
+	}
+	console.log('cornerRadius after looking at sides:', cornerRadius);
+
+	let shadowLayer;
+	let addLayer = false;
+
+	if (layer) {
+		shadowLayer = layer;
+	} else {
+		shadowLayer = CAShapeLayer.layer();
+		shadowLayer.name = 'ns-box-shadow';
+		addLayer = true;
+		layer = nativeView.layer;
+	}
+	// let size = CGSizeMake(cornerRadius ? cornerRadius/2 : 0, cornerRadius ? cornerRadius/2 : 0);
+	let size = CGSizeMake(cornerRadius, cornerRadius);
+	console.log('size:', size.width, size.height);
+	const spreadRadius = layout.toDeviceIndependentPixels(Length.toDevicePixels(boxShadow.spreadRadius, 0.0));
+	// const cgPath = UIBezierPath.bezierPathWithRoundedRectByRoundingCornersCornerRadii(CGRectInset(nativeView.bounds, -Length.toDevicePixels(boxShadow.spreadRadius, 0.0), -Length.toDevicePixels(boxShadow.spreadRadius, 0.0)), corners, size).CGPath;
+	const cgPath = UIBezierPath.bezierPathWithRoundedRectByRoundingCornersCornerRadii(CGRectInset(nativeView.bounds, -spreadRadius, -spreadRadius), corners, size).CGPath;
+	// let cgPath = UIBezierPath(roundedRect: self.bounds, byRoundingCorners: corners, cornerRadii: size).cgPath //1
+	shadowLayer.path = cgPath;
+	console.log('background.color:', background.color);
+	console.log('background.color?.a:', background.color?.a);
 	if (!background.color?.a) {
 		// add white background if view has a transparent background
-		layer.backgroundColor = UIColor.whiteColor.CGColor;
+		shadowLayer.fillColor = UIColor.whiteColor.CGColor;
+		// nativeView.backgroundColor = background.color ? background.color.ios : undefined;
+	} else {
+		shadowLayer.fillColor = background.color ? background.color.ios : undefined;
+		// nativeView.backgroundColor = background.color ? background.color.ios : undefined;
 	}
-	// shadow opacity is handled on the shadow's color instance
-	layer.shadowOpacity = boxShadow.color?.a ? boxShadow.color?.a / 255 : 1;
-	layer.shadowRadius = Length.toDevicePixels(boxShadow.blurRadius, 0.0);
-	layer.shadowColor = boxShadow.color.ios.CGColor;
-
-	// prettier-ignore
-	layer.shadowOffset = CGSizeMake(
-		Length.toDevicePixels(boxShadow.offsetX, 0.0),
-		Length.toDevicePixels(boxShadow.offsetY, 0.0)
-	);
-
-	// this should match the view's border radius
-	const cornerRadius = Length.toDevicePixels(<CoreTypes.LengthType>view.style.borderRadius, 0.0);
-
-	// apply spreadRadius by expanding shadow layer bounds
-	// prettier-ignore
-	const bounds = CGRectInset(nativeView.bounds,
-		-Length.toDevicePixels(boxShadow.spreadRadius, 0.0),
-		-Length.toDevicePixels(boxShadow.spreadRadius, 0.0)
-	);
-
-	// This has the nice glow with box shadow of 0,0
-	layer.shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(bounds, cornerRadius).CGPath;
+	// const borderColor = background.getUniformBorderColor();
+	// shadowLayer.borderColor = !borderColor ? undefined : borderColor.ios.CGColor;
+	// shadowLayer.borderWidth = layout.toDeviceIndependentPixels(background.getUniformBorderWidth());
+	shadowLayer.shadowColor = boxShadow.color.ios.CGColor;
+	shadowLayer.shadowPath = cgPath;
+	shadowLayer.shadowOffset = CGSizeMake(Length.toDevicePixels(boxShadow.offsetX, 0.0), Length.toDevicePixels(boxShadow.offsetY, 0.0));
+	shadowLayer.shadowOpacity = boxShadow.color?.a ? boxShadow.color?.a / 255 : 1;
+	shadowLayer.shadowRadius = Length.toDevicePixels(boxShadow.blurRadius, 0.0);
+	if (addLayer) {
+		console.log('layer.addSublayer(shadowLayer)');
+		// drawLayer.addSublayer(shadowLayer);
+		layer.addSublayer(shadowLayer);
+		// layer.insertSublayerAtIndex(shadowLayer, -1);
+	} else {
+		nativeView.setNeedsDisplay();
+	}
+	layer.masksToBounds = false;
+	nativeView.clipsToBounds = false;
+	nativeView.hasNonUniformBorder = true;
 }
 
 function clearBoxShadow(nativeView: NativeScriptUIView) {
@@ -754,12 +855,14 @@ function clearBoxShadow(nativeView: NativeScriptUIView) {
 	if (!layer) {
 		return;
 	}
-	layer.masksToBounds = true;
-	layer.shadowOffset = CGSizeMake(0, 0);
-	layer.shadowColor = UIColor.clearColor.CGColor;
-	layer.cornerRadius = 0.0;
-	layer.shadowRadius = 0.0;
-	layer.shadowOpacity = 0.0;
+	layer.removeFromSuperlayer();
+	// layer.masksToBounds = true;
+	// layer.shadowPath = null;
+	// layer.shadowOffset = CGSizeMake(0, 0);
+	// layer.shadowColor = UIColor.clearColor.CGColor;
+	// layer.cornerRadius = 0.0;
+	// layer.shadowRadius = 0.0;
+	// layer.shadowOpacity = 0.0;
 }
 
 function drawClipPath(nativeView: UIView, background: BackgroundDefinition) {
@@ -826,6 +929,7 @@ function drawClipPath(nativeView: UIView, background: BackgroundDefinition) {
 
 			layer.borderColor = undefined;
 			layer.borderWidth = 0;
+			console.log('drawClipPath layer.addSublayer(borderLayer)');
 			layer.addSublayer(borderLayer);
 		}
 	}

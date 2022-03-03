@@ -5,14 +5,17 @@ export function navigatingTo(args: EventData) {
 	page.bindingContext = new BoxShadowModel();
 }
 
+const defaultBoxShadow = '0 4 4 4 rgba(0, 0, 0, 0.5)';
+// const defaultBoxShadow = '0 10 15 -3 rgba(200, 0, 0, 0.4)';
+// const defaultBoxShadow = '5 5 1 1 rgba(255, 0, 0, .9)';
+// const defaultBoxShadow = '5 5 5 10 rgba(255, 0, 0, .9)';
+
 export class BoxShadowModel extends Observable {
 	private _selectedComponentType: string = 'buttons';
 	private _selectedBackgroundType: string;
 	private _selectedBorderType: string;
 	private _selectedAnimation: string;
-	private _boxShadow: string = '0 10 15 -3 rgba(200, 0, 0, 0.4)';
-	// private _boxShadow: string = '5 5 1 1 rgba(255, 0, 0, .9)';
-	// private _boxShadow: string = '5 5 5 10 rgba(255, 0, 0, .9)';
+	private _boxShadow: string = defaultBoxShadow;
 
 	background: string;
 	borderWidth: number;
@@ -78,7 +81,7 @@ export class BoxShadowModel extends Observable {
 				this.borderRadius = 10;
 				break;
 			case 'partial':
-				this.borderRadius = '10 0 0 0';
+				this.borderRadius = '10 10 0 0';
 				break;
 			case 'none':
 				this.borderRadius = 0;
@@ -113,6 +116,26 @@ export class BoxShadowModel extends Observable {
 		}
 		this.appliedBoxShadow = this._boxShadow;
 		this.notifyPropertyChange('appliedBoxShadow', this.appliedBoxShadow);
+	}
+
+	resetAll() {
+		this._boxShadow = defaultBoxShadow;
+		this.appliedBoxShadow = null;
+		this.notifyPropertyChange('appliedBoxShadow', this.appliedBoxShadow);
+		this.borderRadius = 0;
+		this.borderWidth = 0;
+		this.notifyPropertyChange('borderRadius', this.borderRadius);
+		this.notifyPropertyChange('borderWidth', this.borderWidth);
+		this.background = null;
+		this.notifyPropertyChange('background', this.background);
+
+		this._selectedBackgroundType = null;
+		this.notifyPropertyChange('selectedBackgroundType', null);
+		this._selectedBorderType = null;
+		this.notifyPropertyChange('selectedBorderType', null);
+		this._selectedComponentType = null;
+		this.notifyPropertyChange('selectedComponentType', null);
+		this._selectedAnimation = null;
 	}
 
 	textChange(args): void {

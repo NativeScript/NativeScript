@@ -57,8 +57,6 @@ Button {
 .box-shadow-demo .box-shadow-prop-controls TextField{
     margin-left: 10;
     padding: 5;
-    border-bottom-width: 1;
-    border-color: #65ADF1;
 }
 
 .box-shadow-demo .controls .description {
@@ -68,18 +66,22 @@ Button {
     margin-bottom: 10;
 }
 
-.box-shadow-demo .controls Button[selectedAttr=true] {
+.box-shadow-demo .controls .unselected {
+    background-color: transparent;
+    color: #65ADF1;
+}
+
+.box-shadow-demo .controls .selected {
     background-color: #65ADF1;
     color: #fff;
 }
-
 .box-shadow-prop-controls .btn-apply {
     background-color: #65ADF1;
     color: #fff;
-    padding: 10 15;
+    padding: 5 6;
     border-radius: 4;
-    margin-left: 10;
-    font-size: 17;
+    margin-right: 8;
+    font-size: 11;
     font-weight: bold;
 }
 

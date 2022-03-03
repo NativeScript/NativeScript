@@ -121,7 +121,7 @@ export namespace iOSNativeHelper {
 	}
 
 	export function getShadowLayer(nativeView: UIView, name: string = 'ns-shadow-layer', create: boolean = true): CALayer {
-		return nativeView.layer;
+		// return nativeView.layer;
 
 		console.log(`--- ${create ? 'CREATE' : 'READ'}`);
 
@@ -179,27 +179,28 @@ export namespace iOSNativeHelper {
 		if (!create) {
 			return null;
 		}
+		return null;
 
-		console.log(`- adding a new layer for - ${name}`);
+		// console.log(`- adding a new layer for - ${name}`);
 
-		const viewLayer = nativeView.layer;
-		const newLayer = CALayer.layer();
+		// const viewLayer = nativeView.layer;
+		// const newLayer = CALayer.layer();
 
-		newLayer.name = name;
-		newLayer.zPosition = 0.0;
-		// nativeView.layer.insertSublayerBelow(newLayer, nativeView.layer)
-		// newLayer.insertSublayerAtIndex(nativeView.layer, 0)
-		// nativeView.layer.zPosition = 1.0;
-		// nativeView.layer.addSublayer(newLayer);
+		// newLayer.name = name;
+		// newLayer.zPosition = 0.0;
+		// // nativeView.layer.insertSublayerBelow(newLayer, nativeView.layer)
+		// // newLayer.insertSublayerAtIndex(nativeView.layer, 0)
+		// // nativeView.layer.zPosition = 1.0;
+		// // nativeView.layer.addSublayer(newLayer);
 
-		// nativeView.layer = CALayer.layer()
+		// // nativeView.layer = CALayer.layer()
 
-		nativeView.layer.insertSublayerAtIndex(newLayer, 0);
-		// nativeView.layer.insertSublayerAtIndex(viewLayer, 1)
+		// nativeView.layer.insertSublayerAtIndex(newLayer, 0);
+		// // nativeView.layer.insertSublayerAtIndex(viewLayer, 1)
 
-		// nativeView.layer.replaceSublayerWith(newLayer, nativeView.layer);
+		// // nativeView.layer.replaceSublayerWith(newLayer, nativeView.layer);
 
-		return newLayer;
+		// return newLayer;
 	}
 
 	export function createUIDocumentInteractionControllerDelegate(): NSObject {
