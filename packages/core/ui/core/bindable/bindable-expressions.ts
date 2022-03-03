@@ -24,6 +24,7 @@ const binaryOperators = {
 	'+': (l, r) => l + r,
 	'-': (l, r) => l - r,
 	'*': (l, r) => l * r,
+	'**': (l, r) => l ** r,
 	'/': (l, r) => l / r,
 	'%': (l, r) => l % r,
 	'<': (l, r) => l < r,
