@@ -2,7 +2,7 @@ package org.nativescript.widgets;
 
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.res.Resources;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -10,9 +10,11 @@ import android.graphics.Matrix;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.ParcelFileDescriptor;
+import android.provider.DocumentsContract;
 import android.util.Base64OutputStream;
 import android.util.Log;
 import android.util.Pair;
@@ -28,14 +30,192 @@ import org.json.JSONObject;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileDescriptor;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.CharBuffer;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 
 public class Utils {
-	public static Drawable getDrawable(String uri, Context context){
+
+
+	public static FileInputStream getFileInputStream(Context context, String path) throws Exception {
+		Uri uri = android.net.Uri.parse(path);
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || !File.isTreeOrDocumentUri(uri)) {
+			java.io.File javaFile = new java.io.File(path);
+			return new FileInputStream(javaFile);
+		}
+		ParcelFileDescriptor pfd = context.getContentResolver().openFileDescriptor(uri, "r");
+		return new FileInputStream(pfd.getFileDescriptor());
+	}
+
+	public static java.io.FileOutputStream getFileOutputStream(Context context, String path) throws
+		Exception {
+		Uri uri = android.net.Uri.parse(path);
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || !File.isTreeOrDocumentUri(uri)) {
+			java.io.File javaFile = new java.io.File(path);
+			return new FileOutputStream(javaFile);
+		}
+		ParcelFileDescriptor pfd = context.getContentResolver().openFileDescriptor(uri, "w");
+		return new java.io.FileOutputStream(pfd.getFileDescriptor());
+
+	}
+
+	public static byte[] getBytes(Context context, String path) throws Exception {
+		java.io.InputStream stream = null;
+		ByteArrayOutputStream byteBuffer = null;
+		byte[] bytesResult;
+		try {
+			stream = getFileInputStream(context, path);
+			byteBuffer = new ByteArrayOutputStream();
+			int bufferSize = 1024;
+			byte[] buffer = new byte[bufferSize];
+			int len;
+			while ((len = stream.read(buffer)) != -1) {
+				byteBuffer.write(buffer, 0, len);
+			}
+			bytesResult = byteBuffer.toByteArray();
+		} finally {
+			// close the stream
+			try {
+				if (stream != null) {
+					stream.close();
+				}
+				if (byteBuffer != null) {
+					byteBuffer.close();
+				}
+			} catch (IOException e) {
+				Log.e("getBytes", "Failed to close stream, IOException: " + e.getMessage());
+			}
+		}
+		return bytesResult;
+	}
+
+	public static String getText(Context context, String path, String encoding) throws Exception {
+		java.io.InputStream stream = null;
+		try {
+			stream = getFileInputStream(context, path);
+			java.io.InputStreamReader reader = new java.io.InputStreamReader(stream, encoding);
+			CharBuffer buffer = CharBuffer.allocate(81920);
+			StringBuilder sb = new StringBuilder();
+
+			while (reader.read(buffer) != -1) {
+				buffer.flip();
+				sb.append(buffer);
+				buffer.clear();
+			}
+
+			reader.close();
+			// Remove UTF8 BOM if present. http://www.rgagnon.com/javadetails/java-handle-utf8-file-with-bom.html
+			String result = sb.toString();
+			if (result.charAt(0) == 0xfeff) {
+				result = result.substring(1);
+			}
+			return result;
+		} catch (Exception exception) {
+			exception.printStackTrace();
+//			Log.e("Utils", Log.getStackTraceString(exception));
+			return null;
+		} finally {
+			// close the stream
+			try {
+				if (stream != null) {
+					stream.close();
+				}
+			} catch (IOException e) {
+				Log.e("getText", "Failed to close stream, IOException: " + e.getMessage());
+			}
+		}
+	}
+
+	public static long getFileLastModified(Context context, String path) {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+			java.io.File file = new java.io.File(path);
+			if (!file.exists()) {
+				return 0;
+			}
+			return file.lastModified();
+		} else {
+			Uri uri = Uri.parse(path);
+			Uri docUri = DocumentsContract.buildDocumentUriUsingTree(uri, DocumentsContract.getTreeDocumentId(uri));
+			Cursor cursor;
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+				cursor = context.getContentResolver().query(docUri, null, null, null);
+			} else {
+				cursor = context.getContentResolver().query(docUri, null, null, null, null);
+			}
+			if (cursor == null || !cursor.moveToFirst()) {
+				return 0;
+			}
+			int dci = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_LAST_MODIFIED);
+			return cursor.getLong(dci);
+		}
+	}
+
+	public static long getFileLength(Context context, String path) {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+			java.io.File file = new java.io.File(path);
+			if (!file.exists()) {
+				return 0;
+			}
+			return file.length();
+		} else {
+			Uri uri = Uri.parse(path);
+			Uri docUri = DocumentsContract.buildDocumentUriUsingTree(uri, DocumentsContract.getTreeDocumentId(uri));
+			Cursor cursor;
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+				cursor = context.getContentResolver().query(docUri, null, null, null);
+			} else {
+				cursor = context.getContentResolver().query(docUri, null, null, null, null);
+			}
+			if (cursor == null || !cursor.moveToFirst()) {
+				return 0;
+			}
+			int dci = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_SIZE);
+			return cursor.getLong(dci);
+		}
+	}
+
+	public static String getFileStats(Context context, String path) throws JSONException {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+			java.io.File file = new java.io.File(path);
+			if (!file.exists()) {
+				return null;
+			}
+			JSONObject json = new JSONObject();
+			json.put("name", file.getName());
+			json.put("isFolder", file.isDirectory());
+			return json.toString();
+		} else {
+			Uri uri = Uri.parse(path);
+			Uri docUri = DocumentsContract.buildDocumentUriUsingTree(uri, DocumentsContract.getTreeDocumentId(uri));
+			Cursor cursor;
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+				cursor = context.getContentResolver().query(docUri, null, null, null);
+			} else {
+				cursor = context.getContentResolver().query(docUri, null, null, null, null);
+			}
+			if (cursor == null || !cursor.moveToFirst()) {
+				return null;
+			}
+			int nci = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_DISPLAY_NAME);
+			int mci = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_MIME_TYPE);
+
+			JSONObject json = new JSONObject();
+			String mimeType = cursor.getString(mci);
+			json.put("name", cursor.getString(nci));
+			json.put("isFolder", mimeType.equals(DocumentsContract.Document.MIME_TYPE_DIR));
+			cursor.close();
+			return json.toString();
+
+		}
+	}
+
+
+	public static Drawable getDrawable(String uri, Context context) {
 		int resId = 0;
 		int resPrefixLength = "res://".length();
 
@@ -43,7 +223,7 @@ public class Utils {
 			String resPath = uri.substring(resPrefixLength);
 			resId = context.getResources().getIdentifier(resPath, "drawable", context.getPackageName());
 		}
-		
+
 		if (resId > 0) {
 			return AppCompatResources.getDrawable(context, resId);
 		} else {
@@ -51,6 +231,7 @@ public class Utils {
 			return null;
 		}
 	}
+
 	public static void drawBoxShadow(View view, String value) {
 		if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M) {
 			return;
@@ -109,7 +290,8 @@ public class Utils {
 	private static final Executor executors = Executors.newCachedThreadPool();
 
 
-	private static Pair<Integer, Integer> getAspectSafeDimensions(float sourceWidth, float sourceHeight, float reqWidth, float reqHeight) {
+	private static Pair<Integer, Integer> getAspectSafeDimensions(float sourceWidth,
+																																float sourceHeight, float reqWidth, float reqHeight) {
 		float widthCoef = sourceWidth / reqWidth;
 		float heightCoef = sourceHeight / reqHeight;
 		float aspectCoef = Math.min(widthCoef, heightCoef);
@@ -118,7 +300,8 @@ public class Utils {
 	}
 
 
-	private static Pair<Integer, Integer> getRequestedImageSize(Pair<Integer, Integer> src, Pair<Integer, Integer> maxSize, ImageAssetOptions options) {
+	private static Pair<Integer, Integer> getRequestedImageSize
+		(Pair<Integer, Integer> src, Pair<Integer, Integer> maxSize, ImageAssetOptions options) {
 		int reqWidth = options.width;
 		if (reqWidth <= 0) {
 			reqWidth = Math.min(src.first, maxSize.first);
@@ -198,113 +381,98 @@ public class Utils {
 
 	private static final Handler mainHandler = new Handler(Looper.getMainLooper());
 
-	public static void loadImageAsync(final Context context, final String src, final String options, final int maxWidth, final int maxHeight, final AsyncImageCallback callback) {
-		executors.execute(new Runnable() {
-			@Override
-			public void run() {
-				BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
-				bitmapOptions.inJustDecodeBounds = true;
+	public static void loadImageAsync(final Context context, final String src,
+																		final String options, final int maxWidth, final int maxHeight, final AsyncImageCallback callback) {
+		executors.execute(() -> {
+			BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
+			bitmapOptions.inJustDecodeBounds = true;
+
+			try {
+				Bitmap bitmap;
+				ParcelFileDescriptor pfd = null;
+				if (src.startsWith("content://")) {
+					Uri uri = Uri.parse(src);
+					ContentResolver resolver = context.getContentResolver();
+					try {
+						pfd = resolver.openFileDescriptor(uri, "r");
+					} catch (final FileNotFoundException e) {
+						mainHandler.post(() -> callback.onError(e));
+						closePfd(pfd);
+						return;
+					}
+					BitmapFactory.decodeFileDescriptor(pfd.getFileDescriptor(), null, bitmapOptions);
+				} else {
+					BitmapFactory.decodeFile(src, bitmapOptions);
+				}
+
+				ImageAssetOptions opts = new ImageAssetOptions();
+				opts.keepAspectRatio = true;
+				opts.autoScaleFactor = true;
 
 				try {
-					Bitmap bitmap;
-					ParcelFileDescriptor pfd = null;
-					if (src.startsWith("content://")) {
-						Uri uri = android.net.Uri.parse(src);
-						ContentResolver resolver = context.getContentResolver();
-						try {
-							pfd = resolver.openFileDescriptor(uri, "r");
-						} catch (final FileNotFoundException e) {
-							mainHandler.post(new Runnable() {
-								@Override
-								public void run() {
-									callback.onError(e);
-								}
-							});
-							closePfd(pfd);
-							return;
-						}
-						android.graphics.BitmapFactory.decodeFileDescriptor(pfd.getFileDescriptor(), null, bitmapOptions);
-					} else {
-						android.graphics.BitmapFactory.decodeFile(src, bitmapOptions);
+					JSONObject object = new JSONObject(options);
+					opts.width = object.optInt("width", 0);
+					opts.height = object.optInt("height", 0);
+					opts.keepAspectRatio = object.optBoolean("keepAspectRatio", true);
+					opts.autoScaleFactor = object.optBoolean("autoScaleFactor", true);
+				} catch (JSONException ignored) {
+				}
+
+
+				Pair<Integer, Integer> sourceSize = new Pair<>(bitmapOptions.outWidth, bitmapOptions.outHeight);
+				Pair<Integer, Integer> maxSize = new Pair<>(maxWidth, maxHeight);
+				Pair<Integer, Integer> requestedSize = getRequestedImageSize(sourceSize, maxSize, opts);
+				int sampleSize = org.nativescript.widgets.image.Fetcher.calculateInSampleSize(bitmapOptions.outWidth, bitmapOptions.outHeight, requestedSize.first, requestedSize.second);
+				BitmapFactory.Options finalBitmapOptions = new BitmapFactory.Options();
+				finalBitmapOptions.inSampleSize = sampleSize;
+
+
+				String error = null;
+				// read as minimum bitmap as possible (slightly bigger than the requested size)
+
+
+				if (pfd != null) {
+					bitmap = BitmapFactory.decodeFileDescriptor(pfd.getFileDescriptor(), null, finalBitmapOptions);
+				} else {
+					bitmap = BitmapFactory.decodeFile(src, finalBitmapOptions);
+				}
+
+
+				if (bitmap != null) {
+					if (requestedSize.first != bitmap.getWidth() || requestedSize.second != bitmap.getHeight()) {
+						// scale to exact size
+						bitmap = Bitmap.createScaledBitmap(bitmap, requestedSize.first, requestedSize.second, true);
 					}
-
-					ImageAssetOptions opts = new ImageAssetOptions();
-					opts.keepAspectRatio = true;
-					opts.autoScaleFactor = true;
-
-					try {
-						JSONObject object = new JSONObject(options);
-						opts.width = object.optInt("width", 0);
-						opts.height = object.optInt("height", 0);
-						opts.keepAspectRatio = object.optBoolean("keepAspectRatio", true);
-						opts.autoScaleFactor = object.optBoolean("autoScaleFactor", true);
-					} catch (JSONException ignored) {
-					}
-
-
-					Pair<Integer, Integer> sourceSize = new Pair<>(bitmapOptions.outWidth, bitmapOptions.outHeight);
-					Pair<Integer, Integer> maxSize = new Pair<>(maxWidth, maxHeight);
-					Pair<Integer, Integer> requestedSize = getRequestedImageSize(sourceSize, maxSize, opts);
-					int sampleSize = org.nativescript.widgets.image.Fetcher.calculateInSampleSize(bitmapOptions.outWidth, bitmapOptions.outHeight, requestedSize.first, requestedSize.second);
-					BitmapFactory.Options finalBitmapOptions = new BitmapFactory.Options();
-					finalBitmapOptions.inSampleSize = sampleSize;
-
-
-					String error = null;
-					// read as minimum bitmap as possible (slightly bigger than the requested size)
-
+					int rotationAngle;
 
 					if (pfd != null) {
-						bitmap = BitmapFactory.decodeFileDescriptor(pfd.getFileDescriptor(), null, finalBitmapOptions);
+						rotationAngle = calculateAngleFromFileDescriptor(pfd.getFileDescriptor());
+						closePfd(pfd);
 					} else {
-						bitmap = android.graphics.BitmapFactory.decodeFile(src, finalBitmapOptions);
+						rotationAngle = calculateAngleFromFile(src);
 					}
 
-
-					if (bitmap != null) {
-						if (requestedSize.first != bitmap.getWidth() || requestedSize.second != bitmap.getHeight()) {
-							// scale to exact size
-							bitmap = android.graphics.Bitmap.createScaledBitmap(bitmap, requestedSize.first, requestedSize.second, true);
-						}
-						int rotationAngle;
-
-						if (pfd != null) {
-							rotationAngle = calculateAngleFromFileDescriptor(pfd.getFileDescriptor());
-							closePfd(pfd);
-						} else {
-							rotationAngle = calculateAngleFromFile(src);
-						}
-
-						if (rotationAngle != 0) {
-							Matrix matrix = new android.graphics.Matrix();
-							matrix.postRotate(rotationAngle);
-							bitmap = android.graphics.Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-						}
+					if (rotationAngle != 0) {
+						Matrix matrix = new Matrix();
+						matrix.postRotate(rotationAngle);
+						bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
 					}
-					if (bitmap == null) {
-						error = "Asset '" + src + "' cannot be found.";
-					}
-
-					final String finalError = error;
-					final Bitmap finalBitmap = bitmap;
-					mainHandler.post(new Runnable() {
-						@Override
-						public void run() {
-							if (finalError != null) {
-								callback.onError(new Exception(finalError));
-							} else {
-								callback.onSuccess(finalBitmap);
-							}
-						}
-					});
-				} catch (final Exception ex) {
-					mainHandler.post(new Runnable() {
-						@Override
-						public void run() {
-							callback.onError(ex);
-						}
-					});
 				}
+				if (bitmap == null) {
+					error = "Asset '" + src + "' cannot be found.";
+				}
+
+				final String finalError = error;
+				final Bitmap finalBitmap = bitmap;
+				mainHandler.post(() -> {
+					if (finalError != null) {
+						callback.onError(new Exception(finalError));
+					} else {
+						callback.onSuccess(finalBitmap);
+					}
+				});
+			} catch (final Exception ex) {
+				mainHandler.post(() -> callback.onError(ex));
 			}
 		});
 	}
@@ -320,71 +488,61 @@ public class Utils {
 	}
 
 
-	public static void saveToFileAsync(final Bitmap bitmap, final String path, final String format, final int quality, final AsyncImageCallback callback) {
-		executors.execute(new Runnable() {
-			@Override
-			public void run() {
-				boolean isSuccess = false;
-				Exception exception = null;
-				if (bitmap != null) {
-					Bitmap.CompressFormat targetFormat = getTargetFormat(format);
-					try (BufferedOutputStream outputStream = new BufferedOutputStream(new java.io.FileOutputStream(path))) {
-						isSuccess = bitmap.compress(targetFormat, quality, outputStream);
-					} catch (Exception e) {
-						exception = e;
-					}
+	public static void saveToFileAsync(final Bitmap bitmap, final String path,
+																		 final String format, final int quality, final AsyncImageCallback callback) {
+		executors.execute(() -> {
+			boolean isSuccess = false;
+			Exception exception = null;
+			if (bitmap != null) {
+				Bitmap.CompressFormat targetFormat = getTargetFormat(format);
+				try (BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(path))) {
+					isSuccess = bitmap.compress(targetFormat, quality, outputStream);
+				} catch (Exception e) {
+					exception = e;
 				}
-
-				final Exception finalException = exception;
-				final boolean finalIsSuccess = isSuccess;
-				mainHandler.post(new Runnable() {
-					@Override
-					public void run() {
-						if (finalException != null) {
-							callback.onError(finalException);
-						} else {
-							callback.onSuccess(finalIsSuccess);
-						}
-					}
-				});
 			}
+
+			final Exception finalException = exception;
+			final boolean finalIsSuccess = isSuccess;
+			mainHandler.post(() -> {
+				if (finalException != null) {
+					callback.onError(finalException);
+				} else {
+					callback.onSuccess(finalIsSuccess);
+				}
+			});
 		});
 	}
 
-	public static void toBase64StringAsync(final Bitmap bitmap, final String format, final int quality, final AsyncImageCallback callback) {
-		executors.execute(new Runnable() {
-			@Override
-			public void run() {
-				String result = null;
-				Exception exception = null;
-				if (bitmap != null) {
+	public static void toBase64StringAsync(final Bitmap bitmap, final String format,
+																				 final int quality, final AsyncImageCallback callback) {
+		executors.execute(() -> {
+			String result = null;
+			Exception exception = null;
+			if (bitmap != null) {
 
-					Bitmap.CompressFormat targetFormat = getTargetFormat(format);
+				Bitmap.CompressFormat targetFormat = getTargetFormat(format);
 
-					try (
-						ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-						Base64OutputStream base64Stream = new Base64OutputStream(outputStream, android.util.Base64.NO_WRAP)
-					) {
-						bitmap.compress(targetFormat, quality, base64Stream);
-						result = outputStream.toString();
-					} catch (Exception e) {
-						exception = e;
-					}
+				try (
+					ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+					Base64OutputStream base64Stream = new Base64OutputStream(outputStream, android.util.Base64.NO_WRAP)
+				) {
+					bitmap.compress(targetFormat, quality, base64Stream);
+					result = outputStream.toString();
+				} catch (Exception e) {
+					exception = e;
 				}
-
-				final Exception finalException = exception;
-				final String finalResult = result;
-				mainHandler.post(new Runnable() {
-					@Override
-					public void run() {
-						if (finalException != null) {
-							callback.onError(finalException);
-						} else {
-							callback.onSuccess(finalResult);
-						}
-					}
-				});
 			}
+
+			final Exception finalException = exception;
+			final String finalResult = result;
+			mainHandler.post(() -> {
+				if (finalException != null) {
+					callback.onError(finalException);
+				} else {
+					callback.onSuccess(finalResult);
+				}
+			});
 		});
 	}
 
@@ -409,42 +567,37 @@ public class Utils {
 
 	}
 
-	public static void resizeAsync(final Bitmap bitmap, final float maxSize, final String options, final AsyncImageCallback callback) {
-		executors.execute(new Runnable() {
-			@Override
-			public void run() {
-				Bitmap result = null;
-				Exception exception = null;
-				if (bitmap != null) {
-					Pair<Integer, Integer> dim = getScaledDimensions(bitmap.getWidth(), bitmap.getHeight(), maxSize);
-					boolean filter = false;
-					if (options != null) {
-						try {
-							JSONObject json = new JSONObject(options);
-							filter = json.optBoolean("filter", false);
-						} catch (JSONException ignored) {
-						}
-					}
+	public static void resizeAsync(final Bitmap bitmap, final float maxSize, final String options,
+																 final AsyncImageCallback callback) {
+		executors.execute(() -> {
+			Bitmap result = null;
+			Exception exception = null;
+			if (bitmap != null) {
+				Pair<Integer, Integer> dim = getScaledDimensions(bitmap.getWidth(), bitmap.getHeight(), maxSize);
+				boolean filter = false;
+				if (options != null) {
 					try {
-						result = android.graphics.Bitmap.createScaledBitmap(bitmap, dim.first, dim.second, filter);
-					} catch (Exception e) {
-						exception = e;
+						JSONObject json = new JSONObject(options);
+						filter = json.optBoolean("filter", false);
+					} catch (JSONException ignored) {
 					}
 				}
-
-				final Exception finalException = exception;
-				final Bitmap finalResult = result;
-				mainHandler.post(new Runnable() {
-					@Override
-					public void run() {
-						if (finalException != null) {
-							callback.onError(finalException);
-						} else {
-							callback.onSuccess(finalResult);
-						}
-					}
-				});
+				try {
+					result = Bitmap.createScaledBitmap(bitmap, dim.first, dim.second, filter);
+				} catch (Exception e) {
+					exception = e;
+				}
 			}
+
+			final Exception finalException = exception;
+			final Bitmap finalResult = result;
+			mainHandler.post(() -> {
+				if (finalException != null) {
+					callback.onError(finalException);
+				} else {
+					callback.onSuccess(finalResult);
+				}
+			});
 		});
 	}
 
