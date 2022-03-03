@@ -198,6 +198,10 @@ declare class HMAccessorySetupManager extends NSObject {
 	static new(): HMAccessorySetupManager; // inherited from NSObject
 
 	addAndSetUpAccessoriesForTopologyCompletionHandler(topology: HMMatterTopology, completion: (p1: NSError) => void): void;
+
+	performAccessorySetupUsingRequestCompletionHandler(request: HMAccessorySetupRequest, completion: (p1: HMAccessorySetupResult, p2: NSError) => void): void;
+
+	performMatterEcosystemAccessorySetupUsingRequestTopologyCompletionHandler(request: HMAccessorySetupRequest, topology: HMMatterTopology, completion: (p1: NSError) => void): void;
 }
 
 declare class HMAccessorySetupPayload extends NSObject {
@@ -213,6 +217,36 @@ declare class HMAccessorySetupPayload extends NSObject {
 	initWithURL(setupPayloadURL: NSURL): this;
 
 	initWithURLOwnershipToken(setupPayloadURL: NSURL, ownershipToken: HMAccessoryOwnershipToken): this;
+}
+
+declare class HMAccessorySetupRequest extends NSObject implements NSCopying {
+
+	static alloc(): HMAccessorySetupRequest; // inherited from NSObject
+
+	static new(): HMAccessorySetupRequest; // inherited from NSObject
+
+	homeUniqueIdentifier: NSUUID;
+
+	payload: HMAccessorySetupPayload;
+
+	suggestedAccessoryName: string;
+
+	suggestedRoomUniqueIdentifier: NSUUID;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare class HMAccessorySetupResult extends NSObject implements NSCopying {
+
+	static alloc(): HMAccessorySetupResult; // inherited from NSObject
+
+	static new(): HMAccessorySetupResult; // inherited from NSObject
+
+	readonly accessoryUniqueIdentifiers: NSArray<NSUUID>;
+
+	readonly homeUniqueIdentifier: NSUUID;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 declare class HMAction extends NSObject {

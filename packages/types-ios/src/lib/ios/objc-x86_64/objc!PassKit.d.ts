@@ -1096,6 +1096,8 @@ declare var PKPaymentNetworkCartesBancaires: string;
 
 declare var PKPaymentNetworkChinaUnionPay: string;
 
+declare var PKPaymentNetworkDankort: string;
+
 declare var PKPaymentNetworkDiscover: string;
 
 declare var PKPaymentNetworkEftpos: string;

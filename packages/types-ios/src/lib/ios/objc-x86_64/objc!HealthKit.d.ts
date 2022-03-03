@@ -2455,6 +2455,8 @@ declare class HKVerifiableClinicalRecord extends HKSample {
 
 	readonly JWSRepresentation: NSData;
 
+	readonly dataRepresentation: NSData;
+
 	readonly expirationDate: Date;
 
 	readonly issuedDate: Date;
@@ -2467,8 +2469,18 @@ declare class HKVerifiableClinicalRecord extends HKSample {
 
 	readonly relevantDate: Date;
 
+	readonly sourceType: string;
+
 	readonly subject: HKVerifiableClinicalRecordSubject;
 }
+
+declare var HKVerifiableClinicalRecordCredentialTypeCOVID19: string;
+
+declare var HKVerifiableClinicalRecordCredentialTypeImmunization: string;
+
+declare var HKVerifiableClinicalRecordCredentialTypeLaboratory: string;
+
+declare var HKVerifiableClinicalRecordCredentialTypeRecovery: string;
 
 declare class HKVerifiableClinicalRecordQuery extends HKQuery {
 
@@ -2478,10 +2490,20 @@ declare class HKVerifiableClinicalRecordQuery extends HKQuery {
 
 	readonly recordTypes: NSArray<string>;
 
+	readonly sourceTypes: NSArray<string>;
+
 	constructor(o: { recordTypes: NSArray<string> | string[]; predicate: NSPredicate; resultsHandler: (p1: HKVerifiableClinicalRecordQuery, p2: NSArray<HKVerifiableClinicalRecord>, p3: NSError) => void; });
 
+	constructor(o: { recordTypes: NSArray<string> | string[]; sourceTypes: NSArray<string> | string[]; predicate: NSPredicate; resultsHandler: (p1: HKVerifiableClinicalRecordQuery, p2: NSArray<HKVerifiableClinicalRecord>, p3: NSError) => void; });
+
 	initWithRecordTypesPredicateResultsHandler(recordTypes: NSArray<string> | string[], predicate: NSPredicate, resultsHandler: (p1: HKVerifiableClinicalRecordQuery, p2: NSArray<HKVerifiableClinicalRecord>, p3: NSError) => void): this;
+
+	initWithRecordTypesSourceTypesPredicateResultsHandler(recordTypes: NSArray<string> | string[], sourceTypes: NSArray<string> | string[], predicate: NSPredicate, resultsHandler: (p1: HKVerifiableClinicalRecordQuery, p2: NSArray<HKVerifiableClinicalRecord>, p3: NSError) => void): this;
 }
+
+declare var HKVerifiableClinicalRecordSourceTypeEUDigitalCOVIDCertificate: string;
+
+declare var HKVerifiableClinicalRecordSourceTypeSMARTHealthCard: string;
 
 declare class HKVerifiableClinicalRecordSubject extends NSObject implements NSCopying, NSSecureCoding {
 

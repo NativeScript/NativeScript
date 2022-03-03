@@ -60,6 +60,17 @@ declare class CMAltitudeData extends CMLogItem {
 	readonly relativeAltitude: number;
 }
 
+declare class CMAmbientPressureData extends CMLogItem {
+
+	static alloc(): CMAmbientPressureData; // inherited from NSObject
+
+	static new(): CMAmbientPressureData; // inherited from NSObject
+
+	readonly pressure: NSMeasurement<NSUnitPressure>;
+
+	readonly temperature: NSMeasurement<NSUnitTemperature>;
+}
+
 declare class CMAttitude extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CMAttitude; // inherited from NSObject
@@ -534,6 +545,17 @@ declare class CMRecordedAccelerometerData extends CMAccelerometerData {
 	static alloc(): CMRecordedAccelerometerData; // inherited from NSObject
 
 	static new(): CMRecordedAccelerometerData; // inherited from NSObject
+
+	readonly identifier: number;
+
+	readonly startDate: Date;
+}
+
+declare class CMRecordedPressureData extends CMAmbientPressureData {
+
+	static alloc(): CMRecordedPressureData; // inherited from NSObject
+
+	static new(): CMRecordedPressureData; // inherited from NSObject
 
 	readonly identifier: number;
 

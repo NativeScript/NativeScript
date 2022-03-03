@@ -502,7 +502,7 @@ declare class NSDiffableDataSourceSnapshot<SectionIdentifierType, ItemIdentifier
 
 	appendItemsWithIdentifiersIntoSectionWithIdentifier(identifiers: NSArray<ItemIdentifierType> | ItemIdentifierType[], sectionIdentifier: SectionIdentifierType): void;
 
-	appendSectionsWithIdentifiers(sectionIdentifiers: NSArray<any> | any[]): void;
+	appendSectionsWithIdentifiers(sectionIdentifiers: NSArray<SectionIdentifierType> | SectionIdentifierType[]): void;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
@@ -3517,11 +3517,15 @@ declare var UIActivityTypePrint: string;
 
 declare var UIActivityTypeSaveToCameraRoll: string;
 
+declare var UIActivityTypeSharePlay: string;
+
 declare class UIActivityViewController extends UIViewController {
 
 	static alloc(): UIActivityViewController; // inherited from NSObject
 
 	static new(): UIActivityViewController; // inherited from NSObject
+
+	allowsProminentActivity: boolean;
 
 	completionHandler: (p1: string, p2: boolean) => void;
 
@@ -4109,6 +4113,8 @@ declare var UIApplicationLaunchOptionsUserActivityTypeKey: string;
 declare function UIApplicationMain(argc: number, argv: interop.Reference<string>, principalClassName: string, delegateClassName: string): never;
 
 declare var UIApplicationOpenExternalURLOptionsEventAttributionKey: string;
+
+declare var UIApplicationOpenNotificationSettingsURLString: string;
 
 declare var UIApplicationOpenSettingsURLString: string;
 
@@ -5530,6 +5536,15 @@ declare class UICellAccessoryDelete extends UICellAccessory {
 	actionHandler: () => void;
 
 	backgroundColor: UIColor;
+}
+
+declare class UICellAccessoryDetail extends UICellAccessory {
+
+	static alloc(): UICellAccessoryDetail; // inherited from NSObject
+
+	static new(): UICellAccessoryDetail; // inherited from NSObject
+
+	actionHandler: () => void;
 }
 
 declare class UICellAccessoryDisclosureIndicator extends UICellAccessory {

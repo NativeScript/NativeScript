@@ -100,7 +100,9 @@ declare const enum NSFileProviderErrorCode {
 
 	UnsyncedEdits = -2007,
 
-	NonEvictable = -2008
+	NonEvictable = -2008,
+
+	VersionNoLongerAvailable = -2009
 }
 
 declare var NSFileProviderErrorCollidingItemKey: string;

@@ -582,6 +582,8 @@ declare function nw_framer_async(framer: NSObject, async_block: () => void): voi
 
 declare function nw_framer_copy_local_endpoint(framer: NSObject): NSObject;
 
+declare function nw_framer_copy_options(framer: NSObject): NSObject;
+
 declare function nw_framer_copy_parameters(framer: NSObject): NSObject;
 
 declare function nw_framer_copy_remote_endpoint(framer: NSObject): NSObject;
@@ -607,6 +609,10 @@ declare function nw_framer_message_create(framer: NSObject): NSObject;
 declare function nw_framer_message_set_object_value(message: NSObject, key: string | interop.Pointer | interop.Reference<any>, value: any): void;
 
 declare function nw_framer_message_set_value(message: NSObject, key: string | interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>, dispose_value: (p1: interop.Pointer | interop.Reference<any>) => void): void;
+
+declare function nw_framer_options_copy_object_value(options: NSObject, key: string | interop.Pointer | interop.Reference<any>): any;
+
+declare function nw_framer_options_set_object_value(options: NSObject, key: string | interop.Pointer | interop.Reference<any>, value: any): void;
 
 declare function nw_framer_parse_input(framer: NSObject, minimum_incomplete_length: number, maximum_length: number, temp_buffer: string | interop.Pointer | interop.Reference<any>, parse: (p1: string, p2: number, p3: boolean) => number): boolean;
 

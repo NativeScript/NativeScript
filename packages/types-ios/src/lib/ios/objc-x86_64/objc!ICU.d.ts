@@ -634,7 +634,31 @@ declare const enum UBlockCode {
 
 	LOCK_YEZIDI = 308,
 
-	LOCK_COUNT = 309,
+	LOCK_ARABIC_EXTENDED_B = 309,
+
+	LOCK_CYPRO_MINOAN = 310,
+
+	LOCK_ETHIOPIC_EXTENDED_B = 311,
+
+	LOCK_KANA_EXTENDED_B = 312,
+
+	LOCK_LATIN_EXTENDED_F = 313,
+
+	LOCK_LATIN_EXTENDED_G = 314,
+
+	LOCK_OLD_UYGHUR = 315,
+
+	LOCK_TANGSA = 316,
+
+	LOCK_TOTO = 317,
+
+	LOCK_UNIFIED_CANADIAN_ABORIGINAL_SYLLABICS_EXTENDED_A = 318,
+
+	LOCK_VITHKUQI = 319,
+
+	LOCK_ZNAMENNY_MUSICAL_NOTATION = 320,
+
+	LOCK_COUNT = 321,
 
 	LOCK_INVALID_CODE = -1
 }
@@ -1577,7 +1601,11 @@ declare const enum UJoiningGroup {
 
 	U_JG_HANIFI_ROHINGYA_PA = 101,
 
-	U_JG_COUNT = 102
+	U_JG_THIN_YEH = 102,
+
+	U_JG_VERTICAL_TAIL = 103,
+
+	U_JG_COUNT = 104
 }
 
 declare const enum UJoiningType {
@@ -1845,7 +1873,21 @@ declare const enum UProperty {
 
 	CHAR_EXTENDED_PICTOGRAPHIC = 64,
 
-	CHAR_BINARY_LIMIT = 65,
+	CHAR_BASIC_EMOJI = 65,
+
+	CHAR_EMOJI_KEYCAP_SEQUENCE = 66,
+
+	CHAR_RGI_EMOJI_MODIFIER_SEQUENCE = 67,
+
+	CHAR_RGI_EMOJI_FLAG_SEQUENCE = 68,
+
+	CHAR_RGI_EMOJI_TAG_SEQUENCE = 69,
+
+	CHAR_RGI_EMOJI_ZWJ_SEQUENCE = 70,
+
+	CHAR_RGI_EMOJI = 71,
+
+	CHAR_BINARY_LIMIT = 72,
 
 	CHAR_BIDI_CLASS = 4096,
 
@@ -2360,6 +2402,8 @@ declare function u_strcmpCodePointOrder(s1: interop.Pointer | interop.Reference<
 declare function u_strcpy(dst: interop.Pointer | interop.Reference<number>, src: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<number>;
 
 declare function u_strcspn(string: interop.Pointer | interop.Reference<number>, matchSet: interop.Pointer | interop.Reference<number>): number;
+
+declare function u_stringHasBinaryProperty(s: interop.Pointer | interop.Reference<number>, length: number, which: UProperty): number;
 
 declare function u_strlen(s: interop.Pointer | interop.Reference<number>): number;
 
