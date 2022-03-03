@@ -161,7 +161,7 @@ const expressionParsers = {
 		 * if context is not ready.
 		 */
 		if (object == null && expression.object.type == 'Identifier') {
-			return expression.isChained ? FORCED_CHAIN_VALUE : object;
+			return expression.isChained ? FORCED_CHAIN_VALUE : undefined;
     }
     if (object == FORCED_CHAIN_VALUE) {
 			return expression.isChained ? object : undefined;
