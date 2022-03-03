@@ -237,6 +237,10 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			configFile: resolve(__dirname, '../stubs/tsconfig.default.json'),
 			context: getProjectRootPath(),
 		};
+
+		// if the project doesn't have a ts config - we don't want to automatically resolve to .ts files
+		// in these cases the file would need to be explicitly imported with the .ts extension to be processed.
+		config.resolve.extensions.delete(`.${platform}.ts`).delete('.ts');
 	}
 
 	// set up ts support
