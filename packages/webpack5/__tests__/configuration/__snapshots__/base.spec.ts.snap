@@ -36,8 +36,6 @@ exports[`base configuration for android 1`] = `
       '@': '__jest__/src'
     },
     extensions: [
-      '.android.ts',
-      '.ts',
       '.android.js',
       '.js',
       '.android.mjs',
@@ -360,8 +358,6 @@ exports[`base configuration for ios 1`] = `
       '@': '__jest__/src'
     },
     extensions: [
-      '.ios.ts',
-      '.ts',
       '.ios.js',
       '.js',
       '.ios.mjs',

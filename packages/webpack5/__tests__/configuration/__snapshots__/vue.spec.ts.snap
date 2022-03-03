@@ -39,8 +39,6 @@ exports[`vue configuration for android 1`] = `
     extensions: [
       '.android.vue',
       '.vue',
-      '.android.ts',
-      '.ts',
       '.android.js',
       '.js',
       '.android.mjs',
@@ -397,8 +395,6 @@ exports[`vue configuration for ios 1`] = `
     extensions: [
       '.ios.vue',
       '.vue',
-      '.ios.ts',
-      '.ts',
       '.ios.js',
       '.js',
       '.ios.mjs',
