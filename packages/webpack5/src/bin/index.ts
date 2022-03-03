@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { redBright, green, greenBright } from 'chalk';
+import { redBright, green, greenBright, yellow } from 'chalk';
 import { program } from 'commander';
 import dedent from 'ts-dedent';
 import webpack from 'webpack';
@@ -108,10 +108,6 @@ program
 				// Set the process exit code depending on errors
 				process.exitCode = stats.hasErrors() ? 1 : 0;
 
-				// if webpack profile is enabled we write the stats to a JSON file
-				if (configuration.profile ===  true) {
-					fs.writeFileSync(path.join(process.cwd(), 'webpack.stats.json'), JSON.stringify(stats.toJson()));
-				}
 				console.log(
 					stats.toString({
 						chunks: false,
@@ -119,6 +115,28 @@ program
 						errorDetails: env.verbose,
 					})
 				);
+
+				// if webpack profile is enabled we write the stats to a JSON file
+				if (configuration.profile || env.profile) {
+					console.log(
+						[
+							'',
+							'|',
+							`|  The build profile has been written to ${yellow(
+								'webpack.stats.json'
+							)}`,
+							`|  You can analyse the stats at ${green(
+								'https://webpack.github.io/analyse/'
+							)}`,
+							'|',
+							'',
+						].join('\n')
+					);
+					fs.writeFileSync(
+						path.join(process.cwd(), 'webpack.stats.json'),
+						JSON.stringify(stats.toJson())
+					);
+				}
 			}
 		};
 
