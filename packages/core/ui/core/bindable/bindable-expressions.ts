@@ -144,23 +144,24 @@ const expressionParsers = {
 
 		const object = convertExpressionToValue(expression.object, model, isBackConvert, changedModel);
 		const property = expression.computed ? convertExpressionToValue(expression.property, model, isBackConvert, changedModel) : expression.property?.name;
-		const propertyInfo = { object, property };
+		const needsNullSafety = object == null && expression.object.type == 'Identifier';
+		const propertyInfo = { object: needsNullSafety ? {} : object, property };
 
 		if (expression.requiresObjectAndProperty) {
 			return propertyInfo;
 		}
 
 		/**
-		 * If an expression caller is null or undefined, apply null-safety.
+		 * If an expression parent property is null or undefined, apply null-safety.
 		 * This behaviour also helps cope with components whose binding context takes a bit longer to load.
 		 * Old parser would be null-safe for properties and sub-properties
 		 * even if expression as a whole consisted of undefined ones.
-		 * The new parser will keep the same principle only if caller is null or undefined, resulting in better control over code and errors.
+		 * The new parser will keep the same principle only if parent property is null or undefined, resulting in better control over code and errors.
 		 * It meddles with members specifically, so that it will not affect expression result as a whole.
 		 * For example, an 'isLoading || isBusy' expression will be validated as 'undefined || undefined'
 		 * if context is not ready.
 		 */
-		if (object == null && expression.object.type == 'Identifier') {
+		if (needsNullSafety) {
 			return expression.isChained ? FORCED_CHAIN_VALUE : undefined;
     }
     if (object == FORCED_CHAIN_VALUE) {
