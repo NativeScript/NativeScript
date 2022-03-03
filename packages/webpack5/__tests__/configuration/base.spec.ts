@@ -101,4 +101,14 @@ describe('base configuration', () => {
 			force: true,
 		});
 	});
+
+	it('supports --env.profile', () => {
+		init({
+			platform: 'ios',
+			profile: true,
+		});
+		const config = base(new Config());
+
+		expect(config.get('profile')).toBe(true);
+	});
 });
