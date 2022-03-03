@@ -150,16 +150,16 @@ const expressionParsers = {
 		}
 
 		/**
-		 * If first member is undefined, make sure that no error is thrown later but return undefined instead.
-		 * This behaviour is kept in order to cope with components whose binding context takes a bit long to load.
-		 * Old parser would return undefined for an expression like 'property1.property2.property3'
-		 * even if expression as a whole consisted of undefined properties.
-		 * The new one will keep the same principle only if first member is undefined for safety reasons.
+		 * If an expression caller is null or undefined, apply null-safety.
+		 * This behaviour also helps cope with components whose binding context takes a bit longer to load.
+		 * Old parser would be null-safe for properties and sub-properties
+		 * even if expression as a whole consisted of undefined ones.
+		 * The new parser will keep the same principle only if caller is null or undefined, resulting in better control over code and errors.
 		 * It meddles with members specifically, so that it will not affect expression result as a whole.
 		 * For example, an 'isLoading || isBusy' expression will be validated as 'undefined || undefined'
 		 * if context is not ready.
 		 */
-		if (object === undefined && expression.object.type == 'Identifier') {
+		if (object == null && expression.object.type == 'Identifier') {
 			return expression.isChained ? FORCED_CHAIN_VALUE : object;
     }
     if (object == FORCED_CHAIN_VALUE) {
