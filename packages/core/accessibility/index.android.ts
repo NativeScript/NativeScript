@@ -645,7 +645,9 @@ function applyContentDescription(view: Partial<View>, forceUpdate?: boolean) {
 
 	const contentDescription = contentDescriptionBuilder.join('. ').trim().replace(/^\.$/, '');
 
-	if (contentDescription) {
+	if (view.testID) {
+		// todo:?
+	} else if (contentDescription) {
 		if (Trace.isEnabled()) {
 			Trace.write(`${cls} - set to "${contentDescription}"`, Trace.categories.Accessibility);
 		}

@@ -1121,6 +1121,10 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public accessibilityScreenChanged(): void {
 		return;
 	}
+
+	public setTestID(view: any, value: string) {
+		return;
+	}
 }
 
 export const originXProperty = new Property<ViewCommon, number>({
