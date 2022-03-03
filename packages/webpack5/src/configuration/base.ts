@@ -222,6 +222,11 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			});
 	});
 
+	// enable profiling with --env.profile
+	config.when(env.profile, (config) => {
+		config.profile(true);
+	});
+
 	// worker-loader should be declared before ts-loader
 	config.module
 		.rule('workers')
