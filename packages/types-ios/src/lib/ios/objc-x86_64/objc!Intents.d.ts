@@ -2438,6 +2438,8 @@ declare class INFile extends NSObject implements NSSecureCoding {
 
 	filename: string;
 
+	removedOnCompletion: boolean;
+
 	readonly typeIdentifier: string;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
@@ -5414,7 +5416,9 @@ declare const enum INPlayMediaIntentResponseCode {
 
 	FailureNoUnplayedContent = 9,
 
-	FailureRestrictedContent = 10
+	FailureRestrictedContent = 10,
+
+	FailureMaxStreamLimitReached = 11
 }
 
 declare class INPlayMediaMediaItemResolutionResult extends INMediaItemResolutionResult {

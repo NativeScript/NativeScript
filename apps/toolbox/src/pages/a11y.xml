@@ -7,18 +7,24 @@
     <GridLayout padding="20" class="a11y-demo-page">   
       <ScrollView>
           <StackLayout>
+            <Button text="Open Modal Page" class="view-item" tap="{{openModal}}" />
+            <Button text="Open Normal Page" class="view-item" tap="{{openNormal}}" />
+
             <Label text="Accessible Label" class="view-item a11y text-center" accessibilityLabel="Accessible Label" accessibilityHint="Just a label" accessibilityRole="{{accessibilityRole.StaticText}}" accessibilityValue="Accessible Label" />
             <Button text="Accessible Button" class="view-item a11y" accessibilityLabel="Accessible Button" accessibilityHint="Tapping this really does nothing" />
             
             <Image src="res://icon" width="50" class="view-item a11y" accessibilityLabel="Image with explicit attribute role" accessibilityRole="{{accessibilityRole.Image}}" />
             <Image src="res://icon" width="50" class="view-item a11y a11y-role-image" accessibilityLabel="Image with css defined role" />
+            
+            
+            <Image src="{{ largeImageSrc }}" width="50" class="view-item a11y a11y-role-image" accessibilityLabel="Image with css defined role" />
 
             <Switch checked="true" class="view-item a11y" accessibilityLabel="Switch with attribute state" accessibilityState="{{accessibilityState.Checked}}" checkedChange="{{checkedChange}}" />
             <Switch checked="true" class="view-item a11y a11y-state-checked" accessibilityLabel="Switch with css state" checkedChange="{{checkedChange}}" />
 
-            <TextView hint="TextView" text="{{switchCheckedText}}" class="view-item a11y" accessibilityLabel="TestView with a value" accessibilityLiveRegion="{{accessibilityLiveRegions.Polite}}"/>
-            <TextField hint="TextField" class="view-item a11y" accessibilityLabel="Plain jane TextField" accessibilityHint="Tell us your real name Jane"/>
-            <TextView hint="TextView" class="view-item a11y" accessibilityLabel="Nice TextView" accessibilityHint="Tell us about yourself Jane"/>
+            <TextView hint="TextView" text="{{switchCheckedText}}" class="view-item a11y" accessibilityLabel="TestView with a value" accessibilityLiveRegion="{{accessibilityLiveRegions.Polite}}" />
+            <TextField hint="TextField" class="view-item a11y" accessibilityLabel="Plain jane TextField" accessibilityHint="Tell us your real name Jane" />
+            <TextView hint="TextView" class="view-item a11y" accessibilityLabel="Nice TextView" accessibilityHint="Tell us about yourself Jane" />
             <GridLayout rows="25" columns="*" class="view-item" accessibilityLabel="No can go GridLayout" accessibilityHint="A grid that will not get bigger when increasing accessible text size">
               <Label text="IN-Accessible Grid" class="view-item text-center" />
             </GridLayout>
@@ -27,8 +33,7 @@
               <Label row="1" text="With another item in a row" class="view-item text-center" />
               <Label rowSpan="2" col="1" text="Hi" />
             </GridLayout>
-            <Button text="Open Modal" class="view-item" tap="{{openModal}}" />
-            <Slider value="10" minValue="0" maxValue="100" class="view-item a11y" accessibilityLabel="Slider" accessibilityHint="A smooth slider" accessibilityValue="10"/>
+            <Slider value="10" minValue="0" maxValue="100" class="view-item a11y" accessibilityLabel="Slider" accessibilityHint="A smooth slider" accessibilityValue="10" />
           </StackLayout>
       </ScrollView>
     </GridLayout>

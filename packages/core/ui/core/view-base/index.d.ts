@@ -229,6 +229,16 @@ export abstract class ViewBase extends Observable {
 	 */
 	public static unloadedEvent: string;
 
+	/**
+	 * String value used when hooking to creation event
+	 */
+	public static createdEvent: string;
+
+	/**
+	 * String value used when hooking to disposeNativeView event
+	 */
+	public static disposeNativeViewEvent: string;
+
 	public ios: any;
 	public android: any;
 

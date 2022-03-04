@@ -30,7 +30,7 @@ export class TextField extends TextFieldBase {
 
 		// Check for a passed in Number value
 		const value = +this.keyboardType;
-		if (!isNaN(value)) {
+		if (typeof this.keyboardType !== 'boolean' && !isNaN(value)) {
 			this._setInputType(value);
 			return;
 		}

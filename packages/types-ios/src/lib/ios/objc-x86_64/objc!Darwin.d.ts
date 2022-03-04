@@ -1558,13 +1558,6 @@ interface __Reply__task_create_identity_token_t {
 }
 declare var __Reply__task_create_identity_token_t: interop.StructType<__Reply__task_create_identity_token_t>;
 
-interface __Reply__task_create_suid_cred_t {
-	Head: mach_msg_header_t;
-	msgh_body: mach_msg_body_t;
-	delegation: mach_msg_port_descriptor_t;
-}
-declare var __Reply__task_create_suid_cred_t: interop.StructType<__Reply__task_create_suid_cred_t>;
-
 interface __Reply__task_create_t {
 	Head: mach_msg_header_t;
 	msgh_body: mach_msg_body_t;
@@ -1930,6 +1923,13 @@ interface __Reply__task_terminate_t {
 	RetCode: number;
 }
 declare var __Reply__task_terminate_t: interop.StructType<__Reply__task_terminate_t>;
+
+interface __Reply__task_test_async_upcall_propagation_t {
+	Head: mach_msg_header_t;
+	NDR: NDR_record_t;
+	RetCode: number;
+}
+declare var __Reply__task_test_async_upcall_propagation_t: interop.StructType<__Reply__task_test_async_upcall_propagation_t>;
 
 interface __Reply__task_test_sync_upcall_t {
 	Head: mach_msg_header_t;
@@ -3556,16 +3556,6 @@ interface __Request__task_create_identity_token_t {
 }
 declare var __Request__task_create_identity_token_t: interop.StructType<__Request__task_create_identity_token_t>;
 
-interface __Request__task_create_suid_cred_t {
-	Head: mach_msg_header_t;
-	NDR: NDR_record_t;
-	pathOffset: number;
-	pathCnt: number;
-	path: interop.Reference<number>;
-	uid: number;
-}
-declare var __Request__task_create_suid_cred_t: interop.StructType<__Request__task_create_suid_cred_t>;
-
 interface __Request__task_create_t {
 	Head: mach_msg_header_t;
 	msgh_body: mach_msg_body_t;
@@ -3916,6 +3906,16 @@ interface __Request__task_terminate_t {
 	Head: mach_msg_header_t;
 }
 declare var __Request__task_terminate_t: interop.StructType<__Request__task_terminate_t>;
+
+interface __Request__task_test_async_upcall_propagation_t {
+	Head: mach_msg_header_t;
+	msgh_body: mach_msg_body_t;
+	port: mach_msg_port_descriptor_t;
+	NDR: NDR_record_t;
+	qos: number;
+	iotier: number;
+}
+declare var __Request__task_test_async_upcall_propagation_t: interop.StructType<__Request__task_test_async_upcall_propagation_t>;
 
 interface __Request__task_test_sync_upcall_t {
 	Head: mach_msg_header_t;
@@ -11523,8 +11523,6 @@ declare function task_create(target_task: number, ledgers: interop.Pointer | int
 
 declare function task_create_identity_token(task: number, token: interop.Pointer | interop.Reference<number>): number;
 
-declare function task_create_suid_cred(task: number, path: interop.Reference<number>, uid: number, delegation: interop.Pointer | interop.Reference<number>): number;
-
 interface task_dyld_info {
 	all_image_info_addr: number;
 	all_image_info_size: number;
@@ -11738,6 +11736,8 @@ declare function task_swap_mach_voucher(task: number, new_voucher: number, old_v
 
 declare function task_terminate(target_task: number): number;
 
+declare function task_test_async_upcall_propagation(task: number, port: number, qos: number, iotier: number): number;
+
 declare function task_test_sync_upcall(task: number, port: number): number;
 
 interface task_thread_times_info {
@@ -11820,6 +11820,7 @@ interface task_vm_info {
 	ledger_tag_neural_nofootprint_compressed: number;
 	limit_bytes_remaining: number;
 	decompressions: number;
+	ledger_swapins: number;
 }
 declare var task_vm_info: interop.StructType<task_vm_info>;
 

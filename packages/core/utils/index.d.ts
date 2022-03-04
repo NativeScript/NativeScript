@@ -188,6 +188,27 @@ export namespace ad {
 export function GC();
 
 /**
+ * An utility function that queues a garbage collection, multiple calls in quick succession are debounced by default and only one gc will be executed after 900ms.
+ * @param delay Customize the delay
+ * @param useThrottle Instead of default debounce strategy, use throttling
+ */
+export function queueGC(delay?: number, useThrottle?: boolean);
+
+/**
+ * A simple throttle utility
+ * @param fn Function to throttle
+ * @param delay Customize the delay (default is 300ms)
+ */
+export function throttle(fn: any, delay?: number);
+
+/**
+ * A simple debounce utility
+ * @param fn Function to debounce
+ * @param delay Customize the delay (default is 300ms)
+ */
+export function debounce(fn: any, delay?: number);
+
+/**
  * Releases the reference to the wrapped native object
  * @param object The Java/Objective-C object to release.
  */

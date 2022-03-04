@@ -248,6 +248,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	public static loadedEvent = 'loaded';
 	public static unloadedEvent = 'unloaded';
 	public static createdEvent = 'created';
+	public static disposeNativeViewEvent = 'disposeNativeView';
 
 	private _onLoadedCalled = false;
 	private _onUnloadedCalled = false;
@@ -763,7 +764,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	}
 
 	public disposeNativeView() {
-		//
+		this.notify({
+			eventName: ViewBase.disposeNativeViewEvent,
+			object: this,
+		});
 	}
 
 	public initNativeView(): void {

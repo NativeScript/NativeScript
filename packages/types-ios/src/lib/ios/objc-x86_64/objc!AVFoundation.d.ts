@@ -271,6 +271,10 @@ declare var AVAssetExportPreset960x540: string;
 
 declare var AVAssetExportPresetAppleM4A: string;
 
+declare var AVAssetExportPresetAppleProRes422LPCM: string;
+
+declare var AVAssetExportPresetAppleProRes4444LPCM: string;
+
 declare var AVAssetExportPresetHEVC1920x1080: string;
 
 declare var AVAssetExportPresetHEVC1920x1080WithAlpha: string;
@@ -1587,6 +1591,12 @@ declare class AVCaptureDevice extends NSObject {
 
 	activeMaxExposureDuration: CMTime;
 
+	readonly activePrimaryConstituentDevice: AVCaptureDevice;
+
+	readonly activePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions: AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions;
+
+	readonly activePrimaryConstituentDeviceSwitchingBehavior: AVCapturePrimaryConstituentDeviceSwitchingBehavior;
+
 	activeVideoMaxFrameDuration: CMTime;
 
 	activeVideoMinFrameDuration: CMTime;
@@ -1600,6 +1610,10 @@ declare class AVCaptureDevice extends NSObject {
 	autoFocusRangeRestriction: AVCaptureAutoFocusRangeRestriction;
 
 	readonly autoFocusRangeRestrictionSupported: boolean;
+
+	automaticallyAdjustsFaceDrivenAutoExposureEnabled: boolean;
+
+	automaticallyAdjustsFaceDrivenAutoFocusEnabled: boolean;
 
 	automaticallyAdjustsVideoHDREnabled: boolean;
 
@@ -1628,6 +1642,12 @@ declare class AVCaptureDevice extends NSObject {
 	readonly exposureTargetBias: number;
 
 	readonly exposureTargetOffset: number;
+
+	faceDrivenAutoExposureEnabled: boolean;
+
+	faceDrivenAutoFocusEnabled: boolean;
+
+	fallbackPrimaryConstituentDevices: NSArray<AVCaptureDevice>;
 
 	readonly flashActive: boolean;
 
@@ -1689,6 +1709,10 @@ declare class AVCaptureDevice extends NSObject {
 
 	readonly position: AVCaptureDevicePosition;
 
+	readonly primaryConstituentDeviceRestrictedSwitchingBehaviorConditions: AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions;
+
+	readonly primaryConstituentDeviceSwitchingBehavior: AVCapturePrimaryConstituentDeviceSwitchingBehavior;
+
 	readonly rampingVideoZoom: boolean;
 
 	smoothAutoFocusEnabled: boolean;
@@ -1696,6 +1720,8 @@ declare class AVCaptureDevice extends NSObject {
 	readonly smoothAutoFocusSupported: boolean;
 
 	subjectAreaChangeMonitoringEnabled: boolean;
+
+	readonly supportedFallbackPrimaryConstituentDevices: NSArray<AVCaptureDevice>;
 
 	readonly suspended: boolean;
 
@@ -1761,6 +1787,8 @@ declare class AVCaptureDevice extends NSObject {
 
 	setFocusModeLockedWithLensPositionCompletionHandler(lensPosition: number, handler: (p1: CMTime) => void): void;
 
+	setPrimaryConstituentDeviceSwitchingBehaviorRestrictedSwitchingBehaviorConditions(switchingBehavior: AVCapturePrimaryConstituentDeviceSwitchingBehavior, restrictedSwitchingBehaviorConditions: AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions): void;
+
 	setTorchModeOnWithLevelError(torchLevel: number): boolean;
 
 	setWhiteBalanceModeLockedWithDeviceWhiteBalanceGainsCompletionHandler(whiteBalanceGains: AVCaptureWhiteBalanceGains, handler: (p1: CMTime) => void): void;
@@ -1819,6 +1847,8 @@ declare class AVCaptureDeviceFormat extends NSObject {
 
 	readonly multiCamSupported: boolean;
 
+	readonly portraitEffectSupported: boolean;
+
 	readonly portraitEffectsMatteStillImageDeliverySupported: boolean;
 
 	readonly supportedColorSpaces: NSArray<number>;
@@ -1832,6 +1862,8 @@ declare class AVCaptureDeviceFormat extends NSObject {
 	readonly videoFieldOfView: number;
 
 	readonly videoFrameRateRangeForCenterStage: AVFrameRateRange;
+
+	readonly videoFrameRateRangeForPortraitEffect: AVFrameRateRange;
 
 	readonly videoHDRSupported: boolean;
 
@@ -1891,6 +1923,8 @@ declare var AVCaptureDeviceTypeBuiltInDualCamera: string;
 declare var AVCaptureDeviceTypeBuiltInDualWideCamera: string;
 
 declare var AVCaptureDeviceTypeBuiltInDuoCamera: string;
+
+declare var AVCaptureDeviceTypeBuiltInLiDARDepthCamera: string;
 
 declare var AVCaptureDeviceTypeBuiltInMicrophone: string;
 
@@ -2105,11 +2139,19 @@ declare class AVCaptureMovieFileOutput extends AVCaptureFileOutput {
 
 	movieFragmentInterval: CMTime;
 
+	readonly primaryConstituentDeviceRestrictedSwitchingBehaviorConditionsForRecording: AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions;
+
+	readonly primaryConstituentDeviceSwitchingBehaviorForRecording: AVCapturePrimaryConstituentDeviceSwitchingBehavior;
+
+	primaryConstituentDeviceSwitchingBehaviorForRecordingEnabled: boolean;
+
 	outputSettingsForConnection(connection: AVCaptureConnection): NSDictionary<string, any>;
 
 	recordsVideoOrientationAndMirroringChangesAsMetadataTrackForConnection(connection: AVCaptureConnection): boolean;
 
 	setOutputSettingsForConnection(outputSettings: NSDictionary<string, any>, connection: AVCaptureConnection): void;
+
+	setPrimaryConstituentDeviceSwitchingBehaviorForRecordingRestrictedSwitchingBehaviorConditions(switchingBehavior: AVCapturePrimaryConstituentDeviceSwitchingBehavior, restrictedSwitchingBehaviorConditions: AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions): void;
 
 	setRecordsVideoOrientationAndMirroringChangesAsMetadataTrackForConnection(doRecordChanges: boolean, connection: AVCaptureConnection): void;
 
@@ -2474,6 +2516,28 @@ declare class AVCapturePhotoSettings extends NSObject implements NSCopying {
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+declare const enum AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions {
+
+	None = 0,
+
+	VideoZoomChanged = 1,
+
+	FocusModeChanged = 2,
+
+	ExposureModeChanged = 4
+}
+
+declare const enum AVCapturePrimaryConstituentDeviceSwitchingBehavior {
+
+	Unsupported = 0,
+
+	Auto = 1,
+
+	Restricted = 2,
+
+	Locked = 3
+}
+
 declare class AVCaptureResolvedPhotoSettings extends NSObject {
 
 	static alloc(): AVCaptureResolvedPhotoSettings; // inherited from NSObject
@@ -2538,6 +2602,8 @@ declare class AVCaptureSession extends NSObject {
 	readonly running: boolean;
 
 	sessionPreset: string;
+
+	readonly synchronizationClock: any;
 
 	usesApplicationAudioSession: boolean;
 
@@ -4980,6 +5046,8 @@ declare var AVMetadataObjectTypeAztecCode: string;
 
 declare var AVMetadataObjectTypeCatBody: string;
 
+declare var AVMetadataObjectTypeCodabarCode: string;
+
 declare var AVMetadataObjectTypeCode128Code: string;
 
 declare var AVMetadataObjectTypeCode39Code: string;
@@ -4998,11 +5066,21 @@ declare var AVMetadataObjectTypeEAN8Code: string;
 
 declare var AVMetadataObjectTypeFace: string;
 
+declare var AVMetadataObjectTypeGS1DataBarCode: string;
+
+declare var AVMetadataObjectTypeGS1DataBarExpandedCode: string;
+
+declare var AVMetadataObjectTypeGS1DataBarLimitedCode: string;
+
 declare var AVMetadataObjectTypeHumanBody: string;
 
 declare var AVMetadataObjectTypeITF14Code: string;
 
 declare var AVMetadataObjectTypeInterleaved2of5Code: string;
+
+declare var AVMetadataObjectTypeMicroPDF417Code: string;
+
+declare var AVMetadataObjectTypeMicroQRCode: string;
 
 declare var AVMetadataObjectTypePDF417Code: string;
 
@@ -6638,6 +6716,8 @@ declare class AVPlayerPlaybackCoordinator extends AVPlaybackCoordinator {
 interface AVPlayerPlaybackCoordinatorDelegate extends NSObjectProtocol {
 
 	playbackCoordinatorIdentifierForPlayerItem?(coordinator: AVPlayerPlaybackCoordinator, playerItem: AVPlayerItem): string;
+
+	playbackCoordinatorInterstitialTimeRangesForPlayerItem?(coordinator: AVPlayerPlaybackCoordinator, playerItem: AVPlayerItem): NSArray<NSValue>;
 }
 declare var AVPlayerPlaybackCoordinatorDelegate: {
 

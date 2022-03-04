@@ -284,6 +284,8 @@ declare const enum BNNSDataType {
 
 	Float32 = 65568,
 
+	BFloat16 = 98320,
+
 	IntBit = 131072,
 
 	Int1 = 131073,

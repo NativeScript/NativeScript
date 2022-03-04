@@ -4,7 +4,7 @@ import { ApplicationEventData, CssChangedEventData, LaunchEventData, LoadAppCSSE
 
 // TODO: explain why we need to this or remov it
 // Use requires to ensure order of imports is maintained
-const { displayedEvent, exitEvent, getCssFileName, launchEvent, livesync, lowMemoryEvent, notify, on, orientationChanged, orientationChangedEvent, resumeEvent, setApplication, suspendEvent, systemAppearanceChanged, systemAppearanceChangedEvent } = require('./application-common');
+const { backgroundEvent, displayedEvent, exitEvent, foregroundEvent, getCssFileName, launchEvent, livesync, lowMemoryEvent, notify, on, orientationChanged, orientationChangedEvent, resumeEvent, setApplication, suspendEvent, systemAppearanceChanged, systemAppearanceChangedEvent } = require('./application-common');
 // First reexport so that app module is initialized.
 export * from './application-common';
 
@@ -86,6 +86,44 @@ class CADisplayLinkTarget extends NSObject {
 	public static ObjCExposedMethods = {
 		onDisplayed: { returns: interop.types.void, params: [CADisplayLink] },
 	};
+}
+
+export function setMaxRefreshRate(options?: { min?: number; max?: number; preferred?: number }) {
+	const adjustRefreshRate = function () {
+		if (displayedLink) {
+			const minFrameRateDisabled = NSBundle.mainBundle.objectForInfoDictionaryKey('CADisableMinimumFrameDurationOnPhone');
+			if (minFrameRateDisabled) {
+				let max = 120;
+				const deviceMaxFrames = UIScreen.mainScreen?.maximumFramesPerSecond;
+				if (options?.max) {
+					if (deviceMaxFrames) {
+						// iOS 10.3
+						max = options.max <= deviceMaxFrames ? options.max : deviceMaxFrames;
+					} else if (displayedLink.preferredFramesPerSecond) {
+						// iOS 10.0
+						max = options.max <= displayedLink.preferredFramesPerSecond ? options.max : displayedLink.preferredFramesPerSecond;
+					}
+				}
+
+				if (iOSNativeHelper.MajorVersion >= 15) {
+					const min = options?.min || max / 2;
+					const preferred = options?.preferred || max;
+					displayedLink.preferredFrameRateRange = CAFrameRateRangeMake(min, max, preferred);
+				} else {
+					displayedLink.preferredFramesPerSecond = max;
+				}
+			}
+		}
+	};
+	if (!displayedOnce) {
+		displayedLinkTarget = <CADisplayLink>CADisplayLinkTarget.new();
+		displayedLink = CADisplayLink.displayLinkWithTargetSelector(displayedLinkTarget, 'onDisplayed');
+		adjustRefreshRate();
+		displayedLink.addToRunLoopForMode(NSRunLoop.mainRunLoop, NSDefaultRunLoopMode);
+		displayedLink.addToRunLoopForMode(NSRunLoop.mainRunLoop, UITrackingRunLoopMode);
+	} else {
+		adjustRefreshRate();
+	}
 }
 
 /* tslint:disable */
@@ -179,12 +217,7 @@ export class iOSApplication implements iOSApplicationDefinition {
 
 	@profile
 	private didFinishLaunchingWithOptions(notification: NSNotification) {
-		if (!displayedOnce) {
-			displayedLinkTarget = CADisplayLinkTarget.new();
-			displayedLink = CADisplayLink.displayLinkWithTargetSelector(displayedLinkTarget, 'onDisplayed');
-			displayedLink.addToRunLoopForMode(NSRunLoop.mainRunLoop, NSDefaultRunLoopMode);
-			displayedLink.addToRunLoopForMode(NSRunLoop.mainRunLoop, UITrackingRunLoopMode);
-		}
+		setMaxRefreshRate();
 
 		this._window = UIWindow.alloc().initWithFrame(UIScreen.mainScreen.bounds);
 		// TODO: Expose Window module so that it can we styled from XML & CSS
@@ -222,6 +255,7 @@ export class iOSApplication implements iOSApplicationDefinition {
 		const ios = UIApplication.sharedApplication;
 		const object = this;
 		notify(<ApplicationEventData>{ eventName: resumeEvent, object, ios });
+		notify(<ApplicationEventData>{ eventName: foregroundEvent, object, ios });
 		const rootView = this._rootView;
 		if (rootView && !rootView.isLoaded) {
 			rootView.callLoaded();
@@ -229,11 +263,10 @@ export class iOSApplication implements iOSApplicationDefinition {
 	}
 
 	private didEnterBackground(notification: NSNotification) {
-		notify(<ApplicationEventData>{
-			eventName: suspendEvent,
-			object: this,
-			ios: UIApplication.sharedApplication,
-		});
+		const ios = UIApplication.sharedApplication;
+		const object = this;
+		notify(<ApplicationEventData>{ eventName: suspendEvent, object, ios });
+		notify(<ApplicationEventData>{ eventName: backgroundEvent, object, ios });
 		const rootView = this._rootView;
 		if (rootView && rootView.isLoaded) {
 			rootView.callUnloaded();
@@ -349,13 +382,20 @@ export class iOSApplication implements iOSApplicationDefinition {
 }
 
 /* tslint:disable */
-const iosApp = new iOSApplication();
+let iosApp: iOSApplication;
 /* tslint:enable */
 export { iosApp as ios };
-setApplication(iosApp);
+
+export function ensureNativeApplication() {
+	if (!iosApp) {
+		iosApp = new iOSApplication();
+		setApplication(iosApp);
+	}
+}
 
 // attach on global, so it can be overwritten in NativeScript Angular
 (<any>global).__onLiveSyncCore = function (context?: ModuleContext) {
+	ensureNativeApplication();
 	iosApp._onLivesync(context);
 };
 
@@ -384,11 +424,14 @@ export function getMainEntry() {
 }
 
 export function getRootView() {
+	ensureNativeApplication();
 	return iosApp.rootView;
 }
 
 let started = false;
 export function run(entry?: string | NavigationEntry) {
+	ensureNativeApplication();
+
 	mainEntry = typeof entry === 'string' ? { moduleName: entry } : entry;
 	started = true;
 
@@ -457,11 +500,13 @@ export function addCss(cssText: string, attributeScoped?: boolean): void {
 }
 
 export function _resetRootView(entry?: NavigationEntry | string) {
+	ensureNativeApplication();
 	mainEntry = typeof entry === 'string' ? { moduleName: entry } : entry;
 	iosApp.setWindowContent();
 }
 
 export function getNativeApplication(): UIApplication {
+	ensureNativeApplication();
 	return iosApp.nativeApp;
 }
 
@@ -502,6 +547,7 @@ function setViewControllerView(view: View): void {
 }
 
 function setRootViewsCssClasses(rootView: View): void {
+	ensureNativeApplication();
 	const deviceType = Device.deviceType.toLowerCase();
 
 	CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${IOS_PLATFORM}`);
@@ -514,6 +560,7 @@ function setRootViewsCssClasses(rootView: View): void {
 }
 
 function setRootViewsSystemAppearanceCssClass(rootView: View): void {
+	ensureNativeApplication();
 	if (majorVersion >= 13) {
 		const systemAppearanceCssClass = `${CSSUtils.CLASS_PREFIX}${iosApp.systemAppearance}`;
 		CSSUtils.pushToSystemCssClasses(systemAppearanceCssClass);
@@ -522,10 +569,12 @@ function setRootViewsSystemAppearanceCssClass(rootView: View): void {
 }
 
 export function orientation(): 'portrait' | 'landscape' | 'unknown' {
+	ensureNativeApplication();
 	return iosApp.orientation;
 }
 
 export function systemAppearance(): 'dark' | 'light' {
+	ensureNativeApplication();
 	return iosApp.systemAppearance;
 }
 

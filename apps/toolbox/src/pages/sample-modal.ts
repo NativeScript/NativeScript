@@ -1,15 +1,31 @@
-import { Page, ShownModallyData, Observable } from '@nativescript/core';
+import { Page, ShownModallyData, Observable, LoadEventData } from '@nativescript/core';
 
 let page: Page;
 let closeCallback: Function;
 export function onShownModally(args: ShownModallyData) {
-	page = <Page>args.object;
-	page.bindingContext = new SampleModal();
+	console.log('page shown modally');
+
 	closeCallback = args.closeCallback;
 
 	if (args.context) {
 		args.context.shownModally = true;
 	}
+}
+
+export function onLoaded(args: LoadEventData) {
+	console.log('page loaded');
+
+	page = args.object as Page;
+	page.bindingContext = new SampleModal();
+
+	const disposePage = page.disposeNativeView.bind(page);
+	page.disposeNativeView = () => {
+		console.log('-'.repeat(100));
+		console.log(' [!!] Disposing modal page...');
+		console.log('-'.repeat(100));
+
+		disposePage();
+	};
 }
 
 export class SampleModal extends Observable {
@@ -18,6 +34,13 @@ export class SampleModal extends Observable {
 		// if (global.isIOS) {
 		//   (<UIViewController>page.ios).view.accessibilityPerformEscape();
 		// }
-		closeCallback();
+		if (typeof closeCallback === 'function') {
+			closeCallback('data from modal');
+			// reset callback...
+			closeCallback = undefined;
+		} else {
+			// fallback to regular nav back...
+			page.frame.goBack();
+		}
 	}
 }

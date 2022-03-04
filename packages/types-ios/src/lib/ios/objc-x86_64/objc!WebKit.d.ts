@@ -279,6 +279,17 @@ declare class WKFrameInfo extends NSObject implements NSCopying {
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+declare const enum WKFullscreenState {
+
+	NotInFullscreen = 0,
+
+	EnteringFullscreen = 1,
+
+	InFullscreen = 2,
+
+	ExitingFullscreen = 3
+}
+
 declare class WKHTTPCookieStore extends NSObject {
 
 	static alloc(): WKHTTPCookieStore; // inherited from NSObject
@@ -467,6 +478,8 @@ declare class WKPreferences extends NSObject implements NSSecureCoding {
 
 	static new(): WKPreferences; // inherited from NSObject
 
+	elementFullscreenEnabled: boolean;
+
 	fraudulentWebsiteWarningEnabled: boolean;
 
 	javaScriptCanOpenWindowsAutomatically: boolean;
@@ -474,6 +487,8 @@ declare class WKPreferences extends NSObject implements NSSecureCoding {
 	javaScriptEnabled: boolean;
 
 	minimumFontSize: number;
+
+	siteSpecificQuirksModeEnabled: boolean;
 
 	textInteractionEnabled: boolean;
 
@@ -776,6 +791,8 @@ declare class WKWebView extends UIView {
 	customUserAgent: string;
 
 	readonly estimatedProgress: number;
+
+	readonly fullscreenState: WKFullscreenState;
 
 	readonly hasOnlySecureContent: boolean;
 

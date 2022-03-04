@@ -8,12 +8,13 @@
   },
   "dependencies": {
     "@nativescript/core": "file:../../packages/core",
-    "nativescript-theme-core": "file:../../node_modules/nativescript-theme-core"
+    "nativescript-theme-core": "file:../../node_modules/nativescript-theme-core",
+    "@nativescript/imagepicker": "^1.0.6"
   },
   "devDependencies": {
-    "@nativescript/android": "8.1.1",
-    "@nativescript/ios": "8.1.0",
+    "@nativescript/android": "alpha",
+    "@nativescript/ios": "alpha",
     "@nativescript/webpack": "file:../../dist/packages/nativescript-webpack.tgz",
-    "typescript": "4.3.5"
+    "typescript": "4.5.4"
   }
 }
