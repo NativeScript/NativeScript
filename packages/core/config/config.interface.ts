@@ -195,6 +195,11 @@ export interface NativeScriptConfig {
 	ignoredNativeDependencies?: string[];
 
 	/**
+	 * Optional files or paths to clean when running the `clean` command
+	 */
+	additionalPathsToClean?: string[];
+
+	/**
 	 * Set cli options
 	 */
 	cli?: IConfigCLI;
