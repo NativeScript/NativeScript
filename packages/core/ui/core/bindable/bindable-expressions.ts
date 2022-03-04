@@ -204,12 +204,12 @@ const expressionParsers = {
 	},
 	'TemplateLiteral': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		let parsedText = '';
-		for (let q of expression.quasis) {
-			parsedText += convertExpressionToValue(q, model, isBackConvert, changedModel);
-		}
+		const elements = expression.expressions.concat(expression.quasis);
+		
+		elements.sort((a, b) => a.start - b.start);
 
-		for (let ex of expression.expressions) {
-			parsedText += convertExpressionToValue(ex, model, isBackConvert, changedModel);
+		for (let el of elements) {
+			parsedText += convertExpressionToValue(el, model, isBackConvert, changedModel);
 		}
 		return parsedText;
 	},
