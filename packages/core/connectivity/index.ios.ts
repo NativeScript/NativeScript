@@ -8,7 +8,6 @@ export enum connectionType {
 }
 
 // Get Connection Type
-declare const sockaddr;
 function _createReachability(host?: string): any {
 	if (host) {
 		return SCNetworkReachabilityCreateWithName(null, host);
