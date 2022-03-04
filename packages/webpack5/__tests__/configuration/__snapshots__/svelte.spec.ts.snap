@@ -44,6 +44,8 @@ exports[`svelte configuration for android 1`] = `
       '.ts',
       '.android.js',
       '.js',
+      '.android.mjs',
+      '.mjs',
       '.android.css',
       '.css',
       '.android.scss',
@@ -269,6 +271,10 @@ exports[`svelte configuration for android 1`] = `
     new ContextExclusionPlugin(
       /(.*)App_Resources(.*)/
     ),
+    /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
+    new ContextExclusionPlugin(
+      /\\\\.(ios)\\\\.(\\\\w+)$/
+    ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
@@ -379,6 +385,8 @@ exports[`svelte configuration for ios 1`] = `
       '.ts',
       '.ios.js',
       '.js',
+      '.ios.mjs',
+      '.mjs',
       '.ios.css',
       '.css',
       '.ios.scss',
@@ -603,6 +611,10 @@ exports[`svelte configuration for ios 1`] = `
     /* config.plugin('ContextExclusionPlugin|App_Resources') */
     new ContextExclusionPlugin(
       /(.*)App_Resources(.*)/
+    ),
+    /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
+    new ContextExclusionPlugin(
+      /\\\\.(android)\\\\.(\\\\w+)$/
     ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(

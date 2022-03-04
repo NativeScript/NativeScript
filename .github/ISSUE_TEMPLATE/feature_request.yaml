@@ -1,6 +1,6 @@
 name: 🚀 Feature request
 description: Suggest an idea for NativeScript
-labels: ["enhancement-pending-triage"]
+labels: ["feature-pending-triage"]
 
 body:
   - type: markdown

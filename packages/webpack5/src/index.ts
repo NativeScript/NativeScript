@@ -43,8 +43,12 @@ export interface IWebpackEnv {
 	// enable verbose output
 	verbose?: boolean;
 
+	// enable webpack profiling
+	profile?: boolean;
+
 	// misc
 	replace?: string[] | string;
+	watchNodeModules?: boolean;
 }
 
 interface IChainEntry {
