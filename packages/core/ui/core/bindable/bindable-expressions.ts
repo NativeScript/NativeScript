@@ -70,7 +70,7 @@ const expressionParsers = {
 				converterExpression = converterExpression.expression;
 			}
 			if (converterExpression.type == 'CallExpression') {
-				converterExpression.arguments.unshift(expression.left);
+				!converterExpression.arguments.includes(expression.left) && converterExpression.arguments.unshift(expression.left);
 				expression.right.nsIsCallable = true;
 				converterExpression = converterExpression.callee;
 			}
