@@ -9,6 +9,7 @@
         <Button text="a11y" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="box-shadow" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="css-playground" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
+         <Button text="datepicker" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="image-async" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="image-handling" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="list-page" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />

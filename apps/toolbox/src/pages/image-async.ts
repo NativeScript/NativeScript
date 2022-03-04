@@ -22,12 +22,12 @@ export class SampleData extends Observable {
 			const saved = results[0];
 			const base64Result = results[1];
 			if (saved) {
-				this.set('savedData', tempFile);
+				this.notifyPropertyChange('savedData', tempFile);
 				console.log('ImageAsset saved', saved, tempFile);
 			}
 			console.log('base64', base64Result);
 			console.log(results[2].width, results[2].height);
-			this.set('resizedImage', results[2]);
+			this.notifyPropertyChange('resizedImage', results[2]);
 		} catch (e) {
 			console.log('Failed to save ImageAsset');
 		}
