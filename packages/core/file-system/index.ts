@@ -1,3 +1,4 @@
+import { ad } from '../utils';
 import { FileSystemAccess } from './file-system-access';
 
 // The FileSystemAccess implementation, used through all the APIs.
@@ -170,8 +171,353 @@ export class FileSystemEntity {
 	}
 }
 
+let FileExt;
+function ensureFileExt() {
+	if (global.isAndroid) {
+		if (FileExt) {
+			return;
+		}
+		class AndroidFileExt extends File {
+			private _helper: org.nativescript.widgets.FileHelper;
+			constructor(value: string) {
+				super();
+				this._path = value;
+				this._helper = org.nativescript.widgets.FileHelper.fromString(ad.getApplicationContext(), value);
+			}
+
+			get extension(): string {
+				return this._helper.getExtension();
+			}
+
+			get size(): number {
+				return this._helper.getSize();
+			}
+
+			get name(): string {
+				return this._helper.getName();
+			}
+
+			get lastModified(): Date {
+				return new Date(this._helper.getLastModified() * 1000);
+			}
+
+			get parent(): Folder {
+				return null;
+			}
+
+			public read(): Promise<any> {
+				return new Promise((resolve, reject) => {
+					try {
+						this._checkAccess();
+					} catch (ex) {
+						reject(ex);
+
+						return;
+					}
+
+					this._locked = true;
+
+					const ref = new WeakRef(this);
+					this._helper.read(
+						ad.getApplicationContext(),
+						new org.nativescript.widgets.FileHelper.Callback({
+							onSuccess(result) {
+								resolve(result);
+								const owner = ref.get();
+								if (owner) {
+									owner._locked = false;
+								}
+							},
+							onError(error) {
+								reject(error);
+								const owner = ref.get();
+								if (owner) {
+									owner._locked = false;
+								}
+							},
+						})
+					);
+				});
+			}
+
+			public readSync(onError?: (error: any) => any) {
+				this._checkAccess();
+
+				this._locked = true;
+				let callback = null;
+				if (typeof onError === 'function') {
+					callback = new org.nativescript.widgets.FileHelper.Callback({
+						onSuccess(result) {},
+						onError(error) {
+							onError(error);
+						},
+					});
+				}
+				const content = this._helper.readSync(ad.getApplicationContext(), callback);
+				this._locked = false;
+				return content;
+			}
+
+			public write(content: any): Promise<void> {
+				return new Promise<void>((resolve, reject) => {
+					try {
+						this._checkAccess();
+					} catch (ex) {
+						reject(ex);
+
+						return;
+					}
+
+					this._locked = true;
+
+					const ref = new WeakRef(this);
+					this._helper.write(
+						ad.getApplicationContext(),
+						content,
+						new org.nativescript.widgets.FileHelper.Callback({
+							onSuccess(result) {
+								resolve();
+								const owner = ref.get();
+								if (owner) {
+									owner._locked = false;
+								}
+							},
+							onError(error) {
+								reject(error);
+								const owner = ref.get();
+								if (owner) {
+									owner._locked = false;
+								}
+							},
+						})
+					);
+				});
+			}
+
+			public writeSync(content: any, onError?: (error: any) => any): void {
+				this._checkAccess();
+
+				this._locked = true;
+				let callback = null;
+				if (typeof onError === 'function') {
+					callback = new org.nativescript.widgets.FileHelper.Callback({
+						onSuccess(result) {},
+						onError(error) {
+							onError(error);
+						},
+					});
+				}
+				this._helper.writeSync(ad.getApplicationContext(), content, callback);
+				this._locked = false;
+			}
+
+			public readText(encoding?: string): Promise<string> {
+				return new Promise((resolve, reject) => {
+					try {
+						this._checkAccess();
+					} catch (ex) {
+						reject(ex);
+
+						return;
+					}
+
+					this._locked = true;
+
+					const ref = new WeakRef(this);
+					this._helper.readText(
+						ad.getApplicationContext(),
+						encoding ?? null,
+						new org.nativescript.widgets.FileHelper.Callback({
+							onSuccess(result) {
+								resolve(result);
+								const owner = ref.get();
+								if (owner) {
+									owner._locked = false;
+								}
+							},
+							onError(error) {
+								reject(error);
+								const owner = ref.get();
+								if (owner) {
+									owner._locked = false;
+								}
+							},
+						})
+					);
+				});
+			}
+
+			public readTextSync(onError?: (error: any) => any, encoding?: string): string {
+				this._checkAccess();
+
+				this._locked = true;
+
+				let callback = null;
+				if (typeof onError === 'function') {
+					callback = new org.nativescript.widgets.FileHelper.Callback({
+						onSuccess(result) {},
+						onError(error) {
+							onError(error);
+						},
+					});
+				}
+				const content = this._helper.readTextSync(ad.getApplicationContext(), encoding ?? null, callback);
+				this._locked = false;
+				return content;
+			}
+
+			public writeText(content: string, encoding?: string): Promise<any> {
+				return new Promise<void>((resolve, reject) => {
+					try {
+						this._checkAccess();
+					} catch (ex) {
+						reject(ex);
+						return;
+					}
+
+					this._locked = true;
+
+					const ref = new WeakRef(this);
+					this._helper.writeText(
+						ad.getApplicationContext(),
+						content,
+						encoding ?? null,
+						new org.nativescript.widgets.FileHelper.Callback({
+							onSuccess(result) {
+								resolve();
+								const owner = ref.get();
+								if (owner) {
+									owner._locked = false;
+								}
+							},
+							onError(error) {
+								reject(error);
+								const owner = ref.get();
+								if (owner) {
+									owner._locked = false;
+								}
+							},
+						})
+					);
+				});
+			}
+
+			public writeTextSync(content: string, onError?: (error: any) => any, encoding?: string): void {
+				this._checkAccess();
+
+				this._locked = true;
+				let callback = null;
+				if (typeof onError === 'function') {
+					callback = new org.nativescript.widgets.FileHelper.Callback({
+						onSuccess(result) {},
+						onError(error) {
+							onError(error);
+						},
+					});
+				}
+				this._helper.writeTextSync(ad.getApplicationContext(), content, encoding ?? null, callback);
+				this._locked = false;
+			}
+
+			public remove(): Promise<any> {
+				return new Promise((resolve, reject) => {
+					try {
+						this._checkAccess();
+					} catch (ex) {
+						reject(ex);
+						return;
+					}
+
+					this._locked = true;
+
+					try {
+						resolve(this._helper.delete(ad.getApplicationContext()));
+					} catch (e) {
+						reject(e);
+					} finally {
+						this._locked = false;
+					}
+				});
+			}
+
+			public removeSync(onError?: (error: any) => any): void {
+				this._checkAccess();
+
+				this._locked = true;
+				try {
+					this._helper.delete(ad.getApplicationContext());
+				} catch (e) {
+					onError?.(e);
+				} finally {
+					this._locked = false;
+				}
+			}
+
+			public rename(newName: string): Promise<any> {
+				return new Promise<void>((resolve, reject) => {
+					try {
+						this._checkAccess();
+					} catch (ex) {
+						reject(ex);
+						return;
+					}
+
+					this._locked = true;
+
+					const ref = new WeakRef(this);
+					this._helper.renameSync(
+						ad.getApplicationContext(),
+						newName,
+						new org.nativescript.widgets.FileHelper.Callback({
+							onSuccess(result) {
+								resolve();
+								const owner = ref.get();
+								if (owner) {
+									owner._locked = false;
+								}
+							},
+							onError(error) {
+								reject(error);
+								const owner = ref.get();
+								if (owner) {
+									owner._locked = false;
+								}
+							},
+						})
+					);
+				});
+			}
+
+			public renameSync(newName: string, onError?: (error: any) => any): void {
+				this._checkAccess();
+
+				this._locked = true;
+				let callback = null;
+				if (typeof onError === 'function') {
+					callback = new org.nativescript.widgets.FileHelper.Callback({
+						onSuccess(result) {},
+						onError(error) {
+							onError(error);
+						},
+					});
+				}
+				this._helper.renameSync(ad.getApplicationContext(), newName, callback);
+				this._locked = false;
+			}
+		}
+
+		FileExt = AndroidFileExt;
+	}
+}
+
 export class File extends FileSystemEntity {
 	public static fromPath(path: string) {
+		if (global.isAndroid) {
+			ensureFileExt();
+			if (typeof path === 'string' && path.startsWith('content:')) {
+				return new FileExt(path);
+			}
+		}
 		const onError = function (error) {
 			throw error;
 		};
@@ -185,6 +531,9 @@ export class File extends FileSystemEntity {
 	}
 
 	public static exists(path: string): boolean {
+		if (global.isAndroid && typeof path === 'string' && path.startsWith('content:')) {
+			return org.nativescript.widgets.FileHelper.exists(ad.getApplicationContext(), path);
+		}
 		return getFileAccess().fileExists(path);
 	}
 
@@ -204,7 +553,7 @@ export class File extends FileSystemEntity {
 	public read(): Promise<any> {
 		return new Promise<any>((resolve, reject) => {
 			try {
-				this.checkAccess();
+				this._checkAccess();
 			} catch (ex) {
 				reject(ex);
 
@@ -229,7 +578,7 @@ export class File extends FileSystemEntity {
 	}
 
 	public readSync(onError?: (error: any) => any): any {
-		this.checkAccess();
+		this._checkAccess();
 
 		this._locked = true;
 
@@ -251,7 +600,7 @@ export class File extends FileSystemEntity {
 	public write(content: any): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			try {
-				this.checkAccess();
+				this._checkAccess();
 			} catch (ex) {
 				reject(ex);
 
@@ -276,7 +625,7 @@ export class File extends FileSystemEntity {
 	}
 
 	public writeSync(content: any, onError?: (error: any) => any): void {
-		this.checkAccess();
+		this._checkAccess();
 
 		try {
 			this._locked = true;
@@ -298,7 +647,7 @@ export class File extends FileSystemEntity {
 	public readText(encoding?: string): Promise<string> {
 		return new Promise((resolve, reject) => {
 			try {
-				this.checkAccess();
+				this._checkAccess();
 			} catch (ex) {
 				reject(ex);
 
@@ -323,7 +672,7 @@ export class File extends FileSystemEntity {
 	}
 
 	public readTextSync(onError?: (error: any) => any, encoding?: string): string {
-		this.checkAccess();
+		this._checkAccess();
 
 		this._locked = true;
 
@@ -344,7 +693,7 @@ export class File extends FileSystemEntity {
 	public writeText(content: string, encoding?: string): Promise<any> {
 		return new Promise((resolve, reject) => {
 			try {
-				this.checkAccess();
+				this._checkAccess();
 			} catch (ex) {
 				reject(ex);
 
@@ -369,7 +718,7 @@ export class File extends FileSystemEntity {
 	}
 
 	public writeTextSync(content: string, onError?: (error: any) => any, encoding?: string): void {
-		this.checkAccess();
+		this._checkAccess();
 
 		try {
 			this._locked = true;
@@ -388,7 +737,7 @@ export class File extends FileSystemEntity {
 		}
 	}
 
-	private checkAccess() {
+	_checkAccess() {
 		if (this.isLocked) {
 			throw new Error('Cannot access a locked file.');
 		}
