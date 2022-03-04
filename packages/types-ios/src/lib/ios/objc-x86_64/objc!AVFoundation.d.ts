@@ -1611,6 +1611,10 @@ declare class AVCaptureDevice extends NSObject {
 
 	readonly autoFocusRangeRestrictionSupported: boolean;
 
+	automaticallyAdjustsFaceDrivenAutoExposureEnabled: boolean;
+
+	automaticallyAdjustsFaceDrivenAutoFocusEnabled: boolean;
+
 	automaticallyAdjustsVideoHDREnabled: boolean;
 
 	automaticallyEnablesLowLightBoostWhenAvailable: boolean;
@@ -1638,6 +1642,10 @@ declare class AVCaptureDevice extends NSObject {
 	readonly exposureTargetBias: number;
 
 	readonly exposureTargetOffset: number;
+
+	faceDrivenAutoExposureEnabled: boolean;
+
+	faceDrivenAutoFocusEnabled: boolean;
 
 	fallbackPrimaryConstituentDevices: NSArray<AVCaptureDevice>;
 
@@ -1915,6 +1923,8 @@ declare var AVCaptureDeviceTypeBuiltInDualCamera: string;
 declare var AVCaptureDeviceTypeBuiltInDualWideCamera: string;
 
 declare var AVCaptureDeviceTypeBuiltInDuoCamera: string;
+
+declare var AVCaptureDeviceTypeBuiltInLiDARDepthCamera: string;
 
 declare var AVCaptureDeviceTypeBuiltInMicrophone: string;
 
@@ -2592,6 +2602,8 @@ declare class AVCaptureSession extends NSObject {
 	readonly running: boolean;
 
 	sessionPreset: string;
+
+	readonly synchronizationClock: any;
 
 	usesApplicationAudioSession: boolean;
 
@@ -5034,6 +5046,8 @@ declare var AVMetadataObjectTypeAztecCode: string;
 
 declare var AVMetadataObjectTypeCatBody: string;
 
+declare var AVMetadataObjectTypeCodabarCode: string;
+
 declare var AVMetadataObjectTypeCode128Code: string;
 
 declare var AVMetadataObjectTypeCode39Code: string;
@@ -5052,11 +5066,21 @@ declare var AVMetadataObjectTypeEAN8Code: string;
 
 declare var AVMetadataObjectTypeFace: string;
 
+declare var AVMetadataObjectTypeGS1DataBarCode: string;
+
+declare var AVMetadataObjectTypeGS1DataBarExpandedCode: string;
+
+declare var AVMetadataObjectTypeGS1DataBarLimitedCode: string;
+
 declare var AVMetadataObjectTypeHumanBody: string;
 
 declare var AVMetadataObjectTypeITF14Code: string;
 
 declare var AVMetadataObjectTypeInterleaved2of5Code: string;
+
+declare var AVMetadataObjectTypeMicroPDF417Code: string;
+
+declare var AVMetadataObjectTypeMicroQRCode: string;
 
 declare var AVMetadataObjectTypePDF417Code: string;
 
@@ -6692,6 +6716,8 @@ declare class AVPlayerPlaybackCoordinator extends AVPlaybackCoordinator {
 interface AVPlayerPlaybackCoordinatorDelegate extends NSObjectProtocol {
 
 	playbackCoordinatorIdentifierForPlayerItem?(coordinator: AVPlayerPlaybackCoordinator, playerItem: AVPlayerItem): string;
+
+	playbackCoordinatorInterstitialTimeRangesForPlayerItem?(coordinator: AVPlayerPlaybackCoordinator, playerItem: AVPlayerItem): NSArray<NSValue>;
 }
 declare var AVPlayerPlaybackCoordinatorDelegate: {
 

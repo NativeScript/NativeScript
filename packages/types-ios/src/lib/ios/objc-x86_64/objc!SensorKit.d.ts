@@ -549,6 +549,8 @@ declare var SRSensorAccelerometer: string;
 
 declare var SRSensorAmbientLightSensor: string;
 
+declare var SRSensorAmbientPressure: string;
+
 declare var SRSensorDeviceUsageReport: string;
 
 declare var SRSensorKeyboardMetrics: string;

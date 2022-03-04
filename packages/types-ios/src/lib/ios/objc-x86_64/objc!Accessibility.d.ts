@@ -26,9 +26,9 @@ declare class AXBrailleMap extends NSObject implements NSCopying, NSSecureCoding
 
 interface AXBrailleMapRenderer extends NSObjectProtocol {
 
-	accessibilityBrailleMapRenderRegion: CGRect;
+	accessibilityBrailleMapRenderRegion?: CGRect;
 
-	accessibilityBrailleMapRenderer: (p1: AXBrailleMap) => void;
+	accessibilityBrailleMapRenderer?: (p1: AXBrailleMap) => void;
 }
 declare var AXBrailleMapRenderer: {
 

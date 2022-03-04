@@ -822,6 +822,8 @@ declare class ASAuthorizationProviderExtensionAuthorizationRequest extends NSObj
 
 	readonly url: NSURL;
 
+	readonly userInterfaceEnabled: boolean;
+
 	cancel(): void;
 
 	complete(): void;

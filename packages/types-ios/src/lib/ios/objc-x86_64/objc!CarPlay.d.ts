@@ -544,6 +544,55 @@ declare const enum CPInformationTemplateLayout {
 	TwoColumn = 1
 }
 
+declare class CPInstrumentClusterController extends NSObject {
+
+	static alloc(): CPInstrumentClusterController; // inherited from NSObject
+
+	static new(): CPInstrumentClusterController; // inherited from NSObject
+
+	attributedInactiveDescriptionVariants: NSArray<NSAttributedString>;
+
+	readonly compassSetting: CPInstrumentClusterSetting;
+
+	delegate: CPInstrumentClusterControllerDelegate;
+
+	inactiveDescriptionVariants: NSArray<string>;
+
+	readonly instrumentClusterWindow: UIWindow;
+
+	readonly speedLimitSetting: CPInstrumentClusterSetting;
+}
+
+interface CPInstrumentClusterControllerDelegate extends NSObjectProtocol {
+
+	instrumentClusterControllerDidChangeCompassSetting?(instrumentClusterController: CPInstrumentClusterController, compassSetting: CPInstrumentClusterSetting): void;
+
+	instrumentClusterControllerDidChangeSpeedLimitSetting?(instrumentClusterController: CPInstrumentClusterController, speedLimitSetting: CPInstrumentClusterSetting): void;
+
+	instrumentClusterControllerDidConnectWindow(instrumentClusterWindow: UIWindow): void;
+
+	instrumentClusterControllerDidDisconnectWindow(instrumentClusterWindow: UIWindow): void;
+
+	instrumentClusterControllerDidZoomIn?(instrumentClusterController: CPInstrumentClusterController): void;
+
+	instrumentClusterControllerDidZoomOut?(instrumentClusterController: CPInstrumentClusterController): void;
+}
+declare var CPInstrumentClusterControllerDelegate: {
+
+	prototype: CPInstrumentClusterControllerDelegate;
+};
+
+declare const enum CPInstrumentClusterSetting {
+
+	Unspecified = 0,
+
+	Enabled = 1,
+
+	Disabled = 2,
+
+	UserPreference = 3
+}
+
 declare class CPInterfaceController extends NSObject {
 
 	static alloc(): CPInterfaceController; // inherited from NSObject
@@ -938,6 +987,8 @@ declare class CPManeuver extends NSObject implements NSCopying, NSSecureCoding {
 	static new(): CPManeuver; // inherited from NSObject
 
 	attributedInstructionVariants: NSArray<NSAttributedString>;
+
+	cardBackgroundColor: UIColor;
 
 	dashboardAttributedInstructionVariants: NSArray<NSAttributedString>;
 
@@ -1346,6 +1397,8 @@ declare class CPNavigationSession extends NSObject {
 
 	pauseTripForReasonDescription(reason: CPTripPauseReason, description: string): void;
 
+	pauseTripForReasonDescriptionTurnCardColor(reason: CPTripPauseReason, description: string, turnCardColor: UIColor): void;
+
 	updateTravelEstimatesForManeuver(estimates: CPTravelEstimates, maneuver: CPManeuver): void;
 }
 
@@ -1711,6 +1764,34 @@ declare var CPTemplateApplicationDashboardSceneDelegate: {
 
 declare var CPTemplateApplicationDashboardSceneSessionRoleApplication: string;
 
+declare class CPTemplateApplicationInstrumentClusterScene extends UIScene {
+
+	static alloc(): CPTemplateApplicationInstrumentClusterScene; // inherited from NSObject
+
+	static new(): CPTemplateApplicationInstrumentClusterScene; // inherited from NSObject
+
+	readonly contentStyle: UIUserInterfaceStyle;
+
+	delegate: CPTemplateApplicationInstrumentClusterSceneDelegate;
+
+	readonly instrumentClusterController: CPInstrumentClusterController;
+}
+
+interface CPTemplateApplicationInstrumentClusterSceneDelegate extends UISceneDelegate {
+
+	contentStyleDidChange?(contentStyle: UIUserInterfaceStyle): void;
+
+	templateApplicationInstrumentClusterSceneDidConnectInstrumentClusterController?(templateApplicationInstrumentClusterScene: CPTemplateApplicationInstrumentClusterScene, instrumentClusterController: CPInstrumentClusterController): void;
+
+	templateApplicationInstrumentClusterSceneDidDisconnectInstrumentClusterController?(templateApplicationInstrumentClusterScene: CPTemplateApplicationInstrumentClusterScene, instrumentClusterController: CPInstrumentClusterController): void;
+}
+declare var CPTemplateApplicationInstrumentClusterSceneDelegate: {
+
+	prototype: CPTemplateApplicationInstrumentClusterSceneDelegate;
+};
+
+declare var CPTemplateApplicationInstrumentClusterSceneSessionRoleApplication: string;
+
 declare class CPTemplateApplicationScene extends UIScene {
 
 	static alloc(): CPTemplateApplicationScene; // inherited from NSObject
@@ -1719,12 +1800,16 @@ declare class CPTemplateApplicationScene extends UIScene {
 
 	readonly carWindow: CPWindow;
 
+	readonly contentStyle: UIUserInterfaceStyle;
+
 	delegate: CPTemplateApplicationSceneDelegate;
 
 	readonly interfaceController: CPInterfaceController;
 }
 
 interface CPTemplateApplicationSceneDelegate extends UISceneDelegate {
+
+	contentStyleDidChange?(contentStyle: UIUserInterfaceStyle): void;
 
 	templateApplicationSceneDidConnectInterfaceController?(templateApplicationScene: CPTemplateApplicationScene, interfaceController: CPInterfaceController): void;
 
