@@ -1,15 +1,19 @@
-import { FileSystemAccess } from './file-system-access';
-
+import { IFileSystemAccess, FileSystemAccess, FileSystemAccess29 } from './file-system-access';
+import { Device } from '../platform';
 // The FileSystemAccess implementation, used through all the APIs.
-let fileAccess: FileSystemAccess;
+let fileAccess: IFileSystemAccess;
 
 /**
  * Returns FileSystemAccess, a shared singleton utility class to provide methods to access and work with the file system. This is used under the hood of all the file system apis in @nativescript/core and provided as a lower level convenience if needed.
  * @returns FileSystemAccess
  */
-export function getFileAccess(): FileSystemAccess {
+export function getFileAccess(): IFileSystemAccess {
 	if (!fileAccess) {
-		fileAccess = new FileSystemAccess();
+		if (global.isAndroid && parseInt(Device.sdkVersion) >= 29) {
+			fileAccess = new FileSystemAccess29();
+		} else {
+			fileAccess = new FileSystemAccess();
+		}
 	}
 
 	return fileAccess;
@@ -161,12 +165,7 @@ export class FileSystemEntity {
 	}
 
 	get lastModified(): Date {
-		let value = this._lastModified;
-		if (!this._lastModified) {
-			value = this._lastModified = getFileAccess().getLastModified(this.path);
-		}
-
-		return value;
+		return getFileAccess().getLastModified(this.path);
 	}
 }
 
@@ -204,7 +203,7 @@ export class File extends FileSystemEntity {
 	public read(): Promise<any> {
 		return new Promise<any>((resolve, reject) => {
 			try {
-				this.checkAccess();
+				this._checkAccess();
 			} catch (ex) {
 				reject(ex);
 
@@ -229,7 +228,7 @@ export class File extends FileSystemEntity {
 	}
 
 	public readSync(onError?: (error: any) => any): any {
-		this.checkAccess();
+		this._checkAccess();
 
 		this._locked = true;
 
@@ -251,7 +250,7 @@ export class File extends FileSystemEntity {
 	public write(content: any): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			try {
-				this.checkAccess();
+				this._checkAccess();
 			} catch (ex) {
 				reject(ex);
 
@@ -276,7 +275,7 @@ export class File extends FileSystemEntity {
 	}
 
 	public writeSync(content: any, onError?: (error: any) => any): void {
-		this.checkAccess();
+		this._checkAccess();
 
 		try {
 			this._locked = true;
@@ -298,7 +297,7 @@ export class File extends FileSystemEntity {
 	public readText(encoding?: string): Promise<string> {
 		return new Promise((resolve, reject) => {
 			try {
-				this.checkAccess();
+				this._checkAccess();
 			} catch (ex) {
 				reject(ex);
 
@@ -323,7 +322,7 @@ export class File extends FileSystemEntity {
 	}
 
 	public readTextSync(onError?: (error: any) => any, encoding?: string): string {
-		this.checkAccess();
+		this._checkAccess();
 
 		this._locked = true;
 
@@ -344,7 +343,7 @@ export class File extends FileSystemEntity {
 	public writeText(content: string, encoding?: string): Promise<any> {
 		return new Promise((resolve, reject) => {
 			try {
-				this.checkAccess();
+				this._checkAccess();
 			} catch (ex) {
 				reject(ex);
 
@@ -369,7 +368,7 @@ export class File extends FileSystemEntity {
 	}
 
 	public writeTextSync(content: string, onError?: (error: any) => any, encoding?: string): void {
-		this.checkAccess();
+		this._checkAccess();
 
 		try {
 			this._locked = true;
@@ -388,7 +387,7 @@ export class File extends FileSystemEntity {
 		}
 	}
 
-	private checkAccess() {
+	_checkAccess() {
 		if (this.isLocked) {
 			throw new Error('Cannot access a locked file.');
 		}
