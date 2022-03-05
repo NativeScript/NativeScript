@@ -100,6 +100,11 @@ interface IConfigCLI {
 	 * Defaults to the CLI set package manager, or `npm` if not set globally
 	 */
 	packageManager: 'yarn' | 'pnpm' | 'npm';
+	
+	/**
+	 * Optional files or paths to clean when running the `clean` command
+	 */
+	additionalPathsToClean?: string[];
 }
 
 interface IConfigHook {
