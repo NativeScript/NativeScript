@@ -734,13 +734,13 @@ export class FileSystemAccess29 extends FileSystemAccess {
 		return super.getDocumentsFolderPath();
 	}
 	getTempFolderPath(): string {
-		return super.getDocumentsFolderPath();
+		return super.getTempFolderPath();
 	}
 	getLogicalRootPath(): string {
-		return super.getDocumentsFolderPath();
+		return super.getLogicalRootPath();
 	}
 	getCurrentAppPath(): string {
-		return super.getDocumentsFolderPath();
+		return super.getCurrentAppPath();
 	}
 	public readText = this.readTextSync.bind(this);
 
