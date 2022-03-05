@@ -1,6 +1,8 @@
 import * as textModule from '../text';
 import { getNativeApplication } from '../application';
 
+import type { IFileSystemAccess } from './file-system-access';
+
 let applicationContext: android.content.Context;
 function getApplicationContext() {
 	if (!applicationContext) {
@@ -10,7 +12,18 @@ function getApplicationContext() {
 	return applicationContext;
 }
 
-export class FileSystemAccess {
+function getOrSetHelper(path: string): org.nativescript.widgets.FileHelper {
+	return org.nativescript.widgets.FileHelper.fromString(applicationContext, path);
+}
+
+function isContentUri(path: string): boolean {
+	if (typeof path === 'string' && path.startsWith('content:')) {
+		return true;
+	}
+	return false;
+}
+
+export class FileSystemAccess implements IFileSystemAccess {
 	private _pathSeparator = '/';
 
 	public getLastModified(path: string): Date {
@@ -590,5 +603,315 @@ export class FileSystemAccess {
 		}
 
 		return result;
+	}
+}
+
+export class FileSystemAccess29 extends FileSystemAccess {
+	getLastModified(path: string): Date {
+		if (isContentUri(path)) {
+			return new Date(getOrSetHelper(path).getLastModified() * 1000);
+		}
+		return super.getLastModified(path);
+	}
+
+	getFileSize(path: string): number {
+		if (isContentUri(path)) {
+			return getOrSetHelper(path).getSize();
+		}
+		return super.getFileSize(path);
+	}
+
+	getParent(path: string, onError?: (error: any) => any): { path: string; name: string } {
+		if (isContentUri(path)) {
+			return null;
+		}
+		return super.getParent(path, onError);
+	}
+	getFile(path: string, onError?: (error: any) => any): { path: string; name: string; extension: string } {
+		if (isContentUri(path)) {
+			try {
+				const file = getOrSetHelper(path);
+				return {
+					path,
+					name: file.getName(),
+					extension: file.getExtension(),
+				};
+			} catch (e) {
+				if (typeof onError === 'function') {
+					onError(e);
+				}
+				return;
+			}
+		}
+		return super.getFile(path, onError);
+	}
+	getFolder(path: string, onError?: (error: any) => any): { path: string; name: string } {
+		if (isContentUri(path)) {
+			return null;
+		}
+		return super.getFolder(path, onError);
+	}
+	getEntities(path: string, onError?: (error: any) => any): { path: string; name: string; extension: string }[] {
+		if (isContentUri(path)) {
+			return null;
+		}
+		return super.getEntities(path, onError);
+	}
+	eachEntity(path: string, onEntity: (entity: { path: string; name: string; extension: string }) => boolean, onError?: (error: any) => any) {
+		if (isContentUri(path)) {
+			return null;
+		}
+		super.eachEntity(path, onEntity);
+	}
+	fileExists(path: string): boolean {
+		if (isContentUri(path)) {
+			return org.nativescript.widgets.FileHelper.exists(applicationContext, path);
+		}
+		return super.fileExists(path);
+	}
+	folderExists(path: string): boolean {
+		if (isContentUri(path)) {
+			return null;
+		}
+		return super.folderExists(path);
+	}
+	deleteFile(path: string, onError?: (error: any) => any) {
+		if (isContentUri(path)) {
+			try {
+				getOrSetHelper(path).delete(applicationContext);
+			} catch (e) {
+				onError?.(e);
+			}
+		} else {
+			super.deleteFile(path, onError);
+		}
+	}
+	deleteFolder(path: string, onError?: (error: any) => any) {
+		if (!isContentUri(path)) {
+			super.deleteFolder(path, onError);
+		}
+	}
+	emptyFolder(path: string, onError?: (error: any) => any): void {
+		if (!isContentUri(path)) {
+			super.emptyFolder(path, onError);
+		}
+	}
+	rename(path: string, newPath: string, onError?: (error: any) => any): void {
+		if (isContentUri(path)) {
+			let callback = null;
+			if (typeof onError === 'function') {
+				callback = new org.nativescript.widgets.FileHelper.Callback({
+					onSuccess(result) {},
+					onError(error) {
+						onError(error);
+					},
+				});
+			}
+			getOrSetHelper(path).renameSync(applicationContext, newPath, callback);
+		} else {
+			super.rename(path, newPath, onError);
+		}
+	}
+
+	public renameAsync(path: string, newPath: string): Promise<any> {
+		return new Promise<void>((resolve, reject) => {
+			getOrSetHelper(path).renameSync(
+				applicationContext,
+				newPath,
+				new org.nativescript.widgets.FileHelper.Callback({
+					onSuccess(result) {
+						resolve();
+					},
+					onError(error) {
+						reject(error);
+					},
+				})
+			);
+		});
+	}
+
+	getDocumentsFolderPath(): string {
+		return super.getDocumentsFolderPath();
+	}
+	getTempFolderPath(): string {
+		return super.getDocumentsFolderPath();
+	}
+	getLogicalRootPath(): string {
+		return super.getDocumentsFolderPath();
+	}
+	getCurrentAppPath(): string {
+		return super.getDocumentsFolderPath();
+	}
+	public readText = this.readTextSync.bind(this);
+
+	readTextAsync(path: string, encoding?: any): Promise<string> {
+		if (isContentUri(path)) {
+			return new Promise((resolve, reject) => {
+				getOrSetHelper(path).readText(
+					applicationContext,
+					encoding ?? null,
+					new org.nativescript.widgets.FileHelper.Callback({
+						onSuccess(result) {
+							resolve(result);
+						},
+						onError(error) {
+							reject(error);
+						},
+					})
+				);
+			});
+		}
+		return super.readTextAsync(path, encoding);
+	}
+	readTextSync(path: string, onError?: (error: any) => any, encoding?: any): string {
+		if (isContentUri(path)) {
+			let callback = null;
+			if (typeof onError === 'function') {
+				callback = new org.nativescript.widgets.FileHelper.Callback({
+					onSuccess(result) {},
+					onError(error) {
+						onError(error);
+					},
+				});
+			}
+			return getOrSetHelper(path).readTextSync(applicationContext, encoding ?? null, callback);
+		} else {
+			return super.readTextSync(path, onError, encoding);
+		}
+	}
+
+	read = this.readSync.bind(this);
+
+	readAsync(path: string): Promise<any> {
+		if (isContentUri(path)) {
+			return new Promise((resolve, reject) => {
+				getOrSetHelper(path).read(
+					applicationContext,
+					new org.nativescript.widgets.FileHelper.Callback({
+						onSuccess(result) {
+							resolve(result);
+						},
+						onError(error) {
+							reject(error);
+						},
+					})
+				);
+			});
+		}
+		return super.readAsync(path);
+	}
+
+	readSync(path: string, onError?: (error: any) => any) {
+		if (isContentUri(path)) {
+			let callback = null;
+			if (typeof onError === 'function') {
+				callback = new org.nativescript.widgets.FileHelper.Callback({
+					onSuccess(result) {},
+					onError(error) {
+						onError(error);
+					},
+				});
+			}
+			return getOrSetHelper(path).readSync(applicationContext, callback);
+		}
+		return super.readSync(path, onError);
+	}
+
+	writeText = this.writeTextSync.bind(this);
+
+	writeTextAsync(path: string, content: string, encoding?: any): Promise<void> {
+		if (isContentUri(path)) {
+			return new Promise<void>((resolve, reject) => {
+				getOrSetHelper(path).writeText(
+					applicationContext,
+					content,
+					encoding ?? null,
+					new org.nativescript.widgets.FileHelper.Callback({
+						onSuccess(result) {
+							resolve();
+						},
+						onError(error) {
+							reject(error);
+						},
+					})
+				);
+			});
+		}
+		return super.writeTextAsync(path, content, encoding);
+	}
+
+	writeTextSync(path: string, content: string, onError?: (error: any) => any, encoding?: any) {
+		if (isContentUri(path)) {
+			let callback = null;
+			if (typeof onError === 'function') {
+				callback = new org.nativescript.widgets.FileHelper.Callback({
+					onSuccess(result) {},
+					onError(error) {
+						onError(error);
+					},
+				});
+			}
+			getOrSetHelper(path).writeTextSync(applicationContext, content, encoding ?? null, callback);
+		} else {
+			super.writeTextSync(path, content, onError);
+		}
+	}
+
+	write = this.writeSync.bind(this);
+
+	writeAsync(path: string, content: any): Promise<void> {
+		if (isContentUri(path)) {
+			return new Promise<void>((resolve, reject) => {
+				getOrSetHelper(path).write(
+					applicationContext,
+					content,
+					new org.nativescript.widgets.FileHelper.Callback({
+						onSuccess(result) {
+							resolve();
+						},
+						onError(error) {
+							reject(error);
+						},
+					})
+				);
+			});
+		}
+		return super.writeAsync(path, content);
+	}
+
+	writeSync(path: string, content: any, onError?: (error: any) => any) {
+		if (isContentUri(path)) {
+			let callback = null;
+			if (typeof onError === 'function') {
+				callback = new org.nativescript.widgets.FileHelper.Callback({
+					onSuccess(result) {},
+					onError(error) {
+						onError(error);
+					},
+				});
+			}
+			getOrSetHelper(path).writeSync(applicationContext, content, callback);
+		} else {
+			super.writeSync(path, content, onError);
+		}
+	}
+
+	getFileExtension(path: string): string {
+		if (isContentUri(path)) {
+			return getOrSetHelper(path).getExtension();
+		}
+		return super.getFileExtension(path);
+	}
+	getPathSeparator(): string {
+		return super.getPathSeparator();
+	}
+	normalizePath(path: string): string {
+		return super.normalizePath(path);
+	}
+	joinPath(left: string, right: string): string {
+		return super.joinPath(left, right);
+	}
+	joinPaths(paths: string[]): string {
+		return super.joinPaths(paths);
 	}
 }

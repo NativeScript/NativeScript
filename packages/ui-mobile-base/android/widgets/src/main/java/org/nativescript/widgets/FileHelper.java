@@ -88,15 +88,14 @@ public class FileHelper {
 
 
 		boolean moved = cursor.moveToFirst();
-
-		if (!moved) {
-			return null;
+		FileHelper helper = null;
+		if (moved) {
+			helper = new FileHelper(uri);
+			helper.size = cursor.getLong(sizeIndex);
+			helper.name = cursor.getString(nameIndex);
+			helper.mime = context.getContentResolver().getType(uri);
+			helper.lastModified = cursor.getLong(lastModifiedIndex);
 		}
-		FileHelper helper = new FileHelper(uri);
-		helper.size = cursor.getLong(sizeIndex);
-		helper.name = cursor.getString(nameIndex);
-		helper.mime = context.getContentResolver().getType(uri);
-		helper.lastModified = cursor.getLong(lastModifiedIndex);
 		cursor.close();
 		return helper;
 	}
@@ -135,13 +134,13 @@ public class FileHelper {
 
 		boolean moved = cursor.moveToFirst();
 
-		if (!moved) {
-			return;
+		if (moved) {
+			size = cursor.getLong(sizeIndex);
+			name = cursor.getString(nameIndex);
+			mime = context.getContentResolver().getType(uri);
+			lastModified = cursor.getLong(lastModifiedIndex);
 		}
-		size = cursor.getLong(sizeIndex);
-		name = cursor.getString(nameIndex);
-		mime = context.getContentResolver().getType(uri);
-		lastModified = cursor.getLong(lastModifiedIndex);
+
 		cursor.close();
 	}
 
