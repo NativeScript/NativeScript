@@ -100,6 +100,11 @@ interface IConfigCLI {
 	 * Defaults to the CLI set package manager, or `npm` if not set globally
 	 */
 	packageManager: 'yarn' | 'pnpm' | 'npm';
+	
+	/**
+	 * Optional files or paths to clean when running the `clean` command
+	 */
+	additionalPathsToClean?: string[];
 }
 
 interface IConfigHook {
@@ -193,11 +198,6 @@ export interface NativeScriptConfig {
 	 * Optionally specify a list of npm package names for which you would like the NativeScript CLI to ignore when attaching native dependencies to the build
 	 */
 	ignoredNativeDependencies?: string[];
-
-	/**
-	 * Optional files or paths to clean when running the `clean` command
-	 */
-	additionalPathsToClean?: string[];
 
 	/**
 	 * Set cli options
