@@ -1,4 +1,4 @@
-import { Page, ImageSource, Observable, EventData, knownFolders, path, Switch } from '@nativescript/core';
+import { Page, ImageSource, Observable, EventData, knownFolders, path, Switch, DatePicker } from '@nativescript/core';
 
 let page: Page;
 
@@ -19,7 +19,7 @@ export class SampleData extends Observable {
 	showTime = true;
 
 	dateChange(args) {
-		console.log('dateChange:', args);
+		console.log('dateChange:', (<DatePicker>args.object).date);
 	}
 
 	checkedChange(args) {
