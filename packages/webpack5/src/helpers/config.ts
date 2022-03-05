@@ -1,5 +1,5 @@
+import { warnOnce } from './log';
 import { env } from '../index';
-import { error, warnOnce } from './log';
 
 function getCLILib() {
 	if (!env.nativescriptLibPath) {
@@ -28,7 +28,9 @@ export function getValue<T = any>(key: string, defaultValue?: any): T {
 		return defaultValue;
 	}
 
-	return (lib.projectConfigService as {
-		getValue(key: string, defaultValue?: any): T;
-	}).getValue(key, defaultValue);
+	return (
+		lib.projectConfigService as {
+			getValue(key: string, defaultValue?: any): T;
+		}
+	).getValue(key, defaultValue);
 }

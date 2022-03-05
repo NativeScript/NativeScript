@@ -1,7 +1,7 @@
 import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
 import { ColorStop } from './gradient';
-import { LinearGradient as CSSLinearGradient } from '../../css/parser';
+import type { LinearGradient as CSSLinearGradient } from '../../css/parser';
 
 export class LinearGradient {
 	public angle: number;

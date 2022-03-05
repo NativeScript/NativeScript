@@ -1,5 +1,5 @@
 {
-  "main": "main.js",
+  "main": "src/main.ts",
   "description": "NativeScript Application",
   "license": "MIT",
   "repository": {

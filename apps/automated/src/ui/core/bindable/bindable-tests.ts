@@ -191,60 +191,63 @@ export function test_bindingContext_Change_IsReflected_Properly() {
 	helper.do_PageTest_WithButton(test);
 }
 
-export function test_WhenBindingIsSetToAnElement_AndElementIsRemoved_ShouldBeCollectedByGC(done) {
-	let testFinished = false;
+// disabled test because in latest v8 engine we rely on built-in WeakRef implementation
+// which does not guarantee releasing objects after a GC call.
 
-	let page = helper.getCurrentPage();
-	let stack = new StackLayout();
+// export function test_WhenBindingIsSetToAnElement_AndElementIsRemoved_ShouldBeCollectedByGC(done) {
+// 	let testFinished = false;
 
-	let expectedValue = 'testValue';
-	let sourcePropertyName = 'testProperty';
-	let targetPropertyName = 'text';
+// 	let page = helper.getCurrentPage();
+// 	let stack = new StackLayout();
 
-	stack.on(View.loadedEvent, () => {
-		const model = new Observable();
-		model.set(sourcePropertyName, expectedValue);
+// 	let expectedValue = 'testValue';
+// 	let sourcePropertyName = 'testProperty';
+// 	let targetPropertyName = 'text';
 
-		function createButton(bindContext) {
-			let button = new Button();
-			button.bind(
-				{
-					sourceProperty: sourcePropertyName,
-					targetProperty: targetPropertyName,
-				},
-				bindContext
-			);
+// 	stack.on(View.loadedEvent, () => {
+// 		const model = new Observable();
+// 		model.set(sourcePropertyName, expectedValue);
 
-			return new WeakRef(button);
-		}
+// 		function createButton(bindContext) {
+// 			let button = new Button();
+// 			button.bind(
+// 				{
+// 					sourceProperty: sourcePropertyName,
+// 					targetProperty: targetPropertyName,
+// 				},
+// 				bindContext
+// 			);
 
-		const weakRef = createButton(model);
+// 			return new WeakRef(button);
+// 		}
 
-		try {
-			stack.addChild(weakRef.get());
-			TKUnit.waitUntilReady(() => weakRef.get().isLoaded);
+// 		const weakRef = createButton(model);
 
-			TKUnit.assertEqual(weakRef.get().text, expectedValue, 'Binding is not working properly!');
-			stack.removeChild(weakRef.get());
-			TKUnit.waitUntilReady(() => !weakRef.get().isLoaded);
+// 		try {
+// 			stack.addChild(weakRef.get());
+// 			TKUnit.waitUntilReady(() => weakRef.get().isLoaded);
 
-			utils.GC();
-			// Give time for the GC to kick in
-			setTimeout(() => {
-				utils.GC();
-				TKUnit.assert(!weakRef.get(), 'UIElement is still alive!');
-				testFinished = true;
-			}, 100);
-		} catch (e) {
-			done(e);
-		}
-	});
+// 			TKUnit.assertEqual(weakRef.get().text, expectedValue, 'Binding is not working properly!');
+// 			stack.removeChild(weakRef.get());
+// 			TKUnit.waitUntilReady(() => !weakRef.get().isLoaded);
 
-	page.content = stack;
+// 			utils.GC();
+// 			// Give time for the GC to kick in
+// 			setTimeout(() => {
+// 				utils.GC();
+// 				TKUnit.assert(!weakRef.get(), 'UIElement is still alive!');
+// 				testFinished = true;
+// 			}, 100);
+// 		} catch (e) {
+// 			done(e);
+// 		}
+// 	});
 
-	TKUnit.waitUntilReady(() => testFinished);
-	done(null);
-}
+// 	page.content = stack;
+
+// 	TKUnit.waitUntilReady(() => testFinished);
+// 	done(null);
+// }
 
 export function test_OneBindableToBindMoreThanOneProperty_ToSameSource() {
 	const model = new Observable();

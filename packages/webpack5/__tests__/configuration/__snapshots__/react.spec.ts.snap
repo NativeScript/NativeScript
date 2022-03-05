@@ -43,6 +43,8 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
       '.ts',
       '.android.js',
       '.js',
+      '.android.mjs',
+      '.mjs',
       '.android.css',
       '.css',
       '.android.scss',
@@ -82,6 +84,16 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
             options: {
               injectHMRRuntime: true
             }
+          }
+        ]
+      },
+      /* config.module.rule('workers') */
+      {
+        test: /\\\\.(mjs|js|ts)$/,
+        use: [
+          /* config.module.rule('workers').use('nativescript-worker-loader') */
+          {
+            loader: 'nativescript-worker-loader'
           }
         ]
       },
@@ -125,16 +137,6 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
           /node_modules/
         ]
       },
-      /* config.module.rule('workers') */
-      {
-        test: /\\\\.(js|ts)$/,
-        use: [
-          /* config.module.rule('workers').use('nativescript-worker-loader') */
-          {
-            loader: 'nativescript-worker-loader'
-          }
-        ]
-      },
       /* config.module.rule('xml') */
       {
         test: /\\\\.xml$/,
@@ -163,7 +165,12 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -188,7 +195,12 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -253,6 +265,10 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
     /* config.plugin('ContextExclusionPlugin|App_Resources') */
     new ContextExclusionPlugin(
       /(.*)App_Resources(.*)/
+    ),
+    /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
+    new ContextExclusionPlugin(
+      /\\\\.(ios)\\\\.(\\\\w+)$/
     ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
@@ -317,14 +333,14 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
         overlay: false,
         forceEnable: false,
         exclude: /node_modules/i,
-        include: /\\\\.([jt]sx?|flow)$/i
+        include: /\\\\.([cm]js|[jt]sx?|flow)$/i
       }
     )
   ],
   entry: {
     bundle: [
-      '@nativescript/core/globals/index.js',
-      '@nativescript/core/bundle-entry-points.js',
+      '@nativescript/core/globals/index',
+      '@nativescript/core/bundle-entry-points',
       '__jest__/src/app.js',
       '@nativescript/core/ui/frame',
       '@nativescript/core/ui/frame/activity'
@@ -376,6 +392,8 @@ exports[`react configuration > android > base config 1`] = `
       '.ts',
       '.android.js',
       '.js',
+      '.android.mjs',
+      '.mjs',
       '.android.css',
       '.css',
       '.android.scss',
@@ -408,13 +426,16 @@ exports[`react configuration > android > base config 1`] = `
             options: {
               platform: 'android'
             }
-          },
-          /* config.module.rule('bundle').use('nativescript-hot-loader') */
+          }
+        ]
+      },
+      /* config.module.rule('workers') */
+      {
+        test: /\\\\.(mjs|js|ts)$/,
+        use: [
+          /* config.module.rule('workers').use('nativescript-worker-loader') */
           {
-            loader: 'nativescript-hot-loader',
-            options: {
-              injectHMRRuntime: true
-            }
+            loader: 'nativescript-worker-loader'
           }
         ]
       },
@@ -447,16 +468,6 @@ exports[`react configuration > android > base config 1`] = `
           /node_modules/
         ]
       },
-      /* config.module.rule('workers') */
-      {
-        test: /\\\\.(js|ts)$/,
-        use: [
-          /* config.module.rule('workers').use('nativescript-worker-loader') */
-          {
-            loader: 'nativescript-worker-loader'
-          }
-        ]
-      },
       /* config.module.rule('xml') */
       {
         test: /\\\\.xml$/,
@@ -485,7 +496,12 @@ exports[`react configuration > android > base config 1`] = `
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -510,7 +526,12 @@ exports[`react configuration > android > base config 1`] = `
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -576,6 +597,10 @@ exports[`react configuration > android > base config 1`] = `
     new ContextExclusionPlugin(
       /(.*)App_Resources(.*)/
     ),
+    /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
+    new ContextExclusionPlugin(
+      /\\\\.(ios)\\\\.(\\\\w+)$/
+    ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
@@ -634,8 +659,8 @@ exports[`react configuration > android > base config 1`] = `
   ],
   entry: {
     bundle: [
-      '@nativescript/core/globals/index.js',
-      '@nativescript/core/bundle-entry-points.js',
+      '@nativescript/core/globals/index',
+      '@nativescript/core/bundle-entry-points',
       '__jest__/src/app.js',
       '@nativescript/core/ui/frame',
       '@nativescript/core/ui/frame/activity'
@@ -687,6 +712,8 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
       '.ts',
       '.ios.js',
       '.js',
+      '.ios.mjs',
+      '.mjs',
       '.ios.css',
       '.css',
       '.ios.scss',
@@ -726,6 +753,16 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
             options: {
               injectHMRRuntime: true
             }
+          }
+        ]
+      },
+      /* config.module.rule('workers') */
+      {
+        test: /\\\\.(mjs|js|ts)$/,
+        use: [
+          /* config.module.rule('workers').use('nativescript-worker-loader') */
+          {
+            loader: 'nativescript-worker-loader'
           }
         ]
       },
@@ -769,16 +806,6 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
           /node_modules/
         ]
       },
-      /* config.module.rule('workers') */
-      {
-        test: /\\\\.(js|ts)$/,
-        use: [
-          /* config.module.rule('workers').use('nativescript-worker-loader') */
-          {
-            loader: 'nativescript-worker-loader'
-          }
-        ]
-      },
       /* config.module.rule('xml') */
       {
         test: /\\\\.xml$/,
@@ -807,7 +834,12 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -832,7 +864,12 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -898,6 +935,10 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
     new ContextExclusionPlugin(
       /(.*)App_Resources(.*)/
     ),
+    /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
+    new ContextExclusionPlugin(
+      /\\\\.(android)\\\\.(\\\\w+)$/
+    ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
@@ -961,14 +1002,14 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
         overlay: false,
         forceEnable: false,
         exclude: /node_modules/i,
-        include: /\\\\.([jt]sx?|flow)$/i
+        include: /\\\\.([cm]js|[jt]sx?|flow)$/i
       }
     )
   ],
   entry: {
     bundle: [
-      '@nativescript/core/globals/index.js',
-      '@nativescript/core/bundle-entry-points.js',
+      '@nativescript/core/globals/index',
+      '@nativescript/core/bundle-entry-points',
       '__jest__/src/app.js'
     ],
     'tns_modules/inspector_modules': [
@@ -1021,6 +1062,8 @@ exports[`react configuration > ios > base config 1`] = `
       '.ts',
       '.ios.js',
       '.js',
+      '.ios.mjs',
+      '.mjs',
       '.ios.css',
       '.css',
       '.ios.scss',
@@ -1053,13 +1096,16 @@ exports[`react configuration > ios > base config 1`] = `
             options: {
               platform: 'ios'
             }
-          },
-          /* config.module.rule('bundle').use('nativescript-hot-loader') */
+          }
+        ]
+      },
+      /* config.module.rule('workers') */
+      {
+        test: /\\\\.(mjs|js|ts)$/,
+        use: [
+          /* config.module.rule('workers').use('nativescript-worker-loader') */
           {
-            loader: 'nativescript-hot-loader',
-            options: {
-              injectHMRRuntime: true
-            }
+            loader: 'nativescript-worker-loader'
           }
         ]
       },
@@ -1092,16 +1138,6 @@ exports[`react configuration > ios > base config 1`] = `
           /node_modules/
         ]
       },
-      /* config.module.rule('workers') */
-      {
-        test: /\\\\.(js|ts)$/,
-        use: [
-          /* config.module.rule('workers').use('nativescript-worker-loader') */
-          {
-            loader: 'nativescript-worker-loader'
-          }
-        ]
-      },
       /* config.module.rule('xml') */
       {
         test: /\\\\.xml$/,
@@ -1130,7 +1166,12 @@ exports[`react configuration > ios > base config 1`] = `
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -1155,7 +1196,12 @@ exports[`react configuration > ios > base config 1`] = `
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -1221,6 +1267,10 @@ exports[`react configuration > ios > base config 1`] = `
     new ContextExclusionPlugin(
       /(.*)App_Resources(.*)/
     ),
+    /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
+    new ContextExclusionPlugin(
+      /\\\\.(android)\\\\.(\\\\w+)$/
+    ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
@@ -1279,8 +1329,8 @@ exports[`react configuration > ios > base config 1`] = `
   ],
   entry: {
     bundle: [
-      '@nativescript/core/globals/index.js',
-      '@nativescript/core/bundle-entry-points.js',
+      '@nativescript/core/globals/index',
+      '@nativescript/core/bundle-entry-points',
       '__jest__/src/app.js'
     ],
     'tns_modules/inspector_modules': [
