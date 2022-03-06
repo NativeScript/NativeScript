@@ -1,4 +1,6 @@
-import groovy.json.JsonSlurper //used to parse package.json
+import groovy.json.JsonSlurper
+
+//used to parse package.json
 import groovy.json.JsonBuilder
 import groovy.json.JsonOutput
 
@@ -6,95 +8,108 @@ def isWinOs = System.properties['os.name'].toLowerCase().contains('windows')
 
 apply plugin: 'com.android.library'
 
-def computeCompileSdkVersion () {
-    if(project.hasProperty("compileSdk")) {
-        return compileSdk
-    }
-    else {
-        return 28
-    }
+def computeCompileSdkVersion = { ->
+	project.hasProperty("compileSdk") ? compileSdk : COMPILE_SDK_VERSION as int }
+def computeTargetSdkVersion = { ->
+	project.hasProperty("targetSdk") ? targetSdk : COMPILE_SDK_VERSION as int }
+def computeBuildToolsVersion = { ->
+	project.hasProperty("buildToolsVersion") ? buildToolsVersion : BUILD_TOOLS_VERSION as String
 }
 
-def computeBuildToolsVersion() {
-    if(project.hasProperty("buildToolsVersion")) {
-        return buildToolsVersion
-    }
-    else {
-        return "28.0.2"
-    }
-}
-
-def computeAndroidXVersion() {
-    if(project.hasProperty("androidxVersion")) {
-        return androidxVersion
-    }
-    else {
-        return "1.0.0"
-    }
-}
-
-def computeSupportVersion() {
-    if(project.hasProperty("supportVersion")) {
-        return supportVersion
-    }
-    else {
-        return "28.0.0"
-    }
-}
-
-def computeTargetSdkVersion() {
-    if(project.hasProperty("targetSdk")) {
-        return targetSdk
-    }
-    else {
-        return 28
-    }
-}
 
 android {
-    compileSdkVersion computeCompileSdkVersion()
-    buildToolsVersion computeBuildToolsVersion()
+	compileSdkVersion computeCompileSdkVersion()
+	buildToolsVersion computeBuildToolsVersion()
 
-    defaultConfig {
-        minSdkVersion 16
-        targetSdkVersion computeTargetSdkVersion()
-        versionCode 1
-        versionName "1.0"
-    }
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-    }
+	defaultConfig {
+		minSdkVersion MIN_SDK_VERSION
+		targetSdkVersion computeTargetSdkVersion()
+		versionCode 1
+		versionName "1.0"
+	}
+	buildTypes {
+		release {
+			minifyEnabled false
+			proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+		}
+	}
+
+	compileOptions {
+		sourceCompatibility JavaVersion.VERSION_1_8
+		targetCompatibility JavaVersion.VERSION_1_8
+	}
+}
+
+apply plugin: 'org.mozilla.rust-android-gradle.rust-android'
+
+cargo {
+	module  = "../../nativescript_common"
+	libname = "nativescript_common"
+	targets = ["arm","arm64","x86","x86_64"]
+
+	apiLevels = [
+		"arm": 17,
+		"arm64": 21,
+		"x86": 17,
+		"x86_64": 21
+	]
+	profile = 'debug'
 }
 
 dependencies {
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
+	implementation fileTree(include: ['*.jar'], dir: 'libs')
 
-    if(project.hasProperty("useAndroidX")) {
-        println 'Using android X'
-        def androidxVersion = computeAndroidXVersion()
-        implementation 'androidx.viewpager:viewpager:' + androidxVersion
-        implementation 'androidx.fragment:fragment:' + androidxVersion
-        implementation 'androidx.transition:transition:' + androidxVersion
-				implementation "androidx.exifinterface:exifinterface:1.3.2"
-				implementation "androidx.appcompat:appcompat:1.1.0"
-    } else {
-        println 'Using support library'
-        implementation 'com.android.support:support-v4:' + computeSupportVersion()
-    }
+
+	def androidXAppCompatVersion = "${android_x_app_compat_version}"
+	if (project.hasProperty("androidXAppCompat")) {
+		androidXAppCompatVersion = androidXAppCompat
+	}
+
+	def androidXExifInterfaceVersion = "${android_x_exif_interface_version}"
+	if (project.hasProperty("androidXExifInterface")) {
+		androidXExifInterfaceVersion = androidXExifInterface
+	}
+
+	def androidXViewPagerVersion = "${android_x_view_pager_version}"
+	if (project.hasProperty("androidXViewPager")) {
+		androidXViewPagerVersion = androidXViewPager
+	}
+
+	def androidXFragmentVersion = "${android_x_fragment_version}"
+	if (project.hasProperty("androidXFragment")) {
+		androidXFragmentVersion = androidXFragment
+	}
+
+	def androidXTransitionVersion = "${android_x_transition_version}"
+	if (project.hasProperty("androidXTransition")) {
+		androidXTransitionVersion = androidXTransition
+	}
+
+
+	implementation "androidx.appcompat:appcompat:$androidXAppCompatVersion"
+	implementation "androidx.exifinterface:exifinterface:$androidXExifInterfaceVersion"
+	implementation "androidx.viewpager2:viewpager2:$androidXViewPagerVersion"
+	implementation "androidx.fragment:fragment:$androidXFragmentVersion"
+	implementation "androidx.transition:transition:$androidXTransitionVersion"
 }
 
-task cleanBuildDir (type: Delete) {
-    delete "../build/"
+task cleanBuildDir(type: Delete) {
+	delete "../build/"
 }
 
-task copyAar << {
-    copy {
-        from "build/outputs/aar/widgets-release.aar"
-        into "../build/"
-    }
+task copyAar {
+	doLast {
+		copy {
+			from "build/outputs/aar/widgets-release.aar"
+			into "../build/"
+		}
+	}
+}
+
+tasks.whenTaskAdded { task ->
+	if ((task.name == 'javaPreCompileDebug' || task.name == 'javaPreCompileRelease')) {
+		task.dependsOn 'cargoBuild'
+	}
 }
 
 assemble.dependsOn(cleanBuildDir)
