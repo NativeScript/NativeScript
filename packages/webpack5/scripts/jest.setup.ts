@@ -13,10 +13,10 @@ jest.mock('cosmiconfig', () => ({
 	},
 }));
 
+const getValueMock = jest.fn();
+getValueMock.mockImplementation((key, defaultValue) => defaultValue);
 jest.mock('../src/helpers/config.ts', () => ({
-	getValue(key, defaultValue) {
-		return defaultValue;
-	},
+	getValue: getValueMock,
 }));
 
 jest.mock('os', () => {

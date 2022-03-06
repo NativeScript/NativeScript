@@ -147,7 +147,7 @@ export interface NativeScriptConfig {
 	 */
 	id?: string;
 	/**
-	 * App's main entry file (currently ignored - set it in package.json main field)
+	 * App's main entry file - this setting overrides the value set in package.json
 	 */
 	main?: string;
 	/**

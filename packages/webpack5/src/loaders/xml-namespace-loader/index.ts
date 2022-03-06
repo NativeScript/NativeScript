@@ -75,16 +75,22 @@ async function parseXML(content: string): Promise<ParseResult> {
 		const resolvePaths = [
 			localNamespacePath,
 			localModulePath,
-			`${localModulePath}.xml`,
 			moduleName,
 			namespace,
-			`${moduleName}.xml`,
 			`~/${moduleName}`,
 			`~/${namespace}`,
+		];
+
+		// fallbacks for codeless namespaces
+		const fallbackResolvePaths = [
+			`${localModulePath}.xml`,
+			`${moduleName}.xml`,
 			`~/${moduleName}.xml`,
 		];
-		DEBUG && console.log({ resolvePaths });
+
+		DEBUG && console.log({ resolvePaths, fallbackResolvePaths });
 		let resolvedPath;
+		let isFallbackPath = false;
 
 		for (const p of resolvePaths) {
 			resolvedPath = await resolveAsync(this.context, p).catch(noop);
@@ -95,7 +101,23 @@ async function parseXML(content: string): Promise<ParseResult> {
 			}
 		}
 
-		DEBUG && console.log({ resolvedPath });
+		if (!resolvedPath) {
+			for (const p of fallbackResolvePaths) {
+				resolvedPath = await resolveAsync(this.context, p).catch(noop);
+
+				// break on first match
+				if (resolvedPath) {
+					isFallbackPath = true;
+					break;
+				}
+			}
+		}
+
+		DEBUG &&
+			console.log({
+				resolvedPath,
+				isFallbackPath,
+			});
 
 		// bail if we haven't resolved a path
 		if (!resolvedPath) {
@@ -104,10 +126,15 @@ async function parseXML(content: string): Promise<ParseResult> {
 
 		const { dir, name } = parse(resolvedPath);
 
-		// register resolved path + short name
-		namespaces.push({ name: namespace, path: resolvedPath });
-		namespaces.push({ name: moduleName, path: resolvedPath });
-		this.addDependency(resolvedPath);
+		DEBUG && console.log({ namespace, moduleName });
+
+		// check if we are not in a fallback path, in which case we shouldn't register it as a namespace
+		if (!isFallbackPath) {
+			// register resolved path + short name
+			namespaces.push({ name: namespace, path: resolvedPath });
+			namespaces.push({ name: moduleName, path: resolvedPath });
+			this.addDependency(resolvedPath);
+		}
 
 		const noExtFilename = join(dir, name);
 
