@@ -1042,6 +1042,16 @@ pub extern "C" fn native_fs_writev(
     position: c_long,
     callback: *const AsyncCallback,
 ) {
+    writev(fd, buffer, buffer_len, position, callback);
+}
+
+pub(crate) fn writev(
+    fd: c_int,
+    buffer: *const *const ByteBuf,
+    buffer_len: size_t,
+    position: c_long,
+    callback: *const AsyncCallback,
+) {
     let on_success = AsyncCallback::clone_from_ptr(callback);
     let callback = AsyncClosure::<usize, std::io::Error>::new(Box::new(move |success, error| {
         if error.is_some() {

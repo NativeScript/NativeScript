@@ -140,6 +140,10 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     bytes: jbyteArray,
     callback: jlong,
 ) {
+    nativeAppendFileWithBytes(env, fd, bytes, callback);
+}
+
+pub(crate) fn nativeAppendFileWithBytes(env: JNIEnv, fd: jint, bytes: jbyteArray, callback: jlong) {
     let callback = callback as *const AsyncCallback;
     let callback = AsyncCallback::clone_from_ptr(callback);
     let bytes = env.new_global_ref(bytes).unwrap();
@@ -180,6 +184,10 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     data: JString,
     callback: jlong,
 ) {
+    nativeAppendFileWithString(fd, data, callback);
+}
+
+pub(crate) fn nativeAppendFileWithString(fd: jint, data: JString, callback: jlong) {
     let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
     let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
@@ -828,6 +836,18 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     position: jlong,
     callback: jlong,
 ) {
+    nativeRead(env, fd, buffer, offset, length, position, callback);
+}
+
+pub(crate) fn nativeRead(
+    env: JNIEnv,
+    fd: jint,
+    buffer: JByteBuffer,
+    offset: jlong,
+    length: jlong,
+    position: jlong,
+    callback: jlong,
+) {
     let callback = callback as *const AsyncCallback;
     let callback = AsyncCallback::clone_from_ptr(callback);
     let bytes = env.new_global_ref(buffer).unwrap();
@@ -855,6 +875,18 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
 pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativeReadWithBytes(
     env: JNIEnv,
     _: JClass,
+    fd: jint,
+    buffer: jbyteArray,
+    offset: jlong,
+    length: jlong,
+    position: jlong,
+    callback: jlong,
+) {
+    nativeReadWithBytes(env, fd, buffer, offset, length, position, callback);
+}
+
+pub(crate) fn nativeReadWithBytes(
+    env: JNIEnv,
     fd: jint,
     buffer: jbyteArray,
     offset: jlong,
@@ -1108,6 +1140,16 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
 pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativeReadv(
     env: JNIEnv,
     _: JClass,
+    fd: jint,
+    buffers: jobjectArray,
+    position: jlong,
+    callback: jlong,
+) {
+    nativeReadv(env, fd, buffers, position, callback);
+}
+
+pub(crate) fn nativeReadv(
+    env: JNIEnv,
     fd: jint,
     buffers: jobjectArray,
     position: jlong,
@@ -1398,6 +1440,18 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     position: jlong,
     callback: jlong,
 ) {
+    nativeWrite(env, fd, buffer, offset, length, position, callback);
+}
+
+pub(crate) fn nativeWrite(
+    env: JNIEnv,
+    fd: jint,
+    buffer: JByteBuffer,
+    offset: jlong,
+    length: jlong,
+    position: jlong,
+    callback: jlong,
+) {
     let callback = callback as *const AsyncCallback;
     let callback = AsyncCallback::clone_from_ptr(callback);
     let buffer = env.new_global_ref(buffer).unwrap();
@@ -1426,6 +1480,18 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
 pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativeWriteBytes(
     env: JNIEnv,
     _: JClass,
+    fd: jint,
+    buffer: jbyteArray,
+    offset: jlong,
+    length: jlong,
+    position: jlong,
+    callback: jlong,
+) {
+    nativeWriteBytes(env, fd, buffer, offset, length, position, callback);
+}
+
+pub(crate) fn nativeWriteBytes(
+    env: JNIEnv,
     fd: jint,
     buffer: jbyteArray,
     offset: jlong,
@@ -1519,7 +1585,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     let encoding = get_str(encoding, "");
 
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_success, error| {
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
         if error.is_some() {
             on_success.on_error(jni::objects::JValue::Object(
                 error_to_jstring(error.unwrap()).as_obj(),
@@ -1540,6 +1606,10 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     data: jbyteArray,
     callback: jlong,
 ) {
+    nativeWriteFileWithBytes(env, fd, data, callback);
+}
+
+pub(crate) fn nativeWriteFileWithBytes(env: JNIEnv, fd: jint, data: jbyteArray, callback: jlong) {
     let callback = callback as *const AsyncCallback;
     let callback = AsyncCallback::clone_from_ptr(callback);
     let data = env.new_global_ref(data).unwrap();
@@ -1580,6 +1650,10 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     data: JByteBuffer,
     callback: jlong,
 ) {
+    nativeWriteFileWithBuffer(env, fd, data, callback);
+}
+
+pub(crate) fn nativeWriteFileWithBuffer(env: JNIEnv, fd: jint, data: JByteBuffer, callback: jlong) {
     let callback = callback as *const AsyncCallback;
     let callback = AsyncCallback::clone_from_ptr(callback);
     let data = env.new_global_ref(data).unwrap();
@@ -1710,6 +1784,16 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
 pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativeWritev(
     env: JNIEnv,
     _: JClass,
+    fd: jint,
+    buffers: jobjectArray,
+    position: jlong,
+    callback: jlong,
+) {
+    nativeWritev(env, fd, buffers, position, callback);
+}
+
+pub(crate) fn nativeWritev(
+    env: JNIEnv,
     fd: jint,
     buffers: jobjectArray,
     position: jlong,

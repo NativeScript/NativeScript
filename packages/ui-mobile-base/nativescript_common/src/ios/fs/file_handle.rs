@@ -408,8 +408,8 @@ pub extern "C" fn native_file_handle_write_string(
         let on_success = AsyncCallback::clone_from_ptr(callback);
         let callback =
             AsyncClosure::<usize, std::io::Error>::new(Box::new(move |success, error| {
-                if error.is_some() {
-                    on_success.on_error(to_error(error.unwrap().to_string()))
+                if let Some(error) = error {
+                    on_success.on_error(to_error(error.to_string()))
                 } else {
                     on_success.on_success(NonNull::new(success.unwrap() as *mut c_void))
                 }
@@ -474,6 +474,18 @@ pub extern "C" fn native_file_handle_write_file_with_bytes(
 
         handle.write_file_with_bytes(buf, callback)
     }
+}
+
+#[no_mangle]
+pub extern "C" fn native_file_handle_writev(
+    handle: *mut FileHandle,
+    buffer: *const *const ByteBuf,
+    buffer_len: size_t,
+    position: c_long,
+    callback: *const AsyncCallback,
+) {
+    let handle = unsafe { &mut *handle };
+    super::a_sync::writev(handle.fd(), buffer, buffer_len, position, callback);
 }
 
 #[no_mangle]
