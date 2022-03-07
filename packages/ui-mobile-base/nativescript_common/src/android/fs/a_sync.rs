@@ -1624,7 +1624,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
         if let Some(error) = error {
             on_success.on_error(jni::objects::JValue::Object(
-                error_to_jstring(error.unwrap()).as_obj(),
+                error_to_jstring(error).as_obj(),
             ))
         } else {
             on_success.on_success(JObject::null().into())
