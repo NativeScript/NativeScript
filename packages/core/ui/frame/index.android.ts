@@ -84,6 +84,7 @@ export class Frame extends FrameBase {
 	private _tearDownPending = false;
 	private _attachedToWindow = false;
 	private _cachedTransitionState: TransitionState;
+	private _frameCreateTimeout: NodeJS.Timeout;
 
 	constructor() {
 		super();
@@ -237,7 +238,7 @@ export class Frame extends FrameBase {
 			this.backgroundColor = this._originalBackground;
 			this._originalBackground = null;
 		}
-		setTimeout(() => {
+		this._frameCreateTimeout = setTimeout(() => {
 			// there's a bug with nested frames where sometimes the nested fragment is not recreated at all
 			// so we manually check on loaded event if the fragment is not recreated and recreate it
 			const currentEntry = this._currentEntry || this._executingContext?.entry;
@@ -258,6 +259,10 @@ export class Frame extends FrameBase {
 
 	onUnloaded() {
 		super.onUnloaded();
+		if (typeof this._frameCreateTimeout === 'number') {
+			clearTimeout(this._frameCreateTimeout);
+			this._frameCreateTimeout = null;
+		}
 	}
 
 	private disposeCurrentFragment(): void {
