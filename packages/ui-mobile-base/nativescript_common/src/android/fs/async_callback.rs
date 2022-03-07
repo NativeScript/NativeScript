@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use jni::objects::{JClass, JObject, JValue};
+use jni::objects::{JClass, JObject};
 use jni::sys::jlong;
 use jni::JNIEnv;
 

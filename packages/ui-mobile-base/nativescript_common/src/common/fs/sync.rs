@@ -301,8 +301,8 @@ pub fn futimes(fd: c_int, atime: c_long, mtime: c_long) -> std::io::Result<()> {
 pub fn lchmod(path: &str, mode: c_ushort) -> std::io::Result<()> {
     let mut options = OpenOptions::new();
     options.write(true);
-    let mut file = options.open(path)?;
-    let mut permissions = std::fs::Permissions::from_mode(mode.into());
+    let file = options.open(path)?;
+    let permissions = std::fs::Permissions::from_mode(mode.into());
     file.set_permissions(permissions)
 }
 

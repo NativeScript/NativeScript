@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::ffi::{CStr, CString};
+use std::ffi::{CStr};
 use std::os::raw::c_char;
 use std::ptr::NonNull;
 use std::sync::Arc;
@@ -148,7 +148,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FsWatcher_native
 
 #[no_mangle]
 pub extern "system" fn Java_org_nativescript_widgets_filesystem_FsWatcher_nativeRef(
-    env: JNIEnv,
+    _env: JNIEnv,
     _: JClass,
     filename: JString,
     callback: jlong,
@@ -198,7 +198,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_WatcherEvent_nat
     let callback = AsyncCallback::clone_from_ptr(callback);
     let on_close = AsyncCallback::clone_from_ptr(on_close);
 
-    let mut map = watcher_callback_map().lock();
+    let map = watcher_callback_map().lock();
     if let Some(item) = map.get(&callback).map(|c| Arc::clone(&c.inner)) {
         let close_callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
             if let Some(error) = error {

@@ -6,12 +6,12 @@ use libc::{c_int, c_uint, c_ushort};
 use crate::android::prelude::*;
 use crate::android::FILE_SYSTEM_CLASS;
 use crate::common::fs;
-use crate::common::fs::file_stat::FileStat;
+
 use crate::common::fs::prelude::handle_meta;
 use crate::common::{ByteBuf, ByteBufMut};
 
 use super::file_dir::build_dir;
-use super::file_dirent::{build_dirent, build_dirents, build_dirents_paths};
+use super::file_dirent::{build_dirents, build_dirents_paths};
 use super::file_stat::build_stat;
 
 #[no_mangle]
@@ -172,10 +172,10 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     _: JClass,
     src: JString,
     dest: JString,
-    flags: jint,
+    _flags: jint,
 ) {
-    let src = get_str(src, "");
-    let dest = get_str(dest, "");
+    let _src = get_str(src, "");
+    let _dest = get_str(dest, "");
     todo!()
 }
 

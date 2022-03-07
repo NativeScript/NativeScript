@@ -25,7 +25,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileDir_nativeCl
 ) {
     let dir: *mut FileDir = file_dir as _;
     if !dir.is_null() {
-        let mut dir = unsafe { Box::from_raw(dir) };
+        let dir = unsafe { Box::from_raw(dir) };
         let result = dir.close();
         if let Err(error) = result {
             let _ = env.throw(error.to_string());
@@ -44,7 +44,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileDir_nativeCl
     let on_success = AsyncCallback::clone_from_ptr(callback);
     let dir: *mut FileDir = file_dir as _;
     if !dir.is_null() {
-        let mut dir = unsafe { Box::from_raw(dir) };
+        let dir = unsafe { Box::from_raw(dir) };
         dir.close_async(Box::new(move |error| {
             if let Some(error) = error {
                 on_success.on_error(jni::objects::JValue::Object(
@@ -65,7 +65,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileDir_nativePa
 ) -> jobject {
     let dir: *mut FileDir = file_dir as _;
     if !dir.is_null() {
-        let mut dir = unsafe { Box::from_raw(dir) };
+        let dir = unsafe { Box::from_raw(dir) };
         return env.new_string(dir.path()).unwrap().into_inner();
     }
     JObject::null().into_inner()
@@ -91,7 +91,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileDir_nativeRe
 ) -> jobject {
     let dir: *mut FileDir = file_dir as _;
     if !dir.is_null() {
-        let mut dir = unsafe { Box::from_raw(dir) };
+        let dir = unsafe { Box::from_raw(dir) };
         match dir.read() {
             Ok(dirent) => {
                 return build_dirent(&env, dirent).into_inner();
@@ -115,7 +115,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileDir_nativeRe
     let on_success = AsyncCallback::clone_from_ptr(callback);
     let dir: *mut FileDir = file_dir as _;
     if !dir.is_null() {
-        let mut dir = unsafe { Box::from_raw(dir) };
+        let dir = unsafe { Box::from_raw(dir) };
         dir.read_async(Box::new(move |dirent, error| {
             if error.is_some() {
                 on_success.on_error(jni::objects::JValue::Object(

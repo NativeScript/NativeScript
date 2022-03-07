@@ -1,23 +1,17 @@
-use std::ffi::{c_void, CString};
 use std::path::PathBuf;
-use std::ptr::NonNull;
 use std::sync::Arc;
 
-use jni::objects::{
-    AutoPrimitiveArray, JByteBuffer, JClass, JObject, JString, JValue, ReleaseMode,
-};
-use jni::sys::{jboolean, jbyteArray, jint, jlong, jobject, jobjectArray, JNI_TRUE};
+use jni::objects::{JByteBuffer, JClass, JObject, JString, JValue, ReleaseMode};
+use jni::sys::{jboolean, jbyteArray, jint, jlong, jobjectArray, JNI_TRUE};
 use jni::JNIEnv;
-use libc::{c_char, c_int, c_long, c_uint, c_ushort};
-use log::log;
-use parking_lot::Mutex;
+use libc::{c_int, c_uint, c_ushort};
 
 use crate::android::prelude::*;
-use crate::android::{FILE_SYSTEM_CLASS, JVM, JVM_CLASS_CACHE};
+use crate::android::{FILE_SYSTEM_CLASS, JVM};
 use crate::common::fs;
 pub use crate::common::fs::a_sync::FileWatchEvent;
 pub use crate::common::fs::a_sync::WatchEvent;
-use crate::common::fs::a_sync::{runtime, AsyncClosure, OnErrorCallback, OnSuccessCallback};
+use crate::common::fs::a_sync::{runtime, AsyncClosure};
 use crate::common::fs::file_dir::FileDir;
 use crate::common::fs::file_stat::FileStat;
 use crate::common::{ByteBuf, ByteBufMut};
@@ -915,7 +909,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     _: JNIEnv,
     _: JClass,
     path: JString,
-    encoding: JString,
+    _encoding: JString,
     callback: jlong,
 ) {
     let callback = callback as *const AsyncCallback;
@@ -943,7 +937,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     _: JNIEnv,
     _: JClass,
     path: JString,
-    encoding: JString,
+    _encoding: JString,
     callback: jlong,
 ) {
     let callback = callback as *const AsyncCallback;
@@ -1529,7 +1523,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     let encoding = get_str(encoding, "");
 
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_success, error| {
         if error.is_some() {
             on_success.on_error(jni::objects::JValue::Object(
                 error_to_jstring(error.unwrap()).as_obj(),
@@ -1566,7 +1560,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
             )
         };
         match fs::sync::write_file_with_bytes(fd, bytes) {
-            Ok(wrote) => {
+            Ok(_) => {
                 // force drop of array to enable jni usage
                 drop(data);
                 callback.on_success(jni::objects::JValue::Object(jni::objects::JObject::null()))
@@ -1600,7 +1594,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
             .get_direct_buffer_address(JByteBuffer::from(data.as_obj()))
             .unwrap();
         match fs::sync::write_file_with_bytes(fd, bytes) {
-            Ok(wrote) => {
+            Ok(_) => {
                 callback.on_success(jni::objects::JValue::Object(jni::objects::JObject::null()))
             }
             Err(error) => callback.on_error(jni::objects::JValue::Object(
@@ -1627,8 +1621,8 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     let encoding = get_str(encoding, "");
 
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
             on_success.on_error(jni::objects::JValue::Object(
                 error_to_jstring(error.unwrap()).as_obj(),
             ))

@@ -1,11 +1,11 @@
-use std::ffi::{c_void, CString};
-use std::ptr::NonNull;
+
+
 
 use jni::objects::{GlobalRef, JClass, JObject, JString};
-use jni::sys::{jboolean, jobject};
+use jni::sys::{jboolean};
 use jni::JNIEnv;
-use libc::{c_char, c_double, c_float, c_int};
-use log::log;
+use libc::{c_double, c_float, c_int};
+
 
 use crate::android::{
     BOOLEAN_CLASS, DOUBLE_CLASS, FLOAT_CLASS, INTEGER_CLASS, JVM, JVM_CLASS_CACHE, LONG_CLASS,

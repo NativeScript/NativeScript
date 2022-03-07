@@ -1,15 +1,15 @@
 use std::ffi::OsString;
 use std::sync::Arc;
 
-use jni::objects::{JClass, JObject, JValue};
+use jni::objects::{JClass, JObject};
 use jni::sys::{jboolean, jlong, jobjectArray, JNI_FALSE};
 use jni::{sys::jobject, JNIEnv};
 
 use crate::android::prelude::*;
-use crate::android::{FILE_DIRENT_CLASS, OBJECT_CLASS, STRING_CLASS};
+use crate::android::{FILE_DIRENT_CLASS, OBJECT_CLASS};
 use crate::common::fs::file_dirent::FileDirent;
 
-use super::a_sync::AsyncCallback;
+
 
 pub(crate) fn build_dirent<'a>(env: &JNIEnv<'a>, dirent: FileDirent) -> JObject<'a> {
     let clazz = find_class(FILE_DIRENT_CLASS).unwrap();
@@ -22,7 +22,7 @@ pub(crate) fn build_dirents(env: &JNIEnv, dirent: Vec<FileDirent>) -> jobjectArr
     let mut dirent = dirent;
     let object_clazz = find_class(OBJECT_CLASS).unwrap();
     let clazz = find_class(FILE_DIRENT_CLASS).unwrap();
-    let mut object_array = env
+    let object_array = env
         .new_object_array(
             dirent.len().try_into().unwrap(),
             object_clazz,
@@ -45,7 +45,7 @@ pub(crate) fn build_dirents(env: &JNIEnv, dirent: Vec<FileDirent>) -> jobjectArr
 pub(crate) fn build_dirents_paths(env: &JNIEnv, dirent: Vec<OsString>) -> jobjectArray {
     let mut dirent = dirent;
     let clazz = find_class(OBJECT_CLASS).unwrap();
-    let mut object_array = env
+    let object_array = env
         .new_object_array(dirent.len().try_into().unwrap(), clazz, JObject::null())
         .unwrap();
 

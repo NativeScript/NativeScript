@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 use std::ffi::c_void;
-use std::os::unix::fs::MetadataExt;
 
-use jni::objects::{GlobalRef, JByteBuffer, JClass, JObject, JString, JValue, ReleaseMode};
-use jni::sys::{jbyteArray, jint, jlong, jobject};
-use jni::JNIEnv;
+
+use jni::objects::{GlobalRef, JValue};
+use jni::sys::{jint};
+
 use jni::JavaVM;
 use once_cell::sync::OnceCell;
 

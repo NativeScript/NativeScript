@@ -1,9 +1,9 @@
 use std::ptr::NonNull;
 
-use jni::objects::{JObject, JValue};
-use jni::sys::jobject;
+use jni::objects::{JObject};
+
 use jni::JNIEnv;
-use libc::stat;
+
 
 use crate::android::prelude::*;
 use crate::android::FILE_STAT_CLASS;
