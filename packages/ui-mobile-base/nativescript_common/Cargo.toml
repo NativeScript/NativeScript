@@ -1,5 +1,3 @@
-cargo-features = ["strip"]
-
 [package]
 name = "nativescript_common"
 version = "0.1.0"
@@ -20,30 +18,28 @@ lto = true
 opt-level = "z"
 debug = false
 incremental = false
-strip = true
+strip = "debuginfo"
 
 [build-dependencies]
 cbindgen = "0.20.0"
 
 
 [dependencies]
-parking_lot = "0.11.2"
+parking_lot = "0.12.0"
 once_cell = "1.8.0"
 filetime = "0.2"
-libc = "0.2.107"
-bitflags = "1.3.2"
-rand = "0.8.4"
+libc = "0.2.119"
 faccess = { git = "https://github.com/MightyPork/faccess", rev = "0c94ef6d4b08a650ecaa31d4dcbd1b769f8cb56b" }
 notify = "4.0.17"
 backoff = { git = "https://github.com/ihrwein/backoff", rev = "08f4e2111ea4b856b24556555d5c6ecf14cfa69d" }
 num_cpus = "1.0"
 tokio = { version = "1.14.0", features = ["rt-multi-thread"] }
 log = "0.4.8"
-
+rand = "0.8.5"
 
 [target.'cfg(target_os="android")'.dependencies]
 jni = "0.19.0"
-android_logger = "0.9.0"
+android_logger = "0.10.1"
 
 [target.'cfg(target_os="macos")'.dependencies]
 objc = { version = "0.2.4" }

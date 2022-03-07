@@ -4,19 +4,16 @@ use std::path::Path;
 
 use libc::{c_char, c_int, c_uint, c_ulong, c_ulonglong, size_t, ssize_t};
 
-use crate::common::{BufOfStrings, ByteBuf, ByteBufMut, fs};
 use crate::common::fs::file_dir::FileDir;
 use crate::common::fs::file_dirent::FileDirentBuf;
 use crate::common::fs::file_stat::FileStat;
 use crate::common::fs::sync::open_path;
+use crate::common::{fs, BufOfStrings, ByteBuf, ByteBufMut};
 use crate::ios::prelude::*;
 use crate::ios::throw_error;
 
 #[no_mangle]
-pub extern "C" fn native_fs_access_sync(
-    path: *const c_char,
-    mode: c_int,
-) {
+pub extern "C" fn native_fs_access_sync(path: *const c_char, mode: c_int) {
     let result = fs::sync::access(get_str(path, "").as_ref(), mode);
 
     if let Err(error) = result {
@@ -44,7 +41,13 @@ pub extern "C" fn native_fs_append_file_with_string_sync(fd: c_int, data: *const
 }
 
 #[no_mangle]
-pub extern "C" fn native_fs_append_file_with_path_bytes_sync(path: *const c_char, data: *const u8, len: size_t, mode: c_int, flags: c_int) {
+pub extern "C" fn native_fs_append_file_with_path_bytes_sync(
+    path: *const c_char,
+    data: *const u8,
+    len: size_t,
+    mode: c_int,
+    flags: c_int,
+) {
     let path = get_str(path, "");
     let buf = unsafe { std::slice::from_raw_parts(data, len) };
     let result = fs::sync::append_file_with_path_bytes(path.as_ref(), buf, mode, flags);
@@ -54,7 +57,12 @@ pub extern "C" fn native_fs_append_file_with_path_bytes_sync(path: *const c_char
 }
 
 #[no_mangle]
-pub extern "C" fn native_fs_append_file_with_path_string_sync(path: *const c_char, data: *const c_char, mode: c_int, flags: c_int) {
+pub extern "C" fn native_fs_append_file_with_path_string_sync(
+    path: *const c_char,
+    data: *const c_char,
+    mode: c_int,
+    flags: c_int,
+) {
     let path = get_str(path, "");
     let data = get_str(data, "");
     let result = fs::sync::append_file_with_path_str(path.as_ref(), data.as_ref(), mode, flags);
@@ -273,17 +281,9 @@ pub extern "C" fn native_fs_open_sync(path: *const c_char, flags: c_int, mode: c
 }
 
 #[no_mangle]
-pub extern "C" fn native_fs_readdir_with_file_type_sync(
-    path: *const c_char,
-) -> *mut FileDirentBuf {
+pub extern "C" fn native_fs_readdir_with_file_type_sync(path: *const c_char) -> *mut FileDirentBuf {
     return match fs::sync::readdir_with_file_types(get_str(path, "").as_ref(), "") {
-        Ok(buf) => {
-            Box::into_raw(
-                Box::new(
-                    FileDirentBuf::from(buf)
-                )
-            )
-        }
+        Ok(buf) => Box::into_raw(Box::new(FileDirentBuf::from(buf))),
         Err(error) => {
             throw_error(&error.to_string());
             std::ptr::null_mut()
@@ -300,11 +300,7 @@ pub extern "C" fn native_fs_readdir_sync(dir: *const c_char) -> *mut BufOfString
             for dir in fd {
                 buf.push(CString::new(dir.as_bytes()).unwrap().into_raw())
             }
-            Box::into_raw(
-                Box::new(
-                    BufOfStrings::from(buf)
-                )
-            )
+            Box::into_raw(Box::new(BufOfStrings::from(buf)))
         }
         Err(error) => {
             throw_error(&error.to_string());
@@ -316,13 +312,7 @@ pub extern "C" fn native_fs_readdir_sync(dir: *const c_char) -> *mut BufOfString
 #[no_mangle]
 pub extern "C" fn native_fs_read_file_sync(path: *const c_char, flags: i32) -> *mut ByteBufMut {
     match fs::sync::read_file(get_str(path, "").as_ref(), flags) {
-        Ok(buf) => {
-            Box::into_raw(
-                Box::new(
-                    ByteBufMut::from(buf)
-                )
-            )
-        }
+        Ok(buf) => Box::into_raw(Box::new(ByteBufMut::from(buf))),
         Err(error) => {
             throw_error(&error.to_string());
             std::ptr::null_mut()
@@ -333,13 +323,7 @@ pub extern "C" fn native_fs_read_file_sync(path: *const c_char, flags: i32) -> *
 #[no_mangle]
 pub extern "C" fn native_fs_read_file_with_fd_sync(fd: c_int, flags: c_int) -> *mut ByteBufMut {
     match fs::sync::read_file_with_fd(fd, flags) {
-        Ok(buf) => {
-            Box::into_raw(
-                Box::new(
-                    ByteBufMut::from(buf)
-                )
-            )
-        }
+        Ok(buf) => Box::into_raw(Box::new(ByteBufMut::from(buf))),
         Err(error) => {
             throw_error(&error.to_string());
             std::ptr::null_mut()
@@ -554,7 +538,6 @@ pub extern "C" fn native_fs_write_file_with_path_string_sync(
     }
 }
 
-
 #[no_mangle]
 pub extern "C" fn native_fs_write_file_with_string_sync(
     fd: c_int,
@@ -566,7 +549,8 @@ pub extern "C" fn native_fs_write_file_with_string_sync(
             fd,
             get_str(data, "").as_ref(),
             get_str(encoding, "").as_ref(),
-        ).map(|_| ());
+        )
+        .map(|_| ());
 
         if let Err(error) = result {
             throw_error(&error.to_string());
@@ -604,7 +588,7 @@ pub extern "C" fn native_fs_write_file_with_bytes_sync(
     fd: c_int,
     data: *const u8,
     data_len: size_t,
-    encoding: *const c_char,
+    _encoding: *const c_char,
 ) {
     if !data.is_null() {
         let buf = unsafe { std::slice::from_raw_parts(data, data_len) };
@@ -646,7 +630,12 @@ pub extern "C" fn native_fs_write_string_sync(
     position: ssize_t,
 ) -> c_ulong {
     if !data.is_null() {
-        return match fs::sync::write_string(fd, get_str(data, "").as_ref(), get_str(encoding, "").as_ref(),position) {
+        return match fs::sync::write_string(
+            fd,
+            get_str(data, "").as_ref(),
+            get_str(encoding, "").as_ref(),
+            position,
+        ) {
             Ok(wrote) => wrote,
             Err(error) => {
                 throw_error(&error.to_string());

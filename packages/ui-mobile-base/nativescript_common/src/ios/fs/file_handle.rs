@@ -1,14 +1,14 @@
-use std::ffi::{c_void, CStr};
+use std::ffi::c_void;
 use std::os::raw::c_long;
 use std::ptr::NonNull;
 
 use libc::{c_char, c_int, c_longlong, c_uchar, c_uint, c_ushort, size_t, ssize_t};
 
-use crate::common::{ByteBuf, ByteBufMut};
 use crate::common::fs::a_sync::AsyncClosure;
 use crate::common::fs::file_handle::FileHandle;
 use crate::common::fs::file_stat::FileStat;
 use crate::common::fs::sync::open_handle_with_path;
+use crate::common::{ByteBuf, ByteBufMut};
 use crate::ios::fs::a_sync::AsyncCallback;
 use crate::ios::prelude::*;
 use crate::ios::throw_error;
@@ -68,9 +68,9 @@ pub extern "C" fn native_file_handle_append_file_with_bytes(
         let buf = ByteBuf::new(data, len);
 
         let on_success = AsyncCallback::clone_from_ptr(callback);
-        let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-            if error.is_some() {
-                on_success.on_error(to_error(error.unwrap().to_string()))
+        let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+            if let Some(error) = error {
+                on_success.on_error(to_error(error.to_string()))
             } else {
                 on_success.on_success(None)
             }
@@ -90,9 +90,9 @@ pub extern "C" fn native_file_handle_append_file_with_string(
     if !handle.is_null() && !data.is_null() {
         let handle = unsafe { &mut *handle };
         let on_success = AsyncCallback::clone_from_ptr(callback);
-        let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-            if error.is_some() {
-                on_success.on_error(to_error(error.unwrap().to_string()))
+        let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+            if let Some(error) = error {
+                on_success.on_error(to_error(error.to_string()))
             } else {
                 on_success.on_success(None)
             }
@@ -111,9 +111,9 @@ pub extern "C" fn native_file_handle_chmod(
     if !handle.is_null() {
         let handle = unsafe { &mut *handle };
         let on_success = AsyncCallback::clone_from_ptr(callback);
-        let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-            if error.is_some() {
-                on_success.on_error(to_error(error.unwrap().to_string()))
+        let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+            if let Some(error) = error {
+                on_success.on_error(to_error(error.to_string()))
             } else {
                 on_success.on_success(None)
             }
@@ -134,9 +134,9 @@ pub extern "C" fn native_file_handle_chown(
     if !handle.is_null() {
         let handle = unsafe { &mut *handle };
         let on_success = AsyncCallback::clone_from_ptr(callback);
-        let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-            if error.is_some() {
-                on_success.on_error(to_error(error.unwrap().to_string()))
+        let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+            if let Some(error) = error {
+                on_success.on_error(to_error(error.to_string()))
             } else {
                 on_success.on_success(None)
             }
@@ -154,9 +154,9 @@ pub extern "C" fn native_file_handle_close(
     if !handle.is_null() {
         let handle = unsafe { Box::from_raw(handle) };
         let on_success = AsyncCallback::clone_from_ptr(callback);
-        let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-            if error.is_some() {
-                on_success.on_error(to_error(error.unwrap().to_string()))
+        let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+            if let Some(error) = error {
+                on_success.on_error(to_error(error.to_string()))
             } else {
                 on_success.on_success(None)
             }
@@ -174,9 +174,9 @@ pub extern "C" fn native_file_handle_data_sync(
     if !handle.is_null() {
         let handle = unsafe { &mut *handle };
         let on_success = AsyncCallback::clone_from_ptr(callback);
-        let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-            if error.is_some() {
-                on_success.on_error(to_error(error.unwrap().to_string()))
+        let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+            if let Some(error) = error {
+                on_success.on_error(to_error(error.to_string()))
             } else {
                 on_success.on_success(None)
             }
@@ -307,9 +307,9 @@ pub extern "C" fn native_file_handle_sync(handle: *mut FileHandle, callback: *co
     if !handle.is_null() {
         let handle = unsafe { &mut *handle };
         let on_success = AsyncCallback::clone_from_ptr(callback);
-        let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-            if error.is_some() {
-                on_success.on_error(to_error(error.unwrap().to_string()))
+        let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+            if let Some(error) = error {
+                on_success.on_error(to_error(error.to_string()))
             } else {
                 on_success.on_success(None)
             }
@@ -329,9 +329,9 @@ pub extern "C" fn native_file_handle_truncate(
     if !handle.is_null() {
         let handle = unsafe { &mut *handle };
         let on_success = AsyncCallback::clone_from_ptr(callback);
-        let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-            if error.is_some() {
-                on_success.on_error(to_error(error.unwrap().to_string()))
+        let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+            if let Some(error) = error {
+                on_success.on_error(to_error(error.to_string()))
             } else {
                 on_success.on_success(None)
             }
@@ -352,9 +352,9 @@ pub extern "C" fn native_file_handle_utimes(
         let handle = unsafe { &mut *handle };
 
         let on_success = AsyncCallback::clone_from_ptr(callback);
-        let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-            if error.is_some() {
-                on_success.on_error(to_error(error.unwrap().to_string()))
+        let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+            if let Some(error) = error {
+                on_success.on_error(to_error(error.to_string()))
             } else {
                 on_success.on_success(None)
             }
@@ -414,13 +414,13 @@ pub extern "C" fn native_file_handle_write_string(
                     on_success.on_success(NonNull::new(success.unwrap() as *mut c_void))
                 }
             }))
-                .into_arc();
+            .into_arc();
 
         handle.write_string(
             get_str(data, "").as_ref(),
             get_str(encoding, "").as_ref(),
             position,
-            callback
+            callback,
         );
     }
 }
@@ -438,21 +438,16 @@ pub extern "C" fn native_file_handle_write_file_with_string(
         let encoding = get_str(encoding, "");
 
         let on_success = AsyncCallback::clone_from_ptr(callback);
-        let callback =
-            AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-                if error.is_some() {
-                    on_success.on_error(to_error(error.unwrap().to_string()))
-                } else {
-                    on_success.on_success(None)
-                }
-            }))
-                .into_arc();
+        let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+            if let Some(error) = error {
+                on_success.on_error(to_error(error.to_string()))
+            } else {
+                on_success.on_success(None)
+            }
+        }))
+        .into_arc();
 
-        handle.write_file_with_str(
-            data.as_ref(),
-            encoding.as_ref(),
-            callback
-        );
+        handle.write_file_with_str(data.as_ref(), encoding.as_ref(), callback);
     }
 }
 
@@ -468,15 +463,14 @@ pub extern "C" fn native_file_handle_write_file_with_bytes(
         let buf = ByteBuf::new(data, data_len);
 
         let on_success = AsyncCallback::clone_from_ptr(callback);
-        let callback =
-            AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-                if error.is_some() {
-                    on_success.on_error(to_error(error.unwrap().to_string()))
-                } else {
-                    on_success.on_success(None)
-                }
-            }))
-                .into_arc();
+        let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+            if let Some(error) = error {
+                on_success.on_error(to_error(error.to_string()))
+            } else {
+                on_success.on_success(None)
+            }
+        }))
+        .into_arc();
 
         handle.write_file_with_bytes(buf, callback)
     }

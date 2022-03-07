@@ -98,14 +98,13 @@ pub extern "C" fn native_fs_file_watcher_ref(
                 callback: Arc::clone(&callback),
                 inner: Arc::new(AsyncClosure {
                     callback: Box::new(move |event, error| {
-                        if error.is_some() {
+                        if let Some(error) = error {
                             (cb.on_error)(NonNull::new(
-                                CString::new(error.unwrap().to_string()).unwrap().into_raw()
-                                    as *mut c_void,
+                                CString::new(error.to_string()).unwrap().into_raw() as *mut c_void,
                             ))
                         } else {
                             (cb.on_success)(NonNull::new(
-                                Box::into_raw(Box::new(error.unwrap())) as *mut c_void
+                                Box::into_raw(Box::new(event.unwrap())) as *mut c_void
                             ))
                         }
                     }),

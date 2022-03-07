@@ -7,11 +7,7 @@ use crate::common::fs::file_dirent::FileDirent;
 #[no_mangle]
 pub extern "C" fn native_fs_file_dirent_clone(dirent: *mut FileDirent) -> *mut FileDirent {
     let dirent = unsafe { &*dirent };
-    Box::into_raw(
-        Box::new(
-            dirent.clone()
-        )
-    )
+    Box::into_raw(Box::new(dirent.clone()))
 }
 
 #[no_mangle]

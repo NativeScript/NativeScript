@@ -5,8 +5,8 @@ use libc::size_t;
 
 pub use constants::*;
 
-pub mod fs;
 pub(crate) mod constants;
+pub mod fs;
 
 #[repr(transparent)]
 #[derive(Copy, Clone, Default)]
@@ -26,20 +26,18 @@ impl ByteBufMut {
         Self {
             data,
             len: length,
-            inner: ByteBufInner { needs_to_clean: false },
+            inner: ByteBufInner {
+                needs_to_clean: false,
+            },
         }
     }
 
     pub fn as_slice<'a>(&self) -> &'a [u8] {
-        unsafe {
-            std::slice::from_raw_parts(self.data, self.len)
-        }
+        unsafe { std::slice::from_raw_parts(self.data, self.len) }
     }
 
     pub fn as_mut_slice<'a>(&self) -> &'a mut [u8] {
-        unsafe {
-            std::slice::from_raw_parts_mut(self.data, self.len)
-        }
+        unsafe { std::slice::from_raw_parts_mut(self.data, self.len) }
     }
 }
 
@@ -52,7 +50,9 @@ impl From<Vec<u8>> for ByteBufMut {
         Self {
             data,
             len,
-            inner: ByteBufInner { needs_to_clean: true },
+            inner: ByteBufInner {
+                needs_to_clean: true,
+            },
         }
     }
 }
@@ -64,16 +64,14 @@ impl Drop for ByteBufMut {
         }
         if !self.data.is_null() && self.len != 0 {
             unsafe {
-                let _ = Box::from_raw(
-                    std::slice::from_raw_parts_mut(self.data, self.len)
-                ).into_vec();
+                let _ =
+                    Box::from_raw(std::slice::from_raw_parts_mut(self.data, self.len)).into_vec();
             }
         }
     }
 }
 
 unsafe impl Send for ByteBufMut {}
-
 
 #[repr(C)]
 pub struct ByteBuf {
@@ -92,9 +90,7 @@ impl ByteBuf {
     }
 
     pub fn as_slice<'a>(&self) -> &'a [u8] {
-        unsafe {
-            std::slice::from_raw_parts(self.data, self.len)
-        }
+        unsafe { std::slice::from_raw_parts(self.data, self.len) }
     }
 }
 
@@ -107,7 +103,9 @@ impl From<Vec<u8>> for ByteBuf {
         Self {
             data,
             len,
-            inner: ByteBufInner { needs_to_clean: true },
+            inner: ByteBufInner {
+                needs_to_clean: true,
+            },
         }
     }
 }
@@ -119,9 +117,10 @@ impl Drop for ByteBuf {
         }
         if !self.data.is_null() && self.len != 0 {
             unsafe {
-                let _ = Box::from_raw(
-                    std::slice::from_raw_parts_mut(self.data as *mut u8, self.len)
-                );
+                let _ = Box::from_raw(std::slice::from_raw_parts_mut(
+                    self.data as *mut u8,
+                    self.len,
+                ));
             }
         }
     }
@@ -141,10 +140,7 @@ impl From<Vec<*mut c_char>> for BufOfStrings {
         let mut slice = vec.into_boxed_slice();
         let data = slice.as_mut_ptr();
         let _ = Box::into_raw(slice);
-        Self {
-            data,
-            len,
-        }
+        Self { data, len }
     }
 }
 

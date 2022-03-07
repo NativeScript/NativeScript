@@ -20,7 +20,6 @@ pub fn handle_meta(metadata: &std::fs::Metadata) -> FileStat {
         ..Default::default()
     };
 
-
     if let Ok(time) = metadata.created() {
         if let Ok(duration) = time.duration_since(std::time::SystemTime::UNIX_EPOCH) {
             stat.birthtimeMs = duration.as_millis() as f64;

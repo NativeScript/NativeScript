@@ -16,7 +16,6 @@ pub fn get_str(string: *const libc::c_char, default: &str) -> std::borrow::Cow<'
     default.into()
 }
 
-
 pub fn handle_meta_into_box(metadata: &std::fs::Metadata) -> *mut FileStat {
     Box::into_raw(Box::new(handle_meta(metadata)))
 }

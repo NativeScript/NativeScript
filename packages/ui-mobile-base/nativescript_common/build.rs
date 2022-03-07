@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 extern crate cbindgen;
 
 use cbindgen::{Config, Language};

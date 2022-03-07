@@ -25,7 +25,10 @@ impl Drop for FileDir {
 
 impl FileDir {
     pub(crate) fn new(path: *mut c_char, dir: *mut libc::DIR) -> FileDir {
-        Self { path, dir: dir as *mut c_void }
+        Self {
+            path,
+            dir: dir as *mut c_void,
+        }
     }
 
     pub fn close(&self) -> std::io::Result<()> {
@@ -44,17 +47,12 @@ impl FileDir {
         let path = self.path as i64;
         let dir = self.dir as i64;
         super::a_sync::runtime().spawn(async move {
-            let tmp_file_dir = FileDir::new(
-                path as _,
-                dir as _,
-            );
+            let tmp_file_dir = FileDir::new(path as _, dir as _);
             match tmp_file_dir.close() {
                 Ok(_) => {
                     (callback)(None);
                 }
-                Err(error) => {
-                    (callback)(Some(error))
-                }
+                Err(error) => (callback)(Some(error)),
             }
         });
     }
@@ -74,14 +72,14 @@ impl FileDir {
         Ok(FileDirent::new_raw(ret))
     }
 
-    pub fn read_async(&self, callback: Box<dyn Fn(Option<FileDirent>, Option<std::io::Error>) + Send>) {
+    pub fn read_async(
+        &self,
+        callback: Box<dyn Fn(Option<FileDirent>, Option<std::io::Error>) + Send>,
+    ) {
         let path = self.path as i64;
         let dir = self.dir as i64;
         super::a_sync::runtime().spawn(async move {
-            let tmp_file_dir = FileDir::new(
-                path as _,
-                dir as _,
-            );
+            let tmp_file_dir = FileDir::new(path as _, dir as _);
             match tmp_file_dir.read() {
                 Ok(dir) => {
                     (callback)(Some(dir), None);

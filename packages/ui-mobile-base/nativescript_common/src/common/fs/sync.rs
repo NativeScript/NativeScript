@@ -1,4 +1,3 @@
-use std::{fs, io};
 use std::borrow::Cow;
 use std::cmp::min;
 use std::ffi::{CStr, CString, OsString};
@@ -6,22 +5,28 @@ use std::fs::{File, OpenOptions, Permissions};
 use std::io::{IoSlice, IoSliceMut, Read, Seek, SeekFrom, Write};
 use std::os::raw::c_ulonglong;
 use std::os::unix::io::{AsRawFd, FromRawFd, RawFd};
-use std::os::unix::prelude::*;
 use std::os::unix::prelude::IntoRawFd;
+use std::os::unix::prelude::*;
 use std::path::Path;
 use std::sync::atomic::{AtomicI32, Ordering};
 use std::time::Duration;
+use std::{fs, io};
 
 use backoff::Error;
 use backoff::ExponentialBackoff;
 use faccess::PathExt;
 use libc::{c_char, c_int, c_long, c_uint, c_ushort};
-use rand::{Rng, thread_rng};
+use rand::{thread_rng, Rng};
 
-use crate::common::{ByteBuf, ByteBufMut, FILE_ACCESS_OPTIONS_F_OK, FILE_ACCESS_OPTIONS_R_OK, FILE_ACCESS_OPTIONS_W_OK, FILE_ACCESS_OPTIONS_X_OK, FILE_OPEN_OPTIONS_O_APPEND, FILE_OPEN_OPTIONS_O_CREAT, FILE_OPEN_OPTIONS_O_EXCL, FILE_OPEN_OPTIONS_O_RDONLY, FILE_OPEN_OPTIONS_O_TRUNC, FILE_OPEN_OPTIONS_O_WRONLY};
 use crate::common::fs::file_dir::FileDir;
 use crate::common::fs::file_dirent::FileDirent;
 use crate::common::fs::file_handle::FileHandle;
+use crate::common::{
+    ByteBuf, ByteBufMut, FILE_ACCESS_OPTIONS_F_OK, FILE_ACCESS_OPTIONS_R_OK,
+    FILE_ACCESS_OPTIONS_W_OK, FILE_ACCESS_OPTIONS_X_OK, FILE_OPEN_OPTIONS_O_APPEND,
+    FILE_OPEN_OPTIONS_O_CREAT, FILE_OPEN_OPTIONS_O_EXCL, FILE_OPEN_OPTIONS_O_RDONLY,
+    FILE_OPEN_OPTIONS_O_TRUNC, FILE_OPEN_OPTIONS_O_WRONLY,
+};
 
 fn file_from_path_str(path: &str, flags: c_int, mode: c_int) -> std::io::Result<File> {
     let mut options = OpenOptions::new();
@@ -74,21 +79,28 @@ pub fn open_path(path: *const c_char, flags: c_int, mode: c_int) -> std::io::Res
 
 pub fn open_handle_with_fd(fd: i32) -> std::io::Result<FileHandle> {
     if fd == -1 {
-        return Err(
-            std::io::Error::new(
-                std::io::ErrorKind::Other, "Bad file descriptor",
-            )
-        );
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            "Bad file descriptor",
+        ));
     }
     let file = unsafe { File::from_raw_fd(fd) };
     Ok(FileHandle::new(file))
 }
 
-pub fn open_handle_with_path_str(path: &str, flags: c_int, mode: c_int) -> std::io::Result<FileHandle> {
+pub fn open_handle_with_path_str(
+    path: &str,
+    flags: c_int,
+    mode: c_int,
+) -> std::io::Result<FileHandle> {
     file_from_path_str(path, flags, mode).map(|v| FileHandle::new(v))
 }
 
-pub fn open_handle_with_path(path: *const c_char, flags: c_int, mode: i32) -> std::io::Result<FileHandle> {
+pub fn open_handle_with_path(
+    path: *const c_char,
+    flags: c_int,
+    mode: i32,
+) -> std::io::Result<FileHandle> {
     file_from_path(path, flags, mode).map(|v| FileHandle::new(v))
 }
 
@@ -128,16 +140,26 @@ pub fn append_file_with_bytes(fd: c_int, data: &[u8]) -> std::io::Result<()> {
     Ok(())
 }
 
-pub fn append_file_with_path_str(path: &str, data: &str, mode: c_int, flags: c_int) -> std::io::Result<()> {
-    let mut fd = open(path, flags, mode)?;
+pub fn append_file_with_path_str(
+    path: &str,
+    data: &str,
+    mode: c_int,
+    flags: c_int,
+) -> std::io::Result<()> {
+    let fd = open(path, flags, mode)?;
     let mut file = unsafe { File::from_raw_fd(fd) };
     let ret = file.write(data.as_bytes()).map(|_| ());
     let _ = file.into_raw_fd();
     ret
 }
 
-pub fn append_file_with_path_bytes(path: &str, data: &[u8], mode: c_int, flags: c_int) -> std::io::Result<()> {
-    let mut fd = open(path, flags, mode)?;
+pub fn append_file_with_path_bytes(
+    path: &str,
+    data: &[u8],
+    mode: c_int,
+    flags: c_int,
+) -> std::io::Result<()> {
+    let fd = open(path, flags, mode)?;
     let mut file = unsafe { File::from_raw_fd(fd) };
     let ret = file.write(data).map(|_| ());
     let _ = file.into_raw_fd();
@@ -231,7 +253,6 @@ pub fn ftruncate(fd: c_int, len: c_long) -> std::io::Result<()> {
     Ok(())
 }
 
-
 #[cfg(any(target_os = "android"))]
 pub fn futimes(fd: c_int, atime: c_long, mtime: c_long) -> std::io::Result<()> {
     let times = [
@@ -276,7 +297,6 @@ pub fn futimes(fd: c_int, atime: c_long, mtime: c_long) -> std::io::Result<()> {
     Ok(())
 }
 
-
 #[cfg(any(target_os = "android"))]
 pub fn lchmod(path: &str, mode: c_ushort) -> std::io::Result<()> {
     let mut options = OpenOptions::new();
@@ -285,7 +305,6 @@ pub fn lchmod(path: &str, mode: c_ushort) -> std::io::Result<()> {
     let mut permissions = std::fs::Permissions::from_mode(mode.into());
     file.set_permissions(permissions)
 }
-
 
 #[cfg(any(target_os = "macos", target_os = "ios"))]
 pub fn lchmod(path: &str, mode: c_ushort) -> std::io::Result<()> {
@@ -373,10 +392,10 @@ pub fn mkdir(path: &str, mode: c_uint, recursive: bool) -> std::io::Result<()> {
     let mut builder = std::fs::DirBuilder::new();
     builder.recursive(recursive);
     #[cfg(unix)]
-        {
-            use std::os::unix::fs::DirBuilderExt;
-            builder.mode(mode);
-        }
+    {
+        use std::os::unix::fs::DirBuilderExt;
+        builder.mode(mode);
+    }
     builder.create(&path)
 }
 
@@ -393,28 +412,27 @@ pub(crate) fn make_temp(
         Some(p) => p.to_path_buf(),
         None => std::env::temp_dir(),
     }
-        .join("_");
+    .join("_");
     let mut rng = thread_rng();
     loop {
         let unique = rng.gen::<u32>();
         buf.set_file_name(format!("{}{:08x}{}", prefix_, unique, suffix_));
         let r = if is_dir {
             #[allow(unused_mut)]
-                let mut builder = std::fs::DirBuilder::new();
+            let mut builder = std::fs::DirBuilder::new();
             #[cfg(unix)]
-                {
-                    use std::os::unix::fs::DirBuilderExt;
-                    builder.mode(0o700);
-                }
+            {
+                use std::os::unix::fs::DirBuilderExt;
+                builder.mode(0o700);
+            }
             builder.create(buf.as_path())
         } else {
             let mut open_options = std::fs::OpenOptions::new();
             open_options.write(true).create_new(true);
             #[cfg(unix)]
-                {
-                    use std::os::unix::fs::OpenOptionsExt;
-                    open_options.mode(0o600);
-                }
+            {
+                open_options.mode(0o600);
+            }
             open_options.open(buf.as_path())?;
             Ok(())
         };
@@ -429,9 +447,7 @@ pub(crate) fn make_temp(
 pub fn mkdtemp<'a>(prefix: &str) -> std::io::Result<Cow<'a, str>> {
     let path = make_temp(None, Some(prefix), None, true)?;
     let os_str = path.into_os_string().to_string_lossy().to_string();
-    Ok(
-        Cow::from(os_str)
-    )
+    Ok(Cow::from(os_str))
 }
 
 pub fn open(path: &str, flags: c_int, mode: c_int) -> std::io::Result<RawFd> {
@@ -522,11 +538,7 @@ pub fn read_link(path: &str, _encoding: &str) -> std::io::Result<std::path::Path
     fs::read_link(path)
 }
 
-pub fn readv(
-    fd: c_int,
-    buffers: &mut [ByteBufMut],
-    position: c_long,
-) -> std::io::Result<usize> {
+pub fn readv(fd: c_int, buffers: &mut [ByteBufMut], position: c_long) -> std::io::Result<usize> {
     let mut file = unsafe { File::from_raw_fd(fd) };
 
     if position != -1 {
@@ -536,12 +548,9 @@ pub fn readv(
         }
     }
 
-    let mut buffers: Vec<IoSliceMut> = buffers.iter()
-        .map(|b| IoSliceMut::new(
-            unsafe {
-                std::slice::from_raw_parts_mut(b.data, b.len)
-            }
-        ))
+    let mut buffers: Vec<IoSliceMut> = buffers
+        .iter()
+        .map(|b| IoSliceMut::new(unsafe { std::slice::from_raw_parts_mut(b.data, b.len) }))
         .collect();
 
     file.read_vectored(buffers.as_mut_slice())
@@ -555,7 +564,6 @@ pub fn readv_raw(
 ) -> std::io::Result<usize> {
     let buf = unsafe { std::slice::from_raw_parts(buffer, buffer_len) };
 
-
     let mut slice_buf = Vec::with_capacity(buffer_len);
     unsafe {
         for item in buf.iter() {
@@ -564,10 +572,8 @@ pub fn readv_raw(
         }
     }
 
-
     readv(fd, slice_buf.as_mut_slice(), position)
 }
-
 
 pub fn real_path(path: &str) -> std::io::Result<std::path::PathBuf> {
     std::fs::canonicalize(path)
@@ -597,7 +603,7 @@ pub fn rmdir(
                     *max_retries_count.get_mut() = current - 1;
                 }
 
-                return match e.kind() {
+                match e.kind() {
                     std::io::ErrorKind::ResourceBusy
                     | std::io::ErrorKind::FilesystemLoop
                     | std::io::ErrorKind::DirectoryNotEmpty => Error::Transient {
@@ -615,7 +621,7 @@ pub fn rmdir(
                             Error::Permanent(e)
                         }
                     }
-                };
+                }
             })
         };
         let bf = ExponentialBackoff::default();
@@ -646,7 +652,7 @@ pub fn rm(
                     *max_retries_count.get_mut() = current - 1;
                 }
 
-                return match e.kind() {
+                match e.kind() {
                     std::io::ErrorKind::ResourceBusy
                     | std::io::ErrorKind::FilesystemLoop
                     | std::io::ErrorKind::DirectoryNotEmpty => Error::Transient {
@@ -664,7 +670,7 @@ pub fn rm(
                             Error::Permanent(e)
                         }
                     }
-                };
+                }
             })
         };
         let bf = ExponentialBackoff::default();
@@ -684,7 +690,11 @@ pub fn symlink(target: &str, path: &str, _type_: &str) -> std::io::Result<()> {
 }
 
 pub fn truncate(path: &str, len: c_ulonglong) -> std::io::Result<()> {
-    OpenOptions::new().truncate(true).write(true).open(path)?.set_len(len)
+    OpenOptions::new()
+        .truncate(true)
+        .write(true)
+        .open(path)?
+        .set_len(len)
 }
 
 pub fn unlink(path: &str) -> std::io::Result<()> {
@@ -757,11 +767,10 @@ pub fn write(
     ret
 }
 
-
 pub fn write_string(
     fd: c_int,
     string: &str,
-    encoding: &str,
+    _encoding: &str,
     position: isize,
 ) -> std::io::Result<usize> {
     let mut file = unsafe { File::from_raw_fd(fd) };
@@ -788,21 +797,27 @@ pub fn write_string(
     ret
 }
 
-pub fn write_file_with_str(fd: c_int, data: &str, encoding: &str) -> std::io::Result<()> {
+pub fn write_file_with_str(fd: c_int, data: &str, _encoding: &str) -> std::io::Result<()> {
     let mut file = unsafe { File::from_raw_fd(fd) };
     let ret = file.write(data.as_bytes());
     let _ = file.into_raw_fd();
-    ret.map(|_|())
+    ret.map(|_| ())
 }
 
 pub fn write_file_with_bytes(fd: c_int, data: &[u8]) -> std::io::Result<()> {
     let mut file = unsafe { File::from_raw_fd(fd) };
     let ret = file.write(data);
     let _ = file.into_raw_fd();
-    ret.map(|_|())
+    ret.map(|_| ())
 }
 
-pub fn write_file_with_str_from_path(path: &str, data: &str, encoding: &str, mode: c_int, flag: c_int) -> std::io::Result<()> {
+pub fn write_file_with_str_from_path(
+    path: &str,
+    data: &str,
+    _encoding: &str,
+    mode: c_int,
+    flag: c_int,
+) -> std::io::Result<()> {
     let mut options = OpenOptions::new();
     if (flag & FILE_OPEN_OPTIONS_O_CREAT) == FILE_OPEN_OPTIONS_O_CREAT {
         options.create(true);
@@ -833,10 +848,16 @@ pub fn write_file_with_str_from_path(path: &str, data: &str, encoding: &str, mod
     }
 
     let mut file = options.open(path)?;
-    file.write(data.as_bytes()).map(|_|())
+    file.write(data.as_bytes()).map(|_| ())
 }
 
-pub fn write_file_with_bytes_from_path(path: &str, data: &[u8], encoding: &str, mode: c_int, flag: c_int) -> std::io::Result<()> {
+pub fn write_file_with_bytes_from_path(
+    path: &str,
+    data: &[u8],
+    _encoding: &str,
+    mode: c_int,
+    flag: c_int,
+) -> std::io::Result<()> {
     let mut options = OpenOptions::new();
     if (flag & FILE_OPEN_OPTIONS_O_CREAT) == FILE_OPEN_OPTIONS_O_CREAT {
         options.create(true);
@@ -867,7 +888,7 @@ pub fn write_file_with_bytes_from_path(path: &str, data: &[u8], encoding: &str, 
     }
     let mut file = options.open(path)?;
 
-    file.write(data).map(|_|())
+    file.write(data).map(|_| ())
 }
 
 pub fn writev(fd: c_int, mut buffers: Vec<ByteBuf>, position: c_long) -> std::io::Result<usize> {
@@ -880,19 +901,20 @@ pub fn writev(fd: c_int, mut buffers: Vec<ByteBuf>, position: c_long) -> std::io
         }
     }
 
-
-    let buffers: Vec<IoSlice> = buffers.iter_mut()
+    let buffers: Vec<IoSlice> = buffers
+        .iter_mut()
         .map(|b| IoSlice::new(b.as_slice()))
         .collect();
-
 
     file.write_vectored(buffers.as_slice())
 }
 
-pub fn writev_raw(fd: c_int,
-                  buffer: *const *const ByteBuf,
-                  buffer_len: usize,
-                  position: c_long) -> std::io::Result<usize> {
+pub fn writev_raw(
+    fd: c_int,
+    buffer: *const *const ByteBuf,
+    buffer_len: usize,
+    position: c_long,
+) -> std::io::Result<usize> {
     let buf = unsafe { std::slice::from_raw_parts(buffer, buffer_len) };
     let mut slice_buf = Vec::with_capacity(buffer_len);
     unsafe {

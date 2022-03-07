@@ -1,15 +1,13 @@
-use std::ffi::{c_void, CString};
 use std::fs::File;
 use std::os::unix::prelude::*;
-use std::ptr::NonNull;
 use std::sync::Arc;
 
 use libc::{c_int, c_long, c_uint, c_ushort};
 
-use crate::common::{ByteBuf, ByteBufMut};
-use crate::common::fs::a_sync::{AsyncClosure, runtime};
+use crate::common::fs::a_sync::{runtime, AsyncClosure};
 use crate::common::fs::file_stat::FileStat;
 use crate::common::fs::sync::open_handle_with_path_str;
+use crate::common::{ByteBuf, ByteBufMut};
 
 pub struct FileHandle {
     pub(crate) file: File,
@@ -21,26 +19,39 @@ impl FileHandle {
         Self { file }
     }
 
-    pub fn new_async(path: &str, flags: c_int, mode: c_int, callback: Arc<AsyncClosure<FileHandle, std::io::Error>>) {
+    pub fn new_async(
+        path: &str,
+        flags: c_int,
+        mode: c_int,
+        callback: Arc<AsyncClosure<FileHandle, std::io::Error>>,
+    ) {
         let path = path.to_string();
-        runtime().spawn_blocking(move || {
-            match open_handle_with_path_str(&path, flags, mode) {
+        runtime().spawn_blocking(
+            move || match open_handle_with_path_str(&path, flags, mode) {
                 Ok(handle) => {
                     callback.on_success(Some(handle));
                 }
                 Err(error) => {
                     callback.on_error(Some(error));
                 }
-            }
-        });
+            },
+        );
     }
 
-    pub fn append_file_with_str(&mut self, data: &str, callback: Arc<AsyncClosure<(), std::io::Error>>) {
+    pub fn append_file_with_str(
+        &mut self,
+        data: &str,
+        callback: Arc<AsyncClosure<(), std::io::Error>>,
+    ) {
         let fd = self.fd();
         crate::common::fs::a_sync::append_file_with_str(fd, data, callback);
     }
 
-    pub fn append_file_with_bytes(&mut self, data: ByteBuf, callback: Arc<AsyncClosure<(), std::io::Error>>) {
+    pub fn append_file_with_bytes(
+        &mut self,
+        data: ByteBuf,
+        callback: Arc<AsyncClosure<(), std::io::Error>>,
+    ) {
         let fd = self.fd();
         crate::common::fs::a_sync::append_file_with_bytes(fd, data, callback);
     }
@@ -60,9 +71,7 @@ impl FileHandle {
             // drop the instance before to close
             let _ = self;
         }
-        unsafe {
-            callback.on_success(None);
-        }
+        callback.on_success(None);
     }
 
     // TODO
@@ -91,7 +100,11 @@ impl FileHandle {
         let fd = self.fd();
         crate::common::fs::a_sync::read(fd, buffer, offset, length, position, callback);
     }
-    pub fn readFile(&mut self, _encoding: &str, callback: Arc<AsyncClosure<ByteBufMut, std::io::Error>>) {
+    pub fn readFile(
+        &mut self,
+        _encoding: &str,
+        callback: Arc<AsyncClosure<ByteBufMut, std::io::Error>>,
+    ) {
         let fd = self.fd();
         crate::common::fs::a_sync::read_file_with_fd(fd, 0, callback);
     }
@@ -121,7 +134,12 @@ impl FileHandle {
         crate::common::fs::a_sync::ftruncate(fd, len, callback);
     }
 
-    pub fn utimes(&mut self, atime: c_long, mtime: c_long, callback: Arc<AsyncClosure<(), std::io::Error>>) {
+    pub fn utimes(
+        &mut self,
+        atime: c_long,
+        mtime: c_long,
+        callback: Arc<AsyncClosure<(), std::io::Error>>,
+    ) {
         let fd = self.fd();
         crate::common::fs::a_sync::futimes(fd, atime, mtime, callback);
     }
@@ -149,13 +167,21 @@ impl FileHandle {
         crate::common::fs::a_sync::write_string(fd, data, encoding, position, callback);
     }
 
-
-    pub fn write_file_with_str(&mut self, data: &str, encoding: &str, callback: Arc<AsyncClosure<(), std::io::Error>>) {
+    pub fn write_file_with_str(
+        &mut self,
+        data: &str,
+        encoding: &str,
+        callback: Arc<AsyncClosure<(), std::io::Error>>,
+    ) {
         let fd = self.fd();
         crate::common::fs::a_sync::write_file_with_str(fd, data, encoding, callback);
     }
 
-    pub fn write_file_with_bytes(&mut self, data: ByteBuf, callback: Arc<AsyncClosure<(), std::io::Error>>) {
+    pub fn write_file_with_bytes(
+        &mut self,
+        data: ByteBuf,
+        callback: Arc<AsyncClosure<(), std::io::Error>>,
+    ) {
         let fd = self.fd();
         crate::common::fs::a_sync::write_file_with_bytes(fd, data, callback);
     }

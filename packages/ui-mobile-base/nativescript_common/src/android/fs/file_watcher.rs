@@ -7,7 +7,6 @@ use jni::JNIEnv;
 use once_cell::sync::OnceCell;
 use parking_lot::Mutex;
 
-
 use crate::android::fs::file_stat::build_stat_op;
 use crate::android::prelude::*;
 use crate::android::{FILE_WATCHER_CLASS, FILE_WATCHER_EVENT_CLASS, JVM};
@@ -34,7 +33,7 @@ fn build_watch_file<'a>(env: &JNIEnv<'a>, file_name: &str, callback: jlong) -> J
     let _ = env.set_field(
         object,
         "fileName",
-        "Ljava/lang/String",
+        "Ljava/lang/String;",
         env.new_string(file_name).unwrap().into(),
     );
     let _ = env.set_field(object, "callback", "J", callback.into());
@@ -42,21 +41,19 @@ fn build_watch_file<'a>(env: &JNIEnv<'a>, file_name: &str, callback: jlong) -> J
 }
 fn build_file_watch_event<'a>(env: &JNIEnv<'a>, event: FileWatchEvent) -> JObject<'a> {
     let clazz = find_class(FILE_WATCHER_EVENT_CLASS).unwrap();
-    let object = env
-        .new_object(clazz, "()V", &[])
-        .unwrap();
+    let object = env.new_object(clazz, "()V", &[]).unwrap();
     let current = build_stat_op(env, event.current);
     let previous = build_stat_op(env, event.previous);
     let _ = env.set_field(
         object,
         "previous",
-        "Lorg/nativescript/widgets/filesystem/FileStat",
+        "Lorg/nativescript/widgets/filesystem/FileStat;",
         previous.into(),
     );
     let _ = env.set_field(
         object,
         "current",
-        "Lorg/nativescript/widgets/filesystem/FileStat",
+        "Lorg/nativescript/widgets/filesystem/FileStat;",
         current.into(),
     );
     object
@@ -73,7 +70,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     callback: jlong,
 ) -> jobject {
     let cb = callback;
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let callback = AsyncCallback::clone_from_ptr(callback);
     let on_success = Arc::clone(&callback);
     let item = FileWatcherCallback {
@@ -116,7 +113,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileWatcher_nati
     filename: JString,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let callback = AsyncCallback::clone_from_ptr(callback);
     let mut map = file_watcher_callback_map().lock();
     let item = map
@@ -135,7 +132,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileWatchEvent_n
     filename: JString,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let callback = AsyncCallback::clone_from_ptr(callback);
     let on_success = Arc::clone(&callback);
 

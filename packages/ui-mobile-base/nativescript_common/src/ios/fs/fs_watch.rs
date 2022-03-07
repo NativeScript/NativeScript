@@ -3,7 +3,7 @@ use std::ffi::{c_void, CString};
 use std::ptr::NonNull;
 use std::sync::Arc;
 
-use libc::{c_char, c_ulong};
+use libc::c_char;
 use once_cell::sync::OnceCell;
 use parking_lot::Mutex;
 
@@ -98,7 +98,7 @@ pub extern "C" fn native_fs_watcher_ref(filename: *const c_char, callback: *cons
                             ))
                         } else {
                             (cb.on_success)(NonNull::new(
-                                Box::into_raw(Box::new(error.unwrap())) as *mut c_void
+                                Box::into_raw(Box::new(event.unwrap())) as *mut c_void
                             ))
                         }
                     }),
@@ -127,15 +127,15 @@ pub extern "C" fn native_fs_watcher_close(
         .map(|c| (Arc::clone(&c.callback), Arc::clone(&c.inner)));
     {
         // drop lock
-        let _ = map;
+        drop(map);
     }
     if let Some(callback) = cb {
         fs::a_sync::watcher_close(
             get_str(filename, "").as_ref(),
             callback.1,
             AsyncClosure::new(Box::new(move |_, error: Option<std::io::Error>| {
-                if error.is_some() {
-                    (on_close.on_error)(to_error(error.unwrap().to_string()));
+                if let Some(error) = error {
+                    (on_close.on_error)(to_error(error.to_string()));
                 }
                 let mut map = watcher_callback_map().lock();
                 let _ = map.remove(&callback.0);

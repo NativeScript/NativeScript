@@ -2,8 +2,6 @@ use std::os::raw::c_uint;
 
 use libc::{c_int, mode_t};
 
-pub(crate) const NOT_FOUND_ERROR: &str = "No such file or directory";
-
 #[no_mangle]
 pub static FILE_COPY_OPTIONS_COPYFILE_EXCL: c_uint = 1;
 
@@ -12,7 +10,6 @@ pub static FILE_COPY_OPTIONS_COPYFILE_FICLONE: c_uint = 2;
 
 #[no_mangle]
 pub static FILE_COPY_OPTIONS_COPYFILE_FICLONE_FORCE: c_uint = 3;
-
 
 #[no_mangle]
 pub static FILE_OPEN_OPTIONS_O_RDONLY: c_int = libc::O_RDONLY;
@@ -23,7 +20,6 @@ pub static FILE_OPEN_OPTIONS_O_WRONLY: c_int = libc::O_WRONLY;
 #[no_mangle]
 pub static FILE_OPEN_OPTIONS_O_RDWR: c_int = libc::O_RDWR;
 
-
 #[cfg(any(target_os = "android"))]
 #[no_mangle]
 pub static FILE_OPEN_OPTIONS_O_CREAT: c_int = libc::O_CREAT;
@@ -31,7 +27,6 @@ pub static FILE_OPEN_OPTIONS_O_CREAT: c_int = libc::O_CREAT;
 #[cfg(any(target_os = "macos", target_os = "ios"))]
 #[no_mangle]
 pub static FILE_OPEN_OPTIONS_O_CREAT: c_int = libc::O_CREAT;
-
 
 #[no_mangle]
 pub static FILE_OPEN_OPTIONS_O_EXCL: c_int = libc::O_EXCL;
@@ -72,7 +67,6 @@ pub static FILE_OPEN_OPTIONS_O_DIRECT: c_int = 0x4000;
 #[no_mangle]
 pub static FILE_OPEN_OPTIONS_O_NONBLOCK: c_int = libc::O_NONBLOCK;
 
-
 #[no_mangle]
 pub static FILE_ACCESS_OPTIONS_F_OK: c_int = libc::F_OK;
 
@@ -84,7 +78,6 @@ pub static FILE_ACCESS_OPTIONS_W_OK: c_int = libc::W_OK;
 
 #[no_mangle]
 pub static FILE_ACCESS_OPTIONS_X_OK: c_int = libc::X_OK;
-
 
 #[no_mangle]
 pub static FILE_TYPE_OPTIONS_S_IFMT: mode_t = libc::S_IFMT;
@@ -109,7 +102,6 @@ pub static FILE_TYPE_OPTIONS_S_IFLNK: mode_t = libc::S_IFLNK;
 
 #[no_mangle]
 pub static FILE_TYPE_OPTIONS_S_IFSOCK: mode_t = libc::S_IFSOCK;
-
 
 #[no_mangle]
 pub static FILE_MODE_OPTIONS_S_IRWXU: mode_t = libc::S_IRWXU;

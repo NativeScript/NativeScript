@@ -63,7 +63,7 @@ impl AsyncCallback {
     pub fn on_success(&self, result: JValue) {
         if let Some(jvm) = JVM.get() {
             let env = jvm.attach_current_thread().unwrap();
-            env.call_method(
+            let _ = env.call_method(
                 self.inner.inner().as_obj(),
                 "onSuccess",
                 "(Ljava/lang/Object;)V",
@@ -75,7 +75,7 @@ impl AsyncCallback {
     pub fn on_error(&self, result: JValue) {
         if let Some(jvm) = JVM.get() {
             let env = jvm.attach_current_thread().unwrap();
-            env.call_method(
+            let _ = env.call_method(
                 self.inner.inner().as_obj(),
                 "onError",
                 "(Ljava/lang/Object;)V",
@@ -98,7 +98,10 @@ impl AsyncCallback {
 
 impl PartialEq for AsyncCallback {
     fn eq(&self, other: &Self) -> bool {
-        self.inner.inner().as_obj().eq(&other.inner.inner().as_obj())
+        self.inner
+            .inner()
+            .as_obj()
+            .eq(&other.inner.inner().as_obj())
     }
 }
 
@@ -124,12 +127,12 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     mode: jint,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
             on_success.on_error(jni::objects::JValue::Object(
-                error_to_jstring(error.unwrap()).as_obj(),
+                error_to_jstring(error).as_obj(),
             ))
         } else {
             on_success.on_success(jni::objects::JObject::null().into())
@@ -147,7 +150,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     bytes: jbyteArray,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let callback = AsyncCallback::clone_from_ptr(callback);
     let bytes = env.new_global_ref(bytes).unwrap();
     runtime().spawn(async move {
@@ -187,12 +190,12 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     data: JString,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
             on_success.on_error(jni::objects::JValue::Object(
-                error_to_jstring(error.unwrap()).as_obj(),
+                error_to_jstring(error).as_obj(),
             ))
         } else {
             on_success.on_success(jni::objects::JObject::null().into())
@@ -213,7 +216,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     flags: jint,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let callback = AsyncCallback::clone_from_ptr(callback);
     let bytes = env.new_global_ref(bytes).unwrap();
     let path = env.new_global_ref(path).unwrap();
@@ -261,14 +264,14 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     flags: jint,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let path = get_str(path, "");
     let data = get_str(data, "");
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
             on_success.on_error(jni::objects::JValue::Object(
-                error_to_jstring(error.unwrap()).as_obj(),
+                error_to_jstring(error).as_obj(),
             ))
         } else {
             on_success.on_success(jni::objects::JObject::null().into())
@@ -286,13 +289,13 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     mode: jint,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let path = get_str(path, "");
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
             on_success.on_error(jni::objects::JValue::Object(
-                error_to_jstring(error.unwrap()).as_obj(),
+                error_to_jstring(error).as_obj(),
             ))
         } else {
             on_success.on_success(jni::objects::JObject::null().into())
@@ -311,13 +314,13 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     gid: jint,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let path = get_str(path, "");
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
             on_success.on_error(jni::objects::JValue::Object(
-                error_to_jstring(error.unwrap()).as_obj(),
+                error_to_jstring(error).as_obj(),
             ))
         } else {
             on_success.on_success(jni::objects::JObject::null().into())
@@ -334,12 +337,12 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     fd: jint,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
             on_success.on_error(jni::objects::JValue::Object(
-                error_to_jstring(error.unwrap()).as_obj(),
+                error_to_jstring(error).as_obj(),
             ))
         } else {
             on_success.on_success(jni::objects::JObject::null().into())
@@ -358,14 +361,14 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     flags: jint,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let src = get_str(src, "");
     let dest = get_str(dest, "");
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
             on_success.on_error(jni::objects::JValue::Object(
-                error_to_jstring(error.unwrap()).as_obj(),
+                error_to_jstring(error).as_obj(),
             ))
         } else {
             on_success.on_success(jni::objects::JObject::null().into())
@@ -381,12 +384,12 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     _: JClass,
     src: JString,
     dest: JString,
-    flags: jint,
+    _flags: jint,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
-    let src = get_str(src, "");
-    let dest = get_str(dest, "");
+    let _callback = callback as *const AsyncCallback;
+    let _src = get_str(src, "");
+    let _dest = get_str(dest, "");
     todo!()
 }
 
@@ -397,7 +400,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     src: JString,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
     let callback = AsyncClosure::<bool, std::io::Error>::new(Box::new(move |success, error| {
         if error.is_some() {
@@ -425,12 +428,12 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     mode: jint,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
             on_success.on_error(jni::objects::JValue::Object(
-                error_to_jstring(error.unwrap()).as_obj(),
+                error_to_jstring(error).as_obj(),
             ))
         } else {
             on_success.on_success(jni::objects::JObject::null().into())
@@ -449,12 +452,12 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     gid: jint,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
             on_success.on_error(jni::objects::JValue::Object(
-                error_to_jstring(error.unwrap()).as_obj(),
+                error_to_jstring(error).as_obj(),
             ))
         } else {
             on_success.on_success(jni::objects::JObject::null().into())
@@ -471,12 +474,12 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     fd: jint,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
             on_success.on_error(jni::objects::JValue::Object(
-                error_to_jstring(error.unwrap()).as_obj(),
+                error_to_jstring(error).as_obj(),
             ))
         } else {
             on_success.on_success(jni::objects::JObject::null().into())
@@ -493,7 +496,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     fd: jint,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
     let callback =
         AsyncClosure::<FileStat, std::io::Error>::new(Box::new(move |success, error| {
@@ -519,12 +522,12 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     fd: jint,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
             on_success.on_error(jni::objects::JValue::Object(
-                error_to_jstring(error.unwrap()).as_obj(),
+                error_to_jstring(error).as_obj(),
             ))
         } else {
             on_success.on_success(jni::objects::JObject::null().into())
@@ -542,12 +545,12 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     len: jlong,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
             on_success.on_error(jni::objects::JValue::Object(
-                error_to_jstring(error.unwrap()).as_obj(),
+                error_to_jstring(error).as_obj(),
             ))
         } else {
             on_success.on_success(jni::objects::JObject::null().into())
@@ -566,12 +569,12 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     mtime: jlong,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
             on_success.on_error(jni::objects::JValue::Object(
-                error_to_jstring(error.unwrap()).as_obj(),
+                error_to_jstring(error).as_obj(),
             ))
         } else {
             on_success.on_success(jni::objects::JObject::null().into())
@@ -595,12 +598,12 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     mode: jint,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
             on_success.on_error(jni::objects::JValue::Object(
-                error_to_jstring(error.unwrap()).as_obj(),
+                error_to_jstring(error).as_obj(),
             ))
         } else {
             on_success.on_success(jni::objects::JObject::null().into())
@@ -620,12 +623,12 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     gid: jint,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
             on_success.on_error(jni::objects::JValue::Object(
-                error_to_jstring(error.unwrap()).as_obj(),
+                error_to_jstring(error).as_obj(),
             ))
         } else {
             on_success.on_success(jni::objects::JObject::null().into())
@@ -645,12 +648,12 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     mtime: jlong,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
             on_success.on_error(jni::objects::JValue::Object(
-                error_to_jstring(error.unwrap()).as_obj(),
+                error_to_jstring(error).as_obj(),
             ))
         } else {
             on_success.on_success(jni::objects::JObject::null().into())
@@ -675,12 +678,12 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     new_path: JString,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
             on_success.on_error(jni::objects::JValue::Object(
-                error_to_jstring(error.unwrap()).as_obj(),
+                error_to_jstring(error).as_obj(),
             ))
         } else {
             on_success.on_success(jni::objects::JObject::null().into())
@@ -699,7 +702,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     path: JString,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
     let callback =
         AsyncClosure::<FileStat, std::io::Error>::new(Box::new(move |success, error| {
@@ -728,12 +731,12 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     recursive: jboolean,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
             on_success.on_error(jni::objects::JValue::Object(
-                error_to_jstring(error.unwrap()).as_obj(),
+                error_to_jstring(error).as_obj(),
             ))
         } else {
             on_success.on_success(jni::objects::JObject::null().into())
@@ -751,7 +754,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     prefix: JString,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
     let callback = AsyncClosure::<PathBuf, std::io::Error>::new(Box::new(move |success, error| {
         if error.is_some() {
@@ -781,7 +784,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     mode: jint,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
     let callback = AsyncClosure::<c_int, std::io::Error>::new(Box::new(move |success, error| {
         if error.is_some() {
@@ -806,7 +809,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     path: JString,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
     let callback = AsyncClosure::<FileDir, std::io::Error>::new(Box::new(move |success, error| {
         if error.is_some() {
@@ -835,7 +838,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     position: jlong,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let callback = AsyncCallback::clone_from_ptr(callback);
     let bytes = env.new_global_ref(buffer).unwrap();
     runtime().spawn(async move {
@@ -869,7 +872,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     position: jlong,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let callback = AsyncCallback::clone_from_ptr(callback);
     let bytes = env.new_global_ref(buffer).unwrap();
     runtime().spawn(async move {
@@ -915,7 +918,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     encoding: JString,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
     let path = get_str(path, "");
     fs::a_sync::readdir_with_file_types(
@@ -943,7 +946,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     encoding: JString,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
     let path = get_str(path, "");
     fs::a_sync::readdir_with_file(
@@ -986,7 +989,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
 }
 
 fn read_file(path: JString, flags: jint, to_bytes: bool, callback: jlong) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
     let callback =
         AsyncClosure::<ByteBufMut, std::io::Error>::new(Box::new(move |success, error| {
@@ -1046,7 +1049,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
 }
 
 fn read_file_with_fd(fd: jint, flags: jint, to_bytes: bool, callback: jlong) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
     let callback =
         AsyncClosure::<ByteBufMut, std::io::Error>::new(Box::new(move |success, error| {
@@ -1067,7 +1070,7 @@ fn read_file_with_fd(fd: jint, flags: jint, to_bytes: bool, callback: jlong) {
                     let buf = Box::into_raw(Box::new(buf));
                     let clazz = find_class(FILE_SYSTEM_CLASS).unwrap();
                     let db: JValue = db.into();
-                    env.call_static_method(
+                    let _ = env.call_static_method(
                         clazz,
                         "watchItem",
                         "(JLjava/nio/ByteBuffer)V",
@@ -1089,7 +1092,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     encoding: JString,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
     let callback = AsyncClosure::<PathBuf, std::io::Error>::new(Box::new(move |success, error| {
         if error.is_some() {
@@ -1120,7 +1123,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     position: jlong,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
     let buffers = env.new_global_ref(buffers).unwrap();
     runtime().spawn(async move {
@@ -1152,7 +1155,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     path: JString,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
     let callback = AsyncClosure::<PathBuf, std::io::Error>::new(Box::new(move |success, error| {
         if error.is_some() {
@@ -1181,12 +1184,12 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     new_path: JString,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
             on_success.on_error(jni::objects::JValue::Object(
-                error_to_jstring(error.unwrap()).as_obj(),
+                error_to_jstring(error).as_obj(),
             ))
         } else {
             on_success.on_success(jni::objects::JObject::null().into())
@@ -1208,12 +1211,12 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     retry_delay: jlong,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
             on_success.on_error(jni::objects::JValue::Object(
-                error_to_jstring(error.unwrap()).as_obj(),
+                error_to_jstring(error).as_obj(),
             ))
         } else {
             on_success.on_success(jni::objects::JObject::null().into())
@@ -1240,12 +1243,12 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     retry_delay: jlong,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
             on_success.on_error(jni::objects::JValue::Object(
-                error_to_jstring(error.unwrap()).as_obj(),
+                error_to_jstring(error).as_obj(),
             ))
         } else {
             on_success.on_success(jni::objects::JObject::null().into())
@@ -1270,7 +1273,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     throw_if_no_entry: jboolean,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
     let callback =
         AsyncClosure::<FileStat, std::io::Error>::new(Box::new(move |success, error| {
@@ -1299,12 +1302,12 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     type_: JString,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
             on_success.on_error(jni::objects::JValue::Object(
-                error_to_jstring(error.unwrap()).as_obj(),
+                error_to_jstring(error).as_obj(),
             ))
         } else {
             on_success.on_success(jni::objects::JObject::null().into())
@@ -1325,12 +1328,12 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     len: jlong,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
             on_success.on_error(jni::objects::JValue::Object(
-                error_to_jstring(error.unwrap()).as_obj(),
+                error_to_jstring(error).as_obj(),
             ))
         } else {
             on_success.on_success(jni::objects::JObject::null().into())
@@ -1348,12 +1351,12 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     path: JString,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
             on_success.on_error(jni::objects::JValue::Object(
-                error_to_jstring(error.unwrap()).as_obj(),
+                error_to_jstring(error).as_obj(),
             ))
         } else {
             on_success.on_success(jni::objects::JObject::null().into())
@@ -1373,12 +1376,12 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     mtime: jlong,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
             on_success.on_error(jni::objects::JValue::Object(
-                error_to_jstring(error.unwrap()).as_obj(),
+                error_to_jstring(error).as_obj(),
             ))
         } else {
             on_success.on_success(jni::objects::JObject::null().into())
@@ -1405,7 +1408,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     position: jlong,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let callback = AsyncCallback::clone_from_ptr(callback);
     let buffer = env.new_global_ref(buffer).unwrap();
     runtime().spawn(async move {
@@ -1440,7 +1443,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     position: jlong,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let callback = AsyncCallback::clone_from_ptr(callback);
     let bytes = env.new_global_ref(buffer).unwrap();
     runtime().spawn(async move {
@@ -1488,7 +1491,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     position: jlong,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let string = get_str(string, "");
     let encoding = get_str(encoding, "");
 
@@ -1521,7 +1524,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     encoding: JString,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let data = get_str(data, "");
     let encoding = get_str(encoding, "");
 
@@ -1547,7 +1550,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     data: jbyteArray,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let callback = AsyncCallback::clone_from_ptr(callback);
     let data = env.new_global_ref(data).unwrap();
     runtime().spawn(async move {
@@ -1587,7 +1590,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     data: JByteBuffer,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let callback = AsyncCallback::clone_from_ptr(callback);
     let data = env.new_global_ref(data).unwrap();
     runtime().spawn(async move {
@@ -1618,7 +1621,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     flag: c_int,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let path = get_str(path, "");
     let data = get_str(data, "");
     let encoding = get_str(encoding, "");
@@ -1648,7 +1651,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     flag: c_int,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let callback = AsyncCallback::clone_from_ptr(callback);
     let path = get_str(path, "");
     let encoding = get_str(encoding, "");
@@ -1693,7 +1696,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     flag: c_int,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let callback = AsyncCallback::clone_from_ptr(callback);
     let path = get_str(path, "");
     let encoding = get_str(encoding, "");
@@ -1722,7 +1725,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     position: jlong,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
     let buffers = env.new_global_ref(buffers).unwrap();
     runtime().spawn(async move {

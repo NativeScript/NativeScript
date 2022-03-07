@@ -1,10 +1,12 @@
-use std::ffi::c_void;
 use std::io;
 use std::path::Path;
 
 use libc::c_uint;
 
-use crate::common::{FILE_COPY_OPTIONS_COPYFILE_EXCL, FILE_COPY_OPTIONS_COPYFILE_FICLONE, FILE_COPY_OPTIONS_COPYFILE_FICLONE_FORCE};
+use crate::common::{
+    FILE_COPY_OPTIONS_COPYFILE_EXCL, FILE_COPY_OPTIONS_COPYFILE_FICLONE,
+    FILE_COPY_OPTIONS_COPYFILE_FICLONE_FORCE,
+};
 
 #[cfg(any(target_os = "android"))]
 pub fn copy_file(from: &Path, to: &Path, mode: c_uint) -> io::Result<()> {
@@ -27,7 +29,6 @@ pub fn copy_file(from: &Path, to: &Path, mode: c_uint) -> io::Result<()> {
 
     let dest = options.open(&to)?;
 
-
     let ret = unsafe {
         // http://man7.org/linux/man-pages/man2/ioctl_ficlonerange.2.html
         libc::ioctl(dest.as_raw_fd(), IOCTL_FICLONE!(), src.as_raw_fd())
@@ -49,9 +50,9 @@ pub fn copy_file(from: &Path, to: &Path, mode: c_uint) -> io::Result<()> {
 
 #[cfg(any(target_os = "macos", target_os = "ios"))]
 pub fn copy_file(from: &Path, to: &Path, flags: c_uint) -> io::Result<()> {
+    use std::ffi::c_void;
     use std::ffi::CString;
     use std::os::unix::ffi::OsStrExt;
-
     fn cstr(path: &Path) -> io::Result<CString> {
         Ok(CString::new(path.as_os_str().as_bytes())?)
     }
@@ -66,9 +67,7 @@ pub fn copy_file(from: &Path, to: &Path, flags: c_uint) -> io::Result<()> {
         mode |= COPYFILE_EXCL;
     }
 
-    if (flags & FILE_COPY_OPTIONS_COPYFILE_FICLONE)
-        == FILE_COPY_OPTIONS_COPYFILE_FICLONE
-    {
+    if (flags & FILE_COPY_OPTIONS_COPYFILE_FICLONE) == FILE_COPY_OPTIONS_COPYFILE_FICLONE {
         mode |= COPYFILE_CLONE;
     }
 

@@ -15,7 +15,6 @@ use std::sync::Arc;
 use libc::{c_char, c_int, c_long, c_uint, c_ulong, c_ulonglong, c_ushort};
 use once_cell::sync::OnceCell;
 use parking_lot::Mutex;
-use rand::Rng;
 use tokio::runtime::Runtime;
 
 use crate::common::fs::file_dir::FileDir;
@@ -110,7 +109,6 @@ fn set_handler(builder: &mut tokio::runtime::Builder) {
     builder.on_thread_start(|| {
         if let Some(jvm) = crate::android::JVM.get() {
             let _ = jvm.attach_current_thread();
-            log::info!("on_thread_start");
         }
     });
 }
@@ -118,6 +116,7 @@ fn set_handler(builder: &mut tokio::runtime::Builder) {
 #[cfg(any(target_os = "ios", target_os = "macos"))]
 fn set_handler(_builder: &mut tokio::runtime::Builder) {}
 
+#[allow(dead_code)]
 pub(crate) struct WatcherItem {
     watcher: notify::RecommendedWatcher,
     callbacks: Vec<Arc<AsyncClosure<WatchEvent, Error>>>,
@@ -125,6 +124,7 @@ pub(crate) struct WatcherItem {
     persistent: bool,
 }
 
+#[allow(dead_code)]
 pub(crate) struct FileWatcherItem {
     watcher: notify::PollWatcher,
     callbacks: Vec<Arc<AsyncClosure<FileWatchEvent, Error>>>,
@@ -769,7 +769,7 @@ pub fn stat(path: &str, throw_if_no_entry: bool, callback: Arc<AsyncClosure<File
                 callback.on_success(Some(handle_meta(&meta)));
             }
             Err(error) => {
-                let mut res = None;
+                let res;
                 if throw_if_no_entry && error.kind() == std::io::ErrorKind::NotFound {
                     res = Some(error);
                 } else {
@@ -898,7 +898,7 @@ pub fn watch(
     filename: &str,
     persistent: bool,
     recursive: bool,
-    encoding: &str,
+    _encoding: &str,
     callback: Arc<AsyncClosure<WatchEvent, Error>>,
 ) {
     use notify::{watcher, DebouncedEvent, RecursiveMode, Watcher};
@@ -963,6 +963,12 @@ pub fn watch(
                             map.remove(&filename);
                             break;
                         }
+
+                        if item.callbacks.is_empty() && !item.persistent {
+                            map.remove(&filename);
+                            break;
+                        }
+
                         let mut event_err = None;
                         let mut event_type = "";
                         let mut event_file_name = std::path::PathBuf::new();
@@ -1083,7 +1089,7 @@ pub fn watcher_close(
 
 pub fn watch_file(
     filename: &str,
-    bigint: bool,
+    _bigint: bool,
     persistent: bool,
     interval: c_ulong,
     callback: Arc<AsyncClosure<FileWatchEvent, Error>>,
@@ -1252,9 +1258,9 @@ pub fn write_string(
     let encoding = encoding.to_string();
     runtime().spawn(async move {
         match super::sync::write_string(fd, &string, &encoding, position) {
-            Ok(wrote) => unsafe {
+            Ok(wrote) => {
                 callback.on_success(Some(wrote));
-            },
+            }
             Err(error) => {
                 callback.on_error(Some(error));
             }
@@ -1380,7 +1386,7 @@ pub fn writev_raw(
     let buffer = buffer as i64;
     let callback = Arc::clone(&callback);
     runtime().spawn(async move {
-        let buffer = unsafe { buffer as *const *const ByteBuf };
+        let buffer = buffer as *const *const ByteBuf;
 
         match super::sync::writev_raw(fd, buffer, buffer_len, position) {
             Ok(wrote) => {

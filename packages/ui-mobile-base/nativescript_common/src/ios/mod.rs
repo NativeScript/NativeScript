@@ -1,12 +1,12 @@
 use std::ffi::CString;
 
 use libc::c_char;
-use objc::{class, msg_send, sel};
 use objc::runtime::Object;
+use objc::{class, msg_send, sel};
 
-use crate::common::{ByteBuf, ByteBufMut};
 use crate::common::fs::file_dir::FileDir;
 use crate::common::fs::file_dirent::FileDirent;
+use crate::common::{ByteBuf, ByteBufMut};
 
 pub mod fs;
 mod prelude;
@@ -17,8 +17,7 @@ pub(crate) fn throw_error(error: &str) {
     unsafe {
         let nil: *mut Object = ::std::ptr::null_mut();
         let exec_cls = class!(NSException);
-        let alloc_sel = sel!(alloc);
-        let string: *mut Object = msg_send![class!(NSString), alloc_sel];
+        let string: *mut Object = msg_send![class!(NSString), alloc];
         let bytes = error.as_ptr() as *const libc::c_void;
         let reason: *mut Object = msg_send![string,
             initWithBytes: bytes

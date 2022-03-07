@@ -11,7 +11,6 @@ pub enum FileDirentInner {
     Regular(fs::DirEntry),
 }
 
-
 pub struct FileDirent(pub(crate) Arc<FileDirentInner>);
 
 impl FileDirent {
@@ -29,7 +28,9 @@ impl FileDirent {
                 let raw = (*raw) as *mut libc::dirent;
                 CStr::from_ptr((*raw).d_name.as_ptr()).to_string_lossy()
             },
-            FileDirentInner::Regular(reg) => Cow::from(reg.file_name().to_string_lossy().as_ref().to_string()),
+            FileDirentInner::Regular(reg) => {
+                Cow::from(reg.file_name().to_string_lossy().as_ref().to_string())
+            }
         }
     }
 
@@ -108,7 +109,9 @@ impl Drop for FileDirent {
     fn drop(&mut self) {
         if let FileDirentInner::Raw(value) = self.0.as_ref() {
             if value.is_null() {
-                unsafe { libc::free(*value); }
+                unsafe {
+                    libc::free(*value);
+                }
             }
         }
     }
@@ -132,10 +135,7 @@ impl From<Vec<FileDirent>> for FileDirentBuf {
         let mut slice = vec.into_boxed_slice();
         let data = slice.as_mut_ptr();
         let _ = Box::into_raw(slice);
-        Self {
-            data,
-            len,
-        }
+        Self { data, len }
     }
 }
 
@@ -143,9 +143,7 @@ impl Drop for FileDirentBuf {
     fn drop(&mut self) {
         if !self.data.is_null() && self.len != 0 {
             unsafe {
-                let _ = Box::from_raw(
-                    std::slice::from_raw_parts_mut(self.data, self.len)
-                );
+                let _ = Box::from_raw(std::slice::from_raw_parts_mut(self.data, self.len));
             }
         }
     }

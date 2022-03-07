@@ -82,9 +82,9 @@ pub extern "C" fn native_fs_access(
     callback: *const AsyncCallback,
 ) {
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
-            on_success.on_error(to_error(error.unwrap().to_string()))
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
+            on_success.on_error(to_error(error.to_string()))
         } else {
             on_success.on_success(None)
         }
@@ -102,9 +102,9 @@ pub extern "C" fn native_fs_append_file_with_bytes(
     callback: *const AsyncCallback,
 ) {
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
-            on_success.on_error(to_error(error.unwrap().to_string()))
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
+            on_success.on_error(to_error(error.to_string()))
         } else {
             on_success.on_success(None)
         }
@@ -120,9 +120,9 @@ pub extern "C" fn native_fs_append_file_with_string(
     callback: *const AsyncCallback,
 ) {
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
-            on_success.on_error(to_error(error.unwrap().to_string()))
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
+            on_success.on_error(to_error(error.to_string()))
         } else {
             on_success.on_success(None)
         }
@@ -142,9 +142,9 @@ pub extern "C" fn native_fs_append_file_with_path_bytes(
     callback: *const AsyncCallback,
 ) {
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
-            on_success.on_error(to_error(error.unwrap().to_string()))
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
+            on_success.on_error(to_error(error.to_string()))
         } else {
             on_success.on_success(None)
         }
@@ -172,9 +172,9 @@ pub extern "C" fn native_fs_append_file_with_path_string(
     let data = get_str(data, "");
 
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
-            on_success.on_error(to_error(error.unwrap().to_string()))
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
+            on_success.on_error(to_error(error.to_string()))
         } else {
             on_success.on_success(None)
         }
@@ -192,9 +192,9 @@ pub extern "C" fn native_fs_chmod(
 ) {
     let path = get_str(path, "");
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
-            on_success.on_error(to_error(error.unwrap().to_string()))
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
+            on_success.on_error(to_error(error.to_string()))
         } else {
             on_success.on_success(None)
         }
@@ -212,9 +212,9 @@ pub extern "C" fn native_fs_chown(
 ) {
     let path = get_str(path, "");
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
-            on_success.on_error(to_error(error.unwrap().to_string()))
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
+            on_success.on_error(to_error(error.to_string()))
         } else {
             on_success.on_success(None)
         }
@@ -226,9 +226,9 @@ pub extern "C" fn native_fs_chown(
 #[no_mangle]
 pub extern "C" fn native_fs_close(fd: c_int, callback: *const AsyncCallback) {
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
-            on_success.on_error(to_error(error.unwrap().to_string()))
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
+            on_success.on_error(to_error(error.to_string()))
         } else {
             on_success.on_success(None)
         }
@@ -247,9 +247,9 @@ pub extern "C" fn native_fs_copy_file(
     let src = get_str(src, "");
     let dest = get_str(dest, "");
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
-            on_success.on_error(to_error(error.unwrap().to_string()))
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
+            on_success.on_error(to_error(error.to_string()))
         } else {
             on_success.on_success(None)
         }
@@ -262,7 +262,7 @@ pub extern "C" fn native_fs_copy_file(
 pub extern "C" fn native_fs_cp(
     _src: *const c_char,
     _dest: *const c_char,
-    callback: *const AsyncCallback,
+    _callback: *const AsyncCallback,
 ) {
     todo!()
 }
@@ -271,8 +271,8 @@ pub extern "C" fn native_fs_cp(
 pub extern "C" fn native_fs_exists(src: *const c_char, callback: *const AsyncCallback) {
     let on_success = AsyncCallback::clone_from_ptr(callback);
     let callback = AsyncClosure::<bool, std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
-            on_success.on_error(to_error(error.unwrap().to_string()))
+        if let Some(error) = error {
+            on_success.on_error(to_error(error.to_string()))
         } else {
             on_success.on_success(NonNull::new(success.unwrap() as c_uchar as *mut c_void))
         }
@@ -284,9 +284,9 @@ pub extern "C" fn native_fs_exists(src: *const c_char, callback: *const AsyncCal
 #[no_mangle]
 pub extern "C" fn native_fs_fchmod(fd: c_int, mode: c_ushort, callback: *const AsyncCallback) {
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
-            on_success.on_error(to_error(error.unwrap().to_string()))
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
+            on_success.on_error(to_error(error.to_string()))
         } else {
             on_success.on_success(None)
         }
@@ -303,9 +303,9 @@ pub extern "C" fn native_fs_fchown(
     callback: *const AsyncCallback,
 ) {
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
-            on_success.on_error(to_error(error.unwrap().to_string()))
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
+            on_success.on_error(to_error(error.to_string()))
         } else {
             on_success.on_success(None)
         }
@@ -317,9 +317,9 @@ pub extern "C" fn native_fs_fchown(
 #[no_mangle]
 pub extern "C" fn native_fs_fdatasync(fd: c_int, callback: *const AsyncCallback) {
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
-            on_success.on_error(to_error(error.unwrap().to_string()))
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
+            on_success.on_error(to_error(error.to_string()))
         } else {
             on_success.on_success(None)
         }
@@ -333,8 +333,8 @@ pub extern "C" fn native_fs_fstat(fd: c_int, callback: *const AsyncCallback) {
     let on_success = AsyncCallback::clone_from_ptr(callback);
     let callback =
         AsyncClosure::<FileStat, std::io::Error>::new(Box::new(move |success, error| {
-            if error.is_some() {
-                on_success.on_error(to_error(error.unwrap().to_string()))
+            if let Some(error) = error {
+                on_success.on_error(to_error(error.to_string()))
             } else {
                 on_success.on_success(NonNull::new(
                     Box::into_raw(Box::new(success.unwrap())) as *mut c_void
@@ -348,9 +348,9 @@ pub extern "C" fn native_fs_fstat(fd: c_int, callback: *const AsyncCallback) {
 #[no_mangle]
 pub extern "C" fn native_fs_fsync(fd: c_int, callback: *const AsyncCallback) {
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
-            on_success.on_error(to_error(error.unwrap().to_string()))
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
+            on_success.on_error(to_error(error.to_string()))
         } else {
             on_success.on_success(None)
         }
@@ -362,9 +362,9 @@ pub extern "C" fn native_fs_fsync(fd: c_int, callback: *const AsyncCallback) {
 #[no_mangle]
 pub extern "C" fn native_fs_ftruncate(fd: c_int, len: c_long, callback: *const AsyncCallback) {
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
-            on_success.on_error(to_error(error.unwrap().to_string()))
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
+            on_success.on_error(to_error(error.to_string()))
         } else {
             on_success.on_success(None)
         }
@@ -381,9 +381,9 @@ pub extern "C" fn native_fs_futimes(
     callback: *const AsyncCallback,
 ) {
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
-            on_success.on_error(to_error(error.unwrap().to_string()))
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
+            on_success.on_error(to_error(error.to_string()))
         } else {
             on_success.on_success(None)
         }
@@ -399,9 +399,9 @@ pub extern "C" fn native_fs_lchmod(
     callback: *const AsyncCallback,
 ) {
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
-            on_success.on_error(to_error(error.unwrap().to_string()))
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
+            on_success.on_error(to_error(error.to_string()))
         } else {
             on_success.on_success(None)
         }
@@ -418,9 +418,9 @@ pub extern "C" fn native_fs_lchown(
     callback: *const AsyncCallback,
 ) {
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
-            on_success.on_error(to_error(error.unwrap().to_string()))
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
+            on_success.on_error(to_error(error.to_string()))
         } else {
             on_success.on_success(None)
         }
@@ -437,9 +437,9 @@ pub extern "C" fn native_fs_lutimes(
     callback: *const AsyncCallback,
 ) {
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
-            on_success.on_error(to_error(error.unwrap().to_string()))
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
+            on_success.on_error(to_error(error.to_string()))
         } else {
             on_success.on_success(None)
         }
@@ -455,9 +455,9 @@ pub extern "C" fn native_fs_link(
     callback: *const AsyncCallback,
 ) {
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
-            on_success.on_error(to_error(error.unwrap().to_string()))
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
+            on_success.on_error(to_error(error.to_string()))
         } else {
             on_success.on_success(None)
         }
@@ -475,8 +475,8 @@ pub extern "C" fn native_fs_lstat(path: *const c_char, callback: *const AsyncCal
     let on_success = AsyncCallback::clone_from_ptr(callback);
     let callback =
         AsyncClosure::<FileStat, std::io::Error>::new(Box::new(move |success, error| {
-            if error.is_some() {
-                on_success.on_error(to_error(error.unwrap().to_string()))
+            if let Some(error) = error {
+                on_success.on_error(to_error(error.to_string()))
             } else {
                 on_success.on_success(NonNull::new(
                     Box::into_raw(Box::new(success.unwrap())) as *mut c_void
@@ -495,9 +495,9 @@ pub extern "C" fn native_fs_mkdir(
     callback: *const AsyncCallback,
 ) {
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
-            on_success.on_error(to_error(error.unwrap().to_string()))
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
+            on_success.on_error(to_error(error.to_string()))
         } else {
             on_success.on_success(None)
         }
@@ -511,8 +511,8 @@ pub extern "C" fn native_fs_mkdtemp(prefix: *const c_char, callback: *const Asyn
     let on_success = AsyncCallback::clone_from_ptr(callback);
     let callback =
         AsyncClosure::<std::path::PathBuf, std::io::Error>::new(Box::new(move |success, error| {
-            if error.is_some() {
-                on_success.on_error(to_error(error.unwrap().to_string()))
+            if let Some(error) = error {
+                on_success.on_error(to_error(error.to_string()))
             } else {
                 on_success.on_success(NonNull::new(
                     CString::new(success.unwrap().to_string_lossy().as_ref())
@@ -627,8 +627,8 @@ pub extern "C" fn native_fs_read_file(
     let on_success = AsyncCallback::clone_from_ptr(callback);
     let callback =
         AsyncClosure::<ByteBufMut, std::io::Error>::new(Box::new(move |success, error| {
-            if error.is_some() {
-                on_success.on_error(to_error(error.unwrap().to_string()))
+            if let Some(error) = error {
+                on_success.on_error(to_error(error.to_string()))
             } else {
                 on_success.on_success(NonNull::new(
                     Box::into_raw(Box::new(success.unwrap())) as *mut c_void
@@ -649,8 +649,8 @@ pub extern "C" fn native_fs_read_file_with_fd(
     let on_success = AsyncCallback::clone_from_ptr(callback);
     let callback =
         AsyncClosure::<ByteBufMut, std::io::Error>::new(Box::new(move |success, error| {
-            if error.is_some() {
-                on_success.on_error(to_error(error.unwrap().to_string()))
+            if let Some(error) = error {
+                on_success.on_error(to_error(error.to_string()))
             } else {
                 on_success.on_success(NonNull::new(
                     Box::into_raw(Box::new(success.unwrap())) as *mut c_void
@@ -763,9 +763,9 @@ pub extern "C" fn native_fs_rename(
     callback: *const AsyncCallback,
 ) {
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
-            on_success.on_error(to_error(error.unwrap().to_string()))
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
+            on_success.on_error(to_error(error.to_string()))
         } else {
             on_success.on_success(None)
         }
@@ -787,9 +787,9 @@ pub extern "C" fn native_fs_rmdir(
     callback: *const AsyncCallback,
 ) {
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
-            on_success.on_error(to_error(error.unwrap().to_string()))
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
+            on_success.on_error(to_error(error.to_string()))
         } else {
             on_success.on_success(None)
         }
@@ -813,9 +813,9 @@ pub extern "C" fn native_fs_rm(
     callback: *const AsyncCallback,
 ) {
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
-            on_success.on_error(to_error(error.unwrap().to_string()))
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
+            on_success.on_error(to_error(error.to_string()))
         } else {
             on_success.on_success(None)
         }
@@ -840,8 +840,8 @@ pub extern "C" fn native_fs_stat(
     let on_success = AsyncCallback::clone_from_ptr(callback);
     let callback =
         AsyncClosure::<FileStat, std::io::Error>::new(Box::new(move |success, error| {
-            if error.is_some() {
-                on_success.on_error(to_error(error.unwrap().to_string()))
+            if let Some(error) = error {
+                on_success.on_error(to_error(error.to_string()))
             } else {
                 on_success.on_success(NonNull::new(
                     Box::into_raw(Box::new(success.unwrap())) as *mut c_void
@@ -861,9 +861,9 @@ pub extern "C" fn native_fs_symlink(
     callback: *const AsyncCallback,
 ) {
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
-            on_success.on_error(to_error(error.unwrap().to_string()))
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
+            on_success.on_error(to_error(error.to_string()))
         } else {
             on_success.on_success(None)
         }
@@ -885,9 +885,9 @@ pub extern "C" fn native_fs_truncate(
     callback: *const AsyncCallback,
 ) {
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
-            on_success.on_error(to_error(error.unwrap().to_string()))
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
+            on_success.on_error(to_error(error.to_string()))
         } else {
             on_success.on_success(None)
         }
@@ -899,9 +899,9 @@ pub extern "C" fn native_fs_truncate(
 #[no_mangle]
 pub extern "C" fn native_fs_unlink(path: *const c_char, callback: *const AsyncCallback) {
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
-            on_success.on_error(to_error(error.unwrap().to_string()))
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
+            on_success.on_error(to_error(error.to_string()))
         } else {
             on_success.on_success(None)
         }
@@ -919,9 +919,9 @@ pub extern "C" fn native_fs_utimes(
     callback: *const AsyncCallback,
 ) {
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
-            on_success.on_error(to_error(error.unwrap().to_string()))
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
+            on_success.on_error(to_error(error.to_string()))
         } else {
             on_success.on_success(None)
         }
@@ -940,9 +940,9 @@ pub extern "C" fn native_fs_write_file_with_path_string(
     callback: *const AsyncCallback,
 ) {
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
-            on_success.on_error(to_error(error.unwrap().to_string()))
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
+            on_success.on_error(to_error(error.to_string()))
         } else {
             on_success.on_success(None)
         }
@@ -995,9 +995,9 @@ pub extern "C" fn native_fs_write_file_with_path_bytes(
     callback: *const AsyncCallback,
 ) {
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
-            on_success.on_error(to_error(error.unwrap().to_string()))
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
+            on_success.on_error(to_error(error.to_string()))
         } else {
             on_success.on_success(None)
         }
@@ -1022,9 +1022,9 @@ pub extern "C" fn native_fs_write_file_with_bytes(
     callback: *const AsyncCallback,
 ) {
     let on_success = AsyncCallback::clone_from_ptr(callback);
-    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |success, error| {
-        if error.is_some() {
-            on_success.on_error(to_error(error.unwrap().to_string()))
+    let callback = AsyncClosure::<(), std::io::Error>::new(Box::new(move |_, error| {
+        if let Some(error) = error {
+            on_success.on_error(to_error(error.to_string()))
         } else {
             on_success.on_success(None)
         }

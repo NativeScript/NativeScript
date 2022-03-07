@@ -1,13 +1,10 @@
-use jni::{
-    JNIEnv,
-    sys::jobject,
-};
 use jni::objects::{JClass, JObject};
 use jni::sys::jlong;
+use jni::{sys::jobject, JNIEnv};
 
+use crate::android::prelude::*;
 use crate::android::FILE_DIR_CLASS;
 use crate::android::JVM;
-use crate::android::prelude::*;
 use crate::common::fs::file_dir::FileDir;
 
 use super::a_sync::AsyncCallback;
@@ -16,9 +13,8 @@ use super::file_dirent::build_dirent;
 pub(crate) fn build_dir<'a>(env: &JNIEnv<'a>, dir: FileDir) -> JObject<'a> {
     let clazz = find_class(FILE_DIR_CLASS).unwrap();
     let dir = Box::into_raw(Box::new(dir));
-    env.new_object(clazz, "(J)V", &[
-        (dir as i64).into()
-    ]).unwrap()
+    env.new_object(clazz, "(J)V", &[(dir as i64).into()])
+        .unwrap()
 }
 
 #[no_mangle]
@@ -32,7 +28,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileDir_nativeCl
         let mut dir = unsafe { Box::from_raw(dir) };
         let result = dir.close();
         if let Err(error) = result {
-            env.throw(error.to_string());
+            let _ = env.throw(error.to_string());
         }
     }
 }
@@ -50,17 +46,16 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileDir_nativeCl
     if !dir.is_null() {
         let mut dir = unsafe { Box::from_raw(dir) };
         dir.close_async(Box::new(move |error| {
-            if error.is_some() {
-                on_success.on_error(
-                    jni::objects::JValue::Object(error_to_jstring(error.unwrap()).as_obj())
-                )
+            if let Some(error) = error {
+                on_success.on_error(jni::objects::JValue::Object(
+                    error_to_jstring(error).as_obj(),
+                ))
             } else {
                 on_success.on_success(jni::objects::JObject::null().into())
             }
         }));
     }
 }
-
 
 #[no_mangle]
 pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileDir_nativePath(
@@ -76,7 +71,6 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileDir_nativePa
     JObject::null().into_inner()
 }
 
-
 #[no_mangle]
 pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileDir_nativeDispose(
     _env: JNIEnv,
@@ -88,7 +82,6 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileDir_nativeDi
         let _ = unsafe { Box::from_raw(dir) };
     }
 }
-
 
 #[no_mangle]
 pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileDir_nativeReadSync(
@@ -104,13 +97,12 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileDir_nativeRe
                 return build_dirent(&env, dirent).into_inner();
             }
             Err(error) => {
-                env.throw(error.to_string());
+                let _ = env.throw(error.to_string());
             }
         }
     }
     return JObject::null().into_inner();
 }
-
 
 #[no_mangle]
 pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileDir_nativeRead(
@@ -126,15 +118,13 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileDir_nativeRe
         let mut dir = unsafe { Box::from_raw(dir) };
         dir.read_async(Box::new(move |dirent, error| {
             if error.is_some() {
-                on_success.on_error(
-                    jni::objects::JValue::Object(error_to_jstring(error.unwrap()).as_obj())
-                )
+                on_success.on_error(jni::objects::JValue::Object(
+                    error_to_jstring(error.unwrap()).as_obj(),
+                ))
             } else {
                 let jvm = JVM.get().unwrap();
                 let env = jvm.attach_current_thread().unwrap();
-                on_success.on_success(
-                    build_dirent(&env, dirent.unwrap()).into()
-                )
+                on_success.on_success(build_dirent(&env, dirent.unwrap()).into())
             }
         }));
     }

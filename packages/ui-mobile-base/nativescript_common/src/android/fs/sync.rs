@@ -1,14 +1,14 @@
-use jni::JNIEnv;
 use jni::objects::{JByteBuffer, JClass, JObject, JString, JValue, ReleaseMode};
-use jni::sys::{jboolean, jbyteArray, jint, jlong, JNI_TRUE, jobject, jobjectArray};
+use jni::sys::{jboolean, jbyteArray, jint, jlong, jobject, jobjectArray, JNI_TRUE};
+use jni::JNIEnv;
 use libc::{c_int, c_uint, c_ushort};
 
-use crate::android::FILE_SYSTEM_CLASS;
 use crate::android::prelude::*;
-use crate::common::{ByteBuf, ByteBufMut};
+use crate::android::FILE_SYSTEM_CLASS;
 use crate::common::fs;
 use crate::common::fs::file_stat::FileStat;
 use crate::common::fs::prelude::handle_meta;
+use crate::common::{ByteBuf, ByteBufMut};
 
 use super::file_dir::build_dir;
 use super::file_dirent::{build_dirent, build_dirents, build_dirents_paths};
@@ -24,7 +24,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     let path = get_str(path, "");
     let result = fs::sync::access(&path, mode);
     if let Err(error) = result {
-        env.throw(error.to_string());
+        let _ = env.throw(error.to_string());
     }
 }
 
@@ -48,7 +48,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
 
     if let Err(error) = result {
         drop(data);
-        env.throw(error.to_string());
+        let _ = env.throw(error.to_string());
     }
 }
 
@@ -63,7 +63,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     let result = fs::sync::append_file_with_str(fd, &data);
 
     if let Err(error) = result {
-        env.throw(error.to_string());
+        let _ = env.throw(error.to_string());
     }
 }
 
@@ -89,7 +89,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     let result = fs::sync::append_file_with_path_bytes(&path, data, mode, flags);
 
     if let Err(error) = result {
-        env.throw(error.to_string());
+        let _ = env.throw(error.to_string());
     }
 }
 
@@ -106,7 +106,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     let data = get_str(data, "");
     let result = fs::sync::append_file_with_path_str(path.as_ref(), data.as_ref(), mode, flags);
     if let Err(error) = result {
-        env.throw(error.to_string());
+        let _ = env.throw(error.to_string());
     }
 }
 
@@ -121,7 +121,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     let result = fs::sync::chmod(path.as_ref(), mode as u32);
 
     if let Err(error) = result {
-        env.throw(error.to_string());
+        let _ = env.throw(error.to_string());
     }
 }
 
@@ -136,7 +136,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     let path = get_str(path, "");
     let result = fs::sync::chown(path.as_ref(), uid as u32, gid as u32);
     if let Err(error) = result {
-        env.throw(error.to_string());
+        let _ = env.throw(error.to_string());
     }
 }
 
@@ -162,7 +162,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     let result = fs::sync::copy_file(&src, &dest, flags as u32);
 
     if let Err(error) = result {
-        env.throw(error.to_string());
+        let _ = env.throw(error.to_string());
     }
 }
 
@@ -198,7 +198,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
 ) {
     let result = fs::sync::fchmod(fd, mode as c_ushort);
     if let Err(error) = result {
-        env.throw(error.to_string());
+        let _ = env.throw(error.to_string());
     }
 }
 
@@ -212,7 +212,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
 ) {
     let result = fs::sync::fchown(fd, uid as c_uint, gid as c_uint);
     if let Err(error) = result {
-        env.throw(error.to_string());
+        let _ = env.throw(error.to_string());
     }
 }
 
@@ -224,7 +224,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
 ) {
     let result = fs::sync::fdatasync(fd);
     if let Err(error) = result {
-        env.throw(error.to_string());
+        let _ = env.throw(error.to_string());
     }
 }
 
@@ -237,7 +237,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     match fs::sync::fstat(fd) {
         Ok(stat) => build_stat(&env, handle_meta(&stat)).into_inner(),
         Err(error) => {
-            env.throw(error.to_string());
+            let _ = env.throw(error.to_string());
             return JObject::null().into_inner();
         }
     }
@@ -251,7 +251,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
 ) {
     let result = fs::sync::fsync(fd);
     if let Err(error) = result {
-        env.throw(error.to_string());
+        let _ = env.throw(error.to_string());
     }
 }
 
@@ -264,7 +264,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
 ) {
     let result = fs::sync::ftruncate(fd, len.try_into().unwrap());
     if let Err(error) = result {
-        env.throw(error.to_string());
+        let _ = env.throw(error.to_string());
     }
 }
 
@@ -278,7 +278,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
 ) {
     let result = fs::sync::futimes(fd, atime.try_into().unwrap(), mtime.try_into().unwrap());
     if let Err(error) = result {
-        env.throw(error.to_string());
+        let _ = env.throw(error.to_string());
     }
 }
 
@@ -292,7 +292,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     let path = get_str(path, "");
     let result = fs::sync::lchmod(&path, mode as c_ushort);
     if let Err(error) = result {
-        env.throw(error.to_string());
+        let _ = env.throw(error.to_string());
     }
 }
 
@@ -307,7 +307,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     let path = get_str(path, "");
     let result = fs::sync::lchown(&path, uid as c_uint, gid as c_uint);
     if let Err(error) = result {
-        env.throw(error.to_string());
+        let _ = env.throw(error.to_string());
     }
 }
 
@@ -322,7 +322,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     let path = get_str(path, "");
     let result = fs::sync::lutimes(&path, atime.try_into().unwrap(), mtime.try_into().unwrap());
     if let Err(error) = result {
-        env.throw(error.to_string());
+        let _ = env.throw(error.to_string());
     }
 }
 
@@ -338,7 +338,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     let result = fs::sync::link(&existing_path, &new_path);
 
     if let Err(error) = result {
-        env.throw(error.to_string());
+        let _ = env.throw(error.to_string());
     }
 }
 
@@ -352,7 +352,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     match fs::sync::lstat(&path) {
         Ok(stat) => build_stat(&env, handle_meta(&stat)).into_inner(),
         Err(error) => {
-            env.throw(error.to_string());
+            let _ = env.throw(error.to_string());
             return JObject::null().into_inner();
         }
     }
@@ -369,7 +369,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     let path = get_str(path, "");
     let result = fs::sync::mkdir(&path, mode as u32, recursive == JNI_TRUE);
     if let Err(error) = result {
-        env.throw(error.to_string());
+        let _ = env.throw(error.to_string());
     }
 }
 
@@ -383,7 +383,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     return match fs::sync::mkdtemp(&prefix) {
         Ok(result) => env.new_string(result).unwrap().into_inner(),
         Err(error) => {
-            env.throw(error.to_string());
+            let _ = env.throw(error.to_string());
             JObject::null().into_inner()
         }
     };
@@ -401,7 +401,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     match fs::sync::open(&path, flags, mode) {
         Ok(fd) => fd.into(),
         Err(error) => {
-            env.throw(error.to_string());
+            let _ = env.throw(error.to_string());
             return 0;
         }
     }
@@ -417,7 +417,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     return match fs::sync::opendir(&path) {
         Ok(dir) => build_dir(&env, dir).into_inner(),
         Err(error) => {
-            env.throw(error.to_string());
+            let _ = env.throw(error.to_string());
             JObject::null().into_inner()
         }
     };
@@ -443,7 +443,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     ) {
         Ok(read) => (read as jlong).into(),
         Err(error) => {
-            env.throw(error.to_string());
+            let _ = env.throw(error.to_string());
             0
         }
     };
@@ -483,7 +483,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
         Err(error) => {
             // force drop of array to enable jni usage
             drop(data);
-            env.throw(error.to_string());
+            let _ = env.throw(error.to_string());
             0
         }
     }
@@ -501,7 +501,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     match fs::sync::readdir_with_file_types(&path, &encoding) {
         Ok(dirent) => build_dirents(&env, dirent),
         Err(error) => {
-            env.throw(error.to_string());
+            let _ = env.throw(error.to_string());
             build_dirents(&env, vec![])
         }
     }
@@ -519,7 +519,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     match fs::sync::readdir_with_file(&path, &encoding) {
         Ok(dir) => build_dirents_paths(&env, dir).into(),
         Err(error) => {
-            env.throw(error.to_string());
+            let _ = env.throw(error.to_string());
             build_dirents_paths(&env, vec![]).into()
         }
     }
@@ -564,12 +564,12 @@ fn read_file(env: JNIEnv, path: JString, flags: jint, to_bytes: bool) -> jobject
                     "(JLjava/nio/ByteBuffer;)V",
                     &[(buf as i64).into(), db],
                 )
-                    .unwrap();
+                .unwrap();
                 db.l().unwrap().into_inner()
             }
         }
         Err(error) => {
-            env.throw(error.to_string());
+            let _ = env.throw(error.to_string());
             JObject::null().into_inner()
         }
     }
@@ -605,7 +605,7 @@ fn read_file_with_fd(env: JNIEnv, fd: jint, flags: jint, to_bytes: bool) -> jobj
                 let buf = Box::into_raw(Box::new(buf));
                 let clazz = find_class(FILE_SYSTEM_CLASS).unwrap();
                 let db: JValue = db.into();
-                env.call_static_method(
+                let _ = env.call_static_method(
                     clazz,
                     "watchItem",
                     "(JLjava/nio/ByteBuffer)V",
@@ -615,7 +615,7 @@ fn read_file_with_fd(env: JNIEnv, fd: jint, flags: jint, to_bytes: bool) -> jobj
             }
         }
         Err(error) => {
-            env.throw(error.to_string());
+            let _ = env.throw(error.to_string());
             JObject::null().into_inner()
         }
     }
@@ -633,7 +633,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     match fs::sync::read_link(&path, &encoding) {
         Ok(link) => env.new_string(link.to_string_lossy()).unwrap().into_inner(),
         Err(error) => {
-            env.throw(error.to_string());
+            let _ = env.throw(error.to_string());
             JObject::null().into_inner()
         }
     }
@@ -657,7 +657,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     match fs::sync::readv(fd, buf.as_mut_slice(), position.try_into().unwrap()) {
         Ok(read) => read as jlong,
         Err(error) => {
-            env.throw(error.to_string());
+            let _ = env.throw(error.to_string());
             0
         }
     }
@@ -673,7 +673,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     match fs::sync::real_path(&path) {
         Ok(buf) => env.new_string(buf.to_string_lossy()).unwrap().into_inner(),
         Err(error) => {
-            env.throw(error.to_string());
+            let _ = env.throw(error.to_string());
             JObject::null().into_inner()
         }
     }
@@ -691,7 +691,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     let result = fs::sync::rename(&old_path, &new_path);
 
     if let Err(error) = result {
-        env.throw(error.to_string());
+        let _ = env.throw(error.to_string());
     }
 }
 
@@ -712,7 +712,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
         retry_delay.try_into().unwrap(),
     );
     if let Err(error) = result {
-        env.throw(error.to_string());
+        let _ = env.throw(error.to_string());
     }
 }
 
@@ -734,7 +734,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     );
 
     if let Err(error) = result {
-        env.throw(error.to_string());
+        let _ = env.throw(error.to_string());
     }
 }
 
@@ -751,7 +751,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
         Ok(stat) => build_stat(&env, handle_meta(&stat)).into_inner(),
         Err(error) => {
             if throw_if_no_entry == JNI_TRUE && error.kind() == std::io::ErrorKind::NotFound {
-                env.throw(error.to_string());
+                let _ = env.throw(error.to_string());
             }
             JObject::null().into_inner()
         }
@@ -772,7 +772,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     let result = fs::sync::symlink(&target, &path, &type_);
 
     if let Err(error) = result {
-        env.throw(error.to_string());
+        let _ = env.throw(error.to_string());
     }
 }
 
@@ -787,7 +787,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     let result = fs::sync::truncate(&path, len.try_into().unwrap());
 
     if let Err(error) = result {
-        env.throw(error.to_string());
+        let _ = env.throw(error.to_string());
     }
 }
 
@@ -801,7 +801,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     let result = fs::sync::unlink(&path);
 
     if let Err(error) = result {
-        env.throw(error.to_string());
+        let _ = env.throw(error.to_string());
     }
 }
 
@@ -819,7 +819,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     let result = fs::sync::utimes(&path, atime.try_into().unwrap(), mtime.try_into().unwrap());
 
     if let Err(error) = result {
-        env.throw(error.to_string());
+        let _ = env.throw(error.to_string());
     }
 }
 
@@ -843,7 +843,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     ) {
         Ok(wrote) => wrote as jlong,
         Err(error) => {
-            env.throw(error.to_string());
+            let _ = env.throw(error.to_string());
             0
         }
     }
@@ -883,7 +883,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
         Err(error) => {
             // force drop of array to enable jni usage
             drop(data);
-            env.throw(error.to_string());
+            let _ = env.throw(error.to_string());
             0_i64
         }
     }
@@ -903,7 +903,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     match fs::sync::write_string(fd, &string, &encoding, position.try_into().unwrap()) {
         Ok(wrote) => wrote as jlong,
         Err(error) => {
-            env.throw(error.to_string());
+            let _ = env.throw(error.to_string());
             0_i64
         }
     }
@@ -922,7 +922,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     let result = fs::sync::write_file_with_str(fd, &data, &encoding);
 
     if let Err(error) = result {
-        env.throw(error.to_string());
+        let _ = env.throw(error.to_string());
     }
 }
 
@@ -945,7 +945,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     let result = fs::sync::write_file_with_bytes(fd, bytes);
 
     if let Err(error) = result {
-        env.throw(error.to_string());
+        let _ = env.throw(error.to_string());
     }
 }
 
@@ -960,7 +960,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     let result = fs::sync::write_file_with_bytes(fd, bytes);
 
     if let Err(error) = result {
-        env.throw(error.to_string());
+        let _ = env.throw(error.to_string());
     }
 }
 
@@ -981,7 +981,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     let result = fs::sync::write_file_with_str_from_path(&path, &data, &encoding, mode, flag);
 
     if let Err(error) = result {
-        env.throw(error.to_string());
+        let _ = env.throw(error.to_string());
     }
 }
 
@@ -1010,7 +1010,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     let result = fs::sync::write_file_with_bytes_from_path(&path, bytes, &encoding, mode, flag);
 
     if let Err(error) = result {
-        env.throw(error.to_string());
+        let _ = env.throw(error.to_string());
     }
 }
 
@@ -1031,7 +1031,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     let result = fs::sync::write_file_with_bytes_from_path(&path, bytes, &encoding, mode, flag);
 
     if let Err(error) = result {
-        env.throw(error.to_string());
+        let _ = env.throw(error.to_string());
     }
 }
 
@@ -1053,7 +1053,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileSystem_nativ
     match fs::sync::writev(fd, buf, position.try_into().unwrap()) {
         Ok(wrote) => wrote as jlong,
         Err(error) => {
-            env.throw(error.to_string());
+            let _ = env.throw(error.to_string());
             0
         }
     }
