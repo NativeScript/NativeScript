@@ -25,10 +25,6 @@ pub(crate) struct AsyncCallbackInner {
 }
 
 impl AsyncCallbackInner {
-    pub(crate) fn inner_raw(&self) -> *mut jni::objects::GlobalRef {
-        self.inner as *mut jni::objects::GlobalRef
-    }
-
     pub(crate) fn inner(&self) -> jni::objects::GlobalRef {
         unsafe { (&*(self.inner as *mut jni::objects::GlobalRef)).clone() }
     }

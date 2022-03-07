@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::ffi::{CStr};
+use std::ffi::CStr;
 use std::os::raw::c_char;
 use std::ptr::NonNull;
 use std::sync::Arc;
@@ -18,6 +18,7 @@ use crate::common::fs::a_sync::{AsyncClosure, WatchEvent};
 
 type WatcherCallbackMap = Arc<Mutex<HashMap<Arc<AsyncCallback>, FsWatchCallback>>>;
 
+#[allow(dead_code)]
 pub struct FsWatchCallback {
     callback: Arc<AsyncCallback>,
     inner: Arc<AsyncClosure<WatchEvent, std::io::Error>>,
@@ -194,7 +195,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_WatcherEvent_nat
     on_close: jlong,
 ) {
     let callback = callback as *const AsyncCallback;
-    let on_close = unsafe { on_close as *const AsyncCallback };
+    let on_close = on_close as *const AsyncCallback;
     let callback = AsyncCallback::clone_from_ptr(callback);
     let on_close = AsyncCallback::clone_from_ptr(on_close);
 

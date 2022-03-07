@@ -40,7 +40,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileDir_nativeCl
     file_dir: jlong,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
     let dir: *mut FileDir = file_dir as _;
     if !dir.is_null() {
@@ -111,7 +111,7 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_FileDir_nativeRe
     file_dir: jlong,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let on_success = AsyncCallback::clone_from_ptr(callback);
     let dir: *mut FileDir = file_dir as _;
     if !dir.is_null() {

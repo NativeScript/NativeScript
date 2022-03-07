@@ -22,6 +22,6 @@ pub extern "system" fn Java_org_nativescript_widgets_filesystem_AsyncCallback_di
     _: JClass,
     callback: jlong,
 ) {
-    let callback = unsafe { callback as *const AsyncCallback };
+    let callback = callback as *const AsyncCallback;
     let _ = unsafe { Arc::from_raw(callback) };
 }
