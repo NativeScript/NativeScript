@@ -14,8 +14,8 @@
     "nativescript-theme-core": "file:../../node_modules/nativescript-theme-core"
   },
   "devDependencies": {
-    "@nativescript/android": "alpha",
-    "@nativescript/ios": "alpha",
+    "@nativescript/android": "~8.2.1",
+    "@nativescript/ios": "~8.2.1",
     "@nativescript/webpack": "file:../../dist/packages/nativescript-webpack.tgz",
     "typescript": "4.5.4"
   },
