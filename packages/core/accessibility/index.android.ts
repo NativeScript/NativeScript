@@ -648,7 +648,9 @@ function applyContentDescription(view: Partial<View>, forceUpdate?: boolean) {
 	if (typeof __USE_TEST_ID__ !== 'undefined' && __USE_TEST_ID__ && view.testID) {
 		// ignore when testID is enabled
 		return;
-	} else if (contentDescription) {
+	}
+
+	if (contentDescription) {
 		if (Trace.isEnabled()) {
 			Trace.write(`${cls} - set to "${contentDescription}"`, Trace.categories.Accessibility);
 		}
