@@ -2,7 +2,7 @@
 import { Point, View as ViewDefinition } from '.';
 
 // Requires
-import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty } from './view-common';
+import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty } from './view-common';
 import { ShowModalOptions, hiddenProperty } from '../view-base';
 import { Trace } from '../../../trace';
 import { layout, iOSNativeHelper } from '../../../utils';
@@ -572,6 +572,16 @@ export class View extends ViewCommon implements ViewDefinition {
 		this.updateOriginPoint(this.originX, value);
 	}
 
+	[testIDProperty.setNative](value: string) {
+		this.setTestID(this.nativeViewProtected, value);
+	}
+
+	public setTestID(view: any, value: string): void {
+		if (typeof __USE_TEST_ID__ !== 'undefined' && __USE_TEST_ID__) {
+			view.accessibilityIdentifier = value;
+		}
+	}
+
 	[accessibilityEnabledProperty.setNative](value: boolean): void {
 		this.nativeViewProtected.isAccessibilityElement = !!value;
 
@@ -581,8 +591,13 @@ export class View extends ViewCommon implements ViewDefinition {
 	[accessibilityIdentifierProperty.getDefault](): string {
 		return this.nativeViewProtected.accessibilityLabel;
 	}
+
 	[accessibilityIdentifierProperty.setNative](value: string): void {
-		this.nativeViewProtected.accessibilityIdentifier = value;
+		if (typeof __USE_TEST_ID__ !== 'undefined' && __USE_TEST_ID__ && this.testID) {
+			// ignore when using testID
+		} else {
+			this.nativeViewProtected.accessibilityIdentifier = value;
+		}
 	}
 
 	[accessibilityRoleProperty.setNative](value: AccessibilityRole): void {

@@ -82,6 +82,8 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public accessibilityValue: string;
 	public accessibilityHint: string;
 
+	public testID: string;
+
 	public touchAnimation: boolean | TouchAnimationOptions;
 	public ignoreTouchAnimation: boolean;
 
@@ -1119,6 +1121,10 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public accessibilityScreenChanged(): void {
 		return;
 	}
+
+	public setTestID(view: any, value: string) {
+		return;
+	}
 }
 
 export const originXProperty = new Property<ViewCommon, number>({
@@ -1195,6 +1201,11 @@ const ignoreTouchAnimationProperty = new Property<ViewCommon, boolean>({
 	valueConverter: booleanConverter,
 });
 ignoreTouchAnimationProperty.register(ViewCommon);
+
+export const testIDProperty = new Property<ViewCommon, string>({
+	name: 'testID',
+});
+testIDProperty.register(ViewCommon);
 
 accessibilityIdentifierProperty.register(ViewCommon);
 accessibilityLabelProperty.register(ViewCommon);

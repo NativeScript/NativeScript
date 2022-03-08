@@ -3,7 +3,7 @@ import type { Point, CustomLayoutView as CustomLayoutViewDefinition } from '.';
 import type { GestureTypes, GestureEventData } from '../../gestures';
 
 // Types.
-import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty } from './view-common';
+import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty } from './view-common';
 import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length } from '../../styling/style-properties';
 import { layout } from '../../../utils';
 import { Trace } from '../../../trace';
@@ -796,6 +796,23 @@ export class View extends ViewCommon {
 		this.nativeViewProtected.setAlpha(float(value));
 	}
 
+	[testIDProperty.setNative](value: string) {
+		this.setTestID(this.nativeViewProtected, value);
+	}
+
+	setTestID(view, value) {
+		if (typeof __USE_TEST_ID__ !== 'undefined' && __USE_TEST_ID__) {
+			const id = Utils.ad.resources.getId(':id/nativescript_accessibility_id');
+
+			if (id) {
+				view.setTag(id, value);
+				view.setTag(value);
+			}
+
+			view.setContentDescription(value);
+		}
+	}
+
 	[accessibilityEnabledProperty.setNative](value: boolean): void {
 		this.nativeViewProtected.setFocusable(!!value);
 
@@ -803,11 +820,15 @@ export class View extends ViewCommon {
 	}
 
 	[accessibilityIdentifierProperty.setNative](value: string): void {
-		const id = Utils.ad.resources.getId(':id/nativescript_accessibility_id');
+		if (typeof __USE_TEST_ID__ !== 'undefined' && __USE_TEST_ID__ && this.testID) {
+			// ignore when using testID;
+		} else {
+			const id = Utils.ad.resources.getId(':id/nativescript_accessibility_id');
 
-		if (id) {
-			this.nativeViewProtected.setTag(id, value);
-			this.nativeViewProtected.setTag(value);
+			if (id) {
+				this.nativeViewProtected.setTag(id, value);
+				this.nativeViewProtected.setTag(value);
+			}
 		}
 	}
 
