@@ -12,7 +12,11 @@ export class SwitchBase extends View implements SwitchDefinition {
 	public offBackgroundColor: Color;
 
 	_onCheckedPropertyChanged(newValue: boolean) {
-		//
+		if (newValue) {
+			this.addPseudoClass('checked');
+		} else {
+			this.deletePseudoClass('checked');
+		}
 	}
 }
 

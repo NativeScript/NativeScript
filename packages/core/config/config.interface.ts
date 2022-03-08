@@ -100,6 +100,16 @@ interface IConfigCLI {
 	 * Defaults to the CLI set package manager, or `npm` if not set globally
 	 */
 	packageManager: 'yarn' | 'pnpm' | 'npm';
+
+	/**
+	 * Optional - Override the files or paths to clean when running the `ns clean` command
+	 */
+	pathsToClean?: string[];
+
+	/**
+	 * Optional - Additional files or paths to clean when running the `ns clean` command, the paths are appended to the default list of paths.
+	 */
+	additionalPathsToClean?: string[];
 }
 
 interface IConfigHook {
@@ -123,16 +133,16 @@ interface IConfigHook {
 	 */
 	type:
 		| 'before-buildAndroidPlugin'	| 'after-buildAndroidPlugin'
-		| 'before-buildAndroid'				| 'after-buildAndroid'
-		| 'before-buildIOS'						| 'after-buildIOS'
+		| 'before-buildAndroid'			| 'after-buildAndroid'
+		| 'before-buildIOS'				| 'after-buildIOS'
 		| 'before-checkEnvironment'		| 'after-checkEnvironment'
 		| 'before-checkForChanges'		| 'after-checkForChanges'
-		| 'before-install'						| 'after-install'
-		| 'before-prepare'						| 'after-prepare'
+		| 'before-install'				| 'after-install'
+		| 'before-prepare'				| 'after-prepare'
 		| 'before-prepareNativeApp'		| 'after-prepareNativeApp'
-		| 'before-resolveCommand'			| 'after-resolveCommand'
-		| 'before-watch'							| 'after-watch'
-		| 'before-watchPatterns'			| 'after-watchPatterns';
+		| 'before-resolveCommand'		| 'after-resolveCommand'
+		| 'before-watch'				| 'after-watch'
+		| 'before-watchPatterns'		| 'after-watchPatterns';
 
 	/**
 	 * Path to the hook script file to run

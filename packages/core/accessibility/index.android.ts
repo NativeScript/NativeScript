@@ -565,8 +565,8 @@ function setAccessibilityDelegate(view: Partial<View>): void {
 
 function applyContentDescription(view: Partial<View>, forceUpdate?: boolean) {
 	let androidView = view.nativeViewProtected as android.view.View;
-	if (!androidView) {
-		return;
+	if (!androidView || (androidView instanceof android.widget.TextView && !view._androidContentDescriptionUpdated)) {
+		return null;
 	}
 
 	if (androidView instanceof androidx.appcompat.widget.Toolbar) {
@@ -582,9 +582,6 @@ function applyContentDescription(view: Partial<View>, forceUpdate?: boolean) {
 	}
 
 	const cls = `applyContentDescription(${view})`;
-	if (!androidView) {
-		return null;
-	}
 
 	const titleValue = view['title'] as string;
 	const textValue = view['text'] as string;
@@ -647,6 +644,11 @@ function applyContentDescription(view: Partial<View>, forceUpdate?: boolean) {
 	}
 
 	const contentDescription = contentDescriptionBuilder.join('. ').trim().replace(/^\.$/, '');
+
+	if (typeof __USE_TEST_ID__ !== 'undefined' && __USE_TEST_ID__ && view.testID) {
+		// ignore when testID is enabled
+		return;
+	}
 
 	if (contentDescription) {
 		if (Trace.isEnabled()) {

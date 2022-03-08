@@ -82,7 +82,6 @@
 /// <reference path="objc-x86_64/objc!JavaScriptCore.d.ts" />
 /// <reference path="objc-x86_64/objc!LinkPresentation.d.ts" />
 /// <reference path="objc-x86_64/objc!LocalAuthentication.d.ts" />
-/// <reference path="objc-x86_64/objc!MDFInternationalization.d.ts" />
 /// <reference path="objc-x86_64/objc!MachO.d.ts" />
 /// <reference path="objc-x86_64/objc!MapKit.d.ts" />
 /// <reference path="objc-x86_64/objc!MediaAccessibility.d.ts" />

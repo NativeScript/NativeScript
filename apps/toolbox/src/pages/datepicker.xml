@@ -1,0 +1,20 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+    <Page.actionBar>
+        <ActionBar title="DatePicker" class="action-bar">
+        </ActionBar>
+    </Page.actionBar>
+<!--dateChange="{{onDateChanged}}"
+year="{{displayDate?.year}}"
+        month="{{displayDate?.month}}"
+        day="{{displayDate?.day}}"
+        hour="{{displayDate?.hour}}"
+        minute="{{displayDate?.minute}}"
+        second="{{{{displayDate?.second}}"-->
+    <StackLayout padding="20">
+      <DatePicker class="v-center text-center" width="{{ showTime ? 220 : 300}}" height="{{ showTime ? 100 : 250}}" showTime="{{ showTime }}" iosPreferredDatePickerStyle="{{showTime ? 2 : 1}}" dateChange="{{ dateChange }}" />
+      <GridLayout rows="auto" columns="auto,*">
+        <Switch checked="true" col="0" checkedChange="{{checkedChange}}" />
+        <Label text="Show Time" col="1" class="m-l-10" />
+      </GridLayout>
+    </StackLayout>
+</Page>

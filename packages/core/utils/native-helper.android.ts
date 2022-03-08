@@ -63,7 +63,12 @@ export namespace ad {
 			windowToken = nativeView.getWindowToken();
 		} else if (androidApp.foregroundActivity instanceof androidx.appcompat.app.AppCompatActivity) {
 			const decorView = androidApp.foregroundActivity.getWindow().getDecorView();
-			windowToken = decorView ? decorView.getWindowToken() : null;
+			if (decorView) {
+				windowToken = decorView.getWindowToken();
+				decorView.requestFocus();
+			} else {
+				windowToken = null;
+			}
 		}
 
 		if (inputManager && windowToken) {

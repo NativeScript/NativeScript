@@ -512,9 +512,13 @@ declare class UNNotificationSound extends NSObject implements NSCopying, NSSecur
 
 	static new(): UNNotificationSound; // inherited from NSObject
 
+	static ringtoneSoundNamed(name: string): UNNotificationSound;
+
 	static soundNamed(name: string): UNNotificationSound;
 
 	static readonly defaultCriticalSound: UNNotificationSound;
+
+	static readonly defaultRingtoneSound: UNNotificationSound;
 
 	static readonly defaultSound: UNNotificationSound;
 

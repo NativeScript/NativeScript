@@ -58,13 +58,16 @@ export class Switch extends SwitchBase {
 
 	private setNativeBackgroundColor(value: string | number | Color) {
 		if (value instanceof Color) {
-			this.nativeViewProtected.getTrackDrawable().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
+			// todo: use https://developer.android.com/reference/androidx/core/graphics/BlendModeColorFilterCompat
+			this.nativeViewProtected.getTrackDrawable().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_OVER);
 		} else {
 			this.nativeViewProtected.getTrackDrawable().clearColorFilter();
 		}
 	}
 
 	_onCheckedPropertyChanged(newValue: boolean) {
+		super._onCheckedPropertyChanged(newValue);
+
 		if (this.offBackgroundColor) {
 			if (!newValue) {
 				this.setNativeBackgroundColor(this.offBackgroundColor);
@@ -86,7 +89,8 @@ export class Switch extends SwitchBase {
 	}
 	[colorProperty.setNative](value: number | Color) {
 		if (value instanceof Color) {
-			this.nativeViewProtected.getThumbDrawable().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
+			// todo: use https://developer.android.com/reference/androidx/core/graphics/BlendModeColorFilterCompat
+			this.nativeViewProtected.getThumbDrawable().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_ATOP);
 		} else {
 			this.nativeViewProtected.getThumbDrawable().clearColorFilter();
 		}

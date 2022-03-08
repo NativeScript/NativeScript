@@ -1,14 +1,7 @@
-import { Font as FontBase, parseFontFamily, genericFontFamilies, FontStyle, FontWeight, FontStyleType, FontWeightType } from './font-common';
+import { Font as FontBase, parseFontFamily, FontStyle, FontWeight, FontStyleType, FontWeightType } from './font-common';
 import { Trace } from '../../trace';
-import { Device } from '../../platform';
 import * as fs from '../../file-system';
 export * from './font-common';
-
-const EMULATE_OBLIQUE = true;
-const OBLIQUE_TRANSFORM = CGAffineTransformMake(1, 0, 0.2, 1, 0, 0);
-const DEFAULT_SERIF = 'Times New Roman';
-const DEFAULT_MONOSPACE = 'Courier New';
-const SUPPORT_FONT_WEIGHTS = parseFloat(Device.osVersion) >= 10.0;
 
 export class Font extends FontBase {
 	public static default = new Font(undefined, undefined, FontStyle.NORMAL, FontWeight.NORMAL, 1);
@@ -40,37 +33,20 @@ export class Font extends FontBase {
 	}
 
 	public getUIFont(defaultFont: UIFont): UIFont {
-		if (!this._uiFont) {
-			this._uiFont = createUIFont(this, defaultFont);
-		}
-
-		return this._uiFont;
+		return new WeakRef(
+			NativeScriptUtils.createUIFont(<any>{
+				fontFamily: parseFontFamily(this.fontFamily),
+				fontSize: this.fontSize || defaultFont.pointSize,
+				fontWeight: getNativeFontWeight(this.fontWeight),
+				isBold: this.isBold,
+				isItalic: this.isItalic,
+			})
+		).get();
 	}
 
 	public getAndroidTypeface(): android.graphics.Typeface {
 		return undefined;
 	}
-}
-
-function getFontFamilyRespectingGenericFonts(fontFamily: string): string {
-	if (!fontFamily) {
-		return fontFamily;
-	}
-
-	switch (fontFamily.toLowerCase()) {
-		case genericFontFamilies.serif:
-			return DEFAULT_SERIF;
-
-		case genericFontFamilies.monospace:
-			return DEFAULT_MONOSPACE;
-
-		default:
-			return fontFamily;
-	}
-}
-
-function shouldUseSystemFont(fontFamily: string) {
-	return !fontFamily || fontFamily === genericFontFamilies.sansSerif || fontFamily === genericFontFamilies.system;
 }
 
 function getNativeFontWeight(fontWeight: FontWeightType): number {
@@ -98,82 +74,8 @@ function getNativeFontWeight(fontWeight: FontWeightType): number {
 		case FontWeight.BLACK:
 			return UIFontWeightBlack;
 		default:
-			throw new Error(`Invalid font weight: "${fontWeight}"`);
+			console.log(`Invalid font weight: "${fontWeight}"`);
 	}
-}
-
-function getSystemFont(size: number, nativeWeight: number, italic: boolean, symbolicTraits: number): UIFont {
-	let result = UIFont.systemFontOfSizeWeight(size, nativeWeight);
-	if (italic) {
-		const descriptor = result.fontDescriptor.fontDescriptorWithSymbolicTraits(symbolicTraits);
-		result = UIFont.fontWithDescriptorSize(descriptor, size);
-	}
-
-	return result;
-}
-
-function createUIFont(font: Font, defaultFont: UIFont): UIFont {
-	let result: UIFont;
-	const size = font.fontSize || defaultFont.pointSize;
-	const nativeWeight = getNativeFontWeight(font.fontWeight);
-	const fontFamilies = parseFontFamily(font.fontFamily);
-
-	let symbolicTraits = 0;
-	if (font.isBold) {
-		symbolicTraits |= UIFontDescriptorSymbolicTraits.TraitBold;
-	}
-	if (font.isItalic) {
-		symbolicTraits |= UIFontDescriptorSymbolicTraits.TraitItalic;
-	}
-
-	const fontDescriptorTraits = {
-		[UIFontSymbolicTrait]: symbolicTraits,
-	};
-
-	// IOS versions below 10 will not return the correct font when UIFontWeightTrait is set
-	// In this case - rely on UIFontSymbolicTrait only
-	if (SUPPORT_FONT_WEIGHTS) {
-		fontDescriptorTraits[UIFontWeightTrait] = nativeWeight;
-	}
-
-	for (let i = 0; i < fontFamilies.length; i++) {
-		const fontFamily = getFontFamilyRespectingGenericFonts(fontFamilies[i]);
-
-		if (shouldUseSystemFont(fontFamily)) {
-			result = getSystemFont(size, nativeWeight, font.isItalic, symbolicTraits);
-			break;
-		} else {
-			const fontAttributes = {
-				[UIFontDescriptorFamilyAttribute]: fontFamily,
-				[UIFontDescriptorTraitsAttribute]: fontDescriptorTraits,
-			};
-
-			let descriptor = UIFontDescriptor.fontDescriptorWithFontAttributes(<any>fontAttributes);
-			result = UIFont.fontWithDescriptorSize(descriptor, size);
-
-			const actualItalic = result.fontDescriptor.symbolicTraits & UIFontDescriptorSymbolicTraits.TraitItalic;
-			if (font.isItalic && !actualItalic && EMULATE_OBLIQUE) {
-				// The font we got is not actually italic so emulate that with a matrix
-				descriptor = descriptor.fontDescriptorWithMatrix(OBLIQUE_TRANSFORM);
-				result = UIFont.fontWithDescriptorSize(descriptor, size);
-			}
-
-			// Check if the resolved font has the correct font-family
-			// If not - fallback to the next font-family
-			if (result.familyName === fontFamily) {
-				break;
-			} else {
-				result = null;
-			}
-		}
-	}
-
-	// Couldn't resolve font - fallback to the system font
-	if (!result) {
-		result = getSystemFont(size, nativeWeight, font.isItalic, symbolicTraits);
-	}
-
-	return result;
 }
 
 export namespace ios {

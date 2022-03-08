@@ -333,14 +333,22 @@ declare class GCDualSenseAdaptiveTrigger extends GCControllerButtonInput {
 
 	readonly status: GCDualSenseAdaptiveTriggerStatus;
 
+	setModeFeedbackWithResistiveStrengths(positionalResistiveStrengths: GCDualSenseAdaptiveTriggerPositionalResistiveStrengths): void;
+
 	setModeFeedbackWithStartPositionResistiveStrength(startPosition: number, resistiveStrength: number): void;
 
 	setModeOff(): void;
+
+	setModeSlopeFeedbackWithStartPositionEndPositionStartStrengthEndStrength(startPosition: number, endPosition: number, startStrength: number, endStrength: number): void;
+
+	setModeVibrationWithAmplitudesFrequency(positionalAmplitudes: GCDualSenseAdaptiveTriggerPositionalAmplitudes, frequency: number): void;
 
 	setModeVibrationWithStartPositionAmplitudeFrequency(startPosition: number, amplitude: number, frequency: number): void;
 
 	setModeWeaponWithStartPositionEndPositionResistiveStrength(startPosition: number, endPosition: number, resistiveStrength: number): void;
 }
+
+declare const GCDualSenseAdaptiveTriggerDiscretePositionCount: number;
 
 declare const enum GCDualSenseAdaptiveTriggerMode {
 
@@ -350,8 +358,20 @@ declare const enum GCDualSenseAdaptiveTriggerMode {
 
 	Weapon = 2,
 
-	Vibration = 3
+	Vibration = 3,
+
+	SlopeFeedback = 4
 }
+
+interface GCDualSenseAdaptiveTriggerPositionalAmplitudes {
+	values: interop.Reference<number>;
+}
+declare var GCDualSenseAdaptiveTriggerPositionalAmplitudes: interop.StructType<GCDualSenseAdaptiveTriggerPositionalAmplitudes>;
+
+interface GCDualSenseAdaptiveTriggerPositionalResistiveStrengths {
+	values: interop.Reference<number>;
+}
+declare var GCDualSenseAdaptiveTriggerPositionalResistiveStrengths: interop.StructType<GCDualSenseAdaptiveTriggerPositionalResistiveStrengths>;
 
 declare const enum GCDualSenseAdaptiveTriggerStatus {
 
@@ -369,7 +389,13 @@ declare const enum GCDualSenseAdaptiveTriggerStatus {
 
 	VibrationNotVibrating = 5,
 
-	VibrationIsVibrating = 6
+	VibrationIsVibrating = 6,
+
+	SlopeFeedbackReady = 7,
+
+	SlopeFeedbackApplyingLoad = 8,
+
+	SlopeFeedbackFinished = 9
 }
 
 declare class GCDualSenseGamepad extends GCExtendedGamepad {
@@ -1526,6 +1552,28 @@ declare class GCPhysicalInputProfile extends NSObject {
 
 	setStateFromPhysicalInput(physicalInput: GCPhysicalInputProfile): void;
 }
+
+declare var GCProductCategoryCoalescedRemote: string;
+
+declare var GCProductCategoryControlCenterRemote: string;
+
+declare var GCProductCategoryDualSense: string;
+
+declare var GCProductCategoryDualShock4: string;
+
+declare var GCProductCategoryKeyboard: string;
+
+declare var GCProductCategoryMFi: string;
+
+declare var GCProductCategoryMouse: string;
+
+declare var GCProductCategorySiriRemote1stGen: string;
+
+declare var GCProductCategorySiriRemote2ndGen: string;
+
+declare var GCProductCategoryUniversalElectronicsRemote: string;
+
+declare var GCProductCategoryXboxOne: string;
 
 interface GCQuaternion {
 	x: number;

@@ -246,6 +246,8 @@ declare class ENExposureWindow extends NSObject {
 	readonly infectiousness: ENInfectiousness;
 
 	readonly scanInstances: NSArray<ENScanInstance>;
+
+	readonly variantOfConcernType: ENVariantOfConcernType;
 }
 
 declare const enum ENInfectiousness {
@@ -367,4 +369,17 @@ declare class ENTemporaryExposureKey extends NSObject {
 	rollingStartNumber: number;
 
 	transmissionRiskLevel: number;
+}
+
+declare const enum ENVariantOfConcernType {
+
+	TypeUnknown = 0,
+
+	Type1 = 1,
+
+	Type2 = 2,
+
+	Type3 = 3,
+
+	Type4 = 4
 }

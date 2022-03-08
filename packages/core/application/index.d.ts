@@ -35,6 +35,16 @@ export const suspendEvent: string;
 export const resumeEvent: string;
 
 /**
+ * String value used when hooking to foreground event.
+ */
+export const foregroundEvent: string;
+
+/**
+ * String value used when hooking to background event.
+ */
+export const backgroundEvent: string;
+
+/**
  * String value used when hooking to exit event.
  */
 export const exitEvent: string;
@@ -75,6 +85,19 @@ export function setAutoSystemAppearanceChanged(value: boolean): void;
  * @param newSystemAppearance the new appearance change
  */
 export function systemAppearanceChanged(rootView: View, newSystemAppearance: 'dark' | 'light'): void;
+
+/**
+ * iOS Only
+ * Dynamically change the preferred frame rate
+ * For devices (iOS 15+) which support min/max/preferred frame rate you can specify ranges
+ * For devices (iOS < 15), you can specify the max frame rate
+ * see: https://developer.apple.com/documentation/quartzcore/optimizing_promotion_refresh_rates_for_iphone_13_pro_and_ipad_pro
+ * To use, ensure your Info.plist has:
+ *   <key>CADisableMinimumFrameDurationOnPhone</key>
+ *   <true/>
+ * @param options { min?: number; max?: number; preferred?: number }
+ */
+export function setMaxRefreshRate(options?: { min?: number; max?: number; preferred?: number }): void;
 
 /**
  * Event data containing information for the application events.
@@ -361,6 +384,13 @@ export function systemAppearance(): 'dark' | 'light' | null;
 export let android: AndroidApplication;
 
 /**
+ * Used internally for backwards compatibility, will be removed in the future.
+ * Allowed Application.android.context to work (or Application.ios). Instead use Utils.android.getApplicationContext() or Utils.android.getPackageName()
+ * @internal
+ */
+export function ensureNativeApplication(): void;
+
+/**
  * This is the iOS-specific application object instance.
  * Encapsulates methods and properties specific to the iOS platform.
  * Will be undefined when TargetOS is Android.
@@ -468,6 +498,7 @@ export class AndroidApplication extends Observable {
 
 	/**
 	 * The application's [android Context](http://developer.android.com/reference/android/content/Context.html) object instance.
+	 * @deprecated Use Utils.android.getApplicationContext() instead.
 	 */
 	context: any /* android.content.Context */;
 
@@ -495,6 +526,7 @@ export class AndroidApplication extends Observable {
 
 	/**
 	 * The name of the application package.
+	 * @deprecated Use Utils.android.getPackageName() instead.
 	 */
 	packageName: string;
 
@@ -502,6 +534,11 @@ export class AndroidApplication extends Observable {
 	 * True if the main application activity is not running (suspended), false otherwise.
 	 */
 	paused: boolean;
+
+	/**
+	 * True if the main application activity is in background, false otherwise.
+	 */
+	backgrounded: boolean;
 
 	/**
 	 * Initialized the android-specific application object with the native android.app.Application instance.

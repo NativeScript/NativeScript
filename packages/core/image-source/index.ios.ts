@@ -4,6 +4,7 @@ import { ImageAsset } from '../image-asset';
 import * as httpModule from '../http';
 import { Font } from '../ui/styling/font';
 import { Color } from '../color';
+import { Trace } from '../trace';
 
 // Types.
 import { path as fsPath, knownFolders } from '../file-system';
@@ -84,8 +85,10 @@ export class ImageSource implements ImageSourceDefinition {
 					if (image) {
 						resolve(new ImageSource(image));
 					} else {
-						(<any>UIImage).tns_safeDecodeImageNamedCompletion(`${name}.jpg`, (image) => {
-							resolve(new ImageSource(image));
+						(<any>UIImage).tns_safeDecodeImageNamedCompletion(`${name}.jpg`, (img) => {
+							if (img) {
+								resolve(new ImageSource(img));
+							}
 						});
 					}
 				});
@@ -104,7 +107,9 @@ export class ImageSource implements ImageSourceDefinition {
 		return new Promise<ImageSource>((resolve, reject) => {
 			try {
 				(<any>UIImage).tns_decodeImageWidthContentsOfFileCompletion(getFileName(path), (uiImage) => {
-					resolve(new ImageSource(uiImage));
+					if (uiImage) {
+						resolve(new ImageSource(uiImage));
+					}
 				});
 			} catch (ex) {
 				reject(ex);
@@ -114,7 +119,10 @@ export class ImageSource implements ImageSourceDefinition {
 
 	static fromFileOrResourceSync(path: string): ImageSource {
 		if (!isFileOrResourcePath(path)) {
-			throw new Error('Path "' + '" is not a valid file or resource.');
+			if (Trace.isEnabled()) {
+				Trace.write('Path "' + path + '" is not a valid file or resource.', Trace.categories.Binding, Trace.messageType.error);
+			}
+			return null;
 		}
 
 		if (path.indexOf(RESOURCE_PREFIX) === 0) {
@@ -133,7 +141,9 @@ export class ImageSource implements ImageSourceDefinition {
 		return new Promise<ImageSource>((resolve, reject) => {
 			try {
 				(<any>UIImage).tns_decodeImageWithDataCompletion(data, (uiImage) => {
-					resolve(new ImageSource(uiImage));
+					if (uiImage) {
+						resolve(new ImageSource(uiImage));
+					}
 				});
 			} catch (ex) {
 				reject(ex);
@@ -295,7 +305,10 @@ export class ImageSource implements ImageSourceDefinition {
 
 	public setNativeSource(source: any): void {
 		if (source && !(source instanceof UIImage)) {
-			throw new Error('The method setNativeSource() expects UIImage instance.');
+			if (Trace.isEnabled()) {
+				Trace.write('The method setNativeSource() expects UIImage instance.', Trace.categories.Binding, Trace.messageType.error);
+			}
+			return;
 		}
 		this.ios = source;
 	}
@@ -440,18 +453,7 @@ function getFileName(path: string): string {
 }
 
 function getImageData(instance: UIImage, format: 'png' | 'jpeg' | 'jpg', quality = 0.9): NSData {
-	let data = null;
-	switch (format) {
-		case 'png':
-			data = UIImagePNGRepresentation(instance);
-			break;
-		case 'jpeg':
-		case 'jpg':
-			data = UIImageJPEGRepresentation(instance, quality);
-			break;
-	}
-
-	return data;
+	return NativeScriptUtils.getImageDataFormatQuality(instance, format, quality);
 }
 
 export function fromAsset(asset: ImageAsset): Promise<ImageSource> {

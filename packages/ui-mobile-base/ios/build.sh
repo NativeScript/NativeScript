@@ -11,6 +11,7 @@ xcodebuild \
     -scheme TNSWidgets \
     -sdk iphonesimulator \
     -configuration Release \
+    -destination "generic/platform=iOS Simulator" \
     clean build \
     BUILD_DIR=$(PWD)/TNSWidgets/build \
     SKIP_INSTALL=NO \
@@ -22,6 +23,7 @@ xcodebuild \
     -scheme TNSWidgets \
     -sdk iphoneos \
     -configuration Release \
+    -destination "generic/platform=iOS" \
     clean build \
     BUILD_DIR=$(PWD)/TNSWidgets/build \
     CODE_SIGN_IDENTITY="" \

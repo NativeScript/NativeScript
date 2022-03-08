@@ -2,14 +2,15 @@ package org.nativescript.widgets;
 
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.ParcelFileDescriptor;
@@ -20,6 +21,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.core.view.ViewCompat;
 import androidx.exifinterface.media.ExifInterface;
 
 import org.json.JSONException;
@@ -33,9 +35,8 @@ import java.io.IOException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-
 public class Utils {
-	public static Drawable getDrawable(String uri, Context context){
+	public static Drawable getDrawable(String uri, Context context) {
 		int resId = 0;
 		int resPrefixLength = "res://".length();
 
@@ -43,7 +44,7 @@ public class Utils {
 			String resPath = uri.substring(resPrefixLength);
 			resId = context.getResources().getIdentifier(resPath, "drawable", context.getPackageName());
 		}
-		
+
 		if (resId > 0) {
 			return AppCompatResources.getDrawable(context, resId);
 		} else {
@@ -51,6 +52,42 @@ public class Utils {
 			return null;
 		}
 	}
+
+	private static Bitmap drawBitmap(View view) {
+		int width = view.getWidth();
+		int height = view.getHeight();
+		Bitmap bitmap;
+		if (view.getAlpha() < 1F) {
+			bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+		} else {
+			bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+		}
+		Canvas canvas = new Canvas(bitmap);
+		if (!ViewCompat.isLaidOut(view)) {
+			view.layout(0, 0, width, height);
+		}
+		view.draw(canvas);
+		return bitmap;
+	}
+
+	public static Bitmap getBitmapFromView(View view) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+			return drawBitmap(view);
+		} else {
+
+			view.setDrawingCacheEnabled(true);
+			Bitmap drawCache = view.getDrawingCache();
+			Bitmap bitmap = Bitmap.createBitmap(drawCache);
+			view.setDrawingCacheEnabled(false);
+
+			if (bitmap == null) {
+				bitmap = drawBitmap(view);
+			}
+
+			return bitmap;
+		}
+	}
+
 	public static void drawBoxShadow(View view, String value) {
 		if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M) {
 			return;

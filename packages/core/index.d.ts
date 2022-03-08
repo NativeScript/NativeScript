@@ -8,7 +8,7 @@
 export type { NativeScriptConfig } from './config';
 export { iOSApplication, AndroidApplication } from './application';
 export type { ApplicationEventData, LaunchEventData, OrientationChangedEventData, UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData, AndroidActivityEventData, AndroidActivityBundleEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, AndroidActivityNewIntentEventData, AndroidActivityBackPressedEventData, SystemAppearanceChangedEventData } from './application';
-import { systemAppearanceChanged, getMainEntry, getRootView, _resetRootView, getResources, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, notify, hasListeners, run, orientation, getNativeApplication, hasLaunched, systemAppearance, setAutoSystemAppearanceChanged } from './application';
+import { AndroidApplication, iOSApplication, systemAppearanceChanged, getMainEntry, getRootView, _resetRootView, getResources, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, notify, hasListeners, run, orientation, getNativeApplication, hasLaunched, systemAppearance, setAutoSystemAppearanceChanged, setMaxRefreshRate } from './application';
 export declare const Application: {
 	launchEvent: string;
 	displayedEvent: string;
@@ -22,6 +22,7 @@ export declare const Application: {
 	systemAppearanceChangedEvent: string;
 	fontScaleChangedEvent: string;
 	systemAppearanceChanged: typeof systemAppearanceChanged;
+	setMaxRefreshRate: typeof setMaxRefreshRate;
 	getMainEntry: typeof getMainEntry;
 	getRootView: typeof getRootView;
 	resetRootView: typeof _resetRootView;
@@ -41,8 +42,8 @@ export declare const Application: {
 	hasLaunched: typeof hasLaunched;
 	systemAppearance: typeof systemAppearance;
 	setAutoSystemAppearanceChanged: typeof setAutoSystemAppearanceChanged;
-	android: import('./application').AndroidApplication;
-	ios: import('./application').iOSApplication;
+	android: AndroidApplication;
+	ios: iOSApplication;
 };
 import { setString, getString, clear, flush, getAllKeys, getBoolean, getNumber, hasKey, remove, setBoolean, setNumber } from './application-settings';
 export declare const ApplicationSettings: {
@@ -102,13 +103,16 @@ export type { InstrumentationMode, TimerInfo } from './profiling';
 export { encoding } from './text';
 export * from './trace';
 export * from './ui';
-import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, iOSNativeHelper as iosUtils, Source, escapeRegexSymbols, convertString, dismissSoftInput, queueMacrotask } from './utils';
+import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, iOSNativeHelper as iosUtils, Source, escapeRegexSymbols, convertString, dismissSoftInput, queueMacrotask, queueGC, throttle, debounce } from './utils';
 import { ClassInfo, getClass, getBaseClasses, getClassInfo, isBoolean, isDefined, isFunction, isNullOrUndefined, isNumber, isObject, isString, isUndefined, toUIString, verifyCallback } from './utils/types';
 export declare const Utils: {
 	GC: typeof GC;
 	RESOURCE_PREFIX: string;
 	FILE_PREFIX: string;
 	queueMacrotask: typeof queueMacrotask;
+	queueGC: typeof queueGC;
+	debounce: typeof debounce;
+	throttle: typeof throttle;
 	isFontIconURI: typeof isFontIconURI;
 	isDataURI: typeof isDataURI;
 	isFileOrResourcePath: typeof isFileOrResourcePath;

@@ -115,7 +115,6 @@ allTests['SCROLL-VIEW'] = scrollViewTests;
 import * as actionBarTests from './ui/action-bar/action-bar-tests';
 allTests['ACTION-BAR'] = actionBarTests;
 
-//TODO: 1 test commented out: test_EventInCodelessFragment
 import * as xmlDeclarationTests from './xml-declaration/xml-declaration-tests';
 allTests['XML-DECLARATION'] = xmlDeclarationTests;
 

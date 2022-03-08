@@ -17,13 +17,15 @@
 		"ios": {
 			"executor": "@nativescript/nx:build",
 			"options": {
-				"platform": "ios"
+				"platform": "ios",
+				"noHmr": true
 			}
 		},
 		"android": {
 			"executor": "@nativescript/nx:build",
 			"options": {
-				"platform": "android"
+				"platform": "android",
+				"noHmr": true
 			}
 		},
 		"clean": {

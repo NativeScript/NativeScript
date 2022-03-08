@@ -50,6 +50,8 @@ declare function sqlite3_aggregate_count(p1: interop.Pointer | interop.Reference
 
 declare function sqlite3_auto_extension(xEntryPoint: interop.FunctionReference<() => void>): number;
 
+declare function sqlite3_autovacuum_pages(db: interop.Pointer | interop.Reference<any>, p2: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number, p4: number, p5: number) => number>, p3: interop.Pointer | interop.Reference<any>, p4: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): number;
+
 declare function sqlite3_backup_finish(p: interop.Pointer | interop.Reference<any>): number;
 
 declare function sqlite3_backup_init(pDest: interop.Pointer | interop.Reference<any>, zDestName: string | interop.Pointer | interop.Reference<any>, pSource: interop.Pointer | interop.Reference<any>, zSourceName: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
@@ -111,6 +113,8 @@ declare function sqlite3_busy_timeout(p1: interop.Pointer | interop.Reference<an
 declare function sqlite3_cancel_auto_extension(xEntryPoint: interop.FunctionReference<() => void>): number;
 
 declare function sqlite3_changes(p1: interop.Pointer | interop.Reference<any>): number;
+
+declare function sqlite3_changes64(p1: interop.Pointer | interop.Reference<any>): number;
 
 declare function sqlite3_clear_bindings(p1: interop.Pointer | interop.Reference<any>): number;
 
@@ -658,6 +662,8 @@ declare function sqlite3_thread_cleanup(): void;
 declare function sqlite3_threadsafe(): number;
 
 declare function sqlite3_total_changes(p1: interop.Pointer | interop.Reference<any>): number;
+
+declare function sqlite3_total_changes64(p1: interop.Pointer | interop.Reference<any>): number;
 
 declare function sqlite3_trace(p1: interop.Pointer | interop.Reference<any>, xTrace: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>, p3: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 

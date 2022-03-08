@@ -1549,6 +1549,8 @@ declare class CNSaveRequest extends NSObject {
 
 	static new(): CNSaveRequest; // inherited from NSObject
 
+	shouldRefetchContacts: boolean;
+
 	transactionAuthor: string;
 
 	addContactToContainerWithIdentifier(contact: CNMutableContact, identifier: string): void;

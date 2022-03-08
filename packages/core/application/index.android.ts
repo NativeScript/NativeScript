@@ -29,6 +29,10 @@ const ActivityBackPressed = 'activityBackPressed';
 const ActivityNewIntent = 'activityNewIntent';
 const ActivityRequestPermissions = 'activityRequestPermissions';
 
+export function setMaxRefreshRate(options?: { min?: number; max?: number; preferred?: number }): void {
+	// ignore on android, ios only
+}
+
 export class AndroidApplication extends Observable implements AndroidApplicationDefinition {
 	public static activityCreatedEvent = ActivityCreated;
 	public static activityDestroyedEvent = ActivityDestroyed;
@@ -45,10 +49,17 @@ export class AndroidApplication extends Observable implements AndroidApplication
 	private _orientation: 'portrait' | 'landscape' | 'unknown';
 	private _systemAppearance: 'light' | 'dark';
 	public paused: boolean;
+	public backgrounded: boolean;
 	public nativeApp: android.app.Application;
+	/**
+	 * @deprecated Use Utils.android.getApplicationContext() instead.
+	 */
 	public context: android.content.Context;
 	public foregroundActivity: androidx.appcompat.app.AppCompatActivity;
 	public startActivity: androidx.appcompat.app.AppCompatActivity;
+	/**
+	 * @deprecated Use Utils.android.getPackageName() instead.
+	 */
 	public packageName: string;
 	// we are using these property to store the callbacks to avoid early GC collection which would trigger MarkReachableObjects
 	private callbacks: any = {};
@@ -159,14 +170,22 @@ export interface AndroidApplication {
 	on(event: 'activityRequestPermissions', callback: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any);
 }
 
-const androidApp = new AndroidApplication();
+let androidApp: AndroidApplication;
 export { androidApp as android };
-appCommon.setApplication(androidApp);
 
 let mainEntry: NavigationEntry;
 let started = false;
 
+export function ensureNativeApplication() {
+	if (!androidApp) {
+		androidApp = new AndroidApplication();
+		appCommon.setApplication(androidApp);
+	}
+}
+
 export function run(entry?: NavigationEntry | string) {
+	ensureNativeApplication();
+
 	if (started) {
 		throw new Error('Application is already started.');
 	}
@@ -199,6 +218,7 @@ export function addCss(cssText: string, attributeScoped?: boolean): void {
 const CALLBACKS = '_callbacks';
 
 export function _resetRootView(entry?: NavigationEntry | string): void {
+	ensureNativeApplication();
 	const activity = androidApp.foregroundActivity || androidApp.startActivity;
 	if (!activity) {
 		throw new Error('Cannot find android activity.');
@@ -217,6 +237,7 @@ export function getMainEntry() {
 }
 
 export function getRootView(): View {
+	ensureNativeApplication();
 	// Use start activity as a backup when foregroundActivity is still not set
 	// in cases when we are getting the root view before activity.onResumed event is fired
 	const activity = androidApp.foregroundActivity || androidApp.startActivity;
@@ -229,6 +250,8 @@ export function getRootView(): View {
 }
 
 export function getNativeApplication(): android.app.Application {
+	ensureNativeApplication();
+
 	// Try getting it from module - check whether application.android.init has been explicitly called
 	let nativeApp = androidApp.nativeApp;
 	if (!nativeApp) {
@@ -259,14 +282,17 @@ export function getNativeApplication(): android.app.Application {
 }
 
 export function orientation(): 'portrait' | 'landscape' | 'unknown' {
+	ensureNativeApplication();
 	return androidApp.orientation;
 }
 
 export function systemAppearance(): 'dark' | 'light' {
+	ensureNativeApplication();
 	return androidApp.systemAppearance;
 }
 
 global.__onLiveSync = function __onLiveSync(context?: ModuleContext) {
+	ensureNativeApplication();
 	if (androidApp && androidApp.paused) {
 		return;
 	}
@@ -339,6 +365,9 @@ function initLifecycleCallbacks() {
 		rootView.getViewTreeObserver().addOnGlobalLayoutListener(global.onGlobalLayoutListener);
 	});
 
+
+	let activitiesStarted = 0;
+
 	const lifecycleCallbacks = new android.app.Application.ActivityLifecycleCallbacks(<any>{
 		onActivityCreated: <any>profile('onActivityCreated', function (activity: androidx.appcompat.app.AppCompatActivity, savedInstanceState: android.os.Bundle) {
 			setThemeOnLaunch(activity, undefined, undefined);
@@ -409,6 +438,15 @@ function initLifecycleCallbacks() {
 		}),
 
 		onActivityStarted: <any>profile('onActivityStarted', function (activity: androidx.appcompat.app.AppCompatActivity) {
+			activitiesStarted++;
+			if (activitiesStarted === 1) {
+				androidApp.backgrounded = true;
+				appCommon.notify(<ApplicationEventData>{
+					eventName: appCommon.foregroundEvent,
+					object: androidApp,
+					android: activity,
+				});
+			}
 			androidApp.notify(<AndroidActivityEventData>{
 				eventName: ActivityStarted,
 				object: androidApp,
@@ -417,6 +455,15 @@ function initLifecycleCallbacks() {
 		}),
 
 		onActivityStopped: <any>profile('onActivityStopped', function (activity: androidx.appcompat.app.AppCompatActivity) {
+			activitiesStarted--;
+			if (activitiesStarted === 0) {
+				androidApp.backgrounded = true;
+				appCommon.notify(<ApplicationEventData>{
+					eventName: appCommon.backgroundEvent,
+					object: androidApp,
+					android: activity,
+				});
+			}
 			androidApp.notify(<AndroidActivityEventData>{
 				eventName: ActivityStopped,
 				object: androidApp,

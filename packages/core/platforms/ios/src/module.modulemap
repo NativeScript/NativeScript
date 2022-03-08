@@ -2,3 +2,13 @@ module NativeScriptEmbedder {
     header "NativeScriptEmbedder.h"
     export *
 }
+
+module NativeScriptUtils {
+    header "NativeScriptUtils.h"
+    export *
+}
+
+module UIViewNativeScript {
+    header "UIView+NativeScript.h"
+    export *
+}
