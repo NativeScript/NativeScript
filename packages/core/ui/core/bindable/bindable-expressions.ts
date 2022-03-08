@@ -91,7 +91,17 @@ const expressionParsers = {
 
 		if (expression.operator == '|') {
 			if (converterExpression.nsRequiresConverter) {
-				return expression.right.nsIsCallable ? right : right?.(left);
+				if (expression.right.nsIsCallable) {
+					return right;
+				}
+
+				if (isFunction(right)) {
+					return right(left);
+				}
+
+				if (isNullOrUndefined(right)) {
+					throw new Error('Cannot perform a call using a null or undefined property');
+				}
 			}
 			throw new Error('Invalid converter syntax');
 		}
