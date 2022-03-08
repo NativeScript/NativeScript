@@ -420,6 +420,9 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			/* for compat only */ 'global.isIOS': platform === 'ios',
 			process: 'global.process',
 
+			// enable testID when using --env.e2e
+			__USE_TEST_ID__: !!env.e2e,
+
 			// todo: ?!?!
 			// profile: '() => {}',
 		},

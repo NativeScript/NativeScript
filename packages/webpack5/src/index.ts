@@ -46,6 +46,7 @@ export interface IWebpackEnv {
 	// misc
 	replace?: string[] | string;
 	watchNodeModules?: boolean;
+	e2e?: boolean;
 }
 
 interface IChainEntry {

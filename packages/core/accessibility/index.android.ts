@@ -645,7 +645,7 @@ function applyContentDescription(view: Partial<View>, forceUpdate?: boolean) {
 
 	const contentDescription = contentDescriptionBuilder.join('. ').trim().replace(/^\.$/, '');
 
-	if (view.testID) {
+	if (typeof __USE_TEST_ID__ !== 'undefined' && __USE_TEST_ID__ && view.testID) {
 		// todo:?
 	} else if (contentDescription) {
 		if (Trace.isEnabled()) {

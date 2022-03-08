@@ -302,7 +302,8 @@ exports[`vue configuration for android 1`] = `
         __IOS__: false,
         'global.isAndroid': true,
         'global.isIOS': false,
-        process: 'global.process'
+        process: 'global.process',
+        __USE_TEST_ID__: false
       }
     ),
     /* config.plugin('CopyWebpackPlugin') */
@@ -656,7 +657,8 @@ exports[`vue configuration for ios 1`] = `
         __IOS__: true,
         'global.isAndroid': false,
         'global.isIOS': true,
-        process: 'global.process'
+        process: 'global.process',
+        __USE_TEST_ID__: false
       }
     ),
     /* config.plugin('CopyWebpackPlugin') */
