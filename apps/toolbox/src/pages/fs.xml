@@ -1,0 +1,10 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+    <Page.actionBar>
+        <ActionBar title="FileSystem Playground" class="action-bar">
+        </ActionBar>
+    </Page.actionBar>
+
+    <StackLayout>
+    <Button tap="openRandomTmp" text="openFile" />
+    </StackLayout>
+</Page>

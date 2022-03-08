@@ -1,0 +1,103 @@
+//
+//  TNSFsConstants.h
+//  TNSWidgets
+//
+//  Created by Osei Fortune on 23/02/2022.
+//  Copyright © 2022 Telerik A D. All rights reserved.
+//
+
+#ifndef TNSFsConstants_h
+#define TNSFsConstants_h
+#import <Foundation/Foundation.h>
+#import "nativescript_common.h"
+@interface TNSFsConstants : NSObject
++(unsigned int) FILE_COPY_OPTIONS_COPYFILE_EXCL;
+
++(unsigned int) FILE_COPY_OPTIONS_COPYFILE_FICLONE;
+
++(unsigned int) FILE_COPY_OPTIONS_COPYFILE_FICLONE_FORCE;
+
++(int) FILE_OPEN_OPTIONS_O_RDONLY;
+
++(int) FILE_OPEN_OPTIONS_O_WRONLY;
+
++(int) FILE_OPEN_OPTIONS_O_RDWR;
+
++(int) FILE_OPEN_OPTIONS_O_CREAT;
+
++(int) FILE_OPEN_OPTIONS_O_EXCL;
+
++(int) FILE_OPEN_OPTIONS_O_NOCTTY;
+
++(int) FILE_OPEN_OPTIONS_O_TRUNC;
+
++(int) FILE_OPEN_OPTIONS_O_APPEND;
+
++(int) FILE_OPEN_OPTIONS_O_DIRECTORY;
+
++(int) FILE_OPEN_OPTIONS_O_NOATIME;
+
++(int) FILE_OPEN_OPTIONS_O_NOFOLLOW;
+
++(int) FILE_OPEN_OPTIONS_O_SYNC;
+
++(int) FILE_OPEN_OPTIONS_O_DSYNC;
+
++(int) FILE_OPEN_OPTIONS_O_SYMLINK;
+
++(int) FILE_OPEN_OPTIONS_O_DIRECT;
+
++(int) FILE_OPEN_OPTIONS_O_NONBLOCK;
+
++(int) FILE_ACCESS_OPTIONS_F_OK;
+
++(int) FILE_ACCESS_OPTIONS_R_OK;
+
++(int) FILE_ACCESS_OPTIONS_W_OK;
+
++(int) FILE_ACCESS_OPTIONS_X_OK;
+
++(mode_t) FILE_TYPE_OPTIONS_S_IFMT;
+
++(mode_t) FILE_TYPE_OPTIONS_S_IFREG;
+
++(mode_t) FILE_TYPE_OPTIONS_S_IFDIR;
+
++(mode_t) FILE_TYPE_OPTIONS_S_IFCHR;
+
++(mode_t) FILE_TYPE_OPTIONS_S_IFBLK;
+
++(mode_t) FILE_TYPE_OPTIONS_S_IFIFO;
+
++(mode_t) FILE_TYPE_OPTIONS_S_IFLNK;
+
++(mode_t) FILE_TYPE_OPTIONS_S_IFSOCK;
+
++(mode_t) FILE_MODE_OPTIONS_S_IRWXU;
+
++(mode_t) FILE_MODE_OPTIONS_S_IRUSR;
+
++(mode_t) FILE_MODE_OPTIONS_S_IWUSR;
+
++(mode_t) FILE_MODE_OPTIONS_S_IXUSR;
+
++(mode_t) FILE_MODE_OPTIONS_S_IRWXG;
+
++(mode_t) FILE_MODE_OPTIONS_S_IRGRP;
+
++(mode_t) FILE_MODE_OPTIONS_S_IWGRP;
+
++(mode_t) FILE_MODE_OPTIONS_S_IXGRP;
+
++(mode_t) FILE_MODE_OPTIONS_S_IRWXO;
+
++(mode_t) FILE_MODE_OPTIONS_S_IROTH;
+
++(mode_t) FILE_MODE_OPTIONS_S_IWOTH;
+
++(mode_t) FILE_MODE_OPTIONS_S_IXOTH;
+
+
+@end
+
+#endif /* TNSFsConstants_h */

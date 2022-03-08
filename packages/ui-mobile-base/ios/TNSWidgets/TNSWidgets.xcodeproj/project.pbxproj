@@ -19,6 +19,39 @@
 		D004031022F781A50089EAD8 /* NSString+Async.m in Sources */ = {isa = PBXBuildFile; fileRef = D004030E22F781A50089EAD8 /* NSString+Async.m */; };
 		D004031322FA27D60089EAD8 /* NSData+Async.h in Headers */ = {isa = PBXBuildFile; fileRef = D004031122FA27D60089EAD8 /* NSData+Async.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D004031422FA27D60089EAD8 /* NSData+Async.m in Sources */ = {isa = PBXBuildFile; fileRef = D004031222FA27D60089EAD8 /* NSData+Async.m */; };
+		F11C102127B4CC1500A6AB02 /* TNSFileSystem.m in Sources */ = {isa = PBXBuildFile; fileRef = F11C102027B4CC1500A6AB02 /* TNSFileSystem.m */; };
+		F11C102327B4CC3800A6AB02 /* TNSFileSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = F11C102227B4CC3800A6AB02 /* TNSFileSystem.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F11C102527B4D36000A6AB02 /* TNSFileHandle.h in Headers */ = {isa = PBXBuildFile; fileRef = F11C102427B4D36000A6AB02 /* TNSFileHandle.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F11C102727B4D37200A6AB02 /* TNSFileHandle.m in Sources */ = {isa = PBXBuildFile; fileRef = F11C102627B4D37200A6AB02 /* TNSFileHandle.m */; };
+		F11C102927B55FE500A6AB02 /* TNSHelpers.m in Sources */ = {isa = PBXBuildFile; fileRef = F11C102827B55FE500A6AB02 /* TNSHelpers.m */; };
+		F11C102B27B55FFC00A6AB02 /* TNSHelpers.h in Headers */ = {isa = PBXBuildFile; fileRef = F11C102A27B55FFC00A6AB02 /* TNSHelpers.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F11C102D27C07BDA00A6AB02 /* TNSFsDir.h in Headers */ = {isa = PBXBuildFile; fileRef = F11C102C27C07BDA00A6AB02 /* TNSFsDir.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F11C102F27C07BE800A6AB02 /* TNSFsDir.m in Sources */ = {isa = PBXBuildFile; fileRef = F11C102E27C07BE800A6AB02 /* TNSFsDir.m */; };
+		F11C103127C081E700A6AB02 /* TNSFsDirent.m in Sources */ = {isa = PBXBuildFile; fileRef = F11C103027C081E700A6AB02 /* TNSFsDirent.m */; };
+		F11C103327C081F600A6AB02 /* TNSFsDirent.h in Headers */ = {isa = PBXBuildFile; fileRef = F11C103227C081F600A6AB02 /* TNSFsDirent.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F11C103527C088A100A6AB02 /* TNSByteBuf.m in Sources */ = {isa = PBXBuildFile; fileRef = F11C103427C088A100A6AB02 /* TNSByteBuf.m */; };
+		F11C103727C088B600A6AB02 /* TNSByteBuf.h in Headers */ = {isa = PBXBuildFile; fileRef = F11C103627C088B600A6AB02 /* TNSByteBuf.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F11C103927C1E70D00A6AB02 /* TNSFsCallback.m in Sources */ = {isa = PBXBuildFile; fileRef = F11C103827C1E70D00A6AB02 /* TNSFsCallback.m */; };
+		F11C103B27C1E72000A6AB02 /* TNSFsCallback.h in Headers */ = {isa = PBXBuildFile; fileRef = F11C103A27C1E72000A6AB02 /* TNSFsCallback.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F11C103D27C2B86A00A6AB02 /* TNSFsCallback+Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = F11C103C27C2B86A00A6AB02 /* TNSFsCallback+Internal.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		F11C103F27C2EB1A00A6AB02 /* TNSFsStat.h in Headers */ = {isa = PBXBuildFile; fileRef = F11C103E27C2EB1A00A6AB02 /* TNSFsStat.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F11C104127C2EB2900A6AB02 /* TNSFsStat.m in Sources */ = {isa = PBXBuildFile; fileRef = F11C104027C2EB2900A6AB02 /* TNSFsStat.m */; };
+		F11C104327C2EFFF00A6AB02 /* TNSFsStat+Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = F11C104227C2EFFF00A6AB02 /* TNSFsStat+Internal.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		F11C104527C3039400A6AB02 /* TNSFsDir+Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = F11C104427C3039400A6AB02 /* TNSFsDir+Internal.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		F11C104727C3209200A6AB02 /* TNSFsDirent+Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = F11C104627C3209200A6AB02 /* TNSFsDirent+Internal.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		F11C104927C3286B00A6AB02 /* TNSByteBuf+Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = F11C104827C3286B00A6AB02 /* TNSByteBuf+Internal.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		F11C104B27C3D2CC00A6AB02 /* TNSFsWatcher.h in Headers */ = {isa = PBXBuildFile; fileRef = F11C104A27C3D2CC00A6AB02 /* TNSFsWatcher.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F11C104D27C3D2D700A6AB02 /* TNSFsWatcher.m in Sources */ = {isa = PBXBuildFile; fileRef = F11C104C27C3D2D700A6AB02 /* TNSFsWatcher.m */; };
+		F11C104F27C3D3EB00A6AB02 /* TNSFsWatcher+Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = F11C104E27C3D3EB00A6AB02 /* TNSFsWatcher+Internal.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		F11C105127C3ECC500A6AB02 /* TNSFsStatWatcher.h in Headers */ = {isa = PBXBuildFile; fileRef = F11C105027C3ECC500A6AB02 /* TNSFsStatWatcher.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F11C105327C3ECD200A6AB02 /* TNSFsStatWatcher+Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = F11C105227C3ECD200A6AB02 /* TNSFsStatWatcher+Internal.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		F11C105527C3ECDD00A6AB02 /* TNSFsStatWatcher.m in Sources */ = {isa = PBXBuildFile; fileRef = F11C105427C3ECDD00A6AB02 /* TNSFsStatWatcher.m */; };
+		F11C105727C5738800A6AB02 /* TNSByteBufMut.m in Sources */ = {isa = PBXBuildFile; fileRef = F11C105627C5738800A6AB02 /* TNSByteBufMut.m */; };
+		F11C105927C5739C00A6AB02 /* TNSByteBufMut.h in Headers */ = {isa = PBXBuildFile; fileRef = F11C105827C5739C00A6AB02 /* TNSByteBufMut.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F11C105B27C5761A00A6AB02 /* TNSByteBufMut+Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = F11C105A27C5761A00A6AB02 /* TNSByteBufMut+Internal.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		F11C105D27C6657000A6AB02 /* TNSFileHandle+Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = F11C105C27C6657000A6AB02 /* TNSFileHandle+Internal.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		F11C105F27C7059000A6AB02 /* TNSFsConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = F11C105E27C7059000A6AB02 /* TNSFsConstants.m */; };
+		F11C106127C707D800A6AB02 /* TNSFsConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = F11C106027C707D800A6AB02 /* TNSFsConstants.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F915D3551EC9EF5E00071914 /* TNSProcess.m in Sources */ = {isa = PBXBuildFile; fileRef = F915D3531EC9EF5E00071914 /* TNSProcess.m */; };
 		F915D3561EC9EF5E00071914 /* TNSProcess.h in Headers */ = {isa = PBXBuildFile; fileRef = F915D3541EC9EF5E00071914 /* TNSProcess.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F98F5CB31CD0EFEA00978308 /* TNSWidgets.h in Headers */ = {isa = PBXBuildFile; fileRef = F98F5CB21CD0EFEA00978308 /* TNSWidgets.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -51,6 +84,39 @@
 		D004030E22F781A50089EAD8 /* NSString+Async.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSString+Async.m"; sourceTree = "<group>"; };
 		D004031122FA27D60089EAD8 /* NSData+Async.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSData+Async.h"; sourceTree = "<group>"; };
 		D004031222FA27D60089EAD8 /* NSData+Async.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSData+Async.m"; sourceTree = "<group>"; };
+		F11C102027B4CC1500A6AB02 /* TNSFileSystem.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TNSFileSystem.m; sourceTree = "<group>"; };
+		F11C102227B4CC3800A6AB02 /* TNSFileSystem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TNSFileSystem.h; sourceTree = "<group>"; };
+		F11C102427B4D36000A6AB02 /* TNSFileHandle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TNSFileHandle.h; sourceTree = "<group>"; };
+		F11C102627B4D37200A6AB02 /* TNSFileHandle.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TNSFileHandle.m; sourceTree = "<group>"; };
+		F11C102827B55FE500A6AB02 /* TNSHelpers.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TNSHelpers.m; sourceTree = "<group>"; };
+		F11C102A27B55FFC00A6AB02 /* TNSHelpers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TNSHelpers.h; sourceTree = "<group>"; };
+		F11C102C27C07BDA00A6AB02 /* TNSFsDir.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TNSFsDir.h; sourceTree = "<group>"; };
+		F11C102E27C07BE800A6AB02 /* TNSFsDir.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TNSFsDir.m; sourceTree = "<group>"; };
+		F11C103027C081E700A6AB02 /* TNSFsDirent.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TNSFsDirent.m; sourceTree = "<group>"; };
+		F11C103227C081F600A6AB02 /* TNSFsDirent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TNSFsDirent.h; sourceTree = "<group>"; };
+		F11C103427C088A100A6AB02 /* TNSByteBuf.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TNSByteBuf.m; sourceTree = "<group>"; };
+		F11C103627C088B600A6AB02 /* TNSByteBuf.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TNSByteBuf.h; sourceTree = "<group>"; };
+		F11C103827C1E70D00A6AB02 /* TNSFsCallback.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TNSFsCallback.m; sourceTree = "<group>"; };
+		F11C103A27C1E72000A6AB02 /* TNSFsCallback.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TNSFsCallback.h; sourceTree = "<group>"; };
+		F11C103C27C2B86A00A6AB02 /* TNSFsCallback+Internal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TNSFsCallback+Internal.h"; sourceTree = "<group>"; };
+		F11C103E27C2EB1A00A6AB02 /* TNSFsStat.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TNSFsStat.h; sourceTree = "<group>"; };
+		F11C104027C2EB2900A6AB02 /* TNSFsStat.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TNSFsStat.m; sourceTree = "<group>"; };
+		F11C104227C2EFFF00A6AB02 /* TNSFsStat+Internal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TNSFsStat+Internal.h"; sourceTree = "<group>"; };
+		F11C104427C3039400A6AB02 /* TNSFsDir+Internal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TNSFsDir+Internal.h"; sourceTree = "<group>"; };
+		F11C104627C3209200A6AB02 /* TNSFsDirent+Internal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TNSFsDirent+Internal.h"; sourceTree = "<group>"; };
+		F11C104827C3286B00A6AB02 /* TNSByteBuf+Internal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TNSByteBuf+Internal.h"; sourceTree = "<group>"; };
+		F11C104A27C3D2CC00A6AB02 /* TNSFsWatcher.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TNSFsWatcher.h; sourceTree = "<group>"; };
+		F11C104C27C3D2D700A6AB02 /* TNSFsWatcher.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TNSFsWatcher.m; sourceTree = "<group>"; };
+		F11C104E27C3D3EB00A6AB02 /* TNSFsWatcher+Internal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TNSFsWatcher+Internal.h"; sourceTree = "<group>"; };
+		F11C105027C3ECC500A6AB02 /* TNSFsStatWatcher.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TNSFsStatWatcher.h; sourceTree = "<group>"; };
+		F11C105227C3ECD200A6AB02 /* TNSFsStatWatcher+Internal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TNSFsStatWatcher+Internal.h"; sourceTree = "<group>"; };
+		F11C105427C3ECDD00A6AB02 /* TNSFsStatWatcher.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TNSFsStatWatcher.m; sourceTree = "<group>"; };
+		F11C105627C5738800A6AB02 /* TNSByteBufMut.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TNSByteBufMut.m; sourceTree = "<group>"; };
+		F11C105827C5739C00A6AB02 /* TNSByteBufMut.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TNSByteBufMut.h; sourceTree = "<group>"; };
+		F11C105A27C5761A00A6AB02 /* TNSByteBufMut+Internal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TNSByteBufMut+Internal.h"; sourceTree = "<group>"; };
+		F11C105C27C6657000A6AB02 /* TNSFileHandle+Internal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TNSFileHandle+Internal.h"; sourceTree = "<group>"; };
+		F11C105E27C7059000A6AB02 /* TNSFsConstants.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TNSFsConstants.m; sourceTree = "<group>"; };
+		F11C106027C707D800A6AB02 /* TNSFsConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TNSFsConstants.h; sourceTree = "<group>"; };
 		F915D3531EC9EF5E00071914 /* TNSProcess.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = TNSProcess.m; path = ../TNSProcess.m; sourceTree = "<group>"; };
 		F915D3541EC9EF5E00071914 /* TNSProcess.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TNSProcess.h; path = ../TNSProcess.h; sourceTree = "<group>"; };
 		F98F5CAF1CD0EFEA00978308 /* TNSWidgets.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TNSWidgets.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -103,6 +169,8 @@
 		F98F5CB11CD0EFEA00978308 /* TNSWidgets */ = {
 			isa = PBXGroup;
 			children = (
+				F11C104627C3209200A6AB02 /* TNSFsDirent+Internal.h */,
+				F11C102A27B55FFC00A6AB02 /* TNSHelpers.h */,
 				F915D3531EC9EF5E00071914 /* TNSProcess.m */,
 				F915D3541EC9EF5E00071914 /* TNSProcess.h */,
 				F98F5CB21CD0EFEA00978308 /* TNSWidgets.h */,
@@ -121,6 +189,37 @@
 				B8E76F5D212C3134009CFCE2 /* UIView+PassThroughParent.m */,
 				D004031122FA27D60089EAD8 /* NSData+Async.h */,
 				D004031222FA27D60089EAD8 /* NSData+Async.m */,
+				F11C102027B4CC1500A6AB02 /* TNSFileSystem.m */,
+				F11C102227B4CC3800A6AB02 /* TNSFileSystem.h */,
+				F11C102427B4D36000A6AB02 /* TNSFileHandle.h */,
+				F11C102627B4D37200A6AB02 /* TNSFileHandle.m */,
+				F11C102827B55FE500A6AB02 /* TNSHelpers.m */,
+				F11C102C27C07BDA00A6AB02 /* TNSFsDir.h */,
+				F11C102E27C07BE800A6AB02 /* TNSFsDir.m */,
+				F11C103027C081E700A6AB02 /* TNSFsDirent.m */,
+				F11C103227C081F600A6AB02 /* TNSFsDirent.h */,
+				F11C103427C088A100A6AB02 /* TNSByteBuf.m */,
+				F11C103627C088B600A6AB02 /* TNSByteBuf.h */,
+				F11C103827C1E70D00A6AB02 /* TNSFsCallback.m */,
+				F11C103A27C1E72000A6AB02 /* TNSFsCallback.h */,
+				F11C103C27C2B86A00A6AB02 /* TNSFsCallback+Internal.h */,
+				F11C103E27C2EB1A00A6AB02 /* TNSFsStat.h */,
+				F11C104027C2EB2900A6AB02 /* TNSFsStat.m */,
+				F11C104227C2EFFF00A6AB02 /* TNSFsStat+Internal.h */,
+				F11C104427C3039400A6AB02 /* TNSFsDir+Internal.h */,
+				F11C104827C3286B00A6AB02 /* TNSByteBuf+Internal.h */,
+				F11C104A27C3D2CC00A6AB02 /* TNSFsWatcher.h */,
+				F11C104C27C3D2D700A6AB02 /* TNSFsWatcher.m */,
+				F11C104E27C3D3EB00A6AB02 /* TNSFsWatcher+Internal.h */,
+				F11C105027C3ECC500A6AB02 /* TNSFsStatWatcher.h */,
+				F11C105227C3ECD200A6AB02 /* TNSFsStatWatcher+Internal.h */,
+				F11C105427C3ECDD00A6AB02 /* TNSFsStatWatcher.m */,
+				F11C105627C5738800A6AB02 /* TNSByteBufMut.m */,
+				F11C105827C5739C00A6AB02 /* TNSByteBufMut.h */,
+				F11C105A27C5761A00A6AB02 /* TNSByteBufMut+Internal.h */,
+				F11C105C27C6657000A6AB02 /* TNSFileHandle+Internal.h */,
+				F11C105E27C7059000A6AB02 /* TNSFsConstants.m */,
+				F11C106027C707D800A6AB02 /* TNSFsConstants.h */,
 			);
 			path = TNSWidgets;
 			sourceTree = "<group>";
@@ -146,7 +245,28 @@
 				B8E76F5E212C3134009CFCE2 /* UIView+PassThroughParent.h in Headers */,
 				D004031322FA27D60089EAD8 /* NSData+Async.h in Headers */,
 				F98F5CCB1CD0F09E00978308 /* UIImage+TNSBlocks.h in Headers */,
+				F11C102327B4CC3800A6AB02 /* TNSFileSystem.h in Headers */,
+				F11C102527B4D36000A6AB02 /* TNSFileHandle.h in Headers */,
+				F11C102B27B55FFC00A6AB02 /* TNSHelpers.h in Headers */,
+				F11C103B27C1E72000A6AB02 /* TNSFsCallback.h in Headers */,
+				F11C102D27C07BDA00A6AB02 /* TNSFsDir.h in Headers */,
+				F11C103F27C2EB1A00A6AB02 /* TNSFsStat.h in Headers */,
+				F11C104B27C3D2CC00A6AB02 /* TNSFsWatcher.h in Headers */,
+				F11C103D27C2B86A00A6AB02 /* TNSFsCallback+Internal.h in Headers */,
+				F11C105927C5739C00A6AB02 /* TNSByteBufMut.h in Headers */,
+				F11C103327C081F600A6AB02 /* TNSFsDirent.h in Headers */,
+				F11C105127C3ECC500A6AB02 /* TNSFsStatWatcher.h in Headers */,
+				F11C103727C088B600A6AB02 /* TNSByteBuf.h in Headers */,
 				B8E76F52212C2DA2009CFCE2 /* NSObject+Swizzling.h in Headers */,
+				F11C106127C707D800A6AB02 /* TNSFsConstants.h in Headers */,
+				F11C104727C3209200A6AB02 /* TNSFsDirent+Internal.h in Headers */,
+				F11C104927C3286B00A6AB02 /* TNSByteBuf+Internal.h in Headers */,
+				F11C105D27C6657000A6AB02 /* TNSFileHandle+Internal.h in Headers */,
+				F11C104527C3039400A6AB02 /* TNSFsDir+Internal.h in Headers */,
+				F11C105327C3ECD200A6AB02 /* TNSFsStatWatcher+Internal.h in Headers */,
+				F11C104F27C3D3EB00A6AB02 /* TNSFsWatcher+Internal.h in Headers */,
+				F11C105B27C5761A00A6AB02 /* TNSByteBufMut+Internal.h in Headers */,
+				F11C104327C2EFFF00A6AB02 /* TNSFsStat+Internal.h in Headers */,
 				B8E76F5A212C2F4E009CFCE2 /* UIView+PropertyBag.h in Headers */,
 				D004030F22F781A50089EAD8 /* NSString+Async.h in Headers */,
 				8B7321CF1D097ECD00884AC6 /* TNSLabel.h in Headers */,
@@ -250,14 +370,26 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F11C104127C2EB2900A6AB02 /* TNSFsStat.m in Sources */,
 				8B7321D01D097ECD00884AC6 /* TNSLabel.m in Sources */,
 				F915D3551EC9EF5E00071914 /* TNSProcess.m in Sources */,
+				F11C102127B4CC1500A6AB02 /* TNSFileSystem.m in Sources */,
 				F98F5CCC1CD0F09E00978308 /* UIImage+TNSBlocks.m in Sources */,
 				B8E76F53212C2DA2009CFCE2 /* NSObject+Swizzling.m in Sources */,
+				F11C103527C088A100A6AB02 /* TNSByteBuf.m in Sources */,
 				D004031022F781A50089EAD8 /* NSString+Async.m in Sources */,
+				F11C103127C081E700A6AB02 /* TNSFsDirent.m in Sources */,
+				F11C105527C3ECDD00A6AB02 /* TNSFsStatWatcher.m in Sources */,
 				D004031422FA27D60089EAD8 /* NSData+Async.m in Sources */,
 				B8E76F5B212C2F4E009CFCE2 /* UIView+PropertyBag.m in Sources */,
 				B8E76F5F212C3134009CFCE2 /* UIView+PassThroughParent.m in Sources */,
+				F11C104D27C3D2D700A6AB02 /* TNSFsWatcher.m in Sources */,
+				F11C105F27C7059000A6AB02 /* TNSFsConstants.m in Sources */,
+				F11C102927B55FE500A6AB02 /* TNSHelpers.m in Sources */,
+				F11C102F27C07BE800A6AB02 /* TNSFsDir.m in Sources */,
+				F11C105727C5738800A6AB02 /* TNSByteBufMut.m in Sources */,
+				F11C102727B4D37200A6AB02 /* TNSFileHandle.m in Sources */,
+				F11C103927C1E70D00A6AB02 /* TNSFsCallback.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -401,9 +533,33 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_BITCODE = NO;
+				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../../nativescript_common/target/\"";
 				INFOPLIST_FILE = TNSWidgets/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				"OTHER_LDFLAGS[arch=x86_64]" = (
+					"$(inherited)",
+					"-L\"$(SRCROOT)/../../nativescript_common/target/x86_64-apple-ios/release\"",
+					"-lnativescript_common",
+					"-Wl,-keep_dwarf_unwind",
+					"-Wl,-no_compact_unwind",
+				);
+				"OTHER_LDFLAGS[sdk=iphoneos*][arch=arm64]" = (
+					"$(inherited)",
+					"-L\"$(SRCROOT)/../../nativescript_common/target/aarch64-apple-ios/release\"",
+					"-lnativescript_common",
+					"-Wl,-keep_dwarf_unwind",
+					"-Wl,-no_compact_unwind",
+				);
+				"OTHER_LDFLAGS[sdk=iphonesimulator*][arch=arm64]" = (
+					"$(inherited)",
+					"-L\"$(SRCROOT)/../../nativescript_common/target/aarch64-apple-ios-sim/release\"",
+					"-lnativescript_common",
+					"-Wl,-keep_dwarf_unwind",
+					"-Wl,-no_compact_unwind",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.nativescript.TNSWidgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -419,9 +575,33 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_BITCODE = NO;
+				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../../nativescript_common/target/\"";
 				INFOPLIST_FILE = TNSWidgets/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				"OTHER_LDFLAGS[arch=x86_64]" = (
+					"$(inherited)",
+					"-L\"$(SRCROOT)/../../nativescript_common/target/x86_64-apple-ios/debug\"",
+					"-lnativescript_common",
+					"-Wl,-keep_dwarf_unwind",
+					"-Wl,-no_compact_unwind",
+				);
+				"OTHER_LDFLAGS[sdk=iphoneos*][arch=arm64]" = (
+					"$(inherited)",
+					"-L\"$(SRCROOT)/../../nativescript_common/target/aarch64-apple-ios/debug\"",
+					"-lnativescript_common",
+					"-Wl,-keep_dwarf_unwind",
+					"-Wl,-no_compact_unwind",
+				);
+				"OTHER_LDFLAGS[sdk=iphonesimulator*][arch=arm64]" = (
+					"$(inherited)",
+					"-L\"$(SRCROOT)/../../nativescript_common/target/aarch64-apple-ios-sim/debug\"",
+					"-lnativescript_common",
+					"-Wl,-keep_dwarf_unwind",
+					"-Wl,-no_compact_unwind",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.nativescript.TNSWidgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
