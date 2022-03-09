@@ -79,7 +79,6 @@ function getAttachListener(): android.view.View.OnAttachStateChangeListener {
 }
 
 export class Frame extends FrameBase {
-	public _originalBackground: any;
 	private _android: AndroidFrame;
 	private _containerViewId = -1;
 	private _tearDownPending = false;
@@ -243,31 +242,6 @@ export class Frame extends FrameBase {
 		// i.e. in a scenario with nested frames / frame with tabview let the descendandt cleanup the inner
 		// fragments first, and then cleanup the parent fragments
 		this.disposeCurrentFragment();
-	}
-
-	onLoaded(): void {
-		if (this._originalBackground) {
-			this.backgroundColor = null;
-			this.backgroundColor = this._originalBackground;
-			this._originalBackground = null;
-		}
-		this._frameCreateTimeout = setTimeout(() => {
-			// there's a bug with nested frames where sometimes the nested fragment is not recreated at all
-			// so we manually check on loaded event if the fragment is not recreated and recreate it
-			const currentEntry = this._currentEntry || this._executingContext?.entry;
-			if (currentEntry) {
-				if (!currentEntry.fragment) {
-					const manager = this._getFragmentManager();
-					const transaction = manager.beginTransaction();
-					currentEntry.fragment = this.createFragment(currentEntry, currentEntry.fragmentTag);
-					_updateTransitions(currentEntry);
-					transaction.replace(this.containerViewId, currentEntry.fragment, currentEntry.fragmentTag);
-					transaction.commitAllowingStateLoss();
-				}
-			}
-		}, 0);
-
-		super.onLoaded();
 	}
 
 	onUnloaded() {
@@ -1063,18 +1037,6 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 
 	@profile
 	public onResume(fragment: org.nativescript.widgets.FragmentBase, superFunc: Function): void {
-		const frame = this.entry.resolvedPage.frame;
-		// on some cases during the first navigation on nested frames the animation doesn't trigger
-		// we depend on the animation (even None animation) to set the entry as the current entry
-		// animation should start between start and resume, so if we have an executing navigation here it probably means the animation was skipped
-		// so we manually set the entry
-		// also, to be compatible with fragments 1.2.x we need this setTimeout as animations haven't run on onResume yet
-		setTimeout(() => {
-			if (frame._executingContext && !(<any>this.entry).isAnimationRunning) {
-				frame.setCurrent(this.entry, frame._executingContext.navigationType);
-			}
-		}, 0);
-
 		superFunc.call(fragment);
 	}
 

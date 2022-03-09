@@ -406,7 +406,6 @@ export class TabView extends TabViewBase {
 	private _viewPager: androidx.viewpager.widget.ViewPager;
 	private _pagerAdapter: androidx.viewpager.widget.PagerAdapter;
 	private _androidViewId = -1;
-	public _originalBackground: any;
 
 	constructor() {
 		super();
@@ -547,13 +546,6 @@ export class TabView extends TabViewBase {
 
 	public onLoaded(): void {
 		super.onLoaded();
-
-		if (this._originalBackground) {
-			this.backgroundColor = null;
-			this.backgroundColor = this._originalBackground;
-			this._originalBackground = null;
-		}
-
 		this.setAdapterItems(this.items);
 	}
 
