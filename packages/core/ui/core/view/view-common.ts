@@ -4,6 +4,7 @@ import { View as ViewDefinition, Point, Size, ShownModallyData } from '.';
 import { booleanConverter, ShowModalOptions, ViewBase } from '../view-base';
 import { getEventOrGestureName } from '../bindable';
 import { layout } from '../../../utils';
+import { isObject } from '../../../utils/types';
 import { Color } from '../../../color';
 import { Property, InheritedProperty } from '../properties';
 import { EventData } from '../../../data/observable';
@@ -13,7 +14,7 @@ import { ViewHelper } from './view-helper';
 
 import { PercentLength } from '../../styling/style-properties';
 
-import { observe as gestureObserve, GesturesObserver, GestureTypes, GestureEventData, fromString as gestureFromString } from '../../gestures';
+import { observe as gestureObserve, GesturesObserver, GestureTypes, GestureEventData, fromString as gestureFromString, TouchManager, TouchAnimationOptions } from '../../gestures';
 
 import { CSSUtils } from '../../../css/system-classes';
 import { Builder } from '../../builder';
@@ -77,6 +78,11 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public accessibilityLabel: string;
 	public accessibilityValue: string;
 	public accessibilityHint: string;
+
+	public testID: string;
+
+	public touchAnimation: boolean | TouchAnimationOptions;
+	public ignoreTouchAnimation: boolean;
 
 	protected _closeModalCallback: Function;
 	public _manager: any;
@@ -154,6 +160,17 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		} else if (css !== undefined) {
 			scope.css = css;
 		}
+	}
+
+	onLoaded() {
+		if (!this.isLoaded) {
+			const enableTapAnimations = TouchManager.enableGlobalTapAnimations && (this.hasListeners('tap') || this.hasListeners('tapChange') || this.getGestureObservers(GestureTypes.tap));
+			if (!this.ignoreTouchAnimation && (this.touchAnimation || enableTapAnimations)) {
+				// console.log('view:', Object.keys((<any>this)._observers));
+				TouchManager.addAnimations(this);
+			}
+		}
+		super.onLoaded();
 	}
 
 	public _closeAllModalViewsInternal(): boolean {
@@ -395,6 +412,8 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 					if (typeof options.closeCallback === 'function') {
 						options.closeCallback.apply(undefined, originalArgs);
 					}
+
+					that._tearDownUI(true);
 				};
 
 				that._hideNativeModalView(parent, whenClosedCallback);
@@ -402,7 +421,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		};
 	}
 
-	protected abstract _hideNativeModalView(parent: ViewCommon, whenClosedCallback: () => void);
+	protected _hideNativeModalView(parent: ViewCommon, whenClosedCallback: () => void) {}
 
 	protected _raiseLayoutChangedEvent() {
 		const args: EventData = {
@@ -1112,6 +1131,10 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public accessibilityScreenChanged(): void {
 		return;
 	}
+
+	public setTestID(view: any, value: string) {
+		return;
+	}
 }
 
 export const originXProperty = new Property<ViewCommon, number>({
@@ -1164,6 +1187,36 @@ export const iosIgnoreSafeAreaProperty = new InheritedProperty({
 	valueConverter: booleanConverter,
 });
 iosIgnoreSafeAreaProperty.register(ViewCommon);
+
+const touchAnimationProperty = new Property<ViewCommon, boolean | TouchAnimationOptions>({
+	name: 'touchAnimation',
+	valueChanged(view, oldValue, newValue) {
+		view.touchAnimation = newValue;
+	},
+	valueConverter(value) {
+		if (isObject(value)) {
+			return <TouchAnimationOptions>value;
+		} else {
+			return booleanConverter(value);
+		}
+	},
+});
+touchAnimationProperty.register(ViewCommon);
+
+const ignoreTouchAnimationProperty = new Property<ViewCommon, boolean>({
+	name: 'ignoreTouchAnimation',
+	valueChanged(view, oldValue, newValue) {
+		view.ignoreTouchAnimation = newValue;
+	},
+	valueConverter: booleanConverter,
+});
+ignoreTouchAnimationProperty.register(ViewCommon);
+
+export const testIDProperty = new Property<ViewCommon, string>({
+	name: 'testID',
+});
+testIDProperty.register(ViewCommon);
+
 accessibilityIdentifierProperty.register(ViewCommon);
 accessibilityLabelProperty.register(ViewCommon);
 accessibilityValueProperty.register(ViewCommon);

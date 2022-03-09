@@ -18,118 +18,118 @@ import androidx.transition.Visibility;
 import java.util.ArrayList;
 
 public class CustomTransition extends Visibility {
-    private boolean resetOnTransitionEnd;
-    private AnimatorSet animatorSet;
-    private AnimatorSet immediateAnimatorSet;
-    private String transitionName;
+	private boolean resetOnTransitionEnd;
+	private final AnimatorSet animatorSet;
+	private AnimatorSet immediateAnimatorSet;
+	private final String transitionName;
 
-    public CustomTransition(AnimatorSet animatorSet, String transitionName) {
-        this.animatorSet = animatorSet;
-        this.transitionName = transitionName;
-    }
+	public CustomTransition(AnimatorSet animatorSet, String transitionName) {
+		this.animatorSet = animatorSet;
+		this.transitionName = transitionName;
+	}
 
-    @Nullable
-    @Override
-    public Animator onAppear(@NonNull ViewGroup sceneRoot, @NonNull final View view, @Nullable TransitionValues startValues,
-                             @Nullable TransitionValues endValues) {
-        if (endValues == null || view == null || this.animatorSet == null) {
-            return null;
-        }
+	@Nullable
+	@Override
+	public Animator onAppear(@NonNull ViewGroup sceneRoot, @NonNull final View view, @Nullable TransitionValues startValues,
+													 @Nullable TransitionValues endValues) {
+		if (endValues == null || view == null || this.animatorSet == null) {
+			return null;
+		}
 
-        return this.setAnimatorsTarget(this.animatorSet, view);
-    }
+		return this.setAnimatorsTarget(this.animatorSet, view);
+	}
 
-    @Override
-    public Animator onDisappear(@NonNull ViewGroup sceneRoot, @NonNull final View view, @Nullable TransitionValues startValues,
-                                @Nullable TransitionValues endValues) {
-        if (startValues == null || view == null || this.animatorSet == null) {
-            return null;
-        }
+	@Override
+	public Animator onDisappear(@NonNull ViewGroup sceneRoot, @NonNull final View view, @Nullable TransitionValues startValues,
+															@Nullable TransitionValues endValues) {
+		if (startValues == null || view == null || this.animatorSet == null) {
+			return null;
+		}
 
-        return this.setAnimatorsTarget(this.animatorSet, view);
-    }
+		return this.setAnimatorsTarget(this.animatorSet, view);
+	}
 
-    public void setResetOnTransitionEnd(boolean resetOnTransitionEnd) {
-            this.resetOnTransitionEnd = resetOnTransitionEnd;
-    }
+	public void setResetOnTransitionEnd(boolean resetOnTransitionEnd) {
+		this.resetOnTransitionEnd = resetOnTransitionEnd;
+	}
 
-    public String getTransitionName(){
-        return this.transitionName;
-    }
+	public String getTransitionName() {
+		return this.transitionName;
+	}
 
-    private Animator setAnimatorsTarget(AnimatorSet animatorSet, final View view) {
-        ArrayList<Animator> animatorsList = animatorSet.getChildAnimations();
-        boolean resetOnTransitionEnd = this.resetOnTransitionEnd;
-        
-        for (int i = 0; i < animatorsList.size(); i++) {
-            animatorsList.get(i).setTarget(view);
-        }
+	private Animator setAnimatorsTarget(AnimatorSet animatorSet, final View view) {
+		ArrayList<Animator> animatorsList = animatorSet.getChildAnimations();
+		boolean resetOnTransitionEnd = this.resetOnTransitionEnd;
 
-        // Reset animation to its initial state to prevent mirrorered effect
-        if (this.resetOnTransitionEnd) {
-            this.immediateAnimatorSet = this.animatorSet.clone();
-        }
+		for (int i = 0; i < animatorsList.size(); i++) {
+			animatorsList.get(i).setTarget(view);
+		}
 
-        // Switching to hardware layer during transition to improve animation performance
-        CustomAnimatorListener listener = new CustomAnimatorListener(view);
-        animatorSet.addListener(listener);
-        this.addListener(new CustomTransitionListenerAdapter(this));
+		// Reset animation to its initial state to prevent mirrorered effect
+		if (this.resetOnTransitionEnd) {
+			this.immediateAnimatorSet = this.animatorSet.clone();
+		}
 
-        return this.animatorSet;
-    }
+		// Switching to hardware layer during transition to improve animation performance
+		CustomAnimatorListener listener = new CustomAnimatorListener(view);
+		animatorSet.addListener(listener);
+		this.addListener(new CustomTransitionListenerAdapter(this));
 
-    private class ReverseInterpolator implements Interpolator {
-        @Override
-        public float getInterpolation(float paramFloat) {
-            return Math.abs(paramFloat - 1f);
-        }
-    }
+		return this.animatorSet;
+	}
 
-    private class CustomTransitionListenerAdapter extends TransitionListenerAdapter {
-        private CustomTransition customTransition;
+	private class ReverseInterpolator implements Interpolator {
+		@Override
+		public float getInterpolation(float paramFloat) {
+			return Math.abs(paramFloat - 1f);
+		}
+	}
 
-        CustomTransitionListenerAdapter(CustomTransition transition) {
-            this.customTransition = transition;
-        }
+	private class CustomTransitionListenerAdapter extends TransitionListenerAdapter {
+		private CustomTransition customTransition;
 
-        @Override
-        public void onTransitionEnd(@NonNull Transition transition) {
-            if (this.customTransition.resetOnTransitionEnd) {
-                this.customTransition.immediateAnimatorSet.setDuration(0);
-                this.customTransition.immediateAnimatorSet.setInterpolator(new ReverseInterpolator());
-                this.customTransition.immediateAnimatorSet.start();
-                this.customTransition.setResetOnTransitionEnd(false);
-            }
+		CustomTransitionListenerAdapter(CustomTransition transition) {
+			this.customTransition = transition;
+		}
 
-            this.customTransition.immediateAnimatorSet = null;
-            this.customTransition = null;
-            transition.removeListener(this);
-        }
-    }
+		@Override
+		public void onTransitionEnd(@NonNull Transition transition) {
+			if (this.customTransition.resetOnTransitionEnd) {
+				this.customTransition.immediateAnimatorSet.setDuration(0);
+				this.customTransition.immediateAnimatorSet.setInterpolator(new ReverseInterpolator());
+				this.customTransition.immediateAnimatorSet.start();
+				this.customTransition.setResetOnTransitionEnd(false);
+			}
 
-    private static class CustomAnimatorListener extends AnimatorListenerAdapter {
+			this.customTransition.immediateAnimatorSet = null;
+			this.customTransition = null;
+			transition.removeListener(this);
+		}
+	}
 
-        private final View mView;
-        private boolean mLayerTypeChanged = false;
+	private static class CustomAnimatorListener extends AnimatorListenerAdapter {
 
-        CustomAnimatorListener(View view) {
-            mView = view;
-        }
+		private final View mView;
+		private boolean mLayerTypeChanged = false;
 
-        @Override
-        public void onAnimationStart(Animator animation) {
-            if (ViewCompat.hasOverlappingRendering(mView)
-                    && mView.getLayerType() == View.LAYER_TYPE_NONE) {
-                mLayerTypeChanged = true;
-                mView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
-            }
-        }
+		CustomAnimatorListener(View view) {
+			mView = view;
+		}
 
-        @Override
-        public void onAnimationEnd(Animator animation) {
-            if (mLayerTypeChanged) {
-                mView.setLayerType(View.LAYER_TYPE_NONE, null);
-            }
-        }
-    }
+		@Override
+		public void onAnimationStart(Animator animation) {
+			if (ViewCompat.hasOverlappingRendering(mView)
+				&& mView.getLayerType() == View.LAYER_TYPE_NONE) {
+				mLayerTypeChanged = true;
+				mView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+			}
+		}
+
+		@Override
+		public void onAnimationEnd(Animator animation) {
+			if (mLayerTypeChanged) {
+				mView.setLayerType(View.LAYER_TYPE_NONE, null);
+			}
+		}
+	}
 }

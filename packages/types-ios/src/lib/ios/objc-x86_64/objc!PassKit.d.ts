@@ -731,6 +731,8 @@ declare var PKPassLibraryDidChangeNotification: string;
 
 declare var PKPassLibraryPassTypeIdentifierUserInfoKey: string;
 
+declare var PKPassLibraryRecoveredPassesUserInfoKey: string;
+
 declare var PKPassLibraryRemotePaymentPassesDidChangeNotification: string;
 
 declare var PKPassLibraryRemovedPassInfosUserInfoKey: string;
@@ -1093,6 +1095,8 @@ declare var PKPaymentNetworkCarteBancaires: string;
 declare var PKPaymentNetworkCartesBancaires: string;
 
 declare var PKPaymentNetworkChinaUnionPay: string;
+
+declare var PKPaymentNetworkDankort: string;
 
 declare var PKPaymentNetworkDiscover: string;
 

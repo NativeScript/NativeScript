@@ -3500,6 +3500,8 @@ declare const kAudioUnitProperty_Latency: number;
 
 declare const kAudioUnitProperty_LoadedOutOfProcess: number;
 
+declare const kAudioUnitProperty_MIDIOutputBufferSizeHint: number;
+
 declare const kAudioUnitProperty_MIDIOutputCallback: number;
 
 declare const kAudioUnitProperty_MIDIOutputCallbackInfo: number;

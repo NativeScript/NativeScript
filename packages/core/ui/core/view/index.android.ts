@@ -3,7 +3,11 @@ import type { Point, CustomLayoutView as CustomLayoutViewDefinition } from '.';
 import type { GestureTypes, GestureEventData } from '../../gestures';
 
 // Types.
+<<<<<<< HEAD
 import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty } from './view-common';
+=======
+import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty } from './view-common';
+>>>>>>> 0dec295fde5ccd5c5febe363d8e36a1ac217f5a8
 import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length } from '../../styling/style-properties';
 import { layout } from '../../../utils';
 import { Trace } from '../../../trace';
@@ -13,8 +17,12 @@ import { EventData } from '../../../data/observable';
 import { perspectiveProperty, visibilityProperty, opacityProperty, horizontalAlignmentProperty, verticalAlignmentProperty, minWidthProperty, minHeightProperty, widthProperty, heightProperty, marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, androidElevationProperty, androidDynamicElevationOffsetProperty } from '../../styling/style-properties';
 import { CoreTypes } from '../../../core-types';
 
+<<<<<<< HEAD
 import { Background, ad as androidBackground } from '../../styling/background';
 import { BackgroundClearFlags, refreshBorderDrawable } from '../../styling/background.android';
+=======
+import { Background, BackgroundClearFlags, refreshBorderDrawable } from '../../styling/background';
+>>>>>>> 0dec295fde5ccd5c5febe363d8e36a1ac217f5a8
 import { profile } from '../../../profiling';
 import { topmost } from '../../frame/frame-stack';
 import { Screen } from '../../../platform';
@@ -24,7 +32,11 @@ import lazy from '../../../utils/lazy';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty } from '../../../accessibility/accessibility-properties';
 import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, isAccessibilityServiceEnabled, sendAccessibilityEvent, updateAccessibilityProperties, updateContentDescription, AccessibilityState } from '../../../accessibility';
 import * as Utils from '../../../utils';
+<<<<<<< HEAD
 import { CSSShadow } from 'ui/styling/css-shadow';
+=======
+import { CSSShadow } from '../../styling/css-shadow';
+>>>>>>> 0dec295fde5ccd5c5febe363d8e36a1ac217f5a8
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -798,6 +810,23 @@ export class View extends ViewCommon {
 		this.nativeViewProtected.setAlpha(float(value));
 	}
 
+	[testIDProperty.setNative](value: string) {
+		this.setTestID(this.nativeViewProtected, value);
+	}
+
+	setTestID(view, value) {
+		if (typeof __USE_TEST_ID__ !== 'undefined' && __USE_TEST_ID__) {
+			const id = Utils.ad.resources.getId(':id/nativescript_accessibility_id');
+
+			if (id) {
+				view.setTag(id, value);
+				view.setTag(value);
+			}
+
+			view.setContentDescription(value);
+		}
+	}
+
 	[accessibilityEnabledProperty.setNative](value: boolean): void {
 		this.nativeViewProtected.setFocusable(!!value);
 
@@ -805,11 +834,15 @@ export class View extends ViewCommon {
 	}
 
 	[accessibilityIdentifierProperty.setNative](value: string): void {
-		const id = Utils.ad.resources.getId(':id/nativescript_accessibility_id');
+		if (typeof __USE_TEST_ID__ !== 'undefined' && __USE_TEST_ID__ && this.testID) {
+			// ignore when using testID;
+		} else {
+			const id = Utils.ad.resources.getId(':id/nativescript_accessibility_id');
 
-		if (id) {
-			this.nativeViewProtected.setTag(id, value);
-			this.nativeViewProtected.setTag(value);
+			if (id) {
+				this.nativeViewProtected.setTag(id, value);
+				this.nativeViewProtected.setTag(value);
+			}
 		}
 	}
 
@@ -1112,21 +1145,23 @@ export class View extends ViewCommon {
 		const nativeView = this.nativeViewProtected;
 		if (!isBorderDrawable && onlyColor) {
 			if (backgroundDrawable && backgroundDrawable.setColor) {
+				// android.graphics.drawable.ColorDrawable
 				backgroundDrawable.setColor(background.color.android);
 				backgroundDrawable.invalidateSelf();
 			} else {
 				nativeView.setBackgroundColor(background.color.android);
 			}
 		} else if (!background.isEmpty()) {
-			if (!isBorderDrawable) {
+			if (isBorderDrawable) {
+				// org.nativescript.widgets.BorderDrawable
+				refreshBorderDrawable(this, backgroundDrawable);
+			} else {
 				backgroundDrawable = new org.nativescript.widgets.BorderDrawable(layout.getDisplayDensity(), this.toString());
 				refreshBorderDrawable(this, backgroundDrawable);
 				nativeView.setBackground(backgroundDrawable);
-			} else {
-				refreshBorderDrawable(this, backgroundDrawable);
 			}
 		} else {
-			//empty background let s reset
+			//empty background let's reset
 			const cachedDrawable = (<any>nativeView)._cachedDrawable;
 			nativeView.setBackground(cachedDrawable);
 		}
@@ -1144,6 +1179,27 @@ export class View extends ViewCommon {
 		};
 		org.nativescript.widgets.Utils.drawBoxShadow(nativeView, JSON.stringify(config));
 	}
+	_redrawNativeBackground(value: android.graphics.drawable.Drawable | Background): void {
+		if (value instanceof Background) {
+			this.onBackgroundOrBorderPropertyChanged();
+		} else {
+			const nativeView = this.nativeViewProtected;
+			nativeView.setBackground(value);
+
+			const style = this.style;
+			const paddingTop = paddingTopProperty.isSet(style) ? this.effectivePaddingTop : this._defaultPaddingTop;
+			const paddingRight = paddingRightProperty.isSet(style) ? this.effectivePaddingRight : this._defaultPaddingRight;
+			const paddingBottom = paddingBottomProperty.isSet(style) ? this.effectivePaddingBottom : this._defaultPaddingBottom;
+			const paddingLeft = paddingLeftProperty.isSet(style) ? this.effectivePaddingLeft : this._defaultPaddingLeft;
+
+			if (this._isPaddingRelative) {
+				nativeView.setPaddingRelative(paddingLeft, paddingTop, paddingRight, paddingBottom);
+			} else {
+				nativeView.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
+			}
+		}
+	}
+
 	protected onBackgroundOrBorderPropertyChanged() {
 		const nativeView = <android.view.View & { _cachedDrawable: android.graphics.drawable.Drawable.ConstantState | android.graphics.drawable.Drawable }>this.nativeViewProtected;
 		if (!nativeView) {
@@ -1187,33 +1243,15 @@ export class View extends ViewCommon {
 		const topPadding = Math.ceil(this.effectiveBorderTopWidth + this.effectivePaddingTop);
 		const rightPadding = Math.ceil(this.effectiveBorderRightWidth + this.effectivePaddingRight);
 		const bottomPadding = Math.ceil(this.effectiveBorderBottomWidth + this.effectivePaddingBottom);
+
 		if (this._isPaddingRelative) {
 			nativeView.setPaddingRelative(leftPadding, topPadding, rightPadding, bottomPadding);
 		} else {
 			nativeView.setPadding(leftPadding, topPadding, rightPadding, bottomPadding);
 		}
+
 		// reset clear flags
 		background.clearFlags = BackgroundClearFlags.NONE;
-	}
-	_redrawNativeBackground(value: android.graphics.drawable.Drawable | Background): void {
-		if (value instanceof Background) {
-			this.onBackgroundOrBorderPropertyChanged();
-		} else {
-			const nativeView = this.nativeViewProtected;
-			nativeView.setBackground(value);
-
-			const style = this.style;
-			const paddingTop = paddingTopProperty.isSet(style) ? this.effectivePaddingTop : this._defaultPaddingTop;
-			const paddingRight = paddingRightProperty.isSet(style) ? this.effectivePaddingRight : this._defaultPaddingRight;
-			const paddingBottom = paddingBottomProperty.isSet(style) ? this.effectivePaddingBottom : this._defaultPaddingBottom;
-			const paddingLeft = paddingLeftProperty.isSet(style) ? this.effectivePaddingLeft : this._defaultPaddingLeft;
-
-			if (this._isPaddingRelative) {
-				nativeView.setPaddingRelative(paddingLeft, paddingTop, paddingRight, paddingBottom);
-			} else {
-				nativeView.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
-			}
-		}
 	}
 
 	public accessibilityAnnouncement(message = this.accessibilityLabel): void {

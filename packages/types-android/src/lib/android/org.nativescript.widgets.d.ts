@@ -394,6 +394,11 @@
                 setImageLoadedListener(listener: image.Worker.OnImageLoadedListener): void;
             }
 
+            export enum TabIconRenderingMode {
+                original,
+                template
+            }
+
             export class TabLayout extends android.widget.HorizontalScrollView {
                 constructor(context: android.content.Context);
                 constructor(context: android.content.Context, attrs: android.util.AttributeSet);
@@ -401,6 +406,8 @@
 
                 setSelectedIndicatorColors(color: Array<number>): void;
                 getSelectedIndicatorColors(): Array<number>;
+                setIconRenderingMode(mode: TabIconRenderingMode): void;
+                getIconRenderingMode(): TabIconRenderingMode;
                 setTabTextColor(color: number): void;
                 getTabTextColor(): number;
                 setSelectedTabTextColor(color: number): void;
@@ -631,8 +638,56 @@
 declare module org {
 	export module nativescript {
 		export module widgets {
+			export class FileHelper {
+				public static class: java.lang.Class<org.nativescript.widgets.FileHelper>;
+				public readText(param0: globalAndroid.content.Context, param1: string, param2: org.nativescript.widgets.FileHelper.Callback): void;
+				public writeSync(param0: globalAndroid.content.Context, param1: androidNative.Array<number>, param2: org.nativescript.widgets.FileHelper.Callback): void;
+				public static fromString(param1: globalAndroid.content.Context, param0: string): org.nativescript.widgets.FileHelper;
+				public writeText(param0: globalAndroid.content.Context, param1: string, param2: string, param3: org.nativescript.widgets.FileHelper.Callback): void;
+				public writeTextSync(param0: globalAndroid.content.Context, param1: string, param2: string, param3: org.nativescript.widgets.FileHelper.Callback): void;
+				public copyToFileSync(param0: globalAndroid.content.Context, param1: java.io.File, param2: org.nativescript.widgets.FileHelper.Callback): boolean;
+				public getName(): string;
+				public read(param0: globalAndroid.content.Context, param1: org.nativescript.widgets.FileHelper.Callback): void;
+				public copyToFile(param0: globalAndroid.content.Context, param1: java.io.File, param2: org.nativescript.widgets.FileHelper.Callback): void;
+				public static fromUri(param0: globalAndroid.content.Context, param1: globalAndroid.net.Uri): org.nativescript.widgets.FileHelper;
+				public readSync(param0: globalAndroid.content.Context, param1: org.nativescript.widgets.FileHelper.Callback): androidNative.Array<number>;
+				public write(param0: globalAndroid.content.Context, param1: androidNative.Array<number>, param2: org.nativescript.widgets.FileHelper.Callback): void;
+				public getSize(): number;
+				public getMime(): string;
+				public readTextSync(param0: globalAndroid.content.Context, param1: string, param2: org.nativescript.widgets.FileHelper.Callback): string;
+				public delete(param0: globalAndroid.content.Context): boolean;
+                public static exists(param0: globalAndroid.content.Context, param1: string): boolean;
+                public static exists(param0: globalAndroid.content.Context, param1: globalAndroid.net.Uri): boolean;
+                public getExtension(): string;
+                public getLastModified(): number;
+                public renameSync(param0: globalAndroid.content.Context, param1: string, param2: org.nativescript.widgets.FileHelper.Callback): string;
+                public rename(param0: globalAndroid.content.Context, param1: string, param2: org.nativescript.widgets.FileHelper.Callback): string;
+			}
+			export module FileHelper {
+				export class Callback {
+					public static class: java.lang.Class<org.nativescript.widgets.FileHelper.Callback>;
+					/**
+					 * Constructs a new instance of the org.nativescript.widgets.FileHelper$Callback interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
+					 */
+					public constructor(implementation: {
+						onError(param0: java.lang.Exception): void;
+						onSuccess(param0: any): void;
+					});
+					public constructor();
+					public onError(param0: java.lang.Exception): void;
+					public onSuccess(param0: any): void;
+				}
+			}
+		}
+	}
+}
+
+declare module org {
+	export module nativescript {
+		export module widgets {
 			export class Utils {
 				public static class: java.lang.Class<org.nativescript.widgets.Utils>;
+                public static getBitmapFromView(param0: globalAndroid.view.View): globalAndroid.graphics.Bitmap;
 				public static loadImageAsync(param0: globalAndroid.content.Context, param1: string, param2: string, param3: number, param4: number, param5: org.nativescript.widgets.Utils.AsyncImageCallback): void;
 				public static drawBoxShadow(param0: globalAndroid.view.View, param1: string): void;
                 public static saveToFileAsync(param0: globalAndroid.graphics.Bitmap, param1: string, param2: string, param3: number, param4: org.nativescript.widgets.Utils.AsyncImageCallback): void;

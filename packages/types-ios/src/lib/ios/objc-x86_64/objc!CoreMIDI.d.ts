@@ -820,6 +820,8 @@ interface MIDIValueMap {
 }
 declare var MIDIValueMap: interop.StructType<MIDIValueMap>;
 
+declare var kMIDI1UPMaxSysexSize: number;
+
 declare const kMIDIIDNotUnique: number;
 
 declare const kMIDIInvalidClient: number;

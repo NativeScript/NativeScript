@@ -7,7 +7,7 @@ import { colorProperty } from '../styling/style-properties';
 import { ImageSource } from '../../image-source';
 import * as application from '../../application';
 import { isAccessibilityServiceEnabled, updateContentDescription } from '../../accessibility';
-import type { Background } from 'ui/styling/background';
+import type { Background } from '../styling/background';
 import { Device } from '../../platform';
 import lazy from '../../utils/lazy';
 
@@ -18,7 +18,6 @@ const ACTION_ITEM_ID_OFFSET = 10000;
 const DEFAULT_ELEVATION = 4;
 
 const sdkVersion = lazy(() => parseInt(Device.sdkVersion));
-
 
 let AppCompatTextView;
 let actionItemIdGenerator = ACTION_ITEM_ID_OFFSET;

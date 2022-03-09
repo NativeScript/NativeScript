@@ -1194,6 +1194,8 @@ declare const enum PHPhotosError {
 
 	AccessUserDenied = 3311,
 
+	LibraryInFileProviderSyncRoot = 5423,
+
 	Invalid = -1
 }
 

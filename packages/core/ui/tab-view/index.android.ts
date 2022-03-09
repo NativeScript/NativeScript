@@ -1,7 +1,7 @@
 import { TabViewItem as TabViewItemDefinition } from '.';
 import { Font } from '../styling/font';
 
-import { TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty, tabTextColorProperty, tabBackgroundColorProperty, tabTextFontSizeProperty, selectedTabTextColorProperty, androidSelectedTabHighlightColorProperty, androidOffscreenTabLimitProperty, traceCategory, traceMissingIcon } from './tab-view-common';
+import { TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty, tabTextColorProperty, tabBackgroundColorProperty, tabTextFontSizeProperty, selectedTabTextColorProperty, androidSelectedTabHighlightColorProperty, androidOffscreenTabLimitProperty, traceCategory, traceMissingIcon, androidIconRenderingModeProperty } from './tab-view-common';
 import { textTransformProperty, getTransformedText } from '../text-base';
 import { CoreTypes } from '../../core-types';
 import { ImageSource } from '../../image-source';
@@ -93,6 +93,9 @@ function initializeNativeClasses() {
 		public items: Array<TabViewItemDefinition>;
 		private mCurTransaction: androidx.fragment.app.FragmentTransaction;
 		private mCurrentPrimaryItem: androidx.fragment.app.Fragment;
+		// in fragments 1.3+, committing a transaction may call the adapter's methods and trigger another commit
+		// we prevent that here.
+		private transactionRunning = false;
 
 		constructor(public owner: TabView) {
 			super();
@@ -227,8 +230,10 @@ function initializeNativeClasses() {
 		}
 
 		private _commitCurrentTransaction() {
-			if (this.mCurTransaction != null) {
+			if (this.mCurTransaction != null && !this.transactionRunning) {
+				this.transactionRunning = true;
 				this.mCurTransaction.commitNowAllowingStateLoss();
+				this.transactionRunning = false;
 				this.mCurTransaction = null;
 			}
 		}
@@ -657,6 +662,16 @@ export class TabView extends TabViewBase {
 		}
 	}
 
+	private getNativeRenderingMode(mode: 'alwaysOriginal' | 'alwaysTemplate'): number {
+		switch (mode) {
+			case 'alwaysTemplate':
+				return org.nativescript.widgets.TabIconRenderingMode.template;
+			default:
+			case 'alwaysOriginal':
+				return org.nativescript.widgets.TabIconRenderingMode.original;
+		}
+	}
+
 	public updateAndroidItemAt(index: number, spec: org.nativescript.widgets.TabItemSpec) {
 		this._tabLayout.updateItemAt(index, spec);
 	}
@@ -666,6 +681,13 @@ export class TabView extends TabViewBase {
 	}
 	[androidOffscreenTabLimitProperty.setNative](value: number) {
 		this._viewPager.setOffscreenPageLimit(value);
+	}
+
+	[androidIconRenderingModeProperty.getDefault](): 'alwaysOriginal' | 'alwaysTemplate' {
+		return 'alwaysOriginal';
+	}
+	[androidIconRenderingModeProperty.setNative](value: 'alwaysOriginal' | 'alwaysTemplate') {
+		this._tabLayout.setIconRenderingMode(this.getNativeRenderingMode(value));
 	}
 
 	[selectedIndexProperty.setNative](value: number) {

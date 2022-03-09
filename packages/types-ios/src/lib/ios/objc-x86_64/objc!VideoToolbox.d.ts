@@ -209,6 +209,8 @@ declare var kVTCompressionPropertyKey_MultiPassStorage: string;
 
 declare var kVTCompressionPropertyKey_NumberOfPendingFrames: string;
 
+declare var kVTCompressionPropertyKey_OutputBitDepth: string;
+
 declare var kVTCompressionPropertyKey_PixelAspectRatio: string;
 
 declare var kVTCompressionPropertyKey_PixelBufferPoolIsShared: string;
@@ -464,6 +466,8 @@ declare var kVTProfileLevel_H264_Main_5_2: string;
 declare var kVTProfileLevel_H264_Main_AutoLevel: string;
 
 declare var kVTProfileLevel_HEVC_Main10_AutoLevel: string;
+
+declare var kVTProfileLevel_HEVC_Main42210_AutoLevel: string;
 
 declare var kVTProfileLevel_HEVC_Main_AutoLevel: string;
 

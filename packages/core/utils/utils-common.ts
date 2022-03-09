@@ -3,6 +3,8 @@ import { dispatchToMainThread, isMainThread } from './mainthread-helper';
 import { sanitizeModuleName } from '../ui/builder/module-name-sanitizer';
 import * as layout from './layout-helper';
 
+import { GC } from './index';
+
 export { layout };
 export * from './mainthread-helper';
 export * from './macrotask-scheduler';
@@ -128,4 +130,35 @@ export function mainThreadify(func: Function): (...args: any[]) => void {
 		const argsToPass = args;
 		executeOnMainThread(() => func.apply(this, argsToPass));
 	};
+}
+
+export function debounce(fn: any, delay = 300) {
+	let timer: NodeJS.Timeout;
+	return (...args: Array<any>) => {
+		clearTimeout(timer);
+		timer = setTimeout(() => {
+			fn.apply(this, args);
+		}, delay);
+	};
+}
+
+export function throttle(fn: any, delay = 300) {
+	let waiting = false;
+	return function () {
+		if (!waiting) {
+			fn.apply(this, arguments);
+			waiting = true;
+			setTimeout(function () {
+				waiting = false;
+			}, delay);
+		}
+	};
+}
+
+export function queueGC(delay = 900, useThrottle?: boolean) {
+	if (useThrottle) {
+		throttle(() => GC(), delay);
+	} else {
+		debounce(() => GC(), delay);
+	}
 }

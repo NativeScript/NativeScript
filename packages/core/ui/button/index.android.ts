@@ -62,7 +62,6 @@ export class Button extends ButtonBase {
 	private _stateListAnimator: any;
 	private _highlightedHandler: (args: TouchGestureEventData) => void;
 
-
 	public _applyBackground(background: Background, isBorderDrawable, onlyColor: boolean, backgroundDrawable: any) {
 		const nativeView = this.nativeViewProtected;
 		if (backgroundDrawable && onlyColor) {

@@ -22,8 +22,9 @@ import { env as _env, IWebpackEnv } from '../index';
 import { getValue } from '../helpers/config';
 import { getIPS } from '../helpers/host';
 import {
-	getPlatformName,
+	getAvailablePlatforms,
 	getAbsoluteDistPath,
+	getPlatformName,
 	getEntryDirPath,
 	getEntryPath,
 } from '../helpers/platform';
@@ -123,6 +124,13 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		],
 	});
 
+	// allow watching node_modules
+	config.when(env.watchNodeModules, (config) => {
+		config.set('snapshot', {
+			managedPaths: [],
+		});
+	});
+
 	// Set up Terser options
 	config.optimization.minimizer('TerserPlugin').use(TerserPlugin, [
 		{
@@ -172,6 +180,8 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.add('.ts')
 		.add(`.${platform}.js`)
 		.add('.js')
+		.add(`.${platform}.mjs`)
+		.add('.mjs')
 		.add(`.${platform}.css`)
 		.add('.css')
 		.add(`.${platform}.scss`)
@@ -212,10 +222,15 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			});
 	});
 
+	// enable profiling with --env.profile
+	config.when(env.profile, (config) => {
+		config.profile(true);
+	});
+
 	// worker-loader should be declared before ts-loader
 	config.module
 		.rule('workers')
-		.test(/\.(js|ts)$/)
+		.test(/\.(mjs|js|ts)$/)
 		.use('nativescript-worker-loader')
 		.loader('nativescript-worker-loader');
 
@@ -365,6 +380,18 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.plugin('ContextExclusionPlugin|App_Resources')
 		.use(ContextExclusionPlugin, [new RegExp(`(.*)App_Resources(.*)`)]);
 
+	// Makes sure that require.context will never include code from
+	// another platform (ie .android.ts when building for ios)
+	const otherPlatformsRE = getAvailablePlatforms()
+		.filter((platform) => platform !== getPlatformName())
+		.join('|');
+
+	config
+		.plugin('ContextExclusionPlugin|Other_Platforms')
+		.use(ContextExclusionPlugin, [
+			new RegExp(`\\.(${otherPlatformsRE})\\.(\\w+)$`),
+		]);
+
 	// Filter common undesirable warnings
 	config.set(
 		'ignoreWarnings',
@@ -397,6 +424,9 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			/* for compat only */ 'global.isAndroid': platform === 'android',
 			/* for compat only */ 'global.isIOS': platform === 'ios',
 			process: 'global.process',
+
+			// enable testID when using --env.e2e
+			__USE_TEST_ID__: !!env.e2e,
 
 			// todo: ?!?!
 			// profile: '() => {}',

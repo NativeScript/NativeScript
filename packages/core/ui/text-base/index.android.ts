@@ -15,6 +15,7 @@ import { layout } from '../../utils';
 import { isString, isNullOrUndefined } from '../../utils/types';
 import { accessibilityIdentifierProperty } from '../../accessibility/accessibility-properties';
 import * as Utils from '../../utils';
+import { testIDProperty } from '../../ui/core/view';
 
 export * from './text-base-common';
 
@@ -292,7 +293,8 @@ export class TextBase extends TextBaseCommon {
 			case 'right':
 				this.nativeTextViewProtected.setGravity(android.view.Gravity.END | verticalGravity);
 				break;
-			default: // initial | left | justify
+			default:
+				// initial | left | justify
 				this.nativeTextViewProtected.setGravity(android.view.Gravity.START | verticalGravity);
 				break;
 		}
@@ -442,13 +444,21 @@ export class TextBase extends TextBaseCommon {
 		org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeTextViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderLeftWidth, 0));
 	}
 
-	[accessibilityIdentifierProperty.setNative](value: string): void {
-		// we override the default setter to apply it on nativeTextViewProtected
-		const id = Utils.ad.resources.getId(':id/nativescript_accessibility_id');
+	[testIDProperty.setNative](value: string): void {
+		this.setTestID(this.nativeTextViewProtected, value);
+	}
 
-		if (id) {
-			this.nativeTextViewProtected.setTag(id, value);
-			this.nativeTextViewProtected.setTag(value);
+	[accessibilityIdentifierProperty.setNative](value: string): void {
+		if (typeof __USE_TEST_ID__ !== 'undefined' && __USE_TEST_ID__ && this.testID) {
+			// ignore when using testID;
+		} else {
+			// we override the default setter to apply it on nativeTextViewProtected
+			const id = Utils.ad.resources.getId(':id/nativescript_accessibility_id');
+
+			if (id) {
+				this.nativeTextViewProtected.setTag(id, value);
+				this.nativeTextViewProtected.setTag(value);
+			}
 		}
 	}
 
@@ -485,14 +495,9 @@ export class TextBase extends TextBaseCommon {
 }
 
 function getCapitalizedString(str: string): string {
-	const words = str.split(' ');
-	const newWords = [];
-	for (let i = 0, length = words.length; i < length; i++) {
-		const word = words[i].toLowerCase();
-		newWords.push(word.substr(0, 1).toUpperCase() + word.substring(1));
-	}
-
-	return newWords.join(' ');
+	let newString = str.toLowerCase();
+	newString = newString.replace(/(?:^|\s|[-"'([{])+\S/g, (c) => c.toUpperCase());
+	return newString;
 }
 
 export function getTransformedText(text: string, textTransform: CoreTypes.TextTransformType): string {

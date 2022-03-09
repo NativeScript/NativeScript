@@ -502,7 +502,7 @@ declare class NSDiffableDataSourceSnapshot<SectionIdentifierType, ItemIdentifier
 
 	appendItemsWithIdentifiersIntoSectionWithIdentifier(identifiers: NSArray<ItemIdentifierType> | ItemIdentifierType[], sectionIdentifier: SectionIdentifierType): void;
 
-	appendSectionsWithIdentifiers(sectionIdentifiers: NSArray<any> | any[]): void;
+	appendSectionsWithIdentifiers(sectionIdentifiers: NSArray<SectionIdentifierType> | SectionIdentifierType[]): void;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
@@ -3517,11 +3517,15 @@ declare var UIActivityTypePrint: string;
 
 declare var UIActivityTypeSaveToCameraRoll: string;
 
+declare var UIActivityTypeSharePlay: string;
+
 declare class UIActivityViewController extends UIViewController {
 
 	static alloc(): UIActivityViewController; // inherited from NSObject
 
 	static new(): UIActivityViewController; // inherited from NSObject
+
+	allowsProminentActivity: boolean;
 
 	completionHandler: (p1: string, p2: boolean) => void;
 
@@ -3801,8 +3805,6 @@ declare var UIAppearanceContainer: {
 declare class UIApplication extends UIResponder {
 
 	static alloc(): UIApplication; // inherited from NSObject
-
-
 
 	static new(): UIApplication; // inherited from NSObject
 
@@ -4111,6 +4113,8 @@ declare var UIApplicationLaunchOptionsUserActivityTypeKey: string;
 declare function UIApplicationMain(argc: number, argv: interop.Reference<string>, principalClassName: string, delegateClassName: string): never;
 
 declare var UIApplicationOpenExternalURLOptionsEventAttributionKey: string;
+
+declare var UIApplicationOpenNotificationSettingsURLString: string;
 
 declare var UIApplicationOpenSettingsURLString: string;
 
@@ -5532,6 +5536,15 @@ declare class UICellAccessoryDelete extends UICellAccessory {
 	actionHandler: () => void;
 
 	backgroundColor: UIColor;
+}
+
+declare class UICellAccessoryDetail extends UICellAccessory {
+
+	static alloc(): UICellAccessoryDetail; // inherited from NSObject
+
+	static new(): UICellAccessoryDetail; // inherited from NSObject
+
+	actionHandler: () => void;
 }
 
 declare class UICellAccessoryDisclosureIndicator extends UICellAccessory {
@@ -7207,12 +7220,9 @@ declare class UIColor extends NSObject implements NSCopying, NSItemProviderReadi
 
 	static colorWithRedGreenBlueAlpha(red: number, green: number, blue: number, alpha: number): UIColor;
 
-	static colorWithUserInterfaceStyleDarkColorDefaultColor(darkColor: UIColor, defaultColor: UIColor): UIColor;
-
 	static colorWithWhiteAlpha(white: number, alpha: number): UIColor;
 
 	static itemProviderVisibilityForRepresentationWithTypeIdentifier(typeIdentifier: string): NSItemProviderRepresentationVisibility;
-
 
 	static new(): UIColor; // inherited from NSObject
 
@@ -7421,10 +7431,6 @@ declare class UIColor extends NSObject implements NSCopying, NSItemProviderReadi
 	itemProviderVisibilityForRepresentationWithTypeIdentifier(typeIdentifier: string): NSItemProviderRepresentationVisibility;
 
 	loadDataWithTypeIdentifierForItemProviderCompletionHandler(typeIdentifier: string, completionHandler: (p1: NSData, p2: NSError) => void): NSProgress;
-
-
-
-
 
 	performSelector(aSelector: string): any;
 
@@ -9967,8 +9973,6 @@ declare class UIFont extends NSObject implements NSCopying, NSSecureCoding {
 
 	static italicSystemFontOfSize(fontSize: number): UIFont;
 
-
-
 	static monospacedDigitSystemFontOfSizeWeight(fontSize: number, weight: number): UIFont;
 
 	static monospacedSystemFontOfSizeWeight(fontSize: number, weight: number): UIFont;
@@ -9999,7 +10003,6 @@ declare class UIFont extends NSObject implements NSCopying, NSSecureCoding {
 
 	readonly lineHeight: number;
 
-
 	readonly pointSize: number;
 
 	readonly xHeight: number;
@@ -10025,12 +10028,6 @@ declare class UIFont extends NSObject implements NSCopying, NSSecureCoding {
 	fontWithSize(fontSize: number): UIFont;
 
 	initWithCoder(coder: NSCoder): this;
-
-
-
-
-
-
 }
 
 declare class UIFontDescriptor extends NSObject implements NSCopying, NSSecureCoding {
@@ -10042,8 +10039,6 @@ declare class UIFontDescriptor extends NSObject implements NSCopying, NSSecureCo
 	static fontDescriptorWithNameMatrix(fontName: string, matrix: CGAffineTransform): UIFontDescriptor;
 
 	static fontDescriptorWithNameSize(fontName: string, size: number): UIFontDescriptor;
-
-
 
 	static new(): UIFontDescriptor; // inherited from NSObject
 
@@ -10932,8 +10927,6 @@ declare class UIImage extends NSObject implements NSItemProviderReading, NSItemP
 	itemProviderVisibilityForRepresentationWithTypeIdentifier(typeIdentifier: string): NSItemProviderRepresentationVisibility;
 
 	loadDataWithTypeIdentifierForItemProviderCompletionHandler(typeIdentifier: string, completionHandler: (p1: NSData, p2: NSError) => void): NSProgress;
-
-	mdf_imageWithHorizontallyFlippedOrientation(): UIImage;
 
 	performSelector(aSelector: string): any;
 
@@ -22281,11 +22274,6 @@ declare class UIView extends UIResponder implements CALayerDelegate, NSCoding, U
 
 	static commitAnimations(): void;
 
-
-	static mdf_userInterfaceLayoutDirectionForSemanticContentAttribute(semanticContentAttribute: UISemanticContentAttribute): UIUserInterfaceLayoutDirection;
-
-	static mdf_userInterfaceLayoutDirectionForSemanticContentAttributeRelativeToLayoutDirection(semanticContentAttribute: UISemanticContentAttribute, layoutDirection: UIUserInterfaceLayoutDirection): UIUserInterfaceLayoutDirection;
-
 	static modifyAnimationsWithRepeatCountAutoreversesAnimations(count: number, autoreverses: boolean, animations: () => void): void;
 
 	static new(): UIView; // inherited from NSObject
@@ -22417,12 +22405,6 @@ declare class UIView extends UIResponder implements CALayerDelegate, NSCoding, U
 	maskView: UIView;
 
 	maximumContentSizeCategory: string;
-
-
-
-	readonly mdf_effectiveUserInterfaceLayoutDirection: UIUserInterfaceLayoutDirection;
-
-	mdf_semanticContentAttribute: UISemanticContentAttribute;
 
 	minimumContentSizeCategory: string;
 
@@ -22645,7 +22627,6 @@ declare class UIView extends UIResponder implements CALayerDelegate, NSCoding, U
 	layoutSublayersOfLayer(layer: CALayer): void;
 
 	layoutSubviews(): void;
-
 
 	needsUpdateConstraints(): boolean;
 

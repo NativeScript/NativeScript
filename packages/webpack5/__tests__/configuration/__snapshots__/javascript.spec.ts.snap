@@ -40,6 +40,8 @@ exports[`javascript configuration for android 1`] = `
       '.ts',
       '.android.js',
       '.js',
+      '.android.mjs',
+      '.mjs',
       '.android.css',
       '.css',
       '.android.scss',
@@ -77,7 +79,7 @@ exports[`javascript configuration for android 1`] = `
       },
       /* config.module.rule('workers') */
       {
-        test: /\\\\.(js|ts)$/,
+        test: /\\\\.(mjs|js|ts)$/,
         use: [
           /* config.module.rule('workers').use('nativescript-worker-loader') */
           {
@@ -242,6 +244,10 @@ exports[`javascript configuration for android 1`] = `
     new ContextExclusionPlugin(
       /(.*)App_Resources(.*)/
     ),
+    /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
+    new ContextExclusionPlugin(
+      /\\\\.(ios)\\\\.(\\\\w+)$/
+    ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
@@ -256,7 +262,8 @@ exports[`javascript configuration for android 1`] = `
         __IOS__: false,
         'global.isAndroid': true,
         'global.isIOS': false,
-        process: 'global.process'
+        process: 'global.process',
+        __USE_TEST_ID__: false
       }
     ),
     /* config.plugin('CopyWebpackPlugin') */
@@ -363,6 +370,8 @@ exports[`javascript configuration for ios 1`] = `
       '.ts',
       '.ios.js',
       '.js',
+      '.ios.mjs',
+      '.mjs',
       '.ios.css',
       '.css',
       '.ios.scss',
@@ -400,7 +409,7 @@ exports[`javascript configuration for ios 1`] = `
       },
       /* config.module.rule('workers') */
       {
-        test: /\\\\.(js|ts)$/,
+        test: /\\\\.(mjs|js|ts)$/,
         use: [
           /* config.module.rule('workers').use('nativescript-worker-loader') */
           {
@@ -565,6 +574,10 @@ exports[`javascript configuration for ios 1`] = `
     new ContextExclusionPlugin(
       /(.*)App_Resources(.*)/
     ),
+    /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
+    new ContextExclusionPlugin(
+      /\\\\.(android)\\\\.(\\\\w+)$/
+    ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
@@ -579,7 +592,8 @@ exports[`javascript configuration for ios 1`] = `
         __IOS__: true,
         'global.isAndroid': false,
         'global.isIOS': true,
-        process: 'global.process'
+        process: 'global.process',
+        __USE_TEST_ID__: false
       }
     ),
     /* config.plugin('CopyWebpackPlugin') */

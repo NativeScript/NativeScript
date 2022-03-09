@@ -1727,6 +1727,10 @@ declare const kCMVideoCodecType_DVCPro50PAL: number;
 
 declare const kCMVideoCodecType_DVCProPAL: number;
 
+declare const kCMVideoCodecType_DepthHEVC: number;
+
+declare const kCMVideoCodecType_DisparityHEVC: number;
+
 declare const kCMVideoCodecType_DolbyVisionHEVC: number;
 
 declare const kCMVideoCodecType_H263: number;

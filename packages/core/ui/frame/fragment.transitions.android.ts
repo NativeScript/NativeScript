@@ -54,6 +54,7 @@ export interface ExpandedEntry extends BackstackEntry {
 	frameId: number;
 
 	isNestedDefaultTransition: boolean;
+	isAnimationRunning: boolean;
 }
 
 export function _setAndroidFragmentTransitions(animated: boolean, navigationTransition: NavigationTransition, currentEntry: ExpandedEntry, newEntry: ExpandedEntry, frameId: number, fragmentTransaction: androidx.fragment.app.FragmentTransaction, isNestedDefaultTransition?: boolean): void {
@@ -63,6 +64,7 @@ export function _setAndroidFragmentTransitions(animated: boolean, navigationTran
 	if (entries && entries.size > 0) {
 		throw new Error('Calling navigation before previous navigation finish.');
 	}
+	newEntry.isAnimationRunning = false;
 
 	allowTransitionOverlap(currentFragment);
 	allowTransitionOverlap(newFragment);
@@ -215,6 +217,7 @@ function getAnimationListener(): android.animation.Animator.AnimatorListener {
 				if (Trace.isEnabled()) {
 					Trace.write(`START ${animator.transitionType} for ${entry.fragmentTag}`, Trace.categories.Transition);
 				}
+				entry.isAnimationRunning = true;
 			}
 
 			onAnimationRepeat(animator: ExpandedAnimator): void {
@@ -237,6 +240,7 @@ function getAnimationListener(): android.animation.Animator.AnimatorListener {
 				if (Trace.isEnabled()) {
 					Trace.write(`CANCEL ${animator.transitionType} for ${animator.entry.fragmentTag} backEntry:${animator.backEntry?.fragmentTag ?? 'none'}`, Trace.categories.Transition);
 				}
+				animator.entry.isAnimationRunning = false;
 			}
 		}
 
@@ -328,6 +332,7 @@ function getTransitionListener(entry: ExpandedEntry, transition: androidx.transi
 
 			public onTransitionStart(transition: androidx.transition.Transition): void {
 				const entry = this.entry;
+				entry.isAnimationRunning = true;
 				addToWaitingQueue(entry);
 				if (Trace.isEnabled()) {
 					Trace.write(`START ${toShortString(transition)} transition for ${entry.fragmentTag}`, Trace.categories.Transition);
@@ -358,6 +363,8 @@ function getTransitionListener(entry: ExpandedEntry, transition: androidx.transi
 			}
 
 			onTransitionCancel(transition: androidx.transition.Transition): void {
+				const entry = this.entry;
+				entry.isAnimationRunning = false;
 				if (Trace.isEnabled()) {
 					Trace.write(`CANCEL ${toShortString(transition)} transition for ${this.entry.fragmentTag} backEntry:${this.backEntry?.fragmentTag ?? 'none'}`, Trace.categories.Transition);
 				}

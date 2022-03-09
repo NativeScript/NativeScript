@@ -2,6 +2,7 @@ import { dirname, resolve } from 'path';
 
 import { getPackageJson, getProjectRootPath } from './project';
 import { error, info, warnOnce } from './log';
+import { getValue } from './config';
 import { env } from '../';
 
 import AndroidPlatform from '../platforms/android';
@@ -41,6 +42,13 @@ export function getPlatform(): INativeScriptPlatform {
 }
 
 /**
+ * Utility to get all registered/available platforms
+ */
+export function getAvailablePlatforms(): string[] {
+	return Object.keys(platforms);
+}
+
+/**
  * Utility to get the currently targeted platform name
  */
 export function getPlatformName(): Platform {
@@ -61,7 +69,7 @@ export function getPlatformName(): Platform {
 		throw error(`
 			Invalid platform: ${env.platform}
 
-			Valid platforms: ${Object.keys(platforms).join(', ')}
+			Valid platforms: ${getAvailablePlatforms().join(', ')}
 		`);
 	}
 
@@ -90,6 +98,13 @@ export function getEntryPath() {
 	// use platform specific entry path
 	if (platform.getEntryPath) {
 		return platform.getEntryPath();
+	}
+
+	// try main from nativescript.config.ts
+	const main = getValue('main');
+
+	if (main) {
+		return resolve(getProjectRootPath(), main);
 	}
 
 	// fallback to main field in package.json

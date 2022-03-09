@@ -6,11 +6,6 @@ import { path, knownFolders } from '../../file-system';
 import * as application from '../../application';
 export * from './background-common';
 
-// TODO: Change this implementation to use
-// We are using "ad" here to avoid namespace collision with the global android object
-export namespace ad {
-}
-
 function fromBase64(source: string): android.graphics.Bitmap {
 	const bytes = android.util.Base64.decode(source, android.util.Base64.DEFAULT);
 
@@ -39,7 +34,7 @@ function fromGradient(gradient: LinearGradient): org.nativescript.widgets.Linear
 }
 
 const pattern = /url\(('|")(.*?)\1\)/;
-export function refreshBorderDrawable(this: void, view: View, borderDrawable: org.nativescript.widgets.BorderDrawable) {
+export function refreshBorderDrawable(view: View, borderDrawable: org.nativescript.widgets.BorderDrawable) {
 	const nativeView = <android.view.View>view.nativeViewProtected;
 	const context = nativeView.getContext();
 

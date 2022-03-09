@@ -42,6 +42,7 @@ apps/**/*/*.map
 apps/**/*/platforms
 apps/**/*/webpack.*.js
 *.tgz
+.npmrc
 
 # System Files
 .DS_Store
