@@ -10,7 +10,7 @@
     "setup": "npm run clean && npm install --legacy-peer-deps",
     "setup:yarn": "yarn clean && yarn",
     "setup:pnpm": "pnpm run clean && pnpm install",
-    "postinstall": "ts-patch install && husky install && nx run webpack5:build",
+    "postinstall": "ts-patch install && husky install",
     "start": "nps",
 		"changelog": "conventional-changelog -p angular -i CHANGELOG.md -s",
 		"apps-automated:ios": "cd apps/automated && tns debug ios --no-hmr --emulator --env.testing",
