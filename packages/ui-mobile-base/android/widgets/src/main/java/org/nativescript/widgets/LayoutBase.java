@@ -1,9 +1,3 @@
-<<<<<<< HEAD
-/**
- *
- */
-=======
->>>>>>> 0dec295fde5ccd5c5febe363d8e36a1ac217f5a8
 package org.nativescript.widgets;
 
 import android.content.Context;
