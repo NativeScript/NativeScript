@@ -23,11 +23,7 @@ import lazy from '../../../utils/lazy';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty } from '../../../accessibility/accessibility-properties';
 import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, isAccessibilityServiceEnabled, sendAccessibilityEvent, updateAccessibilityProperties, updateContentDescription, AccessibilityState } from '../../../accessibility';
 import * as Utils from '../../../utils';
-<<<<<<< HEAD
-import { CSSShadow } from 'ui/styling/css-shadow';
-=======
 import { CSSShadow } from '../../styling/css-shadow';
->>>>>>> 0dec295fde5ccd5c5febe363d8e36a1ac217f5a8
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
