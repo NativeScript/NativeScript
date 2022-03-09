@@ -3,11 +3,7 @@ import type { Point, CustomLayoutView as CustomLayoutViewDefinition } from '.';
 import type { GestureTypes, GestureEventData } from '../../gestures';
 
 // Types.
-<<<<<<< HEAD
-import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty } from './view-common';
-=======
 import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty } from './view-common';
->>>>>>> 0dec295fde5ccd5c5febe363d8e36a1ac217f5a8
 import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length } from '../../styling/style-properties';
 import { layout } from '../../../utils';
 import { Trace } from '../../../trace';
@@ -17,12 +13,7 @@ import { EventData } from '../../../data/observable';
 import { perspectiveProperty, visibilityProperty, opacityProperty, horizontalAlignmentProperty, verticalAlignmentProperty, minWidthProperty, minHeightProperty, widthProperty, heightProperty, marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, androidElevationProperty, androidDynamicElevationOffsetProperty } from '../../styling/style-properties';
 import { CoreTypes } from '../../../core-types';
 
-<<<<<<< HEAD
-import { Background, ad as androidBackground } from '../../styling/background';
-import { BackgroundClearFlags, refreshBorderDrawable } from '../../styling/background.android';
-=======
 import { Background, BackgroundClearFlags, refreshBorderDrawable } from '../../styling/background';
->>>>>>> 0dec295fde5ccd5c5febe363d8e36a1ac217f5a8
 import { profile } from '../../../profiling';
 import { topmost } from '../../frame/frame-stack';
 import { Screen } from '../../../platform';
