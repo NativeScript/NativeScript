@@ -1,3 +1,12 @@
+## [8.2.1](https://github.com/NativeScript/NativeScript/compare/8.2.0-core...8.2.1) (2022-03-09)
+
+
+### Bug Fixes
+
+* wrong thread when in Async task in a worker ([794a779](https://github.com/NativeScript/NativeScript/commit/794a77900f183472a4cc33fa544cb396790d4166)), closes [#9819](https://github.com/NativeScript/NativeScript/issues/9819)
+
+
+
 # [8.2.0](https://github.com/NativeScript/NativeScript/compare/5.0.5-webpack...8.2.0) (2022-03-08)
 
 
