@@ -287,12 +287,30 @@ export class ObservableArray<T> extends Observable {
 	}
 
 	/**
-	 * Returns the index of the first element in the array where predicate is true, and -1 otherwise.
-	 * @param predicate
+	 * Returns the first element in the array where predicate is true, and null otherwise.
+	 * @param callbackfn
 	 * @param thisArg If provided, it will be used as the this value for each invocation of predicate. If it is not provided, undefined is used instead.
 	 */
-	findIndex(predicate: (value: any, index: number, obj: any[]) => unknown, thisArg?: any): number {
-		return this._array.findIndex(predicate, thisArg);
+	find(callbackfn: (value: T, index: number, array: ObservableArray<T>) => any, thisArg?: any): number {
+		return this._array.find((value: T, index: number, array: T[]) => callbackfn(value, index, this), thisArg);
+	}
+
+	/**
+	 * Returns the index of the first element in the array where predicate is true, and -1 otherwise.
+	 * @param callbackfn
+	 * @param thisArg If provided, it will be used as the this value for each invocation of predicate. If it is not provided, undefined is used instead.
+	 */
+	findIndex(callbackfn: (value: T, index: number, array: ObservableArray<T>) => any, thisArg?: any): number {
+		return this._array.findIndex((value: T, index: number, array: T[]) => callbackfn(value, index, this), thisArg);
+	}
+
+	/**
+	 * Determines whether the specified element exists inside the array.
+	 * @param searchElement The value to locate in the array.
+	 * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the search starts at index 0.
+	 */
+	includes(searchElement: T, fromIndex?: number): boolean {
+		return this._array.includes(searchElement, fromIndex);
 	}
 
 	/**
