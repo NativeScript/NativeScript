@@ -138,11 +138,11 @@ export class ObservableArray<T> extends Observable {
 	 * Combines two or more arrays.
 	 * @param items Additional items to add to the end of array1.
 	 */
-	concat(...args): T[] {
+	concat(...args): ObservableArray<T> {
 		this._addArgs.index = this._array.length;
 		const result = this._array.concat(...args);
 
-		return result;
+		return new ObservableArray<T>(result);
 	}
 
 	/**
@@ -174,19 +174,11 @@ export class ObservableArray<T> extends Observable {
 	 * @param item New element of the Array.
 	 */
 	push(...args: any): number {
-		this._addArgs.index = this._array.length;
+		const length = this._array.length;
+		const result = this._array.push(...args);
 
-		if (arguments.length === 1 && Array.isArray(arguments[0])) {
-			const source = <Array<T>>arguments[0];
-
-			for (let i = 0, l = source.length; i < l; i++) {
-				this._array.push(source[i]);
-			}
-		} else {
-			this._array.push(...args);
-		}
-
-		this._addArgs.addedCount = this._array.length - this._addArgs.index;
+		this._addArgs.index = length;
+		this._addArgs.addedCount = result - length;
 
 		this.notify(this._addArgs);
 		this._notifyLengthChange();
@@ -201,9 +193,11 @@ export class ObservableArray<T> extends Observable {
 
 	/**
 	 * Reverses the elements in an Array.
+	 * This method uses 'in place' algorithm.
 	 */
-	reverse(): T[] {
-		return this._array.reverse();
+	reverse(): ObservableArray<T> {
+		this._array.reverse();
+		return this;
 	}
 
 	/**
@@ -226,25 +220,29 @@ export class ObservableArray<T> extends Observable {
 	 * @param start The beginning of the specified portion of the array.
 	 * @param end The end of the specified portion of the array.
 	 */
-	slice(start?: number, end?: number): T[] {
-		return this._array.slice(start, end);
+	slice(start?: number, end?: number): ObservableArray<T> {
+		const result = this._array.slice(start, end);
+		return new ObservableArray<T>(result);
 	}
 
 	/**
 	 * Sorts an array.
+	 * This method uses 'in place' algorithm.
 	 * @param compareFn The name of the function used to determine the order of the elements. If omitted, the elements are sorted in ascending, ASCII character order.
 	 */
-	sort(compareFn?: (a: T, b: T) => number): T[] {
-		return this._array.sort(compareFn);
+	sort(compareFn?: (a: T, b: T) => number): ObservableArray<T> {
+		this._array.sort(compareFn);
+		return this;
 	}
 
 	/**
 	 * Removes elements from an array and, if necessary, inserts new elements in their place, returning the deleted elements.
+	 * This method uses 'in place' algorithm.
 	 * @param start The zero-based location in the array from which to start removing elements.
 	 * @param deleteCount The number of elements to remove.
 	 * @param items Elements to insert into the array in place of the deleted elements.
 	 */
-	splice(start: number, deleteCount?: number, ...items: any): T[] {
+	splice(start: number, deleteCount?: number, ...items: any): ObservableArray<T> {
 		const length = this._array.length;
 		const result = arguments.length === 1 ? this._array.splice(start) : this._array.splice(start, deleteCount, ...items);
 
@@ -268,7 +266,7 @@ export class ObservableArray<T> extends Observable {
 			this._notifyLengthChange();
 		}
 
-		return result;
+		return new ObservableArray<T>(result);
 	}
 
 	/**
@@ -303,14 +301,7 @@ export class ObservableArray<T> extends Observable {
 	 * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the search starts at index 0.
 	 */
 	indexOf(searchElement: T, fromIndex?: number): number {
-		const index = fromIndex ? fromIndex : 0;
-		for (let i = index, l = this._array.length; i < l; i++) {
-			if (this._array[i] === searchElement) {
-				return i;
-			}
-		}
-
-		return -1;
+		return this._array.indexOf(searchElement, fromIndex);
 	}
 
 	/**
@@ -319,15 +310,7 @@ export class ObservableArray<T> extends Observable {
 	 * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the search starts at the last index in the array.
 	 */
 	lastIndexOf(searchElement: T, fromIndex?: number): number {
-		const index = fromIndex ? fromIndex : this._array.length - 1;
-
-		for (let i = index; i >= 0; i--) {
-			if (this._array[i] === searchElement) {
-				return i;
-			}
-		}
-
-		return -1;
+		return this._array.lastIndexOf(searchElement, fromIndex);
 	}
 
 	/**
@@ -335,8 +318,8 @@ export class ObservableArray<T> extends Observable {
 	 * @param callbackfn A function that accepts up to three arguments. The every method calls the callbackfn function for each element in array1 until the callbackfn returns false, or until the end of the array.
 	 * @param thisArg An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
 	 */
-	every(callbackfn: (value: T, index: number, array: T[]) => boolean, thisArg?: any): boolean {
-		return this._array.every(callbackfn, thisArg);
+	every(callbackfn: (value: T, index: number, array: ObservableArray<T>) => boolean, thisArg?: any): boolean {
+		return this._array.every((value: T, index: number, array: T[]) => callbackfn(value, index, this), thisArg);
 	}
 
 	/**
@@ -344,8 +327,8 @@ export class ObservableArray<T> extends Observable {
 	 * @param callbackfn A function that accepts up to three arguments. The some method calls the callbackfn function for each element in array1 until the callbackfn returns true, or until the end of the array.
 	 * @param thisArg An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
 	 */
-	some(callbackfn: (value: T, index: number, array: T[]) => boolean, thisArg?: any): boolean {
-		return this._array.some(callbackfn, thisArg);
+	some(callbackfn: (value: T, index: number, array: ObservableArray<T>) => boolean, thisArg?: any): boolean {
+		return this._array.some((value: T, index: number, array: T[]) => callbackfn(value, index, this), thisArg);
 	}
 
 	/**
@@ -353,8 +336,8 @@ export class ObservableArray<T> extends Observable {
 	 * @param callbackfn  A function that accepts up to three arguments. forEach calls the callbackfn function one time for each element in the array.
 	 * @param thisArg  An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
 	 */
-	forEach(callbackfn: (value: T, index: number, array: T[]) => void, thisArg?: any): void {
-		this._array.forEach(callbackfn, thisArg);
+	forEach(callbackfn: (value: T, index: number, array: ObservableArray<T>) => void, thisArg?: any): void {
+		this._array.forEach((value: T, index: number, array: T[]) => callbackfn(value, index, this), thisArg);
 	}
 
 	/**
@@ -362,8 +345,9 @@ export class ObservableArray<T> extends Observable {
 	 * @param callbackfn A function that accepts up to three arguments. The map method calls the callbackfn function one time for each element in the array.
 	 * @param thisArg An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
 	 */
-	map<U>(callbackfn: (value: T, index: number, array: T[]) => U, thisArg?: any): U[] {
-		return this._array.map(callbackfn, thisArg);
+	map<U>(callbackfn: (value: T, index: number, array: ObservableArray<T>) => U, thisArg?: any): ObservableArray<U> {
+		const result = this._array.map((value: T, index: number, array: T[]) => callbackfn(value, index, this), thisArg);
+		return new ObservableArray<U>(result);
 	}
 
 	/**
@@ -371,8 +355,9 @@ export class ObservableArray<T> extends Observable {
 	 * @param callbackfn A function that accepts up to three arguments. The filter method calls the callbackfn function one time for each element in the array.
 	 * @param thisArg An object to which the this keyword can refer in the callbackfn function. If thisArg is omitted, undefined is used as the this value.
 	 */
-	filter(callbackfn: (value: T, index: number, array: T[]) => boolean, thisArg?: any): T[] {
-		return this._array.filter(callbackfn, thisArg);
+	filter(callbackfn: (value: T, index: number, array: ObservableArray<T>) => boolean, thisArg?: any): ObservableArray<T> {
+		const result = this._array.filter((value: T, index: number, array: T[]) => callbackfn(value, index, this), thisArg);
+		return new ObservableArray<T>(result);
 	}
 
 	/**
@@ -380,8 +365,9 @@ export class ObservableArray<T> extends Observable {
 	 * @param callbackfn A function that accepts up to four arguments. The reduce method calls the callbackfn function one time for each element in the array.
 	 * @param initialValue If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value.
 	 */
-	reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue?: T): T {
-		return initialValue !== undefined ? this._array.reduce(callbackfn, initialValue) : this._array.reduce(callbackfn);
+	reduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: ObservableArray<T>) => T, initialValue?: T): T {
+		const callbackWrapper = (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => callbackfn(previousValue, currentValue, currentIndex, this);
+		return initialValue !== undefined ? this._array.reduce(callbackWrapper, initialValue) : this._array.reduce(callbackWrapper);
 	}
 
 	/**
@@ -389,8 +375,9 @@ export class ObservableArray<T> extends Observable {
 	 * @param callbackfn A function that accepts up to four arguments. The reduceRight method calls the callbackfn function one time for each element in the array.
 	 * @param initialValue If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value.
 	 */
-	reduceRight(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue?: T): T {
-		return initialValue !== undefined ? this._array.reduceRight(callbackfn, initialValue) : this._array.reduceRight(callbackfn);
+	reduceRight(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: ObservableArray<T>) => T, initialValue?: T): T {
+		const callbackWrapper = (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => callbackfn(previousValue, currentValue, currentIndex, this);
+		return initialValue !== undefined ? this._array.reduceRight(callbackWrapper, initialValue) : this._array.reduceRight(callbackWrapper);
 	}
 }
 
