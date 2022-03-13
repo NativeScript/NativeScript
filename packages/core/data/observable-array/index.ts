@@ -335,7 +335,7 @@ export class ObservableArray<T> extends Observable {
 	 * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the search starts at the last index in the array.
 	 */
 	lastIndexOf(searchElement: T, fromIndex?: number): number {
-		return this._array.lastIndexOf(searchElement, fromIndex);
+		return fromIndex !== undefined ? this._array.lastIndexOf(searchElement, fromIndex) : this._array.lastIndexOf(searchElement);
 	}
 
 	/**
