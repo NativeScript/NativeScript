@@ -93,7 +93,7 @@ export class ObservableArray<T> extends Observable {
 	 * Supports relative indexing from the end of the array when passed a negative index.
 	 */
 	getItem(pos: number): T {
-		const index = pos < 0 ? this._array.length - pos : pos;
+		const index = pos < 0 ? this._array.length + pos : pos;
 		return this._array[index];
 	}
 
@@ -102,7 +102,7 @@ export class ObservableArray<T> extends Observable {
 	 * Supports relative indexing from the end of the array when passed a negative index.
 	 */
 	setItem(pos: number, value: T) {
-		const index = pos < 0 ? this._array.length - pos : pos;
+		const index = pos < 0 ? this._array.length + pos : pos;
 		const oldValue = this._array[index];
 		this._array[index] = value;
 
