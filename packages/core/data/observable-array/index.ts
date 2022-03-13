@@ -82,6 +82,12 @@ export class ObservableArray<T> extends Observable {
 		};
 	}
 
+	*[Symbol.iterator]() {
+		for (let item of this._array) {
+			yield item;
+		}
+	}
+
 	/**
 	 * Returns item at specified position.
 	 * Supports relative indexing from the end of the array when passed a negative index.
