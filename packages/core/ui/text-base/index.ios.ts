@@ -271,7 +271,7 @@ export class TextBase extends TextBaseCommon {
 			this.nativeTextViewProtected.attributedText = attrText;
 		}
 	}
-
+	
 	createFormattedTextNative(value: FormattedString) {
 		return NativeScriptUtils.createMutableStringWithDetails(this.getFormattedStringDetails(value) as any);
 	}
