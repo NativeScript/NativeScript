@@ -223,7 +223,7 @@ export class TextBase extends TextBaseCommon {
 		}
 
 		if (this.formattedText) {
-			(<any>this.nativeTextViewProtected).nativeScriptSetFormattedTextDecorationAndTransform(this.getFormattedStringDetails(this.formattedText));
+			this.setFormattedTextDecorationAndTransform();
 		} else {
 			// console.log('setTextDecorationAndTransform...')
 			const text = getTransformedText(isNullOrUndefined(this.text) ? '' : `${this.text}`, this.textTransform);
@@ -234,9 +234,46 @@ export class TextBase extends TextBaseCommon {
 			}
 		}
 	}
+	setFormattedTextDecorationAndTransform() {
+		const attrText = this.createFormattedTextNative(this.formattedText);
+		if (this.letterSpacing !== 0) {
+			attrText.addAttributeValueRange(NSKernAttributeName, this.letterSpacing * this.nativeTextViewProtected.font.pointSize, { location: 0, length: attrText.length });
+		}
+
+		if (this.style.lineHeight) {
+			const paragraphStyle = NSMutableParagraphStyle.alloc().init();
+			paragraphStyle.minimumLineHeight = this.lineHeight;
+			// make sure a possible previously set text alignment setting is not lost when line height is specified
+			if (this.nativeTextViewProtected instanceof UIButton) {
+				paragraphStyle.alignment = (<UIButton>this.nativeTextViewProtected).titleLabel.textAlignment;
+			} else {
+				paragraphStyle.alignment = (<UITextField | UITextView | UILabel>this.nativeTextViewProtected).textAlignment;
+			}
+
+			if (this.nativeTextViewProtected instanceof UILabel) {
+				// make sure a possible previously set line break mode is not lost when line height is specified
+				paragraphStyle.lineBreakMode = this.nativeTextViewProtected.lineBreakMode;
+			}
+			attrText.addAttributeValueRange(NSParagraphStyleAttributeName, paragraphStyle, { location: 0, length: attrText.length });
+		} else if (this.nativeTextViewProtected instanceof UITextView) {
+			const paragraphStyle = NSMutableParagraphStyle.alloc().init();
+			paragraphStyle.alignment = (<UITextView>this.nativeTextViewProtected).textAlignment;
+			attrText.addAttributeValueRange(NSParagraphStyleAttributeName, paragraphStyle, { location: 0, length: attrText.length });
+		}
+
+		if (this.nativeTextViewProtected instanceof UIButton) {
+			this.nativeTextViewProtected.setAttributedTitleForState(attrText, UIControlState.Normal);
+		} else {
+			if (majorVersion >= 13 && UIColor.labelColor) {
+				this.nativeTextViewProtected.textColor = UIColor.labelColor;
+			}
+
+			this.nativeTextViewProtected.attributedText = attrText;
+		}
+	}
 
 	createFormattedTextNative(value: FormattedString) {
-		return NativeScriptUtils.createMutableStringWithDetails(<any>this.getFormattedStringDetails(value));
+		return NativeScriptUtils.createMutableStringWithDetails(this.getFormattedStringDetails(value) as any);
 	}
 
 	getFormattedStringDetails(formattedString: FormattedString) {
