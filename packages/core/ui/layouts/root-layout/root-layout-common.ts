@@ -184,6 +184,10 @@ export class RootLayoutBase extends GridLayout {
 		});
 	}
 
+	topmost(): View {
+		return this.popupViews.length ? this.popupViews[this.popupViews.length - 1].view : null;
+	}
+
 	// bring any view instance open on the rootlayout to front of all the children visually
 	bringToFront(view: View, animated: boolean = false): Promise<void> {
 		return new Promise((resolve, reject) => {
