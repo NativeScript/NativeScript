@@ -423,7 +423,7 @@ export namespace xml2ui {
 					if (componentModule) {
 						this.sourceTracker(componentModule.component, args.position);
 						if (parent) {
-							if (complexProperty) {
+							if (complexProperty && complexProperty.parent == parent) {
 								// Add component to complex property of parent component.
 								ComponentParser.addToComplexProperty(parent, complexProperty, componentModule);
 							} else if ((<any>parent.component)._addChildFromBuilder) {
