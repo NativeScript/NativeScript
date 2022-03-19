@@ -191,7 +191,19 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 			Trace.write(`${this}._onLivesync(${JSON.stringify(context)})`, Trace.categories.Livesync);
 		}
 
+		let hasPopupView = false;
+
+		const rootLayout = global.rootLayout;
+		if (rootLayout != null && rootLayout.topmost() != null) {
+			rootLayout.closeAll();
+			hasPopupView = true;
+		}
+
 		if (this._closeAllModalViewsInternal()) {
+			hasPopupView = true;
+		}
+
+		if (hasPopupView) {
 			return true;
 		}
 
