@@ -29,11 +29,11 @@ export class RootLayoutBase extends GridLayout {
 	open(view: View, options: RootLayoutOptions = {}): Promise<void> {
 		return new Promise((resolve, reject) => {
 			if (!(view instanceof View)) {
-				throw new Error(`Invalid open view: ${view}`);
+				return reject(new Error(`Invalid open view: ${view}`));
 			}
 
 			if (this.hasChild(view)) {
-				throw new Error(`${view} has already been added`);
+				return reject(new Error(`${view} has already been added`));
 			}
 
 			const enterAnimationDefinition = options.animation ? options.animation.enterFrom : null;
@@ -65,7 +65,7 @@ export class RootLayoutBase extends GridLayout {
 						resolve();
 					})
 					.catch((ex) => {
-						throw new Error(`Error playing enter animation: ${ex}`);
+						reject(new Error(`Error playing enter animation: ${ex}`));
 					});
 			});
 		});
@@ -76,11 +76,11 @@ export class RootLayoutBase extends GridLayout {
 	close(view: View, exitTo?: TransitionAnimation): Promise<void> {
 		return new Promise((resolve, reject) => {
 			if (!(view instanceof View)) {
-				throw new Error(`Invalid close view: ${view}`);
+				return reject(new Error(`Invalid close view: ${view}`));
 			}
 
 			if (!this.hasChild(view)) {
-				throw new Error(`Unable to close popup. ${view} not found`);
+				return reject(new Error(`Unable to close popup. ${view} not found`));
 			}
 
 			const popupIndex = this.getPopupIndex(view);
@@ -114,7 +114,7 @@ export class RootLayoutBase extends GridLayout {
 					.play()
 					.then(cleanupAndFinish.bind(this))
 					.catch((ex) => {
-						throw new Error(`Error playing exit animation: ${ex}`);
+						reject(new Error(`Error playing exit animation: ${ex}`));
 					});
 			} else {
 				cleanupAndFinish();
@@ -177,17 +177,17 @@ export class RootLayoutBase extends GridLayout {
 	bringToFront(view: View, animated: boolean = false): Promise<void> {
 		return new Promise((resolve, reject) => {
 			if (!(view instanceof View)) {
-				throw new Error(`Invalid bringToFront view: ${view}`);
+				return reject(new Error(`Invalid bringToFront view: ${view}`));
 			}
 
 			if (!this.hasChild(view)) {
-				throw new Error(`${view} not found or already at topmost`);
+				return reject(new Error(`${view} not found or already at topmost`));
 			}
 
 			const popupIndex = this.getPopupIndex(view);
 			// popupview should be present and not already the topmost view
 			if (popupIndex < 0 || popupIndex == this.popupViews.length - 1) {
-				throw new Error(`${view} not found or already at topmost`);
+				return reject(new Error(`${view} not found or already at topmost`));
 			}
 
 			// keep the popupViews array in sync with the stacking of the views
@@ -197,6 +197,7 @@ export class RootLayoutBase extends GridLayout {
 
 			const exitAnimation = this.getViewExitState(view);
 			if (animated && exitAnimation) {
+				let error = null;
 				this.getExitAnimation(view, exitAnimation)
 					.play()
 					.then(() => {
@@ -210,7 +211,7 @@ export class RootLayoutBase extends GridLayout {
 									this.applyDefaultState(view);
 								})
 								.catch((ex) => {
-									throw new Error(`Error playing enter animation: ${ex}`);
+									error = new Error(`Error playing enter animation: ${ex}`);
 								});
 						} else {
 							this.applyDefaultState(view);
@@ -218,8 +219,12 @@ export class RootLayoutBase extends GridLayout {
 					})
 					.catch((ex) => {
 						this._bringToFront(view);
-						throw new Error(`Error playing exit animation: ${ex}`);
+						error = new Error(`Error playing exit animation: ${ex}`);
 					});
+
+				if (error != null) {
+					return reject(error);
+				}
 			} else {
 				this._bringToFront(view);
 			}
