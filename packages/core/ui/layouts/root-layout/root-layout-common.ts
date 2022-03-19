@@ -65,7 +65,7 @@ export class RootLayoutBase extends GridLayout {
 						resolve();
 					})
 					.catch((ex) => {
-						reject(`Error playing enter animation: ${ex}`);
+						throw new Error(`Error playing enter animation: ${ex}`);
 					});
 			});
 		});
@@ -114,7 +114,7 @@ export class RootLayoutBase extends GridLayout {
 					.play()
 					.then(cleanupAndFinish.bind(this))
 					.catch((ex) => {
-						reject(`Error playing exit animation: ${ex}`);
+						throw new Error(`Error playing exit animation: ${ex}`);
 					});
 			} else {
 				cleanupAndFinish();
@@ -210,7 +210,7 @@ export class RootLayoutBase extends GridLayout {
 									this.applyDefaultState(view);
 								})
 								.catch((ex) => {
-									reject(`Error playing enter animation: ${ex}`);
+									throw new Error(`Error playing enter animation: ${ex}`);
 								});
 						} else {
 							this.applyDefaultState(view);
@@ -218,7 +218,7 @@ export class RootLayoutBase extends GridLayout {
 					})
 					.catch((ex) => {
 						this._bringToFront(view);
-						reject(`Error playing exit animation: ${ex}`);
+						throw new Error(`Error playing exit animation: ${ex}`);
 					});
 			} else {
 				this._bringToFront(view);
