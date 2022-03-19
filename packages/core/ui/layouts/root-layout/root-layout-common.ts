@@ -197,7 +197,6 @@ export class RootLayoutBase extends GridLayout {
 
 			const exitAnimation = this.getViewExitState(view);
 			if (animated && exitAnimation) {
-				let error = null;
 				this.getExitAnimation(view, exitAnimation)
 					.play()
 					.then(() => {
@@ -211,7 +210,7 @@ export class RootLayoutBase extends GridLayout {
 									this.applyDefaultState(view);
 								})
 								.catch((ex) => {
-									error = new Error(`Error playing enter animation: ${ex}`);
+									reject(new Error(`Error playing enter animation: ${ex}`));
 								});
 						} else {
 							this.applyDefaultState(view);
@@ -219,12 +218,8 @@ export class RootLayoutBase extends GridLayout {
 					})
 					.catch((ex) => {
 						this._bringToFront(view);
-						error = new Error(`Error playing exit animation: ${ex}`);
+						reject(new Error(`Error playing exit animation: ${ex}`));
 					});
-
-				if (error != null) {
-					return reject(error);
-				}
 			} else {
 				this._bringToFront(view);
 			}
