@@ -253,13 +253,14 @@ export class ActionBar extends ActionBarBase {
 		// TODO: This could cause issue when canceling BackEdge gesture - we will change the backIndicator to
 		// show the one from the old page but the new page will still be visible (because we canceled EdgeBackSwipe gesutre)
 		// Consider moving this to new method and call it from - navigationControllerDidShowViewControllerAnimated.
-		if (img) {
-			const image = img.imageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+		const image = img ? img.imageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal) : null;
+		if (majorVersion >= 15) {
+			const appearance = this._getAppearance(navigationBar);
+			appearance.setBackIndicatorImageTransitionMaskImage(image, image);
+			this._updateAppearance(navigationBar, appearance);
+		} else {
 			navigationBar.backIndicatorImage = image;
 			navigationBar.backIndicatorTransitionMaskImage = image;
-		} else {
-			navigationBar.backIndicatorImage = null;
-			navigationBar.backIndicatorTransitionMaskImage = null;
 		}
 
 		// Set back button visibility
