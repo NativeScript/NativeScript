@@ -254,9 +254,14 @@ export class ActionBar extends ActionBarBase {
 		// show the one from the old page but the new page will still be visible (because we canceled EdgeBackSwipe gesutre)
 		// Consider moving this to new method and call it from - navigationControllerDidShowViewControllerAnimated.
 		const image = img ? img.imageWithRenderingMode(1 /* AlwaysOriginal */) : null;
-		const appearance = this._getAppearance(navigationBar);
-		appearance.setBackIndicatorImageTransitionMaskImage(image, image);
-		this._updateAppearance(navigationBar, appearance);
+		if (majorVersion >= 15) {
+			const appearance = this._getAppearance(navigationBar);
+			appearance.setBackIndicatorImageTransitionMaskImage(image, image);
+			this._updateAppearance(navigationBar, appearance);
+		} else {
+			navigationBar.backIndicatorImage = image;
+			navigationBar.backIndicatorTransitionMaskImage = image;
+		}
 
 		// Set back button visibility
 		if (this.navigationButton) {
