@@ -25,6 +25,21 @@ export class RootLayoutBase extends GridLayout {
 		super.onLoaded();
 	}
 
+	public _onLivesync(context?: ModuleContext): boolean {
+		let handled = false;
+
+		if (this.popupViews.length > 0) {
+			this.closeAll();
+			handled = true;
+		}
+
+		if (super._onLivesync(context)) {
+			handled = true;
+		}
+
+		return handled;
+	}
+
 	// ability to add any view instance to composite views like layers
 	open(view: View, options: RootLayoutOptions = {}): Promise<void> {
 		return new Promise((resolve, reject) => {
