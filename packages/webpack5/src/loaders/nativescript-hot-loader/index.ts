@@ -1,6 +1,6 @@
-import { relative, resolve } from 'path';
+import { relative } from 'path';
 import dedent from 'ts-dedent';
-import fs from 'fs';
+import { includeHmrInRuntime } from './hmr-runtime';
 
 // note: this will bail even if module.hot appears in a comment
 const MODULE_HOT_RE = /module\.hot/;
@@ -10,25 +10,22 @@ export default function loader(content: string, map: any) {
 		// Code already handles HMR - we don't need to do anything
 		return this.callback(null, content, map);
 	}
+
 	const opts = this.getOptions();
 
 	// used to inject the HMR runtime into the entry file
 	if (opts.injectHMRRuntime) {
-		const hmrRuntimePath = resolve(__dirname, './hmr.runtime.js');
-		const hmrRuntime = fs
-			.readFileSync(hmrRuntimePath)
-			.toString()
-			.split('// ---')[1]
-			.replace('//# sourceMappingURL=hmr.runtime.js.map', '');
-
-		return this.callback(null, `${content}\n${hmrRuntime}`, map);
+		return this.callback(
+			null,
+			`${content}\n${includeHmrInRuntime.toString()}\nincludeHmrInRuntime()`,
+			map
+		);
 	}
 
 	const relativePath = relative(
 		opts.appPath ?? this.rootContext,
 		this.resourcePath
 	).replace(/\\/g, '/');
-
 	const hmrCode = this.hot
 		? dedent`
 			/* NATIVESCRIPT-HOT-LOADER */
