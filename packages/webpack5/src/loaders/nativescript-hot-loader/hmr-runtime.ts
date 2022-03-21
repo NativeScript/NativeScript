@@ -65,7 +65,7 @@ export function includeHmrInRuntime() {
 
 					originalOnLiveSync = function () {
 						originalOnLiveSync = onLiveSyncCallback;
-						onLiveSyncCallback({ type: extMap[ext], moduleId: info.moduleId });
+						onLiveSyncCallback({ type: extMap[ext], path: info.moduleId });
 						// Code here will not be reached during first live-sync call
 					};
 				}
