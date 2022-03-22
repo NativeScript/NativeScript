@@ -58,6 +58,7 @@ export function includeHmrInRuntime() {
 				// console.log('accepted', info)
 				logVerbose('Module Accepted', info);
 
+				// Append context to live-sync callback using a wrapper
 				if (info.outdatedModules.includes(info.moduleId)) {
 					const splitPath = info.moduleId.split('.');
 					const ext = splitPath[splitPath.length - 1];
