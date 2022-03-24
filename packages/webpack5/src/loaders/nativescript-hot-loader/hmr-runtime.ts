@@ -15,7 +15,6 @@ export function includeHmrInRuntime() {
 		};
 
 		let hash = __webpack_require__.h();
-		let originalOnLiveSync = global.__onLiveSync;
 
 		const logVerbose = (title: string, ...info: any) => {
 			if (__NS_ENV_VERBOSE__) {
@@ -57,19 +56,6 @@ export function includeHmrInRuntime() {
 			onAccepted(info) {
 				// console.log('accepted', info)
 				logVerbose('Module Accepted', info);
-
-				// Append context to live-sync callback using a wrapper
-				if (info.outdatedModules.includes(info.moduleId)) {
-					const splitPath = info.moduleId.split('.');
-					const ext = splitPath[splitPath.length - 1];
-					const onLiveSyncCallback = originalOnLiveSync;
-
-					originalOnLiveSync = function () {
-						originalOnLiveSync = onLiveSyncCallback;
-						onLiveSyncCallback({ type: extMap[ext], path: info.moduleId });
-						// Code here will not be reached during first live-sync call
-					};
-				}
 			},
 			onDisposed(info) {
 				// console.log('disposed', info)
@@ -83,36 +69,39 @@ export function includeHmrInRuntime() {
 		const checkAndApply = async () => {
 			hash = __webpack_require__.h();
 			const modules = await module.hot.check().catch((error) => {
-				return setStatus(
+				setStatus(
 					hash,
 					'failure',
 					'Failed to check.',
 					error.message || error.stack
 				);
+				return null;
 			});
 
 			if (!modules) {
 				logVerbose('No modules to apply.');
-				return false;
+				return null;
 			}
 
 			const appliedModules = await module.hot
 				.apply(applyOptions)
 				.catch((error) => {
-					return setStatus(
+					setStatus(
 						hash,
 						'failure',
 						'Failed to apply.',
 						error.message || error.stack
 					);
+					return null;
 				});
 
-			if (!appliedModules) {
+			if (!appliedModules || !appliedModules.length) {
 				logVerbose('No modules applied.');
-				return false;
+				return null;
 			}
 
-			return setStatus(hash, 'success', 'Successfully applied update.');
+			setStatus(hash, 'success', 'Successfully applied update.');
+			return appliedModules;
 		};
 
 		const requireExists = (path) => {
@@ -131,6 +120,7 @@ export function includeHmrInRuntime() {
 			].some((path) => requireExists(path));
 		};
 
+		const originalOnLiveSync = global.__onLiveSync;
 		global.__onLiveSync = async function () {
 			logVerbose('LiveSync');
 
@@ -138,8 +128,17 @@ export function includeHmrInRuntime() {
 				return;
 			}
 
-			await checkAndApply();
-			originalOnLiveSync();
+			let context;
+			const appliedModules = await checkAndApply();
+
+			// Append context to live-sync callback
+			if (appliedModules) {
+				const path = appliedModules[0];
+				const splitPath = path.split('.');
+				const ext = splitPath[splitPath.length - 1];
+				context = { type: extMap[ext], path };
+			}
+			originalOnLiveSync(context);
 		};
 	}
 }
