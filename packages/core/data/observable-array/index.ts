@@ -130,6 +130,10 @@ export class ObservableArray<T> extends Observable {
 		}
 	}
 
+	toJSON(): Array<any> {
+		return this._array;
+	}
+
 	/**
 	 * Returns a string representation of an array.
 	 */

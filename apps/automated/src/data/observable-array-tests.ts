@@ -649,12 +649,16 @@ export const test_findIndex_isDefined = function () {
 	TKUnit.assert(typeof array.findIndex === 'function', "Method 'findIndex()' should be defined!");
 };
 
+export const test_toJSON_isDefined = function () {
+	TKUnit.assert(typeof array.toJSON === 'function', "Method 'toJSON()' should be defined!");
+};
+
 export const test_toString_isDefined = function () {
 	TKUnit.assert(typeof array.toString === 'function', "Method 'toString()' should be defined!");
 };
 
 export const test_toLocaleString_isDefined = function () {
-	TKUnit.assert(typeof array.toLocaleString === 'function', "Method 'toString()' should be defined!");
+	TKUnit.assert(typeof array.toLocaleString === 'function', "Method 'toLocaleString()' should be defined!");
 };
 
 export const test_concat_isDefined = function () {
