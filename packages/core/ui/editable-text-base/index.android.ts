@@ -12,7 +12,7 @@ const sdkVersion = lazy(() => parseInt(Device.sdkVersion));
 
 //https://github.com/NativeScript/NativeScript/issues/2942
 export let dismissKeyboardTimeoutId: NodeJS.Timer;
-export let dismissKeyboardOwner: WeakRef<EditableTextBase>;
+// export let dismissKeyboardOwner: WeakRef<EditableTextBase>;
 
 interface EditTextListeners extends android.text.TextWatcher, android.view.View.OnFocusChangeListener, android.widget.TextView.OnEditorActionListener {}
 
@@ -24,7 +24,7 @@ interface EditTextListenersClass {
 let EditTextListeners: EditTextListenersClass;
 
 function clearDismissTimer(): void {
-	dismissKeyboardOwner = null;
+	// dismissKeyboardOwner = null;
 	if (dismissKeyboardTimeoutId) {
 		clearTimeout(dismissKeyboardTimeoutId);
 		dismissKeyboardTimeoutId = null;
@@ -35,11 +35,11 @@ function dismissSoftInput(owner: EditableTextBase): void {
 	clearDismissTimer();
 	if (!dismissKeyboardTimeoutId) {
 		dismissKeyboardTimeoutId = setTimeout(() => {
-			const owner = dismissKeyboardOwner && dismissKeyboardOwner.get();
+			// const owner = dismissKeyboardOwner && dismissKeyboardOwner.get();
 			const activity = (owner && owner._context) as androidx.appcompat.app.AppCompatActivity;
 			const nativeView = owner && owner.nativeViewProtected;
 			dismissKeyboardTimeoutId = null;
-			dismissKeyboardOwner = null;
+			// dismissKeyboardOwner = null;
 			const focused = activity && activity.getCurrentFocus();
 			if (!focused || !(focused instanceof android.widget.EditText)) {
 				ad.dismissSoftInput(nativeView);
