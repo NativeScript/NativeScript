@@ -155,10 +155,35 @@ export function throttle(fn: any, delay = 300) {
 	};
 }
 
+let throttledGC: Map<number, () => void>;
+let debouncedGC: Map<number, () => void>;
+
 export function queueGC(delay = 900, useThrottle?: boolean) {
+	/**
+	 * developers can use different queueGC settings to optimize their own apps
+	 * each setting is stored in a Map to reuse each time app calls it
+	 */
 	if (useThrottle) {
-		throttle(() => GC(), delay);
+		if (!throttledGC) {
+			throttledGC = new Map();
+		}
+		if (!throttledGC.get(delay)) {
+			throttledGC.set(
+				delay,
+				throttle(() => GC(), delay)
+			);
+		}
+		throttledGC.get(delay)();
 	} else {
-		debounce(() => GC(), delay);
+		if (!debouncedGC) {
+			debouncedGC = new Map();
+		}
+		if (!debouncedGC.get(delay)) {
+			debouncedGC.set(
+				delay,
+				debounce(() => GC(), delay)
+			);
+		}
+		debouncedGC.get(delay)();
 	}
 }
