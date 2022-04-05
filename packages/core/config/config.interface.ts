@@ -123,7 +123,7 @@ interface IConfigHook {
 	 *	* `buildAndroid` - Builds Android app
 	 *	* `buildIOS` - Builds iOS app
 	 *	* `checkEnvironment` - Validate project env, runs during ns doctor, clean, and most build commands
-	 *	* `checkForChanges` - Changes occured during watch
+	 *	* `checkForChanges` - Changes occurred during watch
 	 *	* `install` - Application installed to device/emulator
 	 *	* `prepare` - Compiles webpack and prepares native app in platforms folder
 	 *	* `prepareNativeApp` - Preparing the actual native app, runs during prepare/watch hook
