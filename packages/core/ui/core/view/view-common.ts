@@ -194,12 +194,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
 		let handled = false;
 
-		const rootLayout = global.rootLayout;
-		if (rootLayout != null && rootLayout.topmost() != null) {
-			rootLayout.closeAll();
-			handled = true;
-		}
-
 		if (this._closeAllModalViewsInternal()) {
 			handled = true;
 		}
