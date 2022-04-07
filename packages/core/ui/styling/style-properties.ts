@@ -876,7 +876,7 @@ function parseBorderColor(value: string): { top: Color; right: Color; bottom: Co
 		bottom: undefined,
 		left: undefined,
 	};
-	if (value.indexOf('rgb') === 0) {
+	if (value.indexOf('rgb') === 0 || value.indexOf('hsl') === 0) {
 		result.top = result.right = result.bottom = result.left = new Color(value);
 
 		return result;

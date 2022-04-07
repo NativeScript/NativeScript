@@ -1,3 +1,28 @@
+## [8.2.2](https://github.com/NativeScript/NativeScript/compare/8.2.1-core...8.2.2) (2022-04-07)
+
+
+### Bug Fixes
+
+* **ActionItem:** rendering threw errors if it had a nested child. ([#9821](https://github.com/NativeScript/NativeScript/issues/9821)) ([efa80c7](https://github.com/NativeScript/NativeScript/commit/efa80c728b172c4d2b6dfb7bb502f4b7e8871591))
+* **android:** gesture events fix ([#9842](https://github.com/NativeScript/NativeScript/issues/9842)) ([2664783](https://github.com/NativeScript/NativeScript/commit/2664783dfa773f373a93fd427b3d5c01964975b2))
+* **css:** borderColor parse handling for hsl(a) color values ([#9857](https://github.com/NativeScript/NativeScript/issues/9857)) ([da3bd2c](https://github.com/NativeScript/NativeScript/commit/da3bd2c6fb8e51b303b163812c348fb4ca938f5b))
+* **ios:** navigation button now allows using custom icon ([#9835](https://github.com/NativeScript/NativeScript/issues/9835)) ([f88c158](https://github.com/NativeScript/NativeScript/commit/f88c158b384fee7afec9770b257a4312e715b6ec))
+* **RootLayout:** close popup views on live-sync ([#9834](https://github.com/NativeScript/NativeScript/issues/9834)) ([6941466](https://github.com/NativeScript/NativeScript/commit/694146689b7729280aa99cd393848ede78d6cd37))
+* Utils.queueGC debounce and throttle with reuse of different settings ([#9852](https://github.com/NativeScript/NativeScript/issues/9852)) ([9ce7455](https://github.com/NativeScript/NativeScript/commit/9ce745568f1dfdfa9b1d26021a83408a72db8e16))
+
+
+### Features
+
+* **RootLayout:** added topmost method to retrieve view at top ([#9826](https://github.com/NativeScript/NativeScript/issues/9826)) ([3bb8fc2](https://github.com/NativeScript/NativeScript/commit/3bb8fc28e998a153a561ef331645b84e58a827a3))
+* **TouchManager:** touchDelay property for nested tap control ([c05145b](https://github.com/NativeScript/NativeScript/commit/c05145bd9b62cb017349acf46827fec929b3289c))
+
+
+### Performance Improvements
+
+* Improved live-sync functionality for RootLayout ([#9836](https://github.com/NativeScript/NativeScript/issues/9836)) ([3537858](https://github.com/NativeScript/NativeScript/commit/3537858b6dabe1d419a1ab2853d0188061d9fa23))
+
+
+
 ## [8.2.1](https://github.com/NativeScript/NativeScript/compare/8.2.0-core...8.2.1) (2022-03-09)
 
 

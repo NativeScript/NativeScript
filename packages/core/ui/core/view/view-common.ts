@@ -83,6 +83,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
 	public touchAnimation: boolean | TouchAnimationOptions;
 	public ignoreTouchAnimation: boolean;
+	public touchDelay: number;
 
 	protected _closeModalCallback: Function;
 	public _manager: any;
@@ -195,12 +196,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		}
 
 		let handled = false;
-
-		const rootLayout = global.rootLayout;
-		if (rootLayout != null && rootLayout.topmost() != null) {
-			rootLayout.closeAll();
-			handled = true;
-		}
 
 		if (this._closeAllModalViewsInternal()) {
 			handled = true;
@@ -1217,6 +1212,15 @@ const ignoreTouchAnimationProperty = new Property<ViewCommon, boolean>({
 	valueConverter: booleanConverter,
 });
 ignoreTouchAnimationProperty.register(ViewCommon);
+
+const touchDelayProperty = new Property<ViewCommon, number>({
+	name: 'touchDelay',
+	valueChanged(view, oldValue, newValue) {
+		view.touchDelay = newValue;
+	},
+	valueConverter: (v) => parseFloat(v),
+});
+touchDelayProperty.register(ViewCommon);
 
 export const testIDProperty = new Property<ViewCommon, string>({
 	name: 'testID',
