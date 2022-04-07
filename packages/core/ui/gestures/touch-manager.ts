@@ -92,7 +92,7 @@ export class TouchManager {
 				if (handleDown || handleUp) {
 					view.on(GestureEvents.gestureAttached, (args: GestureEventData) => {
 						if (args.type === GestureTypes.longPress) {
-							(<UILongPressGestureRecognizer>args.ios).minimumPressDuration = 0;
+							(<UILongPressGestureRecognizer>args.ios).minimumPressDuration = (<View>args.object)?.touchDelay || 0;
 						}
 					});
 					view.on(GestureTypes.longPress, (args: GestureEventDataWithState) => {
