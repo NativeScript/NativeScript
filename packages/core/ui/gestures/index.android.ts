@@ -330,7 +330,7 @@ export class GesturesObserver extends GesturesObserverBase {
 				object: this.target,
 				type,
 				view: this.target,
-				ios: recognizer,
+				android: recognizer,
 			});
 		}
 	}
