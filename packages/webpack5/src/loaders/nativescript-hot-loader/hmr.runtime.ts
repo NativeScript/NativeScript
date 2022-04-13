@@ -93,7 +93,7 @@ if (module.hot) {
 
 	const requireExists = (path) => {
 		try {
-			__non_webpack_require__(path);
+			global['require'](path);
 			return true;
 		} catch (err) {
 			return false;
@@ -112,7 +112,7 @@ if (module.hot) {
 		logVerbose('LiveSync');
 
 		if (!hasUpdate()) {
-			return;
+			return false;
 		}
 
 		await checkAndApply();
