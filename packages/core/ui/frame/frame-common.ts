@@ -742,7 +742,7 @@ export function _stack(): Array<FrameBase> {
 export const defaultPage = new Property<FrameBase, string>({
 	name: 'defaultPage',
 	valueChanged: (frame: FrameBase, oldValue: string, newValue: string) => {
-		frame.navigate({ moduleName: newValue });
+		frame.navigate({ moduleName: newValue, clearHistory: true });
 	},
 });
 defaultPage.register(FrameBase);
