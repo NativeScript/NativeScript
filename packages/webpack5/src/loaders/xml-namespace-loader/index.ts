@@ -72,13 +72,14 @@ async function parseXML(content: string): Promise<ParseResult> {
 		const localNamespacePath = join(this.rootContext, namespace);
 		const localModulePath = join(localNamespacePath, elementName);
 
+		// Check namespaces before module names as a folder may contain an index file with exports
 		const resolvePaths = [
 			localNamespacePath,
 			localModulePath,
-			moduleName,
 			namespace,
-			`~/${moduleName}`,
+			moduleName,
 			`~/${namespace}`,
+			`~/${moduleName}`,
 		];
 
 		// fallbacks for codeless namespaces
