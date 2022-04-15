@@ -474,3 +474,6 @@ export class FileSystemAccess {
 		return iOSNativeHelper.joinPaths(...paths);
 	}
 }
+
+// stub to avoid cross platform warning
+export class FileSystemAccess29 extends FileSystemAccess {}
