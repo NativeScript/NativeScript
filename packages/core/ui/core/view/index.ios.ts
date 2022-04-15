@@ -64,6 +64,10 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	public requestLayout(): void {
+		if (this.isLayoutRequested) {
+			return;
+		}
+
 		super.requestLayout();
 		this._privateFlags |= PFLAG_FORCE_LAYOUT;
 
