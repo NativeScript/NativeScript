@@ -126,6 +126,26 @@ export class FileSystemEntity {
 			return;
 		}
 
+		const localError = function (error) {
+			if (onError) {
+				onError(error);
+			}
+
+			return null;
+		};
+
+		const fileAccess = getFileAccess();
+		// call rename for FileSystemAccess29
+		if ((<any>fileAccess).__skip) {
+			fileAccess.rename(this.path, newName, localError);
+			const fileInfo = getFileAccess().getFile(this.path, null);
+			if (fileInfo) {
+				this._name = fileInfo.name;
+				this._extension = fileInfo.extension;
+			}
+			return;
+		}
+
 		const parentFolder = this.parent;
 		if (!parentFolder) {
 			if (onError) {
@@ -135,17 +155,8 @@ export class FileSystemEntity {
 			return;
 		}
 
-		const fileAccess = getFileAccess();
 		const path = parentFolder.path;
 		const newPath = fileAccess.joinPath(path, newName);
-
-		const localError = function (error) {
-			if (onError) {
-				onError(error);
-			}
-
-			return null;
-		};
 
 		fileAccess.rename(this.path, newPath, localError);
 		this._path = newPath;
