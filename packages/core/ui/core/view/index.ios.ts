@@ -64,11 +64,13 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	public requestLayout(): void {
+		super.requestLayout();
+
+		// Do not call 'setNeedsLayout' for views that have already requested a layout update
 		if (this.isLayoutRequested) {
 			return;
 		}
 
-		super.requestLayout();
 		this._privateFlags |= PFLAG_FORCE_LAYOUT;
 
 		const nativeView = this.nativeViewProtected;
