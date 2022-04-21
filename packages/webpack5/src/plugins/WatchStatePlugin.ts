@@ -55,16 +55,24 @@ export class WatchStatePlugin {
 			}
 
 			// logic taken from CleanWebpackPlugin
-			const assets =
-				stats.toJson(
-					{
-						assets: true,
-					},
-					true
-				).assets || [];
-			const assetList = assets.map((asset) => asset.name);
+			// const assets =
+			// 	stats.toJson(
+			// 		{
+			// 			assets: true,
+			// 		},
+			// 		true
+			// 	).assets || [];
+			// const assetList = assets.map((asset) => asset.name);
 
+			// const emittedAssets = Array.from(compilation.emittedAssets);
+
+			const assetList = Object.keys(compilation.assets);
 			const emittedAssets = Array.from(compilation.emittedAssets);
+
+			if (!prevAssets.length && emittedAssets.length < assetList.length) {
+				emittedAssets.push(...assetList);
+			}
+
 			const staleAssets = prevAssets.filter((asset) => {
 				return assetList.includes(asset) === false;
 			});
