@@ -63,6 +63,14 @@ export class View extends ViewCommon implements ViewDefinition {
 		this.once(View.loadedEvent, () => setupAccessibleView(this));
 	}
 
+	disposeNativeView() {
+		super.disposeNativeView();
+
+		this._cachedFrame = null;
+		this._isLaidOut = false;
+		this._hasTransform = false;
+	}
+
 	public requestLayout(): void {
 		super.requestLayout();
 		this._privateFlags |= PFLAG_FORCE_LAYOUT;
