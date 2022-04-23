@@ -37,7 +37,7 @@ export class View extends ViewCommon implements ViewDefinition {
 	 */
 	private _modalAnimatedOptions: Array<boolean>;
 	private _isLaidOut = false;
-	private _hasTransfrom = false;
+	private _hasTransform = false;
 	private _privateFlags: number = PFLAG_LAYOUT_REQUIRED | PFLAG_FORCE_LAYOUT;
 	private _cachedFrame: CGRect;
 	private _suspendCATransaction = false;
@@ -175,7 +175,7 @@ export class View extends ViewCommon implements ViewDefinition {
 			this._cachedFrame = frame;
 			let adjustedFrame = null;
 			let transform = null;
-			if (this._hasTransfrom) {
+			if (this._hasTransform) {
 				// Always set identity transform before setting frame;
 				transform = nativeView.layer.transform;
 				nativeView.layer.transform = CATransform3DIdentity;
@@ -189,7 +189,7 @@ export class View extends ViewCommon implements ViewDefinition {
 				nativeView.frame = adjustedFrame;
 			}
 
-			if (this._hasTransfrom) {
+			if (this._hasTransform) {
 				// re-apply the transform after the frame is adjusted
 				nativeView.layer.transform = transform;
 			}
@@ -378,12 +378,12 @@ export class View extends ViewCommon implements ViewDefinition {
 		transform = iOSNativeHelper.applyRotateTransform(transform, this.rotateX, this.rotateY, this.rotate);
 		transform = CATransform3DScale(transform, scaleX, scaleY, 1);
 		if (!CATransform3DEqualToTransform(this.nativeViewProtected.layer.transform, transform)) {
-			const updateSuspended = this._isPresentationLayerUpdateSuspeneded();
+			const updateSuspended = this._isPresentationLayerUpdateSuspended();
 			if (!updateSuspended) {
 				CATransaction.begin();
 			}
 			this.nativeViewProtected.layer.transform = transform;
-			this._hasTransfrom = this.nativeViewProtected && !CATransform3DEqualToTransform(this.nativeViewProtected.transform3D, CATransform3DIdentity);
+			this._hasTransform = this.nativeViewProtected && !CATransform3DEqualToTransform(this.nativeViewProtected.transform3D, CATransform3DIdentity);
 			if (!updateSuspended) {
 				CATransaction.commit();
 			}
@@ -409,7 +409,7 @@ export class View extends ViewCommon implements ViewDefinition {
 		this._suspendCATransaction = false;
 	}
 
-	public _isPresentationLayerUpdateSuspeneded(): boolean {
+	public _isPresentationLayerUpdateSuspended(): boolean {
 		return this._suspendCATransaction || this._suspendNativeUpdatesCount > 0;
 	}
 
@@ -689,7 +689,7 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 	[opacityProperty.setNative](value: number) {
 		const nativeView = this.nativeViewProtected;
-		const updateSuspended = this._isPresentationLayerUpdateSuspeneded();
+		const updateSuspended = this._isPresentationLayerUpdateSuspended();
 		if (!updateSuspended) {
 			CATransaction.begin();
 		}
@@ -845,7 +845,7 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	_redrawNativeBackground(value: UIColor | Background): void {
-		const updateSuspended = this._isPresentationLayerUpdateSuspeneded();
+		const updateSuspended = this._isPresentationLayerUpdateSuspended();
 		if (!updateSuspended) {
 			CATransaction.begin();
 		}
