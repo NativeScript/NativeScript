@@ -70,6 +70,7 @@ export class View extends ViewCommon implements ViewDefinition {
 		this._cachedFrame = null;
 		this._isLaidOut = false;
 		this._hasTransform = false;
+		this._hasPendingTransform = false;
 	}
 
 	public requestLayout(): void {
