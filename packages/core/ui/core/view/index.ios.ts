@@ -38,6 +38,7 @@ export class View extends ViewCommon implements ViewDefinition {
 	private _modalAnimatedOptions: Array<boolean>;
 	private _isLaidOut = false;
 	private _hasTransform = false;
+	private _hasPendingTransform = false;
 	private _privateFlags: number = PFLAG_LAYOUT_REQUIRED | PFLAG_FORCE_LAYOUT;
 	private _cachedFrame: CGRect;
 	private _suspendCATransaction = false;
@@ -127,6 +128,10 @@ export class View extends ViewCommon implements ViewDefinition {
 		}
 
 		this.updateBackground(sizeChanged);
+		if (this._hasPendingTransform) {
+			this.updateNativeTransform();
+			this._hasPendingTransform = false;
+		}
 		this._privateFlags &= ~PFLAG_FORCE_LAYOUT;
 	}
 
@@ -371,6 +376,11 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	public updateNativeTransform() {
+		if (!this.isLayoutValid) {
+			this._hasPendingTransform = true;
+			return;
+		}
+
 		const scaleX = this.scaleX || 1e-6;
 		const scaleY = this.scaleY || 1e-6;
 		const perspective = this.perspective || 300;
