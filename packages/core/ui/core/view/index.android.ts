@@ -345,7 +345,7 @@ export class View extends ViewCommon {
 		const isLayoutEvent = typeof eventNames === 'string' ? eventNames.indexOf(ViewCommon.layoutChangedEvent) !== -1 : false;
 
 		// Remove native listener only if there are no more user listeners for LayoutChanged event
-		if (this.isLoaded && this.layoutChangeListenerIsSet && isLayoutEvent && !this.hasListeners(ViewCommon.layoutChangedEvent)) {
+		if (this.isLoaded && this.layoutChangeListenerIsSet && isLayoutEvent && !this.needsOnLayoutChangeListener()) {
 			this.nativeViewProtected.removeOnLayoutChangeListener(this.layoutChangeListener);
 			this.layoutChangeListenerIsSet = false;
 		}
@@ -464,9 +464,13 @@ export class View extends ViewCommon {
 		super.initNativeView();
 		this._isClickable = this.nativeViewProtected.isClickable();
 
-		if (this.hasListeners(ViewCommon.layoutChangedEvent)) {
+		if (this.needsOnLayoutChangeListener()) {
 			this.setOnLayoutChangeListener();
 		}
+	}
+
+	public needsOnLayoutChangeListener() {
+		return this.hasListeners(ViewCommon.layoutChangedEvent);
 	}
 
 	public disposeNativeView(): void {
