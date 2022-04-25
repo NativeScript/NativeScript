@@ -228,6 +228,12 @@ export function queueMacrotask(task: () => void): void;
 export function executeOnMainThread(func: Function);
 
 /**
+ * Runs the passed function on the UI Thread.
+ * @param func The function to execute on the UI thread.
+ */
+export function executeOnUIThread(func: Function);
+
+/**
  * Returns a function wrapper which executes the supplied function on the main thread.
  * The wrapper behaves like the original function and passes all of its arguments BUT
  * discards its return value.
