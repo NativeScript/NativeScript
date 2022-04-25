@@ -103,7 +103,7 @@ export type { InstrumentationMode, TimerInfo } from './profiling';
 export { encoding } from './text';
 export * from './trace';
 export * from './ui';
-import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, iOSNativeHelper as iosUtils, Source, escapeRegexSymbols, convertString, dismissSoftInput, queueMacrotask, queueGC, throttle, debounce } from './utils';
+import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, executeOnUIThread, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, iOSNativeHelper as iosUtils, Source, escapeRegexSymbols, convertString, dismissSoftInput, queueMacrotask, queueGC, throttle, debounce } from './utils';
 import { ClassInfo, getClass, getBaseClasses, getClassInfo, isBoolean, isDefined, isFunction, isNullOrUndefined, isNumber, isObject, isString, isUndefined, toUIString, verifyCallback } from './utils/types';
 export declare const Utils: {
 	GC: typeof GC;
@@ -117,6 +117,7 @@ export declare const Utils: {
 	isDataURI: typeof isDataURI;
 	isFileOrResourcePath: typeof isFileOrResourcePath;
 	executeOnMainThread: typeof executeOnMainThread;
+	executeOnUIThread: typeof executeOnUIThread;
 	mainThreadify: typeof mainThreadify;
 	isMainThread: typeof isMainThread;
 	dispatchToMainThread: typeof dispatchToMainThread;
