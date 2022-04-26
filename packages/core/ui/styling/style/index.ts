@@ -146,6 +146,8 @@ export class Style extends Observable implements StyleDefinition {
 	public fontWeight: FontWeight;
 	public font: string;
 
+	public maxLines: number;
+
 	public androidElevation: number;
 	public androidDynamicElevationOffset: number;
 	public zIndex: number;

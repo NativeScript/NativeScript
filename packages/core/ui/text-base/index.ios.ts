@@ -13,6 +13,7 @@ import { isString, isNullOrUndefined } from '../../utils/types';
 import { iOSNativeHelper } from '../../utils';
 import { Trace } from '../../trace';
 import { CoreTypes } from '../../core-types';
+import { maxLinesProperty } from './text-base-common';
 
 export * from './text-base-common';
 
@@ -195,6 +196,23 @@ export class TextBase extends TextBaseCommon {
 
 	[textShadowProperty.setNative](value: CSSShadow) {
 		this._setShadow(value);
+	}
+
+	[maxLinesProperty.setNative](value: number) {
+		const nativeTextViewProtected = this.nativeTextViewProtected;
+		if (nativeTextViewProtected instanceof UITextView) {
+			nativeTextViewProtected.textContainer.maximumNumberOfLines = value;
+
+			if (value !== 0) {
+				nativeTextViewProtected.textContainer.lineBreakMode = NSLineBreakMode.ByTruncatingTail;
+			} else {
+				nativeTextViewProtected.textContainer.lineBreakMode = NSLineBreakMode.ByWordWrapping;
+			}
+		} else if (nativeTextViewProtected instanceof UILabel) {
+			nativeTextViewProtected.numberOfLines = value;
+		} else if (nativeTextViewProtected instanceof UIButton) {
+			nativeTextViewProtected.titleLabel.numberOfLines = value;
+		}
 	}
 
 	_setColor(color: UIColor): void {
