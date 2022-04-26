@@ -170,6 +170,18 @@ export function systemAppearanceChanged(rootView: View, newSystemAppearance: 'da
 	});
 }
 
+export let inBackground = false;
+export let suspended = false;
+
+export function setInBackground(value: boolean): void {
+	inBackground = value;
+}
+export function setSuspended(value: boolean): void {
+	suspended = value;
+}
+
+
+
 global.__onUncaughtError = function (error: NativeScriptError) {
 	global.NativeScriptGlobals.events.notify(<UnhandledErrorEventData>{
 		eventName: uncaughtErrorEvent,

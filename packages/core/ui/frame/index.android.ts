@@ -21,6 +21,7 @@ import { Device } from '../../platform';
 import { profile } from '../../profiling';
 import { ExpandedEntry } from './fragment.transitions.android';
 import { android as androidApplication } from '../../application';
+import { setSuspended } from '../../application/application-common';
 
 export * from './frame-common';
 
@@ -1197,6 +1198,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 		// and raising the application resume event there causes issues like
 		// https://github.com/NativeScript/NativeScript/issues/6708
 		if ((<any>activity).isNativeScriptActivity) {
+			setSuspended(false);
 			const args = <application.ApplicationEventData>{
 				eventName: application.resumeEvent,
 				object: application.android,
