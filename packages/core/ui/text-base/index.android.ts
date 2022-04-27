@@ -462,9 +462,9 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
-	[maxLinesProperty.setNative](value: number | string) {
+	[maxLinesProperty.setNative](value: number) {
 		const nativeTextViewProtected = this.nativeTextViewProtected;
-		if (!value || value === 'none') {
+		if (value <= 0) {
 			nativeTextViewProtected.setMaxLines(Number.MAX_SAFE_INTEGER);
 		} else {
 			nativeTextViewProtected.setMaxLines(typeof value === 'string' ? parseInt(value, 10) : value);

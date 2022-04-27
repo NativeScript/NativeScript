@@ -198,10 +198,11 @@ export class TextBase extends TextBaseCommon {
 		this._setShadow(value);
 	}
 
-	[maxLinesProperty.setNative](value: number) {
+	[maxLinesProperty.setNative](value: CoreTypes.MaxLinesType) {
 		const nativeTextViewProtected = this.nativeTextViewProtected;
+		const numberOfLines = this.whiteSpace === 'normal' ? value : 1;
 		if (nativeTextViewProtected instanceof UITextView) {
-			nativeTextViewProtected.textContainer.maximumNumberOfLines = value;
+			nativeTextViewProtected.textContainer.maximumNumberOfLines = numberOfLines;
 
 			if (value !== 0) {
 				nativeTextViewProtected.textContainer.lineBreakMode = NSLineBreakMode.ByTruncatingTail;
@@ -209,9 +210,9 @@ export class TextBase extends TextBaseCommon {
 				nativeTextViewProtected.textContainer.lineBreakMode = NSLineBreakMode.ByWordWrapping;
 			}
 		} else if (nativeTextViewProtected instanceof UILabel) {
-			nativeTextViewProtected.numberOfLines = value;
+			nativeTextViewProtected.numberOfLines = numberOfLines;
 		} else if (nativeTextViewProtected instanceof UIButton) {
-			nativeTextViewProtected.titleLabel.numberOfLines = value;
+			nativeTextViewProtected.titleLabel.numberOfLines = numberOfLines;
 		}
 	}
 

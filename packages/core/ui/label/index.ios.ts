@@ -117,7 +117,7 @@ export class Label extends TextBase implements LabelDefinition {
 		switch (value) {
 			case 'normal':
 				nativeView.lineBreakMode = NSLineBreakMode.ByWordWrapping;
-				nativeView.numberOfLines = 0;
+				nativeView.numberOfLines = this.maxLines;
 				break;
 			case 'nowrap':
 			case 'initial':

@@ -146,7 +146,7 @@ export class Style extends Observable implements StyleDefinition {
 	public fontWeight: FontWeight;
 	public font: string;
 
-	public maxLines: number;
+	public maxLines: CoreTypes.MaxLinesType;
 
 	public androidElevation: number;
 	public androidDynamicElevationOffset: number;

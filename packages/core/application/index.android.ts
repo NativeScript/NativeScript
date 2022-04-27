@@ -367,7 +367,6 @@ function initLifecycleCallbacks() {
 		rootView.getViewTreeObserver().addOnGlobalLayoutListener(global.onGlobalLayoutListener);
 	});
 
-
 	let activitiesStarted = 0;
 
 	const lifecycleCallbacks = new android.app.Application.ActivityLifecycleCallbacks(<any>{
