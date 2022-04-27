@@ -88,6 +88,12 @@ dependencies {
         outLogger.withStyle(Style.SuccessHeader).println "\t + using android X library androidx.appcompat:appcompat:$androidXAppCompatVersion"
     }
 
+		def androidXDocumentFileVersion = "1.0.1"
+		if (project.hasProperty("androidXDocumentFile")) {
+			androidXDocumentFileVersion = androidXDocumentFile
+		outLogger.withStyle(Style.SuccessHeader).println "\t + using android X library androidx.documentfile:documentfile:$androidXDocumentFileVersion"
+	}
+
 
     implementation fileTree(include: ['*.jar'], dir: 'libs')
 
@@ -98,6 +104,7 @@ dependencies {
     implementation "androidx.transition:transition:$androidXTransitionVersion"
     implementation "androidx.exifinterface:exifinterface:$androidXExifInterfaceVersion"
     implementation "androidx.appcompat:appcompat:$androidXAppCompatVersion"
+		implementation "androidx.documentfile:documentfile:$androidXDocumentFileVersion"
 }
 
 task cleanBuildDir (type: Delete) {

@@ -644,7 +644,6 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	[accessibilityIgnoresInvertColorsProperty.setNative](value: boolean) {
-		console.log('accessibilityIgnoresInvertColorsProperty:', !!value);
 		this.nativeViewProtected.accessibilityIgnoresInvertColors = !!value;
 	}
 
