@@ -200,7 +200,7 @@ export class TextBase extends TextBaseCommon {
 
 	[maxLinesProperty.setNative](value: CoreTypes.MaxLinesType) {
 		const nativeTextViewProtected = this.nativeTextViewProtected;
-		const numberOfLines: number = value === 'none' ? 0 : value;
+		const numberOfLines = this.whiteSpace === 'normal' ? value : 1;
 		if (nativeTextViewProtected instanceof UITextView) {
 			nativeTextViewProtected.textContainer.maximumNumberOfLines = numberOfLines;
 
