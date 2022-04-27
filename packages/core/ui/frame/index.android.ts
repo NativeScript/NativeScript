@@ -1204,7 +1204,6 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 				android: activity,
 			};
 			application.notify(args);
-			application.android.paused = false;
 		}
 	}
 
