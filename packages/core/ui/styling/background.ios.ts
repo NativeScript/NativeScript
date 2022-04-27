@@ -726,7 +726,7 @@ function drawBoxShadow(nativeView: NativeScriptUIView, view: View, boxShadow: CS
 	cornerRadius = Math.min(Math.min(renderSize.width / 2, renderSize.height / 2), cornerRadius);
 
 	// Apply corner radius to sub layers as clipToBounds and masksToBounds are now set to false
-	if (nativeView.layer.sublayers?.count) {
+	if (nativeView.layer?.sublayers?.count) {
 		const count = nativeView.layer.sublayers.count;
 		for (let i = 0; i < count; i++) {
 			const subLayer = nativeView.layer.sublayers.objectAtIndex(i);
@@ -763,7 +763,7 @@ function drawBoxShadow(nativeView: NativeScriptUIView, view: View, boxShadow: CS
 
 function clearBoxShadow(nativeView: NativeScriptUIView) {
 	nativeView.clipsToBounds = true;
-	if (nativeView.layer.sublayers?.count) {
+	if (nativeView.layer?.sublayers?.count) {
 		const count = nativeView.layer.sublayers.count;
 		for (let i = 0; i < count; i++) {
 			const subLayer = nativeView.layer.sublayers.objectAtIndex(i);
