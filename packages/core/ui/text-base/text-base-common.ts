@@ -90,10 +90,10 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 		this.style.lineHeight = value;
 	}
 
-	get maxLines(): number {
+	get maxLines(): CoreTypes.MaxLinesType {
 		return this.style.maxLines;
 	}
-	set maxLines(value: number) {
+	set maxLines(value: CoreTypes.MaxLinesType) {
 		this.style.maxLines = value;
 	}
 
@@ -317,10 +317,10 @@ export const lineHeightProperty = new InheritedCssProperty<Style, number>({
 });
 lineHeightProperty.register(Style);
 
-export const maxLinesProperty = new CssProperty<Style, number | string>({
-    name: 'maxLines',
-    cssName: 'max-lines',
-	valueConverter: (v) => v === 'none' ? 0 : parseInt(v, 10),
+export const maxLinesProperty = new CssProperty<Style, CoreTypes.MaxLinesType>({
+	name: 'maxLines',
+	cssName: 'max-lines',
+	valueConverter: (v) => (v === 'none' ? 0 : parseInt(v, 10)),
 });
 maxLinesProperty.register(Style);
 
