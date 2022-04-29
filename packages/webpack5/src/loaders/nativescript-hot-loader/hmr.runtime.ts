@@ -19,7 +19,7 @@ if (module.hot) {
 
 	const setStatus = (
 		hash: string,
-		status: 'success' | 'failure',
+		status: 'success' | 'failure' | 'boot',
 		message?: string,
 		...info: any
 	): boolean => {
@@ -116,6 +116,11 @@ if (module.hot) {
 		}
 
 		await checkAndApply();
-		originalOnLiveSync();
+		await originalOnLiveSync();
+
+		if (!global.hmrBootEmitted) {
+			global.hmrBootEmitted = true;
+			setStatus(hash, 'boot', 'HMR Enabled - waiting for changes...');
+		}
 	};
 }
