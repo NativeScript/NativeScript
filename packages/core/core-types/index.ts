@@ -86,6 +86,8 @@ export namespace CoreTypes {
 		export const nowrap = 'nowrap';
 	}
 
+	export type MaxLinesType = number;
+
 	export type OrientationType = 'horizontal' | 'vertical';
 	export module Orientation {
 		export const horizontal = 'horizontal';
