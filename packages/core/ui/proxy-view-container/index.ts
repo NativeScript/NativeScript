@@ -66,6 +66,35 @@ export class ProxyViewContainer extends LayoutBase {
 		});
 	}
 
+	_setupUI(context: any, atIndex?: number, parentIsLoaded?: boolean) {
+		let processChildren = false;
+		if (this.reusable && this._context === context) {
+			processChildren = true;
+		}
+		super._setupUI(context, atIndex, parentIsLoaded);
+		if (this.reusable && processChildren) {
+			this.eachChild((child) => {
+				const oldReusable = child.reusable;
+				child.reusable = true;
+				child._setupUI(context);
+				child.reusable = oldReusable;
+				return true;
+			});
+		}
+	}
+	_tearDownUI(force?: boolean) {
+		super._tearDownUI(force);
+		if (this.reusable && !force) {
+			this.eachChild((child) => {
+				const oldReusable = child.reusable;
+				child.reusable = true;
+				child._tearDownUI();
+				child.reusable = oldReusable;
+				return true;
+			});
+		}
+	}
+
 	public _addViewToNativeVisualTree(child: View, atIndex?: number): boolean {
 		if (Trace.isEnabled()) {
 			Trace.write('ProxyViewContainer._addViewToNativeVisualTree for a child ' + child + ' ViewContainer.parent: ' + this.parent, Trace.categories.ViewHierarchy);
