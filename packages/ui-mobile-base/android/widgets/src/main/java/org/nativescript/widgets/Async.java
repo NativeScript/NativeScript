@@ -285,7 +285,6 @@ public class Async {
 	}
 
 	public static class Http {
-		private static final String DELETE_METHOD = "DELETE";
 		private static final String GET_METHOD = "GET";
 		private static final String HEAD_METHOD = "HEAD";
 		private static CookieManager cookieManager;
@@ -537,10 +536,7 @@ public class Async {
 						connection.setInstanceFollowRedirects(false);
 					}
 
-					// Do not attempt to write the content (body) for DELETE method, Java will throw directly
-					if (!requestMethod.equals(DELETE_METHOD)) {
-						options.writeContent(connection, openedStreams);
-					}
+					options.writeContent(connection, openedStreams);
 
 					// close the opened streams (saves copy-paste implementation
 					// in each method that throws IOException)
