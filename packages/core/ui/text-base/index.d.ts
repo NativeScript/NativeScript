@@ -64,6 +64,11 @@ export class TextBase extends View implements AddChildFromBuilder {
 	whiteSpace: CoreTypes.WhiteSpaceType;
 
 	/**
+	 * Gets or sets white space style property.
+	 */
+	maxLines: CoreTypes.MaxLinesType;
+
+	/**
 	 * Gets or sets padding style property.
 	 */
 	padding: string | CoreTypes.LengthType;
