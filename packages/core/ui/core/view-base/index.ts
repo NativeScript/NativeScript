@@ -909,6 +909,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
 	public destroyNode(forceDestroyChildren?: boolean): void {
 		this.reusable = false;
+		this.callUnloaded();
 		this._tearDownUI(forceDestroyChildren);
 	}
 
@@ -958,12 +959,9 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
 			this._suspendNativeUpdates(SuspendType.UISetup);
 
-			if (global.isAndroid) {
-				this.setNativeView(null);
-				this._androidView = null;
-			}
-
-			// this._iosView = null;
+			this.setNativeView(null);
+			this._androidView = null;
+			this._iosView = null;
 
 			this._context = null;
 		}

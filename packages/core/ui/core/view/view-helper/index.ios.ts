@@ -91,7 +91,7 @@ class UILayoutViewController extends UIViewController {
 
 		IOSHelper.updateAutoAdjustScrollInsets(this, owner);
 
-		if (!owner.parent) {
+		if (!owner.isLoaded && !owner.parent) {
 			owner.callLoaded();
 		}
 	}
@@ -99,7 +99,7 @@ class UILayoutViewController extends UIViewController {
 	public viewDidDisappear(animated: boolean): void {
 		super.viewDidDisappear(animated);
 		const owner = this.owner.get();
-		if (owner && !owner.parent) {
+		if (owner && owner.isLoaded && !owner.parent) {
 			owner.callUnloaded();
 		}
 	}
