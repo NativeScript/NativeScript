@@ -616,7 +616,7 @@ export class FrameBase extends CustomLayoutView {
 
 		// Fallback
 		if (!context) {
-			return this._onLiveSyncWithoutContext();
+			return this._onLivesyncWithoutContext();
 		}
 
 		return false;
@@ -646,12 +646,12 @@ export class FrameBase extends CustomLayoutView {
 		return false;
 	}
 
-	private _onLiveSyncWithoutContext(): boolean {
+	private _onLivesyncWithoutContext(): boolean {
 		// Reset activity/window content when:
 		// + Changes are not handled on View
 		// + There is no ModuleContext
 		if (Trace.isEnabled()) {
-			Trace.write(`${this}._onLiveSyncWithoutContext()`, Trace.categories.Livesync);
+			Trace.write(`${this}._onLivesyncWithoutContext()`, Trace.categories.Livesync);
 		}
 
 		if (!this._currentEntry || !this._currentEntry.entry) {
