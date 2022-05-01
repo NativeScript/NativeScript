@@ -24,7 +24,7 @@
     "apps-ui:clean": "cd apps/ui && rimraf -- hooks node_modules platforms package-lock.json webpack.config.js && rimraf -- package-lock.json",
     "core:lint": "cd packages/core && eslint -c .eslintrc --ignore-pattern **/node_modules/** --ignore-pattern !packages/core/**",
     "core:setup": "npm run webpack:build",
-    "core:build": "cpy 'packages/core/*.md' 'packages/core/package.json' 'dist/packages/core' && replace-json-property 'dist/packages/core/package.json' name @akylas/nativescript && copyfiles -e '**/*.ts' 'packages/core/css/**/*' 'packages/core/css-value/**/*' 'packages/core/fetch/**/*' 'packages/core/js-libs/**/*' 'packages/core/cli-hooks/**/*.js' dist && copyfiles -e 'packages/core/__tests__/**/*' 'packages/core/**/*.d.ts' dist && tsc -p packages/core/tsconfig.lib.json --outDir dist",
+    "core:build": "cpy 'packages/core/*.md' 'packages/core/package.json' 'packages/core/.npmignore' 'dist/packages/core' && replace-json-property 'dist/packages/core/package.json' name @akylas/nativescript && copyfiles -e '**/*.ts' 'packages/core/css/**/*' 'packages/core/css-value/**/*' 'packages/core/fetch/**/*' 'packages/core/js-libs/**/*' 'packages/core/cli-hooks/**/*.js' dist && copyfiles -e 'packages/core/__tests__/**/*' 'packages/core/**/*.d.ts' dist && tsc -p packages/core/tsconfig.lib.json --outDir dist",
     "core:build.npm": "npm run ui-mobile-base:build && npm run core:build && copyfiles 'packages/core/platforms/**/*' dist && cd dist/packages/core && npm pack && mv *.tgz ..",
     "core:unit": "cd packages/core/__tests__ && tsc && mocha",
     "core:unit.watch": "cd packages/core/__tests__ && tsc && mocha --watch",
