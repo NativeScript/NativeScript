@@ -24,6 +24,8 @@ export namespace Properties {
 	export const width = 'width';
 }
 
+export const AnimationNonAnimatableProperties = ['duration', 'valueSource', 'delay', 'iterations', 'curve', 'target'];
+
 export class CubicBezierAnimationCurve implements CubicBezierAnimationCurveDefinition {
 	public x1: number;
 	public y1: number;
@@ -151,7 +153,7 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 			if (value === undefined) {
 				continue;
 			}
-			if (item === 'duration' || item === 'valueSource' || item === 'delay' || item === 'iterations' || item === 'curve' || item === 'target') {
+			if (AnimationNonAnimatableProperties.indexOf(item) !== -1) {
 				if (item === 'duration' || item === 'delay' || item === 'iterations') {
 					if (typeof value !== 'number') {
 						throw new Error(`Property ${item} must be valid number. Value: ${value}`);

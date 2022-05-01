@@ -12,7 +12,7 @@ import { Trace } from '../../trace';
 import { unsetValue } from '../core/properties';
 import { Animation } from '.';
 import { scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, rotateProperty, rotateXProperty, rotateYProperty } from '../styling/style-properties';
-import { getPropertyFromKey } from './animation-common';
+import { AnimationNonAnimatableProperties, getPropertyFromKey } from './animation-common';
 
 export class Keyframes {
 	name: string;
@@ -185,7 +185,7 @@ export class KeyframeAnimation {
 		if (index === 0) {
 			const animation = this.animations[0];
 			Object.keys(animation).forEach((key) => {
-				if (key === 'duration' || key === 'delay' || key === 'iterations') {
+				if (AnimationNonAnimatableProperties.indexOf(key) !== -1) {
 					return;
 				}
 				if ('scale' === key) {
@@ -264,7 +264,7 @@ export class KeyframeAnimation {
 
 	private _resetAnimationValues(view: View, animation: Object) {
 		Object.keys(animation).forEach((key) => {
-			if (key === 'duration' || key === 'delay' || key === 'iterations') {
+			if (AnimationNonAnimatableProperties.indexOf(key) !== -1) {
 				return;
 			}
 			if ('scale' === key) {
