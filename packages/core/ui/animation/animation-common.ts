@@ -6,6 +6,8 @@ import { AnimationDefinition, AnimationPromise as AnimationPromiseDefinition, Pa
 import { Color } from '../../color';
 import { Trace } from '../../trace';
 import { PercentLength } from '../styling/style-properties';
+import { Style } from '../styling/style';
+import { CssAnimationProperty, InheritedCssProperty, ShorthandProperty } from '../core/properties';
 
 export * from './animation-interfaces';
 
@@ -140,128 +142,51 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 			throw new Error('No animation target specified.');
 		}
 
+		const propertyAnimations = new Array<PropertyAnimation>();
 		for (const item in animationDefinition) {
 			const value = animationDefinition[item];
 			if (value === undefined) {
 				continue;
 			}
-
-			if ((item === Properties.opacity || item === 'duration' || item === 'delay' || item === 'iterations') && typeof value !== 'number') {
-				throw new Error(`Property ${item} must be valid number. Value: ${value}`);
-			} else if ((item === Properties.scale || item === Properties.translate) && (typeof (<Pair>value).x !== 'number' || typeof (<Pair>value).y !== 'number')) {
-				throw new Error(`Property ${item} must be valid Pair. Value: ${value}`);
-			} else if (item === Properties.backgroundColor && !Color.isValid(animationDefinition.backgroundColor)) {
-				throw new Error(`Property ${item} must be valid color. Value: ${value}`);
-			} else if (item === Properties.width || item === Properties.height) {
-				// Coerce input into a PercentLength object in case it's a string.
-				animationDefinition[item] = PercentLength.parse(<any>value);
-			} else if (item === Properties.rotate) {
-				const rotate: number | Point3D = value;
-				if (typeof rotate !== 'number' && !(typeof rotate.x === 'number' && typeof rotate.y === 'number' && typeof rotate.z === 'number')) {
-					throw new Error(`Property ${rotate} must be valid number or Point3D. Value: ${value}`);
+			if (item === 'duration' || item === 'valueSource' || item === 'delay' || item === 'iterations' || item === 'curve' || item === 'target') {
+				if (item === 'duration' || item === 'delay' || item === 'iterations') {
+					if (typeof value !== 'number') {
+						throw new Error(`Property ${item} must be valid number. Value: ${value}`);
+					}
 				}
+				continue;
 			}
-		}
-
-		const propertyAnimations = new Array<PropertyAnimation>();
-
-		// opacity
-		if (animationDefinition.opacity !== undefined) {
-			propertyAnimations.push({
-				target: animationDefinition.target,
-				property: Properties.opacity,
-				value: animationDefinition.opacity,
-				duration: animationDefinition.duration,
-				delay: animationDefinition.delay,
-				iterations: animationDefinition.iterations,
-				curve: animationDefinition.curve,
-			});
-		}
-
-		// backgroundColor
-		if (animationDefinition.backgroundColor !== undefined) {
-			propertyAnimations.push({
-				target: animationDefinition.target,
-				property: Properties.backgroundColor,
-				value: typeof animationDefinition.backgroundColor === 'string' ? new Color(<any>animationDefinition.backgroundColor) : animationDefinition.backgroundColor,
-				duration: animationDefinition.duration,
-				delay: animationDefinition.delay,
-				iterations: animationDefinition.iterations,
-				curve: animationDefinition.curve,
-			});
-		}
-
-		// translate
-		if (animationDefinition.translate !== undefined) {
-			propertyAnimations.push({
-				target: animationDefinition.target,
-				property: Properties.translate,
-				value: animationDefinition.translate,
-				duration: animationDefinition.duration,
-				delay: animationDefinition.delay,
-				iterations: animationDefinition.iterations,
-				curve: animationDefinition.curve,
-			});
-		}
-
-		// scale
-		if (animationDefinition.scale !== undefined) {
-			propertyAnimations.push({
-				target: animationDefinition.target,
-				property: Properties.scale,
-				value: animationDefinition.scale,
-				duration: animationDefinition.duration,
-				delay: animationDefinition.delay,
-				iterations: animationDefinition.iterations,
-				curve: animationDefinition.curve,
-			});
-		}
-
-		// rotate
-		if (animationDefinition.rotate !== undefined) {
-			// Make sure the value of the rotation property is always Point3D
-			let rotationValue: Point3D;
-			if (typeof animationDefinition.rotate === 'number') {
-				rotationValue = { x: 0, y: 0, z: animationDefinition.rotate };
-			} else {
-				rotationValue = animationDefinition.rotate;
+			let property = CssAnimationProperty.properties[item] || ShorthandProperty.properties[item] || InheritedCssProperty.properties[item] || Style.prototype[item] || Object.getPrototypeOf(animationDefinition.target)[item];
+			if (item === 'scale' || item === 'translate') {
+				property = CssAnimationProperty.properties[item + 'X'];
 			}
-
-			propertyAnimations.push({
-				target: animationDefinition.target,
-				property: Properties.rotate,
-				value: rotationValue,
-				duration: animationDefinition.duration,
-				delay: animationDefinition.delay,
-				iterations: animationDefinition.iterations,
-				curve: animationDefinition.curve,
-			});
-		}
-
-		// height
-		if (animationDefinition.height !== undefined) {
-			propertyAnimations.push({
-				target: animationDefinition.target,
-				property: Properties.height,
-				value: animationDefinition.height,
-				duration: animationDefinition.duration,
-				delay: animationDefinition.delay,
-				iterations: animationDefinition.iterations,
-				curve: animationDefinition.curve,
-			});
-		}
-
-		// width
-		if (animationDefinition.width !== undefined) {
-			propertyAnimations.push({
-				target: animationDefinition.target,
-				property: Properties.width,
-				value: animationDefinition.width,
-				duration: animationDefinition.duration,
-				delay: animationDefinition.delay,
-				iterations: animationDefinition.iterations,
-				curve: animationDefinition.curve,
-			});
+			if (property) {
+				let newValue = value;
+				if (property._valueConverter) {
+					if (item === 'translate' || item === 'rotate' || item === 'scale') {
+						newValue = {};
+						if (item === 'rotate' && typeof value === 'number') {
+							newValue = { x: 0, y: 0, z: typeof value === 'string' ? property._valueConverter(value) : value };
+						} else {
+							Object.keys(value).forEach((k2) => {
+								newValue[k2] = typeof value[k2] === 'string' ? property._valueConverter(value[k2]) : value[k2];
+							});
+						}
+					} else {
+						newValue = typeof value === 'string' ? property._valueConverter(value) : value;
+					}
+				}
+				propertyAnimations.push({
+					target: animationDefinition.target,
+					propertyName: item,
+					property,
+					value: newValue,
+					duration: animationDefinition.duration,
+					delay: animationDefinition.delay,
+					iterations: animationDefinition.iterations,
+					curve: animationDefinition.curve,
+				});
+			}
 		}
 
 		if (propertyAnimations.length === 0) {
@@ -274,7 +199,7 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 	public static _getAnimationInfo(animation: PropertyAnimation): string {
 		return JSON.stringify({
 			target: animation.target.id,
-			property: animation.property,
+			propertyName: animation.propertyName,
 			value: animation.value,
 			duration: animation.duration,
 			delay: animation.delay,

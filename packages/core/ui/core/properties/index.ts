@@ -179,6 +179,8 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 
 	public isStyleProperty: boolean;
 
+	public _valueConverter?: (value: string) => any;
+
 	public get: () => U;
 	public set: (value: U) => void;
 	public overrideHandlers: (options: PropertyOptions<T, U>) => void;
@@ -210,6 +212,8 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 		let affectsLayout: boolean = options.affectsLayout;
 		let valueChanged = options.valueChanged;
 		let valueConverter = options.valueConverter;
+
+		this._valueConverter = valueConverter;
 
 		this.overrideHandlers = function (options: PropertyOptions<T, U>) {
 			if (typeof options.equalityComparer !== 'undefined') {
@@ -592,6 +596,8 @@ export class CssProperty<T extends Style, U> implements CssProperty<T, U> {
 	public readonly defaultValueKey: symbol;
 	public readonly defaultValue: U;
 
+	public _valueConverter?: (value: string) => any;
+
 	public overrideHandlers: (options: CssPropertyOptions<T, U>) => void;
 
 	constructor(options: CssPropertyOptions<T, U>) {
@@ -626,6 +632,8 @@ export class CssProperty<T extends Style, U> implements CssProperty<T, U> {
 		let equalityComparer = options.equalityComparer;
 		let valueChanged = options.valueChanged;
 		let valueConverter = options.valueConverter;
+
+		this._valueConverter = valueConverter;
 
 		this.overrideHandlers = function (options: CssPropertyOptions<T, U>) {
 			if (typeof options.equalityComparer !== 'undefined') {
@@ -865,7 +873,7 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 
 	public isStyleProperty: boolean;
 
-	private static properties: {
+	public static properties: {
 		[cssName: string]: CssAnimationProperty<any, any>;
 	} = {};
 
@@ -1066,10 +1074,13 @@ CssAnimationProperty.prototype.isStyleProperty = true;
 export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> implements InheritedCssProperty<T, U> {
 	public setInheritedValue: (value: U) => void;
 	public overrideHandlers: (options: CssPropertyOptions<T, U>) => void;
-
+	public static properties: {
+		[cssName: string]: InheritedCssProperty<any, any>;
+	} = {};
 	constructor(options: CssPropertyOptions<T, U>) {
 		super(options);
 		const propertyName = options.name;
+		InheritedCssProperty.properties[propertyName] = this;
 
 		const key = this.key;
 		const sourceKey = this.sourceKey;
@@ -1238,10 +1249,15 @@ export class ShorthandProperty<T extends Style, P> implements ShorthandProperty<
 
 	public readonly sourceKey: symbol;
 
+	public static properties: {
+		[cssName: string]: ShorthandProperty<any, any>;
+	} = {};
+
 	constructor(options: ShorthandPropertyOptions<P>) {
 		this.name = options.name;
 
 		const key = Symbol(this.name + ':propertyKey');
+		ShorthandProperty.properties[this.name] = this;
 		this.key = key;
 
 		this.cssName = `css:${options.cssName}`;

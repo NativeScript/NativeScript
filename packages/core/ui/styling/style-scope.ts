@@ -1,7 +1,7 @@
 import { Keyframes } from '../animation/keyframe-animation';
 import { ViewBase } from '../core/view-base';
 import { View } from '../core/view';
-import { unsetValue, _evaluateCssVariableExpression, _evaluateCssCalcExpression, isCssVariable, isCssVariableExpression, isCssCalcExpression } from '../core/properties';
+import { CssAnimationProperty, unsetValue, _evaluateCssVariableExpression, _evaluateCssCalcExpression, isCssVariable, isCssVariableExpression, isCssCalcExpression } from '../core/properties';
 import { SyntaxTree, Keyframes as KeyframesDefinition, parse as parseCss, Node as CssNode } from '../../css';
 
 import { RuleSet, SelectorsMap, SelectorCore, SelectorsMatch, ChangeMap, fromAstNodes, Node } from './css-selector';
@@ -536,15 +536,9 @@ export class CssState {
 
 		const view = this.viewRef.get();
 		if (view) {
-			view.style['keyframe:rotate'] = unsetValue;
-			view.style['keyframe:rotateX'] = unsetValue;
-			view.style['keyframe:rotateY'] = unsetValue;
-			view.style['keyframe:scaleX'] = unsetValue;
-			view.style['keyframe:scaleY'] = unsetValue;
-			view.style['keyframe:translateX'] = unsetValue;
-			view.style['keyframe:translateY'] = unsetValue;
-			view.style['keyframe:backgroundColor'] = unsetValue;
-			view.style['keyframe:opacity'] = unsetValue;
+			Object.values(CssAnimationProperty.properties).forEach((property) => {
+				view.style[property.keyframe] = unsetValue;
+			});
 		} else {
 			Trace.write(`KeyframeAnimations cannot be stopped because ".viewRef" is cleared`, Trace.categories.Animation, Trace.messageType.warn);
 		}

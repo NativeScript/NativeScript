@@ -55,8 +55,7 @@ class AnimationDelegateImpl extends NSObject implements CAAnimationDelegate {
 		const targetStyle = this._propertyAnimation.target.style;
 
 		(<IOSView>this._propertyAnimation.target)._suspendPresentationLayerUpdates();
-
-		switch (this._propertyAnimation.property) {
+		switch (this._propertyAnimation.propertyName) {
 			case Properties.backgroundColor:
 				targetStyle[setLocal ? backgroundColorProperty.name : backgroundColorProperty.keyframe] = value;
 				break;
@@ -155,7 +154,6 @@ export class Animation extends AnimationBase {
 		if (animationDefinitions.length > 0 && animationDefinitions[0].valueSource !== undefined) {
 			this._valueSource = animationDefinitions[0].valueSource;
 		}
-
 		if (!playSequentially) {
 			if (Trace.isEnabled()) {
 				Trace.write('Non-merged Property Animations: ' + this._propertyAnimations.length, Trace.categories.Animation);
@@ -250,12 +248,11 @@ export class Animation extends AnimationBase {
 
 			const animation = propertyAnimations[index];
 			const args = Animation._getNativeAnimationArguments(animation, valueSource);
-
-			if (animation.curve === 'spring') {
-				Animation._createNativeSpringAnimation(propertyAnimations, index, playSequentially, args, animation, valueSource, finishedCallback);
-			} else {
-				Animation._createNativeAnimation(propertyAnimations, index, playSequentially, args, animation, valueSource, finishedCallback);
-			}
+			// if (animation.curve === 'spring') {
+			Animation._createNativeSpringAnimation(propertyAnimations, index, playSequentially, args, animation, valueSource, finishedCallback);
+			// } else {
+			// 	Animation._createNativeAnimation(propertyAnimations, index, playSequentially, args, animation, valueSource, finishedCallback);
+			// }
 		};
 	}
 
@@ -265,13 +262,12 @@ export class Animation extends AnimationBase {
 		const nativeView = <UIView>view.nativeViewProtected;
 		const parent = view.parent as View;
 
-		let propertyNameToAnimate = animation.property;
+		let propertyNameToAnimate = animation.propertyName;
 		let subPropertyNameToAnimate;
 		let toValue = animation.value;
 		let fromValue;
 		const setLocal = valueSource === 'animation';
-
-		switch (animation.property) {
+		switch (animation.propertyName) {
 			case Properties.backgroundColor:
 				animation._originalValue = view.backgroundColor;
 				animation._propertyResetCallback = (value, valueSource) => {
@@ -281,7 +277,7 @@ export class Animation extends AnimationBase {
 				if (nativeView instanceof UILabel) {
 					nativeView.setValueForKey(UIColor.clearColor, 'backgroundColor');
 				}
-				toValue = toValue.CGColor;
+				toValue = (toValue.ios || toValue).CGColor;
 				break;
 			case Properties.opacity:
 				animation._originalValue = view.opacity;
@@ -381,7 +377,7 @@ export class Animation extends AnimationBase {
 				break;
 			case Properties.width:
 			case Properties.height: {
-				const direction: string = animation.property;
+				const direction: string = animation.propertyName;
 				const isHeight: boolean = direction === 'height';
 				propertyNameToAnimate = 'bounds';
 				if (!parent) {
@@ -402,7 +398,20 @@ export class Animation extends AnimationBase {
 				break;
 			}
 			default:
-				throw new Error(`Animating property '${animation.property}' is unsupported`);
+				if (animation.property) {
+					// animation._originalValue = view.backgroundColor;
+					animation._propertyResetCallback = (value, valueSource) => {
+						style[setLocal ? animation.property.name : animation.property.keyframe] = value;
+					};
+					// fromValue = nativeView.layer.backgroundColor;
+					// if (nativeView instanceof UILabel) {
+					// 	nativeView.setValueForKey(UIColor.clearColor, 'backgroundColor');
+					// }
+					// toValue = (toValue.ios || toValue).CGColor;
+				} else {
+					throw new Error(`Animating property '${propertyNameToAnimate}' is unsupported`);
+				}
+				break;
 		}
 
 		let duration = 0.3;
@@ -527,72 +536,76 @@ export class Animation extends AnimationBase {
 			delay = args.delay;
 		}
 
-		UIView.animateWithDurationDelayUsingSpringWithDampingInitialSpringVelocityOptionsAnimationsCompletion(
-			args.duration,
-			delay,
-			0.2,
-			0,
-			UIViewAnimationOptions.CurveLinear,
-			() => {
-				if (args.repeatCount !== undefined) {
-					UIView.setAnimationRepeatCount(args.repeatCount);
-				}
-
-				switch (animation.property) {
-					case Properties.backgroundColor:
-						animation.target.backgroundColor = args.toValue;
-						break;
-					case Properties.opacity:
-						animation.target.opacity = args.toValue;
-						break;
-					case Properties.height:
-					case Properties.width:
-						animation._originalValue = animation.target[animation.property];
-						nativeView.layer.setValueForKey(args.toValue, args.propertyNameToAnimate);
-						animation._propertyResetCallback = function (value) {
-							animation.target[animation.property] = value;
-						};
-						break;
-					case _transform:
-						animation._originalValue = nativeView.layer.transform;
-						nativeView.layer.setValueForKey(args.toValue, args.propertyNameToAnimate);
-						animation._propertyResetCallback = function (value) {
-							nativeView.layer.transform = value;
-						};
-						break;
-				}
-			},
-			function (animationDidFinish: boolean) {
-				if (animationDidFinish) {
-					if (animation.property === _transform) {
-						if (animation.value[Properties.translate] !== undefined) {
-							animation.target.translateX = animation.value[Properties.translate].x;
-							animation.target.translateY = animation.value[Properties.translate].y;
-						}
-						if (animation.value[Properties.rotate] !== undefined) {
-							animation.target.rotateX = animation.value[Properties.rotate].x;
-							animation.target.rotateY = animation.value[Properties.rotate].y;
-							animation.target.rotate = animation.value[Properties.rotate].z;
-						}
-						if (animation.value[Properties.scale] !== undefined) {
-							animation.target.scaleX = animation.value[Properties.scale].x;
-							animation.target.scaleY = animation.value[Properties.scale].y;
-						}
+		const animate = () => {
+			if (args.repeatCount !== undefined) {
+				UIView.setAnimationRepeatCount(args.repeatCount);
+			}
+			const setLocal = valueSource === 'animation';
+			switch (animation.propertyName) {
+				case _transform:
+					animation._originalValue = nativeView.layer.transform;
+					nativeView.layer.setValueForKey(args.toValue, args.propertyNameToAnimate);
+					animation._propertyResetCallback = function (value) {
+						nativeView.layer.transform = value;
+					};
+					break;
+				case Properties.height:
+				case Properties.width:
+					animation.target[setLocal ? animation.property.name : animation.property.keyframe] = animation.value;
+					animation.target.requestLayout();
+					(animation.target.page || animation.target).nativeViewProtected.layoutIfNeeded();
+					break;
+				default:
+					animation.target[setLocal ? animation.property.name : animation.property.keyframe] = animation.value;
+					break;
+				// case Properties.height:
+				// case Properties.width:
+				// 	animation._originalValue = animation.target[animation.propertyName];
+				// 	nativeView.layer.setValueForKey(args.toValue, args.propertyNameToAnimate);
+				// 	animation._propertyResetCallback = function (value) {
+				// 		animation.target[animation.propertyName] = value;
+				// 	};
+				// 	break;
+			}
+		};
+		const finish = (animationDidFinish: boolean) => {
+			if (animationDidFinish) {
+				if (animation.propertyName === _transform) {
+					if (animation.value[Properties.translate] !== undefined) {
+						animation.target.translateX = animation.value[Properties.translate].x;
+						animation.target.translateY = animation.value[Properties.translate].y;
 					}
-				} else {
-					if (animation._propertyResetCallback) {
-						animation._propertyResetCallback(animation._originalValue);
+					if (animation.value[Properties.rotate] !== undefined) {
+						animation.target.rotateX = animation.value[Properties.rotate].x;
+						animation.target.rotateY = animation.value[Properties.rotate].y;
+						animation.target.rotate = animation.value[Properties.rotate].z;
+					}
+					if (animation.value[Properties.scale] !== undefined) {
+						animation.target.scaleX = animation.value[Properties.scale].x;
+						animation.target.scaleY = animation.value[Properties.scale].y;
 					}
 				}
-				if (finishedCallback) {
-					const cancelled = !animationDidFinish;
-					finishedCallback(cancelled);
-				}
-				if (animationDidFinish && nextAnimation) {
-					nextAnimation();
+			} else {
+				if (animation._propertyResetCallback) {
+					animation._propertyResetCallback(animation._originalValue);
 				}
 			}
-		);
+			if (finishedCallback) {
+				const cancelled = !animationDidFinish;
+				finishedCallback(cancelled);
+			}
+			if (animationDidFinish && nextAnimation) {
+				nextAnimation();
+			}
+		};
+		if (animation.curve === 'spring') {
+			UIView.animateWithDurationDelayUsingSpringWithDampingInitialSpringVelocityOptionsAnimationsCompletion(args.duration, delay, 0.2, 0, UIViewAnimationOptions.CurveLinear | UIViewAnimationOptions.AllowUserInteraction, animate, finish);
+		} else {
+			CATransaction.begin();
+			CATransaction.setAnimationTimingFunction(animation.curve);
+			UIView.animateWithDurationDelayOptionsAnimationsCompletion(args.duration, delay, UIViewAnimationOptions.AllowUserInteraction, animate, finish);
+			CATransaction.commit();
+		}
 	}
 
 	private static _createNativeAffineTransform(animation: PropertyAnimation): CATransform3D {
@@ -610,16 +623,27 @@ export class Animation extends AnimationBase {
 			const y = value[Properties.scale].y;
 			result = CATransform3DScale(result, x === 0 ? 0.001 : x, y === 0 ? 0.001 : y, 1);
 		}
+		if (value[Properties.rotate] !== undefined) {
+			const x = value[Properties.rotate].x;
+			const y = value[Properties.rotate].y;
+			const z = value[Properties.rotate].z;
+			const perspective = animation.target.perspective || 300;
+			// Only set perspective if there is 3D rotation
+			if (x || y) {
+				result.m34 = -1 / perspective;
+			}
+			result = iOSNativeHelper.applyRotateTransform(result, x, y, z);
+		}
 
 		return result;
 	}
 
 	private static _isAffineTransform(property: string): boolean {
-		return property === _transform || property === Properties.translate || property === Properties.scale;
+		return property === _transform || property === Properties.translate || property === Properties.rotate || property === Properties.scale;
 	}
 
 	private static _canBeMerged(animation1: PropertyAnimation, animation2: PropertyAnimation) {
-		const result = Animation._isAffineTransform(animation1.property) && Animation._isAffineTransform(animation2.property) && animation1.target === animation2.target && animation1.duration === animation2.duration && animation1.delay === animation2.delay && animation1.iterations === animation2.iterations && animation1.curve === animation2.curve;
+		const result = Animation._isAffineTransform(animation1.propertyName) && Animation._isAffineTransform(animation2.propertyName) && animation1.target === animation2.target && animation1.duration === animation2.duration && animation1.delay === animation2.delay && animation1.iterations === animation2.iterations && animation1.curve === animation2.curve;
 
 		return result;
 	}
@@ -635,7 +659,7 @@ export class Animation extends AnimationBase {
 				continue;
 			}
 
-			if (!Animation._isAffineTransform(propertyAnimations[i].property)) {
+			if (!Animation._isAffineTransform(propertyAnimations[i].propertyName)) {
 				// This is not an affine transform animation, so there is nothing to merge.
 				result.push(propertyAnimations[i]);
 			} else {
@@ -648,7 +672,8 @@ export class Animation extends AnimationBase {
 				// }
 				const newTransformAnimation: PropertyAnimation = {
 					target: propertyAnimations[i].target,
-					property: _transform,
+					propertyName: _transform,
+					property: null,
 					value: {},
 					duration: propertyAnimations[i].duration,
 					delay: propertyAnimations[i].delay,
@@ -658,7 +683,7 @@ export class Animation extends AnimationBase {
 				if (Trace.isEnabled()) {
 					Trace.write('Curve: ' + propertyAnimations[i].curve, Trace.categories.Animation);
 				}
-				newTransformAnimation.value[propertyAnimations[i].property] = propertyAnimations[i].value;
+				newTransformAnimation.value[propertyAnimations[i].propertyName] = propertyAnimations[i].value;
 				if (Trace.isEnabled()) {
 					Trace.write('Created new transform animation: ' + Animation._getAnimationInfo(newTransformAnimation), Trace.categories.Animation);
 				}
@@ -671,7 +696,7 @@ export class Animation extends AnimationBase {
 							if (Trace.isEnabled()) {
 								Trace.write('Merging animations: ' + Animation._getAnimationInfo(newTransformAnimation) + ' + ' + Animation._getAnimationInfo(propertyAnimations[j]) + ';', Trace.categories.Animation);
 							}
-							newTransformAnimation.value[propertyAnimations[j].property] = propertyAnimations[j].value;
+							newTransformAnimation.value[propertyAnimations[j].propertyName] = propertyAnimations[j].value;
 							// Mark that it has been merged so we can skip it on our outer loop.
 							propertyAnimations[j][_skip] = true;
 						}

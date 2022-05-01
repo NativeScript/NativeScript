@@ -91,6 +91,13 @@ function toDevicePixelsCommon(length: CoreTypes.PercentLengthType, auto: number 
 	}
 }
 
+export function colorConverter(v: string | Color): Color {
+	if (v instanceof Color) {
+		return v;
+	}
+	return new Color(v);
+}
+
 export namespace PercentLength {
 	export function parse(fromValue: string | CoreTypes.LengthType): CoreTypes.PercentLengthType {
 		if (fromValue == 'auto') {
@@ -803,7 +810,7 @@ export const backgroundColorProperty = new CssAnimationProperty<Style, Color>({
 		target.backgroundInternal = target.backgroundInternal.withColor(newValue);
 	},
 	equalityComparer: Color.equals,
-	valueConverter: (value) => new Color(value),
+	valueConverter: colorConverter,
 });
 backgroundColorProperty.register(Style);
 
@@ -960,7 +967,7 @@ export const borderTopColorProperty = new CssProperty<Style, Color>({
 		target.backgroundInternal = target.backgroundInternal.withBorderTopColor(newValue);
 	},
 	equalityComparer: Color.equals,
-	valueConverter: (value) => new Color(value),
+	valueConverter: colorConverter,
 });
 borderTopColorProperty.register(Style);
 
@@ -971,7 +978,7 @@ export const borderRightColorProperty = new CssProperty<Style, Color>({
 		target.backgroundInternal = target.backgroundInternal.withBorderRightColor(newValue);
 	},
 	equalityComparer: Color.equals,
-	valueConverter: (value) => new Color(value),
+	valueConverter: colorConverter,
 });
 borderRightColorProperty.register(Style);
 
@@ -982,7 +989,7 @@ export const borderBottomColorProperty = new CssProperty<Style, Color>({
 		target.backgroundInternal = target.backgroundInternal.withBorderBottomColor(newValue);
 	},
 	equalityComparer: Color.equals,
-	valueConverter: (value) => new Color(value),
+	valueConverter: colorConverter,
 });
 borderBottomColorProperty.register(Style);
 
@@ -993,7 +1000,7 @@ export const borderLeftColorProperty = new CssProperty<Style, Color>({
 		target.backgroundInternal = target.backgroundInternal.withBorderLeftColor(newValue);
 	},
 	equalityComparer: Color.equals,
-	valueConverter: (value) => new Color(value),
+	valueConverter: colorConverter,
 });
 borderLeftColorProperty.register(Style);
 
@@ -1037,9 +1044,9 @@ export const borderTopWidthProperty = new CssProperty<Style, CoreTypes.LengthTyp
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
-		const value = Length.toDevicePixels(newValue, 0);
+		let value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
-			throw new Error(`border-top-width should be Non-Negative Finite number. Value: ${value}`);
+			value = 0;
 		}
 
 		const view = target.viewRef.get();
@@ -1061,9 +1068,9 @@ export const borderRightWidthProperty = new CssProperty<Style, CoreTypes.LengthT
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
-		const value = Length.toDevicePixels(newValue, 0);
+		let value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
-			throw new Error(`border-right-width should be Non-Negative Finite number. Value: ${value}`);
+			value = 0;
 		}
 
 		const view = target.viewRef.get();
@@ -1085,9 +1092,9 @@ export const borderBottomWidthProperty = new CssProperty<Style, CoreTypes.Length
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
-		const value = Length.toDevicePixels(newValue, 0);
+		let value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
-			throw new Error(`border-bottom-width should be Non-Negative Finite number. Value: ${value}`);
+			value = 0;
 		}
 
 		const view = target.viewRef.get();
@@ -1109,9 +1116,9 @@ export const borderLeftWidthProperty = new CssProperty<Style, CoreTypes.LengthTy
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
-		const value = Length.toDevicePixels(newValue, 0);
+		let value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
-			throw new Error(`border-left-width should be Non-Negative Finite number. Value: ${value}`);
+			value = 0;
 		}
 
 		const view = target.viewRef.get();
@@ -1165,9 +1172,9 @@ export const borderTopLeftRadiusProperty = new CssProperty<Style, CoreTypes.Leng
 	defaultValue: 0,
 	affectsLayout: global.isIOS,
 	valueChanged: (target, oldValue, newValue) => {
-		const value = Length.toDevicePixels(newValue, 0);
+		let value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
-			throw new Error(`border-top-left-radius should be Non-Negative Finite number. Value: ${value}`);
+			value = 0;
 		}
 		target.backgroundInternal = target.backgroundInternal.withBorderTopLeftRadius(value);
 	},
@@ -1181,9 +1188,9 @@ export const borderTopRightRadiusProperty = new CssProperty<Style, CoreTypes.Len
 	defaultValue: 0,
 	affectsLayout: global.isIOS,
 	valueChanged: (target, oldValue, newValue) => {
-		const value = Length.toDevicePixels(newValue, 0);
+		let value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
-			throw new Error(`border-top-right-radius should be Non-Negative Finite number. Value: ${value}`);
+			value = 0;
 		}
 		target.backgroundInternal = target.backgroundInternal.withBorderTopRightRadius(value);
 	},
@@ -1197,9 +1204,9 @@ export const borderBottomRightRadiusProperty = new CssProperty<Style, CoreTypes.
 	defaultValue: 0,
 	affectsLayout: global.isIOS,
 	valueChanged: (target, oldValue, newValue) => {
-		const value = Length.toDevicePixels(newValue, 0);
+		let value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
-			throw new Error(`border-bottom-right-radius should be Non-Negative Finite number. Value: ${value}`);
+			value = 0;
 		}
 		target.backgroundInternal = target.backgroundInternal.withBorderBottomRightRadius(value);
 	},
@@ -1213,9 +1220,9 @@ export const borderBottomLeftRadiusProperty = new CssProperty<Style, CoreTypes.L
 	defaultValue: 0,
 	affectsLayout: global.isIOS,
 	valueChanged: (target, oldValue, newValue) => {
-		const value = Length.toDevicePixels(newValue, 0);
+		let value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
-			throw new Error(`border-bottom-left-radius should be Non-Negative Finite number. Value: ${value}`);
+			value = 0;
 		}
 		target.backgroundInternal = target.backgroundInternal.withBorderBottomLeftRadius(value);
 	},
@@ -1299,7 +1306,7 @@ export const colorProperty = new InheritedCssProperty<Style, Color>({
 	name: 'color',
 	cssName: 'color',
 	equalityComparer: Color.equals,
-	valueConverter: (v) => new Color(v),
+	valueConverter: colorConverter,
 });
 colorProperty.register(Style);
 

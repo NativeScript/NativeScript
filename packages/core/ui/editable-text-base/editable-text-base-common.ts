@@ -6,6 +6,7 @@ import { booleanConverter } from '../core/view-base';
 import { Style } from '../styling/style';
 import { Color } from '../../color';
 import { CoreTypes } from '../../core-types';
+import { colorConverter } from '../styling/style-properties';
 
 export abstract class EditableTextBase extends TextBase implements EditableTextBaseDefinition {
 	public static blurEvent = 'blur';
@@ -45,7 +46,7 @@ export const placeholderColorProperty = new CssProperty<Style, Color>({
 	name: 'placeholderColor',
 	cssName: 'placeholder-color',
 	equalityComparer: Color.equals,
-	valueConverter: (v) => new Color(v),
+	valueConverter: colorConverter,
 });
 placeholderColorProperty.register(Style);
 
