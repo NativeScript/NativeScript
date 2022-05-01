@@ -11,7 +11,8 @@ import { Trace } from '../../trace';
 // Types.
 import { unsetValue } from '../core/properties';
 import { Animation } from '.';
-import { backgroundColorProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, rotateProperty, opacityProperty, rotateXProperty, rotateYProperty, widthProperty, heightProperty } from '../styling/style-properties';
+import { scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, rotateProperty, rotateXProperty, rotateYProperty } from '../styling/style-properties';
+import { getPropertyFromKey } from './animation-common';
 
 export class Keyframes {
 	name: string;
@@ -198,7 +199,7 @@ export class KeyframeAnimation {
 					view.style[rotateYProperty.keyframe] = animation.rotate.y;
 					view.style[rotateProperty.keyframe] = animation.rotate.z;
 				} else {
-					const property = CssAnimationProperty.properties[key] || Style.prototype[key] || Object.getPrototypeOf(view)[key];
+					const property = getPropertyFromKey(key, view);
 					if (property?.keyframe) {
 						view.style[property.keyframe] = animation[key];
 					}
@@ -277,7 +278,7 @@ export class KeyframeAnimation {
 				view.style[rotateYProperty.keyframe] = unsetValue;
 				view.style[rotateProperty.keyframe] = unsetValue;
 			} else {
-				const property = CssAnimationProperty.properties[key] || Style.prototype[key] || Object.getPrototypeOf(view)[key];
+				const property = getPropertyFromKey(key, view);
 				if (property?.keyframe) {
 					view.style[property.keyframe] = unsetValue;
 				}

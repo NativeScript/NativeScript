@@ -1,15 +1,18 @@
 // Types.
-import { CubicBezierAnimationCurve as CubicBezierAnimationCurveDefinition, Animation as AnimationBaseDefinition, Point3D } from '.';
-import { AnimationDefinition, AnimationPromise as AnimationPromiseDefinition, Pair, PropertyAnimation } from './animation-interfaces';
+import { CubicBezierAnimationCurve as CubicBezierAnimationCurveDefinition, Animation as AnimationBaseDefinition } from '.';
+import { AnimationDefinition, AnimationPromise as AnimationPromiseDefinition, PropertyAnimation } from './animation-interfaces';
 
 // Requires.
-import { Color } from '../../color';
 import { Trace } from '../../trace';
-import { PercentLength } from '../styling/style-properties';
 import { Style } from '../styling/style';
 import { CssAnimationProperty, InheritedCssProperty, ShorthandProperty } from '../core/properties';
+import { View } from '../core/view';
 
 export * from './animation-interfaces';
+
+export function getPropertyFromKey(key: string, view: View) {
+	return CssAnimationProperty.properties[key] || ShorthandProperty.properties[key] || InheritedCssProperty.properties[key] || Style.prototype[key] || Object.getPrototypeOf(view)[key];
+}
 
 export namespace Properties {
 	export const opacity = 'opacity';
@@ -156,7 +159,7 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 				}
 				continue;
 			}
-			let property = CssAnimationProperty.properties[item] || ShorthandProperty.properties[item] || InheritedCssProperty.properties[item] || Style.prototype[item] || Object.getPrototypeOf(animationDefinition.target)[item];
+			let property = getPropertyFromKey(item, animationDefinition.target);
 			if (item === 'scale' || item === 'translate') {
 				property = CssAnimationProperty.properties[item + 'X'];
 			}
