@@ -5,3 +5,5 @@ dist
 !**/*.d.ts
 jest.config.js
 npm-debug.log
+platforms/android/*.aar
+!platforms/android/widgets-release.aar
