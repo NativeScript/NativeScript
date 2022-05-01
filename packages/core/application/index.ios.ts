@@ -20,6 +20,7 @@ import { profile } from '../profiling';
 import { iOSNativeHelper } from '../utils';
 import { initAccessibilityCssHelper } from '../accessibility/accessibility-css-helper';
 import { initAccessibilityFontScale } from '../accessibility/font-scale';
+import { setInBackground, setSuspended } from './application-common';
 
 const IOS_PLATFORM = 'ios';
 
@@ -254,6 +255,8 @@ export class iOSApplication implements iOSApplicationDefinition {
 	private didBecomeActive(notification: NSNotification) {
 		const ios = UIApplication.sharedApplication;
 		const object = this;
+		setInBackground(false);
+		setSuspended(false);
 		notify(<ApplicationEventData>{ eventName: resumeEvent, object, ios });
 		notify(<ApplicationEventData>{ eventName: foregroundEvent, object, ios });
 		const rootView = this._rootView;
@@ -265,6 +268,8 @@ export class iOSApplication implements iOSApplicationDefinition {
 	private didEnterBackground(notification: NSNotification) {
 		const ios = UIApplication.sharedApplication;
 		const object = this;
+		setInBackground(true);
+		setSuspended(true);
 		notify(<ApplicationEventData>{ eventName: suspendEvent, object, ios });
 		notify(<ApplicationEventData>{ eventName: backgroundEvent, object, ios });
 		const rootView = this._rootView;
