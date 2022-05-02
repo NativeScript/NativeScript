@@ -214,6 +214,8 @@ export class Animation extends AnimationBase {
 		}
 
 		if (this._animators.length > 0) {
+			// TODO: fix sequentially which wont work because all animators values are computed before
+			// the first one starts...
 			if (this._playSequentially) {
 				this._animatorSet.playSequentially(this._nativeAnimatorsArray);
 			} else {
@@ -492,7 +494,7 @@ export class Animation extends AnimationBase {
 					propertyAnimation.target.style[targetStyle] = originalValue1;
 					if (propertyAnimation.target.nativeViewProtected) {
 						const setter = propertyAnimation.target[extentProperty.setNative];
-						setter(propertyAnimation.target.style[propertyAnimation.propertyName]);
+						setter.call(propertyAnimation.target, propertyAnimation.target.style[propertyAnimation.propertyName]);
 					}
 				});
 				animators.push(extentAnimator);
@@ -522,8 +524,7 @@ export class Animation extends AnimationBase {
 						);
 						animators.push(animator);
 					} else {
-						nativeArray = Array.create('float', 2);
-						nativeArray[0] = originalValue1;
+						nativeArray = Array.create('float', 1);
 						nativeArray[1] = propertyAnimation.value;
 						const animator = android.animation.ValueAnimator.ofFloat(nativeArray);
 						animator.addUpdateListener(

@@ -162,23 +162,24 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 				continue;
 			}
 			let property = getPropertyFromKey(item, animationDefinition.target);
-			if (item === 'scale' || item === 'translate') {
+			if (item === Properties.scale || item === Properties.translate) {
 				property = CssAnimationProperty.properties[item + 'X'];
 			}
 			if (property) {
 				let newValue = value;
-				if (property._valueConverter) {
-					if (item === 'translate' || item === 'rotate' || item === 'scale') {
+				const valueConverter = property.valueConverter;
+				if (valueConverter) {
+					if (item === Properties.translate || item === Properties.rotate || item === Properties.scale) {
 						newValue = {};
-						if (item === 'rotate' && typeof value === 'number') {
-							newValue = { x: 0, y: 0, z: typeof value === 'string' ? property._valueConverter(value) : value };
+						if (Properties.rotate && typeof value === 'number') {
+							newValue = { x: 0, y: 0, z: typeof value === 'string' ? valueConverter(value) : value };
 						} else {
 							Object.keys(value).forEach((k2) => {
-								newValue[k2] = typeof value[k2] === 'string' ? property._valueConverter(value[k2]) : value[k2];
+								newValue[k2] = typeof value[k2] === 'string' ? valueConverter(value[k2]) : value[k2];
 							});
 						}
 					} else {
-						newValue = typeof value === 'string' ? property._valueConverter(value) : value;
+						newValue = typeof value === 'string' ? valueConverter(value) : value;
 					}
 				}
 				propertyAnimations.push({
