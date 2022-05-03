@@ -1274,7 +1274,13 @@ export function resetCSSProperties(style: Style): void {
 	}
 }
 
-export function propagateInheritableProperties<U extends ViewBase | Style, T extends InheritedProperty<any, any> | InheritedCssProperty<any, any>>(view: U, child: U, properties: Array<T>): void {
+export function propagateInheritableCssProperties(style: Style, child: Style) {
+	return _propagateInheritableProperties(style, child, inheritableCssProperties);
+}
+export function propagateInheritableProperties(view: ViewBase, child: ViewBase) {
+	return _propagateInheritableProperties(view, child, inheritableProperties);
+}
+function _propagateInheritableProperties<U extends ViewBase | Style, T extends InheritedProperty<any, any> | InheritedCssProperty<any, any>>(view: U, child: U, properties: Array<T>): void {
 	const inheritablePropertyValues = inheritablePropertyValuesOn(view, properties);
 	for (const pair of inheritablePropertyValues) {
 		const prop = pair.property;
