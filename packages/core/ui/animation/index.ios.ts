@@ -415,11 +415,6 @@ export class Animation extends AnimationBase {
 						}
 						toValue = toValue.ios.CGColor;
 					}
-					// fromValue = nativeView.layer.backgroundColor;
-					// if (nativeView instanceof UILabel) {
-					// 	nativeView.setValueForKey(UIColor.clearColor, 'backgroundColor');
-					// }
-					// toValue = (toValue.ios || toValue).CGColor;
 				} else {
 					throw new Error(`Animating property '${propertyNameToAnimate}' is unsupported`);
 				}
@@ -652,10 +647,6 @@ export class Animation extends AnimationBase {
 						nativeView.layer.transform = value;
 					};
 					break;
-				// case Properties.height:
-				// case Properties.width:
-				// 	animation.target[setLocal ? animation.property.name : animation.property.keyframe] = animation.value;
-				// 	break;
 				default:
 					animationInfo.target[setLocal ? animationInfo.property.name : animationInfo.property.keyframe] = animationInfo.value;
 					if (animationInfo.property.affectsLayout) {
