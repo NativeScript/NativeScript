@@ -92,8 +92,8 @@ function toDevicePixelsCommon(length: CoreTypes.PercentLengthType, auto: number 
 }
 
 export function colorConverter(v: string | Color): Color {
-	if (v instanceof Color) {
-		return v;
+	if (!v || v instanceof Color) {
+		return v as Color;
 	}
 	return new Color(v);
 }
