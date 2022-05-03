@@ -1,6 +1,6 @@
 // Types.
 import { CubicBezierAnimationCurve as CubicBezierAnimationCurveDefinition, Animation as AnimationBaseDefinition } from '.';
-import { AnimationDefinition, AnimationPromise as AnimationPromiseDefinition, PropertyAnimation } from './animation-interfaces';
+import { AnimationDefinition, AnimationPromise as AnimationPromiseDefinition, Pair, PropertyAnimation } from './animation-interfaces';
 
 // Requires.
 import { Trace } from '../../trace';
@@ -168,10 +168,13 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 			if (property) {
 				let newValue = value;
 				const valueConverter = property.valueConverter;
+				if ((item === Properties.scale || item === Properties.translate) && typeof value.x !== 'object') {
+					throw new Error(`Property ${item} must be valid Pair. Value: ${value}`);
+				}
 				if (valueConverter) {
 					if (item === Properties.translate || item === Properties.rotate || item === Properties.scale) {
 						newValue = {};
-						if (Properties.rotate && typeof value === 'number') {
+						if (Properties.rotate && typeof value !== 'object') {
 							newValue = { x: 0, y: 0, z: typeof value === 'string' ? valueConverter(value) : value };
 						} else {
 							Object.keys(value).forEach((k2) => {
