@@ -1,5 +1,5 @@
 // Types
-import { unsetValue, CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssProperty, makeValidator, makeParser } from '../core/properties';
+import { unsetValue, CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssProperty } from '../core/properties';
 import { Style } from '../styling/style';
 import { Transformation, TransformationValue, TransformFunctionsInfo } from '../animation';
 

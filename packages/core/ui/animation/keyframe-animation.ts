@@ -245,7 +245,7 @@ export class KeyframeAnimation {
 				)
 				.catch((error: any) => {
 					Trace.write(typeof error === 'string' ? error : error.message, Trace.categories.Animation, Trace.messageType.warn);
-				}); // tslint:disable-line
+				});
 		}
 	}
 

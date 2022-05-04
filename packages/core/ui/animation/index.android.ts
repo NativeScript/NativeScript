@@ -108,15 +108,15 @@ function createAnimationSet(animators: android.animation.ObjectAnimator[], itera
 }
 
 export class Animation extends AnimationBase {
-	private _animatorListener: android.animation.Animator.AnimatorListener;
-	private _nativeAnimatorsArray: any;
-	private _animatorSet: android.animation.AnimatorSet;
-	private _animators: Array<android.animation.Animator>;
-	private _propertyUpdateCallbacks: Array<Function>;
-	private _propertyResetCallbacks: Array<Function>;
-	private _valueSource: 'animation' | 'keyframe';
-	private _target: View;
-	private _resetOnFinish = true;
+	protected _animatorListener: android.animation.Animator.AnimatorListener;
+	protected _nativeAnimatorsArray: any;
+	protected _animatorSet: android.animation.AnimatorSet;
+	protected _animators: Array<android.animation.Animator>;
+	protected _propertyUpdateCallbacks: Array<Function>;
+	protected _propertyResetCallbacks: Array<Function>;
+	protected _valueSource: 'animation' | 'keyframe';
+	protected _target: View;
+	protected _resetOnFinish = true;
 
 	constructor(animationDefinitions: Array<AnimationDefinitionInternal>, playSequentially?: boolean) {
 		super(animationDefinitions, playSequentially);
@@ -207,7 +207,7 @@ export class Animation extends AnimationBase {
 		return _resolveAnimationCurve(curve);
 	}
 
-	private _play(): void {
+	protected _play(): void {
 		if (Device.sdkVersion <= '23') {
 			this._animatorSet = new android.animation.AnimatorSet();
 			this._animatorSet.addListener(this._animatorListener);
@@ -231,8 +231,7 @@ export class Animation extends AnimationBase {
 		this._animatorSet.start();
 	}
 
-	private _onAndroidAnimationEnd() {
-		// tslint:disable-line
+	protected _onAndroidAnimationEnd() {
 		if (!this.isPlaying) {
 			// It has been cancelled
 			return;
@@ -246,8 +245,7 @@ export class Animation extends AnimationBase {
 		}
 	}
 
-	private _onAndroidAnimationCancel() {
-		// tslint:disable-line
+	protected _onAndroidAnimationCancel() {
 		this._propertyResetCallbacks.forEach((v) => v());
 		this._rejectAnimationFinishedPromise();
 
@@ -256,7 +254,7 @@ export class Animation extends AnimationBase {
 		}
 	}
 
-	private _createAnimators(propertyAnimation: PropertyAnimation): void {
+	protected _createAnimators(propertyAnimation: PropertyAnimation): void {
 		if (!propertyAnimation.target.nativeViewProtected) {
 			return;
 		}
@@ -524,7 +522,8 @@ export class Animation extends AnimationBase {
 						);
 						animators.push(animator);
 					} else {
-						nativeArray = Array.create('float', 1);
+						nativeArray = Array.create('float', 2);
+						nativeArray[0] = originalValue1;
 						nativeArray[1] = propertyAnimation.value;
 						const animator = android.animation.ValueAnimator.ofFloat(nativeArray);
 						animator.addUpdateListener(

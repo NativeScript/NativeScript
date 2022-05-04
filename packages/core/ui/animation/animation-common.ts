@@ -57,12 +57,12 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 		}
 
 		this._propertyAnimations = new Array<PropertyAnimation>();
-		for (let i = 0, length = animationDefinitions.length; i < length; i++) {
-			if (animationDefinitions[i].curve) {
-				animationDefinitions[i].curve = this._resolveAnimationCurve(animationDefinitions[i].curve);
+		animationDefinitions.forEach((animationDefinition) => {
+			if (animationDefinition.curve) {
+				animationDefinition.curve = this._resolveAnimationCurve(animationDefinition.curve);
 			}
-			this._propertyAnimations = this._propertyAnimations.concat(AnimationBase._createPropertyAnimations(animationDefinitions[i]));
-		}
+			this._propertyAnimations.push(...this._createPropertyAnimations(animationDefinition));
+		});
 
 		if (this._propertyAnimations.length === 0) {
 			throw new Error('Nothing to animate.');
@@ -100,7 +100,7 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 		return animationFinishedPromise;
 	}
 
-	private fixupAnimationPromise(promise: AnimationPromiseDefinition): void {
+	protected fixupAnimationPromise(promise: AnimationPromiseDefinition): void {
 		// Since we are using function() below because of arguments, TS won't automatically do a _this for those functions.
 		const _this = this;
 		promise.cancel = () => {
@@ -132,17 +132,17 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 		return this._isPlaying;
 	}
 
-	public _resolveAnimationFinishedPromise() {
+	protected _resolveAnimationFinishedPromise() {
 		this._isPlaying = false;
 		this._resolve();
 	}
 
-	public _rejectAnimationFinishedPromise() {
+	protected _rejectAnimationFinishedPromise() {
 		this._isPlaying = false;
 		this._reject(new Error('Animation cancelled.'));
 	}
 
-	private static _createPropertyAnimations(animationDefinition: AnimationDefinition): Array<PropertyAnimation> {
+	protected _createPropertyAnimations(animationDefinition: AnimationDefinition): Array<PropertyAnimation> {
 		if (!animationDefinition.target) {
 			throw new Error('No animation target specified.');
 		}
@@ -168,7 +168,7 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 			if (property) {
 				let newValue = value;
 				const valueConverter = property.valueConverter;
-				if ((item === Properties.scale || item === Properties.translate) && typeof value.x !== 'object') {
+				if ((item === Properties.scale || item === Properties.translate) && typeof value !== 'object') {
 					throw new Error(`Property ${item} must be valid Pair. Value: ${value}`);
 				}
 				if (valueConverter) {
