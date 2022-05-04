@@ -480,7 +480,10 @@ export class Animation extends AnimationBase {
 				extentAnimator.addUpdateListener(
 					new android.animation.ValueAnimator.AnimatorUpdateListener({
 						onAnimationUpdate(animator: android.animation.ValueAnimator) {
-							const argb = (<java.lang.Float>animator.getAnimatedValue()).floatValue();
+							let argb = animator.getAnimatedValue();
+							if (argb.floatValue instanceof java.lang.Number) {
+								argb = argb.floatValue();
+							}
 							propertyAnimation.target.style[setLocal ? extentProperty.name : extentProperty.keyframe] = argb;
 						},
 					})
