@@ -1,0 +1,8 @@
+{
+    "whitelist-plugins-usages": true,
+    "blacklist": [
+        "androidx.appcompat*:R.*", "androidx.appcompat*:R*", "*:*BuildConfig", 
+        "com.nativescript*:R.*", "com.nativescript*:R", 
+        "org.nativescript*:R.*", "org.nativescript*:R"
+    ]
+  }

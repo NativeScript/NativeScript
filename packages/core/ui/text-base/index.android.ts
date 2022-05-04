@@ -280,7 +280,7 @@ export class TextBase extends TextBaseCommon {
 
 		this.nativeTextViewProtected.setTransformationMethod(new TextTransformation(this));
 	}
-
+	
 	[textAlignmentProperty.getDefault](): CoreTypes.TextAlignmentType {
 		return 'initial';
 	}

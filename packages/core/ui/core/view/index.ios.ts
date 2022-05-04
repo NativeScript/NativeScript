@@ -11,7 +11,7 @@ import { ios as iosBackground, Background } from '../../styling/background';
 import { perspectiveProperty, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, clipPathProperty } from '../../styling/style-properties';
 import { profile } from '../../../profiling';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty, accessibilityIgnoresInvertColorsProperty } from '../../../accessibility/accessibility-properties';
-import { setupAccessibleView, IOSPostAccessibilityNotificationType, isAccessibilityServiceEnabled, updateAccessibilityProperties, AccessibilityEventOptions, AccessibilityRole, AccessibilityState } from '../../../accessibility';
+import { IOSPostAccessibilityNotificationType, isAccessibilityServiceEnabled, updateAccessibilityProperties, AccessibilityEventOptions, AccessibilityRole, AccessibilityState } from '../../../accessibility';
 import { CoreTypes } from '../../../core-types';
 
 export * from './view-common';
@@ -57,11 +57,23 @@ export class View extends ViewCommon implements ViewDefinition {
 	get isLayoutRequested(): boolean {
 		return (this._privateFlags & PFLAG_FORCE_LAYOUT) === PFLAG_FORCE_LAYOUT;
 	}
+	initNativeView() {
+		super.initNativeView()
+		const nativeView = this.nativeViewProtected;
+		/**
+		 * We need to map back from the UIView to the NativeScript View for accessibility.
+		 *
+		 * We do that by setting the uiView's tag to the View's domId.
+		 * This way we can do reverse lookup.
+		 */
+		 nativeView.tag = this._domId;
+	}
 
-	constructor() {
-		super();
-
-		this.once(View.loadedEvent, () => setupAccessibleView(this));
+	requestlayoutIfNeeded() {
+		if ( this.isLayoutRequired) {
+			this._requetLayoutNeeded = false;
+			this.requestLayout();
+		}
 	}
 
 	disposeNativeView() {
@@ -74,8 +86,13 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	public requestLayout(): void {
-		super.requestLayout();
+		if (this._suspendRequestLayout) {
+			this._requetLayoutNeeded = true;
+			return;
+		}
+		this._requetLayoutNeeded = false;
 		this._privateFlags |= PFLAG_FORCE_LAYOUT;
+		super.requestLayout();
 
 		const nativeView = this.nativeViewProtected;
 		if (nativeView && nativeView.setNeedsLayout) {
@@ -551,6 +568,7 @@ export class View extends ViewCommon implements ViewDefinition {
 
 			return;
 		}
+		this._raiseClosingModallyEvent();
 
 		// modal view has already been closed by UI, probably as a popover
 		if (!parent.viewController.presentedViewController) {
@@ -806,7 +824,7 @@ export class View extends ViewCommon implements ViewDefinition {
 			args = msg;
 		}
 
-		switch (options.iosNotificationType) {
+		switch (options.iosNotificationType as IOSPostAccessibilityNotificationType) {
 			case IOSPostAccessibilityNotificationType.Announcement: {
 				notification = UIAccessibilityAnnouncementNotification;
 				break;

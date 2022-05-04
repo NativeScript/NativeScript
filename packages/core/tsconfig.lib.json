@@ -7,7 +7,7 @@
 		"noImplicitAny": false,
 		"noImplicitUseStrict": true,
 		"removeComments": false,
-		"emitDecoratorMetadata": true,
+    "emitDecoratorMetadata": false,
 		"experimentalDecorators": true,
 		"diagnostics": true,
 		"sourceMap": true,

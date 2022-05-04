@@ -1,6 +1,8 @@
+import { initAccessibilityFontScale } from 'accessibility';
 import * as Application from '../application';
 import type { View } from '../ui/core/view';
 import { notifyAccessibilityFocusState } from './accessibility-common';
+import { initAccessibilityCssHelper } from './accessibility-css-helper';
 import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait } from './accessibility-types';
 
 export * from './accessibility-common';
@@ -35,7 +37,7 @@ function inputArrayToBitMask(values: string | string[], map: Map<string, number>
 	);
 }
 
-let AccessibilityTraitsMap: Map<string, number>;
+let AccessibilityTraitsMap: Map<number, number>;
 let RoleTypeMap: Map<AccessibilityRole, number>;
 
 let nativeFocusedNotificationObserver;
@@ -120,27 +122,32 @@ function ensureNativeClasses() {
 	});
 }
 
-export function setupAccessibleView(view: View): void {
-	const uiView = view.nativeViewProtected as UIView;
-	if (!uiView) {
-		return;
-	}
+// export function setupAccessibleView(view: View): void {
+// 	const uiView = view.nativeViewProtected as UIView;
+// 	if (!uiView) {
+// 		return;
+// 	}
 
-	/**
-	 * We need to map back from the UIView to the NativeScript View.
-	 *
-	 * We do that by setting the uiView's tag to the View's domId.
-	 * This way we can do reverse lookup.
-	 */
-	uiView.tag = view._domId;
-}
+// 	/**
+// 	 * We need to map back from the UIView to the NativeScript View.
+// 	 *
+// 	 * We do that by setting the uiView's tag to the View's domId.
+// 	 * This way we can do reverse lookup.
+// 	 */
+// 	uiView.tag = view._domId;
+// }
 
+let started = false;
 export function updateAccessibilityProperties(view: View): void {
 	const uiView = view.nativeViewProtected as UIView;
 	if (!uiView) {
 		return;
 	}
-
+	if (!started) {
+		started = true;
+		initAccessibilityCssHelper();
+		initAccessibilityFontScale();
+	}
 	ensureNativeClasses();
 
 	const accessibilityRole = view.accessibilityRole;

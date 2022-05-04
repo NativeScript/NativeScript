@@ -374,6 +374,7 @@ export class Binding {
 			newValue = expressionValue;
 		}
 
+
 		this.updateSource(newValue);
 	}
 

@@ -178,6 +178,8 @@ export class Observable {
 	 */
 	public _isViewBase: boolean;
 	//@endprivate
+
+	
 }
 
 /**

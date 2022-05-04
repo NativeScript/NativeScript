@@ -4,6 +4,7 @@ module.exports = (env) => {
 	webpack.init(env);
 
 	webpack.chainWebpack(config => {
+		config.resolve.alias.set('@nativescript/core', '@akylas/nativescript');
 		config.plugin('DefinePlugin').tap(args => {
 			Object.assign(args[0], {
 				__CI__: !!process.env.CI,

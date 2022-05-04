@@ -286,6 +286,10 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 				newInputType = android.text.InputType.TYPE_CLASS_NUMBER;
 				break;
 
+			case 'decimal':
+				newInputType = android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL;
+				break;
+
 			default:
 				const inputType = +value;
 				if (!isNaN(inputType)) {

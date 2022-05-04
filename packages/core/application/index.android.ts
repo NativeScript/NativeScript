@@ -14,8 +14,6 @@ import { NavigationEntry, AndroidActivityCallbacks } from '../ui/frame/frame-int
 import { Observable } from '../data/observable';
 
 import { profile } from '../profiling';
-import { initAccessibilityCssHelper } from '../accessibility/accessibility-css-helper';
-import { initAccessibilityFontScale } from '../accessibility/font-scale';
 import { inBackground, setInBackground, setSuspended, suspended } from './application-common';
 
 const ActivityCreated = 'activityCreated';
@@ -203,9 +201,6 @@ export function run(entry?: NavigationEntry | string) {
 		const nativeApp = getNativeApplication();
 		androidApp.init(nativeApp);
 	}
-
-	initAccessibilityCssHelper();
-	initAccessibilityFontScale();
 }
 
 export function addCss(cssText: string, attributeScoped?: boolean): void {
@@ -376,6 +371,9 @@ function initLifecycleCallbacks() {
 
 	const lifecycleCallbacks = new android.app.Application.ActivityLifecycleCallbacks(<any>{
 		onActivityCreated: <any>profile('onActivityCreated', function (activity: androidx.appcompat.app.AppCompatActivity, savedInstanceState: android.os.Bundle) {
+			if (!androidApp.foregroundActivity) {
+				androidApp.foregroundActivity = activity;
+			}
 			setThemeOnLaunch(activity, undefined, undefined);
 
 			if (!androidApp.startActivity) {

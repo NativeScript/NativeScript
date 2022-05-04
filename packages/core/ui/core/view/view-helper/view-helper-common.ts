@@ -89,11 +89,11 @@ export class ViewHelper {
 		const effectiveMarginRight = child.effectiveMarginRight;
 
 		let hAlignment: CoreTypes.HorizontalAlignmentType;
-		if (child.effectiveWidth >= 0 && childStyle.horizontalAlignment === 'stretch') {
-			hAlignment = 'center';
-		} else {
+		// if (child.effectiveWidth >= 0 && childStyle.horizontalAlignment === 'stretch') {
+		// 	hAlignment = 'center';
+		// } else {
 			hAlignment = childStyle.horizontalAlignment;
-		}
+		// }
 
 		switch (hAlignment) {
 			case 'left':
