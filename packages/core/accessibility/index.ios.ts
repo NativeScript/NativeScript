@@ -1,4 +1,4 @@
-import { initAccessibilityFontScale } from 'accessibility';
+import { initAccessibilityFontScale } from './font-scale';
 import * as Application from '../application';
 import type { View } from '../ui/core/view';
 import { notifyAccessibilityFocusState } from './accessibility-common';

@@ -54,3 +54,4 @@ Thumbs.db
 
 # types
 ios-typings-prj
+/packages/core/platforms/android/core.aar

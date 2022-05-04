@@ -3,6 +3,7 @@ import { ContentView } from '../content-view';
 import { View, CSSType, ShownModallyData } from '../core/view';
 import { booleanConverter } from '../core/view-base';
 import { Property, CssProperty } from '../core/properties';
+import { colorConverter } from '../styling/style-properties';
 import { Style } from '../styling/style';
 import { Color } from '../../color';
 import { EventData } from '../../data/observable';
@@ -223,6 +224,6 @@ export const androidStatusBarBackgroundProperty = new CssProperty<Style, Color>(
 	name: 'androidStatusBarBackground',
 	cssName: 'android-status-bar-background',
 	equalityComparer: Color.equals,
-	valueConverter: (v) => new Color(v),
+	valueConverter: colorConverter,
 });
 androidStatusBarBackgroundProperty.register(Style);

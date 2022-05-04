@@ -315,17 +315,11 @@ export const lineHeightProperty = new InheritedCssProperty<Style, number>({
 });
 lineHeightProperty.register(Style);
 
-<<<<<<< HEAD
+
 export const maxLinesProperty = new CssProperty<Style, CoreTypes.MaxLinesType>({
 	name: 'maxLines',
 	cssName: 'max-lines',
 	valueConverter: (v) => (v === 'none' ? 0 : parseInt(v, 10)),
-=======
-export const maxLinesProperty = new CssProperty<Style, number | string>({
-    name: 'maxLines',
-    cssName: 'max-lines',
-	valueConverter: (v) => v === 'none' ? 0 : parseInt(v, 10),
->>>>>>> 89a0b866a8272637171469e10120bb9a33063f78
 });
 maxLinesProperty.register(Style);
 

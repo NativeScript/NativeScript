@@ -34,7 +34,8 @@ export interface Cancelable {
 
 export interface PropertyAnimation {
 	target: View;
-	property: string;
+	property: any;
+	propertyName: string;
 	value: any;
 	duration?: number;
 	delay?: number;

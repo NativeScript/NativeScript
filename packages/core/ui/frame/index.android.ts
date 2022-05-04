@@ -434,7 +434,7 @@ export class Frame extends FrameBase {
 			//transaction.setTransition(androidx.fragment.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
 		}
 
-		if (this._currentEntry && this._currentEntry.entry.backstackVisible === false) {
+		if (this._currentEntry) {
 			// we only hide the fragment to fix some black blick issues with GLSurfaceView and GLTextureView
 			// it will be removed once the navigation is done
 			transaction.hide(this._currentEntry.fragment);
@@ -494,6 +494,9 @@ export class Frame extends FrameBase {
 			// we only hide the fragment to fix some black blick issues with GLSurfaceView and GLTextureView
 			// it will be removed once the navigation is done
 			transaction.hide(this._currentEntry.fragment);
+
+			// let's show the previous fragment
+			transaction.show(backstackEntry.fragment);
 		}
 
 		transaction.commitNowAllowingStateLoss();
