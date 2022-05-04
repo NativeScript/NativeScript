@@ -1028,6 +1028,12 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		return this.createAnimation(animation).play();
 	}
 
+	public cancelAllAnimations() {
+		if (this._localAnimations) {
+			this._localAnimations.forEach((a) => this._removeAnimation(a));
+		}
+	}
+
 	public createAnimation(animation: any): am.Animation {
 		ensureAnimationModule();
 		if (!this._localAnimations) {
@@ -1055,10 +1061,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	}
 
 	public resetNativeView(): void {
-		if (this._localAnimations) {
-			this._localAnimations.forEach((a) => this._removeAnimation(a));
-		}
-
+		this.cancelAllAnimations();
 		super.resetNativeView();
 	}
 

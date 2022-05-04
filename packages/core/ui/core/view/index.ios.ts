@@ -411,7 +411,10 @@ export class View extends ViewCommon implements ViewDefinition {
 		const newPoint = CGPointMake(originX, originY);
 		this.nativeViewProtected.layer.anchorPoint = newPoint;
 		if (this._cachedFrame) {
-			this._setNativeViewFrame(this.nativeViewProtected, this._cachedFrame);
+			// to ensure we "force" a setFrame we need to clear the _cachedFrame
+			const frame = this._cachedFrame;
+			this._cachedFrame = null;
+			this._setNativeViewFrame(this.nativeViewProtected, frame);
 		}
 	}
 
