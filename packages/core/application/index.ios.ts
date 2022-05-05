@@ -137,7 +137,7 @@ export class iOSApplication implements iOSApplicationDefinition {
 	private _systemAppearance: 'light' | 'dark';
 
 	get paused() {
-		return suspended
+		return suspended;
 	}
 	get backgrounded() {
 		return inBackground;
