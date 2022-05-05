@@ -48,6 +48,12 @@ export const Application = {
 		ensureNativeApplication();
 		return iosApp;
 	},
+	get suspended() {
+		return suspended;
+	},
+	get inBackground() {
+		return inBackground;
+	},
 };
 
 // Export all methods from "application-settings" as ApplicationSettings
@@ -131,6 +137,7 @@ export * from './ui';
 
 import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, executeOnUIThread, queueMacrotask, queueGC, debounce, throttle, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, iOSNativeHelper as iosUtils, Source, RESOURCE_PREFIX, FILE_PREFIX, escapeRegexSymbols, convertString, dismissSoftInput } from './utils';
 import { ClassInfo, getClass, getBaseClasses, getClassInfo, isBoolean, isDefined, isFunction, isNullOrUndefined, isNumber, isObject, isString, isUndefined, toUIString, verifyCallback } from './utils/types';
+import { inBackground, suspended } from 'application/application-common';
 
 export const Utils = {
 	GC,
