@@ -206,7 +206,9 @@ export class Frame extends FrameBase {
 			// NOTE: we are restoring the animation settings in Frame.setCurrent(...) as navigation completes asynchronously
 			const cachedTransitionState = getTransitionState(this._currentEntry);
 
-			if (cachedTransitionState) {
+			// we can end up here also after an activity recreate. In this case the entry fragment was destroyed
+			// and we also dont have cachedTransitionState. We still need to navigate again
+			if (cachedTransitionState || !entry.fragment) {
 				this._cachedTransitionState = cachedTransitionState;
 				this._currentEntry = null;
 				// NavigateCore will eventually call _processNextNavigationEntry again.
