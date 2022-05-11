@@ -1,10 +1,25 @@
 import * as common from './application-settings-common';
 import { getNativeApplication } from '../application';
+import { Trace } from '../trace';
 
+const DB_KEY = 'prefs.db';
 let sharedPreferences: android.content.SharedPreferences;
 function ensureSharedPreferences() {
-	if (!sharedPreferences) {
-		sharedPreferences = (<android.app.Application>getNativeApplication()).getApplicationContext().getSharedPreferences('prefs.db', 0);
+	let context = getNativeApplication().getApplicationContext();
+	if (context && !sharedPreferences) {
+		if (android.os.Build.VERSION.SDK_INT >= 24) {
+			const deviceContext = context.createDeviceProtectedStorageContext();
+			if (deviceContext && !deviceContext.moveSharedPreferencesFrom(context, DB_KEY)) {
+				const warnMessage = 'Failed to migrate Application Settings to Device Protected Storage';
+				if (Trace.isEnabled()) {
+					Trace.write(warnMessage, Trace.categories.Debug, Trace.messageType.warn);
+				} else {
+					console.log(warnMessage);
+				}
+			}
+			context = deviceContext;
+		}
+		sharedPreferences = context.getSharedPreferences(DB_KEY, android.content.Context.MODE_PRIVATE);
 	}
 }
 
