@@ -6,7 +6,7 @@ const DB_KEY = 'prefs.db';
 let sharedPreferences: android.content.SharedPreferences;
 function ensureSharedPreferences() {
 	let context = getNativeApplication().getApplicationContext();
-	if (context && !sharedPreferences) {
+	if (!sharedPreferences) {
 		if (android.os.Build.VERSION.SDK_INT >= 24) {
 			const deviceContext = context.createDeviceProtectedStorageContext();
 			if (deviceContext && !deviceContext.moveSharedPreferencesFrom(context, DB_KEY)) {
