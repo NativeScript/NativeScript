@@ -1,13 +1,16 @@
 import * as common from './application-settings-common';
 import { getNativeApplication } from '../application';
 import { Trace } from '../trace';
+import { Device } from '../platform';
+import lazy from '../utils/lazy';
 
+const sdkVersion = lazy(() => parseInt(Device.sdkVersion));
 const DB_KEY = 'prefs.db';
 let sharedPreferences: android.content.SharedPreferences;
 function ensureSharedPreferences() {
 	let context = getNativeApplication().getApplicationContext();
 	if (!sharedPreferences) {
-		if (android.os.Build.VERSION.SDK_INT >= 24) {
+		if (sdkVersion() >= 24) {
 			const deviceContext = context.createDeviceProtectedStorageContext();
 			if (deviceContext && !deviceContext.moveSharedPreferencesFrom(context, DB_KEY)) {
 				const warnMessage = 'Failed to migrate Application Settings to Device Protected Storage';
