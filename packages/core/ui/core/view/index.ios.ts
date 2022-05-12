@@ -79,6 +79,10 @@ export class View extends ViewCommon implements ViewDefinition {
 	disposeNativeView() {
 		super.disposeNativeView();
 
+		if (this.viewController) {
+			this.viewController = null;
+		} 
+
 		this._cachedFrame = null;
 		this._isLaidOut = false;
 		this._hasTransform = false;
