@@ -77,6 +77,7 @@ export class RootLayoutBase extends GridLayout {
 					.play()
 					.then(() => {
 						this.applyDefaultState(view);
+						view.notify({ eventName: 'opened', object: view });
 						resolve();
 					})
 					.catch((ex) => {
@@ -101,6 +102,7 @@ export class RootLayoutBase extends GridLayout {
 			const popupIndex = this.getPopupIndex(view);
 			const poppedView = this.popupViews[popupIndex];
 			const cleanupAndFinish = () => {
+				view.notify({ eventName: 'closed', object: view });
 				this.removeChild(view);
 				resolve();
 			};
