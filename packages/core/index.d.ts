@@ -44,6 +44,8 @@ export declare const Application: {
 	setAutoSystemAppearanceChanged: typeof setAutoSystemAppearanceChanged;
 	android: AndroidApplication;
 	ios: iOSApplication;
+	suspended: boolean;
+	inBackground: boolean;
 };
 import { setString, getString, clear, flush, getAllKeys, getBoolean, getNumber, hasKey, remove, setBoolean, setNumber } from './application-settings';
 export declare const ApplicationSettings: {
