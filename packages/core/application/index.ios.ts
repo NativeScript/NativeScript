@@ -20,7 +20,7 @@ import { profile } from '../profiling';
 import { iOSNativeHelper } from '../utils';
 import { initAccessibilityCssHelper } from '../accessibility/accessibility-css-helper';
 import { initAccessibilityFontScale } from '../accessibility/font-scale';
-import { setInBackground, setSuspended } from './application-common';
+import { inBackground, setInBackground, setSuspended, suspended } from './application-common';
 
 const IOS_PLATFORM = 'ios';
 
@@ -137,6 +137,13 @@ export class iOSApplication implements iOSApplicationDefinition {
 	private _orientation: 'portrait' | 'landscape' | 'unknown';
 	private _rootView: View;
 	private _systemAppearance: 'light' | 'dark';
+
+	get paused() {
+		return suspended;
+	}
+	get backgrounded() {
+		return inBackground;
+	}
 
 	constructor() {
 		this._observers = new Array<NotificationObserver>();
