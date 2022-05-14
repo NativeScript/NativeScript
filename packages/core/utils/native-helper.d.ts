@@ -122,6 +122,12 @@ export namespace iOSNativeHelper {
 	}
 
 	/**
+	 * Data serialize and deserialize helpers
+	 */
+	export function dataSerialize(data?: any): any;
+	export function dataDeserialize(nativeData?: any): any;
+
+	/**
 	 * @deprecated use application.orientation instead
 	 *
 	 * Gets an information about if current mode is Landscape.
