@@ -1,4 +1,5 @@
 import { Trace } from '../trace';
+import { getClass, isNullOrUndefined } from './types';
 
 declare let UIImagePickerControllerSourceType: any;
 
@@ -50,6 +51,60 @@ export namespace iOSNativeHelper {
 			}
 
 			return arr;
+		}
+	}
+
+	export function dataDeserialize(nativeData?: any) {
+		if (isNullOrUndefined(nativeData)) {
+			// some native values will already be js null values
+			// calling types.getClass below on null/undefined will cause crash
+			return null;
+		} else {
+			switch (getClass(nativeData)) {
+				case 'NSNull':
+					return null;
+				case 'NSMutableDictionary':
+				case 'NSDictionary':
+					let obj = {};
+					const length = nativeData.count;
+					const keysArray = nativeData.allKeys as NSArray<any>;
+					for (let i = 0; i < length; i++) {
+						const nativeKey = keysArray.objectAtIndex(i);
+						obj[nativeKey] = dataDeserialize(nativeData.objectForKey(nativeKey));
+					}
+					return obj;
+				case 'NSMutableArray':
+				case 'NSArray':
+					let array = [];
+					const len = nativeData.count;
+					for (let i = 0; i < len; i++) {
+						array[i] = dataDeserialize(nativeData.objectAtIndex(i));
+					}
+					return array;
+				default:
+					return nativeData;
+			}
+		}
+	}
+
+	export function dataSerialize(data?: any) {
+		switch (typeof data) {
+			case 'number':
+			case 'string':
+			case 'boolean':
+				return data;
+			case 'object':
+				if (Array.isArray(data)) {
+					return NSArray.arrayWithArray(<any>data.map(dataSerialize));
+				}
+
+				let obj = {};
+				for (let key of Object.keys(data)) {
+					obj[key] = dataSerialize(data[key]);
+				}
+				return NSDictionary.dictionaryWithDictionary(<any>obj);
+			default:
+				return NSNull.new();
 		}
 	}
 
