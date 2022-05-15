@@ -6,7 +6,7 @@ export { iOSApplication, AndroidApplication } from './application';
 export type { ApplicationEventData, LaunchEventData, OrientationChangedEventData, UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData, AndroidActivityEventData, AndroidActivityBundleEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, AndroidActivityNewIntentEventData, AndroidActivityBackPressedEventData, SystemAppearanceChangedEventData } from './application';
 
 import { fontScaleChangedEvent, launchEvent, displayedEvent, uncaughtErrorEvent, discardedErrorEvent, suspendEvent, resumeEvent, exitEvent, lowMemoryEvent, orientationChangedEvent, systemAppearanceChanged, systemAppearanceChangedEvent, getMainEntry, getRootView, _resetRootView, getResources, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, notify, hasListeners, run, orientation, getNativeApplication, hasLaunched, android as appAndroid, ios as iosApp, systemAppearance, setAutoSystemAppearanceChanged, ensureNativeApplication, setMaxRefreshRate } from './application';
-import { inBackground, suspended } from 'application/application-common';
+import { inBackground, suspended } from './application/application-common';
 
 export const Application = {
 	launchEvent,
@@ -137,9 +137,8 @@ export * from './trace';
 
 export * from './ui';
 
-import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, executeOnUIThread, queueMacrotask, queueGC, debounce, throttle, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, iOSNativeHelper as iosUtils, Source, RESOURCE_PREFIX, FILE_PREFIX, escapeRegexSymbols, convertString, dismissSoftInput } from './utils';
-import { ClassInfo, getClass, getBaseClasses, getClassInfo, isBoolean, isDefined, isFunction, isNullOrUndefined, isNumber, isObject, isString, isUndefined, toUIString, verifyCallback } from './utils/types';
-import { inBackground, suspended } from 'application/application-common';
+import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, executeOnUIThread, queueMacrotask, queueGC, debounce, throttle, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, iOSNativeHelper as iosUtils, Source, RESOURCE_PREFIX, FILE_PREFIX, escapeRegexSymbols, convertString, dismissSoftInput, dataDeserialize, dataSerialize } from './utils';
+import { ClassInfo, getClass, getBaseClasses, getClassInfo, isBoolean, isDefined, isFunction, isNullOrUndefined, isNumber, isObject, isString, isUndefined, toUIString, verifyCallback, numberHasDecimals, numberIs64Bit } from './utils/types';
 
 export const Utils = {
 	GC,
@@ -171,6 +170,10 @@ export const Utils = {
 	// legacy (a lot of plugins use the shorthand "ad" Utils.ad instead of Utils.android)
 	ad: androidUtils,
 	ios: iosUtils,
+	dataSerialize,
+	dataDeserialize,
+	numberHasDecimals,
+	numberIs64Bit,
 	setTimeout,
 	setInterval,
 	clearInterval,

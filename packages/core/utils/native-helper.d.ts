@@ -1,4 +1,15 @@
 /**
+ * Data serialization from JS > Native
+ * @param wrapPrimitives Optionally wrap primitive types (Some APIs may require this)
+ */
+export function dataSerialize(data?: any, wrapPrimitives?: boolean): any;
+/**
+ * Data deserialization from Native > JS
+ * @param nativeData Native platform data
+ */
+export function dataDeserialize(nativeData?: any): any;
+
+/**
  * Module with android specific utilities.
  */
 export namespace ad {
@@ -120,6 +131,12 @@ export namespace iOSNativeHelper {
 		 */
 		export function nsArrayToJSArray<T>(a: NSArray<T>): T[];
 	}
+
+	/**
+	 * Data serialize and deserialize helpers
+	 */
+	export function dataSerialize(data?: any): any;
+	export function dataDeserialize(nativeData?: any): any;
 
 	/**
 	 * @deprecated use application.orientation instead
