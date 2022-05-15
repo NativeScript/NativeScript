@@ -5,13 +5,13 @@ import { AnimationDefinition, AnimationPromise as AnimationPromiseDefinition, Pa
 // Requires.
 import { Trace } from '../../trace';
 import { Style } from '../styling/style';
-import { CssAnimationProperty, InheritedCssProperty, ShorthandProperty } from '../core/properties';
+import { CssAnimationProperty, CssProperty, InheritedCssProperty, ShorthandProperty } from '../core/properties';
 import { View } from '../core/view';
 
 export * from './animation-interfaces';
 
 export function getPropertyFromKey(key: string, view: View) {
-	return CssAnimationProperty.properties[key] || ShorthandProperty.properties[key] || InheritedCssProperty.properties[key] || Style.prototype[key] || Object.getPrototypeOf(view)[key];
+	return CssAnimationProperty.properties[key] || ShorthandProperty.properties[key] || InheritedCssProperty.properties[key] || CssProperty.properties[key] || Style.prototype[key] || Object.getPrototypeOf(view)[key];
 }
 
 export namespace Properties {
