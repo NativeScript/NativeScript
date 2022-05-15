@@ -180,14 +180,10 @@ export class ImageSource implements ImageSourceDefinition {
 
 	static fromFontIconCodeSync(source: string, font: Font, color: Color): ImageSource {
 		font = font || Font.default;
-		let scaledFontSize = layout.toDevicePixels(font.fontSize);
-		if (!scaledFontSize) {
-			// TODO: Consider making 36 font size as default for optimal look on TabView and ActionBar
-			scaledFontSize = layout.toDevicePixels(UIFont.labelFontSize);
-		}
 
+		// TODO: Consider making 36 font size as default for optimal look on TabView and ActionBar
 		const attributes = {
-			[NSFontAttributeName]: font.withFontSize(scaledFontSize).getUIFont(UIFont.systemFontOfSize(scaledFontSize)),
+			[NSFontAttributeName]: font.getUIFont(UIFont.systemFontOfSize(UIFont.labelFontSize)),
 		};
 
 		if (color) {
