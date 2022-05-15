@@ -183,7 +183,7 @@ export class ImageSource implements ImageSourceDefinition {
 		let scaledFontSize = layout.toDevicePixels(font.fontSize);
 		if (!scaledFontSize) {
 			// TODO: Consider making 36 font size as default for optimal look on TabView and ActionBar
-			scaledFontSize = UIFont.labelFontSize;
+			scaledFontSize = layout.toDevicePixels(UIFont.labelFontSize);
 		}
 
 		const attributes = {
