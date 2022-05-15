@@ -1,4 +1,15 @@
 /**
+ * Data serialization from JS > Native
+ * @param wrapPrimitives Optionally wrap primitive types (Some APIs may require this)
+ */
+export function dataSerialize(data?: any, wrapPrimitives?: boolean): any;
+/**
+ * Data deserialization from Native > JS
+ * @param nativeData Native platform data
+ */
+export function dataDeserialize(nativeData?: any): any;
+
+/**
  * Module with android specific utilities.
  */
 export namespace ad {
