@@ -560,6 +560,9 @@ function setCssFunc<T extends Style, U>(property: CssProperty<T, U>, valueSource
 }
 
 export class CssProperty<T extends Style, U> implements CssProperty<T, U> {
+	public static properties: {
+		[cssName: string]: CssProperty<any, any>;
+	} = {};
 	private registered: boolean;
 
 	public readonly name: string;
@@ -590,6 +593,11 @@ export class CssProperty<T extends Style, U> implements CssProperty<T, U> {
 		this.overrideHandlers = overrideHandlers(this);
 		this.overrideHandlers(options);
 		const propertyName = this.name;
+
+		CssProperty.properties[propertyName] = this;
+		if (this.cssLocalName && this.cssLocalName !== propertyName) {
+			CssProperty.properties[this.cssLocalName] = this;
+		}
 
 		const key = Symbol(propertyName + ':propertyKey');
 		this.key = key;
