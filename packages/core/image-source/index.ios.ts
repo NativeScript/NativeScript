@@ -187,7 +187,7 @@ export class ImageSource implements ImageSourceDefinition {
 		}
 
 		const attributes = {
-			[NSFontAttributeName]: font.getUIFont(UIFont.systemFontOfSize(scaledFontSize)),
+			[NSFontAttributeName]: font.withFontSize(scaledFontSize).getUIFont(UIFont.systemFontOfSize(scaledFontSize)),
 		};
 
 		if (color) {
