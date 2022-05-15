@@ -44,6 +44,14 @@ export function verifyCallback(value: any) {
 	}
 }
 
+export function numberHasDecimals(value: number): boolean {
+	return !(value % 1 === 0);
+}
+
+export function numberIs64Bit(value: number): boolean {
+	return value < -Math.pow(2, 31) + 1 || value > Math.pow(2, 31) - 1;
+}
+
 const classInfosMap = new Map<Function, ClassInfo>();
 
 // ES3-5 type classes are "function blah()", new ES6+ classes can be "class blah"
