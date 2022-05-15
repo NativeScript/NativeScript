@@ -105,8 +105,8 @@ export type { InstrumentationMode, TimerInfo } from './profiling';
 export { encoding } from './text';
 export * from './trace';
 export * from './ui';
-import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, executeOnUIThread, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, iOSNativeHelper as iosUtils, Source, escapeRegexSymbols, convertString, dismissSoftInput, queueMacrotask, queueGC, throttle, debounce } from './utils';
-import { ClassInfo, getClass, getBaseClasses, getClassInfo, isBoolean, isDefined, isFunction, isNullOrUndefined, isNumber, isObject, isString, isUndefined, toUIString, verifyCallback } from './utils/types';
+import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, executeOnUIThread, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, iOSNativeHelper as iosUtils, Source, escapeRegexSymbols, convertString, dismissSoftInput, queueMacrotask, queueGC, throttle, debounce, dataSerialize, dataDeserialize } from './utils';
+import { ClassInfo, getClass, getBaseClasses, getClassInfo, isBoolean, isDefined, isFunction, isNullOrUndefined, isNumber, isObject, isString, isUndefined, toUIString, verifyCallback, numberHasDecimals, numberIs64Bit } from './utils/types';
 export declare const Utils: {
 	GC: typeof GC;
 	RESOURCE_PREFIX: string;
@@ -134,6 +134,10 @@ export declare const Utils: {
 	android: typeof androidUtils;
 	ad: typeof androidUtils;
 	ios: typeof iosUtils;
+	dataSerialize: typeof dataSerialize;
+	dataDeserialize: typeof dataDeserialize;
+	numberHasDecimals: typeof numberHasDecimals;
+	numberIs64Bit: typeof numberIs64Bit;
 	setTimeout: typeof setTimeout;
 	setInterval: typeof setInterval;
 	clearInterval: typeof clearInterval;
