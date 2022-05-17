@@ -672,6 +672,11 @@ function transitionOrAnimationCompleted(entry: ExpandedEntry, backEntry: Backsta
 
 	entries.delete(entry);
 	if (entries.size === 0) {
+		// I had the https://github.com/NativeScript/NativeScript/issues/9096 (similar error but on Android)
+		// during back navigation. The following lines below solved my issue.
+		if (entry.resolvedPage === null) {
+    	return;
+    }
 		const frame = entry.resolvedPage.frame;
 
 		// We have 0 or 1 entry per frameId in completedEntries
