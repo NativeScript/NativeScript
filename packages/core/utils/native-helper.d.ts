@@ -133,6 +133,11 @@ export namespace iOSNativeHelper {
 	}
 
 	/**
+	 * Get the root UIViewController of the app
+	 */
+	export function getRootViewController(): any; /* UIViewController */
+
+	/**
 	 * Data serialize and deserialize helpers
 	 */
 	export function dataSerialize(data?: any): any;
