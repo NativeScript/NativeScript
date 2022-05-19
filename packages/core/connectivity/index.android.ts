@@ -133,7 +133,6 @@ export function startMonitoring(connectionTypeChangedCallback: (newConnectionTyp
 				@NativeClass
 				class NetworkCallbackImpl extends ConnectivityManager.NetworkCallback {
 					onCapabilitiesChanged(network: android.net.Network, networkCapabilities: android.net.NetworkCapabilities) {
-						console.log('NetworkCallbackImpl.onCapabilitiesChanged');
 						if (notifyCallback) {
 							notifyCallback(network, networkCapabilities);
 						}
