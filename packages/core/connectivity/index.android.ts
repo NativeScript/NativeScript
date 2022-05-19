@@ -32,8 +32,12 @@ function getActiveNetworkInfo(): android.net.NetworkInfo {
 function getNetworkCapabilities() {
 	// @ts-ignore
 	const connectivityManager: any = getConnectivityManager();
-	const network = connectivityManager.getActiveNetwork();
-	const capabilities = connectivityManager.getNetworkCapabilities(network);
+	const networkToCheck = connectivityManager.getActiveNetwork();
+	const capabilities = connectivityManager.getNetworkCapabilities(networkToCheck);
+	return parseNetworkCapabilities(capabilities);
+}
+
+function parseNetworkCapabilities(capabilities?: android.net.NetworkCapabilities) {
 	if (capabilities == null) {
 		return connectionType.none;
 	}
@@ -116,8 +120,11 @@ export function startMonitoring(connectionTypeChangedCallback: (newConnectionTyp
 	if (android.os.Build.VERSION.SDK_INT >= 28) {
 		const manager = getConnectivityManager();
 		if (manager) {
-			notifyCallback = () => {
-				const newConnectionType = getConnectionType();
+			notifyCallback = (network: android.net.Network, networkCapabilities: android.net.NetworkCapabilities) => {
+				let newConnectionType = connectionType.none;
+				if (network && networkCapabilities) {
+					newConnectionType = parseNetworkCapabilities(networkCapabilities);
+				}
 				const zoneCallback = zonedCallback(connectionTypeChangedCallback);
 				zoneCallback(newConnectionType);
 			};
@@ -125,15 +132,10 @@ export function startMonitoring(connectionTypeChangedCallback: (newConnectionTyp
 			if (!networkCallback) {
 				@NativeClass
 				class NetworkCallbackImpl extends ConnectivityManager.NetworkCallback {
-					onAvailable(network: android.net.Network) {
-						if (notifyCallback) {
-							notifyCallback();
-						}
-					}
-
 					onCapabilitiesChanged(network: android.net.Network, networkCapabilities: android.net.NetworkCapabilities) {
+						console.log('NetworkCallbackImpl.onCapabilitiesChanged');
 						if (notifyCallback) {
-							notifyCallback();
+							notifyCallback(network, networkCapabilities);
 						}
 					}
 
