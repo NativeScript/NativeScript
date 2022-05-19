@@ -712,7 +712,6 @@ function drawNoRadiusNonUniformBorders(nativeView: NativeScriptUIView, backgroun
 // TODO: use sublayer if its applied to a layout
 function drawBoxShadow(nativeView: NativeScriptUIView, view: View, boxShadow: CSSShadow, background: BackgroundDefinition, useSubLayer: boolean = false) {
 	const layer: CALayer = iOSNativeHelper.getShadowLayer(nativeView, 'ns-box-shadow');
-	const renderSize = view.getActualSize() || { width: 0, height: 0 };
 
 	layer.masksToBounds = false;
 	nativeView.clipsToBounds = false;
@@ -721,23 +720,10 @@ function drawBoxShadow(nativeView: NativeScriptUIView, view: View, boxShadow: CS
 	// nativeView.clipsToBounds doesn't work
 	view.setProperty('clipToBounds', false);
 
-	// This should match the view's border radius (only uniform radius is supported for now)
-	let cornerRadius = layout.toDeviceIndependentPixels(background.borderTopLeftRadius);
-	cornerRadius = Math.min(Math.min(renderSize.width / 2, renderSize.height / 2), cornerRadius);
-
-	// Apply corner radius to sub layers as clipToBounds and masksToBounds are now set to false
-	const sublayers = nativeView.layer?.sublayers;
-	if (sublayers) {
-		for (let i = 0; i < sublayers.count; i++) {
-			sublayers.objectAtIndex(i).cornerRadius = cornerRadius;
-		}
-	}
-
 	if (!background.color?.a) {
 		// add white background if view has a transparent background
 		layer.backgroundColor = UIColor.whiteColor.CGColor;
 	}
-
 	// shadow opacity is handled on the shadow's color instance
 	layer.shadowOpacity = boxShadow.color?.a ? boxShadow.color?.a / 255 : 1;
 	layer.shadowRadius = Length.toDevicePixels(boxShadow.blurRadius, 0.0);
@@ -748,6 +734,9 @@ function drawBoxShadow(nativeView: NativeScriptUIView, view: View, boxShadow: CS
 		Length.toDevicePixels(boxShadow.offsetX, 0.0),
 		Length.toDevicePixels(boxShadow.offsetY, 0.0)
 	);
+
+	// this should match the view's border radius
+	const cornerRadius = Length.toDevicePixels(<CoreTypes.LengthType>view.style.borderRadius, 0.0);
 
 	// apply spreadRadius by expanding shadow layer bounds
 	// prettier-ignore
@@ -762,18 +751,10 @@ function drawBoxShadow(nativeView: NativeScriptUIView, view: View, boxShadow: CS
 
 function clearBoxShadow(nativeView: NativeScriptUIView) {
 	nativeView.clipsToBounds = true;
-	const sublayers = nativeView.layer?.sublayers;
-	if (sublayers) {
-		for (let i = 0; i < sublayers.count; i++) {
-			sublayers.objectAtIndex(i).cornerRadius = 0.0;
-		}
-	}
-
 	const layer: CALayer = iOSNativeHelper.getShadowLayer(nativeView, 'ns-box-shadow', false);
 	if (!layer) {
 		return;
 	}
-
 	layer.masksToBounds = true;
 	layer.shadowOffset = CGSizeMake(0, 0);
 	layer.shadowColor = UIColor.clearColor.CGColor;
