@@ -1,3 +1,9 @@
+# DEPRECATED
+
+This package is no longer maintained by anyone, security patches and bug fixes are not our focus.
+
+If you are looking for a cross platform solution try Flutter/React Native or if you are an Angular enthusiast go for Ionic.
+
 <p align="center">
   <a href="http://www.nativescript.org">
     <img alt="NativeScript" src="https://d1lfyz5kwt8vu9.cloudfront.net/nativescript-logo-2021.png" width="100"/>
