@@ -94,8 +94,10 @@ export class WebView extends WebViewBase {
 
 	public createNativeView() {
 		const nativeView = new android.webkit.WebView(this._context);
-		nativeView.getSettings().setJavaScriptEnabled(true);
-		nativeView.getSettings().setBuiltInZoomControls(true);
+		const settings = nativeView.getSettings();
+		settings.setJavaScriptEnabled(true);
+		settings.setBuiltInZoomControls(true);
+		settings.setAllowFileAccess(true);
 
 		return nativeView;
 	}
