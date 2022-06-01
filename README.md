@@ -38,6 +38,8 @@ We love you and your PR's 🤗. Please follow our [contributing guide](https://g
   * Types for iOS
 * [@nativescript/types-android](https://github.com/NativeScript/NativeScript/tree/master/packages/types-android)
   * Types for Android
+* [@nativescript/types-minimal](https://github.com/NativeScript/NativeScript/tree/master/packages/types-minimal)
+  * A very minimal set of types for only the latest Android and iOS sdks. Most commonly used to optimize Web-based IDE's which auto load all type declarations from node_modules.
 * [@nativescript/ui-mobile-base](https://github.com/NativeScript/NativeScript/tree/master/packages/ui-mobile-base)
   * UI mobile base native classes used by core
 * [@nativescript/webpack](https://github.com/NativeScript/NativeScript/tree/master/packages/webpack)
