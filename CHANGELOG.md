@@ -1,3 +1,18 @@
+## [8.2.4](https://github.com/NativeScript/NativeScript/compare/8.2.3-core...8.2.4) (2022-06-04)
+
+
+### Bug Fixes
+
+* **Utils:** dispatchToUIThread ([9089b2c](https://github.com/NativeScript/NativeScript/commit/9089b2cf87ecc2644090da22ed8797f56db5c7bb))
+* **webview:** android not loading local content ([#9923](https://github.com/NativeScript/NativeScript/issues/9923)) ([834b4bf](https://github.com/NativeScript/NativeScript/commit/834b4bf5e1c92dad8cd7bfad2f329ba9d754c15e))
+
+
+### Features
+
+* **types-minimal:** minimal types for only the latest Android and iOS sdks ([#9927](https://github.com/NativeScript/NativeScript/issues/9927)) ([80e6b81](https://github.com/NativeScript/NativeScript/commit/80e6b8130a85fcd36d6e3bde581ae7d5e4bd1612))
+
+
+
 ## [8.2.3](https://github.com/NativeScript/NativeScript/compare/8.2.2-core...8.2.3) (2022-04-25)
 
 
