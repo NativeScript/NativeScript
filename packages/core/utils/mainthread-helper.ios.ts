@@ -8,12 +8,10 @@ export function isMainThread(): boolean {
 
 export function dispatchToUIThread(func: () => void) {
 	const runloop = CFRunLoopGetMain();
-	return function (func) {
-		if (runloop && func) {
-			CFRunLoopPerformBlock(runloop, kCFRunLoopDefaultMode, func);
-			CFRunLoopWakeUp(runloop);
-		} else if (func) {
-			func();
-		}
-	};
+	if (runloop && func) {
+		CFRunLoopPerformBlock(runloop, kCFRunLoopDefaultMode, func);
+		CFRunLoopWakeUp(runloop);
+	} else if (func) {
+		func();
+	}
 }
