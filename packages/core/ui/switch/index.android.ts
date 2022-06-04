@@ -57,11 +57,13 @@ export class Switch extends SwitchBase {
 	}
 
 	private setNativeBackgroundColor(value: string | number | Color) {
-		if (value instanceof Color) {
-			// todo: use https://developer.android.com/reference/androidx/core/graphics/BlendModeColorFilterCompat
-			this.nativeViewProtected.getTrackDrawable().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_OVER);
-		} else {
-			this.nativeViewProtected.getTrackDrawable().clearColorFilter();
+		if (this.nativeViewProtected) {
+			if (value instanceof Color) {
+				// todo: use https://developer.android.com/reference/androidx/core/graphics/BlendModeColorFilterCompat
+				this.nativeViewProtected.getTrackDrawable().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_OVER);
+			} else {
+				this.nativeViewProtected.getTrackDrawable().clearColorFilter();
+			}
 		}
 	}
 
