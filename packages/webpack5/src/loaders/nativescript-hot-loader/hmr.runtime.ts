@@ -5,6 +5,7 @@
 
 if (module.hot) {
 	let hash = __webpack_require__.h();
+	let hmrBootEmittedSymbol = Symbol.for('HMRBootEmitted');
 
 	const logVerbose = (title: string, ...info: any) => {
 		if (__NS_ENV_VERBOSE__) {
@@ -115,12 +116,15 @@ if (module.hot) {
 			return false;
 		}
 
-		await checkAndApply();
-		await originalOnLiveSync();
-
-		if (!global.hmrBootEmitted) {
-			global.hmrBootEmitted = true;
-			setStatus(hash, 'boot', 'HMR Enabled - waiting for changes...');
+		if (!(await checkAndApply())) {
+			return false;
 		}
+
+		await originalOnLiveSync();
 	};
+
+	if (!global[hmrBootEmittedSymbol]) {
+		global[hmrBootEmittedSymbol] = true;
+		setStatus(hash, 'boot', 'HMR Enabled - waiting for changes...');
+	}
 }
