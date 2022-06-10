@@ -517,16 +517,14 @@ export class View extends ViewCommon implements ViewDefinition {
 		parentController.presentViewControllerAnimatedCompletion(controller, animated, null);
 		const transitionCoordinator = parentController.transitionCoordinator;
 		if (transitionCoordinator) {
-			transitionCoordinator.animateAlongsideTransitionCompletion(null, () => {
-				this._raiseShownModallyEvent();
-				controller = null;
-			});
+			transitionCoordinator.animateAlongsideTransitionCompletion(null, () => this._raiseShownModallyEvent());
 		} else {
 			// Apparently iOS 9+ stops all transitions and animations upon application suspend and transitionCoordinator becomes null here in this case.
 			// Since we are not waiting for any transition to complete, i.e. transitionCoordinator is null, we can directly raise our shownModally event.
 			// Take a look at https://github.com/NativeScript/NativeScript/issues/2173 for more info and a sample project.
 			this._raiseShownModallyEvent();
 		}
+		controller = null;
 	}
 
 	protected _hideNativeModalView(parent: View, whenClosedCallback: () => void) {
