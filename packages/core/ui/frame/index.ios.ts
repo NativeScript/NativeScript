@@ -42,6 +42,8 @@ export class Frame extends FrameBase {
 		this._removeFromFrameStack();
 		this.viewController = null;
 		this._ios.controller = null;
+		this._animatedDelegate = null;
+		this._ios = null;
 		super.disposeNativeView();
 	}
 
