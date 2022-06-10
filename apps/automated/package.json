@@ -6,9 +6,6 @@
     "type": "git",
     "url": "https://github.com/NativeScript/NativeScript.git"
   },
-  "scripts": {
-    "clean": "npx rimraf hooks node_modules platforms package-lock.json && npm i --legacy-peer-deps"
-  },
   "dependencies": {
     "@nativescript/core": "file:../../packages/core",
     "nativescript-theme-core": "file:../../node_modules/nativescript-theme-core"
