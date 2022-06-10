@@ -22628,6 +22628,10 @@ declare class UIView extends UIResponder implements CALayerDelegate, NSCoding, U
 
 	layoutSubviews(): void;
 
+	nativeScriptSetFormattedTextDecorationAndTransform(details: NSDictionary<any, any>): void;
+
+	nativeScriptSetTextDecorationAndTransformTextDecorationLetterSpacingLineHeight(text: string, textDecoration: string, letterSpacing: number, lineHeight: number): void;
+
 	needsUpdateConstraints(): boolean;
 
 	passThroughParent(): boolean;

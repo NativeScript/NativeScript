@@ -13991,6 +13991,9 @@ declare const NS_UnknownByteOrder: number;
 
 interface _expressionFlags {
 	_evaluationBlocked: number;
+	_usesKVC: number;
+	_validatedExpression: number;
+	_validatedKeys: number;
 	_reservedExpressionFlags: number;
 }
 declare var _expressionFlags: interop.StructType<_expressionFlags>;
