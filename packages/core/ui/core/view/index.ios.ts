@@ -913,7 +913,7 @@ export class CustomLayoutView extends ContainerView {
 	}
 
 	public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-		// Don't call super because it will set MeasureDimension. This method must be overriden and calculate its measuredDimensions.
+		// Don't call super because it will set MeasureDimension. This method must be overridden and calculate its measuredDimensions.
 	}
 
 	public _addViewToNativeVisualTree(child: View, atIndex: number): boolean {
