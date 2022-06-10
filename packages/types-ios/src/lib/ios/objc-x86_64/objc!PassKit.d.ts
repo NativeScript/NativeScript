@@ -1541,3 +1541,51 @@ declare class PKTransitPassProperties extends PKStoredValuePassProperties {
 
 	readonly transitBalanceCurrencyCode: string;
 }
+
+interface PKVehicleConnectionDelegate extends NSObjectProtocol {
+
+	sessionDidChangeConnectionState(newState: PKVehicleConnectionSessionConnectionState): void;
+
+	sessionDidReceiveData(data: NSData): void;
+}
+declare var PKVehicleConnectionDelegate: {
+
+	prototype: PKVehicleConnectionDelegate;
+};
+
+declare const enum PKVehicleConnectionErrorCode {
+
+	Unknown = 0,
+
+	SessionUnableToStart = 1,
+
+	SessionNotActive = 2
+}
+
+declare class PKVehicleConnectionSession extends NSObject {
+
+	static alloc(): PKVehicleConnectionSession; // inherited from NSObject
+
+	static new(): PKVehicleConnectionSession; // inherited from NSObject
+
+	static sessionForPassDelegateCompletion(pass: PKSecureElementPass, delegate: PKVehicleConnectionDelegate, completion: (p1: PKVehicleConnectionSession, p2: NSError) => void): void;
+
+	readonly connectionStatus: PKVehicleConnectionSessionConnectionState;
+
+	readonly delegate: PKVehicleConnectionDelegate;
+
+	invalidate(): void;
+
+	sendDataError(message: NSData): boolean;
+}
+
+declare const enum PKVehicleConnectionSessionConnectionState {
+
+	Disconnected = 0,
+
+	Connected = 1,
+
+	Connecting = 2,
+
+	FailedToConnect = 3
+}

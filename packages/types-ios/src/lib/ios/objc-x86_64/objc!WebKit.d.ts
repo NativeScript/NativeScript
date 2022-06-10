@@ -800,9 +800,13 @@ declare class WKWebView extends UIView {
 
 	readonly loading: boolean;
 
+	readonly maximumViewportInset: UIEdgeInsets;
+
 	mediaType: string;
 
 	readonly microphoneCaptureState: WKMediaCaptureState;
+
+	readonly minimumViewportInset: UIEdgeInsets;
 
 	navigationDelegate: WKNavigationDelegate;
 
@@ -883,6 +887,8 @@ declare class WKWebView extends UIView {
 	setCameraCaptureStateCompletionHandler(state: WKMediaCaptureState, completionHandler: () => void): void;
 
 	setMicrophoneCaptureStateCompletionHandler(state: WKMediaCaptureState, completionHandler: () => void): void;
+
+	setMinimumViewportInsetMaximumViewportInset(minimumViewportInset: UIEdgeInsets, maximumViewportInset: UIEdgeInsets): void;
 
 	startDownloadUsingRequestCompletionHandler(request: NSURLRequest, completionHandler: (p1: WKDownload) => void): void;
 
