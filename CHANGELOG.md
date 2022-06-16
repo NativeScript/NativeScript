@@ -1,3 +1,18 @@
+## [8.2.5](https://github.com/NativeScript/NativeScript/compare/8.2.4-core...8.2.5) (2022-06-15)
+
+
+### Bug Fixes
+
+* **color:** output from rgbToHsv and rgbToHsl is now correct ([#9933](https://github.com/NativeScript/NativeScript/issues/9933)) ([ef70956](https://github.com/NativeScript/NativeScript/commit/ef70956623f8eab23e3c245e543b0a1b45e94bf7))
+* **ios:** not responding after rotation ([#9931](https://github.com/NativeScript/NativeScript/issues/9931)) ([aee1d05](https://github.com/NativeScript/NativeScript/commit/aee1d0565105158e84b6a752cc05ee0dc0577943))
+
+
+### Features
+
+* **core:** allow removal of specific CSS variables ([#9896](https://github.com/NativeScript/NativeScript/issues/9896)) ([32567ef](https://github.com/NativeScript/NativeScript/commit/32567ef36165c688f34b39d515790d4ce0836b4d))
+
+
+
 ## [8.2.4](https://github.com/NativeScript/NativeScript/compare/8.2.3-core...8.2.4) (2022-06-04)
 
 
