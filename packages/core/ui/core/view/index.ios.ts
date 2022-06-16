@@ -543,6 +543,7 @@ export class View extends ViewCommon implements ViewDefinition {
 			// Take a look at https://github.com/NativeScript/NativeScript/issues/2173 for more info and a sample project.
 			this._raiseShownModallyEvent();
 		}
+		controller = null;
 	}
 
 	protected _hideNativeModalView(parent: View, whenClosedCallback: () => void) {
