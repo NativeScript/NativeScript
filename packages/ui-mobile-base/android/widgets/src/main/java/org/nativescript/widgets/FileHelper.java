@@ -48,8 +48,9 @@ public class FileHelper {
 	}
 
 	private static boolean isExternalStorageDocument(Uri uri) {
-		return "com.android.externalstorage.documents".equals(uri
-			.getAuthority());
+		return false;
+//		return "com.android.externalstorage.documents".equals(uri
+//			.getAuthority());
 	}
 
 	private static @Nullable
@@ -318,10 +319,17 @@ public class FileHelper {
 
 	private byte[] readSyncInternal(Context context) throws Exception {
 		InputStream is = getInputStream(context, uri);
-		byte[] array = new byte[(int) size];
-		is.read(array);
+
+		Async.Http.RequestResult.ByteArrayOutputStream2 ret = new Async.Http.RequestResult.ByteArrayOutputStream2();
+
+		byte[] buff = new byte[4096];
+		int read;
+		while ((read = is.read(buff, 0, buff.length)) != -1) {
+			ret.write(buff, 0, read);
+		}
+
 		is.close();
-		return array;
+		return ret.buf();
 	}
 
 	public @Nullable
