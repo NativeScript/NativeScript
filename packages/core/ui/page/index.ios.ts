@@ -370,7 +370,7 @@ export class Page extends PageBase {
 		this._ios = null;
 		super.disposeNativeView();
 	}
-	
+
 	// @ts-ignore
 	get ios(): UIViewController {
 		return this._ios;
