@@ -1,7 +1,7 @@
 import * as helper from '../../ui-helper';
 import * as btnCounter from './pages/button-counter';
 import * as TKUnit from '../../tk-unit';
-import { isIOS, isAndroid } from '@nativescript/core';
+import { isIOS } from '@nativescript/core';
 
 // Integration tests that asser sertain runtime behavior, lifecycle events atc.
 
@@ -163,7 +163,7 @@ export function test_css_sets_properties() {
 	page.content = stack;
 
 	// TODO: The check counts here should be the same as the counts before removing from the page.
-	const expectedNativeSettersAfterReaddedToPage = isAndroid ? [2, 4, 4, 4] : expectedChangesAfterResettingClasses;
+	const expectedNativeSettersAfterReaddedToPage = [2, 4, 4, 4];
 	for (let i = 0; i < buttons.length; i++) {
 		TKUnit.assertEqual(buttons[i].colorSetNativeCount, expectedNativeSettersAfterReaddedToPage[i], `Expected ${buttons[i].id} native set to not be called when added to page.`);
 		TKUnit.assertEqual(buttons[i].colorPropertyChangeCount, expectedChangesAfterResettingClasses[i], `Expected ${buttons[i].id} change notifications for css properties to not occur when added to page.`);

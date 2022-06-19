@@ -1,5 +1,5 @@
 {
-	"root": "apps/automated/",
+	"$schema": "../../node_modules/nx/schemas/project-schema.json",
 	"sourceRoot": "apps/automated/app",
 	"projectType": "application",
 	"prefix": "nativescript",

@@ -1,6 +1,6 @@
 import { ScrollEventData } from '../scroll-view';
 import { textProperty } from '../text-base';
-import { TextViewBase as TextViewBaseCommon, maxLinesProperty } from './text-view-common';
+import { TextViewBase as TextViewBaseCommon } from './text-view-common';
 import { editableProperty, hintProperty, placeholderColorProperty, _updateCharactersInRangeReplacementString } from '../editable-text-base';
 import { CoreTypes } from '../../core-types';
 import { CSSType } from '../core/view';
@@ -407,18 +407,6 @@ export class TextView extends TextViewBaseCommon {
 			bottom: inset.bottom,
 			right: inset.right,
 		};
-	}
-	[maxLinesProperty.getDefault](): number {
-		return 0;
-	}
-	[maxLinesProperty.setNative](value: number) {
-		this.nativeTextViewProtected.textContainer.maximumNumberOfLines = value;
-
-		if (value !== 0) {
-			this.nativeTextViewProtected.textContainer.lineBreakMode = NSLineBreakMode.ByTruncatingTail;
-		} else {
-			this.nativeTextViewProtected.textContainer.lineBreakMode = NSLineBreakMode.ByWordWrapping;
-		}
 	}
 }
 

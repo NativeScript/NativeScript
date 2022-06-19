@@ -12,37 +12,38 @@ const sdkVersion = lazy(() => parseInt(Device.sdkVersion));
 
 //https://github.com/NativeScript/NativeScript/issues/2942
 export let dismissKeyboardTimeoutId: NodeJS.Timer;
-export let dismissKeyboardOwner: WeakRef<EditableTextBase>;
 
 interface EditTextListeners extends android.text.TextWatcher, android.view.View.OnFocusChangeListener, android.widget.TextView.OnEditorActionListener {}
 
 interface EditTextListenersClass {
 	prototype: EditTextListeners;
-	new (owner: EditableTextBase): EditTextListeners;
+	new (owner: WeakRef<EditableTextBase>): EditTextListeners;
 }
 
 let EditTextListeners: EditTextListenersClass;
 
 function clearDismissTimer(): void {
-	dismissKeyboardOwner = null;
 	if (dismissKeyboardTimeoutId) {
 		clearTimeout(dismissKeyboardTimeoutId);
 		dismissKeyboardTimeoutId = null;
 	}
 }
 
-function dismissSoftInput(owner: EditableTextBase): void {
+function dismissSoftInput(_owner: WeakRef<EditableTextBase>): void {
 	clearDismissTimer();
 	if (!dismissKeyboardTimeoutId) {
 		dismissKeyboardTimeoutId = setTimeout(() => {
-			const owner = dismissKeyboardOwner && dismissKeyboardOwner.get();
-			const activity = (owner && owner._context) as androidx.appcompat.app.AppCompatActivity;
-			const nativeView = owner && owner.nativeViewProtected;
+			const owner = _owner && _owner.get();
+			const activity = owner?._context as androidx.appcompat.app.AppCompatActivity;
 			dismissKeyboardTimeoutId = null;
-			dismissKeyboardOwner = null;
 			const focused = activity && activity.getCurrentFocus();
-			if (!focused || !(focused instanceof android.widget.EditText)) {
-				ad.dismissSoftInput(nativeView);
+			if (focused && !(focused instanceof android.widget.EditText)) {
+				// warning `ad.dismissSoftInput` will actually focus the next view
+				// if we pass a null parameter!!!
+				// => focus and show keyboard again
+				// the fix was for where there were multiple TextField for which it would work!
+				// with this it will still work without breaking for single TextField
+				ad.dismissSoftInput(focused);
 			}
 		}, 10);
 	}
@@ -55,7 +56,7 @@ function initializeEditTextListeners(): void {
 	@NativeClass
 	@Interfaces([android.text.TextWatcher, android.view.View.OnFocusChangeListener, android.widget.TextView.OnEditorActionListener])
 	class EditTextListenersImpl extends java.lang.Object implements android.text.TextWatcher, android.view.View.OnFocusChangeListener, android.widget.TextView.OnEditorActionListener {
-		constructor(private owner: EditableTextBase) {
+		constructor(private owner: WeakRef<EditableTextBase>) {
 			super();
 
 			return global.__native(this);
@@ -74,7 +75,7 @@ function initializeEditTextListeners(): void {
 		}
 
 		public afterTextChanged(editable: android.text.Editable): void {
-			const owner = this.owner;
+			const owner = this.owner && this.owner.get();
 			if (!owner || owner._changeFromCode) {
 				return;
 			}
@@ -92,7 +93,7 @@ function initializeEditTextListeners(): void {
 		}
 
 		public onFocusChange(view: android.view.View, hasFocus: boolean): void {
-			const owner = this.owner;
+			const owner = this.owner && this.owner.get();
 			if (!owner) {
 				return;
 			}
@@ -113,12 +114,12 @@ function initializeEditTextListeners(): void {
 					eventName: EditableTextBase.blurEvent,
 					object: owner,
 				});
-				dismissSoftInput(owner);
+				dismissSoftInput(this.owner);
 			}
 		}
 
 		public onEditorAction(textView: android.widget.TextView, actionId: number, event: android.view.KeyEvent): boolean {
-			const owner = this.owner;
+			const owner = this.owner && this.owner.get();
 			if (!owner) {
 				return false;
 			}
@@ -170,7 +171,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 		const editText = this.nativeTextViewProtected;
 		this._configureEditText(editText);
 		initializeEditTextListeners();
-		const listeners = new EditTextListeners(this);
+		const listeners = new EditTextListeners(new WeakRef(this));
 		editText.addTextChangedListener(listeners);
 		editText.setOnFocusChangeListener(listeners);
 		editText.setOnEditorActionListener(listeners);

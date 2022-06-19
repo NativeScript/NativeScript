@@ -1,5 +1,5 @@
 // Types
-import { getClosestPropertyValue } from './text-base-common';
+import { getClosestPropertyValue, maxLinesProperty } from './text-base-common';
 import { CSSShadow } from '../styling/css-shadow';
 
 // Requires
@@ -459,6 +459,15 @@ export class TextBase extends TextBaseCommon {
 				this.nativeTextViewProtected.setTag(id, value);
 				this.nativeTextViewProtected.setTag(value);
 			}
+		}
+	}
+
+	[maxLinesProperty.setNative](value: number) {
+		const nativeTextViewProtected = this.nativeTextViewProtected;
+		if (value <= 0) {
+			nativeTextViewProtected.setMaxLines(Number.MAX_SAFE_INTEGER);
+		} else {
+			nativeTextViewProtected.setMaxLines(typeof value === 'string' ? parseInt(value, 10) : value);
 		}
 	}
 

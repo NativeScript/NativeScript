@@ -29,7 +29,6 @@
     "url": "https://github.com/NativeScript/nativescript-dev-webpack.git"
   },
   "scripts": {
-    "clean": "npx rimraf -- node_modules package-lock.json && npm i --ignore-scripts --legacy-peer-deps",
     "tsc": "tsc",
     "postinstall": "node postinstall.js",
     "preuninstall": "node preuninstall.js",
