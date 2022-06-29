@@ -104,7 +104,7 @@ export class Label extends TextBase implements LabelDefinition {
 	private _measureNativeView(width: number, widthMode: number, height: number, heightMode: number): { width: number; height: number } {
 		const view = <UILabel>this.nativeTextViewProtected;
 
-		const nativeSize = view.textRectForBoundsLimitedToNumberOfLines(CGRectMake(0, 0, widthMode === 0 /* layout.UNSPECIFIED */ ? Number.POSITIVE_INFINITY : layout.toDeviceIndependentPixels(width), heightMode === 0 /* layout.UNSPECIFIED */ ? Number.POSITIVE_INFINITY : layout.toDeviceIndependentPixels(height)), 0).size;
+		const nativeSize = view.textRectForBoundsLimitedToNumberOfLines(CGRectMake(0, 0, widthMode === 0 /* layout.UNSPECIFIED */ ? Number.POSITIVE_INFINITY : layout.toDeviceIndependentPixels(width), heightMode === 0 /* layout.UNSPECIFIED */ ? Number.POSITIVE_INFINITY : layout.toDeviceIndependentPixels(height)), view.numberOfLines).size;
 
 		nativeSize.width = layout.round(layout.toDevicePixels(nativeSize.width));
 		nativeSize.height = layout.round(layout.toDevicePixels(nativeSize.height));
