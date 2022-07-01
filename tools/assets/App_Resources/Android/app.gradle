@@ -6,14 +6,10 @@
 //}
 
 android {  
-  compileSdkVersion 29
-  // added ndkVersion because CI tries to use a higer version and fails
-  // if having trouble running or building locally, comment this line
-  // todo: remove once ndk 23+ is supported
-  ndkVersion "22.1.7171670"
+  compileSdkVersion 31
   defaultConfig {  
-    minSdkVersion 17
-    targetSdkVersion 29
+    minSdkVersion 19
+    targetSdkVersion 31
     generatedDensities = []
   }  
   aaptOptions {  

@@ -1,5 +1,5 @@
 import * as types from './types';
-import { dispatchToMainThread, isMainThread } from './mainthread-helper';
+import { dispatchToMainThread, dispatchToUIThread, isMainThread } from './mainthread-helper';
 import { sanitizeModuleName } from '../ui/builder/module-name-sanitizer';
 import * as layout from './layout-helper';
 
@@ -123,6 +123,10 @@ export function executeOnMainThread(func: Function) {
 	} else {
 		dispatchToMainThread(func);
 	}
+}
+
+export function executeOnUIThread(func: Function) {
+	dispatchToUIThread(func);
 }
 
 export function mainThreadify(func: Function): (...args: any[]) => void {

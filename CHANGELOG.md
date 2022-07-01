@@ -1,3 +1,50 @@
+## [8.2.5](https://github.com/NativeScript/NativeScript/compare/8.2.4-core...8.2.5) (2022-06-15)
+
+
+### Bug Fixes
+
+* **color:** output from rgbToHsv and rgbToHsl is now correct ([#9933](https://github.com/NativeScript/NativeScript/issues/9933)) ([ef70956](https://github.com/NativeScript/NativeScript/commit/ef70956623f8eab23e3c245e543b0a1b45e94bf7))
+* **ios:** not responding after rotation ([#9931](https://github.com/NativeScript/NativeScript/issues/9931)) ([aee1d05](https://github.com/NativeScript/NativeScript/commit/aee1d0565105158e84b6a752cc05ee0dc0577943))
+
+
+### Features
+
+* **core:** allow removal of specific CSS variables ([#9896](https://github.com/NativeScript/NativeScript/issues/9896)) ([32567ef](https://github.com/NativeScript/NativeScript/commit/32567ef36165c688f34b39d515790d4ce0836b4d))
+
+
+
+## [8.2.4](https://github.com/NativeScript/NativeScript/compare/8.2.3-core...8.2.4) (2022-06-04)
+
+
+### Bug Fixes
+
+* **Utils:** dispatchToUIThread ([9089b2c](https://github.com/NativeScript/NativeScript/commit/9089b2cf87ecc2644090da22ed8797f56db5c7bb))
+* **webview:** android not loading local content ([#9923](https://github.com/NativeScript/NativeScript/issues/9923)) ([834b4bf](https://github.com/NativeScript/NativeScript/commit/834b4bf5e1c92dad8cd7bfad2f329ba9d754c15e))
+
+
+### Features
+
+* **types-minimal:** minimal types for only the latest Android and iOS sdks ([#9927](https://github.com/NativeScript/NativeScript/issues/9927)) ([80e6b81](https://github.com/NativeScript/NativeScript/commit/80e6b8130a85fcd36d6e3bde581ae7d5e4bd1612))
+
+
+
+## [8.2.3](https://github.com/NativeScript/NativeScript/compare/8.2.2-core...8.2.3) (2022-04-25)
+
+
+### Bug Fixes
+
+* **android:** ensure android application is created before setting listeners ([#9876](https://github.com/NativeScript/NativeScript/issues/9876)) ([54f454f](https://github.com/NativeScript/NativeScript/commit/54f454f881204ec2a02ab1695819cf344c70dffe))
+* **android:** improve content uri handling ([#9874](https://github.com/NativeScript/NativeScript/issues/9874)) ([a272296](https://github.com/NativeScript/NativeScript/commit/a272296d875ca4bacf52c80dd568de6d3b73a4fc)), closes [#9871](https://github.com/NativeScript/NativeScript/issues/9871)
+* file access cross platform stub ([338ae56](https://github.com/NativeScript/NativeScript/commit/338ae56a829d9badf22c458b01d88c1ca9f3e677))
+* removed unecessary `console.log` ([#9877](https://github.com/NativeScript/NativeScript/issues/9877)) ([74e42fc](https://github.com/NativeScript/NativeScript/commit/74e42fcb8b68cf5740b33f337f7cdea7b0b94e3b))
+
+
+### Features
+
+* added Utils.executeOnUIThread ([36a55da](https://github.com/NativeScript/NativeScript/commit/36a55dac7fd9db4ace98ac0a19286d8cfd0410bf))
+
+
+
 ## [8.2.2](https://github.com/NativeScript/NativeScript/compare/8.2.1-core...8.2.2) (2022-04-07)
 
 

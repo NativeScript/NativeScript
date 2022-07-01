@@ -607,6 +607,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 }
 
 export class FileSystemAccess29 extends FileSystemAccess {
+	__skip = true;
 	getLastModified(path: string): Date {
 		if (isContentUri(path)) {
 			return new Date(getOrSetHelper(path).getLastModified() * 1000);

@@ -163,6 +163,7 @@ function onLiveSync(args): void {
 global.NativeScriptGlobals.events.on('livesync', onLiveSync);
 
 global.NativeScriptGlobals.addEventWiring(() => {
+	application.ensureNativeApplication();
 	application.android.on('activityStarted', (args) => {
 		if (!imageFetcher) {
 			initImageCache(args.activity);
@@ -173,6 +174,7 @@ global.NativeScriptGlobals.addEventWiring(() => {
 });
 
 global.NativeScriptGlobals.addEventWiring(() => {
+	application.ensureNativeApplication();
 	application.android.on('activityStopped', (args) => {
 		if (imageFetcher) {
 			imageFetcher.closeCache();
