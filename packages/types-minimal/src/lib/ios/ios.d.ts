@@ -1,4 +1,6 @@
 /// <reference path="runtime.d.ts" />
+/// <reference path="objc-x86_64/objc!ARKit.d.ts" />
+/// <reference path="objc-x86_64/objc!AVFAudio.d.ts" />
 /// <reference path="objc-x86_64/objc!AVFoundation.d.ts" />
 /// <reference path="objc-x86_64/objc!Foundation.d.ts" />
 /// <reference path="objc-x86_64/objc!ObjectiveC.d.ts" />
