@@ -13,9 +13,6 @@ interface FontDescriptor {
 
 const uiFontCache = new Map<string, UIFont>();
 
-let hitCount = 0;
-let missCount = 0;
-
 function computeFontCacheKey(fontDescriptor: FontDescriptor) {
 	const { fontFamily, fontSize, fontWeight, isBold, isItalic } = fontDescriptor;
 	const sep = ':';
@@ -26,12 +23,16 @@ function getUIFontCached(fontDescriptor: FontDescriptor) {
 	const cacheKey = computeFontCacheKey(fontDescriptor);
 
 	if (uiFontCache.has(cacheKey)) {
-		console.log('uiFont cache hit', ++hitCount, '| misses:', missCount);
+		if (Trace.isEnabled()) {
+			Trace.write(`UIFont reuse from cache: ${JSON.stringify(fontDescriptor)}, cache size: ${uiFontCache.size}`, Trace.categories.Style, Trace.messageType.info);
+		}
 		return uiFontCache.get(cacheKey);
 	}
-	console.log('uiFont cache miss', ++missCount);
 	const uiFont = NativeScriptUtils.createUIFont(fontDescriptor as any);
 	uiFontCache.set(cacheKey, uiFont);
+	if (Trace.isEnabled()) {
+		Trace.write(`UIFont creation: ${JSON.stringify(fontDescriptor)}, cache size: ${uiFontCache.size}`, Trace.categories.Style, Trace.messageType.info);
+	}
 
 	return uiFont;
 }
