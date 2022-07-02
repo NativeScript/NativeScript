@@ -3,6 +3,39 @@ import { Trace } from '../../trace';
 import * as fs from '../../file-system';
 export * from './font-common';
 
+interface FontDescriptor {
+	fontFamily: string[];
+	fontSize: number;
+	fontWeight: number;
+	isBold: boolean;
+	isItalic: boolean;
+}
+
+const uiFontCache = new Map<string, UIFont>();
+
+let hitCount = 0;
+let missCount = 0;
+
+function computeFontCacheKey(fontDescriptor: FontDescriptor) {
+	const { fontFamily, fontSize, fontWeight, isBold, isItalic } = fontDescriptor;
+	const sep = ':';
+	return fontFamily.join(sep) + sep + fontSize + sep + fontWeight + sep + isBold + sep + isItalic;
+}
+
+function getUIFontCached(fontDescriptor: FontDescriptor) {
+	const cacheKey = computeFontCacheKey(fontDescriptor);
+
+	if (uiFontCache.has(cacheKey)) {
+		console.log('uiFont cache hit', ++hitCount, '| misses:', missCount);
+		return uiFontCache.get(cacheKey);
+	}
+	console.log('uiFont cache miss', ++missCount);
+	const uiFont = NativeScriptUtils.createUIFont(fontDescriptor as any);
+	uiFontCache.set(cacheKey, uiFont);
+
+	return uiFont;
+}
+
 export class Font extends FontBase {
 	public static default = new Font(undefined, undefined, FontStyle.NORMAL, FontWeight.NORMAL, 1);
 
@@ -33,15 +66,13 @@ export class Font extends FontBase {
 	}
 
 	public getUIFont(defaultFont: UIFont): UIFont {
-		return new WeakRef(
-			NativeScriptUtils.createUIFont(<any>{
-				fontFamily: parseFontFamily(this.fontFamily),
-				fontSize: this.fontSize || defaultFont.pointSize,
-				fontWeight: getNativeFontWeight(this.fontWeight),
-				isBold: this.isBold,
-				isItalic: this.isItalic,
-			})
-		).get();
+		return getUIFontCached({
+			fontFamily: parseFontFamily(this.fontFamily),
+			fontSize: this.fontSize || defaultFont.pointSize,
+			fontWeight: getNativeFontWeight(this.fontWeight),
+			isBold: this.isBold,
+			isItalic: this.isItalic,
+		});
 	}
 
 	public getAndroidTypeface(): android.graphics.Typeface {
