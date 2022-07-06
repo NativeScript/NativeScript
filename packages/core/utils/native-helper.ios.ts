@@ -136,6 +136,16 @@ export namespace iOSNativeHelper {
 		}
 	}
 
+	export function getRootViewController(): UIViewController {
+		const app = UIApplication.sharedApplication;
+		const win = app.keyWindow || (app.windows && app.windows.count > 0 && app.windows.objectAtIndex(0));
+		let vc = win.rootViewController;
+		while (vc && vc.presentedViewController) {
+			vc = vc.presentedViewController;
+		}
+		return vc;
+	}
+
 	export function isLandscape(): boolean {
 		console.log('utils.ios.isLandscape() is deprecated; use application.orientation instead');
 

@@ -58,7 +58,7 @@ export class View extends ViewCommon implements ViewDefinition {
 		return (this._privateFlags & PFLAG_FORCE_LAYOUT) === PFLAG_FORCE_LAYOUT;
 	}
 	initNativeView() {
-		super.initNativeView()
+		super.initNativeView();
 		const nativeView = this.nativeViewProtected;
 		/**
 		 * We need to map back from the UIView to the NativeScript View for accessibility.
@@ -66,11 +66,11 @@ export class View extends ViewCommon implements ViewDefinition {
 		 * We do that by setting the uiView's tag to the View's domId.
 		 * This way we can do reverse lookup.
 		 */
-		 nativeView.tag = this._domId;
+		nativeView.tag = this._domId;
 	}
 
 	requestlayoutIfNeeded() {
-		if ( this.isLayoutRequired) {
+		if (this.isLayoutRequired) {
 			this._requetLayoutNeeded = false;
 			this.requestLayout();
 		}
@@ -81,7 +81,7 @@ export class View extends ViewCommon implements ViewDefinition {
 
 		if (this.viewController) {
 			this.viewController = null;
-		} 
+		}
 
 		this._cachedFrame = null;
 		this._isLaidOut = false;
@@ -567,6 +567,7 @@ export class View extends ViewCommon implements ViewDefinition {
 			// Take a look at https://github.com/NativeScript/NativeScript/issues/2173 for more info and a sample project.
 			this._raiseShownModallyEvent();
 		}
+		controller = null;
 	}
 
 	protected _hideNativeModalView(parent: View, whenClosedCallback: () => void) {
@@ -954,7 +955,7 @@ export class CustomLayoutView extends ContainerView {
 	}
 
 	public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-		// Don't call super because it will set MeasureDimension. This method must be overriden and calculate its measuredDimensions.
+		// Don't call super because it will set MeasureDimension. This method must be overridden and calculate its measuredDimensions.
 	}
 
 	public _addViewToNativeVisualTree(child: View, atIndex: number): boolean {

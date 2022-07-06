@@ -97,6 +97,7 @@
 /// <reference path="objc-x86_64/objc!ModelIO.d.ts" />
 /// <reference path="objc-x86_64/objc!MultipeerConnectivity.d.ts" />
 /// <reference path="objc-x86_64/objc!NativeScriptEmbedder.d.ts" />
+/// <reference path="objc-x86_64/objc!NativeScriptUtils.d.ts" />
 /// <reference path="objc-x86_64/objc!NaturalLanguage.d.ts" />
 /// <reference path="objc-x86_64/objc!NearbyInteraction.d.ts" />
 /// <reference path="objc-x86_64/objc!Network.d.ts" />

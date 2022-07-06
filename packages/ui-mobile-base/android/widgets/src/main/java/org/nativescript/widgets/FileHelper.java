@@ -48,44 +48,35 @@ public class FileHelper {
 	}
 
 	private static boolean isExternalStorageDocument(Uri uri) {
-		return "com.android.externalstorage.documents".equals(uri
-			.getAuthority());
+		return false;
+//		return "com.android.externalstorage.documents".equals(uri
+//			.getAuthority());
 	}
 
 	private static @Nullable
 	Cursor getCursor(Context context, Uri uri) {
 		Cursor cursor = null;
+		String[] projections = {
+			MediaStore.MediaColumns.SIZE,
+			MediaStore.MediaColumns.DISPLAY_NAME,
+			MediaStore.MediaColumns.DATE_MODIFIED
+		};
 		try {
 			if (Build.VERSION.SDK_INT >= 19) {
 				if (DocumentsContract.isDocumentUri(context, uri)) {
-					String docId = DocumentsContract.getDocumentId(uri);
-					String[] split = docId.split(":");
-					String type = split[0];
-
-					Uri contentUri;
-					if ("image".equals(type)) {
-						contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-					} else if ("video".equals(type)) {
-						contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
-					} else if ("audio".equals(type)) {
-						contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-					} else {
-						contentUri = MediaStore.Files.getContentUri("external");
+					if (Build.VERSION.SDK_INT >= 29) {
+						if (!uri.toString().startsWith("content://com.android.providers.downloads.documents")) {
+							cursor = context.getContentResolver().query(
+								MediaStore.getMediaUri(context, uri), projections, null, null, null, null
+							);
+						}
 					}
-
-					String selection = "_id=?";
-					String[] selectionArgs = {split[1]};
-
-					cursor = context.getContentResolver().query(
-						contentUri, null, selection, selectionArgs, null, null
-					);
 				}
 			}
 			if (cursor == null) {
-				cursor = context.getContentResolver().query(uri, null, null, null, null);
+				cursor = context.getContentResolver().query(uri, projections, null, null, null);
 			}
-		} catch (Exception e) {
-			cursor = null;
+		} catch (Exception ignored) {
 		}
 
 		return cursor;
@@ -120,7 +111,7 @@ public class FileHelper {
 	public static @Nullable
 	FileHelper fromString(Context context, String string) {
 		try {
-			return fromUri(context, Uri.parse(Uri.decode(string)), false);
+			return fromUri(context, Uri.parse(string));
 		} catch (Exception e) {
 			return null;
 		}
@@ -158,20 +149,10 @@ public class FileHelper {
 		return null;
 	}
 
+
 	public static @Nullable
-	FileHelper fromUri(Context context, Uri uri) {
-		return fromUri(context, uri, true);
-	}
-
-	private static @Nullable
-	FileHelper fromUri(Context context, Uri contentUri, boolean parseUri) {
-		Uri uri;
-
-		if (parseUri) {
-			uri = Uri.parse(Uri.decode(contentUri.toString()));
-		} else {
-			uri = contentUri;
-		}
+	FileHelper fromUri(Context context, Uri contentUri) {
+		Uri uri = contentUri;
 
 		if (Build.VERSION.SDK_INT >= 19 && isExternalStorageDocument(uri)) {
 			File file = getFile(context, uri);
@@ -338,10 +319,17 @@ public class FileHelper {
 
 	private byte[] readSyncInternal(Context context) throws Exception {
 		InputStream is = getInputStream(context, uri);
-		byte[] array = new byte[(int) size];
-		is.read(array);
+
+		Async.Http.RequestResult.ByteArrayOutputStream2 ret = new Async.Http.RequestResult.ByteArrayOutputStream2();
+
+		byte[] buff = new byte[4096];
+		int read;
+		while ((read = is.read(buff, 0, buff.length)) != -1) {
+			ret.write(buff, 0, read);
+		}
+
 		is.close();
-		return array;
+		return ret.buf();
 	}
 
 	public @Nullable
@@ -517,39 +505,27 @@ public class FileHelper {
 						return file.delete();
 					}
 					return false;
-				}
+				} else {
+					if (DocumentsContract.isDocumentUri(context, uri)) {
+						if (Build.VERSION.SDK_INT >= 29) {
+							if (!uri.toString().startsWith("content://com.android.providers.downloads.documents")) {
+								return context.getContentResolver().delete(
+									MediaStore.getMediaUri(context, uri), null, null
+								) > 0;
+							}
 
-				if (DocumentsContract.isDocumentUri(context, uri)) {
-					String docId = DocumentsContract.getDocumentId(uri);
-					String[] split = docId.split(":");
-					String type = split[0];
-
-					Uri contentUri;
-					if ("image".equals(type)) {
-						contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-					} else if ("video".equals(type)) {
-						contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
-					} else if ("audio".equals(type)) {
-						contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-					} else {
-						contentUri = MediaStore.Files.getContentUri("external");
+						} else {
+							return DocumentsContract.deleteDocument(context.getContentResolver(), uri);
+						}
 					}
-
-					String selection = "_id=?";
-					String[] selectionArgs = {split[1]};
-
-					return context.getContentResolver().delete(
-						contentUri, selection, selectionArgs
-					) > 0;
-
 				}
-
 			}
 			return context.getContentResolver().delete(uri, null, null) > 0;
-		} catch (SecurityException e) {
+		} catch (SecurityException | FileNotFoundException e) {
 			return false;
 		}
 	}
+
 
 	private void renameInternal(Context context, String newName) throws Exception {
 		ContentValues values = new ContentValues();
@@ -566,29 +542,18 @@ public class FileHelper {
 			}
 
 			if (DocumentsContract.isDocumentUri(context, uri)) {
-				String docId = DocumentsContract.getDocumentId(uri);
-				String[] split = docId.split(":");
-				String type = split[0];
-
-				Uri contentUri;
-				if ("image".equals(type)) {
-					contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-				} else if ("video".equals(type)) {
-					contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
-				} else if ("audio".equals(type)) {
-					contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-				} else {
-					contentUri = MediaStore.Files.getContentUri("external");
+				if (Build.VERSION.SDK_INT >= 29) {
+					if (!uri.toString().startsWith("content://com.android.providers.downloads.documents")) {
+						context.getContentResolver().update(
+							uri, values, null, null
+						);
+						return;
+					}
+					DocumentsContract.renameDocument(context.getContentResolver(), uri, newName);
+				} else if (Build.VERSION.SDK_INT >= 21) {
+					DocumentsContract.renameDocument(context.getContentResolver(), uri, newName);
+					return;
 				}
-
-				String selection = "_id=?";
-				String[] selectionArgs = {split[1]};
-
-				context.getContentResolver().update(
-					contentUri, values, selection, selectionArgs
-				);
-
-				return;
 			}
 
 		}

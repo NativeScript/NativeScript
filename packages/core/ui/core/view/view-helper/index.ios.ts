@@ -37,8 +37,7 @@ class UILayoutViewController extends UIViewController {
 		}
 	}
 
-	public viewDidLayoutSubviews(): void {
-		super.viewDidLayoutSubviews();
+	private updateAdditionalSafeAreaInsetsIfNeeded(): void {
 		const owner = this.owner.get();
 		if (owner) {
 			if (majorVersion >= 11) {
@@ -77,7 +76,18 @@ class UILayoutViewController extends UIViewController {
 					}
 				}
 			}
+		}
+	}
 
+	public viewSafeAreaInsetsDidChange(): void {
+		super.viewSafeAreaInsetsDidChange();
+		this.updateAdditionalSafeAreaInsetsIfNeeded();
+	}
+
+	public viewDidLayoutSubviews(): void {
+		super.viewDidLayoutSubviews();
+		const owner = this.owner.get();
+		if (owner) {
 			IOSHelper.layoutView(this, owner);
 		}
 	}

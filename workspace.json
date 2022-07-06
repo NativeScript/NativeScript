@@ -9,8 +9,10 @@
 		"types": "packages/types",
 		"types-android": "packages/types-android",
 		"types-ios": "packages/types-ios",
+		"types-minimal": "packages/types-minimal",
 		"ui-mobile-base": "packages/ui-mobile-base",
 		"webpack": "packages/webpack",
 		"webpack5": "packages/webpack5"
-	}
+	},
+	"$schema": "./node_modules/nx/schemas/workspace-schema.json"
 }

@@ -11,8 +11,17 @@
 		"nx.json": "*",
 		".eslintrc.json": "*"
 	},
-	"cli": {
-		"defaultCollection": "@nrwl/workspace"
+	"tasksRunnerOptions": {
+		"default": {
+			"runner": "nx/tasks-runners/default",
+			"options": {
+				"useDaemonProcess": false,
+				"cacheableOperations": ["build", "lint", "test", "e2e"],
+				"canTrackAnalytics": false,
+				"showUsageWarnings": true,
+				"parallel": 1
+			}
+		}
 	},
 	"generators": {
 		"@nrwl/workspace": {
@@ -72,5 +81,6 @@
 	},
 	"affected": {
 		"defaultBase": "master"
-	}
+	},
+	"$schema": "./node_modules/nx/schemas/nx-schema.json"
 }

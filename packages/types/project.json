@@ -1,5 +1,5 @@
 {
-	"root": "packages/types",
+	"$schema": "../../node_modules/nx/schemas/project-schema.json",
 	"sourceRoot": "packages/types",
 	"projectType": "library",
 	"generators": {},

@@ -1,0 +1,24 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/types-minimal/src",
+  "projectType": "library",
+  "generators": {},
+  "targets": {
+    "build": {
+      "executor": "@nrwl/workspace:run-commands",
+      "outputs": [
+        "dist/packages"
+      ],
+      "options": {
+        "commands": [
+          "./tools/scripts/typings-minimal-copy.sh",
+          "mkdir -p dist/packages/types-minimal",
+          "cp -R packages/types-minimal/src/* dist/packages/types-minimal",
+          "cp packages/types-minimal/package.json dist/packages/types-minimal",
+          "cp packages/types-minimal/README.md dist/packages/types-minimal/README.md"
+        ],
+        "parallel": false
+      }
+    }
+  }
+}

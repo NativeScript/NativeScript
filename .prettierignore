@@ -12,6 +12,7 @@ platforms
 tests
 packages/types-android
 packages/types-ios
+packages/types-minimal
 packages/ui-mobile-base
 tools/assets/App_Resources
 *.cmd
