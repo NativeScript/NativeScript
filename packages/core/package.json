@@ -14,7 +14,9 @@
     "**/*.js",
     "**/*.map",
     "**/platforms/ios/**",
-    "**/platforms/android/**",
+    "platforms/android/native-api-usage.json",
+    "platforms/android/res/values/ids.xml",
+    "platforms/android/widgets-release.aar",
     "**/package.json"
   ],
   "keywords": [
