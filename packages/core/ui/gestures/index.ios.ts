@@ -389,8 +389,8 @@ function _getTapData(args: GestureEventData): TapGestureEventData {
 		eventName: args.eventName,
 		object: args.object,
 		getPointerCount: () => recognizer.numberOfTouches,
-		getX: () => layout.toDeviceIndependentPixels(center.x),
-		getY: () => layout.toDeviceIndependentPixels(center.y),
+		getX: () => center.x,
+		getY: () => center.y,
 	};
 }
 
