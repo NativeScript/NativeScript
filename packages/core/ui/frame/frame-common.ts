@@ -427,8 +427,8 @@ export class FrameBase extends CustomLayoutView {
 			eventName: Page.navigatingToEvent,
 			object: this,
 			isBack,
-			entry: backstackEntry.entry,
-			fromEntry: this.currentEntry,
+			entry: backstackEntry,
+			fromEntry: this._currentEntry,
 		});
 	}
 
