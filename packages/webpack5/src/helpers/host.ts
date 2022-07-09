@@ -5,9 +5,9 @@ export function getIPS() {
 	return Object.keys(interfaces)
 		.map((name) => {
 			return interfaces[name].filter(
-				(binding: any) => binding.family === 'IPv4'
+				(binding: any) => binding.family === 'IPv4' || binding.family === 4
 			)[0];
 		})
-		.filter(Boolean)
+		.filter((binding) => !!binding)
 		.map((binding) => binding.address);
 }
