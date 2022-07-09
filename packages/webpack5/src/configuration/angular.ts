@@ -152,9 +152,15 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			if (!transformers.before) {
 				transformers.before = [];
 			}
-			transformers.before.unshift(
-				require('../transformers/NativeClass').default
-			);
+			if (this.pluginOptions.jitMode) {
+				transformers.before.unshift(
+					require('../transformers/NativeClass').default
+				);
+			} else {
+				transformers.before.push(
+					require('../transformers/NativeClass').default
+				);
+			}
 			args[1] = transformers;
 			return originalCreateFileEmitter.apply(this, args);
 		};
@@ -256,7 +262,8 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			// Additional rules to suppress warnings that are safe to ignore
 			{
 				module: /@angular\/core\/(__ivy_ngcc__\/)?fesm2015\/core.js/,
-				message: /Critical dependency: the request of a dependency is an expression/,
+				message:
+					/Critical dependency: the request of a dependency is an expression/,
 			},
 			/core\/profiling/,
 			/core\/ui\/styling/,
