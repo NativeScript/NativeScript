@@ -1,26 +1,18 @@
 import Config from 'webpack-chain';
 
 import { getEntryDirPath, getEntryPath } from '../helpers/platform';
-import { addVirtualEntry } from '../helpers/virtualModules';
 import { chainedSetAddAfter } from '../helpers/chain';
 import { env as _env, IWebpackEnv } from '../index';
 import { ContextExclusionPlugin } from 'webpack';
 import base from './base';
+import path from 'path';
 
 export default function (config: Config, env: IWebpackEnv = _env): Config {
 	base(config, env);
 	const entryPath = getEntryPath();
-	const filterRE = '/\\.(xml|js|(?<!\\.d\\.)ts|s?css)$/';
-	const virtualEntryPath = addVirtualEntry(
-		config,
-		'typescript',
-		`
-		// VIRTUAL ENTRY START
-		require('@nativescript/core/bundle-entry-points')
-		const context = require.context("~/", /* deep: */ true, /* filter: */ ${filterRE});
-		global.registerWebpackModules(context);
-		// VIRTUAL ENTRY END
-	`
+	const virtualEntryPath = path.resolve(
+		__dirname,
+		'../stubs/virtual-entry-typescript.js'
 	);
 
 	// exclude files starting with _ from require.context

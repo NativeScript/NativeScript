@@ -1,4 +1,6 @@
 import Config from 'webpack-chain';
+import path from 'path';
+import fs from 'fs';
 
 import typescript from '../../src/configuration/typescript';
 import { init } from '../../src';
@@ -15,29 +17,30 @@ describe('typescript configuration', () => {
 		});
 	}
 
-	it('filter typescript declaration files', () => {
+	it('filters typescript declaration files', () => {
 		init({
 			ios: true,
 		});
 
-		const tsConfig = typescript(new Config());
+		// const tsConfig = typescript(new Config());
 		let regex: RegExp;
 
-		// Get the filterRE from the typescript configuration
-		tsConfig.plugin('VirtualModulesPlugin').tap((args) => {
-			const options = args[0];
-			const virtualConfig: string = options[Object.keys(options)[0]];
-			const filterLine = virtualConfig
-				.split('\n')
-				.find((v) => v.includes('filter'));
-			const matches = filterLine.match(/\/(?<filter>\S+)\//);
+		const virtualEntryPath = path.join(
+			__dirname,
+			'../../src/stubs/virtual-entry-typescript.js'
+		);
+		const virtualEntry = fs.readFileSync(virtualEntryPath);
 
-			if (matches) {
-				regex = new RegExp(matches.groups.filter);
-			}
+		const filterLine = virtualEntry
+			.toString()
+			.split('\n')
+			.find((v) => v.includes('filter'));
 
-			return args;
-		});
+		const matches = filterLine.match(/\/(?<filter>\S+)\//);
+
+		if (matches) {
+			regex = new RegExp(matches.groups.filter);
+		}
 
 		expect(regex).toBeDefined();
 
