@@ -22,7 +22,7 @@ export class WatchStatePlugin {
 			callback();
 
 			if (isWatchMode) {
-				console.log(messages.changeDetected);
+				env.stats && console.log(messages.changeDetected);
 
 				if (env.verbose) {
 					if (compiler.modifiedFiles) {
@@ -44,9 +44,10 @@ export class WatchStatePlugin {
 		compiler.hooks.afterEmit.tapAsync(id, function (compilation, callback) {
 			callback();
 
-			console.log(
-				isWatchMode ? messages.startWatching : messages.compilationComplete
-			);
+			env.stats &&
+				console.log(
+					isWatchMode ? messages.startWatching : messages.compilationComplete
+				);
 
 			// Do not notify the CLI if the compilation failed
 			const stats = compilation.getStats();
