@@ -1,6 +1,7 @@
 import CopyWebpackPlugin from 'copy-webpack-plugin';
 import { basename, relative, resolve } from 'path';
 import Config from 'webpack-chain';
+import { sync as globbySync } from 'globby';
 
 import { getProjectRootPath } from './project';
 import { getEntryDirPath } from './platform';
@@ -70,6 +71,15 @@ export function applyCopyRules(config: Config) {
 	config.plugin('CopyWebpackPlugin').use(CopyWebpackPlugin, [
 		{
 			patterns: Array.from(copyRules)
+				.filter((glob) => {
+					if (process.env.NODE_ENV === 'test') {
+						return true;
+					}
+					// remove rules that do not match any paths
+					// prevents webpack watch mode from firing
+					// due to "removed" paths.
+					return globbySync(glob).length > 0;
+				})
 				.map((glob) => ({
 					from: glob,
 					context: entryDir,
