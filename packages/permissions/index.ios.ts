@@ -1,6 +1,6 @@
 import { Device, Trace } from '@nativescript/core';
 import { PermissionStatus } from './common';
-import { PermissionCheckOptions, PermissionsType, PermissionRequestOptions } from '.';
+import { PermissionCheckOptions, PermissionsType, PermissionRequestOptions, PermissionResult } from '.';
 
 export * from './common';
 
@@ -84,7 +84,7 @@ export namespace PermissionsIOS {
 			//         });
 			// }
 		}
-		export function request(type): Promise<[PermissionStatus, boolean]> {
+		export function request(type): Promise<PermissionResult> {
 			const status = getStatusForType(type);
 			if (Trace.isEnabled()) {
 				Trace.write(`NSPLocation request ${type}`, Trace.categories.Permissions, Trace.messageType.info);
@@ -152,7 +152,7 @@ export namespace PermissionsIOS {
 	}
 	namespace NSPBluetooth {
 		let status: PermissionStatus = PermissionStatus.undetermined;
-		export function getStatus(): [PermissionStatus, boolean] {
+		export function getStatus(): PermissionStatus {
 			const status2 = CBPeripheralManager.authorizationStatus();
 			switch (status2) {
 				case CBPeripheralManagerAuthorizationStatus.Authorized:
@@ -167,7 +167,7 @@ export namespace PermissionsIOS {
 				default:
 					status = PermissionStatus.undetermined;
 			}
-			return [status, true];
+			return status;
 		}
 		export type SubCBPeripheralManagerDelegate = Partial<CBPeripheralManagerDelegate>;
 		@NativeClass
@@ -248,7 +248,7 @@ export namespace PermissionsIOS {
 				return AVMediaTypeVideo;
 			}
 		}
-		export function getStatus(type?: string): [PermissionStatus, boolean] {
+		export function getStatus(type?: string): PermissionStatus {
 			const videoStatus = AVCaptureDevice.authorizationStatusForMediaType(typeFromString(type));
 			switch (videoStatus) {
 				case AVAuthorizationStatus.Authorized:
@@ -263,10 +263,10 @@ export namespace PermissionsIOS {
 				default:
 					status = PermissionStatus.undetermined;
 			}
-			return [status, true];
+			return status;
 		}
 
-		export function request(type): Promise<[PermissionStatus, boolean]> {
+		export function request(type): Promise<PermissionResult> {
 			return new Promise((resolve, reject) => {
 				AVCaptureDevice.requestAccessForMediaTypeCompletionHandler(typeFromString(type), (granted) => resolve(getStatus(type)));
 			});
@@ -274,7 +274,7 @@ export namespace PermissionsIOS {
 	}
 	namespace NSPSpeechRecognition {
 		let status: PermissionStatus = PermissionStatus.undetermined;
-		export function getStatus(): [PermissionStatus, boolean] {
+		export function getStatus(): PermissionStatus {
 			const speechStatus = SFSpeechRecognizer.authorizationStatus();
 			switch (speechStatus) {
 				case SFSpeechRecognizerAuthorizationStatus.Authorized:
@@ -289,7 +289,7 @@ export namespace PermissionsIOS {
 				default:
 					status = PermissionStatus.undetermined;
 			}
-			return [status, true];
+			return status;
 		}
 
 		export function request(): Promise<[PermissionStatus, boolean]> {
@@ -731,7 +731,7 @@ export class Permissions {
 
 		return PermissionsIOS.getPermissionStatus(permission, options?.type || DEFAULTS[permission]);
 	}
-	static async request<T extends IOSPermissionTypes | IOSPermissionTypes[]>(permission: T, options?: PermissionRequestOptions): Promise<Result<T>> {
+	static async request<T extends IOSPermissionTypes | IOSPermissionTypes[]>(permission: T, options?: PermissionRequestOptions): Promise<PermissionResult> {
 		if (Trace.isEnabled()) {
 			Trace.write(`request ${permission}`, Trace.categories.Permissions, Trace.messageType.info);
 		}

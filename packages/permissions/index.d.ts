@@ -9,7 +9,7 @@ export interface PermissionRationale {
 	buttonNegative?: string;
 	buttonNeutral?: string;
 }
-export type PermissionCheckOptions = { type: 'always' | null | undefined };
+export type PermissionCheckOptions = { type: 'always' | 'none' | null | undefined };
 export type PermissionRequestOptions = PermissionCheckOptions & { rationale?: PermissionRationale };
 export type PermissionResult = { [k: PermissionsType]: { status: PermissionStatus; nativePermission: Array<string> } };
 

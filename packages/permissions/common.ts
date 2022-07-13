@@ -5,4 +5,5 @@ export enum PermissionStatus {
 	restricted = 'restricted',
 	undetermined = 'undetermined',
 	never_ask_again = 'never_ask_again',
+	blocked = 'blocked',
 }

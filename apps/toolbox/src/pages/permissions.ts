@@ -1,5 +1,5 @@
 import { Observable, EventData, Page, Trace } from '@nativescript/core';
-import { Permissions } from '@nativescript/permissions';
+import { Permissions, PermissionsType } from '@nativescript/permissions';
 
 let page: Page;
 
@@ -35,7 +35,7 @@ export class PermissionsModel extends Observable {
 		super();
 	}
 
-	async checkPermission(args, multiple?: Array<string>) {
+	async checkPermission(args, multiple?: Array<PermissionsType>) {
 		const perm = args.object.bindingContext.name;
 		try {
 			console.log('checkPermission', perm);
