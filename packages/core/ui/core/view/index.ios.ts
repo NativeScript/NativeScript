@@ -89,6 +89,15 @@ export class View extends ViewCommon implements ViewDefinition {
 		this._hasPendingTransform = false;
 	}
 
+	disposeNativeView() {
+		super.disposeNativeView();
+
+		this._cachedFrame = null;
+		this._isLaidOut = false;
+		this._hasTransform = false;
+		this._hasPendingTransform = false;
+	}
+
 	public requestLayout(): void {
 		if (this._suspendRequestLayout) {
 			this._requetLayoutNeeded = true;

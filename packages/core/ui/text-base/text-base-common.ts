@@ -315,7 +315,6 @@ export const lineHeightProperty = new InheritedCssProperty<Style, number>({
 });
 lineHeightProperty.register(Style);
 
-
 export const maxLinesProperty = new CssProperty<Style, CoreTypes.MaxLinesType>({
 	name: 'maxLines',
 	cssName: 'max-lines',

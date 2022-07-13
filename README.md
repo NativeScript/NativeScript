@@ -59,16 +59,12 @@ We love you and your PR's 🤗. Please follow our [contributing guide](https://g
 Outside the source centralized in this repo, NativeScript consists of a few other source repos. Here are the major ones:
 
 - **[iOS runtime](https://github.com/NativeScript/ns-v8ios-runtime)**
-	- [![npm](https://img.shields.io/npm/dm/tns-ios.svg)](https://www.npmjs.com/package/@nativescript/ios) 
 	- This repo contains the NativeScript iOS runtime — the code that hosts NativeScript iOS apps, and allows JavaScript code to be executed on iOS devices. The iOS runtime is written in a fun mix of C++, Objective-C, and more.
 - **[Android runtime](https://github.com/NativeScript/android-runtime)**
-	- [![npm](https://img.shields.io/npm/dm/tns-android.svg)](https://www.npmjs.com/package/tns-android) 
 	- This repo contains the NativeScript Android runtime — the code that hosts NativeScript Android apps, and allows JavaScript code to be executed on Android devices. The Android runtime is written in a fun mix of C++ and Java.
 - **[CLI](//github.com/NativeScript/nativescript-cli)**
-	- [![npm](https://img.shields.io/npm/dm/nativescript.svg)](https://www.npmjs.com/package/nativescript) 
 	- This repo contains the NativeScript command-line interface, which lets you create, build, and run apps using the NativeScript framework. The CLI is written in TypeScript.
 - **[Docs](//github.com/NativeScript/docs-new)**
-	- [![Docs](https://img.shields.io/badge/Docs-NativeScript-brightgreen)](https://docs.nativescript.org/)
 	- This repo contains the NativeScript framework documentation, which is available at <http://docs.nativescript.org/>. The docs are written in Markdown.
 
 ## License

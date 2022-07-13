@@ -29,7 +29,7 @@
 	<key>DTCompiler</key>
 	<string>com.apple.compilers.llvm.clang.1_0</string>
 	<key>DTPlatformBuild</key>
-	<string>13F17a</string>
+	<string>13F100</string>
 	<key>DTPlatformName</key>
 	<string>macosx</string>
 	<key>DTPlatformVersion</key>
@@ -39,9 +39,9 @@
 	<key>DTSDKName</key>
 	<string>macosx12.3</string>
 	<key>DTXcode</key>
-	<string>1340</string>
+	<string>1341</string>
 	<key>DTXcodeBuild</key>
-	<string>13F17a</string>
+	<string>13F100</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>10.15</string>
 	<key>UIDeviceFamily</key>

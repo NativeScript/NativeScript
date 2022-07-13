@@ -276,7 +276,7 @@ export class IOSHelper {
 			const adjustedFrame = IOSHelper.getFrameFromPosition(position, insets);
 
 			if (Trace.isEnabled()) {
-				Trace.write(this + ' :shrinkToSafeArea: ' + JSON.stringify(IOSHelper.getPositionFromFrame(adjustedFrame)), Trace.categories.Layout);
+				Trace.write(`${view} :shrinkToSafeArea: ${JSON.stringify(IOSHelper.getPositionFromFrame(adjustedFrame))}`, Trace.categories.Layout);
 			}
 
 			return adjustedFrame;
