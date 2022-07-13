@@ -11,7 +11,7 @@ import { View } from '../core/view';
 export * from './animation-interfaces';
 
 export function getPropertyFromKey(key: string, view: View) {
-	return CssAnimationProperty.properties[key] || ShorthandProperty.properties[key] || InheritedCssProperty.properties[key] || CssProperty.properties[key] || Style.prototype[key] || Object.getPrototypeOf(view)[key];
+	return CssAnimationProperty.properties[key] || ShorthandProperty.properties[key] || InheritedCssProperty.properties[key] || CssProperty.properties[key] || Style.prototype[key] || view.constructor['registeredProps']?.[key] || Object.getPrototypeOf(view)[key];
 }
 
 export namespace Properties {
@@ -147,6 +147,7 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 			throw new Error('No animation target specified.');
 		}
 
+		console.log('_createPropertyAnimations', Object.keys(animationDefinition), new Error().stack);
 		const propertyAnimations = new Array<PropertyAnimation>();
 		for (const item in animationDefinition) {
 			const value = animationDefinition[item];
@@ -162,10 +163,12 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 				continue;
 			}
 			let property = getPropertyFromKey(item, animationDefinition.target);
+			console.log('property test', item, property);
 			if (item === Properties.scale || item === Properties.translate) {
 				property = CssAnimationProperty.properties[item + 'X'];
 			}
 			if (property) {
+				console.log('property found', item);
 				let newValue = value;
 				const valueConverter = property.valueConverter;
 				if ((item === Properties.scale || item === Properties.translate) && typeof value !== 'object') {
@@ -195,6 +198,7 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 					iterations: animationDefinition.iterations,
 					curve: animationDefinition.curve,
 				});
+				console.log('adding animation proeprty', propertyAnimations.length);
 			}
 		}
 

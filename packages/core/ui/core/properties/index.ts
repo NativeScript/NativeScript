@@ -366,6 +366,12 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 			throw new Error(`Property ${this.name} already registered.`);
 		}
 		this.registered = true;
+		// we store the property in the class static variable
+		// so that animations can get access to us
+		if (!cls['registeredProps']) {
+			cls['registeredProps'] = {};
+		}
+		cls['registeredProps'][this.name] = this;
 		Object.defineProperty(cls.prototype, this.name, this);
 	}
 
