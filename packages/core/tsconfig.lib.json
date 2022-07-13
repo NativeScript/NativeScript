@@ -17,7 +17,7 @@
 		"types": ["node"],
 		"plugins": [
 			{
-				"transform": "../webpack/transformers/ns-transform-native-classes.ts",
+				"transform": "../webpack5/src/transformers/NativeClass/index.ts",
 				"type": "raw"
 			}
 		]
