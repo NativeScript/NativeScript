@@ -519,7 +519,7 @@ export class Animation extends AnimationBase {
 							new android.animation.ValueAnimator.AnimatorUpdateListener({
 								onAnimationUpdate(animator: android.animation.ValueAnimator) {
 									const argb = (<java.lang.Integer>animator.getAnimatedValue()).intValue();
-									propertyAnimation.target.style[setLocal ? property.name : property.keyframe] = new Color(argb);
+									propertyAnimation.target[setLocal ? property.name : property.keyframe] = new Color(argb);
 								},
 							})
 						);
@@ -536,7 +536,7 @@ export class Animation extends AnimationBase {
 									if (result instanceof java.lang.Number) {
 										result = result.floatValue();
 									}
-									propertyAnimation.target.style[setLocal ? property.name : property.keyframe] = result;
+									propertyAnimation.target[setLocal ? property.name : property.keyframe] = result;
 								},
 							})
 						);
@@ -544,13 +544,13 @@ export class Animation extends AnimationBase {
 					}
 
 					propertyUpdateCallbacks.push(() => {
-						propertyAnimation.target.style[setLocal ? property.name : property.keyframe] = propertyAnimation.value;
+						propertyAnimation.target[setLocal ? property.name : property.keyframe] = propertyAnimation.value;
 					});
 					propertyResetCallbacks.push(() => {
 						if (setLocal) {
-							propertyAnimation.target.style[property.name] = originalValue1;
+							propertyAnimation.target[property.name] = originalValue1;
 						} else {
-							propertyAnimation.target.style[property.keyframe] = originalValue1;
+							propertyAnimation.target[property.keyframe] = originalValue1;
 						}
 
 						if (propertyAnimation.target.nativeViewProtected && propertyAnimation.target[property.setNative]) {
