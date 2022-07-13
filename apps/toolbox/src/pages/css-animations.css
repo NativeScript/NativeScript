@@ -38,15 +38,15 @@
 }
 @keyframes colorAndBack {
     0% {
-        color: blue;
+        background-color: blue;
     }
 
     50% {
-        color: yellow;
+        background-color: yellow;
     }
 
     100% {
-        color: blue;
+        background-color: blue;
     }
 }
 
