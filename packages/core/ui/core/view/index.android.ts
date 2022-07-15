@@ -1300,6 +1300,14 @@ export class CustomLayoutView extends ContainerView implements CustomLayoutViewD
 		child._setMinHeightNative(value);
 	}
 
+	public _removeFromNativeVisualTree(): void {
+		super._removeFromNativeVisualTree();
+		const parent = this.nativeViewProtected?.getParent();
+		if (parent && parent['removeView']) {
+			parent['removeView'](this.nativeViewProtected);
+		}
+	}
+
 	public _removeViewFromNativeVisualTree(child: ViewCommon): void {
 		super._removeViewFromNativeVisualTree(child);
 

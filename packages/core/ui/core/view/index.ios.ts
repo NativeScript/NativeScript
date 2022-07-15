@@ -977,6 +977,13 @@ export class CustomLayoutView extends ContainerView {
 		return false;
 	}
 
+	public _removeFromNativeVisualTree(): void {
+		super._removeFromNativeVisualTree();
+		if (this.nativeViewProtected) {
+			this.nativeViewProtected.removeFromSuperview();
+		}
+	}
+
 	public _removeViewFromNativeVisualTree(child: View): void {
 		super._removeViewFromNativeVisualTree(child);
 

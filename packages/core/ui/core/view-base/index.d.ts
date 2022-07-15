@@ -436,6 +436,7 @@ export abstract class ViewBase extends Observable {
 	 */
 	_addViewToNativeVisualTree(view: ViewBase, atIndex?: number): boolean;
 	_removeViewFromNativeVisualTree(view: ViewBase): void;
+	_removeFromNativeVisualTree(): void;
 	_childIndexToNativeChildIndex(index?: number): number;
 
 	/**

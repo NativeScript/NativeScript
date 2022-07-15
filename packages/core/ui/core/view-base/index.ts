@@ -952,9 +952,11 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 				return true;
 			});
 		}
-
 		if (this.parent) {
 			this.parent._removeViewFromNativeVisualTree(this);
+		} else {
+			//ensure we still remove the view or we could create memory leaks
+			this._removeFromNativeVisualTree();
 		}
 
 		// const nativeView = this.nativeViewProtected;
@@ -1007,6 +1009,13 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		}
 
 		return true;
+	}
+
+	/**
+	 * Method is intended to be overridden by inheritors and used as "protected"
+	 */
+	public _removeFromNativeVisualTree(): void {
+		this._isAddedToNativeVisualTree = false;
 	}
 
 	/**
