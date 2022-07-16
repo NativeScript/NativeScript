@@ -37,8 +37,7 @@ class UILayoutViewController extends UIViewController {
 		}
 	}
 
-	public viewDidLayoutSubviews(): void {
-		super.viewDidLayoutSubviews();
+	private updateAdditionalSafeAreaInsetsIfNeeded(): void {
 		const owner = this.owner.get();
 		if (owner) {
 			if (majorVersion >= 11) {
@@ -77,7 +76,18 @@ class UILayoutViewController extends UIViewController {
 					}
 				}
 			}
+		}
+	}
 
+	public viewSafeAreaInsetsDidChange(): void {
+		super.viewSafeAreaInsetsDidChange();
+		this.updateAdditionalSafeAreaInsetsIfNeeded();
+	}
+
+	public viewDidLayoutSubviews(): void {
+		super.viewDidLayoutSubviews();
+		const owner = this.owner.get();
+		if (owner) {
 			IOSHelper.layoutView(this, owner);
 		}
 	}
@@ -91,7 +101,7 @@ class UILayoutViewController extends UIViewController {
 
 		IOSHelper.updateAutoAdjustScrollInsets(this, owner);
 
-		if (!owner.parent) {
+		if (!owner.isLoaded && !owner.parent) {
 			owner.callLoaded();
 		}
 	}
@@ -99,7 +109,7 @@ class UILayoutViewController extends UIViewController {
 	public viewDidDisappear(animated: boolean): void {
 		super.viewDidDisappear(animated);
 		const owner = this.owner.get();
-		if (owner && !owner.parent) {
+		if (owner && owner.isLoaded && !owner.parent) {
 			owner.callUnloaded();
 		}
 	}
@@ -266,7 +276,7 @@ export class IOSHelper {
 			const adjustedFrame = IOSHelper.getFrameFromPosition(position, insets);
 
 			if (Trace.isEnabled()) {
-				Trace.write(this + ' :shrinkToSafeArea: ' + JSON.stringify(IOSHelper.getPositionFromFrame(adjustedFrame)), Trace.categories.Layout);
+                Trace.write(`${view} :shrinkToSafeArea: ${JSON.stringify(IOSHelper.getPositionFromFrame(adjustedFrame))}`, Trace.categories.Layout);
 			}
 
 			return adjustedFrame;

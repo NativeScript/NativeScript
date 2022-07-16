@@ -56,6 +56,14 @@ export class Style extends Observable implements StyleDefinition {
 		this.unscopedCssVariables.set(varName, value);
 	}
 
+	public removeScopedCssVariable(varName: string): void {
+		this.scopedCssVariables.delete(varName);
+	}
+
+	public removeUnscopedCssVariable(varName: string): void {
+		this.unscopedCssVariables.delete(varName);
+	}
+
 	public getCssVariable(varName: string): string | null {
 		const view = this.view;
 		if (!view) {
@@ -145,6 +153,8 @@ export class Style extends Observable implements StyleDefinition {
 	public fontStyle: FontStyle;
 	public fontWeight: FontWeight;
 	public font: string;
+
+	public maxLines: CoreTypes.MaxLinesType;
 
 	public androidElevation: number;
 	public androidDynamicElevationOffset: number;

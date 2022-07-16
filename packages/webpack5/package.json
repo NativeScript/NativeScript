@@ -1,6 +1,6 @@
 {
 	"name": "@nativescript/webpack",
-	"version": "5.0.6",
+	"version": "5.0.7",
 	"private": false,
 	"main": "dist/index.js",
 	"files": [
@@ -45,7 +45,7 @@
 		"terser-webpack-plugin": "^5.0.0",
 		"ts-dedent": "^2.0.0",
 		"ts-loader": "^9.0.0",
-		"vue-loader": "^15.0.0",
+		"vue-loader": "^15.0.0 <= 15.9.8",
 		"webpack": "^5.30.0 <= 5.50.0 || ^5.51.2",
 		"webpack-bundle-analyzer": "^4.0.0",
 		"webpack-chain": "^6.0.0",
@@ -67,7 +67,7 @@
 		"jest-matcher-utils": "27.1.1",
 		"nativescript-vue-template-compiler": "2.9.0",
 		"ts-jest": "27.0.5",
-		"typescript": "4.5.4"
+		"typescript": "4.7.3"
 	},
 	"peerDependencies": {
 		"nativescript-vue-template-compiler": "^2.8.1"

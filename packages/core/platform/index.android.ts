@@ -128,11 +128,23 @@ class DeviceRef {
 	}
 
 	get language(): string {
-		return java.util.Locale.getDefault().getLanguage().replace('_', '-');
+		let defaultNativeLocale;
+		if (android.os.Build.VERSION.SDK_INT >= 24) {
+			defaultNativeLocale = android.content.res.Resources.getSystem().getConfiguration().getLocales().get(0);
+		} else {
+			defaultNativeLocale = android.content.res.Resources.getSystem().getConfiguration().locale;
+		}
+		return defaultNativeLocale.getLanguage().replace('_', '-');
 	}
 
 	get region(): string {
-		return java.util.Locale.getDefault().getCountry();
+		let defaultNativeLocale;
+		if (android.os.Build.VERSION.SDK_INT >= 24) {
+			defaultNativeLocale = android.content.res.Resources.getSystem().getConfiguration().getLocales().get(0);
+		} else {
+			defaultNativeLocale = android.content.res.Resources.getSystem().getConfiguration().locale;
+		}
+		return defaultNativeLocale.getCountry();
 	}
 }
 
