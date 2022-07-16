@@ -8,3 +8,4 @@
 /// <reference path="objc-x86_64/objc!Speech.d.ts" />
 /// <reference path="objc-x86_64/objc!UIKit.d.ts" />
 /// <reference path="objc-x86_64/objc!Vision.d.ts" />
+/// <reference path="objc-x86_64/objc!WebKit.d.ts" />
