@@ -48,7 +48,7 @@
     "acorn": "^8.7.0",
     "css-tree": "^1.1.2",
     "reduce-css-calc": "^2.1.7",
-    "tslib": "~2.0.0"
+    "tslib": "^2.0.0"
   },
   "nativescript": {
     "platforms": {
