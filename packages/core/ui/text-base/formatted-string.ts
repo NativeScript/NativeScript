@@ -76,8 +76,8 @@ export class FormattedString extends ViewBase implements FormattedStringDefiniti
 
 	public toString(): string {
 		let result = '';
-		for (let span of this.spans) {
-			result += span.text;
+		for (let i = 0, length = this._spans.length; i < length; i++) {
+			result += this._spans.getItem(i).text;
 		}
 
 		return result;
