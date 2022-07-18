@@ -46,7 +46,7 @@ export class ObservableArray<T> extends Observable {
 	 */
 	public static changeEvent = CHANGE;
 
-	private _array: Array<any>;
+	private _array: Array<T>;
 	private _addArgs: ChangedData<T>;
 	private _deleteArgs: ChangedData<T>;
 
@@ -184,7 +184,7 @@ export class ObservableArray<T> extends Observable {
 	 * Appends new elements to an array, and returns the new length of the array.
 	 * @param item New element of the Array.
 	 */
-	push(...args: any): number {
+	push(...args: T[]): number {
 		const length = this._array.length;
 		const result = this._array.push(...args);
 
@@ -253,7 +253,7 @@ export class ObservableArray<T> extends Observable {
 	 * @param deleteCount The number of elements to remove.
 	 * @param items Elements to insert into the array in place of the deleted elements.
 	 */
-	splice(start: number, deleteCount?: number, ...items: any): ObservableArray<T> {
+	splice(start: number, deleteCount?: number, ...items: T[]): ObservableArray<T> {
 		const length = this._array.length;
 		const result = arguments.length === 1 ? this._array.splice(start) : this._array.splice(start, deleteCount, ...items);
 
@@ -284,7 +284,7 @@ export class ObservableArray<T> extends Observable {
 	 * Inserts new elements at the start of an array.
 	 * @param items  Elements to insert at the start of the Array.
 	 */
-	unshift(...args: any): number {
+	unshift(...args: T[]): number {
 		const length = this._array.length;
 		const result = this._array.unshift(...args);
 
@@ -302,7 +302,7 @@ export class ObservableArray<T> extends Observable {
 	 * @param callbackfn
 	 * @param thisArg If provided, it will be used as the this value for each invocation of predicate. If it is not provided, undefined is used instead.
 	 */
-	find(callbackfn: (value: T, index: number, array: ObservableArray<T>) => any, thisArg?: any): number {
+	find(callbackfn: (value: T, index: number, array: ObservableArray<T>) => any, thisArg?: any): T {
 		return this._array.find((value: T, index: number, array: T[]) => callbackfn(value, index, this), thisArg);
 	}
 
