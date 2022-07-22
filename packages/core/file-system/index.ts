@@ -571,7 +571,7 @@ export namespace knownFolders {
 			_externalDocuments._isKnown = true;
 		}
 
-		return _documents;
+		return _externalDocuments;
 	}
 
 	export function temp(): Folder {
