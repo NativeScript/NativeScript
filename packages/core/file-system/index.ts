@@ -548,6 +548,7 @@ export class Folder extends FileSystemEntity {
 
 export namespace knownFolders {
 	let _documents: Folder;
+	let _externalDocuments: Folder;
 	let _temp: Folder;
 	let _app: Folder;
 
@@ -563,11 +564,11 @@ export namespace knownFolders {
 	}
 
 	export function externalDocuments(): Folder {
-		if (!_documents) {
+		if (!_externalDocuments) {
 			const path = getFileAccess().getExternalDocumentsFolderPath();
-			_documents = new Folder();
-			_documents._path = path;
-			_documents._isKnown = true;
+			_externalDocuments = new Folder();
+			_externalDocuments._path = path;
+			_externalDocuments._isKnown = true;
 		}
 
 		return _documents;
