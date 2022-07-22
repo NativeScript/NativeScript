@@ -562,6 +562,17 @@ export namespace knownFolders {
 		return _documents;
 	}
 
+	export function externalDocuments(): Folder {
+		if (!_documents) {
+			const path = getFileAccess().getExternalDocumentsFolderPath();
+			_documents = new Folder();
+			_documents._path = path;
+			_documents._isKnown = true;
+		}
+
+		return _documents;
+	}
+
 	export function temp(): Folder {
 		if (!_temp) {
 			const path = getFileAccess().getTempFolderPath();
