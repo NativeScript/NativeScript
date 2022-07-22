@@ -248,6 +248,9 @@ export class FileSystemAccess {
 	public getDocumentsFolderPath(): string {
 		return this.getKnownPath(NSSearchPathDirectory.DocumentDirectory);
 	}
+	public getExternalDocumentsFolderPath(): string {
+		return this.getDocumentsFolderPath();
+	}
 
 	public getTempFolderPath(): string {
 		return this.getKnownPath(NSSearchPathDirectory.CachesDirectory);
