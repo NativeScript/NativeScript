@@ -213,8 +213,8 @@ allTests['PROGRESS'] = progressTests;
 import * as placeholderTests from './ui/placeholder/placeholder-tests';
 allTests['PLACEHOLDER'] = placeholderTests;
 
-import * as pageTests from './ui/page/page-tests';
-allTests['PAGE'] = pageTests;
+// import * as pageTests from './ui/page/page-tests';
+// allTests['PAGE'] = pageTests;
 
 import * as listViewTests from './ui/list-view/list-view-tests';
 allTests['LISTVIEW'] = listViewTests;
