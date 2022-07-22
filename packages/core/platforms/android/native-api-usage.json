@@ -71,6 +71,7 @@
         "android.os:Parcelable*",
         "android.os:Environment*",
         "android.os:IBinder*",
+        "android.os:LocaleList*",
         "android.view:Window*",
         "android.view:View*",
         "android.view.View:OnClickListener*",
