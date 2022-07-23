@@ -446,9 +446,17 @@ declare class ARConfiguration extends NSObject implements NSCopying {
 
 	videoFormat: ARVideoFormat;
 
+	videoHDRAllowed: boolean;
+
 	worldAlignment: ARWorldAlignment;
 
+	static readonly configurableCaptureDeviceForPrimaryCamera: AVCaptureDevice;
+
 	static readonly isSupported: boolean;
+
+	static readonly recommendedVideoFormatFor4KResolution: ARVideoFormat;
+
+	static readonly recommendedVideoFormatForHighResolutionFrameCapturing: ARVideoFormat;
 
 	static readonly supportedVideoFormats: NSArray<ARVideoFormat>;
 
@@ -520,6 +528,10 @@ declare const enum ARErrorCode {
 	MicrophoneUnauthorized = 104,
 
 	LocationUnauthorized = 105,
+
+	HighResolutionFrameCaptureInProgress = 106,
+
+	HighResolutionFrameCaptureFailed = 107,
 
 	WorldTrackingFailed = 200,
 
@@ -672,6 +684,8 @@ declare class ARFrame extends NSObject implements NSCopying {
 	readonly detectedBody: ARBody2D;
 
 	readonly estimatedDepthData: any;
+
+	readonly exifData: NSDictionary<string, any>;
 
 	readonly geoTrackingStatus: ARGeoTrackingStatus;
 
@@ -1162,6 +1176,8 @@ declare class ARPlaneAnchor extends ARAnchor {
 
 	readonly geometry: ARPlaneGeometry;
 
+	readonly planeExtent: ARPlaneExtent;
+
 	static readonly classificationSupported: boolean;
 }
 
@@ -1209,6 +1225,27 @@ declare const enum ARPlaneDetection {
 	Horizontal = 1,
 
 	Vertical = 2
+}
+
+declare class ARPlaneExtent extends NSObject implements NSSecureCoding {
+
+	static alloc(): ARPlaneExtent; // inherited from NSObject
+
+	static new(): ARPlaneExtent; // inherited from NSObject
+
+	readonly height: number;
+
+	readonly rotationOnYAxis: number;
+
+	readonly width: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class ARPlaneGeometry extends NSObject implements NSSecureCoding {
@@ -1689,6 +1726,8 @@ declare class ARSession extends NSObject {
 
 	addAnchor(anchor: ARAnchor): void;
 
+	captureHighResolutionFrameWithCompletion(completion: (p1: ARFrame, p2: NSError) => void): void;
+
 	createReferenceObjectWithTransformCenterExtentCompletionHandler(transform: simd_float4x4, center: interop.Reference<number>, extent: interop.Reference<number>, completionHandler: (p1: ARReferenceObject, p2: NSError) => void): void;
 
 	getCurrentWorldMapWithCompletionHandler(completionHandler: (p1: ARWorldMap, p2: NSError) => void): void;
@@ -1901,6 +1940,10 @@ declare class ARVideoFormat extends NSObject implements NSCopying {
 	readonly framesPerSecond: number;
 
 	readonly imageResolution: CGSize;
+
+	readonly isRecommendedForHighResolutionFrameCapturing: boolean;
+
+	readonly videoHDRSupported: boolean;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }

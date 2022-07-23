@@ -599,6 +599,21 @@ declare function sqlite3_shutdown(): number;
 
 declare function sqlite3_sleep(p1: number): number;
 
+interface sqlite3_snapshot {
+	hidden: interop.Reference<number>;
+}
+declare var sqlite3_snapshot: interop.StructType<sqlite3_snapshot>;
+
+declare function sqlite3_snapshot_cmp(p1: interop.Pointer | interop.Reference<sqlite3_snapshot>, p2: interop.Pointer | interop.Reference<sqlite3_snapshot>): number;
+
+declare function sqlite3_snapshot_free(p1: interop.Pointer | interop.Reference<sqlite3_snapshot>): void;
+
+declare function sqlite3_snapshot_get(db: interop.Pointer | interop.Reference<any>, zSchema: string | interop.Pointer | interop.Reference<any>, ppSnapshot: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<sqlite3_snapshot>>): number;
+
+declare function sqlite3_snapshot_open(db: interop.Pointer | interop.Reference<any>, zSchema: string | interop.Pointer | interop.Reference<any>, pSnapshot: interop.Pointer | interop.Reference<sqlite3_snapshot>): number;
+
+declare function sqlite3_snapshot_recover(db: interop.Pointer | interop.Reference<any>, zDb: string | interop.Pointer | interop.Reference<any>): number;
+
 declare function sqlite3_soft_heap_limit(N: number): void;
 
 declare function sqlite3_soft_heap_limit64(N: number): number;

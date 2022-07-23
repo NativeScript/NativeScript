@@ -117,6 +117,22 @@ declare function VTMultiPassStorageCreate(allocator: any, fileURL: NSURL, timeRa
 
 declare function VTMultiPassStorageGetTypeID(): number;
 
+declare function VTPixelRotationSessionCreate(allocator: any, pixelRotationSessionOut: interop.Pointer | interop.Reference<any>): number;
+
+declare function VTPixelRotationSessionGetTypeID(): number;
+
+declare function VTPixelRotationSessionInvalidate(session: any): void;
+
+declare function VTPixelRotationSessionRotateImage(session: any, sourceBuffer: any, destinationBuffer: any): number;
+
+declare function VTPixelTransferSessionCreate(allocator: any, pixelTransferSessionOut: interop.Pointer | interop.Reference<any>): number;
+
+declare function VTPixelTransferSessionGetTypeID(): number;
+
+declare function VTPixelTransferSessionInvalidate(session: any): void;
+
+declare function VTPixelTransferSessionTransferImage(session: any, sourceBuffer: any, destinationBuffer: any): number;
+
 declare function VTSessionCopyProperty(session: any, propertyKey: string, allocator: any, propertyValueOut: interop.Pointer | interop.Reference<any>): number;
 
 declare function VTSessionCopySerializableProperties(session: any, allocator: any, dictionaryOut: interop.Pointer | interop.Reference<NSDictionary<any, any>>): number;
@@ -161,6 +177,8 @@ declare var kVTCompressionPropertyKey_CleanAperture: string;
 
 declare var kVTCompressionPropertyKey_ColorPrimaries: string;
 
+declare var kVTCompressionPropertyKey_ConstantBitRate: string;
+
 declare var kVTCompressionPropertyKey_ContentLightLevelInfo: string;
 
 declare var kVTCompressionPropertyKey_DataRateLimits: string;
@@ -170,6 +188,8 @@ declare var kVTCompressionPropertyKey_Depth: string;
 declare var kVTCompressionPropertyKey_EnableLTR: string;
 
 declare var kVTCompressionPropertyKey_EncoderID: string;
+
+declare var kVTCompressionPropertyKey_EstimatedAverageBytesPerFrame: string;
 
 declare var kVTCompressionPropertyKey_ExpectedDuration: string;
 
@@ -201,6 +221,8 @@ declare var kVTCompressionPropertyKey_MaxKeyFrameIntervalDuration: string;
 
 declare var kVTCompressionPropertyKey_MaximizePowerEfficiency: string;
 
+declare var kVTCompressionPropertyKey_MinAllowedFrameQP: string;
+
 declare var kVTCompressionPropertyKey_MoreFramesAfterEnd: string;
 
 declare var kVTCompressionPropertyKey_MoreFramesBeforeStart: string;
@@ -217,6 +239,8 @@ declare var kVTCompressionPropertyKey_PixelBufferPoolIsShared: string;
 
 declare var kVTCompressionPropertyKey_PixelTransferProperties: string;
 
+declare var kVTCompressionPropertyKey_PreserveAlphaChannel: string;
+
 declare var kVTCompressionPropertyKey_PreserveDynamicHDRMetadata: string;
 
 declare var kVTCompressionPropertyKey_PrioritizeEncodingSpeedOverQuality: string;
@@ -228,6 +252,8 @@ declare var kVTCompressionPropertyKey_ProgressiveScan: string;
 declare var kVTCompressionPropertyKey_Quality: string;
 
 declare var kVTCompressionPropertyKey_RealTime: string;
+
+declare var kVTCompressionPropertyKey_ReferenceBufferCount: string;
 
 declare var kVTCompressionPropertyKey_SourceFrameCount: string;
 
@@ -366,6 +392,14 @@ declare const kVTMultiPassStorageIdentifierMismatchErr: number;
 declare const kVTMultiPassStorageInvalidErr: number;
 
 declare const kVTParameterErr: number;
+
+declare const kVTPixelRotationNotSupportedErr: number;
+
+declare var kVTPixelRotationPropertyKey_FlipHorizontalOrientation: string;
+
+declare var kVTPixelRotationPropertyKey_FlipVerticalOrientation: string;
+
+declare var kVTPixelRotationPropertyKey_Rotation: string;
 
 declare const kVTPixelTransferNotPermittedErr: number;
 
@@ -523,6 +557,14 @@ declare var kVTPropertyType_Enumeration: string;
 
 declare var kVTPropertyType_Number: string;
 
+declare var kVTRotation_0: string;
+
+declare var kVTRotation_180: string;
+
+declare var kVTRotation_CCW90: string;
+
+declare var kVTRotation_CW90: string;
+
 declare var kVTSampleAttachmentKey_RequireLTRAcknowledgementToken: string;
 
 declare var kVTScalingMode_CropSourceToCleanAperture: string;
@@ -556,6 +598,8 @@ declare const kVTVideoDecoderRemovedErr: number;
 declare var kVTVideoDecoderSpecification_PreferredDecoderGPURegistryID: string;
 
 declare var kVTVideoDecoderSpecification_RequiredDecoderGPURegistryID: string;
+
+declare const kVTVideoDecoderUnknownErr: number;
 
 declare const kVTVideoDecoderUnsupportedDataFormatErr: number;
 

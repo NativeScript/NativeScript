@@ -1,15 +1,15 @@
 
-interface CGAffineTransform {
-	a: number;
-	b: number;
-	c: number;
-	d: number;
-	tx: number;
-	ty: number;
+interface CGAffineTransformComponents {
+	scale: CGSize;
+	horizontalShear: number;
+	rotation: number;
+	translation: CGVector;
 }
-declare var CGAffineTransform: interop.StructType<CGAffineTransform>;
+declare var CGAffineTransformComponents: interop.StructType<CGAffineTransformComponents>;
 
 declare function CGAffineTransformConcat(t1: CGAffineTransform, t2: CGAffineTransform): CGAffineTransform;
+
+declare function CGAffineTransformDecompose(transform: CGAffineTransform): CGAffineTransformComponents;
 
 declare function CGAffineTransformEqualToTransform(t1: CGAffineTransform, t2: CGAffineTransform): boolean;
 
@@ -26,6 +26,8 @@ declare function CGAffineTransformMakeRotation(angle: number): CGAffineTransform
 declare function CGAffineTransformMakeScale(sx: number, sy: number): CGAffineTransform;
 
 declare function CGAffineTransformMakeTranslation(tx: number, ty: number): CGAffineTransform;
+
+declare function CGAffineTransformMakeWithComponents(components: CGAffineTransformComponents): CGAffineTransform;
 
 declare function CGAffineTransformRotate(t: CGAffineTransform, angle: number): CGAffineTransform;
 
@@ -227,6 +229,8 @@ declare function CGColorSpaceCopyPropertyList(space: any): any;
 declare function CGColorSpaceCreateCalibratedGray(whitePoint: interop.Reference<number>, blackPoint: interop.Reference<number>, gamma: number): any;
 
 declare function CGColorSpaceCreateCalibratedRGB(whitePoint: interop.Reference<number>, blackPoint: interop.Reference<number>, gamma: interop.Reference<number>, matrix: interop.Reference<number>): any;
+
+declare function CGColorSpaceCreateCopyWithStandardRange(s: any): any;
 
 declare function CGColorSpaceCreateDeviceCMYK(): any;
 
@@ -1136,6 +1140,8 @@ declare function CGPDFScannerRetain(scanner: interop.Pointer | interop.Reference
 
 declare function CGPDFScannerScan(scanner: interop.Pointer | interop.Reference<any>): boolean;
 
+declare function CGPDFScannerStop(s: interop.Pointer | interop.Reference<any>): void;
+
 declare function CGPDFStreamCopyData(stream: interop.Pointer | interop.Reference<any>, format: interop.Pointer | interop.Reference<CGPDFDataFormat>): NSData;
 
 declare function CGPDFStreamGetDictionary(stream: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
@@ -1287,15 +1293,33 @@ declare function CGPathCreateCopy(path: any): any;
 
 declare function CGPathCreateCopyByDashingPath(path: any, transform: interop.Pointer | interop.Reference<CGAffineTransform>, phase: number, lengths: interop.Pointer | interop.Reference<number>, count: number): any;
 
+declare function CGPathCreateCopyByFlattening(path: any, flatteningThreshold: number): any;
+
+declare function CGPathCreateCopyByIntersectingPath(path: any, maskPath: any, evenOddFillRule: boolean): any;
+
+declare function CGPathCreateCopyByNormalizing(path: any, evenOddFillRule: boolean): any;
+
 declare function CGPathCreateCopyByStrokingPath(path: any, transform: interop.Pointer | interop.Reference<CGAffineTransform>, lineWidth: number, lineCap: CGLineCap, lineJoin: CGLineJoin, miterLimit: number): any;
 
+declare function CGPathCreateCopyBySubtractingPath(path: any, maskPath: any, evenOddFillRule: boolean): any;
+
+declare function CGPathCreateCopyBySymmetricDifferenceOfPath(path: any, maskPath: any, evenOddFillRule: boolean): any;
+
 declare function CGPathCreateCopyByTransformingPath(path: any, transform: interop.Pointer | interop.Reference<CGAffineTransform>): any;
+
+declare function CGPathCreateCopyByUnioningPath(path: any, maskPath: any, evenOddFillRule: boolean): any;
+
+declare function CGPathCreateCopyOfLineByIntersectingPath(path: any, maskPath: any, evenOddFillRule: boolean): any;
+
+declare function CGPathCreateCopyOfLineBySubtractingPath(path: any, maskPath: any, evenOddFillRule: boolean): any;
 
 declare function CGPathCreateMutable(): any;
 
 declare function CGPathCreateMutableCopy(path: any): any;
 
 declare function CGPathCreateMutableCopyByTransformingPath(path: any, transform: interop.Pointer | interop.Reference<CGAffineTransform>): any;
+
+declare function CGPathCreateSeparateComponents(path: any, evenOddFillRule: boolean): NSArray<any>;
 
 declare function CGPathCreateWithEllipseInRect(rect: CGRect, transform: interop.Pointer | interop.Reference<CGAffineTransform>): any;
 
@@ -1345,6 +1369,8 @@ declare function CGPathGetPathBoundingBox(path: any): CGRect;
 
 declare function CGPathGetTypeID(): number;
 
+declare function CGPathIntersectsPath(path1: any, path2: any, evenOddFillRule: boolean): boolean;
+
 declare function CGPathIsEmpty(path: any): boolean;
 
 declare function CGPathIsRect(path: any, rect: interop.Pointer | interop.Reference<CGRect>): boolean;
@@ -1379,12 +1405,6 @@ declare const enum CGPatternTiling {
 	kCGPatternTilingConstantSpacing = 2
 }
 
-interface CGPoint {
-	x: number;
-	y: number;
-}
-declare var CGPoint: interop.StructType<CGPoint>;
-
 declare function CGPointApplyAffineTransform(point: CGPoint, t: CGAffineTransform): CGPoint;
 
 declare function CGPointCreateDictionaryRepresentation(point: CGPoint): NSDictionary<any, any>;
@@ -1397,12 +1417,6 @@ declare function CGPointMakeWithDictionaryRepresentation(dict: NSDictionary<any,
 
 declare var CGPointZero: CGPoint;
 
-interface CGRect {
-	origin: CGPoint;
-	size: CGSize;
-}
-declare var CGRect: interop.StructType<CGRect>;
-
 declare function CGRectApplyAffineTransform(rect: CGRect, t: CGAffineTransform): CGRect;
 
 declare function CGRectContainsPoint(rect: CGRect, point: CGPoint): boolean;
@@ -1412,17 +1426,6 @@ declare function CGRectContainsRect(rect1: CGRect, rect2: CGRect): boolean;
 declare function CGRectCreateDictionaryRepresentation(p1: CGRect): NSDictionary<any, any>;
 
 declare function CGRectDivide(rect: CGRect, slice: interop.Pointer | interop.Reference<CGRect>, remainder: interop.Pointer | interop.Reference<CGRect>, amount: number, edge: CGRectEdge): void;
-
-declare const enum CGRectEdge {
-
-	MinXEdge = 0,
-
-	MinYEdge = 1,
-
-	MaxXEdge = 2,
-
-	MaxYEdge = 3
-}
 
 declare function CGRectEqualToRect(rect1: CGRect, rect2: CGRect): boolean;
 
@@ -1482,12 +1485,6 @@ declare function CGShadingRelease(shading: any): void;
 
 declare function CGShadingRetain(shading: any): any;
 
-interface CGSize {
-	width: number;
-	height: number;
-}
-declare var CGSize: interop.StructType<CGSize>;
-
 declare function CGSizeApplyAffineTransform(size: CGSize, t: CGAffineTransform): CGSize;
 
 declare function CGSizeCreateDictionaryRepresentation(size: CGSize): NSDictionary<any, any>;
@@ -1525,12 +1522,6 @@ declare const enum CGTextEncoding {
 
 	kCGEncodingMacRoman = 1
 }
-
-interface CGVector {
-	dx: number;
-	dy: number;
-}
-declare var CGVector: interop.StructType<CGVector>;
 
 declare function CGVectorMake(dx: number, dy: number): CGVector;
 
@@ -1603,6 +1594,8 @@ declare var kCGColorSpaceITUR_2100_HLG: string;
 declare var kCGColorSpaceITUR_2100_PQ: string;
 
 declare var kCGColorSpaceITUR_709: string;
+
+declare var kCGColorSpaceITUR_709_HLG: string;
 
 declare var kCGColorSpaceITUR_709_PQ: string;
 

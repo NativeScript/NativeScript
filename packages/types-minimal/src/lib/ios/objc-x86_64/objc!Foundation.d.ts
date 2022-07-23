@@ -11,13 +11,19 @@ declare const enum NSActivityOptions {
 
 	AutomaticTerminationDisabled = 32768,
 
+	AnimationTrackingEnabled = 35184372088832,
+
+	TrackingEnabled = 70368744177664,
+
 	UserInitiated = 16777215,
 
 	UserInitiatedAllowingIdleSystemSleep = 15728639,
 
 	Background = 255,
 
-	LatencyCritical = 1095216660480
+	LatencyCritical = 1095216660480,
+
+	UserInteractive = 1095233437695
 }
 
 declare function NSAllHashTableObjects(table: NSHashTable<any>): NSArray<any>;
@@ -445,6 +451,8 @@ declare class NSAttributedStringMarkdownParsingOptions extends NSObject implemen
 
 	allowsExtendedAttributes: boolean;
 
+	appliesSourcePositionAttributes: boolean;
+
 	failurePolicy: NSAttributedStringMarkdownParsingFailurePolicy;
 
 	interpretedSyntax: NSAttributedStringMarkdownInterpretedSyntax;
@@ -452,6 +460,37 @@ declare class NSAttributedStringMarkdownParsingOptions extends NSObject implemen
 	languageCode: string;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare class NSAttributedStringMarkdownSourcePosition extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): NSAttributedStringMarkdownSourcePosition; // inherited from NSObject
+
+	static new(): NSAttributedStringMarkdownSourcePosition; // inherited from NSObject
+
+	readonly endColumn: number;
+
+	readonly endLine: number;
+
+	readonly startColumn: number;
+
+	readonly startLine: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { startLine: number; startColumn: number; endLine: number; endColumn: number; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithStartLineStartColumnEndLineEndColumn(startLine: number, startColumn: number, endLine: number, endColumn: number): this;
+
+	rangeInString(string: string): NSRange;
 }
 
 declare class NSAutoreleasePool extends NSObject {
@@ -2862,6 +2901,8 @@ declare class NSError extends NSObject implements NSCopying, NSSecureCoding {
 
 	static fileProviderErrorForNonExistentItemWithIdentifier(itemIdentifier: string): NSError;
 
+	static fileProviderErrorForRejectedDeletionOfItem(updatedVersion: NSFileProviderItem): NSError;
+
 	static new(): NSError; // inherited from NSObject
 
 	static setUserInfoValueProviderForDomainProvider(errorDomain: string, provider: (p1: NSError, p2: string) => any): void;
@@ -4613,6 +4654,8 @@ declare class NSInvocation extends NSObject {
 
 	invoke(): void;
 
+	invokeUsingIMP(imp: interop.FunctionReference<() => void>): void;
+
 	invokeWithTarget(target: any): void;
 
 	retainArguments(): void;
@@ -4665,6 +4708,10 @@ declare class NSItemProvider extends NSObject implements NSCopying {
 
 	previewImageHandler: (p1: (p1: NSSecureCoding, p2: NSError) => void, p2: typeof NSObject, p3: NSDictionary<any, any>) => void;
 
+	readonly registeredContentTypes: NSArray<UTType>;
+
+	readonly registeredContentTypesForOpenInPlace: NSArray<UTType>;
+
 	readonly registeredTypeIdentifiers: NSArray<string>;
 
 	suggestedName: string;
@@ -4672,6 +4719,8 @@ declare class NSItemProvider extends NSObject implements NSCopying {
 	teamData: NSData;
 
 	constructor(o: { contentsOfURL: NSURL; });
+
+	constructor(o: { contentsOfURL: NSURL; contentType: UTType; openInPlace: boolean; coordinated: boolean; visibility: NSItemProviderRepresentationVisibility; });
 
 	constructor(o: { item: NSSecureCoding; typeIdentifier: string; });
 
@@ -4687,11 +4736,17 @@ declare class NSItemProvider extends NSObject implements NSCopying {
 
 	initWithContentsOfURL(fileURL: NSURL): this;
 
+	initWithContentsOfURLContentTypeOpenInPlaceCoordinatedVisibility(fileURL: NSURL, contentType: UTType, openInPlace: boolean, coordinated: boolean, visibility: NSItemProviderRepresentationVisibility): this;
+
 	initWithItemTypeIdentifier(item: NSSecureCoding, typeIdentifier: string): this;
 
 	initWithObject(object: NSItemProviderWriting): this;
 
+	loadDataRepresentationForContentTypeCompletionHandler(contentType: UTType, completionHandler: (p1: NSData, p2: NSError) => void): NSProgress;
+
 	loadDataRepresentationForTypeIdentifierCompletionHandler(typeIdentifier: string, completionHandler: (p1: NSData, p2: NSError) => void): NSProgress;
+
+	loadFileRepresentationForContentTypeOpenInPlaceCompletionHandler(contentType: UTType, openInPlace: boolean, completionHandler: (p1: NSURL, p2: boolean, p3: NSError) => void): NSProgress;
 
 	loadFileRepresentationForTypeIdentifierCompletionHandler(typeIdentifier: string, completionHandler: (p1: NSURL, p2: NSError) => void): NSProgress;
 
@@ -4703,7 +4758,15 @@ declare class NSItemProvider extends NSObject implements NSCopying {
 
 	loadPreviewImageWithOptionsCompletionHandler(options: NSDictionary<any, any>, completionHandler: (p1: NSSecureCoding, p2: NSError) => void): void;
 
+	registerCKShareContainerAllowedSharingOptions(share: CKShare, container: CKContainer, allowedOptions: CKAllowedSharingOptions): void;
+
+	registerCKShareWithContainerAllowedSharingOptionsPreparationHandler(container: CKContainer, allowedOptions: CKAllowedSharingOptions, preparationHandler: (p1: (p1: CKShare, p2: NSError) => void) => void): void;
+
+	registerDataRepresentationForContentTypeVisibilityLoadHandler(contentType: UTType, visibility: NSItemProviderRepresentationVisibility, loadHandler: (p1: (p1: NSData, p2: NSError) => void) => NSProgress): void;
+
 	registerDataRepresentationForTypeIdentifierVisibilityLoadHandler(typeIdentifier: string, visibility: NSItemProviderRepresentationVisibility, loadHandler: (p1: (p1: NSData, p2: NSError) => void) => NSProgress): void;
+
+	registerFileRepresentationForContentTypeVisibilityOpenInPlaceLoadHandler(contentType: UTType, visibility: NSItemProviderRepresentationVisibility, openInPlace: boolean, loadHandler: (p1: (p1: NSURL, p2: boolean, p3: NSError) => void) => NSProgress): void;
 
 	registerFileRepresentationForTypeIdentifierFileOptionsVisibilityLoadHandler(typeIdentifier: string, fileOptions: NSItemProviderFileOptions, visibility: NSItemProviderRepresentationVisibility, loadHandler: (p1: (p1: NSURL, p2: boolean, p3: NSError) => void) => NSProgress): void;
 
@@ -4712,6 +4775,8 @@ declare class NSItemProvider extends NSObject implements NSCopying {
 	registerObjectOfClassVisibilityLoadHandler(aClass: typeof NSObject, visibility: NSItemProviderRepresentationVisibility, loadHandler: (p1: (p1: NSItemProviderWriting, p2: NSError) => void) => NSProgress): void;
 
 	registerObjectVisibility(object: NSItemProviderWriting, visibility: NSItemProviderRepresentationVisibility): void;
+
+	registeredContentTypesConformingToContentType(contentType: UTType): NSArray<UTType>;
 
 	registeredTypeIdentifiersWithFileOptions(fileOptions: NSItemProviderFileOptions): NSArray<string>;
 }
@@ -5559,6 +5624,8 @@ interface NSMapTableValueCallBacks {
 declare var NSMapTableValueCallBacks: interop.StructType<NSMapTableValueCallBacks>;
 
 declare var NSMapTableWeakMemory: NSPointerFunctionsOptions;
+
+declare var NSMarkdownSourcePositionAttributeName: string;
 
 declare class NSMassFormatter extends NSFormatter {
 
@@ -6521,6 +6588,8 @@ declare class NSMutableURLRequest extends NSURLRequest {
 	mainDocumentURL: NSURL;
 
 	networkServiceType: NSURLRequestNetworkServiceType;
+
+	requiresDNSSECValidation: boolean;
 
 	timeoutInterval: number;
 
@@ -10470,6 +10539,8 @@ declare class NSURLComponents extends NSObject implements NSCopying {
 
 	readonly URL: NSURL;
 
+	encodedHost: string;
+
 	fragment: string;
 
 	host: string;
@@ -11409,6 +11480,8 @@ declare class NSURLSessionConfiguration extends NSObject implements NSCopying {
 
 	requestCachePolicy: NSURLRequestCachePolicy;
 
+	requiresDNSSECValidation: boolean;
+
 	sessionSendsLaunchEvents: boolean;
 
 	sharedContainerIdentifier: string;
@@ -11547,7 +11620,7 @@ declare class NSURLSessionStreamTask extends NSURLSessionTask {
 
 	closeWrite(): void;
 
-	readDataOfMinLengthMaxLengthTimeoutCompletionHandler(minBytes: number, maxBytes: number, timeout: number, completionHandler: (p1: NSData) => void): void;
+	readDataOfMinLengthMaxLengthTimeoutCompletionHandler(minBytes: number, maxBytes: number, timeout: number, completionHandler: (p1: NSData, p2: boolean, p3: NSError) => void): void;
 
 	startSecureConnection(): void;
 
@@ -11642,6 +11715,8 @@ declare class NSURLSessionTask extends NSObject implements NSCopying, NSProgress
 }
 
 interface NSURLSessionTaskDelegate extends NSURLSessionDelegate {
+
+	URLSessionDidCreateTask?(session: NSURLSession, task: NSURLSessionTask): void;
 
 	URLSessionTaskDidCompleteWithError?(session: NSURLSession, task: NSURLSessionTask, error: NSError): void;
 
@@ -13392,6 +13467,8 @@ declare class NSValue extends NSObject implements NSCopying, NSSecureCoding {
 
 	static valueWithCMTimeRange(timeRange: CMTimeRange): NSValue;
 
+	static valueWithCMVideoDimensions(dimensions: CMVideoDimensions): NSValue;
+
 	static valueWithDirectionalEdgeInsets(insets: NSDirectionalEdgeInsets): NSValue;
 
 	static valueWithMKCoordinate(coordinate: CLLocationCoordinate2D): NSValue;
@@ -13433,6 +13510,8 @@ declare class NSValue extends NSObject implements NSCopying, NSSecureCoding {
 	readonly CMTimeRangeValue: CMTimeRange;
 
 	readonly CMTimeValue: CMTime;
+
+	readonly CMVideoDimensionsValue: CMVideoDimensions;
 
 	readonly MKCoordinateSpanValue: MKCoordinateSpan;
 
@@ -13864,6 +13943,8 @@ declare class NSXPCConnection extends NSObject implements NSXPCProxyCreating {
 
 	constructor(o: { listenerEndpoint: NSXPCListenerEndpoint; });
 
+	activate(): void;
+
 	initWithListenerEndpoint(endpoint: NSXPCListenerEndpoint): this;
 
 	invalidate(): void;
@@ -13878,6 +13959,8 @@ declare class NSXPCConnection extends NSObject implements NSXPCProxyCreating {
 
 	synchronousRemoteObjectProxyWithErrorHandler(handler: (p1: NSError) => void): any;
 }
+
+declare const NSXPCConnectionCodeSigningRequirementFailure: number;
 
 declare const NSXPCConnectionErrorMaximum: number;
 
@@ -13926,6 +14009,8 @@ declare class NSXPCListener extends NSObject {
 	delegate: NSXPCListenerDelegate;
 
 	readonly endpoint: NSXPCListenerEndpoint;
+
+	activate(): void;
 
 	invalidate(): void;
 
