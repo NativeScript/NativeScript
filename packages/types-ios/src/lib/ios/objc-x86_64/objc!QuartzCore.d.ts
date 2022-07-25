@@ -195,6 +195,21 @@ declare class CAEAGLLayer extends CALayer implements EAGLDrawable {
 	drawableProperties: NSDictionary<string, any>; // inherited from EAGLDrawable
 }
 
+declare class CAEDRMetadata extends NSObject {
+
+	static HDR10MetadataWithDisplayInfoContentInfoOpticalOutputScale(displayData: NSData, contentData: NSData, scale: number): CAEDRMetadata;
+
+	static HDR10MetadataWithMinLuminanceMaxLuminanceOpticalOutputScale(minNits: number, maxNits: number, scale: number): CAEDRMetadata;
+
+	static alloc(): CAEDRMetadata; // inherited from NSObject
+
+	static new(): CAEDRMetadata; // inherited from NSObject
+
+	static readonly HLGMetadata: CAEDRMetadata;
+
+	static readonly available: boolean;
+}
+
 declare const enum CAEdgeAntialiasingMask {
 
 	kCALayerLeftEdge = 1,
@@ -726,9 +741,13 @@ declare class CAMetalLayer extends CALayer {
 
 	static new(): CAMetalLayer; // inherited from NSObject
 
+	EDRMetadata: CAEDRMetadata;
+
 	allowsNextDrawableTimeout: boolean;
 
 	colorspace: any;
+
+	developerHUDProperties: NSDictionary<any, any>;
 
 	device: MTLDevice;
 
@@ -743,6 +762,8 @@ declare class CAMetalLayer extends CALayer {
 	readonly preferredDevice: MTLDevice;
 
 	presentsWithTransaction: boolean;
+
+	wantsExtendedDynamicRangeContent: boolean;
 
 	nextDrawable(): CAMetalDrawable;
 }
@@ -764,6 +785,33 @@ declare class CAPropertyAnimation extends CAAnimation {
 	keyPath: string;
 
 	valueFunction: CAValueFunction;
+}
+
+declare class CARenderer extends NSObject {
+
+	static alloc(): CARenderer; // inherited from NSObject
+
+	static new(): CARenderer; // inherited from NSObject
+
+	static rendererWithMTLTextureOptions(tex: MTLTexture, dict: NSDictionary<any, any>): CARenderer;
+
+	bounds: CGRect;
+
+	layer: CALayer;
+
+	addUpdateRect(r: CGRect): void;
+
+	beginFrameAtTimeTimeStamp(t: number, ts: interop.Pointer | interop.Reference<CVTimeStamp>): void;
+
+	endFrame(): void;
+
+	nextFrameTime(): number;
+
+	render(): void;
+
+	setDestination(tex: MTLTexture): void;
+
+	updateBounds(): CGRect;
 }
 
 declare class CAReplicatorLayer extends CALayer {
@@ -1171,6 +1219,10 @@ declare var kCAMediaTimingFunctionLinear: string;
 declare var kCAOnOrderIn: string;
 
 declare var kCAOnOrderOut: string;
+
+declare var kCARendererColorSpace: string;
+
+declare var kCARendererMetalCommandQueue: string;
 
 declare var kCAScrollBoth: string;
 

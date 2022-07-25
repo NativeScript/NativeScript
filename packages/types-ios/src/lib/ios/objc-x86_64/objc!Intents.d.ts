@@ -3999,6 +3999,8 @@ declare class INMessage extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): INMessage; // inherited from NSObject
 
+	readonly audioMessageFile: INFile;
+
 	readonly content: string;
 
 	readonly conversationIdentifier: string;
@@ -4027,6 +4029,8 @@ declare class INMessage extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { identifier: string; conversationIdentifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson> | INPerson[]; groupName: INSpeakableString; messageType: INMessageType; serviceName: string; });
 
+	constructor(o: { identifier: string; conversationIdentifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson> | INPerson[]; groupName: INSpeakableString; messageType: INMessageType; serviceName: string; audioMessageFile: INFile; });
+
 	constructor(o: { identifier: string; conversationIdentifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson> | INPerson[]; messageType: INMessageType; });
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
@@ -4040,6 +4044,8 @@ declare class INMessage extends NSObject implements NSCopying, NSSecureCoding {
 	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsGroupNameMessageType(identifier: string, conversationIdentifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson> | INPerson[], groupName: INSpeakableString, messageType: INMessageType): this;
 
 	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsGroupNameMessageTypeServiceName(identifier: string, conversationIdentifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson> | INPerson[], groupName: INSpeakableString, messageType: INMessageType, serviceName: string): this;
+
+	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsGroupNameMessageTypeServiceNameAudioMessageFile(identifier: string, conversationIdentifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson> | INPerson[], groupName: INSpeakableString, messageType: INMessageType, serviceName: string, audioMessageFile: INFile): this;
 
 	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsMessageType(identifier: string, conversationIdentifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson> | INPerson[], messageType: INMessageType): this;
 }
@@ -7724,6 +7730,8 @@ declare class INSendMessageIntentResponse extends INIntentResponse {
 	readonly code: INSendMessageIntentResponseCode;
 
 	sentMessage: INMessage;
+
+	sentMessages: NSArray<INMessage>;
 
 	constructor(o: { code: INSendMessageIntentResponseCode; userActivity: NSUserActivity; });
 

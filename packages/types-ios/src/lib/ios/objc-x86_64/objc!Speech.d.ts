@@ -68,6 +68,8 @@ declare class SFSpeechRecognitionRequest extends NSObject {
 
 	static new(): SFSpeechRecognitionRequest; // inherited from NSObject
 
+	addsPunctuation: boolean;
+
 	contextualStrings: NSArray<string>;
 
 	interactionIdentifier: string;

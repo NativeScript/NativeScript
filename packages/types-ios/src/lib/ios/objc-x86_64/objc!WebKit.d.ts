@@ -231,7 +231,13 @@ declare const enum WKErrorCode {
 
 	NavigationAppBoundDomain = 13,
 
-	JavaScriptAppBoundDomain = 14
+	JavaScriptAppBoundDomain = 14,
+
+	DuplicateCredential = 15,
+
+	MalformedCredential = 16,
+
+	CredentialNotFound = 17
 }
 
 declare var WKErrorDomain: string;
@@ -792,6 +798,10 @@ declare class WKWebView extends UIView {
 
 	readonly estimatedProgress: number;
 
+	readonly findInteraction: UIFindInteraction;
+
+	findInteractionEnabled: boolean;
+
 	readonly fullscreenState: WKFullscreenState;
 
 	readonly hasOnlySecureContent: boolean;
@@ -824,7 +834,7 @@ declare class WKWebView extends UIView {
 
 	constructor(o: { frame: CGRect; configuration: WKWebViewConfiguration; });
 
-	callAsyncJavaScriptArgumentsInFrameInContentWorldCompletionHandler(functionBody: string, _arguments: NSDictionary<string, any>, frame: WKFrameInfo, contentWorld: WKContentWorld, completionHandler: (p1: number, p2: NSError) => void): void;
+	callAsyncJavaScriptArgumentsInFrameInContentWorldCompletionHandler(functionBody: string, _arguments: NSDictionary<string, any>, frame: WKFrameInfo, contentWorld: WKContentWorld, completionHandler: (p1: any, p2: NSError) => void): void;
 
 	closeAllMediaPresentations(): void;
 
@@ -966,6 +976,8 @@ declare class WKWebpagePreferences extends NSObject {
 
 	allowsContentJavaScript: boolean;
 
+	lockdownModeEnabled: boolean;
+
 	preferredContentMode: WKContentMode;
 }
 
@@ -1016,6 +1028,8 @@ declare var WKWebsiteDataTypeCookies: string;
 declare var WKWebsiteDataTypeDiskCache: string;
 
 declare var WKWebsiteDataTypeFetchCache: string;
+
+declare var WKWebsiteDataTypeFileSystem: string;
 
 declare var WKWebsiteDataTypeIndexedDBDatabases: string;
 

@@ -21,7 +21,9 @@ declare const enum SKANError {
 
 	InvalidVersion = 9,
 
-	Unknown = 10
+	Unknown = 10,
+
+	ImpressionTooShort = 11
 }
 
 declare var SKANErrorDomain: string;
@@ -53,6 +55,10 @@ declare class SKAdImpression extends NSObject {
 	timestamp: number;
 
 	version: string;
+
+	constructor(o: { sourceAppStoreItemIdentifier: number; advertisedAppStoreItemIdentifier: number; adNetworkIdentifier: string; adCampaignIdentifier: number; adImpressionIdentifier: string; timestamp: number; signature: string; version: string; });
+
+	initWithSourceAppStoreItemIdentifierAdvertisedAppStoreItemIdentifierAdNetworkIdentifierAdCampaignIdentifierAdImpressionIdentifierTimestampSignatureVersion(sourceAppStoreItemIdentifier: number, advertisedAppStoreItemIdentifier: number, adNetworkIdentifier: string, adCampaignIdentifier: number, adImpressionIdentifier: string, timestamp: number, signature: string, version: string): this;
 }
 
 declare class SKAdNetwork extends NSObject {
@@ -353,6 +359,8 @@ declare class SKOverlayAppConfiguration extends SKOverlayConfiguration {
 	additionalValueForKey(key: string): any;
 
 	initWithAppIdentifierPosition(appIdentifier: string, position: SKOverlayPosition): this;
+
+	setAdImpression(impression: SKAdImpression): void;
 
 	setAdditionalValueForKey(value: any, key: string): void;
 }
@@ -795,6 +803,8 @@ declare class SKStoreProductViewController extends UIViewController {
 	delegate: SKStoreProductViewControllerDelegate;
 
 	loadProductWithParametersCompletionBlock(parameters: NSDictionary<string, any>, block: (p1: boolean, p2: NSError) => void): void;
+
+	loadProductWithParametersImpressionCompletionBlock(parameters: NSDictionary<string, any>, impression: SKAdImpression, block: (p1: boolean, p2: NSError) => void): void;
 }
 
 interface SKStoreProductViewControllerDelegate extends NSObjectProtocol {

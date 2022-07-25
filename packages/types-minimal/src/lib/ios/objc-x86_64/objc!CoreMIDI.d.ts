@@ -1,4 +1,8 @@
 
+declare function MIDIBluetoothDriverActivateAllConnections(): number;
+
+declare function MIDIBluetoothDriverDisconnect(uuid: string): number;
+
 interface MIDICIDeviceIdentification {
 	manufacturer: interop.Reference<number>;
 	family: interop.Reference<number>;
