@@ -313,9 +313,15 @@ declare class ASAuthorizationController extends NSObject {
 
 	constructor(o: { authorizationRequests: NSArray<ASAuthorizationRequest> | ASAuthorizationRequest[]; });
 
+	cancel(): void;
+
 	initWithAuthorizationRequests(authorizationRequests: NSArray<ASAuthorizationRequest> | ASAuthorizationRequest[]): this;
 
+	performAutoFillAssistedRequests(): void;
+
 	performRequests(): void;
+
+	performRequestsWithOptions(options: ASAuthorizationControllerRequestOptions): void;
 }
 
 interface ASAuthorizationControllerDelegate extends NSObjectProtocol {
@@ -337,6 +343,11 @@ declare var ASAuthorizationControllerPresentationContextProviding: {
 
 	prototype: ASAuthorizationControllerPresentationContextProviding;
 };
+
+declare const enum ASAuthorizationControllerRequestOptions {
+
+	PreferImmediatelyAvailableCredentials = 1
+}
 
 interface ASAuthorizationCredential extends NSCopying, NSObjectProtocol, NSSecureCoding {
 }

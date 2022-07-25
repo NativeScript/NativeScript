@@ -84,6 +84,8 @@ declare class MFMessageComposeViewController extends UINavigationController {
 	addAttachmentURLWithAlternateFilename(attachmentURL: NSURL, alternateFilename: string): boolean;
 
 	disableUserAttachments(): void;
+
+	insertCollaborationItemProvider(itemProvider: NSItemProvider): boolean;
 }
 
 declare var MFMessageComposeViewControllerAttachmentAlternateFilename: string;

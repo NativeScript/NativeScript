@@ -146,6 +146,8 @@ declare var NLLanguageJapanese: string;
 
 declare var NLLanguageKannada: string;
 
+declare var NLLanguageKazakh: string;
+
 declare var NLLanguageKhmer: string;
 
 declare var NLLanguageKorean: string;

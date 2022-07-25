@@ -174,6 +174,8 @@ declare class NSCollectionLayoutGroup extends NSCollectionLayoutItem implements 
 
 	static customGroupWithLayoutSizeItemProvider(layoutSize: NSCollectionLayoutSize, itemProvider: (p1: NSCollectionLayoutEnvironment) => NSArray<NSCollectionLayoutGroupCustomItem>): NSCollectionLayoutGroup;
 
+	static horizontalGroupWithLayoutSizeRepeatingSubitemCount(layoutSize: NSCollectionLayoutSize, subitem: NSCollectionLayoutItem, count: number): NSCollectionLayoutGroup;
+
 	static horizontalGroupWithLayoutSizeSubitemCount(layoutSize: NSCollectionLayoutSize, subitem: NSCollectionLayoutItem, count: number): NSCollectionLayoutGroup;
 
 	static horizontalGroupWithLayoutSizeSubitems(layoutSize: NSCollectionLayoutSize, subitems: NSArray<NSCollectionLayoutItem> | NSCollectionLayoutItem[]): NSCollectionLayoutGroup;
@@ -183,6 +185,8 @@ declare class NSCollectionLayoutGroup extends NSCollectionLayoutItem implements 
 	static itemWithLayoutSizeSupplementaryItems(layoutSize: NSCollectionLayoutSize, supplementaryItems: NSArray<NSCollectionLayoutSupplementaryItem> | NSCollectionLayoutSupplementaryItem[]): NSCollectionLayoutGroup; // inherited from NSCollectionLayoutItem
 
 	static new(): NSCollectionLayoutGroup; // inherited from NSObject
+
+	static verticalGroupWithLayoutSizeRepeatingSubitemCount(layoutSize: NSCollectionLayoutSize, subitem: NSCollectionLayoutItem, count: number): NSCollectionLayoutGroup;
 
 	static verticalGroupWithLayoutSizeSubitemCount(layoutSize: NSCollectionLayoutSize, subitem: NSCollectionLayoutItem, count: number): NSCollectionLayoutGroup;
 
@@ -260,6 +264,8 @@ declare class NSCollectionLayoutSection extends NSObject implements NSCopying {
 	orthogonalScrollingBehavior: UICollectionLayoutSectionOrthogonalScrollingBehavior;
 
 	supplementariesFollowContentInsets: boolean;
+
+	supplementaryContentInsetsReference: UIContentInsetsReference;
 
 	visibleItemsInvalidationHandler: (p1: NSArray<NSCollectionLayoutVisibleItem>, p2: CGPoint, p3: NSCollectionLayoutEnvironment) => void;
 
@@ -1120,6 +1126,8 @@ declare class NSMutableParagraphStyle extends NSParagraphStyle {
 
 	tailIndent: number;
 
+	textLists: NSArray<NSTextList>;
+
 	usesDefaultHyphenation: boolean;
 
 	addTabStop(anObject: NSTextTab): void;
@@ -1176,6 +1184,8 @@ declare class NSParagraphStyle extends NSObject implements NSCopying, NSMutableC
 	readonly tabStops: NSArray<NSTextTab>;
 
 	readonly tailIndent: number;
+
+	readonly textLists: NSArray<NSTextList>;
 
 	readonly usesDefaultHyphenation: boolean;
 
@@ -1689,7 +1699,13 @@ declare class NSTextElement extends NSObject {
 
 	static new(): NSTextElement; // inherited from NSObject
 
+	readonly childElements: NSArray<NSTextElement>;
+
 	elementRange: NSTextRange;
+
+	readonly isRepresentedElement: boolean;
+
+	readonly parentElement: NSTextElement;
 
 	textContentManager: NSTextContentManager;
 
@@ -2017,6 +2033,103 @@ declare class NSTextLineFragment extends NSObject implements NSSecureCoding {
 	initWithStringAttributesRange(string: string, attributes: NSDictionary<string, any>, range: NSRange): this;
 
 	locationForCharacterAtIndex(index: number): CGPoint;
+}
+
+declare class NSTextList extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): NSTextList; // inherited from NSObject
+
+	static new(): NSTextList; // inherited from NSObject
+
+	readonly listOptions: NSTextListOptions;
+
+	readonly markerFormat: string;
+
+	readonly ordered: boolean;
+
+	startingItemNumber: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { markerFormat: string; options: number; });
+
+	constructor(o: { markerFormat: string; options: NSTextListOptions; startingItemNumber: number; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithMarkerFormatOptions(markerFormat: string, options: number): this;
+
+	initWithMarkerFormatOptionsStartingItemNumber(markerFormat: string, options: NSTextListOptions, startingItemNumber: number): this;
+
+	markerForItemNumber(itemNumber: number): string;
+}
+
+declare class NSTextListElement extends NSTextParagraph {
+
+	static alloc(): NSTextListElement; // inherited from NSObject
+
+	static new(): NSTextListElement; // inherited from NSObject
+
+	static textListElementWithChildElementsTextListNestingLevel(childElements: NSArray<NSTextListElement> | NSTextListElement[], textList: NSTextList, nestingLevel: number): NSTextListElement;
+
+	static textListElementWithContentsMarkerAttributesTextListChildElements(contents: NSAttributedString, markerAttributes: NSDictionary<string, any>, textList: NSTextList, childElements: NSArray<NSTextListElement> | NSTextListElement[]): NSTextListElement;
+
+	readonly contents: NSAttributedString;
+
+	readonly markerAttributes: NSDictionary<string, any>;
+
+	readonly parentElement: NSTextListElement;
+
+	readonly textList: NSTextList;
+
+	constructor(o: { parentElement: NSTextListElement; textList: NSTextList; contents: NSAttributedString; markerAttributes: NSDictionary<string, any>; childElements: NSArray<NSTextListElement> | NSTextListElement[]; });
+
+	initWithParentElementTextListContentsMarkerAttributesChildElements(parentElement: NSTextListElement, textList: NSTextList, contents: NSAttributedString, markerAttributes: NSDictionary<string, any>, childElements: NSArray<NSTextListElement> | NSTextListElement[]): this;
+}
+
+declare var NSTextListMarkerBox: string;
+
+declare var NSTextListMarkerCheck: string;
+
+declare var NSTextListMarkerCircle: string;
+
+declare var NSTextListMarkerDecimal: string;
+
+declare var NSTextListMarkerDiamond: string;
+
+declare var NSTextListMarkerDisc: string;
+
+declare var NSTextListMarkerHyphen: string;
+
+declare var NSTextListMarkerLowercaseAlpha: string;
+
+declare var NSTextListMarkerLowercaseHexadecimal: string;
+
+declare var NSTextListMarkerLowercaseLatin: string;
+
+declare var NSTextListMarkerLowercaseRoman: string;
+
+declare var NSTextListMarkerOctal: string;
+
+declare var NSTextListMarkerSquare: string;
+
+declare var NSTextListMarkerUppercaseAlpha: string;
+
+declare var NSTextListMarkerUppercaseHexadecimal: string;
+
+declare var NSTextListMarkerUppercaseLatin: string;
+
+declare var NSTextListMarkerUppercaseRoman: string;
+
+declare const enum NSTextListOptions {
+
+	PrependEnclosingMarker = 1
 }
 
 interface NSTextLocation extends NSObjectProtocol {
@@ -3080,7 +3193,7 @@ declare const enum UIAccessibilityZoomType {
 	InsertionPoint = 0
 }
 
-declare class UIAction extends UIMenuElement {
+declare class UIAction extends UIMenuElement implements UIMenuLeaf {
 
 	static actionWithHandler(handler: (p1: UIAction) => void): UIAction;
 
@@ -3092,19 +3205,57 @@ declare class UIAction extends UIMenuElement {
 
 	static new(): UIAction; // inherited from NSObject
 
-	attributes: UIMenuElementAttributes;
-
-	discoverabilityTitle: string;
-
 	readonly identifier: string;
 
-	image: UIImage;
+	attributes: UIMenuElementAttributes; // inherited from UIMenuLeaf
 
-	readonly sender: any;
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	state: UIMenuElementState;
+	readonly description: string; // inherited from NSObjectProtocol
 
-	title: string;
+	discoverabilityTitle: string; // inherited from UIMenuLeaf
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	image: UIImage; // inherited from UIMenuLeaf
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly presentationSourceItem: UIPopoverPresentationControllerSourceItem; // inherited from UIMenuLeaf
+
+	readonly sender: any; // inherited from UIMenuLeaf
+
+	state: UIMenuElementState; // inherited from UIMenuLeaf
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	title: string; // inherited from UIMenuLeaf
+
+	readonly  // inherited from NSObjectProtocol
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	performWithSenderTarget(sender: any, target: any): void;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
 }
 
 declare var UIActionPaste: string;
@@ -3491,6 +3642,10 @@ declare var UIActivityTypeAirDrop: string;
 
 declare var UIActivityTypeAssignToContact: string;
 
+declare var UIActivityTypeCollaborationCopyLink: string;
+
+declare var UIActivityTypeCollaborationInviteWithLink: string;
+
 declare var UIActivityTypeCopyToPasteboard: string;
 
 declare var UIActivityTypeMail: string;
@@ -3645,6 +3800,8 @@ declare class UIAlertController extends UIViewController implements UISpringLoad
 
 	readonly preferredStyle: UIAlertControllerStyle;
 
+	severity: UIAlertControllerSeverity;
+
 	readonly textFields: NSArray<UITextField>;
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
@@ -3686,6 +3843,13 @@ declare class UIAlertController extends UIViewController implements UISpringLoad
 	retainCount(): number;
 
 	self(): this;
+}
+
+declare const enum UIAlertControllerSeverity {
+
+	Default = 0,
+
+	Critical = 1
 }
 
 declare const enum UIAlertControllerStyle {
@@ -4547,7 +4711,7 @@ declare class UIBarAppearance extends NSObject implements NSCopying, NSSecureCod
 	initWithIdiom(idiom: UIUserInterfaceIdiom): this;
 }
 
-declare class UIBarButtonItem extends UIBarItem implements NSCoding, UISpringLoadedInteractionSupporting {
+declare class UIBarButtonItem extends UIBarItem implements NSCoding, UIPopoverPresentationControllerSourceItem, UISpringLoadedInteractionSupporting {
 
 	static alloc(): UIBarButtonItem; // inherited from NSObject
 
@@ -4577,9 +4741,15 @@ declare class UIBarButtonItem extends UIBarItem implements NSCoding, UISpringLoa
 
 	customView: UIView;
 
+	hidden: boolean;
+
 	menu: UIMenu;
 
+	menuRepresentation: UIMenuElement;
+
 	possibleTitles: NSSet<string>;
+
+	preferredMenuElementOrder: UIContextMenuConfigurationElementOrder;
 
 	primaryAction: UIAction;
 
@@ -4644,6 +4814,12 @@ declare class UIBarButtonItem extends UIBarItem implements NSCoding, UISpringLoa
 	class(): typeof NSObject;
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	creatingFixedGroup(): UIBarButtonItemGroup;
+
+	creatingMovableGroupWithCustomizationIdentifier(customizationIdentifier: string): UIBarButtonItemGroup;
+
+	creatingOptionalGroupWithCustomizationIdentifierInDefaultCustomization(customizationIdentifier: string, inDefaultCustomization: boolean): UIBarButtonItemGroup;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -4741,11 +4917,21 @@ declare class UIBarButtonItemGroup extends NSObject implements NSCoding {
 
 	static alloc(): UIBarButtonItemGroup; // inherited from NSObject
 
+	static fixedGroupWithRepresentativeItemItems(representativeItem: UIBarButtonItem, items: NSArray<UIBarButtonItem> | UIBarButtonItem[]): UIBarButtonItemGroup;
+
+	static movableGroupWithCustomizationIdentifierRepresentativeItemItems(customizationIdentifier: string, representativeItem: UIBarButtonItem, items: NSArray<UIBarButtonItem> | UIBarButtonItem[]): UIBarButtonItemGroup;
+
 	static new(): UIBarButtonItemGroup; // inherited from NSObject
+
+	static optionalGroupWithCustomizationIdentifierInDefaultCustomizationRepresentativeItemItems(customizationIdentifier: string, inDefaultCustomization: boolean, representativeItem: UIBarButtonItem, items: NSArray<UIBarButtonItem> | UIBarButtonItem[]): UIBarButtonItemGroup;
 
 	barButtonItems: NSArray<UIBarButtonItem>;
 
 	readonly displayingRepresentativeItem: boolean;
+
+	hidden: boolean;
+
+	menuRepresentation: UIMenuElement;
 
 	representativeItem: UIBarButtonItem;
 
@@ -5214,6 +5400,8 @@ declare class UIButton extends UIControl implements NSCoding, UIAccessibilityCon
 
 	preferredBehavioralStyle: UIBehavioralStyle;
 
+	preferredMenuElementOrder: UIContextMenuConfigurationElementOrder;
+
 	reversesTitleShadowWhenHighlighted: boolean;
 
 	role: UIButtonRole;
@@ -5363,6 +5551,10 @@ declare class UIButtonConfiguration extends NSObject implements NSCopying, NSSec
 
 	imagePlacement: NSDirectionalRectEdge;
 
+	indicator: UIButtonConfigurationIndicator;
+
+	indicatorColorTransformer: (p1: UIColor) => UIColor;
+
 	macIdiomStyle: UIButtonConfigurationMacIdiomStyle;
 
 	preferredSymbolConfigurationForImage: UIImageSymbolConfiguration;
@@ -5409,6 +5601,15 @@ declare const enum UIButtonConfigurationCornerStyle {
 	Large = 3,
 
 	Capsule = 4
+}
+
+declare const enum UIButtonConfigurationIndicator {
+
+	Automatic = 0,
+
+	None = 1,
+
+	Popup = 2
 }
 
 declare const enum UIButtonConfigurationMacIdiomStyle {
@@ -5475,6 +5676,157 @@ declare const enum UIButtonType {
 
 	RoundedRect = 1
 }
+
+declare class UICalendarSelection extends NSObject {
+
+	static alloc(): UICalendarSelection; // inherited from NSObject
+
+	static new(): UICalendarSelection; // inherited from NSObject
+
+	updateSelectableDates(): void;
+}
+
+declare class UICalendarSelectionMultiDate extends UICalendarSelection {
+
+	static alloc(): UICalendarSelectionMultiDate; // inherited from NSObject
+
+	static new(): UICalendarSelectionMultiDate; // inherited from NSObject
+
+	readonly delegate: UICalendarSelectionMultiDateDelegate;
+
+	selectedDates: NSArray<NSDateComponents>;
+
+	constructor(o: { delegate: UICalendarSelectionMultiDateDelegate; });
+
+	initWithDelegate(delegate: UICalendarSelectionMultiDateDelegate): this;
+
+	setSelectedDatesAnimated(selectedDates: NSArray<NSDateComponents> | NSDateComponents[], animated: boolean): void;
+}
+
+interface UICalendarSelectionMultiDateDelegate extends NSObjectProtocol {
+
+	multiDateSelectionCanDeselectDate?(selection: UICalendarSelectionMultiDate, dateComponents: NSDateComponents): boolean;
+
+	multiDateSelectionCanSelectDate?(selection: UICalendarSelectionMultiDate, dateComponents: NSDateComponents): boolean;
+
+	multiDateSelectionDidDeselectDate(selection: UICalendarSelectionMultiDate, dateComponents: NSDateComponents): void;
+
+	multiDateSelectionDidSelectDate(selection: UICalendarSelectionMultiDate, dateComponents: NSDateComponents): void;
+}
+declare var UICalendarSelectionMultiDateDelegate: {
+
+	prototype: UICalendarSelectionMultiDateDelegate;
+};
+
+declare class UICalendarSelectionSingleDate extends UICalendarSelection {
+
+	static alloc(): UICalendarSelectionSingleDate; // inherited from NSObject
+
+	static new(): UICalendarSelectionSingleDate; // inherited from NSObject
+
+	readonly delegate: UICalendarSelectionSingleDateDelegate;
+
+	selectedDate: NSDateComponents;
+
+	constructor(o: { delegate: UICalendarSelectionSingleDateDelegate; });
+
+	initWithDelegate(delegate: UICalendarSelectionSingleDateDelegate): this;
+
+	setSelectedDateAnimated(selectedDate: NSDateComponents, animated: boolean): void;
+}
+
+interface UICalendarSelectionSingleDateDelegate extends NSObjectProtocol {
+
+	dateSelectionCanSelectDate?(selection: UICalendarSelectionSingleDate, dateComponents: NSDateComponents): boolean;
+
+	dateSelectionDidSelectDate(selection: UICalendarSelectionSingleDate, dateComponents: NSDateComponents): void;
+}
+declare var UICalendarSelectionSingleDateDelegate: {
+
+	prototype: UICalendarSelectionSingleDateDelegate;
+};
+
+declare class UICalendarView extends UIView {
+
+	static alloc(): UICalendarView; // inherited from NSObject
+
+	static appearance(): UICalendarView; // inherited from UIAppearance
+
+	static appearanceForTraitCollection(trait: UITraitCollection): UICalendarView; // inherited from UIAppearance
+
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UICalendarView; // inherited from UIAppearance
+
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UICalendarView; // inherited from UIAppearance
+
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UICalendarView; // inherited from UIAppearance
+
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UICalendarView; // inherited from UIAppearance
+
+	static new(): UICalendarView; // inherited from NSObject
+
+	availableDateRange: NSDateInterval;
+
+	calendar: NSCalendar;
+
+	delegate: UICalendarViewDelegate;
+
+	fontDesign: string;
+
+	locale: NSLocale;
+
+	selectionBehavior: UICalendarSelection;
+
+	timeZone: NSTimeZone;
+
+	visibleDateComponents: NSDateComponents;
+
+	wantsDateDecorations: boolean;
+
+	reloadDecorationsForDateComponentsAnimated(dates: NSArray<NSDateComponents> | NSDateComponents[], animated: boolean): void;
+
+	setVisibleDateComponentsAnimated(dateComponents: NSDateComponents, animated: boolean): void;
+}
+
+declare class UICalendarViewDecoration extends NSObject {
+
+	static alloc(): UICalendarViewDecoration; // inherited from NSObject
+
+	static decorationWithColorSize(color: UIColor, size: UICalendarViewDecorationSize): UICalendarViewDecoration;
+
+	static decorationWithCustomViewProvider(customViewProvider: () => UIView): UICalendarViewDecoration;
+
+	static decorationWithImage(image: UIImage): UICalendarViewDecoration;
+
+	static decorationWithImageColorSize(image: UIImage, color: UIColor, size: UICalendarViewDecorationSize): UICalendarViewDecoration;
+
+	static new(): UICalendarViewDecoration; // inherited from NSObject
+
+	constructor(o: { customViewProvider: () => UIView; });
+
+	constructor(o: { image: UIImage; color: UIColor; size: UICalendarViewDecorationSize; });
+
+	initWithCustomViewProvider(customViewProvider: () => UIView): this;
+
+	initWithImageColorSize(image: UIImage, color: UIColor, size: UICalendarViewDecorationSize): this;
+}
+
+declare const enum UICalendarViewDecorationSize {
+
+	Small = 0,
+
+	Medium = 1,
+
+	Large = 2
+}
+
+interface UICalendarViewDelegate extends NSObjectProtocol {
+
+	calendarViewDecorationForDateComponents(calendarView: UICalendarView, dateComponents: NSDateComponents): UICalendarViewDecoration;
+}
+declare var UICalendarViewDelegate: {
+
+	prototype: UICalendarViewDelegate;
+};
 
 declare class UICellAccessory extends NSObject implements NSCopying, NSSecureCoding {
 
@@ -5625,6 +5977,21 @@ declare const enum UICellAccessoryPlacement {
 	Leading = 0,
 
 	Trailing = 1
+}
+
+declare class UICellAccessoryPopUpMenu extends UICellAccessory {
+
+	static alloc(): UICellAccessoryPopUpMenu; // inherited from NSObject
+
+	static new(): UICellAccessoryPopUpMenu; // inherited from NSObject
+
+	readonly menu: UIMenu;
+
+	selectedElementDidChangeHandler: (p1: UIMenu) => void;
+
+	constructor(o: { menu: UIMenu; });
+
+	initWithMenu(menu: UIMenu): this;
 }
 
 declare function UICellAccessoryPositionAfterAccessoryOfClass(accessoryClass: typeof NSObject): (p1: NSArray<UICellAccessory>) => number;
@@ -5938,6 +6305,8 @@ declare class UICollectionView extends UIScrollView implements UIDataSourceTrans
 
 	selectionFollowsFocus: boolean;
 
+	selfSizingInvalidation: UICollectionViewSelfSizingInvalidation;
+
 	readonly visibleCells: NSArray<UICollectionViewCell>;
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
@@ -6111,6 +6480,8 @@ declare class UICollectionViewCell extends UICollectionReusableView {
 
 	selectedBackgroundView: UIView;
 
+	defaultBackgroundConfiguration(): UIBackgroundConfiguration;
+
 	dragStateDidChange(dragState: UICollectionViewCellDragState): void;
 
 	setNeedsUpdateConfiguration(): void;
@@ -6228,9 +6599,17 @@ declare class UICollectionViewController extends UIViewController implements UIC
 
 	collectionViewCanPerformActionForItemAtIndexPathWithSender(collectionView: UICollectionView, action: string, indexPath: NSIndexPath, sender: any): boolean;
 
+	collectionViewCanPerformPrimaryActionForItemAtIndexPath(collectionView: UICollectionView, indexPath: NSIndexPath): boolean;
+
 	collectionViewCellForItemAtIndexPath(collectionView: UICollectionView, indexPath: NSIndexPath): UICollectionViewCell;
 
+	collectionViewContextMenuConfigurationDismissalPreviewForItemAtIndexPath(collectionView: UICollectionView, configuration: UIContextMenuConfiguration, indexPath: NSIndexPath): UITargetedPreview;
+
 	collectionViewContextMenuConfigurationForItemAtIndexPathPoint(collectionView: UICollectionView, indexPath: NSIndexPath, point: CGPoint): UIContextMenuConfiguration;
+
+	collectionViewContextMenuConfigurationForItemsAtIndexPathsPoint(collectionView: UICollectionView, indexPaths: NSArray<NSIndexPath> | NSIndexPath[], point: CGPoint): UIContextMenuConfiguration;
+
+	collectionViewContextMenuConfigurationHighlightPreviewForItemAtIndexPath(collectionView: UICollectionView, configuration: UIContextMenuConfiguration, indexPath: NSIndexPath): UITargetedPreview;
 
 	collectionViewDidBeginMultipleSelectionInteractionAtIndexPath(collectionView: UICollectionView, indexPath: NSIndexPath): void;
 
@@ -6257,6 +6636,8 @@ declare class UICollectionViewController extends UIViewController implements UIC
 	collectionViewNumberOfItemsInSection(collectionView: UICollectionView, section: number): number;
 
 	collectionViewPerformActionForItemAtIndexPathWithSender(collectionView: UICollectionView, action: string, indexPath: NSIndexPath, sender: any): void;
+
+	collectionViewPerformPrimaryActionForItemAtIndexPath(collectionView: UICollectionView, indexPath: NSIndexPath): void;
 
 	collectionViewPreviewForDismissingContextMenuWithConfiguration(collectionView: UICollectionView, configuration: UIContextMenuConfiguration): UITargetedPreview;
 
@@ -6399,7 +6780,15 @@ interface UICollectionViewDelegate extends UIScrollViewDelegate {
 
 	collectionViewCanPerformActionForItemAtIndexPathWithSender?(collectionView: UICollectionView, action: string, indexPath: NSIndexPath, sender: any): boolean;
 
+	collectionViewCanPerformPrimaryActionForItemAtIndexPath?(collectionView: UICollectionView, indexPath: NSIndexPath): boolean;
+
+	collectionViewContextMenuConfigurationDismissalPreviewForItemAtIndexPath?(collectionView: UICollectionView, configuration: UIContextMenuConfiguration, indexPath: NSIndexPath): UITargetedPreview;
+
 	collectionViewContextMenuConfigurationForItemAtIndexPathPoint?(collectionView: UICollectionView, indexPath: NSIndexPath, point: CGPoint): UIContextMenuConfiguration;
+
+	collectionViewContextMenuConfigurationForItemsAtIndexPathsPoint?(collectionView: UICollectionView, indexPaths: NSArray<NSIndexPath> | NSIndexPath[], point: CGPoint): UIContextMenuConfiguration;
+
+	collectionViewContextMenuConfigurationHighlightPreviewForItemAtIndexPath?(collectionView: UICollectionView, configuration: UIContextMenuConfiguration, indexPath: NSIndexPath): UITargetedPreview;
 
 	collectionViewDidBeginMultipleSelectionInteractionAtIndexPath?(collectionView: UICollectionView, indexPath: NSIndexPath): void;
 
@@ -6420,6 +6809,8 @@ interface UICollectionViewDelegate extends UIScrollViewDelegate {
 	collectionViewDidUpdateFocusInContextWithAnimationCoordinator?(collectionView: UICollectionView, context: UICollectionViewFocusUpdateContext, coordinator: UIFocusAnimationCoordinator): void;
 
 	collectionViewPerformActionForItemAtIndexPathWithSender?(collectionView: UICollectionView, action: string, indexPath: NSIndexPath, sender: any): void;
+
+	collectionViewPerformPrimaryActionForItemAtIndexPath?(collectionView: UICollectionView, indexPath: NSIndexPath): void;
 
 	collectionViewPreviewForDismissingContextMenuWithConfiguration?(collectionView: UICollectionView, configuration: UIContextMenuConfiguration): UITargetedPreview;
 
@@ -7084,6 +7475,15 @@ declare const enum UICollectionViewScrollPosition {
 	Right = 32
 }
 
+declare const enum UICollectionViewSelfSizingInvalidation {
+
+	Disabled = 0,
+
+	Enabled = 1,
+
+	EnabledIncludingConstraints = 2
+}
+
 declare class UICollectionViewSupplementaryRegistration extends NSObject {
 
 	static alloc(): UICollectionViewSupplementaryRegistration; // inherited from NSObject
@@ -7504,7 +7904,7 @@ declare class UIColorWell extends UIControl {
 	title: string;
 }
 
-declare class UICommand extends UIMenuElement {
+declare class UICommand extends UIMenuElement implements UIMenuLeaf {
 
 	static alloc(): UICommand; // inherited from NSObject
 
@@ -7518,17 +7918,57 @@ declare class UICommand extends UIMenuElement {
 
 	readonly alternates: NSArray<UICommandAlternate>;
 
-	attributes: UIMenuElementAttributes;
-
-	discoverabilityTitle: string;
-
-	image: UIImage;
-
 	readonly propertyList: any;
 
-	state: UIMenuElementState;
+	attributes: UIMenuElementAttributes; // inherited from UIMenuLeaf
 
-	title: string;
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	discoverabilityTitle: string; // inherited from UIMenuLeaf
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	image: UIImage; // inherited from UIMenuLeaf
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly presentationSourceItem: UIPopoverPresentationControllerSourceItem; // inherited from UIMenuLeaf
+
+	readonly sender: any; // inherited from UIMenuLeaf
+
+	state: UIMenuElementState; // inherited from UIMenuLeaf
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	title: string; // inherited from UIMenuLeaf
+
+	readonly  // inherited from NSObjectProtocol
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	performWithSenderTarget(sender: any, target: any): void;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
 }
 
 declare class UICommandAlternate extends NSObject implements NSCopying, NSSecureCoding {
@@ -7672,6 +8112,8 @@ declare var UIContentSizeCategoryUnspecified: string;
 interface UIContentView extends NSObjectProtocol {
 
 	configuration: UIContentConfiguration;
+
+	supportsConfiguration?(configuration: UIContentConfiguration): boolean;
 }
 declare var UIContentView: {
 
@@ -7686,7 +8128,22 @@ declare class UIContextMenuConfiguration extends NSObject {
 
 	static new(): UIContextMenuConfiguration; // inherited from NSObject
 
+	badgeCount: number;
+
 	readonly identifier: any;
+
+	preferredMenuElementOrder: UIContextMenuConfigurationElementOrder;
+
+	secondaryItemIdentifiers: NSSet<any>;
+}
+
+declare const enum UIContextMenuConfigurationElementOrder {
+
+	Automatic = 0,
+
+	Priority = 1,
+
+	Fixed = 2
 }
 
 declare class UIContextMenuInteraction extends NSObject implements UIInteraction {
@@ -7790,7 +8247,11 @@ declare const enum UIContextMenuInteractionCommitStyle {
 
 interface UIContextMenuInteractionDelegate extends NSObjectProtocol {
 
+	contextMenuInteractionConfigurationDismissalPreviewForItemWithIdentifier?(interaction: UIContextMenuInteraction, configuration: UIContextMenuConfiguration, identifier: any): UITargetedPreview;
+
 	contextMenuInteractionConfigurationForMenuAtLocation(interaction: UIContextMenuInteraction, location: CGPoint): UIContextMenuConfiguration;
+
+	contextMenuInteractionConfigurationHighlightPreviewForItemWithIdentifier?(interaction: UIContextMenuInteraction, configuration: UIContextMenuConfiguration, identifier: any): UITargetedPreview;
 
 	contextMenuInteractionPreviewForDismissingMenuWithConfiguration?(interaction: UIContextMenuInteraction, configuration: UIContextMenuConfiguration): UITargetedPreview;
 
@@ -7911,7 +8372,11 @@ declare class UIControl extends UIView implements UIContextMenuInteractionDelega
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
+	contextMenuInteractionConfigurationDismissalPreviewForItemWithIdentifier(interaction: UIContextMenuInteraction, configuration: UIContextMenuConfiguration, identifier: any): UITargetedPreview;
+
 	contextMenuInteractionConfigurationForMenuAtLocation(interaction: UIContextMenuInteraction, location: CGPoint): UIContextMenuConfiguration;
+
+	contextMenuInteractionConfigurationHighlightPreviewForItemWithIdentifier(interaction: UIContextMenuInteraction, configuration: UIContextMenuConfiguration, identifier: any): UITargetedPreview;
 
 	contextMenuInteractionPreviewForDismissingMenuWithConfiguration(interaction: UIContextMenuInteraction, configuration: UIContextMenuConfiguration): UITargetedPreview;
 
@@ -8119,6 +8584,10 @@ declare const enum UIDataDetectorTypes {
 	FlightNumber = 32,
 
 	LookupSuggestion = 64,
+
+	Money = 128,
+
+	PhysicalValue = 256,
 
 	None = 0,
 
@@ -8662,6 +9131,8 @@ declare class UIDocumentBrowserViewController extends UIViewController implement
 
 	initWithCoder(coder: NSCoder): this;
 
+	renameDocumentAtURLProposedNameCompletionHandler(documentURL: NSURL, proposedName: string, completionHandler: (p1: NSURL, p2: NSError) => void): void;
+
 	revealDocumentAtURLImportIfNeededCompletion(url: NSURL, importIfNeeded: boolean, completion: (p1: NSURL, p2: NSError) => void): void;
 
 	transitionControllerForDocumentAtURL(documentURL: NSURL): UIDocumentBrowserTransitionController;
@@ -8942,6 +9413,29 @@ declare class UIDocumentPickerViewController extends UIViewController {
 	initWithURLInMode(url: NSURL, mode: UIDocumentPickerMode): this;
 
 	initWithURLsInMode(urls: NSArray<NSURL> | NSURL[], mode: UIDocumentPickerMode): this;
+}
+
+declare class UIDocumentProperties extends NSObject {
+
+	static alloc(): UIDocumentProperties; // inherited from NSObject
+
+	static new(): UIDocumentProperties; // inherited from NSObject
+
+	activityViewControllerProvider: () => UIActivityViewController;
+
+	dragItemsProvider: (p1: UIDragSession) => NSArray<UIDragItem>;
+
+	metadata: LPLinkMetadata;
+
+	wantsIconRepresentation: boolean;
+
+	constructor(o: { metadata: LPLinkMetadata; });
+
+	constructor(o: { URL: NSURL; });
+
+	initWithMetadata(metadata: LPLinkMetadata): this;
+
+	initWithURL(url: NSURL): this;
 }
 
 declare const enum UIDocumentSaveOperation {
@@ -9498,6 +9992,123 @@ declare function UIEdgeInsetsFromString(string: string): UIEdgeInsets;
 
 declare var UIEdgeInsetsZero: UIEdgeInsets;
 
+declare const enum UIEditMenuArrowDirection {
+
+	Automatic = 0,
+
+	Up = 1,
+
+	Down = 2,
+
+	Left = 3,
+
+	Right = 4
+}
+
+declare class UIEditMenuConfiguration extends NSObject {
+
+	static alloc(): UIEditMenuConfiguration; // inherited from NSObject
+
+	static configurationWithIdentifierSourcePoint(identifier: any, sourcePoint: CGPoint): UIEditMenuConfiguration;
+
+	static new(): UIEditMenuConfiguration; // inherited from NSObject
+
+	readonly identifier: any;
+
+	preferredArrowDirection: UIEditMenuArrowDirection;
+
+	readonly sourcePoint: CGPoint;
+}
+
+declare class UIEditMenuInteraction extends NSObject implements UIInteraction {
+
+	static alloc(): UIEditMenuInteraction; // inherited from NSObject
+
+	static new(): UIEditMenuInteraction; // inherited from NSObject
+
+	readonly delegate: UIEditMenuInteractionDelegate;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly view: UIView; // inherited from UIInteraction
+
+	readonly  // inherited from NSObjectProtocol
+
+	constructor(o: { delegate: UIEditMenuInteractionDelegate; });
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	didMoveToView(view: UIView): void;
+
+	dismissMenu(): void;
+
+	initWithDelegate(delegate: UIEditMenuInteractionDelegate): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	locationInView(view: UIView): CGPoint;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	presentEditMenuWithConfiguration(configuration: UIEditMenuConfiguration): void;
+
+	reloadVisibleMenu(): void;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+
+	updateVisibleMenuPositionAnimated(animated: boolean): void;
+
+	willMoveToView(view: UIView): void;
+}
+
+interface UIEditMenuInteractionAnimating extends NSObjectProtocol {
+
+	addAnimations(animations: () => void): void;
+
+	addCompletion(completion: () => void): void;
+}
+declare var UIEditMenuInteractionAnimating: {
+
+	prototype: UIEditMenuInteractionAnimating;
+};
+
+interface UIEditMenuInteractionDelegate extends NSObjectProtocol {
+
+	editMenuInteractionMenuForConfigurationSuggestedActions?(interaction: UIEditMenuInteraction, configuration: UIEditMenuConfiguration, suggestedActions: NSArray<UIMenuElement> | UIMenuElement[]): UIMenu;
+
+	editMenuInteractionTargetRectForConfiguration?(interaction: UIEditMenuInteraction, configuration: UIEditMenuConfiguration): CGRect;
+
+	editMenuInteractionWillDismissMenuForConfigurationAnimator?(interaction: UIEditMenuInteraction, configuration: UIEditMenuConfiguration, animator: UIEditMenuInteractionAnimating): void;
+
+	editMenuInteractionWillPresentMenuForConfigurationAnimator?(interaction: UIEditMenuInteraction, configuration: UIEditMenuConfiguration, animator: UIEditMenuInteractionAnimating): void;
+}
+declare var UIEditMenuInteractionDelegate: {
+
+	prototype: UIEditMenuInteractionDelegate;
+};
+
 declare const enum UIEditingInteractionConfiguration {
 
 	None = 0,
@@ -9689,6 +10300,126 @@ declare class UIFieldBehavior extends UIDynamicBehavior {
 	removeItem(item: UIDynamicItem): void;
 }
 
+declare class UIFindInteraction extends NSObject implements UIInteraction {
+
+	static alloc(): UIFindInteraction; // inherited from NSObject
+
+	static new(): UIFindInteraction; // inherited from NSObject
+
+	readonly activeFindSession: UIFindSession;
+
+	readonly delegate: UIFindInteractionDelegate;
+
+	readonly findNavigatorVisible: boolean;
+
+	optionsMenuProvider: (p1: NSArray<UIMenuElement>) => UIMenu;
+
+	replacementText: string;
+
+	searchText: string;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly view: UIView; // inherited from UIInteraction
+
+	readonly  // inherited from NSObjectProtocol
+
+	constructor(o: { sessionDelegate: UIFindInteractionDelegate; });
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	didMoveToView(view: UIView): void;
+
+	dismissFindNavigator(): void;
+
+	findNext(): void;
+
+	findPrevious(): void;
+
+	initWithSessionDelegate(sessionDelegate: UIFindInteractionDelegate): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	presentFindNavigatorShowingReplace(showingReplace: boolean): void;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+
+	updateResultCount(): void;
+
+	willMoveToView(view: UIView): void;
+}
+
+interface UIFindInteractionDelegate extends NSObjectProtocol {
+
+	findInteractionDidBeginFindSession?(interaction: UIFindInteraction, session: UIFindSession): void;
+
+	findInteractionDidEndFindSession?(interaction: UIFindInteraction, session: UIFindSession): void;
+
+	findInteractionSessionForView(interaction: UIFindInteraction, view: UIView): UIFindSession;
+}
+declare var UIFindInteractionDelegate: {
+
+	prototype: UIFindInteractionDelegate;
+};
+
+declare class UIFindSession extends NSObject {
+
+	static alloc(): UIFindSession; // inherited from NSObject
+
+	static new(): UIFindSession; // inherited from NSObject
+
+	readonly allowsReplacement: boolean;
+
+	readonly highlightedResultIndex: number;
+
+	readonly resultCount: number;
+
+	searchResultDisplayStyle: UIFindSessionSearchResultDisplayStyle;
+
+	highlightNextResultInDirection(direction: UITextStorageDirection): void;
+
+	invalidateFoundResults(): void;
+
+	performSearchWithQueryOptions(query: string, options: UITextSearchOptions): void;
+
+	performSingleReplacementWithSearchQueryReplacementStringOptions(searchQuery: string, replacementString: string, options: UITextSearchOptions): void;
+
+	replaceAllInstancesOfSearchQueryWithReplacementStringOptions(searchQuery: string, replacementString: string, options: UITextSearchOptions): void;
+}
+
+declare const enum UIFindSessionSearchResultDisplayStyle {
+
+	CurrentAndTotal = 0,
+
+	Total = 1,
+
+	None = 2
+}
+
 interface UIFloatRange {
 	minimum: number;
 	maximum: number;
@@ -9727,13 +10458,15 @@ declare class UIFocusDebugger extends NSObject {
 
 	static alloc(): UIFocusDebugger; // inherited from NSObject
 
-	static checkFocusGroupTreeForEnvironment(environment: UIFocusEnvironment): string;
-
 	static checkFocusabilityForItem(item: UIFocusItem): UIFocusDebuggerOutput;
+
+	static focusGroupsForEnvironment(environment: UIFocusEnvironment): UIFocusDebuggerOutput;
 
 	static help(): UIFocusDebuggerOutput;
 
 	static new(): UIFocusDebugger; // inherited from NSObject
+
+	static preferredFocusEnvironmentsForEnvironment(environment: UIFocusEnvironment): UIFocusDebuggerOutput;
 
 	static simulateFocusUpdateRequestFromEnvironment(environment: UIFocusEnvironment): UIFocusDebuggerOutput;
 
@@ -10732,6 +11465,8 @@ declare class UIImage extends NSObject implements NSItemProviderReading, NSItemP
 
 	static imageNamedInBundleCompatibleWithTraitCollection(name: string, bundle: NSBundle, traitCollection: UITraitCollection): UIImage;
 
+	static imageNamedInBundleVariableValueWithConfiguration(name: string, bundle: NSBundle, value: number, configuration: UIImageConfiguration): UIImage;
+
 	static imageNamedInBundleWithConfiguration(name: string, bundle: NSBundle, configuration: UIImageConfiguration): UIImage;
 
 	static imageWithCGImage(cgImage: any): UIImage;
@@ -10757,6 +11492,8 @@ declare class UIImage extends NSObject implements NSItemProviderReading, NSItemP
 	static systemImageNamed(name: string): UIImage;
 
 	static systemImageNamedCompatibleWithTraitCollection(name: string, traitCollection: UITraitCollection): UIImage;
+
+	static systemImageNamedVariableValueWithConfiguration(name: string, value: number, configuration: UIImageConfiguration): UIImage;
 
 	static systemImageNamedWithConfiguration(name: string, configuration: UIImageConfiguration): UIImage;
 
@@ -11189,6 +11926,8 @@ declare const enum UIImageResizingMode {
 declare class UIImageSymbolConfiguration extends UIImageConfiguration {
 
 	static alloc(): UIImageSymbolConfiguration; // inherited from NSObject
+
+	static configurationPreferringMonochrome(): UIImageSymbolConfiguration;
 
 	static configurationPreferringMulticolor(): UIImageSymbolConfiguration;
 
@@ -12421,7 +13160,7 @@ declare var UILayoutFittingCompressedSize: CGSize;
 
 declare var UILayoutFittingExpandedSize: CGSize;
 
-declare class UILayoutGuide extends NSObject implements NSCoding {
+declare class UILayoutGuide extends NSObject implements NSCoding, UIPopoverPresentationControllerSourceItem {
 
 	static alloc(): UILayoutGuide; // inherited from NSObject
 
@@ -12455,14 +13194,57 @@ declare class UILayoutGuide extends NSObject implements NSCoding {
 
 	readonly widthAnchor: NSLayoutDimension;
 
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
 	constraintsAffectingLayoutForAxis(axis: UILayoutConstraintAxis): NSArray<NSLayoutConstraint>;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
 }
+
+interface UILayoutGuideAspectFitting extends NSObjectProtocol {
+
+	aspectRatio: number;
+}
+declare var UILayoutGuideAspectFitting: {
+
+	prototype: UILayoutGuideAspectFitting;
+};
 
 declare var UILayoutPriorityDefaultHigh: number;
 
@@ -12722,6 +13504,8 @@ declare class UIListContentTextProperties extends NSObject implements NSCopying,
 
 	numberOfLines: number;
 
+	showsExpansionTextWhenTruncated: boolean;
+
 	transform: UIListContentTextTransform;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
@@ -12811,6 +13595,8 @@ declare class UIListContentView extends UIView implements UIContentView {
 	retainCount(): number;
 
 	self(): this;
+
+	supportsConfiguration(configuration: UIContentConfiguration): boolean;
 }
 
 declare var UIListSeparatorAutomaticInsets: NSDirectionalEdgeInsets;
@@ -12998,6 +13784,8 @@ declare class UIMenu extends UIMenuElement {
 
 	readonly options: UIMenuOptions;
 
+	preferredElementSize: UIMenuElementSize;
+
 	readonly selectedElements: NSArray<UIMenuElement>;
 
 	menuByReplacingChildren(newChildren: NSArray<UIMenuElement> | UIMenuElement[]): UIMenu;
@@ -13096,6 +13884,8 @@ declare var UIMenuControllerWillHideMenuNotification: string;
 
 declare var UIMenuControllerWillShowMenuNotification: string;
 
+declare var UIMenuDocument: string;
+
 declare var UIMenuEdit: string;
 
 declare class UIMenuElement extends NSObject implements NSCopying, NSSecureCoding, UIAccessibilityIdentification {
@@ -13163,7 +13953,18 @@ declare const enum UIMenuElementAttributes {
 
 	Destructive = 2,
 
-	Hidden = 4
+	Hidden = 4,
+
+	KeepsMenuPresented = 8
+}
+
+declare const enum UIMenuElementSize {
+
+	Small = 0,
+
+	Medium = 1,
+
+	Large = 2
 }
 
 declare const enum UIMenuElementState {
@@ -13203,6 +14004,29 @@ declare class UIMenuItem extends NSObject {
 
 	initWithTitleAction(title: string, action: string): this;
 }
+
+interface UIMenuLeaf extends NSObjectProtocol {
+
+	attributes: UIMenuElementAttributes;
+
+	discoverabilityTitle: string;
+
+	image: UIImage;
+
+	presentationSourceItem: UIPopoverPresentationControllerSourceItem;
+
+	sender: any;
+
+	state: UIMenuElementState;
+
+	title: string;
+
+	performWithSenderTarget(sender: any, target: any): void;
+}
+declare var UIMenuLeaf: {
+
+	prototype: UIMenuLeaf;
+};
 
 declare var UIMenuLearn: string;
 
@@ -13407,6 +14231,17 @@ declare class UIMutableUserNotificationCategory extends UIUserNotificationCatego
 	setActionsForContext(actions: NSArray<UIUserNotificationAction> | UIUserNotificationAction[], context: UIUserNotificationActionContext): void;
 }
 
+declare const enum UINSToolbarItemPresentationSize {
+
+	Unspecified = -1,
+
+	Regular = 0,
+
+	Small = 1,
+
+	Large = 3
+}
+
 declare class UINavigationBar extends UIView implements NSCoding, UIBarPositioning {
 
 	static alloc(): UINavigationBar; // inherited from NSObject
@@ -13435,15 +14270,21 @@ declare class UINavigationBar extends UIView implements NSCoding, UIBarPositioni
 
 	barTintColor: UIColor;
 
+	readonly behavioralStyle: UIBehavioralStyle;
+
 	compactAppearance: UINavigationBarAppearance;
 
 	compactScrollEdgeAppearance: UINavigationBarAppearance;
+
+	readonly currentNSToolbarSection: UINavigationBarNSToolbarSection;
 
 	delegate: UINavigationBarDelegate;
 
 	items: NSArray<UINavigationItem>;
 
 	largeTitleTextAttributes: NSDictionary<string, any>;
+
+	preferredBehavioralStyle: UIBehavioralStyle;
 
 	prefersLargeTitles: boolean;
 
@@ -13551,6 +14392,8 @@ interface UINavigationBarDelegate extends UIBarPositioningDelegate {
 
 	navigationBarDidPushItem?(navigationBar: UINavigationBar, item: UINavigationItem): void;
 
+	navigationBarNSToolbarSection?(navigationBar: UINavigationBar): UINavigationBarNSToolbarSection;
+
 	navigationBarShouldPopItem?(navigationBar: UINavigationBar, item: UINavigationItem): boolean;
 
 	navigationBarShouldPushItem?(navigationBar: UINavigationBar, item: UINavigationItem): boolean;
@@ -13559,6 +14402,17 @@ declare var UINavigationBarDelegate: {
 
 	prototype: UINavigationBarDelegate;
 };
+
+declare const enum UINavigationBarNSToolbarSection {
+
+	None = 0,
+
+	Sidebar = 1,
+
+	Supplementary = 2,
+
+	Content = 3
+}
 
 declare class UINavigationController extends UIViewController {
 
@@ -13655,15 +14509,25 @@ declare class UINavigationItem extends NSObject implements NSCoding {
 
 	static new(): UINavigationItem; // inherited from NSObject
 
+	additionalOverflowItems: UIDeferredMenuElement;
+
+	backAction: UIAction;
+
 	backBarButtonItem: UIBarButtonItem;
 
 	backButtonDisplayMode: UINavigationItemBackButtonDisplayMode;
 
 	backButtonTitle: string;
 
+	centerItemGroups: NSArray<UIBarButtonItemGroup>;
+
 	compactAppearance: UINavigationBarAppearance;
 
 	compactScrollEdgeAppearance: UINavigationBarAppearance;
+
+	customizationIdentifier: string;
+
+	documentProperties: UIDocumentProperties;
 
 	hidesBackButton: boolean;
 
@@ -13671,13 +14535,19 @@ declare class UINavigationItem extends NSObject implements NSCoding {
 
 	largeTitleDisplayMode: UINavigationItemLargeTitleDisplayMode;
 
+	leadingItemGroups: NSArray<UIBarButtonItemGroup>;
+
 	leftBarButtonItem: UIBarButtonItem;
 
 	leftBarButtonItems: NSArray<UIBarButtonItem>;
 
 	leftItemsSupplementBackButton: boolean;
 
+	preferredSearchBarPlacement: UINavigationItemSearchBarPlacement;
+
 	prompt: string;
+
+	renameDelegate: UINavigationItemRenameDelegate;
 
 	rightBarButtonItem: UIBarButtonItem;
 
@@ -13685,13 +14555,21 @@ declare class UINavigationItem extends NSObject implements NSCoding {
 
 	scrollEdgeAppearance: UINavigationBarAppearance;
 
+	readonly searchBarPlacement: UINavigationItemSearchBarPlacement;
+
 	searchController: UISearchController;
 
 	standardAppearance: UINavigationBarAppearance;
 
+	style: UINavigationItemStyle;
+
 	title: string;
 
+	titleMenuProvider: (p1: NSArray<UIMenuElement>) => UIMenu;
+
 	titleView: UIView;
+
+	trailingItemGroups: NSArray<UIBarButtonItemGroup>;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -13730,6 +14608,39 @@ declare const enum UINavigationItemLargeTitleDisplayMode {
 	Always = 1,
 
 	Never = 2
+}
+
+interface UINavigationItemRenameDelegate extends NSObjectProtocol {
+
+	navigationItemDidEndRenamingWithTitle(navigationItem: UINavigationItem, title: string): void;
+
+	navigationItemShouldBeginRenaming?(navigationItem: UINavigationItem): boolean;
+
+	navigationItemShouldEndRenamingWithTitle?(navigationItem: UINavigationItem, title: string): boolean;
+
+	navigationItemWillBeginRenamingWithSuggestedTitleSelectedRange?(navigationItem: UINavigationItem, title: string, selectedRange: interop.Pointer | interop.Reference<NSRange>): string;
+}
+declare var UINavigationItemRenameDelegate: {
+
+	prototype: UINavigationItemRenameDelegate;
+};
+
+declare const enum UINavigationItemSearchBarPlacement {
+
+	Automatic = 0,
+
+	Inline = 1,
+
+	Stacked = 2
+}
+
+declare const enum UINavigationItemStyle {
+
+	Navigator = 0,
+
+	Browser = 1,
+
+	Editor = 2
 }
 
 declare class UINib extends NSObject {
@@ -13825,6 +14736,8 @@ declare class UIPageControl extends UIControl {
 
 	defersCurrentPageDisplay: boolean;
 
+	direction: UIPageControlDirection;
+
 	hidesForSinglePage: boolean;
 
 	readonly interactionState: UIPageControlInteractionState;
@@ -13833,9 +14746,15 @@ declare class UIPageControl extends UIControl {
 
 	pageIndicatorTintColor: UIColor;
 
+	preferredCurrentPageIndicatorImage: UIImage;
+
 	preferredIndicatorImage: UIImage;
 
+	currentPageIndicatorImageForPage(page: number): UIImage;
+
 	indicatorImageForPage(page: number): UIImage;
+
+	setCurrentPageIndicatorImageForPage(image: UIImage, page: number): void;
 
 	setIndicatorImageForPage(image: UIImage, page: number): void;
 
@@ -13851,6 +14770,19 @@ declare const enum UIPageControlBackgroundStyle {
 	Prominent = 1,
 
 	Minimal = 2
+}
+
+declare const enum UIPageControlDirection {
+
+	Natural = 0,
+
+	LeftToRight = 1,
+
+	RightToLeft = 2,
+
+	TopToBottom = 3,
+
+	BottomToTop = 4
 }
 
 declare const enum UIPageControlInteractionState {
@@ -14021,6 +14953,67 @@ declare var UIPasteConfigurationSupporting: {
 
 	prototype: UIPasteConfigurationSupporting;
 };
+
+declare class UIPasteControl extends UIControl {
+
+	static alloc(): UIPasteControl; // inherited from NSObject
+
+	static appearance(): UIPasteControl; // inherited from UIAppearance
+
+	static appearanceForTraitCollection(trait: UITraitCollection): UIPasteControl; // inherited from UIAppearance
+
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UIPasteControl; // inherited from UIAppearance
+
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIPasteControl; // inherited from UIAppearance
+
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UIPasteControl; // inherited from UIAppearance
+
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIPasteControl; // inherited from UIAppearance
+
+	static new(): UIPasteControl; // inherited from NSObject
+
+	readonly configuration: UIPasteControlConfiguration;
+
+	target: UIPasteConfigurationSupporting;
+
+	constructor(o: { configuration: UIPasteControlConfiguration; });
+
+	initWithConfiguration(configuration: UIPasteControlConfiguration): this;
+}
+
+declare class UIPasteControlConfiguration extends NSObject implements NSSecureCoding {
+
+	static alloc(): UIPasteControlConfiguration; // inherited from NSObject
+
+	static new(): UIPasteControlConfiguration; // inherited from NSObject
+
+	baseBackgroundColor: UIColor;
+
+	baseForegroundColor: UIColor;
+
+	cornerRadius: number;
+
+	cornerStyle: UIButtonConfigurationCornerStyle;
+
+	displayMode: UIPasteControlDisplayMode;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare const enum UIPasteControlDisplayMode {
+
+	IconAndLabel = 0,
+
+	IconOnly = 1,
+
+	LabelOnly = 2
+}
 
 declare class UIPasteboard extends NSObject {
 
@@ -14235,7 +15228,9 @@ declare const enum UIPencilPreferredAction {
 
 	SwitchPrevious = 2,
 
-	ShowColorPalette = 3
+	ShowColorPalette = 3,
+
+	ShowInkAttributes = 4
 }
 
 declare class UIPercentDrivenInteractiveTransition extends NSObject implements UIViewControllerInteractiveTransitioning {
@@ -14835,6 +15830,8 @@ declare class UIPopoverPresentationController extends UIPresentationController {
 
 	popoverLayoutMargins: UIEdgeInsets;
 
+	sourceItem: UIPopoverPresentationControllerSourceItem;
+
 	sourceRect: CGRect;
 
 	sourceView: UIView;
@@ -14853,6 +15850,13 @@ interface UIPopoverPresentationControllerDelegate extends UIAdaptivePresentation
 declare var UIPopoverPresentationControllerDelegate: {
 
 	prototype: UIPopoverPresentationControllerDelegate;
+};
+
+interface UIPopoverPresentationControllerSourceItem extends NSObjectProtocol {
+}
+declare var UIPopoverPresentationControllerSourceItem: {
+
+	prototype: UIPopoverPresentationControllerSourceItem;
 };
 
 declare const enum UIPreferredPresentationStyle {
@@ -15267,6 +16271,8 @@ declare class UIPrintFormatter extends NSObject implements NSCopying {
 	perPageContentInsets: UIEdgeInsets;
 
 	readonly printPageRenderer: UIPrintPageRenderer;
+
+	readonly requiresMainThread: boolean;
 
 	startPage: number;
 
@@ -15899,6 +16905,18 @@ declare class UIResponder extends NSObject implements UIActivityItemsConfigurati
 
 	delete(sender: any): void;
 
+	duplicate(sender: any): void;
+
+	export(sender: any): void;
+
+	find(sender: any): void;
+
+	findAndReplace(sender: any): void;
+
+	findNext(sender: any): void;
+
+	findPrevious(sender: any): void;
+
 	increaseSize(sender: any): void;
 
 	isEqual(object: any): boolean;
@@ -15916,6 +16934,8 @@ declare class UIResponder extends NSObject implements UIActivityItemsConfigurati
 	motionCancelledWithEvent(motion: UIEventSubtype, event: _UIEvent): void;
 
 	motionEndedWithEvent(motion: UIEventSubtype, event: _UIEvent): void;
+
+	move(sender: any): void;
 
 	paste(sender: any): void;
 
@@ -15946,6 +16966,8 @@ declare class UIResponder extends NSObject implements UIActivityItemsConfigurati
 	reloadInputViews(): void;
 
 	remoteControlReceivedWithEvent(event: _UIEvent): void;
+
+	rename(sender: any): void;
 
 	resignFirstResponder(): boolean;
 
@@ -15983,6 +17005,8 @@ declare class UIResponder extends NSObject implements UIActivityItemsConfigurati
 
 	updateUserActivityState(activity: NSUserActivity): void;
 
+	useSelectionForFind(sender: any): void;
+
 	validateCommand(command: UICommand): void;
 }
 
@@ -15994,11 +17018,25 @@ interface UIResponderStandardEditActions extends NSObjectProtocol {
 
 	delete?(sender: any): void;
 
+	duplicate?(sender: any): void;
+
+	export?(sender: any): void;
+
+	find?(sender: any): void;
+
+	findAndReplace?(sender: any): void;
+
+	findNext?(sender: any): void;
+
+	findPrevious?(sender: any): void;
+
 	increaseSize?(sender: any): void;
 
 	makeTextWritingDirectionLeftToRight?(sender: any): void;
 
 	makeTextWritingDirectionRightToLeft?(sender: any): void;
+
+	move?(sender: any): void;
 
 	paste?(sender: any): void;
 
@@ -16009,6 +17047,8 @@ interface UIResponderStandardEditActions extends NSObjectProtocol {
 	pasteAndSearch?(sender: any): void;
 
 	print?(sender: any): void;
+
+	rename?(sender: any): void;
 
 	select?(sender: any): void;
 
@@ -16021,6 +17061,8 @@ interface UIResponderStandardEditActions extends NSObjectProtocol {
 	toggleUnderline?(sender: any): void;
 
 	updateTextAttributesWithConversionHandler?(conversionHandler: (p1: NSDictionary<string, any>) => NSDictionary<string, any>): void;
+
+	useSelectionForFind?(sender: any): void;
 }
 declare var UIResponderStandardEditActions: {
 
@@ -16241,7 +17283,11 @@ declare const enum UISceneErrorCode {
 
 	MultipleScenesNotSupported = 0,
 
-	RequestDenied = 1
+	RequestDenied = 1,
+
+	GeometryRequestUnsupported = 100,
+
+	GeometryRequestDenied = 101
 }
 
 declare var UISceneErrorDomain: string;
@@ -16305,6 +17351,8 @@ declare class UISceneSizeRestrictions extends NSObject {
 
 	static new(): UISceneSizeRestrictions; // inherited from NSObject
 
+	allowsFullScreen: boolean;
+
 	maximumSize: CGSize;
 
 	minimumSize: CGSize;
@@ -16315,6 +17363,17 @@ declare var UISceneWillConnectNotification: string;
 declare var UISceneWillDeactivateNotification: string;
 
 declare var UISceneWillEnterForegroundNotification: string;
+
+declare class UISceneWindowingBehaviors extends NSObject {
+
+	static alloc(): UISceneWindowingBehaviors; // inherited from NSObject
+
+	static new(): UISceneWindowingBehaviors; // inherited from NSObject
+
+	closable: boolean;
+
+	miniaturizable: boolean;
+}
 
 declare class UIScreen extends NSObject implements UITraitEnvironment {
 
@@ -16336,6 +17395,8 @@ declare class UIScreen extends NSObject implements UITraitEnvironment {
 
 	readonly coordinateSpace: UICoordinateSpace;
 
+	readonly currentEDRHeadroom: number;
+
 	currentMode: UIScreenMode;
 
 	readonly fixedCoordinateSpace: UICoordinateSpace;
@@ -16356,7 +17417,11 @@ declare class UIScreen extends NSObject implements UITraitEnvironment {
 
 	readonly overscanCompensationInsets: UIEdgeInsets;
 
+	readonly potentialEDRHeadroom: number;
+
 	readonly preferredMode: UIScreenMode;
+
+	readonly referenceDisplayModeStatus: UIScreenReferenceDisplayModeStatus;
 
 	readonly scale: number;
 
@@ -16451,6 +17516,19 @@ declare const enum UIScreenOverscanCompensation {
 
 	InsetApplicationFrame = 2
 }
+
+declare const enum UIScreenReferenceDisplayModeStatus {
+
+	NotSupported = 0,
+
+	NotEnabled = 1,
+
+	Limited = 2,
+
+	Enabled = 3
+}
+
+declare var UIScreenReferenceDisplayModeStatusDidChangeNotification: string;
 
 declare class UIScreenshotService extends NSObject {
 
@@ -16804,7 +17882,11 @@ declare const enum UIScrollViewKeyboardDismissMode {
 
 	OnDrag = 1,
 
-	Interactive = 2
+	Interactive = 2,
+
+	OnDragWithAccessory = 3,
+
+	InteractiveWithAccessory = 4
 }
 
 declare class UISearchBar extends UIView implements UIBarPositioning, UITextInputTraits {
@@ -17044,13 +18126,19 @@ declare class UISearchController extends UIViewController implements UIViewContr
 
 	hidesNavigationBarDuringPresentation: boolean;
 
+	ignoresSearchSuggestionsForSearchBarPlacementStacked: boolean;
+
 	obscuresBackgroundDuringPresentation: boolean;
 
 	readonly searchBar: UISearchBar;
 
+	readonly searchBarPlacement: UINavigationItemSearchBarPlacement;
+
 	readonly searchResultsController: UIViewController;
 
 	searchResultsUpdater: UISearchResultsUpdating;
+
+	searchSuggestions: NSArray<UISearchSuggestion>;
 
 	showsSearchResultsController: boolean;
 
@@ -17118,6 +18206,10 @@ interface UISearchControllerDelegate extends NSObjectProtocol {
 	didPresentSearchController?(searchController: UISearchController): void;
 
 	presentSearchController?(searchController: UISearchController): void;
+
+	searchControllerDidChangeFromSearchBarPlacement?(searchController: UISearchController, previousPlacement: UINavigationItemSearchBarPlacement): void;
+
+	searchControllerWillChangeToSearchBarPlacement?(searchController: UISearchController, newPlacement: UINavigationItemSearchBarPlacement): void;
 
 	willDismissSearchController?(searchController: UISearchController): void;
 
@@ -17195,11 +18287,117 @@ declare var UISearchDisplayDelegate: {
 interface UISearchResultsUpdating extends NSObjectProtocol {
 
 	updateSearchResultsForSearchController(searchController: UISearchController): void;
+
+	updateSearchResultsForSearchControllerSelectingSearchSuggestion?(searchController: UISearchController, searchSuggestion: UISearchSuggestion): void;
 }
 declare var UISearchResultsUpdating: {
 
 	prototype: UISearchResultsUpdating;
 };
+
+interface UISearchSuggestion extends NSObjectProtocol {
+
+	iconImage?: UIImage;
+
+	localizedAttributedSuggestion: NSAttributedString;
+
+	localizedDescription?: string;
+
+	localizedSuggestion: string;
+
+	representedObject: any;
+}
+declare var UISearchSuggestion: {
+
+	prototype: UISearchSuggestion;
+};
+
+declare class UISearchSuggestionItem extends NSObject implements UISearchSuggestion {
+
+	static alloc(): UISearchSuggestionItem; // inherited from NSObject
+
+	static new(): UISearchSuggestionItem; // inherited from NSObject
+
+	static suggestionWithLocalizedAttributedSuggestion(suggestion: NSAttributedString): UISearchSuggestionItem;
+
+	static suggestionWithLocalizedAttributedSuggestionDescriptionString(suggestion: NSAttributedString, description: string): UISearchSuggestionItem;
+
+	static suggestionWithLocalizedAttributedSuggestionDescriptionStringIconImage(suggestion: NSAttributedString, description: string, iconImage: UIImage): UISearchSuggestionItem;
+
+	static suggestionWithLocalizedSuggestion(suggestion: string): UISearchSuggestionItem;
+
+	static suggestionWithLocalizedSuggestionDescriptionString(suggestion: string, description: string): UISearchSuggestionItem;
+
+	static suggestionWithLocalizedSuggestionDescriptionStringIconImage(suggestion: string, description: string, iconImage: UIImage): UISearchSuggestionItem;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly iconImage: UIImage; // inherited from UISearchSuggestion
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly localizedAttributedSuggestion: NSAttributedString; // inherited from UISearchSuggestion
+
+	readonly localizedDescription: string; // inherited from UISearchSuggestion
+
+	readonly localizedSuggestion: string; // inherited from UISearchSuggestion
+
+	representedObject: any; // inherited from UISearchSuggestion
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	constructor(o: { localizedAttributedSuggestion: NSAttributedString; });
+
+	constructor(o: { localizedAttributedSuggestion: NSAttributedString; localizedDescription: string; });
+
+	constructor(o: { localizedAttributedSuggestion: NSAttributedString; localizedDescription: string; iconImage: UIImage; });
+
+	constructor(o: { localizedSuggestion: string; });
+
+	constructor(o: { localizedSuggestion: string; localizedDescription: string; });
+
+	constructor(o: { localizedSuggestion: string; localizedDescription: string; iconImage: UIImage; });
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	initWithLocalizedAttributedSuggestion(suggestion: NSAttributedString): this;
+
+	initWithLocalizedAttributedSuggestionLocalizedDescription(suggestion: NSAttributedString, description: string): this;
+
+	initWithLocalizedAttributedSuggestionLocalizedDescriptionIconImage(suggestion: NSAttributedString, description: string, iconImage: UIImage): this;
+
+	initWithLocalizedSuggestion(suggestion: string): this;
+
+	initWithLocalizedSuggestionLocalizedDescription(suggestion: string, description: string): this;
+
+	initWithLocalizedSuggestionLocalizedDescriptionIconImage(suggestion: string, description: string, iconImage: UIImage): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
 
 declare class UISearchTextField extends UITextField {
 
@@ -17223,6 +18421,8 @@ declare class UISearchTextField extends UITextField {
 
 	allowsDeletingTokens: boolean;
 
+	searchSuggestions: NSArray<UISearchSuggestion>;
+
 	readonly textualRange: UITextRange;
 
 	tokenBackgroundColor: UIColor;
@@ -17241,6 +18441,8 @@ declare class UISearchTextField extends UITextField {
 }
 
 interface UISearchTextFieldDelegate extends UITextFieldDelegate {
+
+	searchTextFieldDidSelectSuggestion?(searchTextField: UISearchTextField, suggestion: UISearchSuggestion): void;
 
 	searchTextFieldItemProviderForCopyingToken?(searchTextField: UISearchTextField, token: UISearchToken): NSItemProvider;
 }
@@ -17477,6 +18679,8 @@ declare class UISheetPresentationController extends UIPresentationController {
 	widthFollowsPreferredContentSizeWhenEdgeAttached: boolean;
 
 	animateChanges(changes: () => void): void;
+
+	invalidateDetents(): void;
 }
 
 declare var UISheetPresentationControllerAutomaticDimension: number;
@@ -17494,16 +18698,35 @@ declare class UISheetPresentationControllerDetent extends NSObject {
 
 	static alloc(): UISheetPresentationControllerDetent; // inherited from NSObject
 
+	static customDetentWithIdentifierResolver(identifier: string, resolver: (p1: UISheetPresentationControllerDetentResolutionContext) => number): UISheetPresentationControllerDetent;
+
 	static largeDetent(): UISheetPresentationControllerDetent;
 
 	static mediumDetent(): UISheetPresentationControllerDetent;
 
 	static new(): UISheetPresentationControllerDetent; // inherited from NSObject
+
+	readonly identifier: string;
+
+	resolvedValueInContext(context: UISheetPresentationControllerDetentResolutionContext): number;
 }
 
 declare var UISheetPresentationControllerDetentIdentifierLarge: string;
 
 declare var UISheetPresentationControllerDetentIdentifierMedium: string;
+
+declare var UISheetPresentationControllerDetentInactive: number;
+
+interface UISheetPresentationControllerDetentResolutionContext extends NSObjectProtocol {
+
+	containerTraitCollection: UITraitCollection;
+
+	maximumDetentValue: number;
+}
+declare var UISheetPresentationControllerDetentResolutionContext: {
+
+	prototype: UISheetPresentationControllerDetentResolutionContext;
+};
 
 declare class UISimpleTextPrintFormatter extends UIPrintFormatter {
 
@@ -18539,7 +19762,7 @@ declare var UITabBarDelegate: {
 	prototype: UITabBarDelegate;
 };
 
-declare class UITabBarItem extends UIBarItem implements UISpringLoadedInteractionSupporting {
+declare class UITabBarItem extends UIBarItem implements UIPopoverPresentationControllerSourceItem, UISpringLoadedInteractionSupporting {
 
 	static alloc(): UITabBarItem; // inherited from NSObject
 
@@ -18823,6 +20046,8 @@ declare class UITableView extends UIScrollView implements NSCoding, UIDataSource
 
 	selectionFollowsFocus: boolean;
 
+	selfSizingInvalidation: UITableViewSelfSizingInvalidation;
+
 	separatorColor: UIColor;
 
 	separatorEffect: UIVisualEffect;
@@ -19100,6 +20325,8 @@ declare class UITableViewCell extends UIView implements NSCoding, UIGestureRecog
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
+	defaultBackgroundConfiguration(): UIBackgroundConfiguration;
+
 	defaultContentConfiguration(): UIListContentConfiguration;
 
 	didTransitionToState(state: UITableViewCellStateMask): void;
@@ -19333,6 +20560,8 @@ declare class UITableViewController extends UIViewController implements UITableV
 
 	tableViewCanPerformActionForRowAtIndexPathWithSender(tableView: UITableView, action: string, indexPath: NSIndexPath, sender: any): boolean;
 
+	tableViewCanPerformPrimaryActionForRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): boolean;
+
 	tableViewCellForRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): UITableViewCell;
 
 	tableViewCommitEditingStyleForRowAtIndexPath(tableView: UITableView, editingStyle: UITableViewCellEditingStyle, indexPath: NSIndexPath): void;
@@ -19386,6 +20615,8 @@ declare class UITableViewController extends UIViewController implements UITableV
 	tableViewNumberOfRowsInSection(tableView: UITableView, section: number): number;
 
 	tableViewPerformActionForRowAtIndexPathWithSender(tableView: UITableView, action: string, indexPath: NSIndexPath, sender: any): void;
+
+	tableViewPerformPrimaryActionForRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): void;
 
 	tableViewPreviewForDismissingContextMenuWithConfiguration(tableView: UITableView, configuration: UIContextMenuConfiguration): UITargetedPreview;
 
@@ -19494,6 +20725,8 @@ interface UITableViewDelegate extends NSObjectProtocol, UIScrollViewDelegate {
 
 	tableViewCanPerformActionForRowAtIndexPathWithSender?(tableView: UITableView, action: string, indexPath: NSIndexPath, sender: any): boolean;
 
+	tableViewCanPerformPrimaryActionForRowAtIndexPath?(tableView: UITableView, indexPath: NSIndexPath): boolean;
+
 	tableViewContextMenuConfigurationForRowAtIndexPathPoint?(tableView: UITableView, indexPath: NSIndexPath, point: CGPoint): UIContextMenuConfiguration;
 
 	tableViewDidBeginMultipleSelectionInteractionAtIndexPath?(tableView: UITableView, indexPath: NSIndexPath): void;
@@ -19539,6 +20772,8 @@ interface UITableViewDelegate extends NSObjectProtocol, UIScrollViewDelegate {
 	tableViewLeadingSwipeActionsConfigurationForRowAtIndexPath?(tableView: UITableView, indexPath: NSIndexPath): UISwipeActionsConfiguration;
 
 	tableViewPerformActionForRowAtIndexPathWithSender?(tableView: UITableView, action: string, indexPath: NSIndexPath, sender: any): void;
+
+	tableViewPerformPrimaryActionForRowAtIndexPath?(tableView: UITableView, indexPath: NSIndexPath): void;
 
 	tableViewPreviewForDismissingContextMenuWithConfiguration?(tableView: UITableView, configuration: UIContextMenuConfiguration): UITargetedPreview;
 
@@ -19855,6 +21090,8 @@ declare class UITableViewHeaderFooterView extends UIView {
 
 	constructor(o: { reuseIdentifier: string; });
 
+	defaultBackgroundConfiguration(): UIBackgroundConfiguration;
+
 	defaultContentConfiguration(): UIListContentConfiguration;
 
 	initWithReuseIdentifier(reuseIdentifier: string): this;
@@ -19940,6 +21177,15 @@ declare const enum UITableViewScrollPosition {
 }
 
 declare var UITableViewSelectionDidChangeNotification: string;
+
+declare const enum UITableViewSelfSizingInvalidation {
+
+	Disabled = 0,
+
+	Enabled = 1,
+
+	EnabledIncludingConstraints = 2
+}
 
 declare const enum UITableViewSeparatorInsetReference {
 
@@ -20552,6 +21798,8 @@ declare class UITextField extends UIControl implements NSCoding, UIContentSizeCa
 
 	drawTextInRect(rect: CGRect): void;
 
+	editMenuForTextRangeSuggestedActions(textRange: UITextRange, suggestedActions: NSArray<UIMenuElement> | UIMenuElement[]): UIMenu;
+
 	editingRectForBounds(bounds: CGRect): CGRect;
 
 	encodeWithCoder(coder: NSCoder): void;
@@ -20646,6 +21894,8 @@ interface UITextFieldDelegate extends NSObjectProtocol {
 	textFieldDidEndEditing?(textField: UITextField): void;
 
 	textFieldDidEndEditingReason?(textField: UITextField, reason: UITextFieldDidEndEditingReason): void;
+
+	textFieldEditMenuForCharactersInRangeSuggestedActions?(textField: UITextField, range: NSRange, suggestedActions: NSArray<UIMenuElement> | UIMenuElement[]): UIMenu;
 
 	textFieldShouldBeginEditing?(textField: UITextField): boolean;
 
@@ -20814,6 +22064,8 @@ interface UITextInput extends UIKeyInput {
 	dictationRecognitionFailed?(): void;
 
 	dictationRecordingDidEnd?(): void;
+
+	editMenuForTextRangeSuggestedActions?(textRange: UITextRange, suggestedActions: NSArray<UIMenuElement> | UIMenuElement[]): UIMenu;
 
 	endFloatingCursor?(): void;
 
@@ -21220,6 +22472,96 @@ declare class UITextRange extends NSObject {
 	readonly start: UITextPosition;
 }
 
+interface UITextSearchAggregator extends NSObjectProtocol {
+
+	allFoundRanges: NSOrderedSet<UITextRange>;
+
+	finishedSearching(): void;
+
+	foundRangeForSearchStringInDocument(range: UITextRange, string: string, document: any): void;
+
+	invalidateFoundRangeInDocument(range: UITextRange, document: any): void;
+}
+declare var UITextSearchAggregator: {
+
+	prototype: UITextSearchAggregator;
+};
+
+declare const enum UITextSearchFoundTextStyle {
+
+	Normal = 0,
+
+	Found = 1,
+
+	Highlighted = 2
+}
+
+declare const enum UITextSearchMatchMethod {
+
+	Contains = 0,
+
+	StartsWith = 1,
+
+	FullWord = 2
+}
+
+declare class UITextSearchOptions extends NSObject {
+
+	static alloc(): UITextSearchOptions; // inherited from NSObject
+
+	static new(): UITextSearchOptions; // inherited from NSObject
+
+	readonly stringCompareOptions: NSStringCompareOptions;
+
+	readonly wordMatchMethod: UITextSearchMatchMethod;
+}
+
+interface UITextSearching extends NSObjectProtocol {
+
+	selectedTextRange: UITextRange;
+
+	selectedTextSearchDocument?: any;
+
+	supportsTextReplacement?: boolean;
+
+	clearAllDecoratedFoundText(): void;
+
+	compareFoundRangeToRangeInDocument(foundRange: UITextRange, toRange: UITextRange, document: any): NSComparisonResult;
+
+	compareOrderFromDocumentToDocument?(fromDocument: any, toDocument: any): NSComparisonResult;
+
+	decorateFoundTextRangeInDocumentUsingStyle(range: UITextRange, document: any, style: UITextSearchFoundTextStyle): void;
+
+	performTextSearchWithQueryStringUsingOptionsResultAggregator(string: string, options: UITextSearchOptions, aggregator: UITextSearchAggregator): void;
+
+	replaceAllOccurrencesOfQueryStringUsingOptionsWithText?(queryString: string, options: UITextSearchOptions, replacementText: string): void;
+
+	replaceFoundTextInRangeInDocumentWithText?(range: UITextRange, document: any, replacementText: string): void;
+
+	scrollRangeToVisibleInDocument?(range: UITextRange, document: any): void;
+
+	shouldReplaceFoundTextInRangeInDocumentWithText?(range: UITextRange, document: any, replacementText: string): boolean;
+
+	willHighlightFoundTextRangeInDocument?(range: UITextRange, document: any): void;
+}
+declare var UITextSearching: {
+
+	prototype: UITextSearching;
+};
+
+declare class UITextSearchingFindSession extends UIFindSession {
+
+	static alloc(): UITextSearchingFindSession; // inherited from NSObject
+
+	static new(): UITextSearchingFindSession; // inherited from NSObject
+
+	readonly searchableObject: UITextSearching;
+
+	constructor(o: { searchableObject: UITextSearching; });
+
+	initWithSearchableObject(searchableObject: UITextSearching): this;
+}
+
 declare class UITextSelectionRect extends NSObject {
 
 	static alloc(): UITextSelectionRect; // inherited from NSObject
@@ -21280,7 +22622,7 @@ declare const enum UITextStorageDirection {
 	Backward = 1
 }
 
-declare class UITextView extends UIScrollView implements UIContentSizeCategoryAdjusting, UITextDraggable, UITextDroppable, UITextInput, UITextPasteConfigurationSupporting {
+declare class UITextView extends UIScrollView implements UIContentSizeCategoryAdjusting, UIFindInteractionDelegate, UITextDraggable, UITextDroppable, UITextInput, UITextPasteConfigurationSupporting, UITextSearching {
 
 	static alloc(): UITextView; // inherited from NSObject
 
@@ -21298,6 +22640,8 @@ declare class UITextView extends UIScrollView implements UIContentSizeCategoryAd
 
 	static new(): UITextView; // inherited from NSObject
 
+	static textViewUsingTextLayoutManager(usingTextLayoutManager: boolean): UITextView;
+
 	allowsEditingTextAttributes: boolean;
 
 	attributedText: NSAttributedString;
@@ -21309,6 +22653,10 @@ declare class UITextView extends UIScrollView implements UIContentSizeCategoryAd
 	delegate: UITextViewDelegate;
 
 	editable: boolean;
+
+	readonly findInteraction: UIFindInteraction;
+
+	findInteractionEnabled: boolean;
 
 	font: UIFont;
 
@@ -21335,6 +22683,8 @@ declare class UITextView extends UIScrollView implements UIContentSizeCategoryAd
 	readonly textContainer: NSTextContainer;
 
 	textContainerInset: UIEdgeInsets;
+
+	readonly textLayoutManager: NSTextLayoutManager;
 
 	readonly textStorage: NSTextStorage;
 
@@ -21388,6 +22738,8 @@ declare class UITextView extends UIScrollView implements UIContentSizeCategoryAd
 
 	selectedTextRange: UITextRange; // inherited from UITextInput
 
+	readonly selectedTextSearchDocument: any; // inherited from UITextSearching
+
 	selectionAffinity: UITextStorageDirection; // inherited from UITextInput
 
 	smartDashesType: UITextSmartDashesType; // inherited from UITextInputTraits
@@ -21399,6 +22751,8 @@ declare class UITextView extends UIScrollView implements UIContentSizeCategoryAd
 	spellCheckingType: UITextSpellCheckingType; // inherited from UITextInputTraits
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly supportsTextReplacement: boolean; // inherited from UITextSearching
 
 	textContentType: string; // inherited from UITextInputTraits
 
@@ -21440,13 +22794,21 @@ declare class UITextView extends UIScrollView implements UIContentSizeCategoryAd
 
 	class(): typeof NSObject;
 
+	clearAllDecoratedFoundText(): void;
+
 	closestPositionToPoint(point: CGPoint): UITextPosition;
 
 	closestPositionToPointWithinRange(point: CGPoint, range: UITextRange): UITextPosition;
 
+	compareFoundRangeToRangeInDocument(foundRange: UITextRange, toRange: UITextRange, document: any): NSComparisonResult;
+
+	compareOrderFromDocumentToDocument(fromDocument: any, toDocument: any): NSComparisonResult;
+
 	comparePositionToPosition(position: UITextPosition, other: UITextPosition): NSComparisonResult;
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	decorateFoundTextRangeInDocumentUsingStyle(range: UITextRange, document: any, style: UITextSearchFoundTextStyle): void;
 
 	deleteBackward(): void;
 
@@ -21454,7 +22816,15 @@ declare class UITextView extends UIScrollView implements UIContentSizeCategoryAd
 
 	dictationRecordingDidEnd(): void;
 
+	editMenuForTextRangeSuggestedActions(textRange: UITextRange, suggestedActions: NSArray<UIMenuElement> | UIMenuElement[]): UIMenu;
+
 	endFloatingCursor(): void;
+
+	findInteractionDidBeginFindSession(interaction: UIFindInteraction, session: UIFindSession): void;
+
+	findInteractionDidEndFindSession(interaction: UIFindInteraction, session: UIFindSession): void;
+
+	findInteractionSessionForView(interaction: UIFindInteraction, view: UIView): UIFindSession;
 
 	firstRectForRange(range: UITextRange): CGRect;
 
@@ -21486,6 +22856,8 @@ declare class UITextView extends UIScrollView implements UIContentSizeCategoryAd
 
 	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 
+	performTextSearchWithQueryStringUsingOptionsResultAggregator(string: string, options: UITextSearchOptions, aggregator: UITextSearchAggregator): void;
+
 	positionFromPositionInDirectionOffset(position: UITextPosition, direction: UITextLayoutDirection, offset: number): UITextPosition;
 
 	positionFromPositionOffset(position: UITextPosition, offset: number): UITextPosition;
@@ -21498,6 +22870,10 @@ declare class UITextView extends UIScrollView implements UIContentSizeCategoryAd
 
 	removeTextPlaceholder(textPlaceholder: UITextPlaceholder): void;
 
+	replaceAllOccurrencesOfQueryStringUsingOptionsWithText(queryString: string, options: UITextSearchOptions, replacementText: string): void;
+
+	replaceFoundTextInRangeInDocumentWithText(range: UITextRange, document: any, replacementText: string): void;
+
 	replaceRangeWithText(range: UITextRange, text: string): void;
 
 	respondsToSelector(aSelector: string): boolean;
@@ -21505,6 +22881,8 @@ declare class UITextView extends UIScrollView implements UIContentSizeCategoryAd
 	retainCount(): number;
 
 	scrollRangeToVisible(range: NSRange): void;
+
+	scrollRangeToVisibleInDocument(range: UITextRange, document: any): void;
 
 	selectionRectsForRange(range: UITextRange): NSArray<UITextSelectionRect>;
 
@@ -21518,6 +22896,8 @@ declare class UITextView extends UIScrollView implements UIContentSizeCategoryAd
 
 	shouldChangeTextInRangeReplacementText(range: UITextRange, text: string): boolean;
 
+	shouldReplaceFoundTextInRangeInDocumentWithText(range: UITextRange, document: any, replacementText: string): boolean;
+
 	textInRange(range: UITextRange): string;
 
 	textRangeFromPositionToPosition(fromPosition: UITextPosition, toPosition: UITextPosition): UITextRange;
@@ -21527,6 +22907,8 @@ declare class UITextView extends UIScrollView implements UIContentSizeCategoryAd
 	unmarkText(): void;
 
 	updateFloatingCursorAtPoint(point: CGPoint): void;
+
+	willHighlightFoundTextRangeInDocument(range: UITextRange, document: any): void;
 }
 
 interface UITextViewDelegate extends NSObjectProtocol, UIScrollViewDelegate {
@@ -21538,6 +22920,8 @@ interface UITextViewDelegate extends NSObjectProtocol, UIScrollViewDelegate {
 	textViewDidChangeSelection?(textView: UITextView): void;
 
 	textViewDidEndEditing?(textView: UITextView): void;
+
+	textViewEditMenuForTextInRangeSuggestedActions?(textView: UITextView, range: NSRange, suggestedActions: NSArray<UIMenuElement> | UIMenuElement[]): UIMenu;
 
 	textViewShouldBeginEditing?(textView: UITextView): boolean;
 
@@ -21915,6 +23299,8 @@ declare class UITraitCollection extends NSObject implements NSCopying, NSSecureC
 
 	static traitCollectionWithPreferredContentSizeCategory(preferredContentSizeCategory: string): UITraitCollection;
 
+	static traitCollectionWithToolbarItemPresentationSize(toolbarItemPresentationSize: UINSToolbarItemPresentationSize): UITraitCollection;
+
 	static traitCollectionWithTraitsFromCollections(traitCollections: NSArray<UITraitCollection> | UITraitCollection[]): UITraitCollection;
 
 	static traitCollectionWithUserInterfaceIdiom(idiom: UIUserInterfaceIdiom): UITraitCollection;
@@ -21944,6 +23330,8 @@ declare class UITraitCollection extends NSObject implements NSCopying, NSSecureC
 	readonly legibilityWeight: UILegibilityWeight;
 
 	readonly preferredContentSizeCategory: string;
+
+	readonly toolbarItemPresentationSize: UINSToolbarItemPresentationSize;
 
 	readonly userInterfaceIdiom: UIUserInterfaceIdiom;
 
@@ -22242,7 +23630,7 @@ declare var UIVideoEditorControllerDelegate: {
 	prototype: UIVideoEditorControllerDelegate;
 };
 
-declare class UIView extends UIResponder implements CALayerDelegate, NSCoding, UIAccessibilityIdentification, UIAppearance, UIAppearanceContainer, UICoordinateSpace, UIDynamicItem, UIFocusItem, UIFocusItemContainer, UILargeContentViewerItem, UITraitEnvironment {
+declare class UIView extends UIResponder implements CALayerDelegate, NSCoding, UIAccessibilityIdentification, UIAppearance, UIAppearanceContainer, UICoordinateSpace, UIDynamicItem, UIFocusItem, UIFocusItemContainer, UILargeContentViewerItem, UIPopoverPresentationControllerSourceItem, UITraitEnvironment {
 
 	static addKeyframeWithRelativeStartTimeRelativeDurationAnimations(frameStartTime: number, frameDuration: number, animations: () => void): void;
 
@@ -22319,6 +23707,8 @@ declare class UIView extends UIResponder implements CALayerDelegate, NSCoding, U
 	readonly alignmentRectInsets: UIEdgeInsets;
 
 	alpha: number;
+
+	anchorPoint: CGPoint;
 
 	readonly appliedContentSizeCategoryLimitsDescription: string;
 
@@ -22970,6 +24360,8 @@ declare class UIViewController extends UIResponder implements NSCoding, NSExtens
 
 	static new(): UIViewController; // inherited from NSObject
 
+	readonly activePresentationController: UIPresentationController;
+
 	additionalSafeAreaInsets: UIEdgeInsets;
 
 	automaticallyAdjustsScrollViewInsets: boolean;
@@ -23011,6 +24403,8 @@ declare class UIViewController extends UIResponder implements NSCoding, NSExtens
 	focusGroupIdentifier: string;
 
 	hidesBottomBarWhenPushed: boolean;
+
+	interactionActivityTrackingBaseName: string;
 
 	readonly interfaceOrientation: UIInterfaceOrientation;
 
@@ -23267,6 +24661,8 @@ declare class UIViewController extends UIResponder implements NSCoding, NSExtens
 	setNeedsUpdateOfPrefersPointerLocked(): void;
 
 	setNeedsUpdateOfScreenEdgesDeferringSystemGestures(): void;
+
+	setNeedsUpdateOfSupportedInterfaceOrientations(): void;
 
 	setOverrideTraitCollectionForChildViewController(collection: UITraitCollection, childViewController: UIViewController): void;
 
@@ -23952,6 +25348,8 @@ declare class UIWindow extends UIView {
 
 	rootViewController: UIViewController;
 
+	readonly safeAreaAspectFitLayoutGuide: UILayoutGuide;
+
 	screen: UIScreen;
 
 	windowLevel: number;
@@ -24007,7 +25405,11 @@ declare class UIWindowScene extends UIScene {
 
 	readonly coordinateSpace: UICoordinateSpace;
 
+	readonly effectiveGeometry: UIWindowSceneGeometry;
+
 	readonly focusSystem: UIFocusSystem;
+
+	readonly fullScreen: boolean;
 
 	readonly interfaceOrientation: UIInterfaceOrientation;
 
@@ -24023,7 +25425,11 @@ declare class UIWindowScene extends UIScene {
 
 	readonly traitCollection: UITraitCollection;
 
+	readonly windowingBehaviors: UISceneWindowingBehaviors;
+
 	readonly windows: NSArray<UIWindow>;
+
+	requestGeometryUpdateWithPreferencesErrorHandler(geometryPreferences: UIWindowSceneGeometryPreferences, errorHandler: (p1: NSError) => void): void;
 }
 
 declare class UIWindowSceneActivationAction extends UIAction {
@@ -24151,6 +25557,50 @@ declare const enum UIWindowSceneDismissalAnimation {
 	Decline = 3
 }
 
+declare class UIWindowSceneGeometry extends NSObject implements NSCopying {
+
+	static alloc(): UIWindowSceneGeometry; // inherited from NSObject
+
+	static new(): UIWindowSceneGeometry; // inherited from NSObject
+
+	readonly interfaceOrientation: UIInterfaceOrientation;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare class UIWindowSceneGeometryPreferences extends NSObject {
+
+	static alloc(): UIWindowSceneGeometryPreferences; // inherited from NSObject
+
+	static new(): UIWindowSceneGeometryPreferences; // inherited from NSObject
+}
+
+declare class UIWindowSceneGeometryPreferencesIOS extends UIWindowSceneGeometryPreferences {
+
+	static alloc(): UIWindowSceneGeometryPreferencesIOS; // inherited from NSObject
+
+	static new(): UIWindowSceneGeometryPreferencesIOS; // inherited from NSObject
+
+	interfaceOrientations: UIInterfaceOrientationMask;
+
+	constructor(o: { interfaceOrientations: UIInterfaceOrientationMask; });
+
+	initWithInterfaceOrientations(interfaceOrientations: UIInterfaceOrientationMask): this;
+}
+
+declare class UIWindowSceneGeometryPreferencesMac extends UIWindowSceneGeometryPreferences {
+
+	static alloc(): UIWindowSceneGeometryPreferencesMac; // inherited from NSObject
+
+	static new(): UIWindowSceneGeometryPreferencesMac; // inherited from NSObject
+
+	systemFrame: CGRect;
+
+	constructor(o: { systemFrame: CGRect; });
+
+	initWithSystemFrame(systemFrame: CGRect): this;
+}
+
 declare const enum UIWindowScenePresentationStyle {
 
 	Automatic = 0,
@@ -24163,3 +25613,5 @@ declare const enum UIWindowScenePresentationStyle {
 declare var UIWindowSceneSessionRoleApplication: string;
 
 declare var UIWindowSceneSessionRoleExternalDisplay: string;
+
+declare var UIWindowSceneSessionRoleExternalDisplayNonInteractive: string;

@@ -72,6 +72,8 @@ declare class CTCellularPlanProvisioning extends NSObject {
 
 	static new(): CTCellularPlanProvisioning; // inherited from NSObject
 
+	readonly supportsEmbeddedSIM: boolean;
+
 	addPlanWithCompletionHandler(request: CTCellularPlanProvisioningRequest, completionHandler: (p1: CTCellularPlanProvisioningAddPlanResult) => void): void;
 
 	supportsCellularPlan(): boolean;

@@ -76,8 +76,8 @@ export class FormattedString extends ViewBase implements FormattedStringDefiniti
 
 	public toString(): string {
 		let result = '';
-		for (let i = 0, length = this._spans.length; i < length; i++) {
-			result += this._spans.getItem(i).text;
+		for (let i = 0, length = this.spans.length; i < length; i++) {
+			result += this.spans.getItem(i).text;
 		}
 
 		return result;
@@ -85,7 +85,7 @@ export class FormattedString extends ViewBase implements FormattedStringDefiniti
 
 	public _addArrayFromBuilder(name: string, value: Array<any>) {
 		if (name === 'spans') {
-			this.spans.push(value);
+			this.spans.push(...value);
 		}
 	}
 
