@@ -48,6 +48,7 @@ const FragmentClass = (<any>org.nativescript.widgets.FragmentBase).extend('com.t
 
 	onDestroy() {
 		this._callbacks.onDestroy(this, superProto.onDestroy);
+		this._callbacks = null;
 	},
 
 	toString(): string {
