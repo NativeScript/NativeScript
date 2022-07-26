@@ -25,6 +25,10 @@ export class ActionBarBase extends View implements ActionBarDefinition {
 	get navigationButton(): NavigationButton {
 		return this._navigationButton;
 	}
+	disposeNativeView() {
+		this._actionItems = null;
+		super.disposeNativeView();
+	}
 	set navigationButton(value: NavigationButton) {
 		if (this._navigationButton !== value) {
 			if (this._navigationButton) {
