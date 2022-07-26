@@ -52,7 +52,7 @@
     "mocha": "^8.0.1",
     "mocha-typescript": "^1.1.17",
     "module-alias": "^2.2.2",
-    "nativescript": "~8.2.0",
+    "nativescript": "~8.3.0",
     "nativescript-typedoc-theme": "1.1.0",
     "parse-css": "git+https://github.com/tabatkins/parse-css.git",
     "parserlib": "^1.1.1",
