@@ -5,6 +5,7 @@
 
 if (module.hot) {
 	let hash = __webpack_require__.h();
+	let hmrBootEmittedSymbol = Symbol.for('HMRBootEmitted');
 
 	const logVerbose = (title: string, ...info: any) => {
 		if (__NS_ENV_VERBOSE__) {
@@ -19,7 +20,7 @@ if (module.hot) {
 
 	const setStatus = (
 		hash: string,
-		status: 'success' | 'failure',
+		status: 'success' | 'failure' | 'boot',
 		message?: string,
 		...info: any
 	): boolean => {
@@ -93,7 +94,7 @@ if (module.hot) {
 
 	const requireExists = (path) => {
 		try {
-			__non_webpack_require__(path);
+			global['require'](path);
 			return true;
 		} catch (err) {
 			return false;
@@ -112,10 +113,18 @@ if (module.hot) {
 		logVerbose('LiveSync');
 
 		if (!hasUpdate()) {
-			return;
+			return false;
 		}
 
-		await checkAndApply();
-		originalOnLiveSync();
+		if (!(await checkAndApply())) {
+			return false;
+		}
+
+		await originalOnLiveSync();
 	};
+
+	if (!global[hmrBootEmittedSymbol]) {
+		global[hmrBootEmittedSymbol] = true;
+		setStatus(hash, 'boot', 'HMR Enabled - waiting for changes...');
+	}
 }

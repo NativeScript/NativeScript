@@ -249,11 +249,42 @@ declare class CSSearchQuery extends NSObject {
 
 	constructor(o: { queryString: string; attributes: NSArray<string> | string[]; });
 
+	constructor(o: { queryString: string; queryContext: CSSearchQueryContext; });
+
 	cancel(): void;
 
 	initWithQueryStringAttributes(queryString: string, attributes: NSArray<string> | string[]): this;
 
+	initWithQueryStringQueryContext(queryString: string, queryContext: CSSearchQueryContext): this;
+
 	start(): void;
+}
+
+declare class CSSearchQueryContext extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): CSSearchQueryContext; // inherited from NSObject
+
+	static new(): CSSearchQueryContext; // inherited from NSObject
+
+	fetchAttributes: NSArray<string>;
+
+	filterQueries: NSArray<string>;
+
+	keyboardLanguage: string;
+
+	protectionClasses: NSArray<string>;
+
+	sourceOptions: CSSearchQuerySourceOptions;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare const enum CSSearchQueryErrorCode {
@@ -268,6 +299,13 @@ declare const enum CSSearchQueryErrorCode {
 }
 
 declare var CSSearchQueryErrorDomain: string;
+
+declare const enum CSSearchQuerySourceOptions {
+
+	Default = 0,
+
+	AllowMail = 1
+}
 
 declare var CSSearchQueryString: string;
 
@@ -304,6 +342,8 @@ declare class CSSearchableIndex extends NSObject {
 	initWithName(name: string): this;
 
 	initWithNameProtectionClass(name: string, protectionClass: string): this;
+
+	provideDataForBundleIdentifierTypeCompletionHandler(bundle: string, identifier: string, type: string, completionHandler: (p1: NSData, p2: NSError) => void): void;
 }
 
 interface CSSearchableIndexDelegate extends NSObjectProtocol {
@@ -759,6 +799,92 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 	setValueForCustomKey(value: NSSecureCoding, key: CSCustomAttributeKey): void;
 
 	valueForCustomKey(key: CSCustomAttributeKey): NSSecureCoding;
+}
+
+declare class CSSuggestion extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): CSSuggestion; // inherited from NSObject
+
+	static new(): CSSuggestion; // inherited from NSObject
+
+	readonly localizedAttributedSuggestion: NSAttributedString;
+
+	readonly suggestionKind: CSSuggestionKind;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	compare(other: CSSuggestion): NSComparisonResult;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare var CSSuggestionHighlightAttributeName: string;
+
+declare const enum CSSuggestionKind {
+
+	None = 0,
+
+	Custom = 1,
+
+	Default = 2
+}
+
+declare class CSTopHitQuery extends CSUserQuery {
+
+	static alloc(): CSTopHitQuery; // inherited from NSObject
+
+	static new(): CSTopHitQuery; // inherited from NSObject
+
+	constructor(o: { userQueryString: string; queryContext: CSTopHitQueryContext; });
+
+	initWithUserQueryStringQueryContext(userQueryString: string, queryContext: CSTopHitQueryContext): this;
+}
+
+declare class CSTopHitQueryContext extends CSUserQueryContext {
+
+	static alloc(): CSTopHitQueryContext; // inherited from NSObject
+
+	static new(): CSTopHitQueryContext; // inherited from NSObject
+
+	static topHitQueryContext(): CSTopHitQueryContext;
+
+	static topHitQueryContextWithCurrentSuggestion(currentSuggestion: CSSuggestion): CSTopHitQueryContext;
+
+	maxItemCount: number;
+}
+
+declare class CSUserQuery extends CSSearchQuery {
+
+	static alloc(): CSUserQuery; // inherited from NSObject
+
+	static new(): CSUserQuery; // inherited from NSObject
+
+	readonly foundSuggestionCount: number;
+
+	foundSuggestionsHandler: (p1: NSArray<CSSuggestion>) => void;
+
+	constructor(o: { userQueryString: string; queryContext: CSUserQueryContext; });
+
+	initWithUserQueryStringQueryContext(userQueryString: string, queryContext: CSUserQueryContext): this;
+}
+
+declare class CSUserQueryContext extends CSSearchQueryContext {
+
+	static alloc(): CSUserQueryContext; // inherited from NSObject
+
+	static new(): CSUserQueryContext; // inherited from NSObject
+
+	static userQueryContext(): CSUserQueryContext;
+
+	static userQueryContextWithCurrentSuggestion(currentSuggestion: CSSuggestion): CSUserQueryContext;
+
+	maxSuggestionCount: number;
 }
 
 declare var CoreSpotlightVersionNumber: number;

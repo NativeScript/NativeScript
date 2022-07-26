@@ -103,6 +103,8 @@ declare class SLComposeServiceViewController extends UIViewController implements
 
 	textViewDidEndEditing(textView: UITextView): void;
 
+	textViewEditMenuForTextInRangeSuggestedActions(textView: UITextView, range: NSRange, suggestedActions: NSArray<UIMenuElement> | UIMenuElement[]): UIMenu;
+
 	textViewShouldBeginEditing(textView: UITextView): boolean;
 
 	textViewShouldChangeTextInRangeReplacementText(textView: UITextView, range: NSRange, text: string): boolean;

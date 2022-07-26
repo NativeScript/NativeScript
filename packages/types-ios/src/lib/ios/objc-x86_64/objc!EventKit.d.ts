@@ -331,6 +331,8 @@ declare class EKEventStore extends NSObject {
 
 	readonly sources: NSArray<EKSource>;
 
+	constructor(o: { sources: NSArray<EKSource> | EKSource[]; });
+
 	calendarItemWithIdentifier(identifier: string): EKCalendarItem;
 
 	calendarItemsWithExternalIdentifier(externalIdentifier: string): NSArray<EKCalendarItem>;
@@ -352,6 +354,8 @@ declare class EKEventStore extends NSObject {
 	eventsMatchingPredicate(predicate: NSPredicate): NSArray<EKEvent>;
 
 	fetchRemindersMatchingPredicateCompletion(predicate: NSPredicate, completion: (p1: NSArray<EKReminder>) => void): any;
+
+	initWithSources(sources: NSArray<EKSource> | EKSource[]): this;
 
 	predicateForCompletedRemindersWithCompletionDateStartingEndingCalendars(startDate: Date, endDate: Date, calendars: NSArray<EKCalendar> | EKCalendar[]): NSPredicate;
 
@@ -637,6 +641,8 @@ declare class EKSource extends EKObject {
 	static new(): EKSource; // inherited from NSObject
 
 	readonly calendars: NSSet<EKCalendar>;
+
+	readonly isDelegate: boolean;
 
 	readonly sourceIdentifier: string;
 

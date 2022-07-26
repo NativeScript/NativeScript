@@ -7,7 +7,7 @@ import { profile } from '../../profiling';
 import { TouchGestureEventData, GestureTypes, TouchAction } from '../gestures';
 import { Device } from '../../platform';
 import lazy from '../../utils/lazy';
-import type { Background } from 'ui/styling/background';
+import type { Background } from '../styling/background';
 
 export * from './button-common';
 
