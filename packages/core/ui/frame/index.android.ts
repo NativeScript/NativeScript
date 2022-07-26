@@ -1031,9 +1031,14 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 		// animation should start between start and resume, so if we have an executing navigation here it probably means the animation was skipped
 		// so we manually set the entry
 		// also, to be compatible with fragments 1.2.x we need this setTimeout as animations haven't run on onResume yet
+		const weakRef = new WeakRef(this);
 		setTimeout(() => {
-			if (frame._executingContext && !(<any>this.entry).isAnimationRunning) {
-				frame.setCurrent(this.entry, frame._executingContext.navigationType);
+			const owner = weakRef.get();
+			if (!owner) {
+				return;
+			}
+			if (frame._executingContext && !(<any>owner.entry).isAnimationRunning) {
+				frame.setCurrent(owner.entry, frame._executingContext.navigationType);
 			}
 		}, 0);
 
