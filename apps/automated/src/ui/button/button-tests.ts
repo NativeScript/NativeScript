@@ -418,7 +418,7 @@ export function test_Native_Background_Color_BorderRadius_Change() {
 		helper.waitUntilLayoutReady(view);
 		TKUnit.assertEqual(buttonTestsNative.getNativeBackgroundColor(view).hex, '#00FF00');
 
-		// view.className = '';
+		view.className = '';
 		view.className = 'colorfilter';
 		helper.waitUntilLayoutReady(view);
 		TKUnit.assertEqual(buttonTestsNative.getNativeBackgroundColor(view).hex, '#FF0000');
