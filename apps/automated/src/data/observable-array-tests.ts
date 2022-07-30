@@ -16,7 +16,8 @@ export const test_ObservableArray_shouldCopySourceArrayItems = function () {
 export const test_ObservableArray_shouldCopyMultipleItemsAsSource = function () {
 	// >> observable-array-arguments
 	const sa = [1, 2, 3];
-	const array = new ObservableArray(...sa);
+	// Avoid appending items using spread operator as it will skip argument type check
+	const array = new ObservableArray(1, 2, 3);
 	// << observable-array-arguments
 
 	TKUnit.assertEqual(array.length, 3, 'ObservableArray length should be 3');
