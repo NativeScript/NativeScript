@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-			- ci/fix-automated
+			- 'ci/fix-automated'
   pull_request:
   workflow_dispatch:
 
