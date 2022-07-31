@@ -20,6 +20,7 @@ const spawned_process = spawn(
 		"--force",
 		"--log=trace",
 		"--env.classicLogs",
+		"--timeout=300" // 5 minutes
 	],
 	{
 		stdio: ["inherit", "pipe", "pipe"],
