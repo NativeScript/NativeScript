@@ -8,6 +8,25 @@ declare const enum AVAudioSessionRouteSelection {
 	External = 2
 }
 
+declare class AVInterstitialTimeRange extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): AVInterstitialTimeRange; // inherited from NSObject
+
+	static new(): AVInterstitialTimeRange; // inherited from NSObject
+
+	readonly timeRange: CMTimeRange;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
 declare const enum AVKitError {
 
 	Unknown = -1000,
@@ -138,6 +157,25 @@ declare class AVPictureInPictureVideoCallViewController extends UIViewController
 	static new(): AVPictureInPictureVideoCallViewController; // inherited from NSObject
 }
 
+declare class AVPlaybackSpeed extends NSObject {
+
+	static alloc(): AVPlaybackSpeed; // inherited from NSObject
+
+	static new(): AVPlaybackSpeed; // inherited from NSObject
+
+	readonly localizedName: string;
+
+	readonly localizedNumericName: string;
+
+	readonly rate: number;
+
+	static readonly systemDefaultSpeeds: NSArray<AVPlaybackSpeed>;
+
+	constructor(o: { rate: number; localizedName: string; });
+
+	initWithRateLocalizedName(rate: number, localizedName: string): this;
+}
+
 declare class AVPlayerViewController extends UIViewController {
 
 	static alloc(): AVPlayerViewController; // inherited from NSObject
@@ -145,6 +183,8 @@ declare class AVPlayerViewController extends UIViewController {
 	static new(): AVPlayerViewController; // inherited from NSObject
 
 	allowsPictureInPicturePlayback: boolean;
+
+	allowsVideoFrameAnalysis: boolean;
 
 	canStartPictureInPictureAutomaticallyFromInline: boolean;
 
@@ -164,18 +204,26 @@ declare class AVPlayerViewController extends UIViewController {
 
 	requiresLinearPlayback: boolean;
 
+	readonly selectedSpeed: AVPlaybackSpeed;
+
 	showsPlaybackControls: boolean;
 
 	showsTimecodes: boolean;
+
+	speeds: NSArray<AVPlaybackSpeed>;
 
 	updatesNowPlayingInfoCenter: boolean;
 
 	readonly videoBounds: CGRect;
 
 	videoGravity: string;
+
+	selectSpeed(speed: AVPlaybackSpeed): void;
 }
 
 interface AVPlayerViewControllerDelegate extends NSObjectProtocol {
+
+	playerViewControllerDidPresentInterstitialTimeRange?(playerViewController: AVPlayerViewController, interstitial: AVInterstitialTimeRange): void;
 
 	playerViewControllerDidStartPictureInPicture?(playerViewController: AVPlayerViewController): void;
 
@@ -192,6 +240,8 @@ interface AVPlayerViewControllerDelegate extends NSObjectProtocol {
 	playerViewControllerWillBeginFullScreenPresentationWithAnimationCoordinator?(playerViewController: AVPlayerViewController, coordinator: UIViewControllerTransitionCoordinator): void;
 
 	playerViewControllerWillEndFullScreenPresentationWithAnimationCoordinator?(playerViewController: AVPlayerViewController, coordinator: UIViewControllerTransitionCoordinator): void;
+
+	playerViewControllerWillPresentInterstitialTimeRange?(playerViewController: AVPlayerViewController, interstitial: AVInterstitialTimeRange): void;
 
 	playerViewControllerWillStartPictureInPicture?(playerViewController: AVPlayerViewController): void;
 
@@ -221,6 +271,8 @@ declare class AVRoutePickerView extends UIView {
 	static new(): AVRoutePickerView; // inherited from NSObject
 
 	activeTintColor: UIColor;
+
+	customRoutingController: AVCustomRoutingController;
 
 	delegate: AVRoutePickerViewDelegate;
 

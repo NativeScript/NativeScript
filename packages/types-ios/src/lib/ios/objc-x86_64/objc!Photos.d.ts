@@ -55,6 +55,8 @@ declare class PHAsset extends PHObject {
 
 	readonly favorite: boolean;
 
+	readonly hasAdjustments: boolean;
+
 	readonly hidden: boolean;
 
 	readonly location: CLLocation;
@@ -74,8 +76,6 @@ declare class PHAsset extends PHObject {
 	readonly representsBurst: boolean;
 
 	readonly sourceType: PHAssetSourceType;
-
-	readonly syncFailureHidden: boolean;
 
 	canPerformEditOperation(editOperation: PHAssetEditOperation): boolean;
 
@@ -244,6 +244,8 @@ declare const enum PHAssetCollectionSubtype {
 
 	SmartAlbumRAW = 217,
 
+	SmartAlbumCinematic = 218,
+
 	Any = 9223372036854775807
 }
 
@@ -306,7 +308,9 @@ declare const enum PHAssetMediaSubtype {
 
 	VideoHighFrameRate = 131072,
 
-	VideoTimelapse = 262144
+	VideoTimelapse = 262144,
+
+	VideoCinematic = 2097152
 }
 
 declare const enum PHAssetMediaType {
@@ -348,6 +352,10 @@ declare class PHAssetResource extends NSObject {
 	readonly assetLocalIdentifier: string;
 
 	readonly originalFilename: string;
+
+	readonly pixelHeight: number;
+
+	readonly pixelWidth: number;
 
 	readonly type: PHAssetResourceType;
 
@@ -488,8 +496,6 @@ declare class PHCloudIdentifier extends NSObject implements NSCopying, NSSecureC
 	static new(): PHCloudIdentifier; // inherited from NSObject
 
 	readonly stringValue: string;
-
-	static readonly notFoundIdentifier: PHCloudIdentifier;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -993,15 +999,6 @@ declare class PHLivePhotoEditingContext extends NSObject {
 	saveLivePhotoToOutputOptionsCompletionHandler(output: PHContentEditingOutput, options: NSDictionary<string, any>, handler: (p1: boolean, p2: NSError) => void): void;
 }
 
-declare const enum PHLivePhotoEditingErrorCode {
-
-	Unknown = 0,
-
-	Aborted = 1
-}
-
-declare var PHLivePhotoEditingErrorDomain: string;
-
 interface PHLivePhotoFrame {
 
 	image: CIImage;
@@ -1062,8 +1059,6 @@ declare class PHLocalIdentifierMapping extends NSObject {
 	readonly localIdentifier: string;
 }
 
-declare var PHLocalIdentifierNotFound: string;
-
 declare var PHLocalIdentifiersErrorKey: string;
 
 declare class PHObject extends NSObject implements NSCopying {
@@ -1099,6 +1094,67 @@ declare class PHObjectPlaceholder extends PHObject {
 	static new(): PHObjectPlaceholder; // inherited from NSObject
 }
 
+declare const enum PHObjectType {
+
+	Asset = 1,
+
+	AssetCollection = 2,
+
+	CollectionList = 3
+}
+
+declare class PHPersistentChange extends NSObject {
+
+	static alloc(): PHPersistentChange; // inherited from NSObject
+
+	static new(): PHPersistentChange; // inherited from NSObject
+
+	readonly changeToken: PHPersistentChangeToken;
+
+	changeDetailsForObjectTypeError(objectType: PHObjectType): PHPersistentObjectChangeDetails;
+}
+
+declare class PHPersistentChangeFetchResult extends NSObject {
+
+	static alloc(): PHPersistentChangeFetchResult; // inherited from NSObject
+
+	static new(): PHPersistentChangeFetchResult; // inherited from NSObject
+
+	enumerateChangesWithBlock(block: (p1: PHPersistentChange, p2: interop.Pointer | interop.Reference<boolean>) => void): void;
+}
+
+declare class PHPersistentChangeToken extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): PHPersistentChangeToken; // inherited from NSObject
+
+	static new(): PHPersistentChangeToken; // inherited from NSObject
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare class PHPersistentObjectChangeDetails extends NSObject {
+
+	static alloc(): PHPersistentObjectChangeDetails; // inherited from NSObject
+
+	static new(): PHPersistentObjectChangeDetails; // inherited from NSObject
+
+	readonly deletedLocalIdentifiers: NSSet<string>;
+
+	readonly insertedLocalIdentifiers: NSSet<string>;
+
+	readonly objectType: PHObjectType;
+
+	readonly updatedLocalIdentifiers: NSSet<string>;
+}
+
 declare class PHPhotoLibrary extends NSObject {
 
 	static alloc(): PHPhotoLibrary; // inherited from NSObject
@@ -1115,15 +1171,15 @@ declare class PHPhotoLibrary extends NSObject {
 
 	static sharedPhotoLibrary(): PHPhotoLibrary;
 
+	readonly currentChangeToken: PHPersistentChangeToken;
+
 	readonly unavailabilityReason: NSError;
 
 	cloudIdentifierMappingsForLocalIdentifiers(localIdentifiers: NSArray<string> | string[]): NSDictionary<string, PHCloudIdentifierMapping>;
 
-	cloudIdentifiersForLocalIdentifiers(localIdentifiers: NSArray<string> | string[]): NSArray<PHCloudIdentifier>;
+	fetchPersistentChangesSinceTokenError(token: PHPersistentChangeToken): PHPersistentChangeFetchResult;
 
 	localIdentifierMappingsForCloudIdentifiers(cloudIdentifiers: NSArray<PHCloudIdentifier> | PHCloudIdentifier[]): NSDictionary<PHCloudIdentifier, PHLocalIdentifierMapping>;
-
-	localIdentifiersForCloudIdentifiers(cloudIdentifiers: NSArray<PHCloudIdentifier> | PHCloudIdentifier[]): NSArray<string>;
 
 	performChangesAndWaitError(changeBlock: () => void): boolean;
 
@@ -1174,6 +1230,8 @@ declare const enum PHPhotosError {
 
 	NetworkAccessRequired = 3164,
 
+	NetworkError = 3169,
+
 	IdentifierNotFound = 3201,
 
 	MultipleIdentifiersFound = 3202,
@@ -1195,6 +1253,10 @@ declare const enum PHPhotosError {
 	AccessUserDenied = 3311,
 
 	LibraryInFileProviderSyncRoot = 5423,
+
+	PersistentChangeTokenExpired = 3105,
+
+	PersistentChangeDetailsUnavailable = 3210,
 
 	Invalid = -1
 }

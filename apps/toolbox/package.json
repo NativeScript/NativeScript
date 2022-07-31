@@ -12,8 +12,8 @@
     "@nativescript/imagepicker": "^1.0.6"
   },
   "devDependencies": {
-    "@nativescript/android": "~8.2.1",
-    "@nativescript/ios": "~8.3.1-alpha.1",
+    "@nativescript/android": "~8.3.0",
+    "@nativescript/ios": "~8.3.0",
     "@nativescript/webpack": "file:../../dist/packages/nativescript-webpack.tgz",
     "typescript": "4.7.3"
   }

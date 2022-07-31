@@ -829,6 +829,10 @@ declare var kCGImagePropertyGPSTrackRef: string;
 
 declare var kCGImagePropertyGPSVersion: string;
 
+declare var kCGImagePropertyGroupImageBaseline: string;
+
+declare var kCGImagePropertyGroupImageDisparityAdjustment: string;
+
 declare var kCGImagePropertyGroupImageIndexLeft: string;
 
 declare var kCGImagePropertyGroupImageIndexRight: string;
@@ -864,6 +868,8 @@ declare var kCGImagePropertyHEICSFrameInfoArray: string;
 declare var kCGImagePropertyHEICSLoopCount: string;
 
 declare var kCGImagePropertyHEICSUnclampedDelayTime: string;
+
+declare var kCGImagePropertyHEIFDictionary: string;
 
 declare var kCGImagePropertyHasAlpha: string;
 
@@ -1580,3 +1586,21 @@ declare var kCGImageSourceSubsampleFactor: string;
 declare var kCGImageSourceThumbnailMaxPixelSize: string;
 
 declare var kCGImageSourceTypeIdentifierHint: string;
+
+declare var kIIOCameraExtrinsics_CoordinateSystemID: string;
+
+declare var kIIOCameraExtrinsics_Position: string;
+
+declare var kIIOCameraExtrinsics_Rotation: string;
+
+declare var kIIOCameraModelType_GenericPinhole: string;
+
+declare var kIIOCameraModelType_SimplifiedPinhole: string;
+
+declare var kIIOCameraModel_Intrinsics: string;
+
+declare var kIIOCameraModel_ModelType: string;
+
+declare var kIIOMetadata_CameraExtrinsicsKey: string;
+
+declare var kIIOMetadata_CameraModelKey: string;

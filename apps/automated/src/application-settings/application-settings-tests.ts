@@ -1,4 +1,4 @@
-var appSettings = require('@nativescript/core/application-settings');
+import { ApplicationSettings as appSettings } from '@nativescript/core';
 import * as TKUnit from '../tk-unit';
 
 var stringKey: string = 'stringKey';
@@ -62,9 +62,9 @@ export var testHasKey = function () {
 	TKUnit.assert(!appSettings.hasKey(noStringKey), 'There is a key: ' + noStringKey);
 	TKUnit.assert(!appSettings.hasKey(noNumberKey), 'There is a key: ' + noNumberKey);
 
-	TKUnit.assert(appSettings.hasKey(boolKey), 'There is no key: ' + boolKey);
+	TKUnit.assert(!appSettings.hasKey(boolKey), 'There is no key: ' + boolKey);
 	TKUnit.assert(appSettings.hasKey(stringKey), 'There is no key: ' + stringKey);
-	TKUnit.assert(appSettings.hasKey(numberKey), 'There is no key: ' + numberKey);
+	TKUnit.assert(!appSettings.hasKey(numberKey), 'There is no key: ' + numberKey);
 };
 
 export var testRemove = function () {
@@ -124,6 +124,7 @@ export var testInvalidKey = function () {
 	}
 
 	try {
+		// @ts-ignore
 		appSettings.hasKey(123);
 		TKUnit.assert(false, 'There is a key number');
 	} catch (e) {
@@ -135,6 +136,7 @@ export var testInvalidKey = function () {
 
 export var testInvalidValue = function () {
 	try {
+		// @ts-ignore
 		appSettings.setBoolean(boolKey, 'str');
 		TKUnit.assert(false, 'There is a key undefined');
 	} catch (e) {
@@ -142,6 +144,7 @@ export var testInvalidValue = function () {
 	}
 
 	try {
+		// @ts-ignore
 		appSettings.setBoolean(boolKey, 123);
 		TKUnit.assert(false, 'There is a key undefined');
 	} catch (e) {
@@ -149,6 +152,7 @@ export var testInvalidValue = function () {
 	}
 
 	try {
+		// @ts-ignore
 		appSettings.setString(boolKey, true);
 		TKUnit.assert(false, 'There is a key undefined');
 	} catch (e) {
@@ -156,6 +160,7 @@ export var testInvalidValue = function () {
 	}
 
 	try {
+		// @ts-ignore
 		appSettings.setString(boolKey, 123);
 		TKUnit.assert(false, 'There is a key undefined');
 	} catch (e) {
@@ -163,6 +168,7 @@ export var testInvalidValue = function () {
 	}
 
 	try {
+		// @ts-ignore
 		appSettings.setNumber(boolKey, true);
 		TKUnit.assert(false, 'There is a key undefined');
 	} catch (e) {
@@ -170,6 +176,7 @@ export var testInvalidValue = function () {
 	}
 
 	try {
+		// @ts-ignore
 		appSettings.setNumber(boolKey, '123');
 		TKUnit.assert(false, 'There is a key undefined');
 	} catch (e) {

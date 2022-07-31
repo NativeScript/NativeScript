@@ -138,6 +138,17 @@ declare class SFSafariViewControllerConfiguration extends NSObject implements NS
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+declare class SFSafariViewControllerDataStore extends NSObject {
+
+	static alloc(): SFSafariViewControllerDataStore; // inherited from NSObject
+
+	static new(): SFSafariViewControllerDataStore; // inherited from NSObject
+
+	static readonly defaultDataStore: SFSafariViewControllerDataStore;
+
+	clearWebsiteDataWithCompletionHandler(completion: () => void): void;
+}
+
 interface SFSafariViewControllerDelegate extends NSObjectProtocol {
 
 	safariViewControllerActivityItemsForURLTitle?(controller: SFSafariViewController, URL: NSURL, title: string): NSArray<UIActivity>;

@@ -9,15 +9,45 @@ declare class MPSGraph extends NSObject {
 
 	readonly placeholderTensors: NSArray<MPSGraphTensor>;
 
+	GRUGradientsWithSourceTensorRecurrentWeightSourceGradientZStateOutputFwdInputWeightBiasDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, outputFwd: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, descriptor: MPSGraphGRUDescriptor, name: string): NSArray<MPSGraphTensor>;
+
+	GRUGradientsWithSourceTensorRecurrentWeightSourceGradientZStateOutputFwdInputWeightBiasInitStateDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, outputFwd: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, descriptor: MPSGraphGRUDescriptor, name: string): NSArray<MPSGraphTensor>;
+
+	GRUGradientsWithSourceTensorRecurrentWeightSourceGradientZStateOutputFwdStateGradientInputWeightBiasInitStateMaskSecondaryBiasDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, outputFwd: MPSGraphTensor, stateGradient: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, mask: MPSGraphTensor, secondaryBias: MPSGraphTensor, descriptor: MPSGraphGRUDescriptor, name: string): NSArray<MPSGraphTensor>;
+
+	GRUWithSourceTensorRecurrentWeightInputWeightBiasDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, descriptor: MPSGraphGRUDescriptor, name: string): NSArray<MPSGraphTensor>;
+
+	GRUWithSourceTensorRecurrentWeightInputWeightBiasInitStateDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, descriptor: MPSGraphGRUDescriptor, name: string): NSArray<MPSGraphTensor>;
+
+	GRUWithSourceTensorRecurrentWeightInputWeightBiasInitStateMaskSecondaryBiasDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, mask: MPSGraphTensor, secondaryBias: MPSGraphTensor, descriptor: MPSGraphGRUDescriptor, name: string): NSArray<MPSGraphTensor>;
+
 	L2NormPooling4DGradientWithGradientTensorSourceTensorDescriptorName(gradient: MPSGraphTensor, source: MPSGraphTensor, descriptor: MPSGraphPooling4DOpDescriptor, name: string): MPSGraphTensor;
 
 	L2NormPooling4DWithSourceTensorDescriptorName(source: MPSGraphTensor, descriptor: MPSGraphPooling4DOpDescriptor, name: string): MPSGraphTensor;
+
+	LSTMGradientsWithSourceTensorRecurrentWeightSourceGradientZStateCellOutputFwdDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, cellOutputFwd: MPSGraphTensor, descriptor: MPSGraphLSTMDescriptor, name: string): NSArray<MPSGraphTensor>;
+
+	LSTMGradientsWithSourceTensorRecurrentWeightSourceGradientZStateCellOutputFwdInputWeightBiasInitStateInitCellDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, cellOutputFwd: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, initCell: MPSGraphTensor, descriptor: MPSGraphLSTMDescriptor, name: string): NSArray<MPSGraphTensor>;
+
+	LSTMGradientsWithSourceTensorRecurrentWeightSourceGradientZStateCellOutputFwdInputWeightBiasInitStateInitCellMaskDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, cellOutputFwd: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, initCell: MPSGraphTensor, mask: MPSGraphTensor, descriptor: MPSGraphLSTMDescriptor, name: string): NSArray<MPSGraphTensor>;
+
+	LSTMGradientsWithSourceTensorRecurrentWeightSourceGradientZStateCellOutputFwdStateGradientCellGradientInputWeightBiasInitStateInitCellMaskPeepholeDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, cellOutputFwd: MPSGraphTensor, stateGradient: MPSGraphTensor, cellGradient: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, initCell: MPSGraphTensor, mask: MPSGraphTensor, peephole: MPSGraphTensor, descriptor: MPSGraphLSTMDescriptor, name: string): NSArray<MPSGraphTensor>;
+
+	LSTMWithSourceTensorRecurrentWeightInitStateInitCellDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, initState: MPSGraphTensor, initCell: MPSGraphTensor, descriptor: MPSGraphLSTMDescriptor, name: string): NSArray<MPSGraphTensor>;
+
+	LSTMWithSourceTensorRecurrentWeightInputWeightBiasInitStateInitCellDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, initCell: MPSGraphTensor, descriptor: MPSGraphLSTMDescriptor, name: string): NSArray<MPSGraphTensor>;
+
+	LSTMWithSourceTensorRecurrentWeightInputWeightBiasInitStateInitCellMaskPeepholeDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, initCell: MPSGraphTensor, mask: MPSGraphTensor, peephole: MPSGraphTensor, descriptor: MPSGraphLSTMDescriptor, name: string): NSArray<MPSGraphTensor>;
 
 	absoluteWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
 	acosWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
 	acoshWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+
+	adamWithCurrentLearningRateTensorBeta1TensorBeta2TensorEpsilonTensorValuesTensorMomentumTensorVelocityTensorMaximumVelocityTensorGradientTensorName(currentLearningRateTensor: MPSGraphTensor, beta1Tensor: MPSGraphTensor, beta2Tensor: MPSGraphTensor, epsilonTensor: MPSGraphTensor, valuesTensor: MPSGraphTensor, momentumTensor: MPSGraphTensor, velocityTensor: MPSGraphTensor, maximumVelocityTensor: MPSGraphTensor, gradientTensor: MPSGraphTensor, name: string): NSArray<MPSGraphTensor>;
+
+	adamWithLearningRateTensorBeta1TensorBeta2TensorEpsilonTensorBeta1PowerTensorBeta2PowerTensorValuesTensorMomentumTensorVelocityTensorMaximumVelocityTensorGradientTensorName(learningRateTensor: MPSGraphTensor, beta1Tensor: MPSGraphTensor, beta2Tensor: MPSGraphTensor, epsilonTensor: MPSGraphTensor, beta1PowerTensor: MPSGraphTensor, beta2PowerTensor: MPSGraphTensor, valuesTensor: MPSGraphTensor, momentumTensor: MPSGraphTensor, velocityTensor: MPSGraphTensor, maximumVelocityTensor: MPSGraphTensor, gradientTensor: MPSGraphTensor, name: string): NSArray<MPSGraphTensor>;
 
 	additionWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
@@ -205,11 +235,19 @@ declare class MPSGraph extends NSObject {
 
 	matrixMultiplicationWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	maxPooling2DGradientWithGradientTensorIndicesTensorOutputShapeDescriptorName(gradient: MPSGraphTensor, indices: MPSGraphTensor, outputShape: NSArray<number> | number[], descriptor: MPSGraphPooling2DOpDescriptor, name: string): MPSGraphTensor;
+
+	maxPooling2DGradientWithGradientTensorIndicesTensorOutputShapeTensorDescriptorName(gradient: MPSGraphTensor, indices: MPSGraphTensor, outputShape: MPSGraphTensor, descriptor: MPSGraphPooling2DOpDescriptor, name: string): MPSGraphTensor;
+
 	maxPooling2DGradientWithGradientTensorSourceTensorDescriptorName(gradient: MPSGraphTensor, source: MPSGraphTensor, descriptor: MPSGraphPooling2DOpDescriptor, name: string): MPSGraphTensor;
 
 	maxPooling2DReturnIndicesWithSourceTensorDescriptorName(source: MPSGraphTensor, descriptor: MPSGraphPooling2DOpDescriptor, name: string): NSArray<MPSGraphTensor>;
 
 	maxPooling2DWithSourceTensorDescriptorName(source: MPSGraphTensor, descriptor: MPSGraphPooling2DOpDescriptor, name: string): MPSGraphTensor;
+
+	maxPooling4DGradientWithGradientTensorIndicesTensorOutputShapeDescriptorName(gradient: MPSGraphTensor, indices: MPSGraphTensor, outputShape: NSArray<number> | number[], descriptor: MPSGraphPooling4DOpDescriptor, name: string): MPSGraphTensor;
+
+	maxPooling4DGradientWithGradientTensorIndicesTensorOutputShapeTensorDescriptorName(gradient: MPSGraphTensor, indices: MPSGraphTensor, outputShape: MPSGraphTensor, descriptor: MPSGraphPooling4DOpDescriptor, name: string): MPSGraphTensor;
 
 	maxPooling4DGradientWithGradientTensorSourceTensorDescriptorName(gradient: MPSGraphTensor, source: MPSGraphTensor, descriptor: MPSGraphPooling4DOpDescriptor, name: string): MPSGraphTensor;
 
@@ -395,6 +433,20 @@ declare class MPSGraph extends NSObject {
 
 	sinWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	singleGateRNNGradientsWithSourceTensorRecurrentWeightSourceGradientZStateInitStateDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, initState: MPSGraphTensor, descriptor: MPSGraphSingleGateRNNDescriptor, name: string): NSArray<MPSGraphTensor>;
+
+	singleGateRNNGradientsWithSourceTensorRecurrentWeightSourceGradientZStateInputWeightBiasInitStateDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, descriptor: MPSGraphSingleGateRNNDescriptor, name: string): NSArray<MPSGraphTensor>;
+
+	singleGateRNNGradientsWithSourceTensorRecurrentWeightSourceGradientZStateInputWeightBiasInitStateMaskDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, mask: MPSGraphTensor, descriptor: MPSGraphSingleGateRNNDescriptor, name: string): NSArray<MPSGraphTensor>;
+
+	singleGateRNNGradientsWithSourceTensorRecurrentWeightSourceGradientZStateStateGradientInputWeightBiasInitStateMaskDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, stateGradient: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, mask: MPSGraphTensor, descriptor: MPSGraphSingleGateRNNDescriptor, name: string): NSArray<MPSGraphTensor>;
+
+	singleGateRNNWithSourceTensorRecurrentWeightInitStateDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, initState: MPSGraphTensor, descriptor: MPSGraphSingleGateRNNDescriptor, name: string): NSArray<MPSGraphTensor>;
+
+	singleGateRNNWithSourceTensorRecurrentWeightInputWeightBiasInitStateDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, descriptor: MPSGraphSingleGateRNNDescriptor, name: string): NSArray<MPSGraphTensor>;
+
+	singleGateRNNWithSourceTensorRecurrentWeightInputWeightBiasInitStateMaskDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, mask: MPSGraphTensor, descriptor: MPSGraphSingleGateRNNDescriptor, name: string): NSArray<MPSGraphTensor>;
+
 	sinhWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
 	sliceGradientTensorFwdInShapeTensorStartsEndsStridesName(inputGradientTensor: MPSGraphTensor, fwdInShapeTensor: MPSGraphTensor, starts: NSArray<number> | number[], ends: NSArray<number> | number[], strides: NSArray<number> | number[], name: string): MPSGraphTensor;
@@ -465,6 +517,8 @@ declare class MPSGraph extends NSObject {
 
 	transposeTensorDimensionWithDimensionName(tensor: MPSGraphTensor, dimensionIndex: number, dimensionIndex2: number, name: string): MPSGraphTensor;
 
+	truncateWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+
 	varianceOfTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string): MPSGraphTensor;
 
 	varianceOfTensorMeanTensorAxesName(tensor: MPSGraphTensor, meanTensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string): MPSGraphTensor;
@@ -478,9 +532,15 @@ declare class MPSGraphCompilationDescriptor extends NSObject implements NSCopyin
 
 	static new(): MPSGraphCompilationDescriptor; // inherited from NSObject
 
+	compilationCompletionHandler: (p1: MPSGraphExecutable, p2: NSError) => void;
+
+	dispatchQueue: NSObject;
+
 	optimizationLevel: MPSGraphOptimization;
 
 	optimizationProfile: MPSGraphOptimizationProfile;
+
+	waitForCompilationCompletion: boolean;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
@@ -645,6 +705,10 @@ declare class MPSGraphExecutableExecutionDescriptor extends NSObject {
 	scheduledHandler: (p1: NSArray<MPSGraphTensorData>, p2: NSError) => void;
 
 	waitUntilCompleted: boolean;
+
+	signalEventAtExecutionEventValue(event: MTLSharedEvent, executionStage: MPSGraphExecutionStage, value: number): void;
+
+	waitForEventValue(event: MTLSharedEvent, value: number): void;
 }
 
 declare class MPSGraphExecutionDescriptor extends NSObject {
@@ -660,6 +724,75 @@ declare class MPSGraphExecutionDescriptor extends NSObject {
 	scheduledHandler: (p1: NSDictionary<MPSGraphTensor, MPSGraphTensorData>, p2: NSError) => void;
 
 	waitUntilCompleted: boolean;
+
+	signalEventAtExecutionEventValue(event: MTLSharedEvent, executionStage: MPSGraphExecutionStage, value: number): void;
+
+	waitForEventValue(event: MTLSharedEvent, value: number): void;
+}
+
+declare const enum MPSGraphExecutionStage {
+
+	Completed = 0
+}
+
+declare class MPSGraphGRUDescriptor extends NSObject implements NSCopying {
+
+	static alloc(): MPSGraphGRUDescriptor; // inherited from NSObject
+
+	static descriptor(): MPSGraphGRUDescriptor;
+
+	static new(): MPSGraphGRUDescriptor; // inherited from NSObject
+
+	bidirectional: boolean;
+
+	flipZ: boolean;
+
+	outputGateActivation: MPSGraphRNNActivation;
+
+	resetAfter: boolean;
+
+	resetGateActivation: MPSGraphRNNActivation;
+
+	resetGateFirst: boolean;
+
+	reverse: boolean;
+
+	training: boolean;
+
+	updateGateActivation: MPSGraphRNNActivation;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare class MPSGraphLSTMDescriptor extends NSObject implements NSCopying {
+
+	static alloc(): MPSGraphLSTMDescriptor; // inherited from NSObject
+
+	static descriptor(): MPSGraphLSTMDescriptor;
+
+	static new(): MPSGraphLSTMDescriptor; // inherited from NSObject
+
+	activation: MPSGraphRNNActivation;
+
+	bidirectional: boolean;
+
+	cellGateActivation: MPSGraphRNNActivation;
+
+	forgetGateActivation: MPSGraphRNNActivation;
+
+	forgetGateLast: boolean;
+
+	inputGateActivation: MPSGraphRNNActivation;
+
+	outputGateActivation: MPSGraphRNNActivation;
+
+	produceCell: boolean;
+
+	reverse: boolean;
+
+	training: boolean;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 declare const enum MPSGraphLossReductionType {
@@ -740,7 +873,9 @@ declare const enum MPSGraphPaddingStyle {
 
 	TF_SAME = 2,
 
-	ExplicitOffset = 3
+	ExplicitOffset = 3,
+
+	ONNX_SAME_LOWER = 4
 }
 
 declare class MPSGraphPooling2DOpDescriptor extends NSObject implements NSCopying {
@@ -838,6 +973,19 @@ declare const enum MPSGraphPoolingReturnIndicesMode {
 	LocalFlatten4D = 8
 }
 
+declare const enum MPSGraphRNNActivation {
+
+	None = 0,
+
+	Relu = 1,
+
+	Tanh = 2,
+
+	Sigmoid = 3,
+
+	HardSigmoid = 4
+}
+
 declare const enum MPSGraphRandomDistribution {
 
 	Uniform = 0,
@@ -927,6 +1075,25 @@ declare class MPSGraphShapedType extends MPSGraphType {
 	shape: NSArray<number>;
 
 	isEqualTo(object: MPSGraphShapedType): boolean;
+}
+
+declare class MPSGraphSingleGateRNNDescriptor extends NSObject implements NSCopying {
+
+	static alloc(): MPSGraphSingleGateRNNDescriptor; // inherited from NSObject
+
+	static descriptor(): MPSGraphSingleGateRNNDescriptor;
+
+	static new(): MPSGraphSingleGateRNNDescriptor; // inherited from NSObject
+
+	activation: MPSGraphRNNActivation;
+
+	bidirectional: boolean;
+
+	reverse: boolean;
+
+	training: boolean;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 declare const enum MPSGraphSparseStorageType {

@@ -101,6 +101,12 @@ export interface IFileSystemAccess {
 	getDocumentsFolderPath(): string;
 
 	/**
+	 * Gets the special documents folder on external storage.
+	 * As there is no external storage on iOS it is the same as getDocumentsFolderPath
+	 */
+	getExternalDocumentsFolderPath(): string;
+
+	/**
 	 * Gets the special temp folder.
 	 * Returns for Android: "/data/data/applicationPackageName/cache", iOS: "/var/mobile/Applications/appID/Library/Caches"
 	 */
@@ -277,6 +283,8 @@ export class FileSystemAccess implements IFileSystemAccess {
 	rename(path: string, newPath: string, onError?: (error: any) => any): void;
 
 	getDocumentsFolderPath(): string;
+
+	getExternalDocumentsFolderPath(): string;
 
 	getTempFolderPath(): string;
 

@@ -1,3 +1,13 @@
+## [8.3.1](https://github.com/NativeScript/NativeScript/compare/8.3.0-core...8.3.1) (2022-07-21)
+
+
+### Bug Fixes
+
+* **core:** correct typings in ObservableArray ([#9961](https://github.com/NativeScript/NativeScript/issues/9961)) ([01643f5](https://github.com/NativeScript/NativeScript/commit/01643f513ed3e71b98c3a0bdd9fa15f0b1b7970d))
+* **core:** correctly polyfill tslib ([#9894](https://github.com/NativeScript/NativeScript/issues/9894)) ([20efd36](https://github.com/NativeScript/NativeScript/commit/20efd3605e5c8c654bba26f6d1f1423d7af51747))
+* **core:** FormattedString.spans is now restored ([#9960](https://github.com/NativeScript/NativeScript/issues/9960)) ([0477044](https://github.com/NativeScript/NativeScript/commit/0477044d6f41003d679ef3dd655643b380dca188))
+
+
 # [8.3.0](https://github.com/NativeScript/NativeScript/compare/5.0.7-webpack...8.3.0) (2022-07-14)
 
 
