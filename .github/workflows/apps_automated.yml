@@ -44,5 +44,5 @@ jobs:
         run: node tools/scripts/run-automated.js android
 
       - name: Test (iOS)
-        if: always() # run iOS tests even if Android tests failed
+        if: ${{ always() && !cancelled() }} # run iOS tests even if Android tests failed
         run: node tools/scripts/run-automated.js ios
