@@ -27,12 +27,30 @@ jobs:
 
       - name: Setup
         run: npm run setup
+        
+      - name: Download & install the Android SDK
+        uses: malinskiy/action-android/install-sdk@release/0.1.3
 
-      - name: Create Emulator
-        uses: rigor789/action-create-emulator@main
+      - name: Set up platform tools like adb
+        run: sdkmanager platform-tools
+
+      - name: Start ADB and verify that pathing is working correctly
+        run: adb devices
+
+      - name: Verify $ANDROID_HOME is properly set for later Gradle commands.
+        run: echo $ANDROID_HOME
+        
+      - name: Start Emulator  
+        uses: malinskiy/action-android/emulator-run-cmd@release/0.1.3
 
       - name: Test (Android)
         run: node tools/scripts/run-automated.js android
+        
+      - name: Start iOS Simulator
+        uses: futureware-tech/simulator-action@v1
+        with:
+          model: 'iPhone 13 Pro'
+          os_version: '>=15.0'
 
       - name: Test (iOS)
         if: always() # run iOS tests even if Android tests failed
