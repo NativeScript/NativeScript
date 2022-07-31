@@ -19,8 +19,7 @@ const spawned_process = spawn(
 		"--no-hmr",
 		"--force",
 		"--log=trace",
-		"--env.classicLogs",
-		"--timeout=300" // 5 minutes
+		"--timeout=600" // 10 minutes, booting avds on CI is very slow...
 	],
 	{
 		stdio: ["inherit", "pipe", "pipe"],
