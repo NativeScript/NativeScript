@@ -9,7 +9,7 @@ const kill = require('tree-kill');
 
 const TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
 
-const spawned_process = spawn('npm', ['start', `apps.automated.${process.argv[2]}`], {
+const spawned_process = spawn('npm', ['start', `apps.automated.${process.argv[2]}`, '--env.classicLogs'], {
 	stdio: ['inherit', 'pipe', 'pipe']
 })
 const {stdout, stderr} = spawned_process
