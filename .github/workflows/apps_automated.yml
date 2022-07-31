@@ -48,6 +48,13 @@ jobs:
       - name: Test (Android)
         run: node tools/scripts/run-automated.js android
 
+      - name: Start iOS Simulator
+        if: ${{ always() && !cancelled() }} # run iOS tests even if Android tests failed
+        uses: futureware-tech/simulator-action@v1
+        with:
+          model: 'iPhone 13 Pro Max'
+          os_version: '>=15.0'
+
       - name: Test (iOS)
         if: ${{ always() && !cancelled() }} # run iOS tests even if Android tests failed
         run: node tools/scripts/run-automated.js ios

@@ -18,7 +18,7 @@ const spawned_process = spawn(
 		platform,
 		"--no-hmr",
 		"--force",
-		"--log=trace",
+		// "--log=trace",
 		"--timeout=600" // 10 minutes, booting avds on CI is very slow...
 	],
 	{
