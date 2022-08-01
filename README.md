@@ -4,12 +4,18 @@
   </a>
 </p>
 
+<br />
+<div align="center">
+
 [![Build Status](https://travis-ci.org/NativeScript/NativeScript.svg?branch=master)](https://travis-ci.org/NativeScript/NativeScript)
 
+</div>
+
+## ⚡️ Introduction
 
 [NativeScript](http://www.nativescript.org) empowers you to access native APIs from JavaScript directly. The framework currently provides iOS and Android runtimes for rich mobile development and can be utilized in a number of diverse use cases.
 
-## Setup and Installation
+## ⚙️ Setup and Installation 
 
 * [Environment Setup](https://docs.nativescript.org/environment-setup.html)
 
@@ -67,7 +73,9 @@ Outside the source centralized in this repo, NativeScript consists of a few othe
 - **[Docs](//github.com/NativeScript/docs-new)**
 	- This repo contains the NativeScript framework documentation, which is available at <http://docs.nativescript.org/>. The docs are written in Markdown.
 
-## License
+## 📃️ License
+
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/NativeScript/NativeScript/blob/master/LICENSE)
+
 
 <h3 align="center">Made with ❤️</h3>
