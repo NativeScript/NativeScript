@@ -164,7 +164,7 @@ export class ActionBar extends ActionBarBase {
 		if (value instanceof NavigationButton) {
 			this.navigationButton = value;
 		} else if (value instanceof ActionItem) {
-			this.actionItems.addItem(value);
+			this.actionItems?.addItem(value);
 		} else if (value instanceof View) {
 			this.titleView = value;
 		}
@@ -257,7 +257,7 @@ export class ActionBar extends ActionBarBase {
 
 		// Find item with the right ID;
 		let menuItem: ActionItem = undefined;
-		const items = this.actionItems.getItems();
+		const items = this.actionItems?.getItems() ?? [];
 		for (let i = 0; i < items.length; i++) {
 			if ((<ActionItem>items[i])._getItemId() === itemId) {
 				menuItem = <ActionItem>items[i];
@@ -352,7 +352,7 @@ export class ActionBar extends ActionBarBase {
 
 	public _addActionItems() {
 		const menu = this.nativeViewProtected.getMenu();
-		const items = this.actionItems.getVisibleItems();
+		const items = this.actionItems?.getVisibleItems() ?? [];
 
 		menu.clear();
 		for (let i = 0; i < items.length; i++) {
