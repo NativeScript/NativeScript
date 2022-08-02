@@ -1,3 +1,15 @@
+## [8.3.2](https://github.com/NativeScript/NativeScript/compare/5.0.8-webpack...8.3.2) (2022-08-02)
+
+
+### Bug Fixes
+
+* **android:** FragmentCallbacksImplementation memory leak ([#9977](https://github.com/NativeScript/NativeScript/issues/9977)) ([286d36b](https://github.com/NativeScript/NativeScript/commit/286d36b03b2a6a740ed9a93d83ad36c7f649f6c9))
+* **android:** FragmentClass memory leak ([#9983](https://github.com/NativeScript/NativeScript/issues/9983)) ([0548aaf](https://github.com/NativeScript/NativeScript/commit/0548aaf8da68f104d87d3e36ecc53b31e73028aa))
+* **core:** Added ObservableArray constructor declarations to allow setting multiple arguments ([#9980](https://github.com/NativeScript/NativeScript/issues/9980)) ([d82f3d9](https://github.com/NativeScript/NativeScript/commit/d82f3d990dcbf84c0e6e32d98f2fb19a6532615d))
+* revert "fix(ios): not responding after rotation ([#9931](https://github.com/NativeScript/NativeScript/issues/9931))" ([#9984](https://github.com/NativeScript/NativeScript/issues/9984)) ([54d3006](https://github.com/NativeScript/NativeScript/commit/54d300666a891820a0cae8ec1b410f90c77f96a6))
+
+
+
 ## [8.3.1](https://github.com/NativeScript/NativeScript/compare/8.3.0-core...8.3.1) (2022-07-21)
 
 
