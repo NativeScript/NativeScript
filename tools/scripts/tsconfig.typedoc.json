@@ -15,7 +15,6 @@
 
 		// "../../packages/core/__tests__",
 
-		"../../packages/core/references.d.ts",
 		"../../packages/core/node_modules",
 		"../../node_modules",
 		"../../packages/core/ui/frame/transition-definitions.android.d.ts",
@@ -23,7 +22,7 @@
 	],
 	"typedocOptions": {
 		"entryPoints": ["../../packages/core/index.d.ts", "../../packages/core"],
-		"out": "dist/api-reference",
+		"out": "../../dist/api-reference",
 		"name": "NativeScript",
 		"theme": "../../node_modules/nativescript-typedoc-theme",
 		"excludeExternals": true,
