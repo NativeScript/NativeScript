@@ -266,7 +266,7 @@ export class IOSHelper {
 			const adjustedFrame = IOSHelper.getFrameFromPosition(position, insets);
 
 			if (Trace.isEnabled()) {
-				Trace.write(`${view} :shrinkToSafeArea: ${JSON.stringify(IOSHelper.getPositionFromFrame(adjustedFrame))}`, Trace.categories.Layout);
+                Trace.write(`${view} :shrinkToSafeArea: ${JSON.stringify(IOSHelper.getPositionFromFrame(adjustedFrame))}`, Trace.categories.Layout);
 			}
 
 			return adjustedFrame;
@@ -288,11 +288,11 @@ export class IOSHelper {
 
 		const adjustedPosition = position;
 
-		if (position.left && inWindowPosition.left < safeAreaPosition.left) {
+		if (position.left && inWindowPosition.left <= safeAreaPosition.left) {
 			adjustedPosition.left = fullscreenPosition.left;
 		}
 
-		if (position.top && inWindowPosition.top < safeAreaPosition.top) {
+		if (position.top && inWindowPosition.top <= safeAreaPosition.top) {
 			adjustedPosition.top = fullscreenPosition.top;
 		}
 
