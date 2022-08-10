@@ -279,11 +279,15 @@ class UIViewControllerImpl extends UIViewController {
 
 				if (frameParent) {
 					const parentPageInsetsTop = frameParent.nativeViewProtected.safeAreaInsets.top;
-					const currentInsetsTop = this.view.safeAreaInsets.top;
-					const additionalInsetsTop = Math.max(parentPageInsetsTop - currentInsetsTop, 0);
-
 					const parentPageInsetsBottom = frameParent.nativeViewProtected.safeAreaInsets.bottom;
-					const currentInsetsBottom = this.view.safeAreaInsets.bottom;
+
+					let currentInsetsTop = this.view.safeAreaInsets.top;
+					let currentInsetsBottom = this.view.safeAreaInsets.bottom;
+					if (this.additionalSafeAreaInsets) {
+						currentInsetsTop -= this.additionalSafeAreaInsets.top;
+						currentInsetsBottom -= this.additionalSafeAreaInsets.bottom;
+					}
+					const additionalInsetsTop = Math.max(parentPageInsetsTop - currentInsetsTop, 0);
 					const additionalInsetsBottom = Math.max(parentPageInsetsBottom - currentInsetsBottom, 0);
 
 					if (additionalInsetsTop > 0 || additionalInsetsBottom > 0) {
