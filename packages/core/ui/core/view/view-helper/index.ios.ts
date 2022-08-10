@@ -60,13 +60,15 @@ class UILayoutViewController extends UIViewController {
 				if (parent) {
 					const parentPageInsetsTop = parent.nativeViewProtected.safeAreaInsets.top;
 					const parentPageInsetsBottom = parent.nativeViewProtected.safeAreaInsets.bottom;
-
 					let currentInsetsTop = this.view.safeAreaInsets.top;
 					let currentInsetsBottom = this.view.safeAreaInsets.bottom;
+
+					// Safe area insets include additional safe area insets too, so subtract old values
 					if (this.additionalSafeAreaInsets) {
 						currentInsetsTop -= this.additionalSafeAreaInsets.top;
 						currentInsetsBottom -= this.additionalSafeAreaInsets.bottom;
 					}
+
 					const additionalInsetsTop = Math.max(parentPageInsetsTop - currentInsetsTop, 0);
 					const additionalInsetsBottom = Math.max(parentPageInsetsBottom - currentInsetsBottom, 0);
 
