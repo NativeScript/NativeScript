@@ -6,12 +6,18 @@ import { layout, RESOURCE_PREFIX, isFontIconURI } from '../../utils';
 import { colorProperty } from '../styling/style-properties';
 import { ImageSource } from '../../image-source';
 import * as application from '../../application';
+import { isAccessibilityServiceEnabled, updateContentDescription } from '../../accessibility';
+import type { Background } from '../styling/background';
+import { Device } from '../../platform';
+import lazy from '../../utils/lazy';
 
 export * from './action-bar-common';
 
 const R_ID_HOME = 0x0102002c;
 const ACTION_ITEM_ID_OFFSET = 10000;
 const DEFAULT_ELEVATION = 4;
+
+const sdkVersion = lazy(() => parseInt(Device.sdkVersion));
 
 let AppCompatTextView;
 let actionItemIdGenerator = ACTION_ITEM_ID_OFFSET;
@@ -58,7 +64,7 @@ function initializeMenuItemClickListener(): void {
 		return;
 	}
 
-	apiLevel = android.os.Build.VERSION.SDK_INT;
+	apiLevel = sdkVersion();
 
 	AppCompatTextView = androidx.appcompat.widget.AppCompatTextView;
 
@@ -158,7 +164,7 @@ export class ActionBar extends ActionBarBase {
 		if (value instanceof NavigationButton) {
 			this.navigationButton = value;
 		} else if (value instanceof ActionItem) {
-			this.actionItems.addItem(value);
+			this.actionItems?.addItem(value);
 		} else if (value instanceof View) {
 			this.titleView = value;
 		}
@@ -215,6 +221,32 @@ export class ActionBar extends ActionBarBase {
 		this._updateNavigationButton();
 	}
 
+	public _applyBackground(background: Background, isBorderDrawable, onlyColor: boolean, backgroundDrawable: any) {
+		const nativeView = this.nativeViewProtected;
+		if (backgroundDrawable && onlyColor && sdkVersion() >= 21) {
+			if (isBorderDrawable && (<any>nativeView)._cachedDrawable) {
+				backgroundDrawable = (<any>nativeView)._cachedDrawable;
+				// we need to duplicate the drawable or we lose the "default" cached drawable
+				const constantState = backgroundDrawable.getConstantState();
+				if (constantState) {
+					try {
+						backgroundDrawable = constantState.newDrawable(nativeView.getResources());
+						// eslint-disable-next-line no-empty
+					} catch {}
+				}
+				nativeView.setBackground(backgroundDrawable);
+			}
+
+			const backgroundColor = ((<any>backgroundDrawable).backgroundColor = background.color.android);
+			backgroundDrawable.mutate();
+			backgroundDrawable.setColorFilter(backgroundColor, android.graphics.PorterDuff.Mode.SRC_IN);
+			backgroundDrawable.invalidateSelf(); // Make sure the drawable is invalidated. Android forgets to invalidate it in some cases: toolbar
+			(<any>backgroundDrawable).backgroundColor = backgroundColor;
+		} else {
+			super._applyBackground(background, isBorderDrawable, onlyColor, backgroundDrawable);
+		}
+	}
+
 	public _onAndroidItemSelected(itemId: number): boolean {
 		// Handle home button
 		if (this.navigationButton && itemId === R_ID_HOME) {
@@ -225,7 +257,7 @@ export class ActionBar extends ActionBarBase {
 
 		// Find item with the right ID;
 		let menuItem: ActionItem = undefined;
-		const items = this.actionItems.getItems();
+		const items = this.actionItems?.getItems() ?? [];
 		for (let i = 0; i < items.length; i++) {
 			if ((<ActionItem>items[i])._getItemId() === itemId) {
 				menuItem = <ActionItem>items[i];
@@ -298,7 +330,7 @@ export class ActionBar extends ActionBarBase {
 		}
 	}
 
-	public _updateTitleAndTitleView() {
+	public _updateTitleAndTitleView(): void {
 		if (!this.titleView) {
 			// No title view - show the title
 			const title = this.title;
@@ -313,11 +345,14 @@ export class ActionBar extends ActionBarBase {
 				}
 			}
 		}
+
+		// Update content description for the screen reader.
+		updateContentDescription(this, true);
 	}
 
 	public _addActionItems() {
 		const menu = this.nativeViewProtected.getMenu();
-		const items = this.actionItems.getVisibleItems();
+		const items = this.actionItems?.getVisibleItems() ?? [];
 
 		menu.clear();
 		for (let i = 0; i < items.length; i++) {
@@ -445,6 +480,74 @@ export class ActionBar extends ActionBarBase {
 	[androidContentInsetRightProperty.setNative]() {
 		if (apiLevel >= 21) {
 			this.nativeViewProtected.setContentInsetsAbsolute(this.effectiveContentInsetLeft, this.effectiveContentInsetRight);
+		}
+	}
+
+	public accessibilityScreenChanged(): void {
+		if (!isAccessibilityServiceEnabled()) {
+			return;
+		}
+
+		const nativeView = this.nativeViewProtected;
+		if (!nativeView) {
+			return;
+		}
+
+		const originalFocusableState = android.os.Build.VERSION.SDK_INT >= 26 && nativeView.getFocusable();
+		const originalImportantForAccessibility = nativeView.getImportantForAccessibility();
+		const originalIsAccessibilityHeading = android.os.Build.VERSION.SDK_INT >= 28 && nativeView.isAccessibilityHeading();
+
+		try {
+			nativeView.setFocusable(false);
+			nativeView.setImportantForAccessibility(android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+
+			let announceView: android.view.View | null = null;
+
+			const numChildren = nativeView.getChildCount();
+			for (let i = 0; i < numChildren; i += 1) {
+				const childView = nativeView.getChildAt(i);
+				if (!childView) {
+					continue;
+				}
+
+				childView.setFocusable(true);
+				if (childView instanceof androidx.appcompat.widget.AppCompatTextView) {
+					announceView = childView;
+					if (android.os.Build.VERSION.SDK_INT >= 28) {
+						announceView.setAccessibilityHeading(true);
+					}
+				}
+			}
+
+			if (!announceView) {
+				announceView = nativeView;
+			}
+
+			announceView.setFocusable(true);
+			announceView.setImportantForAccessibility(android.view.View.IMPORTANT_FOR_ACCESSIBILITY_YES);
+
+			announceView.sendAccessibilityEvent(android.view.accessibility.AccessibilityEvent.TYPE_VIEW_FOCUSED);
+			announceView.sendAccessibilityEvent(android.view.accessibility.AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
+		} catch {
+			// ignore
+		} finally {
+			setTimeout(() => {
+				// Reset status after the focus have been reset.
+				const localNativeView = this.nativeViewProtected;
+				if (!localNativeView) {
+					return;
+				}
+
+				if (android.os.Build.VERSION.SDK_INT >= 28) {
+					nativeView.setAccessibilityHeading(originalIsAccessibilityHeading);
+				}
+
+				if (android.os.Build.VERSION.SDK_INT >= 26) {
+					localNativeView.setFocusable(originalFocusableState);
+				}
+
+				localNativeView.setImportantForAccessibility(originalImportantForAccessibility);
+			});
 		}
 	}
 }

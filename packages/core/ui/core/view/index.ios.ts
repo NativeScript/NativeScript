@@ -1,15 +1,18 @@
 // Types.
-import { Point, View as ViewDefinition, dip } from '.';
+import { Point, View as ViewDefinition } from '.';
 
 // Requires
-import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty } from './view-common';
-import { ShowModalOptions } from '../view-base';
+import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty } from './view-common';
+import { ShowModalOptions, hiddenProperty } from '../view-base';
 import { Trace } from '../../../trace';
 import { layout, iOSNativeHelper } from '../../../utils';
 import { IOSHelper } from './view-helper';
 import { ios as iosBackground, Background } from '../../styling/background';
-import { perspectiveProperty, Visibility, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, clipPathProperty } from '../../styling/style-properties';
+import { perspectiveProperty, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, clipPathProperty } from '../../styling/style-properties';
 import { profile } from '../../../profiling';
+import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty, accessibilityIgnoresInvertColorsProperty } from '../../../accessibility/accessibility-properties';
+import { setupAccessibleView, IOSPostAccessibilityNotificationType, isAccessibilityServiceEnabled, updateAccessibilityProperties, AccessibilityEventOptions, AccessibilityRole, AccessibilityState } from '../../../accessibility';
+import { CoreTypes } from '../../../core-types';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -34,7 +37,8 @@ export class View extends ViewCommon implements ViewDefinition {
 	 */
 	private _modalAnimatedOptions: Array<boolean>;
 	private _isLaidOut = false;
-	private _hasTransfrom = false;
+	private _hasTransform = false;
+	private _hasPendingTransform = false;
 	private _privateFlags: number = PFLAG_LAYOUT_REQUIRED | PFLAG_FORCE_LAYOUT;
 	private _cachedFrame: CGRect;
 	private _suspendCATransaction = false;
@@ -54,6 +58,21 @@ export class View extends ViewCommon implements ViewDefinition {
 		return (this._privateFlags & PFLAG_FORCE_LAYOUT) === PFLAG_FORCE_LAYOUT;
 	}
 
+	constructor() {
+		super();
+
+		this.once(View.loadedEvent, () => setupAccessibleView(this));
+	}
+
+	disposeNativeView() {
+		super.disposeNativeView();
+
+		this._cachedFrame = null;
+		this._isLaidOut = false;
+		this._hasTransform = false;
+		this._hasPendingTransform = false;
+	}
+
 	public requestLayout(): void {
 		super.requestLayout();
 		this._privateFlags |= PFLAG_FORCE_LAYOUT;
@@ -71,7 +90,7 @@ export class View extends ViewCommon implements ViewDefinition {
 	public measure(widthMeasureSpec: number, heightMeasureSpec: number): void {
 		const measureSpecsChanged = this._setCurrentMeasureSpecs(widthMeasureSpec, heightMeasureSpec);
 		const forceLayout = (this._privateFlags & PFLAG_FORCE_LAYOUT) === PFLAG_FORCE_LAYOUT;
-		if (forceLayout || measureSpecsChanged) {
+		if (this.nativeViewProtected && (forceLayout || measureSpecsChanged)) {
 			// first clears the measured dimension flag
 			this._privateFlags &= ~PFLAG_MEASURED_DIMENSION_SET;
 
@@ -79,10 +98,12 @@ export class View extends ViewCommon implements ViewDefinition {
 			this.onMeasure(widthMeasureSpec, heightMeasureSpec);
 			this._privateFlags |= PFLAG_LAYOUT_REQUIRED;
 
-			// flag not set, setMeasuredDimension() was not invoked, we raise
-			// an exception to warn the developer
+			// flag not set, setMeasuredDimension() was not invoked, we trace
+			// the exception to warn the developer
 			if ((this._privateFlags & PFLAG_MEASURED_DIMENSION_SET) !== PFLAG_MEASURED_DIMENSION_SET) {
-				throw new Error('onMeasure() did not set the measured dimension by calling setMeasuredDimension() ' + this);
+				if (Trace.isEnabled()) {
+					Trace.write('onMeasure() did not set the measured dimension by calling setMeasuredDimension() ' + this, Trace.categories.Layout, Trace.messageType.error);
+				}
 			}
 		}
 	}
@@ -108,6 +129,10 @@ export class View extends ViewCommon implements ViewDefinition {
 		}
 
 		this.updateBackground(sizeChanged);
+		if (this._hasPendingTransform) {
+			this.updateNativeTransform();
+			this._hasPendingTransform = false;
+		}
 		this._privateFlags &= ~PFLAG_FORCE_LAYOUT;
 	}
 
@@ -164,7 +189,7 @@ export class View extends ViewCommon implements ViewDefinition {
 			this._cachedFrame = frame;
 			let adjustedFrame = null;
 			let transform = null;
-			if (this._hasTransfrom) {
+			if (this._hasTransform) {
 				// Always set identity transform before setting frame;
 				transform = nativeView.layer.transform;
 				nativeView.layer.transform = CATransform3DIdentity;
@@ -178,7 +203,7 @@ export class View extends ViewCommon implements ViewDefinition {
 				nativeView.frame = adjustedFrame;
 			}
 
-			if (this._hasTransfrom) {
+			if (this._hasTransform) {
 				// re-apply the transform after the frame is adjusted
 				nativeView.layer.transform = transform;
 			}
@@ -186,6 +211,7 @@ export class View extends ViewCommon implements ViewDefinition {
 			const boundsOrigin = nativeView.bounds.origin;
 			const boundsFrame = adjustedFrame || frame;
 			nativeView.bounds = CGRectMake(boundsOrigin.x, boundsOrigin.y, boundsFrame.size.width, boundsFrame.size.height);
+			nativeView.layoutIfNeeded();
 
 			this._raiseLayoutChangedEvent();
 			this._isLaidOut = true;
@@ -262,7 +288,9 @@ export class View extends ViewCommon implements ViewDefinition {
 		if (majorVersion <= 10) {
 			return null;
 		}
-
+		if (this.iosIgnoreSafeArea) {
+			return frame;
+		}
 		if (!this.iosOverflowSafeArea || !this.iosOverflowSafeAreaEnabled) {
 			return IOSHelper.shrinkToSafeArea(this, frame);
 		} else if (this.nativeViewProtected && this.nativeViewProtected.window) {
@@ -275,7 +303,9 @@ export class View extends ViewCommon implements ViewDefinition {
 	public getSafeAreaInsets(): { left; top; right; bottom } {
 		const safeAreaInsets = this.nativeViewProtected && this.nativeViewProtected.safeAreaInsets;
 		const insets = { left: 0, top: 0, right: 0, bottom: 0 };
-
+		if (this.iosIgnoreSafeArea) {
+			return insets;
+		}
 		if (safeAreaInsets) {
 			insets.left = layout.round(layout.toDevicePixels(safeAreaInsets.left));
 			insets.top = layout.round(layout.toDevicePixels(safeAreaInsets.top));
@@ -334,7 +364,7 @@ export class View extends ViewCommon implements ViewDefinition {
 		}
 
 		const background = this.style.backgroundInternal;
-		const backgroundDependsOnSize = background.image || !background.hasUniformBorder() || background.hasBorderRadius();
+		const backgroundDependsOnSize = (background.image && background.image !== 'none') || !background.hasUniformBorder() || background.hasBorderRadius();
 
 		if (this._nativeBackgroundState === 'invalid' || (this._nativeBackgroundState === 'drawn' && backgroundDependsOnSize)) {
 			this._redrawNativeBackground(background);
@@ -347,6 +377,11 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	public updateNativeTransform() {
+		if (!this.isLayoutValid) {
+			this._hasPendingTransform = true;
+			return;
+		}
+
 		const scaleX = this.scaleX || 1e-6;
 		const scaleY = this.scaleY || 1e-6;
 		const perspective = this.perspective || 300;
@@ -362,12 +397,12 @@ export class View extends ViewCommon implements ViewDefinition {
 		transform = iOSNativeHelper.applyRotateTransform(transform, this.rotateX, this.rotateY, this.rotate);
 		transform = CATransform3DScale(transform, scaleX, scaleY, 1);
 		if (!CATransform3DEqualToTransform(this.nativeViewProtected.layer.transform, transform)) {
-			const updateSuspended = this._isPresentationLayerUpdateSuspeneded();
+			const updateSuspended = this._isPresentationLayerUpdateSuspended();
 			if (!updateSuspended) {
 				CATransaction.begin();
 			}
 			this.nativeViewProtected.layer.transform = transform;
-			this._hasTransfrom = this.nativeViewProtected && !CATransform3DEqualToTransform(this.nativeViewProtected.transform3D, CATransform3DIdentity);
+			this._hasTransform = this.nativeViewProtected && !CATransform3DEqualToTransform(this.nativeViewProtected.transform3D, CATransform3DIdentity);
 			if (!updateSuspended) {
 				CATransaction.commit();
 			}
@@ -393,7 +428,7 @@ export class View extends ViewCommon implements ViewDefinition {
 		this._suspendCATransaction = false;
 	}
 
-	public _isPresentationLayerUpdateSuspeneded(): boolean {
+	public _isPresentationLayerUpdateSuspended(): boolean {
 		return this._suspendCATransaction || this._suspendNativeUpdatesCount > 0;
 	}
 
@@ -491,6 +526,13 @@ export class View extends ViewCommon implements ViewDefinition {
 		}
 		this._modalAnimatedOptions.push(animated);
 
+		// TODO: a11y
+		// controller.accessibilityViewIsModal = true;
+		// controller.accessibilityPerformEscape = () => {
+		//   console.log('accessibilityPerformEscape!!')
+		//   return true;
+		// }
+
 		parentController.presentViewControllerAnimatedCompletion(controller, animated, null);
 		const transitionCoordinator = parentController.transitionCoordinator;
 		if (transitionCoordinator) {
@@ -501,6 +543,7 @@ export class View extends ViewCommon implements ViewDefinition {
 			// Take a look at https://github.com/NativeScript/NativeScript/issues/2173 for more info and a sample project.
 			this._raiseShownModallyEvent();
 		}
+		controller = null;
 	}
 
 	protected _hideNativeModalView(parent: View, whenClosedCallback: () => void) {
@@ -549,12 +592,85 @@ export class View extends ViewCommon implements ViewDefinition {
 		this.updateOriginPoint(this.originX, value);
 	}
 
-	[automationTextProperty.getDefault](): string {
+	[testIDProperty.setNative](value: string) {
+		this.setTestID(this.nativeViewProtected, value);
+	}
+
+	public setTestID(view: any, value: string): void {
+		if (typeof __USE_TEST_ID__ !== 'undefined' && __USE_TEST_ID__) {
+			view.accessibilityIdentifier = value;
+		}
+	}
+
+	[accessibilityEnabledProperty.setNative](value: boolean): void {
+		this.nativeViewProtected.isAccessibilityElement = !!value;
+
+		updateAccessibilityProperties(this);
+	}
+
+	[accessibilityIdentifierProperty.getDefault](): string {
 		return this.nativeViewProtected.accessibilityLabel;
 	}
-	[automationTextProperty.setNative](value: string) {
-		this.nativeViewProtected.accessibilityIdentifier = value;
+
+	[accessibilityIdentifierProperty.setNative](value: string): void {
+		if (typeof __USE_TEST_ID__ !== 'undefined' && __USE_TEST_ID__ && this.testID) {
+			// ignore when using testID
+		} else {
+			this.nativeViewProtected.accessibilityIdentifier = value;
+		}
+	}
+
+	[accessibilityRoleProperty.setNative](value: AccessibilityRole): void {
+		this.accessibilityRole = value;
+		updateAccessibilityProperties(this);
+	}
+
+	[accessibilityValueProperty.setNative](value: string): void {
+		value = value == null ? null : `${value}`;
+		this.nativeViewProtected.accessibilityValue = value;
+	}
+
+	[accessibilityLabelProperty.setNative](value: string): void {
+		value = value == null ? null : `${value}`;
+		// not sure if needed for Label:
+		// if ((<any>this).nativeTextViewProtected) {
+		//   (<any>this).nativeTextViewProtected.accessibilityLabel = value;
+		// } else {
 		this.nativeViewProtected.accessibilityLabel = value;
+		// }
+	}
+
+	[accessibilityHintProperty.setNative](value: string): void {
+		value = value == null ? null : `${value}`;
+		this.nativeViewProtected.accessibilityHint = value;
+	}
+
+	[accessibilityIgnoresInvertColorsProperty.setNative](value: boolean) {
+		this.nativeViewProtected.accessibilityIgnoresInvertColors = !!value;
+	}
+
+	[accessibilityLanguageProperty.setNative](value: string): void {
+		value = value == null ? null : `${value}`;
+		this.nativeViewProtected.accessibilityLanguage = value;
+	}
+
+	[accessibilityHiddenProperty.setNative](value: boolean): void {
+		this.nativeViewProtected.accessibilityElementsHidden = !!value;
+
+		updateAccessibilityProperties(this);
+	}
+
+	[accessibilityLiveRegionProperty.setNative](): void {
+		updateAccessibilityProperties(this);
+	}
+
+	[accessibilityStateProperty.setNative](value: AccessibilityState): void {
+		this.accessibilityState = value;
+		updateAccessibilityProperties(this);
+	}
+
+	[accessibilityMediaSessionProperty.setNative](): void {
+		updateAccessibilityProperties(this);
 	}
 
 	[isUserInteractionEnabledProperty.getDefault](): boolean {
@@ -564,20 +680,27 @@ export class View extends ViewCommon implements ViewDefinition {
 		this.nativeViewProtected.userInteractionEnabled = value;
 	}
 
-	[visibilityProperty.getDefault](): Visibility {
-		return this.nativeViewProtected.hidden ? Visibility.COLLAPSE : Visibility.VISIBLE;
+	[hiddenProperty.getDefault](): boolean {
+		return this.nativeViewProtected.hidden;
 	}
-	[visibilityProperty.setNative](value: Visibility) {
+	[hiddenProperty.setNative](value: boolean) {
+		this.nativeViewProtected.hidden = value;
+	}
+
+	[visibilityProperty.getDefault](): CoreTypes.VisibilityType {
+		return this.nativeViewProtected.hidden ? CoreTypes.Visibility.collapse : CoreTypes.Visibility.visible;
+	}
+	[visibilityProperty.setNative](value: CoreTypes.VisibilityType) {
 		switch (value) {
-			case Visibility.VISIBLE:
+			case CoreTypes.Visibility.visible:
 				this.nativeViewProtected.hidden = false;
 				break;
-			case Visibility.HIDDEN:
-			case Visibility.COLLAPSE:
+			case CoreTypes.Visibility.hidden:
+			case CoreTypes.Visibility.collapse:
 				this.nativeViewProtected.hidden = true;
 				break;
 			default:
-				throw new Error(`Invalid visibility value: ${value}. Valid values are: "${Visibility.VISIBLE}", "${Visibility.HIDDEN}", "${Visibility.COLLAPSE}".`);
+				throw new Error(`Invalid visibility value: ${value}. Valid values are: "${CoreTypes.Visibility.visible}", "${CoreTypes.Visibility.hidden}", "${CoreTypes.Visibility.collapse}".`);
 		}
 	}
 
@@ -586,7 +709,7 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 	[opacityProperty.setNative](value: number) {
 		const nativeView = this.nativeViewProtected;
-		const updateSuspended = this._isPresentationLayerUpdateSuspeneded();
+		const updateSuspended = this._isPresentationLayerUpdateSuspended();
 		if (!updateSuspended) {
 			CATransaction.begin();
 		}
@@ -638,17 +761,17 @@ export class View extends ViewCommon implements ViewDefinition {
 		this.updateNativeTransform();
 	}
 
-	[translateXProperty.getDefault](): dip {
+	[translateXProperty.getDefault](): CoreTypes.dip {
 		return 0;
 	}
-	[translateXProperty.setNative](value: dip) {
+	[translateXProperty.setNative](value: CoreTypes.dip) {
 		this.updateNativeTransform();
 	}
 
-	[translateYProperty.getDefault](): dip {
+	[translateYProperty.getDefault](): CoreTypes.dip {
 		return 0;
 	}
-	[translateYProperty.setNative](value: dip) {
+	[translateYProperty.setNative](value: CoreTypes.dip) {
 		this.updateNativeTransform();
 	}
 
@@ -667,6 +790,55 @@ export class View extends ViewCommon implements ViewDefinition {
 		if (this.isLayoutValid) {
 			this._redrawNativeBackground(value);
 		}
+	}
+
+	public sendAccessibilityEvent(options: Partial<AccessibilityEventOptions>): void {
+		if (!isAccessibilityServiceEnabled()) {
+			return;
+		}
+
+		if (!options.iosNotificationType) {
+			return;
+		}
+
+		let notification: number;
+		let args: string | UIView | null = this.nativeViewProtected;
+		if (typeof msg === 'string' && msg) {
+			args = msg;
+		}
+
+		switch (options.iosNotificationType) {
+			case IOSPostAccessibilityNotificationType.Announcement: {
+				notification = UIAccessibilityAnnouncementNotification;
+				break;
+			}
+			case IOSPostAccessibilityNotificationType.Layout: {
+				notification = UIAccessibilityLayoutChangedNotification;
+				break;
+			}
+			case IOSPostAccessibilityNotificationType.Screen: {
+				notification = UIAccessibilityScreenChangedNotification;
+				break;
+			}
+			default: {
+				return;
+			}
+		}
+
+		UIAccessibilityPostNotification(notification, args ?? null);
+	}
+
+	public accessibilityAnnouncement(msg = this.accessibilityLabel): void {
+		this.sendAccessibilityEvent({
+			iosNotificationType: IOSPostAccessibilityNotificationType.Announcement,
+			message: msg,
+		});
+	}
+
+	public accessibilityScreenChanged(): void {
+		this.sendAccessibilityEvent({
+			iosNotificationType: IOSPostAccessibilityNotificationType.Screen,
+		});
 	}
 
 	_getCurrentLayoutBounds(): {
@@ -693,7 +865,7 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	_redrawNativeBackground(value: UIColor | Background): void {
-		const updateSuspended = this._isPresentationLayerUpdateSuspeneded();
+		const updateSuspended = this._isPresentationLayerUpdateSuspended();
 		if (!updateSuspended) {
 			CATransaction.begin();
 		}
@@ -716,7 +888,7 @@ export class View extends ViewCommon implements ViewDefinition {
 
 	_setNativeClipToBounds() {
 		const backgroundInternal = this.style.backgroundInternal;
-		this.nativeViewProtected.clipsToBounds = this.nativeViewProtected instanceof UIScrollView || backgroundInternal.hasBorderWidth() || backgroundInternal.hasBorderRadius();
+		this.nativeViewProtected.clipsToBounds = (this.nativeViewProtected instanceof UIScrollView || backgroundInternal.hasBorderWidth() || backgroundInternal.hasBorderRadius()) && !backgroundInternal.hasBoxShadow();
 	}
 
 	private _setupPopoverControllerDelegate(controller: UIViewController, parent: View) {
@@ -758,7 +930,7 @@ export class CustomLayoutView extends ContainerView {
 	}
 
 	public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-		// Don't call super because it will set MeasureDimension. This method must be overriden and calculate its measuredDimensions.
+		// Don't call super because it will set MeasureDimension. This method must be overridden and calculate its measuredDimensions.
 	}
 
 	public _addViewToNativeVisualTree(child: View, atIndex: number): boolean {

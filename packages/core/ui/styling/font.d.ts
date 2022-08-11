@@ -5,6 +5,7 @@
 	public fontStyle: FontStyle;
 	public fontWeight: FontWeight;
 	public fontSize: number;
+	public fontScale: number;
 
 	public isBold: boolean;
 	public isItalic: boolean;
@@ -18,6 +19,7 @@
 	public withFontStyle(style: string): Font;
 	public withFontWeight(weight: string): Font;
 	public withFontSize(size: number): Font;
+	public withFontScale(scale: number): Font;
 
 	public static equals(value1: Font, value2: Font): boolean;
 }

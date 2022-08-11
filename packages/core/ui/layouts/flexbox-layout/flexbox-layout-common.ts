@@ -36,7 +36,7 @@ export namespace JustifyContent {
 	export const FLEX_END = 'flex-end' as const;
 	export const CENTER = 'center' as const;
 	export const SPACE_BETWEEN = 'space-between';
-	export const SPACE_AROUND= 'space-around';
+	export const SPACE_AROUND = 'space-around';
 
 	export const isValid = makeValidator<JustifyContent>(FLEX_START, FLEX_END, CENTER, SPACE_BETWEEN, SPACE_AROUND);
 	export const parse = makeParser<JustifyContent>(isValid);
@@ -50,7 +50,7 @@ export namespace FlexBasisPercent {
 export type AlignItems = 'flex-start' | 'flex-end' | 'center' | 'baseline' | 'stretch';
 export namespace AlignItems {
 	export const FLEX_START = 'flex-start';
-	export const FLEX_END= 'flex-end';
+	export const FLEX_END = 'flex-end';
 	export const CENTER = 'center';
 	export const BASELINE = 'baseline';
 	export const STRETCH = 'stretch';

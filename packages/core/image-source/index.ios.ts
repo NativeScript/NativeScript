@@ -4,10 +4,11 @@ import { ImageAsset } from '../image-asset';
 import * as httpModule from '../http';
 import { Font } from '../ui/styling/font';
 import { Color } from '../color';
+import { Trace } from '../trace';
 
 // Types.
 import { path as fsPath, knownFolders } from '../file-system';
-import { isFileOrResourcePath, RESOURCE_PREFIX, layout } from '../utils';
+import { isFileOrResourcePath, RESOURCE_PREFIX, layout, releaseNativeObject } from '../utils';
 
 import { getScaledDimensions } from './image-source-common';
 
@@ -84,8 +85,10 @@ export class ImageSource implements ImageSourceDefinition {
 					if (image) {
 						resolve(new ImageSource(image));
 					} else {
-						(<any>UIImage).tns_safeDecodeImageNamedCompletion(`${name}.jpg`, (image) => {
-							resolve(new ImageSource(image));
+						(<any>UIImage).tns_safeDecodeImageNamedCompletion(`${name}.jpg`, (img) => {
+							if (img) {
+								resolve(new ImageSource(img));
+							}
 						});
 					}
 				});
@@ -104,7 +107,9 @@ export class ImageSource implements ImageSourceDefinition {
 		return new Promise<ImageSource>((resolve, reject) => {
 			try {
 				(<any>UIImage).tns_decodeImageWidthContentsOfFileCompletion(getFileName(path), (uiImage) => {
-					resolve(new ImageSource(uiImage));
+					if (uiImage) {
+						resolve(new ImageSource(uiImage));
+					}
 				});
 			} catch (ex) {
 				reject(ex);
@@ -114,7 +119,10 @@ export class ImageSource implements ImageSourceDefinition {
 
 	static fromFileOrResourceSync(path: string): ImageSource {
 		if (!isFileOrResourcePath(path)) {
-			throw new Error('Path "' + '" is not a valid file or resource.');
+			if (Trace.isEnabled()) {
+				Trace.write('Path "' + path + '" is not a valid file or resource.', Trace.categories.Binding, Trace.messageType.error);
+			}
+			return null;
 		}
 
 		if (path.indexOf(RESOURCE_PREFIX) === 0) {
@@ -133,7 +141,9 @@ export class ImageSource implements ImageSourceDefinition {
 		return new Promise<ImageSource>((resolve, reject) => {
 			try {
 				(<any>UIImage).tns_decodeImageWithDataCompletion(data, (uiImage) => {
-					resolve(new ImageSource(uiImage));
+					if (uiImage) {
+						resolve(new ImageSource(uiImage));
+					}
 				});
 			} catch (ex) {
 				reject(ex);
@@ -170,17 +180,10 @@ export class ImageSource implements ImageSourceDefinition {
 
 	static fromFontIconCodeSync(source: string, font: Font, color: Color): ImageSource {
 		font = font || Font.default;
-		let fontSize = layout.toDevicePixels(font.fontSize);
-		if (!fontSize) {
-			// TODO: Consider making 36 font size as default for optimal look on TabView and ActionBar
-			fontSize = UIFont.labelFontSize;
-		}
 
-		const density = layout.getDisplayDensity();
-		const scaledFontSize = fontSize * density;
-
+		// TODO: Consider making 36 font size as default for optimal look on TabView and ActionBar
 		const attributes = {
-			[NSFontAttributeName]: font.getUIFont(UIFont.systemFontOfSize(scaledFontSize)),
+			[NSFontAttributeName]: font.getUIFont(UIFont.systemFontOfSize(UIFont.labelFontSize)),
 		};
 
 		if (color) {
@@ -295,7 +298,10 @@ export class ImageSource implements ImageSourceDefinition {
 
 	public setNativeSource(source: any): void {
 		if (source && !(source instanceof UIImage)) {
-			throw new Error('The method setNativeSource() expects UIImage instance.');
+			if (Trace.isEnabled()) {
+				Trace.write('The method setNativeSource() expects UIImage instance.', Trace.categories.Binding, Trace.messageType.error);
+			}
+			return;
 		}
 		this.ios = source;
 	}
@@ -317,6 +323,33 @@ export class ImageSource implements ImageSourceDefinition {
 		return false;
 	}
 
+	public saveToFileAsync(path: string, format: 'png' | 'jpeg' | 'jpg', quality?: number): Promise<boolean> {
+		return new Promise<boolean>((resolve, reject) => {
+			if (!this.ios) {
+				reject(false);
+			}
+			let isSuccess = false;
+			try {
+				if (quality) {
+					quality = (quality - 0) / (100 - 0); // Normalize quality on a scale of 0 to 1
+				}
+				const main_queue = dispatch_get_current_queue();
+				const background_queue = dispatch_get_global_queue(qos_class_t.QOS_CLASS_DEFAULT, 0);
+				dispatch_async(background_queue, () => {
+					const data = getImageData(this.ios, format, quality);
+					if (data) {
+						isSuccess = NSFileManager.defaultManager.createFileAtPathContentsAttributes(path, data, null);
+					}
+					dispatch_async(main_queue, () => {
+						resolve(isSuccess);
+					});
+				});
+			} catch (ex) {
+				reject(ex);
+			}
+		});
+	}
+
 	public toBase64String(format: 'png' | 'jpeg' | 'jpg', quality?: number): string {
 		let res = null;
 		if (!this.ios) {
@@ -335,18 +368,71 @@ export class ImageSource implements ImageSourceDefinition {
 		return res;
 	}
 
+	public toBase64StringAsync(format: 'png' | 'jpeg' | 'jpg', quality?: number): Promise<string> {
+		return new Promise<string>((resolve, reject) => {
+			if (!this.ios) {
+				reject(null);
+			}
+			let result = null;
+			try {
+				if (quality) {
+					quality = (quality - 0) / (100 - 0); // Normalize quality on a scale of 0 to 1
+				}
+				const main_queue = dispatch_get_current_queue();
+				const background_queue = dispatch_get_global_queue(qos_class_t.QOS_CLASS_DEFAULT, 0);
+				dispatch_async(background_queue, () => {
+					const data = getImageData(this.ios, format, quality);
+					if (data) {
+						result = data.base64Encoding();
+					}
+					dispatch_async(main_queue, () => {
+						resolve(result);
+					});
+				});
+			} catch (ex) {
+				reject(ex);
+			}
+		});
+	}
+
 	public resize(maxSize: number, options?: any): ImageSource {
 		const size: CGSize = this.ios.size;
 		const dim = getScaledDimensions(size.width, size.height, maxSize);
 
 		const newSize: CGSize = CGSizeMake(dim.width, dim.height);
-		UIGraphicsBeginImageContextWithOptions(newSize, true, this.ios.scale);
+
+		UIGraphicsBeginImageContextWithOptions(newSize, options?.opaque ?? false, this.ios.scale);
 		this.ios.drawInRect(CGRectMake(0, 0, newSize.width, newSize.height));
 
 		const resizedImage = UIGraphicsGetImageFromCurrentImageContext();
 		UIGraphicsEndImageContext();
 
 		return new ImageSource(resizedImage);
+	}
+
+	public resizeAsync(maxSize: number, options?: any): Promise<ImageSource> {
+		return new Promise((resolve, reject) => {
+			if (!this.ios) {
+				reject(null);
+			}
+			const main_queue = dispatch_get_current_queue();
+			const background_queue = dispatch_get_global_queue(qos_class_t.QOS_CLASS_DEFAULT, 0);
+			dispatch_async(background_queue, () => {
+				const size: CGSize = this.ios.size;
+				const dim = getScaledDimensions(size.width, size.height, maxSize);
+
+				const newSize: CGSize = CGSizeMake(dim.width, dim.height);
+
+				UIGraphicsBeginImageContextWithOptions(newSize, options?.opaque ?? false, this.ios.scale);
+				this.ios.drawInRect(CGRectMake(0, 0, newSize.width, newSize.height));
+
+				const resizedImage = UIGraphicsGetImageFromCurrentImageContext();
+				UIGraphicsEndImageContext();
+				dispatch_async(main_queue, () => {
+					resolve(new ImageSource(resizedImage));
+				});
+			});
+		});
 	}
 }
 
@@ -360,18 +446,7 @@ function getFileName(path: string): string {
 }
 
 function getImageData(instance: UIImage, format: 'png' | 'jpeg' | 'jpg', quality = 0.9): NSData {
-	let data = null;
-	switch (format) {
-		case 'png':
-			data = UIImagePNGRepresentation(instance);
-			break;
-		case 'jpeg':
-		case 'jpg':
-			data = UIImageJPEGRepresentation(instance, quality);
-			break;
-	}
-
-	return data;
+	return NativeScriptUtils.getImageDataFormatQuality(instance, format, quality);
 }
 
 export function fromAsset(asset: ImageAsset): Promise<ImageSource> {

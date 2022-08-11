@@ -187,15 +187,11 @@ export class ImageSource implements ImageSourceDefinition {
 			paint.setColor(color.android);
 		}
 
-		let fontSize = layout.toDevicePixels(font.fontSize);
-		if (!fontSize) {
-			// TODO: Consider making 36 font size as default for optimal look on TabView and ActionBar
-			fontSize = paint.getTextSize();
+		// TODO: Consider making 36 font size as default for optimal look on TabView and ActionBar
+		const scaledFontSize = layout.toDevicePixels(font.fontSize);
+		if (scaledFontSize) {
+			paint.setTextSize(scaledFontSize);
 		}
-
-		const density = layout.getDisplayDensity();
-		const scaledFontSize = fontSize * density;
-		paint.setTextSize(scaledFontSize);
 
 		const textBounds = new android.graphics.Rect();
 		paint.getTextBounds(source, 0, source.length, textBounds);
@@ -316,6 +312,29 @@ export class ImageSource implements ImageSourceDefinition {
 		return res;
 	}
 
+	public saveToFileAsync(path: string, format: 'png' | 'jpeg' | 'jpg', quality = 100): Promise<boolean> {
+		return new Promise((resolve, reject) => {
+			org.nativescript.widgets.Utils.saveToFileAsync(
+				this.android,
+				path,
+				format,
+				quality,
+				new org.nativescript.widgets.Utils.AsyncImageCallback({
+					onSuccess(param0: boolean) {
+						resolve(param0);
+					},
+					onError(param0: java.lang.Exception) {
+						if (param0) {
+							reject(param0.getMessage());
+						} else {
+							reject();
+						}
+					},
+				})
+			);
+		});
+	}
+
 	public toBase64String(format: 'png' | 'jpeg' | 'jpg', quality = 100): string {
 		if (!this.android) {
 			return null;
@@ -334,11 +353,55 @@ export class ImageSource implements ImageSourceDefinition {
 		return outputStream.toString();
 	}
 
+	public toBase64StringAsync(format: 'png' | 'jpeg' | 'jpg', quality = 100): Promise<string> {
+		return new Promise((resolve, reject) => {
+			org.nativescript.widgets.Utils.toBase64StringAsync(
+				this.android,
+				format,
+				quality,
+				new org.nativescript.widgets.Utils.AsyncImageCallback({
+					onSuccess(param0: string) {
+						resolve(param0);
+					},
+					onError(param0: java.lang.Exception) {
+						if (param0) {
+							reject(param0.getMessage());
+						} else {
+							reject();
+						}
+					},
+				})
+			);
+		});
+	}
+
 	public resize(maxSize: number, options?: any): ImageSource {
 		const dim = getScaledDimensions(this.android.getWidth(), this.android.getHeight(), maxSize);
 		const bm: android.graphics.Bitmap = android.graphics.Bitmap.createScaledBitmap(this.android, dim.width, dim.height, options && options.filter);
 
 		return new ImageSource(bm);
+	}
+
+	public resizeAsync(maxSize: number, options?: any): Promise<ImageSource> {
+		return new Promise((resolve, reject) => {
+			org.nativescript.widgets.Utils.resizeAsync(
+				this.android,
+				maxSize,
+				JSON.stringify(options || {}),
+				new org.nativescript.widgets.Utils.AsyncImageCallback({
+					onSuccess(param0: any) {
+						resolve(new ImageSource(param0));
+					},
+					onError(param0: java.lang.Exception) {
+						if (param0) {
+							reject(param0.getMessage());
+						} else {
+							reject();
+						}
+					},
+				})
+			);
+		});
 	}
 }
 

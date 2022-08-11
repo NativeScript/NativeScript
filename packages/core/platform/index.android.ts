@@ -57,6 +57,9 @@ export class Screen {
 	static mainScreen = new MainScreen();
 }
 
+// This retains compatibility with NS6
+export const screen = Screen;
+
 class DeviceRef {
 	private _manufacturer: string;
 	private _model: string;
@@ -64,8 +67,6 @@ class DeviceRef {
 	private _sdkVersion: string;
 	private _deviceType: 'Phone' | 'Tablet';
 	private _uuid: string;
-	private _language: string;
-	private _region: string;
 
 	get manufacturer(): string {
 		if (!this._manufacturer) {
@@ -127,23 +128,30 @@ class DeviceRef {
 	}
 
 	get language(): string {
-		if (!this._language) {
-			this._language = java.util.Locale.getDefault().getLanguage().replace('_', '-');
+		let defaultNativeLocale;
+		if (android.os.Build.VERSION.SDK_INT >= 24) {
+			defaultNativeLocale = android.content.res.Resources.getSystem().getConfiguration().getLocales().get(0);
+		} else {
+			defaultNativeLocale = android.content.res.Resources.getSystem().getConfiguration().locale;
 		}
-
-		return this._language;
+		return defaultNativeLocale.getLanguage().replace('_', '-');
 	}
 
 	get region(): string {
-		if (!this._region) {
-			this._region = java.util.Locale.getDefault().getCountry();
+		let defaultNativeLocale;
+		if (android.os.Build.VERSION.SDK_INT >= 24) {
+			defaultNativeLocale = android.content.res.Resources.getSystem().getConfiguration().getLocales().get(0);
+		} else {
+			defaultNativeLocale = android.content.res.Resources.getSystem().getConfiguration().locale;
 		}
-
-		return this._region;
+		return defaultNativeLocale.getCountry();
 	}
 }
 
 export const Device = new DeviceRef();
+
+// This retains compatibility with NS6
+export const device = Device;
 
 export const isAndroid = global.isAndroid;
 export const isIOS = global.isIOS;

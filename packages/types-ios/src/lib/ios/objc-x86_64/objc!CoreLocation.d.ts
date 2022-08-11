@@ -1,4 +1,11 @@
 
+declare const enum CLAccuracyAuthorization {
+
+	FullAccuracy = 0,
+
+	ReducedAccuracy = 1
+}
+
 declare const enum CLActivityType {
 
 	Other = 1,
@@ -208,7 +215,9 @@ declare const enum CLError {
 
 	kCLErrorRangingUnavailable = 16,
 
-	kCLErrorRangingFailure = 17
+	kCLErrorRangingFailure = 17,
+
+	kCLErrorPromptDeclined = 18
 }
 
 declare class CLFloor extends NSObject implements NSCopying, NSSecureCoding {
@@ -300,11 +309,19 @@ declare class CLLocation extends NSObject implements CKRecordValue, NSCopying, N
 
 	readonly course: number;
 
+	readonly courseAccuracy: number;
+
+	readonly ellipsoidalAltitude: number;
+
 	readonly floor: CLFloor;
 
 	readonly horizontalAccuracy: number;
 
+	readonly sourceInformation: CLLocationSourceInformation;
+
 	readonly speed: number;
+
+	readonly speedAccuracy: number;
 
 	readonly timestamp: Date;
 
@@ -326,6 +343,10 @@ declare class CLLocation extends NSObject implements CKRecordValue, NSCopying, N
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
+	constructor(o: { coordinate: CLLocationCoordinate2D; altitude: number; horizontalAccuracy: number; verticalAccuracy: number; course: number; courseAccuracy: number; speed: number; speedAccuracy: number; timestamp: Date; });
+
+	constructor(o: { coordinate: CLLocationCoordinate2D; altitude: number; horizontalAccuracy: number; verticalAccuracy: number; course: number; courseAccuracy: number; speed: number; speedAccuracy: number; timestamp: Date; sourceInfo: CLLocationSourceInformation; });
+
 	constructor(o: { coordinate: CLLocationCoordinate2D; altitude: number; horizontalAccuracy: number; verticalAccuracy: number; course: number; speed: number; timestamp: Date; });
 
 	constructor(o: { coordinate: CLLocationCoordinate2D; altitude: number; horizontalAccuracy: number; verticalAccuracy: number; timestamp: Date; });
@@ -345,6 +366,10 @@ declare class CLLocation extends NSObject implements CKRecordValue, NSCopying, N
 	getDistanceFrom(location: CLLocation): number;
 
 	initWithCoder(coder: NSCoder): this;
+
+	initWithCoordinateAltitudeHorizontalAccuracyVerticalAccuracyCourseCourseAccuracySpeedSpeedAccuracyTimestamp(coordinate: CLLocationCoordinate2D, altitude: number, hAccuracy: number, vAccuracy: number, course: number, courseAccuracy: number, speed: number, speedAccuracy: number, timestamp: Date): this;
+
+	initWithCoordinateAltitudeHorizontalAccuracyVerticalAccuracyCourseCourseAccuracySpeedSpeedAccuracyTimestampSourceInfo(coordinate: CLLocationCoordinate2D, altitude: number, hAccuracy: number, vAccuracy: number, course: number, courseAccuracy: number, speed: number, speedAccuracy: number, timestamp: Date, sourceInfo: CLLocationSourceInformation): this;
 
 	initWithCoordinateAltitudeHorizontalAccuracyVerticalAccuracyCourseSpeedTimestamp(coordinate: CLLocationCoordinate2D, altitude: number, hAccuracy: number, vAccuracy: number, course: number, speed: number, timestamp: Date): this;
 
@@ -407,9 +432,15 @@ declare class CLLocationManager extends NSObject {
 
 	static significantLocationChangeMonitoringAvailable(): boolean;
 
+	readonly accuracyAuthorization: CLAccuracyAuthorization;
+
 	activityType: CLActivityType;
 
 	allowsBackgroundLocationUpdates: boolean;
+
+	readonly authorizationStatus: CLAuthorizationStatus;
+
+	readonly authorizedForWidgetUpdates: boolean;
 
 	delegate: CLLocationManagerDelegate;
 
@@ -455,11 +486,17 @@ declare class CLLocationManager extends NSObject {
 
 	requestStateForRegion(region: CLRegion): void;
 
+	requestTemporaryFullAccuracyAuthorizationWithPurposeKey(purposeKey: string): void;
+
+	requestTemporaryFullAccuracyAuthorizationWithPurposeKeyCompletion(purposeKey: string, completion: (p1: NSError) => void): void;
+
 	requestWhenInUseAuthorization(): void;
 
 	startMonitoringForRegion(region: CLRegion): void;
 
 	startMonitoringForRegionDesiredAccuracy(region: CLRegion, accuracy: number): void;
+
+	startMonitoringLocationPushesWithCompletion(completion: (p1: NSData, p2: NSError) => void): void;
 
 	startMonitoringSignificantLocationChanges(): void;
 
@@ -475,6 +512,8 @@ declare class CLLocationManager extends NSObject {
 
 	stopMonitoringForRegion(region: CLRegion): void;
 
+	stopMonitoringLocationPushes(): void;
+
 	stopMonitoringSignificantLocationChanges(): void;
 
 	stopMonitoringVisits(): void;
@@ -489,6 +528,8 @@ declare class CLLocationManager extends NSObject {
 }
 
 interface CLLocationManagerDelegate extends NSObjectProtocol {
+
+	locationManagerDidChangeAuthorization?(manager: CLLocationManager): void;
 
 	locationManagerDidChangeAuthorizationStatus?(manager: CLLocationManager, status: CLAuthorizationStatus): void;
 
@@ -532,6 +573,55 @@ declare var CLLocationManagerDelegate: {
 
 	prototype: CLLocationManagerDelegate;
 };
+
+declare const enum CLLocationPushServiceError {
+
+	Unknown = 0,
+
+	MissingPushExtension = 1,
+
+	MissingPushServerEnvironment = 2,
+
+	MissingEntitlement = 3
+}
+
+declare var CLLocationPushServiceErrorDomain: string;
+
+interface CLLocationPushServiceExtension extends NSObjectProtocol {
+
+	didReceiveLocationPushPayloadCompletion(payload: NSDictionary<string, any>, completion: () => void): void;
+
+	serviceExtensionWillTerminate?(): void;
+}
+declare var CLLocationPushServiceExtension: {
+
+	prototype: CLLocationPushServiceExtension;
+};
+
+declare class CLLocationSourceInformation extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): CLLocationSourceInformation; // inherited from NSObject
+
+	static new(): CLLocationSourceInformation; // inherited from NSObject
+
+	readonly isProducedByAccessory: boolean;
+
+	readonly isSimulatedBySoftware: boolean;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { softwareSimulationState: boolean; andExternalAccessoryState: boolean; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithSoftwareSimulationStateAndExternalAccessoryState(isSoftware: boolean, isAccessory: boolean): this;
+}
 
 declare class CLPlacemark extends NSObject implements NSCopying, NSSecureCoding {
 
@@ -689,6 +779,8 @@ declare var kCLLocationAccuracyHundredMeters: number;
 declare var kCLLocationAccuracyKilometer: number;
 
 declare var kCLLocationAccuracyNearestTenMeters: number;
+
+declare var kCLLocationAccuracyReduced: number;
 
 declare var kCLLocationAccuracyThreeKilometers: number;
 

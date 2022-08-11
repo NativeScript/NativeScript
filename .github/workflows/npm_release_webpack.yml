@@ -1,0 +1,41 @@
+name: '@nativescript/webpack -> npm'
+
+on:
+  push:
+    branches: [ 'main' ]
+    paths:
+      - 'packages/webpack/**'
+
+env:
+  NPM_TAG: 'next'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup
+        run: npm install --legacy-peer-deps
+
+      - name: Generate Version
+        working-directory: packages/webpack
+        run: |
+          echo NPM_VERSION=$(node -e "console.log(require('./package.json').version);")-$NPM_TAG-$(date +"%m-%d-%Y")-$GITHUB_RUN_ID >> $GITHUB_ENV
+
+      - name: Bump Version
+        working-directory: packages/webpack
+        run: npm version $NPM_VERSION
+
+      - name: Build @nativescript/webpack
+        run: npx nx run webpack:build
+
+      - name: Publish @nativescript/webpack
+        working-directory: dist/packages
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ../../.npmrc
+          echo "Publishing @nativescript/webpack@$NPM_VERSION to NPM with tag $NPM_TAG..."
+          npm publish nativescript-webpack.tgz --tag $NPM_TAG --dry-run

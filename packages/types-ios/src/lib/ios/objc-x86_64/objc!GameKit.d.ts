@@ -1,4 +1,42 @@
 
+declare class GKAccessPoint extends NSObject {
+
+	static alloc(): GKAccessPoint; // inherited from NSObject
+
+	static new(): GKAccessPoint; // inherited from NSObject
+
+	active: boolean;
+
+	readonly frameInScreenCoordinates: CGRect;
+
+	readonly isPresentingGameCenter: boolean;
+
+	location: GKAccessPointLocation;
+
+	parentWindow: UIWindow;
+
+	showHighlights: boolean;
+
+	readonly visible: boolean;
+
+	static readonly shared: GKAccessPoint;
+
+	triggerAccessPointWithHandler(handler: () => void): void;
+
+	triggerAccessPointWithStateHandler(state: GKGameCenterViewControllerState, handler: () => void): void;
+}
+
+declare const enum GKAccessPointLocation {
+
+	TopLeading = 0,
+
+	TopTrailing = 1,
+
+	BottomLeading = 2,
+
+	BottomTrailing = 3
+}
+
 declare class GKAchievement extends NSObject implements NSCoding, NSSecureCoding {
 
 	static alloc(): GKAchievement; // inherited from NSObject
@@ -54,8 +92,6 @@ declare class GKAchievement extends NSObject implements NSCoding, NSSecureCoding
 	initWithIdentifierPlayer(identifier: string, player: GKPlayer): this;
 
 	issueChallengeToPlayersMessage(playerIDs: NSArray<string> | string[], message: string): void;
-
-	issueChallengeToPlayersMessageMethod(playerIDs: NSArray<string> | string[], message: string): void;
 
 	reportAchievementWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
 
@@ -131,15 +167,6 @@ declare var GKAchievementViewControllerDelegate: {
 
 	prototype: GKAchievementViewControllerDelegate;
 };
-
-declare const enum GKAuthenticationType {
-
-	AuthenticatingWithoutUI = 0,
-
-	AuthenticatingWithGreenBuddyUI = 1,
-
-	AuthenticatingWithAuthKitInvocation = 2
-}
 
 declare class GKBasePlayer extends NSObject {
 
@@ -323,7 +350,21 @@ declare const enum GKErrorCode {
 
 	RestrictedToAutomatch = 30,
 
-	APINotAvailable = 31
+	APINotAvailable = 31,
+
+	NotAuthorized = 32,
+
+	ConnectionTimeout = 33,
+
+	APIObsolete = 34,
+
+	FriendListDescriptionMissing = 100,
+
+	FriendListRestricted = 101,
+
+	FriendListDenied = 102,
+
+	FriendRequestNotAvailable = 103
 }
 
 declare var GKErrorDomain: string;
@@ -360,6 +401,17 @@ declare var GKFriendRequestComposeViewControllerDelegate: {
 	prototype: GKFriendRequestComposeViewControllerDelegate;
 };
 
+declare const enum GKFriendsAuthorizationStatus {
+
+	NotDetermined = 0,
+
+	Restricted = 1,
+
+	Denied = 2,
+
+	Authorized = 3
+}
+
 interface GKGameCenterControllerDelegate extends NSObjectProtocol {
 
 	gameCenterViewControllerDidFinish(gameCenterViewController: GKGameCenterViewController): void;
@@ -384,6 +436,22 @@ declare class GKGameCenterViewController extends UINavigationController {
 	leaderboardTimeScope: GKLeaderboardTimeScope;
 
 	viewState: GKGameCenterViewControllerState;
+
+	constructor(o: { achievementID: string; });
+
+	constructor(o: { leaderboardID: string; playerScope: GKLeaderboardPlayerScope; timeScope: GKLeaderboardTimeScope; });
+
+	constructor(o: { leaderboard: GKLeaderboard; playerScope: GKLeaderboardPlayerScope; });
+
+	constructor(o: { state: GKGameCenterViewControllerState; });
+
+	initWithAchievementID(achievementID: string): this;
+
+	initWithLeaderboardIDPlayerScopeTimeScope(leaderboardID: string, playerScope: GKLeaderboardPlayerScope, timeScope: GKLeaderboardTimeScope): this;
+
+	initWithLeaderboardPlayerScope(leaderboard: GKLeaderboard, playerScope: GKLeaderboardPlayerScope): this;
+
+	initWithState(state: GKGameCenterViewControllerState): this;
 }
 
 declare const enum GKGameCenterViewControllerState {
@@ -394,7 +462,13 @@ declare const enum GKGameCenterViewControllerState {
 
 	Achievements = 1,
 
-	Challenges = 2
+	Challenges = 2,
+
+	LocalPlayerProfile = 3,
+
+	Dashboard = 4,
+
+	LocalPlayerFriendsList = 5
 }
 
 declare class GKGameSession extends NSObject {
@@ -569,11 +643,19 @@ declare class GKLeaderboard extends NSObject {
 
 	static loadLeaderboardsWithCompletionHandler(completionHandler: (p1: NSArray<GKLeaderboard>, p2: NSError) => void): void;
 
+	static loadLeaderboardsWithIDsCompletionHandler(leaderboardIDs: NSArray<string> | string[], completionHandler: (p1: NSArray<GKLeaderboard>, p2: NSError) => void): void;
+
 	static new(): GKLeaderboard; // inherited from NSObject
 
 	static setDefaultLeaderboardWithCompletionHandler(leaderboardIdentifier: string, completionHandler: (p1: NSError) => void): void;
 
+	static submitScoreContextPlayerLeaderboardIDsCompletionHandler(score: number, context: number, player: GKPlayer, leaderboardIDs: NSArray<string> | string[], completionHandler: (p1: NSError) => void): void;
+
+	readonly baseLeaderboardID: string;
+
 	category: string;
+
+	readonly duration: number;
 
 	readonly groupIdentifier: string;
 
@@ -585,15 +667,21 @@ declare class GKLeaderboard extends NSObject {
 
 	readonly maxRange: number;
 
+	readonly nextStartDate: Date;
+
 	playerScope: GKLeaderboardPlayerScope;
 
 	range: NSRange;
 
 	readonly scores: NSArray<GKScore>;
 
+	readonly startDate: Date;
+
 	timeScope: GKLeaderboardTimeScope;
 
 	readonly title: string;
+
+	readonly type: GKLeaderboardType;
 
 	constructor(o: { playerIDs: NSArray<string> | string[]; });
 
@@ -603,9 +691,38 @@ declare class GKLeaderboard extends NSObject {
 
 	initWithPlayers(players: NSArray<GKPlayer> | GKPlayer[]): this;
 
+	loadEntriesForPlayerScopeTimeScopeRangeCompletionHandler(playerScope: GKLeaderboardPlayerScope, timeScope: GKLeaderboardTimeScope, range: NSRange, completionHandler: (p1: GKLeaderboardEntry, p2: NSArray<GKLeaderboardEntry>, p3: number, p4: NSError) => void): void;
+
+	loadEntriesForPlayersTimeScopeCompletionHandler(players: NSArray<GKPlayer> | GKPlayer[], timeScope: GKLeaderboardTimeScope, completionHandler: (p1: GKLeaderboardEntry, p2: NSArray<GKLeaderboardEntry>, p3: NSError) => void): void;
+
 	loadImageWithCompletionHandler(completionHandler: (p1: UIImage, p2: NSError) => void): void;
 
+	loadPreviousOccurrenceWithCompletionHandler(completionHandler: (p1: GKLeaderboard, p2: NSError) => void): void;
+
 	loadScoresWithCompletionHandler(completionHandler: (p1: NSArray<GKScore>, p2: NSError) => void): void;
+
+	submitScoreContextPlayerCompletionHandler(score: number, context: number, player: GKPlayer, completionHandler: (p1: NSError) => void): void;
+}
+
+declare class GKLeaderboardEntry extends NSObject {
+
+	static alloc(): GKLeaderboardEntry; // inherited from NSObject
+
+	static new(): GKLeaderboardEntry; // inherited from NSObject
+
+	readonly context: number;
+
+	readonly date: Date;
+
+	readonly formattedScore: string;
+
+	readonly player: GKPlayer;
+
+	readonly rank: number;
+
+	readonly score: number;
+
+	challengeComposeControllerWithMessagePlayersCompletionHandler(message: string, players: NSArray<GKPlayer> | GKPlayer[], completionHandler: (p1: UIViewController, p2: boolean, p3: NSArray<string>) => void): UIViewController;
 }
 
 declare const enum GKLeaderboardPlayerScope {
@@ -613,6 +730,21 @@ declare const enum GKLeaderboardPlayerScope {
 	Global = 0,
 
 	FriendsOnly = 1
+}
+
+declare class GKLeaderboardScore extends NSObject {
+
+	static alloc(): GKLeaderboardScore; // inherited from NSObject
+
+	static new(): GKLeaderboardScore; // inherited from NSObject
+
+	context: number;
+
+	leaderboardID: string;
+
+	player: GKPlayer;
+
+	value: number;
 }
 
 declare class GKLeaderboardSet extends NSObject implements NSCoding, NSSecureCoding {
@@ -640,6 +772,8 @@ declare class GKLeaderboardSet extends NSObject implements NSCoding, NSSecureCod
 	loadImageWithCompletionHandler(completionHandler: (p1: UIImage, p2: NSError) => void): void;
 
 	loadLeaderboardsWithCompletionHandler(completionHandler: (p1: NSArray<GKLeaderboard>, p2: NSError) => void): void;
+
+	loadLeaderboardsWithHandler(handler: (p1: NSArray<GKLeaderboard>, p2: NSError) => void): void;
 }
 
 declare const enum GKLeaderboardTimeScope {
@@ -649,6 +783,13 @@ declare const enum GKLeaderboardTimeScope {
 	Week = 1,
 
 	AllTime = 2
+}
+
+declare const enum GKLeaderboardType {
+
+	Classic = 0,
+
+	Recurring = 1
 }
 
 declare class GKLeaderboardViewController extends GKGameCenterViewController {
@@ -687,7 +828,11 @@ declare class GKLocalPlayer extends GKPlayer implements GKSavedGameListener {
 
 	readonly friends: NSArray<string>;
 
+	readonly isPresentingFriendRequestViewController: boolean;
+
 	readonly multiplayerGamingRestricted: boolean;
+
+	readonly personalizedCommunicationRestricted: boolean;
 
 	readonly underage: boolean;
 
@@ -715,6 +860,8 @@ declare class GKLocalPlayer extends GKPlayer implements GKSavedGameListener {
 
 	deleteSavedGamesWithNameCompletionHandler(name: string, handler: (p1: NSError) => void): void;
 
+	fetchItemsForIdentityVerificationSignature(completionHandler: (p1: NSURL, p2: NSData, p3: NSData, p4: number, p5: NSError) => void): void;
+
 	fetchSavedGamesWithCompletionHandler(handler: (p1: NSArray<GKSavedGame>, p2: NSError) => void): void;
 
 	generateIdentityVerificationSignatureWithCompletionHandler(completionHandler: (p1: NSURL, p2: NSData, p3: NSData, p4: number, p5: NSError) => void): void;
@@ -733,7 +880,13 @@ declare class GKLocalPlayer extends GKPlayer implements GKSavedGameListener {
 
 	loadFriendPlayersWithCompletionHandler(completionHandler: (p1: NSArray<GKPlayer>, p2: NSError) => void): void;
 
+	loadFriends(completionHandler: (p1: NSArray<GKPlayer>, p2: NSError) => void): void;
+
+	loadFriendsAuthorizationStatus(completionHandler: (p1: GKFriendsAuthorizationStatus, p2: NSError) => void): void;
+
 	loadFriendsWithCompletionHandler(completionHandler: (p1: NSArray<string>, p2: NSError) => void): void;
+
+	loadFriendsWithIdentifiersCompletionHandler(identifiers: NSArray<string> | string[], completionHandler: (p1: NSArray<GKPlayer>, p2: NSError) => void): void;
 
 	loadRecentPlayersWithCompletionHandler(completionHandler: (p1: NSArray<GKPlayer>, p2: NSError) => void): void;
 
@@ -746,6 +899,8 @@ declare class GKLocalPlayer extends GKPlayer implements GKSavedGameListener {
 	playerDidModifySavedGame(player: GKPlayer, savedGame: GKSavedGame): void;
 
 	playerHasConflictingSavedGames(player: GKPlayer, savedGames: NSArray<GKSavedGame> | GKSavedGame[]): void;
+
+	presentFriendRequestCreatorFromViewControllerError(viewController: UIViewController): boolean;
 
 	registerListener(listener: GKLocalPlayerListener): void;
 
@@ -921,6 +1076,8 @@ declare class GKMatchmakerViewController extends UINavigationController {
 
 	static new(): GKMatchmakerViewController; // inherited from NSObject
 
+	canStartWithMinimumPlayers: boolean;
+
 	defaultInvitationMessage: string;
 
 	hosted: boolean;
@@ -928,6 +1085,8 @@ declare class GKMatchmakerViewController extends UINavigationController {
 	readonly matchRequest: GKMatchRequest;
 
 	matchmakerDelegate: GKMatchmakerViewControllerDelegate;
+
+	matchmakingMode: GKMatchmakingMode;
 
 	constructor(o: { invite: GKInvite; });
 
@@ -967,6 +1126,17 @@ declare var GKMatchmakerViewControllerDelegate: {
 	prototype: GKMatchmakerViewControllerDelegate;
 };
 
+declare const enum GKMatchmakingMode {
+
+	Default = 0,
+
+	NearbyOnly = 1,
+
+	AutomatchOnly = 2,
+
+	InviteOnly = 3
+}
+
 declare class GKNotificationBanner extends NSObject {
 
 	static alloc(): GKNotificationBanner; // inherited from NSObject
@@ -988,47 +1158,10 @@ declare const enum GKPeerConnectionState {
 
 	StateDisconnected = 3,
 
-	StateConnecting = 4
+	StateConnecting = 4,
+
+	StateConnectedRelay = 5
 }
-
-declare const enum GKPeerPickerConnectionType {
-
-	Online = 1,
-
-	Nearby = 2
-}
-
-declare class GKPeerPickerController extends NSObject {
-
-	static alloc(): GKPeerPickerController; // inherited from NSObject
-
-	static new(): GKPeerPickerController; // inherited from NSObject
-
-	connectionTypesMask: GKPeerPickerConnectionType;
-
-	delegate: GKPeerPickerControllerDelegate;
-
-	readonly visible: boolean;
-
-	dismiss(): void;
-
-	show(): void;
-}
-
-interface GKPeerPickerControllerDelegate extends NSObjectProtocol {
-
-	peerPickerControllerDidCancel?(picker: GKPeerPickerController): void;
-
-	peerPickerControllerDidConnectPeerToSession?(picker: GKPeerPickerController, peerID: string, session: GKSession): void;
-
-	peerPickerControllerDidSelectConnectionType?(picker: GKPeerPickerController, type: GKPeerPickerConnectionType): void;
-
-	peerPickerControllerSessionForConnectionType?(picker: GKPeerPickerController, type: GKPeerPickerConnectionType): GKSession;
-}
-declare var GKPeerPickerControllerDelegate: {
-
-	prototype: GKPeerPickerControllerDelegate;
-};
 
 declare const enum GKPhotoSize {
 
@@ -1055,6 +1188,8 @@ declare class GKPlayer extends GKBasePlayer {
 
 	readonly isFriend: boolean;
 
+	readonly isInvitable: boolean;
+
 	readonly teamPlayerID: string;
 
 	loadPhotoForSizeWithCompletionHandler(size: GKPhotoSize, completionHandler: (p1: UIImage, p2: NSError) => void): void;
@@ -1074,6 +1209,8 @@ declare const enum GKPlayerConnectionState {
 }
 
 declare var GKPlayerDidChangeNotificationName: string;
+
+declare var GKPlayerIDNoLongerAvailable: string;
 
 declare class GKSavedGame extends NSObject implements NSCopying {
 
@@ -1108,6 +1245,8 @@ declare class GKScore extends NSObject implements NSCoding, NSSecureCoding {
 	static alloc(): GKScore; // inherited from NSObject
 
 	static new(): GKScore; // inherited from NSObject
+
+	static reportLeaderboardScoresWithEligibleChallengesWithCompletionHandler(scores: NSArray<GKLeaderboardScore> | GKLeaderboardScore[], challenges: NSArray<GKChallenge> | GKChallenge[], completionHandler: (p1: NSError) => void): void;
 
 	static reportScoresWithCompletionHandler(scores: NSArray<GKScore> | GKScore[], completionHandler: (p1: NSError) => void): void;
 
@@ -1162,8 +1301,6 @@ declare class GKScore extends NSObject implements NSCoding, NSSecureCoding {
 	initWithLeaderboardIdentifierPlayer(identifier: string, player: GKPlayer): this;
 
 	issueChallengeToPlayersMessage(playerIDs: NSArray<string> | string[], message: string): void;
-
-	issueChallengeToPlayersMessageMethod(playerIDs: NSArray<string> | string[], message: string): void;
 
 	reportScoreWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
 }
@@ -1451,6 +1588,8 @@ declare class GKTurnBasedMatch extends NSObject {
 
 	endMatchInTurnWithMatchDataCompletionHandler(matchData: NSData, completionHandler: (p1: NSError) => void): void;
 
+	endMatchInTurnWithMatchDataLeaderboardScoresAchievementsCompletionHandler(matchData: NSData, scores: NSArray<GKLeaderboardScore> | GKLeaderboardScore[], achievements: NSArray<any> | any[], completionHandler: (p1: NSError) => void): void;
+
 	endMatchInTurnWithMatchDataScoresAchievementsCompletionHandler(matchData: NSData, scores: NSArray<GKScore> | GKScore[], achievements: NSArray<GKAchievement> | GKAchievement[], completionHandler: (p1: NSError) => void): void;
 
 	endTurnWithNextParticipantMatchDataCompletionHandler(nextParticipant: GKTurnBasedParticipant, matchData: NSData, completionHandler: (p1: NSError) => void): void;
@@ -1521,6 +1660,8 @@ declare class GKTurnBasedMatchmakerViewController extends UINavigationController
 	static alloc(): GKTurnBasedMatchmakerViewController; // inherited from NSObject
 
 	static new(): GKTurnBasedMatchmakerViewController; // inherited from NSObject
+
+	matchmakingMode: GKMatchmakingMode;
 
 	showExistingMatches: boolean;
 

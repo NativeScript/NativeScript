@@ -66,6 +66,10 @@ declare const enum CTCharacterCollection {
 	kCTAdobeKorea1CharacterCollection = 5
 }
 
+declare function CTFontCollectionCopyFontAttribute(collection: any, attributeName: string, options: CTFontCollectionCopyOptions): NSArray<any>;
+
+declare function CTFontCollectionCopyFontAttributes(collection: any, attributeNames: NSSet<any>, options: CTFontCollectionCopyOptions): NSArray<any>;
+
 declare const enum CTFontCollectionCopyOptions {
 
 	kCTFontCollectionCopyDefaultOptions = 0,
@@ -114,6 +118,8 @@ declare function CTFontCopyGraphicsFont(font: UIFont, attributes: interop.Pointe
 declare function CTFontCopyLocalizedName(font: UIFont, nameKey: string, actualLanguage: interop.Pointer | interop.Reference<string>): string;
 
 declare function CTFontCopyName(font: UIFont, nameKey: string): string;
+
+declare function CTFontCopyNameForGlyph(font: UIFont, glyph: number): string;
 
 declare function CTFontCopyPostScriptName(font: UIFont): string;
 
@@ -300,6 +306,8 @@ declare const enum CTFontManagerError {
 
 	kCTFontManagerErrorExceededResourceLimit = 106,
 
+	kCTFontManagerErrorAssetNotFound = 107,
+
 	kCTFontManagerErrorNotRegistered = 201,
 
 	kCTFontManagerErrorInUse = 202,
@@ -316,7 +324,9 @@ declare const enum CTFontManagerError {
 
 	kCTFontManagerErrorDuplicatedName = 305,
 
-	kCTFontManagerErrorInvalidFilePath = 306
+	kCTFontManagerErrorInvalidFilePath = 306,
+
+	kCTFontManagerErrorUnsupportedScope = 307
 }
 
 declare function CTFontManagerRegisterFontDescriptors(fontDescriptors: NSArray<any> | any[], scope: CTFontManagerScope, enabled: boolean, registrationHandler: (p1: NSArray<any>, p2: boolean) => boolean): void;
@@ -1752,6 +1762,8 @@ declare var kCTFontOpenTypeFeatureTag: string;
 
 declare var kCTFontOpenTypeFeatureValue: string;
 
+declare var kCTFontOpticalSizeAttribute: string;
+
 declare var kCTFontOrientationAttribute: string;
 
 declare var kCTFontPostScriptCIDNameKey: string;
@@ -1947,6 +1959,8 @@ declare var kCTFontURLAttribute: string;
 declare var kCTFontUniqueNameKey: string;
 
 declare var kCTFontVariationAttribute: string;
+
+declare var kCTFontVariationAxesAttribute: string;
 
 declare var kCTFontVariationAxisDefaultValueKey: string;
 

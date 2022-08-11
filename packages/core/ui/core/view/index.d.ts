@@ -3,10 +3,14 @@ import { Property, InheritedProperty } from '../properties';
 import { EventData } from '../../../data/observable';
 import { Color } from '../../../color';
 import { Animation, AnimationDefinition, AnimationPromise } from '../../animation';
-import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from '../../styling/style-properties';
-import { GestureTypes, GestureEventData, GesturesObserver } from '../../gestures';
-import { LinearGradient } from '../../styling/gradient';
+import { GestureTypes, GesturesObserver } from '../../gestures';
+import { LinearGradient } from '../../styling/linear-gradient';
+import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait, AccessibilityEventOptions } from '../../../accessibility/accessibility-types';
+import { CoreTypes } from '../../../core-types';
+import { CSSShadow } from '../../styling/css-shadow';
+import { ViewCommon } from './view-common';
 
+export * from './view-common';
 // helpers (these are okay re-exported here)
 export * from './view-helper';
 
@@ -38,24 +42,6 @@ export function CSSType(type: string): ClassDecorator;
  * @param type Type of the ModuleType to be matched
  */
 export function viewMatchesModuleContext(view: View, context: ModuleContext, type: ModuleType[]): boolean;
-
-/**
- * Denotes a length number that is in device independent pixel units.
- */
-export type dip = number;
-
-/**
- * Denotes a length number that is in physical device pixels.
- */
-export type px = number;
-
-/**
- * Denotes a normalized percent number.
- * 0% is represented as 0
- * 50% is represented as 0.5
- * 100% is represented as 1
- */
-export type percent = number;
 
 /**
  * The Point interface describes a two dimensional location.
@@ -115,7 +101,7 @@ export interface ShownModallyData extends EventData {
  * This class is the base class for all UI components.
  * A View occupies a rectangular area on the screen and is responsible for drawing and layouting of all UI components within.
  */
-export abstract class View extends ViewBase {
+export abstract class View extends ViewCommon {
 	/**
 	 * String value used when hooking to layoutChanged event.
 	 */
@@ -131,13 +117,30 @@ export abstract class View extends ViewBase {
 	public static shownModallyEvent: string;
 
 	/**
+	 * String value used when hooking to accessibilityBlur event.
+	 */
+	public static accessibilityBlurEvent: string;
+
+	/**
+	 * String value used when hooking to accessibilityFocus event.
+	 */
+	public static accessibilityFocusEvent: string;
+
+	/**
+	 * String value used when hooking to accessibilityFocusChanged event.
+	 */
+	public static accessibilityFocusChangedEvent: string;
+
+	/**
 	 * Gets the android-specific native instance that lies behind this proxy. Will be available if running on an Android platform.
 	 */
+	// @ts-ignore
 	public android: any;
 
 	/**
 	 * Gets the ios-specific native instance that lies behind this proxy. Will be available if running on an iOS platform.
 	 */
+	// @ts-ignore
 	public ios: any;
 
 	/**
@@ -173,57 +176,118 @@ export abstract class View extends ViewBase {
 	/**
 	 * Gets or sets the border width of the view.
 	 */
-	borderWidth: string | Length;
+	borderWidth: string | CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the top border width of the view.
 	 */
-	borderTopWidth: Length;
+	borderTopWidth: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the right border width of the view.
 	 */
-	borderRightWidth: Length;
+	borderRightWidth: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the bottom border width of the view.
 	 */
-	borderBottomWidth: Length;
+	borderBottomWidth: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the left border width of the view.
 	 */
-	borderLeftWidth: Length;
+	borderLeftWidth: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the border radius of the view.
 	 */
-	borderRadius: string | Length;
+	borderRadius: string | CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the top left border radius of the view.
 	 */
-	borderTopLeftRadius: Length;
+	borderTopLeftRadius: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the top right border radius of the view.
 	 */
-	borderTopRightRadius: Length;
+	borderTopRightRadius: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the bottom right border radius of the view.
 	 */
-	borderBottomRightRadius: Length;
+	borderBottomRightRadius: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the bottom left border radius of the view.
 	 */
-	borderBottomLeftRadius: Length;
+	borderBottomLeftRadius: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the color of the view.
 	 */
 	color: Color;
+
+	/**
+	 * If `true` the element is an accessibility element and all the children will be treated as a single selectable component.
+	 */
+	accessible: boolean;
+
+	/**
+	 * Hide the view and its children from the a11y service
+	 */
+	accessibilityHidden: boolean;
+
+	/**
+	 * The view's unique accessibilityIdentifier.
+	 *
+	 * This is used for automated testing.
+	 */
+	accessibilityIdentifier: string;
+
+	/**
+	 * Which role should this view be treated by the a11y service?
+	 */
+	accessibilityRole: AccessibilityRole;
+
+	/**
+	 * Which state should this view be treated as by the a11y service?
+	 */
+	accessibilityState: AccessibilityState;
+
+	/**
+	 * Short description of the element, ideally one word.
+	 */
+	accessibilityLabel: string;
+
+	/**
+	 * Current value of the element in a localized string.
+	 */
+	accessibilityValue: string;
+
+	/**
+	 * A hint describes the elements behavior. Example: 'Tap change playback speed'
+	 */
+	accessibilityHint: string;
+	accessibilityLiveRegion: AccessibilityLiveRegion;
+
+	/**
+	 * Sets the language in which to speak the element's label and value.
+	 * Accepts language ID tags that follows the "BCP 47" specification.
+	 */
+	accessibilityLanguage: string;
+
+	/**
+	 * This view starts a media session. Equivalent to trait = startsMedia
+	 */
+	accessibilityMediaSession: boolean;
+
+	/**
+	 * Internal use only. This is used to limit the number of updates to android.view.View.setContentDescription()
+	 */
+	_androidContentDescriptionUpdated?: boolean;
+
+	automationText: string;
 
 	/**
 	 * Gets or sets the elevation of the android view.
@@ -251,64 +315,69 @@ export abstract class View extends ViewBase {
 	backgroundImage: string | LinearGradient;
 
 	/**
+	 * Gets or sets the box shadow of the view.
+	 */
+	boxShadow: string | CSSShadow;
+
+	/**
 	 * Gets or sets the minimum width the view may grow to.
 	 */
-	minWidth: Length;
+	minWidth: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the minimum height the view may grow to.
 	 */
-	minHeight: Length;
+	minHeight: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the desired width of the view.
 	 */
-	width: PercentLength;
+	width: CoreTypes.PercentLengthType;
 
 	/**
 	 * Gets or sets the desired height of the view.
 	 */
-	height: PercentLength;
+	height: CoreTypes.PercentLengthType;
 
 	/**
 	 * Gets or sets margin style property.
 	 */
-	margin: string | PercentLength;
+	margin: string | CoreTypes.PercentLengthType;
 
 	/**
 	 * Specifies extra space on the left side of this view.
 	 */
-	marginLeft: PercentLength;
+	marginLeft: CoreTypes.PercentLengthType;
 
 	/**
 	 * Specifies extra space on the top side of this view.
 	 */
-	marginTop: PercentLength;
+	marginTop: CoreTypes.PercentLengthType;
 
 	/**
 	 * Specifies extra space on the right side of this view.
 	 */
-	marginRight: PercentLength;
+	marginRight: CoreTypes.PercentLengthType;
 
 	/**
 	 * Specifies extra space on the bottom side of this view.
 	 */
-	marginBottom: PercentLength;
+	marginBottom: CoreTypes.PercentLengthType;
 
 	/**
 	 * Gets or sets the alignment of this view within its parent along the Horizontal axis.
 	 */
-	horizontalAlignment: HorizontalAlignment;
+	horizontalAlignment: CoreTypes.HorizontalAlignmentType;
 
 	/**
 	 * Gets or sets the alignment of this view within its parent along the Vertical axis.
 	 */
-	verticalAlignment: VerticalAlignment;
+	verticalAlignment: CoreTypes.VerticalAlignmentType;
 
 	/**
 	 * Gets or sets the visibility of the view.
 	 */
-	visibility: Visibility;
+	visibility: CoreTypes.VisibilityType;
 
 	/**
 	 * Gets or sets the opacity style property.
@@ -339,12 +408,12 @@ export abstract class View extends ViewBase {
 	/**
 	 * Gets or sets the translateX affine transform of the view in device independent pixels.
 	 */
-	translateX: dip;
+	translateX: CoreTypes.dip;
 
 	/**
 	 * Gets or sets the translateY affine transform of the view in device independent pixels.
 	 */
-	translateY: dip;
+	translateY: CoreTypes.dip;
 
 	/**
 	 * Gets or sets the scaleX affine transform of the view.
@@ -357,11 +426,6 @@ export abstract class View extends ViewBase {
 	scaleY: number;
 
 	//END Style property shortcuts
-
-	/**
-	 * Gets or sets the automation text of the view.
-	 */
-	automationText: string;
 
 	/**
 	 * Gets or sets the X component of the origin point around which the view will be transformed. The default value is 0.5 representing the center of the view.
@@ -392,6 +456,11 @@ export abstract class View extends ViewBase {
 	 * Enables or disables the iosOverflowSafeArea property for all children. This property is iOS specific. Default value: true
 	 */
 	iosOverflowSafeAreaEnabled: boolean;
+
+	/**
+	 * Gets or sets a value indicating whether the the view should totally ignore safe areas computation. This property is iOS specific. Default value: false
+	 */
+	iosIgnoreSafeArea: boolean;
 
 	/**
 	 * Gets is layout is valid. This is a read-only property.
@@ -662,6 +731,30 @@ export abstract class View extends ViewBase {
 	 */
 	public eachChildView(callback: (view: View) => boolean): void;
 
+	/**
+	 * Send accessibility event
+	 * @params options AccessibilityEventOptions
+	 * androidAccessibilityEvent: AndroidAccessibilityEvent;
+	 * iosNotificationType: IOSPostAccessibilityNotificationType;
+	 * message: string;
+	 *
+	 * iOS Notes:
+	 *  type = 'announcement' will announce `args` via VoiceOver. If no args element will be announced instead.
+	 *  type = 'layout' used when the layout of a screen changes.
+	 *  type = 'screen' large change made to the screen.
+	 */
+	public sendAccessibilityEvent(options: Partial<AccessibilityEventOptions>): void;
+
+	/**
+	 * Make an announcement to the screen reader.
+	 */
+	public accessibilityAnnouncement(msg?: string): void;
+
+	/**
+	 * Announce screen changed
+	 */
+	public accessibilityScreenChanged(): void;
+
 	//@private
 	/**
 	 * @private
@@ -728,15 +821,21 @@ export abstract class View extends ViewBase {
 	/**
 	 * @private
 	 */
-	_setMinWidthNative(value: Length): void;
+	_setMinWidthNative(value: CoreTypes.LengthType): void;
 	/**
 	 * @private
 	 */
-	_setMinHeightNative(value: Length): void;
+	_setMinHeightNative(value: CoreTypes.LengthType): void;
 	/**
 	 * @private
 	 */
 	_redrawNativeBackground(value: any): void;
+	/**
+	 * @private
+	 *  method called on Android to apply the background. This allows custom handling
+	 */
+	_applyBackground(background: Background, isBorderDrawable: boolean, onlyColor: boolean, backgroundDrawable: any);
+
 	/**
 	 * @private
 	 */
@@ -808,11 +907,11 @@ export class CustomLayoutView extends ContainerView {
 	/**
 	 * @private
 	 */
-	_setChildMinWidthNative(child: View, value: Length): void;
+	_setChildMinWidthNative(child: View, value: CoreTypes.LengthType): void;
 	/**
 	 * @private
 	 */
-	_setChildMinHeightNative(child: View, value: Length): void;
+	_setChildMinHeightNative(child: View, value: CoreTypes.LengthType): void;
 	//@endprivate
 }
 
@@ -868,7 +967,6 @@ export interface AddChildFromBuilder {
 	_addChildFromBuilder(name: string, value: any): void;
 }
 
-export const automationTextProperty: Property<View, string>;
 export const originXProperty: Property<View, number>;
 export const originYProperty: Property<View, number>;
 export const isEnabledProperty: Property<View, boolean>;

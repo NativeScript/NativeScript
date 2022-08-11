@@ -24,6 +24,8 @@ interface at_block_buffer_t {
 }
 declare var at_block_buffer_t: interop.StructType<at_block_buffer_t>;
 
+declare function at_block_format_convert_to_MTLPixelFormat(blockFormat: at_block_format_t, flags: at_flags_t): number;
+
 declare const enum at_block_format_t {
 
 	at_block_format_invalid = 0,
@@ -107,7 +109,7 @@ declare const enum at_block_format_t {
 	at_block_format_count = 43
 }
 
-declare function at_block_format_to_MTLPixelFormat(p1: at_block_format_t): number;
+declare function at_block_format_to_MTLPixelFormat(blockFormat: at_block_format_t): number;
 
 declare function at_encoder_compress_texels(encoder: NSObject, src: interop.Pointer | interop.Reference<at_texel_region_t>, dest: interop.Pointer | interop.Reference<at_block_buffer_t>, errorThreshold: number, flags: at_flags_t): number;
 

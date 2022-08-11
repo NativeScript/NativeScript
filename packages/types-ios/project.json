@@ -1,0 +1,24 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/types-ios/src",
+  "projectType": "library",
+  "generators": {},
+  "targets": {
+    "build": {
+      "executor": "@nrwl/workspace:run-commands",
+      "outputs": [
+        "dist/packages"
+      ],
+      "options": {
+        "commands": [
+          "./tools/scripts/typings-gen.sh latest",
+          "mkdir -p dist/packages/types-ios",
+          "cp -R packages/types-ios/src/* dist/packages/types-ios",
+          "cp packages/types-ios/package.json dist/packages/types-ios",
+          "cp packages/types-ios/README.md dist/packages/types-ios/README.md"
+        ],
+        "parallel": false
+      }
+    }
+  }
+}

@@ -1,11 +1,81 @@
 
+declare const enum SKANError {
+
+	ImpressionMissingRequiredValue = 0,
+
+	Unsupported = 1,
+
+	AdNetworkIdMissing = 2,
+
+	MismatchedSourceAppId = 3,
+
+	ImpressionNotFound = 4,
+
+	InvalidCampaignId = 5,
+
+	InvalidConversionValue = 6,
+
+	InvalidSourceAppId = 7,
+
+	InvalidAdvertisedAppId = 8,
+
+	InvalidVersion = 9,
+
+	Unknown = 10,
+
+	ImpressionTooShort = 11
+}
+
+declare var SKANErrorDomain: string;
+
+declare class SKAdImpression extends NSObject {
+
+	static alloc(): SKAdImpression; // inherited from NSObject
+
+	static new(): SKAdImpression; // inherited from NSObject
+
+	adCampaignIdentifier: number;
+
+	adDescription: string;
+
+	adImpressionIdentifier: string;
+
+	adNetworkIdentifier: string;
+
+	adPurchaserName: string;
+
+	adType: string;
+
+	advertisedAppStoreItemIdentifier: number;
+
+	signature: string;
+
+	sourceAppStoreItemIdentifier: number;
+
+	timestamp: number;
+
+	version: string;
+
+	constructor(o: { sourceAppStoreItemIdentifier: number; advertisedAppStoreItemIdentifier: number; adNetworkIdentifier: string; adCampaignIdentifier: number; adImpressionIdentifier: string; timestamp: number; signature: string; version: string; });
+
+	initWithSourceAppStoreItemIdentifierAdvertisedAppStoreItemIdentifierAdNetworkIdentifierAdCampaignIdentifierAdImpressionIdentifierTimestampSignatureVersion(sourceAppStoreItemIdentifier: number, advertisedAppStoreItemIdentifier: number, adNetworkIdentifier: string, adCampaignIdentifier: number, adImpressionIdentifier: string, timestamp: number, signature: string, version: string): this;
+}
+
 declare class SKAdNetwork extends NSObject {
 
 	static alloc(): SKAdNetwork; // inherited from NSObject
 
+	static endImpressionCompletionHandler(impression: SKAdImpression, completion: (p1: NSError) => void): void;
+
 	static new(): SKAdNetwork; // inherited from NSObject
 
 	static registerAppForAdNetworkAttribution(): void;
+
+	static startImpressionCompletionHandler(impression: SKAdImpression, completion: (p1: NSError) => void): void;
+
+	static updateConversionValue(conversionValue: number): void;
+
+	static updatePostbackConversionValueCompletionHandler(conversionValue: number, completion: (p1: NSError) => void): void;
 }
 
 declare class SKArcadeService extends NSObject {
@@ -53,7 +123,7 @@ declare class SKCloudServiceController extends NSObject {
 
 	static new(): SKCloudServiceController; // inherited from NSObject
 
-	static requestAuthorization(handler: (p1: SKCloudServiceAuthorizationStatus) => void): void;
+	static requestAuthorization(completionHandler: (p1: SKCloudServiceAuthorizationStatus) => void): void;
 
 	requestCapabilitiesWithCompletionHandler(completionHandler: (p1: SKCloudServiceCapability, p2: NSError) => void): void;
 
@@ -182,7 +252,19 @@ declare const enum SKErrorCode {
 
 	MissingOfferParams = 13,
 
-	InvalidOfferPrice = 14
+	InvalidOfferPrice = 14,
+
+	OverlayCancelled = 15,
+
+	OverlayInvalidConfiguration = 16,
+
+	OverlayTimeout = 17,
+
+	IneligibleForOffer = 18,
+
+	UnsupportedPlatform = 19,
+
+	OverlayPresentedInBackgroundScene = 20
 }
 
 declare var SKErrorDomain: string;
@@ -206,6 +288,125 @@ declare class SKMutablePayment extends SKPayment {
 	requestData: NSData;
 
 	simulatesAskToBuyInSandbox: boolean;
+}
+
+declare class SKOverlay extends NSObject {
+
+	static alloc(): SKOverlay; // inherited from NSObject
+
+	static dismissOverlayInScene(scene: UIWindowScene): void;
+
+	static new(): SKOverlay; // inherited from NSObject
+
+	readonly configuration: SKOverlayConfiguration;
+
+	delegate: SKOverlayDelegate;
+
+	constructor(o: { configuration: SKOverlayConfiguration; });
+
+	initWithConfiguration(configuration: SKOverlayConfiguration): this;
+
+	presentInScene(scene: UIWindowScene): void;
+}
+
+declare class SKOverlayAppClipConfiguration extends SKOverlayConfiguration {
+
+	static alloc(): SKOverlayAppClipConfiguration; // inherited from NSObject
+
+	static new(): SKOverlayAppClipConfiguration; // inherited from NSObject
+
+	campaignToken: string;
+
+	customProductPageIdentifier: string;
+
+	latestReleaseID: string;
+
+	position: SKOverlayPosition;
+
+	providerToken: string;
+
+	constructor(o: { position: SKOverlayPosition; });
+
+	additionalValueForKey(key: string): any;
+
+	initWithPosition(position: SKOverlayPosition): this;
+
+	setAdditionalValueForKey(value: any, key: string): void;
+}
+
+declare class SKOverlayAppConfiguration extends SKOverlayConfiguration {
+
+	static alloc(): SKOverlayAppConfiguration; // inherited from NSObject
+
+	static new(): SKOverlayAppConfiguration; // inherited from NSObject
+
+	appIdentifier: string;
+
+	campaignToken: string;
+
+	customProductPageIdentifier: string;
+
+	latestReleaseID: string;
+
+	position: SKOverlayPosition;
+
+	providerToken: string;
+
+	userDismissible: boolean;
+
+	constructor(o: { appIdentifier: string; position: SKOverlayPosition; });
+
+	additionalValueForKey(key: string): any;
+
+	initWithAppIdentifierPosition(appIdentifier: string, position: SKOverlayPosition): this;
+
+	setAdImpression(impression: SKAdImpression): void;
+
+	setAdditionalValueForKey(value: any, key: string): void;
+}
+
+declare class SKOverlayConfiguration extends NSObject {
+
+	static alloc(): SKOverlayConfiguration; // inherited from NSObject
+
+	static new(): SKOverlayConfiguration; // inherited from NSObject
+}
+
+interface SKOverlayDelegate extends NSObjectProtocol {
+
+	storeOverlayDidFailToLoadWithError?(overlay: SKOverlay, error: NSError): void;
+
+	storeOverlayDidFinishDismissal?(overlay: SKOverlay, transitionContext: SKOverlayTransitionContext): void;
+
+	storeOverlayDidFinishPresentation?(overlay: SKOverlay, transitionContext: SKOverlayTransitionContext): void;
+
+	storeOverlayWillStartDismissal?(overlay: SKOverlay, transitionContext: SKOverlayTransitionContext): void;
+
+	storeOverlayWillStartPresentation?(overlay: SKOverlay, transitionContext: SKOverlayTransitionContext): void;
+}
+declare var SKOverlayDelegate: {
+
+	prototype: SKOverlayDelegate;
+};
+
+declare const enum SKOverlayPosition {
+
+	Bottom = 0,
+
+	BottomRaised = 1
+}
+
+declare class SKOverlayTransitionContext extends NSObject {
+
+	static alloc(): SKOverlayTransitionContext; // inherited from NSObject
+
+	static new(): SKOverlayTransitionContext; // inherited from NSObject
+
+	readonly endFrame: CGRect;
+
+	readonly startFrame: CGRect;
+
+	addAnimationBlock(block: () => void): void;
 }
 
 declare class SKPayment extends NSObject implements NSCopying, NSMutableCopying {
@@ -270,6 +471,8 @@ declare class SKPaymentQueue extends NSObject {
 
 	readonly storefront: SKStorefront;
 
+	readonly transactionObservers: NSArray<SKPaymentTransactionObserver>;
+
 	readonly transactions: NSArray<SKPaymentTransaction>;
 
 	addPayment(payment: SKPayment): void;
@@ -282,6 +485,8 @@ declare class SKPaymentQueue extends NSObject {
 
 	pauseDownloads(downloads: NSArray<SKDownload> | SKDownload[]): void;
 
+	presentCodeRedemptionSheet(): void;
+
 	removeTransactionObserver(observer: SKPaymentTransactionObserver): void;
 
 	restoreCompletedTransactions(): void;
@@ -290,12 +495,16 @@ declare class SKPaymentQueue extends NSObject {
 
 	resumeDownloads(downloads: NSArray<SKDownload> | SKDownload[]): void;
 
+	showPriceConsentIfNeeded(): void;
+
 	startDownloads(downloads: NSArray<SKDownload> | SKDownload[]): void;
 }
 
 interface SKPaymentQueueDelegate extends NSObjectProtocol {
 
 	paymentQueueShouldContinueTransactionInStorefront?(paymentQueue: SKPaymentQueue, transaction: SKPaymentTransaction, newStorefront: SKStorefront): boolean;
+
+	paymentQueueShouldShowPriceConsent?(paymentQueue: SKPaymentQueue): boolean;
 }
 declare var SKPaymentQueueDelegate: {
 
@@ -328,6 +537,8 @@ declare class SKPaymentTransaction extends NSObject {
 interface SKPaymentTransactionObserver extends NSObjectProtocol {
 
 	paymentQueueDidChangeStorefront?(queue: SKPaymentQueue): void;
+
+	paymentQueueDidRevokeEntitlementsForProductIdentifiers?(queue: SKPaymentQueue, productIdentifiers: NSArray<string> | string[]): void;
 
 	paymentQueueRemovedTransactions?(queue: SKPaymentQueue, transactions: NSArray<SKPaymentTransaction> | SKPaymentTransaction[]): void;
 
@@ -376,6 +587,8 @@ declare class SKProduct extends NSObject {
 	readonly introductoryPrice: SKProductDiscount;
 
 	readonly isDownloadable: boolean;
+
+	readonly isFamilyShareable: boolean;
 
 	readonly localizedDescription: string;
 
@@ -452,7 +665,7 @@ declare class SKProductStorePromotionController extends NSObject {
 
 	fetchStorePromotionVisibilityForProductCompletionHandler(product: SKProduct, completionHandler: (p1: SKProductStorePromotionVisibility, p2: NSError) => void): void;
 
-	updateStorePromotionOrderCompletionHandler(storePromotionOrder: NSArray<SKProduct> | SKProduct[], completionHandler: (p1: NSError) => void): void;
+	updateStorePromotionOrderCompletionHandler(promotionOrder: NSArray<SKProduct> | SKProduct[], completionHandler: (p1: NSError) => void): void;
 
 	updateStorePromotionVisibilityForProductCompletionHandler(promotionVisibility: SKProductStorePromotionVisibility, product: SKProduct, completionHandler: (p1: NSError) => void): void;
 }
@@ -561,13 +774,19 @@ declare var SKStoreProductParameterAdNetworkIdentifier: string;
 
 declare var SKStoreProductParameterAdNetworkNonce: string;
 
+declare var SKStoreProductParameterAdNetworkSourceAppStoreIdentifier: string;
+
 declare var SKStoreProductParameterAdNetworkTimestamp: string;
+
+declare var SKStoreProductParameterAdNetworkVersion: string;
 
 declare var SKStoreProductParameterAdvertisingPartnerToken: string;
 
 declare var SKStoreProductParameterAffiliateToken: string;
 
 declare var SKStoreProductParameterCampaignToken: string;
+
+declare var SKStoreProductParameterCustomProductPageIdentifier: string;
 
 declare var SKStoreProductParameterITunesItemIdentifier: string;
 
@@ -584,6 +803,8 @@ declare class SKStoreProductViewController extends UIViewController {
 	delegate: SKStoreProductViewControllerDelegate;
 
 	loadProductWithParametersCompletionBlock(parameters: NSDictionary<string, any>, block: (p1: boolean, p2: NSError) => void): void;
+
+	loadProductWithParametersImpressionCompletionBlock(parameters: NSDictionary<string, any>, impression: SKAdImpression, block: (p1: boolean, p2: NSError) => void): void;
 }
 
 interface SKStoreProductViewControllerDelegate extends NSObjectProtocol {
@@ -602,6 +823,8 @@ declare class SKStoreReviewController extends NSObject {
 	static new(): SKStoreReviewController; // inherited from NSObject
 
 	static requestReview(): void;
+
+	static requestReviewInScene(windowScene: UIWindowScene): void;
 }
 
 declare class SKStorefront extends NSObject {

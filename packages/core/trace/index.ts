@@ -185,6 +185,7 @@ export namespace Trace {
 	 * all predefined categories.
 	 */
 	export namespace categories {
+		export const Accessibility = 'Accessibility';
 		export const VisualTreeEvents = 'VisualTreeEvents';
 		export const Layout = 'Layout';
 		export const Style = 'Style';
@@ -202,7 +203,7 @@ export namespace Trace {
 		export const ModuleNameResolver = 'ModuleNameResolver';
 
 		export const separator = ',';
-		export const All = [VisualTreeEvents, Layout, Style, ViewHierarchy, NativeLifecycle, Debug, Navigation, Test, Binding, Error, Animation, Transition, Livesync, ModuleNameResolver].join(separator);
+		export const All: string = [VisualTreeEvents, Layout, Style, ViewHierarchy, NativeLifecycle, Debug, Navigation, Test, Binding, Error, Animation, Transition, Livesync, ModuleNameResolver].join(separator);
 
 		export function concat(...args: any): string {
 			let result: string;

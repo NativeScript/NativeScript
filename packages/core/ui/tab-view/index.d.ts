@@ -7,8 +7,8 @@ import { ViewBase } from '../core/view-base';
 import { Property, CssProperty } from '../core/properties';
 import { EventData } from '../../data/observable';
 import { Color } from '../../color';
+import { CoreTypes } from '../../core-types';
 import { Style } from '../styling/style';
-import { TextTransform } from '../text-base';
 /**
  * Represents a tab view entry.
  */
@@ -31,7 +31,7 @@ export class TabViewItem extends ViewBase {
 	/**
 	 * Gets or sets the text transform of the tab titles.
 	 */
-	textTransform: TextTransform;
+	textTransform: CoreTypes.TextTransformType;
 
 	/**
 	 * @private
@@ -113,6 +113,14 @@ export class TabView extends View {
 	iosIconRenderingMode: 'automatic' | 'alwaysOriginal' | 'alwaysTemplate';
 
 	/**
+	 * Gets or sets the rendering mode of tab icons on Android.  Defaults to "original"
+	 * Valid values are:
+	 *  - alwaysOriginal
+	 *  - alwaysTemplate
+	 */
+	androidIconRenderingMode: 'alwaysOriginal' | 'alwaysTemplate';
+
+	/**
 	 * Gets or sets the number of tabs that should be retained to either side of the current tab in the view hierarchy in an idle state.
 	 * Tabs beyond this limit will be recreated from the TabView when needed.
 	 */
@@ -160,3 +168,4 @@ export const selectedTabTextColorProperty: CssProperty<Style, Color>;
 export const androidSelectedTabHighlightColorProperty: CssProperty<Style, Color>;
 export const androidOffscreenTabLimitProperty: Property<TabView, number>;
 export const iosIconRenderingModeProperty: Property<TabView, 'automatic' | 'alwaysOriginal' | 'alwaysTemplate'>;
+export const androidIconRenderingModeProperty: Property<TabView, 'alwaysOriginal' | 'alwaysTemplate'>;

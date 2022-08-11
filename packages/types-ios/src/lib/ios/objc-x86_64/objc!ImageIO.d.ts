@@ -137,6 +137,13 @@ declare const enum CGImagePropertyOrientation {
 	kCGImagePropertyOrientationLeft = 8
 }
 
+declare const enum CGImagePropertyTGACompression {
+
+	kCGImageTGACompressionNone = 0,
+
+	kCGImageTGACompressionRLE = 1
+}
+
 declare function CGImageSourceCopyAuxiliaryDataInfoAtIndex(isrc: any, index: number, auxiliaryImageDataType: string): NSDictionary<any, any>;
 
 declare function CGImageSourceCopyMetadataAtIndex(isrc: any, index: number, options: NSDictionary<any, any>): any;
@@ -210,11 +217,17 @@ declare var kCGImageAuxiliaryDataTypeDepth: string;
 
 declare var kCGImageAuxiliaryDataTypeDisparity: string;
 
+declare var kCGImageAuxiliaryDataTypeHDRGainMap: string;
+
 declare var kCGImageAuxiliaryDataTypePortraitEffectsMatte: string;
+
+declare var kCGImageAuxiliaryDataTypeSemanticSegmentationGlassesMatte: string;
 
 declare var kCGImageAuxiliaryDataTypeSemanticSegmentationHairMatte: string;
 
 declare var kCGImageAuxiliaryDataTypeSemanticSegmentationSkinMatte: string;
+
+declare var kCGImageAuxiliaryDataTypeSemanticSegmentationSkyMatte: string;
 
 declare var kCGImageAuxiliaryDataTypeSemanticSegmentationTeethMatte: string;
 
@@ -235,6 +248,8 @@ declare var kCGImageDestinationMetadata: string;
 declare var kCGImageDestinationOptimizeColorForSharing: string;
 
 declare var kCGImageDestinationOrientation: string;
+
+declare var kCGImageDestinationPreserveGainMap: string;
 
 declare var kCGImageMetadataEnumerateRecursively: string;
 
@@ -814,6 +829,32 @@ declare var kCGImagePropertyGPSTrackRef: string;
 
 declare var kCGImagePropertyGPSVersion: string;
 
+declare var kCGImagePropertyGroupImageBaseline: string;
+
+declare var kCGImagePropertyGroupImageDisparityAdjustment: string;
+
+declare var kCGImagePropertyGroupImageIndexLeft: string;
+
+declare var kCGImagePropertyGroupImageIndexRight: string;
+
+declare var kCGImagePropertyGroupImageIsAlternateImage: string;
+
+declare var kCGImagePropertyGroupImageIsLeftImage: string;
+
+declare var kCGImagePropertyGroupImageIsRightImage: string;
+
+declare var kCGImagePropertyGroupImagesAlternate: string;
+
+declare var kCGImagePropertyGroupIndex: string;
+
+declare var kCGImagePropertyGroupType: string;
+
+declare var kCGImagePropertyGroupTypeAlternate: string;
+
+declare var kCGImagePropertyGroupTypeStereoPair: string;
+
+declare var kCGImagePropertyGroups: string;
+
 declare var kCGImagePropertyHEICSCanvasPixelHeight: string;
 
 declare var kCGImagePropertyHEICSCanvasPixelWidth: string;
@@ -827,6 +868,8 @@ declare var kCGImagePropertyHEICSFrameInfoArray: string;
 declare var kCGImagePropertyHEICSLoopCount: string;
 
 declare var kCGImagePropertyHEICSUnclampedDelayTime: string;
+
+declare var kCGImagePropertyHEIFDictionary: string;
 
 declare var kCGImagePropertyHasAlpha: string;
 
@@ -1314,6 +1357,8 @@ declare var kCGImagePropertyIPTCWriterEditor: string;
 
 declare var kCGImagePropertyImageCount: string;
 
+declare var kCGImagePropertyImageIndex: string;
+
 declare var kCGImagePropertyImages: string;
 
 declare var kCGImagePropertyIsFloat: string;
@@ -1430,11 +1475,15 @@ declare var kCGImagePropertyPNGInterlaceType: string;
 
 declare var kCGImagePropertyPNGModificationTime: string;
 
+declare var kCGImagePropertyPNGPixelsAspectRatio: string;
+
 declare var kCGImagePropertyPNGSoftware: string;
 
 declare var kCGImagePropertyPNGSource: string;
 
 declare var kCGImagePropertyPNGTitle: string;
+
+declare var kCGImagePropertyPNGTransparency: string;
 
 declare var kCGImagePropertyPNGWarning: string;
 
@@ -1455,6 +1504,10 @@ declare var kCGImagePropertyPrimaryImage: string;
 declare var kCGImagePropertyProfileName: string;
 
 declare var kCGImagePropertyRawDictionary: string;
+
+declare var kCGImagePropertyTGACompression: string;
+
+declare var kCGImagePropertyTGADictionary: string;
 
 declare var kCGImagePropertyTIFFArtist: string;
 
@@ -1500,6 +1553,20 @@ declare var kCGImagePropertyTIFFYResolution: string;
 
 declare var kCGImagePropertyThumbnailImages: string;
 
+declare var kCGImagePropertyWebPCanvasPixelHeight: string;
+
+declare var kCGImagePropertyWebPCanvasPixelWidth: string;
+
+declare var kCGImagePropertyWebPDelayTime: string;
+
+declare var kCGImagePropertyWebPDictionary: string;
+
+declare var kCGImagePropertyWebPFrameInfoArray: string;
+
+declare var kCGImagePropertyWebPLoopCount: string;
+
+declare var kCGImagePropertyWebPUnclampedDelayTime: string;
+
 declare var kCGImagePropertyWidth: string;
 
 declare var kCGImageSourceCreateThumbnailFromImageAlways: string;
@@ -1519,3 +1586,21 @@ declare var kCGImageSourceSubsampleFactor: string;
 declare var kCGImageSourceThumbnailMaxPixelSize: string;
 
 declare var kCGImageSourceTypeIdentifierHint: string;
+
+declare var kIIOCameraExtrinsics_CoordinateSystemID: string;
+
+declare var kIIOCameraExtrinsics_Position: string;
+
+declare var kIIOCameraExtrinsics_Rotation: string;
+
+declare var kIIOCameraModelType_GenericPinhole: string;
+
+declare var kIIOCameraModelType_SimplifiedPinhole: string;
+
+declare var kIIOCameraModel_Intrinsics: string;
+
+declare var kIIOCameraModel_ModelType: string;
+
+declare var kIIOMetadata_CameraExtrinsicsKey: string;
+
+declare var kIIOMetadata_CameraModelKey: string;

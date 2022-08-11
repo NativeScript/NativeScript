@@ -78,6 +78,8 @@ declare class SNClassificationResult extends NSObject implements SNResult {
 
 	class(): typeof NSObject;
 
+	classificationForIdentifier(identifier: string): SNClassification;
+
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
 	isEqual(object: any): boolean;
@@ -99,13 +101,21 @@ declare class SNClassificationResult extends NSObject implements SNResult {
 	self(): this;
 }
 
+declare var SNClassifierIdentifierVersion1: string;
+
 declare class SNClassifySoundRequest extends NSObject implements SNRequest {
 
 	static alloc(): SNClassifySoundRequest; // inherited from NSObject
 
 	static new(): SNClassifySoundRequest; // inherited from NSObject
 
+	readonly knownClassifications: NSArray<string>;
+
 	overlapFactor: number;
+
+	windowDuration: CMTime;
+
+	readonly windowDurationConstraint: SNTimeDurationConstraint;
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
@@ -119,11 +129,15 @@ declare class SNClassifySoundRequest extends NSObject implements SNRequest {
 
 	readonly  // inherited from NSObjectProtocol
 
+	constructor(o: { classifierIdentifier: string; });
+
 	constructor(o: { MLModel: MLModel; });
 
 	class(): typeof NSObject;
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	initWithClassifierIdentifierError(classifierIdentifier: string): this;
 
 	initWithMLModelError(mlModel: MLModel): this;
 
@@ -187,3 +201,31 @@ declare var SNResultsObserving: {
 
 	prototype: SNResultsObserving;
 };
+
+declare class SNTimeDurationConstraint extends NSObject {
+
+	static alloc(): SNTimeDurationConstraint; // inherited from NSObject
+
+	static new(): SNTimeDurationConstraint; // inherited from NSObject
+
+	readonly durationRange: CMTimeRange;
+
+	readonly enumeratedDurations: NSArray<NSValue>;
+
+	readonly type: SNTimeDurationConstraintType;
+
+	constructor(o: { durationRange: CMTimeRange; });
+
+	constructor(o: { enumeratedDurations: NSArray<NSValue> | NSValue[]; });
+
+	initWithDurationRange(durationRange: CMTimeRange): this;
+
+	initWithEnumeratedDurations(enumeratedDurations: NSArray<NSValue> | NSValue[]): this;
+}
+
+declare const enum SNTimeDurationConstraintType {
+
+	Enumerated = 1,
+
+	Range = 2
+}

@@ -36,8 +36,200 @@ declare const enum BNNSActivationFunction {
 
 	IntegerLinearSaturatePerChannel = 10,
 
-	Softmax = 11
+	Softmax = 11,
+
+	GELUApproximation = 12,
+
+	Gumbel = 13,
+
+	GumbelMax = 14,
+
+	HardSigmoid = 15,
+
+	Softplus = 16,
+
+	Softsign = 17,
+
+	ELU = 18,
+
+	ClampedLeakyRectifiedLinear = 19,
+
+	LinearWithBias = 20,
+
+	LogSoftmax = 21,
+
+	LogSigmoid = 22,
+
+	SELU = 23,
+
+	CELU = 24,
+
+	HardShrink = 25,
+
+	SoftShrink = 26,
+
+	TanhShrink = 27,
+
+	Threshold = 28,
+
+	PReLUPerChannel = 29,
+
+	GELUApproximation2 = 30,
+
+	HardSwish = 30,
+
+	SiLU = 31
 }
+
+declare function BNNSApplyMultiheadAttention(F: interop.Pointer | interop.Reference<any>, batch_size: number, query: interop.Pointer | interop.Reference<any>, query_stride: number, key: interop.Pointer | interop.Reference<any>, key_stride: number, key_mask: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, key_mask_stride: number, value: interop.Pointer | interop.Reference<any>, value_stride: number, output: interop.Pointer | interop.Reference<any>, output_stride: number, add_to_attention: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, backprop_cache_size: interop.Pointer | interop.Reference<number>, backprop_cache: interop.Pointer | interop.Reference<any>, workspace_size: interop.Pointer | interop.Reference<number>, workspace: interop.Pointer | interop.Reference<any>): number;
+
+declare function BNNSApplyMultiheadAttentionBackward(F: interop.Pointer | interop.Reference<any>, batch_size: number, query: interop.Pointer | interop.Reference<any>, query_stride: number, query_param_delta: interop.Pointer | interop.Reference<BNNSMHAProjectionParameters>, key: interop.Pointer | interop.Reference<any>, key_stride: number, key_mask: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, key_mask_stride: number, key_param_delta: interop.Pointer | interop.Reference<BNNSMHAProjectionParameters>, value: interop.Pointer | interop.Reference<any>, value_stride: number, value_param_delta: interop.Pointer | interop.Reference<BNNSMHAProjectionParameters>, add_to_attention: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, key_attn_bias_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, value_attn_bias_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, output: interop.Pointer | interop.Reference<any>, output_stride: number, output_param_delta: interop.Pointer | interop.Reference<BNNSMHAProjectionParameters>, backprop_cache_size: number, backprop_cache: interop.Pointer | interop.Reference<any>, workspace_size: interop.Pointer | interop.Reference<number>, workspace: interop.Pointer | interop.Reference<any>): number;
+
+interface BNNSArithmeticBinary {
+	in1: BNNSNDArrayDescriptor;
+	in1_type: BNNSDescriptorType;
+	in2: BNNSNDArrayDescriptor;
+	in2_type: BNNSDescriptorType;
+	out: BNNSNDArrayDescriptor;
+	out_type: BNNSDescriptorType;
+}
+declare var BNNSArithmeticBinary: interop.StructType<BNNSArithmeticBinary>;
+
+declare function BNNSArithmeticFilterApplyBackwardBatch(filter: interop.Pointer | interop.Reference<any>, batch_size: number, number_of_inputs: number, _in: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, in_stride: interop.Pointer | interop.Reference<number>, in_delta: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>>, in_delta_stride: interop.Pointer | interop.Reference<number>, out: interop.Pointer | interop.Reference<any>, out_stride: number, out_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, out_delta_stride: number): number;
+
+declare function BNNSArithmeticFilterApplyBatch(filter: interop.Pointer | interop.Reference<any>, batch_size: number, number_of_inputs: number, _in: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, in_stride: interop.Pointer | interop.Reference<number>, out: interop.Pointer | interop.Reference<any>, out_stride: number): number;
+
+declare const enum BNNSArithmeticFunction {
+
+	Add = 0,
+
+	Subtract = 1,
+
+	Multiply = 2,
+
+	Divide = 3,
+
+	SquareRoot = 4,
+
+	ReciprocalSquareRoot = 5,
+
+	Ceil = 6,
+
+	Floor = 7,
+
+	Round = 8,
+
+	Sin = 9,
+
+	Cos = 10,
+
+	Tan = 11,
+
+	Asin = 12,
+
+	Acos = 13,
+
+	Atan = 14,
+
+	Sinh = 15,
+
+	Cosh = 16,
+
+	Tanh = 17,
+
+	Asinh = 18,
+
+	Acosh = 19,
+
+	Atanh = 20,
+
+	Pow = 21,
+
+	Exp = 22,
+
+	Exp2 = 23,
+
+	Log = 24,
+
+	Log2 = 25,
+
+	MultiplyNoNaN = 26,
+
+	DivideNoNaN = 27,
+
+	MultiplyAdd = 28,
+
+	Minimum = 29,
+
+	Maximum = 30,
+
+	Select = 31,
+
+	Abs = 32,
+
+	Sign = 33,
+
+	Negate = 34,
+
+	Reciprocal = 35,
+
+	Square = 36,
+
+	FloorDivide = 37,
+
+	TruncDivide = 38,
+
+	TruncRemainder = 39,
+
+	Erf = 40
+}
+
+interface BNNSArithmeticTernary {
+	in1: BNNSNDArrayDescriptor;
+	in1_type: BNNSDescriptorType;
+	in2: BNNSNDArrayDescriptor;
+	in2_type: BNNSDescriptorType;
+	in3: BNNSNDArrayDescriptor;
+	in3_type: BNNSDescriptorType;
+	out: BNNSNDArrayDescriptor;
+	out_type: BNNSDescriptorType;
+}
+declare var BNNSArithmeticTernary: interop.StructType<BNNSArithmeticTernary>;
+
+interface BNNSArithmeticUnary {
+	in: BNNSNDArrayDescriptor;
+	in_type: BNNSDescriptorType;
+	out: BNNSNDArrayDescriptor;
+	out_type: BNNSDescriptorType;
+}
+declare var BNNSArithmeticUnary: interop.StructType<BNNSArithmeticUnary>;
+
+declare function BNNSBandPart(num_lower: number, num_upper: number, input: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, output: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): number;
+
+declare const enum BNNSBoxCoordinateMode {
+
+	CornersHeightFirst = 0,
+
+	CornersWidthFirst = 1,
+
+	CenterSizeHeightFirst = 2,
+
+	CenterSizeWidthFirst = 3
+}
+
+declare function BNNSClipByGlobalNorm(dest: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>>, src: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>>, count: number, max_norm: number, use_norm: number): number;
+
+declare function BNNSClipByNorm(dest: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, src: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, max_norm: number, axis_flags: number): number;
+
+declare function BNNSClipByValue(dest: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, src: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, min_val: number, max_val: number): number;
+
+declare function BNNSCompareTensor(in0: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, in1: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, op: BNNSRelationalOperator, out: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>): number;
+
+declare function BNNSComputeLSTMTrainingCacheCapacity(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersLSTM>): number;
+
+declare function BNNSComputeNorm(dest: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, src: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, norm_type: BNNSNormType, axis_flags: number): number;
+
+declare function BNNSComputeNormBackward(_in: interop.Pointer | interop.Reference<any>, in_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, out: interop.Pointer | interop.Reference<any>, out_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, norm_type: BNNSNormType, axis_flags: number): number;
 
 interface BNNSConvolutionLayerParameters {
 	x_stride: number;
@@ -54,6 +246,75 @@ interface BNNSConvolutionLayerParameters {
 }
 declare var BNNSConvolutionLayerParameters: interop.StructType<BNNSConvolutionLayerParameters>;
 
+declare function BNNSCopy(dest: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, src: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): number;
+
+declare function BNNSCreateRandomGenerator(method: BNNSRandomGeneratorMethod, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSCreateRandomGeneratorWithSeed(method: BNNSRandomGeneratorMethod, seed: number, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSCropResize(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersCropResize>, input: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, roi: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, output: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): number;
+
+declare function BNNSCropResizeBackward(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersCropResize>, in_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, roi: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, out_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): number;
+
+declare const enum BNNSDataLayout {
+
+	LayoutVector = 65536,
+
+	Layout1DLastMajor = 98304,
+
+	Layout1DFirstMajor = 98305,
+
+	LayoutRowMajorMatrix = 131072,
+
+	LayoutColumnMajorMatrix = 131073,
+
+	Layout2DLastMajor = 163840,
+
+	Layout2DFirstMajor = 163841,
+
+	LayoutFullyConnectedSparse = 135169,
+
+	LayoutImageCHW = 196608,
+
+	LayoutSNE = 196609,
+
+	LayoutNSE = 196610,
+
+	LayoutMHA_DHK = 196611,
+
+	Layout3DLastMajor = 229376,
+
+	Layout3DFirstMajor = 229377,
+
+	LayoutConvolutionWeightsOIHW = 262144,
+
+	LayoutConvolutionWeightsOIHrWr = 262145,
+
+	LayoutConvolutionWeightsIOHrWr = 262146,
+
+	LayoutConvolutionWeightsOIHW_Pack32 = 262160,
+
+	Layout4DLastMajor = 294912,
+
+	Layout4DFirstMajor = 294913,
+
+	Layout5DLastMajor = 360448,
+
+	Layout5DFirstMajor = 360449,
+
+	Layout6DLastMajor = 425984,
+
+	Layout6DFirstMajor = 425985,
+
+	Layout7DLastMajor = 491520,
+
+	Layout7DFirstMajor = 491521,
+
+	Layout8DLastMajor = 557056,
+
+	Layout8DFirstMajor = 557057
+}
+
 declare const enum BNNSDataType {
 
 	FloatBit = 65536,
@@ -62,7 +323,15 @@ declare const enum BNNSDataType {
 
 	Float32 = 65568,
 
+	BFloat16 = 98320,
+
 	IntBit = 131072,
+
+	Int1 = 131073,
+
+	Int2 = 131074,
+
+	Int4 = 131076,
 
 	Int8 = 131080,
 
@@ -70,7 +339,15 @@ declare const enum BNNSDataType {
 
 	Int32 = 131104,
 
+	Int64 = 131136,
+
 	UIntBit = 262144,
+
+	UInt1 = 262145,
+
+	UInt2 = 262146,
+
+	UInt4 = 262148,
 
 	UInt8 = 262152,
 
@@ -78,18 +355,108 @@ declare const enum BNNSDataType {
 
 	UInt32 = 262176,
 
+	UInt64 = 262208,
+
 	IndexedBit = 524288,
 
-	Indexed8 = 524296
+	Indexed1 = 524289,
+
+	Indexed2 = 524290,
+
+	Indexed4 = 524292,
+
+	Indexed8 = 524296,
+
+	MiscellaneousBit = 1048576,
+
+	Boolean = 1048584
+}
+
+declare const enum BNNSDescriptorType {
+
+	Constant = 0,
+
+	Sample = 1,
+
+	Parameter = 2
+}
+
+declare function BNNSDestroyRandomGenerator(generator: interop.Pointer | interop.Reference<any>): void;
+
+declare function BNNSDirectApplyActivationBatch(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersActivation>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>, batch_size: number, in_stride: number, out_stride: number): number;
+
+declare function BNNSDirectApplyBroadcastMatMul(transA: boolean, transB: boolean, alpha: number, inputA: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, inputB: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, output: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): void;
+
+declare function BNNSDirectApplyInTopK(K: number, axis: number, batch_size: number, input: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, input_batch_stride: number, test_indices: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, test_indices_batch_stride: number, output: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, output_batch_stride: number, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): number;
+
+declare function BNNSDirectApplyLSTMBatchBackward(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersLSTM>, layer_delta_params: interop.Pointer | interop.Reference<BNNSLayerParametersLSTM>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>, training_cache_ptr: interop.Pointer | interop.Reference<any>, training_cache_capacity: number): number;
+
+declare function BNNSDirectApplyLSTMBatchTrainingCaching(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersLSTM>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>, training_cache_ptr: interop.Pointer | interop.Reference<any>, training_cache_capacity: number): number;
+
+declare function BNNSDirectApplyQuantizer(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersQuantization>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>, batch_size: number, input_stride: number, output_stride: number): number;
+
+declare function BNNSDirectApplyReduction(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersReduction>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): number;
+
+declare function BNNSDirectApplyTopK(K: number, axis: number, batch_size: number, input: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, input_batch_stride: number, best_values: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, best_values_batch_stride: number, best_indices: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, best_indices_batch_stride: number, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): number;
+
+declare const enum BNNSEmbeddingFlags {
+
+	ScaleGradientByFrequency = 1
 }
 
 declare function BNNSFilterApply(filter: interop.Pointer | interop.Reference<any>, _in: interop.Pointer | interop.Reference<any>, out: interop.Pointer | interop.Reference<any>): number;
 
+declare function BNNSFilterApplyBackwardBatch(filter: interop.Pointer | interop.Reference<any>, batch_size: number, _in: interop.Pointer | interop.Reference<any>, in_stride: number, in_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, in_delta_stride: number, out: interop.Pointer | interop.Reference<any>, out_stride: number, out_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, out_delta_stride: number, weights_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, bias_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>): number;
+
+declare function BNNSFilterApplyBackwardTwoInputBatch(filter: interop.Pointer | interop.Reference<any>, batch_size: number, inA: interop.Pointer | interop.Reference<any>, inA_stride: number, inA_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, inA_delta_stride: number, inB: interop.Pointer | interop.Reference<any>, inB_stride: number, inB_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, inB_delta_stride: number, out: interop.Pointer | interop.Reference<any>, out_stride: number, out_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, out_delta_stride: number, weights_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, bias_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>): number;
+
 declare function BNNSFilterApplyBatch(filter: interop.Pointer | interop.Reference<any>, batch_size: number, _in: interop.Pointer | interop.Reference<any>, in_stride: number, out: interop.Pointer | interop.Reference<any>, out_stride: number): number;
+
+declare function BNNSFilterApplyTwoInput(filter: interop.Pointer | interop.Reference<any>, inA: interop.Pointer | interop.Reference<any>, inB: interop.Pointer | interop.Reference<any>, out: interop.Pointer | interop.Reference<any>): number;
+
+declare function BNNSFilterApplyTwoInputBatch(filter: interop.Pointer | interop.Reference<any>, batch_size: number, inA: interop.Pointer | interop.Reference<any>, inA_stride: number, inB: interop.Pointer | interop.Reference<any>, inB_stride: number, out: interop.Pointer | interop.Reference<any>, out_stride: number): number;
 
 declare function BNNSFilterCreateConvolutionLayer(in_desc: interop.Pointer | interop.Reference<BNNSImageStackDescriptor>, out_desc: interop.Pointer | interop.Reference<BNNSImageStackDescriptor>, layer_params: interop.Pointer | interop.Reference<BNNSConvolutionLayerParameters>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
 
 declare function BNNSFilterCreateFullyConnectedLayer(in_desc: interop.Pointer | interop.Reference<BNNSVectorDescriptor>, out_desc: interop.Pointer | interop.Reference<BNNSVectorDescriptor>, layer_params: interop.Pointer | interop.Reference<BNNSFullyConnectedLayerParameters>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateFusedLayer(number_of_fused_filters: number, filter_type: interop.Pointer | interop.Reference<BNNSFilterType>, layer_params: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateLayerActivation(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersActivation>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateLayerArithmetic(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersArithmetic>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateLayerBroadcastMatMul(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersBroadcastMatMul>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateLayerConvolution(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersConvolution>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateLayerDropout(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersDropout>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateLayerEmbedding(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersEmbedding>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateLayerFullyConnected(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersFullyConnected>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateLayerGram(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersGram>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateLayerLoss(layer_params: interop.Pointer | interop.Reference<any>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateLayerMultiheadAttention(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersMultiheadAttention>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateLayerNormalization(normType: BNNSFilterType, layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersNormalization>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateLayerPadding(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersPadding>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateLayerPermute(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersPermute>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateLayerPooling(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersPooling>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateLayerReduction(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersReduction>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateLayerResize(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersResize>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateLayerTensorContraction(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersTensorContraction>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateLayerTransposedConvolution(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersConvolution>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
 
 declare function BNNSFilterCreatePoolingLayer(in_desc: interop.Pointer | interop.Reference<BNNSImageStackDescriptor>, out_desc: interop.Pointer | interop.Reference<BNNSImageStackDescriptor>, layer_params: interop.Pointer | interop.Reference<BNNSPoolingLayerParameters>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
 
@@ -105,6 +472,27 @@ interface BNNSFilterParameters {
 }
 declare var BNNSFilterParameters: interop.StructType<BNNSFilterParameters>;
 
+declare const enum BNNSFilterType {
+
+	Convolution = 0,
+
+	FullyConnected = 1,
+
+	BatchNorm = 2,
+
+	InstanceNorm = 3,
+
+	LayerNorm = 4,
+
+	GroupNorm = 5,
+
+	TransposedConvolution = 6,
+
+	Quantization = 7,
+
+	Arithmetic = 8
+}
+
 declare const enum BNNSFlags {
 
 	UseClientPtr = 1
@@ -119,6 +507,20 @@ interface BNNSFullyConnectedLayerParameters {
 }
 declare var BNNSFullyConnectedLayerParameters: interop.StructType<BNNSFullyConnectedLayerParameters>;
 
+declare function BNNSFusedFilterApplyBackwardBatch(filter: interop.Pointer | interop.Reference<any>, batch_size: number, _in: interop.Pointer | interop.Reference<any>, in_stride: number, in_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, in_delta_stride: number, out: interop.Pointer | interop.Reference<any>, out_stride: number, out_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, out_delta_stride: number, delta_parameters: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>>): number;
+
+declare function BNNSFusedFilterApplyBackwardMultiInputBatch(filter: interop.Pointer | interop.Reference<any>, batch_size: number, number_of_inputs: number, _in: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, in_stride: interop.Pointer | interop.Reference<number>, in_delta: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>>, in_delta_stride: interop.Pointer | interop.Reference<number>, out: interop.Pointer | interop.Reference<any>, out_stride: number, out_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, out_delta_stride: number, delta_parameters: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>>): number;
+
+declare function BNNSFusedFilterApplyBatch(filter: interop.Pointer | interop.Reference<any>, batch_size: number, _in: interop.Pointer | interop.Reference<any>, in_stride: number, out: interop.Pointer | interop.Reference<any>, out_stride: number, training: boolean): number;
+
+declare function BNNSFusedFilterApplyMultiInputBatch(filter: interop.Pointer | interop.Reference<any>, batch_size: number, number_of_inputs: number, _in: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, in_stride: interop.Pointer | interop.Reference<number>, out: interop.Pointer | interop.Reference<any>, out_stride: number, training: boolean): number;
+
+declare function BNNSGather(axis: number, input: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, indices: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, output: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): number;
+
+declare function BNNSGatherND(input: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, indices: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, output: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): number;
+
+declare function BNNSGetPointer(filter: interop.Pointer | interop.Reference<any>, target: BNNSPointerSpecifier): BNNSNDArrayDescriptor;
+
 interface BNNSImageStackDescriptor {
 	width: number;
 	height: number;
@@ -131,6 +533,29 @@ interface BNNSImageStackDescriptor {
 }
 declare var BNNSImageStackDescriptor: interop.StructType<BNNSImageStackDescriptor>;
 
+declare const enum BNNSInterpolationMethod {
+
+	Nearest = 0,
+
+	Linear = 1
+}
+
+interface BNNSLSTMDataDescriptor {
+	data_desc: BNNSNDArrayDescriptor;
+	hidden_desc: BNNSNDArrayDescriptor;
+	cell_state_desc: BNNSNDArrayDescriptor;
+}
+declare var BNNSLSTMDataDescriptor: interop.StructType<BNNSLSTMDataDescriptor>;
+
+interface BNNSLSTMGateDescriptor {
+	iw_desc: interop.Reference<BNNSNDArrayDescriptor>;
+	hw_desc: BNNSNDArrayDescriptor;
+	cw_desc: BNNSNDArrayDescriptor;
+	b_desc: BNNSNDArrayDescriptor;
+	activation: BNNSActivation;
+}
+declare var BNNSLSTMGateDescriptor: interop.StructType<BNNSLSTMGateDescriptor>;
+
 interface BNNSLayerData {
 	data: interop.Pointer | interop.Reference<any>;
 	data_type: BNNSDataType;
@@ -140,9 +565,569 @@ interface BNNSLayerData {
 }
 declare var BNNSLayerData: interop.StructType<BNNSLayerData>;
 
+declare const enum BNNSLayerFlags {
+
+	LSTMBidirectional = 1,
+
+	LSTMDefaultActivations = 2
+}
+
+interface BNNSLayerParametersActivation {
+	i_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+	activation: BNNSActivation;
+	axis_flags: number;
+}
+declare var BNNSLayerParametersActivation: interop.StructType<BNNSLayerParametersActivation>;
+
+interface BNNSLayerParametersArithmetic {
+	arithmetic_function: BNNSArithmeticFunction;
+	arithmetic_function_fields: interop.Pointer | interop.Reference<any>;
+	activation: BNNSActivation;
+}
+declare var BNNSLayerParametersArithmetic: interop.StructType<BNNSLayerParametersArithmetic>;
+
+interface BNNSLayerParametersBroadcastMatMul {
+	alpha: number;
+	beta: number;
+	transA: boolean;
+	transB: boolean;
+	quadratic: boolean;
+	a_is_weights: boolean;
+	b_is_weights: boolean;
+	iA_desc: BNNSNDArrayDescriptor;
+	iB_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+}
+declare var BNNSLayerParametersBroadcastMatMul: interop.StructType<BNNSLayerParametersBroadcastMatMul>;
+
+interface BNNSLayerParametersConvolution {
+	i_desc: BNNSNDArrayDescriptor;
+	w_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+	bias: BNNSNDArrayDescriptor;
+	activation: BNNSActivation;
+	x_stride: number;
+	y_stride: number;
+	x_dilation_stride: number;
+	y_dilation_stride: number;
+	x_padding: number;
+	y_padding: number;
+	groups: number;
+	pad: interop.Reference<number>;
+}
+declare var BNNSLayerParametersConvolution: interop.StructType<BNNSLayerParametersConvolution>;
+
+interface BNNSLayerParametersCropResize {
+	normalized_coordinates: boolean;
+	spatial_scale: number;
+	extrapolation_value: number;
+	sampling_mode: BNNSLinearSamplingMode;
+	box_coordinate_mode: BNNSBoxCoordinateMode;
+	method: BNNSInterpolationMethod;
+}
+declare var BNNSLayerParametersCropResize: interop.StructType<BNNSLayerParametersCropResize>;
+
+interface BNNSLayerParametersDropout {
+	i_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+	rate: number;
+	seed: number;
+	control: number;
+}
+declare var BNNSLayerParametersDropout: interop.StructType<BNNSLayerParametersDropout>;
+
+interface BNNSLayerParametersEmbedding {
+	flags: BNNSEmbeddingFlags;
+	i_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+	dictionary: BNNSNDArrayDescriptor;
+	padding_idx: number;
+	max_norm: number;
+	norm_type: number;
+}
+declare var BNNSLayerParametersEmbedding: interop.StructType<BNNSLayerParametersEmbedding>;
+
+interface BNNSLayerParametersFullyConnected {
+	i_desc: BNNSNDArrayDescriptor;
+	w_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+	bias: BNNSNDArrayDescriptor;
+	activation: BNNSActivation;
+}
+declare var BNNSLayerParametersFullyConnected: interop.StructType<BNNSLayerParametersFullyConnected>;
+
+interface BNNSLayerParametersGram {
+	alpha: number;
+	i_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+}
+declare var BNNSLayerParametersGram: interop.StructType<BNNSLayerParametersGram>;
+
+interface BNNSLayerParametersLSTM {
+	input_size: number;
+	hidden_size: number;
+	batch_size: number;
+	num_layers: number;
+	seq_len: number;
+	dropout: number;
+	lstm_flags: number;
+	sequence_descriptor: BNNSNDArrayDescriptor;
+	input_descriptor: BNNSLSTMDataDescriptor;
+	output_descriptor: BNNSLSTMDataDescriptor;
+	input_gate: BNNSLSTMGateDescriptor;
+	forget_gate: BNNSLSTMGateDescriptor;
+	candidate_gate: BNNSLSTMGateDescriptor;
+	output_gate: BNNSLSTMGateDescriptor;
+	hidden_activation: BNNSActivation;
+}
+declare var BNNSLayerParametersLSTM: interop.StructType<BNNSLayerParametersLSTM>;
+
+interface BNNSLayerParametersLossBase {
+	function: BNNSLossFunction;
+	i_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+	reduction: BNNSLossReductionFunction;
+}
+declare var BNNSLayerParametersLossBase: interop.StructType<BNNSLayerParametersLossBase>;
+
+interface BNNSLayerParametersLossHuber {
+	function: BNNSLossFunction;
+	i_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+	reduction: BNNSLossReductionFunction;
+	huber_delta: number;
+}
+declare var BNNSLayerParametersLossHuber: interop.StructType<BNNSLayerParametersLossHuber>;
+
+interface BNNSLayerParametersLossSigmoidCrossEntropy {
+	function: BNNSLossFunction;
+	i_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+	reduction: BNNSLossReductionFunction;
+	label_smooth: number;
+}
+declare var BNNSLayerParametersLossSigmoidCrossEntropy: interop.StructType<BNNSLayerParametersLossSigmoidCrossEntropy>;
+
+interface BNNSLayerParametersLossSoftmaxCrossEntropy {
+	function: BNNSLossFunction;
+	i_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+	reduction: BNNSLossReductionFunction;
+	label_smooth: number;
+}
+declare var BNNSLayerParametersLossSoftmaxCrossEntropy: interop.StructType<BNNSLayerParametersLossSoftmaxCrossEntropy>;
+
+interface BNNSLayerParametersLossYolo {
+	function: BNNSLossFunction;
+	i_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+	reduction: BNNSLossReductionFunction;
+	huber_delta: number;
+	number_of_grid_columns: number;
+	number_of_grid_rows: number;
+	number_of_anchor_boxes: number;
+	anchor_box_size: number;
+	rescore: boolean;
+	scale_xy: number;
+	scale_wh: number;
+	scale_object: number;
+	scale_no_object: number;
+	scale_classification: number;
+	object_minimum_iou: number;
+	no_object_maximum_iou: number;
+	anchors_data: interop.Pointer | interop.Reference<number>;
+}
+declare var BNNSLayerParametersLossYolo: interop.StructType<BNNSLayerParametersLossYolo>;
+
+interface BNNSLayerParametersMultiheadAttention {
+	query: BNNSMHAProjectionParameters;
+	key: BNNSMHAProjectionParameters;
+	value: BNNSMHAProjectionParameters;
+	add_zero_attn: boolean;
+	key_attn_bias: BNNSNDArrayDescriptor;
+	value_attn_bias: BNNSNDArrayDescriptor;
+	output: BNNSMHAProjectionParameters;
+	dropout: number;
+	seed: number;
+}
+declare var BNNSLayerParametersMultiheadAttention: interop.StructType<BNNSLayerParametersMultiheadAttention>;
+
+interface BNNSLayerParametersNormalization {
+	i_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+	beta_desc: BNNSNDArrayDescriptor;
+	gamma_desc: BNNSNDArrayDescriptor;
+	moving_mean_desc: BNNSNDArrayDescriptor;
+	moving_variance_desc: BNNSNDArrayDescriptor;
+	momentum: number;
+	epsilon: number;
+	activation: BNNSActivation;
+	num_groups: number;
+	normalization_axis: number;
+}
+declare var BNNSLayerParametersNormalization: interop.StructType<BNNSLayerParametersNormalization>;
+
+interface BNNSLayerParametersPadding {
+	i_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+	padding_size: interop.Reference<interop.Reference<number>>;
+	padding_mode: BNNSPaddingMode;
+	padding_value: number;
+}
+declare var BNNSLayerParametersPadding: interop.StructType<BNNSLayerParametersPadding>;
+
+interface BNNSLayerParametersPermute {
+	i_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+	permutation: interop.Reference<number>;
+}
+declare var BNNSLayerParametersPermute: interop.StructType<BNNSLayerParametersPermute>;
+
+interface BNNSLayerParametersPooling {
+	i_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+	bias: BNNSNDArrayDescriptor;
+	activation: BNNSActivation;
+	pooling_function: BNNSPoolingFunction;
+	k_width: number;
+	k_height: number;
+	x_stride: number;
+	y_stride: number;
+	x_dilation_stride: number;
+	y_dilation_stride: number;
+	x_padding: number;
+	y_padding: number;
+	pad: interop.Reference<number>;
+}
+declare var BNNSLayerParametersPooling: interop.StructType<BNNSLayerParametersPooling>;
+
+interface BNNSLayerParametersQuantization {
+	axis_mask: number;
+	function: BNNSQuantizerFunction;
+	i_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+	scale: BNNSNDArrayDescriptor;
+	bias: BNNSNDArrayDescriptor;
+}
+declare var BNNSLayerParametersQuantization: interop.StructType<BNNSLayerParametersQuantization>;
+
+interface BNNSLayerParametersReduction {
+	i_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+	w_desc: BNNSNDArrayDescriptor;
+	reduce_func: BNNSReduceFunction;
+	epsilon: number;
+}
+declare var BNNSLayerParametersReduction: interop.StructType<BNNSLayerParametersReduction>;
+
+interface BNNSLayerParametersResize {
+	method: BNNSInterpolationMethod;
+	i_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+	align_corners: boolean;
+}
+declare var BNNSLayerParametersResize: interop.StructType<BNNSLayerParametersResize>;
+
+interface BNNSLayerParametersTensorContraction {
+	operation: string;
+	alpha: number;
+	beta: number;
+	iA_desc: BNNSNDArrayDescriptor;
+	iB_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+}
+declare var BNNSLayerParametersTensorContraction: interop.StructType<BNNSLayerParametersTensorContraction>;
+
+declare const enum BNNSLinearSamplingMode {
+
+	Default = 0,
+
+	AlignCorners = 1,
+
+	UnalignCorners = 2,
+
+	StrictAlignCorners = 3,
+
+	OffsetCorners = 4
+}
+
+declare function BNNSLossFilterApplyBackwardBatch(filter: interop.Pointer | interop.Reference<any>, batch_size: number, _in: interop.Pointer | interop.Reference<any>, in_stride: number, in_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, in_delta_stride: number, labels: interop.Pointer | interop.Reference<any>, labels_stride: number, weights: interop.Pointer | interop.Reference<any>, weights_size: number, out_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, out_delta_stride: number): number;
+
+declare function BNNSLossFilterApplyBatch(filter: interop.Pointer | interop.Reference<any>, batch_size: number, _in: interop.Pointer | interop.Reference<any>, in_stride: number, labels: interop.Pointer | interop.Reference<any>, labels_stride: number, weights: interop.Pointer | interop.Reference<any>, weights_size: number, out: interop.Pointer | interop.Reference<any>, in_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, in_delta_stride: number): number;
+
+declare const enum BNNSLossFunction {
+
+	SoftmaxCrossEntropy = 1,
+
+	SigmoidCrossEntropy = 2,
+
+	MeanSquareError = 3,
+
+	Huber = 4,
+
+	Yolo = 5,
+
+	Log = 6,
+
+	CosineDistance = 7,
+
+	Hinge = 8,
+
+	MeanAbsoluteError = 9,
+
+	CategoricalCrossEntropy = 10
+}
+
+declare const enum BNNSLossReductionFunction {
+
+	None = 0,
+
+	Sum = 1,
+
+	WeightedMean = 2,
+
+	Mean = 3,
+
+	NonZeroWeightMean = 4
+}
+
+interface BNNSMHAProjectionParameters {
+	target_desc: BNNSNDArrayDescriptor;
+	weights: BNNSNDArrayDescriptor;
+	bias: BNNSNDArrayDescriptor;
+}
+declare var BNNSMHAProjectionParameters: interop.StructType<BNNSMHAProjectionParameters>;
+
+declare function BNNSMatMul(transA: boolean, transB: boolean, alpha: number, inputA: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, inputB: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, output: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, workspace: interop.Pointer | interop.Reference<any>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): number;
+
+declare function BNNSMatMulWorkspaceSize(transA: boolean, transB: boolean, alpha: number, inputA: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, inputB: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, output: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): number;
+
+interface BNNSNDArrayDescriptor {
+	flags: BNNSNDArrayFlags;
+	layout: BNNSDataLayout;
+	size: interop.Reference<number>;
+	stride: interop.Reference<number>;
+	data: interop.Pointer | interop.Reference<any>;
+	data_type: BNNSDataType;
+	table_data: interop.Pointer | interop.Reference<any>;
+	table_data_type: BNNSDataType;
+	data_scale: number;
+	data_bias: number;
+}
+declare var BNNSNDArrayDescriptor: interop.StructType<BNNSNDArrayDescriptor>;
+
+declare const enum BNNSNDArrayFlags {
+
+	BackpropSet = 0,
+
+	BackpropAccumulate = 1
+}
+
+declare function BNNSNDArrayFullyConnectedSparsifySparseCOO(in_dense_shape: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, in_indices: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, in_values: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, out: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, sparse_params: interop.Pointer | interop.Reference<BNNSSparsityParameters>, batch_size: number, workspace: interop.Pointer | interop.Reference<any>, workspace_size: number, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): number;
+
+declare function BNNSNDArrayFullyConnectedSparsifySparseCSR(in_dense_shape: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, in_column_indices: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, in_row_starts: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, in_values: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, out: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, sparse_params: interop.Pointer | interop.Reference<BNNSSparsityParameters>, batch_size: number, workspace: interop.Pointer | interop.Reference<any>, workspace_size: number, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): number;
+
+declare function BNNSNDArrayGetDataSize(array: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>): number;
+
+declare const enum BNNSNormType {
+
+	L2Norm = 1
+}
+
+declare function BNNSNormalizationFilterApplyBackwardBatch(filter: interop.Pointer | interop.Reference<any>, batch_size: number, in_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, in_delta_stride: number, out: interop.Pointer | interop.Reference<any>, out_stride: number, out_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, out_delta_stride: number, beta_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, gamma_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>): number;
+
+declare function BNNSNormalizationFilterApplyBatch(filter: interop.Pointer | interop.Reference<any>, batch_size: number, _in: interop.Pointer | interop.Reference<any>, in_stride: number, out: interop.Pointer | interop.Reference<any>, out_stride: number, training: boolean): number;
+
+interface BNNSOptimizerAdamFields {
+	learning_rate: number;
+	beta1: number;
+	beta2: number;
+	time_step: number;
+	epsilon: number;
+	gradient_scale: number;
+	regularization_scale: number;
+	clip_gradients: boolean;
+	clip_gradients_min: number;
+	clip_gradients_max: number;
+	regularization_func: BNNSOptimizerRegularizationFunction;
+}
+declare var BNNSOptimizerAdamFields: interop.StructType<BNNSOptimizerAdamFields>;
+
+interface BNNSOptimizerAdamWithClippingFields {
+	learning_rate: number;
+	beta1: number;
+	beta2: number;
+	time_step: number;
+	epsilon: number;
+	gradient_scale: number;
+	regularization_scale: number;
+	regularization_func: BNNSOptimizerRegularizationFunction;
+	clipping_func: BNNSOptimizerClippingFunction;
+	clip_gradients_min: number;
+	clip_gradients_max: number;
+	clip_gradients_max_norm: number;
+	clip_gradients_use_norm: number;
+}
+declare var BNNSOptimizerAdamWithClippingFields: interop.StructType<BNNSOptimizerAdamWithClippingFields>;
+
+declare const enum BNNSOptimizerClippingFunction {
+
+	None = 0,
+
+	ByValue = 1,
+
+	ByNorm = 2,
+
+	ByGlobalNorm = 3
+}
+
+declare const enum BNNSOptimizerFunction {
+
+	SGDMomentum = 1,
+
+	Adam = 2,
+
+	RMSProp = 3,
+
+	AdamW = 4,
+
+	AdamAMSGrad = 5,
+
+	AdamWAMSGrad = 6,
+
+	SGDMomentumWithClipping = 7,
+
+	AdamWithClipping = 8,
+
+	RMSPropWithClipping = 9,
+
+	AdamWWithClipping = 10,
+
+	AdamAMSGradWithClipping = 11,
+
+	AdamWAMSGradWithClipping = 12
+}
+
+interface BNNSOptimizerRMSPropFields {
+	learning_rate: number;
+	alpha: number;
+	epsilon: number;
+	centered: boolean;
+	momentum: number;
+	gradient_scale: number;
+	regularization_scale: number;
+	clip_gradients: boolean;
+	clip_gradients_min: number;
+	clip_gradients_max: number;
+	regularization_func: BNNSOptimizerRegularizationFunction;
+}
+declare var BNNSOptimizerRMSPropFields: interop.StructType<BNNSOptimizerRMSPropFields>;
+
+interface BNNSOptimizerRMSPropWithClippingFields {
+	learning_rate: number;
+	alpha: number;
+	epsilon: number;
+	centered: boolean;
+	momentum: number;
+	gradient_scale: number;
+	regularization_scale: number;
+	regularization_func: BNNSOptimizerRegularizationFunction;
+	clipping_func: BNNSOptimizerClippingFunction;
+	clip_gradients_min: number;
+	clip_gradients_max: number;
+	clip_gradients_max_norm: number;
+	clip_gradients_use_norm: number;
+}
+declare var BNNSOptimizerRMSPropWithClippingFields: interop.StructType<BNNSOptimizerRMSPropWithClippingFields>;
+
+declare const enum BNNSOptimizerRegularizationFunction {
+
+	None = 0,
+
+	L1 = 1,
+
+	L2 = 2
+}
+
+interface BNNSOptimizerSGDMomentumFields {
+	learning_rate: number;
+	momentum: number;
+	gradient_scale: number;
+	regularization_scale: number;
+	clip_gradients: boolean;
+	clip_gradients_min: number;
+	clip_gradients_max: number;
+	nesterov: boolean;
+	regularization_func: BNNSOptimizerRegularizationFunction;
+	sgd_momentum_variant: BNNSOptimizerSGDMomentumVariant;
+}
+declare var BNNSOptimizerSGDMomentumFields: interop.StructType<BNNSOptimizerSGDMomentumFields>;
+
+declare const enum BNNSOptimizerSGDMomentumVariant {
+
+	SGDMomentumVariant0 = 0,
+
+	SGDMomentumVariant1 = 1,
+
+	SGDMomentumVariant2 = 2
+}
+
+interface BNNSOptimizerSGDMomentumWithClippingFields {
+	learning_rate: number;
+	momentum: number;
+	gradient_scale: number;
+	regularization_scale: number;
+	nesterov: boolean;
+	regularization_func: BNNSOptimizerRegularizationFunction;
+	sgd_momentum_variant: BNNSOptimizerSGDMomentumVariant;
+	clipping_func: BNNSOptimizerClippingFunction;
+	clip_gradients_min: number;
+	clip_gradients_max: number;
+	clip_gradients_max_norm: number;
+	clip_gradients_use_norm: number;
+}
+declare var BNNSOptimizerSGDMomentumWithClippingFields: interop.StructType<BNNSOptimizerSGDMomentumWithClippingFields>;
+
+declare function BNNSOptimizerStep(_function: BNNSOptimizerFunction, OptimizerAlgFields: interop.Pointer | interop.Reference<any>, number_of_parameters: number, parameters: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>>, gradients: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>>, accumulators: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): number;
+
+declare const enum BNNSPaddingMode {
+
+	Constant = 0,
+
+	Reflect = 1,
+
+	Symmetric = 2
+}
+
+declare function BNNSPermuteFilterApplyBackwardBatch(filter: interop.Pointer | interop.Reference<any>, batch_size: number, in_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, in_delta_stride: number, out_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, out_delta_stride: number): number;
+
+declare const enum BNNSPointerSpecifier {
+
+	Alpha = 0,
+
+	Beta = 1
+}
+
+declare function BNNSPoolingFilterApplyBackwardBatch(filter: interop.Pointer | interop.Reference<any>, batch_size: number, _in: interop.Pointer | interop.Reference<any>, in_stride: number, in_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, in_delta_stride: number, out: interop.Pointer | interop.Reference<any>, out_stride: number, out_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, out_delta_stride: number, bias_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, indices: interop.Pointer | interop.Reference<number>, idx_stride: number): number;
+
+declare function BNNSPoolingFilterApplyBackwardBatchEx(filter: interop.Pointer | interop.Reference<any>, batch_size: number, _in: interop.Pointer | interop.Reference<any>, in_stride: number, in_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, in_delta_stride: number, out: interop.Pointer | interop.Reference<any>, out_stride: number, out_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, out_delta_stride: number, bias_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, indices_data_type: BNNSDataType, indices: interop.Pointer | interop.Reference<any>, idx_stride: number): number;
+
+declare function BNNSPoolingFilterApplyBatch(filter: interop.Pointer | interop.Reference<any>, batch_size: number, _in: interop.Pointer | interop.Reference<any>, in_stride: number, out: interop.Pointer | interop.Reference<any>, out_stride: number, indices: interop.Pointer | interop.Reference<number>, idx_stride: number): number;
+
+declare function BNNSPoolingFilterApplyBatchEx(filter: interop.Pointer | interop.Reference<any>, batch_size: number, _in: interop.Pointer | interop.Reference<any>, in_stride: number, out: interop.Pointer | interop.Reference<any>, out_stride: number, indices_data_type: BNNSDataType, indices: interop.Pointer | interop.Reference<any>, idx_stride: number): number;
+
 declare const enum BNNSPoolingFunction {
 
 	Max = 0,
+
+	AverageCountIncludePadding = 1,
+
+	AverageCountExcludePadding = 2,
+
+	UnMax = 3,
+
+	L2Norm = 4,
 
 	Average = 1
 }
@@ -161,6 +1146,133 @@ interface BNNSPoolingLayerParameters {
 	activation: BNNSActivation;
 }
 declare var BNNSPoolingLayerParameters: interop.StructType<BNNSPoolingLayerParameters>;
+
+declare const enum BNNSQuantizerFunction {
+
+	Quantize = 0,
+
+	Dequantize = 1
+}
+
+declare function BNNSRandomFillNormalFloat(generator: interop.Pointer | interop.Reference<any>, desc: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, mean: number, stddev: number): number;
+
+declare function BNNSRandomFillUniformFloat(generator: interop.Pointer | interop.Reference<any>, desc: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, a: number, b: number): number;
+
+declare function BNNSRandomFillUniformInt(generator: interop.Pointer | interop.Reference<any>, desc: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, a: number, b: number): number;
+
+declare function BNNSRandomGeneratorGetState(generator: interop.Pointer | interop.Reference<any>, state_size: number, state: interop.Pointer | interop.Reference<any>): number;
+
+declare const enum BNNSRandomGeneratorMethod {
+
+	AES_CTR = 0
+}
+
+declare function BNNSRandomGeneratorSetState(generator: interop.Pointer | interop.Reference<any>, state_size: number, state: interop.Pointer | interop.Reference<any>): number;
+
+declare function BNNSRandomGeneratorStateSize(generator: interop.Pointer | interop.Reference<any>): number;
+
+declare const enum BNNSReduceFunction {
+
+	Max = 0,
+
+	Min = 1,
+
+	ArgMax = 2,
+
+	ArgMin = 3,
+
+	Mean = 4,
+
+	MeanNonZero = 5,
+
+	Sum = 6,
+
+	SumSquare = 7,
+
+	SumLog = 8,
+
+	L1Norm = 9,
+
+	LogicalOr = 10,
+
+	LogicalAnd = 11,
+
+	L2Norm = 12,
+
+	LogSumExp = 13,
+
+	Product = 14,
+
+	None = 15,
+
+	Any = 10,
+
+	All = 11
+}
+
+declare const enum BNNSRelationalOperator {
+
+	Equal = 0,
+
+	Less = 1,
+
+	LessEqual = 2,
+
+	Greater = 3,
+
+	GreaterEqual = 4,
+
+	NotEqual = 5,
+
+	LogicalAND = 6,
+
+	LogicalOR = 7,
+
+	LogicalNOT = 8,
+
+	LogicalNAND = 9,
+
+	LogicalNOR = 10,
+
+	LogicalXOR = 11
+}
+
+declare function BNNSScatter(axis: number, op: BNNSReduceFunction, input: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, indices: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, output: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): number;
+
+declare function BNNSScatterND(op: BNNSReduceFunction, input: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, indices: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, output: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): number;
+
+declare function BNNSShuffle(type: BNNSShuffleType, input: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, output: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): number;
+
+declare const enum BNNSShuffleType {
+
+	PixelShuffleNCHW = 0,
+
+	PixelUnshuffleNCHW = 1
+}
+
+interface BNNSSparsityParameters {
+	flags: number;
+	sparsity_ratio: interop.Reference<number>;
+	sparsity_type: BNNSSparsityType;
+	target_system: BNNSTargetSystem;
+}
+declare var BNNSSparsityParameters: interop.StructType<BNNSSparsityParameters>;
+
+declare const enum BNNSSparsityType {
+
+	Unstructured = 0
+}
+
+declare const enum BNNSTargetSystem {
+
+	Generic = 0
+}
+
+declare function BNNSTile(input: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, output: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): number;
+
+declare function BNNSTileBackward(in_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, out_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): number;
+
+declare function BNNSTranspose(dest: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, src: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, axis0: number, axis1: number, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): number;
 
 interface BNNSVectorDescriptor {
 	size: number;
@@ -396,6 +1508,10 @@ declare const enum SparseGMRESVariant_t {
 
 	VariantFGMRES = 2
 }
+
+declare function SparseGetInertia(Factored: SparseOpaqueFactorization_Float, num_positive: interop.Pointer | interop.Reference<number>, num_zero: interop.Pointer | interop.Reference<number>, num_negative: interop.Pointer | interop.Reference<number>): number;
+
+declare function SparseGetInertiaFunction(Factored: SparseOpaqueFactorization_Double, num_positive: interop.Pointer | interop.Reference<number>, num_zero: interop.Pointer | interop.Reference<number>, num_negative: interop.Pointer | interop.Reference<number>): number;
 
 declare function SparseGetTranspose(Matrix: SparseMatrix_Double): SparseMatrix_Double;
 
@@ -832,6 +1948,8 @@ declare function catlas_zaxpby(__N: number, __alpha: interop.Pointer | interop.R
 
 declare function catlas_zset(__N: number, __alpha: interop.Pointer | interop.Reference<any>, __X: interop.Pointer | interop.Reference<any>, __incX: number): void;
 
+declare function caxpy_(n: interop.Pointer | interop.Reference<number>, ca: interop.Pointer | interop.Reference<any>, cx: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>, cy: interop.Pointer | interop.Reference<any>, incy: interop.Pointer | interop.Reference<number>): number;
+
 declare function cbdsqr_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __ncvt: interop.Pointer | interop.Reference<number>, __nru: interop.Pointer | interop.Reference<number>, __ncc: interop.Pointer | interop.Reference<number>, __d__: interop.Pointer | interop.Reference<number>, __e: interop.Pointer | interop.Reference<number>, __vt: interop.Pointer | interop.Reference<__CLPK_complex>, __ldvt: interop.Pointer | interop.Reference<number>, __u: interop.Pointer | interop.Reference<__CLPK_complex>, __ldu: interop.Pointer | interop.Reference<number>, __c__: interop.Pointer | interop.Reference<__CLPK_complex>, __ldc: interop.Pointer | interop.Reference<number>, __rwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function cblas_caxpy(__N: number, __alpha: interop.Pointer | interop.Reference<any>, __X: interop.Pointer | interop.Reference<any>, __incX: number, __Y: interop.Pointer | interop.Reference<any>, __incY: number): void;
@@ -1126,6 +2244,12 @@ declare function cblas_ztrsm(__Order: CBLAS_ORDER, __Side: CBLAS_SIDE, __Uplo: C
 
 declare function cblas_ztrsv(__Order: CBLAS_ORDER, __Uplo: CBLAS_UPLO, __TransA: CBLAS_TRANSPOSE, __Diag: CBLAS_DIAG, __N: number, __A: interop.Pointer | interop.Reference<any>, __lda: number, __X: interop.Pointer | interop.Reference<any>, __incX: number): void;
 
+declare function ccopy_(n: interop.Pointer | interop.Reference<number>, cx: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>, cy: interop.Pointer | interop.Reference<any>, incy: interop.Pointer | interop.Reference<number>): number;
+
+declare function cdotc_(ret_val: interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, cx: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>, cy: interop.Pointer | interop.Reference<any>, incy: interop.Pointer | interop.Reference<number>): void;
+
+declare function cdotu_(ret_val: interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, cx: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>, cy: interop.Pointer | interop.Reference<any>, incy: interop.Pointer | interop.Reference<number>): void;
+
 declare function cgbbrd_(__vect: string | interop.Pointer | interop.Reference<any>, __m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __ncc: interop.Pointer | interop.Reference<number>, __kl: interop.Pointer | interop.Reference<number>, __ku: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<__CLPK_complex>, __ldab: interop.Pointer | interop.Reference<number>, __d__: interop.Pointer | interop.Reference<number>, __e: interop.Pointer | interop.Reference<number>, __q: interop.Pointer | interop.Reference<__CLPK_complex>, __ldq: interop.Pointer | interop.Reference<number>, __pt: interop.Pointer | interop.Reference<__CLPK_complex>, __ldpt: interop.Pointer | interop.Reference<number>, __c__: interop.Pointer | interop.Reference<__CLPK_complex>, __ldc: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_complex>, __rwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function cgbcon_(__norm: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __kl: interop.Pointer | interop.Reference<number>, __ku: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<__CLPK_complex>, __ldab: interop.Pointer | interop.Reference<number>, __ipiv: interop.Pointer | interop.Reference<number>, __anorm: interop.Pointer | interop.Reference<number>, __rcond: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_complex>, __rwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
@@ -1133,6 +2257,8 @@ declare function cgbcon_(__norm: string | interop.Pointer | interop.Reference<an
 declare function cgbequ_(__m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __kl: interop.Pointer | interop.Reference<number>, __ku: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<__CLPK_complex>, __ldab: interop.Pointer | interop.Reference<number>, __r__: interop.Pointer | interop.Reference<number>, __c__: interop.Pointer | interop.Reference<number>, __rowcnd: interop.Pointer | interop.Reference<number>, __colcnd: interop.Pointer | interop.Reference<number>, __amax: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function cgbequb_(__m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __kl: interop.Pointer | interop.Reference<number>, __ku: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<__CLPK_complex>, __ldab: interop.Pointer | interop.Reference<number>, __r__: interop.Pointer | interop.Reference<number>, __c__: interop.Pointer | interop.Reference<number>, __rowcnd: interop.Pointer | interop.Reference<number>, __colcnd: interop.Pointer | interop.Reference<number>, __amax: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
+
+declare function cgbmv_(trans: string | interop.Pointer | interop.Reference<any>, m: interop.Pointer | interop.Reference<number>, n: interop.Pointer | interop.Reference<number>, kl: interop.Pointer | interop.Reference<number>, ku: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<any>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<any>, y: interop.Pointer | interop.Reference<any>, incy: interop.Pointer | interop.Reference<number>): number;
 
 declare function cgbrfs_(__trans: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __kl: interop.Pointer | interop.Reference<number>, __ku: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<__CLPK_complex>, __ldab: interop.Pointer | interop.Reference<number>, __afb: interop.Pointer | interop.Reference<__CLPK_complex>, __ldafb: interop.Pointer | interop.Reference<number>, __ipiv: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<__CLPK_complex>, __ldb: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<__CLPK_complex>, __ldx: interop.Pointer | interop.Reference<number>, __ferr: interop.Pointer | interop.Reference<number>, __berr: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_complex>, __rwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
@@ -1190,6 +2316,10 @@ declare function cgelsx_(__m: interop.Pointer | interop.Reference<number>, __n: 
 
 declare function cgelsy_(__m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_complex>, __lda: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<__CLPK_complex>, __ldb: interop.Pointer | interop.Reference<number>, __jpvt: interop.Pointer | interop.Reference<number>, __rcond: interop.Pointer | interop.Reference<number>, __rank: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_complex>, __lwork: interop.Pointer | interop.Reference<number>, __rwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function cgemm_(transa: string | interop.Pointer | interop.Reference<any>, transb: string | interop.Pointer | interop.Reference<any>, m: interop.Pointer | interop.Reference<number>, n: interop.Pointer | interop.Reference<number>, k: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<any>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>, b: interop.Pointer | interop.Reference<any>, ldb: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<any>, c__: interop.Pointer | interop.Reference<any>, ldc: interop.Pointer | interop.Reference<number>): number;
+
+declare function cgemv_(trans: string | interop.Pointer | interop.Reference<any>, m: interop.Pointer | interop.Reference<number>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<any>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<any>, y: interop.Pointer | interop.Reference<any>, incy: interop.Pointer | interop.Reference<number>): number;
+
 declare function cgeql2_(__m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_complex>, __lda: interop.Pointer | interop.Reference<number>, __tau: interop.Pointer | interop.Reference<__CLPK_complex>, __work: interop.Pointer | interop.Reference<__CLPK_complex>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function cgeqlf_(__m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_complex>, __lda: interop.Pointer | interop.Reference<number>, __tau: interop.Pointer | interop.Reference<__CLPK_complex>, __work: interop.Pointer | interop.Reference<__CLPK_complex>, __lwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
@@ -1202,11 +2332,15 @@ declare function cgeqr2_(__m: interop.Pointer | interop.Reference<number>, __n: 
 
 declare function cgeqrf_(__m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_complex>, __lda: interop.Pointer | interop.Reference<number>, __tau: interop.Pointer | interop.Reference<__CLPK_complex>, __work: interop.Pointer | interop.Reference<__CLPK_complex>, __lwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function cgerc_(m: interop.Pointer | interop.Reference<number>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<any>, x: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>, y: interop.Pointer | interop.Reference<any>, incy: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>): number;
+
 declare function cgerfs_(__trans: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_complex>, __lda: interop.Pointer | interop.Reference<number>, __af: interop.Pointer | interop.Reference<__CLPK_complex>, __ldaf: interop.Pointer | interop.Reference<number>, __ipiv: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<__CLPK_complex>, __ldb: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<__CLPK_complex>, __ldx: interop.Pointer | interop.Reference<number>, __ferr: interop.Pointer | interop.Reference<number>, __berr: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_complex>, __rwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function cgerq2_(__m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_complex>, __lda: interop.Pointer | interop.Reference<number>, __tau: interop.Pointer | interop.Reference<__CLPK_complex>, __work: interop.Pointer | interop.Reference<__CLPK_complex>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function cgerqf_(__m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_complex>, __lda: interop.Pointer | interop.Reference<number>, __tau: interop.Pointer | interop.Reference<__CLPK_complex>, __work: interop.Pointer | interop.Reference<__CLPK_complex>, __lwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
+
+declare function cgeru_(m: interop.Pointer | interop.Reference<number>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<any>, x: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>, y: interop.Pointer | interop.Reference<any>, incy: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>): number;
 
 declare function cgesc2_(__n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_complex>, __lda: interop.Pointer | interop.Reference<number>, __rhs: interop.Pointer | interop.Reference<__CLPK_complex>, __ipiv: interop.Pointer | interop.Reference<number>, __jpiv: interop.Pointer | interop.Reference<number>, __scale: interop.Pointer | interop.Reference<number>): number;
 
@@ -1282,6 +2416,8 @@ declare function chbgvd_(__jobz: string | interop.Pointer | interop.Reference<an
 
 declare function chbgvx_(__jobz: string | interop.Pointer | interop.Reference<any>, __range: string | interop.Pointer | interop.Reference<any>, __uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __ka: interop.Pointer | interop.Reference<number>, __kb: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<__CLPK_complex>, __ldab: interop.Pointer | interop.Reference<number>, __bb: interop.Pointer | interop.Reference<__CLPK_complex>, __ldbb: interop.Pointer | interop.Reference<number>, __q: interop.Pointer | interop.Reference<__CLPK_complex>, __ldq: interop.Pointer | interop.Reference<number>, __vl: interop.Pointer | interop.Reference<number>, __vu: interop.Pointer | interop.Reference<number>, __il: interop.Pointer | interop.Reference<number>, __iu: interop.Pointer | interop.Reference<number>, __abstol: interop.Pointer | interop.Reference<number>, __m: interop.Pointer | interop.Reference<number>, __w: interop.Pointer | interop.Reference<number>, __z__: interop.Pointer | interop.Reference<__CLPK_complex>, __ldz: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_complex>, __rwork: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __ifail: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function chbmv_(uplo: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, k: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<any>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<any>, y: interop.Pointer | interop.Reference<any>, incy: interop.Pointer | interop.Reference<number>): number;
+
 declare function chbtrd_(__vect: string | interop.Pointer | interop.Reference<any>, __uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __kd: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<__CLPK_complex>, __ldab: interop.Pointer | interop.Reference<number>, __d__: interop.Pointer | interop.Reference<number>, __e: interop.Pointer | interop.Reference<number>, __q: interop.Pointer | interop.Reference<__CLPK_complex>, __ldq: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_complex>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function checon_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_complex>, __lda: interop.Pointer | interop.Reference<number>, __ipiv: interop.Pointer | interop.Reference<number>, __anorm: interop.Pointer | interop.Reference<number>, __rcond: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_complex>, __info: interop.Pointer | interop.Reference<number>): number;
@@ -1306,7 +2442,19 @@ declare function chegvd_(__itype: interop.Pointer | interop.Reference<number>, _
 
 declare function chegvx_(__itype: interop.Pointer | interop.Reference<number>, __jobz: string | interop.Pointer | interop.Reference<any>, __range: string | interop.Pointer | interop.Reference<any>, __uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_complex>, __lda: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<__CLPK_complex>, __ldb: interop.Pointer | interop.Reference<number>, __vl: interop.Pointer | interop.Reference<number>, __vu: interop.Pointer | interop.Reference<number>, __il: interop.Pointer | interop.Reference<number>, __iu: interop.Pointer | interop.Reference<number>, __abstol: interop.Pointer | interop.Reference<number>, __m: interop.Pointer | interop.Reference<number>, __w: interop.Pointer | interop.Reference<number>, __z__: interop.Pointer | interop.Reference<__CLPK_complex>, __ldz: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_complex>, __lwork: interop.Pointer | interop.Reference<number>, __rwork: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __ifail: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function chemm_(side: string | interop.Pointer | interop.Reference<any>, uplo: string | interop.Pointer | interop.Reference<any>, m: interop.Pointer | interop.Reference<number>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<any>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>, b: interop.Pointer | interop.Reference<any>, ldb: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<any>, c__: interop.Pointer | interop.Reference<any>, ldc: interop.Pointer | interop.Reference<number>): number;
+
+declare function chemv_(uplo: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<any>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<any>, y: interop.Pointer | interop.Reference<any>, incy: interop.Pointer | interop.Reference<number>): number;
+
+declare function cher2_(uplo: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<any>, x: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>, y: interop.Pointer | interop.Reference<any>, incy: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>): number;
+
+declare function cher2k_(uplo: string | interop.Pointer | interop.Reference<any>, trans: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, k: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<any>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>, b: interop.Pointer | interop.Reference<any>, ldb: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<number>, c__: interop.Pointer | interop.Reference<any>, ldc: interop.Pointer | interop.Reference<number>): number;
+
+declare function cher_(uplo: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>): number;
+
 declare function cherfs_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_complex>, __lda: interop.Pointer | interop.Reference<number>, __af: interop.Pointer | interop.Reference<__CLPK_complex>, __ldaf: interop.Pointer | interop.Reference<number>, __ipiv: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<__CLPK_complex>, __ldb: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<__CLPK_complex>, __ldx: interop.Pointer | interop.Reference<number>, __ferr: interop.Pointer | interop.Reference<number>, __berr: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_complex>, __rwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
+
+declare function cherk_(uplo: string | interop.Pointer | interop.Reference<any>, trans: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, k: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<number>, c__: interop.Pointer | interop.Reference<any>, ldc: interop.Pointer | interop.Reference<number>): number;
 
 declare function chesv_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_complex>, __lda: interop.Pointer | interop.Reference<number>, __ipiv: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<__CLPK_complex>, __ldb: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_complex>, __lwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
@@ -1345,6 +2493,12 @@ declare function chpgv_(__itype: interop.Pointer | interop.Reference<number>, __
 declare function chpgvd_(__itype: interop.Pointer | interop.Reference<number>, __jobz: string | interop.Pointer | interop.Reference<any>, __uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __ap: interop.Pointer | interop.Reference<__CLPK_complex>, __bp: interop.Pointer | interop.Reference<__CLPK_complex>, __w: interop.Pointer | interop.Reference<number>, __z__: interop.Pointer | interop.Reference<__CLPK_complex>, __ldz: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_complex>, __lwork: interop.Pointer | interop.Reference<number>, __rwork: interop.Pointer | interop.Reference<number>, __lrwork: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __liwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function chpgvx_(__itype: interop.Pointer | interop.Reference<number>, __jobz: string | interop.Pointer | interop.Reference<any>, __range: string | interop.Pointer | interop.Reference<any>, __uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __ap: interop.Pointer | interop.Reference<__CLPK_complex>, __bp: interop.Pointer | interop.Reference<__CLPK_complex>, __vl: interop.Pointer | interop.Reference<number>, __vu: interop.Pointer | interop.Reference<number>, __il: interop.Pointer | interop.Reference<number>, __iu: interop.Pointer | interop.Reference<number>, __abstol: interop.Pointer | interop.Reference<number>, __m: interop.Pointer | interop.Reference<number>, __w: interop.Pointer | interop.Reference<number>, __z__: interop.Pointer | interop.Reference<__CLPK_complex>, __ldz: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_complex>, __rwork: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __ifail: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
+
+declare function chpmv_(uplo: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<any>, ap: interop.Pointer | interop.Reference<any>, x: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<any>, y: interop.Pointer | interop.Reference<any>, incy: interop.Pointer | interop.Reference<number>): number;
+
+declare function chpr2_(uplo: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<any>, x: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>, y: interop.Pointer | interop.Reference<any>, incy: interop.Pointer | interop.Reference<number>, ap: interop.Pointer | interop.Reference<any>): number;
+
+declare function chpr_(uplo: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>, ap: interop.Pointer | interop.Reference<any>): number;
 
 declare function chprfs_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __ap: interop.Pointer | interop.Reference<__CLPK_complex>, __afp: interop.Pointer | interop.Reference<__CLPK_complex>, __ipiv: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<__CLPK_complex>, __ldb: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<__CLPK_complex>, __ldx: interop.Pointer | interop.Reference<number>, __ferr: interop.Pointer | interop.Reference<number>, __berr: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_complex>, __rwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
@@ -1632,6 +2786,10 @@ declare function cptts2_(__iuplo: interop.Pointer | interop.Reference<number>, _
 
 declare function crot_(__n: interop.Pointer | interop.Reference<number>, __cx: interop.Pointer | interop.Reference<__CLPK_complex>, __incx: interop.Pointer | interop.Reference<number>, __cy: interop.Pointer | interop.Reference<__CLPK_complex>, __incy: interop.Pointer | interop.Reference<number>, __c__: interop.Pointer | interop.Reference<number>, __s: interop.Pointer | interop.Reference<__CLPK_complex>): number;
 
+declare function crotg_(ca: interop.Pointer | interop.Reference<any>, cb: interop.Pointer | interop.Reference<any>, c: interop.Pointer | interop.Reference<number>, cs: interop.Pointer | interop.Reference<any>): number;
+
+declare function cscal_(n: interop.Pointer | interop.Reference<number>, ca: interop.Pointer | interop.Reference<any>, cx: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>): number;
+
 declare function cspcon_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __ap: interop.Pointer | interop.Reference<__CLPK_complex>, __ipiv: interop.Pointer | interop.Reference<number>, __anorm: interop.Pointer | interop.Reference<number>, __rcond: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_complex>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function cspmv_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __alpha: interop.Pointer | interop.Reference<__CLPK_complex>, __ap: interop.Pointer | interop.Reference<__CLPK_complex>, __x: interop.Pointer | interop.Reference<__CLPK_complex>, __incx: interop.Pointer | interop.Reference<number>, __beta: interop.Pointer | interop.Reference<__CLPK_complex>, __y: interop.Pointer | interop.Reference<__CLPK_complex>, __incy: interop.Pointer | interop.Reference<number>): number;
@@ -1650,7 +2808,11 @@ declare function csptri_(__uplo: string | interop.Pointer | interop.Reference<an
 
 declare function csptrs_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __ap: interop.Pointer | interop.Reference<__CLPK_complex>, __ipiv: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<__CLPK_complex>, __ldb: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function csrot_(n: interop.Pointer | interop.Reference<number>, cx: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>, cy: interop.Pointer | interop.Reference<any>, incy: interop.Pointer | interop.Reference<number>, c: interop.Pointer | interop.Reference<number>, s: interop.Pointer | interop.Reference<number>): number;
+
 declare function csrscl_(__n: interop.Pointer | interop.Reference<number>, __sa: interop.Pointer | interop.Reference<number>, __sx: interop.Pointer | interop.Reference<__CLPK_complex>, __incx: interop.Pointer | interop.Reference<number>): number;
+
+declare function csscal_(n: interop.Pointer | interop.Reference<number>, sa: interop.Pointer | interop.Reference<number>, cx: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>): number;
 
 declare function cstedc_(__compz: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __d__: interop.Pointer | interop.Reference<number>, __e: interop.Pointer | interop.Reference<number>, __z__: interop.Pointer | interop.Reference<__CLPK_complex>, __ldz: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_complex>, __lwork: interop.Pointer | interop.Reference<number>, __rwork: interop.Pointer | interop.Reference<number>, __lrwork: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __liwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
@@ -1662,15 +2824,23 @@ declare function cstemr_(__jobz: string | interop.Pointer | interop.Reference<an
 
 declare function csteqr_(__compz: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __d__: interop.Pointer | interop.Reference<number>, __e: interop.Pointer | interop.Reference<number>, __z__: interop.Pointer | interop.Reference<__CLPK_complex>, __ldz: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function cswap_(n: interop.Pointer | interop.Reference<number>, cx: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>, cy: interop.Pointer | interop.Reference<any>, incy: interop.Pointer | interop.Reference<number>): number;
+
 declare function csycon_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_complex>, __lda: interop.Pointer | interop.Reference<number>, __ipiv: interop.Pointer | interop.Reference<number>, __anorm: interop.Pointer | interop.Reference<number>, __rcond: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_complex>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function csyequb_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_complex>, __lda: interop.Pointer | interop.Reference<number>, __s: interop.Pointer | interop.Reference<number>, __scond: interop.Pointer | interop.Reference<number>, __amax: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_complex>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function csymm_(side: string | interop.Pointer | interop.Reference<any>, uplo: string | interop.Pointer | interop.Reference<any>, m: interop.Pointer | interop.Reference<number>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<any>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>, b: interop.Pointer | interop.Reference<any>, ldb: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<any>, c__: interop.Pointer | interop.Reference<any>, ldc: interop.Pointer | interop.Reference<number>): number;
+
 declare function csymv_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __alpha: interop.Pointer | interop.Reference<__CLPK_complex>, __a: interop.Pointer | interop.Reference<__CLPK_complex>, __lda: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<__CLPK_complex>, __incx: interop.Pointer | interop.Reference<number>, __beta: interop.Pointer | interop.Reference<__CLPK_complex>, __y: interop.Pointer | interop.Reference<__CLPK_complex>, __incy: interop.Pointer | interop.Reference<number>): number;
+
+declare function csyr2k_(uplo: string | interop.Pointer | interop.Reference<any>, trans: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, k: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<any>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>, b: interop.Pointer | interop.Reference<any>, ldb: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<any>, c__: interop.Pointer | interop.Reference<any>, ldc: interop.Pointer | interop.Reference<number>): number;
 
 declare function csyr_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __alpha: interop.Pointer | interop.Reference<__CLPK_complex>, __x: interop.Pointer | interop.Reference<__CLPK_complex>, __incx: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_complex>, __lda: interop.Pointer | interop.Reference<number>): number;
 
 declare function csyrfs_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_complex>, __lda: interop.Pointer | interop.Reference<number>, __af: interop.Pointer | interop.Reference<__CLPK_complex>, __ldaf: interop.Pointer | interop.Reference<number>, __ipiv: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<__CLPK_complex>, __ldb: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<__CLPK_complex>, __ldx: interop.Pointer | interop.Reference<number>, __ferr: interop.Pointer | interop.Reference<number>, __berr: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_complex>, __rwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
+
+declare function csyrk_(uplo: string | interop.Pointer | interop.Reference<any>, trans: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, k: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<any>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<any>, c__: interop.Pointer | interop.Reference<any>, ldc: interop.Pointer | interop.Reference<number>): number;
 
 declare function csysv_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_complex>, __lda: interop.Pointer | interop.Reference<number>, __ipiv: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<__CLPK_complex>, __ldb: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_complex>, __lwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
@@ -1686,7 +2856,11 @@ declare function csytrs_(__uplo: string | interop.Pointer | interop.Reference<an
 
 declare function ctbcon_(__norm: string | interop.Pointer | interop.Reference<any>, __uplo: string | interop.Pointer | interop.Reference<any>, __diag: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __kd: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<__CLPK_complex>, __ldab: interop.Pointer | interop.Reference<number>, __rcond: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_complex>, __rwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function ctbmv_(uplo: string | interop.Pointer | interop.Reference<any>, trans: string | interop.Pointer | interop.Reference<any>, diag: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, k: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>): number;
+
 declare function ctbrfs_(__uplo: string | interop.Pointer | interop.Reference<any>, __trans: string | interop.Pointer | interop.Reference<any>, __diag: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __kd: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<__CLPK_complex>, __ldab: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<__CLPK_complex>, __ldb: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<__CLPK_complex>, __ldx: interop.Pointer | interop.Reference<number>, __ferr: interop.Pointer | interop.Reference<number>, __berr: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_complex>, __rwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
+
+declare function ctbsv_(uplo: string | interop.Pointer | interop.Reference<any>, trans: string | interop.Pointer | interop.Reference<any>, diag: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, k: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>): number;
 
 declare function ctbtrs_(__uplo: string | interop.Pointer | interop.Reference<any>, __trans: string | interop.Pointer | interop.Reference<any>, __diag: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __kd: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<__CLPK_complex>, __ldab: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<__CLPK_complex>, __ldb: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
@@ -1716,7 +2890,11 @@ declare function ctgsyl_(__trans: string | interop.Pointer | interop.Reference<a
 
 declare function ctpcon_(__norm: string | interop.Pointer | interop.Reference<any>, __uplo: string | interop.Pointer | interop.Reference<any>, __diag: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __ap: interop.Pointer | interop.Reference<__CLPK_complex>, __rcond: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_complex>, __rwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function ctpmv_(uplo: string | interop.Pointer | interop.Reference<any>, trans: string | interop.Pointer | interop.Reference<any>, diag: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, ap: interop.Pointer | interop.Reference<any>, x: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>): number;
+
 declare function ctprfs_(__uplo: string | interop.Pointer | interop.Reference<any>, __trans: string | interop.Pointer | interop.Reference<any>, __diag: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __ap: interop.Pointer | interop.Reference<__CLPK_complex>, __b: interop.Pointer | interop.Reference<__CLPK_complex>, __ldb: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<__CLPK_complex>, __ldx: interop.Pointer | interop.Reference<number>, __ferr: interop.Pointer | interop.Reference<number>, __berr: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_complex>, __rwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
+
+declare function ctpsv_(uplo: string | interop.Pointer | interop.Reference<any>, trans: string | interop.Pointer | interop.Reference<any>, diag: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, ap: interop.Pointer | interop.Reference<any>, x: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>): number;
 
 declare function ctptri_(__uplo: string | interop.Pointer | interop.Reference<any>, __diag: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __ap: interop.Pointer | interop.Reference<__CLPK_complex>, __info: interop.Pointer | interop.Reference<number>): number;
 
@@ -1732,11 +2910,19 @@ declare function ctrevc_(__side: string | interop.Pointer | interop.Reference<an
 
 declare function ctrexc_(__compq: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __t: interop.Pointer | interop.Reference<__CLPK_complex>, __ldt: interop.Pointer | interop.Reference<number>, __q: interop.Pointer | interop.Reference<__CLPK_complex>, __ldq: interop.Pointer | interop.Reference<number>, __ifst: interop.Pointer | interop.Reference<number>, __ilst: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function ctrmm_(side: string | interop.Pointer | interop.Reference<any>, uplo: string | interop.Pointer | interop.Reference<any>, transa: string | interop.Pointer | interop.Reference<any>, diag: string | interop.Pointer | interop.Reference<any>, m: interop.Pointer | interop.Reference<number>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<any>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>, b: interop.Pointer | interop.Reference<any>, ldb: interop.Pointer | interop.Reference<number>): number;
+
+declare function ctrmv_(uplo: string | interop.Pointer | interop.Reference<any>, trans: string | interop.Pointer | interop.Reference<any>, diag: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>): number;
+
 declare function ctrrfs_(__uplo: string | interop.Pointer | interop.Reference<any>, __trans: string | interop.Pointer | interop.Reference<any>, __diag: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_complex>, __lda: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<__CLPK_complex>, __ldb: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<__CLPK_complex>, __ldx: interop.Pointer | interop.Reference<number>, __ferr: interop.Pointer | interop.Reference<number>, __berr: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_complex>, __rwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function ctrsen_(__job: string | interop.Pointer | interop.Reference<any>, __compq: string | interop.Pointer | interop.Reference<any>, __select: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __t: interop.Pointer | interop.Reference<__CLPK_complex>, __ldt: interop.Pointer | interop.Reference<number>, __q: interop.Pointer | interop.Reference<__CLPK_complex>, __ldq: interop.Pointer | interop.Reference<number>, __w: interop.Pointer | interop.Reference<__CLPK_complex>, __m: interop.Pointer | interop.Reference<number>, __s: interop.Pointer | interop.Reference<number>, __sep: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_complex>, __lwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function ctrsm_(side: string | interop.Pointer | interop.Reference<any>, uplo: string | interop.Pointer | interop.Reference<any>, transa: string | interop.Pointer | interop.Reference<any>, diag: string | interop.Pointer | interop.Reference<any>, m: interop.Pointer | interop.Reference<number>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<any>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>, b: interop.Pointer | interop.Reference<any>, ldb: interop.Pointer | interop.Reference<number>): number;
+
 declare function ctrsna_(__job: string | interop.Pointer | interop.Reference<any>, __howmny: string | interop.Pointer | interop.Reference<any>, __select: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __t: interop.Pointer | interop.Reference<__CLPK_complex>, __ldt: interop.Pointer | interop.Reference<number>, __vl: interop.Pointer | interop.Reference<__CLPK_complex>, __ldvl: interop.Pointer | interop.Reference<number>, __vr: interop.Pointer | interop.Reference<__CLPK_complex>, __ldvr: interop.Pointer | interop.Reference<number>, __s: interop.Pointer | interop.Reference<number>, __sep: interop.Pointer | interop.Reference<number>, __mm: interop.Pointer | interop.Reference<number>, __m: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_complex>, __ldwork: interop.Pointer | interop.Reference<number>, __rwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
+
+declare function ctrsv_(uplo: string | interop.Pointer | interop.Reference<any>, trans: string | interop.Pointer | interop.Reference<any>, diag: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>): number;
 
 declare function ctrsyl_(__trana: string | interop.Pointer | interop.Reference<any>, __tranb: string | interop.Pointer | interop.Reference<any>, __isgn: interop.Pointer | interop.Reference<number>, __m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_complex>, __lda: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<__CLPK_complex>, __ldb: interop.Pointer | interop.Reference<number>, __c__: interop.Pointer | interop.Reference<__CLPK_complex>, __ldc: interop.Pointer | interop.Reference<number>, __scale: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
@@ -1806,11 +2992,19 @@ declare function cupgtr_(__uplo: string | interop.Pointer | interop.Reference<an
 
 declare function cupmtr_(__side: string | interop.Pointer | interop.Reference<any>, __uplo: string | interop.Pointer | interop.Reference<any>, __trans: string | interop.Pointer | interop.Reference<any>, __m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __ap: interop.Pointer | interop.Reference<__CLPK_complex>, __tau: interop.Pointer | interop.Reference<__CLPK_complex>, __c__: interop.Pointer | interop.Reference<__CLPK_complex>, __ldc: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_complex>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function dasum_(n: interop.Pointer | interop.Reference<number>, dx: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>): number;
+
+declare function daxpy_(n: interop.Pointer | interop.Reference<number>, da: interop.Pointer | interop.Reference<number>, dx: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>, dy: interop.Pointer | interop.Reference<number>, incy: interop.Pointer | interop.Reference<number>): number;
+
 declare function dbdsdc_(__uplo: string | interop.Pointer | interop.Reference<any>, __compq: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __d__: interop.Pointer | interop.Reference<number>, __e: interop.Pointer | interop.Reference<number>, __u: interop.Pointer | interop.Reference<number>, __ldu: interop.Pointer | interop.Reference<number>, __vt: interop.Pointer | interop.Reference<number>, __ldvt: interop.Pointer | interop.Reference<number>, __q: interop.Pointer | interop.Reference<number>, __iq: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function dbdsqr_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __ncvt: interop.Pointer | interop.Reference<number>, __nru: interop.Pointer | interop.Reference<number>, __ncc: interop.Pointer | interop.Reference<number>, __d__: interop.Pointer | interop.Reference<number>, __e: interop.Pointer | interop.Reference<number>, __vt: interop.Pointer | interop.Reference<number>, __ldvt: interop.Pointer | interop.Reference<number>, __u: interop.Pointer | interop.Reference<number>, __ldu: interop.Pointer | interop.Reference<number>, __c__: interop.Pointer | interop.Reference<number>, __ldc: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function dcopy_(n: interop.Pointer | interop.Reference<number>, dx: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>, dy: interop.Pointer | interop.Reference<number>, incy: interop.Pointer | interop.Reference<number>): number;
+
 declare function ddisna_(__job: string | interop.Pointer | interop.Reference<any>, __m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __d__: interop.Pointer | interop.Reference<number>, __sep: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
+
+declare function ddot_(n: interop.Pointer | interop.Reference<number>, dx: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>, dy: interop.Pointer | interop.Reference<number>, incy: interop.Pointer | interop.Reference<number>): number;
 
 declare function dgbbrd_(__vect: string | interop.Pointer | interop.Reference<any>, __m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __ncc: interop.Pointer | interop.Reference<number>, __kl: interop.Pointer | interop.Reference<number>, __ku: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<number>, __ldab: interop.Pointer | interop.Reference<number>, __d__: interop.Pointer | interop.Reference<number>, __e: interop.Pointer | interop.Reference<number>, __q: interop.Pointer | interop.Reference<number>, __ldq: interop.Pointer | interop.Reference<number>, __pt: interop.Pointer | interop.Reference<number>, __ldpt: interop.Pointer | interop.Reference<number>, __c__: interop.Pointer | interop.Reference<number>, __ldc: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
@@ -1819,6 +3013,8 @@ declare function dgbcon_(__norm: string | interop.Pointer | interop.Reference<an
 declare function dgbequ_(__m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __kl: interop.Pointer | interop.Reference<number>, __ku: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<number>, __ldab: interop.Pointer | interop.Reference<number>, __r__: interop.Pointer | interop.Reference<number>, __c__: interop.Pointer | interop.Reference<number>, __rowcnd: interop.Pointer | interop.Reference<number>, __colcnd: interop.Pointer | interop.Reference<number>, __amax: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function dgbequb_(__m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __kl: interop.Pointer | interop.Reference<number>, __ku: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<number>, __ldab: interop.Pointer | interop.Reference<number>, __r__: interop.Pointer | interop.Reference<number>, __c__: interop.Pointer | interop.Reference<number>, __rowcnd: interop.Pointer | interop.Reference<number>, __colcnd: interop.Pointer | interop.Reference<number>, __amax: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
+
+declare function dgbmv_(trans: string | interop.Pointer | interop.Reference<any>, m: interop.Pointer | interop.Reference<number>, n: interop.Pointer | interop.Reference<number>, kl: interop.Pointer | interop.Reference<number>, ku: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<number>, lda: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<number>, y: interop.Pointer | interop.Reference<number>, incy: interop.Pointer | interop.Reference<number>): number;
 
 declare function dgbrfs_(__trans: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __kl: interop.Pointer | interop.Reference<number>, __ku: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<number>, __ldab: interop.Pointer | interop.Reference<number>, __afb: interop.Pointer | interop.Reference<number>, __ldafb: interop.Pointer | interop.Reference<number>, __ipiv: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<number>, __ldb: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<number>, __ldx: interop.Pointer | interop.Reference<number>, __ferr: interop.Pointer | interop.Reference<number>, __berr: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
@@ -1878,6 +3074,10 @@ declare function dgelsx_(__m: interop.Pointer | interop.Reference<number>, __n: 
 
 declare function dgelsy_(__m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<number>, __lda: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<number>, __ldb: interop.Pointer | interop.Reference<number>, __jpvt: interop.Pointer | interop.Reference<number>, __rcond: interop.Pointer | interop.Reference<number>, __rank: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __lwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function dgemm_(transa: string | interop.Pointer | interop.Reference<any>, transb: string | interop.Pointer | interop.Reference<any>, m: interop.Pointer | interop.Reference<number>, n: interop.Pointer | interop.Reference<number>, k: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<number>, lda: interop.Pointer | interop.Reference<number>, b: interop.Pointer | interop.Reference<number>, ldb: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<number>, c__: interop.Pointer | interop.Reference<number>, ldc: interop.Pointer | interop.Reference<number>): number;
+
+declare function dgemv_(trans: string | interop.Pointer | interop.Reference<any>, m: interop.Pointer | interop.Reference<number>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<number>, lda: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<number>, y: interop.Pointer | interop.Reference<number>, incy: interop.Pointer | interop.Reference<number>): number;
+
 declare function dgeql2_(__m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<number>, __lda: interop.Pointer | interop.Reference<number>, __tau: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function dgeqlf_(__m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<number>, __lda: interop.Pointer | interop.Reference<number>, __tau: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __lwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
@@ -1889,6 +3089,8 @@ declare function dgeqpf_(__m: interop.Pointer | interop.Reference<number>, __n: 
 declare function dgeqr2_(__m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<number>, __lda: interop.Pointer | interop.Reference<number>, __tau: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function dgeqrf_(__m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<number>, __lda: interop.Pointer | interop.Reference<number>, __tau: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __lwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
+
+declare function dger_(m: interop.Pointer | interop.Reference<number>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>, y: interop.Pointer | interop.Reference<number>, incy: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<number>, lda: interop.Pointer | interop.Reference<number>): number;
 
 declare function dgerfs_(__trans: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<number>, __lda: interop.Pointer | interop.Reference<number>, __af: interop.Pointer | interop.Reference<number>, __ldaf: interop.Pointer | interop.Reference<number>, __ipiv: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<number>, __ldb: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<number>, __ldx: interop.Pointer | interop.Reference<number>, __ferr: interop.Pointer | interop.Reference<number>, __berr: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
@@ -2258,6 +3460,8 @@ declare function dlauu2_(__uplo: string | interop.Pointer | interop.Reference<an
 
 declare function dlauum_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<number>, __lda: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function dnrm2_(n: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>): number;
+
 declare function dopgtr_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __ap: interop.Pointer | interop.Reference<number>, __tau: interop.Pointer | interop.Reference<number>, __q: interop.Pointer | interop.Reference<number>, __ldq: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function dopmtr_(__side: string | interop.Pointer | interop.Reference<any>, __uplo: string | interop.Pointer | interop.Reference<any>, __trans: string | interop.Pointer | interop.Reference<any>, __m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __ap: interop.Pointer | interop.Reference<number>, __tau: interop.Pointer | interop.Reference<number>, __c__: interop.Pointer | interop.Reference<number>, __ldc: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
@@ -2390,6 +3594,14 @@ declare function dpttrs_(__n: interop.Pointer | interop.Reference<number>, __nrh
 
 declare function dptts2_(__n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __d__: interop.Pointer | interop.Reference<number>, __e: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<number>, __ldb: interop.Pointer | interop.Reference<number>): number;
 
+declare function drot_(n: interop.Pointer | interop.Reference<number>, dx: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>, dy: interop.Pointer | interop.Reference<number>, incy: interop.Pointer | interop.Reference<number>, c: interop.Pointer | interop.Reference<number>, s: interop.Pointer | interop.Reference<number>): number;
+
+declare function drotg_(da: interop.Pointer | interop.Reference<number>, db: interop.Pointer | interop.Reference<number>, c: interop.Pointer | interop.Reference<number>, s: interop.Pointer | interop.Reference<number>): number;
+
+declare function drotm_(n: interop.Pointer | interop.Reference<number>, dx: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>, dy: interop.Pointer | interop.Reference<number>, incy: interop.Pointer | interop.Reference<number>, dparam: interop.Pointer | interop.Reference<number>): number;
+
+declare function drotmg_(dd1: interop.Pointer | interop.Reference<number>, dd2: interop.Pointer | interop.Reference<number>, dx1: interop.Pointer | interop.Reference<number>, dy1: interop.Pointer | interop.Reference<number>, dparam: interop.Pointer | interop.Reference<number>): number;
+
 declare function drscl_(__n: interop.Pointer | interop.Reference<number>, __sa: interop.Pointer | interop.Reference<number>, __sx: interop.Pointer | interop.Reference<number>, __incx: interop.Pointer | interop.Reference<number>): number;
 
 declare function dsbev_(__jobz: string | interop.Pointer | interop.Reference<any>, __uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __kd: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<number>, __ldab: interop.Pointer | interop.Reference<number>, __w: interop.Pointer | interop.Reference<number>, __z__: interop.Pointer | interop.Reference<number>, __ldz: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
@@ -2406,7 +3618,13 @@ declare function dsbgvd_(__jobz: string | interop.Pointer | interop.Reference<an
 
 declare function dsbgvx_(__jobz: string | interop.Pointer | interop.Reference<any>, __range: string | interop.Pointer | interop.Reference<any>, __uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __ka: interop.Pointer | interop.Reference<number>, __kb: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<number>, __ldab: interop.Pointer | interop.Reference<number>, __bb: interop.Pointer | interop.Reference<number>, __ldbb: interop.Pointer | interop.Reference<number>, __q: interop.Pointer | interop.Reference<number>, __ldq: interop.Pointer | interop.Reference<number>, __vl: interop.Pointer | interop.Reference<number>, __vu: interop.Pointer | interop.Reference<number>, __il: interop.Pointer | interop.Reference<number>, __iu: interop.Pointer | interop.Reference<number>, __abstol: interop.Pointer | interop.Reference<number>, __m: interop.Pointer | interop.Reference<number>, __w: interop.Pointer | interop.Reference<number>, __z__: interop.Pointer | interop.Reference<number>, __ldz: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __ifail: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function dsbmv_(uplo: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, k: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<number>, lda: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<number>, y: interop.Pointer | interop.Reference<number>, incy: interop.Pointer | interop.Reference<number>): number;
+
 declare function dsbtrd_(__vect: string | interop.Pointer | interop.Reference<any>, __uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __kd: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<number>, __ldab: interop.Pointer | interop.Reference<number>, __d__: interop.Pointer | interop.Reference<number>, __e: interop.Pointer | interop.Reference<number>, __q: interop.Pointer | interop.Reference<number>, __ldq: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
+
+declare function dscal_(n: interop.Pointer | interop.Reference<number>, da: interop.Pointer | interop.Reference<number>, dx: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>): number;
+
+declare function dsdot_(n: interop.Pointer | interop.Reference<number>, sx: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>, sy: interop.Pointer | interop.Reference<number>, incy: interop.Pointer | interop.Reference<number>): number;
 
 declare function dsfrk_(__transr: string | interop.Pointer | interop.Reference<any>, __uplo: string | interop.Pointer | interop.Reference<any>, __trans: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __k: interop.Pointer | interop.Reference<number>, __alpha: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<number>, __lda: interop.Pointer | interop.Reference<number>, __beta: interop.Pointer | interop.Reference<number>, __c__: interop.Pointer | interop.Reference<number>): number;
 
@@ -2428,7 +3646,13 @@ declare function dspgvd_(__itype: interop.Pointer | interop.Reference<number>, _
 
 declare function dspgvx_(__itype: interop.Pointer | interop.Reference<number>, __jobz: string | interop.Pointer | interop.Reference<any>, __range: string | interop.Pointer | interop.Reference<any>, __uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __ap: interop.Pointer | interop.Reference<number>, __bp: interop.Pointer | interop.Reference<number>, __vl: interop.Pointer | interop.Reference<number>, __vu: interop.Pointer | interop.Reference<number>, __il: interop.Pointer | interop.Reference<number>, __iu: interop.Pointer | interop.Reference<number>, __abstol: interop.Pointer | interop.Reference<number>, __m: interop.Pointer | interop.Reference<number>, __w: interop.Pointer | interop.Reference<number>, __z__: interop.Pointer | interop.Reference<number>, __ldz: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __ifail: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function dspmv_(uplo: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, ap: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<number>, y: interop.Pointer | interop.Reference<number>, incy: interop.Pointer | interop.Reference<number>): number;
+
 declare function dsposv_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<number>, __lda: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<number>, __ldb: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<number>, __ldx: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __swork: interop.Pointer | interop.Reference<number>, __iter: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
+
+declare function dspr2_(uplo: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>, y: interop.Pointer | interop.Reference<number>, incy: interop.Pointer | interop.Reference<number>, ap: interop.Pointer | interop.Reference<number>): number;
+
+declare function dspr_(uplo: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>, ap: interop.Pointer | interop.Reference<number>): number;
 
 declare function dsprfs_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __ap: interop.Pointer | interop.Reference<number>, __afp: interop.Pointer | interop.Reference<number>, __ipiv: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<number>, __ldb: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<number>, __ldx: interop.Pointer | interop.Reference<number>, __ferr: interop.Pointer | interop.Reference<number>, __berr: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
@@ -2466,6 +3690,8 @@ declare function dstevr_(__jobz: string | interop.Pointer | interop.Reference<an
 
 declare function dstevx_(__jobz: string | interop.Pointer | interop.Reference<any>, __range: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __d__: interop.Pointer | interop.Reference<number>, __e: interop.Pointer | interop.Reference<number>, __vl: interop.Pointer | interop.Reference<number>, __vu: interop.Pointer | interop.Reference<number>, __il: interop.Pointer | interop.Reference<number>, __iu: interop.Pointer | interop.Reference<number>, __abstol: interop.Pointer | interop.Reference<number>, __m: interop.Pointer | interop.Reference<number>, __w: interop.Pointer | interop.Reference<number>, __z__: interop.Pointer | interop.Reference<number>, __ldz: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __ifail: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function dswap_(n: interop.Pointer | interop.Reference<number>, dx: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>, dy: interop.Pointer | interop.Reference<number>, incy: interop.Pointer | interop.Reference<number>): number;
+
 declare function dsycon_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<number>, __lda: interop.Pointer | interop.Reference<number>, __ipiv: interop.Pointer | interop.Reference<number>, __anorm: interop.Pointer | interop.Reference<number>, __rcond: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function dsyequb_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<number>, __lda: interop.Pointer | interop.Reference<number>, __s: interop.Pointer | interop.Reference<number>, __scond: interop.Pointer | interop.Reference<number>, __amax: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
@@ -2488,7 +3714,19 @@ declare function dsygvd_(__itype: interop.Pointer | interop.Reference<number>, _
 
 declare function dsygvx_(__itype: interop.Pointer | interop.Reference<number>, __jobz: string | interop.Pointer | interop.Reference<any>, __range: string | interop.Pointer | interop.Reference<any>, __uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<number>, __lda: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<number>, __ldb: interop.Pointer | interop.Reference<number>, __vl: interop.Pointer | interop.Reference<number>, __vu: interop.Pointer | interop.Reference<number>, __il: interop.Pointer | interop.Reference<number>, __iu: interop.Pointer | interop.Reference<number>, __abstol: interop.Pointer | interop.Reference<number>, __m: interop.Pointer | interop.Reference<number>, __w: interop.Pointer | interop.Reference<number>, __z__: interop.Pointer | interop.Reference<number>, __ldz: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __lwork: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __ifail: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function dsymm_(side: string | interop.Pointer | interop.Reference<any>, uplo: string | interop.Pointer | interop.Reference<any>, m: interop.Pointer | interop.Reference<number>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<number>, lda: interop.Pointer | interop.Reference<number>, b: interop.Pointer | interop.Reference<number>, ldb: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<number>, c__: interop.Pointer | interop.Reference<number>, ldc: interop.Pointer | interop.Reference<number>): number;
+
+declare function dsymv_(uplo: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<number>, lda: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<number>, y: interop.Pointer | interop.Reference<number>, incy: interop.Pointer | interop.Reference<number>): number;
+
+declare function dsyr2_(uplo: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>, y: interop.Pointer | interop.Reference<number>, incy: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<number>, lda: interop.Pointer | interop.Reference<number>): number;
+
+declare function dsyr2k_(uplo: string | interop.Pointer | interop.Reference<any>, trans: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, k: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<number>, lda: interop.Pointer | interop.Reference<number>, b: interop.Pointer | interop.Reference<number>, ldb: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<number>, c__: interop.Pointer | interop.Reference<number>, ldc: interop.Pointer | interop.Reference<number>): number;
+
+declare function dsyr_(uplo: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<number>, lda: interop.Pointer | interop.Reference<number>): number;
+
 declare function dsyrfs_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<number>, __lda: interop.Pointer | interop.Reference<number>, __af: interop.Pointer | interop.Reference<number>, __ldaf: interop.Pointer | interop.Reference<number>, __ipiv: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<number>, __ldb: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<number>, __ldx: interop.Pointer | interop.Reference<number>, __ferr: interop.Pointer | interop.Reference<number>, __berr: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
+
+declare function dsyrk_(uplo: string | interop.Pointer | interop.Reference<any>, trans: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, k: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<number>, lda: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<number>, c__: interop.Pointer | interop.Reference<number>, ldc: interop.Pointer | interop.Reference<number>): number;
 
 declare function dsysv_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<number>, __lda: interop.Pointer | interop.Reference<number>, __ipiv: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<number>, __ldb: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __lwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
@@ -2508,7 +3746,11 @@ declare function dsytrs_(__uplo: string | interop.Pointer | interop.Reference<an
 
 declare function dtbcon_(__norm: string | interop.Pointer | interop.Reference<any>, __uplo: string | interop.Pointer | interop.Reference<any>, __diag: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __kd: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<number>, __ldab: interop.Pointer | interop.Reference<number>, __rcond: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function dtbmv_(uplo: string | interop.Pointer | interop.Reference<any>, trans: string | interop.Pointer | interop.Reference<any>, diag: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, k: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<number>, lda: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>): number;
+
 declare function dtbrfs_(__uplo: string | interop.Pointer | interop.Reference<any>, __trans: string | interop.Pointer | interop.Reference<any>, __diag: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __kd: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<number>, __ldab: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<number>, __ldb: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<number>, __ldx: interop.Pointer | interop.Reference<number>, __ferr: interop.Pointer | interop.Reference<number>, __berr: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
+
+declare function dtbsv_(uplo: string | interop.Pointer | interop.Reference<any>, trans: string | interop.Pointer | interop.Reference<any>, diag: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, k: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<number>, lda: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>): number;
 
 declare function dtbtrs_(__uplo: string | interop.Pointer | interop.Reference<any>, __trans: string | interop.Pointer | interop.Reference<any>, __diag: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __kd: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<number>, __ldab: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<number>, __ldb: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
@@ -2538,7 +3780,11 @@ declare function dtgsyl_(__trans: string | interop.Pointer | interop.Reference<a
 
 declare function dtpcon_(__norm: string | interop.Pointer | interop.Reference<any>, __uplo: string | interop.Pointer | interop.Reference<any>, __diag: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __ap: interop.Pointer | interop.Reference<number>, __rcond: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function dtpmv_(uplo: string | interop.Pointer | interop.Reference<any>, trans: string | interop.Pointer | interop.Reference<any>, diag: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, ap: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>): number;
+
 declare function dtprfs_(__uplo: string | interop.Pointer | interop.Reference<any>, __trans: string | interop.Pointer | interop.Reference<any>, __diag: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __ap: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<number>, __ldb: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<number>, __ldx: interop.Pointer | interop.Reference<number>, __ferr: interop.Pointer | interop.Reference<number>, __berr: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
+
+declare function dtpsv_(uplo: string | interop.Pointer | interop.Reference<any>, trans: string | interop.Pointer | interop.Reference<any>, diag: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, ap: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>): number;
 
 declare function dtptri_(__uplo: string | interop.Pointer | interop.Reference<any>, __diag: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __ap: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
@@ -2554,11 +3800,19 @@ declare function dtrevc_(__side: string | interop.Pointer | interop.Reference<an
 
 declare function dtrexc_(__compq: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __t: interop.Pointer | interop.Reference<number>, __ldt: interop.Pointer | interop.Reference<number>, __q: interop.Pointer | interop.Reference<number>, __ldq: interop.Pointer | interop.Reference<number>, __ifst: interop.Pointer | interop.Reference<number>, __ilst: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function dtrmm_(side: string | interop.Pointer | interop.Reference<any>, uplo: string | interop.Pointer | interop.Reference<any>, transa: string | interop.Pointer | interop.Reference<any>, diag: string | interop.Pointer | interop.Reference<any>, m: interop.Pointer | interop.Reference<number>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<number>, lda: interop.Pointer | interop.Reference<number>, b: interop.Pointer | interop.Reference<number>, ldb: interop.Pointer | interop.Reference<number>): number;
+
+declare function dtrmv_(uplo: string | interop.Pointer | interop.Reference<any>, trans: string | interop.Pointer | interop.Reference<any>, diag: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<number>, lda: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>): number;
+
 declare function dtrrfs_(__uplo: string | interop.Pointer | interop.Reference<any>, __trans: string | interop.Pointer | interop.Reference<any>, __diag: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<number>, __lda: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<number>, __ldb: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<number>, __ldx: interop.Pointer | interop.Reference<number>, __ferr: interop.Pointer | interop.Reference<number>, __berr: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function dtrsen_(__job: string | interop.Pointer | interop.Reference<any>, __compq: string | interop.Pointer | interop.Reference<any>, __select: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __t: interop.Pointer | interop.Reference<number>, __ldt: interop.Pointer | interop.Reference<number>, __q: interop.Pointer | interop.Reference<number>, __ldq: interop.Pointer | interop.Reference<number>, __wr: interop.Pointer | interop.Reference<number>, __wi: interop.Pointer | interop.Reference<number>, __m: interop.Pointer | interop.Reference<number>, __s: interop.Pointer | interop.Reference<number>, __sep: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __lwork: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __liwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function dtrsm_(side: string | interop.Pointer | interop.Reference<any>, uplo: string | interop.Pointer | interop.Reference<any>, transa: string | interop.Pointer | interop.Reference<any>, diag: string | interop.Pointer | interop.Reference<any>, m: interop.Pointer | interop.Reference<number>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<number>, lda: interop.Pointer | interop.Reference<number>, b: interop.Pointer | interop.Reference<number>, ldb: interop.Pointer | interop.Reference<number>): number;
+
 declare function dtrsna_(__job: string | interop.Pointer | interop.Reference<any>, __howmny: string | interop.Pointer | interop.Reference<any>, __select: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __t: interop.Pointer | interop.Reference<number>, __ldt: interop.Pointer | interop.Reference<number>, __vl: interop.Pointer | interop.Reference<number>, __ldvl: interop.Pointer | interop.Reference<number>, __vr: interop.Pointer | interop.Reference<number>, __ldvr: interop.Pointer | interop.Reference<number>, __s: interop.Pointer | interop.Reference<number>, __sep: interop.Pointer | interop.Reference<number>, __mm: interop.Pointer | interop.Reference<number>, __m: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __ldwork: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
+
+declare function dtrsv_(uplo: string | interop.Pointer | interop.Reference<any>, trans: string | interop.Pointer | interop.Reference<any>, diag: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<number>, lda: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>): number;
 
 declare function dtrsyl_(__trana: string | interop.Pointer | interop.Reference<any>, __tranb: string | interop.Pointer | interop.Reference<any>, __isgn: interop.Pointer | interop.Reference<number>, __m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<number>, __lda: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<number>, __ldb: interop.Pointer | interop.Reference<number>, __c__: interop.Pointer | interop.Reference<number>, __ldc: interop.Pointer | interop.Reference<number>, __scale: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
@@ -2576,9 +3830,17 @@ declare function dtzrqf_(__m: interop.Pointer | interop.Reference<number>, __n: 
 
 declare function dtzrzf_(__m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<number>, __lda: interop.Pointer | interop.Reference<number>, __tau: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __lwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function dzasum_(n: interop.Pointer | interop.Reference<number>, cx: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>): number;
+
+declare function dznrm2_(n: interop.Pointer | interop.Reference<number>, cx: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>): number;
+
 declare function dzsum1_(__n: interop.Pointer | interop.Reference<number>, __cx: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __incx: interop.Pointer | interop.Reference<number>): number;
 
+declare function icamax_(n: interop.Pointer | interop.Reference<number>, cx: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>): number;
+
 declare function icmax1_(__n: interop.Pointer | interop.Reference<number>, __cx: interop.Pointer | interop.Reference<__CLPK_complex>, __incx: interop.Pointer | interop.Reference<number>): number;
+
+declare function idamax_(n: interop.Pointer | interop.Reference<number>, dx: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>): number;
 
 declare function ieeeck_(__ispec: interop.Pointer | interop.Reference<number>, __zero: interop.Pointer | interop.Reference<number>, __one: interop.Pointer | interop.Reference<number>): number;
 
@@ -2615,6 +3877,10 @@ declare function ilazlc_(__m: interop.Pointer | interop.Reference<number>, __n: 
 declare function ilazlr_(__m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lda: interop.Pointer | interop.Reference<number>): number;
 
 declare function iparmq_(__ispec: interop.Pointer | interop.Reference<number>, __name__: string | interop.Pointer | interop.Reference<any>, __opts: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __ilo: interop.Pointer | interop.Reference<number>, __ihi: interop.Pointer | interop.Reference<number>, __lwork: interop.Pointer | interop.Reference<number>): number;
+
+declare function isamax_(n: interop.Pointer | interop.Reference<number>, sx: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>): number;
+
+declare function izamax_(n: interop.Pointer | interop.Reference<number>, cx: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>): number;
 
 declare function izmax1_(__n: interop.Pointer | interop.Reference<number>, __cx: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __incx: interop.Pointer | interop.Reference<number>): number;
 
@@ -2850,6 +4116,8 @@ declare const kvImageUnknownFlagsBit: number;
 
 declare const kvImageUnsupportedConversion: number;
 
+declare const kvImageUseFP16Accumulator: number;
+
 declare var kvImage_ARGBToYpCbCrMatrix_ITU_R_601_4: interop.Pointer | interop.Reference<vImage_ARGBToYpCbCrMatrix>;
 
 declare var kvImage_ARGBToYpCbCrMatrix_ITU_R_709_2: interop.Pointer | interop.Reference<vImage_ARGBToYpCbCrMatrix>;
@@ -2887,13 +4155,27 @@ declare const enum quadrature_status {
 	QUADRATURE_INTEGRATE_BAD_BEHAVIOUR_ERROR = -102
 }
 
+declare function sasum_(n: interop.Pointer | interop.Reference<number>, sx: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>): number;
+
+declare function saxpy_(n: interop.Pointer | interop.Reference<number>, da: interop.Pointer | interop.Reference<number>, sx: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>, sy: interop.Pointer | interop.Reference<number>, incy: interop.Pointer | interop.Reference<number>): number;
+
 declare function sbdsdc_(__uplo: string | interop.Pointer | interop.Reference<any>, __compq: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __d__: interop.Pointer | interop.Reference<number>, __e: interop.Pointer | interop.Reference<number>, __u: interop.Pointer | interop.Reference<number>, __ldu: interop.Pointer | interop.Reference<number>, __vt: interop.Pointer | interop.Reference<number>, __ldvt: interop.Pointer | interop.Reference<number>, __q: interop.Pointer | interop.Reference<number>, __iq: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function sbdsqr_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __ncvt: interop.Pointer | interop.Reference<number>, __nru: interop.Pointer | interop.Reference<number>, __ncc: interop.Pointer | interop.Reference<number>, __d__: interop.Pointer | interop.Reference<number>, __e: interop.Pointer | interop.Reference<number>, __vt: interop.Pointer | interop.Reference<number>, __ldvt: interop.Pointer | interop.Reference<number>, __u: interop.Pointer | interop.Reference<number>, __ldu: interop.Pointer | interop.Reference<number>, __c__: interop.Pointer | interop.Reference<number>, __ldc: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function scasum_(n: interop.Pointer | interop.Reference<number>, cx: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>): number;
+
+declare function scnrm2_(n: interop.Pointer | interop.Reference<number>, cx: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>): number;
+
+declare function scopy_(n: interop.Pointer | interop.Reference<number>, sx: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>, sy: interop.Pointer | interop.Reference<number>, incy: interop.Pointer | interop.Reference<number>): number;
+
 declare function scsum1_(__n: interop.Pointer | interop.Reference<number>, __cx: interop.Pointer | interop.Reference<__CLPK_complex>, __incx: interop.Pointer | interop.Reference<number>): number;
 
 declare function sdisna_(__job: string | interop.Pointer | interop.Reference<any>, __m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __d__: interop.Pointer | interop.Reference<number>, __sep: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
+
+declare function sdot_(n: interop.Pointer | interop.Reference<number>, sx: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>, sy: interop.Pointer | interop.Reference<number>, incy: interop.Pointer | interop.Reference<number>): number;
+
+declare function sdsdot_(n: interop.Pointer | interop.Reference<number>, sb: interop.Pointer | interop.Reference<number>, sx: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>, sy: interop.Pointer | interop.Reference<number>, incy: interop.Pointer | interop.Reference<number>): number;
 
 declare function sgbbrd_(__vect: string | interop.Pointer | interop.Reference<any>, __m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __ncc: interop.Pointer | interop.Reference<number>, __kl: interop.Pointer | interop.Reference<number>, __ku: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<number>, __ldab: interop.Pointer | interop.Reference<number>, __d__: interop.Pointer | interop.Reference<number>, __e: interop.Pointer | interop.Reference<number>, __q: interop.Pointer | interop.Reference<number>, __ldq: interop.Pointer | interop.Reference<number>, __pt: interop.Pointer | interop.Reference<number>, __ldpt: interop.Pointer | interop.Reference<number>, __c__: interop.Pointer | interop.Reference<number>, __ldc: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
@@ -2902,6 +4184,8 @@ declare function sgbcon_(__norm: string | interop.Pointer | interop.Reference<an
 declare function sgbequ_(__m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __kl: interop.Pointer | interop.Reference<number>, __ku: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<number>, __ldab: interop.Pointer | interop.Reference<number>, __r__: interop.Pointer | interop.Reference<number>, __c__: interop.Pointer | interop.Reference<number>, __rowcnd: interop.Pointer | interop.Reference<number>, __colcnd: interop.Pointer | interop.Reference<number>, __amax: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function sgbequb_(__m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __kl: interop.Pointer | interop.Reference<number>, __ku: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<number>, __ldab: interop.Pointer | interop.Reference<number>, __r__: interop.Pointer | interop.Reference<number>, __c__: interop.Pointer | interop.Reference<number>, __rowcnd: interop.Pointer | interop.Reference<number>, __colcnd: interop.Pointer | interop.Reference<number>, __amax: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
+
+declare function sgbmv_(trans: string | interop.Pointer | interop.Reference<any>, m: interop.Pointer | interop.Reference<number>, n: interop.Pointer | interop.Reference<number>, kl: interop.Pointer | interop.Reference<number>, ku: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<number>, lda: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<number>, y: interop.Pointer | interop.Reference<number>, incy: interop.Pointer | interop.Reference<number>): number;
 
 declare function sgbrfs_(__trans: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __kl: interop.Pointer | interop.Reference<number>, __ku: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<number>, __ldab: interop.Pointer | interop.Reference<number>, __afb: interop.Pointer | interop.Reference<number>, __ldafb: interop.Pointer | interop.Reference<number>, __ipiv: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<number>, __ldb: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<number>, __ldx: interop.Pointer | interop.Reference<number>, __ferr: interop.Pointer | interop.Reference<number>, __berr: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
@@ -2961,6 +4245,10 @@ declare function sgelsx_(__m: interop.Pointer | interop.Reference<number>, __n: 
 
 declare function sgelsy_(__m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<number>, __lda: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<number>, __ldb: interop.Pointer | interop.Reference<number>, __jpvt: interop.Pointer | interop.Reference<number>, __rcond: interop.Pointer | interop.Reference<number>, __rank: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __lwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function sgemm_(transa: string | interop.Pointer | interop.Reference<any>, transb: string | interop.Pointer | interop.Reference<any>, m: interop.Pointer | interop.Reference<number>, n: interop.Pointer | interop.Reference<number>, k: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<number>, lda: interop.Pointer | interop.Reference<number>, b: interop.Pointer | interop.Reference<number>, ldb: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<number>, c__: interop.Pointer | interop.Reference<number>, ldc: interop.Pointer | interop.Reference<number>): number;
+
+declare function sgemv_(trans: string | interop.Pointer | interop.Reference<any>, m: interop.Pointer | interop.Reference<number>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<number>, lda: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<number>, y: interop.Pointer | interop.Reference<number>, incy: interop.Pointer | interop.Reference<number>): number;
+
 declare function sgeql2_(__m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<number>, __lda: interop.Pointer | interop.Reference<number>, __tau: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function sgeqlf_(__m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<number>, __lda: interop.Pointer | interop.Reference<number>, __tau: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __lwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
@@ -2972,6 +4260,8 @@ declare function sgeqpf_(__m: interop.Pointer | interop.Reference<number>, __n: 
 declare function sgeqr2_(__m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<number>, __lda: interop.Pointer | interop.Reference<number>, __tau: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function sgeqrf_(__m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<number>, __lda: interop.Pointer | interop.Reference<number>, __tau: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __lwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
+
+declare function sger_(m: interop.Pointer | interop.Reference<number>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>, y: interop.Pointer | interop.Reference<number>, incy: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<number>, lda: interop.Pointer | interop.Reference<number>): number;
 
 declare function sgerfs_(__trans: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<number>, __lda: interop.Pointer | interop.Reference<number>, __af: interop.Pointer | interop.Reference<number>, __ldaf: interop.Pointer | interop.Reference<number>, __ipiv: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<number>, __ldb: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<number>, __ldx: interop.Pointer | interop.Reference<number>, __ferr: interop.Pointer | interop.Reference<number>, __berr: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
@@ -3339,6 +4629,8 @@ declare function slauum_(__uplo: string | interop.Pointer | interop.Reference<an
 
 declare function smaxloc_(__a: interop.Pointer | interop.Reference<number>, __dimm: interop.Pointer | interop.Reference<number>): number;
 
+declare function snrm2_(n: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>): number;
+
 declare function sopgtr_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __ap: interop.Pointer | interop.Reference<number>, __tau: interop.Pointer | interop.Reference<number>, __q: interop.Pointer | interop.Reference<number>, __ldq: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function sopmtr_(__side: string | interop.Pointer | interop.Reference<any>, __uplo: string | interop.Pointer | interop.Reference<any>, __trans: string | interop.Pointer | interop.Reference<any>, __m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __ap: interop.Pointer | interop.Reference<number>, __tau: interop.Pointer | interop.Reference<number>, __c__: interop.Pointer | interop.Reference<number>, __ldc: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
@@ -3642,6 +4934,14 @@ declare function spttrs_(__n: interop.Pointer | interop.Reference<number>, __nrh
 
 declare function sptts2_(__n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __d__: interop.Pointer | interop.Reference<number>, __e: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<number>, __ldb: interop.Pointer | interop.Reference<number>): number;
 
+declare function srot_(n: interop.Pointer | interop.Reference<number>, sx: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>, sy: interop.Pointer | interop.Reference<number>, incy: interop.Pointer | interop.Reference<number>, c: interop.Pointer | interop.Reference<number>, s: interop.Pointer | interop.Reference<number>): number;
+
+declare function srotg_(sa: interop.Pointer | interop.Reference<number>, sb: interop.Pointer | interop.Reference<number>, c: interop.Pointer | interop.Reference<number>, s: interop.Pointer | interop.Reference<number>): number;
+
+declare function srotm_(n: interop.Pointer | interop.Reference<number>, sx: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>, sy: interop.Pointer | interop.Reference<number>, incy: interop.Pointer | interop.Reference<number>, param: interop.Pointer | interop.Reference<number>): number;
+
+declare function srotmg_(sd1: interop.Pointer | interop.Reference<number>, sd2: interop.Pointer | interop.Reference<number>, sx1: interop.Pointer | interop.Reference<number>, sy1: interop.Pointer | interop.Reference<number>, param: interop.Pointer | interop.Reference<number>): number;
+
 declare function srscl_(__n: interop.Pointer | interop.Reference<number>, __sa: interop.Pointer | interop.Reference<number>, __sx: interop.Pointer | interop.Reference<number>, __incx: interop.Pointer | interop.Reference<number>): number;
 
 declare function ssbev_(__jobz: string | interop.Pointer | interop.Reference<any>, __uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __kd: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<number>, __ldab: interop.Pointer | interop.Reference<number>, __w: interop.Pointer | interop.Reference<number>, __z__: interop.Pointer | interop.Reference<number>, __ldz: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
@@ -3658,7 +4958,11 @@ declare function ssbgvd_(__jobz: string | interop.Pointer | interop.Reference<an
 
 declare function ssbgvx_(__jobz: string | interop.Pointer | interop.Reference<any>, __range: string | interop.Pointer | interop.Reference<any>, __uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __ka: interop.Pointer | interop.Reference<number>, __kb: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<number>, __ldab: interop.Pointer | interop.Reference<number>, __bb: interop.Pointer | interop.Reference<number>, __ldbb: interop.Pointer | interop.Reference<number>, __q: interop.Pointer | interop.Reference<number>, __ldq: interop.Pointer | interop.Reference<number>, __vl: interop.Pointer | interop.Reference<number>, __vu: interop.Pointer | interop.Reference<number>, __il: interop.Pointer | interop.Reference<number>, __iu: interop.Pointer | interop.Reference<number>, __abstol: interop.Pointer | interop.Reference<number>, __m: interop.Pointer | interop.Reference<number>, __w: interop.Pointer | interop.Reference<number>, __z__: interop.Pointer | interop.Reference<number>, __ldz: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __ifail: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function ssbmv_(uplo: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, k: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<number>, lda: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<number>, y: interop.Pointer | interop.Reference<number>, incy: interop.Pointer | interop.Reference<number>): number;
+
 declare function ssbtrd_(__vect: string | interop.Pointer | interop.Reference<any>, __uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __kd: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<number>, __ldab: interop.Pointer | interop.Reference<number>, __d__: interop.Pointer | interop.Reference<number>, __e: interop.Pointer | interop.Reference<number>, __q: interop.Pointer | interop.Reference<number>, __ldq: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
+
+declare function sscal_(n: interop.Pointer | interop.Reference<number>, sa: interop.Pointer | interop.Reference<number>, sx: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>): number;
 
 declare function ssfrk_(__transr: string | interop.Pointer | interop.Reference<any>, __uplo: string | interop.Pointer | interop.Reference<any>, __trans: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __k: interop.Pointer | interop.Reference<number>, __alpha: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<number>, __lda: interop.Pointer | interop.Reference<number>, __beta: interop.Pointer | interop.Reference<number>, __c__: interop.Pointer | interop.Reference<number>): number;
 
@@ -3677,6 +4981,12 @@ declare function sspgv_(__itype: interop.Pointer | interop.Reference<number>, __
 declare function sspgvd_(__itype: interop.Pointer | interop.Reference<number>, __jobz: string | interop.Pointer | interop.Reference<any>, __uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __ap: interop.Pointer | interop.Reference<number>, __bp: interop.Pointer | interop.Reference<number>, __w: interop.Pointer | interop.Reference<number>, __z__: interop.Pointer | interop.Reference<number>, __ldz: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __lwork: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __liwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function sspgvx_(__itype: interop.Pointer | interop.Reference<number>, __jobz: string | interop.Pointer | interop.Reference<any>, __range: string | interop.Pointer | interop.Reference<any>, __uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __ap: interop.Pointer | interop.Reference<number>, __bp: interop.Pointer | interop.Reference<number>, __vl: interop.Pointer | interop.Reference<number>, __vu: interop.Pointer | interop.Reference<number>, __il: interop.Pointer | interop.Reference<number>, __iu: interop.Pointer | interop.Reference<number>, __abstol: interop.Pointer | interop.Reference<number>, __m: interop.Pointer | interop.Reference<number>, __w: interop.Pointer | interop.Reference<number>, __z__: interop.Pointer | interop.Reference<number>, __ldz: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __ifail: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
+
+declare function sspmv_(uplo: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, ap: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<number>, y: interop.Pointer | interop.Reference<number>, incy: interop.Pointer | interop.Reference<number>): number;
+
+declare function sspr2_(uplo: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>, y: interop.Pointer | interop.Reference<number>, incy: interop.Pointer | interop.Reference<number>, ap: interop.Pointer | interop.Reference<number>): number;
+
+declare function sspr_(uplo: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>, ap: interop.Pointer | interop.Reference<number>): number;
 
 declare function ssprfs_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __ap: interop.Pointer | interop.Reference<number>, __afp: interop.Pointer | interop.Reference<number>, __ipiv: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<number>, __ldb: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<number>, __ldx: interop.Pointer | interop.Reference<number>, __ferr: interop.Pointer | interop.Reference<number>, __berr: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
@@ -3714,6 +5024,8 @@ declare function sstevr_(__jobz: string | interop.Pointer | interop.Reference<an
 
 declare function sstevx_(__jobz: string | interop.Pointer | interop.Reference<any>, __range: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __d__: interop.Pointer | interop.Reference<number>, __e: interop.Pointer | interop.Reference<number>, __vl: interop.Pointer | interop.Reference<number>, __vu: interop.Pointer | interop.Reference<number>, __il: interop.Pointer | interop.Reference<number>, __iu: interop.Pointer | interop.Reference<number>, __abstol: interop.Pointer | interop.Reference<number>, __m: interop.Pointer | interop.Reference<number>, __w: interop.Pointer | interop.Reference<number>, __z__: interop.Pointer | interop.Reference<number>, __ldz: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __ifail: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function sswap_(n: interop.Pointer | interop.Reference<number>, sx: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>, sy: interop.Pointer | interop.Reference<number>, incy: interop.Pointer | interop.Reference<number>): number;
+
 declare function ssycon_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<number>, __lda: interop.Pointer | interop.Reference<number>, __ipiv: interop.Pointer | interop.Reference<number>, __anorm: interop.Pointer | interop.Reference<number>, __rcond: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function ssyequb_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<number>, __lda: interop.Pointer | interop.Reference<number>, __s: interop.Pointer | interop.Reference<number>, __scond: interop.Pointer | interop.Reference<number>, __amax: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
@@ -3736,7 +5048,19 @@ declare function ssygvd_(__itype: interop.Pointer | interop.Reference<number>, _
 
 declare function ssygvx_(__itype: interop.Pointer | interop.Reference<number>, __jobz: string | interop.Pointer | interop.Reference<any>, __range: string | interop.Pointer | interop.Reference<any>, __uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<number>, __lda: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<number>, __ldb: interop.Pointer | interop.Reference<number>, __vl: interop.Pointer | interop.Reference<number>, __vu: interop.Pointer | interop.Reference<number>, __il: interop.Pointer | interop.Reference<number>, __iu: interop.Pointer | interop.Reference<number>, __abstol: interop.Pointer | interop.Reference<number>, __m: interop.Pointer | interop.Reference<number>, __w: interop.Pointer | interop.Reference<number>, __z__: interop.Pointer | interop.Reference<number>, __ldz: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __lwork: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __ifail: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function ssymm_(side: string | interop.Pointer | interop.Reference<any>, uplo: string | interop.Pointer | interop.Reference<any>, m: interop.Pointer | interop.Reference<number>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<number>, lda: interop.Pointer | interop.Reference<number>, b: interop.Pointer | interop.Reference<number>, ldb: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<number>, c__: interop.Pointer | interop.Reference<number>, ldc: interop.Pointer | interop.Reference<number>): number;
+
+declare function ssymv_(uplo: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<number>, lda: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<number>, y: interop.Pointer | interop.Reference<number>, incy: interop.Pointer | interop.Reference<number>): number;
+
+declare function ssyr2_(uplo: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>, y: interop.Pointer | interop.Reference<number>, incy: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<number>, lda: interop.Pointer | interop.Reference<number>): number;
+
+declare function ssyr2k_(uplo: string | interop.Pointer | interop.Reference<any>, trans: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, k: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<number>, lda: interop.Pointer | interop.Reference<number>, b: interop.Pointer | interop.Reference<number>, ldb: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<number>, c__: interop.Pointer | interop.Reference<number>, ldc: interop.Pointer | interop.Reference<number>): number;
+
+declare function ssyr_(uplo: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<number>, lda: interop.Pointer | interop.Reference<number>): number;
+
 declare function ssyrfs_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<number>, __lda: interop.Pointer | interop.Reference<number>, __af: interop.Pointer | interop.Reference<number>, __ldaf: interop.Pointer | interop.Reference<number>, __ipiv: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<number>, __ldb: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<number>, __ldx: interop.Pointer | interop.Reference<number>, __ferr: interop.Pointer | interop.Reference<number>, __berr: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
+
+declare function ssyrk_(uplo: string | interop.Pointer | interop.Reference<any>, trans: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, k: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<number>, lda: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<number>, c__: interop.Pointer | interop.Reference<number>, ldc: interop.Pointer | interop.Reference<number>): number;
 
 declare function ssysv_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<number>, __lda: interop.Pointer | interop.Reference<number>, __ipiv: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<number>, __ldb: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __lwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
@@ -3756,7 +5080,11 @@ declare function ssytrs_(__uplo: string | interop.Pointer | interop.Reference<an
 
 declare function stbcon_(__norm: string | interop.Pointer | interop.Reference<any>, __uplo: string | interop.Pointer | interop.Reference<any>, __diag: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __kd: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<number>, __ldab: interop.Pointer | interop.Reference<number>, __rcond: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function stbmv_(uplo: string | interop.Pointer | interop.Reference<any>, trans: string | interop.Pointer | interop.Reference<any>, diag: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, k: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<number>, lda: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>): number;
+
 declare function stbrfs_(__uplo: string | interop.Pointer | interop.Reference<any>, __trans: string | interop.Pointer | interop.Reference<any>, __diag: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __kd: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<number>, __ldab: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<number>, __ldb: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<number>, __ldx: interop.Pointer | interop.Reference<number>, __ferr: interop.Pointer | interop.Reference<number>, __berr: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
+
+declare function stbsv_(uplo: string | interop.Pointer | interop.Reference<any>, trans: string | interop.Pointer | interop.Reference<any>, diag: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, k: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<number>, lda: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>): number;
 
 declare function stbtrs_(__uplo: string | interop.Pointer | interop.Reference<any>, __trans: string | interop.Pointer | interop.Reference<any>, __diag: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __kd: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<number>, __ldab: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<number>, __ldb: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
@@ -3786,7 +5114,11 @@ declare function stgsyl_(__trans: string | interop.Pointer | interop.Reference<a
 
 declare function stpcon_(__norm: string | interop.Pointer | interop.Reference<any>, __uplo: string | interop.Pointer | interop.Reference<any>, __diag: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __ap: interop.Pointer | interop.Reference<number>, __rcond: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function stpmv_(uplo: string | interop.Pointer | interop.Reference<any>, trans: string | interop.Pointer | interop.Reference<any>, diag: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, ap: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>): number;
+
 declare function stprfs_(__uplo: string | interop.Pointer | interop.Reference<any>, __trans: string | interop.Pointer | interop.Reference<any>, __diag: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __ap: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<number>, __ldb: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<number>, __ldx: interop.Pointer | interop.Reference<number>, __ferr: interop.Pointer | interop.Reference<number>, __berr: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
+
+declare function stpsv_(uplo: string | interop.Pointer | interop.Reference<any>, trans: string | interop.Pointer | interop.Reference<any>, diag: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, ap: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>): number;
 
 declare function stptri_(__uplo: string | interop.Pointer | interop.Reference<any>, __diag: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __ap: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
@@ -3802,11 +5134,19 @@ declare function strevc_(__side: string | interop.Pointer | interop.Reference<an
 
 declare function strexc_(__compq: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __t: interop.Pointer | interop.Reference<number>, __ldt: interop.Pointer | interop.Reference<number>, __q: interop.Pointer | interop.Reference<number>, __ldq: interop.Pointer | interop.Reference<number>, __ifst: interop.Pointer | interop.Reference<number>, __ilst: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function strmm_(side: string | interop.Pointer | interop.Reference<any>, uplo: string | interop.Pointer | interop.Reference<any>, transa: string | interop.Pointer | interop.Reference<any>, diag: string | interop.Pointer | interop.Reference<any>, m: interop.Pointer | interop.Reference<number>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<number>, lda: interop.Pointer | interop.Reference<number>, b: interop.Pointer | interop.Reference<number>, ldb: interop.Pointer | interop.Reference<number>): number;
+
+declare function strmv_(uplo: string | interop.Pointer | interop.Reference<any>, trans: string | interop.Pointer | interop.Reference<any>, diag: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<number>, lda: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>): number;
+
 declare function strrfs_(__uplo: string | interop.Pointer | interop.Reference<any>, __trans: string | interop.Pointer | interop.Reference<any>, __diag: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<number>, __lda: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<number>, __ldb: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<number>, __ldx: interop.Pointer | interop.Reference<number>, __ferr: interop.Pointer | interop.Reference<number>, __berr: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function strsen_(__job: string | interop.Pointer | interop.Reference<any>, __compq: string | interop.Pointer | interop.Reference<any>, __select: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __t: interop.Pointer | interop.Reference<number>, __ldt: interop.Pointer | interop.Reference<number>, __q: interop.Pointer | interop.Reference<number>, __ldq: interop.Pointer | interop.Reference<number>, __wr: interop.Pointer | interop.Reference<number>, __wi: interop.Pointer | interop.Reference<number>, __m: interop.Pointer | interop.Reference<number>, __s: interop.Pointer | interop.Reference<number>, __sep: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __lwork: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __liwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function strsm_(side: string | interop.Pointer | interop.Reference<any>, uplo: string | interop.Pointer | interop.Reference<any>, transa: string | interop.Pointer | interop.Reference<any>, diag: string | interop.Pointer | interop.Reference<any>, m: interop.Pointer | interop.Reference<number>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<number>, lda: interop.Pointer | interop.Reference<number>, b: interop.Pointer | interop.Reference<number>, ldb: interop.Pointer | interop.Reference<number>): number;
+
 declare function strsna_(__job: string | interop.Pointer | interop.Reference<any>, __howmny: string | interop.Pointer | interop.Reference<any>, __select: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __t: interop.Pointer | interop.Reference<number>, __ldt: interop.Pointer | interop.Reference<number>, __vl: interop.Pointer | interop.Reference<number>, __ldvl: interop.Pointer | interop.Reference<number>, __vr: interop.Pointer | interop.Reference<number>, __ldvr: interop.Pointer | interop.Reference<number>, __s: interop.Pointer | interop.Reference<number>, __sep: interop.Pointer | interop.Reference<number>, __mm: interop.Pointer | interop.Reference<number>, __m: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __ldwork: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
+
+declare function strsv_(uplo: string | interop.Pointer | interop.Reference<any>, trans: string | interop.Pointer | interop.Reference<any>, diag: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<number>, lda: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<number>, incx: interop.Pointer | interop.Reference<number>): number;
 
 declare function strsyl_(__trana: string | interop.Pointer | interop.Reference<any>, __tranb: string | interop.Pointer | interop.Reference<any>, __isgn: interop.Pointer | interop.Reference<number>, __m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<number>, __lda: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<number>, __ldb: interop.Pointer | interop.Reference<number>, __c__: interop.Pointer | interop.Reference<number>, __ldc: interop.Pointer | interop.Reference<number>, __scale: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
@@ -3854,6 +5194,25 @@ declare function vDSP_DFT_Execute(__Setup: interop.Pointer | interop.Reference<a
 
 declare function vDSP_DFT_ExecuteD(__Setup: interop.Pointer | interop.Reference<any>, __Ir: interop.Pointer | interop.Reference<number>, __Ii: interop.Pointer | interop.Reference<number>, __Or: interop.Pointer | interop.Reference<number>, __Oi: interop.Pointer | interop.Reference<number>): void;
 
+declare function vDSP_DFT_Interleaved_CreateSetup(Previous: interop.Pointer | interop.Reference<any>, Length: number, Direction: vDSP_DFT_Direction, RealtoComplex: vDSP_DFT_RealtoComplex): interop.Pointer | interop.Reference<any>;
+
+declare function vDSP_DFT_Interleaved_CreateSetupD(Previous: interop.Pointer | interop.Reference<any>, Length: number, Direction: vDSP_DFT_Direction, RealtoComplex: vDSP_DFT_RealtoComplex): interop.Pointer | interop.Reference<any>;
+
+declare function vDSP_DFT_Interleaved_DestroySetup(Setup: interop.Pointer | interop.Reference<any>): void;
+
+declare function vDSP_DFT_Interleaved_DestroySetupD(Setup: interop.Pointer | interop.Reference<any>): void;
+
+declare function vDSP_DFT_Interleaved_Execute(Setup: interop.Pointer | interop.Reference<any>, Iri: interop.Pointer | interop.Reference<DSPComplex>, Ori: interop.Pointer | interop.Reference<DSPComplex>): void;
+
+declare function vDSP_DFT_Interleaved_ExecuteD(Setup: interop.Pointer | interop.Reference<any>, Iri: interop.Pointer | interop.Reference<DSPDoubleComplex>, Ori: interop.Pointer | interop.Reference<DSPDoubleComplex>): void;
+
+declare const enum vDSP_DFT_RealtoComplex {
+
+	Interleaved_ComplextoComplex = 0,
+
+	Interleaved_RealtoComplex = 1
+}
+
 declare function vDSP_DFT_zop(__Setup: interop.Pointer | interop.Reference<any>, __Ir: interop.Pointer | interop.Reference<number>, __Ii: interop.Pointer | interop.Reference<number>, __Is: number, __Or: interop.Pointer | interop.Reference<number>, __Oi: interop.Pointer | interop.Reference<number>, __Os: number, __Direction: vDSP_DFT_Direction): void;
 
 declare function vDSP_DFT_zop_CreateSetup(__Previous: interop.Pointer | interop.Reference<any>, __Length: number, __Direction: vDSP_DFT_Direction): interop.Pointer | interop.Reference<any>;
@@ -3890,6 +5249,10 @@ declare function vDSP_biquad_DestroySetup(__setup: interop.Pointer | interop.Ref
 
 declare function vDSP_biquad_DestroySetupD(__setup: interop.Pointer | interop.Reference<any>): void;
 
+declare function vDSP_biquad_SetCoefficientsDouble(__setup: interop.Pointer | interop.Reference<any>, __coeffs: interop.Pointer | interop.Reference<number>, __start_sec: number, __nsec: number): void;
+
+declare function vDSP_biquad_SetCoefficientsSingle(__setup: interop.Pointer | interop.Reference<any>, __coeffs: interop.Pointer | interop.Reference<number>, __start_sec: number, __nsec: number): void;
+
 declare function vDSP_biquadm(__Setup: interop.Pointer | interop.Reference<any>, __X: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number>>, __IX: number, __Y: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number>>, __IY: number, __N: number): void;
 
 declare function vDSP_biquadmD(__Setup: interop.Pointer | interop.Reference<any>, __X: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number>>, __IX: number, __Y: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number>>, __IY: number, __N: number): void;
@@ -3912,13 +5275,23 @@ declare function vDSP_biquadm_ResetStateD(__setup: interop.Pointer | interop.Ref
 
 declare function vDSP_biquadm_SetActiveFilters(__setup: interop.Pointer | interop.Reference<any>, __filter_states: interop.Pointer | interop.Reference<boolean>): void;
 
+declare function vDSP_biquadm_SetActiveFiltersD(__setup: interop.Pointer | interop.Reference<any>, __filter_states: interop.Pointer | interop.Reference<boolean>): void;
+
 declare function vDSP_biquadm_SetCoefficientsDouble(__setup: interop.Pointer | interop.Reference<any>, __coeffs: interop.Pointer | interop.Reference<number>, __start_sec: number, __start_chn: number, __nsec: number, __nchn: number): void;
+
+declare function vDSP_biquadm_SetCoefficientsDoubleD(__setup: interop.Pointer | interop.Reference<any>, __coeffs: interop.Pointer | interop.Reference<number>, __start_sec: number, __start_chn: number, __nsec: number, __nchn: number): void;
 
 declare function vDSP_biquadm_SetCoefficientsSingle(__setup: interop.Pointer | interop.Reference<any>, __coeffs: interop.Pointer | interop.Reference<number>, __start_sec: number, __start_chn: number, __nsec: number, __nchn: number): void;
 
+declare function vDSP_biquadm_SetCoefficientsSingleD(__setup: interop.Pointer | interop.Reference<any>, __coeffs: interop.Pointer | interop.Reference<number>, __start_sec: number, __start_chn: number, __nsec: number, __nchn: number): void;
+
 declare function vDSP_biquadm_SetTargetsDouble(__setup: interop.Pointer | interop.Reference<any>, __targets: interop.Pointer | interop.Reference<number>, __interp_rate: number, __interp_threshold: number, __start_sec: number, __start_chn: number, __nsec: number, __nchn: number): void;
 
+declare function vDSP_biquadm_SetTargetsDoubleD(__setup: interop.Pointer | interop.Reference<any>, __targets: interop.Pointer | interop.Reference<number>, __interp_rate: number, __interp_threshold: number, __start_sec: number, __start_chn: number, __nsec: number, __nchn: number): void;
+
 declare function vDSP_biquadm_SetTargetsSingle(__setup: interop.Pointer | interop.Reference<any>, __targets: interop.Pointer | interop.Reference<number>, __interp_rate: number, __interp_threshold: number, __start_sec: number, __start_chn: number, __nsec: number, __nchn: number): void;
+
+declare function vDSP_biquadm_SetTargetsSingleD(__setup: interop.Pointer | interop.Reference<any>, __targets: interop.Pointer | interop.Reference<number>, __interp_rate: number, __interp_threshold: number, __start_sec: number, __start_chn: number, __nsec: number, __nchn: number): void;
 
 declare function vDSP_blkman_window(__C: interop.Pointer | interop.Reference<number>, __N: number, __Flag: number): void;
 
@@ -4789,6 +6162,8 @@ declare function vImageAffineWarpCG_Planar8(src: interop.Pointer | interop.Refer
 
 declare function vImageAffineWarpCG_PlanarF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, transform: interop.Pointer | interop.Reference<vImage_AffineTransform_Double>, backColor: number, flags: number): number;
 
+declare function vImageAffineWarpD_ARGB16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, transform: interop.Pointer | interop.Reference<vImage_AffineTransform_Double>, backColor: interop.Reference<number>, flags: number): number;
+
 declare function vImageAffineWarpD_ARGB16S(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, transform: interop.Pointer | interop.Reference<vImage_AffineTransform_Double>, backColor: interop.Reference<number>, flags: number): number;
 
 declare function vImageAffineWarpD_ARGB16U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, transform: interop.Pointer | interop.Reference<vImage_AffineTransform_Double>, backColor: interop.Reference<number>, flags: number): number;
@@ -4797,9 +6172,15 @@ declare function vImageAffineWarpD_ARGB8888(src: interop.Pointer | interop.Refer
 
 declare function vImageAffineWarpD_ARGBFFFF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, transform: interop.Pointer | interop.Reference<vImage_AffineTransform_Double>, backColor: interop.Reference<number>, flags: number): number;
 
+declare function vImageAffineWarpD_CbCr16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, transform: interop.Pointer | interop.Reference<vImage_AffineTransform_Double>, backColor: interop.Reference<number>, flags: number): number;
+
+declare function vImageAffineWarpD_Planar16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, transform: interop.Pointer | interop.Reference<vImage_AffineTransform_Double>, backColor: number, flags: number): number;
+
 declare function vImageAffineWarpD_Planar8(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, transform: interop.Pointer | interop.Reference<vImage_AffineTransform_Double>, backColor: number, flags: number): number;
 
 declare function vImageAffineWarpD_PlanarF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, transform: interop.Pointer | interop.Reference<vImage_AffineTransform_Double>, backColor: number, flags: number): number;
+
+declare function vImageAffineWarp_ARGB16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, transform: interop.Pointer | interop.Reference<vImage_AffineTransform>, backColor: interop.Reference<number>, flags: number): number;
 
 declare function vImageAffineWarp_ARGB16S(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, transform: interop.Pointer | interop.Reference<vImage_AffineTransform>, backColor: interop.Reference<number>, flags: number): number;
 
@@ -4808,6 +6189,10 @@ declare function vImageAffineWarp_ARGB16U(src: interop.Pointer | interop.Referen
 declare function vImageAffineWarp_ARGB8888(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, transform: interop.Pointer | interop.Reference<vImage_AffineTransform>, backColor: interop.Reference<number>, flags: number): number;
 
 declare function vImageAffineWarp_ARGBFFFF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, transform: interop.Pointer | interop.Reference<vImage_AffineTransform>, backColor: interop.Reference<number>, flags: number): number;
+
+declare function vImageAffineWarp_CbCr16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, transform: interop.Pointer | interop.Reference<vImage_AffineTransform>, backColor: interop.Reference<number>, flags: number): number;
+
+declare function vImageAffineWarp_Planar16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, transform: interop.Pointer | interop.Reference<vImage_AffineTransform>, backColor: number, flags: number): number;
 
 declare function vImageAffineWarp_Planar8(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, transform: interop.Pointer | interop.Reference<vImage_AffineTransform>, backColor: number, flags: number): number;
 
@@ -4833,6 +6218,8 @@ declare function vImageBoxConvolve_ARGB8888(src: interop.Pointer | interop.Refer
 
 declare function vImageBoxConvolve_Planar8(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, kernel_height: number, kernel_width: number, backgroundColor: number, flags: number): number;
 
+declare function vImageBufferFill_ARGB16F(dest: interop.Pointer | interop.Reference<vImage_Buffer>, color: interop.Reference<number>, flags: number): number;
+
 declare function vImageBufferFill_ARGB16S(dest: interop.Pointer | interop.Reference<vImage_Buffer>, color: interop.Reference<number>, flags: number): number;
 
 declare function vImageBufferFill_ARGB16U(dest: interop.Pointer | interop.Reference<vImage_Buffer>, color: interop.Reference<number>, flags: number): number;
@@ -4840,6 +6227,8 @@ declare function vImageBufferFill_ARGB16U(dest: interop.Pointer | interop.Refere
 declare function vImageBufferFill_ARGB8888(dest: interop.Pointer | interop.Reference<vImage_Buffer>, color: interop.Reference<number>, flags: number): number;
 
 declare function vImageBufferFill_ARGBFFFF(dest: interop.Pointer | interop.Reference<vImage_Buffer>, color: interop.Reference<number>, flags: number): number;
+
+declare function vImageBufferFill_CbCr16S(dest: interop.Pointer | interop.Reference<vImage_Buffer>, color: interop.Reference<number>, flags: number): number;
 
 declare function vImageBufferFill_CbCr16U(dest: interop.Pointer | interop.Reference<vImage_Buffer>, color: interop.Reference<number>, flags: number): number;
 
@@ -5311,6 +6700,8 @@ declare function vImageConverter_CreateForCGToCVImageFormat(srcFormat: interop.P
 
 declare function vImageConverter_CreateForCVToCGImageFormat(srcFormat: any, destFormat: interop.Pointer | interop.Reference<vImage_CGImageFormat>, backgroundColor: interop.Pointer | interop.Reference<number>, flags: number, error: interop.Pointer | interop.Reference<number>): interop.Unmanaged<any>;
 
+declare function vImageConverter_CreateWithCGColorConversionInfo(colorConversionInfoRef: any, sFormat: interop.Pointer | interop.Reference<vImage_CGImageFormat>, dFormat: interop.Pointer | interop.Reference<vImage_CGImageFormat>, bg: interop.Pointer | interop.Reference<number>, flags: number, error: interop.Pointer | interop.Reference<number>): interop.Unmanaged<any>;
+
 declare function vImageConverter_CreateWithCGImageFormat(srcFormat: interop.Pointer | interop.Reference<vImage_CGImageFormat>, destFormat: interop.Pointer | interop.Reference<vImage_CGImageFormat>, backgroundColor: interop.Pointer | interop.Reference<number>, flags: number, error: interop.Pointer | interop.Reference<number>): interop.Unmanaged<any>;
 
 declare function vImageConverter_CreateWithColorSyncCodeFragment(codeFragment: any, srcFormat: interop.Pointer | interop.Reference<vImage_CGImageFormat>, destFormat: interop.Pointer | interop.Reference<vImage_CGImageFormat>, backgroundColor: interop.Pointer | interop.Reference<number>, flags: number, error: interop.Pointer | interop.Reference<number>): interop.Unmanaged<any>;
@@ -5333,17 +6724,25 @@ declare function vImageConvolveMultiKernel_ARGB8888(src: interop.Pointer | inter
 
 declare function vImageConvolveMultiKernel_ARGBFFFF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, kernels: interop.Reference<interop.Pointer | interop.Reference<number>>, kernel_height: number, kernel_width: number, biases: interop.Reference<number>, backgroundColor: interop.Reference<number>, flags: number): number;
 
+declare function vImageConvolveWithBias_ARGB16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, kernel: interop.Pointer | interop.Reference<number>, kernel_height: number, kernel_width: number, bias: number, backgroundColor: interop.Reference<number>, flags: number): number;
+
 declare function vImageConvolveWithBias_ARGB8888(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, kernel: interop.Pointer | interop.Reference<number>, kernel_height: number, kernel_width: number, divisor: number, bias: number, backgroundColor: interop.Reference<number>, flags: number): number;
 
 declare function vImageConvolveWithBias_ARGBFFFF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, kernel: interop.Pointer | interop.Reference<number>, kernel_height: number, kernel_width: number, bias: number, backgroundColor: interop.Reference<number>, flags: number): number;
+
+declare function vImageConvolveWithBias_Planar16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, kernel: interop.Pointer | interop.Reference<number>, kernel_height: number, kernel_width: number, bias: number, backgroundColor: number, flags: number): number;
 
 declare function vImageConvolveWithBias_Planar8(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, kernel: interop.Pointer | interop.Reference<number>, kernel_height: number, kernel_width: number, divisor: number, bias: number, backgroundColor: number, flags: number): number;
 
 declare function vImageConvolveWithBias_PlanarF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, kernel: interop.Pointer | interop.Reference<number>, kernel_height: number, kernel_width: number, bias: number, backgroundColor: number, flags: number): number;
 
+declare function vImageConvolve_ARGB16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, kernel: interop.Pointer | interop.Reference<number>, kernel_height: number, kernel_width: number, backgroundColor: interop.Reference<number>, flags: number): number;
+
 declare function vImageConvolve_ARGB8888(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, kernel: interop.Pointer | interop.Reference<number>, kernel_height: number, kernel_width: number, divisor: number, backgroundColor: interop.Reference<number>, flags: number): number;
 
 declare function vImageConvolve_ARGBFFFF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, kernel: interop.Pointer | interop.Reference<number>, kernel_height: number, kernel_width: number, backgroundColor: interop.Reference<number>, flags: number): number;
+
+declare function vImageConvolve_Planar16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, kernel: interop.Pointer | interop.Reference<number>, kernel_height: number, kernel_width: number, backgroundColor: number, flags: number): number;
 
 declare function vImageConvolve_Planar8(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, kernel: interop.Pointer | interop.Reference<number>, kernel_height: number, kernel_width: number, divisor: number, backgroundColor: number, flags: number): number;
 
@@ -5455,6 +6854,8 @@ declare function vImageHistogramSpecification_Planar8(src: interop.Pointer | int
 
 declare function vImageHistogramSpecification_PlanarF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, desired_histogram: interop.Pointer | interop.Reference<number>, histogram_entries: number, minVal: number, maxVal: number, flags: number): number;
 
+declare function vImageHorizontalReflect_ARGB16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
+
 declare function vImageHorizontalReflect_ARGB16S(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
 declare function vImageHorizontalReflect_ARGB16U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
@@ -5463,11 +6864,17 @@ declare function vImageHorizontalReflect_ARGB8888(src: interop.Pointer | interop
 
 declare function vImageHorizontalReflect_ARGBFFFF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
+declare function vImageHorizontalReflect_CbCr16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
+
+declare function vImageHorizontalReflect_Planar16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
+
 declare function vImageHorizontalReflect_Planar16U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
 declare function vImageHorizontalReflect_Planar8(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
 declare function vImageHorizontalReflect_PlanarF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
+
+declare function vImageHorizontalShearD_ARGB16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, xTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: interop.Reference<number>, flags: number): number;
 
 declare function vImageHorizontalShearD_ARGB16S(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, xTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: interop.Reference<number>, flags: number): number;
 
@@ -5477,9 +6884,19 @@ declare function vImageHorizontalShearD_ARGB8888(src: interop.Pointer | interop.
 
 declare function vImageHorizontalShearD_ARGBFFFF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, xTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: interop.Reference<number>, flags: number): number;
 
+declare function vImageHorizontalShearD_CbCr16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, xTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: interop.Reference<number>, flags: number): number;
+
+declare function vImageHorizontalShearD_CbCr16S(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, xTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: interop.Reference<number>, flags: number): number;
+
+declare function vImageHorizontalShearD_CbCr16U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, xTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: interop.Reference<number>, flags: number): number;
+
+declare function vImageHorizontalShearD_Planar16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, xTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: number, flags: number): number;
+
 declare function vImageHorizontalShearD_Planar8(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, xTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: number, flags: number): number;
 
 declare function vImageHorizontalShearD_PlanarF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, xTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: number, flags: number): number;
+
+declare function vImageHorizontalShear_ARGB16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, xTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: interop.Reference<number>, flags: number): number;
 
 declare function vImageHorizontalShear_ARGB16S(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, xTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: interop.Reference<number>, flags: number): number;
 
@@ -5489,9 +6906,15 @@ declare function vImageHorizontalShear_ARGB8888(src: interop.Pointer | interop.R
 
 declare function vImageHorizontalShear_ARGBFFFF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, xTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: interop.Reference<number>, flags: number): number;
 
+declare function vImageHorizontalShear_CbCr16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, xTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: interop.Reference<number>, flags: number): number;
+
+declare function vImageHorizontalShear_CbCr16S(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, xTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: interop.Reference<number>, flags: number): number;
+
 declare function vImageHorizontalShear_CbCr16U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, xTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: interop.Reference<number>, flags: number): number;
 
 declare function vImageHorizontalShear_CbCr8(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, xTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: interop.Reference<number>, flags: number): number;
+
+declare function vImageHorizontalShear_Planar16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, xTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: number, flags: number): number;
 
 declare function vImageHorizontalShear_Planar16S(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, xTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: number, flags: number): number;
 
@@ -5584,6 +7007,8 @@ declare function vImageOverwriteChannelsWithScalar_ARGB8888(scalar: number, src:
 
 declare function vImageOverwriteChannelsWithScalar_ARGBFFFF(scalar: number, src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, copyMask: number, flags: number): number;
 
+declare function vImageOverwriteChannelsWithScalar_Planar16F(scalar: number, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
+
 declare function vImageOverwriteChannelsWithScalar_Planar16S(scalar: number, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
 declare function vImageOverwriteChannelsWithScalar_Planar16U(scalar: number, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
@@ -5603,6 +7028,8 @@ declare function vImagePermuteChannelsWithMaskedInsert_ARGB16U(src: interop.Poin
 declare function vImagePermuteChannelsWithMaskedInsert_ARGB8888(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, permuteMap: interop.Reference<number>, copyMask: number, backgroundColor: interop.Reference<number>, flags: number): number;
 
 declare function vImagePermuteChannelsWithMaskedInsert_ARGBFFFF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, permuteMap: interop.Reference<number>, copyMask: number, backgroundColor: interop.Reference<number>, flags: number): number;
+
+declare function vImagePermuteChannels_ARGB16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, permuteMap: interop.Reference<number>, flags: number): number;
 
 declare function vImagePermuteChannels_ARGB16U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, permuteMap: interop.Reference<number>, flags: number): number;
 
@@ -5678,6 +7105,8 @@ declare function vImagePremultiplyData_Planar8(src: interop.Pointer | interop.Re
 
 declare function vImagePremultiplyData_PlanarF(src: interop.Pointer | interop.Reference<vImage_Buffer>, alpha: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
+declare function vImagePremultiplyData_RGBA16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
+
 declare function vImagePremultiplyData_RGBA16Q12(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
 declare function vImagePremultiplyData_RGBA16U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
@@ -5706,6 +7135,8 @@ declare function vImageRichardsonLucyDeConvolve_Planar8(src: interop.Pointer | i
 
 declare function vImageRichardsonLucyDeConvolve_PlanarF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, kernel: interop.Pointer | interop.Reference<number>, kernel2: interop.Pointer | interop.Reference<number>, kernel_height: number, kernel_width: number, kernel_height2: number, kernel_width2: number, backgroundColor: number, iterationCount: number, flags: number): number;
 
+declare function vImageRotate90_ARGB16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, rotationConstant: number, backColor: interop.Reference<number>, flags: number): number;
+
 declare function vImageRotate90_ARGB16S(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, rotationConstant: number, backColor: interop.Reference<number>, flags: number): number;
 
 declare function vImageRotate90_ARGB16U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, rotationConstant: number, backColor: interop.Reference<number>, flags: number): number;
@@ -5714,11 +7145,17 @@ declare function vImageRotate90_ARGB8888(src: interop.Pointer | interop.Referenc
 
 declare function vImageRotate90_ARGBFFFF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, rotationConstant: number, backColor: interop.Reference<number>, flags: number): number;
 
+declare function vImageRotate90_CbCr16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, rotationConstant: number, backColor: interop.Reference<number>, flags: number): number;
+
+declare function vImageRotate90_Planar16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, rotationConstant: number, backColor: number, flags: number): number;
+
 declare function vImageRotate90_Planar16U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, rotationConstant: number, backColor: number, flags: number): number;
 
 declare function vImageRotate90_Planar8(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, rotationConstant: number, backColor: number, flags: number): number;
 
 declare function vImageRotate90_PlanarF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, rotationConstant: number, backColor: number, flags: number): number;
+
+declare function vImageRotate_ARGB16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, angleInRadians: number, backColor: interop.Reference<number>, flags: number): number;
 
 declare function vImageRotate_ARGB16S(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, angleInRadians: number, backColor: interop.Reference<number>, flags: number): number;
 
@@ -5728,9 +7165,15 @@ declare function vImageRotate_ARGB8888(src: interop.Pointer | interop.Reference<
 
 declare function vImageRotate_ARGBFFFF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, angleInRadians: number, backColor: interop.Reference<number>, flags: number): number;
 
+declare function vImageRotate_CbCr16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, angleInRadians: number, backColor: interop.Reference<number>, flags: number): number;
+
+declare function vImageRotate_Planar16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, angleInRadians: number, backColor: number, flags: number): number;
+
 declare function vImageRotate_Planar8(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, angleInRadians: number, backColor: number, flags: number): number;
 
 declare function vImageRotate_PlanarF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, angleInRadians: number, backColor: number, flags: number): number;
+
+declare function vImageScale_ARGB16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, flags: number): number;
 
 declare function vImageScale_ARGB16S(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, flags: number): number;
 
@@ -5740,9 +7183,13 @@ declare function vImageScale_ARGB8888(src: interop.Pointer | interop.Reference<v
 
 declare function vImageScale_ARGBFFFF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, flags: number): number;
 
+declare function vImageScale_CbCr16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, flags: number): number;
+
 declare function vImageScale_CbCr16U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, flags: number): number;
 
 declare function vImageScale_CbCr8(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, flags: number): number;
+
+declare function vImageScale_Planar16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, flags: number): number;
 
 declare function vImageScale_Planar16S(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, flags: number): number;
 
@@ -5757,6 +7204,16 @@ declare function vImageScale_XRGB2101010W(src: interop.Pointer | interop.Referen
 declare function vImageSelectChannels_ARGB8888(newSrc: interop.Pointer | interop.Reference<vImage_Buffer>, origSrc: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, copyMask: number, flags: number): number;
 
 declare function vImageSelectChannels_ARGBFFFF(newSrc: interop.Pointer | interop.Reference<vImage_Buffer>, origSrc: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, copyMask: number, flags: number): number;
+
+declare function vImageSepConvolve_Planar16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, kernelX: interop.Pointer | interop.Reference<number>, kernelX_width: number, kernelY: interop.Pointer | interop.Reference<number>, kernelY_width: number, bias: number, backgroundColor: number, flags: number): number;
+
+declare function vImageSepConvolve_Planar16U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, kernelX: interop.Pointer | interop.Reference<number>, kernelX_width: number, kernelY: interop.Pointer | interop.Reference<number>, kernelY_width: number, bias: number, backgroundColor: number, flags: number): number;
+
+declare function vImageSepConvolve_Planar8(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, kernelX: interop.Pointer | interop.Reference<number>, kernelX_width: number, kernelY: interop.Pointer | interop.Reference<number>, kernelY_width: number, bias: number, backgroundColor: number, flags: number): number;
+
+declare function vImageSepConvolve_Planar8to16U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, kernelX: interop.Pointer | interop.Reference<number>, kernelX_width: number, kernelY: interop.Pointer | interop.Reference<number>, kernelY_width: number, scale: number, bias: number, backgroundColor: number, flags: number): number;
+
+declare function vImageSepConvolve_PlanarF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, kernelX: interop.Pointer | interop.Reference<number>, kernelX_width: number, kernelY: interop.Pointer | interop.Reference<number>, kernelY_width: number, bias: number, backgroundColor: number, flags: number): number;
 
 declare function vImageSymmetricPiecewiseGamma_Planar16Q12(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, exponentialCoeffs: interop.Reference<number>, gamma: number, linearCoeffs: interop.Reference<number>, boundary: number, flags: number): number;
 
@@ -5796,6 +7253,8 @@ declare function vImageUnpremultiplyData_Planar8(src: interop.Pointer | interop.
 
 declare function vImageUnpremultiplyData_PlanarF(src: interop.Pointer | interop.Reference<vImage_Buffer>, alpha: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
+declare function vImageUnpremultiplyData_RGBA16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
+
 declare function vImageUnpremultiplyData_RGBA16Q12(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
 declare function vImageUnpremultiplyData_RGBA16U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
@@ -5803,6 +7262,8 @@ declare function vImageUnpremultiplyData_RGBA16U(src: interop.Pointer | interop.
 declare function vImageUnpremultiplyData_RGBA8888(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
 declare function vImageUnpremultiplyData_RGBAFFFF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
+
+declare function vImageVerticalReflect_ARGB16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
 declare function vImageVerticalReflect_ARGB16S(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
@@ -5812,11 +7273,17 @@ declare function vImageVerticalReflect_ARGB8888(src: interop.Pointer | interop.R
 
 declare function vImageVerticalReflect_ARGBFFFF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
+declare function vImageVerticalReflect_CbCr16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
+
+declare function vImageVerticalReflect_Planar16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
+
 declare function vImageVerticalReflect_Planar16U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
 declare function vImageVerticalReflect_Planar8(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
 declare function vImageVerticalReflect_PlanarF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
+
+declare function vImageVerticalShearD_ARGB16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, yTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: interop.Reference<number>, flags: number): number;
 
 declare function vImageVerticalShearD_ARGB16S(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, yTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: interop.Reference<number>, flags: number): number;
 
@@ -5826,9 +7293,19 @@ declare function vImageVerticalShearD_ARGB8888(src: interop.Pointer | interop.Re
 
 declare function vImageVerticalShearD_ARGBFFFF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, yTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: interop.Reference<number>, flags: number): number;
 
+declare function vImageVerticalShearD_CbCr16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, yTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: interop.Reference<number>, flags: number): number;
+
+declare function vImageVerticalShearD_CbCr16S(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, yTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: interop.Reference<number>, flags: number): number;
+
+declare function vImageVerticalShearD_CbCr16U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, yTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: interop.Reference<number>, flags: number): number;
+
+declare function vImageVerticalShearD_Planar16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, yTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: number, flags: number): number;
+
 declare function vImageVerticalShearD_Planar8(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, yTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: number, flags: number): number;
 
 declare function vImageVerticalShearD_PlanarF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, yTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: number, flags: number): number;
+
+declare function vImageVerticalShear_ARGB16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, yTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: interop.Reference<number>, flags: number): number;
 
 declare function vImageVerticalShear_ARGB16S(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, yTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: interop.Reference<number>, flags: number): number;
 
@@ -5838,9 +7315,15 @@ declare function vImageVerticalShear_ARGB8888(src: interop.Pointer | interop.Ref
 
 declare function vImageVerticalShear_ARGBFFFF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, yTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: interop.Reference<number>, flags: number): number;
 
+declare function vImageVerticalShear_CbCr16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, yTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: interop.Reference<number>, flags: number): number;
+
+declare function vImageVerticalShear_CbCr16S(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, yTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: interop.Reference<number>, flags: number): number;
+
 declare function vImageVerticalShear_CbCr16U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, yTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: interop.Reference<number>, flags: number): number;
 
 declare function vImageVerticalShear_CbCr8(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, yTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: interop.Reference<number>, flags: number): number;
+
+declare function vImageVerticalShear_Planar16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, yTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: number, flags: number): number;
 
 declare function vImageVerticalShear_Planar16S(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, yTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: number, flags: number): number;
 
@@ -6140,13 +7623,25 @@ declare function vvtanpi(p1: interop.Pointer | interop.Reference<number>, p2: in
 
 declare function vvtanpif(p1: interop.Pointer | interop.Reference<number>, p2: interop.Pointer | interop.Reference<number>, p3: interop.Pointer | interop.Reference<number>): void;
 
+declare function zaxpy_(n: interop.Pointer | interop.Reference<number>, ca: interop.Pointer | interop.Reference<any>, cx: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>, cy: interop.Pointer | interop.Reference<any>, incy: interop.Pointer | interop.Reference<number>): number;
+
 declare function zbdsqr_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __ncvt: interop.Pointer | interop.Reference<number>, __nru: interop.Pointer | interop.Reference<number>, __ncc: interop.Pointer | interop.Reference<number>, __d__: interop.Pointer | interop.Reference<number>, __e: interop.Pointer | interop.Reference<number>, __vt: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldvt: interop.Pointer | interop.Reference<number>, __u: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldu: interop.Pointer | interop.Reference<number>, __c__: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldc: interop.Pointer | interop.Reference<number>, __rwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function zcgesv_(__n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lda: interop.Pointer | interop.Reference<number>, __ipiv: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldb: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldx: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __swork: interop.Pointer | interop.Reference<__CLPK_complex>, __rwork: interop.Pointer | interop.Reference<number>, __iter: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function zcopy_(n: interop.Pointer | interop.Reference<number>, cx: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>, cy: interop.Pointer | interop.Reference<any>, incy: interop.Pointer | interop.Reference<number>): number;
+
 declare function zcposv_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lda: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldb: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldx: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __swork: interop.Pointer | interop.Reference<__CLPK_complex>, __rwork: interop.Pointer | interop.Reference<number>, __iter: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function zdotc_(ret_val: interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, cx: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>, cy: interop.Pointer | interop.Reference<any>, incy: interop.Pointer | interop.Reference<number>): void;
+
+declare function zdotu_(ret_val: interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, cx: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>, cy: interop.Pointer | interop.Reference<any>, incy: interop.Pointer | interop.Reference<number>): void;
+
+declare function zdrot_(n: interop.Pointer | interop.Reference<number>, cx: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>, cy: interop.Pointer | interop.Reference<any>, incy: interop.Pointer | interop.Reference<number>, c: interop.Pointer | interop.Reference<number>, s: interop.Pointer | interop.Reference<number>): number;
+
 declare function zdrscl_(__n: interop.Pointer | interop.Reference<number>, __sa: interop.Pointer | interop.Reference<number>, __sx: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __incx: interop.Pointer | interop.Reference<number>): number;
+
+declare function zdscal_(n: interop.Pointer | interop.Reference<number>, sa: interop.Pointer | interop.Reference<number>, cx: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>): number;
 
 declare function zgbbrd_(__vect: string | interop.Pointer | interop.Reference<any>, __m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __ncc: interop.Pointer | interop.Reference<number>, __kl: interop.Pointer | interop.Reference<number>, __ku: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldab: interop.Pointer | interop.Reference<number>, __d__: interop.Pointer | interop.Reference<number>, __e: interop.Pointer | interop.Reference<number>, __q: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldq: interop.Pointer | interop.Reference<number>, __pt: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldpt: interop.Pointer | interop.Reference<number>, __c__: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldc: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __rwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
@@ -6155,6 +7650,8 @@ declare function zgbcon_(__norm: string | interop.Pointer | interop.Reference<an
 declare function zgbequ_(__m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __kl: interop.Pointer | interop.Reference<number>, __ku: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldab: interop.Pointer | interop.Reference<number>, __r__: interop.Pointer | interop.Reference<number>, __c__: interop.Pointer | interop.Reference<number>, __rowcnd: interop.Pointer | interop.Reference<number>, __colcnd: interop.Pointer | interop.Reference<number>, __amax: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function zgbequb_(__m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __kl: interop.Pointer | interop.Reference<number>, __ku: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldab: interop.Pointer | interop.Reference<number>, __r__: interop.Pointer | interop.Reference<number>, __c__: interop.Pointer | interop.Reference<number>, __rowcnd: interop.Pointer | interop.Reference<number>, __colcnd: interop.Pointer | interop.Reference<number>, __amax: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
+
+declare function zgbmv_(trans: string | interop.Pointer | interop.Reference<any>, m: interop.Pointer | interop.Reference<number>, n: interop.Pointer | interop.Reference<number>, kl: interop.Pointer | interop.Reference<number>, ku: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<any>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<any>, y: interop.Pointer | interop.Reference<any>, incy: interop.Pointer | interop.Reference<number>): number;
 
 declare function zgbrfs_(__trans: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __kl: interop.Pointer | interop.Reference<number>, __ku: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldab: interop.Pointer | interop.Reference<number>, __afb: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldafb: interop.Pointer | interop.Reference<number>, __ipiv: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldb: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldx: interop.Pointer | interop.Reference<number>, __ferr: interop.Pointer | interop.Reference<number>, __berr: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __rwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
@@ -6212,6 +7709,10 @@ declare function zgelsx_(__m: interop.Pointer | interop.Reference<number>, __n: 
 
 declare function zgelsy_(__m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lda: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldb: interop.Pointer | interop.Reference<number>, __jpvt: interop.Pointer | interop.Reference<number>, __rcond: interop.Pointer | interop.Reference<number>, __rank: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lwork: interop.Pointer | interop.Reference<number>, __rwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function zgemm_(transa: string | interop.Pointer | interop.Reference<any>, transb: string | interop.Pointer | interop.Reference<any>, m: interop.Pointer | interop.Reference<number>, n: interop.Pointer | interop.Reference<number>, k: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<any>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>, b: interop.Pointer | interop.Reference<any>, ldb: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<any>, c__: interop.Pointer | interop.Reference<any>, ldc: interop.Pointer | interop.Reference<number>): number;
+
+declare function zgemv_(trans: string | interop.Pointer | interop.Reference<any>, m: interop.Pointer | interop.Reference<number>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<any>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<any>, y: interop.Pointer | interop.Reference<any>, incy: interop.Pointer | interop.Reference<number>): number;
+
 declare function zgeql2_(__m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lda: interop.Pointer | interop.Reference<number>, __tau: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function zgeqlf_(__m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lda: interop.Pointer | interop.Reference<number>, __tau: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
@@ -6224,11 +7725,15 @@ declare function zgeqr2_(__m: interop.Pointer | interop.Reference<number>, __n: 
 
 declare function zgeqrf_(__m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lda: interop.Pointer | interop.Reference<number>, __tau: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function zgerc_(m: interop.Pointer | interop.Reference<number>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<any>, x: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>, y: interop.Pointer | interop.Reference<any>, incy: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>): number;
+
 declare function zgerfs_(__trans: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lda: interop.Pointer | interop.Reference<number>, __af: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldaf: interop.Pointer | interop.Reference<number>, __ipiv: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldb: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldx: interop.Pointer | interop.Reference<number>, __ferr: interop.Pointer | interop.Reference<number>, __berr: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __rwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function zgerq2_(__m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lda: interop.Pointer | interop.Reference<number>, __tau: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function zgerqf_(__m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lda: interop.Pointer | interop.Reference<number>, __tau: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
+
+declare function zgeru_(m: interop.Pointer | interop.Reference<number>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<any>, x: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>, y: interop.Pointer | interop.Reference<any>, incy: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>): number;
 
 declare function zgesc2_(__n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lda: interop.Pointer | interop.Reference<number>, __rhs: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ipiv: interop.Pointer | interop.Reference<number>, __jpiv: interop.Pointer | interop.Reference<number>, __scale: interop.Pointer | interop.Reference<number>): number;
 
@@ -6304,6 +7809,8 @@ declare function zhbgvd_(__jobz: string | interop.Pointer | interop.Reference<an
 
 declare function zhbgvx_(__jobz: string | interop.Pointer | interop.Reference<any>, __range: string | interop.Pointer | interop.Reference<any>, __uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __ka: interop.Pointer | interop.Reference<number>, __kb: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldab: interop.Pointer | interop.Reference<number>, __bb: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldbb: interop.Pointer | interop.Reference<number>, __q: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldq: interop.Pointer | interop.Reference<number>, __vl: interop.Pointer | interop.Reference<number>, __vu: interop.Pointer | interop.Reference<number>, __il: interop.Pointer | interop.Reference<number>, __iu: interop.Pointer | interop.Reference<number>, __abstol: interop.Pointer | interop.Reference<number>, __m: interop.Pointer | interop.Reference<number>, __w: interop.Pointer | interop.Reference<number>, __z__: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldz: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __rwork: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __ifail: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function zhbmv_(uplo: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, k: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<any>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<any>, y: interop.Pointer | interop.Reference<any>, incy: interop.Pointer | interop.Reference<number>): number;
+
 declare function zhbtrd_(__vect: string | interop.Pointer | interop.Reference<any>, __uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __kd: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldab: interop.Pointer | interop.Reference<number>, __d__: interop.Pointer | interop.Reference<number>, __e: interop.Pointer | interop.Reference<number>, __q: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldq: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function zhecon_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lda: interop.Pointer | interop.Reference<number>, __ipiv: interop.Pointer | interop.Reference<number>, __anorm: interop.Pointer | interop.Reference<number>, __rcond: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __info: interop.Pointer | interop.Reference<number>): number;
@@ -6328,7 +7835,19 @@ declare function zhegvd_(__itype: interop.Pointer | interop.Reference<number>, _
 
 declare function zhegvx_(__itype: interop.Pointer | interop.Reference<number>, __jobz: string | interop.Pointer | interop.Reference<any>, __range: string | interop.Pointer | interop.Reference<any>, __uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lda: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldb: interop.Pointer | interop.Reference<number>, __vl: interop.Pointer | interop.Reference<number>, __vu: interop.Pointer | interop.Reference<number>, __il: interop.Pointer | interop.Reference<number>, __iu: interop.Pointer | interop.Reference<number>, __abstol: interop.Pointer | interop.Reference<number>, __m: interop.Pointer | interop.Reference<number>, __w: interop.Pointer | interop.Reference<number>, __z__: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldz: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lwork: interop.Pointer | interop.Reference<number>, __rwork: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __ifail: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function zhemm_(side: string | interop.Pointer | interop.Reference<any>, uplo: string | interop.Pointer | interop.Reference<any>, m: interop.Pointer | interop.Reference<number>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<any>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>, b: interop.Pointer | interop.Reference<any>, ldb: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<any>, c__: interop.Pointer | interop.Reference<any>, ldc: interop.Pointer | interop.Reference<number>): number;
+
+declare function zhemv_(uplo: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<any>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<any>, y: interop.Pointer | interop.Reference<any>, incy: interop.Pointer | interop.Reference<number>): number;
+
+declare function zher2_(uplo: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<any>, x: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>, y: interop.Pointer | interop.Reference<any>, incy: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>): number;
+
+declare function zher2k_(uplo: string | interop.Pointer | interop.Reference<any>, trans: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, k: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<any>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>, b: interop.Pointer | interop.Reference<any>, ldb: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<number>, c__: interop.Pointer | interop.Reference<any>, ldc: interop.Pointer | interop.Reference<number>): number;
+
+declare function zher_(uplo: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>): number;
+
 declare function zherfs_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lda: interop.Pointer | interop.Reference<number>, __af: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldaf: interop.Pointer | interop.Reference<number>, __ipiv: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldb: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldx: interop.Pointer | interop.Reference<number>, __ferr: interop.Pointer | interop.Reference<number>, __berr: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __rwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
+
+declare function zherk_(uplo: string | interop.Pointer | interop.Reference<any>, trans: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, k: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<number>, c__: interop.Pointer | interop.Reference<any>, ldc: interop.Pointer | interop.Reference<number>): number;
 
 declare function zhesv_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lda: interop.Pointer | interop.Reference<number>, __ipiv: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldb: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
@@ -6365,6 +7884,12 @@ declare function zhpgv_(__itype: interop.Pointer | interop.Reference<number>, __
 declare function zhpgvd_(__itype: interop.Pointer | interop.Reference<number>, __jobz: string | interop.Pointer | interop.Reference<any>, __uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __ap: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __bp: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __w: interop.Pointer | interop.Reference<number>, __z__: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldz: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lwork: interop.Pointer | interop.Reference<number>, __rwork: interop.Pointer | interop.Reference<number>, __lrwork: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __liwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function zhpgvx_(__itype: interop.Pointer | interop.Reference<number>, __jobz: string | interop.Pointer | interop.Reference<any>, __range: string | interop.Pointer | interop.Reference<any>, __uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __ap: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __bp: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __vl: interop.Pointer | interop.Reference<number>, __vu: interop.Pointer | interop.Reference<number>, __il: interop.Pointer | interop.Reference<number>, __iu: interop.Pointer | interop.Reference<number>, __abstol: interop.Pointer | interop.Reference<number>, __m: interop.Pointer | interop.Reference<number>, __w: interop.Pointer | interop.Reference<number>, __z__: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldz: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __rwork: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __ifail: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
+
+declare function zhpmv_(uplo: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<any>, ap: interop.Pointer | interop.Reference<any>, x: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<any>, y: interop.Pointer | interop.Reference<any>, incy: interop.Pointer | interop.Reference<number>): number;
+
+declare function zhpr2_(uplo: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<any>, x: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>, y: interop.Pointer | interop.Reference<any>, incy: interop.Pointer | interop.Reference<number>, ap: interop.Pointer | interop.Reference<any>): number;
+
+declare function zhpr_(uplo: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>, ap: interop.Pointer | interop.Reference<any>): number;
 
 declare function zhprfs_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __ap: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __afp: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ipiv: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldb: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldx: interop.Pointer | interop.Reference<number>, __ferr: interop.Pointer | interop.Reference<number>, __berr: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __rwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
@@ -6654,6 +8179,10 @@ declare function zptts2_(__iuplo: interop.Pointer | interop.Reference<number>, _
 
 declare function zrot_(__n: interop.Pointer | interop.Reference<number>, __cx: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __incx: interop.Pointer | interop.Reference<number>, __cy: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __incy: interop.Pointer | interop.Reference<number>, __c__: interop.Pointer | interop.Reference<number>, __s: interop.Pointer | interop.Reference<__CLPK_doublecomplex>): number;
 
+declare function zrotg_(ca: interop.Pointer | interop.Reference<any>, cb: interop.Pointer | interop.Reference<any>, c: interop.Pointer | interop.Reference<number>, cs: interop.Pointer | interop.Reference<any>): number;
+
+declare function zscal_(n: interop.Pointer | interop.Reference<number>, ca: interop.Pointer | interop.Reference<any>, cx: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>): number;
+
 declare function zspcon_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __ap: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ipiv: interop.Pointer | interop.Reference<number>, __anorm: interop.Pointer | interop.Reference<number>, __rcond: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function zspmv_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __alpha: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ap: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __x: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __incx: interop.Pointer | interop.Reference<number>, __beta: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __y: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __incy: interop.Pointer | interop.Reference<number>): number;
@@ -6682,15 +8211,23 @@ declare function zstemr_(__jobz: string | interop.Pointer | interop.Reference<an
 
 declare function zsteqr_(__compz: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __d__: interop.Pointer | interop.Reference<number>, __e: interop.Pointer | interop.Reference<number>, __z__: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldz: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function zswap_(n: interop.Pointer | interop.Reference<number>, cx: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>, cy: interop.Pointer | interop.Reference<any>, incy: interop.Pointer | interop.Reference<number>): number;
+
 declare function zsycon_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lda: interop.Pointer | interop.Reference<number>, __ipiv: interop.Pointer | interop.Reference<number>, __anorm: interop.Pointer | interop.Reference<number>, __rcond: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function zsyequb_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lda: interop.Pointer | interop.Reference<number>, __s: interop.Pointer | interop.Reference<number>, __scond: interop.Pointer | interop.Reference<number>, __amax: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function zsymm_(side: string | interop.Pointer | interop.Reference<any>, uplo: string | interop.Pointer | interop.Reference<any>, m: interop.Pointer | interop.Reference<number>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<any>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>, b: interop.Pointer | interop.Reference<any>, ldb: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<any>, c__: interop.Pointer | interop.Reference<any>, ldc: interop.Pointer | interop.Reference<number>): number;
+
 declare function zsymv_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __alpha: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __a: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lda: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __incx: interop.Pointer | interop.Reference<number>, __beta: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __y: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __incy: interop.Pointer | interop.Reference<number>): number;
+
+declare function zsyr2k_(uplo: string | interop.Pointer | interop.Reference<any>, trans: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, k: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<any>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>, b: interop.Pointer | interop.Reference<any>, ldb: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<any>, c__: interop.Pointer | interop.Reference<any>, ldc: interop.Pointer | interop.Reference<number>): number;
 
 declare function zsyr_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __alpha: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __x: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __incx: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lda: interop.Pointer | interop.Reference<number>): number;
 
 declare function zsyrfs_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lda: interop.Pointer | interop.Reference<number>, __af: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldaf: interop.Pointer | interop.Reference<number>, __ipiv: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldb: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldx: interop.Pointer | interop.Reference<number>, __ferr: interop.Pointer | interop.Reference<number>, __berr: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __rwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
+
+declare function zsyrk_(uplo: string | interop.Pointer | interop.Reference<any>, trans: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, k: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<any>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>, beta: interop.Pointer | interop.Reference<any>, c__: interop.Pointer | interop.Reference<any>, ldc: interop.Pointer | interop.Reference<number>): number;
 
 declare function zsysv_(__uplo: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lda: interop.Pointer | interop.Reference<number>, __ipiv: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldb: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
@@ -6706,7 +8243,11 @@ declare function zsytrs_(__uplo: string | interop.Pointer | interop.Reference<an
 
 declare function ztbcon_(__norm: string | interop.Pointer | interop.Reference<any>, __uplo: string | interop.Pointer | interop.Reference<any>, __diag: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __kd: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldab: interop.Pointer | interop.Reference<number>, __rcond: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __rwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function ztbmv_(uplo: string | interop.Pointer | interop.Reference<any>, trans: string | interop.Pointer | interop.Reference<any>, diag: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, k: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>): number;
+
 declare function ztbrfs_(__uplo: string | interop.Pointer | interop.Reference<any>, __trans: string | interop.Pointer | interop.Reference<any>, __diag: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __kd: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldab: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldb: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldx: interop.Pointer | interop.Reference<number>, __ferr: interop.Pointer | interop.Reference<number>, __berr: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __rwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
+
+declare function ztbsv_(uplo: string | interop.Pointer | interop.Reference<any>, trans: string | interop.Pointer | interop.Reference<any>, diag: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, k: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>): number;
 
 declare function ztbtrs_(__uplo: string | interop.Pointer | interop.Reference<any>, __trans: string | interop.Pointer | interop.Reference<any>, __diag: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __kd: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __ab: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldab: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldb: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
@@ -6736,7 +8277,11 @@ declare function ztgsyl_(__trans: string | interop.Pointer | interop.Reference<a
 
 declare function ztpcon_(__norm: string | interop.Pointer | interop.Reference<any>, __uplo: string | interop.Pointer | interop.Reference<any>, __diag: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __ap: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __rcond: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __rwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function ztpmv_(uplo: string | interop.Pointer | interop.Reference<any>, trans: string | interop.Pointer | interop.Reference<any>, diag: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, ap: interop.Pointer | interop.Reference<any>, x: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>): number;
+
 declare function ztprfs_(__uplo: string | interop.Pointer | interop.Reference<any>, __trans: string | interop.Pointer | interop.Reference<any>, __diag: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __ap: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __b: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldb: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldx: interop.Pointer | interop.Reference<number>, __ferr: interop.Pointer | interop.Reference<number>, __berr: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __rwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
+
+declare function ztpsv_(uplo: string | interop.Pointer | interop.Reference<any>, trans: string | interop.Pointer | interop.Reference<any>, diag: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, ap: interop.Pointer | interop.Reference<any>, x: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>): number;
 
 declare function ztptri_(__uplo: string | interop.Pointer | interop.Reference<any>, __diag: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __ap: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __info: interop.Pointer | interop.Reference<number>): number;
 
@@ -6752,11 +8297,19 @@ declare function ztrevc_(__side: string | interop.Pointer | interop.Reference<an
 
 declare function ztrexc_(__compq: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __t: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldt: interop.Pointer | interop.Reference<number>, __q: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldq: interop.Pointer | interop.Reference<number>, __ifst: interop.Pointer | interop.Reference<number>, __ilst: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function ztrmm_(side: string | interop.Pointer | interop.Reference<any>, uplo: string | interop.Pointer | interop.Reference<any>, transa: string | interop.Pointer | interop.Reference<any>, diag: string | interop.Pointer | interop.Reference<any>, m: interop.Pointer | interop.Reference<number>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<any>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>, b: interop.Pointer | interop.Reference<any>, ldb: interop.Pointer | interop.Reference<number>): number;
+
+declare function ztrmv_(uplo: string | interop.Pointer | interop.Reference<any>, trans: string | interop.Pointer | interop.Reference<any>, diag: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>): number;
+
 declare function ztrrfs_(__uplo: string | interop.Pointer | interop.Reference<any>, __trans: string | interop.Pointer | interop.Reference<any>, __diag: string | interop.Pointer | interop.Reference<any>, __n: interop.Pointer | interop.Reference<number>, __nrhs: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lda: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldb: interop.Pointer | interop.Reference<number>, __x: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldx: interop.Pointer | interop.Reference<number>, __ferr: interop.Pointer | interop.Reference<number>, __berr: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __rwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function ztrsen_(__job: string | interop.Pointer | interop.Reference<any>, __compq: string | interop.Pointer | interop.Reference<any>, __select: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __t: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldt: interop.Pointer | interop.Reference<number>, __q: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldq: interop.Pointer | interop.Reference<number>, __w: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __m: interop.Pointer | interop.Reference<number>, __s: interop.Pointer | interop.Reference<number>, __sep: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
+declare function ztrsm_(side: string | interop.Pointer | interop.Reference<any>, uplo: string | interop.Pointer | interop.Reference<any>, transa: string | interop.Pointer | interop.Reference<any>, diag: string | interop.Pointer | interop.Reference<any>, m: interop.Pointer | interop.Reference<number>, n: interop.Pointer | interop.Reference<number>, alpha: interop.Pointer | interop.Reference<any>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>, b: interop.Pointer | interop.Reference<any>, ldb: interop.Pointer | interop.Reference<number>): number;
+
 declare function ztrsna_(__job: string | interop.Pointer | interop.Reference<any>, __howmny: string | interop.Pointer | interop.Reference<any>, __select: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __t: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldt: interop.Pointer | interop.Reference<number>, __vl: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldvl: interop.Pointer | interop.Reference<number>, __vr: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldvr: interop.Pointer | interop.Reference<number>, __s: interop.Pointer | interop.Reference<number>, __sep: interop.Pointer | interop.Reference<number>, __mm: interop.Pointer | interop.Reference<number>, __m: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldwork: interop.Pointer | interop.Reference<number>, __rwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
+
+declare function ztrsv_(uplo: string | interop.Pointer | interop.Reference<any>, trans: string | interop.Pointer | interop.Reference<any>, diag: string | interop.Pointer | interop.Reference<any>, n: interop.Pointer | interop.Reference<number>, a: interop.Pointer | interop.Reference<any>, lda: interop.Pointer | interop.Reference<number>, x: interop.Pointer | interop.Reference<any>, incx: interop.Pointer | interop.Reference<number>): number;
 
 declare function ztrsyl_(__trana: string | interop.Pointer | interop.Reference<any>, __tranb: string | interop.Pointer | interop.Reference<any>, __isgn: interop.Pointer | interop.Reference<number>, __m: interop.Pointer | interop.Reference<number>, __n: interop.Pointer | interop.Reference<number>, __a: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __lda: interop.Pointer | interop.Reference<number>, __b: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldb: interop.Pointer | interop.Reference<number>, __c__: interop.Pointer | interop.Reference<__CLPK_doublecomplex>, __ldc: interop.Pointer | interop.Reference<number>, __scale: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 

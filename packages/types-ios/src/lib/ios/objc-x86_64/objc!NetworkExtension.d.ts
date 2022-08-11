@@ -7,7 +7,13 @@ declare class NEAppProxyFlow extends NSObject {
 
 	static new(): NEAppProxyFlow; // inherited from NSObject
 
+	readonly isBound: boolean;
+
 	readonly metaData: NEFlowMetaData;
+
+	networkInterface: NSObject;
+
+	readonly remoteHostname: string;
 
 	closeReadWithError(error: NSError): void;
 
@@ -89,6 +95,78 @@ declare class NEAppProxyUDPFlow extends NEAppProxyFlow {
 	writeDatagramsSentByEndpointsCompletionHandler(datagrams: NSArray<NSData> | NSData[], remoteEndpoints: NSArray<NWEndpoint> | NWEndpoint[], completionHandler: (p1: NSError) => void): void;
 }
 
+interface NEAppPushDelegate extends NSObjectProtocol {
+
+	appPushManagerDidReceiveIncomingCallWithUserInfo(manager: NEAppPushManager, userInfo: NSDictionary<any, any>): void;
+}
+declare var NEAppPushDelegate: {
+
+	prototype: NEAppPushDelegate;
+};
+
+declare var NEAppPushErrorDomain: string;
+
+declare class NEAppPushManager extends NSObject {
+
+	static alloc(): NEAppPushManager; // inherited from NSObject
+
+	static loadAllFromPreferencesWithCompletionHandler(completionHandler: (p1: NSArray<NEAppPushManager>, p2: NSError) => void): void;
+
+	static new(): NEAppPushManager; // inherited from NSObject
+
+	readonly active: boolean;
+
+	delegate: NEAppPushDelegate;
+
+	enabled: boolean;
+
+	localizedDescription: string;
+
+	matchPrivateLTENetworks: NSArray<NEPrivateLTENetwork>;
+
+	matchSSIDs: NSArray<string>;
+
+	providerBundleIdentifier: string;
+
+	providerConfiguration: NSDictionary<string, any>;
+
+	loadFromPreferencesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+
+	removeFromPreferencesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+
+	saveToPreferencesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+}
+
+declare const enum NEAppPushManagerError {
+
+	ConfigurationInvalid = 1,
+
+	ConfigurationNotLoaded = 2,
+
+	InternalError = 3,
+
+	InactiveSession = 4
+}
+
+declare class NEAppPushProvider extends NEProvider {
+
+	static alloc(): NEAppPushProvider; // inherited from NSObject
+
+	static new(): NEAppPushProvider; // inherited from NSObject
+
+	readonly providerConfiguration: NSDictionary<string, any>;
+
+	handleTimerEvent(): void;
+
+	reportIncomingCallWithUserInfo(userInfo: NSDictionary<any, any>): void;
+
+	start(): void;
+
+	startWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+
+	stopWithReasonCompletionHandler(reason: NEProviderStopReason, completionHandler: () => void): void;
+}
+
 declare class NEAppRule extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): NEAppRule; // inherited from NSObject
@@ -114,6 +192,37 @@ declare class NEAppRule extends NSObject implements NSCopying, NSSecureCoding {
 	initWithCoder(coder: NSCoder): this;
 
 	initWithSigningIdentifier(signingIdentifier: string): this;
+}
+
+declare class NEDNSOverHTTPSSettings extends NEDNSSettings {
+
+	static alloc(): NEDNSOverHTTPSSettings; // inherited from NSObject
+
+	static new(): NEDNSOverHTTPSSettings; // inherited from NSObject
+
+	identityReference: NSData;
+
+	serverURL: NSURL;
+}
+
+declare class NEDNSOverTLSSettings extends NEDNSSettings {
+
+	static alloc(): NEDNSOverTLSSettings; // inherited from NSObject
+
+	static new(): NEDNSOverTLSSettings; // inherited from NSObject
+
+	identityReference: NSData;
+
+	serverName: string;
+}
+
+declare const enum NEDNSProtocol {
+
+	Cleartext = 1,
+
+	TLS = 2,
+
+	HTTPS = 3
 }
 
 declare var NEDNSProxyConfigurationDidChangeNotification: string;
@@ -188,6 +297,8 @@ declare class NEDNSSettings extends NSObject implements NSCopying, NSSecureCodin
 
 	static new(): NEDNSSettings; // inherited from NSObject
 
+	readonly dnsProtocol: NEDNSProtocol;
+
 	domainName: string;
 
 	matchDomains: NSArray<string>;
@@ -211,6 +322,44 @@ declare class NEDNSSettings extends NSObject implements NSCopying, NSSecureCodin
 	initWithCoder(coder: NSCoder): this;
 
 	initWithServers(servers: NSArray<string> | string[]): this;
+}
+
+declare var NEDNSSettingsConfigurationDidChangeNotification: string;
+
+declare var NEDNSSettingsErrorDomain: string;
+
+declare class NEDNSSettingsManager extends NSObject {
+
+	static alloc(): NEDNSSettingsManager; // inherited from NSObject
+
+	static new(): NEDNSSettingsManager; // inherited from NSObject
+
+	static sharedManager(): NEDNSSettingsManager;
+
+	dnsSettings: NEDNSSettings;
+
+	readonly enabled: boolean;
+
+	localizedDescription: string;
+
+	onDemandRules: NSArray<NEOnDemandRule>;
+
+	loadFromPreferencesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+
+	removeFromPreferencesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+
+	saveToPreferencesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+}
+
+declare const enum NEDNSSettingsManagerError {
+
+	ConfigurationInvalid = 1,
+
+	ConfigurationDisabled = 2,
+
+	ConfigurationStale = 3,
+
+	ConfigurationCannotBeRemoved = 4
 }
 
 declare class NEEvaluateConnectionRule extends NSObject implements NSCopying, NSSecureCoding {
@@ -579,7 +728,9 @@ declare const enum NEFilterReportEvent {
 
 	DataDecision = 2,
 
-	FlowClosed = 3
+	FlowClosed = 3,
+
+	Statistics = 4
 }
 
 declare class NEFilterSocketFlow extends NEFilterFlow implements NSCopying, NSSecureCoding {
@@ -591,6 +742,8 @@ declare class NEFilterSocketFlow extends NEFilterFlow implements NSCopying, NSSe
 	readonly localEndpoint: NWEndpoint;
 
 	readonly remoteEndpoint: NWEndpoint;
+
+	readonly remoteHostname: string;
 
 	readonly socketFamily: number;
 
@@ -947,6 +1100,8 @@ declare class NEHotspotNetwork extends NSObject {
 
 	static alloc(): NEHotspotNetwork; // inherited from NSObject
 
+	static fetchCurrentWithCompletionHandler(completionHandler: (p1: NEHotspotNetwork) => void): void;
+
 	static new(): NEHotspotNetwork; // inherited from NSObject
 
 	readonly BSSID: string;
@@ -961,11 +1116,26 @@ declare class NEHotspotNetwork extends NSObject {
 
 	readonly secure: boolean;
 
+	readonly securityType: NEHotspotNetworkSecurityType;
+
 	readonly signalStrength: number;
 
 	setConfidence(confidence: NEHotspotHelperConfidence): void;
 
 	setPassword(password: string): void;
+}
+
+declare const enum NEHotspotNetworkSecurityType {
+
+	Open = 0,
+
+	WEP = 1,
+
+	Personal = 2,
+
+	Enterprise = 3,
+
+	Unknown = 4
 }
 
 declare class NEIPv4Route extends NSObject implements NSCopying, NSSecureCoding {
@@ -1241,6 +1411,29 @@ declare class NEPacketTunnelProvider extends NETunnelProvider {
 	stopTunnelWithReasonCompletionHandler(reason: NEProviderStopReason, completionHandler: () => void): void;
 }
 
+declare class NEPrivateLTENetwork extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): NEPrivateLTENetwork; // inherited from NSObject
+
+	static new(): NEPrivateLTENetwork; // inherited from NSObject
+
+	mobileCountryCode: string;
+
+	mobileNetworkCode: string;
+
+	trackingAreaCode: string;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
 declare class NEProvider extends NSObject {
 
 	static alloc(): NEProvider; // inherited from NSObject
@@ -1491,12 +1684,57 @@ declare class NEVPNConnection extends NSObject {
 
 	readonly status: NEVPNStatus;
 
+	fetchLastDisconnectErrorWithCompletionHandler(handler: (p1: NSError) => void): void;
+
 	startVPNTunnelAndReturnError(): boolean;
 
 	startVPNTunnelWithOptionsAndReturnError(options: NSDictionary<string, NSObject>): boolean;
 
 	stopVPNTunnel(): void;
 }
+
+declare const enum NEVPNConnectionError {
+
+	Overslept = 1,
+
+	NoNetworkAvailable = 2,
+
+	UnrecoverableNetworkChange = 3,
+
+	ConfigurationFailed = 4,
+
+	ServerAddressResolutionFailed = 5,
+
+	ServerNotResponding = 6,
+
+	ServerDead = 7,
+
+	AuthenticationFailed = 8,
+
+	ClientCertificateInvalid = 9,
+
+	ClientCertificateNotYetValid = 10,
+
+	ClientCertificateExpired = 11,
+
+	PluginFailed = 12,
+
+	ConfigurationNotFound = 13,
+
+	PluginDisabled = 14,
+
+	NegotiationFailed = 15,
+
+	ServerDisconnected = 16,
+
+	ServerCertificateInvalid = 17,
+
+	ServerCertificateNotYetValid = 18,
+
+	ServerCertificateExpired = 19
+}
+
+declare var NEVPNConnectionErrorDomain: string;
 
 declare var NEVPNConnectionStartOptionPassword: string;
 
@@ -1684,11 +1922,17 @@ declare class NEVPNProtocol extends NSObject implements NSCopying, NSSecureCodin
 
 	disconnectOnSleep: boolean;
 
+	enforceRoutes: boolean;
+
+	excludeLocalNetworks: boolean;
+
 	identityData: NSData;
 
 	identityDataPassword: string;
 
 	identityReference: NSData;
+
+	includeAllNetworks: boolean;
 
 	passwordReference: NSData;
 
@@ -1736,6 +1980,8 @@ declare class NEVPNProtocolIKEv2 extends NEVPNProtocolIPSec {
 	maximumTLSVersion: NEVPNIKEv2TLSVersion;
 
 	minimumTLSVersion: NEVPNIKEv2TLSVersion;
+
+	mtu: number;
 
 	serverCertificateCommonName: string;
 
@@ -1830,6 +2076,8 @@ declare class NWPath extends NSObject {
 	static alloc(): NWPath; // inherited from NSObject
 
 	static new(): NWPath; // inherited from NSObject
+
+	readonly constrained: boolean;
 
 	readonly expensive: boolean;
 

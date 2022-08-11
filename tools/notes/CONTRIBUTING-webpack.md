@@ -23,7 +23,7 @@ Before starting, make yourself familiar with the `@nativescript/webpack`'s [docu
 ## Project Structure
 
 The repository contains several ingredients:
-*   `installer.js` - combination of postinstall scripts for adding or removing webpack configurations and necessary dependecies when installing the plugin.
+*   `installer.js` - combination of postinstall scripts for adding or removing webpack configurations and necessary dependencies when installing the plugin.
 *   `templates/` - webpack config templates for different types of projects - NativeScript with JavaScript, NativeScript with TypeScript and NativeScript Angular projects.
 *   `plugins/` - several [Webpack plugins](https://webpack.js.org/concepts/plugins/) necessary for bundling NativeScript applications.
 *   `snapshot/android/` - tools used with the `NativeScriptSnapshot` plugin for generating V8 Heap Snapshots.
@@ -164,7 +164,7 @@ git checkout release && git pull
 git merge --ff-only origin/master
 ```
 *** Note: If there are commits in release branch which are not merged in master branch '-ff-merge' command will fail. 
-In this case the commits should be merge firstly from release in master branch as explained in section 'Merge changes from release into master' and then repeat step 1.
+In this case the commits should be merged firstly from release in master branch as explained in section 'Merge changes from release into master' and then repeat step 1.
 
 2. Execute `npm i` to install dependencies:
 ```
@@ -233,7 +233,7 @@ git commit
 git push
 ```
 
-6. Create pull request. Replace replace env ${MERGE_BRANCH} with its value
+6. Create pull request. Replace env ${MERGE_BRANCH} with its value
 ```
 curl -d '{"title": "chore: merge release in master","body": "chore: merge release in master","head": "merge-release-in-master","base": "master"}' -X POST https://api.github.com/repos/NativeScript/NativeScript/pulls -H "Authorization: token ${GIT_TOKEN}"
 ```
@@ -244,4 +244,4 @@ git checkout origin/master tns-platform-declarations/package.json tns-core-modul
 git commit --amend
 git push --force-with-lease
 ```
-This will require to repeat steps from 1 to 4, since we need to keep the branches with the same history
+This will require repeating steps from 1 to 4, since we need to keep the branches with the same history

@@ -151,11 +151,13 @@ export class ActionItem extends ViewBase {
 	/**
 	 * Gets the iOS specific options of the action item.
 	 */
+	// @ts-ignore
 	ios: IOSActionItemSettings;
 
 	/**
 	 * Gets the Android specific options of the action item.
 	 */
+	// @ts-ignore
 	android: AndroidActionItemSettings;
 }
 

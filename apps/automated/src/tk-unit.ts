@@ -347,7 +347,7 @@ export function wait(seconds: number): void {
 	waitUntilReady(() => false, seconds, false);
 }
 
-export function waitUntilReady(isReady: () => boolean, timeoutSec: number = 3, shouldThrow: boolean = true) {
+export function waitUntilReady(isReady: () => boolean, timeoutSec: number = 5, shouldThrow: boolean = true) {
 	if (!isReady) {
 		return;
 	}

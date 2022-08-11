@@ -1,6 +1,6 @@
 // Types
 import { View } from '../core/view';
-import { PercentLength } from '../styling/style-properties';
+import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
 
 export type Transformation = {
@@ -19,9 +19,9 @@ export type TransformFunctionsInfo = {
 };
 
 export interface AnimationPromise extends Promise<any>, Cancelable {
-	then(...args):AnimationPromise
-	catch(...args):AnimationPromise
-};
+	then(...args): AnimationPromise;
+	catch(...args): AnimationPromise;
+}
 
 export interface Pair {
 	x: number;
@@ -53,8 +53,8 @@ export interface AnimationDefinition {
 	backgroundColor?: Color;
 	translate?: Pair;
 	scale?: Pair;
-	height?: PercentLength | string;
-	width?: PercentLength | string;
+	height?: CoreTypes.PercentLengthType | string;
+	width?: CoreTypes.PercentLengthType | string;
 	rotate?: number;
 	duration?: number;
 	delay?: number;
@@ -69,5 +69,5 @@ export interface AnimationDefinitionInternal extends AnimationDefinition {
 export interface IOSView extends View {
 	_suspendPresentationLayerUpdates();
 	_resumePresentationLayerUpdates();
-	_isPresentationLayerUpdateSuspeneded();
+	_isPresentationLayerUpdateSuspended();
 }

@@ -1,0 +1,13 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+    <Page.actionBar>
+        <ActionBar title="Permissions" icon="" class="action-bar">
+        </ActionBar>
+    </Page.actionBar>
+
+    <StackLayout class="p-20">
+        <Label text="Test Memory leaks with image picking and saving to device. Best to profile from platform IDE like Xcode." textWrap="true" />
+
+        <Button text="Pick and Save Image" tap="{{ pickImage }}" />
+
+    </StackLayout>
+</Page>

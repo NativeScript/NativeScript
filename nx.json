@@ -6,42 +6,81 @@
 	},
 	"implicitDependencies": {
 		"workspace.json": "*",
-		"package.json": {
-			"dependencies": "*",
-			"devDependencies": "*"
-		},
 		"tsconfig.json": "*",
 		"tslint.json": "*",
 		"nx.json": "*",
 		".eslintrc.json": "*"
 	},
-	"projects": {
-		"apps-automated": {
-			"tags": []
-		},
-		"apps-toolbox": {
-			"tags": []
-		},
-		"apps-ui": {
-			"tags": []
-		},
-		"core": {
-			"tags": []
-		},
-		"types": {
-			"tags": []
-		},
-		"types-ios": {
-			"tags": []
-		},
-		"types-android": {
-			"tags": []
-		},
-		"ui-mobile-base": {
-			"tags": []
-		},
-		"webpack": {
-			"tags": []
+	"tasksRunnerOptions": {
+		"default": {
+			"runner": "nx/tasks-runners/default",
+			"options": {
+				"useDaemonProcess": false,
+				"cacheableOperations": ["build", "lint", "test", "e2e"],
+				"canTrackAnalytics": false,
+				"showUsageWarnings": true,
+				"parallel": 1
+			}
 		}
-	}
+	},
+	"generators": {
+		"@nrwl/workspace": {
+			"library": {
+				"linter": "eslint"
+			}
+		},
+		"@nrwl/cypress": {
+			"cypress-project": {
+				"linter": "eslint"
+			}
+		},
+		"@nrwl/react": {
+			"application": {
+				"linter": "eslint"
+			},
+			"library": {
+				"linter": "eslint"
+			}
+		},
+		"@nrwl/next": {
+			"application": {
+				"linter": "eslint"
+			}
+		},
+		"@nrwl/web": {
+			"application": {
+				"linter": "eslint"
+			}
+		},
+		"@nrwl/node": {
+			"application": {
+				"linter": "eslint"
+			},
+			"library": {
+				"linter": "eslint"
+			}
+		},
+		"@nrwl/nx-plugin": {
+			"plugin": {
+				"linter": "eslint"
+			}
+		},
+		"@nrwl/nest": {
+			"application": {
+				"linter": "eslint"
+			}
+		},
+		"@nrwl/express": {
+			"application": {
+				"linter": "eslint"
+			},
+			"library": {
+				"linter": "eslint"
+			}
+		}
+	},
+	"affected": {
+		"defaultBase": "master"
+	},
+	"$schema": "./node_modules/nx/schemas/nx-schema.json"
 }

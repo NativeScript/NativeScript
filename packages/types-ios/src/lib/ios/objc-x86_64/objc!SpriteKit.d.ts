@@ -964,6 +964,12 @@ declare class SKNode extends UIResponder implements NSCopying, NSSecureCoding, U
 
 	readonly description: string; // inherited from NSObjectProtocol
 
+	readonly focusEffect: UIFocusEffect; // inherited from UIFocusItem
+
+	readonly focusGroupIdentifier: string; // inherited from UIFocusEnvironment
+
+	readonly focusGroupPriority: number; // inherited from UIFocusItem
+
 	readonly focusItemContainer: UIFocusItemContainer; // inherited from UIFocusEnvironment
 
 	readonly frame: CGRect; // inherited from UIFocusItem
@@ -971,6 +977,8 @@ declare class SKNode extends UIResponder implements NSCopying, NSSecureCoding, U
 	readonly hash: number; // inherited from NSObjectProtocol
 
 	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly isTransparentFocusItem: boolean; // inherited from UIFocusItem
 
 	readonly parentFocusEnvironment: UIFocusEnvironment; // inherited from UIFocusEnvironment
 
@@ -2577,6 +2585,8 @@ declare class SKView extends UIView {
 	asynchronous: boolean;
 
 	delegate: NSObject;
+
+	disableDepthStencilBuffer: boolean;
 
 	frameInterval: number;
 

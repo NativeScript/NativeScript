@@ -14,11 +14,8 @@ function lazy<T>(action: () => T): () => T {
 
 	return () => _value || (_value = action());
 }
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const percentLengthToStringLazy = lazy<(length) => string>(() => require('../ui/styling/style-properties').PercentLength.convertToString);
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const getSetPropertiesLazy = lazy<(view: ViewBase) => [string, any][]>(() => require('../ui/core/properties').getSetProperties);
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const getComputedCssValuesLazy = lazy<(view: ViewBase) => [string, any][]>(() => require('../ui/core/properties').getComputedCssValues);
 
 export function registerInspectorEvents(inspector: InspectorEvents) {
@@ -178,7 +175,7 @@ export class DOMNode {
 
 	dispose() {
 		unregisterNode(this);
-		this.viewRef.clear();
+		// this.viewRef.clear();
 	}
 
 	public toObject() {

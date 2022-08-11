@@ -1,0 +1,23 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/types-android/src",
+  "projectType": "library",
+  "generators": {},
+  "targets": {
+    "build": {
+      "executor": "@nrwl/workspace:run-commands",
+      "outputs": [
+        "dist/packages"
+      ],
+      "options": {
+        "commands": [
+          "mkdir -p ../../dist/packages/types-android",
+          "cp -R src/* ../../dist/packages/types-android",
+          "cp package.json *.md ../../dist/packages/types-android"
+        ],
+        "cwd": "packages/types-android",
+        "parallel": false
+      }
+    }
+  }
+}

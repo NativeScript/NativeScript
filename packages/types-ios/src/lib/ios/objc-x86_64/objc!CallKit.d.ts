@@ -139,6 +139,8 @@ declare class CXCallDirectoryManager extends NSObject {
 
 	getEnabledStatusForExtensionWithIdentifierCompletionHandler(identifier: string, completion: (p1: CXCallDirectoryEnabledStatus, p2: NSError) => void): void;
 
+	openSettingsWithCompletionHandler(completion: (p1: NSError) => void): void;
+
 	reloadExtensionWithIdentifierCompletionHandler(identifier: string, completion: (p1: NSError) => void): void;
 }
 
@@ -258,7 +260,9 @@ declare const enum CXErrorCode {
 
 	Unentitled = 1,
 
-	InvalidArgument = 2
+	InvalidArgument = 2,
+
+	MissingVoIPBackgroundMode = 3
 }
 
 declare const enum CXErrorCodeCallDirectoryManagerError {
@@ -295,6 +299,15 @@ declare const enum CXErrorCodeIncomingCallError {
 	FilteredByBlockList = 4
 }
 
+declare const enum CXErrorCodeNotificationServiceExtensionError {
+
+	Unknown = 0,
+
+	InvalidClientProcess = 1,
+
+	MissingNotificationFilteringEntitlement = 2
+}
+
 declare const enum CXErrorCodeRequestTransactionError {
 
 	Unknown = 0,
@@ -319,6 +332,8 @@ declare var CXErrorDomain: string;
 declare var CXErrorDomainCallDirectoryManager: string;
 
 declare var CXErrorDomainIncomingCall: string;
+
+declare var CXErrorDomainNotificationServiceExtension: string;
 
 declare var CXErrorDomainRequestTransaction: string;
 
@@ -387,6 +402,8 @@ declare class CXProvider extends NSObject {
 	static alloc(): CXProvider; // inherited from NSObject
 
 	static new(): CXProvider; // inherited from NSObject
+
+	static reportNewIncomingVoIPPushPayloadCompletion(dictionaryPayload: NSDictionary<any, any>, completion: (p1: NSError) => void): void;
 
 	configuration: CXProviderConfiguration;
 

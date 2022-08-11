@@ -1,30 +1,18 @@
 import { ScrollEventData } from '../scroll-view';
-
+import { CoreTypes } from '../../core-types';
 import { Background as BackgroundDefinition } from './background';
 import { View, Point } from '../core/view';
 import { LinearGradient } from './linear-gradient';
 import { Color } from '../../color';
-import { isDataURI, isFileOrResourcePath, layout } from '../../utils';
+import { iOSNativeHelper, isDataURI, isFileOrResourcePath, layout } from '../../utils';
+import { ios as iosViewUtils, NativeScriptUIView } from '../utils';
 import { ImageSource } from '../../image-source';
 import { CSSValue, parse as cssParse } from '../../css-value';
+import { CSSShadow } from './css-shadow';
+import { Length } from './style-properties';
+import { BackgroundClearFlags } from './background-common';
 
 export * from './background-common';
-
-interface NativeView extends UIView {
-	hasNonUniformBorder: boolean;
-
-	borderLayer: CALayer;
-
-	hasBorderMask: boolean;
-	borderOriginalMask: CALayer;
-
-	topBorderLayer: CALayer;
-	rightBorderLayer: CALayer;
-	bottomBorderLayer: CALayer;
-	leftBorderLayer: CALayer;
-
-	gradientLayer: CAGradientLayer;
-}
 
 interface Rect {
 	left: number;
@@ -43,16 +31,22 @@ export enum CacheMode {
 export namespace ios {
 	export function createBackgroundUIColor(view: View, callback: (uiColor: UIColor) => void, flip?: boolean): void {
 		const background = view.style.backgroundInternal;
-		const nativeView = <NativeView>view.nativeViewProtected;
+		const nativeView = <NativeScriptUIView>view.nativeViewProtected;
+
+		if (background.clearFlags & BackgroundClearFlags.CLEAR_BOX_SHADOW) {
+			// clear box shadow if it has been removed!
+			view.setProperty('clipToBounds', true);
+			clearBoxShadow(nativeView);
+		}
 
 		if (nativeView.hasNonUniformBorder) {
 			unsubscribeFromScrollNotifications(view);
 			clearNonUniformBorders(nativeView);
 		}
 
-		clearGradient(nativeView);
+		iosViewUtils.clearGradient(nativeView);
 		if (background.image instanceof LinearGradient) {
-			drawGradient(nativeView, background.image);
+			iosViewUtils.drawGradient(nativeView, background.image);
 		}
 
 		const hasNonUniformBorderWidths = background.hasBorderWidth() && !background.hasUniformBorder();
@@ -85,6 +79,13 @@ export namespace ios {
 		} else {
 			setUIColorFromImage(view, nativeView, callback, flip);
 		}
+
+		if (background.hasBoxShadow()) {
+			drawBoxShadow(nativeView, view, background.getBoxShadow(), background);
+		}
+
+		// reset clear flags
+		background.clearFlags = BackgroundClearFlags.NONE;
 	}
 }
 
@@ -96,7 +97,7 @@ function onScroll(this: void, args: ScrollEventData): void {
 	}
 }
 
-function adjustLayersForScrollView(nativeView: UIScrollView & NativeView) {
+function adjustLayersForScrollView(nativeView: UIScrollView & NativeScriptUIView) {
 	const layer = nativeView.borderLayer;
 	if (layer instanceof CALayer) {
 		// Compensates with transition for the background layers for scrolling in ScrollView based controls.
@@ -124,6 +125,7 @@ function unsubscribeFromScrollNotifications(view: View) {
 		view.off('scroll', onScroll);
 	}
 }
+
 function subscribeForScrollNotifications(view: View) {
 	if (view.nativeViewProtected instanceof UIScrollView) {
 		view.on('scroll', onScroll);
@@ -131,7 +133,7 @@ function subscribeForScrollNotifications(view: View) {
 	}
 }
 
-function clearNonUniformBorders(nativeView: NativeView): void {
+function clearNonUniformBorders(nativeView: NativeScriptUIView): void {
 	if (nativeView.borderLayer) {
 		nativeView.borderLayer.removeFromSuperlayer();
 	}
@@ -160,6 +162,7 @@ function clearNonUniformBorders(nativeView: NativeView): void {
 }
 
 const pattern = /url\(('|")(.*?)\1\)/;
+
 function setUIColorFromImage(view: View, nativeView: UIView, callback: (uiColor: UIColor) => void, flip?: boolean): void {
 	const frame = nativeView.frame;
 	const boundsWidth = view.scaleX ? frame.size.width / view.scaleX : frame.size.width;
@@ -440,7 +443,7 @@ function cssValueToDeviceIndependentPixels(source: string, total: number): numbe
 	}
 }
 
-function drawUniformColorNonUniformBorders(nativeView: NativeView, background: BackgroundDefinition) {
+function drawUniformColorNonUniformBorders(nativeView: NativeScriptUIView, background: BackgroundDefinition) {
 	const layer = nativeView.layer;
 	layer.backgroundColor = undefined;
 	layer.borderColor = undefined;
@@ -568,7 +571,7 @@ function drawUniformColorNonUniformBorders(nativeView: NativeView, background: B
 	nativeView.hasNonUniformBorder = true;
 }
 
-function drawNoRadiusNonUniformBorders(nativeView: NativeView, background: BackgroundDefinition) {
+function drawNoRadiusNonUniformBorders(nativeView: NativeScriptUIView, background: BackgroundDefinition) {
 	const borderLayer = CALayer.layer();
 	nativeView.layer.addSublayer(borderLayer);
 	nativeView.borderLayer = borderLayer;
@@ -706,44 +709,58 @@ function drawNoRadiusNonUniformBorders(nativeView: NativeView, background: Backg
 	nativeView.hasNonUniformBorder = hasNonUniformBorder;
 }
 
-function drawGradient(nativeView: NativeView, gradient: LinearGradient) {
-	const gradientLayer = CAGradientLayer.layer();
-	gradientLayer.frame = nativeView.bounds;
-	nativeView.gradientLayer = gradientLayer;
+// TODO: use sublayer if its applied to a layout
+function drawBoxShadow(nativeView: NativeScriptUIView, view: View, boxShadow: CSSShadow, background: BackgroundDefinition, useSubLayer: boolean = false) {
+	const layer: CALayer = iOSNativeHelper.getShadowLayer(nativeView, 'ns-box-shadow');
 
-	const iosColors = NSMutableArray.alloc().initWithCapacity(gradient.colorStops.length);
-	const iosStops = NSMutableArray.alloc<number>().initWithCapacity(gradient.colorStops.length);
-	let hasStops = false;
+	layer.masksToBounds = false;
+	nativeView.clipsToBounds = false;
 
-	gradient.colorStops.forEach((stop) => {
-		iosColors.addObject(stop.color.ios.CGColor);
-		if (stop.offset) {
-			iosStops.addObject(stop.offset.value);
-			hasStops = true;
-		}
-	});
+	// this is required (if not, shadow will get cutoff at parent's dimensions)
+	// nativeView.clipsToBounds doesn't work
+	view.setProperty('clipToBounds', false);
 
-	gradientLayer.colors = iosColors;
-
-	if (hasStops) {
-		gradientLayer.locations = iosStops;
+	if (!background.color?.a) {
+		// add white background if view has a transparent background
+		layer.backgroundColor = UIColor.whiteColor.CGColor;
 	}
+	// shadow opacity is handled on the shadow's color instance
+	layer.shadowOpacity = boxShadow.color?.a ? boxShadow.color?.a / 255 : 1;
+	layer.shadowRadius = Length.toDevicePixels(boxShadow.blurRadius, 0.0);
+	layer.shadowColor = boxShadow.color.ios.CGColor;
 
-	const alpha = gradient.angle / (Math.PI * 2);
-	const startX = Math.pow(Math.sin(Math.PI * (alpha + 0.75)), 2);
-	const startY = Math.pow(Math.sin(Math.PI * (alpha + 0.5)), 2);
-	const endX = Math.pow(Math.sin(Math.PI * (alpha + 0.25)), 2);
-	const endY = Math.pow(Math.sin(Math.PI * alpha), 2);
-	gradientLayer.startPoint = { x: startX, y: startY };
-	gradientLayer.endPoint = { x: endX, y: endY };
+	// prettier-ignore
+	layer.shadowOffset = CGSizeMake(
+		Length.toDevicePixels(boxShadow.offsetX, 0.0),
+		Length.toDevicePixels(boxShadow.offsetY, 0.0)
+	);
 
-	nativeView.layer.insertSublayerAtIndex(gradientLayer, 0);
+	// this should match the view's border radius
+	const cornerRadius = Length.toDevicePixels(<CoreTypes.LengthType>view.style.borderRadius, 0.0);
+
+	// apply spreadRadius by expanding shadow layer bounds
+	// prettier-ignore
+	const bounds = CGRectInset(nativeView.bounds,
+		-Length.toDevicePixels(boxShadow.spreadRadius, 0.0),
+		-Length.toDevicePixels(boxShadow.spreadRadius, 0.0)
+	);
+
+	// This has the nice glow with box shadow of 0,0
+	layer.shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(bounds, cornerRadius).CGPath;
 }
 
-function clearGradient(nativeView: NativeView): void {
-	if (nativeView.gradientLayer) {
-		nativeView.gradientLayer.removeFromSuperlayer();
+function clearBoxShadow(nativeView: NativeScriptUIView) {
+	nativeView.clipsToBounds = true;
+	const layer: CALayer = iOSNativeHelper.getShadowLayer(nativeView, 'ns-box-shadow', false);
+	if (!layer) {
+		return;
 	}
+	layer.masksToBounds = true;
+	layer.shadowOffset = CGSizeMake(0, 0);
+	layer.shadowColor = UIColor.clearColor.CGColor;
+	layer.cornerRadius = 0.0;
+	layer.shadowRadius = 0.0;
+	layer.shadowOpacity = 0.0;
 }
 
 function drawClipPath(nativeView: UIView, background: BackgroundDefinition) {

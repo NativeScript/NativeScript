@@ -131,7 +131,56 @@ declare const enum ILMessageFilterAction {
 
 	Allow = 1,
 
-	Filter = 2
+	Junk = 2,
+
+	Filter = 2,
+
+	Promotion = 3,
+
+	Transaction = 4
+}
+
+interface ILMessageFilterCapabilitiesQueryHandling extends NSObjectProtocol {
+
+	handleCapabilitiesQueryRequestContextCompletion(capabilitiesQueryRequest: ILMessageFilterCapabilitiesQueryRequest, context: ILMessageFilterExtensionContext, completion: (p1: ILMessageFilterCapabilitiesQueryResponse) => void): void;
+}
+declare var ILMessageFilterCapabilitiesQueryHandling: {
+
+	prototype: ILMessageFilterCapabilitiesQueryHandling;
+};
+
+declare class ILMessageFilterCapabilitiesQueryRequest extends NSObject implements NSSecureCoding {
+
+	static alloc(): ILMessageFilterCapabilitiesQueryRequest; // inherited from NSObject
+
+	static new(): ILMessageFilterCapabilitiesQueryRequest; // inherited from NSObject
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare class ILMessageFilterCapabilitiesQueryResponse extends NSObject implements NSSecureCoding {
+
+	static alloc(): ILMessageFilterCapabilitiesQueryResponse; // inherited from NSObject
+
+	static new(): ILMessageFilterCapabilitiesQueryResponse; // inherited from NSObject
+
+	promotionalSubActions: NSArray<number>;
+
+	transactionalSubActions: NSArray<number>;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare const enum ILMessageFilterError {
@@ -182,6 +231,8 @@ declare class ILMessageFilterQueryRequest extends NSObject implements NSSecureCo
 
 	readonly messageBody: string;
 
+	readonly receiverISOCountryCode: string;
+
 	readonly sender: string;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
@@ -201,6 +252,8 @@ declare class ILMessageFilterQueryResponse extends NSObject implements NSSecureC
 
 	action: ILMessageFilterAction;
 
+	subAction: ILMessageFilterSubAction;
+
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
@@ -208,6 +261,35 @@ declare class ILMessageFilterQueryResponse extends NSObject implements NSSecureC
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
+}
+
+declare const enum ILMessageFilterSubAction {
+
+	None = 0,
+
+	TransactionalOthers = 10000,
+
+	TransactionalFinance = 10001,
+
+	TransactionalOrders = 10002,
+
+	TransactionalReminders = 10003,
+
+	TransactionalHealth = 10004,
+
+	TransactionalWeather = 10005,
+
+	TransactionalCarrier = 10006,
+
+	TransactionalRewards = 10007,
+
+	TransactionalPublicServices = 10008,
+
+	PromotionalOthers = 20000,
+
+	PromotionalOffers = 20001,
+
+	PromotionalCoupons = 20002
 }
 
 declare class ILNetworkResponse extends NSObject implements NSSecureCoding {

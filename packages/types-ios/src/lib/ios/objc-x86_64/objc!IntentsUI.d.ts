@@ -15,11 +15,17 @@ declare class INUIAddVoiceShortcutButton extends UIButton {
 
 	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): INUIAddVoiceShortcutButton; // inherited from UIAppearance
 
+	static buttonWithConfigurationPrimaryAction(configuration: UIButtonConfiguration, primaryAction: UIAction): INUIAddVoiceShortcutButton; // inherited from UIButton
+
 	static buttonWithType(buttonType: UIButtonType): INUIAddVoiceShortcutButton; // inherited from UIButton
+
+	static buttonWithTypePrimaryAction(buttonType: UIButtonType, primaryAction: UIAction): INUIAddVoiceShortcutButton; // inherited from UIButton
 
 	static new(): INUIAddVoiceShortcutButton; // inherited from NSObject
 
 	static systemButtonWithImageTargetAction(image: UIImage, target: any, action: string): INUIAddVoiceShortcutButton; // inherited from UIButton
+
+	static systemButtonWithPrimaryAction(primaryAction: UIAction): INUIAddVoiceShortcutButton; // inherited from UIButton
 
 	cornerRadius: number;
 

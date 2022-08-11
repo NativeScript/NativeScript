@@ -1,0 +1,44 @@
+{
+	"$schema": "../../node_modules/nx/schemas/project-schema.json",
+	"sourceRoot": "apps/automated/app",
+	"projectType": "application",
+	"prefix": "nativescript",
+	"targets": {
+		"build": {
+			"executor": "@nativescript/nx:build",
+			"options": {
+				"noHmr": true,
+				"production": true,
+				"uglify": true,
+				"release": true,
+				"forDevice": true
+			}
+		},
+		"ios": {
+			"executor": "@nativescript/nx:build",
+			"options": {
+				"noHmr": true,
+				"platform": "ios"
+			}
+		},
+		"android": {
+			"executor": "@nativescript/nx:build",
+			"options": {
+				"noHmr": true,
+				"platform": "android"
+			}
+		},
+		"clean": {
+			"executor": "@nativescript/nx:build",
+			"options": {
+				"clean": true
+			}
+		},
+		"lint": {
+			"executor": "@nrwl/linter:eslint",
+			"options": {
+				"lintFilePatterns": ["apps/automated/**/*.ts", "apps/automated/src/**/*.html"]
+			}
+		}
+	}
+}

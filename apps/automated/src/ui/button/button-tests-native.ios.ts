@@ -1,6 +1,6 @@
 ﻿import * as buttonModule from '@nativescript/core/ui/button';
 import * as colorModule from '@nativescript/core/color';
-import * as enums from '@nativescript/core/ui/enums';
+import { CoreTypes } from '@nativescript/core';
 import { getColor } from '../../ui-helper';
 
 export function getNativeText(button: buttonModule.Button): string {
@@ -26,11 +26,11 @@ export function getNativeBackgroundColor(button: buttonModule.Button): colorModu
 export function getNativeTextAlignment(button: buttonModule.Button): string {
 	switch (button.ios.titleLabel.textAlignment) {
 		case NSTextAlignment.Left:
-			return enums.TextAlignment.left;
+			return CoreTypes.TextAlignment.left;
 		case NSTextAlignment.Center:
-			return enums.TextAlignment.center;
+			return CoreTypes.TextAlignment.center;
 		case NSTextAlignment.Right:
-			return enums.TextAlignment.right;
+			return CoreTypes.TextAlignment.right;
 		default:
 			return 'unexpected value';
 	}

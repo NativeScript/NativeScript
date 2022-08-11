@@ -1,7 +1,7 @@
 import * as helper from '../../ui-helper';
 import * as btnCounter from './pages/button-counter';
 import * as TKUnit from '../../tk-unit';
-import { isIOS, isAndroid } from '@nativescript/core';
+import { isIOS } from '@nativescript/core';
 
 // Integration tests that asser sertain runtime behavior, lifecycle events atc.
 
@@ -75,26 +75,29 @@ export function test_setting_one_property_while_suspedned_does_not_call_other_pr
 	TKUnit.assertEqual(btn1.fontInternalSetNativeCount, 2, 'fontInternal.setNative at step4');
 }
 
-export function test_css_properties_reset_only_once() {
-	const page = helper.navigateToModule('ui/lifecycle/pages/page-one');
-	const btn2 = page.getViewById<btnCounter.Button>('btn2');
+//
+// Commented out because in webpack5 css loading has been rewritten, and does not use page.css
+//
+// export function test_css_properties_reset_only_once() {
+// 	const page = helper.navigateToModule('ui/lifecycle/pages/page-one');
+// 	const btn2 = page.getViewById<btnCounter.Button>('btn2');
 
-	TKUnit.assertEqual(btn2.backgroundInternalSetNativeCount, 1, `Expected ${btn2.id}'s backgroundInternal.setNative to be exactly once when inflating from xml.`);
-	TKUnit.assertEqual(btn2.fontInternalSetNativeCount, 1, `Expected ${btn2.id}'s fontInternal.setNative to be called exactly once when inflating from xml.`);
-	TKUnit.assertEqual(btn2.nativeBackgroundRedraws, 1, `Expected ${btn2.id}'s native background to propagated exactly once when inflating from xml.`);
+// 	TKUnit.assertEqual(btn2.backgroundInternalSetNativeCount, 1, `1: Expected ${btn2.id}'s backgroundInternal.setNative to be exactly once when inflating from xml.`);
+// 	TKUnit.assertEqual(btn2.fontInternalSetNativeCount, 1, `1: Expected ${btn2.id}'s fontInternal.setNative to be called exactly once when inflating from xml.`);
+// 	TKUnit.assertEqual(btn2.nativeBackgroundRedraws, 1, `1: Expected ${btn2.id}'s native background to propagated exactly once when inflating from xml.`);
 
-	page.css = '';
+// 	page.css = '';
 
-	TKUnit.assertEqual(btn2.backgroundInternalSetNativeCount, 2, `Expected ${btn2.id}'s backgroundInternal.setNative to be exactly once when inflating from xml.`);
-	TKUnit.assertEqual(btn2.fontInternalSetNativeCount, 2, `Expected ${btn2.id}'s fontInternal.setNative to be called exactly once when inflating from xml.`);
-	TKUnit.assertEqual(btn2.nativeBackgroundRedraws, isIOS ? 1 : 2, `Expected ${btn2.id}'s native background to propagated exactly once when inflating from xml.`);
+// 	TKUnit.assertEqual(btn2.backgroundInternalSetNativeCount, 2, `2: Expected ${btn2.id}'s backgroundInternal.setNative to be exactly once when inflating from xml.`);
+// 	TKUnit.assertEqual(btn2.fontInternalSetNativeCount, 2, `2: Expected ${btn2.id}'s fontInternal.setNative to be called exactly once when inflating from xml.`);
+// 	TKUnit.assertEqual(btn2.nativeBackgroundRedraws, isIOS ? 1 : 2, `2: Expected ${btn2.id}'s native background to propagated exactly once when inflating from xml.`);
 
-	helper.waitUntilLayoutReady(btn2);
+// 	helper.waitUntilLayoutReady(btn2);
 
-	TKUnit.assertEqual(btn2.backgroundInternalSetNativeCount, 2, `Expected ${btn2.id}'s backgroundInternal.setNative to be exactly once when inflating from xml.`);
-	TKUnit.assertEqual(btn2.fontInternalSetNativeCount, 2, `Expected ${btn2.id}'s fontInternal.setNative to be called exactly once when inflating from xml.`);
-	TKUnit.assertEqual(btn2.nativeBackgroundRedraws, 2, `Expected ${btn2.id}'s native background to propagated exactly once when inflating from xml.`);
-}
+// 	TKUnit.assertEqual(btn2.backgroundInternalSetNativeCount, 2, `3: Expected ${btn2.id}'s backgroundInternal.setNative to be exactly once when inflating from xml.`);
+// 	TKUnit.assertEqual(btn2.fontInternalSetNativeCount, 2, `3: Expected ${btn2.id}'s fontInternal.setNative to be called exactly once when inflating from xml.`);
+// 	TKUnit.assertEqual(btn2.nativeBackgroundRedraws, 2, `3: Expected ${btn2.id}'s native background to propagated exactly once when inflating from xml.`);
+// }
 
 export function test_navigating_away_does_not_excessively_reset() {
 	const page = helper.navigateToModule('ui/lifecycle/pages/page-one');
@@ -160,7 +163,7 @@ export function test_css_sets_properties() {
 	page.content = stack;
 
 	// TODO: The check counts here should be the same as the counts before removing from the page.
-	const expectedNativeSettersAfterReaddedToPage = isAndroid ? [2, 4, 4, 4] : expectedChangesAfterResettingClasses;
+	const expectedNativeSettersAfterReaddedToPage = [2, 4, 4, 4];
 	for (let i = 0; i < buttons.length; i++) {
 		TKUnit.assertEqual(buttons[i].colorSetNativeCount, expectedNativeSettersAfterReaddedToPage[i], `Expected ${buttons[i].id} native set to not be called when added to page.`);
 		TKUnit.assertEqual(buttons[i].colorPropertyChangeCount, expectedChangesAfterResettingClasses[i], `Expected ${buttons[i].id} change notifications for css properties to not occur when added to page.`);

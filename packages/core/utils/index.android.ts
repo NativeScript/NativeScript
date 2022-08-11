@@ -3,7 +3,7 @@ import { Device } from '../platform';
 import { FileSystemAccess } from '../file-system/file-system-access';
 import { Trace } from '../trace';
 
-export { ad, iOSNativeHelper } from './native-helper';
+export { ad, dataDeserialize, dataSerialize, iOSNativeHelper } from './native-helper';
 export * from './utils-common';
 export { Source } from './debug';
 
@@ -81,7 +81,7 @@ function getMimeTypeNameFromExtension(filePath: string): string {
  * @param {string} filePath
  * @returns {boolean} whether opening the file succeeded or not
  */
-export function openFile(filePath: string): boolean {
+export function openFile(filePath: string, title: string = 'Open File...'): boolean {
 	const context = ad.getApplicationContext();
 	try {
 		// Ensure external storage is available
@@ -108,7 +108,7 @@ Applications cannot access internal storage of other application on Android (see
 		// Determine file mimetype & start creating intent
 		const mimeType = getMimeTypeNameFromExtension(filePath);
 		const intent = new android.content.Intent(android.content.Intent.ACTION_VIEW);
-		const chooserIntent = android.content.Intent.createChooser(intent, 'Open File...');
+		const chooserIntent = android.content.Intent.createChooser(intent, title);
 
 		intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
 		chooserIntent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -166,4 +166,8 @@ Please ensure you have your manifest correctly configured with the FileProvider.
 
 export function isRealDevice(): boolean {
 	return ad.isRealDevice();
+}
+
+export function dismissSoftInput(nativeView?: any): void {
+	ad.dismissSoftInput(nativeView);
 }

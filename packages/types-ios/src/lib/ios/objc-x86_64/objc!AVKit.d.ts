@@ -8,6 +8,25 @@ declare const enum AVAudioSessionRouteSelection {
 	External = 2
 }
 
+declare class AVInterstitialTimeRange extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): AVInterstitialTimeRange; // inherited from NSObject
+
+	static new(): AVInterstitialTimeRange; // inherited from NSObject
+
+	readonly timeRange: CMTimeRange;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
 declare const enum AVKitError {
 
 	Unknown = -1000,
@@ -29,6 +48,10 @@ declare class AVPictureInPictureController extends NSObject {
 
 	static pictureInPictureButtonStopImageCompatibleWithTraitCollection(traitCollection: UITraitCollection): UIImage;
 
+	canStartPictureInPictureAutomaticallyFromInline: boolean;
+
+	contentSource: AVPictureInPictureControllerContentSource;
+
 	delegate: AVPictureInPictureControllerDelegate;
 
 	readonly pictureInPictureActive: boolean;
@@ -39,17 +62,54 @@ declare class AVPictureInPictureController extends NSObject {
 
 	readonly playerLayer: AVPlayerLayer;
 
+	requiresLinearPlayback: boolean;
+
 	static readonly pictureInPictureButtonStartImage: UIImage;
 
 	static readonly pictureInPictureButtonStopImage: UIImage;
 
+	constructor(o: { contentSource: AVPictureInPictureControllerContentSource; });
+
 	constructor(o: { playerLayer: AVPlayerLayer; });
 
+	initWithContentSource(contentSource: AVPictureInPictureControllerContentSource): this;
+
 	initWithPlayerLayer(playerLayer: AVPlayerLayer): this;
+
+	invalidatePlaybackState(): void;
 
 	startPictureInPicture(): void;
 
 	stopPictureInPicture(): void;
+}
+
+declare class AVPictureInPictureControllerContentSource extends NSObject {
+
+	static alloc(): AVPictureInPictureControllerContentSource; // inherited from NSObject
+
+	static new(): AVPictureInPictureControllerContentSource; // inherited from NSObject
+
+	readonly activeVideoCallContentViewController: AVPictureInPictureVideoCallViewController;
+
+	readonly activeVideoCallSourceView: UIView;
+
+	readonly playerLayer: AVPlayerLayer;
+
+	readonly sampleBufferDisplayLayer: AVSampleBufferDisplayLayer;
+
+	readonly sampleBufferPlaybackDelegate: AVPictureInPictureSampleBufferPlaybackDelegate;
+
+	constructor(o: { activeVideoCallSourceView: UIView; contentViewController: AVPictureInPictureVideoCallViewController; });
+
+	constructor(o: { playerLayer: AVPlayerLayer; });
+
+	constructor(o: { sampleBufferDisplayLayer: AVSampleBufferDisplayLayer; playbackDelegate: AVPictureInPictureSampleBufferPlaybackDelegate; });
+
+	initWithActiveVideoCallSourceViewContentViewController(sourceView: UIView, contentViewController: AVPictureInPictureVideoCallViewController): this;
+
+	initWithPlayerLayer(playerLayer: AVPlayerLayer): this;
+
+	initWithSampleBufferDisplayLayerPlaybackDelegate(sampleBufferDisplayLayer: AVSampleBufferDisplayLayer, playbackDelegate: AVPictureInPictureSampleBufferPlaybackDelegate): this;
 }
 
 interface AVPictureInPictureControllerDelegate extends NSObjectProtocol {
@@ -71,15 +131,62 @@ declare var AVPictureInPictureControllerDelegate: {
 	prototype: AVPictureInPictureControllerDelegate;
 };
 
+interface AVPictureInPictureSampleBufferPlaybackDelegate extends NSObjectProtocol {
+
+	pictureInPictureControllerDidTransitionToRenderSize(pictureInPictureController: AVPictureInPictureController, newRenderSize: CMVideoDimensions): void;
+
+	pictureInPictureControllerIsPlaybackPaused(pictureInPictureController: AVPictureInPictureController): boolean;
+
+	pictureInPictureControllerSetPlaying(pictureInPictureController: AVPictureInPictureController, playing: boolean): void;
+
+	pictureInPictureControllerShouldProhibitBackgroundAudioPlayback?(pictureInPictureController: AVPictureInPictureController): boolean;
+
+	pictureInPictureControllerSkipByIntervalCompletionHandler(pictureInPictureController: AVPictureInPictureController, skipInterval: CMTime, completionHandler: () => void): void;
+
+	pictureInPictureControllerTimeRangeForPlayback(pictureInPictureController: AVPictureInPictureController): CMTimeRange;
+}
+declare var AVPictureInPictureSampleBufferPlaybackDelegate: {
+
+	prototype: AVPictureInPictureSampleBufferPlaybackDelegate;
+};
+
+declare class AVPictureInPictureVideoCallViewController extends UIViewController {
+
+	static alloc(): AVPictureInPictureVideoCallViewController; // inherited from NSObject
+
+	static new(): AVPictureInPictureVideoCallViewController; // inherited from NSObject
+}
+
+declare class AVPlaybackSpeed extends NSObject {
+
+	static alloc(): AVPlaybackSpeed; // inherited from NSObject
+
+	static new(): AVPlaybackSpeed; // inherited from NSObject
+
+	readonly localizedName: string;
+
+	readonly localizedNumericName: string;
+
+	readonly rate: number;
+
+	static readonly systemDefaultSpeeds: NSArray<AVPlaybackSpeed>;
+
+	constructor(o: { rate: number; localizedName: string; });
+
+	initWithRateLocalizedName(rate: number, localizedName: string): this;
+}
+
 declare class AVPlayerViewController extends UIViewController {
 
 	static alloc(): AVPlayerViewController; // inherited from NSObject
 
 	static new(): AVPlayerViewController; // inherited from NSObject
 
-	static preparePrerollAds(): void;
-
 	allowsPictureInPicturePlayback: boolean;
+
+	allowsVideoFrameAnalysis: boolean;
+
+	canStartPictureInPictureAutomaticallyFromInline: boolean;
 
 	readonly contentOverlayView: UIView;
 
@@ -95,7 +202,15 @@ declare class AVPlayerViewController extends UIViewController {
 
 	readonly readyForDisplay: boolean;
 
+	requiresLinearPlayback: boolean;
+
+	readonly selectedSpeed: AVPlaybackSpeed;
+
 	showsPlaybackControls: boolean;
+
+	showsTimecodes: boolean;
+
+	speeds: NSArray<AVPlaybackSpeed>;
 
 	updatesNowPlayingInfoCenter: boolean;
 
@@ -103,18 +218,20 @@ declare class AVPlayerViewController extends UIViewController {
 
 	videoGravity: string;
 
-	cancelPreroll(): void;
-
-	playPrerollAdWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+	selectSpeed(speed: AVPlaybackSpeed): void;
 }
 
 interface AVPlayerViewControllerDelegate extends NSObjectProtocol {
+
+	playerViewControllerDidPresentInterstitialTimeRange?(playerViewController: AVPlayerViewController, interstitial: AVInterstitialTimeRange): void;
 
 	playerViewControllerDidStartPictureInPicture?(playerViewController: AVPlayerViewController): void;
 
 	playerViewControllerDidStopPictureInPicture?(playerViewController: AVPlayerViewController): void;
 
 	playerViewControllerFailedToStartPictureInPictureWithError?(playerViewController: AVPlayerViewController, error: NSError): void;
+
+	playerViewControllerRestoreUserInterfaceForFullScreenExitWithCompletionHandler?(playerViewController: AVPlayerViewController, completionHandler: (p1: boolean) => void): void;
 
 	playerViewControllerRestoreUserInterfaceForPictureInPictureStopWithCompletionHandler?(playerViewController: AVPlayerViewController, completionHandler: (p1: boolean) => void): void;
 
@@ -123,6 +240,8 @@ interface AVPlayerViewControllerDelegate extends NSObjectProtocol {
 	playerViewControllerWillBeginFullScreenPresentationWithAnimationCoordinator?(playerViewController: AVPlayerViewController, coordinator: UIViewControllerTransitionCoordinator): void;
 
 	playerViewControllerWillEndFullScreenPresentationWithAnimationCoordinator?(playerViewController: AVPlayerViewController, coordinator: UIViewControllerTransitionCoordinator): void;
+
+	playerViewControllerWillPresentInterstitialTimeRange?(playerViewController: AVPlayerViewController, interstitial: AVInterstitialTimeRange): void;
 
 	playerViewControllerWillStartPictureInPicture?(playerViewController: AVPlayerViewController): void;
 
@@ -152,6 +271,8 @@ declare class AVRoutePickerView extends UIView {
 	static new(): AVRoutePickerView; // inherited from NSObject
 
 	activeTintColor: UIColor;
+
+	customRoutingController: AVCustomRoutingController;
 
 	delegate: AVRoutePickerViewDelegate;
 

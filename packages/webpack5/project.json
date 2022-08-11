@@ -1,0 +1,21 @@
+{
+	"$schema": "../../node_modules/nx/schemas/project-schema.json",
+	"sourceRoot": "packages/webpack5",
+	"projectType": "library",
+	"generators": {},
+	"targets": {
+		"lint": {
+			"executor": "@nrwl/linter:eslint",
+			"options": {
+				"lintFilePatterns": []
+			}
+		},
+		"build": {
+			"executor": "@nrwl/workspace:run-commands",
+			"outputs": ["dist/packages"],
+			"options": {
+				"command": "npx zx ./tools/scripts/pack-webpack5.mjs"
+			}
+		}
+	}
+}

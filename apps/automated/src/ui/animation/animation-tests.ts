@@ -4,12 +4,11 @@ import * as viewModule from '@nativescript/core/ui/core/view';
 import { Label } from '@nativescript/core/ui/label';
 import { StackLayout } from '@nativescript/core/ui/layouts/stack-layout';
 import * as colorModule from '@nativescript/core/color';
-import * as enums from '@nativescript/core/ui/enums';
-import { AnimationPromise } from '@nativescript/core/ui/animation';
+import { CoreTypes, PercentLength } from '@nativescript/core';
+import { AnimationPromise, AnimationDefinition, Animation } from '@nativescript/core/ui/animation';
 
 // >> animation-require
-import * as animation from '@nativescript/core/ui/animation';
-import { PercentLength } from '@nativescript/core/ui/styling/style-properties';
+// import * as animation from '@nativescript/core/ui/animation';
 // << animation-require
 
 function prepareTest(parentHeight?: number, parentWidth?: number): Label {
@@ -46,7 +45,7 @@ export function test_AnimatingProperties(done) {
 			duration: 5,
 			delay: 10,
 			iterations: 3,
-			curve: enums.AnimationCurve.easeIn,
+			curve: CoreTypes.AnimationCurve.easeIn,
 		})
 		.then(() => {
 			//console.log("Animation finished.");
@@ -229,12 +228,12 @@ export function test_AnimatingMultipleViews(done) {
 	TKUnit.waitUntilReady(() => label3.isLoaded);
 
 	// >> animation-multiple-views
-	var animations: Array<animation.AnimationDefinition> = [
+	var animations: Array<AnimationDefinition> = [
 		{ target: label1, translate: { x: 200, y: 200 }, duration: 5, delay: 0 },
 		{ target: label2, translate: { x: 200, y: 200 }, duration: 5, delay: 2 },
 		{ target: label3, translate: { x: 200, y: 200 }, duration: 5, delay: 4 },
 	];
-	var a = new animation.Animation(animations);
+	var a = new Animation(animations);
 	a.play()
 		.then(() => {
 			//console.log("Animations finished");
@@ -418,7 +417,7 @@ export function test_AnimateRotate(done) {
 		});
 }
 
-function animateExtentAndAssertExpected(along: 'height' | 'width', value: PercentLength, pixelExpected: PercentLength): Promise<void> {
+function animateExtentAndAssertExpected(along: 'height' | 'width', value: CoreTypes.PercentLengthType, pixelExpected: CoreTypes.PercentLengthType): Promise<void> {
 	function pretty(val) {
 		return JSON.stringify(val, null, 2);
 	}
@@ -478,7 +477,7 @@ export function test_AnimateExtent_Should_AcceptStringPixelValues(done) {
 		const expected = {
 			unit: 'px',
 			value: pair[1],
-		} as PercentLength;
+		} as CoreTypes.PercentLengthType;
 		promise = promise.then(() => {
 			return animateExtentAndAssertExpected('height', input, expected);
 		});
@@ -635,8 +634,8 @@ export function test_PlayPromiseIsRejectedWhenAnimationIsCancelled(done) {
 }
 
 function assertIOSNativeTransformIsCorrect(view: viewModule.View) {
-	if (view.ios) {
-		var errorMessage = (<any>animation)._getTransformMismatchErrorMessage(view);
+	if (global.isIOS) {
+		var errorMessage = (<any>require('@nativescript/core/ui/animation'))._getTransformMismatchErrorMessage(view);
 		if (errorMessage) {
 			TKUnit.assert(false, errorMessage);
 		}

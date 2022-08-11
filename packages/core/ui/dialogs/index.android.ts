@@ -12,7 +12,7 @@ function isString(value): value is string {
 }
 
 function createAlertDialog(options?: DialogOptions): android.app.AlertDialog.Builder {
-	const alert = new android.app.AlertDialog.Builder(androidApp.foregroundActivity);
+	const alert = new android.app.AlertDialog.Builder(androidApp.foregroundActivity, options.theme ? options.theme : -1);
 	alert.setTitle(options && isString(options.title) ? options.title : '');
 	alert.setMessage(options && isString(options.message) ? options.message : '');
 	if (options && options.cancelable === false) {
@@ -325,7 +325,7 @@ export function action(...args): Promise<string> {
 	return new Promise<string>((resolve, reject) => {
 		try {
 			const activity = androidApp.foregroundActivity || androidApp.startActivity;
-			const alert = new android.app.AlertDialog.Builder(activity);
+			const alert = new android.app.AlertDialog.Builder(activity, options.theme ? options.theme : -1);
 			const message = options && isString(options.message) ? options.message : '';
 			const title = options && isString(options.title) ? options.title : '';
 			if (options && options.cancelable === false) {

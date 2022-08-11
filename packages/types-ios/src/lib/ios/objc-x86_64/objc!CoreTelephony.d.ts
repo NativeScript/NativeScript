@@ -72,6 +72,8 @@ declare class CTCellularPlanProvisioning extends NSObject {
 
 	static new(): CTCellularPlanProvisioning; // inherited from NSObject
 
+	readonly supportsEmbeddedSIM: boolean;
+
 	addPlanWithCompletionHandler(request: CTCellularPlanProvisioningRequest, completionHandler: (p1: CTCellularPlanProvisioningAddPlanResult) => void): void;
 
 	supportsCellularPlan(): boolean;
@@ -138,6 +140,10 @@ declare var CTRadioAccessTechnologyHSDPA: string;
 declare var CTRadioAccessTechnologyHSUPA: string;
 
 declare var CTRadioAccessTechnologyLTE: string;
+
+declare var CTRadioAccessTechnologyNR: string;
+
+declare var CTRadioAccessTechnologyNRNSA: string;
 
 declare var CTRadioAccessTechnologyWCDMA: string;
 

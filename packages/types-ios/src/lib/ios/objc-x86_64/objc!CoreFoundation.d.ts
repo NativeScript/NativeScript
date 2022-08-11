@@ -2316,6 +2316,8 @@ declare const enum CFURLBookmarkCreationOptions {
 
 	kCFURLBookmarkCreationSecurityScopeAllowOnlyReadAccess = 4096,
 
+	kCFURLBookmarkCreationWithoutImplicitSecurityScope = 536870912,
+
 	kCFURLBookmarkCreationPreferFileIDResolutionMask = 256
 }
 
@@ -2326,6 +2328,8 @@ declare const enum CFURLBookmarkResolutionOptions {
 	kCFURLBookmarkResolutionWithoutMountingMask = 512,
 
 	kCFURLBookmarkResolutionWithSecurityScope = 1024,
+
+	kCFURLBookmarkResolutionWithoutImplicitStartAccessing = 32768,
 
 	kCFBookmarkResolutionWithoutUIMask = 256,
 
@@ -2633,6 +2637,51 @@ declare function CFWriteStreamUnscheduleFromRunLoop(stream: NSOutputStream, runL
 
 declare function CFWriteStreamWrite(stream: NSOutputStream, buffer: string | interop.Pointer | interop.Reference<any>, bufferLength: number): number;
 
+interface CGAffineTransform {
+	a: number;
+	b: number;
+	c: number;
+	d: number;
+	tx: number;
+	ty: number;
+}
+declare var CGAffineTransform: interop.StructType<CGAffineTransform>;
+
+interface CGPoint {
+	x: number;
+	y: number;
+}
+declare var CGPoint: interop.StructType<CGPoint>;
+
+interface CGRect {
+	origin: CGPoint;
+	size: CGSize;
+}
+declare var CGRect: interop.StructType<CGRect>;
+
+declare const enum CGRectEdge {
+
+	MinXEdge = 0,
+
+	MinYEdge = 1,
+
+	MaxXEdge = 2,
+
+	MaxYEdge = 3
+}
+
+interface CGSize {
+	width: number;
+	height: number;
+}
+declare var CGSize: interop.StructType<CGSize>;
+
+interface CGVector {
+	dx: number;
+	dy: number;
+}
+declare var CGVector: interop.StructType<CGVector>;
+
 interface IUnknownVTbl {
 	_reserved: interop.Pointer | interop.Reference<any>;
 	QueryInterface: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: CFUUIDBytes, p3: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => number>;
@@ -2677,6 +2726,8 @@ declare var kCFBooleanTrue: number;
 declare var kCFBuddhistCalendar: any;
 
 declare var kCFBundleDevelopmentRegionKey: string;
+
+declare const kCFBundleExecutableArchitectureARM64: number;
 
 declare const kCFBundleExecutableArchitectureI386: number;
 
@@ -3148,6 +3199,8 @@ declare var kCFURLEffectiveIconKey: string;
 
 declare var kCFURLFileAllocatedSizeKey: string;
 
+declare var kCFURLFileContentIdentifierKey: string;
+
 declare var kCFURLFileDirectoryContents: string;
 
 declare var kCFURLFileExists: string;
@@ -3218,9 +3271,13 @@ declare var kCFURLIsMountTriggerKey: string;
 
 declare var kCFURLIsPackageKey: string;
 
+declare var kCFURLIsPurgeableKey: string;
+
 declare var kCFURLIsReadableKey: string;
 
 declare var kCFURLIsRegularFileKey: string;
+
+declare var kCFURLIsSparseKey: string;
 
 declare var kCFURLIsSymbolicLinkKey: string;
 
@@ -3247,6 +3304,10 @@ declare var kCFURLLocalizedLabelKey: string;
 declare var kCFURLLocalizedNameKey: string;
 
 declare var kCFURLLocalizedTypeDescriptionKey: string;
+
+declare var kCFURLMayHaveExtendedAttributesKey: string;
+
+declare var kCFURLMayShareFileContentKey: string;
 
 declare var kCFURLNameKey: string;
 
@@ -3277,6 +3338,8 @@ declare var kCFURLUbiquitousItemHasUnresolvedConflictsKey: string;
 declare var kCFURLUbiquitousItemIsDownloadedKey: string;
 
 declare var kCFURLUbiquitousItemIsDownloadingKey: string;
+
+declare var kCFURLUbiquitousItemIsExcludedFromSyncKey: string;
 
 declare var kCFURLUbiquitousItemIsUploadedKey: string;
 
@@ -3343,6 +3406,8 @@ declare var kCFURLVolumeSupportsExclusiveRenamingKey: string;
 declare var kCFURLVolumeSupportsExtendedSecurityKey: string;
 
 declare var kCFURLVolumeSupportsFileCloningKey: string;
+
+declare var kCFURLVolumeSupportsFileProtectionKey: string;
 
 declare var kCFURLVolumeSupportsHardLinksKey: string;
 

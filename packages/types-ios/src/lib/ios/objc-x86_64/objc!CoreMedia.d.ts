@@ -585,17 +585,17 @@ declare function CMTimebaseAddTimer(timebase: any, timer: NSTimer, runloop: any)
 
 declare function CMTimebaseAddTimerDispatchSource(timebase: any, timerSource: NSObject): number;
 
-declare function CMTimebaseCopyMaster(timebase: any): any;
+declare function CMTimebaseCopySource(timebase: any): any;
 
-declare function CMTimebaseCopyMasterClock(timebase: any): any;
+declare function CMTimebaseCopySourceClock(timebase: any): any;
 
-declare function CMTimebaseCopyMasterTimebase(timebase: any): any;
+declare function CMTimebaseCopySourceTimebase(timebase: any): any;
 
-declare function CMTimebaseCopyUltimateMasterClock(timebase: any): any;
+declare function CMTimebaseCopyUltimateSourceClock(timebase: any): any;
 
-declare function CMTimebaseCreateWithMasterClock(allocator: any, masterClock: any, timebaseOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMTimebaseCreateWithSourceClock(allocator: any, sourceClock: any, timebaseOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMTimebaseCreateWithMasterTimebase(allocator: any, masterTimebase: any, timebaseOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMTimebaseCreateWithSourceTimebase(allocator: any, sourceTimebase: any, timebaseOut: interop.Pointer | interop.Reference<any>): number;
 
 declare function CMTimebaseGetEffectiveRate(timebase: any): number;
 
@@ -623,15 +623,15 @@ declare function CMTimebaseRemoveTimer(timebase: any, timer: NSTimer): number;
 
 declare function CMTimebaseRemoveTimerDispatchSource(timebase: any, timerSource: NSObject): number;
 
-declare function CMTimebaseSetAnchorTime(timebase: any, timebaseTime: CMTime, immediateMasterTime: CMTime): number;
-
-declare function CMTimebaseSetMasterClock(timebase: any, newMasterClock: any): number;
-
-declare function CMTimebaseSetMasterTimebase(timebase: any, newMasterTimebase: any): number;
+declare function CMTimebaseSetAnchorTime(timebase: any, timebaseTime: CMTime, immediateSourceTime: CMTime): number;
 
 declare function CMTimebaseSetRate(timebase: any, rate: number): number;
 
-declare function CMTimebaseSetRateAndAnchorTime(timebase: any, rate: number, timebaseTime: CMTime, immediateMasterTime: CMTime): number;
+declare function CMTimebaseSetRateAndAnchorTime(timebase: any, rate: number, timebaseTime: CMTime, immediateSourceTime: CMTime): number;
+
+declare function CMTimebaseSetSourceClock(timebase: any, newSourceClock: any): number;
+
+declare function CMTimebaseSetSourceTimebase(timebase: any, newSourceTimebase: any): number;
 
 declare function CMTimebaseSetTime(timebase: any, time: CMTime): number;
 
@@ -843,7 +843,11 @@ declare var kCMFormatDescriptionExtension_AlphaChannelMode: string;
 
 declare var kCMFormatDescriptionExtension_AlternativeTransferCharacteristics: string;
 
+declare var kCMFormatDescriptionExtension_AmbientViewingEnvironment: string;
+
 declare var kCMFormatDescriptionExtension_AuxiliaryTypeInfo: string;
+
+declare var kCMFormatDescriptionExtension_BitsPerComponent: string;
 
 declare var kCMFormatDescriptionExtension_BytesPerRow: string;
 
@@ -871,6 +875,8 @@ declare var kCMFormatDescriptionExtension_FullRangeVideo: string;
 
 declare var kCMFormatDescriptionExtension_GammaLevel: string;
 
+declare var kCMFormatDescriptionExtension_HorizontalFieldOfView: string;
+
 declare var kCMFormatDescriptionExtension_ICCProfile: string;
 
 declare var kCMFormatDescriptionExtension_MasteringDisplayColorVolume: string;
@@ -878,6 +884,8 @@ declare var kCMFormatDescriptionExtension_MasteringDisplayColorVolume: string;
 declare var kCMFormatDescriptionExtension_OriginalCompressionSettings: string;
 
 declare var kCMFormatDescriptionExtension_PixelAspectRatio: string;
+
+declare var kCMFormatDescriptionExtension_ProtectedContentOriginalFormat: string;
 
 declare var kCMFormatDescriptionExtension_RevisionLevel: string;
 
@@ -975,6 +983,8 @@ declare var kCMImageDescriptionFlavor_3GPFamily: any;
 
 declare var kCMImageDescriptionFlavor_ISOFamily: any;
 
+declare var kCMImageDescriptionFlavor_ISOFamilyWithAppleExtensions: any;
+
 declare var kCMImageDescriptionFlavor_QuickTimeMovie: any;
 
 declare const kCMMPEG2VideoProfile_HDV_1080i50: number;
@@ -1068,6 +1078,10 @@ declare const kCMMediaType_Text: number;
 declare const kCMMediaType_TimeCode: number;
 
 declare const kCMMediaType_Video: number;
+
+declare const kCMMemoryPoolError_AllocationFailed: number;
+
+declare const kCMMemoryPoolError_InvalidParameter: number;
 
 declare var kCMMemoryPoolOption_AgeOutPeriod: string;
 
@@ -1262,6 +1276,8 @@ declare const kCMPixelFormat_444YpCbCr8: number;
 declare const kCMPixelFormat_8IndexedGray_WhiteIsZero: number;
 
 declare var kCMSampleAttachmentKey_AudioIndependentSampleDecoderRefreshCount: string;
+
+declare var kCMSampleAttachmentKey_CryptorSubsampleAuxiliaryData: string;
 
 declare var kCMSampleAttachmentKey_DependsOnOthers: string;
 
@@ -1543,6 +1559,8 @@ declare var kCMTextMarkupAttribute_CharacterEdgeStyle: string;
 
 declare var kCMTextMarkupAttribute_FontFamilyName: string;
 
+declare var kCMTextMarkupAttribute_FontFamilyNameList: string;
+
 declare var kCMTextMarkupAttribute_ForegroundColorARGB: string;
 
 declare var kCMTextMarkupAttribute_GenericFontFamilyName: string;
@@ -1671,6 +1689,8 @@ declare var kCMTimingInfoInvalid: CMSampleTimingInfo;
 
 declare const kCMVideoCodecType_422YpCbCr8: number;
 
+declare const kCMVideoCodecType_AV1: number;
+
 declare const kCMVideoCodecType_Animation: number;
 
 declare const kCMVideoCodecType_AppleProRes422: number;
@@ -1713,6 +1733,12 @@ declare const kCMVideoCodecType_DVCPro50PAL: number;
 
 declare const kCMVideoCodecType_DVCProPAL: number;
 
+declare const kCMVideoCodecType_DepthHEVC: number;
+
+declare const kCMVideoCodecType_DisparityHEVC: number;
+
+declare const kCMVideoCodecType_DolbyVisionHEVC: number;
+
 declare const kCMVideoCodecType_H263: number;
 
 declare const kCMVideoCodecType_H264: number;
@@ -1734,3 +1760,5 @@ declare const kCMVideoCodecType_MPEG4Video: number;
 declare const kCMVideoCodecType_SorensonVideo: number;
 
 declare const kCMVideoCodecType_SorensonVideo3: number;
+
+declare const kCMVideoCodecType_VP9: number;

@@ -380,7 +380,7 @@ export class Animation extends AnimationBase {
 				toValue = NSValue.valueWithCATransform3D(Animation._createNativeAffineTransform(animation));
 				break;
 			case Properties.width:
-			case Properties.height:{
+			case Properties.height: {
 				const direction: string = animation.property;
 				const isHeight: boolean = direction === 'height';
 				propertyNameToAnimate = 'bounds';
@@ -464,10 +464,19 @@ export class Animation extends AnimationBase {
 	private static _createGroupAnimation(args: AnimationInfo, animation: PropertyAnimation) {
 		const groupAnimation = CAAnimationGroup.new();
 		groupAnimation.duration = args.duration;
+		if (args.repeatCount !== undefined) {
+			groupAnimation.repeatCount = args.repeatCount;
+		}
+		if (args.delay !== undefined) {
+			groupAnimation.beginTime = CACurrentMediaTime() + args.delay;
+		}
+		if (animation.curve !== undefined) {
+			groupAnimation.timingFunction = animation.curve;
+		}
 		const animations = NSMutableArray.alloc<CAAnimation>().initWithCapacity(3);
 
 		args.subPropertiesToAnimate.forEach((property) => {
-			const basicAnimationArgs = { ...args };
+			const basicAnimationArgs = { ...args, duration: undefined, repeatCount: undefined, delay: undefined, curve: undefined };
 			basicAnimationArgs.propertyNameToAnimate = `${args.propertyNameToAnimate}.${property}`;
 			basicAnimationArgs.fromValue = args.fromValue[property];
 			basicAnimationArgs.toValue = args.toValue[property];

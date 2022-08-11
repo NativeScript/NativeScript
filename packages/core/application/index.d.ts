@@ -35,6 +35,16 @@ export const suspendEvent: string;
 export const resumeEvent: string;
 
 /**
+ * String value used when hooking to foreground event.
+ */
+export const foregroundEvent: string;
+
+/**
+ * String value used when hooking to background event.
+ */
+export const backgroundEvent: string;
+
+/**
  * String value used when hooking to exit event.
  */
 export const exitEvent: string;
@@ -55,6 +65,11 @@ export const orientationChangedEvent: string;
 export const systemAppearanceChangedEvent: string;
 
 /**
+ * String value used when hooking to fontScaleChanged event.
+ */
+export const fontScaleChangedEvent: string;
+
+/**
  * Boolean to enable/disable systemAppearanceChanged
  */
 export let autoSystemAppearanceChanged: boolean;
@@ -62,7 +77,7 @@ export let autoSystemAppearanceChanged: boolean;
 /**
  * enable/disable systemAppearanceChanged
  */
-export function setAutoSystemAppearanceChanged(value: boolean);
+export function setAutoSystemAppearanceChanged(value: boolean): void;
 
 /**
  * Updates root view classes including those of modals
@@ -70,6 +85,19 @@ export function setAutoSystemAppearanceChanged(value: boolean);
  * @param newSystemAppearance the new appearance change
  */
 export function systemAppearanceChanged(rootView: View, newSystemAppearance: 'dark' | 'light'): void;
+
+/**
+ * iOS Only
+ * Dynamically change the preferred frame rate
+ * For devices (iOS 15+) which support min/max/preferred frame rate you can specify ranges
+ * For devices (iOS < 15), you can specify the max frame rate
+ * see: https://developer.apple.com/documentation/quartzcore/optimizing_promotion_refresh_rates_for_iphone_13_pro_and_ipad_pro
+ * To use, ensure your Info.plist has:
+ *   <key>CADisableMinimumFrameDurationOnPhone</key>
+ *   <true/>
+ * @param options { min?: number; max?: number; preferred?: number }
+ */
+export function setMaxRefreshRate(options?: { min?: number; max?: number; preferred?: number }): void;
 
 /**
  * Event data containing information for the application events.
@@ -131,6 +159,16 @@ export interface SystemAppearanceChangedEventData extends ApplicationEventData {
 }
 
 /**
+ * Event data containing information for font scale changed event.
+ */
+export interface FontScaleChangedEventData extends ApplicationEventData {
+	/**
+	 * New font scale value.
+	 */
+	newValue: number;
+}
+
+/**
  * Event data containing information about unhandled application errors.
  */
 export interface UnhandledErrorEventData extends ApplicationEventData {
@@ -183,6 +221,11 @@ export function setCssFileName(cssFile: string): void;
  * Gets css file name for the application.
  */
 export function getCssFileName(): string;
+
+/**
+ * Ensure css-class is set on rootView
+ */
+export function applyCssClass(rootView: View, cssClasses: string[], newCssClass: string): void;
 
 /**
  * Loads immediately the app.css.
@@ -318,6 +361,8 @@ export function on(event: 'orientationChanged', callback: (args: OrientationChan
  */
 export function on(event: 'systemAppearanceChanged', callback: (args: SystemAppearanceChangedEventData) => void, thisArg?: any);
 
+export function on(event: 'fontScaleChanged', callback: (args: FontScaleChangedEventData) => void, thisArg?: any);
+
 /**
  * Gets the orientation of the application.
  * Available values: "portrait", "landscape", "unknown".
@@ -337,6 +382,13 @@ export function systemAppearance(): 'dark' | 'light' | null;
  * Will be undefined when TargetOS is iOS.
  */
 export let android: AndroidApplication;
+
+/**
+ * Used internally for backwards compatibility, will be removed in the future.
+ * Allowed Application.android.context to work (or Application.ios). Instead use Utils.android.getApplicationContext() or Utils.android.getPackageName()
+ * @internal
+ */
+export function ensureNativeApplication(): void;
 
 /**
  * This is the iOS-specific application object instance.
@@ -446,6 +498,7 @@ export class AndroidApplication extends Observable {
 
 	/**
 	 * The application's [android Context](http://developer.android.com/reference/android/content/Context.html) object instance.
+	 * @deprecated Use Utils.android.getApplicationContext() instead.
 	 */
 	context: any /* android.content.Context */;
 
@@ -473,6 +526,7 @@ export class AndroidApplication extends Observable {
 
 	/**
 	 * The name of the application package.
+	 * @deprecated Use Utils.android.getPackageName() instead.
 	 */
 	packageName: string;
 
@@ -480,6 +534,11 @@ export class AndroidApplication extends Observable {
 	 * True if the main application activity is not running (suspended), false otherwise.
 	 */
 	paused: boolean;
+
+	/**
+	 * True if the main application activity is in background, false otherwise.
+	 */
+	backgrounded: boolean;
 
 	/**
 	 * Initialized the android-specific application object with the native android.app.Application instance.
@@ -605,6 +664,12 @@ export class AndroidApplication extends Observable {
 	 * String value used when hooking to requestPermissions event.
 	 */
 	public static activityRequestPermissionsEvent: string;
+
+	/**
+	 * Get a registered BroadcastReceiver, then you can get the result code of BroadcastReceiver in onReceiveCallback method.
+	 * @param intentFilter A string containing the intent filter.
+	 */
+	public getRegisteredBroadcastReceiver(intentFilter: string): any; /* android.content.BroadcastReceiver */
 
 	/**
 	 * Register a BroadcastReceiver to be run in the main activity thread. The receiver will be called with any broadcast Intent that matches filter, in the main application thread.

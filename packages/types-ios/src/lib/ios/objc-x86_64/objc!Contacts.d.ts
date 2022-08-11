@@ -411,6 +411,10 @@ declare class CNContactFormatter extends NSFormatter implements NSSecureCoding {
 
 	style: CNContactFormatterStyle;
 
+	static readonly descriptorForRequiredKeysForDelimiter: CNKeyDescriptor;
+
+	static readonly descriptorForRequiredKeysForNameOrder: CNKeyDescriptor;
+
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
@@ -714,6 +718,8 @@ declare const enum CNErrorCode {
 	ChangeHistoryExpired = 603,
 
 	ChangeHistoryInvalidAnchor = 604,
+
+	ChangeHistoryInvalidFetchRequest = 605,
 
 	VCardMalformed = 700,
 
@@ -1023,6 +1029,8 @@ declare var CNLabelContactRelationGranddaughter: string;
 
 declare var CNLabelContactRelationGranddaughterDaughtersDaughter: string;
 
+declare var CNLabelContactRelationGranddaughterOrNiece: string;
+
 declare var CNLabelContactRelationGranddaughterSonsDaughter: string;
 
 declare var CNLabelContactRelationGrandfather: string;
@@ -1054,6 +1062,8 @@ declare var CNLabelContactRelationGrandparent: string;
 declare var CNLabelContactRelationGrandson: string;
 
 declare var CNLabelContactRelationGrandsonDaughtersSon: string;
+
+declare var CNLabelContactRelationGrandsonOrNephew: string;
 
 declare var CNLabelContactRelationGrandsonSonsSon: string;
 
@@ -1274,6 +1284,8 @@ declare var CNLabelEmailiCloud: string;
 declare var CNLabelHome: string;
 
 declare var CNLabelOther: string;
+
+declare var CNLabelPhoneNumberAppleWatch: string;
 
 declare var CNLabelPhoneNumberHomeFax: string;
 
@@ -1536,6 +1548,10 @@ declare class CNSaveRequest extends NSObject {
 	static alloc(): CNSaveRequest; // inherited from NSObject
 
 	static new(): CNSaveRequest; // inherited from NSObject
+
+	shouldRefetchContacts: boolean;
+
+	transactionAuthor: string;
 
 	addContactToContainerWithIdentifier(contact: CNMutableContact, identifier: string): void;
 

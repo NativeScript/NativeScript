@@ -1,0 +1,19 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/ui-mobile-base",
+  "projectType": "library",
+  "generators": {},
+  "targets": {
+    "build": {
+      "executor": "@nrwl/workspace:run-commands",
+      "options": {
+        "commands": [
+          "./build.sh",
+          "cp -R dist/package/platforms/* ../../packages/core/platforms"
+        ],
+        "cwd": "packages/ui-mobile-base",
+        "parallel": false
+      }
+    }
+  }
+}

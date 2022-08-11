@@ -1,4 +1,15 @@
 /**
+ * Data serialization from JS > Native
+ * @param wrapPrimitives Optionally wrap primitive types (Some APIs may require this)
+ */
+export function dataSerialize(data?: any, wrapPrimitives?: boolean): any;
+/**
+ * Data deserialization from Native > JS
+ * @param nativeData Native platform data
+ */
+export function dataDeserialize(nativeData?: any): any;
+
+/**
  * Module with android specific utilities.
  */
 export namespace ad {
@@ -112,14 +123,25 @@ export namespace iOSNativeHelper {
 		 * Converts JavaScript array to [NSArray](https://developer.apple.com/library/ios/documentation/Cocoa/Reference/Foundation/Classes/NSArray_Class/).
 		 * @param str - JavaScript string array to convert.
 		 */
-		export function jsArrayToNSArray(str: string[]): any;
+		export function jsArrayToNSArray<T>(str: T[]): NSArray<T>;
 
 		/**
 		 * Converts NSArray to JavaScript array.
 		 * @param a - NSArray to convert.
 		 */
-		export function nsArrayToJSArray(a: any): string[];
+		export function nsArrayToJSArray<T>(a: NSArray<T>): T[];
 	}
+
+	/**
+	 * Get the root UIViewController of the app
+	 */
+	export function getRootViewController(): any; /* UIViewController */
+
+	/**
+	 * Data serialize and deserialize helpers
+	 */
+	export function dataSerialize(data?: any): any;
+	export function dataDeserialize(nativeData?: any): any;
 
 	/**
 	 * @deprecated use application.orientation instead
@@ -168,9 +190,16 @@ export namespace iOSNativeHelper {
 	 */
 	export function applyRotateTransform(transform: any /* CATransform3D*/, x: number, y: number, z: number): any; /* CATransform3D*/
 
-  /**
-   * Create a UIDocumentInteractionControllerDelegate implementation for use with UIDocumentInteractionController
-   */
+	/**
+	 * @param nativeView UIView to find shadow layer with
+	 * @param name Name of the shadow layer if looking for specifically named layer
+	 * @param create should we create a new layer if not found
+	 */
+	export function getShadowLayer(nativeView: any /* UIView */, name?: string, create?: boolean): any; /* CALayer */
+
+	/**
+	 * Create a UIDocumentInteractionControllerDelegate implementation for use with UIDocumentInteractionController
+	 */
 	export function createUIDocumentInteractionControllerDelegate(): any;
 
 	/**

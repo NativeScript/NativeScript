@@ -1,6 +1,5 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.XmlParser = exports.ParserEvent = exports.ParserEventType = void 0;
-var easysax = require('../js-libs/easysax');
 var easysax_1 = require("../js-libs/easysax");
 var ParserEventType = (function () {
     function ParserEventType() {

@@ -14,13 +14,14 @@ export const test_ObservableArray_shouldCopySourceArrayItems = function () {
 };
 
 export const test_ObservableArray_shouldCopyMultipleItemsAsSource = function () {
-	// // >> observable-array-arguments
-	// const array = new ObservableArray(1, 2, 3);
-	// // << observable-array-arguments
+	// >> observable-array-arguments
+	const sa = [1, 2, 3];
+	// Avoid appending items using spread operator as it will skip argument type check
+	const array = new ObservableArray(1, 2, 3);
+	// << observable-array-arguments
 
-	// TKUnit.assertEqual(array.length, 3, "ObservableArray length should be 3");
-	// TKUnit.assertEqual(array.getItem(1), 2, "ObservableArray should copy multiple items from source!");
-	TKUnit.assertEqual(true, true);
+	TKUnit.assertEqual(array.length, 3, 'ObservableArray length should be 3');
+	TKUnit.assertEqual(sa.length, array.length, 'ObservableArray should copy multiple items as source!');
 };
 
 export const test_ObservableArray_shouldCreateArrayFromSpecifiedLength = function () {
@@ -43,6 +44,15 @@ export const test_ObservableArray_shouldBeAbleToSetLength = function () {
 	TKUnit.assertEqual(array.length, 50, 'ObservableArray should respect new length!');
 };
 
+export const test_ObservableArray_shouldBeIterable = function () {
+	// >> observable-array-iterable
+	const array = new ObservableArray([1, 2, 3]);
+	const iterator = array[Symbol.iterator]();
+	// << observable-array-iterable
+
+	TKUnit.assertEqual(iterator.next?.()?.value, array.getItem(0), 'ObservableArray should be iterable!');
+};
+
 export const test_ObservableArray_getItemShouldReturnCorrectItem = function () {
 	// >> observable-array-getitem
 	const array = new ObservableArray([1, 2, 3]);
@@ -54,12 +64,31 @@ export const test_ObservableArray_getItemShouldReturnCorrectItem = function () {
 	TKUnit.assert(firstItem === 1 && secondItem === 2 && thirdItem === 3, 'ObservableArray getItem() should return correct item!');
 };
 
+export const test_ObservableArray_getItemShouldReturnCorrectItemForNegativeIndex = function () {
+	// >> observable-array-getitem
+	const array = new ObservableArray([1, 2, 3]);
+	const thirdItem = array.getItem(-1);
+	const secondItem = array.getItem(-2);
+	const firstItem = array.getItem(-3);
+	// << observable-array-getitem
+
+	TKUnit.assert(thirdItem === 3 && secondItem === 2 && firstItem === 1, 'ObservableArray getItem() should return correct item for negative index!');
+};
+
 export const test_ObservableArray_setItemShouldSetCorrectItem = function () {
 	// >> observable-array-setitem
 	const array = new ObservableArray([1, 2, 3]);
 	array.setItem(1, 5);
 	// << observable-array-setitem
 	TKUnit.assert(array.getItem(1) === 5, 'ObservableArray setItem() should set correct item!');
+};
+
+export const test_ObservableArray_setItemShouldSetCorrectItemForNegativeIndex = function () {
+	// >> observable-array-setitem
+	const array = new ObservableArray([1, 2, 3]);
+	array.setItem(-2, 5);
+	// << observable-array-setitem
+	TKUnit.assert(array.getItem(-2) === 5, 'ObservableArray setItem() should set correct item for negative index!');
 };
 
 export const test_ObservableArray_setItemShouldRaiseCorrectEvent = function () {
@@ -84,12 +113,12 @@ export const test_ObservableArray_setItemShouldRaiseCorrectEvent = function () {
 	TKUnit.assertEqual(removed[0], 2);
 };
 
-export const test_ObservableArray_concatShouldReturnNewArrayWithNewItemsAtTheEnd = function () {
+export const test_ObservableArray_concatShouldReturnNewObservableArrayWithNewItemsAtTheEnd = function () {
 	// >> observable-array-combine
 	const array = new ObservableArray([1, 2, 3]);
 	const result = array.concat([4, 5, 6]);
 	// << observable-array-combine
-	TKUnit.assert(result.length === 6 && result[4] === 5, 'ObservableArray concat() should add items at the end!');
+	TKUnit.assert(result.length === 6 && result.getItem(4) === 5, 'ObservableArray concat() should add items at the end!');
 };
 
 export const test_ObservableArray_joinShouldReturnStringWithAllItemsSeparatedWithComma = function () {
@@ -226,50 +255,12 @@ export const test_ObservableArray_pushShouldAppendNewElementsAndRaiseChangeEvent
 	TKUnit.assert(result.eventName === ObservableArray.changeEvent && result.action === ChangeType.Add && result.removed.length === 0 && result.index === 3 && result.addedCount === 3, "ObservableArray push() should raise 'change' event with correct args!");
 };
 
-export const test_ObservableArray_pushShouldAppendNewElementsFromSourceArray = function () {
-	// >> observable-array-push-source
-	const array = new ObservableArray([1, 2, 3]);
-	// >> (hide)
-	const viewBase = new Label();
-	viewBase.set('testProperty', 0);
-	viewBase.bind({ sourceProperty: 'length', targetProperty: 'testProperty' }, array);
-	// << (hide)
-	const result = array.push([4, 5, 6]);
-	// << observable-array-push-source
-	TKUnit.assert(result === 6 && array.getItem(5) === 6, 'ObservableArray push() should append new elements from source array!');
-	TKUnit.assert(viewBase.get('testProperty') === array.length, 'Expected: ' + array.length + ', Actual: ' + viewBase.get('testProperty'));
-};
-
-export const test_ObservableArray_pushShouldAppendNewElementsFromSourceArrayAndRaiseChangeEventWithCorrectArgs = function () {
-	let result: ChangedData<number>;
-
-	// >> observable-array-push-source-info
-	const array = new ObservableArray([1, 2, 3]);
-	array.on(ObservableArray.changeEvent, (args: ChangedData<number>) => {
-		// Argument (args) is ChangedData<T>.
-		// args.eventName is "change".
-		// args.action is "add".
-		// args.index is equal to the array length.
-		// args.removed.length is 0.
-		// args.addedCount is equal to the number of added items.
-
-		// >> (hide)
-		result = args;
-		// << (hide)
-	});
-
-	array.push([4, 5, 6]);
-	// << observable-array-push-source-info
-
-	TKUnit.assert(result.eventName === ObservableArray.changeEvent && result.action === ChangeType.Add && result.removed.length === 0 && result.index === 3 && result.addedCount === 3, "ObservableArray push() should raise 'change' event with correct args!");
-};
-
-export const test_ObservableArray_reverseShouldReturnNewReversedArray = function () {
+export const test_ObservableArray_reverseShouldReturnReversedObservableArray = function () {
 	// >> observable-array-reverse
 	const array = new ObservableArray([1, 2, 3]);
 	const result = array.reverse();
 	// << observable-array-reverse
-	TKUnit.assert(result.length === 3 && result[0] === 3, 'ObservableArray reverse() should return new reversed array!');
+	TKUnit.assert(result.length === 3 && result.getItem(0) === 3, 'ObservableArray reverse() should return reversed observable array!');
 };
 
 export const test_ObservableArray_shiftShouldRemoveTheFirstElement = function () {
@@ -311,36 +302,36 @@ export const test_ObservableArray_shiftShouldRemoveTheFirstElementAndRaiseChange
 	TKUnit.assert(result.eventName === ObservableArray.changeEvent && result.action === ChangeType.Delete && result.removed.length === 1 && result.index === 0 && result.addedCount === 0, "ObservableArray shift() should raise 'change' event with correct args!");
 };
 
-export const test_ObservableArray_sliceShouldReturnSectionAsNewArray = function () {
+export const test_ObservableArray_sliceShouldReturnSectionAsNewObservableArray = function () {
 	// >> observable-array-slice
 	const array = new ObservableArray([1, 2, 3]);
 	const result = array.slice();
 	// << observable-array-slice
-	TKUnit.assert(result[2] === 3 && result.length === 3, 'ObservableArray slice() should return section!');
+	TKUnit.assert(result.getItem(2) === 3 && result.length === 3, 'ObservableArray slice() should return section!');
 };
 
-export const test_ObservableArray_sliceWithParamsShouldReturnSectionAsNewArray = function () {
+export const test_ObservableArray_sliceWithParamsShouldReturnSectionAsNewObservableArray = function () {
 	// >> observable-array-slice-args
 	const array = new ObservableArray([1, 2, 3, 4, 5]);
 	const result = array.slice(2, 4);
 	// << observable-array-slice-args
-	TKUnit.assert(result[1] === 4 && result.length === 2, 'ObservableArray slice() should return section according to specified arguments!');
+	TKUnit.assert(result.getItem(1) === 4 && result.length === 2, 'ObservableArray slice() should return section according to specified arguments!');
 };
 
-export const test_ObservableArray_sortShouldReturnNewSortedArray = function () {
+export const test_ObservableArray_sortShouldReturnSortedObservableArray = function () {
 	// >> observable-array-sort
 	const array = new ObservableArray([3, 2, 1]);
 	const result = array.sort();
 	// << observable-array-sort
-	TKUnit.assert(result[0] === 1 && result.length === 3, 'ObservableArray sort() should return new sorted array!');
+	TKUnit.assert(result.getItem(0) === 1 && result.length === 3, 'ObservableArray sort() should return sorted observable array!');
 };
 
-export const test_ObservableArray_sortShouldReturnNewSortedArrayAccordingSpecifiedOrder = function () {
+export const test_ObservableArray_sortShouldReturnSortedObservableArrayAccordingSpecifiedOrder = function () {
 	// >> observable-array-sort-comparer
 	const array = new ObservableArray([10, 100, 1]);
 	const result = array.sort((a: number, b: number) => a - b);
 	// << observable-array-sort-comparer
-	TKUnit.assert(result[2] === 100 && result.length === 3, 'ObservableArray sort() should return new sorted array according to specified order!');
+	TKUnit.assert(result.getItem(2) === 100 && result.length === 3, 'ObservableArray sort() should return sorted observable array according to specified order!');
 };
 
 export const test_ObservableArray_spliceShouldRemoveSpecifiedNumberOfElementsStartingFromSpecifiedIndex = function () {
@@ -353,7 +344,7 @@ export const test_ObservableArray_spliceShouldRemoveSpecifiedNumberOfElementsSta
 	// << (hide)
 	const result = array.splice(1, 2);
 	// << observable-array-splice
-	TKUnit.assert(result.length === 2 && result[0] === 'two' && array.length === 1 && array.getItem(0) === 'one', 'ObservableArray splice() should remove specified number of elements starting from specified index!');
+	TKUnit.assert(result.length === 2 && result.getItem(0) === 'two' && array.length === 1 && array.getItem(0) === 'one', 'ObservableArray splice() should remove specified number of elements starting from specified index!');
 	TKUnit.assert(viewBase.get('testProperty') === array.length, 'Expected: ' + array.length + ', Actual: ' + viewBase.get('testProperty'));
 };
 
@@ -466,7 +457,7 @@ export const test_ObservableArray_spliceShouldInsertNewItemsInPlaceOfRemovedItem
 	const array = new ObservableArray(['one', 'two', 'three']);
 	const result = array.splice(1, 2, 'six', 'seven');
 	// << observable-array-splice-args
-	TKUnit.assert(result.length === 2 && result[0] === 'two' && array.length === 3 && array.getItem(2) === 'seven', 'ObservableArray splice() should insert new items in place of removed!');
+	TKUnit.assert(result.length === 2 && result.getItem(0) === 'two' && array.length === 3 && array.getItem(2) === 'seven', 'ObservableArray splice() should insert new items in place of removed!');
 };
 
 export const test_ObservableArray_spliceShouldRemoveAndInertSpecifiedNumberOfElementsStartingFromSpecifiedIndexAndRaiseChangeEventWithCorrectArgs = function () {
@@ -629,6 +620,10 @@ export const test_ObservableArray_settingLengthToSomethingPerformsSpliceAdded = 
 
 const array = new ObservableArray();
 
+export const test_symbolIterator_isDefined = function () {
+	TKUnit.assert(typeof array[Symbol.iterator] === 'function', "Method '[Symbol.iterator]()' should be defined!");
+};
+
 // We do not have indexer!
 export const test_getItem_isDefined = function () {
 	TKUnit.assert(typeof array.getItem === 'function', "Method 'getItem()' should be defined!");
@@ -643,12 +638,28 @@ export const test_length_isDefined = function () {
 	TKUnit.assert(typeof array.length === 'number', "Property 'length' should be defined!");
 };
 
+export const test_includes_isDefined = function () {
+	TKUnit.assert(typeof array.includes === 'function', "Method 'includes()' should be defined!");
+};
+
+export const test_find_isDefined = function () {
+	TKUnit.assert(typeof array.find === 'function', "Method 'find()' should be defined!");
+};
+
+export const test_findIndex_isDefined = function () {
+	TKUnit.assert(typeof array.findIndex === 'function', "Method 'findIndex()' should be defined!");
+};
+
+export const test_toJSON_isDefined = function () {
+	TKUnit.assert(typeof array.toJSON === 'function', "Method 'toJSON()' should be defined!");
+};
+
 export const test_toString_isDefined = function () {
 	TKUnit.assert(typeof array.toString === 'function', "Method 'toString()' should be defined!");
 };
 
 export const test_toLocaleString_isDefined = function () {
-	TKUnit.assert(typeof array.toLocaleString === 'function', "Method 'toString()' should be defined!");
+	TKUnit.assert(typeof array.toLocaleString === 'function', "Method 'toLocaleString()' should be defined!");
 };
 
 export const test_concat_isDefined = function () {

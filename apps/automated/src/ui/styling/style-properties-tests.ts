@@ -1,6 +1,6 @@
 import * as TKUnit from '../../tk-unit';
 import * as helper from '../../ui-helper';
-import { isAndroid, isIOS, Button, Label, TextField, TextView, StackLayout, View, Color, Length, PercentLength, LengthPercentUnit, LengthPxUnit } from '@nativescript/core';
+import { isAndroid, isIOS, Button, Label, TextField, TextView, StackLayout, View, Color, Length, PercentLength, LengthPercentUnit, LengthPxUnit, LengthType } from '@nativescript/core';
 import * as fontModule from '@nativescript/core/ui/styling/font';
 
 export function test_setting_textDecoration_property_from_CSS_is_applied_to_Style() {
@@ -57,6 +57,10 @@ export function test_setting_borderColor_property_from_CSS_is_applied_to_Style()
 
 export function test_setting_borderColorRGB_property_from_CSS_is_applied_to_Style() {
 	test_property_from_CSS_is_applied_to_style('borderColor', 'border-color', new Color('#FF0000'), 'rgb(255, 0, 0)');
+}
+
+export function test_setting_borderColorRGBLvl4_property_from_CSS_is_applied_to_Style() {
+	test_property_from_CSS_is_applied_to_style('borderColor', 'border-color', new Color('#FF0000'), 'rgb(255 0 0 / 1)');
 }
 
 export function test_setting_borderColorRGBA_property_from_CSS_is_applied_to_Style() {
@@ -562,7 +566,7 @@ function test_font_shorthand_property(short: string, family: string, size: numbe
 	TKUnit.assertEqual(testView.style.fontSize, size, 'style.fontSize');
 }
 export function test_setting_font_properties_sets_native_font() {
-	if (fontModule.ios) {
+	if (global.isIOS) {
 		const basePath = 'fonts';
 		fontModule.ios.registerFont(basePath + '/Roboto-Regular.ttf');
 		fontModule.ios.registerFont(basePath + '/Roboto-Bold.ttf');
@@ -821,7 +825,7 @@ export function test_border_width() {
 
 	testView.style.borderWidth = 10;
 	TKUnit.assertEqual(testView.style.borderWidth, 10, 'all');
-	let expected: Length = { value: 10, unit: 'dip' };
+	let expected: LengthType = { value: 10, unit: 'dip' };
 	TKUnit.assertTrue(Length.equals(testView.style.borderTopWidth, expected));
 	TKUnit.assertTrue(Length.equals(testView.style.borderRightWidth, expected));
 	TKUnit.assertTrue(Length.equals(testView.style.borderBottomWidth, expected));
@@ -841,7 +845,7 @@ export function test_border_radius() {
 	let testView = new Button();
 
 	testView.style.borderRadius = 10;
-	let expected: Length = { value: 10, unit: 'dip' };
+	let expected: LengthType = { value: 10, unit: 'dip' };
 
 	TKUnit.assertTrue(Length.equals(testView.style.borderRadius, expected), 'all');
 	TKUnit.assertTrue(Length.equals(testView.style.borderTopLeftRadius, expected), 'top');

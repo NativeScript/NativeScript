@@ -6,9 +6,15 @@ declare const enum CVAttachmentMode {
 	kCVAttachmentMode_ShouldPropagate = 1
 }
 
+declare function CVBufferCopyAttachment(buffer: any, key: string, attachmentMode: interop.Pointer | interop.Reference<CVAttachmentMode>): any;
+
+declare function CVBufferCopyAttachments(buffer: any, attachmentMode: CVAttachmentMode): NSDictionary<any, any>;
+
 declare function CVBufferGetAttachment(buffer: any, key: string, attachmentMode: interop.Pointer | interop.Reference<CVAttachmentMode>): interop.Unmanaged<any>;
 
 declare function CVBufferGetAttachments(buffer: any, attachmentMode: CVAttachmentMode): NSDictionary<any, any>;
+
+declare function CVBufferHasAttachment(buffer: any, key: string): boolean;
 
 declare function CVBufferPropagateAttachments(sourceBuffer: any, destinationBuffer: any): void;
 
@@ -51,6 +57,8 @@ declare function CVImageBufferGetEncodedSize(imageBuffer: any): CGSize;
 
 declare function CVImageBufferIsFlipped(imageBuffer: any): boolean;
 
+declare function CVIsCompressedPixelFormatAvailable(pixelFormatType: number): boolean;
+
 declare function CVMetalTextureCacheCreate(allocator: any, cacheAttributes: NSDictionary<any, any>, metalDevice: MTLDevice, textureAttributes: NSDictionary<any, any>, cacheOut: interop.Pointer | interop.Reference<any>): number;
 
 declare function CVMetalTextureCacheCreateTextureFromImage(allocator: any, textureCache: any, sourceImage: any, textureAttributes: NSDictionary<any, any>, pixelFormat: MTLPixelFormat, width: number, height: number, planeIndex: number, textureOut: interop.Pointer | interop.Reference<any>): number;
@@ -85,13 +93,15 @@ declare function CVOpenGLESTextureGetTypeID(): number;
 
 declare function CVOpenGLESTextureIsFlipped(image: any): boolean;
 
+declare function CVPixelBufferCopyCreationAttributes(pixelBuffer: any): NSDictionary<any, any>;
+
 declare function CVPixelBufferCreate(allocator: any, width: number, height: number, pixelFormatType: number, pixelBufferAttributes: NSDictionary<any, any>, pixelBufferOut: interop.Pointer | interop.Reference<any>): number;
 
 declare function CVPixelBufferCreateResolvedAttributesDictionary(allocator: any, attributes: NSArray<any> | any[], resolvedDictionaryOut: interop.Pointer | interop.Reference<NSDictionary<any, any>>): number;
 
 declare function CVPixelBufferCreateWithBytes(allocator: any, width: number, height: number, pixelFormatType: number, baseAddress: interop.Pointer | interop.Reference<any>, bytesPerRow: number, releaseCallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>, releaseRefCon: interop.Pointer | interop.Reference<any>, pixelBufferAttributes: NSDictionary<any, any>, pixelBufferOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CVPixelBufferCreateWithIOSurface(allocator: any, surface: any, pixelBufferAttributes: NSDictionary<any, any>, pixelBufferOut: interop.Pointer | interop.Reference<any>): number;
+declare function CVPixelBufferCreateWithIOSurface(allocator: any, surface: IOSurface, pixelBufferAttributes: NSDictionary<any, any>, pixelBufferOut: interop.Pointer | interop.Reference<any>): number;
 
 declare function CVPixelBufferCreateWithPlanarBytes(allocator: any, width: number, height: number, pixelFormatType: number, dataPtr: interop.Pointer | interop.Reference<any>, dataSize: number, numberOfPlanes: number, planeBaseAddress: interop.Reference<interop.Pointer | interop.Reference<any>>, planeWidth: interop.Reference<number>, planeHeight: interop.Reference<number>, planeBytesPerRow: interop.Reference<number>, releaseCallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: number, p5: interop.Reference<interop.Pointer | interop.Reference<any>>) => void>, releaseRefCon: interop.Pointer | interop.Reference<any>, pixelBufferAttributes: NSDictionary<any, any>, pixelBufferOut: interop.Pointer | interop.Reference<any>): number;
 
@@ -113,7 +123,7 @@ declare function CVPixelBufferGetHeight(pixelBuffer: any): number;
 
 declare function CVPixelBufferGetHeightOfPlane(pixelBuffer: any, planeIndex: number): number;
 
-declare function CVPixelBufferGetIOSurface(pixelBuffer: any): interop.Unmanaged<any>;
+declare function CVPixelBufferGetIOSurface(pixelBuffer: any): interop.Unmanaged<IOSurface>;
 
 declare function CVPixelBufferGetPixelFormatType(pixelBuffer: any): number;
 
@@ -304,6 +314,8 @@ declare var kCVImageBufferAlphaChannelMode_PremultipliedAlpha: string;
 
 declare var kCVImageBufferAlphaChannelMode_StraightAlpha: string;
 
+declare var kCVImageBufferAmbientViewingEnvironmentKey: string;
+
 declare var kCVImageBufferCGColorSpaceKey: string;
 
 declare var kCVImageBufferChromaLocationBottomFieldKey: string;
@@ -391,6 +403,8 @@ declare var kCVImageBufferPixelAspectRatioKey: string;
 declare var kCVImageBufferPixelAspectRatioVerticalSpacingKey: string;
 
 declare var kCVImageBufferPreferredCleanApertureKey: string;
+
+declare var kCVImageBufferRegionOfInterestKey: string;
 
 declare var kCVImageBufferTransferFunctionKey: string;
 
@@ -482,6 +496,28 @@ declare var kCVPixelBufferPoolMaximumBufferAgeKey: string;
 
 declare var kCVPixelBufferPoolMinimumBufferCountKey: string;
 
+declare var kCVPixelBufferProResRAWKey_BlackLevel: string;
+
+declare var kCVPixelBufferProResRAWKey_ColorMatrix: string;
+
+declare var kCVPixelBufferProResRAWKey_GainFactor: string;
+
+declare var kCVPixelBufferProResRAWKey_MetadataExtension: string;
+
+declare var kCVPixelBufferProResRAWKey_RecommendedCrop: string;
+
+declare var kCVPixelBufferProResRAWKey_SenselSitingOffsets: string;
+
+declare var kCVPixelBufferProResRAWKey_WhiteBalanceBlueFactor: string;
+
+declare var kCVPixelBufferProResRAWKey_WhiteBalanceCCT: string;
+
+declare var kCVPixelBufferProResRAWKey_WhiteBalanceRedFactor: string;
+
+declare var kCVPixelBufferProResRAWKey_WhiteLevel: string;
+
+declare var kCVPixelBufferVersatileBayerKey_BayerPattern: string;
+
 declare var kCVPixelBufferWidthKey: string;
 
 declare var kCVPixelFormatBitsPerBlock: string;
@@ -519,6 +555,8 @@ declare var kCVPixelFormatContainsAlpha: string;
 declare var kCVPixelFormatContainsGrayscale: string;
 
 declare var kCVPixelFormatContainsRGB: string;
+
+declare var kCVPixelFormatContainsSenselArray: string;
 
 declare var kCVPixelFormatContainsYCbCr: string;
 
@@ -566,6 +604,8 @@ declare const kCVPixelFormatType_16LE5551: number;
 
 declare const kCVPixelFormatType_16LE565: number;
 
+declare const kCVPixelFormatType_16VersatileBayer: number;
+
 declare const kCVPixelFormatType_1IndexedGray_WhiteIsZero: number;
 
 declare const kCVPixelFormatType_1Monochrome: number;
@@ -592,6 +632,10 @@ declare const kCVPixelFormatType_32BGRA: number;
 
 declare const kCVPixelFormatType_32RGBA: number;
 
+declare const kCVPixelFormatType_40ARGBLEWideGamut: number;
+
+declare const kCVPixelFormatType_40ARGBLEWideGamutPremultiplied: number;
+
 declare const kCVPixelFormatType_420YpCbCr10BiPlanarFullRange: number;
 
 declare const kCVPixelFormatType_420YpCbCr10BiPlanarVideoRange: number;
@@ -614,7 +658,13 @@ declare const kCVPixelFormatType_422YpCbCr10BiPlanarVideoRange: number;
 
 declare const kCVPixelFormatType_422YpCbCr16: number;
 
+declare const kCVPixelFormatType_422YpCbCr16BiPlanarVideoRange: number;
+
 declare const kCVPixelFormatType_422YpCbCr8: number;
+
+declare const kCVPixelFormatType_422YpCbCr8BiPlanarFullRange: number;
+
+declare const kCVPixelFormatType_422YpCbCr8BiPlanarVideoRange: number;
 
 declare const kCVPixelFormatType_422YpCbCr8FullRange: number;
 
@@ -636,7 +686,15 @@ declare const kCVPixelFormatType_444YpCbCr10BiPlanarFullRange: number;
 
 declare const kCVPixelFormatType_444YpCbCr10BiPlanarVideoRange: number;
 
+declare const kCVPixelFormatType_444YpCbCr16BiPlanarVideoRange: number;
+
+declare const kCVPixelFormatType_444YpCbCr16VideoRange_16A_TriPlanar: number;
+
 declare const kCVPixelFormatType_444YpCbCr8: number;
+
+declare const kCVPixelFormatType_444YpCbCr8BiPlanarFullRange: number;
+
+declare const kCVPixelFormatType_444YpCbCr8BiPlanarVideoRange: number;
 
 declare const kCVPixelFormatType_48RGB: number;
 
@@ -647,6 +705,10 @@ declare const kCVPixelFormatType_4IndexedGray_WhiteIsZero: number;
 declare const kCVPixelFormatType_64ARGB: number;
 
 declare const kCVPixelFormatType_64RGBAHalf: number;
+
+declare const kCVPixelFormatType_64RGBALE: number;
+
+declare const kCVPixelFormatType_64RGBA_DownscaledProResRAW: number;
 
 declare const kCVPixelFormatType_8Indexed: number;
 
@@ -662,11 +724,39 @@ declare const kCVPixelFormatType_DisparityFloat16: number;
 
 declare const kCVPixelFormatType_DisparityFloat32: number;
 
+declare const kCVPixelFormatType_Lossless_32BGRA: number;
+
+declare const kCVPixelFormatType_Lossless_420YpCbCr10PackedBiPlanarVideoRange: number;
+
+declare const kCVPixelFormatType_Lossless_420YpCbCr8BiPlanarFullRange: number;
+
+declare const kCVPixelFormatType_Lossless_420YpCbCr8BiPlanarVideoRange: number;
+
+declare const kCVPixelFormatType_Lossless_422YpCbCr10PackedBiPlanarVideoRange: number;
+
+declare const kCVPixelFormatType_Lossy_32BGRA: number;
+
+declare const kCVPixelFormatType_Lossy_420YpCbCr10PackedBiPlanarVideoRange: number;
+
+declare const kCVPixelFormatType_Lossy_420YpCbCr8BiPlanarFullRange: number;
+
+declare const kCVPixelFormatType_Lossy_420YpCbCr8BiPlanarVideoRange: number;
+
+declare const kCVPixelFormatType_Lossy_422YpCbCr10PackedBiPlanarVideoRange: number;
+
+declare const kCVPixelFormatType_OneComponent10: number;
+
+declare const kCVPixelFormatType_OneComponent12: number;
+
+declare const kCVPixelFormatType_OneComponent16: number;
+
 declare const kCVPixelFormatType_OneComponent16Half: number;
 
 declare const kCVPixelFormatType_OneComponent32Float: number;
 
 declare const kCVPixelFormatType_OneComponent8: number;
+
+declare const kCVPixelFormatType_TwoComponent16: number;
 
 declare const kCVPixelFormatType_TwoComponent16Half: number;
 
@@ -715,5 +805,13 @@ declare const kCVReturnSuccess: number;
 declare const kCVReturnUnsupported: number;
 
 declare const kCVReturnWouldExceedAllocationThreshold: number;
+
+declare const kCVVersatileBayer_BayerPattern_BGGR: number;
+
+declare const kCVVersatileBayer_BayerPattern_GBRG: number;
+
+declare const kCVVersatileBayer_BayerPattern_GRBG: number;
+
+declare const kCVVersatileBayer_BayerPattern_RGGB: number;
 
 declare var kCVZeroTime: CVTime;

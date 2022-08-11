@@ -1,7 +1,7 @@
 import { ActionBar as ActionBarDefinition, ActionItems as ActionItemsDefinition, ActionItem as ActionItemDefinition, NavigationButton, IOSActionItemSettings, AndroidActionItemSettings, AndroidActionBarSettings } from '.';
 
 import { profile } from '../../profiling';
-
+import { CoreTypes } from '../../core-types';
 import { View, CSSType } from '../core/view';
 import { ViewBase, booleanConverter } from '../core/view-base';
 import { Trace } from '../../trace';
@@ -24,6 +24,10 @@ export class ActionBarBase extends View implements ActionBarDefinition {
 
 	get navigationButton(): NavigationButton {
 		return this._navigationButton;
+	}
+	disposeNativeView() {
+		this._actionItems = null;
+		super.disposeNativeView();
 	}
 	set navigationButton(value: NavigationButton) {
 		if (this._navigationButton !== value) {
@@ -81,24 +85,24 @@ export class ActionBarBase extends View implements ActionBarDefinition {
 		}
 	}
 
-	public get androidContentInset(): string | Length {
+	public get androidContentInset(): string | CoreTypes.LengthType {
 		return this.style.androidContentInset;
 	}
-	public set androidContentInset(value: string | Length) {
+	public set androidContentInset(value: string | CoreTypes.LengthType) {
 		this.style.androidContentInset = value;
 	}
 
-	public get androidContentInsetLeft(): Length {
+	public get androidContentInsetLeft(): CoreTypes.LengthType {
 		return this.style.androidContentInsetLeft;
 	}
-	public set androidContentInsetLeft(value: Length) {
+	public set androidContentInsetLeft(value: CoreTypes.LengthType) {
 		this.style.androidContentInsetLeft = value;
 	}
 
-	public get androidContentInsetRight(): Length {
+	public get androidContentInsetRight(): CoreTypes.LengthType {
 		return this.style.androidContentInsetRight;
 	}
-	public set androidContentInsetRight(value: Length) {
+	public set androidContentInsetRight(value: CoreTypes.LengthType) {
 		this.style.androidContentInsetRight = value;
 	}
 
@@ -114,7 +118,7 @@ export class ActionBarBase extends View implements ActionBarDefinition {
 
 	get _childrenCount(): number {
 		let actionViewsCount = 0;
-		this._actionItems.getItems().forEach((actionItem) => {
+		this._actionItems?.getItems().forEach((actionItem) => {
 			if (actionItem.actionView) {
 				actionViewsCount++;
 			}
@@ -140,7 +144,7 @@ export class ActionBarBase extends View implements ActionBarDefinition {
 
 	public _addArrayFromBuilder(name: string, value: Array<any>) {
 		if (name === 'actionItems') {
-			this.actionItems.setItems(value);
+			this.actionItems?.setItems(value);
 		}
 	}
 
@@ -162,13 +166,13 @@ export class ActionBarBase extends View implements ActionBarDefinition {
 			callback(navigationButton);
 		}
 
-		this.actionItems.getItems().forEach((actionItem) => {
+		this.actionItems?.getItems().forEach((actionItem) => {
 			callback(actionItem);
 		});
 	}
 
 	public _isEmpty(): boolean {
-		if (this.title || this.titleView || (this.android && this.android.icon) || this.navigationButton || this.actionItems.getItems().length > 0) {
+		if (this.title || this.titleView || (this.android && this.android.icon) || this.navigationButton || this.actionItems?.getItems().length > 0) {
 			return false;
 		}
 
@@ -363,7 +367,7 @@ export function traceMissingIcon(icon: string) {
 	Trace.write('Could not load action bar icon: ' + icon, Trace.categories.Error, Trace.messageType.error);
 }
 
-function convertToContentInset(this: void, value: string | Length): [CssProperty<any, any>, any][] {
+function convertToContentInset(this: void, value: string | CoreTypes.LengthType): [CssProperty<any, any>, any][] {
 	if (typeof value === 'string' && value !== 'auto') {
 		const insets = value.split(/[ ,]+/);
 
@@ -409,7 +413,7 @@ export const flatProperty = new Property<ActionBarBase, boolean>({
 });
 flatProperty.register(ActionBarBase);
 
-const androidContentInsetProperty = new ShorthandProperty<Style, string | Length>({
+const androidContentInsetProperty = new ShorthandProperty<Style, string | CoreTypes.LengthType>({
 	name: 'androidContentInset',
 	cssName: 'android-content-inset',
 	getter: function (this: Style) {
@@ -423,7 +427,7 @@ const androidContentInsetProperty = new ShorthandProperty<Style, string | Length
 });
 androidContentInsetProperty.register(Style);
 
-export const androidContentInsetLeftProperty = new CssProperty<Style, Length>({
+export const androidContentInsetLeftProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'androidContentInsetLeft',
 	cssName: 'android-content-inset-left',
 	defaultValue: 'auto',
@@ -440,7 +444,7 @@ export const androidContentInsetLeftProperty = new CssProperty<Style, Length>({
 });
 androidContentInsetLeftProperty.register(Style);
 
-export const androidContentInsetRightProperty = new CssProperty<Style, Length>({
+export const androidContentInsetRightProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'androidContentInsetRight',
 	cssName: 'android-content-inset-right',
 	defaultValue: 'auto',

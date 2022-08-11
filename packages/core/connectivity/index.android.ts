@@ -30,16 +30,18 @@ function getActiveNetworkInfo(): android.net.NetworkInfo {
 }
 
 function getNetworkCapabilities() {
-	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 	// @ts-ignore
 	const connectivityManager: any = getConnectivityManager();
-	const network = connectivityManager.getActiveNetwork();
-	const capabilities = connectivityManager.getNetworkCapabilities(network);
+	const networkToCheck = connectivityManager.getActiveNetwork();
+	const capabilities = connectivityManager.getNetworkCapabilities(networkToCheck);
+	return parseNetworkCapabilities(capabilities);
+}
+
+function parseNetworkCapabilities(capabilities?: android.net.NetworkCapabilities) {
 	if (capabilities == null) {
 		return connectionType.none;
 	}
 
-	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 	// @ts-ignore
 	const NetworkCapabilities = (android as any).net.NetworkCapabilities;
 
@@ -101,13 +103,11 @@ export function getConnectionType(): number {
 }
 
 function startMonitoringLegacy(connectionTypeChangedCallback) {
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const onReceiveCallback = function onReceiveCallback(context: android.content.Context, intent: android.content.Intent) {
 		const newConnectionType = getConnectionType();
 		connectionTypeChangedCallback(newConnectionType);
 	};
 	const zoneCallback = zonedCallback(onReceiveCallback);
-	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 	// @ts-ignore
 	androidApp.registerBroadcastReceiver(android.net.ConnectivityManager.CONNECTIVITY_ACTION, zoneCallback);
 }
@@ -120,8 +120,11 @@ export function startMonitoring(connectionTypeChangedCallback: (newConnectionTyp
 	if (android.os.Build.VERSION.SDK_INT >= 28) {
 		const manager = getConnectivityManager();
 		if (manager) {
-			notifyCallback = () => {
-				const newConnectionType = getConnectionType();
+			notifyCallback = (network: android.net.Network, networkCapabilities: android.net.NetworkCapabilities) => {
+				let newConnectionType = connectionType.none;
+				if (network && networkCapabilities) {
+					newConnectionType = parseNetworkCapabilities(networkCapabilities);
+				}
 				const zoneCallback = zonedCallback(connectionTypeChangedCallback);
 				zoneCallback(newConnectionType);
 			};
@@ -129,21 +132,12 @@ export function startMonitoring(connectionTypeChangedCallback: (newConnectionTyp
 			if (!networkCallback) {
 				@NativeClass
 				class NetworkCallbackImpl extends ConnectivityManager.NetworkCallback {
-					// eslint-disable-next-line @typescript-eslint/no-unused-vars
-					onAvailable(network: android.net.Network) {
-						if (notifyCallback) {
-							notifyCallback();
-						}
-					}
-
-					// eslint-disable-next-line @typescript-eslint/no-unused-vars
 					onCapabilitiesChanged(network: android.net.Network, networkCapabilities: android.net.NetworkCapabilities) {
 						if (notifyCallback) {
-							notifyCallback();
+							notifyCallback(network, networkCapabilities);
 						}
 					}
 
-					// eslint-disable-next-line @typescript-eslint/no-unused-vars
 					onLost(network) {
 						if (notifyCallback) {
 							notifyCallback();
@@ -169,7 +163,6 @@ export function startMonitoring(connectionTypeChangedCallback: (newConnectionTyp
 
 export function stopMonitoring(): void {
 	if (android.os.Build.VERSION.SDK_INT >= 28) {
-		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 		// @ts-ignore
 		const manager = getConnectivityManager();
 		if (manager && callback) {

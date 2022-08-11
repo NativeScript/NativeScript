@@ -20,6 +20,10 @@ declare var CHHapticAdvancedPatternPlayer: {
 	prototype: CHHapticAdvancedPatternPlayer;
 };
 
+declare var CHHapticAudioResourceKeyLoopEnabled: string;
+
+declare var CHHapticAudioResourceKeyUseVolumeEnvelope: string;
+
 interface CHHapticDeviceCapability {
 
 	supportsAudio: boolean;
@@ -92,6 +96,8 @@ declare class CHHapticEngine extends NSObject {
 
 	isMutedForHaptics: boolean;
 
+	playsAudioOnly: boolean;
+
 	playsHapticsOnly: boolean;
 
 	resetHandler: () => void;
@@ -144,6 +150,10 @@ declare const enum CHHapticEngineStoppedReason {
 
 	NotifyWhenFinished = 4,
 
+	EngineDestroyed = 5,
+
+	GameControllerDisconnect = 6,
+
 	SystemError = -1
 }
 
@@ -169,6 +179,8 @@ declare const enum CHHapticErrorCode {
 
 	InvalidAudioSession = -4815,
 
+	InvalidEngineParameter = -4816,
+
 	InvalidParameterType = -4820,
 
 	InvalidEventType = -4821,
@@ -186,6 +198,10 @@ declare const enum CHHapticErrorCode {
 	BadParameterEntry = -4831,
 
 	InvalidTime = -4840,
+
+	FileNotFound = -4851,
+
+	InsufficientPower = -4897,
 
 	UnknownError = -4898,
 
@@ -319,6 +335,8 @@ declare class CHHapticPattern extends NSObject {
 
 	readonly duration: number;
 
+	constructor(o: { contentsOfURL: NSURL; });
+
 	constructor(o: { dictionary: NSDictionary<string, any>; });
 
 	constructor(o: { events: NSArray<CHHapticEvent> | CHHapticEvent[]; parameterCurves: NSArray<CHHapticParameterCurve> | CHHapticParameterCurve[]; });
@@ -326,6 +344,8 @@ declare class CHHapticPattern extends NSObject {
 	constructor(o: { events: NSArray<CHHapticEvent> | CHHapticEvent[]; parameters: NSArray<CHHapticDynamicParameter> | CHHapticDynamicParameter[]; });
 
 	exportDictionaryAndReturnError(): NSDictionary<string, any>;
+
+	initWithContentsOfURLError(ahapURL: NSURL): this;
 
 	initWithDictionaryError(patternDict: NSDictionary<string, any>): this;
 
@@ -342,7 +362,11 @@ declare var CHHapticPatternKeyEventParameters: string;
 
 declare var CHHapticPatternKeyEventType: string;
 
+declare var CHHapticPatternKeyEventWaveformLoopEnabled: string;
+
 declare var CHHapticPatternKeyEventWaveformPath: string;
+
+declare var CHHapticPatternKeyEventWaveformUseVolumeEnvelope: string;
 
 declare var CHHapticPatternKeyParameter: string;
 

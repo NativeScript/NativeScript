@@ -39,7 +39,7 @@ export var test_Argb_Color = function () {
 	TKUnit.assertEqual(color.r, 255, 'Color.r not properly parsed');
 	TKUnit.assertEqual(color.g, 100, 'Color.g not properly parsed');
 	TKUnit.assertEqual(color.b, 100, 'Color.b not properly parsed');
-	TKUnit.assertEqual(color.hex, '#64FF6464', 'Color.hex not properly parsed');
+	TKUnit.assertEqual(color.hex, '#FF646464', 'Color.hex not properly parsed');
 	TKUnit.assertEqual(color.argb, 0x64ff6464, 'Color.argb not properly parsed');
 };
 
@@ -72,6 +72,24 @@ export var test_rgb_Color_CSS = function () {
 	TKUnit.assertEqual(color.argb, 0xffff6464, 'Color.argb not properly parsed');
 };
 
+export var test_rgb_Color_CSS_lvl4 = function () {
+	var alpha = 0.5;
+	var expected = 0x80;
+	// <snippet module="color" title="color">
+	// ### Creating a Color from four RGB values
+	// ``` JavaScript
+	// Creates the color with 255 red, 100 green, 100 blue
+	var color = new Color(`rgb(255 100 100 / ${alpha})`);
+	// ```
+	// </snippet>
+	TKUnit.assertEqual(color.a, expected, 'Color.a not properly parsed');
+	TKUnit.assertEqual(color.r, 255, 'Color.r not properly parsed');
+	TKUnit.assertEqual(color.g, 100, 'Color.g not properly parsed');
+	TKUnit.assertEqual(color.b, 100, 'Color.b not properly parsed');
+	TKUnit.assertEqual(color.hex, '#FF646480', 'Color.hex not properly parsed');
+	TKUnit.assertEqual(color.argb, 0x80ff6464, 'Color.argb not properly parsed');
+};
+
 export var test_rgba_Color_CSS = function () {
 	var alpha = 0.5;
 	var expected = 0x80;
@@ -86,6 +104,6 @@ export var test_rgba_Color_CSS = function () {
 	TKUnit.assertEqual(color.r, 255, 'Color.r not properly parsed');
 	TKUnit.assertEqual(color.g, 100, 'Color.g not properly parsed');
 	TKUnit.assertEqual(color.b, 100, 'Color.b not properly parsed');
-	TKUnit.assertEqual(color.hex, '#80FF6464', 'Color.hex not properly parsed');
+	TKUnit.assertEqual(color.hex, '#FF646480', 'Color.hex not properly parsed');
 	TKUnit.assertEqual(color.argb, 0x80ff6464, 'Color.argb not properly parsed');
 };

@@ -1,4 +1,35 @@
 
+declare class MXAnimationMetric extends MXMetric {
+
+	static alloc(): MXAnimationMetric; // inherited from NSObject
+
+	static new(): MXAnimationMetric; // inherited from NSObject
+
+	readonly scrollHitchTimeRatio: NSMeasurement<NSUnit>;
+}
+
+declare class MXAppExitMetric extends MXMetric {
+
+	static alloc(): MXAppExitMetric; // inherited from NSObject
+
+	static new(): MXAppExitMetric; // inherited from NSObject
+
+	readonly backgroundExitData: MXBackgroundExitData;
+
+	readonly foregroundExitData: MXForegroundExitData;
+}
+
+declare class MXAppLaunchDiagnostic extends MXDiagnostic {
+
+	static alloc(): MXAppLaunchDiagnostic; // inherited from NSObject
+
+	static new(): MXAppLaunchDiagnostic; // inherited from NSObject
+
+	readonly callStackTree: MXCallStackTree;
+
+	readonly launchDuration: NSMeasurement<NSUnitDuration>;
+}
+
 declare class MXAppLaunchMetric extends MXMetric {
 
 	static alloc(): MXAppLaunchMetric; // inherited from NSObject
@@ -6,6 +37,10 @@ declare class MXAppLaunchMetric extends MXMetric {
 	static new(): MXAppLaunchMetric; // inherited from NSObject
 
 	readonly histogrammedApplicationResumeTime: MXHistogram<NSUnitDuration>;
+
+	readonly histogrammedExtendedLaunch: MXHistogram<NSUnitDuration>;
+
+	readonly histogrammedOptimizedTimeToFirstDraw: MXHistogram<NSUnitDuration>;
 
 	readonly histogrammedTimeToFirstDraw: MXHistogram<NSUnitDuration>;
 }
@@ -55,13 +90,80 @@ declare class MXAverage<UnitType> extends NSObject implements NSSecureCoding {
 	initWithCoder(coder: NSCoder): this;
 }
 
+declare class MXBackgroundExitData extends NSObject implements NSSecureCoding {
+
+	static alloc(): MXBackgroundExitData; // inherited from NSObject
+
+	static new(): MXBackgroundExitData; // inherited from NSObject
+
+	readonly cumulativeAbnormalExitCount: number;
+
+	readonly cumulativeAppWatchdogExitCount: number;
+
+	readonly cumulativeBackgroundTaskAssertionTimeoutExitCount: number;
+
+	readonly cumulativeBadAccessExitCount: number;
+
+	readonly cumulativeCPUResourceLimitExitCount: number;
+
+	readonly cumulativeIllegalInstructionExitCount: number;
+
+	readonly cumulativeMemoryPressureExitCount: number;
+
+	readonly cumulativeMemoryResourceLimitExitCount: number;
+
+	readonly cumulativeNormalAppExitCount: number;
+
+	readonly cumulativeSuspendedWithLockedFileExitCount: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare class MXCPUExceptionDiagnostic extends MXDiagnostic {
+
+	static alloc(): MXCPUExceptionDiagnostic; // inherited from NSObject
+
+	static new(): MXCPUExceptionDiagnostic; // inherited from NSObject
+
+	readonly callStackTree: MXCallStackTree;
+
+	readonly totalCPUTime: NSMeasurement<NSUnitDuration>;
+
+	readonly totalSampledTime: NSMeasurement<NSUnitDuration>;
+}
+
 declare class MXCPUMetric extends MXMetric {
 
 	static alloc(): MXCPUMetric; // inherited from NSObject
 
 	static new(): MXCPUMetric; // inherited from NSObject
 
+	readonly cumulativeCPUInstructions: NSMeasurement<NSUnit>;
+
 	readonly cumulativeCPUTime: NSMeasurement<NSUnitDuration>;
+}
+
+declare class MXCallStackTree extends NSObject implements NSSecureCoding {
+
+	static alloc(): MXCallStackTree; // inherited from NSObject
+
+	static new(): MXCallStackTree; // inherited from NSObject
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	JSONRepresentation(): NSData;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class MXCellularConditionMetric extends MXMetric {
@@ -73,6 +175,81 @@ declare class MXCellularConditionMetric extends MXMetric {
 	readonly histogrammedCellularConditionTime: MXHistogram<MXUnitSignalBars>;
 }
 
+declare class MXCrashDiagnostic extends MXDiagnostic {
+
+	static alloc(): MXCrashDiagnostic; // inherited from NSObject
+
+	static new(): MXCrashDiagnostic; // inherited from NSObject
+
+	readonly callStackTree: MXCallStackTree;
+
+	readonly exceptionCode: number;
+
+	readonly exceptionType: number;
+
+	readonly signal: number;
+
+	readonly terminationReason: string;
+
+	readonly virtualMemoryRegionInfo: string;
+}
+
+declare class MXDiagnostic extends NSObject implements NSSecureCoding {
+
+	static alloc(): MXDiagnostic; // inherited from NSObject
+
+	static new(): MXDiagnostic; // inherited from NSObject
+
+	readonly applicationVersion: string;
+
+	readonly metaData: MXMetaData;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	JSONRepresentation(): NSData;
+
+	dictionaryRepresentation(): NSDictionary<any, any>;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare class MXDiagnosticPayload extends NSObject implements NSSecureCoding {
+
+	static alloc(): MXDiagnosticPayload; // inherited from NSObject
+
+	static new(): MXDiagnosticPayload; // inherited from NSObject
+
+	readonly appLaunchDiagnostics: NSArray<MXAppLaunchDiagnostic>;
+
+	readonly cpuExceptionDiagnostics: NSArray<MXCPUExceptionDiagnostic>;
+
+	readonly crashDiagnostics: NSArray<MXCrashDiagnostic>;
+
+	readonly diskWriteExceptionDiagnostics: NSArray<MXDiskWriteExceptionDiagnostic>;
+
+	readonly hangDiagnostics: NSArray<MXHangDiagnostic>;
+
+	readonly timeStampBegin: Date;
+
+	readonly timeStampEnd: Date;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	JSONRepresentation(): NSData;
+
+	dictionaryRepresentation(): NSDictionary<any, any>;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
 declare class MXDiskIOMetric extends MXMetric {
 
 	static alloc(): MXDiskIOMetric; // inherited from NSObject
@@ -80,6 +257,17 @@ declare class MXDiskIOMetric extends MXMetric {
 	static new(): MXDiskIOMetric; // inherited from NSObject
 
 	readonly cumulativeLogicalWrites: NSMeasurement<NSUnitInformationStorage>;
+}
+
+declare class MXDiskWriteExceptionDiagnostic extends MXDiagnostic {
+
+	static alloc(): MXDiskWriteExceptionDiagnostic; // inherited from NSObject
+
+	static new(): MXDiskWriteExceptionDiagnostic; // inherited from NSObject
+
+	readonly callStackTree: MXCallStackTree;
+
+	readonly totalWritesCaused: NSMeasurement<NSUnitInformationStorage>;
 }
 
 declare class MXDisplayMetric extends MXMetric {
@@ -91,6 +279,50 @@ declare class MXDisplayMetric extends MXMetric {
 	readonly averagePixelLuminance: MXAverage<MXUnitAveragePixelLuminance>;
 }
 
+declare const enum MXErrorCode {
+
+	LaunchTaskInvalidID = 0,
+
+	LaunchTaskMaxCount = 1,
+
+	LaunchTaskPastDeadline = 2,
+
+	LaunchTaskDuplicated = 3,
+
+	LaunchTaskUnknown = 4,
+
+	LaunchTaskInternalFailure = 5
+}
+
+declare var MXErrorDomain: string;
+
+declare class MXForegroundExitData extends NSObject implements NSSecureCoding {
+
+	static alloc(): MXForegroundExitData; // inherited from NSObject
+
+	static new(): MXForegroundExitData; // inherited from NSObject
+
+	readonly cumulativeAbnormalExitCount: number;
+
+	readonly cumulativeAppWatchdogExitCount: number;
+
+	readonly cumulativeBadAccessExitCount: number;
+
+	readonly cumulativeIllegalInstructionExitCount: number;
+
+	readonly cumulativeMemoryResourceLimitExitCount: number;
+
+	readonly cumulativeNormalAppExitCount: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
 declare class MXGPUMetric extends MXMetric {
 
 	static alloc(): MXGPUMetric; // inherited from NSObject
@@ -98,6 +330,17 @@ declare class MXGPUMetric extends MXMetric {
 	static new(): MXGPUMetric; // inherited from NSObject
 
 	readonly cumulativeGPUTime: NSMeasurement<NSUnitDuration>;
+}
+
+declare class MXHangDiagnostic extends MXDiagnostic {
+
+	static alloc(): MXHangDiagnostic; // inherited from NSObject
+
+	static new(): MXHangDiagnostic; // inherited from NSObject
+
+	readonly callStackTree: MXCallStackTree;
+
+	readonly hangDuration: NSMeasurement<NSUnitDuration>;
 }
 
 declare class MXHistogram<UnitType> extends NSObject implements NSSecureCoding {
@@ -182,6 +425,8 @@ declare class MXMetaData extends NSObject implements NSSecureCoding {
 
 	readonly osVersion: string;
 
+	readonly platformArchitecture: string;
+
 	readonly regionFormat: string;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
@@ -191,6 +436,8 @@ declare class MXMetaData extends NSObject implements NSSecureCoding {
 	DictionaryRepresentation(): NSDictionary<any, any>;
 
 	JSONRepresentation(): NSData;
+
+	dictionaryRepresentation(): NSDictionary<any, any>;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -211,6 +458,8 @@ declare class MXMetric extends NSObject implements NSSecureCoding {
 
 	JSONRepresentation(): NSData;
 
+	dictionaryRepresentation(): NSDictionary<any, any>;
+
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
@@ -220,9 +469,15 @@ declare class MXMetricManager extends NSObject {
 
 	static alloc(): MXMetricManager; // inherited from NSObject
 
+	static extendLaunchMeasurementForTaskIDError(taskID: string): boolean;
+
+	static finishExtendedLaunchMeasurementForTaskIDError(taskID: string): boolean;
+
 	static makeLogHandleWithCategory(category: string): NSObject;
 
 	static new(): MXMetricManager; // inherited from NSObject
+
+	readonly pastDiagnosticPayloads: NSArray<MXDiagnosticPayload>;
 
 	readonly pastPayloads: NSArray<MXMetricPayload>;
 
@@ -235,7 +490,9 @@ declare class MXMetricManager extends NSObject {
 
 interface MXMetricManagerSubscriber extends NSObjectProtocol {
 
-	didReceiveMetricPayloads(payloads: NSArray<MXMetricPayload> | MXMetricPayload[]): void;
+	didReceiveDiagnosticPayloads?(payloads: NSArray<MXDiagnosticPayload> | MXDiagnosticPayload[]): void;
+
+	didReceiveMetricPayloads?(payloads: NSArray<MXMetricPayload> | MXMetricPayload[]): void;
 }
 declare var MXMetricManagerSubscriber: {
 
@@ -247,6 +504,10 @@ declare class MXMetricPayload extends NSObject implements NSSecureCoding {
 	static alloc(): MXMetricPayload; // inherited from NSObject
 
 	static new(): MXMetricPayload; // inherited from NSObject
+
+	readonly animationMetrics: MXAnimationMetric;
+
+	readonly applicationExitMetrics: MXAppExitMetric;
 
 	readonly applicationLaunchMetrics: MXAppLaunchMetric;
 
@@ -290,6 +551,8 @@ declare class MXMetricPayload extends NSObject implements NSSecureCoding {
 
 	JSONRepresentation(): NSData;
 
+	dictionaryRepresentation(): NSDictionary<any, any>;
+
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
@@ -319,6 +582,8 @@ declare class MXSignpostIntervalData extends NSObject implements NSSecureCoding 
 	readonly averageMemory: MXAverage<NSUnitInformationStorage>;
 
 	readonly cumulativeCPUTime: NSMeasurement<NSUnitDuration>;
+
+	readonly cumulativeHitchTimeRatio: NSMeasurement<NSUnit>;
 
 	readonly cumulativeLogicalWrites: NSMeasurement<NSUnitInformationStorage>;
 

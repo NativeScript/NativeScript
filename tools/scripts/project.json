@@ -1,0 +1,17 @@
+{
+	"$schema": "../../node_modules/nx/schemas/project-schema.json",
+	"sourceRoot": "tools/scripts",
+	"projectType": "library",
+	"generators": {},
+	"targets": {
+		"build": {
+			"executor": "@nrwl/workspace:run-commands",
+			"outputs": ["tools/scripts/dist"],
+			"options": {
+				"commands": ["./build-docs.sh"],
+				"cwd": "tools/scripts",
+				"parallel": false
+			}
+		}
+	}
+}

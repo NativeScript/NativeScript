@@ -1,16 +1,30 @@
-// Deifinitions.
-import { Background as BackgroundDefinition } from './background';
-import { BackgroundRepeat } from '../styling/style-properties';
+import { CoreTypes } from '../../core-types';
 import { LinearGradient } from './linear-gradient';
 // Types.
 import { Color } from '../../color';
+import { CSSShadow } from './css-shadow';
 
-export class Background implements BackgroundDefinition {
+/**
+ * Flags used to hint the background handler if it has to clear a specific property
+ *
+ * Flags can be combined with the | operator
+ * for example: BackgroundClearFlags.CLEAR_BACKGROUND_COLOR | BackgroundClearFlags.CLEAR_BOX_SHADOW
+ *
+ * Flags can be checked for using the & operator
+ * for example: if(clearFlags & BackgroundClearFlags.CLEAR_BOX_SHADOW) { ...clear box shadow... }
+ */
+export const enum BackgroundClearFlags {
+	NONE = 0,
+	CLEAR_BACKGROUND_COLOR = 1 << 0,
+	CLEAR_BOX_SHADOW = 2 << 0,
+}
+
+export class Background {
 	public static default = new Background();
 
 	public color: Color;
 	public image: string | LinearGradient;
-	public repeat: BackgroundRepeat;
+	public repeat: CoreTypes.BackgroundRepeatType;
 	public position: string;
 	public size: string;
 	public borderTopColor: Color;
@@ -26,6 +40,8 @@ export class Background implements BackgroundDefinition {
 	public borderBottomLeftRadius = 0;
 	public borderBottomRightRadius = 0;
 	public clipPath: string;
+	public boxShadow: CSSShadow;
+	public clearFlags: number = BackgroundClearFlags.NONE;
 
 	private clone(): Background {
 		const clone = new Background();
@@ -48,6 +64,8 @@ export class Background implements BackgroundDefinition {
 		clone.borderBottomRightRadius = this.borderBottomRightRadius;
 		clone.borderBottomLeftRadius = this.borderBottomLeftRadius;
 		clone.clipPath = this.clipPath;
+		clone.boxShadow = this.boxShadow;
+		clone.clearFlags = this.clearFlags;
 
 		return clone;
 	}
@@ -55,6 +73,9 @@ export class Background implements BackgroundDefinition {
 	public withColor(value: Color): Background {
 		const clone = this.clone();
 		clone.color = value;
+		if (!value) {
+			clone.clearFlags |= BackgroundClearFlags.CLEAR_BACKGROUND_COLOR;
+		}
 
 		return clone;
 	}
@@ -66,7 +87,7 @@ export class Background implements BackgroundDefinition {
 		return clone;
 	}
 
-	public withRepeat(value: BackgroundRepeat): Background {
+	public withRepeat(value: CoreTypes.BackgroundRepeatType): Background {
 		const clone = this.clone();
 		clone.repeat = value;
 
@@ -178,6 +199,16 @@ export class Background implements BackgroundDefinition {
 		return clone;
 	}
 
+	public withBoxShadow(value: CSSShadow): Background {
+		const clone = this.clone();
+		clone.boxShadow = value;
+		if (!value) {
+			clone.clearFlags |= BackgroundClearFlags.CLEAR_BOX_SHADOW;
+		}
+
+		return clone;
+	}
+
 	public isEmpty(): boolean {
 		return !this.color && !this.image && !this.hasBorderWidth() && !this.hasBorderRadius() && !this.clipPath;
 	}
@@ -219,6 +250,7 @@ export class Background implements BackgroundDefinition {
 			value1.borderBottomRightRadius === value2.borderBottomRightRadius &&
 			value1.borderBottomLeftRadius === value2.borderBottomLeftRadius &&
 			value1.clipPath === value2.clipPath
+			// && value1.clearFlags === value2.clearFlags
 		);
 	}
 
@@ -272,6 +304,14 @@ export class Background implements BackgroundDefinition {
 		}
 
 		return 0;
+	}
+
+	public hasBoxShadow(): boolean {
+		return !!this.boxShadow;
+	}
+
+	public getBoxShadow(): CSSShadow {
+		return this.boxShadow;
 	}
 
 	public toString(): string {

@@ -10,6 +10,21 @@ declare const enum VSAccountAccessStatus {
 	Granted = 3
 }
 
+declare class VSAccountApplicationProvider extends NSObject {
+
+	static alloc(): VSAccountApplicationProvider; // inherited from NSObject
+
+	static new(): VSAccountApplicationProvider; // inherited from NSObject
+
+	readonly identifier: string;
+
+	readonly localizedDisplayName: string;
+
+	constructor(o: { localizedDisplayName: string; identifier: string; });
+
+	initWithLocalizedDisplayNameIdentifier(localizedDisplayName: string, identifier: string): this;
+}
+
 declare class VSAccountManager extends NSObject {
 
 	static alloc(): VSAccountManager; // inherited from NSObject
@@ -70,6 +85,8 @@ declare class VSAccountMetadataRequest extends NSObject {
 
 	accountProviderAuthenticationToken: string;
 
+	applicationAccountProviders: NSArray<VSAccountApplicationProvider>;
+
 	attributeNames: NSArray<string>;
 
 	channelIdentifier: string;
@@ -126,7 +143,9 @@ declare const enum VSErrorCode {
 
 	InvalidVerificationToken = 5,
 
-	Rejected = 6
+	Rejected = 6,
+
+	Unsupported = 7
 }
 
 declare var VSErrorDomain: string;

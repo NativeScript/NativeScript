@@ -188,13 +188,6 @@ declare var RPPreviewViewControllerDelegate: {
 	prototype: RPPreviewViewControllerDelegate;
 };
 
-declare const enum RPPreviewViewControllerMode {
-
-	Preview = 0,
-
-	Share = 1
-}
-
 declare const enum RPRecordingErrorCode {
 
 	Unknown = -5800,
@@ -265,6 +258,12 @@ declare const enum RPRecordingErrorCode {
 
 	FailedToStartCaptureStack = -5833,
 
+	InvalidParameter = -5834,
+
+	FilePermissions = -5835,
+
+	ExportClipToURLInProgress = -5836,
+
 	CodeSuccessful = 0
 }
 
@@ -303,7 +302,11 @@ declare class RPScreenRecorder extends NSObject {
 
 	discardRecordingWithHandler(handler: () => void): void;
 
+	exportClipToURLDurationCompletionHandler(url: NSURL, duration: number, completionHandler: (p1: NSError) => void): void;
+
 	startCaptureWithHandlerCompletionHandler(captureHandler: (p1: any, p2: RPSampleBufferType, p3: NSError) => void, completionHandler: (p1: NSError) => void): void;
+
+	startClipBufferingWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
 
 	startRecordingWithHandler(handler: (p1: NSError) => void): void;
 
@@ -311,7 +314,11 @@ declare class RPScreenRecorder extends NSObject {
 
 	stopCaptureWithHandler(handler: (p1: NSError) => void): void;
 
+	stopClipBufferingWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+
 	stopRecordingWithHandler(handler: (p1: RPPreviewViewController, p2: NSError) => void): void;
+
+	stopRecordingWithOutputURLCompletionHandler(url: NSURL, completionHandler: (p1: NSError) => void): void;
 }
 
 interface RPScreenRecorderDelegate extends NSObjectProtocol {
@@ -357,3 +364,5 @@ declare class RPSystemBroadcastPickerView extends UIView implements NSCoding {
 }
 
 declare var RPVideoSampleOrientationKey: string;
+
+declare var SCStreamErrorDomain: string;

@@ -16,13 +16,6 @@ declare var PHContentEditingController: {
 	prototype: PHContentEditingController;
 };
 
-declare class PHEditingExtensionContext extends NSExtensionContext {
-
-	static alloc(): PHEditingExtensionContext; // inherited from NSObject
-
-	static new(): PHEditingExtensionContext; // inherited from NSObject
-}
-
 declare const enum PHLivePhotoBadgeOptions {
 
 	OverContent = 1,
@@ -65,7 +58,11 @@ declare class PHLivePhotoView extends UIView {
 
 interface PHLivePhotoViewDelegate extends NSObjectProtocol {
 
+	livePhotoViewCanBeginPlaybackWithStyle?(livePhotoView: PHLivePhotoView, playbackStyle: PHLivePhotoViewPlaybackStyle): boolean;
+
 	livePhotoViewDidEndPlaybackWithStyle?(livePhotoView: PHLivePhotoView, playbackStyle: PHLivePhotoViewPlaybackStyle): void;
+
+	livePhotoViewExtraMinimumTouchDurationForTouchWithStyle?(livePhotoView: PHLivePhotoView, touch: UITouch, playbackStyle: PHLivePhotoViewPlaybackStyle): number;
 
 	livePhotoViewWillBeginPlaybackWithStyle?(livePhotoView: PHLivePhotoView, playbackStyle: PHLivePhotoViewPlaybackStyle): void;
 }
@@ -82,3 +79,120 @@ declare const enum PHLivePhotoViewPlaybackStyle {
 
 	Hint = 2
 }
+
+declare class PHPickerConfiguration extends NSObject implements NSCopying {
+
+	static alloc(): PHPickerConfiguration; // inherited from NSObject
+
+	static new(): PHPickerConfiguration; // inherited from NSObject
+
+	filter: PHPickerFilter;
+
+	preferredAssetRepresentationMode: PHPickerConfigurationAssetRepresentationMode;
+
+	preselectedAssetIdentifiers: NSArray<string>;
+
+	selection: PHPickerConfigurationSelection;
+
+	selectionLimit: number;
+
+	constructor(o: { photoLibrary: PHPhotoLibrary; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithPhotoLibrary(photoLibrary: PHPhotoLibrary): this;
+}
+
+declare const enum PHPickerConfigurationAssetRepresentationMode {
+
+	Automatic = 0,
+
+	Current = 1,
+
+	Compatible = 2
+}
+
+declare const enum PHPickerConfigurationSelection {
+
+	Default = 0,
+
+	Ordered = 1
+}
+
+declare class PHPickerFilter extends NSObject implements NSCopying {
+
+	static allFilterMatchingSubfilters(subfilters: NSArray<PHPickerFilter> | PHPickerFilter[]): PHPickerFilter;
+
+	static alloc(): PHPickerFilter; // inherited from NSObject
+
+	static anyFilterMatchingSubfilters(subfilters: NSArray<PHPickerFilter> | PHPickerFilter[]): PHPickerFilter;
+
+	static new(): PHPickerFilter; // inherited from NSObject
+
+	static notFilterOfSubfilter(subfilter: PHPickerFilter): PHPickerFilter;
+
+	static playbackStyleFilter(playbackStyle: PHAssetPlaybackStyle): PHPickerFilter;
+
+	static readonly burstsFilter: PHPickerFilter;
+
+	static readonly cinematicVideosFilter: PHPickerFilter;
+
+	static readonly depthEffectPhotosFilter: PHPickerFilter;
+
+	static readonly imagesFilter: PHPickerFilter;
+
+	static readonly livePhotosFilter: PHPickerFilter;
+
+	static readonly panoramasFilter: PHPickerFilter;
+
+	static readonly screenRecordingsFilter: PHPickerFilter;
+
+	static readonly screenshotsFilter: PHPickerFilter;
+
+	static readonly slomoVideosFilter: PHPickerFilter;
+
+	static readonly timelapseVideosFilter: PHPickerFilter;
+
+	static readonly videosFilter: PHPickerFilter;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare class PHPickerResult extends NSObject {
+
+	static alloc(): PHPickerResult; // inherited from NSObject
+
+	static new(): PHPickerResult; // inherited from NSObject
+
+	readonly assetIdentifier: string;
+
+	readonly itemProvider: NSItemProvider;
+}
+
+declare class PHPickerViewController extends UIViewController {
+
+	static alloc(): PHPickerViewController; // inherited from NSObject
+
+	static new(): PHPickerViewController; // inherited from NSObject
+
+	readonly configuration: PHPickerConfiguration;
+
+	delegate: PHPickerViewControllerDelegate;
+
+	constructor(o: { configuration: PHPickerConfiguration; });
+
+	deselectAssetsWithIdentifiers(identifiers: NSArray<string> | string[]): void;
+
+	initWithConfiguration(configuration: PHPickerConfiguration): this;
+
+	moveAssetWithIdentifierAfterAssetWithIdentifier(identifier: string, afterIdentifier: string): void;
+}
+
+interface PHPickerViewControllerDelegate extends NSObjectProtocol {
+
+	pickerDidFinishPicking(picker: PHPickerViewController, results: NSArray<PHPickerResult> | PHPickerResult[]): void;
+}
+declare var PHPickerViewControllerDelegate: {
+
+	prototype: PHPickerViewControllerDelegate;
+};

@@ -163,6 +163,8 @@ declare const enum CBCentralManagerFeature {
 	ExtendedScanAndConnect = 1
 }
 
+declare var CBCentralManagerOptionDeviceAccessForMedia: string;
+
 declare var CBCentralManagerOptionRestoreIdentifierKey: string;
 
 declare var CBCentralManagerOptionShowPowerAlertKey: string;
@@ -305,7 +307,17 @@ declare const enum CBError {
 
 	UnknownDevice = 12,
 
-	OperationNotSupported = 13
+	OperationNotSupported = 13,
+
+	PeerRemovedPairingInformation = 14,
+
+	EncryptionTimedOut = 15,
+
+	TooManyLEPairedDevices = 16,
+
+	LeGattExceededBackgroundNotificationLimit = 17,
+
+	LeGattNearBackgroundNotificationLimit = 18
 }
 
 declare var CBErrorDomain: string;
