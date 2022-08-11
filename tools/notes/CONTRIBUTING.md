@@ -17,7 +17,7 @@ Help us keep a healthy and open community. We expect all participants in this pr
 
 ## <a name="bugs"></a> Reporting Bugs
 
-1. Always update to the most recent master release; the bug may already be resolved.
+1. Always update to the most recent [release](https://github.com/NativeScript/NativeScript/releases); the bug may already be resolved.
 2. Search for similar issues in the issues list for this repo; it may already be an identified problem.
 3. If this is a bug or problem that is clear, simple, and is unlikely to require any discussion -- it is OK to open an issue on GitHub with a reproduction of the bug including workflows and screenshots. If possible, submit a Pull Request with a failing test, entire application or module. If you'd rather take matters into your own hands, fix the bug yourself (jump down to the [Submitting a PR](#pr) section).
 
@@ -59,7 +59,7 @@ npm start
 
 3. Create a branch for your PR
 ```bash
-git checkout -b <my-fix-branch> master
+git checkout -b <my-fix-branch> main
 ```
 
 4. The fun part! Make your code changes. Make sure you:
@@ -68,10 +68,8 @@ git checkout -b <my-fix-branch> master
     - Write unit tests for your fix or feature. Check out [writing unit tests guide](WritingUnitTests.md).
 
 5. Before you submit your PR:
-    - Rebase your changes to the latest master: `git pull --rebase upstream master`.
+    - Rebase your changes to the latest main: `git pull --rebase upstream main`.
     - Ensure all unit test are green for Android and iOS. Check [running unit tests](DevelopmentWorkflow.md#running-unit-tests).
-    - Ensure your changes pass tslint validation. (run `npm run tslint` in the root of the repo).
-    - If you've made changes to a public API, make sure you update and add the `api-reports/NativeScript.api.md` file to the PR. (run `npm run api-extractor` to update the api-report and definitions).
 
 6. Push your fork. If you have rebased you might have to use force-push your branch:
 ```
