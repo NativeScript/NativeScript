@@ -1,3 +1,13 @@
+## [8.3.3](https://github.com/NativeScript/NativeScript/compare/8.3.2-core...8.3.3) (2022-08-11)
+
+
+### Bug Fixes
+
+* **android:** getScaledDimensions ([#9992](https://github.com/NativeScript/NativeScript/issues/9992)) ([944d542](https://github.com/NativeScript/NativeScript/commit/944d54257198708cabc49af19d7e5cdf39e3e1a1))
+* **ios:** additional safe area insets were miscalculated if already set ([#9991](https://github.com/NativeScript/NativeScript/issues/9991)) ([be6efc3](https://github.com/NativeScript/NativeScript/commit/be6efc306708d65405e9cc89e4ef422feeb89df1))
+
+
+
 ## [8.3.2](https://github.com/NativeScript/NativeScript/compare/5.0.8-webpack...8.3.2) (2022-08-02)
 
 
