@@ -1,18 +1,16 @@
 <p align="center">
   <a href="http://www.nativescript.org">
-    <img alt="NativeScript" src="https://d1lfyz5kwt8vu9.cloudfront.net/nativescript-logo-2021.png" width="100"/>
+    <img alt="NativeScript" src="https://raw.githubusercontent.com/NativeScript/artwork/main/logo/export/NativeScript_Logo_Wide_White_Blue_Rounded_Blue.png" height="50"/>
   </a>
+  <div style="text-align: center;">
+
+  ![Automated Tests Passing](https://github.com/NativeScript/NativeScript/actions/workflows/apps_automated.yml/badge.svg)
+  [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/NativeScript/NativeScript/blob/master/LICENSE)
+  [![NPM Version](https://badge.fury.io/js/%40nativescript%2Fcore.svg)](https://www.npmjs.com/@nativescript/core)
+  [![Discord](https://badgen.net/badge/icon/discord?icon=discord&label)](https://nativescript.org/discord)
+
+  </div>
 </p>
-
-<div style="text-align: center;">
-
-![Automated Tests Passing](https://github.com/NativeScript/NativeScript/actions/workflows/apps_automated.yml/badge.svg)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/NativeScript/NativeScript/blob/master/LICENSE)
-[![NPM Version](https://badge.fury.io/js/%40nativescript%2Fcore.svg)](https://www.npmjs.com/@nativescript/core)
-[![Discord](https://badgen.net/badge/icon/discord?icon=discord&label)](https://nativescript.org/discord)
-
-</div>
-
 
 [NativeScript](http://www.nativescript.org) empowers you to access native APIs from JavaScript directly. Currently iOS and Android runtimes are provided for rich mobile development across a variety of diverse use cases. 
 
@@ -79,5 +77,7 @@ Outside the source centralized in this repo, NativeScript consists of a few othe
 	- This repo contains the NativeScript command-line interface, which lets you create, build, and run apps using NativeScript. The CLI is written in TypeScript.
 - **[Docs](//github.com/NativeScript/docs-new)**
 	- This repo contains NativeScript documentation, which is available at <http://docs.nativescript.org/>. The docs are written in Markdown.
+- **[Official Plugins](https://github.com/NativeScript/plugins)
+  - This repo contains a [plugin workspace](https://docs.nativescript.org/plugins/plugin-workspace-guide.html) the TSC (Technical Steering Committee) maintains offering several often useful plugins.
 
 <h3 align="center">Made with ❤️</h3>
