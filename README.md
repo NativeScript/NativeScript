@@ -1,15 +1,16 @@
-<p align="center">
+<p>
   <a href="http://www.nativescript.org">
     <img alt="NativeScript" src="https://raw.githubusercontent.com/NativeScript/artwork/main/logo/export/NativeScript_Logo_Wide_White_Blue_Rounded_Blue.png" height="50"/>
   </a>
-  <div style="text-align: center;">
+</p>
 
-  ![Automated Tests Passing](https://github.com/NativeScript/NativeScript/actions/workflows/apps_automated.yml/badge.svg)
+<p>
+
+  [![Automated Tests Passing](https://github.com/NativeScript/NativeScript/actions/workflows/apps_automated.yml/badge.svg)](https://github.com/NativeScript/NativeScript/actions/workflows/apps_automated.yml)
   [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/NativeScript/NativeScript/blob/master/LICENSE)
   [![NPM Version](https://badge.fury.io/js/%40nativescript%2Fcore.svg)](https://www.npmjs.com/@nativescript/core)
   [![Discord](https://badgen.net/badge/icon/discord?icon=discord&label)](https://nativescript.org/discord)
 
-  </div>
 </p>
 
 [NativeScript](http://www.nativescript.org) empowers you to access native APIs from JavaScript directly. Currently iOS and Android runtimes are provided for rich mobile development across a variety of diverse use cases. 
