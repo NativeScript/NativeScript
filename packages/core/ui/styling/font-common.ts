@@ -6,6 +6,9 @@ export * from './font-interfaces';
 
 export abstract class Font implements FontDefinition {
 	public static default = undefined;
+	public readonly fontStyle: FontStyleType;
+	public readonly fontWeight: FontWeightType;
+	public readonly fontScale: number;
 
 	get isItalic(): boolean {
 		return this.fontStyle === FontStyle.ITALIC;
@@ -15,7 +18,11 @@ export abstract class Font implements FontDefinition {
 		return this.fontWeight === FontWeight.SEMI_BOLD || this.fontWeight === FontWeight.BOLD || this.fontWeight === '700' || this.fontWeight === FontWeight.EXTRA_BOLD || this.fontWeight === FontWeight.BLACK;
 	}
 
-	protected constructor(public readonly fontFamily: string, public readonly fontSize: number, public readonly fontStyle: FontStyleType, public readonly fontWeight: FontWeightType, public readonly fontScale: number) {}
+	protected constructor(public readonly fontFamily: string, public readonly fontSize: number, fontStyle?: FontStyleType, fontWeight?: FontWeightType, fontScale?: number) {
+		this.fontStyle = fontStyle ?? FontStyle.NORMAL;
+		this.fontWeight = fontWeight ?? FontWeight.NORMAL;
+		this.fontScale = fontScale ?? 1;
+	}
 
 	public abstract getAndroidTypeface(): any; /* android.graphics.Typeface */
 	public abstract getUIFont(defaultFont: any /* UIFont */): any; /* UIFont */
