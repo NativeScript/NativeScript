@@ -6,11 +6,12 @@
 	public fontWeight: FontWeight;
 	public fontSize: number;
 	public fontScale: number;
+	public fontVariationSettings?: FontVariationSettings[];
 
 	public isBold: boolean;
 	public isItalic: boolean;
 
-	constructor(family: string, size: number, style?: FontStyle, weight?: FontWeight, scale?: number);
+	constructor(family: string, size: number, style?: FontStyle, weight?: FontWeight, scale?: number, fontVariationSettings?: FontVariationSettings[]);
 
 	public getAndroidTypeface(): any /* android.graphics.Typeface */;
 	public getUIFont(defaultFont: any /* UIFont */): any /* UIFont */;
@@ -20,6 +21,7 @@
 	public withFontWeight(weight: string): Font;
 	public withFontSize(size: number): Font;
 	public withFontScale(scale: number): Font;
+	public withFontVariationSettings(variationSettings: FontVariationSettings[] | null): Font;
 
 	public static equals(value1: Font, value2: Font): boolean;
 }
@@ -47,6 +49,16 @@ export namespace FontWeight {
 	export function parse(value: string): FontWeight;
 }
 
+export interface FontVariationSettings {
+	axis: string;
+	value: number;
+}
+
+export namespace FontVariationSettings {
+	export function parse(fontVariationSettings: string): FontVariationSettings[] | null;
+	export function toString(fontVariationSettings: FontVariationSettings[] | null): string | null;
+}
+
 export interface ParsedFont {
 	fontStyle?: FontStyle;
 	fontVariant?: string;
@@ -54,6 +66,7 @@ export interface ParsedFont {
 	lineHeight?: string;
 	fontSize?: string;
 	fontFamily?: string;
+	fontVariationSettings?: FontVariationSettings[];
 }
 
 export function parseFont(fontValue: string): ParsedFont;
