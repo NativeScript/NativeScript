@@ -672,6 +672,9 @@ function transitionOrAnimationCompleted(entry: ExpandedEntry, backEntry: Backsta
 
 	entries.delete(entry);
 	if (entries.size === 0) {
+		if (!entry.resolvedPage) {
+			return;
+		}
 		const frame = entry.resolvedPage.frame;
 
 		// We have 0 or 1 entry per frameId in completedEntries
