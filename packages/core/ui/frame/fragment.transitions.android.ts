@@ -680,7 +680,7 @@ function transitionOrAnimationCompleted(entry: ExpandedEntry, backEntry: Backsta
 
 		if (!entry.resolvedPage) {
 			if (Trace.isEnabled()) {
-				Trace.write(`Transition completed - Entry ${entry} with unexpected null value for the resolvedPage property.`, Trace.categories.Navigation, Trace.messageType.error);
+				Trace.write(`Transition completed - Entry ${entry} with unexpected null value for the resolvedPage property.`, Trace.categories.Transition, Trace.messageType.error);
 			}
 			return;
 		}
