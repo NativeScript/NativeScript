@@ -679,6 +679,9 @@ function transitionOrAnimationCompleted(entry: ExpandedEntry, backEntry: Backsta
 		waitingQueue.delete(frameId);
 
 		if (!entry.resolvedPage) {
+			if (Trace.isEnabled()) {
+				Trace.write(`Transition completed - Entry ${entry} with unexpected null value for the resolvedPage property.`, Trace.categories.Navigation, Trace.messageType.error);
+			}
 			return;
 		}
 		const frame = entry.resolvedPage.frame;
