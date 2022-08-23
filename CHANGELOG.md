@@ -1,3 +1,28 @@
+## [8.3.4](https://github.com/NativeScript/NativeScript/compare/8.3.3-core...8.3.4) (2022-08-20)
+
+
+### Bug Fixes
+
+* **android:** potential navigation crash ([#9996](https://github.com/NativeScript/NativeScript/issues/9996)) ([ca3d9bd](https://github.com/NativeScript/NativeScript/commit/ca3d9bdc13b86df2bbecb34e07141cea8fc9af7c))
+* **ios:** ListView _prepareCell null safety ([#10001](https://github.com/NativeScript/NativeScript/issues/10001)) ([56f861d](https://github.com/NativeScript/NativeScript/commit/56f861df20212f2107bf2c4e0989ab4debadf423))
+
+
+### Features
+
+* **core:** make font style, weight, scale params optional ([#9993](https://github.com/NativeScript/NativeScript/issues/9993)) ([4b0c812](https://github.com/NativeScript/NativeScript/commit/4b0c8127073d91d15b36a1428fd23b4cf702cae9))
+
+
+
+## [8.3.3](https://github.com/NativeScript/NativeScript/compare/8.3.2-core...8.3.3) (2022-08-11)
+
+
+### Bug Fixes
+
+* **android:** getScaledDimensions ([#9992](https://github.com/NativeScript/NativeScript/issues/9992)) ([944d542](https://github.com/NativeScript/NativeScript/commit/944d54257198708cabc49af19d7e5cdf39e3e1a1))
+* **ios:** additional safe area insets were miscalculated if already set ([#9991](https://github.com/NativeScript/NativeScript/issues/9991)) ([be6efc3](https://github.com/NativeScript/NativeScript/commit/be6efc306708d65405e9cc89e4ef422feeb89df1))
+
+
+
 ## [8.3.2](https://github.com/NativeScript/NativeScript/compare/5.0.8-webpack...8.3.2) (2022-08-02)
 
 
