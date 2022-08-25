@@ -122,20 +122,9 @@ function ensureNativeClasses() {
 	});
 }
 
-// export function setupAccessibleView(view: View): void {
-// 	const uiView = view.nativeViewProtected as UIView;
-// 	if (!uiView) {
-// 		return;
-// 	}
-
-// 	/**
-// 	 * We need to map back from the UIView to the NativeScript View.
-// 	 *
-// 	 * We do that by setting the uiView's tag to the View's domId.
-// 	 * This way we can do reverse lookup.
-// 	 */
-// 	uiView.tag = view._domId;
-// }
+export function setupAccessibleView(view: View): void {
+	updateAccessibilityProperties(view);
+}
 
 let started = false;
 export function updateAccessibilityProperties(view: View): void {
@@ -143,6 +132,14 @@ export function updateAccessibilityProperties(view: View): void {
 	if (!uiView) {
 		return;
 	}
+
+	/**
+	 * We need to map back from the UIView to the NativeScript View.
+	 *
+	 * We do that by setting the uiView's tag to the View's domId.
+	 * This way we can do reverse lookup.
+	 */
+	uiView.tag = view._domId;
 	if (!started) {
 		started = true;
 		initAccessibilityCssHelper();

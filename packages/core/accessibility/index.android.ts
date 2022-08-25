@@ -439,9 +439,9 @@ export function isAccessibilityServiceEnabled(): boolean {
 	return accessibilityServiceEnabled;
 }
 
-// export function setupAccessibleView(view: Partial<View>): void {
-// 	updateAccessibilityProperties(view);
-// }
+export function setupAccessibleView(view: Partial<View>): void {
+	updateAccessibilityProperties(view);
+}
 
 export function updateAccessibilityProperties(view: Partial<View>): void {
 	if (!view.nativeViewProtected) {
@@ -538,7 +538,6 @@ export function updateContentDescription(view: View, forceUpdate?: boolean): str
 
 	return applyContentDescription(view, forceUpdate);
 }
-
 
 let started = false;
 function setAccessibilityDelegate(view: Partial<View>): void {
