@@ -38,11 +38,9 @@ function getUIFontCached(fontDescriptor: FontDescriptor) {
 }
 
 export class Font extends FontBase {
-	public static default = new Font(undefined, undefined, FontStyle.NORMAL, FontWeight.NORMAL, 1);
+	public static default = new Font(undefined, undefined);
 
-	private _uiFont: UIFont;
-
-	constructor(family: string, size: number, style: FontStyleType, weight: FontWeightType, scale: number) {
+	constructor(family: string, size: number, style?: FontStyleType, weight?: FontWeightType, scale?: number) {
 		super(family, size, style, weight, scale);
 	}
 

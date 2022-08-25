@@ -284,6 +284,8 @@ export class FileSystemAccess implements IFileSystemAccess {
 
 	getDocumentsFolderPath(): string;
 
+	getExternalDocumentsFolderPath(): string;
+
 	getTempFolderPath(): string;
 
 	getLogicalRootPath(): string;

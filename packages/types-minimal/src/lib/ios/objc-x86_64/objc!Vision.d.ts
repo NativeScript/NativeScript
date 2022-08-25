@@ -302,6 +302,8 @@ declare var VNDetectBarcodesRequestRevision1: number;
 
 declare var VNDetectBarcodesRequestRevision2: number;
 
+declare var VNDetectBarcodesRequestRevision3: number;
+
 declare var VNDetectContourRequestRevision1: number;
 
 declare class VNDetectContoursRequest extends VNImageBasedRequest {
@@ -587,6 +589,8 @@ declare function VNElementTypeSize(elementType: VNElementType): number;
 
 declare const enum VNErrorCode {
 
+	TuriCoreErrorCode = -1,
+
 	OK = 0,
 
 	RequestCancelled = 1,
@@ -625,7 +629,9 @@ declare const enum VNErrorCode {
 
 	TimeStampNotFound = 18,
 
-	UnsupportedRequest = 19
+	UnsupportedRequest = 19,
+
+	Timeout = 20
 }
 
 declare var VNErrorDomain: string;
@@ -658,6 +664,8 @@ declare class VNFaceLandmarkRegion2D extends VNFaceLandmarkRegion {
 	static new(): VNFaceLandmarkRegion2D; // inherited from NSObject
 
 	readonly normalizedPoints: interop.Pointer | interop.Reference<CGPoint>;
+
+	readonly pointsClassification: VNPointsClassification;
 
 	readonly precisionEstimatesPerPoint: NSArray<number>;
 
@@ -804,6 +812,8 @@ declare class VNGenerateOpticalFlowRequest extends VNTargetedImageRequest {
 
 	computationAccuracy: VNGenerateOpticalFlowRequestComputationAccuracy;
 
+	keepNetworkOutput: boolean;
+
 	outputPixelFormat: number;
 }
 
@@ -819,6 +829,8 @@ declare const enum VNGenerateOpticalFlowRequestComputationAccuracy {
 }
 
 declare var VNGenerateOpticalFlowRequestRevision1: number;
+
+declare var VNGenerateOpticalFlowRequestRevision2: number;
 
 declare class VNGeneratePersonSegmentationRequest extends VNStatefulRequest {
 
@@ -877,6 +889,8 @@ declare class VNHorizonObservation extends VNObservation {
 	readonly angle: number;
 
 	readonly transform: CGAffineTransform;
+
+	transformForImageWidthHeight(width: number, height: number): CGAffineTransform;
 }
 
 declare class VNHumanBodyPoseObservation extends VNRecognizedPointsObservation {
@@ -1052,7 +1066,11 @@ declare const enum VNImageCropAndScaleOption {
 
 	ScaleFit = 1,
 
-	ScaleFill = 2
+	ScaleFill = 2,
+
+	ScaleFitRotate90CCW = 257,
+
+	ScaleFillRotate90CCW = 258
 }
 
 declare class VNImageHomographicAlignmentObservation extends VNImageAlignmentObservation {
@@ -1242,6 +1260,15 @@ declare class VNPoint extends NSObject implements NSCopying, NSSecureCoding {
 	initWithXY(x: number, y: number): this;
 }
 
+declare const enum VNPointsClassification {
+
+	Disconnected = 0,
+
+	OpenPath = 1,
+
+	ClosedPath = 2
+}
+
 declare class VNRecognizeAnimalsRequest extends VNImageBasedRequest {
 
 	static alloc(): VNRecognizeAnimalsRequest; // inherited from NSObject
@@ -1264,6 +1291,8 @@ declare class VNRecognizeTextRequest extends VNImageBasedRequest implements VNRe
 	static new(): VNRecognizeTextRequest; // inherited from NSObject
 
 	static supportedRecognitionLanguagesForTextRecognitionLevelRevisionError(recognitionLevel: VNRequestTextRecognitionLevel, requestRevision: number): NSArray<string>;
+
+	automaticallyDetectsLanguage: boolean;
 
 	customWords: NSArray<string>;
 
@@ -1319,6 +1348,8 @@ declare class VNRecognizeTextRequest extends VNImageBasedRequest implements VNRe
 declare var VNRecognizeTextRequestRevision1: number;
 
 declare var VNRecognizeTextRequestRevision2: number;
+
+declare var VNRecognizeTextRequestRevision3: number;
 
 declare class VNRecognizedObjectObservation extends VNDetectedObjectObservation {
 

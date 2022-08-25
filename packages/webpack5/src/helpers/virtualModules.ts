@@ -8,6 +8,9 @@ import { getEntryDirPath } from './platform';
 import dedent from 'ts-dedent';
 import { getProjectFilePath } from './project';
 
+/**
+ * @deprecated Virtual entries are not recommended by the webpack team, use real files instead. For example, resolve a path in node_modules if necessary.
+ */
 export function addVirtualEntry(
 	config: Config,
 	name: string,
@@ -20,6 +23,9 @@ export function addVirtualEntry(
 	);
 }
 
+/**
+ * @deprecated Virtual modules are not recommended by the webpack team, use real files instead. For example, resolve a path in node_modules if necessary.
+ */
 export function addVirtualModule(
 	config: Config,
 	name: string,

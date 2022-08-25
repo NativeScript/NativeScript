@@ -22,6 +22,8 @@ declare class CPAlertAction extends NSObject implements NSSecureCoding {
 
 	static new(): CPAlertAction; // inherited from NSObject
 
+	readonly color: UIColor;
+
 	readonly handler: (p1: CPAlertAction) => void;
 
 	readonly style: CPAlertActionStyle;
@@ -32,11 +34,15 @@ declare class CPAlertAction extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
+	constructor(o: { title: string; color: UIColor; handler: (p1: CPAlertAction) => void; });
+
 	constructor(o: { title: string; style: CPAlertActionStyle; handler: (p1: CPAlertAction) => void; });
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
+
+	initWithTitleColorHandler(title: string, color: UIColor, handler: (p1: CPAlertAction) => void): this;
 
 	initWithTitleStyleHandler(title: string, style: CPAlertActionStyle, handler: (p1: CPAlertAction) => void): this;
 }
@@ -1542,6 +1548,8 @@ declare class CPPointOfInterest extends NSObject implements NSSecureCoding {
 
 	secondaryButton: CPTextButton;
 
+	selectedPinImage: UIImage;
+
 	subtitle: string;
 
 	summary: string;
@@ -1550,20 +1558,28 @@ declare class CPPointOfInterest extends NSObject implements NSSecureCoding {
 
 	userInfo: any;
 
+	static readonly pinImageSize: CGSize;
+
+	static readonly selectedPinImageSize: CGSize;
+
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	constructor(o: { location: MKMapItem; title: string; subtitle: string; summary: string; detailTitle: string; detailSubtitle: string; detailSummary: string; pinImage: UIImage; });
 
+	constructor(o: { location: MKMapItem; title: string; subtitle: string; summary: string; detailTitle: string; detailSubtitle: string; detailSummary: string; pinImage: UIImage; selectedPinImage: UIImage; });
+
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
 	initWithLocationTitleSubtitleSummaryDetailTitleDetailSubtitleDetailSummaryPinImage(location: MKMapItem, title: string, subtitle: string, summary: string, detailTitle: string, detailSubtitle: string, detailSummary: string, pinImage: UIImage): this;
+
+	initWithLocationTitleSubtitleSummaryDetailTitleDetailSubtitleDetailSummaryPinImageSelectedPinImage(location: MKMapItem, title: string, subtitle: string, summary: string, detailTitle: string, detailSubtitle: string, detailSummary: string, pinImage: UIImage, selectedPinImage: UIImage): this;
 }
 
-declare class CPPointOfInterestTemplate extends CPTemplate {
+declare class CPPointOfInterestTemplate extends CPTemplate implements CPBarButtonProviding {
 
 	static alloc(): CPPointOfInterestTemplate; // inherited from NSObject
 
@@ -1577,9 +1593,49 @@ declare class CPPointOfInterestTemplate extends CPTemplate {
 
 	title: string;
 
+	backButton: CPBarButton; // inherited from CPBarButtonProviding
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	leadingNavigationBarButtons: NSArray<CPBarButton>; // inherited from CPBarButtonProviding
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	trailingNavigationBarButtons: NSArray<CPBarButton>; // inherited from CPBarButtonProviding
+
+	readonly  // inherited from NSObjectProtocol
+
 	constructor(o: { title: string; pointsOfInterest: NSArray<CPPointOfInterest> | CPPointOfInterest[]; selectedIndex: number; });
 
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
 	initWithTitlePointsOfInterestSelectedIndex(title: string, pointsOfInterest: NSArray<CPPointOfInterest> | CPPointOfInterest[], selectedIndex: number): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
 
 	setPointsOfInterestSelectedIndex(pointsOfInterest: NSArray<CPPointOfInterest> | CPPointOfInterest[], selectedIndex: number): void;
 }

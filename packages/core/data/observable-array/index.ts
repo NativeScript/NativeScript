@@ -51,9 +51,21 @@ export class ObservableArray<T> extends Observable {
 	private _deleteArgs: ChangedData<T>;
 
 	/**
+	 * Create ObservableArray<T> with specified length.
+	 */
+	constructor(arrayLength?: number);
+
+	/**
 	 * Create ObservableArray<T> from source Array<T>.
 	 */
-	constructor(args?: T[] | number) {
+	constructor(items: T[]);
+
+	/**
+	 * Create ObservableArray<T> from T items.
+	 */
+	constructor(...items: T[]);
+
+	constructor(_args?: any) {
 		super();
 
 		if (arguments.length === 1 && Array.isArray(arguments[0])) {

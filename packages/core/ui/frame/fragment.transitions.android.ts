@@ -521,7 +521,6 @@ function setReturnTransition(navigationTransition: NavigationTransition, entry: 
 	fragment.setReturnTransition(transition);
 }
 
-
 function setupCurrentFragmentCustomTransition(navTransition: NavigationTransition, entry: ExpandedEntry, transition: Transition): void {
 	const exitAnimator = transition.createAndroidAnimator(Transition.AndroidTransitionType.exit);
 	const exitTransition = new org.nativescript.widgets.CustomTransition(exitAnimator, transition.constructor.name + Transition.AndroidTransitionType.exit.toString());
@@ -538,9 +537,8 @@ function setupNewFragmentCustomTransition(navTransition: NavigationTransition, e
 	setupCurrentFragmentCustomTransition(navTransition, entry, transition);
 
 	const enterAnimator = transition.createAndroidAnimator(Transition.AndroidTransitionType.enter);
-	
-	const enterTransition = new org.nativescript.widgets.CustomTransition(enterAnimator, transition.constructor.name + Transition.AndroidTransitionType.enter.toString());
 
+	const enterTransition = new org.nativescript.widgets.CustomTransition(enterAnimator, transition.constructor.name + Transition.AndroidTransitionType.enter.toString());
 
 	// if the animation is cancelled during the transition
 	// the fragment will get stuck in an in-between state
@@ -548,9 +546,9 @@ function setupNewFragmentCustomTransition(navTransition: NavigationTransition, e
 	enterAnimator.addListener(
 		new android.animation.Animator.AnimatorListener({
 			onAnimationStart: function (animator: android.animation.Animator): void {},
-			onAnimationEnd:  (animator: android.animation.Animator)=> {},
+			onAnimationEnd: (animator: android.animation.Animator) => {},
 			onAnimationRepeat: function (animator: android.animation.Animator): void {},
-			onAnimationCancel:  (animator: android.animation.Animator)=> {
+			onAnimationCancel: (animator: android.animation.Animator) => {
 				const immediateAnimatorSet = animator.clone();
 				immediateAnimatorSet.setDuration(0);
 				immediateAnimatorSet.start();
@@ -617,14 +615,19 @@ function transitionOrAnimationCompleted(entry: ExpandedEntry, backEntry: Backsta
 
 	entries.delete(entry);
 	if (entries.size === 0) {
-		const frame = entry.resolvedPage.frame;
-
 		// We have 0 or 1 entry per frameId in completedEntries
 		// So there is no need to make it to Set like waitingQueue
 		const previousCompletedAnimationEntry = completedEntries.get(frameId);
 		completedEntries.delete(frameId);
 		waitingQueue.delete(frameId);
 
+		if (!entry.resolvedPage) {
+			if (Trace.isEnabled()) {
+				Trace.write(`Transition completed - Entry ${entry} with unexpected null value for the resolvedPage property.`, Trace.categories.Transition, Trace.messageType.error);
+			}
+			return;
+		}
+		const frame = entry.resolvedPage.frame;
 		const navigationContext = frame._executingContext || {
 			navigationType: NavigationType.back,
 		};

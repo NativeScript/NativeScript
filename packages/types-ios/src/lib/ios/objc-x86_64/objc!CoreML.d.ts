@@ -37,7 +37,9 @@ declare const enum MLComputeUnits {
 
 	CPUAndGPU = 1,
 
-	All = 2
+	All = 2,
+
+	CPUAndNeuralEngine = 3
 }
 
 interface MLCustomLayer {
@@ -363,9 +365,13 @@ declare class MLModel extends NSObject {
 
 	static alloc(): MLModel; // inherited from NSObject
 
+	static compileModelAtURLCompletionHandler(modelURL: NSURL, handler: (p1: NSURL, p2: NSError) => void): void;
+
 	static compileModelAtURLError(modelURL: NSURL): NSURL;
 
 	static loadContentsOfURLConfigurationCompletionHandler(url: NSURL, configuration: MLModelConfiguration, handler: (p1: MLModel, p2: NSError) => void): void;
+
+	static loadModelAssetConfigurationCompletionHandler(asset: MLModelAsset, configuration: MLModelConfiguration, handler: (p1: MLModel, p2: NSError) => void): void;
 
 	static modelWithContentsOfURLConfigurationError(url: NSURL, configuration: MLModelConfiguration): MLModel;
 
@@ -386,6 +392,15 @@ declare class MLModel extends NSObject {
 	predictionsFromBatchError(inputBatch: MLBatchProvider): MLBatchProvider;
 
 	predictionsFromBatchOptionsError(inputBatch: MLBatchProvider, options: MLPredictionOptions): MLBatchProvider;
+}
+
+declare class MLModelAsset extends NSObject {
+
+	static alloc(): MLModelAsset; // inherited from NSObject
+
+	static modelAssetWithSpecificationDataError(specificationData: NSData): MLModelAsset;
+
+	static new(): MLModelAsset; // inherited from NSObject
 }
 
 declare var MLModelAuthorKey: string;
@@ -431,6 +446,8 @@ declare class MLModelConfiguration extends NSObject implements NSCopying, NSSecu
 	allowLowPrecisionAccumulationOnGPU: boolean;
 
 	computeUnits: MLComputeUnits;
+
+	modelDisplayName: string;
 
 	parameters: NSDictionary<MLParameterKey, any>;
 
@@ -527,6 +544,8 @@ declare class MLMultiArray extends NSObject implements NSSecureCoding {
 
 	readonly dataType: MLMultiArrayDataType;
 
+	readonly pixelBuffer: any;
+
 	readonly shape: NSArray<number>;
 
 	readonly strides: NSArray<number>;
@@ -538,13 +557,21 @@ declare class MLMultiArray extends NSObject implements NSSecureCoding {
 
 	constructor(o: { dataPointer: interop.Pointer | interop.Reference<any>; shape: NSArray<number> | number[]; dataType: MLMultiArrayDataType; strides: NSArray<number> | number[]; deallocator: (p1: interop.Pointer | interop.Reference<any>) => void; });
 
+	constructor(o: { pixelBuffer: any; shape: NSArray<number> | number[]; });
+
 	constructor(o: { shape: NSArray<number> | number[]; dataType: MLMultiArrayDataType; });
 
 	encodeWithCoder(coder: NSCoder): void;
 
+	getBytesWithHandler(handler: (p1: interop.Pointer | interop.Reference<any>, p2: number) => void): void;
+
+	getMutableBytesWithHandler(handler: (p1: interop.Pointer | interop.Reference<any>, p2: number, p3: NSArray<number>) => void): void;
+
 	initWithCoder(coder: NSCoder): this;
 
 	initWithDataPointerShapeDataTypeStridesDeallocatorError(dataPointer: interop.Pointer | interop.Reference<any>, shape: NSArray<number> | number[], dataType: MLMultiArrayDataType, strides: NSArray<number> | number[], deallocator: (p1: interop.Pointer | interop.Reference<any>) => void): this;
+
+	initWithPixelBufferShape(pixelBuffer: any, shape: NSArray<number> | number[]): this;
 
 	initWithShapeDataTypeError(shape: NSArray<number> | number[], dataType: MLMultiArrayDataType): this;
 
@@ -707,6 +734,8 @@ declare class MLPredictionOptions extends NSObject {
 	static alloc(): MLPredictionOptions; // inherited from NSObject
 
 	static new(): MLPredictionOptions; // inherited from NSObject
+
+	outputBackings: NSDictionary<string, any>;
 
 	usesCPUOnly: boolean;
 }

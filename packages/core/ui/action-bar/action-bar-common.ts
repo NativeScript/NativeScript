@@ -25,6 +25,10 @@ export class ActionBarBase extends View implements ActionBarDefinition {
 	get navigationButton(): NavigationButton {
 		return this._navigationButton;
 	}
+	disposeNativeView() {
+		this._actionItems = null;
+		super.disposeNativeView();
+	}
 	set navigationButton(value: NavigationButton) {
 		if (this._navigationButton !== value) {
 			if (this._navigationButton) {
@@ -114,7 +118,7 @@ export class ActionBarBase extends View implements ActionBarDefinition {
 
 	get _childrenCount(): number {
 		let actionViewsCount = 0;
-		this._actionItems.getItems().forEach((actionItem) => {
+		this._actionItems?.getItems().forEach((actionItem) => {
 			if (actionItem.actionView) {
 				actionViewsCount++;
 			}
@@ -140,7 +144,7 @@ export class ActionBarBase extends View implements ActionBarDefinition {
 
 	public _addArrayFromBuilder(name: string, value: Array<any>) {
 		if (name === 'actionItems') {
-			this.actionItems.setItems(value);
+			this.actionItems?.setItems(value);
 		}
 	}
 
@@ -162,13 +166,13 @@ export class ActionBarBase extends View implements ActionBarDefinition {
 			callback(navigationButton);
 		}
 
-		this.actionItems.getItems().forEach((actionItem) => {
+		this.actionItems?.getItems().forEach((actionItem) => {
 			callback(actionItem);
 		});
 	}
 
 	public _isEmpty(): boolean {
-		if (this.title || this.titleView || (this.android && this.android.icon) || this.navigationButton || this.actionItems.getItems().length > 0) {
+		if (this.title || this.titleView || (this.android && this.android.icon) || this.navigationButton || this.actionItems?.getItems().length > 0) {
 			return false;
 		}
 

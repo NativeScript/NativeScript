@@ -56,7 +56,9 @@ declare const enum AACompressionAlgorithms {
 
 	A_COMPRESSION_ALGORITHM_LZMA = 774,
 
-	A_COMPRESSION_ALGORITHM_LZFSE = 2049
+	A_COMPRESSION_ALGORITHM_LZFSE = 2049,
+
+	A_COMPRESSION_ALGORITHM_LZBITMAP = 1794
 }
 
 declare function AACompressionOutputStreamOpen(compressed_stream: interop.Pointer | interop.Reference<any>, compression_algorithm: number, block_size: number, flags: number, n_threads: number): interop.Pointer | interop.Reference<any>;
@@ -377,6 +379,8 @@ declare function AEAAuthDataSetEntry(auth_data: interop.Pointer | interop.Refere
 declare function AEAContextCreateWithEncryptedStream(encrypted_stream: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function AEAContextCreateWithProfile(profile: number): interop.Pointer | interop.Reference<any>;
+
+declare function AEAContextDecryptAttributes(context: interop.Pointer | interop.Reference<any>): number;
 
 declare function AEAContextDestroy(context: interop.Pointer | interop.Reference<any>): void;
 

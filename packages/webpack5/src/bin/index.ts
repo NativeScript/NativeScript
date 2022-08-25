@@ -56,6 +56,7 @@ program
 			env['env'] = options.env;
 		}
 
+		env['stats'] ??= true;
 		env['watch'] ??= options.watch;
 
 		// if --env.config is passed, we'll set an environment
@@ -108,17 +109,15 @@ program
 				// Set the process exit code depending on errors
 				process.exitCode = stats.hasErrors() ? 1 : 0;
 
-				// if webpack profile is enabled we write the stats to a JSON file
-				if (configuration.profile ===  true) {
-					fs.writeFileSync(path.join(process.cwd(), 'webpack.stats.json'), JSON.stringify(stats.toJson()));
+				if (env.stats) {
+					console.log(
+						stats.toString({
+							chunks: false,
+							colors: true,
+							errorDetails: env.verbose,
+						})
+					);
 				}
-				console.log(
-					stats.toString({
-						chunks: false,
-						colors: true,
-						errorDetails: env.verbose,
-					})
-				);
 
 				// if webpack profile is enabled we write the stats to a JSON file
 				if (configuration.profile || env.profile) {
@@ -145,7 +144,7 @@ program
 		};
 
 		if (options.watch) {
-			console.log('webpack is watching the files...');
+			env.stats && console.log('webpack is watching the files...');
 			compiler.watch(
 				configuration.watchOptions ?? {},
 				webpackCompilationCallback
