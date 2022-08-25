@@ -468,6 +468,7 @@ export class TextBase extends TextBaseCommon {
 			nativeTextViewProtected.setMaxLines(Number.MAX_SAFE_INTEGER);
 		} else {
 			nativeTextViewProtected.setMaxLines(typeof value === 'string' ? parseInt(value, 10) : value);
+			nativeTextViewProtected.setEllipsize(android.text.TextUtils.TruncateAt.END);
 		}
 	}
 
