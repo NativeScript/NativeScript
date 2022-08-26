@@ -116,9 +116,9 @@ export class WebView extends WebViewBase {
 		const nativeView = this.nativeViewProtected;
 		if (nativeView) {
 			nativeView.destroy();
+			nativeView.setWebViewClient(null);
+			(<any>nativeView).client.owner = null;
 		}
-
-		(<any>nativeView).client.owner = null;
 		super.disposeNativeView();
 	}
 
