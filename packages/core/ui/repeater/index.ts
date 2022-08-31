@@ -130,7 +130,7 @@ export class Repeater extends CustomLayoutView {
 
 			if (!viewToAdd) {
 				if (__UI_USE_EXTERNAL_RENDERER__) {
-					viewToAdd = this._getDefaultItemContent(i)
+					viewToAdd = this._getDefaultItemContent(i);
 				} else {
 					viewToAdd = this.itemTemplate ? Builder.parse(this.itemTemplate, this) : this._getDefaultItemContent(i);
 				}
@@ -227,11 +227,7 @@ export const itemTemplatesProperty = new Property<Repeater, string | Array<Keyed
 	affectsLayout: true,
 	valueConverter: (value) => {
 		if (typeof value === 'string') {
-			if (__UI_USE_XML_PARSER__) {
-				return Builder.parseMultipleTemplates(value, null);
-			} else {
-				return null;
-			}
+			return Builder.parseMultipleTemplates(value, null);
 		}
 
 		return value;

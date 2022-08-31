@@ -46,26 +46,24 @@ export namespace xml2ui {
 		}
 
 		public parse(value: ParseInputData) {
-			if (__UI_USE_XML_PARSER__) {
-				const xmlParser = new xml.XmlParser(
-					(args: xml.ParserEvent) => {
-						try {
-							this.next(args);
-						} catch (e) {
-							throw this.error(e, args.position);
-						}
-					},
-					(e, p) => {
-						throw this.error(e, p);
-					},
-					true
-				);
+			const xmlParser = new xml.XmlParser(
+				(args: xml.ParserEvent) => {
+					try {
+						this.next(args);
+					} catch (e) {
+						throw this.error(e, args.position);
+					}
+				},
+				(e, p) => {
+					throw this.error(e, p);
+				},
+				true
+			);
 
-				if (isString(value)) {
-					xmlParser.parse(<string>value);
-				} else if (isObject(value) && isString(value.default)) {
-					xmlParser.parse(value.default);
-				}
+			if (isString(value)) {
+				xmlParser.parse(<string>value);
+			} else if (isObject(value) && isString(value.default)) {
+				xmlParser.parse(value.default);
 			}
 		}
 	}
@@ -264,27 +262,23 @@ export namespace xml2ui {
 		}
 
 		public buildTemplate(): Template {
-			if (__UI_USE_XML_PARSER__) {
-				const context = this._context;
-				const errorFormat = this._templateProperty.errorFormat;
-				const sourceTracker = this._templateProperty.sourceTracker;
-				const template: Template = <Template>profile('Template()', () => {
-					let start: xml2ui.XmlArgsReplay;
-					let ui: xml2ui.ComponentParser;
+			const context = this._context;
+			const errorFormat = this._templateProperty.errorFormat;
+			const sourceTracker = this._templateProperty.sourceTracker;
+			const template: Template = <Template>profile('Template()', () => {
+				let start: xml2ui.XmlArgsReplay;
+				let ui: xml2ui.ComponentParser;
 
-					(start = new xml2ui.XmlArgsReplay(this._recordedXmlStream, errorFormat))
-						// No platform filter, it has been filtered already
-						.pipe(new XmlStateParser((ui = new ComponentParser(context, errorFormat, sourceTracker))));
+				(start = new xml2ui.XmlArgsReplay(this._recordedXmlStream, errorFormat))
+					// No platform filter, it has been filtered already
+					.pipe(new XmlStateParser((ui = new ComponentParser(context, errorFormat, sourceTracker))));
 
-					start.replay();
+				start.replay();
 
-					return ui.rootComponentModule.component;
-				});
+				return ui.rootComponentModule.component;
+			});
 
-				return template;
-			} else {
-				return null;
-			}
+			return template;
 		}
 	}
 
