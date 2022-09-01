@@ -227,7 +227,11 @@ export const itemTemplatesProperty = new Property<Repeater, string | Array<Keyed
 	affectsLayout: true,
 	valueConverter: (value) => {
 		if (typeof value === 'string') {
-			return Builder.parseMultipleTemplates(value, null);
+			if (__UI_USE_XML_PARSER__) {
+				return Builder.parseMultipleTemplates(value, null);
+			} else {
+				return null;
+			}
 		}
 
 		return value;

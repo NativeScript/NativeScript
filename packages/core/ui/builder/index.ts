@@ -231,20 +231,24 @@ export function getExports(instance: ViewBase): any {
 }
 
 function parseInternal(value: string, context: any, xmlModule?: string, moduleName?: string): ComponentModule {
-	let start: xml2ui.XmlStringParser;
-	let ui: xml2ui.ComponentParser;
+	if (__UI_USE_XML_PARSER__) {
+		let start: xml2ui.XmlStringParser;
+		let ui: xml2ui.ComponentParser;
 
-	const errorFormat = debug && xmlModule ? xml2ui.SourceErrorFormat(xmlModule) : xml2ui.PositionErrorFormat;
-	const componentSourceTracker =
-		debug && xmlModule
-			? xml2ui.ComponentSourceTracker(xmlModule)
-			: () => {
-					// no-op
-			  };
+		const errorFormat = debug && xmlModule ? xml2ui.SourceErrorFormat(xmlModule) : xml2ui.PositionErrorFormat;
+		const componentSourceTracker =
+			debug && xmlModule
+				? xml2ui.ComponentSourceTracker(xmlModule)
+				: () => {
+						// no-op
+				  };
 
-	(start = new xml2ui.XmlStringParser(errorFormat)).pipe(new xml2ui.PlatformFilter()).pipe(new xml2ui.XmlStateParser((ui = new xml2ui.ComponentParser(context, errorFormat, componentSourceTracker, moduleName))));
+		(start = new xml2ui.XmlStringParser(errorFormat)).pipe(new xml2ui.PlatformFilter()).pipe(new xml2ui.XmlStateParser((ui = new xml2ui.ComponentParser(context, errorFormat, componentSourceTracker, moduleName))));
 
-	start.parse(value);
+		start.parse(value);
 
-	return ui.rootComponentModule;
+		return ui.rootComponentModule;
+	} else {
+		return null;
+	}
 }
