@@ -64,6 +64,8 @@ export class Builder {
 					const componentModule = resolvedXmlModuleName ? global.loadModule(resolvedXmlModuleName, true) : null;
 					if (componentModule?.default) {
 						componentView = new componentModule.default();
+					} else {
+						throw new Error('Failed to load component from module: ' + moduleName);
 					}
 				}
 				return componentView;
