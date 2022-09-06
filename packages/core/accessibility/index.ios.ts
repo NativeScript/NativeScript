@@ -1,4 +1,5 @@
 import * as Application from '../application';
+import type { ViewBase } from '../ui/core/view-base';
 import type { View } from '../ui/core/view';
 import { notifyAccessibilityFocusState } from './accessibility-common';
 import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait } from './accessibility-types';
@@ -120,7 +121,7 @@ function ensureNativeClasses() {
 	});
 }
 
-export function setupAccessibleView(view: View): void {
+export function setupAccessibleView(view: Partial<ViewBase>): void {
 	const uiView = view.nativeViewProtected as UIView;
 	if (!uiView) {
 		return;

@@ -21,7 +21,7 @@ import { AndroidActivityBackPressedEventData, android as androidApp } from '../.
 import { Device } from '../../../platform';
 import lazy from '../../../utils/lazy';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty } from '../../../accessibility/accessibility-properties';
-import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, setupAccessibleView, isAccessibilityServiceEnabled, sendAccessibilityEvent, updateAccessibilityProperties, updateContentDescription, AccessibilityState } from '../../../accessibility';
+import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, isAccessibilityServiceEnabled, sendAccessibilityEvent, updateAccessibilityProperties, updateContentDescription, AccessibilityState } from '../../../accessibility';
 import * as Utils from '../../../utils';
 import { SDK_VERSION } from '../../../utils/constants';
 import { CSSShadow } from '../../styling/css-shadow';
@@ -319,20 +319,6 @@ export class View extends ViewCommon {
 	private _rootManager: androidx.fragment.app.FragmentManager;
 
 	nativeViewProtected: android.view.View;
-
-	constructor() {
-		super();
-
-		const weakRef = new WeakRef(this);
-		const handler = () => {
-			const owner = weakRef.get();
-			if (owner) {
-				setupAccessibleView(owner);
-				owner.off(View.loadedEvent, handler);
-			}
-		};
-		this.on(View.loadedEvent, handler);
-	}
 
 	// TODO: Implement unobserve that detach the touchListener.
 	_observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {

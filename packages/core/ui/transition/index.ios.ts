@@ -19,7 +19,7 @@ export class Transition {
 		return this._curve;
 	}
 
-	public animateIOSTransition(containerView: UIView, fromView: UIView, toView: UIView, operation: UINavigationControllerOperation, completion: (finished: boolean) => void): void {
+	public animateIOSTransition(transitionContext: UIViewControllerContextTransitioning, fromViewCtrl: UIViewController, toViewCtrl: UIViewController, operation: UINavigationControllerOperation): void {
 		throw new Error('Abstract method call');
 	}
 

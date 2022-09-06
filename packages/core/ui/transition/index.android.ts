@@ -16,7 +16,7 @@ export class Transition {
 	private _interpolator: android.view.animation.Interpolator;
 	private _id: number;
 
-	constructor(duration: number, curve: any) {
+	constructor(duration: number, curve?: any) {
 		this._duration = duration;
 		this._interpolator = curve ? _resolveAnimationCurve(curve) : _defaultInterpolator();
 		this._id = transitionId++;
@@ -30,7 +30,7 @@ export class Transition {
 		return this._interpolator;
 	}
 
-	public animateIOSTransition(containerView: any, fromView: any, toView: any, operation: any, completion: (finished: boolean) => void): void {
+	public animateIOSTransition(transitionContext: any, fromViewCtrl: any, toViewCtrl: any, operation: any): void {
 		throw new Error('Abstract method call');
 	}
 

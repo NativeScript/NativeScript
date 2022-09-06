@@ -14,8 +14,10 @@ export class SlideTransition extends Transition {
 		this._direction = direction;
 	}
 
-	public animateIOSTransition(containerView: UIView, fromView: UIView, toView: UIView, operation: UINavigationControllerOperation, completion: (finished: boolean) => void): void {
+	public animateIOSTransition(transitionContext: UIViewControllerContextTransitioning, fromViewCtrl: UIViewController, toViewCtrl: UIViewController, operation: UINavigationControllerOperation): void {
+		const toView = toViewCtrl.view;
 		const originalToViewTransform = toView.transform;
+		const fromView = fromViewCtrl.view;
 		const originalFromViewTransform = fromView.transform;
 
 		let fromViewEndTransform: CGAffineTransform;
@@ -46,10 +48,10 @@ export class SlideTransition extends Transition {
 
 		switch (operation) {
 			case UINavigationControllerOperation.Push:
-				containerView.insertSubviewAboveSubview(toView, fromView);
+				transitionContext.containerView.insertSubviewAboveSubview(toView, fromView);
 				break;
 			case UINavigationControllerOperation.Pop:
-				containerView.insertSubviewBelowSubview(toView, fromView);
+				transitionContext.containerView.insertSubviewBelowSubview(toView, fromView);
 				break;
 		}
 
@@ -65,7 +67,7 @@ export class SlideTransition extends Transition {
 			(finished: boolean) => {
 				toView.transform = originalToViewTransform;
 				fromView.transform = originalFromViewTransform;
-				completion(finished);
+				transitionContext.completeTransition(finished);
 			}
 		);
 	}

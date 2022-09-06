@@ -5,18 +5,6 @@ import { FadeTransition } from '../transition/fade-transition';
 
 import { Trace } from '../../trace';
 
-namespace UIViewControllerAnimatedTransitioningMethods {
-	const methodSignature = NSMethodSignature.signatureWithObjCTypes('v@:c');
-	const invocation = NSInvocation.invocationWithMethodSignature(methodSignature);
-	invocation.selector = 'completeTransition:';
-
-	export function completeTransition(didComplete: boolean) {
-		const didCompleteReference = new interop.Reference(interop.types.bool, didComplete);
-		invocation.setArgumentAtIndex(didCompleteReference, 2);
-		invocation.invokeWithTarget(this);
-	}
-}
-
 @NativeClass
 class AnimatedTransitioning extends NSObject implements UIViewControllerAnimatedTransitioning {
 	public static ObjCProtocols = [UIViewControllerAnimatedTransitioning];
@@ -37,9 +25,7 @@ class AnimatedTransitioning extends NSObject implements UIViewControllerAnimated
 		return impl;
 	}
 
-	public animateTransition(transitionContext: any): void {
-		const containerView = transitionContext.valueForKey('containerView');
-		const completion = UIViewControllerAnimatedTransitioningMethods.completeTransition.bind(transitionContext);
+	public animateTransition(transitionContext: UIViewControllerContextTransitioning): void {
 		switch (this._operation) {
 			case UINavigationControllerOperation.Push:
 				this._transitionType = 'push';
@@ -55,7 +41,7 @@ class AnimatedTransitioning extends NSObject implements UIViewControllerAnimated
 		if (Trace.isEnabled()) {
 			Trace.write(`START ${this._transition} ${this._transitionType}`, Trace.categories.Transition);
 		}
-		this._transition.animateIOSTransition(containerView, this._fromVC.view, this._toVC.view, this._operation, completion);
+		this._transition.animateIOSTransition(transitionContext, this._fromVC, this._toVC, this._operation);
 	}
 
 	public transitionDuration(transitionContext: UIViewControllerContextTransitioning): number {
@@ -85,7 +71,7 @@ export function _createIOSAnimatedTransitioning(navigationTransition: Navigation
 	} else if (navigationTransition.name) {
 		const name = navigationTransition.name.toLowerCase();
 		if (name.indexOf('slide') === 0) {
-			const direction = name.substr('slide'.length) || 'left'; //Extract the direction from the string
+			const direction = name.substring('slide'.length) || 'left'; //Extract the direction from the string
 			transition = new SlideTransition(direction, navigationTransition.duration, nativeCurve);
 		} else if (name === 'fade') {
 			transition = new FadeTransition(navigationTransition.duration, nativeCurve);
