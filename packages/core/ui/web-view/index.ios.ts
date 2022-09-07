@@ -4,7 +4,7 @@ import { profile } from '../../profiling';
 import { Trace } from '../../trace';
 export * from './web-view-common';
 import { knownFolders } from '../../file-system';
-import { booleanConverter } from 'ui/core/view-base';
+import { booleanConverter } from '../core/view-base';
 
 @NativeClass
 class WKNavigationDelegateImpl extends NSObject implements WKNavigationDelegate {
