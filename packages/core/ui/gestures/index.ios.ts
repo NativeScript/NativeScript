@@ -33,9 +33,10 @@ class UIGestureRecognizerDelegateImpl extends NSObject implements UIGestureRecog
 		if (gestureRecognizer instanceof UITapGestureRecognizer && otherGestureRecognizer instanceof UITapGestureRecognizer && otherGestureRecognizer.numberOfTapsRequired === 2) {
 			return true;
 		}
-		if (gestureRecognizer instanceof UITapGestureRecognizer && otherGestureRecognizer instanceof UILongPressGestureRecognizer) {
-			return true;
-		}
+		// disabled for now as it is broken
+		// if (gestureRecognizer instanceof UITapGestureRecognizer && otherGestureRecognizer instanceof UILongPressGestureRecognizer) {
+		// 	return true;
+		// }
 
 		return false;
 	}
