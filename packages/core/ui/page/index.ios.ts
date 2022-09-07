@@ -486,7 +486,7 @@ export class Page extends PageBase {
 
 	public _addViewToNativeVisualTree(child: View, atIndex: number): boolean {
 		// ActionBar is handled by the UINavigationController
-		if (child === this.actionBar) {
+		if (this.hasActionBar && child === this.actionBar) {
 			return true;
 		}
 
