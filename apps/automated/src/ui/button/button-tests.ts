@@ -3,7 +3,7 @@ import * as helper from '../../ui-helper';
 import { View, EventData, Button, Observable, Color, Page, FormattedString } from '@nativescript/core';
 import * as buttonTestsNative from './button-tests-native';
 import * as spanModule from '@nativescript/core/text/span';
-import { tapEvent} from '@nativescript/core/ui/button';
+import { tapEvent } from '@nativescript/core/ui/button';
 
 // >> button-require-others
 import { BindingOptions } from '@nativescript/core/ui/core/bindable';
@@ -419,7 +419,7 @@ export function test_Native_Background_Color_BorderRadius_Change() {
 		helper.waitUntilLayoutReady(view);
 		TKUnit.assertEqual(buttonTestsNative.getNativeBackgroundColor(view).hex, '#00FF00');
 
-		// view.className = '';
+		view.className = '';
 		view.className = 'colorfilter';
 		helper.waitUntilLayoutReady(view);
 		TKUnit.assertEqual(buttonTestsNative.getNativeBackgroundColor(view).hex, '#FF0000');

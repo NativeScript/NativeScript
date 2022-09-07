@@ -500,6 +500,8 @@ declare function objc_duplicateClass(original: typeof NSObject, name: string | i
 
 declare function objc_end_catch(): void;
 
+declare function objc_enumerateClasses(image: interop.Pointer | interop.Reference<any>, namePrefix: string | interop.Pointer | interop.Reference<any>, conformingTo: any /* Protocol */, subclassing: typeof NSObject, block: (p1: typeof NSObject, p2: interop.Pointer | interop.Reference<boolean>) => void): void;
+
 declare function objc_enumerationMutation(obj: any): void;
 
 declare function objc_exception_rethrow(): void;

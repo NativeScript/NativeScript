@@ -14,7 +14,6 @@ import { profile } from '../../profiling';
 import { Frame } from '../frame';
 import { layout, iOSNativeHelper } from '../../utils';
 import { Device } from '../../platform';
-import { Transparent } from 'color/known-colors';
 export * from './tab-view-common';
 
 const majorVersion = iOSNativeHelper.MajorVersion;

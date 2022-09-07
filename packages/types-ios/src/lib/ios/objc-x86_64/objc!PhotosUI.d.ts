@@ -16,13 +16,6 @@ declare var PHContentEditingController: {
 	prototype: PHContentEditingController;
 };
 
-declare class PHEditingExtensionContext extends NSExtensionContext {
-
-	static alloc(): PHEditingExtensionContext; // inherited from NSObject
-
-	static new(): PHEditingExtensionContext; // inherited from NSObject
-}
-
 declare const enum PHLivePhotoBadgeOptions {
 
 	OverContent = 1,
@@ -68,6 +61,8 @@ interface PHLivePhotoViewDelegate extends NSObjectProtocol {
 	livePhotoViewCanBeginPlaybackWithStyle?(livePhotoView: PHLivePhotoView, playbackStyle: PHLivePhotoViewPlaybackStyle): boolean;
 
 	livePhotoViewDidEndPlaybackWithStyle?(livePhotoView: PHLivePhotoView, playbackStyle: PHLivePhotoViewPlaybackStyle): void;
+
+	livePhotoViewExtraMinimumTouchDurationForTouchWithStyle?(livePhotoView: PHLivePhotoView, touch: UITouch, playbackStyle: PHLivePhotoViewPlaybackStyle): number;
 
 	livePhotoViewWillBeginPlaybackWithStyle?(livePhotoView: PHLivePhotoView, playbackStyle: PHLivePhotoViewPlaybackStyle): void;
 }
@@ -126,15 +121,37 @@ declare const enum PHPickerConfigurationSelection {
 
 declare class PHPickerFilter extends NSObject implements NSCopying {
 
+	static allFilterMatchingSubfilters(subfilters: NSArray<PHPickerFilter> | PHPickerFilter[]): PHPickerFilter;
+
 	static alloc(): PHPickerFilter; // inherited from NSObject
 
 	static anyFilterMatchingSubfilters(subfilters: NSArray<PHPickerFilter> | PHPickerFilter[]): PHPickerFilter;
 
 	static new(): PHPickerFilter; // inherited from NSObject
 
+	static notFilterOfSubfilter(subfilter: PHPickerFilter): PHPickerFilter;
+
+	static playbackStyleFilter(playbackStyle: PHAssetPlaybackStyle): PHPickerFilter;
+
+	static readonly burstsFilter: PHPickerFilter;
+
+	static readonly cinematicVideosFilter: PHPickerFilter;
+
+	static readonly depthEffectPhotosFilter: PHPickerFilter;
+
 	static readonly imagesFilter: PHPickerFilter;
 
 	static readonly livePhotosFilter: PHPickerFilter;
+
+	static readonly panoramasFilter: PHPickerFilter;
+
+	static readonly screenRecordingsFilter: PHPickerFilter;
+
+	static readonly screenshotsFilter: PHPickerFilter;
+
+	static readonly slomoVideosFilter: PHPickerFilter;
+
+	static readonly timelapseVideosFilter: PHPickerFilter;
 
 	static readonly videosFilter: PHPickerFilter;
 
@@ -164,7 +181,11 @@ declare class PHPickerViewController extends UIViewController {
 
 	constructor(o: { configuration: PHPickerConfiguration; });
 
+	deselectAssetsWithIdentifiers(identifiers: NSArray<string> | string[]): void;
+
 	initWithConfiguration(configuration: PHPickerConfiguration): this;
+
+	moveAssetWithIdentifierAfterAssetWithIdentifier(identifier: string, afterIdentifier: string): void;
 }
 
 interface PHPickerViewControllerDelegate extends NSObjectProtocol {

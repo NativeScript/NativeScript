@@ -148,7 +148,7 @@ export class ActionBar extends ActionBarBase {
 		if (value instanceof NavigationButton) {
 			this.navigationButton = value;
 		} else if (value instanceof ActionItem) {
-			this.actionItems.addItem(value);
+			this.actionItems?.addItem(value);
 		} else if (value instanceof View) {
 			this.titleView = value;
 		}
@@ -290,7 +290,7 @@ export class ActionBar extends ActionBarBase {
 	}
 
 	private populateMenuItems(navigationItem: UINavigationItem) {
-		const items = this.actionItems.getVisibleItems();
+		const items = this.actionItems?.getVisibleItems() ?? [];
 		const leftBarItems = NSMutableArray.new();
 		const rightBarItems = NSMutableArray.new();
 		for (let i = 0; i < items.length; i++) {
@@ -449,7 +449,7 @@ export class ActionBar extends ActionBarBase {
 			View.measureChild(this, this.titleView, UNSPECIFIED, UNSPECIFIED);
 		}
 
-		this.actionItems.getItems().forEach((actionItem) => {
+		this.actionItems?.getItems().forEach((actionItem) => {
 			const actionView = actionItem.actionView;
 			if (actionView) {
 				View.measureChild(this, actionView, UNSPECIFIED, UNSPECIFIED);
@@ -473,7 +473,7 @@ export class ActionBar extends ActionBarBase {
 			}
 		}
 
-		this.actionItems.getItems().forEach((actionItem) => {
+		this.actionItems?.getItems().forEach((actionItem) => {
 			const actionView = actionItem.actionView;
 			if (actionView && actionView.ios) {
 				const measuredWidth = actionView.getMeasuredWidth();

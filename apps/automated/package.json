@@ -11,7 +11,7 @@
     "nativescript-theme-core": "file:../../node_modules/nativescript-theme-core"
   },
   "devDependencies": {
-    "@nativescript/android": "~8.2.1",
+    "@nativescript/android": "~8.3.0",
     "@nativescript/ios": "~8.3.0",
     "@nativescript/webpack": "5.0.7",
     "typescript": "4.7.3"

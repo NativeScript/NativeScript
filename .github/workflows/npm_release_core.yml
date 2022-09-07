@@ -2,7 +2,7 @@ name: '@nativescript/core -> npm'
 
 on:
   push:
-    branches: [ 'master' ]
+    branches: [ 'main' ]
     paths:
       - 'packages/core/**'
   workflow_dispatch:

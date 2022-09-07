@@ -463,7 +463,7 @@ export class ListView extends ListViewBase {
 				cell.owner = new WeakRef(view);
 			} else if (cell.view !== view) {
 				this._removeContainer(cell);
-				(<UIView>cell.view.nativeViewProtected).removeFromSuperview();
+				(<UIView>cell.view?.nativeViewProtected)?.removeFromSuperview();
 				cell.owner = new WeakRef(view);
 			}
 

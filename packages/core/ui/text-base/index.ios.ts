@@ -200,7 +200,7 @@ export class TextBase extends TextBaseCommon {
 
 	[maxLinesProperty.setNative](value: CoreTypes.MaxLinesType) {
 		const nativeTextViewProtected = this.nativeTextViewProtected;
-		const numberOfLines = this.whiteSpace === 'normal' ? value : 1;
+		const numberOfLines = this.whiteSpace !== CoreTypes.WhiteSpace.nowrap ? value : 1;
 		if (nativeTextViewProtected instanceof UITextView) {
 			nativeTextViewProtected.textContainer.maximumNumberOfLines = numberOfLines;
 
@@ -374,7 +374,7 @@ export class TextBase extends TextBaseCommon {
 			this._setColor(UIColor.labelColor);
 		}
 	}
-	
+
 	createFormattedTextNative(value: FormattedString) {
 		return NativeScriptUtils.createMutableStringWithDetails(this.getFormattedStringDetails(value) as any);
 	}

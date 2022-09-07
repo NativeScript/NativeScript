@@ -1,4 +1,4 @@
-import { Font as FontBase, parseFontFamily, genericFontFamilies, FontWeight, FontWeightType } from './font-common';
+import { Font as FontBase, parseFontFamily, genericFontFamilies, FontStyleType, FontWeight, FontWeightType } from './font-common';
 import { Trace } from '../../trace';
 import * as application from '../../application';
 import * as fs from '../../file-system';
@@ -10,11 +10,11 @@ const typefaceCache = new Map<string, android.graphics.Typeface>();
 let appAssets: android.content.res.AssetManager;
 
 export class Font extends FontBase {
-	public static default = new Font(undefined, undefined, 'normal', 'normal');
+	public static default = new Font(undefined, undefined);
 
 	private _typeface: android.graphics.Typeface;
 
-	constructor(family: string, size: number, style: 'normal' | 'italic', weight: FontWeightType) {
+	constructor(family: string, size: number, style?: FontStyleType, weight?: FontWeightType) {
 		super(family, size, style, weight, 1);
 	}
 
@@ -22,7 +22,7 @@ export class Font extends FontBase {
 		return new Font(family, this.fontSize, this.fontStyle, this.fontWeight);
 	}
 
-	public withFontStyle(style: 'normal' | 'italic'): Font {
+	public withFontStyle(style: FontStyleType): Font {
 		return new Font(this.fontFamily, this.fontSize, style, this.fontWeight);
 	}
 

@@ -200,6 +200,8 @@ declare class NEDNSOverHTTPSSettings extends NEDNSSettings {
 
 	static new(): NEDNSOverHTTPSSettings; // inherited from NSObject
 
+	identityReference: NSData;
+
 	serverURL: NSURL;
 }
 
@@ -208,6 +210,8 @@ declare class NEDNSOverTLSSettings extends NEDNSSettings {
 	static alloc(): NEDNSOverTLSSettings; // inherited from NSObject
 
 	static new(): NEDNSOverTLSSettings; // inherited from NSObject
+
+	identityReference: NSData;
 
 	serverName: string;
 }
@@ -1680,12 +1684,57 @@ declare class NEVPNConnection extends NSObject {
 
 	readonly status: NEVPNStatus;
 
+	fetchLastDisconnectErrorWithCompletionHandler(handler: (p1: NSError) => void): void;
+
 	startVPNTunnelAndReturnError(): boolean;
 
 	startVPNTunnelWithOptionsAndReturnError(options: NSDictionary<string, NSObject>): boolean;
 
 	stopVPNTunnel(): void;
 }
+
+declare const enum NEVPNConnectionError {
+
+	Overslept = 1,
+
+	NoNetworkAvailable = 2,
+
+	UnrecoverableNetworkChange = 3,
+
+	ConfigurationFailed = 4,
+
+	ServerAddressResolutionFailed = 5,
+
+	ServerNotResponding = 6,
+
+	ServerDead = 7,
+
+	AuthenticationFailed = 8,
+
+	ClientCertificateInvalid = 9,
+
+	ClientCertificateNotYetValid = 10,
+
+	ClientCertificateExpired = 11,
+
+	PluginFailed = 12,
+
+	ConfigurationNotFound = 13,
+
+	PluginDisabled = 14,
+
+	NegotiationFailed = 15,
+
+	ServerDisconnected = 16,
+
+	ServerCertificateInvalid = 17,
+
+	ServerCertificateNotYetValid = 18,
+
+	ServerCertificateExpired = 19
+}
+
+declare var NEVPNConnectionErrorDomain: string;
 
 declare var NEVPNConnectionStartOptionPassword: string;
 
