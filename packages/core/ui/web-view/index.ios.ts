@@ -166,15 +166,16 @@ export class WebView extends WebViewBase {
 	_minimumZoomScale;
 	_zoomScale;
 
-	
 	get allowInlineMediaPlayback(): boolean {
 		return this._allowInlineMediaPlayback;
 	}
+
 	set allowInlineMediaPlayback(value: boolean) {
-		if (typeof value === 'string') {
-			value = booleanConverter(value);
-		}
-		this._allowInlineMediaPlayback = value;
+		// Note: can be set on the view markup,
+		// thus the converter usage (value could come in as string).
+		// Property.setNative should not be used because
+		// it should be set before nativeView is created
+		this._allowInlineMediaPlayback = booleanConverter(value);
 	}
 
 	createNativeView() {
