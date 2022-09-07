@@ -407,7 +407,9 @@ export class Page extends PageBase {
 	updateWithWillAppear(animated: boolean) {
 		// this method is important because it allows plugins to react to modal page close
 		// for example allowing updating status bar background color
-		this.actionBar.update();
+		if (this.hasActionBar) {
+			this.actionBar.update();
+		}
 		this.updateStatusBar();
 	}
 
@@ -446,7 +448,7 @@ export class Page extends PageBase {
 		const height = layout.getMeasureSpecSize(heightMeasureSpec);
 		const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
-		if (this.frame && this.frame._getNavBarVisible(this)) {
+		if (this.hasActionBar && this.frame && this.frame._getNavBarVisible(this)) {
 			const { width, height } = this.actionBar._getActualSize;
 			const widthSpec = layout.makeMeasureSpec(width, layout.EXACTLY);
 			const heightSpec = layout.makeMeasureSpec(height, layout.EXACTLY);
@@ -465,8 +467,10 @@ export class Page extends PageBase {
 	}
 
 	public onLayout(left: number, top: number, right: number, bottom: number) {
-		const { width: actionBarWidth, height: actionBarHeight } = this.actionBar._getActualSize;
-		View.layoutChild(this, this.actionBar, 0, 0, actionBarWidth, actionBarHeight);
+		if (this.hasActionBar) {
+			const { width: actionBarWidth, height: actionBarHeight } = this.actionBar._getActualSize;
+			View.layoutChild(this, this.actionBar, 0, 0, actionBarWidth, actionBarHeight);
+		}
 
 		const insets = this.getSafeAreaInsets();
 
@@ -518,7 +522,7 @@ export class Page extends PageBase {
 
 	public _removeViewFromNativeVisualTree(child: View): void {
 		// ActionBar is handled by the UINavigationController
-		if (child === this.actionBar) {
+		if (this.hasActionBar && child === this.actionBar) {
 			return;
 		}
 
@@ -587,7 +591,7 @@ export class Page extends PageBase {
 			return;
 		}
 
-		if (this.actionBar.accessibilityLabel || this.actionBar.title) {
+		if (this.hasActionBar && (this.actionBar.accessibilityLabel || this.actionBar.title)) {
 			UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, this.actionBar.nativeView);
 
 			return;
