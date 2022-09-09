@@ -121,20 +121,7 @@ function getParamsArray(value: string) {
 }
 
 function isExpression(expression: string): boolean {
-	if (expression.search(expressionSymbolsRegex) > -1) {
-		const parentsMatches = expression.match(parentsRegex);
-		if (parentsMatches) {
-			const restOfExpression = expression.substr(expression.indexOf(parentsMatches[0]) + parentsMatches[0].length);
-			// no more expression regognition symbols so it is safe for sourceProperty
-			if (!(restOfExpression.search(expressionSymbolsRegex) > -1)) {
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	return false;
+	return expression.search(expressionSymbolsRegex) > -1;
 }
 
 export function getBindingOptions(name: string, value: string): any {
