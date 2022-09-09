@@ -671,7 +671,7 @@ interface ChangeAccumulator {
 
 export class SelectorsMatch<T extends Node> implements ChangeAccumulator {
 	public changeMap: ChangeMap<T> = new Map<T, Changes>();
-	public selectors;
+	public selectors: SelectorCore[];
 
 	public addAttribute(node: T, attribute: string): void {
 		const deps: Changes = this.properties(node);
