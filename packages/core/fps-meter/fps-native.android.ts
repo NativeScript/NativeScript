@@ -7,13 +7,15 @@ export class FPSCallback implements definition.FPSCallback {
 
 	public running: boolean;
 	sdkVersion: number;
+	nativeFramesSupported: boolean;
 	constructor(onFrame: (currentTimeMillis: number) => void) {
 		this.running = false;
 		this.onFrame = onFrame;
 
 		this.sdkVersion = parseInt(Device.sdkVersion);
+		this.nativeFramesSupported = this.sdkVersion >= 24 && this._isNativeFramesSupported();
 
-		if (this.sdkVersion >= 24 && this._isNativeFramesSupported()) {
+		if (this.nativeFramesSupported) {
 			this.impl = (nanos: number) => {
 				this.handleFrame(nanos);
 			};
@@ -35,7 +37,7 @@ export class FPSCallback implements definition.FPSCallback {
 			return;
 		}
 
-		if (this.sdkVersion >= 24 && this._isNativeFramesSupported()) {
+		if (this.nativeFramesSupported) {
 			(global as any).__postFrameCallback(this.impl);
 		} else {
 			android.view.Choreographer.getInstance().postFrameCallback(this.impl as any);
@@ -49,7 +51,7 @@ export class FPSCallback implements definition.FPSCallback {
 			return;
 		}
 
-		if (this.sdkVersion >= 24 && this._isNativeFramesSupported()) {
+		if (this.nativeFramesSupported) {
 			(global as any).__removeFrameCallback(this.impl);
 		} else {
 			android.view.Choreographer.getInstance().removeFrameCallback(this.impl as any);
@@ -67,7 +69,7 @@ export class FPSCallback implements definition.FPSCallback {
 		this.onFrame(nanos / 1000000);
 		// add the FrameCallback instance again since it is automatically removed from the Choreographer
 
-		if (this.sdkVersion >= 24 && this._isNativeFramesSupported()) {
+		if (this.nativeFramesSupported) {
 			(global as any).__postFrameCallback(this.impl);
 		} else {
 			android.view.Choreographer.getInstance().postFrameCallback(this.impl as any);
