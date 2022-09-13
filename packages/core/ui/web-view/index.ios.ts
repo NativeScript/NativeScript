@@ -160,22 +160,22 @@ export class WebView extends WebViewBase {
 	private _delegate: WKNavigationDelegateImpl;
 	private _scrollDelegate: UIScrollViewDelegateImpl;
 	private _uiDelegate: WKUIDelegateImpl;
-	private _allowInlineMediaPlayback: boolean;
+	private _iosAllowInlineMediaPlayback: boolean;
 
 	_maximumZoomScale;
 	_minimumZoomScale;
 	_zoomScale;
 
-	get allowInlineMediaPlayback(): boolean {
-		return this._allowInlineMediaPlayback;
+	get iosAllowInlineMediaPlayback(): boolean {
+		return this._iosAllowInlineMediaPlayback;
 	}
 
-	set allowInlineMediaPlayback(value: boolean) {
+	set iosAllowInlineMediaPlayback(value: boolean) {
 		// Note: can be set on the view markup,
 		// thus the converter usage (value could come in as string).
 		// Property.setNative should not be used because
 		// it should be set before nativeView is created
-		this._allowInlineMediaPlayback = booleanConverter(value);
+		this._iosAllowInlineMediaPlayback = booleanConverter(value);
 	}
 
 	createNativeView() {
@@ -184,7 +184,7 @@ export class WebView extends WebViewBase {
 		const wkUController = WKUserContentController.new();
 		wkUController.addUserScript(wkUScript);
 		const configuration = WKWebViewConfiguration.new();
-		if (this.allowInlineMediaPlayback) {
+		if (this.iosAllowInlineMediaPlayback) {
 			configuration.allowsInlineMediaPlayback = true;
 			configuration.allowsPictureInPictureMediaPlayback = true;
 		}
