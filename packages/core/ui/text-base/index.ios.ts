@@ -241,12 +241,14 @@ export class TextBase extends TextBaseCommon {
 			return;
 		}
 
+		const letterSpacing = this.style.letterSpacing ? this.style.letterSpacing : 0;
+		const lineHeight = this.style.lineHeight ? this.style.lineHeight : 0;
 		if (this.formattedText) {
-			(<any>this.nativeTextViewProtected).nativeScriptSetFormattedTextDecorationAndTransform(this.getFormattedStringDetails(this.formattedText));
+			(<any>this.nativeTextViewProtected).nativeScriptSetFormattedTextDecorationAndTransformLetterSpacingLineHeight(this.getFormattedStringDetails(this.formattedText), letterSpacing, lineHeight);
 		} else {
 			// console.log('setTextDecorationAndTransform...')
 			const text = getTransformedText(isNullOrUndefined(this.text) ? '' : `${this.text}`, this.textTransform);
-			(<any>this.nativeTextViewProtected).nativeScriptSetTextDecorationAndTransformTextDecorationLetterSpacingLineHeight(text, this.style.textDecoration || '', this.style.letterSpacing !== 0 ? this.style.letterSpacing : 0, this.style.lineHeight ? this.style.lineHeight : 0);
+			(<any>this.nativeTextViewProtected).nativeScriptSetTextDecorationAndTransformTextDecorationLetterSpacingLineHeight(text, this.style.textDecoration || '', letterSpacing, lineHeight);
 
 			if (!this.style?.color && majorVersion >= 13 && UIColor.labelColor) {
 				this._setColor(UIColor.labelColor);
@@ -295,8 +297,6 @@ export class TextBase extends TextBaseCommon {
 			color: span.color ? span.color.ios : null,
 			backgroundColor: backgroundColor ? backgroundColor.ios : null,
 			textDecoration: getClosestPropertyValue(textDecorationProperty, span),
-			letterSpacing: this.letterSpacing || 0,
-			lineHeight: this.lineHeight || 0, //this.style?.lineHeight ? this.style.lineHeight : 0,
 			baselineOffset: this.getBaselineOffset(iosFont, span.style.verticalAlignment),
 			index,
 		};

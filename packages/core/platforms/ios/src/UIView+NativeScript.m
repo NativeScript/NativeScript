@@ -75,9 +75,7 @@
     }
 }
 
--(void)nativeScriptSetFormattedTextDecorationAndTransform:(NSDictionary*)details {
-    CGFloat letterSpacing = [[details valueForKey:@"letterSpacing"] doubleValue];
-    CGFloat lineHeight = [[details valueForKey:@"lineHeight"] doubleValue];
+-(void)nativeScriptSetFormattedTextDecorationAndTransform:(NSDictionary*)details letterSpacing:(CGFloat)letterSpacing lineHeight:(CGFloat)lineHeight {
     NSMutableAttributedString *attrText = [NativeScriptUtils createMutableStringWithDetails:details];
     if (letterSpacing != 0) {
         NSNumber *kern = [NSNumber numberWithDouble:letterSpacing * ((UITextView*)self).font.pointSize];
