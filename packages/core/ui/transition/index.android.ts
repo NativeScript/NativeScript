@@ -42,3 +42,5 @@ export class Transition {
 		return `Transition@${this._id}`;
 	}
 }
+
+export class CustomTransitionModal extends Transition {}

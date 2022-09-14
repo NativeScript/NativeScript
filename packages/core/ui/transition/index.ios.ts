@@ -31,3 +31,26 @@ export class Transition {
 		return `Transition@${this._id}`;
 	}
 }
+
+export class CustomTransitionModal extends Transition {
+	// Extend this class to create your own
+	dismissedController?(dismissed: UIViewController): UIViewControllerAnimatedTransitioning {
+		return null;
+	}
+
+	presentedController?(presented: UIViewController, presenting: UIViewController, source: UIViewController): UIViewControllerAnimatedTransitioning {
+		return null;
+	}
+
+	interactionDismiss?(animator: UIViewControllerAnimatedTransitioning): UIViewControllerInteractiveTransitioning {
+		return null;
+	}
+
+	interactionPresented?(animator: UIViewControllerAnimatedTransitioning): UIViewControllerInteractiveTransitioning {
+		return null;
+	}
+
+	presentedViewController?(presented: UIViewController, presenting: UIViewController, source: UIViewController): UIPresentationController {
+		return null;
+	}
+}

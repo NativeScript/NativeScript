@@ -8,6 +8,7 @@ import { Page } from '../../page';
 import { Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from '../../layouts/flexbox-layout';
 import { Length } from '../../styling/style-properties';
 import { DOMNode } from '../../../debugger/dom-node';
+import type { CustomTransitionModal } from '../../transition';
 
 /**
  * Iterates through all child views (via visual tree) and executes a function.
@@ -42,6 +43,13 @@ export function getViewById(view: ViewBase, id: string): ViewBase;
  */
 export function getViewByDomId(view: ViewBase, domId: number): ViewBase;
 
+export interface ModalTransition {
+	name?: string;
+	instance?: CustomTransitionModal;
+	duration?: number;
+	curve?: any;
+}
+
 export interface ShowModalOptions {
 	/**
 	 * Any context you want to pass to the modally shown view. This same context will be available in the arguments of the shownModally event handler.
@@ -67,6 +75,11 @@ export interface ShowModalOptions {
 	 * An optional parameter specifying whether to stretch the modal view when not in full-screen mode.
 	 */
 	stretched?: boolean;
+
+	/**
+	 * An optional custom transition effect
+	 */
+	transition?: ModalTransition;
 
 	/**
 	 * An optional parameter that specify options specific to iOS as an object.

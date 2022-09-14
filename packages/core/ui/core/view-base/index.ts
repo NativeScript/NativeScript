@@ -10,6 +10,7 @@ import { Trace } from '../../../trace';
 import { Observable, PropertyChangeData, WrappedValue } from '../../../data/observable';
 import { Style } from '../../styling/style';
 import { paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../../styling/style-properties';
+import type { CustomTransitionModal } from '../../transition';
 
 // TODO: Remove this import!
 import { getClass } from '../../../utils/types';
@@ -37,6 +38,13 @@ function ensureStyleScopeModule() {
 
 const defaultBindingSource = {};
 
+export interface ModalTransition {
+	name?: string;
+	instance?: CustomTransitionModal;
+	duration?: number;
+	curve?: any;
+}
+
 export interface ShowModalOptions {
 	/**
 	 * Any context you want to pass to the modally shown view. This same context will be available in the arguments of the shownModally event handler.
@@ -62,6 +70,11 @@ export interface ShowModalOptions {
 	 * An optional parameter specifying whether to stretch the modal view when not in full-screen mode.
 	 */
 	stretched?: boolean;
+
+	/**
+	 * An optional custom transition effect
+	 */
+	transition?: ModalTransition;
 
 	/**
 	 * An optional parameter that specify options specific to iOS as an object.
