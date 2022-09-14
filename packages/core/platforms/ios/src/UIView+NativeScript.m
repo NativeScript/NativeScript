@@ -92,6 +92,7 @@
         if ([self isKindOfClass:[UIButton class]]) {
             paragraphStyle.alignment = ((UIButton*)self).titleLabel.textAlignment;
         } else {
+            // Paragraph alignment is also important for tappable spans as NSTextContainer takes it into account
             paragraphStyle.alignment = ((UILabel*)self).textAlignment;
         }
         
@@ -103,9 +104,15 @@
             0,
             attrText.length
         }];
-    } else if ([self isKindOfClass:[UITextView class]]) {
+    } else {
         NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
-        paragraphStyle.alignment = ((UITextView*)self).textAlignment;
+
+        if ([self isKindOfClass:[UITextView class]]) {
+            paragraphStyle.alignment = ((UITextView*)self).textAlignment;
+        } else if ([self isKindOfClass:[UILabel class]]) {
+            // It's important to set paragraph alignment for link tap to work on multi-line spans as NSTextContainer takes it into account
+            paragraphStyle.alignment = ((UILabel*)self).textAlignment;
+        }
         [attrText addAttribute:NSParagraphStyleAttributeName value:paragraphStyle range:(NSRange){
             0,
             attrText.length
