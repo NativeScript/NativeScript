@@ -37,11 +37,11 @@ class UILabelClickHandlerImpl extends NSObject {
 			const label = <UILabel>owner.nativeTextViewProtected;
 
 			let offsetXMultiplier: number;
-			switch (label.textAlignment) {
-				case NSTextAlignment.Center:
+			switch (owner.textAlignment) {
+				case 'center':
 					offsetXMultiplier = 0.5;
 					break;
-				case NSTextAlignment.Right:
+				case 'right':
 					offsetXMultiplier = 1.0;
 					break;
 				default:
