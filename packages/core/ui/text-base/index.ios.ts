@@ -33,9 +33,9 @@ class UILabelClickHandlerImpl extends NSObject {
 	public linkTap(tapGesture: UITapGestureRecognizer) {
 		const owner = this._owner.get();
 		if (owner) {
-			// https://stackoverflow.com/a/35789589
 			const label = <UILabel>owner.nativeTextViewProtected;
 
+			// This offset along with setting paragraph style alignment will achieve perfect horizontal alignment for NSTextContainer
 			let offsetXMultiplier: number;
 			switch (owner.textAlignment) {
 				case 'center':
