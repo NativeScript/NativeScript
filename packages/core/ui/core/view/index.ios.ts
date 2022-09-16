@@ -913,7 +913,9 @@ export class View extends ViewCommon implements ViewDefinition {
 
 	private _setupAdaptiveControllerDelegate(controller: UIViewController) {
 		this._adaptivePresentationDelegate = IOSHelper.UIAdaptivePresentationControllerDelegateImp.initWithOwnerAndCallback(new WeakRef(this), this._closeModalCallback);
-		controller.presentationController.delegate = <UIAdaptivePresentationControllerDelegate>this._adaptivePresentationDelegate;
+		if (controller?.presentationController) {
+			controller.presentationController.delegate = <UIAdaptivePresentationControllerDelegate>this._adaptivePresentationDelegate;
+		}
 	}
 }
 View.prototype._nativeBackgroundState = 'unset';
