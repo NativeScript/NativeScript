@@ -303,7 +303,7 @@ export class Observable implements ObservableDefinition {
 			}
 
 			// This ensures errors thrown inside asynchronous functions do not get swallowed
-			if (call instanceof Promise) {
+			if (call && call instanceof Promise) {
 				call.catch((err) => {
 					console.error(err);
 				});
