@@ -295,16 +295,16 @@ export class Observable implements ObservableDefinition {
 				observers.splice(i, 1);
 			}
 
-			let call;
+			let returnValue;
 			if (entry.thisArg) {
-				call = entry.callback.apply(entry.thisArg, [data]);
+				returnValue = entry.callback.apply(entry.thisArg, [data]);
 			} else {
-				call = entry.callback(data);
+				returnValue = entry.callback(data);
 			}
 
 			// This ensures errors thrown inside asynchronous functions do not get swallowed
-			if (call && call instanceof Promise) {
-				call.catch((err) => {
+			if (returnValue && returnValue instanceof Promise) {
+				returnValue.catch((err) => {
 					console.error(err);
 				});
 			}
