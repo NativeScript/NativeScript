@@ -76,6 +76,9 @@
     "**/*": [
       "nx format:write --files"
     ]
+  },
+  "resolutions": {
+    "tslib": "2.4.0"
   }
 }
 
