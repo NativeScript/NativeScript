@@ -214,15 +214,21 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 	}
 	[autocorrectProperty.setNative](value: boolean | number) {
 		let newValue: UITextAutocorrectionType;
+		let spelling: UITextSpellCheckingType;
+
 		if (typeof value === 'number') {
 			newValue = UITextAutocorrectionType.Default;
+			spelling = UITextSpellCheckingType.Default;
 		} else if (value) {
 			newValue = UITextAutocorrectionType.Yes;
+			spelling = UITextSpellCheckingType.No;
 		} else {
 			newValue = UITextAutocorrectionType.No;
+			spelling = UITextSpellCheckingType.No;
 		}
 
 		this.nativeTextViewProtected.autocorrectionType = newValue;
+		this.nativeTextViewProtected.spellCheckingType = spelling;
 	}
 	public setSelection(start: number, stop?: number) {
 		const view = this.nativeTextViewProtected;
