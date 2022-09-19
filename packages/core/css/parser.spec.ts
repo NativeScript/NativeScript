@@ -1,10 +1,10 @@
-import { assert } from 'chai';
-import { Color } from '@nativescript/core';
-import { parseURL, parseColor, parsePercentageOrLength, parseBackgroundPosition, parseBackground, parseSelector, AttributeSelectorTest } from '@nativescript/core/css/parser';
-import { CSS3Parser, TokenObjectType } from '@nativescript/core/css/CSS3Parser';
-import { CSSNativeScript } from '@nativescript/core/css/CSSNativeScript';
+import { Color } from '../color/color-common';
+import { parseURL, parseColor, parsePercentageOrLength, parseBackgroundPosition, parseBackground, parseSelector, AttributeSelectorTest } from './parser';
+import { CSS3Parser, TokenObjectType } from './CSS3Parser';
+import { CSSNativeScript } from './CSSNativeScript';
 
 import * as fs from 'fs';
+import * as path from 'path';
 import * as shadyCss from 'shady-css-parser';
 import * as reworkCss from 'css';
 
@@ -12,6 +12,7 @@ const parseCss: any = require('parse-css');
 const gonzales: any = require('gonzales');
 const parserlib: any = require('parserlib');
 const csstree: any = require('css-tree');
+const testingToolsDir = path.resolve(__dirname, '../../../tools/testing');
 
 describe('css', () => {
 	describe('parser', () => {
@@ -21,12 +22,12 @@ describe('css', () => {
 			if (arguments.length === 3) {
 				it(`${lastIndexOrExpected ? 'can parse ' : 'can not parse '}"${value}"`, () => {
 					const result = parse(value);
-					assert.deepEqual(result, lastIndexOrExpected);
+					expect(result).toStrictEqual(lastIndexOrExpected);
 				});
 			} else {
 				it(`${expected ? 'can parse ' : 'can not parse '}"${value}" starting at index ${lastIndexOrExpected}`, () => {
 					const result = parse(value, <number>lastIndexOrExpected);
-					assert.deepEqual(result, expected);
+					expect(result).toStrictEqual(expected);
 				});
 			}
 		}
@@ -42,13 +43,13 @@ describe('css', () => {
 			describe('color', () => {
 				test(parseColor, '  #369 ', { start: 0, end: 7, value: new Color(0xff336699) });
 				test(parseColor, '  #456789 ', { start: 0, end: 10, value: new Color(0xff456789) });
-				test(parseColor, '  #45678985 ', { start: 0, end: 12, value: new Color(0x45678985) });
+				test(parseColor, '  #45678985 ', { start: 0, end: 12, value: new Color(0x85456789) });
 				test(parseColor, '  rgb(255, 8, 128) ', { start: 0, end: 18, value: new Color(0xffff0880) });
-				test(parseColor, '  rgb(255 8 128 / .5) ', { start: 0, end: 22, value: new Color(0x80ff0880) });
+				test(parseColor, '  rgb(255 8 128 / .5) ', { start: 0, end: 21, value: new Color(0x80ff0880) });
 				test(parseColor, '  rgb(255 8 128/0.5)', { start: 0, end: 20, value: new Color(0x80ff0880) });
 				test(parseColor, '  rgba(255, 8, 128, 0.5) ', { start: 0, end: 24, value: new Color(0x80ff0880) });
-				test(parseColor, '  hsl(330.9, 100%, 51.6%) ', { start: 0, end: 25, value: new Color(0xffff0880) });
-				test(parseColor, '  hsla(330.9, 100%, 51.6%, 0.5) ', { start: 0, end: 31, value: new Color(0x80ff0880) });
+				test(parseColor, '  hsl(330.9, 100%, 51.6%) ', { start: 0, end: 25, value: new Color('hsl(330.9, 100%, 51.6%)') });
+				test(parseColor, '  hsla(330.9, 100%, 51.6%, 0.5) ', { start: 0, end: 31, value: new Color('hsla(330.9, 100%, 51.6%, 0.5)') });
 				test(parseColor, '#FF0000 url(lucky.gif)', 8, null);
 				test(parseColor, 'url(lucky.gif) #FF0000 repeat', 15, { start: 15, end: 23, value: new Color(0xffff0000) });
 			});
@@ -90,13 +91,13 @@ describe('css', () => {
 				test(parseBackgroundPosition, 'top 100% left 25%', { start: 0, end: 17, value: { x: { align: 'left', offset: { value: 0.25, unit: '%' } }, y: { align: 'top', offset: { value: 1, unit: '%' } } } });
 			});
 			describe('background', () => {
-				test(parseBackground, '   #996633  ', { start: 0, end: 12, value: { color: 0xff996633 } });
-				test(parseBackground, '  #00ff00 url("smiley.gif") repeat-y ', { start: 0, end: 37, value: { color: 0xff00ff00, image: 'smiley.gif', repeat: 'repeat-y' } });
+				test(parseBackground, '   #996633  ', { start: 0, end: 12, value: { color: new Color('#996633') } });
+				test(parseBackground, '  #00ff00 url("smiley.gif") repeat-y ', { start: 0, end: 37, value: { color: new Color('#00ff00'), image: 'smiley.gif', repeat: 'repeat-y' } });
 				test(parseBackground, '   url(smiley.gif)  no-repeat  top 50% left 100% #00ff00', {
 					start: 0,
 					end: 56,
 					value: {
-						color: 0xff00ff00,
+						color: new Color('#00ff00'),
 						image: 'smiley.gif',
 						repeat: 'no-repeat',
 						position: {
@@ -110,7 +111,7 @@ describe('css', () => {
 					start: 0,
 					end: 70,
 					value: {
-						color: 0xff00ff00,
+						color: new Color('#00ff00'),
 						image: 'smiley.gif',
 						repeat: 'no-repeat',
 						position: {
@@ -141,13 +142,13 @@ describe('css', () => {
 						},
 					},
 				});
-				test(parseBackground, 'linear-gradient(0deg, blue, green 40%, red)', {
+				test(parseBackground, 'linear-gradient(0deg, #333, #999 40%, #888)', {
 					start: 0,
 					end: 43,
 					value: {
 						image: {
 							angle: (Math.PI * 0) / 4,
-							colors: [{ color: new Color('blue') }, { color: new Color('green'), offset: { value: 0.4, unit: '%' } }, { color: new Color('red') }],
+							colors: [{ color: new Color('#333') }, { color: new Color('#999'), offset: { value: 0.4, unit: '%' } }, { color: new Color('#888') }],
 						},
 					},
 				});
@@ -273,9 +274,11 @@ describe('css', () => {
 			let themeCoreLightIos: string;
 			let whatIsNewIos: string;
 
-			before('Read the core.light.css file', () => {
-				themeCoreLightIos = fs.readFileSync(`${__dirname}/assets/core.light.css`).toString();
-				whatIsNewIos = fs.readFileSync(`${__dirname}/assets/what-is-new.ios.css`).toString();
+			beforeEach(() => {
+				const themeCoreFile = path.resolve(testingToolsDir, 'assets/core.light.css');
+				themeCoreLightIos = fs.readFileSync(themeCoreFile).toString();
+				const whatIsNewFile = path.resolve(testingToolsDir, 'assets/what-is-new.ios.css');
+				whatIsNewIos = fs.readFileSync(whatIsNewFile).toString();
 			});
 
 			describe('tokenizer', () => {
@@ -301,17 +304,17 @@ describe('css', () => {
 					const lastIndex = Math.min(original.length, roundtrip.length);
 					for (let i = 0; i < lastIndex; i++) {
 						if (original[i] !== roundtrip[i]) {
-							assert.equal(roundtrip.substr(i, 50), original.substr(i, 50), 'Round-tripped CSS string differ at index: ' + i);
+							expect(roundtrip.substring(i, 50)).toBe(original.substring(i, 50));
 						}
 					}
 
-					assert.equal(roundtrip.length, original.length, 'Expected round-tripped string lengths to match.');
+					expect(roundtrip.length).toBe(original.length);
 				});
 
 				it('test what-is-new.ios.css from nativescript-marketplace-demo', () => {
 					const parser = new CSS3Parser(whatIsNewIos);
 					const tokens = parser.tokenize();
-					assert.deepEqual(tokens, [
+					expect(tokens).toStrictEqual([
 						{ type: TokenObjectType.atKeyword, text: 'import' },
 						' ',
 						{ type: TokenObjectType.url, text: "url('~/views/what-is-new-common.css')" },
@@ -423,55 +426,48 @@ describe('css', () => {
 					const parser = new CSS3Parser('.btn-primary{border-color:rgba(255,0,0,0)}');
 					const stylesheet = parser.parseAStylesheet();
 
-					assert.deepEqual(
-						stylesheet,
-						{
-							rules: [
-								{
-									type: 'qualified-rule',
-									prelude: [
-										{ type: 2, text: '.' },
-										{ type: 6, text: 'btn-primary' },
-									],
-									block: { type: 9, text: '{border-color:rgba(255,0,0,0)}', associatedToken: '{', values: [{ type: 6, text: 'border-color' }, ':', { type: 14, name: 'rgba', text: 'rgba(255,0,0,0)', components: [{ type: 3, text: '255' }, ',', { type: 3, text: '0' }, ',', { type: 3, text: '0' }, ',', { type: 3, text: '0' }] }] },
-								},
-							],
-						},
-						"NativeScript parsed AST doesn't match."
-					);
+					expect(stylesheet).toStrictEqual({
+						rules: [
+							{
+								type: 'qualified-rule',
+								prelude: [
+									{ type: 2, text: '.' },
+									{ type: 6, text: 'btn-primary' },
+								],
+								block: { type: 9, text: '{border-color:rgba(255,0,0,0)}', associatedToken: '{', values: [{ type: 6, text: 'border-color' }, ':', { type: 14, name: 'rgba', text: 'rgba(255,0,0,0)', components: [{ type: 3, text: '255' }, ',', { type: 3, text: '0' }, ',', { type: 3, text: '0' }, ',', { type: 3, text: '0' }] }] },
+							},
+						],
+					});
 
 					const cssToNS = new CSSNativeScript();
 					const nativescriptAst = cssToNS.parseStylesheet(stylesheet);
 
-					assert.deepEqual(
-						nativescriptAst,
-						{
-							type: 'stylesheet',
-							stylesheet: {
-								rules: [
-									{
-										type: 'rule',
-										selectors: ['.btn-primary'],
-										declarations: [
-											{
-												type: 'declaration',
-												property: 'border-color',
-												value: 'rgba(255,0,0,0)',
-											},
-										],
-									},
-								],
-							},
+					expect(nativescriptAst).toStrictEqual({
+						type: 'stylesheet',
+						stylesheet: {
+							rules: [
+								{
+									type: 'rule',
+									selectors: ['.btn-primary'],
+									declarations: [
+										{
+											type: 'declaration',
+											property: 'border-color',
+											value: 'rgba(255,0,0,0)',
+										},
+									],
+								},
+							],
 						},
-						"NativeScript AST mapped to rework doesn't match."
-					);
+					});
 				});
 			});
 
 			it('serialization', () => {
+				const outReworkFile = path.resolve(testingToolsDir, 'out/rework.css.json');
 				const reworkAst = reworkCss.parse(themeCoreLightIos, { source: 'nativescript-theme-core/css/core.light.css' });
 				fs.writeFileSync(
-					'css/out/rework.css.json',
+					outReworkFile,
 					JSON.stringify(reworkAst, (k, v) => (k === 'position' ? undefined : v), '  ')
 				);
 
@@ -480,7 +476,8 @@ describe('css', () => {
 				const cssToNS = new CSSNativeScript();
 				const nativescriptAst = cssToNS.parseStylesheet(nativescriptStylesheet);
 
-				fs.writeFileSync('css/out/nativescript.css.json', JSON.stringify(nativescriptAst, null, '  '));
+				const outNsCssFile = path.resolve(testingToolsDir, 'out/nativescript.css.json');
+				fs.writeFileSync(outNsCssFile, JSON.stringify(nativescriptAst, null, '  '));
 			});
 
 			it.skip('our parser is fast (this test is flaky, gc, opts.)', () => {
@@ -496,14 +493,14 @@ describe('css', () => {
 					for (let i = 0; i < themeCoreLightIos.length; i++) {
 						count += themeCoreLightIos.charCodeAt(i);
 					}
-					assert.equal(count, 1218711);
+					expect(count).toBe(1218711);
 				});
 				const charByCharDuration = trapDuration(() => {
 					let char;
 					for (let i = 0; i < themeCoreLightIos.length; i++) {
 						char = themeCoreLightIos.charAt(i);
 					}
-					assert.equal(char, '\n');
+					expect(char).toBe('\n');
 				});
 				const compareCharIfDuration = trapDuration(() => {
 					let char;
@@ -514,7 +511,7 @@ describe('css', () => {
 							c++;
 						}
 					}
-					assert.equal(c, 8774);
+					expect(c).toBe(8774);
 				});
 				const compareCharRegEx = /[a-zA-Z_]/;
 				const compareCharRegExDuration = trapDuration(() => {
@@ -526,14 +523,14 @@ describe('css', () => {
 							c++;
 						}
 					}
-					assert.equal(c, 8774);
+					expect(c).toBe(8774);
 				});
 				const indexerDuration = trapDuration(() => {
 					let char;
 					for (let i = 0; i < themeCoreLightIos.length; i++) {
 						char = themeCoreLightIos[i];
 					}
-					assert.equal(char, '\n');
+					expect(char).toBe('\n');
 				});
 				const reworkDuration = trapDuration(() => {
 					const ast = reworkCss.parse(themeCoreLightIos, { source: 'nativescript-theme-core/css/core.light.css' });
@@ -571,8 +568,8 @@ describe('css', () => {
 				});
 				console.log(`          * Baseline perf: .charCodeAt: ${charCodeByCharCodeDuration}ms. .charAt: ${charByCharDuration}ms. []:${indexerDuration}ms. compareCharIf: ${compareCharIfDuration} compareCharRegEx: ${compareCharRegExDuration}`);
 				console.log(`          * Parsers perf: rework: ${reworkDuration}ms. shady: ${shadyDuration}ms. parse-css: ${parseCssDuration}ms. gonzalesDuration: ${gonzalesDuration} parserlib: ${parserlibDuration} csstree: ${csstreeDuration} nativescript-parse: ${nativescriptParseDuration}ms. nativescriptToReworkAst: ${nativescriptToReworkAstDuration}`);
-				assert.isAtMost(nativescriptParseDuration, reworkDuration / 3);
-				assert.isAtMost(nativescriptParseDuration, shadyDuration / 1.5);
+				expect(nativescriptParseDuration <= reworkDuration / 3).toBeTruthy();
+				expect(nativescriptParseDuration <= shadyDuration / 1.5).toBeTruthy();
 			});
 		});
 	});
