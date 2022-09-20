@@ -93,11 +93,7 @@ export class ActionBar extends ActionBarBase {
 		}
 
 		const viewController = <UIViewController>page.ios;
-		if (viewController.navigationController !== null) {
-			return viewController.navigationController.navigationBar;
-		}
-
-		return null;
+		return viewController?.navigationController?.navigationBar;
 	}
 
 	[accessibilityValueProperty.setNative](value: string): void {
