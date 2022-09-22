@@ -221,7 +221,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 			spelling = UITextSpellCheckingType.Default;
 		} else if (value) {
 			newValue = UITextAutocorrectionType.Yes;
-			spelling = UITextSpellCheckingType.No;
+			spelling = UITextSpellCheckingType.Yes;
 		} else {
 			newValue = UITextAutocorrectionType.No;
 			spelling = UITextSpellCheckingType.No;
