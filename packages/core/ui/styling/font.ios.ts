@@ -38,33 +38,33 @@ function getUIFontCached(fontDescriptor: FontDescriptor) {
 }
 
 export class Font extends FontBase {
-	public static default = new Font(undefined, undefined);
+	static default = new Font(undefined, undefined);
 
 	constructor(family: string, size: number, style?: FontStyleType, weight?: FontWeightType, scale?: number) {
 		super(family, size, style, weight, scale);
 	}
 
-	public withFontFamily(family: string): Font {
+	withFontFamily(family: string): Font {
 		return new Font(family, this.fontSize, this.fontStyle, this.fontWeight, this.fontScale);
 	}
 
-	public withFontStyle(style: FontStyleType): Font {
+	withFontStyle(style: FontStyleType): Font {
 		return new Font(this.fontFamily, this.fontSize, style, this.fontWeight, this.fontScale);
 	}
 
-	public withFontWeight(weight: FontWeightType): Font {
+	withFontWeight(weight: FontWeightType): Font {
 		return new Font(this.fontFamily, this.fontSize, this.fontStyle, weight, this.fontScale);
 	}
 
-	public withFontSize(size: number): Font {
+	withFontSize(size: number): Font {
 		return new Font(this.fontFamily, size, this.fontStyle, this.fontWeight, this.fontScale);
 	}
 
-	public withFontScale(scale: number): Font {
+	withFontScale(scale: number): Font {
 		return new Font(this.fontFamily, this.fontSize, this.fontStyle, this.fontWeight, scale);
 	}
 
-	public getUIFont(defaultFont: UIFont): UIFont {
+	getUIFont(defaultFont: UIFont): UIFont {
 		return getUIFontCached({
 			fontFamily: parseFontFamily(this.fontFamily),
 			fontSize: this.fontSize || defaultFont.pointSize,
@@ -74,7 +74,7 @@ export class Font extends FontBase {
 		});
 	}
 
-	public getAndroidTypeface(): android.graphics.Typeface {
+	getAndroidTypeface(): android.graphics.Typeface {
 		return undefined;
 	}
 }

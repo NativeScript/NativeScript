@@ -4,7 +4,7 @@ import { Style } from '../styling/style';
 import { Transformation, TransformationValue, TransformFunctionsInfo } from '../animation';
 
 import { Color } from '../../color';
-import { Font, parseFont, FontStyle, FontWeight } from '../../ui/styling/font';
+import { Font, parseFont, FontStyle, FontStyleType, FontWeight, FontWeightType } from '../../ui/styling/font';
 import { layout, hasDuplicates } from '../../utils';
 import { Background } from '../../ui/styling/background';
 

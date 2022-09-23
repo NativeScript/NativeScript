@@ -1,8 +1,7 @@
-import { Font as FontDefinition } from './font';
-import { ParsedFont } from './font-interfaces';
 import { makeValidator, makeParser } from '../core/properties';
-
-export * from './font-interfaces';
+import { Font as FontDefinition } from './font';
+import { ParsedFont, FontStyleType, FontWeightType } from './font-interfaces';
+export { FontStyle, FontStyleType, FontWeight, FontWeightType, ParsedFont } from './font-interfaces';
 
 export abstract class Font implements FontDefinition {
 	public static default = undefined;
@@ -47,7 +46,6 @@ export abstract class Font implements FontDefinition {
 	}
 }
 
-export type FontStyleType = 'normal' | 'italic';
 export namespace FontStyle {
 	export const NORMAL = 'normal';
 	export const ITALIC = 'italic';
@@ -55,7 +53,6 @@ export namespace FontStyle {
 	export const parse = makeParser<FontStyleType>(isValid);
 }
 
-export type FontWeightType = '100' | '200' | '300' | 'normal' | '400' | '500' | '600' | 'bold' | '700' | '800' | '900' | number;
 export namespace FontWeight {
 	export const THIN = '100';
 	export const EXTRA_LIGHT = '200';

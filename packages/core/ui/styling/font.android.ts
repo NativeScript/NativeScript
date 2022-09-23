@@ -11,7 +11,7 @@ const typefaceCache = new Map<string, android.graphics.Typeface>();
 let appAssets: android.content.res.AssetManager;
 
 export class Font extends FontBase {
-	public static default = new Font(undefined, undefined);
+	static default = new Font(undefined, undefined);
 
 	private _typeface: android.graphics.Typeface;
 
@@ -19,27 +19,27 @@ export class Font extends FontBase {
 		super(family, size, style, weight, 1);
 	}
 
-	public withFontFamily(family: string): Font {
+	withFontFamily(family: string): Font {
 		return new Font(family, this.fontSize, this.fontStyle, this.fontWeight);
 	}
 
-	public withFontStyle(style: FontStyleType): Font {
+	withFontStyle(style: FontStyleType): Font {
 		return new Font(this.fontFamily, this.fontSize, style, this.fontWeight);
 	}
 
-	public withFontWeight(weight: FontWeightType): Font {
+	withFontWeight(weight: FontWeightType): Font {
 		return new Font(this.fontFamily, this.fontSize, this.fontStyle, weight);
 	}
 
-	public withFontSize(size: number): Font {
+	withFontSize(size: number): Font {
 		return new Font(this.fontFamily, size, this.fontStyle, this.fontWeight);
 	}
 
-	public withFontScale(scale: number): Font {
+	withFontScale(scale: number): Font {
 		return new Font(this.fontFamily, this.fontSize, this.fontStyle, this.fontWeight);
 	}
 
-	public getAndroidTypeface(): android.graphics.Typeface {
+	getAndroidTypeface(): android.graphics.Typeface {
 		if (!this._typeface) {
 			this._typeface = createTypeface(this);
 		}
@@ -47,7 +47,7 @@ export class Font extends FontBase {
 		return this._typeface;
 	}
 
-	public getUIFont(defaultFont: UIFont): UIFont {
+	getUIFont(defaultFont: UIFont): UIFont {
 		return undefined;
 	}
 }
