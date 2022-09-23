@@ -1,3 +1,14 @@
+## [8.3.5](https://github.com/NativeScript/NativeScript/compare/8.3.4-core...8.3.5) (2022-09-23)
+
+
+### Bug Fixes
+
+* **animations:** error handling ([df31b2a](https://github.com/NativeScript/NativeScript/commit/df31b2a905cdbdacf3c31e7804a65401e3b498ab))
+* **core:** WeakRef typings to include deref ([#10006](https://github.com/NativeScript/NativeScript/issues/10006)) ([5bed8b9](https://github.com/NativeScript/NativeScript/commit/5bed8b96d84cad8a4297fa8c63c078ba3bdeae51))
+* **ios:** guard accessing actionbar ([#10033](https://github.com/NativeScript/NativeScript/issues/10033)) ([59fb3d9](https://github.com/NativeScript/NativeScript/commit/59fb3d9457dc88d7f20729c5d6c65298d2664932))
+* **ios:** segmented bar nativeView check ([#10023](https://github.com/NativeScript/NativeScript/issues/10023)) ([3ce5362](https://github.com/NativeScript/NativeScript/commit/3ce5362a043c4c7513db98a76b341dc8f1791f50))
+
+
 ## [8.3.4](https://github.com/NativeScript/NativeScript/compare/8.3.3-core...8.3.4) (2022-08-20)
 
 
