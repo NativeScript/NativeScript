@@ -163,6 +163,8 @@ declare class AUAudioUnit extends NSObject {
 
 	initWithComponentDescriptionOptionsError(componentDescription: AudioComponentDescription, options: AudioComponentInstantiationOptions): this;
 
+	messageChannelFor(channelName: string): AUMessageChannel;
+
 	parametersForOverviewWithCount(count: number): NSArray<number>;
 
 	presetStateForError(userPreset: AUAudioUnitPreset): NSDictionary<string, any>;
@@ -302,6 +304,8 @@ declare class AUAudioUnitV2Bridge extends AUAudioUnit {
 	static alloc(): AUAudioUnitV2Bridge; // inherited from NSObject
 
 	static new(): AUAudioUnitV2Bridge; // inherited from NSObject
+
+	readonly audioUnit: interop.Pointer | interop.Reference<any>;
 }
 
 interface AUChannelInfo {
@@ -385,11 +389,32 @@ interface AUInputSamplesInOutputCallbackStruct {
 }
 declare var AUInputSamplesInOutputCallbackStruct: interop.StructType<AUInputSamplesInOutputCallbackStruct>;
 
+declare function AUListenerAddParameter(inListener: interop.Pointer | interop.Reference<any>, inObject: interop.Pointer | interop.Reference<any>, inParameter: interop.Pointer | interop.Reference<AudioUnitParameter>): number;
+
+declare function AUListenerCreate(inProc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<AudioUnitParameter>, p4: number) => void>, inUserData: interop.Pointer | interop.Reference<any>, inRunLoop: any, inRunLoopMode: string, inNotificationInterval: number, outListener: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+
+declare function AUListenerCreateWithDispatchQueue(outListener: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, inNotificationInterval: number, inDispatchQueue: NSObject, inBlock: (p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<AudioUnitParameter>, p3: number) => void): number;
+
+declare function AUListenerDispose(inListener: interop.Pointer | interop.Reference<any>): number;
+
+declare function AUListenerRemoveParameter(inListener: interop.Pointer | interop.Reference<any>, inObject: interop.Pointer | interop.Reference<any>, inParameter: interop.Pointer | interop.Reference<AudioUnitParameter>): number;
+
 interface AUMIDIOutputCallbackStruct {
 	midiOutputCallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<AudioTimeStamp>, p3: number, p4: interop.Pointer | interop.Reference<MIDIPacketList>) => number>;
 	userData: interop.Pointer | interop.Reference<any>;
 }
 declare var AUMIDIOutputCallbackStruct: interop.StructType<AUMIDIOutputCallbackStruct>;
+
+interface AUMessageChannel {
+
+	callHostBlock?: (p1: NSDictionary<any, any>) => NSDictionary<any, any>;
+
+	callAudioUnit?(message: NSDictionary<any, any>): NSDictionary<any, any>;
+}
+declare var AUMessageChannel: {
+
+	prototype: AUMessageChannel;
+};
 
 interface AUNodeRenderCallback {
 	destNode: number;
@@ -466,6 +491,8 @@ declare const enum AUParameterEventType {
 	kParameterEvent_Ramped = 2
 }
 
+declare function AUParameterFormatValue(inParameterValue: number, inParameter: interop.Pointer | interop.Reference<AudioUnitParameter>, inTextBuffer: string | interop.Pointer | interop.Reference<any>, inDigits: number): string;
+
 declare class AUParameterGroup extends AUParameterNode implements NSSecureCoding {
 
 	static alloc(): AUParameterGroup; // inherited from NSObject
@@ -484,6 +511,8 @@ declare class AUParameterGroup extends AUParameterNode implements NSSecureCoding
 
 	initWithCoder(coder: NSCoder): this;
 }
+
+declare function AUParameterListenerNotify(inSendingListener: interop.Pointer | interop.Reference<any>, inSendingObject: interop.Pointer | interop.Reference<any>, inParameter: interop.Pointer | interop.Reference<AudioUnitParameter>): number;
 
 declare class AUParameterNode extends NSObject {
 
@@ -518,6 +547,8 @@ declare class AUParameterNode extends NSObject {
 	tokenByAddingParameterRecordingObserver(observer: (p1: number, p2: interop.Pointer | interop.Reference<AURecordedParameterEvent>) => void): interop.Pointer | interop.Reference<any>;
 }
 
+declare function AUParameterSet(inSendingListener: interop.Pointer | interop.Reference<any>, inSendingObject: interop.Pointer | interop.Reference<any>, inParameter: interop.Pointer | interop.Reference<AudioUnitParameter>, inValue: number, inBufferOffsetInFrames: number): number;
+
 declare class AUParameterTree extends AUParameterGroup implements NSSecureCoding {
 
 	static alloc(): AUParameterTree; // inherited from NSObject
@@ -546,6 +577,10 @@ declare class AUParameterTree extends AUParameterGroup implements NSSecureCoding
 
 	parameterWithIDScopeElement(paramID: number, scope: number, element: number): AUParameter;
 }
+
+declare function AUParameterValueFromLinear(inLinearValue: number, inParameter: interop.Pointer | interop.Reference<AudioUnitParameter>): number;
+
+declare function AUParameterValueToLinear(inParameterValue: number, inParameter: interop.Pointer | interop.Reference<AudioUnitParameter>): number;
 
 interface AUPreset {
 	presetNumber: number;
@@ -668,6 +703,15 @@ declare const enum AUSpatialMixerOutputType {
 	kSpatialMixerOutputType_ExternalSpeakers = 3
 }
 
+declare const enum AUSpatialMixerPersonalizedHRTFMode {
+
+	kSpatialMixerPersonalizedHRTFMode_Off = 0,
+
+	kSpatialMixerPersonalizedHRTFMode_On = 1,
+
+	kSpatialMixerPersonalizedHRTFMode_Auto = 2
+}
+
 declare const enum AUSpatialMixerPointSourceInHeadMode {
 
 	kSpatialMixerPointSourceInHeadMode_Mono = 0,
@@ -779,6 +823,8 @@ declare function AudioCodecSetProperty(inCodec: interop.Pointer | interop.Refere
 
 declare function AudioCodecUninitialize(inCodec: interop.Pointer | interop.Reference<any>): number;
 
+declare function AudioComponentCopyConfigurationInfo(inComponent: interop.Pointer | interop.Reference<any>, outConfigurationInfo: interop.Pointer | interop.Reference<NSDictionary<any, any>>): number;
+
 declare function AudioComponentCopyIcon(comp: interop.Pointer | interop.Reference<any>): UIImage;
 
 declare function AudioComponentCopyName(inComponent: interop.Pointer | interop.Reference<any>, outName: interop.Pointer | interop.Reference<string>): number;
@@ -845,6 +891,10 @@ interface AudioComponentPlugInInterface {
 declare var AudioComponentPlugInInterface: interop.StructType<AudioComponentPlugInInterface>;
 
 declare function AudioComponentRegister(inDesc: interop.Pointer | interop.Reference<AudioComponentDescription>, inName: string, inVersion: number, inFactory: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<AudioComponentDescription>) => interop.Pointer | interop.Reference<AudioComponentPlugInInterface>>): interop.Pointer | interop.Reference<any>;
+
+declare function AudioComponentValidate(inComponent: interop.Pointer | interop.Reference<any>, inValidationParameters: NSDictionary<any, any>, outValidationResult: interop.Pointer | interop.Reference<AudioComponentValidationResult>): number;
+
+declare function AudioComponentValidateWithResults(inComponent: interop.Pointer | interop.Reference<any>, inValidationParameters: NSDictionary<any, any>, inCompletionHandler: (p1: AudioComponentValidationResult, p2: NSDictionary<any, any>) => void): number;
 
 declare const enum AudioComponentValidationResult {
 
@@ -1295,6 +1345,17 @@ interface AudioUnitConnection {
 	destInputNumber: number;
 }
 declare var AudioUnitConnection: interop.StructType<AudioUnitConnection>;
+
+declare const enum AudioUnitEventType {
+
+	kAudioUnitEvent_ParameterValueChange = 0,
+
+	kAudioUnitEvent_BeginParameterChangeGesture = 1,
+
+	kAudioUnitEvent_EndParameterChangeGesture = 2,
+
+	kAudioUnitEvent_PropertyChange = 3
+}
 
 declare function AudioUnitExtensionCopyComponentList(extensionIdentifier: string): interop.Unmanaged<NSArray<any>>;
 
@@ -2232,6 +2293,8 @@ declare const kAUNodeInteraction_Connection: number;
 
 declare const kAUNodeInteraction_InputCallback: number;
 
+declare const kAUParameterListener_AnyParameter: number;
+
 declare const kAUSamplerParam_CoarseTuning: number;
 
 declare const kAUSamplerParam_FineTuning: number;
@@ -2253,6 +2316,12 @@ declare const kAUSampler_DefaultBankLSB: number;
 declare const kAUSampler_DefaultMelodicBankMSB: number;
 
 declare const kAUSampler_DefaultPercussionBankMSB: number;
+
+declare const kAUSoundIsolationParam_SoundToIsolate: number;
+
+declare const kAUSoundIsolationParam_WetDryMixPercent: number;
+
+declare const kAUSoundIsolationSoundType_Voice: number;
 
 declare const kAUVoiceIOProperty_BypassVoiceProcessing: number;
 
@@ -2345,6 +2414,8 @@ declare const kAudioCodecProduceOutputPacketFailure: number;
 declare const kAudioCodecProduceOutputPacketNeedsMoreInputData: number;
 
 declare const kAudioCodecProduceOutputPacketSuccess: number;
+
+declare const kAudioCodecProduceOutputPacketSuccessConcealed: number;
 
 declare const kAudioCodecProduceOutputPacketSuccessHasMore: number;
 
@@ -3652,6 +3723,8 @@ declare const kAudioUnitSubType_AU3DMixerEmbedded: number;
 
 declare const kAudioUnitSubType_AUConverter: number;
 
+declare const kAudioUnitSubType_AUSoundIsolation: number;
+
 declare const kAudioUnitSubType_AUiPodEQ: number;
 
 declare const kAudioUnitSubType_AUiPodTime: number;
@@ -4120,11 +4193,17 @@ declare const kMusicNoteEvent_UseGroupInstrument: number;
 
 declare const kNewTimePitchParam_EnablePeakLocking: number;
 
+declare const kNewTimePitchParam_EnableSpectralCoherence: number;
+
+declare const kNewTimePitchParam_EnableTransientPreservation: number;
+
 declare const kNewTimePitchParam_Overlap: number;
 
 declare const kNewTimePitchParam_Pitch: number;
 
 declare const kNewTimePitchParam_Rate: number;
+
+declare const kNewTimePitchParam_Smoothness: number;
 
 declare const kNumAUNBandEQFilterTypes: number;
 

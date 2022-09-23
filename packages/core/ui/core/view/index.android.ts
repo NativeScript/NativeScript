@@ -324,7 +324,15 @@ export class View extends ViewCommon {
 	constructor() {
 		super();
 
-		this.on(View.loadedEvent, () => setupAccessibleView(this));
+		const weakRef = new WeakRef(this);
+		const handler = () => {
+			const owner = weakRef.get();
+			if (owner) {
+				setupAccessibleView(owner);
+				owner.off(View.loadedEvent, handler);
+			}
+		};
+		this.on(View.loadedEvent, handler);
 	}
 
 	// TODO: Implement unobserve that detach the touchListener.

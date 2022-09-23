@@ -1,4 +1,21 @@
 
+declare class AVAUPresetEvent extends AVMusicEvent {
+
+	static alloc(): AVAUPresetEvent; // inherited from NSObject
+
+	static new(): AVAUPresetEvent; // inherited from NSObject
+
+	element: number;
+
+	readonly presetDictionary: NSDictionary<any, any>;
+
+	scope: number;
+
+	constructor(o: { scope: number; element: number; dictionary: NSDictionary<any, any>; });
+
+	initWithScopeElementDictionary(scope: number, element: number, presetDictionary: NSDictionary<any, any>): this;
+}
+
 interface AVAudio3DAngularOrientation {
 	yaw: number;
 	pitch: number;
@@ -316,7 +333,11 @@ declare class AVAudioEngine extends NSObject {
 
 	connectMIDIToFormatBlock(sourceNode: AVAudioNode, destinationNode: AVAudioNode, format: AVAudioFormat, tapBlock: (p1: number, p2: number, p3: number, p4: string) => number): void;
 
+	connectMIDIToFormatEventListBlock(sourceNode: AVAudioNode, destinationNode: AVAudioNode, format: AVAudioFormat, tapBlock: (p1: number, p2: number, p3: interop.Pointer | interop.Reference<MIDIEventList>) => number): void;
+
 	connectMIDIToNodesFormatBlock(sourceNode: AVAudioNode, destinationNodes: NSArray<AVAudioNode> | AVAudioNode[], format: AVAudioFormat, tapBlock: (p1: number, p2: number, p3: number, p4: string) => number): void;
+
+	connectMIDIToNodesFormatEventListBlock(sourceNode: AVAudioNode, destinationNodes: NSArray<AVAudioNode> | AVAudioNode[], format: AVAudioFormat, tapBlock: (p1: number, p2: number, p3: interop.Pointer | interop.Reference<MIDIEventList>) => number): void;
 
 	connectToConnectionPointsFromBusFormat(sourceNode: AVAudioNode, destNodes: NSArray<AVAudioConnectionPoint> | AVAudioConnectionPoint[], sourceBus: number, format: AVAudioFormat): void;
 
@@ -1258,6 +1279,8 @@ declare class AVAudioSequencer extends NSObject {
 
 	beatsForSeconds(seconds: number): number;
 
+	createAndAppendTrack(): AVMusicTrack;
+
 	dataWithSMPTEResolutionError(SMPTEResolution: number): NSData;
 
 	hostTimeForBeatsError(inBeats: number): number;
@@ -1270,7 +1293,13 @@ declare class AVAudioSequencer extends NSObject {
 
 	prepareToPlay(): void;
 
+	removeTrack(track: AVMusicTrack): boolean;
+
+	reverseEvents(): void;
+
 	secondsForBeats(beats: number): number;
+
+	setUserCallback(userCallback: (p1: AVMusicTrack, p2: NSData, p3: number) => void): void;
 
 	startAndReturnError(): boolean;
 
@@ -1278,6 +1307,50 @@ declare class AVAudioSequencer extends NSObject {
 
 	writeToURLSMPTEResolutionReplaceExistingError(fileURL: NSURL, resolution: number, replace: boolean): boolean;
 }
+
+declare var AVAudioSequencerInfoDictionaryKeyAlbum: string;
+
+declare var AVAudioSequencerInfoDictionaryKeyApproximateDurationInSeconds: string;
+
+declare var AVAudioSequencerInfoDictionaryKeyArtist: string;
+
+declare var AVAudioSequencerInfoDictionaryKeyChannelLayout: string;
+
+declare var AVAudioSequencerInfoDictionaryKeyComments: string;
+
+declare var AVAudioSequencerInfoDictionaryKeyComposer: string;
+
+declare var AVAudioSequencerInfoDictionaryKeyCopyright: string;
+
+declare var AVAudioSequencerInfoDictionaryKeyEncodingApplication: string;
+
+declare var AVAudioSequencerInfoDictionaryKeyGenre: string;
+
+declare var AVAudioSequencerInfoDictionaryKeyISRC: string;
+
+declare var AVAudioSequencerInfoDictionaryKeyKeySignature: string;
+
+declare var AVAudioSequencerInfoDictionaryKeyLyricist: string;
+
+declare var AVAudioSequencerInfoDictionaryKeyNominalBitRate: string;
+
+declare var AVAudioSequencerInfoDictionaryKeyRecordedDate: string;
+
+declare var AVAudioSequencerInfoDictionaryKeySourceBitDepth: string;
+
+declare var AVAudioSequencerInfoDictionaryKeySourceEncoder: string;
+
+declare var AVAudioSequencerInfoDictionaryKeySubTitle: string;
+
+declare var AVAudioSequencerInfoDictionaryKeyTempo: string;
+
+declare var AVAudioSequencerInfoDictionaryKeyTimeSignature: string;
+
+declare var AVAudioSequencerInfoDictionaryKeyTitle: string;
+
+declare var AVAudioSequencerInfoDictionaryKeyTrackNumber: string;
+
+declare var AVAudioSequencerInfoDictionaryKeyYear: string;
 
 declare class AVAudioSession extends NSObject {
 
@@ -1952,15 +2025,21 @@ declare class AVAudioUnitComponent extends NSObject {
 
 	readonly audioComponentDescription: AudioComponentDescription;
 
+	readonly configurationDictionary: NSDictionary<string, any>;
+
 	readonly hasMIDIInput: boolean;
 
 	readonly hasMIDIOutput: boolean;
+
+	readonly icon: UIImage;
 
 	readonly localizedTypeName: string;
 
 	readonly manufacturerName: string;
 
 	readonly name: string;
+
+	readonly passesAUVal: boolean;
 
 	readonly sandboxSafe: boolean;
 
@@ -2280,6 +2359,8 @@ declare class AVAudioUnitMIDIInstrument extends AVAudioUnit implements AVAudioMi
 
 	sendMIDIEventData1Data2(midiStatus: number, data1: number, data2: number): void;
 
+	sendMIDIEventList(eventList: interop.Pointer | interop.Reference<MIDIEventList>): void;
+
 	sendMIDISysExEvent(midiData: NSData): void;
 
 	sendPitchBendOnChannel(pitchbend: number, channel: number): void;
@@ -2435,6 +2516,46 @@ declare var AVEncoderBitRatePerChannelKey: string;
 
 declare var AVEncoderBitRateStrategyKey: string;
 
+declare class AVExtendedNoteOnEvent extends AVMusicEvent {
+
+	static alloc(): AVExtendedNoteOnEvent; // inherited from NSObject
+
+	static new(): AVExtendedNoteOnEvent; // inherited from NSObject
+
+	duration: number;
+
+	groupID: number;
+
+	instrumentID: number;
+
+	midiNote: number;
+
+	velocity: number;
+
+	constructor(o: { MIDINote: number; velocity: number; groupID: number; duration: number; });
+
+	constructor(o: { MIDINote: number; velocity: number; instrumentID: number; groupID: number; duration: number; });
+
+	initWithMIDINoteVelocityGroupIDDuration(midiNote: number, velocity: number, groupID: number, duration: number): this;
+
+	initWithMIDINoteVelocityInstrumentIDGroupIDDuration(midiNote: number, velocity: number, instrumentID: number, groupID: number, duration: number): this;
+}
+
+declare var AVExtendedNoteOnEventDefaultInstrument: number;
+
+declare class AVExtendedTempoEvent extends AVMusicEvent {
+
+	static alloc(): AVExtendedTempoEvent; // inherited from NSObject
+
+	static new(): AVExtendedTempoEvent; // inherited from NSObject
+
+	tempo: number;
+
+	constructor(o: { tempo: number; });
+
+	initWithTempo(tempo: number): this;
+}
+
 declare var AVFormatIDKey: string;
 
 declare var AVLinearPCMBitDepthKey: string;
@@ -2444,6 +2565,196 @@ declare var AVLinearPCMIsBigEndianKey: string;
 declare var AVLinearPCMIsFloatKey: string;
 
 declare var AVLinearPCMIsNonInterleaved: string;
+
+declare class AVMIDIChannelEvent extends AVMusicEvent {
+
+	static alloc(): AVMIDIChannelEvent; // inherited from NSObject
+
+	static new(): AVMIDIChannelEvent; // inherited from NSObject
+
+	channel: number;
+}
+
+declare class AVMIDIChannelPressureEvent extends AVMIDIChannelEvent {
+
+	static alloc(): AVMIDIChannelPressureEvent; // inherited from NSObject
+
+	static new(): AVMIDIChannelPressureEvent; // inherited from NSObject
+
+	pressure: number;
+
+	constructor(o: { channel: number; pressure: number; });
+
+	initWithChannelPressure(channel: number, pressure: number): this;
+}
+
+declare class AVMIDIControlChangeEvent extends AVMIDIChannelEvent {
+
+	static alloc(): AVMIDIControlChangeEvent; // inherited from NSObject
+
+	static new(): AVMIDIControlChangeEvent; // inherited from NSObject
+
+	readonly messageType: AVMIDIControlChangeMessageType;
+
+	readonly value: number;
+
+	constructor(o: { channel: number; messageType: AVMIDIControlChangeMessageType; value: number; });
+
+	initWithChannelMessageTypeValue(channel: number, messageType: AVMIDIControlChangeMessageType, value: number): this;
+}
+
+declare const enum AVMIDIControlChangeMessageType {
+
+	BankSelect = 0,
+
+	ModWheel = 1,
+
+	Breath = 2,
+
+	Foot = 4,
+
+	PortamentoTime = 5,
+
+	DataEntry = 6,
+
+	Volume = 7,
+
+	Balance = 8,
+
+	Pan = 10,
+
+	Expression = 11,
+
+	Sustain = 64,
+
+	Portamento = 65,
+
+	Sostenuto = 66,
+
+	Soft = 67,
+
+	LegatoPedal = 68,
+
+	Hold2Pedal = 69,
+
+	FilterResonance = 71,
+
+	ReleaseTime = 72,
+
+	AttackTime = 73,
+
+	Brightness = 74,
+
+	DecayTime = 75,
+
+	VibratoRate = 76,
+
+	VibratoDepth = 77,
+
+	VibratoDelay = 78,
+
+	ReverbLevel = 91,
+
+	ChorusLevel = 93,
+
+	RPN_LSB = 100,
+
+	RPN_MSB = 101,
+
+	AllSoundOff = 120,
+
+	ResetAllControllers = 121,
+
+	AllNotesOff = 123,
+
+	OmniModeOff = 124,
+
+	OmniModeOn = 125,
+
+	MonoModeOn = 126,
+
+	MonoModeOff = 127
+}
+
+declare class AVMIDIMetaEvent extends AVMusicEvent {
+
+	static alloc(): AVMIDIMetaEvent; // inherited from NSObject
+
+	static new(): AVMIDIMetaEvent; // inherited from NSObject
+
+	readonly type: AVMIDIMetaEventType;
+
+	constructor(o: { type: AVMIDIMetaEventType; data: NSData; });
+
+	initWithTypeData(type: AVMIDIMetaEventType, data: NSData): this;
+}
+
+declare const enum AVMIDIMetaEventType {
+
+	SequenceNumber = 0,
+
+	Text = 1,
+
+	Copyright = 2,
+
+	TrackName = 3,
+
+	Instrument = 4,
+
+	Lyric = 5,
+
+	Marker = 6,
+
+	CuePoint = 7,
+
+	MidiChannel = 32,
+
+	MidiPort = 33,
+
+	EndOfTrack = 47,
+
+	Tempo = 81,
+
+	SmpteOffset = 84,
+
+	TimeSignature = 88,
+
+	KeySignature = 89,
+
+	ProprietaryEvent = 127
+}
+
+declare class AVMIDINoteEvent extends AVMusicEvent {
+
+	static alloc(): AVMIDINoteEvent; // inherited from NSObject
+
+	static new(): AVMIDINoteEvent; // inherited from NSObject
+
+	channel: number;
+
+	duration: number;
+
+	key: number;
+
+	velocity: number;
+
+	constructor(o: { channel: number; key: number; velocity: number; duration: number; });
+
+	initWithChannelKeyVelocityDuration(channel: number, keyNum: number, velocity: number, duration: number): this;
+}
+
+declare class AVMIDIPitchBendEvent extends AVMIDIChannelEvent {
+
+	static alloc(): AVMIDIPitchBendEvent; // inherited from NSObject
+
+	static new(): AVMIDIPitchBendEvent; // inherited from NSObject
+
+	value: number;
+
+	constructor(o: { channel: number; value: number; });
+
+	initWithChannelValue(channel: number, value: number): this;
+}
 
 declare class AVMIDIPlayer extends NSObject {
 
@@ -2472,6 +2783,54 @@ declare class AVMIDIPlayer extends NSObject {
 	prepareToPlay(): void;
 
 	stop(): void;
+}
+
+declare class AVMIDIPolyPressureEvent extends AVMIDIChannelEvent {
+
+	static alloc(): AVMIDIPolyPressureEvent; // inherited from NSObject
+
+	static new(): AVMIDIPolyPressureEvent; // inherited from NSObject
+
+	key: number;
+
+	pressure: number;
+
+	constructor(o: { channel: number; key: number; pressure: number; });
+
+	initWithChannelKeyPressure(channel: number, key: number, pressure: number): this;
+}
+
+declare class AVMIDIProgramChangeEvent extends AVMIDIChannelEvent {
+
+	static alloc(): AVMIDIProgramChangeEvent; // inherited from NSObject
+
+	static new(): AVMIDIProgramChangeEvent; // inherited from NSObject
+
+	programNumber: number;
+
+	constructor(o: { channel: number; programNumber: number; });
+
+	initWithChannelProgramNumber(channel: number, programNumber: number): this;
+}
+
+declare class AVMIDISysexEvent extends AVMusicEvent {
+
+	static alloc(): AVMIDISysexEvent; // inherited from NSObject
+
+	static new(): AVMIDISysexEvent; // inherited from NSObject
+
+	readonly sizeInBytes: number;
+
+	constructor(o: { data: NSData; });
+
+	initWithData(data: NSData): this;
+}
+
+declare class AVMusicEvent extends NSObject {
+
+	static alloc(): AVMusicEvent; // inherited from NSObject
+
+	static new(): AVMusicEvent; // inherited from NSObject
 }
 
 declare const enum AVMusicSequenceLoadOptions {
@@ -2508,6 +2867,22 @@ declare class AVMusicTrack extends NSObject {
 	soloed: boolean;
 
 	readonly timeResolution: number;
+
+	usesAutomatedParameters: boolean;
+
+	addEventAtBeat(event: AVMusicEvent, beat: number): void;
+
+	clearEventsInRange(range: AVBeatRange): void;
+
+	copyAndMergeEventsInRangeFromTrackMergeAtBeat(range: AVBeatRange, sourceTrack: AVMusicTrack, mergeStartBeat: number): void;
+
+	copyEventsInRangeFromTrackInsertAtBeat(range: AVBeatRange, sourceTrack: AVMusicTrack, insertStartBeat: number): void;
+
+	cutEventsInRange(range: AVBeatRange): void;
+
+	enumerateEventsInRangeUsingBlock(range: AVBeatRange, block: (p1: AVMusicEvent, p2: interop.Pointer | interop.Reference<number>, p3: interop.Pointer | interop.Reference<boolean>) => void): void;
+
+	moveEventsInRangeByAmount(range: AVBeatRange, beatAmount: number): void;
 }
 
 declare const enum AVMusicTrackLoopCount {
@@ -2515,7 +2890,39 @@ declare const enum AVMusicTrackLoopCount {
 	Forever = -1
 }
 
+declare class AVMusicUserEvent extends AVMusicEvent {
+
+	static alloc(): AVMusicUserEvent; // inherited from NSObject
+
+	static new(): AVMusicUserEvent; // inherited from NSObject
+
+	readonly sizeInBytes: number;
+
+	constructor(o: { data: NSData; });
+
+	initWithData(data: NSData): this;
+}
+
 declare var AVNumberOfChannelsKey: string;
+
+declare class AVParameterEvent extends AVMusicEvent {
+
+	static alloc(): AVParameterEvent; // inherited from NSObject
+
+	static new(): AVParameterEvent; // inherited from NSObject
+
+	element: number;
+
+	parameterID: number;
+
+	scope: number;
+
+	value: number;
+
+	constructor(o: { parameterID: number; scope: number; element: number; value: number; });
+
+	initWithParameterIDScopeElementValue(parameterID: number, scope: number, element: number, value: number): this;
+}
 
 declare var AVSampleRateConverterAlgorithmKey: string;
 
@@ -2537,6 +2944,123 @@ declare const enum AVSpeechBoundary {
 }
 
 declare var AVSpeechSynthesisIPANotationAttribute: string;
+
+declare class AVSpeechSynthesisMarker extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): AVSpeechSynthesisMarker; // inherited from NSObject
+
+	static new(): AVSpeechSynthesisMarker; // inherited from NSObject
+
+	byteSampleOffset: number;
+
+	mark: AVSpeechSynthesisMarkerMark;
+
+	textRange: NSRange;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { markerType: AVSpeechSynthesisMarkerMark; forTextRange: NSRange; atByteSampleOffset: number; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithMarkerTypeForTextRangeAtByteSampleOffset(type: AVSpeechSynthesisMarkerMark, range: NSRange, byteSampleOffset: number): this;
+}
+
+declare const enum AVSpeechSynthesisMarkerMark {
+
+	Phoneme = 0,
+
+	Word = 1,
+
+	Sentence = 2,
+
+	Paragraph = 3
+}
+
+declare class AVSpeechSynthesisProviderAudioUnit extends AUAudioUnit {
+
+	static alloc(): AVSpeechSynthesisProviderAudioUnit; // inherited from NSObject
+
+	static new(): AVSpeechSynthesisProviderAudioUnit; // inherited from NSObject
+
+	speechSynthesisOutputMetadataBlock: (p1: NSArray<AVSpeechSynthesisMarker>, p2: AVSpeechSynthesisProviderRequest) => void;
+
+	speechVoices: NSArray<AVSpeechSynthesisProviderVoice>;
+
+	cancelSpeechRequest(): void;
+
+	synthesizeSpeechRequest(speechRequest: AVSpeechSynthesisProviderRequest): void;
+}
+
+declare class AVSpeechSynthesisProviderRequest extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): AVSpeechSynthesisProviderRequest; // inherited from NSObject
+
+	static new(): AVSpeechSynthesisProviderRequest; // inherited from NSObject
+
+	readonly ssmlRepresentation: string;
+
+	readonly voice: AVSpeechSynthesisProviderVoice;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { SSMLRepresentation: string; voice: AVSpeechSynthesisProviderVoice; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithSSMLRepresentationVoice(text: string, voice: AVSpeechSynthesisProviderVoice): this;
+}
+
+declare class AVSpeechSynthesisProviderVoice extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): AVSpeechSynthesisProviderVoice; // inherited from NSObject
+
+	static new(): AVSpeechSynthesisProviderVoice; // inherited from NSObject
+
+	static updateSpeechVoices(): void;
+
+	age: number;
+
+	gender: AVSpeechSynthesisVoiceGender;
+
+	readonly identifier: string;
+
+	readonly name: string;
+
+	readonly primaryLanguages: NSArray<string>;
+
+	readonly supportedLanguages: NSArray<string>;
+
+	version: string;
+
+	voiceSize: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { name: string; identifier: string; primaryLanguages: NSArray<string> | string[]; supportedLanguages: NSArray<string> | string[]; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithNameIdentifierPrimaryLanguagesSupportedLanguages(name: string, identifier: string, primaryLanguages: NSArray<string> | string[], supportedLanguages: NSArray<string> | string[]): this;
+}
 
 declare class AVSpeechSynthesisVoice extends NSObject implements NSSecureCoding {
 
@@ -2588,7 +3112,9 @@ declare const enum AVSpeechSynthesisVoiceQuality {
 
 	Default = 1,
 
-	Enhanced = 2
+	Enhanced = 2,
+
+	Premium = 3
 }
 
 declare class AVSpeechSynthesizer extends NSObject {
@@ -2618,6 +3144,8 @@ declare class AVSpeechSynthesizer extends NSObject {
 	stopSpeakingAtBoundary(boundary: AVSpeechBoundary): boolean;
 
 	writeUtteranceToBufferCallback(utterance: AVSpeechUtterance, bufferCallback: (p1: AVAudioBuffer) => void): void;
+
+	writeUtteranceToBufferCallbackToMarkerCallback(utterance: AVSpeechUtterance, bufferCallback: (p1: AVAudioBuffer) => void, markerCallback: (p1: NSArray<AVSpeechSynthesisMarker>) => void): void;
 }
 
 interface AVSpeechSynthesizerDelegate extends NSObjectProtocol {
@@ -2647,6 +3175,8 @@ declare class AVSpeechUtterance extends NSObject implements NSCopying, NSSecureC
 
 	static speechUtteranceWithAttributedString(string: NSAttributedString): AVSpeechUtterance;
 
+	static speechUtteranceWithSSMLRepresentation(string: string): AVSpeechUtterance;
+
 	static speechUtteranceWithString(string: string): AVSpeechUtterance;
 
 	readonly attributedSpeechString: NSAttributedString;
@@ -2673,6 +3203,8 @@ declare class AVSpeechUtterance extends NSObject implements NSCopying, NSSecureC
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
+	constructor(o: { SSMLRepresentation: string; });
+
 	constructor(o: { string: string; });
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
@@ -2682,6 +3214,8 @@ declare class AVSpeechUtterance extends NSObject implements NSCopying, NSSecureC
 	initWithAttributedString(string: NSAttributedString): this;
 
 	initWithCoder(coder: NSCoder): this;
+
+	initWithSSMLRepresentation(string: string): this;
 
 	initWithString(string: string): this;
 }

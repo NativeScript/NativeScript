@@ -62,6 +62,23 @@ declare var CIAreaHistogram: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+interface CIAreaLogarithmicHistogram extends CIAreaReductionFilter {
+
+	count: number;
+
+	maximumStop: number;
+
+	minimumStop: number;
+
+	scale: number;
+}
+declare var CIAreaLogarithmicHistogram: {
+
+	prototype: CIAreaLogarithmicHistogram;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
 interface CIAreaMaximum extends CIAreaReductionFilter {
 }
 declare var CIAreaMaximum: {
@@ -130,6 +147,8 @@ declare var CIAreaReductionFilter: {
 };
 
 interface CIAttributedTextImageGenerator extends CIFilterProtocol {
+
+	padding: number;
 
 	scaleFactor: number;
 
@@ -702,6 +721,8 @@ interface CIColorCube extends CIFilterProtocol {
 
 	cubeDimension: number;
 
+	extrapolate: boolean;
+
 	inputImage: CIImage;
 }
 declare var CIColorCube: {
@@ -718,6 +739,8 @@ interface CIColorCubeWithColorSpace extends CIFilterProtocol {
 	cubeData: NSData;
 
 	cubeDimension: number;
+
+	extrapolate: boolean;
 
 	inputImage: CIImage;
 }
@@ -737,6 +760,8 @@ interface CIColorCubesMixedWithMask extends CIFilterProtocol {
 	cube1Data: NSData;
 
 	cubeDimension: number;
+
+	extrapolate: boolean;
 
 	inputImage: CIImage;
 
@@ -1026,6 +1051,19 @@ declare class CIContext extends NSObject {
 
 	writeTIFFRepresentationOfImageToURLFormatColorSpaceOptionsError(image: CIImage, url: NSURL, format: number, colorSpace: any, options: NSDictionary<string, any>): boolean;
 }
+
+interface CIConvertLab extends CIFilterProtocol {
+
+	inputImage: CIImage;
+
+	normalize: boolean;
+}
+declare var CIConvertLab: {
+
+	prototype: CIConvertLab;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
 
 interface CIConvolution extends CIFilterProtocol {
 
@@ -1513,6 +1551,8 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 
 	static areaHistogramFilter(): CIFilter;
 
+	static areaLogarithmicHistogramFilter(): CIFilter;
+
 	static areaMaximumAlphaFilter(): CIFilter;
 
 	static areaMaximumFilter(): CIFilter;
@@ -1604,6 +1644,10 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 	static columnAverageFilter(): CIFilter;
 
 	static comicEffectFilter(): CIFilter;
+
+	static convertLabToRGBFilter(): CIFilter;
+
+	static convertRGBtoLabFilter(): CIFilter;
 
 	static convolution3X3Filter(): CIFilter;
 
@@ -2572,6 +2616,10 @@ declare class CIImage extends NSObject implements NSCopying, NSSecureCoding {
 
 	imageByCompositingOverImage(dest: CIImage): CIImage;
 
+	imageByConvertingLabToWorkingSpace(): CIImage;
+
+	imageByConvertingWorkingSpaceToLab(): CIImage;
+
 	imageByCroppingToRect(rect: CGRect): CIImage;
 
 	imageByInsertingIntermediate(cache: boolean): CIImage;
@@ -2686,6 +2734,8 @@ interface CIImageProcessorInput {
 
 	bytesPerRow: number;
 
+	digest: number;
+
 	format: number;
 
 	metalTexture: MTLTexture;
@@ -2727,6 +2777,8 @@ interface CIImageProcessorOutput {
 	baseAddress: interop.Pointer | interop.Reference<any>;
 
 	bytesPerRow: number;
+
+	digest: number;
 
 	format: number;
 
@@ -4225,6 +4277,8 @@ interface CITextImageGenerator extends CIFilterProtocol {
 	fontName: string;
 
 	fontSize: number;
+
+	padding: number;
 
 	scaleFactor: number;
 

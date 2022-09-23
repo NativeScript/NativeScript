@@ -689,6 +689,8 @@ declare var PDFDocumentAccessPermissionsOption: string;
 
 declare var PDFDocumentAuthorAttribute: string;
 
+declare var PDFDocumentBurnInAnnotationsOption: string;
+
 declare var PDFDocumentCreationDateAttribute: string;
 
 declare var PDFDocumentCreatorAttribute: string;
@@ -758,6 +760,8 @@ declare const enum PDFDocumentPermissions {
 }
 
 declare var PDFDocumentProducerAttribute: string;
+
+declare var PDFDocumentSaveTextFromOCROption: string;
 
 declare var PDFDocumentSubjectAttribute: string;
 
@@ -894,6 +898,19 @@ declare class PDFPage extends NSObject implements NSCopying {
 	transformForBox(box: PDFDisplayBox): CGAffineTransform;
 }
 
+interface PDFPageOverlayViewProvider extends NSObjectProtocol {
+
+	pdfViewOverlayViewForPage(view: PDFView, page: PDFPage): UIView;
+
+	pdfViewWillDisplayOverlayViewForPage?(pdfView: PDFView, overlayView: UIView, page: PDFPage): void;
+
+	pdfViewWillEndDisplayingOverlayViewForPage?(pdfView: PDFView, overlayView: UIView, page: PDFPage): void;
+}
+declare var PDFPageOverlayViewProvider: {
+
+	prototype: PDFPageOverlayViewProvider;
+};
+
 declare class PDFSelection extends NSObject implements NSCopying {
 
 	static alloc(): PDFSelection; // inherited from NSObject
@@ -998,7 +1015,7 @@ declare class PDFThumbnailView extends UIView implements NSCoding {
 
 declare var PDFThumbnailViewDocumentEditedNotification: string;
 
-declare class PDFView extends UIView implements UIGestureRecognizerDelegate {
+declare class PDFView extends UIView implements UIFindInteractionDelegate, UIGestureRecognizerDelegate {
 
 	static alloc(): PDFView; // inherited from NSObject
 
@@ -1060,7 +1077,13 @@ declare class PDFView extends UIView implements UIGestureRecognizerDelegate {
 
 	enableDataDetectors: boolean;
 
+	readonly findInteraction: UIFindInteraction;
+
+	findInteractionEnabled: boolean;
+
 	highlightedSelections: NSArray<PDFSelection>;
+
+	inMarkupMode: boolean;
 
 	interpolationQuality: PDFInterpolationQuality;
 
@@ -1071,6 +1094,8 @@ declare class PDFView extends UIView implements UIGestureRecognizerDelegate {
 	minScaleFactor: number;
 
 	pageBreakMargins: UIEdgeInsets;
+
+	pageOverlayViewProvider: PDFPageOverlayViewProvider;
 
 	pageShadowsEnabled: boolean;
 
@@ -1117,6 +1142,12 @@ declare class PDFView extends UIView implements UIGestureRecognizerDelegate {
 	drawPagePostToContext(page: PDFPage, context: any): void;
 
 	drawPageToContext(page: PDFPage, context: any): void;
+
+	findInteractionDidBeginFindSession(interaction: UIFindInteraction, session: UIFindSession): void;
+
+	findInteractionDidEndFindSession(interaction: UIFindInteraction, session: UIFindSession): void;
+
+	findInteractionSessionForView(interaction: UIFindInteraction, view: UIView): UIFindSession;
 
 	gestureRecognizerShouldBeRequiredToFailByGestureRecognizer(gestureRecognizer: UIGestureRecognizer, otherGestureRecognizer: UIGestureRecognizer): boolean;
 

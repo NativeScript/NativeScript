@@ -10,6 +10,8 @@
 		"diagnostics": true,
 		"sourceMap": true,
 		"inlineSourceMap": false,
+		"skipDefaultLibCheck": true,
+		"skipLibCheck": true,
 		"lib": ["es6", "dom"],
 		"types": ["node", "chai", "mocha"],
 		"baseUrl": ".",

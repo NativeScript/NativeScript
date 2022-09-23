@@ -672,14 +672,19 @@ function transitionOrAnimationCompleted(entry: ExpandedEntry, backEntry: Backsta
 
 	entries.delete(entry);
 	if (entries.size === 0) {
-		const frame = entry.resolvedPage.frame;
-
 		// We have 0 or 1 entry per frameId in completedEntries
 		// So there is no need to make it to Set like waitingQueue
 		const previousCompletedAnimationEntry = completedEntries.get(frameId);
 		completedEntries.delete(frameId);
 		waitingQueue.delete(frameId);
 
+		if (!entry.resolvedPage) {
+			if (Trace.isEnabled()) {
+				Trace.write(`Transition completed - Entry ${entry} with unexpected null value for the resolvedPage property.`, Trace.categories.Transition, Trace.messageType.error);
+			}
+			return;
+		}
+		const frame = entry.resolvedPage.frame;
 		const navigationContext = frame._executingContext || {
 			navigationType: NavigationType.back,
 		};

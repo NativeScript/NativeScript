@@ -1,6 +1,6 @@
 {
   "name": "nativescript",
-  "version": "8.3.1",
+  "version": "8.3.4",
   "license": "MIT",
   "scripts": {
     "clean": "git clean -f -X -d --exclude=!.idea/ --exclude=!.vscode/* --exclude=!.npmrc",
@@ -23,11 +23,11 @@
   "devDependencies": {
     "@nativescript/hook": "^2.0.0",
     "@nativescript/nx": "~4.0.0",
-    "@nrwl/cli": "14.4.2",
-    "@nrwl/eslint-plugin-nx": "14.4.2",
-    "@nrwl/jest": "14.4.2",
-    "@nrwl/node": "14.4.2",
-    "@nrwl/workspace": "14.4.2",
+    "@nrwl/cli": "14.5.4",
+    "@nrwl/eslint-plugin-nx": "14.5.4",
+    "@nrwl/jest": "14.5.4",
+    "@nrwl/node": "14.5.4",
+    "@nrwl/workspace": "14.5.4",
     "@nstudio/focus": "^14.3.0",
     "@nstudio/nps-i": "~2.0.0",
     "@prettier/plugin-xml": "^2.2.0",
@@ -52,7 +52,7 @@
     "mocha": "^8.0.1",
     "mocha-typescript": "^1.1.17",
     "module-alias": "^2.2.2",
-    "nativescript": "~8.2.0",
+    "nativescript": "~8.3.0",
     "nativescript-typedoc-theme": "1.1.0",
     "parse-css": "git+https://github.com/tabatkins/parse-css.git",
     "parserlib": "^1.1.1",
@@ -69,7 +69,7 @@
     "typedoc": "^0.22.17",
     "typescript": "~4.7.3",
     "zx": "^7.0.5",
-    "nx": "14.4.2"
+    "nx": "14.5.4"
   },
   "lint-staged": {
     "**/*": [

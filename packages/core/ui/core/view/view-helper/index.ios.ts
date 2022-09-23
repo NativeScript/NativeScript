@@ -37,7 +37,8 @@ class UILayoutViewController extends UIViewController {
 		}
 	}
 
-	private updateAdditionalSafeAreaInsetsIfNeeded(): void {
+	public viewDidLayoutSubviews(): void {
+		super.viewDidLayoutSubviews();
 		const owner = this.owner.get();
 		if (owner) {
 			if (majorVersion >= 11) {
@@ -58,11 +59,17 @@ class UILayoutViewController extends UIViewController {
 
 				if (parent) {
 					const parentPageInsetsTop = parent.nativeViewProtected.safeAreaInsets.top;
-					const currentInsetsTop = this.view.safeAreaInsets.top;
-					const additionalInsetsTop = Math.max(parentPageInsetsTop - currentInsetsTop, 0);
-
 					const parentPageInsetsBottom = parent.nativeViewProtected.safeAreaInsets.bottom;
-					const currentInsetsBottom = this.view.safeAreaInsets.bottom;
+					let currentInsetsTop = this.view.safeAreaInsets.top;
+					let currentInsetsBottom = this.view.safeAreaInsets.bottom;
+
+					// Safe area insets include additional safe area insets too, so subtract old values
+					if (this.additionalSafeAreaInsets) {
+						currentInsetsTop -= this.additionalSafeAreaInsets.top;
+						currentInsetsBottom -= this.additionalSafeAreaInsets.bottom;
+					}
+
+					const additionalInsetsTop = Math.max(parentPageInsetsTop - currentInsetsTop, 0);
 					const additionalInsetsBottom = Math.max(parentPageInsetsBottom - currentInsetsBottom, 0);
 
 					if (additionalInsetsTop > 0 || additionalInsetsBottom > 0) {
@@ -76,18 +83,7 @@ class UILayoutViewController extends UIViewController {
 					}
 				}
 			}
-		}
-	}
 
-	public viewSafeAreaInsetsDidChange(): void {
-		super.viewSafeAreaInsetsDidChange();
-		this.updateAdditionalSafeAreaInsetsIfNeeded();
-	}
-
-	public viewDidLayoutSubviews(): void {
-		super.viewDidLayoutSubviews();
-		const owner = this.owner.get();
-		if (owner) {
 			IOSHelper.layoutView(this, owner);
 		}
 	}
@@ -276,7 +272,7 @@ export class IOSHelper {
 			const adjustedFrame = IOSHelper.getFrameFromPosition(position, insets);
 
 			if (Trace.isEnabled()) {
-                Trace.write(`${view} :shrinkToSafeArea: ${JSON.stringify(IOSHelper.getPositionFromFrame(adjustedFrame))}`, Trace.categories.Layout);
+				Trace.write(`${view} :shrinkToSafeArea: ${JSON.stringify(IOSHelper.getPositionFromFrame(adjustedFrame))}`, Trace.categories.Layout);
 			}
 
 			return adjustedFrame;
