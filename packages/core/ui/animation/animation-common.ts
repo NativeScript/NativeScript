@@ -42,7 +42,8 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 
 	constructor(animationDefinitions: Array<AnimationDefinition>, playSequentially?: boolean) {
 		if (!animationDefinitions || animationDefinitions.length === 0) {
-			throw new Error('No animation definitions specified');
+			console.error('No animation definitions specified');
+			return;
 		}
 
 		if (Trace.isEnabled()) {
@@ -58,7 +59,10 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 		}
 
 		if (this._propertyAnimations.length === 0) {
-			throw new Error('Nothing to animate.');
+			if (Trace.isEnabled()) {
+				Trace.write('Nothing to animate.', Trace.categories.Animation);
+			}
+			return;
 		}
 		if (Trace.isEnabled()) {
 			Trace.write('Created ' + this._propertyAnimations.length + ' individual property animations.', Trace.categories.Animation);
@@ -137,7 +141,8 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 
 	private static _createPropertyAnimations(animationDefinition: AnimationDefinition): Array<PropertyAnimation> {
 		if (!animationDefinition.target) {
-			throw new Error('No animation target specified.');
+			console.error('No animation target specified.');
+			return;
 		}
 
 		for (const item in animationDefinition) {
@@ -147,18 +152,22 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 			}
 
 			if ((item === Properties.opacity || item === 'duration' || item === 'delay' || item === 'iterations') && typeof value !== 'number') {
-				throw new Error(`Property ${item} must be valid number. Value: ${value}`);
+				console.error(`Property ${item} must be valid number. Value: ${value}`);
+				return;
 			} else if ((item === Properties.scale || item === Properties.translate) && (typeof (<Pair>value).x !== 'number' || typeof (<Pair>value).y !== 'number')) {
-				throw new Error(`Property ${item} must be valid Pair. Value: ${value}`);
+				console.error(`Property ${item} must be valid Pair. Value: ${value}`);
+				return;
 			} else if (item === Properties.backgroundColor && !Color.isValid(animationDefinition.backgroundColor)) {
-				throw new Error(`Property ${item} must be valid color. Value: ${value}`);
+				console.error(`Property ${item} must be valid color. Value: ${value}`);
+				return;
 			} else if (item === Properties.width || item === Properties.height) {
 				// Coerce input into a PercentLength object in case it's a string.
 				animationDefinition[item] = PercentLength.parse(<any>value);
 			} else if (item === Properties.rotate) {
 				const rotate: number | Point3D = value;
 				if (typeof rotate !== 'number' && !(typeof rotate.x === 'number' && typeof rotate.y === 'number' && typeof rotate.z === 'number')) {
-					throw new Error(`Property ${rotate} must be valid number or Point3D. Value: ${value}`);
+					console.error(`Property ${rotate} must be valid number or Point3D. Value: ${value}`);
+					return;
 				}
 			}
 		}
@@ -265,7 +274,7 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 		}
 
 		if (propertyAnimations.length === 0) {
-			throw new Error('No known animation properties specified');
+			console.error('No known animation properties specified');
 		}
 
 		return propertyAnimations;
