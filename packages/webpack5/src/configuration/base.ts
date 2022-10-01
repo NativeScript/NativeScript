@@ -3,6 +3,7 @@ import {
 	ContextExclusionPlugin,
 	DefinePlugin,
 	HotModuleReplacementPlugin,
+	ProvidePlugin,
 } from 'webpack';
 import Config from 'webpack-chain';
 import { existsSync } from 'fs';
@@ -432,6 +433,18 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			// profile: '() => {}',
 		},
 	]);
+
+	// polyfill things that don't exist in the NS runtimes
+	config.plugin('ProvidePlugin|Polyfills').use(ProvidePlugin, [
+		{
+			Buffer: [require.resolve('buffer/'), 'Buffer'],
+		},
+	]);
+
+	config.resolve.set('fallback', {
+		buffer: require.resolve('buffer/'),
+		crypto: require.resolve('crypto-browserify/'),
+	});
 
 	// enable DotEnv
 	applyDotEnvPlugin(config);
