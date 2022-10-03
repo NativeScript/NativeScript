@@ -66,7 +66,7 @@ export class Page extends PageBase {
 		}
 	}
 
-	private getTopmostWindow() {
+	private getClosestWindow() {
 		// When it comes to modals, check if page has a parent as it may not be the modal root view itself
 		const view = this.parent ?? this;
 		const dialogFragment = (<any>view)._dialogFragment;
@@ -92,7 +92,7 @@ export class Page extends PageBase {
 		systemUiVisibility: number;
 	} {
 		if (Device.sdkVersion >= '21') {
-			const window = this.getTopmostWindow();
+			const window = this.getClosestWindow();
 			const decorView = window.getDecorView();
 
 			return {
@@ -105,7 +105,7 @@ export class Page extends PageBase {
 	}
 	[statusBarStyleProperty.setNative](value: 'dark' | 'light' | { color: number; systemUiVisibility: number }) {
 		if (Device.sdkVersion >= '21') {
-			const window = this.getTopmostWindow();
+			const window = this.getClosestWindow();
 			const decorView = window.getDecorView();
 
 			if (value === 'light') {
@@ -123,7 +123,7 @@ export class Page extends PageBase {
 
 	[androidStatusBarBackgroundProperty.getDefault](): number {
 		if (Device.sdkVersion >= '21') {
-			const window = this.getTopmostWindow();
+			const window = this.getClosestWindow();
 			return (<any>window).getStatusBarColor();
 		}
 
@@ -131,7 +131,7 @@ export class Page extends PageBase {
 	}
 	[androidStatusBarBackgroundProperty.setNative](value: number | Color) {
 		if (Device.sdkVersion >= '21') {
-			const window = this.getTopmostWindow();
+			const window = this.getClosestWindow();
 			const color = value instanceof Color ? value.android : value;
 			(<any>window).setStatusBarColor(color);
 		}
