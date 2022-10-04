@@ -45,59 +45,59 @@ describe('CssTreeParser', () => {
 		expect(cssTreeAST.stylesheet.rules[0].position.content).toBe(testCase);
 	});
 
-	// it('@supports', () => {
-	// 	const testCase = '@supports not (display: grid) { div { float: right; } } .test { color: red; }';
-	// 	const reworkAST = reworkCssParse(testCase, { source: 'file.css' });
-	// 	const cssTreeAST = cssTreeParse(testCase, 'file.css');
+	it('@supports', () => {
+		const testCase = '@supports not (display: grid) { div { float: right; } } .test { color: red; }';
+		const reworkAST = reworkCssParse(testCase, { source: 'file.css' });
+		const cssTreeAST = cssTreeParse(testCase, 'file.css');
 
-	// 	assert.deepEqual(cssTreeAST, reworkAST);
-	// });
+		expect(cssTreeAST.stylesheet.rules[0].position.content).toBe(testCase);
+	});
 
-	// it('@page', () => {
-	// 	const testCase = '@page :first { margin: 2cm; } .test { color: red; }';
-	// 	const reworkAST = reworkCssParse(testCase, { source: 'file.css' });
-	// 	const cssTreeAST = cssTreeParse(testCase, 'file.css');
+	it('@page', () => {
+		const testCase = '@page :first { margin: 2cm; } .test { color: red; }';
+		const reworkAST = reworkCssParse(testCase, { source: 'file.css' });
+		const cssTreeAST = cssTreeParse(testCase, 'file.css');
 
-	// 	assert.deepEqual(cssTreeAST, reworkAST);
-	// });
+		expect(cssTreeAST.stylesheet.rules[0].position.content).toBe(testCase);
+	});
 
-	// it('@document', () => {
-	// 	const testCase = '@document url("https://www.example.com/") { h1 { color: green; } } .test { color: red; }';
-	// 	const reworkAST = reworkCssParse(testCase, { source: 'file.css' });
-	// 	const cssTreeAST = cssTreeParse(testCase, 'file.css');
+	it('@document', () => {
+		const testCase = '@document url("https://www.example.com/") { h1 { color: green; } } .test { color: red; }';
+		const reworkAST = reworkCssParse(testCase, { source: 'file.css' });
+		const cssTreeAST = cssTreeParse(testCase, 'file.css');
 
-	// 	assert.deepEqual(cssTreeAST, reworkAST);
-	// });
+		expect(cssTreeAST.stylesheet.rules[0].position.content).toBe(testCase);
+	});
 
-	// it('@font-face', () => {
-	// 	const testCase = '@font-face { font-family: "Open Sans"; src: url("/fonts/OpenSans-Regular-webfont.woff2") format("woff2"), url("/fonts/OpenSans-Regular-webfont.woff") format("woff"); } .test { color: red; }';
-	// 	const reworkAST = reworkCssParse(testCase, { source: 'file.css' });
-	// 	const cssTreeAST = cssTreeParse(testCase, 'file.css');
+	it('@font-face', () => {
+		const testCase = '@font-face { font-family: "Open Sans"; src: url("/fonts/OpenSans-Regular-webfont.woff2") format("woff2"), url("/fonts/OpenSans-Regular-webfont.woff") format("woff"); } .test { color: red; }';
+		const reworkAST = reworkCssParse(testCase, { source: 'file.css' });
+		const cssTreeAST = cssTreeParse(testCase, 'file.css');
 
-	// 	assert.deepEqual(cssTreeAST, reworkAST);
-	// });
+		expect(cssTreeAST.stylesheet.rules[0].position.content).toBe(testCase);
+	});
 
-	// it('@import', () => {
-	// 	const testCase = '@import url(\'landscape.css\') screen and (orientation:landscape); @import url("fineprint.css") print; .test { color: red; }';
-	// 	const reworkAST = reworkCssParse(testCase, { source: 'file.css' });
-	// 	const cssTreeAST = cssTreeParse(testCase, 'file.css');
+	it('@import', () => {
+		const testCase = '@import url(\'landscape.css\') screen and (orientation:landscape); @import url("fineprint.css") print; .test { color: red; }';
+		const reworkAST = reworkCssParse(testCase, { source: 'file.css' });
+		const cssTreeAST = cssTreeParse(testCase, 'file.css');
 
-	// 	assert.deepEqual(cssTreeAST, reworkAST);
-	// });
+		expect(cssTreeAST.stylesheet.rules[0].position.content).toBe(testCase);
+	});
 
-	// it('@charset', () => {
-	// 	const testCase = '@charset "utf-8"; .test { color: red; }';
-	// 	const reworkAST = reworkCssParse(testCase, { source: 'file.css' });
-	// 	const cssTreeAST = cssTreeParse(testCase, 'file.css');
+	it('@charset', () => {
+		const testCase = '@charset "utf-8"; .test { color: red; }';
+		const reworkAST = reworkCssParse(testCase, { source: 'file.css' });
+		const cssTreeAST = cssTreeParse(testCase, 'file.css');
 
-	// 	assert.deepEqual(cssTreeAST, reworkAST);
-	// });
+		expect(cssTreeAST.stylesheet.rules[0].position.content).toBe(testCase);
+	});
 
-	// it('@namespace', () => {
-	// 	const testCase = '@namespace svg url(http://www.w3.org/2000/svg); .test { color: red; }';
-	// 	const reworkAST = reworkCssParse(testCase, { source: 'file.css' });
-	// 	const cssTreeAST = cssTreeParse(testCase, 'file.css');
+	it('@namespace', () => {
+		const testCase = '@namespace svg url(http://www.w3.org/2000/svg); .test { color: red; }';
+		const reworkAST = reworkCssParse(testCase, { source: 'file.css' });
+		const cssTreeAST = cssTreeParse(testCase, 'file.css');
 
-	// 	assert.deepEqual(cssTreeAST, reworkAST);
-	// });
+		expect(cssTreeAST.stylesheet.rules[0].position.content).toBe(testCase);
+	});
 });

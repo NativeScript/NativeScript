@@ -1,7 +1,7 @@
 import { makeValidator, makeParser } from '../core/properties';
 import { Font as FontDefinition } from './font';
 import { ParsedFont, FontStyleType, FontWeightType } from './font-interfaces';
-export { FontStyle, FontStyleType, FontWeight, FontWeightType, ParsedFont } from './font-interfaces';
+export type { FontStyleType, FontWeightType, ParsedFont } from './font-interfaces';
 
 export abstract class Font implements FontDefinition {
 	public static default = undefined;

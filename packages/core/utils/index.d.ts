@@ -5,6 +5,7 @@ export * from './macrotask-scheduler';
 export { Source } from './debug';
 
 export * from './native-helper';
+export * from './utils-common';
 
 export const RESOURCE_PREFIX: string;
 export const FILE_PREFIX: string;
