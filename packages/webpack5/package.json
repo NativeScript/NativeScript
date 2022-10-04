@@ -21,7 +21,7 @@
 		"@pmmmwh/react-refresh-webpack-plugin": "~0.5.7",
 		"acorn": "^8.0.0",
 		"acorn-stage3": "^4.0.0",
-		"babel-loader": "^8.2.5",
+		"babel-loader": "^8.0.0",
 		"chalk": "^4.0.0",
 		"cli-highlight": "^2.0.0",
 		"commander": "^8.0.0",
