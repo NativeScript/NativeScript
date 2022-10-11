@@ -6,6 +6,9 @@
   <StackLayout class="p-20">
     <ScrollView class="h-full">
       <StackLayout>
+        <Button text="animation-curves-page" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
+        <Button text="layout-stack-height-page" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
+        <Button text="css-animations" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="a11y" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="box-shadow" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="css-playground" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />

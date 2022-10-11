@@ -407,7 +407,7 @@ export class Page extends PageBase {
 	updateWithWillAppear(animated: boolean) {
 		// this method is important because it allows plugins to react to modal page close
 		// for example allowing updating status bar background color
-	  if (this.hasActionBar) {
+		if (this.hasActionBar) {
 			this.actionBar.update();
 		}
 		this.updateStatusBar();
@@ -591,7 +591,7 @@ export class Page extends PageBase {
 			return;
 		}
 
-		if (this.actionBar.accessibilityLabel || this.actionBar.title) {
+		if (this.hasActionBar && (this.actionBar.accessibilityLabel || this.actionBar.title)) {
 			UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, this.actionBar.nativeView);
 
 			return;

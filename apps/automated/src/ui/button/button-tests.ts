@@ -3,6 +3,7 @@ import * as helper from '../../ui-helper';
 import { View, EventData, Button, Observable, Color, Page, FormattedString } from '@nativescript/core';
 import * as buttonTestsNative from './button-tests-native';
 import * as spanModule from '@nativescript/core/text/span';
+import { tapEvent } from '@nativescript/core/ui/button';
 
 // >> button-require-others
 import { BindingOptions } from '@nativescript/core/ui/core/bindable';
@@ -100,7 +101,7 @@ var _testOnClick = function (views: Array<View>) {
 
 	var actualValue = false;
 	// >> button-tap
-	button.on(Button.tapEvent, function (args: EventData) {
+	button.on(tapEvent, function (args: EventData) {
 		// Do something
 		// >> (hide)
 		actualValue = true;

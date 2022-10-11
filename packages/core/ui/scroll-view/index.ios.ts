@@ -165,7 +165,7 @@ export class ScrollView extends ScrollViewBase {
 
 		const nativeView = this.nativeViewProtected;
 
-		if (majorVersion > 10) {
+		if (nativeView && majorVersion > 10) {
 			// Disable automatic adjustment of scroll view insets
 			// Consider exposing this as property with all 4 modes
 			// https://developer.apple.com/documentation/uikit/uiscrollview/contentinsetadjustmentbehavior
@@ -182,7 +182,10 @@ export class ScrollView extends ScrollViewBase {
 			height = Math.max(this._contentMeasuredHeight, height);
 		}
 
-		nativeView.contentSize = CGSizeMake(layout.toDeviceIndependentPixels(scrollWidth), layout.toDeviceIndependentPixels(scrollHeight));
+		if (nativeView) {
+			nativeView.contentSize = CGSizeMake(layout.toDeviceIndependentPixels(scrollWidth), layout.toDeviceIndependentPixels(scrollHeight));
+		}
+
 		View.layoutChild(this, this.layoutView, insets.left, insets.top, insets.left + width, insets.top + height);
 	}
 

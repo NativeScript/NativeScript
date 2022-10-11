@@ -574,7 +574,7 @@ function hsvToRgb(h1, s1, v1) {
 	const s = s1 / 100;
 	const v = v1 / 100;
 
-	var i = Math.floor(h),
+	const i = Math.floor(h),
 		f = h - i,
 		p = v * (1 - s),
 		q = v * (1 - f * s),

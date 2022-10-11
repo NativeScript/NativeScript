@@ -18,8 +18,6 @@ import { IOSHelper } from '../ui/core/view/view-helper';
 import { Device } from '../platform';
 import { profile } from '../profiling';
 import { iOSNativeHelper } from '../utils';
-import { initAccessibilityCssHelper } from '../accessibility/accessibility-css-helper';
-import { initAccessibilityFontScale } from '../accessibility/font-scale';
 import { inBackground, setInBackground, setSuspended, suspended } from './application-common';
 
 const IOS_PLATFORM = 'ios';
@@ -492,9 +490,6 @@ export function run(entry?: string | NavigationEntry) {
 			}
 		}
 	}
-
-	initAccessibilityCssHelper();
-	initAccessibilityFontScale();
 }
 
 export function addCss(cssText: string, attributeScoped?: boolean): void {

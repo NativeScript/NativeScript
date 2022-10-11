@@ -25,7 +25,7 @@ import { LinearGradient } from '../../styling/linear-gradient';
 import * as am from '../../animation';
 import { AccessibilityEventOptions, AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait } from '../../../accessibility/accessibility-types';
 import { accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityValueProperty, accessibilityIgnoresInvertColorsProperty } from '../../../accessibility/accessibility-properties';
-import { accessibilityBlurEvent, accessibilityFocusChangedEvent, accessibilityFocusEvent, accessibilityPerformEscapeEvent, getCurrentFontScale } from '../../../accessibility';
+import { getCurrentFontScale } from '../../../accessibility';
 import { CSSShadow } from '../../styling/css-shadow';
 
 // helpers (these are okay re-exported here)
@@ -72,10 +72,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public static layoutChangedEvent = 'layoutChanged';
 	public static shownModallyEvent = 'shownModally';
 	public static showingModallyEvent = 'showingModally';
-	public static accessibilityBlurEvent = accessibilityBlurEvent;
-	public static accessibilityFocusEvent = accessibilityFocusEvent;
-	public static accessibilityFocusChangedEvent = accessibilityFocusChangedEvent;
-	public static accessibilityPerformEscapeEvent = accessibilityPerformEscapeEvent;
+	public static closingModallyEvent = 'closingModally';
 
 	public accessibilityIdentifier: string;
 	public accessibilityLabel: string;
@@ -130,6 +127,9 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	}
 
 	public changeCssFile(cssFileName: string): void {
+		if (this.disableCss) {
+			return;
+		}
 		const scope = this._styleScope;
 		if (scope && cssFileName) {
 			scope.changeCssFile(cssFileName);
@@ -138,6 +138,9 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	}
 
 	public _updateStyleScope(cssFileName?: string, cssString?: string, css?: string): void {
+		if (this.disableCss) {
+			return;
+		}
 		let scope = this._styleScope;
 		if (!scope) {
 			scope = new StyleScope();
@@ -445,6 +448,13 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 			object: this,
 			context: this._modalContext,
 			closeCallback: this._closeModalCallback,
+		};
+		this.notify(args);
+	}
+	protected _raiseClosingModallyEvent() {
+		const args: EventData = {
+			eventName: ViewCommon.closingModallyEvent,
+			object: this,
 		};
 		this.notify(args);
 	}
@@ -1018,6 +1028,12 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		return this.createAnimation(animation).play();
 	}
 
+	public cancelAllAnimations() {
+		if (this._localAnimations) {
+			this._localAnimations.forEach((a) => this._removeAnimation(a));
+		}
+	}
+
 	public createAnimation(animation: any): am.Animation {
 		ensureAnimationModule();
 		if (!this._localAnimations) {
@@ -1045,10 +1061,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	}
 
 	public resetNativeView(): void {
-		if (this._localAnimations) {
-			this._localAnimations.forEach((a) => this._removeAnimation(a));
-		}
-
+		this.cancelAllAnimations();
 		super.resetNativeView();
 	}
 

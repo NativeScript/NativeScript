@@ -1,25 +1,28 @@
-const semver = require("semver");
-
 const webpackPackageName = "@nativescript/webpack";
 
 module.exports = function ($staticConfig, hookArgs) {
-    const cliVersion = semver.parse($staticConfig.version);
-    const platfrom = hookArgs.prepareData.platform;
-    const projectData = hookArgs.projectData;
+    try {
+        const semver = require("semver");
+        const cliVersion = semver.parse($staticConfig.version);
+        const platfrom = hookArgs.prepareData.platform;
+        const projectData = hookArgs.projectData;
 
-    // Required CLI version for building IOS: 6.2.0
-    if (platfrom.toLowerCase() === "ios" &&
-        !satisfiesRequriredVersion(cliVersion, 6, 2)) {
-        throw new Error(`Building @nativescript/core for iOS requires NativeScript CLI with version at least 6.2.0. Please upgrade your NativeScript CLI version (npm i -g nativescript).`);
-    }
-
-    // Required webpack version for angular projects: 1.3.0
-    if (projectData.projectType === "Angular") {
-        const webpackMinVer = getMinWebpackVersion(projectData);
-
-        if (webpackMinVer && !satisfiesRequriredVersion(webpackMinVer, 1, 3)) {
-            throw new Error(`Building @nativescript/core for Angular requires ${webpackPackageName} with version at least 1.3.0. Please upgrade: npm i ${webpackPackageName} --save-dev.`);
+        // Required CLI version for building IOS: 6.2.0
+        if (platfrom.toLowerCase() === "ios" &&
+            !satisfiesRequriredVersion(cliVersion, 6, 2)) {
+            throw new Error(`Building @nativescript/core for iOS requires NativeScript CLI with version at least 6.2.0. Please upgrade your NativeScript CLI version (npm i -g nativescript).`);
         }
+
+        // Required webpack version for angular projects: 1.3.0
+        if (projectData.projectType === "Angular") {
+            const webpackMinVer = getMinWebpackVersion(projectData);
+
+            if (webpackMinVer && !satisfiesRequriredVersion(webpackMinVer, 1, 3)) {
+                throw new Error(`Building @nativescript/core for Angular requires ${webpackPackageName} with version at least 1.3.0. Please upgrade: npm i ${webpackPackageName} --save-dev.`);
+            }
+        }
+    } catch(err) {
+
     }
 };
 
@@ -49,6 +52,8 @@ function getMinWebpackVersion(projectData) {
     const webpackVer = dependencies[webpackPackageName] || devDependencies[webpackPackageName];
 
     let webpackMinVer = null;
+
+    const semver = require("semver");
 
     if (semver.valid(webpackVer)) {
         webpackMinVer = semver.parse(webpackVer);

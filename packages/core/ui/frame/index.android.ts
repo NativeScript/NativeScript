@@ -19,6 +19,7 @@ import { Builder } from '../builder';
 import { CSSUtils } from '../../css/system-classes';
 import { Device } from '../../platform';
 import { profile } from '../../profiling';
+import { ExpandedEntry } from './fragment.transitions.android';
 import { android as androidApplication } from '../../application';
 import { setSuspended } from '../../application/application-common';
 
@@ -79,11 +80,11 @@ function getAttachListener(): android.view.View.OnAttachStateChangeListener {
 }
 
 export class Frame extends FrameBase {
-	public _originalBackground: any;
 	private _android: AndroidFrame;
 	private _containerViewId = -1;
 	private _tearDownPending = false;
 	private _attachedToWindow = false;
+	private _wasReset = false;
 	private _cachedTransitionState: TransitionState;
 	private _frameCreateTimeout: NodeJS.Timeout;
 
@@ -152,6 +153,7 @@ export class Frame extends FrameBase {
 		}
 
 		this._attachedToWindow = true;
+		this._wasReset = false;
 		this._processNextNavigationEntry();
 	}
 
@@ -166,7 +168,16 @@ export class Frame extends FrameBase {
 		// In this case call _navigateCore in order to recreate the current fragment.
 		// Don't call navigate because it will fire navigation events.
 		// As JS instances are alive it is already done for the current page.
-		if (!this.isLoaded || this._executingContext || !this._attachedToWindow) {
+		if (!this.isLoaded || this._executingContext) {
+			return;
+		}
+
+		// in case the activity is "reset" using resetRootView we must wait for
+		// the attachedToWindow event to make the first navigation or it will crash
+		// https://github.com/NativeScript/NativeScript/commit/9dd3e1a8076e5022e411f2f2eeba34aabc68d112
+		// though we should not do it on app "start"
+		// or it will create a "flash" to activity background color
+		if (this._wasReset && !this._attachedToWindow) {
 			return;
 		}
 
@@ -195,7 +206,9 @@ export class Frame extends FrameBase {
 			// NOTE: we are restoring the animation settings in Frame.setCurrent(...) as navigation completes asynchronously
 			const cachedTransitionState = getTransitionState(this._currentEntry);
 
-			if (cachedTransitionState) {
+			// we can end up here also after an activity recreate. In this case the entry fragment was destroyed
+			// and we also dont have cachedTransitionState. We still need to navigate again
+			if (cachedTransitionState || !entry.fragment) {
 				this._cachedTransitionState = cachedTransitionState;
 				this._currentEntry = null;
 				// NavigateCore will eventually call _processNextNavigationEntry again.
@@ -226,36 +239,12 @@ export class Frame extends FrameBase {
 
 	public _onRootViewReset(): void {
 		super._onRootViewReset();
-
+		// used to handle the "first" navigate differently on first run and on reset
+		this._wasReset = true;
 		// call this AFTER the super call to ensure descendants apply their rootview-reset logic first
 		// i.e. in a scenario with nested frames / frame with tabview let the descendandt cleanup the inner
 		// fragments first, and then cleanup the parent fragments
 		this.disposeCurrentFragment();
-	}
-
-	onLoaded(): void {
-		if (this._originalBackground) {
-			this.backgroundColor = null;
-			this.backgroundColor = this._originalBackground;
-			this._originalBackground = null;
-		}
-		this._frameCreateTimeout = setTimeout(() => {
-			// there's a bug with nested frames where sometimes the nested fragment is not recreated at all
-			// so we manually check on loaded event if the fragment is not recreated and recreate it
-			const currentEntry = this._currentEntry || this._executingContext?.entry;
-			if (currentEntry) {
-				if (!currentEntry.fragment) {
-					const manager = this._getFragmentManager();
-					const transaction = manager.beginTransaction();
-					currentEntry.fragment = this.createFragment(currentEntry, currentEntry.fragmentTag);
-					_updateTransitions(currentEntry);
-					transaction.replace(this.containerViewId, currentEntry.fragment, currentEntry.fragmentTag);
-					transaction.commitAllowingStateLoss();
-				}
-			}
-		}, 0);
-
-		super.onLoaded();
 	}
 
 	onUnloaded() {
@@ -389,8 +378,7 @@ export class Frame extends FrameBase {
 	// HACK: This @profile decorator creates a circular dependency
 	// HACK: because the function parameter type is evaluated with 'typeof'
 	@profile
-	public _navigateCore(newEntry: any) {
-		// should be (newEntry: BackstackEntry)
+	public _navigateCore(newEntry: BackstackEntry) {
 		super._navigateCore(newEntry);
 
 		// set frameId here so that we could use it in fragment.transitions
@@ -448,8 +436,23 @@ export class Frame extends FrameBase {
 			//transaction.setTransition(androidx.fragment.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
 		}
 
-		transaction.replace(this.containerViewId, newFragment, newFragmentTag);
-		transaction.commitAllowingStateLoss();
+		if (this._currentEntry) {
+			// we only hide the fragment to fix some black blick issues with GLSurfaceView and GLTextureView
+			// it will be removed once the navigation is done
+			transaction.hide(this._currentEntry.fragment);
+		}
+		if (clearHistory || isReplace) {
+			// we need to ensure we dont listen for animations of
+			// in between fragments or they could break our transition end handling
+			// and set the wrong current entry
+			for (let index = 0; index < this.backStack.length; index++) {
+				_clearEntry(this.backStack[index]);
+			}
+			transaction.replace(this.containerViewId, newFragment, newFragmentTag);
+		} else {
+			transaction.add(this.containerViewId, newFragment, newFragmentTag);
+		}
+		transaction.commitNowAllowingStateLoss();
 	}
 
 	public _goBackCore(backstackEntry: BackstackEntry) {
@@ -458,7 +461,6 @@ export class Frame extends FrameBase {
 
 		const manager: androidx.fragment.app.FragmentManager = this._getFragmentManager();
 		const transaction = manager.beginTransaction();
-
 		if (!backstackEntry.fragment) {
 			// Happens on newer API levels. On older all fragments
 			// are recreated once activity is created.
@@ -470,16 +472,49 @@ export class Frame extends FrameBase {
 
 		_reverseTransitions(backstackEntry, this._currentEntry);
 
-		transaction.replace(this.containerViewId, backstackEntry.fragment, backstackEntry.fragmentTag);
+		const currentIndex = this.backStack.length;
+		const goBackToIndex = this.backStack.indexOf(backstackEntry);
 
-		transaction.commitAllowingStateLoss();
+		// the order is important so that the last transition listener called be
+		// the one from the current entry we are going back from
+		for (let index = goBackToIndex + 1; index < currentIndex; index++) {
+			// we need to ensure we dont listen for animations of
+			// in between fragments or they could break our transition end handling
+			// and set the wrong current entry
+			_clearEntry(this.backStack[index]);
+			transaction.remove(this.backStack[index].fragment);
+		}
+		if (this._currentEntry !== backstackEntry) {
+			const entry = this._currentEntry as ExpandedEntry;
+			// if we are going back we need to store where we are backing to
+			// so that we can set the current entry
+			// it only needs to be done on the return transition
+			if (entry.returnTransitionListener) {
+				entry.returnTransitionListener.backEntry = backstackEntry;
+			}
+
+			// we only hide the fragment to fix some black blick issues with GLSurfaceView and GLTextureView
+			// it will be removed once the navigation is done
+			transaction.hide(this._currentEntry.fragment);
+
+			// let's show the previous fragment
+			transaction.show(backstackEntry.fragment);
+		}
+
+		transaction.commitNowAllowingStateLoss();
 	}
 
 	public _removeEntry(removed: BackstackEntry): void {
 		super._removeEntry(removed);
-
 		if (removed.fragment) {
+			// we only did hide the fragment to fix some black blick issues with GLSurfaceView and GLTextureView
+			// so lets remove it
+			const manager: androidx.fragment.app.FragmentManager = this._getFragmentManager();
+			const transaction = manager.beginTransaction();
+			transaction.remove(removed.fragment);
+			// clear entry before commit because commit now will release the fragment right away
 			_clearEntry(removed);
+			transaction.commitNowAllowingStateLoss();
 		}
 
 		removed.fragment = null;
@@ -763,6 +798,12 @@ function findPageForFragment(fragment: androidx.fragment.app.Fragment, frame: Fr
 		entry = current;
 	} else if (executingContext && executingContext.entry && executingContext.entry.fragmentTag === fragmentTag) {
 		entry = executingContext.entry;
+	} else {
+		frame.backStack.forEach((e) => {
+			if (e && e.fragmentTag === fragmentTag) {
+				entry = e;
+			}
+		});
 	}
 
 	let page: Page;
@@ -843,14 +884,23 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 	public onCreateAnimator(fragment: androidx.fragment.app.Fragment, transit: number, enter: boolean, nextAnim: number, superFunc: Function): android.animation.Animator {
 		let animator = null;
 		const entry = <any>this.entry;
+		if (Trace.isEnabled()) {
+			Trace.write(`${fragment}.onCreateAnimator(${transit},${enter}, ${nextAnim})`, Trace.categories.Animation);
+		}
 
 		// Return enterAnimator only when new (no current entry) nested transition.
 		if (enter && entry.isNestedDefaultTransition) {
 			animator = entry.enterAnimator;
 			entry.isNestedDefaultTransition = false;
 		}
-
 		return animator || superFunc.call(fragment, transit, enter, nextAnim);
+	}
+	@profile
+	public onCreateAnimation(fragment: androidx.fragment.app.Fragment, transit: number, enter: boolean, nextAnim: number, superFunc: Function): globalAndroid.view.animation.Animation {
+		if (Trace.isEnabled()) {
+			Trace.write(`${fragment}.onCreateAnimation(${transit},${enter}, ${nextAnim})`, Trace.categories.Animation);
+		}
+		return superFunc.call(fragment, transit, enter, nextAnim);
 	}
 
 	@profile
@@ -958,25 +1008,10 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 
 	@profile
 	public onDestroyView(fragment: org.nativescript.widgets.FragmentBase, superFunc: Function): void {
-		try {
-			if (Trace.isEnabled()) {
-				Trace.write(`${fragment}.onDestroyView()`, Trace.categories.NativeLifecycle);
-			}
-
-			const hasRemovingParent = fragment.getRemovingParentFragment();
-
-			if (hasRemovingParent) {
-				const nativeFrameView = this.frame.nativeViewProtected;
-				if (nativeFrameView) {
-					const bitmapDrawable = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), this.backgroundBitmap);
-					this.frame._originalBackground = this.frame.backgroundColor || new Color('White');
-					nativeFrameView.setBackgroundDrawable(bitmapDrawable);
-					this.backgroundBitmap = null;
-				}
-			}
-		} finally {
-			superFunc.call(fragment);
+		if (Trace.isEnabled()) {
+			Trace.write(`${fragment}.onDestroyView()`, Trace.categories.NativeLifecycle);
 		}
+		superFunc.call(fragment);
 	}
 
 	@profile
@@ -999,49 +1034,15 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 		// "IllegalStateException: Failure saving state: active fragment has cleared index: -1"
 		// in a specific mixed parent / nested frame navigation scenario
 		entry.fragment = null;
-
-		const page = entry.resolvedPage;
-		if (!page) {
-			Trace.error(`${fragment}.onDestroy: entry has no resolvedPage`);
-
-			return null;
-		}
 	}
 
 	@profile
 	public onPause(fragment: org.nativescript.widgets.FragmentBase, superFunc: Function): void {
-		try {
-			// Get view as bitmap and set it as background. This is workaround for the disapearing nested fragments.
-			// TODO: Consider removing it when update to androidx.fragment:1.2.0
-			const hasRemovingParent = fragment.getRemovingParentFragment();
-
-			if (hasRemovingParent) {
-				this.backgroundBitmap = this.loadBitmapFromView(this.frame.nativeViewProtected);
-			}
-		} finally {
-			superFunc.call(fragment);
-		}
+		superFunc.call(fragment);
 	}
 
 	@profile
 	public onResume(fragment: org.nativescript.widgets.FragmentBase, superFunc: Function): void {
-		const frame = this.entry.resolvedPage.frame;
-		// on some cases during the first navigation on nested frames the animation doesn't trigger
-		// we depend on the animation (even None animation) to set the entry as the current entry
-		// animation should start between start and resume, so if we have an executing navigation here it probably means the animation was skipped
-		// so we manually set the entry
-		// also, to be compatible with fragments 1.2.x we need this setTimeout as animations haven't run on onResume yet
-		const weakRef = new WeakRef(this);
-		setTimeout(() => {
-			const owner = weakRef.get();
-			if (!owner) {
-				return;
-			}
-			if (frame._executingContext && !(<any>owner.entry).isAnimationRunning) {
-				frame.setCurrent(owner.entry, frame._executingContext.navigationType);
-			}
-		}, 0);
-
 		superFunc.call(fragment);
 	}
 

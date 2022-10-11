@@ -13,7 +13,7 @@ export function createPage() {
 	var vAligns: CoreTypes.VerticalAlignmentType[] = ['stretch', 'top', 'middle', 'bottom'];
 	//var hAligns = ["stretch", "left", "center", "right"];
 	var count = 0;
-	btn.on(buttons.Button.tapEvent, function () {
+	btn.on(buttons.tapEvent, function () {
 		//page.css = "button { vertical-align:" + vAligns[(count++) % 4] + " }";
 		btn.verticalAlignment = vAligns[count++ % 4];
 	});

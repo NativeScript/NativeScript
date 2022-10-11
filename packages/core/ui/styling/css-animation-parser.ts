@@ -125,9 +125,9 @@ function keyframeAnimationsFromCSSProperty(value: any, animations: KeyframeAnima
 export function parseKeyframeDeclarations(unparsedKeyframeDeclarations: KeyframeDeclaration[]): KeyframeDeclaration[] {
 	const declarations = unparsedKeyframeDeclarations.reduce((declarations, { property: unparsedProperty, value: unparsedValue }) => {
 		const property = CssAnimationProperty._getByCssName(unparsedProperty);
-
-		if (typeof unparsedProperty === 'string' && property && property._valueConverter) {
-			declarations[property.name] = property._valueConverter(<string>unparsedValue);
+		const valueConverter = property?.valueConverter;
+		if (typeof unparsedProperty === 'string' && property && valueConverter) {
+			declarations[property.name] = valueConverter(<string>unparsedValue);
 		} else if (typeof unparsedValue === 'string' && unparsedProperty === 'transform') {
 			const transformations = transformConverter(unparsedValue);
 			Object.assign(declarations, transformations);

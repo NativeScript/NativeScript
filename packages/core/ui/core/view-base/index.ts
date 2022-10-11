@@ -272,6 +272,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
 	public id: string;
 	public className: string;
+	public disableCss: boolean;
 
 	public _domId: number;
 	public _context: any;
@@ -432,9 +433,14 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		if (this._isLoaded) {
 			return;
 		}
-
+		// the view is going to be layed out after
+		// no need for requestLayout which can be pretty slow because
+		// called a lot and going all up the chain to the page
+		this.suspendRequestLayout = true;
 		this._isLoaded = true;
-		this._cssState.onLoaded();
+		if (!this.disableCss) {
+			this._cssState.onLoaded();
+		}
 		this._resumeNativeUpdates(SuspendType.Loaded);
 
 		this.eachChild((child) => {
@@ -443,7 +449,8 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 			return true;
 		});
 
-		this._emit('loaded');
+		this.suspendRequestLayout = false;
+		this._emit(ViewBase.loadedEvent);
 	}
 
 	@profile
@@ -462,7 +469,9 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		});
 
 		this._isLoaded = false;
-		this._cssState.onUnloaded();
+		if (!this.disableCss) {
+			this._cssState.onUnloaded();
+		}
 		this._emit('unloaded');
 	}
 
@@ -657,6 +666,19 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		} else {
 			this.parent.requestLayout();
 		}
+	}
+
+	_requetLayoutNeeded = false;
+	get isLayoutRequestNeeded() {
+		return this._requetLayoutNeeded;
+	}
+
+	_suspendRequestLayout = false;
+	set suspendRequestLayout(value: boolean) {
+		this._suspendRequestLayout = value;
+	}
+	get suspendRequestLayout() {
+		return this._suspendRequestLayout;
 	}
 
 	@profile
@@ -930,9 +952,11 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 				return true;
 			});
 		}
-
 		if (this.parent) {
 			this.parent._removeViewFromNativeVisualTree(this);
+		} else {
+			//ensure we still remove the view or we could create memory leaks
+			this._removeFromNativeVisualTree();
 		}
 
 		// const nativeView = this.nativeViewProtected;
@@ -985,6 +1009,13 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		}
 
 		return true;
+	}
+
+	/**
+	 * Method is intended to be overridden by inheritors and used as "protected"
+	 */
+	public _removeFromNativeVisualTree(): void {
+		this._isAddedToNativeVisualTree = false;
 	}
 
 	/**
@@ -1071,6 +1102,9 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	}
 
 	_onCssStateChange(): void {
+		if (this.disableCss) {
+			return;
+		}
 		this._cssState.onChange();
 		eachDescendant(this, (child: ViewBase) => {
 			child._cssState.onChange();
@@ -1080,6 +1114,9 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	}
 
 	_inheritStyleScope(styleScope: ssm.StyleScope): void {
+		if (this.disableCss) {
+			return;
+		}
 		// If we are styleScope don't inherit parent stylescope.
 		// TODO: Consider adding parent scope and merge selectors.
 		if (this._isStyleScopeHost) {
@@ -1181,6 +1218,9 @@ hiddenProperty.register(ViewBase);
 export const classNameProperty = new Property<ViewBase, string>({
 	name: 'className',
 	valueChanged(view: ViewBase, oldValue: string, newValue: string) {
+		if (view.disableCss) {
+			return;
+		}
 		const cssClasses = view.cssClasses;
 		const rootViewsCssClasses = CSSUtils.getSystemCssClasses();
 
@@ -1200,7 +1240,6 @@ export const classNameProperty = new Property<ViewBase, string>({
 		if (typeof newValue === 'string' && newValue !== '') {
 			newValue.split(' ').forEach((c) => cssClasses.add(c));
 		}
-
 		view._onCssStateChange();
 	},
 });
@@ -1211,6 +1250,12 @@ export const idProperty = new Property<ViewBase, string>({
 	valueChanged: (view, oldValue, newValue) => view._onCssStateChange(),
 });
 idProperty.register(ViewBase);
+export const disableCssProperty = new InheritedProperty<ViewBase, boolean>({
+	name: 'disableCss',
+	defaultValue: false,
+	valueConverter: booleanConverter,
+});
+disableCssProperty.register(ViewBase);
 
 export function booleanConverter(v: string | boolean): boolean {
 	const lowercase = (v + '').toLowerCase();

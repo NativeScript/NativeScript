@@ -267,15 +267,6 @@ export function test_AnimateOpacity(done) {
 		});
 }
 
-export function test_AnimateOpacity_ShouldThrow_IfNotNumber() {
-	var label = new Label();
-	helper.buildUIAndRunTest(label, (views: Array<viewModule.View>) => {
-		TKUnit.assertThrows(() => {
-			label.animate({ opacity: <any>'0.75' });
-		}, 'Setting opacity to a non number should throw.');
-	});
-}
-
 export function test_AnimateDelay_ShouldThrow_IfNotNumber() {
 	var label = new Label();
 	helper.buildUIAndRunTest(label, (views: Array<viewModule.View>) => {
@@ -300,15 +291,6 @@ export function test_AnimateIterations_ShouldThrow_IfNotNumber() {
 		TKUnit.assertThrows(() => {
 			label.animate({ iterations: <any>'1' });
 		}, 'Setting iterations to a non number should throw.');
-	});
-}
-
-export function test_AnimateRotate_ShouldThrow_IfNotNumber() {
-	var label = new Label();
-	helper.buildUIAndRunTest(label, (views: Array<viewModule.View>) => {
-		TKUnit.assertThrows(() => {
-			label.animate({ rotate: <any>'1' });
-		}, 'Setting rotate to a non number should throw.');
 	});
 }
 

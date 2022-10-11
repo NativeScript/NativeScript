@@ -8,14 +8,14 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.ScrollView;
+import androidx.core.widget.NestedScrollView;
 
 import org.nativescript.widgets.HorizontalScrollView.SavedState;
 
 /**
  * @author hhristov
  */
-public class VerticalScrollView extends ScrollView {
+public class VerticalScrollView extends NestedScrollView {
 
 	private final Rect mTempRect = new Rect();
 
@@ -212,7 +212,7 @@ public class VerticalScrollView extends ScrollView {
 	}
 
 	@Override
-	protected void onAttachedToWindow() {
+	public void onAttachedToWindow() {
 		super.onAttachedToWindow();
 		this.isFirstLayout = true;
 	}

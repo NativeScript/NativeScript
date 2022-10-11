@@ -3,6 +3,7 @@ import { View, CSSType } from '../core/view';
 import { booleanConverter } from '../core/view-base';
 import { Property } from '../core/properties';
 import { Switch as SwitchDefinition } from '.';
+import { colorConverter } from '../styling/style-properties';
 
 @CSSType('Switch')
 export class SwitchBase extends View implements SwitchDefinition {
@@ -37,6 +38,6 @@ checkedProperty.register(SwitchBase);
 export const offBackgroundColorProperty = new Property<SwitchBase, Color>({
 	name: 'offBackgroundColor',
 	equalityComparer: Color.equals,
-	valueConverter: (v) => new Color(v),
+	valueConverter: colorConverter,
 });
 offBackgroundColorProperty.register(SwitchBase);
