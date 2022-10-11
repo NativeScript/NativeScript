@@ -45,7 +45,6 @@ export class WrappedValue implements WrappedValueDefinition {
 
 const _wrappedValues = [new WrappedValue(null), new WrappedValue(null), new WrappedValue(null), new WrappedValue(null), new WrappedValue(null)];
 
-
 export class Observable implements ObservableDefinition {
 	public static propertyChangeEvent = 'propertyChange';
 	public _isViewBase: boolean;
@@ -164,7 +163,6 @@ export class Observable implements ObservableDefinition {
 		if (observers) {
 			Observable._handleEvent(observers, eventData);
 		}
-
 	}
 
 	private static _handleEvent<T extends EventData>(observers: Array<ListenerEntry>, data: T): void {
@@ -176,10 +174,19 @@ export class Observable implements ObservableDefinition {
 			if (entry.once) {
 				observers.splice(i, 1);
 			}
+
+			let returnValue;
 			if (entry.thisArg) {
-				entry.callback.apply(entry.thisArg, [data]);
+				returnValue = entry.callback.apply(entry.thisArg, [data]);
 			} else {
-				entry.callback(data);
+				returnValue = entry.callback(data);
+			}
+
+			// This ensures errors thrown inside asynchronous functions do not get swallowed
+			if (returnValue && returnValue instanceof Promise) {
+				returnValue.catch((err) => {
+					console.error(err);
+				});
 			}
 		}
 	}

@@ -1,6 +1,7 @@
 import { disableZoomProperty, WebViewBase, WebViewClient } from './web-view-common';
 import { Trace } from '../../trace';
 import { knownFolders } from '../../file-system';
+import { openUrl } from '../../utils';
 
 export * from './web-view-common';
 
@@ -19,9 +20,17 @@ function initializeWebViewClient(): void {
 			return global.__native(this);
 		}
 
-		public shouldOverrideUrlLoading(view: android.webkit.WebView, url: any) {
+		public shouldOverrideUrlLoading(view: android.webkit.WebView, target: any) {
+			const url: string = target instanceof android.webkit.WebResourceRequest ? target.getUrl().toString() : target;
+
 			if (Trace.isEnabled()) {
 				Trace.write('WebViewClientClass.shouldOverrideUrlLoading(' + url + ')', Trace.categories.Debug);
+			}
+
+			// Handle schemes like mailto, tel, etc
+			if (!android.webkit.URLUtil.isNetworkUrl(url)) {
+				openUrl(url);
+				return true;
 			}
 
 			return false;

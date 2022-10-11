@@ -33,8 +33,23 @@ class UILabelClickHandlerImpl extends NSObject {
 	public linkTap(tapGesture: UITapGestureRecognizer) {
 		const owner = this._owner.get();
 		if (owner) {
-			// https://stackoverflow.com/a/35789589
 			const label = <UILabel>owner.nativeTextViewProtected;
+
+			// This offset along with setting paragraph style alignment will achieve perfect horizontal alignment for NSTextContainer
+			let offsetXMultiplier: number;
+			switch (owner.textAlignment) {
+				case 'center':
+					offsetXMultiplier = 0.5;
+					break;
+				case 'right':
+					offsetXMultiplier = 1.0;
+					break;
+				default:
+					offsetXMultiplier = 0.0;
+					break;
+			}
+			const offsetYMultiplier: number = 0.5; // Text is vertically aligned to center
+
 			const layoutManager = NSLayoutManager.alloc().init();
 			const textContainer = NSTextContainer.alloc().initWithSize(CGSizeZero);
 			const textStorage = NSTextStorage.alloc().initWithAttributedString(owner.nativeTextViewProtected['attributedText']);
@@ -51,27 +66,45 @@ class UILabelClickHandlerImpl extends NSObject {
 			const locationOfTouchInLabel = tapGesture.locationInView(label);
 			const textBoundingBox = layoutManager.usedRectForTextContainer(textContainer);
 
-			const textContainerOffset = CGPointMake((labelSize.width - textBoundingBox.size.width) * 0.5 - textBoundingBox.origin.x, (labelSize.height - textBoundingBox.size.height) * 0.5 - textBoundingBox.origin.y);
-
+			const textContainerOffset = CGPointMake((labelSize.width - textBoundingBox.size.width) * offsetXMultiplier - textBoundingBox.origin.x, (labelSize.height - textBoundingBox.size.height) * offsetYMultiplier - textBoundingBox.origin.y);
 			const locationOfTouchInTextContainer = CGPointMake(locationOfTouchInLabel.x - textContainerOffset.x, locationOfTouchInLabel.y - textContainerOffset.y);
 
-			const indexOfCharacter = layoutManager.characterIndexForPointInTextContainerFractionOfDistanceBetweenInsertionPoints(locationOfTouchInTextContainer, textContainer, null);
+			// Check if tap was inside text bounding rect
+			if (CGRectContainsPoint(textBoundingBox, locationOfTouchInTextContainer)) {
+				// According to Apple docs, if no glyph is under point, the nearest glyph is returned
+				const glyphIndex = layoutManager.glyphIndexForPointInTextContainerFractionOfDistanceThroughGlyph(locationOfTouchInTextContainer, textContainer, null);
+				// In order to determine whether the tap point actually lies within the bounds
+				// of the glyph returned, we call the method below and test
+				// whether the point falls in the rectangle returned by that method
+				const glyphRect = layoutManager.boundingRectForGlyphRangeInTextContainer(
+					{
+						location: glyphIndex,
+						length: 1,
+					},
+					textContainer
+				);
 
-			let span: Span = null;
-			// try to find the corresponding span using the spanRanges
-			for (let i = 0; i < owner._spanRanges.length; i++) {
-				const range = owner._spanRanges[i];
-				if (range.location <= indexOfCharacter && range.location + range.length > indexOfCharacter) {
-					if (owner.formattedText && owner.formattedText.spans.length > i) {
-						span = owner.formattedText.spans.getItem(i);
+				// Ensure that an actual glyph was tapped
+				if (CGRectContainsPoint(glyphRect, locationOfTouchInTextContainer)) {
+					const indexOfCharacter = layoutManager.characterIndexForGlyphAtIndex(glyphIndex);
+
+					let span: Span = null;
+					// Try to find the corresponding span using the spanRanges
+					for (let i = 0; i < owner._spanRanges.length; i++) {
+						const range = owner._spanRanges[i];
+						if (range.location <= indexOfCharacter && range.location + range.length > indexOfCharacter) {
+							if (owner.formattedText && owner.formattedText.spans.length > i) {
+								span = owner.formattedText.spans.getItem(i);
+							}
+							break;
+						}
 					}
-					break;
-				}
-			}
 
-			if (span && span.tappable) {
-				// if the span is found and tappable emit the linkTap event
-				span._emit(Span.linkTapEvent);
+					if (span && span.tappable) {
+						// if the span is found and tappable emit the linkTap event
+						span._emit(Span.linkTapEvent);
+					}
+				}
 			}
 		}
 	}
@@ -241,13 +274,16 @@ export class TextBase extends TextBaseCommon {
 			return;
 		}
 
+		const letterSpacing = this.style.letterSpacing ? this.style.letterSpacing : 0;
+		const lineHeight = this.style.lineHeight ? this.style.lineHeight : 0;
 		if (this.formattedText) {
 			this.setFormattedTextDecorationAndTransform();
+			// (<any>this.nativeTextViewProtected).nativeScriptSetFormattedTextDecorationAndTransformLetterSpacingLineHeight(this.getFormattedStringDetails(this.formattedText), letterSpacing, lineHeight);
 		} else {
 			this.setTextDecorationAndTransform();
 			// console.log('setTextDecorationAndTransform...')
 			// const text = getTransformedText(isNullOrUndefined(this.text) ? '' : `${this.text}`, this.textTransform);
-			// (<any>this.nativeTextViewProtected).nativeScriptSetTextDecorationAndTransformTextDecorationLetterSpacingLineHeight(text, this.style.textDecoration || '', this.style.letterSpacing !== 0 ? this.style.letterSpacing : 0, this.style.lineHeight ? this.style.lineHeight : 0);
+			// (<any>this.nativeTextViewProtected).nativeScriptSetTextDecorationAndTransformTextDecorationLetterSpacingLineHeight(text, this.style.textDecoration || '', letterSpacing, lineHeight);
 
 			// if (!this.style?.color && majorVersion >= 13 && UIColor.labelColor) {
 			// 	this._setColor(UIColor.labelColor);
@@ -416,8 +452,6 @@ export class TextBase extends TextBaseCommon {
 			color: span.color ? span.color.ios : null,
 			backgroundColor: backgroundColor ? backgroundColor.ios : null,
 			textDecoration: getClosestPropertyValue(textDecorationProperty, span),
-			letterSpacing: this.letterSpacing || 0,
-			lineHeight: this.lineHeight || 0, //this.style?.lineHeight ? this.style.lineHeight : 0,
 			baselineOffset: this.getBaselineOffset(iosFont, span.style.verticalAlignment),
 			index,
 		};

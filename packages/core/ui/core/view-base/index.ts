@@ -1257,7 +1257,7 @@ export const disableCssProperty = new InheritedProperty<ViewBase, boolean>({
 });
 disableCssProperty.register(ViewBase);
 
-export function booleanConverter(v: string): boolean {
+export function booleanConverter(v: string | boolean): boolean {
 	const lowercase = (v + '').toLowerCase();
 	if (lowercase === 'true') {
 		return true;

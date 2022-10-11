@@ -74,7 +74,7 @@ export function mergeCssSelectors(): void {
 let applicationCssSelectors: RuleSet[] = [];
 let applicationCssSelectorVersion = 0;
 let applicationSelectors: RuleSet[] = [];
-let tagToScopeTag: Map<string | number, string> = new Map();
+const tagToScopeTag: Map<string | number, string> = new Map();
 let currentScopeTag: string = null;
 const applicationAdditionalSelectors: RuleSet[] = [];
 const applicationKeyframes: any = {};
@@ -314,7 +314,7 @@ export function removeTaggedAdditionalCSS(tag: string | number): boolean {
 
 export function addTaggedAdditionalCSS(cssText: string, tag?: string | number): boolean {
 	const parsed: RuleSet[] = CSSSource.fromDetect(cssText, applicationKeyframes, undefined).selectors;
-	let tagScope = currentScopeTag || (tag && tagToScopeTag.has(tag) && tagToScopeTag.get(tag)) || null;
+	const tagScope = currentScopeTag || (tag && tagToScopeTag.has(tag) && tagToScopeTag.get(tag)) || null;
 	if (tagScope && tag) {
 		tagToScopeTag.set(tag, tagScope);
 	}
@@ -568,40 +568,57 @@ export class CssState {
 		// Update values for the scope's css-variables
 		view.style.resetScopedCssVariables();
 
-
 		const valuesToApply = {};
+		const cssExpsProperties = {};
+
 		for (const property in newPropertyValues) {
-			let value = newPropertyValues[property];
-			if (property in oldProperties && oldProperties[property] === value) {
-				// Skip unchanged values
-				delete oldProperties[property];
+			const value = newPropertyValues[property];
+			const isCssExp = isCssVariableExpression(value) || isCssCalcExpression(value);
+
+			if (isCssExp) {
+				// we handle css exp separately because css vars must be evaluated first
+				cssExpsProperties[property] = value;
 				continue;
 			}
 			delete oldProperties[property];
+			if (property in oldProperties && oldProperties[property] === value) {
+				// Skip unchanged values
+				continue;
+			}
 			if (isCssVariable(property)) {
 				view.style.setScopedCssVariable(property, value);
 				delete newPropertyValues[property];
 				continue;
 			}
-			if (isCssVariableExpression(value) || isCssCalcExpression(value)) {
-				value = evaluateCssExpressions(view, property, newPropertyValues[property]);
+			valuesToApply[property] = value;
 		}
-				if (value === unsetValue) {
-					delete newPropertyValues[property];
-					continue;
-				}
+		//we need to parse CSS vars first before evaluating css expressions
+		for (const property in cssExpsProperties) {
+			delete oldProperties[property];
+			const value = evaluateCssExpressions(view, property, cssExpsProperties[property]);
+			if (property in oldProperties && oldProperties[property] === value) {
+				// Skip unchanged values
+				continue;
+			}
+			if (value === unsetValue) {
+				delete newPropertyValues[property];
+			}
+			if (isCssVariable(property)) {
+				view.style.setScopedCssVariable(property, value);
+				delete newPropertyValues[property];
+			}
+
 			valuesToApply[property] = value;
 		}
 
 		// Unset removed values
 		for (const property in oldProperties) {
-				if (property in view.style) {
-					view.style[`css:${property}`] = unsetValue;
+			if (property in view.style) {
+				view.style[`css:${property}`] = unsetValue;
+			} else {
+				// TRICKY: How do we unset local value?
 			}
-			else {
-					// TRICKY: How do we unset local value?
-				}
-			}
+		}
 		// Set new values to the style
 		for (const property in valuesToApply) {
 			const value = valuesToApply[property];
