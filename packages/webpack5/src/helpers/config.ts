@@ -3,16 +3,22 @@ import { env } from '../index';
 
 function getCLILib() {
 	if (!env.nativescriptLibPath) {
-		warnOnce(
-			'getCLILib',
-			`
-			Cannot find NativeScript CLI path. Make sure --env.nativescriptLibPath is passed
-		`
-		);
+		if (typeof env.nativescriptLibPath !== 'boolean') {
+			warnOnce(
+				'getCLILib',
+				`
+				Cannot find NativeScript CLI path. Make sure --env.nativescriptLibPath is passed
+				`
+			);
+		}
 		return false;
 	}
 
-	return require(env.nativescriptLibPath);
+	if (typeof env.nativescriptLibPath === 'boolean') {
+		return false;
+	}
+
+	return require(env.nativescriptLibPath as string);
 }
 
 /**

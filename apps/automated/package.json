@@ -6,18 +6,15 @@
     "type": "git",
     "url": "https://github.com/NativeScript/NativeScript.git"
   },
-  "scripts": {
-    "clean": "npx rimraf hooks node_modules platforms package-lock.json && npm i --legacy-peer-deps"
-  },
   "dependencies": {
     "@nativescript/core": "file:../../packages/core",
     "nativescript-theme-core": "file:../../node_modules/nativescript-theme-core"
   },
   "devDependencies": {
-    "@nativescript/android": "~8.2.1",
-    "@nativescript/ios": "~8.2.1",
-    "@nativescript/webpack": "file:../../dist/packages/nativescript-webpack.tgz",
-    "typescript": "4.5.4"
+    "@nativescript/android": "~8.3.0",
+    "@nativescript/ios": "~8.3.0",
+    "@nativescript/webpack": "5.0.7",
+    "typescript": "4.7.3"
   },
   "gitHead": "c06800e52ee1a184ea2dffd12a6702aaa43be4e3",
   "readme": "NativeScript Application"

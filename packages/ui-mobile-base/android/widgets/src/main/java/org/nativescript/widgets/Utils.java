@@ -434,7 +434,7 @@ public class Utils {
 
 			return new Pair<>(
 				Math.round((maxSize * width) / height)
-				, (int) height);
+				, (int) maxSize);
 		}
 
 		if (width <= maxSize) {

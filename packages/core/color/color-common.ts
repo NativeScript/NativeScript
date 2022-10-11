@@ -466,8 +466,12 @@ function argbFromHsvOrHsva(value: string): number {
 // *Assumes:* r, g, and b are contained in [0, 255]
 // *Returns:* { h, s, l } in [0,360] and [0,100]
 function rgbToHsl(r, g, b) {
-	const max = Math.max(r, g, b) / 255,
-		min = Math.min(r, g, b) / 255;
+	r /= 255;
+	g /= 255;
+	b /= 255;
+
+	const max = Math.max(r, g, b),
+		min = Math.min(r, g, b);
 	let h, s;
 	const l = (max + min) / 2;
 
@@ -478,13 +482,13 @@ function rgbToHsl(r, g, b) {
 		s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
 		switch (max) {
 			case r:
-				h = (g - b) / 255 / d + (g < b ? 6 : 0);
+				h = (g - b) / d + (g < b ? 6 : 0);
 				break;
 			case g:
-				h = (b - r) / 255 / d + 2;
+				h = (b - r) / d + 2;
 				break;
 			case b:
-				h = (r - g) / 255 / d + 4;
+				h = (r - g) / d + 4;
 				break;
 		}
 
@@ -530,8 +534,12 @@ function hslToRgb(h1, s1, l1) {
 // *Assumes:* r, g, and b are contained in the set [0, 255]
 // *Returns:* { h, s, v } in [0,360] and [0,100]
 function rgbToHsv(r, g, b) {
-	const max = Math.max(r, g, b) / 255,
-		min = Math.min(r, g, b) / 255;
+	r /= 255;
+	g /= 255;
+	b /= 255;
+
+	const max = Math.max(r, g, b),
+		min = Math.min(r, g, b);
 	let h;
 	const v = max;
 
@@ -543,13 +551,13 @@ function rgbToHsv(r, g, b) {
 	} else {
 		switch (max) {
 			case r:
-				h = (g - b) / 255 / d + (g < b ? 6 : 0);
+				h = (g - b) / d + (g < b ? 6 : 0);
 				break;
 			case g:
-				h = (b - r) / 255 / d + 2;
+				h = (b - r) / d + 2;
 				break;
 			case b:
-				h = (r - g) / 255 / d + 4;
+				h = (r - g) / d + 4;
 				break;
 		}
 		h /= 6;
@@ -566,7 +574,7 @@ function hsvToRgb(h1, s1, v1) {
 	const s = s1 / 100;
 	const v = v1 / 100;
 
-	var i = Math.floor(h),
+	const i = Math.floor(h),
 		f = h - i,
 		p = v * (1 - s),
 		q = v * (1 - f * s),

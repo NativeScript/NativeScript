@@ -1135,6 +1135,8 @@ function inheritablePropertyValuesOn<T extends InheritedProperty<any, any> | Inh
 type PropertyInterface = Property<ViewBase, any> | CssProperty<Style, any> | CssAnimationProperty<Style, any>;
 
 export const initNativeView = profile('"properties".initNativeView', function initNativeView(view: ViewBase): void {
+	const wasSuspended = view.suspendRequestLayout;
+	view.suspendRequestLayout = true;
 	if (view._suspendedUpdates) {
 		applyPendingNativeSetters(view);
 	} else {
@@ -1142,6 +1144,14 @@ export const initNativeView = profile('"properties".initNativeView', function in
 	}
 	// Would it be faster to delete all members of the old object?
 	view._suspendedUpdates = {};
+
+	// if the view requestLayout was not suspended before
+	// it means we can request a layout if needed.
+	// will be done after otherwise
+	view.suspendRequestLayout = wasSuspended;
+	if (!wasSuspended && view.isLayoutRequestNeeded) {
+		view.requestLayout();
+	}
 });
 
 export function applyPendingNativeSetters(view: ViewBase): void {

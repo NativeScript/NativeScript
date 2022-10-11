@@ -42,6 +42,8 @@ export class Frame extends FrameBase {
 		this._removeFromFrameStack();
 		this.viewController = null;
 		this._ios.controller = null;
+		this._animatedDelegate = null;
+		this._ios = null;
 		super.disposeNativeView();
 	}
 
@@ -247,7 +249,7 @@ export class Frame extends FrameBase {
 						if (page && page.actionBarHidden !== undefined) {
 							newValue = !page.actionBarHidden;
 						} else {
-							newValue = this.ios.controller.viewControllers.count > 1 || (page && page.actionBar && !page.actionBar._isEmpty());
+							newValue = this.ios.controller.viewControllers.count > 1 || (page && page.hasActionBar && !page.actionBar._isEmpty());
 						}
 
 						newValue = !!newValue;

@@ -150,7 +150,8 @@ export class Page extends PageBase {
 
 			return;
 		}
-
-		this.actionBar.accessibilityScreenChanged();
+		if (this.hasActionBar) {
+			this.actionBar.accessibilityScreenChanged();
+		}
 	}
 }

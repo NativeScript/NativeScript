@@ -14,8 +14,7 @@ import { NavigationEntry, AndroidActivityCallbacks } from '../ui/frame/frame-int
 import { Observable } from '../data/observable';
 
 import { profile } from '../profiling';
-import { initAccessibilityCssHelper } from '../accessibility/accessibility-css-helper';
-import { initAccessibilityFontScale } from '../accessibility/font-scale';
+import { inBackground, setInBackground, setSuspended, suspended } from './application-common';
 
 const ActivityCreated = 'activityCreated';
 const ActivityDestroyed = 'activityDestroyed';
@@ -48,8 +47,14 @@ export class AndroidApplication extends Observable implements AndroidApplication
 
 	private _orientation: 'portrait' | 'landscape' | 'unknown';
 	private _systemAppearance: 'light' | 'dark';
-	public paused: boolean;
-	public backgrounded: boolean;
+
+	get paused() {
+		return suspended;
+	}
+	get backgrounded() {
+		return inBackground;
+	}
+
 	public nativeApp: android.app.Application;
 	/**
 	 * @deprecated Use Utils.android.getApplicationContext() instead.
@@ -196,9 +201,6 @@ export function run(entry?: NavigationEntry | string) {
 		const nativeApp = getNativeApplication();
 		androidApp.init(nativeApp);
 	}
-
-	initAccessibilityCssHelper();
-	initAccessibilityFontScale();
 }
 
 export function addCss(cssText: string, attributeScoped?: boolean): void {
@@ -365,11 +367,13 @@ function initLifecycleCallbacks() {
 		rootView.getViewTreeObserver().addOnGlobalLayoutListener(global.onGlobalLayoutListener);
 	});
 
-
 	let activitiesStarted = 0;
 
 	const lifecycleCallbacks = new android.app.Application.ActivityLifecycleCallbacks(<any>{
 		onActivityCreated: <any>profile('onActivityCreated', function (activity: androidx.appcompat.app.AppCompatActivity, savedInstanceState: android.os.Bundle) {
+			if (!androidApp.foregroundActivity) {
+				androidApp.foregroundActivity = activity;
+			}
 			setThemeOnLaunch(activity, undefined, undefined);
 
 			if (!androidApp.startActivity) {
@@ -403,7 +407,7 @@ function initLifecycleCallbacks() {
 
 		onActivityPaused: <any>profile('onActivityPaused', function (activity: androidx.appcompat.app.AppCompatActivity) {
 			if ((<any>activity).isNativeScriptActivity) {
-				androidApp.paused = true;
+				setSuspended(true);
 				appCommon.notify(<ApplicationEventData>{
 					eventName: appCommon.suspendEvent,
 					object: androidApp,
@@ -440,7 +444,7 @@ function initLifecycleCallbacks() {
 		onActivityStarted: <any>profile('onActivityStarted', function (activity: androidx.appcompat.app.AppCompatActivity) {
 			activitiesStarted++;
 			if (activitiesStarted === 1) {
-				androidApp.backgrounded = true;
+				setInBackground(false);
 				appCommon.notify(<ApplicationEventData>{
 					eventName: appCommon.foregroundEvent,
 					object: androidApp,
@@ -457,7 +461,7 @@ function initLifecycleCallbacks() {
 		onActivityStopped: <any>profile('onActivityStopped', function (activity: androidx.appcompat.app.AppCompatActivity) {
 			activitiesStarted--;
 			if (activitiesStarted === 0) {
-				androidApp.backgrounded = true;
+				setInBackground(true);
 				appCommon.notify(<ApplicationEventData>{
 					eventName: appCommon.backgroundEvent,
 					object: androidApp,

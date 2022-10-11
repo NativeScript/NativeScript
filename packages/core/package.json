@@ -1,6 +1,6 @@
 {
   "name": "@nativescript/core",
-  "version": "8.2.3",
+  "version": "8.3.5",
   "description": "A JavaScript library providing an easy to use api for interacting with iOS and Android platform APIs.",
   "main": "index",
   "types": "index.d.ts",
@@ -8,14 +8,6 @@
     "bundle-entry-points.js",
     "./globals/index.js",
     "./globals"
-  ],
-  "files": [
-    "**/*.d.ts",
-    "**/*.js",
-    "**/*.map",
-    "**/platforms/ios/**",
-    "**/platforms/android/**",
-    "**/package.json"
   ],
   "keywords": [
     "NativeScript",
@@ -46,7 +38,7 @@
     "acorn": "^8.7.0",
     "css-tree": "^1.1.2",
     "reduce-css-calc": "^2.1.7",
-    "tslib": "~2.0.0"
+    "tslib": "^2.0.0"
   },
   "nativescript": {
     "platforms": {

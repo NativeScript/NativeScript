@@ -11,7 +11,7 @@ import { ios as iosBackground, Background } from '../../styling/background';
 import { perspectiveProperty, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, clipPathProperty } from '../../styling/style-properties';
 import { profile } from '../../../profiling';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty, accessibilityIgnoresInvertColorsProperty } from '../../../accessibility/accessibility-properties';
-import { setupAccessibleView, IOSPostAccessibilityNotificationType, isAccessibilityServiceEnabled, updateAccessibilityProperties, AccessibilityEventOptions, AccessibilityRole, AccessibilityState } from '../../../accessibility';
+import { IOSPostAccessibilityNotificationType, isAccessibilityServiceEnabled, updateAccessibilityProperties, AccessibilityEventOptions, AccessibilityRole, AccessibilityState } from '../../../accessibility';
 import { CoreTypes } from '../../../core-types';
 
 export * from './view-common';
@@ -37,7 +37,8 @@ export class View extends ViewCommon implements ViewDefinition {
 	 */
 	private _modalAnimatedOptions: Array<boolean>;
 	private _isLaidOut = false;
-	private _hasTransfrom = false;
+	private _hasTransform = false;
+	private _hasPendingTransform = false;
 	private _privateFlags: number = PFLAG_LAYOUT_REQUIRED | PFLAG_FORCE_LAYOUT;
 	private _cachedFrame: CGRect;
 	private _suspendCATransaction = false;
@@ -56,16 +57,46 @@ export class View extends ViewCommon implements ViewDefinition {
 	get isLayoutRequested(): boolean {
 		return (this._privateFlags & PFLAG_FORCE_LAYOUT) === PFLAG_FORCE_LAYOUT;
 	}
+	initNativeView() {
+		super.initNativeView();
+		const nativeView = this.nativeViewProtected;
+		/**
+		 * We need to map back from the UIView to the NativeScript View for accessibility.
+		 *
+		 * We do that by setting the uiView's tag to the View's domId.
+		 * This way we can do reverse lookup.
+		 */
+		nativeView.tag = this._domId;
+	}
 
-	constructor() {
-		super();
+	requestlayoutIfNeeded() {
+		if (this.isLayoutRequired) {
+			this._requetLayoutNeeded = false;
+			this.requestLayout();
+		}
+	}
 
-		this.once(View.loadedEvent, () => setupAccessibleView(this));
+	disposeNativeView() {
+		super.disposeNativeView();
+
+		if (this.viewController) {
+			this.viewController = null;
+		}
+
+		this._cachedFrame = null;
+		this._isLaidOut = false;
+		this._hasTransform = false;
+		this._hasPendingTransform = false;
 	}
 
 	public requestLayout(): void {
-		super.requestLayout();
+		if (this._suspendRequestLayout) {
+			this._requetLayoutNeeded = true;
+			return;
+		}
+		this._requetLayoutNeeded = false;
 		this._privateFlags |= PFLAG_FORCE_LAYOUT;
+		super.requestLayout();
 
 		const nativeView = this.nativeViewProtected;
 		if (nativeView && nativeView.setNeedsLayout) {
@@ -119,6 +150,10 @@ export class View extends ViewCommon implements ViewDefinition {
 		}
 
 		this.updateBackground(sizeChanged);
+		if (this._hasPendingTransform) {
+			this.updateNativeTransform();
+			this._hasPendingTransform = false;
+		}
 		this._privateFlags &= ~PFLAG_FORCE_LAYOUT;
 	}
 
@@ -175,7 +210,7 @@ export class View extends ViewCommon implements ViewDefinition {
 			this._cachedFrame = frame;
 			let adjustedFrame = null;
 			let transform = null;
-			if (this._hasTransfrom) {
+			if (this._hasTransform) {
 				// Always set identity transform before setting frame;
 				transform = nativeView.layer.transform;
 				nativeView.layer.transform = CATransform3DIdentity;
@@ -189,7 +224,7 @@ export class View extends ViewCommon implements ViewDefinition {
 				nativeView.frame = adjustedFrame;
 			}
 
-			if (this._hasTransfrom) {
+			if (this._hasTransform) {
 				// re-apply the transform after the frame is adjusted
 				nativeView.layer.transform = transform;
 			}
@@ -363,6 +398,11 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	public updateNativeTransform() {
+		if (!this.isLayoutValid) {
+			this._hasPendingTransform = true;
+			return;
+		}
+
 		const scaleX = this.scaleX || 1e-6;
 		const scaleY = this.scaleY || 1e-6;
 		const perspective = this.perspective || 300;
@@ -378,12 +418,12 @@ export class View extends ViewCommon implements ViewDefinition {
 		transform = iOSNativeHelper.applyRotateTransform(transform, this.rotateX, this.rotateY, this.rotate);
 		transform = CATransform3DScale(transform, scaleX, scaleY, 1);
 		if (!CATransform3DEqualToTransform(this.nativeViewProtected.layer.transform, transform)) {
-			const updateSuspended = this._isPresentationLayerUpdateSuspeneded();
+			const updateSuspended = this._isPresentationLayerUpdateSuspended();
 			if (!updateSuspended) {
 				CATransaction.begin();
 			}
 			this.nativeViewProtected.layer.transform = transform;
-			this._hasTransfrom = this.nativeViewProtected && !CATransform3DEqualToTransform(this.nativeViewProtected.transform3D, CATransform3DIdentity);
+			this._hasTransform = this.nativeViewProtected && !CATransform3DEqualToTransform(this.nativeViewProtected.transform3D, CATransform3DIdentity);
 			if (!updateSuspended) {
 				CATransaction.commit();
 			}
@@ -412,7 +452,7 @@ export class View extends ViewCommon implements ViewDefinition {
 		this._suspendCATransaction = false;
 	}
 
-	public _isPresentationLayerUpdateSuspeneded(): boolean {
+	public _isPresentationLayerUpdateSuspended(): boolean {
 		return this._suspendCATransaction || this._suspendNativeUpdatesCount > 0;
 	}
 
@@ -527,6 +567,7 @@ export class View extends ViewCommon implements ViewDefinition {
 			// Take a look at https://github.com/NativeScript/NativeScript/issues/2173 for more info and a sample project.
 			this._raiseShownModallyEvent();
 		}
+		controller = null;
 	}
 
 	protected _hideNativeModalView(parent: View, whenClosedCallback: () => void) {
@@ -535,6 +576,7 @@ export class View extends ViewCommon implements ViewDefinition {
 
 			return;
 		}
+		this._raiseClosingModallyEvent();
 
 		// modal view has already been closed by UI, probably as a popover
 		if (!parent.viewController.presentedViewController) {
@@ -692,7 +734,7 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 	[opacityProperty.setNative](value: number) {
 		const nativeView = this.nativeViewProtected;
-		const updateSuspended = this._isPresentationLayerUpdateSuspeneded();
+		const updateSuspended = this._isPresentationLayerUpdateSuspended();
 		if (!updateSuspended) {
 			CATransaction.begin();
 		}
@@ -790,7 +832,7 @@ export class View extends ViewCommon implements ViewDefinition {
 			args = msg;
 		}
 
-		switch (options.iosNotificationType) {
+		switch (options.iosNotificationType as IOSPostAccessibilityNotificationType) {
 			case IOSPostAccessibilityNotificationType.Announcement: {
 				notification = UIAccessibilityAnnouncementNotification;
 				break;
@@ -848,7 +890,7 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	_redrawNativeBackground(value: UIColor | Background): void {
-		const updateSuspended = this._isPresentationLayerUpdateSuspeneded();
+		const updateSuspended = this._isPresentationLayerUpdateSuspended();
 		if (!updateSuspended) {
 			CATransaction.begin();
 		}
@@ -913,7 +955,7 @@ export class CustomLayoutView extends ContainerView {
 	}
 
 	public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-		// Don't call super because it will set MeasureDimension. This method must be overriden and calculate its measuredDimensions.
+		// Don't call super because it will set MeasureDimension. This method must be overridden and calculate its measuredDimensions.
 	}
 
 	public _addViewToNativeVisualTree(child: View, atIndex: number): boolean {
@@ -933,6 +975,13 @@ export class CustomLayoutView extends ContainerView {
 		}
 
 		return false;
+	}
+
+	public _removeFromNativeVisualTree(): void {
+		super._removeFromNativeVisualTree();
+		if (this.nativeViewProtected) {
+			this.nativeViewProtected.removeFromSuperview();
+		}
 	}
 
 	public _removeViewFromNativeVisualTree(child: View): void {

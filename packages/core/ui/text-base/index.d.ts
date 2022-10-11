@@ -64,6 +64,11 @@ export class TextBase extends View implements AddChildFromBuilder {
 	whiteSpace: CoreTypes.WhiteSpaceType;
 
 	/**
+	 * Gets or sets white space style property.
+	 */
+	maxLines: CoreTypes.MaxLinesType;
+
+	/**
 	 * Gets or sets padding style property.
 	 */
 	padding: string | CoreTypes.LengthType;
@@ -123,6 +128,7 @@ export interface TextTransformation {
 export const textProperty: Property<TextBase, string>;
 export const formattedTextProperty: Property<TextBase, FormattedString>;
 
+export const maxLinesProperty: InheritedCssProperty<Style, number>;
 export const textAlignmentProperty: InheritedCssProperty<Style, CoreTypes.TextAlignmentType>;
 export const textDecorationProperty: CssProperty<Style, CoreTypes.TextDecorationType>;
 export const textTransformProperty: CssProperty<Style, CoreTypes.TextTransformType>;

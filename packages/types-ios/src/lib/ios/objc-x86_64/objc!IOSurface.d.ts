@@ -232,6 +232,8 @@ declare var IOSurfacePropertyKeyElementWidth: string;
 
 declare var IOSurfacePropertyKeyHeight: string;
 
+declare var IOSurfacePropertyKeyName: string;
+
 declare var IOSurfacePropertyKeyOffset: string;
 
 declare var IOSurfacePropertyKeyPixelFormat: string;
@@ -337,6 +339,8 @@ declare const kIOSurfaceMapInhibitCache: number;
 declare const kIOSurfaceMapWriteCombineCache: number;
 
 declare const kIOSurfaceMapWriteThruCache: number;
+
+declare var kIOSurfaceName: string;
 
 declare var kIOSurfaceOffset: string;
 

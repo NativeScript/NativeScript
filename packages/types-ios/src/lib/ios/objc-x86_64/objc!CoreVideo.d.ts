@@ -556,6 +556,8 @@ declare var kCVPixelFormatContainsGrayscale: string;
 
 declare var kCVPixelFormatContainsRGB: string;
 
+declare var kCVPixelFormatContainsSenselArray: string;
+
 declare var kCVPixelFormatContainsYCbCr: string;
 
 declare var kCVPixelFormatFillExtendedPixelsCallback: string;

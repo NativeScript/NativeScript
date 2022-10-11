@@ -224,6 +224,11 @@ export class FileSystemAccess implements IFileSystemAccess {
 
 		return dir.getAbsolutePath();
 	}
+	public getExternalDocumentsFolderPath(): string {
+		const dir = getApplicationContext().getExternalFilesDir(null);
+
+		return dir.getAbsolutePath();
+	}
 
 	public getLogicalRootPath(): string {
 		const dir = getApplicationContext().getFilesDir();

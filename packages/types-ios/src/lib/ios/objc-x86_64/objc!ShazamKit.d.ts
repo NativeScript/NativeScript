@@ -39,7 +39,9 @@ declare const enum SHErrorCode {
 
 	CustomCatalogInvalidURL = 301,
 
-	MediaLibrarySyncFailed = 400
+	MediaLibrarySyncFailed = 400,
+
+	InternalError = 500
 }
 
 declare var SHErrorDomain: string;
@@ -106,6 +108,8 @@ declare class SHMediaItem extends NSObject implements NSCopying, NSSecureCoding 
 
 	readonly explicitContent: boolean;
 
+	readonly frequencySkewRanges: NSArray<SHRange>;
+
 	readonly genres: NSArray<string>;
 
 	readonly isrc: string;
@@ -113,6 +117,8 @@ declare class SHMediaItem extends NSObject implements NSCopying, NSSecureCoding 
 	readonly shazamID: string;
 
 	readonly subtitle: string;
+
+	readonly timeRanges: NSArray<SHRange>;
 
 	readonly title: string;
 
@@ -147,6 +153,8 @@ declare var SHMediaItemExplicitContent: string;
 
 declare var SHMediaItemFrequencySkew: string;
 
+declare var SHMediaItemFrequencySkewRanges: string;
+
 declare var SHMediaItemGenres: string;
 
 declare var SHMediaItemISRC: string;
@@ -156,6 +164,8 @@ declare var SHMediaItemMatchOffset: string;
 declare var SHMediaItemShazamID: string;
 
 declare var SHMediaItemSubtitle: string;
+
+declare var SHMediaItemTimeRanges: string;
 
 declare var SHMediaItemTitle: string;
 
@@ -172,6 +182,33 @@ declare class SHMediaLibrary extends NSObject {
 	static readonly defaultLibrary: SHMediaLibrary;
 
 	addMediaItemsCompletionHandler(mediaItems: NSArray<SHMediaItem> | SHMediaItem[], completionHandler: (p1: NSError) => void): void;
+}
+
+declare class SHRange extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): SHRange; // inherited from NSObject
+
+	static new(): SHRange; // inherited from NSObject
+
+	static rangeWithLowerBoundUpperBound(lowerBound: number, upperBound: number): SHRange;
+
+	readonly lowerBound: number;
+
+	readonly upperBound: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { lowerBound: number; upperBound: number; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithLowerBoundUpperBound(lowerBound: number, upperBound: number): this;
 }
 
 declare class SHSession extends NSObject {
@@ -234,6 +271,8 @@ declare class SHSignature extends NSObject implements NSCopying, NSSecureCoding 
 declare class SHSignatureGenerator extends NSObject {
 
 	static alloc(): SHSignatureGenerator; // inherited from NSObject
+
+	static generateSignatureFromAssetCompletionHandler(asset: AVAsset, completionHandler: (p1: SHSignature, p2: NSError) => void): void;
 
 	static new(): SHSignatureGenerator; // inherited from NSObject
 

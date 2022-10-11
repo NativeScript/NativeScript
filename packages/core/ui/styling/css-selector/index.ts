@@ -3,7 +3,7 @@ import { isCssVariable } from '../../core/properties';
 import { isNullOrUndefined } from '../../../utils/types';
 
 import * as cssParser from '../../../css';
-import { Combinator as ICombinator , SimpleSelectorSequence as ISimpleSelectorSequence, Selector as ISelector, SimpleSelector as ISimpleSelector, parseSelector} from '../../../css/parser';
+import { Combinator as ICombinator, SimpleSelectorSequence as ISimpleSelectorSequence, Selector as ISelector, SimpleSelector as ISimpleSelector, parseSelector } from '../../../css/parser';
 
 /**
  * An interface describing the shape of a type on which the selectors may apply.
@@ -671,7 +671,7 @@ interface ChangeAccumulator {
 
 export class SelectorsMatch<T extends Node> implements ChangeAccumulator {
 	public changeMap: ChangeMap<T> = new Map<T, Changes>();
-	public selectors;
+	public selectors: SelectorCore[];
 
 	public addAttribute(node: T, attribute: string): void {
 		const deps: Changes = this.properties(node);

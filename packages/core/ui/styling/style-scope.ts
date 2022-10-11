@@ -74,7 +74,7 @@ export function mergeCssSelectors(): void {
 let applicationCssSelectors: RuleSet[] = [];
 let applicationCssSelectorVersion = 0;
 let applicationSelectors: RuleSet[] = [];
-let tagToScopeTag: Map<string | number, string> = new Map();
+const tagToScopeTag: Map<string | number, string> = new Map();
 let currentScopeTag: string = null;
 const applicationAdditionalSelectors: RuleSet[] = [];
 const applicationKeyframes: any = {};
@@ -314,7 +314,7 @@ export function removeTaggedAdditionalCSS(tag: string | number): boolean {
 
 export function addTaggedAdditionalCSS(cssText: string, tag?: string | number): boolean {
 	const parsed: RuleSet[] = CSSSource.fromDetect(cssText, applicationKeyframes, undefined).selectors;
-	let tagScope = currentScopeTag || (tag && tagToScopeTag.has(tag) && tagToScopeTag.get(tag)) || null;
+	const tagScope = currentScopeTag || (tag && tagToScopeTag.has(tag) && tagToScopeTag.get(tag)) || null;
 	if (tagScope && tag) {
 		tagToScopeTag.set(tag, tagScope);
 	}
@@ -396,7 +396,7 @@ if (application.hasLaunched()) {
 
 export class CssState {
 	static emptyChangeMap: Readonly<ChangeMap<ViewBase>> = Object.freeze(new Map());
-	static emptyPropertyBag: Readonly<Record<string, unknown>> = Object.freeze({});
+	static emptyPropertyBag: Record<string, unknown> = {};
 	static emptyAnimationArray: ReadonlyArray<kam.KeyframeAnimation> = Object.freeze([]);
 	static emptyMatch: Readonly<SelectorsMatch<ViewBase>> = {
 		selectors: [],
@@ -408,7 +408,7 @@ export class CssState {
 
 	_onDynamicStateChangeHandler: () => void;
 	_appliedChangeMap: Readonly<ChangeMap<ViewBase>>;
-	_appliedPropertyValues: Readonly<Record<string, unknown>>;
+	private _appliedPropertyValues: Record<string, unknown> = CssState.emptyPropertyBag;
 	_appliedAnimations: ReadonlyArray<kam.KeyframeAnimation>;
 	_appliedSelectorsVersion: number;
 
@@ -447,6 +447,7 @@ export class CssState {
 		return this.viewRef.get()._styleScope.getSelectorsVersion() === this._appliedSelectorsVersion;
 	}
 
+	@profile
 	public onLoaded(): void {
 		if (this._matchInvalid) {
 			this.updateMatch();
@@ -564,59 +565,63 @@ export class CssState {
 		matchingSelectors.forEach((selector) => selector.ruleset.declarations.forEach((declaration) => (newPropertyValues[declaration.property] = declaration.value)));
 
 		const oldProperties = this._appliedPropertyValues;
-
-		let isCssExpressionInUse = false;
-
 		// Update values for the scope's css-variables
 		view.style.resetScopedCssVariables();
 
+		const valuesToApply = {};
+		const cssExpsProperties = {};
+
 		for (const property in newPropertyValues) {
 			const value = newPropertyValues[property];
-			if (isCssVariable(property)) {
-				view.style.setScopedCssVariable(property, value);
+			const isCssExp = isCssVariableExpression(value) || isCssCalcExpression(value);
 
-				delete newPropertyValues[property];
+			if (isCssExp) {
+				// we handle css exp separately because css vars must be evaluated first
+				cssExpsProperties[property] = value;
 				continue;
 			}
-
-			isCssExpressionInUse = isCssExpressionInUse || isCssVariableExpression(value) || isCssCalcExpression(value);
-		}
-
-		if (isCssExpressionInUse) {
-			// Evalute css-expressions to get the latest values.
-			for (const property in newPropertyValues) {
-				const value = evaluateCssExpressions(view, property, newPropertyValues[property]);
-				if (value === unsetValue) {
-					delete newPropertyValues[property];
-					continue;
-				}
-
-				newPropertyValues[property] = value;
-			}
-		}
-
-		// Property values are fully updated, freeze the object to be used for next update.
-		Object.freeze(newPropertyValues);
-
-		// Unset removed values
-		for (const property in oldProperties) {
-			if (!(property in newPropertyValues)) {
-				if (property in view.style) {
-					view.style[`css:${property}`] = unsetValue;
-				} else {
-					// TRICKY: How do we unset local value?
-				}
-			}
-		}
-
-		// Set new values to the style
-		for (const property in newPropertyValues) {
-			if (oldProperties && property in oldProperties && oldProperties[property] === newPropertyValues[property]) {
+			delete oldProperties[property];
+			if (property in oldProperties && oldProperties[property] === value) {
 				// Skip unchanged values
 				continue;
 			}
+			if (isCssVariable(property)) {
+				view.style.setScopedCssVariable(property, value);
+				delete newPropertyValues[property];
+				continue;
+			}
+			valuesToApply[property] = value;
+		}
+		//we need to parse CSS vars first before evaluating css expressions
+		for (const property in cssExpsProperties) {
+			delete oldProperties[property];
+			const value = evaluateCssExpressions(view, property, cssExpsProperties[property]);
+			if (property in oldProperties && oldProperties[property] === value) {
+				// Skip unchanged values
+				continue;
+			}
+			if (value === unsetValue) {
+				delete newPropertyValues[property];
+			}
+			if (isCssVariable(property)) {
+				view.style.setScopedCssVariable(property, value);
+				delete newPropertyValues[property];
+			}
 
-			const value = newPropertyValues[property];
+			valuesToApply[property] = value;
+		}
+
+		// Unset removed values
+		for (const property in oldProperties) {
+			if (property in view.style) {
+				view.style[`css:${property}`] = unsetValue;
+			} else {
+				// TRICKY: How do we unset local value?
+			}
+		}
+		// Set new values to the style
+		for (const property in valuesToApply) {
+			const value = valuesToApply[property];
 			try {
 				if (property in view.style) {
 					view.style[`css:${property}`] = value;
@@ -687,7 +692,6 @@ export class CssState {
 	}
 }
 CssState.prototype._appliedChangeMap = CssState.emptyChangeMap;
-CssState.prototype._appliedPropertyValues = CssState.emptyPropertyBag;
 CssState.prototype._appliedAnimations = CssState.emptyAnimationArray;
 CssState.prototype._matchInvalid = true;
 

@@ -49,7 +49,8 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 
 	constructor(animationDefinitions: Array<AnimationDefinition>, playSequentially?: boolean) {
 		if (!animationDefinitions || animationDefinitions.length === 0) {
-			throw new Error('No animation definitions specified');
+			console.error('No animation definitions specified');
+			return;
 		}
 
 		if (Trace.isEnabled()) {
@@ -65,7 +66,10 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 		});
 
 		if (this._propertyAnimations.length === 0) {
-			throw new Error('Nothing to animate.');
+			if (Trace.isEnabled()) {
+				Trace.write('Nothing to animate.', Trace.categories.Animation);
+			}
+			return;
 		}
 		if (Trace.isEnabled()) {
 			Trace.write('Created ' + this._propertyAnimations.length + ' individual property animations.', Trace.categories.Animation);
@@ -144,7 +148,8 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 
 	protected _createPropertyAnimations(animationDefinition: AnimationDefinition): Array<PropertyAnimation> {
 		if (!animationDefinition.target) {
-			throw new Error('No animation target specified.');
+			console.error('No animation target specified.');
+			return;
 		}
 
 		console.log('_createPropertyAnimations', Object.keys(animationDefinition), new Error().stack);
@@ -157,7 +162,7 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 			if (AnimationNonAnimatableProperties.indexOf(item) !== -1) {
 				if (item === 'duration' || item === 'delay' || item === 'iterations') {
 					if (typeof value !== 'number') {
-						throw new Error(`Property ${item} must be valid number. Value: ${value}`);
+						console.error(`Property ${item} must be valid number. Value: ${value}`);
 					}
 				}
 				continue;
@@ -172,7 +177,7 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 				let newValue = value;
 				const valueConverter = property.valueConverter;
 				if ((item === Properties.scale || item === Properties.translate) && typeof value !== 'object') {
-					throw new Error(`Property ${item} must be valid Pair. Value: ${value}`);
+					console.error(`Property ${item} must be valid Pair. Value: ${value}`);
 				}
 				if (valueConverter) {
 					if (item === Properties.translate || item === Properties.rotate || item === Properties.scale) {
@@ -203,7 +208,7 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 		}
 
 		if (propertyAnimations.length === 0) {
-			throw new Error('No known animation properties specified');
+			console.error('No known animation properties specified');
 		}
 
 		return propertyAnimations;

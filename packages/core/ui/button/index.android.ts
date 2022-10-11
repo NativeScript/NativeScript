@@ -1,4 +1,4 @@
-import { ButtonBase } from './button-common';
+import { ButtonBase, tapEvent } from './button-common';
 import { PseudoClassHandler } from '../core/view';
 import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length, zIndexProperty, minWidthProperty, minHeightProperty } from '../styling/style-properties';
 import { textAlignmentProperty } from '../text-base';
@@ -7,7 +7,7 @@ import { profile } from '../../profiling';
 import { TouchGestureEventData, GestureTypes, TouchAction } from '../gestures';
 import { Device } from '../../platform';
 import lazy from '../../utils/lazy';
-import type { Background } from 'ui/styling/background';
+import type { Background } from '../styling/background';
 
 export * from './button-common';
 
@@ -38,7 +38,7 @@ function initializeClickListener(): void {
 		public onClick(v: android.view.View): void {
 			const owner = this.owner;
 			if (owner) {
-				owner._emit(ButtonBase.tapEvent);
+				owner._emit(tapEvent);
 			}
 		}
 	}
@@ -47,6 +47,9 @@ function initializeClickListener(): void {
 }
 
 export class Button extends ButtonBase {
+	// defining this here means tap event wont be handled
+	// by the gesture observers
+	public static tapEvent = tapEvent;
 	nativeViewProtected: android.widget.Button;
 
 	constructor() {

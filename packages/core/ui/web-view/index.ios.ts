@@ -4,6 +4,7 @@ import { profile } from '../../profiling';
 import { Trace } from '../../trace';
 export * from './web-view-common';
 import { knownFolders } from '../../file-system';
+import { booleanConverter } from '../core/view-base';
 
 @NativeClass
 class WKNavigationDelegateImpl extends NSObject implements WKNavigationDelegate {
@@ -159,10 +160,23 @@ export class WebView extends WebViewBase {
 	private _delegate: WKNavigationDelegateImpl;
 	private _scrollDelegate: UIScrollViewDelegateImpl;
 	private _uiDelegate: WKUIDelegateImpl;
+	private _iosAllowInlineMediaPlayback: boolean;
 
 	_maximumZoomScale;
 	_minimumZoomScale;
 	_zoomScale;
+
+	get iosAllowInlineMediaPlayback(): boolean {
+		return this._iosAllowInlineMediaPlayback;
+	}
+
+	set iosAllowInlineMediaPlayback(value: boolean) {
+		// Note: can be set on the view markup,
+		// thus the converter usage (value could come in as string).
+		// Property.setNative should not be used because
+		// it should be set before nativeView is created
+		this._iosAllowInlineMediaPlayback = booleanConverter(value);
+	}
 
 	createNativeView() {
 		const jScript = "var meta = document.createElement('meta'); meta.setAttribute('name', 'viewport'); meta.setAttribute('content', 'initial-scale=1.0'); document.getElementsByTagName('head')[0].appendChild(meta);";
@@ -170,6 +184,10 @@ export class WebView extends WebViewBase {
 		const wkUController = WKUserContentController.new();
 		wkUController.addUserScript(wkUScript);
 		const configuration = WKWebViewConfiguration.new();
+		if (this.iosAllowInlineMediaPlayback) {
+			configuration.allowsInlineMediaPlayback = true;
+			configuration.allowsPictureInPictureMediaPlayback = true;
+		}
 		configuration.userContentController = wkUController;
 		configuration.preferences.setValueForKey(true, 'allowFileAccessFromFileURLs');
 

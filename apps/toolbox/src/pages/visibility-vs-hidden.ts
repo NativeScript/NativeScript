@@ -26,7 +26,8 @@ export class VisibilityVsHiddenModel extends Observable {
 	}
 
 	toggleHidden() {
-		this.notifyPropertyChange('currentHidden', !this.currentHidden);
+		this.currentHidden = !this.currentHidden;
+		this.notifyPropertyChange('currentHidden', this.currentHidden);
 		this.notifyPropertyChange('currentHiddenType', `Current Hidden: ${this.currentHidden}`);
 	}
 }

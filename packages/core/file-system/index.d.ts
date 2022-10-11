@@ -218,6 +218,13 @@ export module knownFolders {
 	export function documents(): Folder;
 
 	/**
+	 * Gets the Documents folder available for the current application on an external storage. This Folder is private for the application and not accessible from Users/External apps.
+	 * On android this requires READ_EXTERNAL_STORAGE/WRITE_EXTERNAL_STORAGE permissions
+	 * There is no external storage on iOS os it is the same as `documents()`
+	 */
+	export function externalDocuments(): Folder;
+
+	/**
 	 * Gets the Temporary (Caches) folder available for the current application. This Folder is private for the application and not accessible from Users/External apps.
 	 */
 	export function temp(): Folder;

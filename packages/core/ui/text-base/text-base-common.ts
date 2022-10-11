@@ -15,9 +15,7 @@ import { TextBase as TextBaseDefinition } from '.';
 import { Color } from '../../color';
 import { CSSShadow, parseCSSShadow } from '../styling/css-shadow';
 
-const CHILD_SPAN = 'Span';
 const CHILD_FORMATTED_TEXT = 'formattedText';
-const CHILD_FORMATTED_STRING = 'FormattedString';
 
 export abstract class TextBaseCommon extends View implements TextBaseDefinition {
 	public _isSingleLine: boolean;
@@ -88,6 +86,13 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 	}
 	set lineHeight(value: number) {
 		this.style.lineHeight = value;
+	}
+
+	get maxLines(): CoreTypes.MaxLinesType {
+		return this.style.maxLines;
+	}
+	set maxLines(value: CoreTypes.MaxLinesType) {
+		this.style.maxLines = value;
 	}
 
 	get textAlignment(): CoreTypes.TextAlignmentType {
@@ -168,7 +173,7 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 	}
 
 	public _addChildFromBuilder(name: string, value: any): void {
-		if (name === CHILD_SPAN) {
+		if (name === Span.name) {
 			if (!this.formattedText) {
 				const formattedText = new FormattedString();
 				formattedText.spans.push(value);
@@ -176,7 +181,7 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 			} else {
 				this.formattedText.spans.push(value);
 			}
-		} else if (name === CHILD_FORMATTED_TEXT || name === CHILD_FORMATTED_STRING) {
+		} else if (name === CHILD_FORMATTED_TEXT || name === FormattedString.name) {
 			this.formattedText = value;
 		}
 	}
@@ -309,5 +314,12 @@ export const lineHeightProperty = new InheritedCssProperty<Style, number>({
 	valueConverter: (v) => parseFloat(v),
 });
 lineHeightProperty.register(Style);
+
+export const maxLinesProperty = new CssProperty<Style, CoreTypes.MaxLinesType>({
+	name: 'maxLines',
+	cssName: 'max-lines',
+	valueConverter: (v) => (v === 'none' ? 0 : parseInt(v, 10)),
+});
+maxLinesProperty.register(Style);
 
 export const resetSymbol = Symbol('textPropertyDefault');

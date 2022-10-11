@@ -83,7 +83,7 @@ export class PageBase extends ContentView {
 	}
 
 	public _addChildFromBuilder(name: string, value: any) {
-		if (value instanceof ActionBar) {
+		if (value.constructor.name === 'ActionBar') {
 			this.actionBar = value;
 		} else {
 			super._addChildFromBuilder(name, value);

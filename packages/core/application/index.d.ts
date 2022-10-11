@@ -1,4 +1,4 @@
-﻿import { NavigationEntry } from '../ui/frame';
+import { NavigationEntry } from '../ui/frame';
 import { View } from '../ui/core/view';
 import { Observable, EventData } from '../data/observable';
 

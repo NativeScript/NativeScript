@@ -13,7 +13,7 @@ export class MyControl extends stackLayoutModule.StackLayout {
 		lbl.id = 'my-test-label';
 		var btn = new button.Button();
 		btn.text = 'Tap me!';
-		btn.on(button.Button.tapEvent, (args: EventData) => {
+		btn.on(button.tapEvent, (args: EventData) => {
 			lbl.text = 'Tap ' + counter++;
 		});
 

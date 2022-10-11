@@ -70,5 +70,5 @@ export interface AnimationDefinitionInternal extends AnimationDefinition {
 export interface IOSView extends View {
 	_suspendPresentationLayerUpdates();
 	_resumePresentationLayerUpdates();
-	_isPresentationLayerUpdateSuspeneded();
+	_isPresentationLayerUpdateSuspended();
 }

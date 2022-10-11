@@ -122,6 +122,7 @@ declare namespace NodeJS {
 		TNS_WEBPACK?: boolean;
 		isIOS?: boolean;
 		isAndroid?: boolean;
+		autoLoadPolyfills?: boolean;
 		__requireOverride?: (name: string, dir: string) => any;
 
 		// used to get the rootlayout instance to add/remove childviews
@@ -211,7 +212,7 @@ declare type HeaderInit = Headers | Array<string>;
 declare function fetch(url: string, init?: RequestInit): Promise<Response>;
 
 // declare var console: Console;
-declare var require: NodeRequire;
+declare let require: NodeRequire;
 
 // Extend NodeRequire with the webpack's require context extension.
 interface RequireContext {
@@ -224,9 +225,9 @@ interface RequireContext {
 declare var __dirname: string;
 declare var __filename: string;
 
-declare var module: NodeModule;
+declare let module: NodeModule;
 // Same as module.exports
-declare var exports: any;
+declare let exports: any;
 
 // Global functions
 declare function Deprecated(target: Object, key?: string | symbol, value?: any): void;
@@ -354,6 +355,7 @@ declare class WeakRef<T> {
 	constructor(obj: T);
 	get(): T;
 	clear(): void;
+	deref(): T | undefined;
 }
 
 /**

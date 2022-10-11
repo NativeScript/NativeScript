@@ -32,7 +32,7 @@ export namespace CoreTypes {
 	export type LengthType = 'auto' | dip | LengthDipUnit | LengthPxUnit;
 	export type PercentLengthType = 'auto' | dip | LengthDipUnit | LengthPxUnit | LengthPercentUnit;
 
-	export type KeyboardInputType = 'datetime' | 'phone' | 'number' | 'url' | 'email' | 'integer';
+	export type KeyboardInputType = 'datetime' | 'phone' | 'number' | 'url' | 'email' | 'integer' | 'decimal';
 	export module KeyboardType {
 		export const datetime = 'datetime';
 		export const phone = 'phone';
@@ -40,6 +40,7 @@ export namespace CoreTypes {
 		export const url = 'url';
 		export const email = 'email';
 		export const integer = 'integer';
+		export const decimal = 'decimal';
 	}
 	export type AutofillType = 'username' | 'password' | 'none' | string;
 	export module AutofillType {
@@ -85,6 +86,8 @@ export namespace CoreTypes {
 		export const normal = 'normal';
 		export const nowrap = 'nowrap';
 	}
+
+	export type MaxLinesType = number;
 
 	export type OrientationType = 'horizontal' | 'vertical';
 	export module Orientation {
