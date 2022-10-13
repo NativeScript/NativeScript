@@ -1,12 +1,10 @@
 import * as types from './types';
 import { dispatchToMainThread, dispatchToUIThread, isMainThread } from './mainthread-helper';
 import { sanitizeModuleName } from '../ui/builder/module-name-sanitizer';
-import * as layout from './layout-helper';
 
 import { GC } from './index';
 import { Device } from '../platform';
 
-export { layout };
 export * from './mainthread-helper';
 export * from './macrotask-scheduler';
 

@@ -350,13 +350,6 @@ declare function fail(data: any): void;
 
 declare function zonedCallback(callback: Function): Function;
 
-declare class WeakRef<T> {
-	constructor(obj: T);
-	get(): T;
-	clear(): void;
-	deref(): T | undefined;
-}
-
 /**
  * Create a Java long from a number
  */

@@ -14,7 +14,7 @@ const parserlib: any = require('parserlib');
 const csstree: any = require('css-tree');
 const testingToolsDir = path.resolve(__dirname, '../../../tools/testing');
 
-describe('css', () => {
+fdescribe('css', () => {
 	describe('parser', () => {
 		function test<T>(parse: (value: string, lastIndex?: number) => T, value: string, expected: T);
 		function test<T>(parse: (value: string, lastIndex?: number) => T, value: string, lastIndex: number, expected: T);

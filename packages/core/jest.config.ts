@@ -1,15 +1,19 @@
+/* eslint-disable */
 export default {
 	displayName: 'core',
 	preset: '../../jest.preset.js',
-	globals: {
-		'ts-jest': {
-			tsconfig: '<rootDir>/tsconfig.spec.json',
-		},
-	},
+	setupFiles: ['<rootDir>/jest.setup.ts'],
 	testEnvironment: 'node',
 	transform: {
-		'^.+\\.[tj]sx?$': 'ts-jest',
+		'^.+\\.tsx?$': [
+			'ts-jest',
+			{
+				useESM: true,
+				tsconfig: '<rootDir>/tsconfig.spec.json',
+			},
+		],
 	},
-	moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
+	extensionsToTreatAsEsm: ['.ts'],
+	moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'ios.ts'],
 	coverageDirectory: '../../coverage/core',
 };

@@ -645,7 +645,7 @@ export class CssProperty<T extends Style, U> implements CssProperty<T, U> {
 		const property = this;
 
 		function setLocalValue(this: T, newValue: U | string): void {
-			const view = this.viewRef.get();
+			const view = this.viewRef.deref();
 			if (!view) {
 				Trace.write(`${newValue} not set to view because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 
@@ -723,7 +723,7 @@ export class CssProperty<T extends Style, U> implements CssProperty<T, U> {
 		}
 
 		function setCssValue(this: T, newValue: U | string): void {
-			const view = this.viewRef.get();
+			const view = this.viewRef.deref();
 			if (!view) {
 				Trace.write(`${newValue} not set to view because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 
@@ -925,7 +925,7 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 							return this[symbol];
 					  },
 				set(this: T, boxedValue: U | string) {
-					const view = this.viewRef.get();
+					const view = this.viewRef.deref();
 					if (!view) {
 						Trace.write(`${boxedValue} not set to view because ".viewRef" is cleared`, Trace.categories.Animation, Trace.messageType.warn);
 
@@ -1034,7 +1034,7 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 	}
 
 	public _initDefaultNativeValue(target: T): void {
-		const view = target.viewRef.get();
+		const view = target.viewRef.deref();
 		if (!view) {
 			Trace.write(`_initDefaultNativeValue not executed to view because ".viewRef" is cleared`, Trace.categories.Animation, Trace.messageType.warn);
 
@@ -1103,7 +1103,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 
 		const setFunc = (valueSource: ValueSource) =>
 			function (this: T, boxedValue: any): void {
-				const view = this.viewRef.get();
+				const view = this.viewRef.deref();
 				if (!view) {
 					Trace.write(`${boxedValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 
@@ -1250,7 +1250,7 @@ export class ShorthandProperty<T extends Style, P> implements ShorthandProperty<
 		const converter = options.converter;
 
 		function setLocalValue(this: T, value: string | P): void {
-			const view = this.viewRef.get();
+			const view = this.viewRef.deref();
 			if (!view) {
 				Trace.write(`setLocalValue not executed to view because ".viewRef" is cleared`, Trace.categories.Animation, Trace.messageType.warn);
 
@@ -1265,7 +1265,7 @@ export class ShorthandProperty<T extends Style, P> implements ShorthandProperty<
 		}
 
 		function setCssValue(this: T, value: string): void {
-			const view = this.viewRef.get();
+			const view = this.viewRef.deref();
 			if (!view) {
 				Trace.write(`setCssValue not executed to view because ".viewRef" is cleared`, Trace.categories.Animation, Trace.messageType.warn);
 

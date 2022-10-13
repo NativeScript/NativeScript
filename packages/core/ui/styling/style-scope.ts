@@ -425,7 +425,7 @@ export class CssState {
 	 * As a result, at some point in time, the selectors matched have to be requerried from the style scope and applied to the view.
 	 */
 	public onChange(): void {
-		const view = this.viewRef.get();
+		const view = this.viewRef.deref();
 		if (view && view.isLoaded) {
 			this.unsubscribeFromDynamicUpdates();
 			this.updateMatch();
@@ -437,14 +437,14 @@ export class CssState {
 	}
 
 	public isSelectorsLatestVersionApplied(): boolean {
-		const view = this.viewRef.get();
+		const view = this.viewRef.deref();
 		if (!view) {
 			Trace.write(`isSelectorsLatestVersionApplied returns default value "false" because "this.viewRef" cleared.`, Trace.categories.Style, Trace.messageType.warn);
 
 			return false;
 		}
 
-		return this.viewRef.get()._styleScope.getSelectorsVersion() === this._appliedSelectorsVersion;
+		return this.viewRef.deref()._styleScope.getSelectorsVersion() === this._appliedSelectorsVersion;
 	}
 
 	public onLoaded(): void {
@@ -462,7 +462,7 @@ export class CssState {
 
 	@profile
 	private updateMatch() {
-		const view = this.viewRef.get();
+		const view = this.viewRef.deref();
 		if (view && view._styleScope) {
 			this._match = view._styleScope.matchSelectors(view);
 			this._appliedSelectorsVersion = view._styleScope.getSelectorsVersion();
@@ -475,7 +475,7 @@ export class CssState {
 
 	@profile
 	private updateDynamicState(): void {
-		const view = this.viewRef.get();
+		const view = this.viewRef.deref();
 		if (!view) {
 			Trace.write(`updateDynamicState not executed to view because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 
@@ -513,7 +513,7 @@ export class CssState {
 		});
 
 		if ((this._playsKeyframeAnimations = animations.length > 0)) {
-			const view = this.viewRef.get();
+			const view = this.viewRef.deref();
 			if (!view) {
 				Trace.write(`KeyframeAnimations cannot play because ".viewRef" is cleared`, Trace.categories.Animation, Trace.messageType.warn);
 
@@ -534,7 +534,7 @@ export class CssState {
 		this._appliedAnimations.filter((animation) => animation.isPlaying).forEach((animation) => animation.cancel());
 		this._appliedAnimations = CssState.emptyAnimationArray;
 
-		const view = this.viewRef.get();
+		const view = this.viewRef.deref();
 		if (view) {
 			view.style['keyframe:rotate'] = unsetValue;
 			view.style['keyframe:rotateX'] = unsetValue;
@@ -559,7 +559,7 @@ export class CssState {
 	 * @param matchingSelectors
 	 */
 	private setPropertyValues(matchingSelectors: SelectorCore[]): void {
-		const view = this.viewRef.get();
+		const view = this.viewRef.deref();
 		if (!view) {
 			Trace.write(`${matchingSelectors} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 
@@ -686,7 +686,7 @@ export class CssState {
 	}
 
 	toString(): string {
-		const view = this.viewRef.get();
+		const view = this.viewRef.deref();
 		if (!view) {
 			Trace.write(`toString() of CssState cannot execute correctly because ".viewRef" is cleared`, Trace.categories.Animation, Trace.messageType.warn);
 

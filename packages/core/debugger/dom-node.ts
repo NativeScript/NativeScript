@@ -91,13 +91,13 @@ export class DOMNode {
 
 	public loadAttributes() {
 		this.attributes = [];
-		getSetPropertiesLazy()(this.viewRef.get())
+		getSetPropertiesLazy()(this.viewRef.deref())
 			.filter(propertyFilter)
 			.forEach((pair) => this.attributes.push(pair[0], pair[1] + ''));
 	}
 
 	get children(): DOMNode[] {
-		const view = this.viewRef.get();
+		const view = this.viewRef.deref();
 		if (!view) {
 			return [];
 		}
@@ -116,7 +116,7 @@ export class DOMNode {
 
 	onChildAdded(childView: ViewBase): void {
 		notifyInspector((ins) => {
-			const view = this.viewRef.get();
+			const view = this.viewRef.deref();
 
 			let previousChild: ViewBase;
 			view.eachChild((child) => {
@@ -156,7 +156,7 @@ export class DOMNode {
 	}
 
 	getComputedProperties(): CSSComputedStyleProperty[] {
-		const view = this.viewRef.get();
+		const view = this.viewRef.deref();
 		if (!view) {
 			return [];
 		}

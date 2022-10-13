@@ -28,7 +28,7 @@ export class Color implements definition.Color {
 					const argb = knownColors.getKnownColor(lowered);
 					this._name = arg;
 					this._argb = argb;
-				} else if (arg[0].charAt(0) === SHARP && (arg.length === 4 || arg.length === 7 || arg.length === 9)) {
+				} else if (arg.length && arg[0].charAt(0) === SHARP && (arg.length === 4 || arg.length === 7 || arg.length === 9)) {
 					// we dont use the regexp as it is quite slow. Instead we expect it to be a valid hex format
 					// strange that it would not be. And if it is not a thrown error seems best
 					// The parameter is a "#RRGGBBAA" formatted string

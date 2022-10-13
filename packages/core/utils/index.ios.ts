@@ -2,6 +2,7 @@ import { iOSNativeHelper } from './native-helper';
 import { Trace } from '../trace';
 
 export { dataDeserialize, dataSerialize, iOSNativeHelper } from './native-helper';
+export * from './layout-helper';
 export * from './utils-common';
 export { Source } from './debug';
 

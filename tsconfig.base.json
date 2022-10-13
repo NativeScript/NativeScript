@@ -14,7 +14,7 @@
 		"diagnostics": true,
 		"skipLibCheck": true,
 		"skipDefaultLibCheck": true,
-		"lib": ["es2017", "dom"],
+		"lib": ["ESNext", "dom"],
 		"types": ["node", "jest"],
 		"baseUrl": ".",
 		"paths": {
