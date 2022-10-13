@@ -1212,7 +1212,7 @@ export const idProperty = new Property<ViewBase, string>({
 });
 idProperty.register(ViewBase);
 
-export function booleanConverter(v: string): boolean {
+export function booleanConverter(v: string | boolean): boolean {
 	const lowercase = (v + '').toLowerCase();
 	if (lowercase === 'true') {
 		return true;
