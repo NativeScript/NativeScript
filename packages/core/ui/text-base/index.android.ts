@@ -494,6 +494,9 @@ export class TextBase extends TextBaseCommon {
 		if (this._tappable !== tappable) {
 			this._tappable = tappable;
 			if (this._tappable) {
+				// Setting singleLine to true results in conflicts with LinkMovementMethod
+				// See https://stackoverflow.com/a/34407901
+				this.nativeTextViewProtected.setSingleLine(false);
 				this.nativeTextViewProtected.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
 				this.nativeTextViewProtected.setHighlightColor(null);
 			} else {
