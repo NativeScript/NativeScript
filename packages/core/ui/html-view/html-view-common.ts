@@ -1,5 +1,6 @@
 ﻿import { CssProperty } from '../core/properties';
 import { View, CSSType } from '../core/view';
+import { booleanConverter } from '../core/view-base';
 import { Property } from '../core/properties';
 import { Style } from '../styling/style';
 import { colorConverter } from '../styling/style-properties';
@@ -9,6 +10,7 @@ import { HtmlView as HtmlViewDefinition } from '.';
 @CSSType('HtmlView')
 export class HtmlViewBase extends View implements HtmlViewDefinition {
 	public html: string;
+	public selectable: boolean;
 }
 
 HtmlViewBase.prototype.recycleNativeView = 'auto';
@@ -20,6 +22,13 @@ export const htmlProperty = new Property<HtmlViewBase, string>({
 	affectsLayout: true,
 });
 htmlProperty.register(HtmlViewBase);
+
+export const selectableProperty = new Property<HtmlViewBase, boolean>({
+	name: 'selectable',
+	defaultValue: true,
+	valueConverter: booleanConverter,
+});
+selectableProperty.register(HtmlViewBase);
 
 export const linkColorProperty = new CssProperty<Style, Color>({
 	name: 'linkColor',
