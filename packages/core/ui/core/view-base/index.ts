@@ -672,8 +672,8 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	get isLayoutRequestNeeded() {
 		return this._requetLayoutNeeded;
 	}
-
-	_suspendRequestLayout = false;
+	// we can initialize it to true for less unwanted requestLayout calls
+	_suspendRequestLayout = true;
 	set suspendRequestLayout(value: boolean) {
 		this._suspendRequestLayout = value;
 	}
