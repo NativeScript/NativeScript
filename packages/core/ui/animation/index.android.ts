@@ -7,7 +7,7 @@ import { AnimationBase, CubicBezierAnimationCurve } from './animation-common';
 import { Color } from '../../color';
 import { Trace } from '../../trace';
 import { opacityProperty, backgroundColorProperty, rotateProperty, rotateXProperty, rotateYProperty, translateXProperty, translateYProperty, scaleXProperty, scaleYProperty, heightProperty, widthProperty, PercentLength } from '../styling/style-properties';
-import { layout } from '../../utils';
+import { SDK_VERSION, layout } from '../../utils';
 import { Device, Screen } from '../../platform';
 import lazy from '../../utils/lazy';
 
@@ -208,7 +208,7 @@ export class Animation extends AnimationBase {
 	}
 
 	protected _play(): void {
-		if (Device.sdkVersion <= '23') {
+		if (SDK_VERSION <= 23) {
 			this._animatorSet = new android.animation.AnimatorSet();
 			this._animatorSet.addListener(this._animatorListener);
 		}

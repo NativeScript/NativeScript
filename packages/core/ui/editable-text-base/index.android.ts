@@ -1,14 +1,12 @@
 import { EditableTextBase as EditableTextBaseCommon, autofillTypeProperty, keyboardTypeProperty, returnKeyTypeProperty, editableProperty, autocapitalizationTypeProperty, autocorrectProperty, hintProperty, placeholderColorProperty, maxLengthProperty } from './editable-text-base-common';
 import { textTransformProperty, textProperty, resetSymbol } from '../text-base';
 import { Color } from '../../color';
-import { ad } from '../../utils';
+import { SDK_VERSION, ad } from '../../utils';
 import { CoreTypes } from '../../core-types';
 import { Device } from '../../platform';
 import lazy from '../../utils/lazy';
 
 export * from './editable-text-base-common';
-
-const sdkVersion = lazy(() => parseInt(Device.sdkVersion));
 
 //https://github.com/NativeScript/NativeScript/issues/2942
 export let dismissKeyboardTimeoutId: NodeJS.Timer;
@@ -250,7 +248,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 	}
 
 	[autofillTypeProperty.setNative](value: CoreTypes.AutofillType) {
-		if (sdkVersion() < 26) {
+		if (SDK_VERSION < 26) {
 			return;
 		}
 		let newOptions;

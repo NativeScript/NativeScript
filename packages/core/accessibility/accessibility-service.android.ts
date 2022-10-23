@@ -73,7 +73,7 @@ function ensureStateListener(): SharedA11YObservable {
 	});
 	accessibilityManager.addAccessibilityStateChangeListener(accessibilityStateChangeListener);
 
-	if (android.os.Build.VERSION.SDK_INT >= 19) {
+	if (Utils.SDK_VERSION >= 19) {
 		touchExplorationStateChangeListener = new android.view.accessibility.AccessibilityManager.TouchExplorationStateChangeListener({
 			onTouchExplorationStateChanged(enabled) {
 				updateAccessibilityState();

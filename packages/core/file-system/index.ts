@@ -1,5 +1,6 @@
 import { IFileSystemAccess, FileSystemAccess, FileSystemAccess29 } from './file-system-access';
 import { Device } from '../platform';
+import { SDK_VERSION } from '../utils';
 // The FileSystemAccess implementation, used through all the APIs.
 let fileAccess: IFileSystemAccess;
 
@@ -9,7 +10,7 @@ let fileAccess: IFileSystemAccess;
  */
 export function getFileAccess(): IFileSystemAccess {
 	if (!fileAccess) {
-		if (global.isAndroid && parseInt(Device.sdkVersion) >= 29) {
+		if (global.isAndroid && SDK_VERSION >= 29) {
 			fileAccess = new FileSystemAccess29();
 		} else {
 			fileAccess = new FileSystemAccess();
