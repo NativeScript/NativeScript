@@ -355,6 +355,7 @@ declare class WeakRef<T> {
 	constructor(obj: T);
 	get(): T;
 	clear(): void;
+	deref(): T | undefined;
 }
 
 /**

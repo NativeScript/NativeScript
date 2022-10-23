@@ -6,9 +6,9 @@
         {
             "label": "tsc-unit-tests",
             "type": "shell",
-			"problemMatcher": "$tsc",
-			"command": "./node_modules/.bin/tsc",
-			"args": [ "-p", "unit-tests/tsconfig.json" ],
+            "problemMatcher": "$tsc",
+            "command": "./node_modules/.bin/tsc",
+            "args": [ "-p", "unit-tests/tsconfig.json" ],
         }
     ]
 }

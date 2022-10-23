@@ -19,15 +19,15 @@ exports[`angular configuration for android 1`] = `
     ]
   },
   ignoreWarnings: [
-    /System.import\\\\(\\\\) is deprecated/,
-    /Zone\\\\.js does not support native async\\\\/await/,
-    /environment(\\\\.(\\\\w+))?\\\\.ts is part of the TypeScript compilation but it's unused/,
+    /System.import\\(\\) is deprecated/,
+    /Zone\\.js does not support native async\\/await/,
+    /environment(\\.(\\w+))?\\.ts is part of the TypeScript compilation but it's unused/,
     {
-      module: /@angular\\\\/core\\\\/(__ivy_ngcc__\\\\/)?fesm2015\\\\/core.js/,
+      module: /@angular\\/core\\/(__ivy_ngcc__\\/)?fesm2015\\/core.js/,
       message: /Critical dependency: the request of a dependency is an expression/
     },
-    /core\\\\/profiling/,
-    /core\\\\/ui\\\\/styling/
+    /core\\/profiling/,
+    /core\\/ui\\/styling/
   ],
   output: {
     path: '__jest__/platforms/android/app/src/main/assets/app',
@@ -91,7 +91,7 @@ exports[`angular configuration for android 1`] = `
       },
       /* config.module.rule('workers') */
       {
-        test: /\\\\.(mjs|js|ts)$/,
+        test: /\\.(mjs|js|ts)$/,
         use: [
           /* config.module.rule('workers').use('nativescript-worker-loader') */
           {
@@ -101,14 +101,14 @@ exports[`angular configuration for android 1`] = `
       },
       /* config.module.rule('js') */
       {
-        test: /\\\\.js$/,
+        test: /\\.js$/,
         exclude: [
           /node_modules/
         ]
       },
       /* config.module.rule('xml') */
       {
-        test: /\\\\.xml$/,
+        test: /\\.xml$/,
         use: [
           /* config.module.rule('xml').use('xml-namespace-loader') */
           {
@@ -118,7 +118,7 @@ exports[`angular configuration for android 1`] = `
       },
       /* config.module.rule('css') */
       {
-        test: /\\\\.css$/,
+        test: /\\.css$/,
         include: [
           '__jest__/src/app.css',
           '__jest__/src/app.android.css',
@@ -153,7 +153,7 @@ exports[`angular configuration for android 1`] = `
       },
       /* config.module.rule('scss') */
       {
-        test: /\\\\.scss$/,
+        test: /\\.scss$/,
         include: [
           '__jest__/src/app.scss',
           '__jest__/src/app.android.scss',
@@ -192,9 +192,9 @@ exports[`angular configuration for android 1`] = `
       },
       /* config.module.rule('angular-webpack-loader') */
       {
-        test: /\\\\.[cm]?[tj]sx?$/,
+        test: /\\.[cm]?[tj]sx?$/,
         exclude: [
-          /[/\\\\\\\\](?:core-js|@babel|tslib|web-animations-js|web-streams-polyfill)[/\\\\\\\\]/
+          /[/\\\\](?:core-js|@babel|tslib|web-animations-js|web-streams-polyfill)[/\\\\]/
         ],
         use: [
           /* config.module.rule('angular-webpack-loader').use('webpack-loader') */
@@ -212,7 +212,7 @@ exports[`angular configuration for android 1`] = `
       },
       /* config.module.rule('angular') */
       {
-        test: /(?:\\\\.ngfactory.js|\\\\.ngstyle\\\\.js|\\\\.ts)$/,
+        test: /(?:\\.ngfactory.js|\\.ngstyle\\.js|\\.ts)$/,
         use: [
           /* config.module.rule('angular').use('@ngtools/webpack') */
           {
@@ -222,14 +222,14 @@ exports[`angular configuration for android 1`] = `
       },
       /* config.module.rule('@angular/core') */
       {
-        test: /[\\\\/\\\\\\\\]@angular[\\\\/\\\\\\\\]core[\\\\/\\\\\\\\].+\\\\.js$/,
+        test: /[\\/\\\\]@angular[\\/\\\\]core[\\/\\\\].+\\.js$/,
         parser: {
           system: true
         }
       },
       /* config.module.rule('html') */
       {
-        test: /\\\\.html$/,
+        test: /\\.html$/,
         use: [
           /* config.module.rule('html').use('raw-loader') */
           {
@@ -239,7 +239,7 @@ exports[`angular configuration for android 1`] = `
       },
       /* config.module.rule('css|component') */
       {
-        test: /\\\\.css$/,
+        test: /\\.css$/,
         exclude: [
           '__jest__/src/app.css',
           '__jest__/src/app.android.css',
@@ -254,7 +254,7 @@ exports[`angular configuration for android 1`] = `
       },
       /* config.module.rule('scss|component') */
       {
-        test: /\\\\.scss$/,
+        test: /\\.scss$/,
         exclude: [
           '__jest__/src/app.scss',
           '__jest__/src/app.android.scss',
@@ -294,7 +294,7 @@ exports[`angular configuration for android 1`] = `
     splitChunks: {
       cacheGroups: {
         defaultVendor: {
-          test: /[\\\\\\\\/]node_modules[\\\\\\\\/]/,
+          test: /[\\\\/]node_modules[\\\\/]/,
           priority: -10,
           name: 'vendor',
           chunks: 'all'
@@ -335,7 +335,7 @@ exports[`angular configuration for android 1`] = `
     ),
     /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
     new ContextExclusionPlugin(
-      /\\\\.(ios)\\\\.(\\\\w+)$/
+      /\\.(ios)\\.(\\w+)$/
     ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
@@ -343,8 +343,8 @@ exports[`angular configuration for android 1`] = `
         __DEV__: true,
         __NS_WEBPACK__: true,
         __NS_ENV_VERBOSE__: false,
-        __NS_DEV_HOST_IPS__: '[\\"127.0.0.1\\",\\"192.168.0.10\\"]',
-        __CSS_PARSER__: '\\"css-tree\\"',
+        __NS_DEV_HOST_IPS__: '["127.0.0.1","192.168.0.10"]',
+        __CSS_PARSER__: '"css-tree"',
         __UI_USE_XML_PARSER__: true,
         __UI_USE_EXTERNAL_RENDERER__: false,
         __ANDROID__: true,
@@ -443,15 +443,15 @@ exports[`angular configuration for ios 1`] = `
     ]
   },
   ignoreWarnings: [
-    /System.import\\\\(\\\\) is deprecated/,
-    /Zone\\\\.js does not support native async\\\\/await/,
-    /environment(\\\\.(\\\\w+))?\\\\.ts is part of the TypeScript compilation but it's unused/,
+    /System.import\\(\\) is deprecated/,
+    /Zone\\.js does not support native async\\/await/,
+    /environment(\\.(\\w+))?\\.ts is part of the TypeScript compilation but it's unused/,
     {
-      module: /@angular\\\\/core\\\\/(__ivy_ngcc__\\\\/)?fesm2015\\\\/core.js/,
+      module: /@angular\\/core\\/(__ivy_ngcc__\\/)?fesm2015\\/core.js/,
       message: /Critical dependency: the request of a dependency is an expression/
     },
-    /core\\\\/profiling/,
-    /core\\\\/ui\\\\/styling/
+    /core\\/profiling/,
+    /core\\/ui\\/styling/
   ],
   output: {
     path: '__jest__/platforms/ios/jest/app',
@@ -515,7 +515,7 @@ exports[`angular configuration for ios 1`] = `
       },
       /* config.module.rule('workers') */
       {
-        test: /\\\\.(mjs|js|ts)$/,
+        test: /\\.(mjs|js|ts)$/,
         use: [
           /* config.module.rule('workers').use('nativescript-worker-loader') */
           {
@@ -525,14 +525,14 @@ exports[`angular configuration for ios 1`] = `
       },
       /* config.module.rule('js') */
       {
-        test: /\\\\.js$/,
+        test: /\\.js$/,
         exclude: [
           /node_modules/
         ]
       },
       /* config.module.rule('xml') */
       {
-        test: /\\\\.xml$/,
+        test: /\\.xml$/,
         use: [
           /* config.module.rule('xml').use('xml-namespace-loader') */
           {
@@ -542,7 +542,7 @@ exports[`angular configuration for ios 1`] = `
       },
       /* config.module.rule('css') */
       {
-        test: /\\\\.css$/,
+        test: /\\.css$/,
         include: [
           '__jest__/src/app.css',
           '__jest__/src/app.ios.css',
@@ -577,7 +577,7 @@ exports[`angular configuration for ios 1`] = `
       },
       /* config.module.rule('scss') */
       {
-        test: /\\\\.scss$/,
+        test: /\\.scss$/,
         include: [
           '__jest__/src/app.scss',
           '__jest__/src/app.ios.scss',
@@ -616,9 +616,9 @@ exports[`angular configuration for ios 1`] = `
       },
       /* config.module.rule('angular-webpack-loader') */
       {
-        test: /\\\\.[cm]?[tj]sx?$/,
+        test: /\\.[cm]?[tj]sx?$/,
         exclude: [
-          /[/\\\\\\\\](?:core-js|@babel|tslib|web-animations-js|web-streams-polyfill)[/\\\\\\\\]/
+          /[/\\\\](?:core-js|@babel|tslib|web-animations-js|web-streams-polyfill)[/\\\\]/
         ],
         use: [
           /* config.module.rule('angular-webpack-loader').use('webpack-loader') */
@@ -636,7 +636,7 @@ exports[`angular configuration for ios 1`] = `
       },
       /* config.module.rule('angular') */
       {
-        test: /(?:\\\\.ngfactory.js|\\\\.ngstyle\\\\.js|\\\\.ts)$/,
+        test: /(?:\\.ngfactory.js|\\.ngstyle\\.js|\\.ts)$/,
         use: [
           /* config.module.rule('angular').use('@ngtools/webpack') */
           {
@@ -646,14 +646,14 @@ exports[`angular configuration for ios 1`] = `
       },
       /* config.module.rule('@angular/core') */
       {
-        test: /[\\\\/\\\\\\\\]@angular[\\\\/\\\\\\\\]core[\\\\/\\\\\\\\].+\\\\.js$/,
+        test: /[\\/\\\\]@angular[\\/\\\\]core[\\/\\\\].+\\.js$/,
         parser: {
           system: true
         }
       },
       /* config.module.rule('html') */
       {
-        test: /\\\\.html$/,
+        test: /\\.html$/,
         use: [
           /* config.module.rule('html').use('raw-loader') */
           {
@@ -663,7 +663,7 @@ exports[`angular configuration for ios 1`] = `
       },
       /* config.module.rule('css|component') */
       {
-        test: /\\\\.css$/,
+        test: /\\.css$/,
         exclude: [
           '__jest__/src/app.css',
           '__jest__/src/app.ios.css',
@@ -678,7 +678,7 @@ exports[`angular configuration for ios 1`] = `
       },
       /* config.module.rule('scss|component') */
       {
-        test: /\\\\.scss$/,
+        test: /\\.scss$/,
         exclude: [
           '__jest__/src/app.scss',
           '__jest__/src/app.ios.scss',
@@ -718,7 +718,7 @@ exports[`angular configuration for ios 1`] = `
     splitChunks: {
       cacheGroups: {
         defaultVendor: {
-          test: /[\\\\\\\\/]node_modules[\\\\\\\\/]/,
+          test: /[\\\\/]node_modules[\\\\/]/,
           priority: -10,
           name: 'vendor',
           chunks: 'all'
@@ -759,7 +759,7 @@ exports[`angular configuration for ios 1`] = `
     ),
     /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
     new ContextExclusionPlugin(
-      /\\\\.(android)\\\\.(\\\\w+)$/
+      /\\.(android)\\.(\\w+)$/
     ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
@@ -767,8 +767,8 @@ exports[`angular configuration for ios 1`] = `
         __DEV__: true,
         __NS_WEBPACK__: true,
         __NS_ENV_VERBOSE__: false,
-        __NS_DEV_HOST_IPS__: '[\\"127.0.0.1\\",\\"192.168.0.10\\"]',
-        __CSS_PARSER__: '\\"css-tree\\"',
+        __NS_DEV_HOST_IPS__: '["127.0.0.1","192.168.0.10"]',
+        __CSS_PARSER__: '"css-tree"',
         __UI_USE_XML_PARSER__: true,
         __UI_USE_EXTERNAL_RENDERER__: false,
         __ANDROID__: false,
@@ -850,7 +850,7 @@ exports[`angular configuration for ios 1`] = `
 `;
 
 exports[`angular configuration loads polyfills.android.ts into the bundle entry if it exists  1`] = `
-Array [
+[
   "__jest__/src/polyfills.android.ts",
   "@nativescript/core/bundle-entry-points",
   "__jest__/src/app.js",
@@ -860,7 +860,7 @@ Array [
 `;
 
 exports[`angular configuration loads polyfills.ios.ts into the bundle entry if it exists  1`] = `
-Array [
+[
   "__jest__/src/polyfills.ios.ts",
   "@nativescript/core/bundle-entry-points",
   "__jest__/src/app.js",
@@ -868,7 +868,7 @@ Array [
 `;
 
 exports[`angular configuration loads polyfills.ts into the bundle entry if it exists  1`] = `
-Array [
+[
   "__jest__/src/polyfills.ts",
   "@nativescript/core/bundle-entry-points",
   "__jest__/src/app.js",

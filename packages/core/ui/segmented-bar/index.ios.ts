@@ -8,7 +8,7 @@ export * from './segmented-bar-common';
 export class SegmentedBarItem extends SegmentedBarItemBase {
 	public _update() {
 		const parent = <SegmentedBar>this.parent;
-		if (parent) {
+		if (parent?.ios) {
 			const tabIndex = parent.items.indexOf(this);
 			let title = this.title;
 			title = title === null || title === undefined ? '' : title;

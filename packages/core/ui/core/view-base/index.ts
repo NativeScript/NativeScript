@@ -672,8 +672,8 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	get isLayoutRequestNeeded() {
 		return this._requetLayoutNeeded;
 	}
-
-	_suspendRequestLayout = false;
+	// we can initialize it to true for less unwanted requestLayout calls
+	_suspendRequestLayout = true;
 	set suspendRequestLayout(value: boolean) {
 		this._suspendRequestLayout = value;
 	}
@@ -1257,7 +1257,7 @@ export const disableCssProperty = new InheritedProperty<ViewBase, boolean>({
 });
 disableCssProperty.register(ViewBase);
 
-export function booleanConverter(v: string): boolean {
+export function booleanConverter(v: string | boolean): boolean {
 	const lowercase = (v + '').toLowerCase();
 	if (lowercase === 'true') {
 		return true;

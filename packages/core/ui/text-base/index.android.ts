@@ -280,7 +280,7 @@ export class TextBase extends TextBaseCommon {
 
 		this.nativeTextViewProtected.setTransformationMethod(new TextTransformation(this));
 	}
-	
+
 	[textAlignmentProperty.getDefault](): CoreTypes.TextAlignmentType {
 		return 'initial';
 	}
@@ -505,7 +505,7 @@ export class TextBase extends TextBaseCommon {
 
 function getCapitalizedString(str: string): string {
 	let newString = str.toLowerCase();
-	newString = newString.replace(/(?:^|\s|[-"'([{])+\S/g, (c) => c.toUpperCase());
+	newString = newString.replace(/(?:^|\s'*|[-"([{])+\S/g, (c) => c.toUpperCase());
 	return newString;
 }
 
