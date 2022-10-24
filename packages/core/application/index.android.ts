@@ -15,6 +15,7 @@ import { Observable } from '../data/observable';
 
 import { profile } from '../profiling';
 import { inBackground, setInBackground, setSuspended, suspended } from './application-common';
+import { ad } from '../utils';
 
 const ActivityCreated = 'activityCreated';
 const ActivityDestroyed = 'activityDestroyed';
@@ -114,7 +115,7 @@ export class AndroidApplication extends Observable implements AndroidApplication
 
 	get systemAppearance(): 'light' | 'dark' {
 		if (!this._systemAppearance) {
-			const resources = this.context.getResources();
+			const resources = ad.getApplicationContext().getResources();
 			const configuration = <android.content.res.Configuration>resources.getConfiguration();
 
 			this._systemAppearance = getSystemAppearanceValue(configuration);
