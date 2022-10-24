@@ -243,7 +243,7 @@ export function getRootView(): View {
 	ensureNativeApplication();
 	// Use start activity as a backup when foregroundActivity is still not set
 	// in cases when we are getting the root view before activity.onResumed event is fired
-	const activity = androidApp.foregroundActivity || androidApp.startActivity;
+	const activity = androidApp.startActivity;
 	if (!activity) {
 		return undefined;
 	}
