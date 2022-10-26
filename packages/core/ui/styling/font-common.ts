@@ -55,7 +55,7 @@ export namespace FontStyle {
 	export const parse = makeParser<FontStyleType>(isValid);
 }
 
-export type FontWeightType = '100' | '200' | '300' | 'normal' | '400' | '500' | '600' | 'bold' | '700' | '800' | '900';
+export type FontWeightType = '100' | '200' | '300' | 'normal' | '400' | '500' | '600' | 'bold' | '700' | '800' | '900' | number;
 export namespace FontWeight {
 	export const THIN = '100';
 	export const EXTRA_LIGHT = '200';
