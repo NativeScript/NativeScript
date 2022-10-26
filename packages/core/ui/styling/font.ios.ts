@@ -80,6 +80,9 @@ export class Font extends FontBase {
 }
 
 function getNativeFontWeight(fontWeight: FontWeightType): number {
+	if (typeof fontWeight === 'number') {
+		fontWeight = (fontWeight + '') as any;
+	}
 	switch (fontWeight) {
 		case FontWeight.THIN:
 			return UIFontWeightUltraLight;
