@@ -36,6 +36,8 @@ export interface HttpRequestOptions {
 	 * Gets or sets whether to *not* follow server's redirection responses.
 	 */
 	dontFollowRedirects?: boolean;
+
+	signal?: AbortSignal;
 }
 
 /**
