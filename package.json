@@ -83,6 +83,7 @@
     "module-alias": "^2.2.2",
     "nativescript": "~8.3.0",
     "nativescript-typedoc-theme": "1.1.0",
+    "nx": "14.5.4",
     "parse-css": "git+https://github.com/tabatkins/parse-css.git",
     "parserlib": "^1.1.1",
     "prettier": "^2.6.2",
@@ -100,8 +101,7 @@
     "tslint-to-eslint-config": "^2.13.0",
     "typedoc": "^0.22.17",
     "typescript": "~4.7.3",
-    "zx": "^7.0.5",
-    "nx": "14.5.4"
+    "zx": "^7.0.5"
   },
   "lint-staged": {
     "**/*": [

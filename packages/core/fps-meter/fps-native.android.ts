@@ -1,19 +1,17 @@
 import * as definition from './fps-native';
-import { Device } from '../platform';
+import { SDK_VERSION } from '../utils';
 
 export class FPSCallback implements definition.FPSCallback {
 	private impl: android.view.Choreographer.FrameCallback | ((nanos: number) => void);
 	private onFrame: (currentTimeMillis: number) => void;
 
 	public running: boolean;
-	sdkVersion: number;
 	nativeFramesSupported: boolean;
 	constructor(onFrame: (currentTimeMillis: number) => void) {
 		this.running = false;
 		this.onFrame = onFrame;
 
-		this.sdkVersion = parseInt(Device.sdkVersion);
-		this.nativeFramesSupported = this.sdkVersion >= 24 && this._isNativeFramesSupported();
+		this.nativeFramesSupported = SDK_VERSION >= 24 && this._isNativeFramesSupported();
 
 		if (this.nativeFramesSupported) {
 			this.impl = (nanos: number) => {

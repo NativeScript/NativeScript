@@ -15,6 +15,7 @@ import { Observable } from '../data/observable';
 
 import { profile } from '../profiling';
 import { inBackground, setInBackground, setSuspended, suspended } from './application-common';
+import { ad } from '../utils';
 
 const ActivityCreated = 'activityCreated';
 const ActivityDestroyed = 'activityDestroyed';
@@ -114,7 +115,7 @@ export class AndroidApplication extends Observable implements AndroidApplication
 
 	get systemAppearance(): 'light' | 'dark' {
 		if (!this._systemAppearance) {
-			const resources = this.context.getResources();
+			const resources = ad.getApplicationContext().getResources();
 			const configuration = <android.content.res.Configuration>resources.getConfiguration();
 
 			this._systemAppearance = getSystemAppearanceValue(configuration);
@@ -242,7 +243,7 @@ export function getRootView(): View {
 	ensureNativeApplication();
 	// Use start activity as a backup when foregroundActivity is still not set
 	// in cases when we are getting the root view before activity.onResumed event is fired
-	const activity = androidApp.foregroundActivity || androidApp.startActivity;
+	const activity = androidApp.startActivity;
 	if (!activity) {
 		return undefined;
 	}

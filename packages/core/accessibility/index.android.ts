@@ -1,6 +1,7 @@
 import { initAccessibilityFontScale } from './font-scale';
 import * as Application from '../application';
 import { Trace } from '../trace';
+import { SDK_VERSION } from '../utils';
 import type { View } from '../ui/core/view';
 import { GestureTypes } from '../ui/gestures';
 import { notifyAccessibilityFocusState } from './accessibility-common';
@@ -54,7 +55,7 @@ function accessibilityEventHelper(view: Partial<View>, eventType: number) {
 			 * Android API >= 26 handles accessibility tap-events by converting them to TYPE_VIEW_CLICKED
 			 * These aren't triggered for custom tap events in NativeScript.
 			 */
-			if (android.os.Build.VERSION.SDK_INT >= 26) {
+			if (SDK_VERSION >= 26) {
 				// Find all tap gestures and trigger them.
 				for (const tapGesture of view.getGestureObservers(GestureTypes.tap) ?? []) {
 					tapGesture.callback({
@@ -171,7 +172,7 @@ function ensureNativeClasses() {
 			if (accessibilityRole) {
 				const androidClassName = RoleTypeMap.get(accessibilityRole);
 				if (androidClassName) {
-					const oldClassName = info.getClassName() || (android.os.Build.VERSION.SDK_INT >= 28 && host.getAccessibilityClassName()) || null;
+					const oldClassName = info.getClassName() || (SDK_VERSION >= 28 && host.getAccessibilityClassName()) || null;
 					info.setClassName(androidClassName);
 
 					if (Trace.isEnabled()) {
@@ -191,7 +192,7 @@ function ensureNativeClasses() {
 					info.setClickable(true);
 				}
 
-				if (android.os.Build.VERSION.SDK_INT >= 28) {
+				if (SDK_VERSION >= 28) {
 					if (accessibilityRole === AccessibilityRole.Header) {
 						if (Trace.isEnabled()) {
 							Trace.write(`onInitializeAccessibilityNodeInfo ${view} - set heading role=${accessibilityRole}`, Trace.categories.Accessibility);

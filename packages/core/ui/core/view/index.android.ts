@@ -50,8 +50,6 @@ const GRAVITY_FILL_HORIZONTAL = 7; // android.view.Gravity.FILL_HORIZONTAL
 const GRAVITY_CENTER_VERTICAL = 16; // android.view.Gravity.CENTER_VERTICAL
 const GRAVITY_FILL_VERTICAL = 112; // android.view.Gravity.FILL_VERTICAL
 
-const sdkVersion = lazy(() => parseInt(Device.sdkVersion));
-
 const modalMap = new Map<number, DialogOptions>();
 
 let TouchListener: TouchListener;
@@ -843,7 +841,7 @@ export class View extends ViewCommon {
 			updateAccessibilityProperties(this);
 		}
 
-		if (android.os.Build.VERSION.SDK_INT >= 28) {
+		if (Utils.SDK_VERSION >= 28) {
 			this.nativeViewProtected?.setAccessibilityHeading(value === AccessibilityRole.Header);
 		}
 	}
@@ -901,7 +899,7 @@ export class View extends ViewCommon {
 		return this.getDefaultElevation();
 	}
 	[androidElevationProperty.setNative](value: number) {
-		if (sdkVersion() < 21) {
+		if (Utils.SDK_VERSION < 21) {
 			return;
 		}
 
@@ -912,7 +910,7 @@ export class View extends ViewCommon {
 		return this.getDefaultDynamicElevationOffset();
 	}
 	[androidDynamicElevationOffsetProperty.setNative](value: number) {
-		if (sdkVersion() < 21) {
+		if (Utils.SDK_VERSION < 21) {
 			return;
 		}
 
@@ -920,7 +918,7 @@ export class View extends ViewCommon {
 	}
 
 	protected getDefaultElevation(): number {
-		if (sdkVersion() < 21) {
+		if (Utils.SDK_VERSION < 21) {
 			return 0;
 		}
 

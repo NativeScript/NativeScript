@@ -1,4 +1,5 @@
 import { android as androidApp, getNativeApplication } from '../application';
+import { SDK_VERSION } from '../utils';
 
 export enum connectionType {
 	none = 0,
@@ -69,7 +70,7 @@ function parseNetworkCapabilities(capabilities?: android.net.NetworkCapabilities
 }
 
 export function getConnectionType(): number {
-	if (android.os.Build.VERSION.SDK_INT >= 28) {
+	if (SDK_VERSION >= 28) {
 		return getNetworkCapabilities();
 	} else {
 		const activeNetworkInfo = getActiveNetworkInfo();
@@ -117,7 +118,7 @@ let networkCallback;
 let notifyCallback;
 
 export function startMonitoring(connectionTypeChangedCallback: (newConnectionType: number) => void): void {
-	if (android.os.Build.VERSION.SDK_INT >= 28) {
+	if (SDK_VERSION >= 28) {
 		const manager = getConnectivityManager();
 		if (manager) {
 			notifyCallback = (network: android.net.Network, networkCapabilities: android.net.NetworkCapabilities) => {
@@ -162,7 +163,7 @@ export function startMonitoring(connectionTypeChangedCallback: (newConnectionTyp
 }
 
 export function stopMonitoring(): void {
-	if (android.os.Build.VERSION.SDK_INT >= 28) {
+	if (SDK_VERSION >= 28) {
 		// @ts-ignore
 		const manager = getConnectivityManager();
 		if (manager && callback) {
