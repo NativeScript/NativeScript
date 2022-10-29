@@ -539,7 +539,7 @@ export class View extends ViewCommon {
 
 	@profile
 	public requestLayout(): void {
-		if (this._suspendRequestLayout) {
+		if (this.mSuspendRequestLayout) {
 			this._requetLayoutNeeded = true;
 			return;
 		}

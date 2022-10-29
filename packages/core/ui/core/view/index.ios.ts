@@ -90,7 +90,7 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	public requestLayout(): void {
-		if (this._suspendRequestLayout) {
+		if (this.mSuspendRequestLayout) {
 			this._requetLayoutNeeded = true;
 			return;
 		}
