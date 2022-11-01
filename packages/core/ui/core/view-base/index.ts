@@ -1222,20 +1222,20 @@ export const classNameProperty = new Property<ViewBase, string>({
 			return;
 		}
 		const cssClasses = view.cssClasses;
-		const rootViewsCssClasses = CSSUtils.getSystemCssClasses();
+		// const rootViewsCssClasses = CSSUtils.getSystemCssClasses();
 
-		const shouldAddModalRootViewCssClasses = cssClasses.has(CSSUtils.MODAL_ROOT_VIEW_CSS_CLASS);
-		const shouldAddRootViewCssClasses = cssClasses.has(CSSUtils.ROOT_VIEW_CSS_CLASS);
+		// const shouldAddModalRootViewCssClasses = cssClasses.has(CSSUtils.MODAL_ROOT_VIEW_CSS_CLASS);
+		// const shouldAddRootViewCssClasses = cssClasses.has(CSSUtils.ROOT_VIEW_CSS_CLASS);
 
 		cssClasses.clear();
 
-		if (shouldAddModalRootViewCssClasses) {
-			cssClasses.add(CSSUtils.MODAL_ROOT_VIEW_CSS_CLASS);
-		} else if (shouldAddRootViewCssClasses) {
-			cssClasses.add(CSSUtils.ROOT_VIEW_CSS_CLASS);
-		}
+		// if (shouldAddModalRootViewCssClasses) {
+		// 	cssClasses.add(CSSUtils.MODAL_ROOT_VIEW_CSS_CLASS);
+		// } else if (shouldAddRootViewCssClasses) {
+		// 	cssClasses.add(CSSUtils.ROOT_VIEW_CSS_CLASS);
+		// }
 
-		rootViewsCssClasses.forEach((c) => cssClasses.add(c));
+		// rootViewsCssClasses.forEach((c) => cssClasses.add(c));
 
 		if (typeof newValue === 'string' && newValue !== '') {
 			newValue.split(' ').forEach((c) => cssClasses.add(c));
