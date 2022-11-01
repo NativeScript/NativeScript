@@ -398,15 +398,14 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		this.style._fontScale = getCurrentFontScale();
 		this._modalParent = parent;
 		this._modalContext = options.context;
-		const that = this;
-		this._closeModalCallback = function (...originalArgs) {
-			if (that._closeModalCallback) {
-				const modalIndex = _rootModalViews.indexOf(that);
+		this._closeModalCallback = (...originalArgs) => {
+			if (this._closeModalCallback) {
+				const modalIndex = _rootModalViews.indexOf(this);
 				_rootModalViews.splice(modalIndex);
-				that._modalParent = null;
-				that._modalContext = null;
-				that._closeModalCallback = null;
-				that._dialogClosed();
+				this._modalParent = null;
+				this._modalContext = null;
+				this._closeModalCallback = null;
+				this._dialogClosed();
 				parent._modal = null;
 
 				const whenClosedCallback = () => {
@@ -414,10 +413,10 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 						options.closeCallback.apply(undefined, originalArgs);
 					}
 
-					that._tearDownUI(true);
+					this._tearDownUI(true);
 				};
 
-				that._hideNativeModalView(parent, whenClosedCallback);
+				this._hideNativeModalView(parent, whenClosedCallback);
 			}
 		};
 	}
