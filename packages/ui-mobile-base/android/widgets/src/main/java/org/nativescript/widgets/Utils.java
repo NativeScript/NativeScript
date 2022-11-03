@@ -233,7 +233,7 @@ public class Utils {
 		return rotationAngle;
 	}
 
-	private static final Handler mainHandler = new Handler(Looper.getMainLooper());
+	private static final Handler mHandler = new Handler(Looper.myLooper());
 
 	public static void loadImageAsync(final Context context, final String src, final String options, final int maxWidth, final int maxHeight, final AsyncImageCallback callback) {
 		executors.execute(new Runnable() {
@@ -251,7 +251,7 @@ public class Utils {
 						try {
 							pfd = resolver.openFileDescriptor(uri, "r");
 						} catch (final FileNotFoundException e) {
-							mainHandler.post(new Runnable() {
+							mHandler.post(new Runnable() {
 								@Override
 								public void run() {
 									callback.onError(e);
@@ -324,7 +324,7 @@ public class Utils {
 
 					final String finalError = error;
 					final Bitmap finalBitmap = bitmap;
-					mainHandler.post(new Runnable() {
+					mHandler.post(new Runnable() {
 						@Override
 						public void run() {
 							if (finalError != null) {
@@ -335,7 +335,7 @@ public class Utils {
 						}
 					});
 				} catch (final Exception ex) {
-					mainHandler.post(new Runnable() {
+					mHandler.post(new Runnable() {
 						@Override
 						public void run() {
 							callback.onError(ex);
@@ -374,7 +374,7 @@ public class Utils {
 
 				final Exception finalException = exception;
 				final boolean finalIsSuccess = isSuccess;
-				mainHandler.post(new Runnable() {
+				mHandler.post(new Runnable() {
 					@Override
 					public void run() {
 						if (finalException != null) {
@@ -411,7 +411,7 @@ public class Utils {
 
 				final Exception finalException = exception;
 				final String finalResult = result;
-				mainHandler.post(new Runnable() {
+				mHandler.post(new Runnable() {
 					@Override
 					public void run() {
 						if (finalException != null) {
@@ -471,7 +471,7 @@ public class Utils {
 
 				final Exception finalException = exception;
 				final Bitmap finalResult = result;
-				mainHandler.post(new Runnable() {
+				mHandler.post(new Runnable() {
 					@Override
 					public void run() {
 						if (finalException != null) {
