@@ -23,6 +23,8 @@
         "java.io:IOException*",
         "java.io:FileNotFoundException*",
         "java.nio:ByteBuffer*",
+        "java.nio.file:Path*",
+        "java.nio.file:Paths*",
         "java.util:Locale*",
         "java.util:Calendar*",
         "java.util:HashSet*",
