@@ -17,10 +17,11 @@ export class HtmlView extends View {
 	 */
 	ios: any /* UITextView */;
 
-	/**
-	 * Gets or sets html string for the HtmlView.
-	 */
+	/** Gets or sets html string for the HtmlView. */
 	html: string;
+
+	/** Gets or sets a value indicating whether HtmlView is selectable. */
+	selectable: boolean;
 }
 
 export const htmlProperty: Property<HtmlView, string>;

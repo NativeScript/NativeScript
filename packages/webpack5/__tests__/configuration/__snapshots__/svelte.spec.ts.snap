@@ -19,7 +19,7 @@ exports[`svelte configuration for android 1`] = `
     ]
   },
   ignoreWarnings: [
-    /System.import\\\\(\\\\) is deprecated/
+    /System.import\\(\\) is deprecated/
   ],
   output: {
     path: '__jest__/platforms/android/app/src/main/assets/app',
@@ -83,7 +83,7 @@ exports[`svelte configuration for android 1`] = `
       },
       /* config.module.rule('workers') */
       {
-        test: /\\\\.(js|ts|svelte)$/,
+        test: /\\.(js|ts|svelte)$/,
         use: [
           /* config.module.rule('workers').use('nativescript-worker-loader') */
           {
@@ -94,7 +94,7 @@ exports[`svelte configuration for android 1`] = `
       /* config.module.rule('ts') */
       {
         test: [
-          /\\\\.ts$/
+          /\\.ts$/
         ],
         use: [
           /* config.module.rule('ts').use('ts-loader') */
@@ -114,14 +114,14 @@ exports[`svelte configuration for android 1`] = `
       },
       /* config.module.rule('js') */
       {
-        test: /\\\\.js$/,
+        test: /\\.js$/,
         exclude: [
           /node_modules/
         ]
       },
       /* config.module.rule('xml') */
       {
-        test: /\\\\.xml$/,
+        test: /\\.xml$/,
         use: [
           /* config.module.rule('xml').use('xml-namespace-loader') */
           {
@@ -131,7 +131,7 @@ exports[`svelte configuration for android 1`] = `
       },
       /* config.module.rule('css') */
       {
-        test: /\\\\.css$/,
+        test: /\\.css$/,
         use: [
           /* config.module.rule('css').use('apply-css-loader') */
           {
@@ -161,7 +161,7 @@ exports[`svelte configuration for android 1`] = `
       },
       /* config.module.rule('scss') */
       {
-        test: /\\\\.scss$/,
+        test: /\\.scss$/,
         use: [
           /* config.module.rule('scss').use('apply-css-loader') */
           {
@@ -195,7 +195,7 @@ exports[`svelte configuration for android 1`] = `
       },
       /* config.module.rule('svelte') */
       {
-        test: /\\\\.svelte$/,
+        test: /\\.svelte$/,
         exclude: [
           /node_modules/
         ],
@@ -223,7 +223,7 @@ exports[`svelte configuration for android 1`] = `
     splitChunks: {
       cacheGroups: {
         defaultVendor: {
-          test: /[\\\\\\\\/]node_modules[\\\\\\\\/]/,
+          test: /[\\\\/]node_modules[\\\\/]/,
           priority: -10,
           name: 'vendor',
           chunks: 'all'
@@ -273,7 +273,7 @@ exports[`svelte configuration for android 1`] = `
     ),
     /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
     new ContextExclusionPlugin(
-      /\\\\.(ios)\\\\.(\\\\w+)$/
+      /\\.(ios)\\.(\\w+)$/
     ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
@@ -281,8 +281,8 @@ exports[`svelte configuration for android 1`] = `
         __DEV__: true,
         __NS_WEBPACK__: true,
         __NS_ENV_VERBOSE__: false,
-        __NS_DEV_HOST_IPS__: '[\\"127.0.0.1\\",\\"192.168.0.10\\"]',
-        __CSS_PARSER__: '\\"css-tree\\"',
+        __NS_DEV_HOST_IPS__: '["127.0.0.1","192.168.0.10"]',
+        __CSS_PARSER__: '"css-tree"',
         __UI_USE_XML_PARSER__: true,
         __UI_USE_EXTERNAL_RENDERER__: false,
         __ANDROID__: true,
@@ -361,7 +361,7 @@ exports[`svelte configuration for ios 1`] = `
     ]
   },
   ignoreWarnings: [
-    /System.import\\\\(\\\\) is deprecated/
+    /System.import\\(\\) is deprecated/
   ],
   output: {
     path: '__jest__/platforms/ios/jest/app',
@@ -425,7 +425,7 @@ exports[`svelte configuration for ios 1`] = `
       },
       /* config.module.rule('workers') */
       {
-        test: /\\\\.(js|ts|svelte)$/,
+        test: /\\.(js|ts|svelte)$/,
         use: [
           /* config.module.rule('workers').use('nativescript-worker-loader') */
           {
@@ -436,7 +436,7 @@ exports[`svelte configuration for ios 1`] = `
       /* config.module.rule('ts') */
       {
         test: [
-          /\\\\.ts$/
+          /\\.ts$/
         ],
         use: [
           /* config.module.rule('ts').use('ts-loader') */
@@ -456,14 +456,14 @@ exports[`svelte configuration for ios 1`] = `
       },
       /* config.module.rule('js') */
       {
-        test: /\\\\.js$/,
+        test: /\\.js$/,
         exclude: [
           /node_modules/
         ]
       },
       /* config.module.rule('xml') */
       {
-        test: /\\\\.xml$/,
+        test: /\\.xml$/,
         use: [
           /* config.module.rule('xml').use('xml-namespace-loader') */
           {
@@ -473,7 +473,7 @@ exports[`svelte configuration for ios 1`] = `
       },
       /* config.module.rule('css') */
       {
-        test: /\\\\.css$/,
+        test: /\\.css$/,
         use: [
           /* config.module.rule('css').use('apply-css-loader') */
           {
@@ -503,7 +503,7 @@ exports[`svelte configuration for ios 1`] = `
       },
       /* config.module.rule('scss') */
       {
-        test: /\\\\.scss$/,
+        test: /\\.scss$/,
         use: [
           /* config.module.rule('scss').use('apply-css-loader') */
           {
@@ -537,7 +537,7 @@ exports[`svelte configuration for ios 1`] = `
       },
       /* config.module.rule('svelte') */
       {
-        test: /\\\\.svelte$/,
+        test: /\\.svelte$/,
         exclude: [
           /node_modules/
         ],
@@ -565,7 +565,7 @@ exports[`svelte configuration for ios 1`] = `
     splitChunks: {
       cacheGroups: {
         defaultVendor: {
-          test: /[\\\\\\\\/]node_modules[\\\\\\\\/]/,
+          test: /[\\\\/]node_modules[\\\\/]/,
           priority: -10,
           name: 'vendor',
           chunks: 'all'
@@ -615,7 +615,7 @@ exports[`svelte configuration for ios 1`] = `
     ),
     /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
     new ContextExclusionPlugin(
-      /\\\\.(android)\\\\.(\\\\w+)$/
+      /\\.(android)\\.(\\w+)$/
     ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
@@ -623,8 +623,8 @@ exports[`svelte configuration for ios 1`] = `
         __DEV__: true,
         __NS_WEBPACK__: true,
         __NS_ENV_VERBOSE__: false,
-        __NS_DEV_HOST_IPS__: '[\\"127.0.0.1\\",\\"192.168.0.10\\"]',
-        __CSS_PARSER__: '\\"css-tree\\"',
+        __NS_DEV_HOST_IPS__: '["127.0.0.1","192.168.0.10"]',
+        __CSS_PARSER__: '"css-tree"',
         __UI_USE_XML_PARSER__: true,
         __UI_USE_EXTERNAL_RENDERER__: false,
         __ANDROID__: false,
