@@ -581,9 +581,9 @@ export class FileSystemAccess implements IFileSystemAccess {
 	}
 
 	public normalizePath(path: string): string {
-		const file = new java.io.File(path);
-
-		return file.getAbsolutePath();
+		// the [''] is a trick to not have to create a android.net.URI
+		// and use the method with string signature
+		return java.nio.file.Paths.get(path, ['']).normalize().toString();
 	}
 
 	public joinPath(left: string, right: string): string {
