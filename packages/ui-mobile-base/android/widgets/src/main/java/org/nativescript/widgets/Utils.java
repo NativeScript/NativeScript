@@ -234,7 +234,7 @@ public class Utils {
 	}
 
 	public static void loadImageAsync(final Context context, final String src, final String options, final int maxWidth, final int maxHeight, final AsyncImageCallback callback) {
-		final android.os.Handler mHandler = new android.os.Handler(Looper.myLooper());
+		final Handler mHandler = new Handler(Looper.myLooper());
 		executors.execute(new Runnable() {
 			@Override
 			public void run() {
@@ -357,7 +357,7 @@ public class Utils {
 
 
 	public static void saveToFileAsync(final Bitmap bitmap, final String path, final String format, final int quality, final AsyncImageCallback callback) {
-		final android.os.Handler mHandler = new android.os.Handler(Looper.myLooper());
+		final Handler mHandler = new Handler(Looper.myLooper());
 		executors.execute(new Runnable() {
 			@Override
 			public void run() {
@@ -389,7 +389,7 @@ public class Utils {
 	}
 
 	public static void toBase64StringAsync(final Bitmap bitmap, final String format, final int quality, final AsyncImageCallback callback) {
-		final android.os.Handler mHandler = new android.os.Handler(Looper.myLooper());
+		final Handler mHandler = new Handler(Looper.myLooper());
 		executors.execute(new Runnable() {
 			@Override
 			public void run() {
@@ -448,7 +448,7 @@ public class Utils {
 	}
 
 	public static void resizeAsync(final Bitmap bitmap, final float maxSize, final String options, final AsyncImageCallback callback) {
-		final android.os.Handler mHandler = new android.os.Handler(Looper.myLooper());
+		final Handler mHandler = new Handler(Looper.myLooper());
 		executors.execute(new Runnable() {
 			@Override
 			public void run() {
