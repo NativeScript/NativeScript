@@ -74,6 +74,24 @@ class UIViewControllerImpl extends UIViewController {
 
 	public isBackstackSkipped: boolean;
 	public isBackstackCleared: boolean;
+	private _isRunningLayout = 0;
+	private get isRunningLayout() {
+		return this._isRunningLayout === 0;
+	}
+	private startRunningLayout() {
+		this._isRunningLayout++;
+	}
+	private finishRunningLayout() {
+		this._isRunningLayout--;
+	}
+	private runLayout(cb: () => void) {
+		try {
+			this.startRunningLayout();
+			cb();
+		} finally {
+			this.finishRunningLayout();
+		}
+	}
 
 	public static initWithOwner(owner: WeakRef<Page>): UIViewControllerImpl {
 		const controller = <UIViewControllerImpl>UIViewControllerImpl.new();
@@ -254,7 +272,19 @@ class UIViewControllerImpl extends UIViewController {
 		}
 	}
 
+	public viewSafeAreaInsetsDidChange(): void {
+		super.viewSafeAreaInsetsDidChange();
+		if (this.isRunningLayout) {
+			return;
+		}
+		const owner = this._owner.get();
+		if (owner) {
+			this.runLayout(() => IOSHelper.layoutView(this, owner));
+		}
+	}
+
 	public viewDidLayoutSubviews(): void {
+		this.startRunningLayout();
 		super.viewDidLayoutSubviews();
 		const owner = this._owner.get();
 		if (owner) {
@@ -306,6 +336,7 @@ class UIViewControllerImpl extends UIViewController {
 
 			IOSHelper.layoutView(this, owner);
 		}
+		this.finishRunningLayout();
 	}
 
 	// Mind implementation for other controllerss
@@ -407,7 +438,7 @@ export class Page extends PageBase {
 	updateWithWillAppear(animated: boolean) {
 		// this method is important because it allows plugins to react to modal page close
 		// for example allowing updating status bar background color
-	  if (this.hasActionBar) {
+		if (this.hasActionBar) {
 			this.actionBar.update();
 		}
 		this.updateStatusBar();

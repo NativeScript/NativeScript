@@ -3,6 +3,10 @@
  */
 let timeoutHandler;
 const timeoutCallbacks = {};
+// this is needed to keep a strong reference to the callback
+// currently fixes a race condition in V8 with the android runtime implementation of WeakRef
+// there are fixes in the android runtime that will remove the need for this
+const timeoutCallbacksCb = {};
 let timerId = 0;
 
 function createHandlerAndGetId(): number {
@@ -29,12 +33,14 @@ export function setTimeout(callback: Function, milliseconds = 0, ...args): numbe
 
 			if (timeoutCallbacks[id]) {
 				delete timeoutCallbacks[id];
+				delete timeoutCallbacksCb[id];
 			}
 		},
 	});
 
 	if (!timeoutCallbacks[id]) {
 		timeoutCallbacks[id] = runnable;
+		timeoutCallbacksCb[id] = callback;
 	}
 
 	timeoutHandler.postDelayed(runnable, long(milliseconds));
@@ -47,6 +53,7 @@ export function clearTimeout(id: number): void {
 	if (timeoutCallbacks[index]) {
 		timeoutHandler.removeCallbacks(timeoutCallbacks[index]);
 		delete timeoutCallbacks[index];
+		delete timeoutCallbacksCb[index];
 	}
 }
 
@@ -74,6 +81,7 @@ export function setInterval(callback: Function, milliseconds = 0, ...args): numb
 
 	if (!timeoutCallbacks[id]) {
 		timeoutCallbacks[id] = runnable;
+		timeoutCallbacksCb[id] = callback;
 	}
 
 	timeoutHandler.postDelayed(runnable, long(nextCallMs()));
