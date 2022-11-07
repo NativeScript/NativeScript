@@ -43,7 +43,7 @@ public class FileHelper {
 	}
 
 	FileHelper(Uri uri) {
-		handler = new Handler(Looper.getMainLooper());
+		handler = new Handler(Looper.myLooper());
 		this.uri = uri;
 	}
 
