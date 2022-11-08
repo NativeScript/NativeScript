@@ -4,13 +4,6 @@
 		"appsDir": "apps",
 		"libsDir": "packages"
 	},
-	"implicitDependencies": {
-		"workspace.json": "*",
-		"tsconfig.json": "*",
-		"tslint.json": "*",
-		"nx.json": "*",
-		".eslintrc.json": "*"
-	},
 	"tasksRunnerOptions": {
 		"default": {
 			"runner": "nx/tasks-runners/default",
@@ -82,5 +75,18 @@
 	"affected": {
 		"defaultBase": "master"
 	},
-	"$schema": "./node_modules/nx/schemas/nx-schema.json"
+	"$schema": "./node_modules/nx/schemas/nx-schema.json",
+	"namedInputs": {
+		"default": ["{projectRoot}/**/*", "sharedGlobals"],
+		"sharedGlobals": ["{workspaceRoot}/workspace.json", "{workspaceRoot}/tsconfig.json", "{workspaceRoot}/tslint.json", "{workspaceRoot}/nx.json"],
+		"production": ["default", "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)", "!{projectRoot}/tsconfig.spec.json", "!{projectRoot}/jest.config.[jt]s"]
+	},
+	"targetDefaults": {
+		"build": {
+			"inputs": ["production", "^production"]
+		},
+		"test": {
+			"inputs": ["default", "^production", "{workspaceRoot}/jest.preset.js"]
+		}
+	}
 }
