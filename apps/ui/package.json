@@ -13,8 +13,7 @@
   "devDependencies": {
     "@nativescript/android": "~8.3.0",
     "@nativescript/ios": "~8.3.0",
-    "@nativescript/webpack": "file:../../dist/packages/nativescript-webpack.tgz",
-    "typescript": "4.7.3"
+    "@nativescript/webpack": "file:../../dist/packages/nativescript-webpack.tgz"
   },
   "gitHead": "8ab7726d1ee9991706069c1359c552e67ee0d1a4",
   "readme": "NativeScript Application",

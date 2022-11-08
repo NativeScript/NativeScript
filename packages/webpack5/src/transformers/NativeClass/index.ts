@@ -8,8 +8,9 @@ import ts from 'typescript';
 export default function (ctx: ts.TransformationContext) {
 	function isNativeClassExtension(node: ts.ClassDeclaration) {
 		return (
-			node.decorators &&
-			node.decorators.filter((d) => {
+			ts.canHaveDecorators(node) &&
+			ts.getDecorators(node) &&
+			ts.getDecorators(node).filter((d) => {
 				const fullText = d.getFullText().trim();
 				return fullText.indexOf('@NativeClass') > -1;
 			}).length > 0
