@@ -139,6 +139,9 @@ function createTypeface(font: Font): android.graphics.Typeface {
 }
 
 function getFontWeightSuffix(fontWeight: FontWeightType): string {
+	if (typeof fontWeight === 'number') {
+		fontWeight = (fontWeight + '') as any;
+	}
 	switch (fontWeight) {
 		case FontWeight.THIN:
 			return android.os.Build.VERSION.SDK_INT >= 16 ? '-thin' : '';

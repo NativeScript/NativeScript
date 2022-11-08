@@ -16,8 +16,8 @@
 	public getUIFont(defaultFont: any /* UIFont */): any /* UIFont */;
 
 	public withFontFamily(family: string): Font;
-	public withFontStyle(style: string): Font;
-	public withFontWeight(weight: string): Font;
+	public withFontStyle(style: FontStyle): Font;
+	public withFontWeight(weight: FontWeight): Font;
 	public withFontSize(size: number): Font;
 	public withFontScale(scale: number): Font;
 
@@ -32,7 +32,7 @@ export namespace FontStyle {
 	export function parse(value: string): FontStyle;
 }
 
-export type FontWeight = '100' | '200' | '300' | 'normal' | '400' | '500' | '600' | 'bold' | '700' | '800' | '900';
+export type FontWeight = '100' | '200' | '300' | 'normal' | '400' | '500' | '600' | 'bold' | '700' | '800' | '900' | number;
 export namespace FontWeight {
 	export const THIN: '100';
 	export const EXTRA_LIGHT: '200';
