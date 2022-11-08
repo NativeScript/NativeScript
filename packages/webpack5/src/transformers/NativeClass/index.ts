@@ -25,14 +25,14 @@ export default function (ctx: ts.TransformationContext) {
 
 	function createHelper(node: ts.Node) {
 		// we remove the decorator for now!
-		return ts.createIdentifier(
+		return ts.factory.createIdentifier(
 			ts
 				.transpileModule(
 					node.getText().replace(/@NativeClass(\((.|\n)*?\))?/gm, ''),
 					{
 						compilerOptions: {
 							noEmitHelpers: true,
-							module: ts.ModuleKind.CommonJS,
+							module: ts.ModuleKind.ESNext,
 							target: ts.ScriptTarget.ES5,
 						},
 					}
@@ -45,7 +45,7 @@ export default function (ctx: ts.TransformationContext) {
 	}
 
 	return (source: ts.SourceFile) =>
-		ts.updateSourceFileNode(
+		ts.factory.updateSourceFile(
 			source,
 			ts.visitNodes(source.statements, visitNode)
 		);
