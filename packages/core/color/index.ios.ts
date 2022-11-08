@@ -13,8 +13,11 @@ export class Color extends common.Color {
 	}
 
 	public static fromIosColor(value: UIColor): Color {
-		const rgba = CGColorGetComponents(value.CGColor);
-
-		return new Color(Math.round(rgba[3] * 255), Math.round(rgba[0] * 255), Math.round(rgba[1] * 255), Math.round(rgba[2] * 255));
+		const r = new interop.Reference<number>();
+		const g = new interop.Reference<number>();
+		const b = new interop.Reference<number>();
+		const a = new interop.Reference<number>();
+		value.getRedGreenBlueAlpha(r, g, b, a);
+		return new Color(Math.round(a.value * 255), Math.round(r.value * 255), Math.round(g.value * 255), Math.round(b.value * 255));
 	}
 }
