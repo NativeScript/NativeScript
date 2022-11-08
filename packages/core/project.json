@@ -1,4 +1,5 @@
 {
+	"name": "core",
 	"$schema": "../../node_modules/nx/schemas/project-schema.json",
 	"sourceRoot": "packages/core",
 	"projectType": "library",
@@ -16,11 +17,11 @@
 				"jestConfig": "packages/core/jest.config.ts",
 				"passWithNoTests": true
 			},
-			"outputs": ["coverage/packages/core"]
+			"outputs": ["{workspaceRoot}/coverage/packages/core"]
 		},
 		"build": {
-			"executor": "@nrwl/workspace:run-commands",
-			"outputs": ["dist/packages"],
+			"executor": "nx:run-commands",
+			"outputs": ["{workspaceRoot}/dist/packages"],
 			"options": {
 				"commands": [
 					"npx rimraf dist/packages/core",
@@ -34,7 +35,7 @@
 			}
 		},
 		"unit": {
-			"executor": "@nrwl/workspace:run-commands",
+			"executor": "nx:run-commands",
 			"options": {
 				"commands": ["../../../node_modules/.bin/tsc -p tsconfig.json && ../../../node_modules/.bin/mocha --config=.mocharc.yml"],
 				"cwd": "packages/core/__tests__",
@@ -42,7 +43,7 @@
 			}
 		},
 		"unit.watch": {
-			"executor": "@nrwl/workspace:run-commands",
+			"executor": "nx:run-commands",
 			"options": {
 				"commands": ["../../../node_modules/.bin/tsc -p tsconfig.json && ../../../node_modules/.bin/mocha --watch --config=.mocharc.yml"],
 				"cwd": "packages/core/__tests__",
