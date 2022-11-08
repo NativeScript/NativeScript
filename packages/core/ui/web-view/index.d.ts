@@ -61,6 +61,12 @@ export class WebView extends View {
 	disableZoom: boolean;
 
 	/**
+	 * Enables inline media playback on iOS.
+	 * By default, webview forces iPhone into fullscreen media playback.
+	 */
+	iosAllowInlineMediaPlayback: boolean;
+
+	/**
 	 * Stops loading the current content (if any).
 	 */
 	stopLoading(): void;
