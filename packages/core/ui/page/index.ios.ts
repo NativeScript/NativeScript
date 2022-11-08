@@ -74,9 +74,10 @@ class UIViewControllerImpl extends UIViewController {
 
 	public isBackstackSkipped: boolean;
 	public isBackstackCleared: boolean;
-	private _isRunningLayout = 0;
+	// this is initialized in initWithOwner since the constructor doesn't run on native classes
+	private _isRunningLayout: number;
 	private get isRunningLayout() {
-		return this._isRunningLayout === 0;
+		return this._isRunningLayout !== 0;
 	}
 	private startRunningLayout() {
 		this._isRunningLayout++;
@@ -96,6 +97,7 @@ class UIViewControllerImpl extends UIViewController {
 	public static initWithOwner(owner: WeakRef<Page>): UIViewControllerImpl {
 		const controller = <UIViewControllerImpl>UIViewControllerImpl.new();
 		controller._owner = owner;
+		controller._isRunningLayout = 0;
 
 		return controller;
 	}
