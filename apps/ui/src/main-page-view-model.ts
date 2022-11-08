@@ -70,9 +70,11 @@ export class MainPageViewModel extends TestPageMainViewModel {
 
 	private filterListView(value: string) {
 		if (!MainPageViewModel.checkIfStringIsNullEmptyOrUndefined(value)) {
-			let array = MainPageViewModel.ALL_EXAMPLES.filter((testExample, index, array) => {
-				return MainPageViewModel.stringContains(testExample.path.toLowerCase(), value.toLowerCase()) || MainPageViewModel.stringContains(testExample.name.toLowerCase(), value.toLowerCase());
-			});
+			let array = Array.from(
+				MainPageViewModel.ALL_EXAMPLES.filter((testExample, index, array) => {
+					return MainPageViewModel.stringContains(testExample.path.toLowerCase(), value.toLowerCase()) || MainPageViewModel.stringContains(testExample.name.toLowerCase(), value.toLowerCase());
+				})
+			);
 			this.filteredListOfExamples = new ObservableArray(array);
 		} else {
 			this.filteredListOfExamples = null;
