@@ -2,6 +2,7 @@ import * as textModule from '../text';
 import { getNativeApplication } from '../application';
 
 import type { IFileSystemAccess } from './file-system-access';
+import { SDK_VERSION } from 'utils/utils-common';
 
 let applicationContext: android.content.Context;
 function getApplicationContext() {
@@ -587,9 +588,15 @@ export class FileSystemAccess implements IFileSystemAccess {
 	}
 
 	public normalizePath(path: string): string {
-		// the [''] is a trick to not have to create a android.net.URI
-		// and use the method with string signature
-		return java.nio.file.Paths.get(path, ['']).normalize().toString();
+		if (SDK_VERSION >= 26) {
+			// the [''] is a trick to not have to create a android.net.URI
+			// and use the method with string signature
+			return java.nio.file.Paths.get(path, ['']).normalize().toString();
+		} else {
+			// for now it wont work on pre 26 as File does not normalize
+			const file = new java.io.File(path);
+			return file.getAbsolutePath();
+		}
 	}
 
 	public joinPath(left: string, right: string): string {
