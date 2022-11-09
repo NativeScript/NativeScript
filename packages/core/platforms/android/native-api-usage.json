@@ -18,6 +18,8 @@
         "java.io:InputStreamReader*",
         "java.io:BufferedReader*",
         "java.io:OutputStreamWriter*",
+        "java.io:FileOutputStream*",
+        "java.io:OutputStream*",
         "java.io:BufferedOutputStream*",
         "java.io:ByteArrayOutputStream*",
         "java.io:IOException*",
