@@ -1,7 +1,7 @@
 ﻿import { Color } from '../../color';
 import { Span as SpanDefinition } from './span';
 import { ViewBase } from '../core/view-base';
-import { FontStyle, FontWeight } from '../styling/font';
+import { FontStyleType, FontWeightType } from '../styling/font';
 import { CoreTypes } from '../../core-types';
 import { EventData } from '../../data/observable';
 import { isNullOrUndefined, isString } from '../../utils/types';
@@ -26,18 +26,18 @@ export class Span extends ViewBase implements SpanDefinition {
 	}
 
 	// Italic
-	get fontStyle(): FontStyle {
+	get fontStyle(): FontStyleType {
 		return this.style.fontStyle;
 	}
-	set fontStyle(value: FontStyle) {
+	set fontStyle(value: FontStyleType) {
 		this.style.fontStyle = value;
 	}
 
 	// Bold
-	get fontWeight(): FontWeight {
+	get fontWeight(): FontWeightType {
 		return this.style.fontWeight;
 	}
-	set fontWeight(value: FontWeight) {
+	set fontWeight(value: FontWeightType) {
 		this.style.fontWeight = value;
 	}
 

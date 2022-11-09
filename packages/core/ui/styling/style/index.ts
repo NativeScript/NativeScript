@@ -1,6 +1,6 @@
 import { Style as StyleDefinition } from '.';
 import { Color } from '../../../color';
-import { Font, FontStyle, FontWeight } from '../font';
+import { Font, FontStyleType, FontWeightType } from '../font';
 import { Background } from '../background';
 import { ViewBase } from '../../core/view-base';
 import { LinearGradient } from '../../styling/linear-gradient';
@@ -150,8 +150,8 @@ export class Style extends Observable implements StyleDefinition {
 
 	public fontSize: number;
 	public fontFamily: string;
-	public fontStyle: FontStyle;
-	public fontWeight: FontWeight;
+	public fontStyle: FontStyleType;
+	public fontWeight: FontWeightType;
 	public font: string;
 
 	public maxLines: CoreTypes.MaxLinesType;

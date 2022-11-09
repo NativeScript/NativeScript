@@ -145,7 +145,7 @@ export function _resolveAnimationCurve(curve: string | CubicBezierAnimationCurve
 }
 
 export class Animation extends AnimationBase {
-	protected _iOSAnimationFunction: Function;
+	protected _iOSAnimationFunction: (cancelled?: boolean) => void;
 	protected _finishedAnimations: number;
 	protected _cancelledAnimations: number;
 	protected _mergedPropertyAnimations: Array<PropertyAnimationInfo>;
@@ -246,7 +246,7 @@ export class Animation extends AnimationBase {
 		return _resolveAnimationCurve(curve);
 	}
 
-	protected _createiOSAnimationFunction(propertyAnimations: Array<PropertyAnimation>, index: number, playSequentially: boolean): Function {
+	protected _createiOSAnimationFunction(propertyAnimations: Array<PropertyAnimation>, index: number, playSequentially: boolean) {
 		return (cancelled?: boolean) => {
 			if (cancelled) {
 				if (Trace.isEnabled()) {
@@ -442,18 +442,18 @@ export class Animation extends AnimationBase {
 		const animationInfo = propertyAnimations[index];
 		const args = this._getNativeAnimationArguments(animationInfo, true);
 		const nativeView = <UIView>animationInfo.target.nativeViewProtected;
+		let nativeAnimation;
+
+		if (args.subPropertiesToAnimate) {
+			nativeAnimation = this._createGroupAnimation(args, animationInfo);
+		} else {
+			nativeAnimation = this._createBasicAnimation(args, animationInfo);
+		}
+
+		const animationDelegate = AnimationDelegateImpl.initWithFinishedCallback(new WeakRef(this), animationInfo);
+		nativeAnimation.setValueForKey(animationDelegate, 'delegate');
+
 		if (nativeView?.layer) {
-			let nativeAnimation;
-
-			if (args.subPropertiesToAnimate) {
-				nativeAnimation = this._createGroupAnimation(args, animationInfo);
-			} else {
-				nativeAnimation = this._createBasicAnimation(args, animationInfo);
-			}
-
-			const animationDelegate = AnimationDelegateImpl.initWithFinishedCallback(new WeakRef(this), animationInfo);
-			nativeAnimation.setValueForKey(animationDelegate, 'delegate');
-
 			nativeView.layer.addAnimationForKey(nativeAnimation, args.propertyNameToAnimate);
 
 			let callback = undefined;

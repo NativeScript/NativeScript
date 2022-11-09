@@ -1,4 +1,5 @@
 {
+	"name": "apps-toolbox",
 	"$schema": "../../node_modules/nx/schemas/project-schema.json",
 	"sourceRoot": "apps/toolbox/src",
 	"projectType": "application",
