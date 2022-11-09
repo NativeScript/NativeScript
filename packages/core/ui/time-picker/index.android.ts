@@ -1,4 +1,5 @@
 import { TimePickerBase, getValidTime, timeProperty, hourProperty, minuteProperty } from './time-picker-common';
+import { SDK_VERSION } from '../../utils';
 
 export * from './time-picker-common';
 
@@ -12,8 +13,6 @@ function initializeTimeChangedListener(): void {
 	if (TimeChangedListener) {
 		return;
 	}
-
-	apiLevel = android.os.Build.VERSION.SDK_INT;
 
 	@NativeClass
 	@Interfaces([android.widget.TimePicker.OnTimeChangedListener])
@@ -37,8 +36,6 @@ function initializeTimeChangedListener(): void {
 
 	TimeChangedListener = TimeChangedListenerImpl;
 }
-
-let apiLevel: number;
 
 export class TimePicker extends TimePickerBase {
 	nativeViewProtected: android.widget.TimePicker;
@@ -69,7 +66,7 @@ export class TimePicker extends TimePickerBase {
 	[minuteProperty.setNative](value: number) {
 		this.updatingNativeValue = true;
 		try {
-			if (apiLevel >= 23) {
+			if (SDK_VERSION >= 23) {
 				(<any>this.nativeViewProtected).setMinute(value);
 			} else {
 				this.nativeViewProtected.setCurrentMinute(new java.lang.Integer(value));
@@ -82,7 +79,7 @@ export class TimePicker extends TimePickerBase {
 	[hourProperty.setNative](value: number) {
 		this.updatingNativeValue = true;
 		try {
-			if (apiLevel >= 23) {
+			if (SDK_VERSION >= 23) {
 				(<any>this.nativeViewProtected).setHour(value);
 			} else {
 				this.nativeViewProtected.setCurrentHour(new java.lang.Integer(value));
