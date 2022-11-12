@@ -1,7 +1,7 @@
 import * as textModule from '../text';
 import { getNativeApplication } from '../application';
-import { Device } from '../../platform';
-import lazy from '../../utils/lazy';
+import { Device } from '../platform';
+import lazy from '../utils/lazy';
 
 const sdkVersion = lazy(() => parseInt(Device.sdkVersion));
 
@@ -593,7 +593,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 			// for now it wont work on pre 26 as File does not normalize
 			const file = new java.io.File(path);
 			return file.getAbsolutePath();
-		}	
+		}
 	}
 
 	public joinPath(left: string, right: string): string {
