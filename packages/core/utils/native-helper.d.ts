@@ -151,6 +151,11 @@ export namespace iOSNativeHelper {
 	export function getRootViewController(): any; /* UIViewController */
 
 	/**
+	 * Get the UIWindow of the app
+	 */
+	export function getWindow(): any; /* UIWindow */
+
+	/**
 	 * Set the window background color of base view of the app.
 	 * Often this is shown when opening a modal as the view underneath scales down revealing the window color.
 	 * @param value color (hex, rgb, rgba, etc.)

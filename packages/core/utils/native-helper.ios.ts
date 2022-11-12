@@ -138,8 +138,7 @@ export namespace iOSNativeHelper {
 	}
 
 	export function getRootViewController(): UIViewController {
-		const app = UIApplication.sharedApplication;
-		const win = app.keyWindow || (app.windows && app.windows.count > 0 && app.windows.objectAtIndex(0));
+		const win = getWindow();
 		let vc = win && win.rootViewController;
 		while (vc && vc.presentedViewController) {
 			vc = vc.presentedViewController;
@@ -147,10 +146,23 @@ export namespace iOSNativeHelper {
 		return vc;
 	}
 
+	export function getWindow(): UIWindow {
+		const app = UIApplication.sharedApplication;
+		if (!app) {
+			return;
+		}
+		return app.keyWindow || (app.windows && app.windows.count > 0 && app.windows.objectAtIndex(0));
+	}
+
 	export function setWindowBackgroundColor(value: string) {
+		const win = getWindow();
 		const rootVc = getRootViewController();
-		if (rootVc) {
-			rootVc.view.backgroundColor = new Color(value).ios;
+		if (win) {
+			const bgColor = new Color(value);
+			win.backgroundColor = bgColor.ios;
+			if (rootVc?.view) {
+				rootVc.view.backgroundColor = bgColor.ios;
+			}
 		}
 	}
 
