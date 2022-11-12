@@ -9,11 +9,11 @@
 
         <Label style="color: gray;" textWrap="true" class="m-b-5 text-center" text="This webview plays this youtube content inline." />
         <GridLayout rows="200" columns="">
-            <WebView iosAllowInlineMediaPlayback="true" src="https://sphere.presonus.com/video/youtube/QnGX0xrv6Dw" height="200" />
+            <WebView iosAllowInlineMediaPlayback="true" src="https://www.youtube.com/embed/Mzy1jWxrSiw" height="200" />
         </GridLayout>
         <Label style="color: gray;" textWrap="true" class="m-b-5 m-t-20 text-center" text="This webview forces media content into fullscreen on iPhone." />
         <GridLayout rows="200" columns="">
-            <WebView src="https://sphere.presonus.com/video/youtube/QnGX0xrv6Dw" height="200" />
+            <WebView src="https://www.youtube.com/embed/Mzy1jWxrSiw" height="200" />
         </GridLayout>
 
     </StackLayout>
