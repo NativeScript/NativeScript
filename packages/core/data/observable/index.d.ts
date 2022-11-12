@@ -35,6 +35,11 @@ export interface PropertyChangeData extends EventData {
 	oldValue?: any;
 }
 
+export interface ListenerEntry extends AddEventListenerOptions {
+	callback: (data: EventData) => void;
+	thisArg: any;
+}
+
 /**
  * Helper class that is used to fire property change even when real object is the same.
  * By default property change will not be fired for a same object.
@@ -85,42 +90,45 @@ export class Observable {
 	 * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change").
 	 * @param callback - Callback function which will be executed when event is raised.
 	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
+	 * @param options An optional parameter. If passed as a boolean, configures the useCapture value. Otherwise, specifies options.
 	 */
-	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
-
-	static on(eventName: string, callback: any, thisArg?: any): void;
+	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
 
 	/**
 	 * Raised when a propertyChange occurs.
 	 */
-	on(event: 'propertyChange', callback: (data: EventData) => void, thisArg?: any);
+	on(event: 'propertyChange', callback: (data: EventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
+
+	static on(eventName: string, callback: (data: EventData) => void, thisArg?: any, capture?: boolean): void;
 
 	/**
 	 * Adds one-time listener function for the event named `event`.
 	 * @param event Name of the event to attach to.
 	 * @param callback A function to be called when the specified event is raised.
 	 * @param thisArg An optional parameter which when set will be used as "this" in callback method call.
+	 * @param options An optional parameter. If passed as a boolean, configures the useCapture value. Otherwise, specifies options.
 	 */
-	once(event: string, callback: (data: EventData) => void, thisArg?: any);
+	once(event: string, callback: (data: EventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
 
-	static once(eventName: string, callback: any, thisArg?: any): void;
+	static once(eventName: string, callback: (data: EventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
 
 	/**
 	 * Shortcut alias to the removeEventListener method.
 	 */
-	off(eventNames: string, callback?: any, thisArg?: any);
+	off(eventNames: string, callback?: (data: EventData) => void, thisArg?: any, options?: EventListenerOptions | boolean): void;
 
-	static off(eventName: string, callback?: any, thisArg?: any): void;
+	static off(eventName: string, callback?: (data: EventData) => void, thisArg?: any, options?: EventListenerOptions | boolean): void;
 
 	/**
 	 * Adds a listener for the specified event name.
 	 * @param eventNames Comma delimited names of the events to attach the listener to.
 	 * @param callback A function to be called when some of the specified event(s) is raised.
 	 * @param thisArg An optional parameter which when set will be used as "this" in callback method call.
+	 * @param options An optional parameter. If passed as a boolean, configures the useCapture value. Otherwise, specifies options.
 	 */
-	addEventListener(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
+	addEventListener(eventNames: string, callback: (data: EventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
 
-	static addEventListener(eventName: string, callback: any, thisArg?: any): void;
+	static addEventListener(eventName: string, callback: (data: EventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
 
 	/**
 	 * Removes listener(s) for the specified event name.
@@ -128,9 +136,9 @@ export class Observable {
 	 * @param callback An optional parameter pointing to a specific listener. If not defined, all listeners for the event names will be removed.
 	 * @param thisArg An optional parameter which when set will be used to refine search of the correct callback which will be removed as event listener.
 	 */
-	removeEventListener(eventNames: string, callback?: any, thisArg?: any);
+	removeEventListener(eventNames: string, callback?: (data: EventData) => void, thisArg?: any, options?: EventListenerOptions | boolean): void;
 
-	static removeEventListener(eventName: string, callback?: any, thisArg?: any): void;
+	static removeEventListener(eventName: string, callback?: (data: EventData) => void, thisArg?: any, options?: EventListenerOptions | boolean): void;
 
 	/**
 	 * Updates the specified property with the provided value.
@@ -148,10 +156,52 @@ export class Observable {
 	get(name: string): any;
 
 	/**
-	 * Notifies all the registered listeners for the event provided in the data.eventName.
+	 * Notifies all the registered listeners for the event provided in the
+	 * data.eventName.
+	 *
+	 * Old behaviour (for reference):
+	 * - pre-handling phase: Notifies all observers registered globally, i.e.
+	 *   for the given event name on the given class name (or all class names)
+	 *   with the eventName suffix 'First'.
+	 *
+	 * - handling phase: Notifies all observers registered on the Observable
+	 *   itself.
+	 *
+	 * - post-handling phase: Notifies all observers registered globally, i.e.
+	 *   for the given event name on the given class name (or all class names)
+	 *   without any eventName suffix.
+	 *
+	 *
+	 * New behaviour (based on DOM, but backwards-compatible):
+	 * - pre-handling phase: Same as above.
+	 *
+	 * - capturing phase: Calls the callback for event listeners registered on
+	 *   each ancestor of the target in turn (starting with the most ancestral),
+	 *   but not the target itself.
+	 *
+	 * - at-target phase: Calls the callback for event listeners registered on
+	 *   the target. Equivalent to the old 'handling phase'.
+	 *
+	 * - bubbling phase: Calls the callback for event listeners registered on
+	 *   each ancestor of the target (again, not the target itself) in turn,
+	 *   starting with the immediate parent.
+	 *
+	 * - post-handling phase: Same as above.
+	 *
+	 * - The progragation can be stopped in any of these phases using
+	 *   event.stopPropagation() or event.stopImmediatePropagation().
+	 *
+	 * The old behaviour is the default. That is to say, by taking the default
+	 * option of { bubbles: false } and ensuring that any event listeners added
+	 * also use the default option of { capture: false }, then the event will
+	 * go through just the pre-handling, at-target, and post-handling phases. As
+	 * long as none of the new DOM-specific features like stopPropagation() are
+	 * used, it will behave equivalently.
+	 *
 	 * @param data The data associated with the event.
+	 * @param options Options for the event, in line with DOM Standard.
 	 */
-	notify<T extends NotifyData>(data: T): void;
+	notify<T extends NotifyData>(data: T, options?: CustomEventInit): boolean;
 
 	/**
 	 * Notifies all the registered listeners for the property change event.
@@ -177,6 +227,11 @@ export class Observable {
 	 * @private
 	 */
 	public _isViewBase: boolean;
+	/**
+	 * Type predicate to accompany the _isViewBase property.
+	 * @private
+	 */
+	public isViewBase(): this is boolean;
 	//@endprivate
 }
 

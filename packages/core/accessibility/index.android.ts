@@ -1,8 +1,9 @@
 import * as Application from '../application';
+import { DOMEvent } from '../data/dom-events/dom-event';
 import { Trace } from '../trace';
 import { SDK_VERSION } from '../utils/constants';
 import type { View } from '../ui/core/view';
-import { GestureTypes } from '../ui/gestures';
+import { GestureEventData, GestureTypes } from '../ui/gestures';
 import { notifyAccessibilityFocusState } from './accessibility-common';
 import { getAndroidAccessibilityManager } from './accessibility-service';
 import { AccessibilityRole, AccessibilityState, AndroidAccessibilityEvent } from './accessibility-types';
@@ -54,17 +55,18 @@ function accessibilityEventHelper(view: Partial<View>, eventType: number) {
 			 * These aren't triggered for custom tap events in NativeScript.
 			 */
 			if (SDK_VERSION >= 26) {
-				// Find all tap gestures and trigger them.
-				for (const tapGesture of view.getGestureObservers(GestureTypes.tap) ?? []) {
-					tapGesture.callback({
+				// Trigger all tap handlers on this view.
+				new DOMEvent('tap').dispatchTo({
+					target: view as View,
+					data: {
 						android: view.android,
 						eventName: 'tap',
 						ios: null,
 						object: view,
 						type: GestureTypes.tap,
-						view: view,
-					});
-				}
+						view,
+					} as GestureEventData,
+				});
 			}
 
 			return;

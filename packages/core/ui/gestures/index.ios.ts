@@ -1,7 +1,7 @@
 // Definitions.
-
 import { GestureEventData, TapGestureEventData, GestureEventDataWithState, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData, PinchGestureEventData } from '.';
 import { View } from '../core/view';
+import { DOMEvent } from '../../data/dom-events/dom-event';
 import { EventData } from '../../data/observable';
 
 // Types.
@@ -11,13 +11,6 @@ import { GesturesObserverBase, toString, TouchAction, GestureStateTypes, Gesture
 import { layout } from '../../utils';
 
 export * from './gestures-common';
-
-export function observe(target: View, type: GestureTypes, callback: (args: GestureEventData) => void, context?: any): GesturesObserver {
-	const observer = new GesturesObserver(target, callback, context);
-	observer.observe(type);
-
-	return observer;
-}
 
 @NativeClass
 class UIGestureRecognizerDelegateImpl extends NSObject implements UIGestureRecognizerDelegate {
@@ -50,10 +43,10 @@ class UIGestureRecognizerImpl extends NSObject {
 
 	private _owner: WeakRef<GesturesObserver>;
 	private _type: any;
-	private _callback: Function;
+	private _callback: (args: GestureEventData) => void;
 	private _context: any;
 
-	public static initWithOwnerTypeCallback(owner: WeakRef<GesturesObserver>, type: any, callback?: Function, thisArg?: any): UIGestureRecognizerImpl {
+	public static initWithOwnerTypeCallback(owner: WeakRef<GesturesObserver>, type: any, callback?: (args: GestureEventData) => void, thisArg?: any): UIGestureRecognizerImpl {
 		const handler = <UIGestureRecognizerImpl>UIGestureRecognizerImpl.new();
 		handler._owner = owner;
 		handler._type = type;
@@ -91,7 +84,7 @@ class UIGestureRecognizerImpl extends NSObject {
 }
 
 export class GesturesObserver extends GesturesObserverBase {
-	private _recognizers: {};
+	private _recognizers: { [name: string]: RecognizerCache };
 
 	private _onTargetLoaded: (data: EventData) => void;
 	private _onTargetUnloaded: (data: EventData) => void;
@@ -101,164 +94,203 @@ export class GesturesObserver extends GesturesObserverBase {
 		this._recognizers = {};
 	}
 
-	public androidOnTouchEvent(motionEvent: android.view.MotionEvent): void {
-		//
+	public androidOnTouchEvent(motionEvent: unknown): void {
+		// Android-only, so no-op.
 	}
 
 	public observe(type: GestureTypes) {
-		if (this.target) {
-			this.type = type;
-			this._onTargetLoaded = (args) => {
-				this._attach(this.target, type);
-			};
-			this._onTargetUnloaded = (args) => {
-				this._detach();
-			};
+		if (!this.target) {
+			return;
+		}
 
-			this.target.on('loaded', this._onTargetLoaded);
-			this.target.on('unloaded', this._onTargetUnloaded);
+		this.type = type;
+		this._onTargetLoaded = (args) => {
+			this._attach(this.target, type);
+		};
+		this._onTargetUnloaded = (args) => {
+			this._detach();
+		};
 
-			if (this.target.isLoaded) {
-				this._attach(this.target, type);
-			}
+		this.target.on('loaded', this._onTargetLoaded);
+		this.target.on('unloaded', this._onTargetUnloaded);
+
+		if (this.target.isLoaded) {
+			this._attach(this.target, type);
 		}
 	}
 
 	private _attach(target: View, type: GestureTypes) {
 		this._detach();
 
-		if (target && target.nativeViewProtected && target.nativeViewProtected.addGestureRecognizer) {
-			const nativeView = <UIView>target.nativeViewProtected;
+		if (!target?.nativeViewProtected?.addGestureRecognizer) {
+			return;
+		}
 
-			if (type & GestureTypes.tap) {
-				nativeView.addGestureRecognizer(
-					this._createRecognizer(GestureTypes.tap, (args) => {
-						if (args.view) {
-							this._executeCallback(_getTapData(args));
-						}
-					})
-				);
-			}
+		const nativeView = target.nativeViewProtected as UIView;
 
-			if (type & GestureTypes.doubleTap) {
-				nativeView.addGestureRecognizer(
-					this._createRecognizer(GestureTypes.doubleTap, (args) => {
-						if (args.view) {
-							this._executeCallback(_getTapData(args));
-						}
-					})
-				);
-			}
+		// For each of these gesture types (except for touch, as it's not very
+		// useful), we dispatch non-cancelable, non-bubbling DOM events (for
+		// consistency with the original behaviour of observers). In a breaking
+		// release, we may make them bubbling.
 
-			if (type & GestureTypes.pinch) {
-				nativeView.addGestureRecognizer(
-					this._createRecognizer(GestureTypes.pinch, (args) => {
-						if (args.view) {
-							this._executeCallback(_getPinchData(args));
-						}
-					})
-				);
-			}
+		if (type & GestureTypes.tap) {
+			nativeView.addGestureRecognizer(
+				this._createRecognizer(
+					GestureTypes.tap,
+					(args) =>
+						args.view &&
+						new DOMEvent('tap').dispatchTo({
+							target: args.view as View,
+							data: _getTapData(args),
+						})
+				)
+			);
+		}
 
-			if (type & GestureTypes.pan) {
-				nativeView.addGestureRecognizer(
-					this._createRecognizer(GestureTypes.pan, (args) => {
-						if (args.view) {
-							this._executeCallback(_getPanData(args, target.nativeViewProtected));
-						}
-					})
-				);
-			}
+		if (type & GestureTypes.doubleTap) {
+			nativeView.addGestureRecognizer(
+				this._createRecognizer(
+					GestureTypes.doubleTap,
+					(args) =>
+						args.view &&
+						new DOMEvent('doubleTap').dispatchTo({
+							target: args.view as View,
+							data: _getTapData(args),
+						})
+				)
+			);
+		}
 
-			if (type & GestureTypes.swipe) {
-				nativeView.addGestureRecognizer(
-					this._createRecognizer(
-						GestureTypes.swipe,
-						(args) => {
-							if (args.view) {
-								this._executeCallback(_getSwipeData(args));
-							}
-						},
-						UISwipeGestureRecognizerDirection.Down
-					)
-				);
+		if (type & GestureTypes.pinch) {
+			nativeView.addGestureRecognizer(
+				this._createRecognizer(
+					GestureTypes.pinch,
+					(args) =>
+						args.view &&
+						new DOMEvent('pinch').dispatchTo({
+							target: args.view as View,
+							data: _getPinchData(args),
+						})
+				)
+			);
+		}
 
-				nativeView.addGestureRecognizer(
-					this._createRecognizer(
-						GestureTypes.swipe,
-						(args) => {
-							if (args.view) {
-								this._executeCallback(_getSwipeData(args));
-							}
-						},
-						UISwipeGestureRecognizerDirection.Left
-					)
-				);
+		if (type & GestureTypes.pan) {
+			nativeView.addGestureRecognizer(
+				this._createRecognizer(
+					GestureTypes.pan,
+					(args) =>
+						args.view &&
+						new DOMEvent('pan').dispatchTo({
+							target: args.view as View,
+							data: _getPanData(args, target.nativeViewProtected),
+						})
+				)
+			);
+		}
 
-				nativeView.addGestureRecognizer(
-					this._createRecognizer(
-						GestureTypes.swipe,
-						(args) => {
-							if (args.view) {
-								this._executeCallback(_getSwipeData(args));
-							}
-						},
-						UISwipeGestureRecognizerDirection.Right
-					)
-				);
+		if (type & GestureTypes.swipe) {
+			nativeView.addGestureRecognizer(
+				this._createRecognizer(
+					GestureTypes.swipe,
+					(args) =>
+						args.view &&
+						new DOMEvent('swipe').dispatchTo({
+							target: args.view as View,
+							data: _getSwipeData(args),
+						}),
+					UISwipeGestureRecognizerDirection.Down
+				)
+			);
 
-				nativeView.addGestureRecognizer(
-					this._createRecognizer(
-						GestureTypes.swipe,
-						(args) => {
-							if (args.view) {
-								this._executeCallback(_getSwipeData(args));
-							}
-						},
-						UISwipeGestureRecognizerDirection.Up
-					)
-				);
-			}
+			nativeView.addGestureRecognizer(
+				this._createRecognizer(
+					GestureTypes.swipe,
+					(args) =>
+						args.view &&
+						new DOMEvent('swipe').dispatchTo({
+							target: args.view as View,
+							data: _getSwipeData(args),
+						}),
+					UISwipeGestureRecognizerDirection.Left
+				)
+			);
 
-			if (type & GestureTypes.rotation) {
-				nativeView.addGestureRecognizer(
-					this._createRecognizer(GestureTypes.rotation, (args) => {
-						if (args.view) {
-							this._executeCallback(_getRotationData(args));
-						}
-					})
-				);
-			}
+			nativeView.addGestureRecognizer(
+				this._createRecognizer(
+					GestureTypes.swipe,
+					(args) =>
+						args.view &&
+						new DOMEvent('swipe').dispatchTo({
+							target: args.view as View,
+							data: _getSwipeData(args),
+						}),
+					UISwipeGestureRecognizerDirection.Right
+				)
+			);
 
-			if (type & GestureTypes.longPress) {
-				nativeView.addGestureRecognizer(
-					this._createRecognizer(GestureTypes.longPress, (args) => {
-						if (args.view) {
-							this._executeCallback(_getLongPressData(args));
-						}
-					})
-				);
-			}
+			nativeView.addGestureRecognizer(
+				this._createRecognizer(
+					GestureTypes.swipe,
+					(args) =>
+						args.view &&
+						new DOMEvent('swipe').dispatchTo({
+							target: args.view as View,
+							data: _getSwipeData(args),
+						}),
+					UISwipeGestureRecognizerDirection.Up
+				)
+			);
+		}
 
-			if (type & GestureTypes.touch) {
-				nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.touch));
-			}
+		if (type & GestureTypes.rotation) {
+			nativeView.addGestureRecognizer(
+				this._createRecognizer(
+					GestureTypes.rotation,
+					(args) =>
+						args.view &&
+						new DOMEvent('rotation').dispatchTo({
+							target: args.view as View,
+							data: _getRotationData(args),
+						})
+				)
+			);
+		}
+
+		if (type & GestureTypes.longPress) {
+			nativeView.addGestureRecognizer(
+				this._createRecognizer(
+					GestureTypes.longPress,
+					(args) =>
+						args.view &&
+						new DOMEvent('longPress').dispatchTo({
+							target: args.view as View,
+							data: _getLongPressData(args),
+						})
+				)
+			);
+		}
+
+		if (type & GestureTypes.touch) {
+			nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.touch));
 		}
 	}
 
 	private _detach() {
-		if (this.target && this.target.nativeViewProtected) {
-			for (const name in this._recognizers) {
-				if (this._recognizers.hasOwnProperty(name)) {
-					const item = <RecognizerCache>this._recognizers[name];
-					this.target.nativeViewProtected.removeGestureRecognizer(item.recognizer);
-
-					item.recognizer = null;
-					item.target = null;
-				}
-			}
-			this._recognizers = {};
+		if (!this.target?.nativeViewProtected) {
+			return;
 		}
+
+		for (const name in this._recognizers) {
+			if (this._recognizers.hasOwnProperty(name)) {
+				const item = <RecognizerCache>this._recognizers[name];
+				this.target.nativeViewProtected.removeGestureRecognizer(item.recognizer);
+
+				item.recognizer = null;
+				item.target = null;
+			}
+		}
+		this._recognizers = {};
 	}
 
 	public disconnect() {
@@ -275,62 +307,51 @@ export class GesturesObserver extends GesturesObserverBase {
 		super.disconnect();
 	}
 
-	public _executeCallback(args: GestureEventData) {
-		if (this.callback) {
-			this.callback.call(this.context, args);
-		}
-	}
-
 	private _createRecognizer(type: GestureTypes, callback?: (args: GestureEventData) => void, swipeDirection?: UISwipeGestureRecognizerDirection): UIGestureRecognizer {
-		let recognizer: UIGestureRecognizer;
 		let name = toString(type);
-		const target = _createUIGestureRecognizerTarget(this, type, callback, this.context);
 		const recognizerType = _getUIGestureRecognizerType(type);
-
-		if (recognizerType) {
-			recognizer = recognizerType.alloc().initWithTargetAction(target, 'recognize');
-
-			if (type === GestureTypes.swipe && swipeDirection) {
-				name = name + swipeDirection.toString();
-				(<UISwipeGestureRecognizer>recognizer).direction = swipeDirection;
-			} else if (type === GestureTypes.touch) {
-				(<TouchGestureRecognizer>recognizer).observer = this;
-			} else if (type === GestureTypes.doubleTap) {
-				(<UITapGestureRecognizer>recognizer).numberOfTapsRequired = 2;
-			}
-
-			if (recognizer) {
-				recognizer.delegate = recognizerDelegateInstance;
-				this._recognizers[name] = <RecognizerCache>{
-					recognizer: recognizer,
-					target: target,
-				};
-			}
-
-			this.target.notify({
-				eventName: GestureEvents.gestureAttached,
-				object: this.target,
-				type,
-				view: this.target,
-				ios: recognizer,
-			});
+		if (!recognizerType) {
+			return;
 		}
+
+		const target = _createUIGestureRecognizerTarget(this, type, callback, this.context);
+		const recognizer = recognizerType.alloc().initWithTargetAction(target, 'recognize');
+
+		if (type === GestureTypes.swipe && swipeDirection) {
+			name = `${name}${swipeDirection}`;
+			(<UISwipeGestureRecognizer>recognizer).direction = swipeDirection;
+		} else if (type === GestureTypes.touch) {
+			(<TouchGestureRecognizer>recognizer).observer = this;
+		} else if (type === GestureTypes.doubleTap) {
+			(<UITapGestureRecognizer>recognizer).numberOfTapsRequired = 2;
+		}
+
+		recognizer.delegate = recognizerDelegateInstance;
+		this._recognizers[name] = { recognizer, target };
+
+		this.target.notify({
+			eventName: GestureEvents.gestureAttached,
+			object: this.target,
+			type,
+			view: this.target,
+			ios: recognizer,
+		});
 
 		return recognizer;
 	}
 }
 
-function _createUIGestureRecognizerTarget(owner: GesturesObserver, type: GestureTypes, callback?: (args: GestureEventData) => void, context?: any): any {
+function _createUIGestureRecognizerTarget(owner: GesturesObserver, type: GestureTypes, callback?: (args: GestureEventData) => void, context?: any) {
 	return UIGestureRecognizerImpl.initWithOwnerTypeCallback(new WeakRef(owner), type, callback, context);
 }
 
 interface RecognizerCache {
 	recognizer: UIGestureRecognizer;
-	target: any;
+	target: UIGestureRecognizerImpl;
 }
 
-function _getUIGestureRecognizerType(type: GestureTypes): any {
-	let nativeType = null;
+function _getUIGestureRecognizerType(type: GestureTypes) {
+	let nativeType: typeof UIGestureRecognizer | null = null;
 
 	if (type === GestureTypes.tap) {
 		nativeType = UITapGestureRecognizer;
@@ -478,30 +499,22 @@ class TouchGestureRecognizer extends UIGestureRecognizer {
 
 	touchesBeganWithEvent(touches: NSSet<any>, event: any): void {
 		this.executeCallback(TouchAction.down, touches, event);
-		if (this.view) {
-			this.view.touchesBeganWithEvent(touches, event);
-		}
+		this.view?.touchesBeganWithEvent(touches, event);
 	}
 
 	touchesMovedWithEvent(touches: NSSet<any>, event: any): void {
 		this.executeCallback(TouchAction.move, touches, event);
-		if (this.view) {
-			this.view.touchesMovedWithEvent(touches, event);
-		}
+		this.view?.touchesMovedWithEvent(touches, event);
 	}
 
 	touchesEndedWithEvent(touches: NSSet<any>, event: any): void {
 		this.executeCallback(TouchAction.up, touches, event);
-		if (this.view) {
-			this.view.touchesEndedWithEvent(touches, event);
-		}
+		this.view?.touchesEndedWithEvent(touches, event);
 	}
 
 	touchesCancelledWithEvent(touches: NSSet<any>, event: any): void {
 		this.executeCallback(TouchAction.cancel, touches, event);
-		if (this.view) {
-			this.view.touchesCancelledWithEvent(touches, event);
-		}
+		this.view?.touchesCancelledWithEvent(touches, event);
 	}
 
 	private executeCallback(action: string, touches: NSSet<any>, event: any): void {
@@ -510,11 +523,11 @@ class TouchGestureRecognizer extends UIGestureRecognizer {
 		}
 
 		this._eventData.prepare(this.observer.target, action, touches, event);
-		this.observer._executeCallback(this._eventData);
+		this.observer.callback?.(this._eventData);
 	}
 }
 
-class Pointer implements Pointer {
+class Pointer {
 	public android: any = undefined;
 	public ios: UITouch = undefined;
 
@@ -544,7 +557,7 @@ class Pointer implements Pointer {
 	}
 }
 
-class TouchGestureEventData implements TouchGestureEventData {
+class TouchGestureEventData {
 	eventName: string = toString(GestureTypes.touch);
 	type: GestureTypes = GestureTypes.touch;
 	android: any = undefined;

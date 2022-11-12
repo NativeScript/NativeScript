@@ -409,7 +409,7 @@ export function test_parse_ShouldParseBindingsToGestures() {
 	var observer = (<View>lbl).getGestureObservers(GestureTypes.tap)[0];
 
 	TKUnit.assert(observer !== undefined, 'Expected result: true.');
-	TKUnit.assert(observer.context === context, 'Context should be equal to binding context. Actual result: ' + observer.context);
+	TKUnit.assert(observer.observer.context === context, 'Context should be equal to binding context. Actual result: ' + observer.observer.context);
 }
 
 export function test_parse_ShouldParseBindingsToGesturesWithOn() {
@@ -426,7 +426,7 @@ export function test_parse_ShouldParseBindingsToGesturesWithOn() {
 	var observer = (<View>lbl).getGestureObservers(GestureTypes.tap)[0];
 
 	TKUnit.assert(observer !== undefined, 'Expected result: true.');
-	TKUnit.assert(observer.context === context, 'Context should be equal to binding context. Actual result: ' + observer.context);
+	TKUnit.assert(observer.observer.context === context, 'Context should be equal to binding context. Actual result: ' + observer.observer.context);
 }
 
 export function test_parse_ShouldParseSubProperties() {

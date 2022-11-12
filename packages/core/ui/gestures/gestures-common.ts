@@ -81,7 +81,7 @@ export function toString(type: GestureTypes, separator?: string): string {
 
 // NOTE: toString could return the text of multiple GestureTypes.
 // Souldn't fromString do split on separator and return multiple GestureTypes?
-export function fromString(type: string): GestureTypes {
+export function fromString(type: string): GestureTypes | undefined {
 	const t = type.trim().toLowerCase();
 
 	if (t === 'tap') {
@@ -130,25 +130,18 @@ export abstract class GesturesObserverBase implements GesturesObserverDefinition
 		this._context = context;
 	}
 
-	public abstract androidOnTouchEvent(motionEvent: android.view.MotionEvent);
+	/** Android-only. android.view.MotionEvent */
+	public abstract androidOnTouchEvent(motionEvent: unknown);
+
 	public abstract observe(type: GestureTypes);
 
+	/**
+	 * Disconnect the observer (i.e. stop it observing for gesture events).
+	 *
+	 * Subclasses should override this method to additionally disconnect the
+	 * observers natively.
+	 */
 	public disconnect() {
-		// remove gesture observer from map
-		if (this.target) {
-			const list = this.target.getGestureObservers(this.type);
-			if (list && list.length > 0) {
-				for (let i = 0; i < list.length; i++) {
-					if (list[i].callback === this.callback) {
-						break;
-					}
-				}
-				list.length = 0;
-
-				this.target._gestureObservers[this.type] = undefined;
-				delete this.target._gestureObservers[this.type];
-			}
-		}
 		this._target = null;
 		this._callback = null;
 		this._context = null;
