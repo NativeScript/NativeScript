@@ -9,6 +9,8 @@ export * from './native-helper';
 export const RESOURCE_PREFIX: string;
 export const FILE_PREFIX: string;
 
+export const SDK_VERSION: number;
+
 //@private
 /**
  * Used by various android event listener implementations.
