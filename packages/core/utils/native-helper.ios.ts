@@ -156,10 +156,10 @@ export namespace iOSNativeHelper {
 
 	export function setWindowBackgroundColor(value: string) {
 		const win = getWindow();
-		const rootVc = getRootViewController();
 		if (win) {
 			const bgColor = new Color(value);
 			win.backgroundColor = bgColor.ios;
+			const rootVc = getRootViewController();
 			if (rootVc?.view) {
 				rootVc.view.backgroundColor = bgColor.ios;
 			}
