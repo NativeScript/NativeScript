@@ -1,5 +1,9 @@
 import * as textModule from '../text';
 import { getNativeApplication } from '../application';
+import { Device } from '../platform';
+import lazy from '../utils/lazy';
+
+const sdkVersion = lazy(() => parseInt(Device.sdkVersion));
 
 import type { IFileSystemAccess } from './file-system-access';
 
@@ -581,9 +585,15 @@ export class FileSystemAccess implements IFileSystemAccess {
 	}
 
 	public normalizePath(path: string): string {
-		// the [''] is a trick to not have to create a android.net.URI
-		// and use the method with string signature
-		return java.nio.file.Paths.get(path, ['']).normalize().toString();
+		if (sdkVersion() >= 26) {
+			// the [''] is a trick to not have to create a android.net.URI
+			// and use the method with string signature
+			return java.nio.file.Paths.get(path, ['']).normalize().toString();
+		} else {
+			// for now it wont work on pre 26 as File does not normalize
+			const file = new java.io.File(path);
+			return file.getAbsolutePath();
+		}
 	}
 
 	public joinPath(left: string, right: string): string {

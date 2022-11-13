@@ -12,7 +12,7 @@ export function makeMeasureSpec(size: number, mode: number): number {
 	if (sdkVersion === undefined) {
 		// check whether the old layout is needed
 		sdkVersion = ad.getApplicationContext().getApplicationInfo().targetSdkVersion;
-		useOldMeasureSpec = sdkVersion <= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+		useOldMeasureSpec = sdkVersion <= 17;
 	}
 
 	if (useOldMeasureSpec) {

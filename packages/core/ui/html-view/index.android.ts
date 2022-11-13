@@ -1,4 +1,5 @@
 ﻿import { Color } from '../../color';
+import { SDK_VERSION } from '../../utils';
 import { Font } from '../styling/font';
 import { colorProperty, fontSizeProperty, fontInternalProperty } from '../styling/style-properties';
 import { HtmlViewBase, htmlProperty, selectableProperty, linkColorProperty } from './html-view-common';
@@ -41,8 +42,7 @@ export class HtmlView extends HtmlViewBase {
 			mask = 0;
 		}
 		this.nativeViewProtected.setAutoLinkMask(mask);
-		const apiLevel = android.os.Build.VERSION.SDK_INT;
-		if (apiLevel >= 24) {
+		if (SDK_VERSION >= 24) {
 			this.nativeViewProtected.setText(<any>android.text.Html.fromHtml(value, android.text.Html.FROM_HTML_MODE_LEGACY));
 		} else {
 			this.nativeViewProtected.setText(<any>android.text.Html.fromHtml(value));
