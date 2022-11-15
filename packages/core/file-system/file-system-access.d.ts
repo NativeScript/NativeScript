@@ -298,6 +298,12 @@ export class FileSystemAccess implements IFileSystemAccess {
 
 	readTextSync(path: string, onError?: (error: any) => any, encoding?: any): string;
 
+	readBuffer(path: string, onError?: (error: any) => any): ArrayBuffer;
+
+	readBufferAsync(path: string): Promise<ArrayBuffer>;
+
+	readBufferSync(path: string, onError?: (error: any) => any): ArrayBuffer;
+
 	read(path: string, onError?: (error: any) => any): any;
 
 	readAsync(path: string): Promise<any>;
@@ -309,6 +315,12 @@ export class FileSystemAccess implements IFileSystemAccess {
 	writeTextAsync(path: string, content: string, encoding?: any): Promise<void>;
 
 	writeTextSync(path: string, content: string, onError?: (error: any) => any, encoding?: any);
+
+	writeBuffer(path: string, content: ArrayBuffer | Uint8Array | Uint8ClampedArray, onError?: (error: any) => any);
+
+	writeBufferAsync(path: string, content: ArrayBuffer | Uint8Array | Uint8ClampedArray): Promise<void>;
+
+	writeBufferSync(path: string, content: ArrayBuffer | Uint8Array | Uint8ClampedArray, onError?: (error: any) => any);
 
 	write(path: string, content: any, onError?: (error: any) => any);
 

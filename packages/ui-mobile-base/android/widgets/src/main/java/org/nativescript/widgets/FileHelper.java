@@ -24,6 +24,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -302,8 +307,7 @@ public class FileHelper {
 		}
 		return context.getContentResolver().openInputStream(uri);
 	}
-
-
+	
 	private OutputStream getOutputStream(Context context, Uri uri) throws Exception {
 		if (Build.VERSION.SDK_INT >= 19) {
 			if (isExternalStorageDocument(uri)) {
@@ -332,6 +336,16 @@ public class FileHelper {
 		return ret.buf();
 	}
 
+	private ByteBuffer readBufferSyncInternal(Context context) throws Exception {
+		InputStream is = getInputStream(context, uri);
+
+		ReadableByteChannel channel = Channels.newChannel(is);
+		ByteBuffer buffer = ByteBuffer.allocateDirect(is.available());
+		channel.read(buffer);
+
+		return buffer;
+	}
+
 	public @Nullable
 	byte[] readSync(Context context, @Nullable Callback callback) {
 		try {
@@ -348,6 +362,29 @@ public class FileHelper {
 		executor.execute(() -> {
 			try {
 				byte[] result = readSyncInternal(context);
+				handler.post(() -> callback.onSuccess(result));
+			} catch (Exception e) {
+				handler.post(() -> callback.onError(e));
+			}
+		});
+	}
+
+	public @Nullable
+	ByteBuffer readBufferSync(Context context, @Nullable Callback callback) {
+		try {
+			return readBufferSyncInternal(context);
+		} catch (Exception e) {
+			if (callback != null) {
+				callback.onError(e);
+			}
+		}
+		return null;
+	}
+
+	public void readBuffer(Context context, Callback callback) {
+		executor.execute(() -> {
+			try {
+				ByteBuffer result = readBufferSyncInternal(context);
 				handler.post(() -> callback.onSuccess(result));
 			} catch (Exception e) {
 				handler.post(() -> callback.onError(e));
@@ -400,6 +437,15 @@ public class FileHelper {
 		updateInternal(context);
 	}
 
+	private void writeBufferSyncInternal(Context context,ByteBuffer content) throws Exception {
+		OutputStream os = getOutputStream(context, uri);
+		WritableByteChannel channel = Channels.newChannel(os);
+		channel.write(content);
+		os.flush();
+		os.close();
+		updateInternal(context);
+	}
+
 	public void writeSync(Context context, byte[] content, @Nullable Callback callback) {
 		try {
 			writeSyncInternal(context, content);
@@ -414,6 +460,27 @@ public class FileHelper {
 		executor.execute(() -> {
 			try {
 				writeSyncInternal(context, content);
+				handler.post(() -> callback.onSuccess(null));
+			} catch (Exception e) {
+				handler.post(() -> callback.onError(e));
+			}
+		});
+	}
+
+	public void writeBufferSync(Context context, ByteBuffer content, @Nullable Callback callback) {
+		try {
+			writeBufferSyncInternal(context, content);
+		} catch (Exception e) {
+			if (callback != null) {
+				callback.onError(e);
+			}
+		}
+	}
+
+	public void writeBuffer(Context context, ByteBuffer content, Callback callback) {
+		executor.execute(() -> {
+			try {
+				writeBufferSyncInternal(context, content);
 				handler.post(() -> callback.onSuccess(null));
 			} catch (Exception e) {
 				handler.post(() -> callback.onError(e));
