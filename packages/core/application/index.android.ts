@@ -369,6 +369,7 @@ function initLifecycleCallbacks() {
 	});
 
 	let activitiesStarted = 0;
+	let nativescriptActivity: androidx.appcompat.app.AppCompatActivity = undefined;
 
 	const lifecycleCallbacks = new android.app.Application.ActivityLifecycleCallbacks(<any>{
 		onActivityCreated: <any>profile('onActivityCreated', function (activity: androidx.appcompat.app.AppCompatActivity, savedInstanceState: android.os.Bundle) {
@@ -379,6 +380,10 @@ function initLifecycleCallbacks() {
 
 			if (!androidApp.startActivity) {
 				androidApp.startActivity = activity;
+			}
+
+			if (!nativescriptActivity && (<any>activity)?.isNativeScriptActivity) {
+				nativescriptActivity = activity;
 			}
 
 			notifyActivityCreated(activity, <any>savedInstanceState, undefined);
@@ -393,8 +398,17 @@ function initLifecycleCallbacks() {
 				androidApp.foregroundActivity = undefined;
 			}
 
+			if (activity === nativescriptActivity) {
+				nativescriptActivity = undefined;
+			}
+
 			if (activity === androidApp.startActivity) {
 				androidApp.startActivity = undefined;
+
+				// Fallback for start activity when it is destroyed but we have a known nativescript activity
+				if (nativescriptActivity) {
+					androidApp.startActivity = nativescriptActivity;
+				}
 			}
 
 			androidApp.notify(<AndroidActivityEventData>{

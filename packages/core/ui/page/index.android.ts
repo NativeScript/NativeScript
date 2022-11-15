@@ -66,6 +66,19 @@ export class Page extends PageBase {
 		}
 	}
 
+	private getClosestWindow() {
+		// When it comes to modals, check if page has a parent as it may not be the modal root view itself
+		const view = this.parent ?? this;
+		const dialogFragment = (<any>view)._dialogFragment;
+		if (dialogFragment) {
+			const dialog = dialogFragment.getDialog();
+			if (dialog) {
+				return dialog.getWindow();
+			}
+		}
+		return this._context.getWindow();
+	}
+
 	[actionBarHiddenProperty.setNative](value: boolean) {
 		// in case the actionBar is not created and actionBarHidden is changed to true
 		// the actionBar will be created by updateActionBar
@@ -79,7 +92,7 @@ export class Page extends PageBase {
 		systemUiVisibility: number;
 	} {
 		if (SDK_VERSION >= 21) {
-			const window = (<androidx.appcompat.app.AppCompatActivity>this._context).getWindow();
+			const window = this.getClosestWindow();
 			const decorView = window.getDecorView();
 
 			return {
@@ -92,7 +105,7 @@ export class Page extends PageBase {
 	}
 	[statusBarStyleProperty.setNative](value: 'dark' | 'light' | { color: number; systemUiVisibility: number }) {
 		if (SDK_VERSION >= 21) {
-			const window = (<androidx.appcompat.app.AppCompatActivity>this._context).getWindow();
+			const window = this.getClosestWindow();
 			const decorView = window.getDecorView();
 
 			if (value === 'light') {
@@ -110,8 +123,7 @@ export class Page extends PageBase {
 
 	[androidStatusBarBackgroundProperty.getDefault](): number {
 		if (SDK_VERSION >= 21) {
-			const window = (<androidx.appcompat.app.AppCompatActivity>this._context).getWindow();
-
+			const window = this.getClosestWindow();
 			return (<any>window).getStatusBarColor();
 		}
 
@@ -119,7 +131,7 @@ export class Page extends PageBase {
 	}
 	[androidStatusBarBackgroundProperty.setNative](value: number | Color) {
 		if (SDK_VERSION >= 21) {
-			const window = (<androidx.appcompat.app.AppCompatActivity>this._context).getWindow();
+			const window = this.getClosestWindow();
 			const color = value instanceof Color ? value.android : value;
 			(<any>window).setStatusBarColor(color);
 		}

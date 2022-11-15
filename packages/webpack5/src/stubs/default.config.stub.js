@@ -8,5 +8,3 @@ module.exports = (env) => {
 
 	return webpack.resolveConfig();
 };
-
-

@@ -13,8 +13,8 @@
   "devDependencies": {
     "@nativescript/android": "~8.3.0",
     "@nativescript/ios": "~8.3.0",
-    "@nativescript/webpack": "5.0.7",
-    "typescript": "4.7.3"
+    "@nativescript/webpack": "5.0.10",
+    "typescript": "4.8.4"
   },
   "gitHead": "c06800e52ee1a184ea2dffd12a6702aaa43be4e3",
   "readme": "NativeScript Application"

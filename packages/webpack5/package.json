@@ -1,6 +1,6 @@
 {
 	"name": "@nativescript/webpack",
-	"version": "5.0.9",
+	"version": "5.0.10",
 	"private": false,
 	"main": "dist/index.js",
 	"files": [
@@ -67,7 +67,7 @@
 		"jest-matcher-utils": "29.1.2",
 		"nativescript-vue-template-compiler": "2.9.3",
 		"ts-jest": "29.0.3",
-		"typescript": "4.7.4"
+		"typescript": "4.8.4"
 	},
 	"peerDependencies": {
 		"nativescript-vue-template-compiler": "^2.8.1"

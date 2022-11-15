@@ -442,28 +442,28 @@ export class Animation extends AnimationBase {
 		const animationInfo = propertyAnimations[index];
 		const args = this._getNativeAnimationArguments(animationInfo, true);
 		const nativeView = <UIView>animationInfo.target.nativeViewProtected;
+		let nativeAnimation;
+
+		if (args.subPropertiesToAnimate) {
+			nativeAnimation = this._createGroupAnimation(args, animationInfo);
+		} else {
+			nativeAnimation = this._createBasicAnimation(args, animationInfo);
+		}
+
+		const animationDelegate = AnimationDelegateImpl.initWithFinishedCallback(new WeakRef(this), animationInfo);
+		nativeAnimation.setValueForKey(animationDelegate, 'delegate');
+
 		if (nativeView?.layer) {
-			let nativeAnimation;
-
-			if (args.subPropertiesToAnimate) {
-				nativeAnimation = this._createGroupAnimation(args, animationInfo);
-			} else {
-				nativeAnimation = this._createBasicAnimation(args, animationInfo);
-			}
-
-			const animationDelegate = AnimationDelegateImpl.initWithFinishedCallback(new WeakRef(this), animationInfo);
-			nativeAnimation.setValueForKey(animationDelegate, 'delegate');
-
 			nativeView.layer.addAnimationForKey(nativeAnimation, args.propertyNameToAnimate);
+		}
 
-			let callback = undefined;
-			if (index + 1 < propertyAnimations.length) {
-				callback = this._createiOSAnimationFunction(propertyAnimations, index + 1, playSequentially);
-				if (!playSequentially) {
-					callback();
-				} else {
-					animationDelegate.nextAnimation = callback;
-				}
+		let callback = undefined;
+		if (index + 1 < propertyAnimations.length) {
+			callback = this._createiOSAnimationFunction(propertyAnimations, index + 1, playSequentially);
+			if (!playSequentially) {
+				callback();
+			} else {
+				animationDelegate.nextAnimation = callback;
 			}
 		}
 	}

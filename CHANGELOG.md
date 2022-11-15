@@ -1,3 +1,17 @@
+## [8.3.6](https://github.com/NativeScript/NativeScript/compare/8.3.5-core...8.3.6) (2022-11-12)
+
+
+### Bug Fixes
+
+* **android:** CSS style not working properly in modal pages ([#10070](https://github.com/NativeScript/NativeScript/issues/10070)) ([95c3b30](https://github.com/NativeScript/NativeScript/commit/95c3b3026db9316b126849671fb2be18549b6796))
+* **android:** WeakRef race condition on timers ([#10066](https://github.com/NativeScript/NativeScript/issues/10066)) ([a65fc06](https://github.com/NativeScript/NativeScript/commit/a65fc06c50dc9b6f6bab4d8068ac6d2ecaa78cdf))
+* **ios:** ensure view layout when using large titles ([#10044](https://github.com/NativeScript/NativeScript/issues/10044)) ([0552a3a](https://github.com/NativeScript/NativeScript/commit/0552a3a722469312044fd2e9c40be630d04312ec))
+* **ios:** page isRunningLayout ([#10078](https://github.com/NativeScript/NativeScript/issues/10078)) ([6f1a5d1](https://github.com/NativeScript/NativeScript/commit/6f1a5d16e310324a4e6a2622e2fdf992d2a775d5))
+* **ios:** prevent creating `ActionBar` when not needed ([#10017](https://github.com/NativeScript/NativeScript/issues/10017)) ([8094cf2](https://github.com/NativeScript/NativeScript/commit/8094cf207a4c5714fd0e592e8aa3adf4a4d377e0))
+* **ios:** tab page navigation when showing dialog messages ([#10075](https://github.com/NativeScript/NativeScript/issues/10075)) ([0337a33](https://github.com/NativeScript/NativeScript/commit/0337a3360d37a4b529e94e5f20e9b8f561f4ad1b))
+
+
+
 ## [8.3.5](https://github.com/NativeScript/NativeScript/compare/8.3.4-core...8.3.5) (2022-09-23)
 
 

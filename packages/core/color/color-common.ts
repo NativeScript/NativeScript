@@ -151,7 +151,7 @@ export class Color implements definition.Color {
 	}
 
 	public static isValid(value: any): boolean {
-		if (types.isNullOrUndefined(value) || value instanceof Color) {
+		if (value instanceof Color) {
 			return true;
 		}
 
