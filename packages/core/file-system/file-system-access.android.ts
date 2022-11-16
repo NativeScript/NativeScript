@@ -1,6 +1,6 @@
 import * as textModule from '../text';
 import { getNativeApplication } from '../application';
-import { SDK_VERSION } from 'utils/utils-common';
+import { SDK_VERSION } from '../utils/utils-common';
 
 import type { IFileSystemAccess } from './file-system-access';
 
