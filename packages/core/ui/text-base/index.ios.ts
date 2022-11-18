@@ -244,6 +244,7 @@ export class TextBase extends TextBaseCommon {
 			}
 		} else if (nativeTextViewProtected instanceof UILabel) {
 			nativeTextViewProtected.numberOfLines = numberOfLines;
+			nativeTextViewProtected.lineBreakMode = NSLineBreakMode.ByTruncatingTail;
 		} else if (nativeTextViewProtected instanceof UIButton) {
 			nativeTextViewProtected.titleLabel.numberOfLines = numberOfLines;
 		}
