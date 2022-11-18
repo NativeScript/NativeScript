@@ -107,3 +107,14 @@ export var test_rgba_Color_CSS = function () {
 	TKUnit.assertEqual(color.hex, '#FF646480', 'Color.hex not properly parsed');
 	TKUnit.assertEqual(color.argb, 0x80ff6464, 'Color.argb not properly parsed');
 };
+
+export var test_Color_isValid = function () {
+	var color = new Color('#FF0000');
+
+	TKUnit.assertEqual(Color.isValid(color), true, 'Failed to validate color instance');
+	TKUnit.assertEqual(Color.isValid('#FF0000'), true, 'Failed to validate hex color');
+	TKUnit.assertEqual(Color.isValid('rgb(255, 100, 100)'), true, 'Failed to validate rgb color');
+	TKUnit.assertEqual(Color.isValid('hsl(50, 50%, 50%)'), true, 'Failed to validate hsl color');
+	TKUnit.assertEqual(Color.isValid(null) || Color.isValid(undefined), false, 'Failed to invalidate nullish value');
+	TKUnit.assertEqual(Color.isValid('iamnotaknowncolor'), false, 'Failed to invalidate unknown color');
+};

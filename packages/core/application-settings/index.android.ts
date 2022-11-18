@@ -41,7 +41,8 @@ export function getString(key: string, defaultValue?: string): string {
 export function getNumber(key: string, defaultValue?: number): number {
 	verify(key);
 	if (hasKey(key)) {
-		return sharedPreferences.getFloat(key, float(0.0));
+		// SharedPreferences has no getter or setter for double so use long instead
+		return java.lang.Double.longBitsToDouble(sharedPreferences.getLong(key, long(0)));
 	}
 
 	return defaultValue;
@@ -68,7 +69,8 @@ export function setNumber(key: string, value: number): void {
 	verify(key);
 	common.ensureValidValue(value, 'number');
 	const editor = sharedPreferences.edit();
-	editor.putFloat(key, float(value));
+	// SharedPreferences has no getter or setter for double so use long instead
+	editor.putLong(key, java.lang.Double.doubleToRawLongBits(double(value)));
 	editor.apply();
 }
 

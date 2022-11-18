@@ -3,7 +3,7 @@ import { isCssVariable } from '../../core/properties';
 import { isNullOrUndefined } from '../../../utils/types';
 
 import * as cssParser from '../../../css';
-import { Combinator as ICombinator , SimpleSelectorSequence as ISimpleSelectorSequence, Selector as ISelector, SimpleSelector as ISimpleSelector, parseSelector} from '../../../css/parser';
+import { Combinator as ICombinator, SimpleSelectorSequence as ISimpleSelectorSequence, Selector as ISelector, SimpleSelector as ISimpleSelector, parseSelector } from '../../../css/parser';
 
 /**
  * An interface describing the shape of a type on which the selectors may apply.
@@ -11,6 +11,7 @@ import { Combinator as ICombinator , SimpleSelectorSequence as ISimpleSelectorSe
  */
 export interface Node {
 	parent?: Node;
+	_modalParent?: Node;
 
 	id?: string;
 	nodeName?: string;
@@ -384,7 +385,7 @@ export class Selector extends SelectorCore {
 				return !!node;
 			} else {
 				let ancestor = node;
-				while ((ancestor = ancestor.parent)) {
+				while ((ancestor = ancestor.parent ?? ancestor._modalParent)) {
 					if ((node = group.match(ancestor))) {
 						return true;
 					}

@@ -55,3 +55,15 @@ export function dismissSoftInput(nativeView?: UIView): void {
 	}
 	UIApplication.sharedApplication.sendActionToFromForEvent('resignFirstResponder', null, null, null);
 }
+
+export function dismissKeyboard() {
+	dismissSoftInput();
+}
+
+export function copyToClipboard(value: string) {
+	try {
+		UIPasteboard.generalPasteboard.setValueForPasteboardType(value, kUTTypePlainText);
+	} catch (err) {
+		console.log(err);
+	}
+}
