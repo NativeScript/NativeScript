@@ -1,0 +1,876 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`angular configuration for android 1`] = `
+"{
+  mode: 'development',
+  externals: [
+    'package.json',
+    '~/package.json'
+  ],
+  externalsPresets: {
+    node: false
+  },
+  devtool: 'inline-source-map',
+  target: 'node',
+  watchOptions: {
+    ignored: [
+      '__jest__/platforms/**',
+      '__jest__/App_Resources/**'
+    ]
+  },
+  ignoreWarnings: [
+    /System.import\\(\\) is deprecated/,
+    /Zone\\.js does not support native async\\/await/,
+    /environment(\\.(\\w+))?\\.ts is part of the TypeScript compilation but it's unused/,
+    {
+      module: /@angular\\/core\\/(__ivy_ngcc__\\/)?fesm2015\\/core.js/,
+      message: /Critical dependency: the request of a dependency is an expression/
+    },
+    /core\\/profiling/,
+    /core\\/ui\\/styling/
+  ],
+  output: {
+    path: '__jest__/platforms/android/app/src/main/assets/app',
+    pathinfo: false,
+    publicPath: '',
+    libraryTarget: 'commonjs',
+    globalObject: 'global',
+    clean: true
+  },
+  resolve: {
+    symlinks: true,
+    alias: {
+      '~': '__jest__/src',
+      '@': '__jest__/src'
+    },
+    extensions: [
+      '.android.ts',
+      '.ts',
+      '.android.js',
+      '.js',
+      '.android.mjs',
+      '.mjs',
+      '.android.css',
+      '.css',
+      '.android.scss',
+      '.scss',
+      '.android.json',
+      '.json'
+    ],
+    mainFields: [
+      'module',
+      'main'
+    ],
+    modules: [
+      '__jest__/node_modules',
+      'node_modules'
+    ]
+  },
+  resolveLoader: {
+    modules: [
+      '__jest__/node_modules/@nativescript/webpack/dist/loaders',
+      '__jest__/node_modules',
+      'node_modules'
+    ]
+  },
+  module: {
+    rules: [
+      /* config.module.rule('bundle') */
+      {
+        enforce: 'post',
+        test: '__jest__/src/app.js',
+        use: [
+          /* config.module.rule('bundle').use('app-css-loader') */
+          {
+            loader: 'app-css-loader',
+            options: {
+              platform: 'android'
+            }
+          }
+        ]
+      },
+      /* config.module.rule('workers') */
+      {
+        test: /\\.(mjs|js|ts)$/,
+        use: [
+          /* config.module.rule('workers').use('nativescript-worker-loader') */
+          {
+            loader: 'nativescript-worker-loader'
+          }
+        ]
+      },
+      /* config.module.rule('js') */
+      {
+        test: /\\.js$/,
+        exclude: [
+          /node_modules/
+        ]
+      },
+      /* config.module.rule('xml') */
+      {
+        test: /\\.xml$/,
+        use: [
+          /* config.module.rule('xml').use('xml-namespace-loader') */
+          {
+            loader: 'xml-namespace-loader'
+          }
+        ]
+      },
+      /* config.module.rule('css') */
+      {
+        test: /\\.css$/,
+        include: [
+          '__jest__/src/app.css',
+          '__jest__/src/app.android.css',
+          /node_modules/
+        ],
+        use: [
+          /* config.module.rule('css').use('apply-css-loader') */
+          {
+            loader: 'apply-css-loader'
+          },
+          /* config.module.rule('css').use('css2json-loader') */
+          {
+            loader: 'css2json-loader'
+          },
+          /* config.module.rule('css').use('postcss-loader') */
+          {
+            loader: 'postcss-loader',
+            options: {
+              postcssOptions: {
+                plugins: [
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
+                ]
+              }
+            }
+          }
+        ]
+      },
+      /* config.module.rule('scss') */
+      {
+        test: /\\.scss$/,
+        include: [
+          '__jest__/src/app.scss',
+          '__jest__/src/app.android.scss',
+          /node_modules/
+        ],
+        use: [
+          /* config.module.rule('scss').use('apply-css-loader') */
+          {
+            loader: 'apply-css-loader'
+          },
+          /* config.module.rule('scss').use('css2json-loader') */
+          {
+            loader: 'css2json-loader'
+          },
+          /* config.module.rule('scss').use('postcss-loader') */
+          {
+            loader: 'postcss-loader',
+            options: {
+              postcssOptions: {
+                plugins: [
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
+                ]
+              }
+            }
+          },
+          /* config.module.rule('scss').use('sass-loader') */
+          {
+            loader: 'sass-loader'
+          }
+        ]
+      },
+      /* config.module.rule('angular-webpack-loader') */
+      {
+        test: /\\.[cm]?[tj]sx?$/,
+        exclude: [
+          /[/\\\\](?:core-js|@babel|tslib|web-animations-js|web-streams-polyfill)[/\\\\]/
+        ],
+        use: [
+          /* config.module.rule('angular-webpack-loader').use('webpack-loader') */
+          {
+            loader: '@angular-devkit/build-angular/src/babel/webpack-loader',
+            options: {
+              scriptTarget: 99,
+              aot: true
+            }
+          }
+        ],
+        resolve: {
+          fullySpecified: false
+        }
+      },
+      /* config.module.rule('angular') */
+      {
+        test: /(?:\\.ngfactory.js|\\.ngstyle\\.js|\\.ts)$/,
+        use: [
+          /* config.module.rule('angular').use('@ngtools/webpack') */
+          {
+            loader: '@ngtools/webpack'
+          }
+        ]
+      },
+      /* config.module.rule('@angular/core') */
+      {
+        test: /[\\/\\\\]@angular[\\/\\\\]core[\\/\\\\].+\\.js$/,
+        parser: {
+          system: true
+        }
+      },
+      /* config.module.rule('html') */
+      {
+        test: /\\.html$/,
+        use: [
+          /* config.module.rule('html').use('raw-loader') */
+          {
+            loader: 'raw-loader'
+          }
+        ]
+      },
+      /* config.module.rule('css|component') */
+      {
+        test: /\\.css$/,
+        exclude: [
+          '__jest__/src/app.css',
+          '__jest__/src/app.android.css',
+          /node_modules/
+        ],
+        use: [
+          /* config.module.rule('css|component').use('raw-loader') */
+          {
+            loader: 'raw-loader'
+          }
+        ]
+      },
+      /* config.module.rule('scss|component') */
+      {
+        test: /\\.scss$/,
+        exclude: [
+          '__jest__/src/app.scss',
+          '__jest__/src/app.android.scss',
+          /node_modules/
+        ],
+        use: [
+          /* config.module.rule('scss|component').use('raw-loader') */
+          {
+            loader: 'raw-loader'
+          },
+          /* config.module.rule('scss|component').use('postcss-loader') */
+          {
+            loader: 'postcss-loader',
+            options: {
+              postcssOptions: {
+                plugins: [
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
+                ]
+              }
+            }
+          },
+          /* config.module.rule('scss|component').use('sass-loader') */
+          {
+            loader: 'sass-loader'
+          }
+        ]
+      }
+    ]
+  },
+  optimization: {
+    runtimeChunk: 'single',
+    splitChunks: {
+      cacheGroups: {
+        defaultVendor: {
+          test: /[\\\\/]node_modules[\\\\/]/,
+          priority: -10,
+          name: 'vendor',
+          chunks: 'all'
+        }
+      }
+    },
+    minimizer: [
+      /* config.optimization.minimizer('TerserPlugin') */
+      new TerserPlugin(
+        {
+          terserOptions: {
+            compress: {
+              collapse_vars: false,
+              sequences: false,
+              keep_infinity: true,
+              drop_console: false,
+              global_defs: {
+                __UGLIFIED__: true
+              }
+            },
+            keep_fnames: true,
+            keep_classnames: true
+          }
+        }
+      )
+    ]
+  },
+  plugins: [
+    /* config.plugin('PlatformSuffixPlugin') */
+    new PlatformSuffixPlugin(
+      {
+        platform: 'android'
+      }
+    ),
+    /* config.plugin('ContextExclusionPlugin|App_Resources') */
+    new ContextExclusionPlugin(
+      /(.*)App_Resources(.*)/
+    ),
+    /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
+    new ContextExclusionPlugin(
+      /\\.(ios)\\.(\\w+)$/
+    ),
+    /* config.plugin('DefinePlugin') */
+    new DefinePlugin(
+      {
+        __DEV__: true,
+        __NS_WEBPACK__: true,
+        __NS_ENV_VERBOSE__: false,
+        __NS_DEV_HOST_IPS__: '["127.0.0.1","192.168.0.10"]',
+        __CSS_PARSER__: '"css-tree"',
+        __UI_USE_XML_PARSER__: true,
+        __UI_USE_EXTERNAL_RENDERER__: false,
+        __ANDROID__: true,
+        __IOS__: false,
+        'global.isAndroid': true,
+        'global.isIOS': false,
+        process: 'global.process',
+        __USE_TEST_ID__: false
+      }
+    ),
+    /* config.plugin('CopyWebpackPlugin') */
+    new CopyPlugin(
+      {
+        patterns: [
+          {
+            from: 'assets/**',
+            context: '__jest__/src',
+            noErrorOnMissing: true,
+            globOptions: {
+              dot: false,
+              ignore: []
+            }
+          },
+          {
+            from: 'fonts/**',
+            context: '__jest__/src',
+            noErrorOnMissing: true,
+            globOptions: {
+              dot: false,
+              ignore: []
+            }
+          },
+          {
+            from: '**/*.+(jpg|png)',
+            context: '__jest__/src',
+            noErrorOnMissing: true,
+            globOptions: {
+              dot: false,
+              ignore: []
+            }
+          }
+        ]
+      }
+    ),
+    /* config.plugin('WatchStatePlugin') */
+    new WatchStatePlugin(),
+    /* config.plugin('AngularCompilerPlugin') */
+    new AngularCompilerPlugin(
+      {
+        tsConfigPath: '__jest__/tsconfig.json',
+        mainPath: '__jest__/src/app.js',
+        forkTypeChecker: false,
+        hostReplacementPaths: function () { /* omitted long function */ },
+        platformTransformers: [
+          function () { /* omitted long function */ }
+        ]
+      }
+    ),
+    /* config.plugin('AngularWebpackPlugin') */
+    new AngularWebpackPlugin(
+      {
+        tsconfig: '__jest__/tsconfig.json',
+        directTemplateLoading: false,
+        jitMode: false
+      }
+    )
+  ],
+  entry: {
+    bundle: [
+      '@nativescript/core/globals/index',
+      '@nativescript/core/bundle-entry-points',
+      '__jest__/src/app.js',
+      '@nativescript/core/ui/frame',
+      '@nativescript/core/ui/frame/activity'
+    ]
+  }
+}"
+`;
+
+exports[`angular configuration for ios 1`] = `
+"{
+  mode: 'development',
+  externals: [
+    'package.json',
+    '~/package.json'
+  ],
+  externalsPresets: {
+    node: false
+  },
+  devtool: 'inline-source-map',
+  target: 'node',
+  watchOptions: {
+    ignored: [
+      '__jest__/platforms/**',
+      '__jest__/App_Resources/**'
+    ]
+  },
+  ignoreWarnings: [
+    /System.import\\(\\) is deprecated/,
+    /Zone\\.js does not support native async\\/await/,
+    /environment(\\.(\\w+))?\\.ts is part of the TypeScript compilation but it's unused/,
+    {
+      module: /@angular\\/core\\/(__ivy_ngcc__\\/)?fesm2015\\/core.js/,
+      message: /Critical dependency: the request of a dependency is an expression/
+    },
+    /core\\/profiling/,
+    /core\\/ui\\/styling/
+  ],
+  output: {
+    path: '__jest__/platforms/ios/jest/app',
+    pathinfo: false,
+    publicPath: '',
+    libraryTarget: 'commonjs',
+    globalObject: 'global',
+    clean: true
+  },
+  resolve: {
+    symlinks: true,
+    alias: {
+      '~': '__jest__/src',
+      '@': '__jest__/src'
+    },
+    extensions: [
+      '.ios.ts',
+      '.ts',
+      '.ios.js',
+      '.js',
+      '.ios.mjs',
+      '.mjs',
+      '.ios.css',
+      '.css',
+      '.ios.scss',
+      '.scss',
+      '.ios.json',
+      '.json'
+    ],
+    mainFields: [
+      'module',
+      'main'
+    ],
+    modules: [
+      '__jest__/node_modules',
+      'node_modules'
+    ]
+  },
+  resolveLoader: {
+    modules: [
+      '__jest__/node_modules/@nativescript/webpack/dist/loaders',
+      '__jest__/node_modules',
+      'node_modules'
+    ]
+  },
+  module: {
+    rules: [
+      /* config.module.rule('bundle') */
+      {
+        enforce: 'post',
+        test: '__jest__/src/app.js',
+        use: [
+          /* config.module.rule('bundle').use('app-css-loader') */
+          {
+            loader: 'app-css-loader',
+            options: {
+              platform: 'ios'
+            }
+          }
+        ]
+      },
+      /* config.module.rule('workers') */
+      {
+        test: /\\.(mjs|js|ts)$/,
+        use: [
+          /* config.module.rule('workers').use('nativescript-worker-loader') */
+          {
+            loader: 'nativescript-worker-loader'
+          }
+        ]
+      },
+      /* config.module.rule('js') */
+      {
+        test: /\\.js$/,
+        exclude: [
+          /node_modules/
+        ]
+      },
+      /* config.module.rule('xml') */
+      {
+        test: /\\.xml$/,
+        use: [
+          /* config.module.rule('xml').use('xml-namespace-loader') */
+          {
+            loader: 'xml-namespace-loader'
+          }
+        ]
+      },
+      /* config.module.rule('css') */
+      {
+        test: /\\.css$/,
+        include: [
+          '__jest__/src/app.css',
+          '__jest__/src/app.ios.css',
+          /node_modules/
+        ],
+        use: [
+          /* config.module.rule('css').use('apply-css-loader') */
+          {
+            loader: 'apply-css-loader'
+          },
+          /* config.module.rule('css').use('css2json-loader') */
+          {
+            loader: 'css2json-loader'
+          },
+          /* config.module.rule('css').use('postcss-loader') */
+          {
+            loader: 'postcss-loader',
+            options: {
+              postcssOptions: {
+                plugins: [
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
+                ]
+              }
+            }
+          }
+        ]
+      },
+      /* config.module.rule('scss') */
+      {
+        test: /\\.scss$/,
+        include: [
+          '__jest__/src/app.scss',
+          '__jest__/src/app.ios.scss',
+          /node_modules/
+        ],
+        use: [
+          /* config.module.rule('scss').use('apply-css-loader') */
+          {
+            loader: 'apply-css-loader'
+          },
+          /* config.module.rule('scss').use('css2json-loader') */
+          {
+            loader: 'css2json-loader'
+          },
+          /* config.module.rule('scss').use('postcss-loader') */
+          {
+            loader: 'postcss-loader',
+            options: {
+              postcssOptions: {
+                plugins: [
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
+                ]
+              }
+            }
+          },
+          /* config.module.rule('scss').use('sass-loader') */
+          {
+            loader: 'sass-loader'
+          }
+        ]
+      },
+      /* config.module.rule('angular-webpack-loader') */
+      {
+        test: /\\.[cm]?[tj]sx?$/,
+        exclude: [
+          /[/\\\\](?:core-js|@babel|tslib|web-animations-js|web-streams-polyfill)[/\\\\]/
+        ],
+        use: [
+          /* config.module.rule('angular-webpack-loader').use('webpack-loader') */
+          {
+            loader: '@angular-devkit/build-angular/src/babel/webpack-loader',
+            options: {
+              scriptTarget: 99,
+              aot: true
+            }
+          }
+        ],
+        resolve: {
+          fullySpecified: false
+        }
+      },
+      /* config.module.rule('angular') */
+      {
+        test: /(?:\\.ngfactory.js|\\.ngstyle\\.js|\\.ts)$/,
+        use: [
+          /* config.module.rule('angular').use('@ngtools/webpack') */
+          {
+            loader: '@ngtools/webpack'
+          }
+        ]
+      },
+      /* config.module.rule('@angular/core') */
+      {
+        test: /[\\/\\\\]@angular[\\/\\\\]core[\\/\\\\].+\\.js$/,
+        parser: {
+          system: true
+        }
+      },
+      /* config.module.rule('html') */
+      {
+        test: /\\.html$/,
+        use: [
+          /* config.module.rule('html').use('raw-loader') */
+          {
+            loader: 'raw-loader'
+          }
+        ]
+      },
+      /* config.module.rule('css|component') */
+      {
+        test: /\\.css$/,
+        exclude: [
+          '__jest__/src/app.css',
+          '__jest__/src/app.ios.css',
+          /node_modules/
+        ],
+        use: [
+          /* config.module.rule('css|component').use('raw-loader') */
+          {
+            loader: 'raw-loader'
+          }
+        ]
+      },
+      /* config.module.rule('scss|component') */
+      {
+        test: /\\.scss$/,
+        exclude: [
+          '__jest__/src/app.scss',
+          '__jest__/src/app.ios.scss',
+          /node_modules/
+        ],
+        use: [
+          /* config.module.rule('scss|component').use('raw-loader') */
+          {
+            loader: 'raw-loader'
+          },
+          /* config.module.rule('scss|component').use('postcss-loader') */
+          {
+            loader: 'postcss-loader',
+            options: {
+              postcssOptions: {
+                plugins: [
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
+                ]
+              }
+            }
+          },
+          /* config.module.rule('scss|component').use('sass-loader') */
+          {
+            loader: 'sass-loader'
+          }
+        ]
+      }
+    ]
+  },
+  optimization: {
+    runtimeChunk: 'single',
+    splitChunks: {
+      cacheGroups: {
+        defaultVendor: {
+          test: /[\\\\/]node_modules[\\\\/]/,
+          priority: -10,
+          name: 'vendor',
+          chunks: 'all'
+        }
+      }
+    },
+    minimizer: [
+      /* config.optimization.minimizer('TerserPlugin') */
+      new TerserPlugin(
+        {
+          terserOptions: {
+            compress: {
+              collapse_vars: true,
+              sequences: true,
+              keep_infinity: true,
+              drop_console: false,
+              global_defs: {
+                __UGLIFIED__: true
+              }
+            },
+            keep_fnames: true,
+            keep_classnames: true
+          }
+        }
+      )
+    ]
+  },
+  plugins: [
+    /* config.plugin('PlatformSuffixPlugin') */
+    new PlatformSuffixPlugin(
+      {
+        platform: 'ios'
+      }
+    ),
+    /* config.plugin('ContextExclusionPlugin|App_Resources') */
+    new ContextExclusionPlugin(
+      /(.*)App_Resources(.*)/
+    ),
+    /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
+    new ContextExclusionPlugin(
+      /\\.(android)\\.(\\w+)$/
+    ),
+    /* config.plugin('DefinePlugin') */
+    new DefinePlugin(
+      {
+        __DEV__: true,
+        __NS_WEBPACK__: true,
+        __NS_ENV_VERBOSE__: false,
+        __NS_DEV_HOST_IPS__: '["127.0.0.1","192.168.0.10"]',
+        __CSS_PARSER__: '"css-tree"',
+        __UI_USE_XML_PARSER__: true,
+        __UI_USE_EXTERNAL_RENDERER__: false,
+        __ANDROID__: false,
+        __IOS__: true,
+        'global.isAndroid': false,
+        'global.isIOS': true,
+        process: 'global.process',
+        __USE_TEST_ID__: false
+      }
+    ),
+    /* config.plugin('CopyWebpackPlugin') */
+    new CopyPlugin(
+      {
+        patterns: [
+          {
+            from: 'assets/**',
+            context: '__jest__/src',
+            noErrorOnMissing: true,
+            globOptions: {
+              dot: false,
+              ignore: []
+            }
+          },
+          {
+            from: 'fonts/**',
+            context: '__jest__/src',
+            noErrorOnMissing: true,
+            globOptions: {
+              dot: false,
+              ignore: []
+            }
+          },
+          {
+            from: '**/*.+(jpg|png)',
+            context: '__jest__/src',
+            noErrorOnMissing: true,
+            globOptions: {
+              dot: false,
+              ignore: []
+            }
+          }
+        ]
+      }
+    ),
+    /* config.plugin('WatchStatePlugin') */
+    new WatchStatePlugin(),
+    /* config.plugin('AngularCompilerPlugin') */
+    new AngularCompilerPlugin(
+      {
+        tsConfigPath: '__jest__/tsconfig.json',
+        mainPath: '__jest__/src/app.js',
+        forkTypeChecker: false,
+        hostReplacementPaths: function () { /* omitted long function */ },
+        platformTransformers: [
+          function () { /* omitted long function */ }
+        ]
+      }
+    ),
+    /* config.plugin('AngularWebpackPlugin') */
+    new AngularWebpackPlugin(
+      {
+        tsconfig: '__jest__/tsconfig.json',
+        directTemplateLoading: false,
+        jitMode: false
+      }
+    )
+  ],
+  entry: {
+    bundle: [
+      '@nativescript/core/globals/index',
+      '@nativescript/core/bundle-entry-points',
+      '__jest__/src/app.js'
+    ],
+    'tns_modules/inspector_modules': [
+      '@nativescript/core/inspector_modules'
+    ]
+  }
+}"
+`;
+
+exports[`angular configuration loads polyfills.android.ts into the bundle entry if it exists  1`] = `
+[
+  "__jest__/src/polyfills.android.ts",
+  "@nativescript/core/bundle-entry-points",
+  "__jest__/src/app.js",
+  "@nativescript/core/ui/frame",
+  "@nativescript/core/ui/frame/activity",
+]
+`;
+
+exports[`angular configuration loads polyfills.ios.ts into the bundle entry if it exists  1`] = `
+[
+  "__jest__/src/polyfills.ios.ts",
+  "@nativescript/core/bundle-entry-points",
+  "__jest__/src/app.js",
+]
+`;
+
+exports[`angular configuration loads polyfills.ts into the bundle entry if it exists  1`] = `
+[
+  "__jest__/src/polyfills.ts",
+  "@nativescript/core/bundle-entry-points",
+  "__jest__/src/app.js",
+]
+`;

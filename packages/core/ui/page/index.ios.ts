@@ -7,6 +7,7 @@ import { PageBase, actionBarHiddenProperty, statusBarStyleProperty } from './pag
 
 import { profile } from '../../profiling';
 import { iOSNativeHelper, layout } from '../../utils';
+import { getLastFocusedViewOnPage, isAccessibilityServiceEnabled } from '../../accessibility';
 
 export * from './page-common';
 
@@ -65,14 +66,38 @@ function isBackNavigationFrom(controller: UIViewControllerImpl, page: Page): boo
 
 @NativeClass
 class UIViewControllerImpl extends UIViewController {
+	// TODO: a11y
+	// static ObjCExposedMethods = {
+	// 	accessibilityPerformEscape: { returns: interop.types.bool, params: [interop.types.void] },
+	// };
 	private _owner: WeakRef<Page>;
 
 	public isBackstackSkipped: boolean;
 	public isBackstackCleared: boolean;
+	// this is initialized in initWithOwner since the constructor doesn't run on native classes
+	private _isRunningLayout: number;
+	private get isRunningLayout() {
+		return this._isRunningLayout !== 0;
+	}
+	private startRunningLayout() {
+		this._isRunningLayout++;
+	}
+	private finishRunningLayout() {
+		this._isRunningLayout--;
+	}
+	private runLayout(cb: () => void) {
+		try {
+			this.startRunningLayout();
+			cb();
+		} finally {
+			this.finishRunningLayout();
+		}
+	}
 
 	public static initWithOwner(owner: WeakRef<Page>): UIViewControllerImpl {
 		const controller = <UIViewControllerImpl>UIViewControllerImpl.new();
 		controller._owner = owner;
+		controller._isRunningLayout = 0;
 
 		return controller;
 	}
@@ -172,7 +197,9 @@ class UIViewControllerImpl extends UIViewController {
 			}
 
 			// If page was shown with custom animation - we need to set the navigationController.delegate to the animatedDelegate.
-			frame.ios.controller.delegate = this[DELEGATE];
+			if (frame.ios?.controller) {
+				frame.ios.controller.delegate = this[DELEGATE];
+			}
 
 			frame._processNavigationQueue(owner);
 
@@ -214,7 +241,7 @@ class UIViewControllerImpl extends UIViewController {
 		// or because we are closing a modal page,
 		// or because we are in tab and another controller is selected.
 		const tab = this.tabBarController;
-		if (owner.onNavigatingFrom && !owner._presentedViewController && !this.presentingViewController && frame && frame.currentPage === owner) {
+		if (owner.onNavigatingFrom && !owner._presentedViewController && frame && (!this.presentingViewController || frame.backStack.length > 0) && frame.currentPage === owner) {
 			const willSelectViewController = tab && (<any>tab)._willSelectViewController;
 			if (!willSelectViewController || willSelectViewController === tab.selectedViewController) {
 				const isBack = isBackNavigationFrom(this, owner);
@@ -247,7 +274,19 @@ class UIViewControllerImpl extends UIViewController {
 		}
 	}
 
+	public viewSafeAreaInsetsDidChange(): void {
+		super.viewSafeAreaInsetsDidChange();
+		if (this.isRunningLayout) {
+			return;
+		}
+		const owner = this._owner.get();
+		if (owner) {
+			this.runLayout(() => IOSHelper.layoutView(this, owner));
+		}
+	}
+
 	public viewDidLayoutSubviews(): void {
+		this.startRunningLayout();
 		super.viewDidLayoutSubviews();
 		const owner = this._owner.get();
 		if (owner) {
@@ -272,11 +311,17 @@ class UIViewControllerImpl extends UIViewController {
 
 				if (frameParent) {
 					const parentPageInsetsTop = frameParent.nativeViewProtected.safeAreaInsets.top;
-					const currentInsetsTop = this.view.safeAreaInsets.top;
-					const additionalInsetsTop = Math.max(parentPageInsetsTop - currentInsetsTop, 0);
-
 					const parentPageInsetsBottom = frameParent.nativeViewProtected.safeAreaInsets.bottom;
-					const currentInsetsBottom = this.view.safeAreaInsets.bottom;
+					let currentInsetsTop = this.view.safeAreaInsets.top;
+					let currentInsetsBottom = this.view.safeAreaInsets.bottom;
+
+					// Safe area insets include additional safe area insets too, so subtract old values
+					if (this.additionalSafeAreaInsets) {
+						currentInsetsTop -= this.additionalSafeAreaInsets.top;
+						currentInsetsBottom -= this.additionalSafeAreaInsets.bottom;
+					}
+
+					const additionalInsetsTop = Math.max(parentPageInsetsTop - currentInsetsTop, 0);
 					const additionalInsetsBottom = Math.max(parentPageInsetsBottom - currentInsetsBottom, 0);
 
 					if (additionalInsetsTop > 0 || additionalInsetsBottom > 0) {
@@ -293,6 +338,7 @@ class UIViewControllerImpl extends UIViewController {
 
 			IOSHelper.layoutView(this, owner);
 		}
+		this.finishRunningLayout();
 	}
 
 	// Mind implementation for other controllerss
@@ -310,6 +356,21 @@ class UIViewControllerImpl extends UIViewController {
 		}
 	}
 
+	// TODO: a11y
+	// public accessibilityPerformEscape() {
+	// 	const owner = this._owner.get();
+	// 	if (!owner) {
+	// 		return false;
+	// 	}
+	// 	console.log('page accessibilityPerformEscape');
+	// 	if (owner.onAccessibilityPerformEscape) {
+	// 		const result = owner.onAccessibilityPerformEscape();
+	// 		return result;
+	// 	} else {
+	// 		return false;
+	// 	}
+	// }
+
 	// @ts-ignore
 	public get preferredStatusBarStyle(): UIStatusBarStyle {
 		const owner = this._owner.get();
@@ -324,6 +385,7 @@ class UIViewControllerImpl extends UIViewController {
 export class Page extends PageBase {
 	nativeViewProtected: UIView;
 	viewController: UIViewControllerImpl;
+	onAccessibilityPerformEscape: () => boolean;
 
 	private _backgroundColor = majorVersion <= 12 && !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
 	private _ios: UIViewControllerImpl;
@@ -340,6 +402,12 @@ export class Page extends PageBase {
 
 	createNativeView() {
 		return this.viewController.view;
+	}
+
+	disposeNativeView() {
+		this.viewController = null;
+		this._ios = null;
+		super.disposeNativeView();
 	}
 
 	// @ts-ignore
@@ -372,7 +440,9 @@ export class Page extends PageBase {
 	updateWithWillAppear(animated: boolean) {
 		// this method is important because it allows plugins to react to modal page close
 		// for example allowing updating status bar background color
-		this.actionBar.update();
+		if (this.hasActionBar) {
+			this.actionBar.update();
+		}
 		this.updateStatusBar();
 	}
 
@@ -411,7 +481,7 @@ export class Page extends PageBase {
 		const height = layout.getMeasureSpecSize(heightMeasureSpec);
 		const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
-		if (this.frame && this.frame._getNavBarVisible(this)) {
+		if (this.hasActionBar && this.frame && this.frame._getNavBarVisible(this)) {
 			const { width, height } = this.actionBar._getActualSize;
 			const widthSpec = layout.makeMeasureSpec(width, layout.EXACTLY);
 			const heightSpec = layout.makeMeasureSpec(height, layout.EXACTLY);
@@ -430,8 +500,10 @@ export class Page extends PageBase {
 	}
 
 	public onLayout(left: number, top: number, right: number, bottom: number) {
-		const { width: actionBarWidth, height: actionBarHeight } = this.actionBar._getActualSize;
-		View.layoutChild(this, this.actionBar, 0, 0, actionBarWidth, actionBarHeight);
+		if (this.hasActionBar) {
+			const { width: actionBarWidth, height: actionBarHeight } = this.actionBar._getActualSize;
+			View.layoutChild(this, this.actionBar, 0, 0, actionBarWidth, actionBarHeight);
+		}
 
 		const insets = this.getSafeAreaInsets();
 
@@ -451,7 +523,7 @@ export class Page extends PageBase {
 
 	public _addViewToNativeVisualTree(child: View, atIndex: number): boolean {
 		// ActionBar is handled by the UINavigationController
-		if (child === this.actionBar) {
+		if (this.hasActionBar && child === this.actionBar) {
 			return true;
 		}
 
@@ -483,7 +555,7 @@ export class Page extends PageBase {
 
 	public _removeViewFromNativeVisualTree(child: View): void {
 		// ActionBar is handled by the UINavigationController
-		if (child === this.actionBar) {
+		if (this.hasActionBar && child === this.actionBar) {
 			return;
 		}
 
@@ -521,6 +593,44 @@ export class Page extends PageBase {
 				navigationBar.barStyle = value;
 			}
 		}
+	}
+
+	public accessibilityScreenChanged(refocus = false): void {
+		if (!isAccessibilityServiceEnabled()) {
+			return;
+		}
+
+		if (refocus) {
+			const lastFocusedView = getLastFocusedViewOnPage(this);
+			if (lastFocusedView) {
+				const uiView = lastFocusedView.nativeViewProtected;
+				if (uiView) {
+					UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, uiView);
+
+					return;
+				}
+			}
+		}
+
+		if (this.actionBarHidden) {
+			UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, this.nativeViewProtected);
+
+			return;
+		}
+
+		if (this.accessibilityLabel) {
+			UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, this.nativeViewProtected);
+
+			return;
+		}
+
+		if (this.actionBar.accessibilityLabel || this.actionBar.title) {
+			UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, this.actionBar.nativeView);
+
+			return;
+		}
+
+		UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, this.nativeViewProtected);
 	}
 }
 

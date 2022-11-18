@@ -3,8 +3,6 @@ import { ViewBase } from '../core/view-base';
 import { View } from '../core/view';
 import { unsetValue, _evaluateCssVariableExpression, _evaluateCssCalcExpression, isCssVariable, isCssVariableExpression, isCssCalcExpression } from '../core/properties';
 import { SyntaxTree, Keyframes as KeyframesDefinition, parse as parseCss, Node as CssNode } from '../../css';
-import { CSS3Parser, CSSNativeScript } from '../../css/parser';
-import { cssTreeParse } from '../../css/css-tree-parser';
 
 import { RuleSet, SelectorsMap, SelectorCore, SelectorsMatch, ChangeMap, fromAstNodes, Node } from './css-selector';
 import { Trace } from '../../trace';
@@ -33,7 +31,6 @@ function ensureCssAnimationParserModule() {
 
 let parser: 'rework' | 'nativescript' | 'css-tree' = 'css-tree';
 try {
-	// eslint-disable-next-line @typescript-eslint/no-var-requires
 	const appConfig = require('~/package.json');
 	if (appConfig) {
 		if (appConfig.cssParser === 'rework') {
@@ -77,6 +74,8 @@ export function mergeCssSelectors(): void {
 let applicationCssSelectors: RuleSet[] = [];
 let applicationCssSelectorVersion = 0;
 let applicationSelectors: RuleSet[] = [];
+const tagToScopeTag: Map<string | number, string> = new Map();
+let currentScopeTag: string = null;
 const applicationAdditionalSelectors: RuleSet[] = [];
 const applicationKeyframes: any = {};
 const animationsSymbol = Symbol('animations');
@@ -93,13 +92,19 @@ class CSSSource {
 		if (typeof cssOrAst === 'string') {
 			// raw-loader
 			return CSSSource.fromSource(cssOrAst, keyframes, fileName);
-		} else if (typeof cssOrAst === 'object' && cssOrAst.type === 'stylesheet' && cssOrAst.stylesheet && cssOrAst.stylesheet.rules) {
-			// css-loader
-			return CSSSource.fromAST(cssOrAst, keyframes, fileName);
-		} else {
-			// css2json-loader
-			return CSSSource.fromSource(cssOrAst.toString(), keyframes, fileName);
+		} else if (typeof cssOrAst === 'object') {
+			if (cssOrAst.default) {
+				cssOrAst = cssOrAst.default;
+			}
+
+			if (cssOrAst.type === 'stylesheet' && cssOrAst.stylesheet && cssOrAst.stylesheet.rules) {
+				// css-loader
+				return CSSSource.fromAST(cssOrAst, keyframes, fileName);
+			}
 		}
+
+		// css2json-loader
+		return CSSSource.fromSource(cssOrAst.toString(), keyframes, fileName);
 	}
 
 	public static fromURI(uri: string, keyframes: KeyframesMap): CSSSource {
@@ -114,7 +119,9 @@ class CSSSource {
 				return CSSSource.fromDetect(cssOrAst, keyframes, resolvedModuleName);
 			}
 		} catch (e) {
-			Trace.write(`Could not load CSS from ${uri}: ${e}`, Trace.categories.Error, Trace.messageType.error);
+			if (Trace.isEnabled()) {
+				Trace.write(`Could not load CSS from ${uri}: ${e}`, Trace.categories.Error, Trace.messageType.warn);
+			}
 		}
 
 		return CSSSource.fromFile(appRelativeUri, keyframes);
@@ -205,7 +212,9 @@ class CSSSource {
 				this._selectors = [];
 			}
 		} catch (e) {
-			Trace.write('Css styling failed: ' + e, Trace.categories.Error, Trace.messageType.error);
+			if (Trace.isEnabled()) {
+				Trace.write('Css styling failed: ' + e, Trace.categories.Style, Trace.messageType.error);
+			}
 			this._selectors = [];
 		}
 	}
@@ -213,23 +222,19 @@ class CSSSource {
 	@profile
 	private parseCSSAst() {
 		if (this._source) {
-			switch (parser) {
-				case 'css-tree':
-					this._ast = cssTreeParse(this._source, this._file);
-
-					return;
-				case 'nativescript': {
-					const cssparser = new CSS3Parser(this._source);
-					const stylesheet = cssparser.parseAStylesheet();
-					const cssNS = new CSSNativeScript();
-					this._ast = cssNS.parseStylesheet(stylesheet);
-
-					return;
-				}
-				case 'rework':
-					this._ast = parseCss(this._source, { source: this._file });
-
-					return;
+			if (__CSS_PARSER__ === 'css-tree') {
+				const cssTreeParse = require('../../css/css-tree-parser').cssTreeParse;
+				this._ast = cssTreeParse(this._source, this._file);
+			} else if (__CSS_PARSER__ === 'nativescript') {
+				const CSS3Parser = require('../../css/CSS3Parser').CSS3Parser;
+				const CSSNativeScript = require('../../css/CSSNativeScript').CSSNativeScript;
+				const cssparser = new CSS3Parser(this._source);
+				const stylesheet = cssparser.parseAStylesheet();
+				const cssNS = new CSSNativeScript();
+				this._ast = cssNS.parseStylesheet(stylesheet);
+			} else if (__CSS_PARSER__ === 'rework') {
+				const parseCss = require('../../css').parse;
+				this._ast = parseCss(this._source, { source: this._file });
 			}
 		}
 	}
@@ -309,12 +314,17 @@ export function removeTaggedAdditionalCSS(tag: string | number): boolean {
 
 export function addTaggedAdditionalCSS(cssText: string, tag?: string | number): boolean {
 	const parsed: RuleSet[] = CSSSource.fromDetect(cssText, applicationKeyframes, undefined).selectors;
+	const tagScope = currentScopeTag || (tag && tagToScopeTag.has(tag) && tagToScopeTag.get(tag)) || null;
+	if (tagScope && tag) {
+		tagToScopeTag.set(tag, tagScope);
+	}
 	let changed = false;
 	if (parsed && parsed.length) {
 		changed = true;
-		if (tag != null) {
+		if (tag != null || tagScope != null) {
 			for (let i = 0; i < parsed.length; i++) {
 				parsed[i].tag = tag;
+				parsed[i].scopedTag = tagScope;
 			}
 		}
 		applicationAdditionalSelectors.push(...parsed);
@@ -386,7 +396,7 @@ if (application.hasLaunched()) {
 
 export class CssState {
 	static emptyChangeMap: Readonly<ChangeMap<ViewBase>> = Object.freeze(new Map());
-	static emptyPropertyBag: Readonly<Record<string, unknown>> = Object.freeze({});
+	static emptyPropertyBag: Record<string, unknown> = {};
 	static emptyAnimationArray: ReadonlyArray<kam.KeyframeAnimation> = Object.freeze([]);
 	static emptyMatch: Readonly<SelectorsMatch<ViewBase>> = {
 		selectors: [],
@@ -398,7 +408,7 @@ export class CssState {
 
 	_onDynamicStateChangeHandler: () => void;
 	_appliedChangeMap: Readonly<ChangeMap<ViewBase>>;
-	_appliedPropertyValues: Readonly<Record<string, unknown>>;
+	private _appliedPropertyValues: Record<string, unknown> = CssState.emptyPropertyBag;
 	_appliedAnimations: ReadonlyArray<kam.KeyframeAnimation>;
 	_appliedSelectorsVersion: number;
 
@@ -447,6 +457,7 @@ export class CssState {
 
 	public onUnloaded(): void {
 		this.unsubscribeFromDynamicUpdates();
+		this.stopKeyframeAnimations();
 	}
 
 	@profile
@@ -473,7 +484,10 @@ export class CssState {
 
 		const matchingSelectors = this._match.selectors.filter((sel) => (sel.dynamic ? sel.match(view) : true));
 		if (!matchingSelectors || matchingSelectors.length === 0) {
-			return;
+			// Ideally we should return here if there are no matching selectors, however
+			// if there are property removals, returning here would not remove them
+			// this is seen in STYLE test in automated.
+			// return;
 		}
 		view._batchUpdate(() => {
 			this.stopKeyframeAnimations();
@@ -556,59 +570,63 @@ export class CssState {
 		matchingSelectors.forEach((selector) => selector.ruleset.declarations.forEach((declaration) => (newPropertyValues[declaration.property] = declaration.value)));
 
 		const oldProperties = this._appliedPropertyValues;
-
-		let isCssExpressionInUse = false;
-
 		// Update values for the scope's css-variables
 		view.style.resetScopedCssVariables();
 
+		const valuesToApply = {};
+		const cssExpsProperties = {};
+
 		for (const property in newPropertyValues) {
 			const value = newPropertyValues[property];
-			if (isCssVariable(property)) {
-				view.style.setScopedCssVariable(property, value);
+			const isCssExp = isCssVariableExpression(value) || isCssCalcExpression(value);
 
-				delete newPropertyValues[property];
+			if (isCssExp) {
+				// we handle css exp separately because css vars must be evaluated first
+				cssExpsProperties[property] = value;
 				continue;
 			}
-
-			isCssExpressionInUse = isCssExpressionInUse || isCssVariableExpression(value) || isCssCalcExpression(value);
-		}
-
-		if (isCssExpressionInUse) {
-			// Evalute css-expressions to get the latest values.
-			for (const property in newPropertyValues) {
-				const value = evaluateCssExpressions(view, property, newPropertyValues[property]);
-				if (value === unsetValue) {
-					delete newPropertyValues[property];
-					continue;
-				}
-
-				newPropertyValues[property] = value;
-			}
-		}
-
-		// Property values are fully updated, freeze the object to be used for next update.
-		Object.freeze(newPropertyValues);
-
-		// Unset removed values
-		for (const property in oldProperties) {
-			if (!(property in newPropertyValues)) {
-				if (property in view.style) {
-					view.style[`css:${property}`] = unsetValue;
-				} else {
-					// TRICKY: How do we unset local value?
-				}
-			}
-		}
-
-		// Set new values to the style
-		for (const property in newPropertyValues) {
-			if (oldProperties && property in oldProperties && oldProperties[property] === newPropertyValues[property]) {
+			delete oldProperties[property];
+			if (property in oldProperties && oldProperties[property] === value) {
 				// Skip unchanged values
 				continue;
 			}
+			if (isCssVariable(property)) {
+				view.style.setScopedCssVariable(property, value);
+				delete newPropertyValues[property];
+				continue;
+			}
+			valuesToApply[property] = value;
+		}
+		//we need to parse CSS vars first before evaluating css expressions
+		for (const property in cssExpsProperties) {
+			delete oldProperties[property];
+			const value = evaluateCssExpressions(view, property, cssExpsProperties[property]);
+			if (property in oldProperties && oldProperties[property] === value) {
+				// Skip unchanged values
+				continue;
+			}
+			if (value === unsetValue) {
+				delete newPropertyValues[property];
+			}
+			if (isCssVariable(property)) {
+				view.style.setScopedCssVariable(property, value);
+				delete newPropertyValues[property];
+			}
 
-			const value = newPropertyValues[property];
+			valuesToApply[property] = value;
+		}
+
+		// Unset removed values
+		for (const property in oldProperties) {
+			if (property in view.style) {
+				view.style[`css:${property}`] = unsetValue;
+			} else {
+				// TRICKY: How do we unset local value?
+			}
+		}
+		// Set new values to the style
+		for (const property in valuesToApply) {
+			const value = valuesToApply[property];
 			try {
 				if (property in view.style) {
 					view.style[`css:${property}`] = value;
@@ -679,7 +697,6 @@ export class CssState {
 	}
 }
 CssState.prototype._appliedChangeMap = CssState.emptyChangeMap;
-CssState.prototype._appliedPropertyValues = CssState.emptyPropertyBag;
 CssState.prototype._appliedAnimations = CssState.emptyAnimationArray;
 CssState.prototype._matchInvalid = true;
 
@@ -692,6 +709,7 @@ export class StyleScope {
 	private _localCssSelectorsAppliedVersion = 0;
 	private _applicationCssSelectorsAppliedVersion = 0;
 	private _keyframes = new Map<string, Keyframes>();
+	private _cssFiles: string[] = [];
 
 	get css(): string {
 		return this._css;
@@ -713,8 +731,11 @@ export class StyleScope {
 		if (!cssFileName) {
 			return;
 		}
+		this._cssFiles.push(cssFileName);
+		currentScopeTag = cssFileName;
 
 		const cssSelectors = CSSSource.fromURI(cssFileName, this._keyframes);
+		currentScopeTag = null;
 		this._css = cssSelectors.source;
 		this._localCssSelectors = cssSelectors.selectors;
 		this._localCssSelectorVersion++;
@@ -736,8 +757,13 @@ export class StyleScope {
 		if (!cssString && !cssFileName) {
 			return;
 		}
+		if (cssFileName) {
+			this._cssFiles.push(cssFileName);
+			currentScopeTag = cssFileName;
+		}
 
 		const parsedCssSelectors = cssString ? CSSSource.fromSource(cssString, this._keyframes, cssFileName) : CSSSource.fromURI(cssFileName, this._keyframes);
+		currentScopeTag = null;
 		this._css = this._css + parsedCssSelectors.source;
 		this._localCssSelectors.push(...parsedCssSelectors.selectors);
 		this._localCssSelectorVersion++;
@@ -781,7 +807,7 @@ export class StyleScope {
 	@profile
 	private _createSelectors() {
 		const toMerge: RuleSet[][] = [];
-		toMerge.push(applicationCssSelectors);
+		toMerge.push(applicationCssSelectors.filter((v) => !v.scopedTag || this._cssFiles.indexOf(v.scopedTag) >= 0));
 		this._applicationCssSelectorsAppliedVersion = applicationCssSelectorVersion;
 		toMerge.push(this._localCssSelectors);
 		this._localCssSelectorsAppliedVersion = this._localCssSelectorVersion;

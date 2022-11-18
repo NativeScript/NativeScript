@@ -48,7 +48,7 @@ export class TimePicker extends TimePickerBase {
 
 	disposeNativeView() {
 		this._changeHandler = null;
-		super.initNativeView();
+		super.disposeNativeView();
 	}
 
 	// @ts-ignore

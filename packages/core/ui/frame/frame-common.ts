@@ -10,6 +10,7 @@ import { getAncestor } from '../core/view-base';
 import { Builder } from '../builder';
 import { sanitizeModuleName } from '../builder/module-name-sanitizer';
 import { profile } from '../../profiling';
+import { FRAME_SYMBOL } from './frame-helpers';
 
 export { NavigationType } from './frame-interfaces';
 export type { AndroidActivityCallbacks, AndroidFragmentCallbacks, AndroidFrame, BackstackEntry, NavigationContext, NavigationEntry, NavigationTransition, TransitionState, ViewEntry, iOSFrame } from './frame-interfaces';
@@ -288,7 +289,6 @@ export class FrameBase extends CustomLayoutView {
 	}
 
 	private isNestedWithin(parentFrameCandidate: FrameBase): boolean {
-		// eslint-disable-next-line @typescript-eslint/no-this-alias
 		let frameAncestor: FrameBase = this;
 		while (frameAncestor) {
 			frameAncestor = <FrameBase>getAncestor(frameAncestor, FrameBase);
@@ -427,8 +427,8 @@ export class FrameBase extends CustomLayoutView {
 			eventName: Page.navigatingToEvent,
 			object: this,
 			isBack,
-			entry: backstackEntry.entry,
-			fromEntry: this.currentEntry,
+			entry: backstackEntry,
+			fromEntry: this._currentEntry,
 		});
 	}
 
@@ -616,7 +616,7 @@ export class FrameBase extends CustomLayoutView {
 
 		// Fallback
 		if (!context) {
-			return this.legacyLivesync();
+			return this._onLivesyncWithoutContext();
 		}
 
 		return false;
@@ -631,7 +631,14 @@ export class FrameBase extends CustomLayoutView {
 		if (this.currentPage && viewMatchesModuleContext(this.currentPage, context, ['markup', 'script'])) {
 			Trace.write(`Change Handled: Replacing page ${context.path}`, Trace.categories.Livesync);
 
-			this.replacePage(context.path);
+			// Replace current page with a default fade transition
+			this.replacePage({
+				moduleName: context.path,
+				transition: {
+					name: 'fade',
+					duration: 100,
+				},
+			});
 
 			return true;
 		}
@@ -639,12 +646,12 @@ export class FrameBase extends CustomLayoutView {
 		return false;
 	}
 
-	private legacyLivesync(): boolean {
+	private _onLivesyncWithoutContext(): boolean {
 		// Reset activity/window content when:
 		// + Changes are not handled on View
 		// + There is no ModuleContext
 		if (Trace.isEnabled()) {
-			Trace.write(`${this}._onLivesync()`, Trace.categories.Livesync);
+			Trace.write(`${this}._onLivesyncWithoutContext()`, Trace.categories.Livesync);
 		}
 
 		if (!this._currentEntry || !this._currentEntry.entry) {
@@ -652,37 +659,42 @@ export class FrameBase extends CustomLayoutView {
 		}
 
 		const currentEntry = this._currentEntry.entry;
-		const newEntry: NavigationEntry = {
-			animated: false,
-			clearHistory: true,
-			context: currentEntry.context,
-			create: currentEntry.create,
-			moduleName: currentEntry.moduleName,
-			backstackVisible: currentEntry.backstackVisible,
-		};
 
 		// If create returns the same page instance we can't recreate it.
 		// Instead of navigation set activity content.
 		// This could happen if current page was set in XML as a Page instance.
-		if (newEntry.create) {
-			const page = newEntry.create();
+		if (currentEntry.create) {
+			const page = currentEntry.create();
 			if (page === this.currentPage) {
 				return false;
 			}
 		}
 
-		this.navigate(newEntry);
+		// Replace current page with a default fade transition
+		this.replacePage({
+			moduleName: currentEntry.moduleName,
+			create: currentEntry.create,
+			transition: {
+				name: 'fade',
+				duration: 100,
+			},
+		});
 
 		return true;
 	}
 
-	protected replacePage(pagePath: string): void {
+	public replacePage(entry: string | NavigationEntry): void {
 		const currentBackstackEntry = this._currentEntry;
-		const contextModuleName = sanitizeModuleName(pagePath);
 
-		const newPage = <Page>Builder.createViewFromEntry({ moduleName: contextModuleName });
+		if (typeof entry === 'string') {
+			const contextModuleName = sanitizeModuleName(entry);
+			entry = { moduleName: contextModuleName };
+		}
+
+		const newPage = Builder.createViewFromEntry(entry) as Page;
+
 		const newBackstackEntry: BackstackEntry = {
-			entry: currentBackstackEntry.entry,
+			entry: Object.assign({}, currentBackstackEntry.entry, entry),
 			resolvedPage: newPage,
 			navDepth: currentBackstackEntry.navDepth,
 			fragmentTag: currentBackstackEntry.fragmentTag,
@@ -699,6 +711,9 @@ export class FrameBase extends CustomLayoutView {
 		this._processNextNavigationEntry();
 	}
 }
+
+// Mark as a Frame with an unique Symbol
+FrameBase.prototype[FRAME_SYMBOL] = true;
 
 export function getFrameById(id: string): FrameBase {
 	console.log('getFrameById() is deprecated. Use Frame.getFrameById() instead.');

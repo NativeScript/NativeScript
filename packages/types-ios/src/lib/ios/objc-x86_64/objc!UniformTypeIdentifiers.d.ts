@@ -53,6 +53,10 @@ declare class UTType extends NSObject implements NSCopying, NSSecureCoding {
 
 	readonly version: number;
 
+	static readonly SHCustomCatalogContentType: UTType;
+
+	static readonly SHSignatureContentType: UTType;
+
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
@@ -205,6 +209,8 @@ declare var UTTypeMPEG2Video: UTType;
 declare var UTTypeMPEG4Audio: UTType;
 
 declare var UTTypeMPEG4Movie: UTType;
+
+declare var UTTypeMakefile: UTType;
 
 declare var UTTypeMessage: UTType;
 

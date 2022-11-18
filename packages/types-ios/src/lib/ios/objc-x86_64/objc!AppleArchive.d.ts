@@ -56,7 +56,9 @@ declare const enum AACompressionAlgorithms {
 
 	A_COMPRESSION_ALGORITHM_LZMA = 774,
 
-	A_COMPRESSION_ALGORITHM_LZFSE = 2049
+	A_COMPRESSION_ALGORITHM_LZFSE = 2049,
+
+	A_COMPRESSION_ALGORITHM_LZBITMAP = 1794
 }
 
 declare function AACompressionOutputStreamOpen(compressed_stream: interop.Pointer | interop.Reference<any>, compression_algorithm: number, block_size: number, flags: number, n_threads: number): interop.Pointer | interop.Reference<any>;
@@ -274,6 +276,8 @@ declare const enum AAFlags {
 
 	A_FLAG_EXCLUDE_METADATA_ENTRIES = 512,
 
+	A_FLAG_PROCESS_RANDOM_ACCESS_OUTPUT = 1024,
+
 	A_FLAG_VERBOSITY_0 = 0,
 
 	A_FLAG_VERBOSITY_1 = 4611686018427387904,
@@ -334,6 +338,8 @@ declare function AAHeaderRemoveField(header: interop.Pointer | interop.Reference
 
 declare function AAPathListCreateWithDirectoryContents(dir: string | interop.Pointer | interop.Reference<any>, path: string | interop.Pointer | interop.Reference<any>, msg_data: interop.Pointer | interop.Reference<any>, msg_proc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: string, p4: interop.Pointer | interop.Reference<any>) => number>, flags: number, n_threads: number): interop.Pointer | interop.Reference<any>;
 
+declare function AAPathListCreateWithPath(dir: string | interop.Pointer | interop.Reference<any>, path: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+
 declare function AAPathListDestroy(path_list: interop.Pointer | interop.Reference<any>): void;
 
 declare function AAPathListNodeFirst(path_list: interop.Pointer | interop.Reference<any>): number;
@@ -342,6 +348,154 @@ declare function AAPathListNodeGetPath(path_list: interop.Pointer | interop.Refe
 
 declare function AAPathListNodeNext(path_list: interop.Pointer | interop.Reference<any>, node: number): number;
 
+declare function AARandomAccessByteStreamProcess(istream: interop.Pointer | interop.Reference<any>, ostream: interop.Pointer | interop.Reference<any>, max_offset: number, block_size: number, flags: number, n_threads: number): number;
+
 declare function AASharedBufferPipeOpen(ostream: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, istream: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, buffer_capacity: number): number;
 
 declare function AATempFileStreamOpen(): interop.Pointer | interop.Reference<any>;
+
+declare function AEAAuthDataAppendEntry(auth_data: interop.Pointer | interop.Reference<any>, key: string | interop.Pointer | interop.Reference<any>, data: string | interop.Pointer | interop.Reference<any>, data_size: number): number;
+
+declare function AEAAuthDataClear(auth_data: interop.Pointer | interop.Reference<any>): number;
+
+declare function AEAAuthDataCreate(): interop.Pointer | interop.Reference<any>;
+
+declare function AEAAuthDataCreateWithContext(context: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+
+declare function AEAAuthDataDestroy(auth_data: interop.Pointer | interop.Reference<any>): void;
+
+declare function AEAAuthDataGetEncodedData(auth_data: interop.Pointer | interop.Reference<any>): string;
+
+declare function AEAAuthDataGetEncodedSize(auth_data: interop.Pointer | interop.Reference<any>): number;
+
+declare function AEAAuthDataGetEntry(auth_data: interop.Pointer | interop.Reference<any>, i: number, key_capacity: number, key: string | interop.Pointer | interop.Reference<any>, key_length: interop.Pointer | interop.Reference<number>, data_capacity: number, data: string | interop.Pointer | interop.Reference<any>, data_size: interop.Pointer | interop.Reference<number>): number;
+
+declare function AEAAuthDataGetEntryCount(auth_data: interop.Pointer | interop.Reference<any>): number;
+
+declare function AEAAuthDataRemoveEntry(auth_data: interop.Pointer | interop.Reference<any>, i: number): number;
+
+declare function AEAAuthDataSetEntry(auth_data: interop.Pointer | interop.Reference<any>, i: number, key: string | interop.Pointer | interop.Reference<any>, data: string | interop.Pointer | interop.Reference<any>, data_size: number): number;
+
+declare function AEAContextCreateWithEncryptedStream(encrypted_stream: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+
+declare function AEAContextCreateWithProfile(profile: number): interop.Pointer | interop.Reference<any>;
+
+declare function AEAContextDecryptAttributes(context: interop.Pointer | interop.Reference<any>): number;
+
+declare function AEAContextDestroy(context: interop.Pointer | interop.Reference<any>): void;
+
+declare const enum AEAContextFieldRepresentations {
+
+	A_CONTEXT_FIELD_REPRESENTATION_RAW = 0,
+
+	A_CONTEXT_FIELD_REPRESENTATION_X963 = 1,
+
+	A_CONTEXT_FIELD_REPRESENTATION_GENERATE = 2
+}
+
+declare const enum AEAContextFieldValues {
+
+	A_CONTEXT_CIPHERSUITE_HKDF_SHA256_HMAC = 0,
+
+	A_CONTEXT_CIPHERSUITE_HKDF_SHA256_AESCTR_HMAC = 1,
+
+	A_CONTEXT_SIGNATURE_NONE = 0,
+
+	A_CONTEXT_SIGNATURE_ECDSA_P256 = 1,
+
+	A_CONTEXT_ENCRYPTION_NONE = 0,
+
+	A_CONTEXT_ENCRYPTION_SYMMETRIC = 1,
+
+	A_CONTEXT_ENCRYPTION_ECDHE_P256 = 2,
+
+	A_CONTEXT_ENCRYPTION_SCRYPT = 3,
+
+	A_CONTEXT_CHECKSUM_NONE = 0,
+
+	A_CONTEXT_CHECKSUM_MURMURHASH64 = 1,
+
+	A_CONTEXT_CHECKSUM_SHA256 = 2,
+
+	A_CONTEXT_PADDING_NONE = 0,
+
+	A_CONTEXT_PADDING_ADAPTIVE = 1,
+
+	A_CONTEXT_PADDING_MIN_SIZE = 16
+}
+
+declare const enum AEAContextFields {
+
+	A_CONTEXT_FIELD_PROFILE = 0,
+
+	A_CONTEXT_FIELD_PADDING_SIZE = 1,
+
+	A_CONTEXT_FIELD_CHECKSUM_MODE = 2,
+
+	A_CONTEXT_FIELD_COMPRESSION_ALGORITHM = 3,
+
+	A_CONTEXT_FIELD_COMPRESSION_BLOCK_SIZE = 4,
+
+	A_CONTEXT_FIELD_AUTH_DATA = 5,
+
+	A_CONTEXT_FIELD_MAIN_KEY = 6,
+
+	A_CONTEXT_FIELD_SIGNING_PUBLIC_KEY = 7,
+
+	A_CONTEXT_FIELD_SIGNING_PRIVATE_KEY = 8,
+
+	A_CONTEXT_FIELD_SYMMETRIC_KEY = 9,
+
+	A_CONTEXT_FIELD_RECIPIENT_PUBLIC_KEY = 10,
+
+	A_CONTEXT_FIELD_RECIPIENT_PRIVATE_KEY = 11,
+
+	A_CONTEXT_FIELD_SIGNATURE_ENCRYPTION_KEY = 12,
+
+	A_CONTEXT_FIELD_RAW_SIZE = 13,
+
+	A_CONTEXT_FIELD_CONTAINER_SIZE = 14,
+
+	A_CONTEXT_FIELD_BLOCKS_PER_CLUSTER = 17,
+
+	A_CONTEXT_FIELD_ARCHIVE_IDENTIFIER = 18,
+
+	A_CONTEXT_FIELD_PASSWORD = 19
+}
+
+declare function AEAContextGenerateFieldBlob(context: interop.Pointer | interop.Reference<any>, field: number): number;
+
+declare function AEAContextGetFieldBlob(context: interop.Pointer | interop.Reference<any>, field: number, representation: number, buf_capacity: number, buf: string | interop.Pointer | interop.Reference<any>, buf_size: interop.Pointer | interop.Reference<number>): number;
+
+declare function AEAContextGetFieldUInt(context: interop.Pointer | interop.Reference<any>, field: number): number;
+
+declare function AEAContextSetFieldBlob(context: interop.Pointer | interop.Reference<any>, field: number, representation: number, buf: string | interop.Pointer | interop.Reference<any>, buf_size: number): number;
+
+declare function AEAContextSetFieldUInt(context: interop.Pointer | interop.Reference<any>, field: number, value: number): number;
+
+declare function AEADecryptionInputStreamOpen(encrypted_stream: interop.Pointer | interop.Reference<any>, context: interop.Pointer | interop.Reference<any>, flags: number, n_threads: number): interop.Pointer | interop.Reference<any>;
+
+declare function AEADecryptionRandomAccessInputStreamOpen(encrypted_stream: interop.Pointer | interop.Reference<any>, context: interop.Pointer | interop.Reference<any>, alloc_limit: number, flags: number, n_threads: number): interop.Pointer | interop.Reference<any>;
+
+declare function AEAEncryptionOutputStreamCloseAndUpdateContext(stream: interop.Pointer | interop.Reference<any>, context: interop.Pointer | interop.Reference<any>): number;
+
+declare function AEAEncryptionOutputStreamOpen(encrypted_stream: interop.Pointer | interop.Reference<any>, context: interop.Pointer | interop.Reference<any>, flags: number, n_threads: number): interop.Pointer | interop.Reference<any>;
+
+declare function AEAEncryptionOutputStreamOpenExisting(encrypted_stream: interop.Pointer | interop.Reference<any>, context: interop.Pointer | interop.Reference<any>, flags: number, n_threads: number): interop.Pointer | interop.Reference<any>;
+
+declare const enum AEAProfiles {
+
+	A_PROFILE__HKDF_SHA256_HMAC__NONE__ECDSA_P256 = 0,
+
+	A_PROFILE__HKDF_SHA256_AESCTR_HMAC__SYMMETRIC__NONE = 1,
+
+	A_PROFILE__HKDF_SHA256_AESCTR_HMAC__SYMMETRIC__ECDSA_P256 = 2,
+
+	A_PROFILE__HKDF_SHA256_AESCTR_HMAC__ECDHE_P256__NONE = 3,
+
+	A_PROFILE__HKDF_SHA256_AESCTR_HMAC__ECDHE_P256__ECDSA_P256 = 4,
+
+	A_PROFILE__HKDF_SHA256_AESCTR_HMAC__SCRYPT__NONE = 5
+}
+
+declare function AEAStreamSign(encrypted_stream: interop.Pointer | interop.Reference<any>, context: interop.Pointer | interop.Reference<any>): number;

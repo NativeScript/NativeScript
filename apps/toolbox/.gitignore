@@ -40,3 +40,4 @@ app/app.scss
 
 package-lock.json
 !tools/**
+!webpack.config.js

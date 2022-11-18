@@ -1,5 +1,4 @@
-import * as tslibType from 'tslib';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+import type * as tslibType from 'tslib';
 const tslib: typeof tslibType = require('tslib');
 import { Observable } from '../data/observable';
 import { trace as profilingTrace, time, uptime, level as profilingLevel } from '../profiling';
@@ -133,7 +132,7 @@ export function initGlobal() {
 		// Bind the tslib helpers to global scope.
 		// This is needed when we don't use importHelpers, which
 		// breaks extending native-classes
-		for (const fnName of Object.keys(tslib)) {
+		for (const fnName of Object.getOwnPropertyNames(tslib)) {
 			if (typeof tslib[fnName] !== 'function') {
 				continue;
 			}
@@ -319,6 +318,9 @@ export function initGlobal() {
 
 		global.registerModule('fetch', () => require('../fetch'));
 		installPolyfills('fetch', ['fetch', 'Headers', 'Request', 'Response']);
+
+		// global.registerModule('abortcontroller', () => require('../abortcontroller'));
+		// installPolyfills('abortcontroller', ['AbortController', 'AbortSignal']);
 
 		// Custom decorators
 

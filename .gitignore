@@ -6,12 +6,14 @@
 /out-tsc
 
 # dependencies
-node_modules
-package-lock.json
-yarn-lock.json
+**/node_modules
+**/package-lock.json
+**/yarn.lock
+**/pnpm-lock.yaml
+.npmrc
 
 # IDEs and editors
-/.idea
+.idea
 .project
 .classpath
 .c9/
@@ -40,6 +42,7 @@ apps/**/*/*.map
 apps/**/*/platforms
 apps/**/*/webpack.*.js
 *.tgz
+.npmrc
 
 # System Files
 .DS_Store

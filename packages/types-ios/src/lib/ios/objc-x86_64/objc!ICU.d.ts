@@ -634,7 +634,31 @@ declare const enum UBlockCode {
 
 	LOCK_YEZIDI = 308,
 
-	LOCK_COUNT = 309,
+	LOCK_ARABIC_EXTENDED_B = 309,
+
+	LOCK_CYPRO_MINOAN = 310,
+
+	LOCK_ETHIOPIC_EXTENDED_B = 311,
+
+	LOCK_KANA_EXTENDED_B = 312,
+
+	LOCK_LATIN_EXTENDED_F = 313,
+
+	LOCK_LATIN_EXTENDED_G = 314,
+
+	LOCK_OLD_UYGHUR = 315,
+
+	LOCK_TANGSA = 316,
+
+	LOCK_TOTO = 317,
+
+	LOCK_UNIFIED_CANADIAN_ABORIGINAL_SYLLABICS_EXTENDED_A = 318,
+
+	LOCK_VITHKUQI = 319,
+
+	LOCK_ZNAMENNY_MUSICAL_NOTATION = 320,
+
+	LOCK_COUNT = 321,
 
 	LOCK_INVALID_CODE = -1
 }
@@ -956,7 +980,9 @@ declare const enum UErrorCode {
 
 	U_NO_WRITE_PERMISSION = 30,
 
-	U_STANDARD_ERROR_LIMIT = 31,
+	U_INPUT_TOO_LONG_ERROR = 31,
+
+	U_STANDARD_ERROR_LIMIT = 32,
 
 	U_BAD_VARIABLE_DEFINITION = 65536,
 
@@ -1254,6 +1280,62 @@ declare const enum UHangulSyllableType {
 
 	U_HST_COUNT = 6
 }
+
+interface UIDNAInfo {
+	size: number;
+	isTransitionalDifferent: number;
+	reservedB3: number;
+	errors: number;
+	reservedI2: number;
+	reservedI3: number;
+}
+declare var UIDNAInfo: interop.StructType<UIDNAInfo>;
+
+declare const UIDNA_ALLOW_UNASSIGNED: number;
+
+declare const UIDNA_CHECK_BIDI: number;
+
+declare const UIDNA_CHECK_CONTEXTJ: number;
+
+declare const UIDNA_CHECK_CONTEXTO: number;
+
+declare const UIDNA_DEFAULT: number;
+
+declare const UIDNA_ERROR_BIDI: number;
+
+declare const UIDNA_ERROR_CONTEXTJ: number;
+
+declare const UIDNA_ERROR_CONTEXTO_DIGITS: number;
+
+declare const UIDNA_ERROR_CONTEXTO_PUNCTUATION: number;
+
+declare const UIDNA_ERROR_DISALLOWED: number;
+
+declare const UIDNA_ERROR_DOMAIN_NAME_TOO_LONG: number;
+
+declare const UIDNA_ERROR_EMPTY_LABEL: number;
+
+declare const UIDNA_ERROR_HYPHEN_3_4: number;
+
+declare const UIDNA_ERROR_INVALID_ACE_LABEL: number;
+
+declare const UIDNA_ERROR_LABEL_HAS_DOT: number;
+
+declare const UIDNA_ERROR_LABEL_TOO_LONG: number;
+
+declare const UIDNA_ERROR_LEADING_COMBINING_MARK: number;
+
+declare const UIDNA_ERROR_LEADING_HYPHEN: number;
+
+declare const UIDNA_ERROR_PUNYCODE: number;
+
+declare const UIDNA_ERROR_TRAILING_HYPHEN: number;
+
+declare const UIDNA_NONTRANSITIONAL_TO_ASCII: number;
+
+declare const UIDNA_NONTRANSITIONAL_TO_UNICODE: number;
+
+declare const UIDNA_USE_STD3_RULES: number;
 
 declare const UITER_UNKNOWN_INDEX: number;
 
@@ -1575,7 +1657,11 @@ declare const enum UJoiningGroup {
 
 	U_JG_HANIFI_ROHINGYA_PA = 101,
 
-	U_JG_COUNT = 102
+	U_JG_THIN_YEH = 102,
+
+	U_JG_VERTICAL_TAIL = 103,
+
+	U_JG_COUNT = 104
 }
 
 declare const enum UJoiningType {
@@ -1843,7 +1929,21 @@ declare const enum UProperty {
 
 	CHAR_EXTENDED_PICTOGRAPHIC = 64,
 
-	CHAR_BINARY_LIMIT = 65,
+	CHAR_BASIC_EMOJI = 65,
+
+	CHAR_EMOJI_KEYCAP_SEQUENCE = 66,
+
+	CHAR_RGI_EMOJI_MODIFIER_SEQUENCE = 67,
+
+	CHAR_RGI_EMOJI_FLAG_SEQUENCE = 68,
+
+	CHAR_RGI_EMOJI_TAG_SEQUENCE = 69,
+
+	CHAR_RGI_EMOJI_ZWJ_SEQUENCE = 70,
+
+	CHAR_RGI_EMOJI = 71,
+
+	CHAR_BINARY_LIMIT = 72,
 
 	CHAR_BIDI_CLASS = 4096,
 
@@ -2359,6 +2459,8 @@ declare function u_strcpy(dst: interop.Pointer | interop.Reference<number>, src:
 
 declare function u_strcspn(string: interop.Pointer | interop.Reference<number>, matchSet: interop.Pointer | interop.Reference<number>): number;
 
+declare function u_stringHasBinaryProperty(s: interop.Pointer | interop.Reference<number>, length: number, which: UProperty): number;
+
 declare function u_strlen(s: interop.Pointer | interop.Reference<number>): number;
 
 declare function u_strncasecmp(s1: interop.Pointer | interop.Reference<number>, s2: interop.Pointer | interop.Reference<number>, n: number, options: number): number;
@@ -2410,6 +2512,36 @@ declare function ublock_getCode(c: number): UBlockCode;
 declare function ucpmap_get(map: interop.Pointer | interop.Reference<any>, c: number): number;
 
 declare function ucpmap_getRange(map: interop.Pointer | interop.Reference<any>, start: number, option: UCPMapRangeOption, surrogateValue: number, filter: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number) => number>>, context: interop.Pointer | interop.Reference<any>, pValue: interop.Pointer | interop.Reference<number>): number;
+
+declare function uidna_IDNToASCII(src: interop.Pointer | interop.Reference<number>, srcLength: number, dest: interop.Pointer | interop.Reference<number>, destCapacity: number, options: number, parseError: interop.Pointer | interop.Reference<UParseError>, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+
+declare function uidna_IDNToUnicode(src: interop.Pointer | interop.Reference<number>, srcLength: number, dest: interop.Pointer | interop.Reference<number>, destCapacity: number, options: number, parseError: interop.Pointer | interop.Reference<UParseError>, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+
+declare function uidna_close(idna: interop.Pointer | interop.Reference<any>): void;
+
+declare function uidna_compare(s1: interop.Pointer | interop.Reference<number>, length1: number, s2: interop.Pointer | interop.Reference<number>, length2: number, options: number, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+
+declare function uidna_labelToASCII(idna: interop.Pointer | interop.Reference<any>, label: interop.Pointer | interop.Reference<number>, length: number, dest: interop.Pointer | interop.Reference<number>, capacity: number, pInfo: interop.Pointer | interop.Reference<UIDNAInfo>, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
+
+declare function uidna_labelToASCII_UTF8(idna: interop.Pointer | interop.Reference<any>, label: string | interop.Pointer | interop.Reference<any>, length: number, dest: string | interop.Pointer | interop.Reference<any>, capacity: number, pInfo: interop.Pointer | interop.Reference<UIDNAInfo>, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
+
+declare function uidna_labelToUnicode(idna: interop.Pointer | interop.Reference<any>, label: interop.Pointer | interop.Reference<number>, length: number, dest: interop.Pointer | interop.Reference<number>, capacity: number, pInfo: interop.Pointer | interop.Reference<UIDNAInfo>, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
+
+declare function uidna_labelToUnicodeUTF8(idna: interop.Pointer | interop.Reference<any>, label: string | interop.Pointer | interop.Reference<any>, length: number, dest: string | interop.Pointer | interop.Reference<any>, capacity: number, pInfo: interop.Pointer | interop.Reference<UIDNAInfo>, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
+
+declare function uidna_nameToASCII(idna: interop.Pointer | interop.Reference<any>, name: interop.Pointer | interop.Reference<number>, length: number, dest: interop.Pointer | interop.Reference<number>, capacity: number, pInfo: interop.Pointer | interop.Reference<UIDNAInfo>, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
+
+declare function uidna_nameToASCII_UTF8(idna: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, length: number, dest: string | interop.Pointer | interop.Reference<any>, capacity: number, pInfo: interop.Pointer | interop.Reference<UIDNAInfo>, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
+
+declare function uidna_nameToUnicode(idna: interop.Pointer | interop.Reference<any>, name: interop.Pointer | interop.Reference<number>, length: number, dest: interop.Pointer | interop.Reference<number>, capacity: number, pInfo: interop.Pointer | interop.Reference<UIDNAInfo>, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
+
+declare function uidna_nameToUnicodeUTF8(idna: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, length: number, dest: string | interop.Pointer | interop.Reference<any>, capacity: number, pInfo: interop.Pointer | interop.Reference<UIDNAInfo>, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
+
+declare function uidna_openUTS46(options: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<any>;
+
+declare function uidna_toASCII(src: interop.Pointer | interop.Reference<number>, srcLength: number, dest: interop.Pointer | interop.Reference<number>, destCapacity: number, options: number, parseError: interop.Pointer | interop.Reference<UParseError>, status: interop.Pointer | interop.Reference<UErrorCode>): number;
+
+declare function uidna_toUnicode(src: interop.Pointer | interop.Reference<number>, srcLength: number, dest: interop.Pointer | interop.Reference<number>, destCapacity: number, options: number, parseError: interop.Pointer | interop.Reference<UParseError>, status: interop.Pointer | interop.Reference<UErrorCode>): number;
 
 declare function uiter_current32(iter: interop.Pointer | interop.Reference<UCharIterator>): number;
 

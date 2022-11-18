@@ -356,7 +356,15 @@ declare const enum GKErrorCode {
 
 	ConnectionTimeout = 33,
 
-	APIObsolete = 34
+	APIObsolete = 34,
+
+	FriendListDescriptionMissing = 100,
+
+	FriendListRestricted = 101,
+
+	FriendListDenied = 102,
+
+	FriendRequestNotAvailable = 103
 }
 
 declare var GKErrorDomain: string;
@@ -392,6 +400,17 @@ declare var GKFriendRequestComposeViewControllerDelegate: {
 
 	prototype: GKFriendRequestComposeViewControllerDelegate;
 };
+
+declare const enum GKFriendsAuthorizationStatus {
+
+	NotDetermined = 0,
+
+	Restricted = 1,
+
+	Denied = 2,
+
+	Authorized = 3
+}
 
 interface GKGameCenterControllerDelegate extends NSObjectProtocol {
 
@@ -447,7 +466,9 @@ declare const enum GKGameCenterViewControllerState {
 
 	LocalPlayerProfile = 3,
 
-	Dashboard = 4
+	Dashboard = 4,
+
+	LocalPlayerFriendsList = 5
 }
 
 declare class GKGameSession extends NSObject {
@@ -807,6 +828,8 @@ declare class GKLocalPlayer extends GKPlayer implements GKSavedGameListener {
 
 	readonly friends: NSArray<string>;
 
+	readonly isPresentingFriendRequestViewController: boolean;
+
 	readonly multiplayerGamingRestricted: boolean;
 
 	readonly personalizedCommunicationRestricted: boolean;
@@ -857,7 +880,13 @@ declare class GKLocalPlayer extends GKPlayer implements GKSavedGameListener {
 
 	loadFriendPlayersWithCompletionHandler(completionHandler: (p1: NSArray<GKPlayer>, p2: NSError) => void): void;
 
+	loadFriends(completionHandler: (p1: NSArray<GKPlayer>, p2: NSError) => void): void;
+
+	loadFriendsAuthorizationStatus(completionHandler: (p1: GKFriendsAuthorizationStatus, p2: NSError) => void): void;
+
 	loadFriendsWithCompletionHandler(completionHandler: (p1: NSArray<string>, p2: NSError) => void): void;
+
+	loadFriendsWithIdentifiersCompletionHandler(identifiers: NSArray<string> | string[], completionHandler: (p1: NSArray<GKPlayer>, p2: NSError) => void): void;
 
 	loadRecentPlayersWithCompletionHandler(completionHandler: (p1: NSArray<GKPlayer>, p2: NSError) => void): void;
 
@@ -870,6 +899,8 @@ declare class GKLocalPlayer extends GKPlayer implements GKSavedGameListener {
 	playerDidModifySavedGame(player: GKPlayer, savedGame: GKSavedGame): void;
 
 	playerHasConflictingSavedGames(player: GKPlayer, savedGames: NSArray<GKSavedGame> | GKSavedGame[]): void;
+
+	presentFriendRequestCreatorFromViewControllerError(viewController: UIViewController): boolean;
 
 	registerListener(listener: GKLocalPlayerListener): void;
 
@@ -1045,6 +1076,8 @@ declare class GKMatchmakerViewController extends UINavigationController {
 
 	static new(): GKMatchmakerViewController; // inherited from NSObject
 
+	canStartWithMinimumPlayers: boolean;
+
 	defaultInvitationMessage: string;
 
 	hosted: boolean;
@@ -1099,7 +1132,9 @@ declare const enum GKMatchmakingMode {
 
 	NearbyOnly = 1,
 
-	AutomatchOnly = 2
+	AutomatchOnly = 2,
+
+	InviteOnly = 3
 }
 
 declare class GKNotificationBanner extends NSObject {
@@ -1127,45 +1162,6 @@ declare const enum GKPeerConnectionState {
 
 	StateConnectedRelay = 5
 }
-
-declare const enum GKPeerPickerConnectionType {
-
-	Online = 1,
-
-	Nearby = 2
-}
-
-declare class GKPeerPickerController extends NSObject {
-
-	static alloc(): GKPeerPickerController; // inherited from NSObject
-
-	static new(): GKPeerPickerController; // inherited from NSObject
-
-	connectionTypesMask: GKPeerPickerConnectionType;
-
-	delegate: GKPeerPickerControllerDelegate;
-
-	readonly visible: boolean;
-
-	dismiss(): void;
-
-	show(): void;
-}
-
-interface GKPeerPickerControllerDelegate extends NSObjectProtocol {
-
-	peerPickerControllerDidCancel?(picker: GKPeerPickerController): void;
-
-	peerPickerControllerDidConnectPeerToSession?(picker: GKPeerPickerController, peerID: string, session: GKSession): void;
-
-	peerPickerControllerDidSelectConnectionType?(picker: GKPeerPickerController, type: GKPeerPickerConnectionType): void;
-
-	peerPickerControllerSessionForConnectionType?(picker: GKPeerPickerController, type: GKPeerPickerConnectionType): GKSession;
-}
-declare var GKPeerPickerControllerDelegate: {
-
-	prototype: GKPeerPickerControllerDelegate;
-};
 
 declare const enum GKPhotoSize {
 
@@ -1664,6 +1660,8 @@ declare class GKTurnBasedMatchmakerViewController extends UINavigationController
 	static alloc(): GKTurnBasedMatchmakerViewController; // inherited from NSObject
 
 	static new(): GKTurnBasedMatchmakerViewController; // inherited from NSObject
+
+	matchmakingMode: GKMatchmakingMode;
 
 	showExistingMatches: boolean;
 

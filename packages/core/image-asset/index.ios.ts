@@ -1,5 +1,6 @@
 import { ImageAssetBase, getRequestedImageSize } from './image-asset-common';
 import { path as fsPath, knownFolders } from '../file-system';
+import { queueGC } from '../utils';
 
 export * from './image-asset-common';
 
@@ -40,10 +41,8 @@ export class ImageAsset extends ImageAssetBase {
 		const requestedSize = getRequestedImageSize({ width: srcWidth, height: srcHeight }, this.options);
 
 		if (this.nativeImage) {
-			const newSize = CGSizeMake(requestedSize.width, requestedSize.height);
-			const resizedImage = this.scaleImage(this.nativeImage, newSize);
-			callback(resizedImage, null);
-
+			callback(this.scaleImage(this.nativeImage, CGSizeMake(requestedSize.width, requestedSize.height)), null);
+			queueGC();
 			return;
 		}
 
@@ -53,23 +52,15 @@ export class ImageAsset extends ImageAssetBase {
 
 		PHImageManager.defaultManager().requestImageForAssetTargetSizeContentModeOptionsResultHandler(this.ios, requestedSize, PHImageContentMode.AspectFit, imageRequestOptions, (image, imageResultInfo) => {
 			if (image) {
-				const resultImage = this.scaleImage(image, requestedSize);
-				callback(resultImage, null);
+				callback(this.scaleImage(image, requestedSize), null);
 			} else {
 				callback(null, imageResultInfo.valueForKey(PHImageErrorKey));
 			}
+			queueGC();
 		});
 	}
 
 	private scaleImage(image: UIImage, requestedSize: { width: number; height: number }): UIImage {
-		// scaleFactor = 0 takes the scale factor of the devices's main screen.
-		const scaleFactor = this.options && this.options.autoScaleFactor === false ? 1.0 : 0.0;
-
-		UIGraphicsBeginImageContextWithOptions(requestedSize, false, scaleFactor);
-		image.drawInRect(CGRectMake(0, 0, requestedSize.width, requestedSize.height));
-		const resultImage = UIGraphicsGetImageFromCurrentImageContext();
-		UIGraphicsEndImageContext();
-
-		return resultImage;
+		return NativeScriptUtils.scaleImageWidthHeightScaleFactor(image, requestedSize.width, requestedSize.height, this.options?.autoScaleFactor === false ? 1.0 : 0.0);
 	}
 }

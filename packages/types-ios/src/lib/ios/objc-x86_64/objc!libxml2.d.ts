@@ -91,6 +91,9 @@ declare var _htmlEntityDesc: interop.StructType<_htmlEntityDesc>;
 interface _uconv_t {
 	uconv: interop.Pointer | interop.Reference<any>;
 	utf8: interop.Pointer | interop.Reference<any>;
+	pivot_buf: interop.Reference<number>;
+	pivot_source: interop.Pointer | interop.Reference<number>;
+	pivot_target: interop.Pointer | interop.Reference<number>;
 }
 declare var _uconv_t: interop.StructType<_uconv_t>;
 
@@ -486,7 +489,7 @@ interface _xmlParserCtxt {
 	nsMax: number;
 	nsTab: interop.Pointer | interop.Reference<string>;
 	attallocs: interop.Pointer | interop.Reference<number>;
-	pushTab: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>;
+	pushTab: interop.Pointer | interop.Reference<any>;
 	attsDefault: interop.Pointer | interop.Reference<any>;
 	attsSpecial: interop.Pointer | interop.Reference<any>;
 	nsWellFormed: number;
@@ -933,6 +936,9 @@ interface _xmlXPathContext {
 	dict: interop.Pointer | interop.Reference<any>;
 	flags: number;
 	cache: interop.Pointer | interop.Reference<any>;
+	opLimit: number;
+	opCount: number;
+	depth: number;
 }
 declare var _xmlXPathContext: interop.StructType<_xmlXPathContext>;
 
@@ -999,8 +1005,6 @@ declare function docbDefaultSAXHandlerInit(): void;
 
 declare function elementDecl(ctx: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, type: number, content: interop.Pointer | interop.Reference<_xmlElementContent>): void;
 
-declare var emptyExp: interop.Pointer | interop.Reference<any>;
-
 declare function endDocument(ctx: interop.Pointer | interop.Reference<any>): void;
 
 declare function endElement(ctx: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>): void;
@@ -1008,8 +1012,6 @@ declare function endElement(ctx: interop.Pointer | interop.Reference<any>, name:
 declare function entityDecl(ctx: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, type: number, publicId: string | interop.Pointer | interop.Reference<any>, systemId: string | interop.Pointer | interop.Reference<any>, content: string | interop.Pointer | interop.Reference<any>): void;
 
 declare function externalSubset(ctx: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, ExternalID: string | interop.Pointer | interop.Reference<any>, SystemID: string | interop.Pointer | interop.Reference<any>): void;
-
-declare var forbiddenExp: interop.Pointer | interop.Reference<any>;
 
 declare function getColumnNumber(ctx: interop.Pointer | interop.Reference<any>): number;
 
@@ -2029,59 +2031,6 @@ declare const enum xmlErrorLevel {
 	XML_ERR_FATAL = 3
 }
 
-declare function xmlExpCtxtNbCons(ctxt: interop.Pointer | interop.Reference<any>): number;
-
-declare function xmlExpCtxtNbNodes(ctxt: interop.Pointer | interop.Reference<any>): number;
-
-declare function xmlExpDump(buf: interop.Pointer | interop.Reference<_xmlBuffer>, expr: interop.Pointer | interop.Reference<any>): void;
-
-declare function xmlExpExpDerive(ctxt: interop.Pointer | interop.Reference<any>, expr: interop.Pointer | interop.Reference<any>, sub: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
-
-declare function xmlExpFree(ctxt: interop.Pointer | interop.Reference<any>, expr: interop.Pointer | interop.Reference<any>): void;
-
-declare function xmlExpFreeCtxt(ctxt: interop.Pointer | interop.Reference<any>): void;
-
-declare function xmlExpGetLanguage(ctxt: interop.Pointer | interop.Reference<any>, expr: interop.Pointer | interop.Reference<any>, langList: interop.Pointer | interop.Reference<string>, len: number): number;
-
-declare function xmlExpGetStart(ctxt: interop.Pointer | interop.Reference<any>, expr: interop.Pointer | interop.Reference<any>, tokList: interop.Pointer | interop.Reference<string>, len: number): number;
-
-declare function xmlExpIsNillable(expr: interop.Pointer | interop.Reference<any>): number;
-
-declare function xmlExpMaxToken(expr: interop.Pointer | interop.Reference<any>): number;
-
-declare function xmlExpNewAtom(ctxt: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, len: number): interop.Pointer | interop.Reference<any>;
-
-declare function xmlExpNewCtxt(maxNodes: number, dict: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
-
-declare function xmlExpNewOr(ctxt: interop.Pointer | interop.Reference<any>, left: interop.Pointer | interop.Reference<any>, right: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
-
-declare function xmlExpNewRange(ctxt: interop.Pointer | interop.Reference<any>, subset: interop.Pointer | interop.Reference<any>, min: number, max: number): interop.Pointer | interop.Reference<any>;
-
-declare function xmlExpNewSeq(ctxt: interop.Pointer | interop.Reference<any>, left: interop.Pointer | interop.Reference<any>, right: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
-
-declare const enum xmlExpNodeType {
-
-	XML_EXP_EMPTY = 0,
-
-	XML_EXP_FORBID = 1,
-
-	XML_EXP_ATOM = 2,
-
-	XML_EXP_SEQ = 3,
-
-	XML_EXP_OR = 4,
-
-	XML_EXP_COUNT = 5
-}
-
-declare function xmlExpParse(ctxt: interop.Pointer | interop.Reference<any>, expr: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
-
-declare function xmlExpRef(expr: interop.Pointer | interop.Reference<any>): void;
-
-declare function xmlExpStringDerive(ctxt: interop.Pointer | interop.Reference<any>, expr: interop.Pointer | interop.Reference<any>, str: string | interop.Pointer | interop.Reference<any>, len: number): interop.Pointer | interop.Reference<any>;
-
-declare function xmlExpSubsume(ctxt: interop.Pointer | interop.Reference<any>, expr: interop.Pointer | interop.Reference<any>, sub: interop.Pointer | interop.Reference<any>): number;
-
 declare const enum xmlFeature {
 
 	XML_WITH_THREAD = 1,
@@ -2316,6 +2265,8 @@ declare function xmlHashCopy(table: interop.Pointer | interop.Reference<any>, f:
 declare function xmlHashCreate(size: number): interop.Pointer | interop.Reference<any>;
 
 declare function xmlHashCreateDict(size: number, dict: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+
+declare function xmlHashDefaultDeallocator(entry: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>): void;
 
 declare function xmlHashFree(table: interop.Pointer | interop.Reference<any>, f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>): void;
 
@@ -4625,6 +4576,8 @@ declare function xmlPopInput(ctxt: interop.Pointer | interop.Reference<_xmlParse
 
 declare function xmlPopInputCallbacks(): number;
 
+declare function xmlPopOutputCallbacks(): number;
+
 declare function xmlPreviousElementSibling(node: interop.Pointer | interop.Reference<_xmlNode>): interop.Pointer | interop.Reference<_xmlNode>;
 
 declare function xmlPrintURI(stream: interop.Pointer | interop.Reference<FILE>, uri: interop.Pointer | interop.Reference<_xmlURI>): void;
@@ -6485,7 +6438,11 @@ declare const enum xmlXPathError {
 
 	XPATH_STACK_ERROR = 23,
 
-	XPATH_FORBID_VARIABLE_ERROR = 24
+	XPATH_FORBID_VARIABLE_ERROR = 24,
+
+	XPATH_OP_LIMIT_EXCEEDED = 25,
+
+	XPATH_RECURSION_LIMIT_EXCEEDED = 26
 }
 
 declare function xmlXPathEval(str: string | interop.Pointer | interop.Reference<any>, ctx: interop.Pointer | interop.Reference<_xmlXPathContext>): interop.Pointer | interop.Reference<_xmlXPathObject>;

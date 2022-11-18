@@ -9,7 +9,11 @@ declare const enum compression_algorithm {
 
 	COMPRESSION_LZ4_RAW = 257,
 
-	COMPRESSION_LZFSE = 2049
+	COMPRESSION_BROTLI = 2818,
+
+	COMPRESSION_LZFSE = 2049,
+
+	COMPRESSION_LZBITMAP = 1794
 }
 
 declare function compression_decode_buffer(dst_buffer: string | interop.Pointer | interop.Reference<any>, dst_size: number, src_buffer: string | interop.Pointer | interop.Reference<any>, src_size: number, scratch_buffer: interop.Pointer | interop.Reference<any>, algorithm: compression_algorithm): number;

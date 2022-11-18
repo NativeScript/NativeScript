@@ -1,0 +1,71 @@
+name: 🚀 Feature request
+description: Suggest an idea for NativeScript
+labels: ["feature-pending-triage"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to request a feature for NativeScript!
+
+        > ## Important! :warning:
+        > 
+        > The issue list is reserved exclusively for bug reports and feature requests. That means we do not accept usage questions. If you open an issue that does not conform to the requirements, it will be closed.
+        >
+        > For usage questions, please refer to the following resources:
+        > * Search the [docs](https://docs.nativescript.org/)
+        > * Search or ask in [Discord](https://nativescript.org/discord)
+        > * Search or ask in [Discussions](https://github.com/NativeScript/NativeScript/discussions)
+        > * Search or ask on [StackOverflow](https://stackoverflow.com/questions/tagged/nativescript)
+        > * Watch [video tutorials](https://nativescripting.com/)
+
+  - type: textarea
+    attributes:
+      label: Is your feature request related to a problem? Please describe.
+      description: A clear and concise description of what the problem is.
+      placeholder: |
+        I wish I could use NativeScript to do [...]
+        or
+        I'm always frustrated when [...]
+
+  - type: textarea
+    attributes:
+      label: Describe the solution you'd like
+      description: A clear and concise description of what you want to happen.
+
+  - type: textarea
+    attributes:
+      label: Describe alternatives you've considered
+      description: A clear and concise description of any alternative solutions or features you've considered.
+
+  - type: textarea
+    attributes:
+      label: Anything else?
+      description: Add any other context, code examples, or references to existing implementations about the feature request here.
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+
+        Before you submit this feature request, please confirm the following:
+
+        **1. Is there an existing issue for this?**
+
+        Please search to see if an issue related to this feature request already exists.
+
+        **2. Code of Conduct**
+
+        By submitting this feature request, you agree to follow our [Code of Conduct](https://github.com/NativeScript/NativeScript/blob/master/tools/notes/CONTRIBUTING.md#coc)
+
+        ---
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Please accept these terms
+      options:
+        - label: I have searched the [existing issues](https://github.com/NativeScript/NativeScript/issues) as well as [StackOverflow](https://stackoverflow.com/questions/tagged/nativescript) and this has not been posted before
+          required: true
+        - label: I agree to follow this project's [Code of Conduct](https://github.com/NativeScript/NativeScript/blob/master/tools/notes/CONTRIBUTING.md#coc)
+          required: true

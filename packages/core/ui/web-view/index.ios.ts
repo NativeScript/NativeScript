@@ -1,9 +1,10 @@
 import { WebViewNavigationType } from '.';
-import { WebViewBase } from './web-view-common';
+import { disableZoomProperty, WebViewBase } from './web-view-common';
 import { profile } from '../../profiling';
 import { Trace } from '../../trace';
 export * from './web-view-common';
 import { knownFolders } from '../../file-system';
+import { booleanConverter } from '../core/view-base';
 
 @NativeClass
 class WKNavigationDelegateImpl extends NSObject implements WKNavigationDelegate {
@@ -96,9 +97,86 @@ class WKNavigationDelegateImpl extends NSObject implements WKNavigationDelegate 
 	}
 }
 
+@NativeClass
+class WKUIDelegateImpl extends NSObject implements WKUIDelegate {
+	public static ObjCProtocols = [WKUIDelegate];
+	public static initWithOwner(owner: WeakRef<WebView>): WKUIDelegateImpl {
+		const handler = <WKUIDelegateImpl>WKUIDelegateImpl.new();
+		handler._owner = owner;
+		return handler;
+	}
+	private _owner: WeakRef<WebView>;
+
+	webViewCreateWebViewWithConfigurationForNavigationActionWindowFeatures(webView: WKWebView, configuration: WKWebViewConfiguration, navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures): WKWebView {
+		if (navigationAction && (!navigationAction.targetFrame || (navigationAction.targetFrame && !navigationAction.targetFrame.mainFrame))) {
+			webView.loadRequest(navigationAction.request);
+		}
+		return null;
+	}
+}
+
+@NativeClass
+@ObjCClass(UIScrollViewDelegate)
+class UIScrollViewDelegateImpl extends NSObject implements UIScrollViewDelegate {
+	public static initWithOwner(owner: WeakRef<WebView>): UIScrollViewDelegateImpl {
+		const handler = <UIScrollViewDelegateImpl>UIScrollViewDelegateImpl.new();
+		handler._owner = owner;
+
+		return handler;
+	}
+
+	private _owner: WeakRef<WebView>;
+
+	private _initCurrentValues(scrollView: UIScrollView) {
+		const owner = this._owner.get();
+		if (owner && (owner._minimumZoomScale === undefined || owner._maximumZoomScale === undefined || owner._zoomScale === undefined)) {
+			owner._minimumZoomScale = scrollView.minimumZoomScale;
+			owner._maximumZoomScale = scrollView.maximumZoomScale;
+			owner._zoomScale = scrollView.zoomScale;
+		}
+	}
+
+	private _handleDisableZoom(scrollView: UIScrollView) {
+		const owner = this._owner.get();
+		if (owner.disableZoom) {
+			this._initCurrentValues(scrollView);
+			scrollView.maximumZoomScale = 1.0;
+			scrollView.minimumZoomScale = 1.0;
+			scrollView.zoomScale = 1.0;
+		}
+	}
+
+	scrollViewWillBeginZoomingWithView(scrollView: UIScrollView, view: UIView) {
+		this._handleDisableZoom(scrollView);
+	}
+
+	scrollViewDidZoom(scrollView) {
+		this._handleDisableZoom(scrollView);
+	}
+}
+
 export class WebView extends WebViewBase {
 	nativeViewProtected: WKWebView;
-	private _delegate: any;
+	private _delegate: WKNavigationDelegateImpl;
+	private _scrollDelegate: UIScrollViewDelegateImpl;
+	private _uiDelegate: WKUIDelegateImpl;
+	private _iosAllowInlineMediaPlayback: boolean;
+
+	_maximumZoomScale;
+	_minimumZoomScale;
+	_zoomScale;
+
+	get iosAllowInlineMediaPlayback(): boolean {
+		return this._iosAllowInlineMediaPlayback;
+	}
+
+	set iosAllowInlineMediaPlayback(value: boolean) {
+		// Note: can be set on the view markup,
+		// thus the converter usage (value could come in as string).
+		// Property.setNative should not be used because
+		// it should be set before nativeView is created
+		this._iosAllowInlineMediaPlayback = booleanConverter(value);
+	}
 
 	createNativeView() {
 		const jScript = "var meta = document.createElement('meta'); meta.setAttribute('name', 'viewport'); meta.setAttribute('content', 'initial-scale=1.0'); document.getElementsByTagName('head')[0].appendChild(meta);";
@@ -106,6 +184,10 @@ export class WebView extends WebViewBase {
 		const wkUController = WKUserContentController.new();
 		wkUController.addUserScript(wkUScript);
 		const configuration = WKWebViewConfiguration.new();
+		if (this.iosAllowInlineMediaPlayback) {
+			configuration.allowsInlineMediaPlayback = true;
+			configuration.allowsPictureInPictureMediaPlayback = true;
+		}
 		configuration.userContentController = wkUController;
 		configuration.preferences.setValueForKey(true, 'allowFileAccessFromFileURLs');
 
@@ -118,7 +200,11 @@ export class WebView extends WebViewBase {
 	initNativeView() {
 		super.initNativeView();
 		this._delegate = WKNavigationDelegateImpl.initWithOwner(new WeakRef(this));
+		this._scrollDelegate = UIScrollViewDelegateImpl.initWithOwner(new WeakRef(this));
+		this._uiDelegate = WKUIDelegateImpl.initWithOwner(new WeakRef(this));
 		this.ios.navigationDelegate = this._delegate;
+		this.ios.scrollView.delegate = this._scrollDelegate;
+		this.ios.UIDelegate = this._uiDelegate;
 	}
 
 	@profile
@@ -170,5 +256,18 @@ export class WebView extends WebViewBase {
 
 	public reload() {
 		this.ios.reload();
+	}
+
+	[disableZoomProperty.setNative](value: boolean) {
+		if (!value && typeof this._minimumZoomScale === 'number' && typeof this._maximumZoomScale === 'number' && typeof this._zoomScale === 'number') {
+			if (this.ios.scrollView) {
+				this.ios.scrollView.minimumZoomScale = this._minimumZoomScale;
+				this.ios.scrollView.maximumZoomScale = this._maximumZoomScale;
+				this.ios.scrollView.zoomScale = this._zoomScale;
+				this._minimumZoomScale = undefined;
+				this._maximumZoomScale = undefined;
+				this._zoomScale = undefined;
+			}
+		}
 	}
 }

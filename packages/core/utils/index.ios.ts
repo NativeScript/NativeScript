@@ -1,7 +1,7 @@
 import { iOSNativeHelper } from './native-helper';
 import { Trace } from '../trace';
 
-export { iOSNativeHelper } from './native-helper';
+export { dataDeserialize, dataSerialize, iOSNativeHelper } from './native-helper';
 export * from './utils-common';
 export { Source } from './debug';
 
@@ -48,3 +48,22 @@ export function isRealDevice(): boolean {
 }
 
 export const ad = 0;
+
+export function dismissSoftInput(nativeView?: UIView): void {
+	if (nativeView instanceof UIView && !nativeView.isFirstResponder) {
+		return;
+	}
+	UIApplication.sharedApplication.sendActionToFromForEvent('resignFirstResponder', null, null, null);
+}
+
+export function dismissKeyboard() {
+	dismissSoftInput();
+}
+
+export function copyToClipboard(value: string) {
+	try {
+		UIPasteboard.generalPasteboard.setValueForPasteboardType(value, kUTTypePlainText);
+	} catch (err) {
+		console.log(err);
+	}
+}

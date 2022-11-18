@@ -1,5 +1,6 @@
-import { Font as FontBase, parseFontFamily, genericFontFamilies, FontWeight } from './font-common';
+import { Font as FontBase, parseFontFamily, genericFontFamilies, FontStyleType, FontWeight, FontWeightType } from './font-common';
 import { Trace } from '../../trace';
+import { SDK_VERSION } from '../../utils';
 import * as application from '../../application';
 import * as fs from '../../file-system';
 
@@ -10,28 +11,32 @@ const typefaceCache = new Map<string, android.graphics.Typeface>();
 let appAssets: android.content.res.AssetManager;
 
 export class Font extends FontBase {
-	public static default = new Font(undefined, undefined, 'normal', 'normal');
+	public static default = new Font(undefined, undefined);
 
 	private _typeface: android.graphics.Typeface;
 
-	constructor(family: string, size: number, style: 'normal' | 'italic', weight: FontWeight) {
-		super(family, size, style, weight);
+	constructor(family: string, size: number, style?: FontStyleType, weight?: FontWeightType) {
+		super(family, size, style, weight, 1);
 	}
 
 	public withFontFamily(family: string): Font {
 		return new Font(family, this.fontSize, this.fontStyle, this.fontWeight);
 	}
 
-	public withFontStyle(style: 'normal' | 'italic'): Font {
+	public withFontStyle(style: FontStyleType): Font {
 		return new Font(this.fontFamily, this.fontSize, style, this.fontWeight);
 	}
 
-	public withFontWeight(weight: FontWeight): Font {
+	public withFontWeight(weight: FontWeightType): Font {
 		return new Font(this.fontFamily, this.fontSize, this.fontStyle, weight);
 	}
 
 	public withFontSize(size: number): Font {
 		return new Font(this.fontFamily, size, this.fontStyle, this.fontWeight);
+	}
+
+	public withFontScale(scale: number): Font {
+		return new Font(this.fontFamily, this.fontSize, this.fontStyle, this.fontWeight);
 	}
 
 	public getAndroidTypeface(): android.graphics.Typeface {
@@ -134,13 +139,16 @@ function createTypeface(font: Font): android.graphics.Typeface {
 	return result;
 }
 
-function getFontWeightSuffix(fontWeight: FontWeight): string {
+function getFontWeightSuffix(fontWeight: FontWeightType): string {
+	if (typeof fontWeight === 'number') {
+		fontWeight = (fontWeight + '') as any;
+	}
 	switch (fontWeight) {
 		case FontWeight.THIN:
-			return android.os.Build.VERSION.SDK_INT >= 16 ? '-thin' : '';
+			return SDK_VERSION >= 16 ? '-thin' : '';
 		case FontWeight.EXTRA_LIGHT:
 		case FontWeight.LIGHT:
-			return android.os.Build.VERSION.SDK_INT >= 16 ? '-light' : '';
+			return SDK_VERSION >= 16 ? '-light' : '';
 		case FontWeight.NORMAL:
 		case '400':
 		case undefined:
@@ -148,13 +156,13 @@ function getFontWeightSuffix(fontWeight: FontWeight): string {
 			return '';
 		case FontWeight.MEDIUM:
 		case FontWeight.SEMI_BOLD:
-			return android.os.Build.VERSION.SDK_INT >= 21 ? '-medium' : '';
+			return SDK_VERSION >= 21 ? '-medium' : '';
 		case FontWeight.BOLD:
 		case '700':
 		case FontWeight.EXTRA_BOLD:
 			return '';
 		case FontWeight.BLACK:
-			return android.os.Build.VERSION.SDK_INT >= 21 ? '-black' : '';
+			return SDK_VERSION >= 21 ? '-black' : '';
 		default:
 			throw new Error(`Invalid font weight: "${fontWeight}"`);
 	}

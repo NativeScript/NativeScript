@@ -465,7 +465,9 @@ declare const enum NFCPollingOption {
 
 	ISO15693 = 2,
 
-	ISO18092 = 4
+	ISO18092 = 4,
+
+	PACE = 8
 }
 
 declare const enum NFCReaderError {

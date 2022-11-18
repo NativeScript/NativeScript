@@ -1,5 +1,8 @@
 import { assert } from 'chai';
-import { parseURL, parseColor, parsePercentageOrLength, parseBackgroundPosition, parseBackground, parseSelector, AttributeSelectorTest, CSS3Parser, TokenObjectType, CSSNativeScript } from '@nativescript/core/css/parser';
+import { Color } from '@nativescript/core';
+import { parseURL, parseColor, parsePercentageOrLength, parseBackgroundPosition, parseBackground, parseSelector, AttributeSelectorTest } from '@nativescript/core/css/parser';
+import { CSS3Parser, TokenObjectType } from '@nativescript/core/css/CSS3Parser';
+import { CSSNativeScript } from '@nativescript/core/css/CSSNativeScript';
 
 import * as fs from 'fs';
 import * as shadyCss from 'shady-css-parser';
@@ -37,15 +40,17 @@ describe('css', () => {
 				test(parseURL, 'repeat url(lucky.gif) #FF0000', 6, { start: 6, end: 22, value: 'lucky.gif' });
 			});
 			describe('color', () => {
-				test(parseColor, '  #369 ', { start: 0, end: 7, value: 0xff336699 });
-				test(parseColor, '  #456789 ', { start: 0, end: 10, value: 0xff456789 });
-				test(parseColor, '  #85456789 ', { start: 0, end: 12, value: 0x85456789 });
-				test(parseColor, '  rgb(255, 8, 128) ', { start: 0, end: 18, value: 0xffff0880 });
-				test(parseColor, '  rgba(255, 8, 128, 0.5) ', { start: 0, end: 24, value: 0x80ff0880 });
-				test(parseColor, '  hsl(330.9, 100%, 51.6%) ', { start: 0, end: 25, value: 0xffff0880 });
-				test(parseColor, '  hsla(330.9, 100%, 51.6%, 0.5) ', { start: 0, end: 31, value: 0x80ff0880 });
+				test(parseColor, '  #369 ', { start: 0, end: 7, value: new Color(0xff336699) });
+				test(parseColor, '  #456789 ', { start: 0, end: 10, value: new Color(0xff456789) });
+				test(parseColor, '  #45678985 ', { start: 0, end: 12, value: new Color(0x45678985) });
+				test(parseColor, '  rgb(255, 8, 128) ', { start: 0, end: 18, value: new Color(0xffff0880) });
+				test(parseColor, '  rgb(255 8 128 / .5) ', { start: 0, end: 22, value: new Color(0x80ff0880) });
+				test(parseColor, '  rgb(255 8 128/0.5)', { start: 0, end: 20, value: new Color(0x80ff0880) });
+				test(parseColor, '  rgba(255, 8, 128, 0.5) ', { start: 0, end: 24, value: new Color(0x80ff0880) });
+				test(parseColor, '  hsl(330.9, 100%, 51.6%) ', { start: 0, end: 25, value: new Color(0xffff0880) });
+				test(parseColor, '  hsla(330.9, 100%, 51.6%, 0.5) ', { start: 0, end: 31, value: new Color(0x80ff0880) });
 				test(parseColor, '#FF0000 url(lucky.gif)', 8, null);
-				test(parseColor, 'url(lucky.gif) #FF0000 repeat', 15, { start: 15, end: 23, value: 0xffff0000 });
+				test(parseColor, 'url(lucky.gif) #FF0000 repeat', 15, { start: 15, end: 23, value: new Color(0xffff0000) });
 			});
 			describe('units', () => {
 				test(parsePercentageOrLength, ' 100% ', { start: 0, end: 6, value: { value: 1, unit: '%' } });
@@ -132,7 +137,7 @@ describe('css', () => {
 					value: {
 						image: {
 							angle: (Math.PI * 1) / 4,
-							colors: [{ argb: 0xff0000ff }, { argb: 0xff00ff00 }],
+							colors: [{ color: new Color('#0000FF') }, { color: new Color('#00FF00') }],
 						},
 					},
 				});
@@ -142,7 +147,7 @@ describe('css', () => {
 					value: {
 						image: {
 							angle: (Math.PI * 0) / 4,
-							colors: [{ argb: 0xff0000ff }, { argb: 0xff008000, offset: { value: 0.4, unit: '%' } }, { argb: 0xffff0000 }],
+							colors: [{ color: new Color('blue') }, { color: new Color('green'), offset: { value: 0.4, unit: '%' } }, { color: new Color('red') }],
 						},
 					},
 				});

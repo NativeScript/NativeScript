@@ -4,44 +4,89 @@
 		"appsDir": "apps",
 		"libsDir": "packages"
 	},
-	"implicitDependencies": {
-		"workspace.json": "*",
-		"package.json": {
-			"dependencies": "*",
-			"devDependencies": "*"
-		},
-		"tsconfig.json": "*",
-		"tslint.json": "*",
-		"nx.json": "*",
-		".eslintrc.json": "*"
+	"tasksRunnerOptions": {
+		"default": {
+			"runner": "nx/tasks-runners/default",
+			"options": {
+				"useDaemonProcess": false,
+				"cacheableOperations": ["build", "lint", "test", "e2e"],
+				"canTrackAnalytics": false,
+				"showUsageWarnings": true,
+				"parallel": 1
+			}
+		}
 	},
-	"projects": {
-		"apps-automated": {
-			"tags": []
+	"generators": {
+		"@nrwl/workspace": {
+			"library": {
+				"linter": "eslint"
+			}
 		},
-		"apps-toolbox": {
-			"tags": []
+		"@nrwl/cypress": {
+			"cypress-project": {
+				"linter": "eslint"
+			}
 		},
-		"apps-ui": {
-			"tags": []
+		"@nrwl/react": {
+			"application": {
+				"linter": "eslint"
+			},
+			"library": {
+				"linter": "eslint"
+			}
 		},
-		"core": {
-			"tags": []
+		"@nrwl/next": {
+			"application": {
+				"linter": "eslint"
+			}
 		},
-		"types": {
-			"tags": []
+		"@nrwl/web": {
+			"application": {
+				"linter": "eslint"
+			}
 		},
-		"types-ios": {
-			"tags": []
+		"@nrwl/node": {
+			"application": {
+				"linter": "eslint"
+			},
+			"library": {
+				"linter": "eslint"
+			}
 		},
-		"types-android": {
-			"tags": []
+		"@nrwl/nx-plugin": {
+			"plugin": {
+				"linter": "eslint"
+			}
 		},
-		"ui-mobile-base": {
-			"tags": []
+		"@nrwl/nest": {
+			"application": {
+				"linter": "eslint"
+			}
 		},
-		"webpack": {
-			"tags": []
+		"@nrwl/express": {
+			"application": {
+				"linter": "eslint"
+			},
+			"library": {
+				"linter": "eslint"
+			}
+		}
+	},
+	"affected": {
+		"defaultBase": "master"
+	},
+	"$schema": "./node_modules/nx/schemas/nx-schema.json",
+	"namedInputs": {
+		"default": ["{projectRoot}/**/*", "sharedGlobals"],
+		"sharedGlobals": ["{workspaceRoot}/workspace.json", "{workspaceRoot}/tsconfig.json", "{workspaceRoot}/tslint.json", "{workspaceRoot}/nx.json"],
+		"production": ["default", "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)", "!{projectRoot}/tsconfig.spec.json", "!{projectRoot}/jest.config.[jt]s"]
+	},
+	"targetDefaults": {
+		"build": {
+			"inputs": ["production", "^production"]
+		},
+		"test": {
+			"inputs": ["default", "^production", "{workspaceRoot}/jest.preset.js"]
 		}
 	}
 }

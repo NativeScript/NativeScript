@@ -1,13 +1,81 @@
 
+declare const enum SKANError {
+
+	ImpressionMissingRequiredValue = 0,
+
+	Unsupported = 1,
+
+	AdNetworkIdMissing = 2,
+
+	MismatchedSourceAppId = 3,
+
+	ImpressionNotFound = 4,
+
+	InvalidCampaignId = 5,
+
+	InvalidConversionValue = 6,
+
+	InvalidSourceAppId = 7,
+
+	InvalidAdvertisedAppId = 8,
+
+	InvalidVersion = 9,
+
+	Unknown = 10,
+
+	ImpressionTooShort = 11
+}
+
+declare var SKANErrorDomain: string;
+
+declare class SKAdImpression extends NSObject {
+
+	static alloc(): SKAdImpression; // inherited from NSObject
+
+	static new(): SKAdImpression; // inherited from NSObject
+
+	adCampaignIdentifier: number;
+
+	adDescription: string;
+
+	adImpressionIdentifier: string;
+
+	adNetworkIdentifier: string;
+
+	adPurchaserName: string;
+
+	adType: string;
+
+	advertisedAppStoreItemIdentifier: number;
+
+	signature: string;
+
+	sourceAppStoreItemIdentifier: number;
+
+	timestamp: number;
+
+	version: string;
+
+	constructor(o: { sourceAppStoreItemIdentifier: number; advertisedAppStoreItemIdentifier: number; adNetworkIdentifier: string; adCampaignIdentifier: number; adImpressionIdentifier: string; timestamp: number; signature: string; version: string; });
+
+	initWithSourceAppStoreItemIdentifierAdvertisedAppStoreItemIdentifierAdNetworkIdentifierAdCampaignIdentifierAdImpressionIdentifierTimestampSignatureVersion(sourceAppStoreItemIdentifier: number, advertisedAppStoreItemIdentifier: number, adNetworkIdentifier: string, adCampaignIdentifier: number, adImpressionIdentifier: string, timestamp: number, signature: string, version: string): this;
+}
+
 declare class SKAdNetwork extends NSObject {
 
 	static alloc(): SKAdNetwork; // inherited from NSObject
+
+	static endImpressionCompletionHandler(impression: SKAdImpression, completion: (p1: NSError) => void): void;
 
 	static new(): SKAdNetwork; // inherited from NSObject
 
 	static registerAppForAdNetworkAttribution(): void;
 
+	static startImpressionCompletionHandler(impression: SKAdImpression, completion: (p1: NSError) => void): void;
+
 	static updateConversionValue(conversionValue: number): void;
+
+	static updatePostbackConversionValueCompletionHandler(conversionValue: number, completion: (p1: NSError) => void): void;
 }
 
 declare class SKArcadeService extends NSObject {
@@ -55,7 +123,7 @@ declare class SKCloudServiceController extends NSObject {
 
 	static new(): SKCloudServiceController; // inherited from NSObject
 
-	static requestAuthorization(handler: (p1: SKCloudServiceAuthorizationStatus) => void): void;
+	static requestAuthorization(completionHandler: (p1: SKCloudServiceAuthorizationStatus) => void): void;
 
 	requestCapabilitiesWithCompletionHandler(completionHandler: (p1: SKCloudServiceCapability, p2: NSError) => void): void;
 
@@ -194,7 +262,9 @@ declare const enum SKErrorCode {
 
 	IneligibleForOffer = 18,
 
-	UnsupportedPlatform = 19
+	UnsupportedPlatform = 19,
+
+	OverlayPresentedInBackgroundScene = 20
 }
 
 declare var SKErrorDomain: string;
@@ -247,6 +317,10 @@ declare class SKOverlayAppClipConfiguration extends SKOverlayConfiguration {
 
 	campaignToken: string;
 
+	customProductPageIdentifier: string;
+
+	latestReleaseID: string;
+
 	position: SKOverlayPosition;
 
 	providerToken: string;
@@ -270,6 +344,10 @@ declare class SKOverlayAppConfiguration extends SKOverlayConfiguration {
 
 	campaignToken: string;
 
+	customProductPageIdentifier: string;
+
+	latestReleaseID: string;
+
 	position: SKOverlayPosition;
 
 	providerToken: string;
@@ -281,6 +359,8 @@ declare class SKOverlayAppConfiguration extends SKOverlayConfiguration {
 	additionalValueForKey(key: string): any;
 
 	initWithAppIdentifierPosition(appIdentifier: string, position: SKOverlayPosition): this;
+
+	setAdImpression(impression: SKAdImpression): void;
 
 	setAdditionalValueForKey(value: any, key: string): void;
 }
@@ -585,7 +665,7 @@ declare class SKProductStorePromotionController extends NSObject {
 
 	fetchStorePromotionVisibilityForProductCompletionHandler(product: SKProduct, completionHandler: (p1: SKProductStorePromotionVisibility, p2: NSError) => void): void;
 
-	updateStorePromotionOrderCompletionHandler(storePromotionOrder: NSArray<SKProduct> | SKProduct[], completionHandler: (p1: NSError) => void): void;
+	updateStorePromotionOrderCompletionHandler(promotionOrder: NSArray<SKProduct> | SKProduct[], completionHandler: (p1: NSError) => void): void;
 
 	updateStorePromotionVisibilityForProductCompletionHandler(promotionVisibility: SKProductStorePromotionVisibility, product: SKProduct, completionHandler: (p1: NSError) => void): void;
 }
@@ -706,6 +786,8 @@ declare var SKStoreProductParameterAffiliateToken: string;
 
 declare var SKStoreProductParameterCampaignToken: string;
 
+declare var SKStoreProductParameterCustomProductPageIdentifier: string;
+
 declare var SKStoreProductParameterITunesItemIdentifier: string;
 
 declare var SKStoreProductParameterProductIdentifier: string;
@@ -721,6 +803,8 @@ declare class SKStoreProductViewController extends UIViewController {
 	delegate: SKStoreProductViewControllerDelegate;
 
 	loadProductWithParametersCompletionBlock(parameters: NSDictionary<string, any>, block: (p1: boolean, p2: NSError) => void): void;
+
+	loadProductWithParametersImpressionCompletionBlock(parameters: NSDictionary<string, any>, impression: SKAdImpression, block: (p1: boolean, p2: NSError) => void): void;
 }
 
 interface SKStoreProductViewControllerDelegate extends NSObjectProtocol {

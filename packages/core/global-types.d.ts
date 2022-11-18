@@ -1,6 +1,3 @@
-/* eslint-disable no-var */
-declare var global: NodeJS.Global & typeof globalThis;
-
 interface ModuleResolver {
 	/**
 	 * A function used to resolve the exports for a module.
@@ -126,8 +123,19 @@ declare namespace NodeJS {
 		isIOS?: boolean;
 		isAndroid?: boolean;
 		__requireOverride?: (name: string, dir: string) => any;
+
+		// used to get the rootlayout instance to add/remove childviews
+		rootLayout: any;
 	}
 }
+declare const __DEV__: boolean;
+declare const __CSS_PARSER__: string;
+declare const __NS_WEBPACK__: boolean;
+declare const __UI_USE_EXTERNAL_RENDERER__: boolean;
+declare const __UI_USE_XML_PARSER__: boolean;
+declare const __USE_TEST_ID__: boolean | undefined;
+declare const __ANDROID__: boolean;
+declare const __IOS__: boolean;
 
 declare function setTimeout(callback: (...args: any[]) => void, ms: number, ...args: any[]): number;
 declare function clearTimeout(timeoutId: number): void;
@@ -149,13 +157,6 @@ interface ModuleContext {
 	 * The path of the module for replacement.
 	 */
 	path: string;
-}
-
-// Define a minimal subset of NodeRequire and NodeModule so user apps can compile without
-// installing @types/node
-
-interface NodeRequire {
-	(id: string): any;
 }
 
 interface NodeModule {
@@ -218,10 +219,6 @@ interface RequireContext {
 	(id: string): any;
 	<T>(id: string): T;
 	resolve(id: string): string;
-}
-
-interface NodeRequire {
-	context(path: string, deep?: boolean, filter?: RegExp): RequireContext;
 }
 
 declare var __dirname: string;
@@ -357,4 +354,35 @@ declare class WeakRef<T> {
 	constructor(obj: T);
 	get(): T;
 	clear(): void;
+	deref(): T | undefined;
 }
+
+/**
+ * Create a Java long from a number
+ */
+declare function long(value: number): any;
+
+/**
+ * Create a Java byte from a number
+ */
+declare function byte(value: number): any;
+
+/**
+ * Create a Java short from a number
+ */
+declare function short(value: number): any;
+
+/**
+ * Create a Java double from a number
+ */
+declare function double(value: number): any;
+
+/**
+ * Create a Java float from a number
+ */
+declare function float(value: number): any;
+
+/**
+ * Create a Java char from a string
+ */
+declare function char(value: string): any;

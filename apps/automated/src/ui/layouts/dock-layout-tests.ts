@@ -11,7 +11,7 @@ import * as dockModule from '@nativescript/core/ui/layouts/dock-layout';
 // << dock-layout-require
 
 // >> dock-layout-others
-import * as enums from '@nativescript/core/ui/enums';
+import { CoreTypes } from '@nativescript/core';
 // << dock-layout-others
 
 export class DockLayoutTest extends testModule.UITest<DockLayout> {
@@ -41,7 +41,7 @@ export class DockLayoutTest extends testModule.UITest<DockLayout> {
 	public test_dock_DefaultValue() {
 		var testBtn = new button.Button();
 		var value = dockModule.DockLayout.getDock(testBtn);
-		TKUnit.assertEqual(value, enums.Dock.left, 'Default dock value.');
+		TKUnit.assertEqual(value, CoreTypes.Dock.left, 'Default dock value.');
 	}
 
 	public test_setInvalidDock_Throws() {

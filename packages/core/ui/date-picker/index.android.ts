@@ -1,4 +1,6 @@
 import { DatePickerBase, yearProperty, monthProperty, dayProperty, dateProperty, maxDateProperty, minDateProperty } from './date-picker-common';
+import { TimePicker } from '../time-picker';
+import { StackLayout } from '../layouts/stack-layout';
 
 export * from './date-picker-common';
 
@@ -40,8 +42,15 @@ function initializeDateChangedListener(): void {
 				dateChanged = true;
 			}
 
-			if (dateChanged) {
-				dateProperty.nativeValueChange(owner, new Date(year, month, day));
+			if (dateChanged || (owner.showTime && owner.timePicker)) {
+				let newDate: Date;
+				if (owner.showTime && owner.timePicker) {
+					const dateTime = owner.timePicker.time;
+					newDate = new Date(year, month, day, dateTime.getHours(), dateTime.getMinutes(), dateTime.getSeconds(), dateTime.getMilliseconds());
+				} else {
+					newDate = new Date(year, month, day);
+				}
+				dateProperty.nativeValueChange(owner, newDate);
 			}
 		}
 	}
@@ -51,6 +60,7 @@ function initializeDateChangedListener(): void {
 
 export class DatePicker extends DatePickerBase {
 	nativeViewProtected: android.widget.DatePicker;
+	timePicker: TimePicker;
 
 	public createNativeView() {
 		const picker = new android.widget.DatePicker(this._context);
@@ -66,9 +76,21 @@ export class DatePicker extends DatePickerBase {
 		const listener = new DateChangedListener(this);
 		nativeView.init(this.year, this.month - 1, this.day, listener);
 		(<any>nativeView).listener = listener;
+		if (this.showTime) {
+			this.timePicker = new TimePicker();
+			this.timePicker.width = this.width;
+			this.timePicker.height = this.height;
+			this.timePicker.on('timeChange', (args) => {
+				this.updateNativeDate();
+			});
+			(<StackLayout>this.parent).addChild(this.timePicker);
+		}
 	}
 
 	public disposeNativeView() {
+		if (this.timePicker) {
+			this.timePicker.disposeNativeView();
+		}
 		(<any>this.nativeViewProtected).listener.owner = null;
 		super.disposeNativeView();
 	}
@@ -78,7 +100,12 @@ export class DatePicker extends DatePickerBase {
 		const year = typeof this.year === 'number' ? this.year : nativeView.getYear();
 		const month = typeof this.month === 'number' ? this.month - 1 : nativeView.getMonth();
 		const day = typeof this.day === 'number' ? this.day : nativeView.getDayOfMonth();
-		this.date = new Date(year, month, day);
+		if (this.showTime && this.timePicker) {
+			const time = this.timePicker.time || new Date();
+			this.date = new Date(year, month, day, time.getHours(), time.getMinutes(), time.getSeconds(), time.getMilliseconds());
+		} else {
+			this.date = new Date(year, month, day);
+		}
 	}
 
 	[yearProperty.setNative](value: number) {

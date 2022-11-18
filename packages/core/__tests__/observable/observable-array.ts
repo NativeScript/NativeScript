@@ -44,4 +44,28 @@ describe('observable-array', () => {
 			assert.equal(0, _array.length);
 		});
 	});
+
+	describe('findIndex', () => {
+		it('finds an item', () => {
+			const _array = new ObservableArray();
+
+			_array.push(1);
+			_array.push(2);
+
+			const index = _array.findIndex((i) => i === 2);
+
+			assert.equal(1, index);
+		});
+
+		it('does not find item', () => {
+			const _array = new ObservableArray();
+
+			_array.push(1);
+			_array.push(2);
+
+			const index = _array.findIndex((i) => i === 3);
+
+			assert.equal(-1, index);
+		});
+	});
 });

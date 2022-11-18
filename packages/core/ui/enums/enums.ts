@@ -1,5 +1,5 @@
 /**
- * A lot of plugins still used enums/enums
- * Left here for convenience (over time can eventually remove these)
+ * A lot of plugins still used @nativescript/core/ui/enums/enums
+ * Remove this once @nativescript/eslint-plugin supports automigrating these
  */
-export * from './index';
+export * from '../../core-types';

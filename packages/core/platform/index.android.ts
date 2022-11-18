@@ -1,5 +1,6 @@
 /* tslint:disable:class-name */
 import { getNativeApplication, on, orientationChangedEvent, android as AndroidApplication } from '../application';
+import { SDK_VERSION } from '../utils';
 
 const MIN_TABLET_PIXELS = 600;
 
@@ -67,8 +68,6 @@ class DeviceRef {
 	private _sdkVersion: string;
 	private _deviceType: 'Phone' | 'Tablet';
 	private _uuid: string;
-	private _language: string;
-	private _region: string;
 
 	get manufacturer(): string {
 		if (!this._manufacturer) {
@@ -130,19 +129,23 @@ class DeviceRef {
 	}
 
 	get language(): string {
-		if (!this._language) {
-			this._language = java.util.Locale.getDefault().getLanguage().replace('_', '-');
+		let defaultNativeLocale;
+		if (SDK_VERSION >= 24) {
+			defaultNativeLocale = android.content.res.Resources.getSystem().getConfiguration().getLocales().get(0);
+		} else {
+			defaultNativeLocale = android.content.res.Resources.getSystem().getConfiguration().locale;
 		}
-
-		return this._language;
+		return defaultNativeLocale.getLanguage().replace('_', '-');
 	}
 
 	get region(): string {
-		if (!this._region) {
-			this._region = java.util.Locale.getDefault().getCountry();
+		let defaultNativeLocale;
+		if (SDK_VERSION >= 24) {
+			defaultNativeLocale = android.content.res.Resources.getSystem().getConfiguration().getLocales().get(0);
+		} else {
+			defaultNativeLocale = android.content.res.Resources.getSystem().getConfiguration().locale;
 		}
-
-		return this._region;
+		return defaultNativeLocale.getCountry();
 	}
 }
 

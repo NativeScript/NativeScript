@@ -55,6 +55,10 @@ declare class SRApplicationUsage extends NSObject {
 
 	readonly bundleIdentifier: string;
 
+	readonly reportApplicationIdentifier: string;
+
+	readonly textInputSessions: NSArray<SRTextInputSession>;
+
 	readonly usageTime: number;
 }
 
@@ -301,6 +305,8 @@ declare class SRKeyboardMetrics extends NSObject {
 
 	readonly height: NSMeasurement<NSUnitLength>;
 
+	readonly inputModes: NSArray<string>;
+
 	readonly keyboardIdentifier: string;
 
 	readonly longWordDownErrorDistance: NSArray<SRKeyboardProbabilityMetric<NSUnitLength>>;
@@ -318,6 +324,8 @@ declare class SRKeyboardMetrics extends NSObject {
 	readonly pathToPath: SRKeyboardProbabilityMetric<NSUnitDuration>;
 
 	readonly pathToSpace: SRKeyboardProbabilityMetric<NSUnitDuration>;
+
+	readonly pathTypingSpeed: number;
 
 	readonly planeChangeKeyToCharKey: SRKeyboardProbabilityMetric<NSUnitDuration>;
 
@@ -369,9 +377,13 @@ declare class SRKeyboardMetrics extends NSObject {
 
 	readonly totalPathLength: NSMeasurement<NSUnitLength>;
 
+	readonly totalPathPauses: number;
+
 	readonly totalPathTime: number;
 
 	readonly totalPaths: number;
+
+	readonly totalPauses: number;
 
 	readonly totalRetroCorrections: number;
 
@@ -387,17 +399,48 @@ declare class SRKeyboardMetrics extends NSObject {
 
 	readonly totalTypingDuration: number;
 
+	readonly totalTypingEpisodes: number;
+
 	readonly totalWords: number;
 
 	readonly touchDownDown: SRKeyboardProbabilityMetric<NSUnitDuration>;
 
 	readonly touchDownUp: SRKeyboardProbabilityMetric<NSUnitDuration>;
 
+	readonly typingSpeed: number;
+
 	readonly upErrorDistance: SRKeyboardProbabilityMetric<NSUnitLength>;
 
 	readonly version: string;
 
 	readonly width: NSMeasurement<NSUnitLength>;
+
+	emojiCountForSentimentCategory(category: SRKeyboardMetricsSentimentCategory): number;
+
+	wordCountForSentimentCategory(category: SRKeyboardMetricsSentimentCategory): number;
+}
+
+declare const enum SRKeyboardMetricsSentimentCategory {
+
+	Absolutist = 0,
+
+	Down = 1,
+
+	Death = 2,
+
+	Anxiety = 3,
+
+	Anger = 4,
+
+	Health = 5,
+
+	Positive = 6,
+
+	Sad = 7,
+
+	LowEnergy = 8,
+
+	Confused = 9
 }
 
 declare class SRKeyboardProbabilityMetric<UnitType> extends NSObject {
@@ -506,6 +549,8 @@ declare var SRSensorAccelerometer: string;
 
 declare var SRSensorAmbientLightSensor: string;
 
+declare var SRSensorAmbientPressure: string;
+
 declare var SRSensorDeviceUsageReport: string;
 
 declare var SRSensorKeyboardMetrics: string;
@@ -574,7 +619,33 @@ declare var SRSensorReaderDelegate: {
 
 declare var SRSensorRotationRate: string;
 
+declare var SRSensorSiriSpeechMetrics: string;
+
+declare var SRSensorTelephonySpeechMetrics: string;
+
 declare var SRSensorVisits: string;
+
+declare class SRTextInputSession extends NSObject {
+
+	static alloc(): SRTextInputSession; // inherited from NSObject
+
+	static new(): SRTextInputSession; // inherited from NSObject
+
+	readonly duration: number;
+
+	readonly sessionType: SRTextInputSessionType;
+}
+
+declare const enum SRTextInputSessionType {
+
+	Keyboard = 1,
+
+	ThirdPartyKeyboard = 2,
+
+	Pencil = 3,
+
+	Dictation = 4
+}
 
 declare class SRVisit extends NSObject {
 

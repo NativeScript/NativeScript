@@ -1,6 +1,7 @@
-import { WebViewBase, WebViewClient } from './web-view-common';
+import { disableZoomProperty, WebViewBase, WebViewClient } from './web-view-common';
 import { Trace } from '../../trace';
 import { knownFolders } from '../../file-system';
+import { openUrl } from '../../utils';
 
 export * from './web-view-common';
 
@@ -19,9 +20,17 @@ function initializeWebViewClient(): void {
 			return global.__native(this);
 		}
 
-		public shouldOverrideUrlLoading(view: android.webkit.WebView, url: any) {
+		public shouldOverrideUrlLoading(view: android.webkit.WebView, target: any) {
+			const url: string = target instanceof android.webkit.WebResourceRequest ? target.getUrl().toString() : target;
+
 			if (Trace.isEnabled()) {
 				Trace.write('WebViewClientClass.shouldOverrideUrlLoading(' + url + ')', Trace.categories.Debug);
+			}
+
+			// Handle schemes like mailto, tel, etc
+			if (!android.webkit.URLUtil.isNetworkUrl(url)) {
+				openUrl(url);
+				return true;
 			}
 
 			return false;
@@ -94,8 +103,10 @@ export class WebView extends WebViewBase {
 
 	public createNativeView() {
 		const nativeView = new android.webkit.WebView(this._context);
-		nativeView.getSettings().setJavaScriptEnabled(true);
-		nativeView.getSettings().setBuiltInZoomControls(true);
+		const settings = nativeView.getSettings();
+		settings.setJavaScriptEnabled(true);
+		settings.setBuiltInZoomControls(true);
+		settings.setAllowFileAccess(true);
 
 		return nativeView;
 	}
@@ -107,6 +118,7 @@ export class WebView extends WebViewBase {
 		const client = new WebViewClient(<any>this);
 		nativeView.setWebViewClient(client);
 		(<any>nativeView).client = client;
+		this._disableZoom(this.disableZoom);
 	}
 
 	public disposeNativeView() {
@@ -117,6 +129,19 @@ export class WebView extends WebViewBase {
 
 		(<any>nativeView).client.owner = null;
 		super.disposeNativeView();
+	}
+
+	private _disableZoom(value: boolean) {
+		if (this.nativeView && value) {
+			const settings = this.nativeView.getSettings();
+			settings.setBuiltInZoomControls(false);
+			settings.setSupportZoom(false);
+			settings.setDisplayZoomControls(false);
+		}
+	}
+
+	[disableZoomProperty.setNative](value: boolean) {
+		this._disableZoom(value);
 	}
 
 	public _loadUrl(src: string) {

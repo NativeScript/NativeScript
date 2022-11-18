@@ -501,6 +501,96 @@ declare function __tg_hypotFunction7(x: interop.Reference<number>, y: interop.Re
 
 declare function __tg_hypotFunction8(x: interop.Reference<number>, y: interop.Reference<number>): interop.Reference<number>;
 
+declare function __tg_isfinite(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_isfiniteFunction(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_isfiniteFunction2(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_isfiniteFunction3(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_isfiniteFunction4(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_isfiniteFunction5(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_isfiniteFunction6(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_isfiniteFunction7(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_isfiniteFunction8(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_isinf(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_isinfFunction(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_isinfFunction2(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_isinfFunction3(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_isinfFunction4(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_isinfFunction5(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_isinfFunction6(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_isinfFunction7(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_isinfFunction8(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_isnan(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_isnanFunction(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_isnanFunction2(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_isnanFunction3(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_isnanFunction4(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_isnanFunction5(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_isnanFunction6(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_isnanFunction7(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_isnanFunction8(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_isnormal(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_isnormalFunction(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_isnormalFunction2(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_isnormalFunction3(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_isnormalFunction4(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_isnormalFunction5(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_isnormalFunction6(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_isnormalFunction7(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_isnormalFunction8(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_lgamma(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_lgammaFunction(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_lgammaFunction2(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_lgammaFunction3(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_lgammaFunction4(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_lgammaFunction5(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_lgammaFunction6(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_lgammaFunction7(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_lgammaFunction8(x: interop.Reference<number>): interop.Reference<number>;
+
 declare function __tg_log(x: interop.Reference<number>): interop.Reference<number>;
 
 declare function __tg_log10(x: interop.Reference<number>): interop.Reference<number>;
@@ -706,6 +796,42 @@ declare function __tg_sinFunction6(x: interop.Reference<number>): interop.Refere
 declare function __tg_sinFunction7(x: interop.Reference<number>): interop.Reference<number>;
 
 declare function __tg_sinFunction8(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function __tg_sincos(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+
+declare function __tg_sincosFunction(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+
+declare function __tg_sincosFunction2(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+
+declare function __tg_sincosFunction3(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+
+declare function __tg_sincosFunction4(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+
+declare function __tg_sincosFunction5(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+
+declare function __tg_sincosFunction6(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+
+declare function __tg_sincosFunction7(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+
+declare function __tg_sincosFunction8(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+
+declare function __tg_sincospi(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+
+declare function __tg_sincospiFunction(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+
+declare function __tg_sincospiFunction2(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+
+declare function __tg_sincospiFunction3(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+
+declare function __tg_sincospiFunction4(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+
+declare function __tg_sincospiFunction5(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+
+declare function __tg_sincospiFunction6(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+
+declare function __tg_sincospiFunction7(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+
+declare function __tg_sincospiFunction8(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
 
 declare function __tg_sinh(x: interop.Reference<number>): interop.Reference<number>;
 
@@ -939,6 +1065,10 @@ declare function _simd_insphere_pd3(p1: interop.Pointer | interop.Reference<numb
 
 declare function _simd_insphere_pf3(p1: interop.Reference<number>, p2: interop.Reference<number>, p3: interop.Reference<number>, p4: interop.Reference<number>, p5: interop.Reference<number>): number;
 
+declare function _simd_lgamma_d2(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function _simd_lgamma_f4(x: interop.Reference<number>): interop.Reference<number>;
+
 declare function _simd_log10_d2(x: interop.Reference<number>): interop.Reference<number>;
 
 declare function _simd_log10_f4(x: interop.Reference<number>): interop.Reference<number>;
@@ -990,6 +1120,14 @@ declare function _simd_round_f4(x: interop.Reference<number>): interop.Reference
 declare function _simd_sin_d2(x: interop.Reference<number>): interop.Reference<number>;
 
 declare function _simd_sin_f4(x: interop.Reference<number>): interop.Reference<number>;
+
+declare function _simd_sincos_d2(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+
+declare function _simd_sincos_f4(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+
+declare function _simd_sincospi_d2(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
+
+declare function _simd_sincospi_f4(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
 
 declare function _simd_sinh_d2(x: interop.Reference<number>): interop.Reference<number>;
 
@@ -4346,6 +4484,18 @@ declare function simd_subFunction7(__x: simd_float3x4, __y: simd_float3x4): simd
 declare function simd_subFunction8(__x: simd_float4x4, __y: simd_float4x4): simd_float4x4;
 
 declare function simd_subFunction9(__x: simd_double2x2, __y: simd_double2x2): simd_double2x2;
+
+declare function simd_trace(__x: simd_float2x2): number;
+
+declare function simd_traceFunction(__x: simd_float3x3): number;
+
+declare function simd_traceFunction2(__x: simd_float4x4): number;
+
+declare function simd_traceFunction3(__x: simd_double2x2): number;
+
+declare function simd_traceFunction4(__x: simd_double3x3): number;
+
+declare function simd_traceFunction5(__x: simd_double4x4): number;
 
 declare function simd_transpose(__x: simd_float2x2): simd_float2x2;
 

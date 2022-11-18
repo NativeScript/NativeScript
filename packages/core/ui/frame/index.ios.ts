@@ -20,7 +20,6 @@ const DELEGATE = '_delegate';
 const NAV_DEPTH = '_navDepth';
 const TRANSITION = '_transition';
 const NON_ANIMATED_TRANSITION = 'non-animated';
-const HMR_REPLACE_TRANSITION = 'fade';
 
 let navDepth = -1;
 
@@ -43,6 +42,8 @@ export class Frame extends FrameBase {
 		this._removeFromFrameStack();
 		this.viewController = null;
 		this._ios.controller = null;
+		this._animatedDelegate = null;
+		this._ios = null;
 		super.disposeNativeView();
 	}
 
@@ -84,14 +85,7 @@ export class Frame extends FrameBase {
 
 		let navigationTransition: NavigationTransition;
 		let animated = this.currentPage ? this._getIsAnimatedNavigation(backstackEntry.entry) : false;
-		if (isReplace) {
-			animated = true;
-			navigationTransition = {
-				name: HMR_REPLACE_TRANSITION,
-				duration: 100,
-			};
-			viewController[TRANSITION] = navigationTransition;
-		} else if (animated) {
+		if (animated) {
 			navigationTransition = this._getNavigationTransition(backstackEntry.entry);
 			if (navigationTransition) {
 				viewController[TRANSITION] = navigationTransition;
@@ -124,7 +118,7 @@ export class Frame extends FrameBase {
 		if (!this._currentEntry) {
 			// Update action-bar with disabled animations before the initial navigation.
 			this._updateActionBar(backstackEntry.resolvedPage, true);
-			this._ios.controller.pushViewControllerAnimated(viewController, animated);
+			this.pushViewControllerAnimated(viewController, animated);
 			if (Trace.isEnabled()) {
 				Trace.write(`${this}.pushViewControllerAnimated(${viewController}, ${animated}); depth = ${navDepth}`, Trace.categories.Navigation);
 			}
@@ -186,6 +180,17 @@ export class Frame extends FrameBase {
 		}
 	}
 
+	private pushViewControllerAnimated(viewController: UIViewController, animated: boolean) {
+		let transitionCoordinator = this._ios.controller.transitionCoordinator;
+		if (transitionCoordinator) {
+			transitionCoordinator.animateAlongsideTransitionCompletion(null, () => {
+				this._ios.controller.pushViewControllerAnimated(viewController, animated);
+			});
+		} else {
+			this._ios.controller.pushViewControllerAnimated(viewController, animated);
+		}
+	}
+
 	public _goBackCore(backstackEntry: BackstackEntry) {
 		super._goBackCore(backstackEntry);
 		navDepth = backstackEntry[NAV_DEPTH];
@@ -224,7 +229,7 @@ export class Frame extends FrameBase {
 			this._ios._disableNavBarAnimation = disableNavBarAnimationCache;
 		}
 
-		if (this._ios.controller.navigationBar) {
+		if (this._ios.controller?.navigationBar) {
 			this._ios.controller.navigationBar.userInteractionEnabled = this.navigationQueueIsEmpty();
 		}
 
@@ -404,13 +409,13 @@ class UINavigationControllerImpl extends UINavigationController {
 	}
 
 	get owner(): Frame {
-		return this._owner.get();
+		return this._owner.get?.();
 	}
 
 	@profile
 	public viewWillAppear(animated: boolean): void {
 		super.viewWillAppear(animated);
-		const owner = this._owner.get();
+		const owner = this._owner.get?.();
 		if (owner && !owner.isLoaded && !owner.parent) {
 			owner.callLoaded();
 		}
@@ -419,7 +424,7 @@ class UINavigationControllerImpl extends UINavigationController {
 	@profile
 	public viewDidDisappear(animated: boolean): void {
 		super.viewDidDisappear(animated);
-		const owner = this._owner.get();
+		const owner = this._owner?.get?.();
 		if (owner && owner.isLoaded && !owner.parent && !this.presentedViewController) {
 			owner.callUnloaded();
 			owner._tearDownUI(true);
@@ -543,7 +548,7 @@ class UINavigationControllerImpl extends UINavigationController {
 		super.traitCollectionDidChange(previousTraitCollection);
 
 		if (majorVersion >= 13) {
-			const owner = this._owner.get();
+			const owner = this._owner.get?.();
 			if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
 				owner.notify({
 					eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
@@ -666,7 +671,9 @@ class iOSFrame implements iOSFrameDefinition {
 	}
 	public set showNavigationBar(value: boolean) {
 		this._showNavigationBar = value;
-		this._controller.setNavigationBarHiddenAnimated(!value, !this._disableNavBarAnimation);
+		if (this._controller) {
+			this._controller.setNavigationBarHiddenAnimated(!value, !this._disableNavBarAnimation);
+		}
 	}
 
 	public get navBarVisibility(): 'auto' | 'never' | 'always' {

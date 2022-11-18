@@ -63,11 +63,15 @@ declare const enum SFErrorCode {
 
 declare var SFErrorDomain: string;
 
+declare var SFExtensionMessageKey: string;
+
 declare class SFSafariViewController extends UIViewController {
 
 	static alloc(): SFSafariViewController; // inherited from NSObject
 
 	static new(): SFSafariViewController; // inherited from NSObject
+
+	static prewarmConnectionsToURLs(URLs: NSArray<NSURL> | NSURL[]): SFSafariViewControllerPrewarmingToken;
 
 	readonly configuration: SFSafariViewControllerConfiguration;
 
@@ -92,17 +96,57 @@ declare class SFSafariViewController extends UIViewController {
 	initWithURLEntersReaderIfAvailable(URL: NSURL, entersReaderIfAvailable: boolean): this;
 }
 
+declare class SFSafariViewControllerActivityButton extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): SFSafariViewControllerActivityButton; // inherited from NSObject
+
+	static new(): SFSafariViewControllerActivityButton; // inherited from NSObject
+
+	readonly extensionIdentifier: string;
+
+	readonly templateImage: UIImage;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { templateImage: UIImage; extensionIdentifier: string; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithTemplateImageExtensionIdentifier(templateImage: UIImage, extensionIdentifier: string): this;
+}
+
 declare class SFSafariViewControllerConfiguration extends NSObject implements NSCopying {
 
 	static alloc(): SFSafariViewControllerConfiguration; // inherited from NSObject
 
 	static new(): SFSafariViewControllerConfiguration; // inherited from NSObject
 
+	activityButton: SFSafariViewControllerActivityButton;
+
 	barCollapsingEnabled: boolean;
 
 	entersReaderIfAvailable: boolean;
 
+	eventAttribution: UIEventAttribution;
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare class SFSafariViewControllerDataStore extends NSObject {
+
+	static alloc(): SFSafariViewControllerDataStore; // inherited from NSObject
+
+	static new(): SFSafariViewControllerDataStore; // inherited from NSObject
+
+	static readonly defaultDataStore: SFSafariViewControllerDataStore;
+
+	clearWebsiteDataWithCompletionHandler(completion: () => void): void;
 }
 
 interface SFSafariViewControllerDelegate extends NSObjectProtocol {
@@ -131,6 +175,15 @@ declare const enum SFSafariViewControllerDismissButtonStyle {
 	Close = 1,
 
 	Cancel = 2
+}
+
+declare class SFSafariViewControllerPrewarmingToken extends NSObject {
+
+	static alloc(): SFSafariViewControllerPrewarmingToken; // inherited from NSObject
+
+	static new(): SFSafariViewControllerPrewarmingToken; // inherited from NSObject
+
+	invalidate(): void;
 }
 
 declare class SSReadingList extends NSObject {

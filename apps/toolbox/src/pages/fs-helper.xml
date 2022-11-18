@@ -1,0 +1,8 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+
+   <StackLayout>
+            <Button text="Create Random" tap="createRandom" />
+            <Button text="Pick File" tap="pickFile" />
+            <Button text="Pick Multiple Files" tap="pickFiles" />
+    </StackLayout>
+</Page>

@@ -262,6 +262,8 @@ declare const enum RPRecordingErrorCode {
 
 	FilePermissions = -5835,
 
+	ExportClipToURLInProgress = -5836,
+
 	CodeSuccessful = 0
 }
 
@@ -300,13 +302,19 @@ declare class RPScreenRecorder extends NSObject {
 
 	discardRecordingWithHandler(handler: () => void): void;
 
+	exportClipToURLDurationCompletionHandler(url: NSURL, duration: number, completionHandler: (p1: NSError) => void): void;
+
 	startCaptureWithHandlerCompletionHandler(captureHandler: (p1: any, p2: RPSampleBufferType, p3: NSError) => void, completionHandler: (p1: NSError) => void): void;
+
+	startClipBufferingWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
 
 	startRecordingWithHandler(handler: (p1: NSError) => void): void;
 
 	startRecordingWithMicrophoneEnabledHandler(microphoneEnabled: boolean, handler: (p1: NSError) => void): void;
 
 	stopCaptureWithHandler(handler: (p1: NSError) => void): void;
+
+	stopClipBufferingWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
 
 	stopRecordingWithHandler(handler: (p1: RPPreviewViewController, p2: NSError) => void): void;
 
@@ -356,3 +364,5 @@ declare class RPSystemBroadcastPickerView extends UIView implements NSCoding {
 }
 
 declare var RPVideoSampleOrientationKey: string;
+
+declare var SCStreamErrorDomain: string;

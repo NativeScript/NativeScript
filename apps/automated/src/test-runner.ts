@@ -32,25 +32,25 @@ allTests['GLOBALS'] = globalsTests;
 import * as domNodeTest from './debugger/dom-node-tests';
 allTests['DOM-NODE'] = domNodeTest;
 
-import * as profilingTests from './profiling/profiling-tests';
-allTests['PROFILING'] = profilingTests;
-
 import * as platformTests from './platform/platform-tests';
 allTests['PLATFORM'] = platformTests;
 
 import * as fsTests from './file-system/file-system-tests';
 allTests['FILE-SYSTEM'] = fsTests;
 
-// Disabled tests as they have external dependencies
-// TODO: find a way to run these tests locally, but don't run them on the CI as they are flaky
-// import * as httpTests from "./http/http-tests";
-// allTests["HTTP"] = httpTests;
-
-// import * as xhrTests from "./xhr/xhr-tests";
-// allTests["XHR"] = xhrTests;
-
-// import * as fetchTests from "./fetch/fetch-tests";
-// allTests["FETCH"] = fetchTests;
+import * as httpTests from './http/http-tests';
+import * as xhrTests from './xhr/xhr-tests';
+import * as fetchTests from './fetch/fetch-tests';
+import * as timerTests from './timer/timer-tests';
+import * as profilingTests from './profiling/profiling-tests';
+// don't run these on CI as they are flaky
+if (!__CI__) {
+	allTests['HTTP'] = httpTests;
+	allTests['XHR'] = xhrTests;
+	allTests['FETCH'] = fetchTests;
+	allTests['TIMER'] = timerTests;
+	allTests['PROFILING'] = profilingTests;
+}
 
 import * as appSettingsTests from './application-settings/application-settings-tests';
 allTests['APPLICATION-SETTINGS'] = appSettingsTests;
@@ -70,11 +70,8 @@ allTests['VIRTUAL-ARRAY'] = virtualArrayTests;
 import * as observableTests from './data/observable-tests';
 allTests['OBSERVABLE'] = observableTests;
 
-import * as timerTests from './timer/timer-tests';
-allTests['TIMER'] = timerTests;
-
-import * as animationFrameTests from './animation-frame/animation-frame';
-allTests['ANIMATION-FRAME'] = animationFrameTests;
+// import * as animationFrameTests from './animation-frame/animation-frame';
+// allTests['ANIMATION-FRAME'] = animationFrameTests;
 
 import * as colorTests from './color/color-tests';
 allTests['COLOR'] = colorTests;
@@ -82,8 +79,8 @@ allTests['COLOR'] = colorTests;
 import * as bindableTests from './ui/core/bindable/bindable-tests';
 allTests['BINDABLE'] = bindableTests;
 
-import * as bindingExpressionTests from './ui/core/bindable/binding-expressions-tests';
-allTests['BINDING-EXPRESSIONS'] = bindingExpressionTests;
+// import * as bindingExpressionTests from './ui/core/bindable/binding-expressions-tests';
+// allTests['BINDING-EXPRESSIONS'] = bindingExpressionTests;
 
 import * as xmlParserTests from './xml-parser-tests/xml-parser-tests';
 allTests['XML-PARSER'] = xmlParserTests;
@@ -118,9 +115,8 @@ allTests['SCROLL-VIEW'] = scrollViewTests;
 import * as actionBarTests from './ui/action-bar/action-bar-tests';
 allTests['ACTION-BAR'] = actionBarTests;
 
-//TODO: 1 test commented out: test_EventInCodelessFragment
-import * as xmlDeclarationTests from './xml-declaration/xml-declaration-tests';
-allTests['XML-DECLARATION'] = xmlDeclarationTests;
+// import * as xmlDeclarationTests from './xml-declaration/xml-declaration-tests';
+// allTests['XML-DECLARATION'] = xmlDeclarationTests;
 
 import * as dockLayoutTests from './ui/layouts/dock-layout-tests';
 allTests['DOCKLAYOUT'] = dockLayoutTests;
@@ -190,25 +186,6 @@ allTests['BUTTON'] = buttonTests;
 import * as labelTests from './ui/label/label-tests';
 allTests['LABEL'] = labelTests;
 
-import * as bottomNavigationTests from './ui/bottom-navigation/bottom-navigation-tests';
-allTests['BOTTOM-NAVIGATION'] = bottomNavigationTests;
-
-import * as bottomNavigationTestsNew from './ui/bottom-navigation/bottom-navigation-tests-new';
-allTests['BOTTOM-NAVIGATION-NEW'] = bottomNavigationTestsNew;
-
-import * as bottomNavigationNavigationTests from './ui/bottom-navigation/bottom-navigation-navigation-tests';
-// TODO: uncomment this
-// allTests["BOTTOM-NAVIGATION-NAVIGATION"] = bottomNavigationNavigationTests;
-
-import * as tabsTests from './ui/tabs/tabs-tests';
-allTests['TABS'] = tabsTests;
-
-import * as tabsTestsNew from './ui/tabs/tabs-tests-new';
-allTests['TABS-NEW'] = tabsTestsNew;
-
-import * as tabsNavigationTests from './ui/tabs/tabs-navigation-tests';
-allTests['TABS-NAVIGATION'] = tabsNavigationTests;
-
 import * as tabViewTests from './ui/tab-view/tab-view-tests';
 allTests['TAB-VIEW'] = tabViewTests;
 
@@ -236,8 +213,8 @@ allTests['PROGRESS'] = progressTests;
 import * as placeholderTests from './ui/placeholder/placeholder-tests';
 allTests['PLACEHOLDER'] = placeholderTests;
 
-import * as pageTests from './ui/page/page-tests';
-allTests['PAGE'] = pageTests;
+// import * as pageTests from './ui/page/page-tests';
+// allTests['PAGE'] = pageTests;
 
 import * as listViewTests from './ui/list-view/list-view-tests';
 allTests['LISTVIEW'] = listViewTests;
@@ -260,8 +237,8 @@ allTests['DATE-PICKER'] = datePickerTests;
 import * as timePickerTests from './ui/time-picker/time-picker-tests';
 allTests['TIME-PICKER'] = timePickerTests;
 
-import * as webViewTests from './ui/web-view/web-view-tests';
-allTests['WEB-VIEW'] = webViewTests;
+// import * as webViewTests from './ui/web-view/web-view-tests';
+// allTests['WEB-VIEW'] = webViewTests;
 
 import * as htmlViewTests from './ui/html-view/html-view-tests';
 allTests['HTML-VIEW'] = htmlViewTests;
@@ -272,14 +249,14 @@ allTests['REPEATER'] = repeaterTests;
 import * as segmentedBarTests from './ui/segmented-bar/segmented-bar-tests';
 allTests['SEGMENTED-BAR'] = segmentedBarTests;
 
-import * as animationTests from './ui/animation/animation-tests';
-allTests['ANIMATION'] = animationTests;
+// import * as animationTests from './ui/animation/animation-tests';
+// allTests['ANIMATION'] = animationTests;
 
 import * as lifecycle from './ui/lifecycle/lifecycle-tests';
 allTests['LIFECYCLE'] = lifecycle;
 
-import * as cssAnimationTests from './ui/animation/css-animation-tests';
-allTests['CSS-ANIMATION'] = cssAnimationTests;
+// import * as cssAnimationTests from './ui/animation/css-animation-tests';
+// allTests['CSS-ANIMATION'] = cssAnimationTests;
 
 import * as transitionTests from './navigation/transition-tests';
 allTests['TRANSITIONS'] = transitionTests;
@@ -287,21 +264,14 @@ allTests['TRANSITIONS'] = transitionTests;
 import * as searchBarTests from './ui/search-bar/search-bar-tests';
 allTests['SEARCH-BAR'] = searchBarTests;
 
-import * as navigationTests from './navigation/navigation-tests';
-allTests['NAVIGATION'] = navigationTests;
+// import * as navigationTests from './navigation/navigation-tests';
+// allTests['NAVIGATION'] = navigationTests;
 
-import * as livesyncTests from './livesync/livesync-tests';
-allTests['LIVESYNC'] = livesyncTests;
+// import * as livesyncTests from './livesync/livesync-tests';
+// allTests['LIVESYNC'] = livesyncTests;
 
 import * as tabViewRootTests from './ui/tab-view/tab-view-root-tests';
 allTests['TAB-VIEW-ROOT'] = tabViewRootTests;
-
-import * as bottomNavigationRootTests from './ui/bottom-navigation/bottom-navigation-root-tests';
-allTests['BOTTOM-NAVIGATION-ROOT'] = bottomNavigationRootTests;
-
-// Reset root view didn't work with android tabs
-// import * as tabsRootTests from "./ui/tabs/tabs-root-tests";
-// allTests["TABS-ROOT"] = tabsRootTests;
 
 import * as resetRootViewTests from './ui/root-view/reset-root-view-tests';
 allTests['RESET-ROOT-VIEW'] = resetRootViewTests;

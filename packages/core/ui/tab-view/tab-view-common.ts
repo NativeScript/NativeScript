@@ -5,7 +5,7 @@ import { Style } from '../styling/style';
 import { EventData } from '../../data/observable';
 import { Color } from '../../color';
 import { Property, CssProperty, CoercibleProperty } from '../core/properties';
-import { TextTransform } from '../text-base';
+import { CoreTypes } from '../../core-types';
 import { Trace } from '../../trace';
 
 export const traceCategory = 'TabView';
@@ -16,10 +16,10 @@ export abstract class TabViewItemBase extends ViewBase implements TabViewItemDef
 	private _view: View;
 	private _iconSource: string;
 
-	get textTransform(): TextTransform {
+	get textTransform(): CoreTypes.TextTransformType {
 		return this.style.textTransform;
 	}
-	set textTransform(value: TextTransform) {
+	set textTransform(value: CoreTypes.TextTransformType) {
 		this.style.textTransform = value;
 	}
 
@@ -93,6 +93,7 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
 	public androidTabsPosition: 'top' | 'bottom';
 	public androidSwipeEnabled: boolean;
 	public iosIconRenderingMode: 'automatic' | 'alwaysOriginal' | 'alwaysTemplate';
+	public androidIconRenderingMode: 'alwaysOriginal' | 'alwaysTemplate';
 
 	get androidSelectedTabHighlightColor(): Color {
 		return this.style.androidSelectedTabHighlightColor;
@@ -249,6 +250,9 @@ itemsProperty.register(TabViewBase);
 
 export const iosIconRenderingModeProperty = new Property<TabViewBase, 'automatic' | 'alwaysOriginal' | 'alwaysTemplate'>({ name: 'iosIconRenderingMode', defaultValue: 'automatic' });
 iosIconRenderingModeProperty.register(TabViewBase);
+
+export const androidIconRenderingModeProperty = new Property<TabViewBase, 'alwaysOriginal' | 'alwaysTemplate'>({ name: 'androidIconRenderingMode', defaultValue: 'alwaysOriginal' });
+androidIconRenderingModeProperty.register(TabViewBase);
 
 export const androidOffscreenTabLimitProperty = new Property<TabViewBase, number>({
 	name: 'androidOffscreenTabLimit',

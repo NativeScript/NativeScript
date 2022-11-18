@@ -1,4 +1,4 @@
-import { dip, px } from '../ui/core/view';
+import { CoreTypes } from '../core-types';
 
 export * from './mainthread-helper';
 export * from './macrotask-scheduler';
@@ -8,6 +8,8 @@ export * from './native-helper';
 
 export const RESOURCE_PREFIX: string;
 export const FILE_PREFIX: string;
+
+export const SDK_VERSION: number;
 
 //@private
 /**
@@ -68,19 +70,19 @@ export namespace layout {
 	 * Convert device independent pixels to device pixels - dip to px.
 	 * @param value - The pixel to convert.
 	 */
-	export function toDevicePixels(value: dip): px;
+	export function toDevicePixels(value: CoreTypes.dip): CoreTypes.px;
 
 	/**
 	 * Convert device pixels to device independent pixels - px to dip.
 	 * @param value - The pixel to convert.
 	 */
-	export function toDeviceIndependentPixels(value: px): dip;
+	export function toDeviceIndependentPixels(value: CoreTypes.px): CoreTypes.dip;
 
 	/**
 	 * Rounds value used in layout.
 	 * @param px to round.
 	 */
-	export function round(px: px): px;
+	export function round(px: CoreTypes.px): CoreTypes.px;
 
 	/**
 	 * Converts device pixels to device independent pixes and measure the nativeView.
@@ -188,6 +190,27 @@ export namespace ad {
 export function GC();
 
 /**
+ * An utility function that queues a garbage collection, multiple calls in quick succession are debounced by default and only one gc will be executed after 900ms.
+ * @param delay Customize the delay
+ * @param useThrottle Instead of default debounce strategy, use throttling
+ */
+export function queueGC(delay?: number, useThrottle?: boolean);
+
+/**
+ * A simple throttle utility
+ * @param fn Function to throttle
+ * @param delay Customize the delay (default is 300ms)
+ */
+export function throttle(fn: any, delay?: number);
+
+/**
+ * A simple debounce utility
+ * @param fn Function to debounce
+ * @param delay Customize the delay (default is 300ms)
+ */
+export function debounce(fn: any, delay?: number);
+
+/**
  * Releases the reference to the wrapped native object
  * @param object The Java/Objective-C object to release.
  */
@@ -205,6 +228,12 @@ export function queueMacrotask(task: () => void): void;
  * @param func The function to execute on the main thread.
  */
 export function executeOnMainThread(func: Function);
+
+/**
+ * Runs the passed function on the UI Thread.
+ * @param func The function to execute on the UI thread.
+ */
+export function executeOnUIThread(func: Function);
 
 /**
  * Returns a function wrapper which executes the supplied function on the main thread.
@@ -242,8 +271,9 @@ export function openUrl(url: string): boolean;
 /**
  * Opens file.
  * @param filePath The file.
+ * @param title Optional title for Android. Default is: 'Open File...'
  */
-export function openFile(filePath: string): boolean;
+export function openFile(filePath: string, title?: string): boolean;
 
 /**
  * Escapes special regex symbols (., *, ^, $ and so on) in string in order to create a valid regex from it.
@@ -286,3 +316,18 @@ export function eliminateDuplicates(arr: Array<any>): Array<any>;
  * Checks whether the application is running on real device and not on simulator/emulator.
  */
 export function isRealDevice(): boolean;
+
+/**
+ * Hides the soft input method, usually a soft keyboard.
+ */
+export function dismissSoftInput(nativeView?: any): void;
+
+/**
+ * Dismiss any keyboard visible on the screen.
+ */
+export function dismissKeyboard(): void;
+
+/**
+ * Copy value to device clipboard.
+ */
+export function copyToClipboard(value: string): void;

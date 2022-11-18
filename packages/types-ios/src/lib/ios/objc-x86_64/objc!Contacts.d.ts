@@ -719,6 +719,8 @@ declare const enum CNErrorCode {
 
 	ChangeHistoryInvalidAnchor = 604,
 
+	ChangeHistoryInvalidFetchRequest = 605,
+
 	VCardMalformed = 700,
 
 	VCardSummarizationError = 701
@@ -1546,6 +1548,10 @@ declare class CNSaveRequest extends NSObject {
 	static alloc(): CNSaveRequest; // inherited from NSObject
 
 	static new(): CNSaveRequest; // inherited from NSObject
+
+	shouldRefetchContacts: boolean;
+
+	transactionAuthor: string;
 
 	addContactToContainerWithIdentifier(contact: CNMutableContact, identifier: string): void;
 

@@ -1,0 +1,11 @@
+{
+  "name": "@nativescript/types-minimal",
+  "version": "8.3.0",
+  "description": "NativeScript 'Minimal' Types for only the latest Android and iOS sdks.",
+  "homepage": "https://nativescript.org",
+  "repository": {
+      "type": "git",
+      "url": "https://github.com/NativeScript/NativeScript"
+  },
+  "license": "Apache-2.0"
+}

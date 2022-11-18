@@ -1,4 +1,44 @@
 
+declare class NIAlgorithmConvergence extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): NIAlgorithmConvergence; // inherited from NSObject
+
+	static new(): NIAlgorithmConvergence; // inherited from NSObject
+
+	readonly reasons: NSArray<string>;
+
+	readonly status: NIAlgorithmConvergenceStatus;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare const enum NIAlgorithmConvergenceStatus {
+
+	Unknown = 0,
+
+	NotConverged = 1,
+
+	Converged = 2
+}
+
+declare function NIAlgorithmConvergenceStatusReasonDescription(reason: string): string;
+
+declare var NIAlgorithmConvergenceStatusReasonInsufficientHorizontalSweep: string;
+
+declare var NIAlgorithmConvergenceStatusReasonInsufficientLighting: string;
+
+declare var NIAlgorithmConvergenceStatusReasonInsufficientMovement: string;
+
+declare var NIAlgorithmConvergenceStatusReasonInsufficientVerticalSweep: string;
+
 declare class NIConfiguration extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): NIConfiguration; // inherited from NSObject
@@ -15,6 +55,19 @@ declare class NIConfiguration extends NSObject implements NSCopying, NSSecureCod
 
 	initWithCoder(coder: NSCoder): this;
 }
+
+interface NIDeviceCapability {
+
+	supportsCameraAssistance: boolean;
+
+	supportsDirectionMeasurement: boolean;
+
+	supportsPreciseDistanceMeasurement: boolean;
+}
+declare var NIDeviceCapability: {
+
+	prototype: NIDeviceCapability;
+};
 
 declare class NIDiscoveryToken extends NSObject implements NSCopying, NSSecureCoding {
 
@@ -45,10 +98,33 @@ declare const enum NIErrorCode {
 
 	ActiveSessionsLimitExceeded = -5885,
 
-	UserDidNotAllow = -5884
+	UserDidNotAllow = -5884,
+
+	InvalidARConfiguration = -5883,
+
+	AccessoryPeerDeviceUnavailable = -5882
 }
 
 declare var NIErrorDomain: string;
+
+declare class NINearbyAccessoryConfiguration extends NIConfiguration {
+
+	static alloc(): NINearbyAccessoryConfiguration; // inherited from NSObject
+
+	static new(): NINearbyAccessoryConfiguration; // inherited from NSObject
+
+	readonly accessoryDiscoveryToken: NIDiscoveryToken;
+
+	cameraAssistanceEnabled: boolean;
+
+	constructor(o: { accessoryData: NSData; bluetoothPeerIdentifier: NSUUID; });
+
+	constructor(o: { data: NSData; });
+
+	initWithAccessoryDataBluetoothPeerIdentifierError(accessoryData: NSData, identifier: NSUUID): this;
+
+	initWithDataError(data: NSData): this;
+}
 
 declare class NINearbyObject extends NSObject implements NSCopying, NSSecureCoding {
 
@@ -62,6 +138,10 @@ declare class NINearbyObject extends NSObject implements NSCopying, NSSecureCodi
 
 	readonly distance: number;
 
+	readonly horizontalAngle: number;
+
+	readonly verticalDirectionEstimate: NINearbyObjectVerticalDirectionEstimate;
+
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
@@ -72,6 +152,8 @@ declare class NINearbyObject extends NSObject implements NSCopying, NSSecureCodi
 
 	initWithCoder(coder: NSCoder): this;
 }
+
+declare var NINearbyObjectAngleNotAvailable: number;
 
 declare var NINearbyObjectDirectionNotAvailable: interop.Reference<number>;
 
@@ -84,11 +166,28 @@ declare const enum NINearbyObjectRemovalReason {
 	PeerEnded = 1
 }
 
+declare const enum NINearbyObjectVerticalDirectionEstimate {
+
+	Unknown = 0,
+
+	Same = 1,
+
+	Above = 2,
+
+	Below = 3,
+
+	AboveOrBelow = 4
+}
+
+declare var NINearbyObjectWorldTransformNotAvailable: simd_float4x4;
+
 declare class NINearbyPeerConfiguration extends NIConfiguration {
 
 	static alloc(): NINearbyPeerConfiguration; // inherited from NSObject
 
 	static new(): NINearbyPeerConfiguration; // inherited from NSObject
+
+	cameraAssistanceEnabled: boolean;
 
 	readonly peerDiscoveryToken: NIDiscoveryToken;
 
@@ -111,6 +210,8 @@ declare class NISession extends NSObject {
 
 	readonly discoveryToken: NIDiscoveryToken;
 
+	static readonly deviceCapabilities: NIDeviceCapability;
+
 	static readonly supported: boolean;
 
 	invalidate(): void;
@@ -118,13 +219,23 @@ declare class NISession extends NSObject {
 	pause(): void;
 
 	runWithConfiguration(configuration: NIConfiguration): void;
+
+	setARSession(session: ARSession): void;
+
+	worldTransformForObject(object: NINearbyObject): simd_float4x4;
 }
 
 interface NISessionDelegate extends NSObjectProtocol {
 
+	sessionDidGenerateShareableConfigurationDataForObject?(session: NISession, shareableConfigurationData: NSData, object: NINearbyObject): void;
+
 	sessionDidInvalidateWithError?(session: NISession, error: NSError): void;
 
 	sessionDidRemoveNearbyObjectsWithReason?(session: NISession, nearbyObjects: NSArray<NINearbyObject> | NINearbyObject[], reason: NINearbyObjectRemovalReason): void;
+
+	sessionDidStartRunning?(session: NISession): void;
+
+	sessionDidUpdateAlgorithmConvergenceForObject?(session: NISession, convergence: NIAlgorithmConvergence, object: NINearbyObject): void;
 
 	sessionDidUpdateNearbyObjects?(session: NISession, nearbyObjects: NSArray<NINearbyObject> | NINearbyObject[]): void;
 

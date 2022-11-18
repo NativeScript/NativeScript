@@ -191,6 +191,19 @@ declare class HMAccessoryProfile extends NSObject {
 	readonly uniqueIdentifier: NSUUID;
 }
 
+declare class HMAccessorySetupManager extends NSObject {
+
+	static alloc(): HMAccessorySetupManager; // inherited from NSObject
+
+	static new(): HMAccessorySetupManager; // inherited from NSObject
+
+	addAndSetUpAccessoriesForTopologyCompletionHandler(topology: HMMatterTopology, completion: (p1: NSError) => void): void;
+
+	performAccessorySetupUsingRequestCompletionHandler(request: HMAccessorySetupRequest, completion: (p1: HMAccessorySetupResult, p2: NSError) => void): void;
+
+	performMatterEcosystemAccessorySetupUsingRequestTopologyCompletionHandler(request: HMAccessorySetupRequest, topology: HMMatterTopology, completion: (p1: NSError) => void): void;
+}
+
 declare class HMAccessorySetupPayload extends NSObject {
 
 	static alloc(): HMAccessorySetupPayload; // inherited from NSObject
@@ -204,6 +217,36 @@ declare class HMAccessorySetupPayload extends NSObject {
 	initWithURL(setupPayloadURL: NSURL): this;
 
 	initWithURLOwnershipToken(setupPayloadURL: NSURL, ownershipToken: HMAccessoryOwnershipToken): this;
+}
+
+declare class HMAccessorySetupRequest extends NSObject implements NSCopying {
+
+	static alloc(): HMAccessorySetupRequest; // inherited from NSObject
+
+	static new(): HMAccessorySetupRequest; // inherited from NSObject
+
+	homeUniqueIdentifier: NSUUID;
+
+	payload: HMAccessorySetupPayload;
+
+	suggestedAccessoryName: string;
+
+	suggestedRoomUniqueIdentifier: NSUUID;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare class HMAccessorySetupResult extends NSObject implements NSCopying {
+
+	static alloc(): HMAccessorySetupResult; // inherited from NSObject
+
+	static new(): HMAccessorySetupResult; // inherited from NSObject
+
+	readonly accessoryUniqueIdentifiers: NSArray<NSUUID>;
+
+	readonly homeUniqueIdentifier: NSUUID;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 declare class HMAction extends NSObject {
@@ -397,6 +440,8 @@ declare class HMCameraSource extends NSObject {
 	static alloc(): HMCameraSource; // inherited from NSObject
 
 	static new(): HMCameraSource; // inherited from NSObject
+
+	readonly aspectRatio: number;
 }
 
 declare class HMCameraStream extends HMCameraSource {
@@ -1502,7 +1547,9 @@ declare const enum HMErrorCode {
 
 	AccessoryCommunicationFailure = 101,
 
-	FailedToJoinNetwork = 102
+	FailedToJoinNetwork = 102,
+
+	AccessoryIsSuspended = 103
 }
 
 declare var HMErrorDomain: string;
@@ -1834,6 +1881,128 @@ declare class HMLocationEvent extends HMEvent implements NSCopying, NSMutableCop
 	mutableCopyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	updateRegionCompletionHandler(region: CLRegion, completion: (p1: NSError) => void): void;
+}
+
+declare class HMMatterHome extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): HMMatterHome; // inherited from NSObject
+
+	static new(): HMMatterHome; // inherited from NSObject
+
+	readonly name: string;
+
+	readonly uuid: NSUUID;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { UUID: NSUUID; name: string; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithUUIDName(uuid: NSUUID, name: string): this;
+}
+
+declare class HMMatterRequestHandler extends NSObject implements NSExtensionRequestHandling {
+
+	static alloc(): HMMatterRequestHandler; // inherited from NSObject
+
+	static new(): HMMatterRequestHandler; // inherited from NSObject
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	beginRequestWithExtensionContext(context: NSExtensionContext): void;
+
+	class(): typeof NSObject;
+
+	configureAccessoryWithNameRoomCompletion(accessoryName: string, accessoryRoom: HMMatterRoom, completion: (p1: NSError) => void): void;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	fetchRoomsInHomeCompletion(home: HMMatterHome, completion: (p1: NSArray<HMMatterRoom>, p2: NSError) => void): void;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	pairAccessoryInHomeOnboardingPayloadCompletion(home: HMMatterHome, onboardingPayload: string, completion: (p1: NSError) => void): void;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
+declare class HMMatterRoom extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): HMMatterRoom; // inherited from NSObject
+
+	static new(): HMMatterRoom; // inherited from NSObject
+
+	readonly name: string;
+
+	readonly uuid: NSUUID;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { UUID: NSUUID; name: string; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithUUIDName(uuid: NSUUID, name: string): this;
+}
+
+declare class HMMatterTopology extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): HMMatterTopology; // inherited from NSObject
+
+	static new(): HMMatterTopology; // inherited from NSObject
+
+	readonly homes: NSArray<HMMatterHome>;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { homes: NSArray<HMMatterHome> | HMMatterHome[]; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithHomes(homes: NSArray<HMMatterHome> | HMMatterHome[]): this;
 }
 
 declare class HMMutableCalendarEvent extends HMCalendarEvent {

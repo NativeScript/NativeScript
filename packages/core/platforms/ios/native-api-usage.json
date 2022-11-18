@@ -27,11 +27,14 @@
     "UIKit.*:*",
 
     "WebKit.WKNavigationDelegate:*",
+    "WebKit.WKUIDelegate:*",
     "WebKit.WKUserContentController:*",
     "WebKit.WKUserScript:*",
     "WebKit.WKWebView:*",
     "WebKit.WKWebViewConfiguration:*",
 
-    "TNSWidgets*:*"
+    "TNSWidgets*:*",
+    "UIViewNativeScript:NativeScript",
+    "NativeScriptUtils:NativeScriptUtils"
   ]
 }

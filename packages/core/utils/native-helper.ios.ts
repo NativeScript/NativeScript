@@ -1,4 +1,6 @@
+import { Color } from '../color';
 import { Trace } from '../trace';
+import { getClass, isNullOrUndefined, numberHasDecimals, numberIs64Bit } from './types';
 
 declare let UIImagePickerControllerSourceType: any;
 
@@ -24,8 +26,90 @@ function openFileAtRootModule(filePath: string): boolean {
 	return false;
 }
 
+export function dataDeserialize(nativeData?: any) {
+	if (isNullOrUndefined(nativeData)) {
+		// some native values will already be js null values
+		// calling types.getClass below on null/undefined will cause crash
+		return null;
+	} else {
+		switch (getClass(nativeData)) {
+			case 'NSNull':
+				return null;
+			case 'NSMutableDictionary':
+			case 'NSDictionary':
+				let obj = {};
+				const length = nativeData.count;
+				const keysArray = nativeData.allKeys as NSArray<any>;
+				for (let i = 0; i < length; i++) {
+					const nativeKey = keysArray.objectAtIndex(i);
+					obj[nativeKey] = dataDeserialize(nativeData.objectForKey(nativeKey));
+				}
+				return obj;
+			case 'NSMutableArray':
+			case 'NSArray':
+				let array = [];
+				const len = nativeData.count;
+				for (let i = 0; i < len; i++) {
+					array[i] = dataDeserialize(nativeData.objectAtIndex(i));
+				}
+				return array;
+			default:
+				return nativeData;
+		}
+	}
+}
+
+export function dataSerialize(data: any, wrapPrimitives: boolean = false) {
+	switch (typeof data) {
+		case 'string':
+		case 'boolean': {
+			return data;
+		}
+		case 'number': {
+			const hasDecimals = numberHasDecimals(data);
+			if (numberIs64Bit(data)) {
+				if (hasDecimals) {
+					return NSNumber.alloc().initWithDouble(data);
+				} else {
+					return NSNumber.alloc().initWithLongLong(data);
+				}
+			} else {
+				if (hasDecimals) {
+					return NSNumber.alloc().initWithFloat(data);
+				} else {
+					return data;
+				}
+			}
+		}
+
+		case 'object': {
+			if (data instanceof Date) {
+				return NSDate.dateWithTimeIntervalSince1970(data.getTime() / 1000);
+			}
+
+			if (!data) {
+				return null;
+			}
+
+			if (Array.isArray(data)) {
+				return NSArray.arrayWithArray((<any>data).map(dataSerialize));
+			}
+
+			let node = {} as any;
+			Object.keys(data).forEach(function (key) {
+				let value = data[key];
+				node[key] = dataSerialize(value, wrapPrimitives);
+			});
+			return NSDictionary.dictionaryWithDictionary(node);
+		}
+
+		default:
+			return null;
+	}
+}
+
 export namespace iOSNativeHelper {
-	// TODO: remove for NativeScript 7.0
+	// TODO: remove for NativeScript 9.0
 	export function getter<T>(_this: any, property: T | { (): T }): T {
 		console.log('utils.ios.getter() is deprecated; use the respective native property instead');
 		if (typeof property === 'function') {
@@ -36,11 +120,11 @@ export namespace iOSNativeHelper {
 	}
 
 	export namespace collections {
-		export function jsArrayToNSArray(str: string[]): NSArray<any> {
-			return NSArray.arrayWithArray(<any>str);
+		export function jsArrayToNSArray<T>(str: T[]): NSArray<T> {
+			return NSArray.arrayWithArray(str);
 		}
 
-		export function nsArrayToJSArray(a: NSArray<any>): Array<Object> {
+		export function nsArrayToJSArray<T>(a: NSArray<T>): Array<T> {
 			const arr = [];
 			if (a !== undefined) {
 				const count = a.count;
@@ -50,6 +134,35 @@ export namespace iOSNativeHelper {
 			}
 
 			return arr;
+		}
+	}
+
+	export function getRootViewController(): UIViewController {
+		const win = getWindow();
+		let vc = win && win.rootViewController;
+		while (vc && vc.presentedViewController) {
+			vc = vc.presentedViewController;
+		}
+		return vc;
+	}
+
+	export function getWindow(): UIWindow {
+		const app = UIApplication.sharedApplication;
+		if (!app) {
+			return;
+		}
+		return app.keyWindow || (app.windows && app.windows.count > 0 && app.windows.objectAtIndex(0));
+	}
+
+	export function setWindowBackgroundColor(value: string) {
+		const win = getWindow();
+		if (win) {
+			const bgColor = new Color(value);
+			win.backgroundColor = bgColor.ios;
+			const rootVc = getRootViewController();
+			if (rootVc?.view) {
+				rootVc.view.backgroundColor = bgColor.ios;
+			}
 		}
 	}
 
@@ -118,6 +231,88 @@ export namespace iOSNativeHelper {
 		}
 
 		return transform;
+	}
+
+	export function getShadowLayer(nativeView: UIView, name: string = 'ns-shadow-layer', create: boolean = true): CALayer {
+		return nativeView.layer;
+
+		console.log(`--- ${create ? 'CREATE' : 'READ'}`);
+
+		/**
+		 * UIView
+		 *  -> Shadow
+		 *
+		 *
+		 *  UIView
+		 *   -> UIView
+		 *   -> Shadow
+		 */
+
+		if (!nativeView) {
+			return null;
+		}
+
+		if (!nativeView.layer) {
+			// should never hit this?
+			console.log('- no layer! -');
+			return null;
+		}
+
+		// if the nativeView's layer is the shadow layer?
+		if (nativeView.layer.name === name) {
+			console.log('- found shadow layer - reusing.');
+			return nativeView.layer;
+		}
+
+		console.log('>> layer                :', nativeView.layer);
+		if (nativeView.layer.sublayers?.count) {
+			const count = nativeView.layer.sublayers.count;
+			for (let i = 0; i < count; i++) {
+				const subLayer = nativeView.layer.sublayers.objectAtIndex(i);
+
+				console.log(`>> subLayer ${i + 1}/${count}         :`, subLayer);
+				console.log(`>> subLayer ${i + 1}/${count} name    :`, subLayer.name);
+
+				if (subLayer.name === name) {
+					console.log('- found shadow sublayer - reusing.');
+					return subLayer;
+				}
+			}
+			// if (nativeView instanceof UITextView) {
+			// 	return nativeView.layer.sublayers.objectAtIndex(1);
+			// } else {
+			// 	return nativeView.layer.sublayers.objectAtIndex(nativeView.layer.sublayers.count - 1);
+			// }
+		}
+		// else {
+		// 		layer = nativeView.layer;
+		// }
+
+		// we're not interested in creating a new layer
+		if (!create) {
+			return null;
+		}
+
+		console.log(`- adding a new layer for - ${name}`);
+
+		const viewLayer = nativeView.layer;
+		const newLayer = CALayer.layer();
+
+		newLayer.name = name;
+		newLayer.zPosition = 0.0;
+		// nativeView.layer.insertSublayerBelow(newLayer, nativeView.layer)
+		// newLayer.insertSublayerAtIndex(nativeView.layer, 0)
+		// nativeView.layer.zPosition = 1.0;
+		// nativeView.layer.addSublayer(newLayer);
+
+		// nativeView.layer = CALayer.layer()
+
+		nativeView.layer.insertSublayerAtIndex(newLayer, 0);
+		// nativeView.layer.insertSublayerAtIndex(viewLayer, 1)
+
+		// nativeView.layer.replaceSublayerWith(newLayer, nativeView.layer);
+
+		return newLayer;
 	}
 
 	export function createUIDocumentInteractionControllerDelegate(): NSObject {

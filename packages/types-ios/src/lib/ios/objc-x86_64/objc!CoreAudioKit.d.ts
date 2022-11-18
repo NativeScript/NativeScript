@@ -24,6 +24,15 @@ declare class AUAudioUnitViewConfiguration extends NSObject implements NSSecureC
 	initWithWidthHeightHostHasController(width: number, height: number, hostHasController: boolean): this;
 }
 
+declare class AUGenericViewController extends UIViewController {
+
+	static alloc(): AUGenericViewController; // inherited from NSObject
+
+	static new(): AUGenericViewController; // inherited from NSObject
+
+	auAudioUnit: AUAudioUnit;
+}
+
 declare class AUViewController extends UIViewController implements NSExtensionRequestHandling {
 
 	static alloc(): AUViewController; // inherited from NSObject

@@ -124,7 +124,9 @@ declare const enum IOSurfaceComponentType {
 
 	kIOSurfaceComponentTypeSignedInteger = 2,
 
-	kIOSurfaceComponentTypeFloat = 3
+	kIOSurfaceComponentTypeFloat = 3,
+
+	kIOSurfaceComponentTypeSignedNormalized = 4
 }
 
 declare function IOSurfaceCopyAllValues(buffer: IOSurface): NSDictionary<any, any>;
@@ -230,6 +232,8 @@ declare var IOSurfacePropertyKeyElementWidth: string;
 
 declare var IOSurfacePropertyKeyHeight: string;
 
+declare var IOSurfacePropertyKeyName: string;
+
 declare var IOSurfacePropertyKeyOffset: string;
 
 declare var IOSurfacePropertyKeyPixelFormat: string;
@@ -302,6 +306,8 @@ declare var kIOSurfaceBytesPerRow: string;
 
 declare var kIOSurfaceCacheMode: string;
 
+declare var kIOSurfaceColorSpace: string;
+
 declare const kIOSurfaceCopybackCache: number;
 
 declare const kIOSurfaceCopybackInnerCache: number;
@@ -313,6 +319,8 @@ declare var kIOSurfaceElementHeight: string;
 declare var kIOSurfaceElementWidth: string;
 
 declare var kIOSurfaceHeight: string;
+
+declare var kIOSurfaceICCProfile: string;
 
 declare const kIOSurfaceInhibitCache: number;
 
@@ -331,6 +339,8 @@ declare const kIOSurfaceMapInhibitCache: number;
 declare const kIOSurfaceMapWriteCombineCache: number;
 
 declare const kIOSurfaceMapWriteThruCache: number;
+
+declare var kIOSurfaceName: string;
 
 declare var kIOSurfaceOffset: string;
 

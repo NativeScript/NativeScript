@@ -1,0 +1,60 @@
+name: 'apps/automated'
+
+on:
+  push:
+    branches:
+      - main
+      - 'ci/**'
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: macos-12
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+
+      - name: Install Python
+        uses: actions/setup-python@v1
+
+      - name: Install NativeScript
+        run: |
+          python -m pip install --upgrade pip six
+          npm i -g nativescript --ignore-scripts --legacy-peer-deps
+          ns usage-reporting disable
+          ns error-reporting disable
+          ns doctor
+
+      - name: Setup
+        run: npm run setup
+
+      - name: Create Emulator
+        uses: rigor789/action-create-emulator@main
+
+      - name: Test (Android)
+        run: node tools/scripts/run-automated.js android
+
+      - name: Start iOS Simulator
+        if: ${{ always() && !cancelled() }} # run iOS tests even if Android tests failed
+        uses: futureware-tech/simulator-action@v1
+        with:
+          model: 'iPhone 13 Pro Max'
+          os_version: '>=15.0'
+
+      - name: Test (iOS)
+        if: ${{ always() && !cancelled() }} # run iOS tests even if Android tests failed
+        run: node tools/scripts/run-automated.js ios

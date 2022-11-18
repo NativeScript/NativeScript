@@ -77,7 +77,7 @@ export function setTimeout(callback: Function, milliseconds = 0, ...args): numbe
 
 export function clearTimeout(id: number): void {
 	const pair = timeoutCallbacks.get(<number>(<any>id));
-	if (pair) {
+	if (pair && pair.v) {
 		pair.v.unregister();
 	}
 }

@@ -1,22 +1,25 @@
-<p align="center">
+<p>
   <a href="http://www.nativescript.org">
-    <img alt="NativeScript" src="https://d1lfyz5kwt8vu9.cloudfront.net/nativescript-logo-2021.png" width="100"/>
+    <img alt="NativeScript" src="https://raw.githubusercontent.com/NativeScript/artwork/main/logo/export/NativeScript_Logo_Wide_White_Blue_Rounded_Blue.png" height="50"/>
   </a>
 </p>
 
-[![Build Status](https://travis-ci.org/NativeScript/NativeScript.svg?branch=master)](https://travis-ci.org/NativeScript/NativeScript)
+<p>
 
+  [![Automated Tests Passing](https://github.com/NativeScript/NativeScript/actions/workflows/apps_automated.yml/badge.svg)](https://github.com/NativeScript/NativeScript/actions/workflows/apps_automated.yml)
+  [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/NativeScript/NativeScript/blob/master/LICENSE)
+  [![NPM Version](https://badge.fury.io/js/%40nativescript%2Fcore.svg)](https://www.npmjs.com/@nativescript/core)
+  [![Discord](https://badgen.net/badge/icon/discord?icon=discord&label)](https://nativescript.org/discord)
 
-[NativeScript](http://www.nativescript.org) empowers you to access native APIs from JavaScript directly. The framework currently provides iOS and Android runtimes for rich mobile development and can be utilized in a number of diverse use cases.
+</p>
 
-## Getting Started and Installation
-
-Our Getting Started Guides are hands-on tutorials that walk you through developing with NativeScript:
-
-* [Get started with JavaScript](http://docs.nativescript.org/tutorial/chapter-0)
-* [Get started with TypeScript and Angular](http://docs.nativescript.org/angular/tutorial/ng-chapter-0)
+[NativeScript](http://www.nativescript.org) empowers you to access native APIs from JavaScript directly. Currently iOS and Android runtimes are provided for rich mobile development across a variety of diverse use cases. 
 
 ## Contribute
+
+1. [Setup your local development environment](https://docs.nativescript.org/environment-setup.html)
+
+2. Clone to contribute:
 
 ```bash
 $ git clone https://github.com/NativeScript/NativeScript.git
@@ -29,7 +32,7 @@ $ npm run setup
 $ npm start
 ```
 
-We love you and PR's 🤗 Please follow our [contributing guide](https://github.com/NativeScript/NativeScript/blob/master/tools/notes/CONTRIBUTING.md) and see [our code of governance](https://nativescript.org/governance/) to become as involved as you want to be.
+We love you and your pull requests 🤗. Please follow our [contributing guide](https://github.com/NativeScript/NativeScript/blob/master/tools/notes/CONTRIBUTING.md) and see [our code of governance](https://github.com/NativeScript/management/blob/master/nativescript-governance.md) to become as involved as you want to be.
 
 ## @nativescript/*
 
@@ -41,6 +44,8 @@ We love you and PR's 🤗 Please follow our [contributing guide](https://github.
   * Types for iOS
 * [@nativescript/types-android](https://github.com/NativeScript/NativeScript/tree/master/packages/types-android)
   * Types for Android
+* [@nativescript/types-minimal](https://github.com/NativeScript/NativeScript/tree/master/packages/types-minimal)
+  * A very minimal set of types for only the latest Android and iOS sdks. Most commonly used to optimize Web-based IDE's which auto load all type declarations from node_modules.
 * [@nativescript/ui-mobile-base](https://github.com/NativeScript/NativeScript/tree/master/packages/ui-mobile-base)
   * UI mobile base native classes used by core
 * [@nativescript/webpack](https://github.com/NativeScript/NativeScript/tree/master/packages/webpack)
@@ -48,37 +53,32 @@ We love you and PR's 🤗 Please follow our [contributing guide](https://github.
 
 ## Quick Links
 
-- [NativeScript home page](https://nativescript.org)
-- [Install NativeScript demo mobile app](https://www.nativescript.org/nativescript-example-application)
-- [NativeScript playground](https://play.nativescript.org)
-- [NativeScript and Angular](https://play.nativescript.org/?template=play-ng&tutorial=getting-started-ng)
-- [NativeScript on Twitter](http://twitter.com/NativeScript)
-- [NativeScript community Slack channel](https://www.nativescript.org/slack-invitation-form)
-- [NativeScript on Stack Overflow](http://stackoverflow.com/questions/tagged/nativescript)
+- [NativeScript Home](https://nativescript.org)
+- [NativeScript Tutorials](https://docs.nativescript.org/tutorial/)
 - [NativeScript documentation](https://docs.nativescript.org/)
-- [NativeScript marketplace](https://market.nativescript.org/)
-- [NativeScript roadmap](https://www.nativescript.org/roadmap)
+- JavaScript starter: https://nativescript.new/javascript
+- TypeScript starter: https://nativescript.new/typescript
+- Angular starter: https://nativescript.new/angular
+- Vue starter: https://nativescript.new/vue
+- Svelte starter: https://nativescript.new/svelte
+- React starter: https://nativescript.new/react
+- [NativeScript on Twitter](http://twitter.com/NativeScript)
+- [NativeScript on Discord](https://nativescript.org/discord)
+- [NativeScript on Stack Overflow](http://stackoverflow.com/questions/tagged/nativescript)
 
-## Other framework source repositories
+## Other source repos
 
-Outside of the source centralized in this repo, the NativeScript framework consists of a number of components, all of which are open source available on GitHub. Here are the major ones:
+Outside the source centralized in this repo, NativeScript consists of a few other source repos. Here are the major ones:
 
-- **[iOS runtime](https://github.com/NativeScript/ns-v8ios-runtime)**
-	- [![npm](https://img.shields.io/npm/dm/tns-ios.svg)](https://www.npmjs.com/package/@nativescript/ios) 
-	- This repo contains the NativeScript iOS runtime — the code that hosts NativeScript iOS apps, and allows JavaScript code to be executed on iOS devices. The iOS runtime is written in a fun mix of C++, Objective-C, and more.
-- **[Android runtime](https://github.com/NativeScript/android-runtime)**
-	- [![npm](https://img.shields.io/npm/dm/tns-android.svg)](https://www.npmjs.com/package/tns-android) 
-	- This repo contains the NativeScript Android runtime — the code that hosts NativeScript Android apps, and allows JavaScript code to be executed on Android devices. The Android runtime is written in a fun mix of C++ and Java.
+- **[iOS Runtime](https://github.com/NativeScript/ns-v8ios-runtime)**
+	- This repo contains the NativeScript iOS Runtime — the code that hosts NativeScript iOS apps, and allows JavaScript code to be executed on iOS devices. The iOS runtime is written in a mix of C++, Objective-C, and more.
+- **[Android Runtime](https://github.com/NativeScript/android-runtime)**
+	- This repo contains the NativeScript Android Runtime — the code that hosts NativeScript Android apps, and allows JavaScript code to be executed on Android devices. The Android runtime is written in a mix of C++ and Java.
 - **[CLI](//github.com/NativeScript/nativescript-cli)**
-	- [![npm](https://img.shields.io/npm/dm/nativescript.svg)](https://www.npmjs.com/package/nativescript) 
-	- This repo contains the NativeScript command-line interface, which lets you create, build, and run apps using the NativeScript framework. The CLI is written in TypeScript.
-- **[Docs](//github.com/NativeScript/docs)**
-	- [![Docs](https://img.shields.io/badge/Docs-NativeScript-brightgreen)](https://docs.nativescript.org/)
-	- This repo contains the NativeScript framework documentation, which is available at <http://docs.nativescript.org/>. The docs are written in Markdown.
-
-In addition to the code that makes up the NativeScript framework itself, we also provide a number of [open-source sample apps](https://www.nativescript.org/app-samples-with-code) from which you can take reference while building your NativeScript application.
-
-## License
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/NativeScript/NativeScript/blob/master/LICENSE)
+	- This repo contains the NativeScript command-line interface, which lets you create, build, and run apps using NativeScript. The CLI is written in TypeScript.
+- **[Docs](//github.com/NativeScript/docs-new)**
+	- This repo contains NativeScript documentation, which is available at <http://docs.nativescript.org/>. The docs are written in Markdown.
+- **[Official Plugins](https://github.com/NativeScript/plugins)
+  - This repo contains a [plugin workspace](https://docs.nativescript.org/plugins/plugin-workspace-guide.html) the TSC (Technical Steering Committee) maintains offering several often useful plugins.
 
 <h3 align="center">Made with ❤️</h3>

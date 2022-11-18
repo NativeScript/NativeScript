@@ -314,6 +314,8 @@ declare const kAudioChannelLabel_BinauralRight: number;
 
 declare const kAudioChannelLabel_Center: number;
 
+declare const kAudioChannelLabel_CenterBottom: number;
+
 declare const kAudioChannelLabel_CenterSurround: number;
 
 declare const kAudioChannelLabel_CenterSurroundDirect: number;
@@ -404,6 +406,10 @@ declare const kAudioChannelLabel_HOA_ACN_8: number;
 
 declare const kAudioChannelLabel_HOA_ACN_9: number;
 
+declare const kAudioChannelLabel_HOA_N3D: number;
+
+declare const kAudioChannelLabel_HOA_SN3D: number;
+
 declare const kAudioChannelLabel_Haptic: number;
 
 declare const kAudioChannelLabel_HeadphonesLeft: number;
@@ -414,11 +420,21 @@ declare const kAudioChannelLabel_HearingImpaired: number;
 
 declare const kAudioChannelLabel_LFE2: number;
 
+declare const kAudioChannelLabel_LFE3: number;
+
 declare const kAudioChannelLabel_LFEScreen: number;
 
 declare const kAudioChannelLabel_Left: number;
 
+declare const kAudioChannelLabel_LeftBackSurround: number;
+
+declare const kAudioChannelLabel_LeftBottom: number;
+
 declare const kAudioChannelLabel_LeftCenter: number;
+
+declare const kAudioChannelLabel_LeftEdgeOfScreen: number;
+
+declare const kAudioChannelLabel_LeftSideSurround: number;
 
 declare const kAudioChannelLabel_LeftSurround: number;
 
@@ -429,6 +445,8 @@ declare const kAudioChannelLabel_LeftTopFront: number;
 declare const kAudioChannelLabel_LeftTopMiddle: number;
 
 declare const kAudioChannelLabel_LeftTopRear: number;
+
+declare const kAudioChannelLabel_LeftTopSurround: number;
 
 declare const kAudioChannelLabel_LeftTotal: number;
 
@@ -442,13 +460,23 @@ declare const kAudioChannelLabel_Mono: number;
 
 declare const kAudioChannelLabel_Narration: number;
 
+declare const kAudioChannelLabel_Object: number;
+
 declare const kAudioChannelLabel_RearSurroundLeft: number;
 
 declare const kAudioChannelLabel_RearSurroundRight: number;
 
 declare const kAudioChannelLabel_Right: number;
 
+declare const kAudioChannelLabel_RightBackSurround: number;
+
+declare const kAudioChannelLabel_RightBottom: number;
+
 declare const kAudioChannelLabel_RightCenter: number;
+
+declare const kAudioChannelLabel_RightEdgeOfScreen: number;
+
+declare const kAudioChannelLabel_RightSideSurround: number;
 
 declare const kAudioChannelLabel_RightSurround: number;
 
@@ -459,6 +487,8 @@ declare const kAudioChannelLabel_RightTopFront: number;
 declare const kAudioChannelLabel_RightTopMiddle: number;
 
 declare const kAudioChannelLabel_RightTopRear: number;
+
+declare const kAudioChannelLabel_RightTopSurround: number;
 
 declare const kAudioChannelLabel_RightTotal: number;
 
@@ -563,6 +593,44 @@ declare const kAudioChannelLayoutTag_AudioUnit_8: number;
 declare const kAudioChannelLayoutTag_BeginReserved: number;
 
 declare const kAudioChannelLayoutTag_Binaural: number;
+
+declare const kAudioChannelLayoutTag_CICP_1: number;
+
+declare const kAudioChannelLayoutTag_CICP_10: number;
+
+declare const kAudioChannelLayoutTag_CICP_11: number;
+
+declare const kAudioChannelLayoutTag_CICP_12: number;
+
+declare const kAudioChannelLayoutTag_CICP_13: number;
+
+declare const kAudioChannelLayoutTag_CICP_14: number;
+
+declare const kAudioChannelLayoutTag_CICP_15: number;
+
+declare const kAudioChannelLayoutTag_CICP_16: number;
+
+declare const kAudioChannelLayoutTag_CICP_17: number;
+
+declare const kAudioChannelLayoutTag_CICP_18: number;
+
+declare const kAudioChannelLayoutTag_CICP_19: number;
+
+declare const kAudioChannelLayoutTag_CICP_2: number;
+
+declare const kAudioChannelLayoutTag_CICP_20: number;
+
+declare const kAudioChannelLayoutTag_CICP_3: number;
+
+declare const kAudioChannelLayoutTag_CICP_4: number;
+
+declare const kAudioChannelLayoutTag_CICP_5: number;
+
+declare const kAudioChannelLayoutTag_CICP_6: number;
+
+declare const kAudioChannelLayoutTag_CICP_7: number;
+
+declare const kAudioChannelLayoutTag_CICP_9: number;
 
 declare const kAudioChannelLayoutTag_Cube: number;
 
@@ -693,6 +761,72 @@ declare const kAudioChannelLayoutTag_ITU_3_2: number;
 declare const kAudioChannelLayoutTag_ITU_3_2_1: number;
 
 declare const kAudioChannelLayoutTag_ITU_3_4_1: number;
+
+declare const kAudioChannelLayoutTag_Logic_4_0_A: number;
+
+declare const kAudioChannelLayoutTag_Logic_4_0_B: number;
+
+declare const kAudioChannelLayoutTag_Logic_4_0_C: number;
+
+declare const kAudioChannelLayoutTag_Logic_5_0_A: number;
+
+declare const kAudioChannelLayoutTag_Logic_5_0_B: number;
+
+declare const kAudioChannelLayoutTag_Logic_5_0_C: number;
+
+declare const kAudioChannelLayoutTag_Logic_5_0_D: number;
+
+declare const kAudioChannelLayoutTag_Logic_5_1_A: number;
+
+declare const kAudioChannelLayoutTag_Logic_5_1_B: number;
+
+declare const kAudioChannelLayoutTag_Logic_5_1_C: number;
+
+declare const kAudioChannelLayoutTag_Logic_5_1_D: number;
+
+declare const kAudioChannelLayoutTag_Logic_6_0_A: number;
+
+declare const kAudioChannelLayoutTag_Logic_6_0_B: number;
+
+declare const kAudioChannelLayoutTag_Logic_6_0_C: number;
+
+declare const kAudioChannelLayoutTag_Logic_6_1_A: number;
+
+declare const kAudioChannelLayoutTag_Logic_6_1_B: number;
+
+declare const kAudioChannelLayoutTag_Logic_6_1_C: number;
+
+declare const kAudioChannelLayoutTag_Logic_6_1_D: number;
+
+declare const kAudioChannelLayoutTag_Logic_7_1_A: number;
+
+declare const kAudioChannelLayoutTag_Logic_7_1_B: number;
+
+declare const kAudioChannelLayoutTag_Logic_7_1_C: number;
+
+declare const kAudioChannelLayoutTag_Logic_7_1_SDDS_A: number;
+
+declare const kAudioChannelLayoutTag_Logic_7_1_SDDS_B: number;
+
+declare const kAudioChannelLayoutTag_Logic_7_1_SDDS_C: number;
+
+declare const kAudioChannelLayoutTag_Logic_Atmos_5_1_2: number;
+
+declare const kAudioChannelLayoutTag_Logic_Atmos_5_1_4: number;
+
+declare const kAudioChannelLayoutTag_Logic_Atmos_7_1_2: number;
+
+declare const kAudioChannelLayoutTag_Logic_Atmos_7_1_4_A: number;
+
+declare const kAudioChannelLayoutTag_Logic_Atmos_7_1_4_B: number;
+
+declare const kAudioChannelLayoutTag_Logic_Atmos_7_1_6: number;
+
+declare const kAudioChannelLayoutTag_Logic_Mono: number;
+
+declare const kAudioChannelLayoutTag_Logic_Quadraphonic: number;
+
+declare const kAudioChannelLayoutTag_Logic_Stereo: number;
 
 declare const kAudioChannelLayoutTag_MPEG_1_0: number;
 

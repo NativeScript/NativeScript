@@ -62,6 +62,23 @@ declare var CIAreaHistogram: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+interface CIAreaLogarithmicHistogram extends CIAreaReductionFilter {
+
+	count: number;
+
+	maximumStop: number;
+
+	minimumStop: number;
+
+	scale: number;
+}
+declare var CIAreaLogarithmicHistogram: {
+
+	prototype: CIAreaLogarithmicHistogram;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
 interface CIAreaMaximum extends CIAreaReductionFilter {
 }
 declare var CIAreaMaximum: {
@@ -130,6 +147,8 @@ declare var CIAreaReductionFilter: {
 };
 
 interface CIAttributedTextImageGenerator extends CIFilterProtocol {
+
+	padding: number;
 
 	scaleFactor: number;
 
@@ -702,6 +721,8 @@ interface CIColorCube extends CIFilterProtocol {
 
 	cubeDimension: number;
 
+	extrapolate: boolean;
+
 	inputImage: CIImage;
 }
 declare var CIColorCube: {
@@ -718,6 +739,8 @@ interface CIColorCubeWithColorSpace extends CIFilterProtocol {
 	cubeData: NSData;
 
 	cubeDimension: number;
+
+	extrapolate: boolean;
 
 	inputImage: CIImage;
 }
@@ -737,6 +760,8 @@ interface CIColorCubesMixedWithMask extends CIFilterProtocol {
 	cube1Data: NSData;
 
 	cubeDimension: number;
+
+	extrapolate: boolean;
 
 	inputImage: CIImage;
 
@@ -960,6 +985,8 @@ declare class CIContext extends NSObject {
 
 	constructor(o: { options: NSDictionary<string, any>; });
 
+	HEIF10RepresentationOfImageColorSpaceOptionsError(image: CIImage, colorSpace: any, options: NSDictionary<string, any>): NSData;
+
 	HEIFRepresentationOfImageFormatColorSpaceOptions(image: CIImage, format: number, colorSpace: any, options: NSDictionary<string, any>): NSData;
 
 	JPEGRepresentationOfImageColorSpaceOptions(image: CIImage, colorSpace: any, options: NSDictionary<string, any>): NSData;
@@ -1014,6 +1041,8 @@ declare class CIContext extends NSObject {
 
 	startTaskToRenderToDestinationError(image: CIImage, destination: CIRenderDestination): CIRenderTask;
 
+	writeHEIF10RepresentationOfImageToURLColorSpaceOptionsError(image: CIImage, url: NSURL, colorSpace: any, options: NSDictionary<string, any>): boolean;
+
 	writeHEIFRepresentationOfImageToURLFormatColorSpaceOptionsError(image: CIImage, url: NSURL, format: number, colorSpace: any, options: NSDictionary<string, any>): boolean;
 
 	writeJPEGRepresentationOfImageToURLColorSpaceOptionsError(image: CIImage, url: NSURL, colorSpace: any, options: NSDictionary<string, any>): boolean;
@@ -1022,6 +1051,19 @@ declare class CIContext extends NSObject {
 
 	writeTIFFRepresentationOfImageToURLFormatColorSpaceOptionsError(image: CIImage, url: NSURL, format: number, colorSpace: any, options: NSDictionary<string, any>): boolean;
 }
+
+interface CIConvertLab extends CIFilterProtocol {
+
+	inputImage: CIImage;
+
+	normalize: boolean;
+}
+declare var CIConvertLab: {
+
+	prototype: CIConvertLab;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
 
 interface CIConvolution extends CIFilterProtocol {
 
@@ -1509,6 +1551,8 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 
 	static areaHistogramFilter(): CIFilter;
 
+	static areaLogarithmicHistogramFilter(): CIFilter;
+
 	static areaMaximumAlphaFilter(): CIFilter;
 
 	static areaMaximumFilter(): CIFilter;
@@ -1601,6 +1645,10 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 
 	static comicEffectFilter(): CIFilter;
 
+	static convertLabToRGBFilter(): CIFilter;
+
+	static convertRGBtoLabFilter(): CIFilter;
+
 	static convolution3X3Filter(): CIFilter;
 
 	static convolution5X5Filter(): CIFilter;
@@ -1610,6 +1658,16 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 	static convolution9HorizontalFilter(): CIFilter;
 
 	static convolution9VerticalFilter(): CIFilter;
+
+	static convolutionRGB3X3Filter(): CIFilter;
+
+	static convolutionRGB5X5Filter(): CIFilter;
+
+	static convolutionRGB7X7Filter(): CIFilter;
+
+	static convolutionRGB9HorizontalFilter(): CIFilter;
+
+	static convolutionRGB9VerticalFilter(): CIFilter;
 
 	static copyMachineTransitionFilter(): CIFilter;
 
@@ -1747,6 +1805,8 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 
 	static linearGradientFilter(): CIFilter;
 
+	static linearLightBlendModeFilter(): CIFilter;
+
 	static linearToSRGBToneCurveFilter(): CIFilter;
 
 	static localizedDescriptionForFilterName(filterName: string): string;
@@ -1816,6 +1876,8 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 	static palettizeFilter(): CIFilter;
 
 	static parallelogramTileFilter(): CIFilter;
+
+	static personSegmentationFilter(): CIFilter;
 
 	static perspectiveCorrectionFilter(): CIFilter;
 
@@ -1940,6 +2002,8 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 	static vignetteEffectFilter(): CIFilter;
 
 	static vignetteFilter(): CIFilter;
+
+	static vividLightBlendModeFilter(): CIFilter;
 
 	static vortexDistortionFilter(): CIFilter;
 
@@ -2552,6 +2616,10 @@ declare class CIImage extends NSObject implements NSCopying, NSSecureCoding {
 
 	imageByCompositingOverImage(dest: CIImage): CIImage;
 
+	imageByConvertingLabToWorkingSpace(): CIImage;
+
+	imageByConvertingWorkingSpaceToLab(): CIImage;
+
 	imageByCroppingToRect(rect: CGRect): CIImage;
 
 	imageByInsertingIntermediate(cache: boolean): CIImage;
@@ -2666,6 +2734,8 @@ interface CIImageProcessorInput {
 
 	bytesPerRow: number;
 
+	digest: number;
+
 	format: number;
 
 	metalTexture: MTLTexture;
@@ -2707,6 +2777,8 @@ interface CIImageProcessorOutput {
 	baseAddress: interop.Pointer | interop.Reference<any>;
 
 	bytesPerRow: number;
+
+	digest: number;
 
 	format: number;
 
@@ -2770,6 +2842,8 @@ declare class CIKernel extends NSObject {
 	static kernelWithFunctionNameFromMetalLibraryDataOutputPixelFormatError(name: string, data: NSData, format: number): CIKernel;
 
 	static kernelWithString(string: string): CIKernel;
+
+	static kernelsWithMetalStringError(source: string): NSArray<CIKernel>;
 
 	static kernelsWithString(string: string): NSArray<CIKernel>;
 
@@ -3358,6 +3432,19 @@ declare var CIParallelogramTile: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+interface CIPersonSegmentation extends CIFilterProtocol {
+
+	inputImage: CIImage;
+
+	qualityLevel: number;
+}
+declare var CIPersonSegmentation: {
+
+	prototype: CIPersonSegmentation;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
 interface CIPerspectiveCorrection extends CIFourCoordinateGeometryFilter {
 
 	crop: boolean;
@@ -3558,6 +3645,119 @@ declare var CIQRCodeGenerator: {
 
 	customAttributes?(): NSDictionary<string, any>;
 };
+
+declare var CIRAWDecoderVersion6: string;
+
+declare var CIRAWDecoderVersion6DNG: string;
+
+declare var CIRAWDecoderVersion7: string;
+
+declare var CIRAWDecoderVersion7DNG: string;
+
+declare var CIRAWDecoderVersion8: string;
+
+declare var CIRAWDecoderVersion8DNG: string;
+
+declare var CIRAWDecoderVersionNone: string;
+
+declare class CIRAWFilter extends CIFilter {
+
+	static alloc(): CIRAWFilter; // inherited from NSObject
+
+	static filterWithCVPixelBufferProperties(buffer: any, properties: NSDictionary<any, any>): CIRAWFilter;
+
+	static filterWithImageDataIdentifierHint(data: NSData, identifierHint: string): CIRAWFilter;
+
+	static filterWithImageURL(url: NSURL): CIRAWFilter;
+
+	static new(): CIRAWFilter; // inherited from NSObject
+
+	baselineExposure: number;
+
+	boostAmount: number;
+
+	boostShadowAmount: number;
+
+	colorNoiseReductionAmount: number;
+
+	readonly colorNoiseReductionSupported: boolean;
+
+	contrastAmount: number;
+
+	readonly contrastSupported: boolean;
+
+	decoderVersion: string;
+
+	detailAmount: number;
+
+	readonly detailSupported: boolean;
+
+	draftModeEnabled: boolean;
+
+	exposure: number;
+
+	extendedDynamicRangeAmount: number;
+
+	gamutMappingEnabled: boolean;
+
+	lensCorrectionEnabled: boolean;
+
+	readonly lensCorrectionSupported: boolean;
+
+	linearSpaceFilter: CIFilter;
+
+	localToneMapAmount: number;
+
+	readonly localToneMapSupported: boolean;
+
+	luminanceNoiseReductionAmount: number;
+
+	readonly luminanceNoiseReductionSupported: boolean;
+
+	moireReductionAmount: number;
+
+	readonly moireReductionSupported: boolean;
+
+	readonly nativeSize: CGSize;
+
+	neutralChromaticity: CGPoint;
+
+	neutralLocation: CGPoint;
+
+	neutralTemperature: number;
+
+	neutralTint: number;
+
+	orientation: CGImagePropertyOrientation;
+
+	readonly portraitEffectsMatte: CIImage;
+
+	readonly previewImage: CIImage;
+
+	readonly properties: NSDictionary<any, any>;
+
+	scaleFactor: number;
+
+	readonly semanticSegmentationGlassesMatte: CIImage;
+
+	readonly semanticSegmentationHairMatte: CIImage;
+
+	readonly semanticSegmentationSkinMatte: CIImage;
+
+	readonly semanticSegmentationSkyMatte: CIImage;
+
+	readonly semanticSegmentationTeethMatte: CIImage;
+
+	shadowBias: number;
+
+	sharpnessAmount: number;
+
+	readonly sharpnessSupported: boolean;
+
+	readonly supportedDecoderVersions: NSArray<string>;
+
+	static readonly supportedCameraModels: NSArray<string>;
+}
 
 interface CIRadialGradient extends CIFilterProtocol {
 
@@ -4077,6 +4277,8 @@ interface CITextImageGenerator extends CIFilterProtocol {
 	fontName: string;
 
 	fontSize: number;
+
+	padding: number;
 
 	scaleFactor: number;
 
@@ -4812,6 +5014,8 @@ declare var kCIInputWidthKey: string;
 declare var kCIOutputImageKey: string;
 
 declare var kCIOutputNativeSizeKey: string;
+
+declare var kCIPropertiesKey: string;
 
 declare var kCISamplerAffineMatrix: string;
 

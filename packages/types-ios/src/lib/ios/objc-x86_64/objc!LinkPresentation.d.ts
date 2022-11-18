@@ -84,5 +84,7 @@ declare class LPMetadataProvider extends NSObject {
 
 	cancel(): void;
 
+	startFetchingMetadataForRequestCompletionHandler(request: NSURLRequest, completionHandler: (p1: LPLinkMetadata, p2: NSError) => void): void;
+
 	startFetchingMetadataForURLCompletionHandler(URL: NSURL, completionHandler: (p1: LPLinkMetadata, p2: NSError) => void): void;
 }

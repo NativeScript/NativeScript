@@ -5,6 +5,7 @@ import { Color } from '../../color';
 import { colorProperty, backgroundColorProperty, backgroundInternalProperty } from '../styling/style-properties';
 import { ImageSource } from '../../image-source';
 import { layout, iOSNativeHelper, isFontIconURI } from '../../utils';
+import { accessibilityHintProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityValueProperty } from '../../accessibility/accessibility-properties';
 
 export * from './action-bar-common';
 
@@ -92,11 +93,47 @@ export class ActionBar extends ActionBarBase {
 		}
 
 		const viewController = <UIViewController>page.ios;
-		if (viewController.navigationController !== null) {
-			return viewController.navigationController.navigationBar;
-		}
+		return viewController?.navigationController?.navigationBar;
+	}
 
-		return null;
+	[accessibilityValueProperty.setNative](value: string): void {
+		value = value == null ? null : `${value}`;
+		this.nativeViewProtected.accessibilityValue = value;
+
+		const navigationItem = this._getNavigationItem();
+		if (navigationItem) {
+			navigationItem.accessibilityValue = value;
+		}
+	}
+
+	[accessibilityLabelProperty.setNative](value: string): void {
+		value = value == null ? null : `${value}`;
+		this.nativeViewProtected.accessibilityLabel = value;
+
+		const navigationItem = this._getNavigationItem();
+		if (navigationItem) {
+			navigationItem.accessibilityLabel = value;
+		}
+	}
+
+	[accessibilityHintProperty.setNative](value: string): void {
+		value = value == null ? null : `${value}`;
+		this.nativeViewProtected.accessibilityHint = value;
+
+		const navigationItem = this._getNavigationItem();
+		if (navigationItem) {
+			navigationItem.accessibilityHint = value;
+		}
+	}
+
+	[accessibilityLanguageProperty.setNative](value: string): void {
+		value = value == null ? null : `${value}`;
+		this.nativeViewProtected.accessibilityLanguage = value;
+
+		const navigationItem = this._getNavigationItem();
+		if (navigationItem) {
+			navigationItem.accessibilityLanguage = value;
+		}
 	}
 
 	public createNativeView(): UIView {
@@ -107,7 +144,7 @@ export class ActionBar extends ActionBarBase {
 		if (value instanceof NavigationButton) {
 			this.navigationButton = value;
 		} else if (value instanceof ActionItem) {
-			this.actionItems.addItem(value);
+			this.actionItems?.addItem(value);
 		} else if (value instanceof View) {
 			this.titleView = value;
 		}
@@ -148,7 +185,18 @@ export class ActionBar extends ActionBarBase {
 		}
 	}
 
-	public update() {
+	private _getNavigationItem(): UINavigationItem | null {
+		const page = this.page;
+		// Page should be attached to frame to update the action bar.
+		if (!page || !page.frame) {
+			return null;
+		}
+
+		const viewController = <UIViewController>page.ios;
+		return viewController.navigationItem;
+	}
+
+	public update(): void {
 		const page = this.page;
 		// Page should be attached to frame to update the action bar.
 		if (!page || !page.frame) {
@@ -201,13 +249,14 @@ export class ActionBar extends ActionBarBase {
 		// TODO: This could cause issue when canceling BackEdge gesture - we will change the backIndicator to
 		// show the one from the old page but the new page will still be visible (because we canceled EdgeBackSwipe gesutre)
 		// Consider moving this to new method and call it from - navigationControllerDidShowViewControllerAnimated.
-		if (img) {
-			const image = img.imageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+		const image = img ? img.imageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal) : null;
+		if (majorVersion >= 15) {
+			const appearance = this._getAppearance(navigationBar);
+			appearance.setBackIndicatorImageTransitionMaskImage(image, image);
+			this._updateAppearance(navigationBar, appearance);
+		} else {
 			navigationBar.backIndicatorImage = image;
 			navigationBar.backIndicatorTransitionMaskImage = image;
-		} else {
-			navigationBar.backIndicatorImage = null;
-			navigationBar.backIndicatorTransitionMaskImage = null;
 		}
 
 		// Set back button visibility
@@ -228,10 +277,16 @@ export class ActionBar extends ActionBarBase {
 		if (!this.isLayoutValid) {
 			this.layoutInternal();
 		}
+
+		// Make sure accessibility values are up-to-date on the navigationItem
+		navigationItem.accessibilityValue = this.accessibilityValue;
+		navigationItem.accessibilityLabel = this.accessibilityLabel;
+		navigationItem.accessibilityLanguage = this.accessibilityLanguage;
+		navigationItem.accessibilityHint = this.accessibilityHint;
 	}
 
 	private populateMenuItems(navigationItem: UINavigationItem) {
-		const items = this.actionItems.getVisibleItems();
+		const items = this.actionItems?.getVisibleItems() ?? [];
 		const leftBarItems = NSMutableArray.new();
 		const rightBarItems = NSMutableArray.new();
 		for (let i = 0; i < items.length; i++) {
@@ -291,22 +346,43 @@ export class ActionBar extends ActionBarBase {
 		this.setColor(navBar, color);
 
 		const bgColor = <Color>this.backgroundColor;
-		navBar.barTintColor = bgColor ? bgColor.ios : null;
+		this.setBackgroundColor(navBar, bgColor);
 	}
 
 	private setColor(navBar: UINavigationBar, color?: Color) {
+		if (!navBar) {
+			return;
+		}
 		if (color) {
-			navBar.titleTextAttributes = <any>{
-				[NSForegroundColorAttributeName]: color.ios,
-			};
-			navBar.largeTitleTextAttributes = <any>{
-				[NSForegroundColorAttributeName]: color.ios,
-			};
+			const titleTextColor = NSDictionary.dictionaryWithObjectForKey(color.ios, NSForegroundColorAttributeName);
+			if (majorVersion >= 15) {
+				const appearance = this._getAppearance(navBar);
+				appearance.titleTextAttributes = titleTextColor;
+			}
+			navBar.titleTextAttributes = titleTextColor;
+			navBar.largeTitleTextAttributes = titleTextColor;
 			navBar.tintColor = color.ios;
 		} else {
 			navBar.titleTextAttributes = null;
 			navBar.largeTitleTextAttributes = null;
 			navBar.tintColor = null;
+		}
+	}
+
+	private setBackgroundColor(navBar: UINavigationBar, color?: UIColor | Color) {
+		if (!navBar) {
+			return;
+		}
+
+		const color_ = color instanceof Color ? color.ios : color;
+		if (majorVersion >= 15) {
+			const appearance = this._getAppearance(navBar);
+			// appearance.configureWithOpaqueBackground();
+			appearance.backgroundColor = color_;
+			this._updateAppearance(navBar, appearance);
+		} else {
+			// legacy styling
+			navBar.barTintColor = color_;
 		}
 	}
 
@@ -326,14 +402,39 @@ export class ActionBar extends ActionBarBase {
 
 	private updateFlatness(navBar: UINavigationBar) {
 		if (this.flat) {
-			navBar.setBackgroundImageForBarMetrics(UIImage.new(), UIBarMetrics.Default);
-			navBar.shadowImage = UIImage.new();
-			navBar.translucent = false;
+			if (majorVersion >= 15) {
+				const appearance = this._getAppearance(navBar);
+				appearance.shadowColor = UIColor.clearColor;
+				this._updateAppearance(navBar, appearance);
+			} else {
+				navBar.setBackgroundImageForBarMetrics(UIImage.new(), UIBarMetrics.Default);
+				navBar.shadowImage = UIImage.new();
+				navBar.translucent = false;
+			}
 		} else {
-			navBar.setBackgroundImageForBarMetrics(null, null);
-			navBar.shadowImage = null;
-			navBar.translucent = true;
+			if (majorVersion >= 15) {
+				if (navBar.standardAppearance) {
+					// Not flat and never been set do nothing.
+					const appearance = navBar.standardAppearance;
+					appearance.shadowColor = UINavigationBarAppearance.new().shadowColor;
+					this._updateAppearance(navBar, appearance);
+				}
+			} else {
+				navBar.setBackgroundImageForBarMetrics(null, null);
+				navBar.shadowImage = null;
+				navBar.translucent = true;
+			}
 		}
+	}
+
+	private _getAppearance(navBar: UINavigationBar) {
+		return navBar.standardAppearance ?? UINavigationBarAppearance.new();
+	}
+
+	private _updateAppearance(navBar: UINavigationBar, appearance: UINavigationBarAppearance) {
+		navBar.standardAppearance = appearance;
+		navBar.compactAppearance = appearance;
+		navBar.scrollEdgeAppearance = appearance;
 	}
 
 	public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number) {
@@ -344,7 +445,7 @@ export class ActionBar extends ActionBarBase {
 			View.measureChild(this, this.titleView, UNSPECIFIED, UNSPECIFIED);
 		}
 
-		this.actionItems.getItems().forEach((actionItem) => {
+		this.actionItems?.getItems().forEach((actionItem) => {
 			const actionView = actionItem.actionView;
 			if (actionView) {
 				View.measureChild(this, actionView, UNSPECIFIED, UNSPECIFIED);
@@ -368,7 +469,7 @@ export class ActionBar extends ActionBarBase {
 			}
 		}
 
-		this.actionItems.getItems().forEach((actionItem) => {
+		this.actionItems?.getItems().forEach((actionItem) => {
 			const actionView = actionItem.actionView;
 			if (actionView && actionView.ios) {
 				const measuredWidth = actionView.getMeasuredWidth();
@@ -385,13 +486,12 @@ export class ActionBar extends ActionBarBase {
 	}
 
 	private get navBar(): UINavigationBar {
-		const page = this.page;
 		// Page should be attached to frame to update the action bar.
-		if (!page || !page.frame) {
+		if (this.page?.frame?.ios?.controller) {
+			return (<UINavigationController>this.page.frame.ios.controller).navigationBar;
+		} else {
 			return undefined;
 		}
-
-		return (<UINavigationController>page.frame.ios.controller).navigationBar;
 	}
 
 	[colorProperty.getDefault](): UIColor {
@@ -407,12 +507,9 @@ export class ActionBar extends ActionBarBase {
 		// CssAnimationProperty use default value form their constructor.
 		return null;
 	}
-	[backgroundColorProperty.setNative](value: UIColor | Color) {
+	[backgroundColorProperty.setNative](color: UIColor | Color) {
 		const navBar = this.navBar;
-		if (navBar) {
-			const color = value instanceof Color ? value.ios : value;
-			navBar.barTintColor = color;
-		}
+		this.setBackgroundColor(navBar, color);
 	}
 
 	[backgroundInternalProperty.getDefault](): UIColor {

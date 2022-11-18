@@ -1,5 +1,5 @@
 {
-  "main": "main.js",
+  "main": "src/main.ts",
   "description": "NativeScript Application",
   "license": "MIT",
   "repository": {
@@ -7,13 +7,14 @@
     "url": "https://github.com/NativeScript/NativeScript.git"
   },
   "dependencies": {
+    "@nativescript/core": "file:../../packages/core",
     "nativescript-theme-core": "file:../../node_modules/nativescript-theme-core",
-    "@nativescript/core": "file:../../packages/core"
+    "@nativescript/imagepicker": "^1.0.6"
   },
   "devDependencies": {
-    "@nativescript/android": "7.0.1",
-    "@nativescript/ios": "7.1.0",
+    "@nativescript/android": "~8.3.0",
+    "@nativescript/ios": "~8.3.0",
     "@nativescript/webpack": "file:../../dist/packages/nativescript-webpack.tgz",
-    "typescript": "file:../../node_modules/typescript"
+    "typescript": "4.8.4"
   }
 }

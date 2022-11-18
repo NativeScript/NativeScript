@@ -65,20 +65,20 @@ export function testSaveToFile_WithQuality() {
 	TKUnit.assert(fs.File.exists(path), 'Image not saved to file');
 }
 
-export function testFromFile() {
-	// >> imagesource-load-local
-	const folder = fs.knownFolders.documents();
-	const path = fs.path.join(folder.path, 'test.png');
-	const img = ImageSource.fromFileSync(path);
-	// << imagesource-load-local
+// export function testFromFile() {
+// 	// >> imagesource-load-local
+// 	const folder = fs.knownFolders.documents();
+// 	const path = fs.path.join(folder.path, 'test.png');
+// 	const img = ImageSource.fromFileSync(path);
+// 	// << imagesource-load-local
 
-	TKUnit.assert(img.height > 0, 'image.fromResource failed');
+// 	TKUnit.assert(img.height > 0, 'image.fromResource failed');
 
-	// remove the image from the file system
-	const file = folder.getFile('test.png');
-	file.remove();
-	TKUnit.assert(!fs.File.exists(path), 'test.png not removed');
-}
+// 	// remove the image from the file system
+// 	const file = folder.getFile('test.png');
+// 	file.remove();
+// 	TKUnit.assert(!fs.File.exists(path), 'test.png not removed');
+// }
 
 export function testFromAssetFileNotFound(done) {
 	let asset = new imageAssetModule.ImageAsset('invalidFile.png');

@@ -1,76 +1,80 @@
 {
-	"name": "nativescript",
-	"version": "7.1.4",
-	"license": "MIT",
-	"scripts": {
-		"clean": "git clean -f -X -d",
-		"setup": "npm run clean && npm i && ts-patch install && nx run core:setup",
-		"start": "nps",
-		"changelog": "conventional-changelog -p angular -i CHANGELOG.md -s"
-	},
-	"private": true,
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/NativeScript/NativeScript.git"
-	},
-	"dependencies": {
-		"nativescript-theme-core": "^1.0.4"
-	},
-	"devDependencies": {
-		"@nativescript/hook": "^2.0.0",
-		"@nrwl/cli": "~10.3.1",
-		"@nrwl/eslint-plugin-nx": "~10.3.0",
-		"@nrwl/jest": "~10.3.0",
-		"@nrwl/node": "~10.3.0",
-		"@nrwl/workspace": "~10.3.0",
-		"@nstudio/focus": "~10.3.0",
-		"@nstudio/nps-i": "~1.1.0",
-		"@types/chai": "^4.2.11",
-		"@types/jest": "~26.0.8",
-		"@types/mocha": "^7.0.2",
-		"@types/node": "~14.0.22",
-		"@typescript-eslint/eslint-plugin": "~4.3.0",
-		"@typescript-eslint/parser": "~4.3.0",
-		"chai": "^4.2.0",
-		"conventional-changelog-cli": "^2.0.34",
-		"copyfiles": "^2.4.0",
-		"css": "^3.0.0",
-		"css-tree": "^1.0.0-alpha.39",
-		"dotenv": "~8.2.0",
-		"eslint": "~7.10.0",
-		"eslint-config-prettier": "~6.11.0",
-		"eslint-plugin-prettier": "^3.3.1",
-		"gonzales": "^1.0.7",
-		"husky": "^4.2.5",
-		"jest": "~26.2.2",
-		"lint-staged": "^10.2.11",
-		"mocha": "^8.0.1",
-		"mocha-typescript": "^1.1.17",
-		"module-alias": "^2.2.2",
-		"nativescript": "~7.1.0",
-		"node-sass": "~4.14.1",
-		"parse-css": "git+https://github.com/tabatkins/parse-css.git",
-		"parserlib": "^1.1.1",
-		"prettier": "~2.0.5",
-		"reduce-css-calc": "~2.1.7",
-		"shady-css-parser": "^0.1.0",
-		"terser-webpack-plugin": "~3.0.6",
-		"ts-jest": "26.4.0",
-		"ts-node": "~8.10.2",
-		"ts-patch": "^1.2.5",
-		"tslint": "~6.1.2",
-		"typescript": "~4.0.3",
-		"webpack": "~4.44.1",
-		"webpack-cli": "~3.3.12"
-	},
-	"husky": {
-		"hooks": {
-			"pre-commit": "npx lint-staged"
-		}
-	},
-	"lint-staged": {
-		"**/*": [
-			"nx format:write --files"
-		]
-	}
+  "name": "nativescript",
+  "version": "8.4.0",
+  "license": "MIT",
+  "scripts": {
+    "clean": "git clean -f -X -d --exclude=!.idea/ --exclude=!.vscode/* --exclude=!.npmrc",
+    "clean.all": "npm run setup && nx run-many --target=clean --all",
+    "setup": "npm run clean && npm install --legacy-peer-deps",
+    "setup:yarn": "yarn clean && yarn",
+    "setup:pnpm": "pnpm run clean && pnpm install",
+    "postinstall": "ts-patch install && husky install && nx run webpack5:build",
+    "start": "nps",
+    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s"
+  },
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NativeScript/NativeScript.git"
+  },
+  "dependencies": {
+    "nativescript-theme-core": "^1.0.4"
+  },
+  "devDependencies": {
+    "@nativescript/hook": "^2.0.0",
+    "@nativescript/nx": "~4.0.0",
+    "@nrwl/cli": "15.0.12",
+    "@nrwl/eslint-plugin-nx": "15.0.12",
+    "@nrwl/jest": "15.0.12",
+    "@nrwl/node": "15.0.12",
+    "@nrwl/workspace": "15.0.12",
+    "@nstudio/focus": "^14.3.0",
+    "@nstudio/nps-i": "~2.0.0",
+    "@prettier/plugin-xml": "^2.2.0",
+    "@types/chai": "^4.2.11",
+    "@types/jest": "28.1.8",
+    "@types/mocha": "^7.0.2",
+    "@types/node": "18.7.1",
+    "@typescript-eslint/eslint-plugin": "^5.30.0",
+    "@typescript-eslint/parser": "^5.30.0",
+    "chai": "^4.2.0",
+    "conventional-changelog-cli": "^2.1.1",
+    "copyfiles": "^2.4.0",
+    "css": "^3.0.0",
+    "css-tree": "^1.1.2",
+    "dotenv": "10.0.0",
+    "eslint": "7.22.0",
+    "eslint-config-prettier": "^8.1.0",
+    "gonzales": "^1.0.7",
+    "husky": "^8.0.1",
+    "jest": "28.1.3",
+    "lint-staged": "^13.0.1",
+    "mocha": "^8.0.1",
+    "mocha-typescript": "^1.1.17",
+    "module-alias": "^2.2.2",
+    "nativescript": "~8.3.0",
+    "nativescript-typedoc-theme": "1.1.0",
+    "parse-css": "git+https://github.com/tabatkins/parse-css.git",
+    "parserlib": "^1.1.1",
+    "prettier": "^2.6.2",
+    "reduce-css-calc": "~2.1.7",
+    "sass": "^1.45.2",
+    "shady-css-parser": "^0.1.0",
+    "tree-kill": "^1.2.2",
+    "ts-jest": "28.0.8",
+    "ts-node": "10.9.1",
+    "ts-patch": "^2.0.1",
+    "tslint": "6.1.3",
+    "tslint-to-eslint-config": "^2.13.0",
+    "typedoc": "^0.22.17",
+    "typescript": "4.8.4",
+    "zx": "^7.0.5",
+    "nx": "15.0.12"
+  },
+  "lint-staged": {
+    "**/*": [
+      "nx format:write --files"
+    ]
+  }
 }
+

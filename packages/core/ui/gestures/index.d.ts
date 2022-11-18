@@ -1,6 +1,27 @@
 import { View } from '../core/view';
 import { EventData } from '../../data/observable';
 
+export * from './touch-manager';
+
+/**
+ * Events emitted during gesture lifecycle
+ */
+export enum GestureEvents {
+	/**
+	 * When the gesture is attached to the view
+	 * Provides access to the native gesture recognizer for further customization
+	 */
+	gestureAttached = 'gestureAttached',
+	/**
+	 * When a touch down was detected
+	 */
+	touchDown = 'touchDown',
+	/**
+	 * When a touch up was detected
+	 */
+	touchUp = 'touchUp',
+}
+
 /**
  * Defines an enum with supported gesture types.
  */
@@ -119,7 +140,7 @@ export interface GestureEventData extends EventData {
 	/**
 	 * Gets the view which originates the gesture.
 	 */
-	view: View;
+	view: Partial<View>;
 	/**
 	 * Gets the underlying native iOS specific [UIGestureRecognizer](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIGestureRecognizer_Class/).
 	 */
@@ -266,7 +287,7 @@ export class GesturesObserver {
 	 * @param callback - A function that will be executed when a gesture is received.
 	 * @param context - default this argument for the callbacks.
 	 */
-	constructor(target: View, callback: (args: GestureEventData) => void, context: any);
+	constructor(target: Partial<View>, callback: (args: GestureEventData) => void, context: any);
 
 	/**
 	 * Registers a gesture observer to a view and gesture.

@@ -301,7 +301,11 @@ declare const enum JSTypedArrayType {
 
 	kJSTypedArrayTypeArrayBuffer = 9,
 
-	kJSTypedArrayTypeNone = 10
+	kJSTypedArrayTypeNone = 10,
+
+	kJSTypedArrayTypeBigInt64Array = 11,
+
+	kJSTypedArrayTypeBigUint64Array = 12
 }
 
 declare class JSValue extends NSObject {

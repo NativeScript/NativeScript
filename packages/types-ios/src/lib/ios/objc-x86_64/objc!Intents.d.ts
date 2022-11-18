@@ -1094,6 +1094,31 @@ declare class INCallDestinationTypeResolutionResult extends INIntentResolutionRe
 	static unsupportedWithReason(reason: number): INCallDestinationTypeResolutionResult; // inherited from INIntentResolutionResult
 }
 
+declare class INCallGroup extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): INCallGroup; // inherited from NSObject
+
+	static new(): INCallGroup; // inherited from NSObject
+
+	readonly groupId: string;
+
+	readonly groupName: string;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { groupName: string; groupId: string; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithGroupNameGroupId(groupName: string, groupId: string): this;
+}
+
 declare class INCallRecord extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): INCallRecord; // inherited from NSObject
@@ -1112,13 +1137,23 @@ declare class INCallRecord extends NSObject implements NSCopying, NSSecureCoding
 
 	readonly identifier: string;
 
+	readonly isCallerIdBlocked: number;
+
 	readonly numberOfCalls: number;
+
+	readonly participants: NSArray<INPerson>;
 
 	readonly unseen: number;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { identifier: string; dateCreated: Date; callRecordType: INCallRecordType; callCapability: INCallCapability; callDuration: number; unseen: number; });
+
+	constructor(o: { identifier: string; dateCreated: Date; callRecordType: INCallRecordType; callCapability: INCallCapability; callDuration: number; unseen: number; numberOfCalls: number; });
+
+	constructor(o: { identifier: string; dateCreated: Date; callRecordType: INCallRecordType; callCapability: INCallCapability; callDuration: number; unseen: number; participants: NSArray<INPerson> | INPerson[]; numberOfCalls: number; isCallerIdBlocked: number; });
 
 	constructor(o: { identifier: string; dateCreated: Date; caller: INPerson; callRecordType: INCallRecordType; callCapability: INCallCapability; callDuration: number; unseen: number; });
 
@@ -1129,6 +1164,12 @@ declare class INCallRecord extends NSObject implements NSCopying, NSSecureCoding
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
+
+	initWithIdentifierDateCreatedCallRecordTypeCallCapabilityCallDurationUnseen(identifier: string, dateCreated: Date, callRecordType: INCallRecordType, callCapability: INCallCapability, callDuration: number, unseen: number): this;
+
+	initWithIdentifierDateCreatedCallRecordTypeCallCapabilityCallDurationUnseenNumberOfCalls(identifier: string, dateCreated: Date, callRecordType: INCallRecordType, callCapability: INCallCapability, callDuration: number, unseen: number, numberOfCalls: number): this;
+
+	initWithIdentifierDateCreatedCallRecordTypeCallCapabilityCallDurationUnseenParticipantsNumberOfCallsIsCallerIdBlocked(identifier: string, dateCreated: Date, callRecordType: INCallRecordType, callCapability: INCallCapability, callDuration: number, unseen: number, participants: NSArray<INPerson> | INPerson[], numberOfCalls: number, isCallerIdBlocked: number): this;
 
 	initWithIdentifierDateCreatedCallerCallRecordTypeCallCapabilityCallDurationUnseen(identifier: string, dateCreated: Date, caller: INPerson, callRecordType: INCallRecordType, callCapability: INCallCapability, callDuration: number, unseen: number): this;
 
@@ -1233,8 +1274,6 @@ declare class INCallRecordTypeOptionsResolutionResult extends INIntentResolution
 
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INCallRecordTypeOptionsResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithValueToConfirm(valueToConfirm: INCallRecordTypeOptions): INCallRecordTypeOptionsResolutionResult;
-
 	static needsValue(): INCallRecordTypeOptionsResolutionResult; // inherited from INIntentResolutionResult
 
 	static new(): INCallRecordTypeOptionsResolutionResult; // inherited from NSObject
@@ -1242,8 +1281,6 @@ declare class INCallRecordTypeOptionsResolutionResult extends INIntentResolution
 	static notRequired(): INCallRecordTypeOptionsResolutionResult; // inherited from INIntentResolutionResult
 
 	static successWithResolvedCallRecordTypeOptions(resolvedCallRecordTypeOptions: INCallRecordTypeOptions): INCallRecordTypeOptionsResolutionResult;
-
-	static successWithResolvedValue(resolvedValue: INCallRecordTypeOptions): INCallRecordTypeOptionsResolutionResult;
 
 	static unsupported(): INCallRecordTypeOptionsResolutionResult; // inherited from INIntentResolutionResult
 
@@ -1258,8 +1295,6 @@ declare class INCallRecordTypeResolutionResult extends INIntentResolutionResult 
 
 	static confirmationRequiredWithItemToConfirmForReason(itemToConfirm: any, reason: number): INCallRecordTypeResolutionResult; // inherited from INIntentResolutionResult
 
-	static confirmationRequiredWithValueToConfirm(valueToConfirm: INCallRecordType): INCallRecordTypeResolutionResult;
-
 	static needsValue(): INCallRecordTypeResolutionResult; // inherited from INIntentResolutionResult
 
 	static new(): INCallRecordTypeResolutionResult; // inherited from NSObject
@@ -1267,8 +1302,6 @@ declare class INCallRecordTypeResolutionResult extends INIntentResolutionResult 
 	static notRequired(): INCallRecordTypeResolutionResult; // inherited from INIntentResolutionResult
 
 	static successWithResolvedCallRecordType(resolvedCallRecordType: INCallRecordType): INCallRecordTypeResolutionResult;
-
-	static successWithResolvedValue(resolvedValue: INCallRecordType): INCallRecordTypeResolutionResult;
 
 	static unsupported(): INCallRecordTypeResolutionResult; // inherited from INIntentResolutionResult
 
@@ -2405,6 +2438,8 @@ declare class INFile extends NSObject implements NSSecureCoding {
 
 	filename: string;
 
+	removedOnCompletion: boolean;
+
 	readonly typeIdentifier: string;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
@@ -2499,6 +2534,55 @@ declare class INFlightReservation extends INReservation implements NSCopying, NS
 	initWithItemReferenceReservationNumberBookingTimeReservationStatusReservationHolderNameActionsReservedSeatFlight(itemReference: INSpeakableString, reservationNumber: string, bookingTime: Date, reservationStatus: INReservationStatus, reservationHolderName: string, actions: NSArray<INReservationAction> | INReservationAction[], reservedSeat: INSeat, flight: INFlight): this;
 
 	initWithItemReferenceReservationNumberBookingTimeReservationStatusReservationHolderNameActionsURLReservedSeatFlight(itemReference: INSpeakableString, reservationNumber: string, bookingTime: Date, reservationStatus: INReservationStatus, reservationHolderName: string, actions: NSArray<INReservationAction> | INReservationAction[], URL: NSURL, reservedSeat: INSeat, flight: INFlight): this;
+}
+
+declare class INFocusStatus extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): INFocusStatus; // inherited from NSObject
+
+	static new(): INFocusStatus; // inherited from NSObject
+
+	readonly isFocused: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { isFocused: number; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithIsFocused(isFocused: number): this;
+}
+
+declare const enum INFocusStatusAuthorizationStatus {
+
+	NotDetermined = 0,
+
+	Restricted = 1,
+
+	Denied = 2,
+
+	Authorized = 3
+}
+
+declare class INFocusStatusCenter extends NSObject {
+
+	static alloc(): INFocusStatusCenter; // inherited from NSObject
+
+	static new(): INFocusStatusCenter; // inherited from NSObject
+
+	readonly authorizationStatus: INFocusStatusAuthorizationStatus;
+
+	readonly focusStatus: INFocusStatus;
+
+	static readonly defaultCenter: INFocusStatusCenter;
+
+	requestAuthorizationWithCompletionHandler(completionHandler: (p1: INFocusStatusAuthorizationStatus) => void): void;
 }
 
 declare class INGetAvailableRestaurantReservationBookingDefaultsIntent extends INIntent {
@@ -3151,6 +3235,8 @@ declare class INIntent extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): INIntent; // inherited from NSObject
 
+	donationMetadata: INIntentDonationMetadata;
+
 	readonly identifier: string;
 
 	readonly intentDescription: string;
@@ -3174,6 +3260,23 @@ declare class INIntent extends NSObject implements NSCopying, NSSecureCoding {
 	keyImage(): INImage;
 
 	setImageForParameterNamed(image: INImage, parameterName: string): void;
+}
+
+declare class INIntentDonationMetadata extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): INIntentDonationMetadata; // inherited from NSObject
+
+	static new(): INIntentDonationMetadata; // inherited from NSObject
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare const enum INIntentErrorCode {
@@ -3801,7 +3904,9 @@ declare const enum INMediaReference {
 
 	Unknown = 0,
 
-	CurrentlyPlaying = 1
+	CurrentlyPlaying = 1,
+
+	My = 2
 }
 
 declare class INMediaSearch extends NSObject implements NSCopying, NSSecureCoding {
@@ -3894,6 +3999,8 @@ declare class INMessage extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): INMessage; // inherited from NSObject
 
+	readonly audioMessageFile: INFile;
+
 	readonly content: string;
 
 	readonly conversationIdentifier: string;
@@ -3922,6 +4029,8 @@ declare class INMessage extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { identifier: string; conversationIdentifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson> | INPerson[]; groupName: INSpeakableString; messageType: INMessageType; serviceName: string; });
 
+	constructor(o: { identifier: string; conversationIdentifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson> | INPerson[]; groupName: INSpeakableString; messageType: INMessageType; serviceName: string; audioMessageFile: INFile; });
+
 	constructor(o: { identifier: string; conversationIdentifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson> | INPerson[]; messageType: INMessageType; });
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
@@ -3935,6 +4044,8 @@ declare class INMessage extends NSObject implements NSCopying, NSSecureCoding {
 	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsGroupNameMessageType(identifier: string, conversationIdentifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson> | INPerson[], groupName: INSpeakableString, messageType: INMessageType): this;
 
 	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsGroupNameMessageTypeServiceName(identifier: string, conversationIdentifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson> | INPerson[], groupName: INSpeakableString, messageType: INMessageType, serviceName: string): this;
+
+	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsGroupNameMessageTypeServiceNameAudioMessageFile(identifier: string, conversationIdentifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson> | INPerson[], groupName: INSpeakableString, messageType: INMessageType, serviceName: string, audioMessageFile: INFile): this;
 
 	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsMessageType(identifier: string, conversationIdentifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson> | INPerson[], messageType: INMessageType): this;
 }
@@ -4898,6 +5009,8 @@ declare class INPerson extends NSObject implements INSpeakable, NSCopying, NSSec
 
 	readonly contactIdentifier: string;
 
+	readonly contactSuggestion: boolean;
+
 	readonly customIdentifier: string;
 
 	readonly displayName: string;
@@ -4954,7 +5067,11 @@ declare class INPerson extends NSObject implements INSpeakable, NSCopying, NSSec
 
 	constructor(o: { personHandle: INPersonHandle; nameComponents: NSPersonNameComponents; displayName: string; image: INImage; contactIdentifier: string; customIdentifier: string; aliases: NSArray<INPersonHandle> | INPersonHandle[]; suggestionType: INPersonSuggestionType; });
 
+	constructor(o: { personHandle: INPersonHandle; nameComponents: NSPersonNameComponents; displayName: string; image: INImage; contactIdentifier: string; customIdentifier: string; isContactSuggestion: boolean; suggestionType: INPersonSuggestionType; });
+
 	constructor(o: { personHandle: INPersonHandle; nameComponents: NSPersonNameComponents; displayName: string; image: INImage; contactIdentifier: string; customIdentifier: string; isMe: boolean; });
+
+	constructor(o: { personHandle: INPersonHandle; nameComponents: NSPersonNameComponents; displayName: string; image: INImage; contactIdentifier: string; customIdentifier: string; isMe: boolean; suggestionType: INPersonSuggestionType; });
 
 	constructor(o: { personHandle: INPersonHandle; nameComponents: NSPersonNameComponents; displayName: string; image: INImage; contactIdentifier: string; customIdentifier: string; relationship: string; });
 
@@ -4978,7 +5095,11 @@ declare class INPerson extends NSObject implements INSpeakable, NSCopying, NSSec
 
 	initWithPersonHandleNameComponentsDisplayNameImageContactIdentifierCustomIdentifierAliasesSuggestionType(personHandle: INPersonHandle, nameComponents: NSPersonNameComponents, displayName: string, image: INImage, contactIdentifier: string, customIdentifier: string, aliases: NSArray<INPersonHandle> | INPersonHandle[], suggestionType: INPersonSuggestionType): this;
 
+	initWithPersonHandleNameComponentsDisplayNameImageContactIdentifierCustomIdentifierIsContactSuggestionSuggestionType(personHandle: INPersonHandle, nameComponents: NSPersonNameComponents, displayName: string, image: INImage, contactIdentifier: string, customIdentifier: string, isContactSuggestion: boolean, suggestionType: INPersonSuggestionType): this;
+
 	initWithPersonHandleNameComponentsDisplayNameImageContactIdentifierCustomIdentifierIsMe(personHandle: INPersonHandle, nameComponents: NSPersonNameComponents, displayName: string, image: INImage, contactIdentifier: string, customIdentifier: string, isMe: boolean): this;
+
+	initWithPersonHandleNameComponentsDisplayNameImageContactIdentifierCustomIdentifierIsMeSuggestionType(personHandle: INPersonHandle, nameComponents: NSPersonNameComponents, displayName: string, image: INImage, contactIdentifier: string, customIdentifier: string, isMe: boolean, suggestionType: INPersonSuggestionType): this;
 
 	initWithPersonHandleNameComponentsDisplayNameImageContactIdentifierCustomIdentifierRelationship(personHandle: INPersonHandle, nameComponents: NSPersonNameComponents, displayName: string, image: INImage, contactIdentifier: string, customIdentifier: string, relationship: string): this;
 
@@ -5301,7 +5422,9 @@ declare const enum INPlayMediaIntentResponseCode {
 
 	FailureNoUnplayedContent = 9,
 
-	FailureRestrictedContent = 10
+	FailureRestrictedContent = 10,
+
+	FailureMaxStreamLimitReached = 11
 }
 
 declare class INPlayMediaMediaItemResolutionResult extends INMediaItemResolutionResult {
@@ -5700,6 +5823,8 @@ declare class INRelevantShortcut extends NSObject implements NSCopying, NSSecure
 
 	watchTemplate: INDefaultCardTemplate;
 
+	widgetKind: string;
+
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
@@ -6066,8 +6191,6 @@ declare class INReservation extends NSObject implements NSCopying, NSSecureCodin
 	readonly reservationNumber: string;
 
 	readonly reservationStatus: INReservationStatus;
-
-	readonly url: NSURL;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -7483,7 +7606,7 @@ declare class INSendMessageAttachment extends NSObject {
 	readonly audioMessageFile: INFile;
 }
 
-declare class INSendMessageIntent extends INIntent {
+declare class INSendMessageIntent extends INIntent implements UNNotificationContentProviding {
 
 	static alloc(): INSendMessageIntent; // inherited from NSObject
 
@@ -7507,6 +7630,18 @@ declare class INSendMessageIntent extends INIntent {
 
 	readonly speakableGroupName: INSpeakableString;
 
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
 	constructor(o: { recipients: NSArray<INPerson> | INPerson[]; content: string; groupName: string; serviceName: string; sender: INPerson; });
 
 	constructor(o: { recipients: NSArray<INPerson> | INPerson[]; content: string; speakableGroupName: INSpeakableString; conversationIdentifier: string; serviceName: string; sender: INPerson; });
@@ -7515,6 +7650,10 @@ declare class INSendMessageIntent extends INIntent {
 
 	constructor(o: { recipients: NSArray<INPerson> | INPerson[]; outgoingMessageType: INOutgoingMessageType; content: string; speakableGroupName: INSpeakableString; conversationIdentifier: string; serviceName: string; sender: INPerson; attachments: NSArray<INSendMessageAttachment> | INSendMessageAttachment[]; });
 
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
 	initWithRecipientsContentGroupNameServiceNameSender(recipients: NSArray<INPerson> | INPerson[], content: string, groupName: string, serviceName: string, sender: INPerson): this;
 
 	initWithRecipientsContentSpeakableGroupNameConversationIdentifierServiceNameSender(recipients: NSArray<INPerson> | INPerson[], content: string, speakableGroupName: INSpeakableString, conversationIdentifier: string, serviceName: string, sender: INPerson): this;
@@ -7522,6 +7661,39 @@ declare class INSendMessageIntent extends INIntent {
 	initWithRecipientsOutgoingMessageTypeContentSpeakableGroupNameConversationIdentifierServiceNameSender(recipients: NSArray<INPerson> | INPerson[], outgoingMessageType: INOutgoingMessageType, content: string, speakableGroupName: INSpeakableString, conversationIdentifier: string, serviceName: string, sender: INPerson): this;
 
 	initWithRecipientsOutgoingMessageTypeContentSpeakableGroupNameConversationIdentifierServiceNameSenderAttachments(recipients: NSArray<INPerson> | INPerson[], outgoingMessageType: INOutgoingMessageType, content: string, speakableGroupName: INSpeakableString, conversationIdentifier: string, serviceName: string, sender: INPerson, attachments: NSArray<INSendMessageAttachment> | INSendMessageAttachment[]): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
+declare class INSendMessageIntentDonationMetadata extends INIntentDonationMetadata {
+
+	static alloc(): INSendMessageIntentDonationMetadata; // inherited from NSObject
+
+	static new(): INSendMessageIntentDonationMetadata; // inherited from NSObject
+
+	mentionsCurrentUser: boolean;
+
+	notifyRecipientAnyway: boolean;
+
+	recipientCount: number;
+
+	replyToCurrentUser: boolean;
 }
 
 interface INSendMessageIntentHandling extends NSObjectProtocol {
@@ -7558,6 +7730,8 @@ declare class INSendMessageIntentResponse extends INIntentResponse {
 	readonly code: INSendMessageIntentResponseCode;
 
 	sentMessage: INMessage;
+
+	sentMessages: NSArray<INMessage>;
 
 	constructor(o: { code: INSendMessageIntentResponseCode; userActivity: NSUserActivity; });
 
@@ -8547,6 +8721,58 @@ declare const enum INSetTaskAttributeTemporalEventTriggerUnsupportedReason {
 	InvalidRecurrence = 2
 }
 
+declare class INShareFocusStatusIntent extends INIntent {
+
+	static alloc(): INShareFocusStatusIntent; // inherited from NSObject
+
+	static new(): INShareFocusStatusIntent; // inherited from NSObject
+
+	readonly focusStatus: INFocusStatus;
+
+	constructor(o: { focusStatus: INFocusStatus; });
+
+	initWithFocusStatus(focusStatus: INFocusStatus): this;
+}
+
+interface INShareFocusStatusIntentHandling extends NSObjectProtocol {
+
+	confirmShareFocusStatusCompletion?(intent: INShareFocusStatusIntent, completion: (p1: INShareFocusStatusIntentResponse) => void): void;
+
+	handleShareFocusStatusCompletion(intent: INShareFocusStatusIntent, completion: (p1: INShareFocusStatusIntentResponse) => void): void;
+}
+declare var INShareFocusStatusIntentHandling: {
+
+	prototype: INShareFocusStatusIntentHandling;
+};
+
+declare class INShareFocusStatusIntentResponse extends INIntentResponse {
+
+	static alloc(): INShareFocusStatusIntentResponse; // inherited from NSObject
+
+	static new(): INShareFocusStatusIntentResponse; // inherited from NSObject
+
+	readonly code: INShareFocusStatusIntentResponseCode;
+
+	constructor(o: { code: INShareFocusStatusIntentResponseCode; userActivity: NSUserActivity; });
+
+	initWithCodeUserActivity(code: INShareFocusStatusIntentResponseCode, userActivity: NSUserActivity): this;
+}
+
+declare const enum INShareFocusStatusIntentResponseCode {
+
+	Unspecified = 0,
+
+	Ready = 1,
+
+	InProgress = 2,
+
+	Success = 3,
+
+	Failure = 4,
+
+	FailureRequiringAppLaunch = 5
+}
+
 declare class INShortcut extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): INShortcut; // inherited from NSObject
@@ -9088,7 +9314,7 @@ declare const enum INStartCallContactUnsupportedReason {
 	NoUsableHandleForRedial = 7
 }
 
-declare class INStartCallIntent extends INIntent {
+declare class INStartCallIntent extends INIntent implements UNNotificationContentProviding {
 
 	static alloc(): INStartCallIntent; // inherited from NSObject
 
@@ -9108,13 +9334,47 @@ declare class INStartCallIntent extends INIntent {
 
 	readonly recordTypeForRedialing: INCallRecordType;
 
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
 	constructor(o: { audioRoute: INCallAudioRoute; destinationType: INCallDestinationType; contacts: NSArray<INPerson> | INPerson[]; recordTypeForRedialing: INCallRecordType; callCapability: INCallCapability; });
 
 	constructor(o: { callRecordFilter: INCallRecordFilter; callRecordToCallBack: INCallRecord; audioRoute: INCallAudioRoute; destinationType: INCallDestinationType; contacts: NSArray<INPerson> | INPerson[]; callCapability: INCallCapability; });
 
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
 	initWithAudioRouteDestinationTypeContactsRecordTypeForRedialingCallCapability(audioRoute: INCallAudioRoute, destinationType: INCallDestinationType, contacts: NSArray<INPerson> | INPerson[], recordTypeForRedialing: INCallRecordType, callCapability: INCallCapability): this;
 
 	initWithCallRecordFilterCallRecordToCallBackAudioRouteDestinationTypeContactsCallCapability(callRecordFilter: INCallRecordFilter, callRecordToCallBack: INCallRecord, audioRoute: INCallAudioRoute, destinationType: INCallDestinationType, contacts: NSArray<INPerson> | INPerson[], callCapability: INCallCapability): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
 }
 
 interface INStartCallIntentHandling extends NSObjectProtocol {

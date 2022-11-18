@@ -1,4 +1,4 @@
-import { ImageSource } from '@nativescript/core/image-source';
+import { ImageSource } from '@nativescript/core';
 import * as TKUnit from '../tk-unit';
 import * as http from '@nativescript/core/http';
 import * as fs from '@nativescript/core/file-system';
@@ -689,15 +689,14 @@ export var test_request_jsonAsContentSentAndReceivedProperly = function (done) {
 };
 
 export var test_getString_WorksProperlyInWorker = function (done) {
-	const HttpStringWorker = require('nativescript-worker-loader!./http-string-worker');
-	let worker = new HttpStringWorker();
+	const worker = new Worker('./http-string-worker');
 	console.log('Worker Created');
 	worker.onmessage = function (msg) {
 		console.log('Message received');
 		done();
 	};
 	worker.onerror = function (e) {
-		console.log('errir received');
+		console.log('Error received');
 		done(e);
 	};
 };

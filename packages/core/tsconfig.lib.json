@@ -17,11 +17,11 @@
 		"types": ["node"],
 		"plugins": [
 			{
-				"transform": "../webpack/transformers/ns-transform-native-classes.ts",
+				"transform": "../webpack5/src/transformers/NativeClass/index.ts",
 				"type": "raw"
 			}
 		]
 	},
-	"exclude": ["**/*.spec.ts", "dist", "__tests__"],
+	"exclude": ["**/*.spec.ts", "**/*.test.ts", "dist", "__tests__"],
 	"include": ["**/*.ts", "./references.d.ts"]
 }

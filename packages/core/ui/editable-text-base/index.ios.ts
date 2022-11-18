@@ -1,5 +1,6 @@
-import { EditableTextBase as EditableTextBaseCommon, keyboardTypeProperty, returnKeyTypeProperty, autocapitalizationTypeProperty, autocorrectProperty } from './editable-text-base-common';
+import { EditableTextBase as EditableTextBaseCommon, autofillTypeProperty, keyboardTypeProperty, returnKeyTypeProperty, autocapitalizationTypeProperty, autocorrectProperty } from './editable-text-base-common';
 import { FormattedString } from '../text-base/formatted-string';
+import { CoreTypes } from '../../core-types';
 
 export * from './editable-text-base-common';
 
@@ -70,6 +71,39 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 		}
 
 		this.nativeTextViewProtected.keyboardType = newKeyboardType;
+	}
+	[autofillTypeProperty.setNative](value: CoreTypes.AutofillType) {
+		let newTextContentType: string;
+		switch (value) {
+			case 'phone':
+				newTextContentType = UITextContentTypeTelephoneNumber;
+				break;
+			case 'postalCode':
+				newTextContentType = UITextContentTypePostalCode;
+				break;
+			case 'creditCardNumber':
+				newTextContentType = UITextContentTypeCreditCardNumber;
+				break;
+			case 'email':
+				newTextContentType = UITextContentTypeEmailAddress;
+				break;
+			case 'name':
+				newTextContentType = UITextContentTypeName;
+				break;
+			case 'username':
+				newTextContentType = UITextContentTypeUsername;
+				break;
+			case 'password':
+				newTextContentType = UITextContentTypePassword;
+				break;
+			case 'none':
+				newTextContentType = null;
+			default:
+				newTextContentType = value;
+				break;
+		}
+
+		this.nativeTextViewProtected.textContentType = newTextContentType;
 	}
 
 	[returnKeyTypeProperty.getDefault](): 'done' | 'next' | 'go' | 'search' | 'send' | string {
@@ -180,15 +214,21 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 	}
 	[autocorrectProperty.setNative](value: boolean | number) {
 		let newValue: UITextAutocorrectionType;
+		let spelling: UITextSpellCheckingType;
+
 		if (typeof value === 'number') {
 			newValue = UITextAutocorrectionType.Default;
+			spelling = UITextSpellCheckingType.Default;
 		} else if (value) {
 			newValue = UITextAutocorrectionType.Yes;
+			spelling = UITextSpellCheckingType.Yes;
 		} else {
 			newValue = UITextAutocorrectionType.No;
+			spelling = UITextSpellCheckingType.No;
 		}
 
 		this.nativeTextViewProtected.autocorrectionType = newValue;
+		this.nativeTextViewProtected.spellCheckingType = spelling;
 	}
 	public setSelection(start: number, stop?: number) {
 		const view = this.nativeTextViewProtected;

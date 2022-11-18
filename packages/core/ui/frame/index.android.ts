@@ -19,6 +19,8 @@ import { Builder } from '../builder';
 import { CSSUtils } from '../../css/system-classes';
 import { Device } from '../../platform';
 import { profile } from '../../profiling';
+import { android as androidApplication } from '../../application';
+import { setSuspended } from '../../application/application-common';
 
 export * from './frame-common';
 
@@ -28,7 +30,6 @@ const INTENT_EXTRA = 'com.tns.activity';
 const ROOT_VIEW_ID_EXTRA = 'com.tns.activity.rootViewId';
 const FRAMEID = '_frameId';
 const CALLBACKS = '_callbacks';
-const HMR_REPLACE_TRANSITION = 'fade';
 
 const ownerSymbol = Symbol('_owner');
 const activityRootViewsMap = new Map<number, WeakRef<View>>();
@@ -39,7 +40,6 @@ let fragmentId = -1;
 export let moduleLoaded: boolean;
 
 if (global && global.__inspector) {
-	// eslint-disable-next-line @typescript-eslint/no-var-requires
 	const devtools = require('../../debugger/devtools-elements');
 	devtools.attachDOMInspectorEventCallbacks(global.__inspector);
 	devtools.attachDOMInspectorCommandCallbacks(global.__inspector);
@@ -86,6 +86,7 @@ export class Frame extends FrameBase {
 	private _attachedToWindow = false;
 	private _wasReset = false;
 	private _cachedTransitionState: TransitionState;
+	private _frameCreateTimeout: NodeJS.Timeout;
 
 	constructor() {
 		super();
@@ -145,8 +146,9 @@ export class Frame extends FrameBase {
 		super._onAttachedToWindow();
 
 		// _onAttachedToWindow called from OS again after it was detach
-		// TODO: Consider testing and removing it when update to androidx.fragment:1.2.0
-		if (this._manager && this._manager.isDestroyed()) {
+		// still happens with androidx.fragment:1.3.2
+		const lifecycleState = (androidApplication.foregroundActivity?.getLifecycle?.() || androidApplication.startActivity?.getLifecycle?.())?.getCurrentState() || androidx.lifecycle.Lifecycle.State.CREATED;
+		if ((this._manager && this._manager.isDestroyed()) || !lifecycleState.isAtLeast(androidx.lifecycle.Lifecycle.State.CREATED)) {
 			return;
 		}
 
@@ -249,17 +251,31 @@ export class Frame extends FrameBase {
 			this.backgroundColor = this._originalBackground;
 			this._originalBackground = null;
 		}
+		this._frameCreateTimeout = setTimeout(() => {
+			// there's a bug with nested frames where sometimes the nested fragment is not recreated at all
+			// so we manually check on loaded event if the fragment is not recreated and recreate it
+			const currentEntry = this._currentEntry || this._executingContext?.entry;
+			if (currentEntry) {
+				if (!currentEntry.fragment) {
+					const manager = this._getFragmentManager();
+					const transaction = manager.beginTransaction();
+					currentEntry.fragment = this.createFragment(currentEntry, currentEntry.fragmentTag);
+					_updateTransitions(currentEntry);
+					transaction.replace(this.containerViewId, currentEntry.fragment, currentEntry.fragmentTag);
+					transaction.commitAllowingStateLoss();
+				}
+			}
+		}, 0);
 
 		super.onLoaded();
 	}
 
 	onUnloaded() {
 		super.onUnloaded();
-
-		// calling dispose fragment after super.onUnloaded() means we are not relying on the built-in Android logic
-		// to automatically remove child fragments when parent fragment is removed;
-		// this fixes issue with missing nested fragment on app suspend / resume;
-		this.disposeCurrentFragment();
+		if (typeof this._frameCreateTimeout === 'number') {
+			clearTimeout(this._frameCreateTimeout);
+			this._frameCreateTimeout = null;
+		}
 	}
 
 	private disposeCurrentFragment(): void {
@@ -429,13 +445,7 @@ export class Frame extends FrameBase {
 		// layout pass so we will wait forever for transitionCompleted handler...
 		// https://github.com/NativeScript/NativeScript/issues/4895
 		let navigationTransition: NavigationTransition;
-		if (isReplace) {
-			animated = true;
-			navigationTransition = {
-				name: HMR_REPLACE_TRANSITION,
-				duration: 100,
-			};
-		} else if (this._currentEntry) {
+		if (this._currentEntry) {
 			navigationTransition = this._getNavigationTransition(newEntry.entry);
 		} else {
 			navigationTransition = null;
@@ -1026,6 +1036,28 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 	}
 
 	@profile
+	public onResume(fragment: org.nativescript.widgets.FragmentBase, superFunc: Function): void {
+		const frame = this.entry.resolvedPage.frame;
+		// on some cases during the first navigation on nested frames the animation doesn't trigger
+		// we depend on the animation (even None animation) to set the entry as the current entry
+		// animation should start between start and resume, so if we have an executing navigation here it probably means the animation was skipped
+		// so we manually set the entry
+		// also, to be compatible with fragments 1.2.x we need this setTimeout as animations haven't run on onResume yet
+		const weakRef = new WeakRef(this);
+		setTimeout(() => {
+			const owner = weakRef.get();
+			if (!owner) {
+				return;
+			}
+			if (frame._executingContext && !(<any>owner.entry).isAnimationRunning) {
+				frame.setCurrent(owner.entry, frame._executingContext.navigationType);
+			}
+		}, 0);
+
+		superFunc.call(fragment);
+	}
+
+	@profile
 	public onStop(fragment: androidx.fragment.app.Fragment, superFunc: Function): void {
 		superFunc.call(fragment);
 	}
@@ -1055,12 +1087,11 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 		// view.layout(0, 0, width, height);
 		// view.draw(canvas);
 
-		view.setDrawingCacheEnabled(true);
-		const drawCache = view.getDrawingCache();
-		const bitmap = android.graphics.Bitmap.createBitmap(drawCache);
-		view.setDrawingCacheEnabled(false);
-
-		return bitmap;
+		// view.setDrawingCacheEnabled(true);
+		// const drawCache = view.getDrawingCache();
+		// const bitmap = android.graphics.Bitmap.createBitmap(drawCache);
+		// view.setDrawingCacheEnabled(false);
+		return org.nativescript.widgets.Utils.getBitmapFromView(view);
 	}
 }
 
@@ -1123,7 +1154,9 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 			rootView._saveFragmentsState();
 		}
 
-		outState.putInt(ROOT_VIEW_ID_EXTRA, rootView._domId);
+		if (rootView) {
+			outState.putInt(ROOT_VIEW_ID_EXTRA, rootView._domId);
+		}
 	}
 
 	@profile
@@ -1181,13 +1214,13 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 		// and raising the application resume event there causes issues like
 		// https://github.com/NativeScript/NativeScript/issues/6708
 		if ((<any>activity).isNativeScriptActivity) {
+			setSuspended(false);
 			const args = <application.ApplicationEventData>{
 				eventName: application.resumeEvent,
 				object: application.android,
 				android: activity,
 			};
 			application.notify(args);
-			application.android.paused = false;
 		}
 	}
 
@@ -1203,12 +1236,18 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 				rootView._tearDownUI(true);
 			}
 
-			const exitArgs = {
-				eventName: application.exitEvent,
-				object: application.android,
-				android: activity,
-			};
-			application.notify(exitArgs);
+			// this may happen when the user changes the system theme
+			// In such case, isFinishing() is false (and isChangingConfigurations is true), and the app will start again (onCreate) with a savedInstanceState
+			// as a result, launchEvent will never be called
+			// possible alternative: always fire launchEvent and exitEvent, but pass extra flags to make it clear what kind of launch/destroy is happening
+			if (activity.isFinishing()) {
+				const exitArgs = {
+					eventName: application.exitEvent,
+					object: application.android,
+					android: activity,
+				};
+				application.notify(exitArgs);
+			}
 		} finally {
 			superFunc.call(activity);
 		}

@@ -1,4 +1,19 @@
 
+declare class MPAdTimeRange extends NSObject implements NSCopying {
+
+	static alloc(): MPAdTimeRange; // inherited from NSObject
+
+	static new(): MPAdTimeRange; // inherited from NSObject
+
+	timeRange: CMTimeRange;
+
+	constructor(o: { timeRange: CMTimeRange; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithTimeRange(timeRange: CMTimeRange): this;
+}
+
 declare class MPChangeLanguageOptionCommandEvent extends MPRemoteCommandEvent {
 
 	static alloc(): MPChangeLanguageOptionCommandEvent; // inherited from NSObject
@@ -303,6 +318,8 @@ declare class MPMediaItem extends MPMediaEntity {
 
 	readonly podcastTitle: string;
 
+	readonly preorder: boolean;
+
 	readonly protectedAsset: boolean;
 
 	readonly rating: number;
@@ -406,6 +423,8 @@ declare var MPMediaItemPropertyIsCompilation: string;
 
 declare var MPMediaItemPropertyIsExplicit: string;
 
+declare var MPMediaItemPropertyIsPreorder: string;
+
 declare var MPMediaItemPropertyLastPlayedDate: string;
 
 declare var MPMediaItemPropertyLyrics: string;
@@ -444,7 +463,7 @@ declare class MPMediaLibrary extends NSObject implements NSSecureCoding {
 
 	static new(): MPMediaLibrary; // inherited from NSObject
 
-	static requestAuthorization(handler: (p1: MPMediaLibraryAuthorizationStatus) => void): void;
+	static requestAuthorization(completionHandler: (p1: MPMediaLibraryAuthorizationStatus) => void): void;
 
 	readonly lastModifiedDate: Date;
 
@@ -1388,6 +1407,8 @@ declare const enum MPNowPlayingInfoMediaType {
 	Video = 2
 }
 
+declare var MPNowPlayingInfoPropertyAdTimeRanges: string;
+
 declare var MPNowPlayingInfoPropertyAssetURL: string;
 
 declare var MPNowPlayingInfoPropertyAvailableLanguageOptions: string;
@@ -1395,6 +1416,8 @@ declare var MPNowPlayingInfoPropertyAvailableLanguageOptions: string;
 declare var MPNowPlayingInfoPropertyChapterCount: string;
 
 declare var MPNowPlayingInfoPropertyChapterNumber: string;
+
+declare var MPNowPlayingInfoPropertyCreditsStartTime: string;
 
 declare var MPNowPlayingInfoPropertyCurrentLanguageOptions: string;
 
@@ -1434,6 +1457,48 @@ declare const enum MPNowPlayingPlaybackState {
 
 	Interrupted = 4
 }
+
+declare class MPNowPlayingSession extends NSObject {
+
+	static alloc(): MPNowPlayingSession; // inherited from NSObject
+
+	static new(): MPNowPlayingSession; // inherited from NSObject
+
+	readonly active: boolean;
+
+	automaticallyPublishNowPlayingInfo: boolean;
+
+	readonly canBecomeActive: boolean;
+
+	delegate: MPNowPlayingSessionDelegate;
+
+	readonly nowPlayingInfoCenter: MPNowPlayingInfoCenter;
+
+	readonly players: NSArray<AVPlayer>;
+
+	readonly remoteCommandCenter: MPRemoteCommandCenter;
+
+	constructor(o: { players: NSArray<AVPlayer> | AVPlayer[]; });
+
+	addPlayer(player: AVPlayer): void;
+
+	becomeActiveIfPossibleWithCompletion(completion: (p1: boolean) => void): void;
+
+	initWithPlayers(players: NSArray<AVPlayer> | AVPlayer[]): this;
+
+	removePlayer(player: AVPlayer): void;
+}
+
+interface MPNowPlayingSessionDelegate extends NSObjectProtocol {
+
+	nowPlayingSessionDidChangeActive?(nowPlayingSession: MPNowPlayingSession): void;
+
+	nowPlayingSessionDidChangeCanBecomeActive?(nowPlayingSession: MPNowPlayingSession): void;
+}
+declare var MPNowPlayingSessionDelegate: {
+
+	prototype: MPNowPlayingSessionDelegate;
+};
 
 interface MPPlayableContentDataSource extends NSObjectProtocol {
 

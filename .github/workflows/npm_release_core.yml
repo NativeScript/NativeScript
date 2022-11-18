@@ -2,9 +2,10 @@ name: '@nativescript/core -> npm'
 
 on:
   push:
-    branches: [ 'master' ]
+    branches: [ 'main' ]
     paths:
       - 'packages/core/**'
+  workflow_dispatch:
 
 env:
   NPM_TAG: 'next'
@@ -17,7 +18,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Setup
-        run: npm install
+        run: npm run setup
 
       - name: Generate Version
         working-directory: packages/core

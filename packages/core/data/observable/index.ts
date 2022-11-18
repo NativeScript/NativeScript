@@ -2,12 +2,16 @@ import { Observable as ObservableDefinition, WrappedValue as WrappedValueDefinit
 
 export interface EventData {
 	eventName: string;
-	object: Observable;
+	object: Partial<Observable>;
+}
+
+export interface EventDataValue extends EventData {
+	value?: boolean;
 }
 
 export interface NotifyData extends Partial<EventData> {
 	eventName: string;
-	object?: Observable;
+	object?: Partial<Observable>;
 }
 
 export interface PropertyChangeData extends EventData {
@@ -290,10 +294,19 @@ export class Observable implements ObservableDefinition {
 			if (entry.once) {
 				observers.splice(i, 1);
 			}
+
+			let returnValue;
 			if (entry.thisArg) {
-				entry.callback.apply(entry.thisArg, [data]);
+				returnValue = entry.callback.apply(entry.thisArg, [data]);
 			} else {
-				entry.callback(data);
+				returnValue = entry.callback(data);
+			}
+
+			// This ensures errors thrown inside asynchronous functions do not get swallowed
+			if (returnValue && returnValue instanceof Promise) {
+				returnValue.catch((err) => {
+					console.error(err);
+				});
 			}
 		}
 	}

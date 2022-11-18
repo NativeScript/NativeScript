@@ -829,6 +829,32 @@ declare var kCGImagePropertyGPSTrackRef: string;
 
 declare var kCGImagePropertyGPSVersion: string;
 
+declare var kCGImagePropertyGroupImageBaseline: string;
+
+declare var kCGImagePropertyGroupImageDisparityAdjustment: string;
+
+declare var kCGImagePropertyGroupImageIndexLeft: string;
+
+declare var kCGImagePropertyGroupImageIndexRight: string;
+
+declare var kCGImagePropertyGroupImageIsAlternateImage: string;
+
+declare var kCGImagePropertyGroupImageIsLeftImage: string;
+
+declare var kCGImagePropertyGroupImageIsRightImage: string;
+
+declare var kCGImagePropertyGroupImagesAlternate: string;
+
+declare var kCGImagePropertyGroupIndex: string;
+
+declare var kCGImagePropertyGroupType: string;
+
+declare var kCGImagePropertyGroupTypeAlternate: string;
+
+declare var kCGImagePropertyGroupTypeStereoPair: string;
+
+declare var kCGImagePropertyGroups: string;
+
 declare var kCGImagePropertyHEICSCanvasPixelHeight: string;
 
 declare var kCGImagePropertyHEICSCanvasPixelWidth: string;
@@ -842,6 +868,8 @@ declare var kCGImagePropertyHEICSFrameInfoArray: string;
 declare var kCGImagePropertyHEICSLoopCount: string;
 
 declare var kCGImagePropertyHEICSUnclampedDelayTime: string;
+
+declare var kCGImagePropertyHEIFDictionary: string;
 
 declare var kCGImagePropertyHasAlpha: string;
 
@@ -1329,6 +1357,8 @@ declare var kCGImagePropertyIPTCWriterEditor: string;
 
 declare var kCGImagePropertyImageCount: string;
 
+declare var kCGImagePropertyImageIndex: string;
+
 declare var kCGImagePropertyImages: string;
 
 declare var kCGImagePropertyIsFloat: string;
@@ -1445,11 +1475,15 @@ declare var kCGImagePropertyPNGInterlaceType: string;
 
 declare var kCGImagePropertyPNGModificationTime: string;
 
+declare var kCGImagePropertyPNGPixelsAspectRatio: string;
+
 declare var kCGImagePropertyPNGSoftware: string;
 
 declare var kCGImagePropertyPNGSource: string;
 
 declare var kCGImagePropertyPNGTitle: string;
+
+declare var kCGImagePropertyPNGTransparency: string;
 
 declare var kCGImagePropertyPNGWarning: string;
 
@@ -1552,3 +1586,21 @@ declare var kCGImageSourceSubsampleFactor: string;
 declare var kCGImageSourceThumbnailMaxPixelSize: string;
 
 declare var kCGImageSourceTypeIdentifierHint: string;
+
+declare var kIIOCameraExtrinsics_CoordinateSystemID: string;
+
+declare var kIIOCameraExtrinsics_Position: string;
+
+declare var kIIOCameraExtrinsics_Rotation: string;
+
+declare var kIIOCameraModelType_GenericPinhole: string;
+
+declare var kIIOCameraModelType_SimplifiedPinhole: string;
+
+declare var kIIOCameraModel_Intrinsics: string;
+
+declare var kIIOCameraModel_ModelType: string;
+
+declare var kIIOMetadata_CameraExtrinsicsKey: string;
+
+declare var kIIOMetadata_CameraModelKey: string;
