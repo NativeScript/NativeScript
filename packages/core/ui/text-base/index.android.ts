@@ -11,7 +11,7 @@ import { colorProperty, fontSizeProperty, fontInternalProperty, paddingLeftPrope
 import { FormattedString } from './formatted-string';
 import { Span } from './span';
 import { CoreTypes } from '../../core-types';
-import { layout } from '../../utils';
+import { SDK_VERSION, layout } from '../../utils';
 import { isString, isNullOrUndefined } from '../../utils/types';
 import { accessibilityIdentifierProperty } from '../../accessibility/accessibility-properties';
 import * as Utils from '../../utils';
@@ -298,7 +298,7 @@ export class TextBase extends TextBaseCommon {
 				this.nativeTextViewProtected.setGravity(android.view.Gravity.START | verticalGravity);
 				break;
 		}
-		if (android.os.Build.VERSION.SDK_INT >= 26) {
+		if (SDK_VERSION >= 26) {
 			if (value === 'justify') {
 				this.nativeTextViewProtected.setJustificationMode(android.text.Layout.JUSTIFICATION_MODE_INTER_WORD);
 			} else {
