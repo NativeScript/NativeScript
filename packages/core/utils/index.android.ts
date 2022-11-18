@@ -1,4 +1,5 @@
 import { ad } from './native-helper';
+import { android as androidApp } from '../application';
 import { SDK_VERSION } from '../utils';
 import { FileSystemAccess } from '../file-system/file-system-access';
 import { Trace } from '../trace';
@@ -169,4 +170,27 @@ export function isRealDevice(): boolean {
 
 export function dismissSoftInput(nativeView?: any): void {
 	ad.dismissSoftInput(nativeView);
+}
+
+export function dismissKeyboard() {
+	dismissSoftInput();
+
+	const activity = ad.getCurrentActivity();
+	if (activity) {
+		const focus = activity.getCurrentFocus();
+
+		if (focus) {
+			focus.clearFocus();
+		}
+	}
+}
+
+export function copyToClipboard(value: string) {
+	try {
+		const clipboard = ad.getApplicationContext().getSystemService(android.content.Context.CLIPBOARD_SERVICE);
+		const clip = android.content.ClipData.newPlainText('Clipboard value', value);
+		clipboard.setPrimaryClip(clip);
+	} catch (err) {
+		console.log(err);
+	}
 }
