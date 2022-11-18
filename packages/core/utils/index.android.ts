@@ -1,5 +1,4 @@
 import { ad } from './native-helper';
-import { android as androidApp } from '../application';
 import { SDK_VERSION } from '../utils';
 import { FileSystemAccess } from '../file-system/file-system-access';
 import { Trace } from '../trace';
