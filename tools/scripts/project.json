@@ -1,12 +1,13 @@
 {
+	"name": "core-api-docs",
 	"$schema": "../../node_modules/nx/schemas/project-schema.json",
 	"sourceRoot": "tools/scripts",
 	"projectType": "library",
 	"generators": {},
 	"targets": {
 		"build": {
-			"executor": "@nrwl/workspace:run-commands",
-			"outputs": ["tools/scripts/dist"],
+			"executor": "nx:run-commands",
+			"outputs": ["{projectRoot}/dist"],
 			"options": {
 				"commands": ["./build-docs.sh"],
 				"cwd": "tools/scripts",

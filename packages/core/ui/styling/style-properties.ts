@@ -17,6 +17,7 @@ import { CoreTypes } from '../../core-types';
 import { parseBackground } from '../../css/parser';
 import { LinearGradient } from './linear-gradient';
 import { CSSShadow, parseCSSShadow } from './css-shadow';
+import { FontStyleType, FontWeightType } from './font-common';
 
 function equalsCommon(a: CoreTypes.LengthType, b: CoreTypes.LengthType): boolean;
 function equalsCommon(a: CoreTypes.PercentLengthType, b: CoreTypes.PercentLengthType): boolean;
@@ -1362,7 +1363,7 @@ export const fontSizeProperty = new InheritedCssProperty<Style, number>({
 });
 fontSizeProperty.register(Style);
 
-export const fontStyleProperty = new InheritedCssProperty<Style, FontStyle>({
+export const fontStyleProperty = new InheritedCssProperty<Style, FontStyleType>({
 	name: 'fontStyle',
 	cssName: 'font-style',
 	affectsLayout: global.isIOS,
@@ -1378,7 +1379,7 @@ export const fontStyleProperty = new InheritedCssProperty<Style, FontStyle>({
 });
 fontStyleProperty.register(Style);
 
-export const fontWeightProperty = new InheritedCssProperty<Style, FontWeight>({
+export const fontWeightProperty = new InheritedCssProperty<Style, FontWeightType>({
 	name: 'fontWeight',
 	cssName: 'font-weight',
 	affectsLayout: global.isIOS,

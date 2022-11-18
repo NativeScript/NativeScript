@@ -5,7 +5,7 @@ import { ObservableArray, ChangedData } from '../../data/observable-array';
 import { AddArrayFromBuilder, AddChildFromBuilder } from '../core/view';
 import { ViewBase } from '../core/view-base';
 import { Color } from '../../color';
-import { FontStyle, FontWeight } from '../styling/font';
+import { FontStyleType, FontWeightType } from '../styling/font';
 import { CoreTypes } from '../../core-types';
 
 export class FormattedString extends ViewBase implements FormattedStringDefinition, AddArrayFromBuilder, AddChildFromBuilder {
@@ -31,17 +31,17 @@ export class FormattedString extends ViewBase implements FormattedStringDefiniti
 		this.style.fontSize = value;
 	}
 
-	get fontStyle(): FontStyle {
+	get fontStyle(): FontStyleType {
 		return this.style.fontStyle;
 	}
-	set fontStyle(value: FontStyle) {
+	set fontStyle(value: FontStyleType) {
 		this.style.fontStyle = value;
 	}
 
-	get fontWeight(): FontWeight {
+	get fontWeight(): FontWeightType {
 		return this.style.fontWeight;
 	}
-	set fontWeight(value: FontWeight) {
+	set fontWeight(value: FontWeightType) {
 		this.style.fontWeight = value;
 	}
 

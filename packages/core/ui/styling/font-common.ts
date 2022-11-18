@@ -28,8 +28,8 @@ export abstract class Font implements FontDefinition {
 	public abstract getAndroidTypeface(): any; /* android.graphics.Typeface */
 	public abstract getUIFont(defaultFont: any /* UIFont */): any; /* UIFont */
 	public abstract withFontFamily(family: string): Font;
-	public abstract withFontStyle(style: string): Font;
-	public abstract withFontWeight(weight: string): Font;
+	public abstract withFontStyle(style: FontStyleType): Font;
+	public abstract withFontWeight(weight: FontWeightType): Font;
 	public abstract withFontSize(size: number): Font;
 	public abstract withFontScale(scale: number): Font;
 	public abstract withFontVariationSettings(variationSettings: FontVariationSettingsType[] | null): Font;
@@ -57,7 +57,7 @@ export namespace FontStyle {
 	export const parse = makeParser<FontStyleType>(isValid);
 }
 
-export type FontWeightType = '100' | '200' | '300' | 'normal' | '400' | '500' | '600' | 'bold' | '700' | '800' | '900';
+export type FontWeightType = '100' | '200' | '300' | 'normal' | '400' | '500' | '600' | 'bold' | '700' | '800' | '900' | number;
 export namespace FontWeight {
 	export const THIN = '100';
 	export const EXTRA_LIGHT = '200';

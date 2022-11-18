@@ -556,7 +556,7 @@ export function test_setting_font_shorthand_property() {
 	test_font_shorthand_property('normal normal normal 15px/30px Arial', 'Arial', 15, 'normal', 'normal');
 }
 
-function test_font_shorthand_property(short: string, family: string, size: number, style: string, weight: string) {
+function test_font_shorthand_property(short: string, family: string, size: number, style: string, weight: string | number) {
 	const testView = new Button();
 	(<any>testView.style)['font'] = short;
 

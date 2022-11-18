@@ -152,6 +152,12 @@ export namespace ad {
 
 		return applicationContext;
 	}
+	export function getCurrentActivity() {
+		if (!androidApp) {
+			return null;
+		}
+		return androidApp.foregroundActivity || androidApp.startActivity;
+	}
 	export function getApplication() {
 		if (!application) {
 			application = <android.app.Application>getNativeApplication();
@@ -199,8 +205,8 @@ export namespace ad {
 				return;
 			}
 			windowToken = nativeView.getWindowToken();
-		} else if (androidApp.foregroundActivity instanceof androidx.appcompat.app.AppCompatActivity) {
-			const decorView = androidApp.foregroundActivity.getWindow().getDecorView();
+		} else if (getCurrentActivity() instanceof androidx.appcompat.app.AppCompatActivity) {
+			const decorView = getCurrentActivity().getWindow().getDecorView();
 			if (decorView) {
 				windowToken = decorView.getWindowToken();
 				decorView.requestFocus();
@@ -258,6 +264,9 @@ export namespace ad {
 			const uri = packageName + name;
 
 			return resources.getIdentifier(uri, null, null);
+		}
+		export function getResource(name: string, type?: string): number {
+			return getResources().getIdentifier(name, type, getPackageName());
 		}
 		export function getPalleteColor(name: string, context: android.content.Context): number {
 			return getPaletteColor(name, context);

@@ -1,4 +1,7 @@
 import { Font as FontBase, parseFontFamily, genericFontFamilies, FontStyleType, FontWeight, FontWeightType, FontVariationSettingsType, FontVariationSettings } from './font-common';
+import { Trace } from '../../trace';
+import { SDK_VERSION } from '../../utils';
+import * as application from '../../application';
 import * as fs from '../../file-system';
 import { Trace } from '../../trace';
 import { ad } from '../../utils';
@@ -165,12 +168,15 @@ function createTypeface(font: Font): android.graphics.Typeface {
 }
 
 function getFontWeightSuffix(fontWeight: FontWeightType): string {
+	if (typeof fontWeight === 'number') {
+		fontWeight = (fontWeight + '') as any;
+	}
 	switch (fontWeight) {
 		case FontWeight.THIN:
-			return android.os.Build.VERSION.SDK_INT >= 16 ? '-thin' : '';
+			return SDK_VERSION >= 16 ? '-thin' : '';
 		case FontWeight.EXTRA_LIGHT:
 		case FontWeight.LIGHT:
-			return android.os.Build.VERSION.SDK_INT >= 16 ? '-light' : '';
+			return SDK_VERSION >= 16 ? '-light' : '';
 		case FontWeight.NORMAL:
 		case '400':
 		case undefined:
@@ -178,13 +184,13 @@ function getFontWeightSuffix(fontWeight: FontWeightType): string {
 			return '';
 		case FontWeight.MEDIUM:
 		case FontWeight.SEMI_BOLD:
-			return android.os.Build.VERSION.SDK_INT >= 21 ? '-medium' : '';
+			return SDK_VERSION >= 21 ? '-medium' : '';
 		case FontWeight.BOLD:
 		case '700':
 		case FontWeight.EXTRA_BOLD:
 			return '';
 		case FontWeight.BLACK:
-			return android.os.Build.VERSION.SDK_INT >= 21 ? '-black' : '';
+			return SDK_VERSION >= 21 ? '-black' : '';
 		default:
 			throw new Error(`Invalid font weight: "${fontWeight}"`);
 	}

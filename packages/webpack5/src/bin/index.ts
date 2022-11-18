@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { redBright, green, greenBright, yellow } from 'chalk';
+import { redBright, green, greenBright, yellow } from 'ansi-colors';
 import { program } from 'commander';
 import dedent from 'ts-dedent';
 import webpack from 'webpack';
@@ -150,7 +150,14 @@ program
 				webpackCompilationCallback
 			);
 		} else {
-			compiler.run(webpackCompilationCallback);
+			compiler.run((err, status) => {
+				compiler.close((err2) =>
+					webpackCompilationCallback(
+						(err || err2) as webpack.WebpackError,
+						status
+					)
+				);
+			});
 		}
 	});
 
