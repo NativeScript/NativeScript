@@ -1,3 +1,4 @@
+import { Color } from '../color';
 import { Trace } from '../trace';
 import { getClass, isNullOrUndefined, numberHasDecimals, numberIs64Bit } from './types';
 
@@ -108,7 +109,7 @@ export function dataSerialize(data: any, wrapPrimitives: boolean = false) {
 }
 
 export namespace iOSNativeHelper {
-	// TODO: remove for NativeScript 7.0
+	// TODO: remove for NativeScript 9.0
 	export function getter<T>(_this: any, property: T | { (): T }): T {
 		console.log('utils.ios.getter() is deprecated; use the respective native property instead');
 		if (typeof property === 'function') {
@@ -137,13 +138,32 @@ export namespace iOSNativeHelper {
 	}
 
 	export function getRootViewController(): UIViewController {
-		const app = UIApplication.sharedApplication;
-		const win = app.keyWindow || (app.windows && app.windows.count > 0 && app.windows.objectAtIndex(0));
-		let vc = win.rootViewController;
+		const win = getWindow();
+		let vc = win && win.rootViewController;
 		while (vc && vc.presentedViewController) {
 			vc = vc.presentedViewController;
 		}
 		return vc;
+	}
+
+	export function getWindow(): UIWindow {
+		const app = UIApplication.sharedApplication;
+		if (!app) {
+			return;
+		}
+		return app.keyWindow || (app.windows && app.windows.count > 0 && app.windows.objectAtIndex(0));
+	}
+
+	export function setWindowBackgroundColor(value: string) {
+		const win = getWindow();
+		if (win) {
+			const bgColor = new Color(value);
+			win.backgroundColor = bgColor.ios;
+			const rootVc = getRootViewController();
+			if (rootVc?.view) {
+				rootVc.view.backgroundColor = bgColor.ios;
+			}
+		}
 	}
 
 	export function isLandscape(): boolean {

@@ -4,7 +4,6 @@ import { sanitizeModuleName } from '../ui/builder/module-name-sanitizer';
 import * as layout from './layout-helper';
 
 import { GC } from './index';
-import { Device } from '../platform';
 
 export { layout };
 export * from './mainthread-helper';
@@ -192,5 +191,3 @@ export function queueGC(delay = 900, useThrottle?: boolean) {
 		debouncedGC.get(delay)();
 	}
 }
-
-export const SDK_VERSION = parseInt(Device.sdkVersion, 10);

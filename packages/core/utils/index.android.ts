@@ -170,3 +170,26 @@ export function isRealDevice(): boolean {
 export function dismissSoftInput(nativeView?: any): void {
 	ad.dismissSoftInput(nativeView);
 }
+
+export function dismissKeyboard() {
+	dismissSoftInput();
+
+	const activity = ad.getCurrentActivity();
+	if (activity) {
+		const focus = activity.getCurrentFocus();
+
+		if (focus) {
+			focus.clearFocus();
+		}
+	}
+}
+
+export function copyToClipboard(value: string) {
+	try {
+		const clipboard = ad.getApplicationContext().getSystemService(android.content.Context.CLIPBOARD_SERVICE);
+		const clip = android.content.ClipData.newPlainText('Clipboard value', value);
+		clipboard.setPrimaryClip(clip);
+	} catch (err) {
+		console.log(err);
+	}
+}
