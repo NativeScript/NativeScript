@@ -2,7 +2,7 @@ import * as textModule from '../text';
 import { getNativeApplication } from '../application';
 
 import type { IFileSystemAccess } from './file-system-access';
-import { SDK_VERSION } from 'utils/utils-common';
+import { SDK_VERSION } from '../utils';
 
 let applicationContext: android.content.Context;
 function getApplicationContext() {
