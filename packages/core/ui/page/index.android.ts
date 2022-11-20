@@ -4,7 +4,7 @@ import { View } from '../core/view';
 import { Color } from '../../color';
 import { ActionBar } from '../action-bar';
 import { GridLayout } from '../layouts/grid-layout';
-import { Device } from '../../platform';
+import { SDK_VERSION } from '../../utils';
 import { profile } from '../../profiling';
 import { AndroidAccessibilityEvent, getLastFocusedViewOnPage, isAccessibilityServiceEnabled } from '../../accessibility';
 
@@ -91,7 +91,7 @@ export class Page extends PageBase {
 		color: number;
 		systemUiVisibility: number;
 	} {
-		if (Device.sdkVersion >= '21') {
+		if (SDK_VERSION >= 21) {
 			const window = this.getClosestWindow();
 			const decorView = window.getDecorView();
 
@@ -104,7 +104,7 @@ export class Page extends PageBase {
 		return null;
 	}
 	[statusBarStyleProperty.setNative](value: 'dark' | 'light' | { color: number; systemUiVisibility: number }) {
-		if (Device.sdkVersion >= '21') {
+		if (SDK_VERSION >= 21) {
 			const window = this.getClosestWindow();
 			const decorView = window.getDecorView();
 
@@ -122,7 +122,7 @@ export class Page extends PageBase {
 	}
 
 	[androidStatusBarBackgroundProperty.getDefault](): number {
-		if (Device.sdkVersion >= '21') {
+		if (SDK_VERSION >= 21) {
 			const window = this.getClosestWindow();
 			return (<any>window).getStatusBarColor();
 		}
@@ -130,7 +130,7 @@ export class Page extends PageBase {
 		return null;
 	}
 	[androidStatusBarBackgroundProperty.setNative](value: number | Color) {
-		if (Device.sdkVersion >= '21') {
+		if (SDK_VERSION >= 21) {
 			const window = this.getClosestWindow();
 			const color = value instanceof Color ? value.android : value;
 			(<any>window).setStatusBarColor(color);

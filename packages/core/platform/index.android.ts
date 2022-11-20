@@ -1,5 +1,6 @@
 /* tslint:disable:class-name */
 import { getNativeApplication, on, orientationChangedEvent, android as AndroidApplication } from '../application';
+import { SDK_VERSION } from '../utils';
 
 const MIN_TABLET_PIXELS = 600;
 
@@ -129,7 +130,7 @@ class DeviceRef {
 
 	get language(): string {
 		let defaultNativeLocale;
-		if (android.os.Build.VERSION.SDK_INT >= 24) {
+		if (SDK_VERSION >= 24) {
 			defaultNativeLocale = android.content.res.Resources.getSystem().getConfiguration().getLocales().get(0);
 		} else {
 			defaultNativeLocale = android.content.res.Resources.getSystem().getConfiguration().locale;
@@ -139,7 +140,7 @@ class DeviceRef {
 
 	get region(): string {
 		let defaultNativeLocale;
-		if (android.os.Build.VERSION.SDK_INT >= 24) {
+		if (SDK_VERSION >= 24) {
 			defaultNativeLocale = android.content.res.Resources.getSystem().getConfiguration().getLocales().get(0);
 		} else {
 			defaultNativeLocale = android.content.res.Resources.getSystem().getConfiguration().locale;

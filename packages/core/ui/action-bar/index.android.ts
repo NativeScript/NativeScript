@@ -8,16 +8,13 @@ import { ImageSource } from '../../image-source';
 import * as application from '../../application';
 import { isAccessibilityServiceEnabled, updateContentDescription } from '../../accessibility';
 import type { Background } from '../styling/background';
-import { Device } from '../../platform';
-import lazy from '../../utils/lazy';
+import { SDK_VERSION } from '../../utils';
 
 export * from './action-bar-common';
 
 const R_ID_HOME = 0x0102002c;
 const ACTION_ITEM_ID_OFFSET = 10000;
 const DEFAULT_ELEVATION = 4;
-
-const sdkVersion = lazy(() => parseInt(Device.sdkVersion));
 
 let AppCompatTextView;
 let actionItemIdGenerator = ACTION_ITEM_ID_OFFSET;
@@ -64,8 +61,6 @@ function initializeMenuItemClickListener(): void {
 		return;
 	}
 
-	apiLevel = sdkVersion();
-
 	AppCompatTextView = androidx.appcompat.widget.AppCompatTextView;
 
 	@NativeClass
@@ -87,8 +82,6 @@ function initializeMenuItemClickListener(): void {
 	MenuItemClickListener = MenuItemClickListenerImpl;
 	appResources = application.android.context.getResources();
 }
-
-let apiLevel: number;
 
 export class ActionItem extends ActionItemBase {
 	private _androidPosition: AndroidActionItemSettings = {
@@ -223,7 +216,7 @@ export class ActionBar extends ActionBarBase {
 
 	public _applyBackground(background: Background, isBorderDrawable, onlyColor: boolean, backgroundDrawable: any) {
 		const nativeView = this.nativeViewProtected;
-		if (backgroundDrawable && onlyColor && sdkVersion() >= 21) {
+		if (backgroundDrawable && onlyColor && SDK_VERSION >= 21) {
 			if (isBorderDrawable && (<any>nativeView)._cachedDrawable) {
 				backgroundDrawable = (<any>nativeView)._cachedDrawable;
 				// we need to duplicate the drawable or we lose the "default" cached drawable
@@ -472,13 +465,13 @@ export class ActionBar extends ActionBarBase {
 	}
 
 	[androidContentInsetLeftProperty.setNative]() {
-		if (apiLevel >= 21) {
+		if (SDK_VERSION >= 21) {
 			this.nativeViewProtected.setContentInsetsAbsolute(this.effectiveContentInsetLeft, this.effectiveContentInsetRight);
 		}
 	}
 
 	[androidContentInsetRightProperty.setNative]() {
-		if (apiLevel >= 21) {
+		if (SDK_VERSION >= 21) {
 			this.nativeViewProtected.setContentInsetsAbsolute(this.effectiveContentInsetLeft, this.effectiveContentInsetRight);
 		}
 	}
@@ -493,9 +486,9 @@ export class ActionBar extends ActionBarBase {
 			return;
 		}
 
-		const originalFocusableState = android.os.Build.VERSION.SDK_INT >= 26 && nativeView.getFocusable();
+		const originalFocusableState = SDK_VERSION >= 26 && nativeView.getFocusable();
 		const originalImportantForAccessibility = nativeView.getImportantForAccessibility();
-		const originalIsAccessibilityHeading = android.os.Build.VERSION.SDK_INT >= 28 && nativeView.isAccessibilityHeading();
+		const originalIsAccessibilityHeading = SDK_VERSION >= 28 && nativeView.isAccessibilityHeading();
 
 		try {
 			nativeView.setFocusable(false);
@@ -513,7 +506,7 @@ export class ActionBar extends ActionBarBase {
 				childView.setFocusable(true);
 				if (childView instanceof androidx.appcompat.widget.AppCompatTextView) {
 					announceView = childView;
-					if (android.os.Build.VERSION.SDK_INT >= 28) {
+					if (SDK_VERSION >= 28) {
 						announceView.setAccessibilityHeading(true);
 					}
 				}
@@ -538,11 +531,11 @@ export class ActionBar extends ActionBarBase {
 					return;
 				}
 
-				if (android.os.Build.VERSION.SDK_INT >= 28) {
+				if (SDK_VERSION >= 28) {
 					nativeView.setAccessibilityHeading(originalIsAccessibilityHeading);
 				}
 
-				if (android.os.Build.VERSION.SDK_INT >= 26) {
+				if (SDK_VERSION >= 26) {
 					localNativeView.setFocusable(originalFocusableState);
 				}
 
