@@ -3,5 +3,3 @@
  * Left here for convenience (over time can eventually remove these)
  */
 export * from './index';
-
-export const SDK_VERSION = parseFloat(UIDevice.currentDevice.systemVersion);

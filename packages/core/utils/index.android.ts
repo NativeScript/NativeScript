@@ -1,5 +1,4 @@
 import { ad } from './native-helper';
-import { SDK_VERSION } from '../utils';
 import { FileSystemAccess } from '../file-system/file-system-access';
 import { Trace } from '../trace';
 
@@ -8,6 +7,7 @@ export * from './utils-common';
 export { Source } from './debug';
 
 const MIN_URI_SHARE_RESTRICTED_APK_VERSION = 24;
+export const SDK_VERSION = android.os.Build.VERSION.SDK_INT;
 
 export function GC() {
 	gc();
