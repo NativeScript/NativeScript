@@ -455,15 +455,15 @@ export class Animation extends AnimationBase {
 
 		if (nativeView?.layer) {
 			nativeView.layer.addAnimationForKey(nativeAnimation, args.propertyNameToAnimate);
+		}
 
-			let callback = undefined;
-			if (index + 1 < propertyAnimations.length) {
-				callback = this._createiOSAnimationFunction(propertyAnimations, index + 1, playSequentially);
-				if (!playSequentially) {
-					callback();
-				} else {
-					animationDelegate.nextAnimation = callback;
-				}
+		let callback = undefined;
+		if (index + 1 < propertyAnimations.length) {
+			callback = this._createiOSAnimationFunction(propertyAnimations, index + 1, playSequentially);
+			if (!playSequentially) {
+				callback();
+			} else {
+				animationDelegate.nextAnimation = callback;
 			}
 		}
 	}
