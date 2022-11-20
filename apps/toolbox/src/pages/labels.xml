@@ -1,0 +1,54 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+    <Page.actionBar>
+        <ActionBar title="Labels and TextView" class="action-bar">
+        </ActionBar>
+    </Page.actionBar>
+    <ScrollView>
+      <StackLayout padding="20">
+        <Label text="maxLines 2" fontWeight="bold" />
+        <Label
+				text="Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."
+				textWrap="true"
+				maxLines="2"
+				marginTop="2"
+			/>
+
+        <Label text="maxLines 3" fontWeight="bold" marginTop="6" />
+        <Label
+				text="Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."
+				textWrap="true"
+				maxLines="3"
+				marginTop="2"
+			/>
+
+        <Label text="maxLines 4" fontWeight="bold" marginTop="6" />
+        <Label
+				text="Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."
+				textWrap="true"
+				maxLines="4"
+				marginTop="2"
+			/>
+
+        <Label text="NO textWrap" fontWeight="bold" marginTop="6" />
+        <Label
+				text="Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."
+				marginTop="2"
+			/>
+
+        <Label text="NO maxLines" fontWeight="bold" marginTop="6" />
+        <Label
+				text="Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."
+				textWrap="true"
+				marginTop="2"
+			/>
+
+        <Label text="TextView with maxLines 4" fontWeight="bold" marginTop="6" />
+        <TextView
+				text="Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."
+				maxLines="4"
+				textWrap="true"
+				marginTop="2"
+			/>
+      </StackLayout>
+    </ScrollView>
+</Page>
