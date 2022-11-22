@@ -11,6 +11,16 @@ const timeOrigin = Date.now();
 const emptyArray = [] as const;
 
 export class DOMEvent {
+	/**
+	 * @private
+	 * Internal API to facilitate testing - to be removed once we've completed
+	 * the breaking changes to migrate fully to DOMEvents.
+	 *
+	 * Gets the last event to be dispatched, allowing you to access the DOM
+	 * Event that corresponds to the currently-running callback.
+	 */
+	static unstable_currentEvent: DOMEvent | null = null;
+
 	readonly NONE = 0;
 	readonly CAPTURING_PHASE = 1;
 	readonly AT_TARGET = 2;
@@ -215,6 +225,10 @@ export class DOMEvent {
 		this.eventPhase = this.CAPTURING_PHASE;
 		this.target = target;
 		this._canceled = false;
+
+		// Internal API to facilitate testing - to be removed once we've
+		// completed the breaking changes to migrate fully to DOMEvents.
+		DOMEvent.unstable_currentEvent = this;
 
 		/**
 		 * Resets any internal state to allow the event to be redispatched. Call

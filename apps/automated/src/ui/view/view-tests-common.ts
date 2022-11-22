@@ -1,5 +1,5 @@
 import * as TKUnit from '../../tk-unit';
-import { View, eachDescendant, getViewById, InheritedProperty, CssProperty, CssAnimationProperty, ShorthandProperty, Property, Style, Frame, Page, Button, Label, Color, StackLayout, AbsoluteLayout, Observable, Utils, BindingOptions, isAndroid, LayoutBase } from '@nativescript/core';
+import { View, eachDescendant, getViewById, InheritedProperty, CssProperty, CssAnimationProperty, ShorthandProperty, Property, Style, Frame, Page, ActionBar, Button, Label, Color, StackLayout, AbsoluteLayout, Observable, Utils, BindingOptions, isAndroid, LayoutBase, EventData, ViewBase, DOMEvent } from '@nativescript/core';
 import * as helper from '../../ui-helper';
 import * as definition from './view-tests';
 
@@ -30,6 +30,266 @@ export function test_getViewById_Static() {
 		const result = getViewById(<any>Frame.topmost(), 'myLayout');
 
 		TKUnit.assert(result === views[1]);
+	};
+
+	helper.do_PageTest_WithButton(test);
+}
+
+export function test_event_bubbling() {
+	const test = function ([page, button, actionBar]: [Page, Button, ActionBar]) {
+		const frameIdBefore = page.frame!.id;
+		page.frame!.id = 'frame';
+		page.id = 'page';
+		button.id = 'button';
+		actionBar.id = 'actionBar';
+
+		const ids: string[] = [];
+		const callback = (data: EventData) => {
+			const domEvent = DOMEvent.unstable_currentEvent!;
+			ids.push((domEvent.currentTarget as ViewBase).id);
+		};
+
+		page.frame!.addEventListener(Observable.propertyChangeEvent, callback, null, { capture: false });
+		page.addEventListener(Observable.propertyChangeEvent, callback, null, { capture: false });
+		button.addEventListener(Observable.propertyChangeEvent, callback, null, { capture: false });
+		// ActionBar is not in the bubbling path, but we listen to it just to
+		// test that the event is following the expected path.
+		actionBar.addEventListener(Observable.propertyChangeEvent, callback, null, { capture: false });
+
+		button.setProperty('hidden', true, { bubbles: true });
+
+		const observed = JSON.stringify(ids);
+		const expected = JSON.stringify(['button', 'page', 'frame']);
+
+		TKUnit.assert(expected === observed, `Expected ${expected}, but got ${observed}`);
+
+		// Clean up (the test runner reuses the page rather than creating a
+		// fresh one)
+		page.frame.id = frameIdBefore;
+		page.frame!.removeEventListener(Observable.propertyChangeEvent, callback, null, { capture: false });
+		page.removeEventListener(Observable.propertyChangeEvent, callback, null, { capture: false });
+		button.removeEventListener(Observable.propertyChangeEvent, callback, null, { capture: false });
+		actionBar.removeEventListener(Observable.propertyChangeEvent, callback, null, { capture: false });
+	};
+
+	helper.do_PageTest_WithButton(test);
+}
+
+export function test_event_capturing() {
+	const test = function ([page, button, actionBar]: [Page, Button, ActionBar]) {
+		const frameIdBefore = page.frame!.id;
+		page.frame!.id = 'frame';
+		page.id = 'page';
+		button.id = 'button';
+		actionBar.id = 'actionBar';
+
+		const ids: string[] = [];
+		const callback = (data: EventData) => {
+			const domEvent = DOMEvent.unstable_currentEvent!;
+			ids.push((domEvent.currentTarget as ViewBase).id);
+		};
+
+		page.frame!.addEventListener(Observable.propertyChangeEvent, callback, null, { capture: true });
+		page.addEventListener(Observable.propertyChangeEvent, callback, null, { capture: true });
+		button.addEventListener(Observable.propertyChangeEvent, callback, null, { capture: true });
+		// ActionBar is not in the bubbling path, but we listen to it just to
+		// test that the event is following the expected path.
+		actionBar.addEventListener(Observable.propertyChangeEvent, callback, null, { capture: true });
+
+		button.setProperty('hidden', true, { bubbles: true });
+
+		const observed = JSON.stringify(ids);
+		const expected = JSON.stringify(['frame', 'page', 'button']);
+
+		TKUnit.assert(expected === observed, `Expected ${expected}, but got ${observed}`);
+
+		// Clean up (the test runner reuses the page rather than creating a
+		// fresh one)
+		page.frame.id = frameIdBefore;
+		page.frame!.removeEventListener(Observable.propertyChangeEvent, callback, null, { capture: false });
+		page.removeEventListener(Observable.propertyChangeEvent, callback, null, { capture: false });
+		button.removeEventListener(Observable.propertyChangeEvent, callback, null, { capture: false });
+		actionBar.removeEventListener(Observable.propertyChangeEvent, callback, null, { capture: false });
+	};
+
+	helper.do_PageTest_WithButton(test);
+}
+
+export function test_event_stopImmediatePropagation() {
+	const test = function ([page, button]: [Page, Button, ActionBar]) {
+		page.id = 'page';
+		button.id = 'button';
+
+		const ids: string[] = [];
+		const callback1 = (data: EventData) => {
+			const domEvent = DOMEvent.unstable_currentEvent!;
+			ids.push(`${(domEvent.currentTarget as ViewBase).id}1`);
+			domEvent.stopImmediatePropagation();
+		};
+		const callback2 = (data: EventData) => {
+			const domEvent = DOMEvent.unstable_currentEvent!;
+			ids.push(`${(domEvent.currentTarget as ViewBase).id}2`);
+			domEvent.stopImmediatePropagation();
+		};
+
+		page.addEventListener(Observable.propertyChangeEvent, callback1, null, { capture: false });
+		button.addEventListener(Observable.propertyChangeEvent, callback1, null, { capture: false });
+		button.addEventListener(Observable.propertyChangeEvent, callback2, null, { capture: false });
+
+		button.setProperty('hidden', true, { bubbles: true });
+
+		const observed = JSON.stringify(ids);
+		const expected = JSON.stringify(['button2']);
+
+		TKUnit.assert(expected === observed, `Expected ${expected}, but got ${observed}`);
+
+		// Clean up (the test runner reuses the page rather than creating a
+		// fresh one)
+		page.removeEventListener(Observable.propertyChangeEvent, callback1, null, { capture: false });
+		button.removeEventListener(Observable.propertyChangeEvent, callback1, null, { capture: false });
+		button.removeEventListener(Observable.propertyChangeEvent, callback2, null, { capture: false });
+	};
+
+	helper.do_PageTest_WithButton(test);
+}
+
+export function test_event_stopPropagation() {
+	const test = function ([page, button]: [Page, Button, ActionBar]) {
+		page.id = 'page';
+		button.id = 'button';
+
+		const ids: string[] = [];
+		const callback1 = (data: EventData) => {
+			const domEvent = DOMEvent.unstable_currentEvent!;
+			ids.push(`${(domEvent.currentTarget as ViewBase).id}1`);
+			domEvent.stopPropagation();
+		};
+		const callback2 = (data: EventData) => {
+			const domEvent = DOMEvent.unstable_currentEvent!;
+			ids.push(`${(domEvent.currentTarget as ViewBase).id}2`);
+			domEvent.stopPropagation();
+		};
+
+		page.addEventListener(Observable.propertyChangeEvent, callback1, null, { capture: false });
+		button.addEventListener(Observable.propertyChangeEvent, callback1, null, { capture: false });
+		button.addEventListener(Observable.propertyChangeEvent, callback2, null, { capture: false });
+
+		button.setProperty('hidden', true, { bubbles: true });
+
+		const observed = JSON.stringify(ids);
+		const expected = JSON.stringify(['button2', 'button1']);
+
+		TKUnit.assert(expected === observed, `Expected ${expected}, but got ${observed}`);
+
+		// Clean up (the test runner reuses the page rather than creating a
+		// fresh one)
+		page.removeEventListener(Observable.propertyChangeEvent, callback1, null, { capture: false });
+		button.removeEventListener(Observable.propertyChangeEvent, callback1, null, { capture: false });
+		button.removeEventListener(Observable.propertyChangeEvent, callback2, null, { capture: false });
+	};
+
+	helper.do_PageTest_WithButton(test);
+}
+
+export function test_event_addEventListenerOnPath() {
+	const test = function ([page, button]: [Page, Button, ActionBar]) {
+		page.id = 'page';
+		button.id = 'button';
+
+		const ids: string[] = [];
+		const callback1 = (data: EventData) => {
+			const domEvent = DOMEvent.unstable_currentEvent!;
+			ids.push(`${(domEvent.currentTarget as ViewBase).id}1`);
+
+			// Regarding adding an event listener to the currentTarget:
+			//
+			// Although we add a listener for callback2 to button now, it's too
+			// late for it to receive an event because our DOM Events
+			// implementation evaluates the list of listener entries for the
+			// currentTarget only once (and thus doesn't reassess it after each
+			// listener's callback called).
+			//
+			// This is partially for performance, partially for simplicity of
+			// implementation, and partially because it may actually be
+			// consistent with the DOM spec in the first place (I haven't
+			// checked, as it's quite exotic).
+			button.addEventListener(Observable.propertyChangeEvent, callback2, null, { capture: false });
+
+			// Regarding adding an event listener to another target in the
+			// propagation path:
+			//
+			// A listener added to the next event target in the propagation path
+			// (whether it's bubbling or capturing phase) *should* get called,
+			// as our implementation assesses the listener entries afresh as it
+			// visits each event target in the path (rather than planning out
+			// which entries to run on which targets in advance). I believe this
+			// is consistent with the DOM spec.
+			page.addEventListener(Observable.propertyChangeEvent, callback1, null, { capture: false });
+		};
+
+		const callback2 = (data: EventData) => {
+			const domEvent = DOMEvent.unstable_currentEvent!;
+			ids.push(`${(domEvent.currentTarget as ViewBase).id}2`);
+		};
+
+		page.addEventListener(Observable.propertyChangeEvent, callback1, null, { capture: false });
+		button.addEventListener(Observable.propertyChangeEvent, callback1, null, { capture: false });
+
+		button.setProperty('hidden', true, { bubbles: true });
+
+		const observed = JSON.stringify(ids);
+		const expected = JSON.stringify(['button1', 'page1']);
+
+		TKUnit.assert(expected === observed, `Expected ${expected}, but got ${observed}`);
+
+		// Clean up (the test runner reuses the page rather than creating a
+		// fresh one)
+		page.removeEventListener(Observable.propertyChangeEvent, callback1, null, { capture: false });
+		button.removeEventListener(Observable.propertyChangeEvent, callback1, null, { capture: false });
+		button.removeEventListener(Observable.propertyChangeEvent, callback2, null, { capture: false });
+	};
+
+	helper.do_PageTest_WithButton(test);
+}
+
+export function test_event_removeEventListenerOnPath() {
+	const test = function ([page, button]: [Page, Button, ActionBar]) {
+		page.id = 'page';
+		button.id = 'button';
+
+		const ids: string[] = [];
+		const callback1 = (data: EventData) => {
+			const domEvent = DOMEvent.unstable_currentEvent!;
+			ids.push(`${(domEvent.currentTarget as ViewBase).id}1`);
+		};
+
+		// This callback should run first (given that it is added last).
+		const callback2 = (data: EventData) => {
+			const domEvent = DOMEvent.unstable_currentEvent!;
+			ids.push(`${(domEvent.currentTarget as ViewBase).id}2`);
+
+			// We'll remove the callbacks that would otherwise run straight
+			// after it.
+			button.removeEventListener(Observable.propertyChangeEvent, callback1, null, { capture: false });
+			page.removeEventListener(Observable.propertyChangeEvent, callback1, null, { capture: false });
+		};
+
+		page.addEventListener(Observable.propertyChangeEvent, callback1, null, { capture: false });
+		button.addEventListener(Observable.propertyChangeEvent, callback1, null, { capture: false });
+		button.addEventListener(Observable.propertyChangeEvent, callback2, null, { capture: false });
+
+		button.setProperty('hidden', true, { bubbles: true });
+
+		const observed = JSON.stringify(ids);
+		const expected = JSON.stringify(['button2']);
+
+		TKUnit.assert(expected === observed, `Expected ${expected}, but got ${observed}`);
+
+		// Clean up (the test runner reuses the page rather than creating a
+		// fresh one)
+		page.removeEventListener(Observable.propertyChangeEvent, callback1, null, { capture: false });
+		button.removeEventListener(Observable.propertyChangeEvent, callback1, null, { capture: false });
+		button.removeEventListener(Observable.propertyChangeEvent, callback2, null, { capture: false });
 	};
 
 	helper.do_PageTest_WithButton(test);
