@@ -25,17 +25,7 @@ declare namespace NodeJS {
 			 * Global framework event handling
 			 */
 			events: {
-				on(eventNames: string, callback: (data: any) => void, thisArg?: any);
-				on(event: 'propertyChange', callback: (data: any) => void, thisArg?: any);
-				off(eventNames: string, callback?: any, thisArg?: any);
-				addEventListener(eventNames: string, callback: (data: any) => void, thisArg?: any);
-				removeEventListener(eventNames: string, callback?: any, thisArg?: any);
-				set(name: string, value: any): void;
-				setProperty(name: string, value: any): void;
-				get(name: string): any;
-				notify<T>(data: any): void;
-				notifyPropertyChange(propertyName: string, value: any, oldValue?: any): void;
-				hasListeners(eventName: string): boolean;
+				[Key in keyof import('data/observable').Observable]: import('data/observable').Observable[Key];
 			};
 			launched: boolean;
 			// used by various classes to setup callbacks to wire up global app event handling when the app instance is ready

@@ -4,7 +4,7 @@ import { AndroidActivityBackPressedEventData, AndroidActivityBundleEventData, An
 
 // TODO: explain why we need to this or remov it
 // Use requires to ensure order of imports is maintained
-const appCommon = require('./application-common');
+const appCommon = require('./application-common') as typeof import('./application-common');
 
 // First reexport so that app module is initialized.
 export * from './application-common';
