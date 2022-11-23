@@ -107,8 +107,9 @@ export class ListView extends View {
 	 * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change").
 	 * @param callback - Callback function which will be executed when event is raised.
 	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
+	 * @param options An optional parameter. If passed as a boolean, configures the useCapture value. Otherwise, specifies options.
 	 */
-	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
+	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
 
 	/**
 	 * Raised when a View for the data at the specified index should be created.
@@ -116,17 +117,17 @@ export class ListView extends View {
 	 * Note, that the view property of the event data can be pre-initialized with
 	 * an old instance of a view, so that it can be reused.
 	 */
-	on(event: 'itemLoading', callback: (args: ItemEventData) => void, thisArg?: any);
+	on(event: 'itemLoading', callback: (args: ItemEventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
 
 	/**
 	 * Raised when an item inside the ListView is tapped.
 	 */
-	on(event: 'itemTap', callback: (args: ItemEventData) => void, thisArg?: any);
+	on(event: 'itemTap', callback: (args: ItemEventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
 
 	/**
 	 * Raised when the ListView is scrolled so that its last item is visible.
 	 */
-	on(event: 'loadMoreItems', callback: (args: EventData) => void, thisArg?: any);
+	on(event: 'loadMoreItems', callback: (args: EventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
 }
 
 /**
@@ -164,8 +165,8 @@ export interface TemplatedItemsView {
 	itemTemplate: string | Template;
 	itemTemplates?: string | Array<KeyedTemplate>;
 	refresh(): void;
-	on(event: 'itemLoading', callback: (args: ItemEventData) => void, thisArg?: any);
-	off(event: 'itemLoading', callback: (args: EventData) => void, thisArg?: any);
+	on(event: 'itemLoading', callback: (args: ItemEventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
+	off(event: 'itemLoading', callback: (args: EventData) => void, thisArg?: any, options?: EventListenerOptions | boolean): void;
 }
 
 /**

@@ -166,13 +166,13 @@ export class PageBase extends ContentView {
 PageBase.prototype.recycleNativeView = 'never';
 
 export interface PageBase {
-	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void;
-	on(event: 'navigatingTo', callback: (args: NavigatedData) => void, thisArg?: any): void;
-	on(event: 'navigatedTo', callback: (args: NavigatedData) => void, thisArg?: any): void;
-	on(event: 'navigatingFrom', callback: (args: NavigatedData) => void, thisArg?: any): void;
-	on(event: 'navigatedFrom', callback: (args: NavigatedData) => void, thisArg?: any): void;
-	on(event: 'showingModally', callback: (args: ShownModallyData) => void, thisArg?: any): void;
-	on(event: 'shownModally', callback: (args: ShownModallyData) => void, thisArg?: any);
+	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
+	on(event: 'navigatingTo', callback: (args: NavigatedData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
+	on(event: 'navigatedTo', callback: (args: NavigatedData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
+	on(event: 'navigatingFrom', callback: (args: NavigatedData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
+	on(event: 'navigatedFrom', callback: (args: NavigatedData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
+	on(event: 'showingModally', callback: (args: ShownModallyData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
+	on(event: 'shownModally', callback: (args: ShownModallyData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
 }
 
 /**

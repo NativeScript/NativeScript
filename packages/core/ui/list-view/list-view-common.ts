@@ -154,10 +154,10 @@ export abstract class ListViewBase extends ContainerView implements ListViewDefi
 ListViewBase.prototype.recycleNativeView = 'auto';
 
 export interface ListViewBase {
-	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void;
-	on(event: 'itemLoading', callback: (args: ItemEventData) => void, thisArg?: any): void;
-	on(event: 'itemTap', callback: (args: ItemEventData) => void, thisArg?: any): void;
-	on(event: 'loadMoreItems', callback: (args: EventData) => void, thisArg?: any): void;
+	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
+	on(event: 'itemLoading', callback: (args: ItemEventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
+	on(event: 'itemTap', callback: (args: ItemEventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
+	on(event: 'loadMoreItems', callback: (args: EventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
 }
 
 /**

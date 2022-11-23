@@ -360,7 +360,7 @@ export class View extends ViewCommon {
 		}
 	}
 
-	off(eventNames: string, callback?: (data: EventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void {
+	off(eventNames: string, callback?: (data: EventData) => void, thisArg?: any, options?: EventListenerOptions | boolean): void {
 		super.off(eventNames, callback, thisArg, options);
 		const isLayoutEvent = typeof eventNames === 'string' ? eventNames.indexOf(ViewCommon.layoutChangedEvent) !== -1 : false;
 

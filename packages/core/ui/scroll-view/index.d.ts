@@ -66,13 +66,14 @@ export class ScrollView extends ContentView {
 	 * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change").
 	 * @param callback - Callback function which will be executed when event is raised.
 	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
+	 * @param options An optional parameter. If passed as a boolean, configures the useCapture value. Otherwise, specifies options.
 	 */
-	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void;
+	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
 
 	/**
 	 * Raised when a scroll event occurs.
 	 */
-	on(event: 'scroll', callback: (args: ScrollEventData) => void, thisArg?: any): void;
+	on(event: 'scroll', callback: (args: ScrollEventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
 
 	_onOrientationChanged(): void;
 }

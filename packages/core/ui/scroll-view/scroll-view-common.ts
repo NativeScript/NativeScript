@@ -16,8 +16,8 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
 	public scrollBarIndicatorVisible: boolean;
 	public isScrollEnabled: boolean;
 
-	public addEventListener(arg: string, callback: any, thisArg?: any) {
-		super.addEventListener(arg, callback, thisArg);
+	public addEventListener(arg: string, callback: (data: EventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void {
+		super.addEventListener(arg, callback, thisArg, options);
 
 		if (arg === ScrollViewBase.scrollEvent) {
 			this._scrollChangeCount++;
@@ -25,8 +25,8 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
 		}
 	}
 
-	public removeEventListener(arg: string, callback: any, thisArg?: any) {
-		super.removeEventListener(arg, callback, thisArg);
+	public removeEventListener(arg: string, callback?: (data: EventData) => void, thisArg?: any, options?: EventListenerOptions | boolean): void {
+		super.removeEventListener(arg, callback, thisArg, options);
 
 		if (arg === ScrollViewBase.scrollEvent) {
 			this._scrollChangeCount--;
@@ -87,8 +87,8 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
 	public abstract _onOrientationChanged();
 }
 export interface ScrollViewBase {
-	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
-	on(event: 'scroll', callback: (args: ScrollEventData) => void, thisArg?: any);
+	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
+	on(event: 'scroll', callback: (args: ScrollEventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
 }
 
 const converter = makeParser<CoreTypes.OrientationType>(makeValidator(CoreTypes.Orientation.horizontal, CoreTypes.Orientation.vertical));

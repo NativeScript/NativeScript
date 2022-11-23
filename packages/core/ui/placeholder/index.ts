@@ -20,6 +20,6 @@ export class Placeholder extends View {
 	}
 }
 export interface Placeholder {
-	on(eventNames: string, callback: (args: EventData) => void);
-	on(event: 'creatingView', callback: (args: CreateViewEventData) => void);
+	on(eventNames: string, callback: (args: EventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
+	on(event: 'creatingView', callback: (args: CreateViewEventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
 }
