@@ -115,8 +115,8 @@ export function initGlobal() {
 
 		// ts-helpers
 		// Required by V8 snapshot generator
-		if (!(<any>global).__extends) {
-			(<any>global).__extends = function (d, b) {
+		if (!global.__extends) {
+			global.__extends = function (d, b) {
 				for (const p in b) {
 					if (b.hasOwnProperty(p)) {
 						d[p] = b[p];

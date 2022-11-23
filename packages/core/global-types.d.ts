@@ -1,3 +1,11 @@
+// A refresher on TypeScript global augmentation:
+// - `var foo: boolean;` means that you can get/set both `foo` and `global.foo`.
+//   It's appropriate for globals exposed by the runtime.
+// - `let foo: boolean;` means that you can get/set `foo`, but not `global.foo`.
+//   It's not hugely useful!
+// - `const foo: boolean;` means that you can get `foo`, but not `global.foo`.
+//   It's appropriate for constants injected by Webpack.
+
 interface ModuleResolver {
 	/**
 	 * A function used to resolve the exports for a module.
@@ -16,31 +24,20 @@ declare interface NativeScriptError extends Error {
 	nativeError: any;
 }
 
-//Augment the NodeJS global type with our own extensions
-declare namespace NodeJS {
-	interface Global {
-		NativeScriptHasInitGlobal?: boolean;
-		NativeScriptGlobals?: {
+declare var NativeScriptHasInitGlobal: boolean | undefined;
+declare var NativeScriptGlobals:
+	| undefined
+	| {
 			/**
 			 * Global framework event handling
 			 */
 			events: {
-				on(eventNames: string, callback: (data: any) => void, thisArg?: any);
-				on(event: 'propertyChange', callback: (data: any) => void, thisArg?: any);
-				off(eventNames: string, callback?: any, thisArg?: any);
-				addEventListener(eventNames: string, callback: (data: any) => void, thisArg?: any);
-				removeEventListener(eventNames: string, callback?: any, thisArg?: any);
-				set(name: string, value: any): void;
-				setProperty(name: string, value: any): void;
-				get(name: string): any;
-				notify<T>(data: any): void;
-				notifyPropertyChange(propertyName: string, value: any, oldValue?: any): void;
-				hasListeners(eventName: string): boolean;
+				[Key in keyof import('data/observable').Observable]: import('data/observable').Observable[Key];
 			};
 			launched: boolean;
-			// used by various classes to setup callbacks to wire up global app event handling when the app instance is ready
+			// Used by various classes to set up callbacks to wire up global app event handling when the app instance is ready
 			appEventWiring: Array<any>;
-			// determines if the app instance is ready upon bootstrap
+			// Determines if the app instance is ready upon bootstrap
 			appInstanceReady: boolean;
 
 			/**
@@ -48,86 +45,93 @@ declare namespace NodeJS {
 			 * @param callback wire up any global event handling inside the callback
 			 */
 			addEventWiring(callback: () => void): void;
-		};
-		android?: any;
-		require(id: string): any;
+	  };
+declare var android: any | undefined;
 
-		moduleMerge(sourceExports: any, destExports: any): void;
+declare function moduleMerge(sourceExports: any, destExports: any): void;
 
-		registerModule(name: string, loader: (name: string) => any): void;
-		/**
-		 * Register all modules from a webpack context.
-		 * The context is one created using the following webpack utility:
-		 * https://webpack.js.org/guides/dependency-management/#requirecontext
-		 *
-		 * The extension map is optional, modules in the webpack context will have their original file extension (e.g. may be ".ts" or ".scss" etc.),
-		 * while the built-in module builders in {N} will look for ".js", ".css" or ".xml" files. Adding a map such as:
-		 * ```
-		 * { ".ts": ".js" }
-		 * ```
-		 * Will resolve lookups for .js to the .ts file.
-		 * By default scss and ts files are mapped.
-		 */
-		registerWebpackModules(context: { keys(): string[]; (key: string): any }, extensionMap?: { [originalFileExtension: string]: string });
+declare function registerModule(name: string, loader: (name: string) => any): void;
 
-		/**
-		 * The NativeScript XML builder, style-scope, application modules use various resources such as:
-		 * app.css, page.xml files and modules during the application life-cycle.
-		 * The moduleResolvers can be used to provide additional mechanisms to locate such resources.
-		 * For example:
-		 * ```
-		 * global.moduleResolvers.unshift(uri => uri === "main-page" ? require("main-page") : null);
-		 * ```
-		 * More advanced scenarios will allow for specific bundlers to integrate their module resolving mechanisms.
-		 * When adding resolvers at the start of the array, avoid throwing and return null instead so subsequent resolvers may try to resolve the resource.
-		 * By default the only member of the array is global.require, as last resort - if it fails to find a module it will throw.
-		 */
-		readonly moduleResolvers: ModuleResolver[];
+/**
+ * Register all modules from a webpack context.
+ * The context is one created using the following webpack utility:
+ * https://webpack.js.org/guides/dependency-management/#requirecontext
+ *
+ * The extension map is optional, modules in the webpack context will have their original file extension (e.g. may be ".ts" or ".scss" etc.),
+ * while the built-in module builders in {N} will look for ".js", ".css" or ".xml" files. Adding a map such as:
+ * ```
+ * { ".ts": ".js" }
+ * ```
+ * Will resolve lookups for .js to the .ts file.
+ * By default scss and ts files are mapped.
+ */
+declare function registerWebpackModules(context: { keys(): string[]; (key: string): any }, extensionMap?: { [originalFileExtension: string]: string });
 
-		/**
-		 *
-		 * @param name Name of the module to be loaded
-		 * @param loadForUI Is this UI module is being loaded for UI from @nativescript/core/ui/builder.
-		 * Xml, css/scss and js/ts modules for pages and custom-components should load with loadForUI=true.
-		 * Passing "true" will enable the HMR mechanics this module. Default value is false.
-		 */
-		loadModule(name: string, loadForUI?: boolean): any;
+/**
+ * The NativeScript XML builder, style-scope, application modules use various resources such as:
+ * app.css, page.xml files and modules during the application life-cycle.
+ * The moduleResolvers can be used to provide additional mechanisms to locate such resources.
+ * For example:
+ * ```
+ * global.moduleResolvers.unshift(uri => uri === "main-page" ? require("main-page") : null);
+ * ```
+ * More advanced scenarios will allow for specific bundlers to integrate their module resolving mechanisms.
+ * When adding resolvers at the start of the array, avoid throwing and return null instead so subsequent resolvers may try to resolve the resource.
+ * By default the only member of the array is global.require, as last resort - if it fails to find a module it will throw.
+ */
+declare var moduleResolvers: ModuleResolver[];
 
-		/**
-		 * Checks if the module has been registered with `registerModule` or in `registerWebpackModules`
-		 * @param name Name of the module
-		 */
-		moduleExists(name: string): boolean;
+/**
+ *
+ * @param name Name of the module to be loaded
+ * @param loadForUI Is this UI module is being loaded for UI from @nativescript/core/ui/builder.
+ * Xml, css/scss and js/ts modules for pages and custom-components should load with loadForUI=true.
+ * Passing "true" will enable the HMR mechanics this module. Default value is false.
+ */
+declare function loadModule(name: string, loadForUI?: boolean): any;
 
-		getRegisteredModules(): string[];
+/**
+ * Checks if the module has been registered with `registerModule` or in `registerWebpackModules`
+ * @param name Name of the module
+ */
+declare function moduleExists(name: string): boolean;
 
-		_unregisterModule(name: string): void;
+declare function getRegisteredModules(): string[];
 
-		_isModuleLoadedForUI(moduleName: string): boolean;
+declare function _unregisterModule(name: string): void;
 
-		onGlobalLayoutListener: any;
-		zonedCallback(callback: Function): Function;
-		Reflect?: any;
-		Deprecated(target: Object, key?: string | symbol, descriptor?: any): any;
-		Experimental(target: Object, key?: string | symbol, descriptor?: any): any;
+declare function _isModuleLoadedForUI(moduleName: string): boolean;
 
-		__native?: any;
-		__inspector?: any;
-		__extends: any;
-		__onLiveSync: (context?: { type: string; path: string }) => void;
-		__onLiveSyncCore: (context?: { type: string; path: string }) => void;
-		__onUncaughtError: (error: NativeScriptError) => void;
-		__onDiscardedError: (error: NativeScriptError) => void;
-		__snapshot?: boolean;
-		TNS_WEBPACK?: boolean;
-		isIOS?: boolean;
-		isAndroid?: boolean;
-		__requireOverride?: (name: string, dir: string) => any;
+/**
+ * @platform Android: Initialised during Application initialisation on Android.
+ * @platform iOS: undefined.
+ */
+declare var onGlobalLayoutListener: any | undefined;
+declare function zonedCallback(callback: Function): Function;
+declare const Reflect: any | undefined;
+declare function Deprecated(target: Object, key?: string | symbol, descriptor?: any): any;
+declare function Experimental(target: Object, key?: string | symbol, descriptor?: any): any;
 
-		// used to get the rootlayout instance to add/remove childviews
-		rootLayout: any;
-	}
-}
+/**
+ * @platform Android: use in a class constructor to make the class native.
+ * @platform iOS: undefined (and not needed).
+ */
+declare var __native: undefined | (<T extends any>(thisArg: T) => T);
+declare var __inspector: any | undefined;
+declare var __extends: (classA: { new (...args: any[]): any }, classB: { new (...args: any[]): any }) => void;
+declare var __onLiveSync: (context?: { type: string; path: string }) => void;
+declare var __onLiveSyncCore: (context?: { type: string; path: string }) => void;
+declare var __onUncaughtError: (error: NativeScriptError) => void;
+declare var __onDiscardedError: (error: NativeScriptError) => void;
+declare var __snapshot: boolean | undefined;
+declare var TNS_WEBPACK: boolean | undefined;
+declare var isIOS: boolean | undefined;
+declare var isAndroid: boolean | undefined;
+declare var __requireOverride: ((name: string, dir: string) => any) | undefined;
+
+// Used to get the RootLayout instance to add/remove child views
+declare var rootLayout: any;
+
 declare const __DEV__: boolean;
 declare const __CSS_PARSER__: string;
 declare const __NS_WEBPACK__: boolean;
