@@ -1,22 +1,38 @@
 import { Observable as ObservableDefinition, WrappedValue as WrappedValueDefinition } from '.';
 
+/**
+ * Base event data.
+ */
 export interface EventData {
+	/**
+	 * The name of the event.
+	 */
 	eventName: string;
-	object: Partial<Observable>;
+	/**
+	 * The Observable instance that has raised the event.
+	 */
+	object: Observable;
 }
 
 export interface EventDataValue extends EventData {
 	value?: boolean;
 }
 
-export interface NotifyData extends Partial<EventData> {
-	eventName: string;
-	object?: Partial<Observable>;
-}
-
+/**
+ * Data for the "propertyChange" event.
+ */
 export interface PropertyChangeData extends EventData {
+	/**
+	 * The name of the property that has changed.
+	 */
 	propertyName: string;
+	/**
+	 * The new value of the property.
+	 */
 	value: any;
+	/**
+	 * The previous value of the property.
+	 */
 	oldValue?: any;
 }
 
@@ -271,18 +287,16 @@ export class Observable implements ObservableDefinition {
 		}
 	}
 
-	public notify<T extends NotifyData>(data: T): void {
-		const eventData = data as EventData;
-		eventData.object = eventData.object || this;
+  public notify<T extends EventData>(data: T): void {
 		const eventClass = this.constructor.name;
-		this._globalNotify(eventClass, 'First', eventData);
+		this._globalNotify(eventClass, 'First', data);
 
 		const observers = <Array<ListenerEntry>>this._observers[data.eventName];
 		if (observers) {
-			Observable._handleEvent(observers, eventData);
+			Observable._handleEvent(observers, data);
 		}
 
-		this._globalNotify(eventClass, '', eventData);
+		this._globalNotify(eventClass, '', data);
 	}
 
 	private static _handleEvent<T extends EventData>(observers: Array<ListenerEntry>, data: T): void {
