@@ -257,7 +257,7 @@ export function _resetRootView(entry?: NavigationEntry | string);
 /**
  * Removes listener for the specified event name.
  */
-export function off(eventNames: string, callback?: (eventData: EventData) => void, thisArg?: any, options?: EventListenerOptions | boolean): void;
+export function off(eventNames: string, callback?: (eventData: ApplicationEventData) => void, thisArg?: any, options?: EventListenerOptions | boolean): void;
 
 /**
  * Shortcut alias to the removeEventListener method.
@@ -266,13 +266,13 @@ export function off(eventNames: string, callback?: (eventData: EventData) => voi
  * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
  * @param options An optional parameter. If passed as a boolean, configures the useCapture value. Otherwise, specifies options.
  */
-export function off(eventNames: string, callback?: (eventData: EventData) => void, thisArg?: any, options?: EventListenerOptions | boolean): void;
+export function off(eventNames: string, callback?: (eventData: ApplicationEventData) => void, thisArg?: any, options?: EventListenerOptions | boolean): void;
 
 /**
  * Notifies all the registered listeners for the event provided in the data.eventName.
  * @param data The data associated with the event.
  */
-export function notify(data: any): void;
+export function notify<T extends ApplicationEventData>(data: T, options?: CustomEventInit): void;
 
 /**
  * Checks whether a listener is registered for the specified event name.
@@ -297,17 +297,12 @@ export function on(event: 'cssChanged', callback: (args: CssChangedEventData) =>
 /**
  * Event raised then livesync operation is performed.
  */
-export function on(event: 'livesync', callback: (args: EventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
+export function on(event: 'livesync', callback: (args: ApplicationEventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
 
 /**
  * This event is raised when application css is changed.
  */
 export function on(event: 'cssChanged', callback: (args: CssChangedEventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
-
-/**
- * Event raised then livesync operation is performed.
- */
-export function on(event: 'livesync', callback: (args: EventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
 
 /**
  * This event is raised on application launchEvent.
@@ -319,7 +314,7 @@ export function on(event: 'launch', callback: (args: LaunchEventData) => void, t
  * Its intent is to be suitable for measuring app startup times.
  * @experimental
  */
-export function on(event: 'displayed', callback: (args: EventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
+export function on(event: 'displayed', callback: (args: ApplicationEventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
 
 /**
  * This event is raised when the Application is suspended.
