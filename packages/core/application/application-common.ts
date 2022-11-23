@@ -4,7 +4,7 @@ import '../globals';
 // Types
 import { AndroidApplication, iOSApplication } from '.';
 import { CssChangedEventData, DiscardedErrorEventData, LoadAppCSSEventData, UnhandledErrorEventData } from './application-interfaces';
-import { EventData } from '../data/observable';
+import type { EventData, Observable } from '../data/observable';
 import { View } from '../ui/core/view';
 
 // Requires
@@ -50,10 +50,10 @@ export function setResources(res: any) {
 export const android: AndroidApplication = undefined;
 export const ios: iOSApplication = undefined;
 
-export const on = global.NativeScriptGlobals.events.on.bind(global.NativeScriptGlobals.events);
-export const off = global.NativeScriptGlobals.events.off.bind(global.NativeScriptGlobals.events);
-export const notify = global.NativeScriptGlobals.events.notify.bind(global.NativeScriptGlobals.events);
-export const hasListeners = global.NativeScriptGlobals.events.hasListeners.bind(global.NativeScriptGlobals.events);
+export const on = global.NativeScriptGlobals.events.on.bind(global.NativeScriptGlobals.events) as Observable['on'];
+export const off = global.NativeScriptGlobals.events.off.bind(global.NativeScriptGlobals.events) as Observable['off'];
+export const notify = global.NativeScriptGlobals.events.notify.bind(global.NativeScriptGlobals.events) as Observable['notify'];
+export const hasListeners = global.NativeScriptGlobals.events.hasListeners.bind(global.NativeScriptGlobals.events) as Observable['hasListeners'];
 
 let app: iOSApplication | AndroidApplication;
 export function setApplication(instance: iOSApplication | AndroidApplication): void {
