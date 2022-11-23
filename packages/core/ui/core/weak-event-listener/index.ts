@@ -78,7 +78,7 @@ function validateArgs(source: Observable, eventName: string, handler: (eventData
 	}
 }
 
-export function addWeakEventListener(source: Observable, eventName: string, handler: (eventData: EventData) => void, target: any) {
+export function addWeakEventListener(source: Observable, eventName: string, handler: (eventData: EventData) => void, target: any): void {
 	validateArgs(source, eventName, handler, target);
 
 	let shouldAttach = false;
@@ -104,7 +104,7 @@ export function addWeakEventListener(source: Observable, eventName: string, hand
 	}
 }
 
-export function removeWeakEventListener(source: Observable, eventName: string, handler: (eventData: EventData) => void, target: any) {
+export function removeWeakEventListener(source: Observable, eventName: string, handler: (eventData: EventData) => void, target: any): void {
 	validateArgs(source, eventName, handler, target);
 
 	const handlerForEventWithName = handlersForEventName.get(eventName);
@@ -124,9 +124,9 @@ export function removeWeakEventListener(source: Observable, eventName: string, h
 	}
 
 	// Remove all pairs that match given target and handler or have a dead target
-	const targetHandlerPairsToRemove = [];
-	let pair;
-	let registeredTarget;
+	const targetHandlerPairsToRemove: number[] = [];
+	let pair: TargetHandlerPair;
+	let registeredTarget: Object;
 	for (let i = 0; i < targetHandlerPairList.length; i++) {
 		pair = targetHandlerPairList[i];
 

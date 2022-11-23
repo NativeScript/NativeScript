@@ -1,5 +1,5 @@
 import * as definition from '.';
-import * as observable from '../../data/observable';
+import { EventData, Observable } from '../../data/observable';
 import * as imageSource from '../../image-source';
 
 export interface DownloadRequest {
@@ -9,7 +9,7 @@ export interface DownloadRequest {
 	error?: (key: string) => void;
 }
 
-export class Cache extends observable.Observable implements definition.Cache {
+export class Cache extends Observable implements definition.Cache {
 	public static downloadedEvent = 'downloaded';
 	public static downloadErrorEvent = 'downloadError';
 
@@ -215,7 +215,7 @@ export class Cache extends observable.Observable implements definition.Cache {
 	}
 }
 export interface Cache {
-	on(eventNames: string, callback: (args: observable.EventData) => void, thisArg?: any);
-	on(event: 'downloaded', callback: (args: definition.DownloadedData) => void, thisArg?: any);
-	on(event: 'downloadError', callback: (args: definition.DownloadError) => void, thisArg?: any);
+	on(eventNames: string, callback: (args: EventData) => void, thisArg?: any): void;
+	on(event: 'downloaded', callback: (args: definition.DownloadedData) => void, thisArg?: any): void;
+	on(event: 'downloadError', callback: (args: definition.DownloadError) => void, thisArg?: any): void;
 }
