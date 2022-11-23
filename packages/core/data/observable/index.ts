@@ -3,23 +3,39 @@ import { DOMEvent } from '../dom-events/dom-event';
 
 import { Observable as ObservableDefinition, WrappedValue as WrappedValueDefinition } from '.';
 
+/**
+ * Base event data.
+ */
 export interface EventData {
+	/**
+	 * The name of the event.
+	 */
 	eventName: string;
-	object: Partial<Observable>;
+	/**
+	 * The Observable instance that has raised the event.
+	 */
+	object: Observable;
 }
 
 export interface EventDataValue extends EventData {
 	value?: boolean;
 }
 
-export interface NotifyData extends Partial<EventData> {
-	eventName: string;
-	object?: Partial<Observable>;
-}
-
+/**
+ * Data for the "propertyChange" event.
+ */
 export interface PropertyChangeData extends EventData {
+	/**
+	 * The name of the property that has changed.
+	 */
 	propertyName: string;
+	/**
+	 * The new value of the property.
+	 */
 	value: any;
+	/**
+	 * The previous value of the property.
+	 */
 	oldValue?: any;
 }
 
@@ -288,18 +304,12 @@ export class Observable implements ObservableDefinition {
 	 * @param data The data associated with the event.
 	 * @param options Options for the event, in line with DOM Standard.
 	 */
-	public notify<T extends NotifyData>(data: T, options?: CustomEventInit): void {
-		data.object = data.object || this;
-
-		// Now that we've filled in the `object` field (that was optional in
-		// NotifyData), `data` can be treated as EventData.
-		const eventData = data as EventData;
-
+	public notify<T extends EventData>(data: T, options?: CustomEventInit): void {
 		new DOMEvent(data.eventName, options).dispatchTo({
 			target: this,
-			data: eventData,
-			getGlobalEventHandlersPreHandling: () => this._getGlobalEventHandlers(eventData, 'First'),
-			getGlobalEventHandlersPostHandling: () => this._getGlobalEventHandlers(eventData, ''),
+			data,
+			getGlobalEventHandlersPreHandling: () => this._getGlobalEventHandlers(data, 'First'),
+			getGlobalEventHandlersPostHandling: () => this._getGlobalEventHandlers(data, ''),
 		});
 	}
 
