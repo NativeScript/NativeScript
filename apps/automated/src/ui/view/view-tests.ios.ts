@@ -4,7 +4,7 @@ import { GridLayout } from '@nativescript/core/ui/layouts/grid-layout';
 import { Color } from '@nativescript/core/color';
 import * as helper from '../../ui-helper';
 import * as TKUnit from '../../tk-unit';
-import * as utils from '@nativescript/core/utils/utils';
+import * as utils from '@nativescript/core/utils';
 
 export * from './view-tests-common';
 

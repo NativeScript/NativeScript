@@ -4,7 +4,6 @@ import { BindingOptions } from '@nativescript/core/ui/core/bindable';
 import * as TKUnit from '../../../tk-unit';
 import * as types from '@nativescript/core/utils/types';
 import * as helper from '../../../ui-helper';
-import * as utils from '@nativescript/core/utils/utils';
 import * as bindingBuilder from '@nativescript/core/ui/builder/binding-builder';
 import * as appModule from '@nativescript/core/application';
 import { Trace } from '@nativescript/core';
