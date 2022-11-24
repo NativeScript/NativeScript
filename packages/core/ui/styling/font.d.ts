@@ -49,14 +49,14 @@ export namespace FontWeight {
 	export function parse(value: string): FontWeightType;
 }
 
-export interface FontVariationSettings {
+export type FontVariationSettingsType = {
 	axis: string;
 	value: number;
-}
+};
 
 export namespace FontVariationSettings {
-	export function parse(fontVariationSettings: string): FontVariationSettings[] | null;
-	export function toString(fontVariationSettings: FontVariationSettings[] | null): string | null;
+	export function parse(fontVariationSettings: string): Array<FontVariationSettingsType> | null;
+	export function toString(fontVariationSettings: Array<FontVariationSettingsType> | null): string | null;
 }
 
 export interface ParsedFont {
@@ -66,7 +66,7 @@ export interface ParsedFont {
 	lineHeight?: string;
 	fontSize?: string;
 	fontFamily?: string;
-	fontVariationSettings?: FontVariationSettings[];
+	fontVariationSettings?: Array<FontVariationSettingsType>;
 }
 
 export function parseFont(fontValue: string): ParsedFont;

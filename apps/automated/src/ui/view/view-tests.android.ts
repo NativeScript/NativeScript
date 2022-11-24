@@ -288,9 +288,14 @@ export function getUniformNativeCornerRadius(v: View): number {
 }
 
 export function checkNativeBackgroundColor(v: View): boolean {
-	const bkg = <org.nativescript.widgets.BorderDrawable>(<android.view.View>v.android).getBackground();
-
-	return v.backgroundColor && bkg && bkg.getBackgroundColor() === (<Color>v.backgroundColor).android;
+	const drawable = (<android.view.View>v.android).getBackground();
+	if (drawable instanceof org.nativescript.widgets.BorderDrawable) {
+		return v.backgroundColor && drawable && drawable.getBackgroundColor() === (<Color>v.backgroundColor).android;
+	} else if (drawable instanceof android.graphics.drawable.ColorDrawable) {
+		// "no color when has a drawable is transparent => -1"
+		return drawable.getColor() === ((<Color>v.backgroundColor)?.android || -1);
+	}
+	return !v.backgroundColor && !drawable;
 }
 
 export function checkNativeBackgroundImage(v: View): boolean {
