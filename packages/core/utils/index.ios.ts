@@ -2,8 +2,10 @@ import { iOSNativeHelper } from './native-helper';
 import { Trace } from '../trace';
 
 export { dataDeserialize, dataSerialize, iOSNativeHelper } from './native-helper';
-export * from './utils-common';
+export * from './common';
 export { Source } from './debug';
+
+export const SDK_VERSION = parseFloat(UIDevice.currentDevice.systemVersion);
 
 export function openFile(filePath: string): boolean {
 	try {
