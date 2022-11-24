@@ -222,13 +222,17 @@ export class Animation extends AnimationBase {
 			return;
 		}
 
-		let i = 0;
-		const length = this._mergedPropertyAnimations.length;
-		for (; i < length; i++) {
-			const propertyAnimation = this._mergedPropertyAnimations[i];
-			propertyAnimation.target.nativeViewProtected.layer.removeAllAnimations();
-			if (propertyAnimation._propertyResetCallback) {
-				propertyAnimation._propertyResetCallback(propertyAnimation._originalValue, this._valueSource);
+		if (this._mergedPropertyAnimations) {
+			for (let i = 0; i < this._mergedPropertyAnimations.length; i++) {
+				const propertyAnimation = this._mergedPropertyAnimations[i];
+				if (propertyAnimation) {
+					if (propertyAnimation.target?.nativeViewProtected?.layer) {
+						propertyAnimation.target.nativeViewProtected.layer.removeAllAnimations();
+					}
+					if (propertyAnimation._propertyResetCallback) {
+						propertyAnimation._propertyResetCallback(propertyAnimation._originalValue, this._valueSource);
+					}
+				}
 			}
 		}
 	}
@@ -439,7 +443,7 @@ export class Animation extends AnimationBase {
 
 	private static _createNativeAnimation(propertyAnimations: Array<PropertyAnimation>, index: number, playSequentially: boolean, args: AnimationInfo, animation: PropertyAnimation, valueSource: 'animation' | 'keyframe', finishedCallback: (cancelled?: boolean) => void) {
 		const nativeView = <UIView>animation.target.nativeViewProtected;
-		
+
 		let nativeAnimation;
 
 		if (args.subPropertiesToAnimate) {
@@ -462,7 +466,6 @@ export class Animation extends AnimationBase {
 				animationDelegate.nextAnimation = callback;
 			}
 		}
-		
 	}
 
 	private static _createGroupAnimation(args: AnimationInfo, animation: PropertyAnimation) {
