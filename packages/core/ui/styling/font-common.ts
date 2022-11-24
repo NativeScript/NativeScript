@@ -1,8 +1,9 @@
-import { Font as FontDefinition } from './font';
+import { Font as FontDefinition, FontVariationSettings as FontVariationSettingsType } from './font';
 import { ParsedFont } from './font-interfaces';
 import { makeValidator, makeParser } from '../core/properties';
 
 export * from './font-interfaces';
+export { FontVariationSettingsType };
 
 export abstract class Font implements FontDefinition {
 	public static default = undefined;
@@ -18,7 +19,7 @@ export abstract class Font implements FontDefinition {
 		return this.fontWeight === FontWeight.SEMI_BOLD || this.fontWeight === FontWeight.BOLD || this.fontWeight === '700' || this.fontWeight === FontWeight.EXTRA_BOLD || this.fontWeight === FontWeight.BLACK;
 	}
 
-	protected constructor(public readonly fontFamily: string, public readonly fontSize: number, fontStyle?: FontStyleType, fontWeight?: FontWeightType, fontScale?: number) {
+	protected constructor(public readonly fontFamily: string, public readonly fontSize: number, fontStyle?: FontStyleType, fontWeight?: FontWeightType, fontScale?: number, public readonly fontVariationSettings?: FontVariationSettingsType[]) {
 		this.fontStyle = fontStyle ?? FontStyle.NORMAL;
 		this.fontWeight = fontWeight ?? FontWeight.NORMAL;
 		this.fontScale = fontScale ?? 1;
@@ -31,6 +32,7 @@ export abstract class Font implements FontDefinition {
 	public abstract withFontWeight(weight: FontWeightType): Font;
 	public abstract withFontSize(size: number): Font;
 	public abstract withFontScale(scale: number): Font;
+	public abstract withFontVariationSettings(variationSettings: FontVariationSettingsType[] | null): Font;
 
 	public static equals(value1: Font, value2: Font): boolean {
 		// both values are falsy
@@ -68,6 +70,50 @@ export namespace FontWeight {
 	export const BLACK = '900';
 	export const isValid = makeValidator<FontWeightType>(THIN, EXTRA_LIGHT, LIGHT, NORMAL, '400', MEDIUM, SEMI_BOLD, BOLD, '700', EXTRA_BOLD, BLACK);
 	export const parse = makeParser<FontWeightType>(isValid);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-namespace
+export namespace FontVariationSettings {
+	export function parse(fontVariationSettings: string): FontVariationSettingsType[] | null {
+		const allowedValues = ['normal', 'inherit', 'initial', 'revert', 'revert-layer', 'unset'];
+		const lower = fontVariationSettings?.toLowerCase().trim();
+		if (allowedValues.indexOf(lower) !== -1) {
+			return null;
+		}
+
+		const chunks = lower.split(',');
+		if (chunks.length) {
+			const parsed: FontVariationSettingsType[] = [];
+			for (const chunk of chunks) {
+				const axisChunks = chunk.trim();
+				if (axisChunks.length === 2) {
+					const axisName = chunk[0].trim();
+					const axisValue = parseFloat(chunk[0]);
+					// See https://drafts.csswg.org/css-fonts/#font-variation-settings-def.
+					// Axis name strings longer or shorter than four characters are invalid.
+					if (!isNaN(axisValue) && axisName.length === 6 && ((axisName.startsWith("'") && axisName.endsWith("'")) || (axisName.startsWith('"') && axisName.endsWith('"')))) {
+						parsed.push({ axis: axisName, value: axisValue });
+					} else {
+						throw new Error('Invalid value (font-variation-settings): ' + fontVariationSettings);
+					}
+				} else {
+					throw new Error('Invalid value (font-variation-settings): ' + fontVariationSettings);
+				}
+			}
+
+			return parsed;
+		}
+
+		throw new Error('Invalid value (font-variation-settings): ' + fontVariationSettings);
+	}
+
+	export function toString(fontVariationSettings: FontVariationSettingsType[] | null): string | null {
+		if (fontVariationSettings?.length) {
+			return fontVariationSettings.map(({ axis, value }) => `'${axis}' ${value}`).join(', ');
+		}
+
+		return null;
+	}
 }
 
 export function parseFontFamily(value: string): Array<string> {
@@ -139,4 +185,32 @@ export function parseFont(fontValue: string): ParsedFont {
 	}
 
 	return result;
+}
+
+/**
+ * Kind of hack.
+ * Used to search font variation axis names, since iOS for some reason requires names
+ * but tags are the standards.
+ */
+export function fuzzySearch(query: string, dataset: string[]): string[] | null {
+	const q = query ? query.trim().toLowerCase() : '';
+
+	const result: string[] = [];
+	if (!q.length) {
+		return null;
+	}
+
+	dataset.forEach((item) => {
+		const s = item.trim().toLowerCase();
+		let n = -1;
+		for (const char of q) {
+			n = s.indexOf(char, n + 1);
+			if (!~n) {
+				return;
+			}
+		}
+		result.push(item);
+	});
+
+	return result.length ? result : null;
 }
