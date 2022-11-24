@@ -2,7 +2,6 @@ import { extname, resolve } from 'path';
 import Config from 'webpack-chain';
 import { existsSync } from 'fs';
 
-import { getTypescript, readTsConfig } from '../helpers/typescript';
 import { getDependencyPath } from '../helpers/dependencies';
 import { getProjectFilePath } from '../helpers/project';
 import { env as _env, IWebpackEnv } from '../index';
@@ -183,13 +182,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 		const buildAngularPath = getDependencyPath('@angular-devkit/build-angular');
 		if (buildAngularPath) {
-			const tsConfig = readTsConfig(tsConfigPath);
-			const { ScriptTarget } = getTypescript();
-			const scriptTarget = tsConfig.options.target ?? ScriptTarget.ESNext;
-			const buildAngularOptions: any = {
-				scriptTarget,
-				aot: !disableAOT,
-			};
+			const buildAngularOptions: any = { aot: !disableAOT };
 			if (disableAOT) {
 				buildAngularOptions.optimize = false;
 			}

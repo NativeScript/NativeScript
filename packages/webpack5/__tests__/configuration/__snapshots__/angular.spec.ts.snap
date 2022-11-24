@@ -201,7 +201,6 @@ exports[`angular configuration for android 1`] = `
           {
             loader: '@angular-devkit/build-angular/src/babel/webpack-loader',
             options: {
-              scriptTarget: 99,
               aot: true
             }
           }
@@ -625,7 +624,6 @@ exports[`angular configuration for ios 1`] = `
           {
             loader: '@angular-devkit/build-angular/src/babel/webpack-loader',
             options: {
-              scriptTarget: 99,
               aot: true
             }
           }
