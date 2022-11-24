@@ -4,7 +4,7 @@ import { Style } from '../styling/style';
 import { Transformation, TransformationValue, TransformFunctionsInfo } from '../animation';
 
 import { Color } from '../../color';
-import { Font, parseFont, FontStyle, FontWeight } from '../../ui/styling/font';
+import { Font, parseFont, FontStyle, FontWeight, FontVariationSettings, FontVariationSettingsType } from '../../ui/styling/font';
 import { layout, hasDuplicates } from '../../utils';
 import { Background } from '../../ui/styling/background';
 
@@ -1413,6 +1413,23 @@ const fontProperty = new ShorthandProperty<Style, string>({
 	},
 });
 fontProperty.register(Style);
+
+export const fontVariationSettingsProperty = new InheritedCssProperty<Style, Array<FontVariationSettingsType> | null>({
+	name: 'fontVariationSettings',
+	cssName: 'font-variation-settings',
+	affectsLayout: global.isIOS,
+	valueChanged: (target, oldValue, newValue) => {
+		const currentFont = target.fontInternal || Font.default;
+		if (currentFont.fontVariationSettings !== newValue) {
+			const newFont = currentFont.withFontVariationSettings(newValue);
+			target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
+		}
+	},
+	valueConverter: (value) => {
+		return FontVariationSettings.parse(value);
+	},
+});
+fontVariationSettingsProperty.register(Style);
 
 export const visibilityProperty = new CssProperty<Style, CoreTypes.VisibilityType>({
 	name: 'visibility',

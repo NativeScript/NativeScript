@@ -226,18 +226,19 @@ export class Animation extends AnimationBase {
 
 			return;
 		}
+
 		this._wasCancelled = true;
-		// this._iOSAnimators.forEach((animator) => {
-		// 	animator.stopAnimation(false);
-		// 	animator.finishAnimationAtPosition(UIViewAnimatingPosition.Current);
-		// });
-		let i = 0;
-		const length = this._mergedPropertyAnimations.length;
-		for (; i < length; i++) {
-			const propertyAnimation = this._mergedPropertyAnimations[i];
-			propertyAnimation.target.nativeViewProtected.layer.removeAllAnimations();
-			if (propertyAnimation._propertyResetCallback) {
-				propertyAnimation._propertyResetCallback(propertyAnimation._originalValue, this._valueSource);
+		if (this._mergedPropertyAnimations) {
+			for (let i = 0; i < this._mergedPropertyAnimations.length; i++) {
+				const propertyAnimation = this._mergedPropertyAnimations[i];
+				if (propertyAnimation) {
+					if (propertyAnimation.target?.nativeViewProtected?.layer) {
+						propertyAnimation.target.nativeViewProtected.layer.removeAllAnimations();
+					}
+					if (propertyAnimation._propertyResetCallback) {
+						propertyAnimation._propertyResetCallback(propertyAnimation._originalValue, this._valueSource);
+					}
+				}
 			}
 		}
 	}

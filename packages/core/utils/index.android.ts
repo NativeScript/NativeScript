@@ -3,8 +3,10 @@ import { FileSystemAccess } from '../file-system/file-system-access';
 import { Trace } from '../trace';
 
 export { ad, dataDeserialize, dataSerialize, iOSNativeHelper } from './native-helper';
-export * from './utils-common';
+export * from './common';
 export { Source } from './debug';
+
+export const SDK_VERSION = android.os.Build.VERSION.SDK_INT;
 
 const MIN_URI_SHARE_RESTRICTED_APK_VERSION = 24;
 export const SDK_VERSION = android.os.Build.VERSION.SDK_INT;
