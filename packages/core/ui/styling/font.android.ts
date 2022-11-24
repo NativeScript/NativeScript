@@ -1,9 +1,7 @@
 import { Font as FontBase, parseFontFamily, genericFontFamilies, FontStyleType, FontWeight, FontWeightType, FontVariationSettingsType, FontVariationSettings } from './font-common';
 import { Trace } from '../../trace';
 import { SDK_VERSION } from '../../utils';
-import * as application from '../../application';
 import * as fs from '../../file-system';
-import { Trace } from '../../trace';
 import { ad } from '../../utils';
 
 export * from './font-common';
@@ -17,7 +15,7 @@ export class Font extends FontBase {
 
 	private _typeface: android.graphics.Typeface;
 
-	constructor(family: string, size: number, style?: FontStyleType, weight?: FontWeightType, fontVariationSettings?: FontVariationSettingsType[]) {
+	constructor(family: string, size: number, style?: FontStyleType, weight?: FontWeightType, fontVariationSettings?: Array<FontVariationSettingsType>) {
 		super(family, size, style, weight, 1, fontVariationSettings);
 	}
 
@@ -41,7 +39,7 @@ export class Font extends FontBase {
 		return new Font(this.fontFamily, this.fontSize, this.fontStyle, this.fontWeight, this.fontVariationSettings);
 	}
 
-	public withFontVariationSettings(variationSettings: FontVariationSettingsType[] | null): Font {
+	public withFontVariationSettings(variationSettings: Array<FontVariationSettingsType> | null): Font {
 		return new Font(this.fontFamily, this.fontSize, this.fontStyle, this.fontWeight, variationSettings);
 	}
 

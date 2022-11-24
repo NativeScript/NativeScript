@@ -4,7 +4,7 @@ import { Style } from '../styling/style';
 import { Transformation, TransformationValue, TransformFunctionsInfo } from '../animation';
 
 import { Color } from '../../color';
-import { Font, parseFont, FontStyle, FontWeight, FontVariationSettings } from '../../ui/styling/font';
+import { Font, parseFont, FontStyle, FontWeight, FontVariationSettings, FontVariationSettingsType } from '../../ui/styling/font';
 import { layout, hasDuplicates } from '../../utils';
 import { Background } from '../../ui/styling/background';
 
@@ -1424,7 +1424,7 @@ const fontProperty = new ShorthandProperty<Style, string>({
 });
 fontProperty.register(Style);
 
-export const fontVariationSettingsProperty = new InheritedCssProperty<Style, FontVariationSettings[] | null>({
+export const fontVariationSettingsProperty = new InheritedCssProperty<Style, Array<FontVariationSettingsType> | null>({
 	name: 'fontVariationSettings',
 	cssName: 'font-variation-settings',
 	affectsLayout: global.isIOS,

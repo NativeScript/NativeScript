@@ -1,4 +1,4 @@
-import { Font as FontDefinition, FontVariationSettings as FontVariationSettingsType } from './font';
+import { Font as FontDefinition, FontVariationSettingsType } from './font';
 import { ParsedFont } from './font-interfaces';
 import { makeValidator, makeParser } from '../core/properties';
 
@@ -19,7 +19,7 @@ export abstract class Font implements FontDefinition {
 		return this.fontWeight === FontWeight.SEMI_BOLD || this.fontWeight === FontWeight.BOLD || this.fontWeight === '700' || this.fontWeight === FontWeight.EXTRA_BOLD || this.fontWeight === FontWeight.BLACK;
 	}
 
-	protected constructor(public readonly fontFamily: string, public readonly fontSize: number, fontStyle?: FontStyleType, fontWeight?: FontWeightType, fontScale?: number, public readonly fontVariationSettings?: FontVariationSettingsType[]) {
+	protected constructor(public readonly fontFamily: string, public readonly fontSize: number, fontStyle?: FontStyleType, fontWeight?: FontWeightType, fontScale?: number, public readonly fontVariationSettings?: Array<FontVariationSettingsType>) {
 		this.fontStyle = fontStyle ?? FontStyle.NORMAL;
 		this.fontWeight = fontWeight ?? FontWeight.NORMAL;
 		this.fontScale = fontScale ?? 1;
@@ -32,7 +32,7 @@ export abstract class Font implements FontDefinition {
 	public abstract withFontWeight(weight: FontWeightType): Font;
 	public abstract withFontSize(size: number): Font;
 	public abstract withFontScale(scale: number): Font;
-	public abstract withFontVariationSettings(variationSettings: FontVariationSettingsType[] | null): Font;
+	public abstract withFontVariationSettings(variationSettings: Array<FontVariationSettingsType> | null): Font;
 
 	public static equals(value1: Font, value2: Font): boolean {
 		// both values are falsy
@@ -74,7 +74,7 @@ export namespace FontWeight {
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace FontVariationSettings {
-	export function parse(fontVariationSettings: string): FontVariationSettingsType[] | null {
+	export function parse(fontVariationSettings: string): Array<FontVariationSettingsType> | null {
 		const allowedValues = ['normal', 'inherit', 'initial', 'revert', 'revert-layer', 'unset'];
 		const lower = fontVariationSettings?.toLowerCase().trim();
 		if (allowedValues.indexOf(lower) !== -1) {
@@ -83,7 +83,7 @@ export namespace FontVariationSettings {
 
 		const chunks = lower.split(',');
 		if (chunks.length) {
-			const parsed: FontVariationSettingsType[] = [];
+			const parsed: Array<FontVariationSettingsType> = [];
 			for (const chunk of chunks) {
 				const axisChunks = chunk.trim();
 				if (axisChunks.length === 2) {
@@ -94,17 +94,17 @@ export namespace FontVariationSettings {
 					if (!isNaN(axisValue) && axisName.length === 6 && ((axisName.startsWith("'") && axisName.endsWith("'")) || (axisName.startsWith('"') && axisName.endsWith('"')))) {
 						parsed.push({ axis: axisName, value: axisValue });
 					} else {
-						throw new Error('Invalid value (font-variation-settings): ' + fontVariationSettings);
+						console.error('Invalid value (font-variation-settings): ' + fontVariationSettings);
 					}
 				} else {
-					throw new Error('Invalid value (font-variation-settings): ' + fontVariationSettings);
+					console.error('Invalid value (font-variation-settings): ' + fontVariationSettings);
 				}
 			}
 
 			return parsed;
 		}
 
-		throw new Error('Invalid value (font-variation-settings): ' + fontVariationSettings);
+		console.error('Invalid value (font-variation-settings): ' + fontVariationSettings);
 	}
 
 	export function toString(fontVariationSettings: FontVariationSettingsType[] | null): string | null {

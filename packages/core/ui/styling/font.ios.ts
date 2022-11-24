@@ -1,4 +1,4 @@
-import { Font as FontBase, parseFontFamily, FontWeight, FontStyleType, FontWeightType, FontVariationSettingsType, FontVariationSettings } from './font-common';
+import { Font as FontBase, parseFontFamily, FontWeight, FontStyleType, FontWeightType, FontVariationSettingsType, FontVariationSettings, fuzzySearch } from './font-common';
 import { Trace } from '../../trace';
 import * as fs from '../../file-system';
 export * from './font-common';
@@ -7,7 +7,7 @@ interface FontDescriptor {
 	fontFamily: string[];
 	fontSize: number;
 	fontWeight: number;
-	fontVariationSettings: FontVariationSettingsType[] | null;
+	fontVariationSettings: Array<FontVariationSettingsType> | null;
 	isBold: boolean;
 	isItalic: boolean;
 }
@@ -59,7 +59,7 @@ function getUIFontCached(fontDescriptor: FontDescriptor) {
 export class Font extends FontBase {
 	public static default = new Font(undefined, undefined);
 
-	constructor(family: string, size: number, style?: FontStyleType, weight?: FontWeightType, scale?: number, variationSettings?: FontVariationSettingsType[]) {
+	constructor(family: string, size: number, style?: FontStyleType, weight?: FontWeightType, scale?: number, variationSettings?: Array<FontVariationSettingsType>) {
 		super(family, size, style, weight, scale, variationSettings);
 	}
 
@@ -83,7 +83,7 @@ export class Font extends FontBase {
 		return new Font(this.fontFamily, this.fontSize, this.fontStyle, this.fontWeight, scale, this.fontVariationSettings);
 	}
 
-	public withFontVariationSettings(variationSettings: FontVariationSettingsType[] | null): Font {
+	public withFontVariationSettings(variationSettings: Array<FontVariationSettingsType> | null): Font {
 		return new Font(this.fontFamily, this.fontSize, this.fontStyle, this.fontWeight, this.fontScale, variationSettings);
 	}
 
