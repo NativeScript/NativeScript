@@ -307,7 +307,7 @@ export class Frame extends FrameBase {
 	}
 
 	public _onNavigatingTo(backstackEntry: BackstackEntry, isBack: boolean) {
-		//
+		super._onNavigatingTo(backstackEntry, isBack);
 	}
 }
 
