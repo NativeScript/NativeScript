@@ -7,7 +7,7 @@ if (module.hot) {
 	let hash = __webpack_require__.h();
 	let hmrBootEmittedSymbol = Symbol.for('HMRBootEmitted');
 	let originalLiveSyncSymbol = Symbol.for('OriginalLiveSync');
-	let hmrRuntimeLastLiveSyncSymbol = Symbol.for('hmrRuntimeLastLiveSync');
+	let hmrRuntimeLastLiveSyncSymbol = Symbol.for('HMRRuntimeLastLiveSync');
 
 	const logVerbose = (title: string, ...info: any) => {
 		if (__NS_ENV_VERBOSE__) {
