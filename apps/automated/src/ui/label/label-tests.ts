@@ -7,7 +7,7 @@ import * as LabelModule from '@nativescript/core/ui/label';
 
 import * as types from '@nativescript/core/utils/types';
 import * as colorModule from '@nativescript/core/color';
-import * as utils from '@nativescript/core/utils/utils';
+import * as utils from '@nativescript/core/utils';
 import * as observableModule from '@nativescript/core/data/observable';
 import * as bindable from '@nativescript/core/ui/core/bindable';
 import { CoreTypes, Span, FormattedString } from '@nativescript/core';
