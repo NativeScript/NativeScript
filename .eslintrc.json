@@ -1,17 +1,41 @@
 {
 	"root": true,
-	"parser": "@typescript-eslint/parser",
-	"parserOptions": {
-		"ecmaVersion": 2018,
-		"sourceType": "module",
-		"project": "tsconfig.eslint.json"
-	},
-	"plugins": ["@nativescript", "prettier"],
-	"extends": ["plugin:@nativescript/recommended", "prettier"],
-	"rules": {
-		"prettier/prettier": 2,
-		"@nativescript/no-nativescript-angular-imports": "warn",
-		"@nativescript/no-tns-core-modules-imports": "warn",
-		"@nativescript/no-duplicate-ns-imports": "warn"
-	}
+	"ignorePatterns": ["**/*"],
+	"plugins": ["@nrwl/nx"],
+	"overrides": [
+		{
+			"files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
+			"rules": {
+				"@nrwl/nx/enforce-module-boundaries": [
+					"error",
+					{
+						"enforceBuildableLibDependency": true,
+						"allow": [],
+						"depConstraints": [
+							{
+								"sourceTag": "*",
+								"onlyDependOnLibsWithTags": ["*"]
+							}
+						]
+					}
+				]
+			}
+		},
+		{
+			"files": ["*.ts", "*.tsx"],
+			"extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier", "plugin:@nrwl/nx/typescript"],
+			"rules": {}
+		},
+		{
+			"files": ["*.js", "*.jsx"],
+			"extends": ["plugin:@nrwl/nx/javascript"],
+			"rules": {}
+		},
+		{
+			"files": ["references.d.ts"],
+			"rules": {
+				"@typescript-eslint/triple-slash-reference": "off"
+			}
+		}
+	]
 }

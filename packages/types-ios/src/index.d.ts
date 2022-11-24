@@ -1,1 +1,1 @@
-/// <reference path="./lib/ios.d.ts" />
+/// <reference path="./lib/ios/common.d.ts" />

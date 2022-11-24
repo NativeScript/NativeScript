@@ -4,7 +4,7 @@ import { View } from '../core/view';
 import { EventData } from '../../data/observable';
 
 // Types.
-import { GesturesObserverBase, toString, TouchAction, GestureStateTypes, GestureTypes, SwipeDirection } from './gestures-common';
+import { GesturesObserverBase, toString, TouchAction, GestureStateTypes, GestureTypes, SwipeDirection, GestureEvents } from './gestures-common';
 
 // Import layout from utils directly to avoid circular references
 import { layout } from '../../utils';
@@ -297,31 +297,41 @@ export class GesturesObserver extends GesturesObserverBase {
 	private _attach(target: View, type: GestureTypes) {
 		this._detach();
 
+		let recognizer;
+
 		if (type & GestureTypes.tap || type & GestureTypes.doubleTap || type & GestureTypes.longPress) {
 			initializeTapAndDoubleTapGestureListener();
-			this._simpleGestureDetector = <any>new androidx.core.view.GestureDetectorCompat(target._context, new TapAndDoubleTapGestureListener(this, this.target, type));
+			recognizer = this._simpleGestureDetector = <any>new androidx.core.view.GestureDetectorCompat(target._context, new TapAndDoubleTapGestureListener(this, this.target, type));
 		}
 
 		if (type & GestureTypes.pinch) {
 			initializePinchGestureListener();
-			this._scaleGestureDetector = new android.view.ScaleGestureDetector(target._context, new PinchGestureListener(this, this.target));
+			recognizer = this._scaleGestureDetector = new android.view.ScaleGestureDetector(target._context, new PinchGestureListener(this, this.target));
 		}
 
 		if (type & GestureTypes.swipe) {
 			initializeSwipeGestureListener();
-			this._swipeGestureDetector = <any>new androidx.core.view.GestureDetectorCompat(target._context, new SwipeGestureListener(this, this.target));
+			recognizer = this._swipeGestureDetector = <any>new androidx.core.view.GestureDetectorCompat(target._context, new SwipeGestureListener(this, this.target));
 		}
 
 		if (type & GestureTypes.pan) {
-			this._panGestureDetector = new CustomPanGestureDetector(this, this.target);
+			recognizer = this._panGestureDetector = new CustomPanGestureDetector(this, this.target);
 		}
 
 		if (type & GestureTypes.rotation) {
-			this._rotateGestureDetector = new CustomRotateGestureDetector(this, this.target);
+			recognizer = this._rotateGestureDetector = new CustomRotateGestureDetector(this, this.target);
 		}
 
 		if (type & GestureTypes.touch) {
 			this._notifyTouch = true;
+		} else {
+			this.target.notify({
+				eventName: GestureEvents.gestureAttached,
+				object: this.target,
+				type,
+				view: this.target,
+				android: recognizer,
+			});
 		}
 	}
 

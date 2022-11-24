@@ -248,6 +248,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	public static loadedEvent = 'loaded';
 	public static unloadedEvent = 'unloaded';
 	public static createdEvent = 'created';
+	public static disposeNativeViewEvent = 'disposeNativeView';
 
 	private _onLoadedCalled = false;
 	private _onUnloadedCalled = false;
@@ -763,7 +764,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	}
 
 	public disposeNativeView() {
-		//
+		this.notify({
+			eventName: ViewBase.disposeNativeViewEvent,
+			object: this,
+		});
 	}
 
 	public initNativeView(): void {
@@ -905,6 +909,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
 	public destroyNode(forceDestroyChildren?: boolean): void {
 		this.reusable = false;
+		this.callUnloaded();
 		this._tearDownUI(forceDestroyChildren);
 	}
 
@@ -954,12 +959,9 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
 			this._suspendNativeUpdates(SuspendType.UISetup);
 
-			if (global.isAndroid) {
-				this.setNativeView(null);
-				this._androidView = null;
-			}
-
-			// this._iosView = null;
+			this.setNativeView(null);
+			this._androidView = null;
+			this._iosView = null;
 
 			this._context = null;
 		}
@@ -1210,7 +1212,7 @@ export const idProperty = new Property<ViewBase, string>({
 });
 idProperty.register(ViewBase);
 
-export function booleanConverter(v: string): boolean {
+export function booleanConverter(v: string | boolean): boolean {
 	const lowercase = (v + '').toLowerCase();
 	if (lowercase === 'true') {
 		return true;

@@ -437,15 +437,17 @@ export class ListViewTest extends UITest<ListView> {
 	public test_usingAppLevelConvertersInListViewItems() {
 		var listView = this.testView;
 
-		var dateConverter = function (value, format) {
-			var result = format;
-			var day = value.getDate();
-			result = result.replace('DD', day < 10 ? '0' + day : day);
-			var month = value.getMonth() + 1;
-			result = result.replace('MM', month < 10 ? '0' + month : month);
-			result = result.replace('YYYY', value.getFullYear());
+		var dateConverter = {
+			toView: function (value, format) {
+				var result = format;
+				var day = value.getDate();
+				result = result.replace('DD', day < 10 ? '0' + day : day);
+				var month = value.getMonth() + 1;
+				result = result.replace('MM', month < 10 ? '0' + month : month);
+				result = result.replace('YYYY', value.getFullYear());
 
-			return result;
+				return result;
+			},
 		};
 
 		Application.getResources()['dateConverter'] = dateConverter;
@@ -565,10 +567,12 @@ export class ListViewTest extends UITest<ListView> {
 		var listView = this.testView;
 		var converterCalledCounter = 0;
 
-		var testConverter = function (value) {
-			converterCalledCounter++;
+		var testConverter = {
+			toView: function (value) {
+				converterCalledCounter++;
 
-			return value;
+				return value;
+			},
 		};
 
 		Application.getResources()['testConverter'] = testConverter;
@@ -578,7 +582,7 @@ export class ListViewTest extends UITest<ListView> {
 		listView.bindingContext = listViewModel;
 
 		listView.bind({ sourceProperty: 'items', targetProperty: 'items' });
-		listView.itemTemplate = '<Label id="testLabel" text="{{ $value, $value | testConverter }}" />';
+		listView.itemTemplate = '<Label id="testLabel" text="{{ $value, $value | testConverter() }}" />';
 
 		this.waitUntilListViewReady();
 
@@ -589,10 +593,12 @@ export class ListViewTest extends UITest<ListView> {
 		var listView = this.testView;
 		var converterCalledCounter = 0;
 
-		var testConverter = function (value) {
-			converterCalledCounter++;
+		var testConverter = {
+			toView: function (value) {
+				converterCalledCounter++;
 
-			return value;
+				return value;
+			},
 		};
 
 		Application.getResources()['testConverter'] = testConverter;
@@ -602,7 +608,7 @@ export class ListViewTest extends UITest<ListView> {
 		listView.bindingContext = listViewModel;
 
 		listView.bind({ sourceProperty: 'items', targetProperty: 'items' });
-		listView.itemTemplate = '<StackLayout><Label id="testLabel" text="{{ $value, $value | testConverter }}" /></StackLayout>';
+		listView.itemTemplate = '<StackLayout><Label id="testLabel" text="{{ $value, $value | testConverter() }}" /></StackLayout>';
 
 		this.waitUntilListViewReady();
 
@@ -753,19 +759,23 @@ export class ListViewTest extends UITest<ListView> {
 
 	private assertNoMemoryLeak(weakRef: WeakRef<ListView>) {
 		this.tearDown();
-		TKUnit.waitUntilReady(() => {
-			if (isIOS) {
-				/* tslint:disable:no-unused-expression */
-				// Could cause GC on the next call.
-				// NOTE: Don't replace this with forceGC();
-				new ArrayBuffer(4 * 1024 * 1024);
-			}
-			Utils.GC();
+		//
+		// commented out because with latest engines we use the built-in v8 WeakRef implementation
+		// which does not guarantee releases after a GC pass.
+		//
+		// TKUnit.waitUntilReady(() => {
+		// 	if (isIOS) {
+		// 		/* tslint:disable:no-unused-expression */
+		// 		// Could cause GC on the next call.
+		// 		// NOTE: Don't replace this with forceGC();
+		// 		new ArrayBuffer(4 * 1024 * 1024);
+		// 	}
+		// 	Utils.GC();
+		//
+		// 	return !weakRef.get();
+		// });
 
-			return !weakRef.get();
-		});
-
-		TKUnit.assert(!weakRef.get(), weakRef.get() + ' leaked!');
+		// TKUnit.assert(!weakRef.get(), weakRef.get() + ' leaked!');
 	}
 
 	private loadViewWithItemNumber(args: ItemEventData) {

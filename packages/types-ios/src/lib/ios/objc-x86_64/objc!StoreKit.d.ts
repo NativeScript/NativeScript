@@ -1,4 +1,33 @@
 
+declare const enum SKANError {
+
+	ImpressionMissingRequiredValue = 0,
+
+	Unsupported = 1,
+
+	AdNetworkIdMissing = 2,
+
+	MismatchedSourceAppId = 3,
+
+	ImpressionNotFound = 4,
+
+	InvalidCampaignId = 5,
+
+	InvalidConversionValue = 6,
+
+	InvalidSourceAppId = 7,
+
+	InvalidAdvertisedAppId = 8,
+
+	InvalidVersion = 9,
+
+	Unknown = 10,
+
+	ImpressionTooShort = 11
+}
+
+declare var SKANErrorDomain: string;
+
 declare class SKAdImpression extends NSObject {
 
 	static alloc(): SKAdImpression; // inherited from NSObject
@@ -26,6 +55,10 @@ declare class SKAdImpression extends NSObject {
 	timestamp: number;
 
 	version: string;
+
+	constructor(o: { sourceAppStoreItemIdentifier: number; advertisedAppStoreItemIdentifier: number; adNetworkIdentifier: string; adCampaignIdentifier: number; adImpressionIdentifier: string; timestamp: number; signature: string; version: string; });
+
+	initWithSourceAppStoreItemIdentifierAdvertisedAppStoreItemIdentifierAdNetworkIdentifierAdCampaignIdentifierAdImpressionIdentifierTimestampSignatureVersion(sourceAppStoreItemIdentifier: number, advertisedAppStoreItemIdentifier: number, adNetworkIdentifier: string, adCampaignIdentifier: number, adImpressionIdentifier: string, timestamp: number, signature: string, version: string): this;
 }
 
 declare class SKAdNetwork extends NSObject {
@@ -41,6 +74,8 @@ declare class SKAdNetwork extends NSObject {
 	static startImpressionCompletionHandler(impression: SKAdImpression, completion: (p1: NSError) => void): void;
 
 	static updateConversionValue(conversionValue: number): void;
+
+	static updatePostbackConversionValueCompletionHandler(conversionValue: number, completion: (p1: NSError) => void): void;
 }
 
 declare class SKArcadeService extends NSObject {
@@ -324,6 +359,8 @@ declare class SKOverlayAppConfiguration extends SKOverlayConfiguration {
 	additionalValueForKey(key: string): any;
 
 	initWithAppIdentifierPosition(appIdentifier: string, position: SKOverlayPosition): this;
+
+	setAdImpression(impression: SKAdImpression): void;
 
 	setAdditionalValueForKey(value: any, key: string): void;
 }
@@ -766,6 +803,8 @@ declare class SKStoreProductViewController extends UIViewController {
 	delegate: SKStoreProductViewControllerDelegate;
 
 	loadProductWithParametersCompletionBlock(parameters: NSDictionary<string, any>, block: (p1: boolean, p2: NSError) => void): void;
+
+	loadProductWithParametersImpressionCompletionBlock(parameters: NSDictionary<string, any>, impression: SKAdImpression, block: (p1: boolean, p2: NSError) => void): void;
 }
 
 interface SKStoreProductViewControllerDelegate extends NSObjectProtocol {

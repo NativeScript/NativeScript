@@ -2,14 +2,17 @@ package org.nativescript.widgets;
 
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.ParcelFileDescriptor;
@@ -20,6 +23,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.core.view.ViewCompat;
 import androidx.exifinterface.media.ExifInterface;
 
 import org.json.JSONException;
@@ -33,11 +37,16 @@ import java.io.IOException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-
 public class Utils {
-	public static Drawable getDrawable(String uri, Context context){
-		String resPath = uri.substring("res://".length());
-		int resId = context.getResources().getIdentifier(resPath, "drawable", context.getPackageName());
+	public static Drawable getDrawable(String uri, Context context) {
+		int resId = 0;
+		int resPrefixLength = "res://".length();
+
+		if (uri.length() > resPrefixLength) {
+			String resPath = uri.substring(resPrefixLength);
+			resId = context.getResources().getIdentifier(resPath, "drawable", context.getPackageName());
+		}
+
 		if (resId > 0) {
 			return AppCompatResources.getDrawable(context, resId);
 		} else {
@@ -45,6 +54,65 @@ public class Utils {
 			return null;
 		}
 	}
+
+	private static Bitmap drawBitmap(View view) {
+		int width = view.getWidth();
+		int height = view.getHeight();
+		Bitmap bitmap;
+		if (view.getAlpha() < 1F) {
+			bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+		} else {
+			bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+		}
+		Canvas canvas = new Canvas(bitmap);
+		if (!ViewCompat.isLaidOut(view)) {
+			view.layout(0, 0, width, height);
+		}
+		view.draw(canvas);
+		return bitmap;
+	}
+
+	@SuppressWarnings("deprecation")
+	public static Bitmap getBitmapFromView(View view) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+			return drawBitmap(view);
+		} else {
+
+			view.setDrawingCacheEnabled(true);
+			Bitmap drawCache = view.getDrawingCache();
+			Bitmap bitmap = Bitmap.createBitmap(drawCache);
+			view.setDrawingCacheEnabled(false);
+
+			if (bitmap == null) {
+				bitmap = drawBitmap(view);
+			}
+
+			return bitmap;
+		}
+	}
+
+	public static Bitmap getBitmapFromDrawable(Drawable drawable) {
+		if (drawable instanceof BitmapDrawable) {
+			return ((BitmapDrawable) drawable).getBitmap();
+		} else {
+			Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+			Canvas canvas = new Canvas(bitmap);
+			Rect previousBounds = null;
+
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+				previousBounds = drawable.getBounds();
+				drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+			}
+
+			drawable.draw(canvas);
+
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+				drawable.setBounds(previousBounds);
+			}
+			return bitmap;
+		}
+	}
+
 	public static void drawBoxShadow(View view, String value) {
 		if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M) {
 			return;
@@ -190,9 +258,8 @@ public class Utils {
 		return rotationAngle;
 	}
 
-	private static final Handler mainHandler = new Handler(Looper.getMainLooper());
-
 	public static void loadImageAsync(final Context context, final String src, final String options, final int maxWidth, final int maxHeight, final AsyncImageCallback callback) {
+		final Handler mHandler = new Handler(Looper.myLooper());
 		executors.execute(new Runnable() {
 			@Override
 			public void run() {
@@ -208,7 +275,7 @@ public class Utils {
 						try {
 							pfd = resolver.openFileDescriptor(uri, "r");
 						} catch (final FileNotFoundException e) {
-							mainHandler.post(new Runnable() {
+							mHandler.post(new Runnable() {
 								@Override
 								public void run() {
 									callback.onError(e);
@@ -281,7 +348,7 @@ public class Utils {
 
 					final String finalError = error;
 					final Bitmap finalBitmap = bitmap;
-					mainHandler.post(new Runnable() {
+					mHandler.post(new Runnable() {
 						@Override
 						public void run() {
 							if (finalError != null) {
@@ -292,7 +359,7 @@ public class Utils {
 						}
 					});
 				} catch (final Exception ex) {
-					mainHandler.post(new Runnable() {
+					mHandler.post(new Runnable() {
 						@Override
 						public void run() {
 							callback.onError(ex);
@@ -315,6 +382,7 @@ public class Utils {
 
 
 	public static void saveToFileAsync(final Bitmap bitmap, final String path, final String format, final int quality, final AsyncImageCallback callback) {
+		final Handler mHandler = new Handler(Looper.myLooper());
 		executors.execute(new Runnable() {
 			@Override
 			public void run() {
@@ -331,7 +399,7 @@ public class Utils {
 
 				final Exception finalException = exception;
 				final boolean finalIsSuccess = isSuccess;
-				mainHandler.post(new Runnable() {
+				mHandler.post(new Runnable() {
 					@Override
 					public void run() {
 						if (finalException != null) {
@@ -346,6 +414,7 @@ public class Utils {
 	}
 
 	public static void toBase64StringAsync(final Bitmap bitmap, final String format, final int quality, final AsyncImageCallback callback) {
+		final Handler mHandler = new Handler(Looper.myLooper());
 		executors.execute(new Runnable() {
 			@Override
 			public void run() {
@@ -368,7 +437,7 @@ public class Utils {
 
 				final Exception finalException = exception;
 				final String finalResult = result;
-				mainHandler.post(new Runnable() {
+				mHandler.post(new Runnable() {
 					@Override
 					public void run() {
 						if (finalException != null) {
@@ -391,7 +460,7 @@ public class Utils {
 
 			return new Pair<>(
 				Math.round((maxSize * width) / height)
-				, (int) height);
+				, (int) maxSize);
 		}
 
 		if (width <= maxSize) {
@@ -404,6 +473,7 @@ public class Utils {
 	}
 
 	public static void resizeAsync(final Bitmap bitmap, final float maxSize, final String options, final AsyncImageCallback callback) {
+		final Handler mHandler = new Handler(Looper.myLooper());
 		executors.execute(new Runnable() {
 			@Override
 			public void run() {
@@ -428,7 +498,7 @@ public class Utils {
 
 				final Exception finalException = exception;
 				final Bitmap finalResult = result;
-				mainHandler.post(new Runnable() {
+				mHandler.post(new Runnable() {
 					@Override
 					public void run() {
 						if (finalException != null) {

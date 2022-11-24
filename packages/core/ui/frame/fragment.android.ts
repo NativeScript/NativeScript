@@ -19,6 +19,10 @@ const FragmentClass = (<any>org.nativescript.widgets.FragmentBase).extend('com.t
 		this._callbacks.onPause(this, superProto.onPause);
 	},
 
+	onResume(): void {
+		this._callbacks.onResume(this, superProto.onResume);
+	},
+
 	onCreate(savedInstanceState: android.os.Bundle) {
 		if (!this._callbacks) {
 			setFragmentCallbacks(this);
@@ -44,6 +48,7 @@ const FragmentClass = (<any>org.nativescript.widgets.FragmentBase).extend('com.t
 
 	onDestroy() {
 		this._callbacks.onDestroy(this, superProto.onDestroy);
+		this._callbacks = null;
 	},
 
 	toString(): string {

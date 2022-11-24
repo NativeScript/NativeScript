@@ -1,4 +1,6 @@
+import { Color } from '../color';
 import { Trace } from '../trace';
+import { getClass, isNullOrUndefined, numberHasDecimals, numberIs64Bit } from './types';
 
 declare let UIImagePickerControllerSourceType: any;
 
@@ -24,8 +26,90 @@ function openFileAtRootModule(filePath: string): boolean {
 	return false;
 }
 
+export function dataDeserialize(nativeData?: any) {
+	if (isNullOrUndefined(nativeData)) {
+		// some native values will already be js null values
+		// calling types.getClass below on null/undefined will cause crash
+		return null;
+	} else {
+		switch (getClass(nativeData)) {
+			case 'NSNull':
+				return null;
+			case 'NSMutableDictionary':
+			case 'NSDictionary':
+				let obj = {};
+				const length = nativeData.count;
+				const keysArray = nativeData.allKeys as NSArray<any>;
+				for (let i = 0; i < length; i++) {
+					const nativeKey = keysArray.objectAtIndex(i);
+					obj[nativeKey] = dataDeserialize(nativeData.objectForKey(nativeKey));
+				}
+				return obj;
+			case 'NSMutableArray':
+			case 'NSArray':
+				let array = [];
+				const len = nativeData.count;
+				for (let i = 0; i < len; i++) {
+					array[i] = dataDeserialize(nativeData.objectAtIndex(i));
+				}
+				return array;
+			default:
+				return nativeData;
+		}
+	}
+}
+
+export function dataSerialize(data: any, wrapPrimitives: boolean = false) {
+	switch (typeof data) {
+		case 'string':
+		case 'boolean': {
+			return data;
+		}
+		case 'number': {
+			const hasDecimals = numberHasDecimals(data);
+			if (numberIs64Bit(data)) {
+				if (hasDecimals) {
+					return NSNumber.alloc().initWithDouble(data);
+				} else {
+					return NSNumber.alloc().initWithLongLong(data);
+				}
+			} else {
+				if (hasDecimals) {
+					return NSNumber.alloc().initWithFloat(data);
+				} else {
+					return data;
+				}
+			}
+		}
+
+		case 'object': {
+			if (data instanceof Date) {
+				return NSDate.dateWithTimeIntervalSince1970(data.getTime() / 1000);
+			}
+
+			if (!data) {
+				return null;
+			}
+
+			if (Array.isArray(data)) {
+				return NSArray.arrayWithArray((<any>data).map(dataSerialize));
+			}
+
+			let node = {} as any;
+			Object.keys(data).forEach(function (key) {
+				let value = data[key];
+				node[key] = dataSerialize(value, wrapPrimitives);
+			});
+			return NSDictionary.dictionaryWithDictionary(node);
+		}
+
+		default:
+			return null;
+	}
+}
+
 export namespace iOSNativeHelper {
-	// TODO: remove for NativeScript 7.0
+	// TODO: remove for NativeScript 9.0
 	export function getter<T>(_this: any, property: T | { (): T }): T {
 		console.log('utils.ios.getter() is deprecated; use the respective native property instead');
 		if (typeof property === 'function') {
@@ -50,6 +134,35 @@ export namespace iOSNativeHelper {
 			}
 
 			return arr;
+		}
+	}
+
+	export function getRootViewController(): UIViewController {
+		const win = getWindow();
+		let vc = win && win.rootViewController;
+		while (vc && vc.presentedViewController) {
+			vc = vc.presentedViewController;
+		}
+		return vc;
+	}
+
+	export function getWindow(): UIWindow {
+		const app = UIApplication.sharedApplication;
+		if (!app) {
+			return;
+		}
+		return app.keyWindow || (app.windows && app.windows.count > 0 && app.windows.objectAtIndex(0));
+	}
+
+	export function setWindowBackgroundColor(value: string) {
+		const win = getWindow();
+		if (win) {
+			const bgColor = new Color(value);
+			win.backgroundColor = bgColor.ios;
+			const rootVc = getRootViewController();
+			if (rootVc?.view) {
+				rootVc.view.backgroundColor = bgColor.ios;
+			}
 		}
 	}
 

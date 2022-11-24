@@ -19,7 +19,7 @@ exports[`svelte configuration for android 1`] = `
     ]
   },
   ignoreWarnings: [
-    /System.import\\\\(\\\\) is deprecated/
+    /System.import\\(\\) is deprecated/
   ],
   output: {
     path: '__jest__/platforms/android/app/src/main/assets/app',
@@ -34,6 +34,7 @@ exports[`svelte configuration for android 1`] = `
     alias: {
       '~': '__jest__/src',
       '@': '__jest__/src',
+      svelte$: 'svelte/internal',
       'tns-core-modules': '@nativescript/core'
     },
     extensions: [
@@ -43,6 +44,8 @@ exports[`svelte configuration for android 1`] = `
       '.ts',
       '.android.js',
       '.js',
+      '.android.mjs',
+      '.mjs',
       '.android.css',
       '.css',
       '.android.scss',
@@ -75,20 +78,23 @@ exports[`svelte configuration for android 1`] = `
             options: {
               platform: 'android'
             }
-          },
-          /* config.module.rule('bundle').use('nativescript-hot-loader') */
+          }
+        ]
+      },
+      /* config.module.rule('workers') */
+      {
+        test: /\\.(js|ts|svelte)$/,
+        use: [
+          /* config.module.rule('workers').use('nativescript-worker-loader') */
           {
-            loader: 'nativescript-hot-loader',
-            options: {
-              injectHMRRuntime: true
-            }
+            loader: 'nativescript-worker-loader'
           }
         ]
       },
       /* config.module.rule('ts') */
       {
         test: [
-          /\\\\.ts$/
+          /\\.ts$/
         ],
         use: [
           /* config.module.rule('ts').use('ts-loader') */
@@ -108,24 +114,14 @@ exports[`svelte configuration for android 1`] = `
       },
       /* config.module.rule('js') */
       {
-        test: /\\\\.js$/,
+        test: /\\.js$/,
         exclude: [
           /node_modules/
         ]
       },
-      /* config.module.rule('workers') */
-      {
-        test: /\\\\.(js|ts|svelte)$/,
-        use: [
-          /* config.module.rule('workers').use('nativescript-worker-loader') */
-          {
-            loader: 'nativescript-worker-loader'
-          }
-        ]
-      },
       /* config.module.rule('xml') */
       {
-        test: /\\\\.xml$/,
+        test: /\\.xml$/,
         use: [
           /* config.module.rule('xml').use('xml-namespace-loader') */
           {
@@ -135,7 +131,7 @@ exports[`svelte configuration for android 1`] = `
       },
       /* config.module.rule('css') */
       {
-        test: /\\\\.css$/,
+        test: /\\.css$/,
         use: [
           /* config.module.rule('css').use('apply-css-loader') */
           {
@@ -151,7 +147,12 @@ exports[`svelte configuration for android 1`] = `
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -160,7 +161,7 @@ exports[`svelte configuration for android 1`] = `
       },
       /* config.module.rule('scss') */
       {
-        test: /\\\\.scss$/,
+        test: /\\.scss$/,
         use: [
           /* config.module.rule('scss').use('apply-css-loader') */
           {
@@ -176,7 +177,12 @@ exports[`svelte configuration for android 1`] = `
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -189,7 +195,7 @@ exports[`svelte configuration for android 1`] = `
       },
       /* config.module.rule('svelte') */
       {
-        test: /\\\\.svelte$/,
+        test: /\\.svelte$/,
         exclude: [
           /node_modules/
         ],
@@ -217,7 +223,7 @@ exports[`svelte configuration for android 1`] = `
     splitChunks: {
       cacheGroups: {
         defaultVendor: {
-          test: /[\\\\\\\\/]node_modules[\\\\\\\\/]/,
+          test: /[\\\\/]node_modules[\\\\/]/,
           priority: -10,
           name: 'vendor',
           chunks: 'all'
@@ -265,21 +271,26 @@ exports[`svelte configuration for android 1`] = `
     new ContextExclusionPlugin(
       /(.*)App_Resources(.*)/
     ),
+    /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
+    new ContextExclusionPlugin(
+      /\\.(ios)\\.(\\w+)$/
+    ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
         __DEV__: true,
         __NS_WEBPACK__: true,
         __NS_ENV_VERBOSE__: false,
-        __NS_DEV_HOST_IPS__: '[\\"127.0.0.1\\",\\"192.168.0.10\\"]',
-        __CSS_PARSER__: '\\"css-tree\\"',
+        __NS_DEV_HOST_IPS__: '["127.0.0.1","192.168.0.10"]',
+        __CSS_PARSER__: '"css-tree"',
         __UI_USE_XML_PARSER__: true,
         __UI_USE_EXTERNAL_RENDERER__: false,
         __ANDROID__: true,
         __IOS__: false,
         'global.isAndroid': true,
         'global.isIOS': false,
-        process: 'global.process'
+        process: 'global.process',
+        __USE_TEST_ID__: false
       }
     ),
     /* config.plugin('CopyWebpackPlugin') */
@@ -321,8 +332,8 @@ exports[`svelte configuration for android 1`] = `
   ],
   entry: {
     bundle: [
-      '@nativescript/core/globals/index.js',
-      '@nativescript/core/bundle-entry-points.js',
+      '@nativescript/core/globals/index',
+      '@nativescript/core/bundle-entry-points',
       '__jest__/src/app.js',
       '@nativescript/core/ui/frame',
       '@nativescript/core/ui/frame/activity'
@@ -350,7 +361,7 @@ exports[`svelte configuration for ios 1`] = `
     ]
   },
   ignoreWarnings: [
-    /System.import\\\\(\\\\) is deprecated/
+    /System.import\\(\\) is deprecated/
   ],
   output: {
     path: '__jest__/platforms/ios/jest/app',
@@ -365,6 +376,7 @@ exports[`svelte configuration for ios 1`] = `
     alias: {
       '~': '__jest__/src',
       '@': '__jest__/src',
+      svelte$: 'svelte/internal',
       'tns-core-modules': '@nativescript/core'
     },
     extensions: [
@@ -374,6 +386,8 @@ exports[`svelte configuration for ios 1`] = `
       '.ts',
       '.ios.js',
       '.js',
+      '.ios.mjs',
+      '.mjs',
       '.ios.css',
       '.css',
       '.ios.scss',
@@ -406,20 +420,23 @@ exports[`svelte configuration for ios 1`] = `
             options: {
               platform: 'ios'
             }
-          },
-          /* config.module.rule('bundle').use('nativescript-hot-loader') */
+          }
+        ]
+      },
+      /* config.module.rule('workers') */
+      {
+        test: /\\.(js|ts|svelte)$/,
+        use: [
+          /* config.module.rule('workers').use('nativescript-worker-loader') */
           {
-            loader: 'nativescript-hot-loader',
-            options: {
-              injectHMRRuntime: true
-            }
+            loader: 'nativescript-worker-loader'
           }
         ]
       },
       /* config.module.rule('ts') */
       {
         test: [
-          /\\\\.ts$/
+          /\\.ts$/
         ],
         use: [
           /* config.module.rule('ts').use('ts-loader') */
@@ -439,24 +456,14 @@ exports[`svelte configuration for ios 1`] = `
       },
       /* config.module.rule('js') */
       {
-        test: /\\\\.js$/,
+        test: /\\.js$/,
         exclude: [
           /node_modules/
         ]
       },
-      /* config.module.rule('workers') */
-      {
-        test: /\\\\.(js|ts|svelte)$/,
-        use: [
-          /* config.module.rule('workers').use('nativescript-worker-loader') */
-          {
-            loader: 'nativescript-worker-loader'
-          }
-        ]
-      },
       /* config.module.rule('xml') */
       {
-        test: /\\\\.xml$/,
+        test: /\\.xml$/,
         use: [
           /* config.module.rule('xml').use('xml-namespace-loader') */
           {
@@ -466,7 +473,7 @@ exports[`svelte configuration for ios 1`] = `
       },
       /* config.module.rule('css') */
       {
-        test: /\\\\.css$/,
+        test: /\\.css$/,
         use: [
           /* config.module.rule('css').use('apply-css-loader') */
           {
@@ -482,7 +489,12 @@ exports[`svelte configuration for ios 1`] = `
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -491,7 +503,7 @@ exports[`svelte configuration for ios 1`] = `
       },
       /* config.module.rule('scss') */
       {
-        test: /\\\\.scss$/,
+        test: /\\.scss$/,
         use: [
           /* config.module.rule('scss').use('apply-css-loader') */
           {
@@ -507,7 +519,12 @@ exports[`svelte configuration for ios 1`] = `
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -520,7 +537,7 @@ exports[`svelte configuration for ios 1`] = `
       },
       /* config.module.rule('svelte') */
       {
-        test: /\\\\.svelte$/,
+        test: /\\.svelte$/,
         exclude: [
           /node_modules/
         ],
@@ -548,7 +565,7 @@ exports[`svelte configuration for ios 1`] = `
     splitChunks: {
       cacheGroups: {
         defaultVendor: {
-          test: /[\\\\\\\\/]node_modules[\\\\\\\\/]/,
+          test: /[\\\\/]node_modules[\\\\/]/,
           priority: -10,
           name: 'vendor',
           chunks: 'all'
@@ -596,21 +613,26 @@ exports[`svelte configuration for ios 1`] = `
     new ContextExclusionPlugin(
       /(.*)App_Resources(.*)/
     ),
+    /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
+    new ContextExclusionPlugin(
+      /\\.(android)\\.(\\w+)$/
+    ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
         __DEV__: true,
         __NS_WEBPACK__: true,
         __NS_ENV_VERBOSE__: false,
-        __NS_DEV_HOST_IPS__: '[\\"127.0.0.1\\",\\"192.168.0.10\\"]',
-        __CSS_PARSER__: '\\"css-tree\\"',
+        __NS_DEV_HOST_IPS__: '["127.0.0.1","192.168.0.10"]',
+        __CSS_PARSER__: '"css-tree"',
         __UI_USE_XML_PARSER__: true,
         __UI_USE_EXTERNAL_RENDERER__: false,
         __ANDROID__: false,
         __IOS__: true,
         'global.isAndroid': false,
         'global.isIOS': true,
-        process: 'global.process'
+        process: 'global.process',
+        __USE_TEST_ID__: false
       }
     ),
     /* config.plugin('CopyWebpackPlugin') */
@@ -652,8 +674,8 @@ exports[`svelte configuration for ios 1`] = `
   ],
   entry: {
     bundle: [
-      '@nativescript/core/globals/index.js',
-      '@nativescript/core/bundle-entry-points.js',
+      '@nativescript/core/globals/index',
+      '@nativescript/core/bundle-entry-points',
       '__jest__/src/app.js'
     ],
     'tns_modules/inspector_modules': [

@@ -187,15 +187,11 @@ export class ImageSource implements ImageSourceDefinition {
 			paint.setColor(color.android);
 		}
 
-		let fontSize = layout.toDevicePixels(font.fontSize);
-		if (!fontSize) {
-			// TODO: Consider making 36 font size as default for optimal look on TabView and ActionBar
-			fontSize = paint.getTextSize();
+		// TODO: Consider making 36 font size as default for optimal look on TabView and ActionBar
+		const scaledFontSize = layout.toDevicePixels(font.fontSize);
+		if (scaledFontSize) {
+			paint.setTextSize(scaledFontSize);
 		}
-
-		const density = layout.getDisplayDensity();
-		const scaledFontSize = fontSize * density;
-		paint.setTextSize(scaledFontSize);
 
 		const textBounds = new android.graphics.Rect();
 		paint.getTextBounds(source, 0, source.length, textBounds);
@@ -295,8 +291,13 @@ export class ImageSource implements ImageSourceDefinition {
 
 	public setNativeSource(source: any): void {
 		if (source && !(source instanceof android.graphics.Bitmap)) {
-			throw new Error('The method setNativeSource() expects android.graphics.Bitmap instance.');
+			if (source instanceof android.graphics.drawable.Drawable) {
+				this.android = org.nativescript.widgets.Utils.getBitmapFromDrawable(source);
+				return;
+			}
+			throw new Error('The method setNativeSource() expects an android.graphics.Bitmap or android.graphics.drawable.Drawable instance.');
 		}
+
 		this.android = source;
 	}
 

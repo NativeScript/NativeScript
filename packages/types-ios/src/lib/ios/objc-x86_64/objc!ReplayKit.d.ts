@@ -364,3 +364,5 @@ declare class RPSystemBroadcastPickerView extends UIView implements NSCoding {
 }
 
 declare var RPVideoSampleOrientationKey: string;
+
+declare var SCStreamErrorDomain: string;

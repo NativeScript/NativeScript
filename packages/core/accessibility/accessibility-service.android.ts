@@ -71,19 +71,20 @@ function ensureStateListener(): SharedA11YObservable {
 			}
 		},
 	});
-
-	touchExplorationStateChangeListener = new android.view.accessibility.AccessibilityManager.TouchExplorationStateChangeListener({
-		onTouchExplorationStateChanged(enabled) {
-			updateAccessibilityState();
-
-			if (Trace.isEnabled()) {
-				Trace.write(`TouchExplorationStateChangeListener state changed to: ${!!enabled}`, Trace.categories.Accessibility);
-			}
-		},
-	});
-
 	accessibilityManager.addAccessibilityStateChangeListener(accessibilityStateChangeListener);
-	accessibilityManager.addTouchExplorationStateChangeListener(touchExplorationStateChangeListener);
+
+	if (Utils.SDK_VERSION >= 19) {
+		touchExplorationStateChangeListener = new android.view.accessibility.AccessibilityManager.TouchExplorationStateChangeListener({
+			onTouchExplorationStateChanged(enabled) {
+				updateAccessibilityState();
+
+				if (Trace.isEnabled()) {
+					Trace.write(`TouchExplorationStateChangeListener state changed to: ${!!enabled}`, Trace.categories.Accessibility);
+				}
+			},
+		});
+		accessibilityManager.addTouchExplorationStateChangeListener(touchExplorationStateChangeListener);
+	}
 
 	updateAccessibilityState();
 

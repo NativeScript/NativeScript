@@ -26,6 +26,7 @@
         "androidx.fragment*:*",
         "androidx.transition*:*",
         "androidx.lifecycle*:*",
-        "android.inputmethodservice*:*"
+        "android.inputmethodservice*:*",
+        "androidx.activity:ComponentActivity"
     ]
 }

@@ -2,7 +2,7 @@ import { ImageBase, stretchProperty, imageSourceProperty, tintColorProperty, src
 import { ImageSource } from '../../image-source';
 import { Color } from '../../color';
 import { Trace } from '../../trace';
-import { layout } from '../../utils';
+import { layout, queueGC } from '../../utils';
 
 export * from './image-common';
 
@@ -24,21 +24,57 @@ export class Image extends ImageBase {
 		this._setNativeClipToBounds();
 	}
 
-	private setTintColor(value: Color) {
-		if (value && this.nativeViewProtected.image && !this._templateImageWasCreated) {
-			this.nativeViewProtected.image = this.nativeViewProtected.image.imageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
-			this._templateImageWasCreated = true;
-		} else if (!value && this.nativeViewProtected.image && this._templateImageWasCreated) {
-			this._templateImageWasCreated = false;
-			this.nativeViewProtected.image = this.nativeViewProtected.image.imageWithRenderingMode(UIImageRenderingMode.Automatic);
+	public disposeImageSource() {
+		if (this.nativeViewProtected?.image === this.imageSource?.ios) {
+			this.nativeViewProtected.image = null;
 		}
-		this.nativeViewProtected.tintColor = value ? value.ios : null;
+
+		if (this.imageSource?.ios) {
+			this.imageSource.ios = null;
+		}
+
+		this.imageSource = null;
+
+		queueGC();
+	}
+
+	public disposeNativeView(): void {
+		super.disposeNativeView();
+
+		if (this.nativeViewProtected?.image) {
+			this.nativeViewProtected.image = null;
+		}
+
+		this.disposeImageSource();
+	}
+
+	private setTintColor(value: Color) {
+		if (this.nativeViewProtected) {
+			if (value && this.nativeViewProtected.image && !this._templateImageWasCreated) {
+				this.nativeViewProtected.image = this.nativeViewProtected.image.imageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+				this._templateImageWasCreated = true;
+				queueGC();
+			} else if (!value && this.nativeViewProtected.image && this._templateImageWasCreated) {
+				this._templateImageWasCreated = false;
+				this.nativeViewProtected.image = this.nativeViewProtected.image.imageWithRenderingMode(UIImageRenderingMode.Automatic);
+				queueGC();
+			}
+			this.nativeViewProtected.tintColor = value ? value.ios : null;
+		}
 	}
 
 	public _setNativeImage(nativeImage: UIImage) {
-		this.nativeViewProtected.image = nativeImage;
+		if (this.nativeViewProtected?.image) {
+			this.nativeViewProtected.image = null;
+
+			queueGC();
+		}
+
+		if (this.nativeViewProtected) {
+			this.nativeViewProtected.image = nativeImage;
+		}
 		this._templateImageWasCreated = false;
-		this.setTintColor(this.style.tintColor);
+		this.setTintColor(this.style?.tintColor);
 
 		if (this._imageSourceAffectsLayout) {
 			this.requestLayout();
@@ -46,8 +82,10 @@ export class Image extends ImageBase {
 	}
 
 	_setNativeClipToBounds() {
-		// Always set clipsToBounds for images
-		this.nativeViewProtected.clipsToBounds = true;
+		if (this.nativeViewProtected) {
+			// Always set clipsToBounds for images
+			this.nativeViewProtected.clipsToBounds = true;
+		}
 	}
 
 	public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
@@ -119,23 +157,25 @@ export class Image extends ImageBase {
 	}
 
 	[stretchProperty.setNative](value: 'none' | 'aspectFill' | 'aspectFit' | 'fill') {
-		switch (value) {
-			case 'aspectFit':
-				this.nativeViewProtected.contentMode = UIViewContentMode.ScaleAspectFit;
-				break;
+		if (this.nativeViewProtected) {
+			switch (value) {
+				case 'aspectFit':
+					this.nativeViewProtected.contentMode = UIViewContentMode.ScaleAspectFit;
+					break;
 
-			case 'aspectFill':
-				this.nativeViewProtected.contentMode = UIViewContentMode.ScaleAspectFill;
-				break;
+				case 'aspectFill':
+					this.nativeViewProtected.contentMode = UIViewContentMode.ScaleAspectFill;
+					break;
 
-			case 'fill':
-				this.nativeViewProtected.contentMode = UIViewContentMode.ScaleToFill;
-				break;
+				case 'fill':
+					this.nativeViewProtected.contentMode = UIViewContentMode.ScaleToFill;
+					break;
 
-			case 'none':
-			default:
-				this.nativeViewProtected.contentMode = UIViewContentMode.TopLeft;
-				break;
+				case 'none':
+				default:
+					this.nativeViewProtected.contentMode = UIViewContentMode.TopLeft;
+					break;
+			}
 		}
 	}
 
@@ -144,6 +184,10 @@ export class Image extends ImageBase {
 	}
 
 	[imageSourceProperty.setNative](value: ImageSource) {
+		if (value !== this.imageSource) {
+			this.disposeImageSource();
+		}
+
 		this._setNativeImage(value ? value.ios : null);
 	}
 

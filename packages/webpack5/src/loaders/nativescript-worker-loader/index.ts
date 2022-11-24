@@ -46,7 +46,7 @@ WorkerDependency.Template.prototype.apply = function apply(
 	);
 };
 
-const NEW_WORKER_WITH_STRING_RE = /new\s+Worker\((['"`].+['"`])\)/;
+const NEW_WORKER_WITH_STRING_RE = /new\s+Worker\((['"`].+['"`])\)/g;
 
 /**
  * Replaces

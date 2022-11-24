@@ -240,7 +240,7 @@ interface NFCISO15693Tag extends NFCNDEFTag, NFCTag {
 
 	sendCustomCommandWithConfigurationCompletionHandler(commandConfiguration: NFCISO15693CustomCommandConfiguration, completionHandler: (p1: NSData, p2: NSError) => void): void;
 
-	sendRequestWithFlagCommandCodeDataCompletionHandler(flags: number, commandCode: number, data: NSData, completionHandler: (p1: NFCISO15693ResponseFlag, p2: NSData) => void): void;
+	sendRequestWithFlagCommandCodeDataCompletionHandler(flags: number, commandCode: number, data: NSData, completionHandler: (p1: NFCISO15693ResponseFlag, p2: NSData, p3: NSError) => void): void;
 
 	stayQuietWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
 
@@ -465,7 +465,9 @@ declare const enum NFCPollingOption {
 
 	ISO15693 = 2,
 
-	ISO18092 = 4
+	ISO18092 = 4,
+
+	PACE = 8
 }
 
 declare const enum NFCReaderError {

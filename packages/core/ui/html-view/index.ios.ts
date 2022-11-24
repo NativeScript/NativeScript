@@ -1,7 +1,7 @@
 import { Color } from '../../color';
 import { Font } from '../styling/font';
 import { colorProperty, fontInternalProperty } from '../styling/style-properties';
-import { HtmlViewBase, htmlProperty, linkColorProperty } from './html-view-common';
+import { HtmlViewBase, htmlProperty, selectableProperty, linkColorProperty } from './html-view-common';
 import { View } from '../core/view';
 import { iOSNativeHelper, layout } from '../../utils';
 
@@ -59,10 +59,6 @@ export class HtmlView extends HtmlViewBase {
 		}
 	}
 
-	[htmlProperty.getDefault](): string {
-		return '';
-	}
-
 	private renderWithStyles() {
 		let html = this.currentHtml;
 		const styles = [];
@@ -86,9 +82,19 @@ export class HtmlView extends HtmlViewBase {
 		}
 	}
 
+	[htmlProperty.getDefault](): string {
+		return '';
+	}
 	[htmlProperty.setNative](value: string) {
 		this.currentHtml = value;
 		this.renderWithStyles();
+	}
+
+	[selectableProperty.getDefault](): boolean {
+		return true;
+	}
+	[selectableProperty.setNative](value: boolean) {
+		this.nativeViewProtected.selectable = value;
 	}
 
 	[colorProperty.getDefault](): UIColor {

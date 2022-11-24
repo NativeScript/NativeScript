@@ -280,6 +280,8 @@ declare class MTKView extends UIView implements CALayerDelegate, NSCoding {
 
 	depthStencilPixelFormat: MTLPixelFormat;
 
+	depthStencilStorageMode: MTLStorageMode;
+
 	readonly depthStencilTexture: MTLTexture;
 
 	device: MTLDevice;

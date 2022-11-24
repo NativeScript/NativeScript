@@ -90,6 +90,13 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 		this.style.lineHeight = value;
 	}
 
+	get maxLines(): CoreTypes.MaxLinesType {
+		return this.style.maxLines;
+	}
+	set maxLines(value: CoreTypes.MaxLinesType) {
+		this.style.maxLines = value;
+	}
+
 	get textAlignment(): CoreTypes.TextAlignmentType {
 		return this.style.textAlignment;
 	}
@@ -246,7 +253,7 @@ export function getClosestPropertyValue<T>(property: CssProperty<any, T>, span: 
 	}
 }
 
-const textAlignmentConverter = makeParser<CoreTypes.TextAlignmentType>(makeValidator<CoreTypes.TextAlignmentType>('initial', 'left', 'center', 'right'));
+const textAlignmentConverter = makeParser<CoreTypes.TextAlignmentType>(makeValidator<CoreTypes.TextAlignmentType>('initial', 'left', 'center', 'right', 'justify'));
 export const textAlignmentProperty = new InheritedCssProperty<Style, CoreTypes.TextAlignmentType>({
 	name: 'textAlignment',
 	cssName: 'text-align',
@@ -309,5 +316,12 @@ export const lineHeightProperty = new InheritedCssProperty<Style, number>({
 	valueConverter: (v) => parseFloat(v),
 });
 lineHeightProperty.register(Style);
+
+export const maxLinesProperty = new CssProperty<Style, CoreTypes.MaxLinesType>({
+	name: 'maxLines',
+	cssName: 'max-lines',
+	valueConverter: (v) => (v === 'none' ? 0 : parseInt(v, 10)),
+});
+maxLinesProperty.register(Style);
 
 export const resetSymbol = Symbol('textPropertyDefault');

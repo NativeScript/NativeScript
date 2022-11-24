@@ -23,7 +23,7 @@ export interface LinearGradient {
 	colors: ColorStop[];
 }
 export interface Background {
-	readonly color?: number;
+	readonly color?: number | Color;
 	readonly image?: URL | LinearGradient;
 	readonly repeat?: BackgroundRepeat;
 	readonly position?: BackgroundPosition;
@@ -135,7 +135,6 @@ export function parseColorKeyword(value, start: number, keyword = parseKeyword(v
 	const parseColor = keyword && getKnownColor(keyword.value);
 	if (parseColor != null) {
 		const end = keyword.end;
-		const value = parseColor;
 		return { start, end, value: new Color(parseColor) };
 	}
 	return null;

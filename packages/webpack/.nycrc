@@ -1,5 +1,0 @@
-{
-    "extends": "@istanbuljs/nyc-config-typescript",
-    "exclude": ["/demo/**"],
-    "reporter": ["text", "lcov"]
-}

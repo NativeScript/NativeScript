@@ -21,12 +21,13 @@ export class VisibilityVsHiddenModel extends Observable {
 		if (this.currentVisibilityIndex === 3) {
 			this.currentVisibilityIndex = 0;
 		}
-		this.set('currentVisibility', this.visibilityOptions[this.currentVisibilityIndex]);
-		this.set('currentVisibilityType', `Current Visibility: ${this.visibilityOptions[this.currentVisibilityIndex]}`);
+		this.notifyPropertyChange('currentVisibility', this.visibilityOptions[this.currentVisibilityIndex]);
+		this.notifyPropertyChange('currentVisibilityType', `Current Visibility: ${this.visibilityOptions[this.currentVisibilityIndex]}`);
 	}
 
 	toggleHidden() {
-		this.set('currentHidden', !this.currentHidden);
-		this.set('currentHiddenType', `Current Hidden: ${this.currentHidden}`);
+		this.currentHidden = !this.currentHidden;
+		this.notifyPropertyChange('currentHidden', this.currentHidden);
+		this.notifyPropertyChange('currentHiddenType', `Current Hidden: ${this.currentHidden}`);
 	}
 }

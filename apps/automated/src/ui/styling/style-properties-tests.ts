@@ -59,6 +59,10 @@ export function test_setting_borderColorRGB_property_from_CSS_is_applied_to_Styl
 	test_property_from_CSS_is_applied_to_style('borderColor', 'border-color', new Color('#FF0000'), 'rgb(255, 0, 0)');
 }
 
+export function test_setting_borderColorRGBLvl4_property_from_CSS_is_applied_to_Style() {
+	test_property_from_CSS_is_applied_to_style('borderColor', 'border-color', new Color('#FF0000'), 'rgb(255 0 0 / 1)');
+}
+
 export function test_setting_borderColorRGBA_property_from_CSS_is_applied_to_Style() {
 	test_property_from_CSS_is_applied_to_style('borderColor', 'border-color', new Color('#FF0000'), 'rgba(255,0,0,1)');
 }
@@ -552,7 +556,7 @@ export function test_setting_font_shorthand_property() {
 	test_font_shorthand_property('normal normal normal 15px/30px Arial', 'Arial', 15, 'normal', 'normal');
 }
 
-function test_font_shorthand_property(short: string, family: string, size: number, style: string, weight: string) {
+function test_font_shorthand_property(short: string, family: string, size: number, style: string, weight: string | number) {
 	const testView = new Button();
 	(<any>testView.style)['font'] = short;
 
@@ -562,7 +566,7 @@ function test_font_shorthand_property(short: string, family: string, size: numbe
 	TKUnit.assertEqual(testView.style.fontSize, size, 'style.fontSize');
 }
 export function test_setting_font_properties_sets_native_font() {
-	if (fontModule.ios) {
+	if (global.isIOS) {
 		const basePath = 'fonts';
 		fontModule.ios.registerFont(basePath + '/Roboto-Regular.ttf');
 		fontModule.ios.registerFont(basePath + '/Roboto-Bold.ttf');

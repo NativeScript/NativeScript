@@ -20,7 +20,8 @@ export class Issue5039ViewModel extends Observable {
 	}
 
 	filter(value: string = '') {
+		const filteredItems = this._items.filter((item) => -1 !== item.indexOf(value));
 		this.items.splice(0, this.items.length); // remove all items
-		this.items.push(this._items.filter((i) => -1 !== i.indexOf(value)));
+		this.items.push(...filteredItems);
 	}
 }

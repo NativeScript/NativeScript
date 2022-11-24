@@ -556,6 +556,8 @@ declare var kCVPixelFormatContainsGrayscale: string;
 
 declare var kCVPixelFormatContainsRGB: string;
 
+declare var kCVPixelFormatContainsSenselArray: string;
+
 declare var kCVPixelFormatContainsYCbCr: string;
 
 declare var kCVPixelFormatFillExtendedPixelsCallback: string;
@@ -729,6 +731,18 @@ declare const kCVPixelFormatType_Lossless_420YpCbCr10PackedBiPlanarVideoRange: n
 declare const kCVPixelFormatType_Lossless_420YpCbCr8BiPlanarFullRange: number;
 
 declare const kCVPixelFormatType_Lossless_420YpCbCr8BiPlanarVideoRange: number;
+
+declare const kCVPixelFormatType_Lossless_422YpCbCr10PackedBiPlanarVideoRange: number;
+
+declare const kCVPixelFormatType_Lossy_32BGRA: number;
+
+declare const kCVPixelFormatType_Lossy_420YpCbCr10PackedBiPlanarVideoRange: number;
+
+declare const kCVPixelFormatType_Lossy_420YpCbCr8BiPlanarFullRange: number;
+
+declare const kCVPixelFormatType_Lossy_420YpCbCr8BiPlanarVideoRange: number;
+
+declare const kCVPixelFormatType_Lossy_422YpCbCr10PackedBiPlanarVideoRange: number;
 
 declare const kCVPixelFormatType_OneComponent10: number;
 

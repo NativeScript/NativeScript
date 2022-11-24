@@ -74,10 +74,30 @@ class UIViewControllerImpl extends UIViewController {
 
 	public isBackstackSkipped: boolean;
 	public isBackstackCleared: boolean;
+	// this is initialized in initWithOwner since the constructor doesn't run on native classes
+	private _isRunningLayout: number;
+	private get isRunningLayout() {
+		return this._isRunningLayout !== 0;
+	}
+	private startRunningLayout() {
+		this._isRunningLayout++;
+	}
+	private finishRunningLayout() {
+		this._isRunningLayout--;
+	}
+	private runLayout(cb: () => void) {
+		try {
+			this.startRunningLayout();
+			cb();
+		} finally {
+			this.finishRunningLayout();
+		}
+	}
 
 	public static initWithOwner(owner: WeakRef<Page>): UIViewControllerImpl {
 		const controller = <UIViewControllerImpl>UIViewControllerImpl.new();
 		controller._owner = owner;
+		controller._isRunningLayout = 0;
 
 		return controller;
 	}
@@ -98,13 +118,6 @@ class UIViewControllerImpl extends UIViewController {
 		}
 
 		const frame = this.navigationController ? (<any>this.navigationController).owner : null;
-		const newEntry = this[ENTRY];
-
-		// Don't raise event if currentPage was showing modal page.
-		if (!owner._presentedViewController && newEntry && (!frame || frame.currentPage !== owner)) {
-			const isBack = isBackNavigationTo(owner, newEntry);
-			owner.onNavigatingTo(newEntry.entry.context, isBack, newEntry.entry.bindingContext);
-		}
 
 		if (frame) {
 			if (!owner.parent) {
@@ -254,7 +267,19 @@ class UIViewControllerImpl extends UIViewController {
 		}
 	}
 
+	public viewSafeAreaInsetsDidChange(): void {
+		super.viewSafeAreaInsetsDidChange();
+		if (this.isRunningLayout) {
+			return;
+		}
+		const owner = this._owner.get();
+		if (owner) {
+			this.runLayout(() => IOSHelper.layoutView(this, owner));
+		}
+	}
+
 	public viewDidLayoutSubviews(): void {
+		this.startRunningLayout();
 		super.viewDidLayoutSubviews();
 		const owner = this._owner.get();
 		if (owner) {
@@ -279,11 +304,17 @@ class UIViewControllerImpl extends UIViewController {
 
 				if (frameParent) {
 					const parentPageInsetsTop = frameParent.nativeViewProtected.safeAreaInsets.top;
-					const currentInsetsTop = this.view.safeAreaInsets.top;
-					const additionalInsetsTop = Math.max(parentPageInsetsTop - currentInsetsTop, 0);
-
 					const parentPageInsetsBottom = frameParent.nativeViewProtected.safeAreaInsets.bottom;
-					const currentInsetsBottom = this.view.safeAreaInsets.bottom;
+					let currentInsetsTop = this.view.safeAreaInsets.top;
+					let currentInsetsBottom = this.view.safeAreaInsets.bottom;
+
+					// Safe area insets include additional safe area insets too, so subtract old values
+					if (this.additionalSafeAreaInsets) {
+						currentInsetsTop -= this.additionalSafeAreaInsets.top;
+						currentInsetsBottom -= this.additionalSafeAreaInsets.bottom;
+					}
+
+					const additionalInsetsTop = Math.max(parentPageInsetsTop - currentInsetsTop, 0);
 					const additionalInsetsBottom = Math.max(parentPageInsetsBottom - currentInsetsBottom, 0);
 
 					if (additionalInsetsTop > 0 || additionalInsetsBottom > 0) {
@@ -300,6 +331,7 @@ class UIViewControllerImpl extends UIViewController {
 
 			IOSHelper.layoutView(this, owner);
 		}
+		this.finishRunningLayout();
 	}
 
 	// Mind implementation for other controllerss
@@ -365,6 +397,12 @@ export class Page extends PageBase {
 		return this.viewController.view;
 	}
 
+	disposeNativeView() {
+		this.viewController = null;
+		this._ios = null;
+		super.disposeNativeView();
+	}
+
 	// @ts-ignore
 	get ios(): UIViewController {
 		return this._ios;
@@ -395,7 +433,9 @@ export class Page extends PageBase {
 	updateWithWillAppear(animated: boolean) {
 		// this method is important because it allows plugins to react to modal page close
 		// for example allowing updating status bar background color
-		this.actionBar.update();
+		if (this.hasActionBar) {
+			this.actionBar.update();
+		}
 		this.updateStatusBar();
 	}
 
@@ -434,7 +474,7 @@ export class Page extends PageBase {
 		const height = layout.getMeasureSpecSize(heightMeasureSpec);
 		const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
-		if (this.frame && this.frame._getNavBarVisible(this)) {
+		if (this.hasActionBar && this.frame && this.frame._getNavBarVisible(this)) {
 			const { width, height } = this.actionBar._getActualSize;
 			const widthSpec = layout.makeMeasureSpec(width, layout.EXACTLY);
 			const heightSpec = layout.makeMeasureSpec(height, layout.EXACTLY);
@@ -453,8 +493,10 @@ export class Page extends PageBase {
 	}
 
 	public onLayout(left: number, top: number, right: number, bottom: number) {
-		const { width: actionBarWidth, height: actionBarHeight } = this.actionBar._getActualSize;
-		View.layoutChild(this, this.actionBar, 0, 0, actionBarWidth, actionBarHeight);
+		if (this.hasActionBar) {
+			const { width: actionBarWidth, height: actionBarHeight } = this.actionBar._getActualSize;
+			View.layoutChild(this, this.actionBar, 0, 0, actionBarWidth, actionBarHeight);
+		}
 
 		const insets = this.getSafeAreaInsets();
 
@@ -474,7 +516,7 @@ export class Page extends PageBase {
 
 	public _addViewToNativeVisualTree(child: View, atIndex: number): boolean {
 		// ActionBar is handled by the UINavigationController
-		if (child === this.actionBar) {
+		if (this.hasActionBar && child === this.actionBar) {
 			return true;
 		}
 
@@ -506,7 +548,7 @@ export class Page extends PageBase {
 
 	public _removeViewFromNativeVisualTree(child: View): void {
 		// ActionBar is handled by the UINavigationController
-		if (child === this.actionBar) {
+		if (this.hasActionBar && child === this.actionBar) {
 			return;
 		}
 

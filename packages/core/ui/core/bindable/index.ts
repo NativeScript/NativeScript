@@ -8,10 +8,9 @@ import { addWeakEventListener, removeWeakEventListener } from '../weak-event-lis
 import { bindingConstants, parentsRegex } from '../../builder/binding-builder';
 import { escapeRegexSymbols } from '../../../utils';
 import { Trace } from '../../../trace';
+import { parseExpression, convertExpressionToValue } from './bindable-expressions';
 import * as types from '../../../utils/types';
 import * as bindableResources from './bindable-resources';
-const polymerExpressions = require('../../../js-libs/polymer-expressions');
-import { PolymerExpressions } from '../../../js-libs/polymer-expressions';
 
 const contextKey = 'context';
 // this regex is used to get parameters inside [] for example:
@@ -164,9 +163,9 @@ export class Binding {
 
 		this.propertyChangeListeners.clear();
 
-		if (this.source) {
-			this.source.clear();
-		}
+		// if (this.source) {
+		// 	this.source.clear();
+		// }
 
 		if (this.sourceOptions) {
 			this.sourceOptions.instance.clear();
@@ -346,8 +345,7 @@ export class Binding {
 		if (__UI_USE_EXTERNAL_RENDERER__) {
 		} else if (this.options.expression) {
 			const changedModel = {};
-			changedModel[bc.bindingValueKey] = value;
-			changedModel[bc.newPropertyValueKey] = value;
+			const targetInstance = this.target.get();
 			let sourcePropertyName = '';
 			if (this.sourceOptions) {
 				sourcePropertyName = this.sourceOptions.property;
@@ -355,12 +353,18 @@ export class Binding {
 				sourcePropertyName = this.options.sourceProperty;
 			}
 
+			const updateExpression = this.prepareExpressionForUpdate();
+			this.prepareContextForExpression(targetInstance, changedModel, updateExpression);
+
+			/**
+			 * Wait for 'prepareContextForExpression' to assign keys first and override any possible occurences.
+			 * For example, 'bindingValueKey' key can result in a circular reference if it's set in both cases.
+			 */
+			changedModel[bc.bindingValueKey] = value;
+			changedModel[bc.newPropertyValueKey] = value;
 			if (sourcePropertyName !== '') {
 				changedModel[sourcePropertyName] = value;
 			}
-
-			const updateExpression = this.prepareExpressionForUpdate();
-			this.prepareContextForExpression(changedModel, updateExpression, undefined);
 
 			const expressionValue = this._getExpressionValue(updateExpression, true, changedModel);
 			if (expressionValue instanceof Error) {
@@ -374,13 +378,22 @@ export class Binding {
 	}
 
 	private _getExpressionValue(expression: string, isBackConvert: boolean, changedModel: any): any {
+		let result: any = null;
+
 		if (!__UI_USE_EXTERNAL_RENDERER__) {
+			let context;
+			const targetInstance = this.target.get();
+			const addedProps = [];
 			try {
-				const exp = PolymerExpressions.getExpression(expression);
+				let exp;
+				try {
+					exp = parseExpression(expression);
+				} catch (e) {
+					result = new Error(e + ' at ' + targetInstance);
+				}
+
 				if (exp) {
-					const context = (this.source && this.source.get && this.source.get()) || global;
-					const model = {};
-					const addedProps = [];
+					context = (this.source && this.source.get && this.source.get()) || global;
 					const resources = bindableResources.get();
 					for (const prop in resources) {
 						if (resources.hasOwnProperty(prop) && !context.hasOwnProperty(prop)) {
@@ -389,26 +402,25 @@ export class Binding {
 						}
 					}
 
-					this.prepareContextForExpression(context, expression, addedProps);
-					model[contextKey] = context;
-					const result = exp.getValue(model, isBackConvert, changedModel ? changedModel : model);
-					// clear added props
-					const addedPropsLength = addedProps.length;
-					for (let i = 0; i < addedPropsLength; i++) {
-						delete context[addedProps[i]];
+					// For expressions, there are also cases when binding must be updated after component is loaded (e.g. ListView)
+					if (this.prepareContextForExpression(targetInstance, context, expression, addedProps)) {
+						result = convertExpressionToValue(exp, context, isBackConvert, changedModel ? changedModel : context);
+					} else {
+						targetInstance.off('loaded', this.loadedHandlerVisualTreeBinding, this);
+						targetInstance.on('loaded', this.loadedHandlerVisualTreeBinding, this);
 					}
-					addedProps.length = 0;
-
-					return result;
 				}
-
-				return new Error(expression + ' is not a valid expression.');
 			} catch (e) {
-				const errorMessage = 'Run-time error occured in file: ' + e.sourceURL + ' at line: ' + e.line + ' and column: ' + e.column;
-
-				return new Error(errorMessage);
+				result = new Error(e + ' at ' + targetInstance);
 			}
+
+			// Clear added props
+			for (let prop of addedProps) {
+				delete context[prop];
+			}
+			addedProps.length = 0;
 		}
+		return result;
 	}
 
 	public onSourcePropertyChanged(data: PropertyChangeData) {
@@ -472,24 +484,22 @@ export class Binding {
 		}
 	}
 
-	private prepareContextForExpression(model: Object, expression: string, newProps: Array<string>) {
+	private prepareContextForExpression(target: any, model: Object, expression: string, addedProps = []) {
+		let success = true;
 		let parentViewAndIndex: { view: ViewBase; index: number };
 		let parentView;
-		const addedProps = newProps || [];
 		let expressionCP = expression;
 		if (expressionCP.indexOf(bc.bindingValueKey) > -1) {
 			model[bc.bindingValueKey] = model;
 			addedProps.push(bc.bindingValueKey);
 		}
 
-		let success = true;
-
 		const parentsArray = expressionCP.match(parentsRegex);
 		if (parentsArray) {
 			for (let i = 0; i < parentsArray.length; i++) {
 				// This prevents later checks to mistake $parents[] for $parent
 				expressionCP = expressionCP.replace(parentsArray[i], '');
-				parentViewAndIndex = this.getParentView(this.target.get(), parentsArray[i]);
+				parentViewAndIndex = this.getParentView(target, parentsArray[i]);
 				if (parentViewAndIndex.view) {
 					model[bc.parentsValueKey] = model[bc.parentsValueKey] || {};
 					model[bc.parentsValueKey][parentViewAndIndex.index] = parentViewAndIndex.view.bindingContext;
@@ -501,7 +511,7 @@ export class Binding {
 		}
 
 		if (expressionCP.indexOf(bc.parentValueKey) > -1) {
-			parentView = this.getParentView(this.target.get(), bc.parentValueKey).view;
+			parentView = this.getParentView(target, bc.parentValueKey).view;
 			if (parentView) {
 				model[bc.parentValueKey] = parentView.bindingContext;
 				addedProps.push(bc.parentValueKey);
@@ -509,13 +519,7 @@ export class Binding {
 				success = false;
 			}
 		}
-
-		// For expressions, there are also cases when binding must be updated after component is loaded (e.g. ListView)
-		if (!success) {
-			const targetInstance = this.target.get();
-			targetInstance.off('loaded', this.loadedHandlerVisualTreeBinding, this);
-			targetInstance.on('loaded', this.loadedHandlerVisualTreeBinding, this);
-		}
+		return success;
 	}
 
 	private getSourcePropertyValue() {

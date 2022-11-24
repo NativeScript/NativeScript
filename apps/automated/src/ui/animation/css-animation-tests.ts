@@ -73,7 +73,7 @@ export function test_ReadIterations() {
 	let animation = createAnimationFromCSS('.test { animation-iteration-count: 5; }', 'test');
 	TKUnit.assertEqual(animation.iterations, 5);
 	animation = createAnimationFromCSS('.test { animation-iteration-count: infinite; }', 'test');
-	TKUnit.assertEqual(animation.iterations, Number.MAX_VALUE);
+	TKUnit.assertEqual(animation.iterations, Number.POSITIVE_INFINITY);
 }
 
 export function test_ReadFillMode() {

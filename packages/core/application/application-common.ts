@@ -22,6 +22,8 @@ export function hasLaunched(): boolean {
 export const launchEvent = 'launch';
 export const suspendEvent = 'suspend';
 export const displayedEvent = 'displayed';
+export const backgroundEvent = 'background';
+export const foregroundEvent = 'foreground';
 export const resumeEvent = 'resume';
 export const exitEvent = 'exit';
 export const lowMemoryEvent = 'lowMemory';
@@ -166,6 +168,16 @@ export function systemAppearanceChanged(rootView: View, newSystemAppearance: 'da
 	rootModalViews.forEach((rootModalView) => {
 		applyCssClass(rootModalView, SYSTEM_APPEARANCE_CSS_CLASSES, newSystemAppearanceCssClass);
 	});
+}
+
+export let inBackground = false;
+export let suspended = false;
+
+export function setInBackground(value: boolean): void {
+	inBackground = value;
+}
+export function setSuspended(value: boolean): void {
+	suspended = value;
 }
 
 global.__onUncaughtError = function (error: NativeScriptError) {

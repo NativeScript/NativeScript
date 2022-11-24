@@ -37,7 +37,7 @@ public class BoxShadowDrawable extends LayerDrawable {
 
 	protected float[] currentCornerRadii;
 
-	public BoxShadowDrawable(Drawable wrappedDrawable, String value)  {
+	public BoxShadowDrawable(Drawable wrappedDrawable, String value) {
 		super(new Drawable[]{});
 
 		Log.d(TAG, "Constructing BoxShadowDrawable!");
@@ -71,7 +71,7 @@ public class BoxShadowDrawable extends LayerDrawable {
 			float[] outerRadius;
 
 			// if we are wrapping a BorderDrawable - we can get the radii from it
-			if(wrappedLayer instanceof BorderDrawable) {
+			if (wrappedLayer instanceof BorderDrawable) {
 				BorderDrawable b = (BorderDrawable) wrappedLayer;
 				outerRadius = new float[]{
 					b.getBorderTopLeftRadius(),
@@ -90,13 +90,14 @@ public class BoxShadowDrawable extends LayerDrawable {
 				int cornerRadius = 0;
 				try {
 					cornerRadius = config.getInt("cornerRadius");
-				} catch (JSONException ignore) {}
+				} catch (JSONException ignore) {
+				}
 
 				outerRadius = new float[8];
 				Arrays.fill(outerRadius, cornerRadius);
 			}
 
-			if(!Arrays.equals(outerRadius, currentCornerRadii)) {
+			if (!Arrays.equals(outerRadius, currentCornerRadii)) {
 				Log.d(TAG, "Update layer shape");
 				shadowLayer.setShape(new RoundRectShape(outerRadius, null, null));
 				overlayLayer.setShape(new RoundRectShape(outerRadius, null, null));

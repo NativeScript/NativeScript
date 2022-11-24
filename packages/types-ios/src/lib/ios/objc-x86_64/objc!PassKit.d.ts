@@ -5,7 +5,11 @@ declare class PKAddCarKeyPassConfiguration extends PKAddSecureElementPassConfigu
 
 	static new(): PKAddCarKeyPassConfiguration; // inherited from NSObject
 
+	manufacturerIdentifier: string;
+
 	password: string;
+
+	provisioningTemplateIdentifier: string;
 
 	supportedRadioTechnologies: PKRadioTechnology;
 }
@@ -193,7 +197,9 @@ declare const enum PKAddSecureElementPassErrorCode {
 
 	DeviceNotSupportedError = 4,
 
-	DeviceNotReadyError = 5
+	DeviceNotReadyError = 5,
+
+	OSVersionNotSupportedError = 6
 }
 
 declare var PKAddSecureElementPassErrorDomain: string;
@@ -215,7 +221,7 @@ declare class PKAddSecureElementPassViewController extends UIViewController {
 
 interface PKAddSecureElementPassViewControllerDelegate extends NSObjectProtocol {
 
-	addSecureElementPassViewControllerDidFinishAddingSecureElementPassError(controller: PKAddSecureElementPassViewController, pass: PKSecureElementPass, error: NSError): void;
+	addSecureElementPassViewControllerDidFinishAddingSecureElementPassError?(controller: PKAddSecureElementPassViewController, pass: PKSecureElementPass, error: NSError): void;
 
 	addSecureElementPassViewControllerDidFinishAddingSecureElementPassesError(controller: PKAddSecureElementPassViewController, passes: NSArray<PKSecureElementPass> | PKSecureElementPass[], error: NSError): void;
 }
@@ -227,6 +233,8 @@ declare var PKAddSecureElementPassViewControllerDelegate: {
 declare class PKAddShareablePassConfiguration extends PKAddSecureElementPassConfiguration {
 
 	static alloc(): PKAddShareablePassConfiguration; // inherited from NSObject
+
+	static configurationForPassMetadataPrimaryActionCompletion(passMetadata: NSArray<PKShareablePassMetadata> | PKShareablePassMetadata[], action: PKAddShareablePassConfigurationPrimaryAction, completion: (p1: PKAddShareablePassConfiguration, p2: NSError) => void): void;
 
 	static configurationForPassMetadataProvisioningPolicyIdentifierPrimaryActionCompletion(passMetadata: NSArray<PKShareablePassMetadata> | PKShareablePassMetadata[], provisioningPolicyIdentifier: string, action: PKAddShareablePassConfigurationPrimaryAction, completion: (p1: PKAddShareablePassConfiguration, p2: NSError) => void): void;
 
@@ -272,6 +280,40 @@ declare const enum PKAutomaticPassPresentationSuppressionResult {
 	Cancelled = 3,
 
 	Success = 4
+}
+
+declare class PKAutomaticReloadPaymentRequest extends NSObject {
+
+	static alloc(): PKAutomaticReloadPaymentRequest; // inherited from NSObject
+
+	static new(): PKAutomaticReloadPaymentRequest; // inherited from NSObject
+
+	automaticReloadBilling: PKAutomaticReloadPaymentSummaryItem;
+
+	billingAgreement: string;
+
+	managementURL: NSURL;
+
+	paymentDescription: string;
+
+	tokenNotificationURL: NSURL;
+
+	constructor(o: { paymentDescription: string; automaticReloadBilling: PKAutomaticReloadPaymentSummaryItem; managementURL: NSURL; });
+
+	initWithPaymentDescriptionAutomaticReloadBillingManagementURL(paymentDescription: string, automaticReloadBilling: PKAutomaticReloadPaymentSummaryItem, managementURL: NSURL): this;
+}
+
+declare class PKAutomaticReloadPaymentSummaryItem extends PKPaymentSummaryItem {
+
+	static alloc(): PKAutomaticReloadPaymentSummaryItem; // inherited from NSObject
+
+	static new(): PKAutomaticReloadPaymentSummaryItem; // inherited from NSObject
+
+	static summaryItemWithLabelAmount(label: string, amount: NSDecimalNumber): PKAutomaticReloadPaymentSummaryItem; // inherited from PKPaymentSummaryItem
+
+	static summaryItemWithLabelAmountType(label: string, amount: NSDecimalNumber, type: PKPaymentSummaryItemType): PKAutomaticReloadPaymentSummaryItem; // inherited from PKPaymentSummaryItem
+
+	thresholdAmount: NSDecimalNumber;
 }
 
 declare const enum PKBarcodeEventConfigurationDataType {
@@ -492,6 +534,272 @@ declare var PKEncryptionSchemeECC_V2: string;
 
 declare var PKEncryptionSchemeRSA_V2: string;
 
+declare class PKIdentityAuthorizationController extends NSObject {
+
+	static alloc(): PKIdentityAuthorizationController; // inherited from NSObject
+
+	static new(): PKIdentityAuthorizationController; // inherited from NSObject
+
+	cancelRequest(): void;
+
+	checkCanRequestDocumentCompletion(descriptor: PKIdentityDocumentDescriptor, completion: (p1: boolean) => void): void;
+
+	requestDocumentCompletion(request: PKIdentityRequest, completion: (p1: PKIdentityDocument, p2: NSError) => void): void;
+}
+
+declare class PKIdentityButton extends UIControl {
+
+	static alloc(): PKIdentityButton; // inherited from NSObject
+
+	static appearance(): PKIdentityButton; // inherited from UIAppearance
+
+	static appearanceForTraitCollection(trait: UITraitCollection): PKIdentityButton; // inherited from UIAppearance
+
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): PKIdentityButton; // inherited from UIAppearance
+
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): PKIdentityButton; // inherited from UIAppearance
+
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): PKIdentityButton; // inherited from UIAppearance
+
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): PKIdentityButton; // inherited from UIAppearance
+
+	static buttonWithLabelStyle(label: PKIdentityButtonLabel, style: PKIdentityButtonStyle): PKIdentityButton;
+
+	static new(): PKIdentityButton; // inherited from NSObject
+
+	cornerRadius: number;
+
+	constructor(o: { label: PKIdentityButtonLabel; style: PKIdentityButtonStyle; });
+
+	initWithLabelStyle(label: PKIdentityButtonLabel, style: PKIdentityButtonStyle): this;
+}
+
+declare const enum PKIdentityButtonLabel {
+
+	VerifyIdentity = 0,
+
+	Verify = 1,
+
+	VerifyAge = 2,
+
+	Continue = 3
+}
+
+declare const enum PKIdentityButtonStyle {
+
+	Black = 0,
+
+	BlackOutline = 1
+}
+
+declare class PKIdentityDocument extends NSObject {
+
+	static alloc(): PKIdentityDocument; // inherited from NSObject
+
+	static new(): PKIdentityDocument; // inherited from NSObject
+
+	readonly encryptedData: NSData;
+
+	readonly rawElements: PKIdentityDocumentRawElements;
+}
+
+declare class PKIdentityDocumentAgeThreshold extends NSObject {
+
+	static alloc(): PKIdentityDocumentAgeThreshold; // inherited from NSObject
+
+	static new(): PKIdentityDocumentAgeThreshold; // inherited from NSObject
+
+	readonly atLeastYearsOld: boolean;
+
+	readonly years: number;
+}
+
+interface PKIdentityDocumentDescriptor extends NSObjectProtocol {
+
+	elements: NSArray<PKIdentityElement>;
+
+	addElementsWithIntentToStore(elements: NSArray<PKIdentityElement> | PKIdentityElement[], intentToStore: PKIdentityIntentToStore): void;
+
+	intentToStoreForElement(element: PKIdentityElement): PKIdentityIntentToStore;
+}
+declare var PKIdentityDocumentDescriptor: {
+
+	prototype: PKIdentityDocumentDescriptor;
+};
+
+declare class PKIdentityDocumentIssuingAuthority extends NSObject {
+
+	static alloc(): PKIdentityDocumentIssuingAuthority; // inherited from NSObject
+
+	static new(): PKIdentityDocumentIssuingAuthority; // inherited from NSObject
+
+	readonly ISOCountryCode: string;
+
+	readonly jurisdiction: string;
+
+	readonly name: string;
+}
+
+declare class PKIdentityDocumentRawElements extends NSObject {
+
+	static alloc(): PKIdentityDocumentRawElements; // inherited from NSObject
+
+	static new(): PKIdentityDocumentRawElements; // inherited from NSObject
+
+	readonly address: CNPostalAddress;
+
+	readonly age: number;
+
+	readonly ageThreshold: PKIdentityDocumentAgeThreshold;
+
+	readonly dateOfBirth: NSDateComponents;
+
+	readonly documentExpirationDate: NSDateComponents;
+
+	readonly documentIssueDate: NSDateComponents;
+
+	readonly documentNumber: string;
+
+	readonly issuingAuthority: PKIdentityDocumentIssuingAuthority;
+
+	readonly name: NSPersonNameComponents;
+
+	readonly portraitImageData: NSData;
+}
+
+declare class PKIdentityDriversLicenseDescriptor extends NSObject implements PKIdentityDocumentDescriptor {
+
+	static alloc(): PKIdentityDriversLicenseDescriptor; // inherited from NSObject
+
+	static new(): PKIdentityDriversLicenseDescriptor; // inherited from NSObject
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly elements: NSArray<PKIdentityElement>; // inherited from PKIdentityDocumentDescriptor
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	addElementsWithIntentToStore(elements: NSArray<PKIdentityElement> | PKIdentityElement[], intentToStore: PKIdentityIntentToStore): void;
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	intentToStoreForElement(element: PKIdentityElement): PKIdentityIntentToStore;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
+declare class PKIdentityElement extends NSObject implements NSCopying {
+
+	static ageThresholdElementWithAge(age: number): PKIdentityElement;
+
+	static alloc(): PKIdentityElement; // inherited from NSObject
+
+	static new(): PKIdentityElement; // inherited from NSObject
+
+	static readonly addressElement: PKIdentityElement;
+
+	static readonly ageElement: PKIdentityElement;
+
+	static readonly dateOfBirthElement: PKIdentityElement;
+
+	static readonly documentExpirationDateElement: PKIdentityElement;
+
+	static readonly documentIssueDateElement: PKIdentityElement;
+
+	static readonly documentNumberElement: PKIdentityElement;
+
+	static readonly drivingPrivilegesElement: PKIdentityElement;
+
+	static readonly familyNameElement: PKIdentityElement;
+
+	static readonly givenNameElement: PKIdentityElement;
+
+	static readonly issuingAuthorityElement: PKIdentityElement;
+
+	static readonly portraitElement: PKIdentityElement;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare const enum PKIdentityError {
+
+	Unknown = 1,
+
+	NotEntitled = 2,
+
+	Cancelled = 3,
+
+	NetworkUnavailable = 4,
+
+	NoElementsRequested = 5,
+
+	RequestAlreadyInProgress = 6,
+
+	InvalidNonce = 7,
+
+	InvalidElement = 8,
+
+	InvalidMerchantID = 9,
+
+	NotSupported = 10
+}
+
+declare var PKIdentityErrorDomain: string;
+
+declare class PKIdentityIntentToStore extends NSObject implements NSCopying {
+
+	static alloc(): PKIdentityIntentToStore; // inherited from NSObject
+
+	static mayStoreIntentForDays(days: number): PKIdentityIntentToStore;
+
+	static new(): PKIdentityIntentToStore; // inherited from NSObject
+
+	static readonly mayStoreIntent: PKIdentityIntentToStore;
+
+	static readonly willNotStoreIntent: PKIdentityIntentToStore;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare class PKIdentityRequest extends NSObject {
+
+	static alloc(): PKIdentityRequest; // inherited from NSObject
+
+	static new(): PKIdentityRequest; // inherited from NSObject
+
+	descriptor: PKIdentityDocumentDescriptor;
+
+	merchantIdentifier: string;
+
+	nonce: NSData;
+}
+
 interface PKIssuerProvisioningExtensionAuthorizationProviding extends NSObjectProtocol {
 
 	completionHandler: (p1: PKIssuerProvisioningExtensionAuthorizationResult) => void;
@@ -691,6 +999,8 @@ declare class PKPassLibrary extends NSObject {
 
 	containsPass(pass: PKPass): boolean;
 
+	encryptedServiceProviderDataForSecureElementPassCompletion(secureElementPass: PKSecureElementPass, completion: (p1: NSDictionary<any, any>, p2: NSError) => void): void;
+
 	isPaymentPassActivationAvailable(): boolean;
 
 	openPaymentSetup(): void;
@@ -730,6 +1040,8 @@ declare var PKPassLibraryAddedPassesUserInfoKey: string;
 declare var PKPassLibraryDidChangeNotification: string;
 
 declare var PKPassLibraryPassTypeIdentifierUserInfoKey: string;
+
+declare var PKPassLibraryRecoveredPassesUserInfoKey: string;
 
 declare var PKPassLibraryRemotePaymentPassesDidChangeNotification: string;
 
@@ -832,6 +1144,8 @@ declare class PKPaymentAuthorizationResult extends NSObject {
 	static new(): PKPaymentAuthorizationResult; // inherited from NSObject
 
 	errors: NSArray<NSError>;
+
+	orderDetails: PKPaymentOrderDetails;
 
 	status: PKPaymentAuthorizationStatus;
 
@@ -1084,6 +1398,10 @@ declare const enum PKPaymentMethodType {
 
 declare var PKPaymentNetworkAmex: string;
 
+declare var PKPaymentNetworkBancomat: string;
+
+declare var PKPaymentNetworkBancontact: string;
+
 declare var PKPaymentNetworkBarcode: string;
 
 declare var PKPaymentNetworkCarteBancaire: string;
@@ -1093,6 +1411,8 @@ declare var PKPaymentNetworkCarteBancaires: string;
 declare var PKPaymentNetworkCartesBancaires: string;
 
 declare var PKPaymentNetworkChinaUnionPay: string;
+
+declare var PKPaymentNetworkDankort: string;
 
 declare var PKPaymentNetworkDiscover: string;
 
@@ -1131,6 +1451,25 @@ declare var PKPaymentNetworkVPay: string;
 declare var PKPaymentNetworkVisa: string;
 
 declare var PKPaymentNetworkWaon: string;
+
+declare class PKPaymentOrderDetails extends NSObject {
+
+	static alloc(): PKPaymentOrderDetails; // inherited from NSObject
+
+	static new(): PKPaymentOrderDetails; // inherited from NSObject
+
+	authenticationToken: string;
+
+	orderIdentifier: string;
+
+	orderTypeIdentifier: string;
+
+	webServiceURL: NSURL;
+
+	constructor(o: { orderTypeIdentifier: string; orderIdentifier: string; webServiceURL: NSURL; authenticationToken: string; });
+
+	initWithOrderTypeIdentifierOrderIdentifierWebServiceURLAuthenticationToken(orderTypeIdentifier: string, orderIdentifier: string, webServiceURL: NSURL, authenticationToken: string): this;
+}
 
 declare class PKPaymentPass extends PKSecureElementPass {
 
@@ -1176,6 +1515,8 @@ declare class PKPaymentRequest extends NSObject {
 
 	applicationData: NSData;
 
+	automaticReloadPaymentRequest: PKAutomaticReloadPaymentRequest;
+
 	billingAddress: any;
 
 	billingContact: PKContact;
@@ -1190,7 +1531,11 @@ declare class PKPaymentRequest extends NSObject {
 
 	merchantIdentifier: string;
 
+	multiTokenContexts: NSArray<PKPaymentTokenContext>;
+
 	paymentSummaryItems: NSArray<PKPaymentSummaryItem>;
+
+	recurringPaymentRequest: PKRecurringPaymentRequest;
 
 	requiredBillingAddressFields: PKAddressField;
 
@@ -1284,7 +1629,13 @@ declare class PKPaymentRequestUpdate extends NSObject {
 
 	static new(): PKPaymentRequestUpdate; // inherited from NSObject
 
+	automaticReloadPaymentRequest: PKAutomaticReloadPaymentRequest;
+
+	multiTokenContexts: NSArray<PKPaymentTokenContext>;
+
 	paymentSummaryItems: NSArray<PKPaymentSummaryItem>;
+
+	recurringPaymentRequest: PKRecurringPaymentRequest;
 
 	shippingMethods: NSArray<PKShippingMethod>;
 
@@ -1336,6 +1687,27 @@ declare class PKPaymentToken extends NSObject {
 	readonly transactionIdentifier: string;
 }
 
+declare class PKPaymentTokenContext extends NSObject {
+
+	static alloc(): PKPaymentTokenContext; // inherited from NSObject
+
+	static new(): PKPaymentTokenContext; // inherited from NSObject
+
+	amount: NSDecimalNumber;
+
+	externalIdentifier: string;
+
+	merchantDomain: string;
+
+	merchantIdentifier: string;
+
+	merchantName: string;
+
+	constructor(o: { merchantIdentifier: string; externalIdentifier: string; merchantName: string; merchantDomain: string; amount: NSDecimalNumber; });
+
+	initWithMerchantIdentifierExternalIdentifierMerchantNameMerchantDomainAmount(merchantIdentifier: string, externalIdentifier: string, merchantName: string, merchantDomain: string, amount: NSDecimalNumber): this;
+}
+
 declare const enum PKRadioTechnology {
 
 	None = 0,
@@ -1343,6 +1715,29 @@ declare const enum PKRadioTechnology {
 	NFC = 1,
 
 	Bluetooth = 2
+}
+
+declare class PKRecurringPaymentRequest extends NSObject {
+
+	static alloc(): PKRecurringPaymentRequest; // inherited from NSObject
+
+	static new(): PKRecurringPaymentRequest; // inherited from NSObject
+
+	billingAgreement: string;
+
+	managementURL: NSURL;
+
+	paymentDescription: string;
+
+	regularBilling: PKRecurringPaymentSummaryItem;
+
+	tokenNotificationURL: NSURL;
+
+	trialBilling: PKRecurringPaymentSummaryItem;
+
+	constructor(o: { paymentDescription: string; regularBilling: PKRecurringPaymentSummaryItem; managementURL: NSURL; });
+
+	initWithPaymentDescriptionRegularBillingManagementURL(paymentDescription: string, regularBilling: PKRecurringPaymentSummaryItem, managementURL: NSURL): this;
 }
 
 declare class PKRecurringPaymentSummaryItem extends PKPaymentSummaryItem {
@@ -1398,15 +1793,61 @@ declare const enum PKSecureElementPassActivationState {
 	Deactivated = 4
 }
 
+declare const enum PKShareSecureElementPassErrorCode {
+
+	UnknownError = 0,
+
+	SetupError = 1
+}
+
+declare var PKShareSecureElementPassErrorDomain: string;
+
+declare const enum PKShareSecureElementPassResult {
+
+	Canceled = 0,
+
+	Shared = 1,
+
+	Failed = 2
+}
+
+declare class PKShareSecureElementPassViewController extends UIViewController {
+
+	static alloc(): PKShareSecureElementPassViewController; // inherited from NSObject
+
+	static new(): PKShareSecureElementPassViewController; // inherited from NSObject
+
+	delegate: PKShareSecureElementPassViewControllerDelegate;
+
+	promptToShareURL: boolean;
+
+	constructor(o: { secureElementPass: PKSecureElementPass; delegate: PKShareSecureElementPassViewControllerDelegate; });
+
+	initWithSecureElementPassDelegate(pass: PKSecureElementPass, delegate: PKShareSecureElementPassViewControllerDelegate): this;
+}
+
+interface PKShareSecureElementPassViewControllerDelegate extends NSObjectProtocol {
+
+	shareSecureElementPassViewControllerDidCreateShareURLActivationCode?(controller: PKShareSecureElementPassViewController, universalShareURL: NSURL, activationCode: string): void;
+
+	shareSecureElementPassViewControllerDidFinishWithResult(controller: PKShareSecureElementPassViewController, result: PKShareSecureElementPassResult): void;
+}
+declare var PKShareSecureElementPassViewControllerDelegate: {
+
+	prototype: PKShareSecureElementPassViewControllerDelegate;
+};
+
 declare class PKShareablePassMetadata extends NSObject {
 
 	static alloc(): PKShareablePassMetadata; // inherited from NSObject
 
 	static new(): PKShareablePassMetadata; // inherited from NSObject
 
-	readonly accountHash: string;
+	accountHash: string;
 
 	readonly cardConfigurationIdentifier: string;
+
+	readonly cardTemplateIdentifier: string;
 
 	readonly credentialIdentifier: string;
 
@@ -1416,9 +1857,13 @@ declare class PKShareablePassMetadata extends NSObject {
 
 	readonly passThumbnailImage: any;
 
-	readonly relyingPartyIdentifier: string;
+	readonly preview: PKShareablePassMetadataPreview;
 
-	readonly requiresUnifiedAccessCapableDevice: boolean;
+	relyingPartyIdentifier: string;
+
+	requiresUnifiedAccessCapableDevice: boolean;
+
+	serverEnvironmentIdentifier: string;
 
 	readonly sharingInstanceIdentifier: string;
 
@@ -1426,11 +1871,46 @@ declare class PKShareablePassMetadata extends NSObject {
 
 	constructor(o: { provisioningCredentialIdentifier: string; cardConfigurationIdentifier: string; sharingInstanceIdentifier: string; passThumbnailImage: any; ownerDisplayName: string; localizedDescription: string; });
 
+	constructor(o: { provisioningCredentialIdentifier: string; sharingInstanceIdentifier: string; cardConfigurationIdentifier: string; preview: PKShareablePassMetadataPreview; });
+
+	constructor(o: { provisioningCredentialIdentifier: string; sharingInstanceIdentifier: string; cardTemplateIdentifier: string; preview: PKShareablePassMetadataPreview; });
+
 	constructor(o: { provisioningCredentialIdentifier: string; sharingInstanceIdentifier: string; passThumbnailImage: any; ownerDisplayName: string; localizedDescription: string; accountHash: string; templateIdentifier: string; relyingPartyIdentifier: string; requiresUnifiedAccessCapableDevice: boolean; });
 
 	initWithProvisioningCredentialIdentifierCardConfigurationIdentifierSharingInstanceIdentifierPassThumbnailImageOwnerDisplayNameLocalizedDescription(credentialIdentifier: string, cardConfigurationIdentifier: string, sharingInstanceIdentifier: string, passThumbnailImage: any, ownerDisplayName: string, localizedDescription: string): this;
 
+	initWithProvisioningCredentialIdentifierSharingInstanceIdentifierCardConfigurationIdentifierPreview(credentialIdentifier: string, sharingInstanceIdentifier: string, templateIdentifier: string, preview: PKShareablePassMetadataPreview): this;
+
+	initWithProvisioningCredentialIdentifierSharingInstanceIdentifierCardTemplateIdentifierPreview(credentialIdentifier: string, sharingInstanceIdentifier: string, templateIdentifier: string, preview: PKShareablePassMetadataPreview): this;
+
 	initWithProvisioningCredentialIdentifierSharingInstanceIdentifierPassThumbnailImageOwnerDisplayNameLocalizedDescriptionAccountHashTemplateIdentifierRelyingPartyIdentifierRequiresUnifiedAccessCapableDevice(credentialIdentifier: string, sharingInstanceIdentifier: string, passThumbnailImage: any, ownerDisplayName: string, localizedDescription: string, accountHash: string, templateIdentifier: string, relyingPartyIdentifier: string, requiresUnifiedAccessCapableDevice: boolean): this;
+}
+
+declare class PKShareablePassMetadataPreview extends NSObject {
+
+	static alloc(): PKShareablePassMetadataPreview; // inherited from NSObject
+
+	static new(): PKShareablePassMetadataPreview; // inherited from NSObject
+
+	static previewWithPassThumbnailLocalizedDescription(passThumbnail: any, description: string): PKShareablePassMetadataPreview;
+
+	static previewWithTemplateIdentifier(templateIdentifier: string): PKShareablePassMetadataPreview;
+
+	readonly localizedDescription: string;
+
+	ownerDisplayName: string;
+
+	readonly passThumbnailImage: any;
+
+	readonly provisioningTemplateIdentifier: string;
+
+	constructor(o: { passThumbnail: any; localizedDescription: string; });
+
+	constructor(o: { templateIdentifier: string; });
+
+	initWithPassThumbnailLocalizedDescription(passThumbnail: any, description: string): this;
+
+	initWithTemplateIdentifier(templateIdentifier: string): this;
 }
 
 declare const enum PKShippingContactEditingMode {
@@ -1536,4 +2016,52 @@ declare class PKTransitPassProperties extends PKStoredValuePassProperties {
 	readonly transitBalance: NSDecimalNumber;
 
 	readonly transitBalanceCurrencyCode: string;
+}
+
+interface PKVehicleConnectionDelegate extends NSObjectProtocol {
+
+	sessionDidChangeConnectionState(newState: PKVehicleConnectionSessionConnectionState): void;
+
+	sessionDidReceiveData(data: NSData): void;
+}
+declare var PKVehicleConnectionDelegate: {
+
+	prototype: PKVehicleConnectionDelegate;
+};
+
+declare const enum PKVehicleConnectionErrorCode {
+
+	Unknown = 0,
+
+	SessionUnableToStart = 1,
+
+	SessionNotActive = 2
+}
+
+declare class PKVehicleConnectionSession extends NSObject {
+
+	static alloc(): PKVehicleConnectionSession; // inherited from NSObject
+
+	static new(): PKVehicleConnectionSession; // inherited from NSObject
+
+	static sessionForPassDelegateCompletion(pass: PKSecureElementPass, delegate: PKVehicleConnectionDelegate, completion: (p1: PKVehicleConnectionSession, p2: NSError) => void): void;
+
+	readonly connectionStatus: PKVehicleConnectionSessionConnectionState;
+
+	readonly delegate: PKVehicleConnectionDelegate;
+
+	invalidate(): void;
+
+	sendDataError(message: NSData): boolean;
+}
+
+declare const enum PKVehicleConnectionSessionConnectionState {
+
+	Disconnected = 0,
+
+	Connected = 1,
+
+	Connecting = 2,
+
+	FailedToConnect = 3
 }

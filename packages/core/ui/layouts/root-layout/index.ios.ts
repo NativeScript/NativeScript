@@ -2,9 +2,16 @@ import { Color } from '../../../color';
 import { View } from '../../core/view';
 import { RootLayoutBase, defaultShadeCoverOptions } from './root-layout-common';
 import { TransitionAnimation, ShadeCoverOptions } from '.';
+import { LinearGradient } from '../../styling/linear-gradient';
+import { ios as iosViewUtils } from '../../utils';
+import { parseLinearGradient } from '../../../css/parser';
 export * from './root-layout-common';
 
 export class RootLayout extends RootLayoutBase {
+	// perf optimization: only create and insert gradients if settings change
+	private _currentGradient: string;
+	private _gradientLayer: CAGradientLayer;
+
 	constructor() {
 		super();
 	}
@@ -27,12 +34,24 @@ export class RootLayout extends RootLayoutBase {
 				...defaultShadeCoverOptions,
 				...shadeOptions,
 			};
-			if (view && view.nativeViewProtected) {
+			if (view?.nativeViewProtected) {
 				const duration = this._convertDurationToSeconds(options.animation?.enterFrom?.duration || defaultShadeCoverOptions.animation.enterFrom.duration);
+
+				if (options.color && options.color.startsWith('linear-gradient')) {
+					if (options.color !== this._currentGradient) {
+						this._currentGradient = options.color;
+						const parsedGradient = parseLinearGradient(options.color);
+						this._gradientLayer = iosViewUtils.drawGradient(view.nativeViewProtected, LinearGradient.parse(parsedGradient.value), 0);
+					}
+				}
 				UIView.animateWithDurationAnimationsCompletion(
 					duration,
 					() => {
-						view.nativeViewProtected.backgroundColor = new Color(options.color).ios;
+						if (this._gradientLayer) {
+							this._gradientLayer.opacity = 1;
+						} else if (options.color && view?.nativeViewProtected) {
+							view.nativeViewProtected.backgroundColor = new Color(options.color).ios;
+						}
 						this._applyAnimationProperties(view, {
 							translateX: 0,
 							translateY: 0,
@@ -71,14 +90,21 @@ export class RootLayout extends RootLayoutBase {
 		});
 	}
 
+	protected _cleanupPlatformShadeCover(): void {
+		this._currentGradient = null;
+		this._gradientLayer = null;
+	}
+
 	private _applyAnimationProperties(view: View, shadeCoverAnimation: TransitionAnimation): void {
-		const translate = CGAffineTransformMakeTranslation(shadeCoverAnimation.translateX, shadeCoverAnimation.translateY);
-		// ios doesn't like scale being 0, default it to a small number greater than 0
-		const scale = CGAffineTransformMakeScale(shadeCoverAnimation.scaleX || 0.1, shadeCoverAnimation.scaleY || 0.1);
-		const rotate = CGAffineTransformMakeRotation((shadeCoverAnimation.rotate * Math.PI) / 180); // convert degress to radians
-		const translateAndScale = CGAffineTransformConcat(translate, scale);
-		view.nativeViewProtected.transform = CGAffineTransformConcat(rotate, translateAndScale);
-		view.nativeViewProtected.alpha = shadeCoverAnimation.opacity;
+		if (view?.nativeViewProtected) {
+			const translate = CGAffineTransformMakeTranslation(shadeCoverAnimation.translateX, shadeCoverAnimation.translateY);
+			// ios doesn't like scale being 0, default it to a small number greater than 0
+			const scale = CGAffineTransformMakeScale(shadeCoverAnimation.scaleX || 0.1, shadeCoverAnimation.scaleY || 0.1);
+			const rotate = CGAffineTransformMakeRotation((shadeCoverAnimation.rotate * Math.PI) / 180); // convert degress to radians
+			const translateAndScale = CGAffineTransformConcat(translate, scale);
+			view.nativeViewProtected.transform = CGAffineTransformConcat(rotate, translateAndScale);
+			view.nativeViewProtected.alpha = shadeCoverAnimation.opacity;
+		}
 	}
 
 	private _convertDurationToSeconds(duration: number): number {

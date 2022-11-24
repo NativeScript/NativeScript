@@ -1,4 +1,4 @@
-import { TextViewBase as TextViewBaseCommon, maxLinesProperty } from './text-view-common';
+import { TextViewBase as TextViewBaseCommon } from './text-view-common';
 import { CSSType } from '../core/view';
 
 export * from '../text-base';
@@ -13,20 +13,6 @@ export class TextView extends TextViewBaseCommon {
 	public resetNativeView(): void {
 		super.resetNativeView();
 		this.nativeTextViewProtected.setGravity(android.view.Gravity.TOP | android.view.Gravity.START);
-	}
-
-	[maxLinesProperty.getDefault](): number {
-		return 0;
-	}
-
-	[maxLinesProperty.setNative](value: number) {
-		if (value <= 0) {
-			this.nativeTextViewProtected.setMaxLines(Number.MAX_VALUE);
-
-			return;
-		}
-
-		this.nativeTextViewProtected.setMaxLines(value);
 	}
 
 	public _onReturnPress() {

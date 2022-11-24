@@ -1,5 +1,5 @@
 {
-  "main": "main.js",
+  "main": "src/main.ts",
   "description": "NativeScript Application",
   "license": "MIT",
   "repository": {
@@ -8,12 +8,13 @@
   },
   "dependencies": {
     "@nativescript/core": "file:../../packages/core",
-    "nativescript-theme-core": "file:../../node_modules/nativescript-theme-core"
+    "nativescript-theme-core": "file:../../node_modules/nativescript-theme-core",
+    "@nativescript/imagepicker": "^1.0.6"
   },
   "devDependencies": {
-    "@nativescript/android": "7.0.1",
-    "@nativescript/ios": "7.2.0",
+    "@nativescript/android": "~8.3.0",
+    "@nativescript/ios": "~8.3.0",
     "@nativescript/webpack": "file:../../dist/packages/nativescript-webpack.tgz",
-    "typescript": "4.1.4"
+    "typescript": "4.8.4"
   }
 }

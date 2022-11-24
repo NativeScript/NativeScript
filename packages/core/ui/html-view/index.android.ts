@@ -1,7 +1,8 @@
 ﻿import { Color } from '../../color';
+import { SDK_VERSION } from '../../utils';
 import { Font } from '../styling/font';
 import { colorProperty, fontSizeProperty, fontInternalProperty } from '../styling/style-properties';
-import { HtmlViewBase, htmlProperty, linkColorProperty } from './html-view-common';
+import { HtmlViewBase, htmlProperty, selectableProperty, linkColorProperty } from './html-view-common';
 
 export * from './html-view-common';
 
@@ -41,7 +42,18 @@ export class HtmlView extends HtmlViewBase {
 			mask = 0;
 		}
 		this.nativeViewProtected.setAutoLinkMask(mask);
-		this.nativeViewProtected.setText(<any>android.text.Html.fromHtml(value));
+		if (SDK_VERSION >= 24) {
+			this.nativeViewProtected.setText(<any>android.text.Html.fromHtml(value, android.text.Html.FROM_HTML_MODE_LEGACY));
+		} else {
+			this.nativeViewProtected.setText(<any>android.text.Html.fromHtml(value));
+		}
+	}
+
+	[selectableProperty.getDefault](): boolean {
+		return true;
+	}
+	[selectableProperty.setNative](value: boolean) {
+		this.nativeViewProtected.setTextIsSelectable(value);
 	}
 
 	[colorProperty.getDefault](): android.content.res.ColorStateList {
@@ -59,7 +71,6 @@ export class HtmlView extends HtmlViewBase {
 		return this.nativeViewProtected.getLinkTextColors();
 	}
 	[linkColorProperty.setNative](value: Color | android.content.res.ColorStateList) {
-		const color = value instanceof Color ? value.android : value;
 		if (value instanceof Color) {
 			this.nativeViewProtected.setLinkTextColor(value.android);
 		} else {

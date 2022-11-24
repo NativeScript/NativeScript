@@ -19,175 +19,162 @@ export * from './tab-view-common';
 const majorVersion = iOSNativeHelper.MajorVersion;
 const isPhone = Device.deviceType === 'Phone';
 
-let UITabBarControllerImpl;
-let UITabBarControllerDelegateImpl;
-let UINavigationControllerDelegateImpl;
+@NativeClass
+class UITabBarControllerImpl extends UITabBarController {
+	private _owner: WeakRef<TabView>;
 
-const setupControllers = function () {
-	if (typeof UITabBarControllerImpl === 'undefined') {
-		@NativeClass
-		class UITabBarControllerClass extends UITabBarController {
-			private _owner: WeakRef<TabView>;
+	public static initWithOwner(owner: WeakRef<TabView>): UITabBarControllerImpl {
+		const handler = <UITabBarControllerImpl>UITabBarControllerImpl.new();
+		handler._owner = owner;
 
-			public static initWithOwner(owner: WeakRef<TabView>): typeof UITabBarControllerImpl {
-				const handler = <typeof UITabBarControllerImpl>UITabBarControllerImpl.new();
-				handler._owner = owner;
+		return handler;
+	}
 
-				return handler;
+	public viewDidLoad(): void {
+		super.viewDidLoad();
+
+		// Unify translucent and opaque bars layout
+		// this.edgesForExtendedLayout = UIRectEdgeBottom;
+		this.extendedLayoutIncludesOpaqueBars = true;
+	}
+
+	@profile
+	public viewWillAppear(animated: boolean): void {
+		super.viewWillAppear(animated);
+		const owner = this._owner.get();
+		if (!owner) {
+			return;
+		}
+
+		IOSHelper.updateAutoAdjustScrollInsets(this, owner);
+
+		if (!owner.parent) {
+			owner.callLoaded();
+		}
+	}
+
+	@profile
+	public viewDidDisappear(animated: boolean): void {
+		super.viewDidDisappear(animated);
+		const owner = this._owner.get();
+		if (owner && !owner.parent && owner.isLoaded && !this.presentedViewController) {
+			owner.callUnloaded();
+		}
+	}
+
+	public viewWillTransitionToSizeWithTransitionCoordinator(size: CGSize, coordinator: UIViewControllerTransitionCoordinator): void {
+		super.viewWillTransitionToSizeWithTransitionCoordinator(size, coordinator);
+		coordinator.animateAlongsideTransitionCompletion(null, () => {
+			const owner = this._owner.get();
+			if (owner && owner.items) {
+				owner.items.forEach((tabItem) => tabItem._updateTitleAndIconPositions());
 			}
+		});
+	}
 
-			public viewDidLoad(): void {
-				super.viewDidLoad();
+	// Mind implementation for other controllers
+	public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
+		super.traitCollectionDidChange(previousTraitCollection);
 
-				// Unify translucent and opaque bars layout
-				// this.edgesForExtendedLayout = UIRectEdgeBottom;
-				this.extendedLayoutIncludesOpaqueBars = true;
-			}
-
-			@profile
-			public viewWillAppear(animated: boolean): void {
-				super.viewWillAppear(animated);
-				const owner = this._owner.get();
-				if (!owner) {
-					return;
-				}
-
-				IOSHelper.updateAutoAdjustScrollInsets(this, owner);
-
-				if (!owner.parent) {
-					owner.callLoaded();
-				}
-			}
-
-			@profile
-			public viewDidDisappear(animated: boolean): void {
-				super.viewDidDisappear(animated);
-				const owner = this._owner.get();
-				if (owner && !owner.parent && owner.isLoaded && !this.presentedViewController) {
-					owner.callUnloaded();
-				}
-			}
-
-			public viewWillTransitionToSizeWithTransitionCoordinator(size: CGSize, coordinator: UIViewControllerTransitionCoordinator): void {
-				super.viewWillTransitionToSizeWithTransitionCoordinator(size, coordinator);
-				coordinator.animateAlongsideTransitionCompletion(null, () => {
-					const owner = this._owner.get();
-					if (owner && owner.items) {
-						owner.items.forEach((tabItem) => tabItem._updateTitleAndIconPositions());
-					}
+		if (majorVersion >= 13) {
+			const owner = this._owner.get();
+			if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+				owner.notify({
+					eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
+					object: owner,
 				});
 			}
-
-			// Mind implementation for other controllers
-			public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
-				super.traitCollectionDidChange(previousTraitCollection);
-
-				if (majorVersion >= 13) {
-					const owner = this._owner.get();
-					if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
-						owner.notify({
-							eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
-							object: owner,
-						});
-					}
-				}
-			}
 		}
-		UITabBarControllerImpl = UITabBarControllerClass;
-
-		@NativeClass
-		class UITabBarControllerDelegateClass extends NSObject implements UITabBarControllerDelegate {
-			public static ObjCProtocols = [UITabBarControllerDelegate];
-
-			private _owner: WeakRef<TabView>;
-
-			public static initWithOwner(owner: WeakRef<TabView>): typeof UITabBarControllerDelegateImpl {
-				const delegate = <typeof UITabBarControllerDelegateImpl>UITabBarControllerDelegateImpl.new();
-				delegate._owner = owner;
-
-				return delegate;
-			}
-
-			public tabBarControllerShouldSelectViewController(tabBarController: UITabBarController, viewController: UIViewController): boolean {
-				if (Trace.isEnabled()) {
-					Trace.write('TabView.delegate.SHOULD_select(' + tabBarController + ', ' + viewController + ');', Trace.categories.Debug);
-				}
-
-				const owner = this._owner.get();
-				if (owner) {
-					// "< More" cannot be visible after clicking on the main tab bar buttons.
-					const backToMoreWillBeVisible = false;
-					owner._handleTwoNavigationBars(backToMoreWillBeVisible);
-				}
-
-				if ((<any>tabBarController).selectedViewController === viewController) {
-					return false;
-				}
-
-				(<any>tabBarController)._willSelectViewController = viewController;
-
-				return true;
-			}
-
-			public tabBarControllerDidSelectViewController(tabBarController: UITabBarController, viewController: UIViewController): void {
-				if (Trace.isEnabled()) {
-					Trace.write('TabView.delegate.DID_select(' + tabBarController + ', ' + viewController + ');', Trace.categories.Debug);
-				}
-
-				const owner = this._owner.get();
-				if (owner) {
-					owner._onViewControllerShown(viewController);
-				}
-
-				(<any>tabBarController)._willSelectViewController = undefined;
-			}
-		}
-		UITabBarControllerDelegateImpl = UITabBarControllerDelegateClass;
-
-		@NativeClass
-		class UINavigationControllerDelegateClass extends NSObject implements UINavigationControllerDelegate {
-			public static ObjCProtocols = [UINavigationControllerDelegate];
-
-			private _owner: WeakRef<TabView>;
-
-			public static initWithOwner(owner: WeakRef<TabView>): typeof UINavigationControllerDelegateImpl {
-				const delegate = <typeof UINavigationControllerDelegateImpl>UINavigationControllerDelegateImpl.new();
-				delegate._owner = owner;
-
-				return delegate;
-			}
-
-			navigationControllerWillShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
-				if (Trace.isEnabled()) {
-					Trace.write('TabView.moreNavigationController.WILL_show(' + navigationController + ', ' + viewController + ', ' + animated + ');', Trace.categories.Debug);
-				}
-
-				const owner = this._owner.get();
-				if (owner) {
-					// If viewController is one of our tab item controllers, then "< More" will be visible shortly.
-					// Otherwise viewController is the UIMoreListController which shows the list of all tabs beyond the 4th tab.
-					const backToMoreWillBeVisible = owner._ios.viewControllers.containsObject(viewController);
-					owner._handleTwoNavigationBars(backToMoreWillBeVisible);
-				}
-			}
-
-			navigationControllerDidShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
-				if (Trace.isEnabled()) {
-					Trace.write('TabView.moreNavigationController.DID_show(' + navigationController + ', ' + viewController + ', ' + animated + ');', Trace.categories.Debug);
-				}
-				// We don't need Edit button in More screen.
-				navigationController.navigationBar.topItem.rightBarButtonItem = null;
-				const owner = this._owner.get();
-				if (owner) {
-					owner._onViewControllerShown(viewController);
-				}
-			}
-		}
-		UINavigationControllerDelegateImpl = UINavigationControllerDelegateClass;
 	}
-};
+}
 
-setupControllers();
+@NativeClass
+class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControllerDelegate {
+	public static ObjCProtocols = [UITabBarControllerDelegate];
+
+	private _owner: WeakRef<TabView>;
+
+	public static initWithOwner(owner: WeakRef<TabView>): UITabBarControllerDelegateImpl {
+		const delegate = <UITabBarControllerDelegateImpl>UITabBarControllerDelegateImpl.new();
+		delegate._owner = owner;
+
+		return delegate;
+	}
+
+	public tabBarControllerShouldSelectViewController(tabBarController: UITabBarController, viewController: UIViewController): boolean {
+		if (Trace.isEnabled()) {
+			Trace.write('TabView.delegate.SHOULD_select(' + tabBarController + ', ' + viewController + ');', Trace.categories.Debug);
+		}
+
+		const owner = this._owner.get();
+		if (owner) {
+			// "< More" cannot be visible after clicking on the main tab bar buttons.
+			const backToMoreWillBeVisible = false;
+			owner._handleTwoNavigationBars(backToMoreWillBeVisible);
+		}
+
+		if ((<any>tabBarController).selectedViewController === viewController) {
+			return false;
+		}
+
+		(<any>tabBarController)._willSelectViewController = viewController;
+
+		return true;
+	}
+
+	public tabBarControllerDidSelectViewController(tabBarController: UITabBarController, viewController: UIViewController): void {
+		if (Trace.isEnabled()) {
+			Trace.write('TabView.delegate.DID_select(' + tabBarController + ', ' + viewController + ');', Trace.categories.Debug);
+		}
+
+		const owner = this._owner.get();
+		if (owner) {
+			owner._onViewControllerShown(viewController);
+		}
+
+		(<any>tabBarController)._willSelectViewController = undefined;
+	}
+}
+
+@NativeClass
+class UINavigationControllerDelegateImpl extends NSObject implements UINavigationControllerDelegate {
+	public static ObjCProtocols = [UINavigationControllerDelegate];
+
+	private _owner: WeakRef<TabView>;
+
+	public static initWithOwner(owner: WeakRef<TabView>): UINavigationControllerDelegateImpl {
+		const delegate = <UINavigationControllerDelegateImpl>UINavigationControllerDelegateImpl.new();
+		delegate._owner = owner;
+
+		return delegate;
+	}
+
+	navigationControllerWillShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
+		if (Trace.isEnabled()) {
+			Trace.write('TabView.moreNavigationController.WILL_show(' + navigationController + ', ' + viewController + ', ' + animated + ');', Trace.categories.Debug);
+		}
+
+		const owner = this._owner.get();
+		if (owner) {
+			// If viewController is one of our tab item controllers, then "< More" will be visible shortly.
+			// Otherwise viewController is the UIMoreListController which shows the list of all tabs beyond the 4th tab.
+			const backToMoreWillBeVisible = owner._ios.viewControllers.containsObject(viewController);
+			owner._handleTwoNavigationBars(backToMoreWillBeVisible);
+		}
+	}
+
+	navigationControllerDidShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
+		if (Trace.isEnabled()) {
+			Trace.write('TabView.moreNavigationController.DID_show(' + navigationController + ', ' + viewController + ', ' + animated + ');', Trace.categories.Debug);
+		}
+		// We don't need Edit button in More screen.
+		navigationController.navigationBar.topItem.rightBarButtonItem = null;
+		const owner = this._owner.get();
+		if (owner) {
+			owner._onViewControllerShown(viewController);
+		}
+	}
+}
 
 function updateTitleAndIconPositions(tabItem: TabViewItem, tabBarItem: UITabBarItem, controller: UIViewController) {
 	if (!tabItem || !tabBarItem) {
@@ -265,10 +252,13 @@ export class TabViewItem extends TabViewItemBase {
 			const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(title, icon, index);
 			updateTitleAndIconPositions(this, tabBarItem, controller);
 
-			// TODO: Repeating code. Make TabViewItemBase - ViewBase and move the colorProperty on tabViewItem.
-			// Delete the repeating code.
-			const states = getTitleAttributesForStates(parent);
-			applyStatesToItem(tabBarItem, states);
+			// There is no need to request title styles update here in newer versions as styling is handled by bar appearance instance
+			if (majorVersion < 15) {
+				// TODO: Repeating code. Make TabViewItemBase - ViewBase and move the colorProperty on tabViewItem.
+				// Delete the repeating code.
+				const states = getTitleAttributesForStates(parent);
+				applyStatesToItem(tabBarItem, states);
+			}
 			controller.tabBarItem = tabBarItem;
 		}
 	}
@@ -286,11 +276,11 @@ export class TabViewItem extends TabViewItemBase {
 }
 
 export class TabView extends TabViewBase {
-	public viewController: typeof UITabBarControllerImpl;
+	public viewController: UITabBarControllerImpl;
 	public items: TabViewItem[];
-	public _ios: typeof UITabBarControllerImpl;
-	private _delegate: typeof UITabBarControllerDelegateImpl;
-	private _moreNavigationControllerDelegate: typeof UINavigationControllerDelegateImpl;
+	public _ios: UITabBarControllerImpl;
+	private _delegate: UITabBarControllerDelegateImpl;
+	private _moreNavigationControllerDelegate: UINavigationControllerDelegateImpl;
 	private _iconsCache = {};
 
 	constructor() {
@@ -476,12 +466,18 @@ export class TabView extends TabViewBase {
 			const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(item.title || '', icon, i);
 			updateTitleAndIconPositions(item, tabBarItem, controller);
 
-			applyStatesToItem(tabBarItem, states);
+			if (majorVersion < 15) {
+				applyStatesToItem(tabBarItem, states);
+			}
 
 			controller.tabBarItem = tabBarItem;
 			controllers.addObject(controller);
 			(<TabViewItemDefinition>item).canBeLoaded = true;
 		});
+
+		if (majorVersion >= 15) {
+			this.updateBarItemAppearance(<UITabBar>this._ios.tabBar, states);
+		}
 
 		this._ios.viewControllers = controllers;
 		this._ios.customizableViewControllers = null;
@@ -529,8 +525,38 @@ export class TabView extends TabViewBase {
 
 		const tabBar = <UITabBar>this.ios.tabBar;
 		const states = getTitleAttributesForStates(this);
-		for (let i = 0; i < tabBar.items.count; i++) {
-			applyStatesToItem(tabBar.items[i], states);
+		if (majorVersion >= 15) {
+			this.updateBarItemAppearance(tabBar, states);
+		} else {
+			for (let i = 0; i < tabBar.items.count; i++) {
+				applyStatesToItem(tabBar.items[i], states);
+			}
+		}
+	}
+
+	private updateBarItemAppearance(tabBar: UITabBar, states: TabStates) {
+		const appearance = this._getAppearance(tabBar);
+		const itemAppearances = ['stackedLayoutAppearance', 'inlineLayoutAppearance', 'compactInlineLayoutAppearance'];
+		for (let itemAppearance of itemAppearances) {
+			appearance[itemAppearance].normal.titleTextAttributes = states.normalState;
+			appearance[itemAppearance].selected.titleTextAttributes = states.selectedState;
+		}
+		this._updateAppearance(tabBar, appearance);
+	}
+
+	private _getAppearance(tabBar: UITabBar) {
+		if (tabBar.standardAppearance == null) {
+			const appearance = UITabBarAppearance.new();
+			appearance.stackedLayoutAppearance = appearance.inlineLayoutAppearance = appearance.compactInlineLayoutAppearance = UITabBarItemAppearance.new();
+			return appearance;
+		}
+		return tabBar.standardAppearance;
+	}
+
+	private _updateAppearance(tabBar: UITabBar, appearance: UITabBarAppearance) {
+		tabBar.standardAppearance = appearance;
+		if (majorVersion >= 15) {
+			tabBar.scrollEdgeAppearance = appearance;
 		}
 	}
 
@@ -571,7 +597,14 @@ export class TabView extends TabViewBase {
 		return this._ios.tabBar.barTintColor;
 	}
 	[tabBackgroundColorProperty.setNative](value: UIColor | Color) {
-		this._ios.tabBar.barTintColor = value instanceof Color ? value.ios : value;
+		if (majorVersion >= 13) {
+			const appearance = this._getAppearance(this._ios.tabBar);
+			appearance.configureWithDefaultBackground();
+			appearance.backgroundColor = value instanceof Color ? value.ios : value;
+			this._updateAppearance(this._ios.tabBar, appearance);
+		} else {
+			this._ios.tabBar.barTintColor = value instanceof Color ? value.ios : value;
+		}
 	}
 
 	[selectedTabTextColorProperty.getDefault](): UIColor {
@@ -614,23 +647,28 @@ interface TabStates {
 }
 
 function getTitleAttributesForStates(tabView: TabView): TabStates {
-	const result: TabStates = {};
+	const result: TabStates = {
+		normalState: NSMutableDictionary.new(),
+		selectedState: NSMutableDictionary.new(),
+	};
 
-	const defaultTabItemFontSize = 10;
-	const tabItemFontSize = tabView.style.tabTextFontSize || defaultTabItemFontSize;
-	const font: UIFont = (tabView.style.fontInternal || Font.default).getUIFont(UIFont.systemFontOfSize(tabItemFontSize));
-	const tabItemTextColor = tabView.style.tabTextColor;
-	const textColor = tabItemTextColor instanceof Color ? tabItemTextColor.ios : null;
-	result.normalState = { [NSFontAttributeName]: font };
-	if (textColor) {
-		result.normalState[UITextAttributeTextColor] = textColor;
+	const titleFontSize = tabView.style.tabTextFontSize;
+	let font = tabView.style.fontInternal || Font.default;
+	if (titleFontSize != null) {
+		font = font.withFontSize(titleFontSize);
 	}
 
-	const tabSelectedItemTextColor = tabView.style.selectedTabTextColor;
-	const selectedTextColor = tabSelectedItemTextColor instanceof Color ? tabSelectedItemTextColor.ios : null;
-	result.selectedState = { [NSFontAttributeName]: font };
-	if (selectedTextColor) {
-		result.selectedState[UITextAttributeTextColor] = selectedTextColor;
+	const nativeFont: UIFont = font.getUIFont(UIFont.systemFontOfSize(UIFont.labelFontSize));
+	result.normalState.setValueForKey(nativeFont, NSFontAttributeName);
+	result.selectedState.setValueForKey(nativeFont, NSFontAttributeName);
+
+	const titleColor = tabView.style.tabTextColor;
+	if (titleColor instanceof Color) {
+		result.normalState.setValueForKey(titleColor.ios, UITextAttributeTextColor);
+	}
+	const selectedTitleColor = tabView.style.selectedTabTextColor;
+	if (selectedTitleColor instanceof Color) {
+		result.selectedState.setValueForKey(selectedTitleColor.ios, UITextAttributeTextColor);
 	}
 
 	return result;

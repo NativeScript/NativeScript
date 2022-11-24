@@ -1,10 +1,13 @@
-@import '~nativescript-theme-core/css/core.light.css';
-@import './app-platform.css';
+@import 'nativescript-theme-core/css/core.light.css';
+@import './_app-platform.css';
 
 /*
 The following CSS rule changes the font size of all UI
 components that have the btn class name.
 */
+Button {
+    text-transform: none;
+}
 .btn-view-demo {
   background-color: #65ADF1;
   border-radius: 5;
@@ -198,4 +201,24 @@ components that have the btn class name.
 
 .a11y-demo-page .a11y-state-checked {
   a11y-state: checked;
+}
+
+.switch-demo-page Switch.custom-switch {
+    color: #ddd;
+    background-color: #65adf1;
+}
+
+.switch-demo-page Switch.custom-switch:checked {
+    color: #111;
+    background-color: #65adf1;
+}
+
+.switch-demo-page Switch.custom-switch:disabled {
+    color: #777;
+    background-color: #ddd;
+}
+
+.switch-demo-page Switch.custom-switch:disabled:checked {
+    color: #ddd;
+    background-color: #777;
 }

@@ -427,8 +427,8 @@ export class FrameBase extends CustomLayoutView {
 			eventName: Page.navigatingToEvent,
 			object: this,
 			isBack,
-			entry: backstackEntry.entry,
-			fromEntry: this.currentEntry,
+			entry: backstackEntry,
+			fromEntry: this._currentEntry,
 		});
 	}
 
@@ -616,7 +616,7 @@ export class FrameBase extends CustomLayoutView {
 
 		// Fallback
 		if (!context) {
-			return this.legacyLivesync();
+			return this._onLivesyncWithoutContext();
 		}
 
 		return false;
@@ -631,7 +631,7 @@ export class FrameBase extends CustomLayoutView {
 		if (this.currentPage && viewMatchesModuleContext(this.currentPage, context, ['markup', 'script'])) {
 			Trace.write(`Change Handled: Replacing page ${context.path}`, Trace.categories.Livesync);
 
-			// replace current page with a default fade transition
+			// Replace current page with a default fade transition
 			this.replacePage({
 				moduleName: context.path,
 				transition: {
@@ -646,12 +646,12 @@ export class FrameBase extends CustomLayoutView {
 		return false;
 	}
 
-	private legacyLivesync(): boolean {
+	private _onLivesyncWithoutContext(): boolean {
 		// Reset activity/window content when:
 		// + Changes are not handled on View
 		// + There is no ModuleContext
 		if (Trace.isEnabled()) {
-			Trace.write(`${this}._onLivesync()`, Trace.categories.Livesync);
+			Trace.write(`${this}._onLivesyncWithoutContext()`, Trace.categories.Livesync);
 		}
 
 		if (!this._currentEntry || !this._currentEntry.entry) {
@@ -659,26 +659,26 @@ export class FrameBase extends CustomLayoutView {
 		}
 
 		const currentEntry = this._currentEntry.entry;
-		const newEntry: NavigationEntry = {
-			animated: false,
-			clearHistory: true,
-			context: currentEntry.context,
-			create: currentEntry.create,
-			moduleName: currentEntry.moduleName,
-			backstackVisible: currentEntry.backstackVisible,
-		};
 
 		// If create returns the same page instance we can't recreate it.
 		// Instead of navigation set activity content.
 		// This could happen if current page was set in XML as a Page instance.
-		if (newEntry.create) {
-			const page = newEntry.create();
+		if (currentEntry.create) {
+			const page = currentEntry.create();
 			if (page === this.currentPage) {
 				return false;
 			}
 		}
 
-		this.navigate(newEntry);
+		// Replace current page with a default fade transition
+		this.replacePage({
+			moduleName: currentEntry.moduleName,
+			create: currentEntry.create,
+			transition: {
+				name: 'fade',
+				duration: 100,
+			},
+		});
 
 		return true;
 	}

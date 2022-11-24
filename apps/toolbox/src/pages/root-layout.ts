@@ -11,7 +11,7 @@ export class RootLayoutModel extends Observable {
 			view: this.getPopup('#EA5936', 110, -30),
 			options: {
 				shadeCover: {
-					color: '#FFF',
+					color: 'linear-gradient(to bottom, red, blue)',
 					opacity: 0.7,
 					tapToClose: true,
 				},

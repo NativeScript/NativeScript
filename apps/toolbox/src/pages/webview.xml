@@ -1,0 +1,20 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+    <Page.actionBar>
+        <ActionBar title="WebView" class="action-bar">
+        </ActionBar>
+    </Page.actionBar>
+
+    <StackLayout class="p-10">
+        <Label text="iPhone by default plays media content in a webview in full screen, meaning it takes over your whole UI. You can toggle this on and off with a cool new property: iosAllowInlineMediaPlayback" textWrap="true" style="color: gray;" class="m-b-10 v-center text-center" />
+
+        <Label style="color: gray;" textWrap="true" class="m-b-5 text-center" text="This webview plays this youtube content inline." />
+        <GridLayout rows="200" columns="">
+            <WebView iosAllowInlineMediaPlayback="true" src="https://www.youtube.com/embed/Mzy1jWxrSiw" height="200" />
+        </GridLayout>
+        <Label style="color: gray;" textWrap="true" class="m-b-5 m-t-20 text-center" text="This webview forces media content into fullscreen on iPhone." />
+        <GridLayout rows="200" columns="">
+            <WebView src="https://www.youtube.com/embed/Mzy1jWxrSiw" height="200" />
+        </GridLayout>
+
+    </StackLayout>
+</Page>

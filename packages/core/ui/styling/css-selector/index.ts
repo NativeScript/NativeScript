@@ -1,8 +1,9 @@
 import '../../../globals';
+import { isCssVariable } from '../../core/properties';
 import { isNullOrUndefined } from '../../../utils/types';
 
 import * as cssParser from '../../../css';
-import * as parser from '../../../css/parser';
+import { Combinator as ICombinator, SimpleSelectorSequence as ISimpleSelectorSequence, Selector as ISelector, SimpleSelector as ISimpleSelector, parseSelector } from '../../../css/parser';
 
 /**
  * An interface describing the shape of a type on which the selectors may apply.
@@ -10,6 +11,7 @@ import * as parser from '../../../css/parser';
  */
 export interface Node {
 	parent?: Node;
+	_modalParent?: Node;
 
 	id?: string;
 	nodeName?: string;
@@ -383,7 +385,7 @@ export class Selector extends SelectorCore {
 				return !!node;
 			} else {
 				let ancestor = node;
-				while ((ancestor = ancestor.parent)) {
+				while ((ancestor = ancestor.parent ?? ancestor._modalParent)) {
 					if ((node = group.match(ancestor))) {
 						return true;
 					}
@@ -523,10 +525,10 @@ export function fromAstNodes(astRules: cssParser.Node[]): RuleSet[] {
 }
 
 function createDeclaration(decl: cssParser.Declaration): any {
-	return { property: decl.property.toLowerCase(), value: decl.value };
+	return { property: isCssVariable(decl.property) ? decl.property : decl.property.toLowerCase(), value: decl.value };
 }
 
-function createSimpleSelectorFromAst(ast: parser.SimpleSelector): SimpleSelector {
+function createSimpleSelectorFromAst(ast: ISimpleSelector): SimpleSelector {
 	if (ast.type === '.') {
 		return new ClassSelector(ast.identifier);
 	}
@@ -552,7 +554,7 @@ function createSimpleSelectorFromAst(ast: parser.SimpleSelector): SimpleSelector
 	}
 }
 
-function createSimpleSelectorSequenceFromAst(ast: parser.SimpleSelectorSequence): SimpleSelectorSequence | SimpleSelector {
+function createSimpleSelectorSequenceFromAst(ast: ISimpleSelectorSequence): SimpleSelectorSequence | SimpleSelector {
 	if (ast.length === 0) {
 		return new InvalidSelector(new Error('Empty simple selector sequence.'));
 	} else if (ast.length === 1) {
@@ -562,7 +564,7 @@ function createSimpleSelectorSequenceFromAst(ast: parser.SimpleSelectorSequence)
 	}
 }
 
-function createSelectorFromAst(ast: parser.Selector): SimpleSelector | SimpleSelectorSequence | Selector {
+function createSelectorFromAst(ast: ISelector): SimpleSelector | SimpleSelectorSequence | Selector {
 	if (ast.length === 0) {
 		return new InvalidSelector(new Error('Empty selector.'));
 	} else if (ast.length === 1) {
@@ -570,10 +572,10 @@ function createSelectorFromAst(ast: parser.Selector): SimpleSelector | SimpleSel
 	} else {
 		const simpleSelectorSequences = [];
 		let simpleSelectorSequence: SimpleSelectorSequence | SimpleSelector;
-		let combinator: parser.Combinator;
+		let combinator: ICombinator;
 		for (let i = 0; i < ast.length; i++) {
-			simpleSelectorSequence = createSimpleSelectorSequenceFromAst(<parser.SimpleSelectorSequence>ast[i][0]);
-			combinator = <parser.Combinator>ast[i][1];
+			simpleSelectorSequence = createSimpleSelectorSequenceFromAst(<ISimpleSelectorSequence>ast[i][0]);
+			combinator = <ICombinator>ast[i][1];
 			if (combinator) {
 				simpleSelectorSequence.combinator = combinator;
 			}
@@ -586,7 +588,7 @@ function createSelectorFromAst(ast: parser.Selector): SimpleSelector | SimpleSel
 
 export function createSelector(sel: string): SimpleSelector | SimpleSelectorSequence | Selector {
 	try {
-		const parsedSelector = parser.parseSelector(sel);
+		const parsedSelector = parseSelector(sel);
 		if (!parsedSelector) {
 			return new InvalidSelector(new Error('Empty selector'));
 		}
@@ -670,7 +672,7 @@ interface ChangeAccumulator {
 
 export class SelectorsMatch<T extends Node> implements ChangeAccumulator {
 	public changeMap: ChangeMap<T> = new Map<T, Changes>();
-	public selectors;
+	public selectors: SelectorCore[];
 
 	public addAttribute(node: T, attribute: string): void {
 		const deps: Changes = this.properties(node);

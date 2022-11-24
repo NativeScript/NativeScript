@@ -128,11 +128,12 @@ declare namespace NodeJS {
 		rootLayout: any;
 	}
 }
-declare const __DEV__: string;
+declare const __DEV__: boolean;
 declare const __CSS_PARSER__: string;
 declare const __NS_WEBPACK__: boolean;
 declare const __UI_USE_EXTERNAL_RENDERER__: boolean;
 declare const __UI_USE_XML_PARSER__: boolean;
+declare const __USE_TEST_ID__: boolean | undefined;
 declare const __ANDROID__: boolean;
 declare const __IOS__: boolean;
 
@@ -353,6 +354,7 @@ declare class WeakRef<T> {
 	constructor(obj: T);
 	get(): T;
 	clear(): void;
+	deref(): T | undefined;
 }
 
 /**

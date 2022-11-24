@@ -19,6 +19,17 @@ declare class MXAppExitMetric extends MXMetric {
 	readonly foregroundExitData: MXForegroundExitData;
 }
 
+declare class MXAppLaunchDiagnostic extends MXDiagnostic {
+
+	static alloc(): MXAppLaunchDiagnostic; // inherited from NSObject
+
+	static new(): MXAppLaunchDiagnostic; // inherited from NSObject
+
+	readonly callStackTree: MXCallStackTree;
+
+	readonly launchDuration: NSMeasurement<NSUnitDuration>;
+}
+
 declare class MXAppLaunchMetric extends MXMetric {
 
 	static alloc(): MXAppLaunchMetric; // inherited from NSObject
@@ -26,6 +37,10 @@ declare class MXAppLaunchMetric extends MXMetric {
 	static new(): MXAppLaunchMetric; // inherited from NSObject
 
 	readonly histogrammedApplicationResumeTime: MXHistogram<NSUnitDuration>;
+
+	readonly histogrammedExtendedLaunch: MXHistogram<NSUnitDuration>;
+
+	readonly histogrammedOptimizedTimeToFirstDraw: MXHistogram<NSUnitDuration>;
 
 	readonly histogrammedTimeToFirstDraw: MXHistogram<NSUnitDuration>;
 }
@@ -208,6 +223,8 @@ declare class MXDiagnosticPayload extends NSObject implements NSSecureCoding {
 
 	static new(): MXDiagnosticPayload; // inherited from NSObject
 
+	readonly appLaunchDiagnostics: NSArray<MXAppLaunchDiagnostic>;
+
 	readonly cpuExceptionDiagnostics: NSArray<MXCPUExceptionDiagnostic>;
 
 	readonly crashDiagnostics: NSArray<MXCrashDiagnostic>;
@@ -261,6 +278,23 @@ declare class MXDisplayMetric extends MXMetric {
 
 	readonly averagePixelLuminance: MXAverage<MXUnitAveragePixelLuminance>;
 }
+
+declare const enum MXErrorCode {
+
+	LaunchTaskInvalidID = 0,
+
+	LaunchTaskMaxCount = 1,
+
+	LaunchTaskPastDeadline = 2,
+
+	LaunchTaskDuplicated = 3,
+
+	LaunchTaskUnknown = 4,
+
+	LaunchTaskInternalFailure = 5
+}
+
+declare var MXErrorDomain: string;
 
 declare class MXForegroundExitData extends NSObject implements NSSecureCoding {
 
@@ -434,6 +468,10 @@ declare class MXMetric extends NSObject implements NSSecureCoding {
 declare class MXMetricManager extends NSObject {
 
 	static alloc(): MXMetricManager; // inherited from NSObject
+
+	static extendLaunchMeasurementForTaskIDError(taskID: string): boolean;
+
+	static finishExtendedLaunchMeasurementForTaskIDError(taskID: string): boolean;
 
 	static makeLogHandleWithCategory(category: string): NSObject;
 

@@ -1,7 +1,9 @@
 import * as types from './types';
-import { dispatchToMainThread, isMainThread } from './mainthread-helper';
+import { dispatchToMainThread, dispatchToUIThread, isMainThread } from './mainthread-helper';
 import { sanitizeModuleName } from '../ui/builder/module-name-sanitizer';
 import * as layout from './layout-helper';
+
+import { GC } from './index';
 
 export { layout };
 export * from './mainthread-helper';
@@ -123,9 +125,69 @@ export function executeOnMainThread(func: Function) {
 	}
 }
 
+export function executeOnUIThread(func: Function) {
+	dispatchToUIThread(func);
+}
+
 export function mainThreadify(func: Function): (...args: any[]) => void {
 	return function (...args) {
 		const argsToPass = args;
 		executeOnMainThread(() => func.apply(this, argsToPass));
 	};
+}
+
+export function debounce(fn: any, delay = 300) {
+	let timer: NodeJS.Timeout;
+	return (...args: Array<any>) => {
+		clearTimeout(timer);
+		timer = setTimeout(() => {
+			fn.apply(this, args);
+		}, delay);
+	};
+}
+
+export function throttle(fn: any, delay = 300) {
+	let waiting = false;
+	return function () {
+		if (!waiting) {
+			fn.apply(this, arguments);
+			waiting = true;
+			setTimeout(function () {
+				waiting = false;
+			}, delay);
+		}
+	};
+}
+
+let throttledGC: Map<number, () => void>;
+let debouncedGC: Map<number, () => void>;
+
+export function queueGC(delay = 900, useThrottle?: boolean) {
+	/**
+	 * developers can use different queueGC settings to optimize their own apps
+	 * each setting is stored in a Map to reuse each time app calls it
+	 */
+	if (useThrottle) {
+		if (!throttledGC) {
+			throttledGC = new Map();
+		}
+		if (!throttledGC.get(delay)) {
+			throttledGC.set(
+				delay,
+				throttle(() => GC(), delay)
+			);
+		}
+		throttledGC.get(delay)();
+	} else {
+		if (!debouncedGC) {
+			debouncedGC = new Map();
+		}
+		if (!debouncedGC.get(delay)) {
+			debouncedGC.set(
+				delay,
+				debounce(() => GC(), delay)
+			);
+		}
+		debouncedGC.get(delay)();
+	}
 }

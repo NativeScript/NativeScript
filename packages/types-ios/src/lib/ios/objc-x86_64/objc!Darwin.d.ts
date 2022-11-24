@@ -336,6 +336,16 @@ declare var _NSConcreteGlobalBlock: interop.Reference<interop.Pointer | interop.
 
 declare var _NSConcreteStackBlock: interop.Reference<interop.Pointer | interop.Reference<any>>;
 
+declare function _NSGetArgc(): interop.Pointer | interop.Reference<number>;
+
+declare function _NSGetArgv(): interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<string>>;
+
+declare function _NSGetEnviron(): interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<string>>;
+
+declare function _NSGetMachExecuteHeader(): interop.Pointer | interop.Reference<mach_header_64>;
+
+declare function _NSGetProgname(): interop.Pointer | interop.Reference<string>;
+
 interface _RuneCharClass {
 	__name: interop.Reference<number>;
 	__mask: number;
@@ -551,12 +561,12 @@ interface __Reply__host_get_exception_ports_t {
 }
 declare var __Reply__host_get_exception_ports_t: interop.StructType<__Reply__host_get_exception_ports_t>;
 
-interface __Reply__host_get_io_master_t {
+interface __Reply__host_get_io_main_t {
 	Head: mach_msg_header_t;
 	msgh_body: mach_msg_body_t;
-	io_master: mach_msg_port_descriptor_t;
+	io_main: mach_msg_port_descriptor_t;
 }
-declare var __Reply__host_get_io_master_t: interop.StructType<__Reply__host_get_io_master_t>;
+declare var __Reply__host_get_io_main_t: interop.StructType<__Reply__host_get_io_main_t>;
 
 interface __Reply__host_get_multiuser_config_flags_t {
 	Head: mach_msg_header_t;
@@ -808,41 +818,6 @@ interface __Reply__kmod_get_info_t {
 }
 declare var __Reply__kmod_get_info_t: interop.StructType<__Reply__kmod_get_info_t>;
 
-interface __Reply__lock_acquire_t {
-	Head: mach_msg_header_t;
-	NDR: NDR_record_t;
-	RetCode: number;
-}
-declare var __Reply__lock_acquire_t: interop.StructType<__Reply__lock_acquire_t>;
-
-interface __Reply__lock_handoff_accept_t {
-	Head: mach_msg_header_t;
-	NDR: NDR_record_t;
-	RetCode: number;
-}
-declare var __Reply__lock_handoff_accept_t: interop.StructType<__Reply__lock_handoff_accept_t>;
-
-interface __Reply__lock_handoff_t {
-	Head: mach_msg_header_t;
-	NDR: NDR_record_t;
-	RetCode: number;
-}
-declare var __Reply__lock_handoff_t: interop.StructType<__Reply__lock_handoff_t>;
-
-interface __Reply__lock_make_stable_t {
-	Head: mach_msg_header_t;
-	NDR: NDR_record_t;
-	RetCode: number;
-}
-declare var __Reply__lock_make_stable_t: interop.StructType<__Reply__lock_make_stable_t>;
-
-interface __Reply__lock_release_t {
-	Head: mach_msg_header_t;
-	NDR: NDR_record_t;
-	RetCode: number;
-}
-declare var __Reply__lock_release_t: interop.StructType<__Reply__lock_release_t>;
-
 interface __Reply__lock_set_create_t {
 	Head: mach_msg_header_t;
 	msgh_body: mach_msg_body_t;
@@ -856,13 +831,6 @@ interface __Reply__lock_set_destroy_t {
 	RetCode: number;
 }
 declare var __Reply__lock_set_destroy_t: interop.StructType<__Reply__lock_set_destroy_t>;
-
-interface __Reply__lock_try_t {
-	Head: mach_msg_header_t;
-	NDR: NDR_record_t;
-	RetCode: number;
-}
-declare var __Reply__lock_try_t: interop.StructType<__Reply__lock_try_t>;
 
 interface __Reply__mach_make_memory_entry_64_t {
 	Head: mach_msg_header_t;
@@ -1558,13 +1526,6 @@ interface __Reply__task_create_identity_token_t {
 }
 declare var __Reply__task_create_identity_token_t: interop.StructType<__Reply__task_create_identity_token_t>;
 
-interface __Reply__task_create_suid_cred_t {
-	Head: mach_msg_header_t;
-	msgh_body: mach_msg_body_t;
-	delegation: mach_msg_port_descriptor_t;
-}
-declare var __Reply__task_create_suid_cred_t: interop.StructType<__Reply__task_create_suid_cred_t>;
-
 interface __Reply__task_create_t {
 	Head: mach_msg_header_t;
 	msgh_body: mach_msg_body_t;
@@ -1716,6 +1677,15 @@ interface __Reply__task_map_corpse_info_t {
 	kcd_size: number;
 }
 declare var __Reply__task_map_corpse_info_t: interop.StructType<__Reply__task_map_corpse_info_t>;
+
+interface __Reply__task_map_kcdata_object_64_t {
+	Head: mach_msg_header_t;
+	NDR: NDR_record_t;
+	RetCode: number;
+	kcd_addr_begin: number;
+	kcd_size: number;
+}
+declare var __Reply__task_map_kcdata_object_64_t: interop.StructType<__Reply__task_map_kcdata_object_64_t>;
 
 interface __Reply__task_policy_get_t {
 	Head: mach_msg_header_t;
@@ -1930,6 +1900,13 @@ interface __Reply__task_terminate_t {
 	RetCode: number;
 }
 declare var __Reply__task_terminate_t: interop.StructType<__Reply__task_terminate_t>;
+
+interface __Reply__task_test_async_upcall_propagation_t {
+	Head: mach_msg_header_t;
+	NDR: NDR_record_t;
+	RetCode: number;
+}
+declare var __Reply__task_test_async_upcall_propagation_t: interop.StructType<__Reply__task_test_async_upcall_propagation_t>;
 
 interface __Reply__task_test_sync_upcall_t {
 	Head: mach_msg_header_t;
@@ -2602,10 +2579,10 @@ interface __Request__host_get_exception_ports_t {
 }
 declare var __Request__host_get_exception_ports_t: interop.StructType<__Request__host_get_exception_ports_t>;
 
-interface __Request__host_get_io_master_t {
+interface __Request__host_get_io_main_t {
 	Head: mach_msg_header_t;
 }
-declare var __Request__host_get_io_master_t: interop.StructType<__Request__host_get_io_master_t>;
+declare var __Request__host_get_io_main_t: interop.StructType<__Request__host_get_io_main_t>;
 
 interface __Request__host_get_multiuser_config_flags_t {
 	Head: mach_msg_header_t;
@@ -2843,41 +2820,6 @@ interface __Request__kmod_get_info_t {
 }
 declare var __Request__kmod_get_info_t: interop.StructType<__Request__kmod_get_info_t>;
 
-interface __Request__lock_acquire_t {
-	Head: mach_msg_header_t;
-	NDR: NDR_record_t;
-	lock_id: number;
-}
-declare var __Request__lock_acquire_t: interop.StructType<__Request__lock_acquire_t>;
-
-interface __Request__lock_handoff_accept_t {
-	Head: mach_msg_header_t;
-	NDR: NDR_record_t;
-	lock_id: number;
-}
-declare var __Request__lock_handoff_accept_t: interop.StructType<__Request__lock_handoff_accept_t>;
-
-interface __Request__lock_handoff_t {
-	Head: mach_msg_header_t;
-	NDR: NDR_record_t;
-	lock_id: number;
-}
-declare var __Request__lock_handoff_t: interop.StructType<__Request__lock_handoff_t>;
-
-interface __Request__lock_make_stable_t {
-	Head: mach_msg_header_t;
-	NDR: NDR_record_t;
-	lock_id: number;
-}
-declare var __Request__lock_make_stable_t: interop.StructType<__Request__lock_make_stable_t>;
-
-interface __Request__lock_release_t {
-	Head: mach_msg_header_t;
-	NDR: NDR_record_t;
-	lock_id: number;
-}
-declare var __Request__lock_release_t: interop.StructType<__Request__lock_release_t>;
-
 interface __Request__lock_set_create_t {
 	Head: mach_msg_header_t;
 	NDR: NDR_record_t;
@@ -2892,13 +2834,6 @@ interface __Request__lock_set_destroy_t {
 	lock_set: mach_msg_port_descriptor_t;
 }
 declare var __Request__lock_set_destroy_t: interop.StructType<__Request__lock_set_destroy_t>;
-
-interface __Request__lock_try_t {
-	Head: mach_msg_header_t;
-	NDR: NDR_record_t;
-	lock_id: number;
-}
-declare var __Request__lock_try_t: interop.StructType<__Request__lock_try_t>;
 
 interface __Request__mach_make_memory_entry_64_t {
 	Head: mach_msg_header_t;
@@ -3556,16 +3491,6 @@ interface __Request__task_create_identity_token_t {
 }
 declare var __Request__task_create_identity_token_t: interop.StructType<__Request__task_create_identity_token_t>;
 
-interface __Request__task_create_suid_cred_t {
-	Head: mach_msg_header_t;
-	NDR: NDR_record_t;
-	pathOffset: number;
-	pathCnt: number;
-	path: interop.Reference<number>;
-	uid: number;
-}
-declare var __Request__task_create_suid_cred_t: interop.StructType<__Request__task_create_suid_cred_t>;
-
 interface __Request__task_create_t {
 	Head: mach_msg_header_t;
 	msgh_body: mach_msg_body_t;
@@ -3687,6 +3612,13 @@ interface __Request__task_map_corpse_info_t {
 	corspe_task: mach_msg_port_descriptor_t;
 }
 declare var __Request__task_map_corpse_info_t: interop.StructType<__Request__task_map_corpse_info_t>;
+
+interface __Request__task_map_kcdata_object_64_t {
+	Head: mach_msg_header_t;
+	msgh_body: mach_msg_body_t;
+	kcdata_object: mach_msg_port_descriptor_t;
+}
+declare var __Request__task_map_kcdata_object_64_t: interop.StructType<__Request__task_map_kcdata_object_64_t>;
 
 interface __Request__task_policy_get_t {
 	Head: mach_msg_header_t;
@@ -3916,6 +3848,16 @@ interface __Request__task_terminate_t {
 	Head: mach_msg_header_t;
 }
 declare var __Request__task_terminate_t: interop.StructType<__Request__task_terminate_t>;
+
+interface __Request__task_test_async_upcall_propagation_t {
+	Head: mach_msg_header_t;
+	msgh_body: mach_msg_body_t;
+	port: mach_msg_port_descriptor_t;
+	NDR: NDR_record_t;
+	qos: number;
+	iotier: number;
+}
+declare var __Request__task_test_async_upcall_propagation_t: interop.StructType<__Request__task_test_async_upcall_propagation_t>;
 
 interface __Request__task_test_sync_upcall_t {
 	Head: mach_msg_header_t;
@@ -6397,13 +6339,6 @@ interface fasttrap_machtp_t {
 }
 declare var fasttrap_machtp_t: interop.StructType<fasttrap_machtp_t>;
 
-interface fbootstraptransfer_t {
-	fbt_offset: number;
-	fbt_length: number;
-	fbt_buffer: interop.Pointer | interop.Reference<any>;
-}
-declare var fbootstraptransfer_t: interop.StructType<fbootstraptransfer_t>;
-
 declare function fchdir(p1: number): number;
 
 interface fchecklv_t {
@@ -6670,6 +6605,8 @@ declare function fputws(p1: interop.Pointer | interop.Reference<number>, p2: int
 declare function fputws_l(p1: interop.Pointer | interop.Reference<number>, p2: interop.Pointer | interop.Reference<FILE>, p3: interop.Pointer | interop.Reference<any>): number;
 
 declare function fread(__ptr: interop.Pointer | interop.Reference<any>, __size: number, __nitems: number, __stream: interop.Pointer | interop.Reference<FILE>): number;
+
+declare function freadlink(p1: number, p2: string | interop.Pointer | interop.Reference<any>, p3: number): number;
 
 declare function free(p1: interop.Pointer | interop.Reference<any>): void;
 
@@ -7061,6 +6998,15 @@ interface gpu_energy_data {
 }
 declare var gpu_energy_data: interop.StructType<gpu_energy_data>;
 
+declare const enum graftdmg_type_t {
+
+	GRAFTDMG_CRYPTEX_BOOT = 1,
+
+	GRAFTDMG_CRYPTEX_PREBOOT = 2,
+
+	GRAFTDMG_CRYPTEX_DOWNLEVEL = 3
+}
+
 declare function grantpt(p1: number): number;
 
 interface group {
@@ -7148,7 +7094,7 @@ declare function host_get_clock_service(host: number, clock_id: number, clock_se
 
 declare function host_get_exception_ports(host_priv: number, exception_mask: number, masks: interop.Pointer | interop.Reference<number>, masksCnt: interop.Pointer | interop.Reference<number>, old_handlers: interop.Pointer | interop.Reference<number>, old_behaviors: interop.Pointer | interop.Reference<number>, old_flavors: interop.Pointer | interop.Reference<number>): number;
 
-declare function host_get_io_master(host: number, io_master: interop.Pointer | interop.Reference<number>): number;
+declare function host_get_io_main(host: number, io_main: interop.Pointer | interop.Reference<number>): number;
 
 declare function host_get_multiuser_config_flags(host: number, multiuser_flags: interop.Pointer | interop.Reference<number>): number;
 
@@ -7357,6 +7303,33 @@ declare const enum idtype_t {
 	P_PGID = 2
 }
 
+interface if_cellular_status_v1 {
+	valid_bitmask: number;
+	link_quality_metric: number;
+	ul_effective_bandwidth: number;
+	ul_max_bandwidth: number;
+	ul_min_latency: number;
+	ul_effective_latency: number;
+	ul_max_latency: number;
+	ul_retxt_level: number;
+	ul_bytes_lost: number;
+	ul_min_queue_size: number;
+	ul_avg_queue_size: number;
+	ul_max_queue_size: number;
+	dl_effective_bandwidth: number;
+	dl_max_bandwidth: number;
+	config_inactivity_time: number;
+	config_backoff_time: number;
+	mss_recommended: number;
+	reserved_1: number;
+	reserved_2: number;
+	reserved_3: number;
+	reserved_4: number;
+	reserved_5: number;
+	reserved_6: number;
+}
+declare var if_cellular_status_v1: interop.StructType<if_cellular_status_v1>;
+
 interface if_clonereq {
 	ifcr_total: number;
 	ifcr_count: number;
@@ -7466,6 +7439,34 @@ declare var if_nameindexStruct: interop.StructType<if_nameindexStruct>;
 
 declare function if_nametoindex(p1: string | interop.Pointer | interop.Reference<any>): number;
 
+interface if_wifi_status_v1 {
+	valid_bitmask: number;
+	link_quality_metric: number;
+	ul_effective_bandwidth: number;
+	ul_max_bandwidth: number;
+	ul_min_latency: number;
+	ul_effective_latency: number;
+	ul_max_latency: number;
+	ul_retxt_level: number;
+	ul_bytes_lost: number;
+	ul_error_rate: number;
+	dl_effective_bandwidth: number;
+	dl_max_bandwidth: number;
+	dl_min_latency: number;
+	dl_effective_latency: number;
+	dl_max_latency: number;
+	dl_error_rate: number;
+	config_frequency: number;
+	config_multicast_rate: number;
+	scan_count: number;
+	scan_duration: number;
+	reserved_1: number;
+	reserved_2: number;
+	reserved_3: number;
+	reserved_4: number;
+}
+declare var if_wifi_status_v1: interop.StructType<if_wifi_status_v1>;
+
 interface ifa_msghdr {
 	ifam_msglen: number;
 	ifam_version: number;
@@ -7550,6 +7551,121 @@ interface ifmediareq {
 	ifm_ulist: interop.Pointer | interop.Reference<number>;
 }
 declare var ifmediareq: interop.StructType<ifmediareq>;
+
+interface ifnet_interface_advisory_capacity {
+	rate_trend_suggestion: ifnet_interface_advisory_rate_trend;
+	timestamp: number;
+	max_bandwidth: number;
+	total_byte_count: number;
+	average_throughput: number;
+	flushable_queue_size: number;
+	non_flushable_queue_size: number;
+	average_delay: number;
+}
+declare var ifnet_interface_advisory_capacity: interop.StructType<ifnet_interface_advisory_capacity>;
+
+interface ifnet_interface_advisory_cell_context {
+	radio_access_technology: number;
+	reference_signal_level: number;
+	signal_level: number;
+	signal_quality: number;
+	uplink_bler: number;
+	downlink_bler: number;
+	bandwidth_limitation_indication: number;
+	cdrx_state: number;
+	cdrx_cycle: number;
+	estimated_outage_period: number;
+	outage_state: number;
+	__pad: number;
+}
+declare var ifnet_interface_advisory_cell_context: interop.StructType<ifnet_interface_advisory_cell_context>;
+
+declare const enum ifnet_interface_advisory_direction {
+
+	IF_INTERFACE_ADVISORY_DIRECTION_TX = 1,
+
+	IF_INTERFACE_ADVISORY_DIRECTION_RX = 2
+}
+
+interface ifnet_interface_advisory_header {
+	version: ifnet_interface_advisory_version;
+	direction: ifnet_interface_advisory_direction;
+	interface_type: ifnet_interface_advisory_interface_type;
+	reserved: number;
+}
+declare var ifnet_interface_advisory_header: interop.StructType<ifnet_interface_advisory_header>;
+
+declare const enum ifnet_interface_advisory_interface_type {
+
+	IF_INTERFACE_ADVISORY_INTERFACE_TYPE_WIFI = 1,
+
+	IF_INTERFACE_ADVISORY_INTERFACE_TYPE_CELL = 2
+}
+
+declare const enum ifnet_interface_advisory_rate_trend {
+
+	IF_INTERFACE_ADVISORY_RATE_SUGGESTION_RAMP_UP = 2147483647,
+
+	IF_INTERFACE_ADVISORY_RATE_SUGGESTION_RAMP_DOWN = -2147483648,
+
+	IF_INTERFACE_ADVISORY_RATE_SUGGESTION_RAMP_NEUTRAL = 0
+}
+
+declare const enum ifnet_interface_advisory_version {
+
+	IF_INTERFACE_ADVISORY_VERSION_1 = 1,
+
+	IF_INTERFACE_ADVISORY_VERSION_2 = 2,
+
+	IF_INTERFACE_ADVISORY_VERSION_CURRENT = 2
+}
+
+interface ifnet_interface_advisory_wifi_context {
+	frequency_band: ifnet_interface_advisory_wifi_freq_band;
+	intermittent_state: number;
+	estimated_intermittent_period: number;
+	single_outage_period: number;
+	bt_coex: number;
+	quality_score_delay: number;
+	quality_score_loss: number;
+	quality_score_channel: number;
+	radio_coex: number;
+	wlan_duty_cycle: number;
+	wifi_observed_tx_bitrate: interop.Reference<number>;
+}
+declare var ifnet_interface_advisory_wifi_context: interop.StructType<ifnet_interface_advisory_wifi_context>;
+
+declare const enum ifnet_interface_advisory_wifi_freq_band {
+
+	IF_INTERFACE_ADVISORY_FREQ_BAND_NOT_AVAIL = 0,
+
+	IF_INTERFACE_ADVISORY_FREQ_BAND_WIFI_24GHZ = 1,
+
+	IF_INTERFACE_ADVISORY_FREQ_BAND_WIFI_5GHZ = 2,
+
+	IF_INTERFACE_ADVISORY_FREQ_BAND_WIFI_6GHZ = 3
+}
+
+interface ifnet_traffic_descriptor_common {
+	itd_type: number;
+	_reserved: number;
+	itd_len: number;
+	itd_flags: number;
+}
+declare var ifnet_traffic_descriptor_common: interop.StructType<ifnet_traffic_descriptor_common>;
+
+interface ifnet_traffic_rule_action {
+	ra_type: number;
+	_reserved: number;
+	ra_len: number;
+}
+declare var ifnet_traffic_rule_action: interop.StructType<ifnet_traffic_rule_action>;
+
+interface ifnet_traffic_rule_action_steer {
+	ras_common: ifnet_traffic_rule_action;
+	ras_qset_id: number;
+}
+declare var ifnet_traffic_rule_action_steer: interop.StructType<ifnet_traffic_rule_action_steer>;
 
 interface ifqueue {
 	ifq_head: interop.Pointer | interop.Reference<any>;
@@ -8202,21 +8318,9 @@ declare function localtime(p1: interop.Pointer | interop.Reference<number>): int
 
 declare function localtime_r(p1: interop.Pointer | interop.Reference<number>, p2: interop.Pointer | interop.Reference<tm>): interop.Pointer | interop.Reference<tm>;
 
-declare function lock_acquire(lock_set: number, lock_id: number): number;
-
-declare function lock_handoff(lock_set: number, lock_id: number): number;
-
-declare function lock_handoff_accept(lock_set: number, lock_id: number): number;
-
-declare function lock_make_stable(lock_set: number, lock_id: number): number;
-
-declare function lock_release(lock_set: number, lock_id: number): number;
-
 declare function lock_set_create(task: number, new_lock_set: interop.Pointer | interop.Reference<number>, n_ulocks: number, policy: number): number;
 
 declare function lock_set_destroy(task: number, lock_set: number): number;
-
-declare function lock_try(lock_set: number, lock_id: number): number;
 
 declare function lockf(p1: number, p2: number, p3: number): number;
 
@@ -8691,6 +8795,8 @@ declare const enum mach_port_guard_exception_codes {
 
 	kGUARD_EXC_MOD_REFS = 2,
 
+	kGUARD_EXC_INVALID_OPTIONS = 3,
+
 	kGUARD_EXC_SET_CONTEXT = 4,
 
 	kGUARD_EXC_UNGUARDED = 8,
@@ -8731,7 +8837,9 @@ declare const enum mach_port_guard_exception_codes {
 
 	kGUARD_EXC_MOD_REFS_NON_FATAL = 2097152,
 
-	kGUARD_EXC_IMMOVABLE_NON_FATAL = 4194304
+	kGUARD_EXC_IMMOVABLE_NON_FATAL = 4194304,
+
+	kGUARD_EXC_REQUIRE_REPLY_PORT_SEMANTICS = 8388608
 }
 
 interface mach_port_guard_info_t {
@@ -8885,6 +8993,12 @@ interface mach_vm_info_region_t {
 	vir_user_wired_count: number;
 }
 declare var mach_vm_info_region_t: interop.StructType<mach_vm_info_region_t>;
+
+interface mach_vm_range {
+	min_address: number;
+	max_address: number;
+}
+declare var mach_vm_range: interop.StructType<mach_vm_range>;
 
 interface mach_vm_read_entry {
 	address: number;
@@ -9206,11 +9320,15 @@ declare function mkdtempat_np(dfd: number, path: string | interop.Pointer | inte
 
 declare function mkfifo(p1: string | interop.Pointer | interop.Reference<any>, p2: number): number;
 
+declare function mkfifoat(p1: number, p2: string | interop.Pointer | interop.Reference<any>, p3: number): number;
+
 declare function mkfifox_np(p1: string | interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>): number;
 
 declare function mknod(p1: string | interop.Pointer | interop.Reference<any>, p2: number, p3: number): number;
 
 declare function mknodFunction(p1: string | interop.Pointer | interop.Reference<any>, p2: number, p3: number): number;
+
+declare function mknodat(p1: number, p2: string | interop.Pointer | interop.Reference<any>, p3: number, p4: number): number;
 
 declare function mkostemp(path: string | interop.Pointer | interop.Reference<any>, oflags: number): number;
 
@@ -9468,6 +9586,8 @@ declare function open_memstream(__bufp: interop.Pointer | interop.Reference<stri
 
 declare function open_wmemstream(__bufp: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number>>, __sizep: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<FILE>;
 
+declare function openat_authenticated_np(p1: number, p2: string | interop.Pointer | interop.Reference<any>, p3: number, p4: number): number;
+
 declare function opendev(p1: string | interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: interop.Pointer | interop.Reference<string>): number;
 
 declare function opendir(p1: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<DIR>;
@@ -9510,6 +9630,8 @@ declare const enum os_clockid_t {
 
 	OS_CLOCK_MACH_ABSOLUTE_TIME = 32
 }
+
+declare function os_proc_available_memory(): number;
 
 interface os_unfair_lock {
 	_os_unfair_lock_opaque: number;
@@ -9787,15 +9909,6 @@ interface proc_rlimit_control_wakeupmon {
 declare var proc_rlimit_control_wakeupmon: interop.StructType<proc_rlimit_control_wakeupmon>;
 
 declare function processor_assign(processor: number, new_set: number, wait: number): number;
-
-interface processor_basic_info {
-	cpu_type: number;
-	cpu_subtype: number;
-	running: number;
-	slot_num: number;
-	is_master: number;
-}
-declare var processor_basic_info: interop.StructType<processor_basic_info>;
 
 declare function processor_control(processor: number, processor_cmd: interop.Pointer | interop.Reference<number>, processor_cmdCnt: number): number;
 
@@ -10570,6 +10683,52 @@ interface rusage_info_v5 {
 }
 declare var rusage_info_v5: interop.StructType<rusage_info_v5>;
 
+interface rusage_info_v6 {
+	ri_uuid: interop.Reference<number>;
+	ri_user_time: number;
+	ri_system_time: number;
+	ri_pkg_idle_wkups: number;
+	ri_interrupt_wkups: number;
+	ri_pageins: number;
+	ri_wired_size: number;
+	ri_resident_size: number;
+	ri_phys_footprint: number;
+	ri_proc_start_abstime: number;
+	ri_proc_exit_abstime: number;
+	ri_child_user_time: number;
+	ri_child_system_time: number;
+	ri_child_pkg_idle_wkups: number;
+	ri_child_interrupt_wkups: number;
+	ri_child_pageins: number;
+	ri_child_elapsed_abstime: number;
+	ri_diskio_bytesread: number;
+	ri_diskio_byteswritten: number;
+	ri_cpu_time_qos_default: number;
+	ri_cpu_time_qos_maintenance: number;
+	ri_cpu_time_qos_background: number;
+	ri_cpu_time_qos_utility: number;
+	ri_cpu_time_qos_legacy: number;
+	ri_cpu_time_qos_user_initiated: number;
+	ri_cpu_time_qos_user_interactive: number;
+	ri_billed_system_time: number;
+	ri_serviced_system_time: number;
+	ri_logical_writes: number;
+	ri_lifetime_max_phys_footprint: number;
+	ri_instructions: number;
+	ri_cycles: number;
+	ri_billed_energy: number;
+	ri_serviced_energy: number;
+	ri_interval_max_phys_footprint: number;
+	ri_runnable_time: number;
+	ri_flags: number;
+	ri_user_ptime: number;
+	ri_system_ptime: number;
+	ri_pinstructions: number;
+	ri_pcycles: number;
+	ri_reserved: interop.Reference<number>;
+}
+declare var rusage_info_v6: interop.StructType<rusage_info_v6>;
+
 declare function ruserok(p1: string | interop.Pointer | interop.Reference<any>, p2: number, p3: string | interop.Pointer | interop.Reference<any>, p4: string | interop.Pointer | interop.Reference<any>): number;
 
 interface sa_endpoints_t {
@@ -10802,6 +10961,16 @@ interface searchstate {
 	ss_fsstate: interop.Reference<number>;
 }
 declare var searchstate: interop.StructType<searchstate>;
+
+interface secure_boot_cryptex_args_t {
+	sbc_version: number;
+	sbc_4cc: number;
+	sbc_authentic_manifest_fd: number;
+	sbc_user_manifest_fd: number;
+	sbc_payload_fd: number;
+	sbc_flags: number;
+}
+declare var secure_boot_cryptex_args_t: interop.StructType<secure_boot_cryptex_args_t>;
 
 interface security_token_t {
 	val: interop.Reference<number>;
@@ -11158,6 +11327,12 @@ interface sockaddr_dl {
 	sdl_data: interop.Reference<number>;
 }
 declare var sockaddr_dl: interop.StructType<sockaddr_dl>;
+
+interface sockaddr_header {
+	sa_len: number;
+	sa_family: number;
+}
+declare var sockaddr_header: interop.StructType<sockaddr_header>;
 
 interface sockaddr_in {
 	sin_len: number;
@@ -11523,8 +11698,6 @@ declare function task_create(target_task: number, ledgers: interop.Pointer | int
 
 declare function task_create_identity_token(task: number, token: interop.Pointer | interop.Reference<number>): number;
 
-declare function task_create_suid_cred(task: number, path: interop.Reference<number>, uid: number, delegation: interop.Pointer | interop.Reference<number>): number;
-
 interface task_dyld_info {
 	all_image_info_addr: number;
 	all_image_info_size: number;
@@ -11628,6 +11801,8 @@ declare const enum task_latency_qos {
 declare function task_map_corpse_info(task: number, corspe_task: number, kcd_addr_begin: interop.Pointer | interop.Reference<number>, kcd_size: interop.Pointer | interop.Reference<number>): number;
 
 declare function task_map_corpse_info_64(task: number, corspe_task: number, kcd_addr_begin: interop.Pointer | interop.Reference<number>, kcd_size: interop.Pointer | interop.Reference<number>): number;
+
+declare function task_map_kcdata_object_64(task: number, kcdata_object: number, kcd_addr_begin: interop.Pointer | interop.Reference<number>, kcd_size: interop.Pointer | interop.Reference<number>): number;
 
 declare function task_name_for_pid(target_tport: number, pid: number, tn: interop.Pointer | interop.Reference<number>): number;
 
@@ -11738,6 +11913,8 @@ declare function task_swap_mach_voucher(task: number, new_voucher: number, old_v
 
 declare function task_terminate(target_task: number): number;
 
+declare function task_test_async_upcall_propagation(task: number, port: number, qos: number, iotier: number): number;
+
 declare function task_test_sync_upcall(task: number, port: number): number;
 
 interface task_thread_times_info {
@@ -11820,6 +11997,7 @@ interface task_vm_info {
 	ledger_tag_neural_nofootprint_compressed: number;
 	limit_bytes_remaining: number;
 	decompressions: number;
+	ledger_swapins: number;
 }
 declare var task_vm_info: interop.StructType<task_vm_info>;
 
@@ -12133,10 +12311,15 @@ interface tcpstat {
 	tcps_ecn_client_setup: number;
 	tcps_ecn_server_setup: number;
 	tcps_ecn_server_success: number;
+	tcps_ecn_ace_syn_not_ect: number;
+	tcps_ecn_ace_syn_ect1: number;
+	tcps_ecn_ace_syn_ect0: number;
+	tcps_ecn_ace_syn_ce: number;
 	tcps_ecn_lost_synack: number;
 	tcps_ecn_lost_syn: number;
 	tcps_ecn_not_supported: number;
 	tcps_ecn_recv_ce: number;
+	tcps_ecn_ace_recv_ce: number;
 	tcps_ecn_conn_recv_ce: number;
 	tcps_ecn_conn_recv_ece: number;
 	tcps_ecn_conn_plnoce: number;
@@ -12703,7 +12886,13 @@ declare var vfsstatfs: interop.StructType<vfsstatfs>;
 
 declare const enum virtual_memory_guard_exception_codes {
 
-	kGUARD_EXC_DEALLOC_GAP = 1
+	kGUARD_EXC_DEALLOC_GAP = 1,
+
+	kGUARD_EXC_RECLAIM_COPYIO_FAILURE = 2,
+
+	kGUARD_EXC_RECLAIM_INDEX_FAILURE = 4,
+
+	kGUARD_EXC_RECLAIM_DEALLOCATE_FAILURE = 8
 }
 
 declare function vm_allocate(target_task: number, address: interop.Pointer | interop.Reference<number>, size: number, flags: number): number;

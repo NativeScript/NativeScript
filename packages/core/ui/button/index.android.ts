@@ -6,18 +6,17 @@ import { CoreTypes } from '../../core-types';
 import { profile } from '../../profiling';
 import { TouchGestureEventData, GestureTypes, TouchAction } from '../gestures';
 import { Device } from '../../platform';
+import { SDK_VERSION } from '../../utils';
 import lazy from '../../utils/lazy';
+import type { Background } from '../styling/background';
 
 export * from './button-common';
-
-const sdkVersion = lazy(() => parseInt(Device.sdkVersion));
 
 interface ClickListener {
 	new (owner: Button): android.view.View.OnClickListener;
 }
 
 let ClickListener: ClickListener;
-let APILEVEL: number;
 let AndroidButton: typeof android.widget.Button;
 
 function initializeClickListener(): void {
@@ -48,15 +47,34 @@ function initializeClickListener(): void {
 export class Button extends ButtonBase {
 	nativeViewProtected: android.widget.Button;
 
-	constructor() {
-		super();
-		if (!APILEVEL) {
-			APILEVEL = android.os.Build.VERSION.SDK_INT;
-		}
-	}
-
 	private _stateListAnimator: any;
 	private _highlightedHandler: (args: TouchGestureEventData) => void;
+
+	public _applyBackground(background: Background, isBorderDrawable, onlyColor: boolean, backgroundDrawable: any) {
+		const nativeView = this.nativeViewProtected;
+		if (backgroundDrawable && onlyColor) {
+			if (isBorderDrawable && (<any>nativeView)._cachedDrawable) {
+				backgroundDrawable = (<any>nativeView)._cachedDrawable;
+				// we need to duplicate the drawable or we lose the "default" cached drawable
+				const constantState = backgroundDrawable.getConstantState();
+				if (constantState) {
+					try {
+						backgroundDrawable = constantState.newDrawable(nativeView.getResources());
+						// eslint-disable-next-line no-empty
+					} catch {}
+				}
+				nativeView.setBackground(backgroundDrawable);
+			}
+
+			const backgroundColor = ((<any>backgroundDrawable).backgroundColor = background.color.android);
+			backgroundDrawable.mutate();
+			backgroundDrawable.setColorFilter(backgroundColor, android.graphics.PorterDuff.Mode.SRC_IN);
+			backgroundDrawable.invalidateSelf(); // Make sure the drawable is invalidated. Android forgets to invalidate it in some cases: toolbar
+			(<any>backgroundDrawable).backgroundColor = backgroundColor;
+		} else {
+			super._applyBackground(background, isBorderDrawable, onlyColor, backgroundDrawable);
+		}
+	}
 
 	@profile
 	public createNativeView() {
@@ -86,7 +104,7 @@ export class Button extends ButtonBase {
 	public resetNativeView(): void {
 		super.resetNativeView();
 
-		if (this._stateListAnimator && APILEVEL >= 21) {
+		if (this._stateListAnimator && SDK_VERSION >= 21) {
 			(<any>this.nativeViewProtected).setStateListAnimator(this._stateListAnimator);
 			this._stateListAnimator = undefined;
 		}
@@ -155,8 +173,7 @@ export class Button extends ButtonBase {
 	}
 
 	[zIndexProperty.setNative](value: number) {
-		// API >= 21
-		if (APILEVEL >= 21) {
+		if (SDK_VERSION >= 21) {
 			const nativeView = this.nativeViewProtected;
 			if (!this._stateListAnimator) {
 				this._stateListAnimator = (<any>nativeView).getStateListAnimator();
@@ -174,7 +191,7 @@ export class Button extends ButtonBase {
 	}
 
 	protected getDefaultElevation(): number {
-		if (sdkVersion() < 21) {
+		if (SDK_VERSION < 21) {
 			return 0;
 		}
 
@@ -185,7 +202,7 @@ export class Button extends ButtonBase {
 	}
 
 	protected getDefaultDynamicElevationOffset(): number {
-		if (sdkVersion() < 21) {
+		if (SDK_VERSION < 21) {
 			return 0;
 		}
 

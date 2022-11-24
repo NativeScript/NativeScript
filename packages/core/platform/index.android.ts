@@ -1,5 +1,6 @@
 /* tslint:disable:class-name */
 import { getNativeApplication, on, orientationChangedEvent, android as AndroidApplication } from '../application';
+import { SDK_VERSION } from '../utils';
 
 const MIN_TABLET_PIXELS = 600;
 
@@ -128,11 +129,23 @@ class DeviceRef {
 	}
 
 	get language(): string {
-		return java.util.Locale.getDefault().getLanguage().replace('_', '-');
+		let defaultNativeLocale;
+		if (SDK_VERSION >= 24) {
+			defaultNativeLocale = android.content.res.Resources.getSystem().getConfiguration().getLocales().get(0);
+		} else {
+			defaultNativeLocale = android.content.res.Resources.getSystem().getConfiguration().locale;
+		}
+		return defaultNativeLocale.getLanguage().replace('_', '-');
 	}
 
 	get region(): string {
-		return java.util.Locale.getDefault().getCountry();
+		let defaultNativeLocale;
+		if (SDK_VERSION >= 24) {
+			defaultNativeLocale = android.content.res.Resources.getSystem().getConfiguration().getLocales().get(0);
+		} else {
+			defaultNativeLocale = android.content.res.Resources.getSystem().getConfiguration().locale;
+		}
+		return defaultNativeLocale.getCountry();
 	}
 }
 

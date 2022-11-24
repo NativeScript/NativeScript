@@ -2,7 +2,7 @@
 import { Point, View as ViewDefinition } from '.';
 
 // Requires
-import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty } from './view-common';
+import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty } from './view-common';
 import { ShowModalOptions, hiddenProperty } from '../view-base';
 import { Trace } from '../../../trace';
 import { layout, iOSNativeHelper } from '../../../utils';
@@ -37,7 +37,8 @@ export class View extends ViewCommon implements ViewDefinition {
 	 */
 	private _modalAnimatedOptions: Array<boolean>;
 	private _isLaidOut = false;
-	private _hasTransfrom = false;
+	private _hasTransform = false;
+	private _hasPendingTransform = false;
 	private _privateFlags: number = PFLAG_LAYOUT_REQUIRED | PFLAG_FORCE_LAYOUT;
 	private _cachedFrame: CGRect;
 	private _suspendCATransaction = false;
@@ -63,9 +64,18 @@ export class View extends ViewCommon implements ViewDefinition {
 		this.once(View.loadedEvent, () => setupAccessibleView(this));
 	}
 
+	disposeNativeView() {
+		super.disposeNativeView();
+
+		this._cachedFrame = null;
+		this._isLaidOut = false;
+		this._hasTransform = false;
+		this._hasPendingTransform = false;
+	}
+
 	public requestLayout(): void {
-		super.requestLayout();
 		this._privateFlags |= PFLAG_FORCE_LAYOUT;
+		super.requestLayout();
 
 		const nativeView = this.nativeViewProtected;
 		if (nativeView && nativeView.setNeedsLayout) {
@@ -119,6 +129,10 @@ export class View extends ViewCommon implements ViewDefinition {
 		}
 
 		this.updateBackground(sizeChanged);
+		if (this._hasPendingTransform) {
+			this.updateNativeTransform();
+			this._hasPendingTransform = false;
+		}
 		this._privateFlags &= ~PFLAG_FORCE_LAYOUT;
 	}
 
@@ -175,7 +189,7 @@ export class View extends ViewCommon implements ViewDefinition {
 			this._cachedFrame = frame;
 			let adjustedFrame = null;
 			let transform = null;
-			if (this._hasTransfrom) {
+			if (this._hasTransform) {
 				// Always set identity transform before setting frame;
 				transform = nativeView.layer.transform;
 				nativeView.layer.transform = CATransform3DIdentity;
@@ -189,7 +203,7 @@ export class View extends ViewCommon implements ViewDefinition {
 				nativeView.frame = adjustedFrame;
 			}
 
-			if (this._hasTransfrom) {
+			if (this._hasTransform) {
 				// re-apply the transform after the frame is adjusted
 				nativeView.layer.transform = transform;
 			}
@@ -197,6 +211,7 @@ export class View extends ViewCommon implements ViewDefinition {
 			const boundsOrigin = nativeView.bounds.origin;
 			const boundsFrame = adjustedFrame || frame;
 			nativeView.bounds = CGRectMake(boundsOrigin.x, boundsOrigin.y, boundsFrame.size.width, boundsFrame.size.height);
+			nativeView.layoutIfNeeded();
 
 			this._raiseLayoutChangedEvent();
 			this._isLaidOut = true;
@@ -349,7 +364,7 @@ export class View extends ViewCommon implements ViewDefinition {
 		}
 
 		const background = this.style.backgroundInternal;
-		const backgroundDependsOnSize = background.image || !background.hasUniformBorder() || background.hasBorderRadius();
+		const backgroundDependsOnSize = (background.image && background.image !== 'none') || !background.hasUniformBorder() || background.hasBorderRadius();
 
 		if (this._nativeBackgroundState === 'invalid' || (this._nativeBackgroundState === 'drawn' && backgroundDependsOnSize)) {
 			this._redrawNativeBackground(background);
@@ -362,6 +377,11 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	public updateNativeTransform() {
+		if (!this.isLayoutValid) {
+			this._hasPendingTransform = true;
+			return;
+		}
+
 		const scaleX = this.scaleX || 1e-6;
 		const scaleY = this.scaleY || 1e-6;
 		const perspective = this.perspective || 300;
@@ -377,12 +397,12 @@ export class View extends ViewCommon implements ViewDefinition {
 		transform = iOSNativeHelper.applyRotateTransform(transform, this.rotateX, this.rotateY, this.rotate);
 		transform = CATransform3DScale(transform, scaleX, scaleY, 1);
 		if (!CATransform3DEqualToTransform(this.nativeViewProtected.layer.transform, transform)) {
-			const updateSuspended = this._isPresentationLayerUpdateSuspeneded();
+			const updateSuspended = this._isPresentationLayerUpdateSuspended();
 			if (!updateSuspended) {
 				CATransaction.begin();
 			}
 			this.nativeViewProtected.layer.transform = transform;
-			this._hasTransfrom = this.nativeViewProtected && !CATransform3DEqualToTransform(this.nativeViewProtected.transform3D, CATransform3DIdentity);
+			this._hasTransform = this.nativeViewProtected && !CATransform3DEqualToTransform(this.nativeViewProtected.transform3D, CATransform3DIdentity);
 			if (!updateSuspended) {
 				CATransaction.commit();
 			}
@@ -408,7 +428,7 @@ export class View extends ViewCommon implements ViewDefinition {
 		this._suspendCATransaction = false;
 	}
 
-	public _isPresentationLayerUpdateSuspeneded(): boolean {
+	public _isPresentationLayerUpdateSuspended(): boolean {
 		return this._suspendCATransaction || this._suspendNativeUpdatesCount > 0;
 	}
 
@@ -523,6 +543,7 @@ export class View extends ViewCommon implements ViewDefinition {
 			// Take a look at https://github.com/NativeScript/NativeScript/issues/2173 for more info and a sample project.
 			this._raiseShownModallyEvent();
 		}
+		controller = null;
 	}
 
 	protected _hideNativeModalView(parent: View, whenClosedCallback: () => void) {
@@ -571,6 +592,16 @@ export class View extends ViewCommon implements ViewDefinition {
 		this.updateOriginPoint(this.originX, value);
 	}
 
+	[testIDProperty.setNative](value: string) {
+		this.setTestID(this.nativeViewProtected, value);
+	}
+
+	public setTestID(view: any, value: string): void {
+		if (typeof __USE_TEST_ID__ !== 'undefined' && __USE_TEST_ID__) {
+			view.accessibilityIdentifier = value;
+		}
+	}
+
 	[accessibilityEnabledProperty.setNative](value: boolean): void {
 		this.nativeViewProtected.isAccessibilityElement = !!value;
 
@@ -580,8 +611,13 @@ export class View extends ViewCommon implements ViewDefinition {
 	[accessibilityIdentifierProperty.getDefault](): string {
 		return this.nativeViewProtected.accessibilityLabel;
 	}
+
 	[accessibilityIdentifierProperty.setNative](value: string): void {
-		this.nativeViewProtected.accessibilityIdentifier = value;
+		if (typeof __USE_TEST_ID__ !== 'undefined' && __USE_TEST_ID__ && this.testID) {
+			// ignore when using testID
+		} else {
+			this.nativeViewProtected.accessibilityIdentifier = value;
+		}
 	}
 
 	[accessibilityRoleProperty.setNative](value: AccessibilityRole): void {
@@ -610,7 +646,6 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	[accessibilityIgnoresInvertColorsProperty.setNative](value: boolean) {
-		console.log('accessibilityIgnoresInvertColorsProperty:', !!value);
 		this.nativeViewProtected.accessibilityIgnoresInvertColors = !!value;
 	}
 
@@ -674,7 +709,7 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 	[opacityProperty.setNative](value: number) {
 		const nativeView = this.nativeViewProtected;
-		const updateSuspended = this._isPresentationLayerUpdateSuspeneded();
+		const updateSuspended = this._isPresentationLayerUpdateSuspended();
 		if (!updateSuspended) {
 			CATransaction.begin();
 		}
@@ -830,7 +865,7 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	_redrawNativeBackground(value: UIColor | Background): void {
-		const updateSuspended = this._isPresentationLayerUpdateSuspeneded();
+		const updateSuspended = this._isPresentationLayerUpdateSuspended();
 		if (!updateSuspended) {
 			CATransaction.begin();
 		}
@@ -853,7 +888,7 @@ export class View extends ViewCommon implements ViewDefinition {
 
 	_setNativeClipToBounds() {
 		const backgroundInternal = this.style.backgroundInternal;
-		this.nativeViewProtected.clipsToBounds = this.nativeViewProtected instanceof UIScrollView || backgroundInternal.hasBorderWidth() || backgroundInternal.hasBorderRadius();
+		this.nativeViewProtected.clipsToBounds = (this.nativeViewProtected instanceof UIScrollView || backgroundInternal.hasBorderWidth() || backgroundInternal.hasBorderRadius()) && !backgroundInternal.hasBoxShadow();
 	}
 
 	private _setupPopoverControllerDelegate(controller: UIViewController, parent: View) {
@@ -895,7 +930,7 @@ export class CustomLayoutView extends ContainerView {
 	}
 
 	public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-		// Don't call super because it will set MeasureDimension. This method must be overriden and calculate its measuredDimensions.
+		// Don't call super because it will set MeasureDimension. This method must be overridden and calculate its measuredDimensions.
 	}
 
 	public _addViewToNativeVisualTree(child: View, atIndex: number): boolean {

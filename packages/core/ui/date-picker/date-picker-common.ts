@@ -1,5 +1,6 @@
 ﻿import { DatePicker as DatePickerDefinition } from '.';
 import { View, CSSType } from '../core/view';
+import { booleanConverter } from '../core/view-base';
 import { Property } from '../core/properties';
 
 const defaultDate = new Date();
@@ -10,10 +11,14 @@ export class DatePickerBase extends View implements DatePickerDefinition {
 	public year: number;
 	public month: number;
 	public day: number;
+	public hour: number;
+	public minute: number;
+	public second: number;
 	public maxDate: Date;
 	public minDate: Date;
 	public date: Date;
 	public iosPreferredDatePickerStyle: number;
+	public showTime: boolean;
 }
 
 DatePickerBase.prototype.recycleNativeView = 'auto';
@@ -39,6 +44,27 @@ export const dayProperty = new Property<DatePickerBase, number>({
 });
 dayProperty.register(DatePickerBase);
 
+export const hourProperty = new Property<DatePickerBase, number>({
+	name: 'hour',
+	defaultValue: defaultDate.getHours(),
+	valueConverter: (v) => parseInt(v),
+});
+hourProperty.register(DatePickerBase);
+
+export const minuteProperty = new Property<DatePickerBase, number>({
+	name: 'minute',
+	defaultValue: defaultDate.getMinutes(),
+	valueConverter: (v) => parseInt(v),
+});
+minuteProperty.register(DatePickerBase);
+
+export const secondProperty = new Property<DatePickerBase, number>({
+	name: 'second',
+	defaultValue: defaultDate.getSeconds(),
+	valueConverter: (v) => parseInt(v),
+});
+secondProperty.register(DatePickerBase);
+
 // TODO: Make CoercibleProperties
 export const maxDateProperty = new Property<DatePickerBase, Date>({
 	name: 'maxDate',
@@ -61,6 +87,13 @@ export const dateProperty = new Property<DatePickerBase, Date>({
 	valueConverter: (v) => new Date(v),
 });
 dateProperty.register(DatePickerBase);
+
+export const showTimeProperty = new Property<DatePickerBase, boolean>({
+	name: 'showTime',
+	defaultValue: false,
+	valueConverter: (v) => booleanConverter(v),
+});
+showTimeProperty.register(DatePickerBase);
 
 export const iosPreferredDatePickerStyleProperty = new Property<DatePickerBase, number>({
 	name: 'iosPreferredDatePickerStyle',

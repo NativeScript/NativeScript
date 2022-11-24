@@ -1,9 +1,5 @@
-/**
- * 
- */
 package org.nativescript.widgets;
 
-import org.nativescript.widgets.HorizontalScrollView.SavedState;
 import android.content.Context;
 import android.graphics.Rect;
 import android.os.Parcelable;
@@ -14,9 +10,10 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import androidx.core.widget.NestedScrollView;
 
+import org.nativescript.widgets.HorizontalScrollView.SavedState;
+
 /**
  * @author hhristov
- *
  */
 public class VerticalScrollView extends NestedScrollView {
 

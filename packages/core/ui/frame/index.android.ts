@@ -20,6 +20,7 @@ import { CSSUtils } from '../../css/system-classes';
 import { Device } from '../../platform';
 import { profile } from '../../profiling';
 import { android as androidApplication } from '../../application';
+import { setSuspended } from '../../application/application-common';
 
 export * from './frame-common';
 
@@ -84,6 +85,7 @@ export class Frame extends FrameBase {
 	private _tearDownPending = false;
 	private _attachedToWindow = false;
 	private _cachedTransitionState: TransitionState;
+	private _frameCreateTimeout: NodeJS.Timeout;
 
 	constructor() {
 		super();
@@ -237,12 +239,31 @@ export class Frame extends FrameBase {
 			this.backgroundColor = this._originalBackground;
 			this._originalBackground = null;
 		}
+		this._frameCreateTimeout = setTimeout(() => {
+			// there's a bug with nested frames where sometimes the nested fragment is not recreated at all
+			// so we manually check on loaded event if the fragment is not recreated and recreate it
+			const currentEntry = this._currentEntry || this._executingContext?.entry;
+			if (currentEntry) {
+				if (!currentEntry.fragment) {
+					const manager = this._getFragmentManager();
+					const transaction = manager.beginTransaction();
+					currentEntry.fragment = this.createFragment(currentEntry, currentEntry.fragmentTag);
+					_updateTransitions(currentEntry);
+					transaction.replace(this.containerViewId, currentEntry.fragment, currentEntry.fragmentTag);
+					transaction.commitAllowingStateLoss();
+				}
+			}
+		}, 0);
 
 		super.onLoaded();
 	}
 
 	onUnloaded() {
 		super.onUnloaded();
+		if (typeof this._frameCreateTimeout === 'number') {
+			clearTimeout(this._frameCreateTimeout);
+			this._frameCreateTimeout = null;
+		}
 	}
 
 	private disposeCurrentFragment(): void {
@@ -1003,6 +1024,28 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 	}
 
 	@profile
+	public onResume(fragment: org.nativescript.widgets.FragmentBase, superFunc: Function): void {
+		const frame = this.entry.resolvedPage.frame;
+		// on some cases during the first navigation on nested frames the animation doesn't trigger
+		// we depend on the animation (even None animation) to set the entry as the current entry
+		// animation should start between start and resume, so if we have an executing navigation here it probably means the animation was skipped
+		// so we manually set the entry
+		// also, to be compatible with fragments 1.2.x we need this setTimeout as animations haven't run on onResume yet
+		const weakRef = new WeakRef(this);
+		setTimeout(() => {
+			const owner = weakRef.get();
+			if (!owner) {
+				return;
+			}
+			if (frame._executingContext && !(<any>owner.entry).isAnimationRunning) {
+				frame.setCurrent(owner.entry, frame._executingContext.navigationType);
+			}
+		}, 0);
+
+		superFunc.call(fragment);
+	}
+
+	@profile
 	public onStop(fragment: androidx.fragment.app.Fragment, superFunc: Function): void {
 		superFunc.call(fragment);
 	}
@@ -1032,12 +1075,11 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 		// view.layout(0, 0, width, height);
 		// view.draw(canvas);
 
-		view.setDrawingCacheEnabled(true);
-		const drawCache = view.getDrawingCache();
-		const bitmap = android.graphics.Bitmap.createBitmap(drawCache);
-		view.setDrawingCacheEnabled(false);
-
-		return bitmap;
+		// view.setDrawingCacheEnabled(true);
+		// const drawCache = view.getDrawingCache();
+		// const bitmap = android.graphics.Bitmap.createBitmap(drawCache);
+		// view.setDrawingCacheEnabled(false);
+		return org.nativescript.widgets.Utils.getBitmapFromView(view);
 	}
 }
 
@@ -1160,13 +1202,13 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 		// and raising the application resume event there causes issues like
 		// https://github.com/NativeScript/NativeScript/issues/6708
 		if ((<any>activity).isNativeScriptActivity) {
+			setSuspended(false);
 			const args = <application.ApplicationEventData>{
 				eventName: application.resumeEvent,
 				object: application.android,
 				android: activity,
 			};
 			application.notify(args);
-			application.android.paused = false;
 		}
 	}
 

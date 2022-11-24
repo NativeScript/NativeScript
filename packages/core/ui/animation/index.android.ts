@@ -7,7 +7,7 @@ import { AnimationBase, Properties, CubicBezierAnimationCurve } from './animatio
 import { Color } from '../../color';
 import { Trace } from '../../trace';
 import { opacityProperty, backgroundColorProperty, rotateProperty, rotateXProperty, rotateYProperty, translateXProperty, translateYProperty, scaleXProperty, scaleYProperty, heightProperty, widthProperty, PercentLength } from '../styling/style-properties';
-import { layout } from '../../utils';
+import { SDK_VERSION, layout } from '../../utils';
 import { Device, Screen } from '../../platform';
 import lazy from '../../utils/lazy';
 
@@ -26,16 +26,6 @@ const easeOut = lazy(() => new android.view.animation.DecelerateInterpolator(1))
 const easeInOut = lazy(() => new android.view.animation.AccelerateDecelerateInterpolator());
 const linear = lazy(() => new android.view.animation.LinearInterpolator());
 const bounce = lazy(() => new android.view.animation.BounceInterpolator());
-
-const keyPrefix = 'ui.animation.';
-const propertyKeys = {};
-propertyKeys[Properties.backgroundColor] = Symbol(keyPrefix + Properties.backgroundColor);
-propertyKeys[Properties.opacity] = Symbol(keyPrefix + Properties.opacity);
-propertyKeys[Properties.rotate] = Symbol(keyPrefix + Properties.rotate);
-propertyKeys[Properties.scale] = Symbol(keyPrefix + Properties.scale);
-propertyKeys[Properties.translate] = Symbol(keyPrefix + Properties.translate);
-propertyKeys[Properties.height] = Symbol(keyPrefix + Properties.height);
-propertyKeys[Properties.width] = Symbol(keyPrefix + Properties.width);
 
 export function _resolveAnimationCurve(curve: string | CubicBezierAnimationCurve | android.view.animation.Interpolator | android.view.animation.LinearInterpolator): android.view.animation.Interpolator {
 	switch (curve) {
@@ -178,27 +168,27 @@ export class Animation extends AnimationBase {
 			return this._rejectAlreadyPlaying();
 		}
 
-		if (this._animatorSet) {
-			return this._play();
+		const animationFinishedPromise = super.play();
+
+		if (!this._animatorSet) {
+			this._animators = new Array<android.animation.Animator>();
+			this._propertyUpdateCallbacks = new Array<Function>();
+			this._propertyResetCallbacks = new Array<Function>();
+
+			for (let i = 0, length = this._propertyAnimations.length; i < length; i++) {
+				this._createAnimators(this._propertyAnimations[i]);
+			}
+
+			this._nativeAnimatorsArray = Array.create(android.animation.Animator, this._animators.length);
+			for (let i = 0, length = this._animators.length; i < length; i++) {
+				this._nativeAnimatorsArray[i] = this._animators[i];
+			}
+
+			this._animatorSet = new android.animation.AnimatorSet();
+			this._animatorSet.addListener(this._animatorListener);
 		}
-
-		this._animators = new Array<android.animation.Animator>();
-		this._propertyUpdateCallbacks = new Array<Function>();
-		this._propertyResetCallbacks = new Array<Function>();
-
-		for (let i = 0, length = this._propertyAnimations.length; i < length; i++) {
-			this._createAnimators(this._propertyAnimations[i]);
-		}
-
-		this._nativeAnimatorsArray = Array.create(android.animation.Animator, this._animators.length);
-		for (let i = 0, length = this._animators.length; i < length; i++) {
-			this._nativeAnimatorsArray[i] = this._animators[i];
-		}
-
-		this._animatorSet = new android.animation.AnimatorSet();
-		this._animatorSet.addListener(this._animatorListener);
-
-		return this._play();
+		this._play();
+		return animationFinishedPromise;
 	}
 
 	public cancel(): void {
@@ -217,10 +207,8 @@ export class Animation extends AnimationBase {
 		return _resolveAnimationCurve(curve);
 	}
 
-	private _play(): AnimationPromise {
-		const animationFinishedPromise = super.play();
-
-		if (Device.sdkVersion <= '23') {
+	protected _play(): void {
+		if (SDK_VERSION <= 23) {
 			this._animatorSet = new android.animation.AnimatorSet();
 			this._animatorSet.addListener(this._animatorListener);
 		}
@@ -239,8 +227,6 @@ export class Animation extends AnimationBase {
 
 		this._animatorSet.setupStartValues();
 		this._animatorSet.start();
-
-		return animationFinishedPromise;
 	}
 
 	private _onAndroidAnimationEnd() {
@@ -300,19 +286,6 @@ export class Animation extends AnimationBase {
 		let originalValue3;
 		const density = layout.getDisplayDensity();
 
-		const key = propertyKeys[propertyAnimation.property];
-		if (key) {
-			propertyAnimation.target[key] = propertyAnimation;
-		}
-		function checkAnimation(cb) {
-			return () => {
-				if (propertyAnimation.target[key] === propertyAnimation) {
-					delete propertyAnimation.target[key];
-					cb();
-				}
-			};
-		}
-
 		const setLocal = this._valueSource === 'animation';
 		const style = propertyAnimation.target.style;
 		switch (propertyAnimation.property) {
@@ -320,23 +293,19 @@ export class Animation extends AnimationBase {
 				opacityProperty._initDefaultNativeValue(style);
 
 				originalValue1 = nativeView.getAlpha();
-				propertyUpdateCallbacks.push(
-					checkAnimation(() => {
-						propertyAnimation.target.style[setLocal ? opacityProperty.name : opacityProperty.keyframe] = propertyAnimation.value;
-					})
-				);
-				propertyResetCallbacks.push(
-					checkAnimation(() => {
-						if (setLocal) {
-							propertyAnimation.target.style[opacityProperty.name] = originalValue1;
-						} else {
-							propertyAnimation.target.style[opacityProperty.keyframe] = originalValue1;
-						}
-						if (propertyAnimation.target.nativeViewProtected) {
-							propertyAnimation.target[opacityProperty.setNative](propertyAnimation.target.style.opacity);
-						}
-					})
-				);
+				propertyUpdateCallbacks.push(() => {
+					propertyAnimation.target.style[setLocal ? opacityProperty.name : opacityProperty.keyframe] = propertyAnimation.value;
+				});
+				propertyResetCallbacks.push(() => {
+					if (setLocal) {
+						propertyAnimation.target.style[opacityProperty.name] = originalValue1;
+					} else {
+						propertyAnimation.target.style[opacityProperty.keyframe] = originalValue1;
+					}
+					if (propertyAnimation.target.nativeViewProtected) {
+						propertyAnimation.target[opacityProperty.setNative](propertyAnimation.target.style.opacity);
+					}
+				});
 				animators.push(createObjectAnimator(nativeView, 'alpha', propertyAnimation.value));
 				break;
 
@@ -358,24 +327,20 @@ export class Animation extends AnimationBase {
 					})
 				);
 
-				propertyUpdateCallbacks.push(
-					checkAnimation(() => {
-						propertyAnimation.target.style[setLocal ? backgroundColorProperty.name : backgroundColorProperty.keyframe] = propertyAnimation.value;
-					})
-				);
-				propertyResetCallbacks.push(
-					checkAnimation(() => {
-						if (setLocal) {
-							propertyAnimation.target.style[backgroundColorProperty.name] = originalValue1;
-						} else {
-							propertyAnimation.target.style[backgroundColorProperty.keyframe] = originalValue1;
-						}
+				propertyUpdateCallbacks.push(() => {
+					propertyAnimation.target.style[setLocal ? backgroundColorProperty.name : backgroundColorProperty.keyframe] = propertyAnimation.value;
+				});
+				propertyResetCallbacks.push(() => {
+					if (setLocal) {
+						propertyAnimation.target.style[backgroundColorProperty.name] = originalValue1;
+					} else {
+						propertyAnimation.target.style[backgroundColorProperty.keyframe] = originalValue1;
+					}
 
-						if (propertyAnimation.target.nativeViewProtected && propertyAnimation.target[backgroundColorProperty.setNative]) {
-							propertyAnimation.target[backgroundColorProperty.setNative](propertyAnimation.target.style.backgroundColor);
-						}
-					})
-				);
+					if (propertyAnimation.target.nativeViewProtected && propertyAnimation.target[backgroundColorProperty.setNative]) {
+						propertyAnimation.target[backgroundColorProperty.setNative](propertyAnimation.target.style.backgroundColor);
+					}
+				});
 				animators.push(animator);
 				break;
 			}
@@ -386,29 +351,25 @@ export class Animation extends AnimationBase {
 				originalValue1 = nativeView.getTranslationX() / density;
 				originalValue2 = nativeView.getTranslationY() / density;
 
-				propertyUpdateCallbacks.push(
-					checkAnimation(() => {
-						propertyAnimation.target.style[setLocal ? translateXProperty.name : translateXProperty.keyframe] = propertyAnimation.value.x;
-						propertyAnimation.target.style[setLocal ? translateYProperty.name : translateYProperty.keyframe] = propertyAnimation.value.y;
-					})
-				);
+				propertyUpdateCallbacks.push(() => {
+					propertyAnimation.target.style[setLocal ? translateXProperty.name : translateXProperty.keyframe] = propertyAnimation.value.x;
+					propertyAnimation.target.style[setLocal ? translateYProperty.name : translateYProperty.keyframe] = propertyAnimation.value.y;
+				});
 
-				propertyResetCallbacks.push(
-					checkAnimation(() => {
-						if (setLocal) {
-							propertyAnimation.target.style[translateXProperty.name] = originalValue1;
-							propertyAnimation.target.style[translateYProperty.name] = originalValue2;
-						} else {
-							propertyAnimation.target.style[translateXProperty.keyframe] = originalValue1;
-							propertyAnimation.target.style[translateYProperty.keyframe] = originalValue2;
-						}
+				propertyResetCallbacks.push(() => {
+					if (setLocal) {
+						propertyAnimation.target.style[translateXProperty.name] = originalValue1;
+						propertyAnimation.target.style[translateYProperty.name] = originalValue2;
+					} else {
+						propertyAnimation.target.style[translateXProperty.keyframe] = originalValue1;
+						propertyAnimation.target.style[translateYProperty.keyframe] = originalValue2;
+					}
 
-						if (propertyAnimation.target.nativeViewProtected) {
-							propertyAnimation.target[translateXProperty.setNative](propertyAnimation.target.style.translateX);
-							propertyAnimation.target[translateYProperty.setNative](propertyAnimation.target.style.translateY);
-						}
-					})
-				);
+					if (propertyAnimation.target.nativeViewProtected) {
+						propertyAnimation.target[translateXProperty.setNative](propertyAnimation.target.style.translateX);
+						propertyAnimation.target[translateYProperty.setNative](propertyAnimation.target.style.translateY);
+					}
+				});
 
 				animators.push(createAnimationSet([createObjectAnimator(nativeView, 'translationX', propertyAnimation.value.x * density), createObjectAnimator(nativeView, 'translationY', propertyAnimation.value.y * density)], propertyAnimation.iterations));
 				break;
@@ -420,29 +381,25 @@ export class Animation extends AnimationBase {
 				originalValue1 = nativeView.getScaleX();
 				originalValue2 = nativeView.getScaleY();
 
-				propertyUpdateCallbacks.push(
-					checkAnimation(() => {
-						propertyAnimation.target.style[setLocal ? scaleXProperty.name : scaleXProperty.keyframe] = propertyAnimation.value.x;
-						propertyAnimation.target.style[setLocal ? scaleYProperty.name : scaleYProperty.keyframe] = propertyAnimation.value.y;
-					})
-				);
+				propertyUpdateCallbacks.push(() => {
+					propertyAnimation.target.style[setLocal ? scaleXProperty.name : scaleXProperty.keyframe] = propertyAnimation.value.x;
+					propertyAnimation.target.style[setLocal ? scaleYProperty.name : scaleYProperty.keyframe] = propertyAnimation.value.y;
+				});
 
-				propertyResetCallbacks.push(
-					checkAnimation(() => {
-						if (setLocal) {
-							propertyAnimation.target.style[scaleXProperty.name] = originalValue1;
-							propertyAnimation.target.style[scaleYProperty.name] = originalValue2;
-						} else {
-							propertyAnimation.target.style[scaleXProperty.keyframe] = originalValue1;
-							propertyAnimation.target.style[scaleYProperty.keyframe] = originalValue2;
-						}
+				propertyResetCallbacks.push(() => {
+					if (setLocal) {
+						propertyAnimation.target.style[scaleXProperty.name] = originalValue1;
+						propertyAnimation.target.style[scaleYProperty.name] = originalValue2;
+					} else {
+						propertyAnimation.target.style[scaleXProperty.keyframe] = originalValue1;
+						propertyAnimation.target.style[scaleYProperty.keyframe] = originalValue2;
+					}
 
-						if (propertyAnimation.target.nativeViewProtected) {
-							propertyAnimation.target[scaleXProperty.setNative](propertyAnimation.target.style.scaleX);
-							propertyAnimation.target[scaleYProperty.setNative](propertyAnimation.target.style.scaleY);
-						}
-					})
-				);
+					if (propertyAnimation.target.nativeViewProtected) {
+						propertyAnimation.target[scaleXProperty.setNative](propertyAnimation.target.style.scaleX);
+						propertyAnimation.target[scaleYProperty.setNative](propertyAnimation.target.style.scaleY);
+					}
+				});
 
 				animators.push(createAnimationSet([createObjectAnimator(nativeView, 'scaleX', propertyAnimation.value.x), createObjectAnimator(nativeView, 'scaleY', propertyAnimation.value.y)], propertyAnimation.iterations));
 				break;
@@ -456,32 +413,28 @@ export class Animation extends AnimationBase {
 				originalValue2 = nativeView.getRotationY();
 				originalValue3 = nativeView.getRotation();
 
-				propertyUpdateCallbacks.push(
-					checkAnimation(() => {
-						propertyAnimation.target.style[setLocal ? rotateXProperty.name : rotateXProperty.keyframe] = propertyAnimation.value.x;
-						propertyAnimation.target.style[setLocal ? rotateYProperty.name : rotateYProperty.keyframe] = propertyAnimation.value.y;
-						propertyAnimation.target.style[setLocal ? rotateProperty.name : rotateProperty.keyframe] = propertyAnimation.value.z;
-					})
-				);
-				propertyResetCallbacks.push(
-					checkAnimation(() => {
-						if (setLocal) {
-							propertyAnimation.target.style[rotateXProperty.name] = originalValue1;
-							propertyAnimation.target.style[rotateYProperty.name] = originalValue2;
-							propertyAnimation.target.style[rotateProperty.name] = originalValue3;
-						} else {
-							propertyAnimation.target.style[rotateXProperty.keyframe] = originalValue1;
-							propertyAnimation.target.style[rotateYProperty.keyframe] = originalValue2;
-							propertyAnimation.target.style[rotateProperty.keyframe] = originalValue3;
-						}
+				propertyUpdateCallbacks.push(() => {
+					propertyAnimation.target.style[setLocal ? rotateXProperty.name : rotateXProperty.keyframe] = propertyAnimation.value.x;
+					propertyAnimation.target.style[setLocal ? rotateYProperty.name : rotateYProperty.keyframe] = propertyAnimation.value.y;
+					propertyAnimation.target.style[setLocal ? rotateProperty.name : rotateProperty.keyframe] = propertyAnimation.value.z;
+				});
+				propertyResetCallbacks.push(() => {
+					if (setLocal) {
+						propertyAnimation.target.style[rotateXProperty.name] = originalValue1;
+						propertyAnimation.target.style[rotateYProperty.name] = originalValue2;
+						propertyAnimation.target.style[rotateProperty.name] = originalValue3;
+					} else {
+						propertyAnimation.target.style[rotateXProperty.keyframe] = originalValue1;
+						propertyAnimation.target.style[rotateYProperty.keyframe] = originalValue2;
+						propertyAnimation.target.style[rotateProperty.keyframe] = originalValue3;
+					}
 
-						if (propertyAnimation.target.nativeViewProtected) {
-							propertyAnimation.target[rotateProperty.setNative](propertyAnimation.target.style.rotate);
-							propertyAnimation.target[rotateXProperty.setNative](propertyAnimation.target.style.rotateX);
-							propertyAnimation.target[rotateYProperty.setNative](propertyAnimation.target.style.rotateY);
-						}
-					})
-				);
+					if (propertyAnimation.target.nativeViewProtected) {
+						propertyAnimation.target[rotateProperty.setNative](propertyAnimation.target.style.rotate);
+						propertyAnimation.target[rotateXProperty.setNative](propertyAnimation.target.style.rotateX);
+						propertyAnimation.target[rotateYProperty.setNative](propertyAnimation.target.style.rotateY);
+					}
+				});
 
 				animators.push(createAnimationSet([createObjectAnimator(nativeView, 'rotationX', propertyAnimation.value.x), createObjectAnimator(nativeView, 'rotationY', propertyAnimation.value.y), createObjectAnimator(nativeView, 'rotation', propertyAnimation.value.z)], propertyAnimation.iterations));
 				break;
@@ -514,20 +467,16 @@ export class Animation extends AnimationBase {
 						},
 					})
 				);
-				propertyUpdateCallbacks.push(
-					checkAnimation(() => {
-						propertyAnimation.target.style[targetStyle] = propertyAnimation.value;
-					})
-				);
-				propertyResetCallbacks.push(
-					checkAnimation(() => {
-						propertyAnimation.target.style[targetStyle] = originalValue1;
-						if (propertyAnimation.target.nativeViewProtected) {
-							const setter = propertyAnimation.target[extentProperty.setNative];
-							setter(propertyAnimation.target.style[propertyAnimation.property]);
-						}
-					})
-				);
+				propertyUpdateCallbacks.push(() => {
+					propertyAnimation.target.style[targetStyle] = propertyAnimation.value;
+				});
+				propertyResetCallbacks.push(() => {
+					propertyAnimation.target.style[targetStyle] = originalValue1;
+					if (propertyAnimation.target.nativeViewProtected) {
+						const setter = propertyAnimation.target[extentProperty.setNative];
+						setter(propertyAnimation.target.style[propertyAnimation.property]);
+					}
+				});
 				animators.push(extentAnimator);
 				break;
 			}

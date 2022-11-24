@@ -1,15 +1,20 @@
-import { FileSystemAccess } from './file-system-access';
-
+import { IFileSystemAccess, FileSystemAccess, FileSystemAccess29 } from './file-system-access';
+import { Device } from '../platform';
+import { SDK_VERSION } from '../utils';
 // The FileSystemAccess implementation, used through all the APIs.
-let fileAccess: FileSystemAccess;
+let fileAccess: IFileSystemAccess;
 
 /**
  * Returns FileSystemAccess, a shared singleton utility class to provide methods to access and work with the file system. This is used under the hood of all the file system apis in @nativescript/core and provided as a lower level convenience if needed.
  * @returns FileSystemAccess
  */
-export function getFileAccess(): FileSystemAccess {
+export function getFileAccess(): IFileSystemAccess {
 	if (!fileAccess) {
-		fileAccess = new FileSystemAccess();
+		if (global.isAndroid && SDK_VERSION >= 29) {
+			fileAccess = new FileSystemAccess29();
+		} else {
+			fileAccess = new FileSystemAccess();
+		}
 	}
 
 	return fileAccess;
@@ -122,6 +127,26 @@ export class FileSystemEntity {
 			return;
 		}
 
+		const localError = function (error) {
+			if (onError) {
+				onError(error);
+			}
+
+			return null;
+		};
+
+		const fileAccess = getFileAccess();
+		// call rename for FileSystemAccess29
+		if ((<any>fileAccess).__skip) {
+			fileAccess.rename(this.path, newName, localError);
+			const fileInfo = getFileAccess().getFile(this.path, null);
+			if (fileInfo) {
+				this._name = fileInfo.name;
+				this._extension = fileInfo.extension;
+			}
+			return;
+		}
+
 		const parentFolder = this.parent;
 		if (!parentFolder) {
 			if (onError) {
@@ -131,17 +156,8 @@ export class FileSystemEntity {
 			return;
 		}
 
-		const fileAccess = getFileAccess();
 		const path = parentFolder.path;
 		const newPath = fileAccess.joinPath(path, newName);
-
-		const localError = function (error) {
-			if (onError) {
-				onError(error);
-			}
-
-			return null;
-		};
 
 		fileAccess.rename(this.path, newPath, localError);
 		this._path = newPath;
@@ -161,12 +177,7 @@ export class FileSystemEntity {
 	}
 
 	get lastModified(): Date {
-		let value = this._lastModified;
-		if (!this._lastModified) {
-			value = this._lastModified = getFileAccess().getLastModified(this.path);
-		}
-
-		return value;
+		return getFileAccess().getLastModified(this.path);
 	}
 }
 
@@ -204,7 +215,7 @@ export class File extends FileSystemEntity {
 	public read(): Promise<any> {
 		return new Promise<any>((resolve, reject) => {
 			try {
-				this.checkAccess();
+				this._checkAccess();
 			} catch (ex) {
 				reject(ex);
 
@@ -229,7 +240,7 @@ export class File extends FileSystemEntity {
 	}
 
 	public readSync(onError?: (error: any) => any): any {
-		this.checkAccess();
+		this._checkAccess();
 
 		this._locked = true;
 
@@ -251,7 +262,7 @@ export class File extends FileSystemEntity {
 	public write(content: any): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			try {
-				this.checkAccess();
+				this._checkAccess();
 			} catch (ex) {
 				reject(ex);
 
@@ -276,7 +287,7 @@ export class File extends FileSystemEntity {
 	}
 
 	public writeSync(content: any, onError?: (error: any) => any): void {
-		this.checkAccess();
+		this._checkAccess();
 
 		try {
 			this._locked = true;
@@ -298,7 +309,7 @@ export class File extends FileSystemEntity {
 	public readText(encoding?: string): Promise<string> {
 		return new Promise((resolve, reject) => {
 			try {
-				this.checkAccess();
+				this._checkAccess();
 			} catch (ex) {
 				reject(ex);
 
@@ -323,7 +334,7 @@ export class File extends FileSystemEntity {
 	}
 
 	public readTextSync(onError?: (error: any) => any, encoding?: string): string {
-		this.checkAccess();
+		this._checkAccess();
 
 		this._locked = true;
 
@@ -344,7 +355,7 @@ export class File extends FileSystemEntity {
 	public writeText(content: string, encoding?: string): Promise<any> {
 		return new Promise((resolve, reject) => {
 			try {
-				this.checkAccess();
+				this._checkAccess();
 			} catch (ex) {
 				reject(ex);
 
@@ -369,7 +380,7 @@ export class File extends FileSystemEntity {
 	}
 
 	public writeTextSync(content: string, onError?: (error: any) => any, encoding?: string): void {
-		this.checkAccess();
+		this._checkAccess();
 
 		try {
 			this._locked = true;
@@ -388,7 +399,7 @@ export class File extends FileSystemEntity {
 		}
 	}
 
-	private checkAccess() {
+	_checkAccess() {
 		if (this.isLocked) {
 			throw new Error('Cannot access a locked file.');
 		}
@@ -538,6 +549,7 @@ export class Folder extends FileSystemEntity {
 
 export namespace knownFolders {
 	let _documents: Folder;
+	let _externalDocuments: Folder;
 	let _temp: Folder;
 	let _app: Folder;
 
@@ -550,6 +562,17 @@ export namespace knownFolders {
 		}
 
 		return _documents;
+	}
+
+	export function externalDocuments(): Folder {
+		if (!_externalDocuments) {
+			const path = getFileAccess().getExternalDocumentsFolderPath();
+			_externalDocuments = new Folder();
+			_externalDocuments._path = path;
+			_externalDocuments._isKnown = true;
+		}
+
+		return _externalDocuments;
 	}
 
 	export function temp(): Folder {
