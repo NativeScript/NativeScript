@@ -9,7 +9,6 @@ export { Source } from './debug';
 export const SDK_VERSION = android.os.Build.VERSION.SDK_INT;
 
 const MIN_URI_SHARE_RESTRICTED_APK_VERSION = 24;
-export const SDK_VERSION = android.os.Build.VERSION.SDK_INT;
 
 export function GC() {
 	gc();
