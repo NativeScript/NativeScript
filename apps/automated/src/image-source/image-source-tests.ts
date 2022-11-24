@@ -5,6 +5,7 @@ import * as app from '@nativescript/core/application';
 import * as TKUnit from '../tk-unit';
 import { Font } from '@nativescript/core/ui/styling/font';
 import { Color } from '@nativescript/core/color';
+import * as utils from '@nativescript/core/utils';
 
 const imagePath = '~/assets/logo.png';
 const splashscreenPath = '~/assets/splashscreen.png';
@@ -18,6 +19,36 @@ export function testFromResource() {
 	// << imagesource-resname
 
 	TKUnit.assert(img.height > 0, 'image.fromResource failed');
+}
+
+export function testDrawableSetNativeSource() {
+	if (global.isAndroid) {
+		const context = utils.ad.getApplicationContext() as android.content.Context;
+		const rDrawable = `${context.getPackageName()}.R$drawable`;
+		const rClazz = java.lang.Class.forName(`${rDrawable}`);
+		const iconId = rClazz.getDeclaredField('icon').get(null) as java.lang.Integer;
+		const splashScreenId = rClazz.getDeclaredField('splash_screen').get(null) as java.lang.Integer;
+
+		const icon = androidx.appcompat.content.res.AppCompatResources.getDrawable(context, iconId?.intValue?.() ?? 0);
+		const splashScreen = androidx.appcompat.content.res.AppCompatResources.getDrawable(context, splashScreenId?.intValue?.() ?? 0);
+
+		let type = icon?.getClass?.().toString?.() ?? '';
+
+		// >> imagesource-setNativeSource
+		const img = new ImageSource();
+		img.setNativeSource(icon);
+		// << imagesource-setNativeSource
+
+		TKUnit.assert(img.height > 0, `image ${type} setNativeSource failed`);
+
+		type = splashScreen?.getClass?.().toString?.() ?? '';
+
+		// >> imagesource-setNativeSource
+		img.setNativeSource(splashScreen);
+		// << imagesource-setNativeSource
+
+		TKUnit.assert(img.height > 0, `image ${type} setNativeSource failed`);
+	}
 }
 
 export function testFromUrl(done) {
