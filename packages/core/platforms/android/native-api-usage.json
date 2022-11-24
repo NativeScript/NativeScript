@@ -3,6 +3,7 @@
         "java.lang:String*",
         "java.lang:Integer*",
         "java.lang:Number*",
+        "java.lang:Double*",
         "java.lang:Float*",
         "java.lang:Class*",
         "java.lang:ClassLoader*",
