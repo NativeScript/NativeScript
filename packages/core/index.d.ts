@@ -105,7 +105,7 @@ export type { InstrumentationMode, TimerInfo } from './profiling';
 export { encoding } from './text';
 export * from './trace';
 export * from './ui';
-import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, executeOnUIThread, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, iOSNativeHelper as iosUtils, Source, escapeRegexSymbols, convertString, dismissSoftInput, queueMacrotask, queueGC, throttle, debounce, dataSerialize, dataDeserialize } from './utils';
+import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, executeOnUIThread, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, iOSNativeHelper as iosUtils, Source, escapeRegexSymbols, convertString, dismissSoftInput, dismissKeyboard, queueMacrotask, queueGC, throttle, debounce, dataSerialize, dataDeserialize, copyToClipboard } from './utils';
 import { ClassInfo, getClass, getBaseClasses, getClassInfo, isBoolean, isDefined, isFunction, isNullOrUndefined, isNumber, isObject, isString, isUndefined, toUIString, verifyCallback, numberHasDecimals, numberIs64Bit } from './utils/types';
 export declare const Utils: {
 	GC: typeof GC;
@@ -158,5 +158,7 @@ export declare const Utils: {
 	toUIString: typeof toUIString;
 	verifyCallback: typeof verifyCallback;
 	dismissSoftInput: typeof dismissSoftInput;
+	dismissKeyboard: typeof dismissKeyboard;
+	copyToClipboard: typeof copyToClipboard;
 };
 export { XmlParser, ParserEventType, ParserEvent } from './xml';

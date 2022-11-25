@@ -242,3 +242,13 @@ export function isRealDevice(): boolean;
  * Hides the soft input method, usually a soft keyboard.
  */
 export function dismissSoftInput(nativeView?: any): void;
+
+/**
+ * Dismiss any keyboard visible on the screen.
+ */
+export function dismissKeyboard(): void;
+
+/**
+ * Copy value to device clipboard.
+ */
+export function copyToClipboard(value: string): void;

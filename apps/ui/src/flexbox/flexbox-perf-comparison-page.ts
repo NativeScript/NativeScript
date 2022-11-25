@@ -1,5 +1,5 @@
-import { TabView } from '@nativescript/core/ui/tab-view';
-import * as utils from '@nativescript/core/utils/utils';
+import { TabView } from '@nativescript/core';
+import * as utils from '@nativescript/core/utils';
 
 const titles = ['Etiam lacinia', 'Imperdiet ante', 'A interdum', 'Quisque tempus', 'Sodales viverra'];
 const bodies = [

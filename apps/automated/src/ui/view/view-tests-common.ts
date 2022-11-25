@@ -904,6 +904,12 @@ function _createLabelWithBorder(): View {
 	return lbl;
 }
 
+function _createBackgroundColorView(): View {
+	const lbl = new Label();
+	lbl.backgroundColor = new Color('#FFFF00');
+	return lbl;
+}
+
 export function testIsVisible() {
 	const lbl = new Label();
 
@@ -935,6 +941,23 @@ export function testBackgroundColor() {
 	helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<View>) {
 		const lbl = views[0];
 		helper.waitUntilLayoutReady(lbl);
+		TKUnit.assertEqual(definition.checkNativeBackgroundColor(lbl), true, 'BackgroundColor not applied correctly!');
+	});
+}
+
+export function testBackgroundBorderColor() {
+	helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<View>) {
+		const lbl = views[0];
+		helper.waitUntilLayoutReady(lbl);
+		TKUnit.assertEqual(definition.checkNativeBackgroundColor(lbl), true, 'BackgroundColor not applied correctly!');
+	});
+}
+export function testSetAndRemoveBackgroundColor() {
+	helper.buildUIAndRunTest(_createBackgroundColorView(), function (views: Array<View>) {
+		const lbl = views[0];
+		helper.waitUntilLayoutReady(lbl);
+		TKUnit.assertEqual(definition.checkNativeBackgroundColor(lbl), true, 'BackgroundColor not applied correctly!');
+		lbl.backgroundColor = null;
 		TKUnit.assertEqual(definition.checkNativeBackgroundColor(lbl), true, 'BackgroundColor not applied correctly!');
 	});
 }

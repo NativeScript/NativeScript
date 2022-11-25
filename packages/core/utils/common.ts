@@ -3,7 +3,6 @@ import { dispatchToMainThread, dispatchToUIThread, isMainThread } from './mainth
 import { sanitizeModuleName } from '../ui/builder/module-name-sanitizer';
 
 import { GC } from './index';
-import { Device } from '../platform';
 
 export * from './mainthread-helper';
 export * from './macrotask-scheduler';
@@ -190,5 +189,3 @@ export function queueGC(delay = 900, useThrottle?: boolean) {
 		debouncedGC.get(delay)();
 	}
 }
-
-export const SDK_VERSION = parseInt(Device.sdkVersion, 10);

@@ -1,20 +1,24 @@
 import ts from 'typescript';
 
 /**
- * A TypeScript transform that compiles classes marked with @NativeClass as es5 & commonjs
- *
- * @param ctx
+ * A TypeScript transform that compiles classes marked with `@NativeClass` as es5
  */
 export default function (ctx: ts.TransformationContext) {
 	function isNativeClassExtension(node: ts.ClassDeclaration) {
-		return (
-			ts.canHaveDecorators(node) &&
-			ts.getDecorators(node) &&
-			ts.getDecorators(node).filter((d) => {
-				const fullText = d.getFullText().trim();
-				return fullText.indexOf('@NativeClass') > -1;
-			}).length > 0
-		);
+		let decorators: Readonly<ts.Decorator[]>;
+
+		if ('canHaveDecorators' in ts && ts.canHaveDecorators(node)) {
+			// use the newer decorators API when using a newer typescript version
+			decorators = ts.getDecorators(node);
+		} else {
+			// fallback to old behavior on older typescript versions
+			decorators = node.decorators;
+		}
+
+		return !!decorators?.some((d) => {
+			const fullText = d.getFullText().trim();
+			return fullText.indexOf('@NativeClass') > -1;
+		});
 	}
 	function visitNode(node: ts.Node): ts.Node {
 		if (ts.isClassDeclaration(node) && isNativeClassExtension(node)) {

@@ -23,11 +23,11 @@
   "devDependencies": {
     "@nativescript/hook": "^2.0.0",
     "@nativescript/nx": "~4.0.0",
-    "@nrwl/cli": "15.0.13",
-    "@nrwl/eslint-plugin-nx": "15.0.13",
-    "@nrwl/jest": "15.0.13",
-    "@nrwl/node": "15.0.13",
-    "@nrwl/workspace": "15.0.13",
+    "@nrwl/cli": "15.2.1",
+    "@nrwl/eslint-plugin-nx": "15.2.1",
+    "@nrwl/jest": "15.2.1",
+    "@nrwl/node": "15.2.1",
+    "@nrwl/workspace": "15.2.1",
     "@nstudio/focus": "^15.0.0",
     "@nstudio/nps-i": "~2.0.0",
     "@prettier/plugin-xml": "^2.2.0",
@@ -70,7 +70,7 @@
     "typedoc": "^0.22.17",
     "typescript": "4.8.4",
     "zx": "^7.0.5",
-    "nx": "15.0.13"
+    "nx": "15.2.1"
   },
   "lint-staged": {
     "**/*": [

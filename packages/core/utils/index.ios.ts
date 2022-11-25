@@ -3,8 +3,10 @@ import { Trace } from '../trace';
 
 export { dataDeserialize, dataSerialize, iOSNativeHelper } from './native-helper';
 export * from './layout-helper';
-export * from './utils-common';
+export * from './common';
 export { Source } from './debug';
+
+export const SDK_VERSION = parseFloat(UIDevice.currentDevice.systemVersion);
 
 export function openFile(filePath: string): boolean {
 	try {
@@ -55,4 +57,16 @@ export function dismissSoftInput(nativeView?: UIView): void {
 		return;
 	}
 	UIApplication.sharedApplication.sendActionToFromForEvent('resignFirstResponder', null, null, null);
+}
+
+export function dismissKeyboard() {
+	dismissSoftInput();
+}
+
+export function copyToClipboard(value: string) {
+	try {
+		UIPasteboard.generalPasteboard.setValueForPasteboardType(value, kUTTypePlainText);
+	} catch (err) {
+		console.log(err);
+	}
 }
