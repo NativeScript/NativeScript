@@ -1,4 +1,5 @@
-import { Font as FontBase, parseFontFamily, FontWeight, FontStyleType, FontWeightType, FontVariationSettingsType, FontVariationSettings, fuzzySearch } from './font-common';
+import { Font as FontBase, parseFontFamily, FontWeight, FontVariationSettings, fuzzySearch } from './font-common';
+import { FontStyleType, FontWeightType, FontVariationSettingsType } from './font-interfaces';
 import { Trace } from '../../trace';
 import * as fs from '../../file-system';
 export * from './font-common';

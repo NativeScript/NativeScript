@@ -29,7 +29,7 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
 	}
 
 	public textFieldShouldBeginEditing(textField: UITextField): boolean {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			return owner.textFieldShouldBeginEditing(textField);
 		}
@@ -38,21 +38,21 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
 	}
 
 	public textFieldDidBeginEditing(textField: UITextField): void {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			owner.textFieldDidBeginEditing(textField);
 		}
 	}
 
 	public textFieldDidEndEditing(textField: UITextField) {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			owner.textFieldDidEndEditing(textField);
 		}
 	}
 
 	public textFieldShouldClear(textField: UITextField) {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			return owner.textFieldShouldClear(textField);
 		}
@@ -62,7 +62,7 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
 
 	public textFieldShouldReturn(textField: UITextField): boolean {
 		// Called when the user presses the return button.
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			return owner.textFieldShouldReturn(textField);
 		}
@@ -71,7 +71,7 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
 	}
 
 	public textFieldShouldChangeCharactersInRangeReplacementString(textField: UITextField, range: NSRange, replacementString: string): boolean {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			return owner.textFieldShouldChangeCharactersInRangeReplacementString(textField, range, replacementString);
 		}
@@ -92,7 +92,7 @@ class UITextFieldImpl extends UITextField {
 	}
 
 	private _getTextRectForBounds(bounds: CGRect): CGRect {
-		const owner = this._owner ? this._owner.get() : null;
+		const owner = this._owner ? this._owner.deref() : null;
 
 		if (!owner) {
 			return bounds;

@@ -1,4 +1,5 @@
-import { Font as FontBase, parseFontFamily, genericFontFamilies, FontStyleType, FontWeight, FontWeightType, FontVariationSettingsType, FontVariationSettings } from './font-common';
+import { Font as FontBase, parseFontFamily, genericFontFamilies, FontWeight, FontVariationSettings } from './font-common';
+import { FontStyleType, FontWeightType, FontVariationSettingsType } from './font-interfaces';
 import { Trace } from '../../trace';
 import { SDK_VERSION } from '../../utils';
 import * as fs from '../../file-system';

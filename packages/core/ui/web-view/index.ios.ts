@@ -18,7 +18,7 @@ class WKNavigationDelegateImpl extends NSObject implements WKNavigationDelegate 
 	private _owner: WeakRef<WebView>;
 
 	public webViewDecidePolicyForNavigationActionDecisionHandler(webView: WKWebView, navigationAction: WKNavigationAction, decisionHandler: any): void {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner && navigationAction.request.URL) {
 			let navType: WebViewNavigationType = 'other';
 
@@ -58,7 +58,7 @@ class WKNavigationDelegateImpl extends NSObject implements WKNavigationDelegate 
 		if (Trace.isEnabled()) {
 			Trace.write('WKNavigationDelegateClass.webViewDidFinishNavigation(' + webView.URL + ')', Trace.categories.Debug);
 		}
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			let src = owner.src;
 			if (webView.URL) {
@@ -69,7 +69,7 @@ class WKNavigationDelegateImpl extends NSObject implements WKNavigationDelegate 
 	}
 
 	public webViewDidFailNavigationWithError(webView: WKWebView, navigation: WKNavigation, error: NSError): void {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			let src = owner.src;
 			if (webView.URL) {
@@ -83,7 +83,7 @@ class WKNavigationDelegateImpl extends NSObject implements WKNavigationDelegate 
 	}
 
 	public webViewDidFailProvisionalNavigationWithError(webView: WKWebView, navigation: WKNavigation, error: NSError): void {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			let src = owner.src;
 			if (webView.URL) {
@@ -128,7 +128,7 @@ class UIScrollViewDelegateImpl extends NSObject implements UIScrollViewDelegate 
 	private _owner: WeakRef<WebView>;
 
 	private _initCurrentValues(scrollView: UIScrollView) {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner && (owner._minimumZoomScale === undefined || owner._maximumZoomScale === undefined || owner._zoomScale === undefined)) {
 			owner._minimumZoomScale = scrollView.minimumZoomScale;
 			owner._maximumZoomScale = scrollView.maximumZoomScale;
@@ -137,7 +137,7 @@ class UIScrollViewDelegateImpl extends NSObject implements UIScrollViewDelegate 
 	}
 
 	private _handleDisableZoom(scrollView: UIScrollView) {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner.disableZoom) {
 			this._initCurrentValues(scrollView);
 			scrollView.maximumZoomScale = 1.0;

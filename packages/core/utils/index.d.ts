@@ -6,7 +6,7 @@ export { Source } from './debug';
 
 export * from './layout-helper';
 export * from './native-helper';
-export * from './utils-common';
+export * from './common';
 
 export const RESOURCE_PREFIX: string;
 export const FILE_PREFIX: string;

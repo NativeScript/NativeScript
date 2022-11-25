@@ -144,7 +144,7 @@ function ensureNativeClasses() {
 		}
 
 		private getTnsView(androidView: android.view.View) {
-			const view = androidViewToTNSView.get(androidView)?.get();
+			const view = androidViewToTNSView.get(androidView)?.deref();
 			if (!view) {
 				androidViewToTNSView.delete(androidView);
 

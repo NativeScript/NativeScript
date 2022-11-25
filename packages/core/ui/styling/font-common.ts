@@ -1,13 +1,6 @@
 import { Font as FontDefinition } from './font';
-import { ParsedFont, FontStyleType, FontWeightType } from './font-interfaces';
+import { ParsedFont, FontStyleType, FontWeightType, FontVariationSettingsType } from './font-interfaces';
 import { makeValidator, makeParser } from '../core/properties';
-
-export type { FontStyleType, FontWeightType, ParsedFont } from './font-interfaces';
-
-export type FontVariationSettingsType = {
-	axis: string;
-	value: number;
-};
 
 export abstract class Font implements FontDefinition {
 	public static default = undefined;

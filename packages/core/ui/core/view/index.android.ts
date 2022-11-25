@@ -95,7 +95,7 @@ function initializeTouchListener(): void {
 		}
 
 		onTouch(view: android.view.View, event: android.view.MotionEvent): boolean {
-			const owner = this.owner.get();
+			const owner = this.owner.deref();
 			if (!owner) {
 				return;
 			}
@@ -257,7 +257,7 @@ function initializeDialogFragment() {
 		public onDismiss(dialog: android.content.DialogInterface): void {
 			super.onDismiss(dialog);
 			const manager = this.getFragmentManager();
-			const activity = this.activity?.get();
+			const activity = this.activity?.deref();
 			if (manager && !activity?.isChangingConfigurations()) {
 				removeModal(this.owner._domId);
 				this._dismissCallback();
@@ -272,7 +272,7 @@ function initializeDialogFragment() {
 		public onDestroy(): void {
 			super.onDestroy();
 			const owner = this.owner;
-			const activity = this.activity?.get();
+			const activity = this.activity?.deref();
 			if (!activity?.isChangingConfigurations()) {
 				this.activity = null;
 			}
@@ -324,7 +324,7 @@ export class View extends ViewCommon {
 
 		const weakRef = new WeakRef(this);
 		const handler = () => {
-			const owner = weakRef.get();
+			const owner = weakRef.deref();
 			if (owner) {
 				setupAccessibleView(owner);
 				owner.off(View.loadedEvent, handler);

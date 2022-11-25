@@ -291,7 +291,7 @@ export class ActionBar extends ActionBarBase {
 			this.nativeViewProtected.setNavigationOnClickListener(
 				new android.view.View.OnClickListener({
 					onClick: function (v) {
-						const owner = navBtn.get();
+						const owner = navBtn?.deref();
 						if (owner) {
 							owner._raiseTap();
 						}
@@ -380,7 +380,7 @@ export class ActionBar extends ActionBarBase {
 		item.actionView.android.setOnClickListener(
 			new android.view.View.OnClickListener({
 				onClick: function (v: android.view.View) {
-					const owner = weakRef.get();
+					const owner = weakRef?.deref();
 					if (owner) {
 						owner._raiseTap();
 					}

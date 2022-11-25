@@ -8,4 +8,10 @@ export interface ParsedFont {
 	lineHeight?: string;
 	fontSize?: string;
 	fontFamily?: string;
+	fontVariationSettings?: Array<FontVariationSettingsType>;
 }
+
+export type FontVariationSettingsType = {
+	axis: string;
+	value: number;
+};

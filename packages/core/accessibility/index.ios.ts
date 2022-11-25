@@ -95,7 +95,7 @@ function ensureNativeClasses() {
 			return;
 		}
 
-		const lastView = lastFocusedView?.get();
+		const lastView = lastFocusedView?.deref();
 		if (lastView && view !== lastView) {
 			const lastFocusedUIView = lastView.nativeViewProtected as UIView;
 			if (lastFocusedUIView) {

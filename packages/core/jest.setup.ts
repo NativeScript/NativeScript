@@ -6,6 +6,23 @@ global.NSString = {
 			intValue: 13,
 		};
 	},
+	pathWithComponents(components: string[] | NSArray<string>) {
+		return {
+			stringByStandardizingPath: '',
+		};
+	},
+};
+global.NSFileManager = {
+	defaultManager: {
+		fileExistsAtPathIsDirectory(path: string, isDirectory?: boolean) {
+			return true;
+		},
+	},
+};
+global.interop = {
+	Reference(type: any, ref?: boolean) {
+		return {};
+	},
 };
 global.UIDevice = {
 	currentDevice: {

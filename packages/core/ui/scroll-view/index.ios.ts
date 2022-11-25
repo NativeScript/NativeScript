@@ -19,7 +19,7 @@ class UIScrollViewDelegateImpl extends NSObject implements UIScrollViewDelegate 
 	}
 
 	public scrollViewDidScroll(sv: UIScrollView): void {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			owner.notify(<ScrollEventData>{
 				object: owner,

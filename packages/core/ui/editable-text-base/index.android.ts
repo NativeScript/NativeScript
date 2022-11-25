@@ -3,8 +3,6 @@ import { textTransformProperty, textProperty, resetSymbol } from '../text-base';
 import { Color } from '../../color';
 import { SDK_VERSION, ad } from '../../utils';
 import { CoreTypes } from '../../core-types';
-import { Device } from '../../platform';
-import lazy from '../../utils/lazy';
 
 export * from './editable-text-base-common';
 
@@ -60,23 +58,23 @@ function initializeEditTextListeners(): void {
 		}
 
 		public beforeTextChanged(text: string, start: number, count: number, after: number): void {
-			this.owner?.get()?.beforeTextChanged(text, start, count, after);
+			this.owner?.deref()?.beforeTextChanged(text, start, count, after);
 		}
 
 		public onTextChanged(text: string, start: number, before: number, count: number): void {
-			this.owner?.get()?.onTextChanged(text, start, before, count);
+			this.owner?.deref()?.onTextChanged(text, start, before, count);
 		}
 
 		public afterTextChanged(editable: android.text.Editable): void {
-			this.owner?.get()?.afterTextChanged(editable);
+			this.owner?.deref()?.afterTextChanged(editable);
 		}
 
 		public onFocusChange(view: android.view.View, hasFocus: boolean): void {
-			this.owner?.get()?.onFocusChange(view, hasFocus);
+			this.owner?.deref()?.onFocusChange(view, hasFocus);
 		}
 
 		public onEditorAction(textView: android.widget.TextView, actionId: number, event: android.view.KeyEvent): boolean {
-			return this.owner?.get()?.onEditorAction(textView, actionId, event) || false;
+			return this.owner?.deref()?.onEditorAction(textView, actionId, event) || false;
 		}
 	}
 
