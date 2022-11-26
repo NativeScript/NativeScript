@@ -184,12 +184,10 @@ export namespace Length {
 	} = convertToStringCommon;
 }
 
-export const zeroLength: CoreTypes.LengthType = { value: 0, unit: 'px' };
-
 export const minWidthProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'minWidth',
 	cssName: 'min-width',
-	defaultValue: zeroLength,
+	defaultValue: CoreTypes.zeroLength,
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
@@ -207,7 +205,7 @@ minWidthProperty.register(Style);
 export const minHeightProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'minHeight',
 	cssName: 'min-height',
-	defaultValue: zeroLength,
+	defaultValue: CoreTypes.zeroLength,
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
@@ -277,7 +275,7 @@ marginProperty.register(Style);
 export const marginLeftProperty = new CssProperty<Style, CoreTypes.PercentLengthType>({
 	name: 'marginLeft',
 	cssName: 'margin-left',
-	defaultValue: zeroLength,
+	defaultValue: CoreTypes.zeroLength,
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueConverter: PercentLength.parse,
@@ -287,7 +285,7 @@ marginLeftProperty.register(Style);
 export const marginRightProperty = new CssProperty<Style, CoreTypes.PercentLengthType>({
 	name: 'marginRight',
 	cssName: 'margin-right',
-	defaultValue: zeroLength,
+	defaultValue: CoreTypes.zeroLength,
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueConverter: PercentLength.parse,
@@ -297,7 +295,7 @@ marginRightProperty.register(Style);
 export const marginTopProperty = new CssProperty<Style, CoreTypes.PercentLengthType>({
 	name: 'marginTop',
 	cssName: 'margin-top',
-	defaultValue: zeroLength,
+	defaultValue: CoreTypes.zeroLength,
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueConverter: PercentLength.parse,
@@ -307,7 +305,7 @@ marginTopProperty.register(Style);
 export const marginBottomProperty = new CssProperty<Style, CoreTypes.PercentLengthType>({
 	name: 'marginBottom',
 	cssName: 'margin-bottom',
-	defaultValue: zeroLength,
+	defaultValue: CoreTypes.zeroLength,
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueConverter: PercentLength.parse,
@@ -331,7 +329,7 @@ paddingProperty.register(Style);
 export const paddingLeftProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'paddingLeft',
 	cssName: 'padding-left',
-	defaultValue: zeroLength,
+	defaultValue: CoreTypes.zeroLength,
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
@@ -349,7 +347,7 @@ paddingLeftProperty.register(Style);
 export const paddingRightProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'paddingRight',
 	cssName: 'padding-right',
-	defaultValue: zeroLength,
+	defaultValue: CoreTypes.zeroLength,
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
@@ -367,7 +365,7 @@ paddingRightProperty.register(Style);
 export const paddingTopProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'paddingTop',
 	cssName: 'padding-top',
-	defaultValue: zeroLength,
+	defaultValue: CoreTypes.zeroLength,
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
@@ -385,7 +383,7 @@ paddingTopProperty.register(Style);
 export const paddingBottomProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'paddingBottom',
 	cssName: 'padding-bottom',
-	defaultValue: zeroLength,
+	defaultValue: CoreTypes.zeroLength,
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
@@ -1033,7 +1031,7 @@ borderWidthProperty.register(Style);
 export const borderTopWidthProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'borderTopWidth',
 	cssName: 'border-top-width',
-	defaultValue: zeroLength,
+	defaultValue: CoreTypes.zeroLength,
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
@@ -1057,7 +1055,7 @@ borderTopWidthProperty.register(Style);
 export const borderRightWidthProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'borderRightWidth',
 	cssName: 'border-right-width',
-	defaultValue: zeroLength,
+	defaultValue: CoreTypes.zeroLength,
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
@@ -1081,7 +1079,7 @@ borderRightWidthProperty.register(Style);
 export const borderBottomWidthProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'borderBottomWidth',
 	cssName: 'border-bottom-width',
-	defaultValue: zeroLength,
+	defaultValue: CoreTypes.zeroLength,
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
@@ -1105,7 +1103,7 @@ borderBottomWidthProperty.register(Style);
 export const borderLeftWidthProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'borderLeftWidth',
 	cssName: 'border-left-width',
-	defaultValue: zeroLength,
+	defaultValue: CoreTypes.zeroLength,
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {

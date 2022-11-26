@@ -2,7 +2,7 @@ import { Font as FontBase, parseFontFamily, FontWeight, FontVariationSettings, f
 import { FontStyleType, FontWeightType, FontVariationSettingsType } from './font-interfaces';
 import { Trace } from '../../trace';
 import * as fs from '../../file-system';
-export * from './font-common';
+export { FontStyle, FontWeight, FontVariationSettings, parseFont } from './font-common';
 
 interface FontDescriptor {
 	fontFamily: string[];

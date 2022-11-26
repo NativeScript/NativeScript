@@ -13,7 +13,8 @@ export default {
 			},
 		],
 	},
-	extensionsToTreatAsEsm: ['.ts'],
-	moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'ios.ts'],
+	extensionsToTreatAsEsm: ['.ts', '.ios.ts', '.android.ts'],
+	moduleDirectories: ['node_modules'],
+	moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'ios.ts', 'android.ts'],
 	coverageDirectory: '../../coverage/core',
 };

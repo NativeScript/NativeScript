@@ -4,7 +4,7 @@ export * from './mainthread-helper';
 export * from './macrotask-scheduler';
 export { Source } from './debug';
 
-export * from './layout-helper';
+export { layout } from './layout-helper';
 export * from './native-helper';
 export * from './common';
 

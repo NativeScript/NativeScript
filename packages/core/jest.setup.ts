@@ -12,6 +12,7 @@ global.NSString = {
 		};
 	},
 };
+// global.NSObject = class NSObject {};
 global.NSFileManager = {
 	defaultManager: {
 		fileExistsAtPathIsDirectory(path: string, isDirectory?: boolean) {
@@ -20,29 +21,70 @@ global.NSFileManager = {
 	},
 };
 global.interop = {
-	Reference(type: any, ref?: boolean) {
-		return {};
+	Reference: class Reference {
+		constructor(type: any, ref?: boolean) {}
+	},
+	types: {
+		bool: {},
 	},
 };
+// global.UIApplication = {
+
+// }
 global.UIDevice = {
 	currentDevice: {
 		systemVersion: '13.0',
 	},
 };
+global.UIScreen = {
+	mainScreen: {
+		scale: 1,
+	},
+};
 const cgColors = { CGColor: 1 };
 global.UIColor = {
+	alloc() {
+		return {
+			initWithRedGreenBlueAlpha(r, g, b, a) {
+				return {};
+			},
+		};
+	},
 	clearColor: cgColors,
 };
-global.UIDocumentInteractionController = {
-	interactionControllerWithURL(url: any) {
-		return null;
+global.NativeScriptUtils = {
+	createUIFont(descriptor: any) {
+		return {};
 	},
 };
-global.NSURL = {
-	fileURLWithPath(path: string) {
-		return null;
+global.NSOperationQueue = {
+	mainQueue: {
+		addOperationWithBlock(fn: Function) {
+			if (fn) {
+				fn();
+			}
+		},
 	},
 };
+global.NSThread = {
+	isMainThread: true,
+};
+global.CFRunLoopGetMain = function () {
+	return {};
+};
+global.kCFRunLoopDefaultMode = 1;
+global.CFRunLoopPerformBlock = function (runloop, kCFRunLoopDefaultMode, func) {};
+global.CFRunLoopWakeUp = function (runloop) {};
+// global.UIDocumentInteractionController = {
+// 	interactionControllerWithURL(url: any) {
+// 		return null;
+// 	},
+// };
+// global.NSURL = {
+// 	fileURLWithPath(path: string) {
+// 		return null;
+// 	},
+// };
 // declare class UIDocumentInteractionController extends NSObject implements UIActionSheetDelegate {
 
 // 	static alloc(): UIDocumentInteractionController; // inherited from NSObject

@@ -17,6 +17,11 @@
 				"jestConfig": "packages/core/jest.config.ts",
 				"passWithNoTests": true
 			},
+			"configurations": {
+				"ci": {
+					"ci": true
+				}
+			},
 			"outputs": ["{workspaceRoot}/coverage/packages/core"]
 		},
 		"build": {

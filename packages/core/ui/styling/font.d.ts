@@ -1,6 +1,6 @@
 ﻿export type { FontStyleType, FontWeightType, ParsedFont, FontVariationSettingsType } from './font-interfaces';
 
-export class Font {
+export declare class Font {
 	public static default: Font;
 
 	public fontFamily: string;

@@ -42,6 +42,9 @@ jobs:
       - name: Setup
         run: npm run setup
 
+      - name: Unit Tests
+        run: npx nx affected --target=test --configuration=ci
+
       - name: Create Emulator
         uses: rigor789/action-create-emulator@main
 

@@ -1,6 +1,6 @@
 import * as definition from '.';
 import * as types from '../utils/types';
-import * as knownColors from './known-colors';
+import { knownColors } from './known-colors';
 
 const SHARP = '#';
 const HEX_REGEX = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)|(^#[0-9A-F]{8}$)/i;
@@ -23,11 +23,12 @@ export class Color implements definition.Color {
 					this._argb = argbFromHslOrHsla(lowered);
 				} else if (isHsvOrHsva(lowered)) {
 					this._argb = argbFromHsvOrHsva(lowered);
-				} else if (knownColors.isKnownName(lowered)) {
+				} else if (knownColors[lowered]) {
 					// The parameter is a known color name
-					const argb = knownColors.getKnownColor(lowered);
+					console.log('arg:', arg);
 					this._name = arg;
-					this._argb = argb;
+					console.log(`rgb(${knownColors[lowered][0]},${knownColors[lowered][1]},${knownColors[lowered][2]})`);
+					this._argb = argbFromRgbOrRgba(`rgb(${knownColors[lowered][0]},${knownColors[lowered][1]},${knownColors[lowered][2]})`);
 				} else if (arg.length && arg[0].charAt(0) === SHARP && (arg.length === 4 || arg.length === 7 || arg.length === 9)) {
 					// we dont use the regexp as it is quite slow. Instead we expect it to be a valid hex format
 					// strange that it would not be. And if it is not a thrown error seems best
@@ -99,7 +100,7 @@ export class Color implements definition.Color {
 		return this._name;
 	}
 
-	get ios(): UIColor {
+	get ios(): any /* UIColor */ {
 		return undefined;
 	}
 
@@ -109,7 +110,7 @@ export class Color implements definition.Color {
 
 	public _argbFromString(hex: string): number {
 		// always called as SHARP as first char
-		hex = hex.substr(1);
+		hex = hex.substring(1);
 		const length = hex.length;
 		// first we normalize
 		if (length === 3) {
@@ -160,11 +161,7 @@ export class Color implements definition.Color {
 		}
 		const lowered = value.toLowerCase();
 
-		if (knownColors.isKnownName(lowered)) {
-			return true;
-		}
-
-		return HEX_REGEX.test(value) || isRgbOrRgba(lowered) || isHslOrHsla(lowered);
+		return knownColors[lowered] || HEX_REGEX.test(value) || isRgbOrRgba(lowered) || isHslOrHsla(lowered);
 	}
 	public static fromHSL(a, h, s, l) {
 		return new Color(a, h, s, l, 'hsl');
@@ -177,7 +174,7 @@ export class Color implements definition.Color {
 		return this.hex;
 	}
 
-	public static fromIosColor(value: UIColor): Color {
+	public static fromIosColor(value: any /* UIColor */): Color {
 		return undefined;
 	}
 

@@ -9,11 +9,6 @@ import { profile } from '../../profiling';
 
 export * from './text-field-common';
 
-const zeroLength: CoreTypes.LengthType = {
-	value: 0,
-	unit: 'px',
-};
-
 @NativeClass
 class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
 	public static ObjCProtocols = [UITextFieldDelegate];
@@ -287,28 +282,28 @@ export class TextField extends TextFieldBase {
 	}
 
 	[paddingTopProperty.getDefault](): CoreTypes.LengthType {
-		return zeroLength;
+		return CoreTypes.zeroLength;
 	}
 	[paddingTopProperty.setNative](value: CoreTypes.LengthType) {
 		// Padding is realized via UITextFieldImpl.textRectForBounds method
 	}
 
 	[paddingRightProperty.getDefault](): CoreTypes.LengthType {
-		return zeroLength;
+		return CoreTypes.zeroLength;
 	}
 	[paddingRightProperty.setNative](value: CoreTypes.LengthType) {
 		// Padding is realized via UITextFieldImpl.textRectForBounds method
 	}
 
 	[paddingBottomProperty.getDefault](): CoreTypes.LengthType {
-		return zeroLength;
+		return CoreTypes.zeroLength;
 	}
 	[paddingBottomProperty.setNative](value: CoreTypes.LengthType) {
 		// Padding is realized via UITextFieldImpl.textRectForBounds method
 	}
 
 	[paddingLeftProperty.getDefault](): CoreTypes.LengthType {
-		return zeroLength;
+		return CoreTypes.zeroLength;
 	}
 	[paddingLeftProperty.setNative](value: CoreTypes.LengthType) {
 		// Padding is realized via UITextFieldImpl.textRectForBounds method

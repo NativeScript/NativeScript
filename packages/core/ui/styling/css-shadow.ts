@@ -1,6 +1,6 @@
 import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
-import { Length, zeroLength } from './style-properties';
+import { Length } from './style-properties';
 
 export interface CSSShadow {
 	inset: boolean;
@@ -57,7 +57,7 @@ export function parseCSSShadow(value: string): CSSShadow {
 			try {
 				return Length.parse(val);
 			} catch (err) {
-				return zeroLength;
+				return CoreTypes.zeroLength;
 			}
 		});
 	const [offsetX, offsetY, blurRadius, spreadRadius] = nums;

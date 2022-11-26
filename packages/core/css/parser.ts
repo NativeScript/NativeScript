@@ -1,5 +1,5 @@
 import { Color } from '../color';
-import { getKnownColor } from '../color/known-colors';
+import { knownColors } from '../color/known-colors';
 
 export type Parsed<V> = { start: number; end: number; value: V };
 
@@ -132,16 +132,16 @@ export function convertHSLToRGBColor(hue: number, saturation: number, lightness:
 }
 
 export function parseColorKeyword(value, start: number, keyword = parseKeyword(value, start)): Parsed<Color> {
-	const parseColor = keyword && getKnownColor(keyword.value);
+	const parseColor = keyword && knownColors[keyword.value];
 	if (parseColor != null) {
 		const end = keyword.end;
-		return { start, end, value: new Color(parseColor) };
+		return { start, end, value: new Color(`rgb(${parseColor[0]},${parseColor[1]},${parseColor[2]})`) };
 	}
 	return null;
 }
 
 export function parseColor(value: string, start = 0, keyword = parseKeyword(value, start)): Parsed<Color> {
-	return parseHexColor(value, start) || parseColorKeyword(value, start, keyword) || parseCssColor(value, start);
+	return parseColorKeyword(value, start, keyword) || parseHexColor(value, start) || parseCssColor(value, start);
 }
 
 const keywordRegEx = /\s*([a-z][\w\-]*)\s*/giy;
