@@ -2,6 +2,7 @@ import { extname, resolve } from 'path';
 import Config from 'webpack-chain';
 import { existsSync } from 'fs';
 
+import { getTypescript, readTsConfig } from '../helpers/typescript';
 import { getDependencyPath } from '../helpers/dependencies';
 import { getProjectFilePath } from '../helpers/project';
 import { env as _env, IWebpackEnv } from '../index';
@@ -180,9 +181,19 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				.loader('angular-hot-loader');
 		});
 
-		const buildAngularPath = getDependencyPath('@angular-devkit/build-angular');
-		if (buildAngularPath) {
-			const buildAngularOptions: any = { aot: !disableAOT };
+		const buildAngularMajorVersion = getBuildAngularMajorVersion();
+		if (buildAngularMajorVersion) {
+			const buildAngularOptions: any = {
+				aot: !disableAOT,
+			};
+
+			if (buildAngularMajorVersion < 15) {
+				const tsConfig = readTsConfig(tsConfigPath);
+				const { ScriptTarget } = getTypescript();
+				buildAngularOptions.scriptTarget =
+					tsConfig.options.target ?? ScriptTarget.ESNext;
+			}
+
 			if (disableAOT) {
 				buildAngularOptions.optimize = false;
 			}
@@ -283,4 +294,25 @@ function getAngularCompilerPlugin(): any {
 function getAngularWebpackPlugin(): any {
 	const { AngularWebpackPlugin } = require('@ngtools/webpack');
 	return AngularWebpackPlugin;
+}
+
+const MAJOR_VER_RE = /^(\d+)\./;
+function getBuildAngularMajorVersion() {
+	const buildAngularPath = getDependencyPath('@angular-devkit/build-angular');
+	if (!buildAngularPath) {
+		return null;
+	}
+
+	try {
+		const buildAngularVersion =
+			require(`${buildAngularPath}/package.json`).version;
+
+		const [_, majorStr] = buildAngularVersion.match(MAJOR_VER_RE);
+
+		return Number(majorStr);
+	} catch (err) {
+		// ignore
+	}
+
+	return null;
 }

@@ -1,5 +1,12 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`angular configuration @angular-devkit/build-angular backwards compatible sets scriptTarget for version <15 1`] = `
+{
+  "aot": true,
+  "scriptTarget": 99,
+}
+`;
+
 exports[`angular configuration for android 1`] = `
 "{
   mode: 'development',
