@@ -1,4 +1,4 @@
-﻿export { TextDecoder, TextEncoder } from './text-common';
+﻿export * from './text-common';
 
 export namespace encoding {
 	export const ISO_8859_1 = 5; //NSISOLatin1StringEncoding
