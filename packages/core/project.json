@@ -15,7 +15,8 @@
 			"executor": "@nrwl/jest:jest",
 			"options": {
 				"jestConfig": "packages/core/jest.config.ts",
-				"passWithNoTests": true
+				"passWithNoTests": true,
+				"verbose": true
 			},
 			"configurations": {
 				"ci": {

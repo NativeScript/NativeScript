@@ -1,6 +1,7 @@
-﻿export type { FontStyleType, FontWeightType, ParsedFont, FontVariationSettingsType } from './font-interfaces';
+﻿import { Font as FontBase } from './font-common';
+export type { FontStyleType, FontWeightType, ParsedFont, FontVariationSettingsType } from './font-interfaces';
 
-export declare class Font {
+export declare class Font extends FontBase {
 	public static default: Font;
 
 	public fontFamily: string;

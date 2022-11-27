@@ -1,6 +1,6 @@
 import * as definition from '.';
 import * as types from '../utils/types';
-import { knownColors } from './known-colors';
+import * as knownColors from './known-colors';
 
 const SHARP = '#';
 const HEX_REGEX = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)|(^#[0-9A-F]{8}$)/i;
@@ -23,13 +23,12 @@ export class Color implements definition.Color {
 					this._argb = argbFromHslOrHsla(lowered);
 				} else if (isHsvOrHsva(lowered)) {
 					this._argb = argbFromHsvOrHsva(lowered);
-				} else if (knownColors[lowered]) {
+				} else if (knownColors.isKnownName(lowered)) {
 					// The parameter is a known color name
-					console.log('arg:', arg);
+					const argb = knownColors.getKnownColor(lowered);
 					this._name = arg;
-					console.log(`rgb(${knownColors[lowered][0]},${knownColors[lowered][1]},${knownColors[lowered][2]})`);
-					this._argb = argbFromRgbOrRgba(`rgb(${knownColors[lowered][0]},${knownColors[lowered][1]},${knownColors[lowered][2]})`);
-				} else if (arg.length && arg[0].charAt(0) === SHARP && (arg.length === 4 || arg.length === 7 || arg.length === 9)) {
+					this._argb = argb;
+				} else if (arg[0].charAt(0) === SHARP && (arg.length === 4 || arg.length === 7 || arg.length === 9)) {
 					// we dont use the regexp as it is quite slow. Instead we expect it to be a valid hex format
 					// strange that it would not be. And if it is not a thrown error seems best
 					// The parameter is a "#RRGGBBAA" formatted string
@@ -161,7 +160,11 @@ export class Color implements definition.Color {
 		}
 		const lowered = value.toLowerCase();
 
-		return knownColors[lowered] || HEX_REGEX.test(value) || isRgbOrRgba(lowered) || isHslOrHsla(lowered);
+		if (knownColors.isKnownName(lowered)) {
+			return true;
+		}
+
+		return HEX_REGEX.test(value) || isRgbOrRgba(lowered) || isHslOrHsla(lowered);
 	}
 	public static fromHSL(a, h, s, l) {
 		return new Color(a, h, s, l, 'hsl');

@@ -52,6 +52,12 @@ global.UIColor = {
 	},
 	clearColor: cgColors,
 };
+global.NSSearchPathDirectory = {
+	LibraryDirectory: '',
+	DeveloperDirectory: '',
+	DesktopDirectory: '',
+	DownloadsDirectory: '',
+};
 global.NativeScriptUtils = {
 	createUIFont(descriptor: any) {
 		return {};

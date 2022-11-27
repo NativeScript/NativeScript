@@ -1065,7 +1065,6 @@ CssAnimationProperty.prototype.isStyleProperty = true;
 
 export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> implements InheritedCssProperty<T, U> {
 	public setInheritedValue: (value: U) => void;
-	public overrideHandlers: (options: CssPropertyOptions<T, U>) => void;
 
 	constructor(options: CssPropertyOptions<T, U>) {
 		super(options);

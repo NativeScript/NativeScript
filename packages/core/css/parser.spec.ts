@@ -40,7 +40,7 @@ describe('css', () => {
 				test(parseURL, 'url(lucky.gif) #FF0000', 15, null);
 				test(parseURL, 'repeat url(lucky.gif) #FF0000', 6, { start: 6, end: 22, value: 'lucky.gif' });
 			});
-			xdescribe('color', () => {
+			describe('color', () => {
 				test(parseColor, '  #369 ', { start: 0, end: 7, value: new Color(0xff336699) });
 				test(parseColor, '  #456789 ', { start: 0, end: 10, value: new Color(0xff456789) });
 				test(parseColor, '  #45678985 ', { start: 0, end: 12, value: new Color(0x85456789) });
@@ -90,7 +90,7 @@ describe('css', () => {
 				test(parseBackgroundPosition, 'bottom left 25%', { start: 0, end: 15, value: { x: { align: 'left', offset: { value: 0.25, unit: '%' } }, y: 'bottom' } });
 				test(parseBackgroundPosition, 'top 100% left 25%', { start: 0, end: 17, value: { x: { align: 'left', offset: { value: 0.25, unit: '%' } }, y: { align: 'top', offset: { value: 1, unit: '%' } } } });
 			});
-			xdescribe('background', () => {
+			describe('background', () => {
 				test(parseBackground, '   #996633  ', { start: 0, end: 12, value: { color: new Color('#996633') } });
 				test(parseBackground, '  #00ff00 url("smiley.gif") repeat-y ', { start: 0, end: 37, value: { color: new Color('#00ff00'), image: 'smiley.gif', repeat: 'repeat-y' } });
 				test(parseBackground, '   url(smiley.gif)  no-repeat  top 50% left 100% #00ff00', {
@@ -480,7 +480,7 @@ describe('css', () => {
 				fs.writeFileSync(outNsCssFile, JSON.stringify(nativescriptAst, null, '  '));
 			});
 
-			it.skip('our parser is fast (this test is flaky, gc, opts.)', () => {
+			it('our parser is fast (this test is flaky, gc, opts.)', () => {
 				function trapDuration(action: () => void) {
 					const [startSec, startMSec] = process.hrtime();
 					action();

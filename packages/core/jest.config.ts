@@ -1,7 +1,10 @@
+import type { JestConfigWithTsJest } from 'ts-jest';
+
 /* eslint-disable */
-export default {
+const jestConfig: JestConfigWithTsJest = {
 	displayName: 'core',
-	preset: '../../jest.preset.js',
+	// preset: '../../jest.preset.js',
+	preset: 'ts-jest/presets/default-esm',
 	setupFiles: ['<rootDir>/jest.setup.ts'],
 	testEnvironment: 'node',
 	transform: {
@@ -13,8 +16,12 @@ export default {
 			},
 		],
 	},
-	extensionsToTreatAsEsm: ['.ts', '.ios.ts', '.android.ts'],
+	extensionsToTreatAsEsm: ['.ts'],
 	moduleDirectories: ['node_modules'],
-	moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'ios.ts', 'android.ts'],
-	coverageDirectory: '../../coverage/core',
+	moduleFileExtensions: ['ts', 'js', 'ios.ts'],
+	moduleNameMapper: {
+		'^(\\.{1,2}/.*)\\.js$': '$1',
+	},
 };
+
+export default jestConfig;
