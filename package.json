@@ -64,7 +64,7 @@
     "ts-jest": "29.0.3",
     "ts-node": "10.9.1",
     "ts-patch": "^2.0.1",
-    "tslib": "^2.3.0",
+    "tslib": "^2.4.0",
     "tslint": "6.1.3",
     "tslint-to-eslint-config": "^2.13.0",
     "typedoc": "^0.22.17",
@@ -76,9 +76,6 @@
     "**/*": [
       "nx format:write --files"
     ]
-  },
-  "resolutions": {
-    "tslib": "2.4.0"
   }
 }
 

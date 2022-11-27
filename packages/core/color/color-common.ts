@@ -177,7 +177,10 @@ export class Color implements definition.Color {
 		return this.hex;
 	}
 
-	public static fromIosColor(value: any /* UIColor */): Color {
+	/**
+	 * @param {UIColor} value
+	 */
+	public static fromIosColor(value: any): Color {
 		return undefined;
 	}
 

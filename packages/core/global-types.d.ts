@@ -221,6 +221,16 @@ interface RequireContext {
 	resolve(id: string): string;
 }
 
+declare class WeakRef<T> {
+	constructor(obj: T);
+	/**
+	 * @deprecated Use deref instead with 8.4+
+	 */
+	get(): T;
+	clear(): void;
+	deref(): T | undefined;
+}
+
 declare var __dirname: string;
 declare var __filename: string;
 
