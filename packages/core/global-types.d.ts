@@ -227,6 +227,9 @@ declare class WeakRef<T> {
 	 * @deprecated Use deref instead with 8.4+
 	 */
 	get(): T;
+	/**
+	 * @deprecated You no longer need to make this call and can be safely removed.
+	 */
 	clear(): void;
 	deref(): T | undefined;
 }
