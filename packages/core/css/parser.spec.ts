@@ -48,8 +48,8 @@ describe('css', () => {
 				test(parseColor, '  rgb(255 8 128 / .5) ', { start: 0, end: 21, value: new Color(0x80ff0880) });
 				test(parseColor, '  rgb(255 8 128/0.5)', { start: 0, end: 20, value: new Color(0x80ff0880) });
 				test(parseColor, '  rgba(255, 8, 128, 0.5) ', { start: 0, end: 24, value: new Color(0x80ff0880) });
-				test(parseColor, '  hsl(330.9, 100%, 51.6%) ', { start: 0, end: 25, value: new Color('hsl(330.9, 100%, 51.6%)') });
-				test(parseColor, '  hsla(330.9, 100%, 51.6%, 0.5) ', { start: 0, end: 31, value: new Color('hsla(330.9, 100%, 51.6%, 0.5)') });
+				test(parseColor, '  hsl(330.9, 100%, 51.6%) ', { start: 0, end: 25, value: new Color(0xffff0880) });
+				test(parseColor, '  hsla(330.9, 100%, 51.6%, 0.5) ', { start: 0, end: 31, value: new Color(0x80ff0880) });
 				test(parseColor, '#FF0000 url(lucky.gif)', 8, null);
 				test(parseColor, 'url(lucky.gif) #FF0000 repeat', 15, { start: 15, end: 23, value: new Color(0xffff0000) });
 			});
@@ -142,13 +142,13 @@ describe('css', () => {
 						},
 					},
 				});
-				test(parseBackground, 'linear-gradient(0deg, #333, #999 40%, #888)', {
+				test(parseBackground, 'linear-gradient(0deg, blue, green 40%, red)', {
 					start: 0,
 					end: 43,
 					value: {
 						image: {
 							angle: (Math.PI * 0) / 4,
-							colors: [{ color: new Color('#333') }, { color: new Color('#999'), offset: { value: 0.4, unit: '%' } }, { color: new Color('#888') }],
+							colors: [{ color: new Color('#0000ff') }, { color: new Color('#008000'), offset: { value: 0.4, unit: '%' } }, { color: new Color('#ff0000') }],
 						},
 					},
 				});
@@ -480,7 +480,7 @@ describe('css', () => {
 				fs.writeFileSync(outNsCssFile, JSON.stringify(nativescriptAst, null, '  '));
 			});
 
-			it('our parser is fast (this test is flaky, gc, opts.)', () => {
+			it.skip('our parser is fast (this test is flaky, gc, opts.)', () => {
 				function trapDuration(action: () => void) {
 					const [startSec, startMSec] = process.hrtime();
 					action();

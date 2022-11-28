@@ -1,5 +1,5 @@
-/// <reference path="./references.d.ts" />
 // @ts-nocheck
+global.WeakRef.prototype.get = global.WeakRef.prototype.deref;
 global.NSString = {
 	stringWithString() {
 		return {

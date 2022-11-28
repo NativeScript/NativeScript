@@ -9,5 +9,5 @@
 		"allowJs": true,
 		"experimentalDecorators": true
 	},
-	"include": ["**/*.spec.ts"]
+	"include": ["./references.d.ts", "**/*.spec.ts"]
 }
