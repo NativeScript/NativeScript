@@ -1,4 +1,7 @@
-﻿export class Font {
+﻿import { Font as FontBase } from './font-common';
+export type { FontStyleType, FontWeightType, ParsedFont, FontVariationSettingsType } from './font-interfaces';
+
+export declare class Font extends FontBase {
 	public static default: Font;
 
 	public fontFamily: string;
@@ -26,7 +29,6 @@
 	public static equals(value1: Font, value2: Font): boolean;
 }
 
-export type FontStyleType = 'normal' | 'italic';
 export namespace FontStyle {
 	export const NORMAL: 'normal';
 	export const ITALIC: 'italic';
@@ -34,7 +36,6 @@ export namespace FontStyle {
 	export function parse(value: string): FontStyleType;
 }
 
-export type FontWeightType = '100' | '200' | '300' | 'normal' | '400' | '500' | '600' | 'bold' | '700' | '800' | '900' | number;
 export namespace FontWeight {
 	export const THIN: '100';
 	export const EXTRA_LIGHT: '200';
@@ -49,24 +50,9 @@ export namespace FontWeight {
 	export function parse(value: string): FontWeightType;
 }
 
-export type FontVariationSettingsType = {
-	axis: string;
-	value: number;
-};
-
 export namespace FontVariationSettings {
 	export function parse(fontVariationSettings: string): Array<FontVariationSettingsType> | null;
 	export function toString(fontVariationSettings: Array<FontVariationSettingsType> | null): string | null;
-}
-
-export interface ParsedFont {
-	fontStyle?: FontStyleType;
-	fontVariant?: string;
-	fontWeight?: FontWeightType;
-	lineHeight?: string;
-	fontSize?: string;
-	fontFamily?: string;
-	fontVariationSettings?: Array<FontVariationSettingsType>;
 }
 
 export function parseFont(fontValue: string): ParsedFont;

@@ -99,7 +99,7 @@ export class Color implements definition.Color {
 		return this._name;
 	}
 
-	get ios(): UIColor {
+	get ios(): any /* UIColor */ {
 		return undefined;
 	}
 
@@ -109,7 +109,7 @@ export class Color implements definition.Color {
 
 	public _argbFromString(hex: string): number {
 		// always called as SHARP as first char
-		hex = hex.substr(1);
+		hex = hex.substring(1);
 		const length = hex.length;
 		// first we normalize
 		if (length === 3) {
@@ -177,7 +177,10 @@ export class Color implements definition.Color {
 		return this.hex;
 	}
 
-	public static fromIosColor(value: UIColor): Color {
+	/**
+	 * @param {UIColor} value
+	 */
+	public static fromIosColor(value: any): Color {
 		return undefined;
 	}
 

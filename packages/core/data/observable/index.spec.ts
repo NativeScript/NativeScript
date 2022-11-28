@@ -1,20 +1,19 @@
-import { Observable } from '@nativescript/core/data/observable';
-import { assert } from 'chai';
+import { Observable } from '.';
 
-describe('observable', () => {
+describe('Observable', () => {
 	describe('once', () => {
 		let observable: Observable;
 		let handler: () => void;
 		let callCount = 0;
 
-		beforeEach('create handlers', () => {
+		beforeEach(() => {
 			handler = function () {
 				callCount++;
 			};
 			observable = new Observable();
 			observable.once('test', handler);
 		});
-		afterEach('reset handlers', () => {
+		afterEach(() => {
 			callCount = 0;
 			handler = null;
 			observable = null;
@@ -30,11 +29,11 @@ describe('observable', () => {
 		it('fires just once', () => {
 			notify();
 			notify();
-			assert.equal(callCount, 1, 'Expected the handler to be called exactly once');
+			expect(callCount).toBe(1);
 		});
 		it('does not fire for other events', () => {
 			notifyWrong();
-			assert.equal(callCount, 0, 'Expected the handler to not be called, when other events fire');
+			expect(callCount).toBe(0);
 		});
 	});
 
@@ -53,8 +52,8 @@ describe('observable', () => {
 			};
 			observable.once('test', handler1);
 			observable.notify({ eventName: 'test', object: observable });
-			assert.equal(callCount1, 1, 'Expected the first handler to unsubscribe before being fired and to notify just once');
-			assert.equal(callCount2, 1, 'Expected the second handler to be fired once when recursively notified by the first handler');
+			expect(callCount1).toBe(1);
+			expect(callCount2).toBe(1);
 		});
 	});
 });

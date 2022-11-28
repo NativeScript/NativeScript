@@ -3,7 +3,7 @@ import { LayoutBase } from '../layout-base';
 import { CoreTypes } from '../../../core-types';
 import { View, CSSType } from '../../core/view';
 import { Property } from '../../core/properties';
-import { Length, zeroLength } from '../../styling/style-properties';
+import { Length } from '../../styling/style-properties';
 
 export * from '../layout-base';
 
@@ -53,7 +53,7 @@ AbsoluteLayoutBase.prototype.recycleNativeView = 'auto';
 
 export const leftProperty = new Property<View, CoreTypes.LengthType>({
 	name: 'left',
-	defaultValue: zeroLength,
+	defaultValue: CoreTypes.zeroLength,
 	valueChanged: (target, oldValue, newValue) => {
 		target.effectiveLeft = Length.toDevicePixels(newValue, 0);
 		const layout = target.parent;
@@ -67,7 +67,7 @@ leftProperty.register(View);
 
 export const topProperty = new Property<View, CoreTypes.LengthType>({
 	name: 'top',
-	defaultValue: zeroLength,
+	defaultValue: CoreTypes.zeroLength,
 	valueChanged: (target, oldValue, newValue) => {
 		target.effectiveTop = Length.toDevicePixels(newValue, 0);
 		const layout = target.parent;

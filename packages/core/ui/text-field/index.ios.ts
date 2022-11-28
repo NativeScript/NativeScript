@@ -9,11 +9,6 @@ import { profile } from '../../profiling';
 
 export * from './text-field-common';
 
-const zeroLength: CoreTypes.LengthType = {
-	value: 0,
-	unit: 'px',
-};
-
 @NativeClass
 class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
 	public static ObjCProtocols = [UITextFieldDelegate];
@@ -29,7 +24,7 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
 	}
 
 	public textFieldShouldBeginEditing(textField: UITextField): boolean {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			return owner.textFieldShouldBeginEditing(textField);
 		}
@@ -38,21 +33,21 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
 	}
 
 	public textFieldDidBeginEditing(textField: UITextField): void {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			owner.textFieldDidBeginEditing(textField);
 		}
 	}
 
 	public textFieldDidEndEditing(textField: UITextField) {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			owner.textFieldDidEndEditing(textField);
 		}
 	}
 
 	public textFieldShouldClear(textField: UITextField) {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			return owner.textFieldShouldClear(textField);
 		}
@@ -62,7 +57,7 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
 
 	public textFieldShouldReturn(textField: UITextField): boolean {
 		// Called when the user presses the return button.
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			return owner.textFieldShouldReturn(textField);
 		}
@@ -71,7 +66,7 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
 	}
 
 	public textFieldShouldChangeCharactersInRangeReplacementString(textField: UITextField, range: NSRange, replacementString: string): boolean {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			return owner.textFieldShouldChangeCharactersInRangeReplacementString(textField, range, replacementString);
 		}
@@ -92,7 +87,7 @@ class UITextFieldImpl extends UITextField {
 	}
 
 	private _getTextRectForBounds(bounds: CGRect): CGRect {
-		const owner = this._owner ? this._owner.get() : null;
+		const owner = this._owner ? this._owner.deref() : null;
 
 		if (!owner) {
 			return bounds;
@@ -287,28 +282,28 @@ export class TextField extends TextFieldBase {
 	}
 
 	[paddingTopProperty.getDefault](): CoreTypes.LengthType {
-		return zeroLength;
+		return CoreTypes.zeroLength;
 	}
 	[paddingTopProperty.setNative](value: CoreTypes.LengthType) {
 		// Padding is realized via UITextFieldImpl.textRectForBounds method
 	}
 
 	[paddingRightProperty.getDefault](): CoreTypes.LengthType {
-		return zeroLength;
+		return CoreTypes.zeroLength;
 	}
 	[paddingRightProperty.setNative](value: CoreTypes.LengthType) {
 		// Padding is realized via UITextFieldImpl.textRectForBounds method
 	}
 
 	[paddingBottomProperty.getDefault](): CoreTypes.LengthType {
-		return zeroLength;
+		return CoreTypes.zeroLength;
 	}
 	[paddingBottomProperty.setNative](value: CoreTypes.LengthType) {
 		// Padding is realized via UITextFieldImpl.textRectForBounds method
 	}
 
 	[paddingLeftProperty.getDefault](): CoreTypes.LengthType {
-		return zeroLength;
+		return CoreTypes.zeroLength;
 	}
 	[paddingLeftProperty.setNative](value: CoreTypes.LengthType) {
 		// Padding is realized via UITextFieldImpl.textRectForBounds method

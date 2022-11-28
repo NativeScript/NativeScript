@@ -1,4 +1,5 @@
-import { Font as FontBase, parseFontFamily, genericFontFamilies, FontStyleType, FontWeight, FontWeightType, FontVariationSettingsType, FontVariationSettings } from './font-common';
+import { Font as FontBase, parseFontFamily, genericFontFamilies, FontWeight, FontVariationSettings } from './font-common';
+import { FontStyleType, FontWeightType, FontVariationSettingsType } from './font-interfaces';
 import { Trace } from '../../trace';
 import { SDK_VERSION } from '../../utils';
 import * as fs from '../../file-system';
@@ -11,7 +12,7 @@ const typefaceCache = new Map<string, android.graphics.Typeface>();
 let appAssets: android.content.res.AssetManager;
 
 export class Font extends FontBase {
-	public static default = new Font(undefined, undefined);
+	static default = new Font(undefined, undefined);
 
 	private _typeface: android.graphics.Typeface;
 
@@ -43,7 +44,7 @@ export class Font extends FontBase {
 		return new Font(this.fontFamily, this.fontSize, this.fontStyle, this.fontWeight, variationSettings);
 	}
 
-	public getAndroidTypeface(): android.graphics.Typeface {
+	getAndroidTypeface(): android.graphics.Typeface {
 		if (!this._typeface) {
 			this._typeface = createTypeface(this);
 		}
@@ -51,7 +52,7 @@ export class Font extends FontBase {
 		return this._typeface;
 	}
 
-	public getUIFont(defaultFont: UIFont): UIFont {
+	getUIFont(defaultFont: UIFont): UIFont {
 		return undefined;
 	}
 }

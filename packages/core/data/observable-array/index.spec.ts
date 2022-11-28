@@ -1,7 +1,6 @@
-import { ObservableArray } from '@nativescript/core/data/observable-array';
-import { assert } from 'chai';
+import { ObservableArray } from '.';
 
-describe('observable-array', () => {
+describe('ObservableArray', () => {
 	describe('splice', () => {
 		it('removes an item', () => {
 			const _array = new ObservableArray();
@@ -11,7 +10,7 @@ describe('observable-array', () => {
 
 			_array.splice(0, 1);
 
-			assert.equal(2, _array.getItem(0));
+			expect(_array.getItem(0)).toBe(2);
 		});
 
 		it('replaces an item', () => {
@@ -22,7 +21,7 @@ describe('observable-array', () => {
 
 			_array.splice(0, 1, 3);
 
-			assert.equal(3, _array.getItem(0));
+			expect(_array.getItem(0)).toBe(3);
 		});
 
 		it('empties on start zero and no delete count', () => {
@@ -31,7 +30,7 @@ describe('observable-array', () => {
 			_array.push(1);
 
 			_array.splice(0);
-			assert.equal(0, _array.length);
+			expect(_array.length).toBe(0);
 		});
 
 		it('empties on length set to zero', () => {
@@ -41,7 +40,7 @@ describe('observable-array', () => {
 			_array.push(2);
 
 			_array.length = 0;
-			assert.equal(0, _array.length);
+			expect(_array.length).toBe(0);
 		});
 	});
 
@@ -54,7 +53,7 @@ describe('observable-array', () => {
 
 			const index = _array.findIndex((i) => i === 2);
 
-			assert.equal(1, index);
+			expect(index).toBe(1);
 		});
 
 		it('does not find item', () => {
@@ -65,7 +64,7 @@ describe('observable-array', () => {
 
 			const index = _array.findIndex((i) => i === 3);
 
-			assert.equal(-1, index);
+			expect(index).toBe(-1);
 		});
 	});
 });

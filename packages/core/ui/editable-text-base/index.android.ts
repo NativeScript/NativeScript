@@ -3,8 +3,6 @@ import { textTransformProperty, textProperty, resetSymbol } from '../text-base';
 import { Color } from '../../color';
 import { SDK_VERSION, ad } from '../../utils';
 import { CoreTypes } from '../../core-types';
-import { Device } from '../../platform';
-import lazy from '../../utils/lazy';
 
 export * from './editable-text-base-common';
 

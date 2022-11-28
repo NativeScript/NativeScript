@@ -171,11 +171,11 @@ export class Frame extends FrameBase {
 		if (!this.isLoaded || this._executingContext) {
 			return;
 		}
-		
+
 		// in case the activity is "reset" using resetRootView we must wait for
 		// the attachedToWindow event to make the first navigation or it will crash
 		// https://github.com/NativeScript/NativeScript/commit/9dd3e1a8076e5022e411f2f2eeba34aabc68d112
-		// though we should not do it on app "start" 
+		// though we should not do it on app "start"
 		// or it will create a "flash" to activity background color
 		if (this._wasReset && !this._attachedToWindow) {
 			return;
@@ -1128,7 +1128,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 		if (savedInstanceState) {
 			const rootViewId = savedInstanceState.getInt(ROOT_VIEW_ID_EXTRA, -1);
 			if (rootViewId !== -1 && activityRootViewsMap.has(rootViewId)) {
-				this._rootView = activityRootViewsMap.get(rootViewId).get();
+				this._rootView = activityRootViewsMap.get(rootViewId)?.get();
 			}
 		}
 

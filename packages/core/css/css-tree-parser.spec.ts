@@ -1,24 +1,29 @@
-import { cssTreeParse } from '@nativescript/core/css/css-tree-parser';
-import { parse as reworkCssParse } from '@nativescript/core/css';
-import { assert } from 'chai';
+import { cssTreeParse } from './css-tree-parser';
+import { parse as reworkCssParse } from './reworkcss';
 
-describe('css-tree parser compatible with rework ', () => {
+describe('CssTreeParser', () => {
 	it('basic selector', () => {
 		const testCase = '.test { color: red; }';
 		const reworkAST = reworkCssParse(testCase, { source: 'file.css' });
 		const cssTreeAST = cssTreeParse(testCase, 'file.css');
 
-		assert.deepEqual(cssTreeAST, reworkAST);
+		expect(cssTreeAST.stylesheet.rules[0].declarations[0].position.content).toBe(testCase);
+		expect(reworkAST.stylesheet.rules[0].selectors[0]).toBe('.test');
+		expect(reworkAST.stylesheet.rules[0].declarations[0].property).toBe('color');
+		expect(reworkAST.stylesheet.rules[0].declarations[0].value).toBe('red');
 	});
 
 	it('empty rule', () => {
 		const css = `.test {
-            color: red;
-            ;
-        }`;
+	        color: red;
+	        ;
+	    }`;
 		const reworkAST = reworkCssParse(css, { source: 'file.css' });
 		const cssTreeAST = cssTreeParse(css, 'file.css');
-		assert.deepEqual(cssTreeAST, reworkAST);
+		expect(cssTreeAST.stylesheet.rules[0].declarations[0].position.content).toBe(css);
+		expect(reworkAST.stylesheet.rules[0].selectors[0]).toBe('.test');
+		expect(reworkAST.stylesheet.rules[0].declarations[0].property).toBe('color');
+		expect(reworkAST.stylesheet.rules[0].declarations[0].value).toBe('red');
 	});
 
 	it('@keyframes', () => {
@@ -26,7 +31,10 @@ describe('css-tree parser compatible with rework ', () => {
 		const reworkAST = reworkCssParse(testCase, { source: 'file.css' });
 		const cssTreeAST = cssTreeParse(testCase, 'file.css');
 
-		assert.deepEqual(cssTreeAST, reworkAST);
+		expect(cssTreeAST.stylesheet.rules[0].declarations[0].position.content).toBe(testCase);
+		expect(reworkAST.stylesheet.rules[0].selectors[0]).toBe('.test');
+		expect(reworkAST.stylesheet.rules[0].declarations[0].property).toBe('animation-name');
+		expect(reworkAST.stylesheet.rules[0].declarations[0].value).toBe('test');
 	});
 
 	it('@media', () => {
@@ -34,7 +42,7 @@ describe('css-tree parser compatible with rework ', () => {
 		const reworkAST = reworkCssParse(testCase, { source: 'file.css' });
 		const cssTreeAST = cssTreeParse(testCase, 'file.css');
 
-		assert.deepEqual(cssTreeAST, reworkAST);
+		expect(cssTreeAST.stylesheet.rules[0].position.content).toBe(testCase);
 	});
 
 	it('@supports', () => {
@@ -42,7 +50,7 @@ describe('css-tree parser compatible with rework ', () => {
 		const reworkAST = reworkCssParse(testCase, { source: 'file.css' });
 		const cssTreeAST = cssTreeParse(testCase, 'file.css');
 
-		assert.deepEqual(cssTreeAST, reworkAST);
+		expect(cssTreeAST.stylesheet.rules[0].position.content).toBe(testCase);
 	});
 
 	it('@page', () => {
@@ -50,7 +58,7 @@ describe('css-tree parser compatible with rework ', () => {
 		const reworkAST = reworkCssParse(testCase, { source: 'file.css' });
 		const cssTreeAST = cssTreeParse(testCase, 'file.css');
 
-		assert.deepEqual(cssTreeAST, reworkAST);
+		expect(cssTreeAST.stylesheet.rules[0].position.content).toBe(testCase);
 	});
 
 	it('@document', () => {
@@ -58,7 +66,7 @@ describe('css-tree parser compatible with rework ', () => {
 		const reworkAST = reworkCssParse(testCase, { source: 'file.css' });
 		const cssTreeAST = cssTreeParse(testCase, 'file.css');
 
-		assert.deepEqual(cssTreeAST, reworkAST);
+		expect(cssTreeAST.stylesheet.rules[0].position.content).toBe(testCase);
 	});
 
 	it('@font-face', () => {
@@ -66,7 +74,7 @@ describe('css-tree parser compatible with rework ', () => {
 		const reworkAST = reworkCssParse(testCase, { source: 'file.css' });
 		const cssTreeAST = cssTreeParse(testCase, 'file.css');
 
-		assert.deepEqual(cssTreeAST, reworkAST);
+		expect(cssTreeAST.stylesheet.rules[0].position.content).toBe(testCase);
 	});
 
 	it('@import', () => {
@@ -74,7 +82,7 @@ describe('css-tree parser compatible with rework ', () => {
 		const reworkAST = reworkCssParse(testCase, { source: 'file.css' });
 		const cssTreeAST = cssTreeParse(testCase, 'file.css');
 
-		assert.deepEqual(cssTreeAST, reworkAST);
+		expect(cssTreeAST.stylesheet.rules[0].position.content).toBe(testCase);
 	});
 
 	it('@charset', () => {
@@ -82,7 +90,7 @@ describe('css-tree parser compatible with rework ', () => {
 		const reworkAST = reworkCssParse(testCase, { source: 'file.css' });
 		const cssTreeAST = cssTreeParse(testCase, 'file.css');
 
-		assert.deepEqual(cssTreeAST, reworkAST);
+		expect(cssTreeAST.stylesheet.rules[0].position.content).toBe(testCase);
 	});
 
 	it('@namespace', () => {
@@ -90,6 +98,6 @@ describe('css-tree parser compatible with rework ', () => {
 		const reworkAST = reworkCssParse(testCase, { source: 'file.css' });
 		const cssTreeAST = cssTreeParse(testCase, 'file.css');
 
-		assert.deepEqual(cssTreeAST, reworkAST);
+		expect(cssTreeAST.stylesheet.rules[0].position.content).toBe(testCase);
 	});
 });

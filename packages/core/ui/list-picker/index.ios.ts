@@ -96,7 +96,7 @@ class ListPickerDataSource extends NSObject implements UIPickerViewDataSource {
 	}
 
 	public pickerViewNumberOfRowsInComponent(pickerView: UIPickerView, component: number) {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 
 		return owner && owner.items ? owner.items.length : 0;
 	}
@@ -116,7 +116,7 @@ class ListPickerDelegateImpl extends NSObject implements UIPickerViewDelegate {
 	}
 
 	public pickerViewAttributedTitleForRowForComponent(pickerView: UIPickerView, row: number, component: number): NSAttributedString {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			const title = NSAttributedString.alloc().initWithStringAttributes(owner._getItemAsString(row), <any>{ [NSForegroundColorAttributeName]: pickerView.tintColor });
 
@@ -127,7 +127,7 @@ class ListPickerDelegateImpl extends NSObject implements UIPickerViewDelegate {
 	}
 
 	public pickerViewDidSelectRowInComponent(pickerView: UIPickerView, row: number, component: number): void {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			selectedIndexProperty.nativeValueChange(owner, row);
 			owner.updateSelectedValue(row);

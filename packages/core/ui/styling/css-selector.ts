@@ -1,9 +1,9 @@
-import '../../../globals';
-import { isCssVariable } from '../../core/properties';
-import { isNullOrUndefined } from '../../../utils/types';
+import '../../globals';
+import { isCssVariable } from '../core/properties';
+import { isNullOrUndefined } from '../../utils/types';
 
-import * as cssParser from '../../../css';
-import { Combinator as ICombinator, SimpleSelectorSequence as ISimpleSelectorSequence, Selector as ISelector, SimpleSelector as ISimpleSelector, parseSelector } from '../../../css/parser';
+import * as ReworkCSS from '../../css';
+import { Combinator as ICombinator, SimpleSelectorSequence as ISimpleSelectorSequence, Selector as ISelector, SimpleSelector as ISimpleSelector, parseSelector } from '../../css/parser';
 
 /**
  * An interface describing the shape of a type on which the selectors may apply.
@@ -515,8 +515,8 @@ export class RuleSet {
 	}
 }
 
-export function fromAstNodes(astRules: cssParser.Node[]): RuleSet[] {
-	return (<cssParser.Rule[]>astRules.filter(isRule)).map((rule) => {
+export function fromAstNodes(astRules: ReworkCSS.Node[]): RuleSet[] {
+	return (<ReworkCSS.Rule[]>astRules.filter(isRule)).map((rule) => {
 		const declarations = rule.declarations.filter(isDeclaration).map(createDeclaration);
 		const selectors = rule.selectors.map(createSelector);
 
@@ -524,7 +524,7 @@ export function fromAstNodes(astRules: cssParser.Node[]): RuleSet[] {
 	});
 }
 
-function createDeclaration(decl: cssParser.Declaration): any {
+function createDeclaration(decl: ReworkCSS.Declaration): any {
 	return { property: isCssVariable(decl.property) ? decl.property : decl.property.toLowerCase(), value: decl.value };
 }
 
@@ -599,10 +599,10 @@ export function createSelector(sel: string): SimpleSelector | SimpleSelectorSequ
 	}
 }
 
-function isRule(node: cssParser.Node): node is cssParser.Rule {
+function isRule(node: ReworkCSS.Node): node is ReworkCSS.Rule {
 	return node.type === 'rule';
 }
-function isDeclaration(node: cssParser.Node): node is cssParser.Declaration {
+function isDeclaration(node: ReworkCSS.Node): node is ReworkCSS.Declaration {
 	return node.type === 'declaration';
 }
 

@@ -1,7 +1,8 @@
-import { Font as FontBase, parseFontFamily, FontWeight, FontStyleType, FontWeightType, FontVariationSettingsType, FontVariationSettings, fuzzySearch } from './font-common';
+import { Font as FontBase, parseFontFamily, FontWeight, FontVariationSettings, fuzzySearch } from './font-common';
+import { FontStyleType, FontWeightType, FontVariationSettingsType } from './font-interfaces';
 import { Trace } from '../../trace';
 import * as fs from '../../file-system';
-export * from './font-common';
+export { FontStyle, FontWeight, FontVariationSettings, parseFont } from './font-common';
 
 interface FontDescriptor {
 	fontFamily: string[];
@@ -57,7 +58,7 @@ function getUIFontCached(fontDescriptor: FontDescriptor) {
 }
 
 export class Font extends FontBase {
-	public static default = new Font(undefined, undefined);
+	static default = new Font(undefined, undefined);
 
 	constructor(family: string, size: number, style?: FontStyleType, weight?: FontWeightType, scale?: number, variationSettings?: Array<FontVariationSettingsType>) {
 		super(family, size, style, weight, scale, variationSettings);
@@ -87,7 +88,7 @@ export class Font extends FontBase {
 		return new Font(this.fontFamily, this.fontSize, this.fontStyle, this.fontWeight, this.fontScale, variationSettings);
 	}
 
-	public getUIFont(defaultFont: UIFont): UIFont {
+	getUIFont(defaultFont: UIFont): UIFont {
 		return getUIFontCached({
 			fontFamily: parseFontFamily(this.fontFamily),
 			fontSize: this.fontSize || defaultFont.pointSize,
@@ -98,7 +99,7 @@ export class Font extends FontBase {
 		});
 	}
 
-	public getAndroidTypeface(): android.graphics.Typeface {
+	getAndroidTypeface(): android.graphics.Typeface {
 		return undefined;
 	}
 }
