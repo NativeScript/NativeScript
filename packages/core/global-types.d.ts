@@ -221,17 +221,16 @@ interface RequireContext {
 	resolve(id: string): string;
 }
 
-declare class WeakRef<T> {
-	constructor(obj: T);
+interface WeakRef<T extends object> {
 	/**
 	 * @deprecated Use deref instead with 8.4+
 	 */
 	get(): T;
+
 	/**
 	 * @deprecated You no longer need to make this call and can be safely removed.
 	 */
 	clear(): void;
-	deref(): T | undefined;
 }
 
 declare var __dirname: string;
