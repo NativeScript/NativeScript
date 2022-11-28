@@ -421,15 +421,15 @@ function parseColorWithAlpha(value: string): any {
 	let a = 255;
 
 	if (parts[0]) {
-		f = parseInt(parts[0].trim());
+		f = parseFloat(parts[0].trim());
 	}
 
 	if (parts[1]) {
-		s = parseInt(parts[1].trim());
+		s = parseFloat(parts[1].trim());
 	}
 
 	if (parts[2]) {
-		t = parseInt(parts[2].trim());
+		t = parseFloat(parts[2].trim());
 	}
 
 	if (parts[3]) {
@@ -526,7 +526,7 @@ function hslToRgb(h1, s1, l1) {
 		b = hue2rgb(p, q, h - 1 / 3);
 	}
 
-	return { r: r * 255, g: g * 255, b: b * 255 };
+	return { r: Math.round(r * 255), g: Math.round(g * 255), b: Math.round(b * 255) };
 }
 
 // `rgbToHsv`
