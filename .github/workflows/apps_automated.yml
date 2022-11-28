@@ -43,7 +43,7 @@ jobs:
         run: npm run setup
 
       - name: Unit Tests
-        run: npx nx affected --target=test --configuration=ci
+        run: npx nx run-many --target=test --configuration=ci --projects=core
 
       - name: Create Emulator
         uses: rigor789/action-create-emulator@main
