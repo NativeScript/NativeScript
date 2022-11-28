@@ -70,7 +70,7 @@ function accessibilityEventHelper(view: Partial<View>, eventType: number) {
 			return;
 		}
 		case android.view.accessibility.AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED: {
-			const lastView = lastFocusedView?.deref();
+			const lastView = lastFocusedView?.get();
 			if (lastView && view !== lastView) {
 				const lastAndroidView = lastView.nativeViewProtected as android.view.View;
 				if (lastAndroidView) {
@@ -88,7 +88,7 @@ function accessibilityEventHelper(view: Partial<View>, eventType: number) {
 			return;
 		}
 		case android.view.accessibility.AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUS_CLEARED: {
-			const lastView = lastFocusedView?.deref();
+			const lastView = lastFocusedView?.get();
 			if (lastView && view === lastView) {
 				lastFocusedView = null;
 				androidView.clearFocus();
@@ -144,7 +144,7 @@ function ensureNativeClasses() {
 		}
 
 		private getTnsView(androidView: android.view.View) {
-			const view = androidViewToTNSView.get(androidView)?.deref();
+			const view = androidViewToTNSView.get(androidView)?.get();
 			if (!view) {
 				androidViewToTNSView.delete(androidView);
 

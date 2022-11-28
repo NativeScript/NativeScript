@@ -21,7 +21,7 @@ function getViewById(nodeId: number): ViewBase {
 	const node = getNodeById(nodeId);
 	let view;
 	if (node) {
-		view = node.viewRef.deref();
+		view = node.viewRef.get();
 	}
 
 	return view;

@@ -82,7 +82,7 @@ function initializeClickableSpan(): void {
 			return global.__native(this);
 		}
 		onClick(view: android.view.View): void {
-			const owner = this.owner?.deref();
+			const owner = this.owner?.get();
 			if (owner) {
 				owner._emit(Span.linkTapEvent);
 			}

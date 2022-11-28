@@ -121,9 +121,9 @@ export function buildUIWithWeakRefAndInteract<T extends View>(createFunc: () => 
 	clearPage();
 	const page = getCurrentPage();
 	const weakRef = new WeakRef(createFunc());
-	page.content = weakRef.deref();
+	page.content = weakRef.get();
 	if (interactWithViewFunc) {
-		interactWithViewFunc(weakRef.deref());
+		interactWithViewFunc(weakRef.get());
 	}
 	page.content = null;
 	// Give a change for native cleanup (e.g. keyboard close, etc.).
@@ -141,7 +141,7 @@ export function buildUIWithWeakRefAndInteract<T extends View>(createFunc: () => 
 	}
 	Utils.GC();
 	try {
-		TKUnit.assert(!weakRef.deref(), weakRef.deref() + ' leaked!');
+		TKUnit.assert(!weakRef.get(), weakRef.get() + ' leaked!');
 		done(null);
 	} catch (ex) {
 		done(ex);

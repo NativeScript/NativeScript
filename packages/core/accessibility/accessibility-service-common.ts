@@ -14,7 +14,7 @@ export class CommonA11YServiceEnabledObservable extends SharedA11YObservable {
 		let lastValue: boolean;
 
 		function callback() {
-			const self = ref?.deref();
+			const self = ref?.get();
 			if (!self) {
 				sharedA11YObservable.off(Observable.propertyChangeEvent, callback);
 

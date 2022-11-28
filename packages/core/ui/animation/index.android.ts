@@ -142,7 +142,7 @@ export class Animation extends AnimationBase {
 				if (Trace.isEnabled()) {
 					Trace.write('MainAnimatorListener.onAnimationEnd(' + animator + ')', Trace.categories.Animation);
 				}
-				const thisRef = that?.deref();
+				const thisRef = that?.get();
 				if (thisRef) {
 					thisRef._onAndroidAnimationEnd();
 				}
@@ -151,7 +151,7 @@ export class Animation extends AnimationBase {
 				if (Trace.isEnabled()) {
 					Trace.write('MainAnimatorListener.onAnimationCancel(' + animator + ')', Trace.categories.Animation);
 				}
-				const thisRef = that?.deref();
+				const thisRef = that?.get();
 				if (thisRef) {
 					thisRef._onAndroidAnimationCancel();
 				}

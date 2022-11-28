@@ -33,12 +33,12 @@ function makeFragmentName(viewId: number, id: number): string {
 
 function getTabById(id: number): TabView {
 	const ref = tabs.find((ref) => {
-		const tab = ref.deref();
+		const tab = ref.get();
 
 		return tab && tab._domId === id;
 	});
 
-	return ref && ref.deref();
+	return ref && ref.get();
 }
 
 function initializeNativeClasses() {

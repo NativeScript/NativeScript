@@ -58,23 +58,23 @@ function initializeEditTextListeners(): void {
 		}
 
 		public beforeTextChanged(text: string, start: number, count: number, after: number): void {
-			this.owner?.deref()?.beforeTextChanged(text, start, count, after);
+			this.owner?.get()?.beforeTextChanged(text, start, count, after);
 		}
 
 		public onTextChanged(text: string, start: number, before: number, count: number): void {
-			this.owner?.deref()?.onTextChanged(text, start, before, count);
+			this.owner?.get()?.onTextChanged(text, start, before, count);
 		}
 
 		public afterTextChanged(editable: android.text.Editable): void {
-			this.owner?.deref()?.afterTextChanged(editable);
+			this.owner?.get()?.afterTextChanged(editable);
 		}
 
 		public onFocusChange(view: android.view.View, hasFocus: boolean): void {
-			this.owner?.deref()?.onFocusChange(view, hasFocus);
+			this.owner?.get()?.onFocusChange(view, hasFocus);
 		}
 
 		public onEditorAction(textView: android.widget.TextView, actionId: number, event: android.view.KeyEvent): boolean {
-			return this.owner?.deref()?.onEditorAction(textView, actionId, event) || false;
+			return this.owner?.get()?.onEditorAction(textView, actionId, event) || false;
 		}
 	}
 

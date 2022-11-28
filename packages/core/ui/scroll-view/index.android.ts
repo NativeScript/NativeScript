@@ -133,7 +133,7 @@ export class ScrollView extends ScrollViewBase {
 		if (this.orientation === 'vertical') {
 			this.scrollChangeHandler = new androidx.core.widget.NestedScrollView.OnScrollChangeListener({
 				onScrollChange(view, scrollX, scrollY) {
-					const owner: ScrollView = that?.deref();
+					const owner: ScrollView = that?.get();
 					if (owner) {
 						owner.notify({
 							object: owner,
@@ -148,7 +148,7 @@ export class ScrollView extends ScrollViewBase {
 		} else {
 			this.handler = new android.view.ViewTreeObserver.OnScrollChangedListener({
 				onScrollChanged: function () {
-					const owner: ScrollView = that?.deref();
+					const owner: ScrollView = that?.get();
 					if (owner) {
 						owner._onScrollChanged();
 					}
