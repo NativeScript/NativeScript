@@ -54,7 +54,7 @@ export function getLastFocusedViewOnPage(page: Page): View | null {
 			return null;
 		}
 
-		const lastFocusedView = lastFocusedViewRef.get();
+		const lastFocusedView = lastFocusedViewRef.deref();
 		if (!lastFocusedView) {
 			return null;
 		}

@@ -112,7 +112,7 @@ class UIViewControllerImpl extends UIViewController {
 
 	public viewWillAppear(animated: boolean): void {
 		super.viewWillAppear(animated);
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (!owner) {
 			return;
 		}
@@ -155,7 +155,7 @@ class UIViewControllerImpl extends UIViewController {
 	public viewDidAppear(animated: boolean): void {
 		super.viewDidAppear(animated);
 
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (!owner) {
 			return;
 		}
@@ -218,7 +218,7 @@ class UIViewControllerImpl extends UIViewController {
 	public viewWillDisappear(animated: boolean): void {
 		super.viewWillDisappear(animated);
 
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (!owner) {
 			return;
 		}
@@ -248,7 +248,7 @@ class UIViewControllerImpl extends UIViewController {
 	public viewDidDisappear(animated: boolean): void {
 		super.viewDidDisappear(animated);
 
-		const page = this._owner.get();
+		const page = this._owner?.deref();
 		// Exit if no page or page is hiding because it shows another page modally.
 		if (!page || page.modal || page._presentedViewController) {
 			return;
@@ -261,7 +261,7 @@ class UIViewControllerImpl extends UIViewController {
 
 	public viewWillLayoutSubviews(): void {
 		super.viewWillLayoutSubviews();
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			IOSHelper.updateConstraints(this, owner);
 		}
@@ -272,7 +272,7 @@ class UIViewControllerImpl extends UIViewController {
 		if (this.isRunningLayout) {
 			return;
 		}
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			this.runLayout(() => IOSHelper.layoutView(this, owner));
 		}
@@ -281,7 +281,7 @@ class UIViewControllerImpl extends UIViewController {
 	public viewDidLayoutSubviews(): void {
 		this.startRunningLayout();
 		super.viewDidLayoutSubviews();
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			// layout(owner.actionBar)
 			// layout(owner.content)
@@ -339,7 +339,7 @@ class UIViewControllerImpl extends UIViewController {
 		super.traitCollectionDidChange(previousTraitCollection);
 
 		if (majorVersion >= 13) {
-			const owner = this._owner.get();
+			const owner = this._owner?.deref();
 			if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
 				owner.notify({
 					eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
@@ -366,7 +366,7 @@ class UIViewControllerImpl extends UIViewController {
 
 	// @ts-ignore
 	public get preferredStatusBarStyle(): UIStatusBarStyle {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			return owner.statusBarStyle === 'dark' ? UIStatusBarStyle.LightContent : UIStatusBarStyle.Default;
 		} else {

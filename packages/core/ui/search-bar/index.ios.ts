@@ -23,7 +23,7 @@ class UISearchBarDelegateImpl extends NSObject implements UISearchBarDelegate {
 	}
 
 	public searchBarTextDidChange(searchBar: UISearchBar, searchText: string) {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (!owner) {
 			return;
 		}
@@ -38,7 +38,7 @@ class UISearchBarDelegateImpl extends NSObject implements UISearchBarDelegate {
 
 	public searchBarCancelButtonClicked(searchBar: UISearchBar) {
 		searchBar.resignFirstResponder();
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (!owner) {
 			return;
 		}
@@ -48,7 +48,7 @@ class UISearchBarDelegateImpl extends NSObject implements UISearchBarDelegate {
 
 	public searchBarSearchButtonClicked(searchBar: UISearchBar) {
 		searchBar.resignFirstResponder();
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (!owner) {
 			return;
 		}

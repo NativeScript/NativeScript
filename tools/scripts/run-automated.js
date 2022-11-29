@@ -11,13 +11,11 @@ const TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
 
 const platform = process.argv[2];
 const spawned_process = spawn(
-	"ns",
+	"npx",
 	[
-		"--path=./apps/automated",
+		"nx",
 		"run",
-		platform,
-		"--no-hmr",
-		"--force",
+		`apps-automated:${platform}`,
 		// "--log=trace",
 		"--timeout=600" // 10 minutes, booting avds on CI is very slow...
 	],

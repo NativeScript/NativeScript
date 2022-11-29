@@ -12,7 +12,7 @@ class FrameHandlerImpl extends NSObject {
 	}
 
 	public handleFrame(sender: CADisplayLink): void {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			owner._handleFrame(sender);
 		}
