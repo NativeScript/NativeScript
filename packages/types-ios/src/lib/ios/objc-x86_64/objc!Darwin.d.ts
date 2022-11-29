@@ -5170,6 +5170,12 @@ declare function __sinpi(p1: number): number;
 
 declare function __sinpif(p1: number): number;
 
+interface __sockaddr_header {
+	sa_len: number;
+	sa_family: number;
+}
+declare var __sockaddr_header: interop.StructType<__sockaddr_header>;
+
 declare function __srget(p1: interop.Pointer | interop.Reference<FILE>): number;
 
 declare var __stderrp: interop.Pointer | interop.Reference<FILE>;
@@ -9179,6 +9185,7 @@ interface malloc_zone_t {
 	free_definite_size: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>, p2: interop.Pointer | interop.Reference<any>, p3: number) => void>;
 	pressure_relief: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>, p2: number) => number>;
 	claimed_address: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>, p2: interop.Pointer | interop.Reference<any>) => number>;
+	try_free_default: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>, p2: interop.Pointer | interop.Reference<any>) => void>;
 }
 declare var malloc_zone_t: interop.StructType<malloc_zone_t>;
 
@@ -10725,6 +10732,8 @@ interface rusage_info_v6 {
 	ri_system_ptime: number;
 	ri_pinstructions: number;
 	ri_pcycles: number;
+	ri_energy_nj: number;
+	ri_penergy_nj: number;
 	ri_reserved: interop.Reference<number>;
 }
 declare var rusage_info_v6: interop.StructType<rusage_info_v6>;
@@ -11327,12 +11336,6 @@ interface sockaddr_dl {
 	sdl_data: interop.Reference<number>;
 }
 declare var sockaddr_dl: interop.StructType<sockaddr_dl>;
-
-interface sockaddr_header {
-	sa_len: number;
-	sa_family: number;
-}
-declare var sockaddr_header: interop.StructType<sockaddr_header>;
 
 interface sockaddr_in {
 	sin_len: number;

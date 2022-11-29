@@ -179,13 +179,17 @@ declare class SWHighlightCenter extends NSObject {
 
 	static readonly highlightCollectionTitle: string;
 
+	static readonly systemCollaborationSupportAvailable: boolean;
+
+	clearNoticesForHighlight(highlight: SWCollaborationHighlight): void;
+
 	collaborationHighlightForIdentifierError(collaborationIdentifier: string): SWCollaborationHighlight;
 
-	collaborationHighlightForURLError(URL: NSURL): SWCollaborationHighlight;
+	getCollaborationHighlightForURLCompletionHandler(URL: NSURL, completionHandler: (p1: SWCollaborationHighlight, p2: NSError) => void): void;
+
+	getHighlightForURLCompletionHandler(URL: NSURL, completionHandler: (p1: SWHighlight, p2: NSError) => void): void;
 
 	getSignedIdentityProofForCollaborationHighlightUsingDataCompletionHandler(collaborationHighlight: SWCollaborationHighlight, data: NSData, completionHandler: (p1: SWSignedPersonIdentityProof, p2: NSError) => void): void;
-
-	highlightForURLError(URL: NSURL): SWHighlight;
 
 	postNoticeForHighlightEvent(event: SWHighlightEvent): void;
 }

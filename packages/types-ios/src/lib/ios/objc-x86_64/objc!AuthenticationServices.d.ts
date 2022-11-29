@@ -805,6 +805,8 @@ declare var ASAuthorizationProvider: {
 
 declare var ASAuthorizationProviderAuthorizationOperationConfigurationRemoved: string;
 
+declare var ASAuthorizationProviderAuthorizationOperationDirectRequest: string;
+
 declare class ASAuthorizationProviderExtensionAuthorizationRequest extends NSObject {
 
 	static alloc(): ASAuthorizationProviderExtensionAuthorizationRequest; // inherited from NSObject

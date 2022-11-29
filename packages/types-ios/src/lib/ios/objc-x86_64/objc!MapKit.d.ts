@@ -905,7 +905,15 @@ declare class MKLookAroundViewController extends UIViewController implements NSC
 
 interface MKLookAroundViewControllerDelegate extends NSObjectProtocol {
 
+	lookAroundViewControllerDidDismissFullScreen?(viewController: MKLookAroundViewController): void;
+
+	lookAroundViewControllerDidPresentFullScreen?(viewController: MKLookAroundViewController): void;
+
 	lookAroundViewControllerDidUpdateScene?(viewController: MKLookAroundViewController): void;
+
+	lookAroundViewControllerWillDismissFullScreen?(viewController: MKLookAroundViewController): void;
+
+	lookAroundViewControllerWillPresentFullScreen?(viewController: MKLookAroundViewController): void;
 
 	lookAroundViewControllerWillUpdateScene?(viewController: MKLookAroundViewController): void;
 }

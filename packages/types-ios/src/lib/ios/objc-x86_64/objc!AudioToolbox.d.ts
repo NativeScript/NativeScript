@@ -3821,6 +3821,8 @@ declare const kAudioUnitType_RemoteInstrument: number;
 
 declare const kAudioUnitType_RemoteMusicEffect: number;
 
+declare const kAudioUnitType_SpeechSynthesizer: number;
+
 declare const kAudioUnitUninitializeSelect: number;
 
 declare const kBandpassParam_Bandwidth: number;

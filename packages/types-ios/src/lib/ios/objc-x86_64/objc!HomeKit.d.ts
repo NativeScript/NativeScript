@@ -30,6 +30,8 @@ declare class HMAccessory extends NSObject {
 
 	readonly manufacturer: string;
 
+	readonly matterNodeID: number;
+
 	readonly model: string;
 
 	readonly name: string;
@@ -197,11 +199,7 @@ declare class HMAccessorySetupManager extends NSObject {
 
 	static new(): HMAccessorySetupManager; // inherited from NSObject
 
-	addAndSetUpAccessoriesForTopologyCompletionHandler(topology: HMMatterTopology, completion: (p1: NSError) => void): void;
-
 	performAccessorySetupUsingRequestCompletionHandler(request: HMAccessorySetupRequest, completion: (p1: HMAccessorySetupResult, p2: NSError) => void): void;
-
-	performMatterEcosystemAccessorySetupUsingRequestTopologyCompletionHandler(request: HMAccessorySetupRequest, topology: HMMatterTopology, completion: (p1: NSError) => void): void;
 }
 
 declare class HMAccessorySetupPayload extends NSObject {
@@ -226,6 +224,8 @@ declare class HMAccessorySetupRequest extends NSObject implements NSCopying {
 	static new(): HMAccessorySetupRequest; // inherited from NSObject
 
 	homeUniqueIdentifier: NSUUID;
+
+	matterPayload: MTRSetupPayload;
 
 	payload: HMAccessorySetupPayload;
 
@@ -1657,6 +1657,10 @@ declare class HMHome extends NSObject {
 
 	readonly homeHubState: HMHomeHubState;
 
+	readonly matterControllerID: string;
+
+	readonly matterControllerXPCConnectBlock: () => NSXPCConnection;
+
 	readonly name: string;
 
 	readonly primary: boolean;
@@ -1881,128 +1885,6 @@ declare class HMLocationEvent extends HMEvent implements NSCopying, NSMutableCop
 	mutableCopyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	updateRegionCompletionHandler(region: CLRegion, completion: (p1: NSError) => void): void;
-}
-
-declare class HMMatterHome extends NSObject implements NSCopying, NSSecureCoding {
-
-	static alloc(): HMMatterHome; // inherited from NSObject
-
-	static new(): HMMatterHome; // inherited from NSObject
-
-	readonly name: string;
-
-	readonly uuid: NSUUID;
-
-	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { UUID: NSUUID; name: string; });
-
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
-
-	encodeWithCoder(coder: NSCoder): void;
-
-	initWithCoder(coder: NSCoder): this;
-
-	initWithUUIDName(uuid: NSUUID, name: string): this;
-}
-
-declare class HMMatterRequestHandler extends NSObject implements NSExtensionRequestHandling {
-
-	static alloc(): HMMatterRequestHandler; // inherited from NSObject
-
-	static new(): HMMatterRequestHandler; // inherited from NSObject
-
-	readonly debugDescription: string; // inherited from NSObjectProtocol
-
-	readonly description: string; // inherited from NSObjectProtocol
-
-	readonly hash: number; // inherited from NSObjectProtocol
-
-	readonly isProxy: boolean; // inherited from NSObjectProtocol
-
-	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
-
-	readonly  // inherited from NSObjectProtocol
-
-	beginRequestWithExtensionContext(context: NSExtensionContext): void;
-
-	class(): typeof NSObject;
-
-	configureAccessoryWithNameRoomCompletion(accessoryName: string, accessoryRoom: HMMatterRoom, completion: (p1: NSError) => void): void;
-
-	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
-
-	fetchRoomsInHomeCompletion(home: HMMatterHome, completion: (p1: NSArray<HMMatterRoom>, p2: NSError) => void): void;
-
-	isEqual(object: any): boolean;
-
-	isKindOfClass(aClass: typeof NSObject): boolean;
-
-	isMemberOfClass(aClass: typeof NSObject): boolean;
-
-	pairAccessoryInHomeOnboardingPayloadCompletion(home: HMMatterHome, onboardingPayload: string, completion: (p1: NSError) => void): void;
-
-	performSelector(aSelector: string): any;
-
-	performSelectorWithObject(aSelector: string, object: any): any;
-
-	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
-
-	respondsToSelector(aSelector: string): boolean;
-
-	retainCount(): number;
-
-	self(): this;
-}
-
-declare class HMMatterRoom extends NSObject implements NSCopying, NSSecureCoding {
-
-	static alloc(): HMMatterRoom; // inherited from NSObject
-
-	static new(): HMMatterRoom; // inherited from NSObject
-
-	readonly name: string;
-
-	readonly uuid: NSUUID;
-
-	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { UUID: NSUUID; name: string; });
-
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
-
-	encodeWithCoder(coder: NSCoder): void;
-
-	initWithCoder(coder: NSCoder): this;
-
-	initWithUUIDName(uuid: NSUUID, name: string): this;
-}
-
-declare class HMMatterTopology extends NSObject implements NSCopying, NSSecureCoding {
-
-	static alloc(): HMMatterTopology; // inherited from NSObject
-
-	static new(): HMMatterTopology; // inherited from NSObject
-
-	readonly homes: NSArray<HMMatterHome>;
-
-	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { homes: NSArray<HMMatterHome> | HMMatterHome[]; });
-
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
-
-	encodeWithCoder(coder: NSCoder): void;
-
-	initWithCoder(coder: NSCoder): this;
-
-	initWithHomes(homes: NSArray<HMMatterHome> | HMMatterHome[]): this;
 }
 
 declare class HMMutableCalendarEvent extends HMCalendarEvent {

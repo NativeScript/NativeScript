@@ -33,6 +33,8 @@ declare class AVCustomRoutingController extends NSObject {
 
 	delegate: AVCustomRoutingControllerDelegate;
 
+	knownRouteIPs: NSArray<AVCustomRoutingPartialIP>;
+
 	invalidateAuthorizationForRoute(route: AVCustomDeviceRoute): void;
 
 	isRouteActive(route: AVCustomDeviceRoute): boolean;
@@ -73,4 +75,19 @@ declare const enum AVCustomRoutingEventReason {
 	Deactivate = 1,
 
 	Reactivate = 2
+}
+
+declare class AVCustomRoutingPartialIP extends NSObject {
+
+	static alloc(): AVCustomRoutingPartialIP; // inherited from NSObject
+
+	static new(): AVCustomRoutingPartialIP; // inherited from NSObject
+
+	readonly address: NSData;
+
+	readonly mask: NSData;
+
+	constructor(o: { address: NSData; mask: NSData; });
+
+	initWithAddressMask(address: NSData, mask: NSData): this;
 }

@@ -37,7 +37,9 @@ declare class AEAssessmentConfiguration extends NSObject implements NSCopying {
 
 declare const enum AEAssessmentErrorCode {
 
-	Unknown = 1
+	Unknown = 1,
+
+	UnsupportedPlatform = 2
 }
 
 declare var AEAssessmentErrorDomain: string;
