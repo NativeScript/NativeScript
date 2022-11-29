@@ -292,7 +292,11 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		return this._gestureObservers[type] || [];
 	}
 
-	public addEventListener(arg: string | GestureTypes, callback: (data: EventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void {
+	public addEventListener(arg: string | GestureTypes, callback: EventListenerOrEventListenerObject | ((data: EventData) => void), thisArg?: any, options?: AddEventListenerOptions | boolean): void {
+		if (typeof callback !== 'function') {
+			throw new TypeError('Callback must be function.');
+		}
+
 		// To avoid a full refactor of the Gestures system when migrating to DOM
 		// Events, we mirror the this._gestureObservers record, creating
 		// corresponding DOM Event listeners for each gesture.
@@ -308,7 +312,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		// the same time).
 
 		if (typeof arg === 'number') {
-			this._observe(arg, callback, thisArg, options);
+			this._observe(arg, callback as (data: EventData) => void, thisArg, options);
 			super.addEventListener(gestureToString(arg), callback, thisArg, options);
 			return;
 		}
@@ -320,15 +324,19 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		for (const event of events) {
 			const gesture = gestureFromString(event);
 			if (gesture && !this._isEvent(arg)) {
-				this._observe(gesture, callback, thisArg, options);
+				this._observe(gesture, callback as (data: EventData) => void, thisArg, options);
 			}
 			super.addEventListener(event, callback, thisArg, options);
 		}
 	}
 
-	public removeEventListener(arg: string | GestureTypes, callback?: (data: EventData) => void, thisArg?: any, options?: EventListenerOptions | boolean): void {
+	public removeEventListener(arg: string | GestureTypes, callback?: EventListenerOrEventListenerObject | ((data: EventData) => void), thisArg?: any, options?: EventListenerOptions | boolean): void {
+		if (callback && typeof callback !== 'function') {
+			throw new TypeError('Callback, if provided, must be function.');
+		}
+
 		if (typeof arg === 'number') {
-			this._disconnectGestureObservers(arg, callback, thisArg, options);
+			this._disconnectGestureObservers(arg, callback as (data: EventData) => void, thisArg, options);
 			super.removeEventListener(gestureToString(arg), callback, thisArg, options);
 			return;
 		}
@@ -338,7 +346,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		for (const event of events) {
 			const gesture = gestureFromString(event);
 			if (gesture && !this._isEvent(arg)) {
-				this._disconnectGestureObservers(gesture, callback, thisArg, options);
+				this._disconnectGestureObservers(gesture, callback as (data: EventData) => void, thisArg, options);
 			}
 			super.removeEventListener(event, callback, thisArg, options);
 		}

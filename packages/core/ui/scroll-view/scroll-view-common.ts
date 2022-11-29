@@ -16,7 +16,7 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
 	public scrollBarIndicatorVisible: boolean;
 	public isScrollEnabled: boolean;
 
-	public addEventListener(arg: string, callback: (data: EventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void {
+	public addEventListener(arg: string, callback: EventListenerOrEventListenerObject | ((data: EventData) => void), thisArg?: any, options?: AddEventListenerOptions | boolean): void {
 		super.addEventListener(arg, callback, thisArg, options);
 
 		if (arg === ScrollViewBase.scrollEvent) {
@@ -25,7 +25,7 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
 		}
 	}
 
-	public removeEventListener(arg: string, callback?: (data: EventData) => void, thisArg?: any, options?: EventListenerOptions | boolean): void {
+	public removeEventListener(arg: string, callback?: EventListenerOrEventListenerObject | ((data: EventData) => void), thisArg?: any, options?: EventListenerOptions | boolean): void {
 		super.removeEventListener(arg, callback, thisArg, options);
 
 		if (arg === ScrollViewBase.scrollEvent) {

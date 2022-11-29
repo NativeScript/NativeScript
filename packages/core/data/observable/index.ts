@@ -1,8 +1,6 @@
 import type { ViewBase } from '../../ui/core/view-base';
 import { DOMEvent } from '../dom-events/dom-event';
 
-import { Observable as ObservableDefinition, WrappedValue as WrappedValueDefinition } from '.';
-
 /**
  * Base event data.
  */
@@ -51,7 +49,7 @@ let _wrappedIndex = 0;
  * By default property change will not be fired for a same object.
  * By wrapping object into a WrappedValue instance `same object restriction` will be passed.
  */
-export class WrappedValue implements WrappedValueDefinition {
+export class WrappedValue {
 	/**
 	 * Creates an instance of WrappedValue object.
 	 * @param wrapped - the real value which should be wrapped.
@@ -96,7 +94,7 @@ const _globalEventHandlers: {
  * Please note that should you be using the `new Observable({})` constructor, it is **obsolete** since v3.0,
  * and you have to migrate to the "data/observable" `fromObject({})` or the `fromObjectRecursive({})` functions.
  */
-export class Observable implements ObservableDefinition {
+export class Observable implements EventTarget {
 	/**
 	 * String value used when hooking to propertyChange event.
 	 */
@@ -186,27 +184,27 @@ export class Observable implements ObservableDefinition {
 	 * @param thisArg An optional parameter which when set will be used as "this" in callback method call.
 	 * @param options An optional parameter. If passed as a boolean, configures the useCapture value. Otherwise, specifies options.
 	 */
-	public addEventListener(eventNames: string, callback: (data: EventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void {
+	public addEventListener(eventNames: string, callback: EventListenerOrEventListenerObject | ((data: EventData) => void), thisArg?: any, options?: AddEventListenerOptions | boolean): void {
 		if (typeof eventNames !== 'string') {
 			throw new TypeError('Events name(s) must be string.');
 		}
 
 		if (typeof callback !== 'function') {
-			throw new TypeError('callback must be function.');
+			throw new TypeError('Callback must be function.');
 		}
 
 		const events = eventNames.trim().split(eventDelimiterPattern);
 		for (let i = 0, l = events.length; i < l; i++) {
 			const event = events[i];
 			const list = this.getEventList(event, true);
-			if (Observable._indexOfListener(list, callback, thisArg, options) >= 0) {
+			if (Observable._indexOfListener(list, callback as (data: EventData) => void, thisArg, options) >= 0) {
 				// Don't allow addition of duplicate event listeners.
 				continue;
 			}
 
 			// TODO: Performance optimization - if we do not have the thisArg specified, do not wrap the callback in additional object (ObserveEntry)
 			list.push({
-				callback,
+				callback: callback as (data: EventData) => void,
 				thisArg,
 				...normalizeEventOptions(options),
 			});
@@ -220,7 +218,7 @@ export class Observable implements ObservableDefinition {
 	 * @param thisArg An optional parameter which when set will be used to refine search of the correct callback which will be removed as event listener.
 	 * @param options An optional parameter. If passed as a boolean, configures the useCapture value. Otherwise, specifies options.
 	 */
-	public removeEventListener(eventNames: string, callback?: (data: EventData) => void, thisArg?: any, options?: EventListenerOptions | boolean): void {
+	public removeEventListener(eventNames: string, callback?: EventListenerOrEventListenerObject | ((data: EventData) => void), thisArg?: any, options?: EventListenerOptions | boolean): void {
 		if (typeof eventNames !== 'string') {
 			throw new TypeError('Events name(s) must be string.');
 		}
@@ -236,14 +234,16 @@ export class Observable implements ObservableDefinition {
 			}
 
 			const list = this.getEventList(event, false);
-			if (list) {
-				const index = Observable._indexOfListener(list, callback, thisArg, options);
-				if (index >= 0) {
-					list.splice(index, 1);
-				}
-				if (list.length === 0) {
-					delete this._observers[event];
-				}
+			if (!list) {
+				continue;
+			}
+
+			const index = Observable._indexOfListener(list, callback as (data: EventData) => void, thisArg, options);
+			if (index >= 0) {
+				list.splice(index, 1);
+			}
+			if (list.length === 0) {
+				delete this._observers[event];
 			}
 		}
 	}
@@ -260,13 +260,13 @@ export class Observable implements ObservableDefinition {
 		this.removeEventListener(eventName, callback, thisArg, options);
 	}
 
-	public static removeEventListener(eventName: string, callback?: (data: EventData) => void, thisArg?: any, options?: EventListenerOptions | boolean): void {
+	public static removeEventListener(eventName: string, callback?: EventListenerOrEventListenerObject | ((data: EventData) => void), thisArg?: any, options?: EventListenerOptions | boolean): void {
 		if (typeof eventName !== 'string') {
 			throw new TypeError('Event must be string.');
 		}
 
 		if (callback && typeof callback !== 'function') {
-			throw new TypeError('callback must be function.');
+			throw new TypeError('Callback, if provided, must be function.');
 		}
 
 		const eventClass = this.name === 'Observable' ? '*' : this.name;
@@ -278,7 +278,7 @@ export class Observable implements ObservableDefinition {
 
 		const events = _globalEventHandlers[eventClass][eventName];
 		if (callback) {
-			const index = Observable._indexOfListener(events, callback, thisArg, options);
+			const index = Observable._indexOfListener(events, callback as (data: EventData) => void, thisArg, options);
 			if (index >= 0) {
 				events.splice(index, 1);
 			}
@@ -299,13 +299,13 @@ export class Observable implements ObservableDefinition {
 		}
 	}
 
-	public static addEventListener(eventName: string, callback: (data: EventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void {
+	public static addEventListener(eventName: string, callback: EventListenerOrEventListenerObject | ((data: EventData) => void), thisArg?: any, options?: AddEventListenerOptions | boolean): void {
 		if (typeof eventName !== 'string') {
 			throw new TypeError('Event must be string.');
 		}
 
 		if (typeof callback !== 'function') {
-			throw new TypeError('callback must be function.');
+			throw new TypeError('Callback must be function.');
 		}
 
 		const eventClass = this.name === 'Observable' ? '*' : this.name;
@@ -317,13 +317,13 @@ export class Observable implements ObservableDefinition {
 		}
 
 		const list = _globalEventHandlers[eventClass][eventName];
-		if (Observable._indexOfListener(list, callback, thisArg, options) >= 0) {
+		if (Observable._indexOfListener(list, callback as (data: EventData) => void, thisArg, options) >= 0) {
 			// Don't allow addition of duplicate event listeners.
 			return;
 		}
 
 		_globalEventHandlers[eventClass][eventName].push({
-			callback,
+			callback: callback as (data: EventData) => void,
 			thisArg,
 			...normalizeEventOptions(options),
 		});
@@ -377,6 +377,21 @@ export class Observable implements ObservableDefinition {
 	 */
 	public notify<T extends EventData>(data: T, options?: CustomEventInit): void {
 		new DOMEvent(data.eventName, options).dispatchTo({
+			target: this,
+			data,
+			getGlobalEventHandlersPreHandling: () => this._getGlobalEventHandlers(data, 'First'),
+			getGlobalEventHandlersPostHandling: () => this._getGlobalEventHandlers(data, ''),
+		});
+	}
+
+	dispatchEvent(event: DOMEvent): boolean {
+		const data = {
+			eventName: event.type,
+			object: this,
+			detail: event.detail,
+		};
+
+		return event.dispatchTo({
 			target: this,
 			data,
 			getGlobalEventHandlersPreHandling: () => this._getGlobalEventHandlers(data, 'First'),

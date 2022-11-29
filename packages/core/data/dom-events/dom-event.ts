@@ -10,7 +10,7 @@ const timeOrigin = Date.now();
  */
 const emptyArray = [] as const;
 
-export class DOMEvent {
+export class DOMEvent implements Event {
 	/**
 	 * @private
 	 * Internal API to facilitate testing - to be removed once we've completed
@@ -119,7 +119,7 @@ export class DOMEvent {
 
 	// From CustomEvent rather than Event. Can consider factoring out this
 	// aspect into DOMCustomEvent.
-	private readonly detail: unknown | null;
+	readonly detail: unknown | null;
 
 	private propagationState: EventPropagationState = EventPropagationState.resume;
 
