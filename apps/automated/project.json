@@ -4,6 +4,10 @@
 	"sourceRoot": "apps/automated/app",
 	"projectType": "application",
 	"prefix": "nativescript",
+	"namedInputs": {
+		"default": ["{projectRoot}/**/*"],
+		"production": ["!{projectRoot}/**/*.spec.ts"]
+	},
 	"targets": {
 		"build": {
 			"executor": "@nativescript/nx:build",
@@ -17,6 +21,8 @@
 		},
 		"ios": {
 			"executor": "@nativescript/nx:build",
+			"inputs": ["default", "^production"],
+			"outputs": [],
 			"options": {
 				"noHmr": true,
 				"platform": "ios"
@@ -24,6 +30,8 @@
 		},
 		"android": {
 			"executor": "@nativescript/nx:build",
+			"inputs": ["default", "^production"],
+			"outputs": [],
 			"options": {
 				"noHmr": true,
 				"platform": "android"

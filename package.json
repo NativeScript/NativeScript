@@ -23,7 +23,7 @@
   },
   "devDependencies": {
     "@nativescript/hook": "^2.0.0",
-    "@nativescript/nx": "~4.0.0",
+    "@nativescript/nx": "~4.1.0",
     "@nrwl/cli": "15.2.1",
     "@nrwl/eslint-plugin-nx": "15.2.1",
     "@nrwl/jest": "15.2.1",

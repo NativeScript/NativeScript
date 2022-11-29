@@ -9,7 +9,7 @@
 			"runner": "@nrwl/nx-cloud",
 			"options": {
 				"useDaemonProcess": false,
-				"cacheableOperations": ["build", "lint", "test", "e2e"],
+				"cacheableOperations": ["build", "lint", "test", "ios", "android", "e2e"],
 				"canTrackAnalytics": false,
 				"showUsageWarnings": true,
 				"parallel": 1,
