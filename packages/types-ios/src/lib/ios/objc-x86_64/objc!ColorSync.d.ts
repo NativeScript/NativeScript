@@ -331,3 +331,5 @@ declare var kColorSyncTransformSimplifiedConversionData: string;
 declare var kColorSyncTransformSrcSpace: string;
 
 declare var kColorSyncTransformTag: string;
+
+declare var kColorSyncWebSafeColorsProfile: string;

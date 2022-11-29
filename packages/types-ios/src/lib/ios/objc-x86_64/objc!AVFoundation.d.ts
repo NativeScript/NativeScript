@@ -1897,11 +1897,17 @@ declare class AVCaptureDeviceFormat extends NSObject {
 
 	readonly portraitEffectsMatteStillImageDeliverySupported: boolean;
 
+	readonly secondaryNativeResolutionZoomFactors: NSArray<number>;
+
 	readonly studioLightSupported: boolean;
 
 	readonly supportedColorSpaces: NSArray<number>;
 
 	readonly supportedDepthDataFormats: NSArray<AVCaptureDeviceFormat>;
+
+	readonly supportedMaxPhotoDimensions: NSArray<NSValue>;
+
+	readonly supportedVideoZoomFactorsForDepthDataDelivery: NSArray<number>;
 
 	readonly unsupportedCaptureOutputClasses: NSArray<typeof NSObject>;
 
@@ -2437,6 +2443,8 @@ declare class AVCapturePhotoOutput extends AVCaptureOutput {
 
 	readonly maxBracketedCapturePhotoCount: number;
 
+	maxPhotoDimensions: CMVideoDimensions;
+
 	maxPhotoQualityPrioritization: AVCapturePhotoQualityPrioritization;
 
 	photoSettingsForSceneMonitoring: AVCapturePhotoSettings;
@@ -2446,6 +2454,8 @@ declare class AVCapturePhotoOutput extends AVCaptureOutput {
 	readonly portraitEffectsMatteDeliverySupported: boolean;
 
 	readonly preparedPhotoSettingsArray: NSArray<AVCapturePhotoSettings>;
+
+	preservesLivePhotoCaptureSuspendedOnSessionStop: boolean;
 
 	readonly stillImageStabilizationSupported: boolean;
 
@@ -2540,6 +2550,8 @@ declare class AVCapturePhotoSettings extends NSObject implements NSCopying {
 	livePhotoMovieMetadata: NSArray<AVMetadataItem>;
 
 	livePhotoVideoCodecType: string;
+
+	maxPhotoDimensions: CMVideoDimensions;
 
 	metadata: NSDictionary<string, any>;
 

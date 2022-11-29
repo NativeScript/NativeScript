@@ -1,3 +1,4 @@
+
 declare class NativeScriptUtils extends NSObject {
 
 	static alloc(): NativeScriptUtils; // inherited from NSObject
@@ -10,7 +11,7 @@ declare class NativeScriptUtils extends NSObject {
 
 	static getImageDataFormatQuality(image: UIImage, format: string, quality: number): NSData;
 
-	static getSystemFontWeightItalicSymbolicTraits(size: number, weight: number, italic: boolean, symbolicTraits: UIFontDescriptorSymbolicTraits): UIFont;
+	static getSystemFontWeightItalicSymbolicTraits(size: number, weight: number, italic: boolean, symbolicTraits: number): UIFont;
 
 	static new(): NativeScriptUtils; // inherited from NSObject
 

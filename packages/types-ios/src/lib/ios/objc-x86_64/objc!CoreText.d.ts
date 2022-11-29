@@ -372,6 +372,8 @@ declare const enum CTFontOptions {
 
 	kCTFontOptionsPreventAutoActivation = 1,
 
+	kCTFontOptionsPreventAutoDownload = 2,
+
 	kCTFontOptionsPreferSystemFont = 4
 }
 
