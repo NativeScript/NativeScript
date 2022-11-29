@@ -214,6 +214,8 @@ declare function sqlite3_db_handle(p1: interop.Pointer | interop.Reference<any>)
 
 declare function sqlite3_db_mutex(p1: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
+declare function sqlite3_db_name(db: interop.Pointer | interop.Reference<any>, N: number): string;
+
 declare function sqlite3_db_readonly(db: interop.Pointer | interop.Reference<any>, zDbName: string | interop.Pointer | interop.Reference<any>): number;
 
 declare function sqlite3_db_release_memory(p1: interop.Pointer | interop.Reference<any>): number;
@@ -233,6 +235,8 @@ declare function sqlite3_errcode(db: interop.Pointer | interop.Reference<any>): 
 declare function sqlite3_errmsg(p1: interop.Pointer | interop.Reference<any>): string;
 
 declare function sqlite3_errmsg16(p1: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+
+declare function sqlite3_error_offset(db: interop.Pointer | interop.Reference<any>): number;
 
 declare function sqlite3_errstr(p1: number): string;
 
@@ -782,9 +786,19 @@ interface sqlite3_vtab_cursor {
 }
 declare var sqlite3_vtab_cursor: interop.StructType<sqlite3_vtab_cursor>;
 
+declare function sqlite3_vtab_distinct(p1: interop.Pointer | interop.Reference<sqlite3_index_info>): number;
+
+declare function sqlite3_vtab_in(p1: interop.Pointer | interop.Reference<sqlite3_index_info>, iCons: number, bHandle: number): number;
+
+declare function sqlite3_vtab_in_first(pVal: interop.Pointer | interop.Reference<any>, ppOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+
+declare function sqlite3_vtab_in_next(pVal: interop.Pointer | interop.Reference<any>, ppOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+
 declare function sqlite3_vtab_nochange(p1: interop.Pointer | interop.Reference<any>): number;
 
 declare function sqlite3_vtab_on_conflict(p1: interop.Pointer | interop.Reference<any>): number;
+
+declare function sqlite3_vtab_rhs_value(p1: interop.Pointer | interop.Reference<sqlite3_index_info>, p2: number, ppVal: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 declare function sqlite3_wal_autocheckpoint(db: interop.Pointer | interop.Reference<any>, N: number): number;
 

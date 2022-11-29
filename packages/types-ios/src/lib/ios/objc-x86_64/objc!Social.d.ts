@@ -119,6 +119,10 @@ declare class SLComposeServiceViewController extends UIViewController implements
 
 	textViewShouldInteractWithURLInRangeInteraction(textView: UITextView, URL: NSURL, characterRange: NSRange, interaction: UITextItemInteraction): boolean;
 
+	textViewWillDismissEditMenuWithAnimator(textView: UITextView, animator: UIEditMenuInteractionAnimating): void;
+
+	textViewWillPresentEditMenuWithAnimator(textView: UITextView, animator: UIEditMenuInteractionAnimating): void;
+
 	validateContent(): void;
 
 	viewForZoomingInScrollView(scrollView: UIScrollView): UIView;

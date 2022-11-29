@@ -52,6 +52,8 @@ declare class SKAdImpression extends NSObject {
 
 	sourceAppStoreItemIdentifier: number;
 
+	sourceIdentifier: number;
+
 	timestamp: number;
 
 	version: string;
@@ -75,8 +77,18 @@ declare class SKAdNetwork extends NSObject {
 
 	static updateConversionValue(conversionValue: number): void;
 
+	static updatePostbackConversionValueCoarseValueCompletionHandler(fineValue: number, coarseValue: string, completion: (p1: NSError) => void): void;
+
+	static updatePostbackConversionValueCoarseValueLockWindowCompletionHandler(fineValue: number, coarseValue: string, lockWindow: boolean, completion: (p1: NSError) => void): void;
+
 	static updatePostbackConversionValueCompletionHandler(conversionValue: number, completion: (p1: NSError) => void): void;
 }
+
+declare var SKAdNetworkCoarseConversionValueHigh: string;
+
+declare var SKAdNetworkCoarseConversionValueLow: string;
+
+declare var SKAdNetworkCoarseConversionValueMedium: string;
 
 declare class SKArcadeService extends NSObject {
 
@@ -775,6 +787,8 @@ declare var SKStoreProductParameterAdNetworkIdentifier: string;
 declare var SKStoreProductParameterAdNetworkNonce: string;
 
 declare var SKStoreProductParameterAdNetworkSourceAppStoreIdentifier: string;
+
+declare var SKStoreProductParameterAdNetworkSourceIdentifier: string;
 
 declare var SKStoreProductParameterAdNetworkTimestamp: string;
 

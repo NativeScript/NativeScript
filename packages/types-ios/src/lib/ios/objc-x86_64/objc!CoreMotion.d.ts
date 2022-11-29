@@ -672,3 +672,128 @@ declare class CMTremorResult extends NSObject implements NSCopying, NSSecureCodi
 
 	initWithCoder(coder: NSCoder): this;
 }
+
+declare const enum CMWaterSubmersionDepthState {
+
+	Unknown = 0,
+
+	NotSubmerged = 100,
+
+	SubmergedShallow = 200,
+
+	SubmergedDeep = 300,
+
+	ApproachingMaxDepth = 400,
+
+	PastMaxDepth = 500,
+
+	SensorDepthError = 600
+}
+
+declare class CMWaterSubmersionEvent extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): CMWaterSubmersionEvent; // inherited from NSObject
+
+	static new(): CMWaterSubmersionEvent; // inherited from NSObject
+
+	readonly date: Date;
+
+	readonly state: CMWaterSubmersionState;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare class CMWaterSubmersionManager extends NSObject {
+
+	static alloc(): CMWaterSubmersionManager; // inherited from NSObject
+
+	static new(): CMWaterSubmersionManager; // inherited from NSObject
+
+	delegate: CMWaterSubmersionManagerDelegate;
+
+	static readonly authorizationStatus: CMAuthorizationStatus;
+
+	static readonly waterSubmersionAvailable: boolean;
+}
+
+interface CMWaterSubmersionManagerDelegate extends NSObjectProtocol {
+
+	managerDidUpdateEvent(manager: CMWaterSubmersionManager, event: CMWaterSubmersionEvent): void;
+
+	managerDidUpdateMeasurement(manager: CMWaterSubmersionManager, measurement: CMWaterSubmersionMeasurement): void;
+
+	managerDidUpdateTemperature(manager: CMWaterSubmersionManager, measurement: CMWaterTemperature): void;
+
+	managerErrorOccurred(manager: CMWaterSubmersionManager, error: NSError): void;
+}
+declare var CMWaterSubmersionManagerDelegate: {
+
+	prototype: CMWaterSubmersionManagerDelegate;
+};
+
+declare class CMWaterSubmersionMeasurement extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): CMWaterSubmersionMeasurement; // inherited from NSObject
+
+	static new(): CMWaterSubmersionMeasurement; // inherited from NSObject
+
+	readonly date: Date;
+
+	readonly depth: NSMeasurement<NSUnitLength>;
+
+	readonly pressure: NSMeasurement<NSUnitPressure>;
+
+	readonly submersionState: CMWaterSubmersionDepthState;
+
+	readonly surfacePressure: NSMeasurement<NSUnitPressure>;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare const enum CMWaterSubmersionState {
+
+	Unknown = 0,
+
+	NotSubmerged = 1,
+
+	Submerged = 2
+}
+
+declare class CMWaterTemperature extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): CMWaterTemperature; // inherited from NSObject
+
+	static new(): CMWaterTemperature; // inherited from NSObject
+
+	readonly date: Date;
+
+	readonly temperature: NSMeasurement<NSUnitTemperature>;
+
+	readonly temperatureUncertainty: NSMeasurement<NSUnitTemperature>;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}

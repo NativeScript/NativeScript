@@ -4070,6 +4070,10 @@ declare const kvImageHighQualityResampling: number;
 
 declare const kvImageInternalError: number;
 
+declare const kvImageInterpolationLinear: number;
+
+declare const kvImageInterpolationNearest: number;
+
 declare const kvImageInvalidCVImageFormat: number;
 
 declare const kvImageInvalidEdgeStyle: number;
@@ -6828,11 +6832,21 @@ declare function vImageFlatten_RGBAFFFF(rgbaSrc: interop.Pointer | interop.Refer
 
 declare function vImageFlatten_RGBAFFFFToRGBFFF(p1: interop.Pointer | interop.Reference<vImage_Buffer>, p2: interop.Pointer | interop.Reference<vImage_Buffer>, p3: interop.Reference<number>, p4: boolean, p5: number): number;
 
+declare function vImageFloodFill_ARGB16U(srcDest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, seedX: number, seedY: number, newValue: interop.Reference<number>, connectivity: number, flags: number): number;
+
+declare function vImageFloodFill_ARGB8888(srcDest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, seedX: number, seedY: number, newValue: interop.Reference<number>, connectivity: number, flags: number): number;
+
+declare function vImageFloodFill_Planar16U(srcDest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, seedX: number, seedY: number, newValue: number, connectivity: number, flags: number): number;
+
+declare function vImageFloodFill_Planar8(srcDest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, seedX: number, seedY: number, newValue: number, connectivity: number, flags: number): number;
+
 declare function vImageGamma_Planar8toPlanarF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, gamma: interop.Pointer | interop.Reference<any>, flags: number): number;
 
 declare function vImageGamma_PlanarF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, gamma: interop.Pointer | interop.Reference<any>, flags: number): number;
 
 declare function vImageGamma_PlanarFtoPlanar8(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, gamma: interop.Pointer | interop.Reference<any>, flags: number): number;
+
+declare function vImageGetPerspectiveWarp(srcPoints: interop.Reference<interop.Reference<number>>, destPoints: interop.Reference<interop.Reference<number>>, transform: interop.Pointer | interop.Reference<vImage_PerpsectiveTransform>, flags: number): number;
 
 declare function vImageGetResamplingFilterExtent(filter: interop.Pointer | interop.Reference<any>, flags: number): number;
 
@@ -7038,6 +7052,18 @@ declare function vImagePermuteChannels_ARGB8888(src: interop.Pointer | interop.R
 declare function vImagePermuteChannels_ARGBFFFF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, permuteMap: interop.Reference<number>, flags: number): number;
 
 declare function vImagePermuteChannels_RGB888(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, permuteMap: interop.Reference<number>, flags: number): number;
+
+declare function vImagePerspectiveWarp_ARGB16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, transform: interop.Pointer | interop.Reference<vImage_PerpsectiveTransform>, interpolation: number, backColor: interop.Reference<number>, flags: number): number;
+
+declare function vImagePerspectiveWarp_ARGB16U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, transform: interop.Pointer | interop.Reference<vImage_PerpsectiveTransform>, interpolation: number, backColor: interop.Reference<number>, flags: number): number;
+
+declare function vImagePerspectiveWarp_ARGB8888(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, transform: interop.Pointer | interop.Reference<vImage_PerpsectiveTransform>, interpolation: number, backColor: interop.Reference<number>, flags: number): number;
+
+declare function vImagePerspectiveWarp_Planar16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, transform: interop.Pointer | interop.Reference<vImage_PerpsectiveTransform>, interpolation: number, backColor: number, flags: number): number;
+
+declare function vImagePerspectiveWarp_Planar16U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, transform: interop.Pointer | interop.Reference<vImage_PerpsectiveTransform>, interpolation: number, backColor: number, flags: number): number;
+
+declare function vImagePerspectiveWarp_Planar8(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, transform: interop.Pointer | interop.Reference<vImage_PerpsectiveTransform>, interpolation: number, backColor: number, flags: number): number;
 
 declare function vImagePiecewiseGamma_Planar16Q12(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, exponentialCoeffs: interop.Reference<number>, gamma: number, linearCoeffs: interop.Reference<number>, boundary: number, flags: number): number;
 
@@ -7432,6 +7458,19 @@ declare const enum vImage_InterpolationMethod {
 
 	kvImageHalfInterpolation = 2
 }
+
+interface vImage_PerpsectiveTransform {
+	a: number;
+	b: number;
+	c: number;
+	d: number;
+	tx: number;
+	ty: number;
+	vx: number;
+	vy: number;
+	v: number;
+}
+declare var vImage_PerpsectiveTransform: interop.StructType<vImage_PerpsectiveTransform>;
 
 interface vImage_YpCbCrPixelRange {
 	Yp_bias: number;

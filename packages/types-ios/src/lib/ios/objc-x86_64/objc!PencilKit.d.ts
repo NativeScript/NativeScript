@@ -255,15 +255,21 @@ declare class PKStroke extends NSObject implements NSCopying {
 
 	readonly path: PKStrokePath;
 
+	readonly randomSeed: number;
+
 	readonly renderBounds: CGRect;
 
 	readonly transform: CGAffineTransform;
 
 	constructor(o: { ink: PKInk; strokePath: PKStrokePath; transform: CGAffineTransform; mask: UIBezierPath; });
 
+	constructor(o: { ink: PKInk; strokePath: PKStrokePath; transform: CGAffineTransform; mask: UIBezierPath; randomSeed: number; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	initWithInkStrokePathTransformMask(ink: PKInk, strokePath: PKStrokePath, transform: CGAffineTransform, mask: UIBezierPath): this;
+
+	initWithInkStrokePathTransformMaskRandomSeed(ink: PKInk, strokePath: PKStrokePath, transform: CGAffineTransform, mask: UIBezierPath, randomSeed: number): this;
 }
 
 declare class PKStrokePath extends NSObject implements NSCopying {
