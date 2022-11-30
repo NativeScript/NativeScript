@@ -8,7 +8,7 @@ import { ImageSource } from '../../image-source';
 import * as application from '../../application';
 import { isAccessibilityServiceEnabled, updateContentDescription } from '../../accessibility';
 import type { Background } from '../styling/background';
-import { SDK_VERSION } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 
 export * from './action-bar-common';
 

@@ -11,8 +11,6 @@ export * from './common';
 export const RESOURCE_PREFIX: string;
 export const FILE_PREFIX: string;
 
-export const SDK_VERSION: number;
-
 //@private
 /**
  * Used by various android event listener implementations.
@@ -176,6 +174,13 @@ export function isFontIconURI(uri: string): boolean;
  * @param path The path.
  */
 export function isFileOrResourcePath(path: string): boolean;
+
+/**
+ * Get file extension from file path
+ * @param path file path
+ * @returns file extension
+ */
+export function getFileExtension(path: string): string;
 
 /**
  * Returns true if the specified URI is data URI (http://en.wikipedia.org/wiki/Data_URI_scheme).

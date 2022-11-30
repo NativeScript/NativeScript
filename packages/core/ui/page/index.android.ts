@@ -4,7 +4,7 @@ import { View } from '../core/view';
 import { Color } from '../../color';
 import { ActionBar } from '../action-bar';
 import { GridLayout } from '../layouts/grid-layout';
-import { SDK_VERSION } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 import { profile } from '../../profiling';
 import { AndroidAccessibilityEvent, getLastFocusedViewOnPage, isAccessibilityServiceEnabled } from '../../accessibility';
 
