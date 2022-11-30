@@ -92,14 +92,15 @@ export function dataSerialize(data: any, wrapPrimitives: boolean = false) {
 			}
 
 			if (Array.isArray(data)) {
-				return NSArray.arrayWithArray((<any>data).map(dataSerialize));
+				return NSArray.arrayWithArray(data.map((el) => dataSerialize(el, wrapPrimitives)).filter((el) => el !== null));
 			}
 
-			let node = {} as any;
-			Object.keys(data).forEach(function (key) {
-				let value = data[key];
-				node[key] = dataSerialize(value, wrapPrimitives);
-			});
+			const node = Object.fromEntries(
+				Object.entries(data)
+					.map(([key, value]) => [key, dataSerialize(value, wrapPrimitives)])
+					.filter(([, value]) => value !== null)
+			);
+
 			return NSDictionary.dictionaryWithDictionary(node);
 		}
 
