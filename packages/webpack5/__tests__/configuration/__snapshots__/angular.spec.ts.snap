@@ -1,5 +1,12 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`angular configuration @angular-devkit/build-angular backwards compatible sets scriptTarget for version <15 1`] = `
+{
+  "aot": true,
+  "scriptTarget": 99,
+}
+`;
+
 exports[`angular configuration for android 1`] = `
 "{
   mode: 'development',
@@ -201,7 +208,6 @@ exports[`angular configuration for android 1`] = `
           {
             loader: '@angular-devkit/build-angular/src/babel/webpack-loader',
             options: {
-              scriptTarget: 99,
               aot: true
             }
           }
@@ -625,7 +631,6 @@ exports[`angular configuration for ios 1`] = `
           {
             loader: '@angular-devkit/build-angular/src/babel/webpack-loader',
             options: {
-              scriptTarget: 99,
               aot: true
             }
           }
