@@ -74,6 +74,20 @@ export function isDataURI(uri: string): boolean {
 	return firstSegment && firstSegment.indexOf('data:') === 0 && firstSegment.indexOf('base64') >= 0;
 }
 
+/**
+ * Get file extension from file path
+ * @param path file path
+ * @returns file extension
+ */
+export function getFileExtension(path: string): string {
+	const dotIndex = path.lastIndexOf('.');
+	if (dotIndex && dotIndex >= 0 && dotIndex < path.length) {
+		return path.substring(dotIndex);
+	}
+
+	return '';
+}
+
 export function mergeSort(arr, compareFunc) {
 	if (arr.length < 2) {
 		return arr;

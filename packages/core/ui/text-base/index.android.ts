@@ -11,7 +11,8 @@ import { colorProperty, fontSizeProperty, fontInternalProperty, paddingLeftPrope
 import { FormattedString } from './formatted-string';
 import { Span } from './span';
 import { CoreTypes } from '../../core-types';
-import { SDK_VERSION, layout } from '../../utils';
+import { layout } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 import { isString, isNullOrUndefined } from '../../utils/types';
 import { accessibilityIdentifierProperty } from '../../accessibility/accessibility-properties';
 import * as Utils from '../../utils';

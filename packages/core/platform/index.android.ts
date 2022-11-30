@@ -1,6 +1,6 @@
 /* tslint:disable:class-name */
 import { getNativeApplication, on, orientationChangedEvent, android as AndroidApplication } from '../application';
-import { SDK_VERSION } from '../utils';
+import { SDK_VERSION } from '../utils/constants';
 
 const MIN_TABLET_PIXELS = 600;
 

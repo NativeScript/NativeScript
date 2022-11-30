@@ -6,8 +6,6 @@ export * from './layout-helper';
 export * from './common';
 export { Source } from './debug';
 
-export const SDK_VERSION = parseFloat(UIDevice.currentDevice.systemVersion);
-
 export function openFile(filePath: string): boolean {
 	try {
 		const appPath = iOSNativeHelper.getCurrentAppPath();

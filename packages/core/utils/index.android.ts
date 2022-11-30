@@ -1,13 +1,12 @@
 import { ad } from './native-helper';
-import { FileSystemAccess } from '../file-system/file-system-access';
 import { Trace } from '../trace';
+import { getFileExtension } from './common';
+import { SDK_VERSION } from './constants';
 
 export { ad, dataDeserialize, dataSerialize, iOSNativeHelper } from './native-helper';
 export * from './layout-helper';
 export * from './common';
 export { Source } from './debug';
-
-export const SDK_VERSION = android.os.Build.VERSION.SDK_INT;
 
 const MIN_URI_SHARE_RESTRICTED_APK_VERSION = 24;
 
@@ -72,7 +71,7 @@ function isExternalStorageAvailable(): boolean {
  */
 function getMimeTypeNameFromExtension(filePath: string): string {
 	const mimeTypeMap = android.webkit.MimeTypeMap.getSingleton();
-	const extension = new FileSystemAccess().getFileExtension(filePath).replace('.', '').toLowerCase();
+	const extension = getFileExtension(filePath).replace('.', '').toLowerCase();
 
 	return mimeTypeMap.getMimeTypeFromExtension(extension);
 }
