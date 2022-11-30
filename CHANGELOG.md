@@ -1,3 +1,10 @@
+## [8.4.1](https://github.com/NativeScript/NativeScript/compare/8.4.0-core...8.4.1-core) (2022-11-30)
+
+### Bug Fixes
+
+* **core:** circular imports of SDK_VERSION ([82d60ae](https://github.com/NativeScript/NativeScript/commit/82d60ae057f0f14718c1065f51bf3edbf36ad96a))
+  
+
 ## [8.4.0](https://github.com/NativeScript/NativeScript/compare/8.3.6-core...8.4.0-core) (2022-11-30)
 
 ### Features
