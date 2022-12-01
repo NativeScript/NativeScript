@@ -3,7 +3,8 @@ import { SegmentedBarItemBase, SegmentedBarBase, selectedIndexProperty, itemsPro
 import { isEnabledProperty } from '../core/view';
 import { colorProperty, fontInternalProperty, fontSizeProperty } from '../styling/style-properties';
 import { Color } from '../../color';
-import { SDK_VERSION, layout } from '../../utils';
+import { layout } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 
 export * from './segmented-bar-common';
 

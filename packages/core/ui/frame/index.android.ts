@@ -476,14 +476,14 @@ export class Frame extends FrameBase {
 		const goBackToIndex = this.backStack.indexOf(backstackEntry);
 
 		// the order is important so that the last transition listener called be
-        // the one from the current entry we are going back from
-        for (let index = goBackToIndex + 1; index < currentIndex; index++) {
+		// the one from the current entry we are going back from
+		for (let index = goBackToIndex + 1; index < currentIndex; index++) {
 			// we need to ensure we dont listen for animations of
 			// in between fragments or they could break our transition end handling
 			// and set the wrong current entry
 			_clearEntry(this.backStack[index]);
-            transaction.remove(this.backStack[index].fragment);
-        }
+			transaction.remove(this.backStack[index].fragment);
+		}
 		if (this._currentEntry !== backstackEntry) {
 			const entry = this._currentEntry as ExpandedEntry;
 			// if we are going back we need to store where we are backing to
@@ -1008,11 +1008,11 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 
 	@profile
 	public onDestroyView(fragment: org.nativescript.widgets.FragmentBase, superFunc: Function): void {
-			if (Trace.isEnabled()) {
-				Trace.write(`${fragment}.onDestroyView()`, Trace.categories.NativeLifecycle);
-			}
-			superFunc.call(fragment);
+		if (Trace.isEnabled()) {
+			Trace.write(`${fragment}.onDestroyView()`, Trace.categories.NativeLifecycle);
 		}
+		superFunc.call(fragment);
+	}
 
 	@profile
 	public onDestroy(fragment: androidx.fragment.app.Fragment, superFunc: Function): void {
@@ -1038,7 +1038,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 
 	@profile
 	public onPause(fragment: org.nativescript.widgets.FragmentBase, superFunc: Function): void {
-			superFunc.call(fragment);
+		superFunc.call(fragment);
 	}
 
 	@profile
@@ -1117,7 +1117,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 		if (savedInstanceState) {
 			const rootViewId = savedInstanceState.getInt(ROOT_VIEW_ID_EXTRA, -1);
 			if (rootViewId !== -1 && activityRootViewsMap.has(rootViewId)) {
-				this._rootView = activityRootViewsMap.get(rootViewId).get();
+				this._rootView = activityRootViewsMap.get(rootViewId)?.get();
 			}
 		}
 

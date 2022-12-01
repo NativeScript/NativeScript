@@ -1,5 +1,4 @@
 # NativeScript Core Modules Widgets
-[![Build Status](https://travis-ci.org/NativeScript/NativeScript.svg?branch=master)](https://travis-ci.org/NativeScript/NativeScript)
 
 This library represents native code (Java and Objective-C) used by the NativeScript [`core modules`](https://github.com/NativeScript/NativeScript/tree/master/tns-core-modules-widgets).
 

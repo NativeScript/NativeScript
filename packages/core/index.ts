@@ -137,16 +137,19 @@ export * from './trace';
 
 export * from './ui';
 
-import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, executeOnUIThread, queueMacrotask, queueGC, debounce, throttle, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, iOSNativeHelper as iosUtils, Source, RESOURCE_PREFIX, FILE_PREFIX, escapeRegexSymbols, convertString, dismissSoftInput, dataDeserialize, dataSerialize } from './utils';
+import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, executeOnUIThread, queueMacrotask, queueGC, debounce, throttle, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, iOSNativeHelper as iosUtils, Source, RESOURCE_PREFIX, FILE_PREFIX, escapeRegexSymbols, convertString, dismissSoftInput, dismissKeyboard, dataDeserialize, dataSerialize, copyToClipboard, getFileExtension } from './utils';
+import { SDK_VERSION } from './utils/constants';
 import { ClassInfo, getClass, getBaseClasses, getClassInfo, isBoolean, isDefined, isFunction, isNullOrUndefined, isNumber, isObject, isString, isUndefined, toUIString, verifyCallback, numberHasDecimals, numberIs64Bit } from './utils/types';
 
 export const Utils = {
 	GC,
+	SDK_VERSION,
 	RESOURCE_PREFIX,
 	FILE_PREFIX,
 	isFontIconURI,
 	isDataURI,
 	isFileOrResourcePath,
+	getFileExtension,
 	executeOnMainThread,
 	executeOnUIThread,
 	mainThreadify,
@@ -194,6 +197,8 @@ export const Utils = {
 	toUIString,
 	verifyCallback,
 	dismissSoftInput,
+	dismissKeyboard,
+	copyToClipboard,
 };
 
 export { XmlParser, ParserEventType, ParserEvent } from './xml';

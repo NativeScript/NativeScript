@@ -6,7 +6,7 @@ import { CoreTypes } from '../../core-types';
 import { profile } from '../../profiling';
 import { TouchGestureEventData, GestureTypes, TouchAction } from '../gestures';
 import { Device } from '../../platform';
-import { SDK_VERSION } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 import lazy from '../../utils/lazy';
 import type { Background } from '../styling/background';
 

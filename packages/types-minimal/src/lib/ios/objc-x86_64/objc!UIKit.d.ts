@@ -2076,9 +2076,9 @@ declare class NSTextListElement extends NSTextParagraph {
 
 	static new(): NSTextListElement; // inherited from NSObject
 
-	static textListElementWithChildElementsTextListNestingLevel(childElements: NSArray<NSTextListElement> | NSTextListElement[], textList: NSTextList, nestingLevel: number): NSTextListElement;
+	static textListElementWithChildElementsTextListNestingLevel(children: NSArray<NSTextListElement> | NSTextListElement[], textList: NSTextList, nestingLevel: number): NSTextListElement;
 
-	static textListElementWithContentsMarkerAttributesTextListChildElements(contents: NSAttributedString, markerAttributes: NSDictionary<string, any>, textList: NSTextList, childElements: NSArray<NSTextListElement> | NSTextListElement[]): NSTextListElement;
+	static textListElementWithContentsMarkerAttributesTextListChildElements(contents: NSAttributedString, markerAttributes: NSDictionary<string, any>, textList: NSTextList, children: NSArray<NSTextListElement> | NSTextListElement[]): NSTextListElement;
 
 	readonly contents: NSAttributedString;
 
@@ -2090,7 +2090,7 @@ declare class NSTextListElement extends NSTextParagraph {
 
 	constructor(o: { parentElement: NSTextListElement; textList: NSTextList; contents: NSAttributedString; markerAttributes: NSDictionary<string, any>; childElements: NSArray<NSTextListElement> | NSTextListElement[]; });
 
-	initWithParentElementTextListContentsMarkerAttributesChildElements(parentElement: NSTextListElement, textList: NSTextList, contents: NSAttributedString, markerAttributes: NSDictionary<string, any>, childElements: NSArray<NSTextListElement> | NSTextListElement[]): this;
+	initWithParentElementTextListContentsMarkerAttributesChildElements(parent: NSTextListElement, textList: NSTextList, contents: NSAttributedString, markerAttributes: NSDictionary<string, any>, children: NSArray<NSTextListElement> | NSTextListElement[]): this;
 }
 
 declare var NSTextListMarkerBox: string;
@@ -4781,6 +4781,8 @@ declare class UIBarButtonItem extends UIBarItem implements NSCoding, UIPopoverPr
 
 	constructor(o: { barButtonSystemItem: UIBarButtonSystemItem; primaryAction: UIAction; });
 
+	constructor(o: { barButtonSystemItem: UIBarButtonSystemItem; primaryAction: UIAction; menu: UIMenu; });
+
 	constructor(o: { barButtonSystemItem: UIBarButtonSystemItem; target: any; action: string; });
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
@@ -4794,6 +4796,10 @@ declare class UIBarButtonItem extends UIBarItem implements NSCoding, UIPopoverPr
 	constructor(o: { image: UIImage; style: UIBarButtonItemStyle; target: any; action: string; });
 
 	constructor(o: { primaryAction: UIAction; });
+
+	constructor(o: { primaryAction: UIAction; menu: UIMenu; });
+
+	constructor(o: { title: string; image: UIImage; target: any; action: string; menu: UIMenu; });
 
 	constructor(o: { title: string; menu: UIMenu; });
 
@@ -4827,6 +4833,8 @@ declare class UIBarButtonItem extends UIBarItem implements NSCoding, UIPopoverPr
 
 	initWithBarButtonSystemItemPrimaryAction(systemItem: UIBarButtonSystemItem, primaryAction: UIAction): this;
 
+	initWithBarButtonSystemItemPrimaryActionMenu(systemItem: UIBarButtonSystemItem, primaryAction: UIAction, menu: UIMenu): this;
+
 	initWithBarButtonSystemItemTargetAction(systemItem: UIBarButtonSystemItem, target: any, action: string): this;
 
 	initWithCoder(coder: NSCoder): this;
@@ -4840,6 +4848,10 @@ declare class UIBarButtonItem extends UIBarItem implements NSCoding, UIPopoverPr
 	initWithImageStyleTargetAction(image: UIImage, style: UIBarButtonItemStyle, target: any, action: string): this;
 
 	initWithPrimaryAction(primaryAction: UIAction): this;
+
+	initWithPrimaryActionMenu(primaryAction: UIAction, menu: UIMenu): this;
+
+	initWithTitleImageTargetActionMenu(title: string, image: UIImage, target: any, action: string, menu: UIMenu): this;
 
 	initWithTitleMenu(title: string, menu: UIMenu): this;
 
@@ -4924,6 +4936,8 @@ declare class UIBarButtonItemGroup extends NSObject implements NSCoding {
 	static new(): UIBarButtonItemGroup; // inherited from NSObject
 
 	static optionalGroupWithCustomizationIdentifierInDefaultCustomizationRepresentativeItemItems(customizationIdentifier: string, inDefaultCustomization: boolean, representativeItem: UIBarButtonItem, items: NSArray<UIBarButtonItem> | UIBarButtonItem[]): UIBarButtonItemGroup;
+
+	alwaysAvailable: boolean;
 
 	barButtonItems: NSArray<UIBarButtonItem>;
 
@@ -10394,11 +10408,15 @@ declare class UIFindSession extends NSObject {
 
 	readonly allowsReplacement: boolean;
 
+	readonly allowsReplacementForCurrentlyHighlightedResult: boolean;
+
 	readonly highlightedResultIndex: number;
 
 	readonly resultCount: number;
 
 	searchResultDisplayStyle: UIFindSessionSearchResultDisplayStyle;
+
+	readonly supportsReplacement: boolean;
 
 	highlightNextResultInDirection(direction: UITextStorageDirection): void;
 
@@ -10720,6 +10738,8 @@ declare class UIFont extends NSObject implements NSCopying, NSSecureCoding {
 
 	static systemFontOfSizeWeight(fontSize: number, weight: number): UIFont;
 
+	static systemFontOfSizeWeightWidth(fontSize: number, weight: number, width: number): UIFont;
+
 	readonly ascender: number;
 
 	readonly capHeight: number;
@@ -11024,6 +11044,14 @@ declare var UIFontWeightThin: number;
 declare var UIFontWeightTrait: string;
 
 declare var UIFontWeightUltraLight: number;
+
+declare var UIFontWidthCompressed: number;
+
+declare var UIFontWidthCondensed: number;
+
+declare var UIFontWidthExpanded: number;
+
+declare var UIFontWidthStandard: number;
 
 declare var UIFontWidthTrait: string;
 
@@ -11447,6 +11475,8 @@ declare class UIHoverGestureRecognizer extends UIGestureRecognizer {
 	static alloc(): UIHoverGestureRecognizer; // inherited from NSObject
 
 	static new(): UIHoverGestureRecognizer; // inherited from NSObject
+
+	readonly zOffset: number;
 }
 
 declare class UIImage extends NSObject implements NSItemProviderReading, NSItemProviderWriting, NSSecureCoding, UIAccessibilityIdentification, UIItemProviderPresentationSizeProviding {
@@ -14542,6 +14572,10 @@ declare class UINavigationItem extends NSObject implements NSCoding {
 	leftBarButtonItems: NSArray<UIBarButtonItem>;
 
 	leftItemsSupplementBackButton: boolean;
+
+	readonly overflowPresentationSource: UIPopoverPresentationControllerSourceItem;
+
+	pinnedTrailingGroup: UIBarButtonItemGroup;
 
 	preferredSearchBarPlacement: UINavigationItemSearchBarPlacement;
 
@@ -18130,6 +18164,8 @@ declare class UISearchController extends UIViewController implements UIViewContr
 
 	obscuresBackgroundDuringPresentation: boolean;
 
+	scopeBarActivation: UISearchControllerScopeBarActivation;
+
 	readonly searchBar: UISearchBar;
 
 	readonly searchBarPlacement: UINavigationItemSearchBarPlacement;
@@ -18219,6 +18255,17 @@ declare var UISearchControllerDelegate: {
 
 	prototype: UISearchControllerDelegate;
 };
+
+declare const enum UISearchControllerScopeBarActivation {
+
+	Automatic = 0,
+
+	Manual = 1,
+
+	OnTextEntry = 2,
+
+	OnSearchActivation = 3
+}
 
 declare class UISearchDisplayController extends NSObject {
 
@@ -21883,6 +21930,10 @@ declare class UITextField extends UIControl implements NSCoding, UIContentSizeCa
 	unmarkText(): void;
 
 	updateFloatingCursorAtPoint(point: CGPoint): void;
+
+	willDismissEditMenuWithAnimator(animator: UIEditMenuInteractionAnimating): void;
+
+	willPresentEditMenuWithAnimator(animator: UIEditMenuInteractionAnimating): void;
 }
 
 interface UITextFieldDelegate extends NSObjectProtocol {
@@ -21906,6 +21957,10 @@ interface UITextFieldDelegate extends NSObjectProtocol {
 	textFieldShouldEndEditing?(textField: UITextField): boolean;
 
 	textFieldShouldReturn?(textField: UITextField): boolean;
+
+	textFieldWillDismissEditMenuWithAnimator?(textField: UITextField, animator: UIEditMenuInteractionAnimating): void;
+
+	textFieldWillPresentEditMenuWithAnimator?(textField: UITextField, animator: UIEditMenuInteractionAnimating): void;
 }
 declare var UITextFieldDelegate: {
 
@@ -22114,6 +22169,10 @@ interface UITextInput extends UIKeyInput {
 	unmarkText(): void;
 
 	updateFloatingCursorAtPoint?(point: CGPoint): void;
+
+	willDismissEditMenuWithAnimator?(animator: UIEditMenuInteractionAnimating): void;
+
+	willPresentEditMenuWithAnimator?(animator: UIEditMenuInteractionAnimating): void;
 }
 declare var UITextInput: {
 
@@ -22479,6 +22538,8 @@ interface UITextSearchAggregator extends NSObjectProtocol {
 	finishedSearching(): void;
 
 	foundRangeForSearchStringInDocument(range: UITextRange, string: string, document: any): void;
+
+	invalidate(): void;
 
 	invalidateFoundRangeInDocument(range: UITextRange, document: any): void;
 }
@@ -22908,7 +22969,11 @@ declare class UITextView extends UIScrollView implements UIContentSizeCategoryAd
 
 	updateFloatingCursorAtPoint(point: CGPoint): void;
 
+	willDismissEditMenuWithAnimator(animator: UIEditMenuInteractionAnimating): void;
+
 	willHighlightFoundTextRangeInDocument(range: UITextRange, document: any): void;
+
+	willPresentEditMenuWithAnimator(animator: UIEditMenuInteractionAnimating): void;
 }
 
 interface UITextViewDelegate extends NSObjectProtocol, UIScrollViewDelegate {
@@ -22936,6 +23001,10 @@ interface UITextViewDelegate extends NSObjectProtocol, UIScrollViewDelegate {
 	textViewShouldInteractWithURLInRange?(textView: UITextView, URL: NSURL, characterRange: NSRange): boolean;
 
 	textViewShouldInteractWithURLInRangeInteraction?(textView: UITextView, URL: NSURL, characterRange: NSRange, interaction: UITextItemInteraction): boolean;
+
+	textViewWillDismissEditMenuWithAnimator?(textView: UITextView, animator: UIEditMenuInteractionAnimating): void;
+
+	textViewWillPresentEditMenuWithAnimator?(textView: UITextView, animator: UIEditMenuInteractionAnimating): void;
 }
 declare var UITextViewDelegate: {
 
@@ -24018,7 +24087,7 @@ declare class UIView extends UIResponder implements CALayerDelegate, NSCoding, U
 
 	layoutSubviews(): void;
 
-	nativeScriptSetFormattedTextDecorationAndTransformLetterSpacingLineHeight(details: NSDictionary<any, any>, letterSpacing: number, lineHeight: number): void;
+	nativeScriptSetFormattedTextDecorationAndTransform(details: NSDictionary<any, any>): void;
 
 	nativeScriptSetTextDecorationAndTransformTextDecorationLetterSpacingLineHeight(text: string, textDecoration: string, letterSpacing: number, lineHeight: number): void;
 

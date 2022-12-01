@@ -48,7 +48,7 @@ class TapBarItemHandlerImpl extends NSObject {
 	}
 
 	public tap(args) {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			owner._raiseTap();
 		}

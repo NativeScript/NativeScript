@@ -119,7 +119,7 @@ class SelectionHandlerImpl extends NSObject {
 	}
 
 	public selected(sender: UISegmentedControl) {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			owner.selectedIndex = sender.selectedSegmentIndex;
 		}

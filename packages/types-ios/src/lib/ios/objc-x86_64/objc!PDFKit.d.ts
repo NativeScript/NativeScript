@@ -861,6 +861,8 @@ declare class PDFPage extends NSObject implements NSCopying {
 
 	constructor(o: { image: UIImage; });
 
+	constructor(o: { image: UIImage; options: NSDictionary<string, any>; });
+
 	addAnnotation(annotation: PDFAnnotation): void;
 
 	annotationAtPoint(point: CGPoint): PDFAnnotation;
@@ -876,6 +878,8 @@ declare class PDFPage extends NSObject implements NSCopying {
 	drawWithBoxToContext(box: PDFDisplayBox, context: any): void;
 
 	initWithImage(image: UIImage): this;
+
+	initWithImageOptions(image: UIImage, options: NSDictionary<string, any>): this;
 
 	removeAnnotation(annotation: PDFAnnotation): void;
 
@@ -897,6 +901,14 @@ declare class PDFPage extends NSObject implements NSCopying {
 
 	transformForBox(box: PDFDisplayBox): CGAffineTransform;
 }
+
+declare var PDFPageImageInitializationOptionCompressionQuality: string;
+
+declare var PDFPageImageInitializationOptionMediaBox: string;
+
+declare var PDFPageImageInitializationOptionRotation: string;
+
+declare var PDFPageImageInitializationOptionUpscaleIfSmaller: string;
 
 interface PDFPageOverlayViewProvider extends NSObjectProtocol {
 

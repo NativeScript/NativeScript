@@ -89,12 +89,8 @@ module.exports = {
           description: '@nativescript/core: Build'
         },
 				test: {
-          script: 'nx run core:unit',
-          description: '@nativescript/core: Unit tests',
-					watch: {
-            script: 'nx run core:unit.watch',
-            description: '@nativescript/core: Unit tests with watcher'
-					},
+          script: 'nx run core:test',
+          description: '@nativescript/core: Unit tests'
 				},
 			},
       // @nativescript/core API Reference Docs

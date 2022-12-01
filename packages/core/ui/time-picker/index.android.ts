@@ -1,5 +1,5 @@
 import { TimePickerBase, getValidTime, timeProperty, hourProperty, minuteProperty } from './time-picker-common';
-import { SDK_VERSION } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 
 export * from './time-picker-common';
 

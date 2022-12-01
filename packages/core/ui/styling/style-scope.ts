@@ -2,7 +2,7 @@ import { Keyframes } from '../animation/keyframe-animation';
 import { ViewBase } from '../core/view-base';
 import { View } from '../core/view';
 import { CssAnimationProperty, unsetValue, _evaluateCssVariableExpression, _evaluateCssCalcExpression, isCssVariable, isCssVariableExpression, isCssCalcExpression } from '../core/properties';
-import { SyntaxTree, Keyframes as KeyframesDefinition, parse as parseCss, Node as CssNode } from '../../css';
+import { SyntaxTree, Keyframes as KeyframesDefinition, Node as CssNode } from '../../css';
 
 import { RuleSet, SelectorsMap, SelectorCore, SelectorsMatch, ChangeMap, fromAstNodes, Node } from './css-selector';
 import { Trace } from '../../trace';

@@ -222,6 +222,18 @@ interface RequireContext {
 	resolve(id: string): string;
 }
 
+interface WeakRef<T extends object> {
+	/**
+	 * @deprecated Use deref instead with 8.4+
+	 */
+	get(): T;
+
+	/**
+	 * @deprecated You no longer need to make this call and can be safely removed.
+	 */
+	clear(): void;
+}
+
 declare var __dirname: string;
 declare var __filename: string;
 
@@ -350,13 +362,6 @@ declare function fail(data: any): void;
 // declare function clearInterval(id: number): void;
 
 declare function zonedCallback(callback: Function): Function;
-
-declare class WeakRef<T> {
-	constructor(obj: T);
-	get(): T;
-	clear(): void;
-	deref(): T | undefined;
-}
 
 /**
  * Create a Java long from a number

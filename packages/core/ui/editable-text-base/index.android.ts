@@ -1,10 +1,9 @@
 import { EditableTextBase as EditableTextBaseCommon, autofillTypeProperty, keyboardTypeProperty, returnKeyTypeProperty, editableProperty, autocapitalizationTypeProperty, autocorrectProperty, hintProperty, placeholderColorProperty, maxLengthProperty } from './editable-text-base-common';
 import { textTransformProperty, textProperty, resetSymbol } from '../text-base';
 import { Color } from '../../color';
-import { SDK_VERSION, ad } from '../../utils';
+import { ad } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 import { CoreTypes } from '../../core-types';
-import { Device } from '../../platform';
-import lazy from '../../utils/lazy';
 
 export * from './editable-text-base-common';
 

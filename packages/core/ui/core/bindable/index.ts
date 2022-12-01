@@ -168,7 +168,7 @@ export class Binding {
 		// }
 
 		if (this.sourceOptions) {
-			this.sourceOptions.instance.clear();
+			this.sourceOptions.instance = undefined;
 			this.sourceOptions = undefined;
 		}
 	}
@@ -373,7 +373,6 @@ export class Binding {
 
 			newValue = expressionValue;
 		}
-
 
 		this.updateSource(newValue);
 	}

@@ -1,12 +1,4 @@
 
-interface CGAffineTransformComponents {
-	scale: CGSize;
-	horizontalShear: number;
-	rotation: number;
-	translation: CGVector;
-}
-declare var CGAffineTransformComponents: interop.StructType<CGAffineTransformComponents>;
-
 declare function CGAffineTransformConcat(t1: CGAffineTransform, t2: CGAffineTransform): CGAffineTransform;
 
 declare function CGAffineTransformDecompose(transform: CGAffineTransform): CGAffineTransformComponents;
@@ -1524,6 +1516,10 @@ declare const enum CGTextEncoding {
 }
 
 declare function CGVectorMake(dx: number, dy: number): CGVector;
+
+declare var kCGBitmapByteOrder16Host: CGBitmapInfo;
+
+declare var kCGBitmapByteOrder32Host: CGBitmapInfo;
 
 declare var kCGColorBlack: string;
 

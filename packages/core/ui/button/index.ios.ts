@@ -275,7 +275,7 @@ export class Button extends ButtonBase {
 // 	public tap(args) {
 // 		// _owner is a {N} view which could get destroyed when a tap initiates (protect!)
 // 		if (this._owner) {
-// 			const owner = this._owner.get();
+//			const owner = this._owner?.deref();
 // 			if (owner) {
 // 				owner._emit(ButtonBase.tapEvent);
 // 			}

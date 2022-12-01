@@ -114,18 +114,18 @@ function transformAst(node, css, type) {
     if (node.type === 'Raw') {
         return null;
     }
-    throw Error("Unknown node type " + node.type);
+    throw Error("Unknown node type ".concat(node.type));
 }
 function cssTreeParse(css, source) {
     var errors = [];
-    var ast = css_tree_1.parse(css, {
+    var ast = (0, css_tree_1.parse)(css, {
         parseValue: false,
         parseAtrulePrelude: false,
         parseRulePrelude: false,
         positions: true,
         filename: source,
         onParseError: function (error) {
-            errors.push(source + ":" + error.line + ":" + error.column + ": " + error.formattedMessage);
+            errors.push("".concat(source, ":").concat(error.line, ":").concat(error.column, ": ").concat(error.formattedMessage));
         },
     });
     if (errors.length > 0) {

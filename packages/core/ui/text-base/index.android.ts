@@ -11,7 +11,8 @@ import { colorProperty, fontSizeProperty, fontInternalProperty, paddingLeftPrope
 import { FormattedString } from './formatted-string';
 import { Span } from './span';
 import { CoreTypes } from '../../core-types';
-import { SDK_VERSION, layout } from '../../utils';
+import { layout } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 import { isString, isNullOrUndefined } from '../../utils/types';
 import { accessibilityIdentifierProperty } from '../../accessibility/accessibility-properties';
 import * as Utils from '../../utils';
@@ -82,7 +83,7 @@ function initializeClickableSpan(): void {
 			return global.__native(this);
 		}
 		onClick(view: android.view.View): void {
-			const owner = this.owner.get();
+			const owner = this.owner?.get();
 			if (owner) {
 				owner._emit(Span.linkTapEvent);
 			}
@@ -468,6 +469,7 @@ export class TextBase extends TextBaseCommon {
 			nativeTextViewProtected.setMaxLines(Number.MAX_SAFE_INTEGER);
 		} else {
 			nativeTextViewProtected.setMaxLines(typeof value === 'string' ? parseInt(value, 10) : value);
+			nativeTextViewProtected.setEllipsize(android.text.TextUtils.TruncateAt.END);
 		}
 	}
 

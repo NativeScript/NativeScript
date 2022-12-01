@@ -1466,7 +1466,7 @@ declare class MPNowPlayingSession extends NSObject {
 
 	readonly active: boolean;
 
-	automaticallyPublishNowPlayingInfo: boolean;
+	automaticallyPublishesNowPlayingInfo: boolean;
 
 	readonly canBecomeActive: boolean;
 

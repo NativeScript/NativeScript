@@ -23,6 +23,7 @@ import lazy from '../../../utils/lazy';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty } from '../../../accessibility/accessibility-properties';
 import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, isAccessibilityServiceEnabled, sendAccessibilityEvent, updateAccessibilityProperties, updateContentDescription, AccessibilityState } from '../../../accessibility';
 import * as Utils from '../../../utils';
+import { SDK_VERSION } from '../../../utils/constants';
 import { CSSShadow } from '../../styling/css-shadow';
 
 export * from './view-common';
@@ -841,7 +842,7 @@ export class View extends ViewCommon {
 			updateAccessibilityProperties(this);
 		}
 
-		if (Utils.SDK_VERSION >= 28) {
+		if (SDK_VERSION >= 28) {
 			this.nativeViewProtected?.setAccessibilityHeading(value === AccessibilityRole.Header);
 		}
 	}
@@ -899,7 +900,7 @@ export class View extends ViewCommon {
 		return this.getDefaultElevation();
 	}
 	[androidElevationProperty.setNative](value: number) {
-		if (Utils.SDK_VERSION < 21) {
+		if (SDK_VERSION < 21) {
 			return;
 		}
 
@@ -910,7 +911,7 @@ export class View extends ViewCommon {
 		return this.getDefaultDynamicElevationOffset();
 	}
 	[androidDynamicElevationOffsetProperty.setNative](value: number) {
-		if (Utils.SDK_VERSION < 21) {
+		if (SDK_VERSION < 21) {
 			return;
 		}
 
@@ -918,7 +919,7 @@ export class View extends ViewCommon {
 	}
 
 	protected getDefaultElevation(): number {
-		if (Utils.SDK_VERSION < 21) {
+		if (SDK_VERSION < 21) {
 			return 0;
 		}
 

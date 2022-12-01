@@ -32,6 +32,11 @@ export namespace CoreTypes {
 	export type LengthType = 'auto' | dip | LengthDipUnit | LengthPxUnit;
 	export type PercentLengthType = 'auto' | dip | LengthDipUnit | LengthPxUnit | LengthPercentUnit;
 
+	export const zeroLength: LengthType = {
+		value: 0,
+		unit: 'px',
+	};
+
 	export type KeyboardInputType = 'datetime' | 'phone' | 'number' | 'url' | 'email' | 'integer' | 'decimal';
 	export module KeyboardType {
 		export const datetime = 'datetime';

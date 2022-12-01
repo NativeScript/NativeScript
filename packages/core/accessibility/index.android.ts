@@ -1,7 +1,7 @@
 import { initAccessibilityFontScale } from './font-scale';
 import * as Application from '../application';
 import { Trace } from '../trace';
-import { SDK_VERSION } from '../utils';
+import { SDK_VERSION } from '../utils/constants';
 import type { View } from '../ui/core/view';
 import { GestureTypes } from '../ui/gestures';
 import { notifyAccessibilityFocusState } from './accessibility-common';

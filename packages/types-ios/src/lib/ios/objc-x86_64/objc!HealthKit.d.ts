@@ -446,9 +446,13 @@ declare var HKCategoryTypeIdentifierHighHeartRateEvent: string;
 
 declare var HKCategoryTypeIdentifierHotFlashes: string;
 
+declare var HKCategoryTypeIdentifierInfrequentMenstrualCycles: string;
+
 declare var HKCategoryTypeIdentifierIntermenstrualBleeding: string;
 
 declare var HKCategoryTypeIdentifierIrregularHeartRhythmEvent: string;
+
+declare var HKCategoryTypeIdentifierIrregularMenstrualCycles: string;
 
 declare var HKCategoryTypeIdentifierLactation: string;
 
@@ -478,11 +482,15 @@ declare var HKCategoryTypeIdentifierOvulationTestResult: string;
 
 declare var HKCategoryTypeIdentifierPelvicPain: string;
 
+declare var HKCategoryTypeIdentifierPersistentIntermenstrualBleeding: string;
+
 declare var HKCategoryTypeIdentifierPregnancy: string;
 
 declare var HKCategoryTypeIdentifierPregnancyTestResult: string;
 
 declare var HKCategoryTypeIdentifierProgesteroneTestResult: string;
+
+declare var HKCategoryTypeIdentifierProlongedMenstrualPeriods: string;
 
 declare var HKCategoryTypeIdentifierRapidPoundingOrFlutteringHeartbeat: string;
 
@@ -1925,6 +1933,8 @@ declare var HKQuantityTypeIdentifierAppleExerciseTime: string;
 
 declare var HKQuantityTypeIdentifierAppleMoveTime: string;
 
+declare var HKQuantityTypeIdentifierAppleSleepingWristTemperature: string;
+
 declare var HKQuantityTypeIdentifierAppleStandTime: string;
 
 declare var HKQuantityTypeIdentifierAppleWalkingSteadiness: string;
@@ -2105,6 +2115,8 @@ declare var HKQuantityTypeIdentifierSwimmingStrokeCount: string;
 
 declare var HKQuantityTypeIdentifierUVExposure: string;
 
+declare var HKQuantityTypeIdentifierUnderwaterDepth: string;
+
 declare var HKQuantityTypeIdentifierVO2Max: string;
 
 declare var HKQuantityTypeIdentifierWaistCircumference: string;
@@ -2118,6 +2130,8 @@ declare var HKQuantityTypeIdentifierWalkingHeartRateAverage: string;
 declare var HKQuantityTypeIdentifierWalkingSpeed: string;
 
 declare var HKQuantityTypeIdentifierWalkingStepLength: string;
+
+declare var HKQuantityTypeIdentifierWaterTemperature: string;
 
 declare class HKQuery extends NSObject {
 

@@ -133,22 +133,22 @@ export class ScrollView extends ScrollViewBase {
 		if (this.orientation === 'vertical') {
 			this.scrollChangeHandler = new androidx.core.widget.NestedScrollView.OnScrollChangeListener({
 				onScrollChange(view, scrollX, scrollY) {
-					const owner: ScrollView = that.get();
+					const owner: ScrollView = that?.get();
 					if (owner) {
 						owner.notify({
 							object: owner,
 							eventName: ScrollView.scrollEvent,
 							scrollX: layout.toDeviceIndependentPixels(scrollX),
-							scrollY: layout.toDeviceIndependentPixels(scrollY)
+							scrollY: layout.toDeviceIndependentPixels(scrollY),
 						});
 					}
-				}
+				},
 			});
 			this.nativeView.setOnScrollChangeListener(this.scrollChangeHandler);
 		} else {
 			this.handler = new android.view.ViewTreeObserver.OnScrollChangedListener({
 				onScrollChanged: function () {
-					const owner: ScrollView = that.get();
+					const owner: ScrollView = that?.get();
 					if (owner) {
 						owner._onScrollChanged();
 					}
@@ -182,11 +182,11 @@ export class ScrollView extends ScrollViewBase {
 
 	protected dettachNative() {
 		if (this.handler) {
-			this.nativeViewProtected.getViewTreeObserver().removeOnScrollChangedListener(this.handler);
+			this.nativeViewProtected?.getViewTreeObserver().removeOnScrollChangedListener(this.handler);
 			this.handler = null;
 		}
 		if (this.scrollChangeHandler) {
-			this.nativeView.setOnScrollChangeListener(null);
+			this.nativeView?.setOnScrollChangeListener(null);
 			this.scrollChangeHandler = null;
 		}
 	}

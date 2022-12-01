@@ -92,6 +92,8 @@ declare class SWCollaborationMetadata extends NSObject implements NSCopying, NSI
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
+	constructor(o: { collaborationIdentifier: string; });
+
 	constructor(o: { localIdentifier: string; });
 
 	class(): typeof NSObject;
@@ -103,6 +105,8 @@ declare class SWCollaborationMetadata extends NSObject implements NSCopying, NSI
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
+
+	initWithCollaborationIdentifier(collaborationIdentifier: string): this;
 
 	initWithLocalIdentifier(localIdentifier: string): this;
 
@@ -193,6 +197,15 @@ declare class SWCollaborationOptionsGroup extends NSObject implements NSCopying,
 	initWithCoder(coder: NSCoder): this;
 
 	initWithIdentifierOptions(identifier: string, options: NSArray<SWCollaborationOption> | SWCollaborationOption[]): this;
+}
+
+declare class SWCollaborationOptionsPickerGroup extends SWCollaborationOptionsGroup {
+
+	static alloc(): SWCollaborationOptionsPickerGroup; // inherited from NSObject
+
+	static new(): SWCollaborationOptionsPickerGroup; // inherited from NSObject
+
+	selectedOptionIdentifier: string;
 }
 
 declare class SWCollaborationShareOptions extends NSObject implements NSCopying, NSSecureCoding {

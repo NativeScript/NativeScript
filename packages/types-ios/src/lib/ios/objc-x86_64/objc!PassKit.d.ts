@@ -599,19 +599,6 @@ declare class PKIdentityDocument extends NSObject {
 	static new(): PKIdentityDocument; // inherited from NSObject
 
 	readonly encryptedData: NSData;
-
-	readonly rawElements: PKIdentityDocumentRawElements;
-}
-
-declare class PKIdentityDocumentAgeThreshold extends NSObject {
-
-	static alloc(): PKIdentityDocumentAgeThreshold; // inherited from NSObject
-
-	static new(): PKIdentityDocumentAgeThreshold; // inherited from NSObject
-
-	readonly atLeastYearsOld: boolean;
-
-	readonly years: number;
 }
 
 interface PKIdentityDocumentDescriptor extends NSObjectProtocol {
@@ -626,46 +613,6 @@ declare var PKIdentityDocumentDescriptor: {
 
 	prototype: PKIdentityDocumentDescriptor;
 };
-
-declare class PKIdentityDocumentIssuingAuthority extends NSObject {
-
-	static alloc(): PKIdentityDocumentIssuingAuthority; // inherited from NSObject
-
-	static new(): PKIdentityDocumentIssuingAuthority; // inherited from NSObject
-
-	readonly ISOCountryCode: string;
-
-	readonly jurisdiction: string;
-
-	readonly name: string;
-}
-
-declare class PKIdentityDocumentRawElements extends NSObject {
-
-	static alloc(): PKIdentityDocumentRawElements; // inherited from NSObject
-
-	static new(): PKIdentityDocumentRawElements; // inherited from NSObject
-
-	readonly address: CNPostalAddress;
-
-	readonly age: number;
-
-	readonly ageThreshold: PKIdentityDocumentAgeThreshold;
-
-	readonly dateOfBirth: NSDateComponents;
-
-	readonly documentExpirationDate: NSDateComponents;
-
-	readonly documentIssueDate: NSDateComponents;
-
-	readonly documentNumber: string;
-
-	readonly issuingAuthority: PKIdentityDocumentIssuingAuthority;
-
-	readonly name: NSPersonNameComponents;
-
-	readonly portraitImageData: NSData;
-}
 
 declare class PKIdentityDriversLicenseDescriptor extends NSObject implements PKIdentityDocumentDescriptor {
 
@@ -749,25 +696,21 @@ declare class PKIdentityElement extends NSObject implements NSCopying {
 
 declare const enum PKIdentityError {
 
-	Unknown = 1,
+	Unknown = 0,
 
-	NotEntitled = 2,
+	NotSupported = 1,
 
-	Cancelled = 3,
+	Cancelled = 2,
 
-	NetworkUnavailable = 4,
+	NetworkUnavailable = 3,
 
-	NoElementsRequested = 5,
+	NoElementsRequested = 4,
 
-	RequestAlreadyInProgress = 6,
+	RequestAlreadyInProgress = 5,
 
-	InvalidNonce = 7,
+	InvalidNonce = 6,
 
-	InvalidElement = 8,
-
-	InvalidMerchantID = 9,
-
-	NotSupported = 10
+	InvalidElement = 7
 }
 
 declare var PKIdentityErrorDomain: string;

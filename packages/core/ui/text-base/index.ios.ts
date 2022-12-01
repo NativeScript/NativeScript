@@ -31,7 +31,7 @@ class UILabelClickHandlerImpl extends NSObject {
 	}
 
 	public linkTap(tapGesture: UITapGestureRecognizer) {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			const label = <UILabel>owner.nativeTextViewProtected;
 
@@ -244,6 +244,7 @@ export class TextBase extends TextBaseCommon {
 			}
 		} else if (nativeTextViewProtected instanceof UILabel) {
 			nativeTextViewProtected.numberOfLines = numberOfLines;
+			nativeTextViewProtected.lineBreakMode = NSLineBreakMode.ByTruncatingTail;
 		} else if (nativeTextViewProtected instanceof UIButton) {
 			nativeTextViewProtected.titleLabel.numberOfLines = numberOfLines;
 		}

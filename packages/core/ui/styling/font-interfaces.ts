@@ -1,12 +1,17 @@
-﻿export type FontStyle = 'normal' | 'italic';
-
-export type FontWeight = '100' | '200' | '300' | 'normal' | '400' | '500' | '600' | 'bold' | '700' | '800' | '900' | number;
+﻿export type FontStyleType = 'normal' | 'italic';
+export type FontWeightType = '100' | '200' | '300' | 'normal' | '400' | '500' | '600' | 'bold' | '700' | '800' | '900' | number;
 
 export interface ParsedFont {
-	fontStyle?: FontStyle;
+	fontStyle?: FontStyleType;
 	fontVariant?: string;
-	fontWeight?: FontWeight;
+	fontWeight?: FontWeightType;
 	lineHeight?: string;
 	fontSize?: string;
 	fontFamily?: string;
+	fontVariationSettings?: Array<FontVariationSettingsType>;
 }
+
+export type FontVariationSettingsType = {
+	axis: string;
+	value: number;
+};

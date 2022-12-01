@@ -105,10 +105,12 @@ export type { InstrumentationMode, TimerInfo } from './profiling';
 export { encoding } from './text';
 export * from './trace';
 export * from './ui';
-import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, executeOnUIThread, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, iOSNativeHelper as iosUtils, Source, escapeRegexSymbols, convertString, dismissSoftInput, queueMacrotask, queueGC, throttle, debounce, dataSerialize, dataDeserialize } from './utils';
+import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, executeOnUIThread, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, iOSNativeHelper as iosUtils, Source, escapeRegexSymbols, convertString, dismissSoftInput, dismissKeyboard, queueMacrotask, queueGC, throttle, debounce, dataSerialize, dataDeserialize, copyToClipboard, getFileExtension } from './utils';
+import { SDK_VERSION } from './utils/constants';
 import { ClassInfo, getClass, getBaseClasses, getClassInfo, isBoolean, isDefined, isFunction, isNullOrUndefined, isNumber, isObject, isString, isUndefined, toUIString, verifyCallback, numberHasDecimals, numberIs64Bit } from './utils/types';
 export declare const Utils: {
 	GC: typeof GC;
+	SDK_VERSION: typeof SDK_VERSION;
 	RESOURCE_PREFIX: string;
 	FILE_PREFIX: string;
 	queueMacrotask: typeof queueMacrotask;
@@ -118,6 +120,7 @@ export declare const Utils: {
 	isFontIconURI: typeof isFontIconURI;
 	isDataURI: typeof isDataURI;
 	isFileOrResourcePath: typeof isFileOrResourcePath;
+	getFileExtension: typeof getFileExtension;
 	executeOnMainThread: typeof executeOnMainThread;
 	executeOnUIThread: typeof executeOnUIThread;
 	mainThreadify: typeof mainThreadify;
@@ -158,5 +161,7 @@ export declare const Utils: {
 	toUIString: typeof toUIString;
 	verifyCallback: typeof verifyCallback;
 	dismissSoftInput: typeof dismissSoftInput;
+	dismissKeyboard: typeof dismissKeyboard;
+	copyToClipboard: typeof copyToClipboard;
 };
 export { XmlParser, ParserEventType, ParserEvent } from './xml';

@@ -1,10 +1,11 @@
 import { ad } from './native-helper';
-import { SDK_VERSION } from '../utils';
-import { FileSystemAccess } from '../file-system/file-system-access';
 import { Trace } from '../trace';
+import { getFileExtension } from './common';
+import { SDK_VERSION } from './constants';
 
 export { ad, dataDeserialize, dataSerialize, iOSNativeHelper } from './native-helper';
-export * from './utils-common';
+export * from './layout-helper';
+export * from './common';
 export { Source } from './debug';
 
 const MIN_URI_SHARE_RESTRICTED_APK_VERSION = 24;
@@ -70,7 +71,7 @@ function isExternalStorageAvailable(): boolean {
  */
 function getMimeTypeNameFromExtension(filePath: string): string {
 	const mimeTypeMap = android.webkit.MimeTypeMap.getSingleton();
-	const extension = new FileSystemAccess().getFileExtension(filePath).replace('.', '').toLowerCase();
+	const extension = getFileExtension(filePath).replace('.', '').toLowerCase();
 
 	return mimeTypeMap.getMimeTypeFromExtension(extension);
 }
@@ -169,4 +170,27 @@ export function isRealDevice(): boolean {
 
 export function dismissSoftInput(nativeView?: any): void {
 	ad.dismissSoftInput(nativeView);
+}
+
+export function dismissKeyboard() {
+	dismissSoftInput();
+
+	const activity = ad.getCurrentActivity();
+	if (activity) {
+		const focus = activity.getCurrentFocus();
+
+		if (focus) {
+			focus.clearFocus();
+		}
+	}
+}
+
+export function copyToClipboard(value: string) {
+	try {
+		const clipboard = ad.getApplicationContext().getSystemService(android.content.Context.CLIPBOARD_SERVICE);
+		const clip = android.content.ClipData.newPlainText('Clipboard value', value);
+		clipboard.setPrimaryClip(clip);
+	} catch (err) {
+		console.log(err);
+	}
 }
