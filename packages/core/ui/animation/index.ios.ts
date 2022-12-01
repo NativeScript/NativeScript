@@ -145,7 +145,7 @@ export function _resolveAnimationCurve(curve: string | CubicBezierAnimationCurve
 }
 
 export class Animation extends AnimationBase {
-	protected _iOSAnimationFunction: Function;
+	protected _iOSAnimationFunction: (cancelled?: boolean) => void;
 	protected _finishedAnimations: number;
 	protected _cancelledAnimations: number;
 	protected _mergedPropertyAnimations: Array<PropertyAnimationInfo>;
@@ -226,8 +226,8 @@ export class Animation extends AnimationBase {
 
 			return;
 		}
-		this._wasCancelled = true;
 
+		this._wasCancelled = true;
 		if (this._mergedPropertyAnimations) {
 			for (let i = 0; i < this._mergedPropertyAnimations.length; i++) {
 				const propertyAnimation = this._mergedPropertyAnimations[i];
@@ -247,7 +247,7 @@ export class Animation extends AnimationBase {
 		return _resolveAnimationCurve(curve);
 	}
 
-	protected _createiOSAnimationFunction(propertyAnimations: Array<PropertyAnimation>, index: number, playSequentially: boolean): Function {
+	protected _createiOSAnimationFunction(propertyAnimations: Array<PropertyAnimation>, index: number, playSequentially: boolean) {
 		return (cancelled?: boolean) => {
 			if (cancelled) {
 				if (Trace.isEnabled()) {
