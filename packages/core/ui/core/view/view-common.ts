@@ -4,6 +4,7 @@ import { View as ViewDefinition, Point, Size, ShownModallyData } from '.';
 import { booleanConverter, ShowModalOptions, ViewBase } from '../view-base';
 import { getEventOrGestureName } from '../bindable';
 import { layout } from '../../../utils';
+import { isObject } from '../../../utils/types';
 import { Color } from '../../../color';
 import { Property, InheritedProperty } from '../properties';
 import { EventData } from '../../../data/observable';
@@ -13,7 +14,7 @@ import { ViewHelper } from './view-helper';
 
 import { PercentLength } from '../../styling/style-properties';
 
-import { observe as gestureObserve, GesturesObserver, GestureTypes, GestureEventData, fromString as gestureFromString } from '../../gestures';
+import { observe as gestureObserve, GesturesObserver, GestureTypes, GestureEventData, fromString as gestureFromString, TouchManager, TouchAnimationOptions } from '../../gestures';
 
 import { CSSUtils } from '../../../css/system-classes';
 import { Builder } from '../../builder';
@@ -80,6 +81,12 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public accessibilityLabel: string;
 	public accessibilityValue: string;
 	public accessibilityHint: string;
+
+	public testID: string;
+
+	public touchAnimation: boolean | TouchAnimationOptions;
+	public ignoreTouchAnimation: boolean;
+	public touchDelay: number;
 
 	protected _closeModalCallback: Function;
 	public _manager: any;
@@ -153,6 +160,17 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		}
 	}
 
+	onLoaded() {
+		if (!this.isLoaded) {
+			const enableTapAnimations = TouchManager.enableGlobalTapAnimations && (this.hasListeners('tap') || this.hasListeners('tapChange') || this.getGestureObservers(GestureTypes.tap));
+			if (!this.ignoreTouchAnimation && (this.touchAnimation || enableTapAnimations)) {
+				// console.log('view:', Object.keys((<any>this)._observers));
+				TouchManager.addAnimations(this);
+			}
+		}
+		super.onLoaded();
+	}
+
 	public _closeAllModalViewsInternal(): boolean {
 		if (_rootModalViews && _rootModalViews.length > 0) {
 			_rootModalViews.forEach((v) => {
@@ -174,19 +192,19 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 			Trace.write(`${this}._onLivesync(${JSON.stringify(context)})`, Trace.categories.Livesync);
 		}
 
+		let handled = false;
+
 		if (this._closeAllModalViewsInternal()) {
-			return true;
+			handled = true;
 		}
 
 		if (this._handleLivesync(context)) {
 			return true;
 		}
 
-		let handled = false;
 		this.eachChildView((child: ViewCommon) => {
 			if (child._onLivesync(context)) {
 				handled = true;
-
 				return false;
 			}
 		});
@@ -392,6 +410,8 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 					if (typeof options.closeCallback === 'function') {
 						options.closeCallback.apply(undefined, originalArgs);
 					}
+
+					that._tearDownUI(true);
 				};
 
 				that._hideNativeModalView(parent, whenClosedCallback);
@@ -399,7 +419,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		};
 	}
 
-	protected abstract _hideNativeModalView(parent: ViewCommon, whenClosedCallback: () => void);
+	protected _hideNativeModalView(parent: ViewCommon, whenClosedCallback: () => void) {}
 
 	protected _raiseLayoutChangedEvent() {
 		const args: EventData = {
@@ -1067,6 +1087,9 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public _redrawNativeBackground(value: any): void {
 		//
 	}
+	public _applyBackground(background, isBorderDrawable: boolean, onlyColor: boolean, backgroundDrawable: any) {
+		//
+	}
 
 	_onAttachedToWindow(): void {
 		//
@@ -1097,6 +1120,10 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	}
 
 	public accessibilityScreenChanged(): void {
+		return;
+	}
+
+	public setTestID(view: any, value: string) {
 		return;
 	}
 }
@@ -1151,6 +1178,45 @@ export const iosIgnoreSafeAreaProperty = new InheritedProperty({
 	valueConverter: booleanConverter,
 });
 iosIgnoreSafeAreaProperty.register(ViewCommon);
+
+const touchAnimationProperty = new Property<ViewCommon, boolean | TouchAnimationOptions>({
+	name: 'touchAnimation',
+	valueChanged(view, oldValue, newValue) {
+		view.touchAnimation = newValue;
+	},
+	valueConverter(value) {
+		if (isObject(value)) {
+			return <TouchAnimationOptions>value;
+		} else {
+			return booleanConverter(value);
+		}
+	},
+});
+touchAnimationProperty.register(ViewCommon);
+
+const ignoreTouchAnimationProperty = new Property<ViewCommon, boolean>({
+	name: 'ignoreTouchAnimation',
+	valueChanged(view, oldValue, newValue) {
+		view.ignoreTouchAnimation = newValue;
+	},
+	valueConverter: booleanConverter,
+});
+ignoreTouchAnimationProperty.register(ViewCommon);
+
+const touchDelayProperty = new Property<ViewCommon, number>({
+	name: 'touchDelay',
+	valueChanged(view, oldValue, newValue) {
+		view.touchDelay = newValue;
+	},
+	valueConverter: (v) => parseFloat(v),
+});
+touchDelayProperty.register(ViewCommon);
+
+export const testIDProperty = new Property<ViewCommon, string>({
+	name: 'testID',
+});
+testIDProperty.register(ViewCommon);
+
 accessibilityIdentifierProperty.register(ViewCommon);
 accessibilityLabelProperty.register(ViewCommon);
 accessibilityValueProperty.register(ViewCommon);

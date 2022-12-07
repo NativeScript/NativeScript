@@ -48,7 +48,7 @@ class TapBarItemHandlerImpl extends NSObject {
 	}
 
 	public tap(args) {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			owner._raiseTap();
 		}
@@ -93,11 +93,7 @@ export class ActionBar extends ActionBarBase {
 		}
 
 		const viewController = <UIViewController>page.ios;
-		if (viewController.navigationController !== null) {
-			return viewController.navigationController.navigationBar;
-		}
-
-		return null;
+		return viewController?.navigationController?.navigationBar;
 	}
 
 	[accessibilityValueProperty.setNative](value: string): void {
@@ -148,7 +144,7 @@ export class ActionBar extends ActionBarBase {
 		if (value instanceof NavigationButton) {
 			this.navigationButton = value;
 		} else if (value instanceof ActionItem) {
-			this.actionItems.addItem(value);
+			this.actionItems?.addItem(value);
 		} else if (value instanceof View) {
 			this.titleView = value;
 		}
@@ -253,13 +249,14 @@ export class ActionBar extends ActionBarBase {
 		// TODO: This could cause issue when canceling BackEdge gesture - we will change the backIndicator to
 		// show the one from the old page but the new page will still be visible (because we canceled EdgeBackSwipe gesutre)
 		// Consider moving this to new method and call it from - navigationControllerDidShowViewControllerAnimated.
-		if (img) {
-			const image = img.imageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+		const image = img ? img.imageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal) : null;
+		if (majorVersion >= 15) {
+			const appearance = this._getAppearance(navigationBar);
+			appearance.setBackIndicatorImageTransitionMaskImage(image, image);
+			this._updateAppearance(navigationBar, appearance);
+		} else {
 			navigationBar.backIndicatorImage = image;
 			navigationBar.backIndicatorTransitionMaskImage = image;
-		} else {
-			navigationBar.backIndicatorImage = null;
-			navigationBar.backIndicatorTransitionMaskImage = null;
 		}
 
 		// Set back button visibility
@@ -289,7 +286,7 @@ export class ActionBar extends ActionBarBase {
 	}
 
 	private populateMenuItems(navigationItem: UINavigationItem) {
-		const items = this.actionItems.getVisibleItems();
+		const items = this.actionItems?.getVisibleItems() ?? [];
 		const leftBarItems = NSMutableArray.new();
 		const rightBarItems = NSMutableArray.new();
 		for (let i = 0; i < items.length; i++) {
@@ -448,7 +445,7 @@ export class ActionBar extends ActionBarBase {
 			View.measureChild(this, this.titleView, UNSPECIFIED, UNSPECIFIED);
 		}
 
-		this.actionItems.getItems().forEach((actionItem) => {
+		this.actionItems?.getItems().forEach((actionItem) => {
 			const actionView = actionItem.actionView;
 			if (actionView) {
 				View.measureChild(this, actionView, UNSPECIFIED, UNSPECIFIED);
@@ -472,7 +469,7 @@ export class ActionBar extends ActionBarBase {
 			}
 		}
 
-		this.actionItems.getItems().forEach((actionItem) => {
+		this.actionItems?.getItems().forEach((actionItem) => {
 			const actionView = actionItem.actionView;
 			if (actionView && actionView.ios) {
 				const measuredWidth = actionView.getMeasuredWidth();

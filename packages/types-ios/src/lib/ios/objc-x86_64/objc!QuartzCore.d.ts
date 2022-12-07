@@ -28,6 +28,8 @@ declare class CAAnimation extends NSObject implements CAAction, CAMediaTiming, N
 
 	fadeOutDuration: number;
 
+	preferredFrameRateRange: CAFrameRateRange;
+
 	removedOnCompletion: boolean;
 
 	timingFunction: CAMediaTimingFunction;
@@ -165,6 +167,8 @@ declare class CADisplayLink extends NSObject {
 
 	paused: boolean;
 
+	preferredFrameRateRange: CAFrameRateRange;
+
 	preferredFramesPerSecond: number;
 
 	readonly targetTimestamp: number;
@@ -189,6 +193,21 @@ declare class CAEAGLLayer extends CALayer implements EAGLDrawable {
 	presentsWithTransaction: boolean;
 
 	drawableProperties: NSDictionary<string, any>; // inherited from EAGLDrawable
+}
+
+declare class CAEDRMetadata extends NSObject {
+
+	static HDR10MetadataWithDisplayInfoContentInfoOpticalOutputScale(displayData: NSData, contentData: NSData, scale: number): CAEDRMetadata;
+
+	static HDR10MetadataWithMinLuminanceMaxLuminanceOpticalOutputScale(minNits: number, maxNits: number, scale: number): CAEDRMetadata;
+
+	static alloc(): CAEDRMetadata; // inherited from NSObject
+
+	static new(): CAEDRMetadata; // inherited from NSObject
+
+	static readonly HLGMetadata: CAEDRMetadata;
+
+	static readonly available: boolean;
 }
 
 declare const enum CAEdgeAntialiasingMask {
@@ -347,6 +366,19 @@ declare class CAEmitterLayer extends CALayer {
 
 	velocity: number;
 }
+
+interface CAFrameRateRange {
+	minimum: number;
+	maximum: number;
+	preferred: number;
+}
+declare var CAFrameRateRange: interop.StructType<CAFrameRateRange>;
+
+declare var CAFrameRateRangeDefault: CAFrameRateRange;
+
+declare function CAFrameRateRangeIsEqualToRange(range: CAFrameRateRange, other: CAFrameRateRange): boolean;
+
+declare function CAFrameRateRangeMake(minimum: number, maximum: number, preferred: number): CAFrameRateRange;
 
 declare class CAGradientLayer extends CALayer {
 
@@ -673,7 +705,6 @@ declare class CAMediaTimingFunction extends NSObject implements NSSecureCoding {
 
 	static functionWithName(name: string): CAMediaTimingFunction;
 
-
 	static new(): CAMediaTimingFunction; // inherited from NSObject
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
@@ -710,9 +741,13 @@ declare class CAMetalLayer extends CALayer {
 
 	static new(): CAMetalLayer; // inherited from NSObject
 
+	EDRMetadata: CAEDRMetadata;
+
 	allowsNextDrawableTimeout: boolean;
 
 	colorspace: any;
+
+	developerHUDProperties: NSDictionary<any, any>;
 
 	device: MTLDevice;
 
@@ -727,6 +762,8 @@ declare class CAMetalLayer extends CALayer {
 	readonly preferredDevice: MTLDevice;
 
 	presentsWithTransaction: boolean;
+
+	wantsExtendedDynamicRangeContent: boolean;
 
 	nextDrawable(): CAMetalDrawable;
 }
@@ -748,6 +785,33 @@ declare class CAPropertyAnimation extends CAAnimation {
 	keyPath: string;
 
 	valueFunction: CAValueFunction;
+}
+
+declare class CARenderer extends NSObject {
+
+	static alloc(): CARenderer; // inherited from NSObject
+
+	static new(): CARenderer; // inherited from NSObject
+
+	static rendererWithMTLTextureOptions(tex: MTLTexture, dict: NSDictionary<any, any>): CARenderer;
+
+	bounds: CGRect;
+
+	layer: CALayer;
+
+	addUpdateRect(r: CGRect): void;
+
+	beginFrameAtTimeTimeStamp(t: number, ts: interop.Pointer | interop.Reference<CVTimeStamp>): void;
+
+	endFrame(): void;
+
+	nextFrameTime(): number;
+
+	render(): void;
+
+	setDestination(tex: MTLTexture): void;
+
+	updateBounds(): CGRect;
 }
 
 declare class CAReplicatorLayer extends CALayer {
@@ -1155,6 +1219,10 @@ declare var kCAMediaTimingFunctionLinear: string;
 declare var kCAOnOrderIn: string;
 
 declare var kCAOnOrderOut: string;
+
+declare var kCARendererColorSpace: string;
+
+declare var kCARendererMetalCommandQueue: string;
 
 declare var kCAScrollBoth: string;
 

@@ -1,38 +1,41 @@
-﻿export class Font {
+﻿import { Font as FontBase } from './font-common';
+export type { FontStyleType, FontWeightType, ParsedFont, FontVariationSettingsType } from './font-interfaces';
+
+export declare class Font extends FontBase {
 	public static default: Font;
 
 	public fontFamily: string;
-	public fontStyle: FontStyle;
-	public fontWeight: FontWeight;
+	public fontStyle: FontStyleType;
+	public fontWeight: FontWeightType;
 	public fontSize: number;
 	public fontScale: number;
+	public fontVariationSettings?: FontVariationSettings[];
 
 	public isBold: boolean;
 	public isItalic: boolean;
 
-	constructor(family: string, size: number, style: FontStyle, weight: FontWeight);
+	constructor(family: string, size: number, style?: FontStyleType, weight?: FontWeightType, scale?: number, fontVariationSettings?: FontVariationSettings[]);
 
 	public getAndroidTypeface(): any /* android.graphics.Typeface */;
 	public getUIFont(defaultFont: any /* UIFont */): any /* UIFont */;
 
 	public withFontFamily(family: string): Font;
-	public withFontStyle(style: string): Font;
-	public withFontWeight(weight: string): Font;
+	public withFontStyle(style: FontStyleType): Font;
+	public withFontWeight(weight: FontWeightType): Font;
 	public withFontSize(size: number): Font;
 	public withFontScale(scale: number): Font;
+	public withFontVariationSettings(variationSettings: FontVariationSettings[] | null): Font;
 
 	public static equals(value1: Font, value2: Font): boolean;
 }
 
-export type FontStyle = 'normal' | 'italic';
 export namespace FontStyle {
 	export const NORMAL: 'normal';
 	export const ITALIC: 'italic';
 	export function isValid(value: any): boolean;
-	export function parse(value: string): FontStyle;
+	export function parse(value: string): FontStyleType;
 }
 
-export type FontWeight = '100' | '200' | '300' | 'normal' | '400' | '500' | '600' | 'bold' | '700' | '800' | '900';
 export namespace FontWeight {
 	export const THIN: '100';
 	export const EXTRA_LIGHT: '200';
@@ -44,16 +47,12 @@ export namespace FontWeight {
 	export const EXTRA_BOLD: '800';
 	export const BLACK: '900';
 	export function isValid(value: any): boolean;
-	export function parse(value: string): FontWeight;
+	export function parse(value: string): FontWeightType;
 }
 
-export interface ParsedFont {
-	fontStyle?: FontStyle;
-	fontVariant?: string;
-	fontWeight?: FontWeight;
-	lineHeight?: string;
-	fontSize?: string;
-	fontFamily?: string;
+export namespace FontVariationSettings {
+	export function parse(fontVariationSettings: string): Array<FontVariationSettingsType> | null;
+	export function toString(fontVariationSettings: Array<FontVariationSettingsType> | null): string | null;
 }
 
 export function parseFont(fontValue: string): ParsedFont;

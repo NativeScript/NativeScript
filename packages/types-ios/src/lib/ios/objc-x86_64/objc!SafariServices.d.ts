@@ -133,7 +133,20 @@ declare class SFSafariViewControllerConfiguration extends NSObject implements NS
 
 	entersReaderIfAvailable: boolean;
 
+	eventAttribution: UIEventAttribution;
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare class SFSafariViewControllerDataStore extends NSObject {
+
+	static alloc(): SFSafariViewControllerDataStore; // inherited from NSObject
+
+	static new(): SFSafariViewControllerDataStore; // inherited from NSObject
+
+	static readonly defaultDataStore: SFSafariViewControllerDataStore;
+
+	clearWebsiteDataWithCompletionHandler(completion: () => void): void;
 }
 
 interface SFSafariViewControllerDelegate extends NSObjectProtocol {

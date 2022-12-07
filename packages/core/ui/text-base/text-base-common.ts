@@ -1,7 +1,7 @@
 // Types
 import { PropertyChangeData } from '../../data/observable';
 import { ViewBase } from '../core/view-base';
-import { FontStyle, FontWeight } from '../styling/font-interfaces';
+import { FontStyleType, FontWeightType } from '../styling/font-interfaces';
 
 // Requires.
 import { FormattedString } from './formatted-string';
@@ -62,17 +62,17 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 		this.style.fontSize = value;
 	}
 
-	get fontStyle(): FontStyle {
+	get fontStyle(): FontStyleType {
 		return this.style.fontStyle;
 	}
-	set fontStyle(value: FontStyle) {
+	set fontStyle(value: FontStyleType) {
 		this.style.fontStyle = value;
 	}
 
-	get fontWeight(): FontWeight {
+	get fontWeight(): FontWeightType {
 		return this.style.fontWeight;
 	}
-	set fontWeight(value: FontWeight) {
+	set fontWeight(value: FontWeightType) {
 		this.style.fontWeight = value;
 	}
 
@@ -88,6 +88,13 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 	}
 	set lineHeight(value: number) {
 		this.style.lineHeight = value;
+	}
+
+	get maxLines(): CoreTypes.MaxLinesType {
+		return this.style.maxLines;
+	}
+	set maxLines(value: CoreTypes.MaxLinesType) {
+		this.style.maxLines = value;
 	}
 
 	get textAlignment(): CoreTypes.TextAlignmentType {
@@ -199,7 +206,7 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 
 TextBaseCommon.prototype._isSingleLine = false;
 
-export function isBold(fontWeight: FontWeight): boolean {
+export function isBold(fontWeight: FontWeightType): boolean {
 	return fontWeight === 'bold' || fontWeight === '700' || fontWeight === '800' || fontWeight === '900';
 }
 
@@ -309,5 +316,12 @@ export const lineHeightProperty = new InheritedCssProperty<Style, number>({
 	valueConverter: (v) => parseFloat(v),
 });
 lineHeightProperty.register(Style);
+
+export const maxLinesProperty = new CssProperty<Style, CoreTypes.MaxLinesType>({
+	name: 'maxLines',
+	cssName: 'max-lines',
+	valueConverter: (v) => (v === 'none' ? 0 : parseInt(v, 10)),
+});
+maxLinesProperty.register(Style);
 
 export const resetSymbol = Symbol('textPropertyDefault');

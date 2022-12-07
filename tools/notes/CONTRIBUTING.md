@@ -17,7 +17,7 @@ Help us keep a healthy and open community. We expect all participants in this pr
 
 ## <a name="bugs"></a> Reporting Bugs
 
-1. Always update to the most recent master release; the bug may already be resolved.
+1. Always update to the most recent [release](https://github.com/NativeScript/NativeScript/releases); the bug may already be resolved.
 2. Search for similar issues in the issues list for this repo; it may already be an identified problem.
 3. If this is a bug or problem that is clear, simple, and is unlikely to require any discussion -- it is OK to open an issue on GitHub with a reproduction of the bug including workflows and screenshots. If possible, submit a Pull Request with a failing test, entire application or module. If you'd rather take matters into your own hands, fix the bug yourself (jump down to the [Submitting a PR](#pr) section).
 
@@ -59,7 +59,7 @@ npm start
 
 3. Create a branch for your PR
 ```bash
-git checkout -b <my-fix-branch> master
+git checkout -b <my-fix-branch> main
 ```
 
 4. The fun part! Make your code changes. Make sure you:
@@ -68,10 +68,8 @@ git checkout -b <my-fix-branch> master
     - Write unit tests for your fix or feature. Check out [writing unit tests guide](WritingUnitTests.md).
 
 5. Before you submit your PR:
-    - Rebase your changes to the latest master: `git pull --rebase upstream master`.
+    - Rebase your changes to the latest main: `git pull --rebase upstream main`.
     - Ensure all unit test are green for Android and iOS. Check [running unit tests](DevelopmentWorkflow.md#running-unit-tests).
-    - Ensure your changes pass tslint validation. (run `npm run tslint` in the root of the repo).
-    - If you've made changes to a public API, make sure you update and add the `api-reports/NativeScript.api.md` file to the PR. (run `npm run api-extractor` to update the api-report and definitions).
 
 6. Push your fork. If you have rebased you might have to use force-push your branch:
 ```
@@ -94,12 +92,12 @@ When you click on the button, you will be redirected to the report page. On the 
 
 > Note: Each item name consists of the application name, type of device and platform version: `pr-e2e-tests-[application-name]-[device-type]-[platform-version]`. Usually, the test applications, that are executed for PRs are part of NativeScript repository.
 
-Based on the executed suite, one of the following or all of the following files will be generated: `mochawesome.html` | `index.html` | `unit-tests.log`. Some of the reports also might include `*.png`, `*.logs` or `[page source].xml` files that can help in understanding where is the problem.
+Based on the executed suite, one of the following or all of the following files will be generated: `mochawesome.html` | `index.html` | `unit-tests.log`. Some reports also might include `*.png`, `*.logs` or `[page source].xml` files that can help in understanding where is the problem.
 
 For example:
 1. When you select the `index.html` page, an additional `TestNG Results` sidebar will be displayed. There you can find a list of all failures. 
 2. When you select one of them, you will see on the right side all tests, that have been executed. The problematic ones will be coloured in red. 
-3. If you click on one of them, detailed info or error log will be displayed. As we've mentioned above in some of the test reports, you will also find screenshots, that demonstrates the problem visually. Those images can be found below the info/ error log.
+3. If you click on one of them, detailed info or error log will be displayed. As we've mentioned above in some test reports, you will also find screenshots, that demonstrates the problem visually. Those images can be found below the info/ error log.
 
 ## <a name="commit-messages"></a> Commit Message Guidelines
 
@@ -145,7 +143,7 @@ If the commit reverts a previous commit, it should begin with `revert: `, follow
 Must be one of the following:
 
 * **build**: Changes that affect the build system or external dependencies (example scopes: npm)
-* **ci**: Changes to our CI configuration files and scripts (example scopes: Travis, Jenkins)
+* **ci**: Changes to our CI configuration files and scripts
 * **docs**: Documentation only changes
 * **feat**: A new feature
 * **fix**: A bug fix
@@ -248,7 +246,7 @@ git checkout release
 git merge --ff-only origin/master
 ```
 *** Note: If there are commits in release branch which are not merged in master branch '-ff-merge' command will fail. 
-In this case the commits should be merge firstly from release in master branch as explained in section 'Merge changes from release into master' and then repeat step 1.
+In this case the commits should be merged firstly from release in master branch as explained in section 'Merge changes from release into master' and then repeat step 1.
 
 2. Execute `npm i` to install dependencies:
 ```
@@ -277,7 +275,7 @@ npm --no-git-tag-version version [major|minor|patch] -m "release: cut the %s rel
 cd ..
 ```
 6. Set correct version of **tns-core-modules-widgets** in tns-core-modules/package.json.
-Usually tns-core-modules-widgets should already have been released and we need to set the official version.
+Usually tns-core-modules-widgets should already have been released, and we need to set the official version.
 
 7. Create release-branch with change log
 ```
@@ -333,7 +331,7 @@ git commit
 git push
 ```
 
-6. Create pull request. Replace replace env ${MERGE_BRANCH} with its value
+6. Create pull request. Replace env ${MERGE_BRANCH} with its value
 ```
 curl -d '{"title": "chore: merge release in master","body": "chore: merge release in master","head": "merge-release-in-master","base": "master"}' -X POST https://api.github.com/repos/NativeScript/NativeScript/pulls -H "Authorization: token ${GIT_TOKEN}"
 ```
@@ -344,4 +342,4 @@ git checkout origin/master tns-platform-declarations/package.json tns-core-modul
 git commit --amend
 git push --force-with-lease
 ```
-This will require to repeat steps from 1 to 4, since we need to keep the branches with the same history
+This will require repeating steps from 1 to 4, since we need to keep the branches with the same history

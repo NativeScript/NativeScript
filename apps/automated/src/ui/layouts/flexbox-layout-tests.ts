@@ -590,10 +590,10 @@ export const testJustifyContent_spaceBetween_flexDirection_column_withPadding = 
 	({ root, flexbox, text1, text2, text3 }) => {
 		let space = height(flexbox) - height(text1) - height(text2) - height(text3) - dipToDp(padding) * 2;
 		space = space / 2;
-		equal(top(text1), paddingTop(flexbox));
-		equal(bottom(text3), paddingBottom(flexbox));
-		equal(bottom(text1) + space, top(text2));
-		equal(bottom(text2) + space, top(text3));
+		closeEnough(top(text1), paddingTop(flexbox));
+		closeEnough(bottom(text3), paddingBottom(flexbox));
+		closeEnough(bottom(text1) + space, top(text2));
+		closeEnough(bottom(text2) + space, top(text3));
 	}
 );
 

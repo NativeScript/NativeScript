@@ -160,6 +160,13 @@ declare var VSErrorInfoKeyUnsupportedProviderIdentifier: string;
 
 declare var VSOpenTVProviderSettingsURLString: string;
 
+declare const enum VSOriginatingDeviceCategory {
+
+	Mobile = 0,
+
+	Other = 1
+}
+
 declare class VSSubscription extends NSObject {
 
 	static alloc(): VSSubscription; // inherited from NSObject
@@ -193,4 +200,66 @@ declare class VSSubscriptionRegistrationCenter extends NSObject {
 	static new(): VSSubscriptionRegistrationCenter; // inherited from NSObject
 
 	setCurrentSubscription(currentSubscription: VSSubscription): void;
+}
+
+declare class VSUserAccount extends NSObject {
+
+	static alloc(): VSUserAccount; // inherited from NSObject
+
+	static new(): VSUserAccount; // inherited from NSObject
+
+	accountProviderIdentifier: string;
+
+	accountType: VSUserAccountType;
+
+	authenticationData: string;
+
+	billingIdentifier: string;
+
+	deleted: boolean;
+
+	readonly deviceCategory: VSOriginatingDeviceCategory;
+
+	readonly fromCurrentDevice: boolean;
+
+	identifier: string;
+
+	requiresSystemTrust: boolean;
+
+	subscriptionBillingCycleEndDate: Date;
+
+	tierIdentifiers: NSArray<string>;
+
+	updateURL: NSURL;
+
+	constructor(o: { accountType: VSUserAccountType; updateURL: NSURL; });
+
+	initWithAccountTypeUpdateURL(accountType: VSUserAccountType, url: NSURL): this;
+}
+
+declare class VSUserAccountManager extends NSObject {
+
+	static alloc(): VSUserAccountManager; // inherited from NSObject
+
+	static new(): VSUserAccountManager; // inherited from NSObject
+
+	static readonly sharedUserAccountManager: VSUserAccountManager;
+
+	queryUserAccountsWithOptionsCompletion(options: VSUserAccountQueryOptions, completion: (p1: NSArray<VSUserAccount>, p2: NSError) => void): void;
+
+	updateUserAccountCompletion(account: VSUserAccount, completion: (p1: NSError) => void): void;
+}
+
+declare const enum VSUserAccountQueryOptions {
+
+	None = 0,
+
+	AllDevices = 1
+}
+
+declare const enum VSUserAccountType {
+
+	Free = 0,
+
+	Paid = 1
 }

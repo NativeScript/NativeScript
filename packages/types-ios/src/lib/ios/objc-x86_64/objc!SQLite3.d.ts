@@ -50,6 +50,8 @@ declare function sqlite3_aggregate_count(p1: interop.Pointer | interop.Reference
 
 declare function sqlite3_auto_extension(xEntryPoint: interop.FunctionReference<() => void>): number;
 
+declare function sqlite3_autovacuum_pages(db: interop.Pointer | interop.Reference<any>, p2: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number, p4: number, p5: number) => number>, p3: interop.Pointer | interop.Reference<any>, p4: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): number;
+
 declare function sqlite3_backup_finish(p: interop.Pointer | interop.Reference<any>): number;
 
 declare function sqlite3_backup_init(pDest: interop.Pointer | interop.Reference<any>, zDestName: string | interop.Pointer | interop.Reference<any>, pSource: interop.Pointer | interop.Reference<any>, zSourceName: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
@@ -111,6 +113,8 @@ declare function sqlite3_busy_timeout(p1: interop.Pointer | interop.Reference<an
 declare function sqlite3_cancel_auto_extension(xEntryPoint: interop.FunctionReference<() => void>): number;
 
 declare function sqlite3_changes(p1: interop.Pointer | interop.Reference<any>): number;
+
+declare function sqlite3_changes64(p1: interop.Pointer | interop.Reference<any>): number;
 
 declare function sqlite3_clear_bindings(p1: interop.Pointer | interop.Reference<any>): number;
 
@@ -210,6 +214,8 @@ declare function sqlite3_db_handle(p1: interop.Pointer | interop.Reference<any>)
 
 declare function sqlite3_db_mutex(p1: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
+declare function sqlite3_db_name(db: interop.Pointer | interop.Reference<any>, N: number): string;
+
 declare function sqlite3_db_readonly(db: interop.Pointer | interop.Reference<any>, zDbName: string | interop.Pointer | interop.Reference<any>): number;
 
 declare function sqlite3_db_release_memory(p1: interop.Pointer | interop.Reference<any>): number;
@@ -229,6 +235,8 @@ declare function sqlite3_errcode(db: interop.Pointer | interop.Reference<any>): 
 declare function sqlite3_errmsg(p1: interop.Pointer | interop.Reference<any>): string;
 
 declare function sqlite3_errmsg16(p1: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+
+declare function sqlite3_error_offset(db: interop.Pointer | interop.Reference<any>): number;
 
 declare function sqlite3_errstr(p1: number): string;
 
@@ -595,6 +603,21 @@ declare function sqlite3_shutdown(): number;
 
 declare function sqlite3_sleep(p1: number): number;
 
+interface sqlite3_snapshot {
+	hidden: interop.Reference<number>;
+}
+declare var sqlite3_snapshot: interop.StructType<sqlite3_snapshot>;
+
+declare function sqlite3_snapshot_cmp(p1: interop.Pointer | interop.Reference<sqlite3_snapshot>, p2: interop.Pointer | interop.Reference<sqlite3_snapshot>): number;
+
+declare function sqlite3_snapshot_free(p1: interop.Pointer | interop.Reference<sqlite3_snapshot>): void;
+
+declare function sqlite3_snapshot_get(db: interop.Pointer | interop.Reference<any>, zSchema: string | interop.Pointer | interop.Reference<any>, ppSnapshot: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<sqlite3_snapshot>>): number;
+
+declare function sqlite3_snapshot_open(db: interop.Pointer | interop.Reference<any>, zSchema: string | interop.Pointer | interop.Reference<any>, pSnapshot: interop.Pointer | interop.Reference<sqlite3_snapshot>): number;
+
+declare function sqlite3_snapshot_recover(db: interop.Pointer | interop.Reference<any>, zDb: string | interop.Pointer | interop.Reference<any>): number;
+
 declare function sqlite3_soft_heap_limit(N: number): void;
 
 declare function sqlite3_soft_heap_limit64(N: number): number;
@@ -658,6 +681,8 @@ declare function sqlite3_thread_cleanup(): void;
 declare function sqlite3_threadsafe(): number;
 
 declare function sqlite3_total_changes(p1: interop.Pointer | interop.Reference<any>): number;
+
+declare function sqlite3_total_changes64(p1: interop.Pointer | interop.Reference<any>): number;
 
 declare function sqlite3_trace(p1: interop.Pointer | interop.Reference<any>, xTrace: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>, p3: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
@@ -761,9 +786,19 @@ interface sqlite3_vtab_cursor {
 }
 declare var sqlite3_vtab_cursor: interop.StructType<sqlite3_vtab_cursor>;
 
+declare function sqlite3_vtab_distinct(p1: interop.Pointer | interop.Reference<sqlite3_index_info>): number;
+
+declare function sqlite3_vtab_in(p1: interop.Pointer | interop.Reference<sqlite3_index_info>, iCons: number, bHandle: number): number;
+
+declare function sqlite3_vtab_in_first(pVal: interop.Pointer | interop.Reference<any>, ppOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+
+declare function sqlite3_vtab_in_next(pVal: interop.Pointer | interop.Reference<any>, ppOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+
 declare function sqlite3_vtab_nochange(p1: interop.Pointer | interop.Reference<any>): number;
 
 declare function sqlite3_vtab_on_conflict(p1: interop.Pointer | interop.Reference<any>): number;
+
+declare function sqlite3_vtab_rhs_value(p1: interop.Pointer | interop.Reference<sqlite3_index_info>, p2: number, ppVal: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 declare function sqlite3_wal_autocheckpoint(db: interop.Pointer | interop.Reference<any>, N: number): number;
 

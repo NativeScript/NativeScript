@@ -6,8 +6,6 @@ import lazy from '../../utils/lazy';
 
 export * from './list-picker-common';
 
-const sdkVersion = lazy(() => parseInt(Device.sdkVersion));
-
 interface Formatter {
 	new (owner: ListPicker): android.widget.NumberPicker.Formatter;
 }

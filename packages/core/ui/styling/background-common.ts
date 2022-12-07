@@ -1,5 +1,3 @@
-// Deifinitions.
-import { Background as BackgroundDefinition } from './background';
 import { CoreTypes } from '../../core-types';
 import { LinearGradient } from './linear-gradient';
 // Types.
@@ -21,7 +19,7 @@ export const enum BackgroundClearFlags {
 	CLEAR_BOX_SHADOW = 2 << 0,
 }
 
-export class Background implements BackgroundDefinition {
+export class Background {
 	public static default = new Background();
 
 	public color: Color;

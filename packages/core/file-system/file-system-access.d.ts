@@ -1,7 +1,7 @@
 ﻿/**
  * An utility class used to provide methods to access and work with the file system.
  */
-export class FileSystemAccess {
+export interface IFileSystemAccess {
 	/**
 	 * Gets the last modified date of a file with a given path.
 	 * @param path Path to the file.
@@ -99,6 +99,12 @@ export class FileSystemAccess {
 	 * Returns for Android: "/data/data/applicationPackageName/files", iOS: "/var/mobile/Applications/appID/Documents"
 	 */
 	getDocumentsFolderPath(): string;
+
+	/**
+	 * Gets the special documents folder on external storage.
+	 * As there is no external storage on iOS it is the same as getDocumentsFolderPath
+	 */
+	getExternalDocumentsFolderPath(): string;
 
 	/**
 	 * Gets the special temp folder.
@@ -248,3 +254,77 @@ export class FileSystemAccess {
 	 */
 	joinPaths(paths: string[]): string;
 }
+
+export class FileSystemAccess implements IFileSystemAccess {
+	getLastModified(path: string): Date;
+
+	getFileSize(path: string): number;
+
+	getParent(path: string, onError?: (error: any) => any): { path: string; name: string };
+
+	getFile(path: string, onError?: (error: any) => any): { path: string; name: string; extension: string };
+
+	getFolder(path: string, onError?: (error: any) => any): { path: string; name: string };
+
+	getEntities(path: string, onError?: (error: any) => any): Array<{ path: string; name: string; extension: string }>;
+
+	eachEntity(path: string, onEntity: (entity: { path: string; name: string; extension: string }) => boolean, onError?: (error: any) => any);
+
+	fileExists(path: string): boolean;
+
+	folderExists(path: string): boolean;
+
+	deleteFile(path: string, onError?: (error: any) => any);
+
+	deleteFolder(path: string, onError?: (error: any) => any);
+
+	emptyFolder(path: string, onError?: (error: any) => any): void;
+
+	rename(path: string, newPath: string, onError?: (error: any) => any): void;
+
+	getDocumentsFolderPath(): string;
+
+	getExternalDocumentsFolderPath(): string;
+
+	getTempFolderPath(): string;
+
+	getLogicalRootPath(): string;
+
+	getCurrentAppPath(): string;
+
+	readText(path: string, onError?: (error: any) => any, encoding?: any): string;
+
+	readTextAsync(path: string, encoding?: any): Promise<string>;
+
+	readTextSync(path: string, onError?: (error: any) => any, encoding?: any): string;
+
+	read(path: string, onError?: (error: any) => any): any;
+
+	readAsync(path: string): Promise<any>;
+
+	readSync(path: string, onError?: (error: any) => any): any;
+
+	writeText(path: string, content: string, onError?: (error: any) => any, encoding?: any);
+
+	writeTextAsync(path: string, content: string, encoding?: any): Promise<void>;
+
+	writeTextSync(path: string, content: string, onError?: (error: any) => any, encoding?: any);
+
+	write(path: string, content: any, onError?: (error: any) => any);
+
+	writeAsync(path: string, content: any): Promise<void>;
+
+	writeSync(path: string, content: any, onError?: (error: any) => any);
+
+	getFileExtension(path: string): string;
+
+	getPathSeparator(): string;
+
+	normalizePath(path: string): string;
+
+	joinPath(left: string, right: string): string;
+
+	joinPaths(paths: string[]): string;
+}
+
+export class FileSystemAccess29 extends FileSystemAccess {}

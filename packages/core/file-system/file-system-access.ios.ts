@@ -248,6 +248,9 @@ export class FileSystemAccess {
 	public getDocumentsFolderPath(): string {
 		return this.getKnownPath(NSSearchPathDirectory.DocumentDirectory);
 	}
+	public getExternalDocumentsFolderPath(): string {
+		return this.getDocumentsFolderPath();
+	}
 
 	public getTempFolderPath(): string {
 		return this.getKnownPath(NSSearchPathDirectory.CachesDirectory);
@@ -474,3 +477,6 @@ export class FileSystemAccess {
 		return iOSNativeHelper.joinPaths(...paths);
 	}
 }
+
+// stub to avoid cross platform warning
+export class FileSystemAccess29 extends FileSystemAccess {}

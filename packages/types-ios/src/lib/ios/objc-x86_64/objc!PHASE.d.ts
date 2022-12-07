@@ -233,7 +233,11 @@ declare const enum PHASECurveType {
 
 	Sigmoid = 1668436839,
 
-	InverseSigmoid = 1668434247
+	InverseSigmoid = 1668434247,
+
+	HoldStartValue = 1668434003,
+
+	JumpToEndValue = 1668434501
 }
 
 declare class PHASEDefinition extends NSObject {
@@ -401,7 +405,9 @@ declare class PHASEEnvelopeSegment extends NSObject {
 
 declare const enum PHASEError {
 
-	InitializeFailed = 1346913633
+	InitializeFailed = 1346913633,
+
+	InvalidObject = 1346913634
 }
 
 declare var PHASEErrorDomain: string;

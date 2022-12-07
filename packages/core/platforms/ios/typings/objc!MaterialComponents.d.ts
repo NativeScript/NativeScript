@@ -1,4 +1,3 @@
-
 declare const enum MDCAnimationTimingFunction {
 
 	Standard = 0,

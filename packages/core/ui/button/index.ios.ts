@@ -224,7 +224,7 @@ export class Button extends ButtonBase {
 		switch (value) {
 			case 'normal':
 				nativeView.lineBreakMode = NSLineBreakMode.ByWordWrapping;
-				nativeView.numberOfLines = 0;
+				nativeView.numberOfLines = this.maxLines;
 				break;
 			case 'nowrap':
 			case 'initial':
@@ -285,7 +285,7 @@ class TapHandlerImpl extends NSObject {
 	public tap(args) {
 		// _owner is a {N} view which could get destroyed when a tap initiates (protect!)
 		if (this._owner) {
-			const owner = this._owner.get();
+			const owner = this._owner?.deref();
 			if (owner) {
 				owner._emit(ButtonBase.tapEvent);
 			}

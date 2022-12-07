@@ -47,7 +47,11 @@ declare class ICCameraDevice extends ICDevice {
 
 	requestDownloadFileOptionsDownloadDelegateDidDownloadSelectorContextInfo(file: ICCameraFile, options: NSDictionary<string, any>, downloadDelegate: ICCameraDeviceDownloadDelegate, selector: string, contextInfo: interop.Pointer | interop.Reference<any>): void;
 
+	requestReadDataFromFileAtOffsetLengthReadDelegateDidReadDataSelectorContextInfo(file: ICCameraFile, offset: number, length: number, readDelegate: any, selector: string, contextInfo: interop.Pointer | interop.Reference<any>): void;
+
 	requestSendPTPCommandOutDataCompletion(ptpCommand: NSData, ptpData: NSData, completion: (p1: NSData, p2: NSData, p3: NSError) => void): void;
+
+	requestSendPTPCommandOutDataSendCommandDelegateDidSendCommandSelectorContextInfo(command: NSData, data: NSData, sendCommandDelegate: any, selector: string, contextInfo: interop.Pointer | interop.Reference<any>): void;
 }
 
 declare var ICCameraDeviceCanAcceptPTPCommands: string;
@@ -273,6 +277,8 @@ declare class ICDevice extends NSObject {
 
 	readonly productKind: string;
 
+	readonly systemSymbolName: string;
+
 	readonly transportType: string;
 
 	readonly type: ICDeviceType;
@@ -303,6 +309,8 @@ declare class ICDeviceBrowser extends NSObject {
 	static alloc(): ICDeviceBrowser; // inherited from NSObject
 
 	static new(): ICDeviceBrowser; // inherited from NSObject
+
+	browsedDeviceTypeMask: ICDeviceTypeMask;
 
 	readonly browsing: boolean;
 
@@ -375,7 +383,46 @@ declare var ICDeviceDelegate: {
 	prototype: ICDeviceDelegate;
 };
 
+declare var ICDeviceLocationDescriptionBluetooth: string;
+
+declare var ICDeviceLocationDescriptionFireWire: string;
+
+declare var ICDeviceLocationDescriptionMassStorage: string;
+
+declare var ICDeviceLocationDescriptionUSB: string;
+
+declare const enum ICDeviceLocationType {
+
+	Local = 256,
+
+	Shared = 512,
+
+	Bonjour = 1024,
+
+	Bluetooth = 2048
+}
+
+declare const enum ICDeviceLocationTypeMask {
+
+	Local = 256,
+
+	Shared = 512,
+
+	Bonjour = 1024,
+
+	Bluetooth = 2048,
+
+	Remote = 65024
+}
+
 declare const enum ICDeviceType {
+
+	Camera = 1,
+
+	Scanner = 2
+}
+
+declare const enum ICDeviceTypeMask {
 
 	Camera = 1,
 

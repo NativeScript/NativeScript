@@ -93,6 +93,7 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
 	public androidTabsPosition: 'top' | 'bottom';
 	public androidSwipeEnabled: boolean;
 	public iosIconRenderingMode: 'automatic' | 'alwaysOriginal' | 'alwaysTemplate';
+	public androidIconRenderingMode: 'alwaysOriginal' | 'alwaysTemplate';
 
 	get androidSelectedTabHighlightColor(): Color {
 		return this.style.androidSelectedTabHighlightColor;
@@ -249,6 +250,9 @@ itemsProperty.register(TabViewBase);
 
 export const iosIconRenderingModeProperty = new Property<TabViewBase, 'automatic' | 'alwaysOriginal' | 'alwaysTemplate'>({ name: 'iosIconRenderingMode', defaultValue: 'automatic' });
 iosIconRenderingModeProperty.register(TabViewBase);
+
+export const androidIconRenderingModeProperty = new Property<TabViewBase, 'alwaysOriginal' | 'alwaysTemplate'>({ name: 'androidIconRenderingMode', defaultValue: 'alwaysOriginal' });
+androidIconRenderingModeProperty.register(TabViewBase);
 
 export const androidOffscreenTabLimitProperty = new Property<TabViewBase, number>({
 	name: 'androidOffscreenTabLimit',

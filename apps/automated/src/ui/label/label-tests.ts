@@ -7,7 +7,7 @@ import * as LabelModule from '@nativescript/core/ui/label';
 
 import * as types from '@nativescript/core/utils/types';
 import * as colorModule from '@nativescript/core/color';
-import * as utils from '@nativescript/core/utils/utils';
+import * as utils from '@nativescript/core/utils';
 import * as observableModule from '@nativescript/core/data/observable';
 import * as bindable from '@nativescript/core/ui/core/bindable';
 import { CoreTypes, Span, FormattedString } from '@nativescript/core';
@@ -545,15 +545,15 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 		TKUnit.assertEqual(actualResult, this.expectedTextAlignment);
 	}
 
-	public testErrorMessageWhenWrongCssIsAddedWithFile() {
-		const view = this.testView;
-		const page = this.testPage;
-		this.waitUntilTestElementIsLoaded();
+	// public testErrorMessageWhenWrongCssIsAddedWithFile() {
+	// 	const view = this.testView;
+	// 	const page = this.testPage;
+	// 	this.waitUntilTestElementIsLoaded();
 
-		view.id = 'testLabel';
-		page.addCssFile(fs.path.join(testDir, 'label-tests-wrong-page.css'));
-		TKUnit.assertNotEqual(this.errorMessage, undefined);
-	}
+	// 	view.id = 'testLabel';
+	// 	page.addCssFile(fs.path.join(testDir, 'label-tests-wrong-page.css'));
+	// 	TKUnit.assertNotEqual(this.errorMessage, undefined);
+	// }
 
 	// public testErrorMessageWhenWrongCssIsAdded() {
 	// 	const view = this.testView;

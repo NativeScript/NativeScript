@@ -2,47 +2,44 @@ import { EditableTextBase as EditableTextBaseCommon, autofillTypeProperty, keybo
 import { textTransformProperty, textProperty, resetSymbol } from '../text-base';
 import { Color } from '../../color';
 import { ad } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 import { CoreTypes } from '../../core-types';
-import { Device } from '../../platform';
-import lazy from '../../utils/lazy';
 
 export * from './editable-text-base-common';
 
-const sdkVersion = lazy(() => parseInt(Device.sdkVersion));
-
 //https://github.com/NativeScript/NativeScript/issues/2942
 export let dismissKeyboardTimeoutId: NodeJS.Timer;
-export let dismissKeyboardOwner: WeakRef<EditableTextBase>;
 
 interface EditTextListeners extends android.text.TextWatcher, android.view.View.OnFocusChangeListener, android.widget.TextView.OnEditorActionListener {}
 
 interface EditTextListenersClass {
 	prototype: EditTextListeners;
-	new (owner: EditableTextBase): EditTextListeners;
+	new (owner: WeakRef<EditableTextBase>): EditTextListeners;
 }
 
 let EditTextListeners: EditTextListenersClass;
 
 function clearDismissTimer(): void {
-	dismissKeyboardOwner = null;
 	if (dismissKeyboardTimeoutId) {
 		clearTimeout(dismissKeyboardTimeoutId);
 		dismissKeyboardTimeoutId = null;
 	}
 }
 
-function dismissSoftInput(owner: EditableTextBase): void {
+function dismissSoftInput(view: EditableTextBase): void {
 	clearDismissTimer();
 	if (!dismissKeyboardTimeoutId) {
 		dismissKeyboardTimeoutId = setTimeout(() => {
-			const owner = dismissKeyboardOwner && dismissKeyboardOwner.get();
-			const activity = (owner && owner._context) as androidx.appcompat.app.AppCompatActivity;
-			const nativeView = owner && owner.nativeViewProtected;
+			const activity = view._context as androidx.appcompat.app.AppCompatActivity;
 			dismissKeyboardTimeoutId = null;
-			dismissKeyboardOwner = null;
 			const focused = activity && activity.getCurrentFocus();
-			if (!focused || !(focused instanceof android.widget.EditText)) {
-				ad.dismissSoftInput(nativeView);
+			if (focused && !(focused instanceof android.widget.EditText)) {
+				// warning `ad.dismissSoftInput` will actually focus the next view
+				// if we pass a null parameter!!!
+				// => focus and show keyboard again
+				// the fix was for where there were multiple TextField for which it would work!
+				// with this it will still work without breaking for single TextField
+				ad.dismissSoftInput(focused);
 			}
 		}, 10);
 	}
@@ -55,88 +52,30 @@ function initializeEditTextListeners(): void {
 	@NativeClass
 	@Interfaces([android.text.TextWatcher, android.view.View.OnFocusChangeListener, android.widget.TextView.OnEditorActionListener])
 	class EditTextListenersImpl extends java.lang.Object implements android.text.TextWatcher, android.view.View.OnFocusChangeListener, android.widget.TextView.OnEditorActionListener {
-		constructor(private owner: EditableTextBase) {
+		constructor(private owner: WeakRef<EditableTextBase>) {
 			super();
 
 			return global.__native(this);
 		}
 
 		public beforeTextChanged(text: string, start: number, count: number, after: number): void {
-			//
+			this.owner?.get()?.beforeTextChanged(text, start, count, after);
 		}
 
 		public onTextChanged(text: string, start: number, before: number, count: number): void {
-			// const owner = this.owner;
-			// let selectionStart = owner.android.getSelectionStart();
-			// owner.android.removeTextChangedListener(owner._editTextListeners);
-			// owner.android.addTextChangedListener(owner._editTextListeners);
-			// owner.android.setSelection(selectionStart);
+			this.owner?.get()?.onTextChanged(text, start, before, count);
 		}
 
 		public afterTextChanged(editable: android.text.Editable): void {
-			const owner = this.owner;
-			if (!owner || owner._changeFromCode) {
-				return;
-			}
-
-			switch (owner.updateTextTrigger) {
-				case 'focusLost':
-					owner._dirtyTextAccumulator = editable.toString();
-					break;
-				case 'textChanged':
-					textProperty.nativeValueChange(owner, editable.toString());
-					break;
-				default:
-					throw new Error('Invalid updateTextTrigger: ' + owner.updateTextTrigger);
-			}
+			this.owner?.get()?.afterTextChanged(editable);
 		}
 
 		public onFocusChange(view: android.view.View, hasFocus: boolean): void {
-			const owner = this.owner;
-			if (!owner) {
-				return;
-			}
-
-			if (hasFocus) {
-				clearDismissTimer();
-				owner.notify({
-					eventName: EditableTextBase.focusEvent,
-					object: owner,
-				});
-			} else {
-				if (owner._dirtyTextAccumulator || owner._dirtyTextAccumulator === '') {
-					textProperty.nativeValueChange(owner, owner._dirtyTextAccumulator);
-					owner._dirtyTextAccumulator = undefined;
-				}
-
-				owner.notify({
-					eventName: EditableTextBase.blurEvent,
-					object: owner,
-				});
-				dismissSoftInput(owner);
-			}
+			this.owner?.get()?.onFocusChange(view, hasFocus);
 		}
 
 		public onEditorAction(textView: android.widget.TextView, actionId: number, event: android.view.KeyEvent): boolean {
-			const owner = this.owner;
-			if (!owner) {
-				return false;
-			}
-
-			if (actionId === android.view.inputmethod.EditorInfo.IME_ACTION_DONE || actionId === android.view.inputmethod.EditorInfo.IME_ACTION_UNSPECIFIED || (event && event.getKeyCode() === android.view.KeyEvent.KEYCODE_ENTER)) {
-				// If it is TextField, close the keyboard. If it is TextView, do not close it since the TextView is multiline
-				// https://github.com/NativeScript/NativeScript/issues/3111
-				if (textView.getMaxLines() === 1) {
-					owner.dismissSoftInput();
-				}
-
-				owner._onReturnPress();
-			} else if (actionId === android.view.inputmethod.EditorInfo.IME_ACTION_NEXT || actionId === android.view.inputmethod.EditorInfo.IME_ACTION_PREVIOUS) {
-				// do not close keyboard for ACTION_NEXT or ACTION_PREVIOUS
-				owner._onReturnPress();
-			}
-
-			return false;
+			return this.owner?.get()?.onEditorAction(textView, actionId, event) || false;
 		}
 	}
 
@@ -170,7 +109,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 		const editText = this.nativeTextViewProtected;
 		this._configureEditText(editText);
 		initializeEditTextListeners();
-		const listeners = new EditTextListeners(this);
+		const listeners = new EditTextListeners(new WeakRef(this));
 		editText.addTextChangedListener(listeners);
 		editText.setOnFocusChangeListener(listeners);
 		editText.setOnEditorActionListener(listeners);
@@ -179,7 +118,12 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 	}
 
 	public disposeNativeView(): void {
-		(<any>this.nativeTextViewProtected).listener.owner = null;
+		const editText = this.nativeTextViewProtected;
+		editText.removeTextChangedListener((<any>editText).listener);
+		editText.setOnFocusChangeListener(null);
+		editText.setOnEditorActionListener(null);
+		(<any>editText).listener.owner = null;
+		(<any>editText).listener = null;
 		this._keyListenerCache = null;
 		super.disposeNativeView();
 	}
@@ -299,7 +243,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 	}
 
 	[autofillTypeProperty.setNative](value: CoreTypes.AutofillType) {
-		if (sdkVersion() < 26) {
+		if (SDK_VERSION < 26) {
 			return;
 		}
 		let newOptions;
@@ -531,5 +475,73 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 				view.setSelection(start);
 			}
 		}
+	}
+
+	public beforeTextChanged(text: string, start: number, count: number, after: number): void {
+		// called by android.text.TextWatcher
+	}
+
+	public onTextChanged(text: string, start: number, before: number, count: number): void {
+		// called by android.text.TextWatcher
+		// const owner = this.owner;
+		// let selectionStart = owner.android.getSelectionStart();
+		// owner.android.removeTextChangedListener(owner._editTextListeners);
+		// owner.android.addTextChangedListener(owner._editTextListeners);
+		// owner.android.setSelection(selectionStart);
+	}
+
+	public afterTextChanged(editable: android.text.Editable): void {
+		// called by android.text.TextWatcher
+		if (this._changeFromCode) {
+			return;
+		}
+
+		switch (this.updateTextTrigger) {
+			case 'focusLost':
+				this._dirtyTextAccumulator = editable.toString();
+				break;
+			case 'textChanged':
+				textProperty.nativeValueChange(this, editable.toString());
+				break;
+			default:
+				throw new Error('Invalid updateTextTrigger: ' + this.updateTextTrigger);
+		}
+	}
+
+	public onFocusChange(view: android.view.View, hasFocus: boolean): void {
+		if (hasFocus) {
+			clearDismissTimer();
+			this.notify({
+				eventName: EditableTextBase.focusEvent,
+				object: this,
+			});
+		} else {
+			if (this._dirtyTextAccumulator || this._dirtyTextAccumulator === '') {
+				textProperty.nativeValueChange(this, this._dirtyTextAccumulator);
+				this._dirtyTextAccumulator = undefined;
+			}
+
+			this.notify({
+				eventName: EditableTextBase.blurEvent,
+			});
+			dismissSoftInput(this);
+		}
+	}
+
+	public onEditorAction(textView: android.widget.TextView, actionId: number, event: android.view.KeyEvent): boolean {
+		if (actionId === android.view.inputmethod.EditorInfo.IME_ACTION_DONE || actionId === android.view.inputmethod.EditorInfo.IME_ACTION_UNSPECIFIED || (event && event.getKeyCode() === android.view.KeyEvent.KEYCODE_ENTER)) {
+			// If it is TextField, close the keyboard. If it is TextView, do not close it since the TextView is multiline
+			// https://github.com/NativeScript/NativeScript/issues/3111
+			if (textView.getMaxLines() === 1) {
+				this.dismissSoftInput();
+			}
+
+			this._onReturnPress();
+		} else if (actionId === android.view.inputmethod.EditorInfo.IME_ACTION_NEXT || actionId === android.view.inputmethod.EditorInfo.IME_ACTION_PREVIOUS) {
+			// do not close keyboard for ACTION_NEXT or ACTION_PREVIOUS
+			this._onReturnPress();
+		}
+
+		return false;
 	}
 }

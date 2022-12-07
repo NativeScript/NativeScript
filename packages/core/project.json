@@ -1,0 +1,50 @@
+{
+	"name": "core",
+	"$schema": "../../node_modules/nx/schemas/project-schema.json",
+	"sourceRoot": "packages/core",
+	"projectType": "library",
+	"generators": {},
+	"namedInputs": {
+		"default": ["{projectRoot}/**/*"],
+		"production": ["!{projectRoot}/**/*.spec.ts"]
+	},
+	"targets": {
+		"lint": {
+			"executor": "@nrwl/linter:eslint",
+			"options": {
+				"lintFilePatterns": ["packages/core/**/*.ts", "packages/core/references.d.ts", "packages/core/**/*.spec.ts", "packages/core/**/*.spec.tsx", "packages/core/**/*.spec.js", "packages/core/**/*.spec.jsx", "packages/core/**/*.d.ts"]
+			}
+		},
+		"test": {
+			"executor": "@nrwl/jest:jest",
+			"inputs": ["default", "^production"],
+			"outputs": ["dist/out-tsc"],
+			"options": {
+				"jestConfig": "packages/core/jest.config.ts",
+				"passWithNoTests": true,
+				"verbose": true
+			},
+			"configurations": {
+				"ci": {
+					"ci": true
+				}
+			}
+		},
+		"build": {
+			"executor": "nx:run-commands",
+			"inputs": ["default", "^production"],
+			"outputs": ["{workspaceRoot}/dist/packages"],
+			"options": {
+				"commands": [
+					"npx rimraf dist/packages/core",
+					"npx tsc -p packages/core/tsconfig.lib.json",
+					"npx copyfiles -e \"packages/core/__tests__/**/*\" \"packages/core/**/*.d.ts\" dist && npx copyfiles -e \"packages/core/__tests__/**/*\" \"packages/core/js-libs/**/*\" dist && npx copyfiles -e \"packages/core/__tests__/**/*\" \"packages/core/cli-hooks/**/*.js\" dist && npx copyfiles -e \"packages/core/__tests__/**/*\" \"packages/core/platforms/**/*\" dist && npx copyfiles -e \"packages/core/__tests__/**/*\" \"packages/core/fetch/**/*\" dist && npx copyfiles -e \"packages/core/__tests__/**/*\" \"packages/core/css/**/*\" dist && npx copyfiles -e \"packages/core/__tests__/**/*\" \"packages/core/css-value/**/*\" dist",
+					"npx copyfiles -f \"packages/core/package.json\" \"packages/core/README.md\" \"LICENSE\" dist/packages/core",
+					"cd dist/packages/core && npm pack --pack-destination=.."
+				],
+				"cwd": ".",
+				"parallel": false
+			}
+		}
+	}
+}

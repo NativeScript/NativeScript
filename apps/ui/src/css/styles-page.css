@@ -1,5 +1,6 @@
-﻿#page {
+﻿@import url("../css/import.css");
+
+#page {
     background-color: lightcoral;
 }
 
-@import url("../css/import.css");

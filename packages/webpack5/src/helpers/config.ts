@@ -1,18 +1,24 @@
+import { warnOnce } from './log';
 import { env } from '../index';
-import { error, warnOnce } from './log';
 
 function getCLILib() {
 	if (!env.nativescriptLibPath) {
-		warnOnce(
-			'getCLILib',
-			`
-			Cannot find NativeScript CLI path. Make sure --env.nativescriptLibPath is passed
-		`
-		);
+		if (typeof env.nativescriptLibPath !== 'boolean') {
+			warnOnce(
+				'getCLILib',
+				`
+				Cannot find NativeScript CLI path. Make sure --env.nativescriptLibPath is passed
+				`
+			);
+		}
 		return false;
 	}
 
-	return require(env.nativescriptLibPath);
+	if (typeof env.nativescriptLibPath === 'boolean') {
+		return false;
+	}
+
+	return require(env.nativescriptLibPath as string);
 }
 
 /**
@@ -28,7 +34,9 @@ export function getValue<T = any>(key: string, defaultValue?: any): T {
 		return defaultValue;
 	}
 
-	return (lib.projectConfigService as {
-		getValue(key: string, defaultValue?: any): T;
-	}).getValue(key, defaultValue);
+	return (
+		lib.projectConfigService as {
+			getValue(key: string, defaultValue?: any): T;
+		}
+	).getValue(key, defaultValue);
 }

@@ -2,6 +2,7 @@ import * as Application from '../application';
 import { Observable } from '../data/observable';
 import { Trace } from '../trace';
 import * as Utils from '../utils';
+import { SDK_VERSION } from '../utils/constants';
 import { CommonA11YServiceEnabledObservable, SharedA11YObservable } from './accessibility-service-common';
 
 export function getAndroidAccessibilityManager(): android.view.accessibility.AccessibilityManager | null {
@@ -71,19 +72,20 @@ function ensureStateListener(): SharedA11YObservable {
 			}
 		},
 	});
-
-	touchExplorationStateChangeListener = new android.view.accessibility.AccessibilityManager.TouchExplorationStateChangeListener({
-		onTouchExplorationStateChanged(enabled) {
-			updateAccessibilityState();
-
-			if (Trace.isEnabled()) {
-				Trace.write(`TouchExplorationStateChangeListener state changed to: ${!!enabled}`, Trace.categories.Accessibility);
-			}
-		},
-	});
-
 	accessibilityManager.addAccessibilityStateChangeListener(accessibilityStateChangeListener);
-	accessibilityManager.addTouchExplorationStateChangeListener(touchExplorationStateChangeListener);
+
+	if (SDK_VERSION >= 19) {
+		touchExplorationStateChangeListener = new android.view.accessibility.AccessibilityManager.TouchExplorationStateChangeListener({
+			onTouchExplorationStateChanged(enabled) {
+				updateAccessibilityState();
+
+				if (Trace.isEnabled()) {
+					Trace.write(`TouchExplorationStateChangeListener state changed to: ${!!enabled}`, Trace.categories.Accessibility);
+				}
+			},
+		});
+		accessibilityManager.addTouchExplorationStateChangeListener(touchExplorationStateChangeListener);
+	}
 
 	updateAccessibilityState();
 

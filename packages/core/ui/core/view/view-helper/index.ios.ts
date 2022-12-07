@@ -31,7 +31,7 @@ class UILayoutViewController extends UIViewController {
 
 	public viewWillLayoutSubviews(): void {
 		super.viewWillLayoutSubviews();
-		const owner = this.owner.get();
+		const owner = this.owner?.deref();
 		if (owner) {
 			IOSHelper.updateConstraints(this, owner);
 		}
@@ -39,7 +39,7 @@ class UILayoutViewController extends UIViewController {
 
 	public viewDidLayoutSubviews(): void {
 		super.viewDidLayoutSubviews();
-		const owner = this.owner.get();
+		const owner = this.owner?.deref();
 		if (owner) {
 			if (majorVersion >= 11) {
 				// Handle nested UILayoutViewController safe area application.
@@ -59,11 +59,17 @@ class UILayoutViewController extends UIViewController {
 
 				if (parent) {
 					const parentPageInsetsTop = parent.nativeViewProtected.safeAreaInsets.top;
-					const currentInsetsTop = this.view.safeAreaInsets.top;
-					const additionalInsetsTop = Math.max(parentPageInsetsTop - currentInsetsTop, 0);
-
 					const parentPageInsetsBottom = parent.nativeViewProtected.safeAreaInsets.bottom;
-					const currentInsetsBottom = this.view.safeAreaInsets.bottom;
+					let currentInsetsTop = this.view.safeAreaInsets.top;
+					let currentInsetsBottom = this.view.safeAreaInsets.bottom;
+
+					// Safe area insets include additional safe area insets too, so subtract old values
+					if (this.additionalSafeAreaInsets) {
+						currentInsetsTop -= this.additionalSafeAreaInsets.top;
+						currentInsetsBottom -= this.additionalSafeAreaInsets.bottom;
+					}
+
+					const additionalInsetsTop = Math.max(parentPageInsetsTop - currentInsetsTop, 0);
 					const additionalInsetsBottom = Math.max(parentPageInsetsBottom - currentInsetsBottom, 0);
 
 					if (additionalInsetsTop > 0 || additionalInsetsBottom > 0) {
@@ -84,22 +90,22 @@ class UILayoutViewController extends UIViewController {
 
 	public viewWillAppear(animated: boolean): void {
 		super.viewWillAppear(animated);
-		const owner = this.owner.get();
+		const owner = this.owner?.deref();
 		if (!owner) {
 			return;
 		}
 
 		IOSHelper.updateAutoAdjustScrollInsets(this, owner);
 
-		if (!owner.parent) {
+		if (!owner.isLoaded && !owner.parent) {
 			owner.callLoaded();
 		}
 	}
 
 	public viewDidDisappear(animated: boolean): void {
 		super.viewDidDisappear(animated);
-		const owner = this.owner.get();
-		if (owner && !owner.parent) {
+		const owner = this.owner?.deref();
+		if (owner && owner.isLoaded && !owner.parent) {
 			owner.callUnloaded();
 		}
 	}
@@ -109,7 +115,7 @@ class UILayoutViewController extends UIViewController {
 		super.traitCollectionDidChange(previousTraitCollection);
 
 		if (majorVersion >= 13) {
-			const owner = this.owner.get();
+			const owner = this.owner?.deref();
 			if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
 				owner.notify({
 					eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
@@ -136,7 +142,7 @@ class UIAdaptivePresentationControllerDelegateImp extends NSObject implements UI
 	}
 
 	public presentationControllerDidDismiss(presentationController: UIPresentationController) {
-		const owner = this.owner.get();
+		const owner = this.owner?.deref();
 		if (owner && typeof this.closedCallback === 'function') {
 			this.closedCallback();
 		}
@@ -159,7 +165,7 @@ class UIPopoverPresentationControllerDelegateImp extends NSObject implements UIP
 	}
 
 	public popoverPresentationControllerDidDismissPopover(popoverPresentationController: UIPopoverPresentationController) {
-		const owner = this.owner.get();
+		const owner = this.owner?.deref();
 		if (owner && typeof this.closedCallback === 'function') {
 			this.closedCallback();
 		}
@@ -266,7 +272,7 @@ export class IOSHelper {
 			const adjustedFrame = IOSHelper.getFrameFromPosition(position, insets);
 
 			if (Trace.isEnabled()) {
-				Trace.write(this + ' :shrinkToSafeArea: ' + JSON.stringify(IOSHelper.getPositionFromFrame(adjustedFrame)), Trace.categories.Layout);
+				Trace.write(`${view} :shrinkToSafeArea: ${JSON.stringify(IOSHelper.getPositionFromFrame(adjustedFrame))}`, Trace.categories.Layout);
 			}
 
 			return adjustedFrame;

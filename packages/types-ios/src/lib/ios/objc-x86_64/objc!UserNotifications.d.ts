@@ -79,7 +79,9 @@ declare const enum UNErrorCode {
 
 	ContentProvidingObjectNotAllowed = 1500,
 
-	ContentProvidingInvalid = 1501
+	ContentProvidingInvalid = 1501,
+
+	BadgeInputInvalid = 1600
 }
 
 declare var UNErrorDomain: string;
@@ -108,6 +110,8 @@ declare class UNMutableNotificationContent extends UNNotificationContent {
 	body: string;
 
 	categoryIdentifier: string;
+
+	filterCriteria: string;
 
 	interruptionLevel: UNNotificationInterruptionLevel;
 
@@ -311,6 +315,8 @@ declare class UNNotificationContent extends NSObject implements NSCopying, NSMut
 
 	readonly categoryIdentifier: string;
 
+	readonly filterCriteria: string;
+
 	readonly interruptionLevel: UNNotificationInterruptionLevel;
 
 	readonly launchImageName: string;
@@ -512,9 +518,13 @@ declare class UNNotificationSound extends NSObject implements NSCopying, NSSecur
 
 	static new(): UNNotificationSound; // inherited from NSObject
 
+	static ringtoneSoundNamed(name: string): UNNotificationSound;
+
 	static soundNamed(name: string): UNNotificationSound;
 
 	static readonly defaultCriticalSound: UNNotificationSound;
+
+	static readonly defaultRingtoneSound: UNNotificationSound;
 
 	static readonly defaultSound: UNNotificationSound;
 
@@ -636,6 +646,8 @@ declare class UNUserNotificationCenter extends NSObject {
 	removePendingNotificationRequestsWithIdentifiers(identifiers: NSArray<string> | string[]): void;
 
 	requestAuthorizationWithOptionsCompletionHandler(options: UNAuthorizationOptions, completionHandler: (p1: boolean, p2: NSError) => void): void;
+
+	setBadgeCountWithCompletionHandler(newBadgeCount: number, completionHandler: (p1: NSError) => void): void;
 
 	setNotificationCategories(categories: NSSet<UNNotificationCategory>): void;
 }

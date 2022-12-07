@@ -619,15 +619,15 @@ export var testNativeTextAlignmentFromLocal = function () {
 	});
 };
 
-export var testMemoryLeak = function (done) {
-	helper.buildUIWithWeakRefAndInteract(
-		_createTextFieldFunc,
-		function (textField) {
-			typeTextNatively(textField, 'Hello, world!');
-		},
-		done
-	);
-};
+// export var testMemoryLeak = function (done) {
+// 	helper.buildUIWithWeakRefAndInteract(
+// 		_createTextFieldFunc,
+// 		function (textField) {
+// 			typeTextNatively(textField, 'Hello, world!');
+// 		},
+// 		done
+// 	);
+// };
 
 export var test_WhenFormattedTextPropertyChanges_TextIsUpdated_TextBase = function () {
 	var firstSpan = new Span();

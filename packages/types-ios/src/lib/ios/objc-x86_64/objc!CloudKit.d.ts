@@ -31,6 +31,33 @@ declare const enum CKAccountStatus {
 	TemporarilyUnavailable = 4
 }
 
+declare class CKAllowedSharingOptions extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): CKAllowedSharingOptions; // inherited from NSObject
+
+	static new(): CKAllowedSharingOptions; // inherited from NSObject
+
+	allowedParticipantAccessOptions: CKSharingParticipantAccessOption;
+
+	allowedParticipantPermissionOptions: CKSharingParticipantPermissionOption;
+
+	static readonly standardOptions: CKAllowedSharingOptions;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { allowedParticipantPermissionOptions: CKSharingParticipantPermissionOption; allowedParticipantAccessOptions: CKSharingParticipantAccessOption; });
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithAllowedParticipantPermissionOptionsAllowedParticipantAccessOptions(allowedParticipantPermissionOptions: CKSharingParticipantPermissionOption, allowedParticipantAccessOptions: CKSharingParticipantAccessOption): this;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
 declare const enum CKApplicationPermissionStatus {
 
 	InitialState = 0,
@@ -122,15 +149,15 @@ declare class CKContainer extends NSObject {
 
 	discoverAllIdentitiesWithCompletionHandler(completionHandler: (p1: NSArray<CKUserIdentity>, p2: NSError) => void): void;
 
-	discoverUserIdentityWithEmailAddressCompletionHandler(email: string, completionHandler: (p1: CKUserIdentity) => void): void;
+	discoverUserIdentityWithEmailAddressCompletionHandler(email: string, completionHandler: (p1: CKUserIdentity, p2: NSError) => void): void;
 
-	discoverUserIdentityWithPhoneNumberCompletionHandler(phoneNumber: string, completionHandler: (p1: CKUserIdentity) => void): void;
+	discoverUserIdentityWithPhoneNumberCompletionHandler(phoneNumber: string, completionHandler: (p1: CKUserIdentity, p2: NSError) => void): void;
 
-	discoverUserIdentityWithUserRecordIDCompletionHandler(userRecordID: CKRecordID, completionHandler: (p1: CKUserIdentity) => void): void;
+	discoverUserIdentityWithUserRecordIDCompletionHandler(userRecordID: CKRecordID, completionHandler: (p1: CKUserIdentity, p2: NSError) => void): void;
 
 	fetchAllLongLivedOperationIDsWithCompletionHandler(completionHandler: (p1: NSArray<string>, p2: NSError) => void): void;
 
-	fetchLongLivedOperationWithIDCompletionHandler(operationID: string, completionHandler: (p1: CKOperation) => void): void;
+	fetchLongLivedOperationWithIDCompletionHandler(operationID: string, completionHandler: (p1: CKOperation, p2: NSError) => void): void;
 
 	fetchShareMetadataWithURLCompletionHandler(url: NSURL, completionHandler: (p1: CKShareMetadata, p2: NSError) => void): void;
 
@@ -1660,6 +1687,24 @@ declare var CKShareTitleKey: string;
 
 declare var CKShareTypeKey: string;
 
+declare const enum CKSharingParticipantAccessOption {
+
+	AnyoneWithLink = 1,
+
+	SpecifiedRecipientsOnly = 2,
+
+	Any = 3
+}
+
+declare const enum CKSharingParticipantPermissionOption {
+
+	ReadOnly = 1,
+
+	ReadWrite = 2,
+
+	Any = 3
+}
+
 declare class CKSubscription extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CKSubscription; // inherited from NSObject
@@ -1690,6 +1735,21 @@ declare const enum CKSubscriptionType {
 	RecordZone = 2,
 
 	Database = 3
+}
+
+declare class CKSystemSharingUIObserver extends NSObject {
+
+	static alloc(): CKSystemSharingUIObserver; // inherited from NSObject
+
+	static new(): CKSystemSharingUIObserver; // inherited from NSObject
+
+	systemSharingUIDidSaveShareBlock: (p1: CKRecordID, p2: CKShare, p3: NSError) => void;
+
+	systemSharingUIDidStopSharingBlock: (p1: CKRecordID, p2: NSError) => void;
+
+	constructor(o: { container: CKContainer; });
+
+	initWithContainer(container: CKContainer): this;
 }
 
 declare class CKUserIdentity extends NSObject implements NSCopying, NSSecureCoding {

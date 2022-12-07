@@ -28,7 +28,7 @@ export interface IWebpackEnv {
 	appResourcesPath?: string;
 	appComponents?: string[];
 
-	nativescriptLibPath?: string;
+	nativescriptLibPath?: string | boolean;
 
 	android?: boolean;
 	ios?: boolean;
@@ -43,8 +43,16 @@ export interface IWebpackEnv {
 	// enable verbose output
 	verbose?: boolean;
 
+	// enable webpack profiling
+	profile?: boolean;
+
+	// print webpack stats (default: true)
+	stats?: boolean;
+
 	// misc
 	replace?: string[] | string;
+	watchNodeModules?: boolean;
+	e2e?: boolean;
 }
 
 interface IChainEntry {

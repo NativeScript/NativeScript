@@ -1,4 +1,4 @@
-import { DatePickerBase, yearProperty, monthProperty, dayProperty, dateProperty, maxDateProperty, minDateProperty } from './date-picker-common';
+import { DatePickerBase, yearProperty, monthProperty, dayProperty, dateProperty, maxDateProperty, minDateProperty, hourProperty, minuteProperty, secondProperty, showTimeProperty, iosPreferredDatePickerStyleProperty } from './date-picker-common';
 import { colorProperty } from '../styling/style-properties';
 import { Color } from '../../color';
 import { Device } from '../../platform';
@@ -14,7 +14,7 @@ export class DatePicker extends DatePickerBase {
 
 	public createNativeView() {
 		const picker = UIDatePicker.new();
-		picker.datePickerMode = UIDatePickerMode.Date;
+		picker.datePickerMode = this.showTime ? UIDatePickerMode.DateAndTime : UIDatePickerMode.Date;
 		if (SUPPORT_DATE_PICKER_STYLE) {
 			picker.preferredDatePickerStyle = this.iosPreferredDatePickerStyle;
 		}
@@ -38,27 +38,61 @@ export class DatePicker extends DatePickerBase {
 		return this.nativeViewProtected;
 	}
 
+	[showTimeProperty.setNative](value: boolean) {
+		this.showTime = value;
+		if (this.nativeViewProtected) {
+			this.nativeViewProtected.datePickerMode = this.showTime ? UIDatePickerMode.DateAndTime : UIDatePickerMode.Date;
+		}
+	}
+
+	[iosPreferredDatePickerStyleProperty.setNative](value: number) {
+		this.iosPreferredDatePickerStyle = value;
+		if (this.nativeViewProtected) {
+			if (SUPPORT_DATE_PICKER_STYLE) {
+				this.nativeViewProtected.preferredDatePickerStyle = this.iosPreferredDatePickerStyle;
+			}
+		}
+	}
+
 	[yearProperty.setNative](value: number) {
-		this.date = new Date(value, this.month - 1, this.day);
+		this.date = new Date(value, this.month - 1, this.day, this.hour || 0, this.minute || 0, this.second || 0);
 	}
 
 	[monthProperty.setNative](value: number) {
-		this.date = new Date(this.year, value - 1, this.day);
+		this.date = new Date(this.year, value - 1, this.day, this.hour || 0, this.minute || 0, this.second || 0);
 	}
 
 	[dayProperty.setNative](value: number) {
-		this.date = new Date(this.year, this.month - 1, value);
+		this.date = new Date(this.year, this.month - 1, value, this.hour || 0, this.minute || 0, this.second || 0);
+	}
+
+	[hourProperty.setNative](value: number) {
+		this.date = new Date(this.year, this.month - 1, this.day, value, this.minute || 0, this.second || 0);
+	}
+
+	[minuteProperty.setNative](value: number) {
+		this.date = new Date(this.year, this.month - 1, this.day, this.hour || 0, value, this.second || 0);
+	}
+
+	[secondProperty.setNative](value: number) {
+		this.date = new Date(this.year, this.month - 1, this.day, this.hour || 0, this.minute || 0, value);
 	}
 
 	[dateProperty.setNative](value: Date) {
 		const picker = this.nativeViewProtected;
-		const comps = NSCalendar.currentCalendar.componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay, picker.date);
+		const comps = NSCalendar.currentCalendar.componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay | NSCalendarUnit.HourCalendarUnit | NSCalendarUnit.MinuteCalendarUnit | NSCalendarUnit.SecondCalendarUnit, picker.date);
 		comps.year = value.getFullYear();
 		comps.month = value.getMonth() + 1;
 		comps.day = value.getDate();
+		comps.hour = value.getHours();
+		comps.minute = value.getMinutes();
+		comps.second = value.getSeconds();
 		this.year = comps.year;
 		this.month = comps.month;
 		this.day = comps.day;
+		this.hour = comps.hour;
+		this.minute = comps.minute;
+		this.second = comps.second;
 		picker.setDateAnimated(NSCalendar.currentCalendar.dateFromComponents(comps), false);
 	}
 
@@ -103,12 +137,12 @@ class UIDatePickerChangeHandlerImpl extends NSObject {
 	}
 
 	public valueChanged(sender: UIDatePicker) {
-		const comps = NSCalendar.currentCalendar.componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay, sender.date);
-
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (!owner) {
 			return;
 		}
+
+		const comps = NSCalendar.currentCalendar.componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay | NSCalendarUnit.HourCalendarUnit | NSCalendarUnit.MinuteCalendarUnit | NSCalendarUnit.SecondCalendarUnit, sender.date);
 
 		let dateChanged = false;
 		if (comps.year !== owner.year) {
@@ -126,8 +160,23 @@ class UIDatePickerChangeHandlerImpl extends NSObject {
 			dateChanged = true;
 		}
 
+		if (comps.hour !== owner.hour) {
+			hourProperty.nativeValueChange(owner, comps.hour);
+			dateChanged = true;
+		}
+
+		if (comps.minute !== owner.minute) {
+			minuteProperty.nativeValueChange(owner, comps.minute);
+			dateChanged = true;
+		}
+
+		if (comps.second !== owner.second) {
+			secondProperty.nativeValueChange(owner, comps.second);
+			dateChanged = true;
+		}
+
 		if (dateChanged) {
-			dateProperty.nativeValueChange(owner, new Date(comps.year, comps.month - 1, comps.day));
+			dateProperty.nativeValueChange(owner, new Date(comps.year, comps.month - 1, comps.day, comps.hour, comps.minute, comps.second));
 		}
 	}
 

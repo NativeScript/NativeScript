@@ -10,6 +10,7 @@
 **/package-lock.json
 **/yarn.lock
 **/pnpm-lock.yaml
+.npmrc
 
 # IDEs and editors
 .idea
@@ -41,6 +42,8 @@ apps/**/*/*.map
 apps/**/*/platforms
 apps/**/*/webpack.*.js
 *.tgz
+.npmrc
+**/**/*.log
 
 # System Files
 .DS_Store

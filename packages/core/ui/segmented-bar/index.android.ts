@@ -4,6 +4,7 @@ import { isEnabledProperty } from '../core/view';
 import { colorProperty, fontInternalProperty, fontSizeProperty } from '../styling/style-properties';
 import { Color } from '../../color';
 import { layout } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 
 export * from './segmented-bar-common';
 
@@ -24,7 +25,6 @@ interface TabHost {
 	new (context: android.content.Context, attrs: android.util.AttributeSet): android.widget.TabHost;
 }
 
-let apiLevel: number;
 let selectedIndicatorThickness: number;
 
 let TabHost: TabHost;
@@ -37,9 +37,8 @@ function initializeNativeClasses(): void {
 		return;
 	}
 
-	apiLevel = android.os.Build.VERSION.SDK_INT;
 	// Indicator thickness for material - 2dip. For pre-material - 5dip.
-	selectedIndicatorThickness = layout.toDevicePixels(apiLevel >= 21 ? 2 : 5);
+	selectedIndicatorThickness = layout.toDevicePixels(SDK_VERSION >= 21 ? 2 : 5);
 
 	@NativeClass
 	@Interfaces([android.widget.TabHost.OnTabChangeListener])
@@ -164,7 +163,7 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
 		if (value instanceof Color) {
 			const color = value.android;
 			const backgroundDrawable = viewGroup.getBackground();
-			if (apiLevel > 21 && backgroundDrawable) {
+			if (SDK_VERSION > 21 && backgroundDrawable) {
 				const newDrawable = tryCloneDrawable(backgroundDrawable, nativeView.getResources());
 				newDrawable.setColorFilter(color, android.graphics.PorterDuff.Mode.SRC_IN);
 				viewGroup.setBackground(newDrawable);

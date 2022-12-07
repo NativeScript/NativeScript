@@ -1,4 +1,15 @@
 /**
+ * Data serialization from JS > Native
+ * @param wrapPrimitives Optionally wrap primitive types (Some APIs may require this)
+ */
+export function dataSerialize(data?: any, wrapPrimitives?: boolean): any;
+/**
+ * Data deserialization from Native > JS
+ * @param nativeData Native platform data
+ */
+export function dataDeserialize(nativeData?: any): any;
+
+/**
  * Module with android specific utilities.
  */
 export namespace ad {
@@ -7,6 +18,10 @@ export namespace ad {
 	 */
 	export function getApplication(): any; /* android.app.Application */
 
+	/**
+	 * Get the current native Android activity.
+	 */
+	export function getCurrentActivity(): any; /* android.app.Activity */
 	/**
 	 * Gets the native Android application resources.
 	 */
@@ -72,6 +87,15 @@ export namespace ad {
 		export function getId(name: string): number;
 
 		/**
+		 * Gets the id from a given name with optional type.
+		 * This sets an explicit package name.
+		 * https://developer.android.com/reference/android/content/res/Resources#getIdentifier(java.lang.String,%20java.lang.String,%20java.lang.String)
+		 * @param name - Name of the resource.
+		 * @param type - (Optional) type
+		 */
+		export function getResource(name: string, type?: string): number;
+
+		/**
 		 * [Obsolete - please use getPaletteColor] Gets a color from current theme.
 		 * @param name - Name of the color
 		 */
@@ -120,6 +144,29 @@ export namespace iOSNativeHelper {
 		 */
 		export function nsArrayToJSArray<T>(a: NSArray<T>): T[];
 	}
+
+	/**
+	 * Get the root UIViewController of the app
+	 */
+	export function getRootViewController(): any; /* UIViewController */
+
+	/**
+	 * Get the UIWindow of the app
+	 */
+	export function getWindow(): any; /* UIWindow */
+
+	/**
+	 * Set the window background color of base view of the app.
+	 * Often this is shown when opening a modal as the view underneath scales down revealing the window color.
+	 * @param value color (hex, rgb, rgba, etc.)
+	 */
+	export function setWindowBackgroundColor(value: string): void;
+
+	/**
+	 * Data serialize and deserialize helpers
+	 */
+	export function dataSerialize(data?: any): any;
+	export function dataDeserialize(nativeData?: any): any;
 
 	/**
 	 * @deprecated use application.orientation instead

@@ -27,7 +27,7 @@ extract_apiref() {
     rm -rf "$APIREF_DIR"
 
 #    npm_install
-    npx typedoc --tsconfig tools/scripts/tsconfig.typedoc.json
+    npx typedoc --tsconfig tsconfig.typedoc.json
 
     # mv "dist/apiref" "$APIREF_DIR"
     # archive_dist_dir "api-reference"

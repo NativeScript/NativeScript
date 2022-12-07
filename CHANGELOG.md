@@ -1,3 +1,353 @@
+## [8.4.1](https://github.com/NativeScript/NativeScript/compare/8.4.0-core...8.4.1-core) (2022-11-30)
+
+### Bug Fixes
+
+* **core:** circular imports of SDK_VERSION ([82d60ae](https://github.com/NativeScript/NativeScript/commit/82d60ae057f0f14718c1065f51bf3edbf36ad96a))
+  
+
+## [8.4.0](https://github.com/NativeScript/NativeScript/compare/8.3.6-core...8.4.0-core) (2022-11-30)
+
+### Features
+
+* **android:** support drawable in ImageSource ([#10098](https://github.com/NativeScript/NativeScript/issues/10098)) ([75eefa6](https://github.com/NativeScript/NativeScript/commit/75eefa669deaea09f79e4a15593f1af985a0fea1))
+* **android:** use NestedScrollView for vertical ScrollView ([#9199](https://github.com/NativeScript/NativeScript/issues/9199)) ([cfaa813](https://github.com/NativeScript/NativeScript/commit/cfaa8134b0a5e4163285b1253ac4094f1bdf5b3e))
+* **core:** support css font-variation-settings ([#9995](https://github.com/NativeScript/NativeScript/issues/9995)) ([a5e3e22](https://github.com/NativeScript/NativeScript/commit/a5e3e223dd037a4be8f2d5c9f2bdf3a1b5bc7d27))
+* **core:** support for external XML UI compilers ([#10008](https://github.com/NativeScript/NativeScript/issues/10008)) ([75503ef](https://github.com/NativeScript/NativeScript/commit/75503ef1107953737f05b8939d724fa29fac3fc4))
+* **HtmlView:** selectable property ([#10057](https://github.com/NativeScript/NativeScript/issues/10057)) ([ca9c092](https://github.com/NativeScript/NativeScript/commit/ca9c0928d00c97a757c33060f9fde2f6294485b5))
+* **types-android:** API Level 33 ([#10113](https://github.com/NativeScript/NativeScript/issues/10113)) ([c1187fe](https://github.com/NativeScript/NativeScript/commit/c1187fe5437f6f08ed189b2e8a72ed160d6c61c0))
+* **types-ios:** 16.1 ([#10114](https://github.com/NativeScript/NativeScript/issues/10114)) ([da78e0b](https://github.com/NativeScript/NativeScript/commit/da78e0be3f1144364829aceb8059e4af274bfd8b))
+* **utils:** dismissKeyboard, copyToClipboard, setWindowBackgroundColor, getCurrentActivity and getResource ([#10089](https://github.com/NativeScript/NativeScript/issues/10089)) ([2e1d2c1](https://github.com/NativeScript/NativeScript/commit/2e1d2c175b6bcd15b70c4fd119b3cc303c3799f6))
+* **webview:** adds iosAllowInlineMediaPlayback property ([#10014](https://github.com/NativeScript/NativeScript/issues/10014)) ([4a0e1c9](https://github.com/NativeScript/NativeScript/commit/4a0e1c9aa18ccb865ce5e3a3e5aa9b3d050562e2))
+* TypeScript 4.8+ support and NativeClass decorator improvements ([#10081](https://github.com/NativeScript/NativeScript/issues/10081)) ([7f069a7](https://github.com/NativeScript/NativeScript/commit/7f069a7093087a060274e59f53f68db879846b3e))
+
+
+### Bug Fixes
+
+* **android:** application fallback for `startActivity` ([#10062](https://github.com/NativeScript/NativeScript/issues/10062)) ([f3a5c16](https://github.com/NativeScript/NativeScript/commit/f3a5c16530f1b247f59960cc20280f65fdfc1715))
+* **android:** file manipulation threw exception inside worker ([#10076](https://github.com/NativeScript/NativeScript/issues/10076)) ([25c862e](https://github.com/NativeScript/NativeScript/commit/25c862e148668e2b6a4b7fb438615f9cc2e7ef56))
+* **android:** file system normalizePath ([#10077](https://github.com/NativeScript/NativeScript/issues/10077)) ([497a9db](https://github.com/NativeScript/NativeScript/commit/497a9dbaeaf953248fcb67d26196ddf7deabc8d8))
+* **android:** modal status bar props applied to wrong window ([#10049](https://github.com/NativeScript/NativeScript/issues/10049)) ([6934645](https://github.com/NativeScript/NativeScript/commit/6934645423eba2494c0aa5aed76b0c4b3b768be8))
+* **android:** normalize for API >= 26 ([#10083](https://github.com/NativeScript/NativeScript/issues/10083)) ([e687e9d](https://github.com/NativeScript/NativeScript/commit/e687e9d75650a1fc875d31fa30e4f43455e7c197))
+* **android:** tappable spans aren't visible on single-line labels ([#10055](https://github.com/NativeScript/NativeScript/issues/10055)) ([5765707](https://github.com/NativeScript/NativeScript/commit/57657075ca1a307556c64c13df5854ec3d378e5e))
+* **android:** ApplicationSettings return precise stored numbers ([#10094](https://github.com/NativeScript/NativeScript/issues/10094)) ([fd98690](https://github.com/NativeScript/NativeScript/commit/fd9869094e9f36959df5d59399ffe684be8d8e5f))
+* **android:** memory leak with EditableTextBase ([#10052](https://github.com/NativeScript/NativeScript/issues/10052)) ([501d310](https://github.com/NativeScript/NativeScript/commit/501d310431b19e28f75e27b16a404324a960a79a))
+* **android:** prevent flashing activity on app start ([#9190](https://github.com/NativeScript/NativeScript/issues/9190)) ([6a9484a](https://github.com/NativeScript/NativeScript/commit/6a9484aaa8e77cf97426e102b2784988847fb521))
+* **android:** shared SDK_VERSION ([#10090](https://github.com/NativeScript/NativeScript/issues/10090)) ([0226f47](https://github.com/NativeScript/NativeScript/commit/0226f47f8d3b36fc2cc48cd1895065214fc82acb))
+* **core:** ellipsis at the end for Labels with maxLines ([#10005](https://github.com/NativeScript/NativeScript/issues/10005)) ([6c60eab](https://github.com/NativeScript/NativeScript/commit/6c60eab870026e970a5fee1e064e2ee8ccde476a))
+* **core:** prevent a circular reference because of `SDK_VERSION` ([#10097](https://github.com/NativeScript/NativeScript/issues/10097)) ([c957b48](https://github.com/NativeScript/NativeScript/commit/c957b487a8d98e529df5432aed5b7126a83a6020))
+* **core:** Color.isValid returned true for null/undefined ([#10040](https://github.com/NativeScript/NativeScript/issues/10040)) ([9091e43](https://github.com/NativeScript/NativeScript/commit/9091e43f036139a8f1ad2958eb0b385025204813))
+* **core:** font-weight allow passing number ([#10072](https://github.com/NativeScript/NativeScript/issues/10072)) ([5f3f1ac](https://github.com/NativeScript/NativeScript/commit/5f3f1ace280d7da302977ccb10d2525a48b65cf1))
+* **core:** windows build ([#10056](https://github.com/NativeScript/NativeScript/issues/10056)) ([7860d51](https://github.com/NativeScript/NativeScript/commit/7860d515a8f29fd9dcf07c151b7c606cb3c54e69))
+* **color:** floating point color values ([66e8e39](https://github.com/NativeScript/NativeScript/commit/66e8e39f1e09c39a19372512ab90bd28d59691d1))
+* **core:** deprecation notes for WeakRef clear and get ([3019181](https://github.com/NativeScript/NativeScript/commit/30191816f2fe1c9ec54bdbcbe9aa4eaac9ba11de))
+* **core:** WeakRef deprecation notes ([b83ed39](https://github.com/NativeScript/NativeScript/commit/b83ed3939b68c0e9ee06ee9135e970969d846616))
+* **ios:** animation layer resilience ([#10060](https://github.com/NativeScript/NativeScript/issues/10060)) ([6cabcab](https://github.com/NativeScript/NativeScript/commit/6cabcab0d59c7eeec510fdb37de8eaf52bc8791c))
+* **ios:** Color.fromIosColor returns wrong value ([#10059](https://github.com/NativeScript/NativeScript/issues/10059)) ([b7d340f](https://github.com/NativeScript/NativeScript/commit/b7d340f69b9a64f44d6cc4a2a405ecfbbed78899))
+* **ios:** ensure autocorrect not applied silently on IOS16 ([#10032](https://github.com/NativeScript/NativeScript/issues/10032)) ([40b9e35](https://github.com/NativeScript/NativeScript/commit/40b9e3578f895b202100242643a5a7319bf528f7))
+* **ios:** frame navigatingTo event ([#10096](https://github.com/NativeScript/NativeScript/issues/10096)) ([6148955](https://github.com/NativeScript/NativeScript/commit/6148955335f164aa160e719a98ad811b4d006560))
+* **ios:** stability around canceling an animation ([b8d5372](https://github.com/NativeScript/NativeScript/commit/b8d537250f5fc7e0b2a1008d049b564e302b783a))
+* **webpack:** prevent hmr from patching __onLiveSync multiple times ([#10103](https://github.com/NativeScript/NativeScript/issues/10103)) ([42f5dc5](https://github.com/NativeScript/NativeScript/commit/42f5dc51c751eeb33f34cbd172533c2987df19e4))
+* **webpack:** support angular 15.x ([#10106](https://github.com/NativeScript/NativeScript/issues/10106)) ([f100109](https://github.com/NativeScript/NativeScript/commit/f100109e2d528aea9a389fdebe3d533878570e42))
+* **webpack:** close compiler after run ([#10080](https://github.com/NativeScript/NativeScript/issues/10080)) ([59ca35b](https://github.com/NativeScript/NativeScript/commit/59ca35b44b7dde4b077e5aa4aedecfb3a27e1acd))
+* **webpack:** make NativeClass transformer backwards compatible ([59624a4](https://github.com/NativeScript/NativeScript/commit/59624a4ebe5d9bb4f42f0dd6b04c9427e0fed479))
+
+
+### Performance Improvements
+
+* **core:** android sdk check ([#10084](https://github.com/NativeScript/NativeScript/issues/10084)) ([abd722c](https://github.com/NativeScript/NativeScript/commit/abd722cd3dec73f4caa1bc15f5ae4864550a46f9))
+  
+
+
+## [8.3.6](https://github.com/NativeScript/NativeScript/compare/8.3.5-core...8.3.6-core) (2022-11-12)
+
+
+### Bug Fixes
+
+* **android:** CSS style not working properly in modal pages ([#10070](https://github.com/NativeScript/NativeScript/issues/10070)) ([95c3b30](https://github.com/NativeScript/NativeScript/commit/95c3b3026db9316b126849671fb2be18549b6796))
+* **android:** WeakRef race condition on timers ([#10066](https://github.com/NativeScript/NativeScript/issues/10066)) ([a65fc06](https://github.com/NativeScript/NativeScript/commit/a65fc06c50dc9b6f6bab4d8068ac6d2ecaa78cdf))
+* **ios:** ensure view layout when using large titles ([#10044](https://github.com/NativeScript/NativeScript/issues/10044)) ([0552a3a](https://github.com/NativeScript/NativeScript/commit/0552a3a722469312044fd2e9c40be630d04312ec))
+* **ios:** page isRunningLayout ([#10078](https://github.com/NativeScript/NativeScript/issues/10078)) ([6f1a5d1](https://github.com/NativeScript/NativeScript/commit/6f1a5d16e310324a4e6a2622e2fdf992d2a775d5))
+* **ios:** prevent creating `ActionBar` when not needed ([#10017](https://github.com/NativeScript/NativeScript/issues/10017)) ([8094cf2](https://github.com/NativeScript/NativeScript/commit/8094cf207a4c5714fd0e592e8aa3adf4a4d377e0))
+* **ios:** tab page navigation when showing dialog messages ([#10075](https://github.com/NativeScript/NativeScript/issues/10075)) ([0337a33](https://github.com/NativeScript/NativeScript/commit/0337a3360d37a4b529e94e5f20e9b8f561f4ad1b))
+
+
+
+## [8.3.5](https://github.com/NativeScript/NativeScript/compare/8.3.4-core...8.3.5-core) (2022-09-23)
+
+
+### Bug Fixes
+
+* **animations:** error handling ([df31b2a](https://github.com/NativeScript/NativeScript/commit/df31b2a905cdbdacf3c31e7804a65401e3b498ab))
+* **core:** WeakRef typings to include deref ([#10006](https://github.com/NativeScript/NativeScript/issues/10006)) ([5bed8b9](https://github.com/NativeScript/NativeScript/commit/5bed8b96d84cad8a4297fa8c63c078ba3bdeae51))
+* **ios:** guard accessing actionbar ([#10033](https://github.com/NativeScript/NativeScript/issues/10033)) ([59fb3d9](https://github.com/NativeScript/NativeScript/commit/59fb3d9457dc88d7f20729c5d6c65298d2664932))
+* **ios:** segmented bar nativeView check ([#10023](https://github.com/NativeScript/NativeScript/issues/10023)) ([3ce5362](https://github.com/NativeScript/NativeScript/commit/3ce5362a043c4c7513db98a76b341dc8f1791f50))
+
+
+## [8.3.4](https://github.com/NativeScript/NativeScript/compare/8.3.3-core...8.3.4-core) (2022-08-20)
+
+
+### Bug Fixes
+
+* **android:** potential navigation crash ([#9996](https://github.com/NativeScript/NativeScript/issues/9996)) ([ca3d9bd](https://github.com/NativeScript/NativeScript/commit/ca3d9bdc13b86df2bbecb34e07141cea8fc9af7c))
+* **ios:** ListView _prepareCell null safety ([#10001](https://github.com/NativeScript/NativeScript/issues/10001)) ([56f861d](https://github.com/NativeScript/NativeScript/commit/56f861df20212f2107bf2c4e0989ab4debadf423))
+
+
+### Features
+
+* **core:** make font style, weight, scale params optional ([#9993](https://github.com/NativeScript/NativeScript/issues/9993)) ([4b0c812](https://github.com/NativeScript/NativeScript/commit/4b0c8127073d91d15b36a1428fd23b4cf702cae9))
+
+
+
+## [8.3.3](https://github.com/NativeScript/NativeScript/compare/8.3.2-core...8.3.3-core) (2022-08-11)
+
+
+### Bug Fixes
+
+* **android:** getScaledDimensions ([#9992](https://github.com/NativeScript/NativeScript/issues/9992)) ([944d542](https://github.com/NativeScript/NativeScript/commit/944d54257198708cabc49af19d7e5cdf39e3e1a1))
+* **ios:** additional safe area insets were miscalculated if already set ([#9991](https://github.com/NativeScript/NativeScript/issues/9991)) ([be6efc3](https://github.com/NativeScript/NativeScript/commit/be6efc306708d65405e9cc89e4ef422feeb89df1))
+
+
+
+## [8.3.2](https://github.com/NativeScript/NativeScript/compare/5.0.8-webpack...8.3.2-core) (2022-08-02)
+
+
+### Bug Fixes
+
+* **android:** FragmentCallbacksImplementation memory leak ([#9977](https://github.com/NativeScript/NativeScript/issues/9977)) ([286d36b](https://github.com/NativeScript/NativeScript/commit/286d36b03b2a6a740ed9a93d83ad36c7f649f6c9))
+* **android:** FragmentClass memory leak ([#9983](https://github.com/NativeScript/NativeScript/issues/9983)) ([0548aaf](https://github.com/NativeScript/NativeScript/commit/0548aaf8da68f104d87d3e36ecc53b31e73028aa))
+* **core:** Added ObservableArray constructor declarations to allow setting multiple arguments ([#9980](https://github.com/NativeScript/NativeScript/issues/9980)) ([d82f3d9](https://github.com/NativeScript/NativeScript/commit/d82f3d990dcbf84c0e6e32d98f2fb19a6532615d))
+* revert "fix(ios): not responding after rotation ([#9931](https://github.com/NativeScript/NativeScript/issues/9931))" ([#9984](https://github.com/NativeScript/NativeScript/issues/9984)) ([54d3006](https://github.com/NativeScript/NativeScript/commit/54d300666a891820a0cae8ec1b410f90c77f96a6))
+
+
+
+## [8.3.1](https://github.com/NativeScript/NativeScript/compare/8.3.0-core...8.3.1-core) (2022-07-21)
+
+
+### Bug Fixes
+
+* **core:** correct typings in ObservableArray ([#9961](https://github.com/NativeScript/NativeScript/issues/9961)) ([01643f5](https://github.com/NativeScript/NativeScript/commit/01643f513ed3e71b98c3a0bdd9fa15f0b1b7970d))
+* **core:** correctly polyfill tslib ([#9894](https://github.com/NativeScript/NativeScript/issues/9894)) ([20efd36](https://github.com/NativeScript/NativeScript/commit/20efd3605e5c8c654bba26f6d1f1423d7af51747))
+* **core:** FormattedString.spans is now restored ([#9960](https://github.com/NativeScript/NativeScript/issues/9960)) ([0477044](https://github.com/NativeScript/NativeScript/commit/0477044d6f41003d679ef3dd655643b380dca188))
+
+
+# [8.3.0](https://github.com/NativeScript/NativeScript/compare/5.0.7-webpack...8.3.0-core) (2022-07-14)
+
+
+### Bug Fixes
+
+* **android:** connectivity reporting none on resume ([#9915](https://github.com/NativeScript/NativeScript/issues/9915)) ([413fa2e](https://github.com/NativeScript/NativeScript/commit/413fa2eb4b044163a701614a596a06512082ba8a))
+* **android:** content uri handling improvements ([#9936](https://github.com/NativeScript/NativeScript/issues/9936)) ([9fcd440](https://github.com/NativeScript/NativeScript/commit/9fcd440690e894c80ca88a528309f619fc8997f9))
+* **android:** device language and region from system configuration. ([#9868](https://github.com/NativeScript/NativeScript/issues/9868)) ([ad01e6b](https://github.com/NativeScript/NativeScript/commit/ad01e6b990e14f36e637886b2e0e0c9594daf246))
+* **android:** font icons had incorrect fallback size ([#9914](https://github.com/NativeScript/NativeScript/issues/9914)) ([e8bed44](https://github.com/NativeScript/NativeScript/commit/e8bed44f5b82fda088aa9f6033a9ec76825811ee))
+* **android:** Textfield focus fix ([#9885](https://github.com/NativeScript/NativeScript/issues/9885)) ([fbd1e23](https://github.com/NativeScript/NativeScript/commit/fbd1e23c1c9b63ddcab9b25812c10e62ca9f6da6))
+* **core:** allow View subclass to force onLayoutChangeListener ([#9886](https://github.com/NativeScript/NativeScript/issues/9886)) ([6ccf5a2](https://github.com/NativeScript/NativeScript/commit/6ccf5a22e61b4950f549929f2e5c432bf3e03324))
+* **core:** android wrong background state + current value accessors ([#9883](https://github.com/NativeScript/NativeScript/issues/9883)) ([58a7206](https://github.com/NativeScript/NativeScript/commit/58a720699fe012b382446533f29ef3382ddd862e))
+* **core:** ensure platforms/android/core.aar is not included in pack ([a1dff9a](https://github.com/NativeScript/NativeScript/commit/a1dff9a1dbc5f8a32fffe28fa1d950ec12576061))
+* **core:** import fix ([45dcada](https://github.com/NativeScript/NativeScript/commit/45dcada01ab6f44d7fdc9d28f3b40ce1015053bc))
+* **core:** metadata filtering ([#9946](https://github.com/NativeScript/NativeScript/issues/9946)) ([4a5e2e2](https://github.com/NativeScript/NativeScript/commit/4a5e2e2ac0876a6697ebb468e2825f358c3a63e3))
+* **core:** navigatingToEvent allows access to resolvedPage now ([#9954](https://github.com/NativeScript/NativeScript/issues/9954)) ([38142a6](https://github.com/NativeScript/NativeScript/commit/38142a6aebee4c66ce0ae189dd68e93ee2be2db8))
+* **core:** trace log using a wrong parameter ([#9951](https://github.com/NativeScript/NativeScript/issues/9951)) ([cd5d2c2](https://github.com/NativeScript/NativeScript/commit/cd5d2c2f4df79cc2b7026d86c386a60adda414f6))
+* ensure reusable ProxyViewContainer re-adds native children ([#9882](https://github.com/NativeScript/NativeScript/issues/9882)) ([0a082b3](https://github.com/NativeScript/NativeScript/commit/0a082b340305eac9b9b509225dcd1d5f58766be7))
+* export 'dataSerialize' from utils ([#9909](https://github.com/NativeScript/NativeScript/issues/9909)) ([a85a72d](https://github.com/NativeScript/NativeScript/commit/a85a72d961185eb311df030b515decb4813d41c8))
+* incorrect font icon size conversion to device pixels. ([#9910](https://github.com/NativeScript/NativeScript/issues/9910)) ([d3718e5](https://github.com/NativeScript/NativeScript/commit/d3718e5e5f6e6b241b2dec392cf53e65e869d6f5))
+* **ios:** apply proper border radius to box shadow and view sublayers ([#9881](https://github.com/NativeScript/NativeScript/issues/9881)) ([b7e6128](https://github.com/NativeScript/NativeScript/commit/b7e612857681f8d778c42b3df211494067f911fd))
+* **ios:** do not convert tap event data to device pixels twice ([#9935](https://github.com/NativeScript/NativeScript/issues/9935)) ([3681fd4](https://github.com/NativeScript/NativeScript/commit/3681fd43840e67aaccf6e2b2d5c47d72a09b78b4))
+* **ios:** label measure correct height when using custom numberOfLines ([#9945](https://github.com/NativeScript/NativeScript/issues/9945)) ([2ff0891](https://github.com/NativeScript/NativeScript/commit/2ff0891f933dc0e717efce7e5daea8f8488d5fa9))
+* **ios:** memory leak after using 'showModal' passing any Page as parameter ([#9939](https://github.com/NativeScript/NativeScript/issues/9939)) ([4db4e4a](https://github.com/NativeScript/NativeScript/commit/4db4e4af275048fb58ef0fab3a2ac7e3758ba783))
+* **ios:** memory leak after using the 'presentViewControllerNavigation' ([#9934](https://github.com/NativeScript/NativeScript/issues/9934)) ([957af32](https://github.com/NativeScript/NativeScript/commit/957af328597c53a38a48c9c1133419a55cbbea25))
+* **ios:** proper disposal and recreation of iOS native views ([#9879](https://github.com/NativeScript/NativeScript/issues/9879)) ([f548fdc](https://github.com/NativeScript/NativeScript/commit/f548fdc73512bb74e7ec500550e2db0166e7237b))
+* **live-sync:** navigation history is now maintained ([#9889](https://github.com/NativeScript/NativeScript/issues/9889)) ([665009b](https://github.com/NativeScript/NativeScript/commit/665009b863c0589bf5921f512e3878471255ea82))
+* **RootLayout:** resilience around shadeCover options ([e5fffa1](https://github.com/NativeScript/NativeScript/commit/e5fffa1dad2f7482387d396f8eaebabf96be5011))
+* **TabView:** item styling improvements for iOS 15+ ([#9888](https://github.com/NativeScript/NativeScript/issues/9888)) ([7ccc949](https://github.com/NativeScript/NativeScript/commit/7ccc9497124528d7e83a8217ab80545dec6f6691))
+* **ui-mobile-base:** Android http request body was not sent if method was DELETE ([#9887](https://github.com/NativeScript/NativeScript/issues/9887)) ([57e4973](https://github.com/NativeScript/NativeScript/commit/57e4973da5b06cf8e3950293c24361f5a677c245))
+* **webpack:** NativeClass decorator should run after angular transformers in AOT mode ([#9908](https://github.com/NativeScript/NativeScript/issues/9908)) ([c9f77a0](https://github.com/NativeScript/NativeScript/commit/c9f77a0a22708cb07978c67c84ff010390e9f5f7))
+* **webpack:** unit test runner with node 18+ ([#9952](https://github.com/NativeScript/NativeScript/issues/9952)) ([97a21bb](https://github.com/NativeScript/NativeScript/commit/97a21bb0d7e429e2a1aa6023c905ba02cd4be56b))
+
+
+### Features
+
+* **android:** runOnMain, postFrameCallback & removeFrameCallback ([#9943](https://github.com/NativeScript/NativeScript/issues/9943)) ([49343cb](https://github.com/NativeScript/NativeScript/commit/49343cb9b4ad5be895dd25ef28361b3a100d9249))
+* **application:** expose `inBackground` and `suspended` ([#9897](https://github.com/NativeScript/NativeScript/issues/9897)) ([8987bab](https://github.com/NativeScript/NativeScript/commit/8987babb0801fbc3320bf50877bebefb9702a292))
+* **core:** iterable ObservableArray ([#9824](https://github.com/NativeScript/NativeScript/issues/9824)) ([df74a8b](https://github.com/NativeScript/NativeScript/commit/df74a8baa8d815207c4edfa3909f57f497a9e63a))
+* **core:** maxLines support for all text components ([#9884](https://github.com/NativeScript/NativeScript/issues/9884)) ([7ff7233](https://github.com/NativeScript/NativeScript/commit/7ff7233737e2bc12849e922bc2335d3756ff353d))
+* **ios:** Utils.getRootViewController ([29004d9](https://github.com/NativeScript/NativeScript/commit/29004d9048ab84d774d6978e685ea7b0e47b625b))
+* **mac:** support for Mac Catalyst with ui-mobile-base ([fc77c92](https://github.com/NativeScript/NativeScript/commit/fc77c92e114c8a021a6608bb9ff3c8857263abbd))
+* **RootLayout:** add opened and closed events ([#9893](https://github.com/NativeScript/NativeScript/issues/9893)) ([7b11b6a](https://github.com/NativeScript/NativeScript/commit/7b11b6acfe1e71b803ef65f98b8ac5f271928d56))
+* **types-minimal:** paired down typings optimized for smaller footprint editing environments ([#9947](https://github.com/NativeScript/NativeScript/issues/9947)) ([f49e412](https://github.com/NativeScript/NativeScript/commit/f49e412660d80ec55f7fd146b24ae1e77b0ecbea))
+* **Utils:** dataSerialize, dataDeserialize, numberHasDecimals, numberIs64Bit ([cab5947](https://github.com/NativeScript/NativeScript/commit/cab59473f39066abb667d2039d5333be93488035))
+
+
+### Performance Improvements
+
+* cache UIFont construction based on FontDescriptor ([#9948](https://github.com/NativeScript/NativeScript/issues/9948)) ([8756df3](https://github.com/NativeScript/NativeScript/commit/8756df30d4b3b30e139065583ad57a015006a341))
+
+
+### BREAKING CHANGES
+
+* **core:** Method push will now handle arguments just like Array.prototype.push.
+Certain existing methods will now return ObservableArray instance instead.
+Callback arguments that contained an array argument themselves will now contain an ObservableArray argument.
+* **android:** Exposes language and region values from android system configuration. If you were working around locale handling because this wasn't originally the case you can likely remove extra conditions as this should reflect more accurately now.
+* **ios:** tapData.getX() and tapData.getY() will now return correctly in DIP, so any extra conversions (like calling toDevicePixels) twice must be changed.
+* **core:** When using `navigatingToEvent` event.entry, the `backstackEntry` object is now returned which has an `entry` property on it if you still need it.
+
+
+
+## [8.2.5](https://github.com/NativeScript/NativeScript/compare/8.2.4-core...8.2.5-core) (2022-06-15)
+
+
+### Bug Fixes
+
+* **color:** output from rgbToHsv and rgbToHsl is now correct ([#9933](https://github.com/NativeScript/NativeScript/issues/9933)) ([ef70956](https://github.com/NativeScript/NativeScript/commit/ef70956623f8eab23e3c245e543b0a1b45e94bf7))
+* **ios:** not responding after rotation ([#9931](https://github.com/NativeScript/NativeScript/issues/9931)) ([aee1d05](https://github.com/NativeScript/NativeScript/commit/aee1d0565105158e84b6a752cc05ee0dc0577943))
+
+
+### Features
+
+* **core:** allow removal of specific CSS variables ([#9896](https://github.com/NativeScript/NativeScript/issues/9896)) ([32567ef](https://github.com/NativeScript/NativeScript/commit/32567ef36165c688f34b39d515790d4ce0836b4d))
+
+
+
+## [8.2.4](https://github.com/NativeScript/NativeScript/compare/8.2.3-core...8.2.4-core) (2022-06-04)
+
+
+### Bug Fixes
+
+* **Utils:** dispatchToUIThread ([9089b2c](https://github.com/NativeScript/NativeScript/commit/9089b2cf87ecc2644090da22ed8797f56db5c7bb))
+* **webview:** android not loading local content ([#9923](https://github.com/NativeScript/NativeScript/issues/9923)) ([834b4bf](https://github.com/NativeScript/NativeScript/commit/834b4bf5e1c92dad8cd7bfad2f329ba9d754c15e))
+
+
+### Features
+
+* **types-minimal:** minimal types for only the latest Android and iOS sdks ([#9927](https://github.com/NativeScript/NativeScript/issues/9927)) ([80e6b81](https://github.com/NativeScript/NativeScript/commit/80e6b8130a85fcd36d6e3bde581ae7d5e4bd1612))
+
+
+
+## [8.2.3](https://github.com/NativeScript/NativeScript/compare/8.2.2-core...8.2.3-core) (2022-04-25)
+
+
+### Bug Fixes
+
+* **android:** ensure android application is created before setting listeners ([#9876](https://github.com/NativeScript/NativeScript/issues/9876)) ([54f454f](https://github.com/NativeScript/NativeScript/commit/54f454f881204ec2a02ab1695819cf344c70dffe))
+* **android:** improve content uri handling ([#9874](https://github.com/NativeScript/NativeScript/issues/9874)) ([a272296](https://github.com/NativeScript/NativeScript/commit/a272296d875ca4bacf52c80dd568de6d3b73a4fc)), closes [#9871](https://github.com/NativeScript/NativeScript/issues/9871)
+* file access cross platform stub ([338ae56](https://github.com/NativeScript/NativeScript/commit/338ae56a829d9badf22c458b01d88c1ca9f3e677))
+* removed unecessary `console.log` ([#9877](https://github.com/NativeScript/NativeScript/issues/9877)) ([74e42fc](https://github.com/NativeScript/NativeScript/commit/74e42fcb8b68cf5740b33f337f7cdea7b0b94e3b))
+
+
+### Features
+
+* added Utils.executeOnUIThread ([36a55da](https://github.com/NativeScript/NativeScript/commit/36a55dac7fd9db4ace98ac0a19286d8cfd0410bf))
+
+
+
+## [8.2.2](https://github.com/NativeScript/NativeScript/compare/8.2.1-core...8.2.2-core) (2022-04-07)
+
+
+### Bug Fixes
+
+* **ActionItem:** rendering threw errors if it had a nested child. ([#9821](https://github.com/NativeScript/NativeScript/issues/9821)) ([efa80c7](https://github.com/NativeScript/NativeScript/commit/efa80c728b172c4d2b6dfb7bb502f4b7e8871591))
+* **android:** gesture events fix ([#9842](https://github.com/NativeScript/NativeScript/issues/9842)) ([2664783](https://github.com/NativeScript/NativeScript/commit/2664783dfa773f373a93fd427b3d5c01964975b2))
+* **css:** borderColor parse handling for hsl(a) color values ([#9857](https://github.com/NativeScript/NativeScript/issues/9857)) ([da3bd2c](https://github.com/NativeScript/NativeScript/commit/da3bd2c6fb8e51b303b163812c348fb4ca938f5b))
+* **ios:** navigation button now allows using custom icon ([#9835](https://github.com/NativeScript/NativeScript/issues/9835)) ([f88c158](https://github.com/NativeScript/NativeScript/commit/f88c158b384fee7afec9770b257a4312e715b6ec))
+* **RootLayout:** close popup views on live-sync ([#9834](https://github.com/NativeScript/NativeScript/issues/9834)) ([6941466](https://github.com/NativeScript/NativeScript/commit/694146689b7729280aa99cd393848ede78d6cd37))
+* Utils.queueGC debounce and throttle with reuse of different settings ([#9852](https://github.com/NativeScript/NativeScript/issues/9852)) ([9ce7455](https://github.com/NativeScript/NativeScript/commit/9ce745568f1dfdfa9b1d26021a83408a72db8e16))
+
+
+### Features
+
+* **RootLayout:** added topmost method to retrieve view at top ([#9826](https://github.com/NativeScript/NativeScript/issues/9826)) ([3bb8fc2](https://github.com/NativeScript/NativeScript/commit/3bb8fc28e998a153a561ef331645b84e58a827a3))
+* **TouchManager:** touchDelay property for nested tap control ([c05145b](https://github.com/NativeScript/NativeScript/commit/c05145bd9b62cb017349acf46827fec929b3289c))
+
+
+### Performance Improvements
+
+* Improved live-sync functionality for RootLayout ([#9836](https://github.com/NativeScript/NativeScript/issues/9836)) ([3537858](https://github.com/NativeScript/NativeScript/commit/3537858b6dabe1d419a1ab2853d0188061d9fa23))
+
+
+
+## [8.2.1](https://github.com/NativeScript/NativeScript/compare/8.2.0-core...8.2.1) (2022-03-09)
+
+
+### Bug Fixes
+
+* wrong thread when in Async task in a worker ([794a779](https://github.com/NativeScript/NativeScript/commit/794a77900f183472a4cc33fa544cb396790d4166)), closes [#9819](https://github.com/NativeScript/NativeScript/issues/9819)
+
+
+
+# [8.2.0](https://github.com/NativeScript/NativeScript/compare/5.0.5-webpack...8.2.0) (2022-03-08)
+
+
+### Bug Fixes
+
+* **android:** a11y - do not provide content description for TextView elements ([#9673](https://github.com/NativeScript/NativeScript/issues/9673)) ([dbaf203](https://github.com/NativeScript/NativeScript/commit/dbaf203a590b110a2e435e31748ae338bd2e1824)), closes [#9588](https://github.com/NativeScript/NativeScript/issues/9588)
+* **android:** api17 crash on a11y service ([#9792](https://github.com/NativeScript/NativeScript/issues/9792)) ([2efcdf5](https://github.com/NativeScript/NativeScript/commit/2efcdf57871cc7a8def6a83995cf6f0d7f66f925))
+* **android:** boolean keyboardType should not set inputType ([#9795](https://github.com/NativeScript/NativeScript/issues/9795)) ([9e6371f](https://github.com/NativeScript/NativeScript/commit/9e6371fdaf4a2ba62da9920d9011045a267f4e53))
+* **android:** edge cases and compatibility with fragments 1.2.x ([#9782](https://github.com/NativeScript/NativeScript/issues/9782)) ([6b41268](https://github.com/NativeScript/NativeScript/commit/6b41268a08fff0b82bf044f7a8a6c6f95fcd60f6))
+* **android:** fragment creation loaded/unloaded protection ([ac2e944](https://github.com/NativeScript/NativeScript/commit/ac2e944fd30107cfc1ee863b9245633e51e75450))
+* **android:** nested frames were sometimes not recreated ([#9725](https://github.com/NativeScript/NativeScript/issues/9725)) ([902a4c6](https://github.com/NativeScript/NativeScript/commit/902a4c6afc7442f92e345309d8d69f19a0fd1bdf))
+* **android:** nested frames were sometimes not recreated ([#9748](https://github.com/NativeScript/NativeScript/issues/9748)) ([cb648e3](https://github.com/NativeScript/NativeScript/commit/cb648e309e3a0a9456c0dafabaebb1e9b7c95e1c))
+* **android:** NullPointerException on navigation ([#9669](https://github.com/NativeScript/NativeScript/issues/9669)) ([9b5d125](https://github.com/NativeScript/NativeScript/commit/9b5d125f42b4d2d27483ea2c0b1a8c3417556802)), closes [#8441](https://github.com/NativeScript/NativeScript/issues/8441)
+* **android:** prevent error when detaching from unloaded ScrollView ([#9666](https://github.com/NativeScript/NativeScript/issues/9666)) ([e59f3ff](https://github.com/NativeScript/NativeScript/commit/e59f3ff66984f19dbbc5c0067342c243f3788971))
+* **android:** text-transform: capitalize behavior ([#9598](https://github.com/NativeScript/NativeScript/issues/9598)) ([aa1c631](https://github.com/NativeScript/NativeScript/commit/aa1c631e6f3c38f56d4a84a20a3142289104ab0e)), closes [#7059](https://github.com/NativeScript/NativeScript/issues/7059)
+* **android:** when hiding the keyboard make view lose focus to match ios behavior ([#9786](https://github.com/NativeScript/NativeScript/issues/9786)) ([b78996a](https://github.com/NativeScript/NativeScript/commit/b78996a5690add6c978ee5867ddf666a3471f116))
+* application instance creation occurs only within Application.run ([a518249](https://github.com/NativeScript/NativeScript/commit/a518249958df933ca82f2f82f5efe023fa7ae695))
+* **core:** animation iteration correct for android css animations and iOS rotation ([#9628](https://github.com/NativeScript/NativeScript/issues/9628)) ([608bb1e](https://github.com/NativeScript/NativeScript/commit/608bb1ed24fd32ac6199e632d739e7a66a0da1c8)), closes [#7712](https://github.com/NativeScript/NativeScript/issues/7712)
+* **core:** Application handling of nativeApp instance ([6c06c77](https://github.com/NativeScript/NativeScript/commit/6c06c77618c92590d5aa441eac838c4330732753))
+* **core:** parse template literal syntax with nested identifiers as expression. ([#9744](https://github.com/NativeScript/NativeScript/issues/9744)) ([57cc4ed](https://github.com/NativeScript/NativeScript/commit/57cc4edc8c161b2ceb3b9a7842d627d66d65eb1d))
+* ensure android can access native app instance before bootstrap ([f10cffc](https://github.com/NativeScript/NativeScript/commit/f10cffcb02a1ae37b436ea22eaf1cf67804927fe))
+* **fs:** wrong common paths ([51b92f3](https://github.com/NativeScript/NativeScript/commit/51b92f355799409aba82eca4c951b394c4ef894c))
+* **ios:** do not redraw if background image is 'none' ([#9800](https://github.com/NativeScript/NativeScript/issues/9800)) ([402a7bb](https://github.com/NativeScript/NativeScript/commit/402a7bba2ee9435134d6697dbe5639bd096597f6))
+* **ios:** force layout of view when changing the safe area insets ([#9773](https://github.com/NativeScript/NativeScript/issues/9773)) ([a1ba1f6](https://github.com/NativeScript/NativeScript/commit/a1ba1f6d032ffd2abd17529fbcd782c0200ff6dd))
+* **ios:** proper UITabBarAppearance handling ([6c71ce2](https://github.com/NativeScript/NativeScript/commit/6c71ce21a20adba7ea350176fc5a81da646f594f))
+* **ios:** tabview background color with appearance api in iOS 15+ ([#9617](https://github.com/NativeScript/NativeScript/issues/9617)) ([2749221](https://github.com/NativeScript/NativeScript/commit/27492219e6f1903b4c3f744cfe9a5569ccc6a600))
+* **ios:** UIImage memory leaking after Image is disposed ([#9777](https://github.com/NativeScript/NativeScript/issues/9777)) ([19d8869](https://github.com/NativeScript/NativeScript/commit/19d8869f1dc64d64a8b295985514716be5012a2c))
+* memory leaks around image picking/saving to device ([7dcfecf](https://github.com/NativeScript/NativeScript/commit/7dcfecffab10c3b253975a84f711b46111070bf4))
+* qualifier matcher did not support multiple qualifiers for a single file. ([#9720](https://github.com/NativeScript/NativeScript/issues/9720)) ([3d03f8f](https://github.com/NativeScript/NativeScript/commit/3d03f8f06aa36852cbce82a319dcf9de79c929ac))
+* setup script to build only what's necessary ([b05650c](https://github.com/NativeScript/NativeScript/commit/b05650c4166f5ce04cb761e4f3730cf2656c8192))
+* tear down views after a modal is closed ([#9801](https://github.com/NativeScript/NativeScript/issues/9801)) ([b38337e](https://github.com/NativeScript/NativeScript/commit/b38337e597a8288f6ab0c5058fa9addd622146be))
+* **time-picker:** correction for super.disposeNativeView ([c41e702](https://github.com/NativeScript/NativeScript/commit/c41e7027e45778c9c27fcbc701f56edebd57e33b))
+
+
+### Features
+
+* **android:** content uri support for File ([#9807](https://github.com/NativeScript/NativeScript/issues/9807)) ([c68d002](https://github.com/NativeScript/NativeScript/commit/c68d002c9ad332d4bf5ea6430c3cf852f5ef64df))
+* **android:** tab view icon rendering mode ([#9605](https://github.com/NativeScript/NativeScript/issues/9605)) ([66d8aff](https://github.com/NativeScript/NativeScript/commit/66d8afffc1a987b36605c7206b057268a38ecb06))
+* **android:** update ui-mobile-base to gradle7 ([#9778](https://github.com/NativeScript/NativeScript/issues/9778)) ([c7df2d0](https://github.com/NativeScript/NativeScript/commit/c7df2d0d6f0539ba0db2eda9a5b2ce91a7d59f30))
+* background/foreground events ([#9763](https://github.com/NativeScript/NativeScript/issues/9763)) ([b553a90](https://github.com/NativeScript/NativeScript/commit/b553a900d76893d1f49ea4a20fa361147585a451))
+* **bindable:** allow "global" context for expressions inside bindings ([#9734](https://github.com/NativeScript/NativeScript/issues/9734)) ([2cbb135](https://github.com/NativeScript/NativeScript/commit/2cbb135250252844ce8c7affabaf3140643ce7b4))
+* binding expression parser additions and improvements ([#9791](https://github.com/NativeScript/NativeScript/issues/9791)) ([716b831](https://github.com/NativeScript/NativeScript/commit/716b831523829dfa508d32efe0067060109ca574))
+* **config:** add new option for pathsToClean ([08d5656](https://github.com/NativeScript/NativeScript/commit/08d56568998dae416205fe7b0ada8334ebabb2e0))
+* **config:** cli.additionalPathsToClean to clean other paths with 'ns clean' ([#9808](https://github.com/NativeScript/NativeScript/issues/9808)) ([3ec8c42](https://github.com/NativeScript/NativeScript/commit/3ec8c429719a9a32238801ba3dd7c17c0b50ec72))
+* **core:** add event when disposeNativeView is called ([f038e6b](https://github.com/NativeScript/NativeScript/commit/f038e6ba66c319465bde251d1e540d4ee5981373))
+* **core:** support RGB alpha notation ([#9699](https://github.com/NativeScript/NativeScript/issues/9699)) ([388d7ea](https://github.com/NativeScript/NativeScript/commit/388d7eaa7d956e7785ad26399c14b925664f6a52))
+* **datepicker:** ability to show time via showTime property ([#9570](https://github.com/NativeScript/NativeScript/issues/9570)) ([ab4e47a](https://github.com/NativeScript/NativeScript/commit/ab4e47a1c1132f73648d76fa332c5633028182f7))
+* **gestures:** GestureEvents.gestureAttached added to modify native recognizers when needed ([168a169](https://github.com/NativeScript/NativeScript/commit/168a16972623109afadedabd32ff22d70555026b))
+* improved background handling ([#9615](https://github.com/NativeScript/NativeScript/issues/9615)) ([dde9e02](https://github.com/NativeScript/NativeScript/commit/dde9e02cac1f7f2b34ad7965eaada2661e636641))
+* improved converter and function call parsing mechanism for XML expressions ([#9805](https://github.com/NativeScript/NativeScript/issues/9805)) ([c5856c6](https://github.com/NativeScript/NativeScript/commit/c5856c6daee6901356a55868629484171e64daee))
+* **ios:** allow dynamic ProMotion frame refresh rate changes ([#9775](https://github.com/NativeScript/NativeScript/issues/9775)) ([b292495](https://github.com/NativeScript/NativeScript/commit/b2924955067c992caea5b14e37d705cea203a509))
+* new expression parser for xml bindings ([#9729](https://github.com/NativeScript/NativeScript/issues/9729)) ([90ceed1](https://github.com/NativeScript/NativeScript/commit/90ceed15d3b4f89f06b0a1f7f78724a37c9985e6))
+* proper handling for bindings with converters that were undefined ([#9813](https://github.com/NativeScript/NativeScript/issues/9813)) ([a1772c0](https://github.com/NativeScript/NativeScript/commit/a1772c00058d03ee1e4a6e3ba8f96ba2197e3f2b))
+* **root-layout:** support gradient colors on shade cover ([#9626](https://github.com/NativeScript/NativeScript/issues/9626)) ([d756eb5](https://github.com/NativeScript/NativeScript/commit/d756eb5574ab062fb4b4e8c994f3924380be9317))
+* **switch:** :checked pseudo and color fixes ([#9790](https://github.com/NativeScript/NativeScript/issues/9790)) ([6437352](https://github.com/NativeScript/NativeScript/commit/6437352feda731964728113b1b29cdeda1571666))
+* testID property for use with e2e testing without interfering with a11y ([#9793](https://github.com/NativeScript/NativeScript/issues/9793)) ([8be543b](https://github.com/NativeScript/NativeScript/commit/8be543bcc7da2634f9c627ea15b06e6dfef78b93)), closes [#9748](https://github.com/NativeScript/NativeScript/issues/9748)
+* touch animations demo in toolbox ([d7916d7](https://github.com/NativeScript/NativeScript/commit/d7916d77a147d1dcf203e18550ad3245bfdeb2f7))
+* **types-android:** updated types + api32 ([#9774](https://github.com/NativeScript/NativeScript/issues/9774)) ([2393dad](https://github.com/NativeScript/NativeScript/commit/2393dad6e137b84fc98efbc13abed55db6e227f5))
+* **types-ios:** iOS 15.2 ([#9710](https://github.com/NativeScript/NativeScript/issues/9710)) ([25679a6](https://github.com/NativeScript/NativeScript/commit/25679a69820274a0628793668d600cc4e3e70307))
+* **types-ios:** iOS 15.4 ([#9806](https://github.com/NativeScript/NativeScript/issues/9806)) ([39164ef](https://github.com/NativeScript/NativeScript/commit/39164effdf3d405d47c1e8c3b29479a7a91047a2))
+* **types-ios:** reduced ios types to common types for optimized ts resolution ([#9809](https://github.com/NativeScript/NativeScript/issues/9809)) ([6cd8b8e](https://github.com/NativeScript/NativeScript/commit/6cd8b8e804b5e237574108fbe7c5320acd0dbe31))
+* **ui:** TouchManager for ease in adding interactivity ([26953ec](https://github.com/NativeScript/NativeScript/commit/26953ec1f25ae673faedc5416880ebdfe9fcc8fd))
+* Utils for queueGC, debounce and throttle ([40c5984](https://github.com/NativeScript/NativeScript/commit/40c5984966231ef126e7d143be41c7c1d51085da))
+
+
+### Performance Improvements
+
+* **ios:** autoreleasepool for image extensions ([fbefea4](https://github.com/NativeScript/NativeScript/commit/fbefea4dbad59e9b31ecd9311b1a16f40d041c9d))
+* **ios:** prevent crash with image release ([1fb687d](https://github.com/NativeScript/NativeScript/commit/1fb687df550e1c01c5901920e79487d220e834c4))
+* **ios:** uifont and formatted string optimizations plus uiimage scaling ([#9761](https://github.com/NativeScript/NativeScript/issues/9761)) ([9d3977e](https://github.com/NativeScript/NativeScript/commit/9d3977ea4fd6d6aedeab55e0472999c05ed5a7bd))
+* **ios:** UIImage memory leaks ([#9783](https://github.com/NativeScript/NativeScript/issues/9783)) ([988f372](https://github.com/NativeScript/NativeScript/commit/988f3727883bddd27dd6397d7dfeebeb9b20c559))
+
+
+
 ## [8.1.5](https://github.com/NativeScript/NativeScript/compare/8.1.4-core...8.1.5) (2021-10-28)
 
 

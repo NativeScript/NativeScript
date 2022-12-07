@@ -233,7 +233,11 @@ declare var kNWErrorDomainTLS: string;
 
 declare function nw_advertise_descriptor_copy_txt_record_object(advertise_descriptor: NSObject): NSObject;
 
+declare function nw_advertise_descriptor_create_application_service(application_service_name: string | interop.Pointer | interop.Reference<any>): NSObject;
+
 declare function nw_advertise_descriptor_create_bonjour_service(name: string | interop.Pointer | interop.Reference<any>, type: string | interop.Pointer | interop.Reference<any>, domain: string | interop.Pointer | interop.Reference<any>): NSObject;
+
+declare function nw_advertise_descriptor_get_application_service_name(advertise_descriptor: NSObject): string;
 
 declare function nw_advertise_descriptor_get_no_auto_rename(advertise_descriptor: NSObject): boolean;
 
@@ -243,7 +247,11 @@ declare function nw_advertise_descriptor_set_txt_record(advertise_descriptor: NS
 
 declare function nw_advertise_descriptor_set_txt_record_object(advertise_descriptor: NSObject, txt_record: NSObject): void;
 
+declare function nw_browse_descriptor_create_application_service(application_service_name: string | interop.Pointer | interop.Reference<any>): NSObject;
+
 declare function nw_browse_descriptor_create_bonjour_service(type: string | interop.Pointer | interop.Reference<any>, domain: string | interop.Pointer | interop.Reference<any>): NSObject;
+
+declare function nw_browse_descriptor_get_application_service_name(descriptor: NSObject): string;
 
 declare function nw_browse_descriptor_get_bonjour_service_domain(descriptor: NSObject): string;
 
@@ -434,7 +442,7 @@ declare function nw_content_context_get_is_final(context: NSObject): boolean;
 
 declare function nw_content_context_get_relative_priority(context: NSObject): number;
 
-declare function nw_content_context_set_antecedent(context: NSObject, antecendent_context: NSObject): void;
+declare function nw_content_context_set_antecedent(context: NSObject, antecedent_context: NSObject): void;
 
 declare function nw_content_context_set_expiration_milliseconds(context: NSObject, expiration_milliseconds: number): void;
 
@@ -491,6 +499,8 @@ declare function nw_endpoint_copy_address_string(endpoint: NSObject): string;
 
 declare function nw_endpoint_copy_port_string(endpoint: NSObject): string;
 
+declare function nw_endpoint_copy_txt_record(endpoint: NSObject): NSObject;
+
 declare function nw_endpoint_create_address(address: interop.Pointer | interop.Reference<sockaddr>): NSObject;
 
 declare function nw_endpoint_create_bonjour_service(name: string | interop.Pointer | interop.Reference<any>, type: string | interop.Pointer | interop.Reference<any>, domain: string | interop.Pointer | interop.Reference<any>): NSObject;
@@ -510,6 +520,8 @@ declare function nw_endpoint_get_bonjour_service_type(endpoint: NSObject): strin
 declare function nw_endpoint_get_hostname(endpoint: NSObject): string;
 
 declare function nw_endpoint_get_port(endpoint: NSObject): number;
+
+declare function nw_endpoint_get_signature(endpoint: NSObject, out_signature_length: interop.Pointer | interop.Reference<number>): string;
 
 declare function nw_endpoint_get_type(endpoint: NSObject): nw_endpoint_type_t;
 
@@ -582,6 +594,8 @@ declare function nw_framer_async(framer: NSObject, async_block: () => void): voi
 
 declare function nw_framer_copy_local_endpoint(framer: NSObject): NSObject;
 
+declare function nw_framer_copy_options(framer: NSObject): NSObject;
+
 declare function nw_framer_copy_parameters(framer: NSObject): NSObject;
 
 declare function nw_framer_copy_remote_endpoint(framer: NSObject): NSObject;
@@ -607,6 +621,10 @@ declare function nw_framer_message_create(framer: NSObject): NSObject;
 declare function nw_framer_message_set_object_value(message: NSObject, key: string | interop.Pointer | interop.Reference<any>, value: any): void;
 
 declare function nw_framer_message_set_value(message: NSObject, key: string | interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>, dispose_value: (p1: interop.Pointer | interop.Reference<any>) => void): void;
+
+declare function nw_framer_options_copy_object_value(options: NSObject, key: string | interop.Pointer | interop.Reference<any>): any;
+
+declare function nw_framer_options_set_object_value(options: NSObject, key: string | interop.Pointer | interop.Reference<any>, value: any): void;
 
 declare function nw_framer_parse_input(framer: NSObject, minimum_incomplete_length: number, maximum_length: number, temp_buffer: string | interop.Pointer | interop.Reference<any>, parse: (p1: string, p2: number, p3: boolean) => number): boolean;
 
@@ -850,6 +868,8 @@ declare function nw_parameters_copy_required_interface(parameters: NSObject): NS
 
 declare function nw_parameters_create(): NSObject;
 
+declare function nw_parameters_create_application_service(): NSObject;
+
 declare function nw_parameters_create_quic(configure_quic: (p1: NSObject) => void): NSObject;
 
 declare function nw_parameters_create_secure_tcp(configure_tls: (p1: NSObject) => void, configure_tcp: (p1: NSObject) => void): NSObject;
@@ -899,6 +919,8 @@ declare function nw_parameters_prohibit_interface_type(parameters: NSObject, int
 
 declare function nw_parameters_require_interface(parameters: NSObject, interface: NSObject): void;
 
+declare function nw_parameters_requires_dnssec_validation(parameters: NSObject): boolean;
+
 declare function nw_parameters_set_attribution(parameters: NSObject, attribution: nw_parameters_attribution_t): void;
 
 declare function nw_parameters_set_expired_dns_behavior(parameters: NSObject, expired_dns_behavior: nw_parameters_expired_dns_behavior_t): void;
@@ -922,6 +944,8 @@ declare function nw_parameters_set_prohibit_constrained(parameters: NSObject, pr
 declare function nw_parameters_set_prohibit_expensive(parameters: NSObject, prohibit_expensive: boolean): void;
 
 declare function nw_parameters_set_required_interface_type(parameters: NSObject, interface_type: nw_interface_type_t): void;
+
+declare function nw_parameters_set_requires_dnssec_validation(parameters: NSObject, requires_dnssec_validation: boolean): void;
 
 declare function nw_parameters_set_reuse_local_address(parameters: NSObject, reuse_local_address: boolean): void;
 
@@ -1077,6 +1101,8 @@ declare function nw_quic_get_local_max_streams_bidirectional(metadata: NSObject)
 
 declare function nw_quic_get_local_max_streams_unidirectional(metadata: NSObject): number;
 
+declare function nw_quic_get_max_datagram_frame_size(options: NSObject): number;
+
 declare function nw_quic_get_max_udp_payload_size(options: NSObject): number;
 
 declare function nw_quic_get_remote_idle_timeout(metadata: NSObject): number;
@@ -1089,7 +1115,13 @@ declare function nw_quic_get_stream_application_error(metadata: NSObject): numbe
 
 declare function nw_quic_get_stream_id(metadata: NSObject): number;
 
+declare function nw_quic_get_stream_is_datagram(options: NSObject): boolean;
+
 declare function nw_quic_get_stream_is_unidirectional(options: NSObject): boolean;
+
+declare function nw_quic_get_stream_type(stream_metadata: NSObject): number;
+
+declare function nw_quic_get_stream_usable_datagram_frame_size(metadata: NSObject): number;
 
 declare function nw_quic_set_application_error(metadata: NSObject, application_error: number, reason: string | interop.Pointer | interop.Reference<any>): void;
 
@@ -1113,9 +1145,13 @@ declare function nw_quic_set_local_max_streams_bidirectional(metadata: NSObject,
 
 declare function nw_quic_set_local_max_streams_unidirectional(metadata: NSObject, max_streams_unidirectional: number): void;
 
+declare function nw_quic_set_max_datagram_frame_size(options: NSObject, max_datagram_frame_size: number): void;
+
 declare function nw_quic_set_max_udp_payload_size(options: NSObject, max_udp_payload_size: number): void;
 
 declare function nw_quic_set_stream_application_error(metadata: NSObject, application_error: number): void;
+
+declare function nw_quic_set_stream_is_datagram(options: NSObject, is_datagram: boolean): void;
 
 declare function nw_quic_set_stream_is_unidirectional(options: NSObject, is_unidirectional: boolean): void;
 

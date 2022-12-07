@@ -1,10 +1,12 @@
 import { extname, resolve } from 'path';
-import { merge } from 'webpack-merge';
 import Config from 'webpack-chain';
 import { existsSync } from 'fs';
 
+import { getTypescript, readTsConfig } from '../helpers/typescript';
+import { getDependencyPath } from '../helpers/dependencies';
 import { getProjectFilePath } from '../helpers/project';
 import { env as _env, IWebpackEnv } from '../index';
+import { warnOnce } from '../helpers/log';
 import {
 	getEntryDirPath,
 	getEntryPath,
@@ -21,6 +23,8 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		getProjectFilePath('tsconfig.app.json'),
 		getProjectFilePath('tsconfig.json'),
 	].find((path) => existsSync(path));
+
+	const disableAOT = !!env.disableAOT;
 
 	// remove default ts rule
 	config.module.rules.delete('ts');
@@ -148,7 +152,15 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			if (!transformers.before) {
 				transformers.before = [];
 			}
-			transformers.before.push(require('../transformers/NativeClass').default);
+			if (this.pluginOptions.jitMode) {
+				transformers.before.unshift(
+					require('../transformers/NativeClass').default
+				);
+			} else {
+				transformers.before.push(
+					require('../transformers/NativeClass').default
+				);
+			}
 			args[1] = transformers;
 			return originalCreateFileEmitter.apply(this, args);
 		};
@@ -156,6 +168,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			{
 				tsconfig: tsConfigPath,
 				directTemplateLoading: false,
+				jitMode: disableAOT,
 			},
 		]);
 
@@ -167,6 +180,45 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				.use('angular-hot-loader')
 				.loader('angular-hot-loader');
 		});
+
+		const buildAngularMajorVersion = getBuildAngularMajorVersion();
+		if (buildAngularMajorVersion) {
+			const buildAngularOptions: any = {
+				aot: !disableAOT,
+			};
+
+			if (buildAngularMajorVersion < 15) {
+				const tsConfig = readTsConfig(tsConfigPath);
+				const { ScriptTarget } = getTypescript();
+				buildAngularOptions.scriptTarget =
+					tsConfig.options.target ?? ScriptTarget.ESNext;
+			}
+
+			if (disableAOT) {
+				buildAngularOptions.optimize = false;
+			}
+			// zone + async/await
+			config.module
+				.rule('angular-webpack-loader')
+				.test(/\.[cm]?[tj]sx?$/)
+				.exclude.add(
+					/[/\\](?:core-js|@babel|tslib|web-animations-js|web-streams-polyfill)[/\\]/
+				)
+				.end()
+				.resolve.set('fullySpecified', false)
+				.end()
+				.before('angular')
+				.use('webpack-loader')
+				.loader('@angular-devkit/build-angular/src/babel/webpack-loader')
+				.options(buildAngularOptions);
+		} else {
+			warnOnce(
+				'build-angular-missing',
+				`
+				@angular-devkit/build-angular is missing! Some features may not work as expected. Please install it manually to get rid of this warning.
+				`
+			);
+		}
 	}
 
 	// look for platform specific polyfills first
@@ -182,10 +234,8 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		// replace globals with the polyfills file which
 		// should handle loading the correct globals
 		// and any additional polyfills required.
-		if (paths.includes('@nativescript/core/globals/index.js')) {
-			paths[
-				paths.indexOf('@nativescript/core/globals/index.js')
-			] = polyfillsPath;
+		if (paths.includes('@nativescript/core/globals/index')) {
+			paths[paths.indexOf('@nativescript/core/globals/index')] = polyfillsPath;
 
 			// replace paths with the updated paths
 			config.entry('bundle').clear().merge(paths);
@@ -216,7 +266,8 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			// Additional rules to suppress warnings that are safe to ignore
 			{
 				module: /@angular\/core\/(__ivy_ngcc__\/)?fesm2015\/core.js/,
-				message: /Critical dependency: the request of a dependency is an expression/,
+				message:
+					/Critical dependency: the request of a dependency is an expression/,
 			},
 			/core\/profiling/,
 			/core\/ui\/styling/,
@@ -243,4 +294,25 @@ function getAngularCompilerPlugin(): any {
 function getAngularWebpackPlugin(): any {
 	const { AngularWebpackPlugin } = require('@ngtools/webpack');
 	return AngularWebpackPlugin;
+}
+
+const MAJOR_VER_RE = /^(\d+)\./;
+function getBuildAngularMajorVersion() {
+	const buildAngularPath = getDependencyPath('@angular-devkit/build-angular');
+	if (!buildAngularPath) {
+		return null;
+	}
+
+	try {
+		const buildAngularVersion =
+			require(`${buildAngularPath}/package.json`).version;
+
+		const [_, majorStr] = buildAngularVersion.match(MAJOR_VER_RE);
+
+		return Number(majorStr);
+	} catch (err) {
+		// ignore
+	}
+
+	return null;
 }

@@ -4,6 +4,7 @@ import { profile } from '../../profiling';
 import { Trace } from '../../trace';
 export * from './web-view-common';
 import { knownFolders } from '../../file-system';
+import { booleanConverter } from '../core/view-base';
 
 @NativeClass
 class WKNavigationDelegateImpl extends NSObject implements WKNavigationDelegate {
@@ -17,7 +18,7 @@ class WKNavigationDelegateImpl extends NSObject implements WKNavigationDelegate 
 	private _owner: WeakRef<WebView>;
 
 	public webViewDecidePolicyForNavigationActionDecisionHandler(webView: WKWebView, navigationAction: WKNavigationAction, decisionHandler: any): void {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner && navigationAction.request.URL) {
 			let navType: WebViewNavigationType = 'other';
 
@@ -57,7 +58,7 @@ class WKNavigationDelegateImpl extends NSObject implements WKNavigationDelegate 
 		if (Trace.isEnabled()) {
 			Trace.write('WKNavigationDelegateClass.webViewDidFinishNavigation(' + webView.URL + ')', Trace.categories.Debug);
 		}
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			let src = owner.src;
 			if (webView.URL) {
@@ -68,7 +69,7 @@ class WKNavigationDelegateImpl extends NSObject implements WKNavigationDelegate 
 	}
 
 	public webViewDidFailNavigationWithError(webView: WKWebView, navigation: WKNavigation, error: NSError): void {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			let src = owner.src;
 			if (webView.URL) {
@@ -82,7 +83,7 @@ class WKNavigationDelegateImpl extends NSObject implements WKNavigationDelegate 
 	}
 
 	public webViewDidFailProvisionalNavigationWithError(webView: WKWebView, navigation: WKNavigation, error: NSError): void {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			let src = owner.src;
 			if (webView.URL) {
@@ -127,7 +128,7 @@ class UIScrollViewDelegateImpl extends NSObject implements UIScrollViewDelegate 
 	private _owner: WeakRef<WebView>;
 
 	private _initCurrentValues(scrollView: UIScrollView) {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner && (owner._minimumZoomScale === undefined || owner._maximumZoomScale === undefined || owner._zoomScale === undefined)) {
 			owner._minimumZoomScale = scrollView.minimumZoomScale;
 			owner._maximumZoomScale = scrollView.maximumZoomScale;
@@ -136,7 +137,7 @@ class UIScrollViewDelegateImpl extends NSObject implements UIScrollViewDelegate 
 	}
 
 	private _handleDisableZoom(scrollView: UIScrollView) {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner.disableZoom) {
 			this._initCurrentValues(scrollView);
 			scrollView.maximumZoomScale = 1.0;
@@ -159,10 +160,23 @@ export class WebView extends WebViewBase {
 	private _delegate: WKNavigationDelegateImpl;
 	private _scrollDelegate: UIScrollViewDelegateImpl;
 	private _uiDelegate: WKUIDelegateImpl;
+	private _iosAllowInlineMediaPlayback: boolean;
 
 	_maximumZoomScale;
 	_minimumZoomScale;
 	_zoomScale;
+
+	get iosAllowInlineMediaPlayback(): boolean {
+		return this._iosAllowInlineMediaPlayback;
+	}
+
+	set iosAllowInlineMediaPlayback(value: boolean) {
+		// Note: can be set on the view markup,
+		// thus the converter usage (value could come in as string).
+		// Property.setNative should not be used because
+		// it should be set before nativeView is created
+		this._iosAllowInlineMediaPlayback = booleanConverter(value);
+	}
 
 	createNativeView() {
 		const jScript = "var meta = document.createElement('meta'); meta.setAttribute('name', 'viewport'); meta.setAttribute('content', 'initial-scale=1.0'); document.getElementsByTagName('head')[0].appendChild(meta);";
@@ -170,6 +184,10 @@ export class WebView extends WebViewBase {
 		const wkUController = WKUserContentController.new();
 		wkUController.addUserScript(wkUScript);
 		const configuration = WKWebViewConfiguration.new();
+		if (this.iosAllowInlineMediaPlayback) {
+			configuration.allowsInlineMediaPlayback = true;
+			configuration.allowsPictureInPictureMediaPlayback = true;
+		}
 		configuration.userContentController = wkUController;
 		configuration.preferences.setValueForKey(true, 'allowFileAccessFromFileURLs');
 

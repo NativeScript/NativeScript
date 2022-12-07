@@ -5,7 +5,9 @@ import './globals';
 export { iOSApplication, AndroidApplication } from './application';
 export type { ApplicationEventData, LaunchEventData, OrientationChangedEventData, UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData, AndroidActivityEventData, AndroidActivityBundleEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, AndroidActivityNewIntentEventData, AndroidActivityBackPressedEventData, SystemAppearanceChangedEventData } from './application';
 
-import { fontScaleChangedEvent, launchEvent, displayedEvent, uncaughtErrorEvent, discardedErrorEvent, suspendEvent, resumeEvent, exitEvent, lowMemoryEvent, orientationChangedEvent, systemAppearanceChanged, systemAppearanceChangedEvent, getMainEntry, getRootView, _resetRootView, getResources, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, notify, hasListeners, run, orientation, getNativeApplication, hasLaunched, android as appAndroid, ios as iosApp, systemAppearance, setAutoSystemAppearanceChanged } from './application';
+import { fontScaleChangedEvent, launchEvent, displayedEvent, uncaughtErrorEvent, discardedErrorEvent, suspendEvent, resumeEvent, exitEvent, lowMemoryEvent, orientationChangedEvent, systemAppearanceChanged, systemAppearanceChangedEvent, getMainEntry, getRootView, _resetRootView, getResources, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, notify, hasListeners, run, orientation, getNativeApplication, hasLaunched, android as appAndroid, ios as iosApp, systemAppearance, setAutoSystemAppearanceChanged, ensureNativeApplication, setMaxRefreshRate } from './application';
+import { inBackground, suspended } from './application/application-common';
+
 export const Application = {
 	launchEvent,
 	displayedEvent,
@@ -19,6 +21,7 @@ export const Application = {
 	systemAppearanceChangedEvent,
 	systemAppearanceChanged,
 	fontScaleChangedEvent,
+	setMaxRefreshRate,
 
 	getMainEntry,
 	getRootView,
@@ -39,9 +42,20 @@ export const Application = {
 	hasLaunched,
 	systemAppearance,
 	setAutoSystemAppearanceChanged,
-
-	android: appAndroid,
-	ios: iosApp,
+	get android() {
+		ensureNativeApplication();
+		return appAndroid;
+	},
+	get ios() {
+		ensureNativeApplication();
+		return iosApp;
+	},
+	get suspended() {
+		return suspended;
+	},
+	get inBackground() {
+		return inBackground;
+	},
 };
 
 // Export all methods from "application-settings" as ApplicationSettings
@@ -123,21 +137,28 @@ export * from './trace';
 
 export * from './ui';
 
-import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, queueMacrotask, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, iOSNativeHelper as iosUtils, Source, RESOURCE_PREFIX, FILE_PREFIX, escapeRegexSymbols, convertString, dismissSoftInput } from './utils';
-import { ClassInfo, getClass, getBaseClasses, getClassInfo, isBoolean, isDefined, isFunction, isNullOrUndefined, isNumber, isObject, isString, isUndefined, toUIString, verifyCallback } from './utils/types';
+import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, executeOnUIThread, queueMacrotask, queueGC, debounce, throttle, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, iOSNativeHelper as iosUtils, Source, RESOURCE_PREFIX, FILE_PREFIX, escapeRegexSymbols, convertString, dismissSoftInput, dismissKeyboard, dataDeserialize, dataSerialize, copyToClipboard, getFileExtension } from './utils';
+import { SDK_VERSION } from './utils/constants';
+import { ClassInfo, getClass, getBaseClasses, getClassInfo, isBoolean, isDefined, isFunction, isNullOrUndefined, isNumber, isObject, isString, isUndefined, toUIString, verifyCallback, numberHasDecimals, numberIs64Bit } from './utils/types';
 
 export const Utils = {
 	GC,
+	SDK_VERSION,
 	RESOURCE_PREFIX,
 	FILE_PREFIX,
 	isFontIconURI,
 	isDataURI,
 	isFileOrResourcePath,
+	getFileExtension,
 	executeOnMainThread,
+	executeOnUIThread,
 	mainThreadify,
 	isMainThread,
 	dispatchToMainThread,
 	queueMacrotask,
+	queueGC,
+	debounce,
+	throttle,
 	releaseNativeObject,
 	convertString,
 	escapeRegexSymbols,
@@ -152,6 +173,10 @@ export const Utils = {
 	// legacy (a lot of plugins use the shorthand "ad" Utils.ad instead of Utils.android)
 	ad: androidUtils,
 	ios: iosUtils,
+	dataSerialize,
+	dataDeserialize,
+	numberHasDecimals,
+	numberIs64Bit,
 	setTimeout,
 	setInterval,
 	clearInterval,
@@ -172,6 +197,8 @@ export const Utils = {
 	toUIString,
 	verifyCallback,
 	dismissSoftInput,
+	dismissKeyboard,
+	copyToClipboard,
 };
 
 export { XmlParser, ParserEventType, ParserEvent } from './xml';

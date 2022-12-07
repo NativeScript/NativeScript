@@ -133,6 +133,7 @@ declare const __CSS_PARSER__: string;
 declare const __NS_WEBPACK__: boolean;
 declare const __UI_USE_EXTERNAL_RENDERER__: boolean;
 declare const __UI_USE_XML_PARSER__: boolean;
+declare const __USE_TEST_ID__: boolean | undefined;
 declare const __ANDROID__: boolean;
 declare const __IOS__: boolean;
 
@@ -218,6 +219,18 @@ interface RequireContext {
 	(id: string): any;
 	<T>(id: string): T;
 	resolve(id: string): string;
+}
+
+interface WeakRef<T extends object> {
+	/**
+	 * @deprecated Use deref instead with 8.4+
+	 */
+	get(): T;
+
+	/**
+	 * @deprecated You no longer need to make this call and can be safely removed.
+	 */
+	clear(): void;
 }
 
 declare var __dirname: string;
@@ -348,12 +361,6 @@ declare function fail(data: any): void;
 // declare function clearInterval(id: number): void;
 
 declare function zonedCallback(callback: Function): Function;
-
-declare class WeakRef<T> {
-	constructor(obj: T);
-	get(): T;
-	clear(): void;
-}
 
 /**
  * Create a Java long from a number

@@ -2637,6 +2637,59 @@ declare function CFWriteStreamUnscheduleFromRunLoop(stream: NSOutputStream, runL
 
 declare function CFWriteStreamWrite(stream: NSOutputStream, buffer: string | interop.Pointer | interop.Reference<any>, bufferLength: number): number;
 
+interface CGAffineTransform {
+	a: number;
+	b: number;
+	c: number;
+	d: number;
+	tx: number;
+	ty: number;
+}
+declare var CGAffineTransform: interop.StructType<CGAffineTransform>;
+
+interface CGAffineTransformComponents {
+	scale: CGSize;
+	horizontalShear: number;
+	rotation: number;
+	translation: CGVector;
+}
+declare var CGAffineTransformComponents: interop.StructType<CGAffineTransformComponents>;
+
+interface CGPoint {
+	x: number;
+	y: number;
+}
+declare var CGPoint: interop.StructType<CGPoint>;
+
+interface CGRect {
+	origin: CGPoint;
+	size: CGSize;
+}
+declare var CGRect: interop.StructType<CGRect>;
+
+declare const enum CGRectEdge {
+
+	MinXEdge = 0,
+
+	MinYEdge = 1,
+
+	MaxXEdge = 2,
+
+	MaxYEdge = 3
+}
+
+interface CGSize {
+	width: number;
+	height: number;
+}
+declare var CGSize: interop.StructType<CGSize>;
+
+interface CGVector {
+	dx: number;
+	dy: number;
+}
+declare var CGVector: interop.StructType<CGVector>;
+
 interface IUnknownVTbl {
 	_reserved: interop.Pointer | interop.Reference<any>;
 	QueryInterface: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: CFUUIDBytes, p3: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => number>;

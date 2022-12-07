@@ -1,5 +1,5 @@
 // Types
-import { getClosestPropertyValue } from './text-base-common';
+import { getClosestPropertyValue, maxLinesProperty } from './text-base-common';
 import { CSSShadow } from '../styling/css-shadow';
 
 // Requires
@@ -12,9 +12,11 @@ import { FormattedString } from './formatted-string';
 import { Span } from './span';
 import { CoreTypes } from '../../core-types';
 import { layout } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 import { isString, isNullOrUndefined } from '../../utils/types';
 import { accessibilityIdentifierProperty } from '../../accessibility/accessibility-properties';
 import * as Utils from '../../utils';
+import { testIDProperty } from '../../ui/core/view';
 
 export * from './text-base-common';
 
@@ -81,7 +83,7 @@ function initializeClickableSpan(): void {
 			return global.__native(this);
 		}
 		onClick(view: android.view.View): void {
-			const owner = this.owner.get();
+			const owner = this.owner?.get();
 			if (owner) {
 				owner._emit(Span.linkTapEvent);
 			}
@@ -292,11 +294,12 @@ export class TextBase extends TextBaseCommon {
 			case 'right':
 				this.nativeTextViewProtected.setGravity(android.view.Gravity.END | verticalGravity);
 				break;
-			default: // initial | left | justify
+			default:
+				// initial | left | justify
 				this.nativeTextViewProtected.setGravity(android.view.Gravity.START | verticalGravity);
 				break;
 		}
-		if (android.os.Build.VERSION.SDK_INT >= 26) {
+		if (SDK_VERSION >= 26) {
 			if (value === 'justify') {
 				this.nativeTextViewProtected.setJustificationMode(android.text.Layout.JUSTIFICATION_MODE_INTER_WORD);
 			} else {
@@ -442,13 +445,31 @@ export class TextBase extends TextBaseCommon {
 		org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeTextViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderLeftWidth, 0));
 	}
 
-	[accessibilityIdentifierProperty.setNative](value: string): void {
-		// we override the default setter to apply it on nativeTextViewProtected
-		const id = Utils.ad.resources.getId(':id/nativescript_accessibility_id');
+	[testIDProperty.setNative](value: string): void {
+		this.setTestID(this.nativeTextViewProtected, value);
+	}
 
-		if (id) {
-			this.nativeTextViewProtected.setTag(id, value);
-			this.nativeTextViewProtected.setTag(value);
+	[accessibilityIdentifierProperty.setNative](value: string): void {
+		if (typeof __USE_TEST_ID__ !== 'undefined' && __USE_TEST_ID__ && this.testID) {
+			// ignore when using testID;
+		} else {
+			// we override the default setter to apply it on nativeTextViewProtected
+			const id = Utils.ad.resources.getId(':id/nativescript_accessibility_id');
+
+			if (id) {
+				this.nativeTextViewProtected.setTag(id, value);
+				this.nativeTextViewProtected.setTag(value);
+			}
+		}
+	}
+
+	[maxLinesProperty.setNative](value: number) {
+		const nativeTextViewProtected = this.nativeTextViewProtected;
+		if (value <= 0) {
+			nativeTextViewProtected.setMaxLines(Number.MAX_SAFE_INTEGER);
+		} else {
+			nativeTextViewProtected.setMaxLines(typeof value === 'string' ? parseInt(value, 10) : value);
+			nativeTextViewProtected.setEllipsize(android.text.TextUtils.TruncateAt.END);
 		}
 	}
 
@@ -475,6 +496,9 @@ export class TextBase extends TextBaseCommon {
 		if (this._tappable !== tappable) {
 			this._tappable = tappable;
 			if (this._tappable) {
+				// Setting singleLine to true results in conflicts with LinkMovementMethod
+				// See https://stackoverflow.com/a/34407901
+				this.nativeTextViewProtected.setSingleLine(false);
 				this.nativeTextViewProtected.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
 				this.nativeTextViewProtected.setHighlightColor(null);
 			} else {
@@ -485,14 +509,9 @@ export class TextBase extends TextBaseCommon {
 }
 
 function getCapitalizedString(str: string): string {
-	const words = str.split(' ');
-	const newWords = [];
-	for (let i = 0, length = words.length; i < length; i++) {
-		const word = words[i].toLowerCase();
-		newWords.push(word.substr(0, 1).toUpperCase() + word.substring(1));
-	}
-
-	return newWords.join(' ');
+	let newString = str.toLowerCase();
+	newString = newString.replace(/(?:^|\s'*|[-"([{])+\S/g, (c) => c.toUpperCase());
+	return newString;
 }
 
 export function getTransformedText(text: string, textTransform: CoreTypes.TextTransformType): string {

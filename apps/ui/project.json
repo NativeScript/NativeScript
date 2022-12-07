@@ -1,0 +1,53 @@
+{
+	"name": "apps-ui",
+	"$schema": "../../node_modules/nx/schemas/project-schema.json",
+	"sourceRoot": "apps/ui/src",
+	"projectType": "application",
+	"prefix": "nativescript",
+	"namedInputs": {
+		"default": ["{projectRoot}/**/*"],
+		"production": ["!{projectRoot}/**/*.spec.ts"]
+	},
+	"targets": {
+		"build": {
+			"executor": "@nativescript/nx:build",
+			"options": {
+				"noHmr": true,
+				"production": true,
+				"uglify": true,
+				"release": true,
+				"forDevice": true
+			}
+		},
+		"ios": {
+			"executor": "@nativescript/nx:build",
+			"inputs": ["default", "^production"],
+			"outputs": [],
+			"options": {
+				"platform": "ios",
+				"noHmr": true
+			}
+		},
+		"android": {
+			"executor": "@nativescript/nx:build",
+			"inputs": ["default", "^production"],
+			"outputs": [],
+			"options": {
+				"platform": "android",
+				"noHmr": true
+			}
+		},
+		"clean": {
+			"executor": "@nativescript/nx:build",
+			"options": {
+				"clean": true
+			}
+		},
+		"lint": {
+			"executor": "@nrwl/linter:eslint",
+			"options": {
+				"lintFilePatterns": ["apps/ui/**/*.ts", "apps/ui/src/**/*.html"]
+			}
+		}
+	}
+}

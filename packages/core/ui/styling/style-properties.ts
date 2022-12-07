@@ -1,10 +1,10 @@
 // Types
-import { unsetValue, CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssProperty, makeValidator, makeParser } from '../core/properties';
+import { unsetValue, CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssProperty } from '../core/properties';
 import { Style } from '../styling/style';
 import { Transformation, TransformationValue, TransformFunctionsInfo } from '../animation';
 
 import { Color } from '../../color';
-import { Font, parseFont, FontStyle, FontWeight } from '../../ui/styling/font';
+import { Font, parseFont, FontStyle, FontStyleType, FontWeight, FontWeightType, FontVariationSettings, FontVariationSettingsType } from '../../ui/styling/font';
 import { layout, hasDuplicates } from '../../utils';
 import { Background } from '../../ui/styling/background';
 
@@ -14,7 +14,7 @@ import { decompose2DTransformMatrix, getTransformMatrix, matrixArrayToCssMatrix,
 import { Trace } from '../../trace';
 import { CoreTypes } from '../../core-types';
 
-import * as parser from '../../css/parser';
+import { parseBackground } from '../../css/parser';
 import { LinearGradient } from './linear-gradient';
 import { CSSShadow, parseCSSShadow } from './css-shadow';
 
@@ -184,12 +184,10 @@ export namespace Length {
 	} = convertToStringCommon;
 }
 
-export const zeroLength: CoreTypes.LengthType = { value: 0, unit: 'px' };
-
 export const minWidthProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'minWidth',
 	cssName: 'min-width',
-	defaultValue: zeroLength,
+	defaultValue: CoreTypes.zeroLength,
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
@@ -207,7 +205,7 @@ minWidthProperty.register(Style);
 export const minHeightProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'minHeight',
 	cssName: 'min-height',
-	defaultValue: zeroLength,
+	defaultValue: CoreTypes.zeroLength,
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
@@ -277,7 +275,7 @@ marginProperty.register(Style);
 export const marginLeftProperty = new CssProperty<Style, CoreTypes.PercentLengthType>({
 	name: 'marginLeft',
 	cssName: 'margin-left',
-	defaultValue: zeroLength,
+	defaultValue: CoreTypes.zeroLength,
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueConverter: PercentLength.parse,
@@ -287,7 +285,7 @@ marginLeftProperty.register(Style);
 export const marginRightProperty = new CssProperty<Style, CoreTypes.PercentLengthType>({
 	name: 'marginRight',
 	cssName: 'margin-right',
-	defaultValue: zeroLength,
+	defaultValue: CoreTypes.zeroLength,
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueConverter: PercentLength.parse,
@@ -297,7 +295,7 @@ marginRightProperty.register(Style);
 export const marginTopProperty = new CssProperty<Style, CoreTypes.PercentLengthType>({
 	name: 'marginTop',
 	cssName: 'margin-top',
-	defaultValue: zeroLength,
+	defaultValue: CoreTypes.zeroLength,
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueConverter: PercentLength.parse,
@@ -307,7 +305,7 @@ marginTopProperty.register(Style);
 export const marginBottomProperty = new CssProperty<Style, CoreTypes.PercentLengthType>({
 	name: 'marginBottom',
 	cssName: 'margin-bottom',
-	defaultValue: zeroLength,
+	defaultValue: CoreTypes.zeroLength,
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueConverter: PercentLength.parse,
@@ -331,7 +329,7 @@ paddingProperty.register(Style);
 export const paddingLeftProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'paddingLeft',
 	cssName: 'padding-left',
-	defaultValue: zeroLength,
+	defaultValue: CoreTypes.zeroLength,
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
@@ -349,7 +347,7 @@ paddingLeftProperty.register(Style);
 export const paddingRightProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'paddingRight',
 	cssName: 'padding-right',
-	defaultValue: zeroLength,
+	defaultValue: CoreTypes.zeroLength,
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
@@ -367,7 +365,7 @@ paddingRightProperty.register(Style);
 export const paddingTopProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'paddingTop',
 	cssName: 'padding-top',
-	defaultValue: zeroLength,
+	defaultValue: CoreTypes.zeroLength,
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
@@ -385,7 +383,7 @@ paddingTopProperty.register(Style);
 export const paddingBottomProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'paddingBottom',
 	cssName: 'padding-bottom',
-	defaultValue: zeroLength,
+	defaultValue: CoreTypes.zeroLength,
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
@@ -785,7 +783,7 @@ export const backgroundImageProperty = new CssProperty<Style, string | LinearGra
 	},
 	valueConverter: (value: any) => {
 		if (typeof value === 'string') {
-			const parsed = parser.parseBackground(value);
+			const parsed = parseBackground(value);
 			if (parsed) {
 				value = typeof parsed.value.image === 'object' ? LinearGradient.parse(parsed.value.image) : value;
 			}
@@ -837,7 +835,7 @@ backgroundPositionProperty.register(Style);
 
 function convertToBackgrounds(this: void, value: string): [CssProperty<any, any>, any][] {
 	if (typeof value === 'string') {
-		const backgrounds = parser.parseBackground(value).value;
+		const backgrounds = parseBackground(value).value;
 		let backgroundColor = unsetValue;
 		if (backgrounds.color) {
 			backgroundColor = backgrounds.color instanceof Color ? backgrounds.color : new Color(backgrounds.color);
@@ -876,7 +874,7 @@ function parseBorderColor(value: string): { top: Color; right: Color; bottom: Co
 		bottom: undefined,
 		left: undefined,
 	};
-	if (value.indexOf('rgb') === 0) {
+	if (value.indexOf('rgb') === 0 || value.indexOf('hsl') === 0) {
 		result.top = result.right = result.bottom = result.left = new Color(value);
 
 		return result;
@@ -1033,7 +1031,7 @@ borderWidthProperty.register(Style);
 export const borderTopWidthProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'borderTopWidth',
 	cssName: 'border-top-width',
-	defaultValue: zeroLength,
+	defaultValue: CoreTypes.zeroLength,
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
@@ -1057,7 +1055,7 @@ borderTopWidthProperty.register(Style);
 export const borderRightWidthProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'borderRightWidth',
 	cssName: 'border-right-width',
-	defaultValue: zeroLength,
+	defaultValue: CoreTypes.zeroLength,
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
@@ -1081,7 +1079,7 @@ borderRightWidthProperty.register(Style);
 export const borderBottomWidthProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'borderBottomWidth',
 	cssName: 'border-bottom-width',
-	defaultValue: zeroLength,
+	defaultValue: CoreTypes.zeroLength,
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
@@ -1105,7 +1103,7 @@ borderBottomWidthProperty.register(Style);
 export const borderLeftWidthProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'borderLeftWidth',
 	cssName: 'border-left-width',
-	defaultValue: zeroLength,
+	defaultValue: CoreTypes.zeroLength,
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
@@ -1362,7 +1360,7 @@ export const fontSizeProperty = new InheritedCssProperty<Style, number>({
 });
 fontSizeProperty.register(Style);
 
-export const fontStyleProperty = new InheritedCssProperty<Style, FontStyle>({
+export const fontStyleProperty = new InheritedCssProperty<Style, FontStyleType>({
 	name: 'fontStyle',
 	cssName: 'font-style',
 	affectsLayout: global.isIOS,
@@ -1378,7 +1376,7 @@ export const fontStyleProperty = new InheritedCssProperty<Style, FontStyle>({
 });
 fontStyleProperty.register(Style);
 
-export const fontWeightProperty = new InheritedCssProperty<Style, FontWeight>({
+export const fontWeightProperty = new InheritedCssProperty<Style, FontWeightType>({
 	name: 'fontWeight',
 	cssName: 'font-weight',
 	affectsLayout: global.isIOS,
@@ -1422,6 +1420,23 @@ const fontProperty = new ShorthandProperty<Style, string>({
 	},
 });
 fontProperty.register(Style);
+
+export const fontVariationSettingsProperty = new InheritedCssProperty<Style, Array<FontVariationSettingsType> | null>({
+	name: 'fontVariationSettings',
+	cssName: 'font-variation-settings',
+	affectsLayout: global.isIOS,
+	valueChanged: (target, oldValue, newValue) => {
+		const currentFont = target.fontInternal || Font.default;
+		if (currentFont.fontVariationSettings !== newValue) {
+			const newFont = currentFont.withFontVariationSettings(newValue);
+			target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
+		}
+	},
+	valueConverter: (value) => {
+		return FontVariationSettings.parse(value);
+	},
+});
+fontVariationSettingsProperty.register(Style);
 
 export const visibilityProperty = new CssProperty<Style, CoreTypes.VisibilityType>({
 	name: 'visibility',

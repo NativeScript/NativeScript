@@ -20,6 +20,9 @@ previous_url: /ApiReference/data/observable-array/HOW-TO
 ### Set ObservableArray length to new value.
 {%snippet observable-array-newvalue%}
 
+### Set ObservableArray to be iterable.
+{%snippet observable-array-iterable%}
+
 ### Get item at specified index using getItem(index) method.
 {%snippet observable-array-getitem%}
 
@@ -55,12 +58,6 @@ previous_url: /ApiReference/data/observable-array/HOW-TO
 
 ### Handle "change" event to know more info about the change after calling push() method with multiple elements.
 {%snippet observable-array-push-multiple-info%}
-
-### Use push() method to add multiple elements from source array to the ObservableArray.
-{%snippet observable-array-push-source%}
-
-### Handle "change" event to know more info about the change after calling push() method with multiple elements from source array.
-{%snippet observable-array-push-source-info%}
 
 ### Use reverse() method to reverse the elements order of the ObservableArray.
 {%snippet observable-array-reverse%}

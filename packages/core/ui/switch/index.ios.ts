@@ -1,9 +1,11 @@
 import { SwitchBase, checkedProperty, offBackgroundColorProperty } from './switch-common';
 import { colorProperty, backgroundColorProperty, backgroundInternalProperty } from '../styling/style-properties';
 import { Color } from '../../color';
-import { layout } from '../../utils';
+import { iOSNativeHelper, layout } from '../../utils';
 
 export * from './switch-common';
+
+const majorVersion = iOSNativeHelper.MajorVersion;
 
 @NativeClass
 class SwitchChangeHandlerImpl extends NSObject {
@@ -17,7 +19,7 @@ class SwitchChangeHandlerImpl extends NSObject {
 	}
 
 	public valueChanged(sender: UISwitch) {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			checkedProperty.nativeValueChange(owner, sender.on);
 		}
@@ -55,6 +57,37 @@ export class Switch extends SwitchBase {
 		super.disposeNativeView();
 	}
 
+	private setNativeBackgroundColor(value: UIColor | Color) {
+		if (value) {
+			this.nativeViewProtected.onTintColor = value instanceof Color ? value.ios : value;
+			this.nativeViewProtected.tintColor = value instanceof Color ? value.ios : value;
+			this.nativeViewProtected.backgroundColor = value instanceof Color ? value.ios : value;
+			this.nativeViewProtected.layer.cornerRadius = this.nativeViewProtected.frame.size.height / 2;
+		} else {
+			this.nativeViewProtected.onTintColor = null;
+			this.nativeViewProtected.tintColor = null;
+			this.nativeViewProtected.backgroundColor = null;
+			this.nativeViewProtected.layer.cornerRadius = 0;
+		}
+	}
+
+	_onCheckedPropertyChanged(newValue: boolean) {
+		// only add :checked pseudo handling on supported iOS versions
+		// ios <13 works but causes glitchy animations when toggling
+		// so we decided to keep the old behavior on older versions.
+		if (majorVersion >= 13) {
+			super._onCheckedPropertyChanged(newValue);
+
+			if (this.offBackgroundColor) {
+				if (!newValue) {
+					this.setNativeBackgroundColor(this.offBackgroundColor);
+				} else {
+					this.setNativeBackgroundColor(this.backgroundColor instanceof Color ? this.backgroundColor : new Color(this.backgroundColor));
+				}
+			}
+		}
+	}
+
 	// @ts-ignore
 	get ios(): UISwitch {
 		return this.nativeViewProtected;
@@ -82,14 +115,29 @@ export class Switch extends SwitchBase {
 		return this.nativeViewProtected.thumbTintColor;
 	}
 	[colorProperty.setNative](value: UIColor | Color) {
-		this.nativeViewProtected.thumbTintColor = value instanceof Color ? value.ios : value;
+		const color: UIColor = value instanceof Color ? value.ios : value;
+		this.nativeViewProtected.thumbTintColor = color;
+
+		if (color && this.nativeViewProtected.subviews.count > 0) {
+			const alpha = new interop.Reference(1.0);
+			const res = color.getRedGreenBlueAlpha(null, null, null, alpha);
+
+			this.nativeViewProtected.subviews[0].alpha = (res && alpha.value) ?? 1;
+		}
 	}
 
 	[backgroundColorProperty.getDefault](): UIColor {
 		return this.nativeViewProtected.onTintColor;
 	}
 	[backgroundColorProperty.setNative](value: UIColor | Color) {
-		this.nativeViewProtected.onTintColor = value instanceof Color ? value.ios : value;
+		if (majorVersion >= 13) {
+			if (!this.offBackgroundColor || this.checked) {
+				this.setNativeBackgroundColor(value);
+			}
+		} else {
+			// old behavior on unsupported iOS versions
+			this.nativeViewProtected.onTintColor = value instanceof Color ? value.ios : value;
+		}
 	}
 
 	[backgroundInternalProperty.getDefault](): any {
@@ -103,10 +151,17 @@ export class Switch extends SwitchBase {
 		return this.nativeViewProtected.backgroundColor;
 	}
 	[offBackgroundColorProperty.setNative](value: Color | UIColor) {
-		const nativeValue = value instanceof Color ? value.ios : value;
+		if (majorVersion >= 13) {
+			if (!this.checked) {
+				this.setNativeBackgroundColor(value);
+			}
+		} else {
+			// old behavior on unsupported iOS versions...
+			const nativeValue = value instanceof Color ? value.ios : value;
 
-		this.nativeViewProtected.tintColor = nativeValue;
-		this.nativeViewProtected.backgroundColor = nativeValue;
-		this.nativeViewProtected.layer.cornerRadius = this.nativeViewProtected.frame.size.height / 2;
+			this.nativeViewProtected.tintColor = nativeValue;
+			this.nativeViewProtected.backgroundColor = nativeValue;
+			this.nativeViewProtected.layer.cornerRadius = this.nativeViewProtected.frame.size.height / 2;
+		}
 	}
 }

@@ -62,6 +62,18 @@ export function isNullOrUndefined(value: any): boolean;
 export function verifyCallback(value: any): void;
 
 /**
+ * Checks if the number has decimals
+ * @param value Number to check
+ */
+export function numberHasDecimals(value: number): boolean;
+
+/**
+ * Checks if the number is 64 bit
+ * @param value Number to check
+ */
+export function numberIs64Bit(value: number): boolean;
+
+/**
  * A function that gets the class name of an object.
  * @param object The object.
  * Returns a string with the name of the class.

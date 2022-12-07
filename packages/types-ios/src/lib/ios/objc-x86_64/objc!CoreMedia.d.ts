@@ -585,17 +585,17 @@ declare function CMTimebaseAddTimer(timebase: any, timer: NSTimer, runloop: any)
 
 declare function CMTimebaseAddTimerDispatchSource(timebase: any, timerSource: NSObject): number;
 
-declare function CMTimebaseCopyMaster(timebase: any): any;
+declare function CMTimebaseCopySource(timebase: any): any;
 
-declare function CMTimebaseCopyMasterClock(timebase: any): any;
+declare function CMTimebaseCopySourceClock(timebase: any): any;
 
-declare function CMTimebaseCopyMasterTimebase(timebase: any): any;
+declare function CMTimebaseCopySourceTimebase(timebase: any): any;
 
-declare function CMTimebaseCopyUltimateMasterClock(timebase: any): any;
+declare function CMTimebaseCopyUltimateSourceClock(timebase: any): any;
 
-declare function CMTimebaseCreateWithMasterClock(allocator: any, masterClock: any, timebaseOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMTimebaseCreateWithSourceClock(allocator: any, sourceClock: any, timebaseOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMTimebaseCreateWithMasterTimebase(allocator: any, masterTimebase: any, timebaseOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMTimebaseCreateWithSourceTimebase(allocator: any, sourceTimebase: any, timebaseOut: interop.Pointer | interop.Reference<any>): number;
 
 declare function CMTimebaseGetEffectiveRate(timebase: any): number;
 
@@ -625,13 +625,13 @@ declare function CMTimebaseRemoveTimerDispatchSource(timebase: any, timerSource:
 
 declare function CMTimebaseSetAnchorTime(timebase: any, timebaseTime: CMTime, immediateSourceTime: CMTime): number;
 
-declare function CMTimebaseSetMasterClock(timebase: any, newMasterClock: any): number;
-
-declare function CMTimebaseSetMasterTimebase(timebase: any, newMasterTimebase: any): number;
-
 declare function CMTimebaseSetRate(timebase: any, rate: number): number;
 
 declare function CMTimebaseSetRateAndAnchorTime(timebase: any, rate: number, timebaseTime: CMTime, immediateSourceTime: CMTime): number;
+
+declare function CMTimebaseSetSourceClock(timebase: any, newSourceClock: any): number;
+
+declare function CMTimebaseSetSourceTimebase(timebase: any, newSourceTimebase: any): number;
 
 declare function CMTimebaseSetTime(timebase: any, time: CMTime): number;
 
@@ -983,6 +983,8 @@ declare var kCMImageDescriptionFlavor_3GPFamily: any;
 
 declare var kCMImageDescriptionFlavor_ISOFamily: any;
 
+declare var kCMImageDescriptionFlavor_ISOFamilyWithAppleExtensions: any;
+
 declare var kCMImageDescriptionFlavor_QuickTimeMovie: any;
 
 declare const kCMMPEG2VideoProfile_HDV_1080i50: number;
@@ -1285,6 +1287,8 @@ declare var kCMSampleAttachmentKey_DoNotDisplay: string;
 
 declare var kCMSampleAttachmentKey_EarlierDisplayTimesAllowed: string;
 
+declare var kCMSampleAttachmentKey_HDR10PlusPerFrameData: string;
+
 declare var kCMSampleAttachmentKey_HEVCStepwiseTemporalSubLayerAccess: string;
 
 declare var kCMSampleAttachmentKey_HEVCSyncSampleNALUnitType: string;
@@ -1557,6 +1561,8 @@ declare var kCMTextMarkupAttribute_CharacterEdgeStyle: string;
 
 declare var kCMTextMarkupAttribute_FontFamilyName: string;
 
+declare var kCMTextMarkupAttribute_FontFamilyNameList: string;
+
 declare var kCMTextMarkupAttribute_ForegroundColorARGB: string;
 
 declare var kCMTextMarkupAttribute_GenericFontFamilyName: string;
@@ -1685,6 +1691,8 @@ declare var kCMTimingInfoInvalid: CMSampleTimingInfo;
 
 declare const kCMVideoCodecType_422YpCbCr8: number;
 
+declare const kCMVideoCodecType_AV1: number;
+
 declare const kCMVideoCodecType_Animation: number;
 
 declare const kCMVideoCodecType_AppleProRes422: number;
@@ -1726,6 +1734,10 @@ declare const kCMVideoCodecType_DVCPro50NTSC: number;
 declare const kCMVideoCodecType_DVCPro50PAL: number;
 
 declare const kCMVideoCodecType_DVCProPAL: number;
+
+declare const kCMVideoCodecType_DepthHEVC: number;
+
+declare const kCMVideoCodecType_DisparityHEVC: number;
 
 declare const kCMVideoCodecType_DolbyVisionHEVC: number;
 

@@ -30,6 +30,8 @@ declare class HMAccessory extends NSObject {
 
 	readonly manufacturer: string;
 
+	readonly matterNodeID: number;
+
 	readonly model: string;
 
 	readonly name: string;
@@ -197,7 +199,7 @@ declare class HMAccessorySetupManager extends NSObject {
 
 	static new(): HMAccessorySetupManager; // inherited from NSObject
 
-	addAndSetUpAccessoriesForTopologyCompletionHandler(topology: HMCHIPServiceTopology, completion: (p1: NSError) => void): void;
+	performAccessorySetupUsingRequestCompletionHandler(request: HMAccessorySetupRequest, completion: (p1: HMAccessorySetupResult, p2: NSError) => void): void;
 }
 
 declare class HMAccessorySetupPayload extends NSObject {
@@ -213,6 +215,38 @@ declare class HMAccessorySetupPayload extends NSObject {
 	initWithURL(setupPayloadURL: NSURL): this;
 
 	initWithURLOwnershipToken(setupPayloadURL: NSURL, ownershipToken: HMAccessoryOwnershipToken): this;
+}
+
+declare class HMAccessorySetupRequest extends NSObject implements NSCopying {
+
+	static alloc(): HMAccessorySetupRequest; // inherited from NSObject
+
+	static new(): HMAccessorySetupRequest; // inherited from NSObject
+
+	homeUniqueIdentifier: NSUUID;
+
+	matterPayload: MTRSetupPayload;
+
+	payload: HMAccessorySetupPayload;
+
+	suggestedAccessoryName: string;
+
+	suggestedRoomUniqueIdentifier: NSUUID;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare class HMAccessorySetupResult extends NSObject implements NSCopying {
+
+	static alloc(): HMAccessorySetupResult; // inherited from NSObject
+
+	static new(): HMAccessorySetupResult; // inherited from NSObject
+
+	readonly accessoryUniqueIdentifiers: NSArray<NSUUID>;
+
+	readonly homeUniqueIdentifier: NSUUID;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 declare class HMAction extends NSObject {
@@ -280,128 +314,6 @@ declare class HMAddAccessoryRequest extends NSObject {
 	payloadWithOwnershipToken(ownershipToken: HMAccessoryOwnershipToken): HMAccessorySetupPayload;
 
 	payloadWithURLOwnershipToken(setupPayloadURL: NSURL, ownershipToken: HMAccessoryOwnershipToken): HMAccessorySetupPayload;
-}
-
-declare class HMCHIPServiceHome extends NSObject implements NSCopying, NSSecureCoding {
-
-	static alloc(): HMCHIPServiceHome; // inherited from NSObject
-
-	static new(): HMCHIPServiceHome; // inherited from NSObject
-
-	readonly name: string;
-
-	readonly uuid: NSUUID;
-
-	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { UUID: NSUUID; name: string; });
-
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
-
-	encodeWithCoder(coder: NSCoder): void;
-
-	initWithCoder(coder: NSCoder): this;
-
-	initWithUUIDName(uuid: NSUUID, name: string): this;
-}
-
-declare class HMCHIPServiceRequestHandler extends NSObject implements NSExtensionRequestHandling {
-
-	static alloc(): HMCHIPServiceRequestHandler; // inherited from NSObject
-
-	static new(): HMCHIPServiceRequestHandler; // inherited from NSObject
-
-	readonly debugDescription: string; // inherited from NSObjectProtocol
-
-	readonly description: string; // inherited from NSObjectProtocol
-
-	readonly hash: number; // inherited from NSObjectProtocol
-
-	readonly isProxy: boolean; // inherited from NSObjectProtocol
-
-	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
-
-	readonly  // inherited from NSObjectProtocol
-
-	beginRequestWithExtensionContext(context: NSExtensionContext): void;
-
-	class(): typeof NSObject;
-
-	configureAccessoryWithNameRoomCompletion(accessoryName: string, accessoryRoom: HMCHIPServiceRoom, completion: (p1: NSError) => void): void;
-
-	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
-
-	fetchRoomsInHomeCompletion(home: HMCHIPServiceHome, completion: (p1: NSArray<HMCHIPServiceRoom>, p2: NSError) => void): void;
-
-	isEqual(object: any): boolean;
-
-	isKindOfClass(aClass: typeof NSObject): boolean;
-
-	isMemberOfClass(aClass: typeof NSObject): boolean;
-
-	pairAccessoryInHomeOnboardingPayloadCompletion(home: HMCHIPServiceHome, onboardingPayload: string, completion: (p1: NSError) => void): void;
-
-	performSelector(aSelector: string): any;
-
-	performSelectorWithObject(aSelector: string, object: any): any;
-
-	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
-
-	respondsToSelector(aSelector: string): boolean;
-
-	retainCount(): number;
-
-	self(): this;
-}
-
-declare class HMCHIPServiceRoom extends NSObject implements NSCopying, NSSecureCoding {
-
-	static alloc(): HMCHIPServiceRoom; // inherited from NSObject
-
-	static new(): HMCHIPServiceRoom; // inherited from NSObject
-
-	readonly name: string;
-
-	readonly uuid: NSUUID;
-
-	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { UUID: NSUUID; name: string; });
-
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
-
-	encodeWithCoder(coder: NSCoder): void;
-
-	initWithCoder(coder: NSCoder): this;
-
-	initWithUUIDName(uuid: NSUUID, name: string): this;
-}
-
-declare class HMCHIPServiceTopology extends NSObject implements NSCopying, NSSecureCoding {
-
-	static alloc(): HMCHIPServiceTopology; // inherited from NSObject
-
-	static new(): HMCHIPServiceTopology; // inherited from NSObject
-
-	readonly homes: NSArray<HMCHIPServiceHome>;
-
-	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { homes: NSArray<HMCHIPServiceHome> | HMCHIPServiceHome[]; });
-
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
-
-	encodeWithCoder(coder: NSCoder): void;
-
-	initWithCoder(coder: NSCoder): this;
-
-	initWithHomes(homes: NSArray<HMCHIPServiceHome> | HMCHIPServiceHome[]): this;
 }
 
 declare class HMCalendarEvent extends HMTimeEvent implements NSCopying, NSMutableCopying {
@@ -1744,6 +1656,10 @@ declare class HMHome extends NSObject {
 	delegate: HMHomeDelegate;
 
 	readonly homeHubState: HMHomeHubState;
+
+	readonly matterControllerID: string;
+
+	readonly matterControllerXPCConnectBlock: () => NSXPCConnection;
 
 	readonly name: string;
 

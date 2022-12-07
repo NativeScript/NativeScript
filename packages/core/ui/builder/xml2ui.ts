@@ -3,7 +3,7 @@ import { ScopeError, SourceError, Source } from '../../utils/debug';
 import * as xml from '../../xml';
 import { isString, isObject } from '../../utils/types';
 import { getComponentModule } from './component-builder';
-import { ComponentModule } from './component-builder';
+import type { ComponentModule } from './component-builder';
 import { Device } from '../../platform';
 import { profile } from '../../profiling';
 import { android, ios, loadCustomComponent, defaultNameSpaceMatcher, getExports, Builder } from './index';
@@ -296,7 +296,7 @@ export namespace xml2ui {
 			return this._value;
 		}
 
-		constructor(private parent: XmlStateConsumer, private templateProperty: TemplateProperty) { }
+		constructor(private parent: XmlStateConsumer, private templateProperty: TemplateProperty) {}
 
 		public parse(args: xml.ParserEvent): XmlStateConsumer {
 			if (args.eventType === xml.ParserEventType.StartElement && args.elementName === 'template') {
@@ -331,7 +331,7 @@ export namespace xml2ui {
 		export const enum State {
 			EXPECTING_START,
 			PARSING,
-			FINISHED
+			FINISHED,
 		}
 	}
 
@@ -423,7 +423,7 @@ export namespace xml2ui {
 					if (componentModule) {
 						this.sourceTracker(componentModule.component, args.position);
 						if (parent) {
-							if (complexProperty) {
+							if (complexProperty && complexProperty.parent == parent) {
 								// Add component to complex property of parent component.
 								ComponentParser.addToComplexProperty(parent, complexProperty, componentModule);
 							} else if ((<any>parent.component)._addChildFromBuilder) {
@@ -514,7 +514,7 @@ export namespace xml2ui {
 			parent: ComponentModule;
 			name: string;
 			items?: Array<any>;
-			parser?: { value: any; };
+			parser?: { value: any };
 		}
 	}
 }

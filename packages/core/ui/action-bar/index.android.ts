@@ -7,6 +7,8 @@ import { colorProperty } from '../styling/style-properties';
 import { ImageSource } from '../../image-source';
 import * as application from '../../application';
 import { isAccessibilityServiceEnabled, updateContentDescription } from '../../accessibility';
+import type { Background } from '../styling/background';
+import { SDK_VERSION } from '../../utils/constants';
 
 export * from './action-bar-common';
 
@@ -59,8 +61,6 @@ function initializeMenuItemClickListener(): void {
 		return;
 	}
 
-	apiLevel = android.os.Build.VERSION.SDK_INT;
-
 	AppCompatTextView = androidx.appcompat.widget.AppCompatTextView;
 
 	@NativeClass
@@ -82,8 +82,6 @@ function initializeMenuItemClickListener(): void {
 	MenuItemClickListener = MenuItemClickListenerImpl;
 	appResources = application.android.context.getResources();
 }
-
-let apiLevel: number;
 
 export class ActionItem extends ActionItemBase {
 	private _androidPosition: AndroidActionItemSettings = {
@@ -159,7 +157,7 @@ export class ActionBar extends ActionBarBase {
 		if (value instanceof NavigationButton) {
 			this.navigationButton = value;
 		} else if (value instanceof ActionItem) {
-			this.actionItems.addItem(value);
+			this.actionItems?.addItem(value);
 		} else if (value instanceof View) {
 			this.titleView = value;
 		}
@@ -216,6 +214,32 @@ export class ActionBar extends ActionBarBase {
 		this._updateNavigationButton();
 	}
 
+	public _applyBackground(background: Background, isBorderDrawable, onlyColor: boolean, backgroundDrawable: any) {
+		const nativeView = this.nativeViewProtected;
+		if (backgroundDrawable && onlyColor && SDK_VERSION >= 21) {
+			if (isBorderDrawable && (<any>nativeView)._cachedDrawable) {
+				backgroundDrawable = (<any>nativeView)._cachedDrawable;
+				// we need to duplicate the drawable or we lose the "default" cached drawable
+				const constantState = backgroundDrawable.getConstantState();
+				if (constantState) {
+					try {
+						backgroundDrawable = constantState.newDrawable(nativeView.getResources());
+						// eslint-disable-next-line no-empty
+					} catch {}
+				}
+				nativeView.setBackground(backgroundDrawable);
+			}
+
+			const backgroundColor = ((<any>backgroundDrawable).backgroundColor = background.color.android);
+			backgroundDrawable.mutate();
+			backgroundDrawable.setColorFilter(backgroundColor, android.graphics.PorterDuff.Mode.SRC_IN);
+			backgroundDrawable.invalidateSelf(); // Make sure the drawable is invalidated. Android forgets to invalidate it in some cases: toolbar
+			(<any>backgroundDrawable).backgroundColor = backgroundColor;
+		} else {
+			super._applyBackground(background, isBorderDrawable, onlyColor, backgroundDrawable);
+		}
+	}
+
 	public _onAndroidItemSelected(itemId: number): boolean {
 		// Handle home button
 		if (this.navigationButton && itemId === R_ID_HOME) {
@@ -226,7 +250,7 @@ export class ActionBar extends ActionBarBase {
 
 		// Find item with the right ID;
 		let menuItem: ActionItem = undefined;
-		const items = this.actionItems.getItems();
+		const items = this.actionItems?.getItems() ?? [];
 		for (let i = 0; i < items.length; i++) {
 			if ((<ActionItem>items[i])._getItemId() === itemId) {
 				menuItem = <ActionItem>items[i];
@@ -267,7 +291,7 @@ export class ActionBar extends ActionBarBase {
 			this.nativeViewProtected.setNavigationOnClickListener(
 				new android.view.View.OnClickListener({
 					onClick: function (v) {
-						const owner = navBtn.get();
+						const owner = navBtn?.get();
 						if (owner) {
 							owner._raiseTap();
 						}
@@ -321,7 +345,7 @@ export class ActionBar extends ActionBarBase {
 
 	public _addActionItems() {
 		const menu = this.nativeViewProtected.getMenu();
-		const items = this.actionItems.getVisibleItems();
+		const items = this.actionItems?.getVisibleItems() ?? [];
 
 		menu.clear();
 		for (let i = 0; i < items.length; i++) {
@@ -356,7 +380,7 @@ export class ActionBar extends ActionBarBase {
 		item.actionView.android.setOnClickListener(
 			new android.view.View.OnClickListener({
 				onClick: function (v: android.view.View) {
-					const owner = weakRef.get();
+					const owner = weakRef?.get();
 					if (owner) {
 						owner._raiseTap();
 					}
@@ -441,13 +465,13 @@ export class ActionBar extends ActionBarBase {
 	}
 
 	[androidContentInsetLeftProperty.setNative]() {
-		if (apiLevel >= 21) {
+		if (SDK_VERSION >= 21) {
 			this.nativeViewProtected.setContentInsetsAbsolute(this.effectiveContentInsetLeft, this.effectiveContentInsetRight);
 		}
 	}
 
 	[androidContentInsetRightProperty.setNative]() {
-		if (apiLevel >= 21) {
+		if (SDK_VERSION >= 21) {
 			this.nativeViewProtected.setContentInsetsAbsolute(this.effectiveContentInsetLeft, this.effectiveContentInsetRight);
 		}
 	}
@@ -462,9 +486,9 @@ export class ActionBar extends ActionBarBase {
 			return;
 		}
 
-		const originalFocusableState = android.os.Build.VERSION.SDK_INT >= 26 && nativeView.getFocusable();
+		const originalFocusableState = SDK_VERSION >= 26 && nativeView.getFocusable();
 		const originalImportantForAccessibility = nativeView.getImportantForAccessibility();
-		const originalIsAccessibilityHeading = android.os.Build.VERSION.SDK_INT >= 28 && nativeView.isAccessibilityHeading();
+		const originalIsAccessibilityHeading = SDK_VERSION >= 28 && nativeView.isAccessibilityHeading();
 
 		try {
 			nativeView.setFocusable(false);
@@ -482,7 +506,7 @@ export class ActionBar extends ActionBarBase {
 				childView.setFocusable(true);
 				if (childView instanceof androidx.appcompat.widget.AppCompatTextView) {
 					announceView = childView;
-					if (android.os.Build.VERSION.SDK_INT >= 28) {
+					if (SDK_VERSION >= 28) {
 						announceView.setAccessibilityHeading(true);
 					}
 				}
@@ -507,11 +531,11 @@ export class ActionBar extends ActionBarBase {
 					return;
 				}
 
-				if (android.os.Build.VERSION.SDK_INT >= 28) {
+				if (SDK_VERSION >= 28) {
 					nativeView.setAccessibilityHeading(originalIsAccessibilityHeading);
 				}
 
-				if (android.os.Build.VERSION.SDK_INT >= 26) {
+				if (SDK_VERSION >= 26) {
 					localNativeView.setFocusable(originalFocusableState);
 				}
 

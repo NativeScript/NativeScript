@@ -48,7 +48,7 @@ export class TimePicker extends TimePickerBase {
 
 	disposeNativeView() {
 		this._changeHandler = null;
-		super.initNativeView();
+		super.disposeNativeView();
 	}
 
 	// @ts-ignore
@@ -135,7 +135,7 @@ class UITimePickerChangeHandlerImpl extends NSObject {
 	}
 
 	public valueChanged(sender: UIDatePicker) {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (!owner) {
 			return;
 		}

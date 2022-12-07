@@ -99,7 +99,7 @@ export class Color implements definition.Color {
 		return this._name;
 	}
 
-	get ios(): UIColor {
+	get ios(): any /* UIColor */ {
 		return undefined;
 	}
 
@@ -109,7 +109,7 @@ export class Color implements definition.Color {
 
 	public _argbFromString(hex: string): number {
 		// always called as SHARP as first char
-		hex = hex.substr(1);
+		hex = hex.substring(1);
 		const length = hex.length;
 		// first we normalize
 		if (length === 3) {
@@ -151,7 +151,7 @@ export class Color implements definition.Color {
 	}
 
 	public static isValid(value: any): boolean {
-		if (types.isNullOrUndefined(value) || value instanceof Color) {
+		if (value instanceof Color) {
 			return true;
 		}
 
@@ -177,7 +177,10 @@ export class Color implements definition.Color {
 		return this.hex;
 	}
 
-	public static fromIosColor(value: UIColor): Color {
+	/**
+	 * @param {UIColor} value
+	 */
+	public static fromIosColor(value: any): Color {
 		return undefined;
 	}
 
@@ -406,12 +409,14 @@ function isHsvOrHsva(value: string): boolean {
 }
 
 function parseColorWithAlpha(value: string): any {
+	const separator = value.indexOf(',') !== -1 ? ',' : ' ';
 	const parts = value
 		.replace(/(rgb|hsl|hsv)a?\(/, '')
 		.replace(')', '')
+		.replace(/\//, ' ')
 		.replace(/%/g, '')
-		.trim()
-		.split(',');
+		.split(separator)
+		.filter((part) => Boolean(part.length));
 
 	let f = 255;
 	let s = 255;
@@ -419,15 +424,15 @@ function parseColorWithAlpha(value: string): any {
 	let a = 255;
 
 	if (parts[0]) {
-		f = parseInt(parts[0].trim());
+		f = parseFloat(parts[0].trim());
 	}
 
 	if (parts[1]) {
-		s = parseInt(parts[1].trim());
+		s = parseFloat(parts[1].trim());
 	}
 
 	if (parts[2]) {
-		t = parseInt(parts[2].trim());
+		t = parseFloat(parts[2].trim());
 	}
 
 	if (parts[3]) {
@@ -464,8 +469,12 @@ function argbFromHsvOrHsva(value: string): number {
 // *Assumes:* r, g, and b are contained in [0, 255]
 // *Returns:* { h, s, l } in [0,360] and [0,100]
 function rgbToHsl(r, g, b) {
-	const max = Math.max(r, g, b) / 255,
-		min = Math.min(r, g, b) / 255;
+	r /= 255;
+	g /= 255;
+	b /= 255;
+
+	const max = Math.max(r, g, b),
+		min = Math.min(r, g, b);
 	let h, s;
 	const l = (max + min) / 2;
 
@@ -476,13 +485,13 @@ function rgbToHsl(r, g, b) {
 		s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
 		switch (max) {
 			case r:
-				h = (g - b) / 255 / d + (g < b ? 6 : 0);
+				h = (g - b) / d + (g < b ? 6 : 0);
 				break;
 			case g:
-				h = (b - r) / 255 / d + 2;
+				h = (b - r) / d + 2;
 				break;
 			case b:
-				h = (r - g) / 255 / d + 4;
+				h = (r - g) / d + 4;
 				break;
 		}
 
@@ -520,7 +529,7 @@ function hslToRgb(h1, s1, l1) {
 		b = hue2rgb(p, q, h - 1 / 3);
 	}
 
-	return { r: r * 255, g: g * 255, b: b * 255 };
+	return { r: Math.round(r * 255), g: Math.round(g * 255), b: Math.round(b * 255) };
 }
 
 // `rgbToHsv`
@@ -528,8 +537,12 @@ function hslToRgb(h1, s1, l1) {
 // *Assumes:* r, g, and b are contained in the set [0, 255]
 // *Returns:* { h, s, v } in [0,360] and [0,100]
 function rgbToHsv(r, g, b) {
-	const max = Math.max(r, g, b) / 255,
-		min = Math.min(r, g, b) / 255;
+	r /= 255;
+	g /= 255;
+	b /= 255;
+
+	const max = Math.max(r, g, b),
+		min = Math.min(r, g, b);
 	let h;
 	const v = max;
 
@@ -541,13 +554,13 @@ function rgbToHsv(r, g, b) {
 	} else {
 		switch (max) {
 			case r:
-				h = (g - b) / 255 / d + (g < b ? 6 : 0);
+				h = (g - b) / d + (g < b ? 6 : 0);
 				break;
 			case g:
-				h = (b - r) / 255 / d + 2;
+				h = (b - r) / d + 2;
 				break;
 			case b:
-				h = (r - g) / 255 / d + 4;
+				h = (r - g) / d + 4;
 				break;
 		}
 		h /= 6;

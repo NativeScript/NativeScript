@@ -33,6 +33,8 @@
     "WebKit.WKWebView:*",
     "WebKit.WKWebViewConfiguration:*",
 
-    "TNSWidgets*:*"
+    "TNSWidgets*:*",
+    "UIViewNativeScript:NativeScript",
+    "NativeScriptUtils:NativeScriptUtils"
   ]
 }

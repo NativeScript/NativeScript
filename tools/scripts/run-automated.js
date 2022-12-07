@@ -9,10 +9,21 @@ const kill = require('tree-kill');
 
 const TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
 
-const spawned_process = spawn('npm', ['start', `apps.automated.${process.argv[2]}`], {
-	stdio: ['inherit', 'pipe', 'pipe']
-})
-const {stdout, stderr} = spawned_process
+const platform = process.argv[2];
+const spawned_process = spawn(
+	"npx",
+	[
+		"nx",
+		"run",
+		`apps-automated:${platform}`,
+		// "--log=trace",
+		"--timeout=600" // 10 minutes, booting avds on CI is very slow...
+	],
+	{
+		stdio: ["inherit", "pipe", "pipe"],
+	}
+);
+const { stdout, stderr } = spawned_process
 
 stdout.pipe(process.stdout)
 stderr.pipe(process.stderr)

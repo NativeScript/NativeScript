@@ -42,6 +42,8 @@ export class Frame extends FrameBase {
 		this._removeFromFrameStack();
 		this.viewController = null;
 		this._ios.controller = null;
+		this._animatedDelegate = null;
+		this._ios = null;
 		super.disposeNativeView();
 	}
 
@@ -116,7 +118,7 @@ export class Frame extends FrameBase {
 		if (!this._currentEntry) {
 			// Update action-bar with disabled animations before the initial navigation.
 			this._updateActionBar(backstackEntry.resolvedPage, true);
-			this._ios.controller.pushViewControllerAnimated(viewController, animated);
+			this.pushViewControllerAnimated(viewController, animated);
 			if (Trace.isEnabled()) {
 				Trace.write(`${this}.pushViewControllerAnimated(${viewController}, ${animated}); depth = ${navDepth}`, Trace.categories.Navigation);
 			}
@@ -175,6 +177,17 @@ export class Frame extends FrameBase {
 		this._ios.controller.pushViewControllerAnimated(viewController, animated);
 		if (Trace.isEnabled()) {
 			Trace.write(`${this}.pushViewControllerAnimated(${viewController}, ${animated}); depth = ${navDepth}`, Trace.categories.Navigation);
+		}
+	}
+
+	private pushViewControllerAnimated(viewController: UIViewController, animated: boolean) {
+		let transitionCoordinator = this._ios.controller.transitionCoordinator;
+		if (transitionCoordinator) {
+			transitionCoordinator.animateAlongsideTransitionCompletion(null, () => {
+				this._ios.controller.pushViewControllerAnimated(viewController, animated);
+			});
+		} else {
+			this._ios.controller.pushViewControllerAnimated(viewController, animated);
 		}
 	}
 
@@ -294,7 +307,7 @@ export class Frame extends FrameBase {
 	}
 
 	public _onNavigatingTo(backstackEntry: BackstackEntry, isBack: boolean) {
-		//
+		super._onNavigatingTo(backstackEntry, isBack);
 	}
 }
 
@@ -396,13 +409,13 @@ class UINavigationControllerImpl extends UINavigationController {
 	}
 
 	get owner(): Frame {
-		return this._owner.get?.();
+		return this._owner?.deref?.();
 	}
 
 	@profile
 	public viewWillAppear(animated: boolean): void {
 		super.viewWillAppear(animated);
-		const owner = this._owner.get?.();
+		const owner = this._owner?.deref?.();
 		if (owner && !owner.isLoaded && !owner.parent) {
 			owner.callLoaded();
 		}
@@ -411,7 +424,7 @@ class UINavigationControllerImpl extends UINavigationController {
 	@profile
 	public viewDidDisappear(animated: boolean): void {
 		super.viewDidDisappear(animated);
-		const owner = this._owner?.get?.();
+		const owner = this._owner?.deref?.();
 		if (owner && owner.isLoaded && !owner.parent && !this.presentedViewController) {
 			owner.callUnloaded();
 			owner._tearDownUI(true);
@@ -535,7 +548,7 @@ class UINavigationControllerImpl extends UINavigationController {
 		super.traitCollectionDidChange(previousTraitCollection);
 
 		if (majorVersion >= 13) {
-			const owner = this._owner.get?.();
+			const owner = this._owner?.deref?.();
 			if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
 				owner.notify({
 					eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,

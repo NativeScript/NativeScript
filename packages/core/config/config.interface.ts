@@ -94,6 +94,62 @@ interface IConfigAndroid extends IConfigPlatform {
 	enableMultithreadedJavascript?: boolean;
 }
 
+interface IConfigCLI {
+	/**
+	 * Set the package manager to use for this project.
+	 * Defaults to the CLI set package manager, or `npm` if not set globally
+	 */
+	packageManager: 'yarn' | 'pnpm' | 'npm';
+
+	/**
+	 * Optional - Override the files or paths to clean when running the `ns clean` command
+	 */
+	pathsToClean?: string[];
+
+	/**
+	 * Optional - Additional files or paths to clean when running the `ns clean` command, the paths are appended to the default list of paths.
+	 */
+	additionalPathsToClean?: string[];
+}
+
+interface IConfigHook {
+	// prettier-ignore
+	/**
+	 * Event name for when to run the hook.
+	 * Possible event names are any of the following with the pattern
+	 * `before-*` and `after-*`
+	 *
+	 *	* `buildAndroidPlugin` - Builds aar file for Android plugin, runs during prepareNativeApp
+	 *	* `buildAndroid` - Builds Android app
+	 *	* `buildIOS` - Builds iOS app
+	 *	* `checkEnvironment` - Validate project env, runs during ns doctor, clean, and most build commands
+	 *	* `checkForChanges` - Changes occurred during watch
+	 *	* `install` - Application installed to device/emulator
+	 *	* `prepare` - Compiles webpack and prepares native app in platforms folder
+	 *	* `prepareNativeApp` - Preparing the actual native app, runs during prepare/watch hook
+	 *	* `resolveCommand` - Resolves command and arguments, runs before all cli commands
+	 *	* `watch` - Setup watchers for live sync, runs during prepare hook
+	 *	* `watchPatterns` - Setup watch patterns, runs during watch hook
+	 */
+	type:
+		| 'before-buildAndroidPlugin'	| 'after-buildAndroidPlugin'
+		| 'before-buildAndroid'			| 'after-buildAndroid'
+		| 'before-buildIOS'				| 'after-buildIOS'
+		| 'before-checkEnvironment'		| 'after-checkEnvironment'
+		| 'before-checkForChanges'		| 'after-checkForChanges'
+		| 'before-install'				| 'after-install'
+		| 'before-prepare'				| 'after-prepare'
+		| 'before-prepareNativeApp'		| 'after-prepareNativeApp'
+		| 'before-resolveCommand'		| 'after-resolveCommand'
+		| 'before-watch'				| 'after-watch'
+		| 'before-watchPatterns'		| 'after-watchPatterns';
+
+	/**
+	 * Path to the hook script file to run
+	 */
+	script: string;
+}
+
 export interface NativeScriptConfig {
 	/**
 	 * App's bundle id
@@ -101,7 +157,7 @@ export interface NativeScriptConfig {
 	 */
 	id?: string;
 	/**
-	 * App's main entry file (currently ignored - set it in package.json main field)
+	 * App's main entry file - this setting overrides the value set in package.json
 	 */
 	main?: string;
 	/**
@@ -147,4 +203,14 @@ export interface NativeScriptConfig {
 	 * Optionally specify a list of npm package names for which you would like the NativeScript CLI to ignore when attaching native dependencies to the build
 	 */
 	ignoredNativeDependencies?: string[];
+
+	/**
+	 * Set cli options
+	 */
+	cli?: IConfigCLI;
+
+	/**
+	 * Set project persistent hooks to run
+	 */
+	hooks?: IConfigHook[];
 }

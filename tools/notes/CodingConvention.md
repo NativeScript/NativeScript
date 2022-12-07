@@ -509,7 +509,7 @@ class Foo {
 ```
 
 ## TypeScript optional parameters
-**Do not** use optional parameters in IMPLEMENTATION files. This is because the TS compiler generates additional array and populates its from the **arguments** object. Still, it is OK to use these in a definition file (as declarations ONLY).
+**Do not** use optional parameters in IMPLEMENTATION files. This is because the TS compiler generates additional array and populates it from the **arguments** object. Still, it is OK to use these in a definition file (as declarations ONLY).
 
 *Right:*
 ```TypeScript

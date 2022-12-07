@@ -1,8 +1,9 @@
 import { iOSNativeHelper } from './native-helper';
 import { Trace } from '../trace';
 
-export { iOSNativeHelper } from './native-helper';
-export * from './utils-common';
+export { dataDeserialize, dataSerialize, iOSNativeHelper } from './native-helper';
+export * from './layout-helper';
+export * from './common';
 export { Source } from './debug';
 
 export function openFile(filePath: string): boolean {
@@ -54,4 +55,16 @@ export function dismissSoftInput(nativeView?: UIView): void {
 		return;
 	}
 	UIApplication.sharedApplication.sendActionToFromForEvent('resignFirstResponder', null, null, null);
+}
+
+export function dismissKeyboard() {
+	dismissSoftInput();
+}
+
+export function copyToClipboard(value: string) {
+	try {
+		UIPasteboard.generalPasteboard.setValueForPasteboardType(value, kUTTypePlainText);
+	} catch (err) {
+		console.log(err);
+	}
 }

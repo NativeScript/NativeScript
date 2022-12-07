@@ -27,8 +27,8 @@ export * from './editable-text-base';
 export { Frame, setActivityCallbacks } from './frame';
 export type { NavigationEntry, NavigationContext, NavigationTransition, BackstackEntry, ViewEntry, AndroidActivityCallbacks } from './frame';
 
-export { GesturesObserver, TouchAction, GestureTypes, GestureStateTypes, SwipeDirection } from './gestures';
-export type { GestureEventData, GestureEventDataWithState, TapGestureEventData, PanGestureEventData, PinchGestureEventData, RotationGestureEventData, SwipeGestureEventData, TouchGestureEventData } from './gestures';
+export { GesturesObserver, TouchAction, GestureTypes, GestureStateTypes, SwipeDirection, GestureEvents, TouchManager } from './gestures';
+export type { GestureEventData, GestureEventDataWithState, TapGestureEventData, PanGestureEventData, PinchGestureEventData, RotationGestureEventData, SwipeGestureEventData, TouchGestureEventData, TouchAnimationOptions } from './gestures';
 
 export { HtmlView } from './html-view';
 export { Image } from './image';
@@ -59,7 +59,7 @@ export { Background } from './styling/background';
 export type { CacheMode } from './styling/background';
 export { parseCSSShadow } from './styling/css-shadow';
 export { animationTimingFunctionConverter, timeConverter } from './styling/converters';
-export { Font } from './styling/font';
+export { Font, FontStyle, FontWeight, FontVariationSettings } from './styling/font';
 export { Style } from './styling/style';
 export type { CommonLayoutParams } from './styling/style';
 export * from './styling/style-properties';

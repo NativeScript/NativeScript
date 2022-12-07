@@ -4,7 +4,7 @@ import { View } from '../core/view';
 import { Color } from '../../color';
 import { ActionBar } from '../action-bar';
 import { GridLayout } from '../layouts/grid-layout';
-import { Device } from '../../platform';
+import { SDK_VERSION } from '../../utils/constants';
 import { profile } from '../../profiling';
 import { AndroidAccessibilityEvent, getLastFocusedViewOnPage, isAccessibilityServiceEnabled } from '../../accessibility';
 
@@ -66,6 +66,19 @@ export class Page extends PageBase {
 		}
 	}
 
+	private getClosestWindow() {
+		// When it comes to modals, check if page has a parent as it may not be the modal root view itself
+		const view = this.parent ?? this;
+		const dialogFragment = (<any>view)._dialogFragment;
+		if (dialogFragment) {
+			const dialog = dialogFragment.getDialog();
+			if (dialog) {
+				return dialog.getWindow();
+			}
+		}
+		return this._context.getWindow();
+	}
+
 	[actionBarHiddenProperty.setNative](value: boolean) {
 		// in case the actionBar is not created and actionBarHidden is changed to true
 		// the actionBar will be created by updateActionBar
@@ -78,8 +91,8 @@ export class Page extends PageBase {
 		color: number;
 		systemUiVisibility: number;
 	} {
-		if (Device.sdkVersion >= '21') {
-			const window = (<androidx.appcompat.app.AppCompatActivity>this._context).getWindow();
+		if (SDK_VERSION >= 21) {
+			const window = this.getClosestWindow();
 			const decorView = window.getDecorView();
 
 			return {
@@ -91,8 +104,8 @@ export class Page extends PageBase {
 		return null;
 	}
 	[statusBarStyleProperty.setNative](value: 'dark' | 'light' | { color: number; systemUiVisibility: number }) {
-		if (Device.sdkVersion >= '21') {
-			const window = (<androidx.appcompat.app.AppCompatActivity>this._context).getWindow();
+		if (SDK_VERSION >= 21) {
+			const window = this.getClosestWindow();
 			const decorView = window.getDecorView();
 
 			if (value === 'light') {
@@ -109,17 +122,16 @@ export class Page extends PageBase {
 	}
 
 	[androidStatusBarBackgroundProperty.getDefault](): number {
-		if (Device.sdkVersion >= '21') {
-			const window = (<androidx.appcompat.app.AppCompatActivity>this._context).getWindow();
-
+		if (SDK_VERSION >= 21) {
+			const window = this.getClosestWindow();
 			return (<any>window).getStatusBarColor();
 		}
 
 		return null;
 	}
 	[androidStatusBarBackgroundProperty.setNative](value: number | Color) {
-		if (Device.sdkVersion >= '21') {
-			const window = (<androidx.appcompat.app.AppCompatActivity>this._context).getWindow();
+		if (SDK_VERSION >= 21) {
+			const window = this.getClosestWindow();
 			const color = value instanceof Color ? value.android : value;
 			(<any>window).setStatusBarColor(color);
 		}
