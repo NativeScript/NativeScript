@@ -201,6 +201,10 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 			this.hasUniformBorderRadius();
 	}
 
+	public boolean hasBackgroundColor() {
+		return this.backgroundColor != 0;
+	}
+
 	public BorderDrawable(float density) {
 		super();
 		this.density = density;
@@ -311,7 +315,7 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 		backgroundPath.addRoundRect(backgroundRect, backgroundRadii, Path.Direction.CW);
 
 		// draw background
-		if (this.backgroundColor != 0) {
+		if (this.hasBackgroundColor()) {
 			Paint backgroundColorPaint = new Paint();
 			backgroundColorPaint.setStyle(Paint.Style.FILL);
 			backgroundColorPaint.setColor(this.backgroundColor);

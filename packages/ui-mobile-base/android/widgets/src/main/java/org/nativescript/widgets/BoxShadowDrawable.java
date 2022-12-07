@@ -20,7 +20,7 @@ import java.util.Arrays;
 @RequiresApi(api = Build.VERSION_CODES.M)
 public class BoxShadowDrawable extends LayerDrawable {
 	// Static parameters
-	protected final static int DEFAULT_BACKGROUND_COLOR = Color.TRANSPARENT;
+	protected final static int DEFAULT_BACKGROUND_COLOR = Color.WHITE;
 	protected final static String TAG = "BoxShadowDrawable";
 
 	// BoxShadow Parameters
@@ -42,9 +42,9 @@ public class BoxShadowDrawable extends LayerDrawable {
 
 		Log.d(TAG, "Constructing BoxShadowDrawable!");
 
+		this.wrappedLayer = wrappedDrawable;
 		this.shadowLayer = new ShapeDrawable(new RectShape());
 		this.overlayLayer = this.createOverlayLayer();
-		this.wrappedLayer = wrappedDrawable;
 
 		// add our layers
 		this.addLayer(shadowLayer);
@@ -143,7 +143,9 @@ public class BoxShadowDrawable extends LayerDrawable {
 
 	private ShapeDrawable createOverlayLayer() {
 		ShapeDrawable shapeDrawable = new ShapeDrawable(new RectShape());
-		shapeDrawable.getPaint().setColor(DEFAULT_BACKGROUND_COLOR);
+		if(((BorderDrawable) this.wrappedLayer).hasBackgroundColor()){
+			shapeDrawable.getPaint().setColor(DEFAULT_BACKGROUND_COLOR);
+		}
 
 		return shapeDrawable;
 	}
