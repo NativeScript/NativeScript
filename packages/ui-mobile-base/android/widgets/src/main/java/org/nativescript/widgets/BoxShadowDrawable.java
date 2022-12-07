@@ -20,7 +20,7 @@ import java.util.Arrays;
 @RequiresApi(api = Build.VERSION_CODES.M)
 public class BoxShadowDrawable extends LayerDrawable {
 	// Static parameters
-	protected final static int DEFAULT_BACKGROUND_COLOR = Color.WHITE;
+	protected final static int DEFAULT_BACKGROUND_COLOR = Color.TRANSPARENT;
 	protected final static String TAG = "BoxShadowDrawable";
 
 	// BoxShadow Parameters
