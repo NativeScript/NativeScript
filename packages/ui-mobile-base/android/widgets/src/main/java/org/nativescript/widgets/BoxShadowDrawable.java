@@ -143,7 +143,7 @@ public class BoxShadowDrawable extends LayerDrawable {
 
 	private ShapeDrawable createOverlayLayer() {
 		ShapeDrawable shapeDrawable = new ShapeDrawable(new RectShape());
-		if(((BorderDrawable) this.wrappedLayer).hasBackgroundColor()){
+		if(!((BorderDrawable) this.wrappedLayer).hasBackgroundColor()){
 			shapeDrawable.getPaint().setColor(DEFAULT_BACKGROUND_COLOR);
 		}
 
