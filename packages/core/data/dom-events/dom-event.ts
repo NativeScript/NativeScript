@@ -231,6 +231,26 @@ export class DOMEvent implements Event {
 		this.propagationState = EventPropagationState.stop;
 	}
 
+	// During handleEvent(), we want to work on a copy of the listeners array,
+	// as any callback could modify the original array during the loop.
+	//
+	// However, cloning arrays is expensive on this hot path, so we'll do it
+	// lazily - i.e. only take a clone if a mutation is about to happen.
+	// This optimisation is particularly worth doing as it's very rare that
+	// an event listener callback will end up modifying the listeners array.
+	private listenersLive: MutationSensitiveArray<ListenerEntry> = emptyArray;
+	private listenersLazyCopy: ListenerEntry[] = emptyArray;
+
+	// Creating this upon class construction as an arrow function rather than as
+	// an inline function bound afresh on each usage saves about 210 nanoseconds
+	// per run of handleEvent().
+	private onCurrentListenersMutation = () => {
+		// Cloning the array via spread syntax is up to 180 nanoseconds
+		// faster per run than using Array.prototype.slice().
+		this.listenersLazyCopy = [...this.listenersLive];
+		this.listenersLive.onMutation = null;
+	};
+
 	/**
 	 * Dispatches a synthetic event event to target and returns true if either
 	 * event's cancelable attribute value is false or its preventDefault()
@@ -257,6 +277,8 @@ export class DOMEvent implements Event {
 			this.target = null;
 			this.eventPhase = this.NONE;
 			this.propagationState = EventPropagationState.resume;
+			this.listenersLive = emptyArray;
+			this.listenersLazyCopy = emptyArray;
 		};
 
 		// `Observable.removeEventListener` would likely suffice, but grabbing
@@ -282,10 +304,10 @@ export class DOMEvent implements Event {
 		// event. This keeps behaviour as consistent with DOM Events as
 		// possible.
 
+		this.listenersLazyCopy = this.listenersLive = getGlobalEventHandlersPreHandling?.() || emptyArray;
 		this.handleEvent({
 			data,
 			isGlobal: true,
-			getListenersForType: () => getGlobalEventHandlersPreHandling?.() ?? emptyArray,
 			removeEventListener: removeGlobalEventListener,
 			phase: this.CAPTURING_PHASE,
 		});
@@ -297,13 +319,14 @@ export class DOMEvent implements Event {
 			this.currentTarget = currentTarget;
 			this.eventPhase = this.target === this.currentTarget ? this.AT_TARGET : this.CAPTURING_PHASE;
 
+			this.listenersLazyCopy = this.listenersLive = currentTarget.getEventList(this.type) || emptyArray;
 			this.handleEvent({
 				data,
 				isGlobal: false,
-				getListenersForType: () => currentTarget.getEventList(this.type) ?? emptyArray,
 				removeEventListener: currentTarget.removeEventListener.bind(currentTarget) as Observable['removeEventListener'],
 				phase: this.CAPTURING_PHASE,
 			});
+
 			if (this.propagationState !== EventPropagationState.resume) {
 				reset();
 				return this.returnValue;
@@ -316,13 +339,14 @@ export class DOMEvent implements Event {
 			const currentTarget = eventPath[i];
 			this.eventPhase = this.target === this.currentTarget ? this.AT_TARGET : this.BUBBLING_PHASE;
 
+			this.listenersLazyCopy = this.listenersLive = currentTarget.getEventList(this.type) || emptyArray;
 			this.handleEvent({
 				data,
 				isGlobal: false,
-				getListenersForType: () => currentTarget.getEventList(this.type) ?? emptyArray,
 				removeEventListener: currentTarget.removeEventListener.bind(currentTarget) as Observable['removeEventListener'],
 				phase: this.BUBBLING_PHASE,
 			});
+
 			if (this.propagationState !== EventPropagationState.resume) {
 				reset();
 				return this.returnValue;
@@ -341,10 +365,10 @@ export class DOMEvent implements Event {
 			this.eventPhase = this.BUBBLING_PHASE;
 		}
 
+		this.listenersLazyCopy = this.listenersLive = getGlobalEventHandlersPostHandling?.() || emptyArray;
 		this.handleEvent({
 			data,
 			isGlobal: true,
-			getListenersForType: () => getGlobalEventHandlersPostHandling?.() ?? emptyArray,
 			removeEventListener: removeGlobalEventListener,
 			phase: this.BUBBLING_PHASE,
 		});
@@ -353,32 +377,12 @@ export class DOMEvent implements Event {
 		return this.returnValue;
 	}
 
-	private handleEvent({ data, isGlobal, getListenersForType, phase, removeEventListener }: { data: EventData; isGlobal: boolean; getListenersForType: () => MutationSensitiveArray<ListenerEntry>; phase: 0 | 1 | 2 | 3; removeEventListener: (eventName: string, callback?: any, thisArg?: any, capture?: boolean) => void }) {
-		// We want to work on a copy of the array, as any callback could modify
-		// the original array during the loop.
-		//
-		// However, cloning arrays is expensive on this hot path, so we'll do it
-		// lazily - i.e. only take a clone if a mutation is about to happen.
-		// This optimisation is particularly worth doing as it's very rare that
-		// an event listener callback will end up modifying the listeners array.
-		const listenersLive: MutationSensitiveArray<ListenerEntry> = getListenersForType();
-
+	private handleEvent({ data, isGlobal, phase, removeEventListener }: { data: EventData; isGlobal: boolean; phase: 0 | 1 | 2 | 3; removeEventListener: (eventName: string, callback?: any, thisArg?: any, capture?: boolean) => void }) {
 		// Set a listener to clone the array just before any mutations.
-		let listenersLazyCopy: ListenerEntry[] = listenersLive;
-		listenersLive.onMutation = () => (mutation: string, payload?: unknown) => {
-			console.log(`handleEvent "${data.eventName}": doLazyCopy due to "${mutation}"`, payload);
-			// Cloning the array via spread syntax is up to 180 nanoseconds
-			// faster per run than using Array.prototype.slice().
-			listenersLazyCopy = [...listenersLive];
-			listenersLive.onMutation = null;
-		};
+		this.listenersLive.onMutation = this.onCurrentListenersMutation;
 
-		// Make sure we clear the callback before we exit the function,
-		// otherwise we may wastefully clone the array on future mutations.
-		const cleanup = () => (listenersLive.onMutation = null);
-
-		for (let i = listenersLazyCopy.length - 1; i >= 0; i--) {
-			const listener = listenersLazyCopy[i];
+		for (let i = this.listenersLazyCopy.length - 1; i >= 0; i--) {
+			const listener = this.listenersLazyCopy[i];
 
 			// Assigning variables this old-fashioned way is up to 50
 			// nanoseconds faster per run than ESM destructuring syntax.
@@ -394,7 +398,7 @@ export class DOMEvent implements Event {
 			// We simply use a strict equality check here because we trust that
 			// the listeners provider will never allow two deeply-equal
 			// listeners into the array.
-			if (!listenersLive.includes(listener)) {
+			if (!this.listenersLive.includes(listener)) {
 				continue;
 			}
 
@@ -424,12 +428,13 @@ export class DOMEvent implements Event {
 			}
 
 			if (this.propagationState === EventPropagationState.stopImmediate) {
-				cleanup();
-				return;
+				break;
 			}
 		}
 
-		cleanup();
+		// Make sure we clear the callback before we exit the function,
+		// otherwise we may wastefully clone the array on future mutations.
+		this.listenersLive.onMutation = null;
 	}
 }
 
