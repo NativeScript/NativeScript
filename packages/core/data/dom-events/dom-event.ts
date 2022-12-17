@@ -375,7 +375,7 @@ export class DOMEvent implements Event {
 				returnValue.catch(console.error);
 			}
 
-			if (passive && event.defaultPrevented) {
+			if (passive && this.defaultPrevented) {
 				console.warn('Unexpected call to event.preventDefault() in passive event listener.');
 			}
 
