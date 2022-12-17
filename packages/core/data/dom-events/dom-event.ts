@@ -1,5 +1,4 @@
 import type { EventData, ListenerEntry, Observable } from '../observable/index';
-import type { ViewBase } from '../../ui/core/view-base';
 import { MutationSensitiveArray } from '../mutation-sensitive-array';
 
 // This file contains some of Core's hot paths, so attention has been taken to
@@ -15,6 +14,13 @@ const timeOrigin = Date.now();
  * avoids unnecessary allocations on a relatively hot path of the library.
  */
 const emptyArray = new MutationSensitiveArray<ListenerEntry>();
+
+/**
+ * Recycling the event path array rather than allocating a new one each time
+ * saves about 210 nanoseconds per dispatchTo() call (and avoids memory pressure
+ * and GC).
+ */
+const recycledEventPath: Observable[] = [];
 
 export class DOMEvent implements Event {
 	/**
@@ -157,7 +163,7 @@ export class DOMEvent implements Event {
 
 		// Walk up the target's parents if it has parents (is a ViewBase or
 		// subclass of ViewBase) or not (is an Observable).
-		return this.target.isViewBase() ? this.getEventPath(this.target, 'bubble') : [this.target];
+		return [...this.getEventPath(this.target, 'bubble')];
 	}
 
 	/**
@@ -170,17 +176,23 @@ export class DOMEvent implements Event {
 	 * @example
 	 * [Button, StackLayout, Page] // 'bubble'
 	 */
-	private getEventPath(responder: ViewBase, path: 'capture' | 'bubble'): ViewBase[] {
-		const chain = [responder];
+	private getEventPath(responder: Observable, path: 'capture' | 'bubble'): Observable[] {
+		recycledEventPath.splice(0, recycledEventPath.length);
+		recycledEventPath.push(responder);
+
+		if (!responder.isViewBase()) {
+			return recycledEventPath;
+		}
+
 		let nextResponder = responder.parent;
 		while (nextResponder) {
-			path === 'capture' ? chain.unshift(nextResponder) : chain.push(nextResponder);
+			path === 'capture' ? recycledEventPath.unshift(nextResponder) : recycledEventPath.push(nextResponder);
 
 			// TODO: decide whether to walk up from Page to Frame, and whether
 			// to then walk from Frame to Application or something.
 			nextResponder = nextResponder?.parent;
 		}
-		return chain;
+		return recycledEventPath;
 	}
 
 	/** @deprecated */
@@ -278,7 +290,7 @@ export class DOMEvent implements Event {
 			phase: this.CAPTURING_PHASE,
 		});
 
-		const eventPath = target.isViewBase() ? this.getEventPath(target, 'capture') : [target];
+		const eventPath = this.getEventPath(target, 'capture');
 
 		// Capturing phase, e.g. [Page, StackLayout, Button]
 		for (const currentTarget of eventPath) {
