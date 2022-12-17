@@ -1,0 +1,14 @@
+{
+  "main": "./src/app.ts",
+  "description": "Old bespoke events",
+  "license": "SEE LICENSE IN <your-license-filename>",
+  "repository": "<fill-your-repository-here>",
+  "dependencies": {
+    "@nativescript/core": "8.4.1"
+  },
+  "devDependencies": {
+    "@nativescript/android": "~8.3.0",
+    "@nativescript/ios": "~8.3.0",
+    "@nativescript/webpack": "file:../../dist/packages/nativescript-webpack.tgz"
+  }
+}

@@ -17,6 +17,42 @@ module.exports = {
     },
 		// app testing targets
 		apps: {
+      '...New...': {
+        script: `npx cowsay "New DOM Events 💎"`,
+        description: ` 🔻 New`,
+      },
+      new: {
+        clean: {
+          script: 'nx run apps-new:clean',
+          description: '⚆  Clean  🧹',
+        },
+        ios: {
+          script: 'nx run apps-new:ios',
+          description: '⚆  Run iOS  ',
+        },
+        android: {
+          script: 'nx run apps-new:android',
+          description: '⚆  Run Android  🤖',
+        },
+      },
+      '...Old...': {
+        script: `npx cowsay "Old bespoke events 🏚"`,
+        description: ` 🔻 Old`,
+      },
+      old: {
+        clean: {
+          script: 'nx run apps-old:clean',
+          description: '⚆  Clean  🧹',
+        },
+        ios: {
+          script: 'nx run apps-old:ios',
+          description: '⚆  Run iOS  ',
+        },
+        android: {
+          script: 'nx run apps-old:android',
+          description: '⚆  Run Android  🤖',
+        },
+      },
       "...Automated...": {
         script: `npx cowsay "These run fast, watch the fireworks! 🎆"`,
         description: ` 🔻 Automated test runner which executes e2e tests on the target platform 🎆`
