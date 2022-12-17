@@ -1,6 +1,11 @@
 import type { EventData, ListenerEntry, Observable } from '../observable/index';
 import type { ViewBase } from '../../ui/core/view-base';
 
+// This file contains some of Core's hot paths, so attention has been taken to
+// optimise it. Where specified, optimisations made have been informed based on
+// profiles taken on an Apple M1 Max in a debug build on @nativescript/ios@8.3.3
+// on an iOS Simulator.
+
 const timeOrigin = Date.now();
 
 /**
@@ -338,11 +343,21 @@ export class DOMEvent implements Event {
 	private handleEvent({ data, isGlobal, getListenersForType, phase, removeEventListener }: { data: EventData; isGlobal: boolean; getListenersForType: () => readonly ListenerEntry[]; phase: 0 | 1 | 2 | 3; removeEventListener: (eventName: string, callback?: any, thisArg?: any, capture?: boolean) => void }) {
 		// Work on a copy of the array, as any callback could modify the
 		// original array during the loop.
-		const listenersForTypeCopy = getListenersForType().slice();
+		//
+		// Cloning the array via spread syntax is up to 180 nanoseconds faster
+		// per run than using Array.prototype.slice().
+		const listenersForTypeCopy = [...getListenersForType()];
 
 		for (let i = listenersForTypeCopy.length - 1; i >= 0; i--) {
 			const listener = listenersForTypeCopy[i];
-			const { callback, capture, thisArg, once, passive } = listener;
+
+			// Assigning variables this old-fashioned way is up to 50
+			// nanoseconds faster per run than ESM destructuring syntax.
+			const callback = listener.callback;
+			const capture = listener.capture;
+			const thisArg = listener.thisArg;
+			const once = listener.once;
+			const passive = listener.once;
 
 			// The event listener may have been removed since we took a copy of
 			// the array, so bail out if so.
