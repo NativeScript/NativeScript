@@ -353,16 +353,17 @@ export class DOMEvent implements Event {
 
 		// Set a listener to clone the array just before any mutations.
 		let listenersLazyCopy: ListenerEntry[] = listenersLive;
-		const doLazyCopy = () => {
+		listenersLive.onMutation = () => (mutation: string, payload?: unknown) => {
+			console.log(`handleEvent "${data.eventName}": doLazyCopy due to "${mutation}"`, payload);
 			// Cloning the array via spread syntax is up to 180 nanoseconds
 			// faster per run than using Array.prototype.slice().
 			listenersLazyCopy = [...listenersLive];
+			listenersLive.onMutation = null;
 		};
-		listenersLive.once(doLazyCopy);
 
-		// Make sure we remove the listener before we exit the function,
-		// otherwise we may wastefully clone the array.
-		const cleanup = () => listenersLive.removeListener(doLazyCopy);
+		// Make sure we clear the callback before we exit the function,
+		// otherwise we may wastefully clone the array on future mutations.
+		const cleanup = () => (listenersLive.onMutation = null);
 
 		for (let i = listenersLazyCopy.length - 1; i >= 0; i--) {
 			const listener = listenersLazyCopy[i];

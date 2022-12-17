@@ -8,32 +8,11 @@
  * its entire purpose is to be used for performance-sensitive tasks.
  */
 export class MutationSensitiveArray<T> extends Array<T> {
-	private readonly listeners: (() => void)[] = [];
-
-	once(listener: () => void): void {
-		const wrapper = () => {
-			listener();
-			this.removeListener(wrapper);
-		};
-		this.addListener(wrapper);
-	}
-
-	addListener(listener: () => void): void {
-		if (!this.listeners.includes(listener)) {
-			this.listeners.push(listener);
-		}
-	}
-
-	removeListener(listener: () => void): void {
-		const index = this.listeners.indexOf(listener);
-		if (index > -1) {
-			this.listeners.splice(index, 1);
-		}
-	}
+	onMutation: (() => void) | null = null;
 
 	private invalidate(): void {
-		for (const listener of this.listeners) {
-			listener();
+		if (this.onMutation) {
+			this.onMutation();
 		}
 	}
 
