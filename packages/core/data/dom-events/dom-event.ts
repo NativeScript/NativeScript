@@ -1,5 +1,6 @@
 import type { EventData, ListenerEntry, Observable } from '../observable/index';
 import type { ViewBase } from '../../ui/core/view-base';
+import { MutationSensitiveArray } from '../mutation-sensitive-array';
 
 // This file contains some of Core's hot paths, so attention has been taken to
 // optimise it. Where specified, optimisations made have been informed based on
@@ -13,7 +14,7 @@ const timeOrigin = Date.now();
  * optional accesses, so reusing the same one and treating it as immutable
  * avoids unnecessary allocations on a relatively hot path of the library.
  */
-const emptyArray = [] as const;
+const emptyArray = new MutationSensitiveArray<ListenerEntry>();
 
 export class DOMEvent implements Event {
 	/**
@@ -223,7 +224,7 @@ export class DOMEvent implements Event {
 	 * event's cancelable attribute value is false or its preventDefault()
 	 * method was not invoked, and false otherwise.
 	 */
-	dispatchTo({ target, data, getGlobalEventHandlersPreHandling, getGlobalEventHandlersPostHandling }: { target: Observable; data: EventData; getGlobalEventHandlersPreHandling?: () => readonly ListenerEntry[]; getGlobalEventHandlersPostHandling?: () => readonly ListenerEntry[] }): boolean {
+	dispatchTo({ target, data, getGlobalEventHandlersPreHandling, getGlobalEventHandlersPostHandling }: { target: Observable; data: EventData; getGlobalEventHandlersPreHandling?: () => MutationSensitiveArray<ListenerEntry>; getGlobalEventHandlersPostHandling?: () => MutationSensitiveArray<ListenerEntry> }): boolean {
 		if (this.eventPhase !== this.NONE) {
 			throw new Error('Tried to dispatch a dispatching event');
 		}
@@ -340,16 +341,31 @@ export class DOMEvent implements Event {
 		return this.returnValue;
 	}
 
-	private handleEvent({ data, isGlobal, getListenersForType, phase, removeEventListener }: { data: EventData; isGlobal: boolean; getListenersForType: () => readonly ListenerEntry[]; phase: 0 | 1 | 2 | 3; removeEventListener: (eventName: string, callback?: any, thisArg?: any, capture?: boolean) => void }) {
-		// Work on a copy of the array, as any callback could modify the
-		// original array during the loop.
+	private handleEvent({ data, isGlobal, getListenersForType, phase, removeEventListener }: { data: EventData; isGlobal: boolean; getListenersForType: () => MutationSensitiveArray<ListenerEntry>; phase: 0 | 1 | 2 | 3; removeEventListener: (eventName: string, callback?: any, thisArg?: any, capture?: boolean) => void }) {
+		// We want to work on a copy of the array, as any callback could modify
+		// the original array during the loop.
 		//
-		// Cloning the array via spread syntax is up to 180 nanoseconds faster
-		// per run than using Array.prototype.slice().
-		const listenersForTypeCopy = [...getListenersForType()];
+		// However, cloning arrays is expensive on this hot path, so we'll do it
+		// lazily - i.e. only take a clone if a mutation is about to happen.
+		// This optimisation is particularly worth doing as it's very rare that
+		// an event listener callback will end up modifying the listeners array.
+		const listenersLive: MutationSensitiveArray<ListenerEntry> = getListenersForType();
 
-		for (let i = listenersForTypeCopy.length - 1; i >= 0; i--) {
-			const listener = listenersForTypeCopy[i];
+		// Set a listener to clone the array just before any mutations.
+		let listenersLazyCopy: ListenerEntry[] = listenersLive;
+		const doLazyCopy = () => {
+			// Cloning the array via spread syntax is up to 180 nanoseconds
+			// faster per run than using Array.prototype.slice().
+			listenersLazyCopy = [...listenersLive];
+		};
+		listenersLive.once(doLazyCopy);
+
+		// Make sure we remove the listener before we exit the function,
+		// otherwise we may wastefully clone the array.
+		const cleanup = () => listenersLive.removeListener(doLazyCopy);
+
+		for (let i = listenersLazyCopy.length - 1; i >= 0; i--) {
+			const listener = listenersLazyCopy[i];
 
 			// Assigning variables this old-fashioned way is up to 50
 			// nanoseconds faster per run than ESM destructuring syntax.
@@ -365,7 +381,7 @@ export class DOMEvent implements Event {
 			// We simply use a strict equality check here because we trust that
 			// the listeners provider will never allow two deeply-equal
 			// listeners into the array.
-			if (!getListenersForType().includes(listener)) {
+			if (!listenersLive.includes(listener)) {
 				continue;
 			}
 
@@ -395,9 +411,12 @@ export class DOMEvent implements Event {
 			}
 
 			if (this.propagationState === EventPropagationState.stopImmediate) {
+				cleanup();
 				return;
 			}
 		}
+
+		cleanup();
 	}
 }
 

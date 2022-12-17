@@ -1,5 +1,6 @@
 import type { ViewBase } from '../../ui/core/view-base';
 import { DOMEvent } from '../dom-events/dom-event';
+import { MutationSensitiveArray } from '../mutation-sensitive-array';
 
 /**
  * Base event data.
@@ -85,7 +86,7 @@ const _wrappedValues = [new WrappedValue(null), new WrappedValue(null), new Wrap
 
 const _globalEventHandlers: {
 	[eventClass: string]: {
-		[eventName: string]: ListenerEntry[];
+		[eventName: string]: MutationSensitiveArray<ListenerEntry>;
 	};
 } = {};
 
@@ -114,7 +115,7 @@ export class Observable implements EventTarget {
 		return this._isViewBase;
 	}
 
-	private readonly _observers: { [eventName: string]: ListenerEntry[] } = {};
+	private readonly _observers: { [eventName: string]: MutationSensitiveArray<ListenerEntry> } = {};
 
 	public get(name: string): any {
 		return this[name];
@@ -313,7 +314,7 @@ export class Observable implements EventTarget {
 			_globalEventHandlers[eventClass] = {};
 		}
 		if (!Array.isArray(_globalEventHandlers[eventClass][eventName])) {
-			_globalEventHandlers[eventClass][eventName] = [];
+			_globalEventHandlers[eventClass][eventName] = new MutationSensitiveArray();
 		}
 
 		const list = _globalEventHandlers[eventClass][eventName];
@@ -399,11 +400,11 @@ export class Observable implements EventTarget {
 		});
 	}
 
-	private _getGlobalEventHandlers(data: EventData, eventType: 'First' | ''): ListenerEntry[] {
+	private _getGlobalEventHandlers(data: EventData, eventType: 'First' | ''): MutationSensitiveArray<ListenerEntry> {
 		const eventClass = data.object?.constructor?.name;
 		const globalEventHandlersForOwnClass = _globalEventHandlers[eventClass]?.[`${data.eventName}${eventType}`] ?? [];
 		const globalEventHandlersForAllClasses = _globalEventHandlers['*']?.[`${data.eventName}${eventType}`] ?? [];
-		return [...globalEventHandlersForOwnClass, ...globalEventHandlersForAllClasses];
+		return new MutationSensitiveArray(...globalEventHandlersForOwnClass, ...globalEventHandlersForAllClasses);
 	}
 
 	/**
@@ -440,14 +441,14 @@ export class Observable implements EventTarget {
 		}
 	}
 
-	public getEventList(eventName: string, createIfNeeded?: boolean): ListenerEntry[] | undefined {
+	public getEventList(eventName: string, createIfNeeded?: boolean): MutationSensitiveArray<ListenerEntry> | undefined {
 		if (!eventName) {
 			throw new TypeError('EventName must be valid string.');
 		}
 
 		let list = this._observers[eventName];
 		if (!list && createIfNeeded) {
-			list = [];
+			list = new MutationSensitiveArray();
 			this._observers[eventName] = list;
 		}
 
