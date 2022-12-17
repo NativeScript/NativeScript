@@ -1,4 +1,5 @@
 import { Button, EventData, Page, Switch, View, getViewById, Observable, Label, PropertyChangeData } from '@nativescript/core';
+import { jamieProfiler } from '@nativescript/core/profiling/jamie';
 
 export function navigatingTo(args: EventData) {
 	const page = <Page>args.object;
@@ -47,11 +48,22 @@ export class DemoModel extends Observable {
 
 		this.target.addEventListener(Observable.propertyChangeEvent, onPropertyChange, null);
 
+		jamieProfiler.flush();
+
+		console.log('BEGIN PROFILE');
 		const time = profile(() => {
 			for (let i = 0; i < 1000000; i++) {
 				this.target.setProperty(propName, i);
 			}
 		});
+		console.log('END PROFILE');
+
+		console.log(
+			jamieProfiler
+				.report(jamieProfiler.flush())
+				.map(([key, value]) => `${key}: ${value} ms`)
+				.join('\n')
+		);
 
 		this.target.removeEventListener(Observable.propertyChangeEvent, onPropertyChange, null);
 
