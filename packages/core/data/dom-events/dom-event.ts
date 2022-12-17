@@ -300,8 +300,8 @@ export class DOMEvent implements Event {
 
 		// Bubbling phase, e.g. [Button, StackLayout, Page]
 		// It's correct to dispatch the event to the target during both phases.
-		for (const currentTarget of eventPath.reverse()) {
-			this.currentTarget = currentTarget;
+		for (let i = eventPath.length - 1; i >= 0; i--) {
+			const currentTarget = eventPath[i];
 			this.eventPhase = this.target === this.currentTarget ? this.AT_TARGET : this.BUBBLING_PHASE;
 
 			this.handleEvent({
