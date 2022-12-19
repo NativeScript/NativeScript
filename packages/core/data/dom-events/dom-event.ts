@@ -22,7 +22,60 @@ const emptyArray = new MutationSensitiveArray<ListenerEntry>();
  */
 const recycledEventPath: Observable[] = [];
 
+enum EventPropagationState {
+	resume,
+	stop,
+	stopImmediate,
+}
+
 export class DOMEvent implements Event {
+	// Assigning properties directly to the prototype where possible avoids
+	// wasted work in the constructor on each instance construction.
+	static readonly NONE = 0;
+	static readonly CAPTURING_PHASE = 1;
+	static readonly AT_TARGET = 2;
+	static readonly BUBBLING_PHASE = 3;
+
+	// Assigning initial property values directly on the prototype where
+	// possible avoids wasted work in the constructor on each instance
+	// construction. It's ugly, but saves about 100 nanoseconds per
+	// construction.
+	static {
+		Object.defineProperty(DOMEvent.prototype, 'NONE', { value: DOMEvent.NONE });
+		Object.defineProperty(DOMEvent.prototype, 'CAPTURING_PHASE', { value: DOMEvent.CAPTURING_PHASE });
+		Object.defineProperty(DOMEvent.prototype, 'AT_TARGET', { value: DOMEvent.AT_TARGET });
+		Object.defineProperty(DOMEvent.prototype, 'BUBBLING_PHASE', { value: DOMEvent.BUBBLING_PHASE });
+		Object.defineProperty(DOMEvent.prototype, 'cancelBubble', { value: false, writable: true });
+		Object.defineProperty(DOMEvent.prototype, '_canceled', { value: false, writable: true });
+		Object.defineProperty(DOMEvent.prototype, 'isTrusted', { value: false, writable: true, enumerable: true });
+		Object.defineProperty(DOMEvent.prototype, '_eventPhase', { value: DOMEvent.NONE, writable: true });
+		Object.defineProperty(DOMEvent.prototype, '_currentTarget', { value: null, writable: true });
+		Object.defineProperty(DOMEvent.prototype, '_target', { value: null, writable: true });
+		Object.defineProperty(DOMEvent.prototype, 'propagationState', { value: EventPropagationState.resume, writable: true });
+		Object.defineProperty(DOMEvent.prototype, 'listenersLive', { value: emptyArray, writable: true });
+		Object.defineProperty(DOMEvent.prototype, 'listenersLazyCopy', { value: emptyArray, writable: true });
+	}
+
+	NONE: 0;
+	CAPTURING_PHASE: 1;
+	AT_TARGET: 2;
+	BUBBLING_PHASE: 3;
+
+	/**
+	 * Returns true or false depending on how event was initialized. Its return
+	 * value does not always carry meaning, but true can indicate that part of
+	 * the operation during which event was dispatched, can be canceled by
+	 * invoking the preventDefault() method.
+	 */
+	readonly cancelable: boolean;
+
+	/**
+	 * Returns true or false depending on how event was initialized. True if
+	 * event goes through its target's ancestors in reverse tree order, and
+	 * false otherwise.
+	 */
+	readonly bubbles: boolean;
+
 	/**
 	 * @private
 	 * Internal API to facilitate testing - to be removed once we've completed
@@ -33,30 +86,10 @@ export class DOMEvent implements Event {
 	 */
 	static unstable_currentEvent: DOMEvent | null = null;
 
-	readonly NONE = 0;
-	readonly CAPTURING_PHASE = 1;
-	readonly AT_TARGET = 2;
-	readonly BUBBLING_PHASE = 3;
-
-	/**
-	 * Returns true or false depending on how event was initialized. Its return
-	 * value does not always carry meaning, but true can indicate that part of
-	 * the operation during which event was dispatched, can be canceled by
-	 * invoking the preventDefault() method.
-	 */
-	readonly cancelable: boolean = false;
-
-	/**
-	 * Returns true or false depending on how event was initialized. True if
-	 * event goes through its target's ancestors in reverse tree order, and
-	 * false otherwise.
-	 */
-	readonly bubbles: boolean = false;
-
-	private _canceled = false;
+	private _canceled: boolean;
 
 	/** @deprecated Setting this value does nothing. */
-	cancelBubble = false;
+	cancelBubble: boolean;
 
 	/**
 	 * Returns true or false depending on how event was initialized. True if
@@ -70,7 +103,7 @@ export class DOMEvent implements Event {
 	 * otherwise.
 	 * For now, all NativeScript events will have isTrusted: false.
 	 */
-	readonly isTrusted: boolean = false;
+	readonly isTrusted: boolean;
 
 	/** @deprecated Use defaultPrevented instead. */
 	get returnValue() {
@@ -96,7 +129,7 @@ export class DOMEvent implements Event {
 		return this._canceled;
 	}
 
-	private _eventPhase: 0 | 1 | 2 | 3 = this.NONE;
+	private _eventPhase: 0 | 1 | 2 | 3;
 	/**
 	 * Returns the event's phase, which is one of NONE, CAPTURING_PHASE,
 	 * AT_TARGET, and BUBBLING_PHASE.
@@ -108,7 +141,7 @@ export class DOMEvent implements Event {
 		this._eventPhase = value;
 	}
 
-	private _currentTarget: Observable | null = null;
+	private _currentTarget: Observable | null;
 	/**
 	 * Returns the object whose event listener's callback is currently being
 	 * invoked.
@@ -120,7 +153,7 @@ export class DOMEvent implements Event {
 		this._currentTarget = value;
 	}
 
-	private _target: Observable | null = null;
+	private _target: Observable | null;
 	/** Returns the object to which event is dispatched (its target). */
 	get target() {
 		return this._target;
@@ -133,7 +166,7 @@ export class DOMEvent implements Event {
 	// aspect into DOMCustomEvent.
 	readonly detail: unknown | null;
 
-	private propagationState: EventPropagationState = EventPropagationState.resume;
+	private propagationState: EventPropagationState;
 
 	constructor(
 		/**
@@ -142,12 +175,11 @@ export class DOMEvent implements Event {
 		public type: string,
 		options: CustomEventInit = {}
 	) {
-		const { bubbles = false, cancelable = false, composed = false, detail = null } = options;
-
-		this.bubbles = bubbles;
-		this.cancelable = cancelable;
-		this.composed = composed;
-		this.detail = detail;
+		// Avoid destructuring the options object (might save some nanoseconds).
+		this.bubbles = options.bubbles === true;
+		this.cancelable = options.cancelable === true;
+		this.composed = options.composed === true;
+		this.detail = options.detail === undefined ? null : options.detail;
 	}
 
 	/**
@@ -238,8 +270,8 @@ export class DOMEvent implements Event {
 	// lazily - i.e. only take a clone if a mutation is about to happen.
 	// This optimisation is particularly worth doing as it's very rare that
 	// an event listener callback will end up modifying the listeners array.
-	private listenersLive: MutationSensitiveArray<ListenerEntry> = emptyArray;
-	private listenersLazyCopy: ListenerEntry[] = emptyArray;
+	private listenersLive: MutationSensitiveArray<ListenerEntry>;
+	private listenersLazyCopy: ListenerEntry[];
 
 	// Creating this upon class construction as an arrow function rather than as
 	// an inline function bound afresh on each usage saves about 210 nanoseconds
@@ -436,10 +468,4 @@ export class DOMEvent implements Event {
 		// otherwise we may wastefully clone the array on future mutations.
 		this.listenersLive.onMutation = null;
 	}
-}
-
-enum EventPropagationState {
-	resume,
-	stop,
-	stopImmediate,
 }
