@@ -46,11 +46,11 @@ export class DOMEvent implements Event {
 		Object.defineProperty(DOMEvent.prototype, 'AT_TARGET', { value: DOMEvent.AT_TARGET });
 		Object.defineProperty(DOMEvent.prototype, 'BUBBLING_PHASE', { value: DOMEvent.BUBBLING_PHASE });
 		Object.defineProperty(DOMEvent.prototype, 'cancelBubble', { value: false, writable: true });
-		Object.defineProperty(DOMEvent.prototype, '_canceled', { value: false, writable: true });
+		Object.defineProperty(DOMEvent.prototype, 'defaultPrevented', { value: false, writable: true });
 		Object.defineProperty(DOMEvent.prototype, 'isTrusted', { value: false, writable: true, enumerable: true });
-		Object.defineProperty(DOMEvent.prototype, '_eventPhase', { value: DOMEvent.NONE, writable: true });
-		Object.defineProperty(DOMEvent.prototype, '_currentTarget', { value: null, writable: true });
-		Object.defineProperty(DOMEvent.prototype, '_target', { value: null, writable: true });
+		Object.defineProperty(DOMEvent.prototype, 'eventPhase', { value: DOMEvent.NONE, writable: true });
+		Object.defineProperty(DOMEvent.prototype, 'currentTarget', { value: null, writable: true });
+		Object.defineProperty(DOMEvent.prototype, 'target', { value: null, writable: true });
 		Object.defineProperty(DOMEvent.prototype, 'propagationState', { value: EventPropagationState.resume, writable: true });
 		Object.defineProperty(DOMEvent.prototype, 'listenersLive', { value: emptyArray, writable: true });
 		Object.defineProperty(DOMEvent.prototype, 'listenersLazyCopy', { value: emptyArray, writable: true });
@@ -85,8 +85,6 @@ export class DOMEvent implements Event {
 	 * Event that corresponds to the currently-running callback.
 	 */
 	static unstable_currentEvent: DOMEvent | null = null;
-
-	private _canceled: boolean;
 
 	/** @deprecated Setting this value does nothing. */
 	cancelBubble: boolean;
@@ -125,42 +123,27 @@ export class DOMEvent implements Event {
 	 * Returns true if preventDefault() was invoked successfully to indicate
 	 * cancelation, and false otherwise.
 	 */
-	get defaultPrevented() {
-		return this._canceled;
-	}
+	defaultPrevented: boolean;
 
-	private _eventPhase: 0 | 1 | 2 | 3;
+	// Strictly speaking, we should use { public get, private set } for all of
+	// `eventPhase`, `currentTarget`, and `target`, but using simple properties
+	// saves 800 nanoseconds per run of handleEvent() (and so is one of our
+	// biggest optimisations).
+
 	/**
 	 * Returns the event's phase, which is one of NONE, CAPTURING_PHASE,
 	 * AT_TARGET, and BUBBLING_PHASE.
 	 */
-	get eventPhase() {
-		return this._eventPhase;
-	}
-	private set eventPhase(value: 0 | 1 | 2 | 3) {
-		this._eventPhase = value;
-	}
+	eventPhase: 0 | 1 | 2 | 3;
 
-	private _currentTarget: Observable | null;
 	/**
 	 * Returns the object whose event listener's callback is currently being
 	 * invoked.
 	 */
-	get currentTarget() {
-		return this._currentTarget;
-	}
-	private set currentTarget(value: Observable | null) {
-		this._currentTarget = value;
-	}
+	currentTarget: Observable | null;
 
-	private _target: Observable | null;
 	/** Returns the object to which event is dispatched (its target). */
-	get target() {
-		return this._target;
-	}
-	private set target(value: Observable | null) {
-		this._target = value;
-	}
+	target: Observable | null;
 
 	// From CustomEvent rather than Event. Can consider factoring out this
 	// aspect into DOMCustomEvent.
@@ -245,7 +228,7 @@ export class DOMEvent implements Event {
 		if (!this.cancelable) {
 			return;
 		}
-		this._canceled = true;
+		this.defaultPrevented = true;
 	}
 	/**
 	 * Invoking this method prevents event from reaching any registered event
@@ -294,7 +277,7 @@ export class DOMEvent implements Event {
 		}
 		this.eventPhase = this.CAPTURING_PHASE;
 		this.target = target;
-		this._canceled = false;
+		this.defaultPrevented = false;
 
 		// Internal API to facilitate testing - to be removed once we've
 		// completed the breaking changes to migrate fully to DOMEvents.
@@ -361,7 +344,7 @@ export class DOMEvent implements Event {
 
 			if (this.propagationState !== EventPropagationState.resume) {
 				reset();
-				return this.returnValue;
+				return !this.defaultPrevented;
 			}
 		}
 
@@ -381,7 +364,7 @@ export class DOMEvent implements Event {
 
 			if (this.propagationState !== EventPropagationState.resume) {
 				reset();
-				return this.returnValue;
+				return !this.defaultPrevented;
 			}
 
 			// If the event doesn't bubble, then, having dispatched it at the
@@ -406,7 +389,7 @@ export class DOMEvent implements Event {
 		});
 
 		reset();
-		return this.returnValue;
+		return !this.defaultPrevented;
 	}
 
 	private handleEvent({ data, isGlobal, phase, removeEventListener }: { data: EventData; isGlobal: boolean; phase: 0 | 1 | 2 | 3; removeEventListener: (eventName: string, callback?: any, thisArg?: any, capture?: boolean) => void }) {
