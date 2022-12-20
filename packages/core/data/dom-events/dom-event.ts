@@ -326,12 +326,7 @@ export class DOMEvent implements Event {
 		// possible.
 
 		this.listenersLazyCopy = this.listenersLive = getGlobalEventHandlersPreHandling?.() || emptyArray;
-		this.handleEvent({
-			data,
-			isGlobal: true,
-			removeEventListener: removeGlobalEventListener,
-			phase: this.CAPTURING_PHASE,
-		});
+		this.handleEvent(data, true, this.CAPTURING_PHASE, removeGlobalEventListener);
 
 		const eventPath = this.getEventPath(target, 'capture');
 
@@ -341,12 +336,7 @@ export class DOMEvent implements Event {
 			this.eventPhase = this.target === this.currentTarget ? this.AT_TARGET : this.CAPTURING_PHASE;
 
 			this.listenersLazyCopy = this.listenersLive = currentTarget.getEventList(this.type) || emptyArray;
-			this.handleEvent({
-				data,
-				isGlobal: false,
-				removeEventListener: currentTarget.removeEventListener.bind(currentTarget) as Observable['removeEventListener'],
-				phase: this.CAPTURING_PHASE,
-			});
+			this.handleEvent(data, false, this.CAPTURING_PHASE, currentTarget.removeEventListener.bind(currentTarget) as Observable['removeEventListener']);
 
 			if (this.propagationState !== EventPropagationState.resume) {
 				this.resetForRedispatch();
@@ -361,12 +351,7 @@ export class DOMEvent implements Event {
 			this.eventPhase = this.target === this.currentTarget ? this.AT_TARGET : this.BUBBLING_PHASE;
 
 			this.listenersLazyCopy = this.listenersLive = currentTarget.getEventList(this.type) || emptyArray;
-			this.handleEvent({
-				data,
-				isGlobal: false,
-				removeEventListener: currentTarget.removeEventListener.bind(currentTarget) as Observable['removeEventListener'],
-				phase: this.BUBBLING_PHASE,
-			});
+			this.handleEvent(data, false, this.BUBBLING_PHASE, currentTarget.removeEventListener.bind(currentTarget) as Observable['removeEventListener']);
 
 			if (this.propagationState !== EventPropagationState.resume) {
 				this.resetForRedispatch();
@@ -387,20 +372,17 @@ export class DOMEvent implements Event {
 		}
 
 		this.listenersLazyCopy = this.listenersLive = getGlobalEventHandlersPostHandling?.() || emptyArray;
-		this.handleEvent({
-			data,
-			isGlobal: true,
-			removeEventListener: removeGlobalEventListener,
-			phase: this.BUBBLING_PHASE,
-		});
+		this.handleEvent(data, true, this.BUBBLING_PHASE, removeGlobalEventListener);
 
 		this.resetForRedispatch();
 		return !this.defaultPrevented;
 	}
 
-	private handleEvent({ data, isGlobal, phase, removeEventListener }: { data: EventData; isGlobal: boolean; phase: 0 | 1 | 2 | 3; removeEventListener: (eventName: string, callback?: any, thisArg?: any, capture?: boolean) => void }) {
+	// Taking multiple params instead of a single property bag saves 250
+	// nanoseconds per dispatchTo() call.
+	private handleEvent(data: EventData, isGlobal: boolean, phase: 0 | 1 | 2 | 3, removeEventListener: (eventName: string, callback?: any, thisArg?: any, capture?: boolean) => void) {
 		// Set a listener to clone the array just before any mutations.
-		this.listenersLive.onMutation = this.onCurrentListenersMutation;
+		this.listenersLive.onMutation = this.onCurrentListenersMutation.bind(this);
 
 		for (let i = this.listenersLazyCopy.length - 1; i >= 0; i--) {
 			const listener = this.listenersLazyCopy[i];
