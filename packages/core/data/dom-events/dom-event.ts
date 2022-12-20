@@ -192,8 +192,7 @@ export class DOMEvent implements Event {
 	 * [Button, StackLayout, Page] // 'bubble'
 	 */
 	private getEventPath(responder: Observable, path: 'capture' | 'bubble'): Observable[] {
-		recycledEventPath.splice(0, recycledEventPath.length);
-		recycledEventPath.push(responder);
+		recycledEventPath.splice(0, recycledEventPath.length, responder);
 
 		if (!responder.isViewBase()) {
 			return recycledEventPath;
