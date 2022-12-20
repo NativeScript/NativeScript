@@ -331,7 +331,10 @@ export class DOMEvent implements Event {
 		const eventPath = this.getEventPath(target, 'capture');
 
 		// Capturing phase, e.g. [Page, StackLayout, Button]
-		for (const currentTarget of eventPath) {
+		// This traditional C loop runs 150 nanoseconds faster than a for...of
+		// loop.
+		for (let i = 0; i < eventPath.length; i++) {
+			const currentTarget = eventPath[i];
 			this.currentTarget = currentTarget;
 			this.eventPhase = this.target === this.currentTarget ? this.AT_TARGET : this.CAPTURING_PHASE;
 
