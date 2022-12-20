@@ -1,0 +1,17 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+    <Page.actionBar>
+        <ActionBar title="Forms" class="action-bar">
+        </ActionBar>
+    </Page.actionBar>
+    <StackLayout padding="20">
+      <GridLayout rows="auto,auto" columns="auto,*">
+        <Label text="TextField" />
+        <TextField row="1" textChange="{{textChange}}" marginTop="10" />
+      </GridLayout>
+
+      <GridLayout rows="auto,auto" columns="auto,*" marginTop="20">
+        <Label text="TextField" secure="true" />
+        <TextField row="1" textChange="{{textChange}}" marginTop="10" />
+      </GridLayout>
+    </StackLayout>
+</Page>
