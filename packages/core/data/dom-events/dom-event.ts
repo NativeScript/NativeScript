@@ -257,13 +257,19 @@ export class DOMEvent implements Event {
 
 	// Creating this upon class construction as an arrow function rather than as
 	// an inline function bound afresh on each usage saves about 210 nanoseconds
-	// per run of handleEvent().
-	private onCurrentListenersMutation = () => {
+	// per run of dispatchTo().
+	//
+	// Creating it on the prototype and calling with the context instead saves a
+	// further 125 nanoseconds per run of dispatchTo().
+	//
+	// Creating it on the prototype and binding the context instead saves a
+	// further 30 nanoseconds per run of dispatchTo().
+	private onCurrentListenersMutation() {
 		// Cloning the array via spread syntax is up to 180 nanoseconds
 		// faster per run than using Array.prototype.slice().
 		this.listenersLazyCopy = [...this.listenersLive];
 		this.listenersLive.onMutation = null;
-	};
+	}
 
 	/**
 	 * Dispatches a synthetic event event to target and returns true if either
