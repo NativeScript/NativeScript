@@ -736,8 +736,11 @@ function drawBoxShadow(nativeView: NativeScriptUIView, view: View, boxShadow: CS
 	);
 
 	// this should match the view's border radius
-	const cornerRadius = Length.toDevicePixels(<CoreTypes.LengthType>view.style.borderRadius, 0.0);
-
+    let cornerRadius = view.style.borderRadius;
+    if (typeof view.style.borderRadius !== 'number') {
+        cornerRadius = Length.toDevicePixels(<CoreTypes.LengthType>view.style.borderRadius, 0.0);
+    }
+	
 	// apply spreadRadius by expanding shadow layer bounds
 	// prettier-ignore
 	const bounds = CGRectInset(nativeView.bounds,
