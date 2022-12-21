@@ -306,7 +306,13 @@ export class DOMEvent implements Event {
 		// the static method named `removeEventListener` on the target's class
 		// allows us to be robust to the possiblity of the case of the target
 		// overriding it (however unlikely).
-		const removeGlobalEventListener = (target.constructor as unknown as typeof target).removeEventListener.bind(target.constructor) as Observable['removeEventListener'];
+		//
+		// Rather than eagerly binding the context to the function right here,
+		// we pass the function along with its context to handleEvent() to allow
+		// binding only once needed - doing this for each of the
+		// removeEventListener callbacks saves 100 nanoseconds per dispatchTo()
+		// call.
+		const removeGlobalEventListener = (target.constructor as unknown as typeof target).removeEventListener as Observable['removeEventListener'];
 
 		// Global event handlers are a NativeScript-only concept, so we'll not
 		// try to add new formal event phases for them (as that could break DOM
@@ -326,7 +332,7 @@ export class DOMEvent implements Event {
 		// possible.
 
 		this.listenersLazyCopy = this.listenersLive = getGlobalEventHandlersPreHandling?.() || emptyArray;
-		this.handleEvent(data, true, this.CAPTURING_PHASE, removeGlobalEventListener);
+		this.handleEvent(data, true, this.CAPTURING_PHASE, removeGlobalEventListener, target.constructor);
 
 		const eventPath = this.getEventPath(target, 'capture');
 
@@ -339,7 +345,7 @@ export class DOMEvent implements Event {
 			this.eventPhase = this.target === this.currentTarget ? this.AT_TARGET : this.CAPTURING_PHASE;
 
 			this.listenersLazyCopy = this.listenersLive = currentTarget.getEventList(this.type) || emptyArray;
-			this.handleEvent(data, false, this.CAPTURING_PHASE, currentTarget.removeEventListener.bind(currentTarget) as Observable['removeEventListener']);
+			this.handleEvent(data, false, this.CAPTURING_PHASE, currentTarget.removeEventListener, currentTarget);
 
 			if (this.propagationState !== EventPropagationState.resume) {
 				this.resetForRedispatch();
@@ -354,7 +360,7 @@ export class DOMEvent implements Event {
 			this.eventPhase = this.target === this.currentTarget ? this.AT_TARGET : this.BUBBLING_PHASE;
 
 			this.listenersLazyCopy = this.listenersLive = currentTarget.getEventList(this.type) || emptyArray;
-			this.handleEvent(data, false, this.BUBBLING_PHASE, currentTarget.removeEventListener.bind(currentTarget) as Observable['removeEventListener']);
+			this.handleEvent(data, false, this.BUBBLING_PHASE, currentTarget.removeEventListener, currentTarget);
 
 			if (this.propagationState !== EventPropagationState.resume) {
 				this.resetForRedispatch();
@@ -375,7 +381,7 @@ export class DOMEvent implements Event {
 		}
 
 		this.listenersLazyCopy = this.listenersLive = getGlobalEventHandlersPostHandling?.() || emptyArray;
-		this.handleEvent(data, true, this.BUBBLING_PHASE, removeGlobalEventListener);
+		this.handleEvent(data, true, this.BUBBLING_PHASE, removeGlobalEventListener, target.constructor);
 
 		this.resetForRedispatch();
 		return !this.defaultPrevented;
@@ -383,7 +389,7 @@ export class DOMEvent implements Event {
 
 	// Taking multiple params instead of a single property bag saves 250
 	// nanoseconds per dispatchTo() call.
-	private handleEvent(data: EventData, isGlobal: boolean, phase: 0 | 1 | 2 | 3, removeEventListener: (eventName: string, callback?: any, thisArg?: any, capture?: boolean) => void) {
+	private handleEvent(data: EventData, isGlobal: boolean, phase: 0 | 1 | 2 | 3, removeEventListener: (eventName: string, callback?: any, thisArg?: any, capture?: boolean) => void, removeEventListenerContext: unknown) {
 		// Set a listener to clone the array just before any mutations.
 		this.listenersLive.onMutation = this.onCurrentListenersMutation.bind(this);
 
@@ -416,7 +422,7 @@ export class DOMEvent implements Event {
 			}
 
 			if (once) {
-				removeEventListener(this.type, callback, thisArg, capture);
+				removeEventListener.call(removeEventListenerContext, this.type, callback, thisArg, capture);
 			}
 
 			// Consistent with the original implementation, we only apply
