@@ -393,6 +393,17 @@ export class DOMEvent implements Event {
 		for (let i = this.listenersLazyCopy.length - 1; i >= 0; i--) {
 			const listener = this.listenersLazyCopy[i];
 
+			// Assigning variables this old-fashioned way is up to 50
+			// nanoseconds faster per run than ESM destructuring syntax.
+			const capture = listener.capture;
+
+			// Handle only the events appropriate to the phase. Global events
+			// (a NativeScript-only concept) are allowed to be handled
+			// regardless of phase, for backwards-compatibility.
+			if (!isGlobal && ((phase === DOMEvent.CAPTURING_PHASE && !capture) || (phase === DOMEvent.BUBBLING_PHASE && capture))) {
+				continue;
+			}
+
 			// The event listener may have been removed since we took a copy of
 			// the array, so bail out if so.
 			//
@@ -407,17 +418,6 @@ export class DOMEvent implements Event {
 			// beforeMutation) to allow O(1) lookup, but it went 1000 ns slower
 			// in practice, so it stays!
 			if (!this.listenersLive.includes(listener)) {
-				continue;
-			}
-
-			// Assigning variables this old-fashioned way is up to 50
-			// nanoseconds faster per run than ESM destructuring syntax.
-			const capture = listener.capture;
-
-			// Handle only the events appropriate to the phase. Global events
-			// (a NativeScript-only concept) are allowed to be handled
-			// regardless of phase, for backwards-compatibility.
-			if (!isGlobal && ((phase === DOMEvent.CAPTURING_PHASE && !capture) || (phase === DOMEvent.BUBBLING_PHASE && capture))) {
 				continue;
 			}
 
