@@ -393,6 +393,10 @@ export class DOMEvent implements Event {
 	// nanoseconds per dispatchTo() call.
 	private handleEvent(data: EventData, isGlobal: boolean, phase: 0 | 1 | 2 | 3, removeEventListener: (eventName: string, callback?: any, thisArg?: any, capture?: boolean) => void, removeEventListenerContext: unknown) {
 		// Set a listener to clone the array just before any mutations.
+		//
+		// Lazy-binding this (binding it just before being called, rather than
+		// up-front) unexpectedly seems to slow things down - v8 may be
+		// optimising it for us or something.
 		this.listenersLive.onMutation = this.onCurrentListenersMutation.bind(this);
 
 		for (let i = this.listenersLazyCopy.length - 1; i >= 0; i--) {
