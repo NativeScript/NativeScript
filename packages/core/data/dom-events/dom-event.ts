@@ -56,10 +56,10 @@ export class DOMEvent implements Event {
 		Object.defineProperty(DOMEvent.prototype, 'listenersLazyCopy', { value: emptyArray, writable: true });
 	}
 
-	NONE: 0;
-	CAPTURING_PHASE: 1;
-	AT_TARGET: 2;
-	BUBBLING_PHASE: 3;
+	declare NONE: 0;
+	declare CAPTURING_PHASE: 1;
+	declare AT_TARGET: 2;
+	declare BUBBLING_PHASE: 3;
 
 	/**
 	 * Returns true or false depending on how event was initialized. Its return
@@ -67,14 +67,14 @@ export class DOMEvent implements Event {
 	 * the operation during which event was dispatched, can be canceled by
 	 * invoking the preventDefault() method.
 	 */
-	readonly cancelable: boolean;
+	declare readonly cancelable: boolean;
 
 	/**
 	 * Returns true or false depending on how event was initialized. True if
 	 * event goes through its target's ancestors in reverse tree order, and
 	 * false otherwise.
 	 */
-	readonly bubbles: boolean;
+	declare readonly bubbles: boolean;
 
 	/**
 	 * @private
@@ -87,21 +87,21 @@ export class DOMEvent implements Event {
 	static unstable_currentEvent: DOMEvent | null = null;
 
 	/** @deprecated Setting this value does nothing. */
-	cancelBubble: boolean;
+	declare cancelBubble: boolean;
 
 	/**
 	 * Returns true or false depending on how event was initialized. True if
 	 * event invokes listeners past a ShadowRoot node that is the root of its
 	 * target, and false otherwise.
 	 */
-	readonly composed: boolean;
+	declare readonly composed: boolean;
 
 	/**
 	 * Returns true if event was dispatched by the user agent, and false
 	 * otherwise.
 	 * For now, all NativeScript events will have isTrusted: false.
 	 */
-	readonly isTrusted: boolean;
+	declare readonly isTrusted: boolean;
 
 	/** @deprecated Use defaultPrevented instead. */
 	get returnValue() {
@@ -123,7 +123,7 @@ export class DOMEvent implements Event {
 	 * Returns true if preventDefault() was invoked successfully to indicate
 	 * cancelation, and false otherwise.
 	 */
-	defaultPrevented: boolean;
+	declare defaultPrevented: boolean;
 
 	// Strictly speaking, we should use { public get, private set } for all of
 	// `eventPhase`, `currentTarget`, and `target`, but using simple properties
@@ -134,22 +134,22 @@ export class DOMEvent implements Event {
 	 * Returns the event's phase, which is one of NONE, CAPTURING_PHASE,
 	 * AT_TARGET, and BUBBLING_PHASE.
 	 */
-	eventPhase: 0 | 1 | 2 | 3;
+	declare eventPhase: 0 | 1 | 2 | 3;
 
 	/**
 	 * Returns the object whose event listener's callback is currently being
 	 * invoked.
 	 */
-	currentTarget: Observable | null;
+	declare currentTarget: Observable | null;
 
 	/** Returns the object to which event is dispatched (its target). */
-	target: Observable | null;
+	declare target: Observable | null;
 
 	// From CustomEvent rather than Event. Can consider factoring out this
 	// aspect into DOMCustomEvent.
-	readonly detail: unknown | null;
+	declare readonly detail: unknown | null;
 
-	private propagationState: EventPropagationState;
+	private declare propagationState: EventPropagationState;
 
 	constructor(
 		/**
@@ -252,8 +252,8 @@ export class DOMEvent implements Event {
 	// lazily - i.e. only take a clone if a mutation is about to happen.
 	// This optimisation is particularly worth doing as it's very rare that
 	// an event listener callback will end up modifying the listeners array.
-	private listenersLive: MutationSensitiveArray<ListenerEntry>;
-	private listenersLazyCopy: ListenerEntry[];
+	private declare listenersLive: MutationSensitiveArray<ListenerEntry>;
+	private declare listenersLazyCopy: ListenerEntry[];
 
 	// Creating this upon class construction as an arrow function rather than as
 	// an inline function bound afresh on each usage saves about 210 nanoseconds
