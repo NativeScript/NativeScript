@@ -63,10 +63,7 @@ function initializeTapAndDoubleTapGestureListener() {
 
 		public onLongPress(motionEvent: android.view.MotionEvent): void {
 			if (this._type & GestureTypes.longPress && this._observer?.callback) {
-				new DOMEvent('longPress').dispatchTo({
-					target: this._target,
-					data: _getLongPressArgs(GestureTypes.longPress, this._target, GestureStateTypes.began, motionEvent),
-				});
+				new DOMEvent('longPress').dispatchTo(this._target, _getLongPressArgs(GestureTypes.longPress, this._target, GestureStateTypes.began, motionEvent));
 			}
 		}
 
@@ -74,10 +71,7 @@ function initializeTapAndDoubleTapGestureListener() {
 			if (this._target.getGestureObservers(GestureTypes.doubleTap).length) {
 				this._tapTimeoutId = timer.setTimeout(() => {
 					if (this._type & GestureTypes.tap && this._observer?.callback) {
-						new DOMEvent('tap').dispatchTo({
-							target: this._target,
-							data: _getTapArgs(GestureTypes.tap, this._target, motionEvent),
-						});
+						new DOMEvent('tap').dispatchTo(this._target, _getTapArgs(GestureTypes.tap, this._target, motionEvent));
 					}
 					timer.clearTimeout(this._tapTimeoutId);
 				}, TapAndDoubleTapGestureListenerImpl.DoubleTapTimeout);
@@ -85,10 +79,7 @@ function initializeTapAndDoubleTapGestureListener() {
 			}
 
 			if (this._type & GestureTypes.tap && this._observer?.callback) {
-				new DOMEvent('tap').dispatchTo({
-					target: this._target,
-					data: _getTapArgs(GestureTypes.tap, this._target, motionEvent),
-				});
+				new DOMEvent('tap').dispatchTo(this._target, _getTapArgs(GestureTypes.tap, this._target, motionEvent));
 			}
 		}
 
@@ -97,10 +88,7 @@ function initializeTapAndDoubleTapGestureListener() {
 				timer.clearTimeout(this._tapTimeoutId);
 			}
 			if (this._type & GestureTypes.doubleTap && this._observer?.callback) {
-				new DOMEvent('doubleTap').dispatchTo({
-					target: this._target,
-					data: _getTapArgs(GestureTypes.doubleTap, this._target, motionEvent),
-				});
+				new DOMEvent('doubleTap').dispatchTo(this._target, _getTapArgs(GestureTypes.doubleTap, this._target, motionEvent));
 			}
 		}
 	}
@@ -137,10 +125,7 @@ function initializePinchGestureListener() {
 			this._scale = detector.getScaleFactor();
 
 			if (this._observer?.callback) {
-				new DOMEvent('pinch').dispatchTo({
-					target: this._target,
-					data: new PinchGestureEventData(this._target, detector, this._scale, this._target, GestureStateTypes.began),
-				});
+				new DOMEvent('pinch').dispatchTo(this._target, new PinchGestureEventData(this._target, detector, this._scale, this._target, GestureStateTypes.began));
 			}
 
 			return true;
@@ -150,10 +135,7 @@ function initializePinchGestureListener() {
 			this._scale *= detector.getScaleFactor();
 
 			if (this._observer?.callback) {
-				new DOMEvent('pinch').dispatchTo({
-					target: this._target,
-					data: new PinchGestureEventData(this._target, detector, this._scale, this._target, GestureStateTypes.changed),
-				});
+				new DOMEvent('pinch').dispatchTo(this._target, new PinchGestureEventData(this._target, detector, this._scale, this._target, GestureStateTypes.changed));
 			}
 
 			return true;
@@ -163,10 +145,7 @@ function initializePinchGestureListener() {
 			this._scale *= detector.getScaleFactor();
 
 			if (this._observer?.callback) {
-				new DOMEvent('pinch').dispatchTo({
-					target: this._target,
-					data: new PinchGestureEventData(this._target, detector, this._scale, this._target, GestureStateTypes.ended),
-				});
+				new DOMEvent('pinch').dispatchTo(this._target, new PinchGestureEventData(this._target, detector, this._scale, this._target, GestureStateTypes.ended));
 			}
 		}
 	}
@@ -212,19 +191,13 @@ function initializeSwipeGestureListener() {
 					if (Math.abs(deltaX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
 						if (deltaX > 0) {
 							if (this._observer?.callback) {
-								new DOMEvent('swipe').dispatchTo({
-									target: this._target,
-									data: _getSwipeArgs(SwipeDirection.right, this._target, initialEvent, currentEvent),
-								});
+								new DOMEvent('swipe').dispatchTo(this._target, _getSwipeArgs(SwipeDirection.right, this._target, initialEvent, currentEvent));
 							}
 
 							result = true;
 						} else {
 							if (this._observer?.callback) {
-								new DOMEvent('swipe').dispatchTo({
-									target: this._target,
-									data: _getSwipeArgs(SwipeDirection.left, this._target, initialEvent, currentEvent),
-								});
+								new DOMEvent('swipe').dispatchTo(this._target, _getSwipeArgs(SwipeDirection.left, this._target, initialEvent, currentEvent));
 							}
 							result = true;
 						}
@@ -233,18 +206,12 @@ function initializeSwipeGestureListener() {
 					if (Math.abs(deltaY) > SWIPE_THRESHOLD && Math.abs(velocityY) > SWIPE_VELOCITY_THRESHOLD) {
 						if (deltaY > 0) {
 							if (this._observer?.callback) {
-								new DOMEvent('swipe').dispatchTo({
-									target: this._target,
-									data: _getSwipeArgs(SwipeDirection.down, this._target, initialEvent, currentEvent),
-								});
+								new DOMEvent('swipe').dispatchTo(this._target, _getSwipeArgs(SwipeDirection.down, this._target, initialEvent, currentEvent));
 							}
 							result = true;
 						} else {
 							if (this._observer?.callback) {
-								new DOMEvent('swipe').dispatchTo({
-									target: this._target,
-									data: _getSwipeArgs(SwipeDirection.up, this._target, initialEvent, currentEvent),
-								});
+								new DOMEvent('swipe').dispatchTo(this._target, _getSwipeArgs(SwipeDirection.up, this._target, initialEvent, currentEvent));
 							}
 							result = true;
 						}
@@ -372,10 +339,7 @@ export class GesturesObserver extends GesturesObserverBase {
 			this._eventData.prepare(this.target, motionEvent);
 
 			if (this.callback) {
-				new DOMEvent('touch').dispatchTo({
-					target: this.target,
-					data: this._eventData,
-				});
+				new DOMEvent('touch').dispatchTo(this.target, this._eventData);
 			}
 		}
 
@@ -504,10 +468,7 @@ class CustomPanGestureDetector {
 	private trackStop(currentEvent: android.view.MotionEvent, cacheEvent: boolean) {
 		if (this.isTracking) {
 			if (this.observer?.callback) {
-				new DOMEvent('pan').dispatchTo({
-					target: this.target,
-					data: _getPanArgs(this.deltaX, this.deltaY, this.target, GestureStateTypes.ended, null, currentEvent),
-				});
+				new DOMEvent('pan').dispatchTo(this.target, _getPanArgs(this.deltaX, this.deltaY, this.target, GestureStateTypes.ended, null, currentEvent));
 			}
 
 			this.deltaX = undefined;
@@ -529,10 +490,7 @@ class CustomPanGestureDetector {
 		this.isTracking = true;
 
 		if (this.observer?.callback) {
-			new DOMEvent('pan').dispatchTo({
-				target: this.target,
-				data: _getPanArgs(0, 0, this.target, GestureStateTypes.began, null, currentEvent),
-			});
+			new DOMEvent('pan').dispatchTo(this.target, _getPanArgs(0, 0, this.target, GestureStateTypes.began, null, currentEvent));
 		}
 	}
 
@@ -542,10 +500,7 @@ class CustomPanGestureDetector {
 		this.deltaY = current.y - this.initialY;
 
 		if (this.observer?.callback) {
-			new DOMEvent('pan').dispatchTo({
-				target: this.target,
-				data: _getPanArgs(this.deltaX, this.deltaY, this.target, GestureStateTypes.changed, null, currentEvent),
-			});
+			new DOMEvent('pan').dispatchTo(this.target, _getPanArgs(this.deltaX, this.deltaY, this.target, GestureStateTypes.changed, null, currentEvent));
 		}
 	}
 
@@ -665,10 +620,7 @@ class CustomRotateGestureDetector {
 		};
 
 		if (this.observer?.callback) {
-			new DOMEvent('rotation').dispatchTo({
-				target: this.target,
-				data: args,
-			});
+			new DOMEvent('rotation').dispatchTo(this.target, args);
 		}
 	}
 

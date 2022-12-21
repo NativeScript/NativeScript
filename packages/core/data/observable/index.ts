@@ -377,12 +377,12 @@ export class Observable implements EventTarget {
 	 * @param options Options for the event, in line with DOM Standard.
 	 */
 	public notify<T extends EventData>(data: T, options?: CustomEventInit): void {
-		new DOMEvent(data.eventName, options).dispatchTo({
-			target: this,
+		new DOMEvent(data.eventName, options).dispatchTo(
+			this,
 			data,
-			getGlobalEventHandlersPreHandling: () => this._getGlobalEventHandlers(data, 'First'),
-			getGlobalEventHandlersPostHandling: () => this._getGlobalEventHandlers(data, ''),
-		});
+			() => this._getGlobalEventHandlers(data, 'First'),
+			() => this._getGlobalEventHandlers(data, '')
+		);
 	}
 
 	dispatchEvent(event: DOMEvent): boolean {
@@ -392,12 +392,12 @@ export class Observable implements EventTarget {
 			detail: event.detail,
 		};
 
-		return event.dispatchTo({
-			target: this,
+		return event.dispatchTo(
+			this,
 			data,
-			getGlobalEventHandlersPreHandling: () => this._getGlobalEventHandlers(data, 'First'),
-			getGlobalEventHandlersPostHandling: () => this._getGlobalEventHandlers(data, ''),
-		});
+			() => this._getGlobalEventHandlers(data, 'First'),
+			() => this._getGlobalEventHandlers(data, '')
+		);
 	}
 
 	private _getGlobalEventHandlers(data: EventData, eventType: 'First' | ''): MutationSensitiveArray<ListenerEntry> {

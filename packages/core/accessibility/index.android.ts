@@ -56,17 +56,17 @@ function accessibilityEventHelper(view: View, eventType: number) {
 			 */
 			if (SDK_VERSION >= 26) {
 				// Trigger all tap handlers on this view.
-				new DOMEvent('tap').dispatchTo({
-					target: view as View,
-					data: {
+				new DOMEvent('tap').dispatchTo(
+					view as View,
+					{
 						android: view.android,
 						eventName: 'tap',
 						ios: null,
 						object: view,
 						type: GestureTypes.tap,
 						view,
-					} as GestureEventData,
-				});
+					} as GestureEventData
+				);
 			}
 
 			return;

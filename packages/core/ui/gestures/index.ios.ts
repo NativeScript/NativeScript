@@ -134,141 +134,37 @@ export class GesturesObserver extends GesturesObserverBase {
 		// release, we may make them bubbling.
 
 		if (type & GestureTypes.tap) {
-			nativeView.addGestureRecognizer(
-				this._createRecognizer(
-					GestureTypes.tap,
-					(args) =>
-						args.view &&
-						new DOMEvent('tap').dispatchTo({
-							target: args.view as View,
-							data: _getTapData(args),
-						})
-				)
-			);
+			nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.tap, (args) => args.view && new DOMEvent('tap').dispatchTo(args.view as View, _getTapData(args))));
 		}
 
 		if (type & GestureTypes.doubleTap) {
-			nativeView.addGestureRecognizer(
-				this._createRecognizer(
-					GestureTypes.doubleTap,
-					(args) =>
-						args.view &&
-						new DOMEvent('doubleTap').dispatchTo({
-							target: args.view as View,
-							data: _getTapData(args),
-						})
-				)
-			);
+			nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.doubleTap, (args) => args.view && new DOMEvent('doubleTap').dispatchTo(args.view as View, _getTapData(args))));
 		}
 
 		if (type & GestureTypes.pinch) {
-			nativeView.addGestureRecognizer(
-				this._createRecognizer(
-					GestureTypes.pinch,
-					(args) =>
-						args.view &&
-						new DOMEvent('pinch').dispatchTo({
-							target: args.view as View,
-							data: _getPinchData(args),
-						})
-				)
-			);
+			nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.pinch, (args) => args.view && new DOMEvent('pinch').dispatchTo(args.view as View, _getPinchData(args))));
 		}
 
 		if (type & GestureTypes.pan) {
-			nativeView.addGestureRecognizer(
-				this._createRecognizer(
-					GestureTypes.pan,
-					(args) =>
-						args.view &&
-						new DOMEvent('pan').dispatchTo({
-							target: args.view as View,
-							data: _getPanData(args, target.nativeViewProtected),
-						})
-				)
-			);
+			nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.pan, (args) => args.view && new DOMEvent('pan').dispatchTo(args.view as View, _getPanData(args, target.nativeViewProtected))));
 		}
 
 		if (type & GestureTypes.swipe) {
-			nativeView.addGestureRecognizer(
-				this._createRecognizer(
-					GestureTypes.swipe,
-					(args) =>
-						args.view &&
-						new DOMEvent('swipe').dispatchTo({
-							target: args.view as View,
-							data: _getSwipeData(args),
-						}),
-					UISwipeGestureRecognizerDirection.Down
-				)
-			);
+			nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.swipe, (args) => args.view && new DOMEvent('swipe').dispatchTo(args.view as View, _getSwipeData(args)), UISwipeGestureRecognizerDirection.Down));
 
-			nativeView.addGestureRecognizer(
-				this._createRecognizer(
-					GestureTypes.swipe,
-					(args) =>
-						args.view &&
-						new DOMEvent('swipe').dispatchTo({
-							target: args.view as View,
-							data: _getSwipeData(args),
-						}),
-					UISwipeGestureRecognizerDirection.Left
-				)
-			);
+			nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.swipe, (args) => args.view && new DOMEvent('swipe').dispatchTo(args.view as View, _getSwipeData(args)), UISwipeGestureRecognizerDirection.Left));
 
-			nativeView.addGestureRecognizer(
-				this._createRecognizer(
-					GestureTypes.swipe,
-					(args) =>
-						args.view &&
-						new DOMEvent('swipe').dispatchTo({
-							target: args.view as View,
-							data: _getSwipeData(args),
-						}),
-					UISwipeGestureRecognizerDirection.Right
-				)
-			);
+			nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.swipe, (args) => args.view && new DOMEvent('swipe').dispatchTo(args.view as View, _getSwipeData(args)), UISwipeGestureRecognizerDirection.Right));
 
-			nativeView.addGestureRecognizer(
-				this._createRecognizer(
-					GestureTypes.swipe,
-					(args) =>
-						args.view &&
-						new DOMEvent('swipe').dispatchTo({
-							target: args.view as View,
-							data: _getSwipeData(args),
-						}),
-					UISwipeGestureRecognizerDirection.Up
-				)
-			);
+			nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.swipe, (args) => args.view && new DOMEvent('swipe').dispatchTo(args.view as View, _getSwipeData(args)), UISwipeGestureRecognizerDirection.Up));
 		}
 
 		if (type & GestureTypes.rotation) {
-			nativeView.addGestureRecognizer(
-				this._createRecognizer(
-					GestureTypes.rotation,
-					(args) =>
-						args.view &&
-						new DOMEvent('rotation').dispatchTo({
-							target: args.view as View,
-							data: _getRotationData(args),
-						})
-				)
-			);
+			nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.rotation, (args) => args.view && new DOMEvent('rotation').dispatchTo(args.view as View, _getRotationData(args))));
 		}
 
 		if (type & GestureTypes.longPress) {
-			nativeView.addGestureRecognizer(
-				this._createRecognizer(
-					GestureTypes.longPress,
-					(args) =>
-						args.view &&
-						new DOMEvent('longPress').dispatchTo({
-							target: args.view as View,
-							data: _getLongPressData(args),
-						})
-				)
-			);
+			nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.longPress, (args) => args.view && new DOMEvent('longPress').dispatchTo(args.view as View, _getLongPressData(args))));
 		}
 
 		if (type & GestureTypes.touch) {

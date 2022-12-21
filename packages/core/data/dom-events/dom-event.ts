@@ -290,7 +290,9 @@ export class DOMEvent implements Event {
 	 * event's cancelable attribute value is false or its preventDefault()
 	 * method was not invoked, and false otherwise.
 	 */
-	dispatchTo({ target, data, getGlobalEventHandlersPreHandling, getGlobalEventHandlersPostHandling }: { target: Observable; data: EventData; getGlobalEventHandlersPreHandling?: () => MutationSensitiveArray<ListenerEntry>; getGlobalEventHandlersPostHandling?: () => MutationSensitiveArray<ListenerEntry> }): boolean {
+	// Taking multiple params rather than a single property bag saves about 100
+	// nanoseconds per call.
+	dispatchTo(target: Observable, data: EventData, getGlobalEventHandlersPreHandling?: () => MutationSensitiveArray<ListenerEntry>, getGlobalEventHandlersPostHandling?: () => MutationSensitiveArray<ListenerEntry>): boolean {
 		if (this.eventPhase !== DOMEvent.NONE) {
 			throw new Error('Tried to dispatch a dispatching event');
 		}
