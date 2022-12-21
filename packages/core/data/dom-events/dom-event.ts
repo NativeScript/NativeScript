@@ -280,7 +280,7 @@ export class DOMEvent implements Event {
 	private resetForRedispatch() {
 		this.currentTarget = null;
 		this.target = null;
-		this.eventPhase = this.NONE;
+		this.eventPhase = DOMEvent.NONE;
 		this.propagationState = EventPropagationState.resume;
 		this.listenersLive = emptyArray;
 		this.listenersLazyCopy = emptyArray;
@@ -291,10 +291,10 @@ export class DOMEvent implements Event {
 	 * method was not invoked, and false otherwise.
 	 */
 	dispatchTo({ target, data, getGlobalEventHandlersPreHandling, getGlobalEventHandlersPostHandling }: { target: Observable; data: EventData; getGlobalEventHandlersPreHandling?: () => MutationSensitiveArray<ListenerEntry>; getGlobalEventHandlersPostHandling?: () => MutationSensitiveArray<ListenerEntry> }): boolean {
-		if (this.eventPhase !== this.NONE) {
+		if (this.eventPhase !== DOMEvent.NONE) {
 			throw new Error('Tried to dispatch a dispatching event');
 		}
-		this.eventPhase = this.CAPTURING_PHASE;
+		this.eventPhase = DOMEvent.CAPTURING_PHASE;
 		this.target = target;
 		this.defaultPrevented = false;
 
@@ -332,7 +332,7 @@ export class DOMEvent implements Event {
 		// possible.
 
 		this.listenersLazyCopy = this.listenersLive = getGlobalEventHandlersPreHandling?.() || emptyArray;
-		this.handleEvent(data, true, this.CAPTURING_PHASE, removeGlobalEventListener, target.constructor);
+		this.handleEvent(data, true, DOMEvent.CAPTURING_PHASE, removeGlobalEventListener, target.constructor);
 
 		const eventPath = this.getEventPath(target, 'capture');
 
@@ -342,10 +342,10 @@ export class DOMEvent implements Event {
 		for (let i = 0; i < eventPath.length; i++) {
 			const currentTarget = eventPath[i];
 			this.currentTarget = currentTarget;
-			this.eventPhase = this.target === this.currentTarget ? this.AT_TARGET : this.CAPTURING_PHASE;
+			this.eventPhase = this.target === this.currentTarget ? DOMEvent.AT_TARGET : DOMEvent.CAPTURING_PHASE;
 
 			this.listenersLazyCopy = this.listenersLive = currentTarget.getEventList(this.type) || emptyArray;
-			this.handleEvent(data, false, this.CAPTURING_PHASE, currentTarget.removeEventListener, currentTarget);
+			this.handleEvent(data, false, DOMEvent.CAPTURING_PHASE, currentTarget.removeEventListener, currentTarget);
 
 			if (this.propagationState !== EventPropagationState.resume) {
 				this.resetForRedispatch();
@@ -357,10 +357,10 @@ export class DOMEvent implements Event {
 		// It's correct to dispatch the event to the target during both phases.
 		for (let i = eventPath.length - 1; i >= 0; i--) {
 			const currentTarget = eventPath[i];
-			this.eventPhase = this.target === this.currentTarget ? this.AT_TARGET : this.BUBBLING_PHASE;
+			this.eventPhase = this.target === this.currentTarget ? DOMEvent.AT_TARGET : DOMEvent.BUBBLING_PHASE;
 
 			this.listenersLazyCopy = this.listenersLive = currentTarget.getEventList(this.type) || emptyArray;
-			this.handleEvent(data, false, this.BUBBLING_PHASE, currentTarget.removeEventListener, currentTarget);
+			this.handleEvent(data, false, DOMEvent.BUBBLING_PHASE, currentTarget.removeEventListener, currentTarget);
 
 			if (this.propagationState !== EventPropagationState.resume) {
 				this.resetForRedispatch();
@@ -377,11 +377,11 @@ export class DOMEvent implements Event {
 
 			// Restore event phase in case it changed to AT_TARGET during
 			// this.handleEvent().
-			this.eventPhase = this.BUBBLING_PHASE;
+			this.eventPhase = DOMEvent.BUBBLING_PHASE;
 		}
 
 		this.listenersLazyCopy = this.listenersLive = getGlobalEventHandlersPostHandling?.() || emptyArray;
-		this.handleEvent(data, true, this.BUBBLING_PHASE, removeGlobalEventListener, target.constructor);
+		this.handleEvent(data, true, DOMEvent.BUBBLING_PHASE, removeGlobalEventListener, target.constructor);
 
 		this.resetForRedispatch();
 		return !this.defaultPrevented;
@@ -417,7 +417,7 @@ export class DOMEvent implements Event {
 			// Handle only the events appropriate to the phase. Global events
 			// (a NativeScript-only concept) are allowed to be handled
 			// regardless of phase, for backwards-compatibility.
-			if (!isGlobal && ((phase === this.CAPTURING_PHASE && !capture) || (phase === this.BUBBLING_PHASE && capture))) {
+			if (!isGlobal && ((phase === DOMEvent.CAPTURING_PHASE && !capture) || (phase === DOMEvent.BUBBLING_PHASE && capture))) {
 				continue;
 			}
 
