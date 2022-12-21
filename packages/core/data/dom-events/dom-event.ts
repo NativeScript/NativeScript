@@ -365,8 +365,14 @@ export class DOMEvent implements Event {
 	// Taking multiple params instead of a single property bag saves 250
 	// nanoseconds per dispatchTo() call.
 	private handleEvent(data: EventData, isGlobal: boolean, phase: 0 | 1 | 2 | 3, removeEventListener: (eventName: string, callback?: any, thisArg?: any, capture?: boolean) => void, removeEventListenerContext: unknown) {
-		// Clone the array just before any mutations.
-		const listeners = [...this.listeners];
+		// Clone the array just before any mutations. I tried swapping this out
+		// for a copy-on-write array, but as it had to maintain its own array of
+		// listeners for any write actions, it actually ran significantly
+		// slower.
+		//
+		// There's no clear observable difference between array spread and slice
+		// here, but I think slice has reason to run faster.
+		const listeners = this.listeners.slice();
 
 		for (let i = listeners.length - 1; i >= 0; i--) {
 			const listener = listeners[i];
