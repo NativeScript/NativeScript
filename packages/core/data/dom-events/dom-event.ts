@@ -121,7 +121,7 @@ export class DOMEvent implements Event {
 
 	// Strictly speaking, we should use { public get, private set } for all of
 	// `eventPhase`, `currentTarget`, and `target`, but using simple properties
-	// saves 800 nanoseconds per run of handleEvent() (and so is one of our
+	// saves 800 nanoseconds per run of dispatchTo() (and so is one of our
 	// biggest optimisations).
 
 	/**
@@ -393,14 +393,6 @@ export class DOMEvent implements Event {
 		for (let i = this.listenersLazyCopy.length - 1; i >= 0; i--) {
 			const listener = this.listenersLazyCopy[i];
 
-			// Assigning variables this old-fashioned way is up to 50
-			// nanoseconds faster per run than ESM destructuring syntax.
-			const callback = listener.callback;
-			const capture = listener.capture;
-			const thisArg = listener.thisArg;
-			const once = listener.once;
-			const passive = listener.once;
-
 			// The event listener may have been removed since we took a copy of
 			// the array, so bail out if so.
 			//
@@ -418,6 +410,10 @@ export class DOMEvent implements Event {
 				continue;
 			}
 
+			// Assigning variables this old-fashioned way is up to 50
+			// nanoseconds faster per run than ESM destructuring syntax.
+			const capture = listener.capture;
+
 			// Handle only the events appropriate to the phase. Global events
 			// (a NativeScript-only concept) are allowed to be handled
 			// regardless of phase, for backwards-compatibility.
@@ -425,7 +421,10 @@ export class DOMEvent implements Event {
 				continue;
 			}
 
-			if (once) {
+			const callback = listener.callback;
+			const thisArg = listener.thisArg;
+
+			if (listener.once) {
 				// Calling with the context (rather than eagerly pre-binding it)
 				// saves about 100 nanoseconds per dispatchTo() call.
 				removeEventListener.call(removeEventListenerContext, this.type, callback, thisArg, capture);
@@ -441,11 +440,14 @@ export class DOMEvent implements Event {
 
 			// This ensures that errors thrown inside asynchronous functions do
 			// not get swallowed.
+			//
+			// This check costs only 25 nanoseconds per dispatchTo(), so is not
+			// a huge deal.
 			if (returnValue instanceof Promise) {
 				returnValue.catch(console.error);
 			}
 
-			if (passive && this.defaultPrevented) {
+			if (listener.passive && this.defaultPrevented) {
 				console.warn('Unexpected call to event.preventDefault() in passive event listener.');
 			}
 
