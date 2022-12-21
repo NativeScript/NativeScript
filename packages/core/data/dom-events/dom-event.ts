@@ -369,11 +369,11 @@ export class DOMEvent implements Event {
 	//
 	// Creating it on the prototype and binding the context instead saves a
 	// further 30 nanoseconds per run of dispatchTo().
-	private onCurrentListenersMutation() {
+	private beforeCurrentListenersMutation() {
 		// Cloning the array via spread syntax is up to 180 nanoseconds
 		// faster per run than using Array.prototype.slice().
 		this.listenersLazyCopy = [...this.listenersLive];
-		this.listenersLive.onMutation = null;
+		this.listenersLive.beforeMutation = null;
 	}
 
 	// Taking multiple params instead of a single property bag saves 250
@@ -381,10 +381,10 @@ export class DOMEvent implements Event {
 	private handleEvent(data: EventData, isGlobal: boolean, phase: 0 | 1 | 2 | 3, removeEventListener: (eventName: string, callback?: any, thisArg?: any, capture?: boolean) => void, removeEventListenerContext: unknown) {
 		// Set a listener to clone the array just before any mutations.
 		//
-		// Lazy-binding this (binding it just before being called, rather than
-		// up-front) unexpectedly seems to slow things down - v8 may be
-		// optimising it for us or something.
-		this.listenersLive.onMutation = this.onCurrentListenersMutation.bind(this);
+		// Lazy-binding this (binding it at the time of calling, rather than
+		// eagerly) unexpectedly seems to slow things down - v8 may be applying
+		// some sort of optimisation or something.
+		this.listenersLive.beforeMutation = this.beforeCurrentListenersMutation.bind(this);
 
 		for (let i = this.listenersLazyCopy.length - 1; i >= 0; i--) {
 			const listener = this.listenersLazyCopy[i];
@@ -403,6 +403,13 @@ export class DOMEvent implements Event {
 			// We simply use a strict equality check here because we trust that
 			// the listeners provider will never allow two deeply-equal
 			// listeners into the array.
+			//
+			// This check costs 150 ns per dispatchTo(). I experimented with
+			// optimising this by building a Set of ListenerEntries that got
+			// removed during this handleEvent() (by introducing a method to
+			// MutationSensitiveArray called afterRemoval, similar to
+			// beforeMutation) to allow O(1) lookup, but it went 1000 ns slower
+			// in practice, so it stays!
 			if (!this.listenersLive.includes(listener)) {
 				continue;
 			}
@@ -415,6 +422,8 @@ export class DOMEvent implements Event {
 			}
 
 			if (once) {
+				// Calling with the context (rather than eagerly pre-binding it)
+				// saves about 100 nanoseconds per dispatchTo() call.
 				removeEventListener.call(removeEventListenerContext, this.type, callback, thisArg, capture);
 			}
 
@@ -443,7 +452,7 @@ export class DOMEvent implements Event {
 
 		// Make sure we clear the callback before we exit the function,
 		// otherwise we may wastefully clone the array on future mutations.
-		this.listenersLive.onMutation = null;
+		this.listenersLive.beforeMutation = null;
 	}
 
 	/**
