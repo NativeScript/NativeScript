@@ -166,13 +166,13 @@ export class DOMEvent implements Event {
 		 * Returns the type of event, e.g. "click", "hashchange", or "submit".
 		 */
 		public type: string,
-		options: CustomEventInit = {}
+		options?: CustomEventInit
 	) {
 		// Avoid destructuring the options object (might save some nanoseconds).
-		this.bubbles = options.bubbles === true;
-		this.cancelable = options.cancelable === true;
-		this.composed = options.composed === true;
-		this.detail = options.detail === undefined ? null : options.detail;
+		this.bubbles = options?.bubbles ?? false;
+		this.cancelable = options?.cancelable ?? false;
+		this.composed = options?.composed ?? false;
+		this.detail = options?.detail ?? null;
 	}
 
 	/**
