@@ -29,6 +29,16 @@ enum EventPropagationState {
 }
 
 export class DOMEvent implements Event {
+	/**
+	 * @private
+	 * Internal API to facilitate testing - to be removed once we've completed
+	 * the breaking changes to migrate fully to DOMEvents.
+	 *
+	 * Gets the last event to be dispatched, allowing you to access the DOM
+	 * Event that corresponds to the currently-running callback.
+	 */
+	static unstable_currentEvent: DOMEvent | null = null;
+
 	// Assigning properties directly to the prototype where possible avoids
 	// wasted work in the constructor on each instance construction.
 	static readonly NONE = 0;
@@ -76,16 +86,6 @@ export class DOMEvent implements Event {
 	 */
 	declare readonly bubbles: boolean;
 
-	/**
-	 * @private
-	 * Internal API to facilitate testing - to be removed once we've completed
-	 * the breaking changes to migrate fully to DOMEvents.
-	 *
-	 * Gets the last event to be dispatched, allowing you to access the DOM
-	 * Event that corresponds to the currently-running callback.
-	 */
-	static unstable_currentEvent: DOMEvent | null = null;
-
 	/** @deprecated Setting this value does nothing. */
 	declare cancelBubble: boolean;
 
@@ -107,12 +107,6 @@ export class DOMEvent implements Event {
 	get returnValue() {
 		return !this.defaultPrevented;
 	}
-
-	/**
-	 * Returns the event's timestamp as the number of milliseconds measured
-	 * relative to the time origin.
-	 */
-	readonly timeStamp: DOMHighResTimeStamp = timeOrigin - Date.now();
 
 	/** @deprecated */
 	get srcElement(): Observable | null {
@@ -150,6 +144,22 @@ export class DOMEvent implements Event {
 	declare readonly detail: unknown | null;
 
 	private declare propagationState: EventPropagationState;
+
+	// During handleEvent(), we want to work on a copy of the listeners array,
+	// as any callback could modify the original array during the loop.
+	//
+	// However, cloning arrays is expensive on this hot path, so we'll do it
+	// lazily - i.e. only take a clone if a mutation is about to happen.
+	// This optimisation is particularly worth doing as it's very rare that
+	// an event listener callback will end up modifying the listeners array.
+	private declare listenersLive: MutationSensitiveArray<ListenerEntry>;
+	private declare listenersLazyCopy: ListenerEntry[];
+
+	/**
+	 * Returns the event's timestamp as the number of milliseconds measured
+	 * relative to the time origin.
+	 */
+	readonly timeStamp: DOMHighResTimeStamp = timeOrigin - Date.now();
 
 	constructor(
 		/**
@@ -212,8 +222,9 @@ export class DOMEvent implements Event {
 	/** @deprecated */
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	initEvent(type: string, bubbles?: boolean, cancelable?: boolean): void {
-		// This would be trivial to implement, but it's quite nice for `bubbles`
-		// and `cancelable` to not have backing variables.
+		// This would be trivial to implement, but we'd have to remove the
+		// readonly modifier from `bubbles` and `cancelable`, which would be a
+		// shame just for the sake of supporting a deprecated method.
 		throw new Error('Deprecated; use Event() instead.');
 	}
 
@@ -245,46 +256,6 @@ export class DOMEvent implements Event {
 		this.propagationState = EventPropagationState.stop;
 	}
 
-	// During handleEvent(), we want to work on a copy of the listeners array,
-	// as any callback could modify the original array during the loop.
-	//
-	// However, cloning arrays is expensive on this hot path, so we'll do it
-	// lazily - i.e. only take a clone if a mutation is about to happen.
-	// This optimisation is particularly worth doing as it's very rare that
-	// an event listener callback will end up modifying the listeners array.
-	private declare listenersLive: MutationSensitiveArray<ListenerEntry>;
-	private declare listenersLazyCopy: ListenerEntry[];
-
-	// Creating this upon class construction as an arrow function rather than as
-	// an inline function bound afresh on each usage saves about 210 nanoseconds
-	// per run of dispatchTo().
-	//
-	// Creating it on the prototype and calling with the context instead saves a
-	// further 125 nanoseconds per run of dispatchTo().
-	//
-	// Creating it on the prototype and binding the context instead saves a
-	// further 30 nanoseconds per run of dispatchTo().
-	private onCurrentListenersMutation() {
-		// Cloning the array via spread syntax is up to 180 nanoseconds
-		// faster per run than using Array.prototype.slice().
-		this.listenersLazyCopy = [...this.listenersLive];
-		this.listenersLive.onMutation = null;
-	}
-
-	/**
-	 * Resets any internal state to allow the event to be redispatched. Call
-	 * this before returning from dispatchTo().
-	 */
-	// Declaring this on the prototype rather than as an arrow function saves
-	// 190 nanoseconds per dispatchTo().
-	private resetForRedispatch() {
-		this.currentTarget = null;
-		this.target = null;
-		this.eventPhase = DOMEvent.NONE;
-		this.propagationState = EventPropagationState.resume;
-		this.listenersLive = emptyArray;
-		this.listenersLazyCopy = emptyArray;
-	}
 	/**
 	 * Dispatches a synthetic event event to target and returns true if either
 	 * event's cancelable attribute value is false or its preventDefault()
@@ -389,6 +360,22 @@ export class DOMEvent implements Event {
 		return !this.defaultPrevented;
 	}
 
+	// Creating this upon class construction as an arrow function rather than as
+	// an inline function bound afresh on each usage saves about 210 nanoseconds
+	// per run of dispatchTo().
+	//
+	// Creating it on the prototype and calling with the context instead saves a
+	// further 125 nanoseconds per run of dispatchTo().
+	//
+	// Creating it on the prototype and binding the context instead saves a
+	// further 30 nanoseconds per run of dispatchTo().
+	private onCurrentListenersMutation() {
+		// Cloning the array via spread syntax is up to 180 nanoseconds
+		// faster per run than using Array.prototype.slice().
+		this.listenersLazyCopy = [...this.listenersLive];
+		this.listenersLive.onMutation = null;
+	}
+
 	// Taking multiple params instead of a single property bag saves 250
 	// nanoseconds per dispatchTo() call.
 	private handleEvent(data: EventData, isGlobal: boolean, phase: 0 | 1 | 2 | 3, removeEventListener: (eventName: string, callback?: any, thisArg?: any, capture?: boolean) => void, removeEventListenerContext: unknown) {
@@ -457,5 +444,20 @@ export class DOMEvent implements Event {
 		// Make sure we clear the callback before we exit the function,
 		// otherwise we may wastefully clone the array on future mutations.
 		this.listenersLive.onMutation = null;
+	}
+
+	/**
+	 * Resets any internal state to allow the event to be redispatched. Call
+	 * this before returning from dispatchTo().
+	 */
+	// Declaring this on the prototype rather than as an arrow function saves
+	// 190 nanoseconds per dispatchTo().
+	private resetForRedispatch() {
+		this.currentTarget = null;
+		this.target = null;
+		this.eventPhase = DOMEvent.NONE;
+		this.propagationState = EventPropagationState.resume;
+		this.listenersLive = emptyArray;
+		this.listenersLazyCopy = emptyArray;
 	}
 }
