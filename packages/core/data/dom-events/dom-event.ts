@@ -300,7 +300,7 @@ export class DOMEvent implements Event {
 		// event. This keeps behaviour as consistent with DOM Events as
 		// possible.
 
-		this.handleEvent(data, true, () => getGlobalEventHandlers?.(data, 'First') || emptyArray, DOMEvent.CAPTURING_PHASE, removeGlobalEventListener, target.constructor);
+		this.handleEvent(data, true, () => getGlobalEventHandlers?.(data, 'First') ?? emptyArray, DOMEvent.CAPTURING_PHASE, removeGlobalEventListener, target.constructor);
 
 		const eventPath = this.getEventPath(target, 'capture');
 
@@ -312,7 +312,7 @@ export class DOMEvent implements Event {
 			this.currentTarget = currentTarget;
 			this.eventPhase = this.target === this.currentTarget ? DOMEvent.AT_TARGET : DOMEvent.CAPTURING_PHASE;
 
-			this.handleEvent(data, false, () => currentTarget.getEventList(this.type) || emptyArray, DOMEvent.CAPTURING_PHASE, currentTarget.removeEventListener, currentTarget);
+			this.handleEvent(data, false, () => currentTarget.getEventList(this.type) ?? emptyArray, DOMEvent.CAPTURING_PHASE, currentTarget.removeEventListener, currentTarget);
 
 			if (this.propagationState !== EventPropagationState.resume) {
 				this.resetForRedispatch();
@@ -327,7 +327,7 @@ export class DOMEvent implements Event {
 			this.currentTarget = currentTarget;
 			this.eventPhase = this.target === this.currentTarget ? DOMEvent.AT_TARGET : DOMEvent.BUBBLING_PHASE;
 
-			this.handleEvent(data, false, () => currentTarget.getEventList(this.type) || emptyArray, DOMEvent.BUBBLING_PHASE, currentTarget.removeEventListener, currentTarget);
+			this.handleEvent(data, false, () => currentTarget.getEventList(this.type) ?? emptyArray, DOMEvent.BUBBLING_PHASE, currentTarget.removeEventListener, currentTarget);
 
 			if (this.propagationState !== EventPropagationState.resume) {
 				this.resetForRedispatch();
@@ -347,7 +347,7 @@ export class DOMEvent implements Event {
 			this.eventPhase = DOMEvent.BUBBLING_PHASE;
 		}
 
-		this.handleEvent(data, true, () => getGlobalEventHandlers?.(data, '') || emptyArray, DOMEvent.BUBBLING_PHASE, removeGlobalEventListener, target.constructor);
+		this.handleEvent(data, true, () => getGlobalEventHandlers?.(data, '') ?? emptyArray, DOMEvent.BUBBLING_PHASE, removeGlobalEventListener, target.constructor);
 
 		this.resetForRedispatch();
 		return !this.defaultPrevented;
