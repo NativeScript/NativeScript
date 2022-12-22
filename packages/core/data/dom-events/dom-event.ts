@@ -14,13 +14,6 @@ const timeOrigin = Date.now();
  */
 const emptyArray: ListenerEntry[] = [];
 
-/**
- * Recycling the event path array rather than allocating a new one each time
- * saves about 210 nanoseconds per dispatchTo() call (and avoids memory pressure
- * and GC).
- */
-const recycledEventPath: Observable[] = [];
-
 enum EventPropagationState {
 	resume,
 	stop,
@@ -154,6 +147,13 @@ export class DOMEvent implements Event {
 	private declare listeners: ListenerEntry[];
 
 	/**
+	 * Recycling the event path array rather than allocating a new one each time
+	 * saves about 210 nanoseconds per dispatchTo() call (and avoids memory pressure
+	 * and GC).
+	 */
+	private readonly recycledEventPath: Observable[] = [];
+
+	/**
 	 * Returns the event's timestamp as the number of milliseconds measured
 	 * relative to the time origin.
 	 */
@@ -200,15 +200,15 @@ export class DOMEvent implements Event {
 	 * [Button, StackLayout, Page] // 'bubble'
 	 */
 	private getEventPath(responder: Observable, path: 'capture' | 'bubble'): Observable[] {
-		recycledEventPath.splice(0, recycledEventPath.length, responder);
+		this.recycledEventPath.splice(0, this.recycledEventPath.length, responder);
 
 		if (!responder.isViewBase()) {
-			return recycledEventPath;
+			return this.recycledEventPath;
 		}
 
 		// Determining the function up-front (rather than inside the loop) saves
 		// 50 nanoseconds per dispatchTo() call.
-		const insert = path === 'capture' ? recycledEventPath.unshift.bind(recycledEventPath) : recycledEventPath.push.bind(recycledEventPath);
+		const insert = path === 'capture' ? this.recycledEventPath.unshift.bind(this.recycledEventPath) : this.recycledEventPath.push.bind(this.recycledEventPath);
 
 		let nextResponder = responder.parent;
 		while (nextResponder) {
@@ -218,7 +218,7 @@ export class DOMEvent implements Event {
 			// to then walk from Frame to Application or something.
 			nextResponder = nextResponder?.parent;
 		}
-		return recycledEventPath;
+		return this.recycledEventPath;
 	}
 
 	/** @deprecated */
