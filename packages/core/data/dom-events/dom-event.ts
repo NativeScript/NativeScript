@@ -332,6 +332,7 @@ export class DOMEvent implements Event {
 		// It's correct to dispatch the event to the target during both phases.
 		for (let i = eventPath.length - 1; i >= 0; i--) {
 			const currentTarget = eventPath[i];
+			this.currentTarget = currentTarget;
 			this.eventPhase = this.target === this.currentTarget ? DOMEvent.AT_TARGET : DOMEvent.BUBBLING_PHASE;
 
 			this.listeners = currentTarget.getEventList(this.type) || emptyArray;
