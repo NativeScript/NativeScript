@@ -54,8 +54,6 @@ export class DOMEvent implements Event {
 		Object.defineProperty(DOMEvent.prototype, 'currentTarget', { value: null, writable: true });
 		Object.defineProperty(DOMEvent.prototype, 'target', { value: null, writable: true });
 		Object.defineProperty(DOMEvent.prototype, 'propagationState', { value: EventPropagationState.resume, writable: true });
-		Object.defineProperty(DOMEvent.prototype, 'listeners', { value: emptyArray, writable: true });
-		Object.defineProperty(DOMEvent.prototype, 'listenersLazyCopy', { value: emptyArray, writable: true });
 	}
 
 	declare NONE: 0;
@@ -265,7 +263,7 @@ export class DOMEvent implements Event {
 	 */
 	// Taking multiple params rather than a single property bag saves about 100
 	// nanoseconds per call.
-	dispatchTo(target: Observable, data: EventData, getGlobalEventHandlersPreHandling?: () => ListenerEntry[], getGlobalEventHandlersPostHandling?: () => ListenerEntry[]): boolean {
+	dispatchTo(target: Observable, data: EventData, getGlobalEventHandlers?: (data: EventData, eventType: 'First' | '') => readonly ListenerEntry[] | undefined): boolean {
 		if (this.eventPhase !== DOMEvent.NONE) {
 			throw new Error('Tried to dispatch a dispatching event');
 		}
@@ -306,8 +304,7 @@ export class DOMEvent implements Event {
 		// event. This keeps behaviour as consistent with DOM Events as
 		// possible.
 
-		this.listeners = getGlobalEventHandlersPreHandling?.() || emptyArray;
-		this.handleEvent(data, true, DOMEvent.CAPTURING_PHASE, removeGlobalEventListener, target.constructor);
+		this.handleEvent(data, true, () => getGlobalEventHandlers?.(data, 'First') || emptyArray, DOMEvent.CAPTURING_PHASE, removeGlobalEventListener, target.constructor);
 
 		const eventPath = this.getEventPath(target, 'capture');
 
@@ -319,8 +316,7 @@ export class DOMEvent implements Event {
 			this.currentTarget = currentTarget;
 			this.eventPhase = this.target === this.currentTarget ? DOMEvent.AT_TARGET : DOMEvent.CAPTURING_PHASE;
 
-			this.listeners = currentTarget.getEventList(this.type) || emptyArray;
-			this.handleEvent(data, false, DOMEvent.CAPTURING_PHASE, currentTarget.removeEventListener, currentTarget);
+			this.handleEvent(data, false, () => currentTarget.getEventList(this.type) || emptyArray, DOMEvent.CAPTURING_PHASE, currentTarget.removeEventListener, currentTarget);
 
 			if (this.propagationState !== EventPropagationState.resume) {
 				this.resetForRedispatch();
@@ -335,8 +331,7 @@ export class DOMEvent implements Event {
 			this.currentTarget = currentTarget;
 			this.eventPhase = this.target === this.currentTarget ? DOMEvent.AT_TARGET : DOMEvent.BUBBLING_PHASE;
 
-			this.listeners = currentTarget.getEventList(this.type) || emptyArray;
-			this.handleEvent(data, false, DOMEvent.BUBBLING_PHASE, currentTarget.removeEventListener, currentTarget);
+			this.handleEvent(data, false, () => currentTarget.getEventList(this.type) || emptyArray, DOMEvent.BUBBLING_PHASE, currentTarget.removeEventListener, currentTarget);
 
 			if (this.propagationState !== EventPropagationState.resume) {
 				this.resetForRedispatch();
@@ -356,8 +351,7 @@ export class DOMEvent implements Event {
 			this.eventPhase = DOMEvent.BUBBLING_PHASE;
 		}
 
-		this.listeners = getGlobalEventHandlersPostHandling?.() || emptyArray;
-		this.handleEvent(data, true, DOMEvent.BUBBLING_PHASE, removeGlobalEventListener, target.constructor);
+		this.handleEvent(data, true, () => getGlobalEventHandlers?.(data, '') || emptyArray, DOMEvent.BUBBLING_PHASE, removeGlobalEventListener, target.constructor);
 
 		this.resetForRedispatch();
 		return !this.defaultPrevented;
@@ -365,7 +359,7 @@ export class DOMEvent implements Event {
 
 	// Taking multiple params instead of a single property bag saves 250
 	// nanoseconds per dispatchTo() call.
-	private handleEvent(data: EventData, isGlobal: boolean, phase: 0 | 1 | 2 | 3, removeEventListener: (eventName: string, callback?: any, thisArg?: any, capture?: boolean) => void, removeEventListenerContext: unknown) {
+	private handleEvent(data: EventData, isGlobal: boolean, getListeners: () => readonly ListenerEntry[], phase: 0 | 1 | 2 | 3, removeEventListener: (eventName: string, callback?: any, thisArg?: any, capture?: boolean) => void, removeEventListenerContext: unknown) {
 		// Clone the array just before any mutations. I tried swapping this out
 		// for a copy-on-write array, but as it had to maintain its own array of
 		// listeners for any write actions, it actually ran significantly
@@ -373,7 +367,7 @@ export class DOMEvent implements Event {
 		//
 		// There's no clear observable difference between array spread and slice
 		// here, but I think slice has reason to run faster.
-		const listeners = this.listeners.slice();
+		const listeners = getListeners().slice();
 
 		for (let i = listeners.length - 1; i >= 0; i--) {
 			const listener = listeners[i];
@@ -402,7 +396,7 @@ export class DOMEvent implements Event {
 			// MutationSensitiveArray called afterRemoval, similar to
 			// beforeMutation) to allow O(1) lookup, but it went 1000 ns slower
 			// in practice, so it stays!
-			if (!this.listeners.includes(listener)) {
+			if (!getListeners().includes(listener)) {
 				continue;
 			}
 
@@ -456,6 +450,5 @@ export class DOMEvent implements Event {
 		this.target = null;
 		this.eventPhase = DOMEvent.NONE;
 		this.propagationState = EventPropagationState.resume;
-		this.listeners = emptyArray;
 	}
 }

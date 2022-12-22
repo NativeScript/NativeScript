@@ -376,12 +376,7 @@ export class Observable implements EventTarget {
 	 * @param options Options for the event, in line with DOM Standard.
 	 */
 	public notify<T extends EventData>(data: T, options?: CustomEventInit): void {
-		new DOMEvent(data.eventName, options).dispatchTo(
-			this,
-			data,
-			() => this._getGlobalEventHandlers(data, 'First'),
-			() => this._getGlobalEventHandlers(data, '')
-		);
+		new DOMEvent(data.eventName, options).dispatchTo(this, data, Observable._getGlobalEventHandlers);
 	}
 
 	dispatchEvent(event: DOMEvent): boolean {
@@ -391,19 +386,15 @@ export class Observable implements EventTarget {
 			detail: event.detail,
 		};
 
-		return event.dispatchTo(
-			this,
-			data,
-			() => this._getGlobalEventHandlers(data, 'First'),
-			() => this._getGlobalEventHandlers(data, '')
-		);
+		return event.dispatchTo(this, data, Observable._getGlobalEventHandlers);
 	}
 
-	private _getGlobalEventHandlers(data: EventData, eventType: 'First' | ''): ListenerEntry[] {
+	private static _getGlobalEventHandlers(data: EventData, eventType: 'First' | ''): readonly ListenerEntry[] | undefined {
 		const eventClass = data.object?.constructor?.name;
-		const globalEventHandlersForOwnClass = _globalEventHandlers[eventClass]?.[`${data.eventName}${eventType}`] ?? [];
-		const globalEventHandlersForAllClasses = _globalEventHandlers['*']?.[`${data.eventName}${eventType}`] ?? [];
-		return [...globalEventHandlersForOwnClass, ...globalEventHandlersForAllClasses];
+		const globalEventHandlersForOwnClass = _globalEventHandlers[eventClass]?.[`${data.eventName}${eventType}`];
+		const globalEventHandlersForAllClasses = _globalEventHandlers['*']?.[`${data.eventName}${eventType}`];
+
+		return globalEventHandlersForOwnClass?.length ? (globalEventHandlersForAllClasses?.length ? [...globalEventHandlersForOwnClass, ...globalEventHandlersForAllClasses] : globalEventHandlersForOwnClass) : globalEventHandlersForAllClasses?.length ? globalEventHandlersForAllClasses : undefined;
 	}
 
 	/**
