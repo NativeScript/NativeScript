@@ -271,10 +271,6 @@ export class DOMEvent implements Event {
 		this.target = target;
 		this.defaultPrevented = false;
 
-		// Internal API to facilitate testing - to be removed once we've
-		// completed the breaking changes to migrate fully to DOMEvents.
-		DOMEvent.unstable_currentEvent = this;
-
 		// `Observable.removeEventListener` would likely suffice, but grabbing
 		// the static method named `removeEventListener` on the target's class
 		// allows us to be robust to the possiblity of the case of the target
@@ -409,6 +405,25 @@ export class DOMEvent implements Event {
 				removeEventListener.call(removeEventListenerContext, this.type, callback, thisArg, capture);
 			}
 
+			// Internal API to facilitate testing - to be removed once we've
+			// completed the breaking changes to migrate fully to DOMEvents.
+			//
+			// We update DOMEvent.unstable_currentEvent just before each call to
+			// the callback. Doing it only in dispatchTo() would seem more
+			// efficient, but it wouldn't technically be correct as it's
+			// possible for a callback itself to dispatch another event. Because
+			// we handle events synchronously rather than using a queue, it
+			// would mean that DOMEvent.unstable_currentEvent would correctly
+			// point at the sub-event, but subsequently fail to update to point
+			// at the initial event.
+			//
+			// Note that this will fail to set itself back to null if the
+			// callback throws an error, but that's unlikely to break anything
+			// in practice as it's only intended be valid when accessed
+			// during the callback anyway. We reset it mainly just to stop
+			// retaining the event.
+			DOMEvent.unstable_currentEvent = this;
+
 			// Consistent with the original implementation, we only apply
 			// context to the function if thisArg is truthy.
 			//
@@ -416,6 +431,8 @@ export class DOMEvent implements Event {
 			// having to allocate an array just to hold the args (saves 30
 			// nanoseconds per dispatchTo() call).
 			const returnValue = callback.call(thisArg || undefined, data);
+
+			DOMEvent.unstable_currentEvent = null;
 
 			// This ensures that errors thrown inside asynchronous functions do
 			// not get swallowed.
