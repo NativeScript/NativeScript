@@ -325,6 +325,8 @@ class UIViewControllerImpl extends UIViewController {
 							right: 0,
 						});
 						this.additionalSafeAreaInsets = additionalInsets;
+					} else {
+						this.additionalSafeAreaInsets = null;
 					}
 				}
 			}
