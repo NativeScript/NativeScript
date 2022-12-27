@@ -193,7 +193,7 @@ export function test_android_default_offset_should_preload_1_tab_on_each_side() 
 
 		waitUntilNavigatedToMaxTimeout([items[0].page, items[1].page], () => _resetRootView(entry));
 
-		const expectedEventsRaisedAfterTabCreated = [['Tab0 Frame0 loaded', 'Tab0 Frame0 Page0 navigatingTo', 'Tab0 Frame0 Page0 loaded', 'Tab0 Frame0 Page0 navigatedTo'], ['Tab1 Frame1 loaded', 'Tab1 Frame1 Page1 navigatingTo', 'Tab1 Frame1 Page1 loaded', 'Tab1 Frame1 Page1 navigatedTo'], []];
+		const expectedEventsRaisedAfterTabCreated = [['Tab0 Frame0 loaded', 'Tab0 Frame0 Page0 loaded', 'Tab0 Frame0 Page0 loaded', 'Tab0 Frame0 Page0 navigatedTo'], ['Tab1 Frame1 loaded', 'Tab1 Frame1 Page1 navigatingTo', 'Tab1 Frame1 Page1 loaded', 'Tab1 Frame1 Page1 navigatedTo'], []];
 
 		TKUnit.assertDeepEqual(actualEventsRaised, expectedEventsRaisedAfterTabCreated);
 
