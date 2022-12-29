@@ -1,8 +1,7 @@
 import { disableZoomProperty, WebViewBase, WebViewClient } from './web-view-common';
 import { Trace } from '../../trace';
 import { knownFolders } from '../../file-system';
-import { openUrl } from '../../utils';
-import * as application from '../../application';
+import { openUrl, ad } from '../../utils';
 
 export * from './web-view-common';
 
@@ -38,7 +37,7 @@ function initializeWebViewClient(): void {
 			const intent = new android.content.Intent(android.content.Intent.ACTION_VIEW);
 			intent.setData(android.net.Uri.parse(url));
 
-			const packageManager = application.android.context.getPackageManager();
+			const packageManager =  ad.getApplicationContext().getPackageManager();
 			if (intent.resolveActivity(packageManager) != null) {
 				// App exists to handle the URL. So, open the app
 				openUrl(url);
