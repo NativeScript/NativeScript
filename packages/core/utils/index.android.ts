@@ -22,7 +22,15 @@ export function openUrl(location: string): boolean {
 	const context = ad.getApplicationContext();
 	try {
 		const intent = new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(location.trim()));
+		const packageManager =  context.getPackageManager();
+
 		intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+
+		// Handle schemes like mailto, tel, etc
+		if (intent.resolveActivity(packageManager) == null) {
+			Trace.write('Unable to open ' + location + '. Make sure to added android.permission.QUERY_ALL_PACKAGES permission or queries(https://developer.android.com/guide/topics/manifest/queries-element) to the AndroidManifest.xml file.', Trace.categories.Error, Trace.messageType.error);
+			return false;
+		}
 
 		context.startActivity(intent);
 	} catch (e) {

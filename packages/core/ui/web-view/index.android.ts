@@ -1,7 +1,7 @@
 import { disableZoomProperty, WebViewBase, WebViewClient } from './web-view-common';
 import { Trace } from '../../trace';
 import { knownFolders } from '../../file-system';
-import { openUrl, ad } from '../../utils';
+import { openUrl } from '../../utils';
 
 export * from './web-view-common';
 
@@ -27,21 +27,9 @@ function initializeWebViewClient(): void {
 				Trace.write('WebViewClientClass.shouldOverrideUrlLoading(' + url + ')', Trace.categories.Debug);
 			}
 
-			if (android.webkit.URLUtil.isNetworkUrl(url)) {
-				return false;
-			}
-
 			// Handle schemes like mailto, tel, etc
-			// Make sure to add  <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"/>  to AndroidManifest.xml
-			// We check if there is any app installed on the device to handle the special URL(mailto, tel, etc)
-			const intent = new android.content.Intent(android.content.Intent.ACTION_VIEW);
-			intent.setData(android.net.Uri.parse(url));
-
-			const packageManager =  ad.getApplicationContext().getPackageManager();
-			if (intent.resolveActivity(packageManager) != null) {
-				// App exists to handle the URL. So, open the app
-				openUrl(url);
-				return true;
+			if (!android.webkit.URLUtil.isNetworkUrl(url)) {
+				return openUrl(url);
 			}
 
 			return false;
