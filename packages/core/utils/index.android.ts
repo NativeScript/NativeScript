@@ -28,7 +28,7 @@ export function openUrl(location: string): boolean {
 
 		// Handle schemes like mailto, tel, etc
 		if (intent.resolveActivity(packageManager) == null) {
-			Trace.write('Unable to open ' + location + '. Make sure to added android.permission.QUERY_ALL_PACKAGES permission or queries(https://developer.android.com/guide/topics/manifest/queries-element) to the AndroidManifest.xml file.', Trace.categories.Error, Trace.messageType.error);
+			Trace.write('Unable to open ' + location + '. Make sure to add queries element(https://developer.android.com/guide/topics/manifest/queries-element) matching the scheme to the AndroidManifest.xml file.', Trace.categories.Error, Trace.messageType.error);
 			return false;
 		}
 
