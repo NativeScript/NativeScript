@@ -1,6 +1,6 @@
 {
   "name": "nativescript",
-  "version": "8.4.1",
+  "version": "8.4.2",
   "license": "MIT",
   "scripts": {
     "clean": "git clean -f -X -d --exclude=!.idea/ --exclude=!.vscode/* --exclude=!.npmrc",

@@ -1,3 +1,18 @@
+## [8.4.2](https://github.com/NativeScript/NativeScript/compare/8.4.1-core...8.4.2-core) (2022-12-29)
+
+
+### Bug Fixes
+
+* **android:** backwards compat Java cast Float to Long for ApplicationSettings.getNumber ([#10140](https://github.com/NativeScript/NativeScript/issues/10140)) ([7c1590a](https://github.com/NativeScript/NativeScript/commit/7c1590abff0127fd1e5254648cdd1d8c7ab49869))
+* **core:** update metadata filtering for IOS 16 ([#10133](https://github.com/NativeScript/NativeScript/issues/10133)) ([c461f1b](https://github.com/NativeScript/NativeScript/commit/c461f1bb551a69e721548fa5ae6ca2c7601d0b87))
+* **ios:** box shadow border radius ([#10142](https://github.com/NativeScript/NativeScript/issues/10142)) ([6948f7c](https://github.com/NativeScript/NativeScript/commit/6948f7c03265ebf9b92a7d5f69bfbb4743ce449b))
+* **ios:** navigatingTo event handling ([#10120](https://github.com/NativeScript/NativeScript/issues/10120)) ([a4f28b8](https://github.com/NativeScript/NativeScript/commit/a4f28b831785c8cf6ba76c170fcd7a5628b12c35))
+* **ios:** reset additional insets if they're zero ([#10134](https://github.com/NativeScript/NativeScript/issues/10134)) ([8b7d5ab](https://github.com/NativeScript/NativeScript/commit/8b7d5ab5fc34fa7785b7801ca5de60e69bbf7392))
+* **listview:** delegate handling removed from unloaded ([#10138](https://github.com/NativeScript/NativeScript/issues/10138)) ([04c3d9a](https://github.com/NativeScript/NativeScript/commit/04c3d9a9795898386f26656018bc05cf697d09e2))
+* **utils:** ios to filter out null values  ([#10117](https://github.com/NativeScript/NativeScript/issues/10117)) ([4723114](https://github.com/NativeScript/NativeScript/commit/47231145acb851552d7990e5a75b66dd6d06fee8))
+
+
+
 ## [8.4.1](https://github.com/NativeScript/NativeScript/compare/8.4.0-core...8.4.1-core) (2022-11-30)
 
 ### Bug Fixes

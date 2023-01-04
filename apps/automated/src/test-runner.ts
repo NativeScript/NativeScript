@@ -264,8 +264,8 @@ allTests['TRANSITIONS'] = transitionTests;
 import * as searchBarTests from './ui/search-bar/search-bar-tests';
 allTests['SEARCH-BAR'] = searchBarTests;
 
-// import * as navigationTests from './navigation/navigation-tests';
-// allTests['NAVIGATION'] = navigationTests;
+import * as navigationTests from './navigation/navigation-tests';
+allTests['NAVIGATION'] = navigationTests;
 
 // import * as livesyncTests from './livesync/livesync-tests';
 // allTests['LIVESYNC'] = livesyncTests;
