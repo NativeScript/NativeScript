@@ -49,8 +49,11 @@
 
             BOOL actualItalic = result.fontDescriptor.symbolicTraits & UIFontDescriptorTraitItalic;
             if ([[font valueForKey:@"isItalic"] boolValue] && !actualItalic) {
+                #if TARGET_OS_MACCATALYST
+                #else
                 // The font we got is not actually italic so emulate that with a matrix
                 result = [UIFont fontWithDescriptor:[descriptor fontDescriptorWithMatrix:CGAffineTransformMake(1, 0, 0.2, 1, 0, 0)] size:size];
+                #endif
             }
 
             // Check if the resolved font has the correct font-family
