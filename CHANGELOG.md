@@ -1,3 +1,15 @@
+## [8.4.3](https://github.com/NativeScript/NativeScript/compare/8.4.2-core...8.4.3-core) (2023-01-04)
+
+
+### Bug Fixes
+
+* **android:** WebView url and event handling ([#10147](https://github.com/NativeScript/NativeScript/issues/10147)) ([#10148](https://github.com/NativeScript/NativeScript/issues/10148)) ([8444087](https://github.com/NativeScript/NativeScript/commit/84440876feb8a0b4bc5bc2309dc7a9315d1f91ef))
+* **ios:** prevent layout in viewSafeAreaInsetsDidChange until first viewDidLayoutSubviews ([#10151](https://github.com/NativeScript/NativeScript/issues/10151)) ([760bbd0](https://github.com/NativeScript/NativeScript/commit/760bbd06faf3acb7e0694acaf1ad3e029f1cd278))
+* **ios:** prevent transitionCoordinator usage during modal presentation ([#10153](https://github.com/NativeScript/NativeScript/issues/10153)) ([d138ac0](https://github.com/NativeScript/NativeScript/commit/d138ac000df2e2dfc890db992c39a4429e6ed8dc))
+* **ios:** TextField keyboard handling with emoji, autofill, and shortcuts ([#10154](https://github.com/NativeScript/NativeScript/issues/10154)) ([00944bb](https://github.com/NativeScript/NativeScript/commit/00944bb1b5b6f4cc8084cf7cde3db6448e28e0bd))
+
+
+
 ## [8.4.2](https://github.com/NativeScript/NativeScript/compare/8.4.1-core...8.4.2-core) (2022-12-29)
 
 
