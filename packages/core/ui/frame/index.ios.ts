@@ -118,7 +118,9 @@ export class Frame extends FrameBase {
 		if (!this._currentEntry) {
 			// Update action-bar with disabled animations before the initial navigation.
 			this._updateActionBar(backstackEntry.resolvedPage, true);
-			this.pushViewControllerAnimated(viewController, animated);
+			// Core defaults modalPresentationStyle to 1 for standard frame navigation
+			// for all others, it's modal presentation
+			this.pushViewControllerAnimated(viewController, animated, this._ios?.controller?.modalPresentationStyle !== 1);
 			if (Trace.isEnabled()) {
 				Trace.write(`${this}.pushViewControllerAnimated(${viewController}, ${animated}); depth = ${navDepth}`, Trace.categories.Navigation);
 			}
@@ -180,13 +182,14 @@ export class Frame extends FrameBase {
 		}
 	}
 
-	private pushViewControllerAnimated(viewController: UIViewController, animated: boolean) {
+	private pushViewControllerAnimated(viewController: UIViewController, animated: boolean, isModal: boolean) {
 		let transitionCoordinator = this._ios.controller.transitionCoordinator;
-		if (transitionCoordinator) {
+		if (!isModal && transitionCoordinator) {
 			transitionCoordinator.animateAlongsideTransitionCompletion(null, () => {
 				this._ios.controller.pushViewControllerAnimated(viewController, animated);
 			});
 		} else {
+			// modal should always push immediately without transition coordinator
 			this._ios.controller.pushViewControllerAnimated(viewController, animated);
 		}
 	}
