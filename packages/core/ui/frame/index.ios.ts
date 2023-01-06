@@ -84,7 +84,7 @@ export class Frame extends FrameBase {
 		}
 
 		let navigationTransition: NavigationTransition;
-		let animated = this.currentPage ? this._getIsAnimatedNavigation(backstackEntry.entry) : false;
+		const animated = this.currentPage ? this._getIsAnimatedNavigation(backstackEntry.entry) : false;
 		if (animated) {
 			navigationTransition = this._getNavigationTransition(backstackEntry.entry);
 			if (navigationTransition) {
@@ -183,7 +183,7 @@ export class Frame extends FrameBase {
 	}
 
 	private pushViewControllerAnimated(viewController: UIViewController, animated: boolean, isModal: boolean) {
-		let transitionCoordinator = this._ios.controller.transitionCoordinator;
+		const transitionCoordinator = this._ios.controller.transitionCoordinator;
 		if (!isModal && transitionCoordinator) {
 			transitionCoordinator.animateAlongsideTransitionCompletion(null, () => {
 				this._ios.controller.pushViewControllerAnimated(viewController, animated);

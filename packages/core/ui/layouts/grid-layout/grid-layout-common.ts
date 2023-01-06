@@ -78,15 +78,15 @@ export class ItemSpec extends Observable implements ItemSpecDefinition {
 	private _value: number;
 	private _unitType: GridUnitType;
 
-	constructor() {
+	constructor(...args) {
 		super();
 
-		if (arguments.length === 0) {
+		if (args.length === 0) {
 			this._value = 1;
 			this._unitType = GridUnitType.STAR;
 		} else if (arguments.length === 2) {
-			const value = arguments[0];
-			const type = arguments[1];
+			const value = args[0];
+			const type = args[1];
 			if (typeof value === 'number' && typeof type === 'string') {
 				if (value < 0 || isNaN(value) || !isFinite(value)) {
 					throw new Error(`Value should not be negative, NaN or Infinity: ${value}`);
@@ -381,9 +381,9 @@ rowSpanProperty.register(View);
 
 export type GridUnitType = 'pixel' | 'star' | 'auto';
 export namespace GridUnitType {
-	export const PIXEL: 'pixel' = 'pixel';
-	export const STAR: 'star' = 'star';
-	export const AUTO: 'auto' = 'auto';
+	export const PIXEL = 'pixel';
+	export const STAR = 'star';
+	export const AUTO = 'auto';
 	export const isValid = makeValidator<GridUnitType>(PIXEL, STAR, AUTO);
 	export const parse = makeParser<GridUnitType>(isValid);
 }

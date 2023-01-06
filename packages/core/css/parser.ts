@@ -460,6 +460,7 @@ function parseArgumentsList<T>(text: string, start: number, argument: (value: st
 		return { start, end, value };
 	}
 
+	// eslint-disable-next-line no-constant-condition
 	for (let index = 0; true; index++) {
 		const arg = argument(text, end, index);
 		if (!arg) {

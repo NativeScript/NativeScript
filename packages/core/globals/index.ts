@@ -367,7 +367,7 @@ export function initGlobal() {
 	}
 }
 
-declare var jest: any;
+declare const jest: any;
 function isTestingEnv() {
 	return typeof jest !== 'undefined';
 }

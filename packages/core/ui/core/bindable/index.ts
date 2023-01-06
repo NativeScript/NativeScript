@@ -415,7 +415,7 @@ export class Binding {
 			}
 
 			// Clear added props
-			for (let prop of addedProps) {
+			for (const prop of addedProps) {
 				delete context[prop];
 			}
 			addedProps.length = 0;

@@ -75,7 +75,7 @@ class AnimationDelegateImpl extends NSObject implements CAAnimationDelegate {
 				applyAnimationProperty(targetStyle, scaleXProperty, value.x || 1e-6, setKeyFrame);
 				applyAnimationProperty(targetStyle, scaleYProperty, value.y || 1e-6, setKeyFrame);
 				break;
-			case _transform:
+			case _transform: {
 				const translateValue = value[Properties.rotate];
 				if (translateValue !== undefined) {
 					applyAnimationProperty(targetStyle, translateXProperty, translateValue.x, setKeyFrame);
@@ -95,12 +95,14 @@ class AnimationDelegateImpl extends NSObject implements CAAnimationDelegate {
 					applyAnimationProperty(targetStyle, scaleYProperty, scaleValue.y || 1e-6, setKeyFrame);
 				}
 				break;
-			default:
+			}
+			default: {
 				const property = this._propertyAnimation.property;
 				if (property) {
 					applyAnimationProperty(targetStyle, property, value, setKeyFrame);
 				}
 				break;
+			}
 		}
 
 		(<IOSView>this._propertyAnimation.target)._resumePresentationLayerUpdates();
@@ -385,6 +387,7 @@ export class Animation extends AnimationBase {
 						break;
 					}
 				}
+				// eslint-disable no-fallthrough
 				default:
 					if (animation.property) {
 						// animation._originalValue = view.backgroundColor;
@@ -394,7 +397,7 @@ export class Animation extends AnimationBase {
 						};
 						fromValue = animation._originalValue;
 						if (animation._originalValue instanceof Color) {
-							animation._originalValue = animation._originalValue;
+							// animation._originalValue = animation._originalValue;
 							fromValue = animation._originalValue.ios.CGColor;
 						}
 						if (toValue instanceof Color) {

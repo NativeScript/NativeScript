@@ -1,10 +1,7 @@
 import { View } from '../core/view';
 import { Color } from '../../color';
 
-import { CssAnimationProperty } from '../core/properties';
-
 import { CoreTypes } from '../../core-types';
-import { Style } from '../styling/style';
 
 import { Trace } from '../../trace';
 
@@ -106,7 +103,7 @@ export class KeyframeAnimation {
 		return animation;
 	}
 
-	private static parseKeyframe(info: KeyframeAnimationInfo, keyframe: KeyframeInfo, animations: Array<Object>, startDuration: number): number {
+	private static parseKeyframe(info: KeyframeAnimationInfo, keyframe: KeyframeInfo, animations: Array<Keyframe>, startDuration: number): number {
 		const animation: Keyframe = {};
 		for (const declaration of keyframe.declarations) {
 			animation[declaration.property] = declaration.value;
@@ -262,7 +259,7 @@ export class KeyframeAnimation {
 		this._target = null;
 	}
 
-	private _resetAnimationValues(view: View, animation: Object) {
+	private _resetAnimationValues(view: View, animation: Animation | Keyframe) {
 		Object.keys(animation).forEach((key) => {
 			if (AnimationNonAnimatableProperties.indexOf(key) !== -1) {
 				return;
