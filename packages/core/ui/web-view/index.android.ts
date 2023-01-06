@@ -29,8 +29,7 @@ function initializeWebViewClient(): void {
 
 			// Handle schemes like mailto, tel, etc
 			if (!android.webkit.URLUtil.isNetworkUrl(url)) {
-				openUrl(url);
-				return true;
+				return openUrl(url);
 			}
 
 			return false;
