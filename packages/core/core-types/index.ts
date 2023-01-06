@@ -51,6 +51,9 @@ export namespace CoreTypes {
 	export module AutofillType {
 		export const username = 'username';
 		export const password = 'password';
+		export const newUsername = 'newUsername';
+		export const newPassword = 'newPassword';
+		export const oneTimeCode = 'oneTimeCode';
 		export const none = 'none';
 	}
 

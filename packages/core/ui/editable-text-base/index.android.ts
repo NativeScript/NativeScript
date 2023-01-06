@@ -273,6 +273,15 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 			case 'password':
 				newOptions = 'password'; // android.view.View.AUTOFILL_HINT_PASSWORD
 				break;
+			case 'newPassword':
+				newOptions = 'newPassword'; // android.view.View.AUTOFILL_HINT_NEW_PASSWORD
+				break;
+			case 'newUsername':
+				newOptions = 'newUsername'; // android.view.View.AUTOFILL_HINT_NEW_USERNAME
+				break;
+			case 'oneTimeCode':
+				newOptions = '2faAppOTPCode'; // android.view.View.AUTOFILL_HINT_2FA_APP_OTP
+				break;
 			case 'none':
 				newOptions = null;
 				break;
