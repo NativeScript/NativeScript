@@ -60,7 +60,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 				newKeyboardType = UIKeyboardType.NumberPad;
 				break;
 
-			default:
+			default: {
 				const kt = +value;
 				if (!isNaN(kt)) {
 					newKeyboardType = <UIKeyboardType>kt;
@@ -68,6 +68,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 					newKeyboardType = UIKeyboardType.Default;
 				}
 				break;
+			}
 		}
 
 		this.nativeTextViewProtected.keyboardType = newKeyboardType;
@@ -104,9 +105,11 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 				break;
 			case 'none':
 				newTextContentType = null;
-			default:
+				break;
+			default: {
 				newTextContentType = value;
 				break;
+			}
 		}
 
 		this.nativeTextViewProtected.textContentType = newTextContentType;
@@ -152,7 +155,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 			case 'send':
 				newValue = UIReturnKeyType.Send;
 				break;
-			default:
+			default: {
 				const rkt = +value;
 				if (!isNaN(rkt)) {
 					newValue = <UIKeyboardType>rkt;
@@ -160,6 +163,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 					newValue = UIKeyboardType.Default;
 				}
 				break;
+			}
 		}
 
 		this.nativeTextViewProtected.returnKeyType = newValue;

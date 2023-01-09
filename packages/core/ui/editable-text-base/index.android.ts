@@ -229,7 +229,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 				newInputType = android.text.InputType.TYPE_CLASS_NUMBER;
 				break;
 
-			default:
+			default: {
 				const inputType = +value;
 				if (!isNaN(inputType)) {
 					newInputType = inputType;
@@ -237,6 +237,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 					newInputType = android.text.InputType.TYPE_CLASS_TEXT;
 				}
 				break;
+			}
 		}
 
 		this._setInputType(newInputType);

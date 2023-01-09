@@ -159,11 +159,11 @@ export function debounce(fn: any, delay = 300) {
 	};
 }
 
-export function throttle(fn: any, delay = 300) {
+export function throttle(fn: Function, delay = 300) {
 	let waiting = false;
-	return function () {
+	return function (...args) {
 		if (!waiting) {
-			fn.apply(this, arguments);
+			fn.apply(this, args);
 			waiting = true;
 			setTimeout(function () {
 				waiting = false;
