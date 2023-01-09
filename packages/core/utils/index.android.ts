@@ -22,20 +22,11 @@ export function openUrl(location: string): boolean {
 	const context = ad.getApplicationContext();
 	try {
 		const intent = new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(location.trim()));
-		const packageManager =  context.getPackageManager();
-
 		intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
-
-		// Handle schemes like mailto, tel, etc
-		if (intent.resolveActivity(packageManager) == null) {
-			Trace.write('Unable to open ' + location + '. Make sure to add queries element(https://developer.android.com/guide/topics/manifest/queries-element) matching the scheme to the AndroidManifest.xml file.', Trace.categories.Error, Trace.messageType.error);
-			return false;
-		}
-
 		context.startActivity(intent);
 	} catch (e) {
-		// We Don't do anything with an error.  We just output it
-		Trace.write('Error in OpenURL', Trace.categories.Error, Trace.messageType.error);
+		// We don't do anything with an error. We just output it
+		Trace.write(`Failed to start activity for handling URL: ${location}`, Trace.categories.Error, Trace.messageType.error);
 
 		return false;
 	}

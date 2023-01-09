@@ -109,7 +109,7 @@ export class RootLayout extends RootLayoutBase {
 		backgroundColorAnimator.addUpdateListener(
 			new android.animation.ValueAnimator.AnimatorUpdateListener({
 				onAnimationUpdate(animator: android.animation.ValueAnimator) {
-					let argb = (<java.lang.Integer>animator.getAnimatedValue()).intValue();
+					const argb = (<java.lang.Integer>animator.getAnimatedValue()).intValue();
 					view.backgroundColor = new Color(argb);
 				},
 			})
