@@ -96,6 +96,12 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 			case 'password':
 				newTextContentType = UITextContentTypePassword;
 				break;
+			case 'newPassword':
+				newTextContentType = UITextContentTypeNewPassword;
+				break;
+			case 'oneTimeCode':
+				newTextContentType = UITextContentTypeOneTimeCode;
+				break;
 			case 'none':
 				newTextContentType = null;
 			default:
