@@ -1,4 +1,4 @@
-## [8.4.4](https://github.com/NativeScript/NativeScript/compare/8.4.3-core...8.4.4) (2023-01-09)
+## [8.4.4](https://github.com/NativeScript/NativeScript/compare/8.4.3-core...8.4.4-core) (2023-01-09)
 
 
 ### Bug Fixes
