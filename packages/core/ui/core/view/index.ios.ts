@@ -211,7 +211,6 @@ export class View extends ViewCommon implements ViewDefinition {
 			const boundsOrigin = nativeView.bounds.origin;
 			const boundsFrame = adjustedFrame || frame;
 			nativeView.bounds = CGRectMake(boundsOrigin.x, boundsOrigin.y, boundsFrame.size.width, boundsFrame.size.height);
-			nativeView.layoutIfNeeded();
 
 			this._raiseLayoutChangedEvent();
 			this._isLaidOut = true;
