@@ -1,3 +1,18 @@
+## [8.4.4](https://github.com/NativeScript/NativeScript/compare/8.4.3-core...8.4.4-core) (2023-01-09)
+
+
+### Bug Fixes
+
+* **android:** openUrl ([#10161](https://github.com/NativeScript/NativeScript/issues/10161)) ([451c3cf](https://github.com/NativeScript/NativeScript/commit/451c3cfe43a90be705bb6cc7abb220e674d1d906))
+* **mac:** utils for mac catalyst ([#10157](https://github.com/NativeScript/NativeScript/issues/10157)) ([5b6e4d6](https://github.com/NativeScript/NativeScript/commit/5b6e4d68986f22219c41f434f2bf51e714e485a5))
+
+
+### Features
+
+* **core:** new autoFillTypes for newUsername, newPassword and oneTimeCode ([#10159](https://github.com/NativeScript/NativeScript/issues/10159)) ([bff35e5](https://github.com/NativeScript/NativeScript/commit/bff35e5163d126d44ae3b2828ed96dbdc6c2e6ef))
+
+
+
 ## [8.4.3](https://github.com/NativeScript/NativeScript/compare/8.4.2-core...8.4.3-core) (2023-01-04)
 
 
