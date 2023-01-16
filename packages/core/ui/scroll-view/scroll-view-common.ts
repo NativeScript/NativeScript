@@ -9,7 +9,7 @@ import { CoreTypes } from '../../core-types';
 
 @CSSType('ScrollView')
 export abstract class ScrollViewBase extends ContentView implements ScrollViewDefinition {
-	private _scrollChangeCount = 0;
+	private _addedScrollEvent = false;
 	public static scrollEvent = 'scroll';
 
 	public orientation: CoreTypes.OrientationType;
@@ -19,52 +19,27 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
 	public addEventListener(arg: string, callback: any, thisArg?: any) {
 		super.addEventListener(arg, callback, thisArg);
 
-		if (arg === ScrollViewBase.scrollEvent) {
-			this._scrollChangeCount++;
-			this.attach();
+		if (arg === ScrollViewBase.scrollEvent && !this._addedScrollEvent) {
+			this._addedScrollEvent = true;
+			this.addNativeListener();
 		}
 	}
 
 	public removeEventListener(arg: string, callback: any, thisArg?: any) {
 		super.removeEventListener(arg, callback, thisArg);
 
-		if (arg === ScrollViewBase.scrollEvent) {
-			this._scrollChangeCount--;
-			this.dettach();
+		if (arg === ScrollViewBase.scrollEvent && this._addedScrollEvent) {
+			this._addedScrollEvent = false;
+			this.removeNativeListener();
 		}
 	}
 
-	@profile
-	public onLoaded() {
-		super.onLoaded();
-
-		this.attach();
+	protected addNativeListener() {
+		// implemented per platform
 	}
 
-	public onUnloaded() {
-		super.onUnloaded();
-
-		this.dettach();
-	}
-
-	private attach() {
-		if (this._scrollChangeCount > 0 && this.isLoaded) {
-			this.attachNative();
-		}
-	}
-
-	private dettach() {
-		if (this._scrollChangeCount === 0 && this.isLoaded) {
-			this.dettachNative();
-		}
-	}
-
-	protected attachNative() {
-		//
-	}
-
-	protected dettachNative() {
-		//
+	protected removeNativeListener() {
+		// implemented per platform
 	}
 
 	get horizontalOffset(): number {
