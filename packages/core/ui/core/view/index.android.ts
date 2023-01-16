@@ -425,6 +425,7 @@ export class View extends ViewCommon {
 		this._manager = null;
 		this._rootManager = null;
 		super.onLoaded();
+		this.setOnTouchListener();
 	}
 
 	@profile
@@ -465,7 +466,6 @@ export class View extends ViewCommon {
 	public initNativeView(): void {
 		super.initNativeView();
 		this._isClickable = this.nativeViewProtected.isClickable();
-		this.setOnTouchListener();
 		if (this.needsOnLayoutChangeListener()) {
 			this.setOnLayoutChangeListener();
 		}
@@ -481,7 +481,6 @@ export class View extends ViewCommon {
 			this.touchListenerIsSet = false;
 			if (this.nativeViewProtected) {
 				this.nativeViewProtected.setOnTouchListener(null);
-				this.nativeViewProtected.setClickable(this._isClickable);
 			}
 		}
 		if (this.layoutChangeListenerIsSet) {
@@ -491,7 +490,7 @@ export class View extends ViewCommon {
 	}
 
 	setOnTouchListener() {
-		if (!this.nativeViewProtected || !this.hasGestureObservers()) {
+		if (this.touchListenerIsSet || !this.nativeViewProtected || !this.hasGestureObservers()) {
 			return;
 		}
 
