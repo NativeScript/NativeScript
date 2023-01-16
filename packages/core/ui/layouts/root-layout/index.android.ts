@@ -16,17 +16,19 @@ export class RootLayout extends RootLayoutBase {
 		super.insertChild(view, atIndex);
 		if (!view.hasGestureObservers()) {
 			// block tap events from going through to layers behind the view
-			view.nativeViewProtected.setOnTouchListener(
-				new android.view.View.OnTouchListener({
-					onTouch: function (view, event) {
-						return true;
-					},
-				})
-			);
+			if (view.nativeViewProtected) {
+				view.nativeViewProtected.setOnTouchListener(
+					new android.view.View.OnTouchListener({
+						onTouch: function (view, event) {
+							return true;
+						},
+					})
+				);
+			}
 		}
 	}
 	removeChild(view: View): void {
-		if (view.hasGestureObservers()) {
+		if (view.hasGestureObservers() && view.nativeViewProtected) {
 			view.nativeViewProtected.setOnTouchListener(null);
 		}
 		super.removeChild(view);

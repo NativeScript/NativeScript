@@ -350,8 +350,8 @@ export class TabViewItem extends TabViewItemBase {
 	}
 
 	public disposeNativeView(): void {
-		super.disposeNativeView();
 		(<TabViewItemDefinition>this).canBeLoaded = false;
+		super.disposeNativeView();
 	}
 
 	public createNativeView() {

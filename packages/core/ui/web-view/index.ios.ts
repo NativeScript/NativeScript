@@ -208,10 +208,10 @@ export class WebView extends WebViewBase {
 	}
 
 	disposeNativeView() {
-		super.disposeNativeView();
 		this._delegate = null;
 		this._scrollDelegate = null;
 		this._uiDelegate = null;
+		super.disposeNativeView();
 	}
 
 	// @ts-ignore
