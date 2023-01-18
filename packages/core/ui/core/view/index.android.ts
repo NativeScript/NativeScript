@@ -476,7 +476,6 @@ export class View extends ViewCommon {
 	}
 
 	public disposeNativeView(): void {
-		super.disposeNativeView();
 		if (this.touchListenerIsSet) {
 			this.touchListenerIsSet = false;
 			if (this.nativeViewProtected) {
@@ -485,8 +484,12 @@ export class View extends ViewCommon {
 		}
 		if (this.layoutChangeListenerIsSet) {
 			this.layoutChangeListenerIsSet = false;
-			this.nativeViewProtected.removeOnLayoutChangeListener(this.layoutChangeListener);
+			if (this.nativeViewProtected) {
+				this.nativeViewProtected.removeOnLayoutChangeListener(this.layoutChangeListener);
+				this.layoutChangeListener = null;
+			}
 		}
+		super.disposeNativeView();
 	}
 
 	setOnTouchListener() {

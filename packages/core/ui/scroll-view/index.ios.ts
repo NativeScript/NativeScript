@@ -50,6 +50,7 @@ export class ScrollView extends ScrollViewBase {
 	}
 
 	disposeNativeView() {
+		this.removeNativeListener();
 		this._delegate = null;
 		super.disposeNativeView();
 	}

@@ -123,10 +123,12 @@ export class WebView extends WebViewBase {
 	public disposeNativeView() {
 		const nativeView = this.nativeViewProtected;
 		if (nativeView) {
+			if ((<any>nativeView).client) {
+				(<any>nativeView).client.owner = null;
+			}
 			nativeView.destroy();
 		}
 
-		(<any>nativeView).client.owner = null;
 		super.disposeNativeView();
 	}
 

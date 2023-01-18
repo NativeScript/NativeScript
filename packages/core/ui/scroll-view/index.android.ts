@@ -166,8 +166,8 @@ export class ScrollView extends ScrollViewBase {
 	}
 
 	disposeNativeView() {
-		super.disposeNativeView();
 		this.removeNativeListener();
+		super.disposeNativeView();
 	}
 
 	public _onOrientationChanged() {
