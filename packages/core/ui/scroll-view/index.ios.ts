@@ -47,16 +47,10 @@ export class ScrollView extends ScrollViewBase {
 		super.initNativeView();
 		this.updateScrollBarVisibility(this.scrollBarIndicatorVisible);
 		this._setNativeClipToBounds();
-		if (this.hasListeners(ScrollView.scrollEvent)) {
-			this._delegate = UIScrollViewDelegateImpl.initWithOwner(new WeakRef(this));
-			this.nativeViewProtected.delegate = this._delegate;
-		}
 	}
 
 	disposeNativeView() {
-		if (this.nativeViewProtected) {
-			this.nativeViewProtected.delegate = null;
-		}
+		this.dettachNative();
 		this._delegate = null;
 		super.disposeNativeView();
 	}
@@ -67,6 +61,19 @@ export class ScrollView extends ScrollViewBase {
 		}
 		// Always set clipsToBounds for scroll-view
 		this.nativeViewProtected.clipsToBounds = true;
+	}
+
+	protected attachNative() {
+		if (!this._delegate) {
+			this._delegate = UIScrollViewDelegateImpl.initWithOwner(new WeakRef(this));
+			this.nativeViewProtected.delegate = this._delegate;
+		}
+	}
+
+	protected dettachNative() {
+		if (this.nativeViewProtected) {
+			this.nativeViewProtected.delegate = null;
+		}
 	}
 
 	protected updateScrollBarVisibility(value) {

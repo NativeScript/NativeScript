@@ -116,62 +116,6 @@ export class ScrollView extends ScrollViewBase {
 		}
 
 		this.nativeViewProtected.setId(this._androidViewId);
-
-		if (this.hasListeners(ScrollView.scrollEvent)) {
-			this.addNativeListener();
-		}
-	}
-
-	protected addNativeListener() {
-		if (!this.nativeViewProtected) {
-			return;
-		}
-		const that = new WeakRef(this);
-		if (this.orientation === 'vertical') {
-			this.scrollChangeHandler = new androidx.core.widget.NestedScrollView.OnScrollChangeListener({
-				onScrollChange(view, scrollX, scrollY) {
-					const owner: ScrollView = that?.get();
-					if (owner) {
-						owner.notify({
-							object: owner,
-							eventName: ScrollView.scrollEvent,
-							scrollX: layout.toDeviceIndependentPixels(scrollX),
-							scrollY: layout.toDeviceIndependentPixels(scrollY),
-						});
-					}
-				},
-			});
-			this.nativeViewProtected.setOnScrollChangeListener(this.scrollChangeHandler);
-		} else {
-			this.handler = new android.view.ViewTreeObserver.OnScrollChangedListener({
-				onScrollChanged: function () {
-					const owner: ScrollView = that?.get();
-					if (owner) {
-						owner._onScrollChanged();
-					}
-				},
-			});
-			this.nativeViewProtected.getViewTreeObserver().addOnScrollChangedListener(this.handler);
-		}
-	}
-
-	protected removeNativeListener() {
-		if (!this.nativeViewProtected) {
-			return;
-		}
-		if (this.handler) {
-			this.nativeViewProtected?.getViewTreeObserver().removeOnScrollChangedListener(this.handler);
-			this.handler = null;
-		}
-		if (this.scrollChangeHandler) {
-			this.nativeView?.setOnScrollChangeListener(null);
-			this.scrollChangeHandler = null;
-		}
-	}
-
-	disposeNativeView() {
-		this.removeNativeListener();
-		super.disposeNativeView();
 	}
 
 	public _onOrientationChanged() {
@@ -181,6 +125,22 @@ export class ScrollView extends ScrollViewBase {
 				parent._removeView(this);
 				parent._addView(this);
 			}
+		}
+	}
+
+	protected attachNative() {
+		if (!this.handler) {
+			const that = new WeakRef(this);
+			this.handler = new android.view.ViewTreeObserver.OnScrollChangedListener({
+				onScrollChanged: function () {
+					const owner: ScrollView = that.get();
+					if (owner) {
+						owner._onScrollChanged();
+					}
+				},
+			});
+
+			this.nativeViewProtected.getViewTreeObserver().addOnScrollChangedListener(this.handler);
 		}
 	}
 
@@ -204,6 +164,11 @@ export class ScrollView extends ScrollViewBase {
 				this._lastScrollY = newScrollY;
 			}
 		}
+	}
+
+	protected dettachNative() {
+		this.nativeViewProtected.getViewTreeObserver().removeOnScrollChangedListener(this.handler);
+		this.handler = null;
 	}
 }
 

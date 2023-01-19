@@ -9,11 +9,62 @@ import { CoreTypes } from '../../core-types';
 
 @CSSType('ScrollView')
 export abstract class ScrollViewBase extends ContentView implements ScrollViewDefinition {
+	private _scrollChangeCount = 0;
 	public static scrollEvent = 'scroll';
 
 	public orientation: CoreTypes.OrientationType;
 	public scrollBarIndicatorVisible: boolean;
 	public isScrollEnabled: boolean;
+
+	public addEventListener(arg: string, callback: any, thisArg?: any) {
+		super.addEventListener(arg, callback, thisArg);
+
+		if (arg === ScrollViewBase.scrollEvent) {
+			this._scrollChangeCount++;
+			this.attach();
+		}
+	}
+
+	public removeEventListener(arg: string, callback: any, thisArg?: any) {
+		super.removeEventListener(arg, callback, thisArg);
+
+		if (arg === ScrollViewBase.scrollEvent) {
+			this._scrollChangeCount--;
+			this.dettach();
+		}
+	}
+
+	@profile
+	public onLoaded() {
+		super.onLoaded();
+
+		this.attach();
+	}
+
+	public disposeNativeView() {
+		this.dettach();
+		super.disposeNativeView();
+	}
+
+	private attach() {
+		if (this._scrollChangeCount > 0 && this.isLoaded) {
+			this.attachNative();
+		}
+	}
+
+	private dettach() {
+		if (this._scrollChangeCount === 0 && this.isLoaded) {
+			this.dettachNative();
+		}
+	}
+
+	protected attachNative() {
+		//
+	}
+
+	protected dettachNative() {
+		//
+	}
 
 	get horizontalOffset(): number {
 		return 0;
