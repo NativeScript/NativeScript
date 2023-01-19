@@ -286,6 +286,11 @@ export abstract class ViewBase extends Observable {
 	public className: string;
 
 	/**
+	 * Gets or sets the CSS class name for this view (get/set to className).
+	 */
+	public class: string;
+
+	/**
 	 * Gets owner page. This is a read-only property.
 	 */
 	public readonly page: Page;
