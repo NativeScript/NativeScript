@@ -485,7 +485,7 @@ export class View extends ViewCommon implements ViewDefinition {
 
 						//TODO: only numeric value is supported, percentage value is not supported like Android
 						if (w > 0 && h > 0) {
-							controller.preferredContentSize = CGSizeMake(w, h);
+							this.viewController.preferredContentSize = CGSizeMake(w, h);
 						}
 					}
 
