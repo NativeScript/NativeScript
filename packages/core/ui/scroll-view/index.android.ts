@@ -116,6 +116,10 @@ export class ScrollView extends ScrollViewBase {
 		}
 
 		this.nativeViewProtected.setId(this._androidViewId);
+
+		if (this.hasListeners(ScrollView.scrollEvent)) {
+			this.addNativeListener();
+		}
 	}
 
 	protected addNativeListener() {

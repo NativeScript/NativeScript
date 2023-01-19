@@ -9,38 +9,11 @@ import { CoreTypes } from '../../core-types';
 
 @CSSType('ScrollView')
 export abstract class ScrollViewBase extends ContentView implements ScrollViewDefinition {
-	private _addedScrollEvent = false;
 	public static scrollEvent = 'scroll';
 
 	public orientation: CoreTypes.OrientationType;
 	public scrollBarIndicatorVisible: boolean;
 	public isScrollEnabled: boolean;
-
-	public addEventListener(arg: string, callback: any, thisArg?: any) {
-		super.addEventListener(arg, callback, thisArg);
-
-		if (arg === ScrollViewBase.scrollEvent && !this._addedScrollEvent) {
-			this._addedScrollEvent = true;
-			this.addNativeListener();
-		}
-	}
-
-	public removeEventListener(arg: string, callback: any, thisArg?: any) {
-		super.removeEventListener(arg, callback, thisArg);
-
-		if (arg === ScrollViewBase.scrollEvent && this._addedScrollEvent) {
-			this._addedScrollEvent = false;
-			this.removeNativeListener();
-		}
-	}
-
-	protected addNativeListener() {
-		// implemented per platform
-	}
-
-	protected removeNativeListener() {
-		// implemented per platform
-	}
 
 	get horizontalOffset(): number {
 		return 0;
