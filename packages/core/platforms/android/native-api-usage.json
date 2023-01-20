@@ -42,8 +42,10 @@
         "com.tns:NativeScriptException*",
         "com.nativescript*:*",
         "org.nativescript*:*",
+        "android.content:ClipData*",
         "android.content:Context*",
         "android.content:ComponentCallbacks2*",
+        "android.content:ContentResolver*",
         "android.content.res:Configuration*",
         "android.content.res:Resources*",
         "android.content.res:ColorStateList*",
@@ -135,6 +137,7 @@
         "android.graphics.drawable:ColorDrawable*",
         "android.graphics.drawable:LayerDrawable*",
         "android.graphics.drawable:BitmapDrawable*",
+        "android.graphics.drawable:StateListDrawable*",
         "android.util:Base64*",
         "android.util:Base64OutputStream*",
         "android.util:DisplayMetrics*",
@@ -214,6 +217,7 @@
         "android.text.method:TransformationMethod*",
         "android.text.method:LinkMovementMethod*",
         "android.text.method:MovementMethod*",
+        "android.webkit:URLUtil*",
         "android.webkit:WebViewClient*",
         "android.webkit:WebView*",
         "android.webkit:WebSettings*",
@@ -255,3 +259,4 @@
         "android.inputmethodservice.Keyboard:Key*"
     ]
 }
+
