@@ -479,7 +479,7 @@ export class View extends ViewCommon implements ViewDefinition {
 			} else {
 				//use CSS & attribute width & height if option is not provided
 				const handler = () => {
-					if (controller) {
+					if (this.viewController) {
 						const w = <number>(this.width || this.style.width);
 						const h = <number>(this.height || this.style.height);
 
