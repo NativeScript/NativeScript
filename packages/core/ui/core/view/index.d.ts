@@ -1,6 +1,6 @@
 import { ViewBase } from '../view-base';
 import { Property, InheritedProperty } from '../properties';
-import { EventData } from '../../../data/observable';
+import { EventData, ListenerEntry } from '../../../data/observable';
 import { Color } from '../../../color';
 import { Animation, AnimationDefinition, AnimationPromise } from '../../animation';
 import { GestureTypes, GesturesObserver } from '../../gestures';
@@ -95,6 +95,10 @@ export interface ShownModallyData extends EventData {
 	 * of View.showModal is executed.
 	 */
 	closeCallback?: Function;
+}
+
+export interface ObserverEntry extends ListenerEntry {
+	observer: GesturesObserver;
 }
 
 /**
@@ -577,49 +581,56 @@ export abstract class View extends ViewCommon {
 	 */
 	public focus(): boolean;
 
-	public getGestureObservers(type: GestureTypes): Array<GesturesObserver>;
+	/**
+	 * @returns A readonly array of the observers for the given gesture type (or
+	 * type combination), or an empty array if no gesture observers of that type
+	 * had been registered at all.
+	 */
+	public getGestureObservers(type: GestureTypes): readonly ObserverEntry[];
 
 	/**
 	 * Removes listener(s) for the specified event name.
 	 * @param eventNames Comma delimited names of the events or gesture types the specified listener is associated with.
 	 * @param callback An optional parameter pointing to a specific listener. If not defined, all listeners for the event names will be removed.
 	 * @param thisArg An optional parameter which when set will be used to refine search of the correct callback which will be removed as event listener.
+	 * @param options An optional parameter. If passed as a boolean, configures the useCapture value. Otherwise, specifies options.
 	 */
-	off(eventNames: string | GestureTypes, callback?: (args: EventData) => void, thisArg?: any);
+	off(eventNames: string | GestureTypes, callback?: (args: EventData) => void, thisArg?: any, options?: EventListenerOptions | boolean): void;
 
 	/**
 	 * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
 	 * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change") or you can use gesture types.
 	 * @param callback - Callback function which will be executed when event is raised.
 	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
+	 * @param options An optional parameter. If passed as a boolean, configures the useCapture value. Otherwise, specifies options.
 	 */
-	on(eventNames: string | GestureTypes, callback: (args: EventData) => void, thisArg?: any);
+	on(eventNames: string | GestureTypes, callback: (args: EventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
 
 	/**
 	 * Raised when a loaded event occurs.
 	 */
-	on(event: 'loaded', callback: (args: EventData) => void, thisArg?: any);
+	on(event: 'loaded', callback: (args: EventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
 
 	/**
 	 * Raised when an unloaded event occurs.
 	 */
-	on(event: 'unloaded', callback: (args: EventData) => void, thisArg?: any);
+	on(event: 'unloaded', callback: (args: EventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
 
 	/**
 	 * Raised when a back button is pressed.
 	 * This event is raised only for android.
 	 */
-	on(event: 'androidBackPressed', callback: (args: EventData) => void, thisArg?: any);
+	on(event: 'androidBackPressed', callback: (args: EventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
 
 	/**
 	 * Raised before the view is shown as a modal dialog.
 	 */
-	on(event: 'showingModally', callback: (args: ShownModallyData) => void, thisArg?: any): void;
+	on(event: 'showingModally', callback: (args: ShownModallyData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
 
 	/**
 	 * Raised after the view is shown as a modal dialog.
 	 */
-	on(event: 'shownModally', callback: (args: ShownModallyData) => void, thisArg?: any);
+	on(event: 'shownModally', callback: (args: ShownModallyData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
 
 	/**
 	 * Returns the current modal view that this page is showing (is parent of), if any.
@@ -721,9 +732,16 @@ export abstract class View extends ViewCommon {
 	hasGestureObservers?(): boolean;
 
 	/**
-	 * Android only to set the touch listener
+	 * @platform Android-only
+	 * Set the touch listener.
 	 */
 	setOnTouchListener?(): void;
+
+	/**
+	 * @platform Android-only
+	 * Unset the touch listener.
+	 */
+	unsetOnTouchListener?(): void;
 
 	/**
 	 * Iterates over children of type View.
@@ -764,10 +782,6 @@ export abstract class View extends ViewCommon {
 	 * @private
 	 */
 	isLayoutRequired: boolean;
-	/**
-	 * @private
-	 */
-	_gestureObservers: any;
 	/**
 	 * @private
 	 * androidx.fragment.app.FragmentManager

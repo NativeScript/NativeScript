@@ -140,7 +140,7 @@ export interface GestureEventData extends EventData {
 	/**
 	 * Gets the view which originates the gesture.
 	 */
-	view: Partial<View>;
+	view: View;
 	/**
 	 * Gets the underlying native iOS specific [UIGestureRecognizer](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIGestureRecognizer_Class/).
 	 */
@@ -287,7 +287,7 @@ export class GesturesObserver {
 	 * @param callback - A function that will be executed when a gesture is received.
 	 * @param context - default this argument for the callbacks.
 	 */
-	constructor(target: Partial<View>, callback: (args: GestureEventData) => void, context: any);
+	constructor(target: View, callback: (args: GestureEventData) => void, context: any);
 
 	/**
 	 * Registers a gesture observer to a view and gesture.
@@ -322,15 +322,6 @@ export class GesturesObserver {
 }
 
 /**
- * A short-hand function that is used to create a gesture observer for a view and gesture.
- * @param target - View which will be watched for originating a specific gesture.
- * @param type - Type of the gesture.
- * @param callback - A function that will be executed when a gesture is received.
- * @param context - this argument for the callback.
- */
-export function observe(target: View, type: GestureTypes, callback: (args: GestureEventData) => void, context?: any): GesturesObserver;
-
-/**
  * Returns a string representation of a gesture type.
  * @param type - Type of the gesture.
  * @param separator(optional) - Text separator between gesture type strings.
@@ -341,4 +332,4 @@ export function toString(type: GestureTypes, separator?: string): string;
  * Returns a gesture type enum value from a string (case insensitive).
  * @param type - A string representation of a gesture type (e.g. Tap).
  */
-export function fromString(type: string): GestureTypes;
+export function fromString(type: string): GestureTypes | undefined;

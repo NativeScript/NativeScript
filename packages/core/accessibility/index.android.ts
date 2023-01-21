@@ -1,8 +1,9 @@
 import * as Application from '../application';
+import { DOMEvent } from '../data/dom-events/dom-event';
 import { Trace } from '../trace';
 import { SDK_VERSION } from '../utils/constants';
 import type { View } from '../ui/core/view';
-import { GestureTypes } from '../ui/gestures';
+import { GestureEventData, GestureTypes } from '../ui/gestures';
 import { notifyAccessibilityFocusState } from './accessibility-common';
 import { getAndroidAccessibilityManager } from './accessibility-service';
 import { AccessibilityRole, AccessibilityState, AndroidAccessibilityEvent } from './accessibility-types';
@@ -13,8 +14,8 @@ export * from './font-scale';
 
 let clickableRolesMap = new Set<string>();
 
-let lastFocusedView: WeakRef<Partial<View>>;
-function accessibilityEventHelper(view: Partial<View>, eventType: number) {
+let lastFocusedView: WeakRef<View>;
+function accessibilityEventHelper(view: View, eventType: number) {
 	const eventName = accessibilityEventTypeMap.get(eventType);
 	if (!isAccessibilityServiceEnabled()) {
 		if (Trace.isEnabled()) {
@@ -54,17 +55,18 @@ function accessibilityEventHelper(view: Partial<View>, eventType: number) {
 			 * These aren't triggered for custom tap events in NativeScript.
 			 */
 			if (SDK_VERSION >= 26) {
-				// Find all tap gestures and trigger them.
-				for (const tapGesture of view.getGestureObservers(GestureTypes.tap) ?? []) {
-					tapGesture.callback({
+				// Trigger all tap handlers on this view.
+				new DOMEvent('tap').dispatchTo(
+					view as View,
+					{
 						android: view.android,
 						eventName: 'tap',
 						ios: null,
 						object: view,
 						type: GestureTypes.tap,
-						view: view,
-					});
-				}
+						view,
+					} as GestureEventData
+				);
 			}
 
 			return;
@@ -103,7 +105,7 @@ function accessibilityEventHelper(view: Partial<View>, eventType: number) {
 
 let TNSAccessibilityDelegate: android.view.View.androidviewViewAccessibilityDelegate;
 
-const androidViewToTNSView = new WeakMap<android.view.View, WeakRef<Partial<View>>>();
+const androidViewToTNSView = new WeakMap<android.view.View, WeakRef<View>>();
 
 let accessibilityEventMap: Map<AndroidAccessibilityEvent, number>;
 let accessibilityEventTypeMap: Map<number, string>;
@@ -438,11 +440,11 @@ export function isAccessibilityServiceEnabled(): boolean {
 	return accessibilityServiceEnabled;
 }
 
-export function setupAccessibleView(view: Partial<View>): void {
+export function setupAccessibleView(view: View): void {
 	updateAccessibilityProperties(view);
 }
 
-export function updateAccessibilityProperties(view: Partial<View>): void {
+export function updateAccessibilityProperties(view: View): void {
 	if (!view.nativeViewProtected) {
 		return;
 	}
@@ -538,7 +540,7 @@ export function updateContentDescription(view: View, forceUpdate?: boolean): str
 	return applyContentDescription(view, forceUpdate);
 }
 
-function setAccessibilityDelegate(view: Partial<View>): void {
+function setAccessibilityDelegate(view: View): void {
 	if (!view.nativeViewProtected) {
 		return;
 	}
@@ -564,7 +566,7 @@ function setAccessibilityDelegate(view: Partial<View>): void {
 	androidView.setAccessibilityDelegate(TNSAccessibilityDelegate);
 }
 
-function applyContentDescription(view: Partial<View>, forceUpdate?: boolean) {
+function applyContentDescription(view: View, forceUpdate?: boolean) {
 	let androidView = view.nativeViewProtected as android.view.View;
 	if (!androidView || (androidView instanceof android.widget.TextView && !view._androidContentDescriptionUpdated)) {
 		return null;

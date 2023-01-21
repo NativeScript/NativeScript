@@ -185,6 +185,79 @@ export var test_Observable_addEventListener_MultipleEvents_ShouldTrim = function
 	TKUnit.assert(receivedCount === 2, 'Callbacks not raised properly.');
 };
 
+export var test_Observable_addEventListener_ListenerEquality_Same = function () {
+	var obj = new TestObservable();
+
+	var count = 0;
+	var callback = function (data: EventData) {
+		count++;
+	};
+
+	obj.addEventListener(Observable.propertyChangeEvent, callback);
+	obj.addEventListener(Observable.propertyChangeEvent, callback);
+
+	obj.set('testName', 1);
+	TKUnit.assert(count === 1, 'The propertyChanged notification should be raised once.');
+};
+
+export var test_Observable_addEventListener_ListenerEquality_SameForFalsyThisArg = function () {
+	var obj = new TestObservable();
+
+	var count = 0;
+	var callback = function (data: EventData) {
+		count++;
+	};
+
+	obj.addEventListener(Observable.propertyChangeEvent, callback);
+	obj.addEventListener(Observable.propertyChangeEvent, callback, null);
+	obj.addEventListener(Observable.propertyChangeEvent, callback, undefined);
+	obj.addEventListener(Observable.propertyChangeEvent, callback, false);
+	obj.addEventListener(Observable.propertyChangeEvent, callback, 0);
+	obj.addEventListener(Observable.propertyChangeEvent, callback, NaN);
+	obj.addEventListener(Observable.propertyChangeEvent, callback, '');
+
+	obj.set('testName', 1);
+	TKUnit.assert(count === 1, `Expected to register exactly 1 event listener due to falsy thisArgs being treated the same as omitted thisArgs, but found ${count} events fired.`);
+};
+
+export var test_Observable_addEventListener_ListenerEquality_DistinctByStrictEquality = function () {
+	var obj = new TestObservable();
+
+	var count = 0;
+	var callback = function (data: EventData) {
+		count++;
+	};
+
+	obj.addEventListener(Observable.propertyChangeEvent, callback);
+	obj.addEventListener(Observable.propertyChangeEvent, callback, {});
+	obj.addEventListener(Observable.propertyChangeEvent, callback, {});
+
+	obj.set('testName', 1);
+	TKUnit.assert(count === 3, `Expected to register exactly 3 event listeners due to thisArgs differing by strict equality, but found ${count} events fired.`);
+};
+
+export var test_Observable_addEventListener_ListenerEquality_DistinctByCapture = function () {
+	var obj = new TestObservable();
+
+	var count = 0;
+	var callback = function (data: EventData) {
+		count++;
+	};
+
+	obj.addEventListener(Observable.propertyChangeEvent, callback, null);
+	obj.addEventListener(Observable.propertyChangeEvent, callback, null, true);
+	obj.addEventListener(Observable.propertyChangeEvent, callback, null, false);
+	obj.addEventListener(Observable.propertyChangeEvent, callback, null, { capture: true });
+	obj.addEventListener(Observable.propertyChangeEvent, callback, null, { capture: false });
+	obj.addEventListener(Observable.propertyChangeEvent, callback, null, { capture: true, once: true });
+	obj.addEventListener(Observable.propertyChangeEvent, callback, null, { capture: true, passive: true });
+
+	obj.set('testName', 1);
+	TKUnit.assert(count === 2, `Expected to register exactly 2 event listeners due to their equality depending only on the capture value, but found ${count} events fired.`);
+};
+
+// TODO: corresponding removeEventListener tests, making sure we only remove more than one event listener when passing in just the event name as an arg.
+
 export var test_Observable_addEventListener_MultipleCallbacks = function () {
 	var obj = new TestObservable();
 

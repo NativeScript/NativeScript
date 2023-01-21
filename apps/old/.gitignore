@@ -1,0 +1,42 @@
+# NativeScript
+hooks/
+node_modules/
+platforms/
+
+# NativeScript Template
+*.js.map
+*.js
+!webpack.config.js
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# General
+.DS_Store
+.AppleDouble
+.LSOverride
+.idea
+.cloud
+.project
+tmp/
+typings/
+
+# misc
+npm-debug.log
+
+# app
+!*.d.ts
+!src/assets/fontawesome.min.css
+/report/
+.nsbuildinfo
+/temp/
+/src/tns_modules/
+
+# app uses platform specific scss which can inadvertently get renamed which will cause problems
+app/app.scss
+
+package-lock.json

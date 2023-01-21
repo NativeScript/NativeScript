@@ -115,28 +115,29 @@ export declare class Page extends PageBase {
 	 * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change").
 	 * @param callback - Callback function which will be executed when event is raised.
 	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
+	 * @param options An optional parameter. If passed as a boolean, configures the useCapture value. Otherwise, specifies options.
 	 */
-	public on(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void;
+	public on(eventNames: string, callback: (data: EventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
 
 	/**
 	 * Raised when navigation to the page has started.
 	 */
-	public on(event: 'navigatingTo', callback: (args: NavigatedData) => void, thisArg?: any): void;
+	public on(event: 'navigatingTo', callback: (args: NavigatedData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
 
 	/**
 	 * Raised when navigation to the page has finished.
 	 */
-	public on(event: 'navigatedTo', callback: (args: NavigatedData) => void, thisArg?: any): void;
+	public on(event: 'navigatedTo', callback: (args: NavigatedData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
 
 	/**
 	 * Raised when navigation from the page has started.
 	 */
-	public on(event: 'navigatingFrom', callback: (args: NavigatedData) => void, thisArg?: any): void;
+	public on(event: 'navigatingFrom', callback: (args: NavigatedData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
 
 	/**
 	 * Raised when navigation from the page has finished.
 	 */
-	public on(event: 'navigatedFrom', callback: (args: NavigatedData) => void, thisArg?: any): void;
+	public on(event: 'navigatedFrom', callback: (args: NavigatedData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
 	//@private
 
 	/**

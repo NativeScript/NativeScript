@@ -2,6 +2,8 @@
 	"version": 2,
 	"projects": {
 		"apps-automated": "apps/automated",
+		"apps-new": "apps/new",
+		"apps-old": "apps/old",
 		"apps-toolbox": "apps/toolbox",
 		"apps-ui": "apps/ui",
 		"core": "packages/core",

@@ -1,0 +1,65 @@
+{
+	"name": "apps-new",
+	"$schema": "../../node_modules/nx/schemas/project-schema.json",
+	"sourceRoot": "apps/new/src",
+	"projectType": "application",
+	"prefix": "nativescript",
+	"namedInputs": {
+		"default": ["{projectRoot}/**/*"],
+		"production": ["!{projectRoot}/**/*.spec.ts"]
+	},
+	"targets": {
+		"build": {
+			"executor": "@nativescript/nx:build",
+			"options": {
+				"noHmr": true,
+				"production": true,
+				"uglify": true,
+				"release": true,
+				"forDevice": true
+			},
+			"dependsOn": [
+				{
+					"target": "build.all",
+					"projects": "dependencies"
+				}
+			]
+		},
+		"ios": {
+			"executor": "@nativescript/nx:build",
+			"options": {
+				"platform": "ios"
+			},
+			"dependsOn": [
+				{
+					"target": "build.all",
+					"projects": "dependencies"
+				}
+			]
+		},
+		"android": {
+			"executor": "@nativescript/nx:build",
+			"options": {
+				"platform": "android"
+			},
+			"dependsOn": [
+				{
+					"target": "build.all",
+					"projects": "dependencies"
+				}
+			]
+		},
+		"clean": {
+			"executor": "@nativescript/nx:build",
+			"options": {
+				"clean": true
+			}
+		},
+		"lint": {
+			"executor": "@nrwl/linter:eslint",
+			"options": {
+				"lintFilePatterns": ["apps/new/**/*.ts"]
+			}
+		}
+	}
+}

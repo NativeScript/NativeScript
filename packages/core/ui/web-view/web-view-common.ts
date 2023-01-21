@@ -101,9 +101,9 @@ export abstract class WebViewBase extends ContainerView {
 // HACK: We declare all these 'on' statements, so that they can appear in the API reference
 // HACK: Do we need this? Is it useful? There are static fields to the WebViewBase class for the event names.
 export interface WebViewBase {
-	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void;
-	on(event: 'loadFinished', callback: (args: LoadEventData) => void, thisArg?: any): void;
-	on(event: 'loadStarted', callback: (args: LoadEventData) => void, thisArg?: any): void;
+	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
+	on(event: 'loadFinished', callback: (args: LoadEventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
+	on(event: 'loadStarted', callback: (args: LoadEventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
 }
 
 srcProperty.register(WebViewBase);

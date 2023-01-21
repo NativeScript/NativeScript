@@ -4,7 +4,7 @@ import { AndroidActivityBackPressedEventData, AndroidActivityBundleEventData, An
 
 // TODO: explain why we need to this or remov it
 // Use requires to ensure order of imports is maintained
-const appCommon = require('./application-common');
+const appCommon = require('./application-common') as typeof import('./application-common');
 
 // First reexport so that app module is initialized.
 export * from './application-common';
@@ -163,18 +163,18 @@ export class AndroidApplication extends Observable implements AndroidApplication
 // HACK: We declare all these 'on' statements, so that they can appear in the API reference
 // HACK: Do we need this? Is it useful? There are static fields to the AndroidApplication class for the event names.
 export interface AndroidApplication {
-	on(eventNames: string, callback: (data: AndroidActivityEventData) => void, thisArg?: any);
-	on(event: 'activityCreated', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any);
-	on(event: 'activityDestroyed', callback: (args: AndroidActivityEventData) => void, thisArg?: any);
-	on(event: 'activityStarted', callback: (args: AndroidActivityEventData) => void, thisArg?: any);
-	on(event: 'activityPaused', callback: (args: AndroidActivityEventData) => void, thisArg?: any);
-	on(event: 'activityResumed', callback: (args: AndroidActivityEventData) => void, thisArg?: any);
-	on(event: 'activityStopped', callback: (args: AndroidActivityEventData) => void, thisArg?: any);
-	on(event: 'saveActivityState', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any);
-	on(event: 'activityResult', callback: (args: AndroidActivityResultEventData) => void, thisArg?: any);
-	on(event: 'activityBackPressed', callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any);
-	on(event: 'activityNewIntent', callback: (args: AndroidActivityNewIntentEventData) => void, thisArg?: any);
-	on(event: 'activityRequestPermissions', callback: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any);
+	on(eventNames: string, callback: (data: AndroidActivityEventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
+	on(event: 'activityCreated', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
+	on(event: 'activityDestroyed', callback: (args: AndroidActivityEventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
+	on(event: 'activityStarted', callback: (args: AndroidActivityEventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
+	on(event: 'activityPaused', callback: (args: AndroidActivityEventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
+	on(event: 'activityResumed', callback: (args: AndroidActivityEventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
+	on(event: 'activityStopped', callback: (args: AndroidActivityEventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
+	on(event: 'saveActivityState', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
+	on(event: 'activityResult', callback: (args: AndroidActivityResultEventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
+	on(event: 'activityBackPressed', callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
+	on(event: 'activityNewIntent', callback: (args: AndroidActivityNewIntentEventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
+	on(event: 'activityRequestPermissions', callback: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
 }
 
 let androidApp: AndroidApplication;

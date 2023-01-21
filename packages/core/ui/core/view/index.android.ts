@@ -53,7 +53,7 @@ const GRAVITY_FILL_VERTICAL = 112; // android.view.Gravity.FILL_VERTICAL
 
 const modalMap = new Map<number, DialogOptions>();
 
-let TouchListener: TouchListener;
+let TouchListener: TouchListener | null = null;
 let DialogFragment: DialogFragment;
 
 interface AndroidView {
@@ -112,6 +112,9 @@ function initializeTouchListener(): void {
 	}
 
 	TouchListener = TouchListenerImpl;
+}
+function deinitializeTouchListener(): void {
+	TouchListener = null;
 }
 
 function initializeDialogFragment() {
@@ -313,7 +316,7 @@ export class View extends ViewCommon {
 	public _manager: androidx.fragment.app.FragmentManager;
 	private _isClickable: boolean;
 	private touchListenerIsSet: boolean;
-	private touchListener: android.view.View.OnTouchListener;
+	private touchListener: android.view.View.OnTouchListener | null = null;
 	private layoutChangeListenerIsSet: boolean;
 	private layoutChangeListener: android.view.View.OnLayoutChangeListener;
 	private _rootManager: androidx.fragment.app.FragmentManager;
@@ -334,16 +337,22 @@ export class View extends ViewCommon {
 		this.on(View.loadedEvent, handler);
 	}
 
-	// TODO: Implement unobserve that detach the touchListener.
-	_observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
-		super._observe(type, callback, thisArg);
+	protected _observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void {
+		super._observe(type, callback, thisArg, options);
 		if (this.isLoaded && !this.touchListenerIsSet) {
 			this.setOnTouchListener();
 		}
 	}
 
-	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any) {
-		super.on(eventNames, callback, thisArg);
+	protected _disconnectGestureObservers(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any, options?: EventListenerOptions | boolean): void {
+		super._disconnectGestureObservers(type, callback, thisArg, options);
+		if (this.touchListenerIsSet) {
+			this.unsetOnTouchListener();
+		}
+	}
+
+	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void {
+		super.on(eventNames, callback, thisArg, options);
 		const isLayoutEvent = typeof eventNames === 'string' ? eventNames.indexOf(ViewCommon.layoutChangedEvent) !== -1 : false;
 
 		if (this.isLoaded && !this.layoutChangeListenerIsSet && isLayoutEvent) {
@@ -351,8 +360,8 @@ export class View extends ViewCommon {
 		}
 	}
 
-	off(eventNames: string, callback?: any, thisArg?: any) {
-		super.off(eventNames, callback, thisArg);
+	off(eventNames: string, callback?: (data: EventData) => void, thisArg?: any, options?: EventListenerOptions | boolean): void {
+		super.off(eventNames, callback, thisArg, options);
 		const isLayoutEvent = typeof eventNames === 'string' ? eventNames.indexOf(ViewCommon.layoutChangedEvent) !== -1 : false;
 
 		// Remove native listener only if there are no more user listeners for LayoutChanged event
@@ -449,9 +458,8 @@ export class View extends ViewCommon {
 
 	public handleGestureTouch(event: android.view.MotionEvent): any {
 		for (const type in this._gestureObservers) {
-			const list = this._gestureObservers[type];
-			list.forEach((element) => {
-				element.androidOnTouchEvent(event);
+			this._gestureObservers[type].forEach((gesturesObserver) => {
+				gesturesObserver.observer.androidOnTouchEvent(event);
 			});
 		}
 		if (this.parent instanceof View) {
@@ -460,7 +468,7 @@ export class View extends ViewCommon {
 	}
 
 	hasGestureObservers() {
-		return this._gestureObservers && Object.keys(this._gestureObservers).length > 0;
+		return Object.keys(this._gestureObservers).length > 0;
 	}
 
 	public initNativeView(): void {
@@ -505,9 +513,15 @@ export class View extends ViewCommon {
 
 		this.touchListenerIsSet = true;
 
-		if (this.nativeViewProtected.setClickable) {
-			this.nativeViewProtected.setClickable(this.isUserInteractionEnabled);
-		}
+		this.nativeViewProtected.setClickable?.(this.isUserInteractionEnabled);
+	}
+
+	unsetOnTouchListener() {
+		deinitializeTouchListener();
+		this.touchListener = null;
+		this.nativeViewProtected?.setOnTouchListener(null);
+		this.touchListenerIsSet = false;
+		this.nativeViewProtected?.setClickable?.(this._isClickable);
 	}
 
 	private setOnLayoutChangeListener() {

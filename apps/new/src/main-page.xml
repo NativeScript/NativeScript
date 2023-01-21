@@ -1,0 +1,13 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+  <Page.actionBar>
+    <ActionBar title="Plugin Demos" icon="" class="action-bar" />
+  </Page.actionBar>
+  <StackLayout class="p-20">
+    <ScrollView class="h-full">
+      <StackLayout>
+        <Button text="scrolling" tap="{{ viewDemo }}" class="btn btn-primary view-demo" />
+        <Button text="properties" tap="{{ viewDemo }}" class="btn btn-primary view-demo" />
+      </StackLayout>
+    </ScrollView>
+  </StackLayout>
+</Page>

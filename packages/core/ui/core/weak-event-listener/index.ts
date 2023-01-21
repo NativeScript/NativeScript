@@ -1,7 +1,7 @@
 import { Observable, EventData } from '../../../data/observable';
 
 const handlersForEventName = new Map<string, (eventData: EventData) => void>();
-const sourcesMap = new WeakMap<Partial<Observable>, Map<string, Array<TargetHandlerPair>>>();
+const sourcesMap = new WeakMap<Observable, Map<string, Array<TargetHandlerPair>>>();
 
 class TargetHandlerPair {
 	tagetRef: WeakRef<Object>;
@@ -78,7 +78,7 @@ function validateArgs(source: Observable, eventName: string, handler: (eventData
 	}
 }
 
-export function addWeakEventListener(source: Observable, eventName: string, handler: (eventData: EventData) => void, target: any) {
+export function addWeakEventListener(source: Observable, eventName: string, handler: (eventData: EventData) => void, target: any, options?: AddEventListenerOptions | boolean): void {
 	validateArgs(source, eventName, handler, target);
 
 	let shouldAttach = false;
@@ -100,11 +100,11 @@ export function addWeakEventListener(source: Observable, eventName: string, hand
 	pairList.push(new TargetHandlerPair(target, handler));
 
 	if (shouldAttach) {
-		source.addEventListener(eventName, getHandlerForEventName(eventName));
+		source.addEventListener(eventName, getHandlerForEventName(eventName), options);
 	}
 }
 
-export function removeWeakEventListener(source: Observable, eventName: string, handler: (eventData: EventData) => void, target: any) {
+export function removeWeakEventListener(source: Observable, eventName: string, handler: (eventData: EventData) => void, target: any, options?: AddEventListenerOptions | boolean): void {
 	validateArgs(source, eventName, handler, target);
 
 	const handlerForEventWithName = handlersForEventName.get(eventName);
@@ -124,9 +124,9 @@ export function removeWeakEventListener(source: Observable, eventName: string, h
 	}
 
 	// Remove all pairs that match given target and handler or have a dead target
-	const targetHandlerPairsToRemove = [];
-	let pair;
-	let registeredTarget;
+	const targetHandlerPairsToRemove: number[] = [];
+	let pair: TargetHandlerPair;
+	let registeredTarget: Object;
 	for (let i = 0; i < targetHandlerPairList.length; i++) {
 		pair = targetHandlerPairList[i];
 
@@ -138,7 +138,7 @@ export function removeWeakEventListener(source: Observable, eventName: string, h
 
 	if (targetHandlerPairsToRemove.length === targetHandlerPairList.length) {
 		// There are no alive targets for this event - unsubscribe
-		source.removeEventListener(eventName, handlerForEventWithName);
+		source.removeEventListener(eventName, handlerForEventWithName, options);
 		sourceEventMap.delete(eventName);
 	} else {
 		for (let j = targetHandlerPairsToRemove.length - 1; j >= 0; j--) {

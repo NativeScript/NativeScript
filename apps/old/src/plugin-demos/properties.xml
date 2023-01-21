@@ -1,0 +1,19 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo">
+  <Page.actionBar>
+    <ActionBar title="Properties" icon="" class="action-bar">
+    </ActionBar>
+  </Page.actionBar>
+
+  <ScrollView scroll="{{ onScroll }}">
+    <StackLayout>
+      <FlexboxLayout>
+        <Label text="Manual profiling" />
+        <Switch id="manual-profiling" checked="false" checkedChange="{{ toggleManualProfiling }}" />
+      </FlexboxLayout>
+
+      <Button id="automated-profiling" text="Automated profiling" tap="{{ runAutomatedProfiling }}" class="btn btn-primary" />
+
+      <Label id="target" text="Event target" class="bg-gold" />
+    </StackLayout>
+  </ScrollView>
+</Page>

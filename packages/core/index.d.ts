@@ -77,6 +77,7 @@ export declare const Connectivity: {
 };
 export * from './core-types';
 export { CSSUtils } from './css/system-classes';
+export { DOMEvent } from './data/dom-events/dom-event';
 export { ObservableArray, ChangeType } from './data/observable-array';
 export type { ChangedData } from './data/observable-array';
 export { Observable, WrappedValue, fromObject, fromObjectRecursive } from './data/observable';

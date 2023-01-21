@@ -89,8 +89,8 @@ export abstract class SegmentedBarBase extends View implements SegmentedBarDefin
 }
 
 export interface SegmentedBarBase {
-	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
-	on(event: 'selectedIndexChanged', callback: (args: SelectedIndexChangedEventData) => void, thisArg?: any);
+	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
+	on(event: 'selectedIndexChanged', callback: (args: SelectedIndexChangedEventData) => void, thisArg?: any, options?: AddEventListenerOptions | boolean): void;
 }
 
 SegmentedBarBase.prototype.recycleNativeView = 'auto';
