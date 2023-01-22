@@ -4,7 +4,7 @@ import { ChangedData, ChangeType } from '../observable-array';
 /**
  * Event args for "itemsLoading" event.
  */
-export interface ItemsLoading extends EventData {
+export interface ItemsLoading<T extends Observable = Observable> extends EventData<T> {
 	/**
 	 * Start index.
 	 */
@@ -188,13 +188,13 @@ export interface VirtualArray<T> {
 	 * @param callback - Callback function which will be executed when event is raised.
 	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
 	 */
-	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void;
+	on<O extends Observable = Observable>(eventNames: string, callback: (data: EventData<O>) => void, thisArg?: any): void;
 	/**
 	 * Raised when still not loaded items are requested.
 	 */
-	on(event: 'itemsLoading', callback: (args: ItemsLoading) => void, thisArg?: any): void;
+	on<O extends Observable = Observable>(event: 'itemsLoading', callback: (args: ItemsLoading<O>) => void, thisArg?: any): void;
 	/**
 	 * Raised when a change occurs.
 	 */
-	on(event: 'change', callback: (args: ChangedData<T>) => void, thisArg?: any): void;
+	on<O extends Observable = Observable>(event: 'change', callback: (args: ChangedData<T, O>) => void, thisArg?: any): void;
 }

@@ -4,7 +4,7 @@ import { ViewBase } from '../core/view-base';
 import { Property, CoercibleProperty, InheritedCssProperty } from '../core/properties';
 import { Color } from '../../color';
 import { Style } from '../styling/style';
-import { EventData } from '../../data/observable';
+import { EventData, Observable } from '../../data/observable';
 
 @CSSType('SegmentedBarItem')
 export abstract class SegmentedBarItemBase extends ViewBase implements SegmentedBarItemDefinition {
@@ -89,8 +89,8 @@ export abstract class SegmentedBarBase extends View implements SegmentedBarDefin
 }
 
 export interface SegmentedBarBase {
-	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void;
-	on(event: 'selectedIndexChanged', callback: (args: SelectedIndexChangedEventData) => void, thisArg?: any): void;
+	on<T extends Observable = Observable>(eventNames: string, callback: (data: EventData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = Observable>(event: 'selectedIndexChanged', callback: (args: SelectedIndexChangedEventData<T>) => void, thisArg?: any): void;
 }
 
 SegmentedBarBase.prototype.recycleNativeView = 'auto';

@@ -5,14 +5,14 @@ import { booleanConverter } from '../core/view-base';
 import { Property, CssProperty } from '../core/properties';
 import { Style } from '../styling/style';
 import { Color } from '../../color';
-import { EventData } from '../../data/observable';
+import { EventData, Observable } from '../../data/observable';
 import type { Frame } from '../frame';
 import { isFrame } from '../frame/frame-helpers';
 import { ActionBar } from '../action-bar';
 import { KeyframeAnimationInfo } from '../animation/keyframe-animation';
 import { profile } from '../../profiling';
 
-interface NavigatedData extends EventData {
+interface NavigatedData<T extends Observable = Observable> extends EventData<T> {
 	context: any;
 	isBackNavigation: boolean;
 }
@@ -166,13 +166,13 @@ export class PageBase extends ContentView {
 PageBase.prototype.recycleNativeView = 'never';
 
 export interface PageBase {
-	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void;
-	on(event: 'navigatingTo', callback: (args: NavigatedData) => void, thisArg?: any): void;
-	on(event: 'navigatedTo', callback: (args: NavigatedData) => void, thisArg?: any): void;
-	on(event: 'navigatingFrom', callback: (args: NavigatedData) => void, thisArg?: any): void;
-	on(event: 'navigatedFrom', callback: (args: NavigatedData) => void, thisArg?: any): void;
-	on(event: 'showingModally', callback: (args: ShownModallyData) => void, thisArg?: any): void;
-	on(event: 'shownModally', callback: (args: ShownModallyData) => void, thisArg?: any): void;
+	on<T extends Observable = Observable>(eventNames: string, callback: (data: EventData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = Observable>(event: 'navigatingTo', callback: (args: NavigatedData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = Observable>(event: 'navigatedTo', callback: (args: NavigatedData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = Observable>(event: 'navigatingFrom', callback: (args: NavigatedData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = Observable>(event: 'navigatedFrom', callback: (args: NavigatedData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = Observable>(event: 'showingModally', callback: (args: ShownModallyData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = Observable>(event: 'shownModally', callback: (args: ShownModallyData<T>) => void, thisArg?: any): void;
 }
 
 /**
