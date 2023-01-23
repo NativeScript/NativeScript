@@ -39,13 +39,12 @@ export class Image extends ImageBase {
 	}
 
 	public disposeNativeView(): void {
-		super.disposeNativeView();
-
 		if (this.nativeViewProtected?.image) {
 			this.nativeViewProtected.image = null;
 		}
 
 		this.disposeImageSource();
+		super.disposeNativeView();
 	}
 
 	private setTintColor(value: Color) {

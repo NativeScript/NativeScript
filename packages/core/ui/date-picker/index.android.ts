@@ -91,7 +91,9 @@ export class DatePicker extends DatePickerBase {
 		if (this.timePicker) {
 			this.timePicker.disposeNativeView();
 		}
-		(<any>this.nativeViewProtected).listener.owner = null;
+		if ((<any>this.nativeViewProtected)?.listener) {
+			(<any>this.nativeViewProtected).listener.owner = null;
+		}
 		super.disposeNativeView();
 	}
 

@@ -23,11 +23,10 @@ export function openUrl(location: string): boolean {
 	try {
 		const intent = new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(location.trim()));
 		intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
-
 		context.startActivity(intent);
 	} catch (e) {
-		// We Don't do anything with an error.  We just output it
-		Trace.write('Error in OpenURL', Trace.categories.Error, Trace.messageType.error);
+		// We don't do anything with an error. We just output it
+		Trace.write(`Failed to start activity for handling URL: ${location}`, Trace.categories.Error, Trace.messageType.error);
 
 		return false;
 	}
