@@ -150,8 +150,12 @@ export class SearchBar extends SearchBarBase {
 
 	public disposeNativeView() {
 		const nativeView: any = this.nativeViewProtected;
-		nativeView.closeListener.owner = null;
-		nativeView.queryTextListener.owner = null;
+		if (nativeView.closeListener) {
+			nativeView.closeListener.owner = null;
+		}
+		if (nativeView.queryTextListener) {
+			nativeView.queryTextListener.owner = null;
+		}
 		this._searchPlate = null;
 		this._searchTextView = null;
 		super.disposeNativeView();

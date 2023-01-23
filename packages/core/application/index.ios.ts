@@ -164,7 +164,7 @@ export class iOSApplication implements iOSApplicationDefinition {
 
 	get rootController(): UIViewController {
 		if (NativeScriptEmbedder.sharedInstance().delegate && !this._window) {
-			this._window = UIApplication.sharedApplication.delegate.window;
+			this._window = UIApplication.sharedApplication.keyWindow;
 		}
 		return this._window.rootViewController;
 	}
@@ -252,7 +252,7 @@ export class iOSApplication implements iOSApplicationDefinition {
 				this.setWindowContent(args.root);
 			}
 		} else {
-			this._window = UIApplication.sharedApplication.delegate.window;
+			this._window = UIApplication.sharedApplication.keyWindow;
 		}
 	}
 

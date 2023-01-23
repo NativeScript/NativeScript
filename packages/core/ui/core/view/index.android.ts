@@ -416,14 +416,6 @@ export class View extends ViewCommon {
 
 	@profile
 	public onUnloaded() {
-		if (this.touchListenerIsSet) {
-			this.touchListenerIsSet = false;
-			if (this.nativeViewProtected) {
-				this.nativeViewProtected.setOnTouchListener(null);
-				this.nativeViewProtected.setClickable(this._isClickable);
-			}
-		}
-
 		this._manager = null;
 		this._rootManager = null;
 		super.onUnloaded();
@@ -460,7 +452,6 @@ export class View extends ViewCommon {
 	public initNativeView(): void {
 		super.initNativeView();
 		this._isClickable = this.nativeViewProtected.isClickable();
-
 		if (this.needsOnLayoutChangeListener()) {
 			this.setOnLayoutChangeListener();
 		}
@@ -471,16 +462,24 @@ export class View extends ViewCommon {
 	}
 
 	public disposeNativeView(): void {
-		super.disposeNativeView();
-
+		if (this.touchListenerIsSet) {
+			this.touchListenerIsSet = false;
+			if (this.nativeViewProtected) {
+				this.nativeViewProtected.setOnTouchListener(null);
+			}
+		}
 		if (this.layoutChangeListenerIsSet) {
 			this.layoutChangeListenerIsSet = false;
-			this.nativeViewProtected.removeOnLayoutChangeListener(this.layoutChangeListener);
+			if (this.nativeViewProtected) {
+				this.nativeViewProtected.removeOnLayoutChangeListener(this.layoutChangeListener);
+				this.layoutChangeListener = null;
+			}
 		}
+		super.disposeNativeView();
 	}
 
 	setOnTouchListener() {
-		if (!this.nativeViewProtected || !this.hasGestureObservers()) {
+		if (this.touchListenerIsSet || !this.nativeViewProtected || !this.hasGestureObservers()) {
 			return;
 		}
 
