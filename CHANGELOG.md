@@ -1,3 +1,12 @@
+## [8.4.6](https://github.com/NativeScript/NativeScript/compare/8.4.5-core...8.4.6-core) (2023-01-19)
+
+
+### Bug Fixes
+
+* **core:** ScrollView event wiring sequencing improvement ([#10178](https://github.com/NativeScript/NativeScript/issues/10178)) ([75821ea](https://github.com/NativeScript/NativeScript/commit/75821ead07dc69ffeb82c6bd6d6992095ee4fed1))
+
+
+
 ## [8.4.5](https://github.com/NativeScript/NativeScript/compare/8.4.4-core...8.4.5-core) (2023-01-16)
 
 

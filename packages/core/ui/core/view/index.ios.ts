@@ -479,13 +479,13 @@ export class View extends ViewCommon implements ViewDefinition {
 			} else {
 				//use CSS & attribute width & height if option is not provided
 				const handler = () => {
-					if (controller) {
+					if (this.viewController) {
 						const w = <number>(this.width || this.style.width);
 						const h = <number>(this.height || this.style.height);
 
 						//TODO: only numeric value is supported, percentage value is not supported like Android
 						if (w > 0 && h > 0) {
-							controller.preferredContentSize = CGSizeMake(w, h);
+							this.viewController.preferredContentSize = CGSizeMake(w, h);
 						}
 					}
 
