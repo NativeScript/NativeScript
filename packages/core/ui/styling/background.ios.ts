@@ -193,11 +193,13 @@ function setUIColorFromImage(view: View, nativeView: UIView, callback: (uiColor:
 		bitmap = imageSource && imageSource.ios;
 	} else if (imageUri.indexOf('http') !== -1) {
 		style[symbolUrl] = imageUri;
-		ImageSource.fromUrl(imageUri).then((r) => {
-			if (style && style[symbolUrl] === imageUri) {
-				uiColorFromImage(r.ios, view, callback, flip);
-			}
-		});
+		ImageSource.fromUrl(imageUri)
+			.then((r) => {
+				if (style && style[symbolUrl] === imageUri) {
+					uiColorFromImage(r.ios, view, callback, flip);
+				}
+			})
+			.catch(() => {});
 	}
 
 	uiColorFromImage(bitmap, view, callback, flip);
@@ -360,7 +362,7 @@ function getDrawParams(this: void, image: UIImage, background: BackgroundDefinit
 function uiColorFromImage(img: UIImage, view: View, callback: (uiColor: UIColor) => void, flip?: boolean): void {
 	const background = view.style.backgroundInternal;
 
-	if (!img) {
+	if (!img || !view.nativeViewProtected) {
 		callback(background.color && background.color.ios);
 
 		return;
