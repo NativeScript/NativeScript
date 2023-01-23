@@ -1,3 +1,14 @@
+## [8.4.7](https://github.com/NativeScript/NativeScript/compare/5.0.13-webpack...8.4.7) (2023-01-23)
+
+
+### Bug Fixes
+
+* **core:** allow CoreTypes declarations to be auto generated ([#10183](https://github.com/NativeScript/NativeScript/issues/10183)) ([9f76fea](https://github.com/NativeScript/NativeScript/commit/9f76fea06e02a3f4de4fa69cbc73eb9aa0c8db47))
+* **ios:** race condition when setting preferredContentSize on view controller ([#10179](https://github.com/NativeScript/NativeScript/issues/10179)) ([ed14e24](https://github.com/NativeScript/NativeScript/commit/ed14e242831dc28398bce62a78c7ee8d71f50bed))
+* **ios:** race conditions with nativeView ([#10182](https://github.com/NativeScript/NativeScript/issues/10182)) ([c42c3c5](https://github.com/NativeScript/NativeScript/commit/c42c3c5f2609afaa96bf874c427f0702f8cd5daa))
+
+
+
 ## [8.4.6](https://github.com/NativeScript/NativeScript/compare/8.4.5-core...8.4.6-core) (2023-01-19)
 
 
