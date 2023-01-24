@@ -75,6 +75,7 @@
         "android.net:Uri",
         "android.os:BaseBundle",
         "android.os:Build",
+        "android.os:Build.VERSION",
         "android.os:Bundle",
         "android.os:Environment",
         "android.os:Handler",
