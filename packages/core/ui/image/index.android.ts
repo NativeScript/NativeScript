@@ -67,7 +67,9 @@ export class Image extends ImageBase {
 	}
 
 	public disposeNativeView() {
-		(<any>this.nativeViewProtected).listener.owner = null;
+		if ((<any>this.nativeViewProtected)?.listener) {
+			(<any>this.nativeViewProtected).listener.owner = null;
+		}
 		super.disposeNativeView();
 	}
 

@@ -17,9 +17,9 @@ export class ListPicker extends ListPickerBase {
 
 	initNativeView() {
 		super.initNativeView();
-		const nativeView = this.nativeViewProtected;
-		nativeView.dataSource = this._dataSource = ListPickerDataSource.initWithOwner(new WeakRef(this));
+		this.nativeViewProtected.dataSource = this._dataSource = ListPickerDataSource.initWithOwner(new WeakRef(this));
 		this._delegate = ListPickerDelegateImpl.initWithOwner(new WeakRef(this));
+		this.nativeViewProtected.delegate = this._delegate;
 	}
 
 	public disposeNativeView() {
@@ -31,17 +31,6 @@ export class ListPicker extends ListPickerBase {
 	// @ts-ignore
 	get ios() {
 		return this.nativeViewProtected;
-	}
-
-	@profile
-	public onLoaded() {
-		super.onLoaded();
-		this.ios.delegate = this._delegate;
-	}
-
-	public onUnloaded() {
-		this.ios.delegate = null;
-		super.onUnloaded();
 	}
 
 	[selectedIndexProperty.getDefault](): number {

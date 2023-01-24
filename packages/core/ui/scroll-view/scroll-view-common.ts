@@ -41,10 +41,9 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
 		this.attach();
 	}
 
-	public onUnloaded() {
-		super.onUnloaded();
-
+	public disposeNativeView() {
 		this.dettach();
+		super.disposeNativeView();
 	}
 
 	private attach() {

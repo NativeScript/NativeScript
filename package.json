@@ -1,6 +1,6 @@
 {
   "name": "nativescript",
-  "version": "8.4.1",
+  "version": "8.4.6",
   "license": "MIT",
   "scripts": {
     "clean": "git clean -f -X -d --exclude=!.idea/ --exclude=!.vscode/* --exclude=!.npmrc",
@@ -44,6 +44,7 @@
     "css": "^3.0.0",
     "css-tree": "^1.1.2",
     "dotenv": "10.0.0",
+    "emoji-regex": "^10.2.1",
     "eslint": "7.22.0",
     "eslint-config-prettier": "^8.1.0",
     "gonzales": "^1.0.7",

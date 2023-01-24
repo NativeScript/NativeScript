@@ -51,8 +51,8 @@ const logicalOperators = {
 const expressionParsers = {
 	'ArrayExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		const parsed = [];
-		for (let element of expression.elements) {
-			let value = convertExpressionToValue(element, model, isBackConvert, changedModel);
+		for (const element of expression.elements) {
+			const value = convertExpressionToValue(element, model, isBackConvert, changedModel);
 			element.type == 'SpreadElement' ? parsed.push(...value) : parsed.push(value);
 		}
 		return parsed;
@@ -116,8 +116,8 @@ const expressionParsers = {
 		}
 
 		const parsedArgs = [];
-		for (let argument of expression.arguments) {
-			let value = convertExpressionToValue(argument, model, isBackConvert, changedModel);
+		for (const argument of expression.arguments) {
+			const value = convertExpressionToValue(argument, model, isBackConvert, changedModel);
 			argument.type == 'SpreadElement' ? parsedArgs.push(...value) : parsedArgs.push(value);
 		}
 		return expression.optional ? callback?.(...parsedArgs) : callback(...parsedArgs);
@@ -181,8 +181,8 @@ const expressionParsers = {
 	'NewExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		const callback = convertExpressionToValue(expression.callee, model, isBackConvert, changedModel);
 		const parsedArgs = [];
-		for (let argument of expression.arguments) {
-			let value = convertExpressionToValue(argument, model, isBackConvert, changedModel);
+		for (const argument of expression.arguments) {
+			const value = convertExpressionToValue(argument, model, isBackConvert, changedModel);
 			argument.type == 'SpreadElement' ? parsedArgs.push(...value) : parsedArgs.push(value);
 		}
 
@@ -194,7 +194,7 @@ const expressionParsers = {
 	},
 	'ObjectExpression': (expression: ASTExpression, model, isBackConvert: boolean, changedModel) => {
 		const parsedObject = {};
-		for (let property of expression.properties) {
+		for (const property of expression.properties) {
 			const value = convertExpressionToValue(property, model, isBackConvert, changedModel);
 			Object.assign(parsedObject, value);
 		}
@@ -217,7 +217,7 @@ const expressionParsers = {
 		const length = expression.quasis.length;
 
 		for (let i = 0; i < length; i++) {
-			let q = expression.quasis[i];
+			const q = expression.quasis[i];
 			parsedText += convertExpressionToValue(q, model, isBackConvert, changedModel);
 			if (!q.tail) {
 				parsedText += convertExpressionToValue(expression.expressions[i], model, isBackConvert, changedModel);
@@ -262,7 +262,7 @@ export function parseExpression(expressionText: string): ASTExpression {
 	if (expression == null) {
 		const program: any = parse(expressionText, { ecmaVersion: 2020 });
 		const statements = program.body;
-		for (let statement of statements) {
+		for (const statement of statements) {
 			if (statement.type == 'ExpressionStatement') {
 				expression = statement.expression;
 				break;

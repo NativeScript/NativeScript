@@ -202,18 +202,16 @@ export class WebView extends WebViewBase {
 		this._delegate = WKNavigationDelegateImpl.initWithOwner(new WeakRef(this));
 		this._scrollDelegate = UIScrollViewDelegateImpl.initWithOwner(new WeakRef(this));
 		this._uiDelegate = WKUIDelegateImpl.initWithOwner(new WeakRef(this));
-		this.ios.navigationDelegate = this._delegate;
-		this.ios.scrollView.delegate = this._scrollDelegate;
-		this.ios.UIDelegate = this._uiDelegate;
+		this.nativeViewProtected.navigationDelegate = this._delegate;
+		this.nativeViewProtected.scrollView.delegate = this._scrollDelegate;
+		this.nativeViewProtected.UIDelegate = this._uiDelegate;
 	}
 
-	@profile
-	public onLoaded() {
-		super.onLoaded();
-	}
-
-	public onUnloaded() {
-		super.onUnloaded();
+	disposeNativeView() {
+		this._delegate = null;
+		this._scrollDelegate = null;
+		this._uiDelegate = null;
+		super.disposeNativeView();
 	}
 
 	// @ts-ignore
@@ -222,48 +220,48 @@ export class WebView extends WebViewBase {
 	}
 
 	public stopLoading() {
-		this.ios.stopLoading();
+		this.nativeViewProtected.stopLoading();
 	}
 
 	public _loadUrl(src: string) {
 		if (src.startsWith('file:///')) {
 			const cachePath = src.substring(0, src.lastIndexOf('/'));
-			this.ios.loadFileURLAllowingReadAccessToURL(NSURL.URLWithString(src), NSURL.URLWithString(cachePath));
+			this.nativeViewProtected.loadFileURLAllowingReadAccessToURL(NSURL.URLWithString(src), NSURL.URLWithString(cachePath));
 		} else {
-			this.ios.loadRequest(NSURLRequest.requestWithURL(NSURL.URLWithString(src)));
+			this.nativeViewProtected.loadRequest(NSURLRequest.requestWithURL(NSURL.URLWithString(src)));
 		}
 	}
 
 	public _loadData(content: string) {
-		this.ios.loadHTMLStringBaseURL(content, NSURL.alloc().initWithString(`file:///${knownFolders.currentApp().path}/`));
+		this.nativeViewProtected.loadHTMLStringBaseURL(content, NSURL.alloc().initWithString(`file:///${knownFolders.currentApp().path}/`));
 	}
 
 	get canGoBack(): boolean {
-		return this.ios.canGoBack;
+		return this.nativeViewProtected.canGoBack;
 	}
 
 	get canGoForward(): boolean {
-		return this.ios.canGoForward;
+		return this.nativeViewProtected.canGoForward;
 	}
 
 	public goBack() {
-		this.ios.goBack();
+		this.nativeViewProtected.goBack();
 	}
 
 	public goForward() {
-		this.ios.goForward();
+		this.nativeViewProtected.goForward();
 	}
 
 	public reload() {
-		this.ios.reload();
+		this.nativeViewProtected.reload();
 	}
 
 	[disableZoomProperty.setNative](value: boolean) {
 		if (!value && typeof this._minimumZoomScale === 'number' && typeof this._maximumZoomScale === 'number' && typeof this._zoomScale === 'number') {
-			if (this.ios.scrollView) {
-				this.ios.scrollView.minimumZoomScale = this._minimumZoomScale;
-				this.ios.scrollView.maximumZoomScale = this._maximumZoomScale;
-				this.ios.scrollView.zoomScale = this._zoomScale;
+			if (this.nativeViewProtected?.scrollView) {
+				this.nativeViewProtected.scrollView.minimumZoomScale = this._minimumZoomScale;
+				this.nativeViewProtected.scrollView.maximumZoomScale = this._maximumZoomScale;
+				this.nativeViewProtected.scrollView.zoomScale = this._zoomScale;
 				this._minimumZoomScale = undefined;
 				this._maximumZoomScale = undefined;
 				this._zoomScale = undefined;
