@@ -2,6 +2,7 @@
 import '../globals';
 
 // Types
+import type * as IApplication from '.';
 import { AndroidApplication, iOSApplication } from '.';
 import { CssChangedEventData, DiscardedErrorEventData, LoadAppCSSEventData, UnhandledErrorEventData } from './application-interfaces';
 import { View } from '../ui/core/view';
@@ -49,10 +50,10 @@ export function setResources(res: any) {
 export const android: AndroidApplication = undefined;
 export const ios: iOSApplication = undefined;
 
-export const on = global.NativeScriptGlobals.events.on.bind(global.NativeScriptGlobals.events) as typeof import('.')['on'];
-export const off = global.NativeScriptGlobals.events.off.bind(global.NativeScriptGlobals.events) as typeof import('.')['off'];
-export const notify = global.NativeScriptGlobals.events.notify.bind(global.NativeScriptGlobals.events) as typeof import('.')['notify'];
-export const hasListeners = global.NativeScriptGlobals.events.hasListeners.bind(global.NativeScriptGlobals.events) as typeof import('.')['hasListeners'];
+export const on = global.NativeScriptGlobals.events.on.bind(global.NativeScriptGlobals.events) as typeof IApplication.on;
+export const off = global.NativeScriptGlobals.events.off.bind(global.NativeScriptGlobals.events) as typeof IApplication.off;
+export const notify = global.NativeScriptGlobals.events.notify.bind(global.NativeScriptGlobals.events) as typeof IApplication.notify;
+export const hasListeners = global.NativeScriptGlobals.events.hasListeners.bind(global.NativeScriptGlobals.events) as typeof IApplication.hasListeners;
 
 let app: iOSApplication | AndroidApplication;
 export function setApplication(instance: iOSApplication | AndroidApplication): void {
