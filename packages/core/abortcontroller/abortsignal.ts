@@ -53,7 +53,7 @@ export function abortSignal(signal: AbortSignal): void {
 	}
 
 	abortedFlags.set(signal, true);
-	signal.notify({ eventName: 'abort', type: 'abort', object: this });
+	signal.notify({ eventName: 'abort', type: 'abort' });
 }
 
 /**

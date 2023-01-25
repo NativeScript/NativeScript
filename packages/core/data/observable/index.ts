@@ -1,3 +1,5 @@
+import { Optional } from '../../utils/typescript-utils';
+
 /**
  * Base event data.
  */
@@ -351,16 +353,28 @@ export class Observable {
 		}
 	}
 
-	public notify<T extends EventData>(data: T): void {
-		const eventClass = this.constructor.name;
-		this._globalNotify(eventClass, 'First', data);
+	/**
+	 * Notify this Observable instance with some data. This causes all event
+	 * handlers on the Observable instance to be called, as well as any 'global'
+	 * event handlers set on the instance's class.
+	 *
+	 * @param data an object that satisfies the EventData interface, though with
+	 * an optional 'object' property. If left undefined, the 'object' property
+	 * will implicitly be set as this Observable instance.
+	 */
+	public notify<T extends Optional<EventData, 'object'>>(data: T): void {
+		data.object = data.object || this;
+		const dataWithObject = data as EventData;
 
-		const observers = <Array<ListenerEntry>>this._observers[data.eventName];
+		const eventClass = this.constructor.name;
+		this._globalNotify(eventClass, 'First', dataWithObject);
+
+		const observers = this._observers[data.eventName];
 		if (observers) {
-			Observable._handleEvent(observers, data);
+			Observable._handleEvent(observers, dataWithObject);
 		}
 
-		this._globalNotify(eventClass, '', data);
+		this._globalNotify(eventClass, '', dataWithObject);
 	}
 
 	private static _handleEvent<T extends EventData>(observers: Array<ListenerEntry>, data: T): void {
