@@ -71,24 +71,27 @@ export class AndroidApplication extends Observable implements AndroidApplication
 	private callbacks: any = {};
 
 	public init(nativeApp: android.app.Application): void {
-		if (this.nativeApp === nativeApp) {
+		if (!nativeApp || this.nativeApp === nativeApp) {
 			return;
 		}
 
 		if (this.nativeApp) {
 			throw new Error('application.android already initialized.');
 		}
+		try {
+			this.nativeApp = nativeApp;
+			this.packageName = nativeApp.getPackageName();
+			this.context = nativeApp.getApplicationContext();
+			// we store those callbacks and add a function for clearing them later so that the objects will be eligable for GC
+			this.callbacks.lifecycleCallbacks = initLifecycleCallbacks();
+			this.callbacks.componentCallbacks = initComponentCallbacks();
+			this.nativeApp.registerActivityLifecycleCallbacks(this.callbacks.lifecycleCallbacks);
+			this.nativeApp.registerComponentCallbacks(this.callbacks.componentCallbacks);
 
-		this.nativeApp = nativeApp;
-		this.packageName = nativeApp.getPackageName();
-		this.context = nativeApp.getApplicationContext();
-		// we store those callbacks and add a function for clearing them later so that the objects will be eligable for GC
-		this.callbacks.lifecycleCallbacks = initLifecycleCallbacks();
-		this.callbacks.componentCallbacks = initComponentCallbacks();
-		this.nativeApp.registerActivityLifecycleCallbacks(this.callbacks.lifecycleCallbacks);
-		this.nativeApp.registerComponentCallbacks(this.callbacks.componentCallbacks);
-
-		this._registerPendingReceivers();
+			this._registerPendingReceivers();
+		} catch (err) {
+			console.error('Error initializing AndroidApplication', err);
+		}
 	}
 
 	private _registeredReceivers = {};
