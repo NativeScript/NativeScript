@@ -16,6 +16,7 @@
         "android.app:AlertDialog",
         "android.app:AlertDialog.Builder",
         "android.app:Application",
+        "android.app:Application.ActivityLifecycleCallbacks",
         "android.app:Dialog",
         "android.content.pm:ActivityInfo",
         "android.content.pm:ApplicationInfo",
