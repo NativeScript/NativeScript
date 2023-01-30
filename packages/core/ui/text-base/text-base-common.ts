@@ -264,7 +264,6 @@ const textTransformConverter = makeParser<CoreTypes.TextTransformType>(makeValid
 export const textTransformProperty = new CssProperty<Style, CoreTypes.TextTransformType>({
 	name: 'textTransform',
 	cssName: 'text-transform',
-	defaultValue: 'initial',
 	valueConverter: textTransformConverter,
 });
 textTransformProperty.register(Style);

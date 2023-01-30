@@ -215,6 +215,9 @@ export class TextBase extends TextBaseCommon {
 		this._setNativeText();
 	}
 
+	[textTransformProperty.getDefault](): CoreTypes.TextTransformType {
+		return 'initial';
+	}
 	[textTransformProperty.setNative](value: CoreTypes.TextTransformType) {
 		this._setNativeText();
 	}
