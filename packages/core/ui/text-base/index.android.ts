@@ -273,7 +273,7 @@ export class TextBase extends TextBaseCommon {
 		nativeView.setText(<any>spannableStringBuilder);
 		this._setTappableState(isStringTappable(value));
 
-		textProperty.nativeValueChange(this, value === null || value === undefined ? '' : value.toString());
+		// textProperty.nativeValueChange(this, value === null || value === undefined ? '' : value.toString());
 
 		// TODO: this seems not needed anymore. textTransform and spannableStringBuilder work ok
 		// if (spannableStringBuilder && nativeView instanceof android.widget.Button && !(nativeView.getTransformationMethod() instanceof TextTransformation)) {

@@ -161,7 +161,7 @@ export class TextBase extends TextBaseCommon {
 	[formattedTextProperty.setNative](value: FormattedString) {
 		this._setNativeText();
 		this._setTappableState(isStringTappable(value));
-		textProperty.nativeValueChange(this, !value ? '' : value.toString());
+		// textProperty.nativeValueChange(this, !value ? '' : value.toString());
 		this._requestLayoutOnTextChanged();
 	}
 
