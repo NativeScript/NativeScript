@@ -172,7 +172,7 @@ export interface PageBase {
 	on(event: 'navigatingFrom', callback: (args: NavigatedData) => void, thisArg?: any): void;
 	on(event: 'navigatedFrom', callback: (args: NavigatedData) => void, thisArg?: any): void;
 	on(event: 'showingModally', callback: (args: ShownModallyData) => void, thisArg?: any): void;
-	on(event: 'shownModally', callback: (args: ShownModallyData) => void, thisArg?: any);
+	on(event: 'shownModally', callback: (args: ShownModallyData) => void, thisArg?: any): void;
 }
 
 /**

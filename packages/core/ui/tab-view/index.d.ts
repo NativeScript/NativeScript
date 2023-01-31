@@ -150,12 +150,12 @@ export class TabView extends View {
 	 * @param callback - Callback function which will be executed when event is raised.
 	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
 	 */
-	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
+	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void;
 
 	/**
 	 * Raised when the selected index changes.
 	 */
-	on(event: 'selectedIndexChanged', callback: (args: SelectedIndexChangedEventData) => void, thisArg?: any);
+	on(event: 'selectedIndexChanged', callback: (args: SelectedIndexChangedEventData) => void, thisArg?: any): void;
 }
 
 export const itemsProperty: Property<TabView, TabViewItem[]>;

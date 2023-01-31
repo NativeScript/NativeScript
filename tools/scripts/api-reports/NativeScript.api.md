@@ -1500,7 +1500,7 @@ export class Observable {
 
     notifyPropertyChange(propertyName: string, value: any, oldValue?: any): void;
 
-    off(eventNames: string, callback?: any, thisArg?: any);
+    off(eventNames: string, callback?: (data: EventData) => void, thisArg?: any);
 
     on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
 
@@ -1510,7 +1510,7 @@ export class Observable {
 
     public static propertyChangeEvent: string;
 
-    removeEventListener(eventNames: string, callback?: any, thisArg?: any);
+    removeEventListener(eventNames: string, callback?: (data: EventData) => void, thisArg?: any);
 
     set(name: string, value: any): void;
 
