@@ -6,10 +6,11 @@
 //}
 
 android {  
-  compileSdkVersion 31
+  compileSdkVersion 33
+  buildToolsVersion "33.0.0"
   defaultConfig {  
-    minSdkVersion 19
-    targetSdkVersion 31
+    minSdkVersion 23
+    targetSdkVersion 33
     generatedDensities = []
   }  
   aaptOptions {  

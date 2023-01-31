@@ -1,14 +1,5 @@
 # NativeScript Modules Coding Convention
 
-## Linting
-
-We use [TSLint](https://palantir.github.io/tslint/) for linting. Rules are defined in `build/tslint.json`.
-Run the tslint from the root of the repo with:
-
-```bash
-npm run tslint
-```
-
 ## Tabs vs Spaces
 
 Use 4 spaces indentation.
