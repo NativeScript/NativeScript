@@ -2,9 +2,9 @@
 import '../globals';
 
 // Types
+import type * as IApplication from '.';
 import { AndroidApplication, iOSApplication } from '.';
 import { CssChangedEventData, DiscardedErrorEventData, LoadAppCSSEventData, UnhandledErrorEventData } from './application-interfaces';
-import { EventData } from '../data/observable';
 import { View } from '../ui/core/view';
 
 // Requires
@@ -50,10 +50,10 @@ export function setResources(res: any) {
 export const android: AndroidApplication = undefined;
 export const ios: iOSApplication = undefined;
 
-export const on = global.NativeScriptGlobals.events.on.bind(global.NativeScriptGlobals.events);
-export const off = global.NativeScriptGlobals.events.off.bind(global.NativeScriptGlobals.events);
-export const notify = global.NativeScriptGlobals.events.notify.bind(global.NativeScriptGlobals.events);
-export const hasListeners = global.NativeScriptGlobals.events.hasListeners.bind(global.NativeScriptGlobals.events);
+export const on = global.NativeScriptGlobals.events.on.bind(global.NativeScriptGlobals.events) as typeof IApplication.on;
+export const off = global.NativeScriptGlobals.events.off.bind(global.NativeScriptGlobals.events) as typeof IApplication.off;
+export const notify = global.NativeScriptGlobals.events.notify.bind(global.NativeScriptGlobals.events) as typeof IApplication.notify;
+export const hasListeners = global.NativeScriptGlobals.events.hasListeners.bind(global.NativeScriptGlobals.events) as typeof IApplication.hasListeners;
 
 let app: iOSApplication | AndroidApplication;
 export function setApplication(instance: iOSApplication | AndroidApplication): void {
@@ -63,7 +63,7 @@ export function setApplication(instance: iOSApplication | AndroidApplication): v
 }
 
 export function livesync(rootView: View, context?: ModuleContext) {
-	global.NativeScriptGlobals.events.notify(<EventData>{ eventName: 'livesync', object: app });
+	notify({ eventName: 'livesync', object: app });
 	const liveSyncCore = global.__onLiveSyncCore;
 	let reapplyAppStyles = false;
 
@@ -85,7 +85,7 @@ export function livesync(rootView: View, context?: ModuleContext) {
 
 export function setCssFileName(cssFileName: string) {
 	cssFile = cssFileName;
-	global.NativeScriptGlobals.events.notify(<CssChangedEventData>{
+	notify(<CssChangedEventData>{
 		eventName: 'cssChanged',
 		object: app,
 		cssFile: cssFileName,
@@ -98,7 +98,7 @@ export function getCssFileName(): string {
 
 export function loadAppCss(): void {
 	try {
-		global.NativeScriptGlobals.events.notify(<LoadAppCSSEventData>{
+		notify(<LoadAppCSSEventData>{
 			eventName: 'loadAppCss',
 			object: app,
 			cssFile: getCssFileName(),
@@ -181,7 +181,7 @@ export function setSuspended(value: boolean): void {
 }
 
 global.__onUncaughtError = function (error: NativeScriptError) {
-	global.NativeScriptGlobals.events.notify(<UnhandledErrorEventData>{
+	notify(<UnhandledErrorEventData>{
 		eventName: uncaughtErrorEvent,
 		object: app,
 		android: error,
@@ -191,7 +191,7 @@ global.__onUncaughtError = function (error: NativeScriptError) {
 };
 
 global.__onDiscardedError = function (error: NativeScriptError) {
-	global.NativeScriptGlobals.events.notify(<DiscardedErrorEventData>{
+	notify(<DiscardedErrorEventData>{
 		eventName: discardedErrorEvent,
 		object: app,
 		error: error,

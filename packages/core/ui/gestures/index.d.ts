@@ -140,7 +140,7 @@ export interface GestureEventData extends EventData {
 	/**
 	 * Gets the view which originates the gesture.
 	 */
-	view: Partial<View>;
+	view: View;
 	/**
 	 * Gets the underlying native iOS specific [UIGestureRecognizer](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIGestureRecognizer_Class/).
 	 */
@@ -287,7 +287,7 @@ export class GesturesObserver {
 	 * @param callback - A function that will be executed when a gesture is received.
 	 * @param context - default this argument for the callbacks.
 	 */
-	constructor(target: Partial<View>, callback: (args: GestureEventData) => void, context: any);
+	constructor(target: View, callback: (args: GestureEventData) => void, context: any);
 
 	/**
 	 * Registers a gesture observer to a view and gesture.
