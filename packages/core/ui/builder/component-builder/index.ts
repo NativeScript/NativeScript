@@ -102,25 +102,22 @@ const createComponentInstance = profile('createComponentInstance', (elementName:
 	return { instance, instanceModule };
 });
 
-const getComponentModuleExports = profile(
-	'getComponentModuleExports',
-	(instance: View, moduleExports: Object, attributes: Object): Object => {
-		if (attributes) {
-			const codeFileAttribute = attributes[CODE_FILE] || attributes[IMPORT];
-			if (codeFileAttribute) {
-				const resolvedCodeFileModule = resolveModuleName(sanitizeModuleName(codeFileAttribute), '');
-				if (resolvedCodeFileModule) {
-					moduleExports = global.loadModule(resolvedCodeFileModule, true);
-					(<any>instance).exports = moduleExports;
-				} else {
-					throw new Error(`Code file with path "${codeFileAttribute}" cannot be found! Looking for webpack module with name "${resolvedCodeFileModule}"`);
-				}
+const getComponentModuleExports = profile('getComponentModuleExports', (instance: View, moduleExports: Object, attributes: Object): Object => {
+	if (attributes) {
+		const codeFileAttribute = attributes[CODE_FILE] || attributes[IMPORT];
+		if (codeFileAttribute) {
+			const resolvedCodeFileModule = resolveModuleName(sanitizeModuleName(codeFileAttribute), '');
+			if (resolvedCodeFileModule) {
+				moduleExports = global.loadModule(resolvedCodeFileModule, true);
+				(<any>instance).exports = moduleExports;
+			} else {
+				throw new Error(`Code file with path "${codeFileAttribute}" cannot be found! Looking for webpack module with name "${resolvedCodeFileModule}"`);
 			}
 		}
-
-		return moduleExports;
 	}
-);
+
+	return moduleExports;
+});
 
 const applyComponentCss = profile('applyComponentCss', (instance: View, moduleName: string, attributes: Object) => {
 	let cssApplied = false;
@@ -249,5 +246,5 @@ function isBinding(value: any): boolean {
 // For example, ListView.itemTemplateSelector
 const KNOWN_FUNCTIONS = 'knownFunctions';
 function isKnownFunction(name: string, instance: View): boolean {
-	return instance.constructor && KNOWN_FUNCTIONS in instance.constructor && instance.constructor[KNOWN_FUNCTIONS].indexOf(name) !== -1;
+	return instance.constructor && KNOWN_FUNCTIONS in instance.constructor && (instance.constructor[KNOWN_FUNCTIONS] as string).indexOf(name) !== -1;
 }
