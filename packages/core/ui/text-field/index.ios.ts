@@ -123,22 +123,12 @@ export class TextField extends TextFieldBase {
 	initNativeView() {
 		super.initNativeView();
 		this._delegate = UITextFieldDelegateImpl.initWithOwner(new WeakRef(this));
+		this.nativeViewProtected.delegate = this._delegate;
 	}
 
 	disposeNativeView() {
 		this._delegate = null;
 		super.disposeNativeView();
-	}
-
-	@profile
-	public onLoaded() {
-		super.onLoaded();
-		this.ios.delegate = this._delegate;
-	}
-
-	public onUnloaded() {
-		this.ios.delegate = null;
-		super.onUnloaded();
 	}
 
 	// @ts-ignore

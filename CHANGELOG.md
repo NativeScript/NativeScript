@@ -1,3 +1,34 @@
+## [8.4.7](https://github.com/NativeScript/NativeScript/compare/5.0.13-webpack...8.4.7) (2023-01-23)
+
+
+### Bug Fixes
+
+* **core:** allow CoreTypes declarations to be auto generated ([#10183](https://github.com/NativeScript/NativeScript/issues/10183)) ([9f76fea](https://github.com/NativeScript/NativeScript/commit/9f76fea06e02a3f4de4fa69cbc73eb9aa0c8db47))
+* **ios:** race condition when setting preferredContentSize on view controller ([#10179](https://github.com/NativeScript/NativeScript/issues/10179)) ([ed14e24](https://github.com/NativeScript/NativeScript/commit/ed14e242831dc28398bce62a78c7ee8d71f50bed))
+* **ios:** race conditions with nativeView ([#10182](https://github.com/NativeScript/NativeScript/issues/10182)) ([c42c3c5](https://github.com/NativeScript/NativeScript/commit/c42c3c5f2609afaa96bf874c427f0702f8cd5daa))
+
+
+
+## [8.4.6](https://github.com/NativeScript/NativeScript/compare/8.4.5-core...8.4.6-core) (2023-01-19)
+
+
+### Bug Fixes
+
+* **core:** ScrollView event wiring sequencing improvement ([#10178](https://github.com/NativeScript/NativeScript/issues/10178)) ([75821ea](https://github.com/NativeScript/NativeScript/commit/75821ead07dc69ffeb82c6bd6d6992095ee4fed1))
+
+
+
+## [8.4.5](https://github.com/NativeScript/NativeScript/compare/8.4.4-core...8.4.5-core) (2023-01-16)
+
+
+### Bug Fixes
+
+* **core:** improve loaded/unloaded handling ([18b911e](https://github.com/NativeScript/NativeScript/commit/18b911ed84173928d1d0cfc91be605e046a7e3d1))
+* **core:** improve loaded/unloaded handling to be stable and consistent ([#10170](https://github.com/NativeScript/NativeScript/issues/10170)) ([c9e29aa](https://github.com/NativeScript/NativeScript/commit/c9e29aa9af8b4b82cd259f8402fa11af4640f1b4))
+* **ios:** embedder usage of window ([#10167](https://github.com/NativeScript/NativeScript/issues/10167)) ([a69a9d6](https://github.com/NativeScript/NativeScript/commit/a69a9d6921bd1df11b29c9b697bfb847a3885458))
+
+
+
 ## [8.4.4](https://github.com/NativeScript/NativeScript/compare/8.4.3-core...8.4.4-core) (2023-01-09)
 
 
