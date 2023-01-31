@@ -18,14 +18,14 @@ import { getClass } from '../../../utils/types';
 
 import { profile } from '../../../profiling';
 
-import * as dnm from '../../../debugger/dom-node';
+import type * as dnm from '../../../debugger/dom-node';
 import * as ssm from '../../styling/style-scope';
 import { ViewBase as ViewBaseDefinition } from '.';
 
 let domNodeModule: typeof dnm;
 
 function ensuredomNodeModule(): void {
-	if (!domNodeModule) {
+	if (__DEV__ && !domNodeModule) {
 		domNodeModule = require('../../../debugger/dom-node');
 	}
 }

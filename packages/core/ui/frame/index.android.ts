@@ -40,7 +40,7 @@ let fragmentId = -1;
 
 export let moduleLoaded: boolean;
 
-if (global && global.__inspector) {
+if (__DEV__ && global && global.__inspector) {
 	const devtools = require('../../debugger/devtools-elements');
 	devtools.attachDOMInspectorEventCallbacks(global.__inspector);
 	devtools.attachDOMInspectorCommandCallbacks(global.__inspector);

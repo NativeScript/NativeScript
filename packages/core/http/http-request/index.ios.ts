@@ -75,10 +75,12 @@ export function request(options: httpModule.HttpRequestOptions): Promise<httpMod
 
 			return;
 		}
-
+		let debugRequest: domainDebugger.domains.network.NetworkRequest;
 		try {
-			const network = domainDebugger.getNetwork();
-			const debugRequest = network && network.create();
+			if (__DEV__) {
+				const network = domainDebugger.getNetwork();
+				debugRequest = network && network.create();
+			}
 
 			const urlRequest = NSMutableURLRequest.requestWithURL(NSURL.URLWithString(options.url));
 
