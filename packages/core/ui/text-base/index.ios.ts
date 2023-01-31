@@ -562,8 +562,9 @@ function isStringTappable(formattedString: FormattedString) {
 	if (!formattedString) {
 		return false;
 	}
-	for (let i = 0, length = formattedString.spans.length; i < length; i++) {
-		const span = formattedString.spans.getItem(i);
+	const spans = formattedString.spans;
+	for (let i = 0, length = spans.length; i < length; i++) {
+		const span = spans.getItem(i);
 		if (span.tappable) {
 			return true;
 		}
