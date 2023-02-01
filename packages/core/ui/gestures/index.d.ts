@@ -132,7 +132,7 @@ export namespace TouchAction {
 /**
  * Provides gesture event data.
  */
-export interface GestureEventData<T extends Observable = Observable> extends EventData<T> {
+export interface GestureEventData<T extends Observable = View> extends EventData<T> {
 	/**
 	 * Gets the type of the gesture.
 	 */
@@ -154,7 +154,7 @@ export interface GestureEventData<T extends Observable = Observable> extends Eve
 /**
  * Provides gesture event data.
  */
-export interface TapGestureEventData<T extends Observable = Observable> extends GestureEventData<T> {
+export interface TapGestureEventData<T extends Observable = View> extends GestureEventData<T> {
 	/**
 	 * Gets the number of pointers in the event.
 	 */
@@ -172,7 +172,7 @@ export interface TapGestureEventData<T extends Observable = Observable> extends 
 /**
  * Provides gesture event data.
  */
-export interface TouchGestureEventData<T extends Observable = Observable> extends TapGestureEventData<T> {
+export interface TouchGestureEventData<T extends Observable = View> extends TapGestureEventData<T> {
 	/**
 	 * Gets action of the touch. Possible values: 'up', 'move', 'down', 'cancel'
 	 */
@@ -241,14 +241,14 @@ export interface Pointer {
 /**
  * Provides gesture event data.
  */
-export interface GestureEventDataWithState<T extends Observable = Observable> extends GestureEventData<T> {
+export interface GestureEventDataWithState<T extends Observable = View> extends GestureEventData<T> {
 	state: number;
 }
 
 /**
  * Provides gesture event data for pinch gesture.
  */
-export interface PinchGestureEventData<T extends Observable = Observable> extends GestureEventDataWithState<T> {
+export interface PinchGestureEventData<T extends Observable = View> extends GestureEventDataWithState<T> {
 	scale: number;
 
 	getFocusX(): number;
@@ -258,14 +258,14 @@ export interface PinchGestureEventData<T extends Observable = Observable> extend
 /**
  * Provides gesture event data for swipe gesture.
  */
-export interface SwipeGestureEventData<T extends Observable = Observable> extends GestureEventData<T> {
+export interface SwipeGestureEventData<T extends Observable = View> extends GestureEventData<T> {
 	direction: SwipeDirection;
 }
 
 /**
  * Provides gesture event data for pan gesture.
  */
-export interface PanGestureEventData<T extends Observable = Observable> extends GestureEventDataWithState<T> {
+export interface PanGestureEventData<T extends Observable = View> extends GestureEventDataWithState<T> {
 	deltaX: number;
 	deltaY: number;
 }
@@ -273,14 +273,14 @@ export interface PanGestureEventData<T extends Observable = Observable> extends 
 /**
  * Provides gesture event data for rotation gesture.
  */
-export interface RotationGestureEventData<T extends Observable = Observable> extends GestureEventDataWithState<T> {
+export interface RotationGestureEventData<T extends Observable = View> extends GestureEventDataWithState<T> {
 	rotation: number;
 }
 
 /**
  * Provides options for the GesturesObserver.
  */
-export class GesturesObserver<T extends Observable = Observable> {
+export class GesturesObserver<T extends Observable = View> {
 	/**
 	 * Creates an instance of GesturesObserver class.
 	 * @param target - The view for which the observer is created.
@@ -328,7 +328,7 @@ export class GesturesObserver<T extends Observable = Observable> {
  * @param callback - A function that will be executed when a gesture is received.
  * @param context - this argument for the callback.
  */
-export function observe<T extends Observable = Observable>(target: View, type: GestureTypes, callback: (args: GestureEventData<T>) => void, context?: any): GesturesObserver<T>;
+export function observe<T extends Observable = View>(target: View, type: GestureTypes, callback: (args: GestureEventData<T>) => void, context?: any): GesturesObserver<T>;
 
 /**
  * Returns a string representation of a gesture type.

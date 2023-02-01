@@ -67,17 +67,17 @@ export class ScrollView extends ContentView {
 	 * @param callback - Callback function which will be executed when event is raised.
 	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
 	 */
-	on<T extends Observable = Observable>(eventNames: string, callback: (data: EventData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = ScrollView>(eventNames: string, callback: (data: EventData<T>) => void, thisArg?: any): void;
 
 	/**
 	 * Raised when a scroll event occurs.
 	 */
-	on<T extends Observable = Observable>(event: 'scroll', callback: (args: ScrollEventData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = ScrollView>(event: 'scroll', callback: (args: ScrollEventData<T>) => void, thisArg?: any): void;
 
 	_onOrientationChanged(): void;
 }
 
-export interface ScrollEventData<T extends Observable = Observable> extends EventData<T> {
+export interface ScrollEventData<T extends Observable = ScrollView> extends EventData<T> {
 	scrollX: number;
 	scrollY: number;
 }

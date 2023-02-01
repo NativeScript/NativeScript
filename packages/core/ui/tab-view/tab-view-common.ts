@@ -205,8 +205,8 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
 }
 
 export interface TabViewBase {
-	on<T extends Observable = Observable>(eventNames: string, callback: (data: EventData<T>) => void, thisArg?: any): void;
-	on<T extends Observable = Observable>(event: 'selectedIndexChanged', callback: (args: SelectedIndexChangedEventData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = TabViewBase>(eventNames: string, callback: (data: EventData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = TabViewBase>(event: 'selectedIndexChanged', callback: (args: SelectedIndexChangedEventData<T>) => void, thisArg?: any): void;
 }
 
 export function traceMissingIcon(icon: string) {

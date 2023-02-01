@@ -31,10 +31,10 @@ export class Button extends TextBase {
 	 * @param callback - Callback function which will be executed when event is raised.
 	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
 	 */
-	on<T extends Observable = Observable>(eventNames: string, callback: (data: EventData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = Button>(eventNames: string, callback: (data: EventData<T>) => void, thisArg?: any): void;
 
 	/**
 	 * Raised when a tap event occurs.
 	 */
-	on<T extends Observable = Observable>(event: 'tap', callback: (args: EventData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = Button>(event: 'tap', callback: (args: EventData<T>) => void, thisArg?: any): void;
 }

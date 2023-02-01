@@ -20,6 +20,6 @@ export class Placeholder extends View {
 	}
 }
 export interface Placeholder {
-	on<T extends Observable = Observable>(eventNames: string, callback: (args: EventData<T>) => void, thisArg?: any): void;
-	on<T extends Observable = Observable>(event: 'creatingView', callback: (args: CreateViewEventData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = Placeholder>(eventNames: string, callback: (args: EventData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = Placeholder>(event: 'creatingView', callback: (args: CreateViewEventData<T>) => void, thisArg?: any): void;
 }

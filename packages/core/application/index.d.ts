@@ -395,7 +395,7 @@ export let ios: iOSApplication;
 /**
  * Data for the Android activity events.
  */
-export interface AndroidActivityEventData {
+export interface AndroidActivityEventData<T extends Observable = Observable> extends ApplicationEventData<T> {
 	/**
 	 * The activity.
 	 */

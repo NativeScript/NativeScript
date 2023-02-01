@@ -335,14 +335,14 @@ export class View extends ViewCommon {
 	}
 
 	// TODO: Implement unobserve that detach the touchListener.
-	_observe<T extends Observable = Observable>(type: GestureTypes, callback: (args: GestureEventData<T>) => void, thisArg?: any): void {
+	_observe<T extends Observable = View>(type: GestureTypes, callback: (args: GestureEventData<T>) => void, thisArg?: any): void {
 		super._observe(type, callback, thisArg);
 		if (this.isLoaded && !this.touchListenerIsSet) {
 			this.setOnTouchListener();
 		}
 	}
 
-	on<T extends Observable = Observable>(eventNames: string, callback: (data: EventData<T>) => void, thisArg?: any) {
+	on<T extends Observable = View>(eventNames: string, callback: (data: EventData<T>) => void, thisArg?: any) {
 		super.on(eventNames, callback, thisArg);
 		const isLayoutEvent = typeof eventNames === 'string' ? eventNames.indexOf(ViewCommon.layoutChangedEvent) !== -1 : false;
 
@@ -351,7 +351,7 @@ export class View extends ViewCommon {
 		}
 	}
 
-	off<T extends Observable = Observable>(eventNames: string, callback?: (data: EventData<T>) => void, thisArg?: any) {
+	off<T extends Observable = View>(eventNames: string, callback?: (data: EventData<T>) => void, thisArg?: any) {
 		super.off(eventNames, callback, thisArg);
 		const isLayoutEvent = typeof eventNames === 'string' ? eventNames.indexOf(ViewCommon.layoutChangedEvent) !== -1 : false;
 

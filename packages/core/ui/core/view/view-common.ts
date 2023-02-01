@@ -253,7 +253,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		}
 	}
 
-	_observe<T extends Observable = Observable>(type: GestureTypes, callback: (args: GestureEventData<T>) => void, thisArg?: any): void {
+	_observe<T extends Observable = ViewCommon>(type: GestureTypes, callback: (args: GestureEventData<T>) => void, thisArg?: any): void {
 		if (!this._gestureObservers[type]) {
 			this._gestureObservers[type] = [];
 		}
@@ -265,7 +265,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		return this._gestureObservers[type];
 	}
 
-	public addEventListener<T extends Observable = Observable>(arg: string | GestureTypes, callback: (data: EventData<T>) => void, thisArg?: any) {
+	public addEventListener<T extends Observable = ViewCommon>(arg: string | GestureTypes, callback: (data: EventData<T>) => void, thisArg?: any) {
 		if (typeof arg === 'string') {
 			arg = getEventOrGestureName(arg);
 
@@ -293,7 +293,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		}
 	}
 
-	public removeEventListener<T extends Observable = Observable>(arg: string | GestureTypes, callback?: (data: EventData<T>) => void, thisArg?: any) {
+	public removeEventListener<T extends Observable = ViewCommon>(arg: string | GestureTypes, callback?: (data: EventData<T>) => void, thisArg?: any) {
 		if (typeof arg === 'string') {
 			const gesture = gestureFromString(arg);
 			if (gesture && !this._isEvent(arg)) {

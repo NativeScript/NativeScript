@@ -87,8 +87,8 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
 	public abstract _onOrientationChanged();
 }
 export interface ScrollViewBase {
-	on<T extends Observable = Observable>(eventNames: string, callback: (data: EventData<T>) => void, thisArg?: any): void;
-	on<T extends Observable = Observable>(event: 'scroll', callback: (args: ScrollEventData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = ScrollViewBase>(eventNames: string, callback: (data: EventData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = ScrollViewBase>(event: 'scroll', callback: (args: ScrollEventData<T>) => void, thisArg?: any): void;
 }
 
 const converter = makeParser<CoreTypes.OrientationType>(makeValidator(CoreTypes.Orientation.horizontal, CoreTypes.Orientation.vertical));

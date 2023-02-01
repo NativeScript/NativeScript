@@ -12,7 +12,7 @@ import { ActionBar } from '../action-bar';
 import { KeyframeAnimationInfo } from '../animation/keyframe-animation';
 import { profile } from '../../profiling';
 
-interface NavigatedData<T extends Observable = Observable> extends EventData<T> {
+interface NavigatedData<T extends Observable = PageBase> extends EventData<T> {
 	context: any;
 	isBackNavigation: boolean;
 }
@@ -166,13 +166,13 @@ export class PageBase extends ContentView {
 PageBase.prototype.recycleNativeView = 'never';
 
 export interface PageBase {
-	on<T extends Observable = Observable>(eventNames: string, callback: (data: EventData<T>) => void, thisArg?: any): void;
-	on<T extends Observable = Observable>(event: 'navigatingTo', callback: (args: NavigatedData<T>) => void, thisArg?: any): void;
-	on<T extends Observable = Observable>(event: 'navigatedTo', callback: (args: NavigatedData<T>) => void, thisArg?: any): void;
-	on<T extends Observable = Observable>(event: 'navigatingFrom', callback: (args: NavigatedData<T>) => void, thisArg?: any): void;
-	on<T extends Observable = Observable>(event: 'navigatedFrom', callback: (args: NavigatedData<T>) => void, thisArg?: any): void;
-	on<T extends Observable = Observable>(event: 'showingModally', callback: (args: ShownModallyData<T>) => void, thisArg?: any): void;
-	on<T extends Observable = Observable>(event: 'shownModally', callback: (args: ShownModallyData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = PageBase>(eventNames: string, callback: (data: EventData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = PageBase>(event: 'navigatingTo', callback: (args: NavigatedData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = PageBase>(event: 'navigatedTo', callback: (args: NavigatedData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = PageBase>(event: 'navigatingFrom', callback: (args: NavigatedData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = PageBase>(event: 'navigatedFrom', callback: (args: NavigatedData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = PageBase>(event: 'showingModally', callback: (args: ShownModallyData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = PageBase>(event: 'shownModally', callback: (args: ShownModallyData<T>) => void, thisArg?: any): void;
 }
 
 /**

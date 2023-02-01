@@ -71,8 +71,22 @@ export interface CssChangedEventData<T extends Observable = Observable> extends 
 }
 
 export interface AndroidActivityEventData<T extends Observable = Observable> extends ApplicationEventData<T> {
-	activity: any /* androidx.appcompat.app.AppCompatActivity */;
-	object: any /* AndroidApplication */;
+	/**
+	 * The activity.
+	 * androidx.appcompat.app.AppCompatActivity
+	 */
+	activity: any;
+
+	/**
+	 * The name of the event.
+	 */
+	eventName: string;
+
+	/**
+	 * The instance that has raised the event.
+	 * AndroidApplication
+	 */
+	object: T;
 }
 
 export interface AndroidActivityBundleEventData<T extends Observable = Observable> extends AndroidActivityEventData<T> {

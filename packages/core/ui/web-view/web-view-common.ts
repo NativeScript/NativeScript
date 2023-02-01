@@ -29,7 +29,7 @@ export abstract class WebViewBase extends ContainerView {
 			error: error,
 		};
 
-		this.notify(<any>args);
+		this.notify(args);
 	}
 
 	public _onLoadStarted(url: string, navigationType: WebViewNavigationType) {
@@ -41,7 +41,7 @@ export abstract class WebViewBase extends ContainerView {
 			error: undefined,
 		};
 
-		this.notify(<any>args);
+		this.notify(args);
 	}
 
 	abstract _loadUrl(src: string): void;
@@ -101,9 +101,9 @@ export abstract class WebViewBase extends ContainerView {
 // HACK: We declare all these 'on' statements, so that they can appear in the API reference
 // HACK: Do we need this? Is it useful? There are static fields to the WebViewBase class for the event names.
 export interface WebViewBase {
-	on<T extends Observable = Observable>(eventNames: string, callback: (data: EventData<T>) => void, thisArg?: any): void;
-	on<T extends Observable = Observable>(event: 'loadFinished', callback: (args: LoadEventData<T>) => void, thisArg?: any): void;
-	on<T extends Observable = Observable>(event: 'loadStarted', callback: (args: LoadEventData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = WebViewBase>(eventNames: string, callback: (data: EventData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = WebViewBase>(event: 'loadFinished', callback: (args: LoadEventData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = WebViewBase>(event: 'loadStarted', callback: (args: LoadEventData<T>) => void, thisArg?: any): void;
 }
 
 srcProperty.register(WebViewBase);
