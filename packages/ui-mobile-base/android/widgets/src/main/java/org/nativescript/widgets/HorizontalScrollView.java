@@ -151,12 +151,11 @@ public class HorizontalScrollView extends android.widget.HorizontalScrollView {
 			lp.topMargin = topMargin;
 			lp.rightMargin = rightMargin;
 			lp.bottomMargin = bottomMargin;
-
-			this.scrollableLength = Math.max(0, this.contentMeasuredWidth - width);
 		} else {
-			this.scrollableLength = 0;
+			super.onLayout(changed, left, top, right, bottom);
 		}
 
+		this.scrollableLength = Math.max(0, this.contentMeasuredWidth - width);
 		CommonLayoutParams.restoreOriginalParams(this);
 	}
 }

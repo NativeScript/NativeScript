@@ -158,12 +158,11 @@ public class VerticalScrollView extends NestedScrollView {
 			lp.topMargin = topMargin;
 			lp.rightMargin = rightMargin;
 			lp.bottomMargin = bottomMargin;
-
-			this.scrollableLength = Math.max(0, this.contentMeasuredHeight - height);
 		} else {
-			this.scrollableLength = 0;
+			super.onLayout(changed, left, top, right, bottom);
 		}
 
+		this.scrollableLength = Math.max(0, this.contentMeasuredHeight - height);
 		CommonLayoutParams.restoreOriginalParams(this);
 	}
 }
