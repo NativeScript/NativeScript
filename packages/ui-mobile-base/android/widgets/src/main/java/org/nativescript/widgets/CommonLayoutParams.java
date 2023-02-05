@@ -96,6 +96,33 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
 		return view.getMeasuredHeight() + lp.topMargin + lp.bottomMargin;
 	}
 
+	protected static int getLayoutGravity(View child, boolean fitsWidth, boolean fitsHeight) {
+		CommonLayoutParams lp = (CommonLayoutParams) child.getLayoutParams();
+		int gravity = lp.gravity;
+
+		if (gravity == -1) {
+			gravity = Gravity.FILL;
+		}
+
+		// If gravity is FILL and content does not fill parent, we need it to be centered otherwise our explicit size won't be taken into account.
+		if (fitsWidth) {
+			int horizontalGravity = Gravity.getAbsoluteGravity(gravity, child.getLayoutDirection()) & Gravity.HORIZONTAL_GRAVITY_MASK;
+			if (horizontalGravity == Gravity.FILL_HORIZONTAL) {
+				gravity &= ~Gravity.FILL_HORIZONTAL;
+				gravity |= Gravity.CENTER_HORIZONTAL;
+			}
+		}
+		if (fitsHeight) {
+			int verticalGravity = gravity & Gravity.VERTICAL_GRAVITY_MASK;
+			if (verticalGravity == Gravity.FILL_VERTICAL) {
+				gravity &= ~Gravity.FILL_VERTICAL;
+				gravity |= Gravity.CENTER_VERTICAL;
+			}
+		}
+		
+		return gravity;
+	}
+
 	// We use our own layout method because the one in FrameLayout is broken when margins are set and gravity is CENTER_VERTICAL or CENTER_HORIZONTAL.
 	@SuppressLint("RtlHardcoded")
 	protected static void layoutChild(View child, int left, int top, int right, int bottom) {
@@ -110,18 +137,9 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
 		int childHeight = child.getMeasuredHeight();
 
 		CommonLayoutParams lp = (CommonLayoutParams) child.getLayoutParams();
-		int gravity = lp.gravity;
-		if (gravity == -1) {
-			gravity = Gravity.FILL;
-		}
-
-		int verticalGravity = gravity & Gravity.VERTICAL_GRAVITY_MASK;
-
-		// If we have explicit height and gravity is FILL we need to be centered otherwise our explicit height won't be taken into account.
-		if ((lp.height >= 0 || lp.heightPercent > 0) && verticalGravity == Gravity.FILL_VERTICAL) {
-			verticalGravity = Gravity.CENTER_VERTICAL;
-		}
-
+		final int gravity = CommonLayoutParams.getLayoutGravity(child, (lp.width >= 0 || lp.widthPercent > 0), (lp.height >= 0 || lp.heightPercent > 0));
+		
+		final int verticalGravity = gravity & Gravity.VERTICAL_GRAVITY_MASK;
 		switch (verticalGravity) {
 			case Gravity.TOP:
 				childTop = top + lp.topMargin;
@@ -142,13 +160,7 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
 				break;
 		}
 
-		int horizontalGravity = Gravity.getAbsoluteGravity(gravity, child.getLayoutDirection()) & Gravity.HORIZONTAL_GRAVITY_MASK;
-
-		// If we have explicit width and gravity is FILL we need to be centered otherwise our explicit width won't be taken into account.
-		if ((lp.width >= 0 || lp.widthPercent > 0) && horizontalGravity == Gravity.FILL_HORIZONTAL) {
-			horizontalGravity = Gravity.CENTER_HORIZONTAL;
-		}
-
+		final int horizontalGravity = Gravity.getAbsoluteGravity(gravity, child.getLayoutDirection()) & Gravity.HORIZONTAL_GRAVITY_MASK;
 		switch (horizontalGravity) {
 			case Gravity.LEFT:
 				childLeft = left + lp.leftMargin;

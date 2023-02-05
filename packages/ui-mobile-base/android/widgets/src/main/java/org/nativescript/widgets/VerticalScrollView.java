@@ -134,30 +134,40 @@ public class VerticalScrollView extends NestedScrollView {
 
 	@Override
 	protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+		final int width = right - left;
 		final int height = bottom - top;
 
 		if (this.getChildCount() > 0) {
 			final View child = this.getChildAt(0);
-			final CommonLayoutParams lp = (CommonLayoutParams) child.getLayoutParams();
+			final int childWidth = child.getMeasuredWidth();
+			final int childHeight = child.getMeasuredHeight();
+			final CommonLayoutParams childLayoutParams = (CommonLayoutParams) child.getLayoutParams();
 
-			final int leftMargin = lp.leftMargin;
-			final int topMargin = lp.topMargin;
-			final int rightMargin = lp.rightMargin;
-			final int bottomMargin = lp.bottomMargin;
+			final int leftMargin = childLayoutParams.leftMargin;
+			final int topMargin = childLayoutParams.topMargin;
+			final int rightMargin = childLayoutParams.rightMargin;
+			final int bottomMargin = childLayoutParams.bottomMargin;
+			final int gravity = childLayoutParams.gravity;
 
 			// Android scrollviews don't handle margins very well, so unset margin values and set their values anew when layout calculations are done
-			lp.leftMargin = 0;
-			lp.topMargin = 0;
-			lp.rightMargin = 0;
-			lp.bottomMargin = 0;
+			childLayoutParams.leftMargin = 0;
+			childLayoutParams.topMargin = 0;
+			childLayoutParams.rightMargin = 0;
+			childLayoutParams.bottomMargin = 0;
+
+			// This will apply gravity defaults if needed
+			childLayoutParams.gravity = CommonLayoutParams.getLayoutGravity(child, (childWidth >= 0 && childWidth < width), (childHeight >= 0 && childHeight < height));
 
 			super.onLayout(changed, left, top, right, bottom);
 
-			// View has finished laying out child, set margin values
-			lp.leftMargin = leftMargin;
-			lp.topMargin = topMargin;
-			lp.rightMargin = rightMargin;
-			lp.bottomMargin = bottomMargin;
+			// View has finished laying out child, set margin values back
+			childLayoutParams.leftMargin = leftMargin;
+			childLayoutParams.topMargin = topMargin;
+			childLayoutParams.rightMargin = rightMargin;
+			childLayoutParams.bottomMargin = bottomMargin;
+
+			// Set previous gravity value
+			childLayoutParams.gravity = gravity;
 		} else {
 			super.onLayout(changed, left, top, right, bottom);
 		}
