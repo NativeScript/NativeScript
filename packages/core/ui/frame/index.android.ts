@@ -1,5 +1,5 @@
 // Definitions.
-import { AndroidFrame as AndroidFrameDefinition, AndroidActivityCallbacks, AndroidFragmentCallbacks, BackstackEntry, NavigationTransition } from '.';
+import type { AndroidFrame as AndroidFrameDefinition, AndroidActivityCallbacks, AndroidFragmentCallbacks, BackstackEntry, NavigationTransition } from '.';
 import { TransitionState } from './frame-common';
 import { Page } from '../page';
 
