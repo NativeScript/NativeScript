@@ -109,5 +109,9 @@
     "**/*": [
       "nx format:write --files"
     ]
-  }
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ]
 }

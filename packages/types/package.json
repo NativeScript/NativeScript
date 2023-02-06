@@ -4,15 +4,15 @@
   "description": "NativeScript Types for all supported platforms.",
   "homepage": "https://nativescript.org",
   "repository": {
-      "type": "git",
-      "url": "https://github.com/NativeScript/NativeScript"
+    "type": "git",
+    "url": "https://github.com/NativeScript/NativeScript"
   },
   "files": [
-      "index.d.ts"
+    "index.d.ts"
   ],
   "license": "Apache-2.0",
   "dependencies": {
-    "@nativescript/types-ios": "~8.4.0",
-    "@nativescript/types-android": "~8.4.0"
+    "@nativescript/types-android": "~8.4.0",
+    "@nativescript/types-ios": "~8.4.0"
   }
 }
