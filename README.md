@@ -78,7 +78,7 @@ Outside the source centralized in this repo, NativeScript consists of a few othe
 	- This repo contains the NativeScript command-line interface, which lets you create, build, and run apps using NativeScript. The CLI is written in TypeScript.
 - **[Docs](//github.com/NativeScript/docs-new)**
 	- This repo contains NativeScript documentation, which is available at <http://docs.nativescript.org/>. The docs are written in Markdown.
-- **[Official Plugins](https://github.com/NativeScript/plugins)
+- **[Official Plugins](https://github.com/NativeScript/plugins)**
   - This repo contains a [plugin workspace](https://docs.nativescript.org/plugins/plugin-workspace-guide.html) the TSC (Technical Steering Committee) maintains offering several often useful plugins.
 
 <h3 align="center">Made with ❤️</h3>
