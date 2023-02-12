@@ -106,13 +106,11 @@ public class VerticalScrollView extends NestedScrollView {
 		} else {
 			CommonLayoutParams lp = (CommonLayoutParams) child.getLayoutParams();
 			
-			CommonLayoutParams.measureChild(child, widthMeasureSpec,
-					MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
+			CommonLayoutParams.measureChild(child, widthMeasureSpec, heightMeasureSpec);
 			this.contentMeasuredWidth = CommonLayoutParams.getDesiredWidth(child);
 			this.contentMeasuredHeight = CommonLayoutParams.getDesiredHeight(child);
 
-			// Android ScrollView does not account to child margins so we set them as
-			// paddings. Otherwise you can never scroll to bottom.
+			// Android ScrollView does not account to child margins so we set them as paddings. Otherwise you can never scroll to bottom.
 			this.setPadding(lp.leftMargin, lp.topMargin, lp.rightMargin, lp.bottomMargin);
 		}
 
