@@ -105,8 +105,18 @@ public class VerticalScrollView extends NestedScrollView {
 			this.setPadding(0, 0, 0, 0);
 		} else {
 			CommonLayoutParams lp = (CommonLayoutParams) child.getLayoutParams();
+
+			final int childHeightMeasureSpec;
+
+			final int availableHeight = MeasureSpec.getSize(heightMeasureSpec) - lp.topMargin - lp.bottomMargin;
+			final int childHeight = child.getMeasuredHeight();
+			if (lp.height == LayoutParams.MATCH_PARENT && childHeight < availableHeight) {
+				childHeightMeasureSpec = heightMeasureSpec;
+			} else {
+				childHeightMeasureSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
+			}
 			
-			CommonLayoutParams.measureChild(child, widthMeasureSpec, heightMeasureSpec);
+			CommonLayoutParams.measureChild(child, widthMeasureSpec, childHeightMeasureSpec);
 			this.contentMeasuredWidth = CommonLayoutParams.getDesiredWidth(child);
 			this.contentMeasuredHeight = CommonLayoutParams.getDesiredHeight(child);
 
