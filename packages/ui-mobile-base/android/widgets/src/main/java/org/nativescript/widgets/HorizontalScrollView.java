@@ -107,7 +107,7 @@ public class HorizontalScrollView extends android.widget.HorizontalScrollView {
 
 			final int availableWidth = MeasureSpec.getSize(widthMeasureSpec) - lp.leftMargin - lp.rightMargin;
 			final int childWidth = child.getMeasuredWidth();
-			if (lp.width == LayoutParams.MATCH_PARENT && childWidth < availableWidth) {
+			if (lp.width == LayoutParams.MATCH_PARENT && childWidth > 0 && childWidth < availableWidth) {
 				childWidthMeasureSpec = widthMeasureSpec;
 			} else {
 				childWidthMeasureSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);

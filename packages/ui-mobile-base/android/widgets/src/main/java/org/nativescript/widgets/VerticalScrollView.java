@@ -110,7 +110,7 @@ public class VerticalScrollView extends NestedScrollView {
 
 			final int availableHeight = MeasureSpec.getSize(heightMeasureSpec) - lp.topMargin - lp.bottomMargin;
 			final int childHeight = child.getMeasuredHeight();
-			if (lp.height == LayoutParams.MATCH_PARENT && childHeight < availableHeight) {
+			if (lp.height == LayoutParams.MATCH_PARENT && childHeight > 0 && childHeight < availableHeight) {
 				childHeightMeasureSpec = heightMeasureSpec;
 			} else {
 				childHeightMeasureSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
