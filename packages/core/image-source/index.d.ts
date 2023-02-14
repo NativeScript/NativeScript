@@ -1,6 +1,22 @@
 ﻿import { ImageAsset } from '../image-asset';
 import { Font } from '../ui/styling/font';
 import { Color } from '../color';
+
+export interface ImageSourceLoadOptions {
+	/**
+	 * ios specific options
+	 */
+	ios?: {
+		/**
+		 * The desired scale of the image.
+		 * By default it is set by the system based on a few factors:
+		 * if the image is loaded from a file, the scale is 1.0, except if you have a file@2x.png or the file itself ends in a @2x.png
+		 * in which case it will set the scale to 2 (and so on, depending on the scale of the device).
+		 * For everything else, it'll be 1.0.
+		 */
+		scale?: number;
+	};
+}
 /**
  * Encapsulates the common abstraction behind a platform specific object (typically a Bitmap) that is used as a source for images.
  */
@@ -46,55 +62,55 @@ export class ImageSource {
 	 * Loads this instance from the specified resource name.
 	 * @param name The name of the resource (without its extension).
 	 */
-	static fromResourceSync(name: string): ImageSource;
+	static fromResourceSync(name: string, options?: ImageSourceLoadOptions): ImageSource;
 
 	/**
 	 * Loads this instance from the specified resource name asynchronously.
 	 * @param name The name of the resource (without its extension).
 	 */
-	static fromResource(name: string): Promise<ImageSource>;
+	static fromResource(name: string, options?: ImageSourceLoadOptions): Promise<ImageSource>;
 
 	/**
 	 * Loads this instance from the specified file.
 	 * @param path The location of the file on the file system.
 	 */
-	static fromFileSync(path: string): ImageSource;
+	static fromFileSync(path: string, options?: ImageSourceLoadOptions): ImageSource;
 
 	/**
 	 * Loads this instance from the specified file asynchronously.
 	 * @param path The location of the file on the file system.
 	 */
-	static fromFile(path: string): Promise<ImageSource>;
+	static fromFile(path: string, options?: ImageSourceLoadOptions): Promise<ImageSource>;
 
 	/**
 	 * Creates a new ImageSource instance and loads it from the specified local file or resource (if specified with the "res://" prefix).
 	 * @param path The location of the file on the file system.
 	 */
-	static fromFileOrResourceSync(path: string): ImageSource;
+	static fromFileOrResourceSync(path: string, options?: ImageSourceLoadOptions): ImageSource;
 
 	/**
 	 * Loads this instance from the specified native image data.
 	 * @param data The native data (byte array) to load the image from. This will be either Stream for Android or NSData for iOS.
 	 */
-	static fromDataSync(data: any): ImageSource;
+	static fromDataSync(data: any, options?: ImageSourceLoadOptions): ImageSource;
 
 	/**
 	 * Loads this instance from the specified native image data asynchronously.
 	 * @param data The native data (byte array) to load the image from. This will be either Stream for Android or NSData for iOS.
 	 */
-	static fromData(data: any): Promise<ImageSource>;
+	static fromData(data: any, options?: ImageSourceLoadOptions): Promise<ImageSource>;
 
 	/**
 	 * Loads this instance from the specified base64 encoded string.
 	 * @param source The Base64 string to load the image from.
 	 */
-	static fromBase64Sync(source: string): ImageSource;
+	static fromBase64Sync(source: string, options?: ImageSourceLoadOptions): ImageSource;
 
 	/**
 	 * Loads this instance from the specified base64 encoded string asynchronously.
 	 * @param source The Base64 string to load the image from.
 	 */
-	static fromBase64(source: string): Promise<ImageSource>;
+	static fromBase64(source: string, options?: ImageSourceLoadOptions): Promise<ImageSource>;
 
 	/**
 	 * Creates a new ImageSource instance and loads it from the specified font icon code.
@@ -102,7 +118,7 @@ export class ImageSource {
 	 * @param font The font for the corresponding font icon code
 	 * @param color The color of the generated icon image
 	 */
-	static fromFontIconCodeSync(source: string, font: Font, color: Color): ImageSource;
+	static fromFontIconCodeSync(source: string, font: Font, color: Color, options?: ImageSourceLoadOptions): ImageSource;
 
 	/**
 	 * Creates a new ImageSource instance and sets the provided native source object (typically a Bitmap).

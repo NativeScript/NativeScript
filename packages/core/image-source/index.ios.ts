@@ -1,5 +1,5 @@
 // Definitions.
-import { ImageSource as ImageSourceDefinition } from '.';
+import type { ImageSource as ImageSourceDefinition, ImageSourceLoadOptions } from '.';
 import { ImageAsset } from '../image-asset';
 import * as httpModule from '../http';
 import { Font } from '../ui/styling/font';
@@ -73,51 +73,77 @@ export class ImageSource implements ImageSourceDefinition {
 		return http.getImage(url);
 	}
 
-	static fromResourceSync(name: string): ImageSource {
-		const nativeSource = (<any>UIImage).tns_safeImageNamed(name) || (<any>UIImage).tns_safeImageNamed(`${name}.jpg`);
+	static fromResourceSync(name: string, options?: ImageSourceLoadOptions): ImageSource {
+		const scale = options?.ios?.scale;
+		const nativeSource = typeof scale === 'number' ? (<any>UIImage).tns_safeImageNamedScale(name, scale) || (<any>UIImage).tns_safeImageNamedScale(`${name}.jpg`, scale) : (<any>UIImage).tns_safeImageNamed(name) || (<any>UIImage).tns_safeImageNamed(`${name}.jpg`);
 
 		return nativeSource ? new ImageSource(nativeSource) : null;
 	}
-	static fromResource(name: string): Promise<ImageSource> {
+	static fromResource(name: string, options?: ImageSourceLoadOptions): Promise<ImageSource> {
+		const scale = options?.ios?.scale;
 		return new Promise<ImageSource>((resolve, reject) => {
 			try {
-				(<any>UIImage).tns_safeDecodeImageNamedCompletion(name, (image) => {
-					if (image) {
-						resolve(new ImageSource(image));
-					} else {
-						(<any>UIImage).tns_safeDecodeImageNamedCompletion(`${name}.jpg`, (img) => {
-							if (img) {
-								resolve(new ImageSource(img));
-							}
-						});
-					}
-				});
+				if (typeof scale === 'number') {
+					(<any>UIImage).tns_safeDecodeImageNamedScaleCompletion(name, (image) => {
+						if (image) {
+							resolve(new ImageSource(image));
+						} else {
+							(<any>UIImage).tns_safeDecodeImageNamedScaleCompletion(`${name}.jpg`, (img) => {
+								if (img) {
+									resolve(new ImageSource(img));
+								}
+							});
+						}
+					});
+				} else {
+					(<any>UIImage).tns_safeDecodeImageNamedCompletion(name, (image) => {
+						if (image) {
+							resolve(new ImageSource(image));
+						} else {
+							(<any>UIImage).tns_safeDecodeImageNamedCompletion(`${name}.jpg`, (img) => {
+								if (img) {
+									resolve(new ImageSource(img));
+								}
+							});
+						}
+					});
+				}
 			} catch (ex) {
 				reject(ex);
 			}
 		});
 	}
 
-	static fromFileSync(path: string): ImageSource {
-		const uiImage = UIImage.imageWithContentsOfFile(getFileName(path));
+	static fromFileSync(path: string, options?: ImageSourceLoadOptions): ImageSource {
+		const scale = options?.ios?.scale;
+		const uiImage = typeof scale === 'number' ? UIImage.imageWithDataScale(NSData.dataWithContentsOfFile(getFileName(path)), scale) : UIImage.imageWithContentsOfFile(getFileName(path));
 
 		return uiImage ? new ImageSource(uiImage) : null;
 	}
-	static fromFile(path: string): Promise<ImageSource> {
+	static fromFile(path: string, options?: ImageSourceLoadOptions): Promise<ImageSource> {
+		const scale = options?.ios?.scale;
 		return new Promise<ImageSource>((resolve, reject) => {
 			try {
-				(<any>UIImage).tns_decodeImageWidthContentsOfFileCompletion(getFileName(path), (uiImage) => {
-					if (uiImage) {
-						resolve(new ImageSource(uiImage));
-					}
-				});
+				if (typeof scale === 'number') {
+					(<any>UIImage).tns_decodeImageWidthContentsOfFileScaleCompletion(getFileName(path), scale, (uiImage) => {
+						if (uiImage) {
+							resolve(new ImageSource(uiImage));
+						}
+					});
+				} else {
+					(<any>UIImage).tns_decodeImageWidthContentsOfFileCompletion(getFileName(path), (uiImage) => {
+						if (uiImage) {
+							resolve(new ImageSource(uiImage));
+						}
+					});
+				}
 			} catch (ex) {
 				reject(ex);
 			}
 		});
 	}
 
-	static fromFileOrResourceSync(path: string): ImageSource {
+	static fromFileOrResourceSync(path: string, options?: ImageSourceLoadOptions): ImageSource {
 		if (!isFileOrResourcePath(path)) {
 			if (Trace.isEnabled()) {
 				Trace.write('Path "' + path + '" is not a valid file or resource.', Trace.categories.Binding, Trace.messageType.error);
@@ -126,48 +152,64 @@ export class ImageSource implements ImageSourceDefinition {
 		}
 
 		if (path.indexOf(RESOURCE_PREFIX) === 0) {
-			return ImageSource.fromResourceSync(path.substr(RESOURCE_PREFIX.length));
+			return ImageSource.fromResourceSync(path.substr(RESOURCE_PREFIX.length), options);
 		}
 
-		return ImageSource.fromFileSync(path);
+		return ImageSource.fromFileSync(path, options);
 	}
 
-	static fromDataSync(data: any): ImageSource {
-		const uiImage = UIImage.imageWithData(data);
+	static fromDataSync(data: any, options?: ImageSourceLoadOptions): ImageSource {
+		const scale = options?.ios?.scale;
+		const uiImage = typeof scale === 'number' ? UIImage.imageWithDataScale(data, scale) : UIImage.imageWithData(data);
 
 		return uiImage ? new ImageSource(uiImage) : null;
 	}
-	static fromData(data: any): Promise<ImageSource> {
+	static fromData(data: any, options?: ImageSourceLoadOptions): Promise<ImageSource> {
+		const scale = options?.ios?.scale;
 		return new Promise<ImageSource>((resolve, reject) => {
 			try {
-				(<any>UIImage).tns_decodeImageWithDataCompletion(data, (uiImage) => {
-					if (uiImage) {
-						resolve(new ImageSource(uiImage));
-					}
-				});
+				if (typeof scale === 'number') {
+					(<any>UIImage).tns_decodeImageWithDataScaleCompletion(data, scale, (uiImage) => {
+						if (uiImage) {
+							resolve(new ImageSource(uiImage));
+						}
+					});
+				} else {
+					(<any>UIImage).tns_decodeImageWithDataCompletion(data, (uiImage) => {
+						if (uiImage) {
+							resolve(new ImageSource(uiImage));
+						}
+					});
+				}
 			} catch (ex) {
 				reject(ex);
 			}
 		});
 	}
 
-	static fromBase64Sync(source: string): ImageSource {
+	static fromBase64Sync(source: string, options?: ImageSourceLoadOptions): ImageSource {
+		const scale = options?.ios?.scale;
 		let uiImage: UIImage;
 		if (typeof source === 'string') {
 			const data = NSData.alloc().initWithBase64EncodedStringOptions(source, NSDataBase64DecodingOptions.IgnoreUnknownCharacters);
-			uiImage = UIImage.imageWithData(data);
+			if (typeof scale === 'number') {
+				uiImage = UIImage.imageWithDataScale(data, scale);
+			} else {
+				uiImage = UIImage.imageWithData(data);
+			}
 		}
 
 		return uiImage ? new ImageSource(uiImage) : null;
 	}
-	static fromBase64(source: string): Promise<ImageSource> {
+	static fromBase64(source: string, options?: ImageSourceLoadOptions): Promise<ImageSource> {
+		const scale = options?.ios?.scale;
 		return new Promise<ImageSource>((resolve, reject) => {
 			try {
 				const data = NSData.alloc().initWithBase64EncodedStringOptions(source, NSDataBase64DecodingOptions.IgnoreUnknownCharacters);
 				const main_queue = dispatch_get_current_queue();
 				const background_queue = dispatch_get_global_queue(qos_class_t.QOS_CLASS_DEFAULT, 0);
 				dispatch_async(background_queue, () => {
-					const uiImage = UIImage.imageWithData(data);
+					const uiImage = typeof scale === 'number' ? UIImage.imageWithDataScale(data, scale) : UIImage.imageWithData(data);
 					dispatch_async(main_queue, () => {
 						resolve(new ImageSource(uiImage));
 					});
@@ -178,8 +220,9 @@ export class ImageSource implements ImageSourceDefinition {
 		});
 	}
 
-	static fromFontIconCodeSync(source: string, font: Font, color: Color): ImageSource {
+	static fromFontIconCodeSync(source: string, font: Font, color: Color, options?: ImageSourceLoadOptions): ImageSource {
 		font = font || Font.default;
+		const scale = typeof options?.ios?.scale === 'number' ? options.ios.scale : 0.0;
 
 		// TODO: Consider making 36 font size as default for optimal look on TabView and ActionBar
 		const attributes = {
@@ -192,7 +235,7 @@ export class ImageSource implements ImageSourceDefinition {
 
 		const attributedString = NSAttributedString.alloc().initWithStringAttributes(source, <NSDictionary<string, any>>attributes);
 
-		UIGraphicsBeginImageContextWithOptions(attributedString.size(), false, 0.0);
+		UIGraphicsBeginImageContextWithOptions(attributedString.size(), false, scale);
 		attributedString.drawAtPoint(CGPointMake(0, 0));
 
 		const iconImage = UIGraphicsGetImageFromCurrentImageContext();
