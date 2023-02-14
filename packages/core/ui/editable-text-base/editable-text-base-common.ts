@@ -51,9 +51,7 @@ placeholderColorProperty.register(Style);
 
 const keyboardTypeConverter = makeParser<CoreTypes.KeyboardInputType>(makeValidator<CoreTypes.KeyboardInputType>(CoreTypes.KeyboardType.datetime, CoreTypes.KeyboardType.phone, CoreTypes.KeyboardType.number, CoreTypes.KeyboardType.url, CoreTypes.KeyboardType.email, CoreTypes.KeyboardType.integer), true);
 
-const autofillTypeConverter = makeParser<CoreTypes.AutofillType>(makeValidator<CoreTypes.AutofillType>(CoreTypes.AutofillType.username, CoreTypes.AutofillType.password, CoreTypes.AutofillType.none), true);
-
-export const autofillTypeProperty = new Property<EditableTextBase, CoreTypes.AutofillType>({ name: 'autofillType', valueConverter: autofillTypeConverter });
+export const autofillTypeProperty = new Property<EditableTextBase, CoreTypes.AutofillType>({ name: 'autofillType' });
 autofillTypeProperty.register(EditableTextBase);
 
 export const keyboardTypeProperty = new Property<EditableTextBase, CoreTypes.KeyboardInputType>({ name: 'keyboardType', valueConverter: keyboardTypeConverter });
