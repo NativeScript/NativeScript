@@ -248,7 +248,7 @@ export class iOSApplication implements iOSApplicationDefinition {
 		});
 
 		if (this._window) {
-			if (args.root !== null && !NativeScriptEmbedder.sharedInstance().delegate)
+			if (args.root !== null && !NativeScriptEmbedder.sharedInstance().delegate) {
 				this.setWindowContent(args.root);
 			}
 		} else {
