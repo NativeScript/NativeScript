@@ -461,6 +461,7 @@ export function run(entry?: string | NavigationEntry) {
 					rootView._setupAsRootView({});
 					const embedderDelegate = NativeScriptEmbedder.sharedInstance().delegate;
 					if (embedderDelegate) {
+						setViewControllerView(rootView);
 						embedderDelegate.presentNativeScriptApp(controller);
 					} else {
 						const visibleVC = getVisibleViewController(rootController);
