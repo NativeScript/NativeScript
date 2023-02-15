@@ -49,7 +49,7 @@ jobs:
         uses: rigor789/action-create-emulator@main
 
       - name: Test (Android)
-        run: npx nx run apps-automated:android --timeout=600
+        run: node tools/scripts/run-automated.js android
 
       - name: Start iOS Simulator
         if: ${{ always() && !cancelled() }} # run iOS tests even if Android tests failed
@@ -60,4 +60,4 @@ jobs:
 
       - name: Test (iOS)
         if: ${{ always() && !cancelled() }} # run iOS tests even if Android tests failed
-        run: npx nx run apps-automated:ios --timeout=600
+        run: node tools/scripts/run-automated.js ios

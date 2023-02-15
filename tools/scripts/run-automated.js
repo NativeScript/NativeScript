@@ -6,9 +6,10 @@
  */
 const spawn = require('child_process').spawn
 const kill = require('tree-kill');
+const path = require('path');
 
 const TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
-
+const workspaceDir = path.resolve(__dirname, '../..');
 const platform = process.argv[2];
 const spawned_process = spawn(
 	"npx",
@@ -20,6 +21,7 @@ const spawned_process = spawn(
 		"--timeout=600" // 10 minutes, booting avds on CI is very slow...
 	],
 	{
+		cwd: workspaceDir,
 		stdio: ["inherit", "pipe", "pipe"],
 	}
 );
