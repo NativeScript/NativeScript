@@ -247,9 +247,8 @@ export class iOSApplication implements iOSApplicationDefinition {
 			cssFile: getCssFileName(),
 		});
 
-		// this._window will be undefined when NS app is embedded in a native one
 		if (this._window) {
-			if (args.root !== null) {
+			if (args.root !== null && !NativeScriptEmbedder.sharedInstance().delegate) {
 				this.setWindowContent(args.root);
 			}
 		} else {
