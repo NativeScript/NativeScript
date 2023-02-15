@@ -1,5 +1,5 @@
 // Definitions.
-import { ImageSource as ImageSourceDefinition } from '.';
+import type { ImageSource as ImageSourceDefinition } from '.';
 import { ImageAsset } from '../image-asset';
 import * as httpModule from '../http';
 
@@ -67,6 +67,10 @@ export class ImageSource implements ImageSourceDefinition {
 
 	public set rotationAngle(value: number) {
 		this._rotationAngle = value;
+	}
+
+	get scale(): number {
+		return NaN;
 	}
 
 	constructor(nativeSource?: any) {
@@ -407,6 +411,10 @@ export class ImageSource implements ImageSourceDefinition {
 				})
 			);
 		});
+	}
+
+	public withScaleFactor(newScale: number): ImageSource {
+		return this;
 	}
 }
 

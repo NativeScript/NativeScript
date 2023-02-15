@@ -21,6 +21,11 @@ export class ImageSource {
 	rotationAngle: number;
 
 	/**
+	 * Gets the scale factor of the image (iOS only).
+	 */
+	readonly scale: number;
+
+	/**
 	 * The iOS-specific [UIImage](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIImage_Class/) instance. Will be undefined when running on Android.
 	 */
 	ios: any /* UIImage */;
@@ -245,6 +250,12 @@ export class ImageSource {
 	 *     bilinear filtering is typically minimal and the improved image quality is significant.
 	 */
 	resizeAsync(maxSize: number, options?: any): Promise<ImageSource>;
+
+	/**
+	 * iOS Only. Creates a new ImageSource from the original UIImage but with a different scale factor.
+	 * @param newScale The new scale of the image.
+	 */
+	withScaleFactor(newScale: number): ImageSource;
 }
 
 /**

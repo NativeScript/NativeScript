@@ -1,5 +1,5 @@
 // Definitions.
-import { ImageSource as ImageSourceDefinition } from '.';
+import type { ImageSource as ImageSourceDefinition } from '.';
 import { ImageAsset } from '../image-asset';
 import * as httpModule from '../http';
 import { Font } from '../ui/styling/font';
@@ -47,6 +47,13 @@ export class ImageSource implements ImageSourceDefinition {
 
 	set rotationAngle(_value: number) {
 		// compatibility with Android
+	}
+
+	get scale(): number {
+		if (this.ios) {
+			return this.ios.scale;
+		}
+		return NaN;
 	}
 
 	constructor(nativeSource?: any) {
@@ -433,6 +440,10 @@ export class ImageSource implements ImageSourceDefinition {
 				});
 			});
 		});
+	}
+
+	public withScaleFactor(newScale: number): ImageSource {
+		return new ImageSource(UIImage.imageWithCGImageScaleOrientation(this.ios.CGImage, newScale, this.ios.imageOrientation));
 	}
 }
 
