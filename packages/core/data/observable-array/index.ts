@@ -95,7 +95,7 @@ export class ObservableArray<T> extends Observable {
 	}
 
 	*[Symbol.iterator]() {
-		for (let item of this._array) {
+		for (const item of this._array) {
 			yield item;
 		}
 	}

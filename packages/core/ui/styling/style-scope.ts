@@ -79,6 +79,7 @@ let currentScopeTag: string = null;
 const applicationAdditionalSelectors: RuleSet[] = [];
 const applicationKeyframes: any = {};
 const animationsSymbol = Symbol('animations');
+const kebabCasePattern = /-([a-z])/g;
 const pattern = /('|")(.*?)\1/;
 
 class CSSSource {
@@ -575,6 +576,7 @@ export class CssState {
 
 		const valuesToApply = {};
 		const cssExpsProperties = {};
+		const replacementFunc = (g) => g[1].toUpperCase();
 
 		for (const property in newPropertyValues) {
 			const value = newPropertyValues[property];
@@ -621,7 +623,8 @@ export class CssState {
 			if (property in view.style) {
 				view.style[`css:${property}`] = unsetValue;
 			} else {
-				// TRICKY: How do we unset local value?
+				const camelCasedProperty = property.replace(kebabCasePattern, replacementFunc);
+				view[camelCasedProperty] = unsetValue;
 			}
 		}
 		// Set new values to the style
@@ -631,9 +634,7 @@ export class CssState {
 				if (property in view.style) {
 					view.style[`css:${property}`] = value;
 				} else {
-					const camelCasedProperty = property.replace(/-([a-z])/g, function (g) {
-						return g[1].toUpperCase();
-					});
+					const camelCasedProperty = property.replace(kebabCasePattern, replacementFunc);
 					view[camelCasedProperty] = value;
 				}
 			} catch (e) {

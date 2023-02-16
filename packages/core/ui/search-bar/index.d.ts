@@ -53,17 +53,17 @@ export class SearchBar extends View {
 	 * @param callback - Callback function which will be executed when event is raised.
 	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
 	 */
-	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
+	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void;
 
 	/**
 	 * Raised when a search bar search is submitted.
 	 */
-	on(event: 'submit', callback: (args: EventData) => void, thisArg?: any);
+	on(event: 'submit', callback: (args: EventData) => void, thisArg?: any): void;
 
 	/**
 	 * Raised when a search bar search is closed.
 	 */
-	on(event: 'close', callback: (args: EventData) => void, thisArg?: any);
+	on(event: 'close', callback: (args: EventData) => void, thisArg?: any): void;
 
 	/**
 	 * Hides the soft input method, usually a soft keyboard.

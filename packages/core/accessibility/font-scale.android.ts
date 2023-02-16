@@ -1,3 +1,4 @@
+import type { ApplicationEventData } from '../application';
 import * as Application from '../application';
 import { FontScaleCategory, getClosestValidFontScale } from './font-scale-common';
 export * from './font-scale-common';
@@ -12,7 +13,7 @@ function fontScaleChanged(origFontScale: number) {
 			eventName: Application.fontScaleChangedEvent,
 			object: Application,
 			newValue: currentFontScale,
-		});
+		} as ApplicationEventData);
 	}
 }
 

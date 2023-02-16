@@ -1,22 +1,38 @@
-import { Observable as ObservableDefinition, WrappedValue as WrappedValueDefinition } from '.';
+import { Optional } from '../../utils/typescript-utils';
 
+/**
+ * Base event data.
+ */
 export interface EventData {
+	/**
+	 * The name of the event.
+	 */
 	eventName: string;
-	object: Partial<Observable>;
+	/**
+	 * The Observable instance that has raised the event.
+	 */
+	object: Observable;
 }
 
 export interface EventDataValue extends EventData {
 	value?: boolean;
 }
 
-export interface NotifyData extends Partial<EventData> {
-	eventName: string;
-	object?: Partial<Observable>;
-}
-
+/**
+ * Data for the "propertyChange" event.
+ */
 export interface PropertyChangeData extends EventData {
+	/**
+	 * The name of the property that has changed.
+	 */
 	propertyName: string;
+	/**
+	 * The new value of the property.
+	 */
 	value: any;
+	/**
+	 * The previous value of the property.
+	 */
 	oldValue?: any;
 }
 
@@ -28,13 +44,35 @@ interface ListenerEntry {
 
 let _wrappedIndex = 0;
 
-export class WrappedValue implements WrappedValueDefinition {
-	constructor(public wrapped: any) {}
+/**
+ * Helper class that is used to fire property change even when real object is the same.
+ * By default property change will not be fired for a same object.
+ * By wrapping object into a WrappedValue instance `same object restriction` will be passed.
+ */
+export class WrappedValue {
+	/**
+	 * Creates an instance of WrappedValue object.
+	 * @param wrapped - the real value which should be wrapped.
+	 */
+	constructor(
+		/**
+		 * Property which holds the real value.
+		 */
+		public wrapped: any
+	) {}
 
+	/**
+	 * Gets the real value of previously wrappedValue.
+	 * @param value - Value that should be unwraped. If there is no wrappedValue property of the value object then value will be returned.
+	 */
 	public static unwrap(value: any): any {
 		return value instanceof WrappedValue ? value.wrapped : value;
 	}
 
+	/**
+	 * Returns an instance of WrappedValue. The actual instance is get from a WrappedValues pool.
+	 * @param value - Value that should be wrapped.
+	 */
 	public static wrap(value: any): any {
 		const w = _wrappedValues[_wrappedIndex++ % 5];
 		w.wrapped = value;
@@ -45,13 +83,30 @@ export class WrappedValue implements WrappedValueDefinition {
 
 const _wrappedValues = [new WrappedValue(null), new WrappedValue(null), new WrappedValue(null), new WrappedValue(null), new WrappedValue(null)];
 
-const _globalEventHandlers = {};
+const _globalEventHandlers: {
+	[eventClass: string]: {
+		[eventName: string]: ListenerEntry[];
+	};
+} = {};
 
-export class Observable implements ObservableDefinition {
+/**
+ * Observable is used when you want to be notified when a change occurs. Use on/off methods to add/remove listener.
+ * Please note that should you be using the `new Observable({})` constructor, it is **obsolete** since v3.0,
+ * and you have to migrate to the "data/observable" `fromObject({})` or the `fromObjectRecursive({})` functions.
+ */
+export class Observable {
+	/**
+	 * String value used when hooking to propertyChange event.
+	 */
 	public static propertyChangeEvent = 'propertyChange';
+
+	/**
+	 * Alternative to `instanceof ViewBase`.
+	 * @private
+	 */
 	public _isViewBase: boolean;
 
-	private _observers = {};
+	private readonly _observers: { [eventName: string]: ListenerEntry[] } = {};
 
 	public get(name: string): any {
 		return this[name];
@@ -85,10 +140,22 @@ export class Observable implements ObservableDefinition {
 		}
 	}
 
+	/**
+	 * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
+	 * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change").
+	 * @param callback - Callback function which will be executed when event is raised.
+	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
+	 */
 	public on(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void {
 		this.addEventListener(eventNames, callback, thisArg);
 	}
 
+	/**
+	 * Adds one-time listener function for the event named `event`.
+	 * @param event Name of the event to attach to.
+	 * @param callback A function to be called when the specified event is raised.
+	 * @param thisArg An optional parameter which when set will be used as "this" in callback method call.
+	 */
 	public once(event: string, callback: (data: EventData) => void, thisArg?: any): void {
 		if (typeof event !== 'string') {
 			throw new TypeError('Event must be string.');
@@ -102,10 +169,19 @@ export class Observable implements ObservableDefinition {
 		list.push({ callback, thisArg, once: true });
 	}
 
-	public off(eventNames: string, callback?: any, thisArg?: any): void {
+	/**
+	 * Shortcut alias to the removeEventListener method.
+	 */
+	public off(eventNames: string, callback?: (data: EventData) => void, thisArg?: any): void {
 		this.removeEventListener(eventNames, callback, thisArg);
 	}
 
+	/**
+	 * Adds a listener for the specified event name.
+	 * @param eventNames Comma delimited names of the events to attach the listener to.
+	 * @param callback A function to be called when some of the specified event(s) is raised.
+	 * @param thisArg An optional parameter which when set will be used as "this" in callback method call.
+	 */
 	public addEventListener(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void {
 		if (typeof eventNames !== 'string') {
 			throw new TypeError('Events name(s) must be string.');
@@ -127,7 +203,13 @@ export class Observable implements ObservableDefinition {
 		}
 	}
 
-	public removeEventListener(eventNames: string, callback?: any, thisArg?: any): void {
+	/**
+	 * Removes listener(s) for the specified event name.
+	 * @param eventNames Comma delimited names of the events the specified listener is associated with.
+	 * @param callback An optional parameter pointing to a specific listener. If not defined, all listeners for the event names will be removed.
+	 * @param thisArg An optional parameter which when set will be used to refine search of the correct callback which will be removed as event listener.
+	 */
+	public removeEventListener(eventNames: string, callback?: (data: EventData) => void, thisArg?: any): void {
 		if (typeof eventNames !== 'string') {
 			throw new TypeError('Events name(s) must be string.');
 		}
@@ -157,11 +239,11 @@ export class Observable implements ObservableDefinition {
 		}
 	}
 
-	public static on(eventName: string, callback: any, thisArg?: any): void {
+	public static on(eventName: string, callback: (data: EventData) => void, thisArg?: any): void {
 		this.addEventListener(eventName, callback, thisArg);
 	}
 
-	public static once(eventName: string, callback: any, thisArg?: any): void {
+	public static once(eventName: string, callback: (data: EventData) => void, thisArg?: any): void {
 		if (typeof eventName !== 'string') {
 			throw new TypeError('Event must be string.');
 		}
@@ -180,11 +262,11 @@ export class Observable implements ObservableDefinition {
 		_globalEventHandlers[eventClass][eventName].push({ callback, thisArg, once: true });
 	}
 
-	public static off(eventName: string, callback?: any, thisArg?: any): void {
+	public static off(eventName: string, callback?: (data: EventData) => void, thisArg?: any): void {
 		this.removeEventListener(eventName, callback, thisArg);
 	}
 
-	public static removeEventListener(eventName: string, callback?: any, thisArg?: any): void {
+	public static removeEventListener(eventName: string, callback?: (data: EventData) => void, thisArg?: any): void {
 		if (typeof eventName !== 'string') {
 			throw new TypeError('Event must be string.');
 		}
@@ -232,7 +314,7 @@ export class Observable implements ObservableDefinition {
 		}
 	}
 
-	public static addEventListener(eventName: string, callback: any, thisArg?: any): void {
+	public static addEventListener(eventName: string, callback: (data: EventData) => void, thisArg?: any): void {
 		if (typeof eventName !== 'string') {
 			throw new TypeError('Event must be string.');
 		}
@@ -271,18 +353,28 @@ export class Observable implements ObservableDefinition {
 		}
 	}
 
-	public notify<T extends NotifyData>(data: T): void {
-		const eventData = data as EventData;
-		eventData.object = eventData.object || this;
-		const eventClass = this.constructor.name;
-		this._globalNotify(eventClass, 'First', eventData);
+	/**
+	 * Notify this Observable instance with some data. This causes all event
+	 * handlers on the Observable instance to be called, as well as any 'global'
+	 * event handlers set on the instance's class.
+	 *
+	 * @param data an object that satisfies the EventData interface, though with
+	 * an optional 'object' property. If left undefined, the 'object' property
+	 * will implicitly be set as this Observable instance.
+	 */
+	public notify<T extends Optional<EventData, 'object'>>(data: T): void {
+		data.object = data.object || this;
+		const dataWithObject = data as EventData;
 
-		const observers = <Array<ListenerEntry>>this._observers[data.eventName];
+		const eventClass = this.constructor.name;
+		this._globalNotify(eventClass, 'First', dataWithObject);
+
+		const observers = this._observers[data.eventName];
 		if (observers) {
-			Observable._handleEvent(observers, eventData);
+			Observable._handleEvent(observers, dataWithObject);
 		}
 
-		this._globalNotify(eventClass, '', eventData);
+		this._globalNotify(eventClass, '', dataWithObject);
 	}
 
 	private static _handleEvent<T extends EventData>(observers: Array<ListenerEntry>, data: T): void {
@@ -291,34 +383,46 @@ export class Observable implements ObservableDefinition {
 		}
 		for (let i = observers.length - 1; i >= 0; i--) {
 			const entry = observers[i];
-			if (entry.once) {
-				observers.splice(i, 1);
-			}
+			if (entry) {
+				if (entry.once) {
+					observers.splice(i, 1);
+				}
 
-			let returnValue;
-			if (entry.thisArg) {
-				returnValue = entry.callback.apply(entry.thisArg, [data]);
-			} else {
-				returnValue = entry.callback(data);
-			}
+				let returnValue: any;
+				if (entry.thisArg) {
+					returnValue = entry.callback.apply(entry.thisArg, [data]);
+				} else {
+					returnValue = entry.callback(data);
+				}
 
-			// This ensures errors thrown inside asynchronous functions do not get swallowed
-			if (returnValue && returnValue instanceof Promise) {
-				returnValue.catch((err) => {
-					console.error(err);
-				});
+				// This ensures errors thrown inside asynchronous functions do not get swallowed
+				if (returnValue && returnValue instanceof Promise) {
+					returnValue.catch((err) => {
+						console.error(err);
+					});
+				}
 			}
 		}
 	}
 
-	public notifyPropertyChange(name: string, value: any, oldValue?: any) {
+	/**
+	 * Notifies all the registered listeners for the property change event.
+	 */
+	public notifyPropertyChange(name: string, value: any, oldValue?: any): void {
 		this.notify(this._createPropertyChangeData(name, value, oldValue));
 	}
 
-	public hasListeners(eventName: string) {
+	/**
+	 * Checks whether a listener is registered for the specified event name.
+	 * @param eventName The name of the event to check for.
+	 */
+	public hasListeners(eventName: string): boolean {
 		return eventName in this._observers;
 	}
 
+	/**
+	 * This method is intended to be overriden by inheritors to provide additional implementation.
+	 */
 	public _createPropertyChangeData(propertyName: string, value: any, oldValue?: any): PropertyChangeData {
 		return {
 			eventName: Observable.propertyChangeEvent,
@@ -329,7 +433,7 @@ export class Observable implements ObservableDefinition {
 		};
 	}
 
-	public _emit(eventNames: string) {
+	public _emit(eventNames: string): void {
 		const events = eventNames.split(',');
 
 		for (let i = 0, l = events.length; i < l; i++) {
@@ -370,14 +474,39 @@ export class Observable implements ObservableDefinition {
 	}
 }
 
+export interface Observable {
+	/**
+	 * Raised when a propertyChange occurs.
+	 */
+	on(event: 'propertyChange', callback: (data: EventData) => void, thisArg?: any): void;
+
+	/**
+	 * Updates the specified property with the provided value.
+	 */
+	set(name: string, value: any): void;
+
+	/**
+	 * Updates the specified property with the provided value and raises a property change event and a specific change event based on the property name.
+	 */
+	setProperty(name: string, value: any): void;
+
+	/**
+	 * Gets the value of the specified property.
+	 */
+	get(name: string): any;
+}
+
 class ObservableFromObject extends Observable {
-	public _map = {};
+	public readonly _map: Record<string, any> = {};
 
 	public get(name: string): any {
 		return this._map[name];
 	}
 
-	public set(name: string, value: any) {
+	/**
+	 * Updates the specified property with the provided value.
+	 */
+	public set(name: string, value: any): void {
 		const currentValue = this._map[name];
 		if (currentValue === value) {
 			return;
@@ -402,7 +531,7 @@ function defineNewProperty(target: ObservableFromObject, propertyName: string): 
 	});
 }
 
-function addPropertiesFromObject(observable: ObservableFromObject, source: any, recursive = false) {
+function addPropertiesFromObject(observable: ObservableFromObject, source: any, recursive = false): void {
 	Object.keys(source).forEach((prop) => {
 		let value = source[prop];
 		if (recursive && !Array.isArray(value) && value && typeof value === 'object' && !(value instanceof Observable)) {
@@ -414,6 +543,10 @@ function addPropertiesFromObject(observable: ObservableFromObject, source: any, 
 	});
 }
 
+/**
+ * Creates an Observable instance and sets its properties according to the supplied JavaScript object.
+ * param obj - A JavaScript object used to initialize nativescript Observable instance.
+ */
 export function fromObject(source: any): Observable {
 	const observable = new ObservableFromObject();
 	addPropertiesFromObject(observable, source, false);
@@ -421,6 +554,11 @@ export function fromObject(source: any): Observable {
 	return observable;
 }
 
+/**
+ * Creates an Observable instance and sets its properties according to the supplied JavaScript object.
+ * This function will create new Observable for each nested object (expect arrays and functions) from supplied JavaScript object.
+ * param obj - A JavaScript object used to initialize nativescript Observable instance.
+ */
 export function fromObjectRecursive(source: any): Observable {
 	const observable = new ObservableFromObject();
 	addPropertiesFromObject(observable, source, true);

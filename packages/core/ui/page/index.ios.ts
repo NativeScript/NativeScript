@@ -74,6 +74,7 @@ class UIViewControllerImpl extends UIViewController {
 
 	public isBackstackSkipped: boolean;
 	public isBackstackCleared: boolean;
+	private didFirstLayout: boolean;
 	// this is initialized in initWithOwner since the constructor doesn't run on native classes
 	private _isRunningLayout: number;
 	private get isRunningLayout() {
@@ -84,6 +85,7 @@ class UIViewControllerImpl extends UIViewController {
 	}
 	private finishRunningLayout() {
 		this._isRunningLayout--;
+		this.didFirstLayout = true;
 	}
 	private runLayout(cb: () => void) {
 		try {
@@ -98,6 +100,7 @@ class UIViewControllerImpl extends UIViewController {
 		const controller = <UIViewControllerImpl>UIViewControllerImpl.new();
 		controller._owner = owner;
 		controller._isRunningLayout = 0;
+		controller.didFirstLayout = false;
 
 		return controller;
 	}
@@ -118,6 +121,13 @@ class UIViewControllerImpl extends UIViewController {
 		}
 
 		const frame = this.navigationController ? (<any>this.navigationController).owner : null;
+		const newEntry = this[ENTRY];
+
+		// Don't raise event if currentPage was showing modal page.
+		if (!owner._presentedViewController && newEntry && (!frame || frame.currentPage !== owner)) {
+			const isBack = isBackNavigationTo(owner, newEntry);
+			owner.onNavigatingTo(newEntry.entry.context, isBack, newEntry.entry.bindingContext);
+		}
 
 		if (frame) {
 			if (!owner.parent) {
@@ -269,7 +279,7 @@ class UIViewControllerImpl extends UIViewController {
 
 	public viewSafeAreaInsetsDidChange(): void {
 		super.viewSafeAreaInsetsDidChange();
-		if (this.isRunningLayout) {
+		if (this.isRunningLayout || !this.didFirstLayout) {
 			return;
 		}
 		const owner = this._owner?.deref();
@@ -325,6 +335,8 @@ class UIViewControllerImpl extends UIViewController {
 							right: 0,
 						});
 						this.additionalSafeAreaInsets = additionalInsets;
+					} else {
+						this.additionalSafeAreaInsets = null;
 					}
 				}
 			}

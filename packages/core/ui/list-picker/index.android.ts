@@ -131,8 +131,12 @@ export class ListPicker extends ListPickerBase {
 
 	public disposeNativeView() {
 		const nativeView = this.nativeViewProtected;
-		(<any>nativeView).formatter.owner = null;
-		(<any>nativeView).valueChangedListener.owner = null;
+		if ((<any>nativeView)?.formatter) {
+			(<any>nativeView).formatter.owner = null;
+		}
+		if ((<any>nativeView)?.valueChangedListener) {
+			(<any>nativeView).valueChangedListener.owner = null;
+		}
 		super.disposeNativeView();
 	}
 

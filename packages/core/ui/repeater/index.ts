@@ -8,6 +8,7 @@ import { ObservableArray, ChangedData } from '../../data/observable-array';
 import { addWeakEventListener, removeWeakEventListener } from '../core/weak-event-listener';
 import { Builder } from '../builder';
 import { profile } from '../../profiling';
+import { isFunction } from '../../utils/types';
 
 export interface ItemsSource {
 	length: number;
@@ -130,7 +131,7 @@ export class Repeater extends CustomLayoutView {
 
 			if (!viewToAdd) {
 				if (__UI_USE_EXTERNAL_RENDERER__) {
-					viewToAdd = this._getDefaultItemContent(i);
+					viewToAdd = isFunction(this.itemTemplate) ? (<Template>this.itemTemplate)() : this._getDefaultItemContent(i);
 				} else {
 					viewToAdd = this.itemTemplate ? Builder.parse(this.itemTemplate, this) : this._getDefaultItemContent(i);
 				}

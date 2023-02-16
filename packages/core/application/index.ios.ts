@@ -4,7 +4,7 @@ import { ApplicationEventData, CssChangedEventData, LaunchEventData, LoadAppCSSE
 
 // TODO: explain why we need to this or remov it
 // Use requires to ensure order of imports is maintained
-const { backgroundEvent, displayedEvent, exitEvent, foregroundEvent, getCssFileName, launchEvent, livesync, lowMemoryEvent, notify, on, orientationChanged, orientationChangedEvent, resumeEvent, setApplication, suspendEvent, systemAppearanceChanged, systemAppearanceChangedEvent } = require('./application-common');
+const { backgroundEvent, displayedEvent, exitEvent, foregroundEvent, getCssFileName, launchEvent, livesync, lowMemoryEvent, notify, on, orientationChanged, orientationChangedEvent, resumeEvent, setApplication, suspendEvent, systemAppearanceChanged, systemAppearanceChangedEvent } = require('./application-common') as typeof import('./application-common');
 // First reexport so that app module is initialized.
 export * from './application-common';
 
@@ -12,7 +12,6 @@ import { View } from '../ui/core/view';
 import { NavigationEntry } from '../ui/frame/frame-interfaces';
 // TODO: Remove this and get it from global to decouple builder for angular
 import { Builder } from '../ui/builder';
-import { Observable } from '../data/observable';
 import { CSSUtils } from '../css/system-classes';
 import { IOSHelper } from '../ui/core/view/view-helper';
 import { Device } from '../platform';
@@ -166,7 +165,7 @@ export class iOSApplication implements iOSApplicationDefinition {
 
 	get rootController(): UIViewController {
 		if (NativeScriptEmbedder.sharedInstance().delegate && !this._window) {
-			this._window = UIApplication.sharedApplication.delegate.window;
+			this._window = UIApplication.sharedApplication.keyWindow;
 		}
 		return this._window.rootViewController;
 	}
@@ -238,7 +237,7 @@ export class iOSApplication implements iOSApplicationDefinition {
 		const args: LaunchEventData = {
 			eventName: launchEvent,
 			object: this,
-			ios: (notification && notification.userInfo && notification.userInfo.objectForKey('UIApplicationLaunchOptionsLocalNotificationKey')) || null,
+			ios: notification?.userInfo?.objectForKey('UIApplicationLaunchOptionsLocalNotificationKey') || null,
 		};
 
 		notify(args);
@@ -248,13 +247,12 @@ export class iOSApplication implements iOSApplicationDefinition {
 			cssFile: getCssFileName(),
 		});
 
-		// this._window will be undefined when NS app is embedded in a native one
 		if (this._window) {
-			if (args.root !== null) {
+			if (args.root !== null && !NativeScriptEmbedder.sharedInstance().delegate) {
 				this.setWindowContent(args.root);
 			}
 		} else {
-			this._window = UIApplication.sharedApplication.delegate.window;
+			this._window = UIApplication.sharedApplication.keyWindow;
 		}
 	}
 
@@ -463,6 +461,7 @@ export function run(entry?: string | NavigationEntry) {
 					rootView._setupAsRootView({});
 					const embedderDelegate = NativeScriptEmbedder.sharedInstance().delegate;
 					if (embedderDelegate) {
+						setViewControllerView(rootView);
 						embedderDelegate.presentNativeScriptApp(controller);
 					} else {
 						const visibleVC = getVisibleViewController(rootController);

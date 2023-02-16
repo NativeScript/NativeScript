@@ -13,7 +13,7 @@
 
 </p>
 
-[NativeScript](http://www.nativescript.org) empowers you to access native APIs from JavaScript directly. Currently iOS and Android runtimes are provided for rich mobile development across a variety of diverse use cases. 
+[NativeScript](http://www.nativescript.org) empowers you to access native APIs from JavaScript directly. Currently iOS and Android runtimes are provided for rich mobile development across a variety of diverse use cases.
 
 ## Contribute
 
@@ -37,19 +37,19 @@ We love you and your pull requests 🤗. Please follow our [contributing guide](
 ## @nativescript/*
 
 * [@nativescript/core](https://github.com/NativeScript/NativeScript/tree/master/packages/core)
-  * Core iOS/Android for NativeScript
+  * Core iOS/Android for NativeScript.
 * [@nativescript/types](https://www.npmjs.com/package/@nativescript/types)
   * Types for both iOS/Android below wrapped up as a convenience. *Most commonly used.*
 * [@nativescript/types-ios](https://github.com/NativeScript/NativeScript/tree/master/packages/types-ios)
-  * Types for iOS
+  * Types for iOS.
 * [@nativescript/types-android](https://github.com/NativeScript/NativeScript/tree/master/packages/types-android)
-  * Types for Android
+  * Types for Android.
 * [@nativescript/types-minimal](https://github.com/NativeScript/NativeScript/tree/master/packages/types-minimal)
   * A very minimal set of types for only the latest Android and iOS sdks. Most commonly used to optimize Web-based IDE's which auto load all type declarations from node_modules.
 * [@nativescript/ui-mobile-base](https://github.com/NativeScript/NativeScript/tree/master/packages/ui-mobile-base)
-  * UI mobile base native classes used by core
+  * UI mobile base native classes used by core.
 * [@nativescript/webpack](https://github.com/NativeScript/NativeScript/tree/master/packages/webpack)
-  * Webpack build utilities and configs used by NativeScript apps
+  * Webpack build utilities and configs used by NativeScript apps.
 
 ## Quick Links
 

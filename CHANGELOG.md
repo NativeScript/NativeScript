@@ -1,3 +1,76 @@
+## [8.4.7](https://github.com/NativeScript/NativeScript/compare/5.0.13-webpack...8.4.7) (2023-01-23)
+
+
+### Bug Fixes
+
+* **core:** allow CoreTypes declarations to be auto generated ([#10183](https://github.com/NativeScript/NativeScript/issues/10183)) ([9f76fea](https://github.com/NativeScript/NativeScript/commit/9f76fea06e02a3f4de4fa69cbc73eb9aa0c8db47))
+* **ios:** race condition when setting preferredContentSize on view controller ([#10179](https://github.com/NativeScript/NativeScript/issues/10179)) ([ed14e24](https://github.com/NativeScript/NativeScript/commit/ed14e242831dc28398bce62a78c7ee8d71f50bed))
+* **ios:** race conditions with nativeView ([#10182](https://github.com/NativeScript/NativeScript/issues/10182)) ([c42c3c5](https://github.com/NativeScript/NativeScript/commit/c42c3c5f2609afaa96bf874c427f0702f8cd5daa))
+
+
+
+## [8.4.6](https://github.com/NativeScript/NativeScript/compare/8.4.5-core...8.4.6-core) (2023-01-19)
+
+
+### Bug Fixes
+
+* **core:** ScrollView event wiring sequencing improvement ([#10178](https://github.com/NativeScript/NativeScript/issues/10178)) ([75821ea](https://github.com/NativeScript/NativeScript/commit/75821ead07dc69ffeb82c6bd6d6992095ee4fed1))
+
+
+
+## [8.4.5](https://github.com/NativeScript/NativeScript/compare/8.4.4-core...8.4.5-core) (2023-01-16)
+
+
+### Bug Fixes
+
+* **core:** improve loaded/unloaded handling ([18b911e](https://github.com/NativeScript/NativeScript/commit/18b911ed84173928d1d0cfc91be605e046a7e3d1))
+* **core:** improve loaded/unloaded handling to be stable and consistent ([#10170](https://github.com/NativeScript/NativeScript/issues/10170)) ([c9e29aa](https://github.com/NativeScript/NativeScript/commit/c9e29aa9af8b4b82cd259f8402fa11af4640f1b4))
+* **ios:** embedder usage of window ([#10167](https://github.com/NativeScript/NativeScript/issues/10167)) ([a69a9d6](https://github.com/NativeScript/NativeScript/commit/a69a9d6921bd1df11b29c9b697bfb847a3885458))
+
+
+
+## [8.4.4](https://github.com/NativeScript/NativeScript/compare/8.4.3-core...8.4.4-core) (2023-01-09)
+
+
+### Bug Fixes
+
+* **android:** openUrl ([#10161](https://github.com/NativeScript/NativeScript/issues/10161)) ([451c3cf](https://github.com/NativeScript/NativeScript/commit/451c3cfe43a90be705bb6cc7abb220e674d1d906))
+* **mac:** utils for mac catalyst ([#10157](https://github.com/NativeScript/NativeScript/issues/10157)) ([5b6e4d6](https://github.com/NativeScript/NativeScript/commit/5b6e4d68986f22219c41f434f2bf51e714e485a5))
+
+
+### Features
+
+* **core:** new autoFillTypes for newUsername, newPassword and oneTimeCode ([#10159](https://github.com/NativeScript/NativeScript/issues/10159)) ([bff35e5](https://github.com/NativeScript/NativeScript/commit/bff35e5163d126d44ae3b2828ed96dbdc6c2e6ef))
+
+
+
+## [8.4.3](https://github.com/NativeScript/NativeScript/compare/8.4.2-core...8.4.3-core) (2023-01-04)
+
+
+### Bug Fixes
+
+* **android:** WebView url and event handling ([#10147](https://github.com/NativeScript/NativeScript/issues/10147)) ([#10148](https://github.com/NativeScript/NativeScript/issues/10148)) ([8444087](https://github.com/NativeScript/NativeScript/commit/84440876feb8a0b4bc5bc2309dc7a9315d1f91ef))
+* **ios:** prevent layout in viewSafeAreaInsetsDidChange until first viewDidLayoutSubviews ([#10151](https://github.com/NativeScript/NativeScript/issues/10151)) ([760bbd0](https://github.com/NativeScript/NativeScript/commit/760bbd06faf3acb7e0694acaf1ad3e029f1cd278))
+* **ios:** prevent transitionCoordinator usage during modal presentation ([#10153](https://github.com/NativeScript/NativeScript/issues/10153)) ([d138ac0](https://github.com/NativeScript/NativeScript/commit/d138ac000df2e2dfc890db992c39a4429e6ed8dc))
+* **ios:** TextField keyboard handling with emoji, autofill, and shortcuts ([#10154](https://github.com/NativeScript/NativeScript/issues/10154)) ([00944bb](https://github.com/NativeScript/NativeScript/commit/00944bb1b5b6f4cc8084cf7cde3db6448e28e0bd))
+
+
+
+## [8.4.2](https://github.com/NativeScript/NativeScript/compare/8.4.1-core...8.4.2-core) (2022-12-29)
+
+
+### Bug Fixes
+
+* **android:** backwards compat Java cast Float to Long for ApplicationSettings.getNumber ([#10140](https://github.com/NativeScript/NativeScript/issues/10140)) ([7c1590a](https://github.com/NativeScript/NativeScript/commit/7c1590abff0127fd1e5254648cdd1d8c7ab49869))
+* **core:** update metadata filtering for IOS 16 ([#10133](https://github.com/NativeScript/NativeScript/issues/10133)) ([c461f1b](https://github.com/NativeScript/NativeScript/commit/c461f1bb551a69e721548fa5ae6ca2c7601d0b87))
+* **ios:** box shadow border radius ([#10142](https://github.com/NativeScript/NativeScript/issues/10142)) ([6948f7c](https://github.com/NativeScript/NativeScript/commit/6948f7c03265ebf9b92a7d5f69bfbb4743ce449b))
+* **ios:** navigatingTo event handling ([#10120](https://github.com/NativeScript/NativeScript/issues/10120)) ([a4f28b8](https://github.com/NativeScript/NativeScript/commit/a4f28b831785c8cf6ba76c170fcd7a5628b12c35))
+* **ios:** reset additional insets if they're zero ([#10134](https://github.com/NativeScript/NativeScript/issues/10134)) ([8b7d5ab](https://github.com/NativeScript/NativeScript/commit/8b7d5ab5fc34fa7785b7801ca5de60e69bbf7392))
+* **listview:** delegate handling removed from unloaded ([#10138](https://github.com/NativeScript/NativeScript/issues/10138)) ([04c3d9a](https://github.com/NativeScript/NativeScript/commit/04c3d9a9795898386f26656018bc05cf697d09e2))
+* **utils:** ios to filter out null values  ([#10117](https://github.com/NativeScript/NativeScript/issues/10117)) ([4723114](https://github.com/NativeScript/NativeScript/commit/47231145acb851552d7990e5a75b66dd6d06fee8))
+
+
+
 ## [8.4.1](https://github.com/NativeScript/NativeScript/compare/8.4.0-core...8.4.1-core) (2022-11-30)
 
 ### Bug Fixes
