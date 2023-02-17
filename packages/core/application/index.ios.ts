@@ -248,7 +248,7 @@ export class iOSApplication implements iOSApplicationDefinition {
 		});
 
 		if (this._window) {
-			if (args.root !== null && !NativeScriptEmbedder.sharedInstance().delegate)
+			if (args.root !== null && !NativeScriptEmbedder.sharedInstance().delegate) {
 				this.setWindowContent(args.root);
 			}
 		} else {
@@ -461,6 +461,7 @@ export function run(entry?: string | NavigationEntry) {
 					rootView._setupAsRootView({});
 					const embedderDelegate = NativeScriptEmbedder.sharedInstance().delegate;
 					if (embedderDelegate) {
+						setViewControllerView(rootView);
 						embedderDelegate.presentNativeScriptApp(controller);
 					} else {
 						const visibleVC = getVisibleViewController(rootController);
