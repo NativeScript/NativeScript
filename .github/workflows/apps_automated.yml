@@ -51,8 +51,8 @@ jobs:
       - run: |
           ls -al
           npm i
-          ls -al
-          ls -al node_modules
+          ls -al node_modules/@nativescript
+          ls -al node_modules/@nativescript/core
         working-directory: apps/automated
 
       - name: Test (Android)
