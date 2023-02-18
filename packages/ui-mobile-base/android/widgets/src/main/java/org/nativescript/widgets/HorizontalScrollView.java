@@ -2,16 +2,12 @@ package org.nativescript.widgets;
 
 import android.content.Context;
 import android.graphics.Rect;
-import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.widget.FrameLayout;
-
-import androidx.annotation.NonNull;
 
 /**
  * @author hhristov
@@ -23,7 +19,7 @@ public class HorizontalScrollView extends android.widget.HorizontalScrollView {
 	private int contentMeasuredWidth = 0;
 	private int contentMeasuredHeight = 0;
 	private int scrollableLength = 0;
-	private SavedState mSavedState;
+	private ScrollSavedState mSavedState;
 	private boolean isFirstLayout = true;
 	private boolean scrollEnabled = true;
 
@@ -180,7 +176,7 @@ public class HorizontalScrollView extends android.widget.HorizontalScrollView {
 
 		this.mIsLayoutDirty = false;
 		// Give a child focus if it needs it
-		if (this.mChildToScrollTo != null && isViewDescendantOf(this.mChildToScrollTo, this)) {
+		if (this.mChildToScrollTo != null && Utils.isViewDescendantOf(this.mChildToScrollTo, this)) {
 			this.scrollToChild(this.mChildToScrollTo);
 		}
 
@@ -194,7 +190,7 @@ public class HorizontalScrollView extends android.widget.HorizontalScrollView {
 
 			final int scrollRange = Math.max(0, childWidth - (right - left - this.getPaddingLeft() - this.getPaddingRight()));
 			if (this.mSavedState != null) {
-				scrollX = (this.isLayoutRtl() == mSavedState.isLayoutRtl) ? mSavedState.scrollPosition : (scrollRange - this.mSavedState.scrollPosition);
+				scrollX = this.isLayoutRtl() ? scrollRange - mSavedState.scrollOffsetFromStart : mSavedState.scrollOffsetFromStart;
 				mSavedState = null;
 			} else {
 				if (this.isLayoutRtl()) {
@@ -228,7 +224,7 @@ public class HorizontalScrollView extends android.widget.HorizontalScrollView {
 
 	@Override
 	protected void onRestoreInstanceState(Parcelable state) {
-		SavedState ss = (SavedState) state;
+		ScrollSavedState ss = (ScrollSavedState) state;
 		super.onRestoreInstanceState(ss.getSuperState());
 		this.mSavedState = ss;
 		this.requestLayout();
@@ -237,9 +233,8 @@ public class HorizontalScrollView extends android.widget.HorizontalScrollView {
 	@Override
 	protected Parcelable onSaveInstanceState() {
 		Parcelable superState = super.onSaveInstanceState();
-		SavedState ss = new SavedState(superState);
-		ss.scrollPosition = this.getScrollX();
-		ss.isLayoutRtl = this.isLayoutRtl();
+		ScrollSavedState ss = new ScrollSavedState(superState);
+		ss.scrollOffsetFromStart = isLayoutRtl() ? -this.getScrollX() : this.getScrollX();
 		return ss;
 	}
 
@@ -257,59 +252,5 @@ public class HorizontalScrollView extends android.widget.HorizontalScrollView {
 
 	private boolean isLayoutRtl() {
 		return (this.getLayoutDirection() == LAYOUT_DIRECTION_RTL);
-	}
-
-	/**
-	 * Return true if child is a descendant of parent, (or equal to the parent).
-	 */
-	static boolean isViewDescendantOf(View child, View parent) {
-		if (child == parent) {
-			return true;
-		}
-
-		final ViewParent theParent = child.getParent();
-		return (theParent instanceof ViewGroup) && isViewDescendantOf((View) theParent, parent);
-	}
-
-	static class SavedState extends BaseSavedState {
-		public int scrollPosition;
-		public boolean isLayoutRtl;
-
-		SavedState(Parcelable superState) {
-			super(superState);
-		}
-
-		public SavedState(Parcel source) {
-			super(source);
-			scrollPosition = source.readInt();
-			isLayoutRtl = source.readInt() == 0;
-		}
-
-		@Override
-		public void writeToParcel(Parcel dest, int flags) {
-			super.writeToParcel(dest, flags);
-			dest.writeInt(scrollPosition);
-			dest.writeInt(isLayoutRtl ? 1 : 0);
-		}
-
-		@NonNull
-		@Override
-		public String toString() {
-			return "HorizontalScrollView.SavedState{"
-				+ Integer.toHexString(System.identityHashCode(this))
-				+ " scrollPosition=" + scrollPosition
-				+ " isLayoutRtl=" + isLayoutRtl + "}";
-		}
-
-		public static final Creator<SavedState> CREATOR
-			= new Creator<SavedState>() {
-			public SavedState createFromParcel(Parcel in) {
-				return new SavedState(in);
-			}
-
-			public SavedState[] newArray(int size) {
-				return new SavedState[size];
-			}
-		};
 	}
 }
