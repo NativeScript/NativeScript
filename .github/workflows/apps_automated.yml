@@ -49,6 +49,11 @@ jobs:
         uses: rigor789/action-create-emulator@main
 
       - run: |
+          npm -v
+          node -v
+          ls -al packages/core
+
+      - run: |
           ls -al
           npm i
           ls -al node_modules/@nativescript
