@@ -48,13 +48,13 @@ jobs:
       - name: Create Emulator
         uses: rigor789/action-create-emulator@main
 
-			- run: |
-					ls -al
-					ls -al node_modules
-					npm i
-					ls -al
-					ls -al node_modules
-				working-directory: apps/automated
+      - run: |
+          ls -al
+          ls -al node_modules
+          npm i
+          ls -al
+          ls -al node_modules
+        working-directory: apps/automated
 
       - name: Test (Android)
         run: node tools/scripts/run-automated.js android
