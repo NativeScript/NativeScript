@@ -10,8 +10,6 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import androidx.core.widget.NestedScrollView;
 
-import org.nativescript.widgets.HorizontalScrollView.SavedState;
-
 /**
  * @author hhristov
  */
@@ -22,7 +20,7 @@ public class VerticalScrollView extends NestedScrollView {
 	private int contentMeasuredWidth = 0;
 	private int contentMeasuredHeight = 0;
 	private int scrollableLength = 0;
-	private SavedState mSavedState;
+	private ScrollSavedState mSavedState;
 	private boolean isFirstLayout = true;
 	private boolean scrollEnabled = true;
 
@@ -186,7 +184,7 @@ public class VerticalScrollView extends NestedScrollView {
 
 		this.mIsLayoutDirty = false;
 		// Give a child focus if it needs it
-		if (this.mChildToScrollTo != null && HorizontalScrollView.isViewDescendantOf(this.mChildToScrollTo, this)) {
+		if (this.mChildToScrollTo != null && Utils.isViewDescendantOf(this.mChildToScrollTo, this)) {
 			this.scrollToChild(this.mChildToScrollTo);
 		}
 
@@ -200,7 +198,7 @@ public class VerticalScrollView extends NestedScrollView {
 			final int scrollRange = Math.max(0,
 					childHeight - (bottom - top - this.getPaddingTop() - this.getPaddingBottom()));
 			if (this.mSavedState != null) {
-				scrollY = mSavedState.scrollPosition;
+				scrollY = mSavedState.scrollOffsetFromStart;
 				mSavedState = null;
 			}
 
@@ -232,7 +230,7 @@ public class VerticalScrollView extends NestedScrollView {
 
 	@Override
 	protected void onRestoreInstanceState(Parcelable state) {
-		SavedState ss = (SavedState) state;
+		ScrollSavedState ss = (ScrollSavedState) state;
 		super.onRestoreInstanceState(ss.getSuperState());
 		this.mSavedState = ss;
 		this.requestLayout();
@@ -241,8 +239,8 @@ public class VerticalScrollView extends NestedScrollView {
 	@Override
 	protected Parcelable onSaveInstanceState() {
 		Parcelable superState = super.onSaveInstanceState();
-		SavedState ss = new SavedState(superState);
-		ss.scrollPosition = this.getScrollY();
+		ScrollSavedState ss = new ScrollSavedState(superState);
+		ss.scrollOffsetFromStart = this.getScrollY();
 		return ss;
 	}
 
