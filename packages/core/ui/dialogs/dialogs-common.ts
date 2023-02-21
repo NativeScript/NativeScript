@@ -254,6 +254,7 @@ function applySelectors<T extends View>(view: T, callback: (view: T) => void) {
 	if (currentPage) {
 		const styleScope = currentPage._styleScope;
 		if (styleScope) {
+			view.parent = currentPage;
 			view._inheritStyleScope(styleScope);
 			view.onLoaded();
 			callback(view);

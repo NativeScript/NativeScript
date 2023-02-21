@@ -8,10 +8,14 @@ import android.graphics.ColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatDelegate;
 
 import org.nativescript.widgets.image.BitmapOwner;
@@ -26,6 +30,7 @@ public class ImageView extends androidx.appcompat.widget.AppCompatImageView impl
 
 	private final Path path = new Path();
 	private final RectF rect = new RectF();
+	private final Paint paint = new Paint();
 
 	private double scaleW = 1;
 	private double scaleH = 1;
@@ -209,6 +214,8 @@ public class ImageView extends androidx.appcompat.widget.AppCompatImageView impl
 		}
 	}
 
+	private boolean mSettingBitmap = false;
+
 	@Override
 	public void setImageBitmap(Bitmap bm) {
 		Fetcher fetcher = Fetcher.getInstance(this.getContext());
@@ -217,10 +224,74 @@ public class ImageView extends androidx.appcompat.widget.AppCompatImageView impl
 		if (mUseCache && mUri != null && mBitmap != null && fetcher != null) {
 			fetcher.removeBitmap(mUri);
 		}
-
+		mSettingBitmap = true;
 		super.setImageBitmap(bm);
 		this.mBitmap = bm;
+		if (bm != null) {
+			bitmapWidth = bm.getWidth();
+			bitmapHeight = bm.getHeight();
+			bitmapShader = new BitmapShader(mBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
+		} else {
+			bitmapWidth = -1;
+			bitmapHeight = -1;
+		}
+		mSettingBitmap = false;
 	}
+
+	@Override
+	public void setImageDrawable(@Nullable Drawable drawable) {
+		super.setImageDrawable(drawable);
+		setBitmapShader();
+	}
+
+
+	private final Canvas canvas = new Canvas();
+	private BitmapShader bitmapShader = null;
+	private int bitmapWidth = -1;
+	private int bitmapHeight = -1;
+
+	private void setBitmapShader() {
+		if (mSettingBitmap) {
+			return;
+		}
+		Bitmap mBitmap = null;
+		Drawable drawable = getDrawable();
+		if (drawable != null) {
+
+			if (drawable instanceof BitmapDrawable) {
+				mBitmap = ((BitmapDrawable) drawable).getBitmap();
+			} else {
+				Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+				canvas.setBitmap(bitmap);
+				Rect previousBounds = null;
+
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+					previousBounds = drawable.getBounds();
+					drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+				}
+
+				drawable.draw(canvas);
+
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+					drawable.setBounds(previousBounds);
+				}
+				mBitmap = bitmap;
+			}
+		} else {
+			bitmapShader = null;
+		}
+
+		if (mBitmap != null) {
+			bitmapWidth = mBitmap.getWidth();
+			bitmapHeight = mBitmap.getHeight();
+			bitmapShader = new BitmapShader(mBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
+		} else {
+			bitmapWidth = -1;
+			bitmapHeight = -1;
+		}
+
+	}
+
 
 	@Override
 	protected void onDraw(Canvas canvas) {
@@ -257,17 +328,21 @@ public class ImageView extends androidx.appcompat.widget.AppCompatImageView impl
 			innerHeight = this.getHeight() - borderTopWidth - borderBottomWidth;
 
 			// TODO: Capture all created objects here in locals and update them instead...
-			Path path = new Path();
+			path.reset();
+			paint.reset();
+
 			float[] radii = {
 				Math.max(0, borderTopLeftRadius - borderLeftWidth), Math.max(0, borderTopLeftRadius - borderTopWidth),
 				Math.max(0, borderTopRightRadius - borderRightWidth), Math.max(0, borderTopRightRadius - borderTopWidth),
 				Math.max(0, borderBottomRightRadius - borderRightWidth), Math.max(0, borderBottomRightRadius - borderBottomWidth),
 				Math.max(0, borderBottomLeftRadius - borderLeftWidth), Math.max(0, borderBottomLeftRadius - borderBottomWidth)
 			};
-			path.addRoundRect(new RectF(borderLeftWidth, borderTopWidth, borderLeftWidth + innerWidth, borderTopWidth + innerHeight), radii, Path.Direction.CW);
 
-			Paint paint = new Paint();
-			BitmapShader bitmapShader = new BitmapShader(this.mBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
+			rect.setEmpty();
+			rect.set(borderLeftWidth, borderTopWidth, borderLeftWidth + innerWidth, borderTopWidth + innerHeight);
+
+			path.addRoundRect(rect, radii, Path.Direction.CW);
+
 
 			float bitmapWidth = (float) mBitmap.getWidth();
 			float bitmapHeight = (float) mBitmap.getHeight();

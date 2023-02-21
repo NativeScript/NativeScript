@@ -21,6 +21,7 @@ import android.util.Log;
 import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.view.ViewCompat;
@@ -510,6 +511,18 @@ public class Utils {
 				});
 			}
 		});
+	}
+
+	/**
+	 * Return true if child is a descendant of parent, (or equal to the parent).
+	 */
+	static boolean isViewDescendantOf(View child, View parent) {
+		if (child == parent) {
+			return true;
+		}
+
+		final ViewParent childParent = child.getParent();
+		return (childParent instanceof ViewGroup) && isViewDescendantOf((View) childParent, parent);
 	}
 
 //	public static void clearBoxShadow(View view) {
