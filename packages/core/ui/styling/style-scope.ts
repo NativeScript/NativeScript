@@ -913,28 +913,35 @@ function resolveFilePathFromImport(importSource: string, fileName: string): stri
 export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase, styleStr: string) {
 	const localStyle = `local { ${styleStr} }`;
 	const inlineRuleSet = CSSSource.fromSource(localStyle, new Map()).selectors;
+	const oldInlineRuleSet = view['oldInlineStyle'] ? CSSSource.fromSource(`local { ${view['oldInlineStyle']} }`, new Map()).selectors : null;
 
 	// Reset unscoped css-variables
 	view.style.resetUnscopedCssVariables();
 
+	const declarations = inlineRuleSet[0].declarations;
+	const oldDeclarations = oldInlineRuleSet && oldInlineRuleSet[0].declarations;
 	// Set all the css-variables first, so we can be sure they are up-to-date
-	inlineRuleSet[0].declarations.forEach((d) => {
+	for (let index = declarations.length - 1; index >= 0; index--) {
+		const d = declarations[index];
 		// Use the actual property name so that a local value is set.
 		const property = d.property;
 		if (isCssVariable(property)) {
 			view.style.setUnscopedCssVariable(property, d.value);
+			declarations.splice(index, 1);
 		}
-	});
+		if (oldDeclarations) {
+			const oldIndex = oldDeclarations.findIndex((d2) => d2.property === d.property);
+			if (oldIndex >= 0) {
+				oldDeclarations.splice(oldIndex, 1);
+			}
+		}
+	}
 
-	inlineRuleSet[0].declarations.forEach((d) => {
+	for (let index = declarations.length - 1; index >= 0; index--) {
+		const d = declarations[index];
 		// Use the actual property name so that a local value is set.
 		const property = d.property;
 		try {
-			if (isCssVariable(property)) {
-				// Skip css-variables, they have been handled
-				return;
-			}
-
 			const value = evaluateCssExpressions(view, property, d.value);
 			if (property in view.style) {
 				view.style[property] = value;
@@ -944,7 +951,24 @@ export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase
 		} catch (e) {
 			Trace.write(`Failed to apply property [${d.property}] with value [${d.value}] to ${view}. ${e}`, Trace.categories.Error, Trace.messageType.error);
 		}
-	});
+	}
+	if (oldDeclarations) {
+		for (let index = oldDeclarations.length - 1; index >= 0; index--) {
+			const d = oldDeclarations[index];
+			// Use the actual property name so that a local value is set.
+			const property = d.property;
+			try {
+				if (property in view.style) {
+					view.style[property] = '';
+				} else {
+					view[property] = null;
+				}
+			} catch (e) {
+				Trace.write(`Failed to apply property [${d.property}] with value [${d.value}] to ${view}. ${e}`, Trace.categories.Error, Trace.messageType.error);
+			}
+		}
+	}
+	view['oldInlineStyle'] = styleStr;
 
 	// This is needed in case of changes to css-variable or css-calc expressions.
 	view._onCssStateChange();
