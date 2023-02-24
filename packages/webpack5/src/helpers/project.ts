@@ -1,3 +1,4 @@
+import { existsSync } from 'fs';
 import { resolve } from 'path';
 
 export function getProjectRootPath(): string {
@@ -28,6 +29,13 @@ export function getPackageJson() {
  */
 export function getProjectFilePath(filePath: string): string {
 	return resolve(getProjectRootPath(), filePath);
+}
+
+export function getProjectTSConfigPath(): string | undefined {
+	return [
+		getProjectFilePath('tsconfig.app.json'),
+		getProjectFilePath('tsconfig.json'),
+	].find((path) => existsSync(path));
 }
 
 // unused helper, but keeping it here as we may need it

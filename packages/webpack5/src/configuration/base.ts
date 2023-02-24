@@ -15,7 +15,7 @@ import { PlatformSuffixPlugin } from '../plugins/PlatformSuffixPlugin';
 import { applyFileReplacements } from '../helpers/fileReplacements';
 import { addCopyRule, applyCopyRules } from '../helpers/copyRules';
 import { WatchStatePlugin } from '../plugins/WatchStatePlugin';
-import { getProjectFilePath } from '../helpers/project';
+import { getProjectFilePath, getProjectTSConfigPath } from '../helpers/project';
 import { hasDependency } from '../helpers/dependencies';
 import { applyDotEnvPlugin } from '../helpers/dotEnv';
 import { env as _env, IWebpackEnv } from '../index';
@@ -234,6 +234,13 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.use('nativescript-worker-loader')
 		.loader('nativescript-worker-loader');
 
+	const tsConfigPath = getProjectTSConfigPath();
+	const configFile = tsConfigPath
+		? {
+				configFile: tsConfigPath,
+		  }
+		: undefined;
+
 	// set up ts support
 	config.module
 		.rule('ts')
@@ -243,7 +250,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.options({
 			// todo: perhaps we can provide a default tsconfig
 			// and use that if the project doesn't have one?
-			// configFile: '',
+			...configFile,
 			transpileOnly: true,
 			allowTsInNodeModules: true,
 			compilerOptions: {
@@ -266,6 +273,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 					async: !!env.watch,
 					typescript: {
 						memoryLimit: 4096,
+						...configFile,
 					},
 				},
 			]);

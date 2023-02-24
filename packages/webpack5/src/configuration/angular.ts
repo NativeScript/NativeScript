@@ -4,7 +4,7 @@ import { existsSync } from 'fs';
 
 import { getTypescript, readTsConfig } from '../helpers/typescript';
 import { getDependencyPath } from '../helpers/dependencies';
-import { getProjectFilePath } from '../helpers/project';
+import { getProjectTSConfigPath } from '../helpers/project';
 import { env as _env, IWebpackEnv } from '../index';
 import { warnOnce } from '../helpers/log';
 import {
@@ -18,12 +18,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	base(config, env);
 
 	const platform = getPlatformName();
-
-	const tsConfigPath = [
-		getProjectFilePath('tsconfig.app.json'),
-		getProjectFilePath('tsconfig.json'),
-	].find((path) => existsSync(path));
-
+	const tsConfigPath = getProjectTSConfigPath();
 	const disableAOT = !!env.disableAOT;
 
 	// remove default ts rule
