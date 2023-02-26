@@ -26,8 +26,14 @@ Application.run({
 		bench(() => {
 			bench(function addEvent() {
 				element.addEventListener('loaded', (data) => {
-					console.log(data);
+					const d = data;
 				});
+			}, 100);
+		}, 100);
+
+		bench(() => {
+			bench(function fireEvent() {
+				element._emit('loaded');
 			}, 1);
 		}, 100);
 
