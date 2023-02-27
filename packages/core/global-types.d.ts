@@ -381,3 +381,5 @@ declare function float(value: number): any;
  * Create a Java char from a string
  */
 declare function char(value: string): any;
+
+declare function registerElement(name: string, element: any): void;

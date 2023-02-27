@@ -143,12 +143,12 @@ export function test_ActionBarItemBindingToEvent() {
 		const actionBarItem = page.actionBar.actionItems.getItemAt(0);
 
 		TKUnit.assertEqual((<any>actionBarItem)._observers['tap'].length, 1, 'There should be only one listener');
-		TKUnit.assertEqual((<any>actionBarItem)._observers['tap'][0].callback + '', firstHandler.toString(), 'First handler is not equal');
+		TKUnit.assertEqual((<any>actionBarItem)._observers['tap'][0].listener + '', firstHandler.toString(), 'First handler is not equal');
 
 		p.bindingContext.set('test', secondHandler);
 
 		TKUnit.assertEqual((<any>actionBarItem)._observers['tap'].length, 1, 'There should be only one listener');
-		TKUnit.assertEqual((<any>actionBarItem)._observers['tap'][0].callback + '', secondHandler.toString(), 'Second handler is not equal');
+		TKUnit.assertEqual((<any>actionBarItem)._observers['tap'][0].listener + '', secondHandler.toString(), 'Second handler is not equal');
 	};
 
 	helper.navigate(function () {

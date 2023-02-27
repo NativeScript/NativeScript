@@ -42,6 +42,21 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
 		//Overridden
 	}
 
+	public insertBefore(newNode: View, referenceNode: View): View {
+		super.insertBefore(newNode, referenceNode);
+		if (referenceNode) {
+			this.insertChild(newNode, this.getChildIndex(referenceNode));
+		} else {
+			this.addChild(newNode);
+		}
+		return newNode;
+	}
+
+	public appendChild(node: View): View {
+		//this.addChild(node);
+		return this.insertBefore(node, undefined);
+	}
+
 	public addChild(child: View): void {
 		// TODO: Do we need this method since we have the core logic in the View implementation?
 		this._subViews.push(child);
@@ -55,13 +70,14 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
 		this._registerLayoutChild(child);
 	}
 
+	//@ts-ignore
 	public removeChild(child: View): void {
 		this._removeView(child);
-
 		// TODO: consider caching the index on the child.
 		const index = this._subViews.indexOf(child);
 		this._subViews.splice(index, 1);
 		this._unregisterLayoutChild(child);
+		return super.removeChild(child);
 	}
 
 	public removeChildren(): void {

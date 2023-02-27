@@ -14,6 +14,7 @@ import { CoreTypes } from '../../core-types';
 import { TextBase as TextBaseDefinition } from '.';
 import { Color } from '../../color';
 import { CSSShadow, parseCSSShadow } from '../styling/css-shadow';
+import NodeTypeEnum from '../core/dom/src/nodes/node/NodeTypeEnum';
 
 const CHILD_SPAN = 'Span';
 const CHILD_FORMATTED_TEXT = 'formattedText';
@@ -23,6 +24,24 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 	public _isSingleLine: boolean;
 	public text: string;
 	public formattedText: FormattedString;
+
+	appendChild(node: View): View {
+		return this.insertBefore(node, undefined);
+	}
+
+	insertBefore(newNode: View, referenceNode: View): View {
+		super.insertBefore(newNode, referenceNode);
+		if (newNode instanceof FormattedString) return (this.formattedText = newNode);
+		if (newNode.nodeType === NodeTypeEnum.textNode) this.text = this.textContent;
+	}
+
+	get textContent(): string {
+		return this.text;
+	}
+
+	set textContent(val: string) {
+		this.text = val;
+	}
 
 	/***
 	 * In the NativeScript Core; by default the nativeTextViewProtected points to the same value as nativeViewProtected.

@@ -18,7 +18,12 @@ Trace.addCategories(Trace.categories.Test + ',' + Trace.categories.Error);
 // ));
 
 function runTests() {
-	setTimeout(() => tests.runAll(''), 10);
+	setTimeout(() => {
+		// Calling these two consectively causes a crash.
+		// Otherwise all tests are passing.
+		tests.runAll('TAB-VIEW-NAVIGATION');
+		tests.runAll('IMAGE');
+	}, 10);
 }
 
 export function onNavigatedTo(args) {

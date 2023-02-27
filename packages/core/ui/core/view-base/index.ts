@@ -9,7 +9,7 @@ import { CSSUtils } from '../../../css/system-classes';
 import { Source } from '../../../utils/debug';
 import { Binding, BindingOptions } from '../bindable';
 import { Trace } from '../../../trace';
-import { Observable, PropertyChangeData, WrappedValue } from '../../../data/observable';
+import { PropertyChangeData, WrappedValue } from '../../../data/observable';
 import { Style } from '../../styling/style';
 import { paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../../styling/style-properties';
 
@@ -21,6 +21,8 @@ import { profile } from '../../../profiling';
 import * as dnm from '../../../debugger/dom-node';
 import * as ssm from '../../styling/style-scope';
 import { ViewBase as ViewBaseDefinition } from '.';
+import HTMLElement from '../dom/src/nodes/html-element/HTMLElement';
+import NodeTypeEnum from '../dom/src/nodes/node/NodeTypeEnum';
 
 let domNodeModule: typeof dnm;
 
@@ -244,7 +246,7 @@ namespace SuspendType {
 	}
 }
 
-export abstract class ViewBase extends Observable implements ViewBaseDefinition {
+export abstract class ViewBase extends HTMLElement implements ViewBaseDefinition {
 	public static loadedEvent = 'loaded';
 	public static unloadedEvent = 'unloaded';
 	public static createdEvent = 'created';
@@ -271,7 +273,6 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	public isCollapsed; // Default(false) set in prototype
 
 	public id: string;
-	public className: string;
 
 	public _domId: number;
 	public _context: any;
@@ -338,7 +339,9 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	public reusable: boolean;
 
 	constructor() {
-		super();
+		super(NodeTypeEnum.elementNode, 'ViewBase');
+		this.nodeName = this.constructor.name;
+		this.localName = this.constructor.name;
 		this._domId = viewIdCounter++;
 		this._style = new Style(new WeakRef(this));
 		this.notify({ eventName: ViewBase.createdEvent, type: this.constructor.name, object: this });
@@ -368,6 +371,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	get style(): Style {
 		return this._style;
 	}
+
 	set style(inlineStyle: Style /* | string */) {
 		if (typeof inlineStyle === 'string') {
 			this.setInlineStyle(inlineStyle);

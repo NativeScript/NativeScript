@@ -5,11 +5,28 @@ import { FontStyleType, FontWeightType } from '../styling/font';
 import { CoreTypes } from '../../core-types';
 import { EventData } from '../../data/observable';
 import { isNullOrUndefined, isString } from '../../utils/types';
+import NodeTypeEnum from '../core/dom/src/nodes/node/NodeTypeEnum';
+import { View } from '../core/view';
 
 export class Span extends ViewBase implements SpanDefinition {
 	static linkTapEvent = 'linkTap';
 	private _text: string;
 	private _tappable = false;
+
+	constructor() {
+		super();
+		this.nodeType = NodeTypeEnum.textNode;
+	}
+
+	appendChild(node: View): View {
+		return this.insertBefore(node, undefined);
+	}
+
+	insertBefore(newNode: View, referenceNode: View): View {
+		super.insertBefore(newNode, referenceNode);
+		//if (newNode.nodeType === NodeTypeEnum.textNode) this.text = this._textContent;
+		return newNode;
+	}
 
 	get fontFamily(): string {
 		return this.style.fontFamily;

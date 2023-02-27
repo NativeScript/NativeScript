@@ -36,7 +36,6 @@ function setupConfigListener() {
 	if (configChangedCallback) {
 		return;
 	}
-
 	Application.off(Application.launchEvent, setupConfigListener);
 	const context = Application.android?.context as android.content.Context;
 	if (!context) {

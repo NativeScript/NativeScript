@@ -7,6 +7,7 @@ import { ViewBase } from '../core/view-base';
 import { Color } from '../../color';
 import { FontStyleType, FontWeightType } from '../styling/font';
 import { CoreTypes } from '../../core-types';
+import { DOMUtils } from '../core/dom/src/utils';
 
 export class FormattedString extends ViewBase implements FormattedStringDefinition, AddArrayFromBuilder, AddChildFromBuilder {
 	private _spans: ObservableArray<Span>;
@@ -15,6 +16,21 @@ export class FormattedString extends ViewBase implements FormattedStringDefiniti
 		super();
 		this._spans = new ObservableArray<Span>();
 		this._spans.addEventListener(ObservableArray.changeEvent, this.onSpansCollectionChanged, this);
+	}
+
+	appendChild(node: Span): Span {
+		return this.insertBefore(node, undefined);
+	}
+
+	insertBefore(newNode: Span, referenceNode: Span): Span {
+		if (!(newNode instanceof Span)) return null;
+		DOMUtils.addToArrayProp(this, 'spans', newNode, referenceNode);
+		super.insertBefore(newNode, referenceNode);
+	}
+
+	removeChild(node: any) {
+		DOMUtils.removeFromArrayProp(this, 'spans', node);
+		super.removeChild(node);
 	}
 
 	get fontFamily(): string {
