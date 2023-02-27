@@ -1,6 +1,6 @@
 interface EventInitOptions extends EventInit {
 	captures?: boolean;
-	data?: any;
+	__event_data?: any;
 }
 
 export const EVENT_OPTIONS_DEFAULT: EventInit & { captures?: boolean } = {
@@ -52,18 +52,18 @@ export class Event {
 	constructor(type: string, options: EventInitOptions) {
 		if (!options) options = EVENT_OPTIONS_DEFAULT;
 		this.initEvent(type, options.bubbles, options.cancelable, options.captures);
-		if (options.data) {
-			for (const key in options.data) {
+		if (options.__event_data) {
+			for (const key in options.__event_data) {
 				if (/(eventName|object)/g.test(key)) {
-					this[key] = options.data[key];
+					this[key] = options.__event_data[key];
 					continue;
 				}
 				Object.defineProperty(this, key, {
 					get: () => {
-						return options.data[key];
+						return options.__event_data[key];
 					},
 					set: (v) => {
-						options.data[key] = v;
+						options.__event_data[key] = v;
 					},
 					configurable: true,
 				});

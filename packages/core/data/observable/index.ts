@@ -514,7 +514,7 @@ export class Observable extends EventTarget implements globalThis.EventTarget {
 			const event = data.eventName + eventType;
 			const events = _globalEventHandlers[eventClass][event];
 			if (events) {
-				const event = new NativeDOMEvent(data.eventName, { data: data as unknown });
+				const event = new NativeDOMEvent(data.eventName, { __event_data: data as unknown });
 				Observable._handleEvent(events.slice(0), event);
 			}
 		}
@@ -524,7 +524,7 @@ export class Observable extends EventTarget implements globalThis.EventTarget {
 			const event = data.eventName + eventType;
 			const events = _globalEventHandlers['*'][event];
 			if (events) {
-				const event = new NativeDOMEvent(data.eventName, { data: data as unknown });
+				const event = new NativeDOMEvent(data.eventName, { __event_data: data as unknown });
 				Observable._handleEvent(events.slice(0), event);
 			}
 		}
@@ -548,7 +548,7 @@ export class Observable extends EventTarget implements globalThis.EventTarget {
 
 		const listeners = this._observers[data.eventName];
 		if (listeners) {
-			const event = new NativeDOMEvent(data.eventName, { data: dataWithObject as unknown });
+			const event = new NativeDOMEvent(data.eventName, { __event_data: dataWithObject as unknown });
 			// Create a shallow copy here because there is a possibility
 			// that listeners will be removed while we iterate over events. For example
 			// events that will unsub themselves.
