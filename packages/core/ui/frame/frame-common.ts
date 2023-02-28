@@ -43,6 +43,7 @@ export class FrameBase extends CustomLayoutView {
 
 	public actionBarVisibility: 'auto' | 'never' | 'always';
 	public _currentEntry: BackstackEntry;
+	public _childView: Page;
 	public _animationInProgress = false;
 	public _executingContext: NavigationContext;
 	public _isInFrameStack = false;
@@ -238,6 +239,9 @@ export class FrameBase extends CustomLayoutView {
 		// In case we navigated forward to a page that was in the backstack
 		// with clearHistory: true
 		if (!newPage.frame) {
+			// Used for traversing and manipulating DOM
+			this._childView = newPage;
+
 			this._addView(newPage);
 			newPage._frame = this;
 		}
@@ -456,7 +460,6 @@ export class FrameBase extends CustomLayoutView {
 		if (this._currentEntry) {
 			return this._currentEntry.resolvedPage;
 		}
-
 		return null;
 	}
 
@@ -508,7 +511,7 @@ export class FrameBase extends CustomLayoutView {
 	}
 
 	get _childrenCount(): number {
-		if (this.currentPage) {
+		if (this._childView) {
 			return 1;
 		}
 
@@ -516,7 +519,7 @@ export class FrameBase extends CustomLayoutView {
 	}
 
 	public eachChildView(callback: (child: View) => boolean) {
-		const page = this.currentPage;
+		const page = this._childView;
 		if (page) {
 			callback(page);
 		}

@@ -137,6 +137,9 @@ class UIViewControllerImpl extends UIViewController {
 					owner._updateStyleScope();
 				}
 
+				// Used for traversing and manipulating DOM
+				frame._childView = owner;
+
 				frame._addView(owner);
 			} else if (owner.parent !== frame) {
 				throw new Error('Page is already shown on another frame.');
