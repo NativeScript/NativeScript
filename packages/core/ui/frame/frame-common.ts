@@ -43,7 +43,10 @@ export class FrameBase extends CustomLayoutView {
 
 	public actionBarVisibility: 'auto' | 'never' | 'always';
 	public _currentEntry: BackstackEntry;
+
+	// Used for traversing and manipulating DOM
 	public _childView: Page;
+
 	public _animationInProgress = false;
 	public _executingContext: NavigationContext;
 	public _isInFrameStack = false;
@@ -239,7 +242,6 @@ export class FrameBase extends CustomLayoutView {
 		// In case we navigated forward to a page that was in the backstack
 		// with clearHistory: true
 		if (!newPage.frame) {
-			// Used for traversing and manipulating DOM
 			this._childView = newPage;
 
 			this._addView(newPage);

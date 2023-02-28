@@ -137,7 +137,6 @@ class UIViewControllerImpl extends UIViewController {
 					owner._updateStyleScope();
 				}
 
-				// Used for traversing and manipulating DOM
 				frame._childView = owner;
 
 				frame._addView(owner);

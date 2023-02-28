@@ -913,7 +913,6 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 			return null;
 		}
 
-		// Used for traversing and manipulating DOM
 		frame._childView = page;
 
 		if (page.parent === frame) {
