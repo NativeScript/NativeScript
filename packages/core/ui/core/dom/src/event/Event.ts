@@ -58,13 +58,20 @@ export class Event {
 					this[key] = options.__event_data[key];
 					continue;
 				}
+				/**
+				 * We want to keep reference of original EventData
+				 * object because it's possible that values are set on it
+				 * inside the event listener. For example in a ListView,
+				 * the `itemLoading` event expects that we set `event.view`
+				 * value in the event. Therefore we install getter/setter for each property
+				 * to get/set values on the original object.
+				 *
+				 * This is only added for backward compatibilty.
+				 * Moving to `dispatchEvent` will not require doing this.
+				 */
 				Object.defineProperty(this, key, {
-					get: () => {
-						return options.__event_data[key];
-					},
-					set: (v) => {
-						options.__event_data[key] = v;
-					},
+					get: () => options.__event_data[key],
+					set: (v) => (options.__event_data[key] = v),
 					configurable: true,
 				});
 			}

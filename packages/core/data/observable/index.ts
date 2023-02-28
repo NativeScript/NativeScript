@@ -161,7 +161,7 @@ function indexOfListener(list: EventDescriptior[], listener: EventListenerOrEven
 
 const CAPTURE_PHASE_KEY = '_captureObservers';
 const BUBBLE_PHASE_KEY = '_observers';
-type PhaseKey = '_captureObservers' | '_observers';
+type EventPhaseKey = '_captureObservers' | '_observers';
 
 function addListener(this: any, type: string, listener: EventListenerOrEventListenerObject, descriptor: EventDescriptior) {
 	const eventPhaseKey = descriptor.capture ? CAPTURE_PHASE_KEY : BUBBLE_PHASE_KEY;
@@ -187,19 +187,34 @@ function addListener(this: any, type: string, listener: EventListenerOrEventList
 	getEventList.call(this, type, eventPhaseKey, true).push(descriptor);
 }
 
-function removeListener(this: any, type: string, listener: EventListenerOrEventListenerObject, options: any, phase?: PhaseKey) {
+function removeListener(this: any, type: string, listener: EventListenerOrEventListenerObject, options: any, phase?: EventPhaseKey) {
 	const eventPhaseKey = phase || BUBBLE_PHASE_KEY;
-	const list = getEventList.call(this, type, eventPhaseKey, false) as EventDescriptior[];
-	if (!list) return;
-
+	/**
+	 * If no listener is provided, we remove all attached
+	 * listeners.
+	 */
 	if (!listener) {
 		delete this[eventPhaseKey][type];
 		return;
 	}
 
+	const list = getEventList.call(this, type, eventPhaseKey, false) as EventDescriptior[];
+	if (!list) return;
+
 	const index = indexOfListener(list, listener, isThisArg(options) ? options : undefined);
 	const descriptor = list[index];
+	/**
+	 * If descriptor is not found, the provided
+	 * listener is not registered, simply return.
+	 */
 	if (!descriptor) return;
+	/**
+	 * Mark the listener as removed. This ensures that
+	 * we don't fire listeners that are removed but still
+	 * present in a shallow copy of currrent event's decriptors.
+	 * For example, during an event dispatch, we iterate over a shallow
+	 * copy of decriptors.
+	 */
 	descriptor.removed = true;
 	list.splice(index, 1);
 	if (descriptor.signal && descriptor.abortHandler) {
@@ -208,7 +223,7 @@ function removeListener(this: any, type: string, listener: EventListenerOrEventL
 	if (!list.length) delete this[eventPhaseKey][type];
 }
 
-function getEventList(eventName: string, phaseKey: PhaseKey, createIfNeeded?: boolean): Array<EventDescriptior> {
+function getEventList(eventName: string, phaseKey: EventPhaseKey, createIfNeeded?: boolean): Array<EventDescriptior> {
 	if (!eventName) {
 		throw new TypeError('EventName must be valid string.');
 	}
@@ -218,7 +233,8 @@ function getEventList(eventName: string, phaseKey: PhaseKey, createIfNeeded?: bo
 	return list;
 }
 
-// An empty class to make instanceOf EventTarget checks pass automatically.
+// An empty class to make instanceOf EventTarget checks pass.
+// All the logic for EventTarget is implemented in Observable.
 class EventTarget {}
 /**
  * Observable is used when you want to be notified when a change occurs. Use on/off methods to add/remove listener.
@@ -236,8 +252,13 @@ export class Observable extends EventTarget implements globalThis.EventTarget {
 	 * @private
 	 */
 	public _isViewBase: boolean;
-
+	/**
+	 * Observers for the default/bubbling phase.
+	 */
 	private readonly _observers: { [eventName: string]: EventDescriptior[] } = {};
+	/**
+	 * Observers for the capture phase.
+	 */
 	private readonly _captureObservers: { [eventName: string]: EventDescriptior[] } = {};
 
 	public get(name: string): any {
@@ -385,16 +406,16 @@ export class Observable extends EventTarget implements globalThis.EventTarget {
 		if (bubbles || captures) {
 			// eslint-disable-next-line consistent-this, @typescript-eslint/no-this-alias
 			// Start from the first parent.
-			let currentNode = (this as any).parentNode;
+			let currentNode = (this as unknown as import('../../ui/core/dom/src/nodes/node/Node').default)._parentNode as import('../../ui/core/view-base').ViewBase;
 			while (currentNode) {
 				if (captures && currentNode._captureObservers[type]) capturePhase.unshift(currentNode._captureObservers[type]);
 				if (bubbles && currentNode._observers[type]) bubblePhase.push(currentNode._observers[type]);
 				//@ts-ignore todo
-				currentNode = currentNode.parentNode;
+				currentNode = currentNode._parentNode;
 			}
 		}
 
-		// Capturing starts from the highest ancestor goes down
+		// Capturing starts from the highest ancestor and goes down
 
 		for (const listeners of capturePhase) {
 			(event as NativeDOMEvent).eventPhase = EventPhases.CAPTURING_PHASE;
