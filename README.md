@@ -48,7 +48,7 @@ We love you and your pull requests 🤗. Please follow our [contributing guide](
   * A very minimal set of types for only the latest Android and iOS sdks. Most commonly used to optimize Web-based IDE's which auto load all type declarations from node_modules.
 * [@nativescript/ui-mobile-base](https://github.com/NativeScript/NativeScript/tree/master/packages/ui-mobile-base)
   * UI mobile base native classes used by core.
-* [@nativescript/webpack](https://github.com/NativeScript/NativeScript/tree/master/packages/webpack)
+* [@nativescript/webpack](https://github.com/NativeScript/NativeScript/tree/main/packages/webpack5)
   * Webpack build utilities and configs used by NativeScript apps.
 
 ## Quick Links
@@ -78,7 +78,7 @@ Outside the source centralized in this repo, NativeScript consists of a few othe
 	- This repo contains the NativeScript command-line interface, which lets you create, build, and run apps using NativeScript. The CLI is written in TypeScript.
 - **[Docs](//github.com/NativeScript/docs-new)**
 	- This repo contains NativeScript documentation, which is available at <http://docs.nativescript.org/>. The docs are written in Markdown.
-- **[Official Plugins](https://github.com/NativeScript/plugins)
+- **[Official Plugins](https://github.com/NativeScript/plugins)**
   - This repo contains a [plugin workspace](https://docs.nativescript.org/plugins/plugin-workspace-guide.html) the TSC (Technical Steering Committee) maintains offering several often useful plugins.
 
 <h3 align="center">Made with ❤️</h3>
