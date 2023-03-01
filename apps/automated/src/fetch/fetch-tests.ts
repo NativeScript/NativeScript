@@ -101,7 +101,7 @@ export var test_fetch_fail_invalid_url = function (done) {
 		return completed;
 	};
 
-	fetch('hgfttp://httpbin.org/get')
+	fetch('hgfttp://http-echo.nativescript.org/get')
 		.catch(function (e) {
 			completed = true;
 			done(null);
@@ -111,7 +111,7 @@ export var test_fetch_fail_invalid_url = function (done) {
 
 // Note: fetch is unable to do url validation
 // export var test_fetch_invalid_url_fail_message = function (done) {
-//     fetch("hgfttp://httpbin.org/get").catch(function (e: TypeError) {
+//     fetch("hgfttp://http-echo.nativescript.org/get").catch(function (e: TypeError) {
 //         TKUnit.assert(e.message.match(/Network request failed:.{2,}/), "Failure message should contain details on the failure. Actual message was: " + e.message);
 //         done(null);
 //     }).catch(failOnError(done));

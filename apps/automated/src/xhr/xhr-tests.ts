@@ -365,7 +365,7 @@ export function test_raises_onerror_Event(done) {
 	xhr.onerror = () => {
 		done(null);
 	};
-	xhr.open('GET', 'https://no-such-domain-httpbin.nativescript.org');
+	xhr.open('GET', 'https://no-such-domain.nativescript.org');
 	xhr.send();
 }
 
