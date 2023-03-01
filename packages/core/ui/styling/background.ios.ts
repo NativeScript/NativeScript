@@ -33,6 +33,10 @@ export namespace ios {
 		const background = view.style.backgroundInternal;
 		const nativeView = <NativeScriptUIView>view.nativeViewProtected;
 
+		if (!nativeView) {
+			return;
+		}
+
 		if (background.clearFlags & BackgroundClearFlags.CLEAR_BOX_SHADOW) {
 			// clear box shadow if it has been removed!
 			view.setProperty('clipToBounds', true);
