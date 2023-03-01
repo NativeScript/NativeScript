@@ -913,7 +913,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 			return null;
 		}
 
-		frame._childView = page;
+		frame._resolvedPage = page;
 
 		if (page.parent === frame) {
 			// If we are navigating to a page that was destroyed

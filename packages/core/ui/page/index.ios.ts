@@ -120,7 +120,7 @@ class UIViewControllerImpl extends UIViewController {
 			return;
 		}
 
-		const frame = this.navigationController ? (<any>this.navigationController).owner : null;
+		const frame: Frame = this.navigationController ? (<any>this.navigationController).owner : null;
 		const newEntry = this[ENTRY];
 
 		// Don't raise event if currentPage was showing modal page.
@@ -130,14 +130,14 @@ class UIViewControllerImpl extends UIViewController {
 		}
 
 		if (frame) {
+			frame._resolvedPage = owner;
+
 			if (!owner.parent) {
 				owner._frame = frame;
 				if (!frame._styleScope) {
 					// Make sure page will have styleScope even if frame don't.
 					owner._updateStyleScope();
 				}
-
-				frame._childView = owner;
 
 				frame._addView(owner);
 			} else if (owner.parent !== frame) {
