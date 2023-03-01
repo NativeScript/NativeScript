@@ -8,7 +8,7 @@ export var test_fetch_defined = function () {
 
 export var test_fetch = function (done: (err: Error, res?: string) => void) {
 	// >> fetch-response
-	fetch('https://httpbin.org/get')
+	fetch('https://http-echo.nativescript.org/get')
 		.then(function (r) {
 			// Argument (r) is Response!
 			// >> (hide)
@@ -22,7 +22,7 @@ export var test_fetch = function (done: (err: Error, res?: string) => void) {
 
 export var test_fetch_text = function (done: (err: Error, res?: string) => void) {
 	// >> fetch-string
-	fetch('https://httpbin.org/get')
+	fetch('https://http-echo.nativescript.org/get')
 		.then((response) => response.text())
 		.then(function (r) {
 			// Argument (r) is string!
@@ -37,7 +37,7 @@ export var test_fetch_text = function (done: (err: Error, res?: string) => void)
 
 export var test_fetch_json = function (done: (err: Error, res?: string) => void) {
 	// >> fetch-json
-	fetch('https://httpbin.org/get')
+	fetch('https://http-echo.nativescript.org/get')
 		.then((response) => response.json())
 		.then(function (r) {
 			// Argument (r) is JSON object!
@@ -52,7 +52,7 @@ export var test_fetch_json = function (done: (err: Error, res?: string) => void)
 
 export var test_fetch_formData = function (done: (err: Error, res?: string) => void) {
 	// >> fetch-formdata
-	fetch('https://httpbin.org/get')
+	fetch('https://http-echo.nativescript.org/get')
 		.then((response) => response.formData())
 		.then(function (r) {
 			// Argument (r) is FormData object!
@@ -67,7 +67,7 @@ export var test_fetch_formData = function (done: (err: Error, res?: string) => v
 
 export var test_fetch_blob = function (done: (err: Error, res?: string) => void) {
 	// >> fetch-blob
-	fetch('https://httpbin.org/get')
+	fetch('https://http-echo.nativescript.org/get')
 		.then((response) => response.blob())
 		.then(function (r) {
 			// Argument (r) is Blob object!
@@ -82,7 +82,7 @@ export var test_fetch_blob = function (done: (err: Error, res?: string) => void)
 
 export var test_fetch_arraybuffer = function (done: (err: Error, res?: string) => void) {
 	// >> fetch-arraybuffer
-	fetch('https://httpbin.org/get')
+	fetch('https://http-echo.nativescript.org/get')
 		.then((response) => response.arrayBuffer())
 		.then(function (r) {
 			// Argument (r) is ArrayBuffer object!
@@ -119,7 +119,7 @@ export var test_fetch_fail_invalid_url = function (done) {
 
 export var test_fetch_response_status = function (done) {
 	// >> fetch-status-response
-	fetch('https://httpbin.org/get')
+	fetch('https://http-echo.nativescript.org/get')
 		.then(function (response) {
 			// Argument (response) is Response!
 			var statusCode = response.status;
@@ -134,7 +134,7 @@ export var test_fetch_response_status = function (done) {
 
 export var test_fetch_response_headers = function (done) {
 	// >> fetch-headers-response
-	fetch('https://httpbin.org/get')
+	fetch('https://http-echo.nativescript.org/get')
 		.then(function (response) {
 			// Argument (response) is Response!
 			// var all = response.headers.getAll();
@@ -148,7 +148,7 @@ export var test_fetch_response_headers = function (done) {
 };
 
 export var test_fetch_headers_sent = function (done) {
-	fetch('https://httpbin.org/get', {
+	fetch('https://http-echo.nativescript.org/get', {
 		method: 'GET',
 		headers: new Headers({ 'Content-Type': 'application/json' }),
 	})
@@ -165,7 +165,7 @@ export var test_fetch_post_form_data = function (done) {
 	data.append('MyVariableOne', 'ValueOne');
 	data.append('MyVariableTwo', 'ValueTwo');
 
-	fetch('https://httpbin.org/post', {
+	fetch('https://http-echo.nativescript.org/post', {
 		method: 'POST',
 		headers: new Headers({ 'Content-Type': 'application/x-www-form-urlencoded' }),
 		body: data,
@@ -182,7 +182,7 @@ export var test_fetch_post_form_data = function (done) {
 
 export var test_fetch_post_json = function (done) {
 	// >> fetch-post-json
-	fetch('https://httpbin.org/post', {
+	fetch('https://http-echo.nativescript.org/post', {
 		method: 'POST',
 		headers: new Headers({ 'Content-Type': 'application/json' }),
 		body: JSON.stringify({ MyVariableOne: 'ValueOne', MyVariableTwo: 'ValueTwo' }),
