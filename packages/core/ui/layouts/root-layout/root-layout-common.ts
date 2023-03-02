@@ -41,7 +41,7 @@ export class RootLayoutBase extends GridLayout {
 	}
 
 	// ability to add any view instance to composite views like layers
-	open(view: View, options: RootLayoutOptions = {}): Promise<void | Error> {
+	open(view: View, options: RootLayoutOptions = {}): Promise<void> {
 		const enterAnimationDefinition = options.animation ? options.animation.enterFrom : null;
 
 		return new Promise<void>((resolve, reject) => {
@@ -94,7 +94,7 @@ export class RootLayoutBase extends GridLayout {
 
 	// optional animation parameter to overwrite close animation declared when opening popup
 	// ability to remove any view instance from composite views
-	close(view: View, exitTo?: TransitionAnimation): Promise<void | Error> {
+	close(view: View, exitTo?: TransitionAnimation): Promise<void> {
 		const cleanupAndFinish = () => {
 			view.notify({ eventName: 'closed', object: view });
 			this.removeChild(view);
@@ -144,7 +144,7 @@ export class RootLayoutBase extends GridLayout {
 					return this.getExitAnimation(view, exitAnimationDefinition)
 						.play()
 						.then(cleanupAndFinish.bind(this))
-						.catch((ex) => new Error(`Error playing exit animation: ${ex}`));
+						.catch((ex) => Promise.reject(new Error(`Error playing exit animation: ${ex}`)));
 				}
 				cleanupAndFinish();
 			});

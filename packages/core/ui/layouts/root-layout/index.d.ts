@@ -2,8 +2,8 @@ import { GridLayout } from '../grid-layout';
 import { View } from '../../core/view';
 
 export class RootLayout extends GridLayout {
-	open(view: View, options: RootLayoutOptions = {}): Promise<void | Error>;
-	close(view: View, exitTo?: TransitionAnimation): Promise<void | Error>;
+	open(view: View, options: RootLayoutOptions = {}): Promise<void>;
+	close(view: View, exitTo?: TransitionAnimation): Promise<void>;
 	topmost(): View;
 	bringToFront(view: View, animated?: boolean): Promise<void>;
 	closeAll(): Promise<void[]>;
