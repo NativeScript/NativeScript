@@ -43,11 +43,13 @@ import * as xhrTests from './xhr/xhr-tests';
 import * as fetchTests from './fetch/fetch-tests';
 import * as timerTests from './timer/timer-tests';
 import * as profilingTests from './profiling/profiling-tests';
+
+allTests['HTTP'] = httpTests;
+allTests['XHR'] = xhrTests;
+allTests['FETCH'] = fetchTests;
+
 // don't run these on CI as they are flaky
 if (!__CI__) {
-	allTests['HTTP'] = httpTests;
-	allTests['XHR'] = xhrTests;
-	allTests['FETCH'] = fetchTests;
 	allTests['TIMER'] = timerTests;
 	allTests['PROFILING'] = profilingTests;
 }
