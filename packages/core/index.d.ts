@@ -17,6 +17,8 @@ export declare const Application: {
 	suspendEvent: string;
 	resumeEvent: string;
 	exitEvent: string;
+	foregroundEvent: string;
+	backgroundEvent: string;
 	lowMemoryEvent: string;
 	orientationChangedEvent: string;
 	systemAppearanceChangedEvent: string;
