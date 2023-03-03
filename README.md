@@ -78,7 +78,15 @@ Outside the source centralized in this repo, NativeScript consists of a few othe
 	- This repo contains the NativeScript command-line interface, which lets you create, build, and run apps using NativeScript. The CLI is written in TypeScript.
 - **[Docs](//github.com/NativeScript/docs-new)**
 	- This repo contains NativeScript documentation, which is available at <http://docs.nativescript.org/>. The docs are written in Markdown.
-- **[Official Plugins](https://github.com/NativeScript/plugins)
-  - This repo contains a [plugin workspace](https://docs.nativescript.org/plugins/plugin-workspace-guide.html) the TSC (Technical Steering Committee) maintains offering several often useful plugins.
+- **[Plugins](https://github.com/NativeScript/plugins)**
+  - This repo contains a [plugin workspace](https://docs.nativescript.org/plugins/plugin-workspace-guide.html) with several often useful plugins.
+- **[Firebase](https://github.com/NativeScript/firebase)**
+  - Modular Firebase 🔥 implementation for iOS & Android.
+- **[ML Kit](https://github.com/NativeScript/mlkit)**
+  - Google's [ML Kit SDKs for iOS and Android](https://developers.google.com/ml-kit).
+- **[Payments](https://github.com/NativeScript/payments)**
+  - In-App Purchase, Subscriptions, Google Pay and Apple Pay.
+- **[Artwork](https://github.com/NativeScript/artwork)**
+  - Want to use our logo or colors? This repo contains ready to use media material.
 
 <h3 align="center">Made with ❤️</h3>
