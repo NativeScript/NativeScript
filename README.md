@@ -7,7 +7,7 @@
 <p>
 
   [![Automated Tests Passing](https://github.com/NativeScript/NativeScript/actions/workflows/apps_automated.yml/badge.svg)](https://github.com/NativeScript/NativeScript/actions/workflows/apps_automated.yml)
-  [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/NativeScript/NativeScript/blob/master/LICENSE)
+  [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/NativeScript/NativeScript/blob/main/LICENSE)
   [![NPM Version](https://badge.fury.io/js/%40nativescript%2Fcore.svg)](https://www.npmjs.com/@nativescript/core)
   [![Discord](https://badgen.net/badge/icon/discord?icon=discord&label)](https://nativescript.org/discord)
 
@@ -32,23 +32,23 @@ $ npm run setup
 $ npm start
 ```
 
-We love you and your pull requests 🤗. Please follow our [contributing guide](https://github.com/NativeScript/NativeScript/blob/master/tools/notes/CONTRIBUTING.md) and see [our code of governance](https://github.com/NativeScript/management/blob/master/nativescript-governance.md) to become as involved as you want to be.
+We love you and your pull requests 🤗. Please follow our [contributing guide](https://github.com/NativeScript/NativeScript/blob/main/tools/notes/CONTRIBUTING.md) and see [our code of governance](https://github.com/NativeScript/management/blob/master/nativescript-governance.md) to become as involved as you want to be.
 
 ## @nativescript/*
 
-* [@nativescript/core](https://github.com/NativeScript/NativeScript/tree/master/packages/core)
+* [@nativescript/core](https://github.com/NativeScript/NativeScript/tree/main/packages/core)
   * Core iOS/Android for NativeScript.
 * [@nativescript/types](https://www.npmjs.com/package/@nativescript/types)
   * Types for both iOS/Android below wrapped up as a convenience. *Most commonly used.*
-* [@nativescript/types-ios](https://github.com/NativeScript/NativeScript/tree/master/packages/types-ios)
+* [@nativescript/types-ios](https://github.com/NativeScript/NativeScript/tree/main/packages/types-ios)
   * Types for iOS.
-* [@nativescript/types-android](https://github.com/NativeScript/NativeScript/tree/master/packages/types-android)
+* [@nativescript/types-android](https://github.com/NativeScript/NativeScript/tree/main/packages/types-android)
   * Types for Android.
-* [@nativescript/types-minimal](https://github.com/NativeScript/NativeScript/tree/master/packages/types-minimal)
+* [@nativescript/types-minimal](https://github.com/NativeScript/NativeScript/tree/main/packages/types-minimal)
   * A very minimal set of types for only the latest Android and iOS sdks. Most commonly used to optimize Web-based IDE's which auto load all type declarations from node_modules.
-* [@nativescript/ui-mobile-base](https://github.com/NativeScript/NativeScript/tree/master/packages/ui-mobile-base)
+* [@nativescript/ui-mobile-base](https://github.com/NativeScript/NativeScript/tree/main/packages/ui-mobile-base)
   * UI mobile base native classes used by core.
-* [@nativescript/webpack](https://github.com/NativeScript/NativeScript/tree/master/packages/webpack)
+* [@nativescript/webpack](https://github.com/NativeScript/NativeScript/tree/main/packages/webpack5)
   * Webpack build utilities and configs used by NativeScript apps.
 
 ## Quick Links
