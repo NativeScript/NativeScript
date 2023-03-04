@@ -187,12 +187,22 @@ export class TextBase extends TextBaseCommon {
 		if (!(value instanceof Font) || !this.formattedText) {
 			let nativeView = this.nativeTextViewProtected;
 			nativeView = nativeView instanceof UIButton ? nativeView.titleLabel : nativeView;
-			nativeView.font = value instanceof Font ? value.getUIFont(nativeView.font) : value;
+
+			if (value instanceof Font) {
+				// Apply a11y font scale if not set
+				if (value.fontScale !== this.style._fontScale) {
+					value.fontScale = this.style._fontScale;
+				}
+				nativeView.font = value.getUIFont(nativeView.font);
+			} else {
+				nativeView.font = value;
+			}
 		}
 	}
 
 	[fontScaleProperty.setNative](value: number) {
-		const currentFont = this.style.fontInternal || Font.default;
+		const nativeView = this.nativeTextViewProtected instanceof UIButton ? this.nativeTextViewProtected.titleLabel : this.nativeTextViewProtected;
+		const currentFont = this.style.fontInternal || Font.default.withFontSize(nativeView.font.pointSize);
 		if (currentFont.fontScale !== value) {
 			const newFont = currentFont.withFontScale(value);
 			this.style.fontInternal = newFont;
