@@ -92,7 +92,7 @@ export class Font extends FontBase {
 		return getUIFontCached({
 			fontFamily: parseFontFamily(this.fontFamily),
 			// Apply a11y scale and calculate proper font size (avoid applying multiplier to native point size as it's messing calculations)
-			fontSize: this.fontSize * this.fontScale || defaultFont.pointSize,
+			fontSize: this.fontSize ? this.fontSize * this.fontScale : defaultFont.pointSize,
 			fontWeight: getNativeFontWeight(this.fontWeight),
 			fontVariationSettings: this.fontVariationSettings,
 			isBold: this.isBold,
