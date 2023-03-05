@@ -393,8 +393,6 @@ export class Observable extends EventTarget implements globalThis.EventTarget {
 		 */
 
 		(event as NativeDOMEvent)._target = this;
-		//@ts-ignore
-		(event as NativeDOMEvent).currentTarget = this;
 
 		const capturePhase: Array<EventDescriptior>[] = [];
 
