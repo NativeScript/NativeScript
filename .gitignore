@@ -20,7 +20,7 @@
 *.launch
 .settings/
 *.sublime-workspace
-
+results.md
 # IDE - VSCode
 .vscode/*
 !.vscode/settings.json

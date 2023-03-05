@@ -4,6 +4,7 @@
 		"diagnostics": false,
 		"paths": {
 			"~/*": ["src/*"]
-		}
+		},
+		"allowSyntheticDefaultImports": true
 	}
 }

@@ -1,0 +1,13 @@
+{
+    "folders": [
+        {
+            "path": "."
+        },
+        {
+            "path": "../dominative"
+        },
+        {
+            "path": "../../apps/undom-ng"
+        }
+    ]
+}
