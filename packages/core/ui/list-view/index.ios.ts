@@ -10,7 +10,7 @@ import { StackLayout } from '../layouts/stack-layout';
 import { ProxyViewContainer } from '../proxy-view-container';
 import { profile } from '../../profiling';
 import { Trace } from '../../trace';
-
+import { Utils } from '../..';
 export * from './list-view-common';
 
 const ITEMLOADING = ListViewBase.itemLoadingEvent;
@@ -23,7 +23,7 @@ const infinity = layout.makeMeasureSpec(0, layout.UNSPECIFIED);
 interface ViewItemIndex {
 	_listViewItemIndex?: number;
 }
-
+Trace.enable();
 type ItemView = View & ViewItemIndex;
 
 @NativeClass
@@ -234,6 +234,89 @@ class UITableViewRowHeightDelegateImpl extends NSObject implements UITableViewDe
 		return layout.toDeviceIndependentPixels(owner._effectiveRowHeight);
 	}
 }
+@NativeClass
+class UITableViewDragDelegateImpl extends NSObject implements UITableViewDragDelegate {
+	public static ObjCProtocols = [UITableViewDragDelegate];
+
+	private _owner: WeakRef<ListView>;
+
+	public static initWithOwner(owner: WeakRef<ListView>): UITableViewDragDelegateImpl {
+		const delegate = <UITableViewDragDelegateImpl>UITableViewDragDelegateImpl.new();
+		delegate._owner = owner;
+
+		return delegate;
+	}
+	public tableViewItemsForBeginningDragSessionAtIndexPath(tableView: UITableView, session: UIDragSession, indexPath: NSIndexPath): NSArray<UIDragItem> {
+		return this._owner?.deref().dragItems(indexPath);
+	}
+	public tableViewDragSessionDidEnd(tableView: UITableView, session: UIDragSession): void {}
+}
+
+// @NativeClass
+// class UITableViewDropDelegateImpl extends NSObject implements UITableViewDropDelegate {
+
+// 	static ObjCProtocols = [UITableViewDropDelegate]
+
+// 	private _owner: WeakRef<ListView>
+// 	public static initWithOwner(owner: WeakRef<ListView>): UITableViewDropDelegateImpl {
+// 		const delegate = <UITableViewDropDelegateImpl>UITableViewDropDelegateImpl.new()
+// 		delegate._owner = owner
+// 		return delegate
+// 	}
+// 	tableViewPerformDropWithCoordinator(tableView: UITableView, coordinator: UITableViewDropCoordinator): void {
+//         let destinationIndexPath: NSIndexPath
+
+// 		if (coordinator.destinationIndexPath) {
+//             destinationIndexPath = coordinator.destinationIndexPath
+//         } else {
+//             // Get last index path of table view.
+//             let section = tableView.numberOfSections - 1
+//             let row = tableView.numberOfRowsInSection(section)
+// 			NSIndexPath.indexPathForRowInSection(row,section)
+//         }
+// 		coordinator.session.loadObjectsOfClassCompletion(NSObject,(items: NSArray<NSItemProviderReading>)=>{
+// 			let stringItems = items as NSArray<NSString>
+// 			var indexPaths = NSArray.new()
+// 			stringItems.enumerateObjectsUsingBlock((str,p,d)=>{
+// 			})
+
+// 		})
+
+// 	}
+// 	tableViewCanHandleDropSession(tableView: UITableView, session: UIDropSession): boolean {
+
+// 		return this._owner?.deref().canHandleSession(session)
+// 	}
+
+// 	tableViewDropSessionDidUpdateWithDestinationIndexPath(tableView: UITableView, session: UIDropSession, destinationIndexPath: NSIndexPath): UITableViewDropProposal {
+
+// 		let dropProposal = UITableViewDropProposal.new();
+// 		dropProposal.initWithDropOperation(UIDropOperation.Cancel)
+// 		// Accept only one drag item.
+// 		if (session.items.count != 1) { return dropProposal; }
+
+// 		// The .move drag operation is available only for dragging within this app and while in edit mode.
+// 		if (tableView.hasActiveDrop) {
+// 			console.log(dropProposal.operation)
+
+// 			if (tableView.editing) {
+// 				dropProposal = UITableViewDropProposal.new();
+// 				dropProposal.initWithDropOperationIntent(UIDropOperation.Move, UITableViewDropIntent.InsertAtDestinationIndexPath)
+// 				// dropProposal.intent = UITableViewDropIntent.InsertAtDestinationIndexPath;
+// 			}
+// 		} else {
+// 			dropProposal = UITableViewDropProposal.new();
+// 			dropProposal.initWithDropOperationIntent(UIDropOperation.Copy, UITableViewDropIntent.InsertAtDestinationIndexPath)
+
+// 		}
+
+// 		return dropProposal;
+
+// 	}
+// 	tableViewDropSessionDidEnd(tableView: UITableView, session: UIDropSession): void {
+
+// 	}
+// }
 
 export class ListView extends ListViewBase {
 	public nativeViewProtected: UITableView;
@@ -261,7 +344,10 @@ export class ListView extends ListViewBase {
 		const nativeView = this.nativeViewProtected;
 		nativeView.registerClassForCellReuseIdentifier(ListViewCell.class(), this._defaultTemplate.key);
 		nativeView.estimatedRowHeight = DEFAULT_HEIGHT;
-		nativeView.rowHeight = UITableViewAutomaticDimension;
+		nativeView.rowHeight = 100;
+		nativeView.dragInteractionEnabled = true;
+		nativeView.dragDelegate = UITableViewDragDelegateImpl.initWithOwner(new WeakRef(this));
+		//nativeView.dropDelegate = UITableViewDropDelegateImpl.initWithOwner(new WeakRef(this))
 		nativeView.dataSource = this._dataSource = DataSource.initWithOwner(new WeakRef(this));
 		this._delegate = UITableViewDelegateImpl.initWithOwner(new WeakRef(this));
 		this._setNativeClipToBounds();
@@ -270,6 +356,7 @@ export class ListView extends ListViewBase {
 	disposeNativeView() {
 		this._delegate = null;
 		this._dataSource = null;
+
 		super.disposeNativeView();
 	}
 
@@ -525,5 +612,20 @@ export class ListView extends ListViewBase {
 		const nativeView = this.ios;
 		const estimatedHeight = Length.toDevicePixels(value, 0);
 		nativeView.estimatedRowHeight = estimatedHeight < 0 ? DEFAULT_HEIGHT : estimatedHeight;
+	}
+
+	dragItems(indexPath: NSIndexPath) {
+		const placeName = this.items[indexPath.row];
+		const data = NSString.stringWithString(placeName.name).dataUsingEncoding(NSUTF8StringEncoding);
+		const itemProvider = NSItemProvider.alloc().init();
+		itemProvider.registerDataRepresentationForTypeIdentifierVisibilityLoadHandler(kUTTypePlainText, NSItemProviderRepresentationVisibility.All, (completion) => {
+			completion(data, null);
+			return null;
+		});
+		return NSArray.alloc().initWithArray([UIDragItem.alloc().initWithItemProvider(itemProvider)]) as NSArray<UIDragItem>;
+	}
+
+	canHandleSession(session: UIDropSession) {
+		return session.canLoadObjectsOfClass(NSObject);
 	}
 }

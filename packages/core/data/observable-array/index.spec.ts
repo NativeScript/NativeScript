@@ -6,11 +6,11 @@ describe('ObservableArray', () => {
 			const _array = new ObservableArray();
 
 			_array.push(1);
-			_array.push(2);
+			_array.push(4);
 
 			_array.splice(0, 1);
 
-			expect(_array.getItem(0)).toBe(2);
+			expect(_array.getItem(0)).toBe(4);
 		});
 
 		it('replaces an item', () => {
@@ -65,6 +65,32 @@ describe('ObservableArray', () => {
 			const index = _array.findIndex((i) => i === 3);
 
 			expect(index).toBe(-1);
+		});
+	});
+
+	describe('filter', () => {
+		it('filters items', () => {
+			const _array = new ObservableArray();
+
+			_array.push(1);
+			_array.push(3);
+			_array.push(1.5);
+
+			const filtered = _array.filter((value) => value < 1);
+
+			expect(filtered.length).toBe(0);
+		});
+	});
+	describe('push', () => {
+		let _array: ObservableArray<number>;
+		beforeEach(function () {
+			_array = new ObservableArray();
+			spyOn(_array, 'push');
+			_array.push(2);
+		});
+
+		it('is available', () => {
+			expect(_array.push).toHaveBeenCalled();
 		});
 	});
 });

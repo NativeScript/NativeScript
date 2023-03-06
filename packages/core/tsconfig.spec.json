@@ -1,7 +1,7 @@
 {
 	"compilerOptions": {
 		"outDir": "../../dist/out-tsc",
-		"types": ["jest", "node"],
+		"types": ["jest", "node", "jasmine"],
 		"target": "ESNext",
 		"module": "esnext",
 		"moduleResolution": "node",
