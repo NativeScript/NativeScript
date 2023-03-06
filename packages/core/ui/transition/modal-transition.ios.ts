@@ -133,8 +133,7 @@ class ModalTransitionController extends NSObject implements UIViewControllerAnim
 							sharedElementSnapshot.contentMode = presentedSharedElement.contentMode;
 						}
 
-						// todo: check if this is needed - seems like it's not after refactoring the updateFramePresent to do the snapshotting
-						// matchLayerProperties(sharedElementSnapshot, presentingSharedElement);
+						matchLayerProperties(sharedElementSnapshot, presentingSharedElement);
 						sharedElementSnapshot.clipsToBounds = true;
 						// console.log('---> snapshot: ', sharedElementSnapshot);
 
