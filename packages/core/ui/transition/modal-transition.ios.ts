@@ -9,11 +9,16 @@ const printRect = (r: CGRect) => `CGRect(${r.origin.x} ${r.origin.y} ${r.size.wi
 const printPoint = (r: CGPoint) => `CGPoint(${r.x} ${r.y})`;
 const printSize = (r: CGSize) => `CGPoint(${r.width} ${r.height})`;
 
+const DEFAULT_DURATION = 0.35;
+
 export class ModalTransition extends Transition implements TransitionType {
 	transitionController: ModalTransitionController;
 	presented: UIViewController;
 	presenting: UIViewController;
-	sharedElements: { presented?: Array<{ view: View; startFrame?: CGRect; endFrame?: CGRect; snapshot?: UIImageView }>; presenting?: Array<{ view: View; startFrame: CGRect; endFrame?: CGRect; snapshot?: UIImageView }> };
+	sharedElements: {
+		presented?: Array<{ view: View; startFrame?: CGRect; endFrame?: CGRect; snapshot?: UIImageView; startOpacity?: number; endOpacity?: number }>;
+		presenting?: Array<{ view: View; startFrame: CGRect; endFrame?: CGRect; snapshot?: UIImageView; startOpacity?: number; endOpacity?: number }>;
+	};
 
 	iosPresentedController(presented: UIViewController, presenting: UIViewController, source: UIViewController): UIViewControllerAnimatedTransitioning {
 		this.transitionController = ModalTransitionController.initWithOwner(new WeakRef(this));
@@ -56,7 +61,7 @@ class ModalTransitionController extends NSObject implements UIViewControllerAnim
 	}
 
 	transitionDuration(transitionContext: UIViewControllerContextTransitioning): number {
-		return 0.35;
+		return DEFAULT_DURATION;
 	}
 
 	animateTransition(transitionContext: UIViewControllerContextTransitioning): void {
@@ -70,7 +75,7 @@ class ModalTransitionController extends NSObject implements UIViewControllerAnim
 			}
 			// console.log('state.activeType:', state.activeType)
 			switch (state.activeType) {
-				case SharedTransitionAnimationType.present:
+				case SharedTransitionAnimationType.present: {
 					console.log('-- Transition present --');
 
 					transitionContext.containerView.addSubview(owner.presented.view);
@@ -110,12 +115,28 @@ class ModalTransitionController extends NSObject implements UIViewControllerAnim
 						// Note: snapshot may be most efficient/simple
 						// console.log('---> ', presentingView.sharedTransitionTag, ': ', presentingSharedElement)
 
-						const sharedElementSnapshot = UIImageView.alloc().initWithImage(snapshotView(presentingSharedElement));
-						sharedElementSnapshot.clipsToBounds = true;
-						// console.log('---> snapshot: ', sharedElementSnapshot);
-
 						const presentedView = presentedSharedElements.find((v) => v.sharedTransitionTag === presentingView.sharedTransitionTag);
 						const presentedSharedElement = presentedView.ios;
+
+						const sharedElementSnapshot = UIImageView.alloc().init(); // WithImage(snapshotView(presentedSharedElement));
+
+						// treat images differently...
+						if (presentedSharedElement instanceof UIImageView) {
+							// in case the image is loaded async, we need to update the snapshot when it changes
+							// todo: remove listener on transition end
+							presentedView.on('imageSourceChange', () => {
+								sharedElementSnapshot.image = snapshotView(presentedSharedElement);
+								sharedElementSnapshot.tintColor = presentedSharedElement.tintColor;
+							});
+
+							sharedElementSnapshot.tintColor = presentedSharedElement.tintColor;
+							sharedElementSnapshot.contentMode = presentedSharedElement.contentMode;
+						}
+
+						// todo: check if this is needed - seems like it's not after refactoring the updateFramePresent to do the snapshotting
+						// matchLayerProperties(sharedElementSnapshot, presentingSharedElement);
+						sharedElementSnapshot.clipsToBounds = true;
+						// console.log('---> snapshot: ', sharedElementSnapshot);
 
 						const startFrame = presentingSharedElement.convertRectToView(presentingSharedElement.bounds, transitionContext.containerView);
 						const endFrame = presentedSharedElement.convertRectToView(presentedSharedElement.bounds, transitionContext.containerView);
@@ -127,13 +148,19 @@ class ModalTransitionController extends NSObject implements UIViewControllerAnim
 							startFrame,
 							endFrame,
 							snapshot: sharedElementSnapshot,
+							startOpacity: presentingView.opacity,
+							endOpacity: presentedView.opacity,
 						});
 						owner.sharedElements.presented.push({
 							view: presentedView,
 							startFrame: endFrame,
 							endFrame: startFrame,
+							startOpacity: presentedView.opacity,
+							endOpacity: presentingView.opacity,
 						});
 
+						// set initial opacity to match the source view opacity
+						sharedElementSnapshot.alpha = presentingView.opacity;
 						// hide both while animating within the transition context
 						presentingView.opacity = 0;
 						presentedView.opacity = 0;
@@ -143,16 +170,16 @@ class ModalTransitionController extends NSObject implements UIViewControllerAnim
 
 					const cleanupPresent = () => {
 						for (const presented of owner.sharedElements.presented) {
-							presented.view.opacity = 1;
+							presented.view.opacity = presented.startOpacity;
 						}
 
 						// TODO: Discuss with Igor whether this is necessary
 						// potential this could help smooth some shared element transitions
 						UIView.animateWithDurationAnimationsCompletion(
-							0.3,
+							0, // Igor: disabled for now, we'll talk about this and decide
 							() => {
 								for (const presenting of owner.sharedElements.presenting) {
-									presenting.snapshot.alpha = 0;
+									presenting.snapshot.alpha = presenting.endOpacity;
 								}
 							},
 							() => {
@@ -181,6 +208,14 @@ class ModalTransitionController extends NSObject implements UIViewControllerAnim
 							const updatedEndFrame = presented.view.ios.convertRectToView(presented.view.ios.bounds, transitionContext.containerView);
 							const correctedEndFrame = CGRectMake(updatedEndFrame.origin.x, updatedEndFrame.origin.y, presentingMatch.endFrame.size.width, presentingMatch.endFrame.size.height);
 							presentingMatch.snapshot.frame = correctedEndFrame;
+
+							// apply view and layer properties to the snapshot view to match the source/presented view
+							matchLayerProperties(presentingMatch.snapshot, presented.view.ios);
+							// create a snapshot of the presented view
+							presentingMatch.snapshot.image = snapshotView(presented.view.ios);
+							// apply correct alpha
+							presentingMatch.snapshot.alpha = presentingMatch.endOpacity;
+
 							console.log(`---> ${presentingMatch.view.sharedTransitionTag} animate to: `, printRect(correctedEndFrame));
 						}
 						console.log('  ');
@@ -196,7 +231,7 @@ class ModalTransitionController extends NSObject implements UIViewControllerAnim
 					owner.presented.view.frame = CGRectMake(startX, startY, startWidth, startHeight);
 
 					UIView.animateWithDurationDelayUsingSpringWithDampingInitialSpringVelocityOptionsAnimationsCompletion(
-						typeof state.incomingViewStart?.duration === 'number' ? state.incomingViewStart?.duration / 1000 : 0.35,
+						typeof state.incomingViewStart?.duration === 'number' ? state.incomingViewStart?.duration / 1000 : DEFAULT_DURATION,
 						0,
 						0.5,
 						3,
@@ -218,7 +253,8 @@ class ModalTransitionController extends NSObject implements UIViewControllerAnim
 						}
 					);
 					break;
-				case SharedTransitionAnimationType.dismiss:
+				}
+				case SharedTransitionAnimationType.dismiss: {
 					console.log('-- Transition dismiss --');
 
 					// console.log('transitionContext.containerView.subviews.count:', transitionContext.containerView.subviews.count);
@@ -235,13 +271,13 @@ class ModalTransitionController extends NSObject implements UIViewControllerAnim
 						p.view.opacity = 0;
 					}
 					for (const p of owner.sharedElements.presenting) {
-						p.snapshot.alpha = 1;
+						p.snapshot.alpha = p.endOpacity;
 						transitionContext.containerView.addSubview(p.snapshot);
 					}
 
 					const cleanupDismiss = () => {
 						for (const presenting of owner.sharedElements.presenting) {
-							presenting.view.opacity = 1;
+							presenting.view.opacity = presenting.startOpacity;
 						}
 						SharedTransition.finishState(owner.id);
 						transitionContext.completeTransition(true);
@@ -249,14 +285,17 @@ class ModalTransitionController extends NSObject implements UIViewControllerAnim
 					const updateFrameDismiss = () => {
 						console.log('3. Dismissing shared elements:');
 						for (const presenting of owner.sharedElements.presenting) {
+							matchLayerProperties(presenting.snapshot, presenting.view.ios);
 							presenting.snapshot.frame = presenting.startFrame;
+							presenting.snapshot.alpha = presenting.startOpacity;
+
 							console.log(`---> ${presenting.view.sharedTransitionTag} animate to: `, printRect(presenting.startFrame));
 						}
 						console.log('  ');
 					};
 
 					UIView.animateWithDurationDelayUsingSpringWithDampingInitialSpringVelocityOptionsAnimationsCompletion(
-						typeof state.dismissViewEnd?.duration === 'number' ? state.dismissViewEnd?.duration / 1000 : 0.35,
+						typeof state.dismissViewEnd?.duration === 'number' ? state.dismissViewEnd?.duration / 1000 : DEFAULT_DURATION,
 						0,
 						0.5,
 						3,
@@ -277,16 +316,41 @@ class ModalTransitionController extends NSObject implements UIViewControllerAnim
 						}
 					);
 					break;
+				}
 			}
 		}
 	}
 }
 
 function snapshotView(view: UIView): UIImage {
+	if (view instanceof UIImageView) {
+		return view.image;
+	}
 	// console.log('snapshotView view.frame:', printRect(view.frame));
 	UIGraphicsBeginImageContextWithOptions(CGSizeMake(view.frame.size.width, view.frame.size.height), false, Screen.mainScreen.scale);
 	view.layer.renderInContext(UIGraphicsGetCurrentContext());
 	const image = UIGraphicsGetImageFromCurrentImageContext();
 	UIGraphicsEndImageContext();
 	return image;
+}
+
+// todo: figure out all the properties/layer properties that we want to transition automatically
+// note: some need to be done at various stages of the animation and are not in here. (e.g. alpha)
+function matchLayerProperties(view: UIView, toView: UIView) {
+	const viewPropertiesToMatch: Array<keyof UIView> = ['backgroundColor'];
+	const layerPropertiesToMatch: Array<keyof CALayer> = ['cornerRadius', 'borderWidth', 'borderColor'];
+
+	viewPropertiesToMatch.forEach((property) => {
+		if (view[property] !== toView[property]) {
+			console.log('|    -- matching view property:', property);
+			view[property as any] = toView[property];
+		}
+	});
+
+	layerPropertiesToMatch.forEach((property) => {
+		if (view.layer[property] !== toView.layer[property]) {
+			console.log('|    -- matching layer property:', property);
+			view.layer[property as any] = toView.layer[property];
+		}
+	});
 }
