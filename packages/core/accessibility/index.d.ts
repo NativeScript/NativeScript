@@ -1,5 +1,4 @@
 import type { Page } from '../ui/page';
-import type { ViewBase } from '../ui/core/view-base';
 import type { View } from '../ui/core/view';
 import type { AndroidAccessibilityEvent } from './accessibility-types';
 

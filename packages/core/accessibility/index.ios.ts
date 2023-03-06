@@ -121,7 +121,7 @@ function ensureNativeClasses() {
 	});
 }
 
-export function setupAccessibleView(view: Partial<ViewBase>): void {
+export function setupAccessibleView(view: View): void {
 	const uiView = view.nativeViewProtected as UIView;
 	if (!uiView) {
 		return;

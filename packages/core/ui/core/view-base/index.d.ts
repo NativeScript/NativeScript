@@ -8,7 +8,7 @@ import { Page } from '../../page';
 import { Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from '../../layouts/flexbox-layout';
 import { Length } from '../../styling/style-properties';
 import { DOMNode } from '../../../debugger/dom-node';
-import type { CustomTransitionModal } from '../../transition';
+import type { ModalTransition } from '../../transition/modal-transition';
 
 /**
  * Iterates through all child views (via visual tree) and executes a function.
@@ -43,9 +43,17 @@ export function getViewById(view: ViewBase, id: string): ViewBase;
  */
 export function getViewByDomId(view: ViewBase, domId: number): ViewBase;
 
-export interface ModalTransition {
+/**
+ * Gets a child view by selector.
+ * @param view - The parent (container) view of the view to look for.
+ * @param selector - The selector of the view to look for.
+ * Returns an instance of a view (if found), otherwise undefined.
+ */
+export function querySelectorAll(view: ViewBase, selector: string): Array<ViewBase>;
+
+export interface ModalTransitionType {
 	name?: string;
-	instance?: CustomTransitionModal;
+	instance?: ModalTransition;
 	duration?: number;
 	curve?: any;
 }
@@ -297,6 +305,11 @@ export abstract class ViewBase extends Observable {
 	 * Gets or sets the CSS class name for this view.
 	 */
 	public className: string;
+
+	/**
+	 * Gets or sets the shared transition tag for animated view transitions
+	 */
+	public sharedTransitionTag: string;
 
 	/**
 	 * Gets owner page. This is a read-only property.

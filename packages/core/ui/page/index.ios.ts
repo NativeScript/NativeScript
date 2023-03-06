@@ -8,6 +8,7 @@ import { PageBase, actionBarHiddenProperty, statusBarStyleProperty } from './pag
 import { profile } from '../../profiling';
 import { iOSNativeHelper, layout } from '../../utils';
 import { getLastFocusedViewOnPage, isAccessibilityServiceEnabled } from '../../accessibility';
+import { SharedTransition } from '../transition/shared-transition';
 
 export * from './page-common';
 
@@ -430,6 +431,8 @@ export class Page extends PageBase {
 
 		// Make transitions look good
 		controller.view.backgroundColor = this._backgroundColor;
+		console.log('here for Page:', this.viewController);
+		SharedTransition.addPageToTop(this);
 	}
 
 	createNativeView() {
@@ -465,6 +468,7 @@ export class Page extends PageBase {
 
 	public onLoaded(): void {
 		super.onLoaded();
+		console.log('page loaded');
 		if (this.hasActionBar) {
 			this.actionBar.update();
 		}

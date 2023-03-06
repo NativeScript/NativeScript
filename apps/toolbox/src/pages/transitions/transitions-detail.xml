@@ -1,0 +1,10 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+  <Page.actionBar>
+    <ActionBar title="Transition Detail" icon="" class="action-bar">
+    </ActionBar>
+  </Page.actionBar>
+
+  <GridLayout rows="*" columns="auto,*" verticalAlignment="top">
+    <Image row="0" sharedTransitionTag="image" src="https://cdn.pixabay.com/photo/2012/08/27/14/19/mountains-55067__340.png" width="100%" />
+  </GridLayout>
+</Page>

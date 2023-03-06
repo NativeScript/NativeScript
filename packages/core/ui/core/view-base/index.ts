@@ -10,7 +10,7 @@ import { Trace } from '../../../trace';
 import { Observable, PropertyChangeData, WrappedValue } from '../../../data/observable';
 import { Style } from '../../styling/style';
 import { paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../../styling/style-properties';
-import type { CustomTransitionModal } from '../../transition';
+import type { ModalTransition } from '../../transition/modal-transition';
 
 // TODO: Remove this import!
 import { getClass } from '../../../utils/types';
@@ -38,9 +38,9 @@ function ensureStyleScopeModule() {
 
 const defaultBindingSource = {};
 
-export interface ModalTransition {
+export interface ModalTransitionType {
 	name?: string;
-	instance?: CustomTransitionModal;
+	instance?: ModalTransition;
 	duration?: number;
 	curve?: any;
 }
@@ -74,7 +74,7 @@ export interface ShowModalOptions {
 	/**
 	 * An optional custom transition effect
 	 */
-	transition?: ModalTransition;
+	transition?: ModalTransitionType;
 
 	/**
 	 * An optional parameter that specify options specific to iOS as an object.
@@ -171,6 +171,30 @@ export function getViewByDomId(view: ViewBaseDefinition, domId: number): ViewBas
 
 			// break the iteration by returning false
 			return false;
+		}
+
+		return true;
+	};
+
+	eachDescendant(view, descendantsCallback);
+
+	return retVal;
+}
+
+// TODO: allow all selector types (just using attributes now)
+export function querySelectorAll(view: ViewBaseDefinition, selector: string): Array<ViewBaseDefinition> {
+	if (!view) {
+		return undefined;
+	}
+
+	const retVal: Array<ViewBaseDefinition> = [];
+	if (view[selector]) {
+		retVal.push(view);
+	}
+
+	const descendantsCallback = function (child: ViewBaseDefinition): boolean {
+		if (child[selector]) {
+			retVal.push(child);
 		}
 
 		return true;
@@ -283,6 +307,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
 	public id: string;
 	public className: string;
+	public sharedTransitionTag: string;
 
 	public _domId: number;
 	public _context: any;
@@ -453,7 +478,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
 			return true;
 		});
-		setupAccessibleView(this);
+		setupAccessibleView(<any>this);
 
 		this._emit('loaded');
 	}

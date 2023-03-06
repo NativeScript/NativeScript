@@ -932,41 +932,41 @@ class UIViewControllerTransitioningDelegateImpl extends NSObject implements UIVi
 	}
 
 	animationControllerForDismissedController?(dismissed: UIViewController): UIViewControllerAnimatedTransitioning {
-		const owner = this.owner?.get();
-		if (owner?.dismissedController) {
-			return owner.dismissedController(dismissed);
+		const owner = this.owner?.deref();
+		if (owner?.iosDismissedController) {
+			return owner.iosDismissedController(dismissed);
 		}
 		return null;
 	}
 
 	animationControllerForPresentedControllerPresentingControllerSourceController?(presented: UIViewController, presenting: UIViewController, source: UIViewController): UIViewControllerAnimatedTransitioning {
-		const owner = this.owner?.get();
-		if (owner?.presentedController) {
-			return owner.presentedController(presented, presenting, source);
+		const owner = this.owner?.deref();
+		if (owner?.iosPresentedController) {
+			return owner.iosPresentedController(presented, presenting, source);
 		}
 		return null;
 	}
 
 	interactionControllerForDismissal?(animator: UIViewControllerAnimatedTransitioning): UIViewControllerInteractiveTransitioning {
-		const owner = this.owner?.get();
-		if (owner?.interactionDismiss) {
-			return owner.interactionDismiss(animator);
+		const owner = this.owner?.deref();
+		if (owner?.iosInteractionDismiss) {
+			return owner.iosInteractionDismiss(animator);
 		}
 		return null;
 	}
 
 	interactionControllerForPresentation?(animator: UIViewControllerAnimatedTransitioning): UIViewControllerInteractiveTransitioning {
-		const owner = this.owner?.get();
-		if (owner?.interactionPresented) {
-			return owner.interactionPresented(animator);
+		const owner = this.owner?.deref();
+		if (owner?.iosInteractionPresented) {
+			return owner.iosInteractionPresented(animator);
 		}
 		return null;
 	}
 
 	presentationControllerForPresentedViewControllerPresentingViewControllerSourceViewController?(presented: UIViewController, presenting: UIViewController, source: UIViewController): UIPresentationController {
-		const owner = this.owner?.get();
-		if (owner?.presentedViewController) {
-			return owner.presentedViewController(presented, presenting, source);
+		const owner = this.owner?.deref();
+		if (owner?.iosPresentedViewController) {
+			return owner.iosPresentedViewController(presented, presenting, source);
 		}
 		return null;
 	}
