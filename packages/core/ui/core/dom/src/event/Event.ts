@@ -49,7 +49,7 @@ export class Event {
 	public srcElement: EventTarget;
 	public timeStamp: number;
 
-	constructor(type: string, options: EventInitOptions) {
+	constructor(type: string, options?: EventInitOptions) {
 		if (!options) options = EVENT_OPTIONS_DEFAULT;
 		this.initEvent(type, options.bubbles, options.cancelable, options.captures);
 		if (options.__event_data) {

@@ -252,6 +252,9 @@ export class Observable extends EventTarget implements globalThis.EventTarget {
 	 * @private
 	 */
 	public _isViewBase: boolean;
+
+	public _isRegisteredDOMElement: boolean;
+
 	/**
 	 * Observers for the default/bubbling phase.
 	 */
@@ -417,7 +420,7 @@ export class Observable extends EventTarget implements globalThis.EventTarget {
 
 		for (const listeners of capturePhase) {
 			(event as NativeDOMEvent).eventPhase = EventPhases.CAPTURING_PHASE;
-			Observable._handleEvent(listeners.slice(0), event as NativeDOMEvent);
+			Observable._handleEvent(listeners, event as NativeDOMEvent);
 			if (!event.bubbles || (event as NativeDOMEvent)._propagationStopped) return !event.cancelable || !event.defaultPrevented;
 		}
 
@@ -438,7 +441,7 @@ export class Observable extends EventTarget implements globalThis.EventTarget {
 
 		for (const listeners of bubblePhase) {
 			(event as NativeDOMEvent).eventPhase = EventPhases.BUBBLING_PHASE;
-			Observable._handleEvent(listeners.slice(0), event as NativeDOMEvent);
+			Observable._handleEvent(listeners, event as NativeDOMEvent);
 			if (!event.bubbles || (event as NativeDOMEvent)._propagationStopped) return !event.cancelable || !event.defaultPrevented;
 		}
 		// Reset the event phase.
@@ -538,7 +541,7 @@ export class Observable extends EventTarget implements globalThis.EventTarget {
 			}
 		}
 
-		// Check for he Global handlers for ALL classes
+		// Check for the Global handlers for ALL classes
 		if (_globalEventHandlers['*']) {
 			const event = data.eventName + eventType;
 			const events = _globalEventHandlers['*'][event];
@@ -561,35 +564,39 @@ export class Observable extends EventTarget implements globalThis.EventTarget {
 	public notify<T extends Optional<EventData, 'object'>>(data: T): void {
 		data.object = data.object || this;
 		const dataWithObject = data as EventData;
-
 		const eventClass = this.constructor.name;
-		this._globalNotify(eventClass, 'First', dataWithObject);
 
-		const listeners = this._observers[data.eventName];
-		if (listeners) {
-			const event = new NativeDOMEvent(data.eventName, { __event_data: dataWithObject as unknown });
-			// Create a shallow copy here because there is a possibility
-			// that listeners will be removed while we iterate over events. For example
-			// events that will unsub themselves.
-			Observable._handleEvent(listeners.slice(0), event);
+		this._globalNotify(eventClass, 'First', dataWithObject);
+		if (!this._isRegisteredDOMElement) {
+			Observable._handleEvent(this._observers[data.eventName], dataWithObject, false);
+		} else {
+			Observable._handleEvent(this._observers[data.eventName], new NativeDOMEvent(data.eventName, { __event_data: dataWithObject as unknown }), true);
 		}
 
 		this._globalNotify(eventClass, '', dataWithObject);
 	}
 
-	private static _handleEvent<T extends NativeDOMEvent>(listeners: Array<EventDescriptior>, event: T): void {
+	private static _handleEvent<T extends NativeDOMEvent | EventData>(listeners: Array<EventDescriptior>, event: T, domEvent: boolean = true): void {
 		if (!listeners || !listeners.length) return;
+		// Create a shallow copy here because there is a possibility
+		// that listeners will be removed while we iterate over events. For example
+		// events that will unsub themselves.
+		const _listeners = listeners.slice(0);
 		for (let i = 0, l = listeners.length; i < l; i++) {
-			const descriptor = listeners[i];
+			const descriptor = _listeners[i];
 			const { listener, removed, thisArg } = descriptor;
 			if (removed) continue;
-			event.passive = !event.cancelable || descriptor.passive;
-			event._currentTarget = (thisArg as any) || (event as NativeDOMEvent).object || (descriptor.target as globalThis.EventTarget);
+
+			if (domEvent) {
+				(event as NativeDOMEvent).passive = !(event as NativeDOMEvent).cancelable || descriptor.passive;
+				(event as NativeDOMEvent)._currentTarget = (thisArg as any) || (event as NativeDOMEvent).object || (descriptor.target as globalThis.EventTarget);
+			}
+
 			let returnValue;
 			if (thisArg) {
 				returnValue = (listener as EventListener).apply(thisArg, [event]);
 			} else {
-				returnValue = (listener as EventListener)(event);
+				returnValue = (listener as EventListener)(event as NativeDOMEvent);
 			}
 			// This ensures errors thrown inside asynchronous functions do not get swallowed
 			if (returnValue && returnValue instanceof Promise) {

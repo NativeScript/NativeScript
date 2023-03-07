@@ -14,6 +14,7 @@ const createElement = (type: string, owner: Document) => {
 		element.ownerDocument = owner;
 		//@ts-ignore
 		element.tagName = htmlElementRegistry[type].NODE_TAG_NAME;
+		element._isRegisteredDOMElement = true;
 		return element;
 	}
 	return new HTMLElement(NodeTypeEnum.elementNode, type);
