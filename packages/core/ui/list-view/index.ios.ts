@@ -119,6 +119,9 @@ class DataSource extends NSObject implements UITableViewDataSource {
 
 		return cell;
 	}
+	tableViewMoveRowAtIndexPathToIndexPath(tableView: UITableView, sourceIndexPath: NSIndexPath, destinationIndexPath: NSIndexPath): void {
+		this._owner?.deref().moveItem(sourceIndexPath, destinationIndexPath);
+	}
 }
 
 @NativeClass
@@ -249,74 +252,75 @@ class UITableViewDragDelegateImpl extends NSObject implements UITableViewDragDel
 	public tableViewItemsForBeginningDragSessionAtIndexPath(tableView: UITableView, session: UIDragSession, indexPath: NSIndexPath): NSArray<UIDragItem> {
 		return this._owner?.deref().dragItems(indexPath);
 	}
-	public tableViewDragSessionDidEnd(tableView: UITableView, session: UIDragSession): void {}
+	public tableViewDragSessionDidEnd(tableView: UITableView, session: UIDragSession): void {
+		// this._owner?.deref().refresh()
+	}
 }
 
-// @NativeClass
-// class UITableViewDropDelegateImpl extends NSObject implements UITableViewDropDelegate {
+@NativeClass
+class UITableViewDropDelegateImpl extends NSObject implements UITableViewDropDelegate {
+	static ObjCProtocols = [UITableViewDropDelegate];
 
-// 	static ObjCProtocols = [UITableViewDropDelegate]
+	private _owner: WeakRef<ListView>;
+	public static initWithOwner(owner: WeakRef<ListView>): UITableViewDropDelegateImpl {
+		const delegate = <UITableViewDropDelegateImpl>UITableViewDropDelegateImpl.new();
+		delegate._owner = owner;
+		return delegate;
+	}
+	tableViewPerformDropWithCoordinator(tableView: UITableView, coordinator: UITableViewDropCoordinator): void {
+		let destinationIndexPath: NSIndexPath;
 
-// 	private _owner: WeakRef<ListView>
-// 	public static initWithOwner(owner: WeakRef<ListView>): UITableViewDropDelegateImpl {
-// 		const delegate = <UITableViewDropDelegateImpl>UITableViewDropDelegateImpl.new()
-// 		delegate._owner = owner
-// 		return delegate
-// 	}
-// 	tableViewPerformDropWithCoordinator(tableView: UITableView, coordinator: UITableViewDropCoordinator): void {
-//         let destinationIndexPath: NSIndexPath
+		if (coordinator.destinationIndexPath) {
+			destinationIndexPath = coordinator.destinationIndexPath;
+		} else {
+			// Get last index path of table view.
+			let section = tableView.numberOfSections - 1;
+			let row = tableView.numberOfRowsInSection(section);
+			NSIndexPath.indexPathForRowInSection(row, section);
+		}
 
-// 		if (coordinator.destinationIndexPath) {
-//             destinationIndexPath = coordinator.destinationIndexPath
-//         } else {
-//             // Get last index path of table view.
-//             let section = tableView.numberOfSections - 1
-//             let row = tableView.numberOfRowsInSection(section)
-// 			NSIndexPath.indexPathForRowInSection(row,section)
-//         }
-// 		coordinator.session.loadObjectsOfClassCompletion(NSObject,(items: NSArray<NSItemProviderReading>)=>{
-// 			let stringItems = items as NSArray<NSString>
-// 			var indexPaths = NSArray.new()
-// 			stringItems.enumerateObjectsUsingBlock((str,p,d)=>{
-// 			})
+		coordinator.session.loadObjectsOfClassCompletion(NSString.class(), (items: NSArray<NSItemProviderReading>) => {
+			let stringItems = items;
+			var indexPaths = NSMutableArray.alloc().init() as NSMutableArray<NSIndexPath>;
+			const stringItemsCount = stringItems.count;
 
-// 		})
+			for (let index = 0; index < stringItemsCount; index++) {
+				let indexPath = NSIndexPath.indexPathForRowInSection(destinationIndexPath.row + index, destinationIndexPath.section);
+				indexPaths.addObject(indexPath);
+				tableView.insertRowsAtIndexPathsWithRowAnimation(indexPaths, UITableViewRowAnimation.Automatic);
+			}
+		});
+	}
+	tableViewCanHandleDropSession(tableView: UITableView, session: UIDropSession): boolean {
+		return this._owner?.deref().canHandleSession(session);
+	}
 
-// 	}
-// 	tableViewCanHandleDropSession(tableView: UITableView, session: UIDropSession): boolean {
+	tableViewDropSessionDidUpdateWithDestinationIndexPath(tableView: UITableView, session: UIDropSession, destinationIndexPath: NSIndexPath): UITableViewDropProposal {
+		let dropProposal = UITableViewDropProposal.alloc().initWithDropOperationIntent(UIDropOperation.Move, UITableViewDropIntent.InsertAtDestinationIndexPath);
 
-// 		return this._owner?.deref().canHandleSession(session)
-// 	}
+		// Accept only one drag item.
+		if (session.items.count != 1) {
+			return dropProposal;
+		}
 
-// 	tableViewDropSessionDidUpdateWithDestinationIndexPath(tableView: UITableView, session: UIDropSession, destinationIndexPath: NSIndexPath): UITableViewDropProposal {
+		// The .move drag operation is available only for dragging within this app and while in edit mode.
+		if (tableView.hasActiveDrop) {
+			dropProposal = UITableViewDropProposal.alloc().initWithDropOperationIntent(UIDropOperation.Move, UITableViewDropIntent.InsertAtDestinationIndexPath);
+			if (tableView.editing) {
+				console.log('dropProposal.operation)');
+				dropProposal = UITableViewDropProposal.alloc().initWithDropOperationIntent(UIDropOperation.Move, UITableViewDropIntent.InsertAtDestinationIndexPath);
+				// dropProposal.intent = UITableViewDropIntent.InsertAtDestinationIndexPath;
+			}
+		} else {
+			dropProposal = UITableViewDropProposal.alloc().initWithDropOperationIntent(UIDropOperation.Copy, UITableViewDropIntent.InsertAtDestinationIndexPath);
+		}
 
-// 		let dropProposal = UITableViewDropProposal.new();
-// 		dropProposal.initWithDropOperation(UIDropOperation.Cancel)
-// 		// Accept only one drag item.
-// 		if (session.items.count != 1) { return dropProposal; }
-
-// 		// The .move drag operation is available only for dragging within this app and while in edit mode.
-// 		if (tableView.hasActiveDrop) {
-// 			console.log(dropProposal.operation)
-
-// 			if (tableView.editing) {
-// 				dropProposal = UITableViewDropProposal.new();
-// 				dropProposal.initWithDropOperationIntent(UIDropOperation.Move, UITableViewDropIntent.InsertAtDestinationIndexPath)
-// 				// dropProposal.intent = UITableViewDropIntent.InsertAtDestinationIndexPath;
-// 			}
-// 		} else {
-// 			dropProposal = UITableViewDropProposal.new();
-// 			dropProposal.initWithDropOperationIntent(UIDropOperation.Copy, UITableViewDropIntent.InsertAtDestinationIndexPath)
-
-// 		}
-
-// 		return dropProposal;
-
-// 	}
-// 	tableViewDropSessionDidEnd(tableView: UITableView, session: UIDropSession): void {
-
-// 	}
-// }
+		return dropProposal;
+	}
+	tableViewDropSessionDidEnd(tableView: UITableView, session: UIDropSession): void {
+		this._owner?.deref().refresh();
+	}
+}
 
 export class ListView extends ListViewBase {
 	public nativeViewProtected: UITableView;
@@ -347,7 +351,7 @@ export class ListView extends ListViewBase {
 		nativeView.rowHeight = 100;
 		nativeView.dragInteractionEnabled = true;
 		nativeView.dragDelegate = UITableViewDragDelegateImpl.initWithOwner(new WeakRef(this));
-		//nativeView.dropDelegate = UITableViewDropDelegateImpl.initWithOwner(new WeakRef(this))
+		nativeView.dropDelegate = UITableViewDropDelegateImpl.initWithOwner(new WeakRef(this));
 		nativeView.dataSource = this._dataSource = DataSource.initWithOwner(new WeakRef(this));
 		this._delegate = UITableViewDelegateImpl.initWithOwner(new WeakRef(this));
 		this._setNativeClipToBounds();
@@ -619,13 +623,23 @@ export class ListView extends ListViewBase {
 		const data = NSString.stringWithString(placeName.name).dataUsingEncoding(NSUTF8StringEncoding);
 		const itemProvider = NSItemProvider.alloc().init();
 		itemProvider.registerDataRepresentationForTypeIdentifierVisibilityLoadHandler(kUTTypePlainText, NSItemProviderRepresentationVisibility.All, (completion) => {
-			completion(data, null);
+			completion(data, NSError.new());
 			return null;
 		});
 		return NSArray.alloc().initWithArray([UIDragItem.alloc().initWithItemProvider(itemProvider)]) as NSArray<UIDragItem>;
 	}
+	moveItem(sourceIndex: NSIndexPath, destinationIndex: NSIndexPath) {
+		if (sourceIndex != destinationIndex) {
+			let itemToMove = this.items[sourceIndex.row];
 
+			this.items.splice(sourceIndex.row, 1);
+
+			this.items.splice(destinationIndex.row, 0, itemToMove);
+		} else {
+			return;
+		}
+	}
 	canHandleSession(session: UIDropSession) {
-		return session.canLoadObjectsOfClass(NSObject);
+		return session.canLoadObjectsOfClass(NSString.class());
 	}
 }
