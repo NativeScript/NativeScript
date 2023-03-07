@@ -13,6 +13,7 @@ const updateAttributeNS = (self: Element, ns: string, name: string, value: any) 
  * Element.
  */
 export default class Element extends ParentNode {
+	_tagName: string;
 	attributes: { ns: string; name: string; value?: any }[] = [];
 	constructor(nodeType: NodeTypeEnum, localName: string) {
 		super();
@@ -23,7 +24,8 @@ export default class Element extends ParentNode {
 	}
 
 	get tagName() {
-		return this.nodeName;
+		if (!this._tagName) return (this._tagName = this.nodeName.toUpperCase());
+		return this._tagName;
 	}
 
 	set tagName(name: string) {

@@ -13,6 +13,7 @@ import NodeList from '../nodes/node/NodeList';
 import SVGElement from '../nodes/svg-element/SVGElement';
 import Text from '../nodes/text/Text';
 import XMLSerializer from '../xml-serializer';
+import { HTMLKeyPropElement, HTMLArrayPropElement } from '../nodes/html-prop-element/HTMLPropElement';
 /**
  * Browser window.
  *
@@ -35,9 +36,10 @@ export default class Window {
 	public readonly AbortSignal = AbortSignal;
 	public readonly SVGElement = SVGElement;
 	public readonly CustomEvent = CustomEvent;
+	public readonly HTMLKeyPropElement = HTMLKeyPropElement;
+	public readonly HTMLArrayPropElement = HTMLArrayPropElement;
 	public readonly document: Document;
 	constructor() {
-		this.bindToGlobal();
 		//@ts-ignore
 		globalThis.htmlElementRegistry = {};
 		//@ts-ignore
@@ -88,7 +90,8 @@ export default class Window {
 		globalThis.AbortSignal = AbortSignal;
 		//@ts-ignore
 		globalThis.CustomEvent = CustomEvent;
-
+		globalThis.HTMLKeyPropElement = HTMLKeyPropElement;
+		globalThis.HTMLArrayPropElement = HTMLArrayPropElement;
 		return this;
 	}
 }
