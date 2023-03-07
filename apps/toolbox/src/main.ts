@@ -34,10 +34,11 @@ Application.run({
 			//element.on('loaded', () => {});
 			view.on('loaded', () => {});
 		}
-
+		// Cache views to prevent GC from kicking in.
+		const views = [];
 		suite
 			.add('new FlexboxLayout()', () => {
-				new FlexboxLayout();
+				views.push(new FlexboxLayout());
 			})
 			// .add('document.createElement', () => {
 			// 	document.createElement('view-element');
