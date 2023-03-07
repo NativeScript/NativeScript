@@ -108,6 +108,8 @@ export * from './ui';
 import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, executeOnUIThread, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, iOSNativeHelper as iosUtils, Source, escapeRegexSymbols, convertString, dismissSoftInput, dismissKeyboard, queueMacrotask, queueGC, throttle, debounce, dataSerialize, dataDeserialize, copyToClipboard, getFileExtension, isEmoji } from './utils';
 import { SDK_VERSION } from './utils/constants';
 import { ClassInfo, getClass, getBaseClasses, getClassInfo, isBoolean, isDefined, isFunction, isNullOrUndefined, isNumber, isObject, isString, isUndefined, toUIString, verifyCallback, numberHasDecimals, numberIs64Bit } from './utils/types';
+export * from './ui/core/dom/index';
+
 export declare const Utils: {
 	GC: typeof GC;
 	SDK_VERSION: typeof SDK_VERSION;
