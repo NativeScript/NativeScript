@@ -49,6 +49,7 @@ export default class Node extends Observable {
 	isParentNode: boolean = false;
 	//@ts-ignore
 	localName: string = null;
+	isNode: boolean = true;
 	constructor() {
 		super();
 	}
@@ -97,7 +98,7 @@ export default class Node extends Observable {
 	 * @param [deep=false] "true" to clone deep.
 	 * @returns Cloned node.
 	 */
-	cloneNode(deep: boolean) {
+	cloneNode(deep?: boolean) {
 		let clonedNode: Node;
 		if (this.isParentNode) {
 			if (this.nodeType === NodeTypeEnum.documentNode)

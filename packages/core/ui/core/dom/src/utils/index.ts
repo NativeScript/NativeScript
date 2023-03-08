@@ -58,8 +58,16 @@ const removeFromArrayProp = (node, key, item) => {
 		node[key] = currentArr;
 	}
 };
+/**
+ * Assign properties of target object on the source object.
+ */
+const reassignObjectProperties = (target: unknown, source: unknown) => {
+	for (const value of Object.keys(target)) delete target[value];
+	Object.assign(target, source);
+};
 
 export const DOMUtils = {
 	addToArrayProp,
 	removeFromArrayProp,
+	reassignObjectProperties,
 };

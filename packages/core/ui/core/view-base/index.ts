@@ -336,12 +336,12 @@ export abstract class ViewBase extends HTMLElement implements ViewBaseDefinition
 
 	public _moduleName: string;
 
+	public isNativeELement: boolean = true;
+
 	public reusable: boolean;
 
 	constructor() {
-		super(NodeTypeEnum.elementNode, 'ViewBase');
-		this.nodeName = this.constructor.name;
-		this.localName = this.constructor.name;
+		super(NodeTypeEnum.elementNode, 'view-base');
 		this._domId = viewIdCounter++;
 		this._style = new Style(new WeakRef(this));
 		this.notify({ eventName: ViewBase.createdEvent, type: this.constructor.name, object: this });

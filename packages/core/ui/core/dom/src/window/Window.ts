@@ -14,6 +14,12 @@ import SVGElement from '../nodes/svg-element/SVGElement';
 import Text from '../nodes/text/Text';
 import XMLSerializer from '../xml-serializer';
 import { HTMLKeyPropElement, HTMLArrayPropElement } from '../nodes/html-prop-element/HTMLPropElement';
+
+declare global {
+	// eslint-disable-next-line no-var
+	var htmlElementRegistry: Map<string, HTMLElement>;
+}
+
 /**
  * Browser window.
  *
@@ -39,27 +45,31 @@ export default class Window {
 	public readonly HTMLKeyPropElement = HTMLKeyPropElement;
 	public readonly HTMLArrayPropElement = HTMLArrayPropElement;
 	public readonly document: Document;
+	public readonly self: Window;
 	constructor() {
-		//@ts-ignore
-		globalThis.htmlElementRegistry = {};
-		//@ts-ignore
-		globalThis.registerElement = this.registerElement;
 		this.document = new Document();
 		this.document.defaultView = this;
+		globalThis.htmlElementRegistry = new Map();
+		globalThis.registerElement = this.registerElement;
+		this.self = this;
+	}
+
+	registerElement(name: string, element: HTMLElement) {
+		if (!htmlElementRegistry.has(name)) {
+			//@ts-ignore
+			element.NODE_TAG_NAME = name;
+			//@ts-ignore
+			globalThis.htmlElementRegistry.set(name, element);
+		}
+	}
+
+	bindToGlobal() {
 		//@ts-ignore
 		globalThis.window = this;
 		//@ts-ignore
 		globalThis.document = this.document;
-	}
-
-	registerElement(name: string, element: HTMLElement) {
 		//@ts-ignore
-		element.NODE_TAG_NAME = name;
-		//@ts-ignore
-		globalThis.htmlElementRegistry[name] = element;
-	}
-
-	bindToGlobal() {
+		globalThis.self = this;
 		//@ts-ignore
 		globalThis.Node = Node;
 		//@ts-ignore
@@ -92,6 +102,7 @@ export default class Window {
 		globalThis.CustomEvent = CustomEvent;
 		globalThis.HTMLKeyPropElement = HTMLKeyPropElement;
 		globalThis.HTMLArrayPropElement = HTMLArrayPropElement;
+
 		return this;
 	}
 }

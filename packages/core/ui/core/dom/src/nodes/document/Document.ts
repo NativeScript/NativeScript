@@ -7,10 +7,9 @@ import Text from '../text/Text';
 import { Event } from '../../event/Event';
 
 const createElement = (type: string, owner: Document) => {
-	//@ts-ignore
-	if (htmlElementRegistry && htmlElementRegistry[type]) {
+	if (htmlElementRegistry.has(type)) {
 		//@ts-ignore
-		const element = new htmlElementRegistry[type]();
+		const element = new htmlElementRegistry.get(type)();
 		element.ownerDocument = owner;
 		//@ts-ignore
 		element.tagName = htmlElementRegistry[type].NODE_TAG_NAME;
