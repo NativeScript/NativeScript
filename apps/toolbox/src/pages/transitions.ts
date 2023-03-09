@@ -1,5 +1,4 @@
-import { Observable, EventData, Page, ShowModalOptions, SharedTransition, ModalTransition, TransitionType, Screen } from '@nativescript/core';
-// import { DetailTransition } from './transitions/detail';
+import { Observable, EventData, Page, ShowModalOptions, SharedTransition, ModalTransition, PageTransition, Screen } from '@nativescript/core';
 let page: Page;
 
 export function navigatingTo(args: EventData) {
@@ -12,13 +11,22 @@ export function navigatingTo(args: EventData) {
 // }
 export class TransitionsModel extends Observable {
 	open() {
-		// const detailTransition = new DetailTransition(400, global.isIOS ? UIViewAnimationCurve.EaseInOut : null);
-		// detailTransition.page = page;
 		page.frame.navigate({
 			moduleName: `pages/transitions/transitions-detail`,
-			// transition: {
-			// 	instance: detailTransition,
-			// },
+			transition: {
+				instance: SharedTransition.configure({
+					page,
+					instance: new PageTransition(),
+					incomingViewStart: {
+						y: 200,
+						duration: 1000,
+					},
+					dismissViewEnd: {
+						y: 100,
+						duration: 500,
+					},
+				}),
+			},
 		});
 	}
 

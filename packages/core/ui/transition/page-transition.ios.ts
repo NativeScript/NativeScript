@@ -1,11 +1,11 @@
-import { querySelectorAll } from '../core/view-base';
+﻿import { querySelectorAll } from '../core/view-base';
 import type { View } from '../core/view';
+import { Transition, iosMatchLayerProperties, iosSnapshotView, iosPrintRect } from '.';
 import { Screen } from '../../platform';
-import { Transition, iosMatchLayerProperties, iosPrintRect, iosSnapshotView } from '.';
 import { SharedTransition, SharedTransitionAnimationType, DEFAULT_DURATION } from './shared-transition';
 
-export class ModalTransition extends Transition {
-	transitionController: ModalTransitionController;
+export class PageTransition extends Transition {
+	transitionController: PageTransitionController;
 	presented: UIViewController;
 	presenting: UIViewController;
 	sharedElements: {
@@ -14,14 +14,15 @@ export class ModalTransition extends Transition {
 	};
 
 	iosPresentedController(presented: UIViewController, presenting: UIViewController, source: UIViewController): UIViewControllerAnimatedTransitioning {
-		this.transitionController = ModalTransitionController.initWithOwner(new WeakRef(this));
+		console.log('-- iosPresentedController --');
+		this.transitionController = PageTransitionController.initWithOwner(new WeakRef(this));
 		this.presented = presented;
-		// console.log('presenting:', presenting)
 		return this.transitionController;
 	}
 
 	iosDismissedController(dismissed: UIViewController): UIViewControllerAnimatedTransitioning {
-		this.transitionController = ModalTransitionController.initWithOwner(new WeakRef(this));
+		console.log('-- iosDismissedController --');
+		this.transitionController = PageTransitionController.initWithOwner(new WeakRef(this));
 		this.presented = dismissed;
 		return this.transitionController;
 	}
@@ -43,12 +44,12 @@ export class ModalTransition extends Transition {
 }
 
 @NativeClass()
-class ModalTransitionController extends NSObject implements UIViewControllerAnimatedTransitioning {
+class PageTransitionController extends NSObject implements UIViewControllerAnimatedTransitioning {
 	static ObjCProtocols = [UIViewControllerAnimatedTransitioning];
-	owner: WeakRef<ModalTransition>;
+	owner: WeakRef<PageTransition>;
 
-	static initWithOwner(owner: WeakRef<ModalTransition>) {
-		const ctrl = <ModalTransitionController>ModalTransitionController.new();
+	static initWithOwner(owner: WeakRef<PageTransition>) {
+		const ctrl = <PageTransitionController>PageTransitionController.new();
 		ctrl.owner = owner;
 		return ctrl;
 	}
@@ -58,7 +59,7 @@ class ModalTransitionController extends NSObject implements UIViewControllerAnim
 	}
 
 	animateTransition(transitionContext: UIViewControllerContextTransitioning): void {
-		// console.log('ModalTransitionController animateTransition:', animationType);
+		console.log('PageTransitionController animateTransition');
 		const owner = this.owner.deref();
 		if (owner) {
 			// console.log('owner.id:', owner.id);
@@ -66,7 +67,7 @@ class ModalTransitionController extends NSObject implements UIViewControllerAnim
 			if (!state) {
 				return;
 			}
-			// console.log('state.activeType:', state.activeType)
+			console.log('state.activeType:', state.activeType);
 			switch (state.activeType) {
 				case SharedTransitionAnimationType.present: {
 					console.log('-- Transition present --');

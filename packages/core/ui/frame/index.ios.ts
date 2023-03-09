@@ -402,11 +402,23 @@ class UINavigationControllerAnimatedDelegate extends NSObject implements UINavig
 			Trace.write(`UINavigationControllerImpl.navigationControllerAnimationControllerForOperationFromViewControllerToViewController(${operation}, ${fromVC}, ${toVC}), transition: ${JSON.stringify(navigationTransition)}`, Trace.categories.NativeLifecycle);
 		}
 
+		// Shared element transitions
+		if (operation === UINavigationControllerOperation.Push && navigationTransition.instance?.iosPresentedController) {
+			return navigationTransition.instance?.iosPresentedController(toVC, fromVC, navigationController);
+		} else if (operation === UINavigationControllerOperation.Pop && navigationTransition.instance?.iosDismissedController) {
+			return navigationTransition.instance?.iosDismissedController(toVC);
+		}
+
 		const curve = _getNativeCurve(navigationTransition);
 		const animationController = _createIOSAnimatedTransitioning(navigationTransition, curve, operation, fromVC, toVC);
 
 		return animationController;
 	}
+
+	// TODO: wire this up for interactive gesture control of transition
+	// navigationControllerInteractionControllerForAnimationController(navigationController: UINavigationController, animationController: UIViewControllerAnimatedTransitioning): UIViewControllerInteractiveTransitioning {
+
+	// }
 }
 
 @NativeClass

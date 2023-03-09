@@ -76,7 +76,7 @@ export { TextView } from './text-view';
 export { TimePicker } from './time-picker';
 export { Transition } from './transition';
 export { ModalTransition } from './transition/modal-transition';
+export { PageTransition } from './transition/page-transition';
 export { SharedTransition, SharedTransitionAnimationType } from './transition/shared-transition';
-export type { TransitionType } from './transition';
 export { WebView } from './web-view';
 export type { LoadEventData, WebViewNavigationType } from './web-view';

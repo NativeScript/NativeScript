@@ -2,6 +2,7 @@ import type { Transition } from '.';
 // import type { View } from '../../core/view';
 import type { Page } from '../page';
 
+export const DEFAULT_DURATION = 0.35;
 // always increment when adding new transitions to be able to track their state
 export enum SharedTransitionAnimationType {
 	present,

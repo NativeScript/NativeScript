@@ -13,7 +13,7 @@ import { profile } from '../../../profiling';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty, accessibilityIgnoresInvertColorsProperty } from '../../../accessibility/accessibility-properties';
 import { IOSPostAccessibilityNotificationType, isAccessibilityServiceEnabled, updateAccessibilityProperties, AccessibilityEventOptions, AccessibilityRole, AccessibilityState } from '../../../accessibility';
 import { CoreTypes } from '../../../core-types';
-import { CustomTransitionModal } from '../../transition';
+import type { ModalTransition } from '../../transition/modal-transition';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -922,10 +922,10 @@ View.prototype._nativeBackgroundState = 'unset';
 
 @NativeClass
 class UIViewControllerTransitioningDelegateImpl extends NSObject implements UIViewControllerTransitioningDelegate {
-	owner: WeakRef<CustomTransitionModal>;
+	owner: WeakRef<ModalTransition>;
 	static ObjCProtocols = [UIViewControllerTransitioningDelegate];
 
-	static initWithOwner(owner: WeakRef<CustomTransitionModal>) {
+	static initWithOwner(owner: WeakRef<ModalTransition>) {
 		const delegate = <UIViewControllerTransitioningDelegateImpl>UIViewControllerTransitioningDelegateImpl.new();
 		delegate.owner = owner;
 		return delegate;
