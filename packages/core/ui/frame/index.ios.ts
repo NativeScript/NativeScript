@@ -26,6 +26,7 @@ let navDepth = -1;
 export class Frame extends FrameBase {
 	public viewController: UINavigationControllerImpl;
 	public _animatedDelegate = <UINavigationControllerDelegate>UINavigationControllerAnimatedDelegate.new();
+	// public _transitionDelegate;
 	public _ios: iOSFrame;
 
 	constructor() {
@@ -97,7 +98,12 @@ export class Frame extends FrameBase {
 
 		const nativeTransition = _getNativeTransition(navigationTransition, true);
 		if (!nativeTransition && navigationTransition) {
+			// if (navigationTransition.instance?.iosPresentedController) {
+			// this._ios.controller.transitioningDelegate = this._animatedDelegate;
+			// } else {
 			this._ios.controller.delegate = this._animatedDelegate;
+
+			// }
 			viewController[DELEGATE] = this._animatedDelegate;
 		} else {
 			viewController[DELEGATE] = null;
@@ -379,6 +385,7 @@ class UINavigationControllerAnimatedDelegate extends NSObject implements UINavig
 	public static ObjCProtocols = [UINavigationControllerDelegate];
 
 	navigationControllerAnimationControllerForOperationFromViewControllerToViewController(navigationController: UINavigationController, operation: number, fromVC: UIViewController, toVC: UIViewController): UIViewControllerAnimatedTransitioning {
+		console.log('UINavigationControllerAnimatedDelegate navigationControllerAnimationControllerForOperationFromViewControllerToViewController');
 		let viewController: UIViewController;
 		switch (operation) {
 			case UINavigationControllerOperation.Push:
@@ -402,12 +409,12 @@ class UINavigationControllerAnimatedDelegate extends NSObject implements UINavig
 			Trace.write(`UINavigationControllerImpl.navigationControllerAnimationControllerForOperationFromViewControllerToViewController(${operation}, ${fromVC}, ${toVC}), transition: ${JSON.stringify(navigationTransition)}`, Trace.categories.NativeLifecycle);
 		}
 
-		// Shared element transitions
-		if (operation === UINavigationControllerOperation.Push && navigationTransition.instance?.iosPresentedController) {
-			return navigationTransition.instance?.iosPresentedController(toVC, fromVC, navigationController);
-		} else if (operation === UINavigationControllerOperation.Pop && navigationTransition.instance?.iosDismissedController) {
-			return navigationTransition.instance?.iosDismissedController(toVC);
-		}
+		// // Shared element transitions
+		// if (operation === UINavigationControllerOperation.Push && navigationTransition.instance?.iosPresentedController) {
+		// 	return navigationTransition.instance?.iosPresentedController(toVC, fromVC, navigationController);
+		// } else if (operation === UINavigationControllerOperation.Pop && navigationTransition.instance?.iosDismissedController) {
+		// 	return navigationTransition.instance?.iosDismissedController(viewController);
+		// }
 
 		const curve = _getNativeCurve(navigationTransition);
 		const animationController = _createIOSAnimatedTransitioning(navigationTransition, curve, operation, fromVC, toVC);

@@ -5,7 +5,7 @@
   </Page.actionBar>
 
   <GridLayout rows="auto,auto,*" columns="*" verticalAlignment="top">
-    <Image row="1" sharedTransitionTag="image-modal" src="https://cdn.pixabay.com/photo/2012/08/27/14/19/mountains-55067__340.png" height="230" verticalAlignment="top" marginTop="10" />
+    <Image row="1" sharedTransitionTag="image" src="https://cdn.pixabay.com/photo/2012/08/27/14/19/mountains-55067__340.png" height="230" verticalAlignment="top" marginTop="10" />
 
     <GridLayout row="2" rows="auto,auto,auto">
       <Label text="Opened Navigated Page" verticalAlignment="top" marginTop="20" class="text-center" fontSize="28" color="black" />

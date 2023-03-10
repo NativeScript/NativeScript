@@ -18,11 +18,13 @@ export class TransitionsModel extends Observable {
 					page,
 					instance: new PageTransition(),
 					incomingViewStart: {
-						y: 200,
+						x: Screen.mainScreen.widthDIPs,
+						y: 0,
 						duration: 1000,
 					},
 					dismissViewEnd: {
-						y: 100,
+						x: Screen.mainScreen.widthDIPs,
+						y: 0,
 						duration: 500,
 					},
 				}),
