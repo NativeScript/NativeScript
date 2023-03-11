@@ -175,8 +175,8 @@ export class PageTransition extends Transition {
 				// starting page properties
 				this.presented.view.alpha = typeof state.incomingViewStart?.opacity === 'number' ? state.incomingViewStart?.opacity : 0;
 
-				const startX = typeof state.incomingViewStart?.x === 'number' ? state.incomingViewStart?.x : 0;
-				const startY = typeof state.incomingViewStart?.y === 'number' ? state.incomingViewStart?.y : Screen.mainScreen.heightDIPs;
+				const startX = typeof state.incomingViewStart?.x === 'number' ? state.incomingViewStart?.x : Screen.mainScreen.widthDIPs;
+				const startY = typeof state.incomingViewStart?.y === 'number' ? state.incomingViewStart?.y : 0;
 				const startWidth = typeof state.incomingViewStart?.width === 'number' ? state.incomingViewStart?.width : Screen.mainScreen.widthDIPs;
 				const startHeight = typeof state.incomingViewStart?.height === 'number' ? state.incomingViewStart?.height : Screen.mainScreen.heightDIPs;
 				this.presented.view.frame = CGRectMake(startX, startY, startWidth, startHeight);
@@ -206,7 +206,7 @@ export class PageTransition extends Transition {
 				break;
 			}
 			case UINavigationControllerOperation.Pop: {
-				this.presented = fromViewCtrl;
+				// this.presented = fromViewCtrl;
 				console.log('-- Transition dismiss --', this.presented);
 
 				// console.log('transitionContext.containerView.subviews.count:', transitionContext.containerView.subviews.count);
@@ -229,8 +229,7 @@ export class PageTransition extends Transition {
 
 				const cleanupDismiss = () => {
 					for (const presenting of this.sharedElements.presenting) {
-						// presenting.view.opacity = presenting.startOpacity;
-						presenting.snapshot.removeFromSuperview();
+						presenting.view.opacity = presenting.startOpacity;
 					}
 					SharedTransition.finishState(this.id);
 					transitionContext.completeTransition(true);
@@ -256,8 +255,8 @@ export class PageTransition extends Transition {
 					() => {
 						this.presented.view.alpha = typeof state.dismissViewEnd?.opacity === 'number' ? state.dismissViewEnd?.opacity : 0;
 
-						const endX = typeof state.dismissViewEnd?.x === 'number' ? state.dismissViewEnd?.x : 0;
-						const endY = typeof state.dismissViewEnd?.y === 'number' ? state.dismissViewEnd?.y : Screen.mainScreen.heightDIPs;
+						const endX = typeof state.dismissViewEnd?.x === 'number' ? state.dismissViewEnd?.x : Screen.mainScreen.widthDIPs;
+						const endY = typeof state.dismissViewEnd?.y === 'number' ? state.dismissViewEnd?.y : 0;
 						const endWidth = typeof state.dismissViewEnd?.width === 'number' ? state.dismissViewEnd?.width : Screen.mainScreen.widthDIPs;
 						const endHeight = typeof state.dismissViewEnd?.height === 'number' ? state.dismissViewEnd?.height : Screen.mainScreen.heightDIPs;
 						this.presented.view.frame = CGRectMake(endX, endY, endWidth, endHeight);
