@@ -74,27 +74,17 @@ class ModalTransitionController extends NSObject implements UIViewControllerAnim
 					transitionContext.containerView.addSubview(owner.presented.view);
 					owner.presented.view.layoutIfNeeded();
 
-					// 1. Presented view: gather all sharedTransitionTag views
-					const presentedSharedElements = <Array<View>>querySelectorAll(state.toPage, 'sharedTransitionTag');
-					// console.log('presented sharedTransitionTag total:', presentedSharedElements.length);
-
-					// 2. Presenting view: gather all sharedTransitionTag views
-					const presentingSharedElements = <Array<View>>querySelectorAll(state.page, 'sharedTransitionTag');
-					// console.log('presenting sharedTransitionTag total:', presentingSharedElements.length);
-
-					// 3. only handle sharedTransitionTag on presenting which match presented
-					const presentedTags = presentedSharedElements.map((v) => v.sharedTransitionTag);
-					const presentingViewsToHandle = presentingSharedElements.filter((v) => presentedTags.includes(v.sharedTransitionTag));
+					const { sharedElements, presented } = SharedTransition.getSharedElements(state.page, state.toPage);
 
 					console.log('  ');
 					console.log(
 						`1. Found sharedTransitionTags to animate:`,
-						presentingViewsToHandle.map((v) => v.sharedTransitionTag)
+						sharedElements.map((v) => v.sharedTransitionTag)
 					);
 
 					console.log(`2. Take snapshots of shared elements and position them based on presenting view:`);
 
-					for (const presentingView of presentingViewsToHandle) {
+					for (const presentingView of sharedElements) {
 						if (!owner.sharedElements) {
 							owner.sharedElements = {
 								presented: [],
@@ -108,7 +98,7 @@ class ModalTransitionController extends NSObject implements UIViewControllerAnim
 						// Note: snapshot may be most efficient/simple
 						// console.log('---> ', presentingView.sharedTransitionTag, ': ', presentingSharedElement)
 
-						const presentedView = presentedSharedElements.find((v) => v.sharedTransitionTag === presentingView.sharedTransitionTag);
+						const presentedView = presented.find((v) => v.sharedTransitionTag === presentingView.sharedTransitionTag);
 						const presentedSharedElement = presentedView.ios;
 
 						const sharedElementSnapshot = UIImageView.alloc().init(); // WithImage(snapshotView(presentedSharedElement));
@@ -214,28 +204,28 @@ class ModalTransitionController extends NSObject implements UIViewControllerAnim
 					};
 
 					// starting page properties
-					owner.presented.view.alpha = typeof state.incomingViewStart?.opacity === 'number' ? state.incomingViewStart?.opacity : 0;
+					owner.presented.view.alpha = typeof state.toPageStart?.opacity === 'number' ? state.toPageStart?.opacity : 0;
 
-					const startX = typeof state.incomingViewStart?.x === 'number' ? state.incomingViewStart?.x : 0;
-					const startY = typeof state.incomingViewStart?.y === 'number' ? state.incomingViewStart?.y : Screen.mainScreen.heightDIPs;
-					const startWidth = typeof state.incomingViewStart?.width === 'number' ? state.incomingViewStart?.width : Screen.mainScreen.widthDIPs;
-					const startHeight = typeof state.incomingViewStart?.height === 'number' ? state.incomingViewStart?.height : Screen.mainScreen.heightDIPs;
+					const startX = typeof state.toPageStart?.x === 'number' ? state.toPageStart?.x : 0;
+					const startY = typeof state.toPageStart?.y === 'number' ? state.toPageStart?.y : Screen.mainScreen.heightDIPs;
+					const startWidth = typeof state.toPageStart?.width === 'number' ? state.toPageStart?.width : Screen.mainScreen.widthDIPs;
+					const startHeight = typeof state.toPageStart?.height === 'number' ? state.toPageStart?.height : Screen.mainScreen.heightDIPs;
 					owner.presented.view.frame = CGRectMake(startX, startY, startWidth, startHeight);
 
 					UIView.animateWithDurationDelayUsingSpringWithDampingInitialSpringVelocityOptionsAnimationsCompletion(
-						typeof state.incomingViewStart?.duration === 'number' ? state.incomingViewStart?.duration / 1000 : DEFAULT_DURATION,
+						typeof state.toPageStart?.duration === 'number' ? state.toPageStart?.duration / 1000 : DEFAULT_DURATION,
 						0,
 						0.5,
 						3,
 						UIViewAnimationOptions.CurveEaseInOut,
 						() => {
 							// animate page properties to the following:
-							owner.presented.view.alpha = typeof state.incomingViewEnd?.opacity === 'number' ? state.incomingViewEnd?.opacity : 1;
+							owner.presented.view.alpha = typeof state.toPageEnd?.opacity === 'number' ? state.toPageEnd?.opacity : 1;
 
-							const endX = typeof state.incomingViewEnd?.x === 'number' ? state.incomingViewEnd?.x : 0;
-							const endY = typeof state.incomingViewEnd?.y === 'number' ? state.incomingViewEnd?.y : 0;
-							const endWidth = typeof state.incomingViewEnd?.width === 'number' ? state.incomingViewEnd?.width : Screen.mainScreen.widthDIPs;
-							const endHeight = typeof state.incomingViewEnd?.height === 'number' ? state.incomingViewEnd?.height : Screen.mainScreen.heightDIPs;
+							const endX = typeof state.toPageEnd?.x === 'number' ? state.toPageEnd?.x : 0;
+							const endY = typeof state.toPageEnd?.y === 'number' ? state.toPageEnd?.y : 0;
+							const endWidth = typeof state.toPageEnd?.width === 'number' ? state.toPageEnd?.width : Screen.mainScreen.widthDIPs;
+							const endHeight = typeof state.toPageEnd?.height === 'number' ? state.toPageEnd?.height : Screen.mainScreen.heightDIPs;
 							owner.presented.view.frame = CGRectMake(endX, endY, endWidth, endHeight);
 
 							updateFramePresent();
@@ -287,18 +277,18 @@ class ModalTransitionController extends NSObject implements UIViewControllerAnim
 					};
 
 					UIView.animateWithDurationDelayUsingSpringWithDampingInitialSpringVelocityOptionsAnimationsCompletion(
-						typeof state.dismissViewEnd?.duration === 'number' ? state.dismissViewEnd?.duration / 1000 : DEFAULT_DURATION,
+						typeof state.fromPageEnd?.duration === 'number' ? state.fromPageEnd?.duration / 1000 : DEFAULT_DURATION,
 						0,
 						0.5,
 						3,
 						UIViewAnimationOptions.CurveEaseInOut,
 						() => {
-							owner.presented.view.alpha = typeof state.dismissViewEnd?.opacity === 'number' ? state.dismissViewEnd?.opacity : 0;
+							owner.presented.view.alpha = typeof state.fromPageEnd?.opacity === 'number' ? state.fromPageEnd?.opacity : 0;
 
-							const endX = typeof state.dismissViewEnd?.x === 'number' ? state.dismissViewEnd?.x : 0;
-							const endY = typeof state.dismissViewEnd?.y === 'number' ? state.dismissViewEnd?.y : Screen.mainScreen.heightDIPs;
-							const endWidth = typeof state.dismissViewEnd?.width === 'number' ? state.dismissViewEnd?.width : Screen.mainScreen.widthDIPs;
-							const endHeight = typeof state.dismissViewEnd?.height === 'number' ? state.dismissViewEnd?.height : Screen.mainScreen.heightDIPs;
+							const endX = typeof state.fromPageEnd?.x === 'number' ? state.fromPageEnd?.x : 0;
+							const endY = typeof state.fromPageEnd?.y === 'number' ? state.fromPageEnd?.y : Screen.mainScreen.heightDIPs;
+							const endWidth = typeof state.fromPageEnd?.width === 'number' ? state.fromPageEnd?.width : Screen.mainScreen.widthDIPs;
+							const endHeight = typeof state.fromPageEnd?.height === 'number' ? state.fromPageEnd?.height : Screen.mainScreen.heightDIPs;
 							owner.presented.view.frame = CGRectMake(endX, endY, endWidth, endHeight);
 
 							updateFrameDismiss();

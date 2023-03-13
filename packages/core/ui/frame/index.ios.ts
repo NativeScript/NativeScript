@@ -98,12 +98,7 @@ export class Frame extends FrameBase {
 
 		const nativeTransition = _getNativeTransition(navigationTransition, true);
 		if (!nativeTransition && navigationTransition) {
-			// if (navigationTransition.instance?.iosPresentedController) {
-			// this._ios.controller.transitioningDelegate = this._animatedDelegate;
-			// } else {
 			this._ios.controller.delegate = this._animatedDelegate;
-
-			// }
 			viewController[DELEGATE] = this._animatedDelegate;
 		} else {
 			viewController[DELEGATE] = null;

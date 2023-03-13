@@ -1,124 +1,67 @@
+import { BackstackEntry } from '../frame';
 import { Transition } from '.';
-import { Screen } from '../../platform';
-import lazy from '../../utils/lazy';
-
-const screenWidth = lazy(() => Screen.mainScreen.widthPixels);
-const screenHeight = lazy(() => Screen.mainScreen.heightPixels);
+import { SharedTransition } from './shared-transition';
 
 export class PageTransition extends Transition {
-	private _direction: string;
-
-	constructor(direction: string, duration: number, curve: any) {
-		super(duration, curve);
-		this._direction = direction;
+	createAndroidAnimator(transitionType: string) {
+		console.log('HELLO', transitionType);
 	}
 
-	public createAndroidAnimator(transitionType: string): android.animation.Animator {
-		const translationValues = Array.create('float', 2);
-		switch (this._direction) {
-			case 'left':
-				switch (transitionType) {
-					case Transition.AndroidTransitionType.enter:
-						translationValues[0] = screenWidth();
-						translationValues[1] = 0;
-						break;
-					case Transition.AndroidTransitionType.exit:
-						translationValues[0] = 0;
-						translationValues[1] = -screenWidth();
-						break;
-					case Transition.AndroidTransitionType.popEnter:
-						translationValues[0] = -screenWidth();
-						translationValues[1] = 0;
-						break;
-					case Transition.AndroidTransitionType.popExit:
-						translationValues[0] = 0;
-						translationValues[1] = screenWidth();
-						break;
-				}
-				break;
-			case 'right':
-				switch (transitionType) {
-					case Transition.AndroidTransitionType.enter:
-						translationValues[0] = -screenWidth();
-						translationValues[1] = 0;
-						break;
-					case Transition.AndroidTransitionType.exit:
-						translationValues[0] = 0;
-						translationValues[1] = screenWidth();
-						break;
-					case Transition.AndroidTransitionType.popEnter:
-						translationValues[0] = screenWidth();
-						translationValues[1] = 0;
-						break;
-					case Transition.AndroidTransitionType.popExit:
-						translationValues[0] = 0;
-						translationValues[1] = -screenWidth();
-						break;
-				}
-				break;
-			case 'top':
-				switch (transitionType) {
-					case Transition.AndroidTransitionType.enter:
-						translationValues[0] = screenHeight();
-						translationValues[1] = 0;
-						break;
-					case Transition.AndroidTransitionType.exit:
-						translationValues[0] = 0;
-						translationValues[1] = -screenHeight();
-						break;
-					case Transition.AndroidTransitionType.popEnter:
-						translationValues[0] = -screenHeight();
-						translationValues[1] = 0;
-						break;
-					case Transition.AndroidTransitionType.popExit:
-						translationValues[0] = 0;
-						translationValues[1] = screenHeight();
-						break;
-				}
-				break;
-			case 'bottom':
-				switch (transitionType) {
-					case Transition.AndroidTransitionType.enter:
-						translationValues[0] = -screenHeight();
-						translationValues[1] = 0;
-						break;
-					case Transition.AndroidTransitionType.exit:
-						translationValues[0] = 0;
-						translationValues[1] = screenHeight();
-						break;
-					case Transition.AndroidTransitionType.popEnter:
-						translationValues[0] = screenHeight();
-						translationValues[1] = 0;
-						break;
-					case Transition.AndroidTransitionType.popExit:
-						translationValues[0] = 0;
-						translationValues[1] = -screenHeight();
-						break;
-				}
-				break;
-		}
+	test(fragmentTransaction: androidx.fragment.app.FragmentTransaction, currentEntry: BackstackEntry, newEntry: BackstackEntry) {
+		console.log('HELLO', fragmentTransaction);
 
-		let prop;
+		const fromPage = currentEntry.resolvedPage;
+		const toPage = newEntry.resolvedPage;
 
-		if (this._direction === 'left' || this._direction === 'right') {
-			prop = 'translationX';
-		} else {
-			prop = 'translationY';
-		}
+		const currentFragment: androidx.fragment.app.Fragment = currentEntry ? currentEntry.fragment : null;
+		const newFragment: androidx.fragment.app.Fragment = newEntry.fragment;
 
-		const animator = android.animation.ObjectAnimator.ofFloat(null, prop, translationValues);
-		const duration = this.getDuration();
-		if (duration !== undefined) {
-			animator.setDuration(duration);
-		}
-		animator.setInterpolator(this.getCurve());
+		const { sharedElements, presented, presenting } = SharedTransition.getSharedElements(fromPage, toPage);
+		// fragmentTransaction.addSharedElement();
 
-		const animatorSet = new android.animation.AnimatorSet();
-		animatorSet.play(animator);
-		return animatorSet;
-	}
+		toPage.on('loaded', () => {
+			presented.forEach((v) => {
+				console.log({
+					presentedSharedElements: true,
+					nativeView: !!v.nativeView,
+					sharedTransitionTag: v.sharedTransitionTag,
+				});
+				androidx.core.view.ViewCompat.setTransitionName(v.nativeView, v.sharedTransitionTag);
+			});
 
-	public toString(): string {
-		return `${super.toString()} ${this._direction}`;
+			// setTimeout(() => {
+			newFragment.startPostponedEnterTransition();
+			// }, 2000)
+		});
+
+		presenting.forEach((v) => {
+			console.log({
+				presentingSharedElements: true,
+				nativeView: !!v.nativeView,
+				sharedTransitionTag: v.sharedTransitionTag,
+			});
+			androidx.core.view.ViewCompat.setTransitionName(v.nativeView, v.sharedTransitionTag);
+		});
+		presenting.forEach((v) => {
+			fragmentTransaction.addSharedElement(v.nativeView, v.sharedTransitionTag);
+		});
+
+		fragmentTransaction.setReorderingAllowed(true);
+
+		const transitionSet = new androidx.transition.TransitionSet();
+		transitionSet.setDuration(2000);
+		transitionSet.addTransition(new androidx.transition.ChangeBounds());
+		transitionSet.addTransition(new androidx.transition.ChangeTransform());
+		// transitionSet.addTransition(new androidx.transition.ChangeClipBounds());
+
+		// postpone enter until we call "loaded" on the new page
+		newFragment.postponeEnterTransition();
+
+		newFragment.setSharedElementEnterTransition(transitionSet);
+		newFragment.setSharedElementReturnTransition(transitionSet);
+
+		// newFragment.setSharedElementReturnTransition(new androidx.transition.ChangeBounds());
+		// currentFragment.setSharedElementEnterTransition(new androidx.transition.ChangeBounds());
+		// currentFragment.setSharedElementReturnTransition(new androidx.transition.ChangeBounds());
 	}
 }

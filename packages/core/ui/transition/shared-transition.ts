@@ -1,5 +1,6 @@
 import type { Transition } from '.';
-// import type { View } from '../../core/view';
+import { querySelectorAll } from '../core/view-base';
+import type { View } from '../core/view';
 import type { Page } from '../page';
 
 export const DEFAULT_DURATION = 0.35;
@@ -18,17 +19,17 @@ export interface SharedTransitionConfig {
 	 */
 	instance?: Transition;
 	/**
-	 * View settings to start your transition from.
+	 * View settings to start your transition.
 	 */
-	incomingViewStart?: SharedTransitionPageProperties;
+	toPageStart?: SharedTransitionPageProperties;
 	/**
-	 * View settings to animate your page to.
+	 * View settings to end your transition.
 	 */
-	incomingViewEnd?: SharedTransitionPageProperties;
+	toPageEnd?: SharedTransitionPageProperties;
 	/**
-	 * View settings to animate your page to when dismissed.
+	 * View settings to end your transition for the 'from' (aka outgoing or dismissed) page.
 	 */
-	dismissViewEnd?: SharedTransitionPageProperties;
+	fromPageEnd?: SharedTransitionPageProperties;
 }
 export interface SharedTransitionState extends SharedTransitionConfig {
 	id?: number;
@@ -46,6 +47,12 @@ type SharedTransitionPageProperties = {
 	 */
 	duration?: number;
 };
+/**
+ * Shared Element Transition (experimental)
+ *
+ * no
+ * Note: some APIs may change in subsequent releases
+ */
 export class SharedTransition {
 	static configure(options: SharedTransitionConfig): Transition {
 		SharedTransition.updateState({
@@ -91,5 +98,29 @@ export class SharedTransition {
 		if (index > -1) {
 			SharedTransition.currentStack.splice(index, 1);
 		}
+	}
+	static getSharedElements(
+		fromPage: Page,
+		toPage: Page
+	): {
+		sharedElements: Array<View>;
+		presented: Array<View>;
+		presenting: Array<View>;
+	} {
+		// 1. Presented view: gather all sharedTransitionTag views
+		const presentedSharedElements = <Array<View>>querySelectorAll(toPage, 'sharedTransitionTag');
+		// console.log('presented sharedTransitionTag total:', presentedSharedElements.length);
+
+		// 2. Presenting view: gather all sharedTransitionTag views
+		const presentingSharedElements = <Array<View>>querySelectorAll(fromPage, 'sharedTransitionTag');
+		// console.log('presenting sharedTransitionTag total:', presentingSharedElements.length);
+
+		// 3. only handle sharedTransitionTag on presenting which match presented
+		const presentedTags = presentedSharedElements.map((v) => v.sharedTransitionTag);
+		return {
+			sharedElements: presentingSharedElements.filter((v) => presentedTags.includes(v.sharedTransitionTag)),
+			presented: presentedSharedElements,
+			presenting: presentingSharedElements,
+		};
 	}
 }

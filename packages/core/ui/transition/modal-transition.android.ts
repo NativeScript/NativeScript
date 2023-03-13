@@ -1,7 +1,6 @@
 import { BackstackEntry } from '../frame';
-import { View } from '../core/view';
 import { Transition } from '.';
-import { querySelectorAll } from '../core/view-base';
+import { SharedTransition } from './shared-transition';
 
 export class ModalTransition extends Transition {
 	createAndroidAnimator(transitionType: string) {
@@ -17,21 +16,11 @@ export class ModalTransition extends Transition {
 		const currentFragment: androidx.fragment.app.Fragment = currentEntry ? currentEntry.fragment : null;
 		const newFragment: androidx.fragment.app.Fragment = newEntry.fragment;
 
-		// 1. Presented view: gather all sharedTransitionTag views
-		const presentedSharedElements = <Array<View>>querySelectorAll(toPage, 'sharedTransitionTag');
-		// console.log('presented sharedTransitionTag total:', presentedSharedElements.length);
-
-		// 2. Presenting view: gather all sharedTransitionTag views
-		const presentingSharedElements = <Array<View>>querySelectorAll(fromPage, 'sharedTransitionTag');
-		// console.log('presenting sharedTransitionTag total:', presentingSharedElements.length);
-
-		// 3. only handle sharedTransitionTag on presenting which match presented
-		const presentedTags = presentedSharedElements.map((v) => v.sharedTransitionTag);
-		const presentingViewsToHandle = presentingSharedElements.filter((v) => presentedTags.includes(v.sharedTransitionTag));
+		const { sharedElements, presented, presenting } = SharedTransition.getSharedElements(fromPage, toPage);
 		// fragmentTransaction.addSharedElement();
 
 		toPage.on('loaded', () => {
-			presentedSharedElements.forEach((v) => {
+			presented.forEach((v) => {
 				console.log({
 					presentedSharedElements: true,
 					nativeView: !!v.nativeView,
@@ -45,7 +34,7 @@ export class ModalTransition extends Transition {
 			// }, 2000)
 		});
 
-		presentingSharedElements.forEach((v) => {
+		presenting.forEach((v) => {
 			console.log({
 				presentingSharedElements: true,
 				nativeView: !!v.nativeView,
@@ -53,7 +42,7 @@ export class ModalTransition extends Transition {
 			});
 			androidx.core.view.ViewCompat.setTransitionName(v.nativeView, v.sharedTransitionTag);
 		});
-		presentingSharedElements.forEach((v) => {
+		presenting.forEach((v) => {
 			fragmentTransaction.addSharedElement(v.nativeView, v.sharedTransitionTag);
 		});
 

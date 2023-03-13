@@ -17,11 +17,11 @@ export class TransitionsModel extends Observable {
 				instance: SharedTransition.configure({
 					page,
 					instance: new PageTransition(),
-					incomingViewStart: {
-						duration: 5000,
+					toPageStart: {
+						duration: 1000,
 					},
-					dismissViewEnd: {
-						duration: 5000,
+					fromPageEnd: {
+						duration: 500,
 					},
 				}),
 			},
@@ -35,11 +35,11 @@ export class TransitionsModel extends Observable {
 				instance: SharedTransition.configure({
 					page,
 					instance: new ModalTransition(),
-					incomingViewStart: {
+					toPageStart: {
 						y: 200,
 						duration: 1000,
 					},
-					dismissViewEnd: {
+					fromPageEnd: {
 						y: 100,
 						duration: 500,
 					},
