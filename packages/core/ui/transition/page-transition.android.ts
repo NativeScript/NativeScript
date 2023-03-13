@@ -4,11 +4,11 @@ import { SharedTransition } from './shared-transition';
 
 export class PageTransition extends Transition {
 	createAndroidAnimator(transitionType: string) {
-		console.log('HELLO', transitionType);
+		console.log('HELLO PageTransition', transitionType);
 	}
 
 	test(fragmentTransaction: androidx.fragment.app.FragmentTransaction, currentEntry: BackstackEntry, newEntry: BackstackEntry) {
-		console.log('HELLO', fragmentTransaction);
+		console.log('HELLO PageTransition', fragmentTransaction);
 
 		const fromPage = currentEntry.resolvedPage;
 		const toPage = newEntry.resolvedPage;
