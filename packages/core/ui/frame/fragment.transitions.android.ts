@@ -169,9 +169,6 @@ export function _setAndroidFragmentTransitions(animated: boolean, navigationTran
 		}
 	}
 
-	// @ts-ignore
-	transition?.test?.(fragmentTransaction, currentEntry, newEntry);
-
 	printTransitions(currentEntry);
 	printTransitions(newEntry);
 }

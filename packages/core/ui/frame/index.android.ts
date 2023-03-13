@@ -19,9 +19,9 @@ import { Builder } from '../builder';
 import { CSSUtils } from '../../css/system-classes';
 import { Device } from '../../platform';
 import { profile } from '../../profiling';
-import { android as androidApplication } from '../../application';
 import { setSuspended } from '../../application/application-common';
 import { ad } from '../../utils/native-helper';
+import type { ExpandedEntry } from './fragment.transitions.android';
 
 export * from './frame-common';
 
@@ -459,14 +459,18 @@ export class Frame extends FrameBase {
 
 		if (currentEntry && animated && !navigationTransition) {
 			//TODO: Check whether or not this is still necessary. For Modal views?
-			//transaction.setTransition(androidx.fragment.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+			// transaction.setTransition(androidx.fragment.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
 		}
 
 		transaction.replace(this.containerViewId, newFragment, newFragmentTag);
+
+		// @ts-ignore - TODO: refactor to a meaningful name/api
+		navigationTransition?.instance?.test?.(transaction, currentEntry, newEntry);
+
 		transaction.commitAllowingStateLoss();
 	}
 
-	public _goBackCore(backstackEntry: BackstackEntry) {
+	public _goBackCore(backstackEntry: BackstackEntry & ExpandedEntry) {
 		super._goBackCore(backstackEntry);
 		navDepth = backstackEntry.navDepth;
 
@@ -485,6 +489,9 @@ export class Frame extends FrameBase {
 		_reverseTransitions(backstackEntry, this._currentEntry);
 
 		transaction.replace(this.containerViewId, backstackEntry.fragment, backstackEntry.fragmentTag);
+
+		// @ts-ignore - TODO: refactor to a meaningful name/api
+		backstackEntry.transition?.test?.(transaction, this._currentEntry, backstackEntry);
 
 		transaction.commitAllowingStateLoss();
 	}
@@ -591,7 +598,7 @@ export class Frame extends FrameBase {
 }
 
 export function reloadPage(context?: ModuleContext): void {
-	console.log('reloadPage() is deprecated. Use Frame.reloadPage() instead.');
+	console.warn('reloadPage() is deprecated. Use Frame.reloadPage() instead.');
 
 	return Frame.reloadPage(context);
 }
@@ -1018,7 +1025,10 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 
 		const page = entry.resolvedPage;
 		if (!page) {
-			Trace.error(`${fragment}.onDestroy: entry has no resolvedPage`);
+			// todo: check why this happens when using shared element transition!!!
+			// commented out the Trace.error to prevent a crash (the app will still work interestingly)
+			console.log(`${fragment}.onDestroy: entry has no resolvedPage`);
+			// Trace.error(`${fragment}.onDestroy: entry has no resolvedPage`);
 
 			return null;
 		}
@@ -1077,7 +1087,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 	}
 
 	private loadBitmapFromView(view: android.view.View): android.graphics.Bitmap {
-		// Don't try to creat bitmaps with no dimensions as this causes a crash
+		// Don't try to create bitmaps with no dimensions as this causes a crash
 		// This might happen when showing and closing dialogs fast.
 		if (!(view && view.getWidth() > 0 && view.getHeight() > 0)) {
 			return undefined;
