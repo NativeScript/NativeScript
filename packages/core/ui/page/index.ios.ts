@@ -427,12 +427,8 @@ export class Page extends PageBase {
 	constructor() {
 		super();
 		const controller = UIViewControllerImpl.initWithOwner(new WeakRef(this));
-		this.viewController = this._ios = controller;
-
-		// Make transitions look good
 		controller.view.backgroundColor = this._backgroundColor;
-		console.log('here for Page:', this.viewController);
-		SharedTransition.addPageToTop(this);
+		this.viewController = this._ios = controller;
 	}
 
 	createNativeView() {

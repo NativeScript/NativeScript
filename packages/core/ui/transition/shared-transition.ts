@@ -1,7 +1,6 @@
 import type { Transition } from '.';
-import { querySelectorAll } from '../core/view-base';
+import { querySelectorAll, ViewBase } from '../core/view-base';
 import type { View } from '../core/view';
-import type { Page } from '../page';
 
 export const DEFAULT_DURATION = 0.35;
 // always increment when adding new transitions to be able to track their state
@@ -13,7 +12,7 @@ export interface SharedTransitionConfig {
 	/**
 	 * Page which will start the transition
 	 */
-	page?: Page;
+	page?: ViewBase;
 	/**
 	 * Preconfigured transition or your own custom configured one
 	 */
@@ -32,9 +31,8 @@ export interface SharedTransitionConfig {
 	fromPageEnd?: SharedTransitionPageProperties;
 }
 export interface SharedTransitionState extends SharedTransitionConfig {
-	id?: number;
 	activeType?: SharedTransitionAnimationType;
-	toPage?: Page;
+	toPage?: ViewBase;
 }
 type SharedTransitionPageProperties = {
 	x?: number;
@@ -48,27 +46,26 @@ type SharedTransitionPageProperties = {
 	duration?: number;
 };
 /**
- * Shared Element Transition (experimental)
+ * Shared Element Transitions (experimental)
  *
- * no
- * Note: some APIs may change in subsequent releases
+ * Note: some APIs may change in future releases
  */
 export class SharedTransition {
-	static configure(options: SharedTransitionConfig): Transition {
-		SharedTransition.updateState({
+	static custom(instance: Transition, options: SharedTransitionConfig): { instance: Transition } {
+		SharedTransition.updateState(instance.id, {
 			...options,
-			id: options.instance.id,
+			instance,
 			activeType: SharedTransitionAnimationType.present,
 		});
-		return options.instance;
+		return { instance };
 	}
 
 	static currentStack: Array<SharedTransitionState>;
-	static updateState(state: SharedTransitionState) {
+	static updateState(id: number, state: SharedTransitionState) {
 		if (!SharedTransition.currentStack) {
 			SharedTransition.currentStack = [];
 		}
-		const existingTransition = SharedTransition.getState(state.id);
+		const existingTransition = SharedTransition.getState(id);
 		if (existingTransition) {
 			// updating existing
 			for (const key in state) {
@@ -79,29 +76,18 @@ export class SharedTransition {
 			SharedTransition.currentStack.push(state);
 		}
 	}
-	static addPageToTop(page: Page) {
-		if (SharedTransition.currentStack?.length) {
-			const top = SharedTransition.currentStack.slice(-1)[0];
-			if (top) {
-				SharedTransition.updateState({
-					id: top.id,
-					toPage: page,
-				});
-			}
-		}
-	}
 	static getState(id: number) {
-		return SharedTransition.currentStack.find((t) => t.id === id);
+		return SharedTransition.currentStack.find((t) => t.instance.id === id);
 	}
 	static finishState(id: number) {
-		const index = SharedTransition.currentStack.findIndex((t) => t.id === id);
+		const index = SharedTransition.currentStack.findIndex((t) => t.instance.id === id);
 		if (index > -1) {
 			SharedTransition.currentStack.splice(index, 1);
 		}
 	}
 	static getSharedElements(
-		fromPage: Page,
-		toPage: Page
+		fromPage: ViewBase,
+		toPage: ViewBase
 	): {
 		sharedElements: Array<View>;
 		presented: Array<View>;

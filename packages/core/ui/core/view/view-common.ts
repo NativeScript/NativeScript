@@ -27,6 +27,7 @@ import { AccessibilityEventOptions, AccessibilityLiveRegion, AccessibilityRole, 
 import { accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityValueProperty, accessibilityIgnoresInvertColorsProperty } from '../../../accessibility/accessibility-properties';
 import { accessibilityBlurEvent, accessibilityFocusChangedEvent, accessibilityFocusEvent, accessibilityPerformEscapeEvent, getCurrentFontScale } from '../../../accessibility';
 import { CSSShadow } from '../../styling/css-shadow';
+import { SharedTransition } from '../../transition/shared-transition';
 
 // helpers (these are okay re-exported here)
 export * from './view-helper';
@@ -362,7 +363,12 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
 	public showModal(...args): ViewDefinition {
 		const { view, options } = this.getModalOptions(args);
-
+		if (options.transition?.instance) {
+			SharedTransition.updateState(options.transition?.instance.id, {
+				page: this,
+				toPage: view,
+			});
+		}
 		view._showNativeModalView(this, options);
 
 		return view;

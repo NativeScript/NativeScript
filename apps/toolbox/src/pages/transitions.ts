@@ -13,38 +13,29 @@ export class TransitionsModel extends Observable {
 	open() {
 		page.frame.navigate({
 			moduleName: `pages/transitions/transitions-detail`,
-			transition: {
-				instance: SharedTransition.configure({
-					page,
-					instance: new PageTransition(),
-					toPageStart: {
-						duration: 1000,
-					},
-					fromPageEnd: {
-						duration: 500,
-					},
-				}),
-			},
+			transition: SharedTransition.custom(new PageTransition(), {
+				toPageStart: {
+					duration: 1000,
+				},
+				fromPageEnd: {
+					duration: 500,
+				},
+			}),
 		});
 	}
 
 	openModal() {
 		page.showModal('pages/transitions/transitions-modal', {
-			context: {},
-			transition: {
-				instance: SharedTransition.configure({
-					page,
-					instance: new ModalTransition(),
-					toPageStart: {
-						y: 200,
-						duration: 1000,
-					},
-					fromPageEnd: {
-						y: 100,
-						duration: 500,
-					},
-				}),
-			},
+			transition: SharedTransition.custom(new ModalTransition(), {
+				toPageStart: {
+					y: 200,
+					duration: 1000,
+				},
+				fromPageEnd: {
+					y: 100,
+					duration: 500,
+				},
+			}),
 			closeCallback(args) {
 				console.log('close modal callback', args);
 			},

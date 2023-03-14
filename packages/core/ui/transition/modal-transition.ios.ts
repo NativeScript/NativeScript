@@ -168,8 +168,7 @@ class ModalTransitionController extends NSObject implements UIViewControllerAnim
 								for (const presenting of owner.sharedElements.presenting) {
 									presenting.snapshot.removeFromSuperview();
 								}
-								SharedTransition.updateState({
-									id: owner.id,
+								SharedTransition.updateState(owner.id, {
 									activeType: SharedTransitionAnimationType.dismiss,
 								});
 								transitionContext.completeTransition(true);

@@ -107,8 +107,7 @@ export class PageTransition extends Transition {
 					presentingView.opacity = 0;
 					presentedView.opacity = 0;
 					// add snapshot to animate
-					// transitionContext.containerView.addSubview(sharedElementSnapshot);
-					transitionContext.containerView.insertSubviewAboveSubview(sharedElementSnapshot, this.presented.view);
+					transitionContext.containerView.addSubview(sharedElementSnapshot);
 				}
 
 				const cleanupPresent = () => {
@@ -129,8 +128,7 @@ export class PageTransition extends Transition {
 							for (const presenting of this.sharedElements.presenting) {
 								presenting.snapshot.removeFromSuperview();
 							}
-							SharedTransition.updateState({
-								id: this.id,
+							SharedTransition.updateState(this.id, {
 								activeType: SharedTransitionAnimationType.dismiss,
 							});
 							transitionContext.completeTransition(true);
@@ -219,7 +217,6 @@ export class PageTransition extends Transition {
 				for (const p of this.sharedElements.presenting) {
 					p.snapshot.alpha = p.endOpacity;
 					transitionContext.containerView.addSubview(p.snapshot);
-					// transitionContext.containerView.insertSubviewBelowSubview(p.snapshot, fromViewCtrl.view);
 				}
 
 				const cleanupDismiss = () => {
