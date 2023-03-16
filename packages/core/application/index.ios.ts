@@ -206,6 +206,19 @@ export class iOSApplication implements iOSApplicationDefinition {
 		return this._rootView;
 	}
 
+	public setSystemAppearance(value: 'light' | 'dark' | null) {
+		if (this.systemAppearance !== value) {
+			this._systemAppearance = value;
+			systemAppearanceChanged(this.rootView, value);
+			notify(<SystemAppearanceChangedEventData>{
+				eventName: systemAppearanceChangedEvent,
+				ios: this,
+				newValue: iosApp.systemAppearance,
+				object: this,
+			});
+		}
+	}
+
 	public addNotificationObserver(notificationName: string, onReceiveCallback: (notification: NSNotification) => void): NotificationObserver {
 		const observer = NotificationObserver.initWithCallback(onReceiveCallback);
 		NSNotificationCenter.defaultCenter.addObserverSelectorNameObject(observer, 'onReceive', notificationName, null);
@@ -376,17 +389,7 @@ export class iOSApplication implements iOSApplicationDefinition {
 			const userInterfaceStyle = controller.traitCollection.userInterfaceStyle;
 			const newSystemAppearance = getSystemAppearanceValue(userInterfaceStyle);
 
-			if (this._systemAppearance !== newSystemAppearance) {
-				this._systemAppearance = newSystemAppearance;
-				systemAppearanceChanged(rootView, newSystemAppearance);
-
-				notify(<SystemAppearanceChangedEventData>{
-					eventName: systemAppearanceChangedEvent,
-					ios: this,
-					newValue: this._systemAppearance,
-					object: this,
-				});
-			}
+			this.setSystemAppearance(newSystemAppearance);
 		});
 	}
 }
@@ -461,6 +464,7 @@ export function run(entry?: string | NavigationEntry) {
 					rootView._setupAsRootView({});
 					const embedderDelegate = NativeScriptEmbedder.sharedInstance().delegate;
 					if (embedderDelegate) {
+						setViewControllerView(rootView);
 						embedderDelegate.presentNativeScriptApp(controller);
 					} else {
 						const visibleVC = getVisibleViewController(rootController);
@@ -474,16 +478,7 @@ export function run(entry?: string | NavigationEntry) {
 						const userInterfaceStyle = controller.traitCollection.userInterfaceStyle;
 						const newSystemAppearance = getSystemAppearanceValue(userInterfaceStyle);
 
-						if (this._systemAppearance !== newSystemAppearance) {
-							this._systemAppearance = newSystemAppearance;
-
-							notify(<SystemAppearanceChangedEventData>{
-								eventName: systemAppearanceChangedEvent,
-								ios: this,
-								newValue: this._systemAppearance,
-								object: this,
-							});
-						}
+						iosApp.setSystemAppearance(newSystemAppearance);
 					});
 					iosApp.notifyAppStarted();
 				}

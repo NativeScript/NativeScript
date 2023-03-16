@@ -77,7 +77,7 @@ Passing an `Error` to the `done()` callback will cause the test to fail:
 
 ```typescript
 export function test_getJSON(done) {
-    http.getJSON("https://httpbin.org/get").then(
+    http.getJSON("https://http-echo.nativescript.org/get").then(
         (result) => { done(); }, // success
         (error) => { done(error); }); // fail
 };
