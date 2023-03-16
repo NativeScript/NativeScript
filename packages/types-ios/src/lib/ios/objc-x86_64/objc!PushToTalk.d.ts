@@ -32,7 +32,9 @@ declare const enum PTChannelError {
 
 	DeviceManagementRestriction = 7,
 
-	ScreenTimeRestriction = 8
+	ScreenTimeRestriction = 8,
+
+	TransmissionNotAllowed = 9
 }
 
 declare var PTChannelErrorDomain: string;
@@ -76,6 +78,8 @@ declare class PTChannelManager extends NSObject {
 	setChannelDescriptorForChannelUUIDCompletionHandler(channelDescriptor: PTChannelDescriptor, channelUUID: NSUUID, completionHandler: (p1: NSError) => void): void;
 
 	setServiceStatusForChannelUUIDCompletionHandler(status: PTServiceStatus, channelUUID: NSUUID, completionHandler: (p1: NSError) => void): void;
+
+	setTransmissionModeForChannelUUIDCompletionHandler(transmissionMode: PTTransmissionMode, channelUUID: NSUUID, completionHandler: (p1: NSError) => void): void;
 
 	stopTransmittingWithChannelUUID(channelUUID: NSUUID): void;
 }
@@ -181,4 +185,13 @@ declare const enum PTServiceStatus {
 	Connecting = 1,
 
 	Unavailable = 2
+}
+
+declare const enum PTTransmissionMode {
+
+	FullDuplex = 0,
+
+	HalfDuplex = 1,
+
+	ListenOnly = 2
 }

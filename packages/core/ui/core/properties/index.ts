@@ -243,7 +243,7 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 				}
 			}
 
-			const oldValue = key in this ? this[key] : defaultValue;
+			const oldValue = <U>(key in this ? this[key] : defaultValue);
 			const changed: boolean = equalityComparer ? !equalityComparer(oldValue, value) : oldValue !== value;
 
 			if (wrapped || changed) {
@@ -310,11 +310,11 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 		};
 
 		this.get = function (this: T): U {
-			return key in this ? this[key] : defaultValue;
+			return <U>(key in this ? this[key] : defaultValue);
 		};
 
 		this.nativeValueChange = function (owner: T, value: U): void {
-			const oldValue = key in owner ? owner[key] : defaultValue;
+			const oldValue = <U>(key in owner ? owner[key] : defaultValue);
 			const changed = equalityComparer ? !equalityComparer(oldValue, value) : oldValue !== value;
 			if (changed) {
 				owner[key] = value;
@@ -406,7 +406,7 @@ export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> imp
 		};
 
 		this.coerce = function (target: T): void {
-			const originalValue: U = coerceKey in target ? target[coerceKey] : defaultValue;
+			const originalValue = <U>(coerceKey in target ? target[coerceKey] : defaultValue);
 			// need that to make coercing but also fire change events
 			target[propertyName] = originalValue;
 		};
@@ -662,7 +662,7 @@ export class CssProperty<T extends Style, U> implements CssProperty<T, U> {
 				value = valueConverter && typeof newValue === 'string' ? valueConverter(newValue) : <U>newValue;
 			}
 
-			const oldValue: U = key in this ? this[key] : defaultValue;
+			const oldValue = <U>(key in this ? this[key] : defaultValue);
 			const changed: boolean = equalityComparer ? !equalityComparer(oldValue, value) : oldValue !== value;
 
 			if (changed) {
@@ -747,7 +747,7 @@ export class CssProperty<T extends Style, U> implements CssProperty<T, U> {
 				this[sourceKey] = ValueSource.Css;
 			}
 
-			const oldValue: U = key in this ? this[key] : defaultValue;
+			const oldValue = <U>(key in this ? this[key] : defaultValue);
 			const changed: boolean = equalityComparer ? !equalityComparer(oldValue, value) : oldValue !== value;
 
 			if (changed) {
@@ -1065,7 +1065,6 @@ CssAnimationProperty.prototype.isStyleProperty = true;
 
 export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> implements InheritedCssProperty<T, U> {
 	public setInheritedValue: (value: U) => void;
-	public overrideHandlers: (options: CssPropertyOptions<T, U>) => void;
 
 	constructor(options: CssPropertyOptions<T, U>) {
 		super(options);

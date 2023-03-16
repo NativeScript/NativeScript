@@ -1,12 +1,14 @@
-import { Font as FontBase, parseFontFamily, FontStyle, FontWeight, FontStyleType, FontWeightType } from './font-common';
+import { Font as FontBase, parseFontFamily, FontWeight, FontVariationSettings, fuzzySearch } from './font-common';
+import { FontStyleType, FontWeightType, FontVariationSettingsType } from './font-interfaces';
 import { Trace } from '../../trace';
 import * as fs from '../../file-system';
-export * from './font-common';
+export { FontStyle, FontWeight, FontVariationSettings, parseFont } from './font-common';
 
 interface FontDescriptor {
 	fontFamily: string[];
 	fontSize: number;
 	fontWeight: number;
+	fontVariationSettings: Array<FontVariationSettingsType> | null;
 	isBold: boolean;
 	isItalic: boolean;
 }
@@ -14,9 +16,9 @@ interface FontDescriptor {
 const uiFontCache = new Map<string, UIFont>();
 
 function computeFontCacheKey(fontDescriptor: FontDescriptor) {
-	const { fontFamily, fontSize, fontWeight, isBold, isItalic } = fontDescriptor;
+	const { fontFamily, fontSize, fontWeight, fontVariationSettings, isBold, isItalic } = fontDescriptor;
 	const sep = ':';
-	return fontFamily.join(sep) + sep + fontSize + sep + fontWeight + sep + isBold + sep + isItalic;
+	return [fontFamily.join(sep), fontSize, fontWeight, String(FontVariationSettings.toString(fontVariationSettings)).replace(/'/g, '').replace(/[\s,]/g, '_'), isBold, isItalic].join(sep);
 }
 
 function getUIFontCached(fontDescriptor: FontDescriptor) {
@@ -28,7 +30,25 @@ function getUIFontCached(fontDescriptor: FontDescriptor) {
 		}
 		return uiFontCache.get(cacheKey);
 	}
-	const uiFont = NativeScriptUtils.createUIFont(fontDescriptor as any);
+	let uiFont = NativeScriptUtils.createUIFont(fontDescriptor as any);
+	if (fontDescriptor.fontVariationSettings?.length) {
+		let font = CGFontCreateWithFontName(uiFont.fontName);
+		const variationAxes: NSArray<NSDictionary<'kCGFontVariationAxisDefaultValue' | 'kCGFontVariationAxisMaxValue' | 'kCGFontVariationAxisMinValue' | 'kCGFontVariationAxisName', string | number>> = CGFontCopyVariationAxes(font);
+		const variationAxesNames: string[] = [];
+		for (const axis of variationAxes) {
+			variationAxesNames.push(String(axis.objectForKey('kCGFontVariationAxisName')));
+		}
+		const variationSettings = {};
+		for (const variationSetting of fontDescriptor.fontVariationSettings) {
+			const axisName = fuzzySearch(variationSetting.axis, variationAxesNames);
+			if (axisName?.length) {
+				variationSettings[axisName[0]] = variationSetting.value;
+			}
+		}
+		font = CGFontCreateCopyWithVariations(font, variationSettings as any);
+		uiFont = CTFontCreateWithGraphicsFont(font, fontDescriptor.fontSize, null, null);
+	}
+
 	uiFontCache.set(cacheKey, uiFont);
 	if (Trace.isEnabled()) {
 		Trace.write(`UIFont creation: ${JSON.stringify(fontDescriptor)}, cache size: ${uiFontCache.size}`, Trace.categories.Style, Trace.messageType.info);
@@ -38,43 +58,48 @@ function getUIFontCached(fontDescriptor: FontDescriptor) {
 }
 
 export class Font extends FontBase {
-	public static default = new Font(undefined, undefined);
+	static default = new Font(undefined, undefined);
 
-	constructor(family: string, size: number, style?: FontStyleType, weight?: FontWeightType, scale?: number) {
-		super(family, size, style, weight, scale);
+	constructor(family: string, size: number, style?: FontStyleType, weight?: FontWeightType, scale?: number, variationSettings?: Array<FontVariationSettingsType>) {
+		super(family, size, style, weight, scale, variationSettings);
 	}
 
 	public withFontFamily(family: string): Font {
-		return new Font(family, this.fontSize, this.fontStyle, this.fontWeight, this.fontScale);
+		return new Font(family, this.fontSize, this.fontStyle, this.fontWeight, this.fontScale, this.fontVariationSettings);
 	}
 
 	public withFontStyle(style: FontStyleType): Font {
-		return new Font(this.fontFamily, this.fontSize, style, this.fontWeight, this.fontScale);
+		return new Font(this.fontFamily, this.fontSize, style, this.fontWeight, this.fontScale, this.fontVariationSettings);
 	}
 
 	public withFontWeight(weight: FontWeightType): Font {
-		return new Font(this.fontFamily, this.fontSize, this.fontStyle, weight, this.fontScale);
+		return new Font(this.fontFamily, this.fontSize, this.fontStyle, weight, this.fontScale, this.fontVariationSettings);
 	}
 
 	public withFontSize(size: number): Font {
-		return new Font(this.fontFamily, size, this.fontStyle, this.fontWeight, this.fontScale);
+		return new Font(this.fontFamily, size, this.fontStyle, this.fontWeight, this.fontScale, this.fontVariationSettings);
 	}
 
 	public withFontScale(scale: number): Font {
-		return new Font(this.fontFamily, this.fontSize, this.fontStyle, this.fontWeight, scale);
+		return new Font(this.fontFamily, this.fontSize, this.fontStyle, this.fontWeight, scale, this.fontVariationSettings);
 	}
 
-	public getUIFont(defaultFont: UIFont): UIFont {
+	public withFontVariationSettings(variationSettings: Array<FontVariationSettingsType> | null): Font {
+		return new Font(this.fontFamily, this.fontSize, this.fontStyle, this.fontWeight, this.fontScale, variationSettings);
+	}
+
+	getUIFont(defaultFont: UIFont): UIFont {
 		return getUIFontCached({
 			fontFamily: parseFontFamily(this.fontFamily),
 			fontSize: this.fontSize || defaultFont.pointSize,
 			fontWeight: getNativeFontWeight(this.fontWeight),
+			fontVariationSettings: this.fontVariationSettings,
 			isBold: this.isBold,
 			isItalic: this.isItalic,
 		});
 	}
 
-	public getAndroidTypeface(): android.graphics.Typeface {
+	getAndroidTypeface(): android.graphics.Typeface {
 		return undefined;
 	}
 }

@@ -28,7 +28,7 @@ echo "Deleting old android typings..."
 rm packages/types-minimal/src/lib/android/api/*
 
 echo "Copying minimal typings to android/api..."
-array=( android-declarations.d.ts android-platform-32.d.ts androidx-32.d.ts )
+array=( android-declarations.d.ts android-platform-33.d.ts androidx-32.d.ts )
 for i in "${array[@]}"
 do
 	echo "Including: $i"

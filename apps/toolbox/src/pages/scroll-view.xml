@@ -1,0 +1,14 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+    <Page.actionBar>
+        <ActionBar title="ScrollView" icon="" class="action-bar">
+        </ActionBar>
+    </Page.actionBar>
+ 
+      <ScrollView scroll="{{ scroll }}">
+          <StackLayout>
+
+            <Label text="{{longText}}" textWrap="true" />
+
+          </StackLayout>
+      </ScrollView>
+</Page>

@@ -77,4 +77,26 @@ describe('angular configuration', () => {
 
 		polyfillsPath = false;
 	});
+
+	describe('@angular-devkit/build-angular backwards compatible', () => {
+		beforeAll(() => {
+			jest.mock('@angular-devkit/build-angular/package.json', () => ({
+				version: '14.0.0',
+			}));
+		});
+
+		afterAll(() => {
+			jest.unmock('@angular-devkit/build-angular/package.json');
+		});
+
+		it('sets scriptTarget for version <15', () => {
+			const config = angular(new Config());
+			expect(
+				config.module
+					.rule('angular-webpack-loader')
+					.use('webpack-loader')
+					.get('options')
+			).toMatchSnapshot();
+		});
+	});
 });

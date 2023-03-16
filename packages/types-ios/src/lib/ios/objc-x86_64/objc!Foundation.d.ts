@@ -11241,6 +11241,8 @@ declare class NSURLRequest extends NSObject implements NSCopying, NSMutableCopyi
 
 	readonly networkServiceType: NSURLRequestNetworkServiceType;
 
+	readonly requiresDNSSECValidation: boolean;
+
 	readonly timeoutInterval: number;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding

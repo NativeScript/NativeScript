@@ -1163,6 +1163,45 @@ declare const enum GKPeerConnectionState {
 	StateConnectedRelay = 5
 }
 
+declare const enum GKPeerPickerConnectionType {
+
+	Online = 1,
+
+	Nearby = 2
+}
+
+declare class GKPeerPickerController extends NSObject {
+
+	static alloc(): GKPeerPickerController; // inherited from NSObject
+
+	static new(): GKPeerPickerController; // inherited from NSObject
+
+	connectionTypesMask: GKPeerPickerConnectionType;
+
+	delegate: GKPeerPickerControllerDelegate;
+
+	readonly visible: boolean;
+
+	dismiss(): void;
+
+	show(): void;
+}
+
+interface GKPeerPickerControllerDelegate extends NSObjectProtocol {
+
+	peerPickerControllerDidCancel?(picker: GKPeerPickerController): void;
+
+	peerPickerControllerDidConnectPeerToSession?(picker: GKPeerPickerController, peerID: string, session: GKSession): void;
+
+	peerPickerControllerDidSelectConnectionType?(picker: GKPeerPickerController, type: GKPeerPickerConnectionType): void;
+
+	peerPickerControllerSessionForConnectionType?(picker: GKPeerPickerController, type: GKPeerPickerConnectionType): GKSession;
+}
+declare var GKPeerPickerControllerDelegate: {
+
+	prototype: GKPeerPickerControllerDelegate;
+};
+
 declare const enum GKPhotoSize {
 
 	Small = 0,

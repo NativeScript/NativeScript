@@ -231,17 +231,17 @@ function ensureTouchControlHandlers() {
 			}
 
 			touchDown(args) {
-				this._owner?.get?.().notify({
+				this._owner?.deref?.().notify({
 					eventName: GestureEvents.touchDown,
-					object: this._owner?.get?.(),
+					object: this._owner?.deref?.(),
 					data: args,
 				});
 			}
 
 			touchUp(args) {
-				this._owner?.get?.().notify({
+				this._owner?.deref?.().notify({
 					eventName: GestureEvents.touchUp,
-					object: this._owner?.get?.(),
+					object: this._owner?.deref?.(),
 					data: args,
 				});
 			}

@@ -1,6 +1,7 @@
 import * as textModule from '../text';
 import { getNativeApplication } from '../application';
-import { SDK_VERSION } from '../utils/utils';
+import { getFileExtension } from '../utils';
+import { SDK_VERSION } from '../utils/constants';
 
 import type { IFileSystemAccess } from './file-system-access';
 
@@ -226,8 +227,14 @@ export class FileSystemAccess implements IFileSystemAccess {
 		return dir.getAbsolutePath();
 	}
 	public getExternalDocumentsFolderPath(): string {
-		const dir = getApplicationContext().getExternalFilesDir(null);
-
+		const dirs = getApplicationContext().getExternalFilesDirs(null);
+		let dir;
+		if (dirs && dirs.length > 1) {
+			dir = dirs[dirs.length - 1];
+		}
+		if (!dir) {
+			dir = getApplicationContext().getExternalFilesDir(null);
+		}
 		return dir.getAbsolutePath();
 	}
 
@@ -613,12 +620,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 	// TODO: This method is the same as in the iOS implementation.
 	// Make it in a separate file / module so it can be reused from both implementations.
 	public getFileExtension(path: string): string {
-		const dotIndex = path.lastIndexOf('.');
-		if (dotIndex && dotIndex >= 0 && dotIndex < path.length) {
-			return path.substring(dotIndex);
-		}
-
-		return '';
+		return getFileExtension(path);
 	}
 
 	private enumEntities(path: string, callback: (entity: { path: string; name: string; extension: string }) => boolean, onError?: (error) => any) {

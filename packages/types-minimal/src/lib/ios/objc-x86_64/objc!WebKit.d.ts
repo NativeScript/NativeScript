@@ -128,6 +128,15 @@ declare const enum WKDataDetectorTypes {
 	SpotlightSuggestion = 64
 }
 
+declare const enum WKDialogResult {
+
+	ShowDefault = 1,
+
+	AskAgain = 2,
+
+	Handled = 3
+}
+
 declare class WKDownload extends NSObject implements NSProgressReporting {
 
 	static alloc(): WKDownload; // inherited from NSObject
@@ -649,6 +658,8 @@ interface WKUIDelegate extends NSObjectProtocol {
 	webViewRunJavaScriptTextInputPanelWithPromptDefaultTextInitiatedByFrameCompletionHandler?(webView: WKWebView, prompt: string, defaultText: string, frame: WKFrameInfo, completionHandler: (p1: string) => void): void;
 
 	webViewShouldPreviewElement?(webView: WKWebView, elementInfo: WKPreviewElementInfo): boolean;
+
+	webViewShowLockdownModeFirstUseMessageCompletionHandler?(webView: WKWebView, message: string, completionHandler: (p1: WKDialogResult) => void): void;
 }
 declare var WKUIDelegate: {
 

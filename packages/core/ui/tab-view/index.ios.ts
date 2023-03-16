@@ -41,7 +41,7 @@ class UITabBarControllerImpl extends UITabBarController {
 	@profile
 	public viewWillAppear(animated: boolean): void {
 		super.viewWillAppear(animated);
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (!owner) {
 			return;
 		}
@@ -56,7 +56,7 @@ class UITabBarControllerImpl extends UITabBarController {
 	@profile
 	public viewDidDisappear(animated: boolean): void {
 		super.viewDidDisappear(animated);
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner && !owner.parent && owner.isLoaded && !this.presentedViewController) {
 			owner.callUnloaded();
 		}
@@ -65,7 +65,7 @@ class UITabBarControllerImpl extends UITabBarController {
 	public viewWillTransitionToSizeWithTransitionCoordinator(size: CGSize, coordinator: UIViewControllerTransitionCoordinator): void {
 		super.viewWillTransitionToSizeWithTransitionCoordinator(size, coordinator);
 		coordinator.animateAlongsideTransitionCompletion(null, () => {
-			const owner = this._owner.get();
+			const owner = this._owner?.deref();
 			if (owner && owner.items) {
 				owner.items.forEach((tabItem) => tabItem._updateTitleAndIconPositions());
 			}
@@ -77,7 +77,7 @@ class UITabBarControllerImpl extends UITabBarController {
 		super.traitCollectionDidChange(previousTraitCollection);
 
 		if (majorVersion >= 13) {
-			const owner = this._owner.get();
+			const owner = this._owner?.deref();
 			if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
 				owner.notify({
 					eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
@@ -106,7 +106,7 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
 			Trace.write('TabView.delegate.SHOULD_select(' + tabBarController + ', ' + viewController + ');', Trace.categories.Debug);
 		}
 
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			// "< More" cannot be visible after clicking on the main tab bar buttons.
 			const backToMoreWillBeVisible = false;
@@ -127,7 +127,7 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
 			Trace.write('TabView.delegate.DID_select(' + tabBarController + ', ' + viewController + ');', Trace.categories.Debug);
 		}
 
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			owner._onViewControllerShown(viewController);
 		}
@@ -154,7 +154,7 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
 			Trace.write('TabView.moreNavigationController.WILL_show(' + navigationController + ', ' + viewController + ', ' + animated + ');', Trace.categories.Debug);
 		}
 
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			// If viewController is one of our tab item controllers, then "< More" will be visible shortly.
 			// Otherwise viewController is the UIMoreListController which shows the list of all tabs beyond the 4th tab.
@@ -169,7 +169,7 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
 		}
 		// We don't need Edit button in More screen.
 		navigationController.navigationBar.topItem.rightBarButtonItem = null;
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			owner._onViewControllerShown(viewController);
 		}

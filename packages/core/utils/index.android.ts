@@ -1,10 +1,11 @@
 import { ad } from './native-helper';
-import { SDK_VERSION } from '../utils';
-import { FileSystemAccess } from '../file-system/file-system-access';
 import { Trace } from '../trace';
+import { getFileExtension } from './common';
+import { SDK_VERSION } from './constants';
 
 export { ad, dataDeserialize, dataSerialize, iOSNativeHelper } from './native-helper';
-export * from './utils-common';
+export * from './layout-helper';
+export * from './common';
 export { Source } from './debug';
 
 const MIN_URI_SHARE_RESTRICTED_APK_VERSION = 24;
@@ -22,11 +23,10 @@ export function openUrl(location: string): boolean {
 	try {
 		const intent = new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(location.trim()));
 		intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
-
 		context.startActivity(intent);
 	} catch (e) {
-		// We Don't do anything with an error.  We just output it
-		Trace.write('Error in OpenURL', Trace.categories.Error, Trace.messageType.error);
+		// We don't do anything with an error. We just output it
+		Trace.write(`Failed to start activity for handling URL: ${location}`, Trace.categories.Error, Trace.messageType.error);
 
 		return false;
 	}
@@ -70,7 +70,7 @@ function isExternalStorageAvailable(): boolean {
  */
 function getMimeTypeNameFromExtension(filePath: string): string {
 	const mimeTypeMap = android.webkit.MimeTypeMap.getSingleton();
-	const extension = new FileSystemAccess().getFileExtension(filePath).replace('.', '').toLowerCase();
+	const extension = getFileExtension(filePath).replace('.', '').toLowerCase();
 
 	return mimeTypeMap.getMimeTypeFromExtension(extension);
 }

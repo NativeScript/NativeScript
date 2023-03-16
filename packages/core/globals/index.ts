@@ -361,6 +361,12 @@ export function initGlobal() {
 		};
 	}
 }
-if (!global.NativeScriptHasInitGlobal) {
+
+declare const jest: any;
+function isTestingEnv() {
+	return typeof jest !== 'undefined';
+}
+
+if (!global.NativeScriptHasInitGlobal && !isTestingEnv()) {
 	initGlobal();
 }

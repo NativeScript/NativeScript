@@ -84,7 +84,7 @@ export class Frame extends FrameBase {
 		}
 
 		let navigationTransition: NavigationTransition;
-		let animated = this.currentPage ? this._getIsAnimatedNavigation(backstackEntry.entry) : false;
+		const animated = this.currentPage ? this._getIsAnimatedNavigation(backstackEntry.entry) : false;
 		if (animated) {
 			navigationTransition = this._getNavigationTransition(backstackEntry.entry);
 			if (navigationTransition) {
@@ -118,7 +118,9 @@ export class Frame extends FrameBase {
 		if (!this._currentEntry) {
 			// Update action-bar with disabled animations before the initial navigation.
 			this._updateActionBar(backstackEntry.resolvedPage, true);
-			this.pushViewControllerAnimated(viewController, animated);
+			// Core defaults modalPresentationStyle to 1 for standard frame navigation
+			// for all others, it's modal presentation
+			this.pushViewControllerAnimated(viewController, animated, this._ios?.controller?.modalPresentationStyle !== 1);
 			if (Trace.isEnabled()) {
 				Trace.write(`${this}.pushViewControllerAnimated(${viewController}, ${animated}); depth = ${navDepth}`, Trace.categories.Navigation);
 			}
@@ -180,13 +182,14 @@ export class Frame extends FrameBase {
 		}
 	}
 
-	private pushViewControllerAnimated(viewController: UIViewController, animated: boolean) {
-		let transitionCoordinator = this._ios.controller.transitionCoordinator;
-		if (transitionCoordinator) {
+	private pushViewControllerAnimated(viewController: UIViewController, animated: boolean, isModal: boolean) {
+		const transitionCoordinator = this._ios.controller.transitionCoordinator;
+		if (!isModal && transitionCoordinator) {
 			transitionCoordinator.animateAlongsideTransitionCompletion(null, () => {
 				this._ios.controller.pushViewControllerAnimated(viewController, animated);
 			});
 		} else {
+			// modal should always push immediately without transition coordinator
 			this._ios.controller.pushViewControllerAnimated(viewController, animated);
 		}
 	}
@@ -307,7 +310,16 @@ export class Frame extends FrameBase {
 	}
 
 	public _onNavigatingTo(backstackEntry: BackstackEntry, isBack: boolean) {
-		super._onNavigatingTo(backstackEntry, isBack);
+		// for now to not break iOS events chain (calling navigation events from controller delegates)
+		// we dont call super(which would also trigger events) but only notify the frame of the navigation
+		// though it means events are not triggered at the same time (lifecycle) on iOS / Android
+		this.notify({
+			eventName: Page.navigatingToEvent,
+			object: this,
+			isBack,
+			entry: backstackEntry,
+			fromEntry: this._currentEntry,
+		});
 	}
 }
 
@@ -409,13 +421,13 @@ class UINavigationControllerImpl extends UINavigationController {
 	}
 
 	get owner(): Frame {
-		return this._owner.get?.();
+		return this._owner?.deref?.();
 	}
 
 	@profile
 	public viewWillAppear(animated: boolean): void {
 		super.viewWillAppear(animated);
-		const owner = this._owner.get?.();
+		const owner = this._owner?.deref?.();
 		if (owner && !owner.isLoaded && !owner.parent) {
 			owner.callLoaded();
 		}
@@ -424,7 +436,7 @@ class UINavigationControllerImpl extends UINavigationController {
 	@profile
 	public viewDidDisappear(animated: boolean): void {
 		super.viewDidDisappear(animated);
-		const owner = this._owner?.get?.();
+		const owner = this._owner?.deref?.();
 		if (owner && owner.isLoaded && !owner.parent && !this.presentedViewController) {
 			owner.callUnloaded();
 			owner._tearDownUI(true);
@@ -548,7 +560,7 @@ class UINavigationControllerImpl extends UINavigationController {
 		super.traitCollectionDidChange(previousTraitCollection);
 
 		if (majorVersion >= 13) {
-			const owner = this._owner.get?.();
+			const owner = this._owner?.deref?.();
 			if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
 				owner.notify({
 					eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,

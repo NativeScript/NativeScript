@@ -1,5 +1,5 @@
 import { android as androidApp, getNativeApplication } from '../application';
-import { SDK_VERSION } from '../utils';
+import { SDK_VERSION } from '../utils/constants';
 
 export enum connectionType {
 	none = 0,

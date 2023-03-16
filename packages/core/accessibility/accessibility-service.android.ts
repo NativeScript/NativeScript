@@ -2,6 +2,7 @@ import * as Application from '../application';
 import { Observable } from '../data/observable';
 import { Trace } from '../trace';
 import * as Utils from '../utils';
+import { SDK_VERSION } from '../utils/constants';
 import { CommonA11YServiceEnabledObservable, SharedA11YObservable } from './accessibility-service-common';
 
 export function getAndroidAccessibilityManager(): android.view.accessibility.AccessibilityManager | null {
@@ -73,7 +74,7 @@ function ensureStateListener(): SharedA11YObservable {
 	});
 	accessibilityManager.addAccessibilityStateChangeListener(accessibilityStateChangeListener);
 
-	if (Utils.SDK_VERSION >= 19) {
+	if (SDK_VERSION >= 19) {
 		touchExplorationStateChangeListener = new android.view.accessibility.AccessibilityManager.TouchExplorationStateChangeListener({
 			onTouchExplorationStateChanged(enabled) {
 				updateAccessibilityState();

@@ -19,7 +19,7 @@ export const accessibilityPerformEscapeEvent = 'accessibilityPerformEscape';
  * @param {boolean} receivedFocus
  * @param {boolean} lostFocus
  */
-export function notifyAccessibilityFocusState(view: Partial<View>, receivedFocus: boolean, lostFocus: boolean): void {
+export function notifyAccessibilityFocusState(view: View, receivedFocus: boolean, lostFocus: boolean): void {
 	if (!receivedFocus && !lostFocus) {
 		return;
 	}
@@ -54,7 +54,7 @@ export function getLastFocusedViewOnPage(page: Page): View | null {
 			return null;
 		}
 
-		const lastFocusedView = lastFocusedViewRef.get();
+		const lastFocusedView = lastFocusedViewRef.deref();
 		if (!lastFocusedView) {
 			return null;
 		}

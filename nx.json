@@ -6,13 +6,14 @@
 	},
 	"tasksRunnerOptions": {
 		"default": {
-			"runner": "nx/tasks-runners/default",
+			"runner": "@nrwl/nx-cloud",
 			"options": {
 				"useDaemonProcess": false,
-				"cacheableOperations": ["build", "lint", "test", "e2e"],
+				"cacheableOperations": ["build", "lint", "test", "ios", "android", "e2e"],
 				"canTrackAnalytics": false,
 				"showUsageWarnings": true,
-				"parallel": 1
+				"parallel": 1,
+				"accessToken": "NzRmNDM3NDgtZjlmNy00MTUwLWIxZDktYjJlZTRhMWM5ODY3fHJlYWQtd3JpdGU="
 			}
 		}
 	},
@@ -78,7 +79,7 @@
 	"$schema": "./node_modules/nx/schemas/nx-schema.json",
 	"namedInputs": {
 		"default": ["{projectRoot}/**/*", "sharedGlobals"],
-		"sharedGlobals": ["{workspaceRoot}/workspace.json", "{workspaceRoot}/tsconfig.json", "{workspaceRoot}/tslint.json", "{workspaceRoot}/nx.json"],
+		"sharedGlobals": ["{workspaceRoot}/workspace.json", "{workspaceRoot}/tsconfig.json", "{workspaceRoot}/nx.json"],
 		"production": ["default", "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)", "!{projectRoot}/tsconfig.spec.json", "!{projectRoot}/jest.config.[jt]s"]
 	},
 	"targetDefaults": {

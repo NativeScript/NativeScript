@@ -1,5 +1,5 @@
 ﻿import { Color } from '../../color';
-import { SDK_VERSION } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 import { Font } from '../styling/font';
 import { colorProperty, fontSizeProperty, fontInternalProperty } from '../styling/style-properties';
 import { HtmlViewBase, htmlProperty, selectableProperty, linkColorProperty } from './html-view-common';

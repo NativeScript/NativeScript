@@ -10,6 +10,7 @@ import { Observable, EventData } from '../../data/observable';
 import { ObservableArray, ChangedData } from '../../data/observable-array';
 import { addWeakEventListener, removeWeakEventListener } from '../core/weak-event-listener';
 import { CoreTypes } from '../../core-types';
+import { isFunction } from '../../utils/types';
 
 const autoEffectiveRowHeight = -1;
 
@@ -28,8 +29,13 @@ export abstract class ListViewBase extends ContainerView implements ListViewDefi
 		key: 'default',
 		createView: () => {
 			if (__UI_USE_EXTERNAL_RENDERER__) {
-			} else if (this.itemTemplate) {
-				return Builder.parse(this.itemTemplate, this);
+				if (isFunction(this.itemTemplate)) {
+					return (<Template>this.itemTemplate)();
+				}
+			} else {
+				if (this.itemTemplate) {
+					return Builder.parse(this.itemTemplate, this);
+				}
 			}
 
 			return undefined;

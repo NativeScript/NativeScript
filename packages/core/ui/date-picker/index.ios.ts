@@ -137,7 +137,7 @@ class UIDatePickerChangeHandlerImpl extends NSObject {
 	}
 
 	public valueChanged(sender: UIDatePicker) {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (!owner) {
 			return;
 		}

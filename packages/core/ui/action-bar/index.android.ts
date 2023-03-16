@@ -8,7 +8,7 @@ import { ImageSource } from '../../image-source';
 import * as application from '../../application';
 import { isAccessibilityServiceEnabled, updateContentDescription } from '../../accessibility';
 import type { Background } from '../styling/background';
-import { SDK_VERSION } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 
 export * from './action-bar-common';
 
@@ -177,7 +177,9 @@ export class ActionBar extends ActionBarBase {
 	}
 
 	public disposeNativeView() {
-		(<any>this.nativeViewProtected).menuItemClickListener.owner = null;
+		if ((<any>this.nativeViewProtected)?.menuItemClickListener) {
+			(<any>this.nativeViewProtected).menuItemClickListener.owner = null;
+		}
 		super.disposeNativeView();
 	}
 
@@ -291,7 +293,7 @@ export class ActionBar extends ActionBarBase {
 			this.nativeViewProtected.setNavigationOnClickListener(
 				new android.view.View.OnClickListener({
 					onClick: function (v) {
-						const owner = navBtn.get();
+						const owner = navBtn?.get();
 						if (owner) {
 							owner._raiseTap();
 						}
@@ -380,7 +382,7 @@ export class ActionBar extends ActionBarBase {
 		item.actionView.android.setOnClickListener(
 			new android.view.View.OnClickListener({
 				onClick: function (v: android.view.View) {
-					const owner = weakRef.get();
+					const owner = weakRef?.get();
 					if (owner) {
 						owner._raiseTap();
 					}

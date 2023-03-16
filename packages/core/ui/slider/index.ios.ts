@@ -19,7 +19,7 @@ class TNSSlider extends UISlider {
 	}
 
 	public accessibilityIncrement() {
-		const owner = this.owner.get();
+		const owner = this.owner?.deref();
 		if (!owner) {
 			this.value += 10;
 		} else {
@@ -30,7 +30,7 @@ class TNSSlider extends UISlider {
 	}
 
 	public accessibilityDecrement() {
-		const owner = this.owner.get();
+		const owner = this.owner?.deref();
 		if (!owner) {
 			this.value += 10;
 		} else {
@@ -53,7 +53,7 @@ class SliderChangeHandlerImpl extends NSObject {
 	}
 
 	public sliderValueChanged(sender: UISlider) {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			valueProperty.nativeValueChange(owner, sender.value);
 		}

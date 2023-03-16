@@ -7,6 +7,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -19,6 +21,7 @@ import android.util.Log;
 import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.view.ViewCompat;
@@ -70,6 +73,7 @@ public class Utils {
 		return bitmap;
 	}
 
+	@SuppressWarnings("deprecation")
 	public static Bitmap getBitmapFromView(View view) {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
 			return drawBitmap(view);
@@ -84,6 +88,28 @@ public class Utils {
 				bitmap = drawBitmap(view);
 			}
 
+			return bitmap;
+		}
+	}
+
+	public static Bitmap getBitmapFromDrawable(Drawable drawable) {
+		if (drawable instanceof BitmapDrawable) {
+			return ((BitmapDrawable) drawable).getBitmap();
+		} else {
+			Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+			Canvas canvas = new Canvas(bitmap);
+			Rect previousBounds = null;
+
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+				previousBounds = drawable.getBounds();
+				drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+			}
+
+			drawable.draw(canvas);
+
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+				drawable.setBounds(previousBounds);
+			}
 			return bitmap;
 		}
 	}
@@ -485,6 +511,18 @@ public class Utils {
 				});
 			}
 		});
+	}
+
+	/**
+	 * Return true if child is a descendant of parent, (or equal to the parent).
+	 */
+	static boolean isViewDescendantOf(View child, View parent) {
+		if (child == parent) {
+			return true;
+		}
+
+		final ViewParent childParent = child.getParent();
+		return (childParent instanceof ViewGroup) && isViewDescendantOf((View) childParent, parent);
 	}
 
 //	public static void clearBoxShadow(View view) {

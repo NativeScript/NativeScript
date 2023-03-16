@@ -59,7 +59,7 @@ export { Background } from './styling/background';
 export type { CacheMode } from './styling/background';
 export { parseCSSShadow } from './styling/css-shadow';
 export { animationTimingFunctionConverter, timeConverter } from './styling/converters';
-export { Font, FontStyle, FontWeight } from './styling/font';
+export { Font, FontStyle, FontWeight, FontVariationSettings } from './styling/font';
 export { Style } from './styling/style';
 export type { CommonLayoutParams } from './styling/style';
 export * from './styling/style-properties';

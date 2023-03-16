@@ -6,7 +6,7 @@
 
 @interface NativeScriptUtils : NSObject
 
-+(UIFont*) getSystemFont:(CGFloat)size weight:(UIFontWeight)weight italic:(BOOL)italic symbolicTraits:(CGFloat)symbolicTraits;
++(UIFont*) getSystemFont:(CGFloat)size weight:(UIFontWeight)weight italic:(BOOL)italic symbolicTraits:(UIFontDescriptorSymbolicTraits)symbolicTraits;
 +(UIFont*) createUIFont:(NSDictionary*)font;
 +(NSMutableAttributedString*)createMutableStringWithDetails:(NSDictionary*)details;
 +(NSMutableAttributedString*)createMutableStringForSpan:(NSString*)text font:(UIFont*)font color:(UIColor*)color backgroundColor:(UIColor*)backgroundColor textDecoration:(NSString*)textDecoration baselineOffset:(CGFloat)baselineOffset;

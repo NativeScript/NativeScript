@@ -55,7 +55,7 @@ class ListViewCell extends UITableViewCell {
 	}
 
 	public get view(): View {
-		return this.owner ? this.owner.get() : null;
+		return this.owner ? this.owner.deref() : null;
 	}
 
 	public owner: WeakRef<View>;
@@ -89,14 +89,14 @@ class DataSource extends NSObject implements UITableViewDataSource {
 	}
 
 	public tableViewNumberOfRowsInSection(tableView: UITableView, section: number) {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 
 		return owner && owner.items ? owner.items.length : 0;
 	}
 
 	public tableViewCellForRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): UITableViewCell {
 		// We call this method because ...ForIndexPath calls tableViewHeightForRowAtIndexPath immediately (before we can prepare and measure it).
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		let cell: ListViewCell;
 		if (owner) {
 			const template = owner._getItemTemplate(indexPath.row);
@@ -138,7 +138,7 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
 	}
 
 	public tableViewWillDisplayCellForRowAtIndexPath(tableView: UITableView, cell: UITableViewCell, indexPath: NSIndexPath) {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner && indexPath.row === owner.items.length - 1) {
 			owner.notify(<EventData>{
 				eventName: LOADMOREITEMS,
@@ -149,7 +149,7 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
 
 	public tableViewWillSelectRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): NSIndexPath {
 		const cell = <ListViewCell>tableView.cellForRowAtIndexPath(indexPath);
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			notifyForItemAtIndex(owner, cell, cell.view, ITEMTAP, indexPath);
 		}
@@ -164,7 +164,7 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
 	}
 
 	public tableViewHeightForRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): number {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (!owner) {
 			return tableView.estimatedRowHeight;
 		}
@@ -200,7 +200,7 @@ class UITableViewRowHeightDelegateImpl extends NSObject implements UITableViewDe
 	}
 
 	public tableViewWillDisplayCellForRowAtIndexPath(tableView: UITableView, cell: UITableViewCell, indexPath: NSIndexPath) {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner && indexPath.row === owner.items.length - 1) {
 			owner.notify(<EventData>{
 				eventName: LOADMOREITEMS,
@@ -211,7 +211,7 @@ class UITableViewRowHeightDelegateImpl extends NSObject implements UITableViewDe
 
 	public tableViewWillSelectRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): NSIndexPath {
 		const cell = <ListViewCell>tableView.cellForRowAtIndexPath(indexPath);
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			notifyForItemAtIndex(owner, cell, cell.view, ITEMTAP, indexPath);
 		}
@@ -226,7 +226,7 @@ class UITableViewRowHeightDelegateImpl extends NSObject implements UITableViewDe
 	}
 
 	public tableViewHeightForRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): number {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (!owner) {
 			return tableView.estimatedRowHeight;
 		}
@@ -285,11 +285,6 @@ export class ListView extends ListViewBase {
 			this.refresh();
 		}
 		this.ios.delegate = this._delegate;
-	}
-
-	public onUnloaded() {
-		this.ios.delegate = null;
-		super.onUnloaded();
 	}
 
 	// @ts-ignore

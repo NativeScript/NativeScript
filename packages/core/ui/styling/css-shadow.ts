@@ -1,6 +1,6 @@
 import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
-import { Length, zeroLength } from './style-properties';
+import { Length } from './style-properties';
 
 export interface CSSShadow {
 	inset: boolean;
@@ -45,9 +45,9 @@ export function parseCSSShadow(value: string): CSSShadow {
 	}
 
 	let colorRaw = 'black';
-	if (!isLength(first) && first !== 'inset') {
+	if (first && !isLength(first) && first !== 'inset') {
 		colorRaw = first;
-	} else if (!isLength(last)) {
+	} else if (last && !isLength(last)) {
 		colorRaw = last;
 	}
 	const nums = parts
@@ -57,7 +57,7 @@ export function parseCSSShadow(value: string): CSSShadow {
 			try {
 				return Length.parse(val);
 			} catch (err) {
-				return zeroLength;
+				return CoreTypes.zeroLength;
 			}
 		});
 	const [offsetX, offsetY, blurRadius, spreadRadius] = nums;

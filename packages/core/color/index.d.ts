@@ -1,7 +1,7 @@
 /**
  * Represents a color object. Stores all color components (alpha (opacity), red, green, blue) in a [0..255] range.
  */
-export class Color {
+export declare class Color {
 	constructor(knownColor: string);
 	constructor(hex: string);
 	constructor(argb: number);

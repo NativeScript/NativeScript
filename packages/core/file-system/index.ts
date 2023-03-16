@@ -1,6 +1,5 @@
 import { IFileSystemAccess, FileSystemAccess, FileSystemAccess29 } from './file-system-access';
-import { Device } from '../platform';
-import { SDK_VERSION } from '../utils';
+import { SDK_VERSION } from '../utils/constants';
 // The FileSystemAccess implementation, used through all the APIs.
 let fileAccess: IFileSystemAccess;
 

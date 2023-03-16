@@ -92,17 +92,17 @@ export class WebView extends View {
 	 * @param callback - Callback function which will be executed when event is raised.
 	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
 	 */
-	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
+	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void;
 
 	/**
 	 * Raised when a loadFinished event occurs.
 	 */
-	on(event: 'loadFinished', callback: (args: LoadEventData) => void, thisArg?: any);
+	on(event: 'loadFinished', callback: (args: LoadEventData) => void, thisArg?: any): void;
 
 	/**
 	 * Raised when a loadStarted event occurs.
 	 */
-	on(event: 'loadStarted', callback: (args: LoadEventData) => void, thisArg?: any);
+	on(event: 'loadStarted', callback: (args: LoadEventData) => void, thisArg?: any): void;
 }
 
 /**

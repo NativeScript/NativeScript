@@ -84,6 +84,7 @@ export class Frame extends FrameBase {
 	private _containerViewId = -1;
 	private _tearDownPending = false;
 	private _attachedToWindow = false;
+	private _wasReset = false;
 	private _cachedTransitionState: TransitionState;
 	private _frameCreateTimeout: NodeJS.Timeout;
 
@@ -152,6 +153,7 @@ export class Frame extends FrameBase {
 		}
 
 		this._attachedToWindow = true;
+		this._wasReset = false;
 		this._processNextNavigationEntry();
 	}
 
@@ -166,7 +168,16 @@ export class Frame extends FrameBase {
 		// In this case call _navigateCore in order to recreate the current fragment.
 		// Don't call navigate because it will fire navigation events.
 		// As JS instances are alive it is already done for the current page.
-		if (!this.isLoaded || this._executingContext || !this._attachedToWindow) {
+		if (!this.isLoaded || this._executingContext) {
+			return;
+		}
+
+		// in case the activity is "reset" using resetRootView we must wait for
+		// the attachedToWindow event to make the first navigation or it will crash
+		// https://github.com/NativeScript/NativeScript/commit/9dd3e1a8076e5022e411f2f2eeba34aabc68d112
+		// though we should not do it on app "start"
+		// or it will create a "flash" to activity background color
+		if (this._wasReset && !this._attachedToWindow) {
 			return;
 		}
 
@@ -226,7 +237,8 @@ export class Frame extends FrameBase {
 
 	public _onRootViewReset(): void {
 		super._onRootViewReset();
-
+		// used to handle the "first" navigate differently on first run and on reset
+		this._wasReset = true;
 		// call this AFTER the super call to ensure descendants apply their rootview-reset logic first
 		// i.e. in a scenario with nested frames / frame with tabview let the descendandt cleanup the inner
 		// fragments first, and then cleanup the parent fragments
@@ -427,7 +439,7 @@ export class Frame extends FrameBase {
 		const newFragmentTag = `fragment${fragmentId}[${navDepth}]`;
 		const newFragment = this.createFragment(newEntry, newFragmentTag);
 		const transaction = manager.beginTransaction();
-		let animated = currentEntry ? this._getIsAnimatedNavigation(newEntry.entry) : false;
+		const animated = currentEntry ? this._getIsAnimatedNavigation(newEntry.entry) : false;
 		// NOTE: Don't use transition for the initial navigation (same as on iOS)
 		// On API 21+ transition won't be triggered unless there was at least one
 		// layout pass so we will wait forever for transitionCompleted handler...
@@ -901,12 +913,18 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 			return null;
 		}
 
+		frame._resolvedPage = page;
+
 		if (page.parent === frame) {
 			// If we are navigating to a page that was destroyed
 			// reinitialize its UI.
 			if (!page._context) {
 				const context = (container && container.getContext()) || (inflater && inflater.getContext());
 				page._setupUI(context);
+			}
+
+			if (frame.isLoaded && !page.isLoaded) {
+				page.callLoaded();
 			}
 		} else {
 			if (!frame._styleScope) {
@@ -915,10 +933,6 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 			}
 
 			frame._addView(page);
-		}
-
-		if (frame.isLoaded && !page.isLoaded) {
-			page.callLoaded();
 		}
 
 		const savedState = entry.viewSavedState;
@@ -1116,7 +1130,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 		if (savedInstanceState) {
 			const rootViewId = savedInstanceState.getInt(ROOT_VIEW_ID_EXTRA, -1);
 			if (rootViewId !== -1 && activityRootViewsMap.has(rootViewId)) {
-				this._rootView = activityRootViewsMap.get(rootViewId).get();
+				this._rootView = activityRootViewsMap.get(rootViewId)?.get();
 			}
 		}
 

@@ -1747,10 +1747,6 @@ declare class CKSystemSharingUIObserver extends NSObject {
 
 	systemSharingUIDidStopSharingBlock: (p1: CKRecordID, p2: NSError) => void;
 
-	systemUIDidSaveShareBlock: (p1: CKRecordID, p2: CKShare, p3: NSError) => void;
-
-	systemUIDidStopSharingBlock: (p1: CKRecordID, p2: NSError) => void;
-
 	constructor(o: { container: CKContainer; });
 
 	initWithContainer(container: CKContainer): this;

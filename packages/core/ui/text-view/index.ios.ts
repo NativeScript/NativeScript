@@ -26,7 +26,7 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
 	}
 
 	public textViewShouldBeginEditing(textView: UITextView): boolean {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			return owner.textViewShouldBeginEditing(textView);
 		}
@@ -35,28 +35,28 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
 	}
 
 	public textViewDidBeginEditing(textView: UITextView): void {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			owner.textViewDidBeginEditing(textView);
 		}
 	}
 
 	public textViewDidEndEditing(textView: UITextView): void {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			owner.textViewDidEndEditing(textView);
 		}
 	}
 
 	public textViewDidChange(textView: UITextView): void {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			owner.textViewDidChange(textView);
 		}
 	}
 
 	public textViewShouldChangeTextInRangeReplacementText(textView: UITextView, range: NSRange, replacementString: string): boolean {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			return owner.textViewShouldChangeTextInRangeReplacementText(textView, range, replacementString);
 		}
@@ -65,7 +65,7 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
 	}
 
 	public scrollViewDidScroll(sv: UIScrollView): void {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		if (owner) {
 			return owner.scrollViewDidScroll(sv);
 		}
@@ -106,22 +106,12 @@ export class TextView extends TextViewBaseCommon {
 	initNativeView() {
 		super.initNativeView();
 		this._delegate = UITextViewDelegateImpl.initWithOwner(new WeakRef(this));
+		this.nativeTextViewProtected.delegate = this._delegate;
 	}
 
 	disposeNativeView() {
 		this._delegate = null;
 		super.disposeNativeView();
-	}
-
-	@profile
-	public onLoaded() {
-		super.onLoaded();
-		this.nativeTextViewProtected.delegate = this._delegate;
-	}
-
-	public onUnloaded() {
-		this.nativeTextViewProtected.delegate = null;
-		super.onUnloaded();
 	}
 
 	// @ts-ignore

@@ -6,7 +6,7 @@ let applicationRootPath: string;
 function ensureAppRootPath() {
 	if (!applicationRootPath) {
 		applicationRootPath = knownFolders.currentApp().path;
-		applicationRootPath = applicationRootPath.substr(0, applicationRootPath.length - 'app/'.length);
+		applicationRootPath = applicationRootPath.substring(0, applicationRootPath.length - 'app/'.length);
 	}
 }
 
@@ -20,8 +20,8 @@ export class Source {
 	constructor(uri: string, line: number, column: number) {
 		ensureAppRootPath();
 
-		if (uri.length > applicationRootPath.length && uri.substr(0, applicationRootPath.length) === applicationRootPath) {
-			this._uri = 'file://' + uri.substr(applicationRootPath.length);
+		if (uri.length > applicationRootPath.length && uri.substring(0, applicationRootPath.length) === applicationRootPath) {
+			this._uri = 'file://' + uri.substring(applicationRootPath.length);
 		} else {
 			this._uri = uri;
 		}

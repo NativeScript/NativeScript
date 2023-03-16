@@ -4,6 +4,10 @@
 	"sourceRoot": "packages/core",
 	"projectType": "library",
 	"generators": {},
+	"namedInputs": {
+		"default": ["{projectRoot}/**/*"],
+		"production": ["!{projectRoot}/**/*.spec.ts"]
+	},
 	"targets": {
 		"lint": {
 			"executor": "@nrwl/linter:eslint",
@@ -13,14 +17,22 @@
 		},
 		"test": {
 			"executor": "@nrwl/jest:jest",
+			"inputs": ["default", "^production"],
+			"outputs": ["dist/out-tsc"],
 			"options": {
 				"jestConfig": "packages/core/jest.config.ts",
-				"passWithNoTests": true
+				"passWithNoTests": true,
+				"verbose": true
 			},
-			"outputs": ["{workspaceRoot}/coverage/packages/core"]
+			"configurations": {
+				"ci": {
+					"ci": true
+				}
+			}
 		},
 		"build": {
 			"executor": "nx:run-commands",
+			"inputs": ["default", "^production"],
 			"outputs": ["{workspaceRoot}/dist/packages"],
 			"options": {
 				"commands": [
@@ -31,22 +43,6 @@
 					"cd dist/packages/core && npm pack --pack-destination=.."
 				],
 				"cwd": ".",
-				"parallel": false
-			}
-		},
-		"unit": {
-			"executor": "nx:run-commands",
-			"options": {
-				"commands": ["../../../node_modules/.bin/tsc -p tsconfig.json && ../../../node_modules/.bin/mocha --config=.mocharc.yml"],
-				"cwd": "packages/core/__tests__",
-				"parallel": false
-			}
-		},
-		"unit.watch": {
-			"executor": "nx:run-commands",
-			"options": {
-				"commands": ["../../../node_modules/.bin/tsc -p tsconfig.json && ../../../node_modules/.bin/mocha --watch --config=.mocharc.yml"],
-				"cwd": "packages/core/__tests__",
 				"parallel": false
 			}
 		}

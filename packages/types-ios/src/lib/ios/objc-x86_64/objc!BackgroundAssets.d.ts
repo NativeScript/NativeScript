@@ -1,17 +1,11 @@
 
-declare class BAApplicationExtensionInfo extends NSObject implements NSSecureCoding {
+declare class BAAppExtensionInfo extends NSObject implements NSSecureCoding {
 
-	static alloc(): BAApplicationExtensionInfo; // inherited from NSObject
+	static alloc(): BAAppExtensionInfo; // inherited from NSObject
 
-	static new(): BAApplicationExtensionInfo; // inherited from NSObject
+	static new(): BAAppExtensionInfo; // inherited from NSObject
 
-	readonly applicationIdentifier: string;
-
-	readonly downloadSizeRestricted: boolean;
-
-	readonly lastApplicationLaunchTime: Date;
-
-	readonly lastPeriodicCheckTime: Date;
+	readonly restrictedDownloadSizeRemaining: number;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -22,13 +16,20 @@ declare class BAApplicationExtensionInfo extends NSObject implements NSSecureCod
 	initWithCoder(coder: NSCoder): this;
 }
 
+declare const enum BAContentRequest {
+
+	Install = 1,
+
+	Update = 2,
+
+	Periodic = 3
+}
+
 declare class BADownload extends NSObject implements NSCoding, NSCopying, NSSecureCoding {
 
 	static alloc(): BADownload; // inherited from NSObject
 
 	static new(): BADownload; // inherited from NSObject
-
-	readonly error: NSError;
 
 	readonly identifier: string;
 
@@ -63,9 +64,9 @@ declare class BADownloadManager extends NSObject {
 
 	fetchCurrentDownloadsWithCompletionHandler(completionHandler: (p1: NSArray<BADownload>, p2: NSError) => void): void;
 
-	performWithExclusiveControl(performHandler: (p1: NSError) => void): void;
+	performWithExclusiveControl(performHandler: (p1: boolean, p2: NSError) => void): void;
 
-	performWithExclusiveControlBeforeDateCompletion(date: Date, performHandler: (p1: boolean, p2: NSError) => void): void;
+	performWithExclusiveControlBeforeDatePerformHandler(date: Date, performHandler: (p1: boolean, p2: NSError) => void): void;
 
 	scheduleDownloadError(download: BADownload): boolean;
 
@@ -106,19 +107,15 @@ declare const enum BADownloadState {
 
 interface BADownloaderExtension extends NSObjectProtocol {
 
-	applicationDidInstallWithMetadata?(metadata: BAApplicationExtensionInfo): void;
+	backgroundDownloadDidReceiveChallengeCompletionHandler?(download: BADownload, challenge: NSURLAuthenticationChallenge, completionHandler: (p1: NSURLSessionAuthChallengeDisposition, p2: NSURLCredential) => void): void;
 
-	applicationDidUpdateWithMetadata?(metadata: BAApplicationExtensionInfo): void;
+	backgroundDownloadFailedWithError?(download: BADownload, error: NSError): void;
 
-	backgroundDownloadDidFail?(failedDownload: BADownload): void;
+	backgroundDownloadFinishedWithFileURL?(download: BADownload, fileURL: NSURL): void;
 
-	backgroundDownloadDidFinishFileURL?(finishedDownload: BADownload, fileURL: NSURL): void;
-
-	checkForUpdatesWithMetadata?(metadata: BAApplicationExtensionInfo): void;
+	downloadsForRequestManifestURLExtensionInfo?(contentRequest: BAContentRequest, manifestURL: NSURL, extensionInfo: BAAppExtensionInfo): NSSet<BADownload>;
 
 	extensionWillTerminate?(): void;
-
-	receivedAuthenticationChallengeDownloadCompletionHandler?(challenge: NSURLAuthenticationChallenge, download: BADownload, completionHandler: (p1: NSURLSessionAuthChallengeDisposition, p2: NSURLCredential) => void): void;
 }
 declare var BADownloaderExtension: {
 

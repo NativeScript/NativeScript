@@ -70,7 +70,7 @@ class UIGestureRecognizerImpl extends NSObject {
 	}
 
 	public recognize(recognizer: UIGestureRecognizer): void {
-		const owner = this._owner.get();
+		const owner = this._owner?.deref();
 		const callback = this._callback ? this._callback : owner ? owner.callback : null;
 		const typeParam = this._type;
 		const target = owner ? owner.target : undefined;

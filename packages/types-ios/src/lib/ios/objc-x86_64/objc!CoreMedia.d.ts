@@ -1287,6 +1287,8 @@ declare var kCMSampleAttachmentKey_DoNotDisplay: string;
 
 declare var kCMSampleAttachmentKey_EarlierDisplayTimesAllowed: string;
 
+declare var kCMSampleAttachmentKey_HDR10PlusPerFrameData: string;
+
 declare var kCMSampleAttachmentKey_HEVCStepwiseTemporalSubLayerAccess: string;
 
 declare var kCMSampleAttachmentKey_HEVCSyncSampleNALUnitType: string;

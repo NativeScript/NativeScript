@@ -15,7 +15,7 @@ export interface Declaration extends Node {
 
 export interface Rule extends Node {
 	selectors: string[];
-	declarations: Node[];
+	declarations: Declaration[];
 }
 
 export interface Keyframes extends Rule {
@@ -23,7 +23,7 @@ export interface Keyframes extends Rule {
 }
 
 export interface StyleSheet {
-	rules: Node[];
+	rules: Rule[];
 }
 
 export interface SyntaxTree {

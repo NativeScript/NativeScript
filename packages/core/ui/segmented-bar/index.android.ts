@@ -3,7 +3,8 @@ import { SegmentedBarItemBase, SegmentedBarBase, selectedIndexProperty, itemsPro
 import { isEnabledProperty } from '../core/view';
 import { colorProperty, fontInternalProperty, fontSizeProperty } from '../styling/style-properties';
 import { Color } from '../../color';
-import { SDK_VERSION, layout } from '../../utils';
+import { layout } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 
 export * from './segmented-bar-common';
 
@@ -237,7 +238,9 @@ export class SegmentedBar extends SegmentedBarBase {
 
 	public disposeNativeView() {
 		const nativeView: any = this.nativeViewProtected;
-		nativeView.listener.owner = null;
+		if (nativeView?.listener) {
+			nativeView.listener.owner = null;
+		}
 		super.disposeNativeView();
 	}
 

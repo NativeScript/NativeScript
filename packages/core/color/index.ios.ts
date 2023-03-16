@@ -1,6 +1,6 @@
-import * as common from './color-common';
+import { Color as ColorBase } from './color-common';
 
-export class Color extends common.Color {
+export class Color extends ColorBase {
 	private _ios: UIColor;
 
 	get ios(): UIColor {

@@ -31,7 +31,7 @@ class UILayoutViewController extends UIViewController {
 
 	public viewWillLayoutSubviews(): void {
 		super.viewWillLayoutSubviews();
-		const owner = this.owner.get();
+		const owner = this.owner?.deref();
 		if (owner) {
 			IOSHelper.updateConstraints(this, owner);
 		}
@@ -39,7 +39,7 @@ class UILayoutViewController extends UIViewController {
 
 	public viewDidLayoutSubviews(): void {
 		super.viewDidLayoutSubviews();
-		const owner = this.owner.get();
+		const owner = this.owner?.deref();
 		if (owner) {
 			if (majorVersion >= 11) {
 				// Handle nested UILayoutViewController safe area application.
@@ -80,6 +80,8 @@ class UILayoutViewController extends UIViewController {
 							right: 0,
 						});
 						this.additionalSafeAreaInsets = additionalInsets;
+					} else {
+						this.additionalSafeAreaInsets = null;
 					}
 				}
 			}
@@ -90,7 +92,7 @@ class UILayoutViewController extends UIViewController {
 
 	public viewWillAppear(animated: boolean): void {
 		super.viewWillAppear(animated);
-		const owner = this.owner.get();
+		const owner = this.owner?.deref();
 		if (!owner) {
 			return;
 		}
@@ -104,7 +106,7 @@ class UILayoutViewController extends UIViewController {
 
 	public viewDidDisappear(animated: boolean): void {
 		super.viewDidDisappear(animated);
-		const owner = this.owner.get();
+		const owner = this.owner?.deref();
 		if (owner && owner.isLoaded && !owner.parent) {
 			owner.callUnloaded();
 		}
@@ -115,7 +117,7 @@ class UILayoutViewController extends UIViewController {
 		super.traitCollectionDidChange(previousTraitCollection);
 
 		if (majorVersion >= 13) {
-			const owner = this.owner.get();
+			const owner = this.owner?.deref();
 			if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
 				owner.notify({
 					eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
@@ -142,7 +144,7 @@ class UIAdaptivePresentationControllerDelegateImp extends NSObject implements UI
 	}
 
 	public presentationControllerDidDismiss(presentationController: UIPresentationController) {
-		const owner = this.owner.get();
+		const owner = this.owner?.deref();
 		if (owner && typeof this.closedCallback === 'function') {
 			this.closedCallback();
 		}
@@ -165,7 +167,7 @@ class UIPopoverPresentationControllerDelegateImp extends NSObject implements UIP
 	}
 
 	public popoverPresentationControllerDidDismissPopover(popoverPresentationController: UIPopoverPresentationController) {
-		const owner = this.owner.get();
+		const owner = this.owner?.deref();
 		if (owner && typeof this.closedCallback === 'function') {
 			this.closedCallback();
 		}

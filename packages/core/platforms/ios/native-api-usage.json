@@ -3,7 +3,8 @@
     "CoreFoundation.CFError:*",
     "CoreFoundation.CFNumber:*",
     "CoreFoundation.CFRunLoop:*",
-
+    "CoreFoundation.CFCGTypes:",
+    
     "CoreGraphics.*:*",
 
     "CoreText.CTFontManager:*",

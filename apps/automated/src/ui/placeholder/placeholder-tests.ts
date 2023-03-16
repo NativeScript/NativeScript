@@ -1,7 +1,7 @@
 import * as TKUnit from '../../tk-unit';
 // >> article-creating-view
 import { isIOS, isAndroid } from '@nativescript/core/platform';
-import * as utils from '@nativescript/core/utils/utils';
+import * as utils from '@nativescript/core/utils';
 import * as helper from '../../ui-helper';
 import * as viewModule from '@nativescript/core/ui/core/view';
 

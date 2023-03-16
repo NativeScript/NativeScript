@@ -1,9 +1,13 @@
 {
-	"extends": "./tsconfig.json",
 	"compilerOptions": {
 		"outDir": "../../dist/out-tsc",
-		"module": "commonjs",
-		"types": ["jest", "node"]
+		"types": ["jest", "node"],
+		"target": "ESNext",
+		"module": "esnext",
+		"moduleResolution": "node",
+		"esModuleInterop": true,
+		"allowJs": true,
+		"experimentalDecorators": true
 	},
-	"include": ["**/*.spec.ts", "**/*.test.ts", "**/*.spec.tsx", "**/*.test.tsx", "**/*.spec.js", "**/*.test.js", "**/*.spec.jsx", "**/*.test.jsx", "**/*.d.ts"]
+	"include": ["./references.d.ts", "**/*.spec.ts"]
 }

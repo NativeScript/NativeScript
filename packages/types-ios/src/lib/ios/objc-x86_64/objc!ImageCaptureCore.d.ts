@@ -383,6 +383,25 @@ declare var ICDeviceDelegate: {
 	prototype: ICDeviceDelegate;
 };
 
+declare var ICDeviceLocationDescriptionBluetooth: string;
+
+declare var ICDeviceLocationDescriptionFireWire: string;
+
+declare var ICDeviceLocationDescriptionMassStorage: string;
+
+declare var ICDeviceLocationDescriptionUSB: string;
+
+declare const enum ICDeviceLocationType {
+
+	Local = 256,
+
+	Shared = 512,
+
+	Bonjour = 1024,
+
+	Bluetooth = 2048
+}
+
 declare const enum ICDeviceLocationTypeMask {
 
 	Local = 256,

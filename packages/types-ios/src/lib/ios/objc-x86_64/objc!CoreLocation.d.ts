@@ -217,7 +217,9 @@ declare const enum CLError {
 
 	kCLErrorRangingFailure = 17,
 
-	kCLErrorPromptDeclined = 18
+	kCLErrorPromptDeclined = 18,
+
+	kCLErrorHistoricalLocationError = 19
 }
 
 declare class CLFloor extends NSObject implements NSCopying, NSSecureCoding {

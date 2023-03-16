@@ -7,7 +7,8 @@ import { AnimationBase, Properties, CubicBezierAnimationCurve } from './animatio
 import { Color } from '../../color';
 import { Trace } from '../../trace';
 import { opacityProperty, backgroundColorProperty, rotateProperty, rotateXProperty, rotateYProperty, translateXProperty, translateYProperty, scaleXProperty, scaleYProperty, heightProperty, widthProperty, PercentLength } from '../styling/style-properties';
-import { SDK_VERSION, layout } from '../../utils';
+import { layout } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 import { Device, Screen } from '../../platform';
 import lazy from '../../utils/lazy';
 
@@ -142,7 +143,7 @@ export class Animation extends AnimationBase {
 				if (Trace.isEnabled()) {
 					Trace.write('MainAnimatorListener.onAnimationEnd(' + animator + ')', Trace.categories.Animation);
 				}
-				const thisRef = that.get();
+				const thisRef = that?.get();
 				if (thisRef) {
 					thisRef._onAndroidAnimationEnd();
 				}
@@ -151,7 +152,7 @@ export class Animation extends AnimationBase {
 				if (Trace.isEnabled()) {
 					Trace.write('MainAnimatorListener.onAnimationCancel(' + animator + ')', Trace.categories.Animation);
 				}
-				const thisRef = that.get();
+				const thisRef = that?.get();
 				if (thisRef) {
 					thisRef._onAndroidAnimationCancel();
 				}

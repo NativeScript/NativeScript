@@ -1,5 +1,5 @@
 import * as TKUnit from '../tk-unit';
-import * as utils from '@nativescript/core/utils/utils';
+import * as utils from '@nativescript/core/utils';
 import { isIOS } from '@nativescript/core/platform';
 
 export function test_GC_isDefined() {

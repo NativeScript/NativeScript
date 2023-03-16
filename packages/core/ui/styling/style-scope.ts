@@ -2,7 +2,7 @@ import { Keyframes } from '../animation/keyframe-animation';
 import { ViewBase } from '../core/view-base';
 import { View } from '../core/view';
 import { unsetValue, _evaluateCssVariableExpression, _evaluateCssCalcExpression, isCssVariable, isCssVariableExpression, isCssCalcExpression } from '../core/properties';
-import { SyntaxTree, Keyframes as KeyframesDefinition, parse as parseCss, Node as CssNode } from '../../css';
+import { SyntaxTree, Keyframes as KeyframesDefinition, Node as CssNode } from '../../css';
 
 import { RuleSet, SelectorsMap, SelectorCore, SelectorsMatch, ChangeMap, fromAstNodes, Node } from './css-selector';
 import { Trace } from '../../trace';
@@ -79,6 +79,7 @@ let currentScopeTag: string = null;
 const applicationAdditionalSelectors: RuleSet[] = [];
 const applicationKeyframes: any = {};
 const animationsSymbol = Symbol('animations');
+const kebabCasePattern = /-([a-z])/g;
 const pattern = /('|")(.*?)\1/;
 
 class CSSSource {
@@ -575,6 +576,7 @@ export class CssState {
 
 		const valuesToApply = {};
 		const cssExpsProperties = {};
+		const replacementFunc = (g) => g[1].toUpperCase();
 
 		for (const property in newPropertyValues) {
 			const value = newPropertyValues[property];
@@ -621,7 +623,8 @@ export class CssState {
 			if (property in view.style) {
 				view.style[`css:${property}`] = unsetValue;
 			} else {
-				// TRICKY: How do we unset local value?
+				const camelCasedProperty = property.replace(kebabCasePattern, replacementFunc);
+				view[camelCasedProperty] = unsetValue;
 			}
 		}
 		// Set new values to the style
@@ -631,9 +634,7 @@ export class CssState {
 				if (property in view.style) {
 					view.style[`css:${property}`] = value;
 				} else {
-					const camelCasedProperty = property.replace(/-([a-z])/g, function (g) {
-						return g[1].toUpperCase();
-					});
+					const camelCasedProperty = property.replace(kebabCasePattern, replacementFunc);
 					view[camelCasedProperty] = value;
 				}
 			} catch (e) {

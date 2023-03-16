@@ -153,8 +153,12 @@ export class ListView extends ListViewBase {
 	public disposeNativeView() {
 		const nativeView = this.nativeViewProtected;
 		nativeView.setAdapter(null);
-		(<any>nativeView).itemClickListener.owner = null;
-		(<any>nativeView).adapter.owner = null;
+		if ((<any>nativeView).itemClickListener) {
+			(<any>nativeView).itemClickListener.owner = null;
+		}
+		if ((<any>nativeView).adapter) {
+			(<any>nativeView).adapter.owner = null;
+		}
 		this.clearRealizedCells();
 		super.disposeNativeView();
 	}

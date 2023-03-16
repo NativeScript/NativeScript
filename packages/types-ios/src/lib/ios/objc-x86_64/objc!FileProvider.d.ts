@@ -527,6 +527,8 @@ interface NSFileProviderPendingSetEnumerator extends NSFileProviderEnumerator {
 
 	domainVersion: NSFileProviderDomainVersion;
 
+	maximumSizeReached: boolean;
+
 	refreshInterval: number;
 }
 declare var NSFileProviderPendingSetEnumerator: {

@@ -13,6 +13,12 @@ declare class DDDevice extends NSObject {
 
 	identifier: string;
 
+	mediaContentSubtitle: string;
+
+	mediaContentTitle: string;
+
+	mediaPlaybackState: DDDeviceMediaPlaybackState;
+
 	networkEndpoint: NSObject;
 
 	protocol: DDDeviceProtocol;
@@ -47,7 +53,7 @@ declare const enum DDDeviceCategory {
 
 declare function DDDeviceCategoryToString(inValue: DDDeviceCategory): string;
 
-declare class DDDeviceEvent extends DDEvent {
+declare class DDDeviceEvent extends NSObject {
 
 	static alloc(): DDDeviceEvent; // inherited from NSObject
 
@@ -55,10 +61,23 @@ declare class DDDeviceEvent extends DDEvent {
 
 	readonly device: DDDevice;
 
+	readonly eventType: DDEventType;
+
 	constructor(o: { eventType: DDEventType; device: DDDevice; });
 
 	initWithEventTypeDevice(type: DDEventType, device: DDDevice): this;
 }
+
+declare const enum DDDeviceMediaPlaybackState {
+
+	NoContent = 0,
+
+	Paused = 1,
+
+	Playing = 2
+}
+
+declare function DDDeviceMediaPlaybackStateToString(inValue: DDDeviceMediaPlaybackState): string;
 
 declare const enum DDDeviceProtocol {
 
@@ -94,7 +113,7 @@ declare class DDDiscoverySession extends NSObject {
 
 	static new(): DDDiscoverySession; // inherited from NSObject
 
-	reportEvent(inEvent: DDEvent): void;
+	reportEvent(inEvent: DDDeviceEvent): void;
 }
 
 declare const enum DDErrorCode {
@@ -120,24 +139,6 @@ declare const enum DDErrorCode {
 
 declare var DDErrorDomain: string;
 
-declare class DDEvent extends NSObject {
-
-	static alloc(): DDEvent; // inherited from NSObject
-
-	static new(): DDEvent; // inherited from NSObject
-
-	readonly eventType: DDEventType;
-}
-
-declare class DDEventDevicesPresent extends DDEvent {
-
-	static alloc(): DDEventDevicesPresent; // inherited from NSObject
-
-	static new(): DDEventDevicesPresent; // inherited from NSObject
-
-	readonly devicesPresent: boolean;
-}
-
 declare const enum DDEventType {
 
 	Unknown = 0,
@@ -146,9 +147,7 @@ declare const enum DDEventType {
 
 	DeviceLost = 41,
 
-	DeviceChanged = 42,
-
-	DevicesPresentChanged = 50
+	DeviceChanged = 42
 }
 
 declare function DDEventTypeToString(inValue: DDEventType): string;

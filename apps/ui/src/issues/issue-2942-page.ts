@@ -1,5 +1,4 @@
-import { ad } from '@nativescript/core/utils/utils';
-import { isAndroid } from '@nativescript/core/platform';
+import { Utils } from '@nativescript/core';
 
 export function onButtonLoaded(args) {
 	if (args.object.android) {
@@ -14,7 +13,5 @@ export function onListViewLoaded(args) {
 }
 
 export function hideKeyboard() {
-	if (isAndroid) {
-		ad.dismissSoftInput();
-	}
+	Utils.dismissSoftInput();
 }

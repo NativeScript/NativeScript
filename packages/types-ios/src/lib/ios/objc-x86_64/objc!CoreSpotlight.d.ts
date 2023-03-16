@@ -272,8 +272,6 @@ declare class CSSearchQueryContext extends NSObject implements NSCopying, NSSecu
 
 	keyboardLanguage: string;
 
-	protectionClasses: NSArray<string>;
-
 	sourceOptions: CSSearchQuerySourceOptions;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
@@ -335,6 +333,8 @@ declare class CSSearchableIndex extends NSObject {
 
 	endIndexBatchWithClientStateCompletionHandler(clientState: NSData, completionHandler: (p1: NSError) => void): void;
 
+	fetchDataForBundleIdentifierItemIdentifierContentTypeCompletionHandler(bundleIdentifier: string, itemIdentifier: string, contentType: UTType, completionHandler: (p1: NSData, p2: NSError) => void): void;
+
 	fetchLastClientStateWithCompletionHandler(completionHandler: (p1: NSData, p2: NSError) => void): void;
 
 	indexSearchableItemsCompletionHandler(items: NSArray<CSSearchableItem> | CSSearchableItem[], completionHandler: (p1: NSError) => void): void;
@@ -342,8 +342,6 @@ declare class CSSearchableIndex extends NSObject {
 	initWithName(name: string): this;
 
 	initWithNameProtectionClass(name: string, protectionClass: string): this;
-
-	provideDataForBundleIdentifierTypeCompletionHandler(bundle: string, identifier: string, type: string, completionHandler: (p1: NSData, p2: NSError) => void): void;
 }
 
 interface CSSearchableIndexDelegate extends NSObjectProtocol {
@@ -384,6 +382,8 @@ declare class CSSearchableItem extends NSObject implements NSCopying, NSSecureCo
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	constructor(o: { uniqueIdentifier: string; domainIdentifier: string; attributeSet: CSSearchableItemAttributeSet; });
+
+	compareByRank(other: CSSearchableItem): NSComparisonResult;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
@@ -817,6 +817,8 @@ declare class CSSuggestion extends NSObject implements NSCopying, NSSecureCoding
 
 	compare(other: CSSuggestion): NSComparisonResult;
 
+	compareByRank(other: CSSuggestion): NSComparisonResult;
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	encodeWithCoder(coder: NSCoder): void;
@@ -835,30 +837,6 @@ declare const enum CSSuggestionKind {
 	Default = 2
 }
 
-declare class CSTopHitQuery extends CSUserQuery {
-
-	static alloc(): CSTopHitQuery; // inherited from NSObject
-
-	static new(): CSTopHitQuery; // inherited from NSObject
-
-	constructor(o: { userQueryString: string; queryContext: CSTopHitQueryContext; });
-
-	initWithUserQueryStringQueryContext(userQueryString: string, queryContext: CSTopHitQueryContext): this;
-}
-
-declare class CSTopHitQueryContext extends CSUserQueryContext {
-
-	static alloc(): CSTopHitQueryContext; // inherited from NSObject
-
-	static new(): CSTopHitQueryContext; // inherited from NSObject
-
-	static topHitQueryContext(): CSTopHitQueryContext;
-
-	static topHitQueryContextWithCurrentSuggestion(currentSuggestion: CSSuggestion): CSTopHitQueryContext;
-
-	maxItemCount: number;
-}
-
 declare class CSUserQuery extends CSSearchQuery {
 
 	static alloc(): CSUserQuery; // inherited from NSObject
@@ -869,9 +847,9 @@ declare class CSUserQuery extends CSSearchQuery {
 
 	foundSuggestionsHandler: (p1: NSArray<CSSuggestion>) => void;
 
-	constructor(o: { userQueryString: string; queryContext: CSUserQueryContext; });
+	constructor(o: { userQueryString: string; userQueryContext: CSUserQueryContext; });
 
-	initWithUserQueryStringQueryContext(userQueryString: string, queryContext: CSUserQueryContext): this;
+	initWithUserQueryStringUserQueryContext(userQueryString: string, userQueryContext: CSUserQueryContext): this;
 }
 
 declare class CSUserQueryContext extends CSSearchQueryContext {
@@ -883,6 +861,10 @@ declare class CSUserQueryContext extends CSSearchQueryContext {
 	static userQueryContext(): CSUserQueryContext;
 
 	static userQueryContextWithCurrentSuggestion(currentSuggestion: CSSuggestion): CSUserQueryContext;
+
+	enableRankedResults: boolean;
+
+	maxResultCount: number;
 
 	maxSuggestionCount: number;
 }

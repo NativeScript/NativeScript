@@ -8,21 +8,19 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.ScrollView;
-
-import org.nativescript.widgets.HorizontalScrollView.SavedState;
+import androidx.core.widget.NestedScrollView;
 
 /**
  * @author hhristov
  */
-public class VerticalScrollView extends ScrollView {
+public class VerticalScrollView extends NestedScrollView {
 
 	private final Rect mTempRect = new Rect();
 
 	private int contentMeasuredWidth = 0;
 	private int contentMeasuredHeight = 0;
 	private int scrollableLength = 0;
-	private SavedState mSavedState;
+	private ScrollSavedState mSavedState;
 	private boolean isFirstLayout = true;
 	private boolean scrollEnabled = true;
 
@@ -33,9 +31,9 @@ public class VerticalScrollView extends ScrollView {
 	private boolean mIsLayoutDirty = true;
 
 	/**
-	 * The child to give focus to in the event that a child has requested focus while the
-	 * layout is dirty. This prevents the scroll from being wrong if the child has not been
-	 * laid out before requesting focus.
+	 * The child to give focus to in the event that a child has requested focus
+	 * while the layout is dirty. This prevents the scroll from being wrong if the
+	 * child has not been laid out before requesting focus.
 	 */
 	private View mChildToScrollTo = null;
 
@@ -67,7 +65,8 @@ public class VerticalScrollView extends ScrollView {
 
 	@Override
 	public boolean onTouchEvent(MotionEvent ev) {
-		if (!this.scrollEnabled && (ev.getAction() == MotionEvent.ACTION_DOWN || ev.getAction() == MotionEvent.ACTION_MOVE)) {
+		if (!this.scrollEnabled
+				&& (ev.getAction() == MotionEvent.ACTION_DOWN || ev.getAction() == MotionEvent.ACTION_MOVE)) {
 			return false;
 		}
 
@@ -131,7 +130,8 @@ public class VerticalScrollView extends ScrollView {
 		CommonLayoutParams.adjustChildrenLayoutParams(this, widthMeasureSpec, heightMeasureSpec);
 
 		// Don't call measure because it will measure content twice.
-		// ScrollView is expected to have single child so we measure only the first child.
+		// ScrollView is expected to have single child so we measure only the first
+		// child.
 		View child = this.getChildCount() > 0 ? this.getChildAt(0) : null;
 		if (child == null) {
 			this.scrollableLength = 0;
@@ -139,19 +139,23 @@ public class VerticalScrollView extends ScrollView {
 			this.contentMeasuredHeight = 0;
 			this.setPadding(0, 0, 0, 0);
 		} else {
-			CommonLayoutParams.measureChild(child, widthMeasureSpec, MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
+			CommonLayoutParams.measureChild(child, widthMeasureSpec,
+					MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
 			this.contentMeasuredWidth = CommonLayoutParams.getDesiredWidth(child);
 			this.contentMeasuredHeight = CommonLayoutParams.getDesiredHeight(child);
 
-			// Android ScrollView does not account to child margins so we set them as paddings. Otherwise you can never scroll to bottom.
+			// Android ScrollView does not account to child margins so we set them as
+			// paddings. Otherwise you can never scroll to bottom.
 			CommonLayoutParams lp = (CommonLayoutParams) child.getLayoutParams();
 			this.setPadding(lp.leftMargin, lp.topMargin, lp.rightMargin, lp.bottomMargin);
 		}
 
-		// Don't add in our paddings because they are already added as child margins. (we will include them twice if we add them).
-		// check the previous line - this.setPadding(lp.leftMargin, lp.topMargin, lp.rightMargin, lp.bottomMargin);
-//	    this.contentMeasuredWidth += this.getPaddingLeft() + this.getPaddingRight();
-//	    this.contentMeasuredHeight += this.getPaddingTop() + this.getPaddingBottom();
+		// Don't add in our paddings because they are already added as child margins.
+		// (we will include them twice if we add them).
+		// check the previous line - this.setPadding(lp.leftMargin, lp.topMargin,
+		// lp.rightMargin, lp.bottomMargin);
+		// this.contentMeasuredWidth += this.getPaddingLeft() + this.getPaddingRight();
+		// this.contentMeasuredHeight += this.getPaddingTop() + this.getPaddingBottom();
 
 		// Check against our minimum height
 		this.contentMeasuredWidth = Math.max(this.contentMeasuredWidth, this.getSuggestedMinimumWidth());
@@ -180,7 +184,7 @@ public class VerticalScrollView extends ScrollView {
 
 		this.mIsLayoutDirty = false;
 		// Give a child focus if it needs it
-		if (this.mChildToScrollTo != null && HorizontalScrollView.isViewDescendantOf(this.mChildToScrollTo, this)) {
+		if (this.mChildToScrollTo != null && Utils.isViewDescendantOf(this.mChildToScrollTo, this)) {
 			this.scrollToChild(this.mChildToScrollTo);
 		}
 
@@ -191,9 +195,10 @@ public class VerticalScrollView extends ScrollView {
 		if (this.isFirstLayout) {
 			this.isFirstLayout = false;
 
-			final int scrollRange = Math.max(0, childHeight - (bottom - top - this.getPaddingTop() - this.getPaddingBottom()));
+			final int scrollRange = Math.max(0,
+					childHeight - (bottom - top - this.getPaddingTop() - this.getPaddingBottom()));
 			if (this.mSavedState != null) {
-				scrollY = mSavedState.scrollPosition;
+				scrollY = mSavedState.scrollOffsetFromStart;
 				mSavedState = null;
 			}
 
@@ -212,20 +217,20 @@ public class VerticalScrollView extends ScrollView {
 	}
 
 	@Override
-	protected void onAttachedToWindow() {
+	public void onAttachedToWindow() {
 		super.onAttachedToWindow();
 		this.isFirstLayout = true;
 	}
 
 	@Override
-	protected void onDetachedFromWindow() {
+	public void onDetachedFromWindow() {
 		super.onDetachedFromWindow();
 		this.isFirstLayout = true;
 	}
 
 	@Override
 	protected void onRestoreInstanceState(Parcelable state) {
-		SavedState ss = (SavedState) state;
+		ScrollSavedState ss = (ScrollSavedState) state;
 		super.onRestoreInstanceState(ss.getSuperState());
 		this.mSavedState = ss;
 		this.requestLayout();
@@ -234,8 +239,8 @@ public class VerticalScrollView extends ScrollView {
 	@Override
 	protected Parcelable onSaveInstanceState() {
 		Parcelable superState = super.onSaveInstanceState();
-		SavedState ss = new SavedState(superState);
-		ss.scrollPosition = this.getScrollY();
+		ScrollSavedState ss = new ScrollSavedState(superState);
+		ss.scrollOffsetFromStart = this.getScrollY();
 		return ss;
 	}
 

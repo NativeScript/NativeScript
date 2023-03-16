@@ -2647,6 +2647,14 @@ interface CGAffineTransform {
 }
 declare var CGAffineTransform: interop.StructType<CGAffineTransform>;
 
+interface CGAffineTransformComponents {
+	scale: CGSize;
+	horizontalShear: number;
+	rotation: number;
+	translation: CGVector;
+}
+declare var CGAffineTransformComponents: interop.StructType<CGAffineTransformComponents>;
+
 interface CGPoint {
 	x: number;
 	y: number;

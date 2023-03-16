@@ -99,7 +99,7 @@ export class Color implements definition.Color {
 		return this._name;
 	}
 
-	get ios(): UIColor {
+	get ios(): any /* UIColor */ {
 		return undefined;
 	}
 
@@ -109,7 +109,7 @@ export class Color implements definition.Color {
 
 	public _argbFromString(hex: string): number {
 		// always called as SHARP as first char
-		hex = hex.substr(1);
+		hex = hex.substring(1);
 		const length = hex.length;
 		// first we normalize
 		if (length === 3) {
@@ -177,7 +177,10 @@ export class Color implements definition.Color {
 		return this.hex;
 	}
 
-	public static fromIosColor(value: UIColor): Color {
+	/**
+	 * @param {UIColor} value
+	 */
+	public static fromIosColor(value: any): Color {
 		return undefined;
 	}
 
@@ -421,15 +424,15 @@ function parseColorWithAlpha(value: string): any {
 	let a = 255;
 
 	if (parts[0]) {
-		f = parseInt(parts[0].trim());
+		f = parseFloat(parts[0].trim());
 	}
 
 	if (parts[1]) {
-		s = parseInt(parts[1].trim());
+		s = parseFloat(parts[1].trim());
 	}
 
 	if (parts[2]) {
-		t = parseInt(parts[2].trim());
+		t = parseFloat(parts[2].trim());
 	}
 
 	if (parts[3]) {
@@ -526,7 +529,7 @@ function hslToRgb(h1, s1, l1) {
 		b = hue2rgb(p, q, h - 1 / 3);
 	}
 
-	return { r: r * 255, g: g * 255, b: b * 255 };
+	return { r: Math.round(r * 255), g: Math.round(g * 255), b: Math.round(b * 255) };
 }
 
 // `rgbToHsv`

@@ -168,7 +168,7 @@ export class Binding {
 		// }
 
 		if (this.sourceOptions) {
-			this.sourceOptions.instance.clear();
+			this.sourceOptions.instance = undefined;
 			this.sourceOptions = undefined;
 		}
 	}
@@ -415,7 +415,7 @@ export class Binding {
 			}
 
 			// Clear added props
-			for (let prop of addedProps) {
+			for (const prop of addedProps) {
 				delete context[prop];
 			}
 			addedProps.length = 0;

@@ -21,9 +21,8 @@ export class Button extends ButtonBase {
 
 	public initNativeView(): void {
 		super.initNativeView();
-		const nativeView = this.nativeViewProtected;
 		this._tapHandler = TapHandlerImpl.initWithOwner(new WeakRef(this));
-		nativeView.addTargetActionForControlEvents(this._tapHandler, 'tap', UIControlEvents.TouchUpInside);
+		this.nativeViewProtected.addTargetActionForControlEvents(this._tapHandler, 'tap', UIControlEvents.TouchUpInside);
 	}
 
 	public disposeNativeView(): void {
@@ -285,7 +284,7 @@ class TapHandlerImpl extends NSObject {
 	public tap(args) {
 		// _owner is a {N} view which could get destroyed when a tap initiates (protect!)
 		if (this._owner) {
-			const owner = this._owner.get();
+			const owner = this._owner?.deref();
 			if (owner) {
 				owner._emit(ButtonBase.tapEvent);
 			}

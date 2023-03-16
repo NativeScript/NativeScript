@@ -29,7 +29,7 @@ jobs:
           java-version: '11'
 
       - name: Install Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v4
 
       - name: Install NativeScript
         run: |
@@ -42,6 +42,9 @@ jobs:
       - name: Setup
         run: npm run setup
 
+      - name: Unit Tests
+        run: npx nx run-many --target=test --configuration=ci --projects=core
+
       - name: Create Emulator
         uses: rigor789/action-create-emulator@main
 
@@ -50,7 +53,7 @@ jobs:
 
       - name: Start iOS Simulator
         if: ${{ always() && !cancelled() }} # run iOS tests even if Android tests failed
-        uses: futureware-tech/simulator-action@v1
+        uses: futureware-tech/simulator-action@v2
         with:
           model: 'iPhone 13 Pro Max'
           os_version: '>=15.0'
