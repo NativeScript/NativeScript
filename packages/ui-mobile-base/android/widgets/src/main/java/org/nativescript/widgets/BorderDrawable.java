@@ -905,13 +905,13 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 			};
 			outlineRectF.setEmpty();
 			outlineRectF.set(getBounds());
-			backgroundPath.addRoundRect(outlineRectF, backgroundRadii, Path.Direction.CW);
+			outlineBackgroundPath.addRoundRect(outlineRectF, backgroundRadii, Path.Direction.CW);
 
 			if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
 				// see setConvexPath notes
-				outline.setPath(backgroundPath);
+				outline.setPath(outlineBackgroundPath);
 			} else {
-				outline.setConvexPath(backgroundPath);
+				outline.setConvexPath(outlineBackgroundPath);
 			}
 
 		} else {
