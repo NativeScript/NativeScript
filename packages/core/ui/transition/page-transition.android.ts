@@ -1,15 +1,35 @@
 import { BackstackEntry } from '../frame';
-import { Transition } from '.';
 import { SharedTransition } from './shared-transition';
+// import { SlideTransition } from './slide-transition';
+import { FadeTransition } from './fade-transition';
 
-export class PageTransition extends Transition {
-	createAndroidAnimator(transitionType: string) {
-		console.log('HELLO PageTransition', transitionType);
+export class PageTransition extends FadeTransition {
+	//SlideTransition
+
+	constructor() {
+		super(500);
+		// when extending slide:
+		// super('left', 500);
 	}
 
-	test(fragmentTransaction: androidx.fragment.app.FragmentTransaction, currentEntry: BackstackEntry, newEntry: BackstackEntry) {
-		console.log('HELLO PageTransition', fragmentTransaction);
+	// when extending slide:
+	// createAndroidAnimator(transitionType: string) {
+	// 	// console.log('HELLO PageTransition', transitionType);
+	// 	if (
+	// 		[
+	// 			Transition.AndroidTransitionType.enter,
+	// 			Transition.AndroidTransitionType.popEnter,
+	// 			Transition.AndroidTransitionType.popExit,
+	// 			// When extending SlideTransition, disable exit
+	//			// This causes back navigation shared elements position to be off
+	// 			// Transition.AndroidTransitionType.exit,
+	// 		].includes(transitionType)
+	// 	) {
+	// 		return super.createAndroidAnimator(transitionType);
+	// 	}
+	// }
 
+	androidFragmentTransactionCallback(fragmentTransaction: androidx.fragment.app.FragmentTransaction, currentEntry: BackstackEntry, newEntry: BackstackEntry) {
 		const fromPage = currentEntry.resolvedPage;
 		const toPage = newEntry.resolvedPage;
 
@@ -49,7 +69,7 @@ export class PageTransition extends Transition {
 		fragmentTransaction.setReorderingAllowed(true);
 
 		const transitionSet = new androidx.transition.TransitionSet();
-		transitionSet.setDuration(2000);
+		transitionSet.setDuration(500);
 		transitionSet.addTransition(new androidx.transition.ChangeBounds());
 		transitionSet.addTransition(new androidx.transition.ChangeTransform());
 		// transitionSet.addTransition(new androidx.transition.ChangeClipBounds());

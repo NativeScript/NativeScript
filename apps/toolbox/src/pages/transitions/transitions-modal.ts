@@ -3,8 +3,6 @@ import { Observable, ShownModallyData, LoadEventData, Page, ShowModalOptions } f
 let page: Page;
 let closeCallback: Function;
 export function onShownModally(args: ShownModallyData) {
-	console.log('page shown modally');
-
 	closeCallback = args.closeCallback;
 
 	if (args.context) {

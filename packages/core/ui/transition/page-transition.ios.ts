@@ -1,8 +1,9 @@
-﻿import { querySelectorAll } from '../core/view-base';
-import type { View } from '../core/view';
-import { Transition, iosMatchLayerProperties, iosSnapshotView, iosPrintRect } from '.';
+﻿import type { View } from '../core/view';
+import { Transition } from '.';
 import { Screen } from '../../platform';
-import { SharedTransition, SharedTransitionAnimationType, DEFAULT_DURATION } from './shared-transition';
+import { iOSNativeHelper } from '../../utils/native-helper';
+import { isNumber } from '../../utils/types';
+import { SharedTransition, SharedTransitionAnimationType, DEFAULT_DURATION, DEFAULT_SPRING } from './shared-transition';
 
 export class PageTransition extends Transition {
 	presented: UIViewController;
@@ -13,22 +14,22 @@ export class PageTransition extends Transition {
 	};
 
 	animateIOSTransition(transitionContext: UIViewControllerContextTransitioning, fromViewCtrl: UIViewController, toViewCtrl: UIViewController, operation: UINavigationControllerOperation): void {
-		console.log('--- PageTransitionController animateTransition');
-		console.log('toViewCtrl:', toViewCtrl);
-		console.log('fromViewCtrl:', fromViewCtrl);
+		// console.log('--- PageTransitionController animateTransition');
+		// console.log('toViewCtrl:', toViewCtrl);
+		// console.log('fromViewCtrl:', fromViewCtrl);
 
 		// console.log('owner.id:', owner.id);
 		const state = SharedTransition.getState(this.id);
 		if (!state) {
 			return;
 		}
-		console.log('state.activeType:', state.activeType);
-		console.log('operation:', operation);
+		// console.log('state.activeType:', state.activeType);
+		// console.log('operation:', operation);
 		// switch (state.activeType) {
 		switch (operation) {
 			case UINavigationControllerOperation.Push: {
 				this.presented = toViewCtrl;
-				console.log('-- Transition present --', this.presented);
+				// console.log('-- Transition present --', this.presented);
 
 				// transitionContext.containerView.addSubview(this.presented.view);
 				transitionContext.containerView.insertSubviewAboveSubview(this.presented.view, fromViewCtrl.view);
@@ -36,13 +37,15 @@ export class PageTransition extends Transition {
 
 				const { sharedElements, presented } = SharedTransition.getSharedElements(state.page, state.toPage);
 
-				console.log('  ');
-				console.log(
-					`1. Found sharedTransitionTags to animate:`,
-					sharedElements.map((v) => v.sharedTransitionTag)
-				);
+				if (SharedTransition.DEBUG) {
+					console.log('  ');
+					console.log(
+						`1. Found sharedTransitionTags to animate:`,
+						sharedElements.map((v) => v.sharedTransitionTag)
+					);
 
-				console.log(`2. Take snapshots of shared elements and position them based on presenting view:`);
+					console.log(`2. Take snapshots of shared elements and position them based on presenting view:`);
+				}
 
 				for (const presentingView of sharedElements) {
 					if (!this.sharedElements) {
@@ -68,7 +71,7 @@ export class PageTransition extends Transition {
 						// in case the image is loaded async, we need to update the snapshot when it changes
 						// todo: remove listener on transition end
 						presentedView.on('imageSourceChange', () => {
-							sharedElementSnapshot.image = iosSnapshotView(presentedSharedElement);
+							sharedElementSnapshot.image = iOSNativeHelper.snapshotView(presentedSharedElement, Screen.mainScreen.scale);
 							sharedElementSnapshot.tintColor = presentedSharedElement.tintColor;
 						});
 
@@ -76,14 +79,16 @@ export class PageTransition extends Transition {
 						sharedElementSnapshot.contentMode = presentedSharedElement.contentMode;
 					}
 
-					iosMatchLayerProperties(sharedElementSnapshot, presentingSharedElement);
+					iOSNativeHelper.copyLayerProperties(sharedElementSnapshot, presentingSharedElement);
 					sharedElementSnapshot.clipsToBounds = true;
 					// console.log('---> snapshot: ', sharedElementSnapshot);
 
 					const startFrame = presentingSharedElement.convertRectToView(presentingSharedElement.bounds, transitionContext.containerView);
 					const endFrame = presentedSharedElement.convertRectToView(presentedSharedElement.bounds, transitionContext.containerView);
 					sharedElementSnapshot.frame = startFrame;
-					console.log('---> ', presentingView.sharedTransitionTag, ' frame:', iosPrintRect(sharedElementSnapshot.frame));
+					if (SharedTransition.DEBUG) {
+						console.log('---> ', presentingView.sharedTransitionTag, ' frame:', iOSNativeHelper.printCGRect(sharedElementSnapshot.frame));
+					}
 
 					this.sharedElements.presenting.push({
 						view: presentingView,
@@ -114,26 +119,13 @@ export class PageTransition extends Transition {
 					for (const presented of this.sharedElements.presented) {
 						presented.view.opacity = presented.startOpacity;
 					}
-
-					// TODO: Discuss with Igor whether this is necessary
-					// potential this could help smooth some shared element transitions
-					UIView.animateWithDurationAnimationsCompletion(
-						0, // Igor: disabled for now, we'll talk about this and decide
-						() => {
-							for (const presenting of this.sharedElements.presenting) {
-								presenting.snapshot.alpha = presenting.endOpacity;
-							}
-						},
-						() => {
-							for (const presenting of this.sharedElements.presenting) {
-								presenting.snapshot.removeFromSuperview();
-							}
-							SharedTransition.updateState(this.id, {
-								activeType: SharedTransitionAnimationType.dismiss,
-							});
-							transitionContext.completeTransition(true);
-						}
-					);
+					for (const presenting of this.sharedElements.presenting) {
+						presenting.snapshot.removeFromSuperview();
+					}
+					SharedTransition.updateState(this.id, {
+						activeType: SharedTransitionAnimationType.dismiss,
+					});
+					transitionContext.completeTransition(true);
 				};
 				const updateFramePresent = () => {
 					// https://stackoverflow.com/a/27997678/1418981
@@ -142,7 +134,9 @@ export class PageTransition extends Transition {
 					// Not sure if best to leave all the time?
 					// owner.presented.view.setNeedsLayout();
 					// owner.presented.view.layoutIfNeeded();
-					console.log('3. Animating shared elements:');
+					if (SharedTransition.DEBUG) {
+						console.log('3. Animating shared elements:');
+					}
 					for (const presented of this.sharedElements.presented) {
 						const presentingMatch = this.sharedElements.presenting.find((v) => v.view.sharedTransitionTag === presented.view.sharedTransitionTag);
 						// Workaround wrong origin due ongoing layout process.
@@ -151,65 +145,85 @@ export class PageTransition extends Transition {
 						presentingMatch.snapshot.frame = correctedEndFrame;
 
 						// apply view and layer properties to the snapshot view to match the source/presented view
-						iosMatchLayerProperties(presentingMatch.snapshot, presented.view.ios);
+						iOSNativeHelper.copyLayerProperties(presentingMatch.snapshot, presented.view.ios);
 						// create a snapshot of the presented view
-						presentingMatch.snapshot.image = iosSnapshotView(presented.view.ios);
+						presentingMatch.snapshot.image = iOSNativeHelper.snapshotView(presented.view.ios, Screen.mainScreen.scale);
 						// apply correct alpha
 						presentingMatch.snapshot.alpha = presentingMatch.endOpacity;
 
-						console.log(`---> ${presentingMatch.view.sharedTransitionTag} animate to: `, iosPrintRect(correctedEndFrame));
+						if (SharedTransition.DEBUG) {
+							console.log(`---> ${presentingMatch.view.sharedTransitionTag} animate to: `, iOSNativeHelper.printCGRect(correctedEndFrame));
+						}
 					}
-					console.log('  ');
 				};
 
 				// starting page properties
-				this.presented.view.alpha = typeof state.toPageStart?.opacity === 'number' ? state.toPageStart?.opacity : 0;
+				const toProps = state.toPageStart;
+				this.presented.view.alpha = isNumber(toProps?.opacity) ? toProps?.opacity : 0;
 
-				const startX = typeof state.toPageStart?.x === 'number' ? state.toPageStart?.x : Screen.mainScreen.widthDIPs;
-				const startY = typeof state.toPageStart?.y === 'number' ? state.toPageStart?.y : 0;
-				const startWidth = typeof state.toPageStart?.width === 'number' ? state.toPageStart?.width : Screen.mainScreen.widthDIPs;
-				const startHeight = typeof state.toPageStart?.height === 'number' ? state.toPageStart?.height : Screen.mainScreen.heightDIPs;
+				const startX = isNumber(toProps?.x) ? toProps?.x : Screen.mainScreen.widthDIPs;
+				const startY = isNumber(toProps?.y) ? toProps?.y : 0;
+				const startWidth = isNumber(toProps?.width) ? toProps?.width : Screen.mainScreen.widthDIPs;
+				const startHeight = isNumber(toProps?.height) ? toProps?.height : Screen.mainScreen.heightDIPs;
 				this.presented.view.frame = CGRectMake(startX, startY, startWidth, startHeight);
 
-				UIView.animateWithDurationDelayUsingSpringWithDampingInitialSpringVelocityOptionsAnimationsCompletion(
-					typeof state.toPageStart?.duration === 'number' ? state.toPageStart?.duration / 1000 : DEFAULT_DURATION,
-					0,
-					0.5,
-					3,
-					UIViewAnimationOptions.CurveEaseInOut,
-					() => {
-						// animate page properties to the following:
-						this.presented.view.alpha = typeof state.toPageEnd?.opacity === 'number' ? state.toPageEnd?.opacity : 1;
+				const animateProperties = () => {
+					const props = state.toPageEnd;
+					// animate page properties to the following:
+					this.presented.view.alpha = isNumber(props?.opacity) ? props?.opacity : 1;
 
-						const endX = typeof state.toPageEnd?.x === 'number' ? state.toPageEnd?.x : 0;
-						const endY = typeof state.toPageEnd?.y === 'number' ? state.toPageEnd?.y : 0;
-						const endWidth = typeof state.toPageEnd?.width === 'number' ? state.toPageEnd?.width : Screen.mainScreen.widthDIPs;
-						const endHeight = typeof state.toPageEnd?.height === 'number' ? state.toPageEnd?.height : Screen.mainScreen.heightDIPs;
-						this.presented.view.frame = CGRectMake(endX, endY, endWidth, endHeight);
+					const endX = isNumber(props?.x) ? props?.x : 0;
+					const endY = isNumber(props?.y) ? props?.y : 0;
+					const endWidth = isNumber(props?.width) ? props?.width : Screen.mainScreen.widthDIPs;
+					const endHeight = isNumber(props?.height) ? props?.height : Screen.mainScreen.heightDIPs;
+					this.presented.view.frame = CGRectMake(endX, endY, endWidth, endHeight);
+				};
+				if (isNumber(toProps?.duration)) {
+					// override spring and use only linear animation
+					UIView.animateWithDurationAnimationsCompletion(
+						toProps?.duration / 1000,
+						() => {
+							animateProperties();
+							updateFramePresent();
+						},
+						() => {
+							cleanupPresent();
+						}
+					);
+				} else {
+					const spring = toProps?.spring;
+					iOSNativeHelper.animateWithSpring({
+						tension: isNumber(spring?.tension) ? spring?.tension : DEFAULT_SPRING.tension,
+						friction: isNumber(spring?.friction) ? spring?.tension : DEFAULT_SPRING.friction,
+						animations: () => {
+							animateProperties();
 
-						updateFramePresent();
-					},
-					() => {
-						cleanupPresent();
-					}
-				);
+							updateFramePresent();
+						},
+						completion: () => {
+							cleanupPresent();
+						},
+					});
+				}
 				break;
 			}
 			case UINavigationControllerOperation.Pop: {
 				// this.presented = fromViewCtrl;
-				console.log('-- Transition dismiss --', this.presented);
+				// console.log('-- Transition dismiss --', this.presented);
 
 				transitionContext.containerView.insertSubviewBelowSubview(toViewCtrl.view, fromViewCtrl.view);
 
 				// console.log('transitionContext.containerView.subviews.count:', transitionContext.containerView.subviews.count);
 
-				console.log('  ');
-				console.log(
-					`1. Dismiss sharedTransitionTags to animate:`,
-					this.sharedElements.presented.map((p) => p.view.sharedTransitionTag)
-				);
+				if (SharedTransition.DEBUG) {
+					console.log('  ');
+					console.log(
+						`1. Dismiss sharedTransitionTags to animate:`,
+						this.sharedElements.presented.map((p) => p.view.sharedTransitionTag)
+					);
 
-				console.log(`2. Add back previously stored sharedElements to dismiss:`);
+					console.log(`2. Add back previously stored sharedElements to dismiss:`);
+				}
 
 				for (const p of this.sharedElements.presented) {
 					p.view.opacity = 0;
@@ -228,38 +242,59 @@ export class PageTransition extends Transition {
 					transitionContext.completeTransition(true);
 				};
 				const updateFrameDismiss = () => {
-					console.log('3. Dismissing shared elements:');
+					if (SharedTransition.DEBUG) {
+						console.log('3. Dismissing shared elements:');
+					}
 					for (const presenting of this.sharedElements.presenting) {
-						iosMatchLayerProperties(presenting.snapshot, presenting.view.ios);
+						iOSNativeHelper.copyLayerProperties(presenting.snapshot, presenting.view.ios);
 						presenting.snapshot.frame = presenting.startFrame;
 						presenting.snapshot.alpha = presenting.startOpacity;
 
-						console.log(`---> ${presenting.view.sharedTransitionTag} animate to: `, iosPrintRect(presenting.startFrame));
+						if (SharedTransition.DEBUG) {
+							console.log(`---> ${presenting.view.sharedTransitionTag} animate to: `, iOSNativeHelper.printCGRect(presenting.startFrame));
+						}
 					}
-					console.log('  ');
 				};
 
-				UIView.animateWithDurationDelayUsingSpringWithDampingInitialSpringVelocityOptionsAnimationsCompletion(
-					typeof state.fromPageEnd?.duration === 'number' ? state.fromPageEnd?.duration / 1000 : DEFAULT_DURATION,
-					0,
-					0.5,
-					3,
-					UIViewAnimationOptions.CurveEaseInOut,
-					() => {
-						this.presented.view.alpha = typeof state.fromPageEnd?.opacity === 'number' ? state.fromPageEnd?.opacity : 0;
+				const props = state.fromPageEnd;
 
-						const endX = typeof state.fromPageEnd?.x === 'number' ? state.fromPageEnd?.x : Screen.mainScreen.widthDIPs;
-						const endY = typeof state.fromPageEnd?.y === 'number' ? state.fromPageEnd?.y : 0;
-						const endWidth = typeof state.fromPageEnd?.width === 'number' ? state.fromPageEnd?.width : Screen.mainScreen.widthDIPs;
-						const endHeight = typeof state.fromPageEnd?.height === 'number' ? state.fromPageEnd?.height : Screen.mainScreen.heightDIPs;
-						this.presented.view.frame = CGRectMake(endX, endY, endWidth, endHeight);
+				const animateProperties = () => {
+					this.presented.view.alpha = isNumber(props?.opacity) ? props?.opacity : 0;
 
-						updateFrameDismiss();
-					},
-					() => {
-						cleanupDismiss();
-					}
-				);
+					const endX = isNumber(props?.x) ? props?.x : Screen.mainScreen.widthDIPs;
+					const endY = isNumber(props?.y) ? props?.y : 0;
+					const endWidth = isNumber(props?.width) ? props?.width : Screen.mainScreen.widthDIPs;
+					const endHeight = isNumber(props?.height) ? props?.height : Screen.mainScreen.heightDIPs;
+					this.presented.view.frame = CGRectMake(endX, endY, endWidth, endHeight);
+				};
+
+				if (isNumber(props?.duration)) {
+					// override spring and use only linear animation
+					UIView.animateWithDurationAnimationsCompletion(
+						props?.duration / 1000,
+						() => {
+							animateProperties();
+							updateFrameDismiss();
+						},
+						() => {
+							cleanupDismiss();
+						}
+					);
+				} else {
+					const spring = props?.spring;
+					iOSNativeHelper.animateWithSpring({
+						tension: isNumber(spring?.tension) ? spring?.tension : DEFAULT_SPRING.tension,
+						friction: isNumber(spring?.friction) ? spring?.tension : DEFAULT_SPRING.friction,
+						animations: () => {
+							animateProperties();
+
+							updateFrameDismiss();
+						},
+						completion: () => {
+							cleanupDismiss();
+						},
+					});
+				}
 				break;
 			}
 		}

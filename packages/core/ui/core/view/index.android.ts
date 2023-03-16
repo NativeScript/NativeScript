@@ -714,29 +714,7 @@ export class View extends ViewCommon {
 		this._dialogFragment = df;
 		this._raiseShowingModallyEvent();
 
-		if (options?.transition?.instance) {
-			const currentEntry = parent.page.frame.currentEntry;
-			const newEntry = this.page.frame;
-			const manager: androidx.fragment.app.FragmentManager = parent._getRootFragmentManager(); //this._getFragmentManager();
-			const transaction = manager.beginTransaction();
-			let navigationTransition: any; //NavigationTransition;
-			if (newEntry) {
-				navigationTransition = newEntry.transition;
-			} else {
-				navigationTransition = null;
-			}
-
-			// _setAndroidFragmentTransitions(true, navigationTransition, <any>currentEntry, <any>newEntry, this._domId, transaction, true);
-			// transaction.replace(this.containerViewId, newFragment, newFragmentTag);
-
-			this._dialogFragment.show(parent._getRootFragmentManager(), this._domId.toString());
-			// @ts-ignore - TODO: refactor to a meaningful name/api
-			navigationTransition?.instance?.test?.(transaction, currentEntry, newEntry);
-
-			transaction.commitAllowingStateLoss();
-		} else {
-			this._dialogFragment.show(parent._getRootFragmentManager(), this._domId.toString());
-		}
+		this._dialogFragment.show(parent._getRootFragmentManager(), this._domId.toString());
 	}
 
 	protected _hideNativeModalView(parent: View, whenClosedCallback: () => void) {

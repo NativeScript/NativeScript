@@ -464,8 +464,7 @@ export class Frame extends FrameBase {
 
 		transaction.replace(this.containerViewId, newFragment, newFragmentTag);
 
-		// @ts-ignore - TODO: refactor to a meaningful name/api
-		navigationTransition?.instance?.test?.(transaction, currentEntry, newEntry);
+		navigationTransition?.instance?.androidFragmentTransactionCallback?.(transaction, currentEntry, newEntry);
 
 		transaction.commitAllowingStateLoss();
 	}
@@ -490,8 +489,7 @@ export class Frame extends FrameBase {
 
 		transaction.replace(this.containerViewId, backstackEntry.fragment, backstackEntry.fragmentTag);
 
-		// @ts-ignore - TODO: refactor to a meaningful name/api
-		backstackEntry.transition?.test?.(transaction, this._currentEntry, backstackEntry);
+		backstackEntry.transition?.androidFragmentTransactionCallback?.(transaction, this._currentEntry, backstackEntry);
 
 		transaction.commitAllowingStateLoss();
 	}

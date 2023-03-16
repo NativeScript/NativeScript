@@ -566,7 +566,9 @@ export class View extends ViewCommon implements ViewDefinition {
 			this.interactiveDismissGestureBegan = true;
 			this.interactiveDismissGestureCancelled = false;
 			const percent = args.deltaY / (args.ios.view.bounds.size.height / 2);
-			console.log('pan:', percent);
+			if (SharedTransition.DEBUG) {
+				console.log('interactive dismissal pan:', percent);
+			}
 			switch (args.state) {
 				case GestureStateTypes.began:
 					if (this._closeModalCallback) {
@@ -1012,7 +1014,6 @@ class UIViewControllerTransitioningDelegateImpl extends NSObject implements UIVi
 			const ownerView = this.ownerView?.deref();
 			if (ownerView) {
 				if (ownerView.interactiveDismissGestureBegan) {
-					console.log('interactionControllerForDismissal!');
 					ownerView.transitionIteractiveCtrl = owner.iosInteractionDismiss(animator);
 					return ownerView.transitionIteractiveCtrl;
 				}

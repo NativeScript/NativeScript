@@ -3,6 +3,10 @@ import { querySelectorAll, ViewBase } from '../core/view-base';
 import type { View } from '../core/view';
 
 export const DEFAULT_DURATION = 0.35;
+export const DEFAULT_SPRING = {
+	tension: 140,
+	friction: 10,
+};
 // always increment when adding new transitions to be able to track their state
 export enum SharedTransitionAnimationType {
 	present,
@@ -45,26 +49,55 @@ type SharedTransitionPageProperties = {
 	height?: number;
 	opacity?: number;
 	/**
-	 * Duration in milliseconds
+	 * Linear duration in milliseconds
+	 * Note: When this is defined, it will override spring options and use only linear animation.
 	 */
 	duration?: number;
+	/**
+	 * Spring animation settings.
+	 * Defaults to 140 tension with 10 friction.
+	 */
+	spring?: {
+		tension?: number;
+		friction?: number;
+		mass?: number;
+		delay?: number;
+		velocity?: number;
+		animateOptions?: any /* ios only: UIViewAnimationOptions */;
+	};
 };
 /**
- * Shared Element Transitions (experimental)
- *
- * Note: some APIs may change in future releases
+ * Shared Element Transitions (preview)
+ * Allows you to auto animate between shared elements on two different screesn to create smooth navigational experiences.
+ * View components can define sharedTransitionTag="name" alone with a transition through this API.
  */
 export class SharedTransition {
-	static custom(instance: Transition, options: SharedTransitionConfig): { instance: Transition } {
-		SharedTransition.updateState(instance.id, {
+	/**
+	 * Configure a custom transition with presentation/dismissal options.
+	 * @param transition The custom Transition instance.
+	 * @param options
+	 * @returns a configured SharedTransition instance for use with navigational APIs.
+	 */
+	static custom(transition: Transition, options: SharedTransitionConfig): { instance: Transition } {
+		SharedTransition.updateState(transition.id, {
 			...options,
-			instance,
+			instance: transition,
 			activeType: SharedTransitionAnimationType.present,
 		});
-		return { instance };
+		return { instance: transition };
 	}
 
+	/**
+	 * Enable to see various console logging output of Shared Element Transition behavior.
+	 */
+	static DEBUG = false;
+	/**
+	 * @private
+	 */
 	static currentStack: Array<SharedTransitionState>;
+	/**
+	 * @private
+	 */
 	static updateState(id: number, state: SharedTransitionState) {
 		if (!SharedTransition.currentStack) {
 			SharedTransition.currentStack = [];
@@ -80,15 +113,27 @@ export class SharedTransition {
 			SharedTransition.currentStack.push(state);
 		}
 	}
+	/**
+	 * @private
+	 */
 	static getState(id: number) {
 		return SharedTransition.currentStack.find((t) => t.instance.id === id);
 	}
+	/**
+	 * @private
+	 */
 	static finishState(id: number) {
 		const index = SharedTransition.currentStack.findIndex((t) => t.instance.id === id);
 		if (index > -1) {
 			SharedTransition.currentStack.splice(index, 1);
 		}
 	}
+	/**
+	 * Gather view collections based on sharedTransitionTag details.
+	 * @param fromPage Page moving away from
+	 * @param toPage Page moving to
+	 * @returns Collections of views pertaining to shared elements or particular pages
+	 */
 	static getSharedElements(
 		fromPage: ViewBase,
 		toPage: ViewBase

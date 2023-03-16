@@ -40,7 +40,7 @@ export class FrameBase extends CustomLayoutView {
 	private _animated: boolean;
 	private _transition: NavigationTransition;
 	private _backStack = new Array<BackstackEntry>();
-	private _navigationQueue = new Array<NavigationContext>();
+	_navigationQueue = new Array<NavigationContext>();
 
 	public actionBarVisibility: 'auto' | 'never' | 'always';
 	public _currentEntry: BackstackEntry;
@@ -410,7 +410,7 @@ export class FrameBase extends CustomLayoutView {
 	}
 
 	@profile
-	private performGoBack(navigationContext: NavigationContext) {
+	performGoBack(navigationContext: NavigationContext) {
 		let backstackEntry = navigationContext.entry;
 		const backstack = this._backStack;
 		if (!backstackEntry) {

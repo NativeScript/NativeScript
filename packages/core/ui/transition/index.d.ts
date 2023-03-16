@@ -1,4 +1,6 @@
-﻿export declare class Transition {
+﻿import type { BackstackEntry } from '../frame';
+
+export declare class Transition {
 	id: number;
 	static AndroidTransitionType?: { enter?: string; exit?: string; popEnter?: string; popExit?: string };
 	constructor(duration?: number, nativeCurve?: any /* UIViewAnimationCurve | string | CubicBezierAnimationCurve | android.view.animation.Interpolator | android.view.animation.LinearInterpolator */);
@@ -15,11 +17,6 @@
 	iosInteractionPresented?(animator: any /* UIViewControllerAnimatedTransitioning */): any /* UIViewControllerInteractiveTransitioning */;
 
 	iosPresentedViewController?(presented: any /* UIViewController */, presenting: any /* UIViewController */, source: any /* UIViewController */): any /* UIPresentationController */;
+
+	androidFragmentTransactionCallback?(fragmentTransaction: any /* androidx.fragment.app.FragmentTransaction */, currentEntry: BackstackEntry, newEntry: BackstackEntry): void;
 }
-
-// TODO: move to native-helper.{ios|android}
-export declare function iosSnapshotView(view: any /* UIView */): any; /* UIImage */
-
-export declare function iosMatchLayerProperties(view: any /* UIView */, toView: any /* UIView */);
-
-export declare function iosPrintRect(r: any /* CGRect */): void;

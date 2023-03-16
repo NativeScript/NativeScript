@@ -9,17 +9,19 @@ export function navigatingTo(args: EventData) {
 // class SampleCustomModalTransition extends ModalTransition implements TransitionType {
 
 // }
+SharedTransition.DEBUG = true;
 export class TransitionsModel extends Observable {
 	open() {
 		page.frame.navigate({
 			moduleName: `pages/transitions/transitions-detail`,
 			transition: SharedTransition.custom(new PageTransition(), {
-				toPageStart: {
-					duration: 1000,
-				},
-				fromPageEnd: {
-					duration: 500,
-				},
+				interactiveDismissal: true,
+				// toPageStart: {
+				// 	duration: 400,
+				// },
+				// fromPageEnd: {
+				// 	duration: 500,
+				// },
 			}),
 		});
 	}
@@ -30,15 +32,15 @@ export class TransitionsModel extends Observable {
 				interactiveDismissal: true,
 				toPageStart: {
 					y: 200,
-					duration: 1000,
+					// duration: 400,
 				},
 				fromPageEnd: {
 					y: 100,
-					duration: 500,
+					// duration: 500,
 				},
 			}),
 			closeCallback(args) {
-				console.log('close modal callback', args);
+				// console.log('close modal callback', args);
 			},
 		} as ShowModalOptions);
 	}

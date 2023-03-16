@@ -355,4 +355,84 @@ export namespace iOSNativeHelper {
 			return true;
 		}
 	}
+
+	export function printCGRect(rect: CGRect) {
+		if (rect) {
+			return `CGRect(${rect.origin.x} ${rect.origin.y} ${rect.size.width} ${rect.size.height})`;
+		}
+	}
+
+	export function snapshotView(view: UIView, scale: number): UIImage {
+		if (view instanceof UIImageView) {
+			return view.image;
+		}
+		// console.log('snapshotView view.frame:', printRect(view.frame));
+		UIGraphicsBeginImageContextWithOptions(CGSizeMake(view.frame.size.width, view.frame.size.height), false, scale);
+		view.layer.renderInContext(UIGraphicsGetCurrentContext());
+		const image = UIGraphicsGetImageFromCurrentImageContext();
+		UIGraphicsEndImageContext();
+		return image;
+	}
+
+	export function copyLayerProperties(view: UIView, toView: UIView) {
+		const viewPropertiesToMatch: Array<keyof UIView> = ['backgroundColor'];
+		const layerPropertiesToMatch: Array<keyof CALayer> = ['cornerRadius', 'borderWidth', 'borderColor'];
+
+		viewPropertiesToMatch.forEach((property) => {
+			if (view[property] !== toView[property]) {
+				// console.log('|    -- matching view property:', property);
+				view[property as any] = toView[property];
+			}
+		});
+
+		layerPropertiesToMatch.forEach((property) => {
+			if (view.layer[property] !== toView.layer[property]) {
+				// console.log('|    -- matching layer property:', property);
+				view.layer[property as any] = toView.layer[property];
+			}
+		});
+	}
+
+	export function animateWithSpring(options?: { tension?: number; friction?: number; mass?: number; delay?: number; velocity?: number; animateOptions?: UIViewAnimationOptions; animations?: () => void; completion?: (finished?: boolean) => void }) {
+		const opt = {
+			tension: 140,
+			friction: 10,
+			mass: 1.0,
+			delay: 0,
+			velocity: 0,
+			animateOptions: null,
+			animations: null,
+			completion: null,
+			...(options || {}),
+		};
+
+		// console.log('createSpringAnimator', opt);
+		const damping = opt.friction / Math.sqrt(2 * opt.tension);
+		const undampedFrequency = Math.sqrt(opt.tension / opt.mass);
+
+		// console.log({
+		// 	damping,
+		// 	undampedFrequency
+		// })
+
+		const epsilon = 0.001;
+		let duration = 0;
+
+		if (damping < 1) {
+			// console.log('damping < 1');
+			const a = Math.sqrt(1 - Math.pow(damping, 2));
+			const b = opt.velocity / (a * undampedFrequency);
+			const c = damping / a;
+			const d = -((b - c) / epsilon);
+			if (d > 0) {
+				duration = Math.log(d) / (damping * undampedFrequency);
+			}
+		}
+
+		if (duration === 0) {
+			UIView.animateWithDurationAnimationsCompletion(0, opt.animations, opt.completion);
+			return;
+		}
+		UIView.animateWithDurationDelayUsingSpringWithDampingInitialSpringVelocityOptionsAnimationsCompletion(duration, opt.delay, damping, opt.velocity, opt.animateOptions, opt.animations, opt.completion);
+	}
 }

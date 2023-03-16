@@ -9,7 +9,11 @@ import { _createIOSAnimatedTransitioning } from './fragment.transitions';
 import { IOSHelper } from '../core/view/view-helper';
 import { profile } from '../../profiling';
 import { iOSNativeHelper, layout } from '../../utils';
+import { isNumber } from '../../utils/types';
 import { Trace } from '../../trace';
+import type { PageTransition } from '../transition/page-transition';
+import { SharedTransition } from '../transition/shared-transition';
+import { GestureStateTypes, PanGestureEventData } from '../gestures';
 
 export * from './frame-common';
 
@@ -24,10 +28,11 @@ const NON_ANIMATED_TRANSITION = 'non-animated';
 let navDepth = -1;
 
 export class Frame extends FrameBase {
-	public viewController: UINavigationControllerImpl;
-	public _animatedDelegate = <UINavigationControllerDelegate>UINavigationControllerAnimatedDelegate.new();
-	// public _transitionDelegate;
+	viewController: UINavigationControllerImpl;
+	_animatedDelegate = <UINavigationControllerDelegate>UINavigationControllerAnimatedDelegate.initWithOwner(new WeakRef(this));
+	transitionIteractiveCtrl: UIPercentDrivenInteractiveTransition;
 	public _ios: iOSFrame;
+	private _interactiveDismissGesture: (args: PanGestureEventData) => void;
 
 	constructor() {
 		super();
@@ -100,6 +105,14 @@ export class Frame extends FrameBase {
 		if (!nativeTransition && navigationTransition) {
 			this._ios.controller.delegate = this._animatedDelegate;
 			viewController[DELEGATE] = this._animatedDelegate;
+			const transitionState = SharedTransition.getState(navigationTransition.instance.id);
+			if (transitionState?.interactiveDismissal) {
+				// interactive transitions via gestures
+				// TODO - these could be typed as: boolean | (view: View) => void
+				// to allow users to define their own custom gesture dismissals
+				this._interactiveDismissGesture = this._interactiveDismissGestureHandler.bind(this);
+				this.on('pan', this._interactiveDismissGesture);
+			}
 		} else {
 			viewController[DELEGATE] = null;
 			this._ios.controller.delegate = null;
@@ -183,6 +196,44 @@ export class Frame extends FrameBase {
 		}
 	}
 
+	private _interactiveDismissGestureHandler(args: PanGestureEventData) {
+		if (args?.ios?.view) {
+			this.interactiveDismissGestureBegan = true;
+			this.interactiveDismissGestureCancelled = false;
+			const percent = args.deltaX / (args.ios.view.bounds.size.width / 2);
+			if (SharedTransition.DEBUG) {
+				console.log('interactive dismissal pan:', percent);
+			}
+			switch (args.state) {
+				case GestureStateTypes.began:
+					// const navigationContext = this.parent.page.frame._navigationQueue[0];
+					// this.performGoBack(navigationContext);
+					this._ios.controller.popViewControllerAnimated(true);
+
+					break;
+				case GestureStateTypes.changed:
+					// TODO: allow customization of threshold
+					if (percent < 1) {
+						if (this.transitionIteractiveCtrl) {
+							this.transitionIteractiveCtrl.updateInteractiveTransition(percent);
+						}
+					}
+					break;
+				case GestureStateTypes.cancelled:
+				case GestureStateTypes.ended:
+					if (this.transitionIteractiveCtrl) {
+						if (percent > 0.5) {
+							this.transitionIteractiveCtrl.finishInteractiveTransition();
+						} else {
+							this.interactiveDismissGestureCancelled = true;
+							this.transitionIteractiveCtrl.cancelInteractiveTransition();
+						}
+					}
+					break;
+			}
+		}
+	}
+
 	private pushViewControllerAnimated(viewController: UIViewController, animated: boolean, isModal: boolean) {
 		const transitionCoordinator = this._ios.controller.transitionCoordinator;
 		if (!isModal && transitionCoordinator) {
@@ -202,7 +253,9 @@ export class Frame extends FrameBase {
 		const controller = backstackEntry.resolvedPage.ios;
 		const animated = this._currentEntry ? this._getIsAnimatedNavigation(this._currentEntry.entry) : false;
 
-		this._updateActionBar(backstackEntry.resolvedPage);
+		if (!this.interactiveDismissGestureCancelled) {
+			this._updateActionBar(backstackEntry.resolvedPage);
+		}
 		if (Trace.isEnabled()) {
 			Trace.write(`${this}.popToViewControllerAnimated(${controller}, ${animated}); depth = ${navDepth}`, Trace.categories.Navigation);
 		}
@@ -378,9 +431,16 @@ const _defaultTransitionDuration = 0.35;
 @NativeClass
 class UINavigationControllerAnimatedDelegate extends NSObject implements UINavigationControllerDelegate {
 	public static ObjCProtocols = [UINavigationControllerDelegate];
+	owner: WeakRef<Frame>;
+	transition: PageTransition;
+
+	static initWithOwner(owner: WeakRef<Frame>) {
+		const delegate = <UINavigationControllerAnimatedDelegate>UINavigationControllerAnimatedDelegate.new();
+		delegate.owner = owner;
+		return delegate;
+	}
 
 	navigationControllerAnimationControllerForOperationFromViewControllerToViewController(navigationController: UINavigationController, operation: number, fromVC: UIViewController, toVC: UIViewController): UIViewControllerAnimatedTransitioning {
-		console.log('UINavigationControllerAnimatedDelegate navigationControllerAnimationControllerForOperationFromViewControllerToViewController');
 		let viewController: UIViewController;
 		switch (operation) {
 			case UINavigationControllerOperation.Push:
@@ -404,16 +464,127 @@ class UINavigationControllerAnimatedDelegate extends NSObject implements UINavig
 			Trace.write(`UINavigationControllerImpl.navigationControllerAnimationControllerForOperationFromViewControllerToViewController(${operation}, ${fromVC}, ${toVC}), transition: ${JSON.stringify(navigationTransition)}`, Trace.categories.NativeLifecycle);
 		}
 
+		this.transition = navigationTransition.instance;
+
 		const curve = _getNativeCurve(navigationTransition);
 		const animationController = _createIOSAnimatedTransitioning(navigationTransition, curve, operation, fromVC, toVC);
 
 		return animationController;
 	}
 
-	// TODO: wire this up for interactive gesture control of transition
-	// navigationControllerInteractionControllerForAnimationController(navigationController: UINavigationController, animationController: UIViewControllerAnimatedTransitioning): UIViewControllerInteractiveTransitioning {
+	navigationControllerInteractionControllerForAnimationController(navigationController: UINavigationController, animationController: UIViewControllerAnimatedTransitioning): UIViewControllerInteractiveTransitioning {
+		const owner = this.owner?.deref();
+		if (owner) {
+			if (owner.interactiveDismissGestureBegan) {
+				owner.transitionIteractiveCtrl = PercentInteractiveController.initWithOwner(new WeakRef(this.transition));
+				return owner.transitionIteractiveCtrl;
+			}
+		}
 
-	// }
+		return null;
+	}
+}
+
+@NativeClass()
+class PercentInteractiveController extends UIPercentDrivenInteractiveTransition implements UIViewControllerInteractiveTransitioning {
+	static ObjCProtocols = [UIViewControllerInteractiveTransitioning];
+	owner: WeakRef<PageTransition>;
+	started = false;
+	transitionContext: UIViewControllerContextTransitioning;
+	backgroundAnimation: UIViewPropertyAnimator;
+
+	static initWithOwner(owner: WeakRef<PageTransition>) {
+		const ctrl = <PercentInteractiveController>PercentInteractiveController.new();
+		ctrl.owner = owner;
+		return ctrl;
+	}
+
+	startInteractiveTransition(transitionContext: UIViewControllerContextTransitioning) {
+		console.log('startInteractiveTransition');
+		this.transitionContext = transitionContext;
+	}
+
+	updateInteractiveTransition(percentComplete: number) {
+		console.log('percentComplete:', percentComplete);
+		const owner: any = this.owner?.deref();
+		if (owner) {
+			if (!this.started) {
+				this.started = true;
+				for (const p of owner.sharedElements.presented) {
+					p.view.opacity = 0;
+				}
+				for (const p of owner.sharedElements.presenting) {
+					p.snapshot.alpha = p.endOpacity;
+					this.transitionContext.containerView.addSubview(p.snapshot);
+				}
+				this.backgroundAnimation = UIViewPropertyAnimator.alloc().initWithDurationDampingRatioAnimations(1, 1, () => {
+					for (const p of owner.sharedElements.presenting) {
+						p.snapshot.frame = p.startFrame;
+						iOSNativeHelper.copyLayerProperties(p.snapshot, p.view.ios);
+
+						p.snapshot.alpha = 1;
+					}
+					owner.presented.view.alpha = 0;
+					owner.presented.view.frame = CGRectMake(0, 200, owner.presented.view.bounds.size.width, owner.presented.view.bounds.size.height);
+				});
+			}
+
+			this.backgroundAnimation.fractionComplete = percentComplete;
+		}
+	}
+
+	cancelInteractiveTransition() {
+		console.log('cancelInteractiveTransition');
+		const owner: any = this.owner?.deref();
+		if (owner && this.started) {
+			const state = SharedTransition.getState(owner.id);
+			if (!state) {
+				return;
+			}
+			if (this.backgroundAnimation) {
+				this.backgroundAnimation.reversed = true;
+				const duration = isNumber(state.toPageStart?.duration) ? state.toPageStart?.duration / 1000 : 0.35;
+				this.backgroundAnimation.continueAnimationWithTimingParametersDurationFactor(null, duration);
+				setTimeout(() => {
+					for (const p of owner.sharedElements.presented) {
+						p.view.opacity = 1;
+					}
+					for (const p of owner.sharedElements.presenting) {
+						p.snapshot.removeFromSuperview();
+					}
+					owner.presented.view.alpha = 1;
+					this.backgroundAnimation = null;
+					this.started = false;
+					this.transitionContext.completeTransition(false);
+				}, duration * 1000);
+			}
+		}
+	}
+
+	finishInteractiveTransition() {
+		console.log('finishInteractiveTransition');
+		const owner: any = this.owner?.deref();
+		if (owner && this.started) {
+			if (this.backgroundAnimation) {
+				const state = SharedTransition.getState(owner.id);
+				if (!state) {
+					SharedTransition.finishState(owner.id);
+					this.transitionContext.completeTransition(true);
+					return;
+				}
+
+				const duration = isNumber(state.fromPageEnd?.duration) ? state.fromPageEnd?.duration / 1000 : 0.35;
+				this.backgroundAnimation.continueAnimationWithTimingParametersDurationFactor(null, duration);
+				setTimeout(() => {
+					for (const presenting of owner.sharedElements.presenting) {
+						presenting.view.opacity = presenting.startOpacity;
+					}
+					SharedTransition.finishState(owner.id);
+					this.transitionContext.completeTransition(true);
+				}, duration * 1000);
+			}
+		}
+	}
 }
 
 @NativeClass

@@ -43,11 +43,3 @@ export class Transition implements TransitionType {
 		return `Transition@${this.id}`;
 	}
 }
-
-export function iosSnapshotView(view: any) {
-	return null;
-}
-
-export function iosMatchLayerProperties(view: any, toView: any) {}
-
-export function iosPrintRect(r: any) {}
