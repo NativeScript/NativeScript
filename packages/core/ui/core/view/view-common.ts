@@ -94,6 +94,8 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public _modalParent: ViewCommon;
 	private _modalContext: any;
 	private _modal: ViewCommon;
+	interactiveDismissGestureBegan = false;
+	interactiveDismissGestureCancelled = false;
 
 	private _measuredWidth: number;
 	private _measuredHeight: number;
@@ -401,27 +403,39 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		this.style._fontScale = getCurrentFontScale();
 		this._modalParent = parent;
 		this._modalContext = options.context;
-		const that = this;
-		this._closeModalCallback = function (...originalArgs) {
-			if (that._closeModalCallback) {
-				const modalIndex = _rootModalViews.indexOf(that);
+		this._closeModalCallback = (...originalArgs) => {
+			const cleanupModalViews = () => {
+				const modalIndex = _rootModalViews.indexOf(this);
 				_rootModalViews.splice(modalIndex);
-				that._modalParent = null;
-				that._modalContext = null;
-				that._closeModalCallback = null;
-				that._dialogClosed();
+				this._modalParent = null;
+				this._modalContext = null;
+				this._closeModalCallback = null;
+				this._dialogClosed();
 				parent._modal = null;
+			};
 
-				const whenClosedCallback = () => {
+			const whenClosedCallback = () => {
+				if (this.interactiveDismissGestureBegan) {
+					this.interactiveDismissGestureBegan = false;
+					if (!this.interactiveDismissGestureCancelled) {
+						cleanupModalViews();
+					}
+				}
+
+				if (!this.interactiveDismissGestureCancelled) {
 					if (typeof options.closeCallback === 'function') {
 						options.closeCallback.apply(undefined, originalArgs);
 					}
 
-					that._tearDownUI(true);
-				};
+					this._tearDownUI(true);
+				}
+			};
 
-				that._hideNativeModalView(parent, whenClosedCallback);
+			if (!this.interactiveDismissGestureBegan) {
+				cleanupModalViews();
 			}
+
+			this._hideNativeModalView(parent, whenClosedCallback);
 		};
 	}
 

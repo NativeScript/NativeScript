@@ -18,6 +18,10 @@ export interface SharedTransitionConfig {
 	 */
 	instance?: Transition;
 	/**
+	 * Whether you want to allow interactive dismissal
+	 */
+	interactiveDismissal?: boolean;
+	/**
 	 * View settings to start your transition.
 	 */
 	toPageStart?: SharedTransitionPageProperties;

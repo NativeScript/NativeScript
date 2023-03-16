@@ -1,11 +1,13 @@
 import { querySelectorAll } from '../core/view-base';
 import type { View } from '../core/view';
 import { Screen } from '../../platform';
+import { valueMap } from '../../utils/number-utils';
 import { Transition, iosMatchLayerProperties, iosPrintRect, iosSnapshotView } from '.';
 import { SharedTransition, SharedTransitionAnimationType, DEFAULT_DURATION } from './shared-transition';
 
 export class ModalTransition extends Transition {
 	transitionController: ModalTransitionController;
+	interactiveController: UIPercentDrivenInteractiveTransition;
 	presented: UIViewController;
 	presenting: UIViewController;
 	sharedElements: {
@@ -28,7 +30,8 @@ export class ModalTransition extends Transition {
 
 	iosInteractionDismiss(animator: UIViewControllerAnimatedTransitioning): UIViewControllerInteractiveTransitioning {
 		console.log('-- iosInteractionDismiss --');
-		return null;
+		this.interactiveController = PercentInteractiveController.initWithOwner(new WeakRef(this));
+		return this.interactiveController;
 	}
 
 	iosInteractionPresented(animator: UIViewControllerAnimatedTransitioning): UIViewControllerInteractiveTransitioning {
@@ -39,6 +42,108 @@ export class ModalTransition extends Transition {
 	iosPresentedViewController(presented: UIViewController, presenting: UIViewController, source: UIViewController): UIPresentationController {
 		console.log('-- iosPresentedViewController --');
 		return null;
+	}
+}
+
+@NativeClass()
+class PercentInteractiveController extends UIPercentDrivenInteractiveTransition implements UIViewControllerInteractiveTransitioning {
+	static ObjCProtocols = [UIViewControllerInteractiveTransitioning];
+	owner: WeakRef<ModalTransition>;
+	started = false;
+	transitionContext: UIViewControllerContextTransitioning;
+	backgroundAnimation: UIViewPropertyAnimator;
+
+	static initWithOwner(owner: WeakRef<ModalTransition>) {
+		const ctrl = <PercentInteractiveController>PercentInteractiveController.new();
+		ctrl.owner = owner;
+		return ctrl;
+	}
+
+	startInteractiveTransition(transitionContext: UIViewControllerContextTransitioning) {
+		console.log('startInteractiveTransition');
+		this.transitionContext = transitionContext;
+	}
+
+	updateInteractiveTransition(percentComplete: number) {
+		// console.log('percentComplete:', percentComplete);
+		const owner = this.owner?.deref();
+		if (owner) {
+			if (!this.started) {
+				this.started = true;
+				for (const p of owner.sharedElements.presented) {
+					p.view.opacity = 0;
+				}
+				for (const p of owner.sharedElements.presenting) {
+					p.snapshot.alpha = p.endOpacity;
+					this.transitionContext.containerView.addSubview(p.snapshot);
+				}
+				this.backgroundAnimation = UIViewPropertyAnimator.alloc().initWithDurationDampingRatioAnimations(1, 1, () => {
+					for (const p of owner.sharedElements.presenting) {
+						p.snapshot.frame = p.startFrame;
+						iosMatchLayerProperties(p.snapshot, p.view.ios);
+
+						p.snapshot.alpha = 1;
+					}
+					owner.presented.view.alpha = 0;
+					owner.presented.view.frame = CGRectMake(0, 200, owner.presented.view.bounds.size.width, owner.presented.view.bounds.size.height);
+				});
+			}
+
+			this.backgroundAnimation.fractionComplete = percentComplete;
+		}
+	}
+
+	cancelInteractiveTransition() {
+		console.log('cancelInteractiveTransition');
+		const owner = this.owner?.deref();
+		if (owner && this.started) {
+			const state = SharedTransition.getState(owner.id);
+			if (!state) {
+				return;
+			}
+			if (this.backgroundAnimation) {
+				this.backgroundAnimation.reversed = true;
+				const duration = typeof state.toPageStart?.duration === 'number' ? state.toPageStart?.duration / 1000 : DEFAULT_DURATION;
+				this.backgroundAnimation.continueAnimationWithTimingParametersDurationFactor(null, duration);
+				setTimeout(() => {
+					for (const p of owner.sharedElements.presented) {
+						p.view.opacity = 1;
+					}
+					for (const p of owner.sharedElements.presenting) {
+						p.snapshot.removeFromSuperview();
+					}
+					owner.presented.view.alpha = 1;
+					this.backgroundAnimation = null;
+					this.started = false;
+					this.transitionContext.completeTransition(false);
+				}, duration * 1000);
+			}
+		}
+	}
+
+	finishInteractiveTransition() {
+		console.log('finishInteractiveTransition');
+		const owner = this.owner?.deref();
+		if (owner && this.started) {
+			if (this.backgroundAnimation) {
+				const state = SharedTransition.getState(owner.id);
+				if (!state) {
+					SharedTransition.finishState(owner.id);
+					this.transitionContext.completeTransition(true);
+					return;
+				}
+
+				const duration = typeof state.fromPageEnd?.duration === 'number' ? state.fromPageEnd?.duration / 1000 : DEFAULT_DURATION;
+				this.backgroundAnimation.continueAnimationWithTimingParametersDurationFactor(null, duration);
+				setTimeout(() => {
+					for (const presenting of owner.sharedElements.presenting) {
+						presenting.view.opacity = presenting.startOpacity;
+					}
+					SharedTransition.finishState(owner.id);
+					this.transitionContext.completeTransition(true);
+				}, duration * 1000);
+			}
+		}
 	}
 }
 

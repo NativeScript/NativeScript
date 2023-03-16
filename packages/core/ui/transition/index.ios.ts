@@ -56,14 +56,14 @@ export function iosMatchLayerProperties(view: UIView, toView: UIView) {
 
 	viewPropertiesToMatch.forEach((property) => {
 		if (view[property] !== toView[property]) {
-			console.log('|    -- matching view property:', property);
+			// console.log('|    -- matching view property:', property);
 			view[property as any] = toView[property];
 		}
 	});
 
 	layerPropertiesToMatch.forEach((property) => {
 		if (view.layer[property] !== toView.layer[property]) {
-			console.log('|    -- matching layer property:', property);
+			// console.log('|    -- matching layer property:', property);
 			view.layer[property as any] = toView.layer[property];
 		}
 	});

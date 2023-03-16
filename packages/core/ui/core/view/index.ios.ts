@@ -14,6 +14,8 @@ import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilit
 import { IOSPostAccessibilityNotificationType, isAccessibilityServiceEnabled, updateAccessibilityProperties, AccessibilityEventOptions, AccessibilityRole, AccessibilityState } from '../../../accessibility';
 import { CoreTypes } from '../../../core-types';
 import type { ModalTransition } from '../../transition/modal-transition';
+import { SharedTransition } from '../../transition/shared-transition';
+import { GestureStateTypes, PanGestureEventData } from '../../gestures';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -30,9 +32,11 @@ const majorVersion = iOSNativeHelper.MajorVersion;
 export class View extends ViewCommon implements ViewDefinition {
 	nativeViewProtected: UIView;
 	viewController: UIViewController;
+	transitionIteractiveCtrl: UIPercentDrivenInteractiveTransition;
 	private _popoverPresentationDelegate: IOSHelper.UIPopoverPresentationControllerDelegateImp;
 	private _adaptivePresentationDelegate: IOSHelper.UIAdaptivePresentationControllerDelegateImp;
 	private _transitioningDelegate: UIViewControllerTransitioningDelegateImpl;
+	private _interactiveDismissGesture: (args: PanGestureEventData) => void;
 
 	/**
 	 * Track modal open animated options to use same option upon close
@@ -466,8 +470,16 @@ export class View extends ViewCommon implements ViewDefinition {
 		if (options.transition) {
 			controller.modalPresentationStyle = UIModalPresentationStyle.Custom;
 			if (options.transition.instance) {
-				this._transitioningDelegate = UIViewControllerTransitioningDelegateImpl.initWithOwner(new WeakRef(options.transition.instance));
+				this._transitioningDelegate = UIViewControllerTransitioningDelegateImpl.initWithOwner(new WeakRef(options.transition.instance), new WeakRef(this));
 				controller.transitioningDelegate = this._transitioningDelegate;
+				const transitionState = SharedTransition.getState(options.transition.instance.id);
+				if (transitionState?.interactiveDismissal) {
+					// interactive transitions via gestures
+					// TODO - these could be typed as: boolean | (view: View) => void
+					// to allow users to define their own custom gesture dismissals
+					this._interactiveDismissGesture = this._interactiveDismissGestureHandler.bind(this);
+					this.on('pan', this._interactiveDismissGesture);
+				}
 			}
 		} else if (options.fullscreen) {
 			controller.modalPresentationStyle = UIModalPresentationStyle.FullScreen;
@@ -549,6 +561,41 @@ export class View extends ViewCommon implements ViewDefinition {
 		controller = null;
 	}
 
+	private _interactiveDismissGestureHandler(args: PanGestureEventData) {
+		if (args?.ios?.view) {
+			this.interactiveDismissGestureBegan = true;
+			this.interactiveDismissGestureCancelled = false;
+			const percent = args.deltaY / (args.ios.view.bounds.size.height / 2);
+			console.log('pan:', percent);
+			switch (args.state) {
+				case GestureStateTypes.began:
+					if (this._closeModalCallback) {
+						this._closeModalCallback();
+					}
+					break;
+				case GestureStateTypes.changed:
+					// TODO: allow customization of threshold
+					if (percent < 1) {
+						if (this.transitionIteractiveCtrl) {
+							this.transitionIteractiveCtrl.updateInteractiveTransition(percent);
+						}
+					}
+					break;
+				case GestureStateTypes.cancelled:
+				case GestureStateTypes.ended:
+					if (this.transitionIteractiveCtrl) {
+						if (percent > 0.5) {
+							this.transitionIteractiveCtrl.finishInteractiveTransition();
+						} else {
+							this.interactiveDismissGestureCancelled = true;
+							this.transitionIteractiveCtrl.cancelInteractiveTransition();
+						}
+					}
+					break;
+			}
+		}
+	}
+
 	protected _hideNativeModalView(parent: View, whenClosedCallback: () => void) {
 		if (!parent || !parent.viewController) {
 			Trace.error('Trying to hide modal view but no parent with viewController specified.');
@@ -564,10 +611,20 @@ export class View extends ViewCommon implements ViewDefinition {
 		}
 
 		const parentController = parent.viewController;
-		const animated = this._modalAnimatedOptions ? !!this._modalAnimatedOptions.pop() : true;
+		let animated = true;
+		if (this._modalAnimatedOptions?.length) {
+			animated = this._modalAnimatedOptions.slice(-1)[0];
+		}
 
 		parentController.dismissViewControllerAnimatedCompletion(animated, () => {
-			this._transitioningDelegate = null;
+			if (!this.interactiveDismissGestureCancelled) {
+				this._transitioningDelegate = null;
+				this.transitionIteractiveCtrl = null;
+				this.off('pan', this._interactiveDismissGesture);
+				if (this._modalAnimatedOptions) {
+					this._modalAnimatedOptions.pop();
+				}
+			}
 			whenClosedCallback();
 		});
 	}
@@ -923,11 +980,13 @@ View.prototype._nativeBackgroundState = 'unset';
 @NativeClass
 class UIViewControllerTransitioningDelegateImpl extends NSObject implements UIViewControllerTransitioningDelegate {
 	owner: WeakRef<ModalTransition>;
+	ownerView: WeakRef<View>;
 	static ObjCProtocols = [UIViewControllerTransitioningDelegate];
 
-	static initWithOwner(owner: WeakRef<ModalTransition>) {
+	static initWithOwner(owner: WeakRef<ModalTransition>, ownerView: WeakRef<View>) {
 		const delegate = <UIViewControllerTransitioningDelegateImpl>UIViewControllerTransitioningDelegateImpl.new();
 		delegate.owner = owner;
+		delegate.ownerView = ownerView;
 		return delegate;
 	}
 
@@ -950,7 +1009,14 @@ class UIViewControllerTransitioningDelegateImpl extends NSObject implements UIVi
 	interactionControllerForDismissal?(animator: UIViewControllerAnimatedTransitioning): UIViewControllerInteractiveTransitioning {
 		const owner = this.owner?.deref();
 		if (owner?.iosInteractionDismiss) {
-			return owner.iosInteractionDismiss(animator);
+			const ownerView = this.ownerView?.deref();
+			if (ownerView) {
+				if (ownerView.interactiveDismissGestureBegan) {
+					console.log('interactionControllerForDismissal!');
+					ownerView.transitionIteractiveCtrl = owner.iosInteractionDismiss(animator);
+					return ownerView.transitionIteractiveCtrl;
+				}
+			}
 		}
 		return null;
 	}

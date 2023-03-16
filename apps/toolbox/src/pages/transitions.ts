@@ -27,6 +27,7 @@ export class TransitionsModel extends Observable {
 	openModal() {
 		page.showModal('pages/transitions/transitions-modal', {
 			transition: SharedTransition.custom(new ModalTransition(), {
+				interactiveDismissal: true,
 				toPageStart: {
 					y: 200,
 					duration: 1000,
