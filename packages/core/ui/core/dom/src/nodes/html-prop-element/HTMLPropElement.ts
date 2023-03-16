@@ -1,8 +1,7 @@
 import { DOMUtils } from './../../utils/index';
 import HTMLElement from '../html-element/HTMLElement';
-import Node from '../node/Node';
+import type Node from '../node/Node';
 import NodeTypeEnum from '../node/NodeTypeEnum';
-
 export type ParentPropType = 'array' | 'key';
 
 /**
@@ -92,7 +91,7 @@ export class HTMLPropBaseElement extends HTMLElement {
 	}
 }
 
-class HTMLPropElement extends HTMLPropBaseElement {
+export class HTMLPropElement extends HTMLPropBaseElement {
 	insertBefore(newNode: Node, referenceNode: Node): Node {
 		super.insertBefore(newNode, referenceNode);
 		if (Array.isArray(this._value)) {

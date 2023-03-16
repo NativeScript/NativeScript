@@ -50,12 +50,17 @@ export default class Node extends Observable {
 	//@ts-ignore
 	localName: string = null;
 	isNode: boolean = true;
+	_rootNode: Node = null;
 	constructor() {
 		super();
 	}
 
 	get parentNode() {
 		return this._parentNode;
+	}
+
+	set parentNode(parent: Node) {
+		this._parentNode = parent;
 	}
 
 	get previousElementSibling(): Node {
@@ -79,7 +84,7 @@ export default class Node extends Observable {
 	}
 
 	remove() {
-		if (this.parentNode) this.parentNode.removeChild(this as never);
+		if (this._parentNode) this._parentNode.removeChild(this as never);
 	}
 
 	get childNodes() {
@@ -153,7 +158,7 @@ export default class Node extends Observable {
 
 	insertBefore(newNode: Node, referenceNode: Node): Node {
 		//@ts-ignore
-		if (referenceNode && referenceNode.parentNode !== this) throw new Error(`[UNDOM-NG] Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.`);
+		if (referenceNode && referenceNode._parentNode !== this) throw new Error(`[UNDOM-NG] Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.`);
 
 		if (newNode === referenceNode) return newNode;
 
@@ -165,7 +170,8 @@ export default class Node extends Observable {
 				while (currentNode) {
 					const nextSibling = currentNode.nextSibling;
 					//@ts-ignore
-					currentNode.parentNode = this;
+					currentNode._parentNode = this;
+					currentNode._rootNode = this._rootNode;
 					currentNode = nextSibling;
 				}
 
@@ -192,8 +198,7 @@ export default class Node extends Observable {
 		} else {
 			newNode.remove();
 			//@ts-ignore
-			newNode.parentNode = this;
-
+			newNode._parentNode = this;
 			if (referenceNode) {
 				newNode.previousSibling = referenceNode.previousSibling;
 				newNode.nextSibling = referenceNode;
@@ -207,12 +212,14 @@ export default class Node extends Observable {
 			else this.firstChild = newNode;
 		}
 
+		newNode._rootNode = this._rootNode;
+		if (newNode.connectedCallback) newNode.connectedCallback();
 		return newNode;
 	}
 
 	replaceChild(newChild: Node, oldChild: Node) {
 		//@ts-ignore
-		if (oldChild.parentNode !== this) throw new Error(`[UNDOM-NG] Failed to execute 'replaceChild' on 'Node': The node to be replaced is not a child of this node.`);
+		if (oldChild._parentNode !== this) throw new Error(`[UNDOM-NG] Failed to execute 'replaceChild' on 'Node': The node to be replaced is not a child of this node.`);
 
 		const referenceNode = oldChild.nextSibling;
 		oldChild.remove();
@@ -228,17 +235,38 @@ export default class Node extends Observable {
 		if (node.previousSibling) node.previousSibling.nextSibling = node.nextSibling;
 		if (node.nextSibling) node.nextSibling.previousSibling = node.previousSibling;
 		//@ts-ignore
-		node.parentNode = null;
+		node._parentNode = null;
 		//@ts-ignore
 		node.previousSibling = null;
 		//@ts-ignore
 		node.nextSibling = null;
+
+		// if (node._rootNode && node.nodeName === 'slot') {
+		// 	/**
+		// 	 * Removes the slot element from shadowRoot's slot map.
+		// 	 * Web component must have unique slots names only.
+		// 	 */
+		// 	(this._rootNode as ShadowRoot)._slots.delete((node as HTMLSlotElement).name);
+		// }
+
+		node._rootNode = null;
+		if (node.disconnectedCallback) node.disconnectedCallback();
 		return node;
 	}
 
 	appendChild(node: Node) {
 		//@ts-ignore
 		return this.insertBefore(node);
+	}
+
+	public getRootNode(options: { composed: boolean } = { composed: false }): Node {
+		if (!this._parentNode) {
+			return this;
+		}
+		if (this._rootNode && !options.composed) {
+			return this._rootNode;
+		}
+		return this.ownerDocument;
 	}
 
 	/**
@@ -251,13 +279,25 @@ export default class Node extends Observable {
 	}
 
 	replaceWith(...nodes: Node[]) {
-		if (!this.parentNode) return;
+		if (!this._parentNode) return;
 
 		const ref = this.nextSibling;
-		const parent = this.parentNode;
+		const parent = this._parentNode;
 		for (const i of nodes) {
 			i.remove();
 			parent.insertBefore(i, ref);
 		}
 	}
+
+	_getTheParent(event: Event) {
+		return this._parentNode;
+	}
+	/**
+	 * A callback called when a node is attached to parent.
+	 */
+	public connectedCallback?(): void;
+	/**
+	 * A callback called when a node is detacthed from parent.
+	 */
+	public disconnectedCallback?(): void;
 }

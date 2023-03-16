@@ -1,9 +1,9 @@
-import Node from './Node';
+import type Node from './Node';
 
 /**
  * Class list.
  */
-export default class NodeList extends Array {
+export default class NodeList<T extends Node = Node> extends Array {
 	/**
 	 * Returns `Symbol.toStringTag`.
 	 *
@@ -18,7 +18,7 @@ export default class NodeList extends Array {
 	 *
 	 * @param index Index.
 	 */
-	public item(index: number): Node {
+	public item(index: number): T {
 		return index >= 0 && this[index] ? this[index] : null;
 	}
 }

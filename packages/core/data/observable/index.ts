@@ -412,7 +412,7 @@ export class Observable extends EventTarget implements globalThis.EventTarget {
 				if (captures && currentNode._captureObservers[type]) capturePhase.unshift(currentNode._captureObservers[type]);
 				if (bubbles && currentNode._observers[type]) bubblePhase.push(currentNode._observers[type]);
 				//@ts-ignore todo
-				currentNode = currentNode._parentNode;
+				currentNode = currentNode._getTheParent(event);
 			}
 		}
 

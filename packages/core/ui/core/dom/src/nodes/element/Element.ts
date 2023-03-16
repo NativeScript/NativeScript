@@ -1,13 +1,13 @@
 import { createAttributeFilter, findWhere, splice } from '../../utils';
+import type HTMLSlotElement from '../html-slot-element/HTMLSlotElement';
+import NodeList from '../node/NodeList';
 import NodeTypeEnum from '../node/NodeTypeEnum';
 import ParentNode from '../parent-node/ParentNode';
-
-// eslint-disable-next-line max-params
-const updateAttributeNS = (self: Element, ns: string, name: string, value: any) => {
-	let attr = findWhere(self.attributes, createAttributeFilter(ns, name), false, false);
-	if (!attr) self.attributes.push((attr = { ns, name } as never));
-	attr.value = value;
-};
+import { ShadowHostMixin } from '../shadow-root/ShadowHost';
+import { ShadowRoot } from '../shadow-root/ShadowRoot';
+import XMLParser from '../../xml-parser/XMLParser';
+import XMLSerializer from '../../xml-serializer';
+import QuerySelector from '../../query-selector/QuerySelector';
 
 /**
  * Element.
@@ -15,12 +15,36 @@ const updateAttributeNS = (self: Element, ns: string, name: string, value: any) 
 export default class Element extends ParentNode {
 	_tagName: string;
 	attributes: { ns: string; name: string; value?: any }[] = [];
+	_shadowRoot: ShadowRoot = null;
+	id: string;
+	static _observedAttributes: string[];
+	static observedAttributes: string[];
 	constructor(nodeType: NodeTypeEnum, localName: string) {
 		super();
 		this.nodeType = nodeType;
 		this.localName = localName;
 		this.nodeName = localName;
 		this.attributes = [];
+	}
+
+	assignedSlot: HTMLSlotElement;
+
+	/**
+	 * Returns slot.
+	 *
+	 * @returns Slot.
+	 */
+	public get slot(): string {
+		return this.getAttribute('slot') || '';
+	}
+
+	/**
+	 * Returns slot.
+	 *
+	 * @param slot Slot.
+	 */
+	public set slot(title: string) {
+		this.setAttribute('slot', title);
 	}
 
 	get tagName() {
@@ -42,7 +66,7 @@ export default class Element extends ParentNode {
 	}
 
 	get className() {
-		return this.getAttribute('class');
+		return this.getAttribute('class') || '';
 	}
 	set className(val) {
 		this.setAttribute('class', val);
@@ -52,18 +76,12 @@ export default class Element extends ParentNode {
 	// But we just put it here for some frameworks to work
 	// Or warn people not trying to treat undom like a browser
 	get innerHTML() {
-		const serializedChildren: string[] = [];
-		let currentNode = this.firstChild;
-		while (currentNode) {
-			serializedChildren.push(new XMLSerializer().serializeToString(currentNode as never));
-			currentNode = currentNode.nextSibling;
-		}
-		return ''.concat(...serializedChildren);
+		return new XMLSerializer().serializeToString(this as never, { innerHTML: true });
 	}
 
-	set innerHTML(value) {
+	set innerHTML(html: string) {
 		// Setting innerHTML with an empty string just clears the element's children
-		if (value === '') {
+		if (html === '') {
 			let currentNode = this.firstChild;
 			while (currentNode) {
 				const nextSibling = currentNode.nextSibling;
@@ -73,7 +91,9 @@ export default class Element extends ParentNode {
 			return;
 		}
 
-		throw new Error(`[UNDOM-NG] Failed to set 'innerHTML' on '${this.localName}': Not implemented.`);
+		for (const node of XMLParser.parse(this.ownerDocument, html).childNodes.slice()) {
+			this.appendChild(node);
+		}
 	}
 
 	get outerHTML() {
@@ -87,12 +107,13 @@ export default class Element extends ParentNode {
 			return;
 		}
 
-		throw new Error(`[UNDOM-NG] Failed to set 'outerHTML' on '${this.localName}': Not implemented.`);
+		throw new Error(`[DOM] Failed to set 'outerHTML' on '${this.localName}': Not implemented.`);
 	}
 
 	get cssText() {
 		return this.getAttribute('style');
 	}
+
 	set cssText(val) {
 		this.setAttribute('style', val);
 	}
@@ -113,11 +134,87 @@ export default class Element extends ParentNode {
 	setAttributeNS(namespace: string, name: string, value: unknown) {
 		updateAttributeNS(this, namespace, name, value);
 	}
+
 	getAttributeNS(namespace: string, name: string) {
 		const attr = findWhere(this.attributes, createAttributeFilter(namespace, name), false, false);
 		return attr && attr.value;
 	}
 	removeAttributeNS(namespace: string, name: string) {
+		if (!this.attributeChangedCallback || !(<typeof Element>this.constructor)._observedAttributes || !(<typeof Element>this.constructor)._observedAttributes.includes(name)) {
+			splice(this.attributes, createAttributeFilter(namespace, name), false, false);
+			return;
+		}
+		const oldValue = this.getAttribute(name);
 		splice(this.attributes, createAttributeFilter(namespace, name), false, false);
+		this.attributeChangedCallback(name, oldValue, null);
 	}
+
+	get shadowRoot() {
+		if (this._shadowRoot && this._shadowRoot.mode === 'open') return this._shadowRoot;
+		return null;
+	}
+
+	attachShadow({ mode = 'open' }: { mode: 'open' | 'closed' }) {
+		if (this._shadowRoot) throw new Error('[DOM] Shadow root cannot be created on a host which already hosts a shadow tree.');
+		const shadow = new ShadowRoot({
+			ownerDocument: this.ownerDocument,
+			mode: mode,
+			host: this,
+		});
+
+		this._shadowRoot = shadow;
+
+		const childNodes = this.childNodes;
+		// Remove any childern from rendered DOM
+		for (const node of childNodes) {
+			node.remove();
+		}
+		ShadowHostMixin;
+		// Make this element a Shadow Host.
+		//Object.assign(this, ShadowHostMixin);
+		// // Add childern back to Light DOM
+		// // If they are slottable, they will
+		// // get rendered again in the
+		// // Shadow Tree.
+		// this.append(...childNodes);
+
+		return shadow;
+	}
+
+	/**
+	 * Query CSS selector to find matching nodes.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching elements.
+	 */
+	public querySelectorAll(selector: string): NodeList<Element> {
+		return QuerySelector.querySelectorAll(this, selector);
+	}
+
+	/**
+	 * Query CSS Selector to find matching node.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching element.
+	 */
+	public querySelector(selector: string): Element {
+		return QuerySelector.querySelector(this, selector);
+	}
+	/**
+	 * A callback that fires for element's observed attributes.
+	 * @param name
+	 * @param oldValue
+	 * @param newValue
+	 */
+	public attributeChangedCallback?(name: string, oldValue: string, newValue: any): void;
 }
+
+// eslint-disable-next-line max-params
+const updateAttributeNS = (self: Element, ns: string, name: string, value: any) => {
+	let attr = findWhere(self.attributes, createAttributeFilter(ns, name), false, false);
+	if (!attr) self.attributes.push((attr = { ns, name } as never));
+	if (self.attributeChangedCallback && (<typeof Element>self.constructor)._observedAttributes && (<typeof Element>self.constructor)._observedAttributes.includes(name)) {
+		self.attributeChangedCallback(name, attr.value, value);
+	}
+	attr.value = value;
+};

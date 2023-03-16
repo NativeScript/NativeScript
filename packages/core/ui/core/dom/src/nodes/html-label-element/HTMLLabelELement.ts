@@ -1,5 +1,5 @@
 import { Label } from '../../../../../label';
-import HTMLElement from '../html-element/HTMLElement';
+import type HTMLElement from '../html-element/HTMLElement';
 
 /**
  * HTML Label Element.

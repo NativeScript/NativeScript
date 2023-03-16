@@ -14,6 +14,12 @@ import SVGElement from '../nodes/svg-element/SVGElement';
 import Text from '../nodes/text/Text';
 import XMLSerializer from '../xml-serializer';
 import { HTMLKeyPropElement, HTMLArrayPropElement } from '../nodes/html-prop-element/HTMLPropElement';
+import HTMLSlotElement from '../nodes/html-slot-element/HTMLSlotElement';
+import { HTMLItemTemplateElement } from '../nodes/html-item-template-element/HTMLItemTemplateElement';
+import HTMLTemplateElement from '../nodes/html-template-element/HTMLTemplateElement';
+import { ShadowRoot } from '../nodes/shadow-root/ShadowRoot';
+import DocumentType from '../nodes/document-type/DocumentType';
+import CustomElementRegistry from '../custom-element/CustomElementRegistry';
 
 declare global {
 	// eslint-disable-next-line no-var
@@ -44,14 +50,22 @@ export default class Window {
 	public readonly CustomEvent = CustomEvent;
 	public readonly HTMLKeyPropElement = HTMLKeyPropElement;
 	public readonly HTMLArrayPropElement = HTMLArrayPropElement;
+	public readonly HTMLSlotElement = HTMLSlotElement;
+	public readonly HTMLItemTemplateElement = HTMLItemTemplateElement;
+	public readonly HTMLTemplateElement = HTMLTemplateElement;
+	public readonly ShadowRoot = ShadowRoot;
+	public readonly DocumentType = DocumentType;
 	public readonly document: Document;
 	public readonly self: Window;
+	public readonly customElements: CustomElementRegistry;
+	public readonly CustomElementRegistry = CustomElementRegistry;
 	constructor() {
 		this.document = new Document();
 		this.document.defaultView = this;
 		globalThis.htmlElementRegistry = new Map();
 		globalThis.registerElement = this.registerElement;
 		this.self = this;
+		this.customElements = new CustomElementRegistry();
 	}
 
 	registerElement(name: string, element: HTMLElement) {
@@ -102,7 +116,18 @@ export default class Window {
 		globalThis.CustomEvent = CustomEvent;
 		globalThis.HTMLKeyPropElement = HTMLKeyPropElement;
 		globalThis.HTMLArrayPropElement = HTMLArrayPropElement;
-
+		//@ts-ignore
+		globalThis.HTMLSlotElement = HTMLSlotElement;
+		//@ts-ignore
+		globalThis.HTMLTemplateElement = HTMLTemplateElement;
+		//@ts-ignore
+		globalThis.ShadowRoot = ShadowRoot;
+		//@ts-ignore
+		globalThis.DocumentType = DocumentType;
+		//@ts-ignore
+		globalThis.CustomElementRegistry = CustomElementRegistry;
+		//@ts-ignore
+		globalThis.customElements = this.customElements;
 		return this;
 	}
 }

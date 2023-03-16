@@ -1,9 +1,10 @@
-import { View } from './../../../../view/index';
+import type { View } from './../../../../view/index';
 import { ContentView } from '../../../../../content-view';
 import { DOMUtils } from '../../utils';
-import HTMLElement from '../html-element/HTMLElement';
+import type HTMLElement from '../html-element/HTMLElement';
 import { HTMLPropBaseElement } from '../html-prop-element/HTMLPropElement';
 import NodeTypeEnum from '../node/NodeTypeEnum';
+import { Event } from '../../event/Event';
 
 export class ItemTemplate extends ContentView {
 	itemTemplateElement: HTMLItemTemplateElement;

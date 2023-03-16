@@ -1,7 +1,9 @@
 import type Element from '../element/Element';
 import Node from '../node/Node';
 import NodeTypeEnum from '../node/NodeTypeEnum';
-
+import { escape } from 'html-escaper';
+import NodeList from '../node/NodeList';
+import type { View } from '../../../../view';
 /**
  * Parent node
  */
@@ -48,14 +50,21 @@ export default class ParentNode extends Node {
 	}
 
 	append(...nodes: Node[]) {
-		for (const i of nodes) {
-			this.appendChild(i);
+		for (const node of nodes) {
+			this.appendChild(node);
+		}
+	}
+
+	prepend(...nodes: Node[]) {
+		const prependBeforeChild = this.firstElementChild;
+		for (const node of nodes) {
+			this.insertBefore(node, prependBeforeChild);
 		}
 	}
 
 	replaceChildren(...nodes: Node[]) {
-		for (const old of nodes) {
-			old.remove();
+		for (const node of this.childNodes) {
+			node.remove();
 		}
 
 		for (const node of nodes) {
@@ -70,7 +79,7 @@ export default class ParentNode extends Node {
 		while (currentNode) {
 			if (currentNode.nodeType !== 8) {
 				const textContent = currentNode._textContent;
-				if (textContent) textArr.push(textContent as never);
+				if (textContent) textArr.push(escape(textContent) as never);
 			}
 			currentNode = currentNode.nextSibling;
 		}
@@ -79,5 +88,62 @@ export default class ParentNode extends Node {
 	}
 	set textContent(val) {
 		this._textContent = val;
+	}
+
+	getElementsByTagName(tagName: string) {
+		if (!this.firstChild) return [];
+		const elements = new NodeList();
+		let current = this.firstChild as Element;
+		const tagNameUpper = tagName.toUpperCase();
+		while (current) {
+			if (current.nodeType === NodeTypeEnum.elementNode || current.nodeType === NodeTypeEnum.textNode) {
+				if (current.tagName === tagNameUpper) elements.push(current);
+
+				if (current.firstChild) {
+					const matches = current.getElementsByTagName(tagName);
+					if (matches.length) elements.concat(matches);
+				}
+			}
+			current = current.nextSibling as Element;
+		}
+		return elements;
+	}
+
+	getElementsByClassName(className: string) {
+		if (!this.firstChild) return [];
+		const elements = new NodeList();
+		let current = this.firstChild as View;
+		while (current) {
+			if (current.nodeType === NodeTypeEnum.elementNode || current.nodeType === NodeTypeEnum.textNode) {
+				if (current.cssClasses && current.cssClasses.has(className)) {
+					elements.push(current);
+				} else if (current.className.split(' ').includes(className)) {
+					elements.push(current);
+				}
+
+				if (current.firstChild) {
+					const matches = current.getElementsByClassName(className);
+					if (matches.length) elements.concat(matches);
+				}
+			}
+			current = current.nextSibling as View;
+		}
+		return elements;
+	}
+
+	public getElementById(id: string) {
+		let element: Element;
+		let current = this.firstChild as Element;
+		while (current) {
+			if (current.nodeType === NodeTypeEnum.elementNode || current.nodeType === NodeTypeEnum.textNode) {
+				if (current.id === id) return current;
+
+				if (current.firstChild) {
+					if ((element = current.getElementById(id))) return element;
+				}
+			}
+			current = current.nextSibling as View;
+		}
+		return element;
 	}
 }

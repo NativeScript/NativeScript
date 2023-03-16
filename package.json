@@ -45,6 +45,8 @@
     "eslint": "7.22.0",
     "eslint-config-prettier": "^8.1.0",
     "gonzales": "^1.0.7",
+    "html-entities": "^2.3.3",
+    "html-escaper": "3.0.3",
     "husky": "^8.0.1",
     "jest": "29.4.1",
     "lint-staged": "^13.1.0",
@@ -73,4 +75,3 @@
     ]
   }
 }
-
