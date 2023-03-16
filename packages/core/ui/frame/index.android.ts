@@ -913,12 +913,18 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 			return null;
 		}
 
+		frame._resolvedPage = page;
+
 		if (page.parent === frame) {
 			// If we are navigating to a page that was destroyed
 			// reinitialize its UI.
 			if (!page._context) {
 				const context = (container && container.getContext()) || (inflater && inflater.getContext());
 				page._setupUI(context);
+			}
+
+			if (frame.isLoaded && !page.isLoaded) {
+				page.callLoaded();
 			}
 		} else {
 			if (!frame._styleScope) {
@@ -927,10 +933,6 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 			}
 
 			frame._addView(page);
-		}
-
-		if (frame.isLoaded && !page.isLoaded) {
-			page.callLoaded();
 		}
 
 		const savedState = entry.viewSavedState;
