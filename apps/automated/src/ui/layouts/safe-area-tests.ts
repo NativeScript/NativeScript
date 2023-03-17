@@ -70,10 +70,14 @@ export class SafeAreaTests extends testModule.UITest<any> {
 	}
 
 	private layout_insets_top_action_bar_test(layout: view.View) {
-		const app = UIApplication.sharedApplication;
-		const statusBarHeight = round(dipToDp(app.statusBarFrame.size.height));
-		const actionBarHeight = round(dipToDp(layout.page.actionBar.nativeViewProtected.frame.size.height));
-		const topInset = statusBarHeight + actionBarHeight;
+		// const app = UIApplication.sharedApplication;
+		// const statusBarHeight = round(dipToDp(app.statusBarFrame.size.height));
+		// const actionBarHeight = round(dipToDp(layout.page.actionBar.nativeViewProtected.frame.size.height));
+		// const topInset = statusBarHeight + actionBarHeight;
+
+		const view: UIView = layout.page.actionBar.nativeViewProtected;
+		// use the action bar position and size instead of the status bar and action bar heights as those are unreliable on iOS 16+
+		const topInset = round(dipToDp(view.frame.origin.y + view.frame.size.height));
 
 		const insets = layout.getSafeAreaInsets();
 		equal(insets.top, topInset, `${layout}.topInset - actual:${insets.top}; expected: ${topInset}`);
@@ -81,8 +85,9 @@ export class SafeAreaTests extends testModule.UITest<any> {
 
 	private layout_insets_top_action_bar_hidden_test(layout: view.View) {
 		const app = UIApplication.sharedApplication;
-		const statusBarHeight = round(dipToDp(app.statusBarFrame.size.height));
-		const topInset = statusBarHeight;
+		// const statusBarHeight = round(dipToDp(app.statusBarFrame.size.height));
+		// use window inset instead of status bar frame as that's unreliable on iOS 16+
+		const topInset = round(dipToDp(app.keyWindow.safeAreaInsets.top));
 
 		const insets = layout.getSafeAreaInsets();
 		equal(insets.top, topInset, `${layout}.topInset - actual:${insets.top}; expected: ${topInset}`);
