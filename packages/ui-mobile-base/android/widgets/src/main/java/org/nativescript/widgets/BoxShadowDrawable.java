@@ -42,17 +42,17 @@ public class BoxShadowDrawable extends LayerDrawable {
 
 		Log.d(TAG, "Constructing BoxShadowDrawable!");
 
-		this.wrappedLayer = wrappedDrawable;
 		this.shadowLayer = new ShapeDrawable(new RectShape());
+		this.overlayLayer = this.createOverlayLayer();
+		this.wrappedLayer = wrappedDrawable;
 
 		// add our layers
-		this.addLayer(wrappedLayer);
 		this.addLayer(shadowLayer);
-		if(this.shouldCreateOverlayLayer()){
-			this.overlayLayer = this.createOverlayLayer();
-			this.addLayer(this.overlayLayer);
-		} else {
-			this.overlayLayer = null;
+		this.addLayer(overlayLayer);
+		this.addLayer(wrappedLayer);
+
+		if (shouldHideOverlayLayer()) {
+			this.overlayLayer.setAlpha(0);
 		}
 
 		this.setValue(value);
@@ -104,9 +104,7 @@ public class BoxShadowDrawable extends LayerDrawable {
 			if (!Arrays.equals(outerRadius, currentCornerRadii)) {
 				Log.d(TAG, "Update layer shape");
 				shadowLayer.setShape(new RoundRectShape(outerRadius, null, null));
-				if(this.overlayLayer != null){
-					this.overlayLayer.setShape(new RoundRectShape(outerRadius, null, null));
-				}
+				overlayLayer.setShape(new RoundRectShape(outerRadius, null, null));
 
 				// update current
 				currentCornerRadii = outerRadius;
@@ -154,10 +152,17 @@ public class BoxShadowDrawable extends LayerDrawable {
 		return shapeDrawable;
 	}
 
-	private boolean shouldCreateOverlayLayer(){
-		return this.wrappedLayer instanceof BorderDrawable && !((BorderDrawable) this.wrappedLayer).hasBackgroundColor();
+	private boolean shouldHideOverlayLayer() {
+		if (wrappedLayer instanceof BorderDrawable) {
+			BorderDrawable bd = (BorderDrawable) this.wrappedLayer;
+			if (bd.getBackgroundColor() != 0 || bd.getBackgroundBitmap() != null || bd.getBackgroundGradient() != null) {
+				return true;
+			}
+		}
+
+		return false;
 	}
-	
+
 	@Override
 	public String toString() {
 		return "BoxShadowDrawable { oX:" + offsetX + " oY:" + offsetY + " br:" + blurRadius + " sr:" + spreadRadius + " c:" + shadowColor + " }";
