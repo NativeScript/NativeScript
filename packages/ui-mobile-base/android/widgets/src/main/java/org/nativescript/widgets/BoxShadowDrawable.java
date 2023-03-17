@@ -50,7 +50,9 @@ public class BoxShadowDrawable extends LayerDrawable {
 		this.addLayer(shadowLayer);
 		if(this.shouldCreateOverLayer()){
 			this.overlayLayer = this.createOverlayLayer();
-			this.addLayer(overlayLayer);
+			this.addLayer(this.overlayLayer);
+		} else {
+			this.overlayLayer = null;
 		}
 
 		this.setValue(value);
@@ -103,7 +105,7 @@ public class BoxShadowDrawable extends LayerDrawable {
 				Log.d(TAG, "Update layer shape");
 				shadowLayer.setShape(new RoundRectShape(outerRadius, null, null));
 				if(this.overlayLayer != null){
-					overlayLayer.setShape(new RoundRectShape(outerRadius, null, null));
+					this.overlayLayer.setShape(new RoundRectShape(outerRadius, null, null));
 				}
 
 				// update current
@@ -152,7 +154,7 @@ public class BoxShadowDrawable extends LayerDrawable {
 		return shapeDrawable;
 	}
 
-	private shouldCreateOverLayer(){
+	private boolean shouldCreateOverLayer(){
 		return this.wrappedLayer instanceof BorderDrawable && !((BorderDrawable) this.wrappedLayer).hasBackgroundColor();
 	}
 	
