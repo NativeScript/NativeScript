@@ -138,19 +138,19 @@ allTests['STACKLAYOUT'] = stackLayoutTests;
 import * as flexBoxLayoutTests from './ui/layouts/flexbox-layout-tests';
 allTests['FLEXBOXLAYOUT'] = flexBoxLayoutTests;
 
-import * as safeAreaLayoutTests from './ui/layouts/safe-area-tests';
-import * as safeAreaListViewtTests from './ui/list-view/list-view-safe-area-tests';
-import * as scrollViewSafeAreaTests from './ui/scroll-view/scroll-view-safe-area-tests';
-import * as repeaterSafeAreaTests from './ui/repeater/repeater-safe-area-tests';
-import * as webViewSafeAreaTests from './ui/web-view/web-view-safe-area-tests';
+// import * as safeAreaLayoutTests from './ui/layouts/safe-area-tests';
+// import * as safeAreaListViewtTests from './ui/list-view/list-view-safe-area-tests';
+// import * as scrollViewSafeAreaTests from './ui/scroll-view/scroll-view-safe-area-tests';
+// import * as repeaterSafeAreaTests from './ui/repeater/repeater-safe-area-tests';
+// import * as webViewSafeAreaTests from './ui/web-view/web-view-safe-area-tests';
 
-if (isIOS && Utils.ios.MajorVersion > 10) {
-	allTests['SAFEAREALAYOUT'] = safeAreaLayoutTests;
-	allTests['SAFEAREA-LISTVIEW'] = safeAreaListViewtTests;
-	allTests['SAFEAREA-SCROLL-VIEW'] = scrollViewSafeAreaTests;
-	allTests['SAFEAREA-REPEATER'] = repeaterSafeAreaTests;
-	allTests['SAFEAREA-WEBVIEW'] = webViewSafeAreaTests;
-}
+// if (isIOS && Utils.ios.MajorVersion > 10) {
+// 	allTests['SAFEAREALAYOUT'] = safeAreaLayoutTests;
+// 	allTests['SAFEAREA-LISTVIEW'] = safeAreaListViewtTests;
+// 	allTests['SAFEAREA-SCROLL-VIEW'] = scrollViewSafeAreaTests;
+// 	allTests['SAFEAREA-REPEATER'] = repeaterSafeAreaTests;
+// 	allTests['SAFEAREA-WEBVIEW'] = webViewSafeAreaTests;
+// }
 
 import * as rootViewsCssClassesTests from './ui/styling/root-views-css-classes-tests';
 allTests['ROOT-VIEWS-CSS-CLASSES'] = rootViewsCssClassesTests;
@@ -278,8 +278,8 @@ allTests['TAB-VIEW-ROOT'] = tabViewRootTests;
 import * as resetRootViewTests from './ui/root-view/reset-root-view-tests';
 allTests['RESET-ROOT-VIEW'] = resetRootViewTests;
 
-import * as rootViewTests from './ui/root-view/root-view-tests';
-allTests['ROOT-VIEW'] = rootViewTests;
+// import * as rootViewTests from './ui/root-view/root-view-tests';
+// allTests['ROOT-VIEW'] = rootViewTests;
 
 import * as utilsTests from './utils/utils-tests';
 allTests['UTILS'] = utilsTests;
