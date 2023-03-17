@@ -48,7 +48,7 @@ public class BoxShadowDrawable extends LayerDrawable {
 		// add our layers
 		this.addLayer(wrappedLayer);
 		this.addLayer(shadowLayer);
-		if(this.shouldCreateOverLayer()){
+		if(this.shouldCreateOverlayLayer()){
 			this.overlayLayer = this.createOverlayLayer();
 			this.addLayer(this.overlayLayer);
 		} else {
@@ -154,7 +154,7 @@ public class BoxShadowDrawable extends LayerDrawable {
 		return shapeDrawable;
 	}
 
-	private boolean shouldCreateOverLayer(){
+	private boolean shouldCreateOverlayLayer(){
 		return this.wrappedLayer instanceof BorderDrawable && !((BorderDrawable) this.wrappedLayer).hasBackgroundColor();
 	}
 	
