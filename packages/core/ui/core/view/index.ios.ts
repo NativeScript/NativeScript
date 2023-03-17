@@ -888,6 +888,9 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	_setNativeClipToBounds() {
+		if (!this.nativeViewProtected) {
+			return;
+		}
 		const backgroundInternal = this.style.backgroundInternal;
 		this.nativeViewProtected.clipsToBounds = (this.nativeViewProtected instanceof UIScrollView || backgroundInternal.hasBorderWidth() || backgroundInternal.hasBorderRadius()) && !backgroundInternal.hasBoxShadow();
 	}
