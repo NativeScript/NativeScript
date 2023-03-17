@@ -46,12 +46,12 @@ public class BoxShadowDrawable extends LayerDrawable {
 		this.shadowLayer = new ShapeDrawable(new RectShape());
 
 		// add our layers
+		this.addLayer(wrappedLayer);
 		this.addLayer(shadowLayer);
-		if(!((BorderDrawable) this.wrappedLayer).hasBackgroundColor()){
+		if(this.shouldCreateOverLayer()){
 			this.overlayLayer = this.createOverlayLayer();
 			this.addLayer(overlayLayer);
 		}
-		this.addLayer(wrappedLayer);
 
 		this.setValue(value);
 	}
@@ -152,6 +152,10 @@ public class BoxShadowDrawable extends LayerDrawable {
 		return shapeDrawable;
 	}
 
+	private shouldCreateOverLayer(){
+		return this.wrappedLayer instanceof BorderDrawable && !((BorderDrawable) this.wrappedLayer).hasBackgroundColor();
+	}
+	
 	@Override
 	public String toString() {
 		return "BoxShadowDrawable { oX:" + offsetX + " oY:" + offsetY + " br:" + blurRadius + " sr:" + spreadRadius + " c:" + shadowColor + " }";
