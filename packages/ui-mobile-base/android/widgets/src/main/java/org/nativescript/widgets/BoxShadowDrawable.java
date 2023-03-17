@@ -43,17 +43,20 @@ public class BoxShadowDrawable extends LayerDrawable {
 		Log.d(TAG, "Constructing BoxShadowDrawable!");
 
 		this.shadowLayer = new ShapeDrawable(new RectShape());
-		this.overlayLayer = this.createOverlayLayer();
 		this.wrappedLayer = wrappedDrawable;
+
+		if(shouldHideOverlayLayer()) {
+			this.overlayLayer = null;
+		} else {
+			this.overlayLayer = this.createOverlayLayer();
+		}
 
 		// add our layers
 		this.addLayer(shadowLayer);
-		this.addLayer(overlayLayer);
-		this.addLayer(wrappedLayer);
-
-		if (shouldHideOverlayLayer()) {
-			this.overlayLayer.setAlpha(0);
+		if(this.overlayLayer != null) {
+			this.addLayer(overlayLayer);
 		}
+		this.addLayer(wrappedLayer);
 
 		this.setValue(value);
 	}
@@ -104,7 +107,9 @@ public class BoxShadowDrawable extends LayerDrawable {
 			if (!Arrays.equals(outerRadius, currentCornerRadii)) {
 				Log.d(TAG, "Update layer shape");
 				shadowLayer.setShape(new RoundRectShape(outerRadius, null, null));
-				overlayLayer.setShape(new RoundRectShape(outerRadius, null, null));
+				if(overlayLayer != null) {
+					overlayLayer.setShape(new RoundRectShape(outerRadius, null, null));
+				}
 
 				// update current
 				currentCornerRadii = outerRadius;
