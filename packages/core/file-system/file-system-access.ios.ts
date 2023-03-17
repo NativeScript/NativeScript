@@ -294,6 +294,30 @@ export class FileSystemAccess {
 		}
 	}
 
+	public readBuffer = this.readBufferSync.bind(this);
+
+	public readBufferAsync(path: string): Promise<ArrayBuffer> {
+		return new Promise<ArrayBuffer>((resolve, reject) => {
+			try {
+				(NSData as any).dataWithContentsOfFileCompletion(path, (data) => {
+					resolve(interop.bufferFromData(data));
+				});
+			} catch (ex) {
+				reject(new Error("Failed to read file at path '" + path + "': " + ex));
+			}
+		});
+	}
+
+	public readBufferSync(path: string, onError?: (error: any) => any): ArrayBuffer {
+		try {
+			return interop.bufferFromData(NSData.dataWithContentsOfFile(path));
+		} catch (ex) {
+			if (onError) {
+				onError(new Error("Failed to read file at path '" + path + "': " + ex));
+			}
+		}
+	}
+
 	public read = this.readSync.bind(this);
 
 	public readAsync(path: string): Promise<NSData> {
@@ -345,6 +369,40 @@ export class FileSystemAccess {
 		// TODO: verify the useAuxiliaryFile parameter should be false
 		try {
 			nsString.writeToFileAtomicallyEncodingError(path, false, actualEncoding);
+		} catch (ex) {
+			if (onError) {
+				onError(new Error("Failed to write to file '" + path + "': " + ex));
+			}
+		}
+	}
+
+	static getBuffer(buffer: ArrayBuffer | Uint8Array | Uint8ClampedArray): NSData {
+		if (buffer instanceof ArrayBuffer) {
+			return NSData.dataWithData(buffer as any);
+		} else {
+			const buf = NSData.dataWithData(buffer?.buffer as any);
+			const len = buffer.byteLength;
+			return NSData.dataWithBytesNoCopyLength((buf.bytes as interop.Pointer).add(buffer?.byteOffset ?? 0), len);
+		}
+	}
+
+	public writeBuffer = this.writeBufferSync.bind(this);
+
+	public writeBufferAsync(path: string, content: ArrayBuffer | Uint8Array | Uint8ClampedArray): Promise<void> {
+		return new Promise<void>((resolve, reject) => {
+			try {
+				FileSystemAccess.getBuffer(content).writeToFileAtomicallyCompletion(path, true, () => {
+					resolve();
+				});
+			} catch (ex) {
+				reject(new Error("Failed to write file at path '" + path + "': " + ex));
+			}
+		});
+	}
+
+	public writeBufferSync(path: string, content: ArrayBuffer | Uint8Array | Uint8ClampedArray, onError?: (error: any) => any) {
+		try {
+			FileSystemAccess.getBuffer(content).writeToFileAtomically(path, true);
 		} catch (ex) {
 			if (onError) {
 				onError(new Error("Failed to write to file '" + path + "': " + ex));
