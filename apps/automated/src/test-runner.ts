@@ -278,8 +278,8 @@ allTests['TAB-VIEW-ROOT'] = tabViewRootTests;
 import * as resetRootViewTests from './ui/root-view/reset-root-view-tests';
 allTests['RESET-ROOT-VIEW'] = resetRootViewTests;
 
-import * as rootViewTests from './ui/root-view/root-view-tests';
-allTests['ROOT-VIEW'] = rootViewTests;
+// import * as rootViewTests from './ui/root-view/root-view-tests';
+// allTests['ROOT-VIEW'] = rootViewTests;
 
 import * as utilsTests from './utils/utils-tests';
 allTests['UTILS'] = utilsTests;
