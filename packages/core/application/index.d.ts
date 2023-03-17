@@ -257,7 +257,7 @@ export function _resetRootView(entry?: NavigationEntry | string);
 /**
  * Removes listener for the specified event name.
  */
-export function off(eventNames: string, callback?: any, thisArg?: any);
+export function off(eventNames: string, callback?: (eventData: ApplicationEventData) => void, thisArg?: any): void;
 
 /**
  * Shortcut alias to the removeEventListener method.
@@ -265,13 +265,13 @@ export function off(eventNames: string, callback?: any, thisArg?: any);
  * @param callback - Callback function which will be removed.
  * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
  */
-export function off(eventNames: string, callback?: any, thisArg?: any);
+export function off(eventNames: string, callback?: (eventData: ApplicationEventData) => void, thisArg?: any): void;
 
 /**
  * Notifies all the registered listeners for the event provided in the data.eventName.
  * @param data The data associated with the event.
  */
-export function notify(data: any): void;
+export function notify<T extends ApplicationEventData>(data: T): void;
 
 /**
  * Checks whether a listener is registered for the specified event name.
@@ -285,83 +285,78 @@ export function hasListeners(eventName: string): boolean;
  * @param callback - Callback function which will be executed when event is raised.
  * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
  */
-export function on(eventNames: string, callback: (data: any) => void, thisArg?: any);
+export function on(eventNames: string, callback: (args: EventData) => void, thisArg?: any): void;
 
 /**
  * This event is raised when application css is changed.
  */
-export function on(event: 'cssChanged', callback: (args: CssChangedEventData) => void, thisArg?: any);
+export function on(event: 'cssChanged', callback: (args: CssChangedEventData) => void, thisArg?: any): void;
 
 /**
  * Event raised then livesync operation is performed.
  */
-export function on(event: 'livesync', callback: (args: EventData) => void);
+export function on(event: 'livesync', callback: (args: ApplicationEventData) => void, thisArg?: any): void;
 
 /**
  * This event is raised when application css is changed.
  */
-export function on(event: 'cssChanged', callback: (args: CssChangedEventData) => void, thisArg?: any);
-
-/**
- * Event raised then livesync operation is performed.
- */
-export function on(event: 'livesync', callback: (args: EventData) => void);
+export function on(event: 'cssChanged', callback: (args: CssChangedEventData) => void, thisArg?: any): void;
 
 /**
  * This event is raised on application launchEvent.
  */
-export function on(event: 'launch', callback: (args: LaunchEventData) => void, thisArg?: any);
+export function on(event: 'launch', callback: (args: LaunchEventData) => void, thisArg?: any): void;
 
 /**
  * This event is raised after the application has performed most of its startup actions.
  * Its intent is to be suitable for measuring app startup times.
  * @experimental
  */
-export function on(event: 'displayed', callback: (args: EventData) => void, thisArg?: any);
+export function on(event: 'displayed', callback: (args: ApplicationEventData) => void, thisArg?: any): void;
 
 /**
  * This event is raised when the Application is suspended.
  */
-export function on(event: 'suspend', callback: (args: ApplicationEventData) => void, thisArg?: any);
+export function on(event: 'suspend', callback: (args: ApplicationEventData) => void, thisArg?: any): void;
 
 /**
  * This event is raised when the Application is resumed after it has been suspended.
  */
-export function on(event: 'resume', callback: (args: ApplicationEventData) => void, thisArg?: any);
+export function on(event: 'resume', callback: (args: ApplicationEventData) => void, thisArg?: any): void;
 
 /**
  * This event is raised when the Application is about to exit.
  */
-export function on(event: 'exit', callback: (args: ApplicationEventData) => void, thisArg?: any);
+export function on(event: 'exit', callback: (args: ApplicationEventData) => void, thisArg?: any): void;
 
 /**
  * This event is raised when there is low memory on the target device.
  */
-export function on(event: 'lowMemory', callback: (args: ApplicationEventData) => void, thisArg?: any);
+export function on(event: 'lowMemory', callback: (args: ApplicationEventData) => void, thisArg?: any): void;
 
 /**
  * This event is raised when an uncaught error occurs while the application is running.
  */
-export function on(event: 'uncaughtError', callback: (args: UnhandledErrorEventData) => void, thisArg?: any);
+export function on(event: 'uncaughtError', callback: (args: UnhandledErrorEventData) => void, thisArg?: any): void;
 
 /**
  * This event is raised when an discarded error occurs while the application is running.
  */
-export function on(event: 'discardedError', callback: (args: DiscardedErrorEventData) => void, thisArg?: any);
+export function on(event: 'discardedError', callback: (args: DiscardedErrorEventData) => void, thisArg?: any): void;
 
 /**
  * This event is raised when the orientation of the application changes.
  */
-export function on(event: 'orientationChanged', callback: (args: OrientationChangedEventData) => void, thisArg?: any);
+export function on(event: 'orientationChanged', callback: (args: OrientationChangedEventData) => void, thisArg?: any): void;
 
 /**
  * This event is raised when the operating system appearance changes
  * between light and dark theme (for Android);
  * between light and dark mode (for iOS) and vice versa.
  */
-export function on(event: 'systemAppearanceChanged', callback: (args: SystemAppearanceChangedEventData) => void, thisArg?: any);
+export function on(event: 'systemAppearanceChanged', callback: (args: SystemAppearanceChangedEventData) => void, thisArg?: any): void;
 
-export function on(event: 'fontScaleChanged', callback: (args: FontScaleChangedEventData) => void, thisArg?: any);
+export function on(event: 'fontScaleChanged', callback: (args: FontScaleChangedEventData) => void, thisArg?: any): void;
 
 /**
  * Gets the orientation of the application.
@@ -553,62 +548,62 @@ export class AndroidApplication extends Observable {
 	 * @param callback - Callback function which will be executed when event is raised.
 	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
 	 */
-	on(eventNames: string, callback: (data: AndroidActivityEventData) => void, thisArg?: any);
+	on(eventNames: string, callback: (data: AndroidActivityEventData) => void, thisArg?: any): void;
 
 	/**
 	 * This event is raised on android application ActivityCreated.
 	 */
-	on(event: 'activityCreated', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any);
+	on(event: 'activityCreated', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
 
 	/**
 	 * This event is raised on android application ActivityDestroyed.
 	 */
-	on(event: 'activityDestroyed', callback: (args: AndroidActivityEventData) => void, thisArg?: any);
+	on(event: 'activityDestroyed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
 
 	/**
 	 * This event is raised on android application ActivityStarted.
 	 */
-	on(event: 'activityStarted', callback: (args: AndroidActivityEventData) => void, thisArg?: any);
+	on(event: 'activityStarted', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
 
 	/**
 	 * This event is raised on android application ActivityPaused.
 	 */
-	on(event: 'activityPaused', callback: (args: AndroidActivityEventData) => void, thisArg?: any);
+	on(event: 'activityPaused', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
 
 	/**
 	 * This event is raised on android application ActivityResumed.
 	 */
-	on(event: 'activityResumed', callback: (args: AndroidActivityEventData) => void, thisArg?: any);
+	on(event: 'activityResumed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
 
 	/**
 	 * This event is raised on android application ActivityStopped.
 	 */
-	on(event: 'activityStopped', callback: (args: AndroidActivityEventData) => void, thisArg?: any);
+	on(event: 'activityStopped', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
 
 	/**
 	 * This event is raised on android application SaveActivityState.
 	 */
-	on(event: 'saveActivityState', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any);
+	on(event: 'saveActivityState', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
 
 	/**
 	 * This event is raised on android application ActivityResult.
 	 */
-	on(event: 'activityResult', callback: (args: AndroidActivityResultEventData) => void, thisArg?: any);
+	on(event: 'activityResult', callback: (args: AndroidActivityResultEventData) => void, thisArg?: any): void;
 
 	/**
 	 * This event is raised on the back button is pressed in an android application.
 	 */
-	on(event: 'activityBackPressed', callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any);
+	on(event: 'activityBackPressed', callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any): void;
 
 	/**
 	 * This event is raised when the Android app was launched by an Intent with data.
 	 */
-	on(event: 'activityNewIntent', callback: (args: AndroidActivityNewIntentEventData) => void, thisArg?: any);
+	on(event: 'activityNewIntent', callback: (args: AndroidActivityNewIntentEventData) => void, thisArg?: any): void;
 
 	/**
 	 * This event is raised when the Android activity requests permissions.
 	 */
-	on(event: 'activityRequestPermissions', callback: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any);
+	on(event: 'activityRequestPermissions', callback: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any): void;
 
 	/**
 	 * String value used when hooking to activityCreated event.

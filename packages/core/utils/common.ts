@@ -1,6 +1,7 @@
 import * as types from './types';
 import { dispatchToMainThread, dispatchToUIThread, isMainThread } from './mainthread-helper';
 import { sanitizeModuleName } from '../ui/builder/module-name-sanitizer';
+import emojiRegex from 'emoji-regex';
 
 import { GC } from './index';
 
@@ -158,11 +159,11 @@ export function debounce(fn: any, delay = 300) {
 	};
 }
 
-export function throttle(fn: any, delay = 300) {
+export function throttle(fn: Function, delay = 300) {
 	let waiting = false;
-	return function () {
+	return function (...args) {
 		if (!waiting) {
-			fn.apply(this, arguments);
+			fn.apply(this, args);
 			waiting = true;
 			setTimeout(function () {
 				waiting = false;
@@ -202,4 +203,10 @@ export function queueGC(delay = 900, useThrottle?: boolean) {
 		}
 		debouncedGC.get(delay)();
 	}
+}
+
+export function isEmoji(value: string): boolean {
+	// TODO: In a future runtime update, we can switch to using Unicode Property Escapes:
+	// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions/Unicode_Property_Escapes
+	return emojiRegex().test(value);
 }

@@ -19,7 +19,7 @@ export const accessibilityPerformEscapeEvent = 'accessibilityPerformEscape';
  * @param {boolean} receivedFocus
  * @param {boolean} lostFocus
  */
-export function notifyAccessibilityFocusState(view: Partial<View>, receivedFocus: boolean, lostFocus: boolean): void {
+export function notifyAccessibilityFocusState(view: View, receivedFocus: boolean, lostFocus: boolean): void {
 	if (!receivedFocus && !lostFocus) {
 		return;
 	}

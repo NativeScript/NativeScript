@@ -82,21 +82,12 @@ export class SearchBar extends SearchBarBase {
 	initNativeView() {
 		super.initNativeView();
 		this._delegate = UISearchBarDelegateImpl.initWithOwner(new WeakRef(this));
+		this.nativeViewProtected.delegate = this._delegate;
 	}
 
 	disposeNativeView() {
 		this._delegate = null;
 		super.disposeNativeView();
-	}
-
-	public onLoaded() {
-		super.onLoaded();
-		this.ios.delegate = this._delegate;
-	}
-
-	public onUnloaded() {
-		this.ios.delegate = null;
-		super.onUnloaded();
 	}
 
 	public dismissSoftInput() {

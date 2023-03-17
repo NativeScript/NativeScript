@@ -7,13 +7,13 @@
 <p>
 
   [![Automated Tests Passing](https://github.com/NativeScript/NativeScript/actions/workflows/apps_automated.yml/badge.svg)](https://github.com/NativeScript/NativeScript/actions/workflows/apps_automated.yml)
-  [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/NativeScript/NativeScript/blob/master/LICENSE)
+  [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/NativeScript/NativeScript/blob/main/LICENSE)
   [![NPM Version](https://badge.fury.io/js/%40nativescript%2Fcore.svg)](https://www.npmjs.com/@nativescript/core)
   [![Discord](https://badgen.net/badge/icon/discord?icon=discord&label)](https://nativescript.org/discord)
 
 </p>
 
-[NativeScript](http://www.nativescript.org) empowers you to access native APIs from JavaScript directly. Currently iOS and Android runtimes are provided for rich mobile development across a variety of diverse use cases. 
+[NativeScript](http://www.nativescript.org) empowers you to access native APIs from JavaScript directly. Currently iOS and Android runtimes are provided for rich mobile development across a variety of diverse use cases.
 
 ## Contribute
 
@@ -32,24 +32,24 @@ $ npm run setup
 $ npm start
 ```
 
-We love you and your pull requests 🤗. Please follow our [contributing guide](https://github.com/NativeScript/NativeScript/blob/master/tools/notes/CONTRIBUTING.md) and see [our code of governance](https://github.com/NativeScript/management/blob/master/nativescript-governance.md) to become as involved as you want to be.
+We love you and your pull requests 🤗. Please follow our [contributing guide](https://github.com/NativeScript/NativeScript/blob/main/tools/notes/CONTRIBUTING.md) and see [our code of governance](https://github.com/NativeScript/management/blob/master/nativescript-governance.md) to become as involved as you want to be.
 
 ## @nativescript/*
 
-* [@nativescript/core](https://github.com/NativeScript/NativeScript/tree/master/packages/core)
-  * Core iOS/Android for NativeScript
+* [@nativescript/core](https://github.com/NativeScript/NativeScript/tree/main/packages/core)
+  * Core iOS/Android for NativeScript.
 * [@nativescript/types](https://www.npmjs.com/package/@nativescript/types)
   * Types for both iOS/Android below wrapped up as a convenience. *Most commonly used.*
-* [@nativescript/types-ios](https://github.com/NativeScript/NativeScript/tree/master/packages/types-ios)
-  * Types for iOS
-* [@nativescript/types-android](https://github.com/NativeScript/NativeScript/tree/master/packages/types-android)
-  * Types for Android
-* [@nativescript/types-minimal](https://github.com/NativeScript/NativeScript/tree/master/packages/types-minimal)
+* [@nativescript/types-ios](https://github.com/NativeScript/NativeScript/tree/main/packages/types-ios)
+  * Types for iOS.
+* [@nativescript/types-android](https://github.com/NativeScript/NativeScript/tree/main/packages/types-android)
+  * Types for Android.
+* [@nativescript/types-minimal](https://github.com/NativeScript/NativeScript/tree/main/packages/types-minimal)
   * A very minimal set of types for only the latest Android and iOS sdks. Most commonly used to optimize Web-based IDE's which auto load all type declarations from node_modules.
-* [@nativescript/ui-mobile-base](https://github.com/NativeScript/NativeScript/tree/master/packages/ui-mobile-base)
-  * UI mobile base native classes used by core
-* [@nativescript/webpack](https://github.com/NativeScript/NativeScript/tree/master/packages/webpack)
-  * Webpack build utilities and configs used by NativeScript apps
+* [@nativescript/ui-mobile-base](https://github.com/NativeScript/NativeScript/tree/main/packages/ui-mobile-base)
+  * UI mobile base native classes used by core.
+* [@nativescript/webpack](https://github.com/NativeScript/NativeScript/tree/main/packages/webpack5)
+  * Webpack build utilities and configs used by NativeScript apps.
 
 ## Quick Links
 
@@ -78,7 +78,15 @@ Outside the source centralized in this repo, NativeScript consists of a few othe
 	- This repo contains the NativeScript command-line interface, which lets you create, build, and run apps using NativeScript. The CLI is written in TypeScript.
 - **[Docs](//github.com/NativeScript/docs-new)**
 	- This repo contains NativeScript documentation, which is available at <http://docs.nativescript.org/>. The docs are written in Markdown.
-- **[Official Plugins](https://github.com/NativeScript/plugins)
-  - This repo contains a [plugin workspace](https://docs.nativescript.org/plugins/plugin-workspace-guide.html) the TSC (Technical Steering Committee) maintains offering several often useful plugins.
+- **[Plugins](https://github.com/NativeScript/plugins)**
+  - This repo contains a [plugin workspace](https://docs.nativescript.org/plugins/plugin-workspace-guide.html) with several often useful plugins.
+- **[Firebase](https://github.com/NativeScript/firebase)**
+  - Modular Firebase 🔥 implementation for iOS & Android.
+- **[ML Kit](https://github.com/NativeScript/mlkit)**
+  - Google's [ML Kit SDKs for iOS and Android](https://developers.google.com/ml-kit).
+- **[Payments](https://github.com/NativeScript/payments)**
+  - In-App Purchase, Subscriptions, Google Pay and Apple Pay.
+- **[Artwork](https://github.com/NativeScript/artwork)**
+  - Want to use our logo or colors? This repo contains ready to use media material.
 
 <h3 align="center">Made with ❤️</h3>

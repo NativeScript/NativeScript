@@ -34,9 +34,10 @@ export function dataDeserialize(nativeData?: any) {
 		}
 		case 'org.json.JSONObject': {
 			store = {};
-			let i = nativeData.keys();
+			const i = nativeData.keys();
+			let key;
 			while (i.hasNext()) {
-				let key = i.next();
+				key = i.next();
 				store[key] = dataDeserialize(nativeData.get(key));
 			}
 			break;

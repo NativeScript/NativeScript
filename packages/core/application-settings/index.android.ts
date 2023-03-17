@@ -41,8 +41,20 @@ export function getString(key: string, defaultValue?: string): string {
 export function getNumber(key: string, defaultValue?: number): number {
 	verify(key);
 	if (hasKey(key)) {
-		// SharedPreferences has no getter or setter for double so use long instead
-		return java.lang.Double.longBitsToDouble(sharedPreferences.getLong(key, long(0)));
+		let val;
+
+		// TODO: Remove this migration step in a future release
+		try {
+			val = sharedPreferences.getLong(key, long(0));
+		} catch (err) {
+			// If value is old, it might have been stored as a float so we store it anew as a long value to avoid errors
+			const oldVal = sharedPreferences.getFloat(key, float(0.0));
+			setNumber(key, oldVal);
+
+			val = sharedPreferences.getLong(key, long(0));
+		}
+		// SharedPreferences has no getter or setter for double so we retrieve value as a long and convert it to double
+		return java.lang.Double.longBitsToDouble(val);
 	}
 
 	return defaultValue;
@@ -69,7 +81,7 @@ export function setNumber(key: string, value: number): void {
 	verify(key);
 	common.ensureValidValue(value, 'number');
 	const editor = sharedPreferences.edit();
-	// SharedPreferences has no getter or setter for double so use long instead
+	// SharedPreferences has no getter or setter for double so we convert value and store it as a long
 	editor.putLong(key, java.lang.Double.doubleToRawLongBits(double(value)));
 	editor.apply();
 }

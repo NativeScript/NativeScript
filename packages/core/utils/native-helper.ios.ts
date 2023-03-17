@@ -36,8 +36,8 @@ export function dataDeserialize(nativeData?: any) {
 			case 'NSNull':
 				return null;
 			case 'NSMutableDictionary':
-			case 'NSDictionary':
-				let obj = {};
+			case 'NSDictionary': {
+				const obj = {};
 				const length = nativeData.count;
 				const keysArray = nativeData.allKeys as NSArray<any>;
 				for (let i = 0; i < length; i++) {
@@ -45,14 +45,16 @@ export function dataDeserialize(nativeData?: any) {
 					obj[nativeKey] = dataDeserialize(nativeData.objectForKey(nativeKey));
 				}
 				return obj;
+			}
 			case 'NSMutableArray':
-			case 'NSArray':
-				let array = [];
+			case 'NSArray': {
+				const array = [];
 				const len = nativeData.count;
 				for (let i = 0; i < len; i++) {
 					array[i] = dataDeserialize(nativeData.objectAtIndex(i));
 				}
 				return array;
+			}
 			default:
 				return nativeData;
 		}

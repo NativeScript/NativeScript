@@ -29,8 +29,7 @@ function initializeWebViewClient(): void {
 
 			// Handle schemes like mailto, tel, etc
 			if (!android.webkit.URLUtil.isNetworkUrl(url)) {
-				openUrl(url);
-				return true;
+				return openUrl(url);
 			}
 
 			return false;
@@ -124,10 +123,12 @@ export class WebView extends WebViewBase {
 	public disposeNativeView() {
 		const nativeView = this.nativeViewProtected;
 		if (nativeView) {
+			if ((<any>nativeView).client) {
+				(<any>nativeView).client.owner = null;
+			}
 			nativeView.destroy();
 		}
 
-		(<any>nativeView).client.owner = null;
 		super.disposeNativeView();
 	}
 
