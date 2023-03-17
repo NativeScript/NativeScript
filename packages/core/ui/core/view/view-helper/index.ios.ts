@@ -14,9 +14,51 @@ const majorVersion = iOSNativeHelper.MajorVersion;
 class UILayoutViewController extends UIViewController {
 	public owner: WeakRef<View>;
 
+	private _isRunningLayout: number;
+	private get isRunningLayout() {
+		return this._isRunningLayout !== 0;
+	}
+	private startRunningLayout() {
+		this._isRunningLayout++;
+	}
+	private finishRunningLayout() {
+		this._isRunningLayout--;
+		this.clearScheduledLayout();
+	}
+	private runLayout(cb: () => void) {
+		try {
+			this.startRunningLayout();
+			cb();
+		} finally {
+			this.finishRunningLayout();
+		}
+	}
+
+	layoutTimer: number;
+
+	private clearScheduledLayout() {
+		if (this.layoutTimer) {
+			clearTimeout(this.layoutTimer);
+			this.layoutTimer = null;
+		}
+	}
+
+	private scheduleLayout() {
+		if (this.layoutTimer) {
+			return;
+		}
+		setTimeout(() => {
+			this.layoutTimer = null;
+			if (!this.isRunningLayout) {
+				this.runLayout(() => this.layoutOwner());
+			}
+		});
+	}
+
 	public static initWithOwner(owner: WeakRef<View>): UILayoutViewController {
 		const controller = <UILayoutViewController>UILayoutViewController.new();
 		controller.owner = owner;
+		controller._isRunningLayout = 0;
 
 		return controller;
 	}
@@ -29,6 +71,11 @@ class UILayoutViewController extends UIViewController {
 		this.extendedLayoutIncludesOpaqueBars = true;
 	}
 
+	public viewSafeAreaInsetsDidChange(): void {
+		super.viewSafeAreaInsetsDidChange();
+		this.scheduleLayout();
+	}
+
 	public viewWillLayoutSubviews(): void {
 		super.viewWillLayoutSubviews();
 		const owner = this.owner?.deref();
@@ -38,8 +85,20 @@ class UILayoutViewController extends UIViewController {
 	}
 
 	public viewDidLayoutSubviews(): void {
+		this.startRunningLayout();
 		super.viewDidLayoutSubviews();
+		this.layoutOwner();
+		this.finishRunningLayout();
+	}
+	layoutOwner(force = false) {
 		const owner = this.owner?.deref();
+		if (!force && !!owner.nativeViewProtected?.layer.needsLayout?.()) {
+			// we skip layout if the view is not yet laid out yet
+			// this usually means that viewDidLayoutSubviews will be called again
+			// so doing a layout pass now will layout with the wrong parameters
+			return;
+		}
+
 		if (owner) {
 			if (majorVersion >= 11) {
 				// Handle nested UILayoutViewController safe area application.
