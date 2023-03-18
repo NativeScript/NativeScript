@@ -24,7 +24,7 @@ export default class QuerySelector {
 		const matches = new NodeList<Element>();
 
 		for (const parts of this.getSelectorParts(selector)) {
-			for (const element of this.findAll(node, [node], parts)) {
+			for (const element of this.findAll(node, parts)) {
 				if (!matches.includes(element)) {
 					matches.push(element);
 				}
@@ -43,7 +43,7 @@ export default class QuerySelector {
 	 */
 	public static querySelector(node: Node, selector: string): Element {
 		for (const parts of this.getSelectorParts(selector)) {
-			const match = this.findFirst(node, [node], parts);
+			const match = this.findFirst(node, parts);
 
 			if (match) {
 				return match;
@@ -128,15 +128,15 @@ export default class QuerySelector {
 	 * @param [selectorItem] Selector item.
 	 * @returns HTML elements.
 	 */
-	private static findAll(rootNode: Node, nodes: Node[], selectorParts: string[], selectorItem?: SelectorItem): Element[] {
+	private static findAll(rootNode: Node, selectorParts: string[], selectorItem?: SelectorItem): Element[] {
 		const isDirectChild = selectorParts[0] === '>';
 		if (isDirectChild) {
 			selectorParts = selectorParts.slice(1);
 		}
 		const selector = selectorItem || new SelectorItem(selectorParts[0]);
 		let matched = [];
-
-		for (const node of nodes) {
+		let node = rootNode.firstChild;
+		while (node) {
 			if (node.nodeType === Node.ELEMENT_NODE) {
 				if (selector.match(<Element>node).matches) {
 					if (selectorParts.length === 1) {
@@ -144,17 +144,16 @@ export default class QuerySelector {
 							matched.push(node);
 						}
 					} else {
-						if (node.firstChild) {
-							const childMatches = this.findAll(rootNode, (<Element>node).children, selectorParts.slice(1), null);
-							matched = matched.concat(childMatches);
-						}
+						const childMatches = this.findAll(rootNode, selectorParts.slice(1), null);
+						matched = matched.concat(childMatches);
 					}
 				}
 			}
 
 			if (!isDirectChild && node['firstChild']) {
-				matched = matched.concat(this.findAll(rootNode, node['children'], selectorParts, selector));
+				matched = matched.concat(this.findAll(rootNode, selectorParts, selector));
 			}
+			node = node.nextSibling;
 		}
 
 		return matched;
@@ -170,21 +169,22 @@ export default class QuerySelector {
 	 * @param [selectorItem] Selector item.
 	 * @returns HTML element.
 	 */
-	private static findFirst(rootNode: Node, nodes: Node[], selectorParts: string[], selectorItem?: SelectorItem): Element {
+	private static findFirst(rootNode: Node, selectorParts: string[], selectorItem?: SelectorItem): Element {
 		const isDirectChild = selectorParts[0] === '>';
 		if (isDirectChild) {
 			selectorParts = selectorParts.slice(1);
 		}
 		const selector = selectorItem || new SelectorItem(selectorParts[0]);
+		let node = rootNode.firstChild;
 
-		for (const node of nodes) {
+		while (node) {
 			if (node.nodeType === Node.ELEMENT_NODE && selector.match(<Element>node).matches) {
 				if (selectorParts.length === 1) {
 					if (rootNode !== node) {
 						return <Element>node;
 					}
 				} else {
-					const childSelector = this.findFirst(rootNode, (<Element>node).children, selectorParts.slice(1), null);
+					const childSelector = this.findFirst(rootNode, selectorParts.slice(1), null);
 					if (childSelector) {
 						return childSelector;
 					}
@@ -192,12 +192,13 @@ export default class QuerySelector {
 			}
 
 			if (!isDirectChild && node['firstChild']) {
-				const childSelector = this.findFirst(rootNode, node['children'], selectorParts, selector);
+				const childSelector = this.findFirst(rootNode, selectorParts, selector);
 
 				if (childSelector) {
 					return childSelector;
 				}
 			}
+			node = node.nextSibling;
 		}
 
 		return null;

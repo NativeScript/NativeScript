@@ -11,6 +11,9 @@ const ID_REGEXP = /(?<!\\)#[A-Za-z][-A-Za-z0-9_]*/g;
 const CSS_ESCAPE_REGEXP = /(?<!\\):/g;
 const CSS_ESCAPE_CHAR_REGEXP = /\\/g;
 
+const PsuedoRegex = new RegExp(PSUEDO_REGEXP, 'g');
+const AttributeRegex = new RegExp(ATTRIBUTE_REGEXP, 'g');
+const ClassRegex = new RegExp(CLASS_REGEXP, 'g');
 /**
  * https://github.com/capricorn86/happy-dom/blob/master/packages/happy-dom/src/query-selector/SelectorItem.ts
  * Selector item.
@@ -95,7 +98,6 @@ export default class SelectorItem {
 		if (this.isPseudo && !this.matchesPsuedo(element, selector)) {
 			return { priorityWeight: 0, matches: false };
 		}
-
 		// Attribute match
 		if (this.isAttribute) {
 			const result = this.matchesAttribute(element, selector);
@@ -104,7 +106,6 @@ export default class SelectorItem {
 				return { priorityWeight: 0, matches: false };
 			}
 		}
-
 		return { priorityWeight, matches: true };
 	}
 
@@ -116,7 +117,7 @@ export default class SelectorItem {
 	 * @returns True if it is a match.
 	 */
 	private matchesPsuedo(element: Element, selector: string): boolean {
-		const regexp = new RegExp(PSUEDO_REGEXP, 'g');
+		const regexp = PsuedoRegex;
 		let match: RegExpMatchArray;
 
 		while ((match = regexp.exec(selector))) {
@@ -251,7 +252,7 @@ export default class SelectorItem {
 	 * @returns Result.
 	 */
 	private matchesAttribute(element: Element, selector: string): { priorityWeight: number; matches: boolean } {
-		const regexp = new RegExp(ATTRIBUTE_REGEXP, 'g');
+		const regexp = AttributeRegex;
 		let match: RegExpMatchArray;
 		let priorityWeight = 0;
 
@@ -276,15 +277,14 @@ export default class SelectorItem {
 	 * @returns Result.
 	 */
 	private matchesClass(element: Element, selector: string): { priorityWeight: number; matches: boolean } {
-		const regexp = new RegExp(CLASS_REGEXP, 'g');
-		const classList = element.className.split(' ');
-		const classSelector = selector.split(CSS_ESCAPE_REGEXP)[0];
+		const regexp = ClassRegex;
+		const classList = element.className;
+		const classSelector = selector;
 		let priorityWeight = 0;
 		let match: RegExpMatchArray;
-
 		while ((match = regexp.exec(classSelector))) {
 			priorityWeight += 10;
-			if (!classList.includes(match[1].replace(CSS_ESCAPE_CHAR_REGEXP, ''))) {
+			if (!classList.includes(match[1])) {
 				return { priorityWeight: 0, matches: false };
 			}
 		}

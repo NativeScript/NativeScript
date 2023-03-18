@@ -1,13 +1,13 @@
+import QuerySelector from '../../query-selector/QuerySelector';
 import { createAttributeFilter, findWhere, splice } from '../../utils';
+import XMLParser from '../../xml-parser/XMLParser';
+import XMLSerializer from '../../xml-serializer';
 import type HTMLSlotElement from '../html-slot-element/HTMLSlotElement';
 import NodeList from '../node/NodeList';
 import NodeTypeEnum from '../node/NodeTypeEnum';
 import ParentNode from '../parent-node/ParentNode';
 import { ShadowHostMixin } from '../shadow-root/ShadowHost';
 import { ShadowRoot } from '../shadow-root/ShadowRoot';
-import XMLParser from '../../xml-parser/XMLParser';
-import XMLSerializer from '../../xml-serializer';
-import QuerySelector from '../../query-selector/QuerySelector';
 
 /**
  * Element.
@@ -163,20 +163,18 @@ export default class Element extends ParentNode {
 		});
 
 		this._shadowRoot = shadow;
-
 		const childNodes = this.childNodes;
 		// Remove any childern from rendered DOM
 		for (const node of childNodes) {
 			node.remove();
 		}
-		ShadowHostMixin;
 		// Make this element a Shadow Host.
-		//Object.assign(this, ShadowHostMixin);
+		Object.assign(this, ShadowHostMixin);
 		// // Add childern back to Light DOM
 		// // If they are slottable, they will
 		// // get rendered again in the
 		// // Shadow Tree.
-		// this.append(...childNodes);
+		this.append(...childNodes);
 
 		return shadow;
 	}
