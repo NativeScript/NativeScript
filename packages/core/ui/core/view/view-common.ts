@@ -27,7 +27,7 @@ import { AccessibilityEventOptions, AccessibilityLiveRegion, AccessibilityRole, 
 import { accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityValueProperty, accessibilityIgnoresInvertColorsProperty } from '../../../accessibility/accessibility-properties';
 import { accessibilityBlurEvent, accessibilityFocusChangedEvent, accessibilityFocusEvent, accessibilityPerformEscapeEvent, getCurrentFontScale } from '../../../accessibility';
 import { CSSShadow } from '../../styling/css-shadow';
-import { SharedTransition } from '../../transition/shared-transition';
+import { SharedTransition, SharedTransitionInteractiveOptions } from '../../transition/shared-transition';
 
 // helpers (these are okay re-exported here)
 export * from './view-helper';
@@ -69,6 +69,8 @@ export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator 
 
 export const _rootModalViews = new Array<ViewBase>();
 
+type InteractiveTransitionState = { began?: boolean; cancelled?: boolean; options?: SharedTransitionInteractiveOptions };
+
 export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public static layoutChangedEvent = 'layoutChanged';
 	public static shownModallyEvent = 'shownModally';
@@ -94,8 +96,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public _modalParent: ViewCommon;
 	private _modalContext: any;
 	private _modal: ViewCommon;
-	interactiveDismissGestureBegan = false;
-	interactiveDismissGestureCancelled = false;
+	interactiveTransition: InteractiveTransitionState;
 
 	private _measuredWidth: number;
 	private _measuredHeight: number;
@@ -247,6 +248,13 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		}
 
 		return false;
+	}
+
+	_updateInteractiveTransition(state: InteractiveTransitionState) {
+		this.interactiveTransition = {
+			...(this.interactiveTransition || {}),
+			...state,
+		};
 	}
 
 	_setupAsRootView(context: any): void {
@@ -415,14 +423,16 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 			};
 
 			const whenClosedCallback = () => {
-				if (this.interactiveDismissGestureBegan) {
-					this.interactiveDismissGestureBegan = false;
-					if (!this.interactiveDismissGestureCancelled) {
+				if (this.interactiveTransition?.began) {
+					this._updateInteractiveTransition({
+						began: false,
+					});
+					if (!this.interactiveTransition?.cancelled) {
 						cleanupModalViews();
 					}
 				}
 
-				if (!this.interactiveDismissGestureCancelled) {
+				if (!this.interactiveTransition?.cancelled) {
 					if (typeof options.closeCallback === 'function') {
 						options.closeCallback.apply(undefined, originalArgs);
 					}
@@ -431,7 +441,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 				}
 			};
 
-			if (!this.interactiveDismissGestureBegan) {
+			if (!this.interactiveTransition?.began) {
 				cleanupModalViews();
 			}
 

@@ -30,7 +30,7 @@ let navDepth = -1;
 export class Frame extends FrameBase {
 	viewController: UINavigationControllerImpl;
 	_animatedDelegate = <UINavigationControllerDelegate>UINavigationControllerAnimatedDelegate.initWithOwner(new WeakRef(this));
-	transitionIteractiveCtrl: UIPercentDrivenInteractiveTransition;
+	transitionInteractiveCtrl: UIPercentDrivenInteractiveTransition;
 	public _ios: iOSFrame;
 	private _interactiveDismissGesture: (args: PanGestureEventData) => void;
 
@@ -106,10 +106,12 @@ export class Frame extends FrameBase {
 			this._ios.controller.delegate = this._animatedDelegate;
 			viewController[DELEGATE] = this._animatedDelegate;
 			const transitionState = SharedTransition.getState(navigationTransition.instance.id);
-			if (transitionState?.interactiveDismissal) {
+			if (transitionState?.interactive?.dismiss) {
+				this._updateInteractiveTransition({
+					options: transitionState?.interactive?.dismiss,
+				});
 				// interactive transitions via gestures
-				// TODO - these could be typed as: boolean | (view: View) => void
-				// to allow users to define their own custom gesture dismissals
+				// TODO - allow users to define their own custom gesture dismissals
 				this._interactiveDismissGesture = this._interactiveDismissGestureHandler.bind(this);
 				this.on('pan', this._interactiveDismissGesture);
 			}
@@ -198,35 +200,42 @@ export class Frame extends FrameBase {
 
 	private _interactiveDismissGestureHandler(args: PanGestureEventData) {
 		if (args?.ios?.view) {
-			this.interactiveDismissGestureBegan = true;
-			this.interactiveDismissGestureCancelled = false;
-			const percent = args.deltaX / (args.ios.view.bounds.size.width / 2);
+			this._updateInteractiveTransition({
+				began: true,
+				cancelled: false,
+			});
+			const percent = this.interactiveTransition?.options.percentFormula ? this.interactiveTransition?.options.percentFormula(args) : args.deltaX / (args.ios.view.bounds.size.width / 2);
 			if (SharedTransition.DEBUG) {
-				console.log('interactive dismissal pan:', percent);
+				console.log('Interactive dismissal percentage:', percent);
 			}
 			switch (args.state) {
 				case GestureStateTypes.began:
 					// const navigationContext = this.parent.page.frame._navigationQueue[0];
 					// this.performGoBack(navigationContext);
-					this._ios.controller.popViewControllerAnimated(true);
+					// this._ios.controller.popViewControllerAnimated(true);
+					this._goBackCore(this.backStack.slice(-1)[0]);
 
 					break;
 				case GestureStateTypes.changed:
-					// TODO: allow customization of threshold
 					if (percent < 1) {
-						if (this.transitionIteractiveCtrl) {
-							this.transitionIteractiveCtrl.updateInteractiveTransition(percent);
+						if (this.transitionInteractiveCtrl) {
+							this.transitionInteractiveCtrl.updateInteractiveTransition(percent);
 						}
 					}
 					break;
 				case GestureStateTypes.cancelled:
 				case GestureStateTypes.ended:
-					if (this.transitionIteractiveCtrl) {
-						if (percent > 0.5) {
-							this.transitionIteractiveCtrl.finishInteractiveTransition();
+					if (this.transitionInteractiveCtrl) {
+						const finishThreshold = isNumber(this.interactiveTransition?.options?.finishThreshold) ? this.interactiveTransition?.options?.finishThreshold : 0.5;
+						if (percent > finishThreshold) {
+							this.callUnloaded();
+							this._tearDownUI(true);
+							this.transitionInteractiveCtrl.finishInteractiveTransition();
 						} else {
-							this.interactiveDismissGestureCancelled = true;
-							this.transitionIteractiveCtrl.cancelInteractiveTransition();
+							this._updateInteractiveTransition({
+								cancelled: true,
+							});
+							this.transitionInteractiveCtrl.cancelInteractiveTransition();
 						}
 					}
 					break;
@@ -253,7 +262,7 @@ export class Frame extends FrameBase {
 		const controller = backstackEntry.resolvedPage.ios;
 		const animated = this._currentEntry ? this._getIsAnimatedNavigation(this._currentEntry.entry) : false;
 
-		if (!this.interactiveDismissGestureCancelled) {
+		if (!this.interactiveTransition?.cancelled) {
 			this._updateActionBar(backstackEntry.resolvedPage);
 		}
 		if (Trace.isEnabled()) {
@@ -475,9 +484,9 @@ class UINavigationControllerAnimatedDelegate extends NSObject implements UINavig
 	navigationControllerInteractionControllerForAnimationController(navigationController: UINavigationController, animationController: UIViewControllerAnimatedTransitioning): UIViewControllerInteractiveTransitioning {
 		const owner = this.owner?.deref();
 		if (owner) {
-			if (owner.interactiveDismissGestureBegan) {
-				owner.transitionIteractiveCtrl = PercentInteractiveController.initWithOwner(new WeakRef(this.transition));
-				return owner.transitionIteractiveCtrl;
+			if (owner.interactiveTransition?.began) {
+				owner.transitionInteractiveCtrl = PercentInteractiveController.initWithOwner(new WeakRef(this.transition));
+				return owner.transitionInteractiveCtrl;
 			}
 		}
 
@@ -500,12 +509,11 @@ class PercentInteractiveController extends UIPercentDrivenInteractiveTransition 
 	}
 
 	startInteractiveTransition(transitionContext: UIViewControllerContextTransitioning) {
-		console.log('startInteractiveTransition');
+		// console.log('startInteractiveTransition');
 		this.transitionContext = transitionContext;
 	}
 
 	updateInteractiveTransition(percentComplete: number) {
-		console.log('percentComplete:', percentComplete);
 		const owner: any = this.owner?.deref();
 		if (owner) {
 			if (!this.started) {
@@ -534,7 +542,7 @@ class PercentInteractiveController extends UIPercentDrivenInteractiveTransition 
 	}
 
 	cancelInteractiveTransition() {
-		console.log('cancelInteractiveTransition');
+		// console.log('cancelInteractiveTransition');
 		const owner: any = this.owner?.deref();
 		if (owner && this.started) {
 			const state = SharedTransition.getState(owner.id);
@@ -562,7 +570,7 @@ class PercentInteractiveController extends UIPercentDrivenInteractiveTransition 
 	}
 
 	finishInteractiveTransition() {
-		console.log('finishInteractiveTransition');
+		// console.log('finishInteractiveTransition');
 		const owner: any = this.owner?.deref();
 		if (owner && this.started) {
 			if (this.backgroundAnimation) {

@@ -6,6 +6,7 @@ import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUser
 import { ShowModalOptions, hiddenProperty } from '../view-base';
 import { Trace } from '../../../trace';
 import { layout, iOSNativeHelper } from '../../../utils';
+import { isNumber } from '../../../utils/types';
 import { IOSHelper } from './view-helper';
 import { ios as iosBackground, Background } from '../../styling/background';
 import { perspectiveProperty, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, clipPathProperty } from '../../styling/style-properties';
@@ -32,7 +33,7 @@ const majorVersion = iOSNativeHelper.MajorVersion;
 export class View extends ViewCommon implements ViewDefinition {
 	nativeViewProtected: UIView;
 	viewController: UIViewController;
-	transitionIteractiveCtrl: UIPercentDrivenInteractiveTransition;
+	transitionInteractiveCtrl: UIPercentDrivenInteractiveTransition;
 	private _popoverPresentationDelegate: IOSHelper.UIPopoverPresentationControllerDelegateImp;
 	private _adaptivePresentationDelegate: IOSHelper.UIAdaptivePresentationControllerDelegateImp;
 	private _transitioningDelegate: UIViewControllerTransitioningDelegateImpl;
@@ -473,7 +474,7 @@ export class View extends ViewCommon implements ViewDefinition {
 				this._transitioningDelegate = UIViewControllerTransitioningDelegateImpl.initWithOwner(new WeakRef(options.transition.instance), new WeakRef(this));
 				controller.transitioningDelegate = this._transitioningDelegate;
 				const transitionState = SharedTransition.getState(options.transition.instance.id);
-				if (transitionState?.interactiveDismissal) {
+				if (transitionState?.interactive?.dismiss) {
 					// interactive transitions via gestures
 					// TODO - these could be typed as: boolean | (view: View) => void
 					// to allow users to define their own custom gesture dismissals
@@ -563,11 +564,13 @@ export class View extends ViewCommon implements ViewDefinition {
 
 	private _interactiveDismissGestureHandler(args: PanGestureEventData) {
 		if (args?.ios?.view) {
-			this.interactiveDismissGestureBegan = true;
-			this.interactiveDismissGestureCancelled = false;
-			const percent = args.deltaY / (args.ios.view.bounds.size.height / 2);
+			this._updateInteractiveTransition({
+				began: true,
+				cancelled: false,
+			});
+			const percent = this.interactiveTransition?.options.percentFormula ? this.interactiveTransition?.options.percentFormula(args) : args.deltaY / (args.ios.view.bounds.size.height / 2);
 			if (SharedTransition.DEBUG) {
-				console.log('interactive dismissal pan:', percent);
+				console.log('Interactive dismissal percentage:', percent);
 			}
 			switch (args.state) {
 				case GestureStateTypes.began:
@@ -576,21 +579,23 @@ export class View extends ViewCommon implements ViewDefinition {
 					}
 					break;
 				case GestureStateTypes.changed:
-					// TODO: allow customization of threshold
 					if (percent < 1) {
-						if (this.transitionIteractiveCtrl) {
-							this.transitionIteractiveCtrl.updateInteractiveTransition(percent);
+						if (this.transitionInteractiveCtrl) {
+							this.transitionInteractiveCtrl.updateInteractiveTransition(percent);
 						}
 					}
 					break;
 				case GestureStateTypes.cancelled:
 				case GestureStateTypes.ended:
-					if (this.transitionIteractiveCtrl) {
-						if (percent > 0.5) {
-							this.transitionIteractiveCtrl.finishInteractiveTransition();
+					if (this.transitionInteractiveCtrl) {
+						const finishThreshold = isNumber(this.interactiveTransition?.options?.finishThreshold) ? this.interactiveTransition?.options?.finishThreshold : 0.5;
+						if (percent > finishThreshold) {
+							this.transitionInteractiveCtrl.finishInteractiveTransition();
 						} else {
-							this.interactiveDismissGestureCancelled = true;
-							this.transitionIteractiveCtrl.cancelInteractiveTransition();
+							this._updateInteractiveTransition({
+								cancelled: true,
+							});
+							this.transitionInteractiveCtrl.cancelInteractiveTransition();
 						}
 					}
 					break;
@@ -619,9 +624,9 @@ export class View extends ViewCommon implements ViewDefinition {
 		}
 
 		parentController.dismissViewControllerAnimatedCompletion(animated, () => {
-			if (!this.interactiveDismissGestureCancelled) {
+			if (!this.interactiveTransition?.cancelled) {
 				this._transitioningDelegate = null;
-				this.transitionIteractiveCtrl = null;
+				this.transitionInteractiveCtrl = null;
 				this.off('pan', this._interactiveDismissGesture);
 				if (this._modalAnimatedOptions) {
 					this._modalAnimatedOptions.pop();
@@ -1013,9 +1018,9 @@ class UIViewControllerTransitioningDelegateImpl extends NSObject implements UIVi
 		if (owner?.iosInteractionDismiss) {
 			const ownerView = this.ownerView?.deref();
 			if (ownerView) {
-				if (ownerView.interactiveDismissGestureBegan) {
-					ownerView.transitionIteractiveCtrl = owner.iosInteractionDismiss(animator);
-					return ownerView.transitionIteractiveCtrl;
+				if (ownerView.interactiveTransition?.began) {
+					ownerView.transitionInteractiveCtrl = owner.iosInteractionDismiss(animator);
+					return ownerView.transitionInteractiveCtrl;
 				}
 			}
 		}

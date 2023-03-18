@@ -15,7 +15,11 @@ export class TransitionsModel extends Observable {
 		page.frame.navigate({
 			moduleName: `pages/transitions/transitions-detail`,
 			transition: SharedTransition.custom(new PageTransition(), {
-				interactiveDismissal: true,
+				interactive: {
+					dismiss: {
+						finishThreshold: 0.5,
+					},
+				},
 				// toPageStart: {
 				// 	duration: 400,
 				// },
@@ -29,7 +33,11 @@ export class TransitionsModel extends Observable {
 	openModal() {
 		page.showModal('pages/transitions/transitions-modal', {
 			transition: SharedTransition.custom(new ModalTransition(), {
-				interactiveDismissal: true,
+				interactive: {
+					dismiss: {
+						finishThreshold: 0.5,
+					},
+				},
 				toPageStart: {
 					y: 200,
 					// duration: 400,

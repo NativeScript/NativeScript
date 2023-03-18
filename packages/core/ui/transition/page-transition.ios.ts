@@ -38,7 +38,7 @@ export class PageTransition extends Transition {
 				const { sharedElements, presented } = SharedTransition.getSharedElements(state.page, state.toPage);
 
 				if (SharedTransition.DEBUG) {
-					console.log('  ');
+					console.log('  PageTransition: Push');
 					console.log(
 						`1. Found sharedTransitionTags to animate:`,
 						sharedElements.map((v) => v.sharedTransitionTag)
@@ -216,7 +216,7 @@ export class PageTransition extends Transition {
 				// console.log('transitionContext.containerView.subviews.count:', transitionContext.containerView.subviews.count);
 
 				if (SharedTransition.DEBUG) {
-					console.log('  ');
+					console.log('  PageTransition: Pop');
 					console.log(
 						`1. Dismiss sharedTransitionTags to animate:`,
 						this.sharedElements.presented.map((p) => p.view.sharedTransitionTag)

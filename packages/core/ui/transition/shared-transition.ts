@@ -1,6 +1,7 @@
 import type { Transition } from '.';
 import { querySelectorAll, ViewBase } from '../core/view-base';
 import type { View } from '../core/view';
+import type { PanGestureEventData } from '../gestures';
 
 export const DEFAULT_DURATION = 0.35;
 export const DEFAULT_SPRING = {
@@ -12,19 +13,40 @@ export enum SharedTransitionAnimationType {
 	present,
 	dismiss,
 }
+export interface SharedTransitionInteractiveOptions {
+	/**
+	 * When the pan exceeds this percentage and you let go, finish the transition.
+	 * Default 0.5
+	 */
+	finishThreshold?: number;
+	/**
+	 * You can create your own percent formula used for determing the interactive value.
+	 * By default, we handle this via a formula like this for an interactive page back transition:
+	 * - return eventData.deltaX / (eventData.ios.view.bounds.size.width / 2);
+	 * @param eventData PanGestureEventData
+	 * @returns Should return a percentage value
+	 */
+	percentFormula?: (eventData: PanGestureEventData) => number;
+}
 export interface SharedTransitionConfig {
 	/**
-	 * Page which will start the transition
+	 * Page which will start the transition.
 	 */
 	page?: ViewBase;
 	/**
-	 * Preconfigured transition or your own custom configured one
+	 * Preconfigured transition or your own custom configured one.
 	 */
 	instance?: Transition;
 	/**
-	 * Whether you want to allow interactive dismissal
+	 * Interactive transition settings. (iOS only at the moment)
 	 */
-	interactiveDismissal?: boolean;
+	interactive?: {
+		/**
+		 * Whether you want to allow interactive dismissal.
+		 * Defaults to using 'pan' gesture for dismissal however you can customize your own.
+		 */
+		dismiss?: SharedTransitionInteractiveOptions;
+	};
 	/**
 	 * View settings to start your transition.
 	 */

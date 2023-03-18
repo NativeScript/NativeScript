@@ -65,7 +65,6 @@ class PercentInteractiveController extends UIPercentDrivenInteractiveTransition 
 	}
 
 	updateInteractiveTransition(percentComplete: number) {
-		// console.log('percentComplete:', percentComplete);
 		const owner = this.owner?.deref();
 		if (owner) {
 			if (!this.started) {
@@ -185,7 +184,7 @@ class ModalTransitionController extends NSObject implements UIViewControllerAnim
 					const { sharedElements, presented } = SharedTransition.getSharedElements(state.page, state.toPage);
 
 					if (SharedTransition.DEBUG) {
-						console.log('  ');
+						console.log('  ModalTransition: Present');
 						console.log(
 							`1. Found sharedTransitionTags to animate:`,
 							sharedElements.map((v) => v.sharedTransitionTag)
@@ -362,7 +361,7 @@ class ModalTransitionController extends NSObject implements UIViewControllerAnim
 					// console.log('transitionContext.containerView.subviews.count:', transitionContext.containerView.subviews.count);
 
 					if (SharedTransition.DEBUG) {
-						console.log('  ');
+						console.log('  ModalTransition: Dismiss');
 						console.log(
 							`1. Dismiss sharedTransitionTags to animate:`,
 							owner.sharedElements.presented.map((p) => p.view.sharedTransitionTag)
