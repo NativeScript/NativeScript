@@ -9,7 +9,7 @@ export function navigatingTo(args: EventData) {
 // class SampleCustomModalTransition extends ModalTransition implements TransitionType {
 
 // }
-SharedTransition.DEBUG = true;
+// SharedTransition.DEBUG = true;
 export class TransitionsModel extends Observable {
 	open() {
 		page.frame.navigate({
@@ -21,7 +21,7 @@ export class TransitionsModel extends Observable {
 					},
 				},
 				// toPageStart: {
-				// 	duration: 400,
+				// 	duration: 1000,
 				// },
 				// fromPageEnd: {
 				// 	duration: 500,

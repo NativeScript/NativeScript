@@ -29,9 +29,8 @@ export class PageTransition extends Transition {
 		switch (operation) {
 			case UINavigationControllerOperation.Push: {
 				this.presented = toViewCtrl;
-				// console.log('-- Transition present --', this.presented);
+				this.presenting = fromViewCtrl;
 
-				// transitionContext.containerView.addSubview(this.presented.view);
 				transitionContext.containerView.insertSubviewAboveSubview(this.presented.view, fromViewCtrl.view);
 				this.presented.view.layoutIfNeeded();
 
@@ -55,7 +54,6 @@ export class PageTransition extends Transition {
 						};
 					}
 					const presentingSharedElement = presentingView.ios;
-					// console.log('fromTarget instanceof UIImageView:', fromTarget instanceof UIImageView)
 
 					// TODO: discuss whether we should check if UIImage/UIImageView type to always snapshot images or if other view types could be duped/added vs. snapshotted
 					// Note: snapshot may be most efficient/simple
@@ -208,9 +206,6 @@ export class PageTransition extends Transition {
 				break;
 			}
 			case UINavigationControllerOperation.Pop: {
-				// this.presented = fromViewCtrl;
-				// console.log('-- Transition dismiss --', this.presented);
-
 				transitionContext.containerView.insertSubviewBelowSubview(toViewCtrl.view, fromViewCtrl.view);
 
 				// console.log('transitionContext.containerView.subviews.count:', transitionContext.containerView.subviews.count);

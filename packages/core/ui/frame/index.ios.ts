@@ -3,10 +3,9 @@ import { iOSFrame as iOSFrameDefinition, BackstackEntry, NavigationTransition } 
 import { FrameBase, NavigationType } from './frame-common';
 import { Page } from '../page';
 import { View } from '../core/view';
-
-// Requires
 import { _createIOSAnimatedTransitioning } from './fragment.transitions';
 import { IOSHelper } from '../core/view/view-helper';
+import { Screen } from '../../platform';
 import { profile } from '../../profiling';
 import { iOSNativeHelper, layout } from '../../utils';
 import { isNumber } from '../../utils/types';
@@ -29,7 +28,7 @@ let navDepth = -1;
 
 export class Frame extends FrameBase {
 	viewController: UINavigationControllerImpl;
-	_animatedDelegate = <UINavigationControllerDelegate>UINavigationControllerAnimatedDelegate.initWithOwner(new WeakRef(this));
+	_animatedDelegate: UINavigationControllerDelegate;
 	transitionInteractiveCtrl: UIPercentDrivenInteractiveTransition;
 	public _ios: iOSFrame;
 	private _interactiveDismissGesture: (args: PanGestureEventData) => void;
@@ -47,9 +46,12 @@ export class Frame extends FrameBase {
 	public disposeNativeView() {
 		this._removeFromFrameStack();
 		this.viewController = null;
-		this._ios.controller = null;
 		this._animatedDelegate = null;
-		this._ios = null;
+		if (this._ios) {
+			this._ios.controller = null;
+			this._ios = null;
+		}
+
 		super.disposeNativeView();
 	}
 
@@ -103,6 +105,9 @@ export class Frame extends FrameBase {
 
 		const nativeTransition = _getNativeTransition(navigationTransition, true);
 		if (!nativeTransition && navigationTransition) {
+			if (!this._animatedDelegate) {
+				this._animatedDelegate = <UINavigationControllerDelegate>UINavigationControllerAnimatedDelegate.initWithOwner(new WeakRef(this));
+			}
 			this._ios.controller.delegate = this._animatedDelegate;
 			viewController[DELEGATE] = this._animatedDelegate;
 			const transitionState = SharedTransition.getState(navigationTransition.instance.id);
@@ -210,11 +215,7 @@ export class Frame extends FrameBase {
 			}
 			switch (args.state) {
 				case GestureStateTypes.began:
-					// const navigationContext = this.parent.page.frame._navigationQueue[0];
-					// this.performGoBack(navigationContext);
-					// this._ios.controller.popViewControllerAnimated(true);
-					this._goBackCore(this.backStack.slice(-1)[0]);
-
+					this._ios.controller.popViewControllerAnimated(true);
 					break;
 				case GestureStateTypes.changed:
 					if (percent < 1) {
@@ -228,9 +229,10 @@ export class Frame extends FrameBase {
 					if (this.transitionInteractiveCtrl) {
 						const finishThreshold = isNumber(this.interactiveTransition?.options?.finishThreshold) ? this.interactiveTransition?.options?.finishThreshold : 0.5;
 						if (percent > finishThreshold) {
-							this.callUnloaded();
-							this._tearDownUI(true);
+							this.off('pan', this._interactiveDismissGesture);
 							this.transitionInteractiveCtrl.finishInteractiveTransition();
+							// TODO: may wanna null this out at some later point
+							// this.transitionInteractiveCtrl = null;
 						} else {
 							this._updateInteractiveTransition({
 								cancelled: true,
@@ -262,9 +264,8 @@ export class Frame extends FrameBase {
 		const controller = backstackEntry.resolvedPage.ios;
 		const animated = this._currentEntry ? this._getIsAnimatedNavigation(this._currentEntry.entry) : false;
 
-		if (!this.interactiveTransition?.cancelled) {
-			this._updateActionBar(backstackEntry.resolvedPage);
-		}
+		this._updateActionBar(backstackEntry.resolvedPage);
+
 		if (Trace.isEnabled()) {
 			Trace.write(`${this}.popToViewControllerAnimated(${controller}, ${animated}); depth = ${navDepth}`, Trace.categories.Navigation);
 		}
@@ -509,8 +510,20 @@ class PercentInteractiveController extends UIPercentDrivenInteractiveTransition 
 	}
 
 	startInteractiveTransition(transitionContext: UIViewControllerContextTransitioning) {
-		// console.log('startInteractiveTransition');
+		console.log('startInteractiveTransition');
 		this.transitionContext = transitionContext;
+
+		// Using insertSubviewBelowSubview solves view stack visually but leaves a controller overlapping
+		// TODO: need to find out solution here
+		// console.log('this.transitionContext.containerView.subviews.count:', this.transitionContext.containerView.subviews.count)
+		const owner: any = this.owner?.deref();
+		if (owner) {
+			// console.log('owner.presenting:', owner.presenting)
+			// console.log('owner.presented:', owner.presented)
+			if (owner.presenting) {
+				this.transitionContext.containerView.insertSubviewBelowSubview(owner.presenting.view, owner.presented.view);
+			}
+		}
 	}
 
 	updateInteractiveTransition(percentComplete: number) {
@@ -525,6 +538,8 @@ class PercentInteractiveController extends UIPercentDrivenInteractiveTransition 
 					p.snapshot.alpha = p.endOpacity;
 					this.transitionContext.containerView.addSubview(p.snapshot);
 				}
+				const state = SharedTransition.getState(owner.id);
+				const props = state.fromPageEnd;
 				this.backgroundAnimation = UIViewPropertyAnimator.alloc().initWithDurationDampingRatioAnimations(1, 1, () => {
 					for (const p of owner.sharedElements.presenting) {
 						p.snapshot.frame = p.startFrame;
@@ -532,8 +547,12 @@ class PercentInteractiveController extends UIPercentDrivenInteractiveTransition 
 
 						p.snapshot.alpha = 1;
 					}
-					owner.presented.view.alpha = 0;
-					owner.presented.view.frame = CGRectMake(0, 200, owner.presented.view.bounds.size.width, owner.presented.view.bounds.size.height);
+					owner.presented.view.alpha = isNumber(props?.opacity) ? props?.opacity : 0;
+					const endX = isNumber(props?.x) ? props?.x : Screen.mainScreen.widthDIPs;
+					const endY = isNumber(props?.y) ? props?.y : 0;
+					const endWidth = isNumber(props?.width) ? props?.width : Screen.mainScreen.widthDIPs;
+					const endHeight = isNumber(props?.height) ? props?.height : Screen.mainScreen.heightDIPs;
+					owner.presented.view.frame = CGRectMake(endX, endY, endWidth, endHeight);
 				});
 			}
 
@@ -574,6 +593,7 @@ class PercentInteractiveController extends UIPercentDrivenInteractiveTransition 
 		const owner: any = this.owner?.deref();
 		if (owner && this.started) {
 			if (this.backgroundAnimation) {
+				this.backgroundAnimation.reversed = false;
 				const state = SharedTransition.getState(owner.id);
 				if (!state) {
 					SharedTransition.finishState(owner.id);
@@ -586,10 +606,18 @@ class PercentInteractiveController extends UIPercentDrivenInteractiveTransition 
 				setTimeout(() => {
 					for (const presenting of owner.sharedElements.presenting) {
 						presenting.view.opacity = presenting.startOpacity;
+						presenting.snapshot.removeFromSuperview();
 					}
+
 					SharedTransition.finishState(owner.id);
+					this.backgroundAnimation = null;
+					this.started = false;
+					// console.log('this.transitionContext.containerView.subviews.count:', this.transitionContext.containerView.subviews.count)
+					// this.transitionContext.containerView.subviews.objectAtIndex(this.transitionContext.containerView.subviews.count-1).removeFromSuperview();
 					this.transitionContext.completeTransition(true);
-				}, duration * 1000);
+					console.log('completeTransition!');
+					// console.log('this.transitionContext.containerView.subviews.count:', this.transitionContext.containerView.subviews.count)
+				}, duration * 1001);
 			}
 		}
 	}

@@ -475,6 +475,9 @@ export class View extends ViewCommon implements ViewDefinition {
 				controller.transitioningDelegate = this._transitioningDelegate;
 				const transitionState = SharedTransition.getState(options.transition.instance.id);
 				if (transitionState?.interactive?.dismiss) {
+					this._updateInteractiveTransition({
+						options: transitionState?.interactive?.dismiss,
+					});
 					// interactive transitions via gestures
 					// TODO - these could be typed as: boolean | (view: View) => void
 					// to allow users to define their own custom gesture dismissals
