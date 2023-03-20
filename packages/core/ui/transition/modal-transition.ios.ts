@@ -172,6 +172,7 @@ class PercentInteractiveController extends UIPercentDrivenInteractiveTransition 
 					owner.presented.view.alpha = 1;
 					this.backgroundAnimation = null;
 					this.started = false;
+					this.transitionContext.cancelInteractiveTransition();
 					this.transitionContext.completeTransition(false);
 				}, duration * 1000);
 			}
@@ -198,6 +199,7 @@ class PercentInteractiveController extends UIPercentDrivenInteractiveTransition 
 						presenting.view.opacity = presenting.startOpacity;
 					}
 					SharedTransition.finishState(owner.id);
+					this.transitionContext.finishInteractiveTransition();
 					this.transitionContext.completeTransition(true);
 				}, duration * 1000);
 			}

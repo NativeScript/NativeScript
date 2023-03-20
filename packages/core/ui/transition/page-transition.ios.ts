@@ -11,6 +11,7 @@ export class PageTransition extends Transition {
 	interactiveController: UIPercentDrivenInteractiveTransition;
 	presented: UIViewController;
 	presenting: UIViewController;
+	navigationController: UINavigationController;
 	operation: number;
 	sharedElements: {
 		presented?: Array<{ view: View; startFrame?: CGRect; endFrame?: CGRect; snapshot?: UIImageView; startOpacity?: number; endOpacity?: number }>;
@@ -21,6 +22,7 @@ export class PageTransition extends Transition {
 	private _interactiveGestureTeardown: () => void;
 
 	iosNavigatedController(navigationController: UINavigationController, operation: number, fromVC: UIViewController, toVC: UIViewController): UIViewControllerAnimatedTransitioning {
+		this.navigationController = navigationController;
 		if (!this.transitionController) {
 			this.presented = toVC;
 			this.presenting = fromVC;
@@ -119,21 +121,25 @@ class PercentInteractiveController extends UIPercentDrivenInteractiveTransition 
 		return ctrl;
 	}
 
+	added = false;
 	startInteractiveTransition(transitionContext: UIViewControllerContextTransitioning) {
 		console.log('startInteractiveTransition');
 		this.transitionContext = transitionContext;
 
-		const owner: any = this.owner?.deref();
-		if (owner) {
-			this.transitionContext.containerView.insertSubviewBelowSubview(owner.presenting.view, owner.presented.view);
+		if (!this.started) {
+			this.started = true;
+			const owner: any = this.owner?.deref();
+			if (owner) {
+				this.transitionContext.containerView.insertSubviewBelowSubview(owner.presenting.view, owner.presented.view);
+			}
 		}
 	}
 
 	updateInteractiveTransition(percentComplete: number) {
-		const owner: any = this.owner?.deref();
+		const owner = this.owner?.deref();
 		if (owner) {
-			if (!this.started) {
-				this.started = true;
+			if (!this.added) {
+				this.added = true;
 				for (const p of owner.sharedElements.presented) {
 					p.view.opacity = 0;
 				}
@@ -165,8 +171,8 @@ class PercentInteractiveController extends UIPercentDrivenInteractiveTransition 
 
 	cancelInteractiveTransition() {
 		// console.log('cancelInteractiveTransition');
-		const owner: any = this.owner?.deref();
-		if (owner && this.started) {
+		const owner = this.owner?.deref();
+		if (owner && this.added) {
 			const state = SharedTransition.getState(owner.id);
 			if (!state) {
 				return;
@@ -184,7 +190,8 @@ class PercentInteractiveController extends UIPercentDrivenInteractiveTransition 
 					}
 					owner.presented.view.alpha = 1;
 					this.backgroundAnimation = null;
-					this.started = false;
+					this.added = false;
+					this.transitionContext.cancelInteractiveTransition();
 					this.transitionContext.completeTransition(false);
 				}, duration * 1000);
 			}
@@ -193,8 +200,8 @@ class PercentInteractiveController extends UIPercentDrivenInteractiveTransition 
 
 	finishInteractiveTransition() {
 		// console.log('finishInteractiveTransition');
-		const owner: any = this.owner?.deref();
-		if (owner && this.started) {
+		const owner = this.owner?.deref();
+		if (owner && this.added) {
 			if (this.backgroundAnimation) {
 				this.backgroundAnimation.reversed = false;
 				const state = SharedTransition.getState(owner.id);
@@ -209,16 +216,13 @@ class PercentInteractiveController extends UIPercentDrivenInteractiveTransition 
 				setTimeout(() => {
 					for (const presenting of owner.sharedElements.presenting) {
 						presenting.view.opacity = presenting.startOpacity;
-						// presenting.snapshot.removeFromSuperview();
+						presenting.snapshot.removeFromSuperview();
 					}
 
 					SharedTransition.finishState(owner.id);
-					// SharedTransition.updateState(owner.id, {
-					// 	interactiveCancelled: false,
-					// });
 					this.backgroundAnimation = null;
-					this.started = false;
-					// this.transitionContext.containerView.insertSubviewAboveSubview(owner.presenting.view, owner.presented.view);
+					this.added = false;
+					this.transitionContext.finishInteractiveTransition();
 					this.transitionContext.completeTransition(true);
 				}, duration * 1000);
 			}
