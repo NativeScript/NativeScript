@@ -97,7 +97,9 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	private _modalContext: any;
 	private _modal: ViewCommon;
 
-	// any active transition instance id for tracking state
+	/**
+	 * Active transition instance id for tracking state
+	 */
 	transitionId: number;
 
 	private _measuredWidth: number;

@@ -231,7 +231,8 @@ class UIViewControllerImpl extends UIViewController {
 			// _processNavigationQueue will shift navigationQueue. Check canGoBack after that.
 			// Workaround for disabled backswipe on second custom native transition
 			if (frame.canGoBack()) {
-				if (!frame.interactiveTransition) {
+				const transitionState = SharedTransition.getState(owner.transitionId);
+				if (!transitionState?.interactive) {
 					// only consider when interactive transitions are not enabled
 					navigationController.interactivePopGestureRecognizer.delegate = navigationController;
 					navigationController.interactivePopGestureRecognizer.enabled = owner.enableSwipeBackNavigation;
