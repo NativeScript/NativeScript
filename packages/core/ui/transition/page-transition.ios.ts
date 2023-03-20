@@ -28,7 +28,7 @@ export class PageTransition extends Transition {
 			this.presenting = fromVC;
 		}
 		this.transitionController = PageTransitionController.initWithOwner(new WeakRef(this));
-		console.log('iosNavigatedController presenting:', this.presenting);
+		// console.log('iosNavigatedController presenting:', this.presenting);
 
 		this.operation = operation;
 		return this.transitionController;
@@ -41,17 +41,17 @@ export class PageTransition extends Transition {
 	}
 
 	setupInteractiveGesture(startCallback: () => void, view: View): () => void {
-		console.log(' -- setupInteractiveGesture --');
+		// console.log(' -- setupInteractiveGesture --');
 		this._interactiveStartCallback = startCallback;
 		if (!this._interactiveDismissGesture) {
-			console.log('setup but tearing down first!');
+			// console.log('setup but tearing down first!');
 			view.off('pan', this._interactiveDismissGesture);
 			this._interactiveDismissGesture = this._interactiveDismissGestureHandler.bind(this);
 		}
 		view.on('pan', this._interactiveDismissGesture);
 
 		this._interactiveGestureTeardown = () => {
-			console.log(`-- TEARDOWN setupInteractiveGesture --`);
+			// console.log(`-- TEARDOWN setupInteractiveGesture --`);
 			view.off('pan', this._interactiveDismissGesture);
 			this._interactiveDismissGesture = null;
 		};
@@ -123,7 +123,7 @@ class PercentInteractiveController extends UIPercentDrivenInteractiveTransition 
 
 	added = false;
 	startInteractiveTransition(transitionContext: UIViewControllerContextTransitioning) {
-		console.log('startInteractiveTransition');
+		// console.log('startInteractiveTransition');
 		this.transitionContext = transitionContext;
 
 		if (!this.started) {
@@ -252,21 +252,21 @@ class PageTransitionController extends NSObject implements UIViewControllerAnima
 	animateTransition(transitionContext: UIViewControllerContextTransitioning): void {
 		const owner = this.owner.deref();
 		if (owner) {
-			console.log('--- PageTransitionController animateTransition');
-			console.log('owner.presented:', owner.presented);
-			console.log('owner.presenting:', owner.presenting);
+			// console.log('--- PageTransitionController animateTransition');
+			// console.log('owner.presented:', owner.presented);
+			// console.log('owner.presenting:', owner.presenting);
 
 			// console.log('owner.id:', owner.id);
 			const state = SharedTransition.getState(owner.id);
 			if (!state) {
 				return;
 			}
-			console.log('state.activeType:', state.activeType);
-			console.log('operation:', owner.operation);
+			// console.log('state.activeType:', state.activeType);
+			// console.log('operation:', owner.operation);
 			// switch (state.activeType) {
 			switch (owner.operation) {
 				case UINavigationControllerOperation.Push: {
-					console.log('pushing!!');
+					// console.log('pushing!!');
 					// this.presented = toViewCtrl;
 					// this.presenting = fromViewCtrl;
 
@@ -446,7 +446,7 @@ class PageTransitionController extends NSObject implements UIViewControllerAnima
 					break;
 				}
 				case UINavigationControllerOperation.Pop: {
-					console.log('popping!');
+					// console.log('popping!');
 					transitionContext.containerView.insertSubviewBelowSubview(owner.presenting.view, owner.presented.view);
 
 					// console.log('transitionContext.containerView.subviews.count:', transitionContext.containerView.subviews.count);

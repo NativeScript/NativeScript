@@ -12,7 +12,7 @@ export class FadeTransition extends Transition {
 		this.presented = toVC;
 		this.presenting = fromVC;
 		this.operation = operation;
-		console.log('presenting:', this.presenting);
+		// console.log('presenting:', this.presenting);
 		return this.transitionController;
 	}
 }
@@ -39,7 +39,7 @@ export class FadeTransitionController extends NSObject implements UIViewControll
 	animateTransition(transitionContext: UIViewControllerContextTransitioning): void {
 		const owner = this.owner.deref();
 		if (owner) {
-			console.log('FadeTransitionController animateTransition:', owner.operation);
+			// console.log('FadeTransitionController animateTransition:', owner.operation);
 			const toView = owner.presented.view;
 			const originalToViewAlpha = toView.alpha;
 			const fromView = owner.presenting.view;

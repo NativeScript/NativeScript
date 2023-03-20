@@ -103,9 +103,9 @@ export class SharedTransition {
 	 * @param options
 	 * @returns a configured SharedTransition instance for use with navigational APIs.
 	 */
-	static custom(transition: Transition, options: SharedTransitionConfig): { instance: Transition } {
+	static custom(transition: Transition, options?: SharedTransitionConfig): { instance: Transition } {
 		SharedTransition.updateState(transition.id, {
-			...options,
+			...(options || {}),
 			instance: transition,
 			activeType: SharedTransitionAnimationType.present,
 		});

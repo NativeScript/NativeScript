@@ -44,7 +44,7 @@ export class SlideTransitionController extends NSObject implements UIViewControl
 	}
 
 	animateTransition(transitionContext: UIViewControllerContextTransitioning): void {
-		console.log('SlideTransitionController animateTransition');
+		// console.log('SlideTransitionController animateTransition');
 		const owner = this.owner.deref();
 		if (owner) {
 			const toView = owner.presented.view;
