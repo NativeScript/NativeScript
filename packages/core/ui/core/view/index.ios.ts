@@ -33,11 +33,9 @@ const majorVersion = iOSNativeHelper.MajorVersion;
 export class View extends ViewCommon implements ViewDefinition {
 	nativeViewProtected: UIView;
 	viewController: UIViewController;
-	transitionInteractiveCtrl: UIPercentDrivenInteractiveTransition;
 	private _popoverPresentationDelegate: IOSHelper.UIPopoverPresentationControllerDelegateImp;
 	private _adaptivePresentationDelegate: IOSHelper.UIAdaptivePresentationControllerDelegateImp;
 	private _transitioningDelegate: UIViewControllerTransitioningDelegateImpl;
-	private _interactiveDismissGesture: (args: PanGestureEventData) => void;
 
 	/**
 	 * Track modal open animated options to use same option upon close
@@ -471,18 +469,15 @@ export class View extends ViewCommon implements ViewDefinition {
 		if (options.transition) {
 			controller.modalPresentationStyle = UIModalPresentationStyle.Custom;
 			if (options.transition.instance) {
-				this._transitioningDelegate = UIViewControllerTransitioningDelegateImpl.initWithOwner(new WeakRef(options.transition.instance), new WeakRef(this));
+				this._transitioningDelegate = UIViewControllerTransitioningDelegateImpl.initWithOwner(new WeakRef(options.transition.instance));
 				controller.transitioningDelegate = this._transitioningDelegate;
+				this.transitionId = options.transition.instance.id;
 				const transitionState = SharedTransition.getState(options.transition.instance.id);
 				if (transitionState?.interactive?.dismiss) {
-					this._updateInteractiveTransition({
-						options: transitionState?.interactive?.dismiss,
-					});
 					// interactive transitions via gestures
 					// TODO - these could be typed as: boolean | (view: View) => void
 					// to allow users to define their own custom gesture dismissals
-					this._interactiveDismissGesture = this._interactiveDismissGestureHandler.bind(this);
-					this.on('pan', this._interactiveDismissGesture);
+					options.transition.instance.setupInteractiveGesture(this._closeModalCallback.bind(this), this);
 				}
 			}
 		} else if (options.fullscreen) {
@@ -565,47 +560,6 @@ export class View extends ViewCommon implements ViewDefinition {
 		controller = null;
 	}
 
-	private _interactiveDismissGestureHandler(args: PanGestureEventData) {
-		if (args?.ios?.view) {
-			this._updateInteractiveTransition({
-				began: true,
-				cancelled: false,
-			});
-			const percent = this.interactiveTransition?.options.percentFormula ? this.interactiveTransition?.options.percentFormula(args) : args.deltaY / (args.ios.view.bounds.size.height / 2);
-			if (SharedTransition.DEBUG) {
-				console.log('Interactive dismissal percentage:', percent);
-			}
-			switch (args.state) {
-				case GestureStateTypes.began:
-					if (this._closeModalCallback) {
-						this._closeModalCallback();
-					}
-					break;
-				case GestureStateTypes.changed:
-					if (percent < 1) {
-						if (this.transitionInteractiveCtrl) {
-							this.transitionInteractiveCtrl.updateInteractiveTransition(percent);
-						}
-					}
-					break;
-				case GestureStateTypes.cancelled:
-				case GestureStateTypes.ended:
-					if (this.transitionInteractiveCtrl) {
-						const finishThreshold = isNumber(this.interactiveTransition?.options?.finishThreshold) ? this.interactiveTransition?.options?.finishThreshold : 0.5;
-						if (percent > finishThreshold) {
-							this.transitionInteractiveCtrl.finishInteractiveTransition();
-						} else {
-							this._updateInteractiveTransition({
-								cancelled: true,
-							});
-							this.transitionInteractiveCtrl.cancelInteractiveTransition();
-						}
-					}
-					break;
-			}
-		}
-	}
-
 	protected _hideNativeModalView(parent: View, whenClosedCallback: () => void) {
 		if (!parent || !parent.viewController) {
 			Trace.error('Trying to hide modal view but no parent with viewController specified.');
@@ -627,10 +581,10 @@ export class View extends ViewCommon implements ViewDefinition {
 		}
 
 		parentController.dismissViewControllerAnimatedCompletion(animated, () => {
-			if (!this.interactiveTransition?.cancelled) {
+			const transitionState = SharedTransition.getState(this.transitionId);
+			if (!transitionState?.interactiveCancelled) {
 				this._transitioningDelegate = null;
-				this.transitionInteractiveCtrl = null;
-				this.off('pan', this._interactiveDismissGesture);
+				// this.off('pan', this._interactiveDismissGesture);
 				if (this._modalAnimatedOptions) {
 					this._modalAnimatedOptions.pop();
 				}
@@ -990,13 +944,11 @@ View.prototype._nativeBackgroundState = 'unset';
 @NativeClass
 class UIViewControllerTransitioningDelegateImpl extends NSObject implements UIViewControllerTransitioningDelegate {
 	owner: WeakRef<ModalTransition>;
-	ownerView: WeakRef<View>;
 	static ObjCProtocols = [UIViewControllerTransitioningDelegate];
 
-	static initWithOwner(owner: WeakRef<ModalTransition>, ownerView: WeakRef<View>) {
+	static initWithOwner(owner: WeakRef<ModalTransition>) {
 		const delegate = <UIViewControllerTransitioningDelegateImpl>UIViewControllerTransitioningDelegateImpl.new();
 		delegate.owner = owner;
-		delegate.ownerView = ownerView;
 		return delegate;
 	}
 
@@ -1019,12 +971,9 @@ class UIViewControllerTransitioningDelegateImpl extends NSObject implements UIVi
 	interactionControllerForDismissal?(animator: UIViewControllerAnimatedTransitioning): UIViewControllerInteractiveTransitioning {
 		const owner = this.owner?.deref();
 		if (owner?.iosInteractionDismiss) {
-			const ownerView = this.ownerView?.deref();
-			if (ownerView) {
-				if (ownerView.interactiveTransition?.began) {
-					ownerView.transitionInteractiveCtrl = owner.iosInteractionDismiss(animator);
-					return ownerView.transitionInteractiveCtrl;
-				}
+			const transitionState = SharedTransition.getState(owner.id);
+			if (transitionState?.interactiveBegan) {
+				return owner.iosInteractionDismiss(animator);
 			}
 		}
 		return null;
@@ -1034,14 +983,6 @@ class UIViewControllerTransitioningDelegateImpl extends NSObject implements UIVi
 		const owner = this.owner?.deref();
 		if (owner?.iosInteractionPresented) {
 			return owner.iosInteractionPresented(animator);
-		}
-		return null;
-	}
-
-	presentationControllerForPresentedViewControllerPresentingViewControllerSourceViewController?(presented: UIViewController, presenting: UIViewController, source: UIViewController): UIPresentationController {
-		const owner = this.owner?.deref();
-		if (owner?.iosPresentedViewController) {
-			return owner.iosPresentedViewController(presented, presenting, source);
 		}
 		return null;
 	}

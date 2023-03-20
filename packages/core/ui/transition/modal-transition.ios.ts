@@ -4,16 +4,20 @@ import { iOSNativeHelper } from '../../utils/native-helper';
 import { isNumber } from '../../utils/types';
 import { Transition } from '.';
 import { SharedTransition, SharedTransitionAnimationType, DEFAULT_DURATION, DEFAULT_SPRING } from './shared-transition';
+import { PanGestureEventData, GestureStateTypes } from '../gestures';
 
 export class ModalTransition extends Transition {
 	transitionController: ModalTransitionController;
 	interactiveController: UIPercentDrivenInteractiveTransition;
+	interactiveGestureRecognizer: UIScreenEdgePanGestureRecognizer;
 	presented: UIViewController;
 	presenting: UIViewController;
 	sharedElements: {
 		presented?: Array<{ view: View; startFrame?: CGRect; endFrame?: CGRect; snapshot?: UIImageView; startOpacity?: number; endOpacity?: number }>;
 		presenting?: Array<{ view: View; startFrame: CGRect; endFrame?: CGRect; snapshot?: UIImageView; startOpacity?: number; endOpacity?: number }>;
 	};
+	private _interactiveStartCallback: () => void;
+	private _interactiveDismissGesture: (args: any /*PanGestureEventData*/) => void;
 
 	iosPresentedController(presented: UIViewController, presenting: UIViewController, source: UIViewController): UIViewControllerAnimatedTransitioning {
 		this.transitionController = ModalTransitionController.initWithOwner(new WeakRef(this));
@@ -39,9 +43,60 @@ export class ModalTransition extends Transition {
 		return null;
 	}
 
-	iosPresentedViewController(presented: UIViewController, presenting: UIViewController, source: UIViewController): UIPresentationController {
-		// console.log('-- iosPresentedViewController --');
-		return null;
+	setupInteractiveGesture(startCallback: () => void, view: View) {
+		this._interactiveStartCallback = startCallback;
+		this._interactiveDismissGesture = this._interactiveDismissGestureHandler.bind(this);
+		view.on('pan', this._interactiveDismissGesture);
+		// this.interactiveGestureRecognizer = UIScreenEdgePanGestureRecognizer.alloc().initWithTargetAction()
+		// 			let edgeSwipeGestureRecognizer = UIScreenEdgePanGestureRecognizer(target: self, action: #selector(handleSwipe(_:)))
+		// edgeSwipeGestureRecognizer.edges = .left
+		// view.addGestureRecognizer(edgeSwipeGestureRecognizer)
+	}
+
+	private _interactiveDismissGestureHandler(args: PanGestureEventData) {
+		if (args?.ios?.view) {
+			const state = SharedTransition.getState(this.id);
+			// SharedTransition.updateState(this.id, {
+			// 	interactiveBegan: true,
+			// 	interactiveCancelled: false
+			// });
+			const percent = state.interactive?.dismiss?.percentFormula ? state.interactive.dismiss.percentFormula(args) : args.deltaY / (args.ios.view.bounds.size.height / 2);
+			if (SharedTransition.DEBUG) {
+				console.log('Interactive dismissal percentage:', percent);
+			}
+			switch (args.state) {
+				case GestureStateTypes.began:
+					SharedTransition.updateState(this.id, {
+						interactiveBegan: true,
+						interactiveCancelled: false,
+					});
+					if (this._interactiveStartCallback) {
+						this._interactiveStartCallback();
+					}
+					break;
+				case GestureStateTypes.changed:
+					if (percent < 1) {
+						if (this.interactiveController) {
+							this.interactiveController.updateInteractiveTransition(percent);
+						}
+					}
+					break;
+				case GestureStateTypes.cancelled:
+				case GestureStateTypes.ended:
+					if (this.interactiveController) {
+						const finishThreshold = isNumber(state.interactive?.dismiss?.finishThreshold) ? state.interactive.dismiss.finishThreshold : 0.5;
+						if (percent > finishThreshold) {
+							this.interactiveController.finishInteractiveTransition();
+						} else {
+							SharedTransition.updateState(this.id, {
+								interactiveCancelled: true,
+							});
+							this.interactiveController.cancelInteractiveTransition();
+						}
+					}
+					break;
+			}
+		}
 	}
 }
 
@@ -128,6 +183,7 @@ class PercentInteractiveController extends UIPercentDrivenInteractiveTransition 
 		const owner = this.owner?.deref();
 		if (owner && this.started) {
 			if (this.backgroundAnimation) {
+				this.backgroundAnimation.reversed = false;
 				const state = SharedTransition.getState(owner.id);
 				if (!state) {
 					SharedTransition.finishState(owner.id);
@@ -165,7 +221,7 @@ class ModalTransitionController extends NSObject implements UIViewControllerAnim
 	}
 
 	animateTransition(transitionContext: UIViewControllerContextTransitioning): void {
-		// console.log('ModalTransitionController animateTransition:', animationType);
+		// console.log('ModalTransitionController animateTransition');
 		const owner = this.owner.deref();
 		if (owner) {
 			// console.log('owner.id:', owner.id);

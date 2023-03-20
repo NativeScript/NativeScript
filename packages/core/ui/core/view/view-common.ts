@@ -96,7 +96,9 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public _modalParent: ViewCommon;
 	private _modalContext: any;
 	private _modal: ViewCommon;
-	interactiveTransition: InteractiveTransitionState;
+
+	// any active transition instance id for tracking state
+	transitionId: number;
 
 	private _measuredWidth: number;
 	private _measuredHeight: number;
@@ -248,13 +250,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		}
 
 		return false;
-	}
-
-	_updateInteractiveTransition(state: InteractiveTransitionState) {
-		this.interactiveTransition = {
-			...(this.interactiveTransition || {}),
-			...state,
-		};
 	}
 
 	_setupAsRootView(context: any): void {
@@ -423,16 +418,17 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 			};
 
 			const whenClosedCallback = () => {
-				if (this.interactiveTransition?.began) {
-					this._updateInteractiveTransition({
-						began: false,
+				const transitionState = SharedTransition.getState(this.transitionId);
+				if (transitionState?.interactiveBegan) {
+					SharedTransition.updateState(this.transitionId, {
+						interactiveBegan: false,
 					});
-					if (!this.interactiveTransition?.cancelled) {
+					if (!transitionState?.interactiveCancelled) {
 						cleanupModalViews();
 					}
 				}
 
-				if (!this.interactiveTransition?.cancelled) {
+				if (!transitionState?.interactiveCancelled) {
 					if (typeof options.closeCallback === 'function') {
 						options.closeCallback.apply(undefined, originalArgs);
 					}
@@ -441,7 +437,8 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 				}
 			};
 
-			if (!this.interactiveTransition?.began) {
+			const transitionState = SharedTransition.getState(this.transitionId);
+			if (!transitionState?.interactiveBegan) {
 				cleanupModalViews();
 			}
 

@@ -77,6 +77,8 @@ export { TimePicker } from './time-picker';
 export { Transition } from './transition';
 export { ModalTransition } from './transition/modal-transition';
 export { PageTransition } from './transition/page-transition';
+export { FadeTransition } from './transition/fade-transition';
+export { SlideTransition } from './transition/slide-transition';
 export { SharedTransition, SharedTransitionAnimationType } from './transition/shared-transition';
 export { WebView } from './web-view';
 export type { LoadEventData, WebViewNavigationType } from './web-view';

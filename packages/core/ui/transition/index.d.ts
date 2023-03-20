@@ -8,6 +8,9 @@ export declare class Transition {
 	getCurve(): any;
 	animateIOSTransition(transitionContext: any /*UIViewControllerContextTransitioning */, fromViewCtrl: any /* UIViewController */, toViewCtrl: any /* UIViewController */, operation: any /* UINavigationControllerOperation */): void;
 	createAndroidAnimator(transitionType: string): any;
+
+	setupInteractiveGesture?(startCallback: () => void, view: View): void;
+
 	iosDismissedController?(dismissed: any /* UIViewController */): any /* UIViewControllerAnimatedTransitioning */;
 
 	iosPresentedController?(presented: any /* UIViewController */, presenting: any /* UIViewController */, source: any /* UIViewController */): any /* UIViewControllerAnimatedTransitioning */;
@@ -16,7 +19,7 @@ export declare class Transition {
 
 	iosInteractionPresented?(animator: any /* UIViewControllerAnimatedTransitioning */): any /* UIViewControllerInteractiveTransitioning */;
 
-	iosPresentedViewController?(presented: any /* UIViewController */, presenting: any /* UIViewController */, source: any /* UIViewController */): any /* UIPresentationController */;
+	iosNavigatedController?(navigationController: any /* UINavigationController */, operation: number, fromVC: any /* UIViewController */, toVC: any /* UIViewController */): any /* UIViewControllerAnimatedTransitioning */;
 
 	androidFragmentTransactionCallback?(fragmentTransaction: any /* androidx.fragment.app.FragmentTransaction */, currentEntry: BackstackEntry, newEntry: BackstackEntry): void;
 }

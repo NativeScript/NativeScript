@@ -24,7 +24,7 @@ export interface SharedTransitionInteractiveOptions {
 	 * By default, we handle this via a formula like this for an interactive page back transition:
 	 * - return eventData.deltaX / (eventData.ios.view.bounds.size.width / 2);
 	 * @param eventData PanGestureEventData
-	 * @returns Should return a percentage value
+	 * @returns The percentage value to be used as the finish/cancel threshold
 	 */
 	percentFormula?: (eventData: PanGestureEventData) => number;
 }
@@ -63,6 +63,9 @@ export interface SharedTransitionConfig {
 export interface SharedTransitionState extends SharedTransitionConfig {
 	activeType?: SharedTransitionAnimationType;
 	toPage?: ViewBase;
+	// used internally for determining interactive gesture state of the transition
+	interactiveBegan?: boolean;
+	interactiveCancelled?: boolean;
 }
 type SharedTransitionPageProperties = {
 	x?: number;

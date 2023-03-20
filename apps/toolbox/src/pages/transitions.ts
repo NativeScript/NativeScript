@@ -1,4 +1,4 @@
-import { Observable, EventData, Page, ShowModalOptions, SharedTransition, ModalTransition, PageTransition } from '@nativescript/core';
+import { Observable, EventData, Page, ShowModalOptions, SharedTransition, ModalTransition, PageTransition, FadeTransition, SlideTransition } from '@nativescript/core';
 let page: Page;
 
 export function navigatingTo(args: EventData) {

@@ -1,5 +1,4 @@
 ﻿import type { Transition as TransitionType } from '.';
-import { Screen } from '../../platform';
 
 let transitionId = 0;
 export class Transition implements TransitionType {
