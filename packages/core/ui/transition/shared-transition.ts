@@ -1,4 +1,6 @@
 import type { Transition } from '.';
+import { Screen } from '../../platform';
+import { isNumber } from '../../utils/types';
 import { querySelectorAll, ViewBase } from '../core/view-base';
 import type { View } from '../core/view';
 import type { PanGestureEventData } from '../gestures';
@@ -7,6 +9,9 @@ export const DEFAULT_DURATION = 0.35;
 export const DEFAULT_SPRING = {
 	tension: 140,
 	friction: 10,
+	mass: 1,
+	velocity: 0,
+	delay: 0,
 };
 // always increment when adding new transitions to be able to track their state
 export enum SharedTransitionAnimationType {
@@ -50,15 +55,15 @@ export interface SharedTransitionConfig {
 	/**
 	 * View settings to start your transition.
 	 */
-	toPageStart?: SharedTransitionPageProperties;
+	pageStart?: SharedTransitionPageProperties;
 	/**
 	 * View settings to end your transition.
 	 */
-	toPageEnd?: SharedTransitionPageProperties;
+	pageEnd?: SharedTransitionPageProperties;
 	/**
 	 * View settings to end your transition for the 'from' (aka outgoing or dismissed) page.
 	 */
-	fromPageEnd?: SharedTransitionPageProperties;
+	pageReturn?: SharedTransitionPageProperties;
 }
 export interface SharedTransitionState extends SharedTransitionConfig {
 	activeType?: SharedTransitionAnimationType;
@@ -67,17 +72,15 @@ export interface SharedTransitionState extends SharedTransitionConfig {
 	interactiveBegan?: boolean;
 	interactiveCancelled?: boolean;
 }
-type SharedTransitionPageProperties = {
-	x?: number;
-	y?: number;
-	width?: number;
-	height?: number;
-	opacity?: number;
+export type SharedRect = { x?: number; y?: number; width?: number; height?: number };
+export type SharedProperties = SharedRect & { opacity?: number; scale?: { x?: number; y?: number } };
+type SharedTransitionPageProperties = SharedProperties & {
 	/**
 	 * Linear duration in milliseconds
 	 * Note: When this is defined, it will override spring options and use only linear animation.
 	 */
 	duration?: number;
+	sharedTransitionTags?: { [key: string]: SharedProperties };
 	/**
 	 * Spring animation settings.
 	 * Defaults to 140 tension with 10 friction.
@@ -173,7 +176,10 @@ export class SharedTransition {
 
 		// 2. Presenting view: gather all sharedTransitionTag views
 		const presentingSharedElements = <Array<View>>querySelectorAll(fromPage, 'sharedTransitionTag');
-		// console.log('presenting sharedTransitionTag total:', presentingSharedElements.length);
+		console.log(
+			'presenting sharedTransitionTags:',
+			presentingSharedElements.map((v) => v.sharedTransitionTag)
+		);
 
 		// 3. only handle sharedTransitionTag on presenting which match presented
 		const presentedTags = presentedSharedElements.map((v) => v.sharedTransitionTag);
@@ -183,4 +189,20 @@ export class SharedTransition {
 			presenting: presentingSharedElements,
 		};
 	}
+}
+
+export function getRectFromProps(props: SharedTransitionPageProperties, defaults?: SharedRect): SharedRect {
+	defaults = {
+		x: 0,
+		y: 0,
+		width: Screen.mainScreen.widthDIPs,
+		height: Screen.mainScreen.heightDIPs,
+		...(defaults || {}),
+	};
+	return {
+		x: isNumber(props?.x) ? props?.x : defaults.x,
+		y: isNumber(props?.y) ? props?.y : defaults.y,
+		width: isNumber(props?.width) ? props?.width : defaults.width,
+		height: isNumber(props?.height) ? props?.height : defaults.height,
+	};
 }

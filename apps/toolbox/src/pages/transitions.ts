@@ -38,11 +38,11 @@ export class TransitionsModel extends Observable {
 						finishThreshold: 0.5,
 					},
 				},
-				toPageStart: {
+				pageStart: {
 					y: 200,
 					// duration: 400,
 				},
-				fromPageEnd: {
+				pageReturn: {
 					y: 100,
 					// duration: 500,
 				},

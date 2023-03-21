@@ -148,7 +148,7 @@ class PercentInteractiveController extends UIPercentDrivenInteractiveTransition 
 					this.transitionContext.containerView.addSubview(p.snapshot);
 				}
 				const state = SharedTransition.getState(owner.id);
-				const props = state.fromPageEnd;
+				const props = state.pageReturn;
 				this.backgroundAnimation = UIViewPropertyAnimator.alloc().initWithDurationDampingRatioAnimations(1, 1, () => {
 					for (const p of owner.sharedElements.presenting) {
 						p.snapshot.frame = p.startFrame;
@@ -179,7 +179,7 @@ class PercentInteractiveController extends UIPercentDrivenInteractiveTransition 
 			}
 			if (this.backgroundAnimation) {
 				this.backgroundAnimation.reversed = true;
-				const duration = isNumber(state.toPageStart?.duration) ? state.toPageStart?.duration / 1000 : 0.35;
+				const duration = isNumber(state.pageStart?.duration) ? state.pageStart?.duration / 1000 : 0.35;
 				this.backgroundAnimation.continueAnimationWithTimingParametersDurationFactor(null, duration);
 				setTimeout(() => {
 					for (const p of owner.sharedElements.presented) {
@@ -211,7 +211,7 @@ class PercentInteractiveController extends UIPercentDrivenInteractiveTransition 
 					return;
 				}
 
-				const duration = isNumber(state.fromPageEnd?.duration) ? state.fromPageEnd?.duration / 1000 : 0.35;
+				const duration = isNumber(state.pageReturn?.duration) ? state.pageReturn?.duration / 1000 : 0.35;
 				this.backgroundAnimation.continueAnimationWithTimingParametersDurationFactor(null, duration);
 				setTimeout(() => {
 					for (const presenting of owner.sharedElements.presenting) {
@@ -396,7 +396,7 @@ class PageTransitionController extends NSObject implements UIViewControllerAnima
 					};
 
 					// starting page properties
-					const toProps = state.toPageStart;
+					const toProps = state.pageStart;
 					owner.presented.view.alpha = isNumber(toProps?.opacity) ? toProps?.opacity : 0;
 
 					const startX = isNumber(toProps?.x) ? toProps?.x : Screen.mainScreen.widthDIPs;
@@ -406,7 +406,7 @@ class PageTransitionController extends NSObject implements UIViewControllerAnima
 					owner.presented.view.frame = CGRectMake(startX, startY, startWidth, startHeight);
 
 					const animateProperties = () => {
-						const props = state.toPageEnd;
+						const props = state.pageEnd;
 						// animate page properties to the following:
 						owner.presented.view.alpha = isNumber(props?.opacity) ? props?.opacity : 1;
 
@@ -432,7 +432,7 @@ class PageTransitionController extends NSObject implements UIViewControllerAnima
 						const spring = toProps?.spring;
 						iOSNativeHelper.animateWithSpring({
 							tension: isNumber(spring?.tension) ? spring?.tension : DEFAULT_SPRING.tension,
-							friction: isNumber(spring?.friction) ? spring?.tension : DEFAULT_SPRING.friction,
+							friction: isNumber(spring?.friction) ? spring?.friction : DEFAULT_SPRING.friction,
 							animations: () => {
 								animateProperties();
 
@@ -492,7 +492,7 @@ class PageTransitionController extends NSObject implements UIViewControllerAnima
 						}
 					};
 
-					const props = state.fromPageEnd;
+					const props = state.pageReturn;
 
 					const animateProperties = () => {
 						owner.presented.view.alpha = isNumber(props?.opacity) ? props?.opacity : 0;
@@ -520,7 +520,7 @@ class PageTransitionController extends NSObject implements UIViewControllerAnima
 						const spring = props?.spring;
 						iOSNativeHelper.animateWithSpring({
 							tension: isNumber(spring?.tension) ? spring?.tension : DEFAULT_SPRING.tension,
-							friction: isNumber(spring?.friction) ? spring?.tension : DEFAULT_SPRING.friction,
+							friction: isNumber(spring?.friction) ? spring?.friction : DEFAULT_SPRING.friction,
 							animations: () => {
 								animateProperties();
 
