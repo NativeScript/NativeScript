@@ -21,6 +21,7 @@ function ensureKeyframeAnimationModule() {
 import * as capm from './css-animation-parser';
 import { sanitizeModuleName } from '../builder/module-name-sanitizer';
 import { resolveModuleName } from '../../module-name-resolver';
+import { cleanupImportantFlags } from './css-utils';
 
 let cssAnimationParserModule: typeof capm;
 function ensureCssAnimationParserModule() {
@@ -563,7 +564,6 @@ export class CssState {
 		const view = this.viewRef.get();
 		if (!view) {
 			Trace.write(`${matchingSelectors} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
-
 			return;
 		}
 
@@ -579,7 +579,8 @@ export class CssState {
 		const replacementFunc = (g) => g[1].toUpperCase();
 
 		for (const property in newPropertyValues) {
-			const value = newPropertyValues[property];
+			const value = cleanupImportantFlags(newPropertyValues[property], property);
+
 			const isCssExp = isCssVariableExpression(value) || isCssCalcExpression(value);
 
 			if (isCssExp) {
