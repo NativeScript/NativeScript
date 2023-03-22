@@ -1,4 +1,5 @@
 import type { Transition } from '.';
+import { Observable } from '../../data/observable';
 import { Screen } from '../../platform';
 import { isNumber } from '../../utils/types';
 import { querySelectorAll, ViewBase } from '../core/view-base';
@@ -35,10 +36,6 @@ export interface SharedTransitionInteractiveOptions {
 }
 export interface SharedTransitionConfig {
 	/**
-	 * Page which will start the transition.
-	 */
-	page?: ViewBase;
-	/**
 	 * Preconfigured transition or your own custom configured one.
 	 */
 	instance?: Transition;
@@ -66,6 +63,10 @@ export interface SharedTransitionConfig {
 	pageReturn?: SharedTransitionPageProperties;
 }
 export interface SharedTransitionState extends SharedTransitionConfig {
+	/**
+	 * Page which will start the transition.
+	 */
+	page?: ViewBase;
 	activeType?: SharedTransitionAnimationType;
 	toPage?: ViewBase;
 	// used internally for determining interactive gesture state of the transition
@@ -74,6 +75,14 @@ export interface SharedTransitionState extends SharedTransitionConfig {
 }
 export type SharedRect = { x?: number; y?: number; width?: number; height?: number };
 export type SharedProperties = SharedRect & { opacity?: number; scale?: { x?: number; y?: number } };
+export type SharedSpringProperties = {
+	tension?: number;
+	friction?: number;
+	mass?: number;
+	delay?: number;
+	velocity?: number;
+	animateOptions?: any /* ios only: UIViewAnimationOptions */;
+};
 type SharedTransitionPageProperties = SharedProperties & {
 	/**
 	 * Linear duration in milliseconds
@@ -85,15 +94,9 @@ type SharedTransitionPageProperties = SharedProperties & {
 	 * Spring animation settings.
 	 * Defaults to 140 tension with 10 friction.
 	 */
-	spring?: {
-		tension?: number;
-		friction?: number;
-		mass?: number;
-		delay?: number;
-		velocity?: number;
-		animateOptions?: any /* ios only: UIViewAnimationOptions */;
-	};
+	spring?: SharedSpringProperties;
 };
+let sharedTransitionEvents: Observable;
 /**
  * Shared Element Transitions (preview)
  * Allows you to auto animate between shared elements on two different screesn to create smooth navigational experiences.
@@ -114,6 +117,15 @@ export class SharedTransition {
 		});
 		return { instance: transition };
 	}
+	static events() {
+		if (!sharedTransitionEvents) {
+			sharedTransitionEvents = new Observable();
+		}
+		return sharedTransitionEvents;
+	}
+	static startedEvent = 'SharedTransitionStartedEvent';
+	static finishedEvent = 'SharedTransitionFinishedEvent';
+	static cancelledEvent = 'SharedTransitionCancelledEvent';
 
 	/**
 	 * Enable to see various console logging output of Shared Element Transition behavior.
@@ -145,13 +157,13 @@ export class SharedTransition {
 	 * @private
 	 */
 	static getState(id: number) {
-		return SharedTransition.currentStack.find((t) => t.instance.id === id);
+		return SharedTransition.currentStack?.find((t) => t.instance.id === id);
 	}
 	/**
 	 * @private
 	 */
 	static finishState(id: number) {
-		const index = SharedTransition.currentStack.findIndex((t) => t.instance.id === id);
+		const index = SharedTransition.currentStack?.findIndex((t) => t.instance.id === id);
 		if (index > -1) {
 			SharedTransition.currentStack.splice(index, 1);
 		}
@@ -176,10 +188,10 @@ export class SharedTransition {
 
 		// 2. Presenting view: gather all sharedTransitionTag views
 		const presentingSharedElements = <Array<View>>querySelectorAll(fromPage, 'sharedTransitionTag');
-		console.log(
-			'presenting sharedTransitionTags:',
-			presentingSharedElements.map((v) => v.sharedTransitionTag)
-		);
+		// console.log(
+		// 	'presenting sharedTransitionTags:',
+		// 	presentingSharedElements.map((v) => v.sharedTransitionTag)
+		// );
 
 		// 3. only handle sharedTransitionTag on presenting which match presented
 		const presentedTags = presentedSharedElements.map((v) => v.sharedTransitionTag);
@@ -204,5 +216,24 @@ export function getRectFromProps(props: SharedTransitionPageProperties, defaults
 		y: isNumber(props?.y) ? props?.y : defaults.y,
 		width: isNumber(props?.width) ? props?.width : defaults.width,
 		height: isNumber(props?.height) ? props?.height : defaults.height,
+	};
+}
+
+export function getSpringFromProps(props: SharedSpringProperties) {
+	return {
+		tension: isNumber(props?.tension) ? props?.tension : DEFAULT_SPRING.tension,
+		friction: isNumber(props?.friction) ? props?.friction : DEFAULT_SPRING.friction,
+		mass: isNumber(props?.mass) ? props?.mass : DEFAULT_SPRING.mass,
+		velocity: isNumber(props?.velocity) ? props?.velocity : DEFAULT_SPRING.velocity,
+		delay: isNumber(props?.delay) ? props?.delay : DEFAULT_SPRING.delay,
+	};
+}
+
+export function getPageStartDefaultsForType(type: 'page' | 'modal') {
+	return {
+		x: type === 'page' ? Screen.mainScreen.widthDIPs : 0,
+		y: type === 'page' ? 0 : Screen.mainScreen.heightDIPs,
+		width: Screen.mainScreen.widthDIPs,
+		height: Screen.mainScreen.heightDIPs,
 	};
 }

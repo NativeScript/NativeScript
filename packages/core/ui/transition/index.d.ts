@@ -1,7 +1,26 @@
-﻿import type { BackstackEntry } from '../frame';
+﻿import type { View } from '../core/view';
+import type { BackstackEntry } from '../frame';
+export type SharedElementSettings = { view: View; startFrame: any; endFrame?: any; startOpacity?: number; endOpacity?: number; scale?: { x?: number; y?: number }; startTransform?: any; snapshot?: any };
+export type SharedTransitionType = 'page' | 'modal';
+export interface SharedInteractiveState {
+	started?: false;
+	added?: boolean;
+	transitionContext?: any;
+	propertyAnimator?: any;
+}
 
 export declare class Transition {
 	id: number;
+	transitionController?: any;
+	interactiveController?: any;
+	presented?: any;
+	presenting?: any;
+	sharedElements?: {
+		presented?: Array<SharedElementSettings>;
+		presenting?: Array<SharedElementSettings>;
+		// independent sharedTransitionTags which are part of the shared transition but only on one page
+		independent?: Array<SharedElementSettings & { isPresented?: boolean }>;
+	};
 	static AndroidTransitionType?: { enter?: string; exit?: string; popEnter?: string; popExit?: string };
 	constructor(duration?: number, nativeCurve?: any /* UIViewAnimationCurve | string | CubicBezierAnimationCurve | android.view.animation.Interpolator | android.view.animation.LinearInterpolator */);
 	getDuration(): number;
