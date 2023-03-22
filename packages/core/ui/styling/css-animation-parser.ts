@@ -6,13 +6,13 @@ import { timeConverter, animationTimingFunctionConverter } from '../styling/conv
 import { transformConverter } from '../styling/style-properties';
 
 const ANIMATION_PROPERTY_HANDLERS = Object.freeze({
-	'animation-name': (info: any, value: any) => (info.name = value),
+	'animation-name': (info: any, value: any) => (info.name = value.replaceAll(/['"]/g, '')),
 	'animation-duration': (info: any, value: any) => (info.duration = timeConverter(value)),
 	'animation-delay': (info: any, value: any) => (info.delay = timeConverter(value)),
 	'animation-timing-function': (info: any, value: any) => (info.curve = animationTimingFunctionConverter(value)),
 	'animation-iteration-count': (info: any, value: any) => (info.iterations = value === 'infinite' ? Number.POSITIVE_INFINITY : parseFloat(value)),
 	'animation-direction': (info: any, value: any) => (info.isReverse = value === 'reverse'),
-	'animation-fill-mode': (info: any, value: any) => (info.isForwards = value === 'forwards'),
+	'animation-fill-mode': (info: any, value: any) => (info.isForwards = value === 'forwards' || value === 'both'),
 });
 
 export class CssAnimationParser {
@@ -86,39 +86,87 @@ export class CssAnimationParser {
 	}
 }
 
-function keyframeAnimationsFromCSSProperty(value: any, animations: KeyframeAnimationInfo[]) {
-	if (typeof value === 'string') {
-		const values = value.split(/[,]+/);
-		for (const parsedValue of values) {
-			const animationInfo = new KeyframeAnimationInfo();
-			const arr = (<string>parsedValue).trim().split(/[ ]+/);
+/**
+ * @see https://w3c.github.io/csswg-drafts/css-animations/#propdef-animation
+ * @see https://developer.mozilla.org/en-US/docs/Web/CSS/animation
+ * @internal - exported for testing
+ * @param value
+ * @param animations
+ */
+export function keyframeAnimationsFromCSSProperty(value: any, animations: KeyframeAnimationInfo[]) {
+	if (typeof value !== 'string') {
+		return;
+	}
 
-			if (arr.length > 0) {
-				animationInfo.name = arr[0];
-			}
-			if (arr.length > 1) {
-				animationInfo.duration = timeConverter(arr[1]);
-			}
-			if (arr.length > 2) {
-				animationInfo.curve = animationTimingFunctionConverter(arr[2]);
-			}
-			if (arr.length > 3) {
-				animationInfo.delay = timeConverter(arr[3]);
-			}
-			if (arr.length > 4) {
-				animationInfo.iterations = parseInt(arr[4]);
-			}
-			if (arr.length > 5) {
-				animationInfo.isReverse = arr[4] === 'reverse';
-			}
-			if (arr.length > 6) {
-				animationInfo.isForwards = arr[5] === 'forwards';
-			}
-			if (arr.length > 7) {
-				throw new Error('Invalid value for animation: ' + value);
-			}
-			animations.push(animationInfo);
+	if (value.trim().length === 0) {
+		return;
+	}
+
+	const isTime = (v: string) => !!v.match(/\dm?s$/g);
+	const isTimingFunction = (v: string) => !!v.match(/ease|linear|ease-in|ease-out|ease-in-out|spring|cubic-bezier/g);
+	const isIterationCount = (v: string) => !!v.match(/infinite|[\d.]+$/g);
+	const isDirection = (v: string) => !!v.match(/normal|reverse|alternate|alternate-reverse/g);
+	const isFillMode = (v: string) => !!v.match(/none|forwards|backwards|both/g);
+	const isPlayState = (v: string) => !!v.match(/running|paused/g);
+
+	const values = value.split(/,+/);
+	for (const parsedValue of values) {
+		const animationInfo = new KeyframeAnimationInfo();
+		const arr = (<string>parsedValue).trim().split(/\s+/);
+
+		const [duration, delay] = arr.filter(isTime);
+		const [timing] = arr.filter(isTimingFunction);
+		const [iterationCount] = arr.filter(isIterationCount);
+		const [direction] = arr.filter(isDirection);
+		const [fillMode] = arr.filter(isFillMode);
+		const [playState] = arr.filter(isPlayState);
+		const [name] = arr.filter((v) => {
+			// filter out "consumed" values
+			return ![duration, delay, timing, iterationCount, direction, fillMode, playState].filter(Boolean).includes(v);
+		});
+
+		// console.log({
+		// 	duration,
+		// 	delay,
+		// 	timing,
+		// 	iterationCount,
+		// 	direction,
+		// 	fillMode,
+		// 	playState,
+		// 	name,
+		// });
+
+		if (duration) {
+			ANIMATION_PROPERTY_HANDLERS['animation-duration'](animationInfo, duration);
 		}
+		if (delay) {
+			ANIMATION_PROPERTY_HANDLERS['animation-delay'](animationInfo, delay);
+		}
+		if (timing) {
+			ANIMATION_PROPERTY_HANDLERS['animation-timing-function'](animationInfo, timing);
+		}
+		if (iterationCount) {
+			ANIMATION_PROPERTY_HANDLERS['animation-iteration-count'](animationInfo, iterationCount);
+		}
+		if (direction) {
+			ANIMATION_PROPERTY_HANDLERS['animation-direction'](animationInfo, direction);
+		}
+		if (fillMode) {
+			ANIMATION_PROPERTY_HANDLERS['animation-fill-mode'](animationInfo, fillMode);
+		}
+		if (playState) {
+			// TODO: implement play state? Currently not supported...
+		}
+		if (name) {
+			ANIMATION_PROPERTY_HANDLERS['animation-name'](animationInfo, name);
+		} else {
+			// based on the SPEC we should set the name to 'none' if no name is provided
+			// however we just don't set the name at all.
+			// perhaps we should set it to 'none' and handle it accordingly.
+			// animationInfo.name = 'none'
+		}
+
+		animations.push(animationInfo);
 	}
 }
 
