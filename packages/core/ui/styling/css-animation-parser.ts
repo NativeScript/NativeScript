@@ -64,6 +64,7 @@ export class CssAnimationParser {
 				if (current === undefined) {
 					current = <KeyframeInfo>{};
 					current.duration = time;
+					current.declarations = [];
 					parsedKeyframes[time] = current;
 				}
 				for (const declaration of keyframe.declarations) {
@@ -71,7 +72,7 @@ export class CssAnimationParser {
 						current.curve = animationTimingFunctionConverter(declaration.value);
 					}
 				}
-				current.declarations = declarations;
+				current.declarations = current.declarations.concat(declarations);
 			}
 		}
 		const array = [];
@@ -174,9 +175,9 @@ export function parseKeyframeDeclarations(unparsedKeyframeDeclarations: Keyframe
 	const declarations = unparsedKeyframeDeclarations.reduce((declarations, { property: unparsedProperty, value: unparsedValue }) => {
 		const property = CssAnimationProperty._getByCssName(unparsedProperty);
 
-		if (typeof unparsedProperty === 'string' && property && property._valueConverter) {
+		if (typeof unparsedProperty === 'string' && property?._valueConverter) {
 			declarations[property.name] = property._valueConverter(<string>unparsedValue);
-		} else if (typeof unparsedValue === 'string' && unparsedProperty === 'transform') {
+		} else if (unparsedProperty === 'transform') {
 			const transformations = transformConverter(unparsedValue);
 			Object.assign(declarations, transformations);
 		}
