@@ -43,6 +43,8 @@ describe('css-animation-parser', () => {
 			'ease-out': CoreTypes.AnimationCurve.easeOut,
 			'ease-in-out': CoreTypes.AnimationCurve.easeInOut,
 			spring: CoreTypes.AnimationCurve.spring,
+			'cubic-bezier(0.1, 1.0, 0.5, 0.5)': CoreTypes.AnimationCurve.cubicBezier(0.1, 1.0, 0.5, 0.5),
+			'cubic-bezier(0.42, 0.0, 1.0, 1.0);': CoreTypes.AnimationCurve.cubicBezier(0.42, 0.0, 1.0, 1.0),
 		};
 
 		it('parses duration', () => {
@@ -69,8 +71,8 @@ describe('css-animation-parser', () => {
 
 		it('parses curve', () => {
 			Object.entries(curves).forEach(([curveString, curve]) => {
-				const animation = testSingleAnimation(`0s ${curveString}`);
-				expect(animation.curve).toBe(curve);
+				const animation = testSingleAnimation(`${curveString}`);
+				expect(animation.curve).toEqual(curve);
 			});
 		});
 
@@ -79,13 +81,13 @@ describe('css-animation-parser', () => {
 				const animation1 = testSingleAnimation(`225ms 300ms ${curveString}`);
 				expect(animation1.duration).toBe(225);
 				expect(animation1.delay).toBe(300);
-				expect(animation1.curve).toBe(curve);
+				expect(animation1.curve).toEqual(curve);
 
 				// curve and delay can be swapped
 				const animation2 = testSingleAnimation(`225ms ${curveString} 300ms`);
 				expect(animation2.duration).toBe(225);
 				expect(animation2.delay).toBe(300);
-				expect(animation2.curve).toBe(curve);
+				expect(animation2.curve).toEqual(curve);
 			});
 		});
 

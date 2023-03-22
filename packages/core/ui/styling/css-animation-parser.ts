@@ -103,6 +103,16 @@ export function keyframeAnimationsFromCSSProperty(value: any, animations: Keyfra
 		return;
 	}
 
+	/**
+	 * Matches whitespace except if the whitespace is contained in parenthesis - ex. cubic-bezier(1, 1, 1, 1).
+	 */
+	const VALUE_SPLIT_RE = /\s(?![^(]*\))/;
+
+	/**
+	 * Matches commas except if the comma is contained in parenthesis - ex. cubic-bezier(1, 1, 1, 1).
+	 */
+	const MULTIPLE_SPLIT_RE = /,(?![^(]*\))/;
+
 	const isTime = (v: string) => !!v.match(/\dm?s$/g);
 	const isTimingFunction = (v: string) => !!v.match(/ease|linear|ease-in|ease-out|ease-in-out|spring|cubic-bezier/g);
 	const isIterationCount = (v: string) => !!v.match(/infinite|[\d.]+$/g);
@@ -110,18 +120,18 @@ export function keyframeAnimationsFromCSSProperty(value: any, animations: Keyfra
 	const isFillMode = (v: string) => !!v.match(/none|forwards|backwards|both/g);
 	const isPlayState = (v: string) => !!v.match(/running|paused/g);
 
-	const values = value.split(/,+/);
+	const values = value.split(MULTIPLE_SPLIT_RE);
 	for (const parsedValue of values) {
 		const animationInfo = new KeyframeAnimationInfo();
-		const arr = (<string>parsedValue).trim().split(/\s+/);
+		const parts = (<string>parsedValue).trim().split(VALUE_SPLIT_RE);
 
-		const [duration, delay] = arr.filter(isTime);
-		const [timing] = arr.filter(isTimingFunction);
-		const [iterationCount] = arr.filter(isIterationCount);
-		const [direction] = arr.filter(isDirection);
-		const [fillMode] = arr.filter(isFillMode);
-		const [playState] = arr.filter(isPlayState);
-		const [name] = arr.filter((v) => {
+		const [duration, delay] = parts.filter(isTime);
+		const [timing] = parts.filter(isTimingFunction);
+		const [iterationCount] = parts.filter(isIterationCount);
+		const [direction] = parts.filter(isDirection);
+		const [fillMode] = parts.filter(isFillMode);
+		const [playState] = parts.filter(isPlayState);
+		const [name] = parts.filter((v) => {
 			// filter out "consumed" values
 			return ![duration, delay, timing, iterationCount, direction, fillMode, playState].filter(Boolean).includes(v);
 		});
