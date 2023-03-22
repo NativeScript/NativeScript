@@ -7,7 +7,7 @@ import { transformConverter } from '../styling/style-properties';
 import { cleanupImportantFlags } from './css-utils';
 
 const ANIMATION_PROPERTY_HANDLERS = Object.freeze({
-	'animation-name': (info: any, value: any) => (info.name = value.replaceAll(/['"]/g, '')),
+	'animation-name': (info: any, value: any) => (info.name = value.replace(/['"]/g, '')),
 	'animation-duration': (info: any, value: any) => (info.duration = timeConverter(value)),
 	'animation-delay': (info: any, value: any) => (info.delay = timeConverter(value)),
 	'animation-timing-function': (info: any, value: any) => (info.curve = animationTimingFunctionConverter(value)),

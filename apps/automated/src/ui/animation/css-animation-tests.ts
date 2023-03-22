@@ -13,17 +13,14 @@ const DELTA = 1;
 const SCALE_DELTA = 0.001;
 
 function createAnimationFromCSS(css: string, name: string): keyframeAnimation.KeyframeAnimationInfo {
-	let scope = new StyleScope();
+	const scope = new StyleScope();
 	scope.css = css;
-	scope.ensureSelectors();
-	let selector = findSelectorInScope(scope, name);
-	if (selector !== undefined) {
-		let animation = scope.getAnimations(selector.ruleset)[0];
+	const selector = findSelectorInScope(scope, name);
+	if (selector) {
+		const animation = scope.getAnimations(selector.ruleset)[0];
 
 		return animation;
 	}
-
-	return undefined;
 }
 
 function findSelectorInScope(scope: StyleScope, cssClass: string): SelectorCore {
