@@ -1,5 +1,7 @@
 // @ts-nocheck
 global.WeakRef.prototype.get = global.WeakRef.prototype.deref;
+global.NativeClass = function () {};
+global.NSObject = class NSObject {};
 global.NSString = {
 	stringWithString() {
 		return {
