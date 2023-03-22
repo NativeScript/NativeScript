@@ -257,8 +257,8 @@ allTests['SEGMENTED-BAR'] = segmentedBarTests;
 import * as lifecycle from './ui/lifecycle/lifecycle-tests';
 allTests['LIFECYCLE'] = lifecycle;
 
-// import * as cssAnimationTests from './ui/animation/css-animation-tests';
-// allTests['CSS-ANIMATION'] = cssAnimationTests;
+import * as cssAnimationTests from './ui/animation/css-animation-tests';
+allTests['CSS-ANIMATION'] = cssAnimationTests;
 
 import * as transitionTests from './navigation/transition-tests';
 allTests['TRANSITIONS'] = transitionTests;
