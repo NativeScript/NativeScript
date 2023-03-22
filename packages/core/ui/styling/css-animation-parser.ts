@@ -4,6 +4,7 @@ import { KeyframeAnimationInfo, KeyframeDeclaration, KeyframeInfo, UnparsedKeyfr
 import { timeConverter, animationTimingFunctionConverter } from '../styling/converters';
 
 import { transformConverter } from '../styling/style-properties';
+import { cleanupImportantFlags } from './css-utils';
 
 const ANIMATION_PROPERTY_HANDLERS = Object.freeze({
 	'animation-name': (info: any, value: any) => (info.name = value),
@@ -125,6 +126,7 @@ function keyframeAnimationsFromCSSProperty(value: any, animations: KeyframeAnima
 export function parseKeyframeDeclarations(unparsedKeyframeDeclarations: KeyframeDeclaration[]): KeyframeDeclaration[] {
 	const declarations = unparsedKeyframeDeclarations.reduce((declarations, { property: unparsedProperty, value: unparsedValue }) => {
 		const property = CssAnimationProperty._getByCssName(unparsedProperty);
+		unparsedValue = cleanupImportantFlags(unparsedValue, property?.cssLocalName);
 
 		if (typeof unparsedProperty === 'string' && property && property._valueConverter) {
 			declarations[property.name] = property._valueConverter(<string>unparsedValue);
