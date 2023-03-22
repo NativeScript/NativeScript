@@ -4,7 +4,7 @@ import { KeyframeAnimationInfo, KeyframeDeclaration, KeyframeInfo, UnparsedKeyfr
 import { timeConverter, animationTimingFunctionConverter } from '../styling/converters';
 
 import { transformConverter } from '../styling/style-properties';
-import { Trace } from '../../trace';
+import { cleanupImportantFlags } from './css-utils';
 
 const ANIMATION_PROPERTY_HANDLERS = Object.freeze({
 	'animation-name': (info: any, value: any) => (info.name = value),
@@ -126,11 +126,7 @@ function keyframeAnimationsFromCSSProperty(value: any, animations: KeyframeAnima
 export function parseKeyframeDeclarations(unparsedKeyframeDeclarations: KeyframeDeclaration[]): KeyframeDeclaration[] {
 	const declarations = unparsedKeyframeDeclarations.reduce((declarations, { property: unparsedProperty, value: unparsedValue }) => {
 		const property = CssAnimationProperty._getByCssName(unparsedProperty);
-		const indexOfImportantOccurence: number = unparsedValue.indexOf('!important');
-		if (indexOfImportantOccurence >= 0) {
-			unparsedValue = unparsedValue.substring(0, indexOfImportantOccurence).trim();
-			Trace.write(`The !important css rule is currently not supported. Property: ${property.cssLocalName}`, Trace.categories.Style, Trace.messageType.warn);
-		}
+		unparsedValue = cleanupImportantFlags(unparsedValue, property?.cssLocalName);
 
 		if (typeof unparsedProperty === 'string' && property && property._valueConverter) {
 			declarations[property.name] = property._valueConverter(<string>unparsedValue);

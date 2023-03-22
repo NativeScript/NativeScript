@@ -21,6 +21,7 @@ function ensureKeyframeAnimationModule() {
 import * as capm from './css-animation-parser';
 import { sanitizeModuleName } from '../builder/module-name-sanitizer';
 import { resolveModuleName } from '../../module-name-resolver';
+import { cleanupImportantFlags } from './css-utils';
 
 let cssAnimationParserModule: typeof capm;
 function ensureCssAnimationParserModule() {
@@ -578,12 +579,7 @@ export class CssState {
 		const replacementFunc = (g) => g[1].toUpperCase();
 
 		for (const property in newPropertyValues) {
-			let value = newPropertyValues[property];
-			const indexOfImportantOccurence: number = value.indexOf('!important');
-			if (indexOfImportantOccurence >= 0) {
-				value = value.substring(0, indexOfImportantOccurence).trim();
-				Trace.write(`The !important css rule is currently not supported. Property: ${property}`, Trace.categories.Style, Trace.messageType.warn);
-			}
+			const value = cleanupImportantFlags(newPropertyValues[property], property);
 
 			const isCssExp = isCssVariableExpression(value) || isCssCalcExpression(value);
 
