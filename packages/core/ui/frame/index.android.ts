@@ -21,6 +21,7 @@ import { Device } from '../../platform';
 import { profile } from '../../profiling';
 import { android as androidApplication } from '../../application';
 import { setSuspended } from '../../application/application-common';
+import { ad } from '../../utils/native-helper';
 
 export * from './frame-common';
 
@@ -94,7 +95,7 @@ export class Frame extends FrameBase {
 	}
 
 	public static reloadPage(context?: ModuleContext): void {
-		const activity = application.android.foregroundActivity;
+		const activity = ad.getCurrentActivity();
 		const callbacks: AndroidActivityCallbacks = activity[CALLBACKS];
 		if (callbacks) {
 			const rootView: View = callbacks.getRootView();
@@ -147,7 +148,8 @@ export class Frame extends FrameBase {
 
 		// _onAttachedToWindow called from OS again after it was detach
 		// still happens with androidx.fragment:1.3.2
-		const lifecycleState = (androidApplication.foregroundActivity?.getLifecycle?.() || androidApplication.startActivity?.getLifecycle?.())?.getCurrentState() || androidx.lifecycle.Lifecycle.State.CREATED;
+		const activity = ad.getCurrentActivity();
+		const lifecycleState = activity?.getLifecycle?.()?.getCurrentState() || androidx.lifecycle.Lifecycle.State.CREATED;
 		if ((this._manager && this._manager.isDestroyed()) || !lifecycleState.isAtLeast(androidx.lifecycle.Lifecycle.State.CREATED)) {
 			return;
 		}
