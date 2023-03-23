@@ -27,7 +27,7 @@ export class FPSCallback implements definition.FPSCallback {
 	}
 
 	private _isNativeFramesSupported() {
-		return typeof (<any>global).__postFrameCallback === 'function' && typeof (<any>global).__removeFrameCallback === 'function';
+		return typeof (global as any).__postFrameCallback === 'function' && typeof global.__removeFrameCallback === 'function';
 	}
 
 	public start() {

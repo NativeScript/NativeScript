@@ -295,9 +295,9 @@ function setup(parent?: LayoutBase): Label {
 
 function time(): number {
 	if (global.android) {
-		return (<any>global).java.lang.System.nanoTime() / 1000000;
+		return global.java.lang.System.nanoTime() / 1000000;
 	} else {
-		return (<any>global).CACurrentMediaTime() * 1000;
+		return global.CACurrentMediaTime() * 1000;
 	}
 }
 

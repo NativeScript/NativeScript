@@ -43,12 +43,19 @@ public class BoxShadowDrawable extends LayerDrawable {
 		Log.d(TAG, "Constructing BoxShadowDrawable!");
 
 		this.shadowLayer = new ShapeDrawable(new RectShape());
-		this.overlayLayer = this.createOverlayLayer();
 		this.wrappedLayer = wrappedDrawable;
+
+		if(shouldHideOverlayLayer()) {
+			this.overlayLayer = null;
+		} else {
+			this.overlayLayer = this.createOverlayLayer();
+		}
 
 		// add our layers
 		this.addLayer(shadowLayer);
-		this.addLayer(overlayLayer);
+		if(this.overlayLayer != null) {
+			this.addLayer(overlayLayer);
+		}
 		this.addLayer(wrappedLayer);
 
 		this.setValue(value);
@@ -100,7 +107,9 @@ public class BoxShadowDrawable extends LayerDrawable {
 			if (!Arrays.equals(outerRadius, currentCornerRadii)) {
 				Log.d(TAG, "Update layer shape");
 				shadowLayer.setShape(new RoundRectShape(outerRadius, null, null));
-				overlayLayer.setShape(new RoundRectShape(outerRadius, null, null));
+				if(overlayLayer != null) {
+					overlayLayer.setShape(new RoundRectShape(outerRadius, null, null));
+				}
 
 				// update current
 				currentCornerRadii = outerRadius;
@@ -146,6 +155,17 @@ public class BoxShadowDrawable extends LayerDrawable {
 		shapeDrawable.getPaint().setColor(DEFAULT_BACKGROUND_COLOR);
 
 		return shapeDrawable;
+	}
+
+	private boolean shouldHideOverlayLayer() {
+		if (wrappedLayer instanceof BorderDrawable) {
+			BorderDrawable bd = (BorderDrawable) this.wrappedLayer;
+			if (bd.getBackgroundColor() != 0 || bd.getBackgroundBitmap() != null || bd.getBackgroundGradient() != null) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	@Override

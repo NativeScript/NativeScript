@@ -6,8 +6,8 @@ export function test_global_system_import() {
 	TKUnit.assert(System, 'System not defined');
 	TKUnit.assert(typeof System.import === 'function', 'System.import not a function');
 
-	TKUnit.assert((<any>global).System, 'global.System not defined');
-	TKUnit.assert(typeof (<any>global).System.import === 'function', 'global.System.import not a function');
+	TKUnit.assert(global.System, 'global.System not defined');
+	TKUnit.assert(typeof global.System.import === 'function', 'global.System.import not a function');
 }
 
 export function test_global_zonedCallback() {

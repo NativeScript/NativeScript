@@ -76,7 +76,7 @@ export var test_XMLHttpRequest_readyStateShouldChange = function (done) {
 		// </hide>
 	};
 
-	xhr.open('GET', 'https://httpbin.org/get');
+	xhr.open('GET', 'https://http-echo.nativescript.org/get');
 	xhr.send();
 	// ```
 	// </snippet>
@@ -87,7 +87,7 @@ export var test_XMLHttpRequest_headersSentAndReceivedProperly = function (done) 
 	// ### Send/receive headers
 	// ``` JavaScript
 	let xhr = new XMLHttpRequest();
-	xhr.open('GET', 'https://httpbin.org/get');
+	xhr.open('GET', 'https://http-echo.nativescript.org/get');
 	xhr.setRequestHeader('Content-Type', 'application/json');
 	xhr.onreadystatechange = function () {
 		if (xhr.readyState > 1) {
@@ -112,7 +112,7 @@ export var test_XMLHttpRequest_contentSentAndReceivedProperly = function (done) 
 	// ### Send/receive JSON
 	// ``` JavaScript
 	let xhr = new XMLHttpRequest();
-	xhr.open('POST', 'https://httpbin.org/post');
+	xhr.open('POST', 'https://http-echo.nativescript.org/post');
 	xhr.setRequestHeader('Content-Type', 'application/json');
 	xhr.responseType = 'json';
 	xhr.onreadystatechange = function () {
@@ -137,7 +137,7 @@ export var test_XMLHttpRequest_FormDataContentSentAndReceivedProperly = function
 	// ### Send/receive FormData
 	// ``` JavaScript
 	let xhr = new XMLHttpRequest();
-	xhr.open('POST', 'https://httpbin.org/post');
+	xhr.open('POST', 'https://http-echo.nativescript.org/post');
 	xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 	xhr.onreadystatechange = function () {
 		if (xhr.readyState > 3) {
@@ -169,7 +169,7 @@ export var test_XMLHttpRequest_abortShouldCancelonreadystatechange = function (d
 	// ### Abort request
 	// ``` JavaScript
 	let xhr = new XMLHttpRequest();
-	xhr.open('POST', 'https://httpbin.org/post');
+	xhr.open('POST', 'https://http-echo.nativescript.org/post');
 	xhr.setRequestHeader('Content-Type', 'application/json');
 	// <hide>
 	xhr.onreadystatechange = function () {
@@ -186,7 +186,7 @@ export var test_XMLHttpRequest_abortShouldCancelonreadystatechange = function (d
 
 export var test_XMLHttpRequest_requestShouldBePossibleAfterAbortedOpen = function (done) {
 	xhr = new XMLHttpRequest();
-	xhr.open('POST', 'https://httpbin.org/post');
+	xhr.open('POST', 'https://http-echo.nativescript.org/post');
 	xhr.setRequestHeader('Content-Type', 'application/json');
 	xhr.onreadystatechange = function () {
 		if (xhr.readyState > 3) {
@@ -207,7 +207,7 @@ export var test_XMLHttpRequest_requestShouldBePossibleAfterAbortedOpen = functio
 
 export var test_XMLHttpRequest_requestShouldntBePossibleAfterAbortedSentRequest = function () {
 	xhr = new XMLHttpRequest();
-	xhr.open('POST', 'https://httpbin.org/post');
+	xhr.open('POST', 'https://http-echo.nativescript.org/post');
 	xhr.setRequestHeader('Content-Type', 'application/json');
 	xhr.send(JSON.stringify({ MyVariableOne: 'ValueOne', MyVariableTwo: 'ValueTwo' }));
 	xhr.abort();
@@ -217,7 +217,7 @@ export var test_XMLHttpRequest_requestShouldntBePossibleAfterAbortedSentRequest 
 
 export function test_ignore_zero_length_request_body() {
 	let xhr = new XMLHttpRequest();
-	xhr.open('GET', 'https://httpbin.org/get');
+	xhr.open('GET', 'https://http-echo.nativescript.org/get');
 
 	xhr.send('');
 }
@@ -227,7 +227,7 @@ export function test_raises_onload_Event(done) {
 	xhr.onload = () => {
 		done(null);
 	};
-	xhr.open('GET', 'https://httpbin.org/get');
+	xhr.open('GET', 'https://http-echo.nativescript.org/get');
 	xhr.send();
 }
 
@@ -356,7 +356,7 @@ export function test_sets_status_and_statusText(done) {
 			}
 		}
 	};
-	xhr.open('GET', 'https://httpbin.org/get');
+	xhr.open('GET', 'https://http-echo.nativescript.org/get');
 	xhr.send();
 }
 
@@ -365,7 +365,7 @@ export function test_raises_onerror_Event(done) {
 	xhr.onerror = () => {
 		done(null);
 	};
-	xhr.open('GET', 'https://no-such-domain-httpbin.org');
+	xhr.open('GET', 'https://no-such-domain.nativescript.org');
 	xhr.send();
 }
 
@@ -405,15 +405,15 @@ export var test_XMLHttpRequest_contentReceivedArrayBufferProperly = function (do
 	// ### Receive Blob
 	// ``` JavaScript
 	let xhr = new XMLHttpRequest();
-	xhr.open('GET', 'https://httpbin.org/image/jpeg');
+	xhr.open('GET', 'https://http-echo.nativescript.org/image/jpeg');
 	xhr.responseType = 'arraybuffer';
 	xhr.onreadystatechange = function () {
 		if (xhr.readyState > 3) {
 			// <hide>
 			try {
-				TKUnit.assertEqual(xhr.getResponseHeader('Content-Length'), '35588');
+				TKUnit.assertEqual(xhr.getResponseHeader('Content-Length'), '7911');
 				TKUnit.assertEqual(xhr.getResponseHeader('Content-Type'), 'image/jpeg');
-				TKUnit.assertEqual((xhr.response as ArrayBuffer).byteLength, 35588);
+				TKUnit.assertEqual((xhr.response as ArrayBuffer).byteLength, 7911);
 				done(null);
 			} catch (err) {
 				done(err);
@@ -431,15 +431,15 @@ export var test_XMLHttpRequest_contentReceivedBlobProperly = function (done) {
 	// ### Receive Blob
 	// ``` JavaScript
 	let xhr = new XMLHttpRequest();
-	xhr.open('GET', 'https://httpbin.org/image/jpeg');
+	xhr.open('GET', 'https://http-echo.nativescript.org/image/jpeg');
 	xhr.responseType = 'blob';
 	xhr.onreadystatechange = function () {
 		if (xhr.readyState > 3) {
 			// <hide>
 			try {
-				TKUnit.assertEqual(xhr.getResponseHeader('Content-Length'), '35588');
+				TKUnit.assertEqual(xhr.getResponseHeader('Content-Length'), '7911');
 				TKUnit.assertEqual(xhr.getResponseHeader('Content-Type'), 'image/jpeg');
-				TKUnit.assertEqual((xhr.response as Blob).size, 35588);
+				TKUnit.assertEqual((xhr.response as Blob).size, 7911);
 				TKUnit.assertEqual((xhr.response as Blob).type, 'image/jpeg');
 				done(null);
 			} catch (err) {

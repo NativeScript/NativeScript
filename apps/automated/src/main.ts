@@ -16,7 +16,7 @@ if (Application.ios) {
 
 // Common events for both Android and iOS.
 Application.on(Application.displayedEvent, function (args: ApplicationEventData) {
-	(<any>global).isDisplayedEventFired = true;
+	global.isDisplayedEventFired = true;
 
 	if (args.android) {
 		// For Android applications, args.android is an Android activity class.
