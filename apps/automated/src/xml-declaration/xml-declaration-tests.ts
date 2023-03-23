@@ -130,7 +130,7 @@ export function test_loadWithAttributes() {
 }
 
 export function test_parse_ShouldNotCrashWithoutExports() {
-	const xml = (<any>global).loadModule('xml-declaration/mainPage.xml', true);
+	const xml = global.loadModule('xml-declaration/mainPage.xml', true);
 
 	var v: View = Builder.parse(xml);
 	TKUnit.assert(v instanceof View, 'Expected result: View; Actual result: ' + v + ';');
@@ -826,7 +826,7 @@ export function test_NonExistingElementInTemplateError() {
 }
 
 export function test_EventInTemplate() {
-	var pageCode = (<any>global).loadModule('xml-declaration/template-builder-tests/event-in-template', true);
+	var pageCode = global.loadModule('xml-declaration/template-builder-tests/event-in-template', true);
 	var notified = false;
 	pageCode.test = (args) => {
 		notified = true;
@@ -849,7 +849,7 @@ export function test_EventInTemplate() {
 }
 
 export function test_EventInCodelessFragment() {
-	var pageCode = (<any>global).loadModule('./xml-declaration/template-builder-tests/event-in-codeless-fragment', true);
+	var pageCode = global.loadModule('./xml-declaration/template-builder-tests/event-in-codeless-fragment', true);
 
 	var notified = false;
 	pageCode.setCallback((args) => {

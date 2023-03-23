@@ -2,13 +2,13 @@
 declare let __startCPUProfiler: any;
 declare let __stopCPUProfiler: any;
 
-export function uptime() {
-	return global.android ? (<any>org).nativescript.Process.getUpTime() : (<any>global).__tns_uptime();
+export function uptime(): number {
+	return global.android ? (<any>org).nativescript.Process.getUpTime() : global.__tns_uptime();
 }
 
 export function log(message: string, ...optionalParams: any[]): void {
-	if ((<any>global).__nslog) {
-		(<any>global).__nslog('CONSOLE LOG: ' + message);
+	if (global.__nslog) {
+		global.__nslog('CONSOLE LOG: ' + message);
 	}
 	console.log(message, ...optionalParams);
 }
@@ -31,7 +31,7 @@ const timers: { [index: string]: TimerInfo } = {};
 const anyGlobal = <any>global;
 const profileNames: string[] = [];
 
-export const time = (<any>global).__time || Date.now;
+export const time = (global.__time || Date.now) as () => number;
 
 export function start(name: string): void {
 	let info = timers[name];
