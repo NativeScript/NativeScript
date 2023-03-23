@@ -1329,20 +1329,7 @@ fontFamilyProperty.register(Style);
 export const fontScaleProperty = new InheritedCssProperty<Style, number>({
 	name: '_fontScale',
 	cssName: '_fontScale',
-	affectsLayout: global.isIOS,
-	valueChanged: (target, oldValue, newValue) => {
-		if (global.isIOS) {
-			if (target.viewRef['handleFontSize'] === true) {
-				return;
-			}
-
-			const currentFont = target.fontInternal || Font.default;
-			if (currentFont.fontScale !== newValue) {
-				const newFont = currentFont.withFontScale(newValue);
-				target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
-			}
-		}
-	},
+	defaultValue: 1.0,
 	valueConverter: (v) => parseFloat(v),
 });
 fontScaleProperty.register(Style);
