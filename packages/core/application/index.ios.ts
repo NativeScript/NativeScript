@@ -407,7 +407,7 @@ export function ensureNativeApplication() {
 }
 
 // attach on global, so it can be overwritten in NativeScript Angular
-(<any>global).__onLiveSyncCore = function (context?: ModuleContext) {
+global.__onLiveSyncCore = function (context?: ModuleContext) {
 	ensureNativeApplication();
 	iosApp._onLivesync(context);
 };

@@ -19,7 +19,7 @@ export function testInitialized() {
 
 export function testDisplayedEvent() {
 	// global.isDisplayedEventFired flag is set in app.ts application.displayedEvent handler
-	TKUnit.assert((<any>global).isDisplayedEventFired, 'application.displayedEvent not fired');
+	TKUnit.assert(global.isDisplayedEventFired, 'application.displayedEvent not fired');
 }
 
 export function testOrientation() {
