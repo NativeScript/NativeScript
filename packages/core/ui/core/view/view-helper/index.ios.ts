@@ -14,51 +14,51 @@ const majorVersion = iOSNativeHelper.MajorVersion;
 class UILayoutViewController extends UIViewController {
 	public owner: WeakRef<View>;
 
-	private _isRunningLayout: number;
-	private get isRunningLayout() {
-		return this._isRunningLayout !== 0;
-	}
-	private startRunningLayout() {
-		this._isRunningLayout++;
-	}
-	private finishRunningLayout() {
-		this._isRunningLayout--;
-		this.clearScheduledLayout();
-	}
-	private runLayout(cb: () => void) {
-		try {
-			this.startRunningLayout();
-			cb();
-		} finally {
-			this.finishRunningLayout();
-		}
-	}
+	// private _isRunningLayout: number;
+	// private get isRunningLayout() {
+	// 	return this._isRunningLayout !== 0;
+	// }
+	// private startRunningLayout() {
+	// 	this._isRunningLayout++;
+	// }
+	// private finishRunningLayout() {
+	// 	this._isRunningLayout--;
+	// 	this.clearScheduledLayout();
+	// }
+	// private runLayout(cb: () => void) {
+	// 	try {
+	// 		this.startRunningLayout();
+	// 		cb();
+	// 	} finally {
+	// 		this.finishRunningLayout();
+	// 	}
+	// }
 
-	layoutTimer: number;
+	// layoutTimer: number;
 
-	private clearScheduledLayout() {
-		if (this.layoutTimer) {
-			clearTimeout(this.layoutTimer);
-			this.layoutTimer = null;
-		}
-	}
+	// private clearScheduledLayout() {
+	// 	if (this.layoutTimer) {
+	// 		clearTimeout(this.layoutTimer);
+	// 		this.layoutTimer = null;
+	// 	}
+	// }
 
-	private scheduleLayout() {
-		if (this.layoutTimer) {
-			return;
-		}
-		setTimeout(() => {
-			this.layoutTimer = null;
-			if (!this.isRunningLayout) {
-				this.runLayout(() => this.layoutOwner());
-			}
-		});
-	}
+	// private scheduleLayout() {
+	// 	if (this.layoutTimer) {
+	// 		return;
+	// 	}
+	// 	setTimeout(() => {
+	// 		this.layoutTimer = null;
+	// 		if (!this.isRunningLayout) {
+	// 			this.runLayout(() => this.layoutOwner());
+	// 		}
+	// 	});
+	// }
 
 	public static initWithOwner(owner: WeakRef<View>): UILayoutViewController {
 		const controller = <UILayoutViewController>UILayoutViewController.new();
 		controller.owner = owner;
-		controller._isRunningLayout = 0;
+		// controller._isRunningLayout = 0;
 
 		return controller;
 	}
@@ -73,7 +73,7 @@ class UILayoutViewController extends UIViewController {
 
 	public viewSafeAreaInsetsDidChange(): void {
 		super.viewSafeAreaInsetsDidChange();
-		this.scheduleLayout();
+		// this.scheduleLayout();
 	}
 
 	public viewWillLayoutSubviews(): void {
@@ -85,10 +85,10 @@ class UILayoutViewController extends UIViewController {
 	}
 
 	public viewDidLayoutSubviews(): void {
-		this.startRunningLayout();
+		// this.startRunningLayout();
 		super.viewDidLayoutSubviews();
 		this.layoutOwner();
-		this.finishRunningLayout();
+		// this.finishRunningLayout();
 	}
 	layoutOwner(force = false) {
 		const owner = this.owner?.deref();
