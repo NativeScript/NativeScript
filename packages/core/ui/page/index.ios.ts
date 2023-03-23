@@ -74,7 +74,6 @@ class UIViewControllerImpl extends UIViewController {
 
 	public isBackstackSkipped: boolean;
 	public isBackstackCleared: boolean;
-	private didFirstLayout: boolean;
 	// this is initialized in initWithOwner since the constructor doesn't run on native classes
 	private _isRunningLayout: number;
 	private get isRunningLayout() {
@@ -85,7 +84,7 @@ class UIViewControllerImpl extends UIViewController {
 	}
 	private finishRunningLayout() {
 		this._isRunningLayout--;
-		this.didFirstLayout = true;
+		this.clearScheduledLayout();
 	}
 	private runLayout(cb: () => void) {
 		try {
@@ -96,11 +95,31 @@ class UIViewControllerImpl extends UIViewController {
 		}
 	}
 
+	layoutTimer: number;
+
+	private clearScheduledLayout() {
+		if (this.layoutTimer) {
+			clearTimeout(this.layoutTimer);
+			this.layoutTimer = null;
+		}
+	}
+
+	private scheduleLayout() {
+		if (this.layoutTimer) {
+			return;
+		}
+		setTimeout(() => {
+			this.layoutTimer = null;
+			if (!this.isRunningLayout) {
+				this.runLayout(() => this.layoutOwner());
+			}
+		});
+	}
+
 	public static initWithOwner(owner: WeakRef<Page>): UIViewControllerImpl {
 		const controller = <UIViewControllerImpl>UIViewControllerImpl.new();
 		controller._owner = owner;
 		controller._isRunningLayout = 0;
-		controller.didFirstLayout = false;
 
 		return controller;
 	}
@@ -120,7 +139,7 @@ class UIViewControllerImpl extends UIViewController {
 			return;
 		}
 
-		const frame = this.navigationController ? (<any>this.navigationController).owner : null;
+		const frame: Frame = this.navigationController ? (<any>this.navigationController).owner : null;
 		const newEntry = this[ENTRY];
 
 		// Don't raise event if currentPage was showing modal page.
@@ -130,6 +149,8 @@ class UIViewControllerImpl extends UIViewController {
 		}
 
 		if (frame) {
+			frame._resolvedPage = owner;
+
 			if (!owner.parent) {
 				owner._frame = frame;
 				if (!frame._styleScope) {
@@ -279,71 +300,77 @@ class UIViewControllerImpl extends UIViewController {
 
 	public viewSafeAreaInsetsDidChange(): void {
 		super.viewSafeAreaInsetsDidChange();
-		if (this.isRunningLayout || !this.didFirstLayout) {
-			return;
-		}
-		const owner = this._owner?.deref();
-		if (owner) {
-			this.runLayout(() => IOSHelper.layoutView(this, owner));
-		}
+		this.scheduleLayout();
 	}
 
 	public viewDidLayoutSubviews(): void {
 		this.startRunningLayout();
 		super.viewDidLayoutSubviews();
+		this.layoutOwner();
+		this.finishRunningLayout();
+	}
+
+	layoutOwner(force = false) {
 		const owner = this._owner?.deref();
-		if (owner) {
-			// layout(owner.actionBar)
-			// layout(owner.content)
+		if (!owner) {
+			return;
+		}
+		if (!force && owner.isLayoutValid && !owner.nativeViewProtected?.layer.needsLayout?.()) {
+			// we skip layout if the view is not yet laid out yet
+			// this usually means that viewDidLayoutSubviews will be called again
+			// so doing a layout pass now will layout with the wrong parameters
+			return;
+		}
 
-			if (majorVersion >= 11) {
-				// Handle nested Page safe area insets application.
-				// A Page is nested if its Frame has a parent.
-				// If the Page is nested, cross check safe area insets on top and bottom with Frame parent.
-				const frame = owner.parent;
-				// There is a legacy scenario where Page is not in a Frame - the root of a Modal View, so it has no parent.
-				let frameParent = frame && frame.parent;
+		// layout(owner.actionBar)
+		// layout(owner.content)
 
-				// Handle Angular scenario where TabView is in a ProxyViewContainer
-				// It is possible to wrap components in ProxyViewContainers indefinitely
-				// Not using instanceof ProxyViewContainer to avoid circular dependency
-				// TODO: Try moving UIViewControllerImpl out of page module
-				while (frameParent && !frameParent.nativeViewProtected) {
-					frameParent = frameParent.parent;
-				}
+		if (majorVersion >= 11) {
+			// Handle nested Page safe area insets application.
+			// A Page is nested if its Frame has a parent.
+			// If the Page is nested, cross check safe area insets on top and bottom with Frame parent.
+			const frame = owner.parent;
+			// There is a legacy scenario where Page is not in a Frame - the root of a Modal View, so it has no parent.
+			let frameParent = frame && frame.parent;
 
-				if (frameParent) {
-					const parentPageInsetsTop = frameParent.nativeViewProtected.safeAreaInsets.top;
-					const parentPageInsetsBottom = frameParent.nativeViewProtected.safeAreaInsets.bottom;
-					let currentInsetsTop = this.view.safeAreaInsets.top;
-					let currentInsetsBottom = this.view.safeAreaInsets.bottom;
-
-					// Safe area insets include additional safe area insets too, so subtract old values
-					if (this.additionalSafeAreaInsets) {
-						currentInsetsTop -= this.additionalSafeAreaInsets.top;
-						currentInsetsBottom -= this.additionalSafeAreaInsets.bottom;
-					}
-
-					const additionalInsetsTop = Math.max(parentPageInsetsTop - currentInsetsTop, 0);
-					const additionalInsetsBottom = Math.max(parentPageInsetsBottom - currentInsetsBottom, 0);
-
-					if (additionalInsetsTop > 0 || additionalInsetsBottom > 0) {
-						const additionalInsets = new UIEdgeInsets({
-							top: additionalInsetsTop,
-							left: 0,
-							bottom: additionalInsetsBottom,
-							right: 0,
-						});
-						this.additionalSafeAreaInsets = additionalInsets;
-					} else {
-						this.additionalSafeAreaInsets = null;
-					}
-				}
+			// Handle Angular scenario where TabView is in a ProxyViewContainer
+			// It is possible to wrap components in ProxyViewContainers indefinitely
+			// Not using instanceof ProxyViewContainer to avoid circular dependency
+			// TODO: Try moving UIViewControllerImpl out of page module
+			while (frameParent && !frameParent.nativeViewProtected) {
+				frameParent = frameParent.parent;
 			}
 
-			IOSHelper.layoutView(this, owner);
+			if (frameParent) {
+				const parentPageInsetsTop = frameParent.nativeViewProtected.safeAreaInsets.top;
+				const parentPageInsetsBottom = frameParent.nativeViewProtected.safeAreaInsets.bottom;
+				let currentInsetsTop = this.view.safeAreaInsets.top;
+				let currentInsetsBottom = this.view.safeAreaInsets.bottom;
+
+				// Safe area insets include additional safe area insets too, so subtract old values
+				if (this.additionalSafeAreaInsets) {
+					currentInsetsTop -= this.additionalSafeAreaInsets.top;
+					currentInsetsBottom -= this.additionalSafeAreaInsets.bottom;
+				}
+
+				const additionalInsetsTop = Math.max(parentPageInsetsTop - currentInsetsTop, 0);
+				const additionalInsetsBottom = Math.max(parentPageInsetsBottom - currentInsetsBottom, 0);
+
+				if (additionalInsetsTop > 0 || additionalInsetsBottom > 0) {
+					const additionalInsets = new UIEdgeInsets({
+						top: additionalInsetsTop,
+						left: 0,
+						bottom: additionalInsetsBottom,
+						right: 0,
+					});
+					this.additionalSafeAreaInsets = additionalInsets;
+				} else {
+					this.additionalSafeAreaInsets = null;
+				}
+			}
 		}
-		this.finishRunningLayout();
+
+		IOSHelper.layoutView(this, owner);
 	}
 
 	// Mind implementation for other controllerss

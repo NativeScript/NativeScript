@@ -41,7 +41,6 @@ export interface CssAnimationPropertyOptions<T, U> {
 	readonly name: string;
 	readonly cssName?: string;
 	readonly defaultValue?: U;
-	readonly affectsLayout?: boolean;
 	readonly equalityComparer?: (x: U, y: U) => boolean;
 	readonly valueChanged?: (target: T, oldValue: U, newValue: U) => void;
 	readonly valueConverter?: (value: string) => U;
@@ -53,6 +52,21 @@ const cssSymbolPropertyMap = {};
 
 const inheritableProperties = new Array<InheritedProperty<any, any>>();
 const inheritableCssProperties = new Array<InheritedCssProperty<any, any>>();
+
+function print(map) {
+	const symbols = Object.getOwnPropertySymbols(map);
+	for (const symbol of symbols) {
+		const prop = map[symbol];
+		if (!prop.registered) {
+			console.log(`Property ${prop.name} not Registered!!!!!`);
+		}
+	}
+}
+
+export function _printUnregisteredProperties(): void {
+	print(symbolPropertyMap);
+	print(cssSymbolPropertyMap);
+}
 
 const enum ValueSource {
 	Default = 0,
@@ -199,7 +213,7 @@ function getPropertySetter<T extends ViewBase, U>(property: Property<T, U>) {
 				value = property.coerceValue(this, value);
 			}
 		}
-		const oldValue = key in this ? this[key] : defaultValue;
+		const oldValue = <U>(key in this ? this[key] : defaultValue);
 		const changed: boolean = property.equalityComparer ? !property.equalityComparer(oldValue, value) : oldValue !== value;
 
 		if (wrapped || changed) {
@@ -319,14 +333,14 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 		const property = this;
 		this.set = getPropertySetter(this);
 		this.get = function (this: T): U {
-			return key in this ? this[key] : property.defaultValue;
+			return <U>(key in this ? this[key] : property.defaultValue);
 		};
 		symbolPropertyMap[key] = this;
 	}
 	nativeValueChange(owner: T, value: U): void {
 		const key = this.key;
 		const defaultValue = this.defaultValue;
-		const oldValue = key in owner ? owner[key] : defaultValue;
+		const oldValue = <U>(key in owner ? owner[key] : defaultValue);
 		const changed = this.equalityComparer ? !this.equalityComparer(oldValue, value) : oldValue !== value;
 		if (changed) {
 			const defaultValueKey = this.defaultValueKey;
@@ -391,7 +405,7 @@ export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> imp
 	}
 
 	coerce(target: T): void {
-		const originalValue: U = this.coerceKey in target ? target[this.coerceKey] : this.defaultValue;
+		const originalValue = <U>(this.coerceKey in target ? target[this.coerceKey] : this.defaultValue);
 		// need that to make coercing but also fire change events
 		target[this.name] = originalValue;
 	}
@@ -498,7 +512,7 @@ function setCssFunc<T extends Style, U>(property: CssProperty<T, U>, valueSource
 			value = property.valueConverter && typeof newValue === 'string' ? property.valueConverter(newValue) : <U>newValue;
 		}
 
-		const oldValue: U = key in this ? this[key] : defaultValue;
+		const oldValue = <U>(key in this ? this[key] : defaultValue);
 		const changed: boolean = property.equalityComparer ? !property.equalityComparer(oldValue, value) : oldValue !== value;
 
 		if (changed) {
@@ -909,7 +923,7 @@ function setCssInheritedFunc<T extends Style, U>(property: InheritedCssProperty<
 			}
 		}
 
-		const oldValue: U = key in this ? this[key] : defaultValue;
+		const oldValue = <U>(key in this ? this[key] : defaultValue);
 		let value: U;
 		let unsetNativeValue = false;
 		if (reset) {

@@ -337,7 +337,7 @@ export class View extends ViewCommon {
 		}
 	}
 
-	off(eventNames: string, callback?: any, thisArg?: any) {
+	off(eventNames: string, callback?: (data: EventData) => void, thisArg?: any) {
 		super.off(eventNames, callback, thisArg);
 		const isLayoutEvent = typeof eventNames === 'string' ? eventNames.indexOf(ViewCommon.layoutChangedEvent) !== -1 : false;
 

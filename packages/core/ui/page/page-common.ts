@@ -83,7 +83,7 @@ export class PageBase extends ContentView {
 	}
 
 	public _addChildFromBuilder(name: string, value: any) {
-		if (value.constructor.name ===  'ActionBar') {
+		if (value.constructor.name === 'ActionBar') {
 			this.actionBar = value;
 		} else {
 			super._addChildFromBuilder(name, value);
@@ -173,7 +173,7 @@ export interface PageBase {
 	on(event: 'navigatingFrom', callback: (args: NavigatedData) => void, thisArg?: any): void;
 	on(event: 'navigatedFrom', callback: (args: NavigatedData) => void, thisArg?: any): void;
 	on(event: 'showingModally', callback: (args: ShownModallyData) => void, thisArg?: any): void;
-	on(event: 'shownModally', callback: (args: ShownModallyData) => void, thisArg?: any);
+	on(event: 'shownModally', callback: (args: ShownModallyData) => void, thisArg?: any): void;
 }
 
 /**

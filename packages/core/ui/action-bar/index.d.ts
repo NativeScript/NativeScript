@@ -134,12 +134,12 @@ export class ActionItem extends ViewBase {
 	 * @param callback - Callback function which will be executed when event is raised.
 	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
 	 */
-	on(eventNames: string, callback: (data: EventData) => void);
+	on(eventNames: string, callback: (data: EventData) => void): void;
 
 	/**
 	 * Raised when a tap event occurs.
 	 */
-	on(event: 'tap', callback: (args: EventData) => void);
+	on(event: 'tap', callback: (args: EventData) => void): void;
 
 	//@private
 	/**

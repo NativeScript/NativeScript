@@ -4,16 +4,15 @@ import { CSSShadow } from '../styling/css-shadow';
 
 // Requires
 import { Font } from '../styling/font';
-import { TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textTransformProperty, textShadowProperty, letterSpacingProperty, lineHeightProperty, resetSymbol } from './text-base-common';
+import { TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textTransformProperty, textShadowProperty, letterSpacingProperty, lineHeightProperty, maxLinesProperty, resetSymbol } from './text-base-common';
 import { Color } from '../../color';
 import { FormattedString } from './formatted-string';
 import { Span } from './span';
-import { colorProperty, fontInternalProperty, Length } from '../styling/style-properties';
+import { colorProperty, fontInternalProperty, fontScaleProperty, Length } from '../styling/style-properties';
 import { isString, isNullOrUndefined } from '../../utils/types';
 import { iOSNativeHelper } from '../../utils';
 import { Trace } from '../../trace';
 import { CoreTypes } from '../../core-types';
-import { maxLinesProperty } from './text-base-common';
 
 export * from './text-base-common';
 
@@ -188,7 +187,26 @@ export class TextBase extends TextBaseCommon {
 		if (!(value instanceof Font) || !this.formattedText) {
 			let nativeView = this.nativeTextViewProtected;
 			nativeView = nativeView instanceof UIButton ? nativeView.titleLabel : nativeView;
-			nativeView.font = value instanceof Font ? value.getUIFont(nativeView.font) : value;
+
+			if (value instanceof Font) {
+				// Apply a11y font scale if not set
+				if (value.fontScale !== this.style._fontScale) {
+					value.fontScale = this.style._fontScale;
+				}
+				nativeView.font = value.getUIFont(nativeView.font);
+			} else {
+				nativeView.font = value;
+			}
+		}
+	}
+
+	[fontScaleProperty.setNative](value: number) {
+		const nativeView = this.nativeTextViewProtected instanceof UIButton ? this.nativeTextViewProtected.titleLabel : this.nativeTextViewProtected;
+		const currentFont = this.style.fontInternal || Font.default.withFontSize(nativeView.font.pointSize);
+		if (currentFont.fontScale !== value) {
+			const newFont = currentFont.withFontScale(value);
+			this.style.fontInternal = newFont;
+			this.requestLayout();
 		}
 	}
 

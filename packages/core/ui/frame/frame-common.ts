@@ -43,6 +43,14 @@ export class FrameBase extends CustomLayoutView {
 
 	public actionBarVisibility: 'auto' | 'never' | 'always';
 	public _currentEntry: BackstackEntry;
+
+	/**
+	 * A reference of current page that is set earlier than current entry.
+	 * Using this property, methods like 'eachChildView' and '_childrenCount' gain access to page view
+	 * just in time for calls like '_addView' to perform view-tree iterations.
+	 */
+	public _resolvedPage: Page;
+
 	public _animationInProgress = false;
 	public _executingContext: NavigationContext;
 	public _isInFrameStack = false;
@@ -238,6 +246,8 @@ export class FrameBase extends CustomLayoutView {
 		// In case we navigated forward to a page that was in the backstack
 		// with clearHistory: true
 		if (!newPage.frame) {
+			this._resolvedPage = newPage;
+
 			this._addView(newPage);
 			newPage._frame = this;
 		}
@@ -452,7 +462,6 @@ export class FrameBase extends CustomLayoutView {
 		if (this._currentEntry) {
 			return this._currentEntry.resolvedPage;
 		}
-
 		return null;
 	}
 
@@ -504,7 +513,7 @@ export class FrameBase extends CustomLayoutView {
 	}
 
 	get _childrenCount(): number {
-		if (this.currentPage) {
+		if (this._resolvedPage) {
 			return 1;
 		}
 
@@ -512,7 +521,7 @@ export class FrameBase extends CustomLayoutView {
 	}
 
 	public eachChildView(callback: (child: View) => boolean) {
-		const page = this.currentPage;
+		const page = this._resolvedPage;
 		if (page) {
 			callback(page);
 		}

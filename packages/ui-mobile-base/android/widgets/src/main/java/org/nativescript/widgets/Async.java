@@ -26,7 +26,9 @@ import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -627,6 +629,23 @@ public class Async {
 			});
 		}
 
+		public static void readBuffer(final String path, final CompleteCallback callback, final Object context) {
+			final android.os.Handler mHandler = new android.os.Handler(Looper.myLooper());
+			threadPoolExecutor().execute(new Runnable() {
+				@Override
+				public void run() {
+					final ReadBufferTask task = new ReadBufferTask(callback, context);
+					final ByteBuffer result = task.doInBackground(path);
+					mHandler.post(new Runnable() {
+						@Override
+						public void run() {
+							task.onPostExecute(result);
+						}
+					});
+				}
+			});
+		}
+
 		public static void writeText(final String path, final String content, final String encoding, final CompleteCallback callback, final Object context) {
 			final android.os.Handler mHandler = new android.os.Handler(Looper.myLooper());
 			threadPoolExecutor().execute(new Runnable() {
@@ -650,6 +669,23 @@ public class Async {
 				@Override
 				public void run() {
 					final WriteTask task = new WriteTask(callback, context);
+					final boolean result = task.doInBackground(path, content);
+					mHandler.post(new Runnable() {
+						@Override
+						public void run() {
+							task.onPostExecute(result);
+						}
+					});
+				}
+			});
+		}
+
+		public static void writeBuffer(final String path, final ByteBuffer content, final CompleteCallback callback, final Object context) {
+			final android.os.Handler mHandler = new android.os.Handler(Looper.myLooper());
+			threadPoolExecutor().execute(new Runnable() {
+				@Override
+				public void run() {
+					final WriteBufferTask task = new WriteBufferTask(callback, context);
 					final boolean result = task.doInBackground(path, content);
 					mHandler.post(new Runnable() {
 						@Override
@@ -768,6 +804,55 @@ public class Async {
 			}
 		}
 
+		static class ReadBufferTask {
+			private final CompleteCallback callback;
+			private final Object context;
+
+			public ReadBufferTask(CompleteCallback callback, Object context) {
+				this.callback = callback;
+				this.context = context;
+			}
+
+			protected ByteBuffer doInBackground(String... params) {
+				java.io.File javaFile = new java.io.File(params[0]);
+				FileInputStream stream = null;
+
+				try {
+					stream = new FileInputStream(javaFile);
+
+					ByteBuffer buffer = ByteBuffer.allocateDirect((int) javaFile.length());
+
+					FileChannel channel = stream.getChannel();
+					channel.read(buffer);
+					buffer.rewind();
+
+					return buffer;
+				} catch (FileNotFoundException e) {
+					Log.e(TAG, "Failed to read file, FileNotFoundException: " + e.getMessage());
+					return null;
+				} catch (IOException e) {
+					Log.e(TAG, "Failed to read file, IOException: " + e.getMessage());
+					return null;
+				} finally {
+					if (stream != null) {
+						try {
+							stream.close();
+						} catch (IOException e) {
+							Log.e(TAG, "Failed to close stream, IOException: " + e.getMessage());
+						}
+					}
+				}
+			}
+
+			protected void onPostExecute(final ByteBuffer result) {
+				if (result != null) {
+					this.callback.onComplete(result, this.context);
+				} else {
+					this.callback.onError("ReadTask returns no result.", this.context);
+				}
+			}
+		}
+
 		static class WriteTextTask {
 			private final CompleteCallback callback;
 			private final Object context;
@@ -784,7 +869,6 @@ public class Async {
 					stream = new FileOutputStream(javaFile);
 
 					OutputStreamWriter writer = new OutputStreamWriter(stream, params[2]);
-
 					writer.write(params[1]);
 					writer.close();
 
@@ -836,6 +920,53 @@ public class Async {
 					stream = new FileOutputStream(javaFile);
 					stream.write(content, 0, content.length);
 
+					return true;
+				} catch (FileNotFoundException e) {
+					Log.e(TAG, "Failed to write file, FileNotFoundException: " + e.getMessage());
+					return false;
+				} catch (IOException e) {
+					Log.e(TAG, "Failed to write file, IOException: " + e.getMessage());
+					return false;
+				} finally {
+					if (stream != null) {
+						try {
+							stream.close();
+						} catch (IOException e) {
+							Log.e(TAG, "Failed to close stream, IOException: " + e.getMessage());
+						}
+					}
+				}
+			}
+
+			protected void onPostExecute(final boolean result) {
+				if (result) {
+					this.callback.onComplete(null, this.context);
+				} else {
+					this.callback.onError("WriteTask returns no result.", this.context);
+				}
+			}
+		}
+
+		static class WriteBufferTask {
+			private final CompleteCallback callback;
+			private final Object context;
+
+			public WriteBufferTask(CompleteCallback callback, Object context) {
+				this.callback = callback;
+				this.context = context;
+			}
+
+			protected boolean doInBackground(Object... params) {
+				java.io.File javaFile = new java.io.File((String) params[0]);
+				FileOutputStream stream = null;
+				ByteBuffer content = (ByteBuffer) params[1];
+
+				try {
+					stream = new FileOutputStream(javaFile);
+					FileChannel channel = stream.getChannel();
+					content.rewind();
+					channel.write(content);
+					content.rewind();
 					return true;
 				} catch (FileNotFoundException e) {
 					Log.e(TAG, "Failed to write file, FileNotFoundException: " + e.getMessage());

@@ -15,8 +15,8 @@ export * from './font-scale';
 
 let clickableRolesMap = new Set<AccessibilityRole>();
 
-let lastFocusedView: WeakRef<Partial<View>>;
-function accessibilityEventHelper(view: Partial<View>, eventType: number) {
+let lastFocusedView: WeakRef<View>;
+function accessibilityEventHelper(view: View, eventType: number) {
 	const eventName = accessibilityEventTypeMap.get(eventType);
 	if (!isAccessibilityServiceEnabled()) {
 		if (Trace.isEnabled()) {
@@ -105,7 +105,7 @@ function accessibilityEventHelper(view: Partial<View>, eventType: number) {
 
 let TNSAccessibilityDelegate: android.view.View.androidviewViewAccessibilityDelegate;
 
-const androidViewToTNSView = new WeakMap<android.view.View, WeakRef<Partial<View>>>();
+const androidViewToTNSView = new WeakMap<android.view.View, WeakRef<View>>();
 
 let accessibilityEventMap: Map<AndroidAccessibilityEvent, number>;
 let accessibilityEventTypeMap: Map<number, AndroidAccessibilityEvent>;
@@ -440,11 +440,11 @@ export function isAccessibilityServiceEnabled(): boolean {
 	return accessibilityServiceEnabled;
 }
 
-export function setupAccessibleView(view: Partial<View>): void {
+export function setupAccessibleView(view: View): void {
 	updateAccessibilityProperties(view);
 }
 
-export function updateAccessibilityProperties(view: Partial<View>): void {
+export function updateAccessibilityProperties(view: View): void {
 	if (!view.nativeViewProtected) {
 		return;
 	}
@@ -541,7 +541,7 @@ export function updateContentDescription(view: View, forceUpdate?: boolean): str
 }
 
 let started = false;
-function setAccessibilityDelegate(view: Partial<View>): void {
+function setAccessibilityDelegate(view: View): void {
 	if (!view.nativeViewProtected) {
 		return;
 	}
@@ -572,7 +572,7 @@ function setAccessibilityDelegate(view: Partial<View>): void {
 	androidView.setAccessibilityDelegate(TNSAccessibilityDelegate);
 }
 
-function applyContentDescription(view: Partial<View>, forceUpdate?: boolean) {
+function applyContentDescription(view: View, forceUpdate?: boolean) {
 	let androidView = view.nativeViewProtected as android.view.View;
 	if (!androidView || (androidView instanceof android.widget.TextView && !view._androidContentDescriptionUpdated)) {
 		return null;

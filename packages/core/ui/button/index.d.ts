@@ -10,8 +10,6 @@ export const tapEvent: string;
  * Represents a standard Button widget.
  */
 export class Button extends TextBase {
-
-
 	/**
 	 * Gets the native [android widget](http://developer.android.com/reference/android/widget/Button.html) that represents the user interface for this component. Valid only when running on Android OS.
 	 */
@@ -33,10 +31,10 @@ export class Button extends TextBase {
 	 * @param callback - Callback function which will be executed when event is raised.
 	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
 	 */
-	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
+	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void;
 
 	/**
 	 * Raised when a tap event occurs.
 	 */
-	on(event: 'tap', callback: (args: EventData) => void, thisArg?: any);
+	on(event: 'tap', callback: (args: EventData) => void, thisArg?: any): void;
 }

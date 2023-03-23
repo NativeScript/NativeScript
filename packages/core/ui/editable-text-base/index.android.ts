@@ -525,19 +525,14 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 	public onFocusChange(view: android.view.View, hasFocus: boolean): void {
 		if (hasFocus) {
 			clearDismissTimer();
-			this.notify({
-				eventName: EditableTextBase.focusEvent,
-				object: this,
-			});
+			this.notify({ eventName: EditableTextBase.focusEvent });
 		} else {
 			if (this._dirtyTextAccumulator || this._dirtyTextAccumulator === '') {
 				textProperty.nativeValueChange(this, this._dirtyTextAccumulator);
 				this._dirtyTextAccumulator = undefined;
 			}
 
-			this.notify({
-				eventName: EditableTextBase.blurEvent,
-			});
+			this.notify({ eventName: EditableTextBase.blurEvent });
 			dismissSoftInput(this);
 		}
 	}

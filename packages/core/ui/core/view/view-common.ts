@@ -296,7 +296,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		}
 	}
 
-	public removeEventListener(arg: string | GestureTypes, callback?: any, thisArg?: any) {
+	public removeEventListener(arg: string | GestureTypes, callback?: (data: EventData) => void, thisArg?: any) {
 		if (typeof arg === 'string') {
 			const gesture = gestureFromString(arg);
 			if (gesture && !this._isEvent(arg)) {

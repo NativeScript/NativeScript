@@ -15,44 +15,46 @@ export interface ComponentModule {
 	exports: any;
 }
 
-const legacyShortBarrels = __UI_USE_EXTERNAL_RENDERER__?[]:[
-	'text/formatted-string',
-	'text/span',
-	'ui/text-base/formatted-string',
-	'ui/text-base/span',
-	'ui/action-bar',
-	'ui/activity-indicator',
-	'ui/button',
-	'ui/content-view',
-	'ui/date-picker',
-	'ui/frame',
-	'ui/html-view',
-	'ui/image',
-	'ui/label',
-	'ui/layouts/absolute-layout',
-	'ui/layouts/dock-layout',
-	'ui/layouts/grid-layout',
-	'ui/layouts/stack-layout',
-	'ui/layouts/flexbox-layout',
-	'ui/layouts/wrap-layout',
-	'ui/list-picker',
-	'ui/page',
-	'ui/placeholder',
-	'ui/progress',
-	'ui/proxy-view-container',
-	'ui/repeater',
-	'ui/scroll-view',
-	'ui/search-bar',
-	'ui/segmented-bar',
-	'ui/slider',
-	'ui/switch',
-	'ui/tab-view',
-	'ui/web-view',
-	'ui/text-field',
-	'ui/text-view',
-	'ui/time-picker',
-	'ui/list-view',
-];
+const legacyShortBarrels = __UI_USE_EXTERNAL_RENDERER__
+	? []
+	: [
+			'text/formatted-string',
+			'text/span',
+			'ui/text-base/formatted-string',
+			'ui/text-base/span',
+			'ui/action-bar',
+			'ui/activity-indicator',
+			'ui/button',
+			'ui/content-view',
+			'ui/date-picker',
+			'ui/frame',
+			'ui/html-view',
+			'ui/image',
+			'ui/label',
+			'ui/layouts/absolute-layout',
+			'ui/layouts/dock-layout',
+			'ui/layouts/grid-layout',
+			'ui/layouts/stack-layout',
+			'ui/layouts/flexbox-layout',
+			'ui/layouts/wrap-layout',
+			'ui/list-picker',
+			'ui/page',
+			'ui/placeholder',
+			'ui/progress',
+			'ui/proxy-view-container',
+			'ui/repeater',
+			'ui/scroll-view',
+			'ui/search-bar',
+			'ui/segmented-bar',
+			'ui/slider',
+			'ui/switch',
+			'ui/tab-view',
+			'ui/web-view',
+			'ui/text-field',
+			'ui/text-view',
+			'ui/time-picker',
+			'ui/list-view',
+	  ];
 const CORE_UI_BARREL = '@nativescript/core/ui';
 const CODE_FILE = 'codeFile';
 const CSS_FILE = 'cssFile';
@@ -102,25 +104,22 @@ const createComponentInstance = profile('createComponentInstance', (elementName:
 	return { instance, instanceModule };
 });
 
-const getComponentModuleExports = profile(
-	'getComponentModuleExports',
-	(instance: View, moduleExports: Object, attributes: Object): Object => {
-		if (attributes) {
-			const codeFileAttribute = attributes[CODE_FILE] || attributes[IMPORT];
-			if (codeFileAttribute) {
-				const resolvedCodeFileModule = resolveModuleName(sanitizeModuleName(codeFileAttribute), '');
-				if (resolvedCodeFileModule) {
-					moduleExports = global.loadModule(resolvedCodeFileModule, true);
-					(<any>instance).exports = moduleExports;
-				} else {
-					throw new Error(`Code file with path "${codeFileAttribute}" cannot be found! Looking for webpack module with name "${resolvedCodeFileModule}"`);
-				}
+const getComponentModuleExports = profile('getComponentModuleExports', (instance: View, moduleExports: Object, attributes: Object): Object => {
+	if (attributes) {
+		const codeFileAttribute = attributes[CODE_FILE] || attributes[IMPORT];
+		if (codeFileAttribute) {
+			const resolvedCodeFileModule = resolveModuleName(sanitizeModuleName(codeFileAttribute), '');
+			if (resolvedCodeFileModule) {
+				moduleExports = global.loadModule(resolvedCodeFileModule, true);
+				(<any>instance).exports = moduleExports;
+			} else {
+				throw new Error(`Code file with path "${codeFileAttribute}" cannot be found! Looking for webpack module with name "${resolvedCodeFileModule}"`);
 			}
 		}
-
-		return moduleExports;
 	}
-);
+
+	return moduleExports;
+});
 
 const applyComponentCss = profile('applyComponentCss', (instance: View, moduleName: string, attributes: Object) => {
 	let cssApplied = false;
@@ -249,5 +248,5 @@ function isBinding(value: any): boolean {
 // For example, ListView.itemTemplateSelector
 const KNOWN_FUNCTIONS = 'knownFunctions';
 function isKnownFunction(name: string, instance: View): boolean {
-	return instance.constructor && KNOWN_FUNCTIONS in instance.constructor && instance.constructor[KNOWN_FUNCTIONS].indexOf(name) !== -1;
+	return instance.constructor && KNOWN_FUNCTIONS in instance.constructor && (instance.constructor[KNOWN_FUNCTIONS] as string).indexOf(name) !== -1;
 }
