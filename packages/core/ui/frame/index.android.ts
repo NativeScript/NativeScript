@@ -620,7 +620,7 @@ export function reloadPage(context?: ModuleContext): void {
 }
 
 // attach on global, so it can be overwritten in NativeScript Angular
-(<any>global).__onLiveSyncCore = Frame.reloadPage;
+global.__onLiveSyncCore = Frame.reloadPage;
 
 function cloneExpandedTransitionListener(expandedTransitionListener: any) {
 	if (!expandedTransitionListener) {
