@@ -41,6 +41,7 @@ export interface CssAnimationPropertyOptions<T, U> {
 	readonly name: string;
 	readonly cssName?: string;
 	readonly defaultValue?: U;
+	readonly affectsLayout?: boolean;
 	readonly equalityComparer?: (x: U, y: U) => boolean;
 	readonly valueChanged?: (target: T, oldValue: U, newValue: U) => void;
 	readonly valueConverter?: (value: string) => U;
