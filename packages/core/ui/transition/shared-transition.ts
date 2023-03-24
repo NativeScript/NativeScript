@@ -97,6 +97,7 @@ type SharedTransitionPageProperties = SharedProperties & {
 	spring?: SharedSpringProperties;
 };
 let sharedTransitionEvents: Observable;
+let currentStack: Array<SharedTransitionState>;
 /**
  * Shared Element Transitions (preview)
  * Allows you to auto animate between shared elements on two different screesn to create smooth navigational experiences.
@@ -134,13 +135,9 @@ export class SharedTransition {
 	/**
 	 * @private
 	 */
-	static currentStack: Array<SharedTransitionState>;
-	/**
-	 * @private
-	 */
 	static updateState(id: number, state: SharedTransitionState) {
-		if (!SharedTransition.currentStack) {
-			SharedTransition.currentStack = [];
+		if (!currentStack) {
+			currentStack = [];
 		}
 		const existingTransition = SharedTransition.getState(id);
 		if (existingTransition) {
@@ -150,22 +147,22 @@ export class SharedTransition {
 				// console.log(' ... updating state: ', key, state[key])
 			}
 		} else {
-			SharedTransition.currentStack.push(state);
+			currentStack.push(state);
 		}
 	}
 	/**
 	 * @private
 	 */
 	static getState(id: number) {
-		return SharedTransition.currentStack?.find((t) => t.instance.id === id);
+		return currentStack?.find((t) => t.instance?.id === id);
 	}
 	/**
 	 * @private
 	 */
 	static finishState(id: number) {
-		const index = SharedTransition.currentStack?.findIndex((t) => t.instance.id === id);
+		const index = currentStack?.findIndex((t) => t.instance?.id === id);
 		if (index > -1) {
-			SharedTransition.currentStack.splice(index, 1);
+			currentStack.splice(index, 1);
 		}
 	}
 	/**
@@ -203,6 +200,12 @@ export class SharedTransition {
 	}
 }
 
+/**
+ * Get dimensional rectangle (x,y,width,height) from properties with fallbacks for any undefined values.
+ * @param props combination of properties conformed to SharedTransitionPageProperties
+ * @param defaults fallback properties when props doesn't contain a value for it
+ * @returns { x,y,width,height }
+ */
 export function getRectFromProps(props: SharedTransitionPageProperties, defaults?: SharedRect): SharedRect {
 	defaults = {
 		x: 0,
@@ -219,6 +222,11 @@ export function getRectFromProps(props: SharedTransitionPageProperties, defaults
 	};
 }
 
+/**
+ * Get spring properties with default fallbacks for any undefined values.
+ * @param props various spring related properties conforming to SharedSpringProperties
+ * @returns
+ */
 export function getSpringFromProps(props: SharedSpringProperties) {
 	return {
 		tension: isNumber(props?.tension) ? props?.tension : DEFAULT_SPRING.tension,
@@ -229,6 +237,11 @@ export function getSpringFromProps(props: SharedSpringProperties) {
 	};
 }
 
+/**
+ * Page starting defaults for provided type.
+ * @param type 'page' | 'modal'
+ * @returns { x,y,width,height }
+ */
 export function getPageStartDefaultsForType(type: 'page' | 'modal') {
 	return {
 		x: type === 'page' ? Screen.mainScreen.widthDIPs : 0,

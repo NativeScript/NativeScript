@@ -1,8 +1,10 @@
 import type { SharedInteractiveState, SharedTransitionType } from '.';
 import { getPageStartDefaultsForType, getRectFromProps, getSpringFromProps, SharedTransition, SharedTransitionAnimationType, SharedTransitionState } from './shared-transition';
+import { fromObject } from '../../data/observable';
 import { isNumber } from '../../utils/types';
 import { Screen } from '../../platform';
 import { iOSNativeHelper } from '../../utils/native-helper';
+
 interface PlatformSharedInteractiveState extends SharedInteractiveState {
 	transitionContext?: UIViewControllerContextTransitioning;
 	propertyAnimator?: UIViewPropertyAnimator;
@@ -19,6 +21,11 @@ export class SharedTransitionHelper {
 					// console.log('-- Transition present --');
 					SharedTransition.events().notify({
 						eventName: SharedTransition.startedEvent,
+						object: fromObject({
+							id: transition.id,
+							type,
+							action: 'present',
+						}),
 					});
 
 					if (type === 'modal') {
@@ -29,9 +36,16 @@ export class SharedTransitionHelper {
 					transition.presented.view.layoutIfNeeded();
 
 					const { sharedElements, presented, presenting } = SharedTransition.getSharedElements(state.page, state.toPage);
+					if (!transition.sharedElements) {
+						transition.sharedElements = {
+							presented: [],
+							presenting: [],
+							independent: [],
+						};
+					}
 
 					if (SharedTransition.DEBUG) {
-						console.log('  ModalTransition: Present');
+						console.log(`  ${type}: Present`);
 						console.log(
 							`1. Found sharedTransitionTags to animate:`,
 							sharedElements.map((v) => v.sharedTransitionTag)
@@ -49,13 +63,6 @@ export class SharedTransitionHelper {
 					// console.log('pageEndIndependentTags:', pageEndIndependentTags);
 
 					for (const presentingView of sharedElements) {
-						if (!transition.sharedElements) {
-							transition.sharedElements = {
-								presented: [],
-								presenting: [],
-								independent: [],
-							};
-						}
 						const presentingSharedElement = presentingView.ios;
 						// console.log('fromTarget instanceof UIImageView:', fromTarget instanceof UIImageView)
 
@@ -216,6 +223,11 @@ export class SharedTransitionHelper {
 						transitionContext.completeTransition(true);
 						SharedTransition.events().notify({
 							eventName: SharedTransition.finishedEvent,
+							object: fromObject({
+								id: transition?.id,
+								type,
+								action: 'present',
+							}),
 						});
 					};
 
@@ -302,6 +314,11 @@ export class SharedTransitionHelper {
 					// console.log('-- Transition dismiss --');
 					SharedTransition.events().notify({
 						eventName: SharedTransition.startedEvent,
+						object: fromObject({
+							id: transition?.id,
+							type,
+							action: 'dismiss',
+						}),
 					});
 					if (type === 'page') {
 						transitionContext.containerView.insertSubviewBelowSubview(transition.presenting.view, transition.presented.view);
@@ -310,7 +327,7 @@ export class SharedTransitionHelper {
 					// console.log('transitionContext.containerView.subviews.count:', transitionContext.containerView.subviews.count);
 
 					if (SharedTransition.DEBUG) {
-						console.log('  ModalTransition: Dismiss');
+						console.log(`  ${type}: Dismiss`);
 						console.log(
 							`1. Dismiss sharedTransitionTags to animate:`,
 							transition.sharedElements.presented.map((p) => p.view.sharedTransitionTag)
@@ -347,6 +364,11 @@ export class SharedTransitionHelper {
 						transitionContext.completeTransition(true);
 						SharedTransition.events().notify({
 							eventName: SharedTransition.finishedEvent,
+							object: fromObject({
+								id: transition?.id,
+								type,
+								action: 'dismiss',
+							}),
 						});
 					};
 
@@ -413,9 +435,14 @@ export class SharedTransitionHelper {
 		});
 	}
 
-	static interactiveStart(state: SharedTransitionState, interactiveState: SharedInteractiveState, type: SharedTransitionType) {
+	static interactiveStart(state: SharedTransitionState, interactiveState: PlatformSharedInteractiveState, type: SharedTransitionType) {
 		SharedTransition.events().notify({
 			eventName: SharedTransition.startedEvent,
+			object: fromObject({
+				id: state?.instance?.id,
+				type,
+				action: 'interactiveStart',
+			}),
 		});
 		switch (type) {
 			case 'page':
@@ -424,8 +451,8 @@ export class SharedTransitionHelper {
 		}
 	}
 
-	static interactiveUpdate(state: SharedTransitionState, interactiveState: SharedInteractiveState, type: SharedTransitionType, percent: number) {
-		if (!interactiveState.added) {
+	static interactiveUpdate(state: SharedTransitionState, interactiveState: PlatformSharedInteractiveState, type: SharedTransitionType, percent: number) {
+		if (!interactiveState?.added) {
 			interactiveState.added = true;
 			for (const p of state.instance.sharedElements.presented) {
 				p.view.opacity = 0;
@@ -452,8 +479,8 @@ export class SharedTransitionHelper {
 		interactiveState.propertyAnimator.fractionComplete = percent;
 	}
 
-	static interactiveCancel(state: SharedTransitionState, interactiveState: SharedInteractiveState, type: SharedTransitionType) {
-		if (state.instance && interactiveState.added && interactiveState.propertyAnimator) {
+	static interactiveCancel(state: SharedTransitionState, interactiveState: PlatformSharedInteractiveState, type: SharedTransitionType) {
+		if (state?.instance && interactiveState?.added && interactiveState?.propertyAnimator) {
 			interactiveState.propertyAnimator.reversed = true;
 			const duration = isNumber(state.pageStart?.duration) ? state.pageStart?.duration / 1000 : 0.35;
 			interactiveState.propertyAnimator.continueAnimationWithTimingParametersDurationFactor(null, duration);
@@ -471,13 +498,18 @@ export class SharedTransitionHelper {
 				interactiveState.transitionContext.completeTransition(false);
 				SharedTransition.events().notify({
 					eventName: SharedTransition.cancelledEvent,
+					object: fromObject({
+						id: state?.instance?.id,
+						type,
+						action: 'interactiveCancel',
+					}),
 				});
 			}, duration * 1000);
 		}
 	}
 
-	static interactiveFinish(state: SharedTransitionState, interactiveState: SharedInteractiveState, type: SharedTransitionType) {
-		if (state.instance && interactiveState.added && interactiveState.propertyAnimator) {
+	static interactiveFinish(state: SharedTransitionState, interactiveState: PlatformSharedInteractiveState, type: SharedTransitionType) {
+		if (state?.instance && interactiveState?.added && interactiveState?.propertyAnimator) {
 			interactiveState.propertyAnimator.reversed = false;
 
 			const duration = isNumber(state.pageReturn?.duration) ? state.pageReturn?.duration / 1000 : 0.35;
@@ -495,6 +527,11 @@ export class SharedTransitionHelper {
 				interactiveState.transitionContext.completeTransition(true);
 				SharedTransition.events().notify({
 					eventName: SharedTransition.finishedEvent,
+					object: fromObject({
+						id: state?.instance?.id,
+						type,
+						action: 'interactiveFinish',
+					}),
 				});
 			}, duration * 1000);
 		}
