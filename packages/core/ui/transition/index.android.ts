@@ -27,6 +27,10 @@ export class Transition implements TransitionType {
 		return this._duration;
 	}
 
+	public setDuration(value: number) {
+		this._duration = value;
+	}
+
 	public getCurve(): android.view.animation.Interpolator {
 		return this._interpolator;
 	}

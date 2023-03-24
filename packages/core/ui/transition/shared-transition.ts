@@ -89,6 +89,10 @@ type SharedTransitionPageProperties = SharedProperties & {
 	 * Note: When this is defined, it will override spring options and use only linear animation.
 	 */
 	duration?: number;
+	/**
+	 * (iOS Only) Allow "independent" elements found only on one of the screens to take part in the animation.
+	 * Note: This feature will be brought to Android in a future release.
+	 */
 	sharedTransitionTags?: { [key: string]: SharedProperties };
 	/**
 	 * Spring animation settings.
@@ -116,6 +120,10 @@ export class SharedTransition {
 			instance: transition,
 			activeType: SharedTransitionAnimationType.present,
 		});
+		const pageEnd = options.pageEnd;
+		if (isNumber(pageEnd?.duration)) {
+			transition.setDuration(pageEnd?.duration);
+		}
 		return { instance: transition };
 	}
 	static events() {

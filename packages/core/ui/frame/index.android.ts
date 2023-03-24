@@ -22,6 +22,7 @@ import { profile } from '../../profiling';
 import { setSuspended } from '../../application/application-common';
 import { ad } from '../../utils/native-helper';
 import type { ExpandedEntry } from './fragment.transitions.android';
+import { SharedTransition, SharedTransitionAnimationType } from '../transition/shared-transition';
 
 export * from './frame-common';
 
@@ -467,6 +468,12 @@ export class Frame extends FrameBase {
 		navigationTransition?.instance?.androidFragmentTransactionCallback?.(transaction, currentEntry, newEntry);
 
 		transaction.commitAllowingStateLoss();
+
+		if (navigationTransition?.instance) {
+			SharedTransition.updateState(navigationTransition?.instance?.id, {
+				activeType: SharedTransitionAnimationType.dismiss,
+			});
+		}
 	}
 
 	public _goBackCore(backstackEntry: BackstackEntry & ExpandedEntry) {
@@ -492,6 +499,10 @@ export class Frame extends FrameBase {
 		backstackEntry.transition?.androidFragmentTransactionCallback?.(transaction, this._currentEntry, backstackEntry);
 
 		transaction.commitAllowingStateLoss();
+
+		if (backstackEntry?.transition) {
+			SharedTransition.finishState(backstackEntry.transition.id);
+		}
 	}
 
 	public _removeEntry(removed: BackstackEntry): void {

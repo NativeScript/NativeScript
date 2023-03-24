@@ -24,6 +24,7 @@ export declare class Transition {
 	static AndroidTransitionType?: { enter?: string; exit?: string; popEnter?: string; popExit?: string };
 	constructor(duration?: number, nativeCurve?: any /* UIViewAnimationCurve | string | CubicBezierAnimationCurve | android.view.animation.Interpolator | android.view.animation.LinearInterpolator */);
 	getDuration(): number;
+	setDuration(value: number): void;
 	getCurve(): any;
 	animateIOSTransition(transitionContext: any /*UIViewControllerContextTransitioning */, fromViewCtrl: any /* UIViewController */, toViewCtrl: any /* UIViewController */, operation: any /* UINavigationControllerOperation */): void;
 	createAndroidAnimator(transitionType: string): any;

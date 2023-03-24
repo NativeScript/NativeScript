@@ -1,10 +1,8 @@
 ﻿import type { View } from '../core/view';
 import { SharedElementSettings, SharedInteractiveState, Transition } from '.';
-import { Screen } from '../../platform';
-import { iOSNativeHelper } from '../../utils/native-helper';
 import { isNumber } from '../../utils/types';
 import { PanGestureEventData, GestureStateTypes } from '../gestures';
-import { SharedTransition, SharedTransitionAnimationType, DEFAULT_DURATION, DEFAULT_SPRING, getRectFromProps, getPageStartDefaultsForType } from './shared-transition';
+import { SharedTransition, DEFAULT_DURATION } from './shared-transition';
 import { SharedTransitionHelper } from './shared-transition-helper';
 
 export class PageTransition extends Transition {
