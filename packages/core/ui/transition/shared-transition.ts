@@ -48,7 +48,7 @@ type SharedTransitionPageWithDurationProperties = SharedTransitionPageProperties
 	 * Linear duration in milliseconds
 	 * Note: When this is defined, it will override spring options and use only linear animation.
 	 */
-	duration?: number;
+	duration?: number | undefined | null;
 };
 export interface SharedTransitionInteractiveOptions {
 	/**
@@ -135,7 +135,7 @@ export class SharedTransition {
 			instance: transition,
 			activeType: SharedTransitionAnimationType.present,
 		});
-		const pageEnd = options.pageEnd;
+		const pageEnd = options?.pageEnd;
 		if (isNumber(pageEnd?.duration)) {
 			transition.setDuration(pageEnd?.duration);
 		}
