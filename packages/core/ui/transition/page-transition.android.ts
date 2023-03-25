@@ -80,6 +80,9 @@ export class PageTransition extends FadeTransition {
 		if (curve) {
 			console.warn('PageTransition does not support custom curves at the moment. The passed in curve will be ignored.');
 		}
+		if (typeof duration !== 'number') {
+			duration = 500;
+		}
 		super(duration);
 	}
 

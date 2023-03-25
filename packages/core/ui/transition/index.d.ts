@@ -1,8 +1,8 @@
 ﻿import type { View } from '../core/view';
 import type { BackstackEntry } from '../frame';
 export type SharedElementSettings = { view: View; startFrame: any; endFrame?: any; startOpacity?: number; endOpacity?: number; scale?: { x?: number; y?: number }; startTransform?: any; snapshot?: any };
-export type SharedTransitionType = 'page' | 'modal';
-export interface SharedInteractiveState {
+export type TransitionNavigationType = 'page' | 'modal';
+export interface TransitionInteractiveState {
 	started?: false;
 	added?: boolean;
 	transitionContext?: any;

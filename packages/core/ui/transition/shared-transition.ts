@@ -1,4 +1,4 @@
-import type { Transition } from '.';
+import type { Transition, TransitionNavigationType } from '.';
 import { Observable } from '../../data/observable';
 import { Screen } from '../../platform';
 import { isNumber } from '../../utils/types';
@@ -19,6 +19,37 @@ export enum SharedTransitionAnimationType {
 	present,
 	dismiss,
 }
+type SharedTransitionEventAction = 'present' | 'dismiss' | 'interactiveStart' | 'interactiveFinish';
+export type SharedTransitionEventData = { eventName: string; data: { id: number; type: TransitionNavigationType; action?: SharedTransitionEventAction; percent?: number } };
+export type SharedRect = { x?: number; y?: number; width?: number; height?: number };
+export type SharedProperties = SharedRect & { opacity?: number; scale?: { x?: number; y?: number } };
+export type SharedSpringProperties = {
+	tension?: number;
+	friction?: number;
+	mass?: number;
+	delay?: number;
+	velocity?: number;
+	animateOptions?: any /* ios only: UIViewAnimationOptions */;
+};
+type SharedTransitionPageProperties = SharedProperties & {
+	/**
+	 * (iOS Only) Allow "independent" elements found only on one of the screens to take part in the animation.
+	 * Note: This feature will be brought to Android in a future release.
+	 */
+	sharedTransitionTags?: { [key: string]: SharedProperties };
+	/**
+	 * Spring animation settings.
+	 * Defaults to 140 tension with 10 friction.
+	 */
+	spring?: SharedSpringProperties;
+};
+type SharedTransitionPageWithDurationProperties = SharedTransitionPageProperties & {
+	/**
+	 * Linear duration in milliseconds
+	 * Note: When this is defined, it will override spring options and use only linear animation.
+	 */
+	duration?: number;
+};
 export interface SharedTransitionInteractiveOptions {
 	/**
 	 * When the pan exceeds this percentage and you let go, finish the transition.
@@ -36,10 +67,6 @@ export interface SharedTransitionInteractiveOptions {
 }
 export interface SharedTransitionConfig {
 	/**
-	 * Preconfigured transition or your own custom configured one.
-	 */
-	instance?: Transition;
-	/**
 	 * Interactive transition settings. (iOS only at the moment)
 	 */
 	interactive?: {
@@ -50,57 +77,45 @@ export interface SharedTransitionConfig {
 		dismiss?: SharedTransitionInteractiveOptions;
 	};
 	/**
-	 * View settings to start your transition.
+	 * View settings to start your transition with.
 	 */
 	pageStart?: SharedTransitionPageProperties;
 	/**
-	 * View settings to end your transition.
+	 * View settings to end your transition with.
 	 */
-	pageEnd?: SharedTransitionPageProperties;
+	pageEnd?: SharedTransitionPageWithDurationProperties;
 	/**
-	 * View settings to end your transition for the 'from' (aka outgoing or dismissed) page.
+	 * View settings to return to the original page with.
 	 */
-	pageReturn?: SharedTransitionPageProperties;
+	pageReturn?: SharedTransitionPageWithDurationProperties;
 }
 export interface SharedTransitionState extends SharedTransitionConfig {
+	/**
+	 * (Internally used) Preconfigured transition or your own custom configured one.
+	 */
+	instance?: Transition;
 	/**
 	 * Page which will start the transition.
 	 */
 	page?: ViewBase;
 	activeType?: SharedTransitionAnimationType;
 	toPage?: ViewBase;
-	// used internally for determining interactive gesture state of the transition
+	/**
+	 * Whether interactive transition has began.
+	 */
 	interactiveBegan?: boolean;
+	/**
+	 * Whether interactive transition was cancelled.
+	 */
 	interactiveCancelled?: boolean;
 }
-export type SharedRect = { x?: number; y?: number; width?: number; height?: number };
-export type SharedProperties = SharedRect & { opacity?: number; scale?: { x?: number; y?: number } };
-export type SharedSpringProperties = {
-	tension?: number;
-	friction?: number;
-	mass?: number;
-	delay?: number;
-	velocity?: number;
-	animateOptions?: any /* ios only: UIViewAnimationOptions */;
-};
-type SharedTransitionPageProperties = SharedProperties & {
-	/**
-	 * Linear duration in milliseconds
-	 * Note: When this is defined, it will override spring options and use only linear animation.
-	 */
-	duration?: number;
-	/**
-	 * (iOS Only) Allow "independent" elements found only on one of the screens to take part in the animation.
-	 * Note: This feature will be brought to Android in a future release.
-	 */
-	sharedTransitionTags?: { [key: string]: SharedProperties };
-	/**
-	 * Spring animation settings.
-	 * Defaults to 140 tension with 10 friction.
-	 */
-	spring?: SharedSpringProperties;
-};
-let sharedTransitionEvents: Observable;
+class SharedTransitionObservable extends Observable {
+	// @ts-ignore
+	on(eventNames: string, callback: (data: SharedTransitionEventData) => void, thisArg?: any) {
+		super.on(eventNames, <any>callback, thisArg);
+	}
+}
+let sharedTransitionEvents: SharedTransitionObservable;
 let currentStack: Array<SharedTransitionState>;
 /**
  * Shared Element Transitions (preview)
@@ -126,22 +141,41 @@ export class SharedTransition {
 		}
 		return { instance: transition };
 	}
-	static events() {
+	/**
+	 * Listen to various shared element transition events.
+	 * @returns Observable
+	 */
+	static events(): SharedTransitionObservable {
 		if (!sharedTransitionEvents) {
-			sharedTransitionEvents = new Observable();
+			sharedTransitionEvents = new SharedTransitionObservable();
 		}
 		return sharedTransitionEvents;
 	}
+	/**
+	 * When the transition starts.
+	 */
 	static startedEvent = 'SharedTransitionStartedEvent';
+	/**
+	 * When the transition finishes.
+	 */
 	static finishedEvent = 'SharedTransitionFinishedEvent';
-	static cancelledEvent = 'SharedTransitionCancelledEvent';
+	/**
+	 * When the interactive transition cancels.
+	 */
+	static interactiveCancelledEvent = 'SharedTransitionInteractiveCancelledEvent';
+	/**
+	 * When the interactive transition updates with the percent value.
+	 */
+	static interactiveUpdateEvent = 'SharedTransitionInteractiveUpdateEvent';
 
 	/**
 	 * Enable to see various console logging output of Shared Element Transition behavior.
 	 */
 	static DEBUG = false;
 	/**
-	 * @private
+	 * Update transition state.
+	 * @param id Transition instance id
+	 * @param state SharedTransitionState
 	 */
 	static updateState(id: number, state: SharedTransitionState) {
 		if (!currentStack) {
@@ -159,13 +193,15 @@ export class SharedTransition {
 		}
 	}
 	/**
-	 * @private
+	 * Get current state for any transition.
+	 * @param id Transition instance id
 	 */
 	static getState(id: number) {
 		return currentStack?.find((t) => t.instance?.id === id);
 	}
 	/**
-	 * @private
+	 * Finish transition state.
+	 * @param id Transition instance id
 	 */
 	static finishState(id: number) {
 		const index = currentStack?.findIndex((t) => t.instance?.id === id);
@@ -188,11 +224,11 @@ export class SharedTransition {
 		presenting: Array<View>;
 	} {
 		// 1. Presented view: gather all sharedTransitionTag views
-		const presentedSharedElements = <Array<View>>querySelectorAll(toPage, 'sharedTransitionTag');
+		const presentedSharedElements = <Array<View>>querySelectorAll(toPage, 'sharedTransitionTag').filter((v) => !v.sharedTransitionIgnore);
 		// console.log('presented sharedTransitionTag total:', presentedSharedElements.length);
 
 		// 2. Presenting view: gather all sharedTransitionTag views
-		const presentingSharedElements = <Array<View>>querySelectorAll(fromPage, 'sharedTransitionTag');
+		const presentingSharedElements = <Array<View>>querySelectorAll(fromPage, 'sharedTransitionTag').filter((v) => !v.sharedTransitionIgnore);
 		// console.log(
 		// 	'presenting sharedTransitionTags:',
 		// 	presentingSharedElements.map((v) => v.sharedTransitionTag)
@@ -247,10 +283,10 @@ export function getSpringFromProps(props: SharedSpringProperties) {
 
 /**
  * Page starting defaults for provided type.
- * @param type 'page' | 'modal'
+ * @param type TransitionNavigationType
  * @returns { x,y,width,height }
  */
-export function getPageStartDefaultsForType(type: 'page' | 'modal') {
+export function getPageStartDefaultsForType(type: TransitionNavigationType) {
 	return {
 		x: type === 'page' ? Screen.mainScreen.widthDIPs : 0,
 		y: type === 'page' ? 0 : Screen.mainScreen.heightDIPs,

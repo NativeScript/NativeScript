@@ -1,5 +1,5 @@
 ﻿import type { View } from '../core/view';
-import { SharedElementSettings, SharedInteractiveState, Transition } from '.';
+import { SharedElementSettings, TransitionInteractiveState, Transition } from '.';
 import { isNumber } from '../../utils/types';
 import { PanGestureEventData, GestureStateTypes } from '../gestures';
 import { SharedTransition, DEFAULT_DURATION } from './shared-transition';
@@ -122,7 +122,7 @@ export class PageTransition extends Transition {
 class PercentInteractiveController extends UIPercentDrivenInteractiveTransition implements UIViewControllerInteractiveTransitioning {
 	static ObjCProtocols = [UIViewControllerInteractiveTransitioning];
 	owner: WeakRef<PageTransition>;
-	interactiveState: SharedInteractiveState;
+	interactiveState: TransitionInteractiveState;
 
 	static initWithOwner(owner: WeakRef<PageTransition>) {
 		const ctrl = <PercentInteractiveController>PercentInteractiveController.new();

@@ -1,0 +1,40 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+  <Page.actionBar>
+    <ActionBar title="Transitions Example 1" icon="" class="action-bar">
+    </ActionBar>
+  </Page.actionBar>
+
+  <GridLayout rows="auto,*">
+    <SegmentedBar sharedTransitionTag="segmentbar" horizontalAlignment="center" selectedIndex="{{ segmentSelectedIndex }}" marginTop="20">
+      <SegmentedBarItem title="Example A" />
+      <SegmentedBarItem title="Example B" />
+      <SegmentedBarItem title="Example C" />
+    </SegmentedBar>
+
+    <!-- Example A: Fab -->
+    <ContentView visibility="{{ segmentSelectedIndex === 0 ? 'visible' : 'collapsed' }}" row="1" width="75" height="75" borderRadius="38" backgroundColor="#65adf1" sharedTransitionTag="fab" horizontalAlignment="right" verticalAlignment="bottom" marginBottom="20" marginRight="30" tap="{{open}}" sharedTransitionIgnore="{{segmentSelectedIndex!==0}}" />
+
+    <!-- Example B: Multiple Shapes in Layout Containers -->
+    <GridLayout row="1" visibility="{{ segmentSelectedIndex === 1 ? 'visible' : 'collapsed' }}" tap="{{open}}" marginTop="20" example2="true">
+      <GridLayout rows="" columns="*,auto,*,auto,*,auto,*,auto,*" verticalAlignment="bottom" marginBottom="20">
+        <ContentView col="1" width="40" height="40" borderRadius="20" backgroundColor="#65adf1" sharedTransitionTag="shape1" sharedTransitionIgnore="{{segmentSelectedIndex!==1}}" />
+        <ContentView col="3" width="40" height="40" borderRadius="20" backgroundColor="#65adf1" sharedTransitionTag="shape2" sharedTransitionIgnore="{{segmentSelectedIndex!==1}}" />
+        <ContentView col="5" width="40" height="40" borderRadius="20" backgroundColor="#65adf1" sharedTransitionTag="shape3" sharedTransitionIgnore="{{segmentSelectedIndex!==1}}" />
+        <ContentView col="7" width="40" height="40" borderRadius="20" backgroundColor="#65adf1" sharedTransitionTag="shape4" sharedTransitionIgnore="{{segmentSelectedIndex!==1}}" />
+      </GridLayout>
+    </GridLayout>
+
+
+    <!-- Example C: Dynamic sharedTransitionTags passed around -->
+    <GridLayout row="2" visibility="{{ segmentSelectedIndex === 2 ? 'visible' : 'collapsed' }}" marginTop="20" example3="true">
+      <ListView items="{{ items }}" itemTap="{{onItemTap}}" separatorColor="transparent">
+        <ListView.itemTemplate>
+          <GridLayout columns="auto,*" padding="8">
+            <ContentView marginLeft="10" width="40" height="40" borderRadius="20" backgroundColor="#65adf1" sharedTransitionTag="{{dynamicTag}}" />
+            <Label col="1" marginLeft="10" text="{{ title }}" />
+          </GridLayout>
+        </ListView.itemTemplate>
+      </ListView>
+    </GridLayout>
+  </GridLayout>
+</Page>

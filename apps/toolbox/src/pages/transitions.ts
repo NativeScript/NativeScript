@@ -6,50 +6,27 @@ export function navigatingTo(args: EventData) {
 	page.bindingContext = new TransitionsModel();
 }
 
-// class SampleCustomModalTransition extends ModalTransition implements TransitionType {
-
-// }
-// SharedTransition.DEBUG = true;
 export class TransitionsModel extends Observable {
-	open() {
+	open(args: EventData) {
+		const type = (<any>args.object).type;
+		let moduleName: string;
+		switch (type) {
+			case '1':
+				moduleName = `pages/transitions/transition-example`;
+				break;
+			case '2':
+				moduleName = `pages/transitions/transition-page-modal-example`;
+				break;
+		}
 		page.frame.navigate({
-			moduleName: `pages/transitions/transitions-detail`,
+			moduleName,
 			transition: SharedTransition.custom(new PageTransition(), {
 				interactive: {
 					dismiss: {
 						finishThreshold: 0.5,
 					},
 				},
-				// toPageStart: {
-				// 	duration: 1000,
-				// },
-				// fromPageEnd: {
-				// 	duration: 500,
-				// },
 			}),
 		});
-	}
-
-	openModal() {
-		page.showModal('pages/transitions/transitions-modal', {
-			transition: SharedTransition.custom(new ModalTransition(), {
-				interactive: {
-					dismiss: {
-						finishThreshold: 0.5,
-					},
-				},
-				pageStart: {
-					y: 200,
-					// duration: 400,
-				},
-				pageReturn: {
-					y: 100,
-					// duration: 500,
-				},
-			}),
-			closeCallback(args) {
-				// console.log('close modal callback', args);
-			},
-		} as ShowModalOptions);
 	}
 }

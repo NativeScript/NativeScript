@@ -1,9 +1,7 @@
 import type { View } from '../core/view';
-import { Screen } from '../../platform';
-import { iOSNativeHelper } from '../../utils/native-helper';
 import { isNumber } from '../../utils/types';
-import { Transition, SharedElementSettings, SharedInteractiveState } from '.';
-import { SharedTransition, SharedTransitionAnimationType, DEFAULT_DURATION, DEFAULT_SPRING, getRectFromProps, getPageStartDefaultsForType } from './shared-transition';
+import { Transition, SharedElementSettings, TransitionInteractiveState } from '.';
+import { SharedTransition, DEFAULT_DURATION } from './shared-transition';
 import { SharedTransitionHelper } from './shared-transition-helper';
 import { PanGestureEventData, GestureStateTypes } from '../gestures';
 
@@ -103,7 +101,7 @@ export class ModalTransition extends Transition {
 class PercentInteractiveController extends UIPercentDrivenInteractiveTransition implements UIViewControllerInteractiveTransitioning {
 	static ObjCProtocols = [UIViewControllerInteractiveTransitioning];
 	owner: WeakRef<ModalTransition>;
-	interactiveState: SharedInteractiveState;
+	interactiveState: TransitionInteractiveState;
 
 	static initWithOwner(owner: WeakRef<ModalTransition>) {
 		const ctrl = <PercentInteractiveController>PercentInteractiveController.new();

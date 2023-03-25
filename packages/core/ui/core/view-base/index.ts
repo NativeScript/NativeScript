@@ -372,6 +372,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	 * Gets or sets the shared transition tag for animated view transitions
 	 */
 	public sharedTransitionTag: string;
+	/**
+	 * Opt out of shared transition under different binding conditions
+	 */
+	public sharedTransitionIgnore: boolean;
 
 	public _domId: number;
 	public _context: any /* android.content.Context */;

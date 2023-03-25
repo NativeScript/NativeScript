@@ -18,6 +18,10 @@ export class Transition implements TransitionType {
 		return this._duration;
 	}
 
+	public setDuration(value: number) {
+		this._duration = value;
+	}
+
 	public getCurve(): UIViewAnimationCurve {
 		return this._curve;
 	}
