@@ -126,8 +126,8 @@ export class SharedTransitionHelper {
 
 					for (const tag of pageEndIndependentTags) {
 						// only consider start when there's a matching end
-						const pageStartIndependentProps = pageStart?.sharedTransitionTags[tag];
-						console.log('start:', tag, pageStartIndependentProps);
+						const pageStartIndependentProps = pageStart?.sharedTransitionTags ? pageStart?.sharedTransitionTags[tag] : null;
+						// console.log('start:', tag, pageStartIndependentProps);
 						const pageEndIndependentProps = pageEnd?.sharedTransitionTags[tag];
 						let independentView = presenting.find((v) => v.sharedTransitionTag === tag);
 						let isPresented = false;
