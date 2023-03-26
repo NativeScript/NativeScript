@@ -166,7 +166,7 @@ export class SharedTransitionHelper {
 						const startFrameRect = getRectFromProps(pageStartIndependentProps);
 						// adjust for any specified start positions
 						const startFrameAdjusted = CGRectMake(startFrame.origin.x + startFrameRect.x, startFrame.origin.y + startFrameRect.y, startFrame.size.width, startFrame.size.height);
-						console.log('startFrameAdjusted:', tag, iOSNativeHelper.printCGRect(startFrameAdjusted));
+						// console.log('startFrameAdjusted:', tag, iOSNativeHelper.printCGRect(startFrameAdjusted));
 						// if (pageStartIndependentProps?.scale) {
 						// 	snapshot.transform = CGAffineTransformConcat(CGAffineTransformMakeTranslation(startFrameAdjusted.origin.x, startFrameAdjusted.origin.y), CGAffineTransformMakeScale(pageStartIndependentProps.scale.x, pageStartIndependentProps.scale.y))
 						// } else {
@@ -179,7 +179,7 @@ export class SharedTransitionHelper {
 						const endFrameRect = getRectFromProps(pageEndIndependentProps);
 
 						const endFrame = CGRectMake(startFrame.origin.x + endFrameRect.x, startFrame.origin.y + endFrameRect.y, startFrame.size.width, startFrame.size.height);
-						console.log('endFrame:', tag, iOSNativeHelper.printCGRect(endFrame));
+						// console.log('endFrame:', tag, iOSNativeHelper.printCGRect(endFrame));
 						transition.sharedElements.independent.push({
 							view: independentView,
 							isPresented,
