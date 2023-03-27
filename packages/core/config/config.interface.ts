@@ -19,9 +19,9 @@ interface IConfigIOS extends IConfigPlatform {
 	 */
 	SPMPackages?: Array<{
 		name: string;
-		libs?: Array<string>;
-		repositoryURL?: string;
-		version?: string;
+		libs: Array<string>;
+		repositoryURL: string;
+		version: string;
 	}>;
 }
 
