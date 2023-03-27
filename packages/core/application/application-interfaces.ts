@@ -1,5 +1,5 @@
 // Types
-import { EventData } from '../data/observable';
+import { EventData, Observable } from '../data/observable';
 import { View } from '../ui/core/view';
 
 /**
@@ -12,7 +12,7 @@ export interface NativeScriptError extends Error {
 	nativeError: any;
 }
 
-export interface ApplicationEventData extends EventData {
+export interface ApplicationEventData<T extends Observable = Observable> extends EventData<T> {
 	/**
 	 * UIApplication or undefined, unless otherwise specified. Prefer explicit
 	 * properties where possible.
@@ -34,7 +34,7 @@ export interface ApplicationEventData extends EventData {
 	object: any;
 }
 
-export interface LaunchEventData extends ApplicationEventData {
+export interface LaunchEventData<T extends Observable = Observable> extends ApplicationEventData<T> {
 	/**
 	 * The value stored into didFinishLaunchingWithOptions notification's
 	 * userInfo under 'UIApplicationLaunchOptionsLocalNotificationKey';
@@ -45,57 +45,71 @@ export interface LaunchEventData extends ApplicationEventData {
 	savedInstanceState?: any /* android.os.Bundle */;
 }
 
-export interface OrientationChangedEventData extends ApplicationEventData {
+export interface OrientationChangedEventData<T extends Observable = Observable> extends ApplicationEventData<T> {
 	android: any /* globalAndroid.app.Application */;
 	newValue: 'portrait' | 'landscape' | 'unknown';
 }
 
-export interface SystemAppearanceChangedEventData extends ApplicationEventData {
+export interface SystemAppearanceChangedEventData<T extends Observable = Observable> extends ApplicationEventData<T> {
 	android: any /* globalAndroid.app.Application */;
 	newValue: 'light' | 'dark';
 }
 
-export interface UnhandledErrorEventData extends ApplicationEventData {
+export interface UnhandledErrorEventData<T extends Observable = Observable> extends ApplicationEventData<T> {
 	ios?: NativeScriptError;
 	android?: NativeScriptError;
 	error: NativeScriptError;
 }
 
-export interface DiscardedErrorEventData extends ApplicationEventData {
+export interface DiscardedErrorEventData<T extends Observable = Observable> extends ApplicationEventData<T> {
 	error: NativeScriptError;
 }
 
-export interface CssChangedEventData extends ApplicationEventData {
+export interface CssChangedEventData<T extends Observable = Observable> extends ApplicationEventData<T> {
 	cssFile?: string;
 	cssText?: string;
 }
 
-export interface AndroidActivityEventData extends ApplicationEventData {
-	activity: any /* androidx.appcompat.app.AppCompatActivity */;
-	object: any /* AndroidApplication */;
+export interface AndroidActivityEventData<T extends Observable = Observable> extends ApplicationEventData<T> {
+	/**
+	 * The activity.
+	 * androidx.appcompat.app.AppCompatActivity
+	 */
+	activity: any;
+
+	/**
+	 * The name of the event.
+	 */
+	eventName: string;
+
+	/**
+	 * The instance that has raised the event.
+	 * AndroidApplication
+	 */
+	object: T;
 }
 
-export interface AndroidActivityBundleEventData extends AndroidActivityEventData {
+export interface AndroidActivityBundleEventData<T extends Observable = Observable> extends AndroidActivityEventData<T> {
 	bundle: any /* android.os.Bundle */;
 }
 
-export interface AndroidActivityRequestPermissionsEventData extends AndroidActivityEventData {
+export interface AndroidActivityRequestPermissionsEventData<T extends Observable = Observable> extends AndroidActivityEventData<T> {
 	requestCode: number;
 	permissions: Array<string>;
 	grantResults: Array<number>;
 }
 
-export interface AndroidActivityResultEventData extends AndroidActivityEventData {
+export interface AndroidActivityResultEventData<T extends Observable = Observable> extends AndroidActivityEventData<T> {
 	requestCode: number;
 	resultCode: number;
 	intent: any /* android.content.Intent */;
 }
 
-export interface AndroidActivityNewIntentEventData extends AndroidActivityEventData {
+export interface AndroidActivityNewIntentEventData<T extends Observable = Observable> extends AndroidActivityEventData<T> {
 	intent: any /* android.content.Intent */;
 }
 
-export interface AndroidActivityBackPressedEventData extends AndroidActivityEventData {
+export interface AndroidActivityBackPressedEventData<T extends Observable = Observable> extends AndroidActivityEventData<T> {
 	cancel: boolean;
 }
 
@@ -106,6 +120,6 @@ export interface RootViewControllerImpl {
 	contentController: any;
 }
 
-export interface LoadAppCSSEventData extends ApplicationEventData {
+export interface LoadAppCSSEventData<T extends Observable = Observable> extends ApplicationEventData<T> {
 	cssFile: string;
 }

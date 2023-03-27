@@ -61,12 +61,12 @@ export const maxValueProperty: CoercibleProperty<Slider, number>;
  */
 export const accessibilityStepProperty: Property<SliderBase, number>;
 
-interface AccessibilityIncrementEventData extends EventData {
+interface AccessibilityIncrementEventData<T extends Observable = Slider> extends EventData<T> {
 	object: Slider;
 	value?: number;
 }
 
-interface AccessibilityDecrementEventData extends EventData {
+interface AccessibilityDecrementEventData<T extends Observable = Slider> extends EventData<T> {
 	object: Slider;
 	value?: number;
 }

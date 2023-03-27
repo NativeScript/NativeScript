@@ -13,7 +13,7 @@ export class ChangeType {
 /**
  * Event args for "changed" event.
  */
-export interface ChangedData<T> extends EventData {
+export interface ChangedData<T, O extends Observable = Observable> extends EventData<O> {
 	/**
 	 * Change type.
 	 */
@@ -429,7 +429,7 @@ export interface ObservableArray<T> {
 	 * @param callback - Callback function which will be executed when event is raised.
 	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
 	 */
-	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void;
+	on<T extends Observable = Observable>(eventNames: string, callback: (data: EventData<T>) => void, thisArg?: any): void;
 
-	on(event: 'change', callback: (args: ChangedData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = Observable>(event: 'change', callback: (args: ChangedData<T>) => void, thisArg?: any): void;
 }

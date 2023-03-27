@@ -1,6 +1,6 @@
 import { View } from '../core/view';
 import { CreateViewEventData } from './placeholder-common';
-import { EventData } from '../../data/observable';
+import { EventData, Observable } from '../../data/observable';
 
 export * from './placeholder-common';
 
@@ -20,6 +20,6 @@ export class Placeholder extends View {
 	}
 }
 export interface Placeholder {
-	on(eventNames: string, callback: (args: EventData) => void, thisArg?: any): void;
-	on(event: 'creatingView', callback: (args: CreateViewEventData) => void, thisArg?: any): void;
+	on<T extends Observable = Placeholder>(eventNames: string, callback: (args: EventData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = Placeholder>(event: 'creatingView', callback: (args: CreateViewEventData<T>) => void, thisArg?: any): void;
 }

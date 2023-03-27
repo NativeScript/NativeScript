@@ -132,7 +132,7 @@ export namespace TouchAction {
 /**
  * Provides gesture event data.
  */
-export interface GestureEventData extends EventData {
+export interface GestureEventData<T extends Observable = View> extends EventData<T> {
 	/**
 	 * Gets the type of the gesture.
 	 */
@@ -154,7 +154,7 @@ export interface GestureEventData extends EventData {
 /**
  * Provides gesture event data.
  */
-export interface TapGestureEventData extends GestureEventData {
+export interface TapGestureEventData<T extends Observable = View> extends GestureEventData<T> {
 	/**
 	 * Gets the number of pointers in the event.
 	 */
@@ -172,7 +172,7 @@ export interface TapGestureEventData extends GestureEventData {
 /**
  * Provides gesture event data.
  */
-export interface TouchGestureEventData extends TapGestureEventData {
+export interface TouchGestureEventData<T extends Observable = View> extends TapGestureEventData<T> {
 	/**
 	 * Gets action of the touch. Possible values: 'up', 'move', 'down', 'cancel'
 	 */
@@ -241,14 +241,14 @@ export interface Pointer {
 /**
  * Provides gesture event data.
  */
-export interface GestureEventDataWithState extends GestureEventData {
+export interface GestureEventDataWithState<T extends Observable = View> extends GestureEventData<T> {
 	state: number;
 }
 
 /**
  * Provides gesture event data for pinch gesture.
  */
-export interface PinchGestureEventData extends GestureEventDataWithState {
+export interface PinchGestureEventData<T extends Observable = View> extends GestureEventDataWithState<T> {
 	scale: number;
 
 	getFocusX(): number;
@@ -258,14 +258,14 @@ export interface PinchGestureEventData extends GestureEventDataWithState {
 /**
  * Provides gesture event data for swipe gesture.
  */
-export interface SwipeGestureEventData extends GestureEventData {
+export interface SwipeGestureEventData<T extends Observable = View> extends GestureEventData<T> {
 	direction: SwipeDirection;
 }
 
 /**
  * Provides gesture event data for pan gesture.
  */
-export interface PanGestureEventData extends GestureEventDataWithState {
+export interface PanGestureEventData<T extends Observable = View> extends GestureEventDataWithState<T> {
 	deltaX: number;
 	deltaY: number;
 }
@@ -273,32 +273,32 @@ export interface PanGestureEventData extends GestureEventDataWithState {
 /**
  * Provides gesture event data for rotation gesture.
  */
-export interface RotationGestureEventData extends GestureEventDataWithState {
+export interface RotationGestureEventData<T extends Observable = View> extends GestureEventDataWithState<T> {
 	rotation: number;
 }
 
 /**
  * Provides options for the GesturesObserver.
  */
-export class GesturesObserver {
+export class GesturesObserver<T extends Observable = View> {
 	/**
 	 * Creates an instance of GesturesObserver class.
 	 * @param target - The view for which the observer is created.
 	 * @param callback - A function that will be executed when a gesture is received.
 	 * @param context - default this argument for the callbacks.
 	 */
-	constructor(target: View, callback: (args: GestureEventData) => void, context: any);
+	constructor(target: View, callback: (args: GestureEventData<T>) => void, context: any);
 
 	/**
 	 * Registers a gesture observer to a view and gesture.
 	 * @param type - Type of the gesture.
 	 */
-	observe(type: GestureTypes);
+	observe<T>(type: GestureTypes);
 
 	/**
 	 * Disconnects the gesture observer.
 	 */
-	disconnect();
+	disconnect<T>();
 
 	/**
 	 * Gesture type attached to the observer.
@@ -308,7 +308,7 @@ export class GesturesObserver {
 	/**
 	 * A function that will be executed when a gesture is received.
 	 */
-	callback: (args: GestureEventData) => void;
+	callback: (args: GestureEventData<T>) => void;
 
 	/**
 	 * A context which will be used as `this` in callback execution.
@@ -328,7 +328,7 @@ export class GesturesObserver {
  * @param callback - A function that will be executed when a gesture is received.
  * @param context - this argument for the callback.
  */
-export function observe(target: View, type: GestureTypes, callback: (args: GestureEventData) => void, context?: any): GesturesObserver;
+export function observe<T extends Observable = View>(target: View, type: GestureTypes, callback: (args: GestureEventData<T>) => void, context?: any): GesturesObserver<T>;
 
 /**
  * Returns a string representation of a gesture type.

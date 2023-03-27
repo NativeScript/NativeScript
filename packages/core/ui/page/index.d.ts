@@ -12,7 +12,7 @@ export * from './page-common';
 /**
  * Defines the data for the page navigation events.
  */
-export interface NavigatedData extends EventData {
+export interface NavigatedData<T extends Observable = Page> extends EventData<T> {
 	/**
 	 * The navigation context (optional, may be undefined) passed to the page navigation events method.
 	 */
@@ -116,27 +116,27 @@ export declare class Page extends PageBase {
 	 * @param callback - Callback function which will be executed when event is raised.
 	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
 	 */
-	public on(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void;
+	public on<T extends Observable = Page>(eventNames: string, callback: (data: EventData<T>) => void, thisArg?: any): void;
 
 	/**
 	 * Raised when navigation to the page has started.
 	 */
-	public on(event: 'navigatingTo', callback: (args: NavigatedData) => void, thisArg?: any): void;
+	public on<T extends Observable = Page>(event: 'navigatingTo', callback: (args: NavigatedData<T>) => void, thisArg?: any): void;
 
 	/**
 	 * Raised when navigation to the page has finished.
 	 */
-	public on(event: 'navigatedTo', callback: (args: NavigatedData) => void, thisArg?: any): void;
+	public on<T extends Observable = Page>(event: 'navigatedTo', callback: (args: NavigatedData<T>) => void, thisArg?: any): void;
 
 	/**
 	 * Raised when navigation from the page has started.
 	 */
-	public on(event: 'navigatingFrom', callback: (args: NavigatedData) => void, thisArg?: any): void;
+	public on<T extends Observable = Page>(event: 'navigatingFrom', callback: (args: NavigatedData<T>) => void, thisArg?: any): void;
 
 	/**
 	 * Raised when navigation from the page has finished.
 	 */
-	public on(event: 'navigatedFrom', callback: (args: NavigatedData) => void, thisArg?: any): void;
+	public on<T extends Observable = Page>(event: 'navigatedFrom', callback: (args: NavigatedData<T>) => void, thisArg?: any): void;
 	//@private
 
 	/**

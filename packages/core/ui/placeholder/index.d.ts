@@ -1,5 +1,5 @@
 ﻿import { View } from '../core/view';
-import { EventData } from '../../data/observable';
+import { EventData, Observable } from '../../data/observable';
 
 export * from './placeholder-common';
 
@@ -18,18 +18,18 @@ export class Placeholder extends View {
 	 * @param callback - Callback function which will be executed when event is raised.
 	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
 	 */
-	on(eventNames: string, callback: (args: EventData) => void, thisArg?: any): void;
+	on<T extends Observable = Placeholder>(eventNames: string, callback: (args: EventData<T>) => void, thisArg?: any): void;
 
 	/**
 	 * Raised when a creatingView event occurs.
 	 */
-	on(event: 'creatingView', callback: (args: CreateViewEventData) => void, thisArg?: any): void;
+	on<T extends Observable = Placeholder>(event: 'creatingView', callback: (args: CreateViewEventData<T>) => void, thisArg?: any): void;
 }
 
 /**
  * Event data containing information for creating a native view that will be added to the visual tree.
  */
-export interface CreateViewEventData extends EventData {
+export interface CreateViewEventData<T extends Observable = Placeholder> extends EventData<T> {
 	/**
 	 * The native view that should be added to the visual tree.
 	 */

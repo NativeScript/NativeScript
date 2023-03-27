@@ -18,7 +18,7 @@ export class SegmentedBarItem extends ViewBase {
 /**
  * Defines the data for the SegmentedBar.selectedIndexChanged event.
  */
-export interface SelectedIndexChangedEventData extends EventData {
+export interface SelectedIndexChangedEventData<T extends Observable = SegmentedBar> extends EventData<T> {
 	/**
 	 * The old selected index.
 	 */
@@ -60,12 +60,12 @@ export class SegmentedBar extends View implements AddChildFromBuilder, AddArrayF
 	 * @param callback - Callback function which will be executed when event is raised.
 	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
 	 */
-	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void;
+	on<T extends Observable = SegmentedBar>(eventNames: string, callback: (data: EventData<T>) => void, thisArg?: any): void;
 
 	/**
 	 * Raised when the selected index changes.
 	 */
-	on(event: 'selectedIndexChanged', callback: (args: SelectedIndexChangedEventData) => void, thisArg?: any): void;
+	on<T extends Observable = SegmentedBar>(event: 'selectedIndexChanged', callback: (args: SelectedIndexChangedEventData<T>) => void, thisArg?: any): void;
 
 	/**
 	 * Called for every child element declared in xml.

@@ -215,7 +215,7 @@ export class Cache extends Observable implements definition.Cache {
 	}
 }
 export interface Cache {
-	on(eventNames: string, callback: (args: EventData) => void, thisArg?: any): void;
-	on(event: 'downloaded', callback: (args: definition.DownloadedData) => void, thisArg?: any): void;
-	on(event: 'downloadError', callback: (args: definition.DownloadError) => void, thisArg?: any): void;
+	on<T extends Observable = Cache>(eventNames: string, callback: (args: EventData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = Cache>(event: 'downloaded', callback: (args: definition.DownloadedData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = Cache>(event: 'downloadError', callback: (args: definition.DownloadError<T>) => void, thisArg?: any): void;
 }

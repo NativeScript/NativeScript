@@ -2,7 +2,7 @@ import { TabView as TabViewDefinition, TabViewItem as TabViewItemDefinition, Sel
 import { View, AddArrayFromBuilder, AddChildFromBuilder, CSSType } from '../core/view';
 import { ViewBase, booleanConverter } from '../core/view-base';
 import { Style } from '../styling/style';
-import { EventData } from '../../data/observable';
+import { EventData, Observable } from '../../data/observable';
 import { Color } from '../../color';
 import { Property, CssProperty, CoercibleProperty } from '../core/properties';
 import { CoreTypes } from '../../core-types';
@@ -205,8 +205,8 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
 }
 
 export interface TabViewBase {
-	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void;
-	on(event: 'selectedIndexChanged', callback: (args: SelectedIndexChangedEventData) => void, thisArg?: any): void;
+	on<T extends Observable = TabViewBase>(eventNames: string, callback: (data: EventData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = TabViewBase>(event: 'selectedIndexChanged', callback: (args: SelectedIndexChangedEventData<T>) => void, thisArg?: any): void;
 }
 
 export function traceMissingIcon(icon: string) {

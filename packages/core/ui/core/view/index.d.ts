@@ -83,7 +83,7 @@ export interface Size {
 /**
  * Defines the data for the shownModally event.
  */
-export interface ShownModallyData extends EventData {
+export interface ShownModallyData<T extends Observable = ViewCommon> extends EventData<T> {
 	/**
 	 * The context (optional, may be undefined) passed to the view when shown modally.
 	 */
@@ -585,7 +585,7 @@ export abstract class View extends ViewCommon {
 	 * @param callback An optional parameter pointing to a specific listener. If not defined, all listeners for the event names will be removed.
 	 * @param thisArg An optional parameter which when set will be used to refine search of the correct callback which will be removed as event listener.
 	 */
-	off(eventNames: string | GestureTypes, callback?: (args: EventData) => void, thisArg?: any);
+	off<T extends Observable = View>(eventNames: string | GestureTypes, callback?: (args: EventData<T>) => void, thisArg?: any);
 
 	/**
 	 * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
@@ -593,33 +593,33 @@ export abstract class View extends ViewCommon {
 	 * @param callback - Callback function which will be executed when event is raised.
 	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
 	 */
-	on(eventNames: string | GestureTypes, callback: (args: EventData) => void, thisArg?: any);
+	on<T extends Observable = View>(eventNames: string | GestureTypes, callback: (args: EventData<T>) => void, thisArg?: any);
 
 	/**
 	 * Raised when a loaded event occurs.
 	 */
-	on(event: 'loaded', callback: (args: EventData) => void, thisArg?: any);
+	on<T extends Observable = View>(event: 'loaded', callback: (args: EventData<T>) => void, thisArg?: any);
 
 	/**
 	 * Raised when an unloaded event occurs.
 	 */
-	on(event: 'unloaded', callback: (args: EventData) => void, thisArg?: any);
+	on<T extends Observable = View>(event: 'unloaded', callback: (args: EventData<T>) => void, thisArg?: any);
 
 	/**
 	 * Raised when a back button is pressed.
 	 * This event is raised only for android.
 	 */
-	on(event: 'androidBackPressed', callback: (args: EventData) => void, thisArg?: any);
+	on<T extends Observable = View>(event: 'androidBackPressed', callback: (args: EventData<T>) => void, thisArg?: any);
 
 	/**
 	 * Raised before the view is shown as a modal dialog.
 	 */
-	on(event: 'showingModally', callback: (args: ShownModallyData) => void, thisArg?: any): void;
+	on<T extends Observable = View>(event: 'showingModally', callback: (args: ShownModallyData<T>) => void, thisArg?: any): void;
 
 	/**
 	 * Raised after the view is shown as a modal dialog.
 	 */
-	on(event: 'shownModally', callback: (args: ShownModallyData) => void, thisArg?: any);
+	on<T extends Observable = View>(event: 'shownModally', callback: (args: ShownModallyData<T>) => void, thisArg?: any);
 
 	/**
 	 * Returns the current modal view that this page is showing (is parent of), if any.

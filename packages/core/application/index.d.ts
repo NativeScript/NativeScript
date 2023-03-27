@@ -102,7 +102,7 @@ export function setMaxRefreshRate(options?: { min?: number; max?: number; prefer
 /**
  * Event data containing information for the application events.
  */
-export interface ApplicationEventData extends EventData {
+export interface ApplicationEventData<T extends Observable = Observable> extends EventData<T> {
 	/**
 	 * Gets the native iOS event arguments. Valid only when running on iOS.
 	 */
@@ -127,7 +127,7 @@ export interface ApplicationEventData extends EventData {
 /**
  * Event data containing information for launch event.
  */
-export interface LaunchEventData extends ApplicationEventData {
+export interface LaunchEventData<T extends Observable = Observable> extends ApplicationEventData<T> {
 	/**
 	 * The root view for this Window on iOS or Activity for Android.
 	 * If not set a new Frame will be created as a root view in order to maintain backwards compatibility.
@@ -141,7 +141,7 @@ export interface LaunchEventData extends ApplicationEventData {
 /**
  * Event data containing information for orientation changed event.
  */
-export interface OrientationChangedEventData extends ApplicationEventData {
+export interface OrientationChangedEventData<T extends Observable = Observable> extends ApplicationEventData<T> {
 	/**
 	 * New orientation value.
 	 */
@@ -151,7 +151,7 @@ export interface OrientationChangedEventData extends ApplicationEventData {
 /**
  * Event data containing information for system appearance changed event.
  */
-export interface SystemAppearanceChangedEventData extends ApplicationEventData {
+export interface SystemAppearanceChangedEventData<T extends Observable = Observable> extends ApplicationEventData<T> {
 	/**
 	 * New system appearance value.
 	 */
@@ -161,7 +161,7 @@ export interface SystemAppearanceChangedEventData extends ApplicationEventData {
 /**
  * Event data containing information for font scale changed event.
  */
-export interface FontScaleChangedEventData extends ApplicationEventData {
+export interface FontScaleChangedEventData<T extends Observable = Observable> extends ApplicationEventData<T> {
 	/**
 	 * New font scale value.
 	 */
@@ -171,7 +171,7 @@ export interface FontScaleChangedEventData extends ApplicationEventData {
 /**
  * Event data containing information about unhandled application errors.
  */
-export interface UnhandledErrorEventData extends ApplicationEventData {
+export interface UnhandledErrorEventData<T extends Observable = Observable> extends ApplicationEventData<T> {
 	ios?: NativeScriptError;
 	android?: NativeScriptError;
 	error: NativeScriptError;
@@ -180,14 +180,14 @@ export interface UnhandledErrorEventData extends ApplicationEventData {
 /**
  * Event data containing information about discarded application errors.
  */
-export interface DiscardedErrorEventData extends ApplicationEventData {
+export interface DiscardedErrorEventData<T extends Observable = Observable> extends ApplicationEventData<T> {
 	error: NativeScriptError;
 }
 
 /**
  * Event data containing information about application css change.
  */
-export interface CssChangedEventData extends EventData {
+export interface CssChangedEventData<T extends Observable = Observable> extends EventData<T> {
 	cssFile?: string;
 	cssText?: string;
 }
@@ -257,7 +257,7 @@ export function _resetRootView(entry?: NavigationEntry | string);
 /**
  * Removes listener for the specified event name.
  */
-export function off(eventNames: string, callback?: (eventData: ApplicationEventData) => void, thisArg?: any): void;
+export function off<T extends Observable = Observable>(eventNames: string, callback?: (eventData: ApplicationEventData<T>) => void, thisArg?: any): void;
 
 /**
  * Shortcut alias to the removeEventListener method.
@@ -265,7 +265,7 @@ export function off(eventNames: string, callback?: (eventData: ApplicationEventD
  * @param callback - Callback function which will be removed.
  * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
  */
-export function off(eventNames: string, callback?: (eventData: ApplicationEventData) => void, thisArg?: any): void;
+export function off<T extends Observable = Observable>(eventNames: string, callback?: (eventData: ApplicationEventData<T>) => void, thisArg?: any): void;
 
 /**
  * Notifies all the registered listeners for the event provided in the data.eventName.
@@ -285,78 +285,78 @@ export function hasListeners(eventName: string): boolean;
  * @param callback - Callback function which will be executed when event is raised.
  * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
  */
-export function on(eventNames: string, callback: (args: EventData) => void, thisArg?: any): void;
+export function on<T extends Observable = Observable>(eventNames: string, callback: (args: EventData<T>) => void, thisArg?: any): void;
 
 /**
  * This event is raised when application css is changed.
  */
-export function on(event: 'cssChanged', callback: (args: CssChangedEventData) => void, thisArg?: any): void;
+export function on<T extends Observable = Observable>(event: 'cssChanged', callback: (args: CssChangedEventData<T>) => void, thisArg?: any): void;
 
 /**
  * Event raised then livesync operation is performed.
  */
-export function on(event: 'livesync', callback: (args: ApplicationEventData) => void, thisArg?: any): void;
+export function on<T extends Observable = Observable>(event: 'livesync', callback: (args: ApplicationEventData<T>) => void, thisArg?: any): void;
 
 /**
  * This event is raised when application css is changed.
  */
-export function on(event: 'cssChanged', callback: (args: CssChangedEventData) => void, thisArg?: any): void;
+export function on<T extends Observable = Observable>(event: 'cssChanged', callback: (args: CssChangedEventData<T>) => void, thisArg?: any): void;
 
 /**
  * This event is raised on application launchEvent.
  */
-export function on(event: 'launch', callback: (args: LaunchEventData) => void, thisArg?: any): void;
+export function on<T extends Observable = Observable>(event: 'launch', callback: (args: LaunchEventData<T>) => void, thisArg?: any): void;
 
 /**
  * This event is raised after the application has performed most of its startup actions.
  * Its intent is to be suitable for measuring app startup times.
  * @experimental
  */
-export function on(event: 'displayed', callback: (args: ApplicationEventData) => void, thisArg?: any): void;
+export function on<T extends Observable = Observable>(event: 'displayed', callback: (args: ApplicationEventData<T>) => void, thisArg?: any): void;
 
 /**
  * This event is raised when the Application is suspended.
  */
-export function on(event: 'suspend', callback: (args: ApplicationEventData) => void, thisArg?: any): void;
+export function on<T extends Observable = Observable>(event: 'suspend', callback: (args: ApplicationEventData<T>) => void, thisArg?: any): void;
 
 /**
  * This event is raised when the Application is resumed after it has been suspended.
  */
-export function on(event: 'resume', callback: (args: ApplicationEventData) => void, thisArg?: any): void;
+export function on<T extends Observable = Observable>(event: 'resume', callback: (args: ApplicationEventData<T>) => void, thisArg?: any): void;
 
 /**
  * This event is raised when the Application is about to exit.
  */
-export function on(event: 'exit', callback: (args: ApplicationEventData) => void, thisArg?: any): void;
+export function on<T extends Observable = Observable>(event: 'exit', callback: (args: ApplicationEventData<T>) => void, thisArg?: any): void;
 
 /**
  * This event is raised when there is low memory on the target device.
  */
-export function on(event: 'lowMemory', callback: (args: ApplicationEventData) => void, thisArg?: any): void;
+export function on<T extends Observable = Observable>(event: 'lowMemory', callback: (args: ApplicationEventData<T>) => void, thisArg?: any): void;
 
 /**
  * This event is raised when an uncaught error occurs while the application is running.
  */
-export function on(event: 'uncaughtError', callback: (args: UnhandledErrorEventData) => void, thisArg?: any): void;
+export function on<T extends Observable = Observable>(event: 'uncaughtError', callback: (args: UnhandledErrorEventData<T>) => void, thisArg?: any): void;
 
 /**
  * This event is raised when an discarded error occurs while the application is running.
  */
-export function on(event: 'discardedError', callback: (args: DiscardedErrorEventData) => void, thisArg?: any): void;
+export function on<T extends Observable = Observable>(event: 'discardedError', callback: (args: DiscardedErrorEventData<T>) => void, thisArg?: any): void;
 
 /**
  * This event is raised when the orientation of the application changes.
  */
-export function on(event: 'orientationChanged', callback: (args: OrientationChangedEventData) => void, thisArg?: any): void;
+export function on<T extends Observable = Observable>(event: 'orientationChanged', callback: (args: OrientationChangedEventData<T>) => void, thisArg?: any): void;
 
 /**
  * This event is raised when the operating system appearance changes
  * between light and dark theme (for Android);
  * between light and dark mode (for iOS) and vice versa.
  */
-export function on(event: 'systemAppearanceChanged', callback: (args: SystemAppearanceChangedEventData) => void, thisArg?: any): void;
+export function on<T extends Observable = Observable>(event: 'systemAppearanceChanged', callback: (args: SystemAppearanceChangedEventData<T>) => void, thisArg?: any): void;
 
-export function on(event: 'fontScaleChanged', callback: (args: FontScaleChangedEventData) => void, thisArg?: any): void;
+export function on<T extends Observable = Observable>(event: 'fontScaleChanged', callback: (args: FontScaleChangedEventData<T>) => void, thisArg?: any): void;
 
 /**
  * Gets the orientation of the application.
@@ -395,7 +395,7 @@ export let ios: iOSApplication;
 /**
  * Data for the Android activity events.
  */
-export interface AndroidActivityEventData {
+export interface AndroidActivityEventData<T extends Observable = Observable> extends ApplicationEventData<T> {
 	/**
 	 * The activity.
 	 */
@@ -415,7 +415,7 @@ export interface AndroidActivityEventData {
 /**
  * Data for the Android activity events with bundle.
  */
-export interface AndroidActivityBundleEventData extends AndroidActivityEventData {
+export interface AndroidActivityBundleEventData<T extends Observable = Observable> extends AndroidActivityEventData<T> {
 	/**
 	 * The bundle.
 	 */
@@ -425,7 +425,7 @@ export interface AndroidActivityBundleEventData extends AndroidActivityEventData
 /**
  * Data for the Android activity onRequestPermissions callback
  */
-export interface AndroidActivityRequestPermissionsEventData extends AndroidActivityEventData {
+export interface AndroidActivityRequestPermissionsEventData<T extends Observable = Observable> extends AndroidActivityEventData<T> {
 	/**
 	 * The request code.
 	 */
@@ -445,7 +445,7 @@ export interface AndroidActivityRequestPermissionsEventData extends AndroidActiv
 /**
  * Data for the Android activity result event.
  */
-export interface AndroidActivityResultEventData extends AndroidActivityEventData {
+export interface AndroidActivityResultEventData<T extends Observable = Observable> extends AndroidActivityEventData<T> {
 	/**
 	 * The request code.
 	 */
@@ -465,7 +465,7 @@ export interface AndroidActivityResultEventData extends AndroidActivityEventData
 /**
  * Data for the Android activity newIntent event.
  */
-export interface AndroidActivityNewIntentEventData extends AndroidActivityEventData {
+export interface AndroidActivityNewIntentEventData<T extends Observable = Observable> extends AndroidActivityEventData<T> {
 	/**
 	 * The intent.
 	 */
@@ -475,7 +475,7 @@ export interface AndroidActivityNewIntentEventData extends AndroidActivityEventD
 /**
  * Data for the Android activity back pressed event.
  */
-export interface AndroidActivityBackPressedEventData extends AndroidActivityEventData {
+export interface AndroidActivityBackPressedEventData<T extends Observable = Observable> extends AndroidActivityEventData<T> {
 	/**
 	 * In the event handler, set this value to true if you want to cancel the back navigation and do something else instead.
 	 */
@@ -548,62 +548,62 @@ export class AndroidApplication extends Observable {
 	 * @param callback - Callback function which will be executed when event is raised.
 	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
 	 */
-	on(eventNames: string, callback: (data: AndroidActivityEventData) => void, thisArg?: any): void;
+	on<T extends Observable = Observable>(eventNames: string, callback: (data: AndroidActivityEventData<T>) => void, thisArg?: any): void;
 
 	/**
 	 * This event is raised on android application ActivityCreated.
 	 */
-	on(event: 'activityCreated', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
+	on<T extends Observable = Observable>(event: 'activityCreated', callback: (args: AndroidActivityBundleEventData<T>) => void, thisArg?: any): void;
 
 	/**
 	 * This event is raised on android application ActivityDestroyed.
 	 */
-	on(event: 'activityDestroyed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
+	on<T extends Observable = Observable>(event: 'activityDestroyed', callback: (args: AndroidActivityEventData<T>) => void, thisArg?: any): void;
 
 	/**
 	 * This event is raised on android application ActivityStarted.
 	 */
-	on(event: 'activityStarted', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
+	on<T extends Observable = Observable>(event: 'activityStarted', callback: (args: AndroidActivityEventData<T>) => void, thisArg?: any): void;
 
 	/**
 	 * This event is raised on android application ActivityPaused.
 	 */
-	on(event: 'activityPaused', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
+	on<T extends Observable = Observable>(event: 'activityPaused', callback: (args: AndroidActivityEventData<T>) => void, thisArg?: any): void;
 
 	/**
 	 * This event is raised on android application ActivityResumed.
 	 */
-	on(event: 'activityResumed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
+	on<T extends Observable = Observable>(event: 'activityResumed', callback: (args: AndroidActivityEventData<T>) => void, thisArg?: any): void;
 
 	/**
 	 * This event is raised on android application ActivityStopped.
 	 */
-	on(event: 'activityStopped', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
+	on<T extends Observable = Observable>(event: 'activityStopped', callback: (args: AndroidActivityEventData<T>) => void, thisArg?: any): void;
 
 	/**
 	 * This event is raised on android application SaveActivityState.
 	 */
-	on(event: 'saveActivityState', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
+	on<T extends Observable = Observable>(event: 'saveActivityState', callback: (args: AndroidActivityBundleEventData<T>) => void, thisArg?: any): void;
 
 	/**
 	 * This event is raised on android application ActivityResult.
 	 */
-	on(event: 'activityResult', callback: (args: AndroidActivityResultEventData) => void, thisArg?: any): void;
+	on<T extends Observable = Observable>(event: 'activityResult', callback: (args: AndroidActivityResultEventData<T>) => void, thisArg?: any): void;
 
 	/**
 	 * This event is raised on the back button is pressed in an android application.
 	 */
-	on(event: 'activityBackPressed', callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any): void;
+	on<T extends Observable = Observable>(event: 'activityBackPressed', callback: (args: AndroidActivityBackPressedEventData<T>) => void, thisArg?: any): void;
 
 	/**
 	 * This event is raised when the Android app was launched by an Intent with data.
 	 */
-	on(event: 'activityNewIntent', callback: (args: AndroidActivityNewIntentEventData) => void, thisArg?: any): void;
+	on<T extends Observable = Observable>(event: 'activityNewIntent', callback: (args: AndroidActivityNewIntentEventData<T>) => void, thisArg?: any): void;
 
 	/**
 	 * This event is raised when the Android activity requests permissions.
 	 */
-	on(event: 'activityRequestPermissions', callback: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any): void;
+	on<T extends Observable = Observable>(event: 'activityRequestPermissions', callback: (args: AndroidActivityRequestPermissionsEventData<T>) => void, thisArg?: any): void;
 
 	/**
 	 * String value used when hooking to activityCreated event.
@@ -754,6 +754,6 @@ export function getNativeApplication(): any;
  */
 export function hasLaunched(): boolean;
 
-export interface LoadAppCSSEventData extends EventData {
+export interface LoadAppCSSEventData<T extends Observable = Observable> extends EventData<T> {
 	cssFile: string;
 }

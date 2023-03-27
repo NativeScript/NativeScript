@@ -4,7 +4,7 @@ import { profile } from '../../profiling';
 import { Property, makeParser, makeValidator } from '../core/properties';
 import { CSSType } from '../core/view';
 import { booleanConverter } from '../core/view-base';
-import { EventData } from '../../data/observable';
+import { EventData, Observable } from '../../data/observable';
 import { CoreTypes } from '../../core-types';
 
 @CSSType('ScrollView')
@@ -16,7 +16,7 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
 	public scrollBarIndicatorVisible: boolean;
 	public isScrollEnabled: boolean;
 
-	public addEventListener(arg: string, callback: (data: EventData) => void, thisArg?: any): void {
+	public addEventListener<T extends Observable = Observable>(arg: string, callback: (data: EventData<T>) => void, thisArg?: any): void {
 		super.addEventListener(arg, callback, thisArg);
 
 		if (arg === ScrollViewBase.scrollEvent) {
@@ -25,7 +25,7 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
 		}
 	}
 
-	public removeEventListener(arg: string, callback?: (data: EventData) => void, thisArg?: any): void {
+	public removeEventListener<T extends Observable = Observable>(arg: string, callback?: (data: EventData<T>) => void, thisArg?: any): void {
 		super.removeEventListener(arg, callback, thisArg);
 
 		if (arg === ScrollViewBase.scrollEvent) {
@@ -87,8 +87,8 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
 	public abstract _onOrientationChanged();
 }
 export interface ScrollViewBase {
-	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void;
-	on(event: 'scroll', callback: (args: ScrollEventData) => void, thisArg?: any): void;
+	on<T extends Observable = ScrollViewBase>(eventNames: string, callback: (data: EventData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = ScrollViewBase>(event: 'scroll', callback: (args: ScrollEventData<T>) => void, thisArg?: any): void;
 }
 
 const converter = makeParser<CoreTypes.OrientationType>(makeValidator(CoreTypes.Orientation.horizontal, CoreTypes.Orientation.vertical));

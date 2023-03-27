@@ -163,18 +163,18 @@ export class AndroidApplication extends Observable implements AndroidApplication
 // HACK: We declare all these 'on' statements, so that they can appear in the API reference
 // HACK: Do we need this? Is it useful? There are static fields to the AndroidApplication class for the event names.
 export interface AndroidApplication {
-	on(eventNames: string, callback: (data: AndroidActivityEventData) => void, thisArg?: any): void;
-	on(event: 'activityCreated', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
-	on(event: 'activityDestroyed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	on(event: 'activityStarted', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	on(event: 'activityPaused', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	on(event: 'activityResumed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	on(event: 'activityStopped', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	on(event: 'saveActivityState', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
-	on(event: 'activityResult', callback: (args: AndroidActivityResultEventData) => void, thisArg?: any): void;
-	on(event: 'activityBackPressed', callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any): void;
-	on(event: 'activityNewIntent', callback: (args: AndroidActivityNewIntentEventData) => void, thisArg?: any): void;
-	on(event: 'activityRequestPermissions', callback: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any): void;
+	on<T extends Observable = Observable>(eventNames: string, callback: (data: AndroidActivityEventData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = Observable>(event: 'activityCreated', callback: (args: AndroidActivityBundleEventData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = Observable>(event: 'activityDestroyed', callback: (args: AndroidActivityEventData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = Observable>(event: 'activityStarted', callback: (args: AndroidActivityEventData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = Observable>(event: 'activityPaused', callback: (args: AndroidActivityEventData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = Observable>(event: 'activityResumed', callback: (args: AndroidActivityEventData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = Observable>(event: 'activityStopped', callback: (args: AndroidActivityEventData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = Observable>(event: 'saveActivityState', callback: (args: AndroidActivityBundleEventData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = Observable>(event: 'activityResult', callback: (args: AndroidActivityResultEventData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = Observable>(event: 'activityBackPressed', callback: (args: AndroidActivityBackPressedEventData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = Observable>(event: 'activityNewIntent', callback: (args: AndroidActivityNewIntentEventData<T>) => void, thisArg?: any): void;
+	on<T extends Observable = Observable>(event: 'activityRequestPermissions', callback: (args: AndroidActivityRequestPermissionsEventData<T>) => void, thisArg?: any): void;
 }
 
 let androidApp: AndroidApplication;

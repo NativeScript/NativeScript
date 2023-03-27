@@ -42,7 +42,7 @@ export class TabViewItem extends ViewBase {
 /**
  * Defines the data for the TabView.selectedIndexChanged event.
  */
-export interface SelectedIndexChangedEventData extends EventData {
+export interface SelectedIndexChangedEventData<T extends Observable = TabView> extends EventData<T> {
 	/**
 	 * The old selected index.
 	 */
@@ -150,12 +150,12 @@ export class TabView extends View {
 	 * @param callback - Callback function which will be executed when event is raised.
 	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
 	 */
-	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void;
+	on<T extends Observable = TabView>(eventNames: string, callback: (data: EventData<T>) => void, thisArg?: any): void;
 
 	/**
 	 * Raised when the selected index changes.
 	 */
-	on(event: 'selectedIndexChanged', callback: (args: SelectedIndexChangedEventData) => void, thisArg?: any): void;
+	on<T extends Observable = TabView>(event: 'selectedIndexChanged', callback: (args: SelectedIndexChangedEventData<T>) => void, thisArg?: any): void;
 }
 
 export const itemsProperty: Property<TabView, TabViewItem[]>;

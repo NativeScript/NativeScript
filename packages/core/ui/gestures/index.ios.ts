@@ -2,7 +2,7 @@
 
 import { GestureEventData, TapGestureEventData, GestureEventDataWithState, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData, PinchGestureEventData } from '.';
 import { View } from '../core/view';
-import { EventData } from '../../data/observable';
+import { EventData, Observable } from '../../data/observable';
 
 // Types.
 import { GesturesObserverBase, toString, TouchAction, GestureStateTypes, GestureTypes, SwipeDirection, GestureEvents } from './gestures-common';
@@ -53,7 +53,7 @@ class UIGestureRecognizerImpl extends NSObject {
 	private _callback: Function;
 	private _context: any;
 
-	public static initWithOwnerTypeCallback(owner: WeakRef<GesturesObserver>, type: any, callback?: Function, thisArg?: any): UIGestureRecognizerImpl {
+	public static initWithOwnerTypeCallback<T extends Observable = View>(owner: WeakRef<GesturesObserver>, type: any, callback?: (args: GestureEventData<T>) => void, thisArg?: any): UIGestureRecognizerImpl {
 		const handler = <UIGestureRecognizerImpl>UIGestureRecognizerImpl.new();
 		handler._owner = owner;
 		handler._type = type;
@@ -320,7 +320,7 @@ export class GesturesObserver extends GesturesObserverBase {
 	}
 }
 
-function _createUIGestureRecognizerTarget(owner: GesturesObserver, type: GestureTypes, callback?: (args: GestureEventData) => void, context?: any): any {
+function _createUIGestureRecognizerTarget<T extends Observable = View>(owner: GesturesObserver, type: GestureTypes, callback?: (args: GestureEventData<T>) => void, context?: any): any {
 	return UIGestureRecognizerImpl.initWithOwnerTypeCallback(new WeakRef(owner), type, callback, context);
 }
 

@@ -7,7 +7,7 @@ import { layout } from '../../../utils';
 import { isObject } from '../../../utils/types';
 import { Color } from '../../../color';
 import { Property, InheritedProperty } from '../properties';
-import { EventData } from '../../../data/observable';
+import { EventData, Observable } from '../../../data/observable';
 import { Trace } from '../../../trace';
 import { CoreTypes } from '../../../core-types';
 import { ViewHelper } from './view-helper';
@@ -253,7 +253,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		}
 	}
 
-	_observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
+	_observe<T extends Observable = ViewCommon>(type: GestureTypes, callback: (args: GestureEventData<T>) => void, thisArg?: any): void {
 		if (!this._gestureObservers[type]) {
 			this._gestureObservers[type] = [];
 		}
@@ -265,7 +265,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		return this._gestureObservers[type];
 	}
 
-	public addEventListener(arg: string | GestureTypes, callback: (data: EventData) => void, thisArg?: any) {
+	public addEventListener<T extends Observable = ViewCommon>(arg: string | GestureTypes, callback: (data: EventData<T>) => void, thisArg?: any) {
 		if (typeof arg === 'string') {
 			arg = getEventOrGestureName(arg);
 
@@ -289,11 +289,11 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 				}
 			}
 		} else if (typeof arg === 'number') {
-			this._observe(<GestureTypes>arg, callback, thisArg);
+			this._observe(arg, callback, thisArg);
 		}
 	}
 
-	public removeEventListener(arg: string | GestureTypes, callback?: (data: EventData) => void, thisArg?: any) {
+	public removeEventListener<T extends Observable = ViewCommon>(arg: string | GestureTypes, callback?: (data: EventData<T>) => void, thisArg?: any) {
 		if (typeof arg === 'string') {
 			const gesture = gestureFromString(arg);
 			if (gesture && !this._isEvent(arg)) {

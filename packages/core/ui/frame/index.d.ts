@@ -6,7 +6,7 @@ import { Transition } from '../transition';
 
 export * from './frame-interfaces';
 
-export interface NavigationData extends EventData {
+export interface NavigationData<T extends Observable = Frame> extends EventData<T> {
 	entry?: NavigationEntry;
 	fromEntry?: NavigationEntry;
 	isBack?: boolean;
@@ -221,17 +221,17 @@ export class Frame extends FrameBase {
 	 * @param callback - Callback function which will be executed when event is raised.
 	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
 	 */
-	on(eventNames: string, callback: (args: EventData) => void, thisArg?: any): void;
+	on<T extends Observable = Frame>(eventNames: string, callback: (args: EventData<T>) => void, thisArg?: any): void;
 
 	/**
 	 * Raised when navigation to the page has started.
 	 */
-	public on(event: 'navigatingTo', callback: (args: NavigationData) => void, thisArg?: any): void;
+	public on<T extends Observable = Frame>(event: 'navigatingTo', callback: (args: NavigationData<T>) => void, thisArg?: any): void;
 
 	/**
 	 * Raised when navigation to the page has finished.
 	 */
-	public on(event: 'navigatedTo', callback: (args: NavigationData) => void, thisArg?: any): void;
+	public on<T extends Observable = Frame>(event: 'navigatedTo', callback: (args: NavigationData<T>) => void, thisArg?: any): void;
 }
 
 /**

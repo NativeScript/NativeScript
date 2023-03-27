@@ -8,7 +8,7 @@ import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingB
 import { layout } from '../../../utils';
 import { Trace } from '../../../trace';
 import { ShowModalOptions, hiddenProperty } from '../view-base';
-import { EventData } from '../../../data/observable';
+import { EventData, Observable } from '../../../data/observable';
 
 import { perspectiveProperty, visibilityProperty, opacityProperty, horizontalAlignmentProperty, verticalAlignmentProperty, minWidthProperty, minHeightProperty, widthProperty, heightProperty, marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, androidElevationProperty, androidDynamicElevationOffsetProperty } from '../../styling/style-properties';
 import { CoreTypes } from '../../../core-types';
@@ -335,14 +335,14 @@ export class View extends ViewCommon {
 	}
 
 	// TODO: Implement unobserve that detach the touchListener.
-	_observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
+	_observe<T extends Observable = View>(type: GestureTypes, callback: (args: GestureEventData<T>) => void, thisArg?: any): void {
 		super._observe(type, callback, thisArg);
 		if (this.isLoaded && !this.touchListenerIsSet) {
 			this.setOnTouchListener();
 		}
 	}
 
-	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any) {
+	on<T extends Observable = View>(eventNames: string, callback: (data: EventData<T>) => void, thisArg?: any) {
 		super.on(eventNames, callback, thisArg);
 		const isLayoutEvent = typeof eventNames === 'string' ? eventNames.indexOf(ViewCommon.layoutChangedEvent) !== -1 : false;
 
@@ -351,7 +351,7 @@ export class View extends ViewCommon {
 		}
 	}
 
-	off(eventNames: string, callback?: (data: EventData) => void, thisArg?: any) {
+	off<T extends Observable = View>(eventNames: string, callback?: (data: EventData<T>) => void, thisArg?: any) {
 		super.off(eventNames, callback, thisArg);
 		const isLayoutEvent = typeof eventNames === 'string' ? eventNames.indexOf(ViewCommon.layoutChangedEvent) !== -1 : false;
 

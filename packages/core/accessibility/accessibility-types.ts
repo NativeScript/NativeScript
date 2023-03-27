@@ -1,4 +1,4 @@
-import type { EventData } from '../data/observable';
+import type { EventData, Observable } from '../data/observable';
 
 export enum AccessibilityTrait {
 	/**
@@ -264,7 +264,7 @@ export enum AndroidAccessibilityEvent {
 	ALL_MASK = 'all',
 }
 
-export interface AccessibilityEventPerformEscape extends EventData {
+export interface AccessibilityEventPerformEscape<T extends Observable = Observable> extends EventData<T> {
 	cancel?: boolean;
 }
 

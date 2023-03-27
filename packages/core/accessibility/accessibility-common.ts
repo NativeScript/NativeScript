@@ -28,7 +28,7 @@ export function notifyAccessibilityFocusState(view: View, receivedFocus: boolean
 		eventName: accessibilityFocusChangedEvent,
 		object: view,
 		value: !!receivedFocus,
-	} as EventDataValue);
+	});
 
 	if (receivedFocus) {
 		if (view.page) {
@@ -38,12 +38,12 @@ export function notifyAccessibilityFocusState(view: View, receivedFocus: boolean
 		view.notify({
 			eventName: accessibilityFocusEvent,
 			object: view,
-		} as EventData);
+		});
 	} else if (lostFocus) {
 		view.notify({
 			eventName: accessibilityBlurEvent,
 			object: view,
-		} as EventData);
+		});
 	}
 }
 

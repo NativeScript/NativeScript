@@ -1,6 +1,6 @@
-import { EventData } from '../../data/observable';
+import { EventData, Observable } from '../../data/observable';
 
-export interface CreateViewEventData extends EventData {
+export interface CreateViewEventData<T extends Observable = Observable> extends EventData<T> {
 	/**
 	 * The native view that should be added to the visual tree.
 	 */

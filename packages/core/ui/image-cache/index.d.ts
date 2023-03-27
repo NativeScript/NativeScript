@@ -85,17 +85,17 @@ export class Cache extends Observable {
 	 * @param callback - Callback function which will be executed when event is raised.
 	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
 	 */
-	on(eventNames: string, callback: (args: EventData) => void, thisArg?: any): void;
+	on<T extends Observable = Cache>(eventNames: string, callback: (args: EventData<T>) => void, thisArg?: any): void;
 
 	/**
 	 * Raised when the image has been downloaded.
 	 */
-	on(event: 'downloaded', callback: (args: DownloadedData) => void, thisArg?: any): void;
+	on<T extends Observable = Cache>(event: 'downloaded', callback: (args: DownloadedData<T>) => void, thisArg?: any): void;
 
 	/**
 	 * Raised if the image download errors.
 	 */
-	on(event: 'downloadError', callback: (args: DownloadError) => void, thisArg?: any): void;
+	on<T extends Observable = Cache>(event: 'downloadError', callback: (args: DownloadError<T>) => void, thisArg?: any): void;
 
 	//@private
 	/**
@@ -117,7 +117,7 @@ export class Cache extends Observable {
 /**
  * Provides data for downloaded event.
  */
-export interface DownloadedData extends EventData {
+export interface DownloadedData<T extends Observable = Observable> extends EventData<T> {
 	/**
 	 * A string indentifier of the cached image.
 	 */
@@ -131,7 +131,7 @@ export interface DownloadedData extends EventData {
 /**
  * Provides data for download error.
  */
-export interface DownloadError extends EventData {
+export interface DownloadError<T extends Observable = Observable> extends EventData<T> {
 	/**
 	 * A string indentifier of the cached image.
 	 */

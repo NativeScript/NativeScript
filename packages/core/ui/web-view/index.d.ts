@@ -92,23 +92,23 @@ export class WebView extends View {
 	 * @param callback - Callback function which will be executed when event is raised.
 	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
 	 */
-	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void;
+	on<T extends Observable = WebView>(eventNames: string, callback: (data: EventData<T>) => void, thisArg?: any): void;
 
 	/**
 	 * Raised when a loadFinished event occurs.
 	 */
-	on(event: 'loadFinished', callback: (args: LoadEventData) => void, thisArg?: any): void;
+	on<T extends Observable = WebView>(event: 'loadFinished', callback: (args: LoadEventData<T>) => void, thisArg?: any): void;
 
 	/**
 	 * Raised when a loadStarted event occurs.
 	 */
-	on(event: 'loadStarted', callback: (args: LoadEventData) => void, thisArg?: any): void;
+	on<T extends Observable = WebView>(event: 'loadStarted', callback: (args: LoadEventData<T>) => void, thisArg?: any): void;
 }
 
 /**
  * Event data containing information for the loading events of a WebView.
  */
-export interface LoadEventData extends EventData {
+export interface LoadEventData<T extends Observable = WebView> extends EventData<T> {
 	/**
 	 * Gets the url of the web-view.
 	 */

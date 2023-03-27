@@ -3,7 +3,7 @@ import { Optional } from '../../utils/typescript-utils';
 /**
  * Base event data.
  */
-export interface EventData {
+export interface EventData<T extends Observable = Observable> {
 	/**
 	 * The name of the event.
 	 */
@@ -11,17 +11,17 @@ export interface EventData {
 	/**
 	 * The Observable instance that has raised the event.
 	 */
-	object: Observable;
+	object: T;
 }
 
-export interface EventDataValue extends EventData {
+export interface EventDataValue<T extends Observable = Observable> extends EventData<T> {
 	value?: boolean;
 }
 
 /**
  * Data for the "propertyChange" event.
  */
-export interface PropertyChangeData extends EventData {
+export interface PropertyChangeData<T extends Observable = Observable> extends EventData<T> {
 	/**
 	 * The name of the property that has changed.
 	 */
@@ -36,8 +36,8 @@ export interface PropertyChangeData extends EventData {
 	oldValue?: any;
 }
 
-interface ListenerEntry {
-	callback: (data: EventData) => void;
+interface ListenerEntry<T extends Observable = Observable> {
+	callback(data: EventData<T>): void;
 	thisArg: any;
 	once?: true;
 }
@@ -146,7 +146,7 @@ export class Observable {
 	 * @param callback - Callback function which will be executed when event is raised.
 	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
 	 */
-	public on(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void {
+	public on<T extends Observable = Observable>(eventNames: string, callback: (data: EventData<T>) => void, thisArg?: any): void {
 		this.addEventListener(eventNames, callback, thisArg);
 	}
 
@@ -156,7 +156,7 @@ export class Observable {
 	 * @param callback A function to be called when the specified event is raised.
 	 * @param thisArg An optional parameter which when set will be used as "this" in callback method call.
 	 */
-	public once(event: string, callback: (data: EventData) => void, thisArg?: any): void {
+	public once<T extends Observable = Observable>(event: string, callback: (data: EventData<T>) => void, thisArg?: any): void {
 		if (typeof event !== 'string') {
 			throw new TypeError('Event must be string.');
 		}
@@ -172,7 +172,7 @@ export class Observable {
 	/**
 	 * Shortcut alias to the removeEventListener method.
 	 */
-	public off(eventNames: string, callback?: (data: EventData) => void, thisArg?: any): void {
+	public off<T extends Observable = Observable>(eventNames: string, callback?: (data: EventData<T>) => void, thisArg?: any): void {
 		this.removeEventListener(eventNames, callback, thisArg);
 	}
 
@@ -182,7 +182,7 @@ export class Observable {
 	 * @param callback A function to be called when some of the specified event(s) is raised.
 	 * @param thisArg An optional parameter which when set will be used as "this" in callback method call.
 	 */
-	public addEventListener(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void {
+	public addEventListener<T extends Observable = Observable>(eventNames: string, callback: (data: EventData<T>) => void, thisArg?: any): void {
 		if (typeof eventNames !== 'string') {
 			throw new TypeError('Events name(s) must be string.');
 		}
@@ -209,7 +209,7 @@ export class Observable {
 	 * @param callback An optional parameter pointing to a specific listener. If not defined, all listeners for the event names will be removed.
 	 * @param thisArg An optional parameter which when set will be used to refine search of the correct callback which will be removed as event listener.
 	 */
-	public removeEventListener(eventNames: string, callback?: (data: EventData) => void, thisArg?: any): void {
+	public removeEventListener<T extends Observable = Observable>(eventNames: string, callback?: (data: EventData<T>) => void, thisArg?: any): void {
 		if (typeof eventNames !== 'string') {
 			throw new TypeError('Events name(s) must be string.');
 		}
@@ -239,11 +239,11 @@ export class Observable {
 		}
 	}
 
-	public static on(eventName: string, callback: (data: EventData) => void, thisArg?: any): void {
+	public static on<T extends Observable = Observable>(eventName: string, callback: (data: EventData<T>) => void, thisArg?: any): void {
 		this.addEventListener(eventName, callback, thisArg);
 	}
 
-	public static once(eventName: string, callback: (data: EventData) => void, thisArg?: any): void {
+	public static once<T extends Observable = Observable>(eventName: string, callback: (data: EventData<T>) => void, thisArg?: any): void {
 		if (typeof eventName !== 'string') {
 			throw new TypeError('Event must be string.');
 		}
@@ -262,11 +262,11 @@ export class Observable {
 		_globalEventHandlers[eventClass][eventName].push({ callback, thisArg, once: true });
 	}
 
-	public static off(eventName: string, callback?: (data: EventData) => void, thisArg?: any): void {
+	public static off<T extends Observable = Observable>(eventName: string, callback?: (data: EventData<T>) => void, thisArg?: any): void {
 		this.removeEventListener(eventName, callback, thisArg);
 	}
 
-	public static removeEventListener(eventName: string, callback?: (data: EventData) => void, thisArg?: any): void {
+	public static removeEventListener<T extends Observable = Observable>(eventName: string, callback?: (data: EventData<T>) => void, thisArg?: any): void {
 		if (typeof eventName !== 'string') {
 			throw new TypeError('Event must be string.');
 		}
@@ -314,7 +314,7 @@ export class Observable {
 		}
 	}
 
-	public static addEventListener(eventName: string, callback: (data: EventData) => void, thisArg?: any): void {
+	public static addEventListener<T extends Observable = Observable>(eventName: string, callback: (data: EventData<T>) => void, thisArg?: any): void {
 		if (typeof eventName !== 'string') {
 			throw new TypeError('Event must be string.');
 		}
@@ -333,7 +333,7 @@ export class Observable {
 		_globalEventHandlers[eventClass][eventName].push({ callback, thisArg });
 	}
 
-	private _globalNotify<T extends EventData>(eventClass: string, eventType: string, data: T): void {
+	private _globalNotify<E extends EventData<O>, O extends Observable = Observable>(eventClass: string, eventType: string, data: E): void {
 		// Check for the Global handlers for JUST this class
 		if (_globalEventHandlers[eventClass]) {
 			const event = data.eventName + eventType;
@@ -362,8 +362,8 @@ export class Observable {
 	 * an optional 'object' property. If left undefined, the 'object' property
 	 * will implicitly be set as this Observable instance.
 	 */
-	public notify<T extends Optional<EventData, 'object'>>(data: T): void {
-		data.object = data.object || this;
+	public notify<E extends Optional<EventData<O>, 'object'>, O extends Observable = Observable>(data: E): void {
+		data.object = data.object || (this as unknown as O);
 		const dataWithObject = data as EventData;
 
 		const eventClass = this.constructor.name;
@@ -377,7 +377,7 @@ export class Observable {
 		this._globalNotify(eventClass, '', dataWithObject);
 	}
 
-	private static _handleEvent<T extends EventData>(observers: Array<ListenerEntry>, data: T): void {
+	private static _handleEvent<E extends EventData<O>, O extends Observable = Observable>(observers: Array<ListenerEntry>, data: E): void {
 		if (!observers) {
 			return;
 		}
@@ -456,7 +456,7 @@ export class Observable {
 		return list;
 	}
 
-	private static _indexOfListener(list: Array<ListenerEntry>, callback: (data: EventData) => void, thisArg?: any): number {
+	private static _indexOfListener<T extends Observable = Observable>(list: Array<ListenerEntry>, callback: (data: EventData<T>) => void, thisArg?: any): number {
 		for (let i = 0; i < list.length; i++) {
 			const entry = list[i];
 			if (thisArg) {
@@ -478,7 +478,7 @@ export interface Observable {
 	/**
 	 * Raised when a propertyChange occurs.
 	 */
-	on(event: 'propertyChange', callback: (data: EventData) => void, thisArg?: any): void;
+	on<T extends Observable = Observable>(event: 'propertyChange', callback: (data: EventData<T>) => void, thisArg?: any): void;
 
 	/**
 	 * Updates the specified property with the provided value.
