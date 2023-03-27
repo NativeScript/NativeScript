@@ -2,11 +2,26 @@ import Config from 'webpack-chain';
 import path from 'path';
 import fs from 'fs';
 
+import {
+	mockExistsSync,
+	restoreExistsSync,
+	setHasTSConfig,
+} from '../../scripts/jest.utils';
+
 import typescript from '../../src/configuration/typescript';
 import { init } from '../../src';
 
 describe('typescript configuration', () => {
 	const platforms = ['ios', 'android'];
+
+	beforeAll(() => {
+		mockExistsSync();
+		setHasTSConfig(true);
+	});
+
+	afterAll(() => {
+		restoreExistsSync();
+	});
 
 	for (let platform of platforms) {
 		it(`for ${platform}`, () => {

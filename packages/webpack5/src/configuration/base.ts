@@ -11,11 +11,11 @@ import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import TerserPlugin from 'terser-webpack-plugin';
 
+import { getProjectFilePath, getProjectRootPath } from '../helpers/project';
 import { PlatformSuffixPlugin } from '../plugins/PlatformSuffixPlugin';
 import { applyFileReplacements } from '../helpers/fileReplacements';
 import { addCopyRule, applyCopyRules } from '../helpers/copyRules';
 import { WatchStatePlugin } from '../plugins/WatchStatePlugin';
-import { getProjectFilePath } from '../helpers/project';
 import { hasDependency } from '../helpers/dependencies';
 import { applyDotEnvPlugin } from '../helpers/dotEnv';
 import { env as _env, IWebpackEnv } from '../index';
@@ -234,6 +234,20 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.use('nativescript-worker-loader')
 		.loader('nativescript-worker-loader');
 
+	const hasTSConfig = existsSync(getProjectFilePath('tsconfig.json'));
+
+	let tsDefaultOptions = {};
+	if (!hasTSConfig) {
+		tsDefaultOptions = {
+			configFile: resolve(__dirname, '../stubs/tsconfig.default.json'),
+			context: getProjectRootPath(),
+		};
+
+		// if the project doesn't have a ts config - we don't want to automatically resolve to .ts files
+		// in these cases the file would need to be explicitly imported with the .ts extension to be processed.
+		config.resolve.extensions.delete(`.${platform}.ts`).delete('.ts');
+	}
+
 	// set up ts support
 	config.module
 		.rule('ts')
@@ -241,9 +255,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.use('ts-loader')
 		.loader('ts-loader')
 		.options({
-			// todo: perhaps we can provide a default tsconfig
-			// and use that if the project doesn't have one?
-			// configFile: '',
+			...tsDefaultOptions,
 			transpileOnly: true,
 			allowTsInNodeModules: true,
 			compilerOptions: {
@@ -265,6 +277,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				{
 					async: !!env.watch,
 					typescript: {
+						...tsDefaultOptions,
 						memoryLimit: 4096,
 					},
 				},

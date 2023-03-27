@@ -62,7 +62,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			});
 		});
 
-	config.when(hasDependency('typescript'), (config) => {
+	config.when(config.plugins.has('ForkTsCheckerWebpackPlugin'), (config) => {
 		config.plugin('ForkTsCheckerWebpackPlugin').tap((args) => {
 			args[0] = merge(args[0], {
 				typescript: {

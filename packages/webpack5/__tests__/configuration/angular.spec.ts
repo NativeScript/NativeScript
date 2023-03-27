@@ -1,5 +1,12 @@
 import Config from 'webpack-chain';
 
+import {
+	addMockFile,
+	mockExistsSync,
+	restoreExistsSync,
+	setHasTSConfig,
+} from '../../scripts/jest.utils';
+
 import { default as angular } from '../../src/configuration/angular';
 import { init } from '../../src';
 
@@ -22,29 +29,14 @@ jest.mock(
 
 describe('angular configuration', () => {
 	const platforms = ['ios', 'android'];
-	let fsExistsSyncSpy: jest.SpiedFunction<any>;
-	let polyfillsPath: string | boolean = false;
 
 	beforeAll(() => {
-		const fs = require('fs');
-		const original = fs.existsSync;
-		fsExistsSyncSpy = jest.spyOn(fs, 'existsSync');
-
-		fsExistsSyncSpy.mockImplementation((path) => {
-			if (path === '__jest__/tsconfig.json') {
-				return true;
-			}
-
-			if (polyfillsPath && path === polyfillsPath) {
-				return true;
-			}
-
-			return original.call(fs, path);
-		});
+		mockExistsSync();
+		setHasTSConfig(true);
 	});
 
 	afterAll(() => {
-		fsExistsSyncSpy.mockRestore();
+		restoreExistsSync();
 	});
 
 	for (let platform of platforms) {
@@ -56,26 +48,28 @@ describe('angular configuration', () => {
 		});
 
 		it(`loads polyfills.${platform}.ts into the bundle entry if it exists `, () => {
-			polyfillsPath = `__jest__/src/polyfills.${platform}.ts`;
+			const cleanupMockFile = addMockFile(
+				`__jest__/src/polyfills.${platform}.ts`
+			);
 
 			init({
 				[platform]: true,
 			});
 			expect(angular(new Config()).entry('bundle').values()).toMatchSnapshot();
 
-			polyfillsPath = false;
+			cleanupMockFile();
 		});
 	}
 
 	it(`loads polyfills.ts into the bundle entry if it exists `, () => {
-		polyfillsPath = `__jest__/src/polyfills.ts`;
+		const cleanupMockFile = addMockFile(`__jest__/src/polyfills.ts`);
 
 		init({
 			ios: true,
 		});
 		expect(angular(new Config()).entry('bundle').values()).toMatchSnapshot();
 
-		polyfillsPath = false;
+		cleanupMockFile();
 	});
 
 	describe('@angular-devkit/build-angular backwards compatible', () => {

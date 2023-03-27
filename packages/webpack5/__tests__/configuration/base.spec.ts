@@ -1,13 +1,31 @@
 import Config from 'webpack-chain';
-import fs from 'fs';
 
-import base from '../../src/configuration/base';
-import { init } from '../../src';
+import {
+	mockExistsSync,
+	restoreExistsSync,
+	addMockFile,
+	fsExistsSyncSpy,
+} from '../../scripts/jest.utils';
+
 import { applyFileReplacements } from '../../src/helpers/fileReplacements';
 import { additionalCopyRules } from '../../src/helpers/copyRules';
+import base from '../../src/configuration/base';
+import { init } from '../../src';
 
 describe('base configuration', () => {
 	const platforms = ['ios', 'android'];
+
+	beforeAll(() => {
+		mockExistsSync();
+	});
+
+	beforeEach(() => {
+		fsExistsSyncSpy.mockClear();
+	});
+
+	afterAll(() => {
+		restoreExistsSync();
+	});
 
 	for (let platform of platforms) {
 		it(`for ${platform}`, () => {
@@ -31,8 +49,7 @@ describe('base configuration', () => {
 	});
 
 	it('supports dotenv', () => {
-		const fsSpy = jest.spyOn(fs, 'existsSync');
-		fsSpy.mockReturnValue(true);
+		const cleanupMockFile = addMockFile('__jest__/.env');
 
 		init({
 			ios: true,
@@ -45,12 +62,11 @@ describe('base configuration', () => {
 			return args;
 		});
 
-		fsSpy.mockRestore();
+		cleanupMockFile();
 	});
 
 	it('supports env specific dotenv', () => {
-		const fsSpy = jest.spyOn(fs, 'existsSync');
-		fsSpy.mockReturnValue(true);
+		const cleanupMockFile = addMockFile('__jest__/.env.prod');
 
 		init({
 			ios: true,
@@ -58,19 +74,18 @@ describe('base configuration', () => {
 		});
 		const config = base(new Config());
 
-		expect(fsSpy).toHaveBeenCalledWith('__jest__/.env.prod');
-		expect(fsSpy).toHaveBeenCalledTimes(1);
+		expect(fsExistsSyncSpy).toHaveBeenCalledWith('__jest__/.env.prod');
 		expect(config.plugin('DotEnvPlugin')).toBeDefined();
 		config.plugin('DotEnvPlugin').tap((args) => {
 			expect(args[0].path).toEqual('__jest__/.env.prod');
 			return args;
 		});
-		fsSpy.mockRestore();
+
+		cleanupMockFile();
 	});
 
 	it('falls back to default .env', () => {
-		const fsSpy = jest.spyOn(fs, 'existsSync');
-		fsSpy.mockReturnValueOnce(false).mockReturnValueOnce(true);
+		const cleanupMockFile = addMockFile('__jest__/.env');
 
 		init({
 			ios: true,
@@ -78,15 +93,16 @@ describe('base configuration', () => {
 		});
 		const config = base(new Config());
 
-		expect(fsSpy).toHaveBeenCalledWith('__jest__/.env.prod');
-		expect(fsSpy).toHaveBeenCalledWith('__jest__/.env');
-		expect(fsSpy).toHaveBeenCalledTimes(2);
+		expect(fsExistsSyncSpy).toHaveBeenCalledWith('__jest__/.env.prod');
+		expect(fsExistsSyncSpy).toHaveBeenCalledWith('__jest__/.env');
+
 		expect(config.plugin('DotEnvPlugin')).toBeDefined();
 		config.plugin('DotEnvPlugin').tap((args) => {
 			expect(args[0].path).toEqual('__jest__/.env');
 			return args;
 		});
-		fsSpy.mockRestore();
+
+		cleanupMockFile();
 	});
 
 	it('applies file replacements', () => {
