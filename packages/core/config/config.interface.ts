@@ -12,7 +12,18 @@ interface IConfigPlatform {
 	discardUncaughtJsExceptions?: boolean;
 }
 
-interface IConfigIOS extends IConfigPlatform {}
+interface IConfigIOS extends IConfigPlatform {
+	/**
+	 * Swift Package Manager
+	 * List packages to be included in the iOS build.
+	 */
+	SPMPackages?: Array<{
+		name: string;
+		libs: Array<string>;
+		repositoryURL: string;
+		version: string;
+	}>;
+}
 
 interface IConfigAndroid extends IConfigPlatform {
 	/**
