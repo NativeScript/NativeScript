@@ -3,13 +3,14 @@ import { iOSFrame as iOSFrameDefinition, BackstackEntry, NavigationTransition } 
 import { FrameBase, NavigationType } from './frame-common';
 import { Page } from '../page';
 import { View } from '../core/view';
-
-// Requires
-import { _createIOSAnimatedTransitioning } from './fragment.transitions';
 import { IOSHelper } from '../core/view/view-helper';
 import { profile } from '../../profiling';
 import { iOSNativeHelper, layout } from '../../utils';
 import { Trace } from '../../trace';
+import type { PageTransition } from '../transition/page-transition';
+import { SlideTransition } from '../transition/slide-transition';
+import { FadeTransition } from '../transition/fade-transition';
+import { SharedTransition } from '../transition/shared-transition';
 
 export * from './frame-common';
 
@@ -24,8 +25,8 @@ const NON_ANIMATED_TRANSITION = 'non-animated';
 let navDepth = -1;
 
 export class Frame extends FrameBase {
-	public viewController: UINavigationControllerImpl;
-	public _animatedDelegate = <UINavigationControllerDelegate>UINavigationControllerAnimatedDelegate.new();
+	viewController: UINavigationControllerImpl;
+	_animatedDelegate: UINavigationControllerDelegate;
 	public _ios: iOSFrame;
 
 	constructor() {
@@ -41,9 +42,12 @@ export class Frame extends FrameBase {
 	public disposeNativeView() {
 		this._removeFromFrameStack();
 		this.viewController = null;
-		this._ios.controller = null;
 		this._animatedDelegate = null;
-		this._ios = null;
+		if (this._ios) {
+			this._ios.controller = null;
+			this._ios = null;
+		}
+
 		super.disposeNativeView();
 	}
 
@@ -97,8 +101,22 @@ export class Frame extends FrameBase {
 
 		const nativeTransition = _getNativeTransition(navigationTransition, true);
 		if (!nativeTransition && navigationTransition) {
+			if (!this._animatedDelegate) {
+				this._animatedDelegate = <UINavigationControllerDelegate>UINavigationControllerAnimatedDelegate.initWithOwner(new WeakRef(this));
+			}
 			this._ios.controller.delegate = this._animatedDelegate;
 			viewController[DELEGATE] = this._animatedDelegate;
+			if (navigationTransition.instance) {
+				this.transitionId = navigationTransition.instance.id;
+				const transitionState = SharedTransition.getState(this.transitionId);
+				if (transitionState?.interactive?.dismiss) {
+					// interactive transitions via gestures
+					// TODO - allow users to define their own custom gesture dismissals
+					navigationTransition.instance.setupInteractiveGesture(() => {
+						this._ios.controller.popViewControllerAnimated(true);
+					}, this);
+				}
+			}
 		} else {
 			viewController[DELEGATE] = null;
 			this._ios.controller.delegate = null;
@@ -202,6 +220,7 @@ export class Frame extends FrameBase {
 		const animated = this._currentEntry ? this._getIsAnimatedNavigation(this._currentEntry.entry) : false;
 
 		this._updateActionBar(backstackEntry.resolvedPage);
+
 		if (Trace.isEnabled()) {
 			Trace.write(`${this}.popToViewControllerAnimated(${controller}, ${animated}); depth = ${navDepth}`, Trace.categories.Navigation);
 		}
@@ -377,6 +396,14 @@ const _defaultTransitionDuration = 0.35;
 @NativeClass
 class UINavigationControllerAnimatedDelegate extends NSObject implements UINavigationControllerDelegate {
 	public static ObjCProtocols = [UINavigationControllerDelegate];
+	owner: WeakRef<Frame>;
+	transition: PageTransition;
+
+	static initWithOwner(owner: WeakRef<Frame>) {
+		const delegate = <UINavigationControllerAnimatedDelegate>UINavigationControllerAnimatedDelegate.new();
+		delegate.owner = owner;
+		return delegate;
+	}
 
 	navigationControllerAnimationControllerForOperationFromViewControllerToViewController(navigationController: UINavigationController, operation: number, fromVC: UIViewController, toVC: UIViewController): UIViewControllerAnimatedTransitioning {
 		let viewController: UIViewController;
@@ -401,11 +428,39 @@ class UINavigationControllerAnimatedDelegate extends NSObject implements UINavig
 		if (Trace.isEnabled()) {
 			Trace.write(`UINavigationControllerImpl.navigationControllerAnimationControllerForOperationFromViewControllerToViewController(${operation}, ${fromVC}, ${toVC}), transition: ${JSON.stringify(navigationTransition)}`, Trace.categories.NativeLifecycle);
 		}
+		this.transition = navigationTransition.instance;
 
-		const curve = _getNativeCurve(navigationTransition);
-		const animationController = _createIOSAnimatedTransitioning(navigationTransition, curve, operation, fromVC, toVC);
+		if (!this.transition) {
+			if (navigationTransition.name) {
+				const curve = _getNativeCurve(navigationTransition);
+				const name = navigationTransition.name.toLowerCase();
+				if (name.indexOf('slide') === 0) {
+					const direction = name.substring('slide'.length) || 'left'; //Extract the direction from the string
+					this.transition = new SlideTransition(direction, navigationTransition.duration, curve);
+				} else if (name === 'fade') {
+					this.transition = new FadeTransition(navigationTransition.duration, curve);
+				}
+			}
+		}
 
-		return animationController;
+		if (this.transition?.iosNavigatedController) {
+			return this.transition.iosNavigatedController(navigationController, operation, fromVC, toVC);
+		}
+		return null;
+	}
+
+	navigationControllerInteractionControllerForAnimationController(navigationController: UINavigationController, animationController: UIViewControllerAnimatedTransitioning): UIViewControllerInteractiveTransitioning {
+		const owner = this.owner?.deref();
+		if (owner) {
+			const state = SharedTransition.getState(owner.transitionId);
+			if (state?.instance?.iosInteractionDismiss) {
+				if (state?.interactiveBegan) {
+					return state?.instance?.iosInteractionDismiss(null);
+				}
+			}
+		}
+
+		return null;
 	}
 }
 

@@ -213,7 +213,7 @@ interface RequireContext {
 
 interface WeakRef<T extends object> {
 	/**
-	 * @deprecated Use deref instead with 8.4+
+	 * @deprecated Use deref instead with 8.5+
 	 */
 	get(): T;
 

@@ -34,10 +34,6 @@ export function _clearEntry(entry: BackstackEntry): void;
  * in order to reapply them when new fragment is created for the same entry.
  */
 export function _clearFragment(entry: BackstackEntry): void;
-/**
- * @private
- */
-export function _createIOSAnimatedTransitioning(navigationTransition: NavigationTransition, nativeCurve: any, operation: number, fromVC: any, toVC: any): any;
 
 /**
  * @private

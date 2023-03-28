@@ -83,6 +83,36 @@ global.CFRunLoopGetMain = function () {
 global.kCFRunLoopDefaultMode = 1;
 global.CFRunLoopPerformBlock = function (runloop, kCFRunLoopDefaultMode, func) {};
 global.CFRunLoopWakeUp = function (runloop) {};
+
+global.NativeScriptGlobals = {
+	events: {
+		on: (args) => {},
+		off: (args) => {},
+		notify: (args) => {},
+		hasListeners: (args) => {},
+	},
+};
+
+global.CADisplayLink = function () {};
+global.NSNotification = function () {};
+global.UIApplicationDelegate = function () {};
+global.UIResponder = function () {};
+global.UIResponder.extend = function () {};
+global.UIViewController = function () {};
+global.UIAdaptivePresentationControllerDelegate = function () {};
+global.UIPopoverPresentationControllerDelegate = function () {};
+global.UIContentSizeCategoryExtraSmall = 0.5;
+global.UIContentSizeCategorySmall = 0.7;
+global.UIContentSizeCategoryMedium = 0.85;
+global.UIContentSizeCategoryLarge = 1;
+global.UIContentSizeCategoryExtraLarge = 1.15;
+global.UIContentSizeCategoryExtraExtraLarge = 1.3;
+global.UIContentSizeCategoryExtraExtraExtraLarge = 1.5;
+global.UIContentSizeCategoryAccessibilityMedium = 2;
+global.UIContentSizeCategoryAccessibilityLarge = 2.5;
+global.UIContentSizeCategoryAccessibilityExtraLarge = 3;
+global.UIContentSizeCategoryAccessibilityExtraExtraLarge = 3.5;
+global.UIContentSizeCategoryAccessibilityExtraExtraExtraLarge = 4;
 // global.UIDocumentInteractionController = {
 // 	interactionControllerWithURL(url: any) {
 // 		return null;

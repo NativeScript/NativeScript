@@ -1,20 +1,22 @@
-﻿import * as transition from '@nativescript/core/ui/transition';
+﻿import { PageTransition, SharedTransition, SharedTransitionHelper, Transition } from '@nativescript/core';
 
-export class CustomTransition extends transition.Transition {
+export class CustomTransition extends Transition {
 	constructor(duration: number, curve: any) {
 		super(duration, curve);
 	}
 
-	public animateIOSTransition(containerView: UIView, fromView: UIView, toView: UIView, operation: UINavigationControllerOperation, completion: (finished: boolean) => void): void {
+	animateIOSTransition(transitionContext: UIViewControllerContextTransitioning, fromViewCtrl: UIViewController, toViewCtrl: UIViewController, operation: UINavigationControllerOperation): void {
+		const toView = toViewCtrl.view;
+		const fromView = fromViewCtrl.view;
 		toView.transform = CGAffineTransformMakeScale(0, 0);
 		fromView.transform = CGAffineTransformIdentity;
 
 		switch (operation) {
 			case UINavigationControllerOperation.Push:
-				containerView.insertSubviewAboveSubview(toView, fromView);
+				transitionContext.containerView.insertSubviewAboveSubview(toView, fromView);
 				break;
 			case UINavigationControllerOperation.Pop:
-				containerView.insertSubviewBelowSubview(toView, fromView);
+				transitionContext.containerView.insertSubviewBelowSubview(toView, fromView);
 				break;
 		}
 
@@ -27,7 +29,63 @@ export class CustomTransition extends transition.Transition {
 				toView.transform = CGAffineTransformIdentity;
 				fromView.transform = CGAffineTransformMakeScale(0, 0);
 			},
-			completion
+			(finished) => {
+				transitionContext.completeTransition(finished);
+			}
 		);
+	}
+}
+
+export class CustomSharedElementPageTransition extends PageTransition {
+	transitionController: PageTransitionController;
+	interactiveController: UIPercentDrivenInteractiveTransition;
+	presented: UIViewController;
+	presenting: UIViewController;
+	navigationController: UINavigationController;
+	operation: number;
+
+	iosNavigatedController(navigationController: UINavigationController, operation: number, fromVC: UIViewController, toVC: UIViewController): UIViewControllerAnimatedTransitioning {
+		this.navigationController = navigationController;
+		if (!this.transitionController) {
+			this.presented = toVC;
+			this.presenting = fromVC;
+		}
+		this.transitionController = PageTransitionController.initWithOwner(new WeakRef(this));
+		// console.log('iosNavigatedController presenting:', this.presenting);
+
+		this.operation = operation;
+		return this.transitionController;
+	}
+}
+
+@NativeClass()
+class PageTransitionController extends NSObject implements UIViewControllerAnimatedTransitioning {
+	static ObjCProtocols = [UIViewControllerAnimatedTransitioning];
+	owner: WeakRef<PageTransition>;
+
+	static initWithOwner(owner: WeakRef<PageTransition>) {
+		const ctrl = <PageTransitionController>PageTransitionController.new();
+		ctrl.owner = owner;
+		return ctrl;
+	}
+
+	transitionDuration(transitionContext: UIViewControllerContextTransitioning): number {
+		const owner = this.owner.deref();
+		if (owner) {
+			return owner.getDuration();
+		}
+		return 0.35;
+	}
+
+	animateTransition(transitionContext: UIViewControllerContextTransitioning): void {
+		const owner = this.owner.deref();
+		if (owner) {
+			// console.log('--- PageTransitionController animateTransition');
+			const state = SharedTransition.getState(owner.id);
+			if (!state) {
+				return;
+			}
+			SharedTransitionHelper.animate(state, transitionContext, 'page');
+		}
 	}
 }

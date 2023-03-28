@@ -1,10 +1,8 @@
-// Definitions.
 import { AlignSelf, FlexGrow, FlexShrink, FlexWrapBefore, Order } from '../../layouts/flexbox-layout';
 import { Page } from '../../page';
-
-// Types.
 import { CoreTypes } from '../../../core-types';
 import { Property, CssProperty, CssAnimationProperty, InheritedProperty, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, initNativeView } from '../properties';
+import { setupAccessibleView } from '../../../accessibility';
 import { CSSUtils } from '../../../css/system-classes';
 import { Source } from '../../../utils/debug';
 import { Binding, BindingOptions } from '../bindable';
@@ -12,6 +10,7 @@ import { Trace } from '../../../trace';
 import { Observable, PropertyChangeData, WrappedValue } from '../../../data/observable';
 import { Style } from '../../styling/style';
 import { paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../../styling/style-properties';
+import type { ModalTransition } from '../../transition/modal-transition';
 
 // TODO: Remove this import!
 import { getClass } from '../../../utils/types';
@@ -39,6 +38,13 @@ function ensureStyleScopeModule() {
 
 const defaultBindingSource = {};
 
+export interface ModalTransitionType {
+	name?: string;
+	instance?: ModalTransition;
+	duration?: number;
+	curve?: any;
+}
+
 export interface ShowModalOptions {
 	/**
 	 * Any context you want to pass to the modally shown view. This same context will be available in the arguments of the shownModally event handler.
@@ -64,6 +70,11 @@ export interface ShowModalOptions {
 	 * An optional parameter specifying whether to stretch the modal view when not in full-screen mode.
 	 */
 	stretched?: boolean;
+
+	/**
+	 * An optional custom transition effect
+	 */
+	transition?: ModalTransitionType;
 
 	/**
 	 * An optional parameter that specify options specific to iOS as an object.
@@ -101,6 +112,12 @@ export interface ShowModalOptions {
 	cancelable?: boolean;
 }
 
+/**
+ * Gets an ancestor from a given type.
+ * @param view - Starting view (child view).
+ * @param criterion - The type of ancestor view we are looking for. Could be a string containing a class name or an actual type.
+ * Returns an instance of a view (if found), otherwise undefined.
+ */
 export function getAncestor(view: ViewBaseDefinition, criterion: string | { new () }): ViewBaseDefinition {
 	let matcher: (view: ViewBaseDefinition) => boolean = null;
 	if (typeof criterion === 'string') {
@@ -118,6 +135,12 @@ export function getAncestor(view: ViewBaseDefinition, criterion: string | { new 
 	return null;
 }
 
+/**
+ * Gets a child view by id.
+ * @param view - The parent (container) view of the view to look for.
+ * @param id - The id of the view to look for.
+ * Returns an instance of a view (if found), otherwise undefined.
+ */
 export function getViewById(view: ViewBaseDefinition, id: string): ViewBaseDefinition {
 	if (!view) {
 		return undefined;
@@ -144,6 +167,12 @@ export function getViewById(view: ViewBaseDefinition, id: string): ViewBaseDefin
 	return retVal;
 }
 
+/**
+ * Gets a child view by domId.
+ * @param view - The parent (container) view of the view to look for.
+ * @param domId - The id of the view to look for.
+ * Returns an instance of a view (if found), otherwise undefined.
+ */
 export function getViewByDomId(view: ViewBaseDefinition, domId: number): ViewBaseDefinition {
 	if (!view) {
 		return undefined;
@@ -170,6 +199,41 @@ export function getViewByDomId(view: ViewBaseDefinition, domId: number): ViewBas
 	return retVal;
 }
 
+// TODO: allow all selector types (just using attributes now)
+/**
+ * Gets a child view by selector.
+ * @param view - The parent (container) view of the view to look for.
+ * @param selector - The selector of the view to look for.
+ * Returns an instance of a view (if found), otherwise undefined.
+ */
+export function querySelectorAll(view: ViewBaseDefinition, selector: string): Array<ViewBaseDefinition> {
+	if (!view) {
+		return undefined;
+	}
+
+	const retVal: Array<ViewBaseDefinition> = [];
+	if (view[selector]) {
+		retVal.push(view);
+	}
+
+	const descendantsCallback = function (child: ViewBaseDefinition): boolean {
+		if (child[selector]) {
+			retVal.push(child);
+		}
+
+		return true;
+	};
+
+	eachDescendant(view, descendantsCallback);
+
+	return retVal;
+}
+
+/**
+ * Iterates through all child views (via visual tree) and executes a function.
+ * @param view - Starting view (parent container).
+ * @param callback - A function to execute on every child. If function returns false it breaks the iteration.
+ */
 export function eachDescendant(view: ViewBaseDefinition, callback: (child: ViewBaseDefinition) => boolean) {
 	if (!callback || !view) {
 		return;
@@ -245,9 +309,21 @@ namespace SuspendType {
 }
 
 export abstract class ViewBase extends Observable implements ViewBaseDefinition {
+	/**
+	 * String value used when hooking to loaded event.
+	 */
 	public static loadedEvent = 'loaded';
+	/**
+	 * String value used when hooking to unloaded event.
+	 */
 	public static unloadedEvent = 'unloaded';
+	/**
+	 * String value used when hooking to creation event
+	 */
 	public static createdEvent = 'created';
+	/**
+	 * String value used when hooking to disposeNativeView event
+	 */
 	public static disposeNativeViewEvent = 'disposeNativeView';
 
 	private _onLoadedCalled = false;
@@ -264,23 +340,66 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	public domNode: dnm.DOMNode;
 
 	public recycleNativeView: 'always' | 'never' | 'auto';
+	/**
+	 * returns the native UIViewController.
+	 */
 	public viewController: any;
 	public bindingContext: any;
+	/**
+	 * read-only. If you want to set out-of-band the nativeView use the setNativeView method.
+	 */
 	public nativeViewProtected: any;
+	/**
+	 * Gets the parent view. This property is read-only.
+	 */
 	public parent: ViewBase;
-	public isCollapsed; // Default(false) set in prototype
+	/**
+	 * Returns true if visibility is set to 'collapse'.
+	 * Default(false) set in prototype
+	 * Readonly property
+	 */
+	public isCollapsed;
 
+	/**
+	 * Gets or sets the id for this view.
+	 */
 	public id: string;
+	/**
+	 * Gets or sets the CSS class name for this view.
+	 */
 	public className: string;
+	/**
+	 * Gets or sets the shared transition tag for animated view transitions
+	 */
+	public sharedTransitionTag: string;
+	/**
+	 * Opt out of shared transition under different binding conditions
+	 */
+	public sharedTransitionIgnore: boolean;
 
 	public _domId: number;
-	public _context: any;
+	public _context: any /* android.content.Context */;
 	public _isAddedToNativeVisualTree: boolean;
-	public _cssState: ssm.CssState = new ssm.CssState(new WeakRef(this));
+	/* "ui/styling/style-scope" */ public _cssState: ssm.CssState = new ssm.CssState(new WeakRef(this));
 	public _styleScope: ssm.StyleScope;
+	/**
+	 * A property bag holding suspended native updates.
+	 * Native setters that had to execute while there was no native view,
+	 * or the view was detached from the visual tree etc. will accumulate in this object,
+	 * and will be applied when all prerequisites are met.
+	 * @private
+	 */
 	public _suspendedUpdates: {
 		[propertyName: string]: Property<ViewBase, any> | CssProperty<Style, any> | CssAnimationProperty<Style, any>;
 	};
+	//@endprivate
+	/**
+	 * Determines the depth of suspended updates.
+	 * When the value is 0 the current property updates are not batched nor scoped and must be immediately applied.
+	 * If the value is 1 or greater, the current updates are batched and does not have to provide immediate update.
+	 * Do not set this field, the _batchUpdate method is responsible to keep the count up to date,
+	 * as well as adding/rmoving the view to/from the visual tree.
+	 */
 	public _suspendNativeUpdatesCount: number;
 	public _isStyleScopeHost: boolean;
 	public _automaticallyAdjustsScrollViewInsets: boolean;
@@ -333,8 +452,16 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	public _defaultPaddingLeft: number;
 	public _isPaddingRelative: boolean;
 
+	/**
+	 * @private
+	 * Module name when the view is a module root. Otherwise, it is undefined.
+	 */
 	public _moduleName: string;
 
+	/**
+	 * Gets or sets if the view is reusable.
+	 * Reusable views are not automatically destroyed when removed from the View tree.
+	 */
 	public reusable: boolean;
 
 	constructor() {
@@ -344,7 +471,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		this.notify({ eventName: ViewBase.createdEvent, type: this.constructor.name, object: this });
 	}
 
-	// Used in Angular.
+	// Used in Angular. TODO: remove from here
+	/**
+	 * Gets the template parent or the native parent. Sets the template parent.
+	 */
 	get parentNode() {
 		return this._templateParent || this.parent;
 	}
@@ -361,10 +491,16 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	}
 
 	// TODO: Use Type.prototype.typeName instead.
+	/**
+	 * Gets the name of the constructor function for this instance. E.g. for a Button class this will return "Button".
+	 */
 	get typeName(): string {
 		return getClass(this);
 	}
 
+	/**
+	 * Gets the style object associated to this view.
+	 */
 	get style(): Style {
 		return this._style;
 	}
@@ -397,14 +533,23 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		this.className = v;
 	}
 
+	/**
+	 * Returns the child view with the specified id.
+	 */
 	getViewById<T extends ViewBaseDefinition>(id: string): T {
 		return <T>getViewById(this, id);
 	}
 
+	/**
+	 * Returns the child view with the specified domId.
+	 */
 	getViewByDomId<T extends ViewBaseDefinition>(domId: number): T {
 		return <T>getViewByDomId(this, domId);
 	}
 
+	/**
+	 * Gets owner page. This is a read-only property.
+	 */
 	get page(): Page {
 		if (this.parent) {
 			return this.parent.page;
@@ -413,6 +558,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		return null;
 	}
 
+	/**
+	 * @unstable
+	 * Ensures a dom-node for this view.
+	 */
 	public ensureDomNode() {
 		if (!this.domNode) {
 			ensuredomNodeModule();
@@ -442,6 +591,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
 			return true;
 		});
+		setupAccessibleView(<any>this);
 
 		this._emit('loaded');
 	}
@@ -494,6 +644,9 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		}
 	}
 
+	/**
+	 * Allow multiple updates to be performed on the instance at once.
+	 */
 	public _batchUpdate<T>(callback: () => T): T {
 		try {
 			this._suspendNativeUpdates(SuspendType.Incremental);
@@ -565,6 +718,11 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		return allStates;
 	}
 
+	/**
+	 * @protected
+	 * @unstable
+	 * A widget can call this method to add a matching css pseudo class.
+	 */
 	@profile
 	public addPseudoClass(name: string): void {
 		const allStates = this.getAllAliasedStates(name);
@@ -576,6 +734,11 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		}
 	}
 
+	/**
+	 * @protected
+	 * @unstable
+	 * A widget can call this method to discard matching css pseudo class.
+	 */
 	@profile
 	public deletePseudoClass(name: string): void {
 		const allStates = this.getAllAliasedStates(name);
@@ -659,6 +822,9 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		}
 	}
 
+	/**
+	 * Invalidates the layout of the view and triggers a new layout pass.
+	 */
 	@profile
 	public requestLayout(): void {
 		// Default implementation for non View instances (like TabViewItem).
@@ -668,6 +834,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		}
 	}
 
+	/**
+	 * Iterates over children of type ViewBase.
+	 * @param callback Called for each child of type ViewBase. Iteration stops if this method returns falsy value.
+	 */
 	public eachChild(callback: (child: ViewBase) => boolean) {
 		//
 	}
@@ -697,6 +867,9 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		}
 	}
 
+	/**
+	 * Method is intended to be overridden by inheritors and used as "protected"
+	 */
 	public _addViewCore(view: ViewBase, atIndex?: number) {
 		propagateInheritableProperties(this, view);
 		view._inheritStyleScope(this._styleScope);
@@ -711,16 +884,28 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		}
 	}
 
+	/**
+	 * Load view.
+	 * @param view to load.
+	 */
 	public loadView(view: ViewBase): void {
 		if (view && !view.isLoaded) {
 			view.callLoaded();
 		}
 	}
 
+	/**
+	 * When returning true the callLoaded method will be run in setTimeout
+	 * Method is intended to be overridden by inheritors and used as "protected"
+	 */
 	public _shouldDelayLayout(): boolean {
 		return false;
 	}
 
+	/**
+	 * Unload view.
+	 * @param view to unload.
+	 */
 	public unloadView(view: ViewBase): void {
 		if (view && view.isLoaded) {
 			view.callUnloaded();
@@ -759,10 +944,17 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		}
 	}
 
+	/**
+	 * Creates a native view.
+	 * Returns either android.view.View or UIView.
+	 */
 	public createNativeView(): Object {
 		return undefined;
 	}
 
+	/**
+	 * Clean up references to the native view.
+	 */
 	public disposeNativeView() {
 		this.notify({
 			eventName: ViewBase.disposeNativeViewEvent,
@@ -770,10 +962,16 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		});
 	}
 
+	/**
+	 * Initializes properties/listeners of the native view.
+	 */
 	public initNativeView(): void {
 		//
 	}
 
+	/**
+	 * Resets properties/listeners set to the native view.
+	 */
 	public resetNativeView(): void {
 		//
 	}
@@ -801,8 +999,12 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		this._setupUI(context);
 	}
 
+	/**
+	 * Setups the UI for ViewBase and all its children recursively.
+	 * This method should *not* be overridden by derived views.
+	 */
 	@profile
-	public _setupUI(context: any, atIndex?: number, parentIsLoaded?: boolean): void {
+	public _setupUI(context: any /* android.content.Context */, atIndex?: number, parentIsLoaded?: boolean): void {
 		if (this._context === context) {
 			// this check is unnecessary as this function should never be called when this._context === context as it means the view was somehow detached,
 			// which is only possible by setting reusable = true. Adding it either way for feature flag safety
@@ -889,6 +1091,11 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		});
 	}
 
+	/**
+	 * Set the nativeView field performing extra checks and updates to the native properties on the new view.
+	 * Use in cases where the createNativeView is not suitable.
+	 * As an example use in item controls where the native parent view will create the native views for child items.
+	 */
 	setNativeView(value: any): void {
 		if (this.__nativeView === value) {
 			return;
@@ -907,12 +1114,21 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		}
 	}
 
+	/**
+	 * Tears down the UI of a reusable node by making it no longer reusable.
+	 * @see _tearDownUI
+	 * @param forceDestroyChildren Force destroy the children (even if they are reusable)
+	 */
 	public destroyNode(forceDestroyChildren?: boolean): void {
 		this.reusable = false;
 		this.callUnloaded();
 		this._tearDownUI(forceDestroyChildren);
 	}
 
+	/**
+	 * Tears down the UI for ViewBase and all its children recursively.
+	 * This method should *not* be overridden by derived views.
+	 */
 	@profile
 	public _tearDownUI(force?: boolean): void {
 		// No context means we are already teared down.
@@ -977,6 +1193,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	}
 
 	/**
+	 * Performs the core logic of adding a child view to the native visual tree. Returns true if the view's native representation has been successfully added, false otherwise.
 	 * Method is intended to be overridden by inheritors and used as "protected".
 	 */
 	public _addViewToNativeVisualTree(view: ViewBase, atIndex?: number): boolean {
@@ -1070,6 +1287,11 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		return str;
 	}
 
+	/**
+	 * @private
+	 * Notifies each child's css state for change, recursively.
+	 * Either the style scope, className or id properties were changed.
+	 */
 	_onCssStateChange(): void {
 		this._cssState.onChange();
 		eachDescendant(this, (child: ViewBase) => {
@@ -1097,12 +1319,29 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		}
 	}
 
-	public showModal(...args): ViewBase {
+	/**
+	 * Shows the view passed as parameter as a modal view.
+	 * @param view - View instance to be shown modally.
+	 * @param modalOptions - A ShowModalOptions instance
+	 */
+	public showModal(view: ViewBase, modalOptions?: ShowModalOptions): ViewBase;
+	/**
+	 * Shows the View contained in moduleName as a modal view.
+	 * @param moduleName - The name of the module to load starting from the application root.
+	 * @param modalOptions - A ShowModalOptions instance
+	 */
+	public showModal(moduleName: string, modalOptions?: ShowModalOptions): ViewBase;
+
+	public showModal(moduleOrView: string | ViewBase, modalOptions?: ShowModalOptions): ViewBase {
 		const parent = this.parent;
 
-		return parent && parent.showModal(...args);
+		return parent && parent.showModal(<ViewBase>moduleOrView, modalOptions);
 	}
 
+	/**
+	 * Closes the current modal view that this page is showing.
+	 * @param context - Any context you want to pass back to the host when closing the modal view.
+	 */
 	public closeModal(...args): void {
 		const parent = this.parent;
 		if (parent) {
@@ -1110,6 +1349,9 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		}
 	}
 
+	/**
+	 * Method is intended to be overridden by inheritors and used as "protected"
+	 */
 	public _dialogClosed(): void {
 		eachDescendant(this, (child: ViewBase) => {
 			child._dialogClosed();
@@ -1118,6 +1360,9 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		});
 	}
 
+	/**
+	 * Method is intended to be overridden by inheritors and used as "protected"
+	 */
 	public _onRootViewReset(): void {
 		eachDescendant(this, (child: ViewBase) => {
 			child._onRootViewReset();

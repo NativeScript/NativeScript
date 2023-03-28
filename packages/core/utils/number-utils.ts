@@ -31,3 +31,16 @@ export function notNegative(value: Object): boolean {
 export const radiansToDegrees = (a: number) => a * (180 / Math.PI);
 
 export const degreesToRadians = (a: number) => a * (Math.PI / 180);
+
+/**
+ * Map value changes across a set of criteria
+ * @param val value to map
+ * @param in_min minimum
+ * @param in_max maximum
+ * @param out_min starting value
+ * @param out_max ending value
+ * @returns
+ */
+export function valueMap(val: number, in_min: number, in_max: number, out_min: number, out_max: number) {
+	return ((val - in_min) * (out_max - out_min)) / (in_max - in_min) + out_min;
+}

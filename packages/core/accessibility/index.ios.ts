@@ -1,4 +1,5 @@
 import * as Application from '../application';
+import type { ViewBase } from '../ui/core/view-base';
 import type { View } from '../ui/core/view';
 import { notifyAccessibilityFocusState } from './accessibility-common';
 import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait } from './accessibility-types';

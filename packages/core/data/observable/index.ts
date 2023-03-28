@@ -108,10 +108,16 @@ export class Observable {
 
 	private readonly _observers: { [eventName: string]: ListenerEntry[] } = {};
 
+	/**
+	 * Gets the value of the specified property.
+	 */
 	public get(name: string): any {
 		return this[name];
 	}
 
+	/**
+	 * Updates the specified property with the provided value.
+	 */
 	public set(name: string, value: any): void {
 		// TODO: Parameter validation
 		const oldValue = this[name];
@@ -124,6 +130,9 @@ export class Observable {
 		this.notifyPropertyChange(name, newValue, oldValue);
 	}
 
+	/**
+	 * Updates the specified property with the provided value and raises a property change event and a specific change event based on the property name.
+	 */
 	public setProperty(name: string, value: any): void {
 		const oldValue = this[name];
 		if (this[name] === value) {
@@ -472,28 +481,6 @@ export class Observable {
 
 		return -1;
 	}
-}
-
-export interface Observable {
-	/**
-	 * Raised when a propertyChange occurs.
-	 */
-	on(event: 'propertyChange', callback: (data: EventData) => void, thisArg?: any): void;
-
-	/**
-	 * Updates the specified property with the provided value.
-	 */
-	set(name: string, value: any): void;
-
-	/**
-	 * Updates the specified property with the provided value and raises a property change event and a specific change event based on the property name.
-	 */
-	setProperty(name: string, value: any): void;
-
-	/**
-	 * Gets the value of the specified property.
-	 */
-	get(name: string): any;
 }
 
 class ObservableFromObject extends Observable {
