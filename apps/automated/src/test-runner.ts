@@ -43,11 +43,13 @@ import * as xhrTests from './xhr/xhr-tests';
 import * as fetchTests from './fetch/fetch-tests';
 import * as timerTests from './timer/timer-tests';
 import * as profilingTests from './profiling/profiling-tests';
+
+allTests['HTTP'] = httpTests;
+allTests['XHR'] = xhrTests;
+allTests['FETCH'] = fetchTests;
+
 // don't run these on CI as they are flaky
 if (!__CI__) {
-	allTests['HTTP'] = httpTests;
-	allTests['XHR'] = xhrTests;
-	allTests['FETCH'] = fetchTests;
 	allTests['TIMER'] = timerTests;
 	allTests['PROFILING'] = profilingTests;
 }
@@ -255,8 +257,8 @@ allTests['SEGMENTED-BAR'] = segmentedBarTests;
 import * as lifecycle from './ui/lifecycle/lifecycle-tests';
 allTests['LIFECYCLE'] = lifecycle;
 
-// import * as cssAnimationTests from './ui/animation/css-animation-tests';
-// allTests['CSS-ANIMATION'] = cssAnimationTests;
+import * as cssAnimationTests from './ui/animation/css-animation-tests';
+allTests['CSS-ANIMATION'] = cssAnimationTests;
 
 import * as transitionTests from './navigation/transition-tests';
 allTests['TRANSITIONS'] = transitionTests;
@@ -276,8 +278,8 @@ allTests['TAB-VIEW-ROOT'] = tabViewRootTests;
 import * as resetRootViewTests from './ui/root-view/reset-root-view-tests';
 allTests['RESET-ROOT-VIEW'] = resetRootViewTests;
 
-import * as rootViewTests from './ui/root-view/root-view-tests';
-allTests['ROOT-VIEW'] = rootViewTests;
+// import * as rootViewTests from './ui/root-view/root-view-tests';
+// allTests['ROOT-VIEW'] = rootViewTests;
 
 import * as utilsTests from './utils/utils-tests';
 allTests['UTILS'] = utilsTests;

@@ -115,8 +115,8 @@ export function initGlobal() {
 
 		// ts-helpers
 		// Required by V8 snapshot generator
-		if (!(<any>global).__extends) {
-			(<any>global).__extends = function (d, b) {
+		if (!global.__extends) {
+			global.__extends = function (d, b) {
 				for (const p in b) {
 					if (b.hasOwnProperty(p)) {
 						d[p] = b[p];
@@ -160,7 +160,7 @@ export function initGlobal() {
 		};
 
 		// Cast to <any> because moduleResolvers is read-only in definitions
-		(<any>global).moduleResolvers = [global.require];
+		global.moduleResolvers = [global.require];
 
 		global.registerModule = function (name: string, loader: ModuleLoader): void {
 			modules.set(name, { loader, moduleId: name });
@@ -250,7 +250,7 @@ export function initGlobal() {
 				return result;
 			}
 
-			for (const resolver of (<any>global).moduleResolvers) {
+			for (const resolver of global.moduleResolvers) {
 				const result = resolver(name);
 				if (result) {
 					modules.set(name, { moduleId: name, loader: () => result });
@@ -276,19 +276,19 @@ export function initGlobal() {
 		};
 
 		global.zonedCallback = function (callback: Function): Function {
-			if ((<any>global).zone) {
+			if (global.zone) {
 				// Zone v0.5.* style callback wrapping
-				return (<any>global).zone.bind(callback);
+				return global.zone.bind(callback);
 			}
-			if ((<any>global).Zone) {
+			if (global.Zone) {
 				// Zone v0.6.* style callback wrapping
-				return (<any>global).Zone.current.wrap(callback);
+				return global.Zone.current.wrap(callback);
 			} else {
 				return callback;
 			}
 		};
 
-		(<any>global).System = {
+		global.System = {
 			import(path) {
 				return new Promise((resolve, reject) => {
 					try {

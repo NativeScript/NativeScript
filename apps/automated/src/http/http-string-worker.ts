@@ -5,7 +5,7 @@ postMessage('stub');
 //
 // import { getString } from '@nativescript/core/http';
 //
-// getString('https://httpbin.org/get').then(
+// getString('https://http-echo.nativescript.org/get').then(
 // 	function (r) {
 // 		postMessage(r);
 // 	},
