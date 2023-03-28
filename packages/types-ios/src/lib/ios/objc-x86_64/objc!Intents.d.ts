@@ -499,6 +499,62 @@ declare const enum INAmountType {
 	StatementBalance = 6
 }
 
+declare class INAnswerCallIntent extends INIntent {
+
+	static alloc(): INAnswerCallIntent; // inherited from NSObject
+
+	static new(): INAnswerCallIntent; // inherited from NSObject
+
+	constructor(o: { audioRoute: INCallAudioRoute; callIdentifier: string; });
+
+	initWithAudioRouteCallIdentifier(audioRoute: INCallAudioRoute, callIdentifier: string): this;
+}
+
+interface INAnswerCallIntentHandling extends NSObjectProtocol {
+
+	confirmAnswerCallCompletion?(intent: INAnswerCallIntent, completion: (p1: INAnswerCallIntentResponse) => void): void;
+
+	handleAnswerCallCompletion(intent: INAnswerCallIntent, completion: (p1: INAnswerCallIntentResponse) => void): void;
+}
+declare var INAnswerCallIntentHandling: {
+
+	prototype: INAnswerCallIntentHandling;
+};
+
+declare var INAnswerCallIntentIdentifier: string;
+
+declare class INAnswerCallIntentResponse extends INIntentResponse {
+
+	static alloc(): INAnswerCallIntentResponse; // inherited from NSObject
+
+	static new(): INAnswerCallIntentResponse; // inherited from NSObject
+
+	callRecords: NSArray<INCallRecord>;
+
+	readonly code: INAnswerCallIntentResponseCode;
+
+	constructor(o: { code: INAnswerCallIntentResponseCode; userActivity: NSUserActivity; });
+
+	initWithCodeUserActivity(code: INAnswerCallIntentResponseCode, userActivity: NSUserActivity): this;
+}
+
+declare const enum INAnswerCallIntentResponseCode {
+
+	Unspecified = 0,
+
+	Ready = 1,
+
+	ContinueInApp = 2,
+
+	InProgress = 3,
+
+	Success = 4,
+
+	Failure = 5,
+
+	FailureRequiringAppLaunch = 6
+}
+
 declare class INAppendToNoteIntent extends INIntent {
 
 	static alloc(): INAppendToNoteIntent; // inherited from NSObject
@@ -3148,6 +3204,60 @@ declare const enum INGetVisualCodeIntentResponseCode {
 	FailureRequiringAppLaunch = 6,
 
 	FailureAppConfigurationRequired = 7
+}
+
+declare class INHangUpCallIntent extends INIntent {
+
+	static alloc(): INHangUpCallIntent; // inherited from NSObject
+
+	static new(): INHangUpCallIntent; // inherited from NSObject
+
+	constructor(o: { callIdentifier: string; });
+
+	initWithCallIdentifier(callIdentifier: string): this;
+}
+
+interface INHangUpCallIntentHandling extends NSObjectProtocol {
+
+	confirmHangUpCallCompletion?(intent: INHangUpCallIntent, completion: (p1: INHangUpCallIntentResponse) => void): void;
+
+	handleHangUpCallCompletion(intent: INHangUpCallIntent, completion: (p1: INHangUpCallIntentResponse) => void): void;
+}
+declare var INHangUpCallIntentHandling: {
+
+	prototype: INHangUpCallIntentHandling;
+};
+
+declare var INHangUpCallIntentIdentifier: string;
+
+declare class INHangUpCallIntentResponse extends INIntentResponse {
+
+	static alloc(): INHangUpCallIntentResponse; // inherited from NSObject
+
+	static new(): INHangUpCallIntentResponse; // inherited from NSObject
+
+	readonly code: INHangUpCallIntentResponseCode;
+
+	constructor(o: { code: INHangUpCallIntentResponseCode; userActivity: NSUserActivity; });
+
+	initWithCodeUserActivity(code: INHangUpCallIntentResponseCode, userActivity: NSUserActivity): this;
+}
+
+declare const enum INHangUpCallIntentResponseCode {
+
+	Unspecified = 0,
+
+	Ready = 1,
+
+	InProgress = 2,
+
+	Success = 3,
+
+	Failure = 4,
+
+	FailureRequiringAppLaunch = 5,
+
+	FailureNoCallToHangUp = 6
 }
 
 declare class INImage extends NSObject implements NSCopying, NSSecureCoding {

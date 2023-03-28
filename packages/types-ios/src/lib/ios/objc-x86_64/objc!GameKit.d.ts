@@ -1067,7 +1067,11 @@ declare class GKMatchmaker extends NSObject {
 
 	startBrowsingForNearbyPlayersWithReachableHandler(reachableHandler: (p1: string, p2: boolean) => void): void;
 
+	startGroupActivityWithPlayerHandler(handler: (p1: GKPlayer) => void): void;
+
 	stopBrowsingForNearbyPlayers(): void;
+
+	stopGroupActivity(): void;
 }
 
 declare class GKMatchmakerViewController extends UINavigationController {
