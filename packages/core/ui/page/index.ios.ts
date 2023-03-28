@@ -74,6 +74,7 @@ class UIViewControllerImpl extends UIViewController {
 
 	public isBackstackSkipped: boolean;
 	public isBackstackCleared: boolean;
+	private didFirstLayout: boolean;
 	// this is initialized in initWithOwner since the constructor doesn't run on native classes
 	private _isRunningLayout: number;
 	private get isRunningLayout() {
@@ -84,7 +85,7 @@ class UIViewControllerImpl extends UIViewController {
 	}
 	private finishRunningLayout() {
 		this._isRunningLayout--;
-		this.clearScheduledLayout();
+		this.didFirstLayout = true;
 	}
 	private runLayout(cb: () => void) {
 		try {
@@ -95,31 +96,11 @@ class UIViewControllerImpl extends UIViewController {
 		}
 	}
 
-	layoutTimer: number;
-
-	private clearScheduledLayout() {
-		if (this.layoutTimer) {
-			clearTimeout(this.layoutTimer);
-			this.layoutTimer = null;
-		}
-	}
-
-	private scheduleLayout() {
-		if (this.layoutTimer) {
-			return;
-		}
-		setTimeout(() => {
-			this.layoutTimer = null;
-			if (!this.isRunningLayout) {
-				this.runLayout(() => this.layoutOwner());
-			}
-		});
-	}
-
 	public static initWithOwner(owner: WeakRef<Page>): UIViewControllerImpl {
 		const controller = <UIViewControllerImpl>UIViewControllerImpl.new();
 		controller._owner = owner;
 		controller._isRunningLayout = 0;
+		controller.didFirstLayout = false;
 
 		return controller;
 	}
@@ -300,24 +281,19 @@ class UIViewControllerImpl extends UIViewController {
 
 	public viewSafeAreaInsetsDidChange(): void {
 		super.viewSafeAreaInsetsDidChange();
-		this.scheduleLayout();
+		if (this.isRunningLayout || !this.didFirstLayout) {
+			return;
+		}
+		const owner = this._owner?.deref();
+		if (owner) {
+			this.runLayout(() => IOSHelper.layoutView(this, owner));
+		}
 	}
 
 	public viewDidLayoutSubviews(): void {
 		this.startRunningLayout();
 		super.viewDidLayoutSubviews();
-		this.layoutOwner();
-		this.finishRunningLayout();
-	}
-
-	layoutOwner(force = false) {
 		const owner = this._owner?.deref();
-		if (!force && !!owner.nativeViewProtected?.layer.needsLayout?.()) {
-			// we skip layout if the view is not yet laid out yet
-			// this usually means that viewDidLayoutSubviews will be called again
-			// so doing a layout pass now will layout with the wrong parameters
-			return;
-		}
 		if (owner) {
 			// layout(owner.actionBar)
 			// layout(owner.content)
@@ -369,6 +345,7 @@ class UIViewControllerImpl extends UIViewController {
 
 			IOSHelper.layoutView(this, owner);
 		}
+		this.finishRunningLayout();
 	}
 
 	// Mind implementation for other controllerss

@@ -211,6 +211,7 @@ export class View extends ViewCommon implements ViewDefinition {
 			const boundsOrigin = nativeView.bounds.origin;
 			const boundsFrame = adjustedFrame || frame;
 			nativeView.bounds = CGRectMake(boundsOrigin.x, boundsOrigin.y, boundsFrame.size.width, boundsFrame.size.height);
+			nativeView.layoutIfNeeded();
 
 			this._raiseLayoutChangedEvent();
 			this._isLaidOut = true;
@@ -888,9 +889,6 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	_setNativeClipToBounds() {
-		if (!this.nativeViewProtected) {
-			return;
-		}
 		const backgroundInternal = this.style.backgroundInternal;
 		this.nativeViewProtected.clipsToBounds = (this.nativeViewProtected instanceof UIScrollView || backgroundInternal.hasBorderWidth() || backgroundInternal.hasBorderRadius()) && !backgroundInternal.hasBoxShadow();
 	}
