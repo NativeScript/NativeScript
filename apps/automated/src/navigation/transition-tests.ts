@@ -77,10 +77,9 @@ export function test_SharedElementTransitions() {
 	const navigationTransition = SharedTransition.custom(new CustomSharedElementPageTransition());
 
 	var testId = `SharedElementTransition[${JSON.stringify(navigationTransition)}]`;
-	// if (Trace.isEnabled()) {
-	// Trace.write(`Testing ${testId}`, Trace.categories.Test);
-	console.log(`Testing ${testId}`);
-	// }
+	if (Trace.isEnabled()) {
+		Trace.write(`Testing ${testId}`, Trace.categories.Test);
+	}
 	var navigationEntry: NavigationEntry = {
 		create: function (): Page {
 			let page = new Page();
