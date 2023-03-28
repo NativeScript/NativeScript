@@ -7250,6 +7250,8 @@ declare class MTRBaseClusterTestCluster extends MTRCluster {
 
 	static readAttributeVendorIdWithAttributeCacheEndpointQueueCompletionHandler(attributeCacheContainer: MTRAttributeCacheContainer, endpoint: number, queue: NSObject, completionHandler: (p1: number, p2: NSError) => void): void;
 
+	static readAttributeWriteOnlyInt8uWithAttributeCacheEndpointQueueCompletionHandler(attributeCacheContainer: MTRAttributeCacheContainer, endpoint: number, queue: NSObject, completionHandler: (p1: number, p2: NSError) => void): void;
+
 	constructor(o: { device: MTRBaseDevice; endpoint: number; queue: NSObject; });
 
 	initWithDeviceEndpointQueue(device: MTRBaseDevice, endpoint: number, queue: NSObject): this;
@@ -7426,6 +7428,8 @@ declare class MTRBaseClusterTestCluster extends MTRCluster {
 
 	readAttributeVendorIdWithCompletionHandler(completionHandler: (p1: number, p2: NSError) => void): void;
 
+	readAttributeWriteOnlyInt8uWithCompletionHandler(completionHandler: (p1: number, p2: NSError) => void): void;
+
 	simpleStructEchoRequestWithParamsCompletionHandler(params: MTRTestClusterClusterSimpleStructEchoRequestParams, completionHandler: (p1: MTRTestClusterClusterSimpleStructResponseParams, p2: NSError) => void): void;
 
 	subscribeAttributeAcceptedCommandListWithMinIntervalMaxIntervalParamsSubscriptionEstablishedReportHandler(minInterval: number, maxInterval: number, params: MTRSubscribeParams, subscriptionEstablishedHandler: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
@@ -7599,6 +7603,8 @@ declare class MTRBaseClusterTestCluster extends MTRCluster {
 	subscribeAttributeUnsupportedWithMinIntervalMaxIntervalParamsSubscriptionEstablishedReportHandler(minInterval: number, maxInterval: number, params: MTRSubscribeParams, subscriptionEstablishedHandler: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
 	subscribeAttributeVendorIdWithMinIntervalMaxIntervalParamsSubscriptionEstablishedReportHandler(minInterval: number, maxInterval: number, params: MTRSubscribeParams, subscriptionEstablishedHandler: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
+
+	subscribeAttributeWriteOnlyInt8uWithMinIntervalMaxIntervalParamsSubscriptionEstablishedReportHandler(minInterval: number, maxInterval: number, params: MTRSubscribeParams, subscriptionEstablishedHandler: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
 	testAddArgumentsWithParamsCompletionHandler(params: MTRTestClusterClusterTestAddArgumentsParams, completionHandler: (p1: MTRTestClusterClusterTestAddArgumentsResponseParams, p2: NSError) => void): void;
 
@@ -7975,6 +7981,10 @@ declare class MTRBaseClusterTestCluster extends MTRCluster {
 	writeAttributeVendorIdWithValueCompletionHandler(value: number, completionHandler: (p1: NSError) => void): void;
 
 	writeAttributeVendorIdWithValueParamsCompletionHandler(value: number, params: MTRWriteParams, completionHandler: (p1: NSError) => void): void;
+
+	writeAttributeWriteOnlyInt8uWithValueCompletionHandler(value: number, completionHandler: (p1: NSError) => void): void;
+
+	writeAttributeWriteOnlyInt8uWithValueParamsCompletionHandler(value: number, params: MTRWriteParams, completionHandler: (p1: NSError) => void): void;
 }
 
 declare class MTRBaseClusterThermostat extends MTRCluster {
@@ -9470,6 +9480,8 @@ declare class MTRBaseDevice extends NSObject {
 
 	invokeCommandWithEndpointIdClusterIdCommandIdCommandFieldsTimedInvokeTimeoutClientQueueCompletion(endpointId: number, clusterId: number, commandId: number, commandFields: any, timeoutMs: number, clientQueue: NSObject, completion: (p1: NSArray<NSDictionary<string, any>>, p2: NSError) => void): void;
 
+	openCommissioningWindowWithSetupPasscodeDiscriminatorDurationQueueCompletion(setupPasscode: number, discriminator: number, duration: number, queue: NSObject, completion: (p1: MTRSetupPayload, p2: NSError) => void): void;
+
 	readAttributeWithEndpointIdClusterIdAttributeIdParamsClientQueueCompletion(endpointId: number, clusterId: number, attributeId: number, params: MTRReadParams, clientQueue: NSObject, completion: (p1: NSArray<NSDictionary<string, any>>, p2: NSError) => void): void;
 
 	subscribeAttributeWithEndpointIdClusterIdAttributeIdMinIntervalMaxIntervalParamsClientQueueReportHandlerSubscriptionEstablished(endpointId: number, clusterId: number, attributeId: number, minInterval: number, maxInterval: number, params: MTRSubscribeParams, clientQueue: NSObject, reportHandler: (p1: NSArray<NSDictionary<string, any>>, p2: NSError) => void, subscriptionEstablishedHandler: () => void): void;
@@ -10153,6 +10165,8 @@ declare const enum MTRClusterAttributeIDType {
 	PulseWidthModulationAttributeFeatureMapID = 65532,
 
 	PulseWidthModulationAttributeClusterRevisionID = 65533,
+
+	DescriptorAttributeDeviceTypeListID = 0,
 
 	DescriptorAttributeDeviceListID = 0,
 
@@ -12227,6 +12241,8 @@ declare const enum MTRClusterAttributeIDType {
 	TestClusterAttributeNullableRangeRestrictedInt16uID = 16424,
 
 	TestClusterAttributeNullableRangeRestrictedInt16sID = 16425,
+
+	TestClusterAttributeWriteOnlyInt8uID = 16426,
 
 	TestClusterAttributeGeneratedCommandListID = 65528,
 
@@ -15945,6 +15961,8 @@ declare class MTRClusterTestCluster extends MTRCluster {
 
 	readAttributeVendorIdWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
+	readAttributeWriteOnlyInt8uWithParams(params: MTRReadParams): NSDictionary<string, any>;
+
 	simpleStructEchoRequestWithParamsExpectedValuesExpectedValueIntervalCompletionHandler(params: MTRTestClusterClusterSimpleStructEchoRequestParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completionHandler: (p1: MTRTestClusterClusterSimpleStructResponseParams, p2: NSError) => void): void;
 
 	testAddArgumentsWithParamsExpectedValuesExpectedValueIntervalCompletionHandler(params: MTRTestClusterClusterTestAddArgumentsParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completionHandler: (p1: MTRTestClusterClusterTestAddArgumentsResponseParams, p2: NSError) => void): void;
@@ -16322,6 +16340,10 @@ declare class MTRClusterTestCluster extends MTRCluster {
 	writeAttributeVendorIdWithValueExpectedValueInterval(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number): void;
 
 	writeAttributeVendorIdWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
+
+	writeAttributeWriteOnlyInt8uWithValueExpectedValueInterval(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number): void;
+
+	writeAttributeWriteOnlyInt8uWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 }
 
 declare class MTRClusterThermostat extends MTRCluster {
@@ -17805,6 +17827,19 @@ declare class MTRDescriptorClusterDeviceType extends NSObject implements NSCopyi
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+declare class MTRDescriptorClusterDeviceTypeStruct extends NSObject implements NSCopying {
+
+	static alloc(): MTRDescriptorClusterDeviceTypeStruct; // inherited from NSObject
+
+	static new(): MTRDescriptorClusterDeviceTypeStruct; // inherited from NSObject
+
+	revision: number;
+
+	type: number;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
 declare class MTRDevice extends NSObject {
 
 	static alloc(): MTRDevice; // inherited from NSObject
@@ -17816,6 +17851,8 @@ declare class MTRDevice extends NSObject {
 	readonly state: MTRDeviceState;
 
 	invokeCommandWithEndpointIDClusterIDCommandIDCommandFieldsExpectedValuesExpectedValueIntervalTimedInvokeTimeoutClientQueueCompletion(endpointID: number, clusterID: number, commandID: number, commandFields: any, expectedValues: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueInterval: number, timeout: number, clientQueue: NSObject, completion: (p1: NSArray<NSDictionary<string, any>>, p2: NSError) => void): void;
+
+	openCommissioningWindowWithSetupPasscodeDiscriminatorDurationQueueCompletion(setupPasscode: number, discriminator: number, duration: number, queue: NSObject, completion: (p1: MTRSetupPayload, p2: NSError) => void): void;
 
 	readAttributeWithEndpointIDClusterIDAttributeIDParams(endpointID: number, clusterID: number, attributeID: number, params: MTRReadParams): NSDictionary<string, any>;
 
@@ -17897,6 +17934,8 @@ declare class MTRDeviceController extends NSObject {
 	setNocChainIssuerQueue(nocChainIssuer: MTRNOCChainIssuer, queue: NSObject): void;
 
 	setPairingDelegateQueue(delegate: MTRDevicePairingDelegate, queue: NSObject): void;
+
+	setupCommissioningSessionWithPayloadNewNodeIDError(payload: MTRSetupPayload, newNodeID: number): boolean;
 
 	shutdown(): void;
 
@@ -20875,6 +20914,13 @@ declare class MTRMediaPlaybackClusterStopPlaybackParams extends NSObject impleme
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+declare const enum MTRMediaPlaybackFeature {
+
+	AdvancedSeek = 1,
+
+	VariableSpeed = 2
+}
+
 declare const enum MTRMediaPlaybackPlaybackState {
 
 	Playing = 0,
@@ -22729,7 +22775,11 @@ declare class MTRSetupPayload extends NSObject implements NSSecureCoding {
 
 	static generateRandomPIN(): number;
 
+	static generateRandomSetupPasscode(): number;
+
 	static new(): MTRSetupPayload; // inherited from NSObject
+
+	static setupPayloadWithOnboardingPayloadError(onboardingPayload: string): MTRSetupPayload;
 
 	commissioningFlow: MTRCommissioningFlow;
 
@@ -22753,13 +22803,19 @@ declare class MTRSetupPayload extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
+	constructor(o: { setupPasscode: number; discriminator: number; });
+
 	encodeWithCoder(coder: NSCoder): void;
 
 	getAllOptionalVendorData(): NSArray<MTROptionalQRCodeInfo>;
 
 	initWithCoder(coder: NSCoder): this;
 
+	initWithSetupPasscodeDiscriminator(setupPasscode: number, discriminator: number): this;
+
 	manualEntryCode(): string;
+
+	qrCodeString(): string;
 }
 
 declare var MTRSignedIntegerValueType: string;
@@ -22914,6 +22970,19 @@ declare class MTRSwitchClusterSwitchLatchedEvent extends NSObject implements NSC
 	newPosition: number;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare const enum MTRSwitchFeature {
+
+	LatchingSwitch = 1,
+
+	MomentarySwitch = 2,
+
+	MomentarySwitchRelease = 4,
+
+	MomentarySwitchLongPress = 8,
+
+	MomentarySwitchMultiPress = 16
 }
 
 declare class MTRTargetNavigatorClusterNavigateTargetParams extends NSObject implements NSCopying {

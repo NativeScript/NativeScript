@@ -57,6 +57,8 @@ declare class SRApplicationUsage extends NSObject {
 
 	readonly reportApplicationIdentifier: string;
 
+	readonly supplementalCategories: NSArray<SRSupplementalCategory>;
+
 	readonly textInputSessions: NSArray<SRTextInputSession>;
 
 	readonly usageTime: number;
@@ -315,6 +317,8 @@ declare class SRKeyboardMetrics extends NSObject {
 
 	readonly longWordTouchDownUp: NSArray<SRKeyboardProbabilityMetric<NSUnitDuration>>;
 
+	readonly longWordTouchUpDown: NSArray<SRKeyboardProbabilityMetric<NSUnitDuration>>;
+
 	readonly longWordUpErrorDistance: NSArray<SRKeyboardProbabilityMetric<NSUnitLength>>;
 
 	readonly pathErrorDistanceRatio: NSArray<number>;
@@ -406,6 +410,8 @@ declare class SRKeyboardMetrics extends NSObject {
 	readonly touchDownDown: SRKeyboardProbabilityMetric<NSUnitDuration>;
 
 	readonly touchDownUp: SRKeyboardProbabilityMetric<NSUnitDuration>;
+
+	readonly touchUpDown: SRKeyboardProbabilityMetric<NSUnitDuration>;
 
 	readonly typingSpeed: number;
 
@@ -624,6 +630,25 @@ declare var SRSensorSiriSpeechMetrics: string;
 declare var SRSensorTelephonySpeechMetrics: string;
 
 declare var SRSensorVisits: string;
+
+declare class SRSupplementalCategory extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): SRSupplementalCategory; // inherited from NSObject
+
+	static new(): SRSupplementalCategory; // inherited from NSObject
+
+	readonly identifier: string;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
 
 declare class SRTextInputSession extends NSObject {
 
