@@ -18,12 +18,12 @@ export class Placeholder extends View {
 	 * @param callback - Callback function which will be executed when event is raised.
 	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
 	 */
-	on(eventNames: string, callback: (args: EventData) => void);
+	on(eventNames: string, callback: (args: EventData) => void, thisArg?: any): void;
 
 	/**
 	 * Raised when a creatingView event occurs.
 	 */
-	on(event: 'creatingView', callback: (args: CreateViewEventData) => void);
+	on(event: 'creatingView', callback: (args: CreateViewEventData) => void, thisArg?: any): void;
 }
 
 /**

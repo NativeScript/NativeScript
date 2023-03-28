@@ -22,12 +22,13 @@ export class ActionBarBase extends View implements ActionBarDefinition {
 	public effectiveContentInsetLeft: number;
 	public effectiveContentInsetRight: number;
 
-	get navigationButton(): NavigationButton {
-		return this._navigationButton;
-	}
 	disposeNativeView() {
 		this._actionItems = null;
 		super.disposeNativeView();
+	}
+
+	get navigationButton(): NavigationButton {
+		return this._navigationButton;
 	}
 	set navigationButton(value: NavigationButton) {
 		if (this._navigationButton !== value) {

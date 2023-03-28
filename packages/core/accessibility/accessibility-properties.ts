@@ -31,20 +31,11 @@ export const accessibilityEnabledProperty = new CssProperty<Style, boolean>({
 });
 accessibilityEnabledProperty.register(Style);
 
-const accessibilityHiddenPropertyName = 'accessibilityHidden';
-const accessibilityHiddenCssName = 'a11y-hidden';
-
-export const accessibilityHiddenProperty = global.isIOS
-	? new InheritedCssProperty({
-			name: accessibilityHiddenPropertyName,
-			cssName: accessibilityHiddenCssName,
-			valueConverter: booleanConverter,
-	  })
-	: new CssProperty({
-			name: accessibilityHiddenPropertyName,
-			cssName: accessibilityHiddenCssName,
-			valueConverter: booleanConverter,
-	  });
+export const accessibilityHiddenProperty = new (global.isIOS ? InheritedCssProperty : CssProperty)({
+	name: 'accessibilityHidden',
+	cssName: 'a11y-hidden',
+	valueConverter: booleanConverter,
+});
 accessibilityHiddenProperty.register(Style);
 
 export const accessibilityIdentifierProperty = new Property<View, string>({

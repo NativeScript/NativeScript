@@ -34,7 +34,7 @@ export class PlatformSuffixPlugin {
 	}
 
 	apply(compiler: any) {
-		const platformRE = new RegExp(`\.${this.platform}\.`);
+		const platformRE = new RegExp(`\\.${this.platform}\\.`);
 
 		// require.context
 		compiler.hooks.contextModuleFactory.tap(id, (cmf) => {

@@ -6,7 +6,7 @@ export { iOSApplication, AndroidApplication } from './application';
 export type { ApplicationEventData, LaunchEventData, OrientationChangedEventData, UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData, AndroidActivityEventData, AndroidActivityBundleEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, AndroidActivityNewIntentEventData, AndroidActivityBackPressedEventData, SystemAppearanceChangedEventData } from './application';
 
 import { fontScaleChangedEvent, launchEvent, displayedEvent, uncaughtErrorEvent, discardedErrorEvent, suspendEvent, resumeEvent, exitEvent, lowMemoryEvent, orientationChangedEvent, systemAppearanceChanged, systemAppearanceChangedEvent, getMainEntry, getRootView, _resetRootView, getResources, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, notify, hasListeners, run, orientation, getNativeApplication, hasLaunched, android as appAndroid, ios as iosApp, systemAppearance, setAutoSystemAppearanceChanged, ensureNativeApplication, setMaxRefreshRate } from './application';
-import { inBackground, suspended } from './application/application-common';
+import { inBackground, suspended, foregroundEvent, backgroundEvent } from './application/application-common';
 
 export const Application = {
 	launchEvent,
@@ -16,6 +16,8 @@ export const Application = {
 	suspendEvent,
 	resumeEvent,
 	exitEvent,
+	foregroundEvent,
+	backgroundEvent,
 	lowMemoryEvent,
 	orientationChangedEvent,
 	systemAppearanceChangedEvent,
@@ -137,7 +139,7 @@ export * from './trace';
 
 export * from './ui';
 
-import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, executeOnUIThread, queueMacrotask, queueGC, debounce, throttle, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, iOSNativeHelper as iosUtils, Source, RESOURCE_PREFIX, FILE_PREFIX, escapeRegexSymbols, convertString, dismissSoftInput, dismissKeyboard, dataDeserialize, dataSerialize, copyToClipboard, getFileExtension } from './utils';
+import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, executeOnUIThread, queueMacrotask, queueGC, debounce, throttle, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, iOSNativeHelper as iosUtils, Source, RESOURCE_PREFIX, FILE_PREFIX, escapeRegexSymbols, convertString, dismissSoftInput, dismissKeyboard, dataDeserialize, dataSerialize, copyToClipboard, getFileExtension, isEmoji } from './utils';
 import { SDK_VERSION } from './utils/constants';
 import { ClassInfo, getClass, getBaseClasses, getClassInfo, isBoolean, isDefined, isFunction, isNullOrUndefined, isNumber, isObject, isString, isUndefined, toUIString, verifyCallback, numberHasDecimals, numberIs64Bit } from './utils/types';
 
@@ -199,6 +201,7 @@ export const Utils = {
 	dismissSoftInput,
 	dismissKeyboard,
 	copyToClipboard,
+	isEmoji,
 };
 
 export { XmlParser, ParserEventType, ParserEvent } from './xml';

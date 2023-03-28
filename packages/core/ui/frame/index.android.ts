@@ -21,6 +21,7 @@ import { Device } from '../../platform';
 import { profile } from '../../profiling';
 import { android as androidApplication } from '../../application';
 import { setSuspended } from '../../application/application-common';
+import { ad } from '../../utils/native-helper';
 
 export * from './frame-common';
 
@@ -94,7 +95,7 @@ export class Frame extends FrameBase {
 	}
 
 	public static reloadPage(context?: ModuleContext): void {
-		const activity = application.android.foregroundActivity;
+		const activity = ad.getCurrentActivity();
 		const callbacks: AndroidActivityCallbacks = activity[CALLBACKS];
 		if (callbacks) {
 			const rootView: View = callbacks.getRootView();
@@ -147,7 +148,8 @@ export class Frame extends FrameBase {
 
 		// _onAttachedToWindow called from OS again after it was detach
 		// still happens with androidx.fragment:1.3.2
-		const lifecycleState = (androidApplication.foregroundActivity?.getLifecycle?.() || androidApplication.startActivity?.getLifecycle?.())?.getCurrentState() || androidx.lifecycle.Lifecycle.State.CREATED;
+		const activity = ad.getCurrentActivity();
+		const lifecycleState = activity?.getLifecycle?.()?.getCurrentState() || androidx.lifecycle.Lifecycle.State.CREATED;
 		if ((this._manager && this._manager.isDestroyed()) || !lifecycleState.isAtLeast(androidx.lifecycle.Lifecycle.State.CREATED)) {
 			return;
 		}
@@ -439,7 +441,7 @@ export class Frame extends FrameBase {
 		const newFragmentTag = `fragment${fragmentId}[${navDepth}]`;
 		const newFragment = this.createFragment(newEntry, newFragmentTag);
 		const transaction = manager.beginTransaction();
-		let animated = currentEntry ? this._getIsAnimatedNavigation(newEntry.entry) : false;
+		const animated = currentEntry ? this._getIsAnimatedNavigation(newEntry.entry) : false;
 		// NOTE: Don't use transition for the initial navigation (same as on iOS)
 		// On API 21+ transition won't be triggered unless there was at least one
 		// layout pass so we will wait forever for transitionCompleted handler...
@@ -595,7 +597,7 @@ export function reloadPage(context?: ModuleContext): void {
 }
 
 // attach on global, so it can be overwritten in NativeScript Angular
-(<any>global).__onLiveSyncCore = Frame.reloadPage;
+global.__onLiveSyncCore = Frame.reloadPage;
 
 function cloneExpandedTransitionListener(expandedTransitionListener: any) {
 	if (!expandedTransitionListener) {
@@ -913,12 +915,18 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 			return null;
 		}
 
+		frame._resolvedPage = page;
+
 		if (page.parent === frame) {
 			// If we are navigating to a page that was destroyed
 			// reinitialize its UI.
 			if (!page._context) {
 				const context = (container && container.getContext()) || (inflater && inflater.getContext());
 				page._setupUI(context);
+			}
+
+			if (frame.isLoaded && !page.isLoaded) {
+				page.callLoaded();
 			}
 		} else {
 			if (!frame._styleScope) {
@@ -927,10 +935,6 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 			}
 
 			frame._addView(page);
-		}
-
-		if (frame.isLoaded && !page.isLoaded) {
-			page.callLoaded();
 		}
 
 		const savedState = entry.viewSavedState;

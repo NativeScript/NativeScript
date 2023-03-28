@@ -48,7 +48,7 @@ npx nx run core:test --watch
 
 ### Isolate tests by name
 
-Run a single test by it's decribe name, for example to run just the `xml/index.spec.ts`, the describe block is named `XmlParser` therefore:
+Run a single test by it's describe name, for example to run just the `xml/index.spec.ts`, the describe block is named `XmlParser` therefore:
 
 ```
 npx nx run core:test --watch -t 'XmlParser' 

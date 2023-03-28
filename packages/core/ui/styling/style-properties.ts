@@ -734,6 +734,7 @@ function normalizeTransformation({ property, value }: Transformation): Transform
 }
 
 function convertTransformValue(property: string, stringValue: string): TransformationValue {
+	/* eslint-disable prefer-const */
 	let [x, y, z] = stringValue.split(',').map(parseFloat);
 	if (property === 'translate') {
 		y ??= IDENTITY_TRANSFORMATION.translate.y;
@@ -1170,6 +1171,7 @@ export const borderTopLeftRadiusProperty = new CssProperty<Style, CoreTypes.Leng
 		target.backgroundInternal = target.backgroundInternal.withBorderTopLeftRadius(value);
 	},
 	valueConverter: Length.parse,
+	equalityComparer: Length.equals,
 });
 borderTopLeftRadiusProperty.register(Style);
 
@@ -1186,6 +1188,7 @@ export const borderTopRightRadiusProperty = new CssProperty<Style, CoreTypes.Len
 		target.backgroundInternal = target.backgroundInternal.withBorderTopRightRadius(value);
 	},
 	valueConverter: Length.parse,
+	equalityComparer: Length.equals,
 });
 borderTopRightRadiusProperty.register(Style);
 
@@ -1202,6 +1205,7 @@ export const borderBottomRightRadiusProperty = new CssProperty<Style, CoreTypes.
 		target.backgroundInternal = target.backgroundInternal.withBorderBottomRightRadius(value);
 	},
 	valueConverter: Length.parse,
+	equalityComparer: Length.equals,
 });
 borderBottomRightRadiusProperty.register(Style);
 
@@ -1218,6 +1222,7 @@ export const borderBottomLeftRadiusProperty = new CssProperty<Style, CoreTypes.L
 		target.backgroundInternal = target.backgroundInternal.withBorderBottomLeftRadius(value);
 	},
 	valueConverter: Length.parse,
+	equalityComparer: Length.equals,
 });
 borderBottomLeftRadiusProperty.register(Style);
 
@@ -1324,20 +1329,7 @@ fontFamilyProperty.register(Style);
 export const fontScaleProperty = new InheritedCssProperty<Style, number>({
 	name: '_fontScale',
 	cssName: '_fontScale',
-	affectsLayout: global.isIOS,
-	valueChanged: (target, oldValue, newValue) => {
-		if (global.isIOS) {
-			if (target.viewRef['handleFontSize'] === true) {
-				return;
-			}
-
-			const currentFont = target.fontInternal || Font.default;
-			if (currentFont.fontScale !== newValue) {
-				const newFont = currentFont.withFontScale(newValue);
-				target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
-			}
-		}
-	},
+	defaultValue: 1.0,
 	valueConverter: (v) => parseFloat(v),
 });
 fontScaleProperty.register(Style);

@@ -211,7 +211,6 @@ export class View extends ViewCommon implements ViewDefinition {
 			const boundsOrigin = nativeView.bounds.origin;
 			const boundsFrame = adjustedFrame || frame;
 			nativeView.bounds = CGRectMake(boundsOrigin.x, boundsOrigin.y, boundsFrame.size.width, boundsFrame.size.height);
-			nativeView.layoutIfNeeded();
 
 			this._raiseLayoutChangedEvent();
 			this._isLaidOut = true;
@@ -479,12 +478,14 @@ export class View extends ViewCommon implements ViewDefinition {
 			} else {
 				//use CSS & attribute width & height if option is not provided
 				const handler = () => {
-					const w = <number>(this.width || this.style.width);
-					const h = <number>(this.height || this.style.height);
+					if (this.viewController) {
+						const w = <number>(this.width || this.style.width);
+						const h = <number>(this.height || this.style.height);
 
-					//TODO: only numeric value is supported, percentage value is not supported like Android
-					if (w > 0 && h > 0) {
-						controller.preferredContentSize = CGSizeMake(w, h);
+						//TODO: only numeric value is supported, percentage value is not supported like Android
+						if (w > 0 && h > 0) {
+							this.viewController.preferredContentSize = CGSizeMake(w, h);
+						}
 					}
 
 					this.off(View.loadedEvent, handler);
@@ -887,6 +888,9 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	_setNativeClipToBounds() {
+		if (!this.nativeViewProtected) {
+			return;
+		}
 		const backgroundInternal = this.style.backgroundInternal;
 		this.nativeViewProtected.clipsToBounds = (this.nativeViewProtected instanceof UIScrollView || backgroundInternal.hasBorderWidth() || backgroundInternal.hasBorderRadius()) && !backgroundInternal.hasBoxShadow();
 	}

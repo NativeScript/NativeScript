@@ -4,7 +4,7 @@ import { hintProperty, placeholderColorProperty, _updateCharactersInRangeReplace
 import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
 import { colorProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../styling/style-properties';
-import { layout } from '../../utils';
+import { layout, isEmoji } from '../../utils';
 import { profile } from '../../profiling';
 
 export * from './text-field-common';
@@ -123,22 +123,12 @@ export class TextField extends TextFieldBase {
 	initNativeView() {
 		super.initNativeView();
 		this._delegate = UITextFieldDelegateImpl.initWithOwner(new WeakRef(this));
+		this.nativeViewProtected.delegate = this._delegate;
 	}
 
 	disposeNativeView() {
 		this._delegate = null;
 		super.disposeNativeView();
-	}
-
-	@profile
-	public onLoaded() {
-		super.onLoaded();
-		this.ios.delegate = this._delegate;
-	}
-
-	public onUnloaded() {
-		this.ios.delegate = null;
-		super.onUnloaded();
 	}
 
 	// @ts-ignore
@@ -200,7 +190,10 @@ export class TextField extends TextFieldBase {
 		}
 
 		if (this.updateTextTrigger === 'textChanged') {
-			const shouldReplaceString = (textField.secureTextEntry && this.firstEdit) || delta > 1;
+			// 1. secureTextEntry with firstEdit should not replace
+			// 2. emoji's should not replace value
+			// 3. convenient keyboard shortcuts should not replace value (eg, '.com')
+			const shouldReplaceString = (textField.secureTextEntry && this.firstEdit) || (delta > 1 && !isEmoji(replacementString) && delta !== replacementString.length);
 			if (shouldReplaceString) {
 				textProperty.nativeValueChange(this, replacementString);
 			} else {

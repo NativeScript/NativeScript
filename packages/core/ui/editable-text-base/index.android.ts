@@ -229,7 +229,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 				newInputType = android.text.InputType.TYPE_CLASS_NUMBER;
 				break;
 
-			default:
+			default: {
 				const inputType = +value;
 				if (!isNaN(inputType)) {
 					newInputType = inputType;
@@ -237,6 +237,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 					newInputType = android.text.InputType.TYPE_CLASS_TEXT;
 				}
 				break;
+			}
 		}
 
 		this._setInputType(newInputType);
@@ -268,6 +269,15 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 				break;
 			case 'password':
 				newOptions = 'password'; // android.view.View.AUTOFILL_HINT_PASSWORD
+				break;
+			case 'newPassword':
+				newOptions = 'newPassword'; // android.view.View.AUTOFILL_HINT_NEW_PASSWORD
+				break;
+			case 'newUsername':
+				newOptions = 'newUsername'; // android.view.View.AUTOFILL_HINT_NEW_USERNAME
+				break;
+			case 'oneTimeCode':
+				newOptions = '2faAppOTPCode'; // android.view.View.AUTOFILL_HINT_2FA_APP_OTP
 				break;
 			case 'none':
 				newOptions = null;
@@ -511,19 +521,14 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 	public onFocusChange(view: android.view.View, hasFocus: boolean): void {
 		if (hasFocus) {
 			clearDismissTimer();
-			this.notify({
-				eventName: EditableTextBase.focusEvent,
-				object: this,
-			});
+			this.notify({ eventName: EditableTextBase.focusEvent });
 		} else {
 			if (this._dirtyTextAccumulator || this._dirtyTextAccumulator === '') {
 				textProperty.nativeValueChange(this, this._dirtyTextAccumulator);
 				this._dirtyTextAccumulator = undefined;
 			}
 
-			this.notify({
-				eventName: EditableTextBase.blurEvent,
-			});
+			this.notify({ eventName: EditableTextBase.blurEvent });
 			dismissSoftInput(this);
 		}
 	}

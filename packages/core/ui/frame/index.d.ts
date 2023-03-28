@@ -221,17 +221,17 @@ export class Frame extends FrameBase {
 	 * @param callback - Callback function which will be executed when event is raised.
 	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
 	 */
-	on(eventNames: string, callback: (args: EventData) => void, thisArg?: any);
+	on(eventNames: string, callback: (args: EventData) => void, thisArg?: any): void;
 
 	/**
 	 * Raised when navigation to the page has started.
 	 */
-	public on(event: 'navigatingTo', callback: (args: NavigationData) => void, thisArg?: any);
+	public on(event: 'navigatingTo', callback: (args: NavigationData) => void, thisArg?: any): void;
 
 	/**
 	 * Raised when navigation to the page has finished.
 	 */
-	public on(event: 'navigatedTo', callback: (args: NavigationData) => void, thisArg?: any);
+	public on(event: 'navigatedTo', callback: (args: NavigationData) => void, thisArg?: any): void;
 }
 
 /**

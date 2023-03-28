@@ -177,7 +177,9 @@ export class ActionBar extends ActionBarBase {
 	}
 
 	public disposeNativeView() {
-		(<any>this.nativeViewProtected).menuItemClickListener.owner = null;
+		if ((<any>this.nativeViewProtected)?.menuItemClickListener) {
+			(<any>this.nativeViewProtected).menuItemClickListener.owner = null;
+		}
 		super.disposeNativeView();
 	}
 

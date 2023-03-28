@@ -38,7 +38,7 @@ export namespace CoreTypes {
 	};
 
 	export type KeyboardInputType = 'datetime' | 'phone' | 'number' | 'url' | 'email' | 'integer';
-	export module KeyboardType {
+	export namespace KeyboardType {
 		export const datetime = 'datetime';
 		export const phone = 'phone';
 		export const number = 'number';
@@ -47,14 +47,17 @@ export namespace CoreTypes {
 		export const integer = 'integer';
 	}
 	export type AutofillType = 'username' | 'password' | 'none' | string;
-	export module AutofillType {
+	export namespace AutofillType {
 		export const username = 'username';
 		export const password = 'password';
+		export const newUsername = 'newUsername';
+		export const newPassword = 'newPassword';
+		export const oneTimeCode = 'oneTimeCode';
 		export const none = 'none';
 	}
 
 	export type ReturnKeyButtonType = 'done' | 'next' | 'go' | 'search' | 'send';
-	export module ReturnKeyType {
+	export namespace ReturnKeyType {
 		export const done = 'done';
 		export const next = 'next';
 		export const go = 'go';
@@ -63,7 +66,7 @@ export namespace CoreTypes {
 	}
 
 	export type TextAlignmentType = 'initial' | 'left' | 'center' | 'right' | 'justify';
-	export module TextAlignment {
+	export namespace TextAlignment {
 		export const left = 'left';
 		export const center = 'center';
 		export const right = 'right';
@@ -71,14 +74,14 @@ export namespace CoreTypes {
 	}
 
 	export type TextDecorationType = 'none' | 'underline' | 'line-through' | 'underline line-through';
-	export module TextDecoration {
+	export namespace TextDecoration {
 		export const none = 'none';
 		export const underline = 'underline';
 		export const lineThrough = 'line-through';
 	}
 
 	export type TextTransformType = 'initial' | 'none' | 'capitalize' | 'uppercase' | 'lowercase';
-	export module TextTransform {
+	export namespace TextTransform {
 		export const none = 'none';
 		export const capitalize = 'capitalize';
 		export const uppercase = 'uppercase';
@@ -86,7 +89,7 @@ export namespace CoreTypes {
 	}
 
 	export type WhiteSpaceType = 'initial' | 'normal' | 'nowrap';
-	export module WhiteSpace {
+	export namespace WhiteSpace {
 		export const normal = 'normal';
 		export const nowrap = 'nowrap';
 	}
@@ -94,20 +97,20 @@ export namespace CoreTypes {
 	export type MaxLinesType = number;
 
 	export type OrientationType = 'horizontal' | 'vertical';
-	export module Orientation {
+	export namespace Orientation {
 		export const horizontal = 'horizontal';
 		export const vertical = 'vertical';
 	}
 
 	export type DeviceOrientationType = 'portrait' | 'landscape' | 'unknown';
-	export module DeviceOrientation {
+	export namespace DeviceOrientation {
 		export const portrait = 'portrait';
 		export const landscape = 'landscape';
 		export const unknown = 'unknown';
 	}
 
 	export type HorizontalAlignmentType = 'left' | 'center' | 'right' | 'stretch';
-	export module HorizontalAlignment {
+	export namespace HorizontalAlignment {
 		export const left = 'left';
 		export const center = 'center';
 		export const right = 'right';
@@ -117,7 +120,7 @@ export namespace CoreTypes {
 	}
 
 	export type VerticalAlignmentType = 'top' | 'middle' | 'bottom' | 'stretch';
-	export module VerticalAlignment {
+	export namespace VerticalAlignment {
 		export const top = 'top';
 		export const middle = 'middle';
 		export const bottom = 'bottom';
@@ -140,7 +143,7 @@ export namespace CoreTypes {
 	}
 
 	export type ImageStretchType = 'none' | 'aspectFill' | 'aspectFit' | 'fill';
-	export module ImageStretch {
+	export namespace ImageStretch {
 		export const none: ImageStretchType = 'none';
 		export const aspectFill: ImageStretchType = 'aspectFill';
 		export const aspectFit: ImageStretchType = 'aspectFit';
@@ -148,7 +151,7 @@ export namespace CoreTypes {
 	}
 
 	export type VisibilityType = 'visible' | 'hidden' | 'collapse' | 'collapsed';
-	export module Visibility {
+	export namespace Visibility {
 		export const visible: VisibilityType = 'visible';
 		export const collapse: VisibilityType = 'collapse';
 		export const collapsed: VisibilityType = 'collapsed';
@@ -158,30 +161,30 @@ export namespace CoreTypes {
 		const parseStrict = makeParser<CoreTypes.VisibilityType>(isValid);
 	}
 
-	export module FontAttributes {
+	export namespace FontAttributes {
 		export const Normal = 0;
 		export const Bold = 1;
 		export const Italic = 1 << 1;
 	}
 
-	export module DeviceType {
+	export namespace DeviceType {
 		export const Phone: string = 'Phone';
 		export const Tablet: string = 'Tablet';
 	}
 
 	export type UpdateTextTriggerType = 'focusLost' | 'textChanged';
-	export module UpdateTextTrigger {
+	export namespace UpdateTextTrigger {
 		export const focusLost: UpdateTextTriggerType = 'focusLost';
 		export const textChanged: UpdateTextTriggerType = 'textChanged';
 	}
 
-	export module Accuracy {
+	export namespace Accuracy {
 		export const any: number = 300;
 		export const high: number = 3;
 	}
 
 	export type DockType = 'left' | 'top' | 'right' | 'bottom';
-	export module Dock {
+	export namespace Dock {
 		export const left: DockType = 'left';
 		export const top: DockType = 'top';
 		export const right: DockType = 'right';
@@ -189,48 +192,48 @@ export namespace CoreTypes {
 	}
 
 	export type AutocapitalizationInputType = 'none' | 'words' | 'sentences' | 'allcharacters';
-	export module AutocapitalizationType {
+	export namespace AutocapitalizationType {
 		export const none: AutocapitalizationInputType = 'none';
 		export const words: AutocapitalizationInputType = 'words';
 		export const sentences: AutocapitalizationInputType = 'sentences';
 		export const allCharacters: AutocapitalizationInputType = 'allcharacters';
 	}
 
-	export module NavigationBarVisibility {
+	export namespace NavigationBarVisibility {
 		export const auto: string = 'auto';
 		export const never: string = 'never';
 		export const always: string = 'always';
 	}
 
-	export module AndroidActionBarIconVisibility {
+	export namespace AndroidActionBarIconVisibility {
 		export const auto: string = 'auto';
 		export const never: string = 'never';
 		export const always: string = 'always';
 	}
 
-	export module AndroidActionItemPosition {
+	export namespace AndroidActionItemPosition {
 		export const actionBar: string = 'actionBar';
 		export const actionBarIfRoom: string = 'actionBarIfRoom';
 		export const popup: string = 'popup';
 	}
 
-	export module IOSActionItemPosition {
+	export namespace IOSActionItemPosition {
 		export const left: string = 'left';
 		export const right: string = 'right';
 	}
 
-	export module ImageFormat {
+	export namespace ImageFormat {
 		export const png: string = 'png';
 		export const jpeg: string = 'jpeg';
 		export const jpg: string = 'jpg';
 	}
 
-	export module FontStyle {
+	export namespace FontStyle {
 		export const normal: string = 'normal';
 		export const italic: string = 'italic';
 	}
 
-	export module FontWeight {
+	export namespace FontWeight {
 		export const thin: string = '100';
 		export const extraLight: string = '200';
 		export const light: string = '300';
@@ -243,7 +246,7 @@ export namespace CoreTypes {
 	}
 
 	export type BackgroundRepeatType = 'repeat' | 'repeat-x' | 'repeat-y' | 'no-repeat';
-	export module BackgroundRepeat {
+	export namespace BackgroundRepeat {
 		export const repeat: BackgroundRepeatType = 'repeat';
 		export const repeatX: BackgroundRepeatType = 'repeat-x';
 		export const repeatY: BackgroundRepeatType = 'repeat-y';
@@ -254,26 +257,26 @@ export namespace CoreTypes {
 
 	let animation: typeof animationModule;
 
-	export module AnimationCurve {
+	export namespace AnimationCurve {
 		export const ease = 'ease';
 		export const easeIn = 'easeIn';
 		export const easeOut = 'easeOut';
 		export const easeInOut = 'easeInOut';
 		export const linear = 'linear';
 		export const spring = 'spring';
-		export function cubicBezier(x1: number, y1: number, x2: number, y2: number): Object {
+		export function cubicBezier(x1: number, y1: number, x2: number, y2: number) {
 			animation = animation || require('../ui/animation');
 
 			return new animation.CubicBezierAnimationCurve(x1, y1, x2, y2);
 		}
 	}
 
-	export module StatusBarStyle {
+	export namespace StatusBarStyle {
 		export const light = 'light';
 		export const dark = 'dark';
 	}
 
-	export module SystemAppearance {
+	export namespace SystemAppearance {
 		export const light = 'light';
 		export const dark = 'dark';
 	}

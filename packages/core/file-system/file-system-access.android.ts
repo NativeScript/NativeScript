@@ -227,8 +227,14 @@ export class FileSystemAccess implements IFileSystemAccess {
 		return dir.getAbsolutePath();
 	}
 	public getExternalDocumentsFolderPath(): string {
-		const dir = getApplicationContext().getExternalFilesDir(null);
-
+		const dirs = getApplicationContext().getExternalFilesDirs(null);
+		let dir;
+		if (dirs && dirs.length > 1) {
+			dir = dirs[dirs.length - 1];
+		}
+		if (!dir) {
+			dir = getApplicationContext().getExternalFilesDir(null);
+		}
 		return dir.getAbsolutePath();
 	}
 
@@ -246,6 +252,44 @@ export class FileSystemAccess implements IFileSystemAccess {
 
 	public getCurrentAppPath(): string {
 		return this.getLogicalRootPath() + '/app';
+	}
+
+	public readBuffer = this.readBufferSync.bind(this);
+
+	public readBufferAsync(path: string): Promise<ArrayBuffer> {
+		return new Promise<ArrayBuffer>((resolve, reject) => {
+			try {
+				org.nativescript.widgets.Async.File.readBuffer(
+					path,
+					new org.nativescript.widgets.Async.CompleteCallback({
+						onComplete: (result: java.nio.ByteBuffer) => {
+							resolve((ArrayBuffer as any).from(result));
+						},
+						onError: (err) => {
+							reject(new Error(err));
+						},
+					}),
+					null
+				);
+			} catch (ex) {
+				reject(ex);
+			}
+		});
+	}
+
+	public readBufferSync(path: string, onError?: (error: any) => any) {
+		try {
+			const javaFile = new java.io.File(path);
+			const stream = new java.io.FileInputStream(javaFile);
+			const channel = stream.getChannel();
+			const buffer = new ArrayBuffer(javaFile.length());
+			channel.read(buffer as any);
+			return buffer;
+		} catch (exception) {
+			if (onError) {
+				onError(exception);
+			}
+		}
 	}
 
 	public read = this.readSync.bind(this);
@@ -280,6 +324,52 @@ export class FileSystemAccess implements IFileSystemAccess {
 			dataInputStream.readFully(bytes);
 
 			return bytes;
+		} catch (exception) {
+			if (onError) {
+				onError(exception);
+			}
+		}
+	}
+
+	static getBuffer(buffer: ArrayBuffer | Uint8Array | Uint8ClampedArray): any {
+		if (buffer instanceof ArrayBuffer) {
+			return (buffer as any).nativeObject || buffer;
+		} else {
+			return (buffer?.buffer as any)?.nativeObject || buffer;
+		}
+	}
+
+	public writeBuffer = this.writeBufferSync.bind(this);
+
+	public writeBufferAsync(path: string, buffer: ArrayBuffer | Uint8Array | Uint8ClampedArray): Promise<void> {
+		return new Promise<void>((resolve, reject) => {
+			try {
+				org.nativescript.widgets.Async.File.writeBuffer(
+					path,
+					FileSystemAccess.getBuffer(buffer),
+					new org.nativescript.widgets.Async.CompleteCallback({
+						onComplete: () => {
+							resolve();
+						},
+						onError: (err) => {
+							reject(new Error(err));
+						},
+					}),
+					null
+				);
+			} catch (ex) {
+				reject(ex);
+			}
+		});
+	}
+
+	public writeBufferSync(path: string, buffer: ArrayBuffer | Uint8Array | Uint8ClampedArray, onError?: (error: any) => any) {
+		try {
+			const javaFile = new java.io.File(path);
+			const stream = new java.io.FileOutputStream(javaFile);
+			const channel = stream.getChannel();
+			channel.write(FileSystemAccess.getBuffer(buffer));
+			stream.close();
 		} catch (exception) {
 			if (onError) {
 				onError(exception);
@@ -751,6 +841,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 	getCurrentAppPath(): string {
 		return super.getCurrentAppPath();
 	}
+
 	public readText = this.readTextSync.bind(this);
 
 	readTextAsync(path: string, encoding?: any): Promise<string> {
@@ -787,6 +878,47 @@ export class FileSystemAccess29 extends FileSystemAccess {
 		} else {
 			return super.readTextSync(path, onError, encoding);
 		}
+	}
+
+	readBuffer = this.readBufferSync.bind(this);
+
+	readBufferAsync(path: string): Promise<any> {
+		if (isContentUri(path)) {
+			return new Promise((resolve, reject) => {
+				getOrSetHelper(path).readBuffer(
+					applicationContext,
+					new org.nativescript.widgets.FileHelper.Callback({
+						onSuccess(result) {
+							resolve(result);
+						},
+						onError(error) {
+							reject(error);
+						},
+					})
+				);
+			});
+		}
+		return super.readBufferAsync(path);
+	}
+
+	readBufferSync(path: string, onError?: (error: any) => any) {
+		if (isContentUri(path)) {
+			let callback = null;
+			if (typeof onError === 'function') {
+				callback = new org.nativescript.widgets.FileHelper.Callback({
+					onSuccess(result) {},
+					onError(error) {
+						onError(error);
+					},
+				});
+			}
+			const ret = getOrSetHelper(path).readBufferSync(applicationContext, callback);
+			if (ret) {
+				return null;
+			}
+			return (ArrayBuffer as any).from(ret);
+		}
+		return super.readBufferSync(path, onError);
 	}
 
 	read = this.readSync.bind(this);
@@ -863,6 +995,45 @@ export class FileSystemAccess29 extends FileSystemAccess {
 			getOrSetHelper(path).writeTextSync(applicationContext, content, encoding ?? null, callback);
 		} else {
 			super.writeTextSync(path, content, onError);
+		}
+	}
+
+	writeBuffer = this.writeBufferSync.bind(this);
+
+	writeBufferAsync(path: string, content: any): Promise<void> {
+		if (isContentUri(path)) {
+			return new Promise<void>((resolve, reject) => {
+				getOrSetHelper(path).writeBuffer(
+					applicationContext,
+					FileSystemAccess.getBuffer(content),
+					new org.nativescript.widgets.FileHelper.Callback({
+						onSuccess(result) {
+							resolve();
+						},
+						onError(error) {
+							reject(error);
+						},
+					})
+				);
+			});
+		}
+		return super.writeAsync(path, content);
+	}
+
+	writeBufferSync(path: string, content: any, onError?: (error: any) => any) {
+		if (isContentUri(path)) {
+			let callback = null;
+			if (typeof onError === 'function') {
+				callback = new org.nativescript.widgets.FileHelper.Callback({
+					onSuccess(result) {},
+					onError(error) {
+						onError(error);
+					},
+				});
+			}
+			getOrSetHelper(path).writeSync(applicationContext, FileSystemAccess.getBuffer(content), callback);
+		} else {
+			super.writeSync(path, content, onError);
 		}
 	}
 

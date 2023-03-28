@@ -14,9 +14,51 @@ const majorVersion = iOSNativeHelper.MajorVersion;
 class UILayoutViewController extends UIViewController {
 	public owner: WeakRef<View>;
 
+	private _isRunningLayout: number;
+	private get isRunningLayout() {
+		return this._isRunningLayout !== 0;
+	}
+	private startRunningLayout() {
+		this._isRunningLayout++;
+	}
+	private finishRunningLayout() {
+		this._isRunningLayout--;
+		this.clearScheduledLayout();
+	}
+	private runLayout(cb: () => void) {
+		try {
+			this.startRunningLayout();
+			cb();
+		} finally {
+			this.finishRunningLayout();
+		}
+	}
+
+	layoutTimer: number;
+
+	private clearScheduledLayout() {
+		if (this.layoutTimer) {
+			clearTimeout(this.layoutTimer);
+			this.layoutTimer = null;
+		}
+	}
+
+	private scheduleLayout() {
+		if (this.layoutTimer) {
+			return;
+		}
+		setTimeout(() => {
+			this.layoutTimer = null;
+			if (!this.isRunningLayout) {
+				this.runLayout(() => this.layoutOwner());
+			}
+		});
+	}
+
 	public static initWithOwner(owner: WeakRef<View>): UILayoutViewController {
 		const controller = <UILayoutViewController>UILayoutViewController.new();
 		controller.owner = owner;
+		controller._isRunningLayout = 0;
 
 		return controller;
 	}
@@ -29,6 +71,11 @@ class UILayoutViewController extends UIViewController {
 		this.extendedLayoutIncludesOpaqueBars = true;
 	}
 
+	public viewSafeAreaInsetsDidChange(): void {
+		super.viewSafeAreaInsetsDidChange();
+		this.scheduleLayout();
+	}
+
 	public viewWillLayoutSubviews(): void {
 		super.viewWillLayoutSubviews();
 		const owner = this.owner?.deref();
@@ -38,54 +85,69 @@ class UILayoutViewController extends UIViewController {
 	}
 
 	public viewDidLayoutSubviews(): void {
+		this.startRunningLayout();
 		super.viewDidLayoutSubviews();
+		this.layoutOwner();
+		this.finishRunningLayout();
+	}
+	layoutOwner(force = false) {
 		const owner = this.owner?.deref();
-		if (owner) {
-			if (majorVersion >= 11) {
-				// Handle nested UILayoutViewController safe area application.
-				// Currently, UILayoutViewController can be nested only in a TabView.
-				// The TabView itself is handled by the OS, so we check the TabView's parent (usually a Page, but can be a Layout).
-				const tabViewItem = owner.parent;
-				const tabView = tabViewItem && tabViewItem.parent;
-				let parent = tabView && tabView.parent;
+		if (!owner) {
+			return;
+		}
+		if (!force && owner.isLayoutValid && !owner.nativeViewProtected?.layer.needsLayout?.()) {
+			// we skip layout if the view is not yet laid out yet
+			// this usually means that viewDidLayoutSubviews will be called again
+			// so doing a layout pass now will layout with the wrong parameters
+			return;
+		}
 
-				// Handle Angular scenario where TabView is in a ProxyViewContainer
-				// It is possible to wrap components in ProxyViewContainers indefinitely
-				// Not using instanceof ProxyViewContainer to avoid circular dependency
-				// TODO: Try moving UILayoutViewController out of view module
-				while (parent && !parent.nativeViewProtected) {
-					parent = parent.parent;
-				}
+		if (majorVersion >= 11) {
+			// Handle nested UILayoutViewController safe area application.
+			// Currently, UILayoutViewController can be nested only in a TabView.
+			// The TabView itself is handled by the OS, so we check the TabView's parent (usually a Page, but can be a Layout).
+			const tabViewItem = owner.parent;
+			const tabView = tabViewItem && tabViewItem.parent;
+			let parent = tabView && tabView.parent;
 
-				if (parent) {
-					const parentPageInsetsTop = parent.nativeViewProtected.safeAreaInsets.top;
-					const parentPageInsetsBottom = parent.nativeViewProtected.safeAreaInsets.bottom;
-					let currentInsetsTop = this.view.safeAreaInsets.top;
-					let currentInsetsBottom = this.view.safeAreaInsets.bottom;
-
-					// Safe area insets include additional safe area insets too, so subtract old values
-					if (this.additionalSafeAreaInsets) {
-						currentInsetsTop -= this.additionalSafeAreaInsets.top;
-						currentInsetsBottom -= this.additionalSafeAreaInsets.bottom;
-					}
-
-					const additionalInsetsTop = Math.max(parentPageInsetsTop - currentInsetsTop, 0);
-					const additionalInsetsBottom = Math.max(parentPageInsetsBottom - currentInsetsBottom, 0);
-
-					if (additionalInsetsTop > 0 || additionalInsetsBottom > 0) {
-						const additionalInsets = new UIEdgeInsets({
-							top: additionalInsetsTop,
-							left: 0,
-							bottom: additionalInsetsBottom,
-							right: 0,
-						});
-						this.additionalSafeAreaInsets = additionalInsets;
-					}
-				}
+			// Handle Angular scenario where TabView is in a ProxyViewContainer
+			// It is possible to wrap components in ProxyViewContainers indefinitely
+			// Not using instanceof ProxyViewContainer to avoid circular dependency
+			// TODO: Try moving UILayoutViewController out of view module
+			while (parent && !parent.nativeViewProtected) {
+				parent = parent.parent;
 			}
 
-			IOSHelper.layoutView(this, owner);
+			if (parent) {
+				const parentPageInsetsTop = parent.nativeViewProtected.safeAreaInsets.top;
+				const parentPageInsetsBottom = parent.nativeViewProtected.safeAreaInsets.bottom;
+				let currentInsetsTop = this.view.safeAreaInsets.top;
+				let currentInsetsBottom = this.view.safeAreaInsets.bottom;
+
+				// Safe area insets include additional safe area insets too, so subtract old values
+				if (this.additionalSafeAreaInsets) {
+					currentInsetsTop -= this.additionalSafeAreaInsets.top;
+					currentInsetsBottom -= this.additionalSafeAreaInsets.bottom;
+				}
+
+				const additionalInsetsTop = Math.max(parentPageInsetsTop - currentInsetsTop, 0);
+				const additionalInsetsBottom = Math.max(parentPageInsetsBottom - currentInsetsBottom, 0);
+
+				if (additionalInsetsTop > 0 || additionalInsetsBottom > 0) {
+					const additionalInsets = new UIEdgeInsets({
+						top: additionalInsetsTop,
+						left: 0,
+						bottom: additionalInsetsBottom,
+						right: 0,
+					});
+					this.additionalSafeAreaInsets = additionalInsets;
+				} else {
+					this.additionalSafeAreaInsets = null;
+				}
+			}
 		}
+
+		IOSHelper.layoutView(this, owner);
 	}
 
 	public viewWillAppear(animated: boolean): void {

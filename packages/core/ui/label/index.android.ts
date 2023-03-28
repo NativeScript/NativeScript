@@ -39,6 +39,7 @@ export class Label extends TextBase implements LabelDefinition {
 		const textView = this.nativeTextViewProtected;
 		textView.setSingleLine(true);
 		textView.setEllipsize(android.text.TextUtils.TruncateAt.END);
+		textView.setGravity(android.view.Gravity.CENTER_VERTICAL);
 	}
 
 	[whiteSpaceProperty.setNative](value: CoreTypes.WhiteSpaceType) {
