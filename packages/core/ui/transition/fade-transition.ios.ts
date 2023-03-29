@@ -1,36 +1,77 @@
 ﻿import { Transition } from '.';
+import { DEFAULT_DURATION } from './shared-transition';
 
 export class FadeTransition extends Transition {
-	public animateIOSTransition(containerView: UIView, fromView: UIView, toView: UIView, operation: UINavigationControllerOperation, completion: (finished: boolean) => void): void {
-		const originalToViewAlpha = toView.alpha;
-		const originalFromViewAlpha = fromView.alpha;
+	transitionController: FadeTransitionController;
+	presented: UIViewController;
+	presenting: UIViewController;
+	operation: number;
 
-		toView.alpha = 0.0;
-		fromView.alpha = 1.0;
+	iosNavigatedController(navigationController: UINavigationController, operation: number, fromVC: UIViewController, toVC: UIViewController): UIViewControllerAnimatedTransitioning {
+		this.transitionController = FadeTransitionController.initWithOwner(new WeakRef(this));
+		this.presented = toVC;
+		this.presenting = fromVC;
+		this.operation = operation;
+		// console.log('presenting:', this.presenting);
+		return this.transitionController;
+	}
+}
 
-		switch (operation) {
-			case UINavigationControllerOperation.Push:
-				containerView.insertSubviewAboveSubview(toView, fromView);
-				break;
-			case UINavigationControllerOperation.Pop:
-				containerView.insertSubviewBelowSubview(toView, fromView);
-				break;
+@NativeClass()
+export class FadeTransitionController extends NSObject implements UIViewControllerAnimatedTransitioning {
+	static ObjCProtocols = [UIViewControllerAnimatedTransitioning];
+	owner: WeakRef<FadeTransition>;
+
+	static initWithOwner(owner: WeakRef<FadeTransition>) {
+		const ctrl = <FadeTransitionController>FadeTransitionController.new();
+		ctrl.owner = owner;
+		return ctrl;
+	}
+
+	transitionDuration(transitionContext: UIViewControllerContextTransitioning): number {
+		const owner = this.owner.deref();
+		if (owner) {
+			return owner.getDuration();
 		}
+		return DEFAULT_DURATION;
+	}
 
-		const duration = this.getDuration();
-		const curve = this.getCurve();
-		UIView.animateWithDurationAnimationsCompletion(
-			duration,
-			() => {
-				UIView.setAnimationCurve(curve);
-				toView.alpha = 1.0;
-				fromView.alpha = 0.0;
-			},
-			(finished: boolean) => {
-				toView.alpha = originalToViewAlpha;
-				fromView.alpha = originalFromViewAlpha;
-				completion(finished);
+	animateTransition(transitionContext: UIViewControllerContextTransitioning): void {
+		const owner = this.owner.deref();
+		if (owner) {
+			// console.log('FadeTransitionController animateTransition:', owner.operation);
+			const toView = owner.presented.view;
+			const originalToViewAlpha = toView.alpha;
+			const fromView = owner.presenting.view;
+			const originalFromViewAlpha = fromView.alpha;
+
+			toView.alpha = 0.0;
+			fromView.alpha = 1.0;
+
+			switch (owner.operation) {
+				case UINavigationControllerOperation.Push:
+					transitionContext.containerView.insertSubviewAboveSubview(toView, fromView);
+					break;
+				case UINavigationControllerOperation.Pop:
+					transitionContext.containerView.insertSubviewBelowSubview(toView, fromView);
+					break;
 			}
-		);
+
+			const duration = owner.getDuration();
+			const curve = owner.getCurve();
+			UIView.animateWithDurationAnimationsCompletion(
+				duration,
+				() => {
+					UIView.setAnimationCurve(curve);
+					toView.alpha = 1.0;
+					fromView.alpha = 0.0;
+				},
+				(finished: boolean) => {
+					toView.alpha = originalToViewAlpha;
+					fromView.alpha = originalFromViewAlpha;
+					transitionContext.completeTransition(finished);
+				}
+			);
+		}
 	}
 }

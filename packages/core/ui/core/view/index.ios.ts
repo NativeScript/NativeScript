@@ -6,6 +6,7 @@ import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUser
 import { ShowModalOptions, hiddenProperty } from '../view-base';
 import { Trace } from '../../../trace';
 import { layout, iOSNativeHelper } from '../../../utils';
+import { isNumber } from '../../../utils/types';
 import { IOSHelper } from './view-helper';
 import { ios as iosBackground, Background } from '../../styling/background';
 import { perspectiveProperty, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, clipPathProperty } from '../../styling/style-properties';
@@ -13,6 +14,9 @@ import { profile } from '../../../profiling';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty, accessibilityIgnoresInvertColorsProperty } from '../../../accessibility/accessibility-properties';
 import { IOSPostAccessibilityNotificationType, isAccessibilityServiceEnabled, updateAccessibilityProperties, AccessibilityEventOptions, AccessibilityRole, AccessibilityState } from '../../../accessibility';
 import { CoreTypes } from '../../../core-types';
+import type { ModalTransition } from '../../transition/modal-transition';
+import { SharedTransition } from '../../transition/shared-transition';
+import { GestureStateTypes, PanGestureEventData } from '../../gestures';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -31,6 +35,7 @@ export class View extends ViewCommon implements ViewDefinition {
 	viewController: UIViewController;
 	private _popoverPresentationDelegate: IOSHelper.UIPopoverPresentationControllerDelegateImp;
 	private _adaptivePresentationDelegate: IOSHelper.UIAdaptivePresentationControllerDelegateImp;
+	private _transitioningDelegate: UIViewControllerTransitioningDelegateImpl;
 
 	/**
 	 * Track modal open animated options to use same option upon close
@@ -232,6 +237,7 @@ export class View extends ViewCommon implements ViewDefinition {
 			const boundsOrigin = nativeView.bounds.origin;
 			const boundsFrame = adjustedFrame || frame;
 			nativeView.bounds = CGRectMake(boundsOrigin.x, boundsOrigin.y, boundsFrame.size.width, boundsFrame.size.height);
+			nativeView.layoutIfNeeded();
 
 			this._raiseLayoutChangedEvent();
 			this._isLaidOut = true;
@@ -491,7 +497,21 @@ export class View extends ViewCommon implements ViewDefinition {
 			this.viewController = controller;
 		}
 
-		if (options.fullscreen) {
+		if (options.transition) {
+			controller.modalPresentationStyle = UIModalPresentationStyle.Custom;
+			if (options.transition.instance) {
+				this._transitioningDelegate = UIViewControllerTransitioningDelegateImpl.initWithOwner(new WeakRef(options.transition.instance));
+				controller.transitioningDelegate = this._transitioningDelegate;
+				this.transitionId = options.transition.instance.id;
+				const transitionState = SharedTransition.getState(options.transition.instance.id);
+				if (transitionState?.interactive?.dismiss) {
+					// interactive transitions via gestures
+					// TODO - these could be typed as: boolean | (view: View) => void
+					// to allow users to define their own custom gesture dismissals
+					options.transition.instance.setupInteractiveGesture(this._closeModalCallback.bind(this), this);
+				}
+			}
+		} else if (options.fullscreen) {
 			controller.modalPresentationStyle = UIModalPresentationStyle.FullScreen;
 		} else {
 			controller.modalPresentationStyle = UIModalPresentationStyle.FormSheet;
@@ -587,9 +607,22 @@ export class View extends ViewCommon implements ViewDefinition {
 		}
 
 		const parentController = parent.viewController;
-		const animated = this._modalAnimatedOptions ? !!this._modalAnimatedOptions.pop() : true;
+		let animated = true;
+		if (this._modalAnimatedOptions?.length) {
+			animated = this._modalAnimatedOptions.slice(-1)[0];
+		}
 
-		parentController.dismissViewControllerAnimatedCompletion(animated, whenClosedCallback);
+		parentController.dismissViewControllerAnimatedCompletion(animated, () => {
+			const transitionState = SharedTransition.getState(this.transitionId);
+			if (!transitionState?.interactiveCancelled) {
+				this._transitioningDelegate = null;
+				// this.off('pan', this._interactiveDismissGesture);
+				if (this._modalAnimatedOptions) {
+					this._modalAnimatedOptions.pop();
+				}
+			}
+			whenClosedCallback();
+		});
 	}
 
 	[isEnabledProperty.getDefault](): boolean {
@@ -913,9 +946,6 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	_setNativeClipToBounds() {
-		if (!this.nativeViewProtected) {
-			return;
-		}
 		const backgroundInternal = this.style.backgroundInternal;
 		this.nativeViewProtected.clipsToBounds = (this.nativeViewProtected instanceof UIScrollView || backgroundInternal.hasBorderWidth() || backgroundInternal.hasBorderRadius()) && !backgroundInternal.hasBoxShadow();
 	}
@@ -933,10 +963,59 @@ export class View extends ViewCommon implements ViewDefinition {
 
 	private _setupAdaptiveControllerDelegate(controller: UIViewController) {
 		this._adaptivePresentationDelegate = IOSHelper.UIAdaptivePresentationControllerDelegateImp.initWithOwnerAndCallback(new WeakRef(this), this._closeModalCallback);
-		controller.presentationController.delegate = <UIAdaptivePresentationControllerDelegate>this._adaptivePresentationDelegate;
+		if (controller?.presentationController) {
+			controller.presentationController.delegate = <UIAdaptivePresentationControllerDelegate>this._adaptivePresentationDelegate;
+		}
 	}
 }
 View.prototype._nativeBackgroundState = 'unset';
+
+@NativeClass
+class UIViewControllerTransitioningDelegateImpl extends NSObject implements UIViewControllerTransitioningDelegate {
+	owner: WeakRef<ModalTransition>;
+	static ObjCProtocols = [UIViewControllerTransitioningDelegate];
+
+	static initWithOwner(owner: WeakRef<ModalTransition>) {
+		const delegate = <UIViewControllerTransitioningDelegateImpl>UIViewControllerTransitioningDelegateImpl.new();
+		delegate.owner = owner;
+		return delegate;
+	}
+
+	animationControllerForDismissedController?(dismissed: UIViewController): UIViewControllerAnimatedTransitioning {
+		const owner = this.owner?.deref();
+		if (owner?.iosDismissedController) {
+			return owner.iosDismissedController(dismissed);
+		}
+		return null;
+	}
+
+	animationControllerForPresentedControllerPresentingControllerSourceController?(presented: UIViewController, presenting: UIViewController, source: UIViewController): UIViewControllerAnimatedTransitioning {
+		const owner = this.owner?.deref();
+		if (owner?.iosPresentedController) {
+			return owner.iosPresentedController(presented, presenting, source);
+		}
+		return null;
+	}
+
+	interactionControllerForDismissal?(animator: UIViewControllerAnimatedTransitioning): UIViewControllerInteractiveTransitioning {
+		const owner = this.owner?.deref();
+		if (owner?.iosInteractionDismiss) {
+			const transitionState = SharedTransition.getState(owner.id);
+			if (transitionState?.interactiveBegan) {
+				return owner.iosInteractionDismiss(animator);
+			}
+		}
+		return null;
+	}
+
+	interactionControllerForPresentation?(animator: UIViewControllerAnimatedTransitioning): UIViewControllerInteractiveTransitioning {
+		const owner = this.owner?.deref();
+		if (owner?.iosInteractionPresented) {
+			return owner.iosInteractionPresented(animator);
+		}
+		return null;
+	}
+}
 
 export class ContainerView extends View {
 	public iosOverflowSafeArea: boolean;

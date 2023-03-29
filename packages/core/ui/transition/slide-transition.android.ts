@@ -8,7 +8,7 @@ const screenHeight = lazy(() => Screen.mainScreen.heightPixels);
 export class SlideTransition extends Transition {
 	private _direction: string;
 
-	constructor(direction: string, duration: number, curve: any) {
+	constructor(direction: string, duration: number = 350, curve?: any) {
 		super(duration, curve);
 		this._direction = direction;
 	}

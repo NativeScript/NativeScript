@@ -8,6 +8,7 @@ import { PageBase, actionBarHiddenProperty, statusBarStyleProperty } from './pag
 import { profile } from '../../profiling';
 import { iOSNativeHelper, layout } from '../../utils';
 import { getLastFocusedViewOnPage, isAccessibilityServiceEnabled } from '../../accessibility';
+import { SharedTransition } from '../transition/shared-transition';
 
 export * from './page-common';
 
@@ -74,6 +75,7 @@ class UIViewControllerImpl extends UIViewController {
 
 	public isBackstackSkipped: boolean;
 	public isBackstackCleared: boolean;
+	// private didFirstLayout: boolean;
 	// this is initialized in initWithOwner since the constructor doesn't run on native classes
 	// private _isRunningLayout: number;
 	// private get isRunningLayout() {
@@ -230,8 +232,12 @@ class UIViewControllerImpl extends UIViewController {
 			// _processNavigationQueue will shift navigationQueue. Check canGoBack after that.
 			// Workaround for disabled backswipe on second custom native transition
 			if (frame.canGoBack()) {
-				navigationController.interactivePopGestureRecognizer.delegate = navigationController;
-				navigationController.interactivePopGestureRecognizer.enabled = owner.enableSwipeBackNavigation;
+				const transitionState = SharedTransition.getState(owner.transitionId);
+				if (!transitionState?.interactive) {
+					// only consider when interactive transitions are not enabled
+					navigationController.interactivePopGestureRecognizer.delegate = navigationController;
+					navigationController.interactivePopGestureRecognizer.enabled = owner.enableSwipeBackNavigation;
+				}
 			} else {
 				navigationController.interactivePopGestureRecognizer.enabled = false;
 			}
@@ -300,77 +306,71 @@ class UIViewControllerImpl extends UIViewController {
 
 	public viewSafeAreaInsetsDidChange(): void {
 		super.viewSafeAreaInsetsDidChange();
-		// this.scheduleLayout();
+		// if (this.isRunningLayout || !this.didFirstLayout) {
+		// 	return;
+		// }
+		// const owner = this._owner?.deref();
+		// if (owner) {
+		// 	this.runLayout(() => IOSHelper.layoutView(this, owner));
+		// }
 	}
 
 	public viewDidLayoutSubviews(): void {
 		// this.startRunningLayout();
 		super.viewDidLayoutSubviews();
-		this.layoutOwner();
-		// this.finishRunningLayout();
-	}
-
-	layoutOwner(force = false) {
 		const owner = this._owner?.deref();
-		if (!owner) {
-			return;
-		}
-		if (!force && owner.isLayoutValid && !owner.nativeViewProtected?.layer.needsLayout?.()) {
-			// we skip layout if the view is not yet laid out yet
-			// this usually means that viewDidLayoutSubviews will be called again
-			// so doing a layout pass now will layout with the wrong parameters
-			return;
-		}
+		if (owner) {
+			// layout(owner.actionBar)
+			// layout(owner.content)
 
-		// layout(owner.actionBar)
-		// layout(owner.content)
+			if (majorVersion >= 11) {
+				// Handle nested Page safe area insets application.
+				// A Page is nested if its Frame has a parent.
+				// If the Page is nested, cross check safe area insets on top and bottom with Frame parent.
+				const frame = owner.parent;
+				// There is a legacy scenario where Page is not in a Frame - the root of a Modal View, so it has no parent.
+				let frameParent = frame && frame.parent;
 
-		if (majorVersion >= 11) {
-			// Handle nested Page safe area insets application.
-			// A Page is nested if its Frame has a parent.
-			// If the Page is nested, cross check safe area insets on top and bottom with Frame parent.
-			const frame = owner.parent;
-			// There is a legacy scenario where Page is not in a Frame - the root of a Modal View, so it has no parent.
-			let frameParent = frame && frame.parent;
-
-			// Handle Angular scenario where TabView is in a ProxyViewContainer
-			// It is possible to wrap components in ProxyViewContainers indefinitely
-			// Not using instanceof ProxyViewContainer to avoid circular dependency
-			// TODO: Try moving UIViewControllerImpl out of page module
-			while (frameParent && !frameParent.nativeViewProtected) {
-				frameParent = frameParent.parent;
-			}
-
-			if (frameParent) {
-				const parentPageInsetsTop = frameParent.nativeViewProtected.safeAreaInsets.top;
-				const parentPageInsetsBottom = frameParent.nativeViewProtected.safeAreaInsets.bottom;
-				let currentInsetsTop = this.view.safeAreaInsets.top;
-				let currentInsetsBottom = this.view.safeAreaInsets.bottom;
-
-				// Safe area insets include additional safe area insets too, so subtract old values
-				if (this.additionalSafeAreaInsets) {
-					currentInsetsTop -= this.additionalSafeAreaInsets.top;
-					currentInsetsBottom -= this.additionalSafeAreaInsets.bottom;
+				// Handle Angular scenario where TabView is in a ProxyViewContainer
+				// It is possible to wrap components in ProxyViewContainers indefinitely
+				// Not using instanceof ProxyViewContainer to avoid circular dependency
+				// TODO: Try moving UIViewControllerImpl out of page module
+				while (frameParent && !frameParent.nativeViewProtected) {
+					frameParent = frameParent.parent;
 				}
 
-				const additionalInsetsTop = Math.max(parentPageInsetsTop - currentInsetsTop, 0);
-				const additionalInsetsBottom = Math.max(parentPageInsetsBottom - currentInsetsBottom, 0);
+				if (frameParent) {
+					const parentPageInsetsTop = frameParent.nativeViewProtected.safeAreaInsets.top;
+					const parentPageInsetsBottom = frameParent.nativeViewProtected.safeAreaInsets.bottom;
+					let currentInsetsTop = this.view.safeAreaInsets.top;
+					let currentInsetsBottom = this.view.safeAreaInsets.bottom;
 
-				if (additionalInsetsTop > 0 || additionalInsetsBottom > 0) {
-					const additionalInsets = new UIEdgeInsets({
-						top: additionalInsetsTop,
-						left: 0,
-						bottom: additionalInsetsBottom,
-						right: 0,
-					});
-					this.additionalSafeAreaInsets = additionalInsets;
-				} else {
-					this.additionalSafeAreaInsets = null;
+					// Safe area insets include additional safe area insets too, so subtract old values
+					if (this.additionalSafeAreaInsets) {
+						currentInsetsTop -= this.additionalSafeAreaInsets.top;
+						currentInsetsBottom -= this.additionalSafeAreaInsets.bottom;
+					}
+
+					const additionalInsetsTop = Math.max(parentPageInsetsTop - currentInsetsTop, 0);
+					const additionalInsetsBottom = Math.max(parentPageInsetsBottom - currentInsetsBottom, 0);
+
+					if (additionalInsetsTop > 0 || additionalInsetsBottom > 0) {
+						const additionalInsets = new UIEdgeInsets({
+							top: additionalInsetsTop,
+							left: 0,
+							bottom: additionalInsetsBottom,
+							right: 0,
+						});
+						this.additionalSafeAreaInsets = additionalInsets;
+					} else {
+						this.additionalSafeAreaInsets = null;
+					}
 				}
 			}
-		}
 
-		IOSHelper.layoutView(this, owner);
+			IOSHelper.layoutView(this, owner);
+		}
+		// this.finishRunningLayout();
 	}
 
 	// Mind implementation for other controllerss
@@ -426,10 +426,8 @@ export class Page extends PageBase {
 	constructor() {
 		super();
 		const controller = UIViewControllerImpl.initWithOwner(new WeakRef(this));
-		this.viewController = this._ios = controller;
-
-		// Make transitions look good
 		controller.view.backgroundColor = this._backgroundColor;
+		this.viewController = this._ios = controller;
 	}
 
 	createNativeView() {

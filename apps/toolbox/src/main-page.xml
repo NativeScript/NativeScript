@@ -23,6 +23,7 @@
         <Button text="scroll-view" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="switch" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="touch-animations" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
+        <Button text="transitions" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="vector-image" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="visibility-vs-hidden" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="fs-helper" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />

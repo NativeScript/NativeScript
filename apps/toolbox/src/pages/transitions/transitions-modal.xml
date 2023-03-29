@@ -1,0 +1,16 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="onLoaded" shownModally="onShownModally">
+
+  <GridLayout rows="auto,auto,*" columns="*" verticalAlignment="top">
+    <Button text="Close" tap="{{close}}" horizontalAlignment="right" marginRight="10" />
+    <Image row="1" sharedTransitionTag="image-modal" src="https://cdn.pixabay.com/photo/2012/08/27/14/19/mountains-55067__340.png" height="230" verticalAlignment="top" marginTop="10" />
+
+    <GridLayout row="2" rows="auto,auto,auto">
+      <Label text="Opened Modal" verticalAlignment="top" marginTop="20" class="text-center" fontSize="28" color="black" />
+
+      <ContentView row="1" sharedTransitionTag="open-modal-box2" marginTop="20" width="75" height="75" borderRadius="37" backgroundColor="orange" />
+      <ContentView row="2" sharedTransitionTag="open-modal-box1" marginTop="20" width="200" height="200" borderRadius="100" backgroundColor="purple" />
+      <ContentView row="2" sharedTransitionTag="open-modal-box3" marginTop="20" width="30" height="30" borderRadius="15" backgroundColor="red" horizontalAlignment="right" marginRight="50" />
+      <ContentView row="1" sharedTransitionTag="open-modal-box4" marginTop="20" width="30" height="30" borderRadius="15" backgroundColor="pink" horizontalAlignment="left" marginLeft="50" />
+    </GridLayout>
+  </GridLayout>
+</Page>

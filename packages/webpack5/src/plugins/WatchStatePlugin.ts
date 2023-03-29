@@ -49,10 +49,9 @@ export class WatchStatePlugin {
 					isWatchMode ? messages.startWatching : messages.compilationComplete
 				);
 
-			// Do not notify the CLI if the compilation failed
 			const stats = compilation.getStats();
 			if (stats.hasErrors()) {
-				return;
+				env.verbose && console.log(`[${id}] Warn: Compilation had errors!`);
 			}
 
 			// logic taken from CleanWebpackPlugin

@@ -5835,7 +5835,9 @@ declare const enum UICalendarViewDecorationSize {
 
 interface UICalendarViewDelegate extends NSObjectProtocol {
 
-	calendarViewDecorationForDateComponents(calendarView: UICalendarView, dateComponents: NSDateComponents): UICalendarViewDecoration;
+	calendarViewDecorationForDateComponents?(calendarView: UICalendarView, dateComponents: NSDateComponents): UICalendarViewDecoration;
+
+	calendarViewDidChangeVisibleDateComponentsFrom?(calendarView: UICalendarView, previousDateComponents: NSDateComponents): void;
 }
 declare var UICalendarViewDelegate: {
 
@@ -24087,7 +24089,7 @@ declare class UIView extends UIResponder implements CALayerDelegate, NSCoding, U
 
 	layoutSubviews(): void;
 
-	nativeScriptSetFormattedTextDecorationAndTransform(details: NSDictionary<any, any>): void;
+	nativeScriptSetFormattedTextDecorationAndTransformLetterSpacingLineHeight(details: NSDictionary<any, any>, letterSpacing: number, lineHeight: number): void;
 
 	nativeScriptSetTextDecorationAndTransformTextDecorationLetterSpacingLineHeight(text: string, textDecoration: string, letterSpacing: number, lineHeight: number): void;
 

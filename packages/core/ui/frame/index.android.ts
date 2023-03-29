@@ -19,10 +19,11 @@ import { Builder } from '../builder';
 import { CSSUtils } from '../../css/system-classes';
 import { Device } from '../../platform';
 import { profile } from '../../profiling';
-import { ExpandedEntry } from './fragment.transitions.android';
 import { android as androidApplication } from '../../application';
 import { setSuspended } from '../../application/application-common';
 import { ad } from '../../utils/native-helper';
+import type { ExpandedEntry } from './fragment.transitions.android';
+import { SharedTransition, SharedTransitionAnimationType } from '../transition/shared-transition';
 
 export * from './frame-common';
 
@@ -435,7 +436,7 @@ export class Frame extends FrameBase {
 
 		if (currentEntry && animated && !navigationTransition) {
 			//TODO: Check whether or not this is still necessary. For Modal views?
-			//transaction.setTransition(androidx.fragment.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+			// transaction.setTransition(androidx.fragment.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
 		}
 
 		if (this._currentEntry) {
@@ -454,10 +455,18 @@ export class Frame extends FrameBase {
 		} else {
 			transaction.add(this.containerViewId, newFragment, newFragmentTag);
 		}
+		navigationTransition?.instance?.androidFragmentTransactionCallback?.(transaction, currentEntry, newEntry);
+
 		transaction.commitNowAllowingStateLoss();
+
+		if (navigationTransition?.instance) {
+			SharedTransition.updateState(navigationTransition?.instance?.id, {
+				activeType: SharedTransitionAnimationType.dismiss,
+			});
+		}
 	}
 
-	public _goBackCore(backstackEntry: BackstackEntry) {
+	public _goBackCore(backstackEntry: BackstackEntry & ExpandedEntry) {
 		super._goBackCore(backstackEntry);
 		navDepth = backstackEntry.navDepth;
 
@@ -503,7 +512,13 @@ export class Frame extends FrameBase {
 			transaction.show(backstackEntry.fragment);
 		}
 
+		backstackEntry.transition?.androidFragmentTransactionCallback?.(transaction, this._currentEntry, backstackEntry);
+
 		transaction.commitNowAllowingStateLoss();
+
+		if (backstackEntry?.transition) {
+			SharedTransition.finishState(backstackEntry.transition.id);
+		}
 	}
 
 	public _removeEntry(removed: BackstackEntry): void {
@@ -614,7 +629,7 @@ export class Frame extends FrameBase {
 }
 
 export function reloadPage(context?: ModuleContext): void {
-	console.log('reloadPage() is deprecated. Use Frame.reloadPage() instead.');
+	console.warn('reloadPage() is deprecated. Use Frame.reloadPage() instead.');
 
 	return Frame.reloadPage(context);
 }
@@ -1066,7 +1081,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 	}
 
 	private loadBitmapFromView(view: android.view.View): android.graphics.Bitmap {
-		// Don't try to creat bitmaps with no dimensions as this causes a crash
+		// Don't try to create bitmaps with no dimensions as this causes a crash
 		// This might happen when showing and closing dialogs fast.
 		if (!(view && view.getWidth() > 0 && view.getHeight() > 0)) {
 			return undefined;

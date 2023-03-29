@@ -231,4 +231,39 @@ export namespace iOSNativeHelper {
 	 * Checks whether the application is running on real device and not on simulator.
 	 */
 	export function isRealDevice(): boolean;
+
+	/**
+	 * Debug utility to insert CGRect values into logging output.
+	 * Note: when printing a CGRect directly it will print blank so this helps show the values.
+	 * @param rect CGRect
+	 */
+	export function printCGRect(rect: CGRect): void;
+
+	/**
+	 * Take a snapshot of a View on screen.
+	 * @param view view to snapshot
+	 * @param scale screen scale
+	 */
+	export function snapshotView(view: UIView, scale: number): UIImage;
+
+	/**
+	 * Copy layer properties from one view to another.
+	 * @param view a view to copy layer properties to
+	 * @param toView a view to copy later properties from
+	 */
+	export function copyLayerProperties(view: UIView, toView: UIView): void;
+
+	/**
+	 * Animate views with a configurable spring effect
+	 * @param options various animation settings for the spring
+	 * - tension: number
+	 * - friction: number
+	 * - mass: number
+	 * - delay: number
+	 * - velocity: number
+	 * - animateOptions: UIViewAnimationOptions
+	 * - animations: () => void, Callback containing the property changes you want animated
+	 * - completion: (finished: boolean) => void, Callback when animation is finished
+	 */
+	export function animateWithSpring(options?: { tension?: number; friction?: number; mass?: number; delay?: number; velocity?: number; animateOptions?: UIViewAnimationOptions; animations?: () => void; completion?: (finished?: boolean) => void });
 }

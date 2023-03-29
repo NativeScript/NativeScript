@@ -1,36 +1,41 @@
-﻿// Types.
-import { _resolveAnimationCurve } from '../animation';
+﻿import { _resolveAnimationCurve } from '../animation';
 import lazy from '../../utils/lazy';
+import type { Transition as TransitionType } from '.';
 
 const _defaultInterpolator = lazy(() => new android.view.animation.AccelerateDecelerateInterpolator());
 
 let transitionId = 0;
-export class Transition {
+export class Transition implements TransitionType {
 	static AndroidTransitionType = {
 		enter: 'enter',
 		exit: 'exit',
 		popEnter: 'popEnter',
 		popExit: 'popExit',
 	};
+	id: number;
 	private _duration: number;
 	private _interpolator: android.view.animation.Interpolator;
-	private _id: number;
 
-	constructor(duration: number, curve: any) {
+	constructor(duration: number = 350, curve?: any) {
 		this._duration = duration;
 		this._interpolator = curve ? _resolveAnimationCurve(curve) : _defaultInterpolator();
-		this._id = transitionId++;
+		transitionId++;
+		this.id = transitionId;
 	}
 
 	public getDuration(): number {
 		return this._duration;
 	}
 
+	public setDuration(value: number) {
+		this._duration = value;
+	}
+
 	public getCurve(): android.view.animation.Interpolator {
 		return this._interpolator;
 	}
 
-	public animateIOSTransition(containerView: any, fromView: any, toView: any, operation: any, completion: (finished: boolean) => void): void {
+	public animateIOSTransition(transitionContext: any, fromViewCtrl: any, toViewCtrl: any, operation: any): void {
 		throw new Error('Abstract method call');
 	}
 
@@ -39,6 +44,6 @@ export class Transition {
 	}
 
 	public toString(): string {
-		return `Transition@${this._id}`;
+		return `Transition@${this.id}`;
 	}
 }

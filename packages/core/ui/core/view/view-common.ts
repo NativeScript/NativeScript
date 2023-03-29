@@ -27,6 +27,7 @@ import type { AccessibilityEventOptions, AccessibilityLiveRegion, AccessibilityR
 import { accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityValueProperty, accessibilityIgnoresInvertColorsProperty } from '../../../accessibility/accessibility-properties';
 import { getCurrentFontScale } from '../../../accessibility';
 import { CSSShadow } from '../../styling/css-shadow';
+import { SharedTransition, SharedTransitionInteractiveOptions } from '../../transition/shared-transition';
 
 // helpers (these are okay re-exported here)
 export * from './view-helper';
@@ -68,6 +69,8 @@ export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator 
 
 export const _rootModalViews = new Array<ViewBase>();
 
+type InteractiveTransitionState = { began?: boolean; cancelled?: boolean; options?: SharedTransitionInteractiveOptions };
+
 export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public static layoutChangedEvent = 'layoutChanged';
 	public static shownModallyEvent = 'shownModally';
@@ -90,6 +93,11 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public _modalParent: ViewCommon;
 	private _modalContext: any;
 	private _modal: ViewCommon;
+
+	/**
+	 * Active transition instance id for tracking state
+	 */
+	transitionId: number;
 
 	private _measuredWidth: number;
 	private _measuredHeight: number;
@@ -365,7 +373,12 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
 	public showModal(...args): ViewDefinition {
 		const { view, options } = this.getModalOptions(args);
-
+		if (options.transition?.instance) {
+			SharedTransition.updateState(options.transition?.instance.id, {
+				page: this,
+				toPage: view,
+			});
+		}
 		view._showNativeModalView(this, options);
 
 		return view;
@@ -399,7 +412,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		this._modalParent = parent;
 		this._modalContext = options.context;
 		this._closeModalCallback = (...originalArgs) => {
-			if (this._closeModalCallback) {
+			const cleanupModalViews = () => {
 				const modalIndex = _rootModalViews.indexOf(this);
 				_rootModalViews.splice(modalIndex);
 				this._modalParent = null;
@@ -407,17 +420,34 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 				this._closeModalCallback = null;
 				this._dialogClosed();
 				parent._modal = null;
+			};
 
-				const whenClosedCallback = () => {
+			const whenClosedCallback = () => {
+				const transitionState = SharedTransition.getState(this.transitionId);
+				if (transitionState?.interactiveBegan) {
+					SharedTransition.updateState(this.transitionId, {
+						interactiveBegan: false,
+					});
+					if (!transitionState?.interactiveCancelled) {
+						cleanupModalViews();
+					}
+				}
+
+				if (!transitionState?.interactiveCancelled) {
 					if (typeof options.closeCallback === 'function') {
 						options.closeCallback.apply(undefined, originalArgs);
 					}
 
 					this._tearDownUI(true);
-				};
+				}
+			};
 
-				this._hideNativeModalView(parent, whenClosedCallback);
+			const transitionState = SharedTransition.getState(this.transitionId);
+			if (!transitionState?.interactiveBegan) {
+				cleanupModalViews();
 			}
+
+			this._hideNativeModalView(parent, whenClosedCallback);
 		};
 	}
 

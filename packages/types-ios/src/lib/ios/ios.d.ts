@@ -120,7 +120,6 @@
 /// <reference path="objc-x86_64/objc!PencilKit.d.ts" />
 /// <reference path="objc-x86_64/objc!Photos.d.ts" />
 /// <reference path="objc-x86_64/objc!PhotosUI.d.ts" />
-/// <reference path="objc-x86_64/objc!Pods_iostypingsprj.d.ts" />
 /// <reference path="objc-x86_64/objc!ProximityReader.d.ts" />
 /// <reference path="objc-x86_64/objc!PushKit.d.ts" />
 /// <reference path="objc-x86_64/objc!PushToTalk.d.ts" />
