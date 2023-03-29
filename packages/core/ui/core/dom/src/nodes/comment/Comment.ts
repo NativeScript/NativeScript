@@ -1,5 +1,6 @@
 import Node from '../node/Node';
 import CharacterData from '../character-data/CharacterData';
+import type Element from '../element/Element';
 
 /**
  * Comment node.

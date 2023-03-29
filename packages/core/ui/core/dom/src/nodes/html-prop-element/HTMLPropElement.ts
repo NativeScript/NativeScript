@@ -22,7 +22,7 @@ export class HTMLPropBaseElement extends HTMLElement {
 	public _value: any = undefined;
 
 	constructor(key: string, type: ParentPropType = 'key') {
-		super(NodeTypeEnum.elementNode, 'prop');
+		super();
 		if (key) this.key = key;
 		if (type) this.type = type;
 	}

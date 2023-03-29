@@ -31,6 +31,9 @@ export default class CustomElementRegistry {
 			elementClass._observedAttributes = elementClass.observedAttributes;
 		}
 
+		//@ts-ignore Add a css type so this tag name can be referred to in css files.
+		elementClass.prototype.cssType = tagName;
+
 		if (this._callbacks[tagName]) {
 			const callbacks = this._callbacks[tagName];
 			delete this._callbacks[tagName];

@@ -4,10 +4,12 @@ import NodeTypeEnum from '../node/NodeTypeEnum';
 import { escape } from 'html-escaper';
 import NodeList from '../node/NodeList';
 import type { View } from '../../../../view';
+import QuerySelector from '../../query-selector/QuerySelector';
 /**
  * Parent node
  */
 export default class ParentNode extends Node {
+	isParentNode = true;
 	get childElementCount() {
 		let count = 0;
 
@@ -101,7 +103,7 @@ export default class ParentNode extends Node {
 
 				if (current.firstChild) {
 					const matches = current.getElementsByTagName(tagName);
-					if (matches.length) elements.concat(matches);
+					if (matches.length) elements.push(...matches);
 				}
 			}
 			current = current.nextSibling as Element;
@@ -112,7 +114,7 @@ export default class ParentNode extends Node {
 	getElementsByClassName(className: string) {
 		if (!this.firstChild) return [];
 		const elements = new NodeList();
-		let current = this.firstChild as View;
+		let current = this.firstChild as unknown as View;
 		while (current) {
 			if (current.nodeType === NodeTypeEnum.elementNode || current.nodeType === NodeTypeEnum.textNode) {
 				if (current.cssClasses && current.cssClasses.has(className)) {
@@ -123,7 +125,7 @@ export default class ParentNode extends Node {
 
 				if (current.firstChild) {
 					const matches = current.getElementsByClassName(className);
-					if (matches.length) elements.concat(matches);
+					if (matches.length) elements.push(...matches);
 				}
 			}
 			current = current.nextSibling as View;
@@ -133,17 +135,43 @@ export default class ParentNode extends Node {
 
 	public getElementById(id: string) {
 		let element: Element;
-		let current = this.firstChild as Element;
+		let current = this.firstChild as unknown as View;
 		while (current) {
 			if (current.nodeType === NodeTypeEnum.elementNode || current.nodeType === NodeTypeEnum.textNode) {
 				if (current.id === id) return current;
 
 				if (current.firstChild) {
-					if ((element = current.getElementById(id))) return element;
+					if ((element = current.getElementById(id) as any)) return element;
 				}
 			}
-			current = current.nextSibling as View;
+			current = current.nextSibling as unknown as View;
 		}
 		return element;
 	}
+
+	/**
+	 * Query CSS selector to find matching nodes.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching elements.
+	 */
+	public querySelectorAll(selector: string): NodeList<Element> {
+		return QuerySelector.querySelectorAll(this, selector);
+	}
+
+	/**
+	 * Query CSS Selector to find matching node.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching element.
+	 */
+	public querySelector(selector: string): Element {
+		return QuerySelector.querySelector(this, selector);
+	}
+	/**
+	 * A callback that fires for element's observed attributes.
+	 * @param name
+	 * @param oldValue
+	 * @param newValue
+	 */
 }

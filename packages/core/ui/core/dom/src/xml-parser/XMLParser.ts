@@ -39,7 +39,6 @@ export default class XMLParser {
 
 		if (data !== null && data !== undefined) {
 			data = String(data);
-
 			while ((match = markupRegexp.exec(data))) {
 				const tagName = match[2].toLowerCase();
 				const isStartTag = !match[1];
@@ -52,7 +51,6 @@ export default class XMLParser {
 				if (isStartTag) {
 					const namespaceURI = tagName === 'svg' ? NamespaceURI.svg : (<Element>parent).namespaceURI || NamespaceURI.html;
 					const newElement = document.createElementNS(namespaceURI, tagName);
-
 					// Scripts are not allowed to be executed when they are parsed using innerHTML, outerHTML, replaceWith() etc.
 					// However, they are allowed to be executed when document.write() is used.
 					// See: https://developer.mozilla.org/en-US/docs/Web/API/HTMLScriptElement

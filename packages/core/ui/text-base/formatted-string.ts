@@ -23,13 +23,15 @@ export class FormattedString extends ViewBase implements FormattedStringDefiniti
 	}
 
 	insertBefore(newNode: Span, referenceNode: Span): Span {
-		if (!(newNode instanceof Span)) return null;
-		DOMUtils.addToArrayProp(this, 'spans', newNode, referenceNode);
 		super.insertBefore(newNode, referenceNode);
+		if (!newNode.canRender) return newNode;
+		if (!newNode.isNativeElement || !(newNode instanceof Span)) return newNode;
+		DOMUtils.addToArrayProp(this, '_spans', newNode, referenceNode);
+		return newNode;
 	}
 
 	removeChild(node: any) {
-		DOMUtils.removeFromArrayProp(this, 'spans', node);
+		DOMUtils.removeFromArrayProp(this, '_spans', node);
 		super.removeChild(node);
 	}
 

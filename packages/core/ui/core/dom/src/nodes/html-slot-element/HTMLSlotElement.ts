@@ -1,17 +1,14 @@
 import type Element from '../element/Element';
 import HTMLElement from '../html-element/HTMLElement';
 import type Node from '../node/Node';
-import NodeTypeEnum from '../node/NodeTypeEnum';
 import { LightDOM } from '../shadow-root/LightDOM';
-import type { ShadowHostMixin } from '../shadow-root/ShadowHost';
+import { BIND_SLOTTABLE, FALLBACK_REF, SHADOW_NODE, SLOTTED_CHILD_REF } from '../shadow-root/ShadowNode';
 import type { ShadowRoot } from '../shadow-root/ShadowRoot';
 
 function isNullOrUndefined(value: any) {
 	return value === undefined || value === null;
 }
 
-const FALLBACK_REF = '__slotFallbackRef';
-const SLOTTED_CHILD_REF = '__slotAssignmentRef';
 export default class HTMLSlotElement extends HTMLElement {
 	private _slotChangeEvent: Event;
 	/**
@@ -23,12 +20,10 @@ export default class HTMLSlotElement extends HTMLElement {
 	/**
 	 * Childern that are currently/will be rendered in the DOM Tree.
 	 * Since slot element does not render any childern in the Shadow DOM.
-	 * We keep track of all it's current slotted childern here.
+	 * We keep track of all it's current slotted childern that are attached
+	 * with it's nearest native parent element.
 	 */
 	_slotAssignments: LightDOM = new LightDOM(SLOTTED_CHILD_REF);
-	constructor() {
-		super(NodeTypeEnum.elementNode, 'slot');
-	}
 	/**
 	 * Returns the slot name.
 	 *
@@ -63,7 +58,7 @@ export default class HTMLSlotElement extends HTMLElement {
 	 * @param [options.flatten] A boolean value indicating whether to return the assigned nodes of any available child <slot> elements (true) or not (false). Defaults to false.
 	 * @returns Nodes.
 	 */
-	public assignedNodes(options?: { flatten?: boolean }): Node[] {
+	public assignedNodes(options: { flatten?: boolean } = { flatten: false }): Node[] {
 		const host = (<ShadowRoot>this.getRootNode())?.host;
 
 		if (!host) return [];
@@ -84,8 +79,8 @@ export default class HTMLSlotElement extends HTMLElement {
 	 * @param [_options.flatten] A boolean value indicating whether to return the assigned elements of any available child <slot> elements (true) or not (false). Defaults to false.
 	 * @returns Nodes.
 	 */
-	public assignedElements(_options?: { flatten?: boolean }): Element[] {
-		const host = (<ShadowRoot>this.getRootNode())?.host as unknown as ShadowHostMixin;
+	public assignedElements(_options: { flatten?: boolean } = { flatten: false }): Element[] {
+		const host = (<ShadowRoot>this.getRootNode())?.host as Element;
 		if (!host) return [];
 		if (_options.flatten) {
 			return flattenAssignedNodes([], this);
@@ -97,7 +92,7 @@ export default class HTMLSlotElement extends HTMLElement {
 			/**
 			 * Look up assigned nodes in the Light DOM.
 			 */
-			let current = host._lightDOM.firstChild;
+			let current = (host as any)._lightDOM.firstChild;
 			while (current) {
 				const node = current.node;
 				if (node.slot === name && !node.assignedSlot) {
@@ -119,7 +114,8 @@ export default class HTMLSlotElement extends HTMLElement {
 	 * @returns Cloned node.
 	 */
 	public cloneNode(deep = false): HTMLSlotElement {
-		return <HTMLSlotElement>super.cloneNode(deep);
+		const clone = <HTMLSlotElement>super.cloneNode(deep);
+		return clone;
 	}
 
 	private _getSlotChangeEvent() {
@@ -133,12 +129,15 @@ export default class HTMLSlotElement extends HTMLElement {
 
 	public connectedCallback(): void {
 		const root = this.getRootNode() as ShadowRoot;
-		if (root.isShadow && !root._slots.has(this.name)) {
+		if (root.isShadow) {
+			// Only one slot with a specific slot name can render
+			// slottables.
+			if (root._slots.has(this.name)) return;
 			root._slots.set(this.name, this);
 			this.dispatchSlotChangeEvent();
 		} else {
 			// if shadow does not exist then attach assigned fallback content.
-			if (!this._slotAssignments.firstChild.node.parentNode) {
+			if (!this._slotAssignments.firstChild?.node.parentNode) {
 				(this.parentNode as HTMLElement).append(...this._slotAssignments.childNodes);
 			}
 		}
@@ -154,7 +153,7 @@ export default class HTMLSlotElement extends HTMLElement {
 			}
 		} else {
 			// if shadow does not exist, detach slot assignments from their parent.
-			if (this._slotAssignments.firstChild.node.parentNode) {
+			if (this._slotAssignments.firstChild?.node.parentNode) {
 				for (const node of this._slotAssignments.childNodes) {
 					node.remove();
 				}
@@ -164,49 +163,55 @@ export default class HTMLSlotElement extends HTMLElement {
 
 	isFallbackRendered() {
 		if (!this._slotAssignments.firstChild) return true;
-		return this._slotAssignments.firstChild?.node === this._fallbackChildern.firstChild?.node;
+		return this._slotAssignments.firstChild.node === this._fallbackChildern.firstChild.node;
 	}
 
 	appendChild(node: Node): Node {
-		// If node does not have any assigned slot then it's part of the
-		// fallback content.
-		if (!(node as Element).assignedSlot && !node[FALLBACK_REF]) {
-			this._fallbackChildern.appendChild(node);
-			// If fallback content is not rendered, we return here.
-			if (!this.isFallbackRendered()) return;
-		}
-
-		if (!node[SLOTTED_CHILD_REF]) {
-			this._slotAssignments.appendChild(node);
-		}
-		if (!this.parentNode) return;
-		return this.parentNode.appendChild(node);
+		return this.insertBefore(node, undefined);
 	}
 
 	insertBefore(newNode: Node, referenceNode: Node): Node {
-		if (!(newNode as Element).assignedSlot && !(referenceNode as Element).assignedSlot) {
+		if (!(newNode as Element).assignedSlot) {
 			this._fallbackChildern.insertBefore(newNode, referenceNode);
-			if (!this.isFallbackRendered()) return;
+			if (!this.isFallbackRendered()) {
+				newNode.canRender = false;
+			}
 		}
 
 		if (!newNode[SLOTTED_CHILD_REF]) {
 			this._slotAssignments.insertBefore(newNode, referenceNode);
 		}
+
+		// If slottable is not yet attached to DOM, return.
 		if (!this.parentNode) return;
-		return this.parentNode.insertBefore(newNode, referenceNode);
+
+		newNode[SHADOW_NODE] = true;
+		newNode._rootNode = this._rootNode;
+		if (newNode[BIND_SLOTTABLE] || newNode[FALLBACK_REF]) {
+			this.parentNode.insertBefore(newNode, referenceNode);
+		}
+		return newNode;
 	}
 
 	replaceChild(newChild: Node, oldChild: Node): Node {
 		if (!(newChild as Element).assignedSlot && !(newChild as Element).assignedSlot) {
 			this._fallbackChildern.replaceChild(newChild, oldChild);
-			if (!this.isFallbackRendered()) return;
+			if (!this.isFallbackRendered()) {
+				newChild.canRender = false;
+			}
 		}
 
 		if (!newChild[SLOTTED_CHILD_REF]) {
 			this._slotAssignments.replaceChild(newChild, oldChild);
 		}
 		if (!this.parentNode) return;
-		return this.parentNode.replaceChild(newChild, oldChild);
+		newChild[SHADOW_NODE] = true;
+		newChild._rootNode = this._rootNode;
+
+		if (newChild[BIND_SLOTTABLE] || newChild[FALLBACK_REF]) {
+			this.parentNode.replaceChild(newChild, oldChild);
+		}
+		return newChild;
 	}
 
 	removeChild(node: any) {
@@ -219,17 +224,18 @@ export default class HTMLSlotElement extends HTMLElement {
 			this._slotAssignments.removeChild(node);
 		}
 		if (!this.parentNode) return;
+		node[SHADOW_NODE] = false;
+		node._rootNode = null;
 		this.parentNode.removeChild(node);
 	}
 
 	renderFallback() {
-		if (this._fallbackChildern.childrenCount > 0) {
-			if (this._fallbackChildern.firstChild?.node !== this._slotAssignments.firstChild?.node) {
-				for (const node of this._fallbackChildern.childNodes) {
-					this.appendChild(node);
-				}
+		if (this._fallbackChildern.childrenCount > 0 && this._fallbackChildern.firstChild?.node !== this._slotAssignments.firstChild?.node) {
+			for (const node of this._fallbackChildern.childNodes) {
+				if (node.parentNode) node.remove();
+				node.canRender = true;
+				this.appendChild(node);
 			}
-			return;
 		}
 	}
 }

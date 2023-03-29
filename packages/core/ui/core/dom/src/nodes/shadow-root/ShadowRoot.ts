@@ -1,9 +1,11 @@
 import DocumentFragment from '../document-fragment/DocumentFragment';
+import type Element from '../element/Element';
 import type HTMLElement from '../html-element/HTMLElement';
 import type HTMLSlotElement from '../html-slot-element/HTMLSlotElement';
 import type Node from '../node/Node';
-import type { ShadowHostMixin } from './ShadowHost';
-
+import NodeList from '../node/NodeList';
+import NodeTypeEnum from '../node/NodeTypeEnum';
+import { BIND_SLOTTABLE, RETAIN_MARKER, SHADOW_NODE } from './ShadowNode';
 class Slots {
 	private _shadowRoot: ShadowRoot;
 	private _slots: Map<string, HTMLSlotElement> = new Map();
@@ -34,13 +36,27 @@ class Slots {
 			return;
 		}
 		// Remove fallback content
+		let fallbackNodes = [];
 		if (slot.firstChild) {
-			for (const node of slot.childNodes as Node[]) {
+			fallbackNodes = slot.childNodes;
+			for (const node of fallbackNodes as Node[]) {
 				node.remove();
 			}
 		}
 		for (const node of nodes) {
+			// Detach the node from light parent while keeping
+			// the ref in lightDOM.
+			this._shadowRoot._detachFromLightParent(node as Element);
 			(node as HTMLElement).assignedSlot = slot;
+			node[BIND_SLOTTABLE] = true;
+			slot.appendChild(node);
+			node[BIND_SLOTTABLE] = false;
+		}
+
+		for (const node of fallbackNodes) {
+			// We add back fallback nodes to the tree,
+			// however they won't take part in
+			// rendering.
 			slot.appendChild(node);
 		}
 	}
@@ -53,6 +69,17 @@ class Slots {
 			for (const child of slot.childNodes) {
 				(child as HTMLElement).assignedSlot = undefined;
 				child.remove();
+				// When child gets removed, add it back
+				// to lightDOM's parent.
+				// const lightDOMRef = child['__lightRef'];
+				// if (lightDOMRef) {
+				// 	const lightParent = lightDOMRef?.dom?.parent;
+				// 	if (lightParent) {
+				// 		const nextSibling = lightDOMRef.nextSibling;
+				// 		lightDOMRef?.dom.removeChild(child);
+				// 		lightParent.insertBefore(child, nextSibling?.node);
+				// 	}
+				// }
 			}
 		}
 		return deleted;
@@ -92,22 +119,89 @@ export class ShadowRoot extends DocumentFragment {
 		// Childern added by shadow-root are real nodes and attached to host and rendered.
 		// Childern added directly to the host are light dom nodes and are not actually rendered.
 		// How to diff between the two cases?
-		//@ts-ignore
-		return (this._host as unknown as ShadowHostMixin).appendChild(node, true);
+		return this.insertBefore(node, undefined);
 	}
 
 	insertBefore(newNode: Node, referenceNode: Node): Node {
-		//@ts-ignore
-		return (this._host as unknown as ShadowHostMixin).insertBefore(newNode, referenceNode, true);
+		newNode[SHADOW_NODE] = true;
+		newNode._rootNode = this;
+		// If this element is a document fragment node, insert it's children
+		// into the host. The document fragment is discarded.
+		if (newNode.nodeType === NodeTypeEnum.documentFragmentNode) {
+			for (const child of newNode.childNodes) {
+				// remove from document fragment
+				child.remove();
+				child[SHADOW_NODE] = true;
+				child._rootNode = this;
+				// Insert into the host before reference node.
+				this._host.insertBefore(child, referenceNode);
+			}
+		} else {
+			this._detachFromLightParent(newNode as Element);
+			this._host.insertBefore(newNode, referenceNode);
+		}
+
+		return newNode;
+	}
+
+	adoptStyles(node: Node) {
+		if (node['isNativeElement']) {
+			const adoptedStyles = this['adoptedStyleSheets'];
+			if (adoptedStyles?.length) {
+				for (const styles of adoptedStyles) {
+					const cssText = (styles.cssRules as unknown as Array<CSSRule>).map((rule) => rule.cssText).join('');
+					node['_updateStyleScope'](undefined, cssText);
+				}
+			}
+		}
+	}
+
+	public _detachFromLightParent(node: Element) {
+		if (!node.canRender && node.parentNode) {
+			node[RETAIN_MARKER] = true;
+			node.remove();
+			node[RETAIN_MARKER] = false;
+		}
+		node.canRender = true;
 	}
 
 	replaceChild(newChild: Node, oldChild: Node): Node {
-		//@ts-ignore
-		return (this._host as unknown as ShadowHostMixin).replaceChild(newChild, oldChild, true);
+		this._detachFromLightParent(newChild as Element);
+
+		newChild[SHADOW_NODE] = true;
+		newChild._rootNode = this;
+		return this._host.replaceChild(newChild, oldChild);
 	}
 
 	removeChild(node: any) {
-		//@ts-ignore
-		(this._host as unknown as ShadowHostMixin).removeChild(node, true);
+		node._rootNode = null;
+		this._host.removeChild(node);
 	}
+
+	/**
+	 * Query CSS selector to find matching nodes.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching elements.
+	 */
+	public querySelectorAll(selector: string): NodeList<Element> {
+		return ((this.host as Element).parentNode as Element).querySelectorAll(selector);
+	}
+
+	/**
+	 * Query CSS Selector to find matching node.
+	 *
+	 * @param selector CSS selector.
+	 * @returns Matching element.
+	 */
+	public querySelector(selector: string): Element {
+		return ((this.host as Element).parentNode as Element).querySelector(selector);
+	}
+	/**
+	 * A callback that fires for element's observed attributes.
+	 * @param name
+	 * @param oldValue
+	 * @param newValue
+	 */
 }
+ShadowRoot.prototype['adoptedStyleSheets'] = [];

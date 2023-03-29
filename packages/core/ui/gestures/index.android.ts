@@ -63,7 +63,7 @@ function initializeTapAndDoubleTapGestureListener() {
 		public onLongPress(motionEvent: android.view.MotionEvent): void {
 			if (this._type & GestureTypes.longPress) {
 				const args = _getLongPressArgs(GestureTypes.longPress, this._target, GestureStateTypes.began, motionEvent);
-				_executeCallback(this._observer, args);
+				notifyGestureChange(this._observer, args);
 			}
 		}
 
@@ -72,14 +72,14 @@ function initializeTapAndDoubleTapGestureListener() {
 				this._tapTimeoutId = timer.setTimeout(() => {
 					if (this._type & GestureTypes.tap) {
 						const args = _getTapArgs(GestureTypes.tap, this._target, motionEvent);
-						_executeCallback(this._observer, args);
+						notifyGestureChange(this._observer, args);
 					}
 					timer.clearTimeout(this._tapTimeoutId);
 				}, TapAndDoubleTapGestureListenerImpl.DoubleTapTimeout);
 			} else {
 				if (this._type & GestureTypes.tap) {
 					const args = _getTapArgs(GestureTypes.tap, this._target, motionEvent);
-					_executeCallback(this._observer, args);
+					notifyGestureChange(this._observer, args);
 				}
 			}
 		}
@@ -90,7 +90,7 @@ function initializeTapAndDoubleTapGestureListener() {
 			}
 			if (this._type & GestureTypes.doubleTap) {
 				const args = _getTapArgs(GestureTypes.doubleTap, this._target, motionEvent);
-				_executeCallback(this._observer, args);
+				notifyGestureChange(this._observer, args);
 			}
 		}
 	}
@@ -128,7 +128,7 @@ function initializePinchGestureListener() {
 
 			const args = new PinchGestureEventData(this._target, detector, this._scale, this._target, GestureStateTypes.began);
 
-			_executeCallback(this._observer, args);
+			notifyGestureChange(this._observer, args);
 
 			return true;
 		}
@@ -138,7 +138,7 @@ function initializePinchGestureListener() {
 
 			const args = new PinchGestureEventData(this._target, detector, this._scale, this._target, GestureStateTypes.changed);
 
-			_executeCallback(this._observer, args);
+			notifyGestureChange(this._observer, args);
 
 			return true;
 		}
@@ -148,7 +148,7 @@ function initializePinchGestureListener() {
 
 			const args = new PinchGestureEventData(this._target, detector, this._scale, this._target, GestureStateTypes.ended);
 
-			_executeCallback(this._observer, args);
+			notifyGestureChange(this._observer, args);
 		}
 	}
 
@@ -194,11 +194,11 @@ function initializeSwipeGestureListener() {
 					if (Math.abs(deltaX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
 						if (deltaX > 0) {
 							args = _getSwipeArgs(SwipeDirection.right, this._target, initialEvent, currentEvent);
-							_executeCallback(this._observer, args);
+							notifyGestureChange(this._observer, args);
 							result = true;
 						} else {
 							args = _getSwipeArgs(SwipeDirection.left, this._target, initialEvent, currentEvent);
-							_executeCallback(this._observer, args);
+							notifyGestureChange(this._observer, args);
 							result = true;
 						}
 					}
@@ -206,11 +206,11 @@ function initializeSwipeGestureListener() {
 					if (Math.abs(deltaY) > SWIPE_THRESHOLD && Math.abs(velocityY) > SWIPE_VELOCITY_THRESHOLD) {
 						if (deltaY > 0) {
 							args = _getSwipeArgs(SwipeDirection.down, this._target, initialEvent, currentEvent);
-							_executeCallback(this._observer, args);
+							notifyGestureChange(this._observer, args);
 							result = true;
 						} else {
 							args = _getSwipeArgs(SwipeDirection.up, this._target, initialEvent, currentEvent);
-							_executeCallback(this._observer, args);
+							notifyGestureChange(this._observer, args);
 							result = true;
 						}
 					}
@@ -231,8 +231,8 @@ const SWIPE_VELOCITY_THRESHOLD = 100;
 const INVALID_POINTER_ID = -1;
 const TO_DEGREES = 180 / Math.PI;
 
-export function observe(target: View, type: GestureTypes, callback: (args: GestureEventData) => void, context?: any): GesturesObserver {
-	const observer = new GesturesObserver(target, callback, context);
+export function observe(target: View, type: GestureTypes): GesturesObserver {
+	const observer = new GesturesObserver(target);
 	observer.observe(type);
 
 	return observer;
@@ -250,6 +250,10 @@ export class GesturesObserver extends GesturesObserverBase {
 
 	private _onTargetLoaded: (data: EventData) => void;
 	private _onTargetUnloaded: (data: EventData) => void;
+
+	public callback(data: GestureEventData) {
+		notifyGestureChange(this, data);
+	}
 
 	public observe(type: GestureTypes) {
 		if (this.target) {
@@ -342,7 +346,7 @@ export class GesturesObserver extends GesturesObserverBase {
 			}
 
 			this._eventData.prepare(this.target, motionEvent);
-			_executeCallback(this, this._eventData);
+			notifyGestureChange(this, this._eventData);
 		}
 
 		if (this._simpleGestureDetector) {
@@ -419,9 +423,9 @@ function _getPanArgs(deltaX: number, deltaY: number, view: View, state: GestureS
 	};
 }
 
-function _executeCallback(observer: GesturesObserver, args: GestureEventData) {
-	if (observer && observer.callback) {
-		observer.callback.call((<any>observer)._context, args);
+function notifyGestureChange(observer: GesturesObserver, args: GestureEventData) {
+	if (observer) {
+		observer.target.notify(args);
 	}
 }
 
@@ -490,7 +494,7 @@ class CustomPanGestureDetector {
 	private trackStop(currentEvent: android.view.MotionEvent, cacheEvent: boolean) {
 		if (this.isTracking) {
 			const args = _getPanArgs(this.deltaX, this.deltaY, this.target, GestureStateTypes.ended, null, currentEvent);
-			_executeCallback(this.observer, args);
+			notifyGestureChange(this.observer, args);
 
 			this.deltaX = undefined;
 			this.deltaY = undefined;
@@ -511,7 +515,7 @@ class CustomPanGestureDetector {
 		this.isTracking = true;
 
 		const args = _getPanArgs(0, 0, this.target, GestureStateTypes.began, null, currentEvent);
-		_executeCallback(this.observer, args);
+		notifyGestureChange(this.observer, args);
 	}
 
 	private trackChange(currentEvent: android.view.MotionEvent) {
@@ -520,7 +524,7 @@ class CustomPanGestureDetector {
 		this.deltaY = current.y - this.initialY;
 
 		const args = _getPanArgs(this.deltaX, this.deltaY, this.target, GestureStateTypes.changed, null, currentEvent);
-		_executeCallback(this.observer, args);
+		notifyGestureChange(this.observer, args);
 	}
 
 	private getEventCoordinates(event: android.view.MotionEvent): { x: number; y: number } {
@@ -589,7 +593,7 @@ class CustomRotateGestureDetector {
 					// We have started tracking 2 pointers
 					this.angle = 0;
 					this.initalPointersAngle = this.getPointersAngle(event);
-					this.executeCallback(event, GestureStateTypes.began);
+					this.notifyRotationGestureChange(event, GestureStateTypes.began);
 				}
 				break;
 			}
@@ -597,7 +601,7 @@ class CustomRotateGestureDetector {
 				if (this.isTracking) {
 					this.updateAngle(event);
 
-					this.executeCallback(event, GestureStateTypes.changed);
+					this.notifyRotationGestureChange(event, GestureStateTypes.changed);
 				}
 				break;
 
@@ -610,7 +614,7 @@ class CustomRotateGestureDetector {
 				}
 
 				if (wasTracking && !this.isTracking) {
-					this.executeCallback(event, GestureStateTypes.ended);
+					this.notifyRotationGestureChange(event, GestureStateTypes.ended);
 				}
 				break;
 
@@ -618,7 +622,7 @@ class CustomRotateGestureDetector {
 				this.trackedPtrId1 = INVALID_POINTER_ID;
 				this.trackedPtrId2 = INVALID_POINTER_ID;
 				if (wasTracking) {
-					this.executeCallback(event, GestureStateTypes.cancelled);
+					this.notifyRotationGestureChange(event, GestureStateTypes.cancelled);
 				}
 				break;
 		}
@@ -626,7 +630,7 @@ class CustomRotateGestureDetector {
 		return true;
 	}
 
-	private executeCallback(event: android.view.MotionEvent, state: GestureStateTypes) {
+	private notifyRotationGestureChange(event: android.view.MotionEvent, state: GestureStateTypes) {
 		const args = <RotationGestureEventData>{
 			type: GestureTypes.rotation,
 			view: this.target,
@@ -638,7 +642,7 @@ class CustomRotateGestureDetector {
 			state: state,
 		};
 
-		_executeCallback(this.observer, args);
+		notifyGestureChange(this.observer, args);
 	}
 
 	private updateAngle(event: android.view.MotionEvent) {

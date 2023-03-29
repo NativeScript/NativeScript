@@ -9,9 +9,6 @@ export default class DocumentType extends Node {
 	public publicId = '';
 	public systemId = '';
 
-	set parentNode(node: any) {
-		this._parentNode = node;
-	}
 	//@ts-ignore
 	get nodeName() {
 		return this.name;

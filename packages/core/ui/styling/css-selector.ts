@@ -629,11 +629,9 @@ export class SelectorsMap<T extends Node> implements LookupSorter {
 		if (cssClasses && cssClasses.size) {
 			cssClasses.forEach((c) => selectorClasses.push(this.class[c]));
 		}
-
 		const selectors = selectorClasses.reduce((cur, next) => cur.concat(next || []), []);
 
 		selectorsMatch.selectors = selectors.filter((sel) => sel.accumulateChanges(node, selectorsMatch)).sort((a, b) => a.specificity - b.specificity || a.pos - b.pos);
-
 		return selectorsMatch;
 	}
 

@@ -15,6 +15,7 @@ import { TextBase as TextBaseDefinition } from '.';
 import { Color } from '../../color';
 import { CSSShadow, parseCSSShadow } from '../styling/css-shadow';
 import NodeTypeEnum from '../core/dom/src/nodes/node/NodeTypeEnum';
+import type Text from '../core/dom/src/nodes/text/Text';
 
 const CHILD_SPAN = 'Span';
 const CHILD_FORMATTED_TEXT = 'formattedText';
@@ -31,16 +32,12 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 
 	insertBefore(newNode: View, referenceNode: View): View {
 		super.insertBefore(newNode, referenceNode);
-		if (newNode instanceof FormattedString) return (this.formattedText = newNode);
+		if (!newNode.canRender) return newNode;
+		if (!newNode.isNativeElement && !(newNode as unknown as Text).isTextNode) return newNode;
+		if (newNode instanceof FormattedString) this.formattedText = newNode;
+
 		if (newNode.nodeType === NodeTypeEnum.textNode) this.text = this.textContent;
-	}
-
-	get textContent(): string {
-		return this.text;
-	}
-
-	set textContent(val: string) {
-		this.text = val;
+		return newNode;
 	}
 
 	/***

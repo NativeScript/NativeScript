@@ -11,6 +11,7 @@ import { Trace } from '../../../trace';
 import { CoreTypes } from '../../../core-types';
 import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState } from '../../../accessibility/accessibility-types';
 import { CSSShadow } from '../css-shadow';
+import { isCssVariable } from '../../core/properties';
 
 export interface CommonLayoutParams {
 	width: number;
@@ -244,6 +245,14 @@ export class Style extends Observable implements StyleDefinition {
 		}
 
 		return undefined;
+	}
+
+	public removeProperty(name: string) {
+		this.setProperty(name, undefined);
+	}
+
+	public getPropertyValue(name: string) {
+		return this[name];
 	}
 }
 Style.prototype.PropertyBag = class {

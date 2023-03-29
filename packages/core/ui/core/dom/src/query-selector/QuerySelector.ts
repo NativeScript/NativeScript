@@ -136,6 +136,8 @@ export default class QuerySelector {
 		const selector = selectorItem || new SelectorItem(selectorParts[0]);
 		let matched = [];
 		let node = rootNode.firstChild;
+
+		//@ts-ignore
 		while (node) {
 			if (node.nodeType === Node.ELEMENT_NODE) {
 				if (selector.match(<Element>node).matches) {
@@ -144,14 +146,14 @@ export default class QuerySelector {
 							matched.push(node);
 						}
 					} else {
-						const childMatches = this.findAll(rootNode, selectorParts.slice(1), null);
+						const childMatches = this.findAll(node, selectorParts.slice(1), null);
 						matched = matched.concat(childMatches);
 					}
 				}
 			}
 
 			if (!isDirectChild && node['firstChild']) {
-				matched = matched.concat(this.findAll(rootNode, selectorParts, selector));
+				matched = matched.concat(this.findAll(node, selectorParts, selector));
 			}
 			node = node.nextSibling;
 		}
@@ -184,7 +186,7 @@ export default class QuerySelector {
 						return <Element>node;
 					}
 				} else {
-					const childSelector = this.findFirst(rootNode, selectorParts.slice(1), null);
+					const childSelector = this.findFirst(node, selectorParts.slice(1), null);
 					if (childSelector) {
 						return childSelector;
 					}
@@ -192,7 +194,7 @@ export default class QuerySelector {
 			}
 
 			if (!isDirectChild && node['firstChild']) {
-				const childSelector = this.findFirst(rootNode, selectorParts, selector);
+				const childSelector = this.findFirst(node, selectorParts, selector);
 
 				if (childSelector) {
 					return childSelector;

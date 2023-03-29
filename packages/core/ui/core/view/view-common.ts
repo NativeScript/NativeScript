@@ -14,7 +14,7 @@ import { ViewHelper } from './view-helper';
 
 import { PercentLength } from '../../styling/style-properties';
 
-import { observe as gestureObserve, GesturesObserver, GestureTypes, GestureEventData, fromString as gestureFromString, TouchManager, TouchAnimationOptions } from '../../gestures';
+import { observe as gestureObserve, GesturesObserver, GestureTypes, fromString as gestureFromString, TouchManager, TouchAnimationOptions, toString } from '../../gestures';
 
 import { CSSUtils } from '../../../css/system-classes';
 import { Builder } from '../../builder';
@@ -253,69 +253,48 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		}
 	}
 
-	_observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
+	_observe(type: GestureTypes): void {
 		if (!this._gestureObservers[type]) {
 			this._gestureObservers[type] = [];
 		}
 
-		this._gestureObservers[type].push(gestureObserve(this, type, callback, thisArg));
+		this._gestureObservers[type].push(gestureObserve(this, type));
 	}
 
 	public getGestureObservers(type: GestureTypes): Array<GesturesObserver> {
 		return this._gestureObservers[type];
 	}
 
-	public addEventListener(arg: string | GestureTypes, callback: (data: EventData) => void, thisArg?: any) {
-		if (typeof arg === 'string') {
-			arg = getEventOrGestureName(arg);
+	public addEventListener(type: string | GestureTypes, ...args: unknown[]) {
+		if (typeof type === 'number') {
+			type = toString(type);
+		}
+		type = getEventOrGestureName(type);
+		super.addEventListener(type, ...args);
 
-			const gesture = gestureFromString(arg);
-			if (gesture && !this._isEvent(arg)) {
-				this._observe(gesture, callback, thisArg);
-			} else {
-				const events = arg.split(',');
-				if (events.length > 0) {
-					for (let i = 0; i < events.length; i++) {
-						const evt = events[i].trim();
-						const gst = gestureFromString(evt);
-						if (gst && !this._isEvent(arg)) {
-							this._observe(gst, callback, thisArg);
-						} else {
-							super.addEventListener(evt, callback, thisArg);
-						}
-					}
-				} else {
-					super.addEventListener(arg, callback, thisArg);
-				}
+		const events = type.split(',');
+		for (const event of events) {
+			const type = event.trim();
+			const gesture = !this._isEvent(type) ? gestureFromString(type) : null;
+			if (gesture) {
+				this._observe(gesture);
 			}
-		} else if (typeof arg === 'number') {
-			this._observe(<GestureTypes>arg, callback, thisArg);
 		}
 	}
 
-	public removeEventListener(arg: string | GestureTypes, callback?: (data: EventData) => void, thisArg?: any) {
-		if (typeof arg === 'string') {
-			const gesture = gestureFromString(arg);
-			if (gesture && !this._isEvent(arg)) {
+	public removeEventListener(type: string | GestureTypes, ...args: unknown[]) {
+		if (typeof type === 'number') {
+			type = toString(type);
+		}
+		type = getEventOrGestureName(type);
+		super.removeEventListener(type, ...args);
+		const events = type.split(',');
+		for (const event of events) {
+			const type = event.trim();
+			const gesture = !this._isEvent(type) ? gestureFromString(type) : null;
+			if (gesture) {
 				this._disconnectGestureObservers(gesture);
-			} else {
-				const events = arg.split(',');
-				if (events.length > 0) {
-					for (let i = 0; i < events.length; i++) {
-						const evt = events[i].trim();
-						const gst = gestureFromString(evt);
-						if (gst && !this._isEvent(arg)) {
-							this._disconnectGestureObservers(gst);
-						} else {
-							super.removeEventListener(evt, callback, thisArg);
-						}
-					}
-				} else {
-					super.removeEventListener(arg, callback, thisArg);
-				}
 			}
-		} else if (typeof arg === 'number') {
-			this._disconnectGestureObservers(<GestureTypes>arg);
 		}
 	}
 

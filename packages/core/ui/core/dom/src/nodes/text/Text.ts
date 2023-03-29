@@ -5,6 +5,7 @@ import CharacterData from '../character-data/CharacterData';
  * Text node.
  */
 export default class Text extends CharacterData {
+	public isTextNode: boolean = true;
 	public readonly nodeType = Node.TEXT_NODE;
 
 	/**

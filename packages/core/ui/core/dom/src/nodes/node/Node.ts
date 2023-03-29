@@ -25,43 +25,43 @@ export default class Node extends Observable {
 	public readonly DOCUMENT_TYPE_NODE = NodeTypeEnum.documentTypeNode;
 	public readonly DOCUMENT_FRAGMENT_NODE = NodeTypeEnum.documentFragmentNode;
 	public readonly PROCESSING_INSTRUCTION_NODE = NodeTypeEnum.processingInstructionNode;
+
 	nodeType: NodeTypeEnum = NodeTypeEnum.elementNode;
 	nodeName: string = '';
-	//@ts-ignore
 	_nodeValue: string = null;
-	//@ts-ignore
 	_textContent: string = null;
+
 	readonly ownerDocument: any;
-	//@ts-ignore
 	readonly baseURI: string = null;
-	//@ts-ignore
+
 	parentElement: Element = null;
-	//@ts-ignore
 	_parentNode: Node = null;
-	//@ts-ignore
+	parentNode: Node = null;
+
 	nextSibling: Node = null;
-	//@ts-ignore
 	previousSibling: Node = null;
-	//@ts-ignore
 	firstChild: Node = null;
-	//@ts-ignore
 	lastChild: Node = null;
-	isParentNode: boolean = false;
-	//@ts-ignore
+
 	localName: string = null;
-	isNode: boolean = true;
 	_rootNode: Node = null;
+
+	isNode: boolean = true;
+	canRender: boolean = true;
+	isParentNode: boolean = false;
+
 	constructor() {
 		super();
 	}
 
-	get parentNode() {
-		return this._parentNode;
-	}
+	// get parentNode() {
+	// 	if (this._parentNode && (this._parentNode as Element)._shadowRoot) return (this._parentNode as Element)._shadowRoot;
+	// 	return this._parentNode;
+	// }
 
-	set parentNode(parent: Node) {
-		this._parentNode = parent;
-	}
+	// set parentNode(parent: Node) {
+	// 	this._parentNode = parent;
+	// }
 
 	get previousElementSibling(): Node {
 		let currentNode = this.previousSibling;
@@ -115,8 +115,8 @@ export default class Node extends Observable {
 			else {
 				clonedNode = this.ownerDocument.createElement(this.localName);
 				const sourceAttrs = (this as unknown as Element).attributes;
-				for (const { ns, name, value } of sourceAttrs) {
-					(clonedNode as Element).setAttributeNS(ns, name, value);
+				for (const { namespaceURI, name, value } of sourceAttrs) {
+					(clonedNode as Element).setAttributeNS(namespaceURI, name, value);
 				}
 			}
 
@@ -171,7 +171,6 @@ export default class Node extends Observable {
 					const nextSibling = currentNode.nextSibling;
 					//@ts-ignore
 					currentNode._parentNode = this;
-					currentNode._rootNode = this._rootNode;
 					currentNode = nextSibling;
 				}
 
@@ -211,8 +210,7 @@ export default class Node extends Observable {
 			if (newNode.previousSibling) newNode.previousSibling.nextSibling = newNode;
 			else this.firstChild = newNode;
 		}
-
-		newNode._rootNode = this._rootNode;
+		assignParentNode(newNode);
 		if (newNode.connectedCallback) newNode.connectedCallback();
 		return newNode;
 	}
@@ -251,6 +249,7 @@ export default class Node extends Observable {
 
 		node._rootNode = null;
 		if (node.disconnectedCallback) node.disconnectedCallback();
+		assignParentNode(node);
 		return node;
 	}
 
@@ -300,4 +299,18 @@ export default class Node extends Observable {
 	 * A callback called when a node is detacthed from parent.
 	 */
 	public disconnectedCallback?(): void;
+}
+
+function assignParentNode(node: Node) {
+	const parentNode = node._parentNode as Element;
+
+	if (!parentNode || node.nodeName === '#shadow-root') {
+		return (node.parentNode = null);
+	}
+
+	if (parentNode._shadowRoot) {
+		return (node.parentNode = parentNode._shadowRoot);
+	}
+
+	return (node.parentNode = node._parentNode);
 }

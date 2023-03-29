@@ -11,7 +11,20 @@ import type Node from '../node/Node';
  * https://developer.mozilla.org/en-US/docs/Web/API/HTMLTemplateElement.
  */
 export default class HTMLTemplateElement extends HTMLElement {
-	public content: DocumentFragment = this.ownerDocument.createDocumentFragment();
+	public _content: DocumentFragment;
+	constructor() {
+		super();
+		this.nodeName = 'template';
+	}
+
+	get content(): DocumentFragment {
+		if (!this.ownerDocument) return {} as any;
+		return this._content || (this._content = this.ownerDocument.createDocumentFragment());
+	}
+
+	set content(document: DocumentFragment) {
+		this._content = document;
+	}
 
 	/**
 	 * @override
@@ -45,6 +58,14 @@ export default class HTMLTemplateElement extends HTMLElement {
 	 * @override
 	 */
 	//@ts-ignore
+	public set firstChild(node: Node) {
+		this.content.firstChild = node;
+	}
+
+	/**
+	 * @override
+	 */
+	//@ts-ignore
 	public get lastChild(): Node {
 		return this.content.lastChild;
 	}
@@ -52,13 +73,20 @@ export default class HTMLTemplateElement extends HTMLElement {
 	/**
 	 * @override
 	 */
-	public getInnerHTML(options?: { includeShadowRoots?: boolean }): string {
+	//@ts-ignore
+	public set lastChild(node: Node) {
+		this.content.lastChild = node;
+	}
+
+	/**
+	 * @override
+	 */
+	public getInnerHTML(options: { includeShadowRoots?: boolean } = { includeShadowRoots: false }): string {
 		const xmlSerializer = new XMLSerializer();
-		let xml = '';
-		for (const node of this.content.childNodes) {
-			xml += xmlSerializer.serializeToString(node, options);
-		}
-		return xml;
+		return xmlSerializer.serializeToString(this.content, {
+			includeShadowRoots: options.includeShadowRoots,
+			innerHTML: true,
+		});
 	}
 
 	/**

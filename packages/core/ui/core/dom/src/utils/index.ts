@@ -1,4 +1,5 @@
 import { ObservableArray } from '../../../../../data/observable-array';
+import type { IAttr } from '../nodes/element/Element';
 
 export const toLower = (str: string) => String(str).toLowerCase();
 
@@ -24,7 +25,7 @@ export const splice = (arr: any[], item: any, add: any, byValue: any) => {
 	return i;
 };
 
-export const createAttributeFilter = (ns, name) => (o) => o.ns === ns && toLower(o.name) === toLower(name);
+export const createAttributeFilter = (namespaceURI: string, name: string) => (attribute: IAttr) => attribute.namespaceURI === namespaceURI && toLower(attribute.name) === toLower(name);
 
 const addToArrayProp = (node, key, item, ref) => {
 	if (!node[key]) node[key] = [];

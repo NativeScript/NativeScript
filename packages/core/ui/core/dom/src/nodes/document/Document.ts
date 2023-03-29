@@ -1,9 +1,12 @@
 import ElementTag from '../../config/ElementTag';
 import DOMImplementation from '../../dom-implementation/DOMImplementation';
 import { Event } from '../../event/Event';
+import INodeFilter from '../../tree-walker/INodeFilter';
+import TreeWalker from '../../tree-walker/TreeWalker';
 import Comment from '../comment/Comment';
 import DocumentFragment from '../document-fragment/DocumentFragment';
 import HTMLElement from '../html-element/HTMLElement';
+import type Node from '../node/Node';
 import NodeTypeEnum from '../node/NodeTypeEnum';
 import ParentNode from '../parent-node/ParentNode';
 import Text from '../text/Text';
@@ -12,8 +15,9 @@ const createElement = (type: string, owner: Document) => {
 	let element;
 
 	if (htmlElementRegistry.has(type)) {
-		element = new (htmlElementRegistry.get(type) as any)();
-		element.tagName = htmlElementRegistry[type].NODE_TAG_NAME;
+		const Class = htmlElementRegistry.get(type) as any;
+		element = new Class();
+		element.tagName = Class.NODE_TAG_NAME;
 	} else if (ElementTag[type]) {
 		element = new ElementTag[type]();
 		element.tagName = type;
@@ -21,7 +25,8 @@ const createElement = (type: string, owner: Document) => {
 		element = new (customElements.get(type))();
 		element.tagName = type;
 	} else {
-		element = new HTMLElement(NodeTypeEnum.elementNode, type);
+		element = new HTMLElement();
+		element.tagName = type;
 	}
 	element.ownerDocument = owner;
 	element._isRegisteredDOMElement = true;
@@ -38,6 +43,7 @@ export default class Document extends ParentNode {
 	body: HTMLElement;
 	implementation: DOMImplementation;
 	nodeType: NodeTypeEnum = NodeTypeEnum.documentNode;
+	isParentNode = true;
 	/* eslint-disable class-methods-use-this */
 	constructor() {
 		super();
@@ -100,4 +106,32 @@ export default class Document extends ParentNode {
 	set defaultView(scope: any) {
 		this._defaultView = scope;
 	}
+
+	/**
+	 * Creates a Tree Walker.
+	 *
+	 * @param root Root.
+	 * @param [whatToShow] What to show.
+	 * @param [filter] Filter.
+	 */
+	public createTreeWalker(root: Node, whatToShow = -1, filter: INodeFilter = null): TreeWalker {
+		return new TreeWalker(root, whatToShow, filter);
+	}
+
+	/**
+	 * Imports a node.
+	 *
+	 * @param node Node to import.
+	 * @param [deep=false] Set to "true" if the clone should be deep.
+	 */
+	public importNode(node: Node, deep = false): Node {
+		if (!node.isNode) {
+			throw new Error('Parameter 1 was not of type Node.');
+		}
+		const clone = node.cloneNode(deep);
+		(<Document>clone.ownerDocument) = this;
+		return clone;
+	}
 }
+
+Document.prototype['adoptedStyleSheets'] = [];

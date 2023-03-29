@@ -20,6 +20,9 @@ import HTMLTemplateElement from '../nodes/html-template-element/HTMLTemplateElem
 import { ShadowRoot } from '../nodes/shadow-root/ShadowRoot';
 import DocumentType from '../nodes/document-type/DocumentType';
 import CustomElementRegistry from '../custom-element/CustomElementRegistry';
+import NodeFilter from '../tree-walker/NodeFilter';
+import TreeWalker from '../tree-walker/TreeWalker';
+import { CSSStyleSheet } from '../cssstylesheet/CSSStyleSheet';
 
 declare global {
 	// eslint-disable-next-line no-var
@@ -59,6 +62,15 @@ export default class Window {
 	public readonly self: Window;
 	public readonly customElements: CustomElementRegistry;
 	public readonly CustomElementRegistry = CustomElementRegistry;
+	public readonly NodeFilter = NodeFilter;
+	public readonly TreeWalker = TreeWalker;
+	public readonly setTimeout = globalThis.setTimeout;
+	public readonly setInterval = globalThis.setInterval;
+	public readonly clearInterval = globalThis.clearInterval;
+	public readonly clearTimeout = globalThis.clearTimeout;
+	public readonly clearImmediate = globalThis.clearImmediate;
+	public readonly setImmediate = globalThis.setImmediate;
+	public readonly location = {};
 	constructor() {
 		this.document = new Document();
 		this.document.defaultView = this;
@@ -72,6 +84,8 @@ export default class Window {
 		if (!htmlElementRegistry.has(name)) {
 			//@ts-ignore
 			element.NODE_TAG_NAME = name;
+			//@ts-ignore
+			element.prototype['cssType'] = name;
 			//@ts-ignore
 			globalThis.htmlElementRegistry.set(name, element);
 		}
@@ -128,6 +142,15 @@ export default class Window {
 		globalThis.CustomElementRegistry = CustomElementRegistry;
 		//@ts-ignore
 		globalThis.customElements = this.customElements;
+		globalThis.NodeFilter = NodeFilter;
+		//@ts-ignore
+		globalThis.TreeWalker = TreeWalker;
+		//@ts-ignore
+		globalThis.CSSStyleSheet = CSSStyleSheet;
 		return this;
+	}
+
+	public getComputedStyle(element: Element) {
+		return element['style'];
 	}
 }

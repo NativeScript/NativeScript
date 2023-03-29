@@ -289,6 +289,8 @@ export class GesturesObserver {
 	 */
 	constructor(target: View, callback: (args: GestureEventData) => void, context: any);
 
+	public callback(data: GestureEventData): void;
+
 	/**
 	 * Registers a gesture observer to a view and gesture.
 	 * @param type - Type of the gesture.
@@ -306,16 +308,6 @@ export class GesturesObserver {
 	type: GestureTypes;
 
 	/**
-	 * A function that will be executed when a gesture is received.
-	 */
-	callback: (args: GestureEventData) => void;
-
-	/**
-	 * A context which will be used as `this` in callback execution.
-	 */
-	context: any;
-
-	/**
 	 * An internal Android specific method used to pass the motion event to the correct gesture observer.
 	 */
 	androidOnTouchEvent: (motionEvent: any /* android.view.MotionEvent */) => void;
@@ -328,7 +320,7 @@ export class GesturesObserver {
  * @param callback - A function that will be executed when a gesture is received.
  * @param context - this argument for the callback.
  */
-export function observe(target: View, type: GestureTypes, callback: (args: GestureEventData) => void, context?: any): GesturesObserver;
+export function observe(target: View, type: GestureTypes): GesturesObserver;
 
 /**
  * Returns a string representation of a gesture type.

@@ -96,11 +96,13 @@ interface EventDescriptior extends AddEventListenerOptions {
 	removed?: boolean;
 	abortHandler?: () => void;
 	thisArg?: unknown;
-	listener: EventListenerOrEventListenerObject;
+	listener?: EventListener;
+	listenerObject?: EventListenerObject;
 }
 
 function isThisArg(value: any) {
 	if (!value) return false;
+	if (typeof value === 'function') return false;
 	if (typeof value !== 'object') return false;
 	if (value?.constructor?.toString().indexOf('class') === 0) return true;
 	// If object has none of the values in event options, it's thisArg.
@@ -111,12 +113,22 @@ function isThisArg(value: any) {
 }
 
 const getEventDescriptor = (target: EventTarget, type: string, listener: EventListenerOrEventListenerObject, options?: (AddEventListenerOptions & { thisArg: any }) | boolean): EventDescriptior => {
-	const handleEvent = typeof listener === 'function' ? listener : listener.handleEvent;
+	const listenerPart: { listener?: EventListener; listenerObject?: EventListenerObject } = {};
+
+	if (typeof listener === 'function') {
+		listenerPart.listener = listener;
+	} else if (listener.handleEvent) {
+		listenerPart.listenerObject = listener;
+		if (typeof options === 'function') {
+			listenerPart.listener = options;
+		}
+	}
+
 	/**
 	 * the most common case is handled first. No options. No capturing. No thisArg.
 	 */
 	if (!options || typeof options === 'boolean') {
-		return { target, capture: !!options, type, listener: handleEvent };
+		return { target, capture: !!options, type, ...listenerPart };
 	}
 
 	// The second most common case, last argument is thisArg.
@@ -125,7 +137,7 @@ const getEventDescriptor = (target: EventTarget, type: string, listener: EventLi
 			type,
 			target,
 			thisArg: options,
-			listener: handleEvent,
+			...listenerPart,
 		};
 	}
 	// Finally the last and "new" case of event options.
@@ -137,8 +149,8 @@ const getEventDescriptor = (target: EventTarget, type: string, listener: EventLi
 		once,
 		passive,
 		signal,
-		listener: handleEvent,
 		thisArg: thisArg,
+		...listenerPart,
 	};
 };
 
@@ -593,11 +605,20 @@ export class Observable extends EventTarget implements globalThis.EventTarget {
 			}
 
 			let returnValue;
-			if (thisArg) {
-				returnValue = (listener as EventListener).apply(thisArg, [event]);
-			} else {
-				returnValue = (listener as EventListener)(event as NativeDOMEvent);
+			if (descriptor.listenerObject) {
+				if (thisArg) {
+					returnValue = descriptor.listenerObject.handleEvent.apply(thisArg, [event]);
+				} else {
+					returnValue = descriptor.listenerObject.handleEvent(event as NativeDOMEvent);
+				}
+			} else if (listener) {
+				if (thisArg) {
+					returnValue = listener.apply(thisArg, [event]);
+				} else {
+					returnValue = listener(event as NativeDOMEvent);
+				}
 			}
+
 			// This ensures errors thrown inside asynchronous functions do not get swallowed
 			if (returnValue && returnValue instanceof Promise) {
 				returnValue.catch((err) => {

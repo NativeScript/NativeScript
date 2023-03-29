@@ -23,7 +23,7 @@ export default class XMLSerializer {
 		const rootNode = (root as Element).tagName === 'TEMPLATE' ? (<HTMLTemplateElement>root).content : root;
 		switch (root.nodeType) {
 			case Node.ELEMENT_NODE:
-				const element = <Element>root;
+				const element = <Element>rootNode;
 				const tagName = element.tagName.toLowerCase();
 
 				if (VoidElements.includes(tagName)) {
@@ -31,10 +31,9 @@ export default class XMLSerializer {
 				}
 
 				let innerHTML = '';
-
-				let currentNode = rootNode.firstChild;
+				let currentNode = element.firstChild;
 				while (currentNode) {
-					innerHTML += this.serializeToString(currentNode, options);
+					innerHTML += this.serializeToString(currentNode, { ...options, innerHTML: false });
 					currentNode = currentNode.nextSibling;
 				}
 
@@ -42,12 +41,12 @@ export default class XMLSerializer {
 					innerHTML += `<template shadowroot="${element.shadowRoot.mode}">`;
 
 					for (const node of element.shadowRoot.childNodes) {
-						innerHTML += this.serializeToString(node, options);
+						innerHTML += this.serializeToString(node, { ...options, innerHTML: false });
 					}
 
 					innerHTML += '</template>';
 				}
-				if (innerHTML) {
+				if (options.innerHTML) {
 					return innerHTML;
 				} else {
 					return `<${tagName}${this._getAttributes(element)}>${innerHTML}</${tagName}>`;
@@ -57,7 +56,7 @@ export default class XMLSerializer {
 				let html = '';
 				let currentNode = rootNode.firstChild;
 				while (currentNode) {
-					html += this.serializeToString(currentNode, options);
+					html += this.serializeToString(currentNode, { ...options, innerHTML: false });
 					currentNode = currentNode.nextSibling;
 				}
 				return html;

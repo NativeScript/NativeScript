@@ -9,7 +9,7 @@ import { CSSUtils } from '../../../css/system-classes';
 import { Source } from '../../../utils/debug';
 import { Binding, BindingOptions } from '../bindable';
 import { Trace } from '../../../trace';
-import { PropertyChangeData, WrappedValue } from '../../../data/observable';
+import { EventData, Observable, PropertyChangeData, WrappedValue } from '../../../data/observable';
 import { Style } from '../../styling/style';
 import { paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../../styling/style-properties';
 
@@ -22,7 +22,6 @@ import * as dnm from '../../../debugger/dom-node';
 import * as ssm from '../../styling/style-scope';
 import { ViewBase as ViewBaseDefinition } from '.';
 import HTMLElement from '../dom/src/nodes/html-element/HTMLElement';
-import NodeTypeEnum from '../dom/src/nodes/node/NodeTypeEnum';
 
 let domNodeModule: typeof dnm;
 
@@ -336,24 +335,24 @@ export abstract class ViewBase extends HTMLElement implements ViewBaseDefinition
 
 	public _moduleName: string;
 
-	public isNativeELement: boolean = true;
+	public isNativeElement: boolean = true;
 
 	public reusable: boolean;
 
 	constructor() {
-		super(NodeTypeEnum.elementNode, 'view-base');
+		super();
 		this._domId = viewIdCounter++;
-		this._style = new Style(new WeakRef(this));
+		if (!this._style) this._style = new Style(new WeakRef(this));
 		this.notify({ eventName: ViewBase.createdEvent, type: this.constructor.name, object: this });
 	}
 
-	// Used in Angular.
-	get parentNode() {
-		return this._templateParent || this.parent;
-	}
-	set parentNode(node: ViewBase) {
-		this._templateParent = node;
-	}
+	// // Used in Angular.
+	// get parentNode() {
+	// 	return this._templateParent || this.parent;
+	// }
+	// set parentNode(node: ViewBase) {
+	// 	this._templateParent = node;
+	// }
 
 	get nativeView(): any {
 		// this._disableNativeViewRecycling = true;
@@ -367,11 +366,11 @@ export abstract class ViewBase extends HTMLElement implements ViewBaseDefinition
 	get typeName(): string {
 		return getClass(this);
 	}
-
+	//@ts-ignore
 	get style(): Style {
 		return this._style;
 	}
-
+	//@ts-ignore
 	set style(inlineStyle: Style /* | string */) {
 		if (typeof inlineStyle === 'string') {
 			this.setInlineStyle(inlineStyle);
@@ -681,7 +680,6 @@ export abstract class ViewBase extends HTMLElement implements ViewBaseDefinition
 		if (Trace.isEnabled()) {
 			Trace.write(`${this}._addView(${view}, ${atIndex})`, Trace.categories.ViewHierarchy);
 		}
-
 		if (!view) {
 			throw new Error('Expecting a valid View instance.');
 		}

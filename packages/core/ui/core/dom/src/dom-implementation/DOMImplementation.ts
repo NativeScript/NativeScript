@@ -26,7 +26,9 @@ export default class DOMImplementation {
 		// @ts-ignore
 		documentClass._defaultView = this._ownerDocument.defaultView;
 		// @ts-ignore
-		return new documentClass();
+		const doc = new documentClass();
+		doc.initDocument();
+		return doc;
 	}
 
 	/**

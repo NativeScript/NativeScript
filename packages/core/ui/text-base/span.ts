@@ -13,18 +13,14 @@ export class Span extends ViewBase implements SpanDefinition {
 	private _text: string;
 	private _tappable = false;
 
-	constructor() {
-		super();
-		this.nodeType = NodeTypeEnum.textNode;
-	}
-
 	appendChild(node: View): View {
 		return this.insertBefore(node, undefined);
 	}
 
 	insertBefore(newNode: View, referenceNode: View): View {
 		super.insertBefore(newNode, referenceNode);
-		//if (newNode.nodeType === NodeTypeEnum.textNode) this.text = this._textContent;
+		if (!newNode.canRender) return newNode;
+		if (newNode.nodeType === NodeTypeEnum.textNode) this.text = this.textContent;
 		return newNode;
 	}
 

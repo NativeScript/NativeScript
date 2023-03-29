@@ -121,7 +121,7 @@ export class HTMLItemTemplateElement extends HTMLPropBaseElement {
 
 	createView() {
 		const wrapper = new ItemTemplate(this);
-		if (this._content) wrapper.content = defaultCreateView(this) as View;
+		if (this._content) wrapper.content = defaultCreateView(this) as any;
 		else {
 			const event = new CreateViewEvent();
 			this.dispatchEvent(event);

@@ -44,11 +44,14 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
 
 	public insertBefore(newNode: View, referenceNode: View): View {
 		super.insertBefore(newNode, referenceNode);
+		if (!newNode.isNativeElement || !newNode._parentNode || !newNode.canRender) return newNode;
+
 		if (referenceNode) {
 			this.insertChild(newNode, this.getChildIndex(referenceNode));
 		} else {
 			this.addChild(newNode);
 		}
+
 		return newNode;
 	}
 

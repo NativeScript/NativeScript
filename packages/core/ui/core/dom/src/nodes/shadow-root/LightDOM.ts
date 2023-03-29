@@ -4,12 +4,12 @@ interface LightNodeRef {
 	nextSibling?: LightNodeRef;
 }
 
-function createLightNodeRef(node: any, previousSibling?: LightNodeRef, nextSibling?: LightNodeRef) {
-	Node;
+function createLightNodeRef(node: any, dom?: LightDOM, previousSibling?: LightNodeRef, nextSibling?: LightNodeRef) {
 	return {
 		node,
 		previousSibling,
 		nextSibling,
+		dom,
 	};
 }
 /**
@@ -25,13 +25,15 @@ export class LightDOM {
 	 * A unique key to track childern nodes.
 	 */
 	private ref: string;
-	constructor(ref: string = '__lightRef') {
+	public parent: any;
+	constructor(ref: string = '__lightRef', parent?: any) {
 		this.ref = ref;
+		this.parent = parent;
 	}
 
 	appendChild(node: any) {
 		if (node[this.ref]) return;
-		const ref = createLightNodeRef(node);
+		const ref = createLightNodeRef(node, this);
 		if (!this.firstChild) {
 			this.firstChild = ref;
 			this.lastChild = ref;
@@ -56,7 +58,7 @@ export class LightDOM {
 		}
 
 		const referencedRef = refNode[this.ref] as LightNodeRef;
-		const ref = createLightNodeRef(newNode, referencedRef.previousSibling, referencedRef);
+		const ref = createLightNodeRef(newNode, this, referencedRef.previousSibling, referencedRef);
 		if (referencedRef.previousSibling) {
 			referencedRef.previousSibling.nextSibling = ref;
 		} else {
@@ -74,7 +76,7 @@ export class LightDOM {
 
 	replaceChild(newChild: any, oldChild: any) {
 		const oldRef = oldChild[this.ref] as LightNodeRef;
-		const ref = createLightNodeRef(newChild, oldRef.previousSibling, oldRef.nextSibling);
+		const ref = createLightNodeRef(newChild, this, oldRef.previousSibling, oldRef.nextSibling);
 		if (ref.nextSibling) {
 			ref.nextSibling.previousSibling = ref;
 		} else {

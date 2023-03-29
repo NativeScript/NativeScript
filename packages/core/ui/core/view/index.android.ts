@@ -335,8 +335,8 @@ export class View extends ViewCommon {
 	}
 
 	// TODO: Implement unobserve that detach the touchListener.
-	_observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
-		super._observe(type, callback, thisArg);
+	_observe(type: GestureTypes): void {
+		super._observe(type);
 		if (this.isLoaded && !this.touchListenerIsSet) {
 			this.setOnTouchListener();
 		}

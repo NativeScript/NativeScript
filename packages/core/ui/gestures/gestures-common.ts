@@ -106,28 +106,18 @@ export function fromString(type: string): GestureTypes {
 }
 
 export abstract class GesturesObserverBase implements GesturesObserverDefinition {
-	private _callback: (args: GestureEventData) => void;
 	private _target: View;
-	private _context: any;
 
 	public type: GestureTypes;
-
-	public get callback(): (args: GestureEventData) => void {
-		return this._callback;
-	}
 
 	public get target(): View {
 		return this._target;
 	}
 
-	public get context() {
-		return this._context;
-	}
+	public abstract callback(data: GestureEventData);
 
-	constructor(target: View, callback: (args: GestureEventData) => void, context: any) {
+	constructor(target: View) {
 		this._target = target;
-		this._callback = callback;
-		this._context = context;
 	}
 
 	public abstract androidOnTouchEvent(motionEvent: android.view.MotionEvent);
@@ -138,19 +128,10 @@ export abstract class GesturesObserverBase implements GesturesObserverDefinition
 		if (this.target) {
 			const list = this.target.getGestureObservers(this.type);
 			if (list && list.length > 0) {
-				for (let i = 0; i < list.length; i++) {
-					if (list[i].callback === this.callback) {
-						break;
-					}
-				}
-				list.length = 0;
-
 				this.target._gestureObservers[this.type] = undefined;
 				delete this.target._gestureObservers[this.type];
 			}
 		}
 		this._target = null;
-		this._callback = null;
-		this._context = null;
 	}
 }
