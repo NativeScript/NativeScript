@@ -1,4 +1,4 @@
-﻿import { Transition } from '@nativescript/core';
+﻿import { PageTransition, Transition } from '@nativescript/core';
 
 export class CustomTransition extends Transition {
 	constructor(duration: number, curve: any) {
@@ -34,3 +34,5 @@ export class CustomTransition extends Transition {
 		return animatorSet;
 	}
 }
+
+export class CustomSharedElementPageTransition extends PageTransition {}

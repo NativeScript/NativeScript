@@ -25,10 +25,10 @@
             <TextView testID="testTextView" hint="TextView" text="{{switchCheckedText}}" class="view-item a11y" accessibilityLabel="TestView with a value" accessibilityLiveRegion="{{accessibilityLiveRegions.Polite}}" />
             <TextField testID="testTextField" hint="TextField" class="view-item a11y" accessibilityLabel="Plain jane TextField" accessibilityHint="Tell us your real name Jane" />
             <TextView hint="TextView" class="view-item a11y" accessibilityLabel="Nice TextView" accessibilityHint="Tell us about yourself Jane" />
-            <GridLayout testID="testGridLayout1" rows="25" columns="*" class="view-item" accessibilityLabel="No can go GridLayout" accessibilityHint="A grid that will not get bigger when increasing accessible text size">
+            <GridLayout testID="testGridLayout1" rows="35" columns="*" class="view-item" accessibilityLabel="No can go GridLayout" accessibilityHint="A grid that will not get bigger when increasing accessible text size">
               <Label text="IN-Accessible Grid" class="view-item text-center" />
             </GridLayout>
-            <GridLayout rows="25,25" columns="*,50" class="view-item a11y" accessibilityLabel="Yes an accessible GridLayout" accessibilityHint="A grid that WILL get bigger dynamically when increasing accessible text size">
+            <GridLayout rows="35,35" columns="*,50" class="view-item a11y" accessibilityLabel="Yes an accessible GridLayout" accessibilityHint="A grid that WILL get bigger dynamically when increasing accessible text size">
               <Label text="Accessible Grid" class="view-item text-center" />
               <Label row="1" text="With another item in a row" class="view-item text-center" />
               <Label rowSpan="2" col="1" text="Hi" />

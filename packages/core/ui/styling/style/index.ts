@@ -106,6 +106,9 @@ export class Style extends Observable implements StyleDefinition {
 	}
 
 	public fontInternal: Font;
+	/**
+	 * This property ensures inheritance of a11y scale among views.
+	 */
 	public _fontScale: number;
 	public backgroundInternal: Background;
 

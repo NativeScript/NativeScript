@@ -1,25 +1,32 @@
-﻿let transitionId = 0;
-export class Transition {
+﻿import type { Transition as TransitionType } from '.';
+
+let transitionId = 0;
+export class Transition implements TransitionType {
 	static AndroidTransitionType = {};
+	id: number;
 	private _duration: number;
 	private _curve: UIViewAnimationCurve;
-	private _id: number;
 
-	constructor(duration: number, curve: UIViewAnimationCurve = UIViewAnimationCurve.EaseInOut) {
+	constructor(duration: number = 350, nativeCurve: UIViewAnimationCurve = UIViewAnimationCurve.EaseInOut) {
 		this._duration = duration ? duration / 1000 : 0.35;
-		this._curve = curve;
-		this._id = transitionId++;
+		this._curve = nativeCurve;
+		transitionId++;
+		this.id = transitionId;
 	}
 
 	public getDuration(): number {
 		return this._duration;
 	}
 
+	public setDuration(value: number) {
+		this._duration = value;
+	}
+
 	public getCurve(): UIViewAnimationCurve {
 		return this._curve;
 	}
 
-	public animateIOSTransition(containerView: UIView, fromView: UIView, toView: UIView, operation: UINavigationControllerOperation, completion: (finished: boolean) => void): void {
+	public animateIOSTransition(transitionContext: UIViewControllerContextTransitioning, fromViewCtrl: UIViewController, toViewCtrl: UIViewController, operation: UINavigationControllerOperation): void {
 		throw new Error('Abstract method call');
 	}
 
@@ -28,6 +35,6 @@ export class Transition {
 	}
 
 	public toString(): string {
-		return `Transition@${this._id}`;
+		return `Transition@${this.id}`;
 	}
 }

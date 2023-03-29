@@ -276,10 +276,16 @@ export class Observable extends EventTarget implements globalThis.EventTarget {
 	 */
 	private readonly _captureObservers: { [eventName: string]: EventDescriptior[] } = {};
 
+	/**
+	 * Gets the value of the specified property.
+	 */
 	public get(name: string): any {
 		return this[name];
 	}
 
+	/**
+	 * Updates the specified property with the provided value.
+	 */
 	public set(name: string, value: any): void {
 		// TODO: Parameter validation
 		const oldValue = this[name];
@@ -292,6 +298,9 @@ export class Observable extends EventTarget implements globalThis.EventTarget {
 		this.notifyPropertyChange(name, newValue, oldValue);
 	}
 
+	/**
+	 * Updates the specified property with the provided value and raises a property change event and a specific change event based on the property name.
+	 */
 	public setProperty(name: string, value: any): void {
 		const oldValue = this[name];
 		if (this[name] === value) {
@@ -690,6 +699,7 @@ export interface Observable extends globalThis.EventTarget {
 	 */
 	get(name: string): any;
 }
+
 
 class ObservableFromObject extends Observable {
 	public readonly _map: Record<string, any> = {};

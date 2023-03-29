@@ -11,6 +11,7 @@ import { Builder } from '../builder';
 import { sanitizeModuleName } from '../builder/module-name-sanitizer';
 import { profile } from '../../profiling';
 import { FRAME_SYMBOL } from './frame-helpers';
+import { SharedTransition } from '../transition/shared-transition';
 
 export { NavigationType } from './frame-interfaces';
 export type { AndroidActivityCallbacks, AndroidFragmentCallbacks, AndroidFrame, BackstackEntry, NavigationContext, NavigationEntry, NavigationTransition, TransitionState, ViewEntry, iOSFrame } from './frame-interfaces';
@@ -39,10 +40,18 @@ export class FrameBase extends CustomLayoutView {
 	private _animated: boolean;
 	private _transition: NavigationTransition;
 	private _backStack = new Array<BackstackEntry>();
-	private _navigationQueue = new Array<NavigationContext>();
+	_navigationQueue = new Array<NavigationContext>();
 
 	public actionBarVisibility: 'auto' | 'never' | 'always';
 	public _currentEntry: BackstackEntry;
+
+	/**
+	 * A reference of current page that is set earlier than current entry.
+	 * Using this property, methods like 'eachChildView' and '_childrenCount' gain access to page view
+	 * just in time for calls like '_addView' to perform view-tree iterations.
+	 */
+	public _resolvedPage: Page;
+
 	public _animationInProgress = false;
 	public _executingContext: NavigationContext;
 	public _isInFrameStack = false;
@@ -238,6 +247,8 @@ export class FrameBase extends CustomLayoutView {
 		// In case we navigated forward to a page that was in the backstack
 		// with clearHistory: true
 		if (!newPage.frame) {
+			this._resolvedPage = newPage;
+
 			this._addView(newPage);
 			newPage._frame = this;
 		}
@@ -388,11 +399,18 @@ export class FrameBase extends CustomLayoutView {
 		const backstackEntry = navigationContext.entry;
 		const isBackNavigation = navigationContext.navigationType === NavigationType.back;
 		this._onNavigatingTo(backstackEntry, isBackNavigation);
+		const navigationTransition = this._getNavigationTransition(backstackEntry.entry);
+		if (navigationTransition?.instance) {
+			SharedTransition.updateState(navigationTransition?.instance.id, {
+				page: this.currentPage,
+				toPage: this,
+			});
+		}
 		this._navigateCore(backstackEntry);
 	}
 
 	@profile
-	private performGoBack(navigationContext: NavigationContext) {
+	performGoBack(navigationContext: NavigationContext) {
 		let backstackEntry = navigationContext.entry;
 		const backstack = this._backStack;
 		if (!backstackEntry) {
@@ -456,7 +474,6 @@ export class FrameBase extends CustomLayoutView {
 		if (this._currentEntry) {
 			return this._currentEntry.resolvedPage;
 		}
-
 		return null;
 	}
 
@@ -508,7 +525,7 @@ export class FrameBase extends CustomLayoutView {
 	}
 
 	get _childrenCount(): number {
-		if (this.currentPage) {
+		if (this._resolvedPage) {
 			return 1;
 		}
 
@@ -516,7 +533,7 @@ export class FrameBase extends CustomLayoutView {
 	}
 
 	public eachChildView(callback: (child: View) => boolean) {
-		const page = this.currentPage;
+		const page = this._resolvedPage;
 		if (page) {
 			callback(page);
 		}

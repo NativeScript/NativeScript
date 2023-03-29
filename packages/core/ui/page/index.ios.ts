@@ -8,6 +8,7 @@ import { PageBase, actionBarHiddenProperty, statusBarStyleProperty } from './pag
 import { profile } from '../../profiling';
 import { iOSNativeHelper, layout } from '../../utils';
 import { getLastFocusedViewOnPage, isAccessibilityServiceEnabled } from '../../accessibility';
+import { SharedTransition } from '../transition/shared-transition';
 
 export * from './page-common';
 
@@ -120,7 +121,7 @@ class UIViewControllerImpl extends UIViewController {
 			return;
 		}
 
-		const frame = this.navigationController ? (<any>this.navigationController).owner : null;
+		const frame: Frame = this.navigationController ? (<any>this.navigationController).owner : null;
 		const newEntry = this[ENTRY];
 
 		// Don't raise event if currentPage was showing modal page.
@@ -130,6 +131,8 @@ class UIViewControllerImpl extends UIViewController {
 		}
 
 		if (frame) {
+			frame._resolvedPage = owner;
+
 			if (!owner.parent) {
 				owner._frame = frame;
 				if (!frame._styleScope) {
@@ -209,8 +212,12 @@ class UIViewControllerImpl extends UIViewController {
 			// _processNavigationQueue will shift navigationQueue. Check canGoBack after that.
 			// Workaround for disabled backswipe on second custom native transition
 			if (frame.canGoBack()) {
-				navigationController.interactivePopGestureRecognizer.delegate = navigationController;
-				navigationController.interactivePopGestureRecognizer.enabled = owner.enableSwipeBackNavigation;
+				const transitionState = SharedTransition.getState(owner.transitionId);
+				if (!transitionState?.interactive) {
+					// only consider when interactive transitions are not enabled
+					navigationController.interactivePopGestureRecognizer.delegate = navigationController;
+					navigationController.interactivePopGestureRecognizer.enabled = owner.enableSwipeBackNavigation;
+				}
 			} else {
 				navigationController.interactivePopGestureRecognizer.enabled = false;
 			}
@@ -399,10 +406,8 @@ export class Page extends PageBase {
 	constructor() {
 		super();
 		const controller = UIViewControllerImpl.initWithOwner(new WeakRef(this));
-		this.viewController = this._ios = controller;
-
-		// Make transitions look good
 		controller.view.backgroundColor = this._backgroundColor;
+		this.viewController = this._ios = controller;
 	}
 
 	createNativeView() {

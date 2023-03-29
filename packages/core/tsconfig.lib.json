@@ -4,7 +4,6 @@
 		"noEmitOnError": true,
 		"noEmitHelpers": true,
 		"declaration": true,
-		"noImplicitAny": false,
 		"noImplicitUseStrict": true,
 		"removeComments": false,
 		"emitDecoratorMetadata": true,

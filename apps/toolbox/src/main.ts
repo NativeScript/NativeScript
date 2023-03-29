@@ -2,6 +2,7 @@ import { Application, FlexboxLayout, GridLayout } from '@nativescript/core';
 import Benchmark from 'benchmark';
 const suite = new Benchmark.Suite();
 
+
 //@ts-ignore
 global.performance = {
 	now() {

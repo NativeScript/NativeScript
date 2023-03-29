@@ -2606,7 +2606,7 @@ export interface TraceWriter {
 export class Transition {
     constructor(duration: number, nativeCurve: any);
     // (undocumented)
-    public animateIOSTransition(containerView: any, fromView: any, toView: any, operation: any, completion: (finished: boolean) => void): void;
+    public animateIOSTransition(transitionContext: UIViewControllerContextTransitioning, fromViewCtrl: UIViewController, toViewCtrl: UIViewController, operation: UINavigationControllerOperation): void;
     // (undocumented)
     public createAndroidAnimator(transitionType: string): any;
     // (undocumented)
