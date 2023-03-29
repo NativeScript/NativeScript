@@ -40,11 +40,15 @@ export class RootLayoutBase extends GridLayout {
 		return handled;
 	}
 
-	// ability to add any view instance to composite views like layers
+	/**
+	 * Ability to add any view instance to composite views like layers.
+	 *
+	 * @param view
+	 * @param options
+	 * @returns
+	 */
 	open(view: View, options: RootLayoutOptions = {}): Promise<void> {
-		const enterAnimationDefinition = options.animation ? options.animation.enterFrom : null;
-
-		return new Promise<void>((resolve, reject) => {
+		return new Promise((resolve, reject) => {
 			if (!(view instanceof View)) {
 				return reject(new Error(`Invalid open view: ${view}`));
 			}
@@ -53,57 +57,68 @@ export class RootLayoutBase extends GridLayout {
 				return reject(new Error(`${view} has already been added`));
 			}
 
-			resolve();
-		})
-			.then(() => {
-				// keep track of the views locally to be able to use their options later
-				this.popupViews.push({ view: view, options: options });
+			const toOpen = [];
+			const enterAnimationDefinition = options.animation ? options.animation.enterFrom : null;
 
-				if (options.shadeCover) {
-					// perf optimization note: we only need 1 layer of shade cover
-					// we just update properties if needed by additional overlaid views
-					if (this.shadeCover) {
-						// overwrite current shadeCover options if topmost popupview has additional shadeCover configurations
-						return this.updateShadeCover(this.shadeCover, options.shadeCover);
-					}
-					return this.openShadeCover(options.shadeCover);
+			// keep track of the views locally to be able to use their options later
+			this.popupViews.push({ view: view, options: options });
+
+			if (options.shadeCover) {
+				// perf optimization note: we only need 1 layer of shade cover
+				// we just update properties if needed by additional overlaid views
+				if (this.shadeCover) {
+					// overwrite current shadeCover options if topmost popupview has additional shadeCover configurations
+					toOpen.push(this.updateShadeCover(this.shadeCover, options.shadeCover));
+				} else {
+					toOpen.push(this.openShadeCover(options.shadeCover));
 				}
-			})
-			.then(() => {
-				view.opacity = 0; // always begin with view invisible when adding dynamically
-				this.insertChild(view, this.getChildrenCount() + 1);
+			}
 
-				return new Promise((resolve, reject) => {
+			view.opacity = 0; // always begin with view invisible when adding dynamically
+			this.insertChild(view, this.getChildrenCount() + 1);
+
+			toOpen.push(
+				new Promise<void>((res, rej) => {
 					setTimeout(() => {
 						// only apply initial state and animate after the first tick - ensures safe areas and other measurements apply correctly
 						this.applyInitialState(view, enterAnimationDefinition);
 						this.getEnterAnimation(view, enterAnimationDefinition)
 							.play()
-							.then(() => {
-								this.applyDefaultState(view);
-								view.notify({ eventName: 'opened', object: view });
-								resolve();
-							})
-							.catch((ex) => {
-								reject(new Error(`Error playing enter animation: ${ex}`));
-							});
+							.then(
+								() => {
+									this.applyDefaultState(view);
+									view.notify({ eventName: 'opened', object: view });
+									res();
+								},
+								(err) => {
+									rej(new Error(`Error playing enter animation: ${err}`));
+								}
+							);
 					});
-				});
-			});
+				})
+			);
+
+			Promise.all(toOpen).then(
+				() => {
+					resolve();
+				},
+				(err) => {
+					reject(err);
+				}
+			);
+		});
 	}
 
-	// optional animation parameter to overwrite close animation declared when opening popup
-	// ability to remove any view instance from composite views
+	/**
+	 * Ability to remove any view instance from composite views.
+	 * Optional animation parameter to overwrite close animation declared when opening popup.
+	 *
+	 * @param view
+	 * @param exitTo
+	 * @returns
+	 */
 	close(view: View, exitTo?: TransitionAnimation): Promise<void> {
-		const cleanupAndFinish = () => {
-			view.notify({ eventName: 'closed', object: view });
-			this.removeChild(view);
-		};
-
-		// use exitAnimation that is passed in and fallback to the exitAnimation passed in when opening
-		let exitAnimationDefinition = exitTo;
-
-		return new Promise<void>((resolve, reject) => {
+		return new Promise((resolve, reject) => {
 			if (!(view instanceof View)) {
 				return reject(new Error(`Invalid close view: ${view}`));
 			}
@@ -112,42 +127,58 @@ export class RootLayoutBase extends GridLayout {
 				return reject(new Error(`Unable to close popup. ${view} not found`));
 			}
 
-			resolve();
-		})
-			.then(() => {
-				const popupIndex = this.getPopupIndex(view);
-				const poppedView = this.popupViews[popupIndex];
+			const toClose = [];
+			const popupIndex = this.getPopupIndex(view);
+			const poppedView = this.popupViews[popupIndex];
+			const cleanupAndFinish = () => {
+				view.notify({ eventName: 'closed', object: view });
+				this.removeChild(view);
+				resolve();
+			};
+			// use exitAnimation that is passed in and fallback to the exitAnimation passed in when opening
+			const exitAnimationDefinition = exitTo || poppedView?.options?.animation?.exitTo;
 
-				if (!exitAnimationDefinition) {
-					exitAnimationDefinition = poppedView?.options?.animation?.exitTo;
-				}
+			// Remove view from tracked popupviews
+			this.popupViews.splice(popupIndex, 1);
 
-				// Remove view from tracked popupviews
-				this.popupViews.splice(popupIndex, 1);
+			toClose.push(
+				new Promise<void>((res, rej) => {
+					if (exitAnimationDefinition) {
+						this.getExitAnimation(view, exitAnimationDefinition)
+							.play()
+							.then(res, (err) => {
+								rej(new Error(`Error playing exit animation: ${err}`));
+							});
+					} else {
+						res();
+					}
+				})
+			);
 
-				if (this.shadeCover) {
-					// update shade cover with the topmost popupView options (if not specifically told to ignore)
+			if (this.shadeCover) {
+				// Update shade cover with the topmost popupView options (if not specifically told to ignore)
+				if (this.popupViews.length) {
 					if (!poppedView?.options?.shadeCover?.ignoreShadeRestore) {
-						const shadeCoverOptions = this.popupViews[this.popupViews.length - 1]?.options?.shadeCover;
+						const shadeCoverOptions = this.popupViews[this.popupViews.length - 1].options?.shadeCover;
 						if (shadeCoverOptions) {
-							return this.updateShadeCover(this.shadeCover, shadeCoverOptions);
+							toClose.push(this.updateShadeCover(this.shadeCover, shadeCoverOptions));
 						}
 					}
-					// remove shade cover animation if this is the last opened popup view
-					if (this.popupViews.length === 0) {
-						return this.closeShadeCover(poppedView?.options?.shadeCover);
-					}
+				} else {
+					// Remove shade cover animation if this is the last opened popup view
+					toClose.push(this.closeShadeCover(poppedView?.options?.shadeCover));
 				}
-			})
-			.then(() => {
-				if (exitAnimationDefinition) {
-					return this.getExitAnimation(view, exitAnimationDefinition)
-						.play()
-						.then(cleanupAndFinish.bind(this))
-						.catch((ex) => Promise.reject(new Error(`Error playing exit animation: ${ex}`)));
+			}
+
+			Promise.all(toClose).then(
+				() => {
+					cleanupAndFinish();
+				},
+				(err) => {
+					reject(err);
 				}
-				cleanupAndFinish();
-			});
+			);
+		});
 	}
 
 	closeAll(): Promise<void[]> {
@@ -165,17 +196,28 @@ export class RootLayoutBase extends GridLayout {
 		return this.shadeCover;
 	}
 
-	openShadeCover(options: ShadeCoverOptions = {}) {
-		if (this.shadeCover) {
-			if (Trace.isEnabled()) {
-				Trace.write(`RootLayout shadeCover already open.`, Trace.categories.Layout, Trace.messageType.warn);
+	openShadeCover(options: ShadeCoverOptions = {}): Promise<void> {
+		return new Promise((resolve) => {
+			if (this.shadeCover) {
+				if (Trace.isEnabled()) {
+					Trace.write(`RootLayout shadeCover already open.`, Trace.categories.Layout, Trace.messageType.warn);
+				}
+				resolve();
+			} else {
+				// Create the one and only shade cover
+				const shadeCover = this.createShadeCover();
+				shadeCover.on('loaded', () => {
+					this._initShadeCover(shadeCover, options);
+					this.updateShadeCover(shadeCover, options).then(() => {
+						resolve();
+					});
+				});
+
+				this.shadeCover = shadeCover;
+				// Insert shade cover at index right above the first layout
+				this.insertChild(this.shadeCover, this.staticChildCount + 1);
 			}
-		} else {
-			// create the one and only shade cover
-			this.shadeCover = this.createShadeCover(options);
-			// insert shade cover at index right above the first layout
-			this.insertChild(this.shadeCover, this.staticChildCount + 1);
-		}
+		});
 	}
 
 	closeShadeCover(shadeCoverOptions: ShadeCoverOptions = {}): Promise<void> {
@@ -345,13 +387,9 @@ export class RootLayoutBase extends GridLayout {
 		};
 	}
 
-	private createShadeCover(shadeOptions: ShadeCoverOptions = {}): View {
+	private createShadeCover(): View {
 		const shadeCover = new GridLayout();
 		shadeCover.verticalAlignment = 'bottom';
-		shadeCover.on('loaded', () => {
-			this._initShadeCover(shadeCover, shadeOptions);
-			this.updateShadeCover(shadeCover, shadeOptions);
-		});
 		return shadeCover;
 	}
 

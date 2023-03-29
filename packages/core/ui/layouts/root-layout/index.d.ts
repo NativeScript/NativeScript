@@ -8,7 +8,7 @@ export class RootLayout extends GridLayout {
 	bringToFront(view: View, animated?: boolean): Promise<void>;
 	closeAll(): Promise<void[]>;
 	getShadeCover(): View;
-	openShadeCover(options: ShadeCoverOptions = {}): void;
+	openShadeCover(options: ShadeCoverOptions = {}): Promise<void>;
 	closeShadeCover(shadeCoverOptions: ShadeCoverOptions = {}): Promise<void>;
 }
 
