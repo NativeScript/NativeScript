@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "@nativescript/core": "file:../../packages/core",
-    "nativescript-theme-core": "file:../../node_modules/nativescript-theme-core"
+    "nativescript-theme-core": "2.0.24"
   },
   "devDependencies": {
     "@nativescript/android": "~8.4.0",
