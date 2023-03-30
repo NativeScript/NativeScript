@@ -309,7 +309,6 @@ namespace SuspendType {
 	}
 }
 
-
 export abstract class ViewBase extends HTMLElement implements ViewBaseDefinition {
 	/**
 	 * String value used when hooking to loaded event.
@@ -367,11 +366,6 @@ export abstract class ViewBase extends HTMLElement implements ViewBaseDefinition
 	 * Gets or sets the id for this view.
 	 */
 	public id: string;
-
-	/**
-	 * Gets or sets the CSS class name for this view.
-	 */
-	public className: string;
 	/**
 	 * Gets or sets the shared transition tag for animated view transitions
 	 */
@@ -462,7 +456,6 @@ export abstract class ViewBase extends HTMLElement implements ViewBaseDefinition
 	 */
 	public _moduleName: string;
 
-
 	public isNativeElement: boolean = true;
 
 	/**
@@ -478,7 +471,6 @@ export abstract class ViewBase extends HTMLElement implements ViewBaseDefinition
 		this.notify({ eventName: ViewBase.createdEvent, type: this.constructor.name, object: this });
 	}
 
-
 	// // Used in Angular.
 	// get parentNode() {
 	// 	return this._templateParent || this.parent;
@@ -486,7 +478,6 @@ export abstract class ViewBase extends HTMLElement implements ViewBaseDefinition
 	// set parentNode(node: ViewBase) {
 	// 	this._templateParent = node;
 	// }
-
 
 	get nativeView(): any {
 		// this._disableNativeViewRecycling = true;
