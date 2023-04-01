@@ -4,11 +4,12 @@ import { CSSShadow } from '../styling/css-shadow';
 
 // Requires
 import { Font } from '../styling/font';
+import { iOSAccessibilityAdjustsFontSizeProperty, iOSAccessibilityMaxFontScaleProperty, iOSAccessibilityMinFontScaleProperty } from '../../accessibility/accessibility-properties';
 import { TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textTransformProperty, textShadowProperty, letterSpacingProperty, lineHeightProperty, maxLinesProperty, resetSymbol } from './text-base-common';
 import { Color } from '../../color';
 import { FormattedString } from './formatted-string';
 import { Span } from './span';
-import { colorProperty, fontInternalProperty, fontScaleProperty, Length } from '../styling/style-properties';
+import { colorProperty, fontInternalProperty, fontScaleInternalProperty, Length } from '../styling/style-properties';
 import { isString, isNullOrUndefined } from '../../utils/types';
 import { iOSNativeHelper } from '../../utils';
 import { Trace } from '../../trace';
@@ -187,27 +188,47 @@ export class TextBase extends TextBaseCommon {
 		if (!(value instanceof Font) || !this.formattedText) {
 			let nativeView = this.nativeTextViewProtected;
 			nativeView = nativeView instanceof UIButton ? nativeView.titleLabel : nativeView;
-
-			if (value instanceof Font) {
-				// Apply a11y font scale if not set
-				if (value.fontScale !== this.style._fontScale) {
-					value.fontScale = this.style._fontScale;
-				}
-				nativeView.font = value.getUIFont(nativeView.font);
-			} else {
-				nativeView.font = value;
-			}
+			nativeView.font = value instanceof Font ? value.getUIFont(nativeView.font) : value;
 		}
 	}
 
-	[fontScaleProperty.setNative](value: number) {
+	[fontScaleInternalProperty.setNative](value: number) {
 		const nativeView = this.nativeTextViewProtected instanceof UIButton ? this.nativeTextViewProtected.titleLabel : this.nativeTextViewProtected;
 		const currentFont = this.style.fontInternal || Font.default.withFontSize(nativeView.font.pointSize);
-		if (currentFont.fontScale !== value) {
-			const newFont = currentFont.withFontScale(value);
-			this.style.fontInternal = newFont;
+
+		let finalValue;
+		if (this.iOSAccessibilityAdjustsFontSize) {
+			finalValue = value;
+
+			if (this.iOSAccessibilityMinFontScale && this.iOSAccessibilityMinFontScale > value) {
+				finalValue = this.iOSAccessibilityMinFontScale;
+			}
+			if (this.iOSAccessibilityMaxFontScale && this.iOSAccessibilityMaxFontScale < value) {
+				finalValue = this.iOSAccessibilityMaxFontScale;
+			}
+		} else {
+			finalValue = 1.0;
+		}
+
+		const newFont = currentFont.withFontScale(finalValue);
+		this.style.fontInternal = newFont;
+
+		// Request layout on font scale as it's not done automatically
+		if (currentFont.fontScale !== finalValue) {
 			this.requestLayout();
 		}
+	}
+
+	[iOSAccessibilityAdjustsFontSizeProperty.setNative](value: boolean) {
+		this[fontScaleInternalProperty.setNative](this.style.fontScaleInternal);
+	}
+
+	[iOSAccessibilityMinFontScaleProperty.setNative](value: number) {
+		this[fontScaleInternalProperty.setNative](this.style.fontScaleInternal);
+	}
+
+	[iOSAccessibilityMaxFontScaleProperty.setNative](value: number) {
+		this[fontScaleInternalProperty.setNative](this.style.fontScaleInternal);
 	}
 
 	[textAlignmentProperty.setNative](value: CoreTypes.TextAlignmentType) {

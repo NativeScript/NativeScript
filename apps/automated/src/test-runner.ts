@@ -54,6 +54,9 @@ if (!__CI__) {
 	allTests['PROFILING'] = profilingTests;
 }
 
+import * as a11yPropertiesTests from './accessibility/accessibility-properties-tests';
+allTests['A11Y-PROPERTIES'] = a11yPropertiesTests;
+
 import * as appSettingsTests from './application-settings/application-settings-tests';
 allTests['APPLICATION-SETTINGS'] = appSettingsTests;
 

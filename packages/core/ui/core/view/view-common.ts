@@ -405,7 +405,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		modalRootViewCssClasses.forEach((c) => this.cssClasses.add(c));
 
 		parent._modal = this;
-		this.style._fontScale = getCurrentFontScale();
+		this.style.fontScaleInternal = getCurrentFontScale();
 		this._modalParent = parent;
 		this._modalContext = options.context;
 		this._closeModalCallback = (...originalArgs) => {
@@ -857,6 +857,27 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	}
 	set accessibilityMediaSession(value: boolean) {
 		this.style.accessibilityMediaSession = value;
+	}
+
+	get iOSAccessibilityAdjustsFontSize(): boolean {
+		return this.style.iOSAccessibilityAdjustsFontSize;
+	}
+	set iOSAccessibilityAdjustsFontSize(value: boolean) {
+		this.style.iOSAccessibilityAdjustsFontSize = value;
+	}
+
+	get iOSAccessibilityMinFontScale(): number {
+		return this.style.iOSAccessibilityMinFontScale;
+	}
+	set iOSAccessibilityMinFontScale(value: number) {
+		this.style.iOSAccessibilityMinFontScale = value;
+	}
+
+	get iOSAccessibilityMaxFontScale(): number {
+		return this.style.iOSAccessibilityMaxFontScale;
+	}
+	set iOSAccessibilityMaxFontScale(value: number) {
+		this.style.iOSAccessibilityMaxFontScale = value;
 	}
 
 	get automationText(): string {

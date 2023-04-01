@@ -582,13 +582,17 @@ export function test_setting_font_properties_sets_native_font() {
 
 export function test_native_font_size_with_a11y_font_scale() {
 	if (isIOS) {
-		const page = helper.getCurrentPage();
-		const testView = new Label();
 		const deviceFontScaleMock = 4.0;
 
-		page.content = testView;
+		const page = helper.getCurrentPage();
+		const testView = new Label();
+		const layout = new StackLayout();
+		layout.addChild(testView);
 
-		testView.style._fontScale = deviceFontScaleMock;
+		page.content = layout;
+
+		layout.style.iOSAccessibilityAdjustsFontSize = true;
+		layout.style.fontScaleInternal = deviceFontScaleMock;
 
 		const nativeFontSize = testView.nativeTextViewProtected.font.pointSize;
 		const expectedNativeFontSize = testView.style.fontInternal.fontSize * deviceFontScaleMock;

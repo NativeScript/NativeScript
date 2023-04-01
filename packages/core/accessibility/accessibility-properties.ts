@@ -31,6 +31,30 @@ export const accessibilityEnabledProperty = new CssProperty<Style, boolean>({
 });
 accessibilityEnabledProperty.register(Style);
 
+export const iOSAccessibilityAdjustsFontSizeProperty = new InheritedCssProperty<Style, boolean>({
+	defaultValue: false,
+	name: 'iOSAccessibilityAdjustsFontSize',
+	cssName: 'ios-a11y-adjusts-font-size',
+	valueConverter: booleanConverter,
+});
+iOSAccessibilityAdjustsFontSizeProperty.register(Style);
+
+export const iOSAccessibilityMinFontScaleProperty = new InheritedCssProperty<Style, number>({
+	defaultValue: 0,
+	name: 'iOSAccessibilityMinFontScale',
+	cssName: 'ios-a11y-min-font-scale',
+	valueConverter: parseFloat,
+});
+iOSAccessibilityMinFontScaleProperty.register(Style);
+
+export const iOSAccessibilityMaxFontScaleProperty = new InheritedCssProperty<Style, number>({
+	defaultValue: 0,
+	name: 'iOSAccessibilityMaxFontScale',
+	cssName: 'ios-a11y-max-font-scale',
+	valueConverter: parseFloat,
+});
+iOSAccessibilityMaxFontScaleProperty.register(Style);
+
 export const accessibilityHiddenProperty = new (global.isIOS ? InheritedCssProperty : CssProperty)({
 	name: 'accessibilityHidden',
 	cssName: 'a11y-hidden',
