@@ -11,6 +11,7 @@ import ParentNode from '../parent-node/ParentNode';
 import { LightDOM } from '../shadow-root/LightDOM';
 import { LIGHT_DOM_REF, RETAIN_MARKER, SHADOW_NODE } from '../shadow-root/ShadowNode';
 import { ShadowRoot } from '../shadow-root/ShadowRoot';
+import { DOMTokenList } from './DOMTokenList';
 
 export interface IAttr {
 	namespaceURI: string;
@@ -27,6 +28,7 @@ export default class Element extends ParentNode {
 	_shadowRoot: ShadowRoot = null;
 	_lightDOM: LightDOM = null;
 	id: string;
+	_classList: DOMTokenList;
 	public namespaceURI: string = 'http://www.w3.org/1999/xhtml';
 	static _observedAttributes: string[];
 	static observedAttributes: string[];
@@ -34,6 +36,10 @@ export default class Element extends ParentNode {
 		super();
 		this.attributes = [];
 		this.nodeType = this.ELEMENT_NODE;
+	}
+
+	get classList() {
+		return this._classList || (this._classList = new DOMTokenList(this));
 	}
 
 	assignedSlot: HTMLSlotElement;

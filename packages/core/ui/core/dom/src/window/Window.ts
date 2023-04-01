@@ -85,7 +85,7 @@ export default class Window {
 			//@ts-ignore
 			element.NODE_TAG_NAME = name;
 			//@ts-ignore
-			element.prototype['cssType'] = name;
+			element.prototype['cssType'] = name.replace(/-/g, '');
 			//@ts-ignore
 			globalThis.htmlElementRegistry.set(name, element);
 		}

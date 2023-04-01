@@ -7,6 +7,11 @@ class CSSRule {
 }
 
 export class CSSStyleSheet {
+	/**
+	 * Style Scope of the CSSStyleSheet is
+	 * shared across the app.
+	 */
+	//_scope: StyleScope;
 	timestampTag: number;
 	cssRules: CSSRuleList;
 	ownerRule: CSSRule;
@@ -45,35 +50,18 @@ export class CSSStyleSheet {
 	title: string;
 	type: string;
 
+	// get styleScope() {
+	// 	if (this._scope) return this._scope;
+	// 	this._scope = new StyleScope();
+	// 	const cssText = (this.cssRules as unknown as Array<CSSRule>).map((rule) => rule.cssText).join('');
+	// 	this._scope.addCss(cssText);
+	// 	return this._scope;
+	// }
+
 	adoptStyles() {
 		this.timestampTag = this.timestampTag || Date.now();
 		const cssText = (this.cssRules as unknown as Array<CSSRule>).map((rule) => rule.cssText).join('');
 		removeTaggedAdditionalCSS(this.timestampTag);
 		addTaggedAdditionalCSS(cssText, this.timestampTag);
 	}
-
-	// Todo
-	// Parse the ast
-	// prefix with element tag so it becomes scoped.
-	// private parseCSSAst() {
-	// 	const cssText = (this.cssRules as unknown as Array<CSSRule>).map((rule) => rule.cssText).join('');
-	// 	let ast;
-	// 	if (cssText) {
-	// 		if (__CSS_PARSER__ === 'css-tree') {
-	// 			const cssTreeParse = require('../../../../../css/css-tree-parser').cssTreeParse;
-	// 			ast = cssTreeParse(cssText);
-	// 		} else if (__CSS_PARSER__ === 'nativescript') {
-	// 			const CSS3Parser = require('../../../../../css/CSS3Parser').CSS3Parser;
-	// 			const CSSNativeScript = require('../../../../../css/CSSNativeScript').CSSNativeScript;
-	// 			const cssparser = new CSS3Parser(cssText);
-	// 			const stylesheet = cssparser.parseAStylesheet();
-	// 			const cssNS = new CSSNativeScript();
-	// 			ast = cssNS.parseStylesheet(stylesheet);
-	// 		} else if (__CSS_PARSER__ === 'rework') {
-	// 			const parseCss = require('../../../../../css').parse;
-	// 			ast = parseCss(cssText, { source: undefined });
-	// 		}
-	// 	}
-	// 	return ast;
-	// }
 }
