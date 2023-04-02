@@ -13,21 +13,17 @@ import Text from '../text/Text';
 
 const createElement = (type: string, owner: Document) => {
 	let element;
-
 	if (htmlElementRegistry.has(type)) {
 		const Class = htmlElementRegistry.get(type) as any;
 		element = new Class();
-		element.tagName = Class.NODE_TAG_NAME;
 	} else if (ElementTag[type]) {
 		element = new ElementTag[type]();
-		element.tagName = type;
 	} else if (customElements.get(type)) {
 		element = new (customElements.get(type))();
-		element.tagName = type;
 	} else {
 		element = new HTMLElement();
-		element.tagName = type;
 	}
+	element.tagName = type;
 	element.ownerDocument = owner;
 	element._isRegisteredDOMElement = true;
 	return element;

@@ -26,7 +26,7 @@ import { CSSStyleSheet } from '../cssstylesheet/CSSStyleSheet';
 
 declare global {
 	// eslint-disable-next-line no-var
-	var htmlElementRegistry: Map<string, HTMLElement>;
+	var htmlElementRegistry: Map<string, typeof HTMLElement>;
 }
 
 /**
@@ -80,13 +80,9 @@ export default class Window {
 		this.customElements = new CustomElementRegistry();
 	}
 
-	registerElement(name: string, element: HTMLElement) {
+	registerElement(name: string, element: typeof HTMLElement) {
 		if (!htmlElementRegistry.has(name)) {
-			//@ts-ignore
-			element.NODE_TAG_NAME = name;
-			//@ts-ignore
 			element.prototype['cssType'] = name.replace(/-/g, '');
-			//@ts-ignore
 			globalThis.htmlElementRegistry.set(name, element);
 		}
 	}

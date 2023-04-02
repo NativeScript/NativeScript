@@ -397,6 +397,4 @@ const updateAttributeNS = (self: Element, namespace: string, name: string, value
 	if (self.attributeChangedCallback && (<typeof Element>self.constructor)._observedAttributes && (<typeof Element>self.constructor)._observedAttributes.includes(name)) {
 		self.attributeChangedCallback(name, attr.value, value);
 	}
-	attr.value = value;
-	self[attr.name] = value;
 };
