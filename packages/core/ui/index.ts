@@ -81,6 +81,6 @@ export { FadeTransition } from './transition/fade-transition';
 export { SlideTransition } from './transition/slide-transition';
 export { SharedTransition, SharedTransitionAnimationType } from './transition/shared-transition';
 export { SharedTransitionHelper } from './transition/shared-transition-helper';
-export type { SharedTransitionConfig } from './transition/shared-transition';
+export type { SharedTransitionConfig, SharedTransitionTagProperties } from './transition/shared-transition';
 export { WebView } from './web-view';
 export type { LoadEventData, WebViewNavigationType } from './web-view';

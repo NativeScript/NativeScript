@@ -208,7 +208,7 @@ export function getViewByDomId(view: ViewBaseDefinition, domId: number): ViewBas
  */
 export function querySelectorAll(view: ViewBaseDefinition, selector: string): Array<ViewBaseDefinition> {
 	if (!view) {
-		return undefined;
+		return [];
 	}
 
 	const retVal: Array<ViewBaseDefinition> = [];

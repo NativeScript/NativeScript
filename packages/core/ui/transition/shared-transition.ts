@@ -1,4 +1,4 @@
-import type { Transition, TransitionNavigationType } from '.';
+import type { Transition, TransitionNavigationType, SharedTransitionTagPropertiesToMatch } from '.';
 import { Observable } from '../../data/observable';
 import { Screen } from '../../platform';
 import { isNumber } from '../../utils/types';
@@ -22,7 +22,29 @@ export enum SharedTransitionAnimationType {
 type SharedTransitionEventAction = 'present' | 'dismiss' | 'interactiveStart' | 'interactiveFinish';
 export type SharedTransitionEventData = { eventName: string; data: { id: number; type: TransitionNavigationType; action?: SharedTransitionEventAction; percent?: number } };
 export type SharedRect = { x?: number; y?: number; width?: number; height?: number };
-export type SharedProperties = SharedRect & { opacity?: number; scale?: { x?: number; y?: number } };
+export type SharedProperties = SharedRect & {
+	opacity?: number;
+	scale?: { x?: number; y?: number };
+};
+/**
+ * Properties which can be set on individual Shared Elements
+ */
+export type SharedTransitionTagProperties = SharedProperties & {
+	/**
+	 * The visual stacking order where 0 is at the bottom.
+	 * Shared elements are stacked one on top of the other during each transition.
+	 * By default they are not ordered in any particular fashion.
+	 */
+	zIndex?: number;
+	/**
+	 * Collection of properties to match and animate on each shared element.
+	 *
+	 * Defaults to: 'backgroundColor', 'cornerRadius', 'borderWidth', 'borderColor'
+	 *
+	 * Tip: Using an empty array, [], for view or layer will avoid copying any properties if desired.
+	 */
+	propertiesToMatch?: SharedTransitionTagPropertiesToMatch;
+};
 export type SharedSpringProperties = {
 	tension?: number;
 	friction?: number;
@@ -36,7 +58,7 @@ type SharedTransitionPageProperties = SharedProperties & {
 	 * (iOS Only) Allow "independent" elements found only on one of the screens to take part in the animation.
 	 * Note: This feature will be brought to Android in a future release.
 	 */
-	sharedTransitionTags?: { [key: string]: SharedProperties };
+	sharedTransitionTags?: { [key: string]: SharedTransitionTagProperties };
 	/**
 	 * Spring animation settings.
 	 * Defaults to 140 tension with 10 friction.
@@ -224,11 +246,11 @@ export class SharedTransition {
 		presenting: Array<View>;
 	} {
 		// 1. Presented view: gather all sharedTransitionTag views
-		const presentedSharedElements = <Array<View>>querySelectorAll(toPage, 'sharedTransitionTag').filter((v) => !v.sharedTransitionIgnore);
+		const presentedSharedElements = <Array<View>>querySelectorAll(toPage, 'sharedTransitionTag').filter((v) => !v.sharedTransitionIgnore && typeof v.sharedTransitionTag === 'string');
 		// console.log('presented sharedTransitionTag total:', presentedSharedElements.length);
 
 		// 2. Presenting view: gather all sharedTransitionTag views
-		const presentingSharedElements = <Array<View>>querySelectorAll(fromPage, 'sharedTransitionTag').filter((v) => !v.sharedTransitionIgnore);
+		const presentingSharedElements = <Array<View>>querySelectorAll(fromPage, 'sharedTransitionTag').filter((v) => !v.sharedTransitionIgnore && typeof v.sharedTransitionTag === 'string');
 		// console.log(
 		// 	'presenting sharedTransitionTags:',
 		// 	presentingSharedElements.map((v) => v.sharedTransitionTag)
@@ -254,8 +276,8 @@ export function getRectFromProps(props: SharedTransitionPageProperties, defaults
 	defaults = {
 		x: 0,
 		y: 0,
-		width: Screen.mainScreen.widthDIPs,
-		height: Screen.mainScreen.heightDIPs,
+		width: getPlatformWidth(),
+		height: getPlatformHeight(),
 		...(defaults || {}),
 	};
 	return {
@@ -288,9 +310,17 @@ export function getSpringFromProps(props: SharedSpringProperties) {
  */
 export function getPageStartDefaultsForType(type: TransitionNavigationType) {
 	return {
-		x: type === 'page' ? Screen.mainScreen.widthDIPs : 0,
-		y: type === 'page' ? 0 : Screen.mainScreen.heightDIPs,
-		width: Screen.mainScreen.widthDIPs,
-		height: Screen.mainScreen.heightDIPs,
+		x: type === 'page' ? getPlatformWidth() : 0,
+		y: type === 'page' ? 0 : getPlatformHeight(),
+		width: getPlatformWidth(),
+		height: getPlatformHeight(),
 	};
+}
+
+function getPlatformWidth() {
+	return global.isAndroid ? Screen.mainScreen.widthPixels : Screen.mainScreen.widthDIPs;
+}
+
+function getPlatformHeight() {
+	return global.isAndroid ? Screen.mainScreen.heightPixels : Screen.mainScreen.heightDIPs;
 }

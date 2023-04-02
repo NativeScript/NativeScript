@@ -8,6 +8,7 @@ import { FlipTransition } from '../transition/flip-transition';
 import { _resolveAnimationCurve } from '../animation';
 import lazy from '../../utils/lazy';
 import { Trace } from '../../trace';
+import { SharedTransition, SharedTransitionEventData, SharedTransitionAnimationType } from '../transition/shared-transition';
 
 interface TransitionListener {
 	new (entry: ExpandedEntry, transition: androidx.transition.Transition): ExpandedTransitionListener;
@@ -326,6 +327,30 @@ export function _reverseTransitions(previousEntry: ExpandedEntry, currentEntry: 
 	return transitionUsed;
 }
 
+function notifySharedTransition(id: number, eventName: string) {
+	const state = SharedTransition.getState(id);
+	if (!state) {
+		return;
+	}
+	SharedTransition.events().notify<SharedTransitionEventData>({
+		eventName,
+		data: {
+			id,
+			type: 'page',
+			action: state.activeType === SharedTransitionAnimationType.present ? 'present' : 'dismiss',
+		},
+	});
+	if (eventName === SharedTransition.finishedEvent) {
+		if (state.activeType === SharedTransitionAnimationType.present) {
+			SharedTransition.updateState(id, {
+				activeType: SharedTransitionAnimationType.dismiss,
+			});
+		} else {
+			SharedTransition.finishState(id);
+		}
+	}
+}
+
 // Transition listener can't be static because
 // android is cloning transitions and we can't expand them :(
 function getTransitionListener(entry: ExpandedEntry, transition: androidx.transition.Transition): ExpandedTransitionListener {
@@ -347,6 +372,9 @@ function getTransitionListener(entry: ExpandedEntry, transition: androidx.transi
 				if (Trace.isEnabled()) {
 					Trace.write(`START ${toShortString(transition)} transition for ${entry.fragmentTag}`, Trace.categories.Transition);
 				}
+				if (entry?.transition) {
+					notifySharedTransition(entry.transition?.id, SharedTransition.startedEvent);
+				}
 			}
 
 			onTransitionEnd(transition: androidx.transition.Transition): void {
@@ -356,6 +384,9 @@ function getTransitionListener(entry: ExpandedEntry, transition: androidx.transi
 				}
 				entry.isAnimationRunning = false;
 				transitionOrAnimationCompleted(entry, this.backEntry);
+				if (entry?.transition) {
+					notifySharedTransition(entry.transition?.id, SharedTransition.finishedEvent);
+				}
 			}
 
 			onTransitionResume(transition: androidx.transition.Transition): void {

@@ -374,9 +374,9 @@ export namespace iOSNativeHelper {
 		return image;
 	}
 
-	export function copyLayerProperties(view: UIView, toView: UIView) {
-		const viewPropertiesToMatch: Array<keyof UIView> = ['backgroundColor'];
-		const layerPropertiesToMatch: Array<keyof CALayer> = ['cornerRadius', 'borderWidth', 'borderColor'];
+	export function copyLayerProperties(view: UIView, toView: UIView, customProperties?: { view?: Array<keyof UIView>; layer?: Array<keyof CALayer> }) {
+		const viewPropertiesToMatch: Array<keyof UIView> = customProperties?.view || ['backgroundColor'];
+		const layerPropertiesToMatch: Array<keyof CALayer> = customProperties?.layer || ['cornerRadius', 'borderWidth', 'borderColor'];
 
 		viewPropertiesToMatch.forEach((property) => {
 			if (view[property] !== toView[property]) {
