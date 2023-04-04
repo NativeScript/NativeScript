@@ -380,27 +380,6 @@ export class SharedTransitionHelper {
 						p.view.opacity = 0;
 					}
 
-					const positionSharedTags = async () => {
-						for (const p of transition.sharedElements.presenting) {
-							const pageEndProps = pageEndTags[p.view.sharedTransitionTag];
-							if (pageEndProps?.callback) {
-								await pageEndProps?.callback(p.view, 'dismiss');
-							}
-							p.snapshot.alpha = p.endOpacity;
-						}
-					};
-					const positionIndependentTags = async () => {
-						for (const independent of transition.sharedElements.independent) {
-							const pageEndProps = pageEndTags[independent.view.sharedTransitionTag];
-							if (pageEndProps?.callback) {
-								await pageEndProps?.callback(independent.view, 'dismiss');
-							}
-							independent.snapshot.alpha = independent.endOpacity;
-						}
-					};
-
-					await positionSharedTags();
-					await positionIndependentTags();
 					// combine to order by zIndex and add to transition context
 					const snapshotData = transition.sharedElements.presenting.concat(transition.sharedElements.independent);
 					snapshotData.sort((a, b) => (a.zIndex > b.zIndex ? 1 : -1));
@@ -417,6 +396,30 @@ export class SharedTransitionHelper {
 					}
 
 					for (const data of snapshotData) {
+						const pageEndProps = pageEndTags[data.view.sharedTransitionTag];
+						if (pageEndProps?.callback) {
+							await pageEndProps?.callback(data.view, 'dismiss');
+						}
+
+						const view = data.view.ios;
+						// we need to reset the alpha to the start value so the view is visible in the snapshot
+						view.alpha = data.startOpacity;
+
+						// take a new snapshot
+						data.snapshot.image = iOSNativeHelper.snapshotView(view, Screen.mainScreen.scale);
+
+						const fromView = transition.sharedElements.presented.find((p) => p.view.sharedTransitionTag === data.view.sharedTransitionTag)?.view;
+						if (fromView) {
+							// match the snapshot frame to the current frame of the fromView
+							data.snapshot.frame = fromView.ios.convertRectToView(fromView.ios.bounds, transitionContext.containerView);
+						}
+
+						// snapshot has been taken, we can restore the alpha
+						view.alpha = data.endOpacity;
+
+						// we recalculate the startFrame because the view might have changed its position in the background
+						data.startFrame = view.convertRectToView(view.bounds, transitionContext.containerView);
+
 						// add snapshot to animate
 						transitionContext.containerView.addSubview(data.snapshot);
 					}
@@ -461,7 +464,7 @@ export class SharedTransitionHelper {
 							presenting.snapshot.alpha = presenting.startOpacity;
 
 							if (SharedTransition.DEBUG) {
-								console.log(`---> ${presenting.view.sharedTransitionTag} animate to: `, iOSNativeHelper.printCGRect(presenting.startFrame));
+								console.log(`---> ${presenting.view.sharedTransitionTag} animate to: `, iOSNativeHelper.printCGRect(presenting.snapshot.frame));
 							}
 						}
 
@@ -474,7 +477,7 @@ export class SharedTransitionHelper {
 							}
 
 							if (SharedTransition.DEBUG) {
-								console.log(`---> ${independent.view.sharedTransitionTag} animate to: `, iOSNativeHelper.printCGRect(independent.startFrame));
+								console.log(`---> ${independent.view.sharedTransitionTag} animate to: `, iOSNativeHelper.printCGRect(independent.snapshot.frame));
 							}
 						}
 					};
