@@ -44,6 +44,10 @@ export type SharedTransitionTagProperties = SharedProperties & {
 	 * Tip: Using an empty array, [], for view or layer will avoid copying any properties if desired.
 	 */
 	propertiesToMatch?: SharedTransitionTagPropertiesToMatch;
+	/**
+	 *
+	 */
+	callback?: (view: View, action: SharedTransitionEventAction) => Promise<void>;
 };
 export type SharedSpringProperties = {
 	tension?: number;

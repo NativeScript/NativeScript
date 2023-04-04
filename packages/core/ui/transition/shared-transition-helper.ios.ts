@@ -12,7 +12,7 @@ interface PlatformTransitionInteractiveState extends TransitionInteractiveState 
 export class SharedTransitionHelper {
 	static animate(state: SharedTransitionState, transitionContext: UIViewControllerContextTransitioning, type: TransitionNavigationType) {
 		const transition = state.instance;
-		setTimeout(() => {
+		setTimeout(async () => {
 			// Run on next tick
 			// ensures that existing UI state finishes before snapshotting
 			// (eg, button touch up state)
@@ -60,7 +60,7 @@ export class SharedTransitionHelper {
 					const pageEndTags = pageEnd?.sharedTransitionTags || {};
 					// console.log('pageEndIndependentTags:', pageEndIndependentTags);
 
-					const positionSharedTags = () => {
+					const positionSharedTags = async () => {
 						for (const presentingView of sharedElements) {
 							const presentingSharedElement = presentingView.ios;
 							// console.log('fromTarget instanceof UIImageView:', fromTarget instanceof UIImageView)
@@ -74,6 +74,9 @@ export class SharedTransitionHelper {
 							const pageEndProps = pageEndTags[presentingView.sharedTransitionTag];
 
 							const snapshot = UIImageView.alloc().init();
+							if (pageEndProps?.callback) {
+								await pageEndProps?.callback(presentedView, 'present');
+							}
 
 							// treat images differently...
 							if (presentedSharedElement instanceof UIImageView) {
@@ -126,7 +129,7 @@ export class SharedTransitionHelper {
 						}
 					};
 
-					const positionIndependentTags = () => {
+					const positionIndependentTags = async () => {
 						// independent tags
 						for (const tag in pageEndTags) {
 							// only handle if independent (otherwise it's shared between both pages and handled above)
@@ -145,6 +148,10 @@ export class SharedTransitionHelper {
 									isPresented = true;
 								}
 								const independentSharedElement: UIView = independentView.ios;
+
+								if (pageEndProps?.callback) {
+									await pageEndProps?.callback(independentView, 'present');
+								}
 
 								let snapshot: UIImageView;
 								// if (isPresented) {
@@ -206,8 +213,8 @@ export class SharedTransitionHelper {
 					};
 
 					// position all sharedTransitionTag elements
-					positionSharedTags();
-					positionIndependentTags();
+					await positionSharedTags();
+					await positionIndependentTags();
 					// combine to order by zIndex and add to transition context
 					const snapshotData = transition.sharedElements.presenting.concat(transition.sharedElements.independent);
 					snapshotData.sort((a, b) => (a.zIndex > b.zIndex ? 1 : -1));
@@ -366,23 +373,34 @@ export class SharedTransitionHelper {
 						console.log(`2. Add back previously stored sharedElements to dismiss:`);
 					}
 
+					const pageEnd = state.pageEnd;
+					const pageEndTags = pageEnd?.sharedTransitionTags || {};
+
 					for (const p of transition.sharedElements.presented) {
 						p.view.opacity = 0;
 					}
 
-					const positionSharedTags = () => {
+					const positionSharedTags = async () => {
 						for (const p of transition.sharedElements.presenting) {
+							const pageEndProps = pageEndTags[p.view.sharedTransitionTag];
+							if (pageEndProps?.callback) {
+								await pageEndProps?.callback(p.view, 'dismiss');
+							}
 							p.snapshot.alpha = p.endOpacity;
 						}
 					};
-					const positionIndependentTags = () => {
+					const positionIndependentTags = async () => {
 						for (const independent of transition.sharedElements.independent) {
+							const pageEndProps = pageEndTags[independent.view.sharedTransitionTag];
+							if (pageEndProps?.callback) {
+								await pageEndProps?.callback(independent.view, 'dismiss');
+							}
 							independent.snapshot.alpha = independent.endOpacity;
 						}
 					};
 
-					positionSharedTags();
-					positionIndependentTags();
+					await positionSharedTags();
+					await positionIndependentTags();
 					// combine to order by zIndex and add to transition context
 					const snapshotData = transition.sharedElements.presenting.concat(transition.sharedElements.independent);
 					snapshotData.sort((a, b) => (a.zIndex > b.zIndex ? 1 : -1));
