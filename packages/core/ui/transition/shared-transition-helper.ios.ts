@@ -395,12 +395,16 @@ export class SharedTransitionHelper {
 						);
 					}
 
+					// first loop through all the shared elements and fire the callback
 					for (const data of snapshotData) {
 						const pageEndProps = pageEndTags[data.view.sharedTransitionTag];
 						if (pageEndProps?.callback) {
 							await pageEndProps?.callback(data.view, 'dismiss');
 						}
+					}
 
+					// now that all the callbacks had their chance to run, we can take the snapshots
+					for (const data of snapshotData) {
 						const view = data.view.ios;
 						// we need to reset the alpha to the start value so the view is visible in the snapshot
 						view.alpha = data.startOpacity;
@@ -408,6 +412,7 @@ export class SharedTransitionHelper {
 						// take a new snapshot
 						data.snapshot.image = iOSNativeHelper.snapshotView(view, Screen.mainScreen.scale);
 
+						// find the currently visible view with the same sharedTransitionTag
 						const fromView = transition.sharedElements.presented.find((p) => p.view.sharedTransitionTag === data.view.sharedTransitionTag)?.view;
 						if (fromView) {
 							// match the snapshot frame to the current frame of the fromView
