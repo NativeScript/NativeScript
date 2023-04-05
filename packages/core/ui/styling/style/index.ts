@@ -233,9 +233,9 @@ export class Style extends Observable implements StyleDefinition {
 	public accessibilityLanguage: string;
 	public accessibilityMediaSession: boolean;
 	public accessibilityStep: number;
-	public iOSAccessibilityAdjustsFontSize: boolean;
-	public iOSAccessibilityMinFontScale: number;
-	public iOSAccessibilityMaxFontScale: number;
+	public iosAccessibilityAdjustsFontSize: boolean;
+	public iosAccessibilityMinFontScale: number;
+	public iosAccessibilityMaxFontScale: number;
 
 	public PropertyBag: {
 		new (): { [property: string]: string };

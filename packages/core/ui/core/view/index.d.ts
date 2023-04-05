@@ -285,17 +285,17 @@ export abstract class View extends ViewCommon {
 	/**
 	 * Defines whether accessibility font scale should affect font size.
 	 */
-	iOSAccessibilityAdjustsFontSize: boolean;
+	iosAccessibilityAdjustsFontSize: boolean;
 
 	/**
 	 * Gets or sets the minimum accessibility font scale.
 	 */
-	iOSAccessibilityMinFontScale: number;
+	iosAccessibilityMinFontScale: number;
 
 	/**
 	 * Gets or sets the maximum accessibility font scale.
 	 */
-	iOSAccessibilityMaxFontScale: number;
+	iosAccessibilityMaxFontScale: number;
 
 	/**
 	 * Internal use only. This is used to limit the number of updates to android.view.View.setContentDescription()

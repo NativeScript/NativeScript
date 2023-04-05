@@ -4,7 +4,7 @@ import { CSSShadow } from '../styling/css-shadow';
 
 // Requires
 import { Font } from '../styling/font';
-import { iOSAccessibilityAdjustsFontSizeProperty, iOSAccessibilityMaxFontScaleProperty, iOSAccessibilityMinFontScaleProperty } from '../../accessibility/accessibility-properties';
+import { iosAccessibilityAdjustsFontSizeProperty, iosAccessibilityMaxFontScaleProperty, iosAccessibilityMinFontScaleProperty } from '../../accessibility/accessibility-properties';
 import { TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textTransformProperty, textShadowProperty, letterSpacingProperty, lineHeightProperty, maxLinesProperty, resetSymbol } from './text-base-common';
 import { Color } from '../../color';
 import { FormattedString } from './formatted-string';
@@ -197,14 +197,14 @@ export class TextBase extends TextBaseCommon {
 		const currentFont = this.style.fontInternal || Font.default.withFontSize(nativeView.font.pointSize);
 
 		let finalValue;
-		if (this.iOSAccessibilityAdjustsFontSize) {
+		if (this.iosAccessibilityAdjustsFontSize) {
 			finalValue = value;
 
-			if (this.iOSAccessibilityMinFontScale && this.iOSAccessibilityMinFontScale > value) {
-				finalValue = this.iOSAccessibilityMinFontScale;
+			if (this.iosAccessibilityMinFontScale && this.iosAccessibilityMinFontScale > value) {
+				finalValue = this.iosAccessibilityMinFontScale;
 			}
-			if (this.iOSAccessibilityMaxFontScale && this.iOSAccessibilityMaxFontScale < value) {
-				finalValue = this.iOSAccessibilityMaxFontScale;
+			if (this.iosAccessibilityMaxFontScale && this.iosAccessibilityMaxFontScale < value) {
+				finalValue = this.iosAccessibilityMaxFontScale;
 			}
 		} else {
 			finalValue = 1.0;
@@ -219,15 +219,15 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
-	[iOSAccessibilityAdjustsFontSizeProperty.setNative](value: boolean) {
+	[iosAccessibilityAdjustsFontSizeProperty.setNative](value: boolean) {
 		this[fontScaleInternalProperty.setNative](this.style.fontScaleInternal);
 	}
 
-	[iOSAccessibilityMinFontScaleProperty.setNative](value: number) {
+	[iosAccessibilityMinFontScaleProperty.setNative](value: number) {
 		this[fontScaleInternalProperty.setNative](this.style.fontScaleInternal);
 	}
 
-	[iOSAccessibilityMaxFontScaleProperty.setNative](value: number) {
+	[iosAccessibilityMaxFontScaleProperty.setNative](value: number) {
 		this[fontScaleInternalProperty.setNative](this.style.fontScaleInternal);
 	}
 

@@ -859,25 +859,25 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		this.style.accessibilityMediaSession = value;
 	}
 
-	get iOSAccessibilityAdjustsFontSize(): boolean {
-		return this.style.iOSAccessibilityAdjustsFontSize;
+	get iosAccessibilityAdjustsFontSize(): boolean {
+		return this.style.iosAccessibilityAdjustsFontSize;
 	}
-	set iOSAccessibilityAdjustsFontSize(value: boolean) {
-		this.style.iOSAccessibilityAdjustsFontSize = value;
-	}
-
-	get iOSAccessibilityMinFontScale(): number {
-		return this.style.iOSAccessibilityMinFontScale;
-	}
-	set iOSAccessibilityMinFontScale(value: number) {
-		this.style.iOSAccessibilityMinFontScale = value;
+	set iosAccessibilityAdjustsFontSize(value: boolean) {
+		this.style.iosAccessibilityAdjustsFontSize = value;
 	}
 
-	get iOSAccessibilityMaxFontScale(): number {
-		return this.style.iOSAccessibilityMaxFontScale;
+	get iosAccessibilityMinFontScale(): number {
+		return this.style.iosAccessibilityMinFontScale;
 	}
-	set iOSAccessibilityMaxFontScale(value: number) {
-		this.style.iOSAccessibilityMaxFontScale = value;
+	set iosAccessibilityMinFontScale(value: number) {
+		this.style.iosAccessibilityMinFontScale = value;
+	}
+
+	get iosAccessibilityMaxFontScale(): number {
+		return this.style.iosAccessibilityMaxFontScale;
+	}
+	set iosAccessibilityMaxFontScale(value: number) {
+		this.style.iosAccessibilityMaxFontScale = value;
 	}
 
 	get automationText(): string {
