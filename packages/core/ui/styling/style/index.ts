@@ -108,7 +108,7 @@ export class Style extends Observable implements StyleDefinition {
 	/**
 	 * This property ensures inheritance of a11y scale among views.
 	 */
-	public _fontScale: number;
+	public fontScaleInternal: number;
 	public backgroundInternal: Background;
 
 	public rotate: number;
@@ -233,6 +233,9 @@ export class Style extends Observable implements StyleDefinition {
 	public accessibilityLanguage: string;
 	public accessibilityMediaSession: boolean;
 	public accessibilityStep: number;
+	public iosAccessibilityAdjustsFontSize: boolean;
+	public iosAccessibilityMinFontScale: number;
+	public iosAccessibilityMaxFontScale: number;
 
 	public PropertyBag: {
 		new (): { [property: string]: string };
