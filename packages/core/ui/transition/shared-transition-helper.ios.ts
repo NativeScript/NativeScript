@@ -324,8 +324,10 @@ export class SharedTransitionHelper {
 
 					if (isNumber(pageEnd?.duration)) {
 						// override spring and use only linear animation
-						UIView.animateWithDurationAnimationsCompletion(
+						UIView.animateWithDurationDelayOptionsAnimationsCompletion(
 							pageEnd?.duration / 1000,
+							0,
+							UIViewAnimationOptions.CurveEaseInOut,
 							() => {
 								animateProperties();
 							},
@@ -407,6 +409,7 @@ export class SharedTransitionHelper {
 					for (const data of snapshotData) {
 						const view = data.view.ios;
 						// we need to reset the alpha to the start value so the view is visible in the snapshot
+						const currentAlpha = view.alpha;
 						view.alpha = data.startOpacity;
 
 						// take a new snapshot
@@ -420,7 +423,7 @@ export class SharedTransitionHelper {
 						}
 
 						// snapshot has been taken, we can restore the alpha
-						view.alpha = data.endOpacity;
+						view.alpha = currentAlpha;
 
 						// we recalculate the startFrame because the view might have changed its position in the background
 						data.startFrame = view.convertRectToView(view.bounds, transitionContext.containerView);
@@ -489,8 +492,10 @@ export class SharedTransitionHelper {
 
 					if (isNumber(pageReturn?.duration)) {
 						// override spring and use only linear animation
-						UIView.animateWithDurationAnimationsCompletion(
+						UIView.animateWithDurationDelayOptionsAnimationsCompletion(
 							pageReturn?.duration / 1000,
+							0,
+							UIViewAnimationOptions.CurveEaseInOut,
 							() => {
 								animateProperties();
 							},

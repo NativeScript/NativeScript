@@ -163,7 +163,9 @@ export class SharedTransition {
 		});
 		const pageEnd = options?.pageEnd;
 		if (isNumber(pageEnd?.duration)) {
-			transition.setDuration(pageEnd?.duration);
+			// Android uses milliseconds/iOS uses seconds
+			// users pass in milliseconds
+			transition.setDuration(global.isIOS ? pageEnd?.duration / 1000 : pageEnd?.duration);
 		}
 		return { instance: transition };
 	}
