@@ -2,18 +2,11 @@ import type { Transition, TransitionNavigationType, SharedTransitionTagPropertie
 import { Observable } from '../../data/observable';
 import { Screen } from '../../platform';
 import { isNumber } from '../../utils/types';
+import { CORE_ANIMATION_DEFAULTS } from '../../utils/common';
 import { querySelectorAll, ViewBase } from '../core/view-base';
 import type { View } from '../core/view';
 import type { PanGestureEventData } from '../gestures';
 
-export const DEFAULT_DURATION = 0.35;
-export const DEFAULT_SPRING = {
-	tension: 140,
-	friction: 10,
-	mass: 1,
-	velocity: 0,
-	delay: 0,
-};
 // always increment when adding new transitions to be able to track their state
 export enum SharedTransitionAnimationType {
 	present,
@@ -301,11 +294,11 @@ export function getRectFromProps(props: SharedTransitionPageProperties, defaults
  */
 export function getSpringFromProps(props: SharedSpringProperties) {
 	return {
-		tension: isNumber(props?.tension) ? props?.tension : DEFAULT_SPRING.tension,
-		friction: isNumber(props?.friction) ? props?.friction : DEFAULT_SPRING.friction,
-		mass: isNumber(props?.mass) ? props?.mass : DEFAULT_SPRING.mass,
-		velocity: isNumber(props?.velocity) ? props?.velocity : DEFAULT_SPRING.velocity,
-		delay: isNumber(props?.delay) ? props?.delay : DEFAULT_SPRING.delay,
+		tension: isNumber(props?.tension) ? props?.tension : CORE_ANIMATION_DEFAULTS.spring.tension,
+		friction: isNumber(props?.friction) ? props?.friction : CORE_ANIMATION_DEFAULTS.spring.friction,
+		mass: isNumber(props?.mass) ? props?.mass : CORE_ANIMATION_DEFAULTS.spring.mass,
+		velocity: isNumber(props?.velocity) ? props?.velocity : CORE_ANIMATION_DEFAULTS.spring.velocity,
+		delay: isNumber(props?.delay) ? props?.delay : 0,
 	};
 }
 

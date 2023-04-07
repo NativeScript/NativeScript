@@ -1,7 +1,8 @@
 import type { View } from '../core/view';
+import { CORE_ANIMATION_DEFAULTS } from '../../utils/common';
 import { isNumber } from '../../utils/types';
 import { Transition, SharedElementSettings, TransitionInteractiveState } from '.';
-import { SharedTransition, DEFAULT_DURATION } from './shared-transition';
+import { SharedTransition } from './shared-transition';
 import { SharedTransitionHelper } from './shared-transition-helper';
 import { PanGestureEventData, GestureStateTypes } from '../gestures';
 
@@ -162,7 +163,7 @@ class ModalTransitionController extends NSObject implements UIViewControllerAnim
 	}
 
 	transitionDuration(transitionContext: UIViewControllerContextTransitioning): number {
-		return DEFAULT_DURATION;
+		return CORE_ANIMATION_DEFAULTS.duration;
 	}
 
 	animateTransition(transitionContext: UIViewControllerContextTransitioning): void {

@@ -1,5 +1,6 @@
 import { Color } from '../color';
 import { Trace } from '../trace';
+import { CORE_ANIMATION_DEFAULTS, getDurationWithDampingFromSpring } from './common';
 import { getClass, isNullOrUndefined, numberHasDecimals, numberIs64Bit } from './types';
 
 declare let UIImagePickerControllerSourceType: any;
@@ -394,40 +395,16 @@ export namespace iOSNativeHelper {
 	}
 
 	export function animateWithSpring(options?: { tension?: number; friction?: number; mass?: number; delay?: number; velocity?: number; animateOptions?: UIViewAnimationOptions; animations?: () => void; completion?: (finished?: boolean) => void }) {
+		// for convenience, default spring settings are provided
 		const opt = {
-			tension: 140,
-			friction: 10,
-			mass: 1.0,
+			...CORE_ANIMATION_DEFAULTS.spring,
 			delay: 0,
-			velocity: 0,
 			animateOptions: null,
 			animations: null,
 			completion: null,
 			...(options || {}),
 		};
-
-		// console.log('createSpringAnimator', opt);
-		const damping = opt.friction / Math.sqrt(2 * opt.tension);
-		const undampedFrequency = Math.sqrt(opt.tension / opt.mass);
-
-		// console.log({
-		// 	damping,
-		// 	undampedFrequency
-		// })
-
-		const epsilon = 0.001;
-		let duration = 0;
-
-		if (damping < 1) {
-			// console.log('damping < 1');
-			const a = Math.sqrt(1 - Math.pow(damping, 2));
-			const b = opt.velocity / (a * undampedFrequency);
-			const c = damping / a;
-			const d = -((b - c) / epsilon);
-			if (d > 0) {
-				duration = Math.log(d) / (damping * undampedFrequency);
-			}
-		}
+		const { duration, damping } = getDurationWithDampingFromSpring(opt);
 
 		if (duration === 0) {
 			UIView.animateWithDurationAnimationsCompletion(0, opt.animations, opt.completion);

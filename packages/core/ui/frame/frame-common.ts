@@ -8,7 +8,7 @@ import { frameStack, topmost as frameStackTopmost, _pushInFrameStack, _popFromFr
 import { viewMatchesModuleContext } from '../core/view/view-common';
 import { getAncestor } from '../core/view-base';
 import { Builder } from '../builder';
-import { sanitizeModuleName } from '../builder/module-name-sanitizer';
+import { sanitizeModuleName } from '../../utils/common';
 import { profile } from '../../profiling';
 import { FRAME_SYMBOL } from './frame-helpers';
 import { SharedTransition } from '../transition/shared-transition';

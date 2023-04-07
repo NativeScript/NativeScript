@@ -1,5 +1,5 @@
-﻿import { Transition } from '.';
-import { DEFAULT_DURATION } from './shared-transition';
+﻿import { CORE_ANIMATION_DEFAULTS } from '../../utils/common';
+import { Transition } from '.';
 
 export class FadeTransition extends Transition {
 	transitionController: FadeTransitionController;
@@ -33,7 +33,7 @@ export class FadeTransitionController extends NSObject implements UIViewControll
 		if (owner) {
 			return owner.getDuration();
 		}
-		return DEFAULT_DURATION;
+		return CORE_ANIMATION_DEFAULTS.duration;
 	}
 
 	animateTransition(transitionContext: UIViewControllerContextTransitioning): void {

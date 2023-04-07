@@ -5,7 +5,7 @@ export type { AnimationDefinition } from './animation';
 export { Builder } from './builder';
 export type { LoadOptions } from './builder';
 export type { ComponentModule } from './builder/component-builder';
-export { sanitizeModuleName } from './builder/module-name-sanitizer';
+export { sanitizeModuleName } from '../utils/common';
 export { Button } from './button';
 export { ContentView } from './content-view';
 export { Binding } from './core/bindable';

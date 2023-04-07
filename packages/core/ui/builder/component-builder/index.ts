@@ -7,7 +7,7 @@ import { getBindingOptions, bindingConstants } from '../binding-builder';
 import { profile } from '../../../profiling';
 import * as debugModule from '../../../utils/debug';
 import { Device } from '../../../platform';
-import { sanitizeModuleName } from '../module-name-sanitizer';
+import { sanitizeModuleName } from '../../../utils/common';
 import { resolveModuleName } from '../../../module-name-resolver';
 
 export interface ComponentModule {

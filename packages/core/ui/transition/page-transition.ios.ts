@@ -1,8 +1,9 @@
 ﻿import type { View } from '../core/view';
 import { SharedElementSettings, TransitionInteractiveState, Transition } from '.';
 import { isNumber } from '../../utils/types';
+import { CORE_ANIMATION_DEFAULTS, getDurationWithDampingFromSpring } from '../../utils/common';
 import { PanGestureEventData, GestureStateTypes } from '../gestures';
-import { SharedTransition, DEFAULT_DURATION } from './shared-transition';
+import { SharedTransition, SharedTransitionAnimationType } from './shared-transition';
 import { SharedTransitionHelper } from './shared-transition-helper';
 
 export class PageTransition extends Transition {
@@ -185,9 +186,24 @@ class PageTransitionController extends NSObject implements UIViewControllerAnima
 	transitionDuration(transitionContext: UIViewControllerContextTransitioning): number {
 		const owner = this.owner.deref();
 		if (owner) {
-			return owner.getDuration();
+			const state = SharedTransition.getState(owner.id);
+			switch (state?.activeType) {
+				case SharedTransitionAnimationType.present:
+					if (isNumber(state?.pageEnd?.duration)) {
+						return state.pageEnd?.duration / 1000;
+					} else {
+						return getDurationWithDampingFromSpring(state.pageEnd?.spring).duration;
+					}
+
+				case SharedTransitionAnimationType.dismiss:
+					if (isNumber(state?.pageReturn?.duration)) {
+						return state.pageReturn?.duration / 1000;
+					} else {
+						return getDurationWithDampingFromSpring(state.pageReturn?.spring).duration;
+					}
+			}
 		}
-		return DEFAULT_DURATION;
+		return CORE_ANIMATION_DEFAULTS.duration;
 	}
 
 	animateTransition(transitionContext: UIViewControllerContextTransitioning): void {

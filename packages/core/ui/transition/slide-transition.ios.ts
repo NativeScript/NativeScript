@@ -1,6 +1,6 @@
 ﻿import { Transition } from '.';
 import { Screen } from '../../platform';
-import { DEFAULT_DURATION } from './shared-transition';
+import { CORE_ANIMATION_DEFAULTS } from '../../utils/common';
 
 export class SlideTransition extends Transition {
 	transitionController: SlideTransitionController;
@@ -40,7 +40,7 @@ export class SlideTransitionController extends NSObject implements UIViewControl
 		if (owner) {
 			return owner.getDuration();
 		}
-		return DEFAULT_DURATION;
+		return CORE_ANIMATION_DEFAULTS.duration;
 	}
 
 	animateTransition(transitionContext: UIViewControllerContextTransitioning): void {
