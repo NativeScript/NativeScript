@@ -13,7 +13,8 @@ export enum SharedTransitionAnimationType {
 	dismiss,
 }
 type SharedTransitionEventAction = 'present' | 'dismiss' | 'interactiveStart' | 'interactiveFinish';
-export type SharedTransitionEventData = { eventName: string; data: { id: number; type: TransitionNavigationType; action?: SharedTransitionEventAction; percent?: number } };
+export type SharedTransitionEventDataPayload = { id: number; type: TransitionNavigationType; action?: SharedTransitionEventAction; percent?: number };
+export type SharedTransitionEventData = { eventName: string; data: SharedTransitionEventDataPayload };
 export type SharedRect = { x?: number; y?: number; width?: number; height?: number };
 export type SharedProperties = SharedRect & {
 	opacity?: number;
@@ -106,7 +107,14 @@ export interface SharedTransitionConfig {
 	/**
 	 * View settings to return to the original page with.
 	 */
-	pageReturn?: SharedTransitionPageWithDurationProperties;
+	pageReturn?: SharedTransitionPageWithDurationProperties & {
+		/**
+		 * In some cases you may want the returning animation to start with the original opacity,
+		 * instead of beginning where it ended up on pageEnd.
+		 * Note: you can try enabling this property in cases where your return animation doesn't appear correct.
+		 */
+		useStartOpacity?: boolean;
+	};
 }
 export interface SharedTransitionState extends SharedTransitionConfig {
 	/**
@@ -163,6 +171,12 @@ export class SharedTransition {
 		return { instance: transition };
 	}
 	/**
+	 * Whether a transition is in progress or not.
+	 * Note: used internally however exposed in case custom state ordering is needed.
+	 * Updated when transitions start/end/cancel.
+	 */
+	static inProgress: boolean;
+	/**
 	 * Listen to various shared element transition events.
 	 * @returns Observable
 	 */
@@ -188,6 +202,29 @@ export class SharedTransition {
 	 * When the interactive transition updates with the percent value.
 	 */
 	static interactiveUpdateEvent = 'SharedTransitionInteractiveUpdateEvent';
+
+	/**
+	 * Notify a Shared Transition event.
+	 * @param id transition instance id
+	 * @param eventName Shared Transition event name
+	 * @param type TransitionNavigationType
+	 * @param action SharedTransitionEventAction
+	 */
+	static notifyEvent(eventName: string, data: SharedTransitionEventDataPayload) {
+		switch (eventName) {
+			case SharedTransition.startedEvent:
+			case SharedTransition.interactiveUpdateEvent:
+				SharedTransition.inProgress = true;
+				break;
+			default:
+				SharedTransition.inProgress = false;
+				break;
+		}
+		SharedTransition.events().notify<SharedTransitionEventData>({
+			eventName,
+			data,
+		});
+	}
 
 	/**
 	 * Enable to see various console logging output of Shared Element Transition behavior.

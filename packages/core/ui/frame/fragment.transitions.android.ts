@@ -332,13 +332,10 @@ function notifySharedTransition(id: number, eventName: string) {
 	if (!state) {
 		return;
 	}
-	SharedTransition.events().notify<SharedTransitionEventData>({
-		eventName,
-		data: {
-			id,
-			type: 'page',
-			action: state.activeType === SharedTransitionAnimationType.present ? 'present' : 'dismiss',
-		},
+	SharedTransition.notifyEvent(eventName, {
+		id,
+		type: 'page',
+		action: state.activeType === SharedTransitionAnimationType.present ? 'present' : 'dismiss',
 	});
 	if (eventName === SharedTransition.finishedEvent) {
 		if (state.activeType === SharedTransitionAnimationType.present) {

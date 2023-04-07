@@ -1,4 +1,4 @@
-import { Observable, EventData, Page, ShowModalOptions, SharedTransition, ModalTransition, PageTransition, FadeTransition, SlideTransition, PropertyChangeData } from '@nativescript/core';
+import { Observable, EventData, Page, ShowModalOptions, SharedTransition, ModalTransition, PageTransition, FadeTransition, SlideTransition, PropertyChangeData, ListView } from '@nativescript/core';
 let page: Page;
 // SharedTransition.DEBUG = true;
 export function navigatingTo(args: EventData) {
@@ -77,7 +77,7 @@ export class TransitionsModel extends Observable {
 							zIndex: 3,
 						},
 						shape4: {
-							// should appear "below" shape3
+							// yellow should appear "below" shape3
 							zIndex: 2,
 						},
 					},

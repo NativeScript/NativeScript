@@ -68,10 +68,7 @@ export class PageTransition extends Transition {
 			const state = SharedTransition.getState(this.id);
 			if (!state) {
 				// cleanup and exit, already shutdown
-				if (this._interactiveGestureTeardown) {
-					this._interactiveGestureTeardown();
-					this._interactiveGestureTeardown = null;
-				}
+				this._teardownGesture();
 				return;
 			}
 
@@ -101,10 +98,7 @@ export class PageTransition extends Transition {
 					if (this.interactiveController) {
 						const finishThreshold = isNumber(state.interactive?.dismiss?.finishThreshold) ? state.interactive.dismiss.finishThreshold : 0.5;
 						if (percent > finishThreshold) {
-							if (this._interactiveGestureTeardown) {
-								this._interactiveGestureTeardown();
-								this._interactiveGestureTeardown = null;
-							}
+							this._teardownGesture();
 							this.interactiveController.finishInteractiveTransition();
 						} else {
 							SharedTransition.updateState(this.id, {
@@ -115,6 +109,13 @@ export class PageTransition extends Transition {
 					}
 					break;
 			}
+		}
+	}
+
+	private _teardownGesture() {
+		if (this._interactiveGestureTeardown) {
+			this._interactiveGestureTeardown();
+			this._interactiveGestureTeardown = null;
 		}
 	}
 }

@@ -1,7 +1,8 @@
 import type { TransitionInteractiveState, TransitionNavigationType } from '.';
-import { getPageStartDefaultsForType, getRectFromProps, getSpringFromProps, SharedTransition, SharedTransitionAnimationType, SharedTransitionEventData, SharedTransitionState } from './shared-transition';
+import { getPageStartDefaultsForType, getRectFromProps, getSpringFromProps, SharedTransition, SharedTransitionAnimationType, SharedTransitionState } from './shared-transition';
 import { isNumber } from '../../utils/types';
 import { Screen } from '../../platform';
+import { CORE_ANIMATION_DEFAULTS } from '../../utils/common';
 import { iOSNativeHelper } from '../../utils/native-helper';
 
 interface PlatformTransitionInteractiveState extends TransitionInteractiveState {
@@ -19,13 +20,10 @@ export class SharedTransitionHelper {
 			switch (state.activeType) {
 				case SharedTransitionAnimationType.present: {
 					// console.log('-- Transition present --');
-					SharedTransition.events().notify<SharedTransitionEventData>({
-						eventName: SharedTransition.startedEvent,
-						data: {
-							id: transition.id,
-							type,
-							action: 'present',
-						},
+					SharedTransition.notifyEvent(SharedTransition.startedEvent, {
+						id: transition.id,
+						type,
+						action: 'present',
 					});
 
 					if (type === 'modal') {
@@ -229,6 +227,7 @@ export class SharedTransitionHelper {
 							})
 						);
 					}
+
 					for (const data of snapshotData) {
 						// add snapshot to animate
 						transitionContext.containerView.addSubview(data.snapshot);
@@ -258,13 +257,10 @@ export class SharedTransitionHelper {
 							transition.presenting.view.removeFromSuperview();
 						}
 						transitionContext.completeTransition(true);
-						SharedTransition.events().notify<SharedTransitionEventData>({
-							eventName: SharedTransition.finishedEvent,
-							data: {
-								id: transition?.id,
-								type,
-								action: 'present',
-							},
+						SharedTransition.notifyEvent(SharedTransition.finishedEvent, {
+							id: transition.id,
+							type,
+							action: 'present',
 						});
 					};
 
@@ -351,13 +347,10 @@ export class SharedTransitionHelper {
 				}
 				case SharedTransitionAnimationType.dismiss: {
 					// console.log('-- Transition dismiss --');
-					SharedTransition.events().notify<SharedTransitionEventData>({
-						eventName: SharedTransition.startedEvent,
-						data: {
-							id: transition?.id,
-							type,
-							action: 'dismiss',
-						},
+					SharedTransition.notifyEvent(SharedTransition.startedEvent, {
+						id: transition.id,
+						type,
+						action: 'dismiss',
 					});
 					if (type === 'page') {
 						transitionContext.containerView.insertSubviewBelowSubview(transition.presenting.view, transition.presented.view);
@@ -377,6 +370,7 @@ export class SharedTransitionHelper {
 
 					const pageEnd = state.pageEnd;
 					const pageEndTags = pageEnd?.sharedTransitionTags || {};
+					const pageReturn = state.pageReturn;
 
 					for (const p of transition.sharedElements.presented) {
 						p.view.opacity = 0;
@@ -408,9 +402,11 @@ export class SharedTransitionHelper {
 					// now that all the callbacks had their chance to run, we can take the snapshots
 					for (const data of snapshotData) {
 						const view = data.view.ios;
-						// we need to reset the alpha to the start value so the view is visible in the snapshot
 						const currentAlpha = view.alpha;
-						view.alpha = data.startOpacity;
+						if (pageReturn?.useStartOpacity) {
+							// when desired, reset the alpha to the start value so the view is visible in the snapshot
+							view.alpha = data.startOpacity;
+						}
 
 						// take a new snapshot
 						data.snapshot.image = iOSNativeHelper.snapshotView(view, Screen.mainScreen.scale);
@@ -432,8 +428,6 @@ export class SharedTransitionHelper {
 						transitionContext.containerView.addSubview(data.snapshot);
 					}
 
-					const pageReturn = state.pageReturn;
-
 					const cleanupDismiss = () => {
 						for (const presenting of transition.sharedElements.presenting) {
 							presenting.view.opacity = presenting.startOpacity;
@@ -446,13 +440,10 @@ export class SharedTransitionHelper {
 						SharedTransition.finishState(transition.id);
 						transition.sharedElements = null;
 						transitionContext.completeTransition(true);
-						SharedTransition.events().notify<SharedTransitionEventData>({
-							eventName: SharedTransition.finishedEvent,
-							data: {
-								id: transition?.id,
-								type,
-								action: 'dismiss',
-							},
+						SharedTransition.notifyEvent(SharedTransition.finishedEvent, {
+							id: transition.id,
+							type,
+							action: 'dismiss',
 						});
 					};
 
@@ -522,13 +513,10 @@ export class SharedTransitionHelper {
 	}
 
 	static interactiveStart(state: SharedTransitionState, interactiveState: PlatformTransitionInteractiveState, type: TransitionNavigationType) {
-		SharedTransition.events().notify<SharedTransitionEventData>({
-			eventName: SharedTransition.startedEvent,
-			data: {
-				id: state?.instance?.id,
-				type,
-				action: 'interactiveStart',
-			},
+		SharedTransition.notifyEvent(SharedTransition.startedEvent, {
+			id: state.instance.id,
+			type,
+			action: 'interactiveStart',
 		});
 		switch (type) {
 			case 'page':
@@ -563,20 +551,17 @@ export class SharedTransitionHelper {
 			});
 		}
 		interactiveState.propertyAnimator.fractionComplete = percent;
-		SharedTransition.events().notify<SharedTransitionEventData>({
-			eventName: SharedTransition.interactiveUpdateEvent,
-			data: {
-				id: state?.instance?.id,
-				type,
-				percent,
-			},
+		SharedTransition.notifyEvent(SharedTransition.interactiveUpdateEvent, {
+			id: state?.instance?.id,
+			type,
+			percent,
 		});
 	}
 
 	static interactiveCancel(state: SharedTransitionState, interactiveState: PlatformTransitionInteractiveState, type: TransitionNavigationType) {
 		if (state?.instance && interactiveState?.added && interactiveState?.propertyAnimator) {
 			interactiveState.propertyAnimator.reversed = true;
-			const duration = isNumber(state.pageEnd?.duration) ? state.pageEnd?.duration / 1000 : 0.35;
+			const duration = isNumber(state.pageEnd?.duration) ? state.pageEnd?.duration / 1000 : CORE_ANIMATION_DEFAULTS.duration;
 			interactiveState.propertyAnimator.continueAnimationWithTimingParametersDurationFactor(null, duration);
 			setTimeout(() => {
 				for (const p of state.instance.sharedElements.presented) {
@@ -590,12 +575,13 @@ export class SharedTransitionHelper {
 				interactiveState.added = false;
 				interactiveState.transitionContext.cancelInteractiveTransition();
 				interactiveState.transitionContext.completeTransition(false);
-				SharedTransition.events().notify<SharedTransitionEventData>({
-					eventName: SharedTransition.interactiveCancelledEvent,
-					data: {
-						id: state?.instance?.id,
-						type,
-					},
+				SharedTransition.updateState(state?.instance?.id, {
+					interactiveBegan: false,
+					interactiveCancelled: true,
+				});
+				SharedTransition.notifyEvent(SharedTransition.interactiveCancelledEvent, {
+					id: state?.instance?.id,
+					type,
 				});
 			}, duration * 1000);
 		}
@@ -605,7 +591,7 @@ export class SharedTransitionHelper {
 		if (state?.instance && interactiveState?.added && interactiveState?.propertyAnimator) {
 			interactiveState.propertyAnimator.reversed = false;
 
-			const duration = isNumber(state.pageReturn?.duration) ? state.pageReturn?.duration / 1000 : 0.35;
+			const duration = isNumber(state.pageReturn?.duration) ? state.pageReturn?.duration / 1000 : CORE_ANIMATION_DEFAULTS.duration;
 			interactiveState.propertyAnimator.continueAnimationWithTimingParametersDurationFactor(null, duration);
 			setTimeout(() => {
 				for (const presenting of state.instance.sharedElements.presenting) {
@@ -618,13 +604,10 @@ export class SharedTransitionHelper {
 				interactiveState.added = false;
 				interactiveState.transitionContext.finishInteractiveTransition();
 				interactiveState.transitionContext.completeTransition(true);
-				SharedTransition.events().notify<SharedTransitionEventData>({
-					eventName: SharedTransition.finishedEvent,
-					data: {
-						id: state?.instance?.id,
-						type,
-						action: 'interactiveFinish',
-					},
+				SharedTransition.notifyEvent(SharedTransition.finishedEvent, {
+					id: state?.instance?.id,
+					type,
+					action: 'interactiveFinish',
 				});
 			}, duration * 1000);
 		}
