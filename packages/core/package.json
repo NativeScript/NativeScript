@@ -1,6 +1,6 @@
 {
   "name": "@nativescript/core",
-  "version": "8.5.1-rc.1",
+  "version": "8.5.1-rc.2",
   "description": "A JavaScript library providing an easy to use api for interacting with iOS and Android platform APIs.",
   "main": "index",
   "types": "index.d.ts",
