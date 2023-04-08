@@ -493,6 +493,10 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 
 	public onTextChanged(text: string, start: number, before: number, count: number): void {
 		// called by android.text.TextWatcher
+		if (this.valueFormatter) {
+			this.text = this.valueFormatter(text.toString());
+			this.android.setSelection((this.text || '').length);
+		}
 		// const owner = this.owner;
 		// let selectionStart = owner.android.getSelectionStart();
 		// owner.android.removeTextChangedListener(owner._editTextListeners);
