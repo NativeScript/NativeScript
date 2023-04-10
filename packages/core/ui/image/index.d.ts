@@ -1,6 +1,7 @@
 ﻿import { View } from '../core/view';
 import { Style } from '../styling/style';
 import { ImageSource } from '../../image-source';
+import { ImageAsset } from '../../image-asset';
 import { Color } from '../../color';
 import { Property, InheritedCssProperty } from '../core/properties';
 import { CoreTypes } from '../../core-types';
@@ -27,7 +28,7 @@ export class Image extends View {
 	/**
 	 * Gets or sets the source of the Image. This can be either an URL string or a native image instance.
 	 */
-	src: any;
+	src: string | ImageSource | ImageAsset;
 
 	/**
 	 * Gets a value indicating if the image is currently loading.
@@ -66,7 +67,7 @@ export class Image extends View {
 }
 
 export const imageSourceProperty: Property<Image, ImageSource>;
-export const srcProperty: Property<Image, any>;
+export const srcProperty: Property<Image, string | ImageSource | ImageAsset>;
 export const isLoadingProperty: Property<Image, string>;
 export const loadMode: Property<Image, 'sync' | 'async'>;
 export const stretchProperty: Property<Image, CoreTypes.ImageStretchType>;
