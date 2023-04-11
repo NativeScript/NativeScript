@@ -186,7 +186,7 @@ export class Image extends ImageBase {
 	[srcProperty.getDefault](): any {
 		return undefined;
 	}
-	[srcProperty.setNative](value: any) {
+	[srcProperty.setNative](value: string | ImageSource | ImageAsset) {
 		this._createImageSourceFromSrc(value);
 	}
 }
