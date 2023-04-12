@@ -36,7 +36,7 @@ export class EditableTextBase extends TextBase {
 	/**
 	 * Gets or sets the autofill type.
 	 */
-	 autofillType: CoreTypes.AutofillType;
+	autofillType: CoreTypes.AutofillType;
 
 	/**
 	 * Gets or sets whether the instance is editable.
@@ -57,6 +57,12 @@ export class EditableTextBase extends TextBase {
 	 * Limits input to a certain number of characters.
 	 */
 	maxLength: number;
+
+	/**
+	 * Format input values
+	 * Note: useful for input masking/formatting
+	 */
+	valueFormatter: (value: string) => string;
 
 	/**
 	 * Hides the soft input method, ususally a soft keyboard.
