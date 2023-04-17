@@ -1,3 +1,22 @@
+## [8.5.1](https://github.com/NativeScript/NativeScript/compare/8.5.0-core...8.5.1) (2023-04-17)
+
+
+### Bug Fixes
+
+* **core:** improve strong type src of Image ([#10265](https://github.com/NativeScript/NativeScript/issues/10265)) ([f549667](https://github.com/NativeScript/NativeScript/commit/f54966707d97191e9658ac49c5d8570f87c1c1c5))
+* **core:** RootLayout view and shade cover should animate in parallel ([#10256](https://github.com/NativeScript/NativeScript/issues/10256)) ([2b64e17](https://github.com/NativeScript/NativeScript/commit/2b64e179a5ed54fb7d41d7b000be7d386c850c6b))
+* **core:** sdkVersion and osVersion type adjustments ([#10269](https://github.com/NativeScript/NativeScript/issues/10269)) ([f8edee4](https://github.com/NativeScript/NativeScript/commit/f8edee43a0b28f523d510c6dd7d54015a0bc7e10))
+* **core:** unhandled error typings ([#10268](https://github.com/NativeScript/NativeScript/issues/10268)) ([0a2f002](https://github.com/NativeScript/NativeScript/commit/0a2f002b57a9d1c0950534e8a90d0dc628dc3d31))
+
+
+### Features
+
+* **ios:** new a11y properties for managing font scale ([#10260](https://github.com/NativeScript/NativeScript/issues/10260)) ([7aaa1d8](https://github.com/NativeScript/NativeScript/commit/7aaa1d899dc786ccd6e9e73a4bd94674ddeba12e))
+* **text:** valueFormatter for easy and flexible input auto-formatting ([#10264](https://github.com/NativeScript/NativeScript/issues/10264)) ([b3abc5f](https://github.com/NativeScript/NativeScript/commit/b3abc5f5ae91d718995a366c13499dc98369d0ee))
+* **transitions:** support zIndex on ios shared elements + support page props on android ([#10261](https://github.com/NativeScript/NativeScript/issues/10261)) ([f4b2722](https://github.com/NativeScript/NativeScript/commit/f4b2722bf4259a6a7f0000b54c2d32712ab39117))
+
+
+
 # [8.5.0](https://github.com/NativeScript/NativeScript/compare/8.4.7-core...8.5.0) (2023-03-28)
 
 
