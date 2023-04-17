@@ -46,15 +46,15 @@ export interface IDevice {
 
 	/**
 	 * Gets the OS version.
-	 * For example: 12(android), 8.1(ios)
+	 * For example: 4.4.4(android), 8.1(ios)
 	 */
-	osVersion: number | string;
+	osVersion: string;
 
 	/**
 	 * Gets the SDK version.
-	 * For example: 31(android), 8.1(ios).
+	 * For example: 19(android), 8.1(ios).
 	 */
-	sdkVersion: number | string;
+	sdkVersion: string;
 
 	/**
 	 * Gets the type of the current device.
