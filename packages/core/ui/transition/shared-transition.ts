@@ -1,28 +1,48 @@
-import type { Transition, TransitionNavigationType } from '.';
+import type { Transition, TransitionNavigationType, SharedTransitionTagPropertiesToMatch } from '.';
 import { Observable } from '../../data/observable';
 import { Screen } from '../../platform';
 import { isNumber } from '../../utils/types';
+import { CORE_ANIMATION_DEFAULTS } from '../../utils/common';
 import { querySelectorAll, ViewBase } from '../core/view-base';
 import type { View } from '../core/view';
 import type { PanGestureEventData } from '../gestures';
 
-export const DEFAULT_DURATION = 0.35;
-export const DEFAULT_SPRING = {
-	tension: 140,
-	friction: 10,
-	mass: 1,
-	velocity: 0,
-	delay: 0,
-};
 // always increment when adding new transitions to be able to track their state
 export enum SharedTransitionAnimationType {
 	present,
 	dismiss,
 }
 type SharedTransitionEventAction = 'present' | 'dismiss' | 'interactiveStart' | 'interactiveFinish';
-export type SharedTransitionEventData = { eventName: string; data: { id: number; type: TransitionNavigationType; action?: SharedTransitionEventAction; percent?: number } };
+export type SharedTransitionEventDataPayload = { id: number; type: TransitionNavigationType; action?: SharedTransitionEventAction; percent?: number };
+export type SharedTransitionEventData = { eventName: string; data: SharedTransitionEventDataPayload };
 export type SharedRect = { x?: number; y?: number; width?: number; height?: number };
-export type SharedProperties = SharedRect & { opacity?: number; scale?: { x?: number; y?: number } };
+export type SharedProperties = SharedRect & {
+	opacity?: number;
+	scale?: { x?: number; y?: number };
+};
+/**
+ * Properties which can be set on individual Shared Elements
+ */
+export type SharedTransitionTagProperties = SharedProperties & {
+	/**
+	 * The visual stacking order where 0 is at the bottom.
+	 * Shared elements are stacked one on top of the other during each transition.
+	 * By default they are not ordered in any particular fashion.
+	 */
+	zIndex?: number;
+	/**
+	 * Collection of properties to match and animate on each shared element.
+	 *
+	 * Defaults to: 'backgroundColor', 'cornerRadius', 'borderWidth', 'borderColor'
+	 *
+	 * Tip: Using an empty array, [], for view or layer will avoid copying any properties if desired.
+	 */
+	propertiesToMatch?: SharedTransitionTagPropertiesToMatch;
+	/**
+	 *
+	 */
+	callback?: (view: View, action: SharedTransitionEventAction) => Promise<void>;
+};
 export type SharedSpringProperties = {
 	tension?: number;
 	friction?: number;
@@ -36,7 +56,7 @@ type SharedTransitionPageProperties = SharedProperties & {
 	 * (iOS Only) Allow "independent" elements found only on one of the screens to take part in the animation.
 	 * Note: This feature will be brought to Android in a future release.
 	 */
-	sharedTransitionTags?: { [key: string]: SharedProperties };
+	sharedTransitionTags?: { [key: string]: SharedTransitionTagProperties };
 	/**
 	 * Spring animation settings.
 	 * Defaults to 140 tension with 10 friction.
@@ -87,7 +107,14 @@ export interface SharedTransitionConfig {
 	/**
 	 * View settings to return to the original page with.
 	 */
-	pageReturn?: SharedTransitionPageWithDurationProperties;
+	pageReturn?: SharedTransitionPageWithDurationProperties & {
+		/**
+		 * In some cases you may want the returning animation to start with the original opacity,
+		 * instead of beginning where it ended up on pageEnd.
+		 * Note: you can try enabling this property in cases where your return animation doesn't appear correct.
+		 */
+		useStartOpacity?: boolean;
+	};
 }
 export interface SharedTransitionState extends SharedTransitionConfig {
 	/**
@@ -137,10 +164,18 @@ export class SharedTransition {
 		});
 		const pageEnd = options?.pageEnd;
 		if (isNumber(pageEnd?.duration)) {
-			transition.setDuration(pageEnd?.duration);
+			// Android uses milliseconds/iOS uses seconds
+			// users pass in milliseconds
+			transition.setDuration(global.isIOS ? pageEnd?.duration / 1000 : pageEnd?.duration);
 		}
 		return { instance: transition };
 	}
+	/**
+	 * Whether a transition is in progress or not.
+	 * Note: used internally however exposed in case custom state ordering is needed.
+	 * Updated when transitions start/end/cancel.
+	 */
+	static inProgress: boolean;
 	/**
 	 * Listen to various shared element transition events.
 	 * @returns Observable
@@ -167,6 +202,29 @@ export class SharedTransition {
 	 * When the interactive transition updates with the percent value.
 	 */
 	static interactiveUpdateEvent = 'SharedTransitionInteractiveUpdateEvent';
+
+	/**
+	 * Notify a Shared Transition event.
+	 * @param id transition instance id
+	 * @param eventName Shared Transition event name
+	 * @param type TransitionNavigationType
+	 * @param action SharedTransitionEventAction
+	 */
+	static notifyEvent(eventName: string, data: SharedTransitionEventDataPayload) {
+		switch (eventName) {
+			case SharedTransition.startedEvent:
+			case SharedTransition.interactiveUpdateEvent:
+				SharedTransition.inProgress = true;
+				break;
+			default:
+				SharedTransition.inProgress = false;
+				break;
+		}
+		SharedTransition.events().notify<SharedTransitionEventData>({
+			eventName,
+			data,
+		});
+	}
 
 	/**
 	 * Enable to see various console logging output of Shared Element Transition behavior.
@@ -224,11 +282,11 @@ export class SharedTransition {
 		presenting: Array<View>;
 	} {
 		// 1. Presented view: gather all sharedTransitionTag views
-		const presentedSharedElements = <Array<View>>querySelectorAll(toPage, 'sharedTransitionTag').filter((v) => !v.sharedTransitionIgnore);
+		const presentedSharedElements = <Array<View>>querySelectorAll(toPage, 'sharedTransitionTag').filter((v) => !v.sharedTransitionIgnore && typeof v.sharedTransitionTag === 'string');
 		// console.log('presented sharedTransitionTag total:', presentedSharedElements.length);
 
 		// 2. Presenting view: gather all sharedTransitionTag views
-		const presentingSharedElements = <Array<View>>querySelectorAll(fromPage, 'sharedTransitionTag').filter((v) => !v.sharedTransitionIgnore);
+		const presentingSharedElements = <Array<View>>querySelectorAll(fromPage, 'sharedTransitionTag').filter((v) => !v.sharedTransitionIgnore && typeof v.sharedTransitionTag === 'string');
 		// console.log(
 		// 	'presenting sharedTransitionTags:',
 		// 	presentingSharedElements.map((v) => v.sharedTransitionTag)
@@ -254,8 +312,8 @@ export function getRectFromProps(props: SharedTransitionPageProperties, defaults
 	defaults = {
 		x: 0,
 		y: 0,
-		width: Screen.mainScreen.widthDIPs,
-		height: Screen.mainScreen.heightDIPs,
+		width: getPlatformWidth(),
+		height: getPlatformHeight(),
 		...(defaults || {}),
 	};
 	return {
@@ -273,11 +331,11 @@ export function getRectFromProps(props: SharedTransitionPageProperties, defaults
  */
 export function getSpringFromProps(props: SharedSpringProperties) {
 	return {
-		tension: isNumber(props?.tension) ? props?.tension : DEFAULT_SPRING.tension,
-		friction: isNumber(props?.friction) ? props?.friction : DEFAULT_SPRING.friction,
-		mass: isNumber(props?.mass) ? props?.mass : DEFAULT_SPRING.mass,
-		velocity: isNumber(props?.velocity) ? props?.velocity : DEFAULT_SPRING.velocity,
-		delay: isNumber(props?.delay) ? props?.delay : DEFAULT_SPRING.delay,
+		tension: isNumber(props?.tension) ? props?.tension : CORE_ANIMATION_DEFAULTS.spring.tension,
+		friction: isNumber(props?.friction) ? props?.friction : CORE_ANIMATION_DEFAULTS.spring.friction,
+		mass: isNumber(props?.mass) ? props?.mass : CORE_ANIMATION_DEFAULTS.spring.mass,
+		velocity: isNumber(props?.velocity) ? props?.velocity : CORE_ANIMATION_DEFAULTS.spring.velocity,
+		delay: isNumber(props?.delay) ? props?.delay : 0,
 	};
 }
 
@@ -288,9 +346,17 @@ export function getSpringFromProps(props: SharedSpringProperties) {
  */
 export function getPageStartDefaultsForType(type: TransitionNavigationType) {
 	return {
-		x: type === 'page' ? Screen.mainScreen.widthDIPs : 0,
-		y: type === 'page' ? 0 : Screen.mainScreen.heightDIPs,
-		width: Screen.mainScreen.widthDIPs,
-		height: Screen.mainScreen.heightDIPs,
+		x: type === 'page' ? getPlatformWidth() : 0,
+		y: type === 'page' ? 0 : getPlatformHeight(),
+		width: getPlatformWidth(),
+		height: getPlatformHeight(),
 	};
+}
+
+function getPlatformWidth() {
+	return global.isAndroid ? Screen.mainScreen.widthPixels : Screen.mainScreen.widthDIPs;
+}
+
+function getPlatformHeight() {
+	return global.isAndroid ? Screen.mainScreen.heightPixels : Screen.mainScreen.heightDIPs;
 }

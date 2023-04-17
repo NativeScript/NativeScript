@@ -8,7 +8,7 @@ import { frameStack, topmost as frameStackTopmost, _pushInFrameStack, _popFromFr
 import { viewMatchesModuleContext } from '../core/view/view-common';
 import { getAncestor } from '../core/view-base';
 import { Builder } from '../builder';
-import { sanitizeModuleName } from '../builder/module-name-sanitizer';
+import { sanitizeModuleName } from '../../utils/common';
 import { profile } from '../../profiling';
 import { FRAME_SYMBOL } from './frame-helpers';
 import { SharedTransition } from '../transition/shared-transition';
@@ -401,8 +401,13 @@ export class FrameBase extends CustomLayoutView {
 		this._onNavigatingTo(backstackEntry, isBackNavigation);
 		const navigationTransition = this._getNavigationTransition(backstackEntry.entry);
 		if (navigationTransition?.instance) {
+			const state = SharedTransition.getState(navigationTransition?.instance.id);
 			SharedTransition.updateState(navigationTransition?.instance.id, {
-				page: this.currentPage,
+				// Allow setting custom page context to override default (from) page
+				// helpful for deeply nested frame navigation setups (eg: Nested Tab Navigation)
+				// when sharing elements in this condition, the (from) page would
+				// get overridden on each frame preventing shared element matching
+				page: state?.page || this.currentPage,
 				toPage: this,
 			});
 		}

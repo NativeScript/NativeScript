@@ -19,7 +19,7 @@ function ensureKeyframeAnimationModule() {
 }
 
 import * as capm from './css-animation-parser';
-import { sanitizeModuleName } from '../builder/module-name-sanitizer';
+import { sanitizeModuleName } from '../../utils/common';
 import { resolveModuleName } from '../../module-name-resolver';
 import { cleanupImportantFlags } from './css-utils';
 

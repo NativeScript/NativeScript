@@ -5,7 +5,7 @@
   </Page.actionBar>
 
   <GridLayout rows="auto,*">
-    <SegmentedBar sharedTransitionTag="segmentbar" horizontalAlignment="center" selectedIndex="{{ segmentSelectedIndex }}" marginTop="20">
+    <SegmentedBar horizontalAlignment="center" selectedIndex="{{ segmentSelectedIndex }}" marginTop="20">
       <SegmentedBarItem title="Example A" />
       <SegmentedBarItem title="Example B" />
       <SegmentedBarItem title="Example C" />

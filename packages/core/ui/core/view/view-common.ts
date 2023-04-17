@@ -5,6 +5,7 @@ import { booleanConverter, ShowModalOptions, ViewBase } from '../view-base';
 import { getEventOrGestureName } from '../bindable';
 import { layout } from '../../../utils';
 import { isObject } from '../../../utils/types';
+import { sanitizeModuleName } from '../../../utils/common';
 import { Color } from '../../../color';
 import { Property, InheritedProperty } from '../properties';
 import { EventData } from '../../../data/observable';
@@ -18,7 +19,6 @@ import { observe as gestureObserve, GesturesObserver, GestureTypes, GestureEvent
 
 import { CSSUtils } from '../../../css/system-classes';
 import { Builder } from '../../builder';
-import { sanitizeModuleName } from '../../builder/module-name-sanitizer';
 import { StyleScope } from '../../styling/style-scope';
 import { LinearGradient } from '../../styling/linear-gradient';
 

@@ -52,8 +52,8 @@ export function test_Transitions() {
 	// helper.navigateWithEntry({ create: mainPageFactory, clearHistory: true, animated: false });
 }
 
-export function test_SharedElementTransitions() {
-	helper.navigate(() => {
+export function test_SharedElementTransitions(done) {
+	const mainPage = helper.navigate(() => {
 		const page = new Page();
 		page.id = 'SharedelementTransitionsTestPage_MAIN';
 		page.style.backgroundColor = new Color(255, Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255));
@@ -76,12 +76,12 @@ export function test_SharedElementTransitions() {
 
 	const navigationTransition = SharedTransition.custom(new CustomSharedElementPageTransition());
 
-	var testId = `SharedElementTransition[${JSON.stringify(navigationTransition)}]`;
+	const testId = `SharedElementTransition[${JSON.stringify(navigationTransition)}]`;
 	if (Trace.isEnabled()) {
 		Trace.write(`Testing ${testId}`, Trace.categories.Test);
 	}
-	var navigationEntry: NavigationEntry = {
-		create: function (): Page {
+	const navigationEntry: NavigationEntry = {
+		create(): Page {
 			let page = new Page();
 			page.id = testId;
 			page.style.backgroundColor = new Color(255, Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255));
@@ -99,11 +99,16 @@ export function test_SharedElementTransitions() {
 			grid.addChild(sharedElement);
 
 			page.content = grid;
+
+			page.once('navigatedTo', () => {
+				done();
+			});
+
 			return page;
 		},
 		animated: true,
 		transition: navigationTransition,
 	};
 
-	helper.navigateWithEntry(navigationEntry);
+	mainPage.frame.navigate(navigationEntry);
 }

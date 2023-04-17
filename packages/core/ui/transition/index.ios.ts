@@ -1,4 +1,5 @@
-﻿import type { Transition as TransitionType } from '.';
+﻿import { CORE_ANIMATION_DEFAULTS } from '../../utils/common';
+import type { Transition as TransitionType } from '.';
 
 let transitionId = 0;
 export class Transition implements TransitionType {
@@ -8,7 +9,7 @@ export class Transition implements TransitionType {
 	private _curve: UIViewAnimationCurve;
 
 	constructor(duration: number = 350, nativeCurve: UIViewAnimationCurve = UIViewAnimationCurve.EaseInOut) {
-		this._duration = duration ? duration / 1000 : 0.35;
+		this._duration = duration ? duration / 1000 : CORE_ANIMATION_DEFAULTS.duration;
 		this._curve = nativeCurve;
 		transitionId++;
 		this.id = transitionId;
