@@ -569,7 +569,15 @@ export class Animation extends AnimationBase {
 					break;
 			}
 		};
-		const finish = (animationDidFinish: boolean) => {
+		let finished = false;
+		const startTime = Date.now();
+		const finish = (animationDidFinish: boolean = true) => {
+			if (finished || (animationDidFinish && Date.now() - startTime < args.duration * 1000)) {
+				//ignoring finished. Called to soon
+				// will be called again byt the CATransaction completion block
+				return;
+			}
+			finished = true;
 			if (animationDidFinish) {
 				if (animationInfo.propertyName === _transform) {
 					if (animationInfo.value[Properties.translate] !== undefined) {
@@ -616,15 +624,20 @@ export class Animation extends AnimationBase {
 			} else {
 				CATransaction.begin();
 				CATransaction.setAnimationTimingFunction(animationInfo.curve);
+				CATransaction.setCompletionBlock(finish);
 				UIViewPropertyAnimator.runningPropertyAnimatorWithDurationDelayOptionsAnimationsCompletion(args.duration, args.delay, animationOptions, animate, finishCallback);
 				CATransaction.commit();
 			}
 		} else {
 			if (isSpring) {
+				CATransaction.begin();
+				CATransaction.setCompletionBlock(finish);
 				UIView.animateWithDurationDelayUsingSpringWithDampingInitialSpringVelocityOptionsAnimationsCompletion(args.duration, delay, 0.2, 0, UIViewAnimationOptions.CurveLinear | animationOptions, animate, finish);
+				CATransaction.commit();
 			} else {
 				CATransaction.begin();
 				CATransaction.setAnimationTimingFunction(animationInfo.curve);
+				CATransaction.setCompletionBlock(finish);
 				UIView.animateWithDurationDelayOptionsAnimationsCompletion(args.duration, delay, animationOptions, animate, finish);
 				CATransaction.commit();
 			}
