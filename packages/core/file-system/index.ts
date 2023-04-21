@@ -211,6 +211,53 @@ export class File extends FileSystemEntity {
 		return getFileAccess().getFileSize(this.path);
 	}
 
+	public copy(dest: string): Promise<boolean> {
+		return new Promise<boolean>((resolve, reject) => {
+			try {
+				this._checkAccess();
+			} catch (ex) {
+				reject(ex);
+
+				return;
+			}
+
+			this._locked = true;
+
+			getFileAccess()
+				.copyAsync(this.path, dest)
+				.then(
+					(result) => {
+						resolve(result);
+						this._locked = false;
+					},
+					(error) => {
+						reject(error);
+						this._locked = false;
+					}
+				);
+		});
+	}
+
+	public copySync(dest: string, onError?: (error: any) => any): any {
+		this._checkAccess();
+
+		this._locked = true;
+
+		const that = this;
+		const localError = (error) => {
+			that._locked = false;
+			if (onError) {
+				onError(error);
+			}
+		};
+
+		const content = getFileAccess().copySync(this.path, dest, localError);
+
+		this._locked = false;
+
+		return content;
+	}
+
 	public read(): Promise<any> {
 		return new Promise<any>((resolve, reject) => {
 			try {

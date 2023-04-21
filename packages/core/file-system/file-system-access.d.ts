@@ -3,6 +3,32 @@
  */
 export interface IFileSystemAccess {
 	/**
+	 * Copies a file to a given path.
+	 * @param src The path to the source file.
+	 * @param dest The path to the destination file.
+	 * @param onError (optional) A callback function to use if any error occurs.
+	 * Returns a Promise with a boolean.
+	 */
+	copy(src: string, dest: string, onError?: (error: any) => any): any;
+
+	/**
+	 * Copies a file to a given path.
+	 * @param src The path to the source file.
+	 * @param dest The path to the destination file.
+	 * Returns a Promise with a boolean.
+	 */
+	copyAsync(src: string, dest: string): Promise<any>;
+
+	/**
+	 * Copies a file to a given path.
+	 * @param src The path to the source file.
+	 * @param dest The path to the destination file.
+	 * @param onError (optional) A callback function to use if any error occurs.
+	 * Returns a Promise with a boolean.
+	 */
+	copySync(src: string, dest: string, onError?: (error: any) => any): any;
+
+	/**
 	 * Gets the last modified date of a file with a given path.
 	 * @param path Path to the file.
 	 */
@@ -256,6 +282,12 @@ export interface IFileSystemAccess {
 }
 
 export class FileSystemAccess implements IFileSystemAccess {
+	copy(src: string, dest: string, onError?: (error: any) => any): boolean;
+
+	copySync(src: string, dest: string, onError?: (error: any) => any): boolean;
+
+	copyAsync(src: string, dest: string): Promise<boolean>;
+
 	getLastModified(path: string): Date;
 
 	getFileSize(path: string): number;

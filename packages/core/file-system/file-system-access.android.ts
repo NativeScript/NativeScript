@@ -254,6 +254,42 @@ export class FileSystemAccess implements IFileSystemAccess {
 		return this.getLogicalRootPath() + '/app';
 	}
 
+	public copy = this.copySync.bind(this);
+
+	public copySync(src: string, dest: string, onError?: (error: any) => any) {
+		try {
+			return org.nativescript.widgets.Async.File.copySync(src, dest, getApplicationContext());
+		} catch (error) {
+			if (onError) {
+				onError(exception);
+			}
+		}
+
+		return false;
+	}
+
+	public copyAsync(src: string, dest: string): Promise<boolean> {
+		return new Promise<boolean>((resolve, reject) => {
+			try {
+				org.nativescript.widgets.Async.File.copy(
+					src,
+					dest,
+					new org.nativescript.widgets.Async.CompleteCallback({
+						onComplete: (result: boolean) => {
+							resolve(result);
+						},
+						onError: (err) => {
+							reject(new Error(err));
+						},
+					}),
+					getApplicationContext()
+				);
+			} catch (ex) {
+				reject(ex);
+			}
+		});
+	}
+
 	public readBuffer = this.readBufferSync.bind(this);
 
 	public readBufferAsync(path: string): Promise<ArrayBuffer> {

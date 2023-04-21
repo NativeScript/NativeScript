@@ -29,6 +29,10 @@
                 }
 
                 export module File {
+                    export function copySync(src: string, dest: string, context: android.content.Context): boolean;
+                    export function copy(src: java.io.InputStream, dest: java.io.OutputStream, callback: org.nativescript.widgets.Async.CompleteCallback, context: any): void;
+					export function copySync(src: java.io.InputStream, dest: java.io.OutputStream, context: any): boolean;
+					export function copy(src: string, dest: string, callback: org.nativescript.widgets.Async.CompleteCallback, context: android.content.Context): void;
                     export function readText(path: string, encoding: string, callback: CompleteCallback, context: any);
                     export function read(path: string, callback: CompleteCallback, context: any);
                     export function readBuffer(param0: string, param1: org.nativescript.widgets.Async.CompleteCallback, param2: any): void;
