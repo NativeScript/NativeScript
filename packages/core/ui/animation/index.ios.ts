@@ -28,6 +28,7 @@ class AnimationInfo {
 	public duration: number;
 	public repeatCount: number;
 	public delay: number;
+	public animationBlock?: Function;
 }
 
 export function applyAnimationProperty(styleOrView: View, property: Property<View, any>, value, setKeyFrame: boolean);
@@ -436,6 +437,7 @@ export class Animation extends AnimationBase {
 			fromValue: fromValue,
 			subPropertiesToAnimate: subPropertyNameToAnimate,
 			toValue: toValue,
+			animationBlock: animation.animationBlock,
 			duration: duration,
 			repeatCount: repeatCount,
 			delay: delay,
@@ -544,6 +546,9 @@ export class Animation extends AnimationBase {
 		const animationOptions = UIViewAnimationOptions.AllowUserInteraction;
 
 		const animate = () => {
+			if (args.animationBlock) {
+				args.animationBlock();
+			}
 			if (args.repeatCount !== undefined) {
 				UIView.setAnimationRepeatCount(args.repeatCount);
 			}
