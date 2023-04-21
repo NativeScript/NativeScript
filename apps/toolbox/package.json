@@ -7,14 +7,13 @@
     "url": "https://github.com/NativeScript/NativeScript.git"
   },
   "dependencies": {
-    "@nativescript/core": "file:../../packages/core",
-    "@nativescript/imagepicker": "^1.0.6",
-    "nativescript-theme-core": "file:../../node_modules/nativescript-theme-core"
+    "@nativescript/core": "*",
+    "nativescript-theme-core": "*"
   },
   "devDependencies": {
     "@nativescript/android": "~8.4.0",
     "@nativescript/ios": "~8.4.0",
-    "@nativescript/webpack": "file:../../dist/packages/nativescript-webpack.tgz",
+    "@nativescript/webpack": "*",
     "typescript": "~4.9.5"
   }
 }
