@@ -109,7 +109,8 @@ export function pickFile() {
 			const file = args.intent.getData().toString();
 			//const file = File.fromPath(args.intent.getData().toString());
 			//console.log(file);
-			readFile(file);
+			//readFile(file);
+			copyFile(file);
 		}
 	});
 	const Intent = android.content.Intent;
@@ -170,6 +171,41 @@ function saveFile(selected, readSync) {
 	console.log('# saved file: ', savedFile);
 	console.log('# save size: ', savedFile.size);
 	console.log('==== SAVE END =========');
+}
+
+function copyFile(file) {
+	const picked = File.fromPath(file);
+	const ext = picked.extension;
+	const name = picked.name.replace(`.${ext}`, '');
+	const tempCopy = File.fromPath(path.join(knownFolders.temp().path, `${name}-copy.${ext}`));
+
+	// const done  = picked
+	// 	.copySync(tempCopy.path);
+	// 	console.log('done: ' + done + '\n' + 'Original path: ' + picked.path + '\n' + 'Copied to: ' + tempCopy.path + '\n' + 'Original size: ' + picked.size + '\n' + 'Copy size: ' + tempCopy.size + '\n');
+
+	picked
+		.copy(tempCopy.path)
+		.then((done) => {
+			console.log('done: ' + done + '\n' + 'Original path: ' + picked.path + '\n' + 'Copied to: ' + tempCopy.path + '\n' + 'Original size: ' + picked.size + '\n' + 'Copy size: ' + tempCopy.size + '\n');
+		})
+		.catch((error) => {
+			console.log(error);
+		});
+}
+
+export function copyTest() {
+	const now = Date.now();
+	const tempFile = File.fromPath(path.join(knownFolders.temp().path, `${now}.txt`));
+	tempFile.writeTextSync('Hello World: ' + now);
+	const tempCopy = File.fromPath(path.join(knownFolders.temp().path, `${now}-copy.txt`));
+	tempFile
+		.copy(tempCopy.path)
+		.then((done) => {
+			console.log('done: ' + done + '\n' + 'Original path: ' + tempFile.path + '\n' + 'Copied to: ' + tempCopy.path + '\n' + 'Original size: ' + tempFile.size + '\n' + 'Copy size: ' + tempCopy.size + '\n');
+		})
+		.catch((error) => {
+			console.log(error);
+		});
 }
 
 function getFileNameFromContent(content: string) {

@@ -260,6 +260,65 @@ export class FileSystemAccess {
 		return iOSNativeHelper.getCurrentAppPath();
 	}
 
+	public copy = this.copySync.bind(this);
+
+	public copySync(src: string, dest: string, onError?: (error: any) => any) {
+		const fileManager = NSFileManager.defaultManager;
+		try {
+			return fileManager.copyItemAtPathToPathError(src, dest);
+		} catch (error) {
+			if (error.message.indexOf('exists') > -1) {
+				// check the size of file if empty remove then try copying again
+				// this could be zero due to using File.fromPath passing in a new file
+				let didRemove = false;
+				try {
+					didRemove = fileManager.removeItemAtPathError(dest);
+					return fileManager.copyItemAtPathToPathError(src, dest);
+				} catch (error) {
+					if (onError) {
+						if (didRemove) {
+							onError(error);
+						} else {
+							onError(exception);
+						}
+					}
+				}
+			}
+			if (onError) {
+				onError(exception);
+			}
+		}
+
+		return false;
+	}
+
+	public copyAsync(src: string, dest: string): Promise<boolean> {
+		return new Promise<boolean>((resolve, reject) => {
+			try {
+				NSData.dataWithContentsOfFileCompletion(src, (data) => {
+					if (!data) {
+						reject(new Error("Failed to read file at path '" + src));
+					} else {
+						data.writeToFileAtomicallyCompletion(dest, true, () => {
+							if (this.fileExists(dest)) {
+								const size = this.getFileSize(dest);
+								if (size === data.length) {
+									resolve(true);
+								} else {
+									reject(new Error("Failed to write file at path '" + dest));
+								}
+							} else {
+								reject(new Error("Failed to write file at path '" + dest));
+							}
+						});
+					}
+				});
+			} catch (ex) {
+				reject(ex);
+			}
+		});
+	}
+
 	public readText = this.readTextSync.bind(this);
 
 	public readTextAsync(path: string, encoding?: any) {
