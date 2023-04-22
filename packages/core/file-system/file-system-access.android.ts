@@ -766,7 +766,6 @@ export class FileSystemAccess29 extends FileSystemAccess {
 		if (isContentUri(path)) {
 			try {
 				const file = getOrSetHelper(path);
-				console.log(file, path);
 
 				return {
 					path,
