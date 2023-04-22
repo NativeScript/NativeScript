@@ -205,7 +205,6 @@ export class File extends FileSystemEntity {
 					org.nativescript.widgets.Async.File.copySync(path, tempFile, getApplicationContext());
 					path = tempFile;
 				} else {
-					console.log(fileInfo);
 					const ext = fileInfo.extension;
 					const name = `${fileInfo.name.replace(`.${ext}`, '')}.${ext}`;
 					const tempFile = `${knownFolders.temp().path}/${name}`;
