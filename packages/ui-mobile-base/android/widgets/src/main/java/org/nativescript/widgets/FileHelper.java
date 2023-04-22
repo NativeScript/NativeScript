@@ -53,9 +53,8 @@ public class FileHelper {
 	}
 
 	private static boolean isExternalStorageDocument(Uri uri) {
-		return false;
-//		return "com.android.externalstorage.documents".equals(uri
-//			.getAuthority());
+		return "com.android.externalstorage.documents".equals(uri
+			.getAuthority());
 	}
 
 	private static @Nullable
@@ -132,7 +131,9 @@ public class FileHelper {
 			String path = split[1];
 
 			if ("primary".equals(type)) {
-				String[] parts = Uri.decode(uri.toString()).split(":" + path + "/");
+				int nameIndex = path.lastIndexOf("/");
+				String seg = path.substring(0, nameIndex);
+				String[] parts = Uri.decode(uri.toString()).split(":" + seg);
 				String file = Environment.getExternalStorageDirectory() + "/" + path + "/" + parts[1];
 				return new File(file);
 			} else {
@@ -178,22 +179,21 @@ public class FileHelper {
 			return null;
 		}
 
-		int sizeIndex = cursor.getColumnIndex(
-			MediaStore.MediaColumns.SIZE
-		);
-
-		int nameIndex = cursor.getColumnIndex(
-			MediaStore.MediaColumns.DISPLAY_NAME
-		);
-
-		int lastModifiedIndex = cursor.getColumnIndex(
-			MediaStore.MediaColumns.DATE_MODIFIED
-		);
-
-
 		boolean moved = cursor.moveToFirst();
 		FileHelper helper = null;
 		if (moved) {
+			int sizeIndex = cursor.getColumnIndex(
+					MediaStore.MediaColumns.SIZE
+			);
+
+			int nameIndex = cursor.getColumnIndex(
+					MediaStore.MediaColumns.DISPLAY_NAME
+			);
+
+			int lastModifiedIndex = cursor.getColumnIndex(
+					MediaStore.MediaColumns.DATE_MODIFIED
+			);
+
 			helper = new FileHelper(uri);
 			helper.size = cursor.getLong(sizeIndex);
 			helper.name = cursor.getString(nameIndex);
@@ -244,22 +244,21 @@ public class FileHelper {
 			return;
 		}
 
-		int sizeIndex = cursor.getColumnIndex(
-			MediaStore.MediaColumns.SIZE
-		);
-
-		int nameIndex = cursor.getColumnIndex(
-			MediaStore.MediaColumns.DISPLAY_NAME
-		);
-
-		int lastModifiedIndex = cursor.getColumnIndex(
-			MediaStore.MediaColumns.DATE_MODIFIED
-		);
-
-
 		boolean moved = cursor.moveToFirst();
 
 		if (moved) {
+			int sizeIndex = cursor.getColumnIndex(
+					MediaStore.MediaColumns.SIZE
+			);
+
+			int nameIndex = cursor.getColumnIndex(
+					MediaStore.MediaColumns.DISPLAY_NAME
+			);
+
+			int lastModifiedIndex = cursor.getColumnIndex(
+					MediaStore.MediaColumns.DATE_MODIFIED
+			);
+
 			size = cursor.getLong(sizeIndex);
 			name = cursor.getString(nameIndex);
 			mime = context.getContentResolver().getType(uri);

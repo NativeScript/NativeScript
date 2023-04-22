@@ -110,7 +110,12 @@ export function pickFile() {
 			//const file = File.fromPath(args.intent.getData().toString());
 			//console.log(file);
 			//readFile(file);
-			copyFile(file);
+			//copyFile(file);
+			console.time('fromPath: copy');
+			const f = File.fromPath(file, true);
+			console.timeEnd('fromPath: copy');
+			console.log('old path: ', file);
+			console.log('new path: ', f.path, f.extension, f.size);
 		}
 	});
 	const Intent = android.content.Intent;

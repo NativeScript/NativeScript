@@ -698,3 +698,24 @@ export function test_FolderClear_RemovesEmptySubfolders(done) {
 		})
 		.catch(done);
 }
+
+export function test_FileCopy(done) {
+	const now = Date.now();
+	const tempFile = fs.File.fromPath(fs.path.join(fs.knownFolders.temp().path, `${now}.txt`));
+	const content = 'Hello World: ' + now;
+	tempFile.writeTextSync(content);
+	const tempCopy = fs.File.fromPath(fs.path.join(fs.knownFolders.temp().path, `${now}-copy.txt`));
+	tempFile
+		.copy(tempCopy.path)
+		.then(() => {
+			TKUnit.assert(tempCopy.size === tempFile.size);
+			return tempCopy.readText();
+		})
+		.then((value) => {
+			TKUnit.assert(value === content);
+
+			return Promise.allSettled([tempFile.remove(), tempCopy.remove()]);
+		})
+		.then(() => done())
+		.catch(done);
+}

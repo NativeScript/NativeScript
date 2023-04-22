@@ -81,10 +81,26 @@ export class File extends FileSystemEntity {
 	isLocked: boolean;
 
 	/**
+	 * Copies a file to a given path.
+	 * @param dest The path to the destination file.
+	 * Returns a Promise with a boolean.
+	 */
+	copy(dest: string): Promise<boolean>;
+
+	/**
+	 * Copies a file to a given path.
+	 * @param dest The path to the destination file.
+	 * @param onError (optional) A callback function to use if any error occurs.
+	 * Returns a Promise with a boolean.
+	 */
+	copySync(dest: string, onError?: (error: any) => any): any;
+
+	/**
 	 * Gets or creates a File entity at the specified path.
 	 * @param path The path to get/create the file at.
+	 * @param copy An optional value when set, copies the content-uri to a temp file enabling the legacy behaviour
 	 */
-	static fromPath(path: string): File;
+	static fromPath(path: string, copy?: boolean): File;
 
 	/**
 	 * Reads the content of the file as a string using the specified encoding (defaults to UTF-8).
