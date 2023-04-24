@@ -196,7 +196,7 @@ export class File extends FileSystemEntity {
 			throw error;
 		};
 
-		if (global.isAndroid) {
+		if (global.isAndroid && copy) {
 			if (path.startsWith('content:')) {
 				const fileInfo = getFileAccess().getFile(path, onError);
 				// falls back to creating a temp file without a known extension.
