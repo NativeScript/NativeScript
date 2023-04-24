@@ -898,13 +898,15 @@ export class View extends ViewCommon implements ViewDefinition {
 			CATransaction.begin();
 		}
 
-		if (value instanceof UIColor) {
-			this.nativeViewProtected.backgroundColor = value;
-		} else {
-			iosBackground.createBackgroundUIColor(this, (color: UIColor) => {
-				this.nativeViewProtected.backgroundColor = color;
-			});
-			this._setNativeClipToBounds();
+		if (this.nativeViewProtected) {
+			if (value instanceof UIColor) {
+				this.nativeViewProtected.backgroundColor = value;
+			} else {
+				iosBackground.createBackgroundUIColor(this, (color: UIColor) => {
+					this.nativeViewProtected.backgroundColor = color;
+				});
+				this._setNativeClipToBounds();
+			}
 		}
 
 		if (!updateSuspended) {
@@ -915,8 +917,10 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	_setNativeClipToBounds() {
-		const backgroundInternal = this.style.backgroundInternal;
-		this.nativeViewProtected.clipsToBounds = (this.nativeViewProtected instanceof UIScrollView || backgroundInternal.hasBorderWidth() || backgroundInternal.hasBorderRadius()) && !backgroundInternal.hasBoxShadow();
+		if (this.nativeViewProtected) {
+			const backgroundInternal = this.style.backgroundInternal;
+			this.nativeViewProtected.clipsToBounds = (this.nativeViewProtected instanceof UIScrollView || backgroundInternal.hasBorderWidth() || backgroundInternal.hasBorderRadius()) && !backgroundInternal.hasBoxShadow();
+		}
 	}
 
 	private _setupPopoverControllerDelegate(controller: UIViewController, parent: View) {
