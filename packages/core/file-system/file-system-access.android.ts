@@ -15,7 +15,7 @@ function getApplicationContext() {
 }
 
 function getOrSetHelper(path: string): org.nativescript.widgets.FileHelper {
-	return org.nativescript.widgets.FileHelper.fromString(applicationContext, path);
+	return org.nativescript.widgets.FileHelper.fromString(getApplicationContext(), path);
 }
 
 function isContentUri(path: string): boolean {
@@ -766,6 +766,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 		if (isContentUri(path)) {
 			try {
 				const file = getOrSetHelper(path);
+
 				return {
 					path,
 					name: file.getName(),

@@ -1,5 +1,6 @@
 import { IFileSystemAccess, FileSystemAccess, FileSystemAccess29 } from './file-system-access';
 import { SDK_VERSION } from '../utils/constants';
+import { getNativeApplication } from '../application';
 // The FileSystemAccess implementation, used through all the APIs.
 let fileAccess: IFileSystemAccess;
 
@@ -180,11 +181,38 @@ export class FileSystemEntity {
 	}
 }
 
+let applicationContext;
+function getApplicationContext() {
+	if (!applicationContext) {
+		applicationContext = (<android.app.Application>getNativeApplication()).getApplicationContext();
+	}
+
+	return applicationContext;
+}
+
 export class File extends FileSystemEntity {
-	public static fromPath(path: string) {
+	public static fromPath(path: string, copy: boolean = false) {
 		const onError = function (error) {
 			throw error;
 		};
+
+		if (global.isAndroid && copy) {
+			if (path.startsWith('content:')) {
+				const fileInfo = getFileAccess().getFile(path, onError);
+				// falls back to creating a temp file without a known extension.
+				if (!fileInfo) {
+					const tempFile = `${knownFolders.temp().path}/${java.util.UUID.randomUUID().toString()}`;
+					org.nativescript.widgets.Async.File.copySync(path, tempFile, getApplicationContext());
+					path = tempFile;
+				} else {
+					const ext = fileInfo.extension;
+					const name = `${fileInfo.name.replace(`.${ext}`, '')}.${ext}`;
+					const tempFile = `${knownFolders.temp().path}/${name}`;
+					getFileAccess().copySync(path, tempFile);
+					path = tempFile;
+				}
+			}
+		}
 
 		const fileInfo = getFileAccess().getFile(path, onError);
 		if (!fileInfo) {
