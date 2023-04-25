@@ -1,3 +1,18 @@
+## [8.5.2](https://github.com/NativeScript/NativeScript/compare/8.5.1-core...8.5.2) (2023-04-25)
+
+
+### Bug Fixes
+
+* **ios:** resilience to nativeView access under edge cases ([#10276](https://github.com/NativeScript/NativeScript/issues/10276)) ([4551da0](https://github.com/NativeScript/NativeScript/commit/4551da075b074f4c67da52f5279e2823169731ec))
+
+
+### Features
+
+* **file-system:** allow copy when opening a File ([#10274](https://github.com/NativeScript/NativeScript/issues/10274)) ([18bba2b](https://github.com/NativeScript/NativeScript/commit/18bba2bc11743b8927109e6f01a9cc30e50e95a4))
+* **file:** copy sync and async support ([#10273](https://github.com/NativeScript/NativeScript/issues/10273)) ([c63a50a](https://github.com/NativeScript/NativeScript/commit/c63a50a19627159ca13c513fb8026f42f7c5918e))
+
+
+
 ## [8.5.1](https://github.com/NativeScript/NativeScript/compare/8.5.0-core...8.5.1) (2023-04-17)
 
 
