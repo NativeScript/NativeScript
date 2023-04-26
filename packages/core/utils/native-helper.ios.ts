@@ -368,10 +368,13 @@ export namespace iOSNativeHelper {
 			return view.image;
 		}
 		// console.log('snapshotView view.frame:', printRect(view.frame));
+		const originalOpacity = view.layer.opacity;
+		view.layer.opacity = originalOpacity > 0 ? originalOpacity : 1;
 		UIGraphicsBeginImageContextWithOptions(CGSizeMake(view.frame.size.width, view.frame.size.height), false, scale);
 		view.layer.renderInContext(UIGraphicsGetCurrentContext());
 		const image = UIGraphicsGetImageFromCurrentImageContext();
 		UIGraphicsEndImageContext();
+		view.layer.opacity = originalOpacity;
 		return image;
 	}
 
