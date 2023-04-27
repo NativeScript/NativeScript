@@ -28,6 +28,7 @@ class AnimationInfo {
 	public duration: number;
 	public repeatCount: number;
 	public delay: number;
+	public animationBlock?: Function;
 }
 
 export function applyAnimationProperty(styleOrView: View, property: Property<View, any>, value, setKeyFrame: boolean);
@@ -436,89 +437,90 @@ export class Animation extends AnimationBase {
 			fromValue: fromValue,
 			subPropertiesToAnimate: subPropertyNameToAnimate,
 			toValue: toValue,
+			animationBlock: animation.animationBlock,
 			duration: duration,
 			repeatCount: repeatCount,
 			delay: delay,
 		};
 	}
 
-	protected _createNativeAnimation(propertyAnimations: Array<PropertyAnimation>, index: number, playSequentially: boolean) {
-		const animationInfo = propertyAnimations[index];
-		const args = this._getNativeAnimationArguments(animationInfo, true);
-		const nativeView = <UIView>animationInfo.target.nativeViewProtected;
-		let nativeAnimation;
+	// protected _createNativeAnimation(propertyAnimations: Array<PropertyAnimation>, index: number, playSequentially: boolean) {
+	// 	const animationInfo = propertyAnimations[index];
+	// 	const args = this._getNativeAnimationArguments(animationInfo, true);
+	// 	const nativeView = <UIView>animationInfo.target.nativeViewProtected;
+	// 	let nativeAnimation;
 
-		if (args.subPropertiesToAnimate) {
-			nativeAnimation = this._createGroupAnimation(args, animationInfo);
-		} else {
-			nativeAnimation = this._createBasicAnimation(args, animationInfo);
-		}
+	// 	if (args.subPropertiesToAnimate) {
+	// 		nativeAnimation = this._createGroupAnimation(args, animationInfo);
+	// 	} else {
+	// 		nativeAnimation = this._createBasicAnimation(args, animationInfo);
+	// 	}
 
-		const animationDelegate = AnimationDelegateImpl.initWithFinishedCallback(new WeakRef(this), animationInfo);
-		nativeAnimation.setValueForKey(animationDelegate, 'delegate');
+	// 	const animationDelegate = AnimationDelegateImpl.initWithFinishedCallback(new WeakRef(this), animationInfo);
+	// 	nativeAnimation.setValueForKey(animationDelegate, 'delegate');
 
-		if (nativeView?.layer) {
-			nativeView.layer.addAnimationForKey(nativeAnimation, args.propertyNameToAnimate);
-		}
+	// 	if (nativeView?.layer) {
+	// 		nativeView.layer.addAnimationForKey(nativeAnimation, args.propertyNameToAnimate);
+	// 	}
 
-		let callback = undefined;
-		if (index + 1 < propertyAnimations.length) {
-			callback = this._createiOSAnimationFunction(propertyAnimations, index + 1, playSequentially);
-			if (!playSequentially) {
-				callback();
-			} else {
-				animationDelegate.nextAnimation = callback;
-			}
-		}
-	}
+	// 	let callback = undefined;
+	// 	if (index + 1 < propertyAnimations.length) {
+	// 		callback = this._createiOSAnimationFunction(propertyAnimations, index + 1, playSequentially);
+	// 		if (!playSequentially) {
+	// 			callback();
+	// 		} else {
+	// 			animationDelegate.nextAnimation = callback;
+	// 		}
+	// 	}
+	// }
 
-	protected _createGroupAnimation(args: AnimationInfo, animation: PropertyAnimation) {
-		const groupAnimation = CAAnimationGroup.new();
-		groupAnimation.duration = args.duration;
-		if (args.repeatCount !== undefined) {
-			groupAnimation.repeatCount = args.repeatCount;
-		}
-		if (args.delay !== undefined) {
-			groupAnimation.beginTime = CACurrentMediaTime() + args.delay;
-		}
-		if (animation.curve !== undefined) {
-			groupAnimation.timingFunction = animation.curve;
-		}
-		const animations = NSMutableArray.alloc<CAAnimation>().initWithCapacity(3);
+	// protected _createGroupAnimation(args: AnimationInfo, animation: PropertyAnimation) {
+	// 	const groupAnimation = CAAnimationGroup.new();
+	// 	groupAnimation.duration = args.duration;
+	// 	if (args.repeatCount !== undefined) {
+	// 		groupAnimation.repeatCount = args.repeatCount;
+	// 	}
+	// 	if (args.delay !== undefined) {
+	// 		groupAnimation.beginTime = CACurrentMediaTime() + args.delay;
+	// 	}
+	// 	if (animation.curve !== undefined) {
+	// 		groupAnimation.timingFunction = animation.curve;
+	// 	}
+	// 	const animations = NSMutableArray.alloc<CAAnimation>().initWithCapacity(3);
 
-		args.subPropertiesToAnimate.forEach((property) => {
-			const basicAnimationArgs = { ...args, duration: undefined, repeatCount: undefined, delay: undefined, curve: undefined };
-			basicAnimationArgs.propertyNameToAnimate = `${args.propertyNameToAnimate}.${property}`;
-			basicAnimationArgs.fromValue = args.fromValue[property];
-			basicAnimationArgs.toValue = args.toValue[property];
+	// 	args.subPropertiesToAnimate.forEach((property) => {
+	// 		const basicAnimationArgs = { ...args, duration: undefined, repeatCount: undefined, delay: undefined, curve: undefined };
+	// 		basicAnimationArgs.propertyNameToAnimate = `${args.propertyNameToAnimate}.${property}`;
+	// 		basicAnimationArgs.fromValue = args.fromValue[property];
+	// 		basicAnimationArgs.toValue = args.toValue[property];
 
-			const basicAnimation = this._createBasicAnimation(basicAnimationArgs, animation);
-			animations.addObject(basicAnimation);
-		});
+	// 		const basicAnimation = this._createBasicAnimation(basicAnimationArgs, animation);
+	// 		animations.addObject(basicAnimation);
+	// 	});
 
-		groupAnimation.animations = animations;
+	// 	groupAnimation.animations = animations;
 
-		return groupAnimation;
-	}
+	// 	return groupAnimation;
+	// }
 
-	protected _createBasicAnimation(args: AnimationInfo, animation: PropertyAnimation) {
-		const basicAnimation = (animation.curve === 'spring' ? CASpringAnimation : CABasicAnimation).animationWithKeyPath(args.propertyNameToAnimate);
-		basicAnimation['damping'] = 0.2;
-		basicAnimation.fromValue = args.fromValue;
-		basicAnimation.toValue = args.toValue;
-		basicAnimation.duration = args.duration;
-		if (args.repeatCount !== undefined) {
-			basicAnimation.repeatCount = args.repeatCount;
-		}
-		if (args.delay !== undefined) {
-			basicAnimation.beginTime = CACurrentMediaTime() + args.delay;
-		}
-		if (animation.curve !== undefined) {
-			basicAnimation.timingFunction = animation.curve;
-		}
+	// protected _createBasicAnimation(args: AnimationInfo, animation: PropertyAnimation) {
+	// 	const basicAnimation = (animation.curve === 'spring' ? CASpringAnimation : CABasicAnimation).animationWithKeyPath(args.propertyNameToAnimate);
+	// 	basicAnimation['damping'] = 0.2;
+	// 	basicAnimation.fromValue = args.fromValue;
+	// 	basicAnimation.toValue = args.toValue;
+	// 	basicAnimation.duration = args.duration;
+	// 	if (args.repeatCount !== undefined) {
+	// 		basicAnimation.repeatCount = args.repeatCount;
+	// 	}
+	// 	if (args.delay !== undefined) {
+	// 		basicAnimation.beginTime = CACurrentMediaTime() + args.delay;
+	// 	}
+	// 	if (animation.curve !== undefined) {
+	// 		basicAnimation.timingFunction = animation.curve;
+	// 	}
 
-		return basicAnimation;
-	}
+	// 	return basicAnimation;
+	// }
 	usePropertyAnimator = false;
 	protected _createNativeUIViewAnimation(propertyAnimations: Array<PropertyAnimationInfo>, index: number, playSequentially: boolean, animationInfo: PropertyAnimationInfo) {
 		const args = this._getNativeAnimationArguments(animationInfo);
@@ -544,6 +546,9 @@ export class Animation extends AnimationBase {
 		const animationOptions = UIViewAnimationOptions.AllowUserInteraction;
 
 		const animate = () => {
+			if (args.animationBlock) {
+				args.animationBlock();
+			}
 			if (args.repeatCount !== undefined) {
 				UIView.setAnimationRepeatCount(args.repeatCount);
 			}
@@ -564,7 +569,15 @@ export class Animation extends AnimationBase {
 					break;
 			}
 		};
-		const finish = (animationDidFinish: boolean) => {
+		let finished = false;
+		const startTime = Date.now();
+		const finish = (animationDidFinish: boolean = true) => {
+			if (finished || (animationDidFinish && Date.now() - startTime < args.duration * 1000)) {
+				//ignoring finished. Called to soon
+				// will be called again byt the CATransaction completion block
+				return;
+			}
+			finished = true;
 			if (animationDidFinish) {
 				if (animationInfo.propertyName === _transform) {
 					if (animationInfo.value[Properties.translate] !== undefined) {
@@ -611,15 +624,20 @@ export class Animation extends AnimationBase {
 			} else {
 				CATransaction.begin();
 				CATransaction.setAnimationTimingFunction(animationInfo.curve);
+				CATransaction.setCompletionBlock(finish);
 				UIViewPropertyAnimator.runningPropertyAnimatorWithDurationDelayOptionsAnimationsCompletion(args.duration, args.delay, animationOptions, animate, finishCallback);
 				CATransaction.commit();
 			}
 		} else {
 			if (isSpring) {
+				CATransaction.begin();
+				CATransaction.setCompletionBlock(finish);
 				UIView.animateWithDurationDelayUsingSpringWithDampingInitialSpringVelocityOptionsAnimationsCompletion(args.duration, delay, 0.2, 0, UIViewAnimationOptions.CurveLinear | animationOptions, animate, finish);
+				CATransaction.commit();
 			} else {
 				CATransaction.begin();
 				CATransaction.setAnimationTimingFunction(animationInfo.curve);
+				CATransaction.setCompletionBlock(finish);
 				UIView.animateWithDurationDelayOptionsAnimationsCompletion(args.duration, delay, animationOptions, animate, finish);
 				CATransaction.commit();
 			}

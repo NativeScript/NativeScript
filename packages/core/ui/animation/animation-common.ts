@@ -195,6 +195,7 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 					propertyName: item,
 					property,
 					value: newValue,
+					animationBlock: animationDefinition.animationBlock,
 					duration: animationDefinition.duration,
 					delay: animationDefinition.delay,
 					iterations: animationDefinition.iterations,

@@ -7,8 +7,8 @@
     "url": "https://github.com/NativeScript/NativeScript.git"
   },
   "dependencies": {
-    "@nativescript/core": "file:../../packages/core",
-    "nativescript-theme-core": "2.0.24"
+    "@nativescript/core": "*",
+    "nativescript-theme-core": "*"
   },
   "devDependencies": {
     "@nativescript/android": "~8.4.0",
