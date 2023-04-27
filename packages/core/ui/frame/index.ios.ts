@@ -5,7 +5,7 @@ import { Page } from '../page';
 import { View } from '../core/view';
 import { IOSHelper } from '../core/view/view-helper';
 import { profile } from '../../profiling';
-import { iOSNativeHelper, layout } from '../../utils';
+import { CORE_ANIMATION_DEFAULTS, iOSNativeHelper, layout } from '../../utils';
 import { Trace } from '../../trace';
 import type { PageTransition } from '../transition/page-transition';
 import { SlideTransition } from '../transition/slide-transition';
@@ -391,8 +391,6 @@ class TransitionDelegate extends NSObject {
 	};
 }
 
-const _defaultTransitionDuration = 0.35;
-
 @NativeClass
 class UINavigationControllerAnimatedDelegate extends NSObject implements UINavigationControllerDelegate {
 	public static ObjCProtocols = [UINavigationControllerDelegate];
@@ -499,7 +497,7 @@ class UINavigationControllerImpl extends UINavigationController {
 	}
 
 	private animateWithDuration(navigationTransition: NavigationTransition, nativeTransition: UIViewAnimationTransition, transitionType: string, baseCallback: Function): void {
-		const duration = navigationTransition.duration ? navigationTransition.duration / 1000 : _defaultTransitionDuration;
+		const duration = navigationTransition.duration ? navigationTransition.duration / 1000 : CORE_ANIMATION_DEFAULTS.duration;
 		const curve = _getNativeCurve(navigationTransition);
 
 		const transitionTraced = Trace.isCategorySet(Trace.categories.Transition);

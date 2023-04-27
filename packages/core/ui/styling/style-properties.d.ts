@@ -2,8 +2,8 @@ import { TransformFunctionsInfo } from '../animation';
 import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
 import { CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssProperty } from '../core/properties';
-import { Style } from '../styling/style';
-import { Font, FontStyle, FontWeight } from './font';
+import { Style } from './style';
+import { Font, FontStyleType, FontWeightType } from './font';
 import { Background } from './background';
 
 export namespace Length {
@@ -95,11 +95,12 @@ export const verticalAlignmentProperty: CssProperty<Style, CoreTypes.VerticalAli
 
 export const fontSizeProperty: InheritedCssProperty<Style, number>;
 export const fontFamilyProperty: InheritedCssProperty<Style, string>;
-export const fontStyleProperty: InheritedCssProperty<Style, FontStyle>;
-export const fontWeightProperty: InheritedCssProperty<Style, FontWeight>;
+export const fontStyleProperty: InheritedCssProperty<Style, FontStyleType>;
+export const fontWeightProperty: InheritedCssProperty<Style, FontWeightType>;
 
 export const backgroundInternalProperty: CssProperty<Style, Background>;
 export const fontInternalProperty: InheritedCssProperty<Style, Font>;
+export const fontScaleInternalProperty: InheritedCssProperty<Style, number>;
 
 export const androidElevationProperty: CssProperty<Style, number>;
 export const androidDynamicElevationOffsetProperty: CssProperty<Style, number>;

@@ -3,11 +3,13 @@ import { ViewBase } from '../core/view-base';
 import { BackstackEntry } from '../frame';
 import { isNumber } from '../../utils/types';
 import { FadeTransition } from './fade-transition';
-import { SharedTransition, SharedTransitionAnimationType } from './shared-transition';
+import { Transition } from '.';
+import { getPageStartDefaultsForType, getRectFromProps, SharedTransition, SharedTransitionAnimationType, SharedTransitionEventData } from './shared-transition';
 import { ImageSource } from '../../image-source';
 import { ContentView } from '../content-view';
 import { GridLayout } from '../layouts/grid-layout';
 import { ad } from '../../utils';
+import { Screen } from '../../platform';
 // import { Image } from '../image';
 
 @NativeClass
@@ -74,7 +76,7 @@ function setTransitionName(view: ViewBase) {
 	}
 }
 
-export class PageTransition extends FadeTransition {
+export class PageTransition extends Transition {
 	constructor(duration?: number, curve?: any) {
 		// disable custom curves until we can fix the issue with the animation not completing
 		if (curve) {
@@ -84,6 +86,89 @@ export class PageTransition extends FadeTransition {
 			duration = 500;
 		}
 		super(duration);
+	}
+
+	createAndroidAnimator(transitionType: string) {
+		const state = SharedTransition.getState(this.id);
+		const pageStart = state.pageStart;
+		const startFrame = getRectFromProps(pageStart, {
+			x: 0,
+			y: 0,
+			width: Screen.mainScreen.widthPixels,
+			height: Screen.mainScreen.heightPixels,
+		});
+		const pageEnd = state.pageEnd;
+		const endFrame = getRectFromProps(pageEnd);
+		const pageReturn = state.pageReturn;
+		const returnFrame = getRectFromProps(pageReturn);
+
+		let customDuration = -1;
+		if (state.activeType === SharedTransitionAnimationType.present && isNumber(pageEnd?.duration)) {
+			customDuration = pageEnd.duration;
+		} else if (isNumber(state.pageReturn?.duration)) {
+			customDuration = state.pageReturn.duration;
+		}
+
+		const animationSet = new android.animation.AnimatorSet();
+		animationSet.setDuration(customDuration > -1 ? customDuration : this.getDuration());
+
+		const alphaValues = Array.create('float', 2);
+		const translationXValues = Array.create('float', 2);
+		const translationYValues = Array.create('float', 2);
+		switch (transitionType) {
+			case Transition.AndroidTransitionType.enter:
+				// incoming page (to)
+				alphaValues[0] = isNumber(pageStart?.opacity) ? pageStart?.opacity : 0;
+				alphaValues[1] = isNumber(pageEnd?.opacity) ? pageEnd?.opacity : 1;
+				translationYValues[0] = startFrame.y;
+				translationYValues[1] = endFrame.y;
+				translationXValues[0] = startFrame.x;
+				translationXValues[1] = endFrame.x;
+				break;
+			case Transition.AndroidTransitionType.exit:
+				// current page (from)
+				alphaValues[0] = 1;
+				alphaValues[1] = 0;
+				translationYValues[0] = 0;
+				translationYValues[1] = 0;
+				break;
+			case Transition.AndroidTransitionType.popEnter:
+				// current page (returning to)
+				alphaValues[0] = 0;
+				alphaValues[1] = 1;
+				break;
+			case Transition.AndroidTransitionType.popExit:
+				// removing page (to)
+				alphaValues[0] = isNumber(pageEnd?.opacity) ? pageEnd?.opacity : 1;
+				alphaValues[1] = isNumber(pageStart?.opacity) ? pageStart?.opacity : 0;
+				translationYValues[0] = endFrame.y;
+				translationYValues[1] = startFrame.y;
+				translationXValues[0] = endFrame.x;
+				translationXValues[1] = startFrame.x;
+				break;
+		}
+		const properties = {
+			alpha: alphaValues,
+			translationX: translationXValues,
+			translationY: translationYValues,
+		};
+
+		const animations = new java.util.HashSet<any>();
+		for (const prop in properties) {
+			// console.log(prop, ' ', properties[prop][1]);
+			const animator = android.animation.ObjectAnimator.ofFloat(null, prop, properties[prop]);
+			if (customDuration) {
+				// duration always overrides default spring
+				animator.setInterpolator(new CustomLinearInterpolator());
+			} else {
+				animator.setInterpolator(new CustomSpringInterpolator());
+			}
+			animations.add(animator);
+		}
+
+		animationSet.playTogether(animations);
+
+		return animationSet;
 	}
 
 	androidFragmentTransactionCallback(fragmentTransaction: androidx.fragment.app.FragmentTransaction, currentEntry: BackstackEntry, newEntry: BackstackEntry) {
@@ -151,9 +236,10 @@ export class PageTransition extends FadeTransition {
 		}
 
 		const transitionSet = new androidx.transition.TransitionSet();
-		transitionSet.setDuration(customDuration || this.getDuration());
+		transitionSet.setDuration(customDuration > -1 ? customDuration : this.getDuration());
 		transitionSet.addTransition(new androidx.transition.ChangeBounds());
 		transitionSet.addTransition(new androidx.transition.ChangeTransform());
+		transitionSet.setOrdering(androidx.transition.TransitionSet.ORDERING_TOGETHER);
 
 		if (customDuration) {
 			// duration always overrides default spring

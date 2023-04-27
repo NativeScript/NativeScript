@@ -52,10 +52,10 @@ function applyFontScaleToRootViews(): void {
 
 	const fontScale = getCurrentFontScale();
 
-	rootView.style._fontScale = fontScale;
+	rootView.style.fontScaleInternal = fontScale;
 
 	const rootModalViews = <Array<View>>rootView._getRootModalViews();
-	rootModalViews.forEach((rootModalView) => (rootModalView.style._fontScale = fontScale));
+	rootModalViews.forEach((rootModalView) => (rootModalView.style.fontScaleInternal = fontScale));
 }
 
 export function initAccessibilityCssHelper(): void {

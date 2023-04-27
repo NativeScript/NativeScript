@@ -190,16 +190,31 @@ export class TextField extends TextFieldBase {
 		}
 
 		if (this.updateTextTrigger === 'textChanged') {
-			// 1. secureTextEntry with firstEdit should not replace
-			// 2. emoji's should not replace value
-			// 3. convenient keyboard shortcuts should not replace value (eg, '.com')
-			const shouldReplaceString = (textField.secureTextEntry && this.firstEdit) || (delta > 1 && !isEmoji(replacementString) && delta !== replacementString.length);
-			if (shouldReplaceString) {
-				textProperty.nativeValueChange(this, replacementString);
+			if (this.valueFormatter) {
+				// format/replace
+				let currentValue = textField.text;
+				let nativeValueChange = `${textField.text}${replacementString}`;
+				if (replacementString === '') {
+					// clearing when empty
+					nativeValueChange = currentValue.slice(0, delta);
+				}
+
+				const formattedValue = this.valueFormatter(nativeValueChange);
+				textField.text = formattedValue;
+				textProperty.nativeValueChange(this, formattedValue);
+				return false;
 			} else {
-				if (range.location <= textField.text.length) {
-					const newText = NSString.stringWithString(textField.text).stringByReplacingCharactersInRangeWithString(range, replacementString);
-					textProperty.nativeValueChange(this, newText);
+				// 1. secureTextEntry with firstEdit should not replace
+				// 2. emoji's should not replace value
+				// 3. convenient keyboard shortcuts should not replace value (eg, '.com')
+				const shouldReplaceString = (textField.secureTextEntry && this.firstEdit) || (delta > 1 && !isEmoji(replacementString) && delta !== replacementString.length);
+				if (shouldReplaceString) {
+					textProperty.nativeValueChange(this, replacementString);
+				} else {
+					if (range.location <= textField.text.length) {
+						const newText = NSString.stringWithString(textField.text).stringByReplacingCharactersInRangeWithString(range, replacementString);
+						textProperty.nativeValueChange(this, newText);
+					}
 				}
 			}
 		}

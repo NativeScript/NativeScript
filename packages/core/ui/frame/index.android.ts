@@ -458,12 +458,6 @@ export class Frame extends FrameBase {
 		navigationTransition?.instance?.androidFragmentTransactionCallback?.(transaction, currentEntry, newEntry);
 
 		transaction.commitNowAllowingStateLoss();
-
-		if (navigationTransition?.instance) {
-			SharedTransition.updateState(navigationTransition?.instance?.id, {
-				activeType: SharedTransitionAnimationType.dismiss,
-			});
-		}
 	}
 
 	public _goBackCore(backstackEntry: BackstackEntry & ExpandedEntry) {
@@ -515,10 +509,6 @@ export class Frame extends FrameBase {
 		backstackEntry.transition?.androidFragmentTransactionCallback?.(transaction, this._currentEntry, backstackEntry);
 
 		transaction.commitNowAllowingStateLoss();
-
-		if (backstackEntry?.transition) {
-			SharedTransition.finishState(backstackEntry.transition.id);
-		}
 	}
 
 	public _removeEntry(removed: BackstackEntry): void {

@@ -275,7 +275,9 @@ export class ListView extends ListViewBase {
 
 	_setNativeClipToBounds() {
 		// Always set clipsToBounds for list-view
-		this.ios.clipsToBounds = true;
+		if (this.ios) {
+			this.ios.clipsToBounds = true;
+		}
 	}
 
 	@profile

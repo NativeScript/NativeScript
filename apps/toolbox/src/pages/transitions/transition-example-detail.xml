@@ -6,17 +6,17 @@
 
   <GridLayout>
     <Button text="Close" tap="{{close}}" visibility="{{ isModal ? 'visible' : 'collapsed' }}" horizontalAlignment="left" verticalAlignment="top" marginTop="20" marginLeft="20" />
-    <ContentView width="80%" height="300" borderRadius="20" backgroundColor="green" sharedTransitionTag="fab" horizontalAlignment="center" verticalAlignment="top" marginTop="100" visibility="{{ example1 ? 'visible' : 'collapsed' }}" />
+    <ContentView width="80%" height="300" borderRadius="20" backgroundColor="green" sharedTransitionTag="fab" sharedTransitionIgnore="{{!example1}}" horizontalAlignment="center" verticalAlignment="top" marginTop="100" visibility="{{ example1 ? 'visible' : 'collapsed' }}" />
 
     <GridLayout visibility="{{ example2 ? 'visible' : 'collapsed' }}">
-        <ContentView width="200" height="200" borderRadius="100" backgroundColor="purple" sharedTransitionTag="shape1" verticalAlignment="top" horizontalAlignment="right" marginRight="20" marginTop="20" iosIgnoreSafeArea="true" />
-        <ContentView width="80" height="80" borderRadius="40" backgroundColor="orange" sharedTransitionTag="shape2" verticalAlignment="top" horizontalAlignment="left" marginLeft="20" marginTop="20" iosIgnoreSafeArea="true" />
-        <ContentView width="20" height="20" borderRadius="10" backgroundColor="brown" sharedTransitionTag="shape3" verticalAlignment="bottom" horizontalAlignment="right" marginRight="20" iosIgnoreSafeArea="true" />
-        <ContentView width="150" height="150" borderRadius="75" backgroundColor="yellow" sharedTransitionTag="shape4" verticalAlignment="bottom" horizontalAlignment="left" marginLeft="20" iosIgnoreSafeArea="true" />
+        <ContentView width="200" height="200" borderRadius="100" backgroundColor="purple" sharedTransitionTag="shape1" sharedTransitionIgnore="{{!example2}}" verticalAlignment="top" horizontalAlignment="right" marginRight="20" marginTop="20" iosIgnoreSafeArea="true" />
+        <ContentView width="80" height="80" borderRadius="40" backgroundColor="orange" sharedTransitionTag="shape2" sharedTransitionIgnore="{{!example2}}" verticalAlignment="top" horizontalAlignment="left" marginLeft="20" marginTop="20" iosIgnoreSafeArea="true" />
+        <ContentView width="20" height="20" borderRadius="10" backgroundColor="brown" sharedTransitionTag="shape3" sharedTransitionIgnore="{{!example2}}" verticalAlignment="bottom" horizontalAlignment="right" marginRight="20" iosIgnoreSafeArea="true" />
+        <ContentView width="150" height="150" borderRadius="75" backgroundColor="yellow" sharedTransitionTag="shape4" sharedTransitionIgnore="{{!example2}}" verticalAlignment="bottom" horizontalAlignment="left" marginLeft="20" iosIgnoreSafeArea="true" />
     </GridLayout>
 
     <GridLayout visibility="{{ example3 ? 'visible' : 'collapsed' }}">
-        <ContentView width="80%" height="200" borderRadius="20" backgroundColor="purple" sharedTransitionTag="{{dynamicTag}}" verticalAlignment="top" horizontalAlignment="center" marginRight="20" marginTop="20" iosIgnoreSafeArea="true" />
+        <ContentView width="80%" height="200" borderRadius="20" backgroundColor="purple" sharedTransitionTag="{{dynamicTag}}" sharedTransitionIgnore="{{!example3}}" verticalAlignment="top" horizontalAlignment="center" marginRight="20" marginTop="20" iosIgnoreSafeArea="true" />
     </GridLayout>
   </GridLayout>
 </Page>

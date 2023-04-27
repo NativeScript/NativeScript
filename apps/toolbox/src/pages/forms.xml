@@ -1,15 +1,25 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
-    <Page.actionBar>
-        <ActionBar title="Labels and TextView" class="action-bar">
-        </ActionBar>
-    </Page.actionBar>
-    <ScrollView>
-      <StackLayout padding="20">
-        <Label text="TextField:" fontWeight="bold" />
-        <TextField textChange="{{ textChange }}" marginTop="6" backgroundColor="#efefef" padding="8" fontSize="18" keyboardType="url" />
+  <Page.actionBar>
+    <ActionBar title="Labels and TextView" class="action-bar">
+    </ActionBar>
+  </Page.actionBar>
+  <ScrollView>
+    <StackLayout padding="20">
+      <Label text="TextField:" fontWeight="bold" />
+      <TextField textChange="{{ textChange }}" marginTop="6" backgroundColor="#efefef" padding="8" fontSize="18" keyboardType="url" />
 
-		<Label text="{{ textInput }}" marginTop="6" />
-        
-      </StackLayout>
-    </ScrollView>
+      <Label text="{{ textInput }}" marginTop="6" />
+
+      <Label text="SSN Formatted input:" fontWeight="bold" marginTop="12" />
+      <TextField hint="XXX-XX-XXXX" style.placeholderColor="silver" textChange="{{textChangeSSN}}" keyboardType="number" color="black" width="80%" borderColor="silver" borderWidth="1" height="40" textAlignment="center" borderRadius="4" valueFormatter="{{valueFormatterSSN}}" padding="5" maxLength="11">
+      </TextField>
+      <Label text="{{ formattedSSNInput }}" marginTop="6" />
+
+      <Label text="Phone Formatted input:" fontWeight="bold" marginTop="12" />
+      <TextField hint="XXX-XXX-XXXX" style.placeholderColor="silver" textChange="{{textChangePhone}}" keyboardType="number" color="black" width="80%" borderColor="silver" borderWidth="1" height="40" textAlignment="center" borderRadius="4" valueFormatter="{{valueFormatterPhone}}" padding="5" maxLength="12">
+      </TextField>
+      <Label text="{{ formattedPhoneInput }}" marginTop="6" />
+
+    </StackLayout>
+  </ScrollView>
 </Page>

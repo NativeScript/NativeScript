@@ -5,6 +5,7 @@ import { booleanConverter, ShowModalOptions, ViewBase } from '../view-base';
 import { getEventOrGestureName } from '../bindable';
 import { layout } from '../../../utils';
 import { isObject } from '../../../utils/types';
+import { sanitizeModuleName } from '../../../utils/common';
 import { Color } from '../../../color';
 import { Property, InheritedProperty } from '../properties';
 import { EventData } from '../../../data/observable';
@@ -18,7 +19,6 @@ import { observe as gestureObserve, GesturesObserver, GestureTypes, GestureEvent
 
 import { CSSUtils } from '../../../css/system-classes';
 import { Builder } from '../../builder';
-import { sanitizeModuleName } from '../../builder/module-name-sanitizer';
 import { StyleScope } from '../../styling/style-scope';
 import { LinearGradient } from '../../styling/linear-gradient';
 
@@ -408,7 +408,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		modalRootViewCssClasses.forEach((c) => this.cssClasses.add(c));
 
 		parent._modal = this;
-		this.style._fontScale = getCurrentFontScale();
+		this.style.fontScaleInternal = getCurrentFontScale();
 		this._modalParent = parent;
 		this._modalContext = options.context;
 		this._closeModalCallback = (...originalArgs) => {
@@ -867,6 +867,27 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	}
 	set accessibilityMediaSession(value: boolean) {
 		this.style.accessibilityMediaSession = value;
+	}
+
+	get iosAccessibilityAdjustsFontSize(): boolean {
+		return this.style.iosAccessibilityAdjustsFontSize;
+	}
+	set iosAccessibilityAdjustsFontSize(value: boolean) {
+		this.style.iosAccessibilityAdjustsFontSize = value;
+	}
+
+	get iosAccessibilityMinFontScale(): number {
+		return this.style.iosAccessibilityMinFontScale;
+	}
+	set iosAccessibilityMinFontScale(value: number) {
+		this.style.iosAccessibilityMinFontScale = value;
+	}
+
+	get iosAccessibilityMaxFontScale(): number {
+		return this.style.iosAccessibilityMaxFontScale;
+	}
+	set iosAccessibilityMaxFontScale(value: number) {
+		this.style.iosAccessibilityMaxFontScale = value;
 	}
 
 	get automationText(): string {

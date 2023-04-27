@@ -22,6 +22,7 @@ export abstract class EditableTextBase extends TextBase implements EditableTextB
 	public autocorrect: boolean;
 	public hint: string;
 	public maxLength: number;
+	public valueFormatter: (value: string) => string;
 
 	public abstract dismissSoftInput();
 	public abstract _setInputType(inputType: number): void;

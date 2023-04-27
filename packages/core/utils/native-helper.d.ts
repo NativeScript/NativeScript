@@ -250,8 +250,9 @@ export namespace iOSNativeHelper {
 	 * Copy layer properties from one view to another.
 	 * @param view a view to copy layer properties to
 	 * @param toView a view to copy later properties from
+	 * @param (optional) custom properties to copy between both views
 	 */
-	export function copyLayerProperties(view: UIView, toView: UIView): void;
+	export function copyLayerProperties(view: UIView, toView: UIView, customProperties?: { view?: Array<string> /* Array<keyof UIView> */; layer?: Array<string> /* Array<keyof CALayer> */ }): void;
 
 	/**
 	 * Animate views with a configurable spring effect

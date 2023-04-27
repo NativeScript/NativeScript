@@ -1,8 +1,9 @@
 ﻿import type { View } from '../core/view';
 import { SharedElementSettings, TransitionInteractiveState, Transition } from '.';
 import { isNumber } from '../../utils/types';
+import { CORE_ANIMATION_DEFAULTS, getDurationWithDampingFromSpring } from '../../utils/common';
 import { PanGestureEventData, GestureStateTypes } from '../gestures';
-import { SharedTransition, DEFAULT_DURATION } from './shared-transition';
+import { SharedTransition, SharedTransitionAnimationType } from './shared-transition';
 import { SharedTransitionHelper } from './shared-transition-helper';
 
 export class PageTransition extends Transition {
@@ -67,10 +68,7 @@ export class PageTransition extends Transition {
 			const state = SharedTransition.getState(this.id);
 			if (!state) {
 				// cleanup and exit, already shutdown
-				if (this._interactiveGestureTeardown) {
-					this._interactiveGestureTeardown();
-					this._interactiveGestureTeardown = null;
-				}
+				this._teardownGesture();
 				return;
 			}
 
@@ -100,10 +98,7 @@ export class PageTransition extends Transition {
 					if (this.interactiveController) {
 						const finishThreshold = isNumber(state.interactive?.dismiss?.finishThreshold) ? state.interactive.dismiss.finishThreshold : 0.5;
 						if (percent > finishThreshold) {
-							if (this._interactiveGestureTeardown) {
-								this._interactiveGestureTeardown();
-								this._interactiveGestureTeardown = null;
-							}
+							this._teardownGesture();
 							this.interactiveController.finishInteractiveTransition();
 						} else {
 							SharedTransition.updateState(this.id, {
@@ -114,6 +109,13 @@ export class PageTransition extends Transition {
 					}
 					break;
 			}
+		}
+	}
+
+	private _teardownGesture() {
+		if (this._interactiveGestureTeardown) {
+			this._interactiveGestureTeardown();
+			this._interactiveGestureTeardown = null;
 		}
 	}
 }
@@ -185,9 +187,24 @@ class PageTransitionController extends NSObject implements UIViewControllerAnima
 	transitionDuration(transitionContext: UIViewControllerContextTransitioning): number {
 		const owner = this.owner.deref();
 		if (owner) {
-			return owner.getDuration();
+			const state = SharedTransition.getState(owner.id);
+			switch (state?.activeType) {
+				case SharedTransitionAnimationType.present:
+					if (isNumber(state?.pageEnd?.duration)) {
+						return state.pageEnd?.duration / 1000;
+					} else {
+						return getDurationWithDampingFromSpring(state.pageEnd?.spring).duration;
+					}
+
+				case SharedTransitionAnimationType.dismiss:
+					if (isNumber(state?.pageReturn?.duration)) {
+						return state.pageReturn?.duration / 1000;
+					} else {
+						return getDurationWithDampingFromSpring(state.pageReturn?.spring).duration;
+					}
+			}
 		}
-		return DEFAULT_DURATION;
+		return CORE_ANIMATION_DEFAULTS.duration;
 	}
 
 	animateTransition(transitionContext: UIViewControllerContextTransitioning): void {

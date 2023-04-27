@@ -1,12 +1,12 @@
 // Types
 import { unsetValue, CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssProperty } from '../core/properties';
-import { Style } from '../styling/style';
+import { Style } from './style';
 import { Transformation, TransformationValue, TransformFunctionsInfo } from '../animation';
 
 import { Color } from '../../color';
-import { Font, parseFont, FontStyle, FontStyleType, FontWeight, FontWeightType, FontVariationSettings, FontVariationSettingsType } from '../../ui/styling/font';
+import { Font, parseFont, FontStyle, FontStyleType, FontWeight, FontWeightType, FontVariationSettings, FontVariationSettingsType } from './font';
+import { Background } from './background';
 import { layout, hasDuplicates } from '../../utils';
-import { Background } from '../../ui/styling/background';
 
 import { radiansToDegrees } from '../../utils/number-utils';
 
@@ -1316,13 +1316,13 @@ export const fontFamilyProperty = new InheritedCssProperty<Style, string>({
 });
 fontFamilyProperty.register(Style);
 
-export const fontScaleProperty = new InheritedCssProperty<Style, number>({
-	name: '_fontScale',
-	cssName: '_fontScale',
+export const fontScaleInternalProperty = new InheritedCssProperty<Style, number>({
+	name: 'fontScaleInternal',
+	cssName: '_fontScaleInternal',
 	defaultValue: 1.0,
 	valueConverter: (v) => parseFloat(v),
 });
-fontScaleProperty.register(Style);
+fontScaleInternalProperty.register(Style);
 
 export const fontSizeProperty = new InheritedCssProperty<Style, number>({
 	name: 'fontSize',

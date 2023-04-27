@@ -1,6 +1,16 @@
 ﻿import type { View } from '../core/view';
 import type { BackstackEntry } from '../frame';
-export type SharedElementSettings = { view: View; startFrame: any; endFrame?: any; startOpacity?: number; endOpacity?: number; scale?: { x?: number; y?: number }; startTransform?: any; snapshot?: any };
+export type SharedTransitionTagPropertiesToMatch = {
+	/**
+	 * View related properties
+	 */
+	view?: Array<string>;
+	/**
+	 * For iOS, can be specific if CALayer related properties
+	 */
+	layer?: Array<string>;
+};
+export type SharedElementSettings = { view: View; startFrame: any; endFrame?: any; startOpacity?: number; endOpacity?: number; scale?: { x?: number; y?: number }; zIndex?: number; startTransform?: any; snapshot?: any; propertiesToMatch?: SharedTransitionTagPropertiesToMatch };
 export type TransitionNavigationType = 'page' | 'modal';
 export interface TransitionInteractiveState {
 	started?: false;
@@ -11,6 +21,10 @@ export interface TransitionInteractiveState {
 
 export declare class Transition {
 	id: number;
+	/**
+	 * (Optional) Provide a unique name to identify this transition
+	 */
+	name?: string;
 	transitionController?: any;
 	interactiveController?: any;
 	presented?: any;

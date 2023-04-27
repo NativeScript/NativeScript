@@ -7,13 +7,21 @@ interface ModuleResolver {
 }
 
 /**
- * An extended JavaScript Error which will have the nativeError property initialized in case the error is caused by executing platform-specific code.
+ * An extended JavaScript Error which will have the nativeException property initialized in case the error is caused by executing platform-specific code.
  */
 declare interface NativeScriptError extends Error {
 	/**
 	 * Represents the native error object.
 	 */
-	nativeError: any;
+	nativeException?: any;
+	/**
+	 * The native stack trace.
+	 */
+	stackTrace?: string;
+	/**
+	 * Javascript portion of stack trace.
+	 */
+	stack?: string;
 }
 
 //Augment the NodeJS global type with our own extensions
