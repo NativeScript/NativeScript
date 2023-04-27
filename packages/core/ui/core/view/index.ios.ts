@@ -897,13 +897,13 @@ export class View extends ViewCommon implements ViewDefinition {
 		if (!updateSuspended) {
 			CATransaction.begin();
 		}
-
-		if (this.nativeViewProtected) {
+		const view = this.nativeViewProtected;
+		if (view) {
 			if (value instanceof UIColor) {
-				this.nativeViewProtected.backgroundColor = value;
+				view.backgroundColor = value;
 			} else {
 				iosBackground.createBackgroundUIColor(this, (color: UIColor) => {
-					this.nativeViewProtected.backgroundColor = color;
+					view.backgroundColor = color;
 				});
 				this._setNativeClipToBounds();
 			}
@@ -917,9 +917,10 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	_setNativeClipToBounds() {
-		if (this.nativeViewProtected) {
+		const view = this.nativeViewProtected;
+		if (view) {
 			const backgroundInternal = this.style.backgroundInternal;
-			this.nativeViewProtected.clipsToBounds = (this.nativeViewProtected instanceof UIScrollView || backgroundInternal.hasBorderWidth() || backgroundInternal.hasBorderRadius()) && !backgroundInternal.hasBoxShadow();
+			view.clipsToBounds = (view instanceof UIScrollView || backgroundInternal.hasBorderWidth() || backgroundInternal.hasBorderRadius()) && !backgroundInternal.hasBoxShadow();
 		}
 	}
 
