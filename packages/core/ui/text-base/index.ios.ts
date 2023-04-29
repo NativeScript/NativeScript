@@ -194,15 +194,17 @@ export class TextBase extends TextBaseCommon {
 
 	[fontScaleInternalProperty.setNative](value: number) {
 		const nativeView = this.nativeTextViewProtected instanceof UIButton ? this.nativeTextViewProtected.titleLabel : this.nativeTextViewProtected;
-		const currentFont = this.style.fontInternal || Font.default.withFontSize(nativeView.font.pointSize);
+		const font = this.style.fontInternal || Font.default.withFontSize(nativeView.font.pointSize);
 		const finalValue = adjustMinMaxFontScale(value, this);
 
-		const newFont = currentFont.withFontScale(finalValue);
-		this.style.fontInternal = newFont;
-
 		// Request layout on font scale as it's not done automatically
-		if (currentFont.fontScale !== finalValue) {
+		if (font.fontScale !== finalValue) {
+			this.style.fontInternal = font.withFontScale(finalValue);
 			this.requestLayout();
+		} else {
+			if (!this.style.fontInternal) {
+				this.style.fontInternal = font;
+			}
 		}
 	}
 
