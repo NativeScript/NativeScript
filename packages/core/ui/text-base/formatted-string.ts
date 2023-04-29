@@ -66,6 +66,27 @@ export class FormattedString extends ViewBase implements FormattedStringDefiniti
 		this.style.backgroundColor = value;
 	}
 
+	get iosAccessibilityAdjustsFontSize(): boolean {
+		return this.style.iosAccessibilityAdjustsFontSize;
+	}
+	set iosAccessibilityAdjustsFontSize(value: boolean) {
+		this.style.iosAccessibilityAdjustsFontSize = value;
+	}
+
+	get iosAccessibilityMinFontScale(): number {
+		return this.style.iosAccessibilityMinFontScale;
+	}
+	set iosAccessibilityMinFontScale(value: number) {
+		this.style.iosAccessibilityMinFontScale = value;
+	}
+
+	get iosAccessibilityMaxFontScale(): number {
+		return this.style.iosAccessibilityMaxFontScale;
+	}
+	set iosAccessibilityMaxFontScale(value: number) {
+		this.style.iosAccessibilityMaxFontScale = value;
+	}
+
 	get spans(): ObservableArray<Span> {
 		if (!this._spans) {
 			this._spans = new ObservableArray<Span>();
@@ -135,6 +156,12 @@ export class FormattedString extends ViewBase implements FormattedStringDefiniti
 		style.on('textDecorationChange', this.onPropertyChange, this);
 		style.on('colorChange', this.onPropertyChange, this);
 		style.on('backgroundColorChange', this.onPropertyChange, this);
+
+		// These handlers will trigger font scale update
+		style.on('iosAccessibilityAdjustsFontSizeChange', this.onPropertyChange, this);
+		style.on('iosAccessibilityMinFontScaleChange', this.onPropertyChange, this);
+		style.on('iosAccessibilityMaxFontScaleChange', this.onPropertyChange, this);
+		style.on('fontScaleInternalChange', this.onPropertyChange, this);
 	}
 
 	private removePropertyChangeHandler(span: Span) {
@@ -147,6 +174,11 @@ export class FormattedString extends ViewBase implements FormattedStringDefiniti
 		style.off('textDecorationChange', this.onPropertyChange, this);
 		style.off('colorChange', this.onPropertyChange, this);
 		style.off('backgroundColorChange', this.onPropertyChange, this);
+
+		style.off('iosAccessibilityAdjustsFontSizeChange', this.onPropertyChange, this);
+		style.off('iosAccessibilityMinFontScaleChange', this.onPropertyChange, this);
+		style.off('iosAccessibilityMaxFontScaleChange', this.onPropertyChange, this);
+		style.off('fontScaleInternalChange', this.onPropertyChange, this);
 	}
 
 	private onPropertyChange(data: PropertyChangeData) {

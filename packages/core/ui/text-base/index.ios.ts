@@ -14,6 +14,7 @@ import { isString, isNullOrUndefined } from '../../utils/types';
 import { iOSNativeHelper } from '../../utils';
 import { Trace } from '../../trace';
 import { CoreTypes } from '../../core-types';
+import { ViewBase } from 'ui/core/view-base';
 
 export * from './text-base-common';
 
@@ -195,20 +196,7 @@ export class TextBase extends TextBaseCommon {
 	[fontScaleInternalProperty.setNative](value: number) {
 		const nativeView = this.nativeTextViewProtected instanceof UIButton ? this.nativeTextViewProtected.titleLabel : this.nativeTextViewProtected;
 		const currentFont = this.style.fontInternal || Font.default.withFontSize(nativeView.font.pointSize);
-
-		let finalValue;
-		if (this.iosAccessibilityAdjustsFontSize) {
-			finalValue = value;
-
-			if (this.iosAccessibilityMinFontScale && this.iosAccessibilityMinFontScale > value) {
-				finalValue = this.iosAccessibilityMinFontScale;
-			}
-			if (this.iosAccessibilityMaxFontScale && this.iosAccessibilityMaxFontScale < value) {
-				finalValue = this.iosAccessibilityMaxFontScale;
-			}
-		} else {
-			finalValue = 1.0;
-		}
+		const finalValue = adjustMinMaxFontScale(value, this);
 
 		const newFont = currentFont.withFontScale(finalValue);
 		this.style.fontInternal = newFont;
@@ -360,7 +348,8 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	createMutableStringDetails(span: Span, text: string, index?: number): any {
-		const font = new Font(span.style.fontFamily, span.style.fontSize, span.style.fontStyle, span.style.fontWeight);
+		const fontScale = adjustMinMaxFontScale(span.style.fontScaleInternal, span);
+		const font = new Font(span.style.fontFamily, span.style.fontSize, span.style.fontStyle, span.style.fontWeight, fontScale);
 		const iosFont = font.getUIFont(this.nativeTextViewProtected.font);
 
 		const backgroundColor = <Color>(span.style.backgroundColor || (<FormattedString>span.parent).backgroundColor || (<TextBase>span.parent.parent).backgroundColor);
@@ -484,4 +473,21 @@ function isStringTappable(formattedString: FormattedString) {
 	}
 
 	return false;
+}
+
+function adjustMinMaxFontScale(value: number, view: TextBase | Span) {
+	let finalValue;
+	if (view.iosAccessibilityAdjustsFontSize) {
+		finalValue = value;
+
+		if (view.iosAccessibilityMinFontScale && view.iosAccessibilityMinFontScale > value) {
+			finalValue = view.iosAccessibilityMinFontScale;
+		}
+		if (view.iosAccessibilityMaxFontScale && view.iosAccessibilityMaxFontScale < value) {
+			finalValue = view.iosAccessibilityMaxFontScale;
+		}
+	} else {
+		finalValue = 1.0;
+	}
+	return finalValue;
 }
