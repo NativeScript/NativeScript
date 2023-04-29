@@ -14,7 +14,6 @@ import { isString, isNullOrUndefined } from '../../utils/types';
 import { iOSNativeHelper } from '../../utils';
 import { Trace } from '../../trace';
 import { CoreTypes } from '../../core-types';
-import { ViewBase } from 'ui/core/view-base';
 
 export * from './text-base-common';
 
