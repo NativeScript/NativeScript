@@ -6,7 +6,7 @@ import { Span } from './span';
 import { ObservableArray } from '../../data/observable-array';
 import { ViewBase } from '../core/view-base';
 import { Color } from '../../color';
-import { FontStyle, FontWeight } from '../styling/font';
+import { FontStyleType, FontWeightType } from '../styling/font';
 import { CoreTypes } from '../../core-types';
 
 /**
@@ -36,12 +36,12 @@ export class FormattedString extends ViewBase {
 	/**
 	 * Gets or sets the font style which will be used for all spans that doesn't have a specific value.
 	 */
-	public fontStyle: FontStyle;
+	public fontStyle: FontStyleType;
 
 	/**
 	 * Gets or sets the font weight which will be used for all spans that doesn't have a specific value.
 	 */
-	public fontWeight: FontWeight;
+	public fontWeight: FontWeightType;
 
 	/**
 	 * Gets or sets text decorations which will be used for all spans that doesn't have a specific value.
@@ -57,4 +57,19 @@ export class FormattedString extends ViewBase {
 	 * Gets or sets the font background color which will be used for all spans that doesn't have a specific value.
 	 */
 	public backgroundColor: Color;
+
+	/**
+	 * Defines whether accessibility font scale should affect font size.
+	 */
+	iosAccessibilityAdjustsFontSize: boolean;
+
+	/**
+	 * Gets or sets the minimum accessibility font scale.
+	 */
+	iosAccessibilityMinFontScale: number;
+
+	/**
+	 * Gets or sets the maximum accessibility font scale.
+	 */
+	iosAccessibilityMaxFontScale: number;
 }

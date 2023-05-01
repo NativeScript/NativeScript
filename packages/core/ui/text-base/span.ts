@@ -62,6 +62,27 @@ export class Span extends ViewBase implements SpanDefinition {
 		this.style.backgroundColor = value;
 	}
 
+	get iosAccessibilityAdjustsFontSize(): boolean {
+		return this.style.iosAccessibilityAdjustsFontSize;
+	}
+	set iosAccessibilityAdjustsFontSize(value: boolean) {
+		this.style.iosAccessibilityAdjustsFontSize = value;
+	}
+
+	get iosAccessibilityMinFontScale(): number {
+		return this.style.iosAccessibilityMinFontScale;
+	}
+	set iosAccessibilityMinFontScale(value: number) {
+		this.style.iosAccessibilityMinFontScale = value;
+	}
+
+	get iosAccessibilityMaxFontScale(): number {
+		return this.style.iosAccessibilityMaxFontScale;
+	}
+	set iosAccessibilityMaxFontScale(value: number) {
+		this.style.iosAccessibilityMaxFontScale = value;
+	}
+
 	get text(): string {
 		return this._text;
 	}
