@@ -1,11 +1,13 @@
 package org.nativescript.widgets;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Looper;
 import android.util.Base64;
 import android.util.Log;
@@ -599,19 +601,87 @@ public class Async {
 
 	public static class File {
 
+		static void updateValue(Context context, Uri uri) {
+			ContentValues values = new ContentValues();
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+				context.getContentResolver().update(uri, values, null);
+			} else {
+				context.getContentResolver().update(uri, values, null, null);
+			}
+		}
+
+		public static void append(final String path, final byte[] content, final CompleteCallback callback, final Object context) {
+			final android.os.Handler mHandler = new android.os.Handler(Looper.myLooper());
+			threadPoolExecutor().execute(new Runnable() {
+				@Override
+				public void run() {
+					final AppendTask task = new AppendTask(callback, context);
+					final boolean result = task.doInBackground(path, content);
+					mHandler.post(new Runnable() {
+						@Override
+						public void run() {
+							task.onPostExecute(result);
+						}
+					});
+				}
+			});
+		}
+
+		public static void appendBuffer(final String path, final ByteBuffer content, final CompleteCallback callback, final Object context) {
+			final android.os.Handler mHandler = new android.os.Handler(Looper.myLooper());
+			threadPoolExecutor().execute(new Runnable() {
+				@Override
+				public void run() {
+					final AppendBufferTask task = new AppendBufferTask(callback, context);
+					final boolean result = task.doInBackground(path, content);
+					mHandler.post(new Runnable() {
+						@Override
+						public void run() {
+							task.onPostExecute(result);
+						}
+					});
+				}
+			});
+		}
+
+		public static void appendText(final String path, final String content, final String encoding, final CompleteCallback callback, final Object context) {
+			final android.os.Handler mHandler = new android.os.Handler(Looper.myLooper());
+			threadPoolExecutor().execute(new Runnable() {
+				@Override
+				public void run() {
+					final AppendTextTask task = new AppendTextTask(callback, context);
+					final boolean result = task.doInBackground(path, content, encoding);
+					mHandler.post(new Runnable() {
+						@Override
+						public void run() {
+							task.onPostExecute(result);
+						}
+					});
+				}
+			});
+		}
+
 		public static boolean copySync(final String src, final String dest, final Context context) throws Exception {
 			InputStream is;
 			OutputStream os;
-
+			boolean requiresUpdate = false;
 			if(src.startsWith("content://")){
 				is = context.getContentResolver().openInputStream(Uri.parse(src));
 			}else is = new FileInputStream(new java.io.File(src));
 
 			if(dest.startsWith("content://")){
 				os = context.getContentResolver().openOutputStream(Uri.parse(dest));
+				requiresUpdate = true;
 			}else os = new FileOutputStream(new java.io.File(dest));
 
-			return copySync(is, os, context);
+			boolean ret = copySync(is, os, context);
+
+			if(ret && requiresUpdate){
+				updateValue(context, Uri.parse(dest));
+			}
+
+			return ret;
+
 		}
 
 		public static boolean copySync(final InputStream src, final OutputStream dest, final Object context) throws Exception {
@@ -630,15 +700,33 @@ public class Async {
 				InputStream is;
 				OutputStream os;
 
+				boolean requiresUpdate = false;
+
 				if(src.startsWith("content://")){
 					is = context.getContentResolver().openInputStream(Uri.parse(src));
 				}else is = new FileInputStream(new java.io.File(src));
 
 				if(dest.startsWith("content://")){
+					requiresUpdate = true;
 					os = context.getContentResolver().openOutputStream(Uri.parse(dest));
 				}else os = new FileOutputStream(new java.io.File(dest));
 
-				copy(is, os, callback, context);
+				boolean finalRequiresUpdate = requiresUpdate;
+				copy(is, os, new CompleteCallback() {
+					@Override
+					public void onComplete(Object result, Object tag) {
+						if(finalRequiresUpdate){
+							updateValue(context, Uri.parse(dest));
+						}
+						callback.onComplete(result, tag);
+					}
+
+					@Override
+					public void onError(String error, Object tag) {
+						callback.onError(error, tag);
+					}
+				}, context);
+
 			}catch (Exception exception){
 				callback.onError(exception.getMessage(), context);
 			}
@@ -666,11 +754,12 @@ public class Async {
 			return written;
 		}
 
-
 		public static void copy(final InputStream src, final OutputStream dest, final CompleteCallback callback, final Object context) {
 			final android.os.Handler mHandler = new android.os.Handler(Looper.myLooper());
 			threadPoolExecutor().execute((Runnable) () -> {
 
+				boolean done = false;
+				Exception error = null;
 				try (InputStream is = src; OutputStream os = dest){
 					ReadableByteChannel isc = java.nio.channels.Channels.newChannel(is);
 					WritableByteChannel osc = java.nio.channels.Channels.newChannel(os);
@@ -679,10 +768,19 @@ public class Async {
 
 					int written = fastChannelCopy(isc, osc);
 
-					mHandler.post(() -> callback.onComplete(size == written, context));
+					done = size == written;
 
 				} catch (Exception e) {
-					mHandler.post(() -> callback.onError(e.getMessage(), context));
+					error = e;
+
+				}finally {
+					if (error != null){
+						Exception finalError = error;
+						mHandler.post(() -> callback.onError(finalError.getMessage(), context));
+					}else {
+						boolean finalDone = done;
+						mHandler.post(() -> callback.onComplete(finalDone, context));
+					}
 				}
 			});
 		}
@@ -1082,6 +1180,147 @@ public class Async {
 					this.callback.onComplete(null, this.context);
 				} else {
 					this.callback.onError("WriteTask returns no result.", this.context);
+				}
+			}
+		}
+
+		static class AppendTask {
+			private final CompleteCallback callback;
+			private final Object context;
+
+			public AppendTask(CompleteCallback callback, Object context) {
+				this.callback = callback;
+				this.context = context;
+			}
+
+			protected boolean doInBackground(Object... params) {
+				java.io.File javaFile = new java.io.File((String) params[0]);
+				FileOutputStream stream = null;
+				byte[] content = (byte[]) params[1];
+
+				try {
+					stream = new FileOutputStream(javaFile, true);
+					stream.write(content, 0, content.length);
+
+					return true;
+				} catch (FileNotFoundException e) {
+					Log.e(TAG, "Failed to append file, FileNotFoundException: " + e.getMessage());
+					return false;
+				} catch (IOException e) {
+					Log.e(TAG, "Failed to write file, IOException: " + e.getMessage());
+					return false;
+				} finally {
+					if (stream != null) {
+						try {
+							stream.close();
+						} catch (IOException e) {
+							Log.e(TAG, "Failed to close stream, IOException: " + e.getMessage());
+						}
+					}
+				}
+			}
+
+			protected void onPostExecute(final boolean result) {
+				if (result) {
+					this.callback.onComplete(null, this.context);
+				} else {
+					this.callback.onError("AppendTask returns no result.", this.context);
+				}
+			}
+		}
+
+		static class AppendBufferTask {
+			private final CompleteCallback callback;
+			private final Object context;
+
+			public AppendBufferTask(CompleteCallback callback, Object context) {
+				this.callback = callback;
+				this.context = context;
+			}
+
+			protected boolean doInBackground(Object... params) {
+				java.io.File javaFile = new java.io.File((String) params[0]);
+				FileOutputStream stream = null;
+				ByteBuffer content = (ByteBuffer) params[1];
+
+				try {
+					stream = new FileOutputStream(javaFile, true);
+					FileChannel channel = stream.getChannel();
+					content.rewind();
+					channel.write(content);
+					content.rewind();
+					return true;
+				} catch (FileNotFoundException e) {
+					Log.e(TAG, "Failed to append to file, FileNotFoundException: " + e.getMessage());
+					return false;
+				} catch (IOException e) {
+					Log.e(TAG, "Failed to append file, IOException: " + e.getMessage());
+					return false;
+				} finally {
+					if (stream != null) {
+						try {
+							stream.close();
+						} catch (IOException e) {
+							Log.e(TAG, "Failed to close stream, IOException: " + e.getMessage());
+						}
+					}
+				}
+			}
+
+			protected void onPostExecute(final boolean result) {
+				if (result) {
+					this.callback.onComplete(null, this.context);
+				} else {
+					this.callback.onError("AppendTask returns no result.", this.context);
+				}
+			}
+		}
+
+		static class AppendTextTask {
+			private final CompleteCallback callback;
+			private final Object context;
+
+			public AppendTextTask(CompleteCallback callback, Object context) {
+				this.callback = callback;
+				this.context = context;
+			}
+
+			protected boolean doInBackground(String... params) {
+				java.io.File javaFile = new java.io.File(params[0]);
+				FileOutputStream stream = null;
+				try {
+					stream = new FileOutputStream(javaFile, true);
+
+					OutputStreamWriter writer = new OutputStreamWriter(stream, params[2]);
+					writer.write(params[1]);
+					writer.close();
+
+					return true;
+				} catch (FileNotFoundException e) {
+					Log.e(TAG, "Failed to append file, FileNotFoundException: " + e.getMessage());
+					return false;
+				} catch (UnsupportedEncodingException e) {
+					Log.e(TAG, "Failed to append file, UnsupportedEncodingException: " + e.getMessage());
+					return false;
+				} catch (IOException e) {
+					Log.e(TAG, "Failed to append file, IOException: " + e.getMessage());
+					return false;
+				} finally {
+					if (stream != null) {
+						try {
+							stream.close();
+						} catch (IOException e) {
+							Log.e(TAG, "Failed to close stream, IOException: " + e.getMessage());
+						}
+					}
+				}
+			}
+
+			protected void onPostExecute(final boolean result) {
+				if (result) {
+					this.callback.onComplete(null, this.context);
+				} else {
+					this.callback.onError("AppendTextTask returns no result.", this.context);
 				}
 			}
 		}

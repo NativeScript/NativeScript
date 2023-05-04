@@ -375,6 +375,81 @@ export class FileSystemAccess implements IFileSystemAccess {
 		}
 	}
 
+	public appendBuffer = this.appendBufferSync.bind(this);
+
+	public appendBufferAsync(path: string, buffer: ArrayBuffer | Uint8Array | Uint8ClampedArray): Promise<void> {
+		return new Promise<void>((resolve, reject) => {
+			try {
+				org.nativescript.widgets.Async.File.appendBuffer(
+					path,
+					FileSystemAccess.getBuffer(buffer),
+					new org.nativescript.widgets.Async.CompleteCallback({
+						onComplete: () => {
+							resolve();
+						},
+						onError: (err) => {
+							reject(new Error(err));
+						},
+					}),
+					null
+				);
+			} catch (ex) {
+				reject(ex);
+			}
+		});
+	}
+
+	public appendBufferSync(path: string, buffer: ArrayBuffer | Uint8Array | Uint8ClampedArray, onError?: (error: any) => any) {
+		try {
+			const javaFile = new java.io.File(path);
+			const stream = new java.io.FileOutputStream(javaFile);
+			const channel = stream.getChannel();
+			channel.write(FileSystemAccess.getBuffer(buffer));
+			stream.close();
+		} catch (exception) {
+			if (onError) {
+				onError(exception);
+			}
+		}
+	}
+
+	public append = this.appendSync.bind(this);
+
+	public appendAsync(path: string, bytes: androidNative.Array<number>): Promise<void> {
+		return new Promise<void>((resolve, reject) => {
+			try {
+				org.nativescript.widgets.Async.File.append(
+					path,
+					bytes,
+					new org.nativescript.widgets.Async.CompleteCallback({
+						onComplete: () => {
+							resolve();
+						},
+						onError: (err) => {
+							reject(new Error(err));
+						},
+					}),
+					null
+				);
+			} catch (ex) {
+				reject(ex);
+			}
+		});
+	}
+
+	public appendSync(path: string, bytes: androidNative.Array<number>, onError?: (error: any) => any) {
+		try {
+			const javaFile = new java.io.File(path);
+			const stream = new java.io.FileOutputStream(javaFile, true);
+			stream.write(bytes, 0, bytes.length);
+			stream.close();
+		} catch (exception) {
+			if (onError) {
+				onError(exception);
+			}
+		}
+	}
+
 	public writeBuffer = this.writeBufferSync.bind(this);
 
 	public writeBufferAsync(path: string, buffer: ArrayBuffer | Uint8Array | Uint8ClampedArray): Promise<void> {
@@ -536,6 +611,56 @@ export class FileSystemAccess implements IFileSystemAccess {
 		}
 
 		return s;
+	}
+
+	public appendText = this.appendTextSync.bind(this);
+
+	public appendTextAsync(path: string, content: string, encoding?: any): Promise<void> {
+		let actualEncoding = encoding;
+		if (!actualEncoding) {
+			actualEncoding = textModule.encoding.UTF_8;
+		}
+
+		return new Promise<void>((resolve, reject) => {
+			try {
+				org.nativescript.widgets.Async.File.appendText(
+					path,
+					content,
+					actualEncoding,
+					new org.nativescript.widgets.Async.CompleteCallback({
+						onComplete: () => {
+							resolve();
+						},
+						onError: (err) => {
+							reject(new Error(err));
+						},
+					}),
+					null
+				);
+			} catch (ex) {
+				reject(ex);
+			}
+		});
+	}
+
+	public appendTextSync(path: string, content: string, onError?: (error: any) => any, encoding?: any) {
+		try {
+			const javaFile = new java.io.File(path);
+			const stream = new java.io.FileOutputStream(javaFile, true);
+
+			let actualEncoding = encoding;
+			if (!actualEncoding) {
+				actualEncoding = textModule.encoding.UTF_8;
+			}
+			const writer = new java.io.OutputStreamWriter(stream, actualEncoding);
+
+			writer.write(content);
+			writer.close();
+		} catch (exception) {
+			if (onError) {
+				onError(exception);
+			}
+		}
 	}
 
 	public writeText = this.writeTextSync.bind(this);
@@ -877,6 +1002,124 @@ export class FileSystemAccess29 extends FileSystemAccess {
 	}
 	getCurrentAppPath(): string {
 		return super.getCurrentAppPath();
+	}
+
+	appendBuffer = this.appendBufferSync.bind(this);
+
+	appendBufferAsync(path: string, content: any): Promise<void> {
+		if (isContentUri(path)) {
+			return new Promise<void>((resolve, reject) => {
+				getOrSetHelper(path).appendBuffer(
+					applicationContext,
+					FileSystemAccess.getBuffer(content),
+					new org.nativescript.widgets.FileHelper.Callback({
+						onSuccess(result) {
+							resolve();
+						},
+						onError(error) {
+							reject(error);
+						},
+					})
+				);
+			});
+		}
+		return super.appendAsync(path, content);
+	}
+
+	appendBufferSync(path: string, content: any, onError?: (error: any) => any) {
+		if (isContentUri(path)) {
+			let callback = null;
+			if (typeof onError === 'function') {
+				callback = new org.nativescript.widgets.FileHelper.Callback({
+					onSuccess(result) {},
+					onError(error) {
+						onError(error);
+					},
+				});
+			}
+			getOrSetHelper(path).appendSync(applicationContext, FileSystemAccess.getBuffer(content), callback);
+		} else {
+			super.appendSync(path, content, onError);
+		}
+	}
+
+	append = this.appendSync.bind(this);
+
+	appendAsync(path: string, content: any): Promise<void> {
+		if (isContentUri(path)) {
+			return new Promise<void>((resolve, reject) => {
+				getOrSetHelper(path).append(
+					applicationContext,
+					content,
+					new org.nativescript.widgets.FileHelper.Callback({
+						onSuccess(result) {
+							resolve();
+						},
+						onError(error) {
+							reject(error);
+						},
+					})
+				);
+			});
+		}
+		return super.appendAsync(path, content);
+	}
+
+	appendSync(path: string, content: any, onError?: (error: any) => any) {
+		if (isContentUri(path)) {
+			let callback = null;
+			if (typeof onError === 'function') {
+				callback = new org.nativescript.widgets.FileHelper.Callback({
+					onSuccess(result) {},
+					onError(error) {
+						onError(error);
+					},
+				});
+			}
+			getOrSetHelper(path).appendSync(applicationContext, content, callback);
+		} else {
+			super.appendSync(path, content, onError);
+		}
+	}
+
+	appendText = this.appendTextSync.bind(this);
+
+	appendTextAsync(path: string, content: string, encoding?: any): Promise<void> {
+		if (isContentUri(path)) {
+			return new Promise<void>((resolve, reject) => {
+				getOrSetHelper(path).appendText(
+					applicationContext,
+					content,
+					encoding ?? null,
+					new org.nativescript.widgets.FileHelper.Callback({
+						onSuccess(result) {
+							resolve();
+						},
+						onError(error) {
+							reject(error);
+						},
+					})
+				);
+			});
+		}
+		return super.appendTextAsync(path, content, encoding);
+	}
+
+	appendTextSync(path: string, content: string, onError?: (error: any) => any, encoding?: any) {
+		if (isContentUri(path)) {
+			let callback = null;
+			if (typeof onError === 'function') {
+				callback = new org.nativescript.widgets.FileHelper.Callback({
+					onSuccess(result) {},
+					onError(error) {
+						onError(error);
+					},
+				});
+			}
+			getOrSetHelper(path).appendTextSync(applicationContext, content, encoding ?? null, callback);
+		} else {
+			super.appendTextSync(path, content, onError);
+		}
 	}
 
 	public readText = this.readTextSync.bind(this);

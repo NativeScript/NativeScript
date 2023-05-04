@@ -445,6 +445,115 @@ export class FileSystemAccess {
 		}
 	}
 
+	public appendBuffer = this.appendBufferSync.bind(this);
+
+	public appendBufferAsync(path: string, content: ArrayBuffer | Uint8Array | Uint8ClampedArray): Promise<void> {
+		return new Promise<void>((resolve, reject) => {
+			try {
+				const handle = NSFileHandle.fileHandleForWritingAtPath(path);
+				(handle as any).appendDataCompletion(FileSystemAccess.getBuffer(content), (error) => {
+					if (error) {
+						reject(error);
+					} else {
+						resolve();
+					}
+					handle.closeFile();
+				});
+			} catch (ex) {
+				reject(new Error("Failed to write file at path '" + path + "': " + ex));
+			}
+		});
+	}
+
+	public appendBufferSync(path: string, content: ArrayBuffer | Uint8Array | Uint8ClampedArray, onError?: (error: any) => any) {
+		try {
+			const handle = NSFileHandle.fileHandleForWritingAtPath(path);
+			handle.seekToEndOfFile();
+			handle.writeData(FileSystemAccess.getBuffer(content));
+			handle.closeFile();
+		} catch (ex) {
+			if (onError) {
+				onError(new Error("Failed to write to file '" + path + "': " + ex));
+			}
+		}
+	}
+
+	public append = this.appendSync.bind(this);
+
+	public appendAsync(path: string, content: NSData): Promise<void> {
+		return new Promise<void>((resolve, reject) => {
+			try {
+				const handle = NSFileHandle.fileHandleForWritingAtPath(path);
+				(handle as any).appendDataCompletion(content, (error) => {
+					if (error) {
+						reject(error);
+					} else {
+						resolve();
+					}
+					handle.closeFile();
+				});
+			} catch (ex) {
+				reject(new Error("Failed to write file at path '" + path + "': " + ex));
+			}
+		});
+	}
+
+	public appendSync(path: string, content: NSData, onError?: (error: any) => any) {
+		try {
+			const handle = NSFileHandle.fileHandleForWritingAtPath(path);
+			handle.seekToEndOfFile();
+			handle.writeData(content);
+			handle.closeFile();
+		} catch (ex) {
+			if (onError) {
+				onError(new Error("Failed to write to file '" + path + "': " + ex));
+			}
+		}
+	}
+
+	public appendText = this.appendTextSync.bind(this);
+
+	public appendTextAsync(path: string, content: string, encoding?: any): Promise<void> {
+		const nsString = NSString.stringWithString(content);
+		const actualEncoding = encoding || textEncoding.UTF_8;
+
+		return new Promise<void>((resolve, reject) => {
+			try {
+				const data = nsString.dataUsingEncoding(actualEncoding);
+				const handle = NSFileHandle.fileHandleForWritingAtPath(path);
+				(handle as any).appendDataCompletion(data, (error) => {
+					if (error) {
+						reject(error);
+					} else {
+						resolve();
+					}
+					handle.closeFile();
+				});
+			} catch (ex) {
+				reject(new Error("Failed to append file at path '" + path + "': " + ex));
+			}
+		});
+	}
+
+	public appendTextSync(path: string, content: string, onError?: (error: any) => any, encoding?: any) {
+		const nsString = NSString.stringWithString(content);
+
+		const actualEncoding = encoding || textEncoding.UTF_8;
+
+		// TODO: verify the useAuxiliaryFile parameter should be false
+		try {
+			const data = nsString.dataUsingEncoding(actualEncoding);
+			const handle = NSFileHandle.fileHandleForWritingAtPath(path);
+			handle.seekToEndOfFile();
+			handle.writeData(data);
+			handle.closeFile();
+		} catch (ex) {
+			if (onError) {
+				onError(new Error("Failed to append to file '" + path + "': " + ex));
+			}
+		}
+	}
+
 	public writeBuffer = this.writeBufferSync.bind(this);
 
 	public writeBufferAsync(path: string, content: ArrayBuffer | Uint8Array | Uint8ClampedArray): Promise<void> {
