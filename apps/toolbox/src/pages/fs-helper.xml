@@ -5,5 +5,10 @@
             <Button text="Pick File" tap="pickFile" />
             <Button text="Pick Multiple Files" tap="pickFiles" />
             <Button text="Test Copy" tap="copyTest" />
+            <Button text="External File Creation" tap="createFileInDownloads" />
+            <Button text="Add file to gallery" tap="createFileInGallery" />
+            <Button text="Add file to music" tap="createFileInMusic" />
+            <Button text="Append Text" tap="createAndAppendText" />
+            <Button text="Append Data" tap="createAndAppendData" />
     </StackLayout>
 </Page>
