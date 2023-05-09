@@ -1,6 +1,9 @@
+import { platformCheck } from './platform-check';
 import { getNativeApplication, android as androidApp } from '../application';
 import { Trace } from '../trace';
 import { numberHasDecimals, numberIs64Bit } from './types';
+
+const globalThis = global;
 
 export function dataDeserialize(nativeData?: any) {
 	if (nativeData === null || typeof nativeData !== 'object') {
@@ -140,11 +143,10 @@ export function dataSerialize(data?: any, wrapPrimitives?: boolean) {
 	}
 }
 
-// We are using "ad" here to avoid namespace collision with the global android object
-export namespace ad {
-	let application: android.app.Application;
-	let applicationContext: android.content.Context;
-	let contextResources: android.content.res.Resources;
+namespace AndroidUtils {
+	let application: globalThis.android.app.Application;
+	let applicationContext: globalThis.android.content.Context;
+	let contextResources: globalThis.android.content.res.Resources;
 	let packageName: string;
 	export function getApplicationContext() {
 		if (!applicationContext) {
@@ -161,7 +163,7 @@ export namespace ad {
 	}
 	export function getApplication() {
 		if (!application) {
-			application = <android.app.Application>getNativeApplication();
+			application = <globalThis.android.app.Application>getNativeApplication();
 		}
 
 		return application;
@@ -181,27 +183,27 @@ export namespace ad {
 		return packageName;
 	}
 
-	let inputMethodManager: android.view.inputmethod.InputMethodManager;
-	export function getInputMethodManager(): android.view.inputmethod.InputMethodManager {
+	let inputMethodManager: globalThis.android.view.inputmethod.InputMethodManager;
+	export function getInputMethodManager(): globalThis.android.view.inputmethod.InputMethodManager {
 		if (!inputMethodManager) {
-			inputMethodManager = <android.view.inputmethod.InputMethodManager>getApplicationContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+			inputMethodManager = <globalThis.android.view.inputmethod.InputMethodManager>getApplicationContext().getSystemService(globalThis.android.content.Context.INPUT_METHOD_SERVICE);
 		}
 
 		return inputMethodManager;
 	}
 
-	export function showSoftInput(nativeView: android.view.View): void {
+	export function showSoftInput(nativeView: globalThis.android.view.View): void {
 		const inputManager = getInputMethodManager();
-		if (inputManager && nativeView instanceof android.view.View) {
-			inputManager.showSoftInput(nativeView, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+		if (inputManager && nativeView instanceof globalThis.android.view.View) {
+			inputManager.showSoftInput(nativeView, globalThis.android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
 		}
 	}
 
-	export function dismissSoftInput(nativeView?: android.view.View): void {
+	export function dismissSoftInput(nativeView?: globalThis.android.view.View): void {
 		const inputManager = getInputMethodManager();
-		let windowToken: android.os.IBinder;
+		let windowToken: globalThis.android.os.IBinder;
 
-		if (nativeView instanceof android.view.View) {
+		if (nativeView instanceof globalThis.android.view.View) {
 			if (!nativeView.hasFocus()) {
 				return;
 			}
@@ -269,10 +271,10 @@ export namespace ad {
 		export function getResource(name: string, type?: string): number {
 			return getResources().getIdentifier(name, type, getPackageName());
 		}
-		export function getPalleteColor(name: string, context: android.content.Context): number {
+		export function getPalleteColor(name: string, context: globalThis.android.content.Context): number {
 			return getPaletteColor(name, context);
 		}
-		export function getPaletteColor(name: string, context: android.content.Context): number {
+		export function getPaletteColor(name: string, context: globalThis.android.content.Context): number {
 			if (attrCache.has(name)) {
 				return attrCache.get(name);
 			}
@@ -290,7 +292,7 @@ export namespace ad {
 				}
 
 				if (colorID) {
-					const typedValue = new android.util.TypedValue();
+					const typedValue = new globalThis.android.util.TypedValue();
 					context.getTheme().resolveAttribute(colorID, typedValue, true);
 					result = typedValue.data;
 				}
@@ -305,10 +307,19 @@ export namespace ad {
 	}
 
 	export function isRealDevice(): boolean {
-		const fingerprint = android.os.Build.FINGERPRINT;
+		const fingerprint = globalThis.android.os.Build.FINGERPRINT;
 
 		return fingerprint != null && (fingerprint.indexOf('vbox') > -1 || fingerprint.indexOf('generic') > -1);
 	}
 }
 
-export const iOSNativeHelper = 0;
+/**
+ * @deprecated Use `Utils.android` instead.
+ */
+export import ad = AndroidUtils;
+
+export import android = AndroidUtils;
+
+// these don't exist on Android.Stub them to empty functions.
+export const iOSNativeHelper = platformCheck('Utils.iOSNativeHelper');
+export const ios = platformCheck('Utils.ios');

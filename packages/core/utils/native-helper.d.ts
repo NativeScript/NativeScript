@@ -12,7 +12,7 @@ export function dataDeserialize(nativeData?: any): any;
 /**
  * Module with android specific utilities.
  */
-export namespace ad {
+declare namespace AndroidUtils {
 	/**
 	 * Gets the native Android application instance.
 	 */
@@ -113,10 +113,11 @@ export namespace ad {
 	 */
 	export function isRealDevice(): boolean;
 }
+
 /**
  * Module with ios specific utilities.
  */
-export namespace iOSNativeHelper {
+declare namespace iOSUtils {
 	// Common properties between UILabel, UITextView and UITextField
 	export interface TextUIView {
 		font: any;
@@ -268,3 +269,17 @@ export namespace iOSNativeHelper {
 	 */
 	export function animateWithSpring(options?: { tension?: number; friction?: number; mass?: number; delay?: number; velocity?: number; animateOptions?: UIViewAnimationOptions; animations?: () => void; completion?: (finished?: boolean) => void });
 }
+
+/**
+ * @deprecated use Utils.android instead.
+ */
+export import ad = AndroidUtils;
+
+export import android = AndroidUtils;
+
+/**
+ * @deprecated use Utils.ios instead.
+ */
+export import iOSNativeHelper = iOSUtils;
+
+export import ios = iOSUtils;

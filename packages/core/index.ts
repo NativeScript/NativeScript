@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="./global-types.d.ts" />
 // Init globals first (use import to ensure it's always at the top)
 import './globals';
@@ -131,78 +132,9 @@ export type { IDevice } from './platform';
 // Profiling
 export { profile, enable as profilingEnable, disable as profilingDisable, time as profilingTime, uptime as profilingUptime, start as profilingStart, stop as profilingStop, isRunning as profilingIsRunning, dumpProfiles as profilingDumpProfiles, resetProfiles as profilingResetProfiles, startCPUProfile as profilingStartCPU, stopCPUProfile as profilingStopCPU } from './profiling';
 export type { InstrumentationMode, TimerInfo } from './profiling';
-
 export { encoding } from './text';
-// for developers to be explicit if they desire around globals (allows access via Utils below)
-import { setTimeout, setInterval, clearInterval, clearTimeout } from './timer';
 export * from './trace';
-
 export * from './ui';
-
-import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, executeOnUIThread, queueMacrotask, queueGC, debounce, throttle, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, iOSNativeHelper as iosUtils, Source, RESOURCE_PREFIX, FILE_PREFIX, escapeRegexSymbols, convertString, dismissSoftInput, dismissKeyboard, dataDeserialize, dataSerialize, copyToClipboard, getFileExtension, isEmoji, getDurationWithDampingFromSpring } from './utils';
-import { SDK_VERSION } from './utils/constants';
-import { ClassInfo, getClass, getBaseClasses, getClassInfo, isBoolean, isDefined, isFunction, isNullOrUndefined, isNumber, isObject, isString, isUndefined, toUIString, verifyCallback, numberHasDecimals, numberIs64Bit } from './utils/types';
-
-export const Utils = {
-	GC,
-	SDK_VERSION,
-	RESOURCE_PREFIX,
-	FILE_PREFIX,
-	isFontIconURI,
-	isDataURI,
-	isFileOrResourcePath,
-	getFileExtension,
-	executeOnMainThread,
-	executeOnUIThread,
-	mainThreadify,
-	isMainThread,
-	dispatchToMainThread,
-	queueMacrotask,
-	queueGC,
-	debounce,
-	throttle,
-	releaseNativeObject,
-	convertString,
-	escapeRegexSymbols,
-
-	getModuleName,
-	openFile,
-	openUrl,
-	isRealDevice,
-
-	layout,
-	android: androidUtils,
-	// legacy (a lot of plugins use the shorthand "ad" Utils.ad instead of Utils.android)
-	ad: androidUtils,
-	ios: iosUtils,
-	dataSerialize,
-	dataDeserialize,
-	numberHasDecimals,
-	numberIs64Bit,
-	setTimeout,
-	setInterval,
-	clearInterval,
-	clearTimeout,
-	Source,
-	ClassInfo,
-	getClass,
-	getBaseClasses,
-	getClassInfo,
-	isBoolean,
-	isDefined,
-	isFunction,
-	isNullOrUndefined,
-	isNumber,
-	isObject,
-	isString,
-	isUndefined,
-	toUIString,
-	verifyCallback,
-	dismissSoftInput,
-	dismissKeyboard,
-	copyToClipboard,
-	isEmoji,
-	getDurationWithDampingFromSpring,
-};
+export * as Utils from './utils';
 
 export { XmlParser, ParserEventType, ParserEvent } from './xml';

@@ -1,3 +1,4 @@
+import { platformCheck } from './platform-check';
 import { Color } from '../color';
 import { Trace } from '../trace';
 import { CORE_ANIMATION_DEFAULTS, getDurationWithDampingFromSpring } from './common';
@@ -112,7 +113,7 @@ export function dataSerialize(data: any, wrapPrimitives: boolean = false) {
 	}
 }
 
-export namespace iOSNativeHelper {
+namespace iOSUtils {
 	// TODO: remove for NativeScript 9.0
 	export function getter<T>(_this: any, property: T | { (): T }): T {
 		console.log('utils.ios.getter() is deprecated; use the respective native property instead');
@@ -416,3 +417,14 @@ export namespace iOSNativeHelper {
 		UIView.animateWithDurationDelayUsingSpringWithDampingInitialSpringVelocityOptionsAnimationsCompletion(duration, opt.delay, damping, opt.velocity, opt.animateOptions, opt.animations, opt.completion);
 	}
 }
+
+// these don't exist on iOS. Stub them to empty functions.
+export const ad = platformCheck('Utils.ad');
+export const android = platformCheck('Utils.android');
+
+/**
+ * @deprecated Use `Utils.ios` instead.
+ */
+export import iOSNativeHelper = iOSUtils;
+
+export import ios = iOSUtils;

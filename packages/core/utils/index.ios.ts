@@ -1,18 +1,23 @@
-import { iOSNativeHelper } from './native-helper';
 import { Trace } from '../trace';
+import { ios as iOSUtils } from './native-helper';
 
-export { dataDeserialize, dataSerialize, iOSNativeHelper } from './native-helper';
-export * from './layout-helper';
+export { clearInterval, clearTimeout, setInterval, setTimeout } from '../timer';
 export * from './common';
-export { Source } from './debug';
+export * from './constants';
+export * from './debug';
+export * from './layout-helper';
+export * from './macrotask-scheduler';
+export * from './mainthread-helper';
+export * from './native-helper';
+export * from './types';
 
 export function openFile(filePath: string): boolean {
 	try {
-		const appPath = iOSNativeHelper.getCurrentAppPath();
-		const path = iOSNativeHelper.isRealDevice() ? filePath.replace('~', appPath) : filePath;
+		const appPath = iOSUtils.getCurrentAppPath();
+		const path = iOSUtils.isRealDevice() ? filePath.replace('~', appPath) : filePath;
 
 		const controller = UIDocumentInteractionController.interactionControllerWithURL(NSURL.fileURLWithPath(path));
-		controller.delegate = iOSNativeHelper.createUIDocumentInteractionControllerDelegate();
+		controller.delegate = iOSUtils.createUIDocumentInteractionControllerDelegate();
 
 		return controller.presentPreviewAnimated(true);
 	} catch (e) {
@@ -45,7 +50,7 @@ export function openUrl(location: string): boolean {
 }
 
 export function isRealDevice(): boolean {
-	return iOSNativeHelper.isRealDevice();
+	return iOSUtils.isRealDevice();
 }
 
 export const ad = 0;
