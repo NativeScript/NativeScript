@@ -6,95 +6,105 @@ import './globals';
 export { iOSApplication, AndroidApplication } from './application';
 export type { ApplicationEventData, LaunchEventData, OrientationChangedEventData, UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData, AndroidActivityEventData, AndroidActivityBundleEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, AndroidActivityNewIntentEventData, AndroidActivityBackPressedEventData, SystemAppearanceChangedEventData } from './application';
 
-import { fontScaleChangedEvent, launchEvent, displayedEvent, uncaughtErrorEvent, discardedErrorEvent, suspendEvent, resumeEvent, exitEvent, lowMemoryEvent, orientationChangedEvent, systemAppearanceChanged, systemAppearanceChangedEvent, getMainEntry, getRootView, _resetRootView, getResources, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, notify, hasListeners, run, orientation, getNativeApplication, hasLaunched, android as appAndroid, ios as iosApp, systemAppearance, setAutoSystemAppearanceChanged, ensureNativeApplication, setMaxRefreshRate } from './application';
-import { inBackground, suspended, foregroundEvent, backgroundEvent } from './application/application-common';
+export * as Application from './application';
 
-export const Application = {
-	launchEvent,
-	displayedEvent,
-	uncaughtErrorEvent,
-	discardedErrorEvent,
-	suspendEvent,
-	resumeEvent,
-	exitEvent,
-	foregroundEvent,
-	backgroundEvent,
-	lowMemoryEvent,
-	orientationChangedEvent,
-	systemAppearanceChangedEvent,
-	systemAppearanceChanged,
-	fontScaleChangedEvent,
-	setMaxRefreshRate,
+// import { fontScaleChangedEvent, launchEvent, displayedEvent, uncaughtErrorEvent, discardedErrorEvent, suspendEvent, resumeEvent, exitEvent, lowMemoryEvent, orientationChangedEvent, systemAppearanceChanged, systemAppearanceChangedEvent, getMainEntry, getRootView, _resetRootView, getResources, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, notify, hasListeners, run, orientation, getNativeApplication, hasLaunched, android as appAndroid, ios as iosApp, systemAppearance, setAutoSystemAppearanceChanged, ensureNativeApplication, setMaxRefreshRate } from './application';
+// import { inBackground, suspended, foregroundEvent, backgroundEvent } from './application/application-common';
 
-	getMainEntry,
-	getRootView,
-	resetRootView: _resetRootView,
-	getResources,
-	setResources,
-	setCssFileName,
-	getCssFileName,
-	loadAppCss,
-	addCss,
-	on,
-	off,
-	notify,
-	hasListeners,
-	run,
-	orientation,
-	getNativeApplication,
-	hasLaunched,
-	systemAppearance,
-	setAutoSystemAppearanceChanged,
-	get android() {
-		ensureNativeApplication();
-		return appAndroid;
-	},
-	get ios() {
-		ensureNativeApplication();
-		return iosApp;
-	},
-	get suspended() {
-		return suspended;
-	},
-	get inBackground() {
-		return inBackground;
-	},
-};
+// export const Application = {
+// 	launchEvent,
+// 	displayedEvent,
+// 	uncaughtErrorEvent,
+// 	discardedErrorEvent,
+// 	suspendEvent,
+// 	resumeEvent,
+// 	exitEvent,
+// 	foregroundEvent,
+// 	backgroundEvent,
+// 	lowMemoryEvent,
+// 	orientationChangedEvent,
+// 	systemAppearanceChangedEvent,
+// 	systemAppearanceChanged,
+// 	fontScaleChangedEvent,
+// 	setMaxRefreshRate,
 
-// Export all methods from "application-settings" as ApplicationSettings
-import { setString, getString, clear, flush, getAllKeys, getBoolean, getNumber, hasKey, remove, setBoolean, setNumber } from './application-settings';
-export const ApplicationSettings = {
-	clear,
-	flush,
-	hasKey,
-	remove,
-	setString,
-	getString,
-	getAllKeys,
-	getBoolean,
-	setBoolean,
-	getNumber,
-	setNumber,
-};
+// 	getMainEntry,
+// 	getRootView,
+// 	resetRootView: _resetRootView,
+// 	getResources,
+// 	setResources,
+// 	setCssFileName,
+// 	getCssFileName,
+// 	loadAppCss,
+// 	addCss,
+// 	on,
+// 	off,
+// 	notify,
+// 	hasListeners,
+// 	run,
+// 	orientation,
+// 	getNativeApplication,
+// 	hasLaunched,
+// 	systemAppearance,
+// 	setAutoSystemAppearanceChanged,
+// 	get android() {
+// 		ensureNativeApplication();
+// 		return appAndroid;
+// 	},
+// 	get ios() {
+// 		ensureNativeApplication();
+// 		return iosApp;
+// 	},
+// 	get suspended() {
+// 		return suspended;
+// 	},
+// 	get inBackground() {
+// 		return inBackground;
+// 	},
+// };
 
-import { accessibilityBlurEvent, accessibilityFocusEvent, accessibilityFocusChangedEvent, accessibilityPerformEscapeEvent } from './accessibility';
-export const AccessibilityEvents = {
-	accessibilityBlurEvent,
-	accessibilityFocusEvent,
-	accessibilityFocusChangedEvent,
-	accessibilityPerformEscapeEvent,
-};
+export * as ApplicationSettings from './application-settings';
+// // Export all methods from "application-settings" as ApplicationSettings
+// import { setString, getString, clear, flush, getAllKeys, getBoolean, getNumber, hasKey, remove, setBoolean, setNumber } from './application-settings';
+// export const ApplicationSettings = {
+// 	clear,
+// 	flush,
+// 	hasKey,
+// 	remove,
+// 	setString,
+// 	getString,
+// 	getAllKeys,
+// 	getBoolean,
+// 	setBoolean,
+// 	getNumber,
+// 	setNumber,
+// };
+
+import * as Accessibility from './accessibility';
+export namespace AccessibilityEvents {
+	export const accessibilityBlurEvent = Accessibility.accessibilityBlurEvent;
+	export const accessibilityFocusEvent = Accessibility.accessibilityFocusEvent;
+	export const accessibilityFocusChangedEvent = Accessibility.accessibilityFocusChangedEvent;
+	export const accessibilityPerformEscapeEvent = Accessibility.accessibilityPerformEscapeEvent;
+}
+// export const AccessibilityEvents = {
+// 	accessibilityBlurEvent,
+// 	accessibilityFocusEvent,
+// 	accessibilityFocusChangedEvent,
+// 	accessibilityPerformEscapeEvent,
+// };
 export { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait, FontScaleCategory } from './accessibility';
 
 export { Color } from './color';
 
-import { connectionType, getConnectionType, startMonitoring, stopMonitoring } from './connectivity';
-export const Connectivity = {
-	connectionType,
-	getConnectionType,
-	startMonitoring,
-	stopMonitoring,
-};
+export * as Connectivity from './connectivity';
+// import { connectionType, getConnectionType, startMonitoring, stopMonitoring } from './connectivity';
+// export const Connectivity = {
+// 	connectionType,
+// 	getConnectionType,
+// 	startMonitoring,
+// 	stopMonitoring,
+// };
 
 export * from './core-types';
 
@@ -110,15 +120,17 @@ export { File, FileSystemEntity, Folder, knownFolders, path, getFileAccess, Andr
 
 // Export all interfaces from "http" module
 export type { HttpRequestOptions, HttpResponse, Headers, HttpResponseEncoding, HttpContent } from './http';
+export * as Http from './http';
+
 // Export all methods from "http" as Http
-import { getFile, getImage, getJSON, getString as httpGetString, request } from './http';
-export const Http = {
-	getFile,
-	getImage,
-	getJSON,
-	getString: httpGetString,
-	request,
-};
+// import { getFile, getImage, getJSON, getString as httpGetString, request } from './http';
+// export const Http = {
+// 	getFile,
+// 	getImage,
+// 	getJSON,
+// 	getString: httpGetString,
+// 	request,
+// };
 
 export { ImageAsset } from './image-asset';
 export type { ImageAssetOptions } from './image-asset';

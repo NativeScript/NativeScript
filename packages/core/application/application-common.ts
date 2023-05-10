@@ -39,10 +39,16 @@ const SYSTEM_APPEARANCE_CSS_CLASSES = [`${CSSUtils.CLASS_PREFIX}${CoreTypes.Syst
 
 let cssFile = './app.css';
 
+/**
+ * Get application level static resources.
+ */
 export function getResources() {
 	return bindableResources.get();
 }
 
+/**
+ * Set application level static resources.
+ */
 export function setResources(res: any) {
 	bindableResources.set(res);
 }
@@ -83,6 +89,9 @@ export function livesync(rootView: View, context?: ModuleContext) {
 	}
 }
 
+/**
+ * Sets css file name for the application.
+ */
 export function setCssFileName(cssFileName: string) {
 	cssFile = cssFileName;
 	notify(<CssChangedEventData>{
@@ -92,10 +101,19 @@ export function setCssFileName(cssFileName: string) {
 	});
 }
 
+/**
+ * Gets css file name for the application.
+ */
 export function getCssFileName(): string {
 	return cssFile;
 }
 
+/**
+ * Loads immediately the app.css.
+ * By default the app.css file is loaded shortly after "loaded".
+ * For the Android snapshot the CSS can be parsed during the snapshot generation,
+ * as the CSS does not depend on runtime APIs, and loadAppCss will be called explicitly.
+ */
 export function loadAppCss(): void {
 	try {
 		notify(<LoadAppCSSEventData>{
@@ -128,6 +146,9 @@ function increaseStyleScopeApplicationCssSelectorVersion(rootView: View) {
 	}
 }
 
+/**
+ * Ensure css-class is set on rootView
+ */
 export function applyCssClass(rootView: View, cssClasses: string[], newCssClass: string): void {
 	if (!rootView.cssClasses.has(newCssClass)) {
 		cssClasses.forEach((cssClass) => removeCssClass(rootView, cssClass));
@@ -150,12 +171,24 @@ export function orientationChanged(rootView: View, newOrientation: 'portrait' | 
 		applyCssClass(rootModalView, ORIENTATION_CSS_CLASSES, newOrientationCssClass);
 	});
 }
+
+/**
+ * Boolean to enable/disable systemAppearanceChanged
+ */
 export let autoSystemAppearanceChanged = true;
 
+/**
+ * enable/disable systemAppearanceChanged
+ */
 export function setAutoSystemAppearanceChanged(value: boolean): void {
 	autoSystemAppearanceChanged = value;
 }
 
+/**
+ * Updates root view classes including those of modals
+ * @param rootView the root view
+ * @param newSystemAppearance the new appearance change
+ */
 export function systemAppearanceChanged(rootView: View, newSystemAppearance: 'dark' | 'light'): void {
 	if (!rootView || !autoSystemAppearanceChanged) {
 		return;
@@ -171,11 +204,11 @@ export function systemAppearanceChanged(rootView: View, newSystemAppearance: 'da
 }
 
 export let inBackground = false;
-export let suspended = false;
-
 export function setInBackground(value: boolean): void {
 	inBackground = value;
 }
+
+export let suspended = false;
 export function setSuspended(value: boolean): void {
 	suspended = value;
 }

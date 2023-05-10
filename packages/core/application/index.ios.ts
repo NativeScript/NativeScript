@@ -16,15 +16,15 @@ import { CSSUtils } from '../css/system-classes';
 import { IOSHelper } from '../ui/core/view/view-helper';
 import { Device } from '../platform';
 import { profile } from '../profiling';
-import { iOSNativeHelper } from '../utils';
+import * as Utils from '../utils';
 import { initAccessibilityCssHelper } from '../accessibility/accessibility-css-helper';
 import { initAccessibilityFontScale } from '../accessibility/font-scale';
 import { inBackground, setInBackground, setSuspended, suspended } from './application-common';
 
 const IOS_PLATFORM = 'ios';
 
-const getVisibleViewController = iOSNativeHelper.getVisibleViewController;
-const majorVersion = iOSNativeHelper.MajorVersion;
+const getVisibleViewController = Utils.ios.getVisibleViewController;
+const majorVersion = Utils.ios.MajorVersion;
 
 // NOTE: UIResponder with implementation of window - related to https://github.com/NativeScript/ios-runtime/issues/430
 // TODO: Refactor the UIResponder to use Typescript extends when this issue is resolved:
@@ -105,7 +105,7 @@ export function setMaxRefreshRate(options?: { min?: number; max?: number; prefer
 					}
 				}
 
-				if (iOSNativeHelper.MajorVersion >= 15) {
+				if (Utils.ios.MajorVersion >= 15) {
 					const min = options?.min || max / 2;
 					const preferred = options?.preferred || max;
 					displayedLink.preferredFrameRateRange = CAFrameRateRangeMake(min, max, preferred);
@@ -394,10 +394,9 @@ export class iOSApplication implements iOSApplicationDefinition {
 	}
 }
 
-/* tslint:disable */
 let iosApp: iOSApplication;
-/* tslint:enable */
 export { iosApp as ios };
+ensureNativeApplication();
 
 export function ensureNativeApplication() {
 	if (!iosApp) {
@@ -504,7 +503,7 @@ export function addCss(cssText: string, attributeScoped?: boolean): void {
 	}
 }
 
-export function _resetRootView(entry?: NavigationEntry | string) {
+export function resetRootView(entry?: NavigationEntry | string) {
 	ensureNativeApplication();
 	mainEntry = typeof entry === 'string' ? { moduleName: entry } : entry;
 	iosApp.setWindowContent();

@@ -179,6 +179,7 @@ export interface AndroidApplication {
 
 let androidApp: AndroidApplication;
 export { androidApp as android };
+ensureNativeApplication();
 
 let mainEntry: NavigationEntry;
 let started = false;
@@ -224,7 +225,7 @@ export function addCss(cssText: string, attributeScoped?: boolean): void {
 
 const CALLBACKS = '_callbacks';
 
-export function _resetRootView(entry?: NavigationEntry | string): void {
+export function resetRootView(entry?: NavigationEntry | string): void {
 	ensureNativeApplication();
 	const activity = androidApp.foregroundActivity || androidApp.startActivity;
 	if (!activity) {

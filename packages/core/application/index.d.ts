@@ -3,88 +3,7 @@ import { View } from '../ui/core/view';
 import { Observable, EventData } from '../data/observable';
 
 export * from './application-interfaces';
-
-/**
- * String value used when hooking to launch event.
- */
-export const launchEvent: string;
-
-/**
- * String value used when hooking to displayed event.
- */
-export const displayedEvent: string;
-
-/**
- * String value used when hooking to uncaughtError event.
- */
-export const uncaughtErrorEvent: string;
-
-/**
- * String value used when hooking to discardedError event.
- */
-export const discardedErrorEvent: string;
-
-/**
- * String value used when hooking to suspend event.
- */
-export const suspendEvent: string;
-
-/**
- * String value used when hooking to resume event.
- */
-export const resumeEvent: string;
-
-/**
- * String value used when hooking to foreground event.
- */
-export const foregroundEvent: string;
-
-/**
- * String value used when hooking to background event.
- */
-export const backgroundEvent: string;
-
-/**
- * String value used when hooking to exit event.
- */
-export const exitEvent: string;
-
-/**
- * String value used when hooking to lowMemory event.
- */
-export const lowMemoryEvent: string;
-
-/**
- * String value used when hooking to orientationChanged event.
- */
-export const orientationChangedEvent: string;
-
-/**
- * String value used when hooking to systemAppearanceChanged event.
- */
-export const systemAppearanceChangedEvent: string;
-
-/**
- * String value used when hooking to fontScaleChanged event.
- */
-export const fontScaleChangedEvent: string;
-
-/**
- * Boolean to enable/disable systemAppearanceChanged
- */
-export let autoSystemAppearanceChanged: boolean;
-
-/**
- * enable/disable systemAppearanceChanged
- */
-export function setAutoSystemAppearanceChanged(value: boolean): void;
-
-/**
- * Updates root view classes including those of modals
- * @param rootView the root view
- * @param newSystemAppearance the new appearance change
- */
-export function systemAppearanceChanged(rootView: View, newSystemAppearance: 'dark' | 'light'): void;
+export * from './application-common';
 
 /**
  * iOS Only
@@ -203,39 +122,6 @@ export function getMainEntry(): NavigationEntry;
 export function getRootView(): View;
 
 /**
- * Get application level static resources.
- */
-export function getResources(): any;
-
-/**
- * Set application level static resources.
- */
-export function setResources(resources: any): void;
-
-/**
- * Sets css file name for the application.
- */
-export function setCssFileName(cssFile: string): void;
-
-/**
- * Gets css file name for the application.
- */
-export function getCssFileName(): string;
-
-/**
- * Ensure css-class is set on rootView
- */
-export function applyCssClass(rootView: View, cssClasses: string[], newCssClass: string): void;
-
-/**
- * Loads immediately the app.css.
- * By default the app.css file is loaded shortly after "loaded".
- * For the Android snapshot the CSS can be parsed during the snapshot generation,
- * as the CSS does not depend on runtime APIs, and loadAppCss will be called explicitly.
- */
-export function loadAppCss();
-
-/**
  * Adds new values to the application styles.
  * @param cssText - A valid styles which will be added to the current application styles.
  * @param attributeScoped - Whether the styles are attribute scoped. Adding attribute scoped styles will not perform a full application styling refresh.
@@ -252,7 +138,7 @@ export function run(entry?: NavigationEntry | string);
  * Call this method to change the root view of your application. Important: Your application must already be running.
  * This method won't create Frame as root view.
  */
-export function _resetRootView(entry?: NavigationEntry | string);
+export function resetRootView(entry?: NavigationEntry | string);
 
 /**
  * Removes listener for the specified event name.

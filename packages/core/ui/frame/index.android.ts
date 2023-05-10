@@ -1354,7 +1354,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 	// 1. Application initial start - there is no rootView in callbacks.
 	// 2. Application revived after Activity is destroyed. this._rootView should have been restored by id in onCreate.
 	// 3. Livesync if rootView has no custom _onLivesync. this._rootView should have been cleared upfront. Launch event should not fired
-	// 4. _resetRootView method. this._rootView should have been cleared upfront. Launch event should not fired
+	// 4. resetRootView method. this._rootView should have been cleared upfront. Launch event should not fired
 	private setActivityContent(activity: androidx.appcompat.app.AppCompatActivity, savedInstanceState: android.os.Bundle, fireLaunchEvent: boolean): void {
 		let rootView = this._rootView;
 
