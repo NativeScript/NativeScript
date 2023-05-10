@@ -3,7 +3,7 @@ import {
 	FileSystemAccess,
 	FileSystemAccess29,
 } from './file-system-access';
-import { SDK_VERSION } from '../utils/constants';
+import { SDK_VERSION } from '../utils';
 import { Application } from '../application';
 
 // The FileSystemAccess implementation, used through all the APIs.

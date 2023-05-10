@@ -1,8 +1,11 @@
-import type { Transition, TransitionNavigationType, SharedTransitionTagPropertiesToMatch } from '.';
+import type {
+	Transition,
+	TransitionNavigationType,
+	SharedTransitionTagPropertiesToMatch,
+} from '.';
 import { Observable } from '../../data/observable';
 import { Screen } from '../../platform';
-import { isNumber } from '../../utils/types';
-import { CORE_ANIMATION_DEFAULTS } from '../../utils/common';
+import { isNumber, CORE_ANIMATION_DEFAULTS } from '../../utils';
 import { querySelectorAll, ViewBase } from '../core/view-base';
 import type { View } from '../core/view';
 import type { PanGestureEventData } from '../gestures';
@@ -12,9 +15,21 @@ export enum SharedTransitionAnimationType {
 	present,
 	dismiss,
 }
-type SharedTransitionEventAction = 'present' | 'dismiss' | 'interactiveStart' | 'interactiveFinish';
-export type SharedTransitionEventDataPayload = { id: number; type: TransitionNavigationType; action?: SharedTransitionEventAction; percent?: number };
-export type SharedTransitionEventData = { eventName: string; data: SharedTransitionEventDataPayload };
+type SharedTransitionEventAction =
+	| 'present'
+	| 'dismiss'
+	| 'interactiveStart'
+	| 'interactiveFinish';
+export type SharedTransitionEventDataPayload = {
+	id: number;
+	type: TransitionNavigationType;
+	action?: SharedTransitionEventAction;
+	percent?: number;
+};
+export type SharedTransitionEventData = {
+	eventName: string;
+	data: SharedTransitionEventDataPayload;
+};
 export type SharedRect = { x?: number; y?: number; width?: number; height?: number };
 export type SharedProperties = SharedRect & {
 	opacity?: number;
@@ -138,7 +153,11 @@ export interface SharedTransitionState extends SharedTransitionConfig {
 }
 class SharedTransitionObservable extends Observable {
 	// @ts-ignore
-	on(eventNames: string, callback: (data: SharedTransitionEventData) => void, thisArg?: any) {
+	on(
+		eventNames: string,
+		callback: (data: SharedTransitionEventData) => void,
+		thisArg?: any
+	) {
 		super.on(eventNames, <any>callback, thisArg);
 	}
 }
@@ -156,7 +175,10 @@ export class SharedTransition {
 	 * @param options
 	 * @returns a configured SharedTransition instance for use with navigational APIs.
 	 */
-	static custom(transition: Transition, options?: SharedTransitionConfig): { instance: Transition } {
+	static custom(
+		transition: Transition,
+		options?: SharedTransitionConfig
+	): { instance: Transition } {
 		SharedTransition.updateState(transition.id, {
 			...(options || {}),
 			instance: transition,
@@ -282,11 +304,19 @@ export class SharedTransition {
 		presenting: Array<View>;
 	} {
 		// 1. Presented view: gather all sharedTransitionTag views
-		const presentedSharedElements = <Array<View>>querySelectorAll(toPage, 'sharedTransitionTag').filter((v) => !v.sharedTransitionIgnore && typeof v.sharedTransitionTag === 'string');
+		const presentedSharedElements = <Array<View>>(
+			querySelectorAll(toPage, 'sharedTransitionTag').filter(
+				(v) => !v.sharedTransitionIgnore && typeof v.sharedTransitionTag === 'string'
+			)
+		);
 		// console.log('presented sharedTransitionTag total:', presentedSharedElements.length);
 
 		// 2. Presenting view: gather all sharedTransitionTag views
-		const presentingSharedElements = <Array<View>>querySelectorAll(fromPage, 'sharedTransitionTag').filter((v) => !v.sharedTransitionIgnore && typeof v.sharedTransitionTag === 'string');
+		const presentingSharedElements = <Array<View>>(
+			querySelectorAll(fromPage, 'sharedTransitionTag').filter(
+				(v) => !v.sharedTransitionIgnore && typeof v.sharedTransitionTag === 'string'
+			)
+		);
 		// console.log(
 		// 	'presenting sharedTransitionTags:',
 		// 	presentingSharedElements.map((v) => v.sharedTransitionTag)
@@ -295,7 +325,9 @@ export class SharedTransition {
 		// 3. only handle sharedTransitionTag on presenting which match presented
 		const presentedTags = presentedSharedElements.map((v) => v.sharedTransitionTag);
 		return {
-			sharedElements: presentingSharedElements.filter((v) => presentedTags.includes(v.sharedTransitionTag)),
+			sharedElements: presentingSharedElements.filter((v) =>
+				presentedTags.includes(v.sharedTransitionTag)
+			),
 			presented: presentedSharedElements,
 			presenting: presentingSharedElements,
 		};
@@ -308,7 +340,10 @@ export class SharedTransition {
  * @param defaults fallback properties when props doesn't contain a value for it
  * @returns { x,y,width,height }
  */
-export function getRectFromProps(props: SharedTransitionPageProperties, defaults?: SharedRect): SharedRect {
+export function getRectFromProps(
+	props: SharedTransitionPageProperties,
+	defaults?: SharedRect
+): SharedRect {
 	defaults = {
 		x: 0,
 		y: 0,
@@ -331,10 +366,16 @@ export function getRectFromProps(props: SharedTransitionPageProperties, defaults
  */
 export function getSpringFromProps(props: SharedSpringProperties) {
 	return {
-		tension: isNumber(props?.tension) ? props?.tension : CORE_ANIMATION_DEFAULTS.spring.tension,
-		friction: isNumber(props?.friction) ? props?.friction : CORE_ANIMATION_DEFAULTS.spring.friction,
+		tension: isNumber(props?.tension)
+			? props?.tension
+			: CORE_ANIMATION_DEFAULTS.spring.tension,
+		friction: isNumber(props?.friction)
+			? props?.friction
+			: CORE_ANIMATION_DEFAULTS.spring.friction,
 		mass: isNumber(props?.mass) ? props?.mass : CORE_ANIMATION_DEFAULTS.spring.mass,
-		velocity: isNumber(props?.velocity) ? props?.velocity : CORE_ANIMATION_DEFAULTS.spring.velocity,
+		velocity: isNumber(props?.velocity)
+			? props?.velocity
+			: CORE_ANIMATION_DEFAULTS.spring.velocity,
 		delay: isNumber(props?.delay) ? props?.delay : 0,
 	};
 }

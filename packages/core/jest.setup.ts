@@ -1,7 +1,13 @@
 // @ts-nocheck
+global.__DEV__ = true;
 global.WeakRef.prototype.get = global.WeakRef.prototype.deref;
 global.NativeClass = function () {};
-global.NSObject = class NSObject {};
+global.NSTimer = class NSTimer {};
+global.NSObject = class NSObject {
+	static new() {
+		return new NSObject();
+	}
+};
 global.NSString = {
 	stringWithString() {
 		return {
@@ -20,6 +26,16 @@ global.NSFileManager = {
 		fileExistsAtPathIsDirectory(path: string, isDirectory?: boolean) {
 			return true;
 		},
+	},
+};
+global.NSNotificationCenter = {
+	defaultCenter: {
+		addObserverSelectorNameObject(
+			observer: any,
+			selector: any,
+			name: any,
+			object: any
+		) {},
 	},
 };
 global.interop = {
@@ -96,6 +112,17 @@ global.NativeScriptGlobals = {
 global.CADisplayLink = function () {};
 global.NSNotification = function () {};
 global.UIApplicationDelegate = function () {};
+global.UIApplicationDidFinishLaunchingNotification =
+	'UIApplicationDidFinishLaunchingNotification';
+global.UIApplicationDidBecomeActiveNotification =
+	'UIApplicationDidBecomeActiveNotification';
+global.UIApplicationDidEnterBackgroundNotification =
+	'UIApplicationDidEnterBackgroundNotification';
+global.UIApplicationWillTerminateNotification = 'UIApplicationWillTerminateNotification';
+global.UIApplicationDidReceiveMemoryWarningNotification =
+	'UIApplicationDidReceiveMemoryWarningNotification';
+global.UIApplicationDidChangeStatusBarOrientationNotification =
+	'UIApplicationDidChangeStatusBarOrientationNotification';
 global.UIResponder = function () {};
 global.UIResponder.extend = function () {};
 global.UIViewController = function () {};

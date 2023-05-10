@@ -5,7 +5,7 @@ import { View } from '../ui';
 import { Builder } from '../ui/builder';
 import { IOSHelper } from '../ui/core/view/view-helper';
 import { NavigationEntry } from '../ui/frame/frame-interfaces';
-import * as Utils from '../utils/';
+import * as Utils from '../utils';
 import type { iOSApplication as IiOSApplication } from './';
 import { ApplicationCommon } from './application-common';
 import {
@@ -82,10 +82,6 @@ class Responder extends UIResponder implements UIApplicationDelegate {
 }
 
 export class iOSApplication extends ApplicationCommon implements IiOSApplication {
-	private _backgroundColor =
-		Utils.ios.MajorVersion <= 12 || !UIColor.systemBackgroundColor
-			? UIColor.whiteColor
-			: UIColor.systemBackgroundColor;
 	private _delegate: UIApplicationDelegate;
 	private _window: UIWindow;
 	private _notificationObservers: NotificationObserver[] = [];
@@ -468,7 +464,10 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		this._window = UIWindow.alloc().initWithFrame(UIScreen.mainScreen.bounds);
 
 		// TODO: Expose Window module so that it can we styled from XML & CSS
-		this._window.backgroundColor = this._backgroundColor;
+		this._window.backgroundColor =
+			Utils.ios.MajorVersion <= 12 || !UIColor.systemBackgroundColor
+				? UIColor.whiteColor
+				: UIColor.systemBackgroundColor;
 
 		this.notifyAppStarted(notification);
 	}
