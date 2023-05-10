@@ -7,6 +7,8 @@ declare class BAAppExtensionInfo extends NSObject implements NSSecureCoding {
 
 	readonly restrictedDownloadSizeRemaining: number;
 
+	readonly restrictedEssentialDownloadSizeRemaining: number;
+
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
@@ -33,6 +35,8 @@ declare class BADownload extends NSObject implements NSCoding, NSCopying, NSSecu
 
 	readonly identifier: string;
 
+	readonly isEssential: boolean;
+
 	readonly priority: number;
 
 	readonly state: BADownloadState;
@@ -42,6 +46,8 @@ declare class BADownload extends NSObject implements NSCoding, NSCopying, NSSecu
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyAsNonEssential(): this;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
@@ -61,6 +67,8 @@ declare class BADownloadManager extends NSObject {
 	static readonly sharedManager: BADownloadManager;
 
 	cancelDownloadError(download: BADownload): boolean;
+
+	fetchCurrentDownloads(): NSArray<BADownload>;
 
 	fetchCurrentDownloadsWithCompletionHandler(completionHandler: (p1: NSArray<BADownload>, p2: NSError) => void): void;
 
@@ -128,7 +136,7 @@ declare var BADownloaderPriorityMax: number;
 
 declare var BADownloaderPriorityMin: number;
 
-declare class BAURLDownload extends BADownload {
+declare class BAURLDownload extends BADownload implements NSCopying {
 
 	static alloc(): BAURLDownload; // inherited from NSObject
 
@@ -138,7 +146,17 @@ declare class BAURLDownload extends BADownload {
 
 	constructor(o: { identifier: string; request: NSURLRequest; applicationGroupIdentifier: string; priority: number; });
 
+	constructor(o: { identifier: string; request: NSURLRequest; essential: boolean; fileSize: number; applicationGroupIdentifier: string; priority: number; });
+
+	constructor(o: { identifier: string; request: NSURLRequest; fileSize: number; applicationGroupIdentifier: string; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
 	initWithIdentifierRequestApplicationGroupIdentifier(identifier: string, request: NSURLRequest, applicationGroupIdentifier: string): this;
 
 	initWithIdentifierRequestApplicationGroupIdentifierPriority(identifier: string, request: NSURLRequest, applicationGroupIdentifier: string, priority: number): this;
+
+	initWithIdentifierRequestEssentialFileSizeApplicationGroupIdentifierPriority(identifier: string, request: NSURLRequest, essential: boolean, fileSize: number, applicationGroupIdentifier: string, priority: number): this;
+
+	initWithIdentifierRequestFileSizeApplicationGroupIdentifier(identifier: string, request: NSURLRequest, fileSize: number, applicationGroupIdentifier: string): this;
 }

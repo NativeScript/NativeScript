@@ -1659,6 +1659,8 @@ declare class AVCaptureDevice extends NSObject {
 
 	readonly centerStageActive: boolean;
 
+	centerStageRectOfInterest: CGRect;
+
 	readonly companionDeskViewCamera: AVCaptureDevice;
 
 	readonly connected: boolean;
@@ -1801,7 +1803,7 @@ declare class AVCaptureDevice extends NSObject {
 
 	static readonly preferredMicrophoneMode: AVCaptureMicrophoneMode;
 
-	static studioLightEnabled: boolean;
+	static readonly studioLightEnabled: boolean;
 
 	cancelVideoZoomRamp(): void;
 
@@ -3679,7 +3681,11 @@ declare const enum AVError {
 
 	FailedToLoadSampleData = -11881,
 
-	AirPlayReceiverTemporarilyUnavailable = -11882
+	AirPlayReceiverTemporarilyUnavailable = -11882,
+
+	EncodeFailed = -11883,
+
+	SandboxExtensionDenied = -11884
 }
 
 declare var AVErrorDeviceKey: string;
@@ -6164,6 +6170,8 @@ declare class AVPlayerInterstitialEvent extends NSObject implements NSCopying {
 
 	alignsStartWithPrimarySegmentBoundary: boolean;
 
+	readonly assetListResponse: NSDictionary<any, any>;
+
 	cue: string;
 
 	date: Date;
@@ -6187,6 +6195,15 @@ declare class AVPlayerInterstitialEvent extends NSObject implements NSCopying {
 	willPlayOnce: boolean;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare const enum AVPlayerInterstitialEventAssetListResponseStatus {
+
+	Available = 0,
+
+	Cleared = 1,
+
+	Unavailable = 2
 }
 
 declare class AVPlayerInterstitialEventController extends AVPlayerInterstitialEventMonitor {
@@ -6228,6 +6245,14 @@ declare class AVPlayerInterstitialEventMonitor extends NSObject {
 
 	initWithPrimaryPlayer(primaryPlayer: AVPlayer): this;
 }
+
+declare var AVPlayerInterstitialEventMonitorAssetListResponseStatusDidChangeErrorKey: string;
+
+declare var AVPlayerInterstitialEventMonitorAssetListResponseStatusDidChangeEventKey: string;
+
+declare var AVPlayerInterstitialEventMonitorAssetListResponseStatusDidChangeNotification: string;
+
+declare var AVPlayerInterstitialEventMonitorAssetListResponseStatusDidChangeStatusKey: string;
 
 declare var AVPlayerInterstitialEventMonitorCurrentEventDidChangeNotification: string;
 

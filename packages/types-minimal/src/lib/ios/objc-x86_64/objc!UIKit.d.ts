@@ -3596,6 +3596,8 @@ declare class UIActivityItemsConfiguration extends NSObject implements UIActivit
 	self(): this;
 }
 
+declare var UIActivityItemsConfigurationInteractionCopy: string;
+
 declare var UIActivityItemsConfigurationInteractionShare: string;
 
 declare var UIActivityItemsConfigurationMetadataKeyLinkPresentationMetadata: string;
@@ -3635,6 +3637,8 @@ declare var UIActivityItemsConfigurationReading: {
 
 	prototype: UIActivityItemsConfigurationReading;
 };
+
+declare var UIActivityTypeAddToHomeScreen: string;
 
 declare var UIActivityTypeAddToReadingList: string;
 
@@ -5577,11 +5581,15 @@ declare class UIButtonConfiguration extends NSObject implements NSCopying, NSSec
 
 	subtitle: string;
 
+	subtitleLineBreakMode: NSLineBreakMode;
+
 	subtitleTextAttributesTransformer: (p1: NSDictionary<string, any>) => NSDictionary<string, any>;
 
 	title: string;
 
 	titleAlignment: UIButtonConfigurationTitleAlignment;
+
+	titleLineBreakMode: NSLineBreakMode;
 
 	titlePadding: number;
 
@@ -11478,7 +11486,13 @@ declare class UIHoverGestureRecognizer extends UIGestureRecognizer {
 
 	static new(): UIHoverGestureRecognizer; // inherited from NSObject
 
+	readonly altitudeAngle: number;
+
 	readonly zOffset: number;
+
+	azimuthAngleInView(view: UIView): number;
+
+	azimuthUnitVectorInView(view: UIView): CGVector;
 }
 
 declare class UIImage extends NSObject implements NSItemProviderReading, NSItemProviderWriting, NSSecureCoding, UIAccessibilityIdentification, UIItemProviderPresentationSizeProviding {
@@ -17951,6 +17965,8 @@ declare class UISearchBar extends UIView implements UIBarPositioning, UITextInpu
 
 	delegate: UISearchBarDelegate;
 
+	enabled: boolean;
+
 	inputAccessoryView: UIView;
 
 	placeholder: string;
@@ -22192,6 +22208,21 @@ declare class UITextInputAssistantItem extends NSObject {
 	leadingBarButtonGroups: NSArray<UIBarButtonItemGroup>;
 
 	trailingBarButtonGroups: NSArray<UIBarButtonItemGroup>;
+}
+
+declare class UITextInputContext extends NSObject {
+
+	static alloc(): UITextInputContext; // inherited from NSObject
+
+	static current(): UITextInputContext;
+
+	static new(): UITextInputContext; // inherited from NSObject
+
+	dictationInputExpected: boolean;
+
+	hardwareKeyboardInputExpected: boolean;
+
+	pencilInputExpected: boolean;
 }
 
 declare var UITextInputCurrentInputModeDidChangeNotification: string;

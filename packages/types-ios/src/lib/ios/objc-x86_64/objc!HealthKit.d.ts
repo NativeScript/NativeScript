@@ -736,6 +736,8 @@ declare class HKClinicalType extends HKSampleType {
 
 declare var HKClinicalTypeIdentifierAllergyRecord: string;
 
+declare var HKClinicalTypeIdentifierClinicalNoteRecord: string;
+
 declare var HKClinicalTypeIdentifierConditionRecord: string;
 
 declare var HKClinicalTypeIdentifierCoverageRecord: string;
@@ -775,7 +777,7 @@ declare class HKContactsLensSpecification extends HKLensSpecification implements
 	initWithSphereCylinderAxisAddPowerBaseCurveDiameter(sphere: HKQuantity, cylinder: HKQuantity, axis: HKQuantity, addPower: HKQuantity, baseCurve: HKQuantity, diameter: HKQuantity): this;
 }
 
-declare class HKContactsPrescription extends HKVisionPrescription {
+declare class HKContactsPrescription extends HKVisionPrescription implements NSCopying, NSSecureCoding {
 
 	static alloc(): HKContactsPrescription; // inherited from NSObject
 
@@ -790,6 +792,16 @@ declare class HKContactsPrescription extends HKVisionPrescription {
 	readonly leftEye: HKContactsLensSpecification;
 
 	readonly rightEye: HKContactsLensSpecification;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class HKCorrelation extends HKSample {
@@ -1163,6 +1175,10 @@ declare var HKFHIRResourceTypeCondition: string;
 
 declare var HKFHIRResourceTypeCoverage: string;
 
+declare var HKFHIRResourceTypeDiagnosticReport: string;
+
+declare var HKFHIRResourceTypeDocumentReference: string;
+
 declare var HKFHIRResourceTypeImmunization: string;
 
 declare var HKFHIRResourceTypeMedicationDispense: string;
@@ -1275,7 +1291,7 @@ declare class HKGlassesLensSpecification extends HKLensSpecification implements 
 	initWithSphereCylinderAxisAddPowerVertexDistancePrismFarPupillaryDistanceNearPupillaryDistance(sphere: HKQuantity, cylinder: HKQuantity, axis: HKQuantity, addPower: HKQuantity, vertexDistance: HKQuantity, prism: HKVisionPrism, farPupillaryDistance: HKQuantity, nearPupillaryDistance: HKQuantity): this;
 }
 
-declare class HKGlassesPrescription extends HKVisionPrescription {
+declare class HKGlassesPrescription extends HKVisionPrescription implements NSCopying, NSSecureCoding {
 
 	static alloc(): HKGlassesPrescription; // inherited from NSObject
 
@@ -1288,6 +1304,16 @@ declare class HKGlassesPrescription extends HKVisionPrescription {
 	readonly leftEye: HKGlassesLensSpecification;
 
 	readonly rightEye: HKGlassesLensSpecification;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class HKHealthStore extends NSObject {
@@ -1502,6 +1528,8 @@ declare var HKMetadataKeyFoodType: string;
 declare var HKMetadataKeyGlassesPrescriptionDescription: string;
 
 declare var HKMetadataKeyGroupFitness: string;
+
+declare var HKMetadataKeyHeadphoneGain: string;
 
 declare var HKMetadataKeyHeartRateEventThreshold: string;
 
@@ -2860,7 +2888,7 @@ declare const enum HKVisionEye {
 	Right = 2
 }
 
-declare class HKVisionPrescription extends HKSample {
+declare class HKVisionPrescription extends HKSample implements NSCopying, NSSecureCoding {
 
 	static alloc(): HKVisionPrescription; // inherited from NSObject
 
@@ -2873,6 +2901,16 @@ declare class HKVisionPrescription extends HKSample {
 	readonly expirationDate: Date;
 
 	readonly prescriptionType: HKVisionPrescriptionType;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare const enum HKVisionPrescriptionType {
@@ -3051,7 +3089,7 @@ declare class HKWorkout extends HKSample {
 	statisticsForType(quantityType: HKQuantityType): HKStatistics;
 }
 
-declare class HKWorkoutActivity extends NSObject {
+declare class HKWorkoutActivity extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): HKWorkoutActivity; // inherited from NSObject
 
@@ -3073,7 +3111,17 @@ declare class HKWorkoutActivity extends NSObject {
 
 	readonly workoutEvents: NSArray<HKWorkoutEvent>;
 
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
 	constructor(o: { workoutConfiguration: HKWorkoutConfiguration; startDate: Date; endDate: Date; metadata: NSDictionary<string, any>; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 
 	initWithWorkoutConfigurationStartDateEndDateMetadata(workoutConfiguration: HKWorkoutConfiguration, startDate: Date, endDate: Date, metadata: NSDictionary<string, any>): this;
 

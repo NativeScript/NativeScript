@@ -10936,6 +10936,8 @@ declare var NSURLFileAllocatedSizeKey: string;
 
 declare var NSURLFileContentIdentifierKey: string;
 
+declare var NSURLFileIdentifierKey: string;
+
 declare var NSURLFileProtectionComplete: string;
 
 declare var NSURLFileProtectionCompleteUnlessOpen: string;
@@ -12062,9 +12064,13 @@ declare var NSURLVolumeLocalizedNameKey: string;
 
 declare var NSURLVolumeMaximumFileSizeKey: string;
 
+declare var NSURLVolumeMountFromLocationKey: string;
+
 declare var NSURLVolumeNameKey: string;
 
 declare var NSURLVolumeResourceCountKey: string;
+
+declare var NSURLVolumeSubtypeKey: string;
 
 declare var NSURLVolumeSupportsAccessPermissionsKey: string;
 
@@ -12107,6 +12113,8 @@ declare var NSURLVolumeSupportsVolumeSizesKey: string;
 declare var NSURLVolumeSupportsZeroRunsKey: string;
 
 declare var NSURLVolumeTotalCapacityKey: string;
+
+declare var NSURLVolumeTypeNameKey: string;
 
 declare var NSURLVolumeURLForRemountingKey: string;
 

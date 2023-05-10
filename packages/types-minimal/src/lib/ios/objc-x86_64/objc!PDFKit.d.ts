@@ -746,6 +746,8 @@ declare var PDFDocumentKeywordsAttribute: string;
 
 declare var PDFDocumentModificationDateAttribute: string;
 
+declare var PDFDocumentOptimizeImagesForScreenOption: string;
+
 declare var PDFDocumentOwnerPasswordOption: string;
 
 declare var PDFDocumentPageIndexKey: string;
@@ -760,6 +762,8 @@ declare const enum PDFDocumentPermissions {
 }
 
 declare var PDFDocumentProducerAttribute: string;
+
+declare var PDFDocumentSaveImagesAsJPEGOption: string;
 
 declare var PDFDocumentSaveTextFromOCROption: string;
 

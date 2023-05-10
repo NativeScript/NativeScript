@@ -505,6 +505,10 @@ declare class INAnswerCallIntent extends INIntent {
 
 	static new(): INAnswerCallIntent; // inherited from NSObject
 
+	readonly audioRoute: INCallAudioRoute;
+
+	readonly callIdentifier: string;
+
 	constructor(o: { audioRoute: INCallAudioRoute; callIdentifier: string; });
 
 	initWithAudioRouteCallIdentifier(audioRoute: INCallAudioRoute, callIdentifier: string): this;
@@ -3211,6 +3215,8 @@ declare class INHangUpCallIntent extends INIntent {
 	static alloc(): INHangUpCallIntent; // inherited from NSObject
 
 	static new(): INHangUpCallIntent; // inherited from NSObject
+
+	readonly callIdentifier: string;
 
 	constructor(o: { callIdentifier: string; });
 
