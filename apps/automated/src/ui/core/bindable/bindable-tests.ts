@@ -1,18 +1,24 @@
-import { Observable, fromObject, fromObjectRecursive } from '@nativescript/core/data/observable';
+import {
+	Observable,
+	fromObject,
+	fromObjectRecursive,
+} from '@nativescript/core/data/observable';
 import { ViewBase } from '@nativescript/core/ui/core/view-base';
 import { BindingOptions } from '@nativescript/core/ui/core/bindable';
 import * as TKUnit from '../../../tk-unit';
 import * as types from '@nativescript/core/utils/types';
 import * as helper from '../../../ui-helper';
 import * as bindingBuilder from '@nativescript/core/ui/builder/binding-builder';
-import * as appModule from '@nativescript/core/application';
-import { Trace } from '@nativescript/core';
-import { View } from '@nativescript/core/ui/core/view';
-import { Button } from '@nativescript/core/ui/button';
-import { Page } from '@nativescript/core/ui/page';
-import { StackLayout } from '@nativescript/core/ui/layouts/stack-layout';
-import { Label } from '@nativescript/core/ui/label';
-import { TextField } from '@nativescript/core/ui/text-field';
+import {
+	Application,
+	View,
+	Button,
+	Page,
+	StackLayout,
+	Label,
+	TextField,
+	Trace,
+} from '@nativescript/core';
 declare var WeakRef: any;
 // <snippet module="ui/core/bindable" title="bindable">
 // For information and examples how to use bindings please refer to special [**Data binding**](../../../../bindings.md) topic.
@@ -49,11 +55,17 @@ export function test_Bindable_Bind_ToTarget_OneWay() {
 	const obj = new Label();
 	obj.bind(options, model);
 
-	TKUnit.assert(obj.get('text') === 'John', "Expected result after binding is [test value] === 'John'");
+	TKUnit.assert(
+		obj.get('text') === 'John',
+		"Expected result after binding is [test value] === 'John'"
+	);
 
 	model.set('name', 'Changed');
 
-	TKUnit.assert(obj.get('text') === 'Changed', "Expected result after binding is [test value] === 'Changed'");
+	TKUnit.assert(
+		obj.get('text') === 'Changed',
+		"Expected result after binding is [test value] === 'Changed'"
+	);
 }
 
 export function test_Bindable_Bind_ToTarget_TwoWay() {
@@ -70,11 +82,19 @@ export function test_Bindable_Bind_ToTarget_TwoWay() {
 	obj.bind(options, model);
 	obj.set('text', 'Changed');
 
-	TKUnit.assertEqual(model.get('name'), 'Changed', 'Two-way binding not updating the source when target is changed.');
+	TKUnit.assertEqual(
+		model.get('name'),
+		'Changed',
+		'Two-way binding not updating the source when target is changed.'
+	);
 
 	model.set('name', 'John');
 
-	TKUnit.assertEqual(obj.get('text'), 'John', 'Two-way binding not updating the target when source is changed.');
+	TKUnit.assertEqual(
+		obj.get('text'),
+		'John',
+		'Two-way binding not updating the target when source is changed.'
+	);
 }
 
 export function test_Bindable_Bind_ToBindingContext_OneWay() {
@@ -91,7 +111,10 @@ export function test_Bindable_Bind_ToBindingContext_OneWay() {
 	obj.set('text', 'local');
 	obj.bindingContext = model;
 
-	TKUnit.assert(obj.get('text') === 'John', 'Binding to a context does not update the target property.');
+	TKUnit.assert(
+		obj.get('text') === 'John',
+		'Binding to a context does not update the target property.'
+	);
 }
 
 export function test_Bindable_Bind_ToBindingContext_TwoWay() {
@@ -110,11 +133,19 @@ export function test_Bindable_Bind_ToBindingContext_TwoWay() {
 	obj.set('text', 'local');
 	obj.bindingContext = model;
 
-	TKUnit.assertEqual(obj.get('text'), 'John', 'Binding to a context does not update the target property.');
+	TKUnit.assertEqual(
+		obj.get('text'),
+		'John',
+		'Binding to a context does not update the target property.'
+	);
 
 	obj.set('text', 'local');
 
-	TKUnit.assertEqual(model.get('name'), 'local', 'Two-way binding to a context does not update the source property.');
+	TKUnit.assertEqual(
+		model.get('name'),
+		'local',
+		'Two-way binding to a context does not update the source property.'
+	);
 }
 
 export function test_Bindable_Unbind() {
@@ -150,7 +181,11 @@ export function test_bind_NoSource_WillUse_BindingContext() {
 		});
 
 		const button = <Button>views[1];
-		TKUnit.assertEqual(button.text, model.get('testProperty'), 'Bind method not working when no source is passed but a valid bindingContext is present.');
+		TKUnit.assertEqual(
+			button.text,
+			model.get('testProperty'),
+			'Bind method not working when no source is passed but a valid bindingContext is present.'
+		);
 	};
 
 	helper.do_PageTest_WithButton(test);
@@ -177,14 +212,24 @@ export function test_bindingContext_Change_IsReflected_Properly() {
 		});
 
 		const button = <Button>views[1];
-		TKUnit.assert(button.text === '', 'Bind should do nothing when no source and binding context are available.');
+		TKUnit.assert(
+			button.text === '',
+			'Bind should do nothing when no source and binding context are available.'
+		);
 
 		views[0].bindingContext = model;
-		TKUnit.assert(button.text === 'testValue', 'Binding not updated properly when a valid bindingContext is provided.');
+		TKUnit.assert(
+			button.text === 'testValue',
+			'Binding not updated properly when a valid bindingContext is provided.'
+		);
 
 		views[0].bindingContext = undefined;
 		model.set('testProperty', 'updatedValue');
-		TKUnit.assertEqual(button.text, '', 'Binding not properly detached when bindingContext is cleared.');
+		TKUnit.assertEqual(
+			button.text,
+			'',
+			'Binding not properly detached when bindingContext is cleared.'
+		);
 	};
 
 	helper.do_PageTest_WithButton(test);
@@ -268,8 +313,16 @@ export function test_OneBindableToBindMoreThanOneProperty_ToSameSource() {
 	model.set('name', 'John');
 	model.set('sourceProperty', 'testValue');
 
-	TKUnit.assertEqual(obj.get('text'), 'John', 'Binding does not updates target property.');
-	TKUnit.assertEqual(obj.get('targetProperty'), 'testValue', 'Binding does not updates target property1.');
+	TKUnit.assertEqual(
+		obj.get('text'),
+		'John',
+		'Binding does not updates target property.'
+	);
+	TKUnit.assertEqual(
+		obj.get('targetProperty'),
+		'testValue',
+		'Binding does not updates target property1.'
+	);
 }
 
 export function test_MoreThanOneBindables_BindToASameSourceAndProperty() {
@@ -288,8 +341,16 @@ export function test_MoreThanOneBindables_BindToASameSourceAndProperty() {
 
 	model.set('sourceProperty', 'testValue');
 
-	TKUnit.assertEqual(obj1.get('targetProperty'), 'testValue', 'Binding does not updates target property for first object.');
-	TKUnit.assertEqual(obj2.get('targetProperty'), 'testValue', 'Binding does not updates target property for second object.');
+	TKUnit.assertEqual(
+		obj1.get('targetProperty'),
+		'testValue',
+		'Binding does not updates target property for first object.'
+	);
+	TKUnit.assertEqual(
+		obj2.get('targetProperty'),
+		'testValue',
+		'Binding does not updates target property for second object.'
+	);
 }
 
 class TestClass extends ViewBase {
@@ -402,86 +463,210 @@ export function test_Bindable_BindingContext_String_DoesNotThrow() {
 
 export function test_getBindableOptionsFromStringFullFormat() {
 	const bindingExpression = 'bindProperty, bindProperty * 2, false';
-	const bindOptions = bindingBuilder.getBindingOptions('targetBindProperty', bindingExpression);
+	const bindOptions = bindingBuilder.getBindingOptions(
+		'targetBindProperty',
+		bindingExpression
+	);
 
-	TKUnit.assert(bindOptions.sourceProperty === 'bindProperty', 'Expected: bindProperty, Actual: ' + bindOptions.sourceProperty);
-	TKUnit.assert(bindOptions.targetProperty === 'targetBindProperty', 'Expected: targetBindProperty, Actual: ' + bindOptions.targetProperty);
-	TKUnit.assert(bindOptions.expression === 'bindProperty * 2', 'Expected: bindProperty * 2, Actual:' + bindOptions.expression);
-	TKUnit.assert(bindOptions.twoWay === false, 'Expected: false, Actual: ' + bindOptions.twoWay);
+	TKUnit.assert(
+		bindOptions.sourceProperty === 'bindProperty',
+		'Expected: bindProperty, Actual: ' + bindOptions.sourceProperty
+	);
+	TKUnit.assert(
+		bindOptions.targetProperty === 'targetBindProperty',
+		'Expected: targetBindProperty, Actual: ' + bindOptions.targetProperty
+	);
+	TKUnit.assert(
+		bindOptions.expression === 'bindProperty * 2',
+		'Expected: bindProperty * 2, Actual:' + bindOptions.expression
+	);
+	TKUnit.assert(
+		bindOptions.twoWay === false,
+		'Expected: false, Actual: ' + bindOptions.twoWay
+	);
 }
 
 export function test_getBindableOptionsFromStringShortFormatExpression() {
 	const bindingExpression = 'bindProperty * 2';
-	const bindOptions = bindingBuilder.getBindingOptions('targetBindProperty', bindingExpression);
+	const bindOptions = bindingBuilder.getBindingOptions(
+		'targetBindProperty',
+		bindingExpression
+	);
 
-	TKUnit.assert(bindOptions.sourceProperty === '$value', 'Expected: bindProperty, Actual: ' + bindOptions.sourceProperty);
-	TKUnit.assert(bindOptions.targetProperty === 'targetBindProperty', 'Expected: targetBindProperty, Actual: ' + bindOptions.targetProperty);
-	TKUnit.assert(bindOptions.expression === 'bindProperty * 2', 'Expected: bindProperty * 2, Actual: ' + bindOptions.expression);
-	TKUnit.assert(bindOptions.twoWay === true, 'Expected: true, Actual: ' + bindOptions.twoWay);
+	TKUnit.assert(
+		bindOptions.sourceProperty === '$value',
+		'Expected: bindProperty, Actual: ' + bindOptions.sourceProperty
+	);
+	TKUnit.assert(
+		bindOptions.targetProperty === 'targetBindProperty',
+		'Expected: targetBindProperty, Actual: ' + bindOptions.targetProperty
+	);
+	TKUnit.assert(
+		bindOptions.expression === 'bindProperty * 2',
+		'Expected: bindProperty * 2, Actual: ' + bindOptions.expression
+	);
+	TKUnit.assert(
+		bindOptions.twoWay === true,
+		'Expected: true, Actual: ' + bindOptions.twoWay
+	);
 }
 
 export function test_getBindableOptionsFromStringShortFormatProperty() {
 	const bindingExpression = 'bindProperty';
-	const bindOptions = bindingBuilder.getBindingOptions('targetBindProperty', bindingExpression);
+	const bindOptions = bindingBuilder.getBindingOptions(
+		'targetBindProperty',
+		bindingExpression
+	);
 
-	TKUnit.assert(bindOptions.sourceProperty === 'bindProperty', 'Expected: bindProperty, Actual: ' + bindOptions.sourceProperty);
-	TKUnit.assert(bindOptions.targetProperty === 'targetBindProperty', 'Expected: targetBindProperty, Actual: ' + bindOptions.targetProperty);
-	TKUnit.assert(bindOptions.expression === undefined, 'Expected: null, Actual: ' + bindOptions.expression);
-	TKUnit.assert(bindOptions.twoWay === true, 'Expected: true, Actual: ' + bindOptions.twoWay);
+	TKUnit.assert(
+		bindOptions.sourceProperty === 'bindProperty',
+		'Expected: bindProperty, Actual: ' + bindOptions.sourceProperty
+	);
+	TKUnit.assert(
+		bindOptions.targetProperty === 'targetBindProperty',
+		'Expected: targetBindProperty, Actual: ' + bindOptions.targetProperty
+	);
+	TKUnit.assert(
+		bindOptions.expression === undefined,
+		'Expected: null, Actual: ' + bindOptions.expression
+	);
+	TKUnit.assert(
+		bindOptions.twoWay === true,
+		'Expected: true, Actual: ' + bindOptions.twoWay
+	);
 }
 
 export function test_getBindableOptionsFromStringTwoParamsFormat() {
 	const bindingExpression = 'bindProperty, bindProperty * 2';
-	const bindOptions = bindingBuilder.getBindingOptions('targetBindProperty', bindingExpression);
+	const bindOptions = bindingBuilder.getBindingOptions(
+		'targetBindProperty',
+		bindingExpression
+	);
 
-	TKUnit.assert(bindOptions.sourceProperty === 'bindProperty', 'Expected: bindProperty, Actual: ' + bindOptions.sourceProperty);
-	TKUnit.assert(bindOptions.targetProperty === 'targetBindProperty', 'Expected: targetBindProperty, Actual: ' + bindOptions.targetProperty);
-	TKUnit.assert(bindOptions.expression === 'bindProperty * 2', 'Expected: bindProperty * 2, Actual:' + bindOptions.expression);
-	TKUnit.assert(bindOptions.twoWay === true, 'Expected: true, Actual: ' + bindOptions.twoWay);
+	TKUnit.assert(
+		bindOptions.sourceProperty === 'bindProperty',
+		'Expected: bindProperty, Actual: ' + bindOptions.sourceProperty
+	);
+	TKUnit.assert(
+		bindOptions.targetProperty === 'targetBindProperty',
+		'Expected: targetBindProperty, Actual: ' + bindOptions.targetProperty
+	);
+	TKUnit.assert(
+		bindOptions.expression === 'bindProperty * 2',
+		'Expected: bindProperty * 2, Actual:' + bindOptions.expression
+	);
+	TKUnit.assert(
+		bindOptions.twoWay === true,
+		'Expected: true, Actual: ' + bindOptions.twoWay
+	);
 }
 
 export function test_getBindableOptionsFromStringFullNamedFormat() {
 	const bindingExpression = 'bindProperty, expression = bindProperty * 2, twoWay = false';
-	const bindOptions = bindingBuilder.getBindingOptions('targetBindProperty', bindingExpression);
+	const bindOptions = bindingBuilder.getBindingOptions(
+		'targetBindProperty',
+		bindingExpression
+	);
 
-	TKUnit.assert(bindOptions.sourceProperty === 'bindProperty', 'Expected: bindProperty, Actual: ' + bindOptions.sourceProperty);
-	TKUnit.assert(bindOptions.targetProperty === 'targetBindProperty', 'Expected: targetBindProperty, Actual: ' + bindOptions.targetProperty);
-	TKUnit.assert(bindOptions.expression === 'bindProperty * 2', 'Expected: bindProperty * 2, Actual:' + bindOptions.expression);
-	TKUnit.assert(bindOptions.twoWay === false, 'Expected: false, Actual: ' + bindOptions.twoWay);
+	TKUnit.assert(
+		bindOptions.sourceProperty === 'bindProperty',
+		'Expected: bindProperty, Actual: ' + bindOptions.sourceProperty
+	);
+	TKUnit.assert(
+		bindOptions.targetProperty === 'targetBindProperty',
+		'Expected: targetBindProperty, Actual: ' + bindOptions.targetProperty
+	);
+	TKUnit.assert(
+		bindOptions.expression === 'bindProperty * 2',
+		'Expected: bindProperty * 2, Actual:' + bindOptions.expression
+	);
+	TKUnit.assert(
+		bindOptions.twoWay === false,
+		'Expected: false, Actual: ' + bindOptions.twoWay
+	);
 }
 
 export function test_getBindableOptionsFromStringShortNamedFormatExpression() {
-	const bindingExpression = 'sourceProperty = bindProperty, expression = bindProperty * 2';
-	const bindOptions = bindingBuilder.getBindingOptions('targetBindProperty', bindingExpression);
+	const bindingExpression =
+		'sourceProperty = bindProperty, expression = bindProperty * 2';
+	const bindOptions = bindingBuilder.getBindingOptions(
+		'targetBindProperty',
+		bindingExpression
+	);
 
-	TKUnit.assert(bindOptions.sourceProperty === 'bindProperty', 'Expected: bindProperty, Actual: ' + bindOptions.sourceProperty);
-	TKUnit.assert(bindOptions.targetProperty === 'targetBindProperty', 'Expected: targetBindProperty, Actual: ' + bindOptions.targetProperty);
-	TKUnit.assert(bindOptions.expression === 'bindProperty * 2', 'Expected: bindProperty * 2, Actual: ' + bindOptions.expression);
-	TKUnit.assert(bindOptions.twoWay === true, 'Expected: true, Actual: ' + bindOptions.twoWay);
+	TKUnit.assert(
+		bindOptions.sourceProperty === 'bindProperty',
+		'Expected: bindProperty, Actual: ' + bindOptions.sourceProperty
+	);
+	TKUnit.assert(
+		bindOptions.targetProperty === 'targetBindProperty',
+		'Expected: targetBindProperty, Actual: ' + bindOptions.targetProperty
+	);
+	TKUnit.assert(
+		bindOptions.expression === 'bindProperty * 2',
+		'Expected: bindProperty * 2, Actual: ' + bindOptions.expression
+	);
+	TKUnit.assert(
+		bindOptions.twoWay === true,
+		'Expected: true, Actual: ' + bindOptions.twoWay
+	);
 }
 
 export function test_getBindableOptionsFromStringShortNamedFormatProperty() {
 	const bindingExpression = 'sourceProperty = bindProperty';
-	const bindOptions = bindingBuilder.getBindingOptions('targetBindProperty', bindingExpression);
-	TKUnit.assert(bindOptions.sourceProperty === 'bindProperty', 'Expected: bindProperty, Actual: ' + bindOptions.sourceProperty);
-	TKUnit.assert(bindOptions.targetProperty === 'targetBindProperty', 'Expected: targetBindProperty, Actual: ' + bindOptions.targetProperty);
-	TKUnit.assert(bindOptions.expression === undefined, 'Expected: null, Actual: ' + bindOptions.expression);
-	TKUnit.assert(bindOptions.twoWay === true, 'Expected: true, Actual: ' + bindOptions.twoWay);
+	const bindOptions = bindingBuilder.getBindingOptions(
+		'targetBindProperty',
+		bindingExpression
+	);
+	TKUnit.assert(
+		bindOptions.sourceProperty === 'bindProperty',
+		'Expected: bindProperty, Actual: ' + bindOptions.sourceProperty
+	);
+	TKUnit.assert(
+		bindOptions.targetProperty === 'targetBindProperty',
+		'Expected: targetBindProperty, Actual: ' + bindOptions.targetProperty
+	);
+	TKUnit.assert(
+		bindOptions.expression === undefined,
+		'Expected: null, Actual: ' + bindOptions.expression
+	);
+	TKUnit.assert(
+		bindOptions.twoWay === true,
+		'Expected: true, Actual: ' + bindOptions.twoWay
+	);
 }
 
 export function test_getBindableOptionsFromStringTwoParamsNamedFormat() {
 	const bindingExpression = 'bindProperty, expression = bindProperty * 2';
-	const bindOptions = bindingBuilder.getBindingOptions('targetBindProperty', bindingExpression);
+	const bindOptions = bindingBuilder.getBindingOptions(
+		'targetBindProperty',
+		bindingExpression
+	);
 
-	TKUnit.assert(bindOptions.sourceProperty === 'bindProperty', 'Expected: bindProperty, Actual: ' + bindOptions.sourceProperty);
-	TKUnit.assert(bindOptions.targetProperty === 'targetBindProperty', 'Expected: targetBindProperty, Actual: ' + bindOptions.targetProperty);
-	TKUnit.assert(bindOptions.expression === 'bindProperty * 2', 'Expected: bindProperty * 2, Actual:' + bindOptions.expression);
-	TKUnit.assert(bindOptions.twoWay === true, 'Expected: true, Actual: ' + bindOptions.twoWay);
+	TKUnit.assert(
+		bindOptions.sourceProperty === 'bindProperty',
+		'Expected: bindProperty, Actual: ' + bindOptions.sourceProperty
+	);
+	TKUnit.assert(
+		bindOptions.targetProperty === 'targetBindProperty',
+		'Expected: targetBindProperty, Actual: ' + bindOptions.targetProperty
+	);
+	TKUnit.assert(
+		bindOptions.expression === 'bindProperty * 2',
+		'Expected: bindProperty * 2, Actual:' + bindOptions.expression
+	);
+	TKUnit.assert(
+		bindOptions.twoWay === true,
+		'Expected: true, Actual: ' + bindOptions.twoWay
+	);
 }
 
 export function test_getBindingOptionsFromStringWithFunctionWitnMoreParams() {
 	const bindingExpression = 'bindProperty, converter(bindProperty, param1)';
-	const bindOptions = bindingBuilder.getBindingOptions('targetBindProperty', bindingExpression);
+	const bindOptions = bindingBuilder.getBindingOptions(
+		'targetBindProperty',
+		bindingExpression
+	);
 
 	TKUnit.assertEqual(bindOptions.sourceProperty, 'bindProperty');
 	TKUnit.assertEqual(bindOptions.targetProperty, 'targetBindProperty');
@@ -491,7 +676,10 @@ export function test_getBindingOptionsFromStringWithFunctionWitnMoreParams() {
 
 export function test_getBindingOptionsFromStringWithFunctionArrayParams() {
 	const bindingExpression = 'bindProperty, converter(bindProperty, [param1, param2])';
-	const bindOptions = bindingBuilder.getBindingOptions('targetBindProperty', bindingExpression);
+	const bindOptions = bindingBuilder.getBindingOptions(
+		'targetBindProperty',
+		bindingExpression
+	);
 
 	TKUnit.assertEqual(bindOptions.sourceProperty, 'bindProperty');
 	TKUnit.assertEqual(bindOptions.targetProperty, 'targetBindProperty');
@@ -513,7 +701,10 @@ export function test_bindingToNestedPropertyWithValueSyntax() {
 	);
 
 	TKUnit.assertEqual(testElement.get('targetPropertyName'), 'testValue');
-	TKUnit.assertTrue(bindingSource['$value'] === undefined, 'We should not add $value to bindingSource.');
+	TKUnit.assertTrue(
+		bindingSource['$value'] === undefined,
+		'We should not add $value to bindingSource.'
+	);
 }
 
 export function test_TwoElementsBindingToSameBindingContext() {
@@ -525,7 +716,11 @@ export function test_TwoElementsBindingToSameBindingContext() {
 		TKUnit.assertEqual(upperStackLabel.text, label1.text, 'label1');
 		TKUnit.assertEqual(upperStackLabel.text, label2.text, 'label2');
 	};
-	helper.navigateToModuleAndRunTest('ui/core/bindable/bindingContext_testPage', null, testFunc);
+	helper.navigateToModuleAndRunTest(
+		'ui/core/bindable/bindingContext_testPage',
+		null,
+		testFunc
+	);
 }
 
 export function test_BindingContext_NavigatingForwardAndBack() {
@@ -535,12 +730,20 @@ export function test_BindingContext_NavigatingForwardAndBack() {
 			const testTextField: TextField = <TextField>childPage.getViewById('testTextField');
 			testTextField.text = expectedValue;
 		};
-		helper.navigateToModuleAndRunTest('ui/core/bindable/bindingContext_testPage2', page.bindingContext, innerTestFunc);
+		helper.navigateToModuleAndRunTest(
+			'ui/core/bindable/bindingContext_testPage2',
+			page.bindingContext,
+			innerTestFunc
+		);
 		const testLabel: Label = <Label>page.getViewById('testLabel');
 		TKUnit.assertEqual(testLabel.text, expectedValue);
 	};
 
-	helper.navigateToModuleAndRunTest('ui/core/bindable/bindingContext_testPage1', null, testFunc);
+	helper.navigateToModuleAndRunTest(
+		'ui/core/bindable/bindingContext_testPage1',
+		null,
+		testFunc
+	);
 }
 
 export function test_BindingToSource_FailsAfterBindingContextChange() {
@@ -555,7 +758,10 @@ export function test_BindingToSource_FailsAfterBindingContextChange() {
 
 	const testFunc = function (views: Array<View>) {
 		const testLabel = <Label>views[0];
-		testLabel.bind({ sourceProperty: 'testProperty', targetProperty: 'text' }, labelViewModel);
+		testLabel.bind(
+			{ sourceProperty: 'testProperty', targetProperty: 'text' },
+			labelViewModel
+		);
 
 		const page = <Page>views[1];
 		page.bindingContext = new Observable();
@@ -583,11 +789,21 @@ export function test_BindingToParentView_ShouldNotLeaveGarbageInViewModel() {
 		testStack.bindingContext = stackViewModel;
 
 		let testLabel = <Label>testStack.getChildAt(0);
-		testLabel.bind({ sourceProperty: '$parent.testProperty', targetProperty: 'text', expression: '$parent.testProperty' });
+		testLabel.bind({
+			sourceProperty: '$parent.testProperty',
+			targetProperty: 'text',
+			expression: '$parent.testProperty',
+		});
 
 		TKUnit.assertEqual(testLabel.text, expectedValue);
-		TKUnit.assertTrue(stackViewModel['$parent'] === undefined, "stackViewModel['$parent'] should be removed from parent binding context.");
-		TKUnit.assertTrue(testLabel.bindingContext['$parent'] === undefined, "testLabel.bindingContext['$parent'] should be removed from parent binding context.");
+		TKUnit.assertTrue(
+			stackViewModel['$parent'] === undefined,
+			"stackViewModel['$parent'] should be removed from parent binding context."
+		);
+		TKUnit.assertTrue(
+			testLabel.bindingContext['$parent'] === undefined,
+			"testLabel.bindingContext['$parent'] should be removed from parent binding context."
+		);
 	};
 
 	helper.buildUIAndRunTest(createStack(), testFunc);
@@ -610,11 +826,21 @@ export function test_BindingToParentsView_ShouldNotLeaveGarbageInViewModel() {
 		testStack.bindingContext = stackViewModel;
 
 		let testLabel = <Label>testStack.getChildAt(0);
-		testLabel.bind({ sourceProperty: "$parents['StackLayout'].testProperty", targetProperty: 'text', expression: "$parents['StackLayout'].testProperty" });
+		testLabel.bind({
+			sourceProperty: "$parents['StackLayout'].testProperty",
+			targetProperty: 'text',
+			expression: "$parents['StackLayout'].testProperty",
+		});
 
 		TKUnit.assertEqual(testLabel.text, expectedValue);
-		TKUnit.assertTrue(stackViewModel['$parent'] === undefined, "stackViewModel['$parent'] should be removed from parent binding context.");
-		TKUnit.assertTrue(testLabel.bindingContext['$parents'] === undefined, "testLabel.bindingContext['$parents'] should be removed from parent binding context.");
+		TKUnit.assertTrue(
+			stackViewModel['$parent'] === undefined,
+			"stackViewModel['$parent'] should be removed from parent binding context."
+		);
+		TKUnit.assertTrue(
+			testLabel.bindingContext['$parents'] === undefined,
+			"testLabel.bindingContext['$parents'] should be removed from parent binding context."
+		);
 	};
 
 	helper.buildUIAndRunTest(createStack(), testFunc);
@@ -632,17 +858,24 @@ export function test_BindingToDictionaryAtAppLevel() {
 	pageViewModel.set('testProperty', testPropertyName);
 	const dict = {};
 	dict[testPropertyName] = expectedValue;
-	appModule.getResources()['dict'] = dict;
+	Application.getResources()['dict'] = dict;
 
 	const testFunc = function (views: Array<View>) {
 		const testLabel = <Label>views[0];
-		testLabel.bind({ sourceProperty: 'testProperty', targetProperty: 'text', expression: 'dict[testProperty]' });
+		testLabel.bind({
+			sourceProperty: 'testProperty',
+			targetProperty: 'text',
+			expression: 'dict[testProperty]',
+		});
 
 		const page = <Page>views[1];
 		page.bindingContext = pageViewModel;
 
 		TKUnit.assertEqual(testLabel.text, expectedValue);
-		TKUnit.assertTrue(testLabel.bindingContext['dict'] === undefined, 'BindingContext should not contain properties from application resources.');
+		TKUnit.assertTrue(
+			testLabel.bindingContext['dict'] === undefined,
+			'BindingContext should not contain properties from application resources.'
+		);
 	};
 
 	helper.buildUIAndRunTest(createLabel(), testFunc);
@@ -658,7 +891,7 @@ export function test_BindingConverterCalledEvenWithNullValue() {
 	const testPropertyValue = null;
 	const expectedValue = 'collapsed';
 	pageViewModel.set('testProperty', testPropertyValue);
-	appModule.getResources()['converter'] = {
+	Application.getResources()['converter'] = {
 		toView: function (value) {
 			if (value) {
 				return 'visible';
@@ -670,7 +903,11 @@ export function test_BindingConverterCalledEvenWithNullValue() {
 
 	const testFunc = function (views: Array<View>) {
 		const testLabel = <Label>views[0];
-		testLabel.bind({ sourceProperty: 'testProperty', targetProperty: 'text', expression: 'testProperty | converter()' });
+		testLabel.bind({
+			sourceProperty: 'testProperty',
+			targetProperty: 'text',
+			expression: 'testProperty | converter()',
+		});
 
 		const page = <Page>views[1];
 		page.bindingContext = pageViewModel;
@@ -785,7 +1022,10 @@ class Activity extends Observable {
 export function test_NestedPropertiesBinding() {
 	const expectedValue = 'Default Text';
 	const viewModel = new Observable();
-	viewModel.set('activity', new Activity(expectedValue, 'Default First Name', 'Default Last Name'));
+	viewModel.set(
+		'activity',
+		new Activity(expectedValue, 'Default First Name', 'Default Last Name')
+	);
 
 	const target1 = new Label();
 	target1.bind(
@@ -810,7 +1050,10 @@ export function test_NestedPropertiesBinding() {
 export function test_WrongNestedPropertiesBinding() {
 	const expectedValue = 'Default Text';
 	const viewModel = new Observable();
-	viewModel.set('activity', new Activity(expectedValue, 'Default First Name', 'Default Last Name'));
+	viewModel.set(
+		'activity',
+		new Activity(expectedValue, 'Default First Name', 'Default Last Name')
+	);
 	let errorMessage;
 	let traceWriter = {
 		write: function (message, category, type?) {
@@ -838,7 +1081,10 @@ export function test_NestedPropertiesBindingTwoTargets() {
 	const expectedFirstName = 'Default First Name';
 	const expectedLastName = 'Default Last Name';
 	const viewModel = new Observable();
-	viewModel.set('activity', new Activity(expectedText, expectedFirstName, expectedLastName));
+	viewModel.set(
+		'activity',
+		new Activity(expectedText, expectedFirstName, expectedLastName)
+	);
 
 	const target1 = new Label();
 	target1.bind(
@@ -879,7 +1125,10 @@ export function test_NestedPropertiesBindingTwoTargetsAndSecondChange() {
 	const expectedFirstName = 'Default First Name';
 	const expectedLastName = 'Default Last Name';
 	const viewModel = new Observable();
-	viewModel.set('activity', new Activity(expectedText, expectedFirstName, expectedLastName));
+	viewModel.set(
+		'activity',
+		new Activity(expectedText, expectedFirstName, expectedLastName)
+	);
 
 	const target1 = new Label();
 	target1.bind(
@@ -917,7 +1166,11 @@ export function test_NestedPropertiesBindingTwoTargetsAndSecondChange() {
 	const secondExpectedText = 'Second expected text';
 	const secondExpectedFirstName = 'Second expected first name';
 	const secondExpectedLastName = 'Second expected last name';
-	const act1 = new Activity(secondExpectedText, secondExpectedFirstName, secondExpectedLastName);
+	const act1 = new Activity(
+		secondExpectedText,
+		secondExpectedFirstName,
+		secondExpectedLastName
+	);
 
 	viewModel.set('activity', act1);
 
@@ -930,7 +1183,10 @@ export function test_NestedPropertiesBindingTwoTargetsAndRegularChange() {
 	const expectedFirstName = 'Default First Name';
 	const expectedLastName = 'Default Last Name';
 	const viewModel = new Observable();
-	viewModel.set('activity', new Activity(expectedText, expectedFirstName, expectedLastName));
+	viewModel.set(
+		'activity',
+		new Activity(expectedText, expectedFirstName, expectedLastName)
+	);
 
 	const target1 = new Label();
 	target1.bind(
@@ -980,7 +1236,10 @@ export function test_NestedPropertiesBindingTwoTargetsAndReplacingSomeNestedObje
 	const expectedFirstName = 'Default First Name';
 	const expectedLastName = 'Default Last Name';
 	const viewModel = new Observable();
-	viewModel.set('activity', new Activity(expectedText, expectedFirstName, expectedLastName));
+	viewModel.set(
+		'activity',
+		new Activity(expectedText, expectedFirstName, expectedLastName)
+	);
 
 	const target1 = new Label();
 	target1.bind(
@@ -1093,7 +1352,10 @@ export function test_BindingHitsGetterTooManyTimes() {
 
 	const bindableObj = new Label();
 
-	bindableObj.bind({ sourceProperty: 'dummyProperty', targetProperty: 'dummyTarget' }, model);
+	bindableObj.bind(
+		{ sourceProperty: 'dummyProperty', targetProperty: 'dummyTarget' },
+		model
+	);
 
 	TKUnit.assertEqual(counter, 1, 'Property getter should be hit only once!');
 }
@@ -1119,11 +1381,19 @@ export function test_SupportFunctionsInExpressions() {
 
 	model.set('anyColor', 'blue');
 
-	TKUnit.assertEqual(bindableObj.get('text'), 'collapsed', 'When anyColor is blue test property should be collapsed.');
+	TKUnit.assertEqual(
+		bindableObj.get('text'),
+		'collapsed',
+		'When anyColor is blue test property should be collapsed.'
+	);
 
 	model.set('anyColor', 'red');
 
-	TKUnit.assertEqual(bindableObj.get('text'), 'visible', 'When anyColor is red test property should be visible.');
+	TKUnit.assertEqual(
+		bindableObj.get('text'),
+		'visible',
+		'When anyColor is red test property should be visible.'
+	);
 }
 
 export function test_$ValueSupportWithinExpression() {
@@ -1147,12 +1417,23 @@ export function test_$ValueSupportWithinExpression() {
 
 	model.set('anyColor', 'blue');
 
-	TKUnit.assertEqual(bindableObj.get('text'), 'blue', 'When anyColor is blue test property should be blue too.');
+	TKUnit.assertEqual(
+		bindableObj.get('text'),
+		'blue',
+		'When anyColor is blue test property should be blue too.'
+	);
 
 	model.set('anyColor', 'red');
 
-	TKUnit.assertEqual(bindableObj.get('text'), 'red', 'When anyColor is red test property should be red too.');
-	TKUnit.assertTrue(model['$value'] === undefined, 'We should not add $value to binding context.');
+	TKUnit.assertEqual(
+		bindableObj.get('text'),
+		'red',
+		'When anyColor is red test property should be red too.'
+	);
+	TKUnit.assertTrue(
+		model['$value'] === undefined,
+		'We should not add $value to binding context.'
+	);
 }
 
 class DummyNestedClass extends Observable {
@@ -1390,7 +1671,9 @@ export function test_Observable_from_nested_json_binds_correctly_when_upper_obje
 		model
 	);
 
-	model.get('firstObject').set('secondObject', fromObject({ dummyProperty: expectedValue }));
+	model
+		.get('firstObject')
+		.set('secondObject', fromObject({ dummyProperty: expectedValue }));
 
 	TKUnit.assertEqual(obj.get('text'), expectedValue);
 }

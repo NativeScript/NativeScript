@@ -21,6 +21,14 @@
 			}
 		]
 	},
-	"exclude": ["**/*.spec.ts", "**/*.test.ts", "dist", "__tests__", "jest.config.ts", "jest.setup.ts"],
+	"exclude": [
+		"**/*.spec.ts",
+		"**/*.test.ts",
+		"dist",
+		"__tests__",
+		"jest.config.ts",
+		"jest.setup.ts",
+		"./application-old/**/*"
+	],
 	"include": ["**/*.ts", "./references.d.ts"]
 }

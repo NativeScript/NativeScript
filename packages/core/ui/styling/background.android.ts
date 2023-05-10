@@ -1,9 +1,14 @@
 import { View } from '../core/view';
 import { LinearGradient } from './linear-gradient';
-import { isDataURI, isFileOrResourcePath, RESOURCE_PREFIX, FILE_PREFIX } from '../../utils';
+import {
+	isDataURI,
+	isFileOrResourcePath,
+	RESOURCE_PREFIX,
+	FILE_PREFIX,
+} from '../../utils';
 import { parse } from '../../css-value';
 import { path, knownFolders } from '../../file-system';
-import * as application from '../../application';
+import { Application } from '../../application';
 export * from './background-common';
 
 function fromBase64(source: string): android.graphics.Bitmap {
@@ -12,7 +17,9 @@ function fromBase64(source: string): android.graphics.Bitmap {
 	return android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
 }
 
-function fromGradient(gradient: LinearGradient): org.nativescript.widgets.LinearGradientDefinition {
+function fromGradient(
+	gradient: LinearGradient
+): org.nativescript.widgets.LinearGradientDefinition {
 	const colors = Array.create('int', gradient.colorStops.length);
 	const stops = Array.create('float', gradient.colorStops.length);
 	let hasStops = false;
@@ -30,22 +37,38 @@ function fromGradient(gradient: LinearGradient): org.nativescript.widgets.Linear
 	const endX = Math.pow(Math.sin(Math.PI * (alpha + 0.25)), 2);
 	const endY = Math.pow(Math.sin(Math.PI * alpha), 2);
 
-	return new org.nativescript.widgets.LinearGradientDefinition(startX, startY, endX, endY, colors, hasStops ? stops : null);
+	return new org.nativescript.widgets.LinearGradientDefinition(
+		startX,
+		startY,
+		endX,
+		endY,
+		colors,
+		hasStops ? stops : null
+	);
 }
 
 const pattern = /url\(('|")(.*?)\1\)/;
-export function refreshBorderDrawable(view: View, borderDrawable: org.nativescript.widgets.BorderDrawable) {
+export function refreshBorderDrawable(
+	view: View,
+	borderDrawable: org.nativescript.widgets.BorderDrawable
+) {
 	const nativeView = <android.view.View>view.nativeViewProtected;
 	const context = nativeView.getContext();
 
 	const background = view.style.backgroundInternal;
 	if (background) {
-		const backgroundPositionParsedCSSValues = createNativeCSSValueArray(background.position);
+		const backgroundPositionParsedCSSValues = createNativeCSSValueArray(
+			background.position
+		);
 		const backgroundSizeParsedCSSValues = createNativeCSSValueArray(background.size);
 		const blackColor = -16777216; //android.graphics.Color.BLACK;
 
 		let imageUri: string;
-		if (background.image && typeof background.image === 'string' && background.image !== 'none') {
+		if (
+			background.image &&
+			typeof background.image === 'string' &&
+			background.image !== 'none'
+		) {
 			imageUri = background.image;
 			const match = imageUri.match(pattern);
 			if (match && match[2]) {
@@ -64,7 +87,10 @@ export function refreshBorderDrawable(view: View, borderDrawable: org.nativescri
 			if (imageUri.indexOf(RESOURCE_PREFIX) !== 0) {
 				let fileName = imageUri;
 				if (fileName.indexOf('~/') === 0) {
-					fileName = path.join(knownFolders.currentApp().path, fileName.replace('~/', ''));
+					fileName = path.join(
+						knownFolders.currentApp().path,
+						fileName.replace('~/', '')
+					);
 				}
 
 				imageUri = FILE_PREFIX + fileName;
@@ -109,7 +135,9 @@ export function refreshBorderDrawable(view: View, borderDrawable: org.nativescri
 	}
 }
 
-function createNativeCSSValueArray(css: string): androidNative.Array<org.nativescript.widgets.CSSValue> {
+function createNativeCSSValueArray(
+	css: string
+): androidNative.Array<org.nativescript.widgets.CSSValue> {
 	if (!css) {
 		return null;
 	}
@@ -117,7 +145,12 @@ function createNativeCSSValueArray(css: string): androidNative.Array<org.natives
 	const cssValues = parse(css);
 	const nativeArray = Array.create(org.nativescript.widgets.CSSValue, cssValues.length);
 	for (let i = 0, length = cssValues.length; i < length; i++) {
-		nativeArray[i] = new org.nativescript.widgets.CSSValue(cssValues[i].type, cssValues[i].string, cssValues[i].unit, cssValues[i].value);
+		nativeArray[i] = new org.nativescript.widgets.CSSValue(
+			cssValues[i].type,
+			cssValues[i].string,
+			cssValues[i].unit,
+			cssValues[i].value
+		);
 	}
 
 	return nativeArray;
@@ -132,7 +165,12 @@ export enum CacheMode {
 let currentCacheMode: CacheMode;
 let imageFetcher: org.nativescript.widgets.image.Fetcher;
 
-export function initImageCache(context: android.content.Context, mode = CacheMode.diskAndMemory, memoryCacheSize = 0.25, diskCacheSize: number = 10 * 1024 * 1024): void {
+export function initImageCache(
+	context: android.content.Context,
+	mode = CacheMode.diskAndMemory,
+	memoryCacheSize = 0.25,
+	diskCacheSize: number = 10 * 1024 * 1024
+): void {
 	if (currentCacheMode === mode) {
 		return;
 	}
@@ -163,8 +201,7 @@ function onLiveSync(args): void {
 global.NativeScriptGlobals.events.on('livesync', onLiveSync);
 
 global.NativeScriptGlobals.addEventWiring(() => {
-	application.ensureNativeApplication();
-	application.android.on('activityStarted', (args) => {
+	Application.android.on('activityStarted', (args) => {
 		if (!imageFetcher) {
 			initImageCache(args.activity);
 		} else {
@@ -174,8 +211,7 @@ global.NativeScriptGlobals.addEventWiring(() => {
 });
 
 global.NativeScriptGlobals.addEventWiring(() => {
-	application.ensureNativeApplication();
-	application.android.on('activityStopped', (args) => {
+	Application.android.on('activityStopped', (args) => {
 		if (imageFetcher) {
 			imageFetcher.closeCache();
 		}

@@ -1,15 +1,23 @@
-import { applyCssClass, getRootView } from '../application';
-import * as Application from '../application';
+import { Application } from '../application';
 import type { View } from '../ui/core/view';
 import { AccessibilityServiceEnabledObservable } from './accessibility-service';
-import { FontScaleCategory, getCurrentFontScale, getFontScaleCategory, VALID_FONT_SCALES } from './font-scale';
+import {
+	FontScaleCategory,
+	getCurrentFontScale,
+	getFontScaleCategory,
+	VALID_FONT_SCALES,
+} from './font-scale';
 
 // CSS-classes
 const fontScaleExtraSmallCategoryClass = `a11y-fontscale-xs`;
 const fontScaleMediumCategoryClass = `a11y-fontscale-m`;
 const fontScaleExtraLargeCategoryClass = `a11y-fontscale-xl`;
 
-const fontScaleCategoryClasses = [fontScaleExtraSmallCategoryClass, fontScaleMediumCategoryClass, fontScaleExtraLargeCategoryClass];
+const fontScaleCategoryClasses = [
+	fontScaleExtraSmallCategoryClass,
+	fontScaleMediumCategoryClass,
+	fontScaleExtraLargeCategoryClass,
+];
 
 const a11yServiceEnabledClass = `a11y-service-enabled`;
 const a11yServiceDisabledClass = `a11y-service-disabled`;
@@ -27,25 +35,29 @@ function ensureClasses() {
 		return;
 	}
 
-	fontScaleCssClasses = new Map(VALID_FONT_SCALES.map((fs) => [fs, `a11y-fontscale-${Number(fs * 100).toFixed(0)}`]));
+	fontScaleCssClasses = new Map(
+		VALID_FONT_SCALES.map((fs) => [fs, `a11y-fontscale-${Number(fs * 100).toFixed(0)}`])
+	);
 
 	accessibilityServiceObservable = new AccessibilityServiceEnabledObservable();
 }
 
 function applyRootCssClass(cssClasses: string[], newCssClass: string): void {
-	const rootView = getRootView();
+	const rootView = Application.getRootView();
 	if (!rootView) {
 		return;
 	}
 
-	applyCssClass(rootView, cssClasses, newCssClass);
+	Application.applyCssClass(rootView, cssClasses, newCssClass);
 
 	const rootModalViews = <Array<View>>rootView._getRootModalViews();
-	rootModalViews.forEach((rootModalView) => applyCssClass(rootModalView, cssClasses, newCssClass));
+	rootModalViews.forEach((rootModalView) =>
+		Application.applyCssClass(rootModalView, cssClasses, newCssClass)
+	);
 }
 
 function applyFontScaleToRootViews(): void {
-	const rootView = getRootView();
+	const rootView = Application.getRootView();
 	if (!rootView) {
 		return;
 	}
@@ -55,7 +67,9 @@ function applyFontScaleToRootViews(): void {
 	rootView.style.fontScaleInternal = fontScale;
 
 	const rootModalViews = <Array<View>>rootView._getRootModalViews();
-	rootModalViews.forEach((rootModalView) => (rootModalView.style.fontScaleInternal = fontScale));
+	rootModalViews.forEach(
+		(rootModalView) => (rootModalView.style.fontScaleInternal = fontScale)
+	);
 }
 
 export function initAccessibilityCssHelper(): void {
@@ -67,7 +81,10 @@ export function initAccessibilityCssHelper(): void {
 		applyFontScaleToRootViews();
 	});
 
-	accessibilityServiceObservable.on(AccessibilityServiceEnabledObservable.propertyChangeEvent, updateCurrentHelperClasses);
+	accessibilityServiceObservable.on(
+		AccessibilityServiceEnabledObservable.propertyChangeEvent,
+		updateCurrentHelperClasses
+	);
 }
 
 /**

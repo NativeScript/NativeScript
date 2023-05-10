@@ -1,54 +1,58 @@
-// Types
-import { iOSApplication as iOSApplicationDefinition } from '.';
-import { ApplicationEventData, CssChangedEventData, LaunchEventData, LoadAppCSSEventData, OrientationChangedEventData, SystemAppearanceChangedEventData } from './application-interfaces';
-
-// TODO: explain why we need to this or remov it
-// Use requires to ensure order of imports is maintained
-const { backgroundEvent, displayedEvent, exitEvent, foregroundEvent, getCssFileName, launchEvent, livesync, lowMemoryEvent, notify, on, orientationChanged, orientationChangedEvent, resumeEvent, setApplication, suspendEvent, systemAppearanceChanged, systemAppearanceChangedEvent } = require('./application-common') as typeof import('./application-common');
-// First reexport so that app module is initialized.
-export * from './application-common';
-
-import { View } from '../ui/core/view';
-import { NavigationEntry } from '../ui/frame/frame-interfaces';
-// TODO: Remove this and get it from global to decouple builder for angular
-import { Builder } from '../ui/builder';
-import { CSSUtils } from '../css/system-classes';
-import { IOSHelper } from '../ui/core/view/view-helper';
-import { Device } from '../platform';
-import { profile } from '../profiling';
-import * as Utils from '../utils';
 import { initAccessibilityCssHelper } from '../accessibility/accessibility-css-helper';
 import { initAccessibilityFontScale } from '../accessibility/font-scale';
-import { inBackground, setInBackground, setSuspended, suspended } from './application-common';
+import { profile } from '../profiling';
+import { View } from '../ui';
+import { Builder } from '../ui/builder';
+import { IOSHelper } from '../ui/core/view/view-helper';
+import { NavigationEntry } from '../ui/frame/frame-interfaces';
+import * as Utils from '../utils/';
+import type { iOSApplication as IiOSApplication } from './';
+import { ApplicationCommon } from './application-common';
+import {
+	ApplicationEventData,
+	LaunchEventData,
+	LoadAppCSSEventData,
+} from './application-interfaces';
 
-const IOS_PLATFORM = 'ios';
-
-const getVisibleViewController = Utils.ios.getVisibleViewController;
-const majorVersion = Utils.ios.MajorVersion;
-
-// NOTE: UIResponder with implementation of window - related to https://github.com/NativeScript/ios-runtime/issues/430
-// TODO: Refactor the UIResponder to use Typescript extends when this issue is resolved:
-// https://github.com/NativeScript/ios-runtime/issues/1012
-
-const Responder = (<any>UIResponder).extend(
-	{
-		get window() {
-			return iosApp ? iosApp.window : undefined;
-		},
-		set window(setWindow) {
-			// NOOP
-		},
-	},
-	{
-		protocols: [UIApplicationDelegate],
+@NativeClass
+class CADisplayLinkTarget extends NSObject {
+	private _owner: WeakRef<iOSApplication>;
+	static initWithOwner(owner: WeakRef<iOSApplication>): CADisplayLinkTarget {
+		const target = <CADisplayLinkTarget>CADisplayLinkTarget.new();
+		target._owner = owner;
+		return target;
 	}
-);
+
+	onDisplayed(link: CADisplayLink) {
+		link.invalidate();
+		const owner = this._owner.deref();
+
+		if (!owner) {
+			return;
+		}
+
+		owner.displayedOnce = true;
+		owner.notify(<ApplicationEventData>{
+			eventName: owner.displayedEvent,
+			object: owner,
+			ios: owner.ios,
+		});
+		owner.displayedLinkTarget = null;
+		owner.displayedLink = null;
+	}
+
+	public static ObjCExposedMethods = {
+		onDisplayed: { returns: interop.types.void, params: [CADisplayLink] },
+	};
+}
 
 @NativeClass
 class NotificationObserver extends NSObject {
 	private _onReceiveCallback: (notification: NSNotification) => void;
 
-	public static initWithCallback(onReceiveCallback: (notification: NSNotification) => void): NotificationObserver {
+	public static initWithCallback(
+		onReceiveCallback: (notification: NSNotification) => void
+	): NotificationObserver {
 		const observer = <NotificationObserver>super.new();
 		observer._onReceiveCallback = onReceiveCallback;
 
@@ -64,34 +68,199 @@ class NotificationObserver extends NSObject {
 	};
 }
 
-let displayedOnce = false;
-let displayedLinkTarget;
-let displayedLink;
-
 @NativeClass
-class CADisplayLinkTarget extends NSObject {
-	onDisplayed(link: CADisplayLink) {
-		link.invalidate();
-		const ios = UIApplication.sharedApplication;
-		const object = iosApp;
-		displayedOnce = true;
-		notify(<ApplicationEventData>{
-			eventName: displayedEvent,
-			object,
-			ios,
-		});
-		displayedLinkTarget = null;
-		displayedLink = null;
+class Responder extends UIResponder implements UIApplicationDelegate {
+	get window(): UIWindow {
+		return Application.ios.window;
 	}
-	public static ObjCExposedMethods = {
-		onDisplayed: { returns: interop.types.void, params: [CADisplayLink] },
-	};
+
+	set window(value: UIWindow) {
+		// NOOP
+	}
+
+	static ObjCProtocols = [UIApplicationDelegate];
 }
 
-export function setMaxRefreshRate(options?: { min?: number; max?: number; preferred?: number }) {
-	const adjustRefreshRate = function () {
-		if (displayedLink) {
-			const minFrameRateDisabled = NSBundle.mainBundle.objectForInfoDictionaryKey('CADisableMinimumFrameDurationOnPhone');
+export class iOSApplication extends ApplicationCommon implements IiOSApplication {
+	private _backgroundColor =
+		Utils.ios.MajorVersion <= 12 || !UIColor.systemBackgroundColor
+			? UIColor.whiteColor
+			: UIColor.systemBackgroundColor;
+	private _delegate: UIApplicationDelegate;
+	private _window: UIWindow;
+	private _notificationObservers: NotificationObserver[] = [];
+	private _rootView: View;
+
+	displayedOnce = false;
+	displayedLinkTarget: CADisplayLinkTarget;
+	displayedLink: CADisplayLink;
+
+	constructor() {
+		super();
+
+		this.addNotificationObserver(
+			UIApplicationDidFinishLaunchingNotification,
+			this.didFinishLaunchingWithOptions.bind(this)
+		);
+		this.addNotificationObserver(
+			UIApplicationDidBecomeActiveNotification,
+			this.didBecomeActive.bind(this)
+		);
+		this.addNotificationObserver(
+			UIApplicationDidEnterBackgroundNotification,
+			this.didEnterBackground.bind(this)
+		);
+		this.addNotificationObserver(
+			UIApplicationWillTerminateNotification,
+			this.willTerminate.bind(this)
+		);
+		this.addNotificationObserver(
+			UIApplicationDidReceiveMemoryWarningNotification,
+			this.didReceiveMemoryWarning.bind(this)
+		);
+		this.addNotificationObserver(
+			UIApplicationDidChangeStatusBarOrientationNotification,
+			this.didChangeStatusBarOrientation.bind(this)
+		);
+	}
+
+	getRootView(): View {
+		return this._rootView;
+	}
+
+	resetRootView(view?: View) {
+		super.resetRootView(view);
+		this.setWindowContent();
+	}
+
+	run(entry?: string | NavigationEntry): void {
+		console.log('run in iOSApplication', entry);
+
+		this.mainEntry = typeof entry === 'string' ? { moduleName: entry } : entry;
+		this.started = true;
+
+		if (this.nativeApp) {
+			this.runAsEmbeddedApp();
+		} else {
+			this.runAsMainApp();
+		}
+
+		initAccessibilityCssHelper();
+		initAccessibilityFontScale();
+	}
+
+	private runAsMainApp() {
+		console.log('runAsMainApp', this.delegate);
+		UIApplicationMain(
+			0,
+			null,
+			null,
+			this.delegate
+				? NSStringFromClass(this.delegate as any)
+				: NSStringFromClass(Responder)
+		);
+	}
+
+	private runAsEmbeddedApp() {
+		// TODO: this rootView should be held alive until rootController dismissViewController is called.
+		const rootView = this.createRootView();
+		if (!rootView) {
+			return;
+		}
+		// Attach to the existing iOS app
+		const window =
+			this.nativeApp.keyWindow ||
+			(this.nativeApp.windows.count > 0 && this.nativeApp.windows[0]);
+
+		if (!window) {
+			return;
+		}
+
+		const rootController = window.rootViewController;
+		if (!rootController) {
+			return;
+		}
+
+		const controller = this.getViewController(rootView);
+		const embedderDelegate = NativeScriptEmbedder.sharedInstance().delegate;
+
+		rootView._setupAsRootView({});
+		rootView.on(IOSHelper.traitCollectionColorAppearanceChangedEvent, () => {
+			const userInterfaceStyle = controller.traitCollection.userInterfaceStyle;
+			const newSystemAppearance = this.getSystemAppearanceValue(userInterfaceStyle);
+			this.setSystemAppearance(newSystemAppearance);
+		});
+
+		if (embedderDelegate) {
+			this.setViewControllerView(rootView);
+			embedderDelegate.presentNativeScriptApp(controller);
+		} else {
+			const visibleVC = Utils.ios.getVisibleViewController(rootController);
+			visibleVC.presentViewControllerAnimatedCompletion(controller, true, null);
+		}
+
+		// this.setRootViewsSystemAppearanceCssClass(rootView);
+		this.notifyAppStarted();
+	}
+
+	private createRootView(v?: View) {
+		let rootView = v;
+		if (!rootView) {
+			console.log('createRootView mainEntry', this.mainEntry);
+			// try to navigate to the mainEntry (if specified)
+			if (!this.mainEntry) {
+				throw new Error(
+					'Main entry is missing. App cannot be started. Verify app bootstrap.'
+				);
+			} else {
+				// console.log('createRootView mainEntry:', mainEntry);
+				rootView = Builder.createViewFromEntry(this.mainEntry);
+			}
+		}
+		// console.log('createRootView rootView:', rootView);
+
+		// setRootViewsCssClasses(rootView);
+
+		return rootView;
+	}
+
+	private getViewController(rootView: View): UIViewController {
+		let viewController: UIViewController = rootView.viewController || rootView.ios;
+
+		if (!(viewController instanceof UIViewController)) {
+			// We set UILayoutViewController dynamically to the root view if it doesn't have a view controller
+			// At the moment the root view doesn't have its native view created. We set it in the setViewControllerView func
+			viewController = IOSHelper.UILayoutViewController.initWithOwner(
+				new WeakRef(rootView)
+			) as UIViewController;
+			rootView.viewController = viewController;
+		}
+
+		return viewController;
+	}
+
+	private setViewControllerView(view: View): void {
+		const viewController: UIViewController = view.viewController || view.ios;
+		const nativeView = view.ios || view.nativeViewProtected;
+
+		if (!nativeView || !viewController) {
+			throw new Error('Root should be either UIViewController or UIView');
+		}
+
+		if (viewController instanceof IOSHelper.UILayoutViewController) {
+			viewController.view.addSubview(nativeView);
+		}
+	}
+
+	setMaxRefreshRate(options?: { min?: number; max?: number; preferred?: number }): void {
+		const adjustRefreshRate = () => {
+			if (!this.displayedLink) {
+				return;
+			}
+			const minFrameRateDisabled = NSBundle.mainBundle.objectForInfoDictionaryKey(
+				'CADisableMinimumFrameDurationOnPhone'
+			);
+
 			if (minFrameRateDisabled) {
 				let max = 120;
 				const deviceMaxFrames = UIScreen.mainScreen?.maximumFramesPerSecond;
@@ -99,238 +268,125 @@ export function setMaxRefreshRate(options?: { min?: number; max?: number; prefer
 					if (deviceMaxFrames) {
 						// iOS 10.3
 						max = options.max <= deviceMaxFrames ? options.max : deviceMaxFrames;
-					} else if (displayedLink.preferredFramesPerSecond) {
+					} else if (this.displayedLink.preferredFramesPerSecond) {
 						// iOS 10.0
-						max = options.max <= displayedLink.preferredFramesPerSecond ? options.max : displayedLink.preferredFramesPerSecond;
+						max =
+							options.max <= this.displayedLink.preferredFramesPerSecond
+								? options.max
+								: this.displayedLink.preferredFramesPerSecond;
 					}
 				}
 
 				if (Utils.ios.MajorVersion >= 15) {
 					const min = options?.min || max / 2;
 					const preferred = options?.preferred || max;
-					displayedLink.preferredFrameRateRange = CAFrameRateRangeMake(min, max, preferred);
+					this.displayedLink.preferredFrameRateRange = CAFrameRateRangeMake(
+						min,
+						max,
+						preferred
+					);
 				} else {
-					displayedLink.preferredFramesPerSecond = max;
+					this.displayedLink.preferredFramesPerSecond = max;
 				}
 			}
+		};
+
+		if (this.displayedOnce) {
+			adjustRefreshRate();
+			return;
 		}
-	};
-	if (!displayedOnce) {
-		displayedLinkTarget = <CADisplayLink>CADisplayLinkTarget.new();
-		displayedLink = CADisplayLink.displayLinkWithTargetSelector(displayedLinkTarget, 'onDisplayed');
+
+		this.displayedLinkTarget = CADisplayLinkTarget.initWithOwner(new WeakRef(this));
+		this.displayedLink = CADisplayLink.displayLinkWithTargetSelector(
+			this.displayedLinkTarget,
+			'onDisplayed'
+		);
 		adjustRefreshRate();
-		displayedLink.addToRunLoopForMode(NSRunLoop.mainRunLoop, NSDefaultRunLoopMode);
-		displayedLink.addToRunLoopForMode(NSRunLoop.mainRunLoop, UITrackingRunLoopMode);
-	} else {
-		adjustRefreshRate();
-	}
-}
-
-/* tslint:disable */
-export class iOSApplication implements iOSApplicationDefinition {
-	/* tslint:enable */
-	private _backgroundColor = majorVersion <= 12 || !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
-	private _delegate: typeof UIApplicationDelegate;
-	private _window: UIWindow;
-	private _observers: Array<NotificationObserver>;
-	private _orientation: 'portrait' | 'landscape' | 'unknown';
-	private _rootView: View;
-	private _systemAppearance: 'light' | 'dark';
-
-	get paused() {
-		return suspended;
-	}
-	get backgrounded() {
-		return inBackground;
+		this.displayedLink.addToRunLoopForMode(NSRunLoop.mainRunLoop, NSDefaultRunLoopMode);
+		this.displayedLink.addToRunLoopForMode(NSRunLoop.mainRunLoop, UITrackingRunLoopMode);
 	}
 
-	constructor() {
-		this._observers = new Array<NotificationObserver>();
-		this.addNotificationObserver(UIApplicationDidFinishLaunchingNotification, this.didFinishLaunchingWithOptions.bind(this));
-		this.addNotificationObserver(UIApplicationDidBecomeActiveNotification, this.didBecomeActive.bind(this));
-		this.addNotificationObserver(UIApplicationDidEnterBackgroundNotification, this.didEnterBackground.bind(this));
-		this.addNotificationObserver(UIApplicationWillTerminateNotification, this.willTerminate.bind(this));
-		this.addNotificationObserver(UIApplicationDidReceiveMemoryWarningNotification, this.didReceiveMemoryWarning.bind(this));
-		this.addNotificationObserver(UIApplicationDidChangeStatusBarOrientationNotification, this.didChangeStatusBarOrientation.bind(this));
+	get rootController() {
+		return this.window.rootViewController;
 	}
 
-	get orientation(): 'portrait' | 'landscape' | 'unknown' {
-		if (!this._orientation) {
-			const statusBarOrientation = UIApplication.sharedApplication.statusBarOrientation;
-			this._orientation = this.getOrientationValue(statusBarOrientation);
-		}
-
-		return this._orientation;
-	}
-
-	get rootController(): UIViewController {
-		if (NativeScriptEmbedder.sharedInstance().delegate && !this._window) {
-			this._window = UIApplication.sharedApplication.keyWindow;
-		}
-		return this._window.rootViewController;
-	}
-
-	get systemAppearance(): 'light' | 'dark' | null {
-		// userInterfaceStyle is available on UITraitCollection since iOS 12.
-		if (majorVersion <= 11) {
-			return null;
-		}
-
-		if (!this._systemAppearance) {
-			const userInterfaceStyle = this.rootController.traitCollection.userInterfaceStyle;
-			this._systemAppearance = getSystemAppearanceValue(userInterfaceStyle);
-		}
-
-		return this._systemAppearance;
-	}
-
-	get nativeApp(): UIApplication {
+	get nativeApp() {
 		return UIApplication.sharedApplication;
 	}
 
 	get window(): UIWindow {
+		if (NativeScriptEmbedder.sharedInstance().delegate && !this._window) {
+			this._window = UIApplication.sharedApplication.keyWindow;
+		}
+
 		return this._window;
 	}
 
-	get delegate(): typeof UIApplicationDelegate {
+	get delegate(): UIApplicationDelegate {
 		return this._delegate;
 	}
 
-	set delegate(value: typeof UIApplicationDelegate) {
+	set delegate(value: UIApplicationDelegate | unknown) {
 		if (this._delegate !== value) {
-			this._delegate = value;
+			this._delegate = value as UIApplicationDelegate;
 		}
 	}
 
-	get rootView(): View {
-		return this._rootView;
+	getNativeApplication() {
+		return this.nativeApp;
 	}
 
-	public setSystemAppearance(value: 'light' | 'dark' | null) {
-		if (this.systemAppearance !== value) {
-			this._systemAppearance = value;
-			systemAppearanceChanged(this.rootView, value);
-			notify(<SystemAppearanceChangedEventData>{
-				eventName: systemAppearanceChangedEvent,
-				ios: this,
-				newValue: iosApp.systemAppearance,
-				object: this,
-			});
-		}
-	}
-
-	public addNotificationObserver(notificationName: string, onReceiveCallback: (notification: NSNotification) => void): NotificationObserver {
+	addNotificationObserver(
+		notificationName: string,
+		onReceiveCallback: (notification: NSNotification) => void
+	) {
 		const observer = NotificationObserver.initWithCallback(onReceiveCallback);
-		NSNotificationCenter.defaultCenter.addObserverSelectorNameObject(observer, 'onReceive', notificationName, null);
-		this._observers.push(observer);
+		NSNotificationCenter.defaultCenter.addObserverSelectorNameObject(
+			observer,
+			'onReceive',
+			notificationName,
+			null
+		);
+		this._notificationObservers.push(observer);
 
 		return observer;
 	}
 
-	public removeNotificationObserver(observer: any, notificationName: string) {
-		const index = this._observers.indexOf(observer);
+	removeNotificationObserver(observer: any, notificationName: string) {
+		const index = this._notificationObservers.indexOf(observer);
 		if (index >= 0) {
-			this._observers.splice(index, 1);
-			NSNotificationCenter.defaultCenter.removeObserverNameObject(observer, notificationName, null);
+			this._notificationObservers.splice(index, 1);
+			NSNotificationCenter.defaultCenter.removeObserverNameObject(
+				observer,
+				notificationName,
+				null
+			);
 		}
 	}
 
-	@profile
-	private didFinishLaunchingWithOptions(notification: NSNotification) {
-		setMaxRefreshRate();
+	protected getSystemAppearance(): 'light' | 'dark' {
+		// userInterfaceStyle is available on UITraitCollection since iOS 12.
+		if (Utils.ios.MajorVersion <= 11) {
+			return undefined;
+		}
 
-		this._window = UIWindow.alloc().initWithFrame(UIScreen.mainScreen.bounds);
-		// TODO: Expose Window module so that it can we styled from XML & CSS
-		this._window.backgroundColor = this._backgroundColor;
-
-		this.notifyAppStarted(notification);
+		const userInterfaceStyle = this.rootController.traitCollection.userInterfaceStyle;
+		return this.getSystemAppearanceValue(userInterfaceStyle);
 	}
 
-	public notifyAppStarted(notification?: NSNotification) {
-		const args: LaunchEventData = {
-			eventName: launchEvent,
-			object: this,
-			ios: notification?.userInfo?.objectForKey('UIApplicationLaunchOptionsLocalNotificationKey') || null,
-		};
-
-		notify(args);
-		notify(<LoadAppCSSEventData>{
-			eventName: 'loadAppCss',
-			object: <any>this,
-			cssFile: getCssFileName(),
-		});
-
-		if (this._window) {
-			if (args.root !== null && !NativeScriptEmbedder.sharedInstance().delegate) {
-				this.setWindowContent(args.root);
-			}
-		} else {
-			this._window = UIApplication.sharedApplication.keyWindow;
+	private getSystemAppearanceValue(userInterfaceStyle: number): 'dark' | 'light' {
+		switch (userInterfaceStyle) {
+			case UIUserInterfaceStyle.Dark:
+				return 'dark';
+			case UIUserInterfaceStyle.Light:
+			case UIUserInterfaceStyle.Unspecified:
+				return 'light';
 		}
 	}
 
-	@profile
-	private didBecomeActive(notification: NSNotification) {
-		const ios = UIApplication.sharedApplication;
-		const object = this;
-		setInBackground(false);
-		setSuspended(false);
-		notify(<ApplicationEventData>{ eventName: resumeEvent, object, ios });
-		notify(<ApplicationEventData>{ eventName: foregroundEvent, object, ios });
-		const rootView = this._rootView;
-		if (rootView && !rootView.isLoaded) {
-			rootView.callLoaded();
-		}
-	}
-
-	private didEnterBackground(notification: NSNotification) {
-		const ios = UIApplication.sharedApplication;
-		const object = this;
-		setInBackground(true);
-		setSuspended(true);
-		notify(<ApplicationEventData>{ eventName: suspendEvent, object, ios });
-		notify(<ApplicationEventData>{ eventName: backgroundEvent, object, ios });
-		const rootView = this._rootView;
-		if (rootView && rootView.isLoaded) {
-			rootView.callUnloaded();
-		}
-	}
-
-	private willTerminate(notification: NSNotification) {
-		notify(<ApplicationEventData>{
-			eventName: exitEvent,
-			object: this,
-			ios: UIApplication.sharedApplication,
-		});
-		const rootView = this._rootView;
-		if (rootView && rootView.isLoaded) {
-			rootView.callUnloaded();
-		}
-	}
-
-	private didChangeStatusBarOrientation(notification: NSNotification) {
+	protected getOrientation() {
 		const statusBarOrientation = UIApplication.sharedApplication.statusBarOrientation;
-		const newOrientation = this.getOrientationValue(statusBarOrientation);
-
-		if (this._orientation !== newOrientation) {
-			this._orientation = newOrientation;
-			orientationChanged(getRootView(), newOrientation);
-
-			notify(<OrientationChangedEventData>{
-				eventName: orientationChangedEvent,
-				ios: this,
-				newValue: this._orientation,
-				object: this,
-			});
-		}
-	}
-
-	private didReceiveMemoryWarning(notification: NSNotification) {
-		notify(<ApplicationEventData>{
-			eventName: lowMemoryEvent,
-			object: this,
-			ios: UIApplication.sharedApplication,
-		});
+		return this.getOrientationValue(statusBarOrientation);
 	}
 
 	private getOrientationValue(orientation: number): 'portrait' | 'landscape' | 'unknown' {
@@ -346,40 +402,51 @@ export class iOSApplication implements iOSApplicationDefinition {
 		}
 	}
 
-	public _onLivesync(context?: ModuleContext): void {
-		// Handle application root module
-		const isAppRootModuleChanged = context && context.path && context.path.includes(getMainEntry().moduleName) && context.type !== 'style';
+	private notifyAppStarted(notification?: NSNotification) {
+		const args: LaunchEventData = {
+			eventName: this.launchEvent,
+			object: this,
+			ios:
+				notification?.userInfo?.objectForKey(
+					'UIApplicationLaunchOptionsLocalNotificationKey'
+				) || null,
+		};
 
-		// Set window content when:
-		// + Application root module is changed
-		// + View did not handle the change
-		// Note:
-		// The case when neither app root module is changed, nor livesync is handled on View,
-		// then changes will not apply until navigate forward to the module.
-		if (isAppRootModuleChanged || (this._rootView && !this._rootView._onLivesync(context))) {
-			this.setWindowContent();
+		this.notify(args);
+		this.notify(<LoadAppCSSEventData>{
+			eventName: 'loadAppCss',
+			object: this,
+			cssFile: this.getCssFileName(),
+		});
+
+		if (this._window) {
+			if (args.root !== null && !NativeScriptEmbedder.sharedInstance().delegate) {
+				this.setWindowContent(args.root);
+			}
+		} else {
+			this._window = UIApplication.sharedApplication.keyWindow;
 		}
 	}
 
-	public setWindowContent(view?: View): void {
+	private setWindowContent(view?: View): void {
 		if (this._rootView) {
 			// if we already have a root view, we reset it.
 			this._rootView._onRootViewReset();
 		}
-		const rootView = createRootView(view);
-		const controller = getViewController(rootView);
+		const rootView = this.createRootView(view);
+		const controller = this.getViewController(rootView);
 
 		this._rootView = rootView;
 
 		// setup view as styleScopeHost
 		rootView._setupAsRootView({});
 
-		setViewControllerView(rootView);
+		this.setViewControllerView(rootView);
 
 		const haveController = this._window.rootViewController !== null;
 		this._window.rootViewController = controller;
 
-		setRootViewsSystemAppearanceCssClass(rootView);
+		this.setRootViewsSystemAppearanceCssClass(rootView);
 
 		if (!haveController) {
 			this._window.makeKeyAndVisible();
@@ -387,211 +454,102 @@ export class iOSApplication implements iOSApplicationDefinition {
 
 		rootView.on(IOSHelper.traitCollectionColorAppearanceChangedEvent, () => {
 			const userInterfaceStyle = controller.traitCollection.userInterfaceStyle;
-			const newSystemAppearance = getSystemAppearanceValue(userInterfaceStyle);
+			const newSystemAppearance = this.getSystemAppearanceValue(userInterfaceStyle);
 
 			this.setSystemAppearance(newSystemAppearance);
 		});
 	}
-}
 
-let iosApp: iOSApplication;
-export { iosApp as ios };
-ensureNativeApplication();
+	// Observers
+	@profile
+	private didFinishLaunchingWithOptions(notification: NSNotification) {
+		this.setMaxRefreshRate();
 
-export function ensureNativeApplication() {
-	if (!iosApp) {
-		iosApp = new iOSApplication();
-		setApplication(iosApp);
-	}
-}
+		this._window = UIWindow.alloc().initWithFrame(UIScreen.mainScreen.bounds);
 
-// attach on global, so it can be overwritten in NativeScript Angular
-global.__onLiveSyncCore = function (context?: ModuleContext) {
-	ensureNativeApplication();
-	iosApp._onLivesync(context);
-};
+		// TODO: Expose Window module so that it can we styled from XML & CSS
+		this._window.backgroundColor = this._backgroundColor;
 
-let mainEntry: NavigationEntry;
-
-function createRootView(v?: View) {
-	let rootView = v;
-	if (!rootView) {
-		// try to navigate to the mainEntry (if specified)
-		if (!mainEntry) {
-			throw new Error('Main entry is missing. App cannot be started. Verify app bootstrap.');
-		} else {
-			// console.log('createRootView mainEntry:', mainEntry);
-			rootView = Builder.createViewFromEntry(mainEntry);
-		}
-	}
-	// console.log('createRootView rootView:', rootView);
-
-	setRootViewsCssClasses(rootView);
-
-	return rootView;
-}
-
-export function getMainEntry() {
-	return mainEntry;
-}
-
-export function getRootView() {
-	ensureNativeApplication();
-	return iosApp.rootView;
-}
-
-let started = false;
-export function run(entry?: string | NavigationEntry) {
-	ensureNativeApplication();
-
-	mainEntry = typeof entry === 'string' ? { moduleName: entry } : entry;
-	started = true;
-
-	if (!iosApp.nativeApp) {
-		// Normal NativeScript app will need UIApplicationMain.
-		UIApplicationMain(0, null, null, iosApp && iosApp.delegate ? NSStringFromClass(<any>iosApp.delegate) : NSStringFromClass(Responder));
-	} else {
-		// TODO: this rootView should be held alive until rootController dismissViewController is called.
-		const rootView = createRootView();
-		if (rootView) {
-			// Attach to the existing iOS app
-			const window = iosApp.nativeApp.keyWindow || (iosApp.nativeApp.windows.count > 0 && iosApp.nativeApp.windows[0]);
-			if (window) {
-				const rootController = window.rootViewController;
-				if (rootController) {
-					const controller = getViewController(rootView);
-					rootView._setupAsRootView({});
-					const embedderDelegate = NativeScriptEmbedder.sharedInstance().delegate;
-					if (embedderDelegate) {
-						setViewControllerView(rootView);
-						embedderDelegate.presentNativeScriptApp(controller);
-					} else {
-						const visibleVC = getVisibleViewController(rootController);
-						visibleVC.presentViewControllerAnimatedCompletion(controller, true, null);
-					}
-
-					// Mind root view CSS classes in future work
-					// on embedding NativeScript applications
-					setRootViewsSystemAppearanceCssClass(rootView);
-					rootView.on(IOSHelper.traitCollectionColorAppearanceChangedEvent, () => {
-						const userInterfaceStyle = controller.traitCollection.userInterfaceStyle;
-						const newSystemAppearance = getSystemAppearanceValue(userInterfaceStyle);
-
-						iosApp.setSystemAppearance(newSystemAppearance);
-					});
-					iosApp.notifyAppStarted();
-				}
-			}
-		}
+		this.notifyAppStarted(notification);
 	}
 
-	initAccessibilityCssHelper();
-	initAccessibilityFontScale();
-}
-
-export function addCss(cssText: string, attributeScoped?: boolean): void {
-	notify(<CssChangedEventData>{
-		eventName: 'cssChanged',
-		object: <any>iosApp,
-		cssText: cssText,
-	});
-	if (!attributeScoped) {
-		const rootView = getRootView();
-		if (rootView) {
-			rootView._onCssStateChange();
-		}
-	}
-}
-
-export function resetRootView(entry?: NavigationEntry | string) {
-	ensureNativeApplication();
-	mainEntry = typeof entry === 'string' ? { moduleName: entry } : entry;
-	iosApp.setWindowContent();
-}
-
-export function getNativeApplication(): UIApplication {
-	ensureNativeApplication();
-	return iosApp.nativeApp;
-}
-
-function getSystemAppearanceValue(userInterfaceStyle: number): 'dark' | 'light' {
-	switch (userInterfaceStyle) {
-		case UIUserInterfaceStyle.Dark:
-			return 'dark';
-		case UIUserInterfaceStyle.Light:
-		case UIUserInterfaceStyle.Unspecified:
-			return 'light';
-	}
-}
-
-function getViewController(rootView: View): UIViewController {
-	let viewController: UIViewController = rootView.viewController || rootView.ios;
-
-	if (!(viewController instanceof UIViewController)) {
-		// We set UILayoutViewController dynamically to the root view if it doesn't have a view controller
-		// At the moment the root view doesn't have its native view created. We set it in the setViewControllerView func
-		viewController = IOSHelper.UILayoutViewController.initWithOwner(new WeakRef(rootView)) as UIViewController;
-		rootView.viewController = viewController;
+	@profile
+	private didBecomeActive(notification: NSNotification) {
+		// const ios = UIApplication.sharedApplication;
+		// const object = this;
+		// setInBackground(false);
+		// setSuspended(false);
+		this.notify(<ApplicationEventData>{
+			eventName: this.resumeEvent,
+			object: this,
+			ios: this.ios,
+		});
+		this.notify(<ApplicationEventData>{
+			eventName: this.foregroundEvent,
+			object: this,
+			ios: this.ios,
+		});
+		// const rootView = this._rootView;
+		// if (rootView && !rootView.isLoaded) {
+		// 	rootView.callLoaded();
+		// }
 	}
 
-	return viewController;
-}
+	private didEnterBackground(notification: NSNotification) {
+		// const ios = UIApplication.sharedApplication;
+		// const object = this;
+		// setInBackground(true);
+		// setSuspended(true);
 
-function setViewControllerView(view: View): void {
-	const viewController: UIViewController = view.viewController || view.ios;
-	const nativeView = view.ios || view.nativeViewProtected;
+		this.notify(<ApplicationEventData>{
+			eventName: this.suspendEvent,
+			object: this,
+			ios: this.ios,
+		});
+		this.notify(<ApplicationEventData>{
+			eventName: this.backgroundEvent,
+			object: this,
+			ios: this.ios,
+		});
 
-	if (!nativeView || !viewController) {
-		throw new Error('Root should be either UIViewController or UIView');
+		// const rootView = this._rootView;
+		// if (rootView && rootView.isLoaded) {
+		// 	rootView.callUnloaded();
+		// }
 	}
 
-	if (viewController instanceof IOSHelper.UILayoutViewController) {
-		viewController.view.addSubview(nativeView);
-	}
-}
+	private willTerminate(notification: NSNotification) {
+		this.notify(<ApplicationEventData>{
+			eventName: this.exitEvent,
+			object: this,
+			ios: this.ios,
+		});
 
-function setRootViewsCssClasses(rootView: View): void {
-	ensureNativeApplication();
-	const deviceType = Device.deviceType.toLowerCase();
-
-	CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${IOS_PLATFORM}`);
-	CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${deviceType}`);
-	CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${iosApp.orientation}`);
-
-	rootView.cssClasses.add(CSSUtils.ROOT_VIEW_CSS_CLASS);
-	const rootViewCssClasses = CSSUtils.getSystemCssClasses();
-	rootViewCssClasses.forEach((c) => rootView.cssClasses.add(c));
-}
-
-function setRootViewsSystemAppearanceCssClass(rootView: View): void {
-	ensureNativeApplication();
-	if (majorVersion >= 13) {
-		const systemAppearanceCssClass = `${CSSUtils.CLASS_PREFIX}${iosApp.systemAppearance}`;
-		CSSUtils.pushToSystemCssClasses(systemAppearanceCssClass);
-		rootView.cssClasses.add(systemAppearanceCssClass);
-	}
-}
-
-export function orientation(): 'portrait' | 'landscape' | 'unknown' {
-	ensureNativeApplication();
-	return iosApp.orientation;
-}
-
-export function systemAppearance(): 'dark' | 'light' {
-	ensureNativeApplication();
-	return iosApp.systemAppearance;
-}
-
-global.__onLiveSync = function __onLiveSync(context?: ModuleContext) {
-	if (!started) {
-		return;
+		// const rootView = this._rootView;
+		// if (rootView && rootView.isLoaded) {
+		// 	rootView.callUnloaded();
+		// }
 	}
 
-	const rootView = getRootView();
-	livesync(rootView, context);
-};
+	private didReceiveMemoryWarning(notification: NSNotification) {
+		this.notify(<ApplicationEventData>{
+			eventName: this.lowMemoryEvent,
+			object: this,
+			ios: this.ios,
+		});
+	}
 
-// core exports this symbol so apps may import them in general
-// technically they are only available for use when running that platform
-// helps avoid a webpack nonexistent warning
+	private didChangeStatusBarOrientation(notification: NSNotification) {
+		const statusBarOrientation = UIApplication.sharedApplication.statusBarOrientation;
+		const newOrientation = this.getOrientationValue(statusBarOrientation);
+		this.setOrientation(newOrientation);
+	}
+
+	get ios() {
+		// ensures Application.ios is defined when running on iOS
+		return this;
+	}
+}
+export * from './application-common';
+export const Application = new iOSApplication();
 export const AndroidApplication = undefined;

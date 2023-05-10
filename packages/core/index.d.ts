@@ -8,9 +8,26 @@
 export type { NativeScriptConfig } from './config';
 
 export { iOSApplication, AndroidApplication } from './application';
-export type { ApplicationEventData, LaunchEventData, OrientationChangedEventData, UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData, AndroidActivityEventData, AndroidActivityBundleEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, AndroidActivityNewIntentEventData, AndroidActivityBackPressedEventData, SystemAppearanceChangedEventData } from './application';
+export type {
+	ApplicationEventData,
+	LaunchEventData,
+	OrientationChangedEventData,
+	UnhandledErrorEventData,
+	DiscardedErrorEventData,
+	CssChangedEventData,
+	LoadAppCSSEventData,
+	AndroidActivityEventData,
+	AndroidActivityBundleEventData,
+	AndroidActivityRequestPermissionsEventData,
+	AndroidActivityResultEventData,
+	AndroidActivityNewIntentEventData,
+	AndroidActivityBackPressedEventData,
+	SystemAppearanceChangedEventData,
+} from './application';
 
-export * as Application from './application';
+// export * as Application from './application';
+export * from './application';
+
 // import { AndroidApplication, iOSApplication, systemAppearanceChanged, getMainEntry, getRootView, _resetRootView, getResources, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, notify, hasListeners, run, orientation, getNativeApplication, hasLaunched, systemAppearance, setAutoSystemAppearanceChanged, setMaxRefreshRate } from './application';
 // export declare const Application: {
 // 	launchEvent: string;
@@ -77,10 +94,18 @@ import * as Accessibility from './accessibility';
 export namespace AccessibilityEvents {
 	export const accessibilityBlurEvent = Accessibility.accessibilityBlurEvent;
 	export const accessibilityFocusEvent = Accessibility.accessibilityFocusEvent;
-	export const accessibilityFocusChangedEvent = Accessibility.accessibilityFocusChangedEvent;
-	export const accessibilityPerformEscapeEvent = Accessibility.accessibilityPerformEscapeEvent;
+	export const accessibilityFocusChangedEvent =
+		Accessibility.accessibilityFocusChangedEvent;
+	export const accessibilityPerformEscapeEvent =
+		Accessibility.accessibilityPerformEscapeEvent;
 }
-export { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait, FontScaleCategory } from './accessibility';
+export {
+	AccessibilityLiveRegion,
+	AccessibilityRole,
+	AccessibilityState,
+	AccessibilityTrait,
+	FontScaleCategory,
+} from './accessibility';
 export { Color } from './color';
 export * as Connectivity from './connectivity';
 // import { connectionType, getConnectionType, startMonitoring, stopMonitoring } from './connectivity';
@@ -94,12 +119,31 @@ export * from './core-types';
 export { CSSUtils } from './css/system-classes';
 export { ObservableArray, ChangeType } from './data/observable-array';
 export type { ChangedData } from './data/observable-array';
-export { Observable, WrappedValue, fromObject, fromObjectRecursive } from './data/observable';
+export {
+	Observable,
+	WrappedValue,
+	fromObject,
+	fromObjectRecursive,
+} from './data/observable';
 export type { PropertyChangeData, EventData } from './data/observable';
 export { VirtualArray } from './data/virtual-array';
 export type { ItemsLoading } from './data/virtual-array';
-export { File, FileSystemEntity, Folder, knownFolders, path, getFileAccess, AndroidDirectory } from './file-system';
-export type { HttpRequestOptions, HttpResponse, Headers, HttpResponseEncoding, HttpContent } from './http';
+export {
+	File,
+	FileSystemEntity,
+	Folder,
+	knownFolders,
+	path,
+	getFileAccess,
+	AndroidDirectory,
+} from './file-system';
+export type {
+	HttpRequestOptions,
+	HttpResponse,
+	Headers,
+	HttpResponseEncoding,
+	HttpContent,
+} from './http';
 export * as Http from './http';
 // import { getFile, getImage, getJSON, getString as httpGetString } from './http';
 // export declare const Http: {
@@ -116,7 +160,20 @@ export { ModuleNameResolver, _setResolver } from './module-name-resolver';
 export type { ModuleListProvider, PlatformContext } from './module-name-resolver';
 export { isAndroid, isIOS, Screen, Device, platformNames } from './platform';
 export type { IDevice } from './platform';
-export { profile, enable as profilingEnable, disable as profilingDisable, time as profilingTime, uptime as profilingUptime, start as profilingStart, stop as profilingStop, isRunning as profilingIsRunning, dumpProfiles as profilingDumpProfiles, resetProfiles as profilingResetProfiles, startCPUProfile as profilingStartCPU, stopCPUProfile as profilingStopCPU } from './profiling';
+export {
+	profile,
+	enable as profilingEnable,
+	disable as profilingDisable,
+	time as profilingTime,
+	uptime as profilingUptime,
+	start as profilingStart,
+	stop as profilingStop,
+	isRunning as profilingIsRunning,
+	dumpProfiles as profilingDumpProfiles,
+	resetProfiles as profilingResetProfiles,
+	startCPUProfile as profilingStartCPU,
+	stopCPUProfile as profilingStopCPU,
+} from './profiling';
 export type { InstrumentationMode, TimerInfo } from './profiling';
 export { encoding } from './text';
 export * from './trace';

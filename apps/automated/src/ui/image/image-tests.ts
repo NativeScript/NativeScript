@@ -16,7 +16,7 @@ import * as ViewModule from '@nativescript/core/ui/core/view';
 import * as helper from '../../ui-helper';
 import * as color from '@nativescript/core/color';
 import * as backgroundModule from '@nativescript/core/ui/styling/background';
-import { android as androidApp } from '@nativescript/core/application';
+import { Application } from '@nativescript/core';
 const imagePath = '~/assets/logo.png';
 
 export function test_recycling() {
@@ -24,14 +24,20 @@ export function test_recycling() {
 }
 
 if (global.isAndroid) {
-	(<any>backgroundModule).initImageCache(androidApp.startActivity, (<any>backgroundModule).CacheMode.memory); // use memory cache only.
+	(<any>backgroundModule).initImageCache(
+		Application.android.startActivity,
+		(<any>backgroundModule).CacheMode.memory
+	); // use memory cache only.
 }
 
 export const test_Image_Members = function () {
 	const image = new ImageModule.Image();
 	TKUnit.assert(types.isUndefined(image.src), 'Image.src is defined');
 	TKUnit.assert(types.isDefined(image.isLoading), 'Image.isLoading is not defined');
-	TKUnit.assert(image.isLoading === false, 'Image.isLoading is default value should be false.');
+	TKUnit.assert(
+		image.isLoading === false,
+		'Image.isLoading is default value should be false.'
+	);
 };
 
 export const test_setting_src_to_resource = function () {
@@ -68,7 +74,11 @@ function runImageTestSync(image: ImageModule.Image, src: string) {
 	TKUnit.assertTrue(imageSourceAvailable, 'imageSource should be set.');
 }
 
-function runImageTestAsync(image: ImageModule.Image, src: string, done: (e: any) => void) {
+function runImageTestAsync(
+	image: ImageModule.Image,
+	src: string,
+	done: (e: any) => void
+) {
 	image.loadMode = 'async';
 	image.src = null;
 
@@ -120,7 +130,8 @@ export const test_SettingImageSrcToFileWithinApp_async = function (done) {
 export const test_SettingImageSrcToDataURI_sync = function () {
 	// >> img-create-datauri
 	const image = new ImageModule.Image();
-	image.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAAXNSR0IArs4c6QAAABxpRE9UAAAAAgAAAAAAAAACAAAAKAAAAAIAAAACAAAARiS4uJEAAAASSURBVBgZYvjPwABHSMz/DAAAAAD//0GWpK0AAAAOSURBVGNgYPiPhBgQAACEvQv1D5y/pAAAAABJRU5ErkJggg==';
+	image.src =
+		'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAAXNSR0IArs4c6QAAABxpRE9UAAAAAgAAAAAAAAACAAAAKAAAAAIAAAACAAAARiS4uJEAAAASSURBVBgZYvjPwABHSMz/DAAAAAD//0GWpK0AAAAOSURBVGNgYPiPhBgQAACEvQv1D5y/pAAAAABJRU5ErkJggg==';
 	// << img-create-datauri
 
 	runImageTestSync(image, image.src);
@@ -128,7 +139,8 @@ export const test_SettingImageSrcToDataURI_sync = function () {
 
 export const test_SettingImageSrcToDataURI_async = function (done) {
 	const image = new ImageModule.Image();
-	image.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAAXNSR0IArs4c6QAAABxpRE9UAAAAAgAAAAAAAAACAAAAKAAAAAIAAAACAAAARiS4uJEAAAASSURBVBgZYvjPwABHSMz/DAAAAAD//0GWpK0AAAAOSURBVGNgYPiPhBgQAACEvQv1D5y/pAAAAABJRU5ErkJggg==';
+	image.src =
+		'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAAXNSR0IArs4c6QAAABxpRE9UAAAAAgAAAAAAAAACAAAAKAAAAAIAAAACAAAARiS4uJEAAAASSURBVBgZYvjPwABHSMz/DAAAAAD//0GWpK0AAAAOSURBVGNgYPiPhBgQAACEvQv1D5y/pAAAAABJRU5ErkJggg==';
 
 	runImageTestAsync(image, image.src, done);
 };
@@ -185,7 +197,10 @@ export const test_SettingStretch_AspectFit = function () {
 
 	const testFunc = function (views: Array<ViewModule.View>) {
 		if (image.android) {
-			TKUnit.assertEqual(image.android.getScaleType(), android.widget.ImageView.ScaleType.FIT_CENTER);
+			TKUnit.assertEqual(
+				image.android.getScaleType(),
+				android.widget.ImageView.ScaleType.FIT_CENTER
+			);
 		} else if (image.ios) {
 			TKUnit.assertEqual(image.ios.contentMode, UIViewContentMode.ScaleAspectFit);
 		}
@@ -198,7 +213,10 @@ export const test_SettingStretch_Default = function () {
 	const image = new ImageModule.Image();
 	const testFunc = function (views: Array<ViewModule.View>) {
 		if (image.android) {
-			TKUnit.assertEqual(image.android.getScaleType(), android.widget.ImageView.ScaleType.FIT_CENTER);
+			TKUnit.assertEqual(
+				image.android.getScaleType(),
+				android.widget.ImageView.ScaleType.FIT_CENTER
+			);
 		} else if (image.ios) {
 			TKUnit.assertEqual(image.ios.contentMode, UIViewContentMode.ScaleAspectFit);
 		}
@@ -213,7 +231,10 @@ export const test_SettingStretch_AspectFill = function () {
 
 	const testFunc = function (views: Array<ViewModule.View>) {
 		if (image.android) {
-			TKUnit.assertEqual(image.android.getScaleType(), android.widget.ImageView.ScaleType.CENTER_CROP);
+			TKUnit.assertEqual(
+				image.android.getScaleType(),
+				android.widget.ImageView.ScaleType.CENTER_CROP
+			);
 		} else if (image.ios) {
 			TKUnit.assertEqual(image.ios.contentMode, UIViewContentMode.ScaleAspectFill);
 		}
@@ -228,7 +249,10 @@ export const test_SettingStretch_Fill = function () {
 
 	const testFunc = function (views: Array<ViewModule.View>) {
 		if (image.android) {
-			TKUnit.assertEqual(image.android.getScaleType(), android.widget.ImageView.ScaleType.FIT_XY);
+			TKUnit.assertEqual(
+				image.android.getScaleType(),
+				android.widget.ImageView.ScaleType.FIT_XY
+			);
 		} else if (image.ios) {
 			TKUnit.assertEqual(image.ios.contentMode, UIViewContentMode.ScaleToFill);
 		}
@@ -243,7 +267,10 @@ export const test_SettingStretch_none = function () {
 
 	const testFunc = function (views: Array<ViewModule.View>) {
 		if (image.android) {
-			TKUnit.assertEqual(image.android.getScaleType(), android.widget.ImageView.ScaleType.MATRIX);
+			TKUnit.assertEqual(
+				image.android.getScaleType(),
+				android.widget.ImageView.ScaleType.MATRIX
+			);
 		} else if (image.ios) {
 			TKUnit.assertEqual(image.ios.contentMode, UIViewContentMode.TopLeft);
 		}
@@ -276,23 +303,25 @@ export const test_SettingImageSourceWhenSizedToParentDoesNotRequestLayout = ios(
 	TKUnit.assertFalse(called, 'image.requestLayout should not be called.');
 });
 
-export const test_SettingImageSourceWhenFixedWidthAndHeightDoesNotRequestLayout = ios(() => {
-	let host = new StackLayout();
-	let image = new Image();
-	image.width = { value: 100, unit: 'dip' };
-	image.height = { value: 100, unit: 'dip' };
-	host.addChild(image);
+export const test_SettingImageSourceWhenFixedWidthAndHeightDoesNotRequestLayout = ios(
+	() => {
+		let host = new StackLayout();
+		let image = new Image();
+		image.width = { value: 100, unit: 'dip' };
+		image.height = { value: 100, unit: 'dip' };
+		host.addChild(image);
 
-	let mainPage = helper.getCurrentPage();
-	mainPage.content = host;
-	TKUnit.waitUntilReady(() => host.isLoaded);
+		let mainPage = helper.getCurrentPage();
+		mainPage.content = host;
+		TKUnit.waitUntilReady(() => host.isLoaded);
 
-	let called = false;
-	image.requestLayout = () => (called = true);
-	image.src = '~/assets/logo.png';
+		let called = false;
+		image.requestLayout = () => (called = true);
+		image.src = '~/assets/logo.png';
 
-	TKUnit.assertFalse(called, 'image.requestLayout should not be called.');
-});
+		TKUnit.assertFalse(called, 'image.requestLayout should not be called.');
+	}
+);
 
 export const test_SettingImageSourceWhenSizedToContentShouldInvalidate = ios(() => {
 	let host = new StackLayout();
@@ -330,8 +359,16 @@ export const test_DimensionsAreRoundedAfterScale = function () {
 
 	let scale = hostWidth / imageWidth;
 	let expectedHeight = Math.round(imageHeight * scale);
-	TKUnit.assertEqual(image.getMeasuredWidth(), hostWidth, 'Actual width is different from expected width.');
-	TKUnit.assertEqual(image.getMeasuredHeight(), expectedHeight, 'Actual height is different from expected height.');
+	TKUnit.assertEqual(
+		image.getMeasuredWidth(),
+		hostWidth,
+		'Actual width is different from expected width.'
+	);
+	TKUnit.assertEqual(
+		image.getMeasuredHeight(),
+		expectedHeight,
+		'Actual height is different from expected height.'
+	);
 };
 
 export const test_tintColor = function () {
@@ -347,15 +384,24 @@ export const test_tintColor = function () {
 			TKUnit.assert(tintColor === null, 'tintColor expected to be set to null');
 		} else if (image.ios) {
 			const imageColor = getColor(testImage.ios.tintColor);
-			TKUnit.assert(!imageColor.equals(colorRed), 'imageColor expected to be different than tintColor');
+			TKUnit.assert(
+				!imageColor.equals(colorRed),
+				'imageColor expected to be different than tintColor'
+			);
 		}
 		image.tintColor = colorRed;
 
 		if (image.android) {
-			TKUnit.assert(testImage.android.getColorFilter() !== null, 'tintColor expected to be set to a nonnull value');
+			TKUnit.assert(
+				testImage.android.getColorFilter() !== null,
+				'tintColor expected to be set to a nonnull value'
+			);
 		} else if (image.ios) {
 			const imageColor = getColor(testImage.ios.tintColor);
-			TKUnit.assert(imageColor.equals(colorRed), 'tintColor expected to be set to: ' + colorRed);
+			TKUnit.assert(
+				imageColor.equals(colorRed),
+				'tintColor expected to be set to: ' + colorRed
+			);
 		}
 	};
 

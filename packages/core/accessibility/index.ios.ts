@@ -1,8 +1,13 @@
-import * as Application from '../application';
+import { Application } from '../application';
 import type { ViewBase } from '../ui/core/view-base';
 import type { View } from '../ui/core/view';
 import { notifyAccessibilityFocusState } from './accessibility-common';
-import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait } from './accessibility-types';
+import {
+	AccessibilityLiveRegion,
+	AccessibilityRole,
+	AccessibilityState,
+	AccessibilityTrait,
+} from './accessibility-types';
 
 export * from './accessibility-common';
 export * from './accessibility-types';
@@ -26,7 +31,10 @@ function enforceArray(val: string | string[]): string[] {
  * @param values string values
  * @param map    map lower-case name to integer value.
  */
-function inputArrayToBitMask(values: string | string[], map: Map<string, number>): number {
+function inputArrayToBitMask(
+	values: string | string[],
+	map: Map<string, number>
+): number {
 	return (
 		enforceArray(values)
 			.filter((value) => !!value)
@@ -47,7 +55,10 @@ function ensureNativeClasses() {
 	}
 
 	AccessibilityTraitsMap = new Map<AccessibilityTrait, number>([
-		[AccessibilityTrait.AllowsDirectInteraction, UIAccessibilityTraitAllowsDirectInteraction],
+		[
+			AccessibilityTrait.AllowsDirectInteraction,
+			UIAccessibilityTraitAllowsDirectInteraction,
+		],
 		[AccessibilityTrait.CausesPageTurn, UIAccessibilityTraitCausesPageTurn],
 		[AccessibilityTrait.NotEnabled, UIAccessibilityTraitNotEnabled],
 		[AccessibilityTrait.Selected, UIAccessibilityTraitSelected],
@@ -61,7 +72,10 @@ function ensureNativeClasses() {
 		[AccessibilityRole.Header, UIAccessibilityTraitHeader],
 		[AccessibilityRole.KeyboardKey, UIAccessibilityTraitKeyboardKey],
 		[AccessibilityRole.Image, UIAccessibilityTraitImage],
-		[AccessibilityRole.ImageButton, UIAccessibilityTraitImage | UIAccessibilityTraitButton],
+		[
+			AccessibilityRole.ImageButton,
+			UIAccessibilityTraitImage | UIAccessibilityTraitButton,
+		],
 		[AccessibilityRole.Link, UIAccessibilityTraitLink],
 		[AccessibilityRole.None, UIAccessibilityTraitNone],
 		[AccessibilityRole.PlaysSound, UIAccessibilityTraitPlaysSound],
@@ -73,47 +87,55 @@ function ensureNativeClasses() {
 		[AccessibilityRole.Switch, UIAccessibilityTraitButton],
 	]);
 
-	nativeFocusedNotificationObserver = Application.ios.addNotificationObserver(UIAccessibilityElementFocusedNotification, (args: NSNotification) => {
-		const uiView = args.userInfo?.objectForKey(UIAccessibilityFocusedElementKey) as UIView;
-		if (!uiView?.tag) {
-			return;
-		}
+	nativeFocusedNotificationObserver = Application.ios.addNotificationObserver(
+		UIAccessibilityElementFocusedNotification,
+		(args: NSNotification) => {
+			const uiView = args.userInfo?.objectForKey(
+				UIAccessibilityFocusedElementKey
+			) as UIView;
+			if (!uiView?.tag) {
+				return;
+			}
 
-		const rootView = Application.getRootView();
+			const rootView = Application.getRootView();
 
-		// We use the UIView's tag to find the NativeScript View by its domId.
-		let view = rootView.getViewByDomId<View>(uiView?.tag);
-		if (!view) {
-			for (const modalView of <Array<View>>rootView._getRootModalViews()) {
-				view = modalView.getViewByDomId(uiView?.tag);
-				if (view) {
-					break;
+			// We use the UIView's tag to find the NativeScript View by its domId.
+			let view = rootView.getViewByDomId<View>(uiView?.tag);
+			if (!view) {
+				for (const modalView of <Array<View>>rootView._getRootModalViews()) {
+					view = modalView.getViewByDomId(uiView?.tag);
+					if (view) {
+						break;
+					}
 				}
 			}
-		}
 
-		if (!view) {
-			return;
-		}
-
-		const lastView = lastFocusedView?.deref();
-		if (lastView && view !== lastView) {
-			const lastFocusedUIView = lastView.nativeViewProtected as UIView;
-			if (lastFocusedUIView) {
-				lastFocusedView = null;
-
-				notifyAccessibilityFocusState(lastView, false, true);
+			if (!view) {
+				return;
 			}
+
+			const lastView = lastFocusedView?.deref();
+			if (lastView && view !== lastView) {
+				const lastFocusedUIView = lastView.nativeViewProtected as UIView;
+				if (lastFocusedUIView) {
+					lastFocusedView = null;
+
+					notifyAccessibilityFocusState(lastView, false, true);
+				}
+			}
+
+			lastFocusedView = new WeakRef(view);
+
+			notifyAccessibilityFocusState(view, true, false);
 		}
-
-		lastFocusedView = new WeakRef(view);
-
-		notifyAccessibilityFocusState(view, true, false);
-	});
+	);
 
 	Application.on(Application.exitEvent, () => {
 		if (nativeFocusedNotificationObserver) {
-			Application.ios.removeNotificationObserver(nativeFocusedNotificationObserver, UIAccessibilityElementFocusedNotification);
+			Application.ios.removeNotificationObserver(
+				nativeFocusedNotificationObserver,
+				UIAccessibilityElementFocusedNotification
+			);
 		}
 
 		nativeFocusedNotificationObserver = null;
@@ -185,7 +207,9 @@ export function updateAccessibilityProperties(view: View): void {
 		}
 	}
 
-	const UpdatesFrequentlyTrait = AccessibilityTraitsMap.get(AccessibilityTrait.UpdatesFrequently);
+	const UpdatesFrequentlyTrait = AccessibilityTraitsMap.get(
+		AccessibilityTrait.UpdatesFrequently
+	);
 
 	switch (view.accessibilityLiveRegion) {
 		case AccessibilityLiveRegion.Polite:
@@ -248,19 +272,26 @@ export function isAccessibilityServiceEnabled(): boolean {
 
 	let voiceOverStatusChangedNotificationName: string | null = null;
 	if (typeof UIAccessibilityVoiceOverStatusDidChangeNotification !== 'undefined') {
-		voiceOverStatusChangedNotificationName = UIAccessibilityVoiceOverStatusDidChangeNotification;
+		voiceOverStatusChangedNotificationName =
+			UIAccessibilityVoiceOverStatusDidChangeNotification;
 	} else if (typeof UIAccessibilityVoiceOverStatusChanged !== 'undefined') {
 		voiceOverStatusChangedNotificationName = UIAccessibilityVoiceOverStatusChanged;
 	}
 
 	if (voiceOverStatusChangedNotificationName) {
-		nativeObserver = Application.ios.addNotificationObserver(voiceOverStatusChangedNotificationName, () => {
-			accessibilityServiceEnabled = isVoiceOverRunning();
-		});
+		nativeObserver = Application.ios.addNotificationObserver(
+			voiceOverStatusChangedNotificationName,
+			() => {
+				accessibilityServiceEnabled = isVoiceOverRunning();
+			}
+		);
 
 		Application.on(Application.exitEvent, () => {
 			if (nativeObserver) {
-				Application.ios.removeNotificationObserver(nativeObserver, voiceOverStatusChangedNotificationName);
+				Application.ios.removeNotificationObserver(
+					nativeObserver,
+					voiceOverStatusChangedNotificationName
+				);
 			}
 
 			accessibilityServiceEnabled = undefined;

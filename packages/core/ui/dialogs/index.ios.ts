@@ -2,38 +2,70 @@
  * iOS specific dialogs functions implementation.
  */
 import { Trace } from '../../trace';
-import { ConfirmOptions, PromptOptions, PromptResult, LoginOptions, LoginResult, ActionOptions, getCurrentPage, getLabelColor, getButtonColors, getTextFieldColor, isDialogOptions, inputType, capitalizationType, DialogStrings, parseLoginOptions } from './dialogs-common';
+import {
+	ConfirmOptions,
+	PromptOptions,
+	PromptResult,
+	LoginOptions,
+	LoginResult,
+	ActionOptions,
+	getCurrentPage,
+	getLabelColor,
+	getButtonColors,
+	getTextFieldColor,
+	isDialogOptions,
+	inputType,
+	capitalizationType,
+	DialogStrings,
+	parseLoginOptions,
+} from './dialogs-common';
 import { isString, isDefined, isFunction } from '../../utils/types';
-import { getRootView, ios } from '../../application';
+import { Application } from '../../application';
 
 export * from './dialogs-common';
 
-function addButtonsToAlertController(alertController: UIAlertController, options: ConfirmOptions, callback?: Function): void {
+function addButtonsToAlertController(
+	alertController: UIAlertController,
+	options: ConfirmOptions,
+	callback?: Function
+): void {
 	if (!options) {
 		return;
 	}
 
 	if (isString(options.cancelButtonText)) {
 		alertController.addAction(
-			UIAlertAction.actionWithTitleStyleHandler(options.cancelButtonText, UIAlertActionStyle.Default, () => {
-				raiseCallback(callback, false);
-			})
+			UIAlertAction.actionWithTitleStyleHandler(
+				options.cancelButtonText,
+				UIAlertActionStyle.Default,
+				() => {
+					raiseCallback(callback, false);
+				}
+			)
 		);
 	}
 
 	if (isString(options.neutralButtonText)) {
 		alertController.addAction(
-			UIAlertAction.actionWithTitleStyleHandler(options.neutralButtonText, UIAlertActionStyle.Default, () => {
-				raiseCallback(callback, undefined);
-			})
+			UIAlertAction.actionWithTitleStyleHandler(
+				options.neutralButtonText,
+				UIAlertActionStyle.Default,
+				() => {
+					raiseCallback(callback, undefined);
+				}
+			)
 		);
 	}
 
 	if (isString(options.okButtonText)) {
 		alertController.addAction(
-			UIAlertAction.actionWithTitleStyleHandler(options.okButtonText, UIAlertActionStyle.Default, () => {
-				raiseCallback(callback, true);
-			})
+			UIAlertAction.actionWithTitleStyleHandler(
+				options.okButtonText,
+				UIAlertActionStyle.Default,
+				() => {
+					raiseCallback(callback, true);
+				}
+			)
 		);
 	}
 }
@@ -45,22 +77,31 @@ function raiseCallback(callback, result) {
 }
 
 function showUIAlertController(alertController: UIAlertController) {
-	let viewController = ios.rootController;
+	let viewController = Application.ios.rootController;
 
 	while (viewController && viewController.presentedViewController) {
 		viewController = viewController.presentedViewController;
 	}
 
 	if (!viewController) {
-		Trace.write(`No root controller found to open dialog.`, Trace.categories.Error, Trace.messageType.warn);
+		Trace.write(
+			`No root controller found to open dialog.`,
+			Trace.categories.Error,
+			Trace.messageType.warn
+		);
 
 		return;
 	}
 
 	if (alertController.popoverPresentationController) {
 		alertController.popoverPresentationController.sourceView = viewController.view;
-		alertController.popoverPresentationController.sourceRect = CGRectMake(viewController.view.bounds.size.width / 2.0, viewController.view.bounds.size.height / 2.0, 1.0, 1.0);
-		alertController.popoverPresentationController.permittedArrowDirections = 0;
+		alertController.popoverPresentationController.sourceRect = CGRectMake(
+			viewController.view.bounds.size.width / 2.0,
+			viewController.view.bounds.size.height / 2.0,
+			1.0,
+			1.0
+		);
+		alertController.popoverPresentationController.permittedArrowDirections = 0 as any;
 	}
 
 	const color = getButtonColors().color;
@@ -71,11 +112,17 @@ function showUIAlertController(alertController: UIAlertController) {
 	const lblColor = getLabelColor();
 	if (lblColor) {
 		if (alertController.title) {
-			const title = NSAttributedString.alloc().initWithStringAttributes(alertController.title, <any>{ [NSForegroundColorAttributeName]: lblColor.ios });
+			const title = NSAttributedString.alloc().initWithStringAttributes(
+				alertController.title,
+				<any>{ [NSForegroundColorAttributeName]: lblColor.ios }
+			);
 			alertController.setValueForKey(title, 'attributedTitle');
 		}
 		if (alertController.message) {
-			const message = NSAttributedString.alloc().initWithStringAttributes(alertController.message, <any>{ [NSForegroundColorAttributeName]: lblColor.ios });
+			const message = NSAttributedString.alloc().initWithStringAttributes(
+				alertController.message,
+				<any>{ [NSForegroundColorAttributeName]: lblColor.ios }
+			);
 			alertController.setValueForKey(message, 'attributedMessage');
 		}
 	}
@@ -86,8 +133,19 @@ function showUIAlertController(alertController: UIAlertController) {
 export function alert(arg: any): Promise<void> {
 	return new Promise<void>((resolve, reject) => {
 		try {
-			const options = !isDialogOptions(arg) ? { title: DialogStrings.ALERT, okButtonText: DialogStrings.OK, message: arg + '' } : arg;
-			const alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.Alert);
+			const options = !isDialogOptions(arg)
+				? {
+						title: DialogStrings.ALERT,
+						okButtonText: DialogStrings.OK,
+						message: arg + '',
+				  }
+				: arg;
+			const alertController =
+				UIAlertController.alertControllerWithTitleMessagePreferredStyle(
+					options.title,
+					options.message,
+					UIAlertControllerStyle.Alert
+				);
 
 			addButtonsToAlertController(alertController, options, () => {
 				resolve();
@@ -111,7 +169,12 @@ export function confirm(arg: any): Promise<boolean> {
 						message: arg + '',
 				  }
 				: arg;
-			const alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.Alert);
+			const alertController =
+				UIAlertController.alertControllerWithTitleMessagePreferredStyle(
+					options.title,
+					options.message,
+					UIAlertControllerStyle.Alert
+				);
 
 			addButtonsToAlertController(alertController, options, (r) => {
 				resolve(r);
@@ -151,7 +214,12 @@ export function prompt(...args): Promise<PromptResult> {
 
 	return new Promise<PromptResult>((resolve, reject) => {
 		try {
-			const alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.Alert);
+			const alertController =
+				UIAlertController.alertControllerWithTitleMessagePreferredStyle(
+					options.title,
+					options.message,
+					UIAlertControllerStyle.Alert
+				);
 
 			alertController.addTextFieldWithConfigurationHandler((arg: UITextField) => {
 				arg.text = isString(options.defaultText) ? options.defaultText : '';
@@ -211,7 +279,12 @@ export function login(...args: any[]): Promise<LoginResult> {
 
 	return new Promise<LoginResult>((resolve, reject) => {
 		try {
-			const alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.Alert);
+			const alertController =
+				UIAlertController.alertControllerWithTitleMessagePreferredStyle(
+					options.title,
+					options.message,
+					UIAlertControllerStyle.Alert
+				);
 
 			const textFieldColor = getTextFieldColor();
 
@@ -284,18 +357,31 @@ export function action(...args): Promise<string> {
 		try {
 			let i: number;
 			let action: string;
-			const alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.ActionSheet);
+			const alertController =
+				UIAlertController.alertControllerWithTitleMessagePreferredStyle(
+					options.title,
+					options.message,
+					UIAlertControllerStyle.ActionSheet
+				);
 
 			if (options.actions) {
 				for (i = 0; i < options.actions.length; i++) {
 					action = options.actions[i];
 					if (isString(action)) {
-						const thisActionIsDestructive = options.destructiveActionsIndexes && options.destructiveActionsIndexes.indexOf(i) !== -1;
-						const dialogType = thisActionIsDestructive ? UIAlertActionStyle.Destructive : UIAlertActionStyle.Default;
+						const thisActionIsDestructive =
+							options.destructiveActionsIndexes &&
+							options.destructiveActionsIndexes.indexOf(i) !== -1;
+						const dialogType = thisActionIsDestructive
+							? UIAlertActionStyle.Destructive
+							: UIAlertActionStyle.Default;
 						alertController.addAction(
-							UIAlertAction.actionWithTitleStyleHandler(action, dialogType, (arg: UIAlertAction) => {
-								resolve(arg.title);
-							})
+							UIAlertAction.actionWithTitleStyleHandler(
+								action,
+								dialogType,
+								(arg: UIAlertAction) => {
+									resolve(arg.title);
+								}
+							)
 						);
 					}
 				}
@@ -303,9 +389,13 @@ export function action(...args): Promise<string> {
 
 			if (isString(options.cancelButtonText)) {
 				alertController.addAction(
-					UIAlertAction.actionWithTitleStyleHandler(options.cancelButtonText, UIAlertActionStyle.Cancel, (arg: UIAlertAction) => {
-						resolve(arg.title);
-					})
+					UIAlertAction.actionWithTitleStyleHandler(
+						options.cancelButtonText,
+						UIAlertActionStyle.Cancel,
+						(arg: UIAlertAction) => {
+							resolve(arg.title);
+						}
+					)
 				);
 			}
 

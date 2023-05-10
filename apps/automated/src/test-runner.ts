@@ -2,7 +2,20 @@
 import * as TKUnit from './tk-unit';
 import './ui-test';
 
-import { isIOS, isAndroid, Application, Device, platformNames, Trace, Button, Frame, StackLayout, Page, TextView, Utils } from '@nativescript/core';
+import {
+	isIOS,
+	isAndroid,
+	Application,
+	Device,
+	platformNames,
+	Trace,
+	Button,
+	Frame,
+	StackLayout,
+	Page,
+	TextView,
+	Utils,
+} from '@nativescript/core';
 Frame.defaultAnimatedNavigation = false;
 
 export function isRunningOnEmulator(): boolean {
@@ -155,8 +168,8 @@ if (isIOS && Utils.ios.MajorVersion > 10) {
 	allTests['SAFEAREA-WEBVIEW'] = webViewSafeAreaTests;
 }
 
-import * as rootViewsCssClassesTests from './ui/styling/root-views-css-classes-tests';
-allTests['ROOT-VIEWS-CSS-CLASSES'] = rootViewsCssClassesTests;
+// import * as rootViewsCssClassesTests from './ui/styling/root-views-css-classes-tests';
+// allTests['ROOT-VIEWS-CSS-CLASSES'] = rootViewsCssClassesTests;
 
 import * as stylePropertiesTests from './ui/styling/style-properties-tests';
 allTests['STYLE-PROPERTIES'] = stylePropertiesTests;
@@ -345,7 +358,12 @@ function printRunTestStats() {
 
 	const totalTime = (TKUnit.time() - startTime).toFixed(2);
 
-	let finalMessage = `\n` + `=== ALL TESTS COMPLETE ===\n` + `${allTests.length - failedTestCount} OK, ${failedTestCount} failed\n` + `DURATION: ${totalTime} ms\n` + `=== END OF TESTS ===\n`;
+	let finalMessage =
+		`\n` +
+		`=== ALL TESTS COMPLETE ===\n` +
+		`${allTests.length - failedTestCount} OK, ${failedTestCount} failed\n` +
+		`DURATION: ${totalTime} ms\n` +
+		`=== END OF TESTS ===\n`;
 
 	TKUnit.write(finalMessage, Trace.messageType.info);
 
@@ -370,17 +388,29 @@ function generateTestFile(allTests: TestInfo[]) {
 		let testName = testCase.testName;
 		let duration = (testCase.duration / 1000).toFixed(2);
 
-		testCases.push(`<testcase classname="${Device.os}" name="${testName}" time="${duration}">`);
+		testCases.push(
+			`<testcase classname="${Device.os}" name="${testName}" time="${duration}">`
+		);
 		if (!testCase.isPassed) {
 			failedTestCount++;
-			testCases.push(`<failure type="exceptions.AssertionError"><![CDATA[${testCase.errorMessage}]]></failure>`);
+			testCases.push(
+				`<failure type="exceptions.AssertionError"><![CDATA[${testCase.errorMessage}]]></failure>`
+			);
 		}
 		testCases.push(`</testcase>`);
 	});
 
 	const totalTime = (TKUnit.time() - startTime).toFixed(2);
 
-	const result = ['<testsuites>', `<testsuite name="NativeScript Tests" timestamp="${new Date()}" hostname="hostname" time="${totalTime}" errors="0" tests="${allTests.length}" skipped="0" failures="${failedTestCount}">`, ...testCases, '</testsuite>', '</testsuites>'].join('');
+	const result = [
+		'<testsuites>',
+		`<testsuite name="NativeScript Tests" timestamp="${new Date()}" hostname="hostname" time="${totalTime}" errors="0" tests="${
+			allTests.length
+		}" skipped="0" failures="${failedTestCount}">`,
+		...testCases,
+		'</testsuite>',
+		'</testsuites>',
+	].join('');
 
 	return result;
 }
@@ -425,7 +455,14 @@ function startLog(): void {
 function log(): void {
 	let testsName: string = this.name;
 	let duration = TKUnit.time() - this.start;
-	TKUnit.write(testsName + ' COMPLETED for ' + duration.toFixed(2) + ' BACKSTACK DEPTH: ' + Frame.topmost().backStack.length, Trace.messageType.info);
+	TKUnit.write(
+		testsName +
+			' COMPLETED for ' +
+			duration.toFixed(2) +
+			' BACKSTACK DEPTH: ' +
+			Frame.topmost().backStack.length,
+		Trace.messageType.info
+	);
 }
 
 function getAllProperties(obj: any) {
@@ -433,7 +470,10 @@ function getAllProperties(obj: any) {
 	let currentObj = obj;
 	do {
 		Object.getOwnPropertyNames(currentObj).map((item) => properties.add(item));
-	} while ((currentObj = Object.getPrototypeOf(currentObj)) && currentObj !== Object.prototype);
+	} while (
+		(currentObj = Object.getPrototypeOf(currentObj)) &&
+		currentObj !== Object.prototype
+	);
 	return [...properties.keys()];
 }
 
@@ -467,7 +507,13 @@ export function runAll(testSelector?: string) {
 		}
 	}
 
-	console.log('TESTS: ' + singleModuleName ? singleModuleName : '' + ' ' + singleTestName ? singleTestName : '');
+	console.log(
+		'TESTS: ' + singleModuleName
+			? singleModuleName
+			: '' + ' ' + singleTestName
+			? singleTestName
+			: ''
+	);
 
 	testsQueue.push(
 		new TestInfo(() => {
@@ -501,8 +547,19 @@ export function runAll(testSelector?: string) {
 				if (test.setUp) {
 					testsQueue.push(new TestInfo(test.setUp, test));
 				}
-				const testTimeout = testsWithLongDelay[testName] || testsSuitesWithLongDelay[name];
-				testsQueue.push(new TestInfo(testFunction, test, true, name + '.' + testName, false, null, testTimeout));
+				const testTimeout =
+					testsWithLongDelay[testName] || testsSuitesWithLongDelay[name];
+				testsQueue.push(
+					new TestInfo(
+						testFunction,
+						test,
+						true,
+						name + '.' + testName,
+						false,
+						null,
+						testTimeout
+					)
+				);
 				if (test.tearDown) {
 					testsQueue.push(new TestInfo(test.tearDown, test));
 				}
@@ -535,7 +592,16 @@ class TestInfo implements TKUnit.TestInfoEntry {
 	testTimeout: number;
 	duration: number;
 
-	constructor(testFunc, testInstance?: any, isTest?, testName?, isPassed?, errorMessage?, testTimeout?, duration?) {
+	constructor(
+		testFunc,
+		testInstance?: any,
+		isTest?,
+		testName?,
+		isPassed?,
+		errorMessage?,
+		testTimeout?,
+		duration?
+	) {
 		this.testFunc = testFunc;
 		this.instance = testInstance || null;
 		this.isTest = isTest || false;

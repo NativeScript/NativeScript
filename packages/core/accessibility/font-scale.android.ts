@@ -1,5 +1,4 @@
-import type { ApplicationEventData } from '../application';
-import * as Application from '../application';
+import { Application, ApplicationEventData } from '../application';
 import { FontScaleCategory, getClosestValidFontScale } from './font-scale-common';
 export * from './font-scale-common';
 
@@ -28,7 +27,9 @@ export function getFontScaleCategory(): FontScaleCategory {
 }
 
 function useAndroidFontScale() {
-	fontScaleChanged(Number(Application.android.context.getResources().getConfiguration().fontScale));
+	fontScaleChanged(
+		Number(Application.android.context.getResources().getConfiguration().fontScale)
+	);
 }
 
 let configChangedCallback: android.content.ComponentCallbacks2;

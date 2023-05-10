@@ -1,8 +1,8 @@
 import { Screen, Device } from '../platform';
-import * as appCommonModule from '../application/application-common';
 import { PlatformContext, findMatch, stripQualifiers } from './qualifier-matcher';
 import { registerModulesFromFileSystem } from './non-bundle-workflow-compat';
 import { Trace } from '../trace';
+import { Application } from '../application';
 
 export type { PlatformContext } from './qualifier-matcher';
 
@@ -11,7 +11,15 @@ export type ModuleListProvider = () => string[];
 export class ModuleNameResolver {
 	private _cache = {};
 
-	constructor(private context: PlatformContext, private moduleListProvider: ModuleListProvider = global.getRegisteredModules) {}
+	constructor(
+		private context: PlatformContext,
+		private moduleListProvider: ModuleListProvider = global.getRegisteredModules
+	) {
+		Application.on('livesync', (args) => clearCache());
+		Application.on('orientationChanged', (args) => {
+			resolverInstance = undefined;
+		});
+	}
 
 	public resolveModuleName(path: string, ext: string): string {
 		const key = path + ext;
@@ -22,7 +30,10 @@ export class ModuleNameResolver {
 		}
 
 		if (Trace.isEnabled()) {
-			Trace.write(`path: '${path}' with ext: '${ext}' resolved: '${result}'`, Trace.categories.ModuleNameResolver);
+			Trace.write(
+				`path: '${path}' with ext: '${ext}' resolved: '${result}'`,
+				Trace.categories.ModuleNameResolver
+			);
 		}
 
 		return result;
@@ -46,7 +57,9 @@ export class ModuleNameResolver {
 	}
 
 	private getCandidates(path: string, ext: string): Array<string> {
-		const candidates = this.moduleListProvider().filter((moduleName) => moduleName.startsWith(path) && (!ext || moduleName.endsWith(ext)));
+		const candidates = this.moduleListProvider().filter(
+			(moduleName) => moduleName.startsWith(path) && (!ext || moduleName.endsWith(ext))
+		);
 
 		return candidates;
 	}
@@ -72,7 +85,10 @@ export function resolveModuleName(path: string, ext: string): string {
 }
 
 function resolveModuleSnapshot(path, ext) {
-	Trace.write(`Resolving module in SNAPSHOT context - path: '${path}' with ext: '${ext}'`, Trace.categories.ModuleNameResolver);
+	Trace.write(
+		`Resolving module in SNAPSHOT context - path: '${path}' with ext: '${ext}'`,
+		Trace.categories.ModuleNameResolver
+	);
 
 	// Platform module when in snapshot. So resolve modules with default android phone.
 	// NB: The only module name that should ever be resolved while in snapshot is app.css, because it is
@@ -94,8 +110,3 @@ export function clearCache() {
 export function _setResolver(resolver: ModuleNameResolver) {
 	resolverInstance = resolver;
 }
-
-appCommonModule.on('livesync', (args) => clearCache());
-appCommonModule.on('orientationChanged', (args) => {
-	resolverInstance = undefined;
-});

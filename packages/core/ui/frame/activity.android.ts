@@ -1,6 +1,6 @@
 import '../../globals';
 import { setActivityCallbacks, AndroidActivityCallbacks } from '.';
-const appModule = require('../../application');
+import { Application } from '../../application';
 
 /**
  * NOTE: We cannot use NativeClass here because this is used in appComponents in webpack.config
@@ -12,7 +12,7 @@ const superProto = androidx.appcompat.app.AppCompatActivity.prototype;
 		// init must at least be defined
 	},
 	onCreate(savedInstanceState: android.os.Bundle): void {
-		appModule.android.init(this.getApplication());
+		Application.android.init(this.getApplication());
 
 		// Set isNativeScriptActivity in onCreate.
 		// The JS constructor might not be called because the activity is created from Android.
@@ -21,11 +21,21 @@ const superProto = androidx.appcompat.app.AppCompatActivity.prototype;
 			setActivityCallbacks(this);
 		}
 
-		this._callbacks.onCreate(this, savedInstanceState, this.getIntent(), superProto.onCreate);
+		this._callbacks.onCreate(
+			this,
+			savedInstanceState,
+			this.getIntent(),
+			superProto.onCreate
+		);
 	},
 
 	onNewIntent(intent: android.content.Intent): void {
-		this._callbacks.onNewIntent(this, intent, superProto.setIntent, superProto.onNewIntent);
+		this._callbacks.onNewIntent(
+			this,
+			intent,
+			superProto.setIntent,
+			superProto.onNewIntent
+		);
 	},
 
 	onSaveInstanceState(outState: android.os.Bundle): void {
@@ -52,11 +62,31 @@ const superProto = androidx.appcompat.app.AppCompatActivity.prototype;
 		this._callbacks.onBackPressed(this, superProto.onBackPressed);
 	},
 
-	onRequestPermissionsResult(requestCode: number, permissions: Array<string>, grantResults: Array<number>): void {
-		this._callbacks.onRequestPermissionsResult(this, requestCode, permissions, grantResults, undefined /*TODO: Enable if needed*/);
+	onRequestPermissionsResult(
+		requestCode: number,
+		permissions: Array<string>,
+		grantResults: Array<number>
+	): void {
+		this._callbacks.onRequestPermissionsResult(
+			this,
+			requestCode,
+			permissions,
+			grantResults,
+			undefined /*TODO: Enable if needed*/
+		);
 	},
 
-	onActivityResult(requestCode: number, resultCode: number, data: android.content.Intent): void {
-		this._callbacks.onActivityResult(this, requestCode, resultCode, data, superProto.onActivityResult);
+	onActivityResult(
+		requestCode: number,
+		resultCode: number,
+		data: android.content.Intent
+	): void {
+		this._callbacks.onActivityResult(
+			this,
+			requestCode,
+			resultCode,
+			data,
+			superProto.onActivityResult
+		);
 	},
 });

@@ -1,5 +1,5 @@
 /* tslint:disable:class-name */
-import { getNativeApplication, on, orientationChangedEvent, android as AndroidApplication } from '../application';
+import { Application } from '../application';
 import { SDK_VERSION } from '../utils/constants';
 
 const MIN_TABLET_PIXELS = 600;
@@ -20,15 +20,18 @@ class MainScreen {
 	}
 
 	private initMetrics(): void {
-		const nativeApp = <android.app.Application>getNativeApplication();
-		nativeApp.getSystemService(android.content.Context.WINDOW_SERVICE).getDefaultDisplay().getRealMetrics(this._metrics);
+		const nativeApp = Application.android.getNativeApplication();
+		nativeApp
+			.getSystemService(android.content.Context.WINDOW_SERVICE)
+			.getDefaultDisplay()
+			.getRealMetrics(this._metrics);
 	}
 
 	private get metrics(): android.util.DisplayMetrics {
 		if (!this._metrics) {
 			// NOTE: This will be memory leak but we MainScreen is singleton
-			on('cssChanged', this.reinitMetrics, this);
-			on(orientationChangedEvent, this.reinitMetrics, this);
+			Application.on('cssChanged', this.reinitMetrics, this);
+			Application.on(Application.orientationChangedEvent, this.reinitMetrics, this);
 
 			this._metrics = new android.util.DisplayMetrics();
 			this.initMetrics();
@@ -107,7 +110,9 @@ class DeviceRef {
 
 	get deviceType(): 'Phone' | 'Tablet' {
 		if (!this._deviceType) {
-			const dips = Math.min(Screen.mainScreen.widthPixels, Screen.mainScreen.heightPixels) / Screen.mainScreen.scale;
+			const dips =
+				Math.min(Screen.mainScreen.widthPixels, Screen.mainScreen.heightPixels) /
+				Screen.mainScreen.scale;
 			// If the device has more than 600 dips it is considered to be a tablet.
 			if (dips >= MIN_TABLET_PIXELS) {
 				this._deviceType = 'Tablet';
@@ -121,8 +126,11 @@ class DeviceRef {
 
 	get uuid(): string {
 		if (!this._uuid) {
-			const nativeApp = <android.app.Application>AndroidApplication.nativeApp;
-			this._uuid = android.provider.Settings.Secure.getString(nativeApp.getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
+			const nativeApp = Application.android.getNativeApplication();
+			this._uuid = android.provider.Settings.Secure.getString(
+				nativeApp.getContentResolver(),
+				android.provider.Settings.Secure.ANDROID_ID
+			);
 		}
 
 		return this._uuid;
@@ -131,9 +139,13 @@ class DeviceRef {
 	get language(): string {
 		let defaultNativeLocale;
 		if (SDK_VERSION >= 24) {
-			defaultNativeLocale = android.content.res.Resources.getSystem().getConfiguration().getLocales().get(0);
+			defaultNativeLocale = android.content.res.Resources.getSystem()
+				.getConfiguration()
+				.getLocales()
+				.get(0);
 		} else {
-			defaultNativeLocale = android.content.res.Resources.getSystem().getConfiguration().locale;
+			defaultNativeLocale =
+				android.content.res.Resources.getSystem().getConfiguration().locale;
 		}
 		return defaultNativeLocale.getLanguage().replace('_', '-');
 	}
@@ -141,9 +153,13 @@ class DeviceRef {
 	get region(): string {
 		let defaultNativeLocale;
 		if (SDK_VERSION >= 24) {
-			defaultNativeLocale = android.content.res.Resources.getSystem().getConfiguration().getLocales().get(0);
+			defaultNativeLocale = android.content.res.Resources.getSystem()
+				.getConfiguration()
+				.getLocales()
+				.get(0);
 		} else {
-			defaultNativeLocale = android.content.res.Resources.getSystem().getConfiguration().locale;
+			defaultNativeLocale =
+				android.content.res.Resources.getSystem().getConfiguration().locale;
 		}
 		return defaultNativeLocale.getCountry();
 	}

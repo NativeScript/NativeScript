@@ -5,13 +5,162 @@ if (typeof NSDate !== 'undefined') {
 	start = java.lang.System.currentTimeMillis();
 }
 
-import { Application, ApplicationEventData, UnhandledErrorEventData, DiscardedErrorEventData, AndroidActivityBundleEventData, AndroidActivityEventData, AndroidApplication, AndroidActivityNewIntentEventData, AndroidActivityResultEventData, AndroidActivityBackPressedEventData } from '@nativescript/core';
+// Utils.android.dismissSoftInput();
+// Utils.ad.dismissSoftInput();
+
+// Utils.ios.animateWithSpring();
+
+// Utils.android.isRealDevice()
+
+// isAndroid
+// const {
+// 	GC,
+// 	SDK_VERSION,
+// 	RESOURCE_PREFIX,
+// 	FILE_PREFIX,
+// 	isFontIconURI,
+// 	isDataURI,
+// 	isFileOrResourcePath,
+// 	getFileExtension,
+// 	executeOnMainThread,
+// 	executeOnUIThread,
+// 	mainThreadify,
+// 	isMainThread,
+// 	dispatchToMainThread,
+// 	queueMacrotask,
+// 	queueGC,
+// 	debounce,
+// 	throttle,
+// 	releaseNativeObject,
+// 	convertString,
+// 	escapeRegexSymbols,
+
+// 	getModuleName,
+// 	openFile,
+// 	openUrl,
+// 	isRealDevice,
+
+// 	layout,
+// 	android,
+// 	// legacy (a lot of plugins use the shorthand "ad" Utils.ad instead of Utils.android)
+// 	ad,
+// 	ios,
+// 	dataSerialize,
+// 	dataDeserialize,
+// 	numberHasDecimals,
+// 	numberIs64Bit,
+// 	setTimeout,
+// 	setInterval,
+// 	clearInterval,
+// 	clearTimeout,
+// 	Source,
+// 	ClassInfo,
+// 	getClass,
+// 	getBaseClasses,
+// 	getClassInfo,
+// 	isBoolean,
+// 	isDefined,
+// 	isFunction,
+// 	isNullOrUndefined,
+// 	isNumber,
+// 	isObject,
+// 	isString,
+// 	isUndefined,
+// 	toUIString,
+// 	verifyCallback,
+// 	dismissSoftInput,
+// 	dismissKeyboard,
+// 	copyToClipboard,
+// 	isEmoji,
+// 	getDurationWithDampingFromSpring,
+
+// 	// wtf
+// } = Utils;
+
+// const {
+// 	launchEvent,
+// 	displayedEvent,
+// 	uncaughtErrorEvent,
+// 	discardedErrorEvent,
+// 	suspendEvent,
+// 	resumeEvent,
+// 	exitEvent,
+// 	foregroundEvent,
+// 	backgroundEvent,
+// 	lowMemoryEvent,
+// 	orientationChangedEvent,
+// 	systemAppearanceChangedEvent,
+// 	systemAppearanceChanged,
+// 	fontScaleChangedEvent,
+// 	setMaxRefreshRate,
+
+// 	getMainEntry,
+// 	getRootView,
+// 	resetRootView,
+// 	getResources,
+// 	setResources,
+// 	setCssFileName,
+// 	getCssFileName,
+// 	loadAppCss,
+// 	addCss,
+// 	on,
+// 	off,
+// 	notify,
+// 	hasListeners,
+// 	run,
+// 	orientation,
+// 	getNativeApplication,
+// 	hasLaunched,
+// 	systemAppearance,
+// 	setAutoSystemAppearanceChanged,
+// 	android: appAndroid,
+// 	inBackground,
+// 	suspended,
+// 	ios: iosApp,
+// 	// get android() {
+// 	// 	ensureNativeApplication();
+// 	// 	return appAndroid;
+// 	// },
+// 	// get ios() {
+// 	// 	ensureNativeApplication();
+// 	// 	return iosApp;
+// 	// },
+// 	// get suspended() {
+// 	// 	return suspended;
+// 	// },
+// 	// get inBackground() {
+// 	// 	return inBackground;
+// 	// },
+// } = Application;
+
+// Application.suspendEvent
+
+import {
+	Application,
+	ApplicationEventData,
+	UnhandledErrorEventData,
+	DiscardedErrorEventData,
+	AndroidActivityBundleEventData,
+	AndroidActivityEventData,
+	AndroidApplication,
+	AndroidActivityNewIntentEventData,
+	AndroidActivityResultEventData,
+	AndroidActivityBackPressedEventData,
+} from '@nativescript/core';
+
+// import { Application } from "@nativescript/core/application-new";
+
+// Application.AndroidApplication
+// Application2.AndroidApplication
 
 if (Application.ios) {
 	// Observe application notifications.
-	Application.ios.addNotificationObserver(UIApplicationDidFinishLaunchingNotification, (notification: NSNotification) => {
-		console.log('UIApplicationDidFinishLaunchingNotification: ' + notification);
-	});
+	Application.ios.addNotificationObserver(
+		UIApplicationDidFinishLaunchingNotification,
+		(notification: NSNotification) => {
+			console.log('UIApplicationDidFinishLaunchingNotification: ' + notification);
+		}
+	);
 }
 
 // Common events for both Android and iOS.
@@ -30,7 +179,9 @@ Application.on(Application.displayedEvent, function (args: ApplicationEventData)
 Application.on(Application.launchEvent, function (args: ApplicationEventData) {
 	if (args.android) {
 		// For Android applications, args.android is an android.content.Intent class.
-		console.log('Launched Android application with the following intent: ' + args.android + '.');
+		console.log(
+			'Launched Android application with the following intent: ' + args.android + '.'
+		);
 	} else if (args.ios !== undefined) {
 		// For iOS applications, args.ios is NSDictionary (launchOptions).
 		console.log('Launched iOS application with options: ' + args.ios);
@@ -92,46 +243,108 @@ Application.on(Application.discardedErrorEvent, function (args: DiscardedErrorEv
 
 // Android activity events.
 if (Application.android) {
-	Application.android.on(AndroidApplication.activityCreatedEvent, function (args: AndroidActivityBundleEventData) {
-		console.log('Event: ' + args.eventName + ', Activity: ' + args.activity + ', Bundle: ' + args.bundle);
-	});
+	Application.android.on(
+		Application.android.activityCreatedEvent,
+		function (args: AndroidActivityBundleEventData) {
+			console.log(
+				'Event: ' +
+					args.eventName +
+					', Activity: ' +
+					args.activity +
+					', Bundle: ' +
+					args.bundle
+			);
+		}
+	);
 
-	Application.android.on(AndroidApplication.activityDestroyedEvent, function (args: AndroidActivityEventData) {
-		console.log('Event: ' + args.eventName + ', Activity: ' + args.activity);
-	});
+	Application.android.on(
+		Application.android.activityDestroyedEvent,
+		function (args: AndroidActivityEventData) {
+			console.log('Event: ' + args.eventName + ', Activity: ' + args.activity);
+		}
+	);
 
-	Application.android.on(AndroidApplication.activityStartedEvent, function (args: AndroidActivityEventData) {
-		console.log('Event: ' + args.eventName + ', Activity: ' + args.activity);
-	});
+	Application.android.on(
+		Application.android.activityStartedEvent,
+		function (args: AndroidActivityEventData) {
+			console.log('Event: ' + args.eventName + ', Activity: ' + args.activity);
+		}
+	);
 
-	Application.android.on(AndroidApplication.activityPausedEvent, function (args: AndroidActivityEventData) {
-		console.log('Event: ' + args.eventName + ', Activity: ' + args.activity);
-	});
+	Application.android.on(
+		Application.android.activityPausedEvent,
+		function (args: AndroidActivityEventData) {
+			console.log('Event: ' + args.eventName + ', Activity: ' + args.activity);
+		}
+	);
 
-	Application.android.on(AndroidApplication.activityResumedEvent, function (args: AndroidActivityEventData) {
-		console.log('Event: ' + args.eventName + ', Activity: ' + args.activity);
-	});
+	Application.android.on(
+		Application.android.activityResumedEvent,
+		function (args: AndroidActivityEventData) {
+			console.log('Event: ' + args.eventName + ', Activity: ' + args.activity);
+		}
+	);
 
-	Application.android.on(AndroidApplication.activityStoppedEvent, function (args: AndroidActivityEventData) {
-		console.log('Event: ' + args.eventName + ', Activity: ' + args.activity);
-	});
+	Application.android.on(
+		Application.android.activityStoppedEvent,
+		function (args: AndroidActivityEventData) {
+			console.log('Event: ' + args.eventName + ', Activity: ' + args.activity);
+		}
+	);
 
-	Application.android.on(AndroidApplication.saveActivityStateEvent, function (args: AndroidActivityBundleEventData) {
-		console.log('Event: ' + args.eventName + ', Activity: ' + args.activity + ', Bundle: ' + args.bundle);
-	});
+	Application.android.on(
+		Application.android.saveActivityStateEvent,
+		function (args: AndroidActivityBundleEventData) {
+			console.log(
+				'Event: ' +
+					args.eventName +
+					', Activity: ' +
+					args.activity +
+					', Bundle: ' +
+					args.bundle
+			);
+		}
+	);
 
-	Application.android.on(AndroidApplication.activityResultEvent, function (args: AndroidActivityResultEventData) {
-		console.log('Event: ' + args.eventName + ', Activity: ' + args.activity + ', requestCode: ' + args.requestCode + ', resultCode: ' + args.resultCode + ', Intent: ' + args.intent);
-	});
+	Application.android.on(
+		Application.android.activityResultEvent,
+		function (args: AndroidActivityResultEventData) {
+			console.log(
+				'Event: ' +
+					args.eventName +
+					', Activity: ' +
+					args.activity +
+					', requestCode: ' +
+					args.requestCode +
+					', resultCode: ' +
+					args.resultCode +
+					', Intent: ' +
+					args.intent
+			);
+		}
+	);
 
-	Application.android.on(AndroidApplication.activityBackPressedEvent, function (args: AndroidActivityBackPressedEventData) {
-		console.log('Event: ' + args.eventName + ', Activity: ' + args.activity);
-		// Set args.cancel = true to cancel back navigation and do something custom.
-	});
+	Application.android.on(
+		Application.android.activityBackPressedEvent,
+		function (args: AndroidActivityBackPressedEventData) {
+			console.log('Event: ' + args.eventName + ', Activity: ' + args.activity);
+			// Set args.cancel = true to cancel back navigation and do something custom.
+		}
+	);
 
-	Application.android.on(AndroidApplication.activityNewIntentEvent, function (args: AndroidActivityNewIntentEventData) {
-		console.log('Event: ' + args.eventName + ', Activity: ' + args.activity + ', Intent: ' + args.intent);
-	});
+	Application.android.on(
+		Application.android.activityNewIntentEvent,
+		function (args: AndroidActivityNewIntentEventData) {
+			console.log(
+				'Event: ' +
+					args.eventName +
+					', Activity: ' +
+					args.activity +
+					', Intent: ' +
+					args.intent
+			);
+		}
+	);
 }
 
 let time;

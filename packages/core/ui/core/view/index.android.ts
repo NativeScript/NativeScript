@@ -3,29 +3,100 @@ import type { Point, CustomLayoutView as CustomLayoutViewDefinition } from '.';
 import type { GestureTypes, GestureEventData } from '../../gestures';
 
 // Types.
-import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty } from './view-common';
-import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length } from '../../styling/style-properties';
+import {
+	ViewCommon,
+	isEnabledProperty,
+	originXProperty,
+	originYProperty,
+	isUserInteractionEnabledProperty,
+	testIDProperty,
+} from './view-common';
+import {
+	paddingLeftProperty,
+	paddingTopProperty,
+	paddingRightProperty,
+	paddingBottomProperty,
+	Length,
+} from '../../styling/style-properties';
 import { layout } from '../../../utils';
 import { Trace } from '../../../trace';
 import { ShowModalOptions, hiddenProperty } from '../view-base';
 import { EventData } from '../../../data/observable';
 
-import { perspectiveProperty, visibilityProperty, opacityProperty, horizontalAlignmentProperty, verticalAlignmentProperty, minWidthProperty, minHeightProperty, widthProperty, heightProperty, marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, androidElevationProperty, androidDynamicElevationOffsetProperty } from '../../styling/style-properties';
+import {
+	perspectiveProperty,
+	visibilityProperty,
+	opacityProperty,
+	horizontalAlignmentProperty,
+	verticalAlignmentProperty,
+	minWidthProperty,
+	minHeightProperty,
+	widthProperty,
+	heightProperty,
+	marginLeftProperty,
+	marginTopProperty,
+	marginRightProperty,
+	marginBottomProperty,
+	rotateProperty,
+	rotateXProperty,
+	rotateYProperty,
+	scaleXProperty,
+	scaleYProperty,
+	translateXProperty,
+	translateYProperty,
+	zIndexProperty,
+	backgroundInternalProperty,
+	androidElevationProperty,
+	androidDynamicElevationOffsetProperty,
+} from '../../styling/style-properties';
 import { CoreTypes } from '../../../core-types';
 
-import { Background, BackgroundClearFlags, refreshBorderDrawable } from '../../styling/background';
+import {
+	Background,
+	BackgroundClearFlags,
+	refreshBorderDrawable,
+} from '../../styling/background';
 import { profile } from '../../../profiling';
 import { topmost } from '../../frame/frame-stack';
 import { Screen } from '../../../platform';
-import { AndroidActivityBackPressedEventData, android as androidApp } from '../../../application';
+import { AndroidActivityBackPressedEventData, Application } from '../../../application';
 import { Device } from '../../../platform';
 import lazy from '../../../utils/lazy';
-import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty } from '../../../accessibility/accessibility-properties';
-import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, isAccessibilityServiceEnabled, sendAccessibilityEvent, updateAccessibilityProperties, updateContentDescription, AccessibilityState } from '../../../accessibility';
+import {
+	accessibilityEnabledProperty,
+	accessibilityHiddenProperty,
+	accessibilityHintProperty,
+	accessibilityIdentifierProperty,
+	accessibilityLabelProperty,
+	accessibilityLanguageProperty,
+	accessibilityLiveRegionProperty,
+	accessibilityMediaSessionProperty,
+	accessibilityRoleProperty,
+	accessibilityStateProperty,
+	accessibilityValueProperty,
+} from '../../../accessibility/accessibility-properties';
+import {
+	AccessibilityLiveRegion,
+	AccessibilityRole,
+	AndroidAccessibilityEvent,
+	isAccessibilityServiceEnabled,
+	sendAccessibilityEvent,
+	updateAccessibilityProperties,
+	updateContentDescription,
+	AccessibilityState,
+} from '../../../accessibility';
 import * as Utils from '../../../utils';
 import { SDK_VERSION } from '../../../utils/constants';
 import { CSSShadow } from '../../styling/css-shadow';
-import { _setAndroidFragmentTransitions, _getAnimatedEntries, _updateTransitions, _reverseTransitions, _clearEntry, _clearFragment, addNativeTransitionListener } from '../../frame/fragment.transitions';
+import {
+	_setAndroidFragmentTransitions,
+	_getAnimatedEntries,
+	_updateTransitions,
+	_reverseTransitions,
+	_clearEntry,
+	_clearFragment,
+	addNativeTransitionListener,
+} from '../../frame/fragment.transitions';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -58,7 +129,9 @@ let TouchListener: TouchListener;
 let DialogFragment: DialogFragment;
 
 interface AndroidView {
-	_cachedDrawable: android.graphics.drawable.Drawable.ConstantState | android.graphics.drawable.Drawable;
+	_cachedDrawable:
+		| android.graphics.drawable.Drawable.ConstantState
+		| android.graphics.drawable.Drawable;
 }
 
 interface DialogOptions {
@@ -87,7 +160,10 @@ function initializeTouchListener(): void {
 
 	@NativeClass
 	@Interfaces([android.view.View.OnTouchListener])
-	class TouchListenerImpl extends java.lang.Object implements android.view.View.OnTouchListener {
+	class TouchListenerImpl
+		extends java.lang.Object
+		implements android.view.View.OnTouchListener
+	{
 		private owner: WeakRef<View>;
 		constructor(owner: View) {
 			super();
@@ -122,7 +198,11 @@ function initializeDialogFragment() {
 
 	@NativeClass
 	class DialogImpl extends android.app.Dialog {
-		constructor(public fragment: DialogFragmentImpl, context: android.content.Context, themeResId: number) {
+		constructor(
+			public fragment: DialogFragmentImpl,
+			context: android.content.Context,
+			themeResId: number
+		) {
 			super(context, themeResId);
 
 			return global.__native(this);
@@ -143,7 +223,7 @@ function initializeDialogFragment() {
 			};
 
 			// Fist fire application.android global event
-			androidApp.notify(args);
+			Application.android.notify(args);
 			if (args.cancel) {
 				return;
 			}
@@ -219,7 +299,11 @@ function initializeDialogFragment() {
 			return dialog;
 		}
 
-		public onCreateView(inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle): android.view.View {
+		public onCreateView(
+			inflater: android.view.LayoutInflater,
+			container: android.view.ViewGroup,
+			savedInstanceState: android.os.Bundle
+		): android.view.View {
 			const owner = this.owner;
 			this.activity = new WeakRef(this.getActivity());
 			owner._setupAsRootView(this.getActivity());
@@ -233,7 +317,11 @@ function initializeDialogFragment() {
 			} else {
 				// the dialog seems to not follow the default activity softInputMode,
 				// thus set we set it here.
-				window.setSoftInputMode((<androidx.appcompat.app.AppCompatActivity>owner._context).getWindow().getAttributes().softInputMode);
+				window.setSoftInputMode(
+					(<androidx.appcompat.app.AppCompatActivity>owner._context)
+						.getWindow()
+						.getAttributes().softInputMode
+				);
 			}
 			return owner.nativeViewProtected;
 		}
@@ -245,7 +333,9 @@ function initializeDialogFragment() {
 				const length = android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 				window.setLayout(length, length);
 				// This removes the default backgroundDrawable so there are no margins.
-				window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.WHITE));
+				window.setBackgroundDrawable(
+					new android.graphics.drawable.ColorDrawable(android.graphics.Color.WHITE)
+				);
 			}
 
 			const owner = this.owner;
@@ -322,7 +412,11 @@ export class View extends ViewCommon {
 	nativeViewProtected: android.view.View;
 
 	// TODO: Implement unobserve that detach the touchListener.
-	_observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
+	_observe(
+		type: GestureTypes,
+		callback: (args: GestureEventData) => void,
+		thisArg?: any
+	): void {
 		super._observe(type, callback, thisArg);
 		if (this.isLoaded && !this.touchListenerIsSet) {
 			this.setOnTouchListener();
@@ -331,7 +425,10 @@ export class View extends ViewCommon {
 
 	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any) {
 		super.on(eventNames, callback, thisArg);
-		const isLayoutEvent = typeof eventNames === 'string' ? eventNames.indexOf(ViewCommon.layoutChangedEvent) !== -1 : false;
+		const isLayoutEvent =
+			typeof eventNames === 'string'
+				? eventNames.indexOf(ViewCommon.layoutChangedEvent) !== -1
+				: false;
 
 		if (this.isLoaded && !this.layoutChangeListenerIsSet && isLayoutEvent) {
 			this.setOnLayoutChangeListener();
@@ -340,10 +437,18 @@ export class View extends ViewCommon {
 
 	off(eventNames: string, callback?: (data: EventData) => void, thisArg?: any) {
 		super.off(eventNames, callback, thisArg);
-		const isLayoutEvent = typeof eventNames === 'string' ? eventNames.indexOf(ViewCommon.layoutChangedEvent) !== -1 : false;
+		const isLayoutEvent =
+			typeof eventNames === 'string'
+				? eventNames.indexOf(ViewCommon.layoutChangedEvent) !== -1
+				: false;
 
 		// Remove native listener only if there are no more user listeners for LayoutChanged event
-		if (this.isLoaded && this.layoutChangeListenerIsSet && isLayoutEvent && !this.needsOnLayoutChangeListener()) {
+		if (
+			this.isLoaded &&
+			this.layoutChangeListenerIsSet &&
+			isLayoutEvent &&
+			!this.needsOnLayoutChangeListener()
+		) {
 			this.nativeViewProtected.removeOnLayoutChangeListener(this.layoutChangeListener);
 			this.layoutChangeListenerIsSet = false;
 		}
@@ -355,7 +460,9 @@ export class View extends ViewCommon {
 
 	public _getRootFragmentManager(): androidx.fragment.app.FragmentManager {
 		if (!this._rootManager && this._context) {
-			this._rootManager = (<androidx.fragment.app.FragmentActivity>this._context).getSupportFragmentManager();
+			this._rootManager = (<androidx.fragment.app.FragmentActivity>(
+				this._context
+			)).getSupportFragmentManager();
 		}
 
 		return this._rootManager;
@@ -480,7 +587,11 @@ export class View extends ViewCommon {
 	}
 
 	setOnTouchListener() {
-		if (this.touchListenerIsSet || !this.nativeViewProtected || !this.hasGestureObservers()) {
+		if (
+			this.touchListenerIsSet ||
+			!this.nativeViewProtected ||
+			!this.hasGestureObservers()
+		) {
 			return;
 		}
 
@@ -504,8 +615,23 @@ export class View extends ViewCommon {
 			this.layoutChangeListener =
 				this.layoutChangeListener ||
 				new android.view.View.OnLayoutChangeListener({
-					onLayoutChange(v: android.view.View, left: number, top: number, right: number, bottom: number, oldLeft: number, oldTop: number, oldRight: number, oldBottom: number): void {
-						if (left !== oldLeft || top !== oldTop || right !== oldRight || bottom !== oldBottom) {
+					onLayoutChange(
+						v: android.view.View,
+						left: number,
+						top: number,
+						right: number,
+						bottom: number,
+						oldLeft: number,
+						oldTop: number,
+						oldRight: number,
+						oldBottom: number
+					): void {
+						if (
+							left !== oldLeft ||
+							top !== oldTop ||
+							right !== oldRight ||
+							bottom !== oldBottom
+						) {
 							owner._raiseLayoutChangedEvent();
 						}
 					},
@@ -531,7 +657,12 @@ export class View extends ViewCommon {
 		return false;
 	}
 
-	public layoutNativeView(left: number, top: number, right: number, bottom: number): void {
+	public layoutNativeView(
+		left: number,
+		top: number,
+		right: number,
+		bottom: number
+	): void {
 		if (this.nativeViewProtected) {
 			this.nativeViewProtected.layout(left, top, right, bottom);
 		}
@@ -641,7 +772,15 @@ export class View extends ViewCommon {
 	}
 
 	public getLocationRelativeTo(otherView: ViewCommon): Point {
-		if (!this.nativeViewProtected || !this.nativeViewProtected.getWindowToken() || !otherView || !otherView.nativeViewProtected || !otherView.nativeViewProtected.getWindowToken() || this.nativeViewProtected.getWindowToken() !== otherView.nativeViewProtected.getWindowToken()) {
+		if (
+			!this.nativeViewProtected ||
+			!this.nativeViewProtected.getWindowToken() ||
+			!otherView ||
+			!otherView.nativeViewProtected ||
+			!otherView.nativeViewProtected.getWindowToken() ||
+			this.nativeViewProtected.getWindowToken() !==
+				otherView.nativeViewProtected.getWindowToken()
+		) {
 			return undefined;
 		}
 
@@ -656,7 +795,12 @@ export class View extends ViewCommon {
 		};
 	}
 
-	public static resolveSizeAndState(size: number, specSize: number, specMode: number, childMeasuredState: number): number {
+	public static resolveSizeAndState(
+		size: number,
+		specSize: number,
+		specMode: number,
+		childMeasuredState: number
+	): number {
 		let result = size;
 		switch (specMode) {
 			case layout.UNSPECIFIED:
@@ -691,7 +835,9 @@ export class View extends ViewCommon {
 		if (options.android) {
 			if ((<any>options).android.cancelable !== undefined) {
 				cancelable = !!(<any>options).android.cancelable;
-				console.log('ShowModalOptions.android.cancelable is deprecated. Use ShowModalOptions.cancelable instead.');
+				console.log(
+					'ShowModalOptions.android.cancelable is deprecated. Use ShowModalOptions.cancelable instead.'
+				);
 			}
 			windowSoftInputMode = (<any>options).android.windowSoftInputMode;
 		}
@@ -754,7 +900,9 @@ export class View extends ViewCommon {
 		return this.nativeViewProtected.getVisibility() === android.view.View.GONE;
 	}
 	[hiddenProperty.setNative](value: boolean) {
-		this.nativeViewProtected.setVisibility(value ? android.view.View.GONE : android.view.View.VISIBLE);
+		this.nativeViewProtected.setVisibility(
+			value ? android.view.View.GONE : android.view.View.VISIBLE
+		);
 	}
 
 	[visibilityProperty.getDefault](): CoreTypes.VisibilityType {
@@ -767,7 +915,9 @@ export class View extends ViewCommon {
 			case android.view.View.GONE:
 				return 'collapse';
 			default:
-				throw new Error(`Unsupported android.view.View visibility: ${nativeVisibility}. Currently supported values are android.view.View.VISIBLE, android.view.View.INVISIBLE, android.view.View.GONE.`);
+				throw new Error(
+					`Unsupported android.view.View visibility: ${nativeVisibility}. Currently supported values are android.view.View.VISIBLE, android.view.View.INVISIBLE, android.view.View.GONE.`
+				);
 		}
 	}
 	[visibilityProperty.setNative](value: CoreTypes.VisibilityType) {
@@ -782,7 +932,9 @@ export class View extends ViewCommon {
 				this.nativeViewProtected.setVisibility(android.view.View.GONE);
 				break;
 			default:
-				throw new Error(`Invalid visibility value: ${value}. Valid values are: visible, hidden, collapse.`);
+				throw new Error(
+					`Invalid visibility value: ${value}. Valid values are: visible, hidden, collapse.`
+				);
 		}
 	}
 
@@ -834,7 +986,9 @@ export class View extends ViewCommon {
 		updateAccessibilityProperties(this);
 
 		if (SDK_VERSION >= 28) {
-			this.nativeViewProtected?.setAccessibilityHeading(value === AccessibilityRole.Header);
+			this.nativeViewProtected?.setAccessibilityHeading(
+				value === AccessibilityRole.Header
+			);
 		}
 	}
 
@@ -855,24 +1009,34 @@ export class View extends ViewCommon {
 
 	[accessibilityHiddenProperty.setNative](value: boolean): void {
 		if (value) {
-			this.nativeViewProtected.setImportantForAccessibility(android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
+			this.nativeViewProtected.setImportantForAccessibility(
+				android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+			);
 		} else {
-			this.nativeViewProtected.setImportantForAccessibility(android.view.View.IMPORTANT_FOR_ACCESSIBILITY_YES);
+			this.nativeViewProtected.setImportantForAccessibility(
+				android.view.View.IMPORTANT_FOR_ACCESSIBILITY_YES
+			);
 		}
 	}
 
 	[accessibilityLiveRegionProperty.setNative](value: AccessibilityLiveRegion): void {
 		switch (value) {
 			case AccessibilityLiveRegion.Assertive: {
-				this.nativeViewProtected.setAccessibilityLiveRegion(android.view.View.ACCESSIBILITY_LIVE_REGION_ASSERTIVE);
+				this.nativeViewProtected.setAccessibilityLiveRegion(
+					android.view.View.ACCESSIBILITY_LIVE_REGION_ASSERTIVE
+				);
 				break;
 			}
 			case AccessibilityLiveRegion.Polite: {
-				this.nativeViewProtected.setAccessibilityLiveRegion(android.view.View.ACCESSIBILITY_LIVE_REGION_POLITE);
+				this.nativeViewProtected.setAccessibilityLiveRegion(
+					android.view.View.ACCESSIBILITY_LIVE_REGION_POLITE
+				);
 				break;
 			}
 			default: {
-				this.nativeViewProtected.setAccessibilityLiveRegion(android.view.View.ACCESSIBILITY_LIVE_REGION_NONE);
+				this.nativeViewProtected.setAccessibilityLiveRegion(
+					android.view.View.ACCESSIBILITY_LIVE_REGION_NONE
+				);
 				break;
 			}
 		}
@@ -916,7 +1080,9 @@ export class View extends ViewCommon {
 
 		// NOTE: overriden in Button implementation as for widgets with StateListAnimator (Button)
 		// nativeView.getElevation() returns 0 at the time of the getDefault() query
-		return layout.toDeviceIndependentPixels((<any>this.nativeViewProtected).getElevation());
+		return layout.toDeviceIndependentPixels(
+			(<any>this.nativeViewProtected).getElevation()
+		);
 	}
 
 	protected getDefaultDynamicElevationOffset() {
@@ -947,13 +1113,30 @@ export class View extends ViewCommon {
 		pressedZ = layout.toDevicePixels(pressedZ);
 
 		const pressedSet = new AnimatorSet();
-		pressedSet.playTogether(java.util.Arrays.asList([ObjectAnimator.ofFloat(nativeView, 'translationZ', [pressedZ]).setDuration(duration), ObjectAnimator.ofFloat(nativeView, 'elevation', [elevation]).setDuration(0)]));
+		pressedSet.playTogether(
+			java.util.Arrays.asList([
+				ObjectAnimator.ofFloat(nativeView, 'translationZ', [pressedZ]).setDuration(
+					duration
+				),
+				ObjectAnimator.ofFloat(nativeView, 'elevation', [elevation]).setDuration(0),
+			])
+		);
 
 		const notPressedSet = new AnimatorSet();
-		notPressedSet.playTogether(java.util.Arrays.asList([ObjectAnimator.ofFloat(nativeView, 'translationZ', [z]).setDuration(duration), ObjectAnimator.ofFloat(nativeView, 'elevation', [elevation]).setDuration(0)]));
+		notPressedSet.playTogether(
+			java.util.Arrays.asList([
+				ObjectAnimator.ofFloat(nativeView, 'translationZ', [z]).setDuration(duration),
+				ObjectAnimator.ofFloat(nativeView, 'elevation', [elevation]).setDuration(0),
+			])
+		);
 
 		const defaultSet = new AnimatorSet();
-		defaultSet.playTogether(java.util.Arrays.asList([ObjectAnimator.ofFloat(nativeView, 'translationZ', [0]).setDuration(0), ObjectAnimator.ofFloat(nativeView, 'elevation', [0]).setDuration(0)]));
+		defaultSet.playTogether(
+			java.util.Arrays.asList([
+				ObjectAnimator.ofFloat(nativeView, 'translationZ', [0]).setDuration(0),
+				ObjectAnimator.ofFloat(nativeView, 'elevation', [0]).setDuration(0),
+			])
+		);
 
 		const stateListAnimator = new (<any>android.animation).StateListAnimator();
 		stateListAnimator.addState([statePressed, stateEnabled], pressedSet);
@@ -968,11 +1151,14 @@ export class View extends ViewCommon {
 	}
 
 	[horizontalAlignmentProperty.getDefault](): CoreTypes.HorizontalAlignmentType {
-		return <CoreTypes.HorizontalAlignmentType>org.nativescript.widgets.ViewHelper.getHorizontalAlignment(this.nativeViewProtected);
+		return <CoreTypes.HorizontalAlignmentType>(
+			org.nativescript.widgets.ViewHelper.getHorizontalAlignment(this.nativeViewProtected)
+		);
 	}
 	[horizontalAlignmentProperty.setNative](value: CoreTypes.HorizontalAlignmentType) {
 		const nativeView = this.nativeViewProtected;
-		const lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
+		const lp: any =
+			nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
 		const gravity = lp.gravity;
 		const weight = lp.weight;
 		// Set only if params gravity exists.
@@ -1008,11 +1194,14 @@ export class View extends ViewCommon {
 	}
 
 	[verticalAlignmentProperty.getDefault](): CoreTypes.VerticalAlignmentType {
-		return <CoreTypes.VerticalAlignmentType>org.nativescript.widgets.ViewHelper.getVerticalAlignment(this.nativeViewProtected);
+		return <CoreTypes.VerticalAlignmentType>(
+			org.nativescript.widgets.ViewHelper.getVerticalAlignment(this.nativeViewProtected)
+		);
 	}
 	[verticalAlignmentProperty.setNative](value: CoreTypes.VerticalAlignmentType) {
 		const nativeView = this.nativeViewProtected;
-		const lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
+		const lp: any =
+			nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
 		const gravity = lp.gravity;
 		const height = lp.height;
 		// Set only if params gravity exists.
@@ -1052,15 +1241,24 @@ export class View extends ViewCommon {
 	}
 
 	[rotateXProperty.setNative](value: number) {
-		org.nativescript.widgets.ViewHelper.setRotateX(this.nativeViewProtected, float(value));
+		org.nativescript.widgets.ViewHelper.setRotateX(
+			this.nativeViewProtected,
+			float(value)
+		);
 	}
 
 	[rotateYProperty.setNative](value: number) {
-		org.nativescript.widgets.ViewHelper.setRotateY(this.nativeViewProtected, float(value));
+		org.nativescript.widgets.ViewHelper.setRotateY(
+			this.nativeViewProtected,
+			float(value)
+		);
 	}
 
 	[perspectiveProperty.setNative](value: number) {
-		org.nativescript.widgets.ViewHelper.setPerspective(this.nativeViewProtected, float(value * Screen.mainScreen.scale));
+		org.nativescript.widgets.ViewHelper.setPerspective(
+			this.nativeViewProtected,
+			float(value * Screen.mainScreen.scale)
+		);
 	}
 
 	[scaleXProperty.setNative](value: number) {
@@ -1072,11 +1270,17 @@ export class View extends ViewCommon {
 	}
 
 	[translateXProperty.setNative](value: CoreTypes.dip) {
-		org.nativescript.widgets.ViewHelper.setTranslateX(this.nativeViewProtected, layout.toDevicePixels(value));
+		org.nativescript.widgets.ViewHelper.setTranslateX(
+			this.nativeViewProtected,
+			layout.toDevicePixels(value)
+		);
 	}
 
 	[translateYProperty.setNative](value: CoreTypes.dip) {
-		org.nativescript.widgets.ViewHelper.setTranslateY(this.nativeViewProtected, layout.toDevicePixels(value));
+		org.nativescript.widgets.ViewHelper.setTranslateY(
+			this.nativeViewProtected,
+			layout.toDevicePixels(value)
+		);
 	}
 
 	[zIndexProperty.getDefault](): number {
@@ -1104,7 +1308,9 @@ export class View extends ViewCommon {
 
 		return null;
 	}
-	[backgroundInternalProperty.setNative](value: android.graphics.drawable.Drawable | Background) {
+	[backgroundInternalProperty.setNative](
+		value: android.graphics.drawable.Drawable | Background
+	) {
 		this._redrawNativeBackground(value);
 	}
 
@@ -1124,7 +1330,12 @@ export class View extends ViewCommon {
 		}
 	}
 
-	public _applyBackground(background: Background, isBorderDrawable: boolean, onlyColor: boolean, backgroundDrawable: any) {
+	public _applyBackground(
+		background: Background,
+		isBorderDrawable: boolean,
+		onlyColor: boolean,
+		backgroundDrawable: any
+	) {
 		const nativeView = this.nativeViewProtected;
 		if (!isBorderDrawable && onlyColor) {
 			if (backgroundDrawable && backgroundDrawable.setColor) {
@@ -1139,7 +1350,10 @@ export class View extends ViewCommon {
 				// org.nativescript.widgets.BorderDrawable
 				refreshBorderDrawable(this, backgroundDrawable);
 			} else {
-				backgroundDrawable = new org.nativescript.widgets.BorderDrawable(layout.getDisplayDensity(), this.toString());
+				backgroundDrawable = new org.nativescript.widgets.BorderDrawable(
+					layout.getDisplayDensity(),
+					this.toString()
+				);
 				refreshBorderDrawable(this, backgroundDrawable);
 				nativeView.setBackground(backgroundDrawable);
 			}
@@ -1171,13 +1385,26 @@ export class View extends ViewCommon {
 			nativeView.setBackground(value);
 
 			const style = this.style;
-			const paddingTop = paddingTopProperty.isSet(style) ? this.effectivePaddingTop : this._defaultPaddingTop;
-			const paddingRight = paddingRightProperty.isSet(style) ? this.effectivePaddingRight : this._defaultPaddingRight;
-			const paddingBottom = paddingBottomProperty.isSet(style) ? this.effectivePaddingBottom : this._defaultPaddingBottom;
-			const paddingLeft = paddingLeftProperty.isSet(style) ? this.effectivePaddingLeft : this._defaultPaddingLeft;
+			const paddingTop = paddingTopProperty.isSet(style)
+				? this.effectivePaddingTop
+				: this._defaultPaddingTop;
+			const paddingRight = paddingRightProperty.isSet(style)
+				? this.effectivePaddingRight
+				: this._defaultPaddingRight;
+			const paddingBottom = paddingBottomProperty.isSet(style)
+				? this.effectivePaddingBottom
+				: this._defaultPaddingBottom;
+			const paddingLeft = paddingLeftProperty.isSet(style)
+				? this.effectivePaddingLeft
+				: this._defaultPaddingLeft;
 
 			if (this._isPaddingRelative) {
-				nativeView.setPaddingRelative(paddingLeft, paddingTop, paddingRight, paddingBottom);
+				nativeView.setPaddingRelative(
+					paddingLeft,
+					paddingTop,
+					paddingRight,
+					paddingBottom
+				);
 			} else {
 				nativeView.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
 			}
@@ -1185,14 +1412,23 @@ export class View extends ViewCommon {
 	}
 
 	protected onBackgroundOrBorderPropertyChanged() {
-		const nativeView = <android.view.View & { _cachedDrawable: android.graphics.drawable.Drawable.ConstantState | android.graphics.drawable.Drawable }>this.nativeViewProtected;
+		const nativeView = <
+			android.view.View & {
+				_cachedDrawable:
+					| android.graphics.drawable.Drawable.ConstantState
+					| android.graphics.drawable.Drawable;
+			}
+		>this.nativeViewProtected;
 		if (!nativeView) {
 			return;
 		}
 
 		const background = this.style.backgroundInternal;
 
-		if (background.clearFlags & BackgroundClearFlags.CLEAR_BOX_SHADOW || background.clearFlags & BackgroundClearFlags.CLEAR_BACKGROUND_COLOR) {
+		if (
+			background.clearFlags & BackgroundClearFlags.CLEAR_BOX_SHADOW ||
+			background.clearFlags & BackgroundClearFlags.CLEAR_BACKGROUND_COLOR
+		) {
 			// clear background if we're clearing the box shadow
 			// or the background has been removed
 			nativeView.setBackground(null);
@@ -1208,11 +1444,11 @@ export class View extends ViewCommon {
 		const isBorderDrawable = drawable instanceof org.nativescript.widgets.BorderDrawable;
 
 		// prettier-ignore
-		const onlyColor = !background.hasBorderWidth() 
-			&& !background.hasBorderRadius() 
-			&& !background.hasBoxShadow() 
-			&& !background.clipPath 
-			&& !background.image 
+		const onlyColor = !background.hasBorderWidth()
+			&& !background.hasBorderRadius()
+			&& !background.hasBoxShadow()
+			&& !background.clipPath
+			&& !background.image
 			&& !!background.color;
 
 		this._applyBackground(background, isBorderDrawable, onlyColor, drawable);
@@ -1223,10 +1459,16 @@ export class View extends ViewCommon {
 
 		// TODO: Can we move BorderWidths as separate native setter?
 		// This way we could skip setPadding if borderWidth is not changed.
-		const leftPadding = Math.ceil(this.effectiveBorderLeftWidth + this.effectivePaddingLeft);
+		const leftPadding = Math.ceil(
+			this.effectiveBorderLeftWidth + this.effectivePaddingLeft
+		);
 		const topPadding = Math.ceil(this.effectiveBorderTopWidth + this.effectivePaddingTop);
-		const rightPadding = Math.ceil(this.effectiveBorderRightWidth + this.effectivePaddingRight);
-		const bottomPadding = Math.ceil(this.effectiveBorderBottomWidth + this.effectivePaddingBottom);
+		const rightPadding = Math.ceil(
+			this.effectiveBorderRightWidth + this.effectivePaddingRight
+		);
+		const bottomPadding = Math.ceil(
+			this.effectiveBorderBottomWidth + this.effectivePaddingBottom
+		);
 
 		if (this._isPaddingRelative) {
 			nativeView.setPaddingRelative(leftPadding, topPadding, rightPadding, bottomPadding);
@@ -1256,19 +1498,28 @@ export class ContainerView extends View {
 	public iosOverflowSafeArea: boolean;
 }
 
-export class CustomLayoutView extends ContainerView implements CustomLayoutViewDefinition {
+export class CustomLayoutView
+	extends ContainerView
+	implements CustomLayoutViewDefinition
+{
 	nativeViewProtected: android.view.ViewGroup;
 
 	public createNativeView() {
 		return new org.nativescript.widgets.ContentLayout(this._context);
 	}
 
-	public _addViewToNativeVisualTree(child: ViewCommon, atIndex: number = Number.MAX_SAFE_INTEGER): boolean {
+	public _addViewToNativeVisualTree(
+		child: ViewCommon,
+		atIndex: number = Number.MAX_SAFE_INTEGER
+	): boolean {
 		super._addViewToNativeVisualTree(child);
 
 		if (this.nativeViewProtected && child.nativeViewProtected) {
 			if (Trace.isEnabled()) {
-				Trace.write(`${this}.nativeView.addView(${child}.nativeView, ${atIndex})`, Trace.categories.VisualTreeEvents);
+				Trace.write(
+					`${this}.nativeView.addView(${child}.nativeView, ${atIndex})`,
+					Trace.categories.VisualTreeEvents
+				);
 			}
 			this.nativeViewProtected.addView(child.nativeViewProtected, atIndex);
 			if (child instanceof View) {
@@ -1301,7 +1552,10 @@ export class CustomLayoutView extends ContainerView implements CustomLayoutViewD
 		if (nativeView && childView) {
 			nativeView.removeView(childView);
 			if (Trace.isEnabled()) {
-				Trace.write(`${nativeView}.removeView(${childView})`, Trace.categories.VisualTreeEvents);
+				Trace.write(
+					`${nativeView}.removeView(${childView})`,
+					Trace.categories.VisualTreeEvents
+				);
 				Trace.notifyEvent(child, 'childInLayoutRemovedFromNativeVisualTree');
 			}
 		}
@@ -1357,7 +1611,10 @@ function createNativePercentLengthProperty(options: NativePercentLengthPropertyO
 				setPixels(this.nativeViewProtected, layout.round(layout.toDevicePixels(length)));
 			} else if (length.unit == 'dip') {
 				// tslint:disable-line
-				setPixels(this.nativeViewProtected, layout.round(layout.toDevicePixels(length.value)));
+				setPixels(
+					this.nativeViewProtected,
+					layout.round(layout.toDevicePixels(length.value))
+				);
 			} else if (length.unit == 'px') {
 				// tslint:disable-line
 				setPixels(this.nativeViewProtected, layout.round(length.value));

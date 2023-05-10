@@ -1,6 +1,11 @@
-import { IFileSystemAccess, FileSystemAccess, FileSystemAccess29 } from './file-system-access';
+import {
+	IFileSystemAccess,
+	FileSystemAccess,
+	FileSystemAccess29,
+} from './file-system-access';
 import { SDK_VERSION } from '../utils/constants';
-import { getNativeApplication } from '../application';
+import { Application } from '../application';
+
 // The FileSystemAccess implementation, used through all the APIs.
 let fileAccess: IFileSystemAccess;
 
@@ -184,7 +189,9 @@ export class FileSystemEntity {
 let applicationContext;
 function getApplicationContext() {
 	if (!applicationContext) {
-		applicationContext = (<android.app.Application>getNativeApplication()).getApplicationContext();
+		applicationContext = Application.android
+			.getNativeApplication()
+			.getApplicationContext();
 	}
 
 	return applicationContext;
@@ -205,7 +212,9 @@ export enum AndroidDirectory {
 	SCREENSHOTS = 'screenshots',
 }
 
-function getAndroidDirectory(value: AndroidDirectory): { path: string; column: android.net.Uri } | null {
+function getAndroidDirectory(
+	value: AndroidDirectory
+): { path: string; column: android.net.Uri } | null {
 	switch (value) {
 		case AndroidDirectory.ALARMS:
 			return {
@@ -273,7 +282,12 @@ function getAndroidDirectory(value: AndroidDirectory): { path: string; column: a
 }
 
 class Android {
-	createFile(options: { relativePath?: string; name: string; mime: string; directory: AndroidDirectory }): File {
+	createFile(options: {
+		relativePath?: string;
+		name: string;
+		mime: string;
+		directory: AndroidDirectory;
+	}): File {
 		if (!global.isAndroid) {
 			throw new Error(`createFile is available on Android only!`);
 		}
@@ -289,12 +303,17 @@ class Android {
 
 		if (SDK_VERSION >= 29) {
 			const relativePath = options?.relativePath ? `/${options.relativePath}` : '';
-			meta.put(android.provider.MediaStore.MediaColumns.RELATIVE_PATH, `${externalDirectory.path}${relativePath}`);
+			meta.put(
+				android.provider.MediaStore.MediaColumns.RELATIVE_PATH,
+				`${externalDirectory.path}${relativePath}`
+			);
 			// todo
 			//	meta.put(android.provider.MediaStore.MediaColumns.IS_PENDING, java.lang.Integer.valueOf(1));
 		} else {
 			const relativePath = options?.relativePath ? `${options.relativePath}/` : '';
-			const directory = android.os.Environment.getExternalStoragePublicDirectory(externalDirectory.path);
+			const directory = android.os.Environment.getExternalStoragePublicDirectory(
+				externalDirectory.path
+			);
 			const file = new java.io.File(directory, `${relativePath}${options.name}`);
 			meta.put(android.provider.MediaStore.MediaColumns.DATA, file.getAbsolutePath());
 		}
@@ -330,8 +349,14 @@ export class File extends FileSystemEntity {
 				const fileInfo = getFileAccess().getFile(path, onError);
 				// falls back to creating a temp file without a known extension.
 				if (!fileInfo) {
-					const tempFile = `${knownFolders.temp().path}/${java.util.UUID.randomUUID().toString()}`;
-					org.nativescript.widgets.Async.File.copySync(path, tempFile, getApplicationContext());
+					const tempFile = `${
+						knownFolders.temp().path
+					}/${java.util.UUID.randomUUID().toString()}`;
+					org.nativescript.widgets.Async.File.copySync(
+						path,
+						tempFile,
+						getApplicationContext()
+					);
 					path = tempFile;
 				} else {
 					const ext = fileInfo.extension;
@@ -442,7 +467,11 @@ export class File extends FileSystemEntity {
 		});
 	}
 
-	public appendTextSync(content: string, onError?: (error: any) => any, encoding?: string): void {
+	public appendTextSync(
+		content: string,
+		onError?: (error: any) => any,
+		encoding?: string
+	): void {
 		this._checkAccess();
 
 		try {
@@ -676,7 +705,11 @@ export class File extends FileSystemEntity {
 		});
 	}
 
-	public writeTextSync(content: string, onError?: (error: any) => any, encoding?: string): void {
+	public writeTextSync(
+		content: string,
+		onError?: (error: any) => any,
+		encoding?: string
+	): void {
 		this._checkAccess();
 
 		try {
@@ -825,7 +858,11 @@ export class Folder extends FileSystemEntity {
 			return;
 		}
 
-		const onSuccess = function (fileInfo: { path: string; name: string; extension: string }): boolean {
+		const onSuccess = function (fileInfo: {
+			path: string;
+			name: string;
+			extension: string;
+		}): boolean {
 			let entity;
 			if (fileInfo.extension) {
 				entity = createFile(fileInfo);
@@ -897,7 +934,9 @@ export namespace knownFolders {
 	export namespace ios {
 		function _checkPlatform(knownFolderName: string) {
 			if (!global.isIOS) {
-				throw new Error(`The "${knownFolderName}" known folder is available on iOS only!`);
+				throw new Error(
+					`The "${knownFolderName}" known folder is available on iOS only!`
+				);
 			}
 		}
 
@@ -905,7 +944,9 @@ export namespace knownFolders {
 		export function library(): Folder {
 			_checkPlatform('library');
 			if (!_library) {
-				const existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.LibraryDirectory);
+				const existingFolderInfo = getExistingFolderInfo(
+					NSSearchPathDirectory.LibraryDirectory
+				);
 
 				if (existingFolderInfo) {
 					_library = existingFolderInfo.folder;
@@ -921,7 +962,9 @@ export namespace knownFolders {
 		export function developer(): Folder {
 			_checkPlatform('developer');
 			if (!_developer) {
-				const existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.DeveloperDirectory);
+				const existingFolderInfo = getExistingFolderInfo(
+					NSSearchPathDirectory.DeveloperDirectory
+				);
 
 				if (existingFolderInfo) {
 					_developer = existingFolderInfo.folder;
@@ -937,7 +980,9 @@ export namespace knownFolders {
 		export function desktop(): Folder {
 			_checkPlatform('desktop');
 			if (!_desktop) {
-				const existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.DesktopDirectory);
+				const existingFolderInfo = getExistingFolderInfo(
+					NSSearchPathDirectory.DesktopDirectory
+				);
 
 				if (existingFolderInfo) {
 					_desktop = existingFolderInfo.folder;
@@ -953,7 +998,9 @@ export namespace knownFolders {
 		export function downloads(): Folder {
 			_checkPlatform('downloads');
 			if (!_downloads) {
-				const existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.DownloadsDirectory);
+				const existingFolderInfo = getExistingFolderInfo(
+					NSSearchPathDirectory.DownloadsDirectory
+				);
 
 				if (existingFolderInfo) {
 					_downloads = existingFolderInfo.folder;
@@ -969,7 +1016,9 @@ export namespace knownFolders {
 		export function movies(): Folder {
 			_checkPlatform('movies');
 			if (!_movies) {
-				const existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.MoviesDirectory);
+				const existingFolderInfo = getExistingFolderInfo(
+					NSSearchPathDirectory.MoviesDirectory
+				);
 
 				if (existingFolderInfo) {
 					_movies = existingFolderInfo.folder;
@@ -985,7 +1034,9 @@ export namespace knownFolders {
 		export function music(): Folder {
 			_checkPlatform('music');
 			if (!_music) {
-				const existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.MusicDirectory);
+				const existingFolderInfo = getExistingFolderInfo(
+					NSSearchPathDirectory.MusicDirectory
+				);
 
 				if (existingFolderInfo) {
 					_music = existingFolderInfo.folder;
@@ -1001,7 +1052,9 @@ export namespace knownFolders {
 		export function pictures(): Folder {
 			_checkPlatform('pictures');
 			if (!_pictures) {
-				const existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.PicturesDirectory);
+				const existingFolderInfo = getExistingFolderInfo(
+					NSSearchPathDirectory.PicturesDirectory
+				);
 
 				if (existingFolderInfo) {
 					_pictures = existingFolderInfo.folder;
@@ -1017,7 +1070,9 @@ export namespace knownFolders {
 		export function sharedPublic(): Folder {
 			_checkPlatform('sharedPublic');
 			if (!_sharedPublic) {
-				const existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.SharedPublicDirectory);
+				const existingFolderInfo = getExistingFolderInfo(
+					NSSearchPathDirectory.SharedPublicDirectory
+				);
 
 				if (existingFolderInfo) {
 					_sharedPublic = existingFolderInfo.folder;
@@ -1029,7 +1084,10 @@ export namespace knownFolders {
 			return _sharedPublic;
 		}
 
-		function getExistingFolderInfo(pathDirectory: any /* NSSearchPathDirectory */): { folder: Folder; path: string } {
+		function getExistingFolderInfo(pathDirectory: any /* NSSearchPathDirectory */): {
+			folder: Folder;
+			path: string;
+		} {
 			const fileAccess = <any>getFileAccess();
 			const folderPath = fileAccess.getKnownPath(pathDirectory);
 			const folderInfo = fileAccess.getExistingFolder(folderPath);
