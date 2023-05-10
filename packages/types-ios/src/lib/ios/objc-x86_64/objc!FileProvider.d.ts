@@ -68,6 +68,8 @@ declare class NSFileProviderDomain extends NSObject {
 
 	readonly userEnabled: boolean;
 
+	readonly volumeUUID: NSUUID;
+
 	constructor(o: { identifier: string; displayName: string; });
 
 	constructor(o: { identifier: string; displayName: string; pathRelativeToDocumentStorage: string; });

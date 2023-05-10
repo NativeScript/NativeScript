@@ -1161,7 +1161,9 @@ declare const enum nw_quic_stream_type_t {
 
 	nw_quic_stream_type_bidirectional = 1,
 
-	nw_quic_stream_type_unidirectional = 2
+	nw_quic_stream_type_unidirectional = 2,
+
+	nw_quic_stream_type_datagram = 3
 }
 
 declare function nw_release(obj: interop.Pointer | interop.Reference<any>): void;

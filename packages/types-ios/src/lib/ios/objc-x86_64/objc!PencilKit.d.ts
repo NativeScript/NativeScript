@@ -143,20 +143,34 @@ declare class PKEraserTool extends PKTool {
 
 	static alloc(): PKEraserTool; // inherited from NSObject
 
+	static defaultWidthForEraserType(eraserType: PKEraserType): number;
+
+	static maximumWidthForEraserType(eraserType: PKEraserType): number;
+
+	static minimumWidthForEraserType(eraserType: PKEraserType): number;
+
 	static new(): PKEraserTool; // inherited from NSObject
 
 	readonly eraserType: PKEraserType;
 
+	readonly width: number;
+
 	constructor(o: { eraserType: PKEraserType; });
 
+	constructor(o: { eraserType: PKEraserType; width: number; });
+
 	initWithEraserType(eraserType: PKEraserType): this;
+
+	initWithEraserTypeWidth(eraserType: PKEraserType, width: number): this;
 }
 
 declare const enum PKEraserType {
 
 	Vector = 0,
 
-	Bitmap = 1
+	Bitmap = 1,
+
+	FixedWidthBitmap = 2
 }
 
 declare class PKFloatRange extends NSObject implements NSCopying {

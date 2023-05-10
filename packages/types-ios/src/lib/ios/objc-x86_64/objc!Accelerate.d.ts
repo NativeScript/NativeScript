@@ -78,7 +78,15 @@ declare const enum BNNSActivationFunction {
 
 	HardSwish = 30,
 
-	SiLU = 31
+	SiLU = 31,
+
+	ReLU6 = 32,
+
+	Erf = 33,
+
+	GELU = 34,
+
+	GELUApproximationSigmoid = 35
 }
 
 declare function BNNSApplyMultiheadAttention(F: interop.Pointer | interop.Reference<any>, batch_size: number, query: interop.Pointer | interop.Reference<any>, query_stride: number, key: interop.Pointer | interop.Reference<any>, key_stride: number, key_mask: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, key_mask_stride: number, value: interop.Pointer | interop.Reference<any>, value_stride: number, output: interop.Pointer | interop.Reference<any>, output_stride: number, add_to_attention: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, backprop_cache_size: interop.Pointer | interop.Reference<number>, backprop_cache: interop.Pointer | interop.Reference<any>, workspace_size: interop.Pointer | interop.Reference<number>, workspace: interop.Pointer | interop.Reference<any>): number;
@@ -1205,6 +1213,8 @@ declare const enum BNNSReduceFunction {
 
 	None = 15,
 
+	LogSum = 16,
+
 	Any = 10,
 
 	All = 11
@@ -1247,7 +1257,11 @@ declare const enum BNNSShuffleType {
 
 	PixelShuffleNCHW = 0,
 
-	PixelUnshuffleNCHW = 1
+	PixelUnshuffleNCHW = 1,
+
+	DepthToSpaceNCHW = 2,
+
+	SpaceToDepthNCHW = 3
 }
 
 interface BNNSSparsityParameters {

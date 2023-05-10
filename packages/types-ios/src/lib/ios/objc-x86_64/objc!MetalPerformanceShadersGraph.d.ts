@@ -131,6 +131,16 @@ declare class MPSGraph extends NSObject {
 
 	convolution2DWithSourceTensorWeightsTensorDescriptorName(source: MPSGraphTensor, weights: MPSGraphTensor, descriptor: MPSGraphConvolution2DOpDescriptor, name: string): MPSGraphTensor;
 
+	convolution3DDataGradientWithIncomingGradientTensorWeightsTensorOutputShapeForwardConvolutionDescriptorName(incomingGradient: MPSGraphTensor, weights: MPSGraphTensor, outputShape: NSArray<number> | number[], forwardConvolutionDescriptor: MPSGraphConvolution3DOpDescriptor, name: string): MPSGraphTensor;
+
+	convolution3DDataGradientWithIncomingGradientTensorWeightsTensorOutputShapeTensorForwardConvolutionDescriptorName(gradient: MPSGraphTensor, weights: MPSGraphTensor, outputShapeTensor: MPSGraphTensor, forwardConvolutionDescriptor: MPSGraphConvolution3DOpDescriptor, name: string): MPSGraphTensor;
+
+	convolution3DWeightsGradientWithIncomingGradientTensorSourceTensorOutputShapeForwardConvolutionDescriptorName(incomingGradient: MPSGraphTensor, source: MPSGraphTensor, outputShape: NSArray<number> | number[], forwardConvolutionDescriptor: MPSGraphConvolution3DOpDescriptor, name: string): MPSGraphTensor;
+
+	convolution3DWeightsGradientWithIncomingGradientTensorSourceTensorOutputShapeTensorForwardConvolutionDescriptorName(gradient: MPSGraphTensor, source: MPSGraphTensor, outputShapeTensor: MPSGraphTensor, forwardConvolutionDescriptor: MPSGraphConvolution3DOpDescriptor, name: string): MPSGraphTensor;
+
+	convolution3DWithSourceTensorWeightsTensorDescriptorName(source: MPSGraphTensor, weights: MPSGraphTensor, descriptor: MPSGraphConvolution3DOpDescriptor, name: string): MPSGraphTensor;
+
 	convolutionTranspose2DDataGradientWithIncomingGradientTensorWeightsTensorOutputShapeForwardConvolutionDescriptorName(incomingGradient: MPSGraphTensor, weights: MPSGraphTensor, outputShape: NSArray<number> | number[], forwardConvolutionDescriptor: MPSGraphConvolution2DOpDescriptor, name: string): MPSGraphTensor;
 
 	convolutionTranspose2DDataGradientWithIncomingGradientTensorWeightsTensorOutputShapeTensorForwardConvolutionDescriptorName(incomingGradient: MPSGraphTensor, weights: MPSGraphTensor, outputShape: MPSGraphTensor, forwardConvolutionDescriptor: MPSGraphConvolution2DOpDescriptor, name: string): MPSGraphTensor;
@@ -684,6 +694,53 @@ declare class MPSGraphConvolution2DOpDescriptor extends NSObject implements NSCo
 	setExplicitPaddingWithPaddingLeftPaddingRightPaddingTopPaddingBottom(paddingLeft: number, paddingRight: number, paddingTop: number, paddingBottom: number): void;
 }
 
+declare class MPSGraphConvolution3DOpDescriptor extends NSObject implements NSCopying {
+
+	static alloc(): MPSGraphConvolution3DOpDescriptor; // inherited from NSObject
+
+	static descriptorWithStrideInXStrideInYStrideInZDilationRateInXDilationRateInYDilationRateInZGroupsPaddingLeftPaddingRightPaddingTopPaddingBottomPaddingFrontPaddingBackPaddingStyleDataLayoutWeightsLayout(strideInX: number, strideInY: number, strideInZ: number, dilationRateInX: number, dilationRateInY: number, dilationRateInZ: number, groups: number, paddingLeft: number, paddingRight: number, paddingTop: number, paddingBottom: number, paddingFront: number, paddingBack: number, paddingStyle: MPSGraphPaddingStyle, dataLayout: MPSGraphTensorNamedDataLayout, weightsLayout: MPSGraphTensorNamedDataLayout): MPSGraphConvolution3DOpDescriptor;
+
+	static descriptorWithStrideInXStrideInYStrideInZDilationRateInXDilationRateInYDilationRateInZGroupsPaddingStyleDataLayoutWeightsLayout(strideInX: number, strideInY: number, strideInZ: number, dilationRateInX: number, dilationRateInY: number, dilationRateInZ: number, groups: number, paddingStyle: MPSGraphPaddingStyle, dataLayout: MPSGraphTensorNamedDataLayout, weightsLayout: MPSGraphTensorNamedDataLayout): MPSGraphConvolution3DOpDescriptor;
+
+	static new(): MPSGraphConvolution3DOpDescriptor; // inherited from NSObject
+
+	dataLayout: MPSGraphTensorNamedDataLayout;
+
+	dilationRateInX: number;
+
+	dilationRateInY: number;
+
+	dilationRateInZ: number;
+
+	groups: number;
+
+	paddingBack: number;
+
+	paddingBottom: number;
+
+	paddingFront: number;
+
+	paddingLeft: number;
+
+	paddingRight: number;
+
+	paddingStyle: MPSGraphPaddingStyle;
+
+	paddingTop: number;
+
+	strideInX: number;
+
+	strideInY: number;
+
+	strideInZ: number;
+
+	weightsLayout: MPSGraphTensorNamedDataLayout;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	setExplicitPaddingWithPaddingLeftPaddingRightPaddingTopPaddingBottomPaddingFrontPaddingBack(paddingLeft: number, paddingRight: number, paddingTop: number, paddingBottom: number, paddingFront: number, paddingBack: number): void;
+}
+
 declare class MPSGraphCreateSparseOpDescriptor extends NSObject implements NSCopying {
 
 	static alloc(): MPSGraphCreateSparseOpDescriptor; // inherited from NSObject
@@ -784,6 +841,8 @@ declare class MPSGraphExecutable extends NSObject {
 	options: MPSGraphOptions;
 
 	readonly targetTensors: NSArray<MPSGraphTensor>;
+
+	getOutputTypesWithDeviceInputTypesCompilationDescriptor(device: MPSGraphDevice, inputTypes: NSArray<MPSGraphType> | MPSGraphType[], compilationDescriptor: MPSGraphCompilationDescriptor): NSArray<MPSGraphShapedType>;
 
 	runAsyncWithMTLCommandQueueInputsArrayResultsArrayExecutionDescriptor(commandQueue: MTLCommandQueue, inputsArray: NSArray<MPSGraphTensorData> | MPSGraphTensorData[], resultsArray: NSArray<MPSGraphTensorData> | MPSGraphTensorData[], executionDescriptor: MPSGraphExecutableExecutionDescriptor): NSArray<MPSGraphTensorData>;
 
@@ -1157,7 +1216,11 @@ declare const enum MPSGraphResizeNearestRoundingMode {
 
 	Ceil = 2,
 
-	Floor = 3
+	Floor = 3,
+
+	RoundToEven = 4,
+
+	RoundToOdd = 5
 }
 
 declare const enum MPSGraphScatterMode {
@@ -1287,7 +1350,15 @@ declare const enum MPSGraphTensorNamedDataLayout {
 
 	HWC = 5,
 
-	HW = 6
+	HW = 6,
+
+	NCDHW = 7,
+
+	NDHWC = 8,
+
+	OIDHW = 9,
+
+	DHWIO = 10
 }
 
 declare class MPSGraphType extends NSObject implements NSCopying {

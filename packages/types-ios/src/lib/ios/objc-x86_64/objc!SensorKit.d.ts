@@ -55,6 +55,8 @@ declare class SRApplicationUsage extends NSObject {
 
 	readonly bundleIdentifier: string;
 
+	readonly relativeStartTime: number;
+
 	readonly reportApplicationIdentifier: string;
 
 	readonly supplementalCategories: NSArray<SRSupplementalCategory>;
@@ -217,6 +219,8 @@ declare class SRDeviceUsageReport extends NSObject {
 
 	readonly totalUnlocks: number;
 
+	readonly version: string;
+
 	readonly webUsageByCategory: NSDictionary<string, NSArray<SRWebUsage>>;
 }
 
@@ -334,6 +338,8 @@ declare class SRKeyboardMetrics extends NSObject {
 	readonly planeChangeKeyToCharKey: SRKeyboardProbabilityMetric<NSUnitDuration>;
 
 	readonly planeChangeToAnyTap: SRKeyboardProbabilityMetric<NSUnitDuration>;
+
+	readonly sessionIdentifiers: NSArray<string>;
 
 	readonly shortWordCharKeyDownErrorDistance: SRKeyboardProbabilityMetric<NSUnitLength>;
 
@@ -471,6 +477,34 @@ declare const enum SRLocationCategory {
 	Gym = 4
 }
 
+declare class SRMediaEvent extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): SRMediaEvent; // inherited from NSObject
+
+	static new(): SRMediaEvent; // inherited from NSObject
+
+	readonly eventType: SRMediaEventType;
+
+	readonly mediaIdentifier: string;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare const enum SRMediaEventType {
+
+	OnScreen = 1,
+
+	OffScreen = 2
+}
+
 declare class SRMessagesUsageReport extends NSObject {
 
 	static alloc(): SRMessagesUsageReport; // inherited from NSObject
@@ -560,6 +594,8 @@ declare var SRSensorAmbientPressure: string;
 declare var SRSensorDeviceUsageReport: string;
 
 declare var SRSensorKeyboardMetrics: string;
+
+declare var SRSensorMediaEvents: string;
 
 declare var SRSensorMessagesUsageReport: string;
 
@@ -658,6 +694,8 @@ declare class SRTextInputSession extends NSObject {
 
 	readonly duration: number;
 
+	readonly sessionIdentifier: string;
+
 	readonly sessionType: SRTextInputSessionType;
 }
 
@@ -706,7 +744,11 @@ declare class SRWristDetection extends NSObject {
 
 	readonly crownOrientation: SRCrownOrientation;
 
+	readonly offWristDate: Date;
+
 	readonly onWrist: boolean;
+
+	readonly onWristDate: Date;
 
 	readonly wristLocation: SRWristLocation;
 }
