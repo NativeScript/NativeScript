@@ -51,8 +51,8 @@ export function testAndroidApplicationInitialized() {
 		Application.android.foregroundActivity,
 		'Android foregroundActivity not initialized.'
 	);
-	// @ts-expect-error
 	TKUnit.assert(
+		// @ts-expect-error
 		Application.android.foregroundActivity.isNativeScriptActivity,
 		'Android foregroundActivity.isNativeScriptActivity is false.'
 	);
