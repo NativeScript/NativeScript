@@ -5,6 +5,7 @@ import { GridLayout } from '../grid-layout';
 import { RootLayout, RootLayoutOptions, ShadeCoverOptions, TransitionAnimation } from '.';
 import { Animation } from '../../animation';
 import { AnimationDefinition } from '../../animation';
+import { isNumber } from '../../../utils/types';
 
 @CSSType('RootLayout')
 export class RootLayoutBase extends GridLayout {
