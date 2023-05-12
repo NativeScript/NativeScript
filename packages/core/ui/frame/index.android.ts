@@ -14,9 +14,6 @@ import {
 	AndroidActivityRequestPermissionsEventData,
 	AndroidActivityResultEventData,
 	Application,
-	ApplicationEventData,
-	LaunchEventData,
-	LoadAppCSSEventData,
 } from '../../application';
 
 import { _stack, FrameBase, NavigationType } from './frame-common';
@@ -35,25 +32,15 @@ import {
 	addNativeTransitionListener,
 } from './fragment.transitions';
 
-// TODO: Remove this and get it from global to decouple builder for angular
-import { Builder } from '../builder';
-import { CSSUtils } from '../../css/system-classes';
-import { Device } from '../../platform';
 import { profile } from '../../profiling';
-import { ad } from '../../utils/native-helper';
+import { android as androidUtils } from '../../utils/native-helper';
 import type { ExpandedEntry } from './fragment.transitions.android';
-import {
-	SharedTransition,
-	SharedTransitionAnimationType,
-} from '../transition/shared-transition';
 import {
 	AndroidActivityBackPressedEventData,
 	AndroidActivityNewIntentEventData,
 } from 'application-old';
 
 export * from './frame-common';
-
-const ANDROID_PLATFORM = 'android';
 
 const INTENT_EXTRA = 'com.tns.activity';
 const ROOT_VIEW_ID_EXTRA = 'com.tns.activity.rootViewId';
@@ -123,7 +110,7 @@ export class Frame extends FrameBase {
 	}
 
 	public static reloadPage(context?: ModuleContext): void {
-		const activity = ad.getCurrentActivity();
+		const activity = androidUtils.getCurrentActivity();
 		const callbacks: AndroidActivityCallbacks = activity[CALLBACKS];
 		if (callbacks) {
 			const rootView: View = callbacks.getRootView();
@@ -180,7 +167,7 @@ export class Frame extends FrameBase {
 
 		// _onAttachedToWindow called from OS again after it was detach
 		// still happens with androidx.fragment:1.3.2
-		const activity = ad.getCurrentActivity();
+		const activity = androidUtils.getCurrentActivity();
 		const lifecycleState =
 			activity?.getLifecycle?.()?.getCurrentState() ||
 			androidx.lifecycle.Lifecycle.State.CREATED;
@@ -1413,13 +1400,11 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 		// and raising the application resume event there causes issues like
 		// https://github.com/NativeScript/NativeScript/issues/6708
 		if ((<any>activity).isNativeScriptActivity) {
-			Application.setSuspended(false);
-			const args = <ApplicationEventData>{
-				eventName: Application.resumeEvent,
-				object: Application.android,
+			Application.setSuspended(false, {
+				// todo: deprecate in favor of using event.activity instead.
 				android: activity,
-			};
-			Application.notify(args);
+				activity,
+			});
 		}
 	}
 
@@ -1585,51 +1570,20 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 			);
 		}
 
+		const intent = activity.getIntent();
+		rootView = Application.createRootView(rootView, fireLaunchEvent, {
+			// todo: deprecate in favor of args.intent?
+			android: intent,
+			intent,
+			savedInstanceState,
+		});
+
 		if (!rootView) {
-			const mainEntry = Application.getMainEntry();
-			const intent = activity.getIntent();
-			// useful for integrations that would like to set rootView asynchronously after app launch
-			let shouldRootViewBeEmpty = false;
-
-			if (fireLaunchEvent) {
-				// entry point for Angular and Vue frameworks
-				rootView = notifyLaunch(intent, <any>savedInstanceState, null);
-				shouldRootViewBeEmpty = rootView === null;
-			}
-
-			if (!rootView) {
-				if (shouldRootViewBeEmpty) {
-					return;
-				}
-				// entry point for NS Core
-				if (!mainEntry) {
-					// Also handles scenarios with Angular and Vue where the notifyLaunch didn't return a root view.
-					throw new Error(
-						'Main entry is missing. App cannot be started. Verify app bootstrap.'
-					);
-				}
-
-				rootView = Builder.createViewFromEntry(mainEntry);
-			}
-
-			this._rootView = rootView;
-			activityRootViewsMap.set(rootView._domId, new WeakRef(rootView));
-
-			const deviceType = Device.deviceType.toLowerCase();
-
-			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${ANDROID_PLATFORM}`);
-			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${deviceType}`);
-			CSSUtils.pushToSystemCssClasses(
-				`${CSSUtils.CLASS_PREFIX}${Application.android.orientation}`
-			);
-			CSSUtils.pushToSystemCssClasses(
-				`${CSSUtils.CLASS_PREFIX}${Application.android.systemAppearance}`
-			);
-
-			this._rootView.cssClasses.add(CSSUtils.ROOT_VIEW_CSS_CLASS);
-			const rootViewCssClasses = CSSUtils.getSystemCssClasses();
-			rootViewCssClasses.forEach((c) => this._rootView.cssClasses.add(c));
+			// no root view created
+			return;
 		}
+
+		activityRootViewsMap.set(rootView._domId, new WeakRef(rootView));
 
 		// setup view as styleScopeHost
 		rootView._setupAsRootView(activity);
@@ -1638,33 +1592,13 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 			rootView.nativeViewProtected,
 			new org.nativescript.widgets.CommonLayoutParams()
 		);
+
+		this._rootView = rootView;
+
+		// sets root classes once rootView is ready...
+		Application.initRootView();
 	}
 }
-
-const notifyLaunch = profile(
-	'notifyLaunch',
-	function notifyLaunch(
-		intent: android.content.Intent,
-		savedInstanceState: android.os.Bundle
-	): View {
-		const launchArgs: LaunchEventData = {
-			eventName: Application.launchEvent,
-			object: Application,
-			android: intent,
-			savedInstanceState,
-		};
-
-		Application.notify(launchArgs);
-		Application.notify(<LoadAppCSSEventData>{
-			eventName: 'loadAppCss',
-			object: Application,
-			android: Application.android,
-			cssFile: Application.getCssFileName(),
-		});
-
-		return launchArgs.root;
-	}
-);
 
 export function setActivityCallbacks(
 	activity: androidx.appcompat.app.AppCompatActivity

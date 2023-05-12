@@ -1,19 +1,28 @@
-// Require globals first so that snapshot takes __extends function.
-// import '../globals';
-
-import { Observable } from '../data/observable';
+import { initAccessibilityCssHelper } from '../accessibility/accessibility-css-helper';
+import { initAccessibilityFontScale } from '../accessibility/font-scale';
 import { CoreTypes } from '../core-types';
 import { CSSUtils } from '../css/system-classes';
+import { Observable } from '../data/observable';
+import { Device } from '../platform';
+import { profile } from '../profiling';
 import { Trace } from '../trace';
+import { Builder } from '../ui/builder';
 import * as bindableResources from '../ui/core/bindable/bindable-resources';
-import { View } from '../ui/core/view';
+import type { View } from '../ui/core/view';
+import type { Frame } from '../ui/frame';
 import { NavigationEntry } from '../ui/frame/frame-interfaces';
+import type { StyleScope } from '../ui/styling/style-scope';
 import type {
 	AndroidApplication as IAndroidApplication,
 	iOSApplication as IiOSApplication,
 } from './';
-import { CssChangedEventData, LoadAppCSSEventData } from './application-interfaces';
 import {
+	ApplicationEventData,
+	CssChangedEventData,
+	DiscardedErrorEventData,
+	LaunchEventData,
+	LoadAppCSSEventData,
+	NativeScriptError,
 	OrientationChangedEventData,
 	SystemAppearanceChangedEventData,
 } from './application-interfaces';
@@ -43,22 +52,75 @@ export class ApplicationCommon extends Observable {
 	readonly orientationChangedEvent = 'orientationChanged';
 	readonly systemAppearanceChangedEvent = 'systemAppearanceChanged';
 	readonly fontScaleChangedEvent = 'fontScaleChanged';
+	readonly livesyncEvent = 'livesync';
 
 	constructor() {
 		super();
 
 		global.NativeScriptGlobals.appInstanceReady = true;
+
+		global.__onUncaughtError = (error: NativeScriptError) => {
+			this.notify({
+				eventName: this.uncaughtErrorEvent,
+				object: this,
+				android: error,
+				ios: error,
+				error: error,
+			} as DiscardedErrorEventData);
+		};
+
+		global.__onDiscardedError = (error: NativeScriptError) => {
+			this.notify({
+				eventName: this.discardedErrorEvent,
+				object: this,
+				error: error,
+			} as DiscardedErrorEventData);
+		};
+
+		global.__onLiveSync = (context?: ModuleContext) => {
+			if (this.suspended) {
+				return;
+			}
+
+			const rootView = this.getRootView();
+			this.livesync(rootView, context);
+		};
 	}
 
-	/**
-	 * Ensure css-class is set on rootView
-	 */
+	livesync(rootView: View, context?: ModuleContext) {
+		this.notify({ eventName: this.livesyncEvent, object: this });
+		const liveSyncCore = global.__onLiveSyncCore;
+		let reapplyAppStyles = false;
+
+		// ModuleContext is available only for Hot Module Replacement
+		if (context && context.path) {
+			const styleExtensions = ['css', 'scss'];
+			const appStylesFullFileName = this.getCssFileName();
+			const appStylesFileName = appStylesFullFileName.substring(
+				0,
+				appStylesFullFileName.lastIndexOf('.') + 1
+			);
+			reapplyAppStyles = styleExtensions.some(
+				(ext) => context.path === appStylesFileName.concat(ext)
+			);
+		}
+
+		// Handle application styles
+		if (rootView && reapplyAppStyles) {
+			rootView._onCssStateChange();
+		} else if (liveSyncCore) {
+			liveSyncCore(context);
+		}
+	}
+
 	applyCssClass(rootView: View, cssClasses: string[], newCssClass: string): void {
 		if (!rootView.cssClasses.has(newCssClass)) {
 			cssClasses.forEach((cssClass) => this.removeCssClass(rootView, cssClass));
 			this.addCssClass(rootView, newCssClass);
 			this.increaseStyleScopeApplicationCssSelectorVersion(rootView);
 			rootView._onCssStateChange();
+
+			console.log('APPLY ROOT CSS CLASSES', ...rootView.cssClasses);
 		}
 	}
 
@@ -73,13 +135,39 @@ export class ApplicationCommon extends Observable {
 	}
 
 	private increaseStyleScopeApplicationCssSelectorVersion(rootView: View) {
-		const styleScope =
-			rootView._styleScope ||
-			((<any>rootView).currentPage && (<any>rootView).currentPage._styleScope);
+		const styleScope: StyleScope =
+			rootView._styleScope ?? (rootView as Frame)?.currentPage?._styleScope;
 
 		if (styleScope) {
 			styleScope._increaseApplicationCssSelectorVersion();
 		}
+	}
+
+	protected setRootViewCSSClasses(rootView: View): void {
+		const platform = Device.os.toLowerCase();
+		const deviceType = Device.deviceType.toLowerCase();
+
+		if (platform) {
+			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${platform}`);
+		}
+
+		if (deviceType) {
+			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${deviceType}`);
+		}
+
+		if (this.orientation) {
+			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${this.orientation}`);
+		}
+
+		if (this.systemAppearance) {
+			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${this.systemAppearance}`);
+		}
+
+		rootView.cssClasses.add(CSSUtils.ROOT_VIEW_CSS_CLASS);
+		const rootViewCssClasses = CSSUtils.getSystemCssClasses();
+		rootViewCssClasses.forEach((c) => rootView.cssClasses.add(c));
+
+		console.log('ROOT CSS CLASSES', ...rootView.cssClasses);
 	}
 
 	/**
@@ -89,12 +177,14 @@ export class ApplicationCommon extends Observable {
 	 * For devices (iOS < 15), you can specify the max frame rate
 	 * see: https://developer.apple.com/documentation/quartzcore/optimizing_promotion_refresh_rates_for_iphone_13_pro_and_ipad_pro
 	 * To use, ensure your Info.plist has:
+	 * ```xml
 	 *   <key>CADisableMinimumFrameDurationOnPhone</key>
 	 *   <true/>
+	 * ```
 	 * @param options { min?: number; max?: number; preferred?: number }
 	 */
 	setMaxRefreshRate(options?: { min?: number; max?: number; preferred?: number }) {
-		//
+		// implement in platform specific files (iOS only for now)
 	}
 
 	mainEntry: NavigationEntry;
@@ -102,15 +192,62 @@ export class ApplicationCommon extends Observable {
 		return this.mainEntry;
 	}
 
+	@profile
+	protected notifyLaunch(additionalLanchEventData?: any): View | null {
+		const launchArgs: LaunchEventData = {
+			eventName: this.launchEvent,
+			object: this,
+			ios: this.ios,
+			android: this.android,
+			...additionalLanchEventData,
+		};
+		this.notify(launchArgs);
+		this.loadAppCss();
+
+		return launchArgs.root;
+	}
+
+	createRootView(view?: View, fireLaunchEvent = false, additionalLanchEventData?: any) {
+		let rootView = view;
+
+		if (!rootView) {
+			if (fireLaunchEvent) {
+				rootView = this.notifyLaunch(additionalLanchEventData);
+
+				// useful for integrations that would like to set rootView asynchronously after app launch
+				if (rootView === null) {
+					return null;
+				}
+			}
+
+			if (!rootView) {
+				// try to navigate to the mainEntry (if specified)
+				if (!this.mainEntry) {
+					throw new Error(
+						'Main entry is missing. App cannot be started. Verify app bootstrap.'
+					);
+				}
+
+				rootView = Builder.createViewFromEntry(this.mainEntry);
+			}
+		}
+
+		return rootView;
+	}
+
 	getRootView(): View {
-		// ensureNativeApplication();
-		// return iosApp.rootView;
-		// return this.rootView;
 		throw new Error('getRootView() Not implemented.');
 	}
 
 	resetRootView(entry?: NavigationEntry | string) {
 		this.mainEntry = typeof entry === 'string' ? { moduleName: entry } : entry;
+		// rest of implementation is platform specific
+	}
+
+	initRootView() {
+		this.setRootViewCSSClasses(this.getRootView());
+		initAccessibilityCssHelper();
+		initAccessibilityFontScale();
 	}
 
 	/**
@@ -157,7 +294,9 @@ export class ApplicationCommon extends Observable {
 		try {
 			this.notify(<LoadAppCSSEventData>{
 				eventName: 'loadAppCss',
-				object: this, // app,
+				object: this,
+				ios: this.ios,
+				android: this.android,
 				cssFile: this.getCssFileName(),
 			});
 		} catch (e) {
@@ -174,7 +313,7 @@ export class ApplicationCommon extends Observable {
 	addCss(cssText: string, attributeScoped?: boolean): void {
 		this.notify(<CssChangedEventData>{
 			eventName: 'cssChanged',
-			object: this, // <any>iosApp,
+			object: this,
 			cssText: cssText,
 		});
 		if (!attributeScoped) {
@@ -250,9 +389,9 @@ export class ApplicationCommon extends Observable {
 		return global.NativeScriptGlobals && global.NativeScriptGlobals.launched;
 	}
 
-	private _systemAppearance: 'dark' | 'light';
+	private _systemAppearance: 'dark' | 'light' | null;
 
-	protected getSystemAppearance(): 'dark' | 'light' {
+	protected getSystemAppearance(): 'dark' | 'light' | null {
 		// override in platform specific Application class
 		throw new Error('getSystemAppearance() not implemented');
 	}
@@ -262,7 +401,6 @@ export class ApplicationCommon extends Observable {
 			return;
 		}
 		this._systemAppearance = value;
-		this.setRootViewsSystemAppearanceCssClass(this.getRootView());
 		this.systemAppearanceChanged(this.getRootView(), value);
 		this.notify(<SystemAppearanceChangedEventData>{
 			eventName: this.systemAppearanceChangedEvent,
@@ -273,14 +411,7 @@ export class ApplicationCommon extends Observable {
 		});
 	}
 
-	setRootViewsSystemAppearanceCssClass(rootView: View): void {
-		const systemAppearance = this.systemAppearance;
-		const systemAppearanceCssClass = `${CSSUtils.CLASS_PREFIX}${systemAppearance}`;
-		CSSUtils.pushToSystemCssClasses(systemAppearanceCssClass);
-		rootView.cssClasses.add(systemAppearanceCssClass);
-	}
-
-	get systemAppearance(): 'dark' | 'light' {
+	get systemAppearance(): 'dark' | 'light' | null {
 		// return cached value, or get it from the platform specific override
 		return (this._systemAppearance ??= this.getSystemAppearance());
 	}
@@ -314,15 +445,54 @@ export class ApplicationCommon extends Observable {
 			newSystemAppearanceCssClass
 		);
 
-		const rootModalViews = <Array<View>>rootView._getRootModalViews();
+		const rootModalViews = rootView._getRootModalViews();
 		rootModalViews.forEach((rootModalView) => {
 			this.applyCssClass(
-				rootModalView,
+				rootModalView as View,
 				SYSTEM_APPEARANCE_CSS_CLASSES,
 				newSystemAppearanceCssClass
 			);
 		});
 	}
+
+	private _inBackground: boolean = false;
+
+	get inBackground() {
+		return this._inBackground;
+	}
+
+	setInBackground(value: boolean, additonalData?: any) {
+		this._inBackground = value;
+
+		this.notify(<ApplicationEventData>{
+			eventName: value ? this.backgroundEvent : this.foregroundEvent,
+			object: this,
+			ios: this.ios,
+
+			...additonalData,
+		});
+	}
+
+	private _suspended: boolean = false;
+
+	get suspended() {
+		return this._suspended;
+	}
+
+	setSuspended(value: boolean, additonalData?: any) {
+		this._suspended = value;
+
+		this.notify(<ApplicationEventData>{
+			eventName: value ? this.suspendEvent : this.resumeEvent,
+			object: this,
+			ios: this.ios,
+			android: this.android,
+
+			...additonalData,
+		});
+	}
+
+	public started = false;
 
 	get android(): IAndroidApplication {
 		return undefined;
@@ -332,18 +502,6 @@ export class ApplicationCommon extends Observable {
 		return undefined;
 	}
 
-	get inBackground() {
-		return false;
-	}
-
-	get suspended() {
-		return false;
-	}
-
-	setSuspended(suspended: boolean) {
-		// TODO
-	}
-
 	get AndroidApplication() {
 		return this.android;
 	}
@@ -351,8 +509,6 @@ export class ApplicationCommon extends Observable {
 	get iOSApplication() {
 		return this.ios;
 	}
-
-	public started = false;
 }
 
 // export const AndroidApplication: IAndroidApplication = undefined;

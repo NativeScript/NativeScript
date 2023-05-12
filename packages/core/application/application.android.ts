@@ -1,15 +1,13 @@
-import { initAccessibilityCssHelper } from '../accessibility/accessibility-css-helper';
-import { initAccessibilityFontScale } from '../accessibility/font-scale';
 import { profile } from '../profiling';
 import { View } from '../ui';
 import { AndroidActivityCallbacks, NavigationEntry } from '../ui/frame/frame-common';
+import type { AndroidApplication as IAndroidApplication } from './application';
+import { ApplicationCommon } from './application-common';
 import type {
 	AndroidActivityBundleEventData,
 	AndroidActivityEventData,
 	ApplicationEventData,
-	AndroidApplication as IAndroidApplication,
-} from '.';
-import { ApplicationCommon } from './application-common';
+} from './application-interfaces';
 
 declare namespace com {
 	namespace tns {
@@ -102,18 +100,18 @@ class NativeScriptLifecycleCallbacks extends android.app.Application
 		} as AndroidActivityEventData);
 
 		// TODO: This is a temporary workaround to force the V8's Garbage Collector, which will force the related Java Object to be collected.
-		// gc();
+		gc();
 	}
 
 	@profile
 	public onActivityPaused(activity: androidx.appcompat.app.AppCompatActivity): void {
 		// console.log('NativeScriptLifecycleCallbacks onActivityPaused');
 		if ('isNativeScriptActivity' in activity) {
-			Application.android.notify({
-				eventName: Application.suspendEvent,
-				object: Application.android,
+			Application.setSuspended(true, {
+				// todo: deprecate event.android in favor of event.activity
 				android: activity,
-			} as ApplicationEventData);
+				activity,
+			});
 		}
 
 		Application.android.notify({
@@ -127,6 +125,9 @@ class NativeScriptLifecycleCallbacks extends android.app.Application
 	public onActivityResumed(activity: androidx.appcompat.app.AppCompatActivity): void {
 		// console.log('NativeScriptLifecycleCallbacks onActivityResumed');
 		Application.android.setForegroundActivity(activity);
+
+		// NOTE: setSuspended(false) is called in frame/index.android.ts inside onPostResume
+		// This is done to ensure proper timing for the event to be raised
 
 		Application.android.notify({
 			eventName: Application.android.activityResumedEvent,
@@ -227,11 +228,11 @@ class NativeScriptLifecycleCallbacks extends android.app.Application
 			new android.view.ViewTreeObserver.OnGlobalLayoutListener({
 				onGlobalLayout() {
 					Application.android.notify({
-						eventName: Application.android.displayedEvent,
+						eventName: Application.displayedEvent,
 						object: Application,
 						android: Application.android,
 						activity,
-					});
+					} as AndroidActivityEventData);
 					const viewTreeObserver = rootView.getViewTreeObserver();
 					viewTreeObserver.removeOnGlobalLayoutListener(global.onGlobalLayoutListener);
 				},
@@ -380,17 +381,6 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 			const nativeApp = this.getNativeApplication();
 			this.init(nativeApp);
 		}
-
-		initAccessibilityCssHelper();
-		initAccessibilityFontScale();
-	}
-
-	/**
-	 * todo: check if true, cause there's no such thing in Utils.android
-	 * @deprecated Use Utils.android.getPackageName() instead.
-	 */
-	get packageName() {
-		return this.nativeApp.getPackageName();
 	}
 
 	private _startActivity: androidx.appcompat.app.AppCompatActivity;
@@ -412,8 +402,32 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 		this._foregroundActivity = value;
 	}
 
+	/**
+	 * @deprecated Use `Application.suspended` instead.
+	 */
+	get paused(): boolean {
+		return this.suspended;
+	}
+
+	/**
+	 * @deprecated Use `Application.inBackground` instead.
+	 */
+	get backgrounded(): boolean {
+		return this.inBackground;
+	}
+
+	/**
+	 * @deprecated Use `Utils.android.getApplicationContext()` instead.
+	 */
 	get context() {
 		return this.nativeApp.getApplicationContext();
+	}
+
+	/**
+	 * @deprecated Use `Utils.android.getPackageName()` instead.
+	 */
+	get packageName() {
+		return this.nativeApp.getPackageName();
 	}
 
 	public registerBroadcastReceiver(

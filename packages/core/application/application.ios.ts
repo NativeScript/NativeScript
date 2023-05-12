@@ -1,12 +1,9 @@
-import { initAccessibilityCssHelper } from '../accessibility/accessibility-css-helper';
-import { initAccessibilityFontScale } from '../accessibility/font-scale';
 import { profile } from '../profiling';
 import { View } from '../ui';
-import { Builder } from '../ui/builder';
 import { IOSHelper } from '../ui/core/view/view-helper';
 import { NavigationEntry } from '../ui/frame/frame-interfaces';
 import * as Utils from '../utils';
-import type { iOSApplication as IiOSApplication } from './';
+import type { iOSApplication as IiOSApplication } from './application';
 import { ApplicationCommon } from './application-common';
 import {
 	ApplicationEventData,
@@ -35,7 +32,7 @@ class CADisplayLinkTarget extends NSObject {
 		owner.notify(<ApplicationEventData>{
 			eventName: owner.displayedEvent,
 			object: owner,
-			ios: owner.ios,
+			ios: UIApplication.sharedApplication,
 		});
 		owner.displayedLinkTarget = null;
 		owner.displayedLink = null;
@@ -130,8 +127,6 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	}
 
 	run(entry?: string | NavigationEntry): void {
-		console.log('run in iOSApplication', entry);
-
 		this.mainEntry = typeof entry === 'string' ? { moduleName: entry } : entry;
 		this.started = true;
 
@@ -140,9 +135,6 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		} else {
 			this.runAsMainApp();
 		}
-
-		initAccessibilityCssHelper();
-		initAccessibilityFontScale();
 	}
 
 	private runAsMainApp() {
@@ -195,29 +187,8 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 			visibleVC.presentViewControllerAnimatedCompletion(controller, true, null);
 		}
 
-		// this.setRootViewsSystemAppearanceCssClass(rootView);
+		this.initRootView();
 		this.notifyAppStarted();
-	}
-
-	private createRootView(v?: View) {
-		let rootView = v;
-		if (!rootView) {
-			console.log('createRootView mainEntry', this.mainEntry);
-			// try to navigate to the mainEntry (if specified)
-			if (!this.mainEntry) {
-				throw new Error(
-					'Main entry is missing. App cannot be started. Verify app bootstrap.'
-				);
-			} else {
-				// console.log('createRootView mainEntry:', mainEntry);
-				rootView = Builder.createViewFromEntry(this.mainEntry);
-			}
-		}
-		// console.log('createRootView rootView:', rootView);
-
-		// setRootViewsCssClasses(rootView);
-
-		return rootView;
 	}
 
 	private getViewController(rootView: View): UIViewController {
@@ -362,8 +333,8 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 
 	protected getSystemAppearance(): 'light' | 'dark' {
 		// userInterfaceStyle is available on UITraitCollection since iOS 12.
-		if (Utils.ios.MajorVersion <= 11) {
-			return undefined;
+		if (Utils.ios.MajorVersion <= 11 || !this.rootController) {
+			return null;
 		}
 
 		const userInterfaceStyle = this.rootController.traitCollection.userInterfaceStyle;
@@ -399,25 +370,16 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	}
 
 	private notifyAppStarted(notification?: NSNotification) {
-		const args: LaunchEventData = {
-			eventName: this.launchEvent,
-			object: this,
+		const root = this.notifyLaunch({
 			ios:
 				notification?.userInfo?.objectForKey(
 					'UIApplicationLaunchOptionsLocalNotificationKey'
-				) || null,
-		};
-
-		this.notify(args);
-		this.notify(<LoadAppCSSEventData>{
-			eventName: 'loadAppCss',
-			object: this,
-			cssFile: this.getCssFileName(),
+				) ?? null,
 		});
 
 		if (this._window) {
-			if (args.root !== null && !NativeScriptEmbedder.sharedInstance().delegate) {
-				this.setWindowContent(args.root);
+			if (root !== null && !NativeScriptEmbedder.sharedInstance().delegate) {
+				this.setWindowContent(root);
 			}
 		} else {
 			this._window = UIApplication.sharedApplication.keyWindow;
@@ -442,11 +404,11 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		const haveController = this._window.rootViewController !== null;
 		this._window.rootViewController = controller;
 
-		this.setRootViewsSystemAppearanceCssClass(rootView);
-
 		if (!haveController) {
 			this._window.makeKeyAndVisible();
 		}
+
+		this.initRootView();
 
 		rootView.on(IOSHelper.traitCollectionColorAppearanceChangedEvent, () => {
 			const userInterfaceStyle = controller.traitCollection.userInterfaceStyle;
@@ -474,47 +436,29 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 
 	@profile
 	private didBecomeActive(notification: NSNotification) {
-		// const ios = UIApplication.sharedApplication;
-		// const object = this;
-		// setInBackground(false);
-		// setSuspended(false);
-		this.notify(<ApplicationEventData>{
-			eventName: this.resumeEvent,
-			object: this,
-			ios: this.ios,
-		});
-		this.notify(<ApplicationEventData>{
-			eventName: this.foregroundEvent,
-			object: this,
-			ios: this.ios,
-		});
-		// const rootView = this._rootView;
-		// if (rootView && !rootView.isLoaded) {
-		// 	rootView.callLoaded();
-		// }
+		const additionalData = {
+			ios: UIApplication.sharedApplication,
+		};
+		this.setInBackground(false, additionalData);
+		this.setSuspended(false, additionalData);
+
+		const rootView = this._rootView;
+		if (rootView && !rootView.isLoaded) {
+			rootView.callLoaded();
+		}
 	}
 
 	private didEnterBackground(notification: NSNotification) {
-		// const ios = UIApplication.sharedApplication;
-		// const object = this;
-		// setInBackground(true);
-		// setSuspended(true);
+		const additionalData = {
+			ios: UIApplication.sharedApplication,
+		};
+		this.setInBackground(true, additionalData);
+		this.setSuspended(true, additionalData);
 
-		this.notify(<ApplicationEventData>{
-			eventName: this.suspendEvent,
-			object: this,
-			ios: this.ios,
-		});
-		this.notify(<ApplicationEventData>{
-			eventName: this.backgroundEvent,
-			object: this,
-			ios: this.ios,
-		});
-
-		// const rootView = this._rootView;
-		// if (rootView && rootView.isLoaded) {
-		// 	rootView.callUnloaded();
-		// }
+		const rootView = this._rootView;
+		if (rootView && rootView.isLoaded) {
+			rootView.callUnloaded();
+		}
 	}
 
 	private willTerminate(notification: NSNotification) {

@@ -84,7 +84,7 @@ export interface FontScaleChangedEventData extends ApplicationEventData {
 /**
  * Event data containing information about unhandled application errors.
  */
-export interface UnhandledErrorEventData extends EventData {
+export interface UnhandledErrorEventData extends ApplicationEventData {
 	ios?: NativeScriptError;
 	android?: NativeScriptError;
 	error: NativeScriptError;
@@ -93,7 +93,7 @@ export interface UnhandledErrorEventData extends EventData {
 /**
  * Event data containing information about discarded application errors.
  */
-export interface DiscardedErrorEventData extends EventData {
+export interface DiscardedErrorEventData extends ApplicationEventData {
 	error: NativeScriptError;
 }
 

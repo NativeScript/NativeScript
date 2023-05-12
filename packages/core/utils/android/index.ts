@@ -33,7 +33,7 @@ export function getResources() {
 
 	return contextResources;
 }
-function getPackageName() {
+export function getPackageName() {
 	if (!packageName) {
 		packageName = getApplicationContext().getPackageName();
 	}
