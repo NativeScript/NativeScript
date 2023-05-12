@@ -5,7 +5,7 @@ if (typeof NSDate !== 'undefined') {
 	start = java.lang.System.currentTimeMillis();
 }
 
-import { Application, ApplicationEventData, UnhandledErrorEventData, DiscardedErrorEventData, AndroidActivityBundleEventData, AndroidActivityEventData, AndroidApplication, AndroidActivityNewIntentEventData, AndroidActivityResultEventData, AndroidActivityBackPressedEventData, Label, LaunchEventData } from '@nativescript/core';
+import { AndroidActivityBackPressedEventData, AndroidActivityBundleEventData, AndroidActivityEventData, AndroidActivityNewIntentEventData, AndroidActivityResultEventData, Application, ApplicationEventData, DiscardedErrorEventData, LaunchEventData, UnhandledErrorEventData } from '@nativescript/core';
 
 // import * as Application from "@nativescript/core/application";
 
@@ -146,5 +146,3 @@ if (typeof NSDate !== 'undefined') {
 console.log(`TIME TO LOAD APP: ${time} ms`);
 
 Application.run({ moduleName: 'app-root' });
-
-// Application.android.on()
