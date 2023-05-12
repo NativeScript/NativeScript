@@ -113,6 +113,13 @@ export class ApplicationCommon extends Observable {
 		}
 	}
 
+	/**
+	 * Applies the the `newCssClass` to the `rootView` and removes all other css classes from `cssClasses`
+	 * previously applied to the `rootView`.
+	 * @param rootView
+	 * @param cssClasses
+	 * @param newCssClass
+	 */
 	applyCssClass(rootView: View, cssClasses: string[], newCssClass: string): void {
 		if (!rootView.cssClasses.has(newCssClass)) {
 			cssClasses.forEach((cssClass) => this.removeCssClass(rootView, cssClass));
@@ -120,7 +127,15 @@ export class ApplicationCommon extends Observable {
 			this.increaseStyleScopeApplicationCssSelectorVersion(rootView);
 			rootView._onCssStateChange();
 
-			console.log('APPLY ROOT CSS CLASSES', ...rootView.cssClasses);
+			if (Trace.isEnabled()) {
+				const rootCssClasses = Array.from(rootView.cssClasses);
+				Trace.write(
+					`Applying root css class: ${newCssClass}. rootView css classes: ${rootCssClasses.join(
+						' '
+					)}`,
+					Trace.categories.Style
+				);
+			}
 		}
 	}
 
@@ -143,7 +158,7 @@ export class ApplicationCommon extends Observable {
 		}
 	}
 
-	protected setRootViewCSSClasses(rootView: View): void {
+	private setRootViewCSSClasses(rootView: View): void {
 		const platform = Device.os.toLowerCase();
 		const deviceType = Device.deviceType.toLowerCase();
 
@@ -167,7 +182,13 @@ export class ApplicationCommon extends Observable {
 		const rootViewCssClasses = CSSUtils.getSystemCssClasses();
 		rootViewCssClasses.forEach((c) => rootView.cssClasses.add(c));
 
-		console.log('ROOT CSS CLASSES', ...rootView.cssClasses);
+		if (Trace.isEnabled()) {
+			const rootCssClasses = Array.from(rootView.cssClasses);
+			Trace.write(
+				`Setting root css classes: ${rootCssClasses.join(' ')}`,
+				Trace.categories.Style
+			);
+		}
 	}
 
 	/**
