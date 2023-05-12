@@ -3,7 +3,7 @@
 	"compilerOptions": {
 		"rootDir": ".",
 		"target": "ES2020",
-		"module": "ES6",
+		"module": "esnext",
 		"sourceMap": true,
 		"declaration": true,
 		"moduleResolution": "node",
