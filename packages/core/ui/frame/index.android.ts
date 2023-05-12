@@ -1,23 +1,22 @@
 // Definitions.
-import { AndroidFrame as AndroidFrameDefinition, AndroidActivityCallbacks, AndroidFragmentCallbacks, BackstackEntry, NavigationTransition } from '.';
-import { TransitionState } from './frame-common';
+import { AndroidActivityCallbacks, AndroidFragmentCallbacks, AndroidFrame as AndroidFrameDefinition, BackstackEntry, NavigationTransition } from '.';
 import { Page } from '../page';
+import { TransitionState } from './frame-common';
 
 // Types.
-import { AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, Application } from '../../application';
+import { AndroidActivityBackPressedEventData, AndroidActivityNewIntentEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, Application } from '../../application';
 
-import { _stack, FrameBase, NavigationType } from './frame-common';
 import { Color } from '../../color';
+import { Observable } from '../../data/observable';
 import { Trace } from '../../trace';
 import { View } from '../core/view';
-import { Observable } from '../../data/observable';
+import { _stack, FrameBase, NavigationType } from './frame-common';
 
-import { _setAndroidFragmentTransitions, _getAnimatedEntries, _updateTransitions, _reverseTransitions, _clearEntry, _clearFragment, addNativeTransitionListener } from './fragment.transitions';
+import { _clearEntry, _clearFragment, _getAnimatedEntries, _reverseTransitions, _setAndroidFragmentTransitions, _updateTransitions, addNativeTransitionListener } from './fragment.transitions';
 
 import { profile } from '../../profiling';
 import { android as androidUtils } from '../../utils/native-helper';
 import type { ExpandedEntry } from './fragment.transitions.android';
-import { AndroidActivityBackPressedEventData, AndroidActivityNewIntentEventData } from 'application-old';
 
 export * from './frame-common';
 
