@@ -1,6 +1,6 @@
 // Types
-import type { AndroidApplication, iOSApplication, ApplicationCommon } from '.';
-import type { EventData } from '../data/observable';
+import type { ApplicationCommon } from '.';
+import type { EventData, Observable } from '../data/observable';
 import type { View } from '../ui/core/view';
 
 /**
@@ -16,7 +16,12 @@ export interface NativeScriptError extends Error {
 /**
  * Event data containing information for the application events.
  */
-export interface ApplicationEventData extends EventData {
+export interface ApplicationEventData {
+	/**
+	 * The name of the event.
+	 */
+	eventName: string;
+
 	/**
 	 * Gets the native iOS event arguments. Valid only when running on iOS.
 	 */
@@ -30,7 +35,7 @@ export interface ApplicationEventData extends EventData {
 	/**
 	 * The instance that has raised the event.
 	 */
-	object: ApplicationCommon;
+	object: ApplicationCommon | Observable;
 }
 
 /**

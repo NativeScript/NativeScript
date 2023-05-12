@@ -2,7 +2,6 @@ import { initAccessibilityCssHelper } from '../accessibility/accessibility-css-h
 import { initAccessibilityFontScale } from '../accessibility/font-scale';
 import { CoreTypes } from '../core-types';
 import { CSSUtils } from '../css/system-classes';
-import { Observable } from '../data/observable';
 import { Device } from '../platform';
 import { profile } from '../profiling';
 import { Trace } from '../trace';
@@ -20,11 +19,13 @@ import {
 	ApplicationEventData,
 	CssChangedEventData,
 	DiscardedErrorEventData,
+	FontScaleChangedEventData,
 	LaunchEventData,
 	LoadAppCSSEventData,
 	NativeScriptError,
 	OrientationChangedEventData,
 	SystemAppearanceChangedEventData,
+	UnhandledErrorEventData,
 } from './application-interfaces';
 
 const ORIENTATION_CSS_CLASSES = [
@@ -38,7 +39,21 @@ const SYSTEM_APPEARANCE_CSS_CLASSES = [
 	`${CSSUtils.CLASS_PREFIX}${CoreTypes.SystemAppearance.dark}`,
 ];
 
-export class ApplicationCommon extends Observable {
+const globalEvents = global.NativeScriptGlobals.events;
+
+// helper interface to correctly type Application event handlers
+interface ApplicationEvents {
+	on(
+		eventNames: string,
+		callback: (args: ApplicationEventData) => void,
+		thisArg?: any
+	): void;
+	off(eventNames: string, callback?: any, thisArg?: any): void;
+	notify<T = ApplicationEventData>(eventData: T): void;
+	hasListeners(eventName: string): boolean;
+}
+
+export class ApplicationCommon {
 	readonly launchEvent = 'launch';
 	readonly suspendEvent = 'suspend';
 	readonly displayedEvent = 'displayed';
@@ -54,9 +69,14 @@ export class ApplicationCommon extends Observable {
 	readonly fontScaleChangedEvent = 'fontScaleChanged';
 	readonly livesyncEvent = 'livesync';
 
-	constructor() {
-		super();
+	// Application events go through the global events.
+	readonly on: ApplicationEvents['on'] = globalEvents.on.bind(globalEvents);
+	readonly off: ApplicationEvents['off'] = globalEvents.off.bind(globalEvents);
+	readonly notify: ApplicationEvents['notify'] = globalEvents.notify.bind(globalEvents);
+	readonly hasListeners: ApplicationEvents['hasListeners'] =
+		globalEvents.hasListeners.bind(globalEvents);
 
+	constructor() {
 		global.NativeScriptGlobals.appInstanceReady = true;
 
 		global.__onUncaughtError = (error: NativeScriptError) => {
@@ -345,15 +365,6 @@ export class ApplicationCommon extends Observable {
 		}
 	}
 
-	on = global.NativeScriptGlobals.events.on.bind(global.NativeScriptGlobals.events);
-	off = global.NativeScriptGlobals.events.off.bind(global.NativeScriptGlobals.events);
-	notify = global.NativeScriptGlobals.events.notify.bind(
-		global.NativeScriptGlobals.events
-	);
-	hasListeners = global.NativeScriptGlobals.events.hasListeners.bind(
-		global.NativeScriptGlobals.events
-	);
-
 	run(entry?: string | NavigationEntry) {
 		throw new Error('run() Not implemented.');
 	}
@@ -531,6 +542,3 @@ export class ApplicationCommon extends Observable {
 		return this.ios;
 	}
 }
-
-// export const AndroidApplication: IAndroidApplication = undefined;
-// export const iOSApplication: IiOSApplication = undefined;
