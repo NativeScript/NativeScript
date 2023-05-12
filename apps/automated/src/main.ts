@@ -220,3 +220,5 @@ if (typeof NSDate !== 'undefined') {
 console.log(`TIME TO LOAD APP: ${time} ms`);
 
 Application.run({ moduleName: 'app-root' });
+
+// Application.android.on()

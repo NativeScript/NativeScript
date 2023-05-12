@@ -9,21 +9,23 @@ import { Builder } from '../ui/builder';
 import * as bindableResources from '../ui/core/bindable/bindable-resources';
 import type { View } from '../ui/core/view';
 import type { Frame } from '../ui/frame';
-import { NavigationEntry } from '../ui/frame/frame-interfaces';
+import type { NavigationEntry } from '../ui/frame/frame-interfaces';
 import type { StyleScope } from '../ui/styling/style-scope';
 import type {
 	AndroidApplication as IAndroidApplication,
 	iOSApplication as IiOSApplication,
 } from './';
-import {
+import type {
 	ApplicationEventData,
 	CssChangedEventData,
 	DiscardedErrorEventData,
+	FontScaleChangedEventData,
 	LaunchEventData,
 	LoadAppCSSEventData,
 	NativeScriptError,
 	OrientationChangedEventData,
 	SystemAppearanceChangedEventData,
+	UnhandledErrorEventData,
 } from './application-interfaces';
 
 const ORIENTATION_CSS_CLASSES = [
@@ -41,14 +43,133 @@ const globalEvents = global.NativeScriptGlobals.events;
 
 // helper interface to correctly type Application event handlers
 interface ApplicationEvents {
+	off(eventNames: string, callback?: any, thisArg?: any): void;
+	notify<T = ApplicationEventData>(eventData: T): void;
+	hasListeners(eventName: string): boolean;
+
 	on(
 		eventNames: string,
 		callback: (args: ApplicationEventData) => void,
 		thisArg?: any
 	): void;
-	off(eventNames: string, callback?: any, thisArg?: any): void;
-	notify<T = ApplicationEventData>(eventData: T): void;
-	hasListeners(eventName: string): boolean;
+	/**
+	 * This event is raised when application css is changed.
+	 */
+	on(
+		event: 'cssChanged',
+		callback: (args: CssChangedEventData) => void,
+		thisArg?: any
+	): void;
+
+	/**
+	 * Event raised then livesync operation is performed.
+	 */
+	on(
+		event: 'livesync',
+		callback: (args: ApplicationEventData) => void,
+		thisArg?: any
+	): void;
+
+	/**
+	 * This event is raised when application css is changed.
+	 */
+	on(
+		event: 'cssChanged',
+		callback: (args: CssChangedEventData) => void,
+		thisArg?: any
+	): void;
+
+	/**
+	 * This event is raised on application launchEvent.
+	 */
+	on(event: 'launch', callback: (args: LaunchEventData) => void, thisArg?: any): void;
+
+	/**
+	 * This event is raised after the application has performed most of its startup actions.
+	 * Its intent is to be suitable for measuring app startup times.
+	 * @experimental
+	 */
+	on(
+		event: 'displayed',
+		callback: (args: ApplicationEventData) => void,
+		thisArg?: any
+	): void;
+
+	/**
+	 * This event is raised when the Application is suspended.
+	 */
+	on(
+		event: 'suspend',
+		callback: (args: ApplicationEventData) => void,
+		thisArg?: any
+	): void;
+
+	/**
+	 * This event is raised when the Application is resumed after it has been suspended.
+	 */
+	on(
+		event: 'resume',
+		callback: (args: ApplicationEventData) => void,
+		thisArg?: any
+	): void;
+
+	/**
+	 * This event is raised when the Application is about to exit.
+	 */
+	on(event: 'exit', callback: (args: ApplicationEventData) => void, thisArg?: any): void;
+
+	/**
+	 * This event is raised when there is low memory on the target device.
+	 */
+	on(
+		event: 'lowMemory',
+		callback: (args: ApplicationEventData) => void,
+		thisArg?: any
+	): void;
+
+	/**
+	 * This event is raised when an uncaught error occurs while the application is running.
+	 */
+	on(
+		event: 'uncaughtError',
+		callback: (args: UnhandledErrorEventData) => void,
+		thisArg?: any
+	): void;
+
+	/**
+	 * This event is raised when an discarded error occurs while the application is running.
+	 */
+	on(
+		event: 'discardedError',
+		callback: (args: DiscardedErrorEventData) => void,
+		thisArg?: any
+	): void;
+
+	/**
+	 * This event is raised when the orientation of the application changes.
+	 */
+	on(
+		event: 'orientationChanged',
+		callback: (args: OrientationChangedEventData) => void,
+		thisArg?: any
+	): void;
+
+	/**
+	 * This event is raised when the operating system appearance changes
+	 * between light and dark theme (for Android);
+	 * between light and dark mode (for iOS) and vice versa.
+	 */
+	on(
+		event: 'systemAppearanceChanged',
+		callback: (args: SystemAppearanceChangedEventData) => void,
+		thisArg?: any
+	): void;
+
+	on(
+		event: 'fontScaleChanged',
+		callback: (args: FontScaleChangedEventData) => void,
+		thisArg?: any
+	): void;
 }
 
 export class ApplicationCommon {
@@ -70,10 +191,10 @@ export class ApplicationCommon {
 	readonly cssChangedEvent = 'cssChanged';
 
 	// Application events go through the global events.
-	readonly on: ApplicationEvents['on'] = globalEvents.on.bind(globalEvents);
-	readonly off: ApplicationEvents['off'] = globalEvents.off.bind(globalEvents);
-	readonly notify: ApplicationEvents['notify'] = globalEvents.notify.bind(globalEvents);
-	readonly hasListeners: ApplicationEvents['hasListeners'] =
+	on: ApplicationEvents['on'] = globalEvents.on.bind(globalEvents);
+	off: ApplicationEvents['off'] = globalEvents.off.bind(globalEvents);
+	notify: ApplicationEvents['notify'] = globalEvents.notify.bind(globalEvents);
+	hasListeners: ApplicationEvents['hasListeners'] =
 		globalEvents.hasListeners.bind(globalEvents);
 
 	constructor() {

@@ -7,89 +7,8 @@
  */
 export type { NativeScriptConfig } from './config';
 
-export { iOSApplication, AndroidApplication } from './application';
-export type {
-	ApplicationEventData,
-	LaunchEventData,
-	OrientationChangedEventData,
-	UnhandledErrorEventData,
-	DiscardedErrorEventData,
-	CssChangedEventData,
-	LoadAppCSSEventData,
-	AndroidActivityEventData,
-	AndroidActivityBundleEventData,
-	AndroidActivityRequestPermissionsEventData,
-	AndroidActivityResultEventData,
-	AndroidActivityNewIntentEventData,
-	AndroidActivityBackPressedEventData,
-	SystemAppearanceChangedEventData,
-} from './application';
-
-// export * as Application from './application';
 export * from './application';
-
-// import { AndroidApplication, iOSApplication, systemAppearanceChanged, getMainEntry, getRootView, _resetRootView, getResources, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, notify, hasListeners, run, orientation, getNativeApplication, hasLaunched, systemAppearance, setAutoSystemAppearanceChanged, setMaxRefreshRate } from './application';
-// export declare const Application: {
-// 	launchEvent: string;
-// 	displayedEvent: string;
-// 	uncaughtErrorEvent: string;
-// 	discardedErrorEvent: string;
-// 	suspendEvent: string;
-// 	resumeEvent: string;
-// 	exitEvent: string;
-// 	foregroundEvent: string;
-// 	backgroundEvent: string;
-// 	lowMemoryEvent: string;
-// 	orientationChangedEvent: string;
-// 	systemAppearanceChangedEvent: string;
-// 	fontScaleChangedEvent: string;
-// 	systemAppearanceChanged: typeof systemAppearanceChanged;
-// 	setMaxRefreshRate: typeof setMaxRefreshRate;
-// 	getMainEntry: typeof getMainEntry;
-// 	getRootView: typeof getRootView;
-// 	resetRootView: typeof _resetRootView;
-// 	getResources: typeof getResources;
-// 	setResources: typeof setResources;
-// 	setCssFileName: typeof setCssFileName;
-// 	getCssFileName: typeof getCssFileName;
-// 	loadAppCss: typeof loadAppCss;
-// 	addCss: typeof addCss;
-// 	on: typeof on;
-// 	off: typeof off;
-// 	notify: typeof notify;
-// 	hasListeners: typeof hasListeners;
-// 	run: typeof run;
-// 	orientation: typeof orientation;
-// 	getNativeApplication: typeof getNativeApplication;
-// 	hasLaunched: typeof hasLaunched;
-// 	systemAppearance: typeof systemAppearance;
-// 	setAutoSystemAppearanceChanged: typeof setAutoSystemAppearanceChanged;
-// 	android: AndroidApplication;
-// 	ios: iOSApplication;
-// 	suspended: boolean;
-// 	inBackground: boolean;
-// };
-
 export * as ApplicationSettings from './application-settings';
-// import { setString, getString, clear, flush, getAllKeys, getBoolean, getNumber, hasKey, remove, setBoolean, setNumber } from './application-settings';
-// export declare const ApplicationSettings: {
-// 	clear: typeof clear;
-// 	flush: typeof flush;
-// 	hasKey: typeof hasKey;
-// 	remove: typeof remove;
-// 	setString: typeof setString;
-// 	getString: typeof getString;
-// 	getAllKeys: typeof getAllKeys;
-// 	getBoolean: typeof getBoolean;
-// 	setBoolean: typeof setBoolean;
-// 	getNumber: typeof getNumber;
-// 	setNumber: typeof setNumber;
-// };
-// export declare const AccessibilityEvents: {
-// 	accessibilityBlurEvent: string;
-// 	accessibilityFocusEvent: string;
-// 	accessibilityFocusChangedEvent: string;
-// };
 import * as Accessibility from './accessibility';
 export namespace AccessibilityEvents {
 	export const accessibilityBlurEvent = Accessibility.accessibilityBlurEvent;
@@ -145,14 +64,6 @@ export type {
 	HttpContent,
 } from './http';
 export * as Http from './http';
-// import { getFile, getImage, getJSON, getString as httpGetString } from './http';
-// export declare const Http: {
-// 	getFile: typeof getFile;
-// 	getImage: typeof getImage;
-// 	getJSON: typeof getJSON;
-// 	getString: typeof httpGetString;
-// 	request: (options: import('./http').HttpRequestOptions) => Promise<import('./http').HttpResponse>;
-// };
 export { ImageAsset } from './image-asset';
 export type { ImageAssetOptions } from './image-asset';
 export { ImageSource } from './image-source';

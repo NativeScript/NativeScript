@@ -1,4 +1,4 @@
-import type { ApplicationCommon } from '.';
+import type { ApplicationCommon } from './application-common';
 import type { EventData, Observable } from '../data/observable';
 import type { View } from '../ui/core/view';
 
