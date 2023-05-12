@@ -240,6 +240,18 @@ class NativeScriptComponentCallbacks extends android.content.ComponentCallbacks2
 }
 
 export class AndroidApplication extends ApplicationCommon implements IAndroidApplication {
+	static readonly activityCreatedEvent = 'activityCreated';
+	static readonly activityDestroyedEvent = 'activityDestroyed';
+	static readonly activityStartedEvent = 'activityStarted';
+	static readonly activityPausedEvent = 'activityPaused';
+	static readonly activityResumedEvent = 'activityResumed';
+	static readonly activityStoppedEvent = 'activityStopped';
+	static readonly saveActivityStateEvent = 'saveActivityState';
+	static readonly activityResultEvent = 'activityResult';
+	static readonly activityBackPressedEvent = 'activityBackPressed';
+	static readonly activityNewIntentEvent = 'activityNewIntent';
+	static readonly activityRequestPermissionsEvent = 'activityRequestPermissions';
+
 	readonly activityCreatedEvent = 'activityCreated';
 	readonly activityDestroyedEvent = 'activityDestroyed';
 	readonly activityStartedEvent = 'activityStarted';

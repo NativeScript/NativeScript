@@ -6,6 +6,51 @@ export * from './application-interfaces';
 export const Application: ApplicationCommon;
 
 export class AndroidApplication extends ApplicationCommon {
+	/**
+	 * @deprecated Use `Application.android.activityCreatedEvent` instead.
+	 */
+	static readonly activityCreatedEvent;
+	/**
+	 * @deprecated Use `Application.android.activityDestroyedEvent` instead.
+	 */
+	static readonly activityDestroyedEvent;
+	/**
+	 * @deprecated Use `Application.android.activityStartedEvent` instead.
+	 */
+	static readonly activityStartedEvent;
+	/**
+	 * @deprecated Use `Application.android.activityPausedEvent` instead.
+	 */
+	static readonly activityPausedEvent;
+	/**
+	 * @deprecated Use `Application.android.activityResumedEvent` instead.
+	 */
+	static readonly activityResumedEvent;
+	/**
+	 * @deprecated Use `Application.android.activityStoppedEvent` instead.
+	 */
+	static readonly activityStoppedEvent;
+	/**
+	 * @deprecated Use `Application.android.saveActivityStateEvent` instead.
+	 */
+	static readonly saveActivityStateEvent;
+	/**
+	 * @deprecated Use `Application.android.activityResultEvent` instead.
+	 */
+	static readonly activityResultEvent;
+	/**
+	 * @deprecated Use `Application.android.activityBackPressedEvent` instead.
+	 */
+	static readonly activityBackPressedEvent;
+	/**
+	 * @deprecated Use `Application.android.activityNewIntentEvent` instead.
+	 */
+	static readonly activityNewIntentEvent;
+	/**
+	 * @deprecated Use `Application.android.activityRequestPermissionsEvent` instead.
+	 */
+	static readonly activityRequestPermissionsEvent;
+
 	readonly activityCreatedEvent;
 	readonly activityDestroyedEvent;
 	readonly activityStartedEvent;
