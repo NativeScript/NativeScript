@@ -5,11 +5,7 @@ import { NavigationEntry } from '../ui/frame/frame-interfaces';
 import * as Utils from '../utils';
 import type { iOSApplication as IiOSApplication } from './application';
 import { ApplicationCommon } from './application-common';
-import {
-	ApplicationEventData,
-	LaunchEventData,
-	LoadAppCSSEventData,
-} from './application-interfaces';
+import { ApplicationEventData } from './application-interfaces';
 
 @NativeClass
 class CADisplayLinkTarget extends NSObject {

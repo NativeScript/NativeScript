@@ -19,13 +19,11 @@ import {
 	ApplicationEventData,
 	CssChangedEventData,
 	DiscardedErrorEventData,
-	FontScaleChangedEventData,
 	LaunchEventData,
 	LoadAppCSSEventData,
 	NativeScriptError,
 	OrientationChangedEventData,
 	SystemAppearanceChangedEventData,
-	UnhandledErrorEventData,
 } from './application-interfaces';
 
 const ORIENTATION_CSS_CLASSES = [
@@ -68,6 +66,8 @@ export class ApplicationCommon {
 	readonly systemAppearanceChangedEvent = 'systemAppearanceChanged';
 	readonly fontScaleChangedEvent = 'fontScaleChanged';
 	readonly livesyncEvent = 'livesync';
+	readonly loadAppCssEvent = 'loadAppCss';
+	readonly cssChangedEvent = 'cssChanged';
 
 	// Application events go through the global events.
 	readonly on: ApplicationEvents['on'] = globalEvents.on.bind(globalEvents);
@@ -107,6 +107,9 @@ export class ApplicationCommon {
 		};
 	}
 
+	/**
+	 * @internal
+	 */
 	livesync(rootView: View, context?: ModuleContext) {
 		this.notify({ eventName: this.livesyncEvent, object: this });
 		const liveSyncCore = global.__onLiveSyncCore;
@@ -228,7 +231,11 @@ export class ApplicationCommon {
 		// implement in platform specific files (iOS only for now)
 	}
 
-	mainEntry: NavigationEntry;
+	protected mainEntry: NavigationEntry;
+
+	/**
+	 * @returns The main entry of the application
+	 */
 	getMainEntry() {
 		return this.mainEntry;
 	}
@@ -248,6 +255,7 @@ export class ApplicationCommon {
 		return launchArgs.root;
 	}
 
+	@profile
 	createRootView(view?: View, fireLaunchEvent = false, additionalLanchEventData?: any) {
 		let rootView = view;
 
@@ -305,14 +313,14 @@ export class ApplicationCommon {
 		bindableResources.set(res);
 	}
 
-	cssFile = './app.css';
+	private cssFile = './app.css';
 	/**
 	 * Sets css file name for the application.
 	 */
 	setCssFileName(cssFileName: string) {
 		this.cssFile = cssFileName;
 		this.notify(<CssChangedEventData>{
-			eventName: 'cssChanged',
+			eventName: this.cssChangedEvent,
 			object: this,
 			cssFile: cssFileName,
 		});
@@ -334,7 +342,7 @@ export class ApplicationCommon {
 	loadAppCss(): void {
 		try {
 			this.notify(<LoadAppCSSEventData>{
-				eventName: 'loadAppCss',
+				eventName: this.loadAppCssEvent,
 				object: this,
 				ios: this.ios,
 				android: this.android,
@@ -353,7 +361,7 @@ export class ApplicationCommon {
 
 	addCss(cssText: string, attributeScoped?: boolean): void {
 		this.notify(<CssChangedEventData>{
-			eventName: 'cssChanged',
+			eventName: this.cssChangedEvent,
 			object: this,
 			cssText: cssText,
 		});

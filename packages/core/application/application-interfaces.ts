@@ -1,4 +1,3 @@
-// Types
 import type { ApplicationCommon } from '.';
 import type { EventData, Observable } from '../data/observable';
 import type { View } from '../ui/core/view';
