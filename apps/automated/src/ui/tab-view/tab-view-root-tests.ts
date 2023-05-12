@@ -1,13 +1,5 @@
 import * as TKUnit from '../../tk-unit';
-import {
-	Application,
-	Frame,
-	NavigationEntry,
-	Page,
-	TabView,
-	TabViewItem,
-	isAndroid,
-} from '@nativescript/core';
+import { Application, Frame, NavigationEntry, Page, TabView, TabViewItem, isAndroid } from '@nativescript/core';
 
 function waitUntilNavigatedToMaxTimeout(pages: Page[], action: Function) {
 	const maxTimeout = 8;
@@ -26,10 +18,7 @@ function waitUntilTabViewReady(page: Page, action: Function) {
 	action();
 
 	if (isAndroid) {
-		TKUnit.waitUntilReady(
-			() =>
-				page.frame._currentEntry.fragment && page.frame._currentEntry.fragment.isAdded()
-		);
+		TKUnit.waitUntilReady(() => page.frame._currentEntry.fragment && page.frame._currentEntry.fragment.isAdded());
 	} else {
 		TKUnit.waitUntilReady(() => page.isLoaded);
 	}
@@ -109,24 +98,14 @@ export function test_offset_zero_should_raise_same_events() {
 		const page = item.page;
 		page.on(Page.loadedEvent, () => actualEventsRaised[i].push(`${page.id} loaded`));
 		page.on(Page.unloadedEvent, () => actualEventsRaised[i].push(`${page.id} unloaded`));
-		page.on(Page.navigatingToEvent, () =>
-			actualEventsRaised[i].push(`${page.id} navigatingTo`)
-		);
-		page.on(Page.navigatingFromEvent, () =>
-			actualEventsRaised[i].push(`${page.id} navigatingFrom`)
-		);
-		page.on(Page.navigatedToEvent, () =>
-			actualEventsRaised[i].push(`${page.id} navigatedTo`)
-		);
-		page.on(Page.navigatedFromEvent, () =>
-			actualEventsRaised[i].push(`${page.id} navigatedFrom`)
-		);
+		page.on(Page.navigatingToEvent, () => actualEventsRaised[i].push(`${page.id} navigatingTo`));
+		page.on(Page.navigatingFromEvent, () => actualEventsRaised[i].push(`${page.id} navigatingFrom`));
+		page.on(Page.navigatedToEvent, () => actualEventsRaised[i].push(`${page.id} navigatedTo`));
+		page.on(Page.navigatedFromEvent, () => actualEventsRaised[i].push(`${page.id} navigatedFrom`));
 
 		const frame = item.frame;
 		frame.on(Frame.loadedEvent, () => actualEventsRaised[i].push(`${frame.id} loaded`));
-		frame.on(Frame.unloadedEvent, () =>
-			actualEventsRaised[i].push(`${frame.id} unloaded`)
-		);
+		frame.on(Frame.unloadedEvent, () => actualEventsRaised[i].push(`${frame.id} unloaded`));
 	}
 
 	const items = createTabItemsWithFrames(3);
@@ -149,32 +128,14 @@ export function test_offset_zero_should_raise_same_events() {
 
 	waitUntilNavigatedToMaxTimeout([items[0].page], () => Application.resetRootView(entry));
 
-	const expectedEventsRaisedAfterTabCreated = [
-		[
-			'Tab0 Frame0 loaded',
-			'Tab0 Frame0 Page0 navigatingTo',
-			'Tab0 Frame0 Page0 loaded',
-			'Tab0 Frame0 Page0 navigatedTo',
-		],
-		[],
-		[],
-	];
+	const expectedEventsRaisedAfterTabCreated = [['Tab0 Frame0 loaded', 'Tab0 Frame0 Page0 navigatingTo', 'Tab0 Frame0 Page0 loaded', 'Tab0 Frame0 Page0 navigatedTo'], [], []];
 
 	TKUnit.assertDeepEqual(actualEventsRaised, expectedEventsRaisedAfterTabCreated);
 
 	resetActualEventsRaised();
 	waitUntilNavigatedToMaxTimeout([items[2].page], () => (tabView.selectedIndex = 2));
 
-	const expectedEventsRaisedAfterSelectThirdTab = [
-		['Tab0 Frame0 Page0 unloaded', 'Tab0 Frame0 unloaded'],
-		[],
-		[
-			'Tab2 Frame2 loaded',
-			'Tab2 Frame2 Page2 navigatingTo',
-			'Tab2 Frame2 Page2 loaded',
-			'Tab2 Frame2 Page2 navigatedTo',
-		],
-	];
+	const expectedEventsRaisedAfterSelectThirdTab = [['Tab0 Frame0 Page0 unloaded', 'Tab0 Frame0 unloaded'], [], ['Tab2 Frame2 loaded', 'Tab2 Frame2 Page2 navigatingTo', 'Tab2 Frame2 Page2 loaded', 'Tab2 Frame2 Page2 navigatedTo']];
 
 	TKUnit.assertDeepEqual(actualEventsRaised, expectedEventsRaisedAfterSelectThirdTab);
 
@@ -182,11 +143,7 @@ export function test_offset_zero_should_raise_same_events() {
 
 	waitUntilTabViewReady(items[0].page, () => (tabView.selectedIndex = 0));
 
-	const expectedEventsRaisedAfterReturnToFirstTab = [
-		['Tab0 Frame0 Page0 loaded', 'Tab0 Frame0 loaded'],
-		[],
-		['Tab2 Frame2 Page2 unloaded', 'Tab2 Frame2 unloaded'],
-	];
+	const expectedEventsRaisedAfterReturnToFirstTab = [['Tab0 Frame0 Page0 loaded', 'Tab0 Frame0 loaded'], [], ['Tab2 Frame2 Page2 unloaded', 'Tab2 Frame2 unloaded']];
 
 	TKUnit.assertDeepEqual(actualEventsRaised, expectedEventsRaisedAfterReturnToFirstTab);
 }
@@ -206,24 +163,14 @@ export function test_android_default_offset_should_preload_1_tab_on_each_side() 
 		const page = item.page;
 		page.on(Page.loadedEvent, () => actualEventsRaised[i].push(`${page.id} loaded`));
 		page.on(Page.unloadedEvent, () => actualEventsRaised[i].push(`${page.id} unloaded`));
-		page.on(Page.navigatingToEvent, () =>
-			actualEventsRaised[i].push(`${page.id} navigatingTo`)
-		);
-		page.on(Page.navigatingFromEvent, () =>
-			actualEventsRaised[i].push(`${page.id} navigatingFrom`)
-		);
-		page.on(Page.navigatedToEvent, () =>
-			actualEventsRaised[i].push(`${page.id} navigatedTo`)
-		);
-		page.on(Page.navigatedFromEvent, () =>
-			actualEventsRaised[i].push(`${page.id} navigatedFrom`)
-		);
+		page.on(Page.navigatingToEvent, () => actualEventsRaised[i].push(`${page.id} navigatingTo`));
+		page.on(Page.navigatingFromEvent, () => actualEventsRaised[i].push(`${page.id} navigatingFrom`));
+		page.on(Page.navigatedToEvent, () => actualEventsRaised[i].push(`${page.id} navigatedTo`));
+		page.on(Page.navigatedFromEvent, () => actualEventsRaised[i].push(`${page.id} navigatedFrom`));
 
 		const frame = item.frame;
 		frame.on(Frame.loadedEvent, () => actualEventsRaised[i].push(`${frame.id} loaded`));
-		frame.on(Frame.unloadedEvent, () =>
-			actualEventsRaised[i].push(`${frame.id} unloaded`)
-		);
+		frame.on(Frame.unloadedEvent, () => actualEventsRaised[i].push(`${frame.id} unloaded`));
 	}
 
 	if (isAndroid) {
@@ -240,41 +187,16 @@ export function test_android_default_offset_should_preload_1_tab_on_each_side() 
 			create: () => tabView,
 		};
 
-		waitUntilNavigatedToMaxTimeout([items[0].page, items[1].page], () =>
-			Application.resetRootView(entry)
-		);
+		waitUntilNavigatedToMaxTimeout([items[0].page, items[1].page], () => Application.resetRootView(entry));
 
-		const expectedEventsRaisedAfterTabCreated = [
-			[
-				'Tab0 Frame0 loaded',
-				'Tab0 Frame0 Page0 navigatingTo',
-				'Tab0 Frame0 Page0 loaded',
-				'Tab0 Frame0 Page0 navigatedTo',
-			],
-			[
-				'Tab1 Frame1 loaded',
-				'Tab1 Frame1 Page1 navigatingTo',
-				'Tab1 Frame1 Page1 loaded',
-				'Tab1 Frame1 Page1 navigatedTo',
-			],
-			[],
-		];
+		const expectedEventsRaisedAfterTabCreated = [['Tab0 Frame0 loaded', 'Tab0 Frame0 Page0 navigatingTo', 'Tab0 Frame0 Page0 loaded', 'Tab0 Frame0 Page0 navigatedTo'], ['Tab1 Frame1 loaded', 'Tab1 Frame1 Page1 navigatingTo', 'Tab1 Frame1 Page1 loaded', 'Tab1 Frame1 Page1 navigatedTo'], []];
 
 		TKUnit.assertDeepEqual(actualEventsRaised, expectedEventsRaisedAfterTabCreated);
 
 		resetActualEventsRaised();
 		waitUntilNavigatedToMaxTimeout([items[2].page], () => (tabView.selectedIndex = 2));
 
-		const expectedEventsRaisedAfterSelectThirdTab = [
-			['Tab0 Frame0 Page0 unloaded', 'Tab0 Frame0 unloaded'],
-			[],
-			[
-				'Tab2 Frame2 loaded',
-				'Tab2 Frame2 Page2 navigatingTo',
-				'Tab2 Frame2 Page2 loaded',
-				'Tab2 Frame2 Page2 navigatedTo',
-			],
-		];
+		const expectedEventsRaisedAfterSelectThirdTab = [['Tab0 Frame0 Page0 unloaded', 'Tab0 Frame0 unloaded'], [], ['Tab2 Frame2 loaded', 'Tab2 Frame2 Page2 navigatingTo', 'Tab2 Frame2 Page2 loaded', 'Tab2 Frame2 Page2 navigatedTo']];
 
 		TKUnit.assertDeepEqual(actualEventsRaised, expectedEventsRaisedAfterSelectThirdTab);
 
@@ -282,11 +204,7 @@ export function test_android_default_offset_should_preload_1_tab_on_each_side() 
 
 		waitUntilTabViewReady(items[0].page, () => (tabView.selectedIndex = 0));
 
-		const expectedEventsRaisedAfterReturnToFirstTab = [
-			['Tab0 Frame0 Page0 loaded', 'Tab0 Frame0 loaded'],
-			[],
-			['Tab2 Frame2 Page2 unloaded', 'Tab2 Frame2 unloaded'],
-		];
+		const expectedEventsRaisedAfterReturnToFirstTab = [['Tab0 Frame0 Page0 loaded', 'Tab0 Frame0 loaded'], [], ['Tab2 Frame2 Page2 unloaded', 'Tab2 Frame2 unloaded']];
 
 		TKUnit.assertDeepEqual(actualEventsRaised, expectedEventsRaisedAfterReturnToFirstTab);
 	}

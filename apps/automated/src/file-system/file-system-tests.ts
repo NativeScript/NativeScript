@@ -210,10 +210,7 @@ export var testFileReadWriteBinary = function () {
 	if (Device.os === platformNames.ios) {
 		TKUnit.assertTrue(source.isEqualToData(destination));
 	} else {
-		TKUnit.assertEqual(
-			new java.io.File(sourceFile.path).length(),
-			new java.io.File(destinationFile.path).length()
-		);
+		TKUnit.assertEqual(new java.io.File(sourceFile.path).length(), new java.io.File(destinationFile.path).length());
 	}
 
 	destinationFile.removeSync();
@@ -241,10 +238,7 @@ export var testFileReadWriteBinaryAsync = function () {
 							if (Device.os === platformNames.ios) {
 								TKUnit.assertTrue(source.isEqualToData(destination));
 							} else {
-								TKUnit.assertEqual(
-									new java.io.File(sourceFile.path).length(),
-									new java.io.File(destinationFile.path).length()
-								);
+								TKUnit.assertEqual(new java.io.File(sourceFile.path).length(), new java.io.File(destinationFile.path).length());
 							}
 
 							destinationFile.removeSync();
@@ -277,19 +271,13 @@ export var testGetKnownFolders = function () {
 	var documents = fs.knownFolders.documents();
 	// >> (hide)
 	TKUnit.assert(<any>documents, 'Could not retrieve the Documents known folder.');
-	TKUnit.assert(
-		documents.isKnown,
-		'The Documents folder should have its isKnown property set to true.'
-	);
+	TKUnit.assert(documents.isKnown, 'The Documents folder should have its isKnown property set to true.');
 	// << (hide)
 	// Getting the application's 'temp' folder.
 	var temp = fs.knownFolders.temp();
 	// >> (hide)
 	TKUnit.assert(<any>temp, 'Could not retrieve the Temporary known folder.');
-	TKUnit.assert(
-		temp.isKnown,
-		'The Temporary folder should have its isKnown property set to true.'
-	);
+	TKUnit.assert(temp.isKnown, 'The Temporary folder should have its isKnown property set to true.');
 	// << (hide)
 	// << file-system-known-folders
 };
@@ -307,30 +295,13 @@ function _testIOSSpecificKnownFolder(knownFolderName: string) {
 	if (isIOS) {
 		testFunc();
 		if (knownFolder) {
-			TKUnit.assertTrue(
-				knownFolder.isKnown,
-				`The ${knownFolderName} folder should have its "isKnown" property set to true.`
-			);
-			TKUnit.assertNotNull(
-				createdFile,
-				`Could not create a new file in the ${knownFolderName} known folder.`
-			);
-			TKUnit.assertTrue(
-				fs.File.exists(createdFile.path),
-				`Could not create a new file in the ${knownFolderName} known folder.`
-			);
-			TKUnit.assertEqual(
-				createdFile.readTextSync(),
-				'some text',
-				`The contents of the new file created in the ${knownFolderName} known folder are not as expected.`
-			);
+			TKUnit.assertTrue(knownFolder.isKnown, `The ${knownFolderName} folder should have its "isKnown" property set to true.`);
+			TKUnit.assertNotNull(createdFile, `Could not create a new file in the ${knownFolderName} known folder.`);
+			TKUnit.assertTrue(fs.File.exists(createdFile.path), `Could not create a new file in the ${knownFolderName} known folder.`);
+			TKUnit.assertEqual(createdFile.readTextSync(), 'some text', `The contents of the new file created in the ${knownFolderName} known folder are not as expected.`);
 		}
 	} else {
-		TKUnit.assertThrows(
-			testFunc,
-			`Trying to retrieve the ${knownFolderName} known folder on a platform different from iOS should throw!`,
-			`The "${knownFolderName}" known folder is available on iOS only!`
-		);
+		TKUnit.assertThrows(testFunc, `Trying to retrieve the ${knownFolderName} known folder on a platform different from iOS should throw!`, `The "${knownFolderName}" known folder is available on iOS only!`);
 	}
 }
 
@@ -440,10 +411,7 @@ export var testGetParent = function () {
 	// The parent folder of the file would be the documents folder.
 	var parent = file.parent;
 	// >> (hide)
-	TKUnit.assert(
-		documents === parent,
-		'The parent folder should be the Documents folder.'
-	);
+	TKUnit.assert(documents === parent, 'The parent folder should be the Documents folder.');
 	file.remove();
 	// << (hide)
 	// << file-system-parent
@@ -621,11 +589,7 @@ export var testFolderClear = function () {
 	);
 	// >> (hide)
 	folder.getEntities().then(function (entities) {
-		TKUnit.assertEqual(
-			entities.length,
-			0,
-			`${entities.length} entities left after clearing a folder.`
-		);
+		TKUnit.assertEqual(entities.length, 0, `${entities.length} entities left after clearing a folder.`);
 		folder.remove();
 	});
 	// << (hide)
@@ -669,10 +633,7 @@ export function test_FSEntity_Properties() {
 
 	TKUnit.assert(file.extension === '.txt', 'FileEntity.extension not working.');
 	TKUnit.assert(file.isLocked === false, 'FileEntity.isLocked not working.');
-	TKUnit.assert(
-		file.lastModified instanceof Date,
-		'FileEntity.lastModified not working.'
-	);
+	TKUnit.assert(file.lastModified instanceof Date, 'FileEntity.lastModified not working.');
 	TKUnit.assert(file.size === 0, 'FileEntity.size not working.');
 	TKUnit.assert(file.name === 'Test_File.txt', 'FileEntity.name not working.');
 	TKUnit.assert(file.parent === documents, 'FileEntity.parent not working.');
@@ -711,12 +672,7 @@ export function test_UnlockAfterWrite(done) {
 
 export function test_CreateParentOnNewFile(done) {
 	var documentsFolderName = fs.knownFolders.documents().path;
-	var tempFileName = fs.path.join(
-		documentsFolderName,
-		'folder1',
-		'folder2',
-		'Test_File_Create_Parent.txt'
-	);
+	var tempFileName = fs.path.join(documentsFolderName, 'folder1', 'folder2', 'Test_File_Create_Parent.txt');
 	var file = fs.File.fromPath(tempFileName);
 	file
 		.writeText('Hello World!')
@@ -731,17 +687,11 @@ export function test_FolderClear_RemovesEmptySubfolders(done) {
 	let documents = fs.knownFolders.documents();
 	let rootFolder = documents.getFolder('rootFolder');
 	let emptySubfolder = rootFolder.getFolder('emptySubfolder');
-	TKUnit.assertTrue(
-		fs.Folder.exists(emptySubfolder.path),
-		'emptySubfolder should exist before parent folder is cleared.'
-	);
+	TKUnit.assertTrue(fs.Folder.exists(emptySubfolder.path), 'emptySubfolder should exist before parent folder is cleared.');
 	rootFolder
 		.clear()
 		.then(() => {
-			TKUnit.assertFalse(
-				fs.File.exists(emptySubfolder.path),
-				'emptySubfolder should not exist after parent folder was cleared.'
-			);
+			TKUnit.assertFalse(fs.File.exists(emptySubfolder.path), 'emptySubfolder should not exist after parent folder was cleared.');
 			rootFolder.remove();
 			done();
 		})
@@ -750,14 +700,10 @@ export function test_FolderClear_RemovesEmptySubfolders(done) {
 
 export function test_FileCopy(done) {
 	const now = Date.now();
-	const tempFile = fs.File.fromPath(
-		fs.path.join(fs.knownFolders.temp().path, `${now}.txt`)
-	);
+	const tempFile = fs.File.fromPath(fs.path.join(fs.knownFolders.temp().path, `${now}.txt`));
 	const content = 'Hello World: ' + now;
 	tempFile.writeTextSync(content);
-	const tempCopy = fs.File.fromPath(
-		fs.path.join(fs.knownFolders.temp().path, `${now}-copy.txt`)
-	);
+	const tempCopy = fs.File.fromPath(fs.path.join(fs.knownFolders.temp().path, `${now}-copy.txt`));
 	tempFile
 		.copy(tempCopy.path)
 		.then(() => {
@@ -788,30 +734,18 @@ export function testAndroidCreate() {
 	};
 	if (isAndroid) {
 		const file = testFunc();
-		TKUnit.assertEqual(
-			file.readTextSync(),
-			'some text',
-			`The contents of the new file created in the 'AndroidDirectory.DOWNLOADS' folder are not as expected.`
-		);
+		TKUnit.assertEqual(file.readTextSync(), 'some text', `The contents of the new file created in the 'AndroidDirectory.DOWNLOADS' folder are not as expected.`);
 		file.removeSync();
 		TKUnit.assertTrue(!fs.File.exists(file.path));
 	} else {
-		TKUnit.assertThrows(
-			testFunc,
-			`Trying to retrieve createFile on a platform different from Android should throw!`,
-			`createFile is available on Android only!`
-		);
+		TKUnit.assertThrows(testFunc, `Trying to retrieve createFile on a platform different from Android should throw!`, `createFile is available on Android only!`);
 	}
 }
 
 export function test_FileAppend(done) {
 	const content = 'Hello World';
-	const hello_world = global.isIOS
-		? NSString.stringWithString(content).dataUsingEncoding(NSUTF8StringEncoding)
-		: new java.lang.String(content).getBytes('UTF-8');
-	const file = fs.File.fromPath(
-		fs.path.join(fs.knownFolders.temp().path, `${Date.now()}-app.txt`)
-	);
+	const hello_world = global.isIOS ? NSString.stringWithString(content).dataUsingEncoding(NSUTF8StringEncoding) : new java.lang.String(content).getBytes('UTF-8');
+	const file = fs.File.fromPath(fs.path.join(fs.knownFolders.temp().path, `${Date.now()}-app.txt`));
 	file
 		.appendText('Hello')
 		.then(() => file.appendText(' World'))
@@ -830,9 +764,7 @@ export function test_FileAppend(done) {
 
 export function test_FileAppendText(done) {
 	const content = 'Hello World';
-	const file = fs.File.fromPath(
-		fs.path.join(fs.knownFolders.temp().path, `${Date.now()}-app.txt`)
-	);
+	const file = fs.File.fromPath(fs.path.join(fs.knownFolders.temp().path, `${Date.now()}-app.txt`));
 	file
 		.appendText('Hello')
 		.then(() => file.appendText(' World'))

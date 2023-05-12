@@ -21,21 +21,11 @@ const superProto = androidx.appcompat.app.AppCompatActivity.prototype;
 			setActivityCallbacks(this);
 		}
 
-		this._callbacks.onCreate(
-			this,
-			savedInstanceState,
-			this.getIntent(),
-			superProto.onCreate
-		);
+		this._callbacks.onCreate(this, savedInstanceState, this.getIntent(), superProto.onCreate);
 	},
 
 	onNewIntent(intent: android.content.Intent): void {
-		this._callbacks.onNewIntent(
-			this,
-			intent,
-			superProto.setIntent,
-			superProto.onNewIntent
-		);
+		this._callbacks.onNewIntent(this, intent, superProto.setIntent, superProto.onNewIntent);
 	},
 
 	onSaveInstanceState(outState: android.os.Bundle): void {
@@ -62,31 +52,11 @@ const superProto = androidx.appcompat.app.AppCompatActivity.prototype;
 		this._callbacks.onBackPressed(this, superProto.onBackPressed);
 	},
 
-	onRequestPermissionsResult(
-		requestCode: number,
-		permissions: Array<string>,
-		grantResults: Array<number>
-	): void {
-		this._callbacks.onRequestPermissionsResult(
-			this,
-			requestCode,
-			permissions,
-			grantResults,
-			undefined /*TODO: Enable if needed*/
-		);
+	onRequestPermissionsResult(requestCode: number, permissions: Array<string>, grantResults: Array<number>): void {
+		this._callbacks.onRequestPermissionsResult(this, requestCode, permissions, grantResults, undefined /*TODO: Enable if needed*/);
 	},
 
-	onActivityResult(
-		requestCode: number,
-		resultCode: number,
-		data: android.content.Intent
-	): void {
-		this._callbacks.onActivityResult(
-			this,
-			requestCode,
-			resultCode,
-			data,
-			superProto.onActivityResult
-		);
+	onActivityResult(requestCode: number, resultCode: number, data: android.content.Intent): void {
+		this._callbacks.onActivityResult(this, requestCode, resultCode, data, superProto.onActivityResult);
 	},
 });

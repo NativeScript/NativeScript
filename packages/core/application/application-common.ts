@@ -11,29 +11,17 @@ import type { View } from '../ui/core/view';
 import type { Frame } from '../ui/frame';
 import type { NavigationEntry } from '../ui/frame/frame-interfaces';
 import type { StyleScope } from '../ui/styling/style-scope';
-import type {
-	AndroidApplication as IAndroidApplication,
-	iOSApplication as IiOSApplication,
-} from './';
-import type {
-	ApplicationEventData,
-	CssChangedEventData,
-	DiscardedErrorEventData,
-	FontScaleChangedEventData,
-	LaunchEventData,
-	LoadAppCSSEventData,
-	NativeScriptError,
-	OrientationChangedEventData,
-	SystemAppearanceChangedEventData,
-	UnhandledErrorEventData,
-} from './application-interfaces';
+import type { AndroidApplication as IAndroidApplication, iOSApplication as IiOSApplication } from './';
+import type { ApplicationEventData, CssChangedEventData, DiscardedErrorEventData, FontScaleChangedEventData, LaunchEventData, LoadAppCSSEventData, NativeScriptError, OrientationChangedEventData, SystemAppearanceChangedEventData, UnhandledErrorEventData } from './application-interfaces';
 
+// prettier-ignore
 const ORIENTATION_CSS_CLASSES = [
 	`${CSSUtils.CLASS_PREFIX}${CoreTypes.DeviceOrientation.portrait}`,
 	`${CSSUtils.CLASS_PREFIX}${CoreTypes.DeviceOrientation.landscape}`,
 	`${CSSUtils.CLASS_PREFIX}${CoreTypes.DeviceOrientation.unknown}`,
 ];
 
+// prettier-ignore
 const SYSTEM_APPEARANCE_CSS_CLASSES = [
 	`${CSSUtils.CLASS_PREFIX}${CoreTypes.SystemAppearance.light}`,
 	`${CSSUtils.CLASS_PREFIX}${CoreTypes.SystemAppearance.dark}`,
@@ -47,37 +35,21 @@ interface ApplicationEvents {
 	notify<T = ApplicationEventData>(eventData: T): void;
 	hasListeners(eventName: string): boolean;
 
-	on(
-		eventNames: string,
-		callback: (args: ApplicationEventData) => void,
-		thisArg?: any
-	): void;
+	on(eventNames: string, callback: (args: ApplicationEventData) => void, thisArg?: any): void;
 	/**
 	 * This event is raised when application css is changed.
 	 */
-	on(
-		event: 'cssChanged',
-		callback: (args: CssChangedEventData) => void,
-		thisArg?: any
-	): void;
+	on(event: 'cssChanged', callback: (args: CssChangedEventData) => void, thisArg?: any): void;
 
 	/**
 	 * Event raised then livesync operation is performed.
 	 */
-	on(
-		event: 'livesync',
-		callback: (args: ApplicationEventData) => void,
-		thisArg?: any
-	): void;
+	on(event: 'livesync', callback: (args: ApplicationEventData) => void, thisArg?: any): void;
 
 	/**
 	 * This event is raised when application css is changed.
 	 */
-	on(
-		event: 'cssChanged',
-		callback: (args: CssChangedEventData) => void,
-		thisArg?: any
-	): void;
+	on(event: 'cssChanged', callback: (args: CssChangedEventData) => void, thisArg?: any): void;
 
 	/**
 	 * This event is raised on application launchEvent.
@@ -89,29 +61,17 @@ interface ApplicationEvents {
 	 * Its intent is to be suitable for measuring app startup times.
 	 * @experimental
 	 */
-	on(
-		event: 'displayed',
-		callback: (args: ApplicationEventData) => void,
-		thisArg?: any
-	): void;
+	on(event: 'displayed', callback: (args: ApplicationEventData) => void, thisArg?: any): void;
 
 	/**
 	 * This event is raised when the Application is suspended.
 	 */
-	on(
-		event: 'suspend',
-		callback: (args: ApplicationEventData) => void,
-		thisArg?: any
-	): void;
+	on(event: 'suspend', callback: (args: ApplicationEventData) => void, thisArg?: any): void;
 
 	/**
 	 * This event is raised when the Application is resumed after it has been suspended.
 	 */
-	on(
-		event: 'resume',
-		callback: (args: ApplicationEventData) => void,
-		thisArg?: any
-	): void;
+	on(event: 'resume', callback: (args: ApplicationEventData) => void, thisArg?: any): void;
 
 	/**
 	 * This event is raised when the Application is about to exit.
@@ -121,55 +81,31 @@ interface ApplicationEvents {
 	/**
 	 * This event is raised when there is low memory on the target device.
 	 */
-	on(
-		event: 'lowMemory',
-		callback: (args: ApplicationEventData) => void,
-		thisArg?: any
-	): void;
+	on(event: 'lowMemory', callback: (args: ApplicationEventData) => void, thisArg?: any): void;
 
 	/**
 	 * This event is raised when an uncaught error occurs while the application is running.
 	 */
-	on(
-		event: 'uncaughtError',
-		callback: (args: UnhandledErrorEventData) => void,
-		thisArg?: any
-	): void;
+	on(event: 'uncaughtError', callback: (args: UnhandledErrorEventData) => void, thisArg?: any): void;
 
 	/**
 	 * This event is raised when an discarded error occurs while the application is running.
 	 */
-	on(
-		event: 'discardedError',
-		callback: (args: DiscardedErrorEventData) => void,
-		thisArg?: any
-	): void;
+	on(event: 'discardedError', callback: (args: DiscardedErrorEventData) => void, thisArg?: any): void;
 
 	/**
 	 * This event is raised when the orientation of the application changes.
 	 */
-	on(
-		event: 'orientationChanged',
-		callback: (args: OrientationChangedEventData) => void,
-		thisArg?: any
-	): void;
+	on(event: 'orientationChanged', callback: (args: OrientationChangedEventData) => void, thisArg?: any): void;
 
 	/**
 	 * This event is raised when the operating system appearance changes
 	 * between light and dark theme (for Android);
 	 * between light and dark mode (for iOS) and vice versa.
 	 */
-	on(
-		event: 'systemAppearanceChanged',
-		callback: (args: SystemAppearanceChangedEventData) => void,
-		thisArg?: any
-	): void;
+	on(event: 'systemAppearanceChanged', callback: (args: SystemAppearanceChangedEventData) => void, thisArg?: any): void;
 
-	on(
-		event: 'fontScaleChanged',
-		callback: (args: FontScaleChangedEventData) => void,
-		thisArg?: any
-	): void;
+	on(event: 'fontScaleChanged', callback: (args: FontScaleChangedEventData) => void, thisArg?: any): void;
 }
 
 export class ApplicationCommon {
@@ -194,8 +130,7 @@ export class ApplicationCommon {
 	on: ApplicationEvents['on'] = globalEvents.on.bind(globalEvents);
 	off: ApplicationEvents['off'] = globalEvents.off.bind(globalEvents);
 	notify: ApplicationEvents['notify'] = globalEvents.notify.bind(globalEvents);
-	hasListeners: ApplicationEvents['hasListeners'] =
-		globalEvents.hasListeners.bind(globalEvents);
+	hasListeners: ApplicationEvents['hasListeners'] = globalEvents.hasListeners.bind(globalEvents);
 
 	constructor() {
 		global.NativeScriptGlobals.appInstanceReady = true;
@@ -240,13 +175,8 @@ export class ApplicationCommon {
 		if (context && context.path) {
 			const styleExtensions = ['css', 'scss'];
 			const appStylesFullFileName = this.getCssFileName();
-			const appStylesFileName = appStylesFullFileName.substring(
-				0,
-				appStylesFullFileName.lastIndexOf('.') + 1
-			);
-			reapplyAppStyles = styleExtensions.some(
-				(ext) => context.path === appStylesFileName.concat(ext)
-			);
+			const appStylesFileName = appStylesFullFileName.substring(0, appStylesFullFileName.lastIndexOf('.') + 1);
+			reapplyAppStyles = styleExtensions.some((ext) => context.path === appStylesFileName.concat(ext));
 		}
 
 		// Handle application styles
@@ -273,12 +203,7 @@ export class ApplicationCommon {
 
 			if (Trace.isEnabled()) {
 				const rootCssClasses = Array.from(rootView.cssClasses);
-				Trace.write(
-					`Applying root css class: ${newCssClass}. rootView css classes: ${rootCssClasses.join(
-						' '
-					)}`,
-					Trace.categories.Style
-				);
+				Trace.write(`Applying root css class: ${newCssClass}. rootView css classes: ${rootCssClasses.join(' ')}`, Trace.categories.Style);
 			}
 		}
 	}
@@ -294,8 +219,7 @@ export class ApplicationCommon {
 	}
 
 	private increaseStyleScopeApplicationCssSelectorVersion(rootView: View) {
-		const styleScope: StyleScope =
-			rootView._styleScope ?? (rootView as Frame)?.currentPage?._styleScope;
+		const styleScope: StyleScope = rootView._styleScope ?? (rootView as Frame)?.currentPage?._styleScope;
 
 		if (styleScope) {
 			styleScope._increaseApplicationCssSelectorVersion();
@@ -328,10 +252,7 @@ export class ApplicationCommon {
 
 		if (Trace.isEnabled()) {
 			const rootCssClasses = Array.from(rootView.cssClasses);
-			Trace.write(
-				`Setting root css classes: ${rootCssClasses.join(' ')}`,
-				Trace.categories.Style
-			);
+			Trace.write(`Setting root css classes: ${rootCssClasses.join(' ')}`, Trace.categories.Style);
 		}
 	}
 
@@ -393,9 +314,7 @@ export class ApplicationCommon {
 			if (!rootView) {
 				// try to navigate to the mainEntry (if specified)
 				if (!this.mainEntry) {
-					throw new Error(
-						'Main entry is missing. App cannot be started. Verify app bootstrap.'
-					);
+					throw new Error('Main entry is missing. App cannot be started. Verify app bootstrap.');
 				}
 
 				rootView = Builder.createViewFromEntry(this.mainEntry);
@@ -471,11 +390,7 @@ export class ApplicationCommon {
 			});
 		} catch (e) {
 			if (Trace.isEnabled()) {
-				Trace.write(
-					`The app CSS file ${this.getCssFileName()} couldn't be loaded!`,
-					Trace.categories.Style,
-					Trace.messageType.warn
-				);
+				Trace.write(`The app CSS file ${this.getCssFileName()} couldn't be loaded!`, Trace.categories.Style, Trace.messageType.warn);
 			}
 		}
 	}
@@ -524,10 +439,7 @@ export class ApplicationCommon {
 		return (this._orientation ??= this.getOrientation());
 	}
 
-	orientationChanged(
-		rootView: View,
-		newOrientation: 'portrait' | 'landscape' | 'unknown'
-	): void {
+	orientationChanged(rootView: View, newOrientation: 'portrait' | 'landscape' | 'unknown'): void {
 		if (!rootView) {
 			return;
 		}
@@ -600,19 +512,11 @@ export class ApplicationCommon {
 		}
 
 		const newSystemAppearanceCssClass = `${CSSUtils.CLASS_PREFIX}${newSystemAppearance}`;
-		this.applyCssClass(
-			rootView,
-			SYSTEM_APPEARANCE_CSS_CLASSES,
-			newSystemAppearanceCssClass
-		);
+		this.applyCssClass(rootView, SYSTEM_APPEARANCE_CSS_CLASSES, newSystemAppearanceCssClass);
 
 		const rootModalViews = rootView._getRootModalViews();
 		rootModalViews.forEach((rootModalView) => {
-			this.applyCssClass(
-				rootModalView as View,
-				SYSTEM_APPEARANCE_CSS_CLASSES,
-				newSystemAppearanceCssClass
-			);
+			this.applyCssClass(rootModalView as View, SYSTEM_APPEARANCE_CSS_CLASSES, newSystemAppearanceCssClass);
 		});
 	}
 

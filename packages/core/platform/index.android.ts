@@ -21,10 +21,7 @@ class MainScreen {
 
 	private initMetrics(): void {
 		const nativeApp = Application.android.getNativeApplication();
-		nativeApp
-			.getSystemService(android.content.Context.WINDOW_SERVICE)
-			.getDefaultDisplay()
-			.getRealMetrics(this._metrics);
+		nativeApp.getSystemService(android.content.Context.WINDOW_SERVICE).getDefaultDisplay().getRealMetrics(this._metrics);
 	}
 
 	private get metrics(): android.util.DisplayMetrics {
@@ -110,9 +107,7 @@ class DeviceRef {
 
 	get deviceType(): 'Phone' | 'Tablet' {
 		if (!this._deviceType) {
-			const dips =
-				Math.min(Screen.mainScreen.widthPixels, Screen.mainScreen.heightPixels) /
-				Screen.mainScreen.scale;
+			const dips = Math.min(Screen.mainScreen.widthPixels, Screen.mainScreen.heightPixels) / Screen.mainScreen.scale;
 			// If the device has more than 600 dips it is considered to be a tablet.
 			if (dips >= MIN_TABLET_PIXELS) {
 				this._deviceType = 'Tablet';
@@ -127,10 +122,7 @@ class DeviceRef {
 	get uuid(): string {
 		if (!this._uuid) {
 			const nativeApp = Application.android.getNativeApplication();
-			this._uuid = android.provider.Settings.Secure.getString(
-				nativeApp.getContentResolver(),
-				android.provider.Settings.Secure.ANDROID_ID
-			);
+			this._uuid = android.provider.Settings.Secure.getString(nativeApp.getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
 		}
 
 		return this._uuid;
@@ -139,13 +131,9 @@ class DeviceRef {
 	get language(): string {
 		let defaultNativeLocale;
 		if (SDK_VERSION >= 24) {
-			defaultNativeLocale = android.content.res.Resources.getSystem()
-				.getConfiguration()
-				.getLocales()
-				.get(0);
+			defaultNativeLocale = android.content.res.Resources.getSystem().getConfiguration().getLocales().get(0);
 		} else {
-			defaultNativeLocale =
-				android.content.res.Resources.getSystem().getConfiguration().locale;
+			defaultNativeLocale = android.content.res.Resources.getSystem().getConfiguration().locale;
 		}
 		return defaultNativeLocale.getLanguage().replace('_', '-');
 	}
@@ -153,13 +141,9 @@ class DeviceRef {
 	get region(): string {
 		let defaultNativeLocale;
 		if (SDK_VERSION >= 24) {
-			defaultNativeLocale = android.content.res.Resources.getSystem()
-				.getConfiguration()
-				.getLocales()
-				.get(0);
+			defaultNativeLocale = android.content.res.Resources.getSystem().getConfiguration().getLocales().get(0);
 		} else {
-			defaultNativeLocale =
-				android.content.res.Resources.getSystem().getConfiguration().locale;
+			defaultNativeLocale = android.content.res.Resources.getSystem().getConfiguration().locale;
 		}
 		return defaultNativeLocale.getCountry();
 	}

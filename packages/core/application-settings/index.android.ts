@@ -4,10 +4,7 @@ import { Application } from '../application';
 let sharedPreferences: android.content.SharedPreferences;
 function ensureSharedPreferences() {
 	if (!sharedPreferences) {
-		sharedPreferences = Application.android
-			.getNativeApplication()
-			.getApplicationContext()
-			.getSharedPreferences('prefs.db', 0);
+		sharedPreferences = Application.android.getNativeApplication().getApplicationContext().getSharedPreferences('prefs.db', 0);
 	}
 }
 

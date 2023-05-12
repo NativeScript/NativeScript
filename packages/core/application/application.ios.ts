@@ -43,9 +43,7 @@ class CADisplayLinkTarget extends NSObject {
 class NotificationObserver extends NSObject {
 	private _onReceiveCallback: (notification: NSNotification) => void;
 
-	public static initWithCallback(
-		onReceiveCallback: (notification: NSNotification) => void
-	): NotificationObserver {
+	public static initWithCallback(onReceiveCallback: (notification: NSNotification) => void): NotificationObserver {
 		const observer = <NotificationObserver>super.new();
 		observer._onReceiveCallback = onReceiveCallback;
 
@@ -87,30 +85,12 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	constructor() {
 		super();
 
-		this.addNotificationObserver(
-			UIApplicationDidFinishLaunchingNotification,
-			this.didFinishLaunchingWithOptions.bind(this)
-		);
-		this.addNotificationObserver(
-			UIApplicationDidBecomeActiveNotification,
-			this.didBecomeActive.bind(this)
-		);
-		this.addNotificationObserver(
-			UIApplicationDidEnterBackgroundNotification,
-			this.didEnterBackground.bind(this)
-		);
-		this.addNotificationObserver(
-			UIApplicationWillTerminateNotification,
-			this.willTerminate.bind(this)
-		);
-		this.addNotificationObserver(
-			UIApplicationDidReceiveMemoryWarningNotification,
-			this.didReceiveMemoryWarning.bind(this)
-		);
-		this.addNotificationObserver(
-			UIApplicationDidChangeStatusBarOrientationNotification,
-			this.didChangeStatusBarOrientation.bind(this)
-		);
+		this.addNotificationObserver(UIApplicationDidFinishLaunchingNotification, this.didFinishLaunchingWithOptions.bind(this));
+		this.addNotificationObserver(UIApplicationDidBecomeActiveNotification, this.didBecomeActive.bind(this));
+		this.addNotificationObserver(UIApplicationDidEnterBackgroundNotification, this.didEnterBackground.bind(this));
+		this.addNotificationObserver(UIApplicationWillTerminateNotification, this.willTerminate.bind(this));
+		this.addNotificationObserver(UIApplicationDidReceiveMemoryWarningNotification, this.didReceiveMemoryWarning.bind(this));
+		this.addNotificationObserver(UIApplicationDidChangeStatusBarOrientationNotification, this.didChangeStatusBarOrientation.bind(this));
 	}
 
 	getRootView(): View {
@@ -135,14 +115,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 
 	private runAsMainApp() {
 		console.log('runAsMainApp', this.delegate);
-		UIApplicationMain(
-			0,
-			null,
-			null,
-			this.delegate
-				? NSStringFromClass(this.delegate as any)
-				: NSStringFromClass(Responder)
-		);
+		UIApplicationMain(0, null, null, this.delegate ? NSStringFromClass(this.delegate as any) : NSStringFromClass(Responder));
 	}
 
 	private runAsEmbeddedApp() {
@@ -152,9 +125,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 			return;
 		}
 		// Attach to the existing iOS app
-		const window =
-			this.nativeApp.keyWindow ||
-			(this.nativeApp.windows.count > 0 && this.nativeApp.windows[0]);
+		const window = this.nativeApp.keyWindow || (this.nativeApp.windows.count > 0 && this.nativeApp.windows[0]);
 
 		if (!window) {
 			return;
@@ -193,9 +164,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		if (!(viewController instanceof UIViewController)) {
 			// We set UILayoutViewController dynamically to the root view if it doesn't have a view controller
 			// At the moment the root view doesn't have its native view created. We set it in the setViewControllerView func
-			viewController = IOSHelper.UILayoutViewController.initWithOwner(
-				new WeakRef(rootView)
-			) as UIViewController;
+			viewController = IOSHelper.UILayoutViewController.initWithOwner(new WeakRef(rootView)) as UIViewController;
 			rootView.viewController = viewController;
 		}
 
@@ -220,9 +189,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 			if (!this.displayedLink) {
 				return;
 			}
-			const minFrameRateDisabled = NSBundle.mainBundle.objectForInfoDictionaryKey(
-				'CADisableMinimumFrameDurationOnPhone'
-			);
+			const minFrameRateDisabled = NSBundle.mainBundle.objectForInfoDictionaryKey('CADisableMinimumFrameDurationOnPhone');
 
 			if (minFrameRateDisabled) {
 				let max = 120;
@@ -233,21 +200,14 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 						max = options.max <= deviceMaxFrames ? options.max : deviceMaxFrames;
 					} else if (this.displayedLink.preferredFramesPerSecond) {
 						// iOS 10.0
-						max =
-							options.max <= this.displayedLink.preferredFramesPerSecond
-								? options.max
-								: this.displayedLink.preferredFramesPerSecond;
+						max = options.max <= this.displayedLink.preferredFramesPerSecond ? options.max : this.displayedLink.preferredFramesPerSecond;
 					}
 				}
 
 				if (Utils.ios.MajorVersion >= 15) {
 					const min = options?.min || max / 2;
 					const preferred = options?.preferred || max;
-					this.displayedLink.preferredFrameRateRange = CAFrameRateRangeMake(
-						min,
-						max,
-						preferred
-					);
+					this.displayedLink.preferredFrameRateRange = CAFrameRateRangeMake(min, max, preferred);
 				} else {
 					this.displayedLink.preferredFramesPerSecond = max;
 				}
@@ -260,10 +220,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		}
 
 		this.displayedLinkTarget = CADisplayLinkTarget.initWithOwner(new WeakRef(this));
-		this.displayedLink = CADisplayLink.displayLinkWithTargetSelector(
-			this.displayedLinkTarget,
-			'onDisplayed'
-		);
+		this.displayedLink = CADisplayLink.displayLinkWithTargetSelector(this.displayedLinkTarget, 'onDisplayed');
 		adjustRefreshRate();
 		this.displayedLink.addToRunLoopForMode(NSRunLoop.mainRunLoop, NSDefaultRunLoopMode);
 		this.displayedLink.addToRunLoopForMode(NSRunLoop.mainRunLoop, UITrackingRunLoopMode);
@@ -299,17 +256,9 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		return this.nativeApp;
 	}
 
-	addNotificationObserver(
-		notificationName: string,
-		onReceiveCallback: (notification: NSNotification) => void
-	) {
+	addNotificationObserver(notificationName: string, onReceiveCallback: (notification: NSNotification) => void) {
 		const observer = NotificationObserver.initWithCallback(onReceiveCallback);
-		NSNotificationCenter.defaultCenter.addObserverSelectorNameObject(
-			observer,
-			'onReceive',
-			notificationName,
-			null
-		);
+		NSNotificationCenter.defaultCenter.addObserverSelectorNameObject(observer, 'onReceive', notificationName, null);
 		this._notificationObservers.push(observer);
 
 		return observer;
@@ -319,11 +268,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		const index = this._notificationObservers.indexOf(observer);
 		if (index >= 0) {
 			this._notificationObservers.splice(index, 1);
-			NSNotificationCenter.defaultCenter.removeObserverNameObject(
-				observer,
-				notificationName,
-				null
-			);
+			NSNotificationCenter.defaultCenter.removeObserverNameObject(observer, notificationName, null);
 		}
 	}
 
@@ -367,10 +312,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 
 	private notifyAppStarted(notification?: NSNotification) {
 		const root = this.notifyLaunch({
-			ios:
-				notification?.userInfo?.objectForKey(
-					'UIApplicationLaunchOptionsLocalNotificationKey'
-				) ?? null,
+			ios: notification?.userInfo?.objectForKey('UIApplicationLaunchOptionsLocalNotificationKey') ?? null,
 		});
 
 		if (this._window) {
@@ -422,10 +364,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		this._window = UIWindow.alloc().initWithFrame(UIScreen.mainScreen.bounds);
 
 		// TODO: Expose Window module so that it can we styled from XML & CSS
-		this._window.backgroundColor =
-			Utils.ios.MajorVersion <= 12 || !UIColor.systemBackgroundColor
-				? UIColor.whiteColor
-				: UIColor.systemBackgroundColor;
+		this._window.backgroundColor = Utils.ios.MajorVersion <= 12 || !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
 
 		this.notifyAppStarted(notification);
 	}

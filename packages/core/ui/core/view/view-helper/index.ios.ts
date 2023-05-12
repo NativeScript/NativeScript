@@ -68,10 +68,7 @@ class UILayoutViewController extends UIViewController {
 					}
 
 					const additionalInsetsTop = Math.max(parentPageInsetsTop - currentInsetsTop, 0);
-					const additionalInsetsBottom = Math.max(
-						parentPageInsetsBottom - currentInsetsBottom,
-						0
-					);
+					const additionalInsetsBottom = Math.max(parentPageInsetsBottom - currentInsetsBottom, 0);
 
 					if (additionalInsetsTop > 0 || additionalInsetsBottom > 0) {
 						const additionalInsets = new UIEdgeInsets({
@@ -119,13 +116,7 @@ class UILayoutViewController extends UIViewController {
 
 		if (iOSUtils.MajorVersion >= 13) {
 			const owner = this.owner?.deref();
-			if (
-				owner &&
-				this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection &&
-				this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(
-					previousTraitCollection
-				)
-			) {
+			if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
 				owner.notify({
 					eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
 					object: owner,
@@ -136,19 +127,13 @@ class UILayoutViewController extends UIViewController {
 }
 
 @NativeClass
-class UIAdaptivePresentationControllerDelegateImp
-	extends NSObject
-	implements UIAdaptivePresentationControllerDelegate
-{
+class UIAdaptivePresentationControllerDelegateImp extends NSObject implements UIAdaptivePresentationControllerDelegate {
 	public static ObjCProtocols = [UIAdaptivePresentationControllerDelegate];
 
 	private owner: WeakRef<View>;
 	private closedCallback: Function;
 
-	public static initWithOwnerAndCallback(
-		owner: WeakRef<View>,
-		whenClosedCallback: Function
-	): UIAdaptivePresentationControllerDelegateImp {
+	public static initWithOwnerAndCallback(owner: WeakRef<View>, whenClosedCallback: Function): UIAdaptivePresentationControllerDelegateImp {
 		const instance = <UIAdaptivePresentationControllerDelegateImp>super.new();
 		instance.owner = owner;
 		instance.closedCallback = whenClosedCallback;
@@ -156,9 +141,7 @@ class UIAdaptivePresentationControllerDelegateImp
 		return instance;
 	}
 
-	public presentationControllerDidDismiss(
-		presentationController: UIPresentationController
-	) {
+	public presentationControllerDidDismiss(presentationController: UIPresentationController) {
 		const owner = this.owner?.deref();
 		if (owner && typeof this.closedCallback === 'function') {
 			this.closedCallback();
@@ -167,19 +150,13 @@ class UIAdaptivePresentationControllerDelegateImp
 }
 
 @NativeClass
-class UIPopoverPresentationControllerDelegateImp
-	extends NSObject
-	implements UIPopoverPresentationControllerDelegate
-{
+class UIPopoverPresentationControllerDelegateImp extends NSObject implements UIPopoverPresentationControllerDelegate {
 	public static ObjCProtocols = [UIPopoverPresentationControllerDelegate];
 
 	private owner: WeakRef<View>;
 	private closedCallback: Function;
 
-	public static initWithOwnerAndCallback(
-		owner: WeakRef<View>,
-		whenClosedCallback: Function
-	): UIPopoverPresentationControllerDelegateImp {
+	public static initWithOwnerAndCallback(owner: WeakRef<View>, whenClosedCallback: Function): UIPopoverPresentationControllerDelegateImp {
 		const instance = <UIPopoverPresentationControllerDelegateImp>super.new();
 		instance.owner = owner;
 		instance.closedCallback = whenClosedCallback;
@@ -187,9 +164,7 @@ class UIPopoverPresentationControllerDelegateImp
 		return instance;
 	}
 
-	public popoverPresentationControllerDidDismissPopover(
-		popoverPresentationController: UIPopoverPresentationController
-	) {
+	public popoverPresentationControllerDidDismissPopover(popoverPresentationController: UIPopoverPresentationController) {
 		const owner = this.owner?.deref();
 		if (owner && typeof this.closedCallback === 'function') {
 			this.closedCallback();
@@ -198,13 +173,10 @@ class UIPopoverPresentationControllerDelegateImp
 }
 
 export class IOSHelper {
-	static traitCollectionColorAppearanceChangedEvent =
-		'traitCollectionColorAppearanceChanged';
+	static traitCollectionColorAppearanceChangedEvent = 'traitCollectionColorAppearanceChanged';
 	static UILayoutViewController = UILayoutViewController;
-	static UIAdaptivePresentationControllerDelegateImp =
-		UIAdaptivePresentationControllerDelegateImp;
-	static UIPopoverPresentationControllerDelegateImp =
-		UIPopoverPresentationControllerDelegateImp;
+	static UIAdaptivePresentationControllerDelegateImp = UIAdaptivePresentationControllerDelegateImp;
+	static UIPopoverPresentationControllerDelegateImp = UIPopoverPresentationControllerDelegateImp;
 
 	static getParentWithViewController(view: View): View {
 		while (view && !view.viewController) {
@@ -237,16 +209,7 @@ export class IOSHelper {
 		const rootView = controller.view;
 		const layoutGuide = UILayoutGuide.new();
 		rootView.addLayoutGuide(layoutGuide);
-		NSLayoutConstraint.activateConstraints(<any>[
-			layoutGuide.topAnchor.constraintEqualToAnchor(
-				controller.topLayoutGuide.bottomAnchor
-			),
-			layoutGuide.bottomAnchor.constraintEqualToAnchor(
-				controller.bottomLayoutGuide.topAnchor
-			),
-			layoutGuide.leadingAnchor.constraintEqualToAnchor(rootView.leadingAnchor),
-			layoutGuide.trailingAnchor.constraintEqualToAnchor(rootView.trailingAnchor),
-		]);
+		NSLayoutConstraint.activateConstraints(<any>[layoutGuide.topAnchor.constraintEqualToAnchor(controller.topLayoutGuide.bottomAnchor), layoutGuide.bottomAnchor.constraintEqualToAnchor(controller.bottomLayoutGuide.topAnchor), layoutGuide.leadingAnchor.constraintEqualToAnchor(rootView.leadingAnchor), layoutGuide.trailingAnchor.constraintEqualToAnchor(rootView.trailingAnchor)]);
 
 		return layoutGuide;
 	}
@@ -254,11 +217,7 @@ export class IOSHelper {
 	static layoutView(controller: UIViewController, owner: View): void {
 		let layoutGuide = controller.view.safeAreaLayoutGuide;
 		if (!layoutGuide) {
-			Trace.write(
-				`safeAreaLayoutGuide during layout of ${owner}. Creating fallback constraints, but layout might be wrong.`,
-				Trace.categories.Layout,
-				Trace.messageType.error
-			);
+			Trace.write(`safeAreaLayoutGuide during layout of ${owner}. Creating fallback constraints, but layout might be wrong.`, Trace.categories.Layout, Trace.messageType.error);
 
 			layoutGuide = IOSHelper.initLayoutGuide(controller);
 		}
@@ -279,14 +238,7 @@ export class IOSHelper {
 		const heightSpec = layout.makeMeasureSpec(safeAreaHeight, layout.EXACTLY);
 
 		ViewHelper.measureChild(null, owner, widthSpec, heightSpec);
-		ViewHelper.layoutChild(
-			null,
-			owner,
-			position.left,
-			position.top,
-			position.right,
-			position.bottom
-		);
+		ViewHelper.layoutChild(null, owner, position.left, position.top, position.right, position.bottom);
 
 		if (owner.parent) {
 			owner.parent._layoutParent();
@@ -297,27 +249,18 @@ export class IOSHelper {
 		const left = layout.round(layout.toDevicePixels(frame.origin.x));
 		const top = layout.round(layout.toDevicePixels(frame.origin.y));
 		const right = layout.round(layout.toDevicePixels(frame.origin.x + frame.size.width));
-		const bottom = layout.round(
-			layout.toDevicePixels(frame.origin.y + frame.size.height)
-		);
+		const bottom = layout.round(layout.toDevicePixels(frame.origin.y + frame.size.height));
 
 		return { left, right, top, bottom };
 	}
 
-	static getFrameFromPosition(
-		position: { left; top; right; bottom },
-		insets?: { left; top; right; bottom }
-	): CGRect {
+	static getFrameFromPosition(position: { left; top; right; bottom }, insets?: { left; top; right; bottom }): CGRect {
 		insets = insets || { left: 0, top: 0, right: 0, bottom: 0 };
 
 		const left = layout.toDeviceIndependentPixels(position.left + insets.left);
 		const top = layout.toDeviceIndependentPixels(position.top + insets.top);
-		const width = layout.toDeviceIndependentPixels(
-			position.right - position.left - insets.left - insets.right
-		);
-		const height = layout.toDeviceIndependentPixels(
-			position.bottom - position.top - insets.top - insets.bottom
-		);
+		const width = layout.toDeviceIndependentPixels(position.right - position.left - insets.left - insets.right);
+		const height = layout.toDeviceIndependentPixels(position.bottom - position.top - insets.top - insets.bottom);
 
 		return CGRectMake(left, top, width, height);
 	}
@@ -329,12 +272,7 @@ export class IOSHelper {
 			const adjustedFrame = IOSHelper.getFrameFromPosition(position, insets);
 
 			if (Trace.isEnabled()) {
-				Trace.write(
-					`${view} :shrinkToSafeArea: ${JSON.stringify(
-						IOSHelper.getPositionFromFrame(adjustedFrame)
-					)}`,
-					Trace.categories.Layout
-				);
+				Trace.write(`${view} :shrinkToSafeArea: ${JSON.stringify(IOSHelper.getPositionFromFrame(adjustedFrame))}`, Trace.categories.Layout);
 			}
 
 			return adjustedFrame;
@@ -364,43 +302,24 @@ export class IOSHelper {
 			adjustedPosition.top = fullscreenPosition.top;
 		}
 
-		if (
-			inWindowPosition.right < fullscreenPosition.right &&
-			inWindowPosition.right >= safeAreaPosition.right + fullscreenPosition.left
-		) {
+		if (inWindowPosition.right < fullscreenPosition.right && inWindowPosition.right >= safeAreaPosition.right + fullscreenPosition.left) {
 			adjustedPosition.right += fullscreenPosition.right - inWindowPosition.right;
 		}
 
-		if (
-			inWindowPosition.bottom < fullscreenPosition.bottom &&
-			inWindowPosition.bottom >= safeAreaPosition.bottom + fullscreenPosition.top
-		) {
+		if (inWindowPosition.bottom < fullscreenPosition.bottom && inWindowPosition.bottom >= safeAreaPosition.bottom + fullscreenPosition.top) {
 			adjustedPosition.bottom += fullscreenPosition.bottom - inWindowPosition.bottom;
 		}
 
-		const adjustedFrame = CGRectMake(
-			layout.toDeviceIndependentPixels(adjustedPosition.left),
-			layout.toDeviceIndependentPixels(adjustedPosition.top),
-			layout.toDeviceIndependentPixels(adjustedPosition.right - adjustedPosition.left),
-			layout.toDeviceIndependentPixels(adjustedPosition.bottom - adjustedPosition.top)
-		);
+		const adjustedFrame = CGRectMake(layout.toDeviceIndependentPixels(adjustedPosition.left), layout.toDeviceIndependentPixels(adjustedPosition.top), layout.toDeviceIndependentPixels(adjustedPosition.right - adjustedPosition.left), layout.toDeviceIndependentPixels(adjustedPosition.bottom - adjustedPosition.top));
 
 		if (Trace.isEnabled()) {
-			Trace.write(
-				view +
-					' :expandBeyondSafeArea: ' +
-					JSON.stringify(IOSHelper.getPositionFromFrame(adjustedFrame)),
-				Trace.categories.Layout
-			);
+			Trace.write(view + ' :expandBeyondSafeArea: ' + JSON.stringify(IOSHelper.getPositionFromFrame(adjustedFrame)), Trace.categories.Layout);
 		}
 
 		return adjustedFrame;
 	}
 
-	static getAvailableSpaceFromParent(
-		view: View,
-		frame: CGRect
-	): { safeArea: CGRect; fullscreen: CGRect; inWindow: CGRect } {
+	static getAvailableSpaceFromParent(view: View, frame: CGRect): { safeArea: CGRect; fullscreen: CGRect; inWindow: CGRect } {
 		if (!view) {
 			return;
 		}
@@ -412,11 +331,7 @@ export class IOSHelper {
 			viewControllerView = view.viewController.view;
 		} else {
 			let parent = view.parent as View;
-			while (
-				parent &&
-				!parent.viewController &&
-				!(parent.nativeViewProtected instanceof UIScrollView)
-			) {
+			while (parent && !parent.viewController && !(parent.nativeViewProtected instanceof UIScrollView)) {
 				parent = parent.parent as View;
 			}
 
@@ -434,24 +349,11 @@ export class IOSHelper {
 		if (viewControllerView) {
 			safeArea = viewControllerView.safeAreaLayoutGuide.layoutFrame;
 			fullscreen = viewControllerView.frame;
-			controllerInWindow = viewControllerView.convertPointToView(
-				viewControllerView.bounds.origin,
-				null
-			);
+			controllerInWindow = viewControllerView.convertPointToView(viewControllerView.bounds.origin, null);
 		} else if (scrollView) {
 			const insets = scrollView.safeAreaInsets;
-			safeArea = CGRectMake(
-				insets.left,
-				insets.top,
-				scrollView.contentSize.width - insets.left - insets.right,
-				scrollView.contentSize.height - insets.top - insets.bottom
-			);
-			fullscreen = CGRectMake(
-				0,
-				0,
-				scrollView.contentSize.width,
-				scrollView.contentSize.height
-			);
+			safeArea = CGRectMake(insets.left, insets.top, scrollView.contentSize.width - insets.left - insets.right, scrollView.contentSize.height - insets.top - insets.bottom);
+			fullscreen = CGRectMake(0, 0, scrollView.contentSize.width, scrollView.contentSize.height);
 		}
 
 		// We take into account the controller position inside the window.
@@ -465,12 +367,7 @@ export class IOSHelper {
 			inWindowTop += scrollView.contentOffset.y;
 		}
 
-		const inWindow = CGRectMake(
-			inWindowLeft,
-			inWindowTop,
-			frame.size.width,
-			frame.size.height
-		);
+		const inWindow = CGRectMake(inWindowLeft, inWindowTop, frame.size.width, frame.size.height);
 
 		return {
 			safeArea: safeArea,

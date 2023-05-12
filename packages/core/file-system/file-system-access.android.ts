@@ -8,9 +8,7 @@ import type { IFileSystemAccess } from './file-system-access';
 let applicationContext: android.content.Context;
 function getApplicationContext() {
 	if (!applicationContext) {
-		applicationContext = Application.android
-			.getNativeApplication()
-			.getApplicationContext();
+		applicationContext = Application.android.getNativeApplication().getApplicationContext();
 	}
 
 	return applicationContext;
@@ -42,10 +40,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 		return javaFile.length();
 	}
 
-	public getParent(
-		path: string,
-		onError?: (error: any) => any
-	): { path: string; name: string } {
+	public getParent(path: string, onError?: (error: any) => any): { path: string; name: string } {
 		try {
 			const javaFile = new java.io.File(path);
 			const parent = javaFile.getParentFile();
@@ -61,17 +56,11 @@ export class FileSystemAccess implements IFileSystemAccess {
 		}
 	}
 
-	public getFile(
-		path: string,
-		onError?: (error: any) => any
-	): { path: string; name: string; extension: string } {
+	public getFile(path: string, onError?: (error: any) => any): { path: string; name: string; extension: string } {
 		return this.ensureFile(new java.io.File(path), false, onError);
 	}
 
-	public getFolder(
-		path: string,
-		onError?: (error: any) => any
-	): { path: string; name: string } {
+	public getFolder(path: string, onError?: (error: any) => any): { path: string; name: string } {
 		const javaFile = new java.io.File(path);
 		const dirInfo = this.ensureFile(javaFile, true, onError);
 		if (!dirInfo) {
@@ -81,11 +70,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 		return { path: dirInfo.path, name: dirInfo.name };
 	}
 
-	public eachEntity(
-		path: string,
-		onEntity: (file: { path: string; name: string; extension: string }) => boolean,
-		onError?: (error: any) => any
-	) {
+	public eachEntity(path: string, onEntity: (file: { path: string; name: string; extension: string }) => boolean, onError?: (error: any) => any) {
 		if (!onEntity) {
 			return;
 		}
@@ -93,20 +78,13 @@ export class FileSystemAccess implements IFileSystemAccess {
 		this.enumEntities(path, onEntity, onError);
 	}
 
-	public getEntities(
-		path: string,
-		onError?: (error: any) => any
-	): Array<{ path: string; name: string; extension: string }> {
+	public getEntities(path: string, onError?: (error: any) => any): Array<{ path: string; name: string; extension: string }> {
 		const fileInfos = new Array<{
 			path: string;
 			name: string;
 			extension: string;
 		}>();
-		const onEntity = function (entity: {
-			path: string;
-			name: string;
-			extension: string;
-		}): boolean {
+		const onEntity = function (entity: { path: string; name: string; extension: string }): boolean {
 			fileInfos.push(entity);
 
 			return true;
@@ -280,11 +258,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 
 	public copySync(src: string, dest: string, onError?: (error: any) => any) {
 		try {
-			return org.nativescript.widgets.Async.File.copySync(
-				src,
-				dest,
-				getApplicationContext()
-			);
+			return org.nativescript.widgets.Async.File.copySync(src, dest, getApplicationContext());
 		} catch (error) {
 			if (onError) {
 				onError(exception);
@@ -403,10 +377,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 
 	public appendBuffer = this.appendBufferSync.bind(this);
 
-	public appendBufferAsync(
-		path: string,
-		buffer: ArrayBuffer | Uint8Array | Uint8ClampedArray
-	): Promise<void> {
+	public appendBufferAsync(path: string, buffer: ArrayBuffer | Uint8Array | Uint8ClampedArray): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			try {
 				org.nativescript.widgets.Async.File.appendBuffer(
@@ -428,11 +399,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 		});
 	}
 
-	public appendBufferSync(
-		path: string,
-		buffer: ArrayBuffer | Uint8Array | Uint8ClampedArray,
-		onError?: (error: any) => any
-	) {
+	public appendBufferSync(path: string, buffer: ArrayBuffer | Uint8Array | Uint8ClampedArray, onError?: (error: any) => any) {
 		try {
 			const javaFile = new java.io.File(path);
 			const stream = new java.io.FileOutputStream(javaFile);
@@ -470,11 +437,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 		});
 	}
 
-	public appendSync(
-		path: string,
-		bytes: androidNative.Array<number>,
-		onError?: (error: any) => any
-	) {
+	public appendSync(path: string, bytes: androidNative.Array<number>, onError?: (error: any) => any) {
 		try {
 			const javaFile = new java.io.File(path);
 			const stream = new java.io.FileOutputStream(javaFile, true);
@@ -489,10 +452,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 
 	public writeBuffer = this.writeBufferSync.bind(this);
 
-	public writeBufferAsync(
-		path: string,
-		buffer: ArrayBuffer | Uint8Array | Uint8ClampedArray
-	): Promise<void> {
+	public writeBufferAsync(path: string, buffer: ArrayBuffer | Uint8Array | Uint8ClampedArray): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			try {
 				org.nativescript.widgets.Async.File.writeBuffer(
@@ -514,11 +474,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 		});
 	}
 
-	public writeBufferSync(
-		path: string,
-		buffer: ArrayBuffer | Uint8Array | Uint8ClampedArray,
-		onError?: (error: any) => any
-	) {
+	public writeBufferSync(path: string, buffer: ArrayBuffer | Uint8Array | Uint8ClampedArray, onError?: (error: any) => any) {
 		try {
 			const javaFile = new java.io.File(path);
 			const stream = new java.io.FileOutputStream(javaFile);
@@ -556,11 +512,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 		});
 	}
 
-	public writeSync(
-		path: string,
-		bytes: androidNative.Array<number>,
-		onError?: (error: any) => any
-	) {
+	public writeSync(path: string, bytes: androidNative.Array<number>, onError?: (error: any) => any) {
 		try {
 			const javaFile = new java.io.File(path);
 			const stream = new java.io.FileOutputStream(javaFile);
@@ -691,12 +643,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 		});
 	}
 
-	public appendTextSync(
-		path: string,
-		content: string,
-		onError?: (error: any) => any,
-		encoding?: any
-	) {
+	public appendTextSync(path: string, content: string, onError?: (error: any) => any, encoding?: any) {
 		try {
 			const javaFile = new java.io.File(path);
 			const stream = new java.io.FileOutputStream(javaFile, true);
@@ -746,12 +693,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 		});
 	}
 
-	public writeTextSync(
-		path: string,
-		content: string,
-		onError?: (error: any) => any,
-		encoding?: any
-	) {
+	public writeTextSync(path: string, content: string, onError?: (error: any) => any, encoding?: any) {
 		try {
 			const javaFile = new java.io.File(path);
 			const stream = new java.io.FileOutputStream(javaFile);
@@ -795,11 +737,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 		return success;
 	}
 
-	private ensureFile(
-		javaFile: java.io.File,
-		isFolder: boolean,
-		onError?: (error: any) => any
-	): { path: string; name: string; extension: string } {
+	private ensureFile(javaFile: java.io.File, isFolder: boolean, onError?: (error: any) => any): { path: string; name: string; extension: string } {
 		try {
 			if (!javaFile.exists()) {
 				let created;
@@ -813,9 +751,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 				if (!created) {
 					// TODO: unified approach for error messages
 					if (onError) {
-						onError(
-							'Failed to create new java File for path ' + javaFile.getAbsolutePath()
-						);
+						onError('Failed to create new java File for path ' + javaFile.getAbsolutePath());
 					}
 
 					return undefined;
@@ -848,11 +784,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 		return getFileExtension(path);
 	}
 
-	private enumEntities(
-		path: string,
-		callback: (entity: { path: string; name: string; extension: string }) => boolean,
-		onError?: (error) => any
-	) {
+	private enumEntities(path: string, callback: (entity: { path: string; name: string; extension: string }) => boolean, onError?: (error) => any) {
 		try {
 			let javaFile = new java.io.File(path);
 			if (!javaFile.getCanonicalFile().isDirectory()) {
@@ -955,10 +887,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 		}
 		return super.getParent(path, onError);
 	}
-	getFile(
-		path: string,
-		onError?: (error: any) => any
-	): { path: string; name: string; extension: string } {
+	getFile(path: string, onError?: (error: any) => any): { path: string; name: string; extension: string } {
 		if (isContentUri(path)) {
 			try {
 				const file = getOrSetHelper(path);
@@ -983,20 +912,13 @@ export class FileSystemAccess29 extends FileSystemAccess {
 		}
 		return super.getFolder(path, onError);
 	}
-	getEntities(
-		path: string,
-		onError?: (error: any) => any
-	): { path: string; name: string; extension: string }[] {
+	getEntities(path: string, onError?: (error: any) => any): { path: string; name: string; extension: string }[] {
 		if (isContentUri(path)) {
 			return null;
 		}
 		return super.getEntities(path, onError);
 	}
-	eachEntity(
-		path: string,
-		onEntity: (entity: { path: string; name: string; extension: string }) => boolean,
-		onError?: (error: any) => any
-	) {
+	eachEntity(path: string, onEntity: (entity: { path: string; name: string; extension: string }) => boolean, onError?: (error: any) => any) {
 		if (isContentUri(path)) {
 			return null;
 		}
@@ -1115,11 +1037,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 					},
 				});
 			}
-			getOrSetHelper(path).appendSync(
-				applicationContext,
-				FileSystemAccess.getBuffer(content),
-				callback
-			);
+			getOrSetHelper(path).appendSync(applicationContext, FileSystemAccess.getBuffer(content), callback);
 		} else {
 			super.appendSync(path, content, onError);
 		}
@@ -1187,12 +1105,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 		return super.appendTextAsync(path, content, encoding);
 	}
 
-	appendTextSync(
-		path: string,
-		content: string,
-		onError?: (error: any) => any,
-		encoding?: any
-	) {
+	appendTextSync(path: string, content: string, onError?: (error: any) => any, encoding?: any) {
 		if (isContentUri(path)) {
 			let callback = null;
 			if (typeof onError === 'function') {
@@ -1203,12 +1116,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 					},
 				});
 			}
-			getOrSetHelper(path).appendTextSync(
-				applicationContext,
-				content,
-				encoding ?? null,
-				callback
-			);
+			getOrSetHelper(path).appendTextSync(applicationContext, content, encoding ?? null, callback);
 		} else {
 			super.appendTextSync(path, content, onError);
 		}
@@ -1246,11 +1154,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 					},
 				});
 			}
-			return getOrSetHelper(path).readTextSync(
-				applicationContext,
-				encoding ?? null,
-				callback
-			);
+			return getOrSetHelper(path).readTextSync(applicationContext, encoding ?? null, callback);
 		} else {
 			return super.readTextSync(path, onError, encoding);
 		}
@@ -1357,12 +1261,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 		return super.writeTextAsync(path, content, encoding);
 	}
 
-	writeTextSync(
-		path: string,
-		content: string,
-		onError?: (error: any) => any,
-		encoding?: any
-	) {
+	writeTextSync(path: string, content: string, onError?: (error: any) => any, encoding?: any) {
 		if (isContentUri(path)) {
 			let callback = null;
 			if (typeof onError === 'function') {
@@ -1373,12 +1272,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 					},
 				});
 			}
-			getOrSetHelper(path).writeTextSync(
-				applicationContext,
-				content,
-				encoding ?? null,
-				callback
-			);
+			getOrSetHelper(path).writeTextSync(applicationContext, content, encoding ?? null, callback);
 		} else {
 			super.writeTextSync(path, content, onError);
 		}
@@ -1417,11 +1311,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 					},
 				});
 			}
-			getOrSetHelper(path).writeSync(
-				applicationContext,
-				FileSystemAccess.getBuffer(content),
-				callback
-			);
+			getOrSetHelper(path).writeSync(applicationContext, FileSystemAccess.getBuffer(content), callback);
 		} else {
 			super.writeSync(path, content, onError);
 		}

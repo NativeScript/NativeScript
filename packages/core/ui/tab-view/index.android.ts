@@ -1,21 +1,7 @@
 import { TabViewItem as TabViewItemDefinition } from '.';
 import { Font } from '../styling/font';
 
-import {
-	TabViewBase,
-	TabViewItemBase,
-	itemsProperty,
-	selectedIndexProperty,
-	tabTextColorProperty,
-	tabBackgroundColorProperty,
-	tabTextFontSizeProperty,
-	selectedTabTextColorProperty,
-	androidSelectedTabHighlightColorProperty,
-	androidOffscreenTabLimitProperty,
-	traceCategory,
-	traceMissingIcon,
-	androidIconRenderingModeProperty,
-} from './tab-view-common';
+import { TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty, tabTextColorProperty, tabBackgroundColorProperty, tabTextFontSizeProperty, selectedTabTextColorProperty, androidSelectedTabHighlightColorProperty, androidOffscreenTabLimitProperty, traceCategory, traceMissingIcon, androidIconRenderingModeProperty } from './tab-view-common';
 import { textTransformProperty, getTransformedText } from '../text-base';
 import { CoreTypes } from '../../core-types';
 import { ImageSource } from '../../image-source';
@@ -92,11 +78,7 @@ function initializeNativeClasses() {
 			}
 		}
 
-		public onCreateView(
-			inflater: android.view.LayoutInflater,
-			container: android.view.ViewGroup,
-			savedInstanceState: android.os.Bundle
-		): android.view.View {
+		public onCreateView(inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle): android.view.View {
 			const tabItem = this.owner.items[this.index];
 
 			return tabItem.view.nativeViewProtected;
@@ -108,10 +90,7 @@ function initializeNativeClasses() {
 			// Get view as bitmap and set it as background. This is workaround for the disapearing nested fragments.
 			// TODO: Consider removing it when update to androidx.fragment:1.2.0
 			if (hasRemovingParent && this.owner.selectedIndex === this.index) {
-				const bitmapDrawable = new android.graphics.drawable.BitmapDrawable(
-					appResources,
-					this.backgroundBitmap
-				);
+				const bitmapDrawable = new android.graphics.drawable.BitmapDrawable(appResources, this.backgroundBitmap);
 				this.owner._originalBackground = this.owner.backgroundColor || new Color('White');
 				this.owner.nativeViewProtected.setBackground(bitmapDrawable);
 				this.backgroundBitmap = null;
@@ -188,10 +167,7 @@ function initializeNativeClasses() {
 			}
 		}
 
-		instantiateItem(
-			container: android.view.ViewGroup,
-			position: number
-		): java.lang.Object {
+		instantiateItem(container: android.view.ViewGroup, position: number): java.lang.Object {
 			const fragmentManager = this.owner._getFragmentManager();
 			if (!this.mCurTransaction) {
 				this.mCurTransaction = fragmentManager.beginTransaction();
@@ -200,8 +176,7 @@ function initializeNativeClasses() {
 			const itemId = this.getItemId(position);
 			const name = makeFragmentName(container.getId(), itemId);
 
-			let fragment: androidx.fragment.app.Fragment =
-				fragmentManager.findFragmentByTag(name);
+			let fragment: androidx.fragment.app.Fragment = fragmentManager.findFragmentByTag(name);
 			if (fragment != null) {
 				this.mCurTransaction.attach(fragment);
 			} else {
@@ -227,19 +202,13 @@ function initializeNativeClasses() {
 			return this.items ? POSITION_UNCHANGED : POSITION_NONE;
 		}
 
-		destroyItem(
-			container: android.view.ViewGroup,
-			position: number,
-			object: java.lang.Object
-		): void {
+		destroyItem(container: android.view.ViewGroup, position: number, object: java.lang.Object): void {
 			if (!this.mCurTransaction) {
 				const fragmentManager = this.owner._getFragmentManager();
 				this.mCurTransaction = fragmentManager.beginTransaction();
 			}
 
-			const fragment: androidx.fragment.app.Fragment = <androidx.fragment.app.Fragment>(
-				object
-			);
+			const fragment: androidx.fragment.app.Fragment = <androidx.fragment.app.Fragment>object;
 			this.mCurTransaction.detach(fragment);
 
 			if (this.mCurrentPrimaryItem === fragment) {
@@ -253,11 +222,7 @@ function initializeNativeClasses() {
 			}
 		}
 
-		setPrimaryItem(
-			container: android.view.ViewGroup,
-			position: number,
-			object: java.lang.Object
-		): void {
+		setPrimaryItem(container: android.view.ViewGroup, position: number, object: java.lang.Object): void {
 			const fragment = <androidx.fragment.app.Fragment>object;
 			if (fragment !== this.mCurrentPrimaryItem) {
 				if (this.mCurrentPrimaryItem != null) {
@@ -327,9 +292,7 @@ function createTabItemSpec(item: TabViewItem): org.nativescript.widgets.TabItemS
 
 	if (item.iconSource) {
 		if (item.iconSource.indexOf(RESOURCE_PREFIX) === 0) {
-			result.iconId = ad.resources.getDrawableId(
-				item.iconSource.substr(RESOURCE_PREFIX.length)
-			);
+			result.iconId = ad.resources.getDrawableId(item.iconSource.substr(RESOURCE_PREFIX.length));
 			if (result.iconId === 0) {
 				traceMissingIcon(item.iconSource);
 			}
@@ -337,10 +300,7 @@ function createTabItemSpec(item: TabViewItem): org.nativescript.widgets.TabItemS
 			const is = ImageSource.fromFileOrResourceSync(item.iconSource);
 			if (is) {
 				// TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
-				result.iconDrawable = new android.graphics.drawable.BitmapDrawable(
-					appResources,
-					is.android
-				);
+				result.iconDrawable = new android.graphics.drawable.BitmapDrawable(appResources, is.android);
 			} else {
 				traceMissingIcon(item.iconSource);
 			}
@@ -354,8 +314,7 @@ let defaultAccentColor: number = undefined;
 function getDefaultAccentColor(context: android.content.Context): number {
 	if (defaultAccentColor === undefined) {
 		//Fallback color: https://developer.android.com/samples/SlidingTabsColors/src/com.example.android.common/view/SlidingTabStrip.html
-		defaultAccentColor =
-			ad.resources.getPaletteColor(ACCENT_COLOR, context) || 0xff33b5e5;
+		defaultAccentColor = ad.resources.getPaletteColor(ACCENT_COLOR, context) || 0xff33b5e5;
 	}
 
 	return defaultAccentColor;
@@ -374,8 +333,7 @@ export class TabViewItem extends TabViewItemBase {
 	public initNativeView(): void {
 		super.initNativeView();
 		if (this.nativeViewProtected) {
-			this._defaultTransformationMethod =
-				this.nativeViewProtected.getTransformationMethod();
+			this._defaultTransformationMethod = this.nativeViewProtected.getTransformationMethod();
 		}
 	}
 
@@ -424,10 +382,7 @@ export class TabViewItem extends TabViewItemBase {
 		// TODO: can happen in a modal tabview scenario when the modal dialog fragment is already removed
 		if (!tabFragment) {
 			if (Trace.isEnabled()) {
-				Trace.write(
-					`Could not get child fragment manager for tab item with index ${this.index}`,
-					traceCategory
-				);
+				Trace.write(`Could not get child fragment manager for tab item with index ${this.index}`, traceCategory);
 			}
 
 			return (<any>tabView)._getRootFragmentManager();
@@ -443,10 +398,7 @@ export class TabViewItem extends TabViewItemBase {
 		if (typeof value === 'number') {
 			this.nativeViewProtected.setTextSize(value);
 		} else {
-			this.nativeViewProtected.setTextSize(
-				android.util.TypedValue.COMPLEX_UNIT_PX,
-				value.nativeSize
-			);
+			this.nativeViewProtected.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, value.nativeSize);
 		}
 	}
 
@@ -454,9 +406,7 @@ export class TabViewItem extends TabViewItemBase {
 		return this.nativeViewProtected.getTypeface();
 	}
 	[fontInternalProperty.setNative](value: Font | android.graphics.Typeface) {
-		this.nativeViewProtected.setTypeface(
-			value instanceof Font ? value.getAndroidTypeface() : value
-		);
+		this.nativeViewProtected.setTypeface(value instanceof Font ? value.getAndroidTypeface() : value);
 	}
 
 	[textTransformProperty.getDefault](): 'default' {
@@ -475,10 +425,7 @@ export class TabViewItem extends TabViewItemBase {
 	}
 }
 
-function setElevation(
-	grid: org.nativescript.widgets.GridLayout,
-	tabLayout: org.nativescript.widgets.TabLayout
-) {
+function setElevation(grid: org.nativescript.widgets.GridLayout, tabLayout: org.nativescript.widgets.TabLayout) {
 	const compat = <any>androidx.core.view.ViewCompat;
 	if (compat.setElevation) {
 		const val = DEFAULT_ELEVATION * layout.getDisplayDensity();
@@ -489,12 +436,7 @@ function setElevation(
 
 export const tabs = new Array<WeakRef<TabView>>();
 
-function iterateIndexRange(
-	index: number,
-	eps: number,
-	lastIndex: number,
-	callback: (i) => void
-) {
+function iterateIndexRange(index: number, eps: number, lastIndex: number, callback: (i) => void) {
 	const rangeStart = Math.max(0, index - eps);
 	const rangeEnd = Math.min(index + eps, lastIndex);
 	for (let i = rangeStart; i <= rangeEnd; i++) {
@@ -547,18 +489,8 @@ export class TabView extends TabViewBase {
 		lp.row = 1;
 
 		if (this.androidTabsPosition === 'top') {
-			nativeView.addRow(
-				new org.nativescript.widgets.ItemSpec(
-					1,
-					org.nativescript.widgets.GridUnitType.auto
-				)
-			);
-			nativeView.addRow(
-				new org.nativescript.widgets.ItemSpec(
-					1,
-					org.nativescript.widgets.GridUnitType.star
-				)
-			);
+			nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
+			nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
 
 			viewPager.setLayoutParams(lp);
 
@@ -566,18 +498,8 @@ export class TabView extends TabViewBase {
 				viewPager.setSwipePageEnabled(false);
 			}
 		} else {
-			nativeView.addRow(
-				new org.nativescript.widgets.ItemSpec(
-					1,
-					org.nativescript.widgets.GridUnitType.star
-				)
-			);
-			nativeView.addRow(
-				new org.nativescript.widgets.ItemSpec(
-					1,
-					org.nativescript.widgets.GridUnitType.auto
-				)
-			);
+			nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
+			nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
 
 			tabLayout.setLayoutParams(lp);
 			viewPager.setSwipePageEnabled(false);
@@ -631,8 +553,7 @@ export class TabView extends TabViewBase {
 		}
 
 		const lastIndex = items.length - 1;
-		const offsideItems =
-			this.androidTabsPosition === 'top' ? this.androidOffscreenTabLimit : 1;
+		const offsideItems = this.androidTabsPosition === 'top' ? this.androidOffscreenTabLimit : 1;
 
 		const toUnload = [];
 		const toLoad = [];
@@ -807,9 +728,7 @@ export class TabView extends TabViewBase {
 	[androidIconRenderingModeProperty.getDefault](): 'alwaysOriginal' | 'alwaysTemplate' {
 		return 'alwaysOriginal';
 	}
-	[androidIconRenderingModeProperty.setNative](
-		value: 'alwaysOriginal' | 'alwaysTemplate'
-	) {
+	[androidIconRenderingModeProperty.setNative](value: 'alwaysOriginal' | 'alwaysTemplate') {
 		this._tabLayout.setIconRenderingMode(this.getNativeRenderingMode(value));
 	}
 
@@ -817,10 +736,7 @@ export class TabView extends TabViewBase {
 		const smoothScroll = this.androidTabsPosition === 'top';
 
 		if (Trace.isEnabled()) {
-			Trace.write(
-				'TabView this._viewPager.setCurrentItem(' + value + ', ' + smoothScroll + ');',
-				traceCategory
-			);
+			Trace.write('TabView this._viewPager.setCurrentItem(' + value + ', ' + smoothScroll + ');', traceCategory);
 		}
 
 		this._viewPager.setCurrentItem(value, smoothScroll);
@@ -837,15 +753,11 @@ export class TabView extends TabViewBase {
 	[tabBackgroundColorProperty.getDefault](): android.graphics.drawable.Drawable {
 		return this._tabLayout.getBackground();
 	}
-	[tabBackgroundColorProperty.setNative](
-		value: android.graphics.drawable.Drawable | Color
-	) {
+	[tabBackgroundColorProperty.setNative](value: android.graphics.drawable.Drawable | Color) {
 		if (value instanceof Color) {
 			this._tabLayout.setBackgroundColor(value.android);
 		} else {
-			this._tabLayout.setBackground(
-				tryCloneDrawable(value, this.nativeViewProtected.getResources())
-			);
+			this._tabLayout.setBackground(tryCloneDrawable(value, this.nativeViewProtected.getResources()));
 		}
 	}
 
@@ -886,10 +798,7 @@ export class TabView extends TabViewBase {
 	}
 }
 
-function tryCloneDrawable(
-	value: android.graphics.drawable.Drawable,
-	resources: android.content.res.Resources
-): android.graphics.drawable.Drawable {
+function tryCloneDrawable(value: android.graphics.drawable.Drawable, resources: android.content.res.Resources): android.graphics.drawable.Drawable {
 	if (value) {
 		const constantState = value.getConstantState();
 		if (constantState) {

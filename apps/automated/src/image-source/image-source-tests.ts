@@ -24,18 +24,10 @@ export function testDrawableSetNativeSource() {
 		const rDrawable = `${context.getPackageName()}.R$drawable`;
 		const rClazz = java.lang.Class.forName(`${rDrawable}`);
 		const iconId = rClazz.getDeclaredField('icon').get(null) as java.lang.Integer;
-		const splashScreenId = rClazz
-			.getDeclaredField('splash_screen')
-			.get(null) as java.lang.Integer;
+		const splashScreenId = rClazz.getDeclaredField('splash_screen').get(null) as java.lang.Integer;
 
-		const icon = androidx.appcompat.content.res.AppCompatResources.getDrawable(
-			context,
-			iconId?.intValue?.() ?? 0
-		);
-		const splashScreen = androidx.appcompat.content.res.AppCompatResources.getDrawable(
-			context,
-			splashScreenId?.intValue?.() ?? 0
-		);
+		const icon = androidx.appcompat.content.res.AppCompatResources.getDrawable(context, iconId?.intValue?.() ?? 0);
+		const splashScreen = androidx.appcompat.content.res.AppCompatResources.getDrawable(context, splashScreenId?.intValue?.() ?? 0);
 
 		let type = icon?.getClass?.().toString?.() ?? '';
 
@@ -264,10 +256,8 @@ export function testNativeFields() {
 		TKUnit.assert(img.ios != null, 'Image.ios not updated.');
 	}
 }
-const fullAndroidPng =
-	'iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAA3NCSVQICAjb4U/gAAAAFUlEQVQImWP8z4AAjAz/kTnIPGQAAG86AwGcuMlCAAAAAElFTkSuQmCC';
-const fullIosPng =
-	'iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAAXNSR0IArs4c6QAAABxpRE9UAAAAAgAAAAAAAAACAAAAKAAAAAIAAAACAAAARiS4uJEAAAASSURBVBgZYvjPwABHSMz/DAAAAAD//0GWpK0AAAAOSURBVGNgYPiPhBgQAACEvQv1D5y/pAAAAABJRU5ErkJggg==';
+const fullAndroidPng = 'iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAA3NCSVQICAjb4U/gAAAAFUlEQVQImWP8z4AAjAz/kTnIPGQAAG86AwGcuMlCAAAAAElFTkSuQmCC';
+const fullIosPng = 'iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAAXNSR0IArs4c6QAAABxpRE9UAAAAAgAAAAAAAAACAAAAKAAAAAIAAAACAAAARiS4uJEAAAASSURBVBgZYvjPwABHSMz/DAAAAAD//0GWpK0AAAAOSURBVGNgYPiPhBgQAACEvQv1D5y/pAAAAABJRU5ErkJggg==';
 
 const jpgImageAsBase64String =
 	'/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/2wBDAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAARCAAEAAQDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD+Pz/h5j+1Z/z9fBr/AMRt+AH/AM7uiiiv9fV9E36KOn/HMX0f+n/NlvDT/p3/ANUv/V3vrf8AP1nueaf8LOa9P+ZjjP8Ap3/0/wD6u99b/wD/2Q==';
@@ -335,11 +325,7 @@ export function testLoadFromBase64Encode_PNG() {
 
 export function testLoadFromFontIconCode() {
 	let img: ImageSource;
-	img = ImageSource.fromFontIconCodeSync(
-		'F10B',
-		Font.default.withFontFamily('FontAwesome'),
-		new Color('red')
-	);
+	img = ImageSource.fromFontIconCodeSync('F10B', Font.default.withFontFamily('FontAwesome'), new Color('red'));
 
 	TKUnit.assert(img !== null, 'Actual: ' + img);
 	TKUnit.assert(img.width !== null, 'img.width');
@@ -353,8 +339,5 @@ export function testResize() {
 
 	const resized = img.resize(newSize);
 
-	TKUnit.assert(
-		resized.width === newSize || resized.height === newSize,
-		'Image not resized correctly'
-	);
+	TKUnit.assert(resized.width === newSize || resized.height === newSize, 'Image not resized correctly');
 }

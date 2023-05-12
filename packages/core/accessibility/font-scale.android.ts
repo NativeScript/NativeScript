@@ -27,9 +27,7 @@ export function getFontScaleCategory(): FontScaleCategory {
 }
 
 function useAndroidFontScale() {
-	fontScaleChanged(
-		Number(Application.android.context.getResources().getConfiguration().fontScale)
-	);
+	fontScaleChanged(Number(Application.android.context.getResources().getConfiguration().fontScale));
 }
 
 let configChangedCallback: android.content.ComponentCallbacks2;

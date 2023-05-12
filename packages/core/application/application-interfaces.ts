@@ -142,8 +142,7 @@ export interface AndroidActivityBundleEventData extends AndroidActivityEventData
 /**
  * Data for the Android activity onRequestPermissions callback
  */
-export interface AndroidActivityRequestPermissionsEventData
-	extends AndroidActivityEventData {
+export interface AndroidActivityRequestPermissionsEventData extends AndroidActivityEventData {
 	/**
 	 * The request code.
 	 */

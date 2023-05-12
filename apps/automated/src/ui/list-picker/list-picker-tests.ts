@@ -34,10 +34,7 @@ export var testWhenlistPickerIsCreatedItemsAreUndefined = function () {
 		var listPicker = <listPickerModule.ListPicker>views[0];
 		var expectedValue = undefined;
 		var actualValue = listPicker.items;
-		TKUnit.assert(
-			actualValue === expectedValue,
-			'Actual: ' + actualValue + '; Expected: ' + expectedValue
-		);
+		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
@@ -46,26 +43,19 @@ export var testWhenlistPickerIsCreatedSelectedIndexIsUndefined = function () {
 		var listPicker = <listPickerModule.ListPicker>views[0];
 		var expectedValue = -1;
 		var actualValue = listPicker.selectedIndex;
-		TKUnit.assert(
-			actualValue === expectedValue,
-			'Actual: ' + actualValue + '; Expected: ' + expectedValue
-		);
+		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
-export var testWhenSettingItemsToNonEmptyArrayTheSameAmountOfNativeItemsIsCreated =
-	function () {
-		helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
-			var listPicker = <listPickerModule.ListPicker>views[0];
-			listPicker.items = _createItems(10);
-			var expectedValue = listPicker.items.length;
-			var actualValue = listPickerTestsNative.getNativeItemsCount(listPicker);
-			TKUnit.assert(
-				actualValue === expectedValue,
-				'Actual: ' + actualValue + '; Expected: ' + expectedValue
-			);
-		});
-	};
+export var testWhenSettingItemsToNonEmptyArrayTheSameAmountOfNativeItemsIsCreated = function () {
+	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
+		var listPicker = <listPickerModule.ListPicker>views[0];
+		listPicker.items = _createItems(10);
+		var expectedValue = listPicker.items.length;
+		var actualValue = listPickerTestsNative.getNativeItemsCount(listPicker);
+		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
+	});
+};
 
 export var testWhenSettingItemsToEmptyArrayZeroNativeItemsAreCreated = function () {
 	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
@@ -73,10 +63,7 @@ export var testWhenSettingItemsToEmptyArrayZeroNativeItemsAreCreated = function 
 		listPicker.items = [];
 		var expectedValue = listPicker.items.length;
 		var actualValue = listPickerTestsNative.getNativeItemsCount(listPicker);
-		TKUnit.assert(
-			actualValue === expectedValue,
-			'Actual: ' + actualValue + '; Expected: ' + expectedValue
-		);
+		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
@@ -88,10 +75,7 @@ export var testSelectedIndexBecomesZeroWhenItemsBoundToNonEmptyArray = function 
 		// << article-binding-listpickeritems
 		var expectedValue = 0;
 		var actualValue = listPicker.selectedIndex;
-		TKUnit.assert(
-			actualValue === expectedValue,
-			'Actual: ' + actualValue + '; Expected: ' + expectedValue
-		);
+		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
@@ -105,10 +89,7 @@ export var testSelectedIndexBecomesUndefinedWhenItemsBoundToEmptyArray = functio
 		listPicker.items = [];
 		var expectedValue = -1;
 		var actualValue = listPicker.selectedIndex;
-		TKUnit.assert(
-			actualValue === expectedValue,
-			'Actual: ' + actualValue + '; Expected: ' + expectedValue
-		);
+		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
@@ -120,10 +101,7 @@ export var testSelectedIndexBecomesUndefinedWhenItemsBoundToUndefined = function
 		listPicker.items = undefined;
 		var expectedValue = -1;
 		var actualValue = listPicker.selectedIndex;
-		TKUnit.assert(
-			actualValue === expectedValue,
-			'Actual: ' + actualValue + '; Expected: ' + expectedValue
-		);
+		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
@@ -135,10 +113,7 @@ export var testSelectedIndexBecomesUndefinedWhenItemsBoundToNull = function () {
 		listPicker.items = null;
 		var expectedValue = -1;
 		var actualValue = listPicker.selectedIndex;
-		TKUnit.assert(
-			actualValue === expectedValue,
-			'Actual: ' + actualValue + '; Expected: ' + expectedValue
-		);
+		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
@@ -150,10 +125,7 @@ export var testItemsIsResolvedCorrectlyIfSetBeforeViewIsLoaded = function () {
 	helper.buildUIAndRunTest(listPicker, function (views: Array<View>) {
 		var listPicker = <listPickerModule.ListPicker>views[0];
 		var actualValue = listPicker.items.length;
-		TKUnit.assert(
-			actualValue === expectedValue,
-			'Actual: ' + actualValue + '; Expected: ' + expectedValue
-		);
+		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
@@ -165,10 +137,7 @@ export var testSelectedIndexIsResolvedCorrectlyIfSetBeforeViewIsLoaded = functio
 	helper.buildUIAndRunTest(listPicker, function (views: Array<View>) {
 		var listPicker = <listPickerModule.ListPicker>views[0];
 		var actualValue = listPicker.selectedIndex;
-		TKUnit.assert(
-			actualValue === expectedValue,
-			'Actual: ' + actualValue + '; Expected: ' + expectedValue
-		);
+		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
 	});
 };
 
@@ -236,20 +205,19 @@ export var test_Android_WhenItemsAreEmptyNativeControlDoesNotShowZero = function
 	});
 };
 
-export var test_Android_WhenBoundToSingleElementArrayEditTextIsUpdatedProperly =
-	function () {
-		if (!Application.android) {
-			return;
-		}
+export var test_Android_WhenBoundToSingleElementArrayEditTextIsUpdatedProperly = function () {
+	if (!Application.android) {
+		return;
+	}
 
-		helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
-			var listPicker = <listPickerModule.ListPicker>views[0];
-			listPicker.items = ['One'];
-			var expectedValue = 'One';
-			var actualValue = listPicker.nativeViewProtected.editText.getText().toString();
-			TKUnit.assertEqual(actualValue, expectedValue);
-		});
-	};
+	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
+		var listPicker = <listPickerModule.ListPicker>views[0];
+		listPicker.items = ['One'];
+		var expectedValue = 'One';
+		var actualValue = listPicker.nativeViewProtected.editText.getText().toString();
+		TKUnit.assertEqual(actualValue, expectedValue);
+	});
+};
 
 export var test_Android_WhenSelectedIndexChangesEditTextIsUpdatedProperly = function () {
 	if (!Application.android) {

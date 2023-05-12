@@ -86,20 +86,14 @@ function setupConfigListener(attempt = 0) {
 		return;
 	}
 
-	fontSizeObserver = Application.ios.addNotificationObserver(
-		UIContentSizeCategoryDidChangeNotification,
-		(args) => {
-			const fontSize = args.userInfo.valueForKey(UIContentSizeCategoryNewValueKey);
-			contentSizeUpdated(fontSize);
-		}
-	);
+	fontSizeObserver = Application.ios.addNotificationObserver(UIContentSizeCategoryDidChangeNotification, (args) => {
+		const fontSize = args.userInfo.valueForKey(UIContentSizeCategoryNewValueKey);
+		contentSizeUpdated(fontSize);
+	});
 
 	Application.on(Application.exitEvent, () => {
 		if (fontSizeObserver) {
-			Application.ios.removeNotificationObserver(
-				fontSizeObserver,
-				UIContentSizeCategoryDidChangeNotification
-			);
+			Application.ios.removeNotificationObserver(fontSizeObserver, UIContentSizeCategoryDidChangeNotification);
 			fontSizeObserver = null;
 		}
 

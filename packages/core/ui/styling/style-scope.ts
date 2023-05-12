@@ -1,25 +1,10 @@
 import { Keyframes } from '../animation/keyframe-animation';
 import { ViewBase } from '../core/view-base';
 import { View } from '../core/view';
-import {
-	unsetValue,
-	_evaluateCssVariableExpression,
-	_evaluateCssCalcExpression,
-	isCssVariable,
-	isCssVariableExpression,
-	isCssCalcExpression,
-} from '../core/properties';
+import { unsetValue, _evaluateCssVariableExpression, _evaluateCssCalcExpression, isCssVariable, isCssVariableExpression, isCssCalcExpression } from '../core/properties';
 import { SyntaxTree, Keyframes as KeyframesDefinition, Node as CssNode } from '../../css';
 
-import {
-	RuleSet,
-	SelectorsMap,
-	SelectorCore,
-	SelectorsMatch,
-	ChangeMap,
-	fromAstNodes,
-	Node,
-} from './css-selector';
+import { RuleSet, SelectorsMap, SelectorCore, SelectorsMatch, ChangeMap, fromAstNodes, Node } from './css-selector';
 import { Trace } from '../../trace';
 import { File, knownFolders, path } from '../../file-system';
 import { Application, CssChangedEventData, LoadAppCSSEventData } from '../../application';
@@ -73,11 +58,7 @@ function evaluateCssExpressions(view: ViewBase, property: string, value: string)
 	try {
 		value = _evaluateCssCalcExpression(value);
 	} catch (e) {
-		Trace.write(
-			`Failed to evaluate css-calc for property [${property}] for expression [${value}] to ${view}. ${e.stack}`,
-			Trace.categories.Error,
-			Trace.messageType.error
-		);
+		Trace.write(`Failed to evaluate css-calc for property [${property}] for expression [${value}] to ${view}. ${e.stack}`, Trace.categories.Error, Trace.messageType.error);
 
 		return unsetValue;
 	}
@@ -105,21 +86,11 @@ const pattern = /('|")(.*?)\1/;
 class CSSSource {
 	private _selectors: RuleSet[] = [];
 
-	private constructor(
-		private _ast: SyntaxTree,
-		private _url: string,
-		private _file: string,
-		private _keyframes: KeyframesMap,
-		private _source: string
-	) {
+	private constructor(private _ast: SyntaxTree, private _url: string, private _file: string, private _keyframes: KeyframesMap, private _source: string) {
 		this.parse();
 	}
 
-	public static fromDetect(
-		cssOrAst: any,
-		keyframes: KeyframesMap,
-		fileName?: string
-	): CSSSource {
+	public static fromDetect(cssOrAst: any, keyframes: KeyframesMap, fileName?: string): CSSSource {
 		if (typeof cssOrAst === 'string') {
 			// raw-loader
 			return CSSSource.fromSource(cssOrAst, keyframes, fileName);
@@ -128,11 +99,7 @@ class CSSSource {
 				cssOrAst = cssOrAst.default;
 			}
 
-			if (
-				cssOrAst.type === 'stylesheet' &&
-				cssOrAst.stylesheet &&
-				cssOrAst.stylesheet.rules
-			) {
+			if (cssOrAst.type === 'stylesheet' && cssOrAst.stylesheet && cssOrAst.stylesheet.rules) {
 				// css-loader
 				return CSSSource.fromAST(cssOrAst, keyframes, fileName);
 			}
@@ -155,11 +122,7 @@ class CSSSource {
 			}
 		} catch (e) {
 			if (Trace.isEnabled()) {
-				Trace.write(
-					`Could not load CSS from ${uri}: ${e}`,
-					Trace.categories.Error,
-					Trace.messageType.warn
-				);
+				Trace.write(`Could not load CSS from ${uri}: ${e}`, Trace.categories.Error, Trace.messageType.warn);
 			}
 		}
 
@@ -173,11 +136,7 @@ class CSSSource {
 
 		const appPath = knownFolders.currentApp().path;
 		if (!uri.startsWith(appPath)) {
-			Trace.write(
-				`${uri} does not start with ${appPath}`,
-				Trace.categories.Error,
-				Trace.messageType.error
-			);
+			Trace.write(`${uri} does not start with ${appPath}`, Trace.categories.Error, Trace.messageType.error);
 
 			return uri;
 		}
@@ -202,11 +161,7 @@ class CSSSource {
 		return new CSSSource(undefined, url, file, keyframes, undefined);
 	}
 
-	public static fromFileImport(
-		url: string,
-		keyframes: KeyframesMap,
-		importSource: string
-	): CSSSource {
+	public static fromFileImport(url: string, keyframes: KeyframesMap, importSource: string): CSSSource {
 		const file = CSSSource.resolveCSSPathFromURL(url, importSource);
 
 		return new CSSSource(undefined, url, file, keyframes, undefined);
@@ -220,19 +175,11 @@ class CSSSource {
 		return file;
 	}
 
-	public static fromSource(
-		source: string,
-		keyframes: KeyframesMap,
-		url?: string
-	): CSSSource {
+	public static fromSource(source: string, keyframes: KeyframesMap, url?: string): CSSSource {
 		return new CSSSource(undefined, url, undefined, keyframes, source);
 	}
 
-	public static fromAST(
-		ast: SyntaxTree,
-		keyframes: KeyframesMap,
-		url?: string
-	): CSSSource {
+	public static fromAST(ast: SyntaxTree, keyframes: KeyframesMap, url?: string): CSSSource {
 		return new CSSSource(ast, url, undefined, keyframes, undefined);
 	}
 
@@ -268,11 +215,7 @@ class CSSSource {
 			}
 		} catch (e) {
 			if (Trace.isEnabled()) {
-				Trace.write(
-					'Css styling failed: ' + e,
-					Trace.categories.Style,
-					Trace.messageType.error
-				);
+				Trace.write('Css styling failed: ' + e, Trace.categories.Style, Trace.messageType.error);
 			}
 			this._selectors = [];
 		}
@@ -301,10 +244,7 @@ class CSSSource {
 	@profile
 	private createSelectors() {
 		if (this._ast) {
-			this._selectors = [
-				...this.createSelectorsFromImports(),
-				...this.createSelectorsFromSyntaxTree(),
-			];
+			this._selectors = [...this.createSelectorsFromImports(), ...this.createSelectorsFromSyntaxTree()];
 		}
 	}
 
@@ -318,18 +258,14 @@ class CSSSource {
 			return urlMatch && urlMatch[2];
 		};
 
-		const sourceFromImportObject = (importObject) =>
-			importObject['position'] && importObject['position']['source'];
+		const sourceFromImportObject = (importObject) => importObject['position'] && importObject['position']['source'];
 
 		const toUrlSourcePair = (importObject) => ({
 			url: urlFromImportObject(importObject),
 			source: sourceFromImportObject(importObject),
 		});
 
-		const getCssFile = ({ url, source }) =>
-			source
-				? CSSSource.fromFileImport(url, this._keyframes, source)
-				: CSSSource.fromURI(url, this._keyframes);
+		const getCssFile = ({ url, source }) => (source ? CSSSource.fromFileImport(url, this._keyframes, source) : CSSSource.fromURI(url, this._keyframes));
 
 		const cssFiles = imports
 			.map(toUrlSourcePair)
@@ -343,19 +279,14 @@ class CSSSource {
 
 	private createSelectorsFromSyntaxTree(): RuleSet[] {
 		const nodes = this._ast.stylesheet.rules;
-		(<KeyframesDefinition[]>nodes.filter(isKeyframe)).forEach(
-			(node) => (this._keyframes[node.name] = node)
-		);
+		(<KeyframesDefinition[]>nodes.filter(isKeyframe)).forEach((node) => (this._keyframes[node.name] = node));
 
 		const rulesets = fromAstNodes(nodes);
 		if (rulesets && rulesets.length) {
 			ensureCssAnimationParserModule();
 
 			rulesets.forEach((rule) => {
-				rule[animationsSymbol] =
-					cssAnimationParserModule.CssAnimationParser.keyframeAnimationsFromCSSDeclarations(
-						rule.declarations
-					);
+				rule[animationsSymbol] = cssAnimationParserModule.CssAnimationParser.keyframeAnimationsFromCSSDeclarations(rule.declarations);
 			});
 		}
 
@@ -384,13 +315,8 @@ export function removeTaggedAdditionalCSS(tag: string | number): boolean {
 }
 
 export function addTaggedAdditionalCSS(cssText: string, tag?: string | number): boolean {
-	const parsed: RuleSet[] = CSSSource.fromDetect(
-		cssText,
-		applicationKeyframes,
-		undefined
-	).selectors;
-	const tagScope =
-		currentScopeTag || (tag && tagToScopeTag.has(tag) && tagToScopeTag.get(tag)) || null;
+	const parsed: RuleSet[] = CSSSource.fromDetect(cssText, applicationKeyframes, undefined).selectors;
+	const tagScope = currentScopeTag || (tag && tagToScopeTag.has(tag) && tagToScopeTag.get(tag)) || null;
 	if (tagScope && tag) {
 		tagToScopeTag.set(tag, tagScope);
 	}
@@ -410,24 +336,17 @@ export function addTaggedAdditionalCSS(cssText: string, tag?: string | number): 
 	return changed;
 }
 
-const onCssChanged = profile(
-	'"style-scope".onCssChanged',
-	(args: CssChangedEventData) => {
-		if (args.cssText) {
-			const parsed = CSSSource.fromSource(
-				args.cssText,
-				applicationKeyframes,
-				args.cssFile
-			).selectors;
-			if (parsed) {
-				applicationAdditionalSelectors.push(...parsed);
-				mergeCssSelectors();
-			}
-		} else if (args.cssFile) {
-			loadCss(args.cssFile, null, null);
+const onCssChanged = profile('"style-scope".onCssChanged', (args: CssChangedEventData) => {
+	if (args.cssText) {
+		const parsed = CSSSource.fromSource(args.cssText, applicationKeyframes, args.cssFile).selectors;
+		if (parsed) {
+			applicationAdditionalSelectors.push(...parsed);
+			mergeCssSelectors();
 		}
+	} else if (args.cssFile) {
+		loadCss(args.cssFile, null, null);
 	}
-);
+});
 
 function onLiveSync(args: CssChangedEventData): void {
 	loadCss(Application.getCssFileName(), null, null);
@@ -458,13 +377,10 @@ global.NativeScriptGlobals.events.on('livesync', onLiveSync);
 //  - with-snapshot - code injected in snapshot bundle by [NativeScriptSnapshotPlugin](https://github.com/NativeScript/nativescript-dev-webpack/blob/48b26f412fd70c19dc0b9c7763e08e9505a0ae11/plugins/NativeScriptSnapshotPlugin/index.js#L48-L56)
 // Having the app.css loaded in snapshot provides significant boost in startup (when using the ns-theme ~150 ms). However, because app.css is resolved at build-time,
 // when the snapshot is created - there is no way to use file qualifiers or change the name of on app.css
-export const loadAppCSS = profile(
-	'"style-scope".loadAppCSS',
-	(args: LoadAppCSSEventData) => {
-		loadCss(args.cssFile, null, null);
-		global.NativeScriptGlobals.events.off('loadAppCss', loadAppCSS);
-	}
-);
+export const loadAppCSS = profile('"style-scope".loadAppCSS', (args: LoadAppCSSEventData) => {
+	loadCss(args.cssFile, null, null);
+	global.NativeScriptGlobals.events.off('loadAppCss', loadAppCSS);
+});
 
 if (Application.hasLaunched()) {
 	loadAppCSS(
@@ -525,19 +441,12 @@ export class CssState {
 	public isSelectorsLatestVersionApplied(): boolean {
 		const view = this.viewRef.get();
 		if (!view) {
-			Trace.write(
-				`isSelectorsLatestVersionApplied returns default value "false" because "this.viewRef" cleared.`,
-				Trace.categories.Style,
-				Trace.messageType.warn
-			);
+			Trace.write(`isSelectorsLatestVersionApplied returns default value "false" because "this.viewRef" cleared.`, Trace.categories.Style, Trace.messageType.warn);
 
 			return false;
 		}
 
-		return (
-			this.viewRef.get()._styleScope.getSelectorsVersion() ===
-			this._appliedSelectorsVersion
-		);
+		return this.viewRef.get()._styleScope.getSelectorsVersion() === this._appliedSelectorsVersion;
 	}
 
 	public onLoaded(): void {
@@ -570,18 +479,12 @@ export class CssState {
 	private updateDynamicState(): void {
 		const view = this.viewRef.get();
 		if (!view) {
-			Trace.write(
-				`updateDynamicState not executed to view because ".viewRef" is cleared`,
-				Trace.categories.Style,
-				Trace.messageType.warn
-			);
+			Trace.write(`updateDynamicState not executed to view because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 
 			return;
 		}
 
-		const matchingSelectors = this._match.selectors.filter((sel) =>
-			sel.dynamic ? sel.match(view) : true
-		);
+		const matchingSelectors = this._match.selectors.filter((sel) => (sel.dynamic ? sel.match(view) : true));
 		if (!matchingSelectors || matchingSelectors.length === 0) {
 			// Ideally we should return here if there are no matching selectors, however
 			// if there are property removals, returning here would not remove them
@@ -599,15 +502,11 @@ export class CssState {
 		const animations: kam.KeyframeAnimation[] = [];
 
 		matchingSelectors.forEach((selector) => {
-			const ruleAnimations: kam.KeyframeAnimationInfo[] =
-				selector.ruleset[animationsSymbol];
+			const ruleAnimations: kam.KeyframeAnimationInfo[] = selector.ruleset[animationsSymbol];
 			if (ruleAnimations) {
 				ensureKeyframeAnimationModule();
 				for (const animationInfo of ruleAnimations) {
-					const animation =
-						keyframeAnimationModule.KeyframeAnimation.keyframeAnimationFromInfo(
-							animationInfo
-						);
+					const animation = keyframeAnimationModule.KeyframeAnimation.keyframeAnimationFromInfo(animationInfo);
 					if (animation) {
 						animations.push(animation);
 					}
@@ -618,11 +517,7 @@ export class CssState {
 		if ((this._playsKeyframeAnimations = animations.length > 0)) {
 			const view = this.viewRef.get();
 			if (!view) {
-				Trace.write(
-					`KeyframeAnimations cannot play because ".viewRef" is cleared`,
-					Trace.categories.Animation,
-					Trace.messageType.warn
-				);
+				Trace.write(`KeyframeAnimations cannot play because ".viewRef" is cleared`, Trace.categories.Animation, Trace.messageType.warn);
 
 				return;
 			}
@@ -638,9 +533,7 @@ export class CssState {
 			return;
 		}
 
-		this._appliedAnimations
-			.filter((animation) => animation.isPlaying)
-			.forEach((animation) => animation.cancel());
+		this._appliedAnimations.filter((animation) => animation.isPlaying).forEach((animation) => animation.cancel());
 		this._appliedAnimations = CssState.emptyAnimationArray;
 
 		const view = this.viewRef.get();
@@ -655,11 +548,7 @@ export class CssState {
 			view.style['keyframe:backgroundColor'] = unsetValue;
 			view.style['keyframe:opacity'] = unsetValue;
 		} else {
-			Trace.write(
-				`KeyframeAnimations cannot be stopped because ".viewRef" is cleared`,
-				Trace.categories.Animation,
-				Trace.messageType.warn
-			);
+			Trace.write(`KeyframeAnimations cannot be stopped because ".viewRef" is cleared`, Trace.categories.Animation, Trace.messageType.warn);
 		}
 
 		this._playsKeyframeAnimations = false;
@@ -674,20 +563,12 @@ export class CssState {
 	private setPropertyValues(matchingSelectors: SelectorCore[]): void {
 		const view = this.viewRef.get();
 		if (!view) {
-			Trace.write(
-				`${matchingSelectors} not set to view's property because ".viewRef" is cleared`,
-				Trace.categories.Style,
-				Trace.messageType.warn
-			);
+			Trace.write(`${matchingSelectors} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 			return;
 		}
 
 		const newPropertyValues = new view.style.PropertyBag();
-		matchingSelectors.forEach((selector) =>
-			selector.ruleset.declarations.forEach(
-				(declaration) => (newPropertyValues[declaration.property] = declaration.value)
-			)
-		);
+		matchingSelectors.forEach((selector) => selector.ruleset.declarations.forEach((declaration) => (newPropertyValues[declaration.property] = declaration.value)));
 
 		const oldProperties = this._appliedPropertyValues;
 		// Update values for the scope's css-variables
@@ -758,11 +639,7 @@ export class CssState {
 					view[camelCasedProperty] = value;
 				}
 			} catch (e) {
-				Trace.write(
-					`Failed to apply property [${property}] with value [${value}] to ${view}. ${e.stack}`,
-					Trace.categories.Error,
-					Trace.messageType.error
-				);
+				Trace.write(`Failed to apply property [${property}] with value [${value}] to ${view}. ${e.stack}`, Trace.categories.Error, Trace.messageType.error);
 			}
 		}
 
@@ -794,10 +671,7 @@ export class CssState {
 		this._appliedChangeMap.forEach((changes, view) => {
 			if (changes.attributes) {
 				changes.attributes.forEach((attribute) => {
-					view.removeEventListener(
-						attribute + 'Change',
-						this._onDynamicStateChangeHandler
-					);
+					view.removeEventListener(attribute + 'Change', this._onDynamicStateChangeHandler);
 				});
 			}
 			if (changes.pseudoClasses) {
@@ -816,11 +690,7 @@ export class CssState {
 	toString(): string {
 		const view = this.viewRef.get();
 		if (!view) {
-			Trace.write(
-				`toString() of CssState cannot execute correctly because ".viewRef" is cleared`,
-				Trace.categories.Animation,
-				Trace.messageType.warn
-			);
+			Trace.write(`toString() of CssState cannot execute correctly because ".viewRef" is cleared`, Trace.categories.Animation, Trace.messageType.warn);
 
 			return '';
 		}
@@ -894,9 +764,7 @@ export class StyleScope {
 			currentScopeTag = cssFileName;
 		}
 
-		const parsedCssSelectors = cssString
-			? CSSSource.fromSource(cssString, this._keyframes, cssFileName)
-			: CSSSource.fromURI(cssFileName, this._keyframes);
+		const parsedCssSelectors = cssString ? CSSSource.fromSource(cssString, this._keyframes, cssFileName) : CSSSource.fromURI(cssFileName, this._keyframes);
 		currentScopeTag = null;
 		this._css = this._css + parsedCssSelectors.source;
 		this._localCssSelectors.push(...parsedCssSelectors.selectors);
@@ -913,20 +781,13 @@ export class StyleScope {
 		ensureKeyframeAnimationModule();
 		const animation = new keyframeAnimationModule.KeyframeAnimationInfo();
 		ensureCssAnimationParserModule();
-		animation.keyframes =
-			cssAnimationParserModule.CssAnimationParser.keyframesArrayFromCSS(
-				cssKeyframes.keyframes
-			);
+		animation.keyframes = cssAnimationParserModule.CssAnimationParser.keyframesArrayFromCSS(cssKeyframes.keyframes);
 
 		return animation;
 	}
 
 	public ensureSelectors(): number {
-		if (
-			!this.isApplicationCssSelectorsLatestVersionApplied() ||
-			!this.isLocalCssSelectorsLatestVersionApplied() ||
-			!this._mergedCssSelectors
-		) {
+		if (!this.isApplicationCssSelectorsLatestVersionApplied() || !this.isLocalCssSelectorsLatestVersionApplied() || !this._mergedCssSelectors) {
 			this._createSelectors();
 		}
 
@@ -948,11 +809,7 @@ export class StyleScope {
 	@profile
 	private _createSelectors() {
 		const toMerge: RuleSet[][] = [];
-		toMerge.push(
-			applicationCssSelectors.filter(
-				(v) => !v.scopedTag || this._cssFiles.indexOf(v.scopedTag) >= 0
-			)
-		);
+		toMerge.push(applicationCssSelectors.filter((v) => !v.scopedTag || this._cssFiles.indexOf(v.scopedTag) >= 0));
 		this._applicationCssSelectorsAppliedVersion = applicationCssSelectorVersion;
 		toMerge.push(this._localCssSelectors);
 		this._localCssSelectorsAppliedVersion = this._localCssSelectorVersion;
@@ -961,10 +818,7 @@ export class StyleScope {
 		}
 
 		if (toMerge.length > 0) {
-			this._mergedCssSelectors = toMerge.reduce(
-				(merged, next) => merged.concat(next || []),
-				[]
-			);
+			this._mergedCssSelectors = toMerge.reduce((merged, next) => merged.concat(next || []), []);
 			this._applyKeyframesOnSelectors();
 			this._selectors = new SelectorsMap(this._mergedCssSelectors);
 		}
@@ -989,10 +843,7 @@ export class StyleScope {
 	getSelectorsVersion() {
 		// The counters can only go up. So we can return just appVersion + localVersion
 		// The 100000 * appVersion is just for easier debugging
-		return (
-			100000 * this._applicationCssSelectorsAppliedVersion +
-			this._localCssSelectorsAppliedVersion
-		);
+		return 100000 * this._applicationCssSelectorsAppliedVersion + this._localCssSelectorsAppliedVersion;
 	}
 
 	private _applyKeyframesOnSelectors() {
@@ -1004,10 +855,7 @@ export class StyleScope {
 				for (const animation of animations) {
 					const cssKeyframe = this._keyframes[animation.name];
 					if (cssKeyframe !== undefined) {
-						animation.keyframes =
-							cssAnimationParserModule.CssAnimationParser.keyframesArrayFromCSS(
-								cssKeyframe.keyframes
-							);
+						animation.keyframes = cssAnimationParserModule.CssAnimationParser.keyframesArrayFromCSS(cssKeyframe.keyframes);
 					}
 				}
 			}
@@ -1021,12 +869,7 @@ export class StyleScope {
 
 type KeyframesMap = Map<string, Keyframes>;
 
-export function resolveFileNameFromUrl(
-	url: string,
-	appDirectory: string,
-	fileExists: (name: string) => boolean,
-	importSource?: string
-): string {
+export function resolveFileNameFromUrl(url: string, appDirectory: string, fileExists: (name: string) => boolean, importSource?: string): string {
 	let fileName: string = typeof url === 'string' ? url.trim() : '';
 	if (fileName.indexOf('~/') === 0) {
 		fileName = fileName.replace('~/', '');
@@ -1069,17 +912,12 @@ function resolveFilePathFromImport(importSource: string, fileName: string): stri
 	// remove current file name
 	importSourceParts.pop();
 	// remove element in case of dot-segment for parent directory or add file name
-	fileNameParts.forEach((p) =>
-		isParentDirectory(p) ? importSourceParts.pop() : importSourceParts.push(p)
-	);
+	fileNameParts.forEach((p) => (isParentDirectory(p) ? importSourceParts.pop() : importSourceParts.push(p)));
 
 	return importSourceParts.join(path.separator);
 }
 
-export const applyInlineStyle = profile(function applyInlineStyle(
-	view: ViewBase,
-	styleStr: string
-) {
+export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase, styleStr: string) {
 	const localStyle = `local { ${styleStr} }`;
 	const inlineRuleSet = CSSSource.fromSource(localStyle, new Map()).selectors;
 
@@ -1111,11 +949,7 @@ export const applyInlineStyle = profile(function applyInlineStyle(
 				view[property] = value;
 			}
 		} catch (e) {
-			Trace.write(
-				`Failed to apply property [${d.property}] with value [${d.value}] to ${view}. ${e}`,
-				Trace.categories.Error,
-				Trace.messageType.error
-			);
+			Trace.write(`Failed to apply property [${d.property}] with value [${d.value}] to ${view}. ${e}`, Trace.categories.Error, Trace.messageType.error);
 		}
 	});
 

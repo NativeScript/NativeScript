@@ -168,8 +168,7 @@ export const run = Application.run.bind(Application);
  * Application.setAutoSystemAppearanceChanged()
  * ```
  */
-export const setAutoSystemAppearanceChanged =
-	Application.setAutoSystemAppearanceChanged.bind(Application);
+export const setAutoSystemAppearanceChanged = Application.setAutoSystemAppearanceChanged.bind(Application);
 
 /**
  * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
@@ -219,8 +218,7 @@ export const systemAppearance = () => Application.systemAppearance;
  * Application.systemAppearanceChanged()
  * ```
  */
-export const systemAppearanceChanged =
-	Application.systemAppearanceChanged.bind(Application);
+export const systemAppearanceChanged = Application.systemAppearanceChanged.bind(Application);
 
 /**
  * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.

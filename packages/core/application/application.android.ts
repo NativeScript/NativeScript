@@ -3,11 +3,7 @@ import { View } from '../ui';
 import { AndroidActivityCallbacks, NavigationEntry } from '../ui/frame/frame-common';
 import type { AndroidApplication as IAndroidApplication } from './application';
 import { ApplicationCommon } from './application-common';
-import type {
-	AndroidActivityBundleEventData,
-	AndroidActivityEventData,
-	ApplicationEventData,
-} from './application-interfaces';
+import type { AndroidActivityBundleEventData, AndroidActivityEventData, ApplicationEventData } from './application-interfaces';
 
 declare namespace com {
 	namespace tns {
@@ -19,17 +15,9 @@ declare namespace com {
 
 @NativeClass
 class BroadcastReceiver extends android.content.BroadcastReceiver {
-	private _onReceiveCallback: (
-		context: android.content.Context,
-		intent: android.content.Intent
-	) => void;
+	private _onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void;
 
-	constructor(
-		onReceiveCallback: (
-			context: android.content.Context,
-			intent: android.content.Intent
-		) => void
-	) {
+	constructor(onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void) {
 		super();
 		this._onReceiveCallback = onReceiveCallback;
 
@@ -45,16 +33,12 @@ class BroadcastReceiver extends android.content.BroadcastReceiver {
 
 @NativeClass
 @JavaProxy('org.nativescript.NativeScriptLifecycleCallbacks')
-class NativeScriptLifecycleCallbacks extends android.app.Application
-	.ActivityLifecycleCallbacks {
+class NativeScriptLifecycleCallbacks extends android.app.Application.ActivityLifecycleCallbacks {
 	private activitiesCount: number = 0;
 	private nativescriptActivity: androidx.appcompat.app.AppCompatActivity;
 
 	@profile
-	public onActivityCreated(
-		activity: androidx.appcompat.app.AppCompatActivity,
-		savedInstanceState: android.os.Bundle
-	): void {
+	public onActivityCreated(activity: androidx.appcompat.app.AppCompatActivity, savedInstanceState: android.os.Bundle): void {
 		// console.log('NativeScriptLifecycleCallbacks onActivityCreated');
 		this.setThemeOnLaunch(activity);
 
@@ -137,10 +121,7 @@ class NativeScriptLifecycleCallbacks extends android.app.Application
 	}
 
 	@profile
-	public onActivitySaveInstanceState(
-		activity: androidx.appcompat.app.AppCompatActivity,
-		bundle: android.os.Bundle
-	): void {
+	public onActivitySaveInstanceState(activity: androidx.appcompat.app.AppCompatActivity, bundle: android.os.Bundle): void {
 		// console.log('NativeScriptLifecycleCallbacks onActivitySaveInstanceState');
 
 		Application.android.notify({
@@ -193,12 +174,7 @@ class NativeScriptLifecycleCallbacks extends android.app.Application
 	@profile
 	setThemeOnLaunch(activity: androidx.appcompat.app.AppCompatActivity) {
 		// Set app theme after launch screen was used during startup
-		const activityInfo = activity
-			.getPackageManager()
-			.getActivityInfo(
-				activity.getComponentName(),
-				android.content.pm.PackageManager.GET_META_DATA
-			);
+		const activityInfo = activity.getPackageManager().getActivityInfo(activity.getComponentName(), android.content.pm.PackageManager.GET_META_DATA);
 		if (activityInfo.metaData) {
 			const setThemeOnLaunch = activityInfo.metaData.getInt('SET_THEME_ON_LAUNCH', -1);
 			if (setThemeOnLaunch !== -1) {
@@ -208,10 +184,7 @@ class NativeScriptLifecycleCallbacks extends android.app.Application
 	}
 
 	@profile
-	notifyActivityCreated(
-		activity: androidx.appcompat.app.AppCompatActivity,
-		bundle: android.os.Bundle
-	) {
+	notifyActivityCreated(activity: androidx.appcompat.app.AppCompatActivity, bundle: android.os.Bundle) {
 		Application.android.notify({
 			eventName: Application.android.activityCreatedEvent,
 			object: Application.android,
@@ -224,22 +197,19 @@ class NativeScriptLifecycleCallbacks extends android.app.Application
 	subscribeForGlobalLayout(activity: androidx.appcompat.app.AppCompatActivity) {
 		const rootView = activity.getWindow().getDecorView().getRootView();
 		// store the listener not to trigger GC collection before collecting the method
-		global.onGlobalLayoutListener =
-			new android.view.ViewTreeObserver.OnGlobalLayoutListener({
-				onGlobalLayout() {
-					Application.android.notify({
-						eventName: Application.displayedEvent,
-						object: Application,
-						android: Application.android,
-						activity,
-					} as AndroidActivityEventData);
-					const viewTreeObserver = rootView.getViewTreeObserver();
-					viewTreeObserver.removeOnGlobalLayoutListener(global.onGlobalLayoutListener);
-				},
-			});
-		rootView
-			.getViewTreeObserver()
-			.addOnGlobalLayoutListener(global.onGlobalLayoutListener);
+		global.onGlobalLayoutListener = new android.view.ViewTreeObserver.OnGlobalLayoutListener({
+			onGlobalLayout() {
+				Application.android.notify({
+					eventName: Application.displayedEvent,
+					object: Application,
+					android: Application.android,
+					activity,
+				} as AndroidActivityEventData);
+				const viewTreeObserver = rootView.getViewTreeObserver();
+				viewTreeObserver.removeOnGlobalLayoutListener(global.onGlobalLayoutListener);
+			},
+		});
+		rootView.getViewTreeObserver().addOnGlobalLayoutListener(global.onGlobalLayoutListener);
 	}
 }
 
@@ -264,9 +234,7 @@ class NativeScriptComponentCallbacks extends android.content.ComponentCallbacks2
 	}
 
 	@profile
-	public onConfigurationChanged(
-		newConfiguration: android.content.res.Configuration
-	): void {
+	public onConfigurationChanged(newConfiguration: android.content.res.Configuration): void {
 		Application.android.onConfigurationChanged(newConfiguration);
 	}
 }
@@ -315,9 +283,7 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 	}
 
 	private _registeredReceivers = {};
-	private _pendingReceiverRegistrations = new Array<
-		(context: android.content.Context) => void
-	>();
+	private _pendingReceiverRegistrations = new Array<(context: android.content.Context) => void>();
 	private _registerPendingReceivers() {
 		this._pendingReceiverRegistrations.forEach((func) => func(this.context));
 		this._pendingReceiverRegistrations.length = 0;
@@ -344,9 +310,7 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 		// the getInstance might return null if com.tns.NativeScriptApplication exists but is not the starting app type
 		if (!nativeApp) {
 			// TODO: Should we handle the case when a custom application type is provided and the user has not explicitly initialized the application module?
-			const clazz = java.lang.Class.forName(
-				'androidx.appcompat.app.AppCompatActivityThread'
-			);
+			const clazz = java.lang.Class.forName('androidx.appcompat.app.AppCompatActivityThread');
 			if (clazz) {
 				const method = clazz.getMethod('currentApplication', null);
 				if (method) {
@@ -357,9 +321,7 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 
 		// we cannot work without having the app instance
 		if (!nativeApp) {
-			throw new Error(
-				"Failed to retrieve native Android Application object. If you have a custom android.app.Application type implemented make sure that you've called the 'Application.android.init' method."
-			);
+			throw new Error("Failed to retrieve native Android Application object. If you have a custom android.app.Application type implemented make sure that you've called the 'Application.android.init' method.");
 		}
 
 		return nativeApp;
@@ -430,17 +392,9 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 		return this.nativeApp.getPackageName();
 	}
 
-	public registerBroadcastReceiver(
-		intentFilter: string,
-		onReceiveCallback: (
-			context: android.content.Context,
-			intent: android.content.Intent
-		) => void
-	): void {
+	public registerBroadcastReceiver(intentFilter: string, onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void): void {
 		const registerFunc = (context: android.content.Context) => {
-			const receiver: android.content.BroadcastReceiver = new BroadcastReceiver(
-				onReceiveCallback
-			);
+			const receiver: android.content.BroadcastReceiver = new BroadcastReceiver(onReceiveCallback);
 			context.registerReceiver(receiver, new android.content.IntentFilter(intentFilter));
 			this._registeredReceivers[intentFilter] = receiver;
 		};
@@ -461,9 +415,7 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 		}
 	}
 
-	public getRegisteredBroadcastReceiver(
-		intentFilter: string
-	): android.content.BroadcastReceiver | undefined {
+	public getRegisteredBroadcastReceiver(intentFilter: string): android.content.BroadcastReceiver | undefined {
 		return this._registeredReceivers[intentFilter];
 	}
 
@@ -500,11 +452,8 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 	}
 
 	// https://developer.android.com/guide/topics/ui/look-and-feel/darktheme#configuration_changes
-	private getSystemAppearanceValue(
-		configuration: android.content.res.Configuration
-	): 'dark' | 'light' {
-		const systemAppearance =
-			configuration.uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
+	private getSystemAppearanceValue(configuration: android.content.res.Configuration): 'dark' | 'light' {
+		const systemAppearance = configuration.uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
 
 		switch (systemAppearance) {
 			case android.content.res.Configuration.UI_MODE_NIGHT_YES:
@@ -521,9 +470,7 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 		return this.getOrientationValue(configuration);
 	}
 
-	private getOrientationValue(
-		configuration: android.content.res.Configuration
-	): 'portrait' | 'landscape' | 'unknown' {
+	private getOrientationValue(configuration: android.content.res.Configuration): 'portrait' | 'landscape' | 'unknown' {
 		const orientation = configuration.orientation;
 
 		switch (orientation) {

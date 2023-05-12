@@ -1,27 +1,12 @@
-import {
-	AndroidActionItemSettings,
-	AndroidActionBarSettings as AndroidActionBarSettingsDefinition,
-	ActionItem as ActionItemDefinition,
-} from '.';
-import {
-	ActionItemBase,
-	ActionBarBase,
-	isVisible,
-	flatProperty,
-	traceMissingIcon,
-	androidContentInsetLeftProperty,
-	androidContentInsetRightProperty,
-} from './action-bar-common';
+import { AndroidActionItemSettings, AndroidActionBarSettings as AndroidActionBarSettingsDefinition, ActionItem as ActionItemDefinition } from '.';
+import { ActionItemBase, ActionBarBase, isVisible, flatProperty, traceMissingIcon, androidContentInsetLeftProperty, androidContentInsetRightProperty } from './action-bar-common';
 import { View } from '../core/view';
 import { Color } from '../../color';
 import { layout, RESOURCE_PREFIX, isFontIconURI } from '../../utils';
 import { colorProperty } from '../styling/style-properties';
 import { ImageSource } from '../../image-source';
 import { Application } from '../../application';
-import {
-	isAccessibilityServiceEnabled,
-	updateContentDescription,
-} from '../../accessibility';
+import { isAccessibilityServiceEnabled, updateContentDescription } from '../../accessibility';
 import type { Background } from '../styling/background';
 import { SDK_VERSION } from '../../utils/constants';
 
@@ -51,10 +36,7 @@ function loadActionIconDrawableOrResourceId(item: ActionItemDefinition): any {
 		const is = ImageSource.fromFontIconCodeSync(fontIconCode, font, color);
 
 		if (is && is.android) {
-			drawableOrId = new android.graphics.drawable.BitmapDrawable(
-				appResources,
-				is.android
-			);
+			drawableOrId = new android.graphics.drawable.BitmapDrawable(appResources, is.android);
 		}
 	} else {
 		drawableOrId = getDrawableOrResourceId(itemIcon, appResources);
@@ -83,10 +65,7 @@ function initializeMenuItemClickListener(): void {
 
 	@NativeClass
 	@Interfaces([androidx.appcompat.widget.Toolbar.OnMenuItemClickListener])
-	class MenuItemClickListenerImpl
-		extends java.lang.Object
-		implements androidx.appcompat.widget.Toolbar.OnMenuItemClickListener
-	{
+	class MenuItemClickListenerImpl extends java.lang.Object implements androidx.appcompat.widget.Toolbar.OnMenuItemClickListener {
 		constructor(public owner: ActionBar) {
 			super();
 
@@ -237,12 +216,7 @@ export class ActionBar extends ActionBarBase {
 		this._updateNavigationButton();
 	}
 
-	public _applyBackground(
-		background: Background,
-		isBorderDrawable,
-		onlyColor: boolean,
-		backgroundDrawable: any
-	) {
+	public _applyBackground(background: Background, isBorderDrawable, onlyColor: boolean, backgroundDrawable: any) {
 		const nativeView = this.nativeViewProtected;
 		if (backgroundDrawable && onlyColor && SDK_VERSION >= 21) {
 			if (isBorderDrawable && (<any>nativeView)._cachedDrawable) {
@@ -258,13 +232,9 @@ export class ActionBar extends ActionBarBase {
 				nativeView.setBackground(backgroundDrawable);
 			}
 
-			const backgroundColor = ((<any>backgroundDrawable).backgroundColor =
-				background.color.android);
+			const backgroundColor = ((<any>backgroundDrawable).backgroundColor = background.color.android);
 			backgroundDrawable.mutate();
-			backgroundDrawable.setColorFilter(
-				backgroundColor,
-				android.graphics.PorterDuff.Mode.SRC_IN
-			);
+			backgroundDrawable.setColorFilter(backgroundColor, android.graphics.PorterDuff.Mode.SRC_IN);
 			backgroundDrawable.invalidateSelf(); // Make sure the drawable is invalidated. Android forgets to invalidate it in some cases: toolbar
 			(<any>backgroundDrawable).backgroundColor = backgroundColor;
 		} else {
@@ -382,12 +352,7 @@ export class ActionBar extends ActionBarBase {
 		menu.clear();
 		for (let i = 0; i < items.length; i++) {
 			const item = <ActionItem>items[i];
-			const menuItem = menu.add(
-				android.view.Menu.NONE,
-				item._getItemId(),
-				android.view.Menu.NONE,
-				item.text + ''
-			);
+			const menuItem = menu.add(android.view.Menu.NONE, item._getItemId(), android.view.Menu.NONE, item.text + '');
 
 			if (item.actionView && item.actionView.android) {
 				// With custom action view, the menuitem cannot be displayed in a popup menu.
@@ -438,10 +403,7 @@ export class ActionBar extends ActionBarBase {
 		}
 	}
 
-	public _addViewToNativeVisualTree(
-		child: View,
-		atIndex: number = Number.MAX_VALUE
-	): boolean {
+	public _addViewToNativeVisualTree(child: View, atIndex: number = Number.MAX_VALUE): boolean {
 		super._addViewToNativeVisualTree(child);
 
 		if (this.nativeViewProtected && child.nativeViewProtected) {
@@ -506,19 +468,13 @@ export class ActionBar extends ActionBarBase {
 
 	[androidContentInsetLeftProperty.setNative]() {
 		if (SDK_VERSION >= 21) {
-			this.nativeViewProtected.setContentInsetsAbsolute(
-				this.effectiveContentInsetLeft,
-				this.effectiveContentInsetRight
-			);
+			this.nativeViewProtected.setContentInsetsAbsolute(this.effectiveContentInsetLeft, this.effectiveContentInsetRight);
 		}
 	}
 
 	[androidContentInsetRightProperty.setNative]() {
 		if (SDK_VERSION >= 21) {
-			this.nativeViewProtected.setContentInsetsAbsolute(
-				this.effectiveContentInsetLeft,
-				this.effectiveContentInsetRight
-			);
+			this.nativeViewProtected.setContentInsetsAbsolute(this.effectiveContentInsetLeft, this.effectiveContentInsetRight);
 		}
 	}
 
@@ -534,14 +490,11 @@ export class ActionBar extends ActionBarBase {
 
 		const originalFocusableState = SDK_VERSION >= 26 && nativeView.getFocusable();
 		const originalImportantForAccessibility = nativeView.getImportantForAccessibility();
-		const originalIsAccessibilityHeading =
-			SDK_VERSION >= 28 && nativeView.isAccessibilityHeading();
+		const originalIsAccessibilityHeading = SDK_VERSION >= 28 && nativeView.isAccessibilityHeading();
 
 		try {
 			nativeView.setFocusable(false);
-			nativeView.setImportantForAccessibility(
-				android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO
-			);
+			nativeView.setImportantForAccessibility(android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO);
 
 			let announceView: android.view.View | null = null;
 
@@ -566,16 +519,10 @@ export class ActionBar extends ActionBarBase {
 			}
 
 			announceView.setFocusable(true);
-			announceView.setImportantForAccessibility(
-				android.view.View.IMPORTANT_FOR_ACCESSIBILITY_YES
-			);
+			announceView.setImportantForAccessibility(android.view.View.IMPORTANT_FOR_ACCESSIBILITY_YES);
 
-			announceView.sendAccessibilityEvent(
-				android.view.accessibility.AccessibilityEvent.TYPE_VIEW_FOCUSED
-			);
-			announceView.sendAccessibilityEvent(
-				android.view.accessibility.AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED
-			);
+			announceView.sendAccessibilityEvent(android.view.accessibility.AccessibilityEvent.TYPE_VIEW_FOCUSED);
+			announceView.sendAccessibilityEvent(android.view.accessibility.AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
 		} catch {
 			// ignore
 		} finally {
@@ -600,9 +547,7 @@ export class ActionBar extends ActionBarBase {
 	}
 }
 
-function getAppCompatTextView(
-	toolbar: androidx.appcompat.widget.Toolbar
-): typeof AppCompatTextView {
+function getAppCompatTextView(toolbar: androidx.appcompat.widget.Toolbar): typeof AppCompatTextView {
 	for (let i = 0, count = toolbar.getChildCount(); i < count; i++) {
 		const child = toolbar.getChildAt(i);
 		if (child instanceof AppCompatTextView) {
@@ -617,21 +562,14 @@ ActionBar.prototype.recycleNativeView = 'auto';
 
 let defaultTitleTextColor: number;
 
-function getDrawableOrResourceId(
-	icon: string,
-	resources: android.content.res.Resources
-): any {
+function getDrawableOrResourceId(icon: string, resources: android.content.res.Resources): any {
 	if (typeof icon !== 'string') {
 		return null;
 	}
 
 	let result = null;
 	if (icon.indexOf(RESOURCE_PREFIX) === 0) {
-		const resourceId: number = resources.getIdentifier(
-			icon.substr(RESOURCE_PREFIX.length),
-			'drawable',
-			Application.android.packageName
-		);
+		const resourceId: number = resources.getIdentifier(icon.substr(RESOURCE_PREFIX.length), 'drawable', Application.android.packageName);
 		if (resourceId > 0) {
 			result = resourceId;
 		}
@@ -675,9 +613,5 @@ function getIconVisibility(iconVisibility: string): boolean {
 }
 
 function getSystemResourceId(systemIcon: string): number {
-	return android.content.res.Resources.getSystem().getIdentifier(
-		systemIcon,
-		'drawable',
-		'android'
-	);
+	return android.content.res.Resources.getSystem().getIdentifier(systemIcon, 'drawable', 'android');
 }

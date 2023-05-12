@@ -1,27 +1,5 @@
 import * as TKUnit from '../../tk-unit';
-import {
-	View,
-	eachDescendant,
-	getViewById,
-	InheritedProperty,
-	CssProperty,
-	CssAnimationProperty,
-	ShorthandProperty,
-	Property,
-	Style,
-	Frame,
-	Page,
-	Button,
-	Label,
-	Color,
-	StackLayout,
-	AbsoluteLayout,
-	Observable,
-	Utils,
-	BindingOptions,
-	isAndroid,
-	LayoutBase,
-} from '@nativescript/core';
+import { View, eachDescendant, getViewById, InheritedProperty, CssProperty, CssAnimationProperty, ShorthandProperty, Property, Style, Frame, Page, Button, Label, Color, StackLayout, AbsoluteLayout, Observable, Utils, BindingOptions, isAndroid, LayoutBase } from '@nativescript/core';
 import * as helper from '../../ui-helper';
 import { checkNativeBackgroundColor, checkNativeBackgroundImage } from './view-tests';
 
@@ -180,25 +158,16 @@ export function test_bindingContext_IsInherited() {
 export function test_isAddedToNativeVisualTree_IsUpdated() {
 	const test = function (views: Array<View>) {
 		for (let i = 0; i < views.length; i++) {
-			TKUnit.assert(
-				views[i]._isAddedToNativeVisualTree,
-				`View ${views[i]} not initially added`
-			);
+			TKUnit.assert(views[i]._isAddedToNativeVisualTree, `View ${views[i]} not initially added`);
 		}
 
 		const newButton = new Button();
 		TKUnit.assert(!newButton._isAddedToNativeVisualTree, 'Button is not added initially');
 
 		views[1]._addView(newButton);
-		TKUnit.assert(
-			newButton._isAddedToNativeVisualTree,
-			'Button is not added after _addView'
-		);
+		TKUnit.assert(newButton._isAddedToNativeVisualTree, 'Button is not added after _addView');
 		views[1]._removeView(newButton);
-		TKUnit.assert(
-			!newButton._isAddedToNativeVisualTree,
-			'Button is removed after _removeView'
-		);
+		TKUnit.assert(!newButton._isAddedToNativeVisualTree, 'Button is removed after _removeView');
 	};
 
 	helper.do_PageTest_WithStackLayout_AndButton(test);
@@ -442,21 +411,9 @@ export function test_NativeSetter_not_called_when_property_is_not_set() {
 	const testView = new TestView('view');
 
 	helper.buildUIAndRunTest(testView, () => {
-		TKUnit.assertEqual(
-			testView.viewPropCounter,
-			0,
-			'Native setter should not be called if value is not set.'
-		);
-		TKUnit.assertEqual(
-			testView.cssPropCounter,
-			0,
-			'Native setter should not be called if value is not set.'
-		);
-		TKUnit.assertEqual(
-			testView.cssAnimPropCounter,
-			0,
-			'Native setter should not be called if value is not set.'
-		);
+		TKUnit.assertEqual(testView.viewPropCounter, 0, 'Native setter should not be called if value is not set.');
+		TKUnit.assertEqual(testView.cssPropCounter, 0, 'Native setter should not be called if value is not set.');
+		TKUnit.assertEqual(testView.cssAnimPropCounter, 0, 'Native setter should not be called if value is not set.');
 	});
 }
 
@@ -464,21 +421,9 @@ export function test_GetDefault_not_called_when_property_is_not_set() {
 	const testView = new TestView('view');
 
 	helper.buildUIAndRunTest(testView, () => {
-		TKUnit.assertEqual(
-			testView.viewPropGetDefaultCounter,
-			0,
-			'Get default should not be called if value is not set.'
-		);
-		TKUnit.assertEqual(
-			testView.cssPropGetDefaultCounter,
-			0,
-			'Get default should not be called if value is not set.'
-		);
-		TKUnit.assertEqual(
-			testView.cssAnimPropGetDefaultCounter,
-			0,
-			'Get default should not be called if value is not set.'
-		);
+		TKUnit.assertEqual(testView.viewPropGetDefaultCounter, 0, 'Get default should not be called if value is not set.');
+		TKUnit.assertEqual(testView.cssPropGetDefaultCounter, 0, 'Get default should not be called if value is not set.');
+		TKUnit.assertEqual(testView.cssAnimPropGetDefaultCounter, 0, 'Get default should not be called if value is not set.');
 	});
 }
 
@@ -490,32 +435,16 @@ export function test_NativeSetter_called_only_once_with_localValue() {
 
 	helper.buildUIAndRunTest(testView, () => {
 		TKUnit.assertEqual(testView.cssPropNativeValue, 'testCssValue', 'Native value');
-		TKUnit.assertEqual(
-			testView.cssAnimPropNativeValue,
-			'testCssAnimValue',
-			'Native value'
-		);
+		TKUnit.assertEqual(testView.cssAnimPropNativeValue, 'testCssAnimValue', 'Native value');
 		TKUnit.assertEqual(testView.viewPropNativeValue, 'testViewValue', 'Native value');
 
 		TKUnit.assertEqual(testView.cssPropCounter, 1, 'NativeSetter count called once');
 		TKUnit.assertEqual(testView.cssAnimPropCounter, 1, 'NativeSetter count called once');
 		TKUnit.assertEqual(testView.viewPropCounter, 1, 'NativeSetter count called once');
 
-		TKUnit.assertEqual(
-			testView.cssPropGetDefaultCounter,
-			1,
-			'GetDefault count called once'
-		);
-		TKUnit.assertEqual(
-			testView.cssAnimPropGetDefaultCounter,
-			1,
-			'GetDefault count called once'
-		);
-		TKUnit.assertEqual(
-			testView.viewPropGetDefaultCounter,
-			1,
-			'GetDefault count called once'
-		);
+		TKUnit.assertEqual(testView.cssPropGetDefaultCounter, 1, 'GetDefault count called once');
+		TKUnit.assertEqual(testView.cssAnimPropGetDefaultCounter, 1, 'GetDefault count called once');
+		TKUnit.assertEqual(testView.viewPropGetDefaultCounter, 1, 'GetDefault count called once');
 	});
 }
 
@@ -528,32 +457,16 @@ export function test_NativeSetter_called_only_once_with_localValue_after_added_t
 		testView.custom = 'testViewValue';
 
 		TKUnit.assertEqual(testView.cssPropNativeValue, 'testCssValue', 'Native value');
-		TKUnit.assertEqual(
-			testView.cssAnimPropNativeValue,
-			'testCssAnimValue',
-			'Native value'
-		);
+		TKUnit.assertEqual(testView.cssAnimPropNativeValue, 'testCssAnimValue', 'Native value');
 		TKUnit.assertEqual(testView.viewPropNativeValue, 'testViewValue', 'Native value');
 
 		TKUnit.assertEqual(testView.cssPropCounter, 1, 'NativeSetter count called once');
 		TKUnit.assertEqual(testView.cssAnimPropCounter, 1, 'NativeSetter count called once');
 		TKUnit.assertEqual(testView.viewPropCounter, 1, 'NativeSetter count called once');
 
-		TKUnit.assertEqual(
-			testView.cssPropGetDefaultCounter,
-			1,
-			'GetDefault count called once'
-		);
-		TKUnit.assertEqual(
-			testView.cssAnimPropGetDefaultCounter,
-			1,
-			'GetDefault count called once'
-		);
-		TKUnit.assertEqual(
-			testView.viewPropGetDefaultCounter,
-			1,
-			'GetDefault count called once'
-		);
+		TKUnit.assertEqual(testView.cssPropGetDefaultCounter, 1, 'GetDefault count called once');
+		TKUnit.assertEqual(testView.cssAnimPropGetDefaultCounter, 1, 'GetDefault count called once');
+		TKUnit.assertEqual(testView.viewPropGetDefaultCounter, 1, 'GetDefault count called once');
 	});
 }
 
@@ -571,23 +484,11 @@ export function test_NativeSetter_called_only_once_with_cssValue() {
 		testView,
 		() => {
 			TKUnit.assertEqual(testView.cssPropCounter, 1, 'CssNativeSetter count called once');
-			TKUnit.assertEqual(
-				testView.viewPropCounter,
-				1,
-				'ViewNativeSetter count called once'
-			);
-			TKUnit.assertEqual(
-				testView.cssAnimPropCounter,
-				1,
-				'CssAnimationNativeSetter count called once'
-			);
+			TKUnit.assertEqual(testView.viewPropCounter, 1, 'ViewNativeSetter count called once');
+			TKUnit.assertEqual(testView.cssAnimPropCounter, 1, 'CssAnimationNativeSetter count called once');
 
 			TKUnit.assertEqual(testView.cssPropNativeValue, 'testCssValue', 'Native value');
-			TKUnit.assertEqual(
-				testView.cssAnimPropNativeValue,
-				'testCssAnimValue',
-				'Native value'
-			);
+			TKUnit.assertEqual(testView.cssAnimPropNativeValue, 'testCssAnimValue', 'Native value');
 			TKUnit.assertEqual(testView.viewPropNativeValue, 'testViewValue', 'Native value');
 		},
 		{ pageCss: pageCSS }
@@ -611,34 +512,14 @@ export function test_NativeSetter_called_only_once_with_cssValue_and_localValue(
 		testView,
 		() => {
 			TKUnit.assertEqual(testView.cssPropCounter, 1, 'CssNativeSetter count called once');
-			TKUnit.assertEqual(
-				testView.viewPropCounter,
-				1,
-				'ViewNativeSetter count called once'
-			);
-			TKUnit.assertEqual(
-				testView.cssAnimPropCounter,
-				1,
-				'CssAnimNativeSetter count called once'
-			);
+			TKUnit.assertEqual(testView.viewPropCounter, 1, 'ViewNativeSetter count called once');
+			TKUnit.assertEqual(testView.cssAnimPropCounter, 1, 'CssAnimNativeSetter count called once');
 
 			// CSS property set form css has CSS value source, which is weaker than local value
-			TKUnit.assertEqual(
-				testView.cssPropNativeValue,
-				'testCssValueLocal',
-				'Native value'
-			);
-			TKUnit.assertEqual(
-				testView.cssAnimPropNativeValue,
-				'testCssAnimationValueLocal',
-				'Native value'
-			);
+			TKUnit.assertEqual(testView.cssPropNativeValue, 'testCssValueLocal', 'Native value');
+			TKUnit.assertEqual(testView.cssAnimPropNativeValue, 'testCssAnimationValueLocal', 'Native value');
 			// View property set from CSS sets local value
-			TKUnit.assertEqual(
-				testView.viewPropNativeValue,
-				'testViewValueCSS',
-				'Native value'
-			);
+			TKUnit.assertEqual(testView.viewPropNativeValue, 'testViewValueCSS', 'Native value');
 		},
 		{ pageCss: pageCSS }
 	);
@@ -660,11 +541,7 @@ export function test_NativeSetter_called_only_once_with_multiple_sets() {
 		TKUnit.assertEqual(testView.viewPropCounter, 1, 'NativeSetter count called once');
 
 		TKUnit.assertEqual(testView.cssPropNativeValue, 'testCssValue2', 'Native value');
-		TKUnit.assertEqual(
-			testView.cssAnimPropNativeValue,
-			'testCssAnimValue2',
-			'Native value'
-		);
+		TKUnit.assertEqual(testView.cssAnimPropNativeValue, 'testCssAnimValue2', 'Native value');
 		TKUnit.assertEqual(testView.viewPropNativeValue, 'testViewValue2', 'Native value');
 	});
 }
@@ -737,10 +614,7 @@ export function test_InheritableProperties_getValuesFromParent() {
 	const test = function (views: Array<View>) {
 		const bottomView = <TestView>views[3];
 
-		TKUnit.assert(
-			bottomView.inheritanceTest === testValue,
-			'Expected: ' + testValue + ' Actual: ' + bottomView.inheritanceTest
-		);
+		TKUnit.assert(bottomView.inheritanceTest === testValue, 'Expected: ' + testValue + ' Actual: ' + bottomView.inheritanceTest);
 	};
 
 	const firstView = new TestView('firstView');
@@ -759,10 +633,7 @@ export function test_BooleanInheritableProperties_getValuesFromParent() {
 	const test = function (views: Array<View>) {
 		const bottomView = <TestView>views[3];
 
-		TKUnit.assert(
-			bottomView.booleanInheritanceTest === testValue,
-			'Expected: ' + testValue + ' Actual: ' + bottomView.booleanInheritanceTest
-		);
+		TKUnit.assert(bottomView.booleanInheritanceTest === testValue, 'Expected: ' + testValue + ' Actual: ' + bottomView.booleanInheritanceTest);
 	};
 
 	const firstView = new TestView('firstView');
@@ -781,20 +652,11 @@ export function test_InheritableProperties_resetValuesOnRemoveFromVisualTree() {
 	const test = function (views: Array<View>) {
 		const bottomView = <TestView>views[3];
 
-		TKUnit.assert(
-			bottomView.inheritanceTest === testValue,
-			'Expected: ' + testValue + ' Actual: ' + bottomView.inheritanceTest
-		);
+		TKUnit.assert(bottomView.inheritanceTest === testValue, 'Expected: ' + testValue + ' Actual: ' + bottomView.inheritanceTest);
 
 		(<TestView>views[2]).removeChild(bottomView);
 
-		TKUnit.assert(
-			bottomView.inheritanceTest === inheritanceTestDefaultValue,
-			'Expected: ' +
-				inheritanceTestDefaultValue +
-				' Actual: ' +
-				bottomView.inheritanceTest
-		);
+		TKUnit.assert(bottomView.inheritanceTest === inheritanceTestDefaultValue, 'Expected: ' + inheritanceTestDefaultValue + ' Actual: ' + bottomView.inheritanceTest);
 	};
 
 	const firstView = new TestView('firstView');
@@ -812,13 +674,7 @@ export function test_InheritableProperties_DefaultValue() {
 	const test = function (views: Array<View>) {
 		const bottomView = <TestView>views[3];
 
-		TKUnit.assert(
-			bottomView.inheritanceTest === inheritanceTestDefaultValue,
-			'Expected: ' +
-				inheritanceTestDefaultValue +
-				' Actual: ' +
-				bottomView.inheritanceTest
-		);
+		TKUnit.assert(bottomView.inheritanceTest === inheritanceTestDefaultValue, 'Expected: ' + inheritanceTestDefaultValue + ' Actual: ' + bottomView.inheritanceTest);
 	};
 
 	const firstView = new TestView('firstView');
@@ -838,15 +694,9 @@ export function test_InheritableProperties_ChangeNotification() {
 		topView.inheritanceTest = testValue;
 
 		const bottomView = <TestView>views[3];
-		bottomView.bind(
-			{ targetProperty: 'dummy', sourceProperty: 'inheritanceTest' },
-			bottomView
-		);
+		bottomView.bind({ targetProperty: 'dummy', sourceProperty: 'inheritanceTest' }, bottomView);
 
-		TKUnit.assert(
-			bottomView.dummy === testValue,
-			'Expected: ' + testValue + ' Actual: ' + bottomView.dummy
-		);
+		TKUnit.assert(bottomView.dummy === testValue, 'Expected: ' + testValue + ' Actual: ' + bottomView.dummy);
 	};
 
 	const firstView = new TestView('firstView');
@@ -859,12 +709,7 @@ export function test_InheritableProperties_ChangeNotification() {
 	helper.do_PageTest(test, firstView, secondView, thirdView);
 }
 
-function property_binding_test(
-	propName: string,
-	firstValue: any,
-	secondValue: any,
-	view?: View
-) {
+function property_binding_test(propName: string, firstValue: any, secondValue: any, view?: View) {
 	let actualResult;
 	const model = new Observable();
 	model.set(propName, firstValue);
@@ -888,12 +733,7 @@ function property_binding_test(
 	TKUnit.assertEqual(actualResult, secondValue);
 }
 
-function property_binding_style_test(
-	propName: string,
-	firstValue: any,
-	secondValue: any,
-	view?: View
-) {
+function property_binding_style_test(propName: string, firstValue: any, secondValue: any, view?: View) {
 	let actualResult;
 	const model = new Observable();
 	model.set(propName, firstValue);
@@ -986,11 +826,7 @@ export function test_binding_style_color() {
 }
 
 export function test_binding_style_backgroundColor() {
-	property_binding_style_test(
-		'backgroundColor',
-		new Color('#FF0000'),
-		new Color('#00FF00')
-	);
+	property_binding_style_test('backgroundColor', new Color('#FF0000'), new Color('#00FF00'));
 }
 
 export function test_binding_style_fontSize() {
@@ -1108,9 +944,7 @@ export function testSetInlineStyle() {
 	const expectedColor = '#FF0000';
 	const expectedBackgroundColor = '#FF0000';
 
-	lbl.setInlineStyle(
-		`color: ${expectedColor};background-color: ${expectedBackgroundColor};`
-	);
+	lbl.setInlineStyle(`color: ${expectedColor};background-color: ${expectedBackgroundColor};`);
 
 	helper.buildUIAndRunTest(lbl, function (views: Array<View>) {
 		TKUnit.assertEqual(lbl.color.hex, expectedColor);
@@ -1122,11 +956,7 @@ export function testBackgroundColor() {
 	helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<View>) {
 		const lbl = views[0];
 		helper.waitUntilLayoutReady(lbl);
-		TKUnit.assertEqual(
-			checkNativeBackgroundColor(lbl),
-			true,
-			'BackgroundColor not applied correctly!'
-		);
+		TKUnit.assertEqual(checkNativeBackgroundColor(lbl), true, 'BackgroundColor not applied correctly!');
 	});
 }
 
@@ -1134,28 +964,16 @@ export function testBackgroundBorderColor() {
 	helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<View>) {
 		const lbl = views[0];
 		helper.waitUntilLayoutReady(lbl);
-		TKUnit.assertEqual(
-			checkNativeBackgroundColor(lbl),
-			true,
-			'BackgroundColor not applied correctly!'
-		);
+		TKUnit.assertEqual(checkNativeBackgroundColor(lbl), true, 'BackgroundColor not applied correctly!');
 	});
 }
 export function testSetAndRemoveBackgroundColor() {
 	helper.buildUIAndRunTest(_createBackgroundColorView(), function (views: Array<View>) {
 		const lbl = views[0];
 		helper.waitUntilLayoutReady(lbl);
-		TKUnit.assertEqual(
-			checkNativeBackgroundColor(lbl),
-			true,
-			'BackgroundColor not applied correctly!'
-		);
+		TKUnit.assertEqual(checkNativeBackgroundColor(lbl), true, 'BackgroundColor not applied correctly!');
 		lbl.backgroundColor = null;
-		TKUnit.assertEqual(
-			checkNativeBackgroundColor(lbl),
-			true,
-			'BackgroundColor not applied correctly!'
-		);
+		TKUnit.assertEqual(checkNativeBackgroundColor(lbl), true, 'BackgroundColor not applied correctly!');
 	});
 }
 
@@ -1165,11 +983,7 @@ export function testBackgroundImage() {
 	helper.buildUIAndRunTest(lbl, function (views: Array<View>) {
 		const page = <Page>views[1];
 		page.css = ".myClass { background-image: url('~/assets/logo.png') }";
-		TKUnit.assertEqual(
-			checkNativeBackgroundImage(lbl),
-			true,
-			'Style background-image not loaded correctly.'
-		);
+		TKUnit.assertEqual(checkNativeBackgroundImage(lbl), true, 'Style background-image not loaded correctly.');
 	});
 }
 
@@ -1190,10 +1004,7 @@ export function testBackgroundShorthand_With_EmptyBorder() {
 
 export function test_automation_text_default_value() {
 	let view = new Button();
-	TKUnit.assertTrue(
-		view.automationText === undefined,
-		'AutomationText default value should be UNDEFINED.'
-	);
+	TKUnit.assertTrue(view.automationText === undefined, 'AutomationText default value should be UNDEFINED.');
 }
 
 export function test_getLocationInWindow_IsUndefinedWhenNotInTheVisualTree() {
@@ -1266,8 +1077,7 @@ export function test_background_image_doesnt_throw() {
 	var btn = new Button();
 	// There is no need to wait until image is downloaded.
 	// It was throwing an exception when starting the download...
-	btn.style.backgroundImage =
-		'https://www.bodybuilding.com/images/2016/june/8-benefits-to-working-out-in-the-morning-header-v2-830x467.jpg';
+	btn.style.backgroundImage = 'https://www.bodybuilding.com/images/2016/june/8-benefits-to-working-out-in-the-morning-header-v2-830x467.jpg';
 	helper.buildUIAndRunTest(btn, function (views: Array<View>) {
 		helper.waitUntilLayoutReady(btn);
 	});
@@ -1276,16 +1086,8 @@ export function test_background_image_doesnt_throw() {
 export function test_shorthand_property_sets_composite_properties() {
 	var view = new TestView('view1');
 	view.customShortHand = 'left,right';
-	TKUnit.assertEqual(
-		view.customCssA,
-		'left',
-		"Expected customCssAProperty to be 'left'."
-	);
-	TKUnit.assertEqual(
-		view.customCssB,
-		'right',
-		"Expected customCssAProperty to be 'right'."
-	);
+	TKUnit.assertEqual(view.customCssA, 'left', "Expected customCssAProperty to be 'left'.");
+	TKUnit.assertEqual(view.customCssB, 'right', "Expected customCssAProperty to be 'right'.");
 }
 
 export function test_shorthand_property_is_set_by_composite_properties() {
@@ -1298,34 +1100,14 @@ export function test_shorthand_property_is_set_by_composite_properties() {
 export function test_shorthand_property_doesnt_cache() {
 	var view = new TestView('view1');
 	view.customShortHand = 'left,right';
-	TKUnit.assertEqual(
-		view.customCssA,
-		'left',
-		"Expected customCssA to be 'left' the first time."
-	);
-	TKUnit.assertEqual(
-		view.customCssB,
-		'right',
-		"Expected customCssA to be 'right' the second time."
-	);
+	TKUnit.assertEqual(view.customCssA, 'left', "Expected customCssA to be 'left' the first time.");
+	TKUnit.assertEqual(view.customCssB, 'right', "Expected customCssA to be 'right' the second time.");
 	view.customCssA = 'top';
 	view.customCssB = 'bottom';
-	TKUnit.assertEqual(
-		view.customShortHand,
-		'top,bottom',
-		"Expected customShortHand to be 'top,bottom' calculated from the composite properties."
-	);
+	TKUnit.assertEqual(view.customShortHand, 'top,bottom', "Expected customShortHand to be 'top,bottom' calculated from the composite properties.");
 	// This used to fail in https://github.com/NativeScript/NativeScript/issues/4450 the customShortHand would cache "left,right" when initially set,
 	// And won't run internal logic as the new value is "same" as the previous value, not taking into account that meanwhile the composite properties were set.
 	view.customShortHand = 'left,right';
-	TKUnit.assertEqual(
-		view.customCssA,
-		'left',
-		"Expected customCssA to be 'left' the second time."
-	);
-	TKUnit.assertEqual(
-		view.customCssB,
-		'right',
-		"Expected customCssA to be 'right' the second time."
-	);
+	TKUnit.assertEqual(view.customCssA, 'left', "Expected customCssA to be 'left' the second time.");
+	TKUnit.assertEqual(view.customCssB, 'right', "Expected customCssA to be 'right' the second time.");
 }

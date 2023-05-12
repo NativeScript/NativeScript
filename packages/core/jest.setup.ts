@@ -30,12 +30,7 @@ global.NSFileManager = {
 };
 global.NSNotificationCenter = {
 	defaultCenter: {
-		addObserverSelectorNameObject(
-			observer: any,
-			selector: any,
-			name: any,
-			object: any
-		) {},
+		addObserverSelectorNameObject(observer: any, selector: any, name: any, object: any) {},
 	},
 };
 global.interop = {
@@ -112,17 +107,12 @@ global.NativeScriptGlobals = {
 global.CADisplayLink = function () {};
 global.NSNotification = function () {};
 global.UIApplicationDelegate = function () {};
-global.UIApplicationDidFinishLaunchingNotification =
-	'UIApplicationDidFinishLaunchingNotification';
-global.UIApplicationDidBecomeActiveNotification =
-	'UIApplicationDidBecomeActiveNotification';
-global.UIApplicationDidEnterBackgroundNotification =
-	'UIApplicationDidEnterBackgroundNotification';
+global.UIApplicationDidFinishLaunchingNotification = 'UIApplicationDidFinishLaunchingNotification';
+global.UIApplicationDidBecomeActiveNotification = 'UIApplicationDidBecomeActiveNotification';
+global.UIApplicationDidEnterBackgroundNotification = 'UIApplicationDidEnterBackgroundNotification';
 global.UIApplicationWillTerminateNotification = 'UIApplicationWillTerminateNotification';
-global.UIApplicationDidReceiveMemoryWarningNotification =
-	'UIApplicationDidReceiveMemoryWarningNotification';
-global.UIApplicationDidChangeStatusBarOrientationNotification =
-	'UIApplicationDidChangeStatusBarOrientationNotification';
+global.UIApplicationDidReceiveMemoryWarningNotification = 'UIApplicationDidReceiveMemoryWarningNotification';
+global.UIApplicationDidChangeStatusBarOrientationNotification = 'UIApplicationDidChangeStatusBarOrientationNotification';
 global.UIResponder = function () {};
 global.UIResponder.extend = function () {};
 global.UIViewController = function () {};

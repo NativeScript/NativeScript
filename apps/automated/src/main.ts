@@ -5,31 +5,15 @@ if (typeof NSDate !== 'undefined') {
 	start = java.lang.System.currentTimeMillis();
 }
 
-import {
-	Application,
-	ApplicationEventData,
-	UnhandledErrorEventData,
-	DiscardedErrorEventData,
-	AndroidActivityBundleEventData,
-	AndroidActivityEventData,
-	AndroidApplication,
-	AndroidActivityNewIntentEventData,
-	AndroidActivityResultEventData,
-	AndroidActivityBackPressedEventData,
-	Label,
-	LaunchEventData,
-} from '@nativescript/core';
+import { Application, ApplicationEventData, UnhandledErrorEventData, DiscardedErrorEventData, AndroidActivityBundleEventData, AndroidActivityEventData, AndroidApplication, AndroidActivityNewIntentEventData, AndroidActivityResultEventData, AndroidActivityBackPressedEventData, Label, LaunchEventData } from '@nativescript/core';
 
 // import * as Application from "@nativescript/core/application";
 
 if (Application.ios) {
 	// Observe application notifications.
-	Application.ios.addNotificationObserver(
-		UIApplicationDidFinishLaunchingNotification,
-		(notification: NSNotification) => {
-			console.log('UIApplicationDidFinishLaunchingNotification:', notification);
-		}
-	);
+	Application.ios.addNotificationObserver(UIApplicationDidFinishLaunchingNotification, (notification: NSNotification) => {
+		console.log('UIApplicationDidFinishLaunchingNotification:', notification);
+	});
 }
 
 // Common events for both Android and iOS.
@@ -110,104 +94,46 @@ Application.on(Application.discardedErrorEvent, function (args: DiscardedErrorEv
 
 // Android activity events.
 if (Application.android) {
-	Application.android.on(
-		Application.android.activityCreatedEvent,
-		function (args: AndroidActivityBundleEventData) {
-			console.log(
-				'Event: ' + args.eventName + ', Activity:',
-				args.activity,
-				', Bundle:',
-				args.bundle
-			);
-		}
-	);
+	Application.android.on(Application.android.activityCreatedEvent, function (args: AndroidActivityBundleEventData) {
+		console.log('Event: ' + args.eventName + ', Activity:', args.activity, ', Bundle:', args.bundle);
+	});
 
-	Application.android.on(
-		Application.android.activityDestroyedEvent,
-		function (args: AndroidActivityEventData) {
-			console.log('Event: ' + args.eventName + ', Activity: ', args.activity);
-		}
-	);
+	Application.android.on(Application.android.activityDestroyedEvent, function (args: AndroidActivityEventData) {
+		console.log('Event: ' + args.eventName + ', Activity: ', args.activity);
+	});
 
-	Application.android.on(
-		Application.android.activityStartedEvent,
-		function (args: AndroidActivityEventData) {
-			console.log('Event: ' + args.eventName + ', Activity:', args.activity);
-		}
-	);
+	Application.android.on(Application.android.activityStartedEvent, function (args: AndroidActivityEventData) {
+		console.log('Event: ' + args.eventName + ', Activity:', args.activity);
+	});
 
-	Application.android.on(
-		Application.android.activityPausedEvent,
-		function (args: AndroidActivityEventData) {
-			console.log('Event: ' + args.eventName + ', Activity:', args.activity);
-		}
-	);
+	Application.android.on(Application.android.activityPausedEvent, function (args: AndroidActivityEventData) {
+		console.log('Event: ' + args.eventName + ', Activity:', args.activity);
+	});
 
-	Application.android.on(
-		Application.android.activityResumedEvent,
-		function (args: AndroidActivityEventData) {
-			console.log('Event: ' + args.eventName + ', Activity:', args.activity);
-		}
-	);
+	Application.android.on(Application.android.activityResumedEvent, function (args: AndroidActivityEventData) {
+		console.log('Event: ' + args.eventName + ', Activity:', args.activity);
+	});
 
-	Application.android.on(
-		Application.android.activityStoppedEvent,
-		function (args: AndroidActivityEventData) {
-			console.log('Event: ' + args.eventName + ', Activity:', args.activity);
-		}
-	);
+	Application.android.on(Application.android.activityStoppedEvent, function (args: AndroidActivityEventData) {
+		console.log('Event: ' + args.eventName + ', Activity:', args.activity);
+	});
 
-	Application.android.on(
-		Application.android.saveActivityStateEvent,
-		function (args: AndroidActivityBundleEventData) {
-			console.log(
-				'Event: ' + args.eventName + ', Activity:',
-				args.activity,
-				', Bundle:',
-				args.bundle
-			);
-		}
-	);
+	Application.android.on(Application.android.saveActivityStateEvent, function (args: AndroidActivityBundleEventData) {
+		console.log('Event: ' + args.eventName + ', Activity:', args.activity, ', Bundle:', args.bundle);
+	});
 
-	Application.android.on(
-		Application.android.activityResultEvent,
-		function (args: AndroidActivityResultEventData) {
-			console.log(
-				'Event:',
-				args.eventName,
-				', Activity:',
-				args.activity,
-				', requestCode: ',
-				args.requestCode,
-				', resultCode: ',
-				args.resultCode,
-				', Intent: ',
-				args.intent
-			);
-		}
-	);
+	Application.android.on(Application.android.activityResultEvent, function (args: AndroidActivityResultEventData) {
+		console.log('Event:', args.eventName, ', Activity:', args.activity, ', requestCode: ', args.requestCode, ', resultCode: ', args.resultCode, ', Intent: ', args.intent);
+	});
 
-	Application.android.on(
-		Application.android.activityBackPressedEvent,
-		function (args: AndroidActivityBackPressedEventData) {
-			console.log('Event:', args.eventName, ', Activity:', args.activity);
-			// Set args.cancel = true to cancel back navigation and do something custom.
-		}
-	);
+	Application.android.on(Application.android.activityBackPressedEvent, function (args: AndroidActivityBackPressedEventData) {
+		console.log('Event:', args.eventName, ', Activity:', args.activity);
+		// Set args.cancel = true to cancel back navigation and do something custom.
+	});
 
-	Application.android.on(
-		Application.android.activityNewIntentEvent,
-		function (args: AndroidActivityNewIntentEventData) {
-			console.log(
-				'Event: ',
-				args.eventName,
-				', Activity:',
-				args.activity,
-				', Intent:',
-				args.intent
-			);
-		}
-	);
+	Application.android.on(Application.android.activityNewIntentEvent, function (args: AndroidActivityNewIntentEventData) {
+		console.log('Event: ', args.eventName, ', Activity:', args.activity, ', Intent:', args.intent);
+	});
 }
 
 let time;

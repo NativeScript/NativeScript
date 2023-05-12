@@ -44,11 +44,7 @@ export function getPackageName() {
 let inputMethodManager: android.view.inputmethod.InputMethodManager;
 export function getInputMethodManager(): android.view.inputmethod.InputMethodManager {
 	if (!inputMethodManager) {
-		inputMethodManager = <android.view.inputmethod.InputMethodManager>(
-			getApplicationContext().getSystemService(
-				android.content.Context.INPUT_METHOD_SERVICE
-			)
-		);
+		inputMethodManager = <android.view.inputmethod.InputMethodManager>getApplicationContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
 	}
 
 	return inputMethodManager;
@@ -57,10 +53,7 @@ export function getInputMethodManager(): android.view.inputmethod.InputMethodMan
 export function showSoftInput(nativeView: android.view.View): void {
 	const inputManager = getInputMethodManager();
 	if (inputManager && nativeView instanceof android.view.View) {
-		inputManager.showSoftInput(
-			nativeView,
-			android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT
-		);
+		inputManager.showSoftInput(nativeView, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
 	}
 }
 
@@ -136,16 +129,10 @@ export namespace resources {
 	export function getResource(name: string, type?: string): number {
 		return getResources().getIdentifier(name, type, getPackageName());
 	}
-	export function getPalleteColor(
-		name: string,
-		context: android.content.Context
-	): number {
+	export function getPalleteColor(name: string, context: android.content.Context): number {
 		return getPaletteColor(name, context);
 	}
-	export function getPaletteColor(
-		name: string,
-		context: android.content.Context
-	): number {
+	export function getPaletteColor(name: string, context: android.content.Context): number {
 		if (attrCache.has(name)) {
 			return attrCache.get(name);
 		}
@@ -168,11 +155,7 @@ export namespace resources {
 				result = typedValue.data;
 			}
 		} catch (ex) {
-			Trace.write(
-				'Cannot get pallete color: ' + name,
-				Trace.categories.Error,
-				Trace.messageType.error
-			);
+			Trace.write('Cannot get pallete color: ' + name, Trace.categories.Error, Trace.messageType.error);
 		}
 
 		attrCache.set(name, result);
@@ -184,8 +167,5 @@ export namespace resources {
 export function isRealDevice(): boolean {
 	const fingerprint = android.os.Build.FINGERPRINT;
 
-	return (
-		fingerprint != null &&
-		(fingerprint.indexOf('vbox') > -1 || fingerprint.indexOf('generic') > -1)
-	);
+	return fingerprint != null && (fingerprint.indexOf('vbox') > -1 || fingerprint.indexOf('generic') > -1);
 }
