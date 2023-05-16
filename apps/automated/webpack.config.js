@@ -21,7 +21,7 @@ module.exports = (env) => {
 					// exclude detection of files based on a RegExp
 					// exclude: /a\.js|node_modules/,
 					// include specific files based on a RegExp
-					include: /application/,
+					// include: /application/,
 					// add errors to webpack instead of warnings
 					// failOnError: true,
 					// allow import cycles that include an asyncronous import,

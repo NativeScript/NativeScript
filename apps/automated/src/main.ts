@@ -7,8 +7,6 @@ if (typeof NSDate !== 'undefined') {
 
 import { AndroidActivityBackPressedEventData, AndroidActivityBundleEventData, AndroidActivityEventData, AndroidActivityNewIntentEventData, AndroidActivityResultEventData, Application, ApplicationEventData, DiscardedErrorEventData, LaunchEventData, UnhandledErrorEventData } from '@nativescript/core';
 
-// import * as Application from "@nativescript/core/application";
-
 if (Application.ios) {
 	// Observe application notifications.
 	Application.ios.addNotificationObserver(UIApplicationDidFinishLaunchingNotification, (notification: NSNotification) => {
