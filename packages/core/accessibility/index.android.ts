@@ -411,7 +411,7 @@ export function isAccessibilityServiceEnabled(): boolean {
 	updateAccessibilityServiceState();
 
 	Application.on(Application.exitEvent, (args: ApplicationEventData) => {
-		const activity = args.android as unknown as android.app.Activity;
+		const activity = args.android as android.app.Activity;
 		if (activity && !activity.isFinishing()) {
 			return;
 		}

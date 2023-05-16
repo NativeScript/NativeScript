@@ -91,8 +91,7 @@ function ensureStateListener(): SharedA11YObservable {
 
 	Application.on(Application.resumeEvent, updateAccessibilityState);
 	Application.on(Application.exitEvent, (args: ApplicationEventData) => {
-		// todo: check type of args.android
-		const activity = args.android as unknown as android.app.Activity;
+		const activity = args.android as android.app.Activity;
 		if (activity && !activity.isFinishing()) {
 			return;
 		}
