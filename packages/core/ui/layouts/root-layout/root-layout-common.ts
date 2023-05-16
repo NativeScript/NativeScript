@@ -5,6 +5,7 @@ import { GridLayout } from '../grid-layout';
 import { RootLayout, RootLayoutOptions, ShadeCoverOptions, TransitionAnimation } from '.';
 import { Animation } from '../../animation';
 import { AnimationDefinition } from '../../animation';
+import { isNumber } from '../../../utils/types';
 
 @CSSType('RootLayout')
 export class RootLayoutBase extends GridLayout {
@@ -382,8 +383,8 @@ export class RootLayoutBase extends GridLayout {
 			target: targetView,
 			...defaultTransitionAnimation,
 			...(exitTo || {}),
-			translate: { x: exitTo.translateX || defaultTransitionAnimation.translateX, y: exitTo.translateY || defaultTransitionAnimation.translateY },
-			scale: { x: exitTo.scaleX || defaultTransitionAnimation.scaleX, y: exitTo.scaleY || defaultTransitionAnimation.scaleY },
+			translate: { x: isNumber(exitTo.translateX) ? exitTo.translateX : defaultTransitionAnimation.translateX, y: isNumber(exitTo.translateY) ? exitTo.translateY : defaultTransitionAnimation.translateY },
+			scale: { x: isNumber(exitTo.scaleX) ? exitTo.scaleX : defaultTransitionAnimation.scaleX, y: isNumber(exitTo.scaleY) ? exitTo.scaleY : defaultTransitionAnimation.scaleY },
 		};
 	}
 

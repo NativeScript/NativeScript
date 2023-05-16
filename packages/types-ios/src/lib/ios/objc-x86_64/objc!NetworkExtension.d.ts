@@ -160,6 +160,8 @@ declare class NEAppPushProvider extends NEProvider {
 
 	reportIncomingCallWithUserInfo(userInfo: NSDictionary<any, any>): void;
 
+	reportPushToTalkMessageWithUserInfo(userInfo: NSDictionary<any, any>): void;
+
 	start(): void;
 
 	startWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
@@ -1923,6 +1925,10 @@ declare class NEVPNProtocol extends NSObject implements NSCopying, NSSecureCodin
 	disconnectOnSleep: boolean;
 
 	enforceRoutes: boolean;
+
+	excludeAPNs: boolean;
+
+	excludeCellularServices: boolean;
 
 	excludeLocalNetworks: boolean;
 

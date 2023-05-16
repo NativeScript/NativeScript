@@ -584,7 +584,9 @@ declare const enum CLLocationPushServiceError {
 
 	MissingPushServerEnvironment = 2,
 
-	MissingEntitlement = 3
+	MissingEntitlement = 3,
+
+	UnsupportedPlatform = 4
 }
 
 declare var CLLocationPushServiceErrorDomain: string;

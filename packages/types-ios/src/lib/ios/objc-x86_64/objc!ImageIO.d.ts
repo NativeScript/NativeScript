@@ -1447,6 +1447,8 @@ declare var kCGImagePropertyNamedColorSpace: string;
 
 declare var kCGImagePropertyOpenEXRAspectRatio: string;
 
+declare var kCGImagePropertyOpenEXRCompression: string;
+
 declare var kCGImagePropertyOpenEXRDictionary: string;
 
 declare var kCGImagePropertyOrientation: string;

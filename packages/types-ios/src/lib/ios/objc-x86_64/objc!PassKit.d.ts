@@ -68,9 +68,13 @@ declare class PKAddPassesViewController extends UIViewController {
 
 	delegate: PKAddPassesViewControllerDelegate;
 
+	constructor(o: { issuerData: NSData; signature: NSData; });
+
 	constructor(o: { pass: PKPass; });
 
 	constructor(o: { passes: NSArray<PKPass> | PKPass[]; });
+
+	initWithIssuerDataSignatureError(issuerData: NSData, signature: NSData): this;
 
 	initWithPass(pass: PKPass): this;
 
@@ -452,6 +456,31 @@ declare class PKDateComponentsRange extends NSObject implements NSCopying, NSSec
 	initWithCoder(coder: NSCoder): this;
 
 	initWithStartDateComponentsEndDateComponents(startDateComponents: NSDateComponents, endDateComponents: NSDateComponents): this;
+}
+
+declare class PKDeferredPaymentRequest extends NSObject {
+
+	static alloc(): PKDeferredPaymentRequest; // inherited from NSObject
+
+	static new(): PKDeferredPaymentRequest; // inherited from NSObject
+
+	billingAgreement: string;
+
+	deferredBilling: PKDeferredPaymentSummaryItem;
+
+	freeCancellationDate: Date;
+
+	freeCancellationDateTimeZone: NSTimeZone;
+
+	managementURL: NSURL;
+
+	paymentDescription: string;
+
+	tokenNotificationURL: NSURL;
+
+	constructor(o: { paymentDescription: string; deferredBilling: PKDeferredPaymentSummaryItem; managementURL: NSURL; });
+
+	initWithPaymentDescriptionDeferredBillingManagementURL(paymentDescription: string, deferredBilling: PKDeferredPaymentSummaryItem, managementURL: NSURL): this;
 }
 
 declare class PKDeferredPaymentSummaryItem extends PKPaymentSummaryItem {
@@ -1383,6 +1412,8 @@ declare var PKPaymentNetworkMir: string;
 
 declare var PKPaymentNetworkNanaco: string;
 
+declare var PKPaymentNetworkPostFinance: string;
+
 declare var PKPaymentNetworkPrivateLabel: string;
 
 declare var PKPaymentNetworkQuicPay: string;
@@ -1469,6 +1500,8 @@ declare class PKPaymentRequest extends NSObject {
 	couponCode: string;
 
 	currencyCode: string;
+
+	deferredPaymentRequest: PKDeferredPaymentRequest;
 
 	merchantCapabilities: PKMerchantCapability;
 
@@ -1573,6 +1606,8 @@ declare class PKPaymentRequestUpdate extends NSObject {
 	static new(): PKPaymentRequestUpdate; // inherited from NSObject
 
 	automaticReloadPaymentRequest: PKAutomaticReloadPaymentRequest;
+
+	deferredPaymentRequest: PKDeferredPaymentRequest;
 
 	multiTokenContexts: NSArray<PKPaymentTokenContext>;
 

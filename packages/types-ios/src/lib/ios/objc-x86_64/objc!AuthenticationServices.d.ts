@@ -1508,6 +1508,15 @@ declare class ASAuthorizationSingleSignOnRequest extends ASAuthorizationOpenIDRe
 	userInterfaceEnabled: boolean;
 }
 
+declare const enum ASAuthorizationWebBrowserPublicKeyCredentialManagerAuthorizationState {
+
+	Authorized = 0,
+
+	Denied = 1,
+
+	NotDetermined = 2
+}
+
 declare var ASCOSEAlgorithmIdentifierES256: number;
 
 declare var ASCOSEEllipticCurveIdentifierP256: number;

@@ -90,6 +90,8 @@ declare const enum MACaptionAppearanceTextEdgeStyle {
 	kMACaptionAppearanceTextEdgeStyleDropShadow = 5
 }
 
+declare function MADimFlashingLightsEnabled(): boolean;
+
 declare function MAImageCaptioningCopyCaption(url: NSURL, error: interop.Pointer | interop.Reference<NSError>): string;
 
 declare function MAImageCaptioningCopyMetadataTagPath(): string;
@@ -105,3 +107,5 @@ declare var MAMediaCharacteristicTranscribesSpokenDialogForAccessibility: string
 declare var kMAAudibleMediaSettingsChangedNotification: string;
 
 declare var kMACaptionAppearanceSettingsChangedNotification: string;
+
+declare var kMADimFlashingLightsChangedNotification: string;

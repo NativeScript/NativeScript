@@ -2233,7 +2233,11 @@ declare class HMTimerTrigger extends HMTrigger {
 
 	readonly timeZone: NSTimeZone;
 
+	constructor(o: { name: string; fireDate: Date; recurrence: NSDateComponents; });
+
 	constructor(o: { name: string; fireDate: Date; timeZone: NSTimeZone; recurrence: NSDateComponents; recurrenceCalendar: NSCalendar; });
+
+	initWithNameFireDateRecurrence(name: string, fireDate: Date, recurrence: NSDateComponents): this;
 
 	initWithNameFireDateTimeZoneRecurrenceRecurrenceCalendar(name: string, fireDate: Date, timeZone: NSTimeZone, recurrence: NSDateComponents, recurrenceCalendar: NSCalendar): this;
 

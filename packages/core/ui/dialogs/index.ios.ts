@@ -47,7 +47,7 @@ function raiseCallback(callback, result) {
 function showUIAlertController(alertController: UIAlertController) {
 	let viewController = Application.ios.rootController;
 
-	while (viewController && viewController.presentedViewController) {
+	while (viewController && viewController.presentedViewController && !viewController.presentedViewController.beingDismissed) {
 		viewController = viewController.presentedViewController;
 	}
 
@@ -60,7 +60,7 @@ function showUIAlertController(alertController: UIAlertController) {
 	if (alertController.popoverPresentationController) {
 		alertController.popoverPresentationController.sourceView = viewController.view;
 		alertController.popoverPresentationController.sourceRect = CGRectMake(viewController.view.bounds.size.width / 2.0, viewController.view.bounds.size.height / 2.0, 1.0, 1.0);
-		alertController.popoverPresentationController.permittedArrowDirections = 0 as any;
+		alertController.popoverPresentationController.permittedArrowDirections = 0 as UIPopoverArrowDirection;
 	}
 
 	const color = getButtonColors().color;

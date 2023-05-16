@@ -6021,6 +6021,13 @@ declare function creat(p1: string | interop.Pointer | interop.Reference<any>, p2
 
 declare function crypt(p1: string | interop.Pointer | interop.Reference<any>, p2: string | interop.Pointer | interop.Reference<any>): string;
 
+declare const enum cryptex_auth_type_t {
+
+	CRYPTEX1_AUTH_ENV_GENERIC = 4,
+
+	CRYPTEX1_AUTH_ENV_GENERIC_SUPPLEMENTAL = 5
+}
+
 declare function ctermid(p1: string | interop.Pointer | interop.Reference<any>): string;
 
 declare function ctermid_r(p1: string | interop.Pointer | interop.Reference<any>): string;
@@ -8804,6 +8811,8 @@ declare const enum mach_port_guard_exception_codes {
 	kGUARD_EXC_INVALID_OPTIONS = 3,
 
 	kGUARD_EXC_SET_CONTEXT = 4,
+
+	kGUARD_EXC_THREAD_SET_STATE = 5,
 
 	kGUARD_EXC_UNGUARDED = 8,
 
