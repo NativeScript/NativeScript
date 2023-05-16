@@ -122,10 +122,11 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 
 	private runAsEmbeddedApp() {
 		// TODO: this rootView should be held alive until rootController dismissViewController is called.
-		const rootView = this.createRootView();
+		const rootView = this.createRootView(this._rootView, true);
 		if (!rootView) {
 			return;
 		}
+		this._rootView = rootView;
 		// Attach to the existing iOS app
 		const window = this.nativeApp.keyWindow || (this.nativeApp.windows.count > 0 && this.nativeApp.windows[0]);
 
