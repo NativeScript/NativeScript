@@ -132,6 +132,9 @@ export class ApplicationCommon {
 	notify: ApplicationEvents['notify'] = globalEvents.notify.bind(globalEvents);
 	hasListeners: ApplicationEvents['hasListeners'] = globalEvents.hasListeners.bind(globalEvents);
 
+	/**
+	 * @internal - should not be constructed by the user.
+	 */
 	constructor() {
 		global.NativeScriptGlobals.appInstanceReady = true;
 

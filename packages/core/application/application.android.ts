@@ -252,26 +252,22 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 	static readonly activityNewIntentEvent = 'activityNewIntent';
 	static readonly activityRequestPermissionsEvent = 'activityRequestPermissions';
 
-	readonly activityCreatedEvent = 'activityCreated';
-	readonly activityDestroyedEvent = 'activityDestroyed';
-	readonly activityStartedEvent = 'activityStarted';
-	readonly activityPausedEvent = 'activityPaused';
-	readonly activityResumedEvent = 'activityResumed';
-	readonly activityStoppedEvent = 'activityStopped';
-	readonly saveActivityStateEvent = 'saveActivityState';
-	readonly activityResultEvent = 'activityResult';
-	readonly activityBackPressedEvent = 'activityBackPressed';
-	readonly activityNewIntentEvent = 'activityNewIntent';
-	readonly activityRequestPermissionsEvent = 'activityRequestPermissions';
+	readonly activityCreatedEvent = AndroidApplication.activityCreatedEvent;
+	readonly activityDestroyedEvent = AndroidApplication.activityDestroyedEvent;
+	readonly activityStartedEvent = AndroidApplication.activityStartedEvent;
+	readonly activityPausedEvent = AndroidApplication.activityPausedEvent;
+	readonly activityResumedEvent = AndroidApplication.activityResumedEvent;
+	readonly activityStoppedEvent = AndroidApplication.activityStoppedEvent;
+	readonly saveActivityStateEvent = AndroidApplication.saveActivityStateEvent;
+	readonly activityResultEvent = AndroidApplication.activityResultEvent;
+	readonly activityBackPressedEvent = AndroidApplication.activityBackPressedEvent;
+	readonly activityNewIntentEvent = AndroidApplication.activityNewIntentEvent;
+	readonly activityRequestPermissionsEvent = AndroidApplication.activityRequestPermissionsEvent;
 
 	private _nativeApp: android.app.Application;
 	// we are using these property to store the callbacks to avoid early GC collection which would trigger MarkReachableObjects
 	private lifecycleCallbacks: NativeScriptLifecycleCallbacks;
 	private componentCallbacks: NativeScriptComponentCallbacks;
-
-	constructor() {
-		super();
-	}
 
 	init(nativeApp: android.app.Application): void {
 		if (this.nativeApp === nativeApp) {
@@ -376,30 +372,18 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 		this._foregroundActivity = value;
 	}
 
-	/**
-	 * @deprecated Use `Application.suspended` instead.
-	 */
 	get paused(): boolean {
 		return this.suspended;
 	}
 
-	/**
-	 * @deprecated Use `Application.inBackground` instead.
-	 */
 	get backgrounded(): boolean {
 		return this.inBackground;
 	}
 
-	/**
-	 * @deprecated Use `Utils.android.getApplicationContext()` instead.
-	 */
 	get context() {
 		return this.nativeApp.getApplicationContext();
 	}
 
-	/**
-	 * @deprecated Use `Utils.android.getPackageName()` instead.
-	 */
 	get packageName() {
 		return this.nativeApp.getPackageName();
 	}
@@ -496,7 +480,7 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 	}
 
 	get android() {
-		// ensures Application.android is defined when running on iOS
+		// ensures Application.android is defined when running on Android
 		return this;
 	}
 }

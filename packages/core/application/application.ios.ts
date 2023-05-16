@@ -82,6 +82,9 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	displayedLinkTarget: CADisplayLinkTarget;
 	displayedLink: CADisplayLink;
 
+	/**
+	 * @internal - should not be constructed by the user.
+	 */
 	constructor() {
 		super();
 
@@ -114,7 +117,6 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	}
 
 	private runAsMainApp() {
-		console.log('runAsMainApp', this.delegate);
 		UIApplicationMain(0, null, null, this.delegate ? NSStringFromClass(this.delegate as any) : NSStringFromClass(Responder));
 	}
 
@@ -242,8 +244,8 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		return this._window;
 	}
 
-	get delegate(): UIApplicationDelegate {
-		return this._delegate;
+	get delegate(): UIApplicationDelegate & { prototype: UIApplicationDelegate } {
+		return this._delegate as any;
 	}
 
 	set delegate(value: UIApplicationDelegate | unknown) {

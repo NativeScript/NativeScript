@@ -202,12 +202,3 @@ export interface AndroidActivityBackPressedEventData extends AndroidActivityEven
 export interface LoadAppCSSEventData extends ApplicationEventData {
 	cssFile: string;
 }
-
-//////////////////////////////
-
-/**
- * @deprecated
- */
-export interface RootViewControllerImpl {
-	contentController: any;
-}
