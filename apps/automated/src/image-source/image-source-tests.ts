@@ -1,11 +1,8 @@
 ﻿import { ImageSource } from '@nativescript/core/image-source';
 import * as imageAssetModule from '@nativescript/core/image-asset';
 import * as fs from '@nativescript/core/file-system';
-import * as app from '@nativescript/core/application';
 import * as TKUnit from '../tk-unit';
-import { Font } from '@nativescript/core/ui/styling/font';
-import { Color } from '@nativescript/core/color';
-import * as utils from '@nativescript/core/utils';
+import { Application, Font, Color, Utils } from '@nativescript/core';
 
 const imagePath = '~/assets/logo.png';
 const splashscreenPath = '~/assets/splashscreen.png';
@@ -23,7 +20,7 @@ export function testFromResource() {
 
 export function testDrawableSetNativeSource() {
 	if (global.isAndroid) {
-		const context = utils.ad.getApplicationContext() as android.content.Context;
+		const context = Utils.android.getApplicationContext() as android.content.Context;
 		const rDrawable = `${context.getPackageName()}.R$drawable`;
 		const rClazz = java.lang.Class.forName(`${rDrawable}`);
 		const iconId = rClazz.getDeclaredField('icon').get(null) as java.lang.Integer;
@@ -253,9 +250,9 @@ export function testFromAssetWithBiggerScaling(done) {
 
 export function testNativeFields() {
 	const img = ImageSource.fromFileSync(imagePath);
-	if (app.android) {
+	if (Application.android) {
 		TKUnit.assert(img.android != null, 'Image.android not updated.');
-	} else if (app.ios) {
+	} else if (Application.ios) {
 		TKUnit.assert(img.ios != null, 'Image.ios not updated.');
 	}
 }
@@ -315,9 +312,9 @@ export function testLoadFromBase64Encode_JPEG() {
 
 export function testLoadFromBase64Encode_PNG() {
 	let img: ImageSource;
-	if (app.android) {
+	if (Application.android) {
 		img = ImageSource.fromBase64Sync(fullAndroidPng);
-	} else if (app.ios) {
+	} else if (Application.ios) {
 		img = ImageSource.fromBase64Sync(fullIosPng);
 	}
 

@@ -1,5 +1,5 @@
 import * as layoutCommon from './layout-helper-common';
-import { ad } from '../native-helper';
+import { android as AndroidUtils } from '../native-helper';
 
 // export * from './layout-helper-common';
 
@@ -38,7 +38,7 @@ export namespace layout {
 	export function makeMeasureSpec(size: number, mode: number): number {
 		if (sdkVersion === undefined) {
 			// check whether the old layout is needed
-			sdkVersion = ad.getApplicationContext().getApplicationInfo().targetSdkVersion;
+			sdkVersion = AndroidUtils.getApplicationContext().getApplicationInfo().targetSdkVersion;
 			useOldMeasureSpec = sdkVersion <= 17;
 		}
 
@@ -51,7 +51,7 @@ export namespace layout {
 
 	export function getDisplayDensity(): number {
 		if (density === undefined) {
-			density = ad.getResources().getDisplayMetrics().density;
+			density = AndroidUtils.getResources().getDisplayMetrics().density;
 		}
 
 		return density;

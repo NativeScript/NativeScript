@@ -5,7 +5,7 @@ import { Color } from '../../color';
 import { layout, RESOURCE_PREFIX, isFontIconURI } from '../../utils';
 import { colorProperty } from '../styling/style-properties';
 import { ImageSource } from '../../image-source';
-import * as application from '../../application';
+import { Application } from '../../application';
 import { isAccessibilityServiceEnabled, updateContentDescription } from '../../accessibility';
 import type { Background } from '../styling/background';
 import { SDK_VERSION } from '../../utils/constants';
@@ -80,7 +80,7 @@ function initializeMenuItemClickListener(): void {
 	}
 
 	MenuItemClickListener = MenuItemClickListenerImpl;
-	appResources = application.android.context.getResources();
+	appResources = Application.android.context.getResources();
 }
 
 export class ActionItem extends ActionItemBase {
@@ -317,7 +317,7 @@ export class ActionBar extends ActionBarBase {
 					traceMissingIcon(icon);
 				}
 			} else {
-				const defaultIcon = application.android.nativeApp.getApplicationInfo().icon;
+				const defaultIcon = Application.android.nativeApp.getApplicationInfo().icon;
 				this.nativeViewProtected.setLogo(defaultIcon);
 			}
 		} else {
@@ -332,7 +332,7 @@ export class ActionBar extends ActionBarBase {
 			if (title !== undefined) {
 				this.nativeViewProtected.setTitle(title);
 			} else {
-				const appContext = application.android.context;
+				const appContext = Application.android.context;
 				const appInfo = appContext.getApplicationInfo();
 				const appLabel = appContext.getPackageManager().getApplicationLabel(appInfo);
 				if (appLabel) {
@@ -569,7 +569,7 @@ function getDrawableOrResourceId(icon: string, resources: android.content.res.Re
 
 	let result = null;
 	if (icon.indexOf(RESOURCE_PREFIX) === 0) {
-		const resourceId: number = resources.getIdentifier(icon.substr(RESOURCE_PREFIX.length), 'drawable', application.android.packageName);
+		const resourceId: number = resources.getIdentifier(icon.substr(RESOURCE_PREFIX.length), 'drawable', Application.android.packageName);
 		if (resourceId > 0) {
 			result = resourceId;
 		}

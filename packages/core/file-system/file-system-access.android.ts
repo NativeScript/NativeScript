@@ -1,5 +1,5 @@
 import * as textModule from '../text';
-import { getNativeApplication } from '../application';
+import { Application } from '../application';
 import { getFileExtension } from '../utils';
 import { SDK_VERSION } from '../utils/constants';
 
@@ -8,7 +8,7 @@ import type { IFileSystemAccess } from './file-system-access';
 let applicationContext: android.content.Context;
 function getApplicationContext() {
 	if (!applicationContext) {
-		applicationContext = (<android.app.Application>getNativeApplication()).getApplicationContext();
+		applicationContext = Application.android.getNativeApplication().getApplicationContext();
 	}
 
 	return applicationContext;
@@ -574,7 +574,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 			// TODO: bufferedReader.read(CharBuffer) does not currently work
 			let line = undefined;
 			let result = '';
-			while (true) {
+			while (line !== null) {
 				line = bufferedReader.readLine();
 				if (line === null) {
 					break;

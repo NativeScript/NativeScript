@@ -1,5 +1,4 @@
-import { applyCssClass, getRootView } from '../application';
-import * as Application from '../application';
+import { Application } from '../application';
 import type { View } from '../ui/core/view';
 import { AccessibilityServiceEnabledObservable } from './accessibility-service';
 import { FontScaleCategory, getCurrentFontScale, getFontScaleCategory, VALID_FONT_SCALES } from './font-scale';
@@ -33,19 +32,19 @@ function ensureClasses() {
 }
 
 function applyRootCssClass(cssClasses: string[], newCssClass: string): void {
-	const rootView = getRootView();
+	const rootView = Application.getRootView();
 	if (!rootView) {
 		return;
 	}
 
-	applyCssClass(rootView, cssClasses, newCssClass);
+	Application.applyCssClass(rootView, cssClasses, newCssClass);
 
 	const rootModalViews = <Array<View>>rootView._getRootModalViews();
-	rootModalViews.forEach((rootModalView) => applyCssClass(rootModalView, cssClasses, newCssClass));
+	rootModalViews.forEach((rootModalView) => Application.applyCssClass(rootModalView, cssClasses, newCssClass));
 }
 
 function applyFontScaleToRootViews(): void {
-	const rootView = getRootView();
+	const rootView = Application.getRootView();
 	if (!rootView) {
 		return;
 	}

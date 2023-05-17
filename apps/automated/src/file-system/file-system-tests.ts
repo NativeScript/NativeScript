@@ -4,8 +4,7 @@ import * as fs from '@nativescript/core/file-system';
 // << file-system-require
 
 import * as TKUnit from '../tk-unit';
-import * as appModule from '@nativescript/core/application';
-import { isIOS, Device, platformNames, isAndroid } from '@nativescript/core';
+import { Application, isIOS, Device, platformNames, isAndroid } from '@nativescript/core';
 
 export var testPathNormalize = function () {
 	// >> file-system-normalize
@@ -600,7 +599,7 @@ export var testFolderClear = function () {
 // misc
 export var testKnownFolderRename = function () {
 	// You can rename known folders in android - so skip this test.
-	if (!appModule.android) {
+	if (!Application.android) {
 		var folder = fs.knownFolders.documents();
 		folder.rename('Something').then(
 			function (result) {
