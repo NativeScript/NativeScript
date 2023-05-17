@@ -6,7 +6,7 @@ import * as httpModule from '../http';
 // Types.
 import { path as fsPath, knownFolders } from '../file-system';
 import { isFileOrResourcePath, RESOURCE_PREFIX, layout } from '../utils';
-import { getNativeApplication } from '../application';
+import { Application } from '../application';
 import { Font } from '../ui/styling/font';
 import { Color } from '../color';
 
@@ -26,7 +26,7 @@ let resources: android.content.res.Resources;
 
 function getApplication() {
 	if (!application) {
-		application = <android.app.Application>getNativeApplication();
+		application = Application.android.getNativeApplication();
 	}
 
 	return application;

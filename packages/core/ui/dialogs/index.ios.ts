@@ -4,7 +4,7 @@
 import { Trace } from '../../trace';
 import { ConfirmOptions, PromptOptions, PromptResult, LoginOptions, LoginResult, ActionOptions, getCurrentPage, getLabelColor, getButtonColors, getTextFieldColor, isDialogOptions, inputType, capitalizationType, DialogStrings, parseLoginOptions } from './dialogs-common';
 import { isString, isDefined, isFunction } from '../../utils/types';
-import { getRootView, ios } from '../../application';
+import { Application } from '../../application';
 
 export * from './dialogs-common';
 
@@ -45,7 +45,7 @@ function raiseCallback(callback, result) {
 }
 
 function showUIAlertController(alertController: UIAlertController) {
-	let viewController = ios.rootController as UIViewController;
+	let viewController = Application.ios.rootController;
 
 	while (viewController && viewController.presentedViewController && !viewController.presentedViewController.beingDismissed) {
 		viewController = viewController.presentedViewController;
@@ -86,7 +86,13 @@ function showUIAlertController(alertController: UIAlertController) {
 export function alert(arg: any): Promise<void> {
 	return new Promise<void>((resolve, reject) => {
 		try {
-			const options = !isDialogOptions(arg) ? { title: DialogStrings.ALERT, okButtonText: DialogStrings.OK, message: arg + '' } : arg;
+			const options = !isDialogOptions(arg)
+				? {
+						title: DialogStrings.ALERT,
+						okButtonText: DialogStrings.OK,
+						message: arg + '',
+				  }
+				: arg;
 			const alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.Alert);
 
 			addButtonsToAlertController(alertController, options, () => {

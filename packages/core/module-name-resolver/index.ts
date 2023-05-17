@@ -1,8 +1,8 @@
 import { Screen, Device } from '../platform';
-import * as appCommonModule from '../application/application-common';
 import { PlatformContext, findMatch, stripQualifiers } from './qualifier-matcher';
 import { registerModulesFromFileSystem } from './non-bundle-workflow-compat';
 import { Trace } from '../trace';
+import { Application } from '../application';
 
 export type { PlatformContext } from './qualifier-matcher';
 
@@ -11,7 +11,12 @@ export type ModuleListProvider = () => string[];
 export class ModuleNameResolver {
 	private _cache = {};
 
-	constructor(private context: PlatformContext, private moduleListProvider: ModuleListProvider = global.getRegisteredModules) {}
+	constructor(private context: PlatformContext, private moduleListProvider: ModuleListProvider = global.getRegisteredModules) {
+		Application.on('livesync', (args) => clearCache());
+		Application.on('orientationChanged', (args) => {
+			resolverInstance = undefined;
+		});
+	}
 
 	public resolveModuleName(path: string, ext: string): string {
 		const key = path + ext;
@@ -94,8 +99,3 @@ export function clearCache() {
 export function _setResolver(resolver: ModuleNameResolver) {
 	resolverInstance = resolver;
 }
-
-appCommonModule.on('livesync', (args) => clearCache());
-appCommonModule.on('orientationChanged', (args) => {
-	resolverInstance = undefined;
-});

@@ -5,14 +5,7 @@ import * as TKUnit from '../../../tk-unit';
 import * as types from '@nativescript/core/utils/types';
 import * as helper from '../../../ui-helper';
 import * as bindingBuilder from '@nativescript/core/ui/builder/binding-builder';
-import * as appModule from '@nativescript/core/application';
-import { Trace } from '@nativescript/core';
-import { View } from '@nativescript/core/ui/core/view';
-import { Button } from '@nativescript/core/ui/button';
-import { Page } from '@nativescript/core/ui/page';
-import { StackLayout } from '@nativescript/core/ui/layouts/stack-layout';
-import { Label } from '@nativescript/core/ui/label';
-import { TextField } from '@nativescript/core/ui/text-field';
+import { Application, View, Button, Page, StackLayout, Label, TextField, Trace } from '@nativescript/core';
 declare var WeakRef: any;
 // <snippet module="ui/core/bindable" title="bindable">
 // For information and examples how to use bindings please refer to special [**Data binding**](../../../../bindings.md) topic.
@@ -583,7 +576,11 @@ export function test_BindingToParentView_ShouldNotLeaveGarbageInViewModel() {
 		testStack.bindingContext = stackViewModel;
 
 		let testLabel = <Label>testStack.getChildAt(0);
-		testLabel.bind({ sourceProperty: '$parent.testProperty', targetProperty: 'text', expression: '$parent.testProperty' });
+		testLabel.bind({
+			sourceProperty: '$parent.testProperty',
+			targetProperty: 'text',
+			expression: '$parent.testProperty',
+		});
 
 		TKUnit.assertEqual(testLabel.text, expectedValue);
 		TKUnit.assertTrue(stackViewModel['$parent'] === undefined, "stackViewModel['$parent'] should be removed from parent binding context.");
@@ -610,7 +607,11 @@ export function test_BindingToParentsView_ShouldNotLeaveGarbageInViewModel() {
 		testStack.bindingContext = stackViewModel;
 
 		let testLabel = <Label>testStack.getChildAt(0);
-		testLabel.bind({ sourceProperty: "$parents['StackLayout'].testProperty", targetProperty: 'text', expression: "$parents['StackLayout'].testProperty" });
+		testLabel.bind({
+			sourceProperty: "$parents['StackLayout'].testProperty",
+			targetProperty: 'text',
+			expression: "$parents['StackLayout'].testProperty",
+		});
 
 		TKUnit.assertEqual(testLabel.text, expectedValue);
 		TKUnit.assertTrue(stackViewModel['$parent'] === undefined, "stackViewModel['$parent'] should be removed from parent binding context.");
@@ -632,11 +633,15 @@ export function test_BindingToDictionaryAtAppLevel() {
 	pageViewModel.set('testProperty', testPropertyName);
 	const dict = {};
 	dict[testPropertyName] = expectedValue;
-	appModule.getResources()['dict'] = dict;
+	Application.getResources()['dict'] = dict;
 
 	const testFunc = function (views: Array<View>) {
 		const testLabel = <Label>views[0];
-		testLabel.bind({ sourceProperty: 'testProperty', targetProperty: 'text', expression: 'dict[testProperty]' });
+		testLabel.bind({
+			sourceProperty: 'testProperty',
+			targetProperty: 'text',
+			expression: 'dict[testProperty]',
+		});
 
 		const page = <Page>views[1];
 		page.bindingContext = pageViewModel;
@@ -658,7 +663,7 @@ export function test_BindingConverterCalledEvenWithNullValue() {
 	const testPropertyValue = null;
 	const expectedValue = 'collapsed';
 	pageViewModel.set('testProperty', testPropertyValue);
-	appModule.getResources()['converter'] = {
+	Application.getResources()['converter'] = {
 		toView: function (value) {
 			if (value) {
 				return 'visible';
@@ -670,7 +675,11 @@ export function test_BindingConverterCalledEvenWithNullValue() {
 
 	const testFunc = function (views: Array<View>) {
 		const testLabel = <Label>views[0];
-		testLabel.bind({ sourceProperty: 'testProperty', targetProperty: 'text', expression: 'testProperty | converter()' });
+		testLabel.bind({
+			sourceProperty: 'testProperty',
+			targetProperty: 'text',
+			expression: 'testProperty | converter()',
+		});
 
 		const page = <Page>views[1];
 		page.bindingContext = pageViewModel;

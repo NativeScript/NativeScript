@@ -1,4 +1,4 @@
-import * as Application from '../application';
+import { Application, ApplicationEventData } from '../application';
 import { Trace } from '../trace';
 import { SDK_VERSION } from '../utils/constants';
 import type { View } from '../ui/core/view';
@@ -410,7 +410,7 @@ export function isAccessibilityServiceEnabled(): boolean {
 
 	updateAccessibilityServiceState();
 
-	Application.on(Application.exitEvent, (args: Application.ApplicationEventData) => {
+	Application.on(Application.exitEvent, (args: ApplicationEventData) => {
 		const activity = args.android as android.app.Activity;
 		if (activity && !activity.isFinishing()) {
 			return;

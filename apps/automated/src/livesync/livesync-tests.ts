@@ -1,12 +1,7 @@
 import * as helper from '../ui-helper';
 import * as TKUnit from '../tk-unit';
 
-import * as app from '@nativescript/core/application';
-import * as frame from '@nativescript/core/ui/frame';
-import { Color } from '@nativescript/core/color';
-import { Builder } from '@nativescript/core/ui/builder';
-import { Page } from '@nativescript/core/ui/page';
-import { Frame } from '@nativescript/core/ui/frame';
+import { Application, Frame, Page, Builder, Color } from '@nativescript/core';
 
 const LIVESYNC_FOLDER = 'livesync/';
 
@@ -45,7 +40,7 @@ export function setUp() {
 }
 
 export function tearDown() {
-	app.setCssFileName(appCssFileName);
+	Application.setCssFileName(appCssFileName);
 }
 
 export function test_onLiveSync_ModuleContext_AppStyle_AppNewCss() {
@@ -143,7 +138,7 @@ function _test_onLiveSync_ModuleContext_AppStyle(appStyleFileName: string, lives
 	const buttonPage = <Page>Builder.createViewFromEntry({ moduleName: buttonPageModuleName });
 	helper.navigateWithHistory(() => buttonPage);
 
-	app.setCssFileName(appStyleFileName);
+	Application.setCssFileName(appStyleFileName);
 	const pageBeforeLiveSync = helper.getCurrentPage();
 	livesync({ type: 'style', path: livesyncStyleFileName });
 

@@ -17,7 +17,7 @@ import { Background, BackgroundClearFlags, refreshBorderDrawable } from '../../s
 import { profile } from '../../../profiling';
 import { topmost } from '../../frame/frame-stack';
 import { Screen } from '../../../platform';
-import { AndroidActivityBackPressedEventData, android as androidApp } from '../../../application';
+import { AndroidActivityBackPressedEventData, Application } from '../../../application';
 import { Device } from '../../../platform';
 import lazy from '../../../utils/lazy';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty } from '../../../accessibility/accessibility-properties';
@@ -143,7 +143,7 @@ function initializeDialogFragment() {
 			};
 
 			// Fist fire application.android global event
-			androidApp.notify(args);
+			Application.android.notify(args);
 			if (args.cancel) {
 				return;
 			}
@@ -1185,7 +1185,11 @@ export class View extends ViewCommon {
 	}
 
 	protected onBackgroundOrBorderPropertyChanged() {
-		const nativeView = <android.view.View & { _cachedDrawable: android.graphics.drawable.Drawable.ConstantState | android.graphics.drawable.Drawable }>this.nativeViewProtected;
+		const nativeView = <
+			android.view.View & {
+				_cachedDrawable: android.graphics.drawable.Drawable.ConstantState | android.graphics.drawable.Drawable;
+			}
+		>this.nativeViewProtected;
 		if (!nativeView) {
 			return;
 		}
@@ -1208,11 +1212,11 @@ export class View extends ViewCommon {
 		const isBorderDrawable = drawable instanceof org.nativescript.widgets.BorderDrawable;
 
 		// prettier-ignore
-		const onlyColor = !background.hasBorderWidth() 
-			&& !background.hasBorderRadius() 
-			&& !background.hasBoxShadow() 
-			&& !background.clipPath 
-			&& !background.image 
+		const onlyColor = !background.hasBorderWidth()
+			&& !background.hasBorderRadius()
+			&& !background.hasBoxShadow()
+			&& !background.clipPath
+			&& !background.image
 			&& !!background.color;
 
 		this._applyBackground(background, isBorderDrawable, onlyColor, drawable);

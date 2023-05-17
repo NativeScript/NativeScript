@@ -1,9 +1,5 @@
 import * as TKUnit from '../../tk-unit';
-import { isAndroid } from '@nativescript/core/platform';
-import { _resetRootView } from '@nativescript/core/application/';
-import { Frame, NavigationEntry } from '@nativescript/core/ui/frame';
-import { Page } from '@nativescript/core/ui/page';
-import { TabView, TabViewItem } from '@nativescript/core/ui/tab-view';
+import { Application, Frame, NavigationEntry, Page, TabView, TabViewItem, isAndroid } from '@nativescript/core';
 
 function waitUntilNavigatedToMaxTimeout(pages: Page[], action: Function) {
 	const maxTimeout = 8;
@@ -80,7 +76,7 @@ export function test_frame_topmost_matches_selectedIndex() {
 		create: () => tabView,
 	};
 
-	waitUntilNavigatedToMaxTimeout([items[0].page], () => _resetRootView(entry));
+	waitUntilNavigatedToMaxTimeout([items[0].page], () => Application.resetRootView(entry));
 	TKUnit.assertEqual(Frame.topmost().id, 'Tab0 Frame0');
 
 	waitUntilNavigatedToMaxTimeout([items[1].page], () => (tabView.selectedIndex = 1));
@@ -130,7 +126,7 @@ export function test_offset_zero_should_raise_same_events() {
 		create: () => tabView,
 	};
 
-	waitUntilNavigatedToMaxTimeout([items[0].page], () => _resetRootView(entry));
+	waitUntilNavigatedToMaxTimeout([items[0].page], () => Application.resetRootView(entry));
 
 	const expectedEventsRaisedAfterTabCreated = [['Tab0 Frame0 loaded', 'Tab0 Frame0 Page0 navigatingTo', 'Tab0 Frame0 Page0 loaded', 'Tab0 Frame0 Page0 navigatedTo'], [], []];
 
@@ -191,7 +187,7 @@ export function test_android_default_offset_should_preload_1_tab_on_each_side() 
 			create: () => tabView,
 		};
 
-		waitUntilNavigatedToMaxTimeout([items[0].page, items[1].page], () => _resetRootView(entry));
+		waitUntilNavigatedToMaxTimeout([items[0].page, items[1].page], () => Application.resetRootView(entry));
 
 		const expectedEventsRaisedAfterTabCreated = [['Tab0 Frame0 loaded', 'Tab0 Frame0 Page0 navigatingTo', 'Tab0 Frame0 Page0 loaded', 'Tab0 Frame0 Page0 navigatedTo'], ['Tab1 Frame1 loaded', 'Tab1 Frame1 Page1 navigatingTo', 'Tab1 Frame1 Page1 loaded', 'Tab1 Frame1 Page1 navigatedTo'], []];
 
@@ -223,5 +219,5 @@ export function tearDownModule() {
 		create: () => frame,
 	};
 
-	waitUntilNavigatedToMaxTimeout([page], () => _resetRootView(entry));
+	waitUntilNavigatedToMaxTimeout([page], () => Application.resetRootView(entry));
 }

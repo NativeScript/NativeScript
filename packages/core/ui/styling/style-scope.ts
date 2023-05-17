@@ -7,7 +7,7 @@ import { SyntaxTree, Keyframes as KeyframesDefinition, Node as CssNode } from '.
 import { RuleSet, SelectorsMap, SelectorCore, SelectorsMatch, ChangeMap, fromAstNodes, Node } from './css-selector';
 import { Trace } from '../../trace';
 import { File, knownFolders, path } from '../../file-system';
-import * as application from '../../application';
+import { Application, CssChangedEventData, LoadAppCSSEventData } from '../../application';
 import { profile } from '../../profiling';
 
 import * as kam from '../animation/keyframe-animation';
@@ -336,7 +336,7 @@ export function addTaggedAdditionalCSS(cssText: string, tag?: string | number): 
 	return changed;
 }
 
-const onCssChanged = profile('"style-scope".onCssChanged', (args: application.CssChangedEventData) => {
+const onCssChanged = profile('"style-scope".onCssChanged', (args: CssChangedEventData) => {
 	if (args.cssText) {
 		const parsed = CSSSource.fromSource(args.cssText, applicationKeyframes, args.cssFile).selectors;
 		if (parsed) {
@@ -348,8 +348,8 @@ const onCssChanged = profile('"style-scope".onCssChanged', (args: application.Cs
 	}
 });
 
-function onLiveSync(args: application.CssChangedEventData): void {
-	loadCss(application.getCssFileName(), null, null);
+function onLiveSync(args: CssChangedEventData): void {
+	loadCss(Application.getCssFileName(), null, null);
 }
 
 const loadCss = profile(`"style-scope".loadCss`, (cssModule: string) => {
@@ -377,17 +377,17 @@ global.NativeScriptGlobals.events.on('livesync', onLiveSync);
 //  - with-snapshot - code injected in snapshot bundle by [NativeScriptSnapshotPlugin](https://github.com/NativeScript/nativescript-dev-webpack/blob/48b26f412fd70c19dc0b9c7763e08e9505a0ae11/plugins/NativeScriptSnapshotPlugin/index.js#L48-L56)
 // Having the app.css loaded in snapshot provides significant boost in startup (when using the ns-theme ~150 ms). However, because app.css is resolved at build-time,
 // when the snapshot is created - there is no way to use file qualifiers or change the name of on app.css
-export const loadAppCSS = profile('"style-scope".loadAppCSS', (args: application.LoadAppCSSEventData) => {
+export const loadAppCSS = profile('"style-scope".loadAppCSS', (args: LoadAppCSSEventData) => {
 	loadCss(args.cssFile, null, null);
 	global.NativeScriptGlobals.events.off('loadAppCss', loadAppCSS);
 });
 
-if (application.hasLaunched()) {
+if (Application.hasLaunched()) {
 	loadAppCSS(
 		{
 			eventName: 'loadAppCss',
-			object: <any>application,
-			cssFile: application.getCssFileName(),
+			object: Application,
+			cssFile: Application.getCssFileName(),
 		},
 		null,
 		null
