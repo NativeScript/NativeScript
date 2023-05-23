@@ -1,6 +1,6 @@
 ﻿import { Color } from '../../color';
 import { ViewBase } from '../core/view-base';
-import { FontStyle, FontWeight } from '../styling/font';
+import { FontStyleType, FontWeightType } from '../styling/font';
 import { CoreTypes } from '../../core-types';
 
 /**
@@ -20,12 +20,12 @@ export class Span extends ViewBase {
 	/**
 	 * Gets or sets the font style of the span.
 	 */
-	public fontStyle: FontStyle;
+	public fontStyle: FontStyleType;
 
 	/**
 	 * Gets or sets the font weight of the span.
 	 */
-	public fontWeight: FontWeight;
+	public fontWeight: FontWeightType;
 
 	/**
 	 * Gets or sets text decorations for the span.
@@ -41,6 +41,21 @@ export class Span extends ViewBase {
 	 * Gets or sets the font background color of the span.
 	 */
 	public backgroundColor: Color;
+
+	/**
+	 * Defines whether accessibility font scale should affect font size.
+	 */
+	iosAccessibilityAdjustsFontSize: boolean;
+
+	/**
+	 * Gets or sets the minimum accessibility font scale.
+	 */
+	iosAccessibilityMinFontScale: number;
+
+	/**
+	 * Gets or sets the maximum accessibility font scale.
+	 */
+	iosAccessibilityMaxFontScale: number;
 
 	/**
 	 * Gets or sets the text for the span.

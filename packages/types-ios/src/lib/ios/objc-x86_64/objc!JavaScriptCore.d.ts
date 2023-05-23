@@ -52,6 +52,8 @@ declare class JSContext extends NSObject {
 
 	readonly globalObject: JSValue;
 
+	inspectable: boolean;
+
 	name: string;
 
 	readonly virtualMachine: JSVirtualMachine;
@@ -98,9 +100,13 @@ declare function JSGlobalContextCreate(globalObjectClass: interop.Pointer | inte
 
 declare function JSGlobalContextCreateInGroup(group: interop.Pointer | interop.Reference<any>, globalObjectClass: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
+declare function JSGlobalContextIsInspectable(ctx: interop.Pointer | interop.Reference<any>): boolean;
+
 declare function JSGlobalContextRelease(ctx: interop.Pointer | interop.Reference<any>): void;
 
 declare function JSGlobalContextRetain(ctx: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+
+declare function JSGlobalContextSetInspectable(ctx: interop.Pointer | interop.Reference<any>, inspectable: boolean): void;
 
 declare function JSGlobalContextSetName(ctx: interop.Pointer | interop.Reference<any>, name: interop.Pointer | interop.Reference<any>): void;
 

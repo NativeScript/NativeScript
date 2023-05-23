@@ -1,5 +1,20 @@
 ﻿import { FileSystemAccess } from './file-system-access';
 
+export enum AndroidDirectory {
+	ALARMS,
+	AUDIOBOOKS,
+	DCIM,
+	DOCUMENTS,
+	DOWNLOADS,
+	MOVIES,
+	MUSIC,
+	NOTIFICATIONS,
+	PICTURES,
+	PODCASTS,
+	RINGTONES,
+	SCREENSHOTS,
+}
+
 /**
  * Returns FileSystemAccess, a shared singleton utility class to provide methods to access and work with the file system. This is used under the hood of all the file system apis in @nativescript/core and provided as a lower level convenience if needed.
  * @returns FileSystemAccess
@@ -56,9 +71,26 @@ export class FileSystemEntity {
 }
 
 /**
+ * Contains Android-specific the file system helpers.
+ */
+class Android {
+	createFile(options: { relativePath?: string; name: string; mime: string; directory: AndroidDirectory }): File;
+}
+
+/**
+ * Contains iOS-specific the file system helpers.
+ */
+
+class iOS {}
+
+/**
  * Represents a File entity on the file system.
  */
 export class File extends FileSystemEntity {
+	static readonly android: Android;
+
+	static readonly ios: iOS;
+
 	/**
 	 * Checks whether a File with the specified path already exists.
 	 * @param path The path to check for.
@@ -79,6 +111,34 @@ export class File extends FileSystemEntity {
 	 * Gets a value indicating whether the file is currently locked, meaning a background operation associated with this file is running.
 	 */
 	isLocked: boolean;
+
+	/**
+	 * Appends the provided string to the file, using the specified encoding (defaults to UTF-8).
+	 * @param content The content to be saved to the file.
+	 * @param encoding An optional value specifying the preferred encoding (defaults to UTF-8).
+	 */
+	appendText(content: string, encoding?: string): Promise<any>;
+
+	/**
+	 * Appends the provided string to the file synchronously, using the specified encoding (defaults to UTF-8).
+	 * @param content The content to be saved to the file.
+	 * @param onError An optional function to be called if some IO-error occurs.
+	 * @param encoding An optional value specifying the preferred encoding (defaults to UTF-8).
+	 */
+	appendTextSync(content: string, onError?: (error: any) => any, encoding?: string): void;
+
+	/**
+	 * Appends the provided binary content to the file.
+	 * @param content The binary content to be saved to the file.
+	 */
+	append(content: any): Promise<void>;
+
+	/**
+	 * Appends the provided binary content to the file synchronously.
+	 * @param content The binary content to be saved to the file.
+	 * @param onError An optional function to be called if some IO-error occurs.
+	 */
+	appendSync(content: any, onError?: (error: any) => any): void;
 
 	/**
 	 * Copies a file to a given path.

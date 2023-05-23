@@ -1305,6 +1305,10 @@ declare class MTLCompileOptions extends NSObject implements NSCopying {
 
 	static new(): MTLCompileOptions; // inherited from NSObject
 
+	allowReferencingUndefinedSymbols: boolean;
+
+	compileSymbolVisibility: MTLCompileSymbolVisibility;
+
 	fastMathEnabled: boolean;
 
 	installName: string;
@@ -1315,6 +1319,8 @@ declare class MTLCompileOptions extends NSObject implements NSCopying {
 
 	libraryType: MTLLibraryType;
 
+	maxTotalThreadsPerThreadgroup: number;
+
 	optimizationLevel: MTLLibraryOptimizationLevel;
 
 	preprocessorMacros: NSDictionary<string, NSObject>;
@@ -1322,6 +1328,13 @@ declare class MTLCompileOptions extends NSObject implements NSCopying {
 	preserveInvariance: boolean;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare const enum MTLCompileSymbolVisibility {
+
+	Default = 0,
+
+	Hidden = 1
 }
 
 interface MTLComputeCommandEncoder extends MTLCommandEncoder {
@@ -1894,6 +1907,8 @@ interface MTLDevice extends NSObjectProtocol {
 
 	supports32BitMSAA: boolean;
 
+	supportsBCTextureCompression: boolean;
+
 	supportsDynamicLibraries: boolean;
 
 	supportsFunctionPointers: boolean;
@@ -1983,12 +1998,6 @@ interface MTLDevice extends NSObjectProtocol {
 	newFence(): MTLFence;
 
 	newHeapWithDescriptor(descriptor: MTLHeapDescriptor): MTLHeap;
-
-	newIOCommandQueueWithDescriptorError(descriptor: MTLIOCommandQueueDescriptor): MTLIOCommandQueue;
-
-	newIOHandleWithURLCompressionMethodError(url: NSURL, compressionMethod: MTLIOCompressionMethod): MTLIOFileHandle;
-
-	newIOHandleWithURLError(url: NSURL): MTLIOFileHandle;
 
 	newIndirectCommandBufferWithDescriptorMaxCommandCountOptions(descriptor: MTLIndirectCommandBufferDescriptor, maxCount: number, options: MTLResourceOptions): MTLIndirectCommandBuffer;
 
@@ -2681,172 +2690,6 @@ declare const enum MTLHeapType {
 	Placement = 1,
 
 	Sparse = 2
-}
-
-interface MTLIOCommandBuffer extends NSObjectProtocol {
-
-	error: NSError;
-
-	label: string;
-
-	status: MTLIOStatus;
-
-	addBarrier(): void;
-
-	addCompletedHandler(block: (p1: MTLIOCommandBuffer) => void): void;
-
-	commit(): void;
-
-	copyStatusToBufferOffset(buffer: MTLBuffer, offset: number): void;
-
-	enqueue(): void;
-
-	loadBufferOffsetSizeSourceHandleSourceHandleOffset(buffer: MTLBuffer, offset: number, size: number, sourceHandle: MTLIOFileHandle, sourceHandleOffset: number): void;
-
-	loadBytesSizeSourceHandleSourceHandleOffset(pointer: interop.Pointer | interop.Reference<any>, size: number, sourceHandle: MTLIOFileHandle, sourceHandleOffset: number): void;
-
-	loadTextureSliceLevelSizeSourceBytesPerRowSourceBytesPerImageDestinationOriginSourceHandleSourceHandleOffset(texture: MTLTexture, slice: number, level: number, size: MTLSize, sourceBytesPerRow: number, sourceBytesPerImage: number, destinationOrigin: MTLOrigin, sourceHandle: MTLIOFileHandle, sourceHandleOffset: number): void;
-
-	popDebugGroup(): void;
-
-	pushDebugGroup(string: string): void;
-
-	signalEventValue(event: MTLSharedEvent, value: number): void;
-
-	tryCancel(): void;
-
-	waitForEventValue(event: MTLSharedEvent, value: number): void;
-
-	waitUntilCompleted(): void;
-}
-declare var MTLIOCommandBuffer: {
-
-	prototype: MTLIOCommandBuffer;
-};
-
-interface MTLIOCommandQueue extends NSObjectProtocol {
-
-	label: string;
-
-	commandBuffer(): MTLIOCommandBuffer;
-
-	commandBufferWithUnretainedReferences(): MTLIOCommandBuffer;
-
-	enqueueBarrier(): void;
-}
-declare var MTLIOCommandQueue: {
-
-	prototype: MTLIOCommandQueue;
-};
-
-declare class MTLIOCommandQueueDescriptor extends NSObject implements NSCopying {
-
-	static alloc(): MTLIOCommandQueueDescriptor; // inherited from NSObject
-
-	static new(): MTLIOCommandQueueDescriptor; // inherited from NSObject
-
-	maxCommandBufferCount: number;
-
-	maxCommandsInFlight: number;
-
-	priority: MTLIOPriority;
-
-	scratchBufferAllocator: MTLIOScratchBufferAllocator;
-
-	type: MTLIOCommandQueueType;
-
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
-}
-
-declare const enum MTLIOCommandQueueType {
-
-	Concurrent = 0,
-
-	Serial = 1
-}
-
-declare function MTLIOCompressionContextAppendData(context: interop.Pointer | interop.Reference<any>, data: interop.Pointer | interop.Reference<any>, size: number): void;
-
-declare function MTLIOCompressionContextDefaultChunkSize(): number;
-
-declare const enum MTLIOCompressionMethod {
-
-	Zlib = 0,
-
-	LZFSE = 1,
-
-	LZ4 = 2,
-
-	LZMA = 3,
-
-	LZBitmap = 4
-}
-
-declare const enum MTLIOCompressionStatus {
-
-	Complete = 0,
-
-	Error = 1
-}
-
-declare function MTLIOCreateCompressionContext(path: string | interop.Pointer | interop.Reference<any>, type: MTLIOCompressionMethod, chunkSize: number): interop.Pointer | interop.Reference<any>;
-
-declare const enum MTLIOError {
-
-	URLInvalid = 1,
-
-	Internal = 2
-}
-
-declare var MTLIOErrorDomain: string;
-
-interface MTLIOFileHandle extends NSObjectProtocol {
-
-	label: string;
-}
-declare var MTLIOFileHandle: {
-
-	prototype: MTLIOFileHandle;
-};
-
-declare function MTLIOFlushAndDestroyCompressionContext(context: interop.Pointer | interop.Reference<any>): MTLIOCompressionStatus;
-
-declare const enum MTLIOPriority {
-
-	High = 0,
-
-	Normal = 1,
-
-	Low = 2
-}
-
-interface MTLIOScratchBuffer extends NSObjectProtocol {
-
-	buffer: MTLBuffer;
-}
-declare var MTLIOScratchBuffer: {
-
-	prototype: MTLIOScratchBuffer;
-};
-
-interface MTLIOScratchBufferAllocator extends NSObjectProtocol {
-
-	newScratchBufferWithMinimumSize(minimumSize: number): MTLIOScratchBuffer;
-}
-declare var MTLIOScratchBufferAllocator: {
-
-	prototype: MTLIOScratchBufferAllocator;
-};
-
-declare const enum MTLIOStatus {
-
-	Pending = 0,
-
-	Cancelled = 1,
-
-	Error = 2,
-
-	Complete = 3
 }
 
 declare const enum MTLIndexType {

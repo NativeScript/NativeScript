@@ -3213,6 +3213,8 @@ declare var kCFURLFileDirectoryContents: string;
 
 declare var kCFURLFileExists: string;
 
+declare var kCFURLFileIdentifierKey: string;
+
 declare var kCFURLFileLastModificationTime: string;
 
 declare var kCFURLFileLength: string;
@@ -3395,9 +3397,13 @@ declare var kCFURLVolumeLocalizedNameKey: string;
 
 declare var kCFURLVolumeMaximumFileSizeKey: string;
 
+declare var kCFURLVolumeMountFromLocationKey: string;
+
 declare var kCFURLVolumeNameKey: string;
 
 declare var kCFURLVolumeResourceCountKey: string;
+
+declare var kCFURLVolumeSubtypeKey: string;
 
 declare var kCFURLVolumeSupportsAccessPermissionsKey: string;
 
@@ -3440,6 +3446,8 @@ declare var kCFURLVolumeSupportsVolumeSizesKey: string;
 declare var kCFURLVolumeSupportsZeroRunsKey: string;
 
 declare var kCFURLVolumeTotalCapacityKey: string;
+
+declare var kCFURLVolumeTypeNameKey: string;
 
 declare var kCFURLVolumeURLForRemountingKey: string;
 

@@ -503,6 +503,8 @@ declare class WKPreferences extends NSObject implements NSSecureCoding {
 
 	minimumFontSize: number;
 
+	shouldPrintBackgrounds: boolean;
+
 	siteSpecificQuirksModeEnabled: boolean;
 
 	textInteractionEnabled: boolean;
@@ -660,6 +662,10 @@ interface WKUIDelegate extends NSObjectProtocol {
 	webViewShouldPreviewElement?(webView: WKWebView, elementInfo: WKPreviewElementInfo): boolean;
 
 	webViewShowLockdownModeFirstUseMessageCompletionHandler?(webView: WKWebView, message: string, completionHandler: (p1: WKDialogResult) => void): void;
+
+	webViewWillDismissEditMenuWithAnimator?(webView: WKWebView, animator: UIEditMenuInteractionAnimating): void;
+
+	webViewWillPresentEditMenuWithAnimator?(webView: WKWebView, animator: UIEditMenuInteractionAnimating): void;
 }
 declare var WKUIDelegate: {
 
@@ -816,6 +822,8 @@ declare class WKWebView extends UIView {
 	readonly fullscreenState: WKFullscreenState;
 
 	readonly hasOnlySecureContent: boolean;
+
+	inspectable: boolean;
 
 	interactionState: any;
 

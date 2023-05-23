@@ -22,3 +22,4 @@ FOUNDATION_EXPORT const unsigned char TNSWidgetsVersionString[];
 #import "TNSProcess.h"
 #import "NSString+Async.h"
 #import "NSData+Async.h"
+#import "NSFileHandle+Async.h"

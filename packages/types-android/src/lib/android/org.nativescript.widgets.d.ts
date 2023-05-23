@@ -39,6 +39,9 @@
                     export function writeText(path: string, content: string, encoding: string, callback: CompleteCallback, context: any);
                     export function write(path: string, content: androidNative.Array<number>, callback: CompleteCallback, context: any);
                     export function writeBuffer(param0: string, param1: java.nio.ByteBuffer, param2: org.nativescript.widgets.Async.CompleteCallback, param3: any): void;
+                    export function append(path: string, content: androidNative.Array<number>, callback: CompleteCallback, context: any);
+                    export function appendBuffer(param0: string, param1: java.nio.ByteBuffer, param2: org.nativescript.widgets.Async.CompleteCallback, param3: any): void;
+                    export function appendText(path: string, content: string, encoding: string, callback: CompleteCallback, context: any);
                 }
 
                 export module Http {
@@ -646,7 +649,13 @@ declare module org {
 		export module widgets {
 			export class FileHelper {
 				public static class: java.lang.Class<org.nativescript.widgets.FileHelper>;
+                public appendTextSync(param0: globalAndroid.content.Context, param1: string, param2: string, param3: org.nativescript.widgets.FileHelper.Callback): void;
+                public appendText(param0: globalAndroid.content.Context, param1: string, param2: string, param3: org.nativescript.widgets.FileHelper.Callback): void;
 				public readText(param0: globalAndroid.content.Context, param1: string, param2: org.nativescript.widgets.FileHelper.Callback): void;
+                public appendSync(param0: globalAndroid.content.Context, param1: androidNative.Array<number>, param2: org.nativescript.widgets.FileHelper.Callback): void;
+                public append(param0: globalAndroid.content.Context, param1: androidNative.Array<number>, param2: org.nativescript.widgets.FileHelper.Callback): void;
+                public appendBufferSync(param0: globalAndroid.content.Context, param1: java.nio.ByteBuffer, param2: org.nativescript.widgets.FileHelper.Callback): void;
+                public appendBuffer(param0: globalAndroid.content.Context, param1: java.nio.ByteBuffer, param2: org.nativescript.widgets.FileHelper.Callback): void;
 				public writeBufferSync(param0: globalAndroid.content.Context, param1: java.nio.ByteBuffer, param2: org.nativescript.widgets.FileHelper.Callback): void;
 				public writeTextSync(param0: globalAndroid.content.Context, param1: string, param2: string, param3: org.nativescript.widgets.FileHelper.Callback): void;
 				public copyToFileSync(param0: globalAndroid.content.Context, param1: java.io.File, param2: org.nativescript.widgets.FileHelper.Callback): boolean;

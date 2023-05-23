@@ -195,7 +195,7 @@ declare class CAEAGLLayer extends CALayer implements EAGLDrawable {
 	drawableProperties: NSDictionary<string, any>; // inherited from EAGLDrawable
 }
 
-declare class CAEDRMetadata extends NSObject {
+declare class CAEDRMetadata extends NSObject implements NSCopying, NSSecureCoding {
 
 	static HDR10MetadataWithDisplayInfoContentInfoOpticalOutputScale(displayData: NSData, contentData: NSData, scale: number): CAEDRMetadata;
 
@@ -208,6 +208,16 @@ declare class CAEDRMetadata extends NSObject {
 	static readonly HLGMetadata: CAEDRMetadata;
 
 	static readonly available: boolean;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare const enum CAEdgeAntialiasingMask {

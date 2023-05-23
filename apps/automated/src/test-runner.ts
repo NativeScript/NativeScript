@@ -227,6 +227,9 @@ allTests['LISTVIEW'] = listViewTests;
 import * as activityIndicatorTests from './ui/activity-indicator/activity-indicator-tests';
 allTests['ACTIVITY-INDICATOR'] = activityIndicatorTests;
 
+import * as textBaseTests from './ui/text-base/text-base-tests';
+allTests['TEXT-BASE'] = textBaseTests;
+
 import * as textFieldTests from './ui/text-field/text-field-tests';
 allTests['TEXT-FIELD'] = textFieldTests;
 

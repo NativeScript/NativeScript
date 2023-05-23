@@ -1,3 +1,18 @@
+## [8.5.3](https://github.com/NativeScript/NativeScript/compare/8.5.2-core...8.5.3) (2023-05-04)
+
+
+### Bug Fixes
+
+* **ios:** FormattedString and Span a11y font scale ([#10281](https://github.com/NativeScript/NativeScript/issues/10281)) ([a14becd](https://github.com/NativeScript/NativeScript/commit/a14becdc6af723d6c1d30c35af3074f79ae2da0b))
+* **shared-transition:** iOS snapshot opacity ([#10278](https://github.com/NativeScript/NativeScript/issues/10278)) ([b8a548f](https://github.com/NativeScript/NativeScript/commit/b8a548f009354248a49236b2f7635c38f10b6247))
+
+
+### Performance Improvements
+
+* faster nativeView accessors ([#10279](https://github.com/NativeScript/NativeScript/issues/10279)) ([b7d02c9](https://github.com/NativeScript/NativeScript/commit/b7d02c9c8616035674a0002754ce89408ba785a8))
+
+
+
 ## [8.5.2](https://github.com/NativeScript/NativeScript/compare/8.5.1-core...8.5.2) (2023-04-25)
 
 

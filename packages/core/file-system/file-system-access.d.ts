@@ -3,6 +3,55 @@
  */
 export interface IFileSystemAccess {
 	/**
+	 * Appends binary to a file with a given path.
+	 * @param path The path to the source file.
+	 * @param content The content which will be written to the file.
+	 * @param onError (optional) A callback function to use if any error occurs.
+	 */
+	append(path: string, content: any, onError?: (error: any) => any);
+
+	/**
+	 * Appends binary to a file with a given path.
+	 * @param path The path to the source file.
+	 * @param content The content which will be written to the file.
+	 */
+	appendAsync(path: string, content: any): Promise<void>;
+
+	/**
+	 * Appends a binary to a file with a given path.
+	 * @param path The path to the source file.
+	 * @param content The content which will be written to the file.
+	 * @param onError (optional) A callback function to use if any error occurs.
+	 */
+	appendSync(path: string, content: any, onError?: (error: any) => any);
+
+	/**
+	 * Appends text to a file with a given path.
+	 * @param path The path to the source file.
+	 * @param content The content which will be written to the file.
+	 * @param onError (optional) A callback function to use if any error occurs.
+	 * @param encoding (optional) If set writes the text with the specified encoding (default UTF-8).
+	 */
+	appendText(path: string, content: string, onError?: (error: any) => any, encoding?: any);
+
+	/**
+	 * Appends text to a file with a given path.
+	 * @param path The path to the source file.
+	 * @param content The content which will be written to the file.
+	 * @param encoding (optional) If set writes the text with the specified encoding (default UTF-8).
+	 */
+	appendTextAsync(path: string, content: string, encoding?: any): Promise<void>;
+
+	/**
+	 * Appends text to a file with a given path.
+	 * @param path The path to the source file.
+	 * @param content The content which will be written to the file.
+	 * @param onError (optional) A callback function to use if any error occurs.
+	 * @param encoding (optional) If set writes the text with the specified encoding (default UTF-8).
+	 */
+	appendTextSync(path: string, content: string, onError?: (error: any) => any, encoding?: any);
+
+	/**
 	 * Copies a file to a given path.
 	 * @param src The path to the source file.
 	 * @param dest The path to the destination file.
@@ -282,6 +331,24 @@ export interface IFileSystemAccess {
 }
 
 export class FileSystemAccess implements IFileSystemAccess {
+	appendBuffer(path: string, content: ArrayBuffer | Uint8Array | Uint8ClampedArray, onError?: (error: any) => any);
+
+	appendBufferAsync(path: string, content: ArrayBuffer | Uint8Array | Uint8ClampedArray): Promise<void>;
+
+	appendBufferSync(path: string, content: ArrayBuffer | Uint8Array | Uint8ClampedArray, onError?: (error: any) => any);
+
+	append(path: string, content: any, onError?: (error: any) => any);
+
+	appendAsync(path: string, content: any): Promise<void>;
+
+	appendSync(path: string, content: any, onError?: (error: any) => any);
+
+	appendText(path: string, content: string, onError?: (error: any) => any, encoding?: any);
+
+	appendTextAsync(path: string, content: string, encoding?: any): Promise<void>;
+
+	appendTextSync(path: string, content: string, onError?: (error: any) => any, encoding?: any);
+
 	copy(src: string, dest: string, onError?: (error: any) => any): boolean;
 
 	copySync(src: string, dest: string, onError?: (error: any) => any): boolean;
