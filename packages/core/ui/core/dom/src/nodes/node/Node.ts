@@ -211,6 +211,7 @@ export default class Node extends Observable {
 			else this.firstChild = newNode;
 		}
 		assignParentNode(newNode);
+		newNode['canRender'] = this.canRender;
 		if (newNode.connectedCallback) newNode.connectedCallback();
 		return newNode;
 	}
@@ -250,6 +251,7 @@ export default class Node extends Observable {
 		node._rootNode = null;
 		if (node.disconnectedCallback) node.disconnectedCallback();
 		assignParentNode(node);
+		node.canRender = true;
 		return node;
 	}
 

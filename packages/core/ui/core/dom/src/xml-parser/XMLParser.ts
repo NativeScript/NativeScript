@@ -236,6 +236,6 @@ export default class XMLParser {
 		if (namespaceURI === NamespaceURI.svg) {
 			return name;
 		}
-		return name.toLowerCase();
+		return name;
 	}
 }

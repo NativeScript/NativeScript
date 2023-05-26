@@ -391,8 +391,11 @@ export default class Element extends ParentNode {
 const updateAttributeNS = (self: Element, namespace: string, name: string, value: any) => {
 	let attr = findWhere(self.attributes, createAttributeFilter(namespace, name), false, false);
 	if (!attr) self.attributes.push((attr = { namespaceURI: namespace, name } as IAttr));
-
 	if (attr.value === value) return;
+	attr.value = value;
+	if (self.canRender && self['isNativeElement']) {
+		self[name] = value;
+	}
 
 	if (self.attributeChangedCallback && (<typeof Element>self.constructor)._observedAttributes && (<typeof Element>self.constructor)._observedAttributes.includes(name)) {
 		self.attributeChangedCallback(name, attr.value, value);
