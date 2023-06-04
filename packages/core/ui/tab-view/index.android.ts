@@ -10,7 +10,7 @@ import { Color } from '../../color';
 import { fontSizeProperty, fontInternalProperty } from '../styling/style-properties';
 import { RESOURCE_PREFIX, ad, layout } from '../../utils';
 import { Frame } from '../frame';
-import * as application from '../../application';
+import { Application } from '../../application';
 
 export * from './tab-view-common';
 
@@ -240,7 +240,7 @@ function initializeNativeClasses() {
 	}
 
 	PagerAdapter = FragmentPagerAdapter;
-	appResources = application.android.context.getResources();
+	appResources = Application.android.context.getResources();
 }
 
 function createTabItemSpec(item: TabViewItem): org.nativescript.widgets.TabItemSpec {

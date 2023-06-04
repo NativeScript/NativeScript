@@ -1,4 +1,4 @@
-import * as Application from '../application';
+import { Application, ApplicationEventData } from '../application';
 import { Observable } from '../data/observable';
 import { Trace } from '../trace';
 import * as Utils from '../utils';
@@ -90,6 +90,33 @@ function ensureStateListener(): SharedA11YObservable {
 	updateAccessibilityState();
 
 	Application.on(Application.resumeEvent, updateAccessibilityState);
+	Application.on(Application.exitEvent, (args: ApplicationEventData) => {
+		const activity = args.android as android.app.Activity;
+		if (activity && !activity.isFinishing()) {
+			return;
+		}
+
+		const accessibilityManager = getAndroidAccessibilityManager();
+		if (accessibilityManager) {
+			if (accessibilityStateChangeListener) {
+				accessibilityManager.removeAccessibilityStateChangeListener(accessibilityStateChangeListener);
+			}
+
+			if (touchExplorationStateChangeListener) {
+				accessibilityManager.removeTouchExplorationStateChangeListener(touchExplorationStateChangeListener);
+			}
+		}
+
+		accessibilityStateChangeListener = null;
+		touchExplorationStateChangeListener = null;
+
+		if (sharedA11YObservable) {
+			sharedA11YObservable.removeEventListener(Observable.propertyChangeEvent);
+			sharedA11YObservable = null;
+		}
+
+		Application.off(Application.resumeEvent, updateAccessibilityState);
+	});
 
 	return sharedA11YObservable;
 }
@@ -97,34 +124,6 @@ function ensureStateListener(): SharedA11YObservable {
 export function isAccessibilityServiceEnabled(): boolean {
 	return ensureStateListener().accessibilityServiceEnabled;
 }
-
-Application.on(Application.exitEvent, (args: Application.ApplicationEventData) => {
-	const activity = args.android as android.app.Activity;
-	if (activity && !activity.isFinishing()) {
-		return;
-	}
-
-	const accessibilityManager = getAndroidAccessibilityManager();
-	if (accessibilityManager) {
-		if (accessibilityStateChangeListener) {
-			accessibilityManager.removeAccessibilityStateChangeListener(accessibilityStateChangeListener);
-		}
-
-		if (touchExplorationStateChangeListener) {
-			accessibilityManager.removeTouchExplorationStateChangeListener(touchExplorationStateChangeListener);
-		}
-	}
-
-	accessibilityStateChangeListener = null;
-	touchExplorationStateChangeListener = null;
-
-	if (sharedA11YObservable) {
-		sharedA11YObservable.removeEventListener(Observable.propertyChangeEvent);
-		sharedA11YObservable = null;
-	}
-
-	Application.off(Application.resumeEvent, updateAccessibilityState);
-});
 
 export class AccessibilityServiceEnabledObservable extends CommonA11YServiceEnabledObservable {
 	constructor() {

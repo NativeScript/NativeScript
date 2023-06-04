@@ -1,4 +1,4 @@
-import { android as androidApp, getNativeApplication } from '../application';
+import { Application } from '../application';
 import { SDK_VERSION } from '../utils/constants';
 
 export enum connectionType {
@@ -18,7 +18,7 @@ const vpn = 'vpn';
 
 // Get Connection Type
 function getConnectivityManager(): android.net.ConnectivityManager {
-	return getNativeApplication().getApplicationContext().getSystemService(android.content.Context.CONNECTIVITY_SERVICE);
+	return Application.android.getNativeApplication().getApplicationContext().getSystemService(android.content.Context.CONNECTIVITY_SERVICE);
 }
 
 function getActiveNetworkInfo(): android.net.NetworkInfo {
@@ -129,10 +129,9 @@ export function startMonitoring(connectionTypeChangedCallback: (newConnectionTyp
 				const zoneCallback = zonedCallback(connectionTypeChangedCallback);
 				zoneCallback(newConnectionType);
 			};
-			const ConnectivityManager = android.net.ConnectivityManager;
 			if (!networkCallback) {
 				@NativeClass
-				class NetworkCallbackImpl extends ConnectivityManager.NetworkCallback {
+				class NetworkCallbackImpl extends android.net.ConnectivityManager.NetworkCallback {
 					onCapabilitiesChanged(network: android.net.Network, networkCapabilities: android.net.NetworkCapabilities) {
 						if (notifyCallback) {
 							notifyCallback(network, networkCapabilities);
@@ -172,6 +171,6 @@ export function stopMonitoring(): void {
 			callback = null;
 		}
 	} else {
-		androidApp.unregisterBroadcastReceiver(android.net.ConnectivityManager.CONNECTIVITY_ACTION);
+		Application.android.unregisterBroadcastReceiver(android.net.ConnectivityManager.CONNECTIVITY_ACTION);
 	}
 }

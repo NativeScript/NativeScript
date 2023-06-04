@@ -1,5 +1,4 @@
-import { initAccessibilityFontScale } from './font-scale';
-import * as Application from '../application';
+import { Application, ApplicationEventData } from '../application';
 import { Trace } from '../trace';
 import { SDK_VERSION } from '../utils/constants';
 import type { View } from '../ui/core/view';
@@ -8,6 +7,7 @@ import { notifyAccessibilityFocusState } from './accessibility-common';
 import { initAccessibilityCssHelper } from './accessibility-css-helper';
 import { getAndroidAccessibilityManager } from './accessibility-service';
 import { AccessibilityRole, AccessibilityState, AndroidAccessibilityEvent } from './accessibility-types';
+import { initAccessibilityFontScale } from './font-scale';
 
 export * from './accessibility-common';
 export * from './accessibility-types';
@@ -412,7 +412,7 @@ export function isAccessibilityServiceEnabled(): boolean {
 
 	updateAccessibilityServiceState();
 
-	Application.on(Application.exitEvent, (args: Application.ApplicationEventData) => {
+	Application.on(Application.exitEvent, (args: ApplicationEventData) => {
 		const activity = args.android as android.app.Activity;
 		if (activity && !activity.isFinishing()) {
 			return;

@@ -1,4 +1,4 @@
-import { ad } from './native-helper';
+import { android as androidHelper } from './native-helper';
 
 export function dispatchToMainThread(func: () => void) {
 	const runOnMainThread = (global as any).__runOnMainThread;
@@ -20,7 +20,7 @@ export function isMainThread(): boolean {
 }
 
 export function dispatchToUIThread(func: () => void) {
-	const activity: androidx.appcompat.app.AppCompatActivity = ad.getCurrentActivity();
+	const activity = androidHelper.getCurrentActivity();
 	if (activity && func) {
 		activity.runOnUiThread(
 			new java.lang.Runnable({

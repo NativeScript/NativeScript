@@ -3,7 +3,7 @@ import { LinearGradient } from './linear-gradient';
 import { isDataURI, isFileOrResourcePath, RESOURCE_PREFIX, FILE_PREFIX } from '../../utils';
 import { parse } from '../../css-value';
 import { path, knownFolders } from '../../file-system';
-import * as application from '../../application';
+import { Application } from '../../application';
 export * from './background-common';
 
 function fromBase64(source: string): android.graphics.Bitmap {
@@ -163,8 +163,7 @@ function onLiveSync(args): void {
 global.NativeScriptGlobals.events.on('livesync', onLiveSync);
 
 global.NativeScriptGlobals.addEventWiring(() => {
-	application.ensureNativeApplication();
-	application.android.on('activityStarted', (args) => {
+	Application.android.on('activityStarted', (args) => {
 		if (!imageFetcher) {
 			initImageCache(args.activity);
 		} else {
@@ -174,8 +173,7 @@ global.NativeScriptGlobals.addEventWiring(() => {
 });
 
 global.NativeScriptGlobals.addEventWiring(() => {
-	application.ensureNativeApplication();
-	application.android.on('activityStopped', (args) => {
+	Application.android.on('activityStopped', (args) => {
 		if (imageFetcher) {
 			imageFetcher.closeCache();
 		}

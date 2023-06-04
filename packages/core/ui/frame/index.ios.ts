@@ -5,7 +5,7 @@ import { Page } from '../page';
 import { View } from '../core/view';
 import { IOSHelper } from '../core/view/view-helper';
 import { profile } from '../../profiling';
-import { CORE_ANIMATION_DEFAULTS, iOSNativeHelper, layout } from '../../utils';
+import { CORE_ANIMATION_DEFAULTS, ios as iOSUtils, layout } from '../../utils';
 import { Trace } from '../../trace';
 import type { PageTransition } from '../transition/page-transition';
 import { SlideTransition } from '../transition/slide-transition';
@@ -14,7 +14,7 @@ import { SharedTransition } from '../transition/shared-transition';
 
 export * from './frame-common';
 
-const majorVersion = iOSNativeHelper.MajorVersion;
+const majorVersion = iOSUtils.MajorVersion;
 
 const ENTRY = '_entry';
 const DELEGATE = '_delegate';

@@ -1,4 +1,4 @@
-import * as Application from '../application';
+import { Application } from '../application';
 import { Observable } from '../data/observable';
 import { Trace } from '../trace';
 import { AccessibilityServiceEnabledPropName, CommonA11YServiceEnabledObservable, SharedA11YObservable } from './accessibility-service-common';
