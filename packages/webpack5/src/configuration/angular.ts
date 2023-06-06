@@ -13,6 +13,16 @@ import {
 	getPlatformName,
 } from '../helpers/platform';
 import base from './base';
+// until we can switch to async/await on the webpack config, copy this from '@angular/compiler-cli'
+const GLOBAL_DEFS_FOR_TERSER = {
+	ngDevMode: false,
+	ngI18nClosureMode: false,
+};
+
+const GLOBAL_DEFS_FOR_TERSER_WITH_AOT = {
+	...GLOBAL_DEFS_FOR_TERSER,
+	ngJitMode: false,
+};
 
 export default function (config: Config, env: IWebpackEnv = _env): Config {
 	base(config, env);
@@ -268,6 +278,19 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			/core\/ui\/styling/,
 		])
 	);
+
+	config.optimization.minimizer('TerserPlugin').tap((args) => {
+		args[0].terserOptions ??= {};
+		args[0].terserOptions.compress ??= {};
+		args[0].terserOptions.compress.global_defs ??= {};
+		args[0].terserOptions.compress.global_defs = {
+			...args[0].terserOptions.compress.global_defs,
+			...(disableAOT
+				? GLOBAL_DEFS_FOR_TERSER
+				: GLOBAL_DEFS_FOR_TERSER_WITH_AOT),
+		};
+		return args;
+	});
 
 	// todo: re-visit later, disabling by default now
 	// config.plugin('DefinePlugin').tap((args) => {
