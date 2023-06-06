@@ -318,7 +318,10 @@ exports[`angular configuration for android 1`] = `
               keep_infinity: true,
               drop_console: false,
               global_defs: {
-                __UGLIFIED__: true
+                __UGLIFIED__: true,
+                ngDevMode: false,
+                ngI18nClosureMode: false,
+                ngJitMode: false
               }
             },
             keep_fnames: true,
@@ -741,7 +744,10 @@ exports[`angular configuration for ios 1`] = `
               keep_infinity: true,
               drop_console: false,
               global_defs: {
-                __UGLIFIED__: true
+                __UGLIFIED__: true,
+                ngDevMode: false,
+                ngI18nClosureMode: false,
+                ngJitMode: false
               }
             },
             keep_fnames: true,
