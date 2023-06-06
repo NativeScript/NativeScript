@@ -13,6 +13,7 @@ import {
 	getPlatformName,
 } from '../helpers/platform';
 import base from './base';
+import semver from 'semver';
 // until we can switch to async/await on the webpack config, copy this from '@angular/compiler-cli'
 const GLOBAL_DEFS_FOR_TERSER = {
 	ngDevMode: false,
@@ -23,6 +24,40 @@ const GLOBAL_DEFS_FOR_TERSER_WITH_AOT = {
 	...GLOBAL_DEFS_FOR_TERSER,
 	ngJitMode: false,
 };
+
+const CHROME_VERSIONS = {
+	android: {
+		'0.0.0': 'chrome 83',
+		'8.5.0': 'chrome 103',
+	},
+	ios: {
+		'0.0.0': 'chrome 92',
+		'8.5.0': 'chrome 103',
+	},
+	default: 'chrome 103',
+};
+
+function getSupportedBrowsers() {
+	const platform = getPlatformName();
+	if (platform === 'android' || platform === 'ios') {
+		try {
+			const version = require(`@nativescript/${platform}/package.json`).version;
+			let parsed = semver.parse(version);
+			if (parsed) {
+				let lastVersion = CHROME_VERSIONS.default;
+				for (const k in CHROME_VERSIONS[platform]) {
+					if (semver.gte(parsed, k)) {
+						lastVersion = CHROME_VERSIONS[platform][k];
+					} else {
+						break;
+					}
+				}
+				return [lastVersion];
+			}
+		} catch (e) {}
+	}
+	return [CHROME_VERSIONS.default];
+}
 
 export default function (config: Config, env: IWebpackEnv = _env): Config {
 	base(config, env);
@@ -197,6 +232,8 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				const { ScriptTarget } = getTypescript();
 				buildAngularOptions.scriptTarget =
 					tsConfig.options.target ?? ScriptTarget.ESNext;
+			} else {
+				buildAngularOptions.supportedBrowsers = getSupportedBrowsers();
 			}
 
 			if (disableAOT) {
