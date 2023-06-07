@@ -57,6 +57,7 @@ export class SharedTransitionHelper {
 					const pageEnd = state.pageEnd;
 					const pageEndTags = pageEnd?.sharedTransitionTags || {};
 					// console.log('pageEndIndependentTags:', pageEndIndependentTags);
+					const customTagAnimation: { [key: string]: (options: { context: UIViewControllerContextTransitioning; sharedElements: any }) => void } = {};
 
 					const positionSharedTags = async () => {
 						for (const presentingView of sharedElements) {
@@ -73,7 +74,10 @@ export class SharedTransitionHelper {
 
 							const snapshot = UIImageView.alloc().init();
 							if (pageEndProps?.callback) {
-								await pageEndProps?.callback(presentedView, 'present');
+								const customCallback = await pageEndProps?.callback(presentedView, 'present');
+								if (customCallback) {
+									customTagAnimation[presentedView.sharedTransitionTag] = customCallback;
+								}
 							}
 
 							// treat images differently...
@@ -230,7 +234,14 @@ export class SharedTransitionHelper {
 
 					for (const data of snapshotData) {
 						// add snapshot to animate
-						transitionContext.containerView.addSubview(data.snapshot);
+						if (customTagAnimation[data.view.sharedTransitionTag]) {
+							customTagAnimation[data.view.sharedTransitionTag]({
+								context: transitionContext,
+								sharedElements: transition.sharedElements,
+							});
+						} else {
+							transitionContext.containerView.addSubview(data.snapshot);
+						}
 					}
 
 					// Important: always set after above shared element positions have had their start positions set
@@ -282,21 +293,25 @@ export class SharedTransitionHelper {
 						// owner.presented.view.layoutIfNeeded();
 
 						for (const presented of transition.sharedElements.presented) {
-							const presentingMatch = transition.sharedElements.presenting.find((v) => v.view.sharedTransitionTag === presented.view.sharedTransitionTag);
-							// Workaround wrong origin due ongoing layout process.
-							const updatedEndFrame = presented.view.ios.convertRectToView(presented.view.ios.bounds, transitionContext.containerView);
-							const correctedEndFrame = CGRectMake(updatedEndFrame.origin.x, updatedEndFrame.origin.y, presentingMatch.endFrame.size.width, presentingMatch.endFrame.size.height);
-							presentingMatch.snapshot.frame = correctedEndFrame;
+							if (!customTagAnimation[presented.view.sharedTransitionTag]) {
+								const presentingMatch = transition.sharedElements.presenting.find((v) => v.view.sharedTransitionTag === presented.view.sharedTransitionTag);
+								// Workaround wrong origin due ongoing layout process.
+								const updatedEndFrame = presented.view.ios.convertRectToView(presented.view.ios.bounds, transitionContext.containerView);
+								const correctedEndFrame = CGRectMake(updatedEndFrame.origin.x, updatedEndFrame.origin.y, presentingMatch.endFrame.size.width, presentingMatch.endFrame.size.height);
+								presentingMatch.snapshot.frame = correctedEndFrame;
 
-							// apply view and layer properties to the snapshot view to match the source/presented view
-							iOSUtils.copyLayerProperties(presentingMatch.snapshot, presented.view.ios, presented.propertiesToMatch as any);
-							// create a snapshot of the presented view
-							presentingMatch.snapshot.image = iOSUtils.snapshotView(presented.view.ios, Screen.mainScreen.scale);
-							// apply correct alpha
-							presentingMatch.snapshot.alpha = presentingMatch.endOpacity;
+								// apply view and layer properties to the snapshot view to match the source/presented view
+								iOSUtils.copyLayerProperties(presentingMatch.snapshot, presented.view.ios, presented.propertiesToMatch as any);
+								setTimeout(() => {
+									// create a snapshot of the presented view on next tick
+									presentingMatch.snapshot.image = iOSUtils.snapshotView(presented.view.ios, Screen.mainScreen.scale);
+									// apply correct alpha
+									presentingMatch.snapshot.alpha = presentingMatch.endOpacity;
+								});
 
-							if (SharedTransition.DEBUG) {
-								console.log(`---> ${presentingMatch.view.sharedTransitionTag} animate to: `, iOSUtils.printCGRect(correctedEndFrame));
+								if (SharedTransition.DEBUG) {
+									console.log(`---> ${presentingMatch.view.sharedTransitionTag} animate to: `, iOSUtils.printCGRect(correctedEndFrame));
+								}
 							}
 						}
 						for (const independent of transition.sharedElements.independent) {

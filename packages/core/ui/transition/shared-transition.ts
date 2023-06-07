@@ -48,7 +48,7 @@ export type SharedTransitionTagProperties = SharedProperties & {
 	/**
 	 *
 	 */
-	callback?: (view: View, action: SharedTransitionEventAction) => Promise<void>;
+	callback?: (view: View, action: SharedTransitionEventAction) => Promise<void | ((options: { context: any; /* UIViewControllerContextTransitioning */ sharedElements: any }) => void)>;
 };
 export type SharedSpringProperties = {
 	tension?: number;
