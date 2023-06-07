@@ -85,7 +85,9 @@ declare const enum CTCellularPlanProvisioningAddPlanResult {
 
 	Fail = 1,
 
-	Success = 2
+	Success = 2,
+
+	Cancel = 3
 }
 
 declare class CTCellularPlanProvisioningRequest extends NSObject implements NSSecureCoding {

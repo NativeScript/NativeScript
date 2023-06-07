@@ -429,7 +429,9 @@ declare const enum PHAssetResourceType {
 
 	AdjustmentBasePairedVideo = 11,
 
-	AdjustmentBaseVideo = 12
+	AdjustmentBaseVideo = 12,
+
+	PhotoProxy = 19
 }
 
 declare const enum PHAssetSourceType {
@@ -707,7 +709,11 @@ declare class PHContentEditingOutput extends NSObject {
 
 	adjustmentData: PHAdjustmentData;
 
+	readonly defaultRenderedContentType: UTType;
+
 	readonly renderedContentURL: NSURL;
+
+	readonly supportedRenderedContentTypes: NSArray<UTType>;
 
 	constructor(o: { contentEditingInput: PHContentEditingInput; });
 
@@ -716,6 +722,8 @@ declare class PHContentEditingOutput extends NSObject {
 	initWithContentEditingInput(contentEditingInput: PHContentEditingInput): this;
 
 	initWithPlaceholderForCreatedAsset(placeholderForCreatedAsset: PHObjectPlaceholder): this;
+
+	renderedContentURLForTypeError(type: UTType): NSURL;
 }
 
 declare class PHFetchOptions extends NSObject implements NSCopying {
@@ -854,6 +862,8 @@ declare class PHImageRequestOptions extends NSObject implements NSCopying {
 	static alloc(): PHImageRequestOptions; // inherited from NSObject
 
 	static new(): PHImageRequestOptions; // inherited from NSObject
+
+	allowSecondaryDegradedImage: boolean;
 
 	deliveryMode: PHImageRequestOptionsDeliveryMode;
 
@@ -1263,7 +1273,7 @@ declare const enum PHPhotosError {
 
 declare var PHPhotosErrorDomain: string;
 
-declare class PHVideoRequestOptions extends NSObject {
+declare class PHVideoRequestOptions extends NSObject implements NSCopying {
 
 	static alloc(): PHVideoRequestOptions; // inherited from NSObject
 
@@ -1276,6 +1286,8 @@ declare class PHVideoRequestOptions extends NSObject {
 	progressHandler: (p1: number, p2: NSError, p3: interop.Pointer | interop.Reference<boolean>, p4: NSDictionary<any, any>) => void;
 
 	version: PHVideoRequestOptionsVersion;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 declare const enum PHVideoRequestOptionsDeliveryMode {

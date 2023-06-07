@@ -365,6 +365,8 @@ declare function CGContextConvertSizeToUserSpace(c: any, size: CGSize): CGSize;
 
 declare function CGContextCopyPath(c: any): any;
 
+declare function CGContextDrawConicGradient(c: any, gradient: any, center: CGPoint, angle: number): void;
+
 declare function CGContextDrawImage(c: any, rect: CGRect, image: any): void;
 
 declare function CGContextDrawLayerAtPoint(context: any, point: CGPoint, layer: any): void;

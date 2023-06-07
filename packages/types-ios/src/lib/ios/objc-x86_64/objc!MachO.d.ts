@@ -500,6 +500,20 @@ interface mach_header_64 {
 }
 declare var mach_header_64: interop.StructType<mach_header_64>;
 
+declare function macho_arch_name_for_cpu_type(type: number, subtype: number): string;
+
+declare function macho_arch_name_for_mach_header(mh: interop.Pointer | interop.Reference<mach_header>): string;
+
+declare function macho_best_slice(path: string | interop.Pointer | interop.Reference<any>, bestSlice: (p1: interop.Pointer | interop.Reference<mach_header>, p2: number, p3: number) => void): number;
+
+declare function macho_best_slice_in_fd(fd: number, bestSlice: (p1: interop.Pointer | interop.Reference<mach_header>, p2: number, p3: number) => void): number;
+
+declare function macho_cpu_type_for_arch_name(archName: string | interop.Pointer | interop.Reference<any>, type: interop.Pointer | interop.Reference<number>, subtype: interop.Pointer | interop.Reference<number>): boolean;
+
+declare function macho_for_each_slice(path: string | interop.Pointer | interop.Reference<any>, callback: (p1: interop.Pointer | interop.Reference<mach_header>, p2: number, p3: number, p4: interop.Pointer | interop.Reference<boolean>) => void): number;
+
+declare function macho_for_each_slice_in_fd(fd: number, callback: (p1: interop.Pointer | interop.Reference<mach_header>, p2: number, p3: number, p4: interop.Pointer | interop.Reference<boolean>) => void): number;
+
 interface note_command {
 	cmd: number;
 	cmdsize: number;

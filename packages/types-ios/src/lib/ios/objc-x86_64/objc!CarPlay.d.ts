@@ -1797,6 +1797,10 @@ declare class CPTabBarTemplate extends CPTemplate {
 
 	initWithTemplates(templates: NSArray<CPTemplate> | CPTemplate[]): this;
 
+	selectTemplate(newTemplate: CPTemplate): void;
+
+	selectTemplateAtIndex(index: number): void;
+
 	updateTemplates(newTemplates: NSArray<CPTemplate> | CPTemplate[]): void;
 }
 

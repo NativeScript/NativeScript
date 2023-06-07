@@ -1,11 +1,4 @@
 
-interface OS_at_encoder extends NSObjectProtocol {
-}
-declare var OS_at_encoder: {
-
-	prototype: OS_at_encoder;
-};
-
 declare const enum at_alpha_t {
 
 	at_alpha_not_premultiplied = 0,
@@ -111,33 +104,33 @@ declare const enum at_block_format_t {
 
 declare function at_block_format_to_MTLPixelFormat(blockFormat: at_block_format_t): number;
 
-declare function at_encoder_compress_texels(encoder: NSObject, src: interop.Pointer | interop.Reference<at_texel_region_t>, dest: interop.Pointer | interop.Reference<at_block_buffer_t>, errorThreshold: number, flags: at_flags_t): number;
+declare function at_encoder_compress_texels(encoder: interop.Pointer | interop.Reference<any>, src: interop.Pointer | interop.Reference<at_texel_region_t>, dest: interop.Pointer | interop.Reference<at_block_buffer_t>, errorThreshold: number, flags: at_flags_t): number;
 
-declare function at_encoder_create(texelType: at_texel_format_t, texelAlphaType: at_alpha_t, blockType: at_block_format_t, blockAlphaType: at_alpha_t, backgroundColor: interop.Pointer | interop.Reference<number>): NSObject;
+declare function at_encoder_create(texelType: at_texel_format_t, texelAlphaType: at_alpha_t, blockType: at_block_format_t, blockAlphaType: at_alpha_t, backgroundColor: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
 
-declare function at_encoder_decompress_texels(encoder: NSObject, src: interop.Pointer | interop.Reference<at_block_buffer_t>, dest: interop.Pointer | interop.Reference<at_texel_region_t>, flags: at_flags_t): at_error_t;
+declare function at_encoder_decompress_texels(encoder: interop.Pointer | interop.Reference<any>, src: interop.Pointer | interop.Reference<at_block_buffer_t>, dest: interop.Pointer | interop.Reference<at_texel_region_t>, flags: at_flags_t): at_error_t;
 
-declare function at_encoder_get_block_address(encoder: NSObject, texelPosition: at_size_t, imageSize: at_size_t, blockInfo: interop.Pointer | interop.Reference<at_block_buffer_t>): interop.Pointer | interop.Reference<any>;
+declare function at_encoder_get_block_address(encoder: interop.Pointer | interop.Reference<any>, texelPosition: at_size_t, imageSize: at_size_t, blockInfo: interop.Pointer | interop.Reference<at_block_buffer_t>): interop.Pointer | interop.Reference<any>;
 
-declare function at_encoder_get_block_alpha(encoder: NSObject): at_alpha_t;
+declare function at_encoder_get_block_alpha(encoder: interop.Pointer | interop.Reference<any>): at_alpha_t;
 
-declare function at_encoder_get_block_counts(encoder: NSObject, imageSize: at_size_t): at_size_t;
+declare function at_encoder_get_block_counts(encoder: interop.Pointer | interop.Reference<any>, imageSize: at_size_t): at_size_t;
 
-declare function at_encoder_get_block_dimensions(encoder: NSObject): at_size_t;
+declare function at_encoder_get_block_dimensions(encoder: interop.Pointer | interop.Reference<any>): at_size_t;
 
-declare function at_encoder_get_block_format(encoder: NSObject): at_block_format_t;
+declare function at_encoder_get_block_format(encoder: interop.Pointer | interop.Reference<any>): at_block_format_t;
 
-declare function at_encoder_get_block_size(encoder: NSObject): number;
+declare function at_encoder_get_block_size(encoder: interop.Pointer | interop.Reference<any>): number;
 
-declare function at_encoder_get_texel_alpha(encoder: NSObject): at_alpha_t;
+declare function at_encoder_get_texel_alpha(encoder: interop.Pointer | interop.Reference<any>): at_alpha_t;
 
-declare function at_encoder_get_texel_format(encoder: NSObject): at_texel_format_t;
+declare function at_encoder_get_texel_format(encoder: interop.Pointer | interop.Reference<any>): at_texel_format_t;
 
 declare function at_encoder_get_version(): number;
 
-declare function at_encoder_is_compression_monolithic(encoder: NSObject, flags: at_flags_t): boolean;
+declare function at_encoder_is_compression_monolithic(encoder: interop.Pointer | interop.Reference<any>, flags: at_flags_t): boolean;
 
-declare function at_encoder_is_decompression_monolithic(encoder: NSObject, flags: at_flags_t): boolean;
+declare function at_encoder_is_decompression_monolithic(encoder: interop.Pointer | interop.Reference<any>, flags: at_flags_t): boolean;
 
 declare const enum at_error_t {
 

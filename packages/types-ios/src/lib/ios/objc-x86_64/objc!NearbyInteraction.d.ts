@@ -206,8 +206,6 @@ declare class NISession extends NSObject {
 
 	delegate: NISessionDelegate;
 
-	delegateQueue: NSObject;
-
 	readonly discoveryToken: NIDiscoveryToken;
 
 	static readonly deviceCapabilities: NIDeviceCapability;

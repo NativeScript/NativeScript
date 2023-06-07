@@ -879,6 +879,17 @@ declare class HKCumulativeQuantitySeriesSample extends HKCumulativeQuantitySampl
 	readonly sum: HKQuantity;
 }
 
+declare const enum HKCyclingFunctionalThresholdPowerTestType {
+
+	MaxExercise60Minute = 1,
+
+	MaxExercise20Minute = 2,
+
+	RampTest = 3,
+
+	PredictionExercise = 4
+}
+
 declare var HKDataTypeIdentifierHeartbeatSeries: string;
 
 declare class HKDeletedObject extends NSObject implements NSSecureCoding {
@@ -1109,6 +1120,8 @@ declare class HKElectrocardiogramVoltageMeasurement extends NSObject implements 
 
 declare const enum HKErrorCode {
 
+	UnknownError = 0,
+
 	NoError = 0,
 
 	ErrorHealthDataUnavailable = 1,
@@ -1131,7 +1144,11 @@ declare const enum HKErrorCode {
 
 	ErrorRequiredAuthorizationDenied = 10,
 
-	ErrorNoData = 11
+	ErrorNoData = 11,
+
+	ErrorWorkoutActivityNotAllowed = 12,
+
+	ErrorDataSizeExceeded = 13
 }
 
 declare var HKErrorDomain: string;
@@ -1324,6 +1341,10 @@ declare class HKHealthStore extends NSObject {
 
 	static new(): HKHealthStore; // inherited from NSObject
 
+	authorizationViewControllerPresenter: UIViewController;
+
+	workoutSessionMirroringStartHandler: (p1: HKWorkoutSession) => void;
+
 	activityMoveModeWithError(): HKActivityMoveModeObject;
 
 	addSamplesToWorkoutCompletion(samples: NSArray<HKSample> | HKSample[], workout: HKWorkout, completion: (p1: boolean, p2: NSError) => void): void;
@@ -1477,6 +1498,8 @@ declare class HKLensSpecification extends NSObject {
 	readonly sphere: HKQuantity;
 }
 
+declare var HKMetadataKeyActivityType: string;
+
 declare var HKMetadataKeyAlgorithmVersion: string;
 
 declare var HKMetadataKeyAlpineSlopeGrade: string;
@@ -1485,9 +1508,13 @@ declare var HKMetadataKeyAppleDeviceCalibrated: string;
 
 declare var HKMetadataKeyAppleECGAlgorithmVersion: string;
 
+declare var HKMetadataKeyAppleFitnessPlusSession: string;
+
 declare var HKMetadataKeyAudioExposureDuration: string;
 
 declare var HKMetadataKeyAudioExposureLevel: string;
+
+declare var HKMetadataKeyAverageLightIntensity: string;
 
 declare var HKMetadataKeyAverageMETs: string;
 
@@ -1502,6 +1529,8 @@ declare var HKMetadataKeyBodyTemperatureSensorLocation: string;
 declare var HKMetadataKeyCoachedWorkout: string;
 
 declare var HKMetadataKeyCrossTrainerDistance: string;
+
+declare var HKMetadataKeyCyclingFunctionalThresholdPowerTestType: string;
 
 declare var HKMetadataKeyDateOfEarliestDataUsedForEstimate: string;
 
@@ -1559,6 +1588,8 @@ declare var HKMetadataKeyMaximumSpeed: string;
 
 declare var HKMetadataKeyMenstrualCycleStart: string;
 
+declare var HKMetadataKeyPhysicalEffortEstimationType: string;
+
 declare var HKMetadataKeyQuantityClampedToLowerBound: string;
 
 declare var HKMetadataKeyQuantityClampedToUpperBound: string;
@@ -1596,6 +1627,8 @@ declare var HKMetadataKeyVO2MaxValue: string;
 declare var HKMetadataKeyWasTakenInLab: string;
 
 declare var HKMetadataKeyWasUserEntered: string;
+
+declare var HKMetadataKeyWaterSalinity: string;
 
 declare var HKMetadataKeyWeatherCondition: string;
 
@@ -1721,6 +1754,13 @@ declare class HKObserverQuery extends HKQuery {
 	initWithQueryDescriptorsUpdateHandler(queryDescriptors: NSArray<HKQueryDescriptor> | HKQueryDescriptor[], updateHandler: (p1: HKObserverQuery, p2: NSSet<HKSampleType>, p3: () => void, p4: NSError) => void): this;
 
 	initWithSampleTypePredicateUpdateHandler(sampleType: HKSampleType, predicate: NSPredicate, updateHandler: (p1: HKObserverQuery, p2: () => void, p3: NSError) => void): this;
+}
+
+declare const enum HKPhysicalEffortEstimationType {
+
+	ActivityLookup = 1,
+
+	DeviceSensed = 2
 }
 
 declare var HKPredicateKeyPathAverage: string;
@@ -1989,6 +2029,14 @@ declare var HKQuantityTypeIdentifierBodyMassIndex: string;
 
 declare var HKQuantityTypeIdentifierBodyTemperature: string;
 
+declare var HKQuantityTypeIdentifierCyclingCadence: string;
+
+declare var HKQuantityTypeIdentifierCyclingFunctionalThresholdPower: string;
+
+declare var HKQuantityTypeIdentifierCyclingPower: string;
+
+declare var HKQuantityTypeIdentifierCyclingSpeed: string;
+
 declare var HKQuantityTypeIdentifierDietaryBiotin: string;
 
 declare var HKQuantityTypeIdentifierDietaryCaffeine: string;
@@ -2081,6 +2129,8 @@ declare var HKQuantityTypeIdentifierElectrodermalActivity: string;
 
 declare var HKQuantityTypeIdentifierEnvironmentalAudioExposure: string;
 
+declare var HKQuantityTypeIdentifierEnvironmentalSoundReduction: string;
+
 declare var HKQuantityTypeIdentifierFlightsClimbed: string;
 
 declare var HKQuantityTypeIdentifierForcedExpiratoryVolume1: string;
@@ -2115,6 +2165,8 @@ declare var HKQuantityTypeIdentifierPeakExpiratoryFlowRate: string;
 
 declare var HKQuantityTypeIdentifierPeripheralPerfusionIndex: string;
 
+declare var HKQuantityTypeIdentifierPhysicalEffort: string;
+
 declare var HKQuantityTypeIdentifierPushCount: string;
 
 declare var HKQuantityTypeIdentifierRespiratoryRate: string;
@@ -2140,6 +2192,8 @@ declare var HKQuantityTypeIdentifierStairDescentSpeed: string;
 declare var HKQuantityTypeIdentifierStepCount: string;
 
 declare var HKQuantityTypeIdentifierSwimmingStrokeCount: string;
+
+declare var HKQuantityTypeIdentifierTimeInDaylight: string;
 
 declare var HKQuantityTypeIdentifierUVExposure: string;
 
@@ -2680,6 +2734,10 @@ declare class HKUnit extends NSObject implements NSCopying, NSSecureCoding {
 
 	static literUnitWithMetricPrefix(prefix: HKMetricPrefix): HKUnit;
 
+	static luxUnit(): HKUnit;
+
+	static luxUnitWithMetricPrefix(prefix: HKMetricPrefix): HKUnit;
+
 	static massFormatterUnitFromUnit(unit: HKUnit): NSMassFormatterUnit;
 
 	static meterUnit(): HKUnit;
@@ -2959,6 +3017,13 @@ declare class HKVisionPrism extends NSObject implements NSCopying, NSSecureCodin
 	initWithCoder(coder: NSCoder): this;
 
 	initWithVerticalAmountVerticalBaseHorizontalAmountHorizontalBaseEye(verticalAmount: HKQuantity, verticalBase: HKPrismBase, horizontalAmount: HKQuantity, horizontalBase: HKPrismBase, eye: HKVisionEye): this;
+}
+
+declare const enum HKWaterSalinity {
+
+	FreshWater = 1,
+
+	SaltWater = 2
 }
 
 declare const enum HKWeatherCondition {
@@ -3294,6 +3359,8 @@ declare const enum HKWorkoutActivityType {
 
 	Transition = 83,
 
+	UnderwaterDiving = 84,
+
 	Other = 3000
 }
 
@@ -3466,6 +3533,78 @@ declare class HKWorkoutRouteQuery extends HKQuery {
 
 declare var HKWorkoutRouteTypeIdentifier: string;
 
+declare class HKWorkoutSession extends NSObject implements NSSecureCoding {
+
+	static alloc(): HKWorkoutSession; // inherited from NSObject
+
+	static new(): HKWorkoutSession; // inherited from NSObject
+
+	readonly activityType: HKWorkoutActivityType;
+
+	readonly currentActivity: HKWorkoutActivity;
+
+	delegate: HKWorkoutSessionDelegate;
+
+	readonly endDate: Date;
+
+	readonly locationType: HKWorkoutSessionLocationType;
+
+	readonly startDate: Date;
+
+	readonly state: HKWorkoutSessionState;
+
+	readonly type: HKWorkoutSessionType;
+
+	readonly workoutConfiguration: HKWorkoutConfiguration;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	beginNewActivityWithConfigurationDateMetadata(workoutConfiguration: HKWorkoutConfiguration, date: Date, metadata: NSDictionary<string, any>): void;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	end(): void;
+
+	endCurrentActivityOnDate(date: Date): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	pause(): void;
+
+	prepare(): void;
+
+	resume(): void;
+
+	sendDataToRemoteWorkoutSessionCompletion(data: NSData, completion: (p1: boolean, p2: NSError) => void): void;
+
+	startActivityWithDate(date: Date): void;
+
+	stopActivityWithDate(date: Date): void;
+}
+
+interface HKWorkoutSessionDelegate extends NSObjectProtocol {
+
+	workoutSessionDidBeginActivityWithConfigurationDate?(workoutSession: HKWorkoutSession, workoutConfiguration: HKWorkoutConfiguration, date: Date): void;
+
+	workoutSessionDidChangeToStateFromStateDate(workoutSession: HKWorkoutSession, toState: HKWorkoutSessionState, fromState: HKWorkoutSessionState, date: Date): void;
+
+	workoutSessionDidDisconnectFromRemoteDeviceWithError?(workoutSession: HKWorkoutSession, error: NSError): void;
+
+	workoutSessionDidEndActivityWithConfigurationDate?(workoutSession: HKWorkoutSession, workoutConfiguration: HKWorkoutConfiguration, date: Date): void;
+
+	workoutSessionDidFailWithError(workoutSession: HKWorkoutSession, error: NSError): void;
+
+	workoutSessionDidGenerateEvent?(workoutSession: HKWorkoutSession, event: HKWorkoutEvent): void;
+
+	workoutSessionDidReceiveDataFromRemoteDevice?(workoutSession: HKWorkoutSession, data: NSData): void;
+}
+declare var HKWorkoutSessionDelegate: {
+
+	prototype: HKWorkoutSessionDelegate;
+};
+
 declare const enum HKWorkoutSessionLocationType {
 
 	Unknown = 1,
@@ -3473,6 +3612,28 @@ declare const enum HKWorkoutSessionLocationType {
 	Indoor = 2,
 
 	Outdoor = 3
+}
+
+declare const enum HKWorkoutSessionState {
+
+	NotStarted = 1,
+
+	Running = 2,
+
+	Ended = 3,
+
+	Paused = 4,
+
+	Prepared = 5,
+
+	Stopped = 6
+}
+
+declare const enum HKWorkoutSessionType {
+
+	Primary = 0,
+
+	Mirrored = 1
 }
 
 declare var HKWorkoutSortIdentifierDuration: string;

@@ -61,7 +61,7 @@ declare function DNSServiceResolve(sdRef: interop.Pointer | interop.Reference<in
 
 declare function DNSServiceSendQueuedRequests(sdRef: interop.Pointer | interop.Reference<any>): number;
 
-declare function DNSServiceSetDispatchQueue(service: interop.Pointer | interop.Reference<any>, queue: NSObject): number;
+declare function DNSServiceSetDispatchQueue(service: interop.Pointer | interop.Reference<any>, queue: interop.Pointer | interop.Reference<any>): number;
 
 declare function DNSServiceSleepKeepalive(sdRef: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, flags: number, fd: number, timeout: number, callBack: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<any>) => void>, context: interop.Pointer | interop.Reference<any>): number;
 

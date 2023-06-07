@@ -127,9 +127,9 @@ declare class NFCISO15693ReaderSession extends NFCReaderSession {
 
 	static new(): NFCISO15693ReaderSession; // inherited from NSObject
 
-	constructor(o: { delegate: NFCReaderSessionDelegate; queue: NSObject; });
+	constructor(o: { delegate: NFCReaderSessionDelegate; queue: interop.Pointer | interop.Reference<any>; });
 
-	initWithDelegateQueue(delegate: NFCReaderSessionDelegate, queue: NSObject): this;
+	initWithDelegateQueue(delegate: NFCReaderSessionDelegate, queue: interop.Pointer | interop.Reference<any>): this;
 
 	restartPolling(): void;
 }
@@ -409,11 +409,11 @@ declare class NFCNDEFReaderSession extends NFCReaderSession {
 
 	static new(): NFCNDEFReaderSession; // inherited from NSObject
 
-	constructor(o: { delegate: NFCNDEFReaderSessionDelegate; queue: NSObject; invalidateAfterFirstRead: boolean; });
+	constructor(o: { delegate: NFCNDEFReaderSessionDelegate; queue: interop.Pointer | interop.Reference<any>; invalidateAfterFirstRead: boolean; });
 
 	connectToTagCompletionHandler(tag: NFCNDEFTag, completionHandler: (p1: NSError) => void): void;
 
-	initWithDelegateQueueInvalidateAfterFirstRead(delegate: NFCNDEFReaderSessionDelegate, queue: NSObject, invalidateAfterFirstRead: boolean): this;
+	initWithDelegateQueueInvalidateAfterFirstRead(delegate: NFCNDEFReaderSessionDelegate, queue: interop.Pointer | interop.Reference<any>, invalidateAfterFirstRead: boolean): this;
 
 	restartPolling(): void;
 }
@@ -525,7 +525,7 @@ declare class NFCReaderSession extends NSObject implements NFCReaderSessionProto
 
 	readonly delegate: any;
 
-	readonly sessionQueue: NSObject;
+	readonly sessionQueue: interop.Pointer | interop.Reference<any>;
 
 	static readonly readingAvailable: boolean;
 
@@ -646,11 +646,11 @@ declare class NFCTagReaderSession extends NFCReaderSession {
 
 	readonly connectedTag: NFCTag;
 
-	constructor(o: { pollingOption: NFCPollingOption; delegate: NFCTagReaderSessionDelegate; queue: NSObject; });
+	constructor(o: { pollingOption: NFCPollingOption; delegate: NFCTagReaderSessionDelegate; queue: interop.Pointer | interop.Reference<any>; });
 
 	connectToTagCompletionHandler(tag: NFCTag, completionHandler: (p1: NSError) => void): void;
 
-	initWithPollingOptionDelegateQueue(pollingOption: NFCPollingOption, delegate: NFCTagReaderSessionDelegate, queue: NSObject): this;
+	initWithPollingOptionDelegateQueue(pollingOption: NFCPollingOption, delegate: NFCTagReaderSessionDelegate, queue: interop.Pointer | interop.Reference<any>): this;
 
 	restartPolling(): void;
 }
@@ -769,9 +769,9 @@ declare class NFCVASReaderSession extends NFCReaderSession {
 
 	static new(): NFCVASReaderSession; // inherited from NSObject
 
-	constructor(o: { VASCommandConfigurations: NSArray<NFCVASCommandConfiguration> | NFCVASCommandConfiguration[]; delegate: NFCVASReaderSessionDelegate; queue: NSObject; });
+	constructor(o: { VASCommandConfigurations: NSArray<NFCVASCommandConfiguration> | NFCVASCommandConfiguration[]; delegate: NFCVASReaderSessionDelegate; queue: interop.Pointer | interop.Reference<any>; });
 
-	initWithVASCommandConfigurationsDelegateQueue(commandConfigurations: NSArray<NFCVASCommandConfiguration> | NFCVASCommandConfiguration[], delegate: NFCVASReaderSessionDelegate, queue: NSObject): this;
+	initWithVASCommandConfigurationsDelegateQueue(commandConfigurations: NSArray<NFCVASCommandConfiguration> | NFCVASCommandConfiguration[], delegate: NFCVASReaderSessionDelegate, queue: interop.Pointer | interop.Reference<any>): this;
 }
 
 interface NFCVASReaderSessionDelegate extends NSObjectProtocol {

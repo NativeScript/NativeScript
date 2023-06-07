@@ -1720,8 +1720,6 @@ declare class ARSession extends NSObject {
 
 	delegate: ARSessionDelegate;
 
-	delegateQueue: NSObject;
-
 	readonly identifier: NSUUID;
 
 	addAnchor(anchor: ARAnchor): void;
