@@ -286,7 +286,10 @@ export function snapshotView(view: UIView, scale: number): UIImage {
 	view.layer.renderInContext(UIGraphicsGetCurrentContext());
 	const image = UIGraphicsGetImageFromCurrentImageContext();
 	UIGraphicsEndImageContext();
-	view.layer.opacity = originalOpacity;
+	setTimeout(() => {
+		// ensure set back properly on next tick
+		view.layer.opacity = originalOpacity;
+	});
 	return image;
 }
 
