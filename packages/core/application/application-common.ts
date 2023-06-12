@@ -128,6 +128,7 @@ export class ApplicationCommon {
 
 	// Application events go through the global events.
 	on: ApplicationEvents['on'] = globalEvents.on.bind(globalEvents);
+	once: ApplicationEvents['on'] = globalEvents.once.bind(globalEvents);
 	off: ApplicationEvents['off'] = globalEvents.off.bind(globalEvents);
 	notify: ApplicationEvents['notify'] = globalEvents.notify.bind(globalEvents);
 	hasListeners: ApplicationEvents['hasListeners'] = globalEvents.hasListeners.bind(globalEvents);
