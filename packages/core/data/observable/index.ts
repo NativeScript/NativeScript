@@ -12,6 +12,18 @@ export interface EventData {
 	 * The Observable instance that has raised the event.
 	 */
 	object: Observable;
+	/**
+	 * The event-specific data for iOS
+	 */
+	ios: any;
+	 /**
+	 * The event-specific data for Android
+	 */
+	android: any;
+	/**
+	 * Error object if an error occured
+	 */
+	error: any;
 }
 
 export interface EventDataValue extends EventData {
