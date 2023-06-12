@@ -35,6 +35,7 @@ interface ApplicationEvents {
 	notify<T = ApplicationEventData>(eventData: T): void;
 	hasListeners(eventName: string): boolean;
 
+	once(eventNames: string, callback: (args: ApplicationEventData) => void, thisArg?: any): void;
 	on(eventNames: string, callback: (args: ApplicationEventData) => void, thisArg?: any): void;
 	/**
 	 * This event is raised when application css is changed.
@@ -129,6 +130,7 @@ export class ApplicationCommon {
 	// Application events go through the global events.
 	on: ApplicationEvents['on'] = globalEvents.on.bind(globalEvents);
 	off: ApplicationEvents['off'] = globalEvents.off.bind(globalEvents);
+	once: ApplicationEvents['once'] = globalEvents.once.bind(globalEvents);
 	notify: ApplicationEvents['notify'] = globalEvents.notify.bind(globalEvents);
 	hasListeners: ApplicationEvents['hasListeners'] = globalEvents.hasListeners.bind(globalEvents);
 
