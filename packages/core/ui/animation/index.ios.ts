@@ -7,7 +7,7 @@ import { AnimationBase, Properties, CubicBezierAnimationCurve } from './animatio
 import { Trace } from '../../trace';
 import { opacityProperty, backgroundColorProperty, rotateProperty, rotateXProperty, rotateYProperty, translateXProperty, translateYProperty, scaleXProperty, scaleYProperty, heightProperty, widthProperty, PercentLength } from '../styling/style-properties';
 
-import { iOSNativeHelper } from '../../utils/native-helper';
+import { ios as iosHelper } from '../../utils/native-helper';
 
 import { Screen } from '../../platform';
 
@@ -168,33 +168,28 @@ export class Animation extends AnimationBase {
 			this._mergedPropertyAnimations = this._propertyAnimations;
 		}
 
-		const that = this;
 		const animationFinishedCallback = (cancelled: boolean) => {
-			if (that._playSequentially) {
+			if (this._playSequentially) {
 				// This function will be called by the last animation when done or by another animation if the user cancels them halfway through.
-				if (cancelled) {
-					that._rejectAnimationFinishedPromise();
-				} else {
-					that._resolveAnimationFinishedPromise();
-				}
+				this._resolveAnimationFinishedPromise();
 			} else {
 				// This callback will be called by each INDIVIDUAL animation when it finishes or is cancelled.
 				if (cancelled) {
-					that._cancelledAnimations++;
+					this._cancelledAnimations++;
 				} else {
-					that._finishedAnimations++;
+					this._finishedAnimations++;
 				}
 
-				if (that._cancelledAnimations > 0 && that._cancelledAnimations + that._finishedAnimations === that._mergedPropertyAnimations.length) {
+				if (this._cancelledAnimations > 0 && this._cancelledAnimations + this._finishedAnimations === this._mergedPropertyAnimations.length) {
 					if (Trace.isEnabled()) {
-						Trace.write(that._cancelledAnimations + ' animations cancelled.', Trace.categories.Animation);
+						Trace.write(this._cancelledAnimations + ' animations cancelled.', Trace.categories.Animation);
 					}
-					that._rejectAnimationFinishedPromise();
-				} else if (that._finishedAnimations === that._mergedPropertyAnimations.length) {
+					this._resolveAnimationFinishedPromise();
+				} else if (this._finishedAnimations === this._mergedPropertyAnimations.length) {
 					if (Trace.isEnabled()) {
-						Trace.write(that._finishedAnimations + ' animations finished.', Trace.categories.Animation);
+						Trace.write(this._finishedAnimations + ' animations finished.', Trace.categories.Animation);
 					}
-					that._resolveAnimationFinishedPromise();
+					this._resolveAnimationFinishedPromise();
 				}
 			}
 		};
@@ -719,7 +714,7 @@ function calculateTransform(view: View): CATransform3D {
 	}
 
 	expectedTransform = CATransform3DTranslate(expectedTransform, view.translateX, view.translateY, 0);
-	expectedTransform = iOSNativeHelper.applyRotateTransform(expectedTransform, view.rotateX, view.rotateY, view.rotate);
+	expectedTransform = iosHelper.applyRotateTransform(expectedTransform, view.rotateX, view.rotateY, view.rotate);
 	expectedTransform = CATransform3DScale(expectedTransform, scaleX, scaleY, 1);
 
 	return expectedTransform;

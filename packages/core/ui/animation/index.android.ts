@@ -248,7 +248,7 @@ export class Animation extends AnimationBase {
 	private _onAndroidAnimationCancel() {
 		// tslint:disable-line
 		this._propertyResetCallbacks.forEach((v) => v());
-		this._rejectAnimationFinishedPromise();
+		this._resolveAnimationFinishedPromise();
 
 		if (this._target) {
 			this._target._removeAnimation(this);
