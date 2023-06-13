@@ -208,7 +208,7 @@ export const setResources = Application.setResources.bind(Application);
  * Application.systemAppearance()
  * ```
  */
-export const systemAppearance = () => Application.systemAppearance();
+export const systemAppearance = Application.systemAppearance.bind(Application);
 
 /**
  * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
