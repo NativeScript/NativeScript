@@ -128,7 +128,7 @@ export const on = Application.on.bind(Application);
  * Application.orientation()
  * ```
  */
-export const orientation = () => Application.orientation();
+export const orientation = Application.orientation.bind(Application)
 
 /**
  * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
