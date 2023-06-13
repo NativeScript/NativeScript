@@ -526,36 +526,39 @@ export class SharedTransitionHelper {
 	}
 
 	static interactiveUpdate(state: SharedTransitionState, interactiveState: PlatformTransitionInteractiveState, type: TransitionNavigationType, percent: number) {
-		if (!interactiveState?.added) {
-			interactiveState.added = true;
-			for (const p of state.instance.sharedElements.presented) {
-				p.view.opacity = 0;
-			}
-			for (const p of state.instance.sharedElements.presenting) {
-				p.snapshot.alpha = p.endOpacity;
-				interactiveState.transitionContext.containerView.addSubview(p.snapshot);
-			}
-
-			const pageStart = state.pageStart;
-
-			const startFrame = getRectFromProps(pageStart, getPageStartDefaultsForType(type));
-			interactiveState.propertyAnimator = UIViewPropertyAnimator.alloc().initWithDurationDampingRatioAnimations(1, 1, () => {
-				for (const p of state.instance.sharedElements.presenting) {
-					p.snapshot.frame = p.startFrame;
-					iOSUtils.copyLayerProperties(p.snapshot, p.view.ios, p.propertiesToMatch as any);
-
-					p.snapshot.alpha = 1;
+		if (interactiveState) {
+			if (!interactiveState.added) {
+				interactiveState.added = true;
+				for (const p of state.instance.sharedElements.presented) {
+					p.view.opacity = 0;
 				}
-				state.instance.presented.view.alpha = isNumber(state.pageReturn?.opacity) ? state.pageReturn?.opacity : 0;
-				state.instance.presented.view.frame = CGRectMake(startFrame.x, startFrame.y, state.instance.presented.view.bounds.size.width, state.instance.presented.view.bounds.size.height);
+				for (const p of state.instance.sharedElements.presenting) {
+					p.snapshot.alpha = p.endOpacity;
+					interactiveState.transitionContext.containerView.addSubview(p.snapshot);
+				}
+
+				const pageStart = state.pageStart;
+
+				const startFrame = getRectFromProps(pageStart, getPageStartDefaultsForType(type));
+				interactiveState.propertyAnimator = UIViewPropertyAnimator.alloc().initWithDurationDampingRatioAnimations(1, 1, () => {
+					for (const p of state.instance.sharedElements.presenting) {
+						p.snapshot.frame = p.startFrame;
+						iOSUtils.copyLayerProperties(p.snapshot, p.view.ios, p.propertiesToMatch as any);
+
+						p.snapshot.alpha = 1;
+					}
+					state.instance.presented.view.alpha = isNumber(state.pageReturn?.opacity) ? state.pageReturn?.opacity : 0;
+					state.instance.presented.view.frame = CGRectMake(startFrame.x, startFrame.y, state.instance.presented.view.bounds.size.width, state.instance.presented.view.bounds.size.height);
+				});
+			}
+
+			interactiveState.propertyAnimator.fractionComplete = percent;
+			SharedTransition.notifyEvent(SharedTransition.interactiveUpdateEvent, {
+				id: state?.instance?.id,
+				type,
+				percent,
 			});
 		}
-		interactiveState.propertyAnimator.fractionComplete = percent;
-		SharedTransition.notifyEvent(SharedTransition.interactiveUpdateEvent, {
-			id: state?.instance?.id,
-			type,
-			percent,
-		});
 	}
 
 	static interactiveCancel(state: SharedTransitionState, interactiveState: PlatformTransitionInteractiveState, type: TransitionNavigationType) {
