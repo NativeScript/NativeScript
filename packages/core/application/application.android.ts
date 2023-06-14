@@ -138,11 +138,11 @@ class NativeScriptLifecycleCallbacks extends android.app.Application.ActivityLif
 
 		this.activitiesCount++;
 		if (this.activitiesCount === 1) {
-			Application.android.notify({
-				eventName: Application.foregroundEvent,
-				object: Application.android,
+			Application.android.setInBackground(false, {
+				// todo: deprecate event.android in favor of event.activity
 				android: activity,
-			} as ApplicationEventData);
+				activity,
+			});
 		}
 
 		Application.android.notify({
@@ -157,11 +157,11 @@ class NativeScriptLifecycleCallbacks extends android.app.Application.ActivityLif
 		// console.log('NativeScriptLifecycleCallbacks onActivityStopped');
 		this.activitiesCount--;
 		if (this.activitiesCount === 0) {
-			Application.android.notify({
-				eventName: Application.backgroundEvent,
-				object: Application.android,
+			Application.android.setInBackground(true, {
+				// todo: deprecate event.android in favor of event.activity
 				android: activity,
-			} as ApplicationEventData);
+				activity,
+			});
 		}
 
 		Application.android.notify({

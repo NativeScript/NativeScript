@@ -98,6 +98,7 @@ global.CFRunLoopWakeUp = function (runloop) {};
 global.NativeScriptGlobals = {
 	events: {
 		on: (args) => {},
+		once: (args) => {},
 		off: (args) => {},
 		notify: (args) => {},
 		hasListeners: (args) => {},
