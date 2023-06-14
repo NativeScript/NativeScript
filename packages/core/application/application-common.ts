@@ -439,7 +439,7 @@ export class ApplicationCommon {
 		});
 	}
 
-	get orientation(): 'portrait' | 'landscape' | 'unknown' {
+	orientation(): 'portrait' | 'landscape' | 'unknown' {
 		return (this._orientation ??= this.getOrientation());
 	}
 
@@ -488,7 +488,7 @@ export class ApplicationCommon {
 		});
 	}
 
-	get systemAppearance(): 'dark' | 'light' | null {
+	systemAppearance(): 'dark' | 'light' | null {
 		// return cached value, or get it from the platform specific override
 		return (this._systemAppearance ??= this.getSystemAppearance());
 	}
