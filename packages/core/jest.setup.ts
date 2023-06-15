@@ -1,4 +1,7 @@
 // @ts-nocheck
+
+jest.mock('@nativescript/core/application', () => null, { virtual: true });
+
 global.__DEV__ = true;
 global.WeakRef.prototype.get = global.WeakRef.prototype.deref;
 global.NativeClass = function () {};
