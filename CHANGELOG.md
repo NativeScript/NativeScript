@@ -1,3 +1,17 @@
+## [8.5.4](https://github.com/NativeScript/NativeScript/compare/5.0.15-webpack...8.5.4) (2023-06-17)
+
+
+### Bug Fixes
+
+* **android:** improve content uri handling ([#10316](https://github.com/NativeScript/NativeScript/issues/10316)) ([77f252e](https://github.com/NativeScript/NativeScript/commit/77f252e5516f48460f019998292f55ed19dc438c))
+* **animation:** avoid uncaught reject on cancel ([#10309](https://github.com/NativeScript/NativeScript/issues/10309)) ([622f365](https://github.com/NativeScript/NativeScript/commit/622f3659d8f531c35f790421a70cd927e4a52600))
+* **Application:** inBackground handling & missing `once` ([#10307](https://github.com/NativeScript/NativeScript/issues/10307)) ([e430555](https://github.com/NativeScript/NativeScript/commit/e430555cb24650ff1500867fefb86928d148d7f7))
+* ensure Application instance initialized early ([#10315](https://github.com/NativeScript/NativeScript/issues/10315)) ([0401b09](https://github.com/NativeScript/NativeScript/commit/0401b09a43b3776e0a533e737b1aa49cafbe7961))
+* **shared-transition:** race condition with interactive updates ([#10312](https://github.com/NativeScript/NativeScript/issues/10312)) ([25cc49d](https://github.com/NativeScript/NativeScript/commit/25cc49d4f491dabd4aede8c1ca8a6f0e0b4955e8))
+* **shared-transitions:** layer opacity set back to original on next tick ([#10310](https://github.com/NativeScript/NativeScript/issues/10310)) ([0956cb0](https://github.com/NativeScript/NativeScript/commit/0956cb0f919bc385664559c269c56892f3cd1b4e))
+
+
+
 ## [8.5.3](https://github.com/NativeScript/NativeScript/compare/8.5.2-core...8.5.3) (2023-05-04)
 
 
