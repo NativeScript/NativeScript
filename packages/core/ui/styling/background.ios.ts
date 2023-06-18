@@ -831,7 +831,7 @@ function clearBoxShadow(nativeView: NativeScriptUIView) {
 }
 
 function drawClipPath(nativeView: NativeScriptUIView, background: BackgroundDefinition) {
-	const layer = nativeView.bgLayer;
+	const layer: CALayer = nativeView.layer;
 	const layerBounds = layer.bounds;
 	const layerOrigin = layerBounds.origin;
 	const layerSize = layerBounds.size;
