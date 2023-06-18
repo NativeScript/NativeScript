@@ -16,7 +16,7 @@ import { CoreTypes } from '../../core-types';
 
 import { parseBackground } from '../../css/parser';
 import { LinearGradient } from './linear-gradient';
-import { CSSShadowLengthTypes, parseCSSShadow } from './css-shadow';
+import { parseCSSShadow, ShadowCSSValues } from './css-shadow';
 
 function equalsCommon(a: CoreTypes.LengthType, b: CoreTypes.LengthType): boolean;
 function equalsCommon(a: CoreTypes.PercentLengthType, b: CoreTypes.PercentLengthType): boolean;
@@ -1226,7 +1226,7 @@ export const borderBottomLeftRadiusProperty = new CssProperty<Style, CoreTypes.L
 });
 borderBottomLeftRadiusProperty.register(Style);
 
-const boxShadowProperty = new CssProperty<Style, CSSShadowLengthTypes>({
+const boxShadowProperty = new CssProperty<Style, ShadowCSSValues>({
 	name: 'boxShadow',
 	cssName: 'box-shadow',
 	valueChanged: (target, oldValue, newValue) => {

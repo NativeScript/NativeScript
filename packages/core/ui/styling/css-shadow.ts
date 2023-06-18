@@ -2,7 +2,7 @@ import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
 import { Length } from './style-properties';
 
-export interface CSSShadowLengthTypes {
+export interface ShadowCSSValues {
 	inset: boolean;
 	offsetX: CoreTypes.LengthType;
 	offsetY: CoreTypes.LengthType;
@@ -27,14 +27,14 @@ const LENGTH_RE = /^-?[0-9]+[a-zA-Z%]*?$/;
 const isLength = (v) => v === '0' || LENGTH_RE.test(v);
 
 /**
- * Parse a string into CSSShadowLengthTypes
+ * Parse a string into ShadowCSSValues
  * Supports any valid css box/text shadow combination.
  *
  * inspired by https://github.com/jxnblk/css-box-shadow/blob/master/index.js (MIT License)
  *
  * @param value
  */
-export function parseCSSShadow(value: string): CSSShadowLengthTypes {
+export function parseCSSShadow(value: string): ShadowCSSValues {
 	const parts = value.trim().split(PARTS_RE);
 	const inset = parts.includes('inset');
 	const first = parts[0];

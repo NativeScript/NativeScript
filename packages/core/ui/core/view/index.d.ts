@@ -7,7 +7,7 @@ import { GestureTypes, GesturesObserver } from '../../gestures';
 import { LinearGradient } from '../../styling/linear-gradient';
 import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait, AccessibilityEventOptions } from '../../../accessibility/accessibility-types';
 import { CoreTypes } from '../../../core-types';
-import { CSSShadowLengthTypes } from '../../styling/css-shadow';
+import { ShadowCSSValues } from '../../styling/css-shadow';
 import { ViewCommon } from './view-common';
 
 export * from './view-common';
@@ -332,7 +332,7 @@ export abstract class View extends ViewCommon {
 	/**
 	 * Gets or sets the box shadow of the view.
 	 */
-	boxShadow: string | CSSShadowLengthTypes;
+	boxShadow: string | ShadowCSSValues;
 
 	/**
 	 * Gets or sets the minimum width the view may grow to.

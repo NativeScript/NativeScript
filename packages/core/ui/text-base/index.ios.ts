@@ -1,6 +1,6 @@
 // Types
 import { getClosestPropertyValue } from './text-base-common';
-import { CSSShadowLengthTypes } from '../styling/css-shadow';
+import { ShadowCSSValues } from '../styling/css-shadow';
 
 // Requires
 import { Font } from '../styling/font';
@@ -255,7 +255,7 @@ export class TextBase extends TextBaseCommon {
 		this._setNativeText();
 	}
 
-	[textShadowProperty.setNative](value: CSSShadowLengthTypes) {
+	[textShadowProperty.setNative](value: ShadowCSSValues) {
 		this._setShadow(value);
 	}
 
@@ -404,7 +404,7 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
-	_setShadow(value: CSSShadowLengthTypes): void {
+	_setShadow(value: ShadowCSSValues): void {
 		const layer: CALayer = this.nativeTextViewProtected.layer;
 
 		if (isNullOrUndefined(value)) {

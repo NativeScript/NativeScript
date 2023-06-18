@@ -13,7 +13,7 @@ import { Observable } from '../../data/observable';
 import { CoreTypes } from '../../core-types';
 import { TextBase as TextBaseDefinition } from '.';
 import { Color } from '../../color';
-import { CSSShadowLengthTypes, parseCSSShadow } from '../styling/css-shadow';
+import { ShadowCSSValues, parseCSSShadow } from '../styling/css-shadow';
 
 const CHILD_SPAN = 'Span';
 const CHILD_FORMATTED_TEXT = 'formattedText';
@@ -118,10 +118,10 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 		this.style.textTransform = value;
 	}
 
-	get textShadow(): CSSShadowLengthTypes {
+	get textShadow(): ShadowCSSValues {
 		return this.style.textShadow;
 	}
-	set textShadow(value: CSSShadowLengthTypes) {
+	set textShadow(value: ShadowCSSValues) {
 		this.style.textShadow = value;
 	}
 
@@ -278,7 +278,7 @@ export const textTransformProperty = new CssProperty<Style, CoreTypes.TextTransf
 });
 textTransformProperty.register(Style);
 
-export const textShadowProperty = new CssProperty<Style, string | CSSShadowLengthTypes>({
+export const textShadowProperty = new CssProperty<Style, string | ShadowCSSValues>({
 	name: 'textShadow',
 	cssName: 'text-shadow',
 	affectsLayout: global.isIOS,
