@@ -1230,14 +1230,18 @@ const boxShadowProperty = new CssProperty<Style, CSSShadowLengthTypes>({
 	name: 'boxShadow',
 	cssName: 'box-shadow',
 	valueChanged: (target, oldValue, newValue) => {
-		target.backgroundInternal = target.backgroundInternal.withBoxShadow({
-			inset: newValue.inset,
-			offsetX: Length.toDevicePixels(newValue.offsetX, 0),
-			offsetY: Length.toDevicePixels(newValue.offsetY, 0),
-			blurRadius: Length.toDevicePixels(newValue.blurRadius, 0),
-			spreadRadius: Length.toDevicePixels(newValue.spreadRadius, 0),
-			color: newValue.color,
-		});
+		target.backgroundInternal = target.backgroundInternal.withBoxShadow(
+			newValue
+				? {
+						inset: newValue.inset,
+						offsetX: Length.toDevicePixels(newValue.offsetX, 0),
+						offsetY: Length.toDevicePixels(newValue.offsetY, 0),
+						blurRadius: Length.toDevicePixels(newValue.blurRadius, 0),
+						spreadRadius: Length.toDevicePixels(newValue.spreadRadius, 0),
+						color: newValue.color,
+				  }
+				: null
+		);
 	},
 	valueConverter: (value) => {
 		return parseCSSShadow(value);
