@@ -27,7 +27,7 @@ const LENGTH_RE = /^-?[0-9]+[a-zA-Z%]*?$/;
 const isLength = (v) => v === '0' || LENGTH_RE.test(v);
 
 /**
- * Parse a string into a CSSShadow
+ * Parse a string into CSSShadowLengthTypes
  * Supports any valid css box/text shadow combination.
  *
  * inspired by https://github.com/jxnblk/css-box-shadow/blob/master/index.js (MIT License)
