@@ -2,7 +2,7 @@ import { Color } from '../../color';
 import { View } from '../core/view';
 import { BackgroundRepeat } from '../../css/parser';
 import { LinearGradient } from '../styling/linear-gradient';
-import { CSSShadow } from './css-shadow';
+import { BoxShadow } from './box-shadow';
 
 export * from './background-common';
 
@@ -32,7 +32,7 @@ export enum CacheMode {
 // 	public borderBottomRightRadius: number;
 // 	public borderBottomLeftRadius: number;
 // 	public clipPath: string;
-// 	public boxShadow: string | CSSShadow;
+// 	public boxShadow: string | BoxShadow;
 // 	public clearFlags: number;
 
 // 	public withColor(value: Color): Background;
@@ -53,7 +53,7 @@ export enum CacheMode {
 // 	public withBorderBottomRightRadius(value: number): Background;
 // 	public withBorderBottomLeftRadius(value: number): Background;
 // 	public withClipPath(value: string): Background;
-// 	public withBoxShadow(value: CSSShadow): Background;
+// 	public withBoxShadow(value: BoxShadow): Background;
 
 // 	public isEmpty(): boolean;
 
@@ -70,7 +70,7 @@ export enum CacheMode {
 // 	public getUniformBorderWidth(): number;
 // 	public getUniformBorderRadius(): number;
 // 	public hasBoxShadow(): boolean;
-// 	public getBoxShadow(): CSSShadow;
+// 	public getBoxShadow(): BoxShadow;
 // }
 
 export namespace ios {

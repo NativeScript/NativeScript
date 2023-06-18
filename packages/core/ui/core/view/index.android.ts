@@ -17,15 +17,13 @@ import { Background, BackgroundClearFlags, refreshBorderDrawable } from '../../s
 import { profile } from '../../../profiling';
 import { topmost } from '../../frame/frame-stack';
 import { Screen } from '../../../platform';
-import { AndroidActivityBackPressedEventData, Application } from '../../../application';
+import { AndroidActivityBackPressedEventData, android as androidApp } from '../../../application';
 import { Device } from '../../../platform';
 import lazy from '../../../utils/lazy';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty } from '../../../accessibility/accessibility-properties';
-import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, isAccessibilityServiceEnabled, sendAccessibilityEvent, updateAccessibilityProperties, updateContentDescription, AccessibilityState } from '../../../accessibility';
+import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, setupAccessibleView, isAccessibilityServiceEnabled, sendAccessibilityEvent, updateAccessibilityProperties, updateContentDescription, AccessibilityState } from '../../../accessibility';
 import * as Utils from '../../../utils';
-import { SDK_VERSION } from '../../../utils/constants';
-import { CSSShadow } from '../../styling/css-shadow';
-import { _setAndroidFragmentTransitions, _getAnimatedEntries, _updateTransitions, _reverseTransitions, _clearEntry, _clearFragment, addNativeTransitionListener } from '../../frame/fragment.transitions';
+import { BoxShadow } from '../../styling/box-shadow';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -51,6 +49,8 @@ const GRAVITY_CENTER_HORIZONTAL = 1; // android.view.Gravity.CENTER_HORIZONTAL
 const GRAVITY_FILL_HORIZONTAL = 7; // android.view.Gravity.FILL_HORIZONTAL
 const GRAVITY_CENTER_VERTICAL = 16; // android.view.Gravity.CENTER_VERTICAL
 const GRAVITY_FILL_VERTICAL = 112; // android.view.Gravity.FILL_VERTICAL
+
+const sdkVersion = lazy(() => parseInt(Device.sdkVersion));
 
 const modalMap = new Map<number, DialogOptions>();
 
@@ -143,7 +143,7 @@ function initializeDialogFragment() {
 			};
 
 			// Fist fire application.android global event
-			Application.android.notify(args);
+			androidApp.notify(args);
 			if (args.cancel) {
 				return;
 			}
@@ -321,6 +321,12 @@ export class View extends ViewCommon {
 
 	nativeViewProtected: android.view.View;
 
+	constructor() {
+		super();
+
+		this.on(View.loadedEvent, () => setupAccessibleView(this));
+	}
+
 	// TODO: Implement unobserve that detach the touchListener.
 	_observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
 		super._observe(type, callback, thisArg);
@@ -338,12 +344,12 @@ export class View extends ViewCommon {
 		}
 	}
 
-	off(eventNames: string, callback?: (data: EventData) => void, thisArg?: any) {
+	off(eventNames: string, callback?: any, thisArg?: any) {
 		super.off(eventNames, callback, thisArg);
 		const isLayoutEvent = typeof eventNames === 'string' ? eventNames.indexOf(ViewCommon.layoutChangedEvent) !== -1 : false;
 
 		// Remove native listener only if there are no more user listeners for LayoutChanged event
-		if (this.isLoaded && this.layoutChangeListenerIsSet && isLayoutEvent && !this.needsOnLayoutChangeListener()) {
+		if (this.isLoaded && this.layoutChangeListenerIsSet && isLayoutEvent && !this.hasListeners(ViewCommon.layoutChangedEvent)) {
 			this.nativeViewProtected.removeOnLayoutChangeListener(this.layoutChangeListener);
 			this.layoutChangeListenerIsSet = false;
 		}
@@ -417,6 +423,14 @@ export class View extends ViewCommon {
 
 	@profile
 	public onUnloaded() {
+		if (this.touchListenerIsSet) {
+			this.touchListenerIsSet = false;
+			if (this.nativeViewProtected) {
+				this.nativeViewProtected.setOnTouchListener(null);
+				this.nativeViewProtected.setClickable(this._isClickable);
+			}
+		}
+
 		this._manager = null;
 		this._rootManager = null;
 		super.onUnloaded();
@@ -453,34 +467,23 @@ export class View extends ViewCommon {
 	public initNativeView(): void {
 		super.initNativeView();
 		this._isClickable = this.nativeViewProtected.isClickable();
-		if (this.needsOnLayoutChangeListener()) {
+
+		if (this.hasListeners(ViewCommon.layoutChangedEvent)) {
 			this.setOnLayoutChangeListener();
 		}
 	}
 
-	public needsOnLayoutChangeListener() {
-		return this.hasListeners(ViewCommon.layoutChangedEvent);
-	}
-
 	public disposeNativeView(): void {
-		if (this.touchListenerIsSet) {
-			this.touchListenerIsSet = false;
-			if (this.nativeViewProtected) {
-				this.nativeViewProtected.setOnTouchListener(null);
-			}
-		}
+		super.disposeNativeView();
+
 		if (this.layoutChangeListenerIsSet) {
 			this.layoutChangeListenerIsSet = false;
-			if (this.nativeViewProtected) {
-				this.nativeViewProtected.removeOnLayoutChangeListener(this.layoutChangeListener);
-				this.layoutChangeListener = null;
-			}
+			this.nativeViewProtected.removeOnLayoutChangeListener(this.layoutChangeListener);
 		}
-		super.disposeNativeView();
 	}
 
 	setOnTouchListener() {
-		if (this.touchListenerIsSet || !this.nativeViewProtected || !this.hasGestureObservers()) {
+		if (!this.nativeViewProtected || !this.hasGestureObservers()) {
 			return;
 		}
 
@@ -833,7 +836,7 @@ export class View extends ViewCommon {
 		this.accessibilityRole = value;
 		updateAccessibilityProperties(this);
 
-		if (SDK_VERSION >= 28) {
+		if (android.os.Build.VERSION.SDK_INT >= 28) {
 			this.nativeViewProtected?.setAccessibilityHeading(value === AccessibilityRole.Header);
 		}
 	}
@@ -891,7 +894,7 @@ export class View extends ViewCommon {
 		return this.getDefaultElevation();
 	}
 	[androidElevationProperty.setNative](value: number) {
-		if (SDK_VERSION < 21) {
+		if (sdkVersion() < 21) {
 			return;
 		}
 
@@ -902,7 +905,7 @@ export class View extends ViewCommon {
 		return this.getDefaultDynamicElevationOffset();
 	}
 	[androidDynamicElevationOffsetProperty.setNative](value: number) {
-		if (SDK_VERSION < 21) {
+		if (sdkVersion() < 21) {
 			return;
 		}
 
@@ -910,7 +913,7 @@ export class View extends ViewCommon {
 	}
 
 	protected getDefaultElevation(): number {
-		if (SDK_VERSION < 21) {
+		if (sdkVersion() < 21) {
 			return 0;
 		}
 
@@ -1150,7 +1153,7 @@ export class View extends ViewCommon {
 		}
 	}
 
-	protected _drawBoxShadow(boxShadow: CSSShadow) {
+	protected _drawBoxShadow(boxShadow: BoxShadow) {
 		const nativeView = this.nativeViewProtected;
 		const config = {
 			shadowColor: boxShadow.color.android,
@@ -1185,11 +1188,7 @@ export class View extends ViewCommon {
 	}
 
 	protected onBackgroundOrBorderPropertyChanged() {
-		const nativeView = <
-			android.view.View & {
-				_cachedDrawable: android.graphics.drawable.Drawable.ConstantState | android.graphics.drawable.Drawable;
-			}
-		>this.nativeViewProtected;
+		const nativeView = <android.view.View & { _cachedDrawable: android.graphics.drawable.Drawable.ConstantState | android.graphics.drawable.Drawable }>this.nativeViewProtected;
 		if (!nativeView) {
 			return;
 		}
@@ -1212,11 +1211,11 @@ export class View extends ViewCommon {
 		const isBorderDrawable = drawable instanceof org.nativescript.widgets.BorderDrawable;
 
 		// prettier-ignore
-		const onlyColor = !background.hasBorderWidth()
-			&& !background.hasBorderRadius()
-			&& !background.hasBoxShadow()
-			&& !background.clipPath
-			&& !background.image
+		const onlyColor = !background.hasBorderWidth() 
+			&& !background.hasBorderRadius() 
+			&& !background.hasBoxShadow() 
+			&& !background.clipPath 
+			&& !background.image 
 			&& !!background.color;
 
 		this._applyBackground(background, isBorderDrawable, onlyColor, drawable);

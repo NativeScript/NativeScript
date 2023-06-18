@@ -16,7 +16,7 @@ import { CoreTypes } from '../../core-types';
 
 import { parseBackground } from '../../css/parser';
 import { LinearGradient } from './linear-gradient';
-import { CSSShadow, parseCSSShadow } from './css-shadow';
+import { CSSShadowLengthTypes, parseCSSShadow } from './css-shadow';
 
 function equalsCommon(a: CoreTypes.LengthType, b: CoreTypes.LengthType): boolean;
 function equalsCommon(a: CoreTypes.PercentLengthType, b: CoreTypes.PercentLengthType): boolean;
@@ -1226,11 +1226,18 @@ export const borderBottomLeftRadiusProperty = new CssProperty<Style, CoreTypes.L
 });
 borderBottomLeftRadiusProperty.register(Style);
 
-const boxShadowProperty = new CssProperty<Style, CSSShadow>({
+const boxShadowProperty = new CssProperty<Style, CSSShadowLengthTypes>({
 	name: 'boxShadow',
 	cssName: 'box-shadow',
 	valueChanged: (target, oldValue, newValue) => {
-		target.backgroundInternal = target.backgroundInternal.withBoxShadow(newValue);
+		target.backgroundInternal = target.backgroundInternal.withBoxShadow({
+			inset: newValue.inset,
+			offsetX: Length.toDevicePixels(newValue.offsetX, 0),
+			offsetY: Length.toDevicePixels(newValue.offsetY, 0),
+			blurRadius: Length.toDevicePixels(newValue.blurRadius, 0),
+			spreadRadius: Length.toDevicePixels(newValue.spreadRadius, 0),
+			color: newValue.color,
+		});
 	},
 	valueConverter: (value) => {
 		return parseCSSShadow(value);

@@ -5,11 +5,11 @@ import { View, Point } from '../core/view';
 import { LinearGradient } from './linear-gradient';
 import { Color } from '../../color';
 import { Screen } from '../../platform';
-import { iOSNativeHelper, isDataURI, isFileOrResourcePath, layout } from '../../utils';
+import { isDataURI, isFileOrResourcePath, layout } from '../../utils';
 import { ios as iosViewUtils, NativeScriptUIView } from '../utils';
 import { ImageSource } from '../../image-source';
 import { CSSValue, parse as cssParse } from '../../css-value';
-import { CSSShadow } from './css-shadow';
+import { BoxShadow } from './box-shadow';
 import { Length } from './style-properties';
 import { BackgroundClearFlags } from './background-common';
 
@@ -33,18 +33,13 @@ export namespace ios {
 	export function createBackgroundUIColor(view: View, flip?: boolean): void {
 		const background = view.style.backgroundInternal;
 		const nativeView = <NativeScriptUIView>view.nativeViewProtected;
-		let bgLayer;
-		const callback = (color: UIColor) => {
-			const cgColor = color ? color.CGColor : null;
-			bgLayer.backgroundColor = cgColor;
-		};
 
 		if (!nativeView) {
 			return;
 		}
 
+		// Clear box shadow if it has been removed
 		if (background.clearFlags & BackgroundClearFlags.CLEAR_BOX_SHADOW) {
-			// clear box shadow if it has been removed!
 			view.setProperty('clipToBounds', true);
 			clearBoxShadow(nativeView);
 		}
@@ -55,27 +50,13 @@ export namespace ios {
 		}
 
 		// Get rid of previous background layer
-		if (nativeView.bgLayer) {
-			if (nativeView.bgLayer !== nativeView.layer) {
-				nativeView.bgLayer.removeFromSuperlayer();
-			}
-			nativeView.bgLayer = null;
-		}
+		clearBackgroundLayer(nativeView);
 
-		// Use a new layer for special effects like gradient or shadow
-		if (background.image instanceof LinearGradient) {
-			bgLayer = iosViewUtils.drawGradient(nativeView, background.image);
-			nativeView.layer.addSublayer(bgLayer);
-		} else if (background.hasBoxShadow()) {
-			bgLayer = CALayer.layer();
-			bgLayer.frame = nativeView.bounds;
-			bgLayer.allowsEdgeAntialiasing = true;
-			bgLayer.contentsScale = Screen.mainScreen.scale;
-			nativeView.layer.addSublayer(bgLayer);
-		} else {
-			bgLayer = nativeView.layer;
-		}
-		nativeView.bgLayer = bgLayer;
+		const bgLayer = initializeBackgroundLayer(nativeView, background);
+		const callback = (color: UIColor) => {
+			const cgColor = color ? color.CGColor : null;
+			bgLayer.backgroundColor = cgColor;
+		};
 
 		const hasNonUniformBorderWidths = background.hasBorderWidth() && !background.hasUniformBorder();
 		const hasNonUniformBorderRadiuses = background.hasBorderRadius() && !background.hasUniformBorderRadius();
@@ -758,7 +739,37 @@ function drawNoRadiusNonUniformBorders(nativeView: NativeScriptUIView, backgroun
 	nativeView.hasNonUniformBorder = hasNonUniformBorder;
 }
 
-function drawBoxShadow(nativeView: NativeScriptUIView, boxShadow: CSSShadow, background: BackgroundDefinition) {
+function initializeBackgroundLayer(nativeView: NativeScriptUIView, background: BackgroundDefinition): CALayer {
+	let bgLayer;
+
+	// Use a new layer for special effects like gradient or shadow
+	if (background.image instanceof LinearGradient) {
+		bgLayer = iosViewUtils.drawGradient(nativeView, background.image);
+		nativeView.layer.addSublayer(bgLayer);
+	} else if (background.hasBoxShadow()) {
+		bgLayer = CALayer.layer();
+		bgLayer.frame = nativeView.bounds;
+		bgLayer.allowsEdgeAntialiasing = true;
+		bgLayer.contentsScale = Screen.mainScreen.scale;
+		nativeView.layer.addSublayer(bgLayer);
+	} else {
+		bgLayer = nativeView.layer;
+	}
+	nativeView.bgLayer = bgLayer;
+
+	return bgLayer;
+}
+
+function clearBackgroundLayer(nativeView: NativeScriptUIView) {
+	if (nativeView.bgLayer) {
+		if (nativeView.bgLayer !== nativeView.layer) {
+			nativeView.bgLayer.removeFromSuperlayer();
+		}
+		nativeView.bgLayer = null;
+	}
+}
+
+function drawBoxShadow(nativeView: NativeScriptUIView, boxShadow: BoxShadow, background: BackgroundDefinition) {
 	const shadowLayer: CALayer = nativeView.layer;
 	const bgLayer = nativeView.bgLayer;
 	const layerBounds = bgLayer.bounds;

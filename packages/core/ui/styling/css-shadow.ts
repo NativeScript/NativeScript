@@ -2,12 +2,12 @@ import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
 import { Length } from './style-properties';
 
-export interface CSSShadow {
+export interface CSSShadowLengthTypes {
 	inset: boolean;
-	offsetX: number;
-	offsetY: number;
-	blurRadius?: number;
-	spreadRadius?: number;
+	offsetX: CoreTypes.LengthType;
+	offsetY: CoreTypes.LengthType;
+	blurRadius?: CoreTypes.LengthType;
+	spreadRadius?: CoreTypes.LengthType;
 	color: Color;
 }
 
@@ -34,7 +34,7 @@ const isLength = (v) => v === '0' || LENGTH_RE.test(v);
  *
  * @param value
  */
-export function parseCSSShadow(value: string): CSSShadow {
+export function parseCSSShadow(value: string): CSSShadowLengthTypes {
 	const parts = value.trim().split(PARTS_RE);
 	const inset = parts.includes('inset');
 	const first = parts[0];
@@ -64,10 +64,10 @@ export function parseCSSShadow(value: string): CSSShadow {
 
 	return {
 		inset,
-		offsetX: Length.toDevicePixels(offsetX, 0),
-		offsetY: Length.toDevicePixels(offsetY, 0),
-		blurRadius: Length.toDevicePixels(blurRadius, 0),
-		spreadRadius: Length.toDevicePixels(spreadRadius, 0),
+		offsetX: offsetX,
+		offsetY: offsetY,
+		blurRadius: blurRadius,
+		spreadRadius: spreadRadius,
 		color: new Color(colorRaw),
 	};
 }

@@ -1,6 +1,6 @@
 // Types
 import { getClosestPropertyValue } from './text-base-common';
-import { CSSShadow } from '../styling/css-shadow';
+import { CSSShadowLengthTypes } from '../styling/css-shadow';
 
 // Requires
 import { Font } from '../styling/font';
@@ -11,7 +11,7 @@ import { FormattedString } from './formatted-string';
 import { Span } from './span';
 import { colorProperty, fontInternalProperty, fontScaleInternalProperty, Length } from '../styling/style-properties';
 import { isString, isNullOrUndefined } from '../../utils/types';
-import { iOSNativeHelper } from '../../utils';
+import { iOSNativeHelper, layout } from '../../utils';
 import { Trace } from '../../trace';
 import { CoreTypes } from '../../core-types';
 
@@ -255,7 +255,7 @@ export class TextBase extends TextBaseCommon {
 		this._setNativeText();
 	}
 
-	[textShadowProperty.setNative](value: CSSShadow) {
+	[textShadowProperty.setNative](value: CSSShadowLengthTypes) {
 		this._setShadow(value);
 	}
 
@@ -404,12 +404,8 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
-	_setShadow(value: CSSShadow): void {
-		const layer = iOSNativeHelper.getShadowLayer(this.nativeTextViewProtected, 'ns-text-shadow');
-		if (!layer) {
-			Trace.write('text-shadow not applied, no layer.', Trace.categories.Style, Trace.messageType.info);
-			return;
-		}
+	_setShadow(value: CSSShadowLengthTypes): void {
+		const layer: CALayer = this.nativeTextViewProtected.layer;
 
 		if (isNullOrUndefined(value)) {
 			// clear the text shadow
@@ -423,12 +419,12 @@ export class TextBase extends TextBaseCommon {
 		// shadow opacity is handled on the shadow's color instance
 		layer.shadowOpacity = value.color?.a ? value.color?.a / 255 : 1;
 		layer.shadowColor = value.color.ios.CGColor;
-		layer.shadowRadius = Length.toDevicePixels(value.blurRadius, 0.0);
+		layer.shadowRadius = layout.toDeviceIndependentPixels(Length.toDevicePixels(value.blurRadius, 0));
 
 		// prettier-ignore
 		layer.shadowOffset = CGSizeMake(
-			Length.toDevicePixels(value.offsetX, 0.0),
-			Length.toDevicePixels(value.offsetY, 0.0)
+			layout.toDeviceIndependentPixels(Length.toDevicePixels(value.offsetX, 0)),
+			layout.toDeviceIndependentPixels(Length.toDevicePixels(value.offsetY, 0))
 		);
 
 		layer.masksToBounds = false;

@@ -1,6 +1,6 @@
 // Types
 import { getClosestPropertyValue, maxLinesProperty, textOverflowProperty } from './text-base-common';
-import { CSSShadow } from '../styling/css-shadow';
+import { CSSShadowLengthTypes } from '../styling/css-shadow';
 
 // Requires
 import { Font } from '../styling/font';
@@ -419,7 +419,7 @@ export class TextBase extends TextBaseCommon {
 		};
 	}
 
-	[textShadowProperty.setNative](value: CSSShadow) {
+	[textShadowProperty.setNative](value: CSSShadowLengthTypes) {
 		// prettier-ignore
 		this.nativeTextViewProtected.setShadowLayer(
 			Length.toDevicePixels(value.blurRadius, java.lang.Float.MIN_VALUE),
