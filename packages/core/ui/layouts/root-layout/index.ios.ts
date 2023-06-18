@@ -41,7 +41,9 @@ export class RootLayout extends RootLayoutBase {
 					if (options.color !== this._currentGradient) {
 						this._currentGradient = options.color;
 						const parsedGradient = parseLinearGradient(options.color);
-						this._gradientLayer = iosViewUtils.drawGradient(view.nativeViewProtected, LinearGradient.parse(parsedGradient.value), 0);
+						const gradientLayer = iosViewUtils.drawGradient(view.nativeViewProtected, LinearGradient.parse(parsedGradient.value));
+						view.nativeViewProtected.layer.insertSublayerAtIndex(gradientLayer, 0);
+						this._gradientLayer = gradientLayer;
 					}
 				}
 				UIView.animateWithDurationAnimationsCompletion(
@@ -92,7 +94,10 @@ export class RootLayout extends RootLayoutBase {
 
 	protected _cleanupPlatformShadeCover(): void {
 		this._currentGradient = null;
-		this._gradientLayer = null;
+		if (this._gradientLayer != null) {
+			this._gradientLayer.removeFromSuperlayer();
+			this._gradientLayer = null;
+		}
 	}
 
 	private _applyAnimationProperties(view: View, shadeCoverAnimation: TransitionAnimation): void {

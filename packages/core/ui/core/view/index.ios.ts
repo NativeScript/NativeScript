@@ -899,16 +899,12 @@ export class View extends ViewCommon implements ViewDefinition {
 		if (!updateSuspended) {
 			CATransaction.begin();
 		}
-		const view = this.nativeViewProtected;
-		if (view) {
-			if (value instanceof UIColor) {
-				view.backgroundColor = value;
-			} else {
-				iosBackground.createBackgroundUIColor(this, (color: UIColor) => {
-					view.backgroundColor = color;
-				});
-				this._setNativeClipToBounds();
-			}
+
+		if (value instanceof UIColor) {
+			this.nativeViewProtected.backgroundColor = value;
+		} else {
+			iosBackground.createBackgroundUIColor(this);
+			this._setNativeClipToBounds();
 		}
 
 		if (!updateSuspended) {

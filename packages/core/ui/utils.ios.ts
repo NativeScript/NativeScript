@@ -1,8 +1,10 @@
-﻿import * as utils from '../utils';
+﻿import { Screen } from '../platform';
+import * as utils from '../utils';
 import { LinearGradient } from './styling/linear-gradient';
 
 interface NativeScriptUIView extends UIView {
 	hasNonUniformBorder: boolean;
+	bgLayer: CALayer;
 	borderLayer: CALayer;
 
 	hasBorderMask: boolean;
@@ -12,9 +14,6 @@ interface NativeScriptUIView extends UIView {
 	rightBorderLayer: CALayer;
 	bottomBorderLayer: CALayer;
 	leftBorderLayer: CALayer;
-
-	gradientLayer: CAGradientLayer;
-	boxShadowLayer: CALayer;
 }
 
 export namespace ios {
@@ -42,7 +41,7 @@ export namespace ios {
 		return utils.layout.toDevicePixels(min);
 	}
 
-	export function drawGradient(nativeView: NativeScriptUIView, gradient: LinearGradient, gradientLayerOpacity?: number, index?: number): CAGradientLayer {
+	export function drawGradient(nativeView: NativeScriptUIView, gradient: LinearGradient, gradientLayerOpacity?: number): CAGradientLayer {
 		let gradientLayer: CAGradientLayer;
 		if (nativeView && gradient) {
 			gradientLayer = CAGradientLayer.layer();
@@ -50,7 +49,8 @@ export namespace ios {
 				gradientLayer.opacity = gradientLayerOpacity;
 			}
 			gradientLayer.frame = nativeView.bounds;
-			nativeView.gradientLayer = gradientLayer;
+			gradientLayer.allowsEdgeAntialiasing = true;
+			gradientLayer.contentsScale = Screen.mainScreen.scale;
 
 			const iosColors = NSMutableArray.alloc().initWithCapacity(gradient.colorStops.length);
 			const iosStops = NSMutableArray.alloc<number>().initWithCapacity(gradient.colorStops.length);
@@ -77,15 +77,7 @@ export namespace ios {
 			const endY = Math.pow(Math.sin(Math.PI * alpha), 2);
 			gradientLayer.startPoint = { x: startX, y: startY };
 			gradientLayer.endPoint = { x: endX, y: endY };
-
-			nativeView.layer.insertSublayerAtIndex(gradientLayer, index || 0);
 		}
 		return gradientLayer;
-	}
-
-	export function clearGradient(nativeView: NativeScriptUIView): void {
-		if (nativeView?.gradientLayer) {
-			nativeView.gradientLayer.removeFromSuperlayer();
-		}
 	}
 }

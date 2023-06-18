@@ -1,5 +1,6 @@
 ﻿export interface NativeScriptUIView extends UIView {
 	hasNonUniformBorder: boolean;
+	bgLayer: CALayer;
 	borderLayer: CALayer;
 
 	hasBorderMask: boolean;
@@ -9,9 +10,6 @@
 	rightBorderLayer: CALayer;
 	bottomBorderLayer: CALayer;
 	leftBorderLayer: CALayer;
-
-	gradientLayer: CAGradientLayer;
-	boxShadowLayer: CALayer;
 }
 export namespace ios {
 	/**
@@ -28,16 +26,9 @@ export namespace ios {
 
 	/**
 	 * draw gradient using CAGradientLayer and insert into UIView sublayer
-	 * @param nativeView UIView
+	 * @param nativeView NativeScriptUIView
 	 * @param gradient Parsed LinearGradient
 	 * @param gradientLayerOpacity Initial layer opacity (in case you'd like to use with animation sequence)
-	 * @param index sublayer index to insert layer at (defaults to 0)
 	 */
-	export function drawGradient(uiView: any /* UIView */, gradient: LinearGradient, gradientLayerOpacity?: number, index?: number): any; /* CAGradientLayer */
-
-	/**
-	 * clear gradientLayer if found on provided UIView
-	 * @param nativeView UIView
-	 */
-	export function clearGradient(uiView: any /* UIView */): void;
+	export function drawGradient(uiView: NativeScriptUIView, gradient: LinearGradient, gradientLayerOpacity?: number): CAGradientLayer;
 }

@@ -150,14 +150,7 @@ export class Label extends TextBase implements LabelDefinition {
 
 	_redrawNativeBackground(value: UIColor | Background): void {
 		if (value instanceof Background) {
-			ios.createBackgroundUIColor(
-				this,
-				(color: UIColor) => {
-					const cgColor = color ? color.CGColor : null;
-					this.nativeTextViewProtected.layer.backgroundColor = cgColor;
-				},
-				true
-			);
+			ios.createBackgroundUIColor(this, true);
 		}
 
 		this._setNativeClipToBounds();

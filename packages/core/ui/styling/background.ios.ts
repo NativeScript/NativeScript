@@ -4,6 +4,7 @@ import { Background as BackgroundDefinition } from './background';
 import { View, Point } from '../core/view';
 import { LinearGradient } from './linear-gradient';
 import { Color } from '../../color';
+import { Screen } from '../../platform';
 import { iOSNativeHelper, isDataURI, isFileOrResourcePath, layout } from '../../utils';
 import { ios as iosViewUtils, NativeScriptUIView } from '../utils';
 import { ImageSource } from '../../image-source';
@@ -29,9 +30,14 @@ export enum CacheMode {
 }
 
 export namespace ios {
-	export function createBackgroundUIColor(view: View, callback: (uiColor: UIColor) => void, flip?: boolean): void {
+	export function createBackgroundUIColor(view: View, flip?: boolean): void {
 		const background = view.style.backgroundInternal;
 		const nativeView = <NativeScriptUIView>view.nativeViewProtected;
+		let bgLayer;
+		const callback = (color: UIColor) => {
+			const cgColor = color ? color.CGColor : null;
+			bgLayer.backgroundColor = cgColor;
+		};
 
 		if (!nativeView) {
 			return;
@@ -48,10 +54,26 @@ export namespace ios {
 			clearNonUniformBorders(nativeView);
 		}
 
-		iosViewUtils.clearGradient(nativeView);
-		if (background.image instanceof LinearGradient) {
-			iosViewUtils.drawGradient(nativeView, background.image);
+		// Get rid of previous background layer
+		if (nativeView.bgLayer) {
+			nativeView.bgLayer.removeFromSuperlayer();
+			nativeView.bgLayer = null;
 		}
+
+		// Use a new layer for special effects like gradient or shadow
+		if (background.image instanceof LinearGradient) {
+			bgLayer = iosViewUtils.drawGradient(nativeView, background.image);
+			nativeView.layer.addSublayer(bgLayer);
+		} else if (background.hasBoxShadow()) {
+			bgLayer = CALayer.layer();
+			bgLayer.frame = nativeView.bounds;
+			bgLayer.allowsEdgeAntialiasing = true;
+			bgLayer.contentsScale = Screen.mainScreen.scale;
+			nativeView.layer.addSublayer(bgLayer);
+		} else {
+			bgLayer = nativeView.layer;
+		}
+		nativeView.bgLayer = bgLayer;
 
 		const hasNonUniformBorderWidths = background.hasBorderWidth() && !background.hasUniformBorder();
 		const hasNonUniformBorderRadiuses = background.hasBorderRadius() && !background.hasUniformBorderRadius();
@@ -59,13 +81,12 @@ export namespace ios {
 			drawUniformColorNonUniformBorders(nativeView, background);
 			subscribeForScrollNotifications(view);
 		} else if (background.hasUniformBorder()) {
-			const layer = nativeView.layer;
 			const borderColor = background.getUniformBorderColor();
-			layer.borderColor = !borderColor ? undefined : borderColor.ios.CGColor;
-			layer.borderWidth = layout.toDeviceIndependentPixels(background.getUniformBorderWidth());
+			bgLayer.borderColor = !borderColor ? undefined : borderColor.ios.CGColor;
+			bgLayer.borderWidth = layout.toDeviceIndependentPixels(background.getUniformBorderWidth());
 			const renderSize = view.getActualSize() || { width: 0, height: 0 };
 			const cornerRadius = layout.toDeviceIndependentPixels(background.getUniformBorderRadius());
-			layer.cornerRadius = Math.min(Math.min(renderSize.width / 2, renderSize.height / 2), cornerRadius);
+			bgLayer.cornerRadius = Math.min(Math.min(renderSize.width / 2, renderSize.height / 2), cornerRadius);
 		} else {
 			drawNoRadiusNonUniformBorders(nativeView, background);
 			subscribeForScrollNotifications(view);
@@ -85,7 +106,10 @@ export namespace ios {
 		}
 
 		if (background.hasBoxShadow()) {
-			drawBoxShadow(nativeView, view, background.getBoxShadow(), background);
+			// this is required (if not, shadow will get cutoff at parent's dimensions)
+			// nativeView.clipsToBounds doesn't work
+			view.setProperty('clipToBounds', false);
+			drawBoxShadow(nativeView, background.getBoxShadow(), background);
 		}
 
 		// reset clear flags
@@ -449,15 +473,41 @@ function cssValueToDeviceIndependentPixels(source: string, total: number): numbe
 	}
 }
 
+function getBorderCapRadius(a: number, b: number, c: number): number {
+	return a && Math.min(a, Math.min(b, c));
+}
+
+function getNonUniformBordersClipPath(bounds: CGRect, cappedRadii: [number, number, number, number], offset: number = 0): any {
+	const { width, height } = bounds.size;
+	const { x, y } = bounds.origin;
+
+	const left = x - offset;
+	const top = y - offset;
+	const right = x + width + offset;
+	const bottom = y + height + offset;
+
+	const clipPath = CGPathCreateMutable();
+
+	CGPathMoveToPoint(clipPath, null, left + cappedRadii[0], top);
+	CGPathAddArcToPoint(clipPath, null, right, top, right, top + cappedRadii[1], cappedRadii[1]);
+	CGPathAddArcToPoint(clipPath, null, right, bottom, right - cappedRadii[2], bottom, cappedRadii[2]);
+	CGPathAddArcToPoint(clipPath, null, left, bottom, left, bottom - cappedRadii[3], cappedRadii[3]);
+	CGPathAddArcToPoint(clipPath, null, left, top, left + cappedRadii[0], top, cappedRadii[0]);
+	CGPathCloseSubpath(clipPath);
+
+	return clipPath;
+}
+
 function drawUniformColorNonUniformBorders(nativeView: NativeScriptUIView, background: BackgroundDefinition) {
-	const layer = nativeView.layer;
+	const layer = nativeView.bgLayer;
+	const layerBounds = layer.bounds;
 	layer.backgroundColor = undefined;
 	layer.borderColor = undefined;
 	layer.borderWidth = 0;
 	layer.cornerRadius = 0;
 
-	const { width, height } = layer.bounds.size;
-	const { x, y } = layer.bounds.origin;
+	const { width, height } = layerBounds.size;
+	const { x, y } = layerBounds.origin;
 
 	const left = x;
 	const top = y;
@@ -489,23 +539,13 @@ function drawUniformColorNonUniformBorders(nativeView: NativeScriptUIView, backg
 	const bottomRadii = outerBottomRightRadius + outerBottomLeftRadius;
 	const leftRadii = outerBottomLeftRadius + outerTopLeftRadius;
 
-	function capRadius(a: number, b: number, c: number): number {
-		return a && Math.min(a, Math.min(b, c));
-	}
-
-	const cappedOuterTopLeftRadius = capRadius(outerTopLeftRadius, (outerTopLeftRadius / topRadii) * width, (outerTopLeftRadius / leftRadii) * height);
-	const cappedOuterTopRightRadius = capRadius(outerTopRightRadius, (outerTopRightRadius / topRadii) * width, (outerTopRightRadius / rightRadii) * height);
-	const cappedOuterBottomRightRadius = capRadius(outerBottomRightRadius, (outerBottomRightRadius / bottomRadii) * width, (outerBottomRightRadius / rightRadii) * height);
-	const cappedOuterBottomLeftRadius = capRadius(outerBottomLeftRadius, (outerBottomLeftRadius / bottomRadii) * width, (outerBottomLeftRadius / leftRadii) * height);
+	const cappedOuterTopLeftRadius = getBorderCapRadius(outerTopLeftRadius, (outerTopLeftRadius / topRadii) * width, (outerTopLeftRadius / leftRadii) * height);
+	const cappedOuterTopRightRadius = getBorderCapRadius(outerTopRightRadius, (outerTopRightRadius / topRadii) * width, (outerTopRightRadius / rightRadii) * height);
+	const cappedOuterBottomRightRadius = getBorderCapRadius(outerBottomRightRadius, (outerBottomRightRadius / bottomRadii) * width, (outerBottomRightRadius / rightRadii) * height);
+	const cappedOuterBottomLeftRadius = getBorderCapRadius(outerBottomLeftRadius, (outerBottomLeftRadius / bottomRadii) * width, (outerBottomLeftRadius / leftRadii) * height);
 
 	// Outer contour
-	const clipPath = CGPathCreateMutable();
-	CGPathMoveToPoint(clipPath, null, left + cappedOuterTopLeftRadius, top);
-	CGPathAddArcToPoint(clipPath, null, right, top, right, top + cappedOuterTopRightRadius, cappedOuterTopRightRadius);
-	CGPathAddArcToPoint(clipPath, null, right, bottom, right - cappedOuterBottomRightRadius, bottom, cappedOuterBottomRightRadius);
-	CGPathAddArcToPoint(clipPath, null, left, bottom, left, bottom - cappedOuterBottomLeftRadius, cappedOuterBottomLeftRadius);
-	CGPathAddArcToPoint(clipPath, null, left, top, left + cappedOuterTopLeftRadius, top, cappedOuterTopLeftRadius);
-	CGPathCloseSubpath(clipPath);
+	const clipPath = getNonUniformBordersClipPath(layerBounds, [cappedOuterTopLeftRadius, cappedOuterTopRightRadius, cappedOuterBottomRightRadius, cappedOuterBottomLeftRadius]);
 
 	nativeView.borderOriginalMask = layer.mask;
 	const clipShapeLayer = CAShapeLayer.layer();
@@ -578,15 +618,16 @@ function drawUniformColorNonUniformBorders(nativeView: NativeScriptUIView, backg
 }
 
 function drawNoRadiusNonUniformBorders(nativeView: NativeScriptUIView, background: BackgroundDefinition) {
+	const layer = nativeView.bgLayer;
 	const borderLayer = CALayer.layer();
-	nativeView.layer.addSublayer(borderLayer);
+	layer.addSublayer(borderLayer);
 	nativeView.borderLayer = borderLayer;
 
 	borderLayer.borderColor = undefined;
 	borderLayer.borderWidth = 0;
 	borderLayer.cornerRadius = 0;
 
-	const layerBounds = nativeView.layer.bounds;
+	const layerBounds = layer.bounds;
 	const layerOrigin = layerBounds.origin;
 	const layerSize = layerBounds.size;
 
@@ -715,16 +756,12 @@ function drawNoRadiusNonUniformBorders(nativeView: NativeScriptUIView, backgroun
 	nativeView.hasNonUniformBorder = hasNonUniformBorder;
 }
 
-// TODO: use sublayer if its applied to a layout
-function drawBoxShadow(nativeView: NativeScriptUIView, view: View, boxShadow: CSSShadow, background: BackgroundDefinition, useSubLayer: boolean = false) {
-	const layer: CALayer = iOSNativeHelper.getShadowLayer(nativeView, 'ns-box-shadow');
+function drawBoxShadow(nativeView: NativeScriptUIView, boxShadow: CSSShadow, background: BackgroundDefinition) {
+	const layer = nativeView.layer;
+	const layerBounds = nativeView.bgLayer.bounds;
 
 	layer.masksToBounds = false;
 	nativeView.clipsToBounds = false;
-
-	// this is required (if not, shadow will get cutoff at parent's dimensions)
-	// nativeView.clipsToBounds doesn't work
-	view.setProperty('clipToBounds', false);
 
 	if (!background.color?.a) {
 		// add white background if view has a transparent background
@@ -732,32 +769,43 @@ function drawBoxShadow(nativeView: NativeScriptUIView, view: View, boxShadow: CS
 	}
 	// shadow opacity is handled on the shadow's color instance
 	layer.shadowOpacity = boxShadow.color?.a ? boxShadow.color?.a / 255 : 1;
-	layer.shadowRadius = Length.toDevicePixels(boxShadow.blurRadius, 0.0);
+	layer.shadowRadius = layout.toDeviceIndependentPixels(boxShadow.blurRadius);
 	layer.shadowColor = boxShadow.color.ios.CGColor;
 
 	// prettier-ignore
 	layer.shadowOffset = CGSizeMake(
-		Length.toDevicePixels(boxShadow.offsetX, 0.0),
-		Length.toDevicePixels(boxShadow.offsetY, 0.0)
+		layout.toDeviceIndependentPixels(boxShadow.offsetX),
+		layout.toDeviceIndependentPixels(boxShadow.offsetY)
 	);
 
-	// this should match the view's border radius
-	let cornerRadius: number;
-	if (typeof view.style.borderRadius !== 'number') {
-		cornerRadius = Length.toDevicePixels(<CoreTypes.LengthType>view.style.borderRadius, 0.0);
-	} else {
-		cornerRadius = view.style.borderRadius;
+	// Apply spread radius by expanding shadow layer bounds (this has a nice glow with radii set to 0)
+	const spreadRadius = layout.toDeviceIndependentPixels(boxShadow.spreadRadius);
+	const hasNonUniformBorderWidths = background.hasBorderWidth() && !background.hasUniformBorder();
+	const hasNonUniformBorderRadiuses = background.hasBorderRadius() && !background.hasUniformBorderRadius();
+	if (background.hasUniformBorderColor() && (hasNonUniformBorderWidths || hasNonUniformBorderRadiuses)) {
+		const { width, height } = layerBounds.size;
+		const outerTopLeftRadius = layout.toDeviceIndependentPixels(background.borderTopLeftRadius);
+		const outerTopRightRadius = layout.toDeviceIndependentPixels(background.borderTopRightRadius);
+		const outerBottomRightRadius = layout.toDeviceIndependentPixels(background.borderBottomRightRadius);
+		const outerBottomLeftRadius = layout.toDeviceIndependentPixels(background.borderBottomLeftRadius);
+
+		const topRadii = outerTopLeftRadius + outerTopRightRadius;
+		const rightRadii = outerTopRightRadius + outerBottomRightRadius;
+		const bottomRadii = outerBottomRightRadius + outerBottomLeftRadius;
+		const leftRadii = outerBottomLeftRadius + outerTopLeftRadius;
+
+		const cappedOuterTopLeftRadius = getBorderCapRadius(outerTopLeftRadius, (outerTopLeftRadius / topRadii) * width, (outerTopLeftRadius / leftRadii) * height);
+		const cappedOuterTopRightRadius = getBorderCapRadius(outerTopRightRadius, (outerTopRightRadius / topRadii) * width, (outerTopRightRadius / rightRadii) * height);
+		const cappedOuterBottomRightRadius = getBorderCapRadius(outerBottomRightRadius, (outerBottomRightRadius / bottomRadii) * width, (outerBottomRightRadius / rightRadii) * height);
+		const cappedOuterBottomLeftRadius = getBorderCapRadius(outerBottomLeftRadius, (outerBottomLeftRadius / bottomRadii) * width, (outerBottomLeftRadius / leftRadii) * height);
+
+		layer.shadowPath = getNonUniformBordersClipPath(layerBounds, [cappedOuterTopLeftRadius, cappedOuterTopRightRadius, cappedOuterBottomRightRadius, cappedOuterBottomLeftRadius], spreadRadius);
+	} else if (background.hasUniformBorder()) {
+		const bounds = CGRectInset(layerBounds, -spreadRadius, -spreadRadius);
+		const cornerRadius = nativeView.bgLayer.cornerRadius;
+
+		layer.shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(bounds, cornerRadius).CGPath;
 	}
-
-	// apply spreadRadius by expanding shadow layer bounds
-	// prettier-ignore
-	const bounds = CGRectInset(nativeView.bounds,
-		-Length.toDevicePixels(boxShadow.spreadRadius, 0.0),
-		-Length.toDevicePixels(boxShadow.spreadRadius, 0.0)
-	);
-
-	// This has the nice glow with box shadow of 0,0
-	layer.shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(bounds, cornerRadius).CGPath;
 }
 
 function clearBoxShadow(nativeView: NativeScriptUIView) {
@@ -774,8 +822,8 @@ function clearBoxShadow(nativeView: NativeScriptUIView) {
 	layer.shadowOpacity = 0.0;
 }
 
-function drawClipPath(nativeView: UIView, background: BackgroundDefinition) {
-	const layer = nativeView.layer;
+function drawClipPath(nativeView: NativeScriptUIView, background: BackgroundDefinition) {
+	const layer = nativeView.bgLayer;
 	const layerBounds = layer.bounds;
 	const layerOrigin = layerBounds.origin;
 	const layerSize = layerBounds.size;

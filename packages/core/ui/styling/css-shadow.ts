@@ -4,10 +4,10 @@ import { Length } from './style-properties';
 
 export interface CSSShadow {
 	inset: boolean;
-	offsetX: CoreTypes.LengthType;
-	offsetY: CoreTypes.LengthType;
-	blurRadius?: CoreTypes.LengthType;
-	spreadRadius?: CoreTypes.LengthType;
+	offsetX: number;
+	offsetY: number;
+	blurRadius?: number;
+	spreadRadius?: number;
 	color: Color;
 }
 
@@ -64,10 +64,10 @@ export function parseCSSShadow(value: string): CSSShadow {
 
 	return {
 		inset,
-		offsetX: offsetX,
-		offsetY: offsetY,
-		blurRadius: blurRadius,
-		spreadRadius: spreadRadius,
+		offsetX: Length.toDevicePixels(offsetX, 0),
+		offsetY: Length.toDevicePixels(offsetY, 0),
+		blurRadius: Length.toDevicePixels(blurRadius, 0),
+		spreadRadius: Length.toDevicePixels(spreadRadius, 0),
 		color: new Color(colorRaw),
 	};
 }

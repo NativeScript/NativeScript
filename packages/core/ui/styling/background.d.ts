@@ -74,7 +74,7 @@ export enum CacheMode {
 // }
 
 export namespace ios {
-	export function createBackgroundUIColor(view: View, callback: (uiColor: any /* UIColor */) => void, flip?: boolean): void;
+	export function createBackgroundUIColor(view: View, flip?: boolean): void;
 }
 
 export namespace ad {
