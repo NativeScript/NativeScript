@@ -808,6 +808,8 @@ function drawBoxShadow(nativeView: NativeScriptUIView, boxShadow: CSSShadow, bac
 		const cornerRadius = bgLayer.cornerRadius;
 
 		shadowLayer.shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(bounds, cornerRadius).CGPath;
+	} else {
+		shadowLayer.shadowPath = null;
 	}
 }
 
