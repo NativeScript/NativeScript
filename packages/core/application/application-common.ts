@@ -233,6 +233,8 @@ export class ApplicationCommon {
 	private setRootViewCSSClasses(rootView: View): void {
 		const platform = Device.os.toLowerCase();
 		const deviceType = Device.deviceType.toLowerCase();
+		const orientation = this.orientation();
+		const systemAppearance = this.systemAppearance();
 
 		if (platform) {
 			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${platform}`);
@@ -242,12 +244,12 @@ export class ApplicationCommon {
 			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${deviceType}`);
 		}
 
-		if (this.orientation) {
-			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${this.orientation}`);
+		if (orientation) {
+			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${orientation}`);
 		}
 
-		if (this.systemAppearance) {
-			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${this.systemAppearance}`);
+		if (systemAppearance) {
+			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${systemAppearance}`);
 		}
 
 		rootView.cssClasses.add(CSSUtils.ROOT_VIEW_CSS_CLASS);
