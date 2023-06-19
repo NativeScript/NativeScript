@@ -903,7 +903,7 @@ export class View extends ViewCommon implements ViewDefinition {
 		if (value instanceof UIColor) {
 			this.nativeViewProtected.backgroundColor = value;
 		} else {
-			iosBackground.createBackgroundUIColor(this);
+			iosBackground.createBackgroundUIColor(this, true);
 			this._setNativeClipToBounds();
 		}
 
