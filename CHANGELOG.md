@@ -1,3 +1,13 @@
+## [8.5.5](https://github.com/NativeScript/NativeScript/compare/8.5.4-core...8.5.5) (2023-06-19)
+
+
+### Bug Fixes
+
+* **animation:** css keyframes ([685d61c](https://github.com/NativeScript/NativeScript/commit/685d61cf54c0fabb959edf5f5dcc01dec304005d))
+* **Application:** orientation & systemAppearance root classes ([7f09b92](https://github.com/NativeScript/NativeScript/commit/7f09b925bd093e7970e183f39dc73f3c32e9e466))
+
+
+
 ## [8.5.4](https://github.com/NativeScript/NativeScript/compare/5.0.15-webpack...8.5.4) (2023-06-17)
 
 
