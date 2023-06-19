@@ -171,7 +171,9 @@ export class Animation extends AnimationBase {
 		const animationFinishedCallback = (cancelled: boolean) => {
 			if (this._playSequentially) {
 				// This function will be called by the last animation when done or by another animation if the user cancels them halfway through.
-				this._resolveAnimationFinishedPromise();
+				if (!cancelled) {
+					this._resolveAnimationFinishedPromise();
+				}
 			} else {
 				// This callback will be called by each INDIVIDUAL animation when it finishes or is cancelled.
 				if (cancelled) {
@@ -184,7 +186,6 @@ export class Animation extends AnimationBase {
 					if (Trace.isEnabled()) {
 						Trace.write(this._cancelledAnimations + ' animations cancelled.', Trace.categories.Animation);
 					}
-					this._resolveAnimationFinishedPromise();
 				} else if (this._finishedAnimations === this._mergedPropertyAnimations.length) {
 					if (Trace.isEnabled()) {
 						Trace.write(this._finishedAnimations + ' animations finished.', Trace.categories.Animation);
