@@ -745,13 +745,13 @@ function initializeBackgroundLayer(nativeView: NativeScriptUIView, background: B
 	// Use a new layer for special effects like gradient or shadow
 	if (background.image instanceof LinearGradient) {
 		bgLayer = iosViewUtils.drawGradient(nativeView, background.image);
-		nativeView.layer.addSublayer(bgLayer);
+		nativeView.layer.insertSublayerAtIndex(bgLayer, 0);
 	} else if (background.hasBoxShadow()) {
 		bgLayer = CALayer.layer();
 		bgLayer.frame = nativeView.bounds;
 		bgLayer.allowsEdgeAntialiasing = true;
 		bgLayer.contentsScale = Screen.mainScreen.scale;
-		nativeView.layer.addSublayer(bgLayer);
+		nativeView.layer.insertSublayerAtIndex(bgLayer, 0);
 	} else {
 		bgLayer = nativeView.layer;
 	}
