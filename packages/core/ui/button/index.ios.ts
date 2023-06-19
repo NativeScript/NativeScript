@@ -1,7 +1,7 @@
 import { ControlStateChangeListener } from '../core/control-state-change';
 import { ButtonBase } from './button-common';
 import { View, PseudoClassHandler } from '../core/view';
-import { backgroundColorProperty, borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty } from '../styling/style-properties';
+import { borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty } from '../styling/style-properties';
 import { textAlignmentProperty, whiteSpaceProperty, textOverflowProperty } from '../text-base';
 import { layout } from '../../utils';
 import { CoreTypes } from '../../core-types';
@@ -54,14 +54,6 @@ export class Button extends ButtonBase {
 		} else {
 			this._stateChangedHandler.stop();
 		}
-	}
-
-	[backgroundColorProperty.getDefault](): UIColor {
-		return this.nativeViewProtected.backgroundColor;
-	}
-
-	[backgroundColorProperty.setNative](value: UIColor | Color) {
-		this.nativeViewProtected.backgroundColor = value instanceof Color ? value.ios : value;
 	}
 
 	[borderTopWidthProperty.getDefault](): CoreTypes.LengthType {
