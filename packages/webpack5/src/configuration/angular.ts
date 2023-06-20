@@ -214,7 +214,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				.end()
 				.before('angular')
 				.use('webpack-loader')
-				.loader('@angular-devkit/build-angular/src/babel/webpack-loader')
+				.loader(getWebpackLoaderPath())
 				.options(buildAngularOptions);
 		} else {
 			warnOnce(
@@ -333,4 +333,25 @@ function getBuildAngularMajorVersion() {
 	}
 
 	return null;
+}
+
+function tryRequireResolve(path: string) {
+	try {
+		return require.resolve(path);
+	} catch (err) {
+		return null;
+	}
+}
+
+function getWebpackLoaderPath() {
+	return (
+		tryRequireResolve(
+			'@angular-devkit/build-angular/src/babel/webpack-loader'
+		) ||
+		tryRequireResolve(
+			'@angular-devkit/build-angular/src/tools/babel/webpack-loader'
+		) ||
+		// fallback to angular 16.1+
+		'@angular-devkit/build-angular/src/tools/babel/webpack-loader'
+	);
 }
