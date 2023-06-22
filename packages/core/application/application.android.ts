@@ -265,6 +265,9 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 	readonly activityRequestPermissionsEvent = AndroidApplication.activityRequestPermissionsEvent;
 
 	private _nativeApp: android.app.Application;
+	private _context: android.content.Context;
+	private _packageName: string;
+
 	// we are using these property to store the callbacks to avoid early GC collection which would trigger MarkReachableObjects
 	private lifecycleCallbacks: NativeScriptLifecycleCallbacks;
 	private componentCallbacks: NativeScriptComponentCallbacks;
@@ -279,6 +282,8 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 		}
 
 		this._nativeApp = nativeApp;
+		this._context = nativeApp.getApplicationContext();
+		this._packageName = nativeApp.getPackageName();
 
 		// we store those callbacks and add a function for clearing them later so that the objects will be eligable for GC
 		this.lifecycleCallbacks = new NativeScriptLifecycleCallbacks();
@@ -381,11 +386,11 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 	}
 
 	get context() {
-		return this.nativeApp.getApplicationContext();
+		return this._context;
 	}
 
 	get packageName() {
-		return this.nativeApp.getPackageName();
+		return this._packageName;
 	}
 
 	public registerBroadcastReceiver(intentFilter: string, onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void): void {
