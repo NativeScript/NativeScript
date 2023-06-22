@@ -206,7 +206,7 @@ exports[`angular configuration for android 1`] = `
         use: [
           /* config.module.rule('angular-webpack-loader').use('webpack-loader') */
           {
-            loader: '@angular-devkit/build-angular/src/babel/webpack-loader',
+            loader: '<rootDir>/node_modules/@angular-devkit/build-angular/src/tools/babel/webpack-loader.js',
             options: {
               aot: true
             }
@@ -632,7 +632,7 @@ exports[`angular configuration for ios 1`] = `
         use: [
           /* config.module.rule('angular-webpack-loader').use('webpack-loader') */
           {
-            loader: '@angular-devkit/build-angular/src/babel/webpack-loader',
+            loader: '<rootDir>/node_modules/@angular-devkit/build-angular/src/tools/babel/webpack-loader.js',
             options: {
               aot: true
             }
