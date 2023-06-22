@@ -9,7 +9,15 @@ export interface NativeScriptError extends Error {
 	/**
 	 * Represents the native error object.
 	 */
-	nativeError: any;
+	nativeException?: any;
+	/**
+	 * The native stack trace.
+	 */
+	stackTrace?: string;
+	/**
+	 * Javascript portion of stack trace.
+	 */
+	stack?: string;
 }
 
 /**
