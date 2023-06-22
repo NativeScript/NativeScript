@@ -1,4 +1,14 @@
-## [8.5.5](https://github.com/NativeScript/NativeScript/compare/8.5.4-core...8.5.5) (2023-06-19)
+## [8.5.6](https://github.com/NativeScript/NativeScript/compare/8.5.5-core...8.5.6-core) (2023-06-22)
+
+
+### Bug Fixes
+
+* **core:** unhandled error typings ([#10320](https://github.com/NativeScript/NativeScript/issues/10320)) ([c278430](https://github.com/NativeScript/NativeScript/commit/c27843024050115c3ee058828ed6f404d513c07a))
+* **android:** early access to context and packageName ([#10321](https://github.com/NativeScript/NativeScript/issues/10321)) ([0873894](https://github.com/NativeScript/NativeScript/commit/0873894a27cc2785c9b1db189d63e2cd2e2c60f7))
+
+
+
+## [8.5.5](https://github.com/NativeScript/NativeScript/compare/8.5.4-core...8.5.5-core) (2023-06-19)
 
 
 ### Bug Fixes
@@ -8,7 +18,7 @@
 
 
 
-## [8.5.4](https://github.com/NativeScript/NativeScript/compare/5.0.15-webpack...8.5.4) (2023-06-17)
+## [8.5.4](https://github.com/NativeScript/NativeScript/compare/5.0.15-webpack...8.5.4-core) (2023-06-17)
 
 
 ### Bug Fixes
@@ -22,7 +32,7 @@
 
 
 
-## [8.5.3](https://github.com/NativeScript/NativeScript/compare/8.5.2-core...8.5.3) (2023-05-04)
+## [8.5.3](https://github.com/NativeScript/NativeScript/compare/8.5.2-core...8.5.3-core) (2023-05-04)
 
 
 ### Bug Fixes
@@ -37,7 +47,7 @@
 
 
 
-## [8.5.2](https://github.com/NativeScript/NativeScript/compare/8.5.1-core...8.5.2) (2023-04-25)
+## [8.5.2](https://github.com/NativeScript/NativeScript/compare/8.5.1-core...8.5.2-core) (2023-04-25)
 
 
 ### Bug Fixes
@@ -52,7 +62,7 @@
 
 
 
-## [8.5.1](https://github.com/NativeScript/NativeScript/compare/8.5.0-core...8.5.1) (2023-04-17)
+## [8.5.1](https://github.com/NativeScript/NativeScript/compare/8.5.0-core...8.5.1-core) (2023-04-17)
 
 
 ### Bug Fixes
@@ -71,7 +81,7 @@
 
 
 
-# [8.5.0](https://github.com/NativeScript/NativeScript/compare/8.4.7-core...8.5.0) (2023-03-28)
+# [8.5.0](https://github.com/NativeScript/NativeScript/compare/8.4.7-core...8.5.0-core) (2023-03-28)
 
 
 ### Bug Fixes
@@ -224,7 +234,7 @@ for (var i = 0; i < collection.count; i++) {
 
 
 
-## [8.4.7](https://github.com/NativeScript/NativeScript/compare/5.0.13-webpack...8.4.7) (2023-01-23)
+## [8.4.7](https://github.com/NativeScript/NativeScript/compare/5.0.13-webpack...8.4.7-core) (2023-01-23)
 
 
 ### Bug Fixes
