@@ -103,7 +103,7 @@ declare module globalThis {
 	function _isModuleLoadedForUI(moduleName: string): boolean;
 
 	var onGlobalLayoutListener: any;
-	function zonedCallback(callback: Function): Function;
+	function zonedCallback<T = Function>(callback: T): T;
 	var Reflect: any;
 	function Deprecated(target: Object, key?: string | symbol, descriptor?: any): any;
 	function Experimental(target: Object, key?: string | symbol, descriptor?: any): any;
@@ -358,7 +358,7 @@ declare function fail(data: any): void;
  */
 // declare function clearInterval(id: number): void;
 
-declare function zonedCallback(callback: Function): Function;
+declare function zonedCallback<T = Function>(callback: T): T;
 
 /**
  * Create a Java long from a number
