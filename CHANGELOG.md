@@ -1,3 +1,14 @@
+## [8.5.7](https://github.com/NativeScript/NativeScript/compare/8.5.6-core...8.5.7-core) (2023-06-23)
+
+
+### Bug Fixes
+
+* **Application:** getNativeApplication wrong ActivityThread ([#10326](https://github.com/NativeScript/NativeScript/issues/10326)) ([029ed4f](https://github.com/NativeScript/NativeScript/commit/029ed4fe5d724e6a21dbb35d4683ad8290777c99)), closes [#10325](https://github.com/NativeScript/NativeScript/issues/10325)
+* **Connectivity:** androidApp is not defined on SDK <28 ([#10324](https://github.com/NativeScript/NativeScript/issues/10324)) ([fce2e88](https://github.com/NativeScript/NativeScript/commit/fce2e88cbabd4b55b3c7e4c62b109bdfe46c165c)), closes [#10323](https://github.com/NativeScript/NativeScript/issues/10323)
+* trigger css update when setting root classes ([#10328](https://github.com/NativeScript/NativeScript/issues/10328)) ([0903719](https://github.com/NativeScript/NativeScript/commit/09037196d83ef610d8d8d4616a293545e2b4b24d))
+
+
+
 ## [8.5.6](https://github.com/NativeScript/NativeScript/compare/8.5.5-core...8.5.6-core) (2023-06-22)
 
 
