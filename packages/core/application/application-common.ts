@@ -256,6 +256,9 @@ export class ApplicationCommon {
 		const rootViewCssClasses = CSSUtils.getSystemCssClasses();
 		rootViewCssClasses.forEach((c) => rootView.cssClasses.add(c));
 
+		this.increaseStyleScopeApplicationCssSelectorVersion(rootView);
+		rootView._onCssStateChange();
+
 		if (Trace.isEnabled()) {
 			const rootCssClasses = Array.from(rootView.cssClasses);
 			Trace.write(`Setting root css classes: ${rootCssClasses.join(' ')}`, Trace.categories.Style);
