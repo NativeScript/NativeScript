@@ -323,7 +323,7 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 		// the getInstance might return null if com.tns.NativeScriptApplication exists but is not the starting app type
 		if (!nativeApp) {
 			// TODO: Should we handle the case when a custom application type is provided and the user has not explicitly initialized the application module?
-			const clazz = java.lang.Class.forName('androidx.appcompat.app.AppCompatActivityThread');
+			const clazz = java.lang.Class.forName('android.app.ActivityThread');
 			if (clazz) {
 				const method = clazz.getMethod('currentApplication', null);
 				if (method) {
