@@ -31,10 +31,8 @@
 ```bash
 $ git clone https://github.com/NativeScript/NativeScript.git
 $ cd NativeScript
-
 # setup workspace for development
 $ npm run setup
-
 # list all available commands to run
 $ npm start
 ```
