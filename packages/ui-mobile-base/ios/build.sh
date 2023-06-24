@@ -17,6 +17,18 @@ xcodebuild \
     SKIP_INSTALL=NO \
     -quiet
 
+echo "Build for visionOS"
+xcodebuild \
+    -project TNSWidgets/TNSWidgets.xcodeproj \
+    -scheme TNSWidgets \
+    -sdk xrsimulator \
+    -configuration Release \
+    -destination "generic/platform=xrsimulator" \
+    clean build \
+    BUILD_DIR=$(PWD)/TNSWidgets/build \
+    SKIP_INSTALL=NO \
+    -quiet
+
 echo "Build for iphoneos"
 xcodebuild \
     -project TNSWidgets/TNSWidgets.xcodeproj \
@@ -53,4 +65,6 @@ xcodebuild \
     -debug-symbols $(PWD)/TNSWidgets/build/Release-iphonesimulator/TNSWidgets.framework.dSYM \
     -framework $(PWD)/TNSWidgets/build/Release-maccatalyst/TNSWidgets.framework \
     -debug-symbols $(PWD)/TNSWidgets/build/Release-maccatalyst/TNSWidgets.framework.dSYM \
+    -framework $(PWD)/TNSWidgets/build/Release-xrsimulator/TNSWidgets.framework \
+    -debug-symbols $(PWD)/TNSWidgets/build/Release-xrsimulator/TNSWidgets.framework.dSYM \
     -output $(PWD)/TNSWidgets/build/TNSWidgets.xcframework
