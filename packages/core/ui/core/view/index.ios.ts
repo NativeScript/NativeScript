@@ -72,6 +72,9 @@ export class View extends ViewCommon implements ViewDefinition {
 		this._isLaidOut = false;
 		this._hasTransform = false;
 		this._hasPendingTransform = false;
+
+		// Perform background cleanup
+		iosBackground.clearBackgroundUIColor(this);
 	}
 
 	public requestLayout(): void {
@@ -900,11 +903,16 @@ export class View extends ViewCommon implements ViewDefinition {
 			CATransaction.begin();
 		}
 
-		if (value instanceof UIColor) {
-			this.nativeViewProtected.backgroundColor = value;
-		} else {
-			iosBackground.createBackgroundUIColor(this, true);
-			this._setNativeClipToBounds();
+		const nativeView = this.nativeViewProtected;
+		if (nativeView) {
+			if (value instanceof UIColor) {
+				nativeView.backgroundColor = value;
+			} else {
+				iosBackground.createBackgroundUIColor(this, (color: UIColor) => {
+					nativeView.backgroundColor = color;
+				});
+				this._setNativeClipToBounds();
+			}
 		}
 
 		if (!updateSuspended) {
@@ -918,7 +926,7 @@ export class View extends ViewCommon implements ViewDefinition {
 		const view = this.nativeViewProtected;
 		if (view) {
 			const backgroundInternal = this.style.backgroundInternal;
-			view.clipsToBounds = (view instanceof UIScrollView || backgroundInternal.hasBorderWidth() || backgroundInternal.hasBorderRadius()) && !backgroundInternal.hasBoxShadow();
+			view.clipsToBounds = view instanceof UIScrollView || backgroundInternal.hasBorderWidth() || backgroundInternal.hasBorderRadius();
 		}
 	}
 
