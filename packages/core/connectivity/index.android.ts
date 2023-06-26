@@ -109,8 +109,7 @@ function startMonitoringLegacy(connectionTypeChangedCallback) {
 		connectionTypeChangedCallback(newConnectionType);
 	};
 	const zoneCallback = zonedCallback(onReceiveCallback);
-	// @ts-ignore
-	androidApp.registerBroadcastReceiver(android.net.ConnectivityManager.CONNECTIVITY_ACTION, zoneCallback);
+	Application.android.registerBroadcastReceiver(android.net.ConnectivityManager.CONNECTIVITY_ACTION, zoneCallback);
 }
 
 let callback;

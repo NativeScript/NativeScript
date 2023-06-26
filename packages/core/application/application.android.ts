@@ -146,11 +146,6 @@ class NativeScriptLifecycleCallbacks extends android.app.Application.ActivityLif
 				android: activity,
 				activity,
 			});
-			Application.android.notify({
-				eventName: Application.foregroundEvent,
-				object: Application.android,
-				android: activity,
-			} as ApplicationEventData);
 		}
 
 		Application.android.notify({
@@ -165,16 +160,11 @@ class NativeScriptLifecycleCallbacks extends android.app.Application.ActivityLif
 		// console.log('NativeScriptLifecycleCallbacks onActivityStopped');
 		this.activitiesCount--;
 		if (this.activitiesCount === 0) {
-			Application.setInBackground(true, {
+			Application.android.setInBackground(true, {
 				// todo: deprecate event.android in favor of event.activity
 				android: activity,
 				activity,
 			});
-			Application.android.notify({
-				eventName: Application.backgroundEvent,
-				object: Application.android,
-				android: activity,
-			} as ApplicationEventData);
 		}
 
 		Application.android.notify({
@@ -278,6 +268,9 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 	readonly activityRequestPermissionsEvent = AndroidApplication.activityRequestPermissionsEvent;
 
 	private _nativeApp: android.app.Application;
+	private _context: android.content.Context;
+	private _packageName: string;
+
 	// we are using these property to store the callbacks to avoid early GC collection which would trigger MarkReachableObjects
 	private lifecycleCallbacks: NativeScriptLifecycleCallbacks;
 	private componentCallbacks: NativeScriptComponentCallbacks;
@@ -293,6 +286,8 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 
 		try {
 			this._nativeApp = nativeApp;
+			this._context = nativeApp.getApplicationContext();
+			this._packageName = nativeApp.getPackageName();
 
 			// we store those callbacks and add a function for clearing them later so that the objects will be eligable for GC
 			this.lifecycleCallbacks = new NativeScriptLifecycleCallbacks();
@@ -335,7 +330,7 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 		// the getInstance might return null if com.tns.NativeScriptApplication exists but is not the starting app type
 		if (!nativeApp) {
 			// TODO: Should we handle the case when a custom application type is provided and the user has not explicitly initialized the application module?
-			const clazz = java.lang.Class.forName('androidx.appcompat.app.AppCompatActivityThread');
+			const clazz = java.lang.Class.forName('android.app.ActivityThread');
 			if (clazz) {
 				const method = clazz.getMethod('currentApplication', null);
 				if (method) {
@@ -398,11 +393,11 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 	}
 
 	get context() {
-		return this.nativeApp ? this.nativeApp.getApplicationContext() : Application.android.getNativeApplication().getApplicationContext();
+		return this._context;
 	}
 
 	get packageName() {
-		return this.nativeApp.getPackageName();
+		return this._packageName;
 	}
 
 	public registerBroadcastReceiver(intentFilter: string, onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void): void {

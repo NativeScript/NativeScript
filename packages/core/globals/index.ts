@@ -375,3 +375,6 @@ function isTestingEnv() {
 if (!global.NativeScriptHasInitGlobal && !isTestingEnv()) {
 	initGlobal();
 }
+
+// ensure the Application instance is initialized before any other module imports it.
+require('@nativescript/core/application');

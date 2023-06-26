@@ -80,14 +80,14 @@ Application.on(Application.lowMemoryEvent, function (args: ApplicationEventData)
 // Error events.
 Application.on(Application.uncaughtErrorEvent, function (args: UnhandledErrorEventData) {
 	console.log('NativeScriptError:', args.error);
-	console.log((<any>args.error).nativeException ?? (<any>args.error).nativeError);
-	console.log((<any>args.error).stackTrace ?? (<any>args.error).stack);
+	console.log(args.error.nativeException ?? (<any>args.error).nativeError);
+	console.log(args.error.stackTrace ?? args.error.stack);
 });
 
 Application.on(Application.discardedErrorEvent, function (args: DiscardedErrorEventData) {
 	console.log('[Discarded] NativeScriptError:', args.error);
-	console.log((<any>args.error).nativeException ?? (<any>args.error).nativeError);
-	console.log((<any>args.error).stackTrace ?? (<any>args.error).stack);
+	console.log(args.error.nativeException ?? (<any>args.error).nativeError);
+	console.log(args.error.stackTrace ?? args.error.stack);
 });
 
 // Android activity events.

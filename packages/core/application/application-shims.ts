@@ -1,7 +1,7 @@
 import { Application } from './application';
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
@@ -11,7 +11,7 @@ import { Application } from './application';
 export const addCss = Application.addCss.bind(Application);
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
@@ -21,7 +21,7 @@ export const addCss = Application.addCss.bind(Application);
 export const getCssFileName = Application.getCssFileName.bind(Application);
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
@@ -31,7 +31,7 @@ export const getCssFileName = Application.getCssFileName.bind(Application);
 export const getMainEntry = Application.getMainEntry.bind(Application);
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
@@ -41,7 +41,7 @@ export const getMainEntry = Application.getMainEntry.bind(Application);
 export const getNativeApplication = Application.getNativeApplication.bind(Application);
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
@@ -51,7 +51,7 @@ export const getNativeApplication = Application.getNativeApplication.bind(Applic
 export const getResources = Application.getResources.bind(Application);
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
@@ -61,7 +61,7 @@ export const getResources = Application.getResources.bind(Application);
 export const getRootView = Application.getRootView.bind(Application);
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
@@ -71,7 +71,7 @@ export const getRootView = Application.getRootView.bind(Application);
 export const hasLaunched = Application.hasLaunched.bind(Application);
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
@@ -81,7 +81,7 @@ export const hasLaunched = Application.hasLaunched.bind(Application);
 export const hasListeners = Application.hasListeners.bind(Application);
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
@@ -91,7 +91,7 @@ export const hasListeners = Application.hasListeners.bind(Application);
 export const loadAppCss = Application.loadAppCss.bind(Application);
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
@@ -101,7 +101,7 @@ export const loadAppCss = Application.loadAppCss.bind(Application);
 export const notify = Application.notify.bind(Application);
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
@@ -111,7 +111,7 @@ export const notify = Application.notify.bind(Application);
 export const off = Application.off.bind(Application);
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
@@ -121,17 +121,17 @@ export const off = Application.off.bind(Application);
 export const on = Application.on.bind(Application);
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
- * Application.orientation
+ * Application.orientation()
  * ```
  */
-export const orientation = () => Application.orientation;
+export const orientation = Application.orientation.bind(Application);
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
@@ -141,7 +141,7 @@ export const orientation = () => Application.orientation;
 export const resetRootView = Application.resetRootView.bind(Application);
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
@@ -151,7 +151,7 @@ export const resetRootView = Application.resetRootView.bind(Application);
 export const _resetRootView = Application.resetRootView.bind(Application);
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
@@ -161,7 +161,7 @@ export const _resetRootView = Application.resetRootView.bind(Application);
 export const run = Application.run.bind(Application);
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
@@ -171,7 +171,7 @@ export const run = Application.run.bind(Application);
 export const setAutoSystemAppearanceChanged = Application.setAutoSystemAppearanceChanged.bind(Application);
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
@@ -181,7 +181,7 @@ export const setAutoSystemAppearanceChanged = Application.setAutoSystemAppearanc
 export const setCssFileName = Application.setCssFileName.bind(Application);
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
@@ -191,7 +191,7 @@ export const setCssFileName = Application.setCssFileName.bind(Application);
 export const setMaxRefreshRate = Application.setMaxRefreshRate.bind(Application);
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
@@ -201,17 +201,17 @@ export const setMaxRefreshRate = Application.setMaxRefreshRate.bind(Application)
 export const setResources = Application.setResources.bind(Application);
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
- * Application.systemAppearance
+ * Application.systemAppearance()
  * ```
  */
-export const systemAppearance = () => Application.systemAppearance;
+export const systemAppearance = Application.systemAppearance.bind(Application);
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
@@ -221,7 +221,7 @@ export const systemAppearance = () => Application.systemAppearance;
 export const systemAppearanceChanged = Application.systemAppearanceChanged.bind(Application);
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
@@ -231,7 +231,7 @@ export const systemAppearanceChanged = Application.systemAppearanceChanged.bind(
 export const discardedErrorEvent = Application.discardedErrorEvent;
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
@@ -241,7 +241,7 @@ export const discardedErrorEvent = Application.discardedErrorEvent;
 export const uncaughtErrorEvent = Application.uncaughtErrorEvent;
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
@@ -251,7 +251,7 @@ export const uncaughtErrorEvent = Application.uncaughtErrorEvent;
 export const displayedEvent = Application.displayedEvent;
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
@@ -261,7 +261,7 @@ export const displayedEvent = Application.displayedEvent;
 export const exitEvent = Application.exitEvent;
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
@@ -271,7 +271,7 @@ export const exitEvent = Application.exitEvent;
 export const fontScaleChangedEvent = Application.fontScaleChangedEvent;
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
@@ -281,7 +281,7 @@ export const fontScaleChangedEvent = Application.fontScaleChangedEvent;
 export const launchEvent = Application.launchEvent;
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
@@ -291,7 +291,7 @@ export const launchEvent = Application.launchEvent;
 export const lowMemoryEvent = Application.lowMemoryEvent;
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
@@ -301,7 +301,7 @@ export const lowMemoryEvent = Application.lowMemoryEvent;
 export const resumeEvent = Application.resumeEvent;
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
@@ -311,7 +311,7 @@ export const resumeEvent = Application.resumeEvent;
 export const orientationChangedEvent = Application.orientationChangedEvent;
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
@@ -321,7 +321,7 @@ export const orientationChangedEvent = Application.orientationChangedEvent;
 export const suspendEvent = Application.suspendEvent;
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
@@ -331,7 +331,7 @@ export const suspendEvent = Application.suspendEvent;
 export const systemAppearanceChangedEvent = Application.systemAppearanceChangedEvent;
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
@@ -341,7 +341,7 @@ export const systemAppearanceChangedEvent = Application.systemAppearanceChangedE
 export const backgroundEvent = Application.backgroundEvent;
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
@@ -351,7 +351,7 @@ export const backgroundEvent = Application.backgroundEvent;
 export const foregroundEvent = Application.foregroundEvent;
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
@@ -361,7 +361,7 @@ export const foregroundEvent = Application.foregroundEvent;
 export const inBackground = Application.inBackground;
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
@@ -371,7 +371,7 @@ export const inBackground = Application.inBackground;
 export const suspended = Application.suspended;
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";
@@ -381,7 +381,7 @@ export const suspended = Application.suspended;
 export const android = Application.android;
 
 /**
- * @deprecated Deep imports into the Application module are depreacted and will be removed in a future release.
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
  * Use the `Application` class imported from "@nativescript/core" instead:
  * ```ts
  * import { Application } from "@nativescript/core";

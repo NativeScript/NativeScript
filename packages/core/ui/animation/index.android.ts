@@ -248,7 +248,7 @@ export class Animation extends AnimationBase {
 
 	protected _onAndroidAnimationCancel() {
 		this._propertyResetCallbacks.forEach((v) => v());
-		this._rejectAnimationFinishedPromise();
+		this._resolveAnimationFinishedPromise();
 
 		if (this._target) {
 			this._target._removeAnimation(this);

@@ -8,11 +8,12 @@ import { Trace } from '../../trace';
 import { rotateProperty, rotateXProperty, rotateYProperty, translateXProperty, translateYProperty, scaleXProperty, scaleYProperty, heightProperty, widthProperty, PercentLength } from '../styling/style-properties';
 import { CssAnimationProperty, Property } from '../core/properties';
 
-import { iOSNativeHelper } from '../../utils/native-helper';
+import { ios as iosHelper } from '../../utils/native-helper';
 
 import { Screen } from '../../platform';
 import { Color } from '../../color';
 import { Style } from '../styling/style';
+import { applyRotateTransform } from 'utils/ios';
 
 export * from './animation-common';
 export { KeyframeAnimation, KeyframeAnimationInfo, KeyframeDeclaration, KeyframeInfo } from './keyframe-animation';
@@ -668,7 +669,7 @@ export class Animation extends AnimationBase {
 			if (x || y) {
 				result.m34 = -1 / perspective;
 			}
-			result = iOSNativeHelper.applyRotateTransform(result, x, y, z);
+			result = applyRotateTransform(result, x, y, z);
 		}
 
 		return result;
@@ -773,7 +774,7 @@ function calculateTransform(view: View): CATransform3D {
 	}
 
 	expectedTransform = CATransform3DTranslate(expectedTransform, view.translateX, view.translateY, 0);
-	expectedTransform = iOSNativeHelper.applyRotateTransform(expectedTransform, view.rotateX, view.rotateY, view.rotate);
+	expectedTransform = applyRotateTransform(expectedTransform, view.rotateX, view.rotateY, view.rotate);
 	expectedTransform = CATransform3DScale(expectedTransform, scaleX, scaleY, 1);
 
 	return expectedTransform;

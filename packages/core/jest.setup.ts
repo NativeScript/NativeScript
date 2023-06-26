@@ -1,4 +1,7 @@
 // @ts-nocheck
+
+jest.mock('@nativescript/core/application', () => null, { virtual: true });
+
 global.__DEV__ = true;
 global.WeakRef.prototype.get = global.WeakRef.prototype.deref;
 global.NativeClass = function () {};
@@ -98,6 +101,7 @@ global.CFRunLoopWakeUp = function (runloop) {};
 global.NativeScriptGlobals = {
 	events: {
 		on: (args) => {},
+		once: (args) => {},
 		off: (args) => {},
 		notify: (args) => {},
 		hasListeners: (args) => {},
