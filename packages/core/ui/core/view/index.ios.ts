@@ -17,6 +17,7 @@ import { CoreTypes } from '../../../core-types';
 import type { ModalTransition } from '../../transition/modal-transition';
 import { SharedTransition } from '../../transition/shared-transition';
 import { GestureStateTypes, PanGestureEventData } from '../../gestures';
+import { applyRotateTransform } from 'utils/ios';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -420,7 +421,7 @@ export class View extends ViewCommon implements ViewDefinition {
 		}
 
 		transform = CATransform3DTranslate(transform, this.translateX, this.translateY, 0);
-		transform = iOSNativeHelper.applyRotateTransform(transform, this.rotateX, this.rotateY, this.rotate);
+		transform = applyRotateTransform(transform, this.rotateX, this.rotateY, this.rotate);
 		transform = CATransform3DScale(transform, scaleX, scaleY, 1);
 		if (!CATransform3DEqualToTransform(this.nativeViewProtected.layer.transform, transform)) {
 			const updateSuspended = this._isPresentationLayerUpdateSuspended();
