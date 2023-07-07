@@ -26,7 +26,7 @@
     "core:lint": "cd packages/core ; eslint -c .eslintrc --ignore-pattern **/node_modules/** --ignore-pattern !packages/core/**",
     "core:setup": "npm run webpack:build",
     "core:build": "cpy 'packages/core/*.md' 'packages/core/package.json' 'packages/core/.npmignore' 'dist/packages/core' ; replace-json-property 'dist/packages/core/package.json' name @akylas/nativescript ; copyfiles -e '**/*.ts' 'packages/core/css/**/*' 'packages/core/css-value/**/*' 'packages/core/fetch/**/*' 'packages/core/js-libs/**/*' 'packages/core/cli-hooks/**/*.js' dist ; copyfiles -e 'packages/core/__tests__/**/*' 'packages/core/**/*.d.ts' dist ; tsc -p packages/core/tsconfig.lib.json",
-    "core:build.npm": "rimraf dist/packages/core ; npm run ui-mobile-base:build ; npm run core:build ; copyfiles 'packages/core/platforms/**/*' dist ; cd dist/packages/core ; npm pack ; mv *.tgz ..",
+    "core:build.npm": "rimraf dist/packages/core ; npm run postinstall ; npm run ui-mobile-base:build ; npm run core:build ; copyfiles 'packages/core/platforms/**/*' dist ; cd dist/packages/core ; npm pack ; mv *.tgz ..",
     "core:unit": "cd packages/core/__tests__ ; tsc ; mocha",
     "core:unit.watch": "cd packages/core/__tests__ ; tsc ; mocha --watch",
     "core-compat:build": "cd packages/core-compat ; rimraf node_modules package-lock.json ; $npm_package_config_npm_alias i  ; tsc -p tsconfig.json ; mv \"$(npm pack | tail -n 1)\" ../../dist/packages/tns-core-modules.tgz",
