@@ -11,6 +11,7 @@ import { Observable, PropertyChangeData, WrappedValue } from '../../../data/obse
 import { Style } from '../../styling/style';
 import { paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../../styling/style-properties';
 import type { ModalTransition } from '../../transition/modal-transition';
+import type { GestureEventData } from '../../gestures';
 
 // TODO: Remove this import!
 import { getClass } from '../../../utils/types';

@@ -279,7 +279,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
 			const gesture = gestureFromString(arg);
 			if (gesture && !this._isEvent(arg)) {
-				this._observe(gesture, callback, thisArg);
+				this._observe(gesture, callback as unknown as (data: GestureEventData) => void, thisArg);
 			} else {
 				const events = arg.split(',');
 				if (events.length > 0) {
@@ -287,7 +287,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 						const evt = events[i].trim();
 						const gst = gestureFromString(evt);
 						if (gst && !this._isEvent(arg)) {
-							this._observe(gst, callback, thisArg);
+							this._observe(gst, callback as unknown as (data: GestureEventData) => void, thisArg);
 						} else {
 							super.addEventListener(evt, callback, thisArg);
 						}
@@ -297,7 +297,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 				}
 			}
 		} else if (typeof arg === 'number') {
-			this._observe(<GestureTypes>arg, callback, thisArg);
+			this._observe(<GestureTypes>arg, callback as unknown as (data: GestureEventData) => void, thisArg);
 		}
 	}
 
