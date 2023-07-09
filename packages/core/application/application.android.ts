@@ -32,10 +32,16 @@ class BroadcastReceiver extends android.content.BroadcastReceiver {
 }
 
 @NativeClass
+@Interfaces([android.app.Application.ActivityLifecycleCallbacks])
 @JavaProxy('org.nativescript.NativeScriptLifecycleCallbacks')
-class NativeScriptLifecycleCallbacks extends android.app.Application.ActivityLifecycleCallbacks {
+class NativeScriptLifecycleCallbacks extends java.lang.Object implements Partial<android.app.Application.ActivityLifecycleCallbacks> {
 	private activitiesCount: number = 0;
 	private nativescriptActivity: androidx.appcompat.app.AppCompatActivity;
+
+	constructor() {
+		super();
+		return global.__native(this);
+	}
 
 	@profile
 	public onActivityCreated(activity: androidx.appcompat.app.AppCompatActivity, savedInstanceState: android.os.Bundle): void {
@@ -214,8 +220,14 @@ class NativeScriptLifecycleCallbacks extends android.app.Application.ActivityLif
 }
 
 @NativeClass
+@Interfaces([android.content.ComponentCallbacks2])
 @JavaProxy('org.nativescript.NativeScriptComponentCallbacks')
-class NativeScriptComponentCallbacks extends android.content.ComponentCallbacks2 {
+class NativeScriptComponentCallbacks extends java.lang.Object implements android.content.ComponentCallbacks2 {
+	constructor() {
+		super();
+		return global.__native(this);
+	}
+
 	@profile
 	public onLowMemory(): void {
 		gc();
@@ -287,7 +299,7 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 
 		// we store those callbacks and add a function for clearing them later so that the objects will be eligable for GC
 		this.lifecycleCallbacks = new NativeScriptLifecycleCallbacks();
-		this.nativeApp.registerActivityLifecycleCallbacks(this.lifecycleCallbacks);
+		this.nativeApp.registerActivityLifecycleCallbacks(this.lifecycleCallbacks as any);
 
 		this.componentCallbacks = new NativeScriptComponentCallbacks();
 		this.nativeApp.registerComponentCallbacks(this.componentCallbacks);
