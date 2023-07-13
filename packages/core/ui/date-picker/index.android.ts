@@ -130,7 +130,7 @@ export class DatePicker extends DatePickerBase {
 
 	[dateProperty.setNative](value: Date) {
 		const nativeView = this.nativeViewProtected;
-		if ((value && nativeView.getDayOfMonth() !== value.getDate()) || nativeView.getMonth() !== value.getMonth() || nativeView.getYear() !== value.getFullYear()) {
+		if (value && (nativeView.getDayOfMonth() !== value.getDate() || nativeView.getMonth() !== value.getMonth() || nativeView.getYear() !== value.getFullYear())) {
 			nativeView.updateDate(value.getFullYear(), value.getMonth(), value.getDate());
 		}
 	}
