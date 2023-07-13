@@ -13,242 +13,268 @@ declare namespace com {
 	}
 }
 
-@NativeClass
-class BroadcastReceiver extends android.content.BroadcastReceiver {
-	private _onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void;
-
-	constructor(onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void) {
-		super();
-		this._onReceiveCallback = onReceiveCallback;
-
-		return global.__native(this);
-	}
-
-	public onReceive(context: android.content.Context, intent: android.content.Intent) {
-		if (this._onReceiveCallback) {
-			this._onReceiveCallback(context, intent);
-		}
-	}
+declare class BroadcastReceiver extends android.content.BroadcastReceiver {
+	constructor(onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void);
 }
 
-@NativeClass
-@Interfaces([android.app.Application.ActivityLifecycleCallbacks])
-@JavaProxy('org.nativescript.NativeScriptLifecycleCallbacks')
-class NativeScriptLifecycleCallbacks extends java.lang.Object implements Partial<android.app.Application.ActivityLifecycleCallbacks> {
-	private activitiesCount: number = 0;
-	private nativescriptActivity: androidx.appcompat.app.AppCompatActivity;
-
-	constructor() {
-		super();
-		return global.__native(this);
+let BroadcastReceiver_: typeof BroadcastReceiver;
+function initBroadcastReceiver() {
+	if (BroadcastReceiver_) {
+		return BroadcastReceiver_;
 	}
 
-	@profile
-	public onActivityCreated(activity: androidx.appcompat.app.AppCompatActivity, savedInstanceState: android.os.Bundle): void {
-		// console.log('NativeScriptLifecycleCallbacks onActivityCreated');
-		this.setThemeOnLaunch(activity);
+	@NativeClass
+	class BroadcastReceiverImpl extends android.content.BroadcastReceiver {
+		private _onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void;
 
-		if (!Application.android.startActivity) {
-			Application.android.setStartActivity(activity);
+		constructor(onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void) {
+			super();
+			this._onReceiveCallback = onReceiveCallback;
+
+			return global.__native(this);
 		}
 
-		if (!this.nativescriptActivity && 'isNativeScriptActivity' in activity) {
-			this.nativescriptActivity = activity;
-		}
-
-		this.notifyActivityCreated(activity, savedInstanceState);
-
-		if (Application.hasListeners(Application.displayedEvent)) {
-			this.subscribeForGlobalLayout(activity);
-		}
-	}
-
-	@profile
-	public onActivityDestroyed(activity: androidx.appcompat.app.AppCompatActivity): void {
-		// console.log('NativeScriptLifecycleCallbacks onActivityDestroyed');
-		if (activity === Application.android.foregroundActivity) {
-			Application.android.setForegroundActivity(undefined);
-		}
-
-		if (activity === this.nativescriptActivity) {
-			this.nativescriptActivity = undefined;
-		}
-
-		if (activity === Application.android.startActivity) {
-			Application.android.setStartActivity(undefined);
-
-			// Fallback for start activity when it is destroyed but we have a known nativescript activity
-			if (this.nativescriptActivity) {
-				Application.android.setStartActivity(this.nativescriptActivity);
-			}
-		}
-
-		Application.android.notify({
-			eventName: Application.android.activityDestroyedEvent,
-			object: Application.android,
-			activity,
-		} as AndroidActivityEventData);
-
-		// TODO: This is a temporary workaround to force the V8's Garbage Collector, which will force the related Java Object to be collected.
-		gc();
-	}
-
-	@profile
-	public onActivityPaused(activity: androidx.appcompat.app.AppCompatActivity): void {
-		// console.log('NativeScriptLifecycleCallbacks onActivityPaused');
-		if ('isNativeScriptActivity' in activity) {
-			Application.setSuspended(true, {
-				// todo: deprecate event.android in favor of event.activity
-				android: activity,
-				activity,
-			});
-		}
-
-		Application.android.notify({
-			eventName: Application.android.activityPausedEvent,
-			object: Application.android,
-			activity,
-		} as AndroidActivityEventData);
-	}
-
-	@profile
-	public onActivityResumed(activity: androidx.appcompat.app.AppCompatActivity): void {
-		// console.log('NativeScriptLifecycleCallbacks onActivityResumed');
-		Application.android.setForegroundActivity(activity);
-
-		// NOTE: setSuspended(false) is called in frame/index.android.ts inside onPostResume
-		// This is done to ensure proper timing for the event to be raised
-
-		Application.android.notify({
-			eventName: Application.android.activityResumedEvent,
-			object: Application.android,
-			activity,
-		} as AndroidActivityEventData);
-	}
-
-	@profile
-	public onActivitySaveInstanceState(activity: androidx.appcompat.app.AppCompatActivity, bundle: android.os.Bundle): void {
-		// console.log('NativeScriptLifecycleCallbacks onActivitySaveInstanceState');
-
-		Application.android.notify({
-			eventName: Application.android.saveActivityStateEvent,
-			object: Application.android,
-			activity,
-			bundle,
-		} as AndroidActivityBundleEventData);
-	}
-
-	@profile
-	public onActivityStarted(activity: androidx.appcompat.app.AppCompatActivity): void {
-		// console.log('NativeScriptLifecycleCallbacks onActivityStarted');
-
-		this.activitiesCount++;
-		if (this.activitiesCount === 1) {
-			Application.android.setInBackground(false, {
-				// todo: deprecate event.android in favor of event.activity
-				android: activity,
-				activity,
-			});
-		}
-
-		Application.android.notify({
-			eventName: Application.android.activityStartedEvent,
-			object: Application.android,
-			activity,
-		} as AndroidActivityEventData);
-	}
-
-	@profile
-	public onActivityStopped(activity: androidx.appcompat.app.AppCompatActivity): void {
-		// console.log('NativeScriptLifecycleCallbacks onActivityStopped');
-		this.activitiesCount--;
-		if (this.activitiesCount === 0) {
-			Application.android.setInBackground(true, {
-				// todo: deprecate event.android in favor of event.activity
-				android: activity,
-				activity,
-			});
-		}
-
-		Application.android.notify({
-			eventName: Application.android.activityStoppedEvent,
-			object: Application.android,
-			activity,
-		} as AndroidActivityEventData);
-	}
-
-	@profile
-	setThemeOnLaunch(activity: androidx.appcompat.app.AppCompatActivity) {
-		// Set app theme after launch screen was used during startup
-		const activityInfo = activity.getPackageManager().getActivityInfo(activity.getComponentName(), android.content.pm.PackageManager.GET_META_DATA);
-		if (activityInfo.metaData) {
-			const setThemeOnLaunch = activityInfo.metaData.getInt('SET_THEME_ON_LAUNCH', -1);
-			if (setThemeOnLaunch !== -1) {
-				activity.setTheme(setThemeOnLaunch);
+		public onReceive(context: android.content.Context, intent: android.content.Intent) {
+			if (this._onReceiveCallback) {
+				this._onReceiveCallback(context, intent);
 			}
 		}
 	}
 
-	@profile
-	notifyActivityCreated(activity: androidx.appcompat.app.AppCompatActivity, bundle: android.os.Bundle) {
-		Application.android.notify({
-			eventName: Application.android.activityCreatedEvent,
-			object: Application.android,
-			activity,
-			bundle,
-		} as AndroidActivityBundleEventData);
+	BroadcastReceiver_ = BroadcastReceiverImpl;
+	return BroadcastReceiver_;
+}
+
+declare class NativeScriptLifecycleCallbacks extends android.app.Application.ActivityLifecycleCallbacks {}
+
+let NativeScriptLifecycleCallbacks_: typeof NativeScriptLifecycleCallbacks;
+function initNativeScriptLifecycleCallbacks() {
+	if (NativeScriptLifecycleCallbacks_) {
+		return NativeScriptLifecycleCallbacks_;
 	}
 
-	@profile
-	subscribeForGlobalLayout(activity: androidx.appcompat.app.AppCompatActivity) {
-		const rootView = activity.getWindow().getDecorView().getRootView();
-		// store the listener not to trigger GC collection before collecting the method
-		global.onGlobalLayoutListener = new android.view.ViewTreeObserver.OnGlobalLayoutListener({
-			onGlobalLayout() {
-				Application.android.notify({
-					eventName: Application.displayedEvent,
-					object: Application,
-					android: Application.android,
+	@NativeClass
+	@JavaProxy('org.nativescript.NativeScriptLifecycleCallbacks')
+	class NativeScriptLifecycleCallbacksImpl extends android.app.Application.ActivityLifecycleCallbacks {
+		private activitiesCount: number = 0;
+		private nativescriptActivity: androidx.appcompat.app.AppCompatActivity;
+
+		@profile
+		public onActivityCreated(activity: androidx.appcompat.app.AppCompatActivity, savedInstanceState: android.os.Bundle): void {
+			// console.log('NativeScriptLifecycleCallbacks onActivityCreated');
+			this.setThemeOnLaunch(activity);
+
+			if (!Application.android.startActivity) {
+				Application.android.setStartActivity(activity);
+			}
+
+			if (!this.nativescriptActivity && 'isNativeScriptActivity' in activity) {
+				this.nativescriptActivity = activity;
+			}
+
+			this.notifyActivityCreated(activity, savedInstanceState);
+
+			if (Application.hasListeners(Application.displayedEvent)) {
+				this.subscribeForGlobalLayout(activity);
+			}
+		}
+
+		@profile
+		public onActivityDestroyed(activity: androidx.appcompat.app.AppCompatActivity): void {
+			// console.log('NativeScriptLifecycleCallbacks onActivityDestroyed');
+			if (activity === Application.android.foregroundActivity) {
+				Application.android.setForegroundActivity(undefined);
+			}
+
+			if (activity === this.nativescriptActivity) {
+				this.nativescriptActivity = undefined;
+			}
+
+			if (activity === Application.android.startActivity) {
+				Application.android.setStartActivity(undefined);
+
+				// Fallback for start activity when it is destroyed but we have a known nativescript activity
+				if (this.nativescriptActivity) {
+					Application.android.setStartActivity(this.nativescriptActivity);
+				}
+			}
+
+			Application.android.notify({
+				eventName: Application.android.activityDestroyedEvent,
+				object: Application.android,
+				activity,
+			} as AndroidActivityEventData);
+
+			// TODO: This is a temporary workaround to force the V8's Garbage Collector, which will force the related Java Object to be collected.
+			gc();
+		}
+
+		@profile
+		public onActivityPaused(activity: androidx.appcompat.app.AppCompatActivity): void {
+			// console.log('NativeScriptLifecycleCallbacks onActivityPaused');
+			if ('isNativeScriptActivity' in activity) {
+				Application.setSuspended(true, {
+					// todo: deprecate event.android in favor of event.activity
+					android: activity,
 					activity,
-				} as AndroidActivityEventData);
-				const viewTreeObserver = rootView.getViewTreeObserver();
-				viewTreeObserver.removeOnGlobalLayoutListener(global.onGlobalLayoutListener);
-			},
-		});
-		rootView.getViewTreeObserver().addOnGlobalLayoutListener(global.onGlobalLayoutListener);
+				});
+			}
+
+			Application.android.notify({
+				eventName: Application.android.activityPausedEvent,
+				object: Application.android,
+				activity,
+			} as AndroidActivityEventData);
+		}
+
+		@profile
+		public onActivityResumed(activity: androidx.appcompat.app.AppCompatActivity): void {
+			// console.log('NativeScriptLifecycleCallbacks onActivityResumed');
+			Application.android.setForegroundActivity(activity);
+
+			// NOTE: setSuspended(false) is called in frame/index.android.ts inside onPostResume
+			// This is done to ensure proper timing for the event to be raised
+
+			Application.android.notify({
+				eventName: Application.android.activityResumedEvent,
+				object: Application.android,
+				activity,
+			} as AndroidActivityEventData);
+		}
+
+		@profile
+		public onActivitySaveInstanceState(activity: androidx.appcompat.app.AppCompatActivity, bundle: android.os.Bundle): void {
+			// console.log('NativeScriptLifecycleCallbacks onActivitySaveInstanceState');
+
+			Application.android.notify({
+				eventName: Application.android.saveActivityStateEvent,
+				object: Application.android,
+				activity,
+				bundle,
+			} as AndroidActivityBundleEventData);
+		}
+
+		@profile
+		public onActivityStarted(activity: androidx.appcompat.app.AppCompatActivity): void {
+			// console.log('NativeScriptLifecycleCallbacks onActivityStarted');
+
+			this.activitiesCount++;
+			if (this.activitiesCount === 1) {
+				Application.android.setInBackground(false, {
+					// todo: deprecate event.android in favor of event.activity
+					android: activity,
+					activity,
+				});
+			}
+
+			Application.android.notify({
+				eventName: Application.android.activityStartedEvent,
+				object: Application.android,
+				activity,
+			} as AndroidActivityEventData);
+		}
+
+		@profile
+		public onActivityStopped(activity: androidx.appcompat.app.AppCompatActivity): void {
+			// console.log('NativeScriptLifecycleCallbacks onActivityStopped');
+			this.activitiesCount--;
+			if (this.activitiesCount === 0) {
+				Application.android.setInBackground(true, {
+					// todo: deprecate event.android in favor of event.activity
+					android: activity,
+					activity,
+				});
+			}
+
+			Application.android.notify({
+				eventName: Application.android.activityStoppedEvent,
+				object: Application.android,
+				activity,
+			} as AndroidActivityEventData);
+		}
+
+		@profile
+		setThemeOnLaunch(activity: androidx.appcompat.app.AppCompatActivity) {
+			// Set app theme after launch screen was used during startup
+			const activityInfo = activity.getPackageManager().getActivityInfo(activity.getComponentName(), android.content.pm.PackageManager.GET_META_DATA);
+			if (activityInfo.metaData) {
+				const setThemeOnLaunch = activityInfo.metaData.getInt('SET_THEME_ON_LAUNCH', -1);
+				if (setThemeOnLaunch !== -1) {
+					activity.setTheme(setThemeOnLaunch);
+				}
+			}
+		}
+
+		@profile
+		notifyActivityCreated(activity: androidx.appcompat.app.AppCompatActivity, bundle: android.os.Bundle) {
+			Application.android.notify({
+				eventName: Application.android.activityCreatedEvent,
+				object: Application.android,
+				activity,
+				bundle,
+			} as AndroidActivityBundleEventData);
+		}
+
+		@profile
+		subscribeForGlobalLayout(activity: androidx.appcompat.app.AppCompatActivity) {
+			const rootView = activity.getWindow().getDecorView().getRootView();
+			// store the listener not to trigger GC collection before collecting the method
+			global.onGlobalLayoutListener = new android.view.ViewTreeObserver.OnGlobalLayoutListener({
+				onGlobalLayout() {
+					Application.android.notify({
+						eventName: Application.displayedEvent,
+						object: Application,
+						android: Application.android,
+						activity,
+					} as AndroidActivityEventData);
+					const viewTreeObserver = rootView.getViewTreeObserver();
+					viewTreeObserver.removeOnGlobalLayoutListener(global.onGlobalLayoutListener);
+				},
+			});
+			rootView.getViewTreeObserver().addOnGlobalLayoutListener(global.onGlobalLayoutListener);
+		}
 	}
+
+	NativeScriptLifecycleCallbacks_ = NativeScriptLifecycleCallbacksImpl;
+	return NativeScriptLifecycleCallbacks_;
 }
 
-@NativeClass
-@Interfaces([android.content.ComponentCallbacks2])
-@JavaProxy('org.nativescript.NativeScriptComponentCallbacks')
-class NativeScriptComponentCallbacks extends java.lang.Object implements android.content.ComponentCallbacks2 {
-	constructor() {
-		super();
-		return global.__native(this);
+declare class NativeScriptComponentCallbacks extends android.content.ComponentCallbacks2 {}
+
+let NativeScriptComponentCallbacks_: typeof NativeScriptComponentCallbacks;
+function initNativeScriptComponentCallbacks() {
+	if (NativeScriptComponentCallbacks_) {
+		return NativeScriptComponentCallbacks_;
 	}
 
-	@profile
-	public onLowMemory(): void {
-		gc();
-		java.lang.System.gc();
+	@NativeClass
+	@JavaProxy('org.nativescript.NativeScriptComponentCallbacks')
+	class NativeScriptComponentCallbacksImpl extends android.content.ComponentCallbacks2 {
+		@profile
+		public onLowMemory(): void {
+			gc();
+			java.lang.System.gc();
 
-		Application.notify({
-			eventName: Application.lowMemoryEvent,
-			object: Application,
-			android: this,
-		} as ApplicationEventData);
+			Application.notify({
+				eventName: Application.lowMemoryEvent,
+				object: Application,
+				android: this,
+			} as ApplicationEventData);
+		}
+
+		@profile
+		public onTrimMemory(level: number): void {
+			// TODO: This is skipped for now, test carefully for OutOfMemory exceptions
+		}
+
+		@profile
+		public onConfigurationChanged(newConfiguration: android.content.res.Configuration): void {
+			Application.android.onConfigurationChanged(newConfiguration);
+		}
 	}
 
-	@profile
-	public onTrimMemory(level: number): void {
-		// TODO: This is skipped for now, test carefully for OutOfMemory exceptions
-	}
-
-	@profile
-	public onConfigurationChanged(newConfiguration: android.content.res.Configuration): void {
-		Application.android.onConfigurationChanged(newConfiguration);
-	}
+	NativeScriptComponentCallbacks_ = NativeScriptComponentCallbacksImpl;
+	return NativeScriptComponentCallbacks_;
 }
 
 export class AndroidApplication extends ApplicationCommon implements IAndroidApplication {
@@ -298,10 +324,10 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 		this._packageName = nativeApp.getPackageName();
 
 		// we store those callbacks and add a function for clearing them later so that the objects will be eligable for GC
-		this.lifecycleCallbacks = new NativeScriptLifecycleCallbacks();
-		this.nativeApp.registerActivityLifecycleCallbacks(this.lifecycleCallbacks as any);
+		this.lifecycleCallbacks = new (initNativeScriptLifecycleCallbacks())();
+		this.nativeApp.registerActivityLifecycleCallbacks(this.lifecycleCallbacks);
 
-		this.componentCallbacks = new NativeScriptComponentCallbacks();
+		this.componentCallbacks = new (initNativeScriptComponentCallbacks())();
 		this.nativeApp.registerComponentCallbacks(this.componentCallbacks);
 
 		this._registerPendingReceivers();
@@ -407,7 +433,7 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 
 	public registerBroadcastReceiver(intentFilter: string, onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void): void {
 		const registerFunc = (context: android.content.Context) => {
-			const receiver: android.content.BroadcastReceiver = new BroadcastReceiver(onReceiveCallback);
+			const receiver: android.content.BroadcastReceiver = new (initBroadcastReceiver())(onReceiveCallback);
 			context.registerReceiver(receiver, new android.content.IntentFilter(intentFilter));
 			this._registeredReceivers[intentFilter] = receiver;
 		};
