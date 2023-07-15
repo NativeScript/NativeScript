@@ -6,6 +6,8 @@ import { View } from '../core/view';
 import { AnimationBase, Properties, CubicBezierAnimationCurve } from './animation-common';
 import { Trace } from '../../trace';
 import { opacityProperty, backgroundColorProperty, rotateProperty, rotateXProperty, rotateYProperty, translateXProperty, translateYProperty, scaleXProperty, scaleYProperty, heightProperty, widthProperty, PercentLength } from '../styling/style-properties';
+import { ios as iosBackground } from '../styling/background';
+import { NativeScriptUIView } from '../utils';
 
 import { ios as iosHelper } from '../../utils/native-helper';
 
@@ -222,8 +224,15 @@ export class Animation extends AnimationBase {
 			for (let i = 0; i < this._mergedPropertyAnimations.length; i++) {
 				const propertyAnimation = this._mergedPropertyAnimations[i];
 				if (propertyAnimation) {
-					if (propertyAnimation.target?.nativeViewProtected?.layer) {
-						propertyAnimation.target.nativeViewProtected.layer.removeAllAnimations();
+					if (propertyAnimation.target?.nativeViewProtected) {
+						const nativeView: NativeScriptUIView = propertyAnimation.target.nativeViewProtected;
+						nativeView.layer.removeAllAnimations();
+						if (nativeView.gradientLayer) {
+							nativeView.gradientLayer.removeAllAnimations();
+						}
+						if (nativeView.shadowLayer) {
+							nativeView.shadowLayer.removeAllAnimations();
+						}
 					}
 					if (propertyAnimation._propertyResetCallback) {
 						propertyAnimation._propertyResetCallback(propertyAnimation._originalValue, this._valueSource);
@@ -262,14 +271,14 @@ export class Animation extends AnimationBase {
 	private static _getNativeAnimationArguments(animation: PropertyAnimationInfo, valueSource: 'animation' | 'keyframe'): AnimationInfo {
 		const view = animation.target;
 		const style = view.style;
-		const nativeView = <UIView>view.nativeViewProtected;
+		const nativeView: NativeScriptUIView = view.nativeViewProtected;
 		const parent = view.parent as View;
 
 		let propertyNameToAnimate = animation.property;
 		let subPropertyNameToAnimate;
 		let toValue = animation.value;
 		let fromValue;
-		if (nativeView?.layer) {
+		if (nativeView) {
 			const setLocal = valueSource === 'animation';
 
 			switch (animation.property) {
@@ -279,10 +288,11 @@ export class Animation extends AnimationBase {
 						style[setLocal ? backgroundColorProperty.name : backgroundColorProperty.keyframe] = value;
 					};
 					fromValue = nativeView.layer.backgroundColor;
+
 					if (nativeView instanceof UILabel) {
 						nativeView.setValueForKey(UIColor.clearColor, 'backgroundColor');
 					}
-					toValue = toValue.CGColor;
+					toValue = toValue?.ios?.CGColor;
 					break;
 				case Properties.opacity:
 					animation._originalValue = view.opacity;
@@ -395,7 +405,7 @@ export class Animation extends AnimationBase {
 					const extentY = isHeight ? asNumber : currentBounds.size.height;
 					fromValue = NSValue.valueWithCGRect(currentBounds);
 					toValue = NSValue.valueWithCGRect(CGRectMake(currentBounds.origin.x, currentBounds.origin.y, extentX, extentY));
-					animation._originalValue = view.height;
+					animation._originalValue = view[isHeight ? 'height' : 'width'];
 					animation._propertyResetCallback = (value, valueSource) => {
 						const prop = isHeight ? heightProperty : widthProperty;
 						style[setLocal ? prop.name : prop.keyframe] = value;
@@ -438,7 +448,7 @@ export class Animation extends AnimationBase {
 	}
 
 	private static _createNativeAnimation(propertyAnimations: Array<PropertyAnimation>, index: number, playSequentially: boolean, args: AnimationInfo, animation: PropertyAnimation, valueSource: 'animation' | 'keyframe', finishedCallback: (cancelled?: boolean) => void) {
-		const nativeView = <UIView>animation.target.nativeViewProtected;
+		const nativeView: NativeScriptUIView = animation.target.nativeViewProtected;
 
 		let nativeAnimation;
 
@@ -450,8 +460,18 @@ export class Animation extends AnimationBase {
 
 		const animationDelegate = AnimationDelegateImpl.initWithFinishedCallback(finishedCallback, animation, valueSource);
 		nativeAnimation.setValueForKey(animationDelegate, 'delegate');
-		if (nativeView?.layer) {
+		if (nativeView) {
 			nativeView.layer.addAnimationForKey(nativeAnimation, args.propertyNameToAnimate);
+			if (args.propertyNameToAnimate === 'bounds') {
+				if (nativeView.gradientLayer) {
+					nativeView.gradientLayer.addAnimationForKey(nativeAnimation, args.propertyNameToAnimate);
+				}
+			}
+
+			// Shadow layer does not inherit from animating view layer
+			if (nativeView.shadowLayer) {
+				nativeView.shadowLayer.addAnimationForKey(nativeAnimation, args.propertyNameToAnimate);
+			}
 		}
 		let callback = undefined;
 		if (index + 1 < propertyAnimations.length) {
@@ -512,7 +532,7 @@ export class Animation extends AnimationBase {
 	}
 
 	private static _createNativeSpringAnimation(propertyAnimations: Array<PropertyAnimationInfo>, index: number, playSequentially: boolean, args: AnimationInfo, animation: PropertyAnimationInfo, valueSource: 'animation' | 'keyframe', finishedCallback: (cancelled?: boolean) => void) {
-		const nativeView = <UIView>animation.target.nativeViewProtected;
+		const nativeView: NativeScriptUIView = animation.target.nativeViewProtected;
 
 		let callback = undefined;
 		let nextAnimation;
@@ -552,6 +572,15 @@ export class Animation extends AnimationBase {
 					case Properties.width:
 						animation._originalValue = animation.target[animation.property];
 						nativeView.layer.setValueForKey(args.toValue, args.propertyNameToAnimate);
+
+						if (nativeView.gradientLayer) {
+							nativeView.gradientLayer.setValueForKey(args.toValue, args.propertyNameToAnimate);
+						}
+						// Shadow layer does not inherit from animating view layer
+						if (nativeView.shadowLayer) {
+							iosBackground.drawBoxShadow(animation.target);
+						}
+
 						animation._propertyResetCallback = function (value) {
 							animation.target[animation.property] = value;
 						};
@@ -559,6 +588,12 @@ export class Animation extends AnimationBase {
 					case _transform:
 						animation._originalValue = nativeView.layer.transform;
 						nativeView.layer.setValueForKey(args.toValue, args.propertyNameToAnimate);
+
+						// Shadow layer does not inherit from animating view layer
+						if (nativeView.shadowLayer) {
+							nativeView.shadowLayer.setValueForKey(args.toValue, args.propertyNameToAnimate);
+						}
+
 						animation._propertyResetCallback = function (value) {
 							nativeView.layer.transform = value;
 						};

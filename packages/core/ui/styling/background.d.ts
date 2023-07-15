@@ -62,6 +62,7 @@ export enum CacheMode {
 // 	public hasBorderColor(): boolean;
 // 	public hasBorderWidth(): boolean;
 // 	public hasBorderRadius(): boolean;
+//	public hasBorder(): boolean;
 // 	public hasUniformBorderColor(): boolean;
 // 	public hasUniformBorderWidth(): boolean;
 // 	public hasUniformBorderRadius(): boolean;
@@ -76,6 +77,7 @@ export enum CacheMode {
 export namespace ios {
 	export function createBackgroundUIColor(view: View, callback: (uiColor: any /* UIColor */) => void, flip?: boolean): void;
 	export function clearBackgroundUIColor(view: View): void;
+	export function drawBoxShadow(view: View): void;
 }
 
 export namespace ad {

@@ -41,7 +41,10 @@ export class RootLayout extends RootLayoutBase {
 					if (options.color !== this._currentGradient) {
 						this._currentGradient = options.color;
 						const parsedGradient = parseLinearGradient(options.color);
-						this._gradientLayer = this._gradientLayer = iosViewUtils.drawGradient(view.nativeViewProtected, LinearGradient.parse(parsedGradient.value), 0);
+
+						this._gradientLayer = CAGradientLayer.new();
+						iosViewUtils.drawGradient(view.nativeViewProtected, this._gradientLayer, LinearGradient.parse(parsedGradient.value));
+						view.nativeViewProtected.layer.insertSublayerAtIndex(this._gradientLayer, 0);
 					}
 				}
 				UIView.animateWithDurationAnimationsCompletion(

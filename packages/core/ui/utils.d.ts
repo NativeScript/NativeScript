@@ -29,15 +29,9 @@ export namespace ios {
 	/**
 	 * Draw gradient using CAGradientLayer and insert into UIView sublayer
 	 * @param nativeView NativeScriptUIView
+	 * @param gradientLayer CAGradientLayer
 	 * @param gradient Parsed LinearGradient
 	 * @param gradientLayerOpacity Initial layer opacity (in case you'd like to use with animation sequence)
-	 * @param index sublayer index to insert layer at (defaults to 0)
 	 */
-	export function drawGradient(uiView: NativeScriptUIView, gradient: LinearGradient, gradientLayerOpacity?: number, index?: number): CAGradientLayer;
-
-	/**
-	 * Clear gradientLayer if found on provided NativeScriptUIView
-	 * @param nativeView NativeScriptUIView
-	 */
-	export function clearGradient(uiView: NativeScriptUIView): void;
+	export function drawGradient(uiView: NativeScriptUIView, gradientLayer: CAGradientLayer, gradient: LinearGradient, gradientLayerOpacity?: number): void;
 }

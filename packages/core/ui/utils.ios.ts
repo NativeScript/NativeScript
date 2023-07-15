@@ -43,53 +43,46 @@ export namespace ios {
 		return utils.layout.toDevicePixels(min);
 	}
 
-	export function drawGradient(nativeView: NativeScriptUIView, gradient: LinearGradient, gradientLayerOpacity?: number, index?: number): CAGradientLayer {
-		let gradientLayer: CAGradientLayer;
-		if (nativeView && gradient) {
-			gradientLayer = CAGradientLayer.layer();
-			if (typeof gradientLayerOpacity === 'number') {
-				gradientLayer.opacity = gradientLayerOpacity;
-			}
-			gradientLayer.frame = nativeView.bounds;
-			gradientLayer.allowsEdgeAntialiasing = true;
-			gradientLayer.contentsScale = Screen.mainScreen.scale;
-			nativeView.gradientLayer = gradientLayer;
-
-			const iosColors = NSMutableArray.alloc().initWithCapacity(gradient.colorStops.length);
-			const iosStops = NSMutableArray.alloc<number>().initWithCapacity(gradient.colorStops.length);
-			let hasStops = false;
-
-			gradient.colorStops.forEach((stop) => {
-				iosColors.addObject(stop.color.ios.CGColor);
-				if (stop.offset) {
-					iosStops.addObject(stop.offset.value);
-					hasStops = true;
-				}
-			});
-
-			gradientLayer.colors = iosColors;
-
-			if (hasStops) {
-				gradientLayer.locations = iosStops;
-			}
-
-			const alpha = gradient.angle / (Math.PI * 2);
-			const startX = Math.pow(Math.sin(Math.PI * (alpha + 0.75)), 2);
-			const startY = Math.pow(Math.sin(Math.PI * (alpha + 0.5)), 2);
-			const endX = Math.pow(Math.sin(Math.PI * (alpha + 0.25)), 2);
-			const endY = Math.pow(Math.sin(Math.PI * alpha), 2);
-			gradientLayer.startPoint = { x: startX, y: startY };
-			gradientLayer.endPoint = { x: endX, y: endY };
-
-			nativeView.layer.insertSublayerAtIndex(gradientLayer, index || 0);
+	export function drawGradient(nativeView: NativeScriptUIView, gradientLayer: CAGradientLayer, gradient: LinearGradient, gradientLayerOpacity?: number): void {
+		if (!nativeView || !gradient) {
+			return;
 		}
-		return gradientLayer;
-	}
 
-	export function clearGradient(nativeView: NativeScriptUIView): void {
-		if (nativeView?.gradientLayer) {
-			nativeView.gradientLayer.removeFromSuperlayer();
-			nativeView.gradientLayer = null;
+		if (typeof gradientLayerOpacity === 'number') {
+			gradientLayer.opacity = gradientLayerOpacity;
 		}
+
+		// Update these properties instead of layer frame as the latter messes with animations
+		gradientLayer.bounds = nativeView.bounds;
+		gradientLayer.anchorPoint = CGPointMake(0, 0);
+
+		gradientLayer.allowsEdgeAntialiasing = true;
+		gradientLayer.contentsScale = Screen.mainScreen.scale;
+
+		const iosColors = NSMutableArray.alloc().initWithCapacity(gradient.colorStops.length);
+		const iosStops = NSMutableArray.alloc<number>().initWithCapacity(gradient.colorStops.length);
+		let hasStops = false;
+
+		gradient.colorStops.forEach((stop) => {
+			iosColors.addObject(stop.color.ios.CGColor);
+			if (stop.offset) {
+				iosStops.addObject(stop.offset.value);
+				hasStops = true;
+			}
+		});
+
+		gradientLayer.colors = iosColors;
+
+		if (hasStops) {
+			gradientLayer.locations = iosStops;
+		}
+
+		const alpha = gradient.angle / (Math.PI * 2);
+		const startX = Math.pow(Math.sin(Math.PI * (alpha + 0.75)), 2);
+		const startY = Math.pow(Math.sin(Math.PI * (alpha + 0.5)), 2);
+		const endX = Math.pow(Math.sin(Math.PI * (alpha + 0.25)), 2);
+		const endY = Math.pow(Math.sin(Math.PI * alpha), 2);
+		gradientLayer.startPoint = { x: startX, y: startY };
+		gradientLayer.endPoint = { x: endX, y: endY };
 	}
 }

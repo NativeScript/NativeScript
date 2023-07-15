@@ -266,6 +266,10 @@ export class Background {
 		return this.borderTopLeftRadius > 0 || this.borderTopRightRadius > 0 || this.borderBottomRightRadius > 0 || this.borderBottomLeftRadius > 0;
 	}
 
+	public hasBorder(): boolean {
+		return (this.hasBorderColor() && this.hasBorderWidth()) || this.hasBorderRadius();
+	}
+
 	public hasUniformBorderColor(): boolean {
 		return Color.equals(this.borderTopColor, this.borderRightColor) && Color.equals(this.borderTopColor, this.borderBottomColor) && Color.equals(this.borderTopColor, this.borderLeftColor);
 	}
