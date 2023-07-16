@@ -1085,9 +1085,15 @@ function insetPath(value: string, bounds: Rect): UIBezierPath {
 
 function circlePath(value: string, bounds: Rect): UIBezierPath {
 	const arr = value.split(/[\s]+/);
-	const radius = cssValueToDeviceIndependentPixels(arr[0], (bounds.right > bounds.bottom ? bounds.bottom : bounds.right) / 2);
-	const y = cssValueToDeviceIndependentPixels(arr[2], bounds.bottom);
-	const x = cssValueToDeviceIndependentPixels(arr[3], bounds.right);
+	const defaultValue = '50%';
+
+	// This is the retail web formula as described in https://developer.mozilla.org/en-US/docs/Web/CSS/basic-shape
+	const size = Math.sqrt(Math.pow(bounds.right, 2) + Math.pow(bounds.bottom, 2)) / Math.sqrt(2);
+	const radius = cssValueToDeviceIndependentPixels(arr[0], size);
+
+	// If these values are missing, apply default value
+	const x = cssValueToDeviceIndependentPixels(arr.length > 2 ? arr[2] : defaultValue, bounds.right);
+	const y = cssValueToDeviceIndependentPixels(arr.length > 3 ? arr[3] : defaultValue, bounds.bottom);
 
 	return UIBezierPath.bezierPathWithArcCenterRadiusStartAngleEndAngleClockwise(CGPointMake(x, y), radius, 0, 360, true).CGPath;
 }
