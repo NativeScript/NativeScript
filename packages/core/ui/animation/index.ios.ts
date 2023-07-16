@@ -231,6 +231,9 @@ export class Animation extends AnimationBase {
 							nativeView.gradientLayer.removeAllAnimations();
 						}
 						if (nativeView.shadowLayer) {
+							if (nativeView.shadowLayer.mask) {
+								nativeView.shadowLayer.mask.removeAllAnimations();
+							}
 							nativeView.shadowLayer.removeAllAnimations();
 						}
 					}
@@ -465,6 +468,35 @@ export class Animation extends AnimationBase {
 			if (args.propertyNameToAnimate === 'bounds') {
 				if (nativeView.gradientLayer) {
 					nativeView.gradientLayer.addAnimationForKey(nativeAnimation, args.propertyNameToAnimate);
+				}
+
+				// Shadow layer does not inherit from animating view layer
+				if (nativeView.shadowLayer) {
+					const { maskPath, shadowPath } = iosBackground.generateShadowLayerPaths(animation.target, args.toValue.CGRectValue);
+					const shadowMask = nativeView.shadowLayer.mask as CAShapeLayer;
+					if (shadowMask) {
+						const maskPathAnimation = this._createBasicAnimation(
+							{
+								...args,
+								propertyNameToAnimate: 'path',
+								fromValue: shadowMask.path,
+								toValue: maskPath,
+							},
+							animation
+						);
+						shadowMask.addAnimationForKey(maskPathAnimation, 'path');
+					}
+
+					const shadowPathAnimation = this._createBasicAnimation(
+						{
+							...args,
+							propertyNameToAnimate: 'shadowPath',
+							fromValue: nativeView.shadowLayer.shadowPath,
+							toValue: shadowPath,
+						},
+						animation
+					);
+					nativeView.shadowLayer.addAnimationForKey(shadowPathAnimation, 'shadowPath');
 				}
 			}
 

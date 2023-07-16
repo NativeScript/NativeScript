@@ -38,6 +38,11 @@ interface CappedOuterRadii {
 	bottomRight: number;
 }
 
+interface ShadowLayerResizablePropertyValues {
+	maskPath: any;
+	shadowPath: any;
+}
+
 const clearCGColor = UIColor.clearColor.CGColor;
 const uriPattern = /url\(('|")(.*?)\1\)/;
 const symbolUrl = Symbol('backgroundImageUrl');
@@ -172,6 +177,14 @@ export namespace ios {
 			shadowLayer = nativeView.shadowLayer;
 		} else {
 			shadowLayer = CALayer.new();
+
+			const maskLayer = CAShapeLayer.new();
+			const startingPoint = CGPointMake(0, 0);
+			maskLayer.position = startingPoint;
+			maskLayer.anchorPoint = startingPoint;
+			maskLayer.fillRule = kCAFillRuleEvenOdd;
+			shadowLayer.mask = maskLayer;
+
 			// Instead of nesting it, add shadow layer underneath view so that it's not affected by border masking
 			layer.superlayer.insertSublayerBelow(shadowLayer, layer);
 			nativeView.shadowLayer = shadowLayer;
@@ -194,6 +207,21 @@ export namespace ios {
 			layout.toDeviceIndependentPixels(boxShadow.offsetX),
 			layout.toDeviceIndependentPixels(boxShadow.offsetY)
 		);
+
+		const { maskPath, shadowPath } = generateShadowLayerPaths(view, bounds);
+
+		(shadowLayer.mask as CAShapeLayer).path = maskPath;
+		// Apply spread radius by expanding shadow layer bounds (this has a nice glow with radii set to 0)
+		shadowLayer.shadowPath = shadowPath;
+	}
+
+	export function generateShadowLayerPaths(view: View, bounds: CGRect): ShadowLayerResizablePropertyValues {
+		const background = view.style.backgroundInternal;
+		const nativeView = <NativeScriptUIView>view.nativeViewProtected;
+		const layer = nativeView.layer;
+
+		const boxShadow: BoxShadow = background.getBoxShadow();
+		const spreadRadius = layout.toDeviceIndependentPixels(boxShadow.spreadRadius);
 
 		const { width, height } = bounds.size;
 		const hasNonUniformBorderWidths = background.hasBorderWidth() && !background.hasUniformBorder();
@@ -255,9 +283,10 @@ export namespace ios {
 			shadowPath = CGPathCreateWithRect(CGRectInset(bounds, -spreadRadius, -spreadRadius), null);
 		}
 
-		shadowLayer.mask = getShadowInnerClipMask(shadowLayer, boxShadow, maskPath);
-		// Apply spread radius by expanding shadow layer bounds (this has a nice glow with radii set to 0)
-		shadowLayer.shadowPath = shadowPath;
+		return {
+			maskPath: drawShadowMaskPath(bounds, boxShadow, maskPath),
+			shadowPath,
+		};
 	}
 }
 
@@ -913,12 +942,12 @@ function drawNoRadiusNonUniformBorders(nativeView: NativeScriptUIView, backgroun
 /**
  * Creates a mask that ensures no shadow will be displayed underneath transparent backgrounds.
  *
- * @param nativeView
+ * @param bounds
  * @param boxShadow
  * @param bordersClipPath
  * @returns
  */
-function getShadowInnerClipMask(shadowLayer: CALayer, boxShadow: BoxShadow, bordersClipPath: any): CAShapeLayer {
+function drawShadowMaskPath(bounds: CGRect, boxShadow: BoxShadow, bordersClipPath: any): CAShapeLayer {
 	const shadowRadius = layout.toDeviceIndependentPixels(boxShadow.blurRadius);
 	const spreadRadius = layout.toDeviceIndependentPixels(boxShadow.spreadRadius);
 	const offsetX = layout.toDeviceIndependentPixels(boxShadow.offsetX);
@@ -927,21 +956,14 @@ function getShadowInnerClipMask(shadowLayer: CALayer, boxShadow: BoxShadow, bord
 	// This value has to be large enough to avoid clipping shadow
 	const outerRectRadius: number = shadowRadius * 3 + spreadRadius;
 
-	const maskLayer = CAShapeLayer.new();
-	maskLayer.bounds = shadowLayer.bounds;
-	maskLayer.position = CGPointMake(0, 0);
-	maskLayer.anchorPoint = CGPointMake(0, 0);
-	maskLayer.fillRule = kCAFillRuleEvenOdd;
-
 	const maskPath = CGPathCreateMutable();
 	// Proper clip position and size
-	const outerRect = CGRectOffset(CGRectInset(shadowLayer.bounds, -outerRectRadius, -outerRectRadius), offsetX, offsetY);
+	const outerRect = CGRectOffset(CGRectInset(bounds, -outerRectRadius, -outerRectRadius), offsetX, offsetY);
 
 	CGPathAddPath(maskPath, null, bordersClipPath);
 	CGPathAddRect(maskPath, null, outerRect);
 
-	maskLayer.path = maskPath;
-	return maskLayer;
+	return maskPath;
 }
 
 function clearBoxShadow(nativeView: NativeScriptUIView) {
