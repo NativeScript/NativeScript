@@ -11,7 +11,7 @@ year="{{displayDate?.year}}"
         minute="{{displayDate?.minute}}"
         second="{{{{displayDate?.second}}"-->
     <StackLayout padding="20">
-      <DatePicker class="v-center text-center" width="{{ showTime ? 220 : 300}}" height="{{ showTime ? 100 : 250}}" showTime="{{ showTime }}" iosPreferredDatePickerStyle="{{showTime ? 2 : 1}}" dateChange="{{ dateChange }}" />
+      <DatePicker class="v-center text-center" width="{{ showTime ? 220 : 300}}" height="{{ showTime ? 100 : 250}}" minDate="{{minDate}}" maxDate="{{maxDate}}" showTime="{{ showTime }}" iosPreferredDatePickerStyle="{{showTime ? 2 : 1}}" dateChange="{{ dateChange }}" />
       <GridLayout rows="auto" columns="auto,*">
         <Switch checked="true" col="0" checkedChange="{{checkedChange}}" />
         <Label text="Show Time" col="1" class="m-l-10" />
