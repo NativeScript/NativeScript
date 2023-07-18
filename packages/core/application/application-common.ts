@@ -364,8 +364,8 @@ export class ApplicationCommon {
 		// rest of implementation is platform specific
 	}
 
-	initRootView() {
-		this.setRootViewCSSClasses(this.getRootView());
+	initRootView(rootView: View) {
+		this.setRootViewCSSClasses(rootView);
 		initAccessibilityCssHelper();
 		initAccessibilityFontScale();
 	}
