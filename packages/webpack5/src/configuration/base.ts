@@ -1,8 +1,9 @@
-import { extname, resolve } from 'path';
+import { extname, resolve, join } from 'path';
 import {
 	ContextExclusionPlugin,
 	DefinePlugin,
 	HotModuleReplacementPlugin,
+	NormalModuleReplacementPlugin,
 } from 'webpack';
 import Config from 'webpack-chain';
 import { existsSync } from 'fs';
@@ -375,6 +376,13 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// 		}
 	// 	}
 	// ])
+
+	config
+		.plugin('NormalModuleReplacementPlugin|tslib')
+		.use(NormalModuleReplacementPlugin, [
+			/^tslib$/,
+			'@nativescript/core/tslib',
+		]);
 
 	config.plugin('PlatformSuffixPlugin').use(PlatformSuffixPlugin, [
 		{
