@@ -1,3 +1,16 @@
+## [8.5.9](https://github.com/NativeScript/NativeScript/compare/8.5.7-core...8.5.9-core) (2023-07-24)
+
+
+### Bug Fixes
+
+* **application:** explicitly pass rootView to initRootView  ([#10345](https://github.com/NativeScript/NativeScript/issues/10345)) ([bd8e1b8](https://github.com/NativeScript/NativeScript/commit/bd8e1b8e79f95335d4e813a6ab283b43e1a8d6e0))
+* **application:** restore AndroidApplication.on etc. ([#10336](https://github.com/NativeScript/NativeScript/issues/10336)) ([0804934](https://github.com/NativeScript/NativeScript/commit/08049340b5ed18bdc8b9c3432e24106eddd17fe3))
+* **application:** wrap native classes in initialisers ([#10335](https://github.com/NativeScript/NativeScript/issues/10335)) ([5359153](https://github.com/NativeScript/NativeScript/commit/5359153a117e7efe93f433ac375b1495f7d29958)), closes [#10334](https://github.com/NativeScript/NativeScript/issues/10334)
+* **core:** fix Page event overload resolution ([#10347](https://github.com/NativeScript/NativeScript/issues/10347)) ([2e732ae](https://github.com/NativeScript/NativeScript/commit/2e732ae79fb5194f8a2b217699a996c1bd5449b8))
+* **datepicker:** max, min and date value binding handling ([#10343](https://github.com/NativeScript/NativeScript/issues/10343)) ([6effd55](https://github.com/NativeScript/NativeScript/commit/6effd554f2295a557886a7cc2b9edaf2465043f9))
+
+
+
 ## [8.5.7](https://github.com/NativeScript/NativeScript/compare/8.5.6-core...8.5.7-core) (2023-06-23)
 
 
