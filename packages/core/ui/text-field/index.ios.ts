@@ -192,7 +192,7 @@ export class TextField extends TextFieldBase {
 		if (this.updateTextTrigger === 'textChanged') {
 			if (this.valueFormatter) {
 				// format/replace
-				let currentValue = textField.text;
+				const currentValue = textField.text;
 				let nativeValueChange = `${textField.text}${replacementString}`;
 				if (replacementString === '') {
 					// clearing when empty
