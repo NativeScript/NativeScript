@@ -51,7 +51,7 @@
   },
   "devDependencies": {
     "@nativescript/hook": "^2.0.0",
-    "@nativescript/nx": "~4.2.0",
+    "@nativescript/nx": "16.5.2-dev.0",
     "@nrwl/cli": "15.9.2",
     "@nrwl/eslint-plugin-nx": "15.9.2",
     "@nrwl/jest": "15.9.2",
@@ -92,7 +92,7 @@
     "tree-kill": "^1.2.2",
     "ts-jest": "29.1.0",
     "ts-node": "10.9.1",
-    "ts-patch": "^3.0.2",
+    "ts-patch": "^2.1.0",
     "tslib": "^2.5.0",
     "typedoc": "^0.23.24",
     "typescript": "~4.9.5",
