@@ -13,7 +13,7 @@ echo "Build android"
 cd android
 ./gradlew --quiet assembleRelease
 cd ..
-cp android/widgets/build/outputs/aar/widgets.aar dist/package/platforms/android/widgets-release.aar
+cp android/widgets/build/outputs/aar/widgets-release.aar dist/package/platforms/android/widgets-release.aar
 
 if [ "$1" ]
 then
