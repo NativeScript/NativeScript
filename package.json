@@ -35,7 +35,7 @@
     "types-android:lint": "cd packages/types-android ; eslint -c .eslintrc --ignore-pattern **/node_modules/** --ignore-pattern !packages/types-android/**",
     "types-android:test": "cd packages/types-android ; jest --config jest.config.js --ignore-pattern **/node_modules/** --ignore-pattern !packages/types-android/**",
     "types-android:build": "rimraf dist/packages/types-android ; cpy '**/*' '../../../dist/packages/types-android' --cwd=packages/types-android/src --parents ; cpy 'package.json' '*.md' '../../dist/packages/types-android' --cwd=packages/types-android --parents",
-    "ui-mobile-base:build": "cd packages/ui-mobile-base ; ./build.sh ; copyfiles dist/package/platforms/* ../../packages/core/platforms ; copyfiles dist/package/platforms/* ../../dist/packages/core/platforms",
+    "ui-mobile-base:build": "cd packages/ui-mobile-base ; ./build.sh ; cd dist/package/platforms; copyfiles '**/*' '../../../../../packages/core/platforms' ; copyfiles '**/*' '../../../../../dist/packages/core/platforms'",
     "webpack:lint": "cd packages/webpack5 ; eslint -c .eslintrc --ignore-pattern **/node_modules/** --ignore-pattern !packages/webpack/**",
     "webpack:test": "cd packages/webpack5 ; npm run tsc ; npm run jasmine",
     "webpack:build": "cd packages/webpack5 npm run build ; mkdir -p ../../dist/packages ; mv \"$(npm pack | tail -n 1)\" ../../dist/packages/nativescript-webpack.tgz"

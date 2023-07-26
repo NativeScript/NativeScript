@@ -12,7 +12,10 @@ rm -rf dist
 
 export SKIP_PACK=true
 ./build.android.sh
-./build.ios.sh
+if [ "$OSTYPE" = "darwin" ]
+then
+  ./build.ios.sh
+fi
 
 echo "Copy NPM artifacts"
 cp .npmignore README.md package.json dist/package
