@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.StringWriter;
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
@@ -527,12 +528,12 @@ public class FileHelper {
 		}
 
 		InputStream is = getInputStream(context, uri);
-		InputStreamReader isr = new InputStreamReader(is, characterSet);
-		BufferedReader reader = new BufferedReader(isr);
+		int n = 0;
 		char[] buf = new char[is.available()];
-		reader.read(buf);
-		reader.close();
-		return new String(buf);
+		InputStreamReader isr = new InputStreamReader(is, characterSet);
+		StringWriter writer = new StringWriter();
+    	while (-1 != (n = isr.read(buf))) writer.write(buf, 0, n);
+    	return writer.toString();
 	}
 
 	public String readTextSync(Context context, @Nullable String encoding, @Nullable Callback callback) {
