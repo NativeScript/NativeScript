@@ -9,7 +9,7 @@ import { layout, iOSNativeHelper } from '../../../utils';
 import { isNumber } from '../../../utils/types';
 import { IOSHelper } from './view-helper';
 import { ios as iosBackground, Background, BackgroundClearFlags } from '../../styling/background';
-import { perspectiveProperty, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, clipPathProperty } from '../../styling/style-properties';
+import { perspectiveProperty, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty } from '../../styling/style-properties';
 import { profile } from '../../../profiling';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty, accessibilityIgnoresInvertColorsProperty } from '../../../accessibility/accessibility-properties';
 import { IOSPostAccessibilityNotificationType, isAccessibilityServiceEnabled, updateAccessibilityProperties, AccessibilityEventOptions, AccessibilityRole, AccessibilityState } from '../../../accessibility';
@@ -395,15 +395,10 @@ export class View extends ViewCommon implements ViewDefinition {
 		}
 
 		const background = this.style.backgroundInternal;
-		const backgroundDependsOnSize = (background.image && background.image !== 'none') || !background.hasUniformBorder() || background.hasBorderRadius() || background.hasBoxShadow();
+		const backgroundDependsOnSize = (background.image && background.image !== 'none') || background.clipPath || !background.hasUniformBorder() || background.hasBorderRadius() || background.hasBoxShadow();
 
 		if (this._nativeBackgroundState === 'invalid' || (this._nativeBackgroundState === 'drawn' && backgroundDependsOnSize)) {
 			this._redrawNativeBackground(background);
-		}
-
-		const clipPath = this.style.clipPath;
-		if (clipPath !== '' && this[clipPathProperty.setNative]) {
-			this[clipPathProperty.setNative](clipPath);
 		}
 	}
 

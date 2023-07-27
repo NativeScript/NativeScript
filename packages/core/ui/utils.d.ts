@@ -2,8 +2,8 @@
 	hasNonUniformBorder: boolean;
 	borderLayer: CALayer;
 
-	hasBorderMask: boolean;
-	borderOriginalMask: CALayer;
+	hasClippingMask: boolean;
+	originalMask: CALayer;
 
 	topBorderLayer: CALayer;
 	rightBorderLayer: CALayer;

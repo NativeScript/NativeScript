@@ -75,15 +75,11 @@ export enum CacheMode {
 // }
 
 export namespace ios {
-	export interface ShadowLayerResizablePropertyValues {
-		maskPath: any;
-		shadowPath: any;
-	}
-
 	export function createBackgroundUIColor(view: View, callback: (uiColor: any /* UIColor */) => void, flip?: boolean): void;
 	export function clearBackgroundUIColor(view: View): void;
 	export function drawBoxShadow(view: View): void;
-	export function generateShadowLayerPaths(view: View, bounds: CGRect): ShadowLayerResizablePropertyValues;
+	export function drawClipPath(view: View, bounds: CGRect): any;
+	export function generateShadowPath(view: View, bounds: CGRect): any;
 }
 
 export namespace ad {

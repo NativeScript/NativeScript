@@ -216,7 +216,6 @@ export class Animation extends AnimationBase {
 	public cancel(): void {
 		if (!this.isPlaying) {
 			Trace.write('Animation is not currently playing.', Trace.categories.Animation, Trace.messageType.warn);
-
 			return;
 		}
 
@@ -226,7 +225,11 @@ export class Animation extends AnimationBase {
 				if (propertyAnimation) {
 					if (propertyAnimation.target?.nativeViewProtected) {
 						const nativeView: NativeScriptUIView = propertyAnimation.target.nativeViewProtected;
+						if (nativeView.layer.mask) {
+							nativeView.layer.mask.removeAllAnimations();
+						}
 						nativeView.layer.removeAllAnimations();
+
 						if (nativeView.gradientLayer) {
 							nativeView.gradientLayer.removeAllAnimations();
 						}
@@ -466,21 +469,43 @@ export class Animation extends AnimationBase {
 		if (nativeView) {
 			nativeView.layer.addAnimationForKey(nativeAnimation, args.propertyNameToAnimate);
 			if (args.propertyNameToAnimate === 'bounds') {
+				const background = animation.target.style.backgroundInternal;
+				const toRawValue: CGRect = args.toValue.CGRectValue;
+
 				if (nativeView.gradientLayer) {
 					nativeView.gradientLayer.addAnimationForKey(nativeAnimation, args.propertyNameToAnimate);
 				}
 
+				let clipPath;
+				if (nativeView.hasClippingMask && nativeView.layer.mask instanceof CAShapeLayer) {
+					if (background.clipPath) {
+						clipPath = iosBackground.drawClipPath(animation.target, toRawValue);
+						nativeView.layer.mask.addAnimationForKey(
+							this._createBasicAnimation(
+								{
+									...args,
+									propertyNameToAnimate: 'path',
+									fromValue: nativeView.layer.mask.path,
+									toValue: clipPath,
+								},
+								animation
+							),
+							'path'
+						);
+					}
+				}
+
 				// Shadow layer does not inherit from animating view layer
 				if (nativeView.shadowLayer) {
-					const { maskPath, shadowPath } = iosBackground.generateShadowLayerPaths(animation.target, args.toValue.CGRectValue);
-					const shadowMask = nativeView.shadowLayer.mask as CAShapeLayer;
-					if (shadowMask) {
+					const shadowPath = iosBackground.generateShadowPath(animation.target, toRawValue);
+					const shadowMask = nativeView.shadowLayer.mask;
+					if (shadowMask && clipPath && shadowMask instanceof CAShapeLayer) {
 						const maskPathAnimation = this._createBasicAnimation(
 							{
 								...args,
 								propertyNameToAnimate: 'path',
 								fromValue: shadowMask.path,
-								toValue: maskPath,
+								toValue: clipPath,
 							},
 							animation
 						);
