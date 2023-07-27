@@ -50,6 +50,7 @@ export class SharedTransitionHelper {
 						console.log(`2. Take snapshots of shared elements and position them based on presenting view:`);
 					}
 
+					const pageOut = state.pageOut;
 					const pageStart = state.pageStart;
 
 					const startFrame = getRectFromProps(pageStart, getPageStartDefaultsForType(type));
@@ -273,6 +274,14 @@ export class SharedTransitionHelper {
 						const endFrame = getRectFromProps(pageEnd);
 						transition.presented.view.frame = CGRectMake(endFrame.x, endFrame.y, endFrame.width, endFrame.height);
 
+						if (pageOut) {
+							if (isNumber(pageOut.opacity)) {
+								transition.presenting.view.alpha = pageOut?.opacity;
+							}
+
+							const outFrame = getRectFromProps(pageOut);
+							transition.presenting.view.frame = CGRectMake(outFrame.x, outFrame.y, outFrame.width, outFrame.height);
+						}
 						// animate page properties to the following:
 						// https://stackoverflow.com/a/27997678/1418981
 						// In order to have proper layout. Seems mostly needed when presenting.
@@ -368,6 +377,7 @@ export class SharedTransitionHelper {
 						console.log(`2. Add back previously stored sharedElements to dismiss:`);
 					}
 
+					const pageOut = state.pageOut;
 					const pageEnd = state.pageEnd;
 					const pageEndTags = pageEnd?.sharedTransitionTags || {};
 					const pageReturn = state.pageReturn;
@@ -456,6 +466,14 @@ export class SharedTransitionHelper {
 
 						const endFrame = getRectFromProps(pageReturn, getPageStartDefaultsForType(type));
 						transition.presented.view.frame = CGRectMake(endFrame.x, endFrame.y, endFrame.width, endFrame.height);
+
+						if (pageOut) {
+							// always return to defaults if pageOut had been used
+							transition.presenting.view.alpha = 1;
+
+							const outFrame = getRectFromProps(null);
+							transition.presenting.view.frame = CGRectMake(0, 0, outFrame.width, outFrame.height);
+						}
 
 						for (const presenting of transition.sharedElements.presenting) {
 							iOSUtils.copyLayerProperties(presenting.snapshot, presenting.view.ios, presenting.propertiesToMatch as any);
