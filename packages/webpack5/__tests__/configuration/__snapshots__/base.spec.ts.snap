@@ -648,3 +648,5 @@ exports[`base configuration support env.watchNodeModules 1`] = `
   "managedPaths": [],
 }
 `;
+
+exports[`base configuration supports env.sourceMap=hidden-source-map 1`] = `"../../../ios-sourceMaps/[file].map[query]"`;

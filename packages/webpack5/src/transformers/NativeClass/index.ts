@@ -38,6 +38,8 @@ export default function (ctx: ts.TransformationContext) {
 							noEmitHelpers: true,
 							module: ts.ModuleKind.ESNext,
 							target: ts.ScriptTarget.ES5,
+							experimentalDecorators: true,
+							emitDecoratorMetadata: true,
 						},
 					}
 				)

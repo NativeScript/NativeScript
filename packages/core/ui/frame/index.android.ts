@@ -1378,7 +1378,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 		this._rootView = rootView;
 
 		// sets root classes once rootView is ready...
-		Application.initRootView();
+		Application.initRootView(rootView);
 	}
 }
 

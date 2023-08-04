@@ -104,13 +104,17 @@ export interface SharedTransitionConfig {
 		dismiss?: SharedTransitionInteractiveOptions;
 	};
 	/**
-	 * View settings to start your transition with.
+	 * View settings applied to the incoming page to start your transition with.
 	 */
 	pageStart?: SharedTransitionPageProperties;
 	/**
-	 * View settings to end your transition with.
+	 * View settings applied to the incoming page to end your transition with.
 	 */
 	pageEnd?: SharedTransitionPageWithDurationProperties;
+	/**
+	 * View settings applied to the outgoing page in your transition.
+	 */
+	pageOut?: SharedTransitionPageWithDurationProperties;
 	/**
 	 * View settings to return to the original page with.
 	 */
