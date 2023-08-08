@@ -31,22 +31,22 @@ export declare class Page extends PageBase {
 	/**
 	 * String value used when hooking to navigatingTo event.
 	 */
-	public static navigatingToEvent: string;
+	public static readonly navigatingToEvent = 'navigatingTo';
 
 	/**
 	 * String value used when hooking to navigatedTo event.
 	 */
-	public static navigatedToEvent: string;
+	public static readonly navigatedToEvent = 'navigatedTo';
 
 	/**
 	 * String value used when hooking to navigatingFrom event.
 	 */
-	public static navigatingFromEvent: string;
+	public static readonly navigatingFromEvent = 'navigatingFrom';
 
 	/**
 	 * String value used when hooking to navigatedFrom event.
 	 */
-	public static navigatedFromEvent: string;
+	public static readonly navigatedFromEvent = 'navigatedFrom';
 
 	/**
 	 * Gets or sets whether page background spans under status bar.

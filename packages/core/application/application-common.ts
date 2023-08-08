@@ -127,6 +127,28 @@ export class ApplicationCommon {
 	readonly loadAppCssEvent = 'loadAppCss';
 	readonly cssChangedEvent = 'cssChanged';
 
+	// Expose statically for backwards compat on AndroidApplication.on etc.
+	/**
+	 * @deprecated Use `Application.android.on()` instead.
+	 */
+	static on: ApplicationEvents['on'] = globalEvents.on.bind(globalEvents);
+	/**
+	 * @deprecated Use `Application.android.once()` instead.
+	 */
+	static once: ApplicationEvents['on'] = globalEvents.once.bind(globalEvents);
+	/**
+	 * @deprecated Use `Application.android.off()` instead.
+	 */
+	static off: ApplicationEvents['off'] = globalEvents.off.bind(globalEvents);
+	/**
+	 * @deprecated Use `Application.android.notify()` instead.
+	 */
+	static notify: ApplicationEvents['notify'] = globalEvents.notify.bind(globalEvents);
+	/**
+	 * @deprecated Use `Application.android.hasListeners()` instead.
+	 */
+	static hasListeners: ApplicationEvents['hasListeners'] = globalEvents.hasListeners.bind(globalEvents);
+
 	// Application events go through the global events.
 	on: ApplicationEvents['on'] = globalEvents.on.bind(globalEvents);
 	off: ApplicationEvents['off'] = globalEvents.off.bind(globalEvents);
@@ -343,8 +365,8 @@ export class ApplicationCommon {
 		// rest of implementation is platform specific
 	}
 
-	initRootView() {
-		this.setRootViewCSSClasses(this.getRootView());
+	initRootView(rootView: View) {
+		this.setRootViewCSSClasses(rootView);
 		initAccessibilityCssHelper();
 		initAccessibilityFontScale();
 	}

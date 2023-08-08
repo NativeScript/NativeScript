@@ -157,7 +157,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 			visibleVC.presentViewControllerAnimatedCompletion(controller, true, null);
 		}
 
-		this.initRootView();
+		this.initRootView(rootView);
 		this.notifyAppStarted();
 	}
 
@@ -349,7 +349,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 			this._window.makeKeyAndVisible();
 		}
 
-		this.initRootView();
+		this.initRootView(rootView);
 
 		rootView.on(IOSHelper.traitCollectionColorAppearanceChangedEvent, () => {
 			const userInterfaceStyle = controller.traitCollection.userInterfaceStyle;
