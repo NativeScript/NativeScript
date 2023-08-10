@@ -13,7 +13,7 @@ import { ios as iosHelper } from '../../utils/native-helper';
 import { Screen } from '../../platform';
 import { Color } from '../../color';
 import { Style } from '../styling/style';
-import { applyRotateTransform } from 'utils/ios';
+import { applyRotateTransform } from '../../utils/ios';
 
 export * from './animation-common';
 export { KeyframeAnimation, KeyframeAnimationInfo, KeyframeDeclaration, KeyframeInfo } from './keyframe-animation';

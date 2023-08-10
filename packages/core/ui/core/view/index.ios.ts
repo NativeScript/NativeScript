@@ -17,7 +17,7 @@ import { CoreTypes } from '../../../core-types';
 import type { ModalTransition } from '../../transition/modal-transition';
 import { SharedTransition } from '../../transition/shared-transition';
 import { GestureStateTypes, PanGestureEventData } from '../../gestures';
-import { applyRotateTransform } from 'utils/ios';
+import { applyRotateTransform } from '../../../utils/ios';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
