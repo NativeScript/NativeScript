@@ -39,7 +39,7 @@ export default function (ctx: ts.TransformationContext) {
 							module: ts.ModuleKind.ESNext,
 							target: ts.ScriptTarget.ES5,
 							experimentalDecorators: true,
-							emitDecoratorMetadata: true,
+							emitDecoratorMetadata: false,
 						},
 					}
 				)
