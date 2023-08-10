@@ -336,7 +336,7 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 
 			this._registerPendingReceivers();
 		} catch (err) {
-			console.error('Error initializing AndroidApplication', err);
+			console.error('Error initializing AndroidApplication', err, err.stack);
 		}
 	}
 
