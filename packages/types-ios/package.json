@@ -1,11 +1,11 @@
 {
-  "name": "@nativescript/types-ios",
-  "version": "8.5.0",
-  "description": "NativeScript Types for iOS.",
-  "homepage": "https://nativescript.org",
-  "repository": {
-      "type": "git",
-      "url": "https://github.com/NativeScript/NativeScript"
-  },
-  "license": "Apache-2.0"
+	"name": "@nativescript/types-ios",
+	"version": "8.5.0",
+	"description": "NativeScript Types for iOS.",
+	"homepage": "https://nativescript.org",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/NativeScript/NativeScript"
+	},
+	"license": "Apache-2.0"
 }
