@@ -86,6 +86,8 @@ declare class MFMessageComposeViewController extends UINavigationController {
 	disableUserAttachments(): void;
 
 	insertCollaborationItemProvider(itemProvider: NSItemProvider): boolean;
+
+	setUPIVerificationCodeSendCompletion(completion: (p1: boolean) => void): void;
 }
 
 declare var MFMessageComposeViewControllerAttachmentAlternateFilename: string;

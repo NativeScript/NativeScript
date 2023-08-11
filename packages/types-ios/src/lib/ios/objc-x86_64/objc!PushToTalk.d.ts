@@ -73,6 +73,8 @@ declare class PTChannelManager extends NSObject {
 
 	requestJoinChannelWithUUIDDescriptor(channelUUID: NSUUID, descriptor: PTChannelDescriptor): void;
 
+	setAccessoryButtonEventsEnabledForChannelUUIDCompletionHandler(enabled: boolean, channelUUID: NSUUID, completionHandler: (p1: NSError) => void): void;
+
 	setActiveRemoteParticipantForChannelUUIDCompletionHandler(participant: PTParticipant, channelUUID: NSUUID, completionHandler: (p1: NSError) => void): void;
 
 	setChannelDescriptorForChannelUUIDCompletionHandler(channelDescriptor: PTChannelDescriptor, channelUUID: NSUUID, completionHandler: (p1: NSError) => void): void;

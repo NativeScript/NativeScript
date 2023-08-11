@@ -1,4 +1,8 @@
 
+declare function AXAnimatedImagesEnabled(): boolean;
+
+declare var AXAnimatedImagesEnabledDidChangeNotification: string;
+
 declare class AXBrailleMap extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): AXBrailleMap; // inherited from NSObject
@@ -166,6 +170,8 @@ declare const enum AXCustomContentImportance {
 interface AXCustomContentProvider extends NSObjectProtocol {
 
 	accessibilityCustomContent: NSArray<AXCustomContent>;
+
+	accessibilityCustomContentBlock?: () => NSArray<AXCustomContent>;
 }
 declare var AXCustomContentProvider: {
 

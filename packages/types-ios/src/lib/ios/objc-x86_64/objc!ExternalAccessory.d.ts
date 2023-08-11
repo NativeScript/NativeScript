@@ -125,11 +125,11 @@ declare class EAWiFiUnconfiguredAccessoryBrowser extends NSObject {
 
 	readonly unconfiguredAccessories: NSSet<EAWiFiUnconfiguredAccessory>;
 
-	constructor(o: { delegate: EAWiFiUnconfiguredAccessoryBrowserDelegate; queue: NSObject; });
+	constructor(o: { delegate: EAWiFiUnconfiguredAccessoryBrowserDelegate; queue: interop.Pointer | interop.Reference<any>; });
 
 	configureAccessoryWithConfigurationUIOnViewController(accessory: EAWiFiUnconfiguredAccessory, viewController: UIViewController): void;
 
-	initWithDelegateQueue(delegate: EAWiFiUnconfiguredAccessoryBrowserDelegate, queue: NSObject): this;
+	initWithDelegateQueue(delegate: EAWiFiUnconfiguredAccessoryBrowserDelegate, queue: interop.Pointer | interop.Reference<any>): this;
 
 	startSearchingForUnconfiguredAccessoriesMatchingPredicate(predicate: NSPredicate): void;
 

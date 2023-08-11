@@ -65,6 +65,8 @@ declare var SFErrorDomain: string;
 
 declare var SFExtensionMessageKey: string;
 
+declare var SFExtensionProfileKey: string;
+
 declare class SFSafariViewController extends UIViewController {
 
 	static alloc(): SFSafariViewController; // inherited from NSObject

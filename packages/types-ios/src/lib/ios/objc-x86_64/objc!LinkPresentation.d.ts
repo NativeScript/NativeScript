@@ -7,7 +7,9 @@ declare const enum LPErrorCode {
 
 	MetadataFetchCancelled = 3,
 
-	MetadataFetchTimedOut = 4
+	MetadataFetchTimedOut = 4,
+
+	MetadataFetchNotAllowed = 5
 }
 
 declare var LPErrorDomain: string;

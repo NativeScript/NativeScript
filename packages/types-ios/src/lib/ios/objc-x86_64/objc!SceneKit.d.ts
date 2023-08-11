@@ -64,7 +64,7 @@ declare class SCNAction extends NSObject implements NSCopying, NSSecureCoding {
 
 	static runBlock(block: (p1: SCNNode) => void): SCNAction;
 
-	static runBlockQueue(block: (p1: SCNNode) => void, queue: NSObject): SCNAction;
+	static runBlockQueue(block: (p1: SCNNode) => void, queue: interop.Pointer | interop.Reference<any>): SCNAction;
 
 	static scaleByDuration(scale: number, sec: number): SCNAction;
 
@@ -3673,6 +3673,8 @@ declare class SCNRenderer extends NSObject implements SCNSceneRenderer, SCNTechn
 
 	usesReverseZ: boolean; // inherited from SCNSceneRenderer
 
+	readonly workingColorSpace: any; // inherited from SCNSceneRenderer
+
 	readonly  // inherited from NSObjectProtocol
 
 	class(): typeof NSObject;
@@ -3925,6 +3927,8 @@ interface SCNSceneRenderer extends NSObjectProtocol {
 	temporalAntialiasingEnabled: boolean;
 
 	usesReverseZ: boolean;
+
+	workingColorSpace: any;
 
 	hitTestOptions(point: CGPoint, options: NSDictionary<string, any>): NSArray<SCNHitTestResult>;
 
@@ -4578,6 +4582,8 @@ declare class SCNView extends UIView implements SCNSceneRenderer, SCNTechniqueSu
 	temporalAntialiasingEnabled: boolean; // inherited from SCNSceneRenderer
 
 	usesReverseZ: boolean; // inherited from SCNSceneRenderer
+
+	readonly workingColorSpace: any; // inherited from SCNSceneRenderer
 
 	readonly  // inherited from NSObjectProtocol
 

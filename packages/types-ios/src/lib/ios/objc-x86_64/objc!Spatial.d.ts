@@ -40,6 +40,8 @@ declare function SPAffineTransform3DMakeWith4x4Matrix(matrix: simd_double4x4): S
 
 declare function SPAffineTransform3DMakeWithProjective(transform: SPProjectiveTransform3D): SPAffineTransform3D;
 
+declare function SPAffineTransform3DMakeWithTruncatedProjective(transform: SPProjectiveTransform3D): SPAffineTransform3D;
+
 declare function SPAffineTransform3DRotateByQuaternion(transform: SPAffineTransform3D, quaternion: simd_quatd): SPAffineTransform3D;
 
 declare function SPAffineTransform3DScaleBy(transform: SPAffineTransform3D, x: number, y: number, z: number): SPAffineTransform3D;
@@ -53,6 +55,24 @@ interface SPAngle {
 }
 declare var SPAngle: interop.StructType<SPAngle>;
 
+declare function SPAngleAcos(x: number): SPAngle;
+
+declare function SPAngleAcosh(x: number): SPAngle;
+
+declare function SPAngleAsin(x: number): SPAngle;
+
+declare function SPAngleAsinh(x: number): SPAngle;
+
+declare function SPAngleAtan(x: number): SPAngle;
+
+declare function SPAngleAtan2(y: number, x: number): SPAngle;
+
+declare function SPAngleAtanh(x: number): SPAngle;
+
+declare function SPAngleCos(angle: SPAngle): number;
+
+declare function SPAngleCosh(angle: SPAngle): number;
+
 declare function SPAngleEqualToAngle(angle1: SPAngle, angle2: SPAngle): boolean;
 
 declare function SPAngleGetDegrees(angle: SPAngle): number;
@@ -60,6 +80,18 @@ declare function SPAngleGetDegrees(angle: SPAngle): number;
 declare function SPAngleMakeWithDegrees(degrees: number): SPAngle;
 
 declare function SPAngleMakeWithRadians(radians: number): SPAngle;
+
+declare function SPAngleNegate(angle: SPAngle): SPAngle;
+
+declare function SPAngleNormalize(angle: SPAngle): SPAngle;
+
+declare function SPAngleSin(angle: SPAngle): number;
+
+declare function SPAngleSinh(angle: SPAngle): number;
+
+declare function SPAngleTan(angle: SPAngle): number;
+
+declare function SPAngleTanh(angle: SPAngle): number;
 
 declare const enum SPAxis {
 
@@ -72,7 +104,11 @@ declare const enum SPAxis {
 
 declare const enum SPEulerAngleOrder {
 
-	PitchYawRoll = 1
+	PitchYawRoll = 1,
+
+	XYZ = 1,
+
+	ZXY = 2
 }
 
 interface SPEulerAngles {
@@ -137,7 +173,3 @@ declare function SPProjectiveTransform3DScaleBy(transform: SPProjectiveTransform
 declare function SPProjectiveTransform3DScaleUniform(transform: SPProjectiveTransform3D, scale: number): SPProjectiveTransform3D;
 
 declare function SPProjectiveTransform3DShear(transform: SPProjectiveTransform3D, shearAxis: SPAxis, shearFactor0: number, shearFactor1: number): SPProjectiveTransform3D;
-
-declare var SpatialVersionNumber: number;
-
-declare var SpatialVersionString: number;

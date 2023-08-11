@@ -256,6 +256,8 @@ declare var BNNSConvolutionLayerParameters: interop.StructType<BNNSConvolutionLa
 
 declare function BNNSCopy(dest: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, src: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): number;
 
+declare function BNNSCreateNearestNeighbors(max_n_samples: number, n_features: number, n_neighbors: number, data_type: BNNSDataType, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
 declare function BNNSCreateRandomGenerator(method: BNNSRandomGeneratorMethod, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
 
 declare function BNNSCreateRandomGeneratorWithSeed(method: BNNSRandomGeneratorMethod, seed: number, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
@@ -388,6 +390,8 @@ declare const enum BNNSDescriptorType {
 
 	Parameter = 2
 }
+
+declare function BNNSDestroyNearestNeighbors(knn: interop.Pointer | interop.Reference<any>): void;
 
 declare function BNNSDestroyRandomGenerator(generator: interop.Pointer | interop.Reference<any>): void;
 
@@ -938,6 +942,10 @@ declare function BNNSNDArrayFullyConnectedSparsifySparseCSR(in_dense_shape: inte
 
 declare function BNNSNDArrayGetDataSize(array: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>): number;
 
+declare function BNNSNearestNeighborsGetInfo(knn: interop.Pointer | interop.Reference<any>, sample_number: number, indices: interop.Pointer | interop.Reference<number>, distances: interop.Pointer | interop.Reference<any>): number;
+
+declare function BNNSNearestNeighborsLoad(knn: interop.Pointer | interop.Reference<any>, n_new_samples: number, data_ptr: interop.Pointer | interop.Reference<any>): number;
+
 declare const enum BNNSNormType {
 
 	L2Norm = 1
@@ -1161,6 +1169,8 @@ declare const enum BNNSQuantizerFunction {
 
 	Dequantize = 1
 }
+
+declare function BNNSRandomFillCategoricalFloat(generator: interop.Pointer | interop.Reference<any>, desc: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, probabilities: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, log_probabilities: boolean): number;
 
 declare function BNNSRandomFillNormalFloat(generator: interop.Pointer | interop.Reference<any>, desc: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, mean: number, stddev: number): number;
 
@@ -6738,6 +6748,8 @@ declare function vImageConverter_Release(converter: any): void;
 
 declare function vImageConverter_Retain(converter: any): void;
 
+declare function vImageConvolveFloatKernel_ARGB8888(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, kernel: interop.Pointer | interop.Reference<number>, kernelHeight: number, kernelWidth: number, bias: number, backgroundColor: interop.Reference<number>, flags: number): number;
+
 declare function vImageConvolveMultiKernel_ARGB8888(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, kernels: interop.Reference<interop.Pointer | interop.Reference<number>>, kernel_height: number, kernel_width: number, divisors: interop.Reference<number>, biases: interop.Reference<number>, backgroundColor: interop.Reference<number>, flags: number): number;
 
 declare function vImageConvolveMultiKernel_ARGBFFFF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, kernels: interop.Reference<interop.Pointer | interop.Reference<number>>, kernel_height: number, kernel_width: number, biases: interop.Reference<number>, backgroundColor: interop.Reference<number>, flags: number): number;
@@ -7244,6 +7256,8 @@ declare function vImageScale_XRGB2101010W(src: interop.Pointer | interop.Referen
 declare function vImageSelectChannels_ARGB8888(newSrc: interop.Pointer | interop.Reference<vImage_Buffer>, origSrc: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, copyMask: number, flags: number): number;
 
 declare function vImageSelectChannels_ARGBFFFF(newSrc: interop.Pointer | interop.Reference<vImage_Buffer>, origSrc: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, copyMask: number, flags: number): number;
+
+declare function vImageSepConvolve_ARGB8888(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, kernelX: interop.Pointer | interop.Reference<number>, kernelX_width: number, kernelY: interop.Pointer | interop.Reference<number>, kernelY_width: number, bias: number, backgroundColor: interop.Reference<number>, flags: number): number;
 
 declare function vImageSepConvolve_Planar16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, kernelX: interop.Pointer | interop.Reference<number>, kernelX_width: number, kernelY: interop.Pointer | interop.Reference<number>, kernelY_width: number, bias: number, backgroundColor: number, flags: number): number;
 

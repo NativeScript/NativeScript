@@ -180,6 +180,8 @@ declare class ICCameraFile extends ICCameraItem {
 
 	requestReadDataAtOffsetLengthCompletion(offset: number, length: number, completion: (p1: NSData, p2: NSError) => void): void;
 
+	requestSecurityScopedURLWithCompletion(completion: (p1: NSURL, p2: NSError) => void): void;
+
 	requestThumbnailDataWithOptionsCompletion(options: NSDictionary<string, any>, completion: (p1: NSData, p2: NSError) => void): void;
 }
 
@@ -701,6 +703,8 @@ declare var ICStatusNotificationKey: string;
 declare var ICTransportTypeExFAT: string;
 
 declare var ICTransportTypeMassStorage: string;
+
+declare var ICTransportTypeProximity: string;
 
 declare var ICTransportTypeTCPIP: string;
 

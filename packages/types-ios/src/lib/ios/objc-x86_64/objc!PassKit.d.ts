@@ -273,6 +273,15 @@ declare const enum PKAddressField {
 	All = 15
 }
 
+declare const enum PKApplePayLaterAvailability {
+
+	Available = 0,
+
+	UnavailableItemIneligible = 1,
+
+	UnavailableRecurringTransaction = 2
+}
+
 declare const enum PKAutomaticPassPresentationSuppressionResult {
 
 	NotSupported = 0,
@@ -496,67 +505,63 @@ declare class PKDeferredPaymentSummaryItem extends PKPaymentSummaryItem {
 	deferredDate: Date;
 }
 
-declare class PKDisbursementAuthorizationController extends NSObject {
+declare const enum PKDisbursementErrorCode {
 
-	static alloc(): PKDisbursementAuthorizationController; // inherited from NSObject
+	UnknownError = -1,
 
-	static new(): PKDisbursementAuthorizationController; // inherited from NSObject
+	UnsupportedCardError = 1,
 
-	static supportsDisbursements(): boolean;
-
-	readonly delegate: PKDisbursementAuthorizationControllerDelegate;
-
-	constructor(o: { disbursementRequest: PKDisbursementRequest; delegate: PKDisbursementAuthorizationControllerDelegate; });
-
-	authorizeDisbursementWithCompletion(completion: (p1: boolean, p2: NSError) => void): void;
-
-	initWithDisbursementRequestDelegate(disbursementRequest: PKDisbursementRequest, delegate: PKDisbursementAuthorizationControllerDelegate): this;
+	RecipientContactInvalidError = 2
 }
 
-interface PKDisbursementAuthorizationControllerDelegate extends NSObjectProtocol {
+declare var PKDisbursementErrorContactFieldUserInfoKey: string;
 
-	disbursementAuthorizationControllerDidAuthorizeWithDisbursementVoucher(controller: PKDisbursementAuthorizationController, disbursementVoucher: PKDisbursementVoucher): void;
-
-	disbursementAuthorizationControllerDidFinish(controller: PKDisbursementAuthorizationController): void;
-}
-declare var PKDisbursementAuthorizationControllerDelegate: {
-
-	prototype: PKDisbursementAuthorizationControllerDelegate;
-};
+declare var PKDisbursementErrorDomain: string;
 
 declare class PKDisbursementRequest extends NSObject {
 
 	static alloc(): PKDisbursementRequest; // inherited from NSObject
 
+	static disbursementCardUnsupportedError(): NSError;
+
+	static disbursementContactInvalidErrorWithContactFieldLocalizedDescription(field: string, localizedDescription: string): NSError;
+
 	static new(): PKDisbursementRequest; // inherited from NSObject
 
-	amount: NSDecimalNumber;
-
-	countryCode: string;
+	applicationData: NSData;
 
 	currencyCode: string;
 
-	requestSchedule: PKDisbursementRequestSchedule;
+	merchantCapabilities: PKMerchantCapability;
+
+	merchantIdentifier: string;
+
+	recipientContact: PKContact;
+
+	regionCode: string;
+
+	requiredRecipientContactFields: NSArray<string>;
 
 	summaryItems: NSArray<PKPaymentSummaryItem>;
+
+	supportedNetworks: NSArray<string>;
+
+	supportedRegions: NSArray<string>;
+
+	constructor(o: { merchantIdentifier: string; currencyCode: string; regionCode: string; supportedNetworks: NSArray<string> | string[]; merchantCapabilities: PKMerchantCapability; summaryItems: NSArray<PKPaymentSummaryItem> | PKPaymentSummaryItem[]; });
+
+	initWithMerchantIdentifierCurrencyCodeRegionCodeSupportedNetworksMerchantCapabilitiesSummaryItems(merchantIdentifier: string, currencyCode: string, regionCode: string, supportedNetworks: NSArray<string> | string[], merchantCapabilities: PKMerchantCapability, summaryItems: NSArray<PKPaymentSummaryItem> | PKPaymentSummaryItem[]): this;
 }
 
-declare const enum PKDisbursementRequestSchedule {
+declare class PKDisbursementSummaryItem extends PKPaymentSummaryItem {
 
-	OneTime = 0,
+	static alloc(): PKDisbursementSummaryItem; // inherited from NSObject
 
-	Future = 1
-}
+	static new(): PKDisbursementSummaryItem; // inherited from NSObject
 
-declare class PKDisbursementVoucher extends NSObject {
+	static summaryItemWithLabelAmount(label: string, amount: NSDecimalNumber): PKDisbursementSummaryItem; // inherited from PKPaymentSummaryItem
 
-	static alloc(): PKDisbursementVoucher; // inherited from NSObject
-
-	static new(): PKDisbursementVoucher; // inherited from NSObject
-
-	readonly data: NSData;
-
-	readonly redemptionURL: NSURL;
+	static summaryItemWithLabelAmountType(label: string, amount: NSDecimalNumber, type: PKPaymentSummaryItemType): PKDisbursementSummaryItem; // inherited from PKPaymentSummaryItem
 }
 
 declare var PKEncryptionSchemeECC_V2: string;
@@ -772,6 +777,17 @@ declare class PKIdentityRequest extends NSObject {
 	nonce: NSData;
 }
 
+declare class PKInstantFundsOutFeeSummaryItem extends PKPaymentSummaryItem {
+
+	static alloc(): PKInstantFundsOutFeeSummaryItem; // inherited from NSObject
+
+	static new(): PKInstantFundsOutFeeSummaryItem; // inherited from NSObject
+
+	static summaryItemWithLabelAmount(label: string, amount: NSDecimalNumber): PKInstantFundsOutFeeSummaryItem; // inherited from PKPaymentSummaryItem
+
+	static summaryItemWithLabelAmountType(label: string, amount: NSDecimalNumber, type: PKPaymentSummaryItemType): PKInstantFundsOutFeeSummaryItem; // inherited from PKPaymentSummaryItem
+}
+
 interface PKIssuerProvisioningExtensionAuthorizationProviding extends NSObjectProtocol {
 
 	completionHandler: (p1: PKIssuerProvisioningExtensionAuthorizationResult) => void;
@@ -865,7 +881,9 @@ declare const enum PKMerchantCapability {
 
 	CapabilityCredit = 4,
 
-	CapabilityDebit = 8
+	CapabilityDebit = 8,
+
+	CapabilityInstantFundsOut = 128
 }
 
 declare class PKObject extends NSObject {
@@ -1034,6 +1052,75 @@ declare const enum PKPassType {
 	Any = -1
 }
 
+declare const enum PKPayLaterAction {
+
+	LearnMore = 0,
+
+	Calculator = 1
+}
+
+declare const enum PKPayLaterDisplayStyle {
+
+	Standard = 0,
+
+	Badge = 1,
+
+	Checkout = 2,
+
+	Price = 3
+}
+
+declare class PKPayLaterUtilities extends NSObject {
+
+	static alloc(): PKPayLaterUtilities; // inherited from NSObject
+
+	static new(): PKPayLaterUtilities; // inherited from NSObject
+
+	static validateWithAmountLocaleCompletion(amount: NSDecimalNumber, locale: NSLocale, completion: (p1: boolean) => void): void;
+}
+
+declare class PKPayLaterView extends UIView {
+
+	static alloc(): PKPayLaterView; // inherited from NSObject
+
+	static appearance(): PKPayLaterView; // inherited from UIAppearance
+
+	static appearanceForTraitCollection(trait: UITraitCollection): PKPayLaterView; // inherited from UIAppearance
+
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): PKPayLaterView; // inherited from UIAppearance
+
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): PKPayLaterView; // inherited from UIAppearance
+
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): PKPayLaterView; // inherited from UIAppearance
+
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): PKPayLaterView; // inherited from UIAppearance
+
+	static new(): PKPayLaterView; // inherited from NSObject
+
+	action: PKPayLaterAction;
+
+	amount: NSDecimalNumber;
+
+	delegate: PKPayLaterViewDelegate;
+
+	displayStyle: PKPayLaterDisplayStyle;
+
+	locale: NSLocale;
+
+	constructor(o: { amount: NSDecimalNumber; locale: NSLocale; });
+
+	initWithAmountLocale(amount: NSDecimalNumber, locale: NSLocale): this;
+}
+
+interface PKPayLaterViewDelegate extends NSObjectProtocol {
+
+	payLaterViewDidUpdateHeight(view: PKPayLaterView): void;
+}
+declare var PKPayLaterViewDelegate: {
+
+	prototype: PKPayLaterViewDelegate;
+};
+
 declare class PKPayment extends NSObject {
 
 	static alloc(): PKPayment; // inherited from NSObject
@@ -1065,11 +1152,21 @@ declare class PKPaymentAuthorizationController extends NSObject {
 
 	static new(): PKPaymentAuthorizationController; // inherited from NSObject
 
+	static supportsDisbursements(): boolean;
+
+	static supportsDisbursementsUsingNetworks(supportedNetworks: NSArray<string> | string[]): boolean;
+
+	static supportsDisbursementsUsingNetworksCapabilities(supportedNetworks: NSArray<string> | string[], capabilties: PKMerchantCapability): boolean;
+
 	delegate: PKPaymentAuthorizationControllerDelegate;
+
+	constructor(o: { disbursementRequest: PKDisbursementRequest; });
 
 	constructor(o: { paymentRequest: PKPaymentRequest; });
 
 	dismissWithCompletion(completion: () => void): void;
+
+	initWithDisbursementRequest(request: PKDisbursementRequest): this;
 
 	initWithPaymentRequest(request: PKPaymentRequest): this;
 
@@ -1157,9 +1254,19 @@ declare class PKPaymentAuthorizationViewController extends UIViewController {
 
 	static new(): PKPaymentAuthorizationViewController; // inherited from NSObject
 
+	static supportsDisbursements(): boolean;
+
+	static supportsDisbursementsUsingNetworks(supportedNetworks: NSArray<string> | string[]): boolean;
+
+	static supportsDisbursementsUsingNetworksCapabilities(supportedNetworks: NSArray<string> | string[], capabilities: PKMerchantCapability): boolean;
+
 	delegate: PKPaymentAuthorizationViewControllerDelegate;
 
+	constructor(o: { disbursementRequest: PKDisbursementRequest; });
+
 	constructor(o: { paymentRequest: PKPaymentRequest; });
+
+	initWithDisbursementRequest(request: PKDisbursementRequest): this;
 
 	initWithPaymentRequest(request: PKPaymentRequest): this;
 }
@@ -1420,6 +1527,8 @@ declare var PKPaymentNetworkQuicPay: string;
 
 declare var PKPaymentNetworkSuica: string;
 
+declare var PKPaymentNetworkTmoney: string;
+
 declare var PKPaymentNetworkVPay: string;
 
 declare var PKPaymentNetworkVisa: string;
@@ -1486,6 +1595,8 @@ declare class PKPaymentRequest extends NSObject {
 	static paymentShippingAddressInvalidErrorWithKeyLocalizedDescription(postalAddressKey: string, localizedDescription: string): NSError;
 
 	static paymentShippingAddressUnserviceableErrorWithLocalizedDescription(localizedDescription: string): NSError;
+
+	applePayLaterAvailability: PKApplePayLaterAvailability;
 
 	applicationData: NSData;
 
@@ -1893,9 +2004,11 @@ declare class PKShareablePassMetadataPreview extends NSObject {
 
 declare const enum PKShippingContactEditingMode {
 
-	Enabled = 1,
+	Available = 1,
 
-	StorePickup = 2
+	StorePickup = 2,
+
+	Enabled = 1
 }
 
 declare class PKShippingMethod extends PKPaymentSummaryItem {

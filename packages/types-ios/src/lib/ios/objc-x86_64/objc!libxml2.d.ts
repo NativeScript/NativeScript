@@ -91,9 +91,6 @@ declare var _htmlEntityDesc: interop.StructType<_htmlEntityDesc>;
 interface _uconv_t {
 	uconv: interop.Pointer | interop.Reference<any>;
 	utf8: interop.Pointer | interop.Reference<any>;
-	pivot_buf: interop.Reference<number>;
-	pivot_source: interop.Pointer | interop.Reference<number>;
-	pivot_target: interop.Pointer | interop.Reference<number>;
 }
 declare var _uconv_t: interop.StructType<_uconv_t>;
 
@@ -936,9 +933,6 @@ interface _xmlXPathContext {
 	dict: interop.Pointer | interop.Reference<any>;
 	flags: number;
 	cache: interop.Pointer | interop.Reference<any>;
-	opLimit: number;
-	opCount: number;
-	depth: number;
 }
 declare var _xmlXPathContext: interop.StructType<_xmlXPathContext>;
 
@@ -2489,6 +2483,8 @@ declare function xmlMemRealloc(ptr: interop.Pointer | interop.Reference<any>, si
 declare function xmlMemSetup(freeFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>, mallocFunc: interop.FunctionReference<(p1: number) => interop.Pointer | interop.Reference<any>>, reallocFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number) => interop.Pointer | interop.Reference<any>>, strdupFunc: interop.FunctionReference<(p1: string) => string>): number;
 
 declare function xmlMemShow(fp: interop.Pointer | interop.Reference<FILE>, nr: number): void;
+
+declare function xmlMemSize(ptr: interop.Pointer | interop.Reference<any>): number;
 
 declare var xmlMemStrdup: interop.FunctionReference<(p1: string) => string>;
 
@@ -6438,11 +6434,7 @@ declare const enum xmlXPathError {
 
 	XPATH_STACK_ERROR = 23,
 
-	XPATH_FORBID_VARIABLE_ERROR = 24,
-
-	XPATH_OP_LIMIT_EXCEEDED = 25,
-
-	XPATH_RECURSION_LIMIT_EXCEEDED = 26
+	XPATH_FORBID_VARIABLE_ERROR = 24
 }
 
 declare function xmlXPathEval(str: string | interop.Pointer | interop.Reference<any>, ctx: interop.Pointer | interop.Reference<_xmlXPathContext>): interop.Pointer | interop.Reference<_xmlXPathObject>;
