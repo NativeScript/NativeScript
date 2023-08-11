@@ -16,9 +16,9 @@
 			}
 		},
 		"test": {
-			"executor": "@nrwl/jest:jest",
+			"executor": "@nx/jest:jest",
 			"inputs": ["default", "^production"],
-			"outputs": ["dist/out-tsc"],
+			"outputs": ["{workspaceRoot}/dist/out-tsc"],
 			"options": {
 				"jestConfig": "packages/core/jest.config.ts",
 				"passWithNoTests": true,

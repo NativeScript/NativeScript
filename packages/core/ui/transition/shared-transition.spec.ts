@@ -1,3 +1,4 @@
+import { GestureTypes } from '../gestures';
 import { SharedTransition, SharedTransitionAnimationType } from './shared-transition';
 
 describe('SharedTransition', () => {
@@ -44,7 +45,7 @@ describe('SharedTransition', () => {
 		const state = SharedTransition.getState(transition.instance.id);
 		expect(state.activeType).toBe(SharedTransitionAnimationType.present);
 		expect(state.interactive.dismiss.finishThreshold).toBe(0.6);
-		expect(state.interactive.dismiss.percentFormula({ deltaX: 0.9, deltaY: 0, state: 0, android: null, eventName: 'pan', ios: null, object: null, type: 3, view: null })).toBe(0.7);
+		expect(state.interactive.dismiss.percentFormula({ deltaX: 0.9, deltaY: 0, state: 0, android: null, eventName: 'pan', ios: null, object: null, type: GestureTypes.pan, view: null })).toBe(0.7);
 		expect(state.pageStart.x).toBe(200);
 		expect(state.pageStart.y).toBe(100);
 		expect(state.pageStart.spring.friction).toBe(40);

@@ -1,4 +1,4 @@
-import { extname, resolve } from 'path';
+import { extname, relative, resolve } from 'path';
 import {
 	ContextExclusionPlugin,
 	DefinePlugin,
@@ -32,6 +32,7 @@ import {
 export default function (config: Config, env: IWebpackEnv = _env): Config {
 	const entryPath = getEntryPath();
 	const platform = getPlatformName();
+	const outputPath = getAbsoluteDistPath();
 	const mode = env.production ? 'production' : 'development';
 
 	// set mode
@@ -80,6 +81,15 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 	config.devtool(getSourceMapType(env.sourceMap));
 
+	// when using hidden-source-map, output source maps to the `platforms/{platformName}-sourceMaps` folder
+	if (env.sourceMap === 'hidden-source-map') {
+		const sourceMapAbsolutePath = getProjectFilePath(
+			`./platforms/${platform}-sourceMaps/[file].map[query]`
+		);
+		const sourceMapRelativePath = relative(outputPath, sourceMapAbsolutePath);
+		config.output.sourceMapFilename(sourceMapRelativePath);
+	}
+
 	// todo: figure out easiest way to make "node" target work in ns
 	// rather than the custom ns target implementation that's hard to maintain
 	// appears to be working - but we still have to deal with HMR
@@ -110,7 +120,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	});
 
 	config.output
-		.path(getAbsoluteDistPath())
+		.path(outputPath)
 		.pathinfo(false)
 		.publicPath('')
 		.libraryTarget('commonjs')

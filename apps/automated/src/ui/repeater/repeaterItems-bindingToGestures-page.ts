@@ -1,4 +1,4 @@
-function pageLoaded(args) {
+export function pageLoaded(args) {
 	var page = args.object;
 	page.bindingContext = {
 		items: [
@@ -18,8 +18,3 @@ function pageLoaded(args) {
 		parentViewProperty: 'Parent View Property',
 	};
 }
-exports.pageLoaded = pageLoaded;
-
-exports.tapPage = function (args) {
-	console.log('Tap! ' + args + ' ' + args.object);
-};

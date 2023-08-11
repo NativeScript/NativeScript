@@ -18,8 +18,8 @@ Application.on('displayed', (args) => {
 Application.on('uncaughtError', (args) => {
 	const error = args.error;
 	console.warn(error.message);
-	if (error.nativeError) {
-		console.warn('native error: ' + error.nativeError);
+	if (error.nativeException) {
+		console.warn('native error: ' + error.nativeException);
 	}
 });
 

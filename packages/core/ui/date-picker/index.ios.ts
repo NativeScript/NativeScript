@@ -79,39 +79,45 @@ export class DatePicker extends DatePickerBase {
 	}
 
 	[dateProperty.setNative](value: Date) {
-		const picker = this.nativeViewProtected;
-		const comps = NSCalendar.currentCalendar.componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay | NSCalendarUnit.HourCalendarUnit | NSCalendarUnit.MinuteCalendarUnit | NSCalendarUnit.SecondCalendarUnit, picker.date);
-		comps.year = value.getFullYear();
-		comps.month = value.getMonth() + 1;
-		comps.day = value.getDate();
-		comps.hour = value.getHours();
-		comps.minute = value.getMinutes();
-		comps.second = value.getSeconds();
-		this.year = comps.year;
-		this.month = comps.month;
-		this.day = comps.day;
-		this.hour = comps.hour;
-		this.minute = comps.minute;
-		this.second = comps.second;
-		picker.setDateAnimated(NSCalendar.currentCalendar.dateFromComponents(comps), false);
+		if (value) {
+			const comps = NSCalendar.currentCalendar.componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay | NSCalendarUnit.HourCalendarUnit | NSCalendarUnit.MinuteCalendarUnit | NSCalendarUnit.SecondCalendarUnit, this.nativeViewProtected.date);
+			comps.year = value.getFullYear();
+			comps.month = value.getMonth() + 1;
+			comps.day = value.getDate();
+			comps.hour = value.getHours();
+			comps.minute = value.getMinutes();
+			comps.second = value.getSeconds();
+			this.year = comps.year;
+			this.month = comps.month;
+			this.day = comps.day;
+			this.hour = comps.hour;
+			this.minute = comps.minute;
+			this.second = comps.second;
+			this.nativeViewProtected.setDateAnimated(NSCalendar.currentCalendar.dateFromComponents(comps), false);
+		}
 	}
 
 	[maxDateProperty.getDefault](): Date {
 		return this.nativeViewProtected.maximumDate;
 	}
 	[maxDateProperty.setNative](value: Date) {
-		const picker = this.nativeViewProtected;
-		const nsDate = NSDate.dateWithTimeIntervalSince1970(value.getTime() / 1000);
-		picker.maximumDate = <any>nsDate;
+		if (value) {
+			const nsDate = NSDate.dateWithTimeIntervalSince1970(value.getTime() / 1000);
+			this.nativeViewProtected.maximumDate = <any>nsDate;
+		} else {
+			this.nativeViewProtected.maximumDate = null;
+		}
 	}
 
 	[minDateProperty.getDefault](): Date {
 		return this.nativeViewProtected.minimumDate;
 	}
 	[minDateProperty.setNative](value: Date) {
-		const picker = this.nativeViewProtected;
-		const nsDate = NSDate.dateWithTimeIntervalSince1970(value.getTime() / 1000);
-		picker.minimumDate = <any>nsDate;
+		if (value) {
+			this.nativeViewProtected.minimumDate = NSDate.dateWithTimeIntervalSince1970(value.getTime() / 1000) as any;
+		} else {
+			this.nativeViewProtected.minimumDate = null;
+		}
 	}
 
 	[colorProperty.getDefault](): UIColor {

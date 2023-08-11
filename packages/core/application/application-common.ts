@@ -126,8 +126,31 @@ export class ApplicationCommon {
 	readonly loadAppCssEvent = 'loadAppCss';
 	readonly cssChangedEvent = 'cssChanged';
 
+	// Expose statically for backwards compat on AndroidApplication.on etc.
+	/**
+	 * @deprecated Use `Application.android.on()` instead.
+	 */
+	static on: ApplicationEvents['on'] = globalEvents.on.bind(globalEvents);
+	/**
+	 * @deprecated Use `Application.android.once()` instead.
+	 */
+	static once: ApplicationEvents['on'] = globalEvents.once.bind(globalEvents);
+	/**
+	 * @deprecated Use `Application.android.off()` instead.
+	 */
+	static off: ApplicationEvents['off'] = globalEvents.off.bind(globalEvents);
+	/**
+	 * @deprecated Use `Application.android.notify()` instead.
+	 */
+	static notify: ApplicationEvents['notify'] = globalEvents.notify.bind(globalEvents);
+	/**
+	 * @deprecated Use `Application.android.hasListeners()` instead.
+	 */
+	static hasListeners: ApplicationEvents['hasListeners'] = globalEvents.hasListeners.bind(globalEvents);
+
 	// Application events go through the global events.
 	on: ApplicationEvents['on'] = globalEvents.on.bind(globalEvents);
+	once: ApplicationEvents['on'] = globalEvents.once.bind(globalEvents);
 	off: ApplicationEvents['off'] = globalEvents.off.bind(globalEvents);
 	notify: ApplicationEvents['notify'] = globalEvents.notify.bind(globalEvents);
 	hasListeners: ApplicationEvents['hasListeners'] = globalEvents.hasListeners.bind(globalEvents);
@@ -232,6 +255,8 @@ export class ApplicationCommon {
 	private setRootViewCSSClasses(rootView: View): void {
 		const platform = Device.os.toLowerCase();
 		const deviceType = Device.deviceType.toLowerCase();
+		const orientation = this.orientation();
+		const systemAppearance = this.systemAppearance();
 
 		if (platform) {
 			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${platform}`);
@@ -241,17 +266,20 @@ export class ApplicationCommon {
 			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${deviceType}`);
 		}
 
-		if (this.orientation) {
-			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${this.orientation}`);
+		if (orientation) {
+			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${orientation}`);
 		}
 
-		if (this.systemAppearance) {
-			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${this.systemAppearance}`);
+		if (systemAppearance) {
+			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${systemAppearance}`);
 		}
 
 		rootView.cssClasses.add(CSSUtils.ROOT_VIEW_CSS_CLASS);
 		const rootViewCssClasses = CSSUtils.getSystemCssClasses();
 		rootViewCssClasses.forEach((c) => rootView.cssClasses.add(c));
+
+		this.increaseStyleScopeApplicationCssSelectorVersion(rootView);
+		rootView._onCssStateChange();
 
 		if (Trace.isEnabled()) {
 			const rootCssClasses = Array.from(rootView.cssClasses);
@@ -336,8 +364,8 @@ export class ApplicationCommon {
 		// rest of implementation is platform specific
 	}
 
-	initRootView() {
-		this.setRootViewCSSClasses(this.getRootView());
+	initRootView(rootView: View) {
+		this.setRootViewCSSClasses(rootView);
 		initAccessibilityCssHelper();
 		initAccessibilityFontScale();
 	}
@@ -438,7 +466,7 @@ export class ApplicationCommon {
 		});
 	}
 
-	get orientation(): 'portrait' | 'landscape' | 'unknown' {
+	orientation(): 'portrait' | 'landscape' | 'unknown' {
 		return (this._orientation ??= this.getOrientation());
 	}
 
@@ -487,7 +515,7 @@ export class ApplicationCommon {
 		});
 	}
 
-	get systemAppearance(): 'dark' | 'light' | null {
+	systemAppearance(): 'dark' | 'light' | null {
 		// return cached value, or get it from the platform specific override
 		return (this._systemAppearance ??= this.getSystemAppearance());
 	}
