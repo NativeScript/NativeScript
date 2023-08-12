@@ -1,6 +1,7 @@
 import { AndroidActionItemSettings, AndroidActionBarSettings as AndroidActionBarSettingsDefinition, ActionItem as ActionItemDefinition } from '.';
 import { ActionItemBase, ActionBarBase, isVisible, flatProperty, traceMissingIcon, androidContentInsetLeftProperty, androidContentInsetRightProperty } from './action-bar-common';
 import { View } from '../core/view';
+import { VIEW_GONE, VIEW_VISIBLE } from '../core/view/index.android';
 import { Color } from '../../color';
 import { layout, RESOURCE_PREFIX, isFontIconURI } from '../../utils';
 import { colorProperty } from '../styling/style-properties';
@@ -195,13 +196,13 @@ export class ActionBar extends ActionBarBase {
 
 		const page = this.page;
 		if (!page.frame || !page.frame._getNavBarVisible(page)) {
-			this.nativeViewProtected.setVisibility(android.view.View.GONE);
+			this.nativeViewProtected.setVisibility(VIEW_GONE);
 
 			// If action bar is hidden - no need to fill it with items.
 			return;
 		}
 
-		this.nativeViewProtected.setVisibility(android.view.View.VISIBLE);
+		this.nativeViewProtected.setVisibility(VIEW_VISIBLE);
 
 		// Add menu items
 		this._addActionItems();

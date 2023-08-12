@@ -41,16 +41,20 @@ const statePressed = 16842919; // android.R.attr.state_pressed
 const stateEnabled = 16842910; // android.R.attr.state_enabled
 const styleAnimationDialog = 16973826; // android.R.style.Animation_Dialog
 
-const VERTICAL_GRAVITY_MASK = 112; // android.view.Gravity.VERTICAL_GRAVITY_MASK
-const HORIZONTAL_GRAVITY_MASK = 7; // android.view.Gravity.HORIZONTAL_GRAVITY_MASK
-const GRAVITY_LEFT = 3; // android.view.Gravity.LEFT
-const GRAVITY_RIGHT = 5; // android.view.Gravity.RIGHT
-const GRAVITY_TOP = 48; // android.view.Gravity.TOP
-const GRAVITY_BOTTOM = 80; // android.view.Gravity.BOTTOM
-const GRAVITY_CENTER_HORIZONTAL = 1; // android.view.Gravity.CENTER_HORIZONTAL
-const GRAVITY_FILL_HORIZONTAL = 7; // android.view.Gravity.FILL_HORIZONTAL
-const GRAVITY_CENTER_VERTICAL = 16; // android.view.Gravity.CENTER_VERTICAL
-const GRAVITY_FILL_VERTICAL = 112; // android.view.Gravity.FILL_VERTICAL
+export const VERTICAL_GRAVITY_MASK = 112; // android.view.Gravity.VERTICAL_GRAVITY_MASK
+export const HORIZONTAL_GRAVITY_MASK = 7; // android.view.Gravity.HORIZONTAL_GRAVITY_MASK
+export const GRAVITY_LEFT = 3; // android.view.Gravity.LEFT
+export const GRAVITY_RIGHT = 5; // android.view.Gravity.RIGHT
+export const GRAVITY_TOP = 48; // android.view.Gravity.TOP
+export const GRAVITY_BOTTOM = 80; // android.view.Gravity.BOTTOM
+export const GRAVITY_CENTER_HORIZONTAL = 1; // android.view.Gravity.CENTER_HORIZONTAL
+export const GRAVITY_FILL_HORIZONTAL = 7; // android.view.Gravity.FILL_HORIZONTAL
+export const GRAVITY_CENTER_VERTICAL = 16; // android.view.Gravity.CENTER_VERTICAL
+export const GRAVITY_FILL_VERTICAL = 112; // android.view.Gravity.FILL_VERTICAL
+
+export const VIEW_GONE = 8; //android.view.View.GONE;
+export const VIEW_VISIBLE = 0; //android.view.View.VISIBLE;
+export const VIEW_INVISIBLE = 4; //android.view.View.INVISIBLE;
 
 const modalMap = new Map<number, DialogOptions>();
 
@@ -758,20 +762,20 @@ export class View extends ViewCommon {
 	}
 
 	[hiddenProperty.getDefault](): boolean {
-		return this.nativeViewProtected.getVisibility() === android.view.View.GONE;
+		return this.nativeViewProtected.getVisibility() === VIEW_GONE;
 	}
 	[hiddenProperty.setNative](value: boolean) {
-		this.nativeViewProtected.setVisibility(value ? android.view.View.GONE : android.view.View.VISIBLE);
+		this.nativeViewProtected.setVisibility(value ? VIEW_GONE : VIEW_VISIBLE);
 	}
 
 	[visibilityProperty.getDefault](): CoreTypes.VisibilityType {
 		const nativeVisibility = this.nativeViewProtected.getVisibility();
 		switch (nativeVisibility) {
-			case android.view.View.VISIBLE:
+			case VIEW_VISIBLE:
 				return 'visible';
-			case android.view.View.INVISIBLE:
+			case VIEW_INVISIBLE:
 				return 'hidden';
-			case android.view.View.GONE:
+			case VIEW_GONE:
 				return 'collapse';
 			default:
 				throw new Error(`Unsupported android.view.View visibility: ${nativeVisibility}. Currently supported values are android.view.View.VISIBLE, android.view.View.INVISIBLE, android.view.View.GONE.`);
@@ -780,13 +784,13 @@ export class View extends ViewCommon {
 	[visibilityProperty.setNative](value: CoreTypes.VisibilityType) {
 		switch (value) {
 			case 'visible':
-				this.nativeViewProtected.setVisibility(android.view.View.VISIBLE);
+				this.nativeViewProtected.setVisibility(VIEW_VISIBLE);
 				break;
 			case 'hidden':
-				this.nativeViewProtected.setVisibility(android.view.View.INVISIBLE);
+				this.nativeViewProtected.setVisibility(VIEW_INVISIBLE);
 				break;
 			case 'collapse':
-				this.nativeViewProtected.setVisibility(android.view.View.GONE);
+				this.nativeViewProtected.setVisibility(VIEW_GONE);
 				break;
 			default:
 				throw new Error(`Invalid visibility value: ${value}. Valid values are: visible, hidden, collapse.`);

@@ -5,6 +5,7 @@ import { colorProperty, fontInternalProperty, fontSizeProperty } from '../stylin
 import { Color } from '../../color';
 import { layout } from '../../utils';
 import { SDK_VERSION } from '../../utils/constants';
+import { VIEW_GONE } from '../core/view/index.android';
 
 export * from './segmented-bar-common';
 
@@ -71,7 +72,7 @@ function initializeNativeClasses(): void {
 			// This is collapsed by default and made visible
 			// by android when TabItem becomes visible/selected.
 			// TODO: Try commenting visibility change.
-			tv.setVisibility(android.view.View.GONE);
+			tv.setVisibility(VIEW_GONE);
 			tv.setMaxLines(1);
 			tv.setEllipsize(android.text.TextUtils.TruncateAt.END);
 
@@ -218,7 +219,7 @@ export class SegmentedBar extends SegmentedBarBase {
 
 		const frame = new android.widget.FrameLayout(context);
 		frame.setId(R_ID_TABCONTENT);
-		frame.setVisibility(android.view.View.GONE);
+		frame.setVisibility(VIEW_GONE);
 		tabHostLayout.addView(frame);
 
 		nativeView.addView(tabHostLayout);
