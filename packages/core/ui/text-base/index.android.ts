@@ -194,6 +194,9 @@ export class TextBase extends TextBaseCommon {
 
 	// public ignoreNextTransform = false;
 
+	// so that we dont set fontInternal when setting fontSize (useless)
+	handleFontSize = true;
+
 	public initNativeView(): void {
 		super.initNativeView();
 		// initializeTextTransformation();
