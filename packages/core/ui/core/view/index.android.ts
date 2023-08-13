@@ -486,7 +486,8 @@ export class View extends ViewCommon {
 	}
 
 	setOnTouchListener() {
-		if (this.touchListenerIsSet || !this.nativeViewProtected || !this.hasGestureObservers()) {
+		const view = this.nativeViewProtected;
+		if (this.touchListenerIsSet || !view || !this.hasGestureObservers()) {
 			return;
 		}
 
@@ -494,11 +495,11 @@ export class View extends ViewCommon {
 		// false as we might need the ability for the event to pass through to a parent view
 		initializeTouchListener();
 		this.touchListener = this.touchListener || new TouchListener(this);
-		this.nativeViewProtected.setOnTouchListener(this.touchListener);
+		view.setOnTouchListener(this.touchListener);
 
 		this.touchListenerIsSet = true;
-		if (this.nativeViewProtected.setClickable) {
-			this.nativeViewProtected.setClickable(this.isUserInteractionEnabled);
+		if (view.setClickable) {
+			view.setClickable(this.isUserInteractionEnabled);
 		}
 	}
 
