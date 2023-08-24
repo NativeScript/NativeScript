@@ -161,18 +161,20 @@ export class View extends ViewCommon implements ViewDefinition {
 
 	private layoutOuterLayers(): void {
 		const nativeView: NativeScriptUIView = <NativeScriptUIView>this.nativeViewProtected;
-		const frame = nativeView.frame;
-		const needsUpdate: boolean = nativeView.shadowLayer != null;
+		if (nativeView) {
+			const frame = nativeView.frame;
+			const needsUpdate: boolean = nativeView.shadowLayer != null;
 
-		if (needsUpdate) {
-			CATransaction.setDisableActions(true);
+			if (needsUpdate) {
+				CATransaction.setDisableActions(true);
 
-			if (nativeView.shadowLayer) {
-				nativeView.shadowLayer.bounds = nativeView.bounds;
-				nativeView.shadowLayer.position = CGPointMake(frame.origin.x + frame.size.width / 2, frame.origin.y + frame.size.height / 2);
+				if (nativeView.shadowLayer) {
+					nativeView.shadowLayer.bounds = nativeView.bounds;
+					nativeView.shadowLayer.position = CGPointMake(frame.origin.x + frame.size.width / 2, frame.origin.y + frame.size.height / 2);
+				}
+
+				CATransaction.setDisableActions(false);
 			}
-
-			CATransaction.setDisableActions(false);
 		}
 	}
 
