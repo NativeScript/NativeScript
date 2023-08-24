@@ -4,21 +4,23 @@ import { LinearGradient } from './styling/linear-gradient';
 
 interface NativeScriptUIView extends UIView {
 	hasNonUniformBorder: boolean;
-	borderLayer: CALayer;
+	hasNonUniformBorderColor: boolean;
+	borderLayer: CAShapeLayer;
 
-	hasClippingMask: boolean;
+	maskType: ios.LayerMaskType;
 	originalMask: CALayer;
-
-	topBorderLayer: CALayer;
-	rightBorderLayer: CALayer;
-	bottomBorderLayer: CALayer;
-	leftBorderLayer: CALayer;
 
 	gradientLayer: CAGradientLayer;
 	shadowLayer: CALayer;
 }
 
 export namespace ios {
+	export type LayerMaskType = 'BORDER' | 'CLIP_PATH';
+	export namespace LayerMask {
+		export const BORDER = 'BORDER';
+		export const CLIP_PATH = 'CLIP_PATH';
+	}
+
 	export function getActualHeight(view: UIView): number {
 		if (view.window && !view.hidden) {
 			return utils.layout.toDevicePixels(view.frame.size.height);

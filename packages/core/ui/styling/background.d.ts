@@ -76,10 +76,14 @@ export enum CacheMode {
 
 export namespace ios {
 	export function createBackgroundUIColor(view: View, callback: (uiColor: any /* UIColor */) => void, flip?: boolean): void;
-	export function clearBackgroundUIColor(view: View): void;
-	export function drawBoxShadow(view: View): void;
-	export function drawClipPath(view: View, bounds: CGRect): any;
+	export function drawBackgroundVisualEffects(view: View): void;
+	export function clearBackgroundVisualEffects(view: View): void;
+	export function generateClipPath(view: View, bounds: CGRect): any;
 	export function generateShadowPath(view: View, bounds: CGRect): any;
+	export function getUniformBorderRadius(view: View, bounds: CGRect): number;
+	export function generateNonUniformBorderInnerClipRoundedPath(view: View, bounds: CGRect): any;
+	export function generateNonUniformBorderOuterClipRoundedPath(view: View, bounds: CGRect): any;
+	export function generateNonUniformMultiColorBorderRoundedPaths(view: View, bounds: CGRect): Array<any>;
 }
 
 export namespace ad {

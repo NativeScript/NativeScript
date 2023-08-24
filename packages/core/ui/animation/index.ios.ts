@@ -7,7 +7,7 @@ import { AnimationBase, Properties, CubicBezierAnimationCurve } from './animatio
 import { Trace } from '../../trace';
 import { opacityProperty, backgroundColorProperty, rotateProperty, rotateXProperty, rotateYProperty, translateXProperty, translateYProperty, scaleXProperty, scaleYProperty, heightProperty, widthProperty, PercentLength } from '../styling/style-properties';
 import { ios as iosBackground } from '../styling/background';
-import { NativeScriptUIView } from '../utils';
+import { ios as iosViewUtils, NativeScriptUIView } from '../utils';
 
 import { ios as iosHelper } from '../../utils/native-helper';
 
@@ -230,9 +230,26 @@ export class Animation extends AnimationBase {
 						}
 						nativeView.layer.removeAllAnimations();
 
+						// Gradient background animations
 						if (nativeView.gradientLayer) {
 							nativeView.gradientLayer.removeAllAnimations();
 						}
+
+						// Border animations
+						if (nativeView.borderLayer) {
+							if (nativeView.borderLayer.mask) {
+								nativeView.borderLayer.mask.removeAllAnimations();
+							}
+
+							const layerCount: number = nativeView.borderLayer.sublayers?.count;
+							for (let i = 0; i < layerCount; i++) {
+								nativeView.borderLayer.sublayers[i].removeAllAnimations();
+							}
+
+							nativeView.borderLayer.removeAllAnimations();
+						}
+
+						// Shadow animations
 						if (nativeView.shadowLayer) {
 							if (nativeView.shadowLayer.mask) {
 								nativeView.shadowLayer.mask.removeAllAnimations();
@@ -469,60 +486,7 @@ export class Animation extends AnimationBase {
 		if (nativeView) {
 			nativeView.layer.addAnimationForKey(nativeAnimation, args.propertyNameToAnimate);
 			if (args.propertyNameToAnimate === 'bounds') {
-				const background = animation.target.style.backgroundInternal;
-				const toRawValue: CGRect = args.toValue.CGRectValue;
-
-				if (nativeView.gradientLayer) {
-					nativeView.gradientLayer.addAnimationForKey(nativeAnimation, args.propertyNameToAnimate);
-				}
-
-				let clipPath;
-				if (nativeView.hasClippingMask && nativeView.layer.mask instanceof CAShapeLayer) {
-					if (background.clipPath) {
-						clipPath = iosBackground.drawClipPath(animation.target, toRawValue);
-						nativeView.layer.mask.addAnimationForKey(
-							this._createBasicAnimation(
-								{
-									...args,
-									propertyNameToAnimate: 'path',
-									fromValue: nativeView.layer.mask.path,
-									toValue: clipPath,
-								},
-								animation
-							),
-							'path'
-						);
-					}
-				}
-
-				// Shadow layer does not inherit from animating view layer
-				if (nativeView.shadowLayer) {
-					const shadowPath = iosBackground.generateShadowPath(animation.target, toRawValue);
-					const shadowMask = nativeView.shadowLayer.mask;
-					if (shadowMask && clipPath && shadowMask instanceof CAShapeLayer) {
-						const maskPathAnimation = this._createBasicAnimation(
-							{
-								...args,
-								propertyNameToAnimate: 'path',
-								fromValue: shadowMask.path,
-								toValue: clipPath,
-							},
-							animation
-						);
-						shadowMask.addAnimationForKey(maskPathAnimation, 'path');
-					}
-
-					const shadowPathAnimation = this._createBasicAnimation(
-						{
-							...args,
-							propertyNameToAnimate: 'shadowPath',
-							fromValue: nativeView.shadowLayer.shadowPath,
-							toValue: shadowPath,
-						},
-						animation
-					);
-					nativeView.shadowLayer.addAnimationForKey(shadowPathAnimation, 'shadowPath');
-				}
+				this.addBasicAnimationToNestedLayers(nativeView, args.toValue.CGRectValue, animation, args, nativeAnimation);
 			}
 
 			// Shadow layer does not inherit from animating view layer
@@ -630,13 +594,8 @@ export class Animation extends AnimationBase {
 						animation._originalValue = animation.target[animation.property];
 						nativeView.layer.setValueForKey(args.toValue, args.propertyNameToAnimate);
 
-						if (nativeView.gradientLayer) {
-							nativeView.gradientLayer.setValueForKey(args.toValue, args.propertyNameToAnimate);
-						}
-						// Shadow layer does not inherit from animating view layer
-						if (nativeView.shadowLayer) {
-							iosBackground.drawBoxShadow(animation.target);
-						}
+						// Resize background during animation
+						iosBackground.drawBackgroundVisualEffects(animation.target);
 
 						animation._propertyResetCallback = function (value) {
 							animation.target[animation.property] = value;
@@ -778,6 +737,155 @@ export class Animation extends AnimationBase {
 		}
 
 		return result;
+	}
+
+	private static addBasicAnimationToNestedLayers(nativeView: NativeScriptUIView, bounds: CGRect, animation: PropertyAnimation, args: AnimationInfo, nativeAnimation: CABasicAnimation) {
+		const view: View = animation.target;
+
+		// Gradient background animation
+		if (nativeView.gradientLayer) {
+			nativeView.gradientLayer.addAnimationForKey(nativeAnimation, 'bounds');
+		}
+
+		let clipPath; // This is also used for animating shadow
+
+		// Clipping mask animation
+		if (nativeView.layer.mask instanceof CAShapeLayer) {
+			let toValue;
+
+			if (nativeView.maskType === iosViewUtils.LayerMask.BORDER) {
+				toValue = iosBackground.generateNonUniformBorderOuterClipRoundedPath(view, bounds);
+			} else if (nativeView.maskType === iosViewUtils.LayerMask.CLIP_PATH) {
+				clipPath = iosBackground.generateClipPath(view, bounds);
+				toValue = clipPath;
+			} else {
+				Trace.write('Unknown mask on animating view: ' + view, Trace.categories.Animation, Trace.messageType.info);
+			}
+
+			if (toValue) {
+				nativeView.layer.mask.addAnimationForKey(
+					this._createBasicAnimation(
+						{
+							...args,
+							propertyNameToAnimate: 'path',
+							fromValue: nativeView.layer.mask.path,
+							toValue,
+						},
+						animation
+					),
+					'path'
+				);
+			}
+		}
+
+		// Border animations (uniform and non-uniform)
+		if (nativeView.hasNonUniformBorder) {
+			if (nativeView.borderLayer) {
+				const innerClipPath = iosBackground.generateNonUniformBorderInnerClipRoundedPath(animation.target, bounds);
+
+				if (nativeView.hasNonUniformBorderColor) {
+					const borderMask = nativeView.borderLayer.mask;
+					if (borderMask instanceof CAShapeLayer) {
+						borderMask.addAnimationForKey(
+							this._createBasicAnimation(
+								{
+									...args,
+									propertyNameToAnimate: 'path',
+									fromValue: borderMask.path,
+									toValue: innerClipPath,
+								},
+								animation
+							),
+							'path'
+						);
+					}
+
+					const layerCount: number = nativeView.borderLayer.sublayers?.count;
+					if (layerCount > 0) {
+						const paths = iosBackground.generateNonUniformMultiColorBorderRoundedPaths(animation.target, bounds);
+
+						for (let i = 0; i < layerCount; i++) {
+							const layer = nativeView.borderLayer.sublayers[i];
+							if (layer instanceof CAShapeLayer) {
+								layer.addAnimationForKey(
+									this._createBasicAnimation(
+										{
+											...args,
+											propertyNameToAnimate: 'path',
+											fromValue: layer.path,
+											toValue: paths[i],
+										},
+										animation
+									),
+									'path'
+								);
+							}
+						}
+					}
+				} else {
+					nativeView.borderLayer.addAnimationForKey(
+						this._createBasicAnimation(
+							{
+								...args,
+								propertyNameToAnimate: 'path',
+								fromValue: nativeView.borderLayer.path,
+								toValue: innerClipPath,
+							},
+							animation
+						),
+						'path'
+					);
+				}
+			}
+		} else {
+			// TODO: Animate border width when borders get support for percentage values
+			// Uniform corner radius also relies on view size
+			if (nativeView.layer.cornerRadius) {
+				nativeView.layer.addAnimationForKey(
+					this._createBasicAnimation(
+						{
+							...args,
+							propertyNameToAnimate: 'cornerRadius',
+							fromValue: nativeView.layer.cornerRadius,
+							toValue: iosBackground.getUniformBorderRadius(animation.target, bounds),
+						},
+						animation
+					),
+					'cornerRadius'
+				);
+			}
+		}
+
+		// Shadow layer does not inherit from animating view layer
+		if (nativeView.shadowLayer) {
+			const shadowPath = iosBackground.generateShadowPath(view, bounds);
+			const shadowMask = nativeView.shadowLayer.mask;
+
+			// This is for animating view clip path on shadow
+			if (clipPath && shadowMask instanceof CAShapeLayer) {
+				const maskPathAnimation = this._createBasicAnimation(
+					{
+						...args,
+						propertyNameToAnimate: 'path',
+						fromValue: shadowMask.path,
+						toValue: clipPath,
+					},
+					animation
+				);
+				shadowMask.addAnimationForKey(maskPathAnimation, 'path');
+			}
+
+			const shadowPathAnimation = this._createBasicAnimation(
+				{
+					...args,
+					propertyNameToAnimate: 'shadowPath',
+					fromValue: nativeView.shadowLayer.shadowPath,
+					toValue: shadowPath,
+				},
+				animation
+			);
+			nativeView.shadowLayer.addAnimationForKey(shadowPathAnimation, 'shadowPath');
+		}
 	}
 }
 

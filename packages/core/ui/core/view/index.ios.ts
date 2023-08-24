@@ -74,11 +74,11 @@ export class View extends ViewCommon implements ViewDefinition {
 		this._hasTransform = false;
 		this._hasPendingTransform = false;
 
-		// Ensure shadows get removed
+		// Make sure shadows get removed
 		this.style.backgroundInternal.clearFlags |= BackgroundClearFlags.CLEAR_BOX_SHADOW;
 
 		// Perform background cleanup
-		iosBackground.clearBackgroundUIColor(this);
+		iosBackground.clearBackgroundVisualEffects(this);
 	}
 
 	public requestLayout(): void {
