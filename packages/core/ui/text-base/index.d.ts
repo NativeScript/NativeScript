@@ -64,6 +64,11 @@ export class TextBase extends View implements AddChildFromBuilder {
 	whiteSpace: CoreTypes.WhiteSpaceType;
 
 	/**
+	 * Gets or sets text-overflow style property.
+	 */
+	textOverflow: CoreTypes.TextOverflowType;
+
+	/**
 	 * Gets or sets white space style property.
 	 */
 	maxLines: CoreTypes.MaxLinesType;
@@ -134,6 +139,7 @@ export const textDecorationProperty: CssProperty<Style, CoreTypes.TextDecoration
 export const textTransformProperty: CssProperty<Style, CoreTypes.TextTransformType>;
 export const textShadowProperty: CssProperty<Style, CSSShadow>;
 export const whiteSpaceProperty: CssProperty<Style, CoreTypes.WhiteSpaceType>;
+export const textOverflowProperty: CssProperty<Style, CoreTypes.TextOverflowType>;
 export const letterSpacingProperty: CssProperty<Style, number>;
 export const lineHeightProperty: CssProperty<Style, number>;
 

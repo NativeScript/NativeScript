@@ -132,6 +132,13 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 		this.style.whiteSpace = value;
 	}
 
+	get textOverflow(): CoreTypes.TextOverflowType {
+		return this.style.textOverflow;
+	}
+	set textOverflow(value: CoreTypes.TextOverflowType) {
+		this.style.textOverflow = value;
+	}
+
 	get padding(): string | CoreTypes.LengthType {
 		return this.style.padding;
 	}
@@ -290,6 +297,16 @@ export const whiteSpaceProperty = new CssProperty<Style, CoreTypes.WhiteSpaceTyp
 	valueConverter: whiteSpaceConverter,
 });
 whiteSpaceProperty.register(Style);
+
+const textOverflowConverter = makeParser<CoreTypes.TextOverflowType>(makeValidator<CoreTypes.TextOverflowType>('clip', 'ellipsis', 'initial', 'unset'));
+export const textOverflowProperty = new CssProperty<Style, CoreTypes.TextOverflowType>({
+	name: 'textOverflow',
+	cssName: 'text-overflow',
+	defaultValue: 'initial',
+	affectsLayout: global.isIOS,
+	valueConverter: textOverflowConverter,
+});
+textOverflowProperty.register(Style);
 
 const textDecorationConverter = makeParser<CoreTypes.TextDecorationType>(makeValidator<CoreTypes.TextDecorationType>('none', 'underline', 'line-through', 'underline line-through'));
 export const textDecorationProperty = new CssProperty<Style, CoreTypes.TextDecorationType>({

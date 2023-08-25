@@ -4,7 +4,7 @@ import { Length, borderTopWidthProperty, borderRightWidthProperty, borderBottomW
 import { booleanConverter } from '../core/view-base';
 import { View, CSSType } from '../core/view';
 import { CoreTypes } from '../../core-types';
-import { TextBase, whiteSpaceProperty } from '../text-base';
+import { TextBase, whiteSpaceProperty, textOverflowProperty } from '../text-base';
 import { layout } from '../../utils';
 
 import { ios } from '../styling/background';
@@ -113,16 +113,41 @@ export class Label extends TextBase implements LabelDefinition {
 	}
 
 	[whiteSpaceProperty.setNative](value: CoreTypes.WhiteSpaceType) {
-		const nativeView = this.nativeTextViewProtected;
-		switch (value) {
+		this.adjustLineBreak();
+	}
+
+	[textOverflowProperty.setNative](value: CoreTypes.TextOverflowType) {
+		this.adjustLineBreak();
+	}
+
+	private adjustLineBreak() {
+		const whiteSpace = this.whiteSpace;
+		const textOverflow = this.textOverflow;
+		const nativeView = this.nativeViewProtected;
+		switch (whiteSpace) {
 			case 'normal':
 				nativeView.lineBreakMode = NSLineBreakMode.ByWordWrapping;
 				nativeView.numberOfLines = this.maxLines;
 				break;
-			case 'nowrap':
 			case 'initial':
 				nativeView.lineBreakMode = NSLineBreakMode.ByTruncatingTail;
 				nativeView.numberOfLines = 1;
+				break;
+			case 'nowrap':
+				switch (textOverflow) {
+					case 'clip':
+						nativeView.lineBreakMode = NSLineBreakMode.ByClipping;
+						nativeView.numberOfLines = this.maxLines;
+						break;
+					case 'ellipsis':
+						nativeView.lineBreakMode = NSLineBreakMode.ByTruncatingTail;
+						nativeView.numberOfLines = 1;
+						break;
+					default:
+						nativeView.lineBreakMode = NSLineBreakMode.ByTruncatingMiddle;
+						nativeView.numberOfLines = 1;
+						break;
+				}
 				break;
 		}
 	}
