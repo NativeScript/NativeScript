@@ -417,7 +417,7 @@ export class TextBase extends TextBaseCommon {
 		}
 
 		// shadow opacity is handled on the shadow's color instance
-		layer.shadowOpacity = value.color?.a ? value.color?.a / 255 : 1;
+		layer.shadowOpacity = value.color?.a ? value.color.a / 255 : 1;
 		layer.shadowColor = value.color.ios.CGColor;
 		layer.shadowRadius = layout.toDeviceIndependentPixels(Length.toDevicePixels(value.blurRadius, 0));
 
