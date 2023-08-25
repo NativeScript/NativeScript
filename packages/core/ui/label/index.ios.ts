@@ -139,12 +139,8 @@ export class Label extends TextBase implements LabelDefinition {
 						nativeView.lineBreakMode = NSLineBreakMode.ByClipping;
 						nativeView.numberOfLines = this.maxLines;
 						break;
-					case 'ellipsis':
-						nativeView.lineBreakMode = NSLineBreakMode.ByTruncatingTail;
-						nativeView.numberOfLines = 1;
-						break;
 					default:
-						nativeView.lineBreakMode = NSLineBreakMode.ByTruncatingMiddle;
+						nativeView.lineBreakMode = NSLineBreakMode.ByTruncatingTail;
 						nativeView.numberOfLines = 1;
 						break;
 				}

@@ -330,14 +330,13 @@ export class TextBase extends TextBaseCommon {
 				break;
 			case 'nowrap':
 				switch (textOverflow) {
-					case 'unset':
-					case 'clip':
-						nativeView.setSingleLine(false);
-						nativeView.setEllipsize(null);
-						break;
 					case 'initial':
 					case 'ellipsis':
 						nativeView.setSingleLine(true);
+						nativeView.setEllipsize(android.text.TextUtils.TruncateAt.END);
+						break;
+					default:
+						nativeView.setSingleLine(false);
 						nativeView.setEllipsize(android.text.TextUtils.TruncateAt.END);
 						break;
 				}
