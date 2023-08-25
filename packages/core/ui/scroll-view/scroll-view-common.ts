@@ -31,15 +31,12 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
 		super.removeEventListener(arg, callback, thisArg);
 
 		if (arg === ScrollViewBase.scrollEvent) {
-			let shouldDetach = false;
-
 			if (this._scrollChangeCount > 0) {
 				this._scrollChangeCount--;
-				shouldDetach = this._scrollChangeCount === 0;
-			}
 
-			if (this.nativeViewProtected && shouldDetach) {
-				this.detachNative();
+				if (this.nativeViewProtected && this._scrollChangeCount === 0) {
+					this.detachNative();
+				}
 			}
 		}
 	}
