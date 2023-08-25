@@ -358,7 +358,7 @@ function clearLayerMask(nativeView: NativeScriptUIView, background: BackgroundDe
 	nativeView.maskType = null;
 }
 
-function onScroll(this: void, args: ScrollEventData): void {
+function onBackgroundViewScroll(args: ScrollEventData): void {
 	const view = <View>args.object;
 	const nativeView = view.nativeViewProtected;
 	if (nativeView instanceof UIScrollView) {
@@ -367,17 +367,6 @@ function onScroll(this: void, args: ScrollEventData): void {
 }
 
 function adjustLayersForScrollView(nativeView: UIScrollView & NativeScriptUIView) {
-	const layersToAdjust: CALayer[] = [];
-	if (nativeView.gradientLayer) {
-		layersToAdjust.push(nativeView.gradientLayer);
-	}
-	if (nativeView.borderLayer) {
-		layersToAdjust.push(nativeView.borderLayer);
-	}
-	if (nativeView.shadowLayer) {
-		layersToAdjust.push(nativeView.shadowLayer);
-	}
-
 	// Compensates with transition for the background layers for scrolling in ScrollView based controls.
 	CATransaction.begin();
 	CATransaction.setDisableActions(true);
@@ -391,12 +380,21 @@ function adjustLayersForScrollView(nativeView: UIScrollView & NativeScriptUIView
 		ty: offset.y,
 	};
 
-	for (const layer of layersToAdjust) {
-		layer.setAffineTransform(transform);
-	}
-
 	if (nativeView.layer.mask) {
 		nativeView.layer.mask.setAffineTransform(transform);
+	}
+
+	// Nested layers
+	if (nativeView.gradientLayer) {
+		nativeView.gradientLayer.setAffineTransform(transform);
+	}
+	if (nativeView.borderLayer) {
+		nativeView.borderLayer.setAffineTransform(transform);
+	}
+	if (nativeView.shadowLayer) {
+		// Update bounds of shadow layer as it belongs to parent view
+		nativeView.shadowLayer.bounds = nativeView.bounds;
+		nativeView.shadowLayer.setAffineTransform(transform);
 	}
 
 	CATransaction.setDisableActions(false);
@@ -405,14 +403,14 @@ function adjustLayersForScrollView(nativeView: UIScrollView & NativeScriptUIView
 
 function unregisterAdjustLayersOnScrollListener(view: View) {
 	if (view.nativeViewProtected instanceof UIScrollView) {
-		view.off('scroll', onScroll);
+		view.off('scroll', onBackgroundViewScroll);
 	}
 }
 
 function registerAdjustLayersOnScrollListener(view: View) {
 	if (view.nativeViewProtected instanceof UIScrollView) {
-		view.off('scroll', onScroll);
-		view.on('scroll', onScroll);
+		view.off('scroll', onBackgroundViewScroll);
+		view.on('scroll', onBackgroundViewScroll);
 		adjustLayersForScrollView(<any>view.nativeViewProtected);
 	}
 }

@@ -42,6 +42,14 @@ TextView {
     border-left-width: 20;
 }
 
+.gradient {
+    background: linear-gradient(to bottom, orangered, green, lightblue);
+}
+
+.shadow {
+    box-shadow: inset 0 0 5 5 #000000;
+}
+
 .body {
     font-size: 11;
 }
