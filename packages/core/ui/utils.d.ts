@@ -7,7 +7,7 @@
 	originalMask: CALayer;
 
 	gradientLayer: CAGradientLayer;
-	shadowLayer: CALayer;
+	outerShadowContainerLayer: CALayer;
 }
 
 export namespace ios {

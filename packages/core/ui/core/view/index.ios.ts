@@ -163,14 +163,14 @@ export class View extends ViewCommon implements ViewDefinition {
 		const nativeView: NativeScriptUIView = <NativeScriptUIView>this.nativeViewProtected;
 		if (nativeView) {
 			const frame = nativeView.frame;
-			const needsUpdate: boolean = nativeView.shadowLayer != null;
+			const needsUpdate: boolean = nativeView.outerShadowContainerLayer != null;
 
 			if (needsUpdate) {
 				CATransaction.setDisableActions(true);
 
-				if (nativeView.shadowLayer) {
-					nativeView.shadowLayer.bounds = nativeView.bounds;
-					nativeView.shadowLayer.position = CGPointMake(frame.origin.x + frame.size.width / 2, frame.origin.y + frame.size.height / 2);
+				if (nativeView.outerShadowContainerLayer) {
+					nativeView.outerShadowContainerLayer.bounds = nativeView.bounds;
+					nativeView.outerShadowContainerLayer.position = CGPointMake(frame.origin.x + frame.size.width / 2, frame.origin.y + frame.size.height / 2);
 				}
 
 				CATransaction.setDisableActions(false);
@@ -426,7 +426,7 @@ export class View extends ViewCommon implements ViewDefinition {
 		transform = iOSNativeHelper.applyRotateTransform(transform, this.rotateX, this.rotateY, this.rotate);
 		transform = CATransform3DScale(transform, scaleX, scaleY, 1);
 
-		const needsTransform: boolean = !CATransform3DEqualToTransform(this.nativeViewProtected.layer.transform, transform) || (nativeView.shadowLayer && !CATransform3DEqualToTransform(nativeView.shadowLayer.transform, transform));
+		const needsTransform: boolean = !CATransform3DEqualToTransform(this.nativeViewProtected.layer.transform, transform) || (nativeView.outerShadowContainerLayer && !CATransform3DEqualToTransform(nativeView.outerShadowContainerLayer.transform, transform));
 
 		if (needsTransform) {
 			const updateSuspended = this._isPresentationLayerUpdateSuspended();
@@ -437,8 +437,8 @@ export class View extends ViewCommon implements ViewDefinition {
 			CATransaction.setDisableActions(true);
 
 			this.nativeViewProtected.layer.transform = transform;
-			if (nativeView.shadowLayer) {
-				nativeView.shadowLayer.transform = transform;
+			if (nativeView.outerShadowContainerLayer) {
+				nativeView.outerShadowContainerLayer.transform = transform;
 			}
 			this._hasTransform = this.nativeViewProtected && !CATransform3DEqualToTransform(this.nativeViewProtected.transform3D, CATransform3DIdentity);
 
@@ -760,16 +760,23 @@ export class View extends ViewCommon implements ViewDefinition {
 		return this.nativeViewProtected.hidden ? CoreTypes.Visibility.collapse : CoreTypes.Visibility.visible;
 	}
 	[visibilityProperty.setNative](value: CoreTypes.VisibilityType) {
+		const nativeView: NativeScriptUIView = <NativeScriptUIView>this.nativeViewProtected;
+
 		switch (value) {
 			case CoreTypes.Visibility.visible:
-				this.nativeViewProtected.hidden = false;
+				nativeView.hidden = false;
 				break;
 			case CoreTypes.Visibility.hidden:
 			case CoreTypes.Visibility.collapse:
-				this.nativeViewProtected.hidden = true;
+				nativeView.hidden = true;
 				break;
 			default:
 				throw new Error(`Invalid visibility value: ${value}. Valid values are: "${CoreTypes.Visibility.visible}", "${CoreTypes.Visibility.hidden}", "${CoreTypes.Visibility.collapse}".`);
+		}
+
+		// Apply visibility value to shadows as well
+		if (nativeView.outerShadowContainerLayer) {
+			nativeView.outerShadowContainerLayer.hidden = nativeView.hidden;
 		}
 	}
 
@@ -777,7 +784,7 @@ export class View extends ViewCommon implements ViewDefinition {
 		return this.nativeViewProtected.alpha;
 	}
 	[opacityProperty.setNative](value: number) {
-		const nativeView = this.nativeViewProtected;
+		const nativeView: NativeScriptUIView = <NativeScriptUIView>this.nativeViewProtected;
 		const updateSuspended = this._isPresentationLayerUpdateSuspended();
 		if (!updateSuspended) {
 			CATransaction.begin();
@@ -786,6 +793,10 @@ export class View extends ViewCommon implements ViewDefinition {
 		CATransaction.setDisableActions(true);
 
 		nativeView.alpha = value;
+		// Apply opacity value to shadows as well
+		if (nativeView.outerShadowContainerLayer) {
+			nativeView.outerShadowContainerLayer.opacity = value;
+		}
 
 		CATransaction.setDisableActions(false);
 		if (!updateSuspended) {

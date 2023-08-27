@@ -79,7 +79,7 @@ export namespace ios {
 	export function drawBackgroundVisualEffects(view: View): void;
 	export function clearBackgroundVisualEffects(view: View): void;
 	export function generateClipPath(view: View, bounds: CGRect): any;
-	export function generateShadowPath(view: View, bounds: CGRect): any;
+	export function generateShadowLayerPaths(view: View, bounds: CGRect): { maskPath: any; shadowPath: any };
 	export function getUniformBorderRadius(view: View, bounds: CGRect): number;
 	export function generateNonUniformBorderInnerClipRoundedPath(view: View, bounds: CGRect): any;
 	export function generateNonUniformBorderOuterClipRoundedPath(view: View, bounds: CGRect): any;

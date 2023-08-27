@@ -66,17 +66,7 @@ export namespace ios {
 		drawBackgroundVisualEffects(view);
 
 		if (!background.image) {
-			const color: Color = background.color;
-			if (color) {
-				// Add white background if view has a transparent background along with box shadow
-				if (background.hasBoxShadow() && !color.a) {
-					nativeView.layer.backgroundColor = UIColor.whiteColor.CGColor;
-				} else {
-					callback(color.ios);
-				}
-			} else {
-				callback(undefined);
-			}
+			callback(background?.color?.ios);
 		} else {
 			if (!(background.image instanceof LinearGradient)) {
 				setUIColorFromImage(view, nativeView, callback, flip);
@@ -184,7 +174,7 @@ export namespace ios {
 		background.clearFlags = BackgroundClearFlags.NONE;
 	}
 
-	export function generateShadowPath(view: View, bounds: CGRect): any {
+	export function generateShadowLayerPaths(view: View, bounds: CGRect): { maskPath: any; shadowPath: any } {
 		const background = view.style.backgroundInternal;
 		const nativeView = <NativeScriptUIView>view.nativeViewProtected;
 		const layer = nativeView.layer;
@@ -194,7 +184,7 @@ export namespace ios {
 
 		const { width, height } = bounds.size;
 
-		let shadowPath;
+		let innerPath, shadowPath;
 
 		// Generate more detailed paths if view has border radius
 		if (background.hasBorderRadius()) {
@@ -214,6 +204,7 @@ export namespace ios {
 					bottomRight: cappedRadius + spreadRadius,
 				};
 
+				innerPath = generateNonUniformBorderOuterClipPath(bounds, cappedOuterRadii);
 				shadowPath = generateNonUniformBorderOuterClipPath(bounds, cappedOuterRadiiWithSpread, spreadRadius);
 			} else {
 				const outerTopLeftRadius = layout.toDeviceIndependentPixels(background.borderTopLeftRadius);
@@ -241,13 +232,18 @@ export namespace ios {
 					bottomRight: cappedOuterRadii.bottomRight > 0 ? cappedOuterRadii.bottomRight + spreadRadius : cappedOuterRadii.bottomRight,
 				};
 
+				innerPath = generateNonUniformBorderOuterClipPath(bounds, cappedOuterRadii);
 				shadowPath = generateNonUniformBorderOuterClipPath(bounds, cappedOuterRadiiWithSpread, spreadRadius);
 			}
 		} else {
+			innerPath = CGPathCreateWithRect(bounds, null);
 			shadowPath = CGPathCreateWithRect(CGRectInset(bounds, -spreadRadius, -spreadRadius), null);
 		}
 
-		return shadowPath;
+		return {
+			maskPath: generateShadowMaskPath(bounds, boxShadow, innerPath),
+			shadowPath,
+		};
 	}
 
 	export function generateClipPath(view: View, bounds: CGRect): UIBezierPath {
@@ -350,8 +346,8 @@ function maskLayerIfNeeded(nativeView: NativeScriptUIView, background: Backgroun
 }
 
 function clearLayerMask(nativeView: NativeScriptUIView, background: BackgroundDefinition) {
-	if (nativeView.shadowLayer) {
-		nativeView.shadowLayer.mask = null;
+	if (nativeView.outerShadowContainerLayer) {
+		nativeView.outerShadowContainerLayer.mask = null;
 	}
 	nativeView.layer.mask = nativeView.originalMask;
 	nativeView.originalMask = null;
@@ -391,10 +387,10 @@ function adjustLayersForScrollView(nativeView: UIScrollView & NativeScriptUIView
 	if (nativeView.borderLayer) {
 		nativeView.borderLayer.setAffineTransform(transform);
 	}
-	if (nativeView.shadowLayer) {
+	if (nativeView.outerShadowContainerLayer) {
 		// Update bounds of shadow layer as it belongs to parent view
-		nativeView.shadowLayer.bounds = nativeView.bounds;
-		nativeView.shadowLayer.setAffineTransform(transform);
+		nativeView.outerShadowContainerLayer.bounds = nativeView.bounds;
+		nativeView.outerShadowContainerLayer.setAffineTransform(transform);
 	}
 
 	CATransaction.setDisableActions(false);
@@ -419,10 +415,9 @@ function clearNonUniformColorBorders(nativeView: NativeScriptUIView): void {
 	if (nativeView.borderLayer) {
 		nativeView.borderLayer.mask = null;
 
-		const count: number = nativeView.borderLayer.sublayers?.count;
-		for (let i = 0; i < count; i++) {
-			const layer = nativeView.borderLayer.sublayers[i];
-			layer.removeFromSuperlayer();
+		const layers = nativeView.borderLayer.sublayers;
+		for (let i = 0, count = layers?.count; i < count; i++) {
+			layers[i].removeFromSuperlayer();
 		}
 	}
 	nativeView.hasNonUniformBorderColor = false;
@@ -1128,58 +1123,111 @@ function drawBoxShadow(view: View): void {
 		return;
 	}
 
+	const bounds = nativeView.bounds;
+	const viewFrame = nativeView.frame;
 	const boxShadow: BoxShadow = background.getBoxShadow();
+
+	// Initialize outer shadows
+	let outerShadowContainerLayer: CALayer;
+	if (nativeView.outerShadowContainerLayer) {
+		outerShadowContainerLayer = nativeView.outerShadowContainerLayer;
+	} else {
+		outerShadowContainerLayer = CALayer.new();
+
+		// TODO: Make this dynamic when views get support for multiple shadows
+		const shadowLayer = CALayer.new();
+		// This mask is necessary to maintain transparent background
+		const maskLayer = CAShapeLayer.new();
+		maskLayer.fillRule = kCAFillRuleEvenOdd;
+
+		shadowLayer.mask = maskLayer;
+		outerShadowContainerLayer.addSublayer(shadowLayer);
+
+		// Instead of nesting it, add shadow container layer underneath view so that it's not affected by border masking
+		layer.superlayer.insertSublayerBelow(outerShadowContainerLayer, layer);
+		nativeView.outerShadowContainerLayer = outerShadowContainerLayer;
+	}
+
+	// Apply clip path to shadow
+	if (nativeView.maskType === iosViewUtils.LayerMask.CLIP_PATH && layer.mask instanceof CAShapeLayer) {
+		if (!outerShadowContainerLayer.mask) {
+			outerShadowContainerLayer.mask = CAShapeLayer.new();
+		}
+		if (outerShadowContainerLayer.mask instanceof CAShapeLayer) {
+			outerShadowContainerLayer.mask.path = layer.mask.path;
+		}
+	}
+
+	// Since shadow layer is added to view layer's superlayer, we have to be more specific about shadow layer position
+	outerShadowContainerLayer.bounds = bounds;
+	outerShadowContainerLayer.position = CGPointMake(viewFrame.origin.x + viewFrame.size.width / 2, viewFrame.origin.y + viewFrame.size.height / 2);
+
+	// Inherit view visibility values
+	outerShadowContainerLayer.opacity = layer.opacity;
+	outerShadowContainerLayer.hidden = nativeView.hidden;
+
+	const outerShadowLayers = outerShadowContainerLayer.sublayers;
+	if (outerShadowLayers?.count) {
+		for (let i = 0, count = outerShadowLayers.count; i < count; i++) {
+			const shadowLayer = outerShadowLayers[i];
+			const shadowRadius = layout.toDeviceIndependentPixels(boxShadow.blurRadius);
+			const spreadRadius = layout.toDeviceIndependentPixels(boxShadow.spreadRadius);
+			const offsetX = layout.toDeviceIndependentPixels(boxShadow.offsetX);
+			const offsetY = layout.toDeviceIndependentPixels(boxShadow.offsetY);
+			const { maskPath, shadowPath } = ios.generateShadowLayerPaths(view, bounds);
+
+			shadowLayer.allowsEdgeAntialiasing = true;
+			shadowLayer.contentsScale = Screen.mainScreen.scale;
+
+			// Shadow opacity is handled on the shadow's color instance
+			shadowLayer.shadowOpacity = boxShadow.color?.a ? boxShadow.color.a / 255 : 1;
+			shadowLayer.shadowRadius = shadowRadius;
+			shadowLayer.shadowColor = boxShadow.color?.ios?.CGColor;
+			shadowLayer.shadowOffset = CGSizeMake(offsetX, offsetY);
+
+			// Apply spread radius by expanding shadow layer bounds (this has a nice glow with radii set to 0)
+			shadowLayer.shadowPath = shadowPath;
+
+			// A mask that ensures that view maintains transparent background
+			if (shadowLayer.mask instanceof CAShapeLayer) {
+				shadowLayer.mask.path = maskPath;
+			}
+		}
+	}
+}
+
+function clearBoxShadow(nativeView: NativeScriptUIView) {
+	if (nativeView.outerShadowContainerLayer) {
+		nativeView.outerShadowContainerLayer.removeFromSuperlayer();
+		nativeView.outerShadowContainerLayer = null;
+	}
+}
+
+/**
+ * Creates a mask that ensures no shadow will be displayed underneath transparent backgrounds.
+ *
+ * @param bounds
+ * @param boxShadow
+ * @param bordersClipPath
+ * @returns
+ */
+function generateShadowMaskPath(bounds: CGRect, boxShadow: BoxShadow, innerClipPath: any): any {
 	const shadowRadius = layout.toDeviceIndependentPixels(boxShadow.blurRadius);
 	const spreadRadius = layout.toDeviceIndependentPixels(boxShadow.spreadRadius);
 	const offsetX = layout.toDeviceIndependentPixels(boxShadow.offsetX);
 	const offsetY = layout.toDeviceIndependentPixels(boxShadow.offsetY);
 
-	const bounds = nativeView.bounds;
-	const viewFrame = nativeView.frame;
+	// This value has to be large enough to avoid clipping shadow halo effect
+	const outerRectRadius: number = shadowRadius * 3 + spreadRadius;
 
-	// Initialize shadow layer
-	let shadowLayer: CALayer;
-	if (nativeView.shadowLayer) {
-		shadowLayer = nativeView.shadowLayer;
-	} else {
-		shadowLayer = CALayer.new();
-		// Instead of nesting it, add shadow layer underneath view so that it's not affected by border masking
-		layer.superlayer.insertSublayerBelow(shadowLayer, layer);
-		nativeView.shadowLayer = shadowLayer;
-	}
+	const maskPath = CGPathCreateMutable();
+	// Proper clip position and size
+	const outerRect = CGRectOffset(CGRectInset(bounds, -outerRectRadius, -outerRectRadius), offsetX, offsetY);
 
-	// Apply clip path to shadow
-	if (nativeView.maskType === iosViewUtils.LayerMask.CLIP_PATH && layer.mask instanceof CAShapeLayer) {
-		if (!shadowLayer.mask) {
-			shadowLayer.mask = CAShapeLayer.new();
-		}
-		if (shadowLayer.mask instanceof CAShapeLayer) {
-			shadowLayer.mask.path = layer.mask.path;
-		}
-	}
+	CGPathAddPath(maskPath, null, innerClipPath);
+	CGPathAddRect(maskPath, null, outerRect);
 
-	// Since shadow layer is added to view layer's superlayer, we have to be more specific about shadow layer position
-	shadowLayer.bounds = bounds;
-	shadowLayer.position = CGPointMake(viewFrame.origin.x + viewFrame.size.width / 2, viewFrame.origin.y + viewFrame.size.height / 2);
-
-	shadowLayer.allowsEdgeAntialiasing = true;
-	shadowLayer.contentsScale = Screen.mainScreen.scale;
-
-	// Shadow opacity is handled on the shadow's color instance
-	shadowLayer.shadowOpacity = boxShadow.color?.a ? boxShadow.color?.a / 255 : 1;
-	shadowLayer.shadowRadius = shadowRadius;
-	shadowLayer.shadowColor = boxShadow.color?.ios?.CGColor;
-	shadowLayer.shadowOffset = CGSizeMake(offsetX, offsetY);
-
-	// Apply spread radius by expanding shadow layer bounds (this has a nice glow with radii set to 0)
-	shadowLayer.shadowPath = ios.generateShadowPath(view, bounds);
-}
-
-function clearBoxShadow(nativeView: NativeScriptUIView) {
-	if (nativeView.shadowLayer) {
-		nativeView.shadowLayer.removeFromSuperlayer();
-		nativeView.shadowLayer = null;
-	}
+	return maskPath;
 }
 
 function rectPath(value: string, position: Position): UIBezierPath {
