@@ -1,5 +1,5 @@
 // Types
-import { getClosestPropertyValue, maxLinesProperty } from './text-base-common';
+import { getClosestPropertyValue, maxLinesProperty, textOverflowProperty } from './text-base-common';
 import { CSSShadow } from '../styling/css-shadow';
 
 // Requires
@@ -311,16 +311,35 @@ export class TextBase extends TextBaseCommon {
 	// Overridden in TextField because setSingleLine(false) will remove methodTransformation.
 	// and we don't want to allow TextField to be multiline
 	[whiteSpaceProperty.setNative](value: CoreTypes.WhiteSpaceType) {
+		this.adjustLineBreak();
+	}
+
+	[textOverflowProperty.setNative](value: CoreTypes.TextOverflowType) {
+		this.adjustLineBreak();
+	}
+
+	private adjustLineBreak() {
+		const whiteSpace = this.whiteSpace;
+		const textOverflow = this.textOverflow;
 		const nativeView = this.nativeTextViewProtected;
-		switch (value) {
+		switch (whiteSpace) {
 			case 'initial':
 			case 'normal':
 				nativeView.setSingleLine(false);
 				nativeView.setEllipsize(null);
 				break;
 			case 'nowrap':
-				nativeView.setSingleLine(true);
-				nativeView.setEllipsize(android.text.TextUtils.TruncateAt.END);
+				switch (textOverflow) {
+					case 'initial':
+					case 'ellipsis':
+						nativeView.setSingleLine(true);
+						nativeView.setEllipsize(android.text.TextUtils.TruncateAt.END);
+						break;
+					default:
+						nativeView.setSingleLine(false);
+						nativeView.setEllipsize(android.text.TextUtils.TruncateAt.END);
+						break;
+				}
 				break;
 		}
 	}
