@@ -749,7 +749,8 @@ function drawNonUniformBorders(nativeView: NativeScriptUIView, background: Backg
 		if (!nativeView.hasNonUniformBorder) {
 			nativeView.borderLayer = CAShapeLayer.new();
 			nativeView.borderLayer.fillRule = kCAFillRuleEvenOdd;
-			layer.addSublayer(nativeView.borderLayer);
+			// Add layer on top of background layers and behind nested view layers so that views don't get hidden if borders are too large
+			layer.insertSublayerAtIndex(nativeView.borderLayer, nativeView.gradientLayer ? 1 : 0);
 			nativeView.hasNonUniformBorder = true;
 		}
 
