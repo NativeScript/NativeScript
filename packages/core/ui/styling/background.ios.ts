@@ -96,7 +96,7 @@ export namespace ios {
 
 		if (background.hasUniformBorder()) {
 			const borderColor = background.getUniformBorderColor();
-			layer.borderColor = !borderColor ? undefined : borderColor.ios.CGColor;
+			layer.borderColor = borderColor?.ios?.CGColor;
 			layer.borderWidth = layout.toDeviceIndependentPixels(background.getUniformBorderWidth());
 			layer.cornerRadius = getUniformBorderRadius(view, layer.bounds);
 		} else {
@@ -802,7 +802,7 @@ function drawNonUniformBorders(nativeView: NativeScriptUIView, background: Backg
 	}
 }
 
-function calculateInnerRadius(radius: number, insetX: number, insetY: number): { xRadius: number; yRadius: number; maxRadius: number } {
+function calculateInnerBorderClipRadius(radius: number, insetX: number, insetY: number): { xRadius: number; yRadius: number; maxRadius: number } {
 	const innerXRadius = Math.max(0, radius - insetX);
 	const innerYRadius = Math.max(0, radius - insetY);
 	const innerMaxRadius = Math.max(innerXRadius, innerYRadius);
@@ -886,7 +886,7 @@ function generateNonUniformBorderInnerClipPath(bounds: CGRect, background: Backg
 	}
 
 	if (cappedBorderTopWidth > 0 || cappedBorderRightWidth > 0) {
-		const { xRadius, yRadius, maxRadius } = calculateInnerRadius(cappedOuterRadii.topRight, cappedBorderRightWidth, cappedBorderTopWidth);
+		const { xRadius, yRadius, maxRadius } = calculateInnerBorderClipRadius(cappedOuterRadii.topRight, cappedBorderRightWidth, cappedBorderTopWidth);
 		const innerTopRightTransform: any = CGAffineTransformMake(maxRadius && xRadius / maxRadius, 0, 0, maxRadius && yRadius / maxRadius, position.right - cappedBorderRightWidth - xRadius, position.top + cappedBorderTopWidth + yRadius);
 		CGPathAddArc(clipPath, innerTopRightTransform, 0, 0, maxRadius, (Math.PI * 3) / 2, 0, false);
 	} else {
@@ -894,7 +894,7 @@ function generateNonUniformBorderInnerClipPath(bounds: CGRect, background: Backg
 	}
 
 	if (cappedBorderBottomWidth > 0 || cappedBorderRightWidth > 0) {
-		const { xRadius, yRadius, maxRadius } = calculateInnerRadius(cappedOuterRadii.bottomRight, cappedBorderRightWidth, cappedBorderBottomWidth);
+		const { xRadius, yRadius, maxRadius } = calculateInnerBorderClipRadius(cappedOuterRadii.bottomRight, cappedBorderRightWidth, cappedBorderBottomWidth);
 		const innerBottomRightTransform: any = CGAffineTransformMake(maxRadius && xRadius / maxRadius, 0, 0, maxRadius && yRadius / maxRadius, position.right - cappedBorderRightWidth - xRadius, position.bottom - cappedBorderBottomWidth - yRadius);
 		CGPathAddArc(clipPath, innerBottomRightTransform, 0, 0, maxRadius, 0, Math.PI / 2, false);
 	} else {
@@ -902,7 +902,7 @@ function generateNonUniformBorderInnerClipPath(bounds: CGRect, background: Backg
 	}
 
 	if (cappedBorderBottomWidth > 0 || cappedBorderLeftWidth > 0) {
-		const { xRadius, yRadius, maxRadius } = calculateInnerRadius(cappedOuterRadii.bottomLeft, cappedBorderLeftWidth, cappedBorderBottomWidth);
+		const { xRadius, yRadius, maxRadius } = calculateInnerBorderClipRadius(cappedOuterRadii.bottomLeft, cappedBorderLeftWidth, cappedBorderBottomWidth);
 		const innerBottomLeftTransform: any = CGAffineTransformMake(maxRadius && xRadius / maxRadius, 0, 0, maxRadius && yRadius / maxRadius, position.left + cappedBorderLeftWidth + xRadius, position.bottom - cappedBorderBottomWidth - yRadius);
 		CGPathAddArc(clipPath, innerBottomLeftTransform, 0, 0, maxRadius, Math.PI / 2, Math.PI, false);
 	} else {
@@ -910,7 +910,7 @@ function generateNonUniformBorderInnerClipPath(bounds: CGRect, background: Backg
 	}
 
 	if (cappedBorderTopWidth > 0 || cappedBorderLeftWidth > 0) {
-		const { xRadius, yRadius, maxRadius } = calculateInnerRadius(cappedOuterRadii.topLeft, cappedBorderLeftWidth, cappedBorderTopWidth);
+		const { xRadius, yRadius, maxRadius } = calculateInnerBorderClipRadius(cappedOuterRadii.topLeft, cappedBorderLeftWidth, cappedBorderTopWidth);
 		const innerTopLeftTransform: any = CGAffineTransformMake(maxRadius && xRadius / maxRadius, 0, 0, maxRadius && yRadius / maxRadius, position.left + cappedBorderLeftWidth + xRadius, position.top + cappedBorderTopWidth + yRadius);
 		CGPathAddArc(clipPath, innerTopLeftTransform, 0, 0, maxRadius, Math.PI, (Math.PI * 3) / 2, false);
 	} else {
@@ -1164,7 +1164,7 @@ function drawBoxShadow(view: View): void {
 
 	// Inherit view visibility values
 	outerShadowContainerLayer.opacity = layer.opacity;
-	outerShadowContainerLayer.hidden = nativeView.hidden;
+	outerShadowContainerLayer.hidden = layer.hidden;
 
 	const outerShadowLayers = outerShadowContainerLayer.sublayers;
 	if (outerShadowLayers?.count) {

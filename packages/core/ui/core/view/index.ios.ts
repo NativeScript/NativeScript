@@ -154,12 +154,12 @@ export class View extends ViewCommon implements ViewDefinition {
 		} else {
 			// Update layers that don't belong to view's layer (e.g. shadow layers)
 			if (needsLayout) {
-				this.layoutOuterLayers();
+				this.layoutOuterShadows();
 			}
 		}
 	}
 
-	private layoutOuterLayers(): void {
+	private layoutOuterShadows(): void {
 		const nativeView: NativeScriptUIView = <NativeScriptUIView>this.nativeViewProtected;
 		if (nativeView) {
 			const frame = nativeView.frame;

@@ -497,7 +497,7 @@ export class Animation extends AnimationBase {
 		if (nativeView) {
 			nativeView.layer.addAnimationForKey(nativeAnimation, args.propertyNameToAnimate);
 			if (args.propertyNameToAnimate === 'bounds') {
-				this.addBasicAnimationToNestedLayers(nativeView, args.toValue.CGRectValue, animation, args, nativeAnimation);
+				this.animateNestedLayerSizeUsingBasicAnimation(nativeView, args.toValue.CGRectValue, animation, args, nativeAnimation);
 			}
 
 			// Shadow layers do not inherit from animating view layer
@@ -750,7 +750,7 @@ export class Animation extends AnimationBase {
 		return result;
 	}
 
-	private static addBasicAnimationToNestedLayers(nativeView: NativeScriptUIView, bounds: CGRect, animation: PropertyAnimation, args: AnimationInfo, nativeAnimation: CABasicAnimation) {
+	private static animateNestedLayerSizeUsingBasicAnimation(nativeView: NativeScriptUIView, bounds: CGRect, animation: PropertyAnimation, args: AnimationInfo, nativeAnimation: CABasicAnimation) {
 		const view: View = animation.target;
 
 		// Gradient background animation
