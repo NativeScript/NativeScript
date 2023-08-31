@@ -414,11 +414,7 @@ function registerAdjustLayersOnScrollListener(view: View) {
 function clearNonUniformColorBorders(nativeView: NativeScriptUIView): void {
 	if (nativeView.borderLayer) {
 		nativeView.borderLayer.mask = null;
-
-		const layers = nativeView.borderLayer.sublayers;
-		for (let i = 0, count = layers?.count; i < count; i++) {
-			layers[i].removeFromSuperlayer();
-		}
+		nativeView.borderLayer.sublayers = null;
 	}
 	nativeView.hasNonUniformBorderColor = false;
 }

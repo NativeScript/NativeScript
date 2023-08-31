@@ -242,8 +242,10 @@ export class Animation extends AnimationBase {
 							}
 
 							const borderLayers = nativeView.borderLayer.sublayers;
-							for (let i = 0, count = borderLayers?.count; i < count; i++) {
-								borderLayers[i].removeAllAnimations();
+							if (borderLayers?.count) {
+								for (let i = 0, count = borderLayers.count; i < count; i++) {
+									borderLayers[i].removeAllAnimations();
+								}
 							}
 
 							nativeView.borderLayer.removeAllAnimations();
@@ -256,13 +258,15 @@ export class Animation extends AnimationBase {
 							}
 
 							const outerShadowLayers = nativeView.outerShadowContainerLayer.sublayers;
-							for (let i = 0, count = outerShadowLayers.count; i < count; i++) {
-								const shadowLayer = outerShadowLayers[i];
+							if (outerShadowLayers?.count) {
+								for (let i = 0, count = outerShadowLayers.count; i < count; i++) {
+									const shadowLayer = outerShadowLayers[i];
 
-								if (shadowLayer.mask) {
-									shadowLayer.mask.removeAllAnimations();
+									if (shadowLayer.mask) {
+										shadowLayer.mask.removeAllAnimations();
+									}
+									shadowLayer.removeAllAnimations();
 								}
-								shadowLayer.removeAllAnimations();
 							}
 
 							nativeView.outerShadowContainerLayer.removeAllAnimations();
