@@ -15,6 +15,7 @@ export class BoxShadowModel extends Observable {
 	// private _boxShadow: string = '5 5 5 10 rgba(255, 0, 0, .9)';
 
 	background: string;
+	borderColor: string;
 	borderWidth: number;
 	borderRadius: number;
 	appliedBoxShadow: string;
@@ -72,18 +73,23 @@ export class BoxShadowModel extends Observable {
 		this.notifyPropertyChange('selectedBorderType', value);
 		switch (value) {
 			case 'solid':
-				this.borderWidth = this.borderWidth ? 0 : 2;
+				this.borderWidth = this.borderWidth ? 0 : 5;
 				break;
 			case 'rounded':
 				this.borderRadius = this.borderRadius ? 0 : 10;
 				break;
+			case 'colorful':
+				this.borderColor = this.borderColor ? null : 'green blue pink yellow';
+				break;
 			case 'none':
+				this.borderColor = null;
 				this.borderRadius = 0;
 				this.borderWidth = 0;
 				break;
 			default:
 				break;
 		}
+		this.notifyPropertyChange('borderColor', this.borderColor);
 		this.notifyPropertyChange('borderRadius', this.borderRadius);
 		this.notifyPropertyChange('borderWidth', this.borderWidth);
 	}
