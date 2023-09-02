@@ -74,6 +74,7 @@ class Responder extends UIResponder implements UIApplicationDelegate {
 
 export class iOSApplication extends ApplicationCommon implements IiOSApplication {
 	private _delegate: UIApplicationDelegate;
+	private _delegateHandlers = new Map<string, Array<Function>>();
 	private _window: UIWindow;
 	private _notificationObservers: NotificationObserver[] = [];
 	private _rootView: View;
@@ -253,6 +254,44 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		if (this._delegate !== value) {
 			this._delegate = value as UIApplicationDelegate;
 		}
+	}
+
+	addDelegateHandler<T extends keyof UIApplicationDelegate>(methodName: T, handler: (typeof UIApplicationDelegate.prototype)[T]): void {
+		// safe-guard against invalid handlers
+		if (typeof handler !== 'function') {
+			return;
+		}
+
+		// ensure we have a delegate
+		this.delegate ??= Responder as any;
+
+		const handlers = this._delegateHandlers.get(methodName) ?? [];
+
+		if (!this._delegateHandlers.has(methodName)) {
+			const originalHandler = this.delegate.prototype[methodName];
+
+			if (originalHandler) {
+				// if there is an original handler, we add it to the handlers array to be called first.
+				handlers.push(originalHandler as Function);
+			}
+
+			// replace the original method implementation with one that will call all handlers.
+			this.delegate.prototype[methodName] = function (...args: any[]) {
+				let res: any;
+				for (const handler of handlers) {
+					if (typeof handler !== 'function') {
+						continue;
+					}
+					res = handler.apply(this, args);
+				}
+				return res;
+			} as (typeof UIApplicationDelegate.prototype)[T];
+
+			// store the handlers
+			this._delegateHandlers.set(methodName, handlers);
+		}
+
+		handlers.push(handler);
 	}
 
 	getNativeApplication() {
