@@ -62,7 +62,7 @@ function initializeEditTextListeners(): void {
 			this.owner?.get()?.beforeTextChanged(text, start, count, after);
 		}
 
-		public onTextChanged(text: string, start: number, before: number, count: number): void {
+		public onTextChanged(text: any /* java.lang.CharSequence */, start: number, before: number, count: number): void {
 			this.owner?.get()?.onTextChanged(text, start, before, count);
 		}
 
@@ -495,9 +495,12 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 		// called by android.text.TextWatcher
 	}
 
-	public onTextChanged(text: string, start: number, before: number, count: number): void {
+	public onTextChanged(text: any /* java.lang.CharSequence */, start: number, before: number, count: number): void {
+		if (text === <any>this.text) {
+			return;
+		}
 		// called by android.text.TextWatcher
-		const newValue = this.valueFormatter?.(text.toString()) || text.toString();
+		const newValue = <any>this.text instanceof java.lang.CharSequence ? this.text : this.valueFormatter?.(text.toString()) || text.toString();
 		// prevent infinite loop
 		if (newValue !== this.text) {
 			this.text = newValue;

@@ -416,7 +416,7 @@ export class TextBase extends TextBaseCommon {
 				dict.set(NSFontAttributeName, this.nativeTextViewProtected.font);
 			}
 
-			const result = NSMutableAttributedString.alloc().initWithString(source);
+			const result = <any>source instanceof NSAttributedString ? NSMutableAttributedString.alloc().initWithAttributedString(<any>source) : NSMutableAttributedString.alloc().initWithString(source);
 			result.setAttributesRange(<any>dict, {
 				location: 0,
 				length: source.length,
