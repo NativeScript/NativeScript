@@ -920,8 +920,8 @@ export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase
 	// Reset unscoped css-variables
 	view.style.resetUnscopedCssVariables();
 
-	const declarations = inlineRuleSet[0].declarations;
-	const oldDeclarations = oldInlineRuleSet && oldInlineRuleSet[0].declarations;
+	const declarations = inlineRuleSet?.[0]?.declarations || [];
+	const oldDeclarations = oldInlineRuleSet?.[0]?.declarations;
 	// Set all the css-variables first, so we can be sure they are up-to-date
 	for (let index = declarations.length - 1; index >= 0; index--) {
 		const d = declarations[index];
