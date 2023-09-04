@@ -75,9 +75,9 @@ declare class CXCallController extends NSObject {
 
 	readonly callObserver: CXCallObserver;
 
-	constructor(o: { queue: NSObject; });
+	constructor(o: { queue: interop.Pointer | interop.Reference<any>; });
 
-	initWithQueue(queue: NSObject): this;
+	initWithQueue(queue: interop.Pointer | interop.Reference<any>): this;
 
 	requestTransactionCompletion(transaction: CXTransaction, completion: (p1: NSError) => void): void;
 
@@ -210,7 +210,7 @@ declare class CXCallObserver extends NSObject {
 
 	readonly calls: NSArray<CXCall>;
 
-	setDelegateQueue(delegate: CXCallObserverDelegate, queue: NSObject): void;
+	setDelegateQueue(delegate: CXCallObserverDelegate, queue: interop.Pointer | interop.Reference<any>): void;
 }
 
 interface CXCallObserverDelegate extends NSObjectProtocol {
@@ -296,7 +296,9 @@ declare const enum CXErrorCodeIncomingCallError {
 
 	FilteredByDoNotDisturb = 3,
 
-	FilteredByBlockList = 4
+	FilteredByBlockList = 4,
+
+	FilteredDuringRestrictedSharingMode = 5
 }
 
 declare const enum CXErrorCodeNotificationServiceExtensionError {
@@ -427,7 +429,7 @@ declare class CXProvider extends NSObject {
 
 	reportOutgoingCallWithUUIDStartedConnectingAtDate(UUID: NSUUID, dateStartedConnecting: Date): void;
 
-	setDelegateQueue(delegate: CXProviderDelegate, queue: NSObject): void;
+	setDelegateQueue(delegate: CXProviderDelegate, queue: interop.Pointer | interop.Reference<any>): void;
 }
 
 declare class CXProviderConfiguration extends NSObject implements NSCopying {

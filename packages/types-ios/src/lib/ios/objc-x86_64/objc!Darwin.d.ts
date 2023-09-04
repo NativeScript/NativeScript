@@ -63,6 +63,30 @@ interface FILE {
 }
 declare var FILE: interop.StructType<FILE>;
 
+interface FTSENT {
+	fts_cycle: interop.Pointer | interop.Reference<FTSENT>;
+	fts_parent: interop.Pointer | interop.Reference<FTSENT>;
+	fts_link: interop.Pointer | interop.Reference<FTSENT>;
+	fts_number: number;
+	fts_pointer: interop.Pointer | interop.Reference<any>;
+	fts_accpath: string;
+	fts_path: string;
+	fts_errno: number;
+	fts_symfd: number;
+	fts_pathlen: number;
+	fts_namelen: number;
+	fts_ino: number;
+	fts_dev: number;
+	fts_nlink: number;
+	fts_level: number;
+	fts_info: number;
+	fts_flags: number;
+	fts_instr: number;
+	fts_statp: interop.Pointer | interop.Reference<statStruct>;
+	fts_name: interop.Reference<number>;
+}
+declare var FTSENT: interop.StructType<FTSENT>;
+
 interface FTW {
 	base: number;
 	level: number;
@@ -100,30 +124,6 @@ interface Float96 {
 	man: interop.Reference<number>;
 }
 declare var Float96: interop.StructType<Float96>;
-
-declare const HV_BAD_ARGUMENT: number;
-
-declare const HV_BUSY: number;
-
-declare const HV_DENIED: number;
-
-declare const HV_ERROR: number;
-
-declare const HV_ILLEGAL_GUEST_STATE: number;
-
-declare const HV_MEMORY_EXEC: number;
-
-declare const HV_MEMORY_READ: number;
-
-declare const HV_MEMORY_WRITE: number;
-
-declare const HV_NO_DEVICE: number;
-
-declare const HV_NO_RESOURCES: number;
-
-declare const HV_SUCCESS: number;
-
-declare const HV_UNSUPPORTED: number;
 
 declare var KERNEL_AUDIT_TOKEN: audit_token_t;
 
@@ -196,25 +196,9 @@ declare function OSAtomicCompareAndSwapPtr(__oldValue: interop.Pointer | interop
 
 declare function OSAtomicCompareAndSwapPtrBarrier(__oldValue: interop.Pointer | interop.Reference<any>, __newValue: interop.Pointer | interop.Reference<any>, __theValue: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
 
-declare function OSAtomicDecrement32(__theValue: interop.Pointer | interop.Reference<number>): number;
-
-declare function OSAtomicDecrement32Barrier(__theValue: interop.Pointer | interop.Reference<number>): number;
-
-declare function OSAtomicDecrement64(__theValue: interop.Pointer | interop.Reference<number>): number;
-
-declare function OSAtomicDecrement64Barrier(__theValue: interop.Pointer | interop.Reference<number>): number;
-
 declare function OSAtomicDequeue(__list: interop.Pointer | interop.Reference<OSQueueHead>, __offset: number): interop.Pointer | interop.Reference<any>;
 
 declare function OSAtomicEnqueue(__list: interop.Pointer | interop.Reference<OSQueueHead>, __new: interop.Pointer | interop.Reference<any>, __offset: number): void;
-
-declare function OSAtomicIncrement32(__theValue: interop.Pointer | interop.Reference<number>): number;
-
-declare function OSAtomicIncrement32Barrier(__theValue: interop.Pointer | interop.Reference<number>): number;
-
-declare function OSAtomicIncrement64(__theValue: interop.Pointer | interop.Reference<number>): number;
-
-declare function OSAtomicIncrement64Barrier(__theValue: interop.Pointer | interop.Reference<number>): number;
 
 declare function OSAtomicOr32(__theMask: number, __theValue: interop.Pointer | interop.Reference<number>): number;
 
@@ -5000,29 +4984,23 @@ interface __darwin_zmm_reg {
 }
 declare var __darwin_zmm_reg: interop.StructType<__darwin_zmm_reg>;
 
-interface __double2 {
-	__sinval: number;
-	__cosval: number;
-}
-declare var __double2: interop.StructType<__double2>;
-
 declare function __error(): interop.Pointer | interop.Reference<number>;
 
 declare function __exp10(p1: number): number;
 
 declare function __exp10f(p1: number): number;
 
-interface __float2 {
-	__sinval: number;
-	__cosval: number;
-}
-declare var __float2: interop.StructType<__float2>;
-
 declare function __fpclassifyd(p1: number): number;
 
 declare function __fpclassifyf(p1: number): number;
 
 declare function __fpclassifyl(p1: number): number;
+
+declare function __iconv(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<string>, p3: interop.Pointer | interop.Reference<number>, p4: interop.Pointer | interop.Reference<string>, p5: interop.Pointer | interop.Reference<number>, p6: number, p7: interop.Pointer | interop.Reference<number>): number;
+
+declare function __iconv_free_list(p1: interop.Pointer | interop.Reference<string>, p2: number): void;
+
+declare function __iconv_get_list(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<string>>, p2: interop.Pointer | interop.Reference<number>, p3: boolean): number;
 
 declare function __inline_isfinited(p1: number): number;
 
@@ -5152,19 +5130,7 @@ declare var __shmid_ds_new: interop.StructType<__shmid_ds_new>;
 
 declare function __sincos(__x: number, __sinp: interop.Pointer | interop.Reference<number>, __cosp: interop.Pointer | interop.Reference<number>): void;
 
-declare function __sincos_stret(p1: number): __double2;
-
 declare function __sincosf(__x: number, __sinp: interop.Pointer | interop.Reference<number>, __cosp: interop.Pointer | interop.Reference<number>): void;
-
-declare function __sincosf_stret(p1: number): __float2;
-
-declare function __sincospi(__x: number, __sinp: interop.Pointer | interop.Reference<number>, __cosp: interop.Pointer | interop.Reference<number>): void;
-
-declare function __sincospi_stret(p1: number): __double2;
-
-declare function __sincospif(__x: number, __sinp: interop.Pointer | interop.Reference<number>, __cosp: interop.Pointer | interop.Reference<number>): void;
-
-declare function __sincospif_stret(p1: number): __float2;
 
 declare function __sinpi(p1: number): number;
 
@@ -5737,6 +5703,21 @@ interface audit_fstat {
 }
 declare var audit_fstat: interop.StructType<audit_fstat>;
 
+declare const enum audit_session_flags {
+
+	AU_SESSION_FLAG_IS_INITIAL = 1,
+
+	AU_SESSION_FLAG_HAS_GRAPHIC_ACCESS = 16,
+
+	AU_SESSION_FLAG_HAS_TTY = 32,
+
+	AU_SESSION_FLAG_IS_REMOTE = 4096,
+
+	AU_SESSION_FLAG_HAS_CONSOLE_ACCESS = 8192,
+
+	AU_SESSION_FLAG_HAS_AUTHENTICATED = 16384
+}
+
 declare function audit_session_join(port: number): number;
 
 declare function audit_session_port(asid: number, portname: interop.Pointer | interop.Reference<number>): number;
@@ -5807,6 +5788,18 @@ interface auditpinfo_addr {
 declare var auditpinfo_addr: interop.StructType<auditpinfo_addr>;
 
 declare var averunnable: loadavg;
+
+declare function backtrace(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: number): number;
+
+declare function backtrace_async(array: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, length: number, task_id: interop.Pointer | interop.Reference<number>): number;
+
+declare function backtrace_from_fp(startfp: interop.Pointer | interop.Reference<any>, array: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, size: number): number;
+
+declare function backtrace_image_offsets(array: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, image_offsets: interop.Pointer | interop.Reference<image_offset>, size: number): void;
+
+declare function backtrace_symbols(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: number): interop.Pointer | interop.Reference<string>;
+
+declare function backtrace_symbols_fd(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: number, p3: number): void;
 
 declare function basename(p1: string | interop.Pointer | interop.Reference<any>): string;
 
@@ -6025,7 +6018,9 @@ declare const enum cryptex_auth_type_t {
 
 	CRYPTEX1_AUTH_ENV_GENERIC = 4,
 
-	CRYPTEX1_AUTH_ENV_GENERIC_SUPPLEMENTAL = 5
+	CRYPTEX1_AUTH_ENV_GENERIC_SUPPLEMENTAL = 5,
+
+	CRYPTEX_AUTH_PDI_NONCE = 6
 }
 
 declare function ctermid(p1: string | interop.Pointer | interop.Reference<any>): string;
@@ -6093,8 +6088,6 @@ interface dirent {
 	d_name: interop.Reference<number>;
 }
 declare var dirent: interop.StructType<dirent>;
-
-declare function dirfd(dirp: interop.Pointer | interop.Reference<DIR>): number;
 
 declare function dirname(p1: string | interop.Pointer | interop.Reference<any>): string;
 
@@ -6190,6 +6183,8 @@ declare const eNoteReapDeprecated: number;
 declare function ecvt(p1: number, p2: number, p3: interop.Pointer | interop.Reference<number>, p4: interop.Pointer | interop.Reference<number>): string;
 
 declare function encrypt(p1: string | interop.Pointer | interop.Reference<any>, p2: number): void;
+
+declare function endfsent(): void;
 
 declare function endgrent(): void;
 
@@ -6351,6 +6346,13 @@ interface fasttrap_machtp_t {
 	ftmt_retired: number;
 }
 declare var fasttrap_machtp_t: interop.StructType<fasttrap_machtp_t>;
+
+interface fattributiontag_t {
+	ft_flags: number;
+	ft_hash: number;
+	ft_attribution_name: interop.Reference<number>;
+}
+declare var fattributiontag_t: interop.StructType<fattributiontag_t>;
 
 declare function fchdir(p1: number): number;
 
@@ -6653,6 +6655,8 @@ declare function fsetpos(p1: interop.Pointer | interop.Reference<FILE>, p2: inte
 
 declare function fsetxattr(fd: number, name: string | interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>, size: number, position: number, options: number): number;
 
+declare function fsgetpath(p1: string | interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<fsid_t>, p4: number): number;
+
 interface fsid_t {
 	val: interop.Reference<number>;
 }
@@ -6695,6 +6699,17 @@ interface fssearchblock {
 	searchattrs: attrlist;
 }
 declare var fssearchblock: interop.StructType<fssearchblock>;
+
+interface fstab {
+	fs_spec: string;
+	fs_file: string;
+	fs_vfstype: string;
+	fs_mntops: string;
+	fs_type: string;
+	fs_freq: number;
+	fs_passno: number;
+}
+declare var fstab: interop.StructType<fstab>;
 
 declare function fstat(p1: number, p2: interop.Pointer | interop.Reference<statStruct>): number;
 
@@ -6811,6 +6826,12 @@ declare function geteuid(): number;
 
 declare function getfh(p1: string | interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<fhandle>): number;
 
+declare function getfsent(): interop.Pointer | interop.Reference<fstab>;
+
+declare function getfsfile(p1: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<fstab>;
+
+declare function getfsspec(p1: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<fstab>;
+
 declare function getfsstat(p1: interop.Pointer | interop.Reference<statfsStruct>, p2: number, p3: number): number;
 
 declare function getgid(): number;
@@ -6844,6 +6865,8 @@ declare function gethostent(): interop.Pointer | interop.Reference<hostent>;
 declare function gethostid(): number;
 
 declare function gethostname(p1: string | interop.Pointer | interop.Reference<any>, p2: number): number;
+
+declare function gethostuuid(p1: interop.Reference<number>, p2: interop.Pointer | interop.Reference<timespec>): number;
 
 declare function getifaddrs(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<ifaddrs>>): number;
 
@@ -7017,7 +7040,11 @@ declare const enum graftdmg_type_t {
 
 	GRAFTDMG_CRYPTEX_PREBOOT = 2,
 
-	GRAFTDMG_CRYPTEX_DOWNLEVEL = 3
+	GRAFTDMG_CRYPTEX_DOWNLEVEL = 3,
+
+	GRAFTDMG_CRYPTEX_PDI_NONCE = 6,
+
+	GRAFTDMG_CRYPTEX_EFFECTIVE_AP = 7
 }
 
 declare function grantpt(p1: number): number;
@@ -7267,11 +7294,16 @@ interface icmp_ra_addr {
 }
 declare var icmp_ra_addr: interop.StructType<icmp_ra_addr>;
 
-declare function iconv(__cd: interop.Pointer | interop.Reference<any>, __inbuf: interop.Pointer | interop.Reference<string>, __inbytesleft: interop.Pointer | interop.Reference<number>, __outbuf: interop.Pointer | interop.Reference<string>, __outbytesleft: interop.Pointer | interop.Reference<number>): number;
+declare function iconv(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<string>, p3: interop.Pointer | interop.Reference<number>, p4: interop.Pointer | interop.Reference<string>, p5: interop.Pointer | interop.Reference<number>): number;
 
-declare function iconv_canonicalize(name: string | interop.Pointer | interop.Reference<any>): string;
+interface iconv_allocation_t {
+	spaceholder: interop.Reference<interop.Pointer | interop.Reference<any>>;
+}
+declare var iconv_allocation_t: interop.StructType<iconv_allocation_t>;
 
-declare function iconv_close(_cd: interop.Pointer | interop.Reference<any>): number;
+declare function iconv_canonicalize(p1: string | interop.Pointer | interop.Reference<any>): string;
+
+declare function iconv_close(p1: interop.Pointer | interop.Reference<any>): number;
 
 interface iconv_fallbacks {
 	mb_to_uc_fallback: interop.FunctionReference<(p1: string, p2: number, p3: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<number>, p2: number, p3: interop.Pointer | interop.Reference<any>) => void>, p4: interop.Pointer | interop.Reference<any>, p5: interop.Pointer | interop.Reference<any>) => void>;
@@ -7289,11 +7321,13 @@ interface iconv_hooks {
 }
 declare var iconv_hooks: interop.StructType<iconv_hooks>;
 
-declare function iconv_open(__tocode: string | interop.Pointer | interop.Reference<any>, __fromcode: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function iconv_open(p1: string | interop.Pointer | interop.Reference<any>, p2: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function iconvctl(cd: interop.Pointer | interop.Reference<any>, request: number, argument: interop.Pointer | interop.Reference<any>): number;
+declare function iconv_open_into(p1: string | interop.Pointer | interop.Reference<any>, p2: string | interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<iconv_allocation_t>): number;
 
-declare function iconvlist(do_one: interop.FunctionReference<(p1: number, p2: interop.Pointer | interop.Reference<string>, p3: interop.Pointer | interop.Reference<any>) => number>, data: interop.Pointer | interop.Reference<any>): void;
+declare function iconvctl(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<any>): number;
+
+declare function iconvlist(do_one: interop.FunctionReference<(p1: number, p2: interop.Pointer | interop.Reference<string>, p3: interop.Pointer | interop.Reference<any>) => number>, p2: interop.Pointer | interop.Reference<any>): void;
 
 interface id_ip {
 	idi_ip: ip;
@@ -7719,6 +7753,12 @@ declare function ilogb(p1: number): number;
 declare function ilogbf(p1: number): number;
 
 declare function ilogbl(p1: number): number;
+
+interface image_offset {
+	uuid: interop.Reference<number>;
+	offset: number;
+}
+declare var image_offset: interop.StructType<image_offset>;
 
 declare function imaxabs(j: number): number;
 
@@ -8277,7 +8317,7 @@ declare function lgammaf(p1: number): number;
 
 declare function lgammal(p1: number): number;
 
-declare function libiconv_set_relocation_prefix(orig_prefix: string | interop.Pointer | interop.Reference<any>, curr_prefix: string | interop.Pointer | interop.Reference<any>): void;
+declare function libiconv_set_relocation_prefix(p1: string | interop.Pointer | interop.Reference<any>, p2: string | interop.Pointer | interop.Reference<any>): void;
 
 interface linger {
 	l_onoff: number;
@@ -8854,7 +8894,9 @@ declare const enum mach_port_guard_exception_codes {
 
 	kGUARD_EXC_IMMOVABLE_NON_FATAL = 4194304,
 
-	kGUARD_EXC_REQUIRE_REPLY_PORT_SEMANTICS = 8388608
+	kGUARD_EXC_REQUIRE_REPLY_PORT_SEMANTICS = 8388608,
+
+	kGUARD_EXC_EXCEPTION_BEHAVIOR_ENFORCE = 16777216
 }
 
 interface mach_port_guard_info_t {
@@ -9015,6 +9057,35 @@ interface mach_vm_range {
 }
 declare var mach_vm_range: interop.StructType<mach_vm_range>;
 
+declare const enum mach_vm_range_flags_t {
+
+	MACH_VM_RANGE_NONE = 0
+}
+
+declare const enum mach_vm_range_flavor_t {
+
+	MACH_VM_RANGE_FLAVOR_INVALID = 0,
+
+	MACH_VM_RANGE_FLAVOR_V1 = 1
+}
+
+interface mach_vm_range_recipe_v1_t {
+	flags: mach_vm_range_flags_t;
+	range_tag: mach_vm_range_tag_t;
+	vm_tag: number;
+	range: mach_vm_range;
+}
+declare var mach_vm_range_recipe_v1_t: interop.StructType<mach_vm_range_recipe_v1_t>;
+
+declare const enum mach_vm_range_tag_t {
+
+	MACH_VM_RANGE_DEFAULT = 0,
+
+	MACH_VM_RANGE_DATA = 1,
+
+	MACH_VM_RANGE_FIXED = 2
+}
+
 interface mach_vm_read_entry {
 	address: number;
 	size: number;
@@ -9118,6 +9189,7 @@ interface malloc_introspection_t {
 	reinit_lock: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>) => void>;
 	print_task: interop.FunctionReference<(p1: number, p2: number, p3: number, p4: interop.FunctionReference<(p1: number, p2: number, p3: number, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => number>, p5: interop.FunctionReference<(p1: string) => void>) => void>;
 	task_statistics: interop.FunctionReference<(p1: number, p2: number, p3: interop.FunctionReference<(p1: number, p2: number, p3: number, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => number>, p4: interop.Pointer | interop.Reference<malloc_statistics_t>) => void>;
+	zone_type: number;
 }
 declare var malloc_introspection_t: interop.StructType<malloc_introspection_t>;
 
@@ -9205,6 +9277,26 @@ declare function malloc_zone_valloc(zone: interop.Pointer | interop.Reference<ma
 declare function mblen(__s: string | interop.Pointer | interop.Reference<any>, __n: number): number;
 
 declare function mblen_l(p1: string | interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<any>): number;
+
+declare function mbr_check_membership(user: interop.Reference<number>, group: interop.Reference<number>, ismember: interop.Pointer | interop.Reference<number>): number;
+
+declare function mbr_check_service_membership(user: interop.Reference<number>, servicename: string | interop.Pointer | interop.Reference<any>, ismember: interop.Pointer | interop.Reference<number>): number;
+
+declare function mbr_gid_to_uuid(gid: number, uu: interop.Reference<number>): number;
+
+declare function mbr_identifier_to_uuid(id_type: number, identifier: interop.Pointer | interop.Reference<any>, identifier_size: number, uu: interop.Reference<number>): number;
+
+declare function mbr_sid_to_string(sid: interop.Pointer | interop.Reference<nt_sid_t>, string: string | interop.Pointer | interop.Reference<any>): number;
+
+declare function mbr_sid_to_uuid(sid: interop.Pointer | interop.Reference<nt_sid_t>, uu: interop.Reference<number>): number;
+
+declare function mbr_string_to_sid(string: string | interop.Pointer | interop.Reference<any>, sid: interop.Pointer | interop.Reference<nt_sid_t>): number;
+
+declare function mbr_uid_to_uuid(uid: number, uu: interop.Reference<number>): number;
+
+declare function mbr_uuid_to_id(uu: interop.Reference<number>, uid_or_gid: interop.Pointer | interop.Reference<number>, id_type: interop.Pointer | interop.Reference<number>): number;
+
+declare function mbr_uuid_to_sid(uu: interop.Reference<number>, sid: interop.Pointer | interop.Reference<nt_sid_t>): number;
 
 declare function mbstowcs(p1: interop.Pointer | interop.Reference<number>, p2: string | interop.Pointer | interop.Reference<any>, p3: number): number;
 
@@ -9589,6 +9681,14 @@ declare const noErr: number;
 declare const normal: number;
 
 declare function nrand48(p1: interop.Reference<number>): number;
+
+interface nt_sid_t {
+	sid_kind: number;
+	sid_authcount: number;
+	sid_authority: interop.Reference<number>;
+	sid_authorities: interop.Reference<number>;
+}
+declare var nt_sid_t: interop.StructType<nt_sid_t>;
 
 interface ntsid_t {
 	sid_kind: number;
@@ -11092,6 +11192,8 @@ declare function setenv(__name: string | interop.Pointer | interop.Reference<any
 
 declare function seteuid(p1: number): number;
 
+declare function setfsent(): number;
+
 declare function setgid(p1: number): number;
 
 declare function setgrent(): void;
@@ -11638,6 +11740,74 @@ declare function sysctl(p1: interop.Pointer | interop.Reference<number>, p2: num
 declare function sysctlbyname(p1: string | interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<number>, p4: interop.Pointer | interop.Reference<any>, p5: number): number;
 
 declare function sysctlnametomib(p1: string | interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<number>, p3: interop.Pointer | interop.Reference<number>): number;
+
+declare function sysdir_get_next_search_path_enumeration(state: number, path: string | interop.Pointer | interop.Reference<any>): number;
+
+declare const enum sysdir_search_path_directory_t {
+
+	SYSDIR_DIRECTORY_APPLICATION = 1,
+
+	SYSDIR_DIRECTORY_DEMO_APPLICATION = 2,
+
+	SYSDIR_DIRECTORY_DEVELOPER_APPLICATION = 3,
+
+	SYSDIR_DIRECTORY_ADMIN_APPLICATION = 4,
+
+	SYSDIR_DIRECTORY_LIBRARY = 5,
+
+	SYSDIR_DIRECTORY_DEVELOPER = 6,
+
+	SYSDIR_DIRECTORY_USER = 7,
+
+	SYSDIR_DIRECTORY_DOCUMENTATION = 8,
+
+	SYSDIR_DIRECTORY_DOCUMENT = 9,
+
+	SYSDIR_DIRECTORY_CORESERVICE = 10,
+
+	SYSDIR_DIRECTORY_AUTOSAVED_INFORMATION = 11,
+
+	SYSDIR_DIRECTORY_DESKTOP = 12,
+
+	SYSDIR_DIRECTORY_CACHES = 13,
+
+	SYSDIR_DIRECTORY_APPLICATION_SUPPORT = 14,
+
+	SYSDIR_DIRECTORY_DOWNLOADS = 15,
+
+	SYSDIR_DIRECTORY_INPUT_METHODS = 16,
+
+	SYSDIR_DIRECTORY_MOVIES = 17,
+
+	SYSDIR_DIRECTORY_MUSIC = 18,
+
+	SYSDIR_DIRECTORY_PICTURES = 19,
+
+	SYSDIR_DIRECTORY_PRINTER_DESCRIPTION = 20,
+
+	SYSDIR_DIRECTORY_SHARED_PUBLIC = 21,
+
+	SYSDIR_DIRECTORY_PREFERENCE_PANES = 22,
+
+	SYSDIR_DIRECTORY_ALL_APPLICATIONS = 100,
+
+	SYSDIR_DIRECTORY_ALL_LIBRARIES = 101
+}
+
+declare const enum sysdir_search_path_domain_mask_t {
+
+	SYSDIR_DOMAIN_MASK_USER = 1,
+
+	SYSDIR_DOMAIN_MASK_LOCAL = 2,
+
+	SYSDIR_DOMAIN_MASK_NETWORK = 4,
+
+	SYSDIR_DOMAIN_MASK_SYSTEM = 8,
+
+	SYSDIR_DOMAIN_MASK_ALL = 65535
+}
+
+declare function sysdir_start_search_path_enumeration(dir: sysdir_search_path_directory_t, domainMask: sysdir_search_path_domain_mask_t): number;
 
 declare function tan(p1: number): number;
 

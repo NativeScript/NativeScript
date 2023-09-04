@@ -49,12 +49,6 @@ export class ScrollView extends ScrollViewBase {
 		this._setNativeClipToBounds();
 	}
 
-	disposeNativeView() {
-		this.dettachNative();
-		this._delegate = null;
-		super.disposeNativeView();
-	}
-
 	_setNativeClipToBounds() {
 		if (!this.nativeViewProtected) {
 			return;
@@ -70,9 +64,12 @@ export class ScrollView extends ScrollViewBase {
 		}
 	}
 
-	protected dettachNative() {
-		if (this.nativeViewProtected) {
-			this.nativeViewProtected.delegate = null;
+	protected detachNative() {
+		if (this._delegate) {
+			if (this.nativeViewProtected) {
+				this.nativeViewProtected.delegate = null;
+			}
+			this._delegate = null;
 		}
 	}
 

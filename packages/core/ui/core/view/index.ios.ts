@@ -32,7 +32,9 @@ const PFLAG_LAYOUT_REQUIRED = 1 << 2;
 const majorVersion = iOSNativeHelper.MajorVersion;
 
 export class View extends ViewCommon implements ViewDefinition {
+	// @ts-ignore
 	nativeViewProtected: UIView;
+	// @ts-ignore
 	viewController: UIViewController;
 	private _popoverPresentationDelegate: IOSHelper.UIPopoverPresentationControllerDelegateImp;
 	private _adaptivePresentationDelegate: IOSHelper.UIAdaptivePresentationControllerDelegateImp;
@@ -1024,8 +1026,6 @@ class UIViewControllerTransitioningDelegateImpl extends NSObject implements UIVi
 }
 
 export class ContainerView extends View {
-	public iosOverflowSafeArea: boolean;
-
 	constructor() {
 		super();
 		this.iosOverflowSafeArea = true;
@@ -1033,6 +1033,7 @@ export class ContainerView extends View {
 }
 
 export class CustomLayoutView extends ContainerView {
+	// @ts-ignore
 	nativeViewProtected: UIView;
 
 	createNativeView() {

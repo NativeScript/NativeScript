@@ -676,6 +676,8 @@ declare const kCVPixelFormatType_4444AYpCbCr16: number;
 
 declare const kCVPixelFormatType_4444AYpCbCr8: number;
 
+declare const kCVPixelFormatType_4444AYpCbCrFloat: number;
+
 declare const kCVPixelFormatType_4444YpCbCrA8: number;
 
 declare const kCVPixelFormatType_4444YpCbCrA8R: number;

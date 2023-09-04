@@ -123,7 +123,7 @@ declare function SCNetworkReachabilityScheduleWithRunLoop(target: any, runLoop: 
 
 declare function SCNetworkReachabilitySetCallback(target: any, callout: interop.FunctionReference<(p1: any, p2: SCNetworkReachabilityFlags, p3: interop.Pointer | interop.Reference<any>) => void>, context: interop.Pointer | interop.Reference<SCNetworkReachabilityContext>): boolean;
 
-declare function SCNetworkReachabilitySetDispatchQueue(target: any, queue: NSObject): boolean;
+declare function SCNetworkReachabilitySetDispatchQueue(target: any, queue: interop.Pointer | interop.Reference<any>): boolean;
 
 declare function SCNetworkReachabilityUnscheduleFromRunLoop(target: any, runLoop: any, runLoopMode: string): boolean;
 

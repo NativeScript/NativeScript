@@ -105,6 +105,13 @@ declare class WKContextMenuElementInfo extends NSObject {
 	readonly linkURL: NSURL;
 }
 
+declare const enum WKCookiePolicy {
+
+	Allow = 0,
+
+	Disallow = 1
+}
+
 declare const enum WKDataDetectorTypes {
 
 	None = 0,
@@ -317,9 +324,13 @@ declare class WKHTTPCookieStore extends NSObject {
 
 	getAllCookies(completionHandler: (p1: NSArray<NSHTTPCookie>) => void): void;
 
+	getCookiePolicy(completionHandler: (p1: WKCookiePolicy) => void): void;
+
 	removeObserver(observer: WKHTTPCookieStoreObserver): void;
 
 	setCookieCompletionHandler(cookie: NSHTTPCookie, completionHandler: () => void): void;
+
+	setCookiePolicyCompletionHandler(policy: WKCookiePolicy, completionHandler: () => void): void;
 }
 
 interface WKHTTPCookieStoreObserver extends NSObjectProtocol {
@@ -330,6 +341,15 @@ declare var WKHTTPCookieStoreObserver: {
 
 	prototype: WKHTTPCookieStoreObserver;
 };
+
+declare const enum WKInactiveSchedulingPolicy {
+
+	Suspend = 0,
+
+	Throttle = 1,
+
+	None = 2
+}
 
 declare const enum WKMediaCaptureState {
 
@@ -473,6 +493,8 @@ declare class WKPDFConfiguration extends NSObject implements NSCopying {
 
 	static new(): WKPDFConfiguration; // inherited from NSObject
 
+	allowTransparentBackground: boolean;
+
 	rect: CGRect;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
@@ -496,6 +518,8 @@ declare class WKPreferences extends NSObject implements NSSecureCoding {
 	elementFullscreenEnabled: boolean;
 
 	fraudulentWebsiteWarningEnabled: boolean;
+
+	inactiveSchedulingPolicy: WKInactiveSchedulingPolicy;
 
 	javaScriptCanOpenWindowsAutomatically: boolean;
 
@@ -1017,13 +1041,21 @@ declare class WKWebsiteDataStore extends NSObject implements NSSecureCoding {
 
 	static alloc(): WKWebsiteDataStore; // inherited from NSObject
 
+	static dataStoreForIdentifier(identifier: NSUUID): WKWebsiteDataStore;
+
 	static defaultDataStore(): WKWebsiteDataStore;
+
+	static fetchAllDataStoreIdentifiers(completionHandler: (p1: NSArray<NSUUID>) => void): void;
 
 	static new(): WKWebsiteDataStore; // inherited from NSObject
 
 	static nonPersistentDataStore(): WKWebsiteDataStore;
 
+	static removeDataStoreForIdentifierCompletionHandler(identifier: NSUUID, completionHandler: (p1: NSError) => void): void;
+
 	readonly httpCookieStore: WKHTTPCookieStore;
+
+	readonly identifier: NSUUID;
 
 	readonly persistent: boolean;
 
@@ -1050,13 +1082,19 @@ declare var WKWebsiteDataTypeFetchCache: string;
 
 declare var WKWebsiteDataTypeFileSystem: string;
 
+declare var WKWebsiteDataTypeHashSalt: string;
+
 declare var WKWebsiteDataTypeIndexedDBDatabases: string;
 
 declare var WKWebsiteDataTypeLocalStorage: string;
 
+declare var WKWebsiteDataTypeMediaKeys: string;
+
 declare var WKWebsiteDataTypeMemoryCache: string;
 
 declare var WKWebsiteDataTypeOfflineWebApplicationCache: string;
+
+declare var WKWebsiteDataTypeSearchFieldRecentSearches: string;
 
 declare var WKWebsiteDataTypeServiceWorkerRegistrations: string;
 

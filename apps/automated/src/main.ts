@@ -12,6 +12,13 @@ if (Application.ios) {
 	Application.ios.addNotificationObserver(UIApplicationDidFinishLaunchingNotification, (notification: NSNotification) => {
 		console.log('UIApplicationDidFinishLaunchingNotification:', notification);
 	});
+
+	// Make sure we can add multiple handlers for the same event.
+	for (let i = 0; i < 10; i++) {
+		Application.ios.addDelegateHandler('applicationDidBecomeActive', (application: UIApplication) => {
+			console.log('applicationDidBecomeActive', i, application);
+		});
+	}
 }
 
 // Common events for both Android and iOS.

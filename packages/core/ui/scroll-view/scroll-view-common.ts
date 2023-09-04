@@ -21,7 +21,9 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
 
 		if (arg === ScrollViewBase.scrollEvent) {
 			this._scrollChangeCount++;
-			this.attach();
+			if (this.nativeViewProtected) {
+				this.attachNative();
+			}
 		}
 	}
 
@@ -29,40 +31,35 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
 		super.removeEventListener(arg, callback, thisArg);
 
 		if (arg === ScrollViewBase.scrollEvent) {
-			this._scrollChangeCount--;
-			this.dettach();
+			if (this._scrollChangeCount > 0) {
+				this._scrollChangeCount--;
+
+				if (this.nativeViewProtected && this._scrollChangeCount === 0) {
+					this.detachNative();
+				}
+			}
 		}
 	}
 
-	@profile
-	public onLoaded() {
-		super.onLoaded();
-
-		this.attach();
-	}
-
-	public disposeNativeView() {
-		this.dettach();
-		super.disposeNativeView();
-	}
-
-	private attach() {
-		if (this._scrollChangeCount > 0 && this.isLoaded) {
+	initNativeView() {
+		super.initNativeView();
+		if (this._scrollChangeCount > 0) {
 			this.attachNative();
 		}
 	}
 
-	private dettach() {
-		if (this._scrollChangeCount === 0 && this.isLoaded) {
-			this.dettachNative();
+	public disposeNativeView() {
+		if (this._scrollChangeCount > 0) {
+			this.detachNative();
 		}
+		super.disposeNativeView();
 	}
 
 	protected attachNative() {
 		//
 	}
 
-	protected dettachNative() {
+	protected detachNative() {
 		//
 	}
 

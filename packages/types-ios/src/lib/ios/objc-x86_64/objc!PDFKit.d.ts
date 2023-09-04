@@ -147,6 +147,8 @@ declare class PDFAnnotation extends NSObject implements NSCoding, NSCopying {
 
 	action: PDFAction;
 
+	readonly activatableTextField: boolean;
+
 	alignment: NSTextAlignment;
 
 	allowsToggleToOff: boolean;

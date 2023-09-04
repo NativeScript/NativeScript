@@ -76,6 +76,8 @@ declare class UTType extends NSObject implements NSCopying, NSSecureCoding {
 
 declare var UTType3DContent: UTType;
 
+declare var UTTypeAHAP: UTType;
+
 declare var UTTypeAIFF: UTType;
 
 declare var UTTypeARReferenceObject: UTType;

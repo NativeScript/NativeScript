@@ -15,7 +15,11 @@ declare function crc32(crc: number, buf: string | interop.Pointer | interop.Refe
 
 declare function crc32_combine(p1: number, p2: number, p3: number): number;
 
-declare function crc32_z(adler: number, buf: string | interop.Pointer | interop.Reference<any>, len: number): number;
+declare function crc32_combine_gen(p1: number): number;
+
+declare function crc32_combine_op(crc1: number, crc2: number, op: number): number;
+
+declare function crc32_z(crc: number, buf: string | interop.Pointer | interop.Reference<any>, len: number): number;
 
 declare function deflate(strm: interop.Pointer | interop.Reference<z_stream>, flush: number): number;
 

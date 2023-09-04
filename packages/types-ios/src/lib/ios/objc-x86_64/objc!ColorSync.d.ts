@@ -178,11 +178,17 @@ declare var kColorSyncGenericRGBProfile: string;
 
 declare var kColorSyncGenericXYZProfile: string;
 
+declare var kColorSyncHDRDerivative: string;
+
+declare var kColorSyncHLGDerivative: string;
+
 declare var kColorSyncITUR2020Profile: string;
 
 declare var kColorSyncITUR709Profile: string;
 
 declare var kColorSyncNormalQuality: string;
+
+declare var kColorSyncPQDerivative: string;
 
 declare var kColorSyncProfile: string;
 

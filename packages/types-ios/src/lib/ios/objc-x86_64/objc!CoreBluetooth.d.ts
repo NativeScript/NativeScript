@@ -112,17 +112,17 @@ declare class CBCentralManager extends CBManager {
 
 	readonly isScanning: boolean;
 
-	constructor(o: { delegate: CBCentralManagerDelegate; queue: NSObject; });
+	constructor(o: { delegate: CBCentralManagerDelegate; queue: interop.Pointer | interop.Reference<any>; });
 
-	constructor(o: { delegate: CBCentralManagerDelegate; queue: NSObject; options: NSDictionary<string, any>; });
+	constructor(o: { delegate: CBCentralManagerDelegate; queue: interop.Pointer | interop.Reference<any>; options: NSDictionary<string, any>; });
 
 	cancelPeripheralConnection(peripheral: CBPeripheral): void;
 
 	connectPeripheralOptions(peripheral: CBPeripheral, options: NSDictionary<string, any>): void;
 
-	initWithDelegateQueue(delegate: CBCentralManagerDelegate, queue: NSObject): this;
+	initWithDelegateQueue(delegate: CBCentralManagerDelegate, queue: interop.Pointer | interop.Reference<any>): this;
 
-	initWithDelegateQueueOptions(delegate: CBCentralManagerDelegate, queue: NSObject, options: NSDictionary<string, any>): this;
+	initWithDelegateQueueOptions(delegate: CBCentralManagerDelegate, queue: interop.Pointer | interop.Reference<any>, options: NSDictionary<string, any>): this;
 
 	registerForConnectionEventsWithOptions(options: NSDictionary<string, any>): void;
 
@@ -142,6 +142,8 @@ interface CBCentralManagerDelegate extends NSObjectProtocol {
 	centralManagerDidConnectPeripheral?(central: CBCentralManager, peripheral: CBPeripheral): void;
 
 	centralManagerDidDisconnectPeripheralError?(central: CBCentralManager, peripheral: CBPeripheral, error: NSError): void;
+
+	centralManagerDidDisconnectPeripheralTimestampIsReconnectingError?(central: CBCentralManager, peripheral: CBPeripheral, timestamp: number, isReconnecting: boolean, error: NSError): void;
 
 	centralManagerDidDiscoverPeripheralAdvertisementDataRSSI?(central: CBCentralManager, peripheral: CBPeripheral, advertisementData: NSDictionary<string, any>, RSSI: number): void;
 
@@ -242,6 +244,8 @@ declare const enum CBCharacteristicWriteType {
 
 	WithoutResponse = 1
 }
+
+declare var CBConnectPeripheralOptionEnableAutoReconnect: string;
 
 declare var CBConnectPeripheralOptionEnableTransportBridgingKey: string;
 
@@ -528,15 +532,15 @@ declare class CBPeripheralManager extends CBManager {
 
 	readonly isAdvertising: boolean;
 
-	constructor(o: { delegate: CBPeripheralManagerDelegate; queue: NSObject; });
+	constructor(o: { delegate: CBPeripheralManagerDelegate; queue: interop.Pointer | interop.Reference<any>; });
 
-	constructor(o: { delegate: CBPeripheralManagerDelegate; queue: NSObject; options: NSDictionary<string, any>; });
+	constructor(o: { delegate: CBPeripheralManagerDelegate; queue: interop.Pointer | interop.Reference<any>; options: NSDictionary<string, any>; });
 
 	addService(service: CBMutableService): void;
 
-	initWithDelegateQueue(delegate: CBPeripheralManagerDelegate, queue: NSObject): this;
+	initWithDelegateQueue(delegate: CBPeripheralManagerDelegate, queue: interop.Pointer | interop.Reference<any>): this;
 
-	initWithDelegateQueueOptions(delegate: CBPeripheralManagerDelegate, queue: NSObject, options: NSDictionary<string, any>): this;
+	initWithDelegateQueueOptions(delegate: CBPeripheralManagerDelegate, queue: interop.Pointer | interop.Reference<any>, options: NSDictionary<string, any>): this;
 
 	publishL2CAPChannelWithEncryption(encryptionRequired: boolean): void;
 

@@ -31,9 +31,9 @@ declare class PKPushRegistry extends NSObject {
 
 	desiredPushTypes: NSSet<string>;
 
-	constructor(o: { queue: NSObject; });
+	constructor(o: { queue: interop.Pointer | interop.Reference<any>; });
 
-	initWithQueue(queue: NSObject): this;
+	initWithQueue(queue: interop.Pointer | interop.Reference<any>): this;
 
 	pushTokenForType(type: string): NSData;
 }

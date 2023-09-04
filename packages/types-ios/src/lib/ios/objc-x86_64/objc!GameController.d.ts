@@ -34,6 +34,8 @@ interface GCAxisInput extends NSObjectProtocol {
 
 	lastValueTimestamp: number;
 
+	sources: NSSet<GCPhysicalInputSource>;
+
 	value: number;
 
 	valueDidChangeHandler: (p1: GCPhysicalInputElement, p2: GCAxisInput, p3: number) => void;
@@ -116,6 +118,8 @@ declare class GCController extends NSObject implements GCDevice {
 
 	readonly haptics: GCDeviceHaptics;
 
+	readonly input: GCControllerLiveInput;
+
 	readonly light: GCDeviceLight;
 
 	readonly microGamepad: GCMicroGamepad;
@@ -133,8 +137,6 @@ declare class GCController extends NSObject implements GCDevice {
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
 	readonly description: string; // inherited from NSObjectProtocol
-
-	handlerQueue: NSObject; // inherited from GCDevice
 
 	readonly hash: number; // inherited from NSObjectProtocol
 
@@ -265,6 +267,136 @@ declare class GCControllerElement extends NSObject {
 	unmappedSfSymbolsName: string;
 }
 
+declare class GCControllerInputState extends NSObject implements GCDevicePhysicalInputState {
+
+	static alloc(): GCControllerInputState; // inherited from NSObject
+
+	static new(): GCControllerInputState; // inherited from NSObject
+
+	readonly axes: GCPhysicalInputElementCollection<string, GCAxisElement>; // inherited from GCDevicePhysicalInputState
+
+	readonly buttons: GCPhysicalInputElementCollection<string, GCButtonElement>; // inherited from GCDevicePhysicalInputState
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly device: GCDevice; // inherited from GCDevicePhysicalInputState
+
+	readonly dpads: GCPhysicalInputElementCollection<string, GCDirectionPadElement>; // inherited from GCDevicePhysicalInputState
+
+	readonly elements: GCPhysicalInputElementCollection<string, GCPhysicalInputElement>; // inherited from GCDevicePhysicalInputState
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly lastEventLatency: number; // inherited from GCDevicePhysicalInputState
+
+	readonly lastEventTimestamp: number; // inherited from GCDevicePhysicalInputState
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly switches: GCPhysicalInputElementCollection<string, GCSwitchElement>; // inherited from GCDevicePhysicalInputState
+
+	readonly  // inherited from NSObjectProtocol
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	objectForKeyedSubscript(key: string): GCPhysicalInputElement;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
+declare class GCControllerLiveInput extends GCControllerInputState implements GCDevicePhysicalInput {
+
+	static alloc(): GCControllerLiveInput; // inherited from NSObject
+
+	static new(): GCControllerLiveInput; // inherited from NSObject
+
+	readonly unmappedInput: GCControllerLiveInput;
+
+	readonly axes: GCPhysicalInputElementCollection<string, GCAxisElement>; // inherited from GCDevicePhysicalInputState
+
+	readonly buttons: GCPhysicalInputElementCollection<string, GCButtonElement>; // inherited from GCDevicePhysicalInputState
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly device: GCDevice; // inherited from GCDevicePhysicalInputState
+
+	readonly dpads: GCPhysicalInputElementCollection<string, GCDirectionPadElement>; // inherited from GCDevicePhysicalInputState
+
+	elementValueDidChangeHandler: (p1: GCDevicePhysicalInput, p2: GCPhysicalInputElement) => void; // inherited from GCDevicePhysicalInput
+
+	readonly elements: GCPhysicalInputElementCollection<string, GCPhysicalInputElement>; // inherited from GCDevicePhysicalInputState
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	inputStateAvailableHandler: (p1: GCDevicePhysicalInput) => void; // inherited from GCDevicePhysicalInput
+
+	inputStateQueueDepth: number; // inherited from GCDevicePhysicalInput
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly lastEventLatency: number; // inherited from GCDevicePhysicalInputState
+
+	readonly lastEventTimestamp: number; // inherited from GCDevicePhysicalInputState
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly switches: GCPhysicalInputElementCollection<string, GCSwitchElement>; // inherited from GCDevicePhysicalInputState
+
+	readonly  // inherited from NSObjectProtocol
+
+	capture(): GCControllerInputState;
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	nextInputState(): GCControllerInputState;
+
+	objectForKeyedSubscript(key: string): GCPhysicalInputElement;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
 declare const enum GCControllerPlayerIndex {
 
 	IndexUnset = -1,
@@ -308,8 +440,6 @@ declare var GCCurrentExtendedGamepadSnapshotDataVersion: GCExtendedGamepadSnapsh
 declare var GCCurrentMicroGamepadSnapshotDataVersion: GCMicroGamepadSnapshotDataVersion;
 
 interface GCDevice extends NSObjectProtocol {
-
-	handlerQueue: NSObject;
 
 	physicalInputProfile: GCPhysicalInputProfile;
 
@@ -784,6 +914,8 @@ declare var GCHapticsLocalityRightHandle: string;
 declare var GCHapticsLocalityRightTrigger: string;
 
 declare var GCHapticsLocalityTriggers: string;
+
+declare function GCInputArcadeButtonName(row: number, column: number): string;
 
 declare var GCInputButtonA: string;
 
@@ -1399,8 +1531,6 @@ declare class GCKeyboard extends NSObject implements GCDevice {
 
 	readonly description: string; // inherited from NSObjectProtocol
 
-	handlerQueue: NSObject; // inherited from GCDevice
-
 	readonly hash: number; // inherited from NSObjectProtocol
 
 	readonly isProxy: boolean; // inherited from NSObjectProtocol
@@ -1464,6 +1594,8 @@ interface GCLinearInput extends NSObjectProtocol {
 	lastValueLatency: number;
 
 	lastValueTimestamp: number;
+
+	sources: NSSet<GCPhysicalInputSource>;
 
 	value: number;
 
@@ -1607,8 +1739,6 @@ declare class GCMouse extends NSObject implements GCDevice {
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
 	readonly description: string; // inherited from NSObjectProtocol
-
-	handlerQueue: NSObject; // inherited from GCDevice
 
 	readonly hash: number; // inherited from NSObjectProtocol
 
@@ -1755,6 +1885,34 @@ declare class GCPhysicalInputProfile extends NSObject {
 	setStateFromPhysicalInput(physicalInput: GCPhysicalInputProfile): void;
 }
 
+interface GCPhysicalInputSource extends NSObjectProtocol {
+
+	direction: GCPhysicalInputSourceDirection;
+
+	elementAliases: NSSet<string>;
+
+	elementLocalizedName: string;
+
+	sfSymbolsName: string;
+}
+declare var GCPhysicalInputSource: {
+
+	prototype: GCPhysicalInputSource;
+};
+
+declare const enum GCPhysicalInputSourceDirection {
+
+	NotApplicable = 0,
+
+	Up = 1,
+
+	Right = 2,
+
+	Down = 4,
+
+	Left = 8
+}
+
 interface GCPressedStateInput extends NSObjectProtocol {
 
 	lastPressedStateLatency: number;
@@ -1764,11 +1922,15 @@ interface GCPressedStateInput extends NSObjectProtocol {
 	pressed: boolean;
 
 	pressedDidChangeHandler: (p1: GCPhysicalInputElement, p2: GCPressedStateInput, p3: boolean) => void;
+
+	sources: NSSet<GCPhysicalInputSource>;
 }
 declare var GCPressedStateInput: {
 
 	prototype: GCPressedStateInput;
 };
+
+declare var GCProductCategoryArcadeStick: string;
 
 declare var GCProductCategoryCoalescedRemote: string;
 
@@ -1813,6 +1975,8 @@ interface GCRelativeInput extends NSObjectProtocol {
 	lastDeltaLatency: number;
 
 	lastDeltaTimestamp: number;
+
+	sources: NSSet<GCPhysicalInputSource>;
 }
 declare var GCRelativeInput: {
 
@@ -1857,6 +2021,8 @@ interface GCSwitchPositionInput extends NSObjectProtocol {
 	positionRange: NSRange;
 
 	sequential: boolean;
+
+	sources: NSSet<GCPhysicalInputSource>;
 }
 declare var GCSwitchPositionInput: {
 
@@ -1887,6 +2053,8 @@ interface GCTouchedStateInput extends NSObjectProtocol {
 
 	lastTouchedStateTimestamp: number;
 
+	sources: NSSet<GCPhysicalInputSource>;
+
 	touched: boolean;
 
 	touchedDidChangeHandler: (p1: GCPhysicalInputElement, p2: GCTouchedStateInput, p3: boolean) => void;
@@ -1914,6 +2082,10 @@ declare class GCVirtualController extends NSObject {
 
 	initWithConfiguration(configuration: GCVirtualControllerConfiguration): this;
 
+	setPositionForDirectionPadElement(position: CGPoint, element: string): void;
+
+	setValueForButtonElement(value: number, element: string): void;
+
 	updateConfigurationForElementConfiguration(element: string, config: (p1: GCVirtualControllerElementConfiguration) => GCVirtualControllerElementConfiguration): void;
 }
 
@@ -1924,6 +2096,8 @@ declare class GCVirtualControllerConfiguration extends NSObject {
 	static new(): GCVirtualControllerConfiguration; // inherited from NSObject
 
 	elements: NSSet<string>;
+
+	hidden: boolean;
 }
 
 declare class GCVirtualControllerElementConfiguration extends NSObject {

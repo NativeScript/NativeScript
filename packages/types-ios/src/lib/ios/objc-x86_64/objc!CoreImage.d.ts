@@ -481,6 +481,27 @@ declare var CICMYKHalftone: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+interface CICannyEdgeDetector extends CIFilterProtocol {
+
+	gaussianSigma: number;
+
+	hysteresisPasses: number;
+
+	inputImage: CIImage;
+
+	perceptual: boolean;
+
+	thresholdHigh: number;
+
+	thresholdLow: number;
+}
+declare var CICannyEdgeDetector: {
+
+	prototype: CICannyEdgeDetector;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
 interface CICheckerboardGenerator extends CIFilterProtocol {
 
 	center: CGPoint;
@@ -991,6 +1012,8 @@ declare class CIContext extends NSObject {
 
 	JPEGRepresentationOfImageColorSpaceOptions(image: CIImage, colorSpace: any, options: NSDictionary<string, any>): NSData;
 
+	OpenEXRRepresentationOfImageOptionsError(image: CIImage, options: NSDictionary<string, any>): NSData;
+
 	PNGRepresentationOfImageFormatColorSpaceOptions(image: CIImage, format: number, colorSpace: any, options: NSDictionary<string, any>): NSData;
 
 	TIFFRepresentationOfImageFormatColorSpaceOptions(image: CIImage, format: number, colorSpace: any, options: NSDictionary<string, any>): NSData;
@@ -1046,6 +1069,8 @@ declare class CIContext extends NSObject {
 	writeHEIFRepresentationOfImageToURLFormatColorSpaceOptionsError(image: CIImage, url: NSURL, format: number, colorSpace: any, options: NSDictionary<string, any>): boolean;
 
 	writeJPEGRepresentationOfImageToURLColorSpaceOptionsError(image: CIImage, url: NSURL, colorSpace: any, options: NSDictionary<string, any>): boolean;
+
+	writeOpenEXRRepresentationOfImageToURLOptionsError(image: CIImage, url: NSURL, options: NSDictionary<string, any>): boolean;
 
 	writePNGRepresentationOfImageToURLFormatColorSpaceOptionsError(image: CIImage, url: NSURL, format: number, colorSpace: any, options: NSDictionary<string, any>): boolean;
 
@@ -1593,6 +1618,8 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 
 	static bumpDistortionLinearFilter(): CIFilter;
 
+	static cannyEdgeDetectorFilter(): CIFilter;
+
 	static checkerboardGeneratorFilter(): CIFilter;
 
 	static circleSplashDistortionFilter(): CIFilter;
@@ -1923,6 +1950,8 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 
 	static roundedRectangleGeneratorFilter(): CIFilter;
 
+	static roundedRectangleStrokeGeneratorFilter(): CIFilter;
+
 	static rowAverageFilter(): CIFilter;
 
 	static sRGBToneCurveToLinearFilter(): CIFilter;
@@ -1946,6 +1975,8 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 	static sixfoldRotatedTileFilter(): CIFilter;
 
 	static smoothLinearGradientFilter(): CIFilter;
+
+	static sobelGradientsFilter(): CIFilter;
 
 	static softLightBlendModeFilter(): CIFilter;
 
@@ -2046,6 +2077,53 @@ declare var CIFilterConstructor: {
 
 	prototype: CIFilterConstructor;
 };
+
+declare class CIFilterGenerator extends NSObject implements CIFilterConstructor, NSCopying, NSSecureCoding {
+
+	static alloc(): CIFilterGenerator; // inherited from NSObject
+
+	static filterGenerator(): CIFilterGenerator;
+
+	static filterGeneratorWithContentsOfURL(aURL: NSURL): CIFilterGenerator;
+
+	static new(): CIFilterGenerator; // inherited from NSObject
+
+	classAttributes: NSDictionary<any, any>;
+
+	readonly exportedKeys: NSDictionary<any, any>;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { contentsOfURL: NSURL; });
+
+	connectObjectWithKeyToObjectWithKey(sourceObject: any, sourceKey: string, targetObject: any, targetKey: string): void;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	disconnectObjectWithKeyToObjectWithKey(sourceObject: any, sourceKey: string, targetObject: any, targetKey: string): void;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	exportKeyFromObjectWithName(key: string, targetObject: any, exportedKeyName: string): void;
+
+	filter(): CIFilter;
+
+	filterWithName(name: string): CIFilter;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithContentsOfURL(aURL: NSURL): this;
+
+	registerFilterName(name: string): void;
+
+	removeExportedKey(exportedKeyName: string): void;
+
+	setAttributesForExportedKey(attributes: NSDictionary<any, any>, key: string): void;
+
+	writeToURLAtomically(aURL: NSURL, flag: boolean): boolean;
+}
 
 interface CIFilterProtocol {
 
@@ -2744,6 +2822,10 @@ interface CIImageProcessorInput {
 
 	region: CGRect;
 
+	roiTileCount: number;
+
+	roiTileIndex: number;
+
 	surface: IOSurface;
 }
 declare var CIImageProcessorInput: {
@@ -2764,6 +2846,8 @@ declare class CIImageProcessorKernel extends NSObject {
 	static processWithInputsArgumentsOutputError(inputs: NSArray<CIImageProcessorInput> | CIImageProcessorInput[], _arguments: NSDictionary<string, any>, output: CIImageProcessorOutput): boolean;
 
 	static roiForInputArgumentsOutputRect(input: number, _arguments: NSDictionary<string, any>, outputRect: CGRect): CGRect;
+
+	static roiTileArrayForInputArgumentsOutputRect(input: number, _arguments: NSDictionary<string, any>, outputRect: CGRect): NSArray<CIVector>;
 
 	static readonly outputFormat: number;
 
@@ -3866,6 +3950,8 @@ declare class CIRenderInfo extends NSObject {
 
 	static new(): CIRenderInfo; // inherited from NSObject
 
+	readonly kernelCompileTime: number;
+
 	readonly kernelExecutionTime: number;
 
 	readonly passCount: number;
@@ -3912,6 +3998,23 @@ interface CIRoundedRectangleGenerator extends CIFilterProtocol {
 declare var CIRoundedRectangleGenerator: {
 
 	prototype: CIRoundedRectangleGenerator;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
+interface CIRoundedRectangleStrokeGenerator extends CIFilterProtocol {
+
+	color: CIColor;
+
+	extent: CGRect;
+
+	radius: number;
+
+	width: number;
+}
+declare var CIRoundedRectangleStrokeGenerator: {
+
+	prototype: CIRoundedRectangleStrokeGenerator;
 
 	customAttributes?(): NSDictionary<string, any>;
 };
@@ -4064,6 +4167,17 @@ interface CISmoothLinearGradient extends CIFilterProtocol {
 declare var CISmoothLinearGradient: {
 
 	prototype: CISmoothLinearGradient;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
+interface CISobelGradients extends CIFilterProtocol {
+
+	inputImage: CIImage;
+}
+declare var CISobelGradients: {
+
+	prototype: CISobelGradients;
 
 	customAttributes?(): NSDictionary<string, any>;
 };
@@ -4767,6 +4881,8 @@ declare var kCIContextCacheIntermediates: string;
 
 declare var kCIContextHighQualityDownsample: string;
 
+declare var kCIContextMemoryLimit: string;
+
 declare var kCIContextName: string;
 
 declare var kCIContextOutputColorSpace: string;
@@ -4819,6 +4935,8 @@ declare var kCIFormatRG16: number;
 
 declare var kCIFormatRG8: number;
 
+declare var kCIFormatRGB10: number;
+
 declare var kCIFormatRGBA16: number;
 
 declare var kCIFormatRGBA8: number;
@@ -4826,6 +4944,12 @@ declare var kCIFormatRGBA8: number;
 declare var kCIFormatRGBAf: number;
 
 declare var kCIFormatRGBAh: number;
+
+declare var kCIFormatRGBX16: number;
+
+declare var kCIFormatRGBXf: number;
+
+declare var kCIFormatRGBXh: number;
 
 declare var kCIFormatRGf: number;
 
@@ -4851,6 +4975,8 @@ declare var kCIImageAuxiliaryDepth: string;
 
 declare var kCIImageAuxiliaryDisparity: string;
 
+declare var kCIImageAuxiliaryHDRGainMap: string;
+
 declare var kCIImageAuxiliaryPortraitEffectsMatte: string;
 
 declare var kCIImageAuxiliarySemanticSegmentationGlassesMatte: string;
@@ -4863,7 +4989,11 @@ declare var kCIImageAuxiliarySemanticSegmentationSkyMatte: string;
 
 declare var kCIImageAuxiliarySemanticSegmentationTeethMatte: string;
 
+declare var kCIImageCacheImmediately: string;
+
 declare var kCIImageColorSpace: string;
+
+declare var kCIImageExpandToHDR: string;
 
 declare var kCIImageNearestSampling: string;
 

@@ -168,6 +168,14 @@ export class iOSApplication extends ApplicationCommon {
 	set delegate(value: UIApplicationDelegate | unknown);
 
 	/**
+	 * Adds a delegate handler for the specified delegate method name. This method does not replace an existing handler,
+	 * but rather adds the new handler to the existing chain of handlers.
+	 * @param methodName The name of the delegate method to add a handler for.
+	 * @param handler A function that will be called when the specified delegate method is called.
+	 */
+	addDelegateHandler<T extends keyof UIApplicationDelegate>(methodName: T, handler: (typeof UIApplicationDelegate.prototype)[T]): void;
+
+	/**
 	 * Adds an observer to the default notification center for the specified notification.
 	 * For more information, please visit 'https://developer.apple.com/library/mac/documentation/Cocoa/Reference/Foundation/Classes/NSNotificationCenter_Class/#//apple_ref/occ/instm/NSNotificationCenter/addObserver:selector:name:object:'
 	 * @param notificationName A string containing the name of the notification.

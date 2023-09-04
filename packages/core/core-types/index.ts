@@ -95,6 +95,14 @@ export namespace CoreTypes {
 		export const nowrap = 'nowrap';
 	}
 
+	export type TextOverflowType = 'clip' | 'ellipsis' | 'initial' | 'unset';
+	export namespace TextOverflow {
+		export const clip = 'clip';
+		export const ellipsis = 'ellipsis';
+		export const initial = 'initial';
+		export const unset = 'unset';
+	}
+
 	export type MaxLinesType = number;
 
 	export type OrientationType = 'horizontal' | 'vertical';

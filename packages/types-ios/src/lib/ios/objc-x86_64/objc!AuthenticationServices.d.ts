@@ -452,6 +452,8 @@ declare class ASAuthorizationPlatformPublicKeyCredentialAssertion extends NSObje
 
 	static new(): ASAuthorizationPlatformPublicKeyCredentialAssertion; // inherited from NSObject
 
+	readonly attachment: ASAuthorizationPublicKeyCredentialAttachment;
+
 	readonly credentialID: NSData; // inherited from ASPublicKeyCredential
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
@@ -679,6 +681,8 @@ declare class ASAuthorizationPlatformPublicKeyCredentialRegistration extends NSO
 	static alloc(): ASAuthorizationPlatformPublicKeyCredentialRegistration; // inherited from NSObject
 
 	static new(): ASAuthorizationPlatformPublicKeyCredentialRegistration; // inherited from NSObject
+
+	readonly attachment: ASAuthorizationPublicKeyCredentialAttachment;
 
 	readonly credentialID: NSData; // inherited from ASPublicKeyCredential
 
@@ -915,6 +919,13 @@ declare var ASAuthorizationPublicKeyCredentialAssertionRequest: {
 
 	prototype: ASAuthorizationPublicKeyCredentialAssertionRequest;
 };
+
+declare const enum ASAuthorizationPublicKeyCredentialAttachment {
+
+	Platform = 0,
+
+	CrossPlatform = 1
+}
 
 declare var ASAuthorizationPublicKeyCredentialAttestationKindDirect: string;
 
@@ -1521,6 +1532,21 @@ declare var ASCOSEAlgorithmIdentifierES256: number;
 
 declare var ASCOSEEllipticCurveIdentifierP256: number;
 
+interface ASCredentialIdentity extends NSObjectProtocol {
+
+	rank: number;
+
+	recordIdentifier: string;
+
+	serviceIdentifier: ASCredentialServiceIdentifier;
+
+	user: string;
+}
+declare var ASCredentialIdentity: {
+
+	prototype: ASCredentialIdentity;
+};
+
 declare class ASCredentialIdentityStore extends NSObject {
 
 	static alloc(): ASCredentialIdentityStore; // inherited from NSObject
@@ -1535,9 +1561,15 @@ declare class ASCredentialIdentityStore extends NSObject {
 
 	removeCredentialIdentitiesCompletion(credentialIdentities: NSArray<ASPasswordCredentialIdentity> | ASPasswordCredentialIdentity[], completion: (p1: boolean, p2: NSError) => void): void;
 
+	removeCredentialIdentityEntriesCompletion(credentialIdentities: NSArray<ASCredentialIdentity> | ASCredentialIdentity[], completion: (p1: boolean, p2: NSError) => void): void;
+
 	replaceCredentialIdentitiesWithIdentitiesCompletion(newCredentialIdentities: NSArray<ASPasswordCredentialIdentity> | ASPasswordCredentialIdentity[], completion: (p1: boolean, p2: NSError) => void): void;
 
+	replaceCredentialIdentityEntriesCompletion(newCredentialIdentities: NSArray<ASCredentialIdentity> | ASCredentialIdentity[], completion: (p1: boolean, p2: NSError) => void): void;
+
 	saveCredentialIdentitiesCompletion(credentialIdentities: NSArray<ASPasswordCredentialIdentity> | ASPasswordCredentialIdentity[], completion: (p1: boolean, p2: NSError) => void): void;
+
+	saveCredentialIdentityEntriesCompletion(credentialIdentities: NSArray<ASCredentialIdentity> | ASCredentialIdentity[], completion: (p1: boolean, p2: NSError) => void): void;
 }
 
 declare const enum ASCredentialIdentityStoreErrorCode {
@@ -1568,7 +1600,11 @@ declare class ASCredentialProviderExtensionContext extends NSExtensionContext {
 
 	static new(): ASCredentialProviderExtensionContext; // inherited from NSObject
 
+	completeAssertionRequestWithSelectedPasskeyCredentialCompletionHandler(credential: ASPasskeyAssertionCredential, completionHandler: (p1: boolean) => void): void;
+
 	completeExtensionConfigurationRequest(): void;
+
+	completeRegistrationRequestWithSelectedPasskeyCredentialCompletionHandler(credential: ASPasskeyRegistrationCredential, completionHandler: (p1: boolean) => void): void;
 
 	completeRequestWithSelectedCredentialCompletionHandler(credential: ASPasswordCredential, completionHandler: (p1: boolean) => void): void;
 }
@@ -1585,9 +1621,33 @@ declare class ASCredentialProviderViewController extends UIViewController {
 
 	prepareInterfaceForExtensionConfiguration(): void;
 
+	prepareInterfaceForPasskeyRegistration(registrationRequest: ASCredentialRequest): void;
+
 	prepareInterfaceToProvideCredentialForIdentity(credentialIdentity: ASPasswordCredentialIdentity): void;
 
+	prepareInterfaceToProvideCredentialForRequest(credentialRequest: ASCredentialRequest): void;
+
 	provideCredentialWithoutUserInteractionForIdentity(credentialIdentity: ASPasswordCredentialIdentity): void;
+
+	provideCredentialWithoutUserInteractionForRequest(credentialRequest: ASCredentialRequest): void;
+}
+
+interface ASCredentialRequest extends NSCopying, NSObjectProtocol, NSSecureCoding {
+
+	credentialIdentity: ASCredentialIdentity;
+
+	type: ASCredentialRequestType;
+}
+declare var ASCredentialRequest: {
+
+	prototype: ASCredentialRequest;
+};
+
+declare const enum ASCredentialRequestType {
+
+	Password = 0,
+
+	PasskeyAssertion = 1
 }
 
 declare class ASCredentialServiceIdentifier extends NSObject implements NSCopying, NSSecureCoding {
@@ -1636,6 +1696,278 @@ declare const enum ASExtensionErrorCode {
 declare var ASExtensionErrorDomain: string;
 
 declare var ASExtensionLocalizedFailureReasonErrorKey: string;
+
+declare class ASPasskeyAssertionCredential extends NSObject implements ASAuthorizationCredential {
+
+	static alloc(): ASPasskeyAssertionCredential; // inherited from NSObject
+
+	static credentialWithUserHandleRelyingPartySignatureClientDataHashAuthenticatorDataCredentialID(userHandle: NSData, relyingParty: string, signature: NSData, clientDataHash: NSData, authenticatorData: NSData, credentialID: NSData): ASPasskeyAssertionCredential;
+
+	static new(): ASPasskeyAssertionCredential; // inherited from NSObject
+
+	readonly authenticatorData: NSData;
+
+	readonly clientDataHash: NSData;
+
+	readonly credentialID: NSData;
+
+	readonly relyingParty: string;
+
+	readonly signature: NSData;
+
+	readonly userHandle: NSData;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { userHandle: NSData; relyingParty: string; signature: NSData; clientDataHash: NSData; authenticatorData: NSData; credentialID: NSData; });
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithUserHandleRelyingPartySignatureClientDataHashAuthenticatorDataCredentialID(userHandle: NSData, relyingParty: string, signature: NSData, clientDataHash: NSData, authenticatorData: NSData, credentialID: NSData): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
+declare class ASPasskeyCredentialIdentity extends NSObject implements ASCredentialIdentity, NSCopying, NSSecureCoding {
+
+	static alloc(): ASPasskeyCredentialIdentity; // inherited from NSObject
+
+	static identityWithRelyingPartyIdentifierUserNameCredentialIDUserHandleRecordIdentifier(relyingPartyIdentifier: string, userName: string, credentialID: NSData, userHandle: NSData, recordIdentifier: string): ASPasskeyCredentialIdentity;
+
+	static new(): ASPasskeyCredentialIdentity; // inherited from NSObject
+
+	readonly credentialID: NSData;
+
+	readonly relyingPartyIdentifier: string;
+
+	readonly userHandle: NSData;
+
+	readonly userName: string;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	rank: number; // inherited from ASCredentialIdentity
+
+	readonly recordIdentifier: string; // inherited from ASCredentialIdentity
+
+	readonly serviceIdentifier: ASCredentialServiceIdentifier; // inherited from ASCredentialIdentity
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly user: string; // inherited from ASCredentialIdentity
+
+	readonly  // inherited from NSObjectProtocol
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { relyingPartyIdentifier: string; userName: string; credentialID: NSData; userHandle: NSData; recordIdentifier: string; });
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithRelyingPartyIdentifierUserNameCredentialIDUserHandleRecordIdentifier(relyingPartyIdentifier: string, userName: string, credentialID: NSData, userHandle: NSData, recordIdentifier: string): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
+declare class ASPasskeyCredentialRequest extends NSObject implements ASCredentialRequest {
+
+	static alloc(): ASPasskeyCredentialRequest; // inherited from NSObject
+
+	static new(): ASPasskeyCredentialRequest; // inherited from NSObject
+
+	static requestWithCredentialIdentityClientDataHashUserVerificationPreference(credentialIdentity: ASPasskeyCredentialIdentity, clientDataHash: NSData, userVerificationPreference: string): ASPasskeyCredentialRequest;
+
+	readonly clientDataHash: NSData;
+
+	userVerificationPreference: string;
+
+	readonly credentialIdentity: ASCredentialIdentity; // inherited from ASCredentialRequest
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly type: ASCredentialRequestType; // inherited from ASCredentialRequest
+
+	readonly  // inherited from NSObjectProtocol
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { credentialIdentity: ASPasskeyCredentialIdentity; clientDataHash: NSData; userVerificationPreference: string; });
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithCredentialIdentityClientDataHashUserVerificationPreference(credentialIdentity: ASPasskeyCredentialIdentity, clientDataHash: NSData, userVerificationPreference: string): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
+declare class ASPasskeyRegistrationCredential extends NSObject implements ASAuthorizationCredential {
+
+	static alloc(): ASPasskeyRegistrationCredential; // inherited from NSObject
+
+	static credentialWithRelyingPartyClientDataHashCredentialIDAttestationObject(relyingParty: string, clientDataHash: NSData, credentialID: NSData, attestationObject: NSData): ASPasskeyRegistrationCredential;
+
+	static new(): ASPasskeyRegistrationCredential; // inherited from NSObject
+
+	readonly attestationObject: NSData;
+
+	readonly clientDataHash: NSData;
+
+	readonly credentialID: NSData;
+
+	readonly relyingParty: string;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { relyingParty: string; clientDataHash: NSData; credentialID: NSData; attestationObject: NSData; });
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithRelyingPartyClientDataHashCredentialIDAttestationObject(relyingParty: string, clientDataHash: NSData, credentialID: NSData, attestationObject: NSData): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
 
 declare class ASPasswordCredential extends NSObject implements ASAuthorizationCredential {
 
@@ -1698,7 +2030,7 @@ declare class ASPasswordCredential extends NSObject implements ASAuthorizationCr
 	self(): this;
 }
 
-declare class ASPasswordCredentialIdentity extends NSObject implements NSCopying, NSSecureCoding {
+declare class ASPasswordCredentialIdentity extends NSObject implements ASCredentialIdentity, NSCopying, NSSecureCoding {
 
 	static alloc(): ASPasswordCredentialIdentity; // inherited from NSObject
 
@@ -1706,19 +2038,35 @@ declare class ASPasswordCredentialIdentity extends NSObject implements NSCopying
 
 	static new(): ASPasswordCredentialIdentity; // inherited from NSObject
 
-	rank: number;
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	readonly recordIdentifier: string;
+	readonly description: string; // inherited from NSObjectProtocol
 
-	readonly serviceIdentifier: ASCredentialServiceIdentifier;
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	readonly user: string;
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	rank: number; // inherited from ASCredentialIdentity
+
+	readonly recordIdentifier: string; // inherited from ASCredentialIdentity
+
+	readonly serviceIdentifier: ASCredentialServiceIdentifier; // inherited from ASCredentialIdentity
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly user: string; // inherited from ASCredentialIdentity
+
+	readonly  // inherited from NSObjectProtocol
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	constructor(o: { serviceIdentifier: ASCredentialServiceIdentifier; user: string; recordIdentifier: string; });
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
@@ -1727,6 +2075,85 @@ declare class ASPasswordCredentialIdentity extends NSObject implements NSCopying
 	initWithCoder(coder: NSCoder): this;
 
 	initWithServiceIdentifierUserRecordIdentifier(serviceIdentifier: ASCredentialServiceIdentifier, user: string, recordIdentifier: string): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
+declare class ASPasswordCredentialRequest extends NSObject implements ASCredentialRequest {
+
+	static alloc(): ASPasswordCredentialRequest; // inherited from NSObject
+
+	static new(): ASPasswordCredentialRequest; // inherited from NSObject
+
+	static requestWithCredentialIdentity(credentialIdentity: ASPasswordCredentialIdentity): ASPasswordCredentialRequest;
+
+	readonly credentialIdentity: ASCredentialIdentity; // inherited from ASCredentialRequest
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly type: ASCredentialRequestType; // inherited from ASCredentialRequest
+
+	readonly  // inherited from NSObjectProtocol
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { credentialIdentity: ASPasswordCredentialIdentity; });
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithCredentialIdentity(credentialIdentity: ASPasswordCredentialIdentity): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
 }
 
 interface ASPublicKeyCredential extends ASAuthorizationCredential {
@@ -1739,6 +2166,26 @@ declare var ASPublicKeyCredential: {
 
 	prototype: ASPublicKeyCredential;
 };
+
+declare const enum ASPublicKeyCredentialClientDataCrossOriginValue {
+
+	NotSet = 0,
+
+	CrossOrigin = 1,
+
+	SameOriginWithAncestors = 2
+}
+
+declare class ASSettingsHelper extends NSObject {
+
+	static alloc(): ASSettingsHelper; // inherited from NSObject
+
+	static new(): ASSettingsHelper; // inherited from NSObject
+
+	static openCredentialProviderAppSettingsWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+
+	static openVerificationCodeAppSettingsWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+}
 
 declare const enum ASUserDetectionStatus {
 

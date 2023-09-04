@@ -21,7 +21,8 @@
 			"@nativescript/core": ["packages/core/index.ts"],
 			"@nativescript/core/*": ["packages/core/*"],
 			"@nativescript/types-android": ["packages/types-android/src/index.ts"],
-			"@nativescript/types-ios": ["packages/types-ios/src/index.ts"]
+			"@nativescript/types-ios": ["packages/types-ios/src/index.ts"],
+			"@nativescript/workspace-plugin": ["tools/workspace-plugin/src/index.ts"]
 		}
 	},
 	"exclude": ["node_modules", "tmp", "platforms", "__tests__"]

@@ -172,6 +172,7 @@ export class Style extends Observable implements StyleDefinition {
 	public textTransform: CoreTypes.TextTransformType;
 	public textShadow: CSSShadow;
 	public whiteSpace: CoreTypes.WhiteSpaceType;
+	public textOverflow: CoreTypes.TextOverflowType;
 
 	public minWidth: CoreTypes.LengthType;
 	public minHeight: CoreTypes.LengthType;

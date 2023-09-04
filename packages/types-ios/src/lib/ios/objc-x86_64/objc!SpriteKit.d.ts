@@ -184,7 +184,7 @@ declare class SKAction extends NSObject implements NSCopying, NSSecureCoding {
 
 	static runBlock(block: () => void): SKAction;
 
-	static runBlockQueue(block: () => void, queue: NSObject): SKAction;
+	static runBlockQueue(block: () => void, queue: interop.Pointer | interop.Reference<any>): SKAction;
 
 	static scaleByDuration(scale: number, duration: number): SKAction;
 

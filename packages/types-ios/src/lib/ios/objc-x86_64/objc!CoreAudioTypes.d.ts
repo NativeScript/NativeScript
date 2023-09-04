@@ -872,6 +872,18 @@ declare const kAudioChannelLayoutTag_Mono: number;
 
 declare const kAudioChannelLayoutTag_Octagonal: number;
 
+declare const kAudioChannelLayoutTag_Ogg_3_0: number;
+
+declare const kAudioChannelLayoutTag_Ogg_4_0: number;
+
+declare const kAudioChannelLayoutTag_Ogg_5_0: number;
+
+declare const kAudioChannelLayoutTag_Ogg_5_1: number;
+
+declare const kAudioChannelLayoutTag_Ogg_6_1: number;
+
+declare const kAudioChannelLayoutTag_Ogg_7_1: number;
+
 declare const kAudioChannelLayoutTag_Pentagonal: number;
 
 declare const kAudioChannelLayoutTag_Quadraphonic: number;

@@ -16,9 +16,9 @@ declare class STScreenTimeConfigurationObserver extends NSObject {
 
 	readonly configuration: STScreenTimeConfiguration;
 
-	constructor(o: { updateQueue: NSObject; });
+	constructor(o: { updateQueue: interop.Pointer | interop.Reference<any>; });
 
-	initWithUpdateQueue(updateQueue: NSObject): this;
+	initWithUpdateQueue(updateQueue: interop.Pointer | interop.Reference<any>): this;
 
 	startObserving(): void;
 

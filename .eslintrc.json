@@ -1,7 +1,7 @@
 {
 	"root": true,
 	"ignorePatterns": ["**/*"],
-	"plugins": ["@nrwl/nx"],
+	"plugins": ["@nx"],
 	"parser": "@typescript-eslint/parser",
 	"parserOptions": {
 		"ecmaFeatures": {
@@ -16,7 +16,7 @@
 		{
 			"files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
 			"rules": {
-				"@nrwl/nx/enforce-module-boundaries": [
+				"@nx/enforce-module-boundaries": [
 					"error",
 					{
 						"enforceBuildableLibDependency": true,
@@ -33,7 +33,7 @@
 		},
 		{
 			"files": ["*.ts", "*.tsx"],
-			"extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier", "plugin:@nrwl/nx/typescript"],
+			"extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier", "plugin:@nx/typescript"],
 			"rules": {
 				"no-empty": "off",
 				"no-useless-escape": "off",
@@ -53,7 +53,7 @@
 		},
 		{
 			"files": ["*.js", "*.jsx"],
-			"extends": ["plugin:@nrwl/nx/javascript"],
+			"extends": ["plugin:@nx/javascript"],
 			"rules": {}
 		},
 		{
@@ -61,6 +61,11 @@
 			"rules": {
 				"@typescript-eslint/triple-slash-reference": "off"
 			}
+		},
+		{
+			"files": "*.json",
+			"parser": "jsonc-eslint-parser",
+			"rules": {}
 		}
 	]
 }
