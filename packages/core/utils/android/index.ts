@@ -62,10 +62,19 @@ export function dismissSoftInput(nativeView?: android.view.View): void {
 	let windowToken: android.os.IBinder;
 
 	if (nativeView instanceof android.view.View) {
+		windowToken = nativeView.getWindowToken();
+
+		if (windowToken == null) {
+			// in this case the view might already have been removed from view tree
+			// but the user might still be wanting to hide the keyboard
+			// let s used a deprecated method to ensure we hide it
+			if (inputManager) {
+				inputManager.toggleSoftInput(1, 0);
+			}
+		}
 		if (!nativeView.hasFocus()) {
 			return;
 		}
-		windowToken = nativeView.getWindowToken();
 	} else if (getCurrentActivity() instanceof androidx.appcompat.app.AppCompatActivity) {
 		const decorView = getCurrentActivity().getWindow().getDecorView();
 		if (decorView) {
