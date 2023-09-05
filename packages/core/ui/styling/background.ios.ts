@@ -938,10 +938,17 @@ function generateNonUniformMultiColorBorderPaths(bounds: CGRect, background: Bac
 		right: x + width,
 	};
 
-	const topWidth = layout.toDeviceIndependentPixels(background.borderTopWidth);
-	const rightWidth = layout.toDeviceIndependentPixels(background.borderRightWidth);
-	const bottomWidth = layout.toDeviceIndependentPixels(background.borderBottomWidth);
-	const leftWidth = layout.toDeviceIndependentPixels(background.borderLeftWidth);
+	const topWidth: number = layout.toDeviceIndependentPixels(background.borderTopWidth);
+	const rightWidth: number = layout.toDeviceIndependentPixels(background.borderRightWidth);
+	const bottomWidth: number = layout.toDeviceIndependentPixels(background.borderBottomWidth);
+	const leftWidth: number = layout.toDeviceIndependentPixels(background.borderLeftWidth);
+
+	// These values have 1 as fallback in order to handler borders with zero values
+	const safeTopWidth: number = Math.max(topWidth, 1);
+	const safeRightWidth: number = Math.max(rightWidth, 1);
+	const safeBottomWidth: number = Math.max(bottomWidth, 1);
+	const safeLeftWidth: number = Math.max(leftWidth, 1);
+
 	const paths = new Array(4);
 
 	const lto: Point = {
@@ -949,8 +956,8 @@ function generateNonUniformMultiColorBorderPaths(bounds: CGRect, background: Bac
 		y: position.top,
 	}; // left-top-outside
 	const lti: Point = {
-		x: position.left + leftWidth,
-		y: position.top + topWidth,
+		x: position.left + safeLeftWidth,
+		y: position.top + safeTopWidth,
 	}; // left-top-inside
 
 	const rto: Point = {
@@ -958,8 +965,8 @@ function generateNonUniformMultiColorBorderPaths(bounds: CGRect, background: Bac
 		y: position.top,
 	}; // right-top-outside
 	const rti: Point = {
-		x: position.right - rightWidth,
-		y: position.top + topWidth,
+		x: position.right - safeRightWidth,
+		y: position.top + safeTopWidth,
 	}; // right-top-inside
 
 	const rbo: Point = {
@@ -967,8 +974,8 @@ function generateNonUniformMultiColorBorderPaths(bounds: CGRect, background: Bac
 		y: position.bottom,
 	}; // right-bottom-outside
 	const rbi: Point = {
-		x: position.right - rightWidth,
-		y: position.bottom - bottomWidth,
+		x: position.right - safeRightWidth,
+		y: position.bottom - safeBottomWidth,
 	}; // right-bottom-inside
 
 	const lbo: Point = {
@@ -976,16 +983,16 @@ function generateNonUniformMultiColorBorderPaths(bounds: CGRect, background: Bac
 		y: position.bottom,
 	}; // left-bottom-outside
 	const lbi: Point = {
-		x: position.left + leftWidth,
-		y: position.bottom - bottomWidth,
+		x: position.left + safeLeftWidth,
+		y: position.bottom - safeBottomWidth,
 	}; // left-bottom-inside
 
 	const centerX: number = position.right / 2;
 	const centerY: number = position.bottom / 2;
 
-	// These values help calculate the size each border shape should consume
-	const averageHorizontalBorderMultiplier: number = (leftWidth + rightWidth) / 2;
-	const averageVerticalBorderMultiplier: number = (topWidth + bottomWidth) / 2;
+	// These values help calculate the size that each border shape should consume
+	const averageHorizontalBorderWidth: number = Math.max((leftWidth + rightWidth) / 2, 1);
+	const averageVerticalBorderWidth: number = Math.max((topWidth + bottomWidth) / 2, 1);
 	const viewRatioMultiplier: number = width > 0 && height > 0 ? width / height : 1;
 
 	const borderTopColor = background.borderTopColor;
@@ -993,55 +1000,26 @@ function generateNonUniformMultiColorBorderPaths(bounds: CGRect, background: Bac
 	const borderBottomColor = background.borderBottomColor;
 	const borderLeftColor = background.borderLeftColor;
 
-	let borderTopY: number = centerY * (topWidth / averageHorizontalBorderMultiplier) * viewRatioMultiplier;
-	let borderRightX: number = position.right - (centerX * (rightWidth / averageVerticalBorderMultiplier)) / viewRatioMultiplier;
-	let borderBottomY: number = position.bottom - centerY * (bottomWidth / averageHorizontalBorderMultiplier) * viewRatioMultiplier;
-	let borderLeftX: number = (centerX * (leftWidth / averageVerticalBorderMultiplier)) / viewRatioMultiplier;
+	let borderTopY: number = centerY * (safeTopWidth / averageHorizontalBorderWidth) * viewRatioMultiplier;
+	let borderRightX: number = position.right - (centerX * (safeRightWidth / averageVerticalBorderWidth)) / viewRatioMultiplier;
+	let borderBottomY: number = position.bottom - centerY * (safeBottomWidth / averageHorizontalBorderWidth) * viewRatioMultiplier;
+	let borderLeftX: number = (centerX * (safeLeftWidth / averageVerticalBorderWidth)) / viewRatioMultiplier;
 
-	let borderTopLeftX: number, borderTopRightX: number;
-	let borderRightBottomY: number, borderRightTopY: number;
-	let borderBottomLeftX: number, borderBottomRightX: number;
-	let borderLeftBottomY: number, borderLeftTopY: number;
-
-	const hasHorizontalIntersection: boolean = borderLeftX > borderRightX || borderRightX < borderLeftX;
-	const hasVerticalIntersection: boolean = borderTopY > borderBottomY || borderBottomY < borderTopY;
-
-	// Some border values get calculated earlier as they're used to adjust other borders that collide with each other
-	if (hasHorizontalIntersection || hasVerticalIntersection) {
-		if (hasVerticalIntersection) {
-			borderLeftTopY = extendPointsToTargetY(lto.y, lto.x, lti.y, lti.x, borderLeftX);
-			borderLeftBottomY = extendPointsToTargetY(lbo.y, lbo.x, lbi.y, lbi.x, borderLeftX);
-
-			if (borderTopY > borderBottomY) {
-				borderTopY = borderLeftTopY;
-			}
-
-			if (borderBottomY < borderTopY) {
-				borderBottomY = borderLeftBottomY;
-			}
-		} else {
-			borderTopLeftX = extendPointsToTargetY(lto.x, lto.y, lti.x, lti.y, borderTopY);
-			borderTopRightX = extendPointsToTargetY(rto.x, rto.y, rti.x, rti.y, borderTopY);
-
-			if (borderLeftX > borderRightX) {
-				borderLeftX = borderTopLeftX;
-			}
-
-			if (borderRightX < borderLeftX) {
-				borderRightX = borderTopRightX;
-			}
-		}
+	// Adjust border triangle width in case of borders colliding between each other or borders being less than 4
+	const hasHorizontalIntersection: boolean = borderLeftX > borderRightX;
+	const hasVerticalIntersection: boolean = borderTopY > borderBottomY;
+	if (hasVerticalIntersection) {
+		borderTopY = extendPointsToTargetY(lto.y, lto.x, lti.y, lti.x, borderLeftX);
+		borderBottomY = extendPointsToTargetY(lbo.y, lbo.x, lbi.y, lbi.x, borderLeftX);
+	} else if (hasHorizontalIntersection) {
+		borderLeftX = extendPointsToTargetY(lto.x, lto.y, lti.x, lti.y, borderTopY);
+		borderRightX = extendPointsToTargetY(rto.x, rto.y, rti.x, rti.y, borderTopY);
 	}
 
-	if (topWidth > 0 && borderTopColor && borderTopColor.ios) {
+	if (topWidth > 0 && borderTopColor?.ios) {
 		const topBorderPath = CGPathCreateMutable();
-
-		if (borderTopLeftX == null) {
-			borderTopLeftX = extendPointsToTargetY(lto.x, lto.y, lti.x, lti.y, borderTopY);
-		}
-		if (borderTopRightX == null) {
-			borderTopRightX = extendPointsToTargetY(rto.x, rto.y, rti.x, rti.y, borderTopY);
-		}
+		const borderTopLeftX: number = extendPointsToTargetY(lto.x, lto.y, lti.x, lti.y, borderTopY);
+		const borderTopRightX: number = extendPointsToTargetY(rto.x, rto.y, rti.x, rti.y, borderTopY);
 
 		CGPathMoveToPoint(topBorderPath, null, lto.x, lto.y);
 		CGPathAddLineToPoint(topBorderPath, null, rto.x, rto.y);
@@ -1053,11 +1031,10 @@ function generateNonUniformMultiColorBorderPaths(bounds: CGRect, background: Bac
 
 		paths[0] = topBorderPath;
 	}
-	if (rightWidth > 0 && borderRightColor && borderRightColor.ios) {
+	if (rightWidth > 0 && borderRightColor?.ios) {
 		const rightBorderPath = CGPathCreateMutable();
-
-		borderRightBottomY = extendPointsToTargetY(rbo.y, rbo.x, rbi.y, rbi.x, borderRightX);
-		borderRightTopY = extendPointsToTargetY(rto.y, rto.x, rti.y, rti.x, borderRightX);
+		const borderRightBottomY: number = extendPointsToTargetY(rbo.y, rbo.x, rbi.y, rbi.x, borderRightX);
+		const borderRightTopY: number = extendPointsToTargetY(rto.y, rto.x, rti.y, rti.x, borderRightX);
 
 		CGPathMoveToPoint(rightBorderPath, null, rto.x, rto.y);
 		CGPathAddLineToPoint(rightBorderPath, null, rbo.x, rbo.y);
@@ -1069,11 +1046,10 @@ function generateNonUniformMultiColorBorderPaths(bounds: CGRect, background: Bac
 
 		paths[1] = rightBorderPath;
 	}
-	if (bottomWidth > 0 && borderBottomColor && borderBottomColor.ios) {
+	if (bottomWidth > 0 && borderBottomColor?.ios) {
 		const bottomBorderPath = CGPathCreateMutable();
-
-		borderBottomLeftX = extendPointsToTargetY(lbo.x, lbo.y, lbi.x, lbi.y, borderBottomY);
-		borderBottomRightX = extendPointsToTargetY(rbo.x, rbo.y, rbi.x, rbi.y, borderBottomY);
+		const borderBottomLeftX: number = extendPointsToTargetY(lbo.x, lbo.y, lbi.x, lbi.y, borderBottomY);
+		const borderBottomRightX: number = extendPointsToTargetY(rbo.x, rbo.y, rbi.x, rbi.y, borderBottomY);
 
 		CGPathMoveToPoint(bottomBorderPath, null, rbo.x, rbo.y);
 		CGPathAddLineToPoint(bottomBorderPath, null, lbo.x, lbo.y);
@@ -1085,15 +1061,10 @@ function generateNonUniformMultiColorBorderPaths(bounds: CGRect, background: Bac
 
 		paths[2] = bottomBorderPath;
 	}
-	if (leftWidth > 0 && borderLeftColor && borderLeftColor.ios) {
+	if (leftWidth > 0 && borderLeftColor?.ios) {
 		const leftBorderPath = CGPathCreateMutable();
-
-		if (borderLeftTopY == null) {
-			borderLeftTopY = extendPointsToTargetY(lto.y, lto.x, lti.y, lti.x, borderLeftX);
-		}
-		if (borderLeftBottomY == null) {
-			borderLeftBottomY = extendPointsToTargetY(lbo.y, lbo.x, lbi.y, lbi.x, borderLeftX);
-		}
+		const borderLeftTopY: number = extendPointsToTargetY(lto.y, lto.x, lti.y, lti.x, borderLeftX);
+		const borderLeftBottomY: number = extendPointsToTargetY(lbo.y, lbo.x, lbi.y, lbi.x, borderLeftX);
 
 		CGPathMoveToPoint(leftBorderPath, null, lbo.x, lbo.y);
 		CGPathAddLineToPoint(leftBorderPath, null, lto.x, lto.y);
