@@ -1,5 +1,6 @@
 import { Application } from '../../application';
 import { Trace } from '../../trace';
+import { topmost } from '../../ui/frame/frame-stack';
 
 let application: android.app.Application;
 let applicationContext: android.content.Context;
@@ -67,7 +68,7 @@ export function dismissSoftInput(nativeView?: android.view.View): void {
 		}
 		windowToken = nativeView.getWindowToken();
 	} else if (getCurrentActivity() instanceof androidx.appcompat.app.AppCompatActivity) {
-		const decorView = getCurrentActivity().getWindow().getDecorView();
+        const decorView = (topmost().modal?.getClosestWindow() ?? getCurrentActivity().getWindow()).getDecorView();
 		if (decorView) {
 			windowToken = decorView.getWindowToken();
 			decorView.requestFocus();
