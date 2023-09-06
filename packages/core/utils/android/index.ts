@@ -68,7 +68,7 @@ export function dismissSoftInput(nativeView?: android.view.View): void {
 		}
 		windowToken = nativeView.getWindowToken();
 	} else if (getCurrentActivity() instanceof androidx.appcompat.app.AppCompatActivity) {
-        const decorView = (topmost().modal?.getClosestWindow() ?? getCurrentActivity().getWindow()).getDecorView();
+		const decorView = (topmost().modal?.getClosestWindow() ?? getCurrentActivity().getWindow()).getDecorView();
 		if (decorView) {
 			windowToken = decorView.getWindowToken();
 			decorView.requestFocus();
