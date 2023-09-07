@@ -169,8 +169,9 @@ export class View extends ViewCommon implements ViewDefinition {
 				CATransaction.setDisableActions(true);
 
 				if (nativeView.outerShadowContainerLayer) {
+					const { x: originX, y: originY }: CGPoint = nativeView.outerShadowContainerLayer.anchorPoint;
 					nativeView.outerShadowContainerLayer.bounds = nativeView.bounds;
-					nativeView.outerShadowContainerLayer.position = CGPointMake(frame.origin.x + frame.size.width / 2, frame.origin.y + frame.size.height / 2);
+					nativeView.outerShadowContainerLayer.position = CGPointMake(frame.origin.x + frame.size.width * originX, frame.origin.y + frame.size.height * originY);
 				}
 
 				CATransaction.setDisableActions(false);
@@ -450,11 +451,27 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	public updateOriginPoint(originX: number, originY: number) {
+		const nativeView: NativeScriptUIView = <NativeScriptUIView>this.nativeViewProtected;
 		const newPoint = CGPointMake(originX, originY);
-		this.nativeViewProtected.layer.anchorPoint = newPoint;
+
+		// Disable CALayer animatable property changes
+		CATransaction.setDisableActions(true);
+
+		nativeView.layer.anchorPoint = newPoint;
 		if (this._cachedFrame) {
-			this._setNativeViewFrame(this.nativeViewProtected, this._cachedFrame);
+			this._setNativeViewFrame(nativeView, this._cachedFrame);
 		}
+
+		// Make sure new origin also applies to outer shadow layers
+		if (nativeView.outerShadowContainerLayer) {
+			// This is the new frame after view origin point update
+			const frame = nativeView.frame;
+
+			nativeView.outerShadowContainerLayer.anchorPoint = newPoint;
+			nativeView.outerShadowContainerLayer.position = CGPointMake(frame.origin.x + frame.size.width * originX, frame.origin.y + frame.size.height * originY);
+		}
+
+		CATransaction.setDisableActions(false);
 	}
 
 	// By default we update the view's presentation layer when setting backgroundColor and opacity properties.

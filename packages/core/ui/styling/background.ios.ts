@@ -1125,9 +1125,12 @@ function drawBoxShadow(view: View): void {
 		}
 	}
 
-	// Since shadow layer is added to view layer's superlayer, we have to be more specific about shadow layer position
 	outerShadowContainerLayer.bounds = bounds;
-	outerShadowContainerLayer.position = CGPointMake(viewFrame.origin.x + viewFrame.size.width / 2, viewFrame.origin.y + viewFrame.size.height / 2);
+	outerShadowContainerLayer.anchorPoint = layer.anchorPoint;
+
+	// Since shadow uses superlayer's coordinate system, we have to be more specific about shadow layer position
+	const { x: originX, y: originY }: CGPoint = outerShadowContainerLayer.anchorPoint;
+	outerShadowContainerLayer.position = CGPointMake(viewFrame.origin.x + viewFrame.size.width * originX, viewFrame.origin.y + viewFrame.size.height * originY);
 
 	// Inherit view visibility values
 	outerShadowContainerLayer.opacity = layer.opacity;
