@@ -427,23 +427,23 @@ declare class GLKTextureLoader extends NSObject {
 
 	constructor(o: { sharegroup: EAGLSharegroup; });
 
-	cubeMapWithContentsOfFileOptionsQueueCompletionHandler(path: string, options: NSDictionary<string, number>, queue: NSObject, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
+	cubeMapWithContentsOfFileOptionsQueueCompletionHandler(path: string, options: NSDictionary<string, number>, queue: interop.Pointer | interop.Reference<any>, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
 
-	cubeMapWithContentsOfFilesOptionsQueueCompletionHandler(paths: NSArray<any> | any[], options: NSDictionary<string, number>, queue: NSObject, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
+	cubeMapWithContentsOfFilesOptionsQueueCompletionHandler(paths: NSArray<any> | any[], options: NSDictionary<string, number>, queue: interop.Pointer | interop.Reference<any>, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
 
-	cubeMapWithContentsOfURLOptionsQueueCompletionHandler(url: NSURL, options: NSDictionary<string, number>, queue: NSObject, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
+	cubeMapWithContentsOfURLOptionsQueueCompletionHandler(url: NSURL, options: NSDictionary<string, number>, queue: interop.Pointer | interop.Reference<any>, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
 
 	initWithSharegroup(sharegroup: EAGLSharegroup): this;
 
-	textureWithCGImageOptionsQueueCompletionHandler(cgImage: any, options: NSDictionary<string, number>, queue: NSObject, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
+	textureWithCGImageOptionsQueueCompletionHandler(cgImage: any, options: NSDictionary<string, number>, queue: interop.Pointer | interop.Reference<any>, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
 
-	textureWithContentsOfDataOptionsQueueCompletionHandler(data: NSData, options: NSDictionary<string, number>, queue: NSObject, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
+	textureWithContentsOfDataOptionsQueueCompletionHandler(data: NSData, options: NSDictionary<string, number>, queue: interop.Pointer | interop.Reference<any>, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
 
-	textureWithContentsOfFileOptionsQueueCompletionHandler(path: string, options: NSDictionary<string, number>, queue: NSObject, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
+	textureWithContentsOfFileOptionsQueueCompletionHandler(path: string, options: NSDictionary<string, number>, queue: interop.Pointer | interop.Reference<any>, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
 
-	textureWithContentsOfURLOptionsQueueCompletionHandler(url: NSURL, options: NSDictionary<string, number>, queue: NSObject, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
+	textureWithContentsOfURLOptionsQueueCompletionHandler(url: NSURL, options: NSDictionary<string, number>, queue: interop.Pointer | interop.Reference<any>, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
 
-	textureWithNameScaleFactorBundleOptionsQueueCompletionHandler(name: string, scaleFactor: number, bundle: NSBundle, options: NSDictionary<string, number>, queue: NSObject, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
+	textureWithNameScaleFactorBundleOptionsQueueCompletionHandler(name: string, scaleFactor: number, bundle: NSBundle, options: NSDictionary<string, number>, queue: interop.Pointer | interop.Reference<any>, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
 }
 
 declare var GLKTextureLoaderApplyPremultiplication: string;

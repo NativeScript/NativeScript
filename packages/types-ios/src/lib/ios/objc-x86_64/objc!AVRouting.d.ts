@@ -7,7 +7,7 @@ declare class AVCustomDeviceRoute extends NSObject {
 
 	readonly bluetoothIdentifier: NSUUID;
 
-	readonly networkEndpoint: NSObject;
+	readonly networkEndpoint: interop.Pointer | interop.Reference<any>;
 }
 
 declare class AVCustomRoutingActionItem extends NSObject {

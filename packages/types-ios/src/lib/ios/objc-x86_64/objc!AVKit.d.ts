@@ -31,7 +31,15 @@ declare const enum AVKitError {
 
 	Unknown = -1000,
 
-	PictureInPictureStartFailed = -1001
+	PictureInPictureStartFailed = -1001,
+
+	ContentRatingUnknown = -1100,
+
+	ContentDisallowedByPasscode = -1101,
+
+	ContentDisallowedByProfile = -1102,
+
+	RecordingFailed = -1200
 }
 
 declare var AVKitErrorDomain: string;
@@ -212,9 +220,13 @@ declare class AVPlayerViewController extends UIViewController {
 
 	speeds: NSArray<AVPlaybackSpeed>;
 
+	readonly toggleLookupAction: UIAction;
+
 	updatesNowPlayingInfoCenter: boolean;
 
 	readonly videoBounds: CGRect;
+
+	videoFrameAnalysisTypes: AVVideoFrameAnalysisType;
 
 	videoGravity: string;
 
@@ -289,3 +301,18 @@ declare var AVRoutePickerViewDelegate: {
 
 	prototype: AVRoutePickerViewDelegate;
 };
+
+declare const enum AVVideoFrameAnalysisType {
+
+	None = 0,
+
+	Default = 1,
+
+	Text = 2,
+
+	Subject = 4,
+
+	VisualSearch = 8,
+
+	MachineReadableCode = 16
+}

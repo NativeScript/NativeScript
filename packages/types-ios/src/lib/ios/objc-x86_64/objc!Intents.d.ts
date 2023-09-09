@@ -2335,6 +2335,72 @@ declare class INDoubleResolutionResult extends INIntentResolutionResult {
 	static unsupportedWithReason(reason: number): INDoubleResolutionResult; // inherited from INIntentResolutionResult
 }
 
+declare class INEditMessageIntent extends INIntent {
+
+	static alloc(): INEditMessageIntent; // inherited from NSObject
+
+	static new(): INEditMessageIntent; // inherited from NSObject
+
+	readonly editedContent: string;
+
+	readonly messageIdentifier: string;
+
+	constructor(o: { messageIdentifier: string; editedContent: string; });
+
+	initWithMessageIdentifierEditedContent(messageIdentifier: string, editedContent: string): this;
+}
+
+interface INEditMessageIntentHandling extends NSObjectProtocol {
+
+	confirmEditMessageCompletion?(intent: INEditMessageIntent, completion: (p1: INEditMessageIntentResponse) => void): void;
+
+	handleEditMessageCompletion(intent: INEditMessageIntent, completion: (p1: INEditMessageIntentResponse) => void): void;
+
+	resolveEditedContentForEditMessageWithCompletion?(intent: INEditMessageIntent, completion: (p1: INStringResolutionResult) => void): void;
+}
+declare var INEditMessageIntentHandling: {
+
+	prototype: INEditMessageIntentHandling;
+};
+
+declare class INEditMessageIntentResponse extends INIntentResponse {
+
+	static alloc(): INEditMessageIntentResponse; // inherited from NSObject
+
+	static new(): INEditMessageIntentResponse; // inherited from NSObject
+
+	readonly code: INEditMessageIntentResponseCode;
+
+	constructor(o: { code: INEditMessageIntentResponseCode; userActivity: NSUserActivity; });
+
+	initWithCodeUserActivity(code: INEditMessageIntentResponseCode, userActivity: NSUserActivity): this;
+}
+
+declare const enum INEditMessageIntentResponseCode {
+
+	Unspecified = 0,
+
+	Ready = 1,
+
+	InProgress = 2,
+
+	Success = 3,
+
+	Failure = 4,
+
+	FailureRequiringAppLaunch = 5,
+
+	FailureMessageNotFound = 6,
+
+	FailurePastEditTimeLimit = 7,
+
+	FailureMessageTypeUnsupported = 8,
+
+	FailureUnsupportedOnService = 9,
+
+	FailureMessageServiceNotAvailable = 10
+}
+
 declare class INEndWorkoutIntent extends INIntent {
 
 	static alloc(): INEndWorkoutIntent; // inherited from NSObject
@@ -3459,7 +3525,11 @@ declare const enum INIntentErrorCode {
 
 	EncodingFailed = 8001,
 
-	DecodingGeneric = 9000
+	DecodingGeneric = 9000,
+
+	UnableToCreateAppIntentRepresentation = 10000,
+
+	NoAppIntent = 10001
 }
 
 declare var INIntentErrorDomain: string;
@@ -4115,6 +4185,8 @@ declare class INMessage extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): INMessage; // inherited from NSObject
 
+	readonly attachmentFiles: NSArray<INFile>;
+
 	readonly audioMessageFile: INFile;
 
 	readonly content: string;
@@ -4127,7 +4199,11 @@ declare class INMessage extends NSObject implements NSCopying, NSSecureCoding {
 
 	readonly identifier: string;
 
+	readonly linkMetadata: INMessageLinkMetadata;
+
 	readonly messageType: INMessageType;
+
+	readonly numberOfAttachments: number;
 
 	readonly recipients: NSArray<INPerson>;
 
@@ -4145,7 +4221,13 @@ declare class INMessage extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { identifier: string; conversationIdentifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson> | INPerson[]; groupName: INSpeakableString; messageType: INMessageType; serviceName: string; });
 
+	constructor(o: { identifier: string; conversationIdentifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson> | INPerson[]; groupName: INSpeakableString; messageType: INMessageType; serviceName: string; attachmentFiles: NSArray<INFile> | INFile[]; });
+
 	constructor(o: { identifier: string; conversationIdentifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson> | INPerson[]; groupName: INSpeakableString; messageType: INMessageType; serviceName: string; audioMessageFile: INFile; });
+
+	constructor(o: { identifier: string; conversationIdentifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson> | INPerson[]; groupName: INSpeakableString; serviceName: string; linkMetadata: INMessageLinkMetadata; });
+
+	constructor(o: { identifier: string; conversationIdentifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson> | INPerson[]; groupName: INSpeakableString; serviceName: string; messageType: INMessageType; numberOfAttachments: number; });
 
 	constructor(o: { identifier: string; conversationIdentifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson> | INPerson[]; messageType: INMessageType; });
 
@@ -4161,7 +4243,13 @@ declare class INMessage extends NSObject implements NSCopying, NSSecureCoding {
 
 	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsGroupNameMessageTypeServiceName(identifier: string, conversationIdentifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson> | INPerson[], groupName: INSpeakableString, messageType: INMessageType, serviceName: string): this;
 
+	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsGroupNameMessageTypeServiceNameAttachmentFiles(identifier: string, conversationIdentifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson> | INPerson[], groupName: INSpeakableString, messageType: INMessageType, serviceName: string, attachmentFiles: NSArray<INFile> | INFile[]): this;
+
 	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsGroupNameMessageTypeServiceNameAudioMessageFile(identifier: string, conversationIdentifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson> | INPerson[], groupName: INSpeakableString, messageType: INMessageType, serviceName: string, audioMessageFile: INFile): this;
+
+	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsGroupNameServiceNameLinkMetadata(identifier: string, conversationIdentifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson> | INPerson[], groupName: INSpeakableString, serviceName: string, linkMetadata: INMessageLinkMetadata): this;
+
+	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsGroupNameServiceNameMessageTypeNumberOfAttachments(identifier: string, conversationIdentifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson> | INPerson[], groupName: INSpeakableString, serviceName: string, messageType: INMessageType, numberOfAttachments: number): this;
 
 	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsMessageType(identifier: string, conversationIdentifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson> | INPerson[], messageType: INMessageType): this;
 }
@@ -4244,6 +4332,37 @@ declare class INMessageAttributeResolutionResult extends INIntentResolutionResul
 	static unsupportedWithReason(reason: number): INMessageAttributeResolutionResult; // inherited from INIntentResolutionResult
 }
 
+declare class INMessageLinkMetadata extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): INMessageLinkMetadata; // inherited from NSObject
+
+	static new(): INMessageLinkMetadata; // inherited from NSObject
+
+	linkURL: NSURL;
+
+	openGraphType: string;
+
+	siteName: string;
+
+	summary: string;
+
+	title: string;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { siteName: string; summary: string; title: string; openGraphType: string; linkURL: NSURL; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithSiteNameSummaryTitleOpenGraphTypeLinkURL(siteName: string, summary: string, title: string, openGraphType: string, linkURL: NSURL): this;
+}
+
 declare const enum INMessageType {
 
 	Unspecified = 0,
@@ -4296,7 +4415,9 @@ declare const enum INMessageType {
 
 	File = 24,
 
-	Link = 25
+	Link = 25,
+
+	Reaction = 26
 }
 
 interface INMessagesDomainHandling extends INSearchForMessagesIntentHandling, INSendMessageIntentHandling, INSetMessageAttributeIntentHandling {
@@ -5108,7 +5229,7 @@ declare class INPaymentStatusResolutionResult extends INIntentResolutionResult {
 	static unsupportedWithReason(reason: number): INPaymentStatusResolutionResult; // inherited from INIntentResolutionResult
 }
 
-interface INPaymentsDomainHandling extends INPayBillIntentHandling, INRequestPaymentIntentHandling, INSearchForAccountsIntentHandling, INSearchForBillsIntentHandling, INSendPaymentIntentHandling, INTransferMoneyIntentHandling {
+interface INPaymentsDomainHandling extends INRequestPaymentIntentHandling, INSendPaymentIntentHandling {
 }
 declare var INPaymentsDomainHandling: {
 
@@ -6961,7 +7082,7 @@ declare class INRideVehicle extends NSObject implements NSCopying, NSSecureCodin
 	initWithCoder(coder: NSCoder): this;
 }
 
-interface INRidesharingDomainHandling extends INCancelRideIntentHandling, INGetRideStatusIntentHandling, INListRideOptionsIntentHandling, INRequestRideIntentHandling, INSendRideFeedbackIntentHandling {
+interface INRidesharingDomainHandling extends INGetRideStatusIntentHandling, INListRideOptionsIntentHandling, INRequestRideIntentHandling {
 }
 declare var INRidesharingDomainHandling: {
 
@@ -10398,6 +10519,68 @@ declare class INURLResolutionResult extends INIntentResolutionResult {
 	static unsupported(): INURLResolutionResult; // inherited from INIntentResolutionResult
 
 	static unsupportedWithReason(reason: number): INURLResolutionResult; // inherited from INIntentResolutionResult
+}
+
+declare class INUnsendMessagesIntent extends INIntent {
+
+	static alloc(): INUnsendMessagesIntent; // inherited from NSObject
+
+	static new(): INUnsendMessagesIntent; // inherited from NSObject
+
+	readonly messageIdentifiers: NSArray<string>;
+
+	constructor(o: { messageIdentifiers: NSArray<string> | string[]; });
+
+	initWithMessageIdentifiers(messageIdentifiers: NSArray<string> | string[]): this;
+}
+
+interface INUnsendMessagesIntentHandling extends NSObjectProtocol {
+
+	confirmUnsendMessagesCompletion?(intent: INUnsendMessagesIntent, completion: (p1: INUnsendMessagesIntentResponse) => void): void;
+
+	handleUnsendMessagesCompletion(intent: INUnsendMessagesIntent, completion: (p1: INUnsendMessagesIntentResponse) => void): void;
+}
+declare var INUnsendMessagesIntentHandling: {
+
+	prototype: INUnsendMessagesIntentHandling;
+};
+
+declare class INUnsendMessagesIntentResponse extends INIntentResponse {
+
+	static alloc(): INUnsendMessagesIntentResponse; // inherited from NSObject
+
+	static new(): INUnsendMessagesIntentResponse; // inherited from NSObject
+
+	readonly code: INUnsendMessagesIntentResponseCode;
+
+	constructor(o: { code: INUnsendMessagesIntentResponseCode; userActivity: NSUserActivity; });
+
+	initWithCodeUserActivity(code: INUnsendMessagesIntentResponseCode, userActivity: NSUserActivity): this;
+}
+
+declare const enum INUnsendMessagesIntentResponseCode {
+
+	Unspecified = 0,
+
+	Ready = 1,
+
+	InProgress = 2,
+
+	Success = 3,
+
+	Failure = 4,
+
+	FailureRequiringAppLaunch = 5,
+
+	FailureMessageNotFound = 6,
+
+	FailurePastUnsendTimeLimit = 7,
+
+	FailureMessageTypeUnsupported = 8,
+
+	FailureUnsupportedOnService = 9,
+
+	FailureMessageServiceNotAvailable = 10
 }
 
 declare class INUpcomingMediaManager extends NSObject {

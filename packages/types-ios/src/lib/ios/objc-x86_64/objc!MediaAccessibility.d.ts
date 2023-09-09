@@ -92,6 +92,30 @@ declare const enum MACaptionAppearanceTextEdgeStyle {
 
 declare function MADimFlashingLightsEnabled(): boolean;
 
+declare class MAFlashingLightsProcessor extends NSObject {
+
+	static alloc(): MAFlashingLightsProcessor; // inherited from NSObject
+
+	static new(): MAFlashingLightsProcessor; // inherited from NSObject
+
+	canProcessSurface(surface: IOSurface): boolean;
+
+	processSurfaceOutSurfaceTimestampOptions(inSurface: IOSurface, outSurface: IOSurface, timestamp: number, options: NSDictionary<string, any>): MAFlashingLightsProcessorResult;
+}
+
+declare class MAFlashingLightsProcessorResult extends NSObject {
+
+	static alloc(): MAFlashingLightsProcessorResult; // inherited from NSObject
+
+	static new(): MAFlashingLightsProcessorResult; // inherited from NSObject
+
+	readonly intensityLevel: number;
+
+	readonly mitigationLevel: number;
+
+	readonly surfaceProcessed: boolean;
+}
+
 declare function MAImageCaptioningCopyCaption(url: NSURL, error: interop.Pointer | interop.Reference<NSError>): string;
 
 declare function MAImageCaptioningCopyMetadataTagPath(): string;

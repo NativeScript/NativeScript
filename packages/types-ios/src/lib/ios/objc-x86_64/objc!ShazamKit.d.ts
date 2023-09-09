@@ -41,7 +41,9 @@ declare const enum SHErrorCode {
 
 	MediaLibrarySyncFailed = 400,
 
-	InternalError = 500
+	InternalError = 500,
+
+	MediaItemFetchFailed = 600
 }
 
 declare var SHErrorDomain: string;
@@ -106,6 +108,8 @@ declare class SHMediaItem extends NSObject implements NSCopying, NSSecureCoding 
 
 	readonly artworkURL: NSURL;
 
+	readonly creationDate: Date;
+
 	readonly explicitContent: boolean;
 
 	readonly frequencySkewRanges: NSArray<SHRange>;
@@ -148,6 +152,8 @@ declare var SHMediaItemAppleMusicURL: string;
 declare var SHMediaItemArtist: string;
 
 declare var SHMediaItemArtworkURL: string;
+
+declare var SHMediaItemCreationDate: string;
 
 declare var SHMediaItemExplicitContent: string;
 

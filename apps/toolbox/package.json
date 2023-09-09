@@ -15,6 +15,6 @@
     "@nativescript/android": "~8.5.0",
     "@nativescript/ios": "~8.5.0",
     "@nativescript/webpack": "file:../../dist/packages/nativescript-webpack.tgz",
-    "typescript": "~4.9.5"
+    "typescript": "~5.2.0"
   }
 }

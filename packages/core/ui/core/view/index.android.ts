@@ -24,7 +24,7 @@ import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilit
 import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, isAccessibilityServiceEnabled, sendAccessibilityEvent, updateAccessibilityProperties, updateContentDescription, AccessibilityState } from '../../../accessibility';
 import * as Utils from '../../../utils';
 import { SDK_VERSION } from '../../../utils/constants';
-import { CSSShadow } from '../../styling/css-shadow';
+import { BoxShadow } from '../../styling/box-shadow';
 import { _setAndroidFragmentTransitions, _getAnimatedEntries, _updateTransitions, _reverseTransitions, _clearEntry, _clearFragment, addNativeTransitionListener } from '../../frame/fragment.transitions';
 
 export * from './view-common';
@@ -1150,15 +1150,15 @@ export class View extends ViewCommon {
 		}
 	}
 
-	protected _drawBoxShadow(boxShadow: CSSShadow) {
+	protected _drawBoxShadow(boxShadow: BoxShadow) {
 		const nativeView = this.nativeViewProtected;
 		const config = {
 			shadowColor: boxShadow.color.android,
 			cornerRadius: Length.toDevicePixels(this.borderRadius as CoreTypes.LengthType, 0.0),
-			spreadRadius: Length.toDevicePixels(boxShadow.spreadRadius, 0.0),
-			blurRadius: Length.toDevicePixels(boxShadow.blurRadius, 0.0),
-			offsetX: Length.toDevicePixels(boxShadow.offsetX, 0.0),
-			offsetY: Length.toDevicePixels(boxShadow.offsetY, 0.0),
+			spreadRadius: boxShadow.spreadRadius,
+			blurRadius: boxShadow.blurRadius,
+			offsetX: boxShadow.offsetX,
+			offsetY: boxShadow.offsetY,
 		};
 		org.nativescript.widgets.Utils.drawBoxShadow(nativeView, JSON.stringify(config));
 	}

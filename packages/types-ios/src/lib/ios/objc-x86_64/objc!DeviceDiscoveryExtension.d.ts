@@ -11,6 +11,8 @@ declare class DDDevice extends NSObject {
 
 	displayName: string;
 
+	groupIdentifier: string;
+
 	identifier: string;
 
 	mediaContentSubtitle: string;
@@ -19,13 +21,15 @@ declare class DDDevice extends NSObject {
 
 	mediaPlaybackState: DDDeviceMediaPlaybackState;
 
-	networkEndpoint: NSObject;
+	networkEndpoint: interop.Pointer | interop.Reference<any>;
 
 	protocol: DDDeviceProtocol;
 
 	protocolType: UTType;
 
 	state: DDDeviceState;
+
+	supportsGrouping: boolean;
 
 	txtRecordData: NSData;
 
