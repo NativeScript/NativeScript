@@ -157,6 +157,9 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				},
 				keep_fnames: true,
 				keep_classnames: true,
+				format: {
+					keep_quoted_props: true,
+				},
 			},
 		},
 	]);
