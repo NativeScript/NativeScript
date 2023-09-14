@@ -218,7 +218,10 @@ exports[`javascript configuration for android 1`] = `
               }
             },
             keep_fnames: true,
-            keep_classnames: true
+            keep_classnames: true,
+            format: {
+              keep_quoted_props: true
+            }
           }
         }
       )
@@ -538,7 +541,10 @@ exports[`javascript configuration for ios 1`] = `
               }
             },
             keep_fnames: true,
-            keep_classnames: true
+            keep_classnames: true,
+            format: {
+              keep_quoted_props: true
+            }
           }
         }
       )
