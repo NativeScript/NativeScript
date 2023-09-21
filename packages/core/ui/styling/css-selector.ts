@@ -4,6 +4,7 @@ import { isNullOrUndefined } from '../../utils/types';
 
 import * as ReworkCSS from '../../css';
 import { Combinator as ICombinator, SimpleSelectorSequence as ISimpleSelectorSequence, Selector as ISelector, SimpleSelector as ISimpleSelector, parseSelector } from '../../css/parser';
+import { CSSUtils } from '../../css/system-classes';
 
 /**
  * An interface describing the shape of a type on which the selectors may apply.
@@ -675,6 +676,9 @@ export class SelectorsMatch<T extends Node> implements ChangeAccumulator {
 	public selectors: SelectorCore[];
 
 	public addAttribute(node: T, attribute: string): void {
+		if (CSSUtils.IgnoredCssDynamicAttributeTracking.has(attribute)) {
+			return;
+		}
 		const deps: Changes = this.properties(node);
 		if (!deps.attributes) {
 			deps.attributes = new Set();
