@@ -67,10 +67,11 @@ export function dismissSoftInput(nativeView?: android.view.View): void {
 		if (windowToken == null) {
 			// in this case the view might already have been removed from view tree
 			// but the user might still be wanting to hide the keyboard
-			// let s used a deprecated method to ensure we hide it
+			// let s use a deprecated method to ensure we hide it
 			if (inputManager) {
 				inputManager.toggleSoftInput(1, 0);
 			}
+			return;
 		}
 		if (!nativeView.hasFocus()) {
 			return;
