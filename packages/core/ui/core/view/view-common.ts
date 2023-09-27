@@ -26,7 +26,7 @@ import * as am from '../../animation';
 import type { AccessibilityEventOptions, AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait } from '../../../accessibility/accessibility-types';
 import { accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityValueProperty, accessibilityIgnoresInvertColorsProperty } from '../../../accessibility/accessibility-properties';
 import { getCurrentFontScale } from '../../../accessibility';
-import { CSSShadow } from '../../styling/css-shadow';
+import { ShadowCSSValues } from '../../styling/css-shadow';
 import { SharedTransition, SharedTransitionInteractiveOptions } from '../../transition/shared-transition';
 
 // helpers (these are okay re-exported here)
@@ -656,10 +656,10 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		this.style.backgroundRepeat = value;
 	}
 
-	get boxShadow(): CSSShadow {
+	get boxShadow(): ShadowCSSValues {
 		return this.style.boxShadow;
 	}
-	set boxShadow(value: CSSShadow) {
+	set boxShadow(value: ShadowCSSValues) {
 		this.style.boxShadow = value;
 	}
 
