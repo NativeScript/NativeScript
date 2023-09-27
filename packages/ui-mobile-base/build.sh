@@ -1,8 +1,18 @@
 #!/bin/sh
 
-echo "Set exit on simple errors"
-set -e
+function throwErrors()
+{
+  echo "Set exit on simple errors"
+    set -e
+}
 
+function ignoreErrors()
+{
+  echo "ignore errors"
+    set +e
+}
+
+throwErrors
 
 echo "Use dumb gradle terminal"
 export TERM=dumb
@@ -11,7 +21,14 @@ echo "Clean dist"
 rm -rf dist
 
 export SKIP_PACK=true
+
+# we ignore android widgets lib build errors for scenarios like:
+# macOS dev without android dev env
+ignoreErrors
 ./build.android.sh
+throwErrors
+
+# only build ios widgets framework on macOS
 if [ "$OSTYPE" = "darwin" ]
 then
   ./build.ios.sh
