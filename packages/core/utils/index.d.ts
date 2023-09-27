@@ -45,7 +45,7 @@ export function throttle(fn: any, delay?: number);
  * @param fn Function to debounce
  * @param delay Customize the delay (default is 300ms)
  */
-export function debounce(fn: any, delay?: number);
+export function debounce(fn: any, delay?: number, options?: { leading?: boolean });
 
 /**
  * Releases the reference to the wrapped native object
