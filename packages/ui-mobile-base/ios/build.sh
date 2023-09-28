@@ -17,17 +17,19 @@ xcodebuild \
     SKIP_INSTALL=NO \
     -quiet
 
-echo "Build for visionOS"
-xcodebuild \
-    -project TNSWidgets/TNSWidgets.xcodeproj \
-    -scheme TNSWidgets \
-    -sdk xrsimulator \
-    -configuration Release \
-    -destination "generic/platform=xrsimulator" \
-    clean build \
-    BUILD_DIR=$(PWD)/TNSWidgets/build \
-    SKIP_INSTALL=NO \
-    -quiet
+# This needs to stay on 'vision' tag of core until Xcode releases final with it
+# Only available in Xcode beta so far
+# echo "Build for visionOS"
+# xcodebuild \
+#     -project TNSWidgets/TNSWidgets.xcodeproj \
+#     -scheme TNSWidgets \
+#     -sdk xrsimulator \
+#     -configuration Release \
+#     -destination "generic/platform=xrsimulator" \
+#     clean build \
+#     BUILD_DIR=$(PWD)/TNSWidgets/build \
+#     SKIP_INSTALL=NO \
+#     -quiet
 
 echo "Build for iphoneos"
 xcodebuild \
@@ -65,6 +67,8 @@ xcodebuild \
     -debug-symbols $(PWD)/TNSWidgets/build/Release-iphonesimulator/TNSWidgets.framework.dSYM \
     -framework $(PWD)/TNSWidgets/build/Release-maccatalyst/TNSWidgets.framework \
     -debug-symbols $(PWD)/TNSWidgets/build/Release-maccatalyst/TNSWidgets.framework.dSYM \
-    -framework $(PWD)/TNSWidgets/build/Release-xrsimulator/TNSWidgets.framework \
-    -debug-symbols $(PWD)/TNSWidgets/build/Release-xrsimulator/TNSWidgets.framework.dSYM \
     -output $(PWD)/TNSWidgets/build/TNSWidgets.xcframework
+
+# Add back for 'vision' tag of core
+# -framework $(PWD)/TNSWidgets/build/Release-xrsimulator/TNSWidgets.framework \
+# -debug-symbols $(PWD)/TNSWidgets/build/Release-xrsimulator/TNSWidgets.framework.dSYM \
