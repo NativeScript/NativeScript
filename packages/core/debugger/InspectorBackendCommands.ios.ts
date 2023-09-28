@@ -40,9 +40,7 @@ export namespace HeapDomain {
 		// Stop tracking heap changes. This will produce a `trackingComplete` event.
 		stopTracking(): void;
 		// Returns a preview (string, Debugger.FunctionDetails, or Runtime.ObjectPreview) for a Heap.HeapObjectId.
-		getPreview(
-			params: GetPreviewMethodArguments
-		): {
+		getPreview(params: GetPreviewMethodArguments): {
 			string?: string;
 			functionDetails?: DebuggerDomain.FunctionDetails;
 			preview?: RuntimeDomain.ObjectPreview;
@@ -315,9 +313,7 @@ export namespace DebuggerDomain {
 		// Set pause on assertions state. Assertions are console.assert assertions.
 		setPauseOnAssertions(params: SetPauseOnAssertionsMethodArguments): void;
 		// Evaluates expression on a given call frame.
-		evaluateOnCallFrame(
-			params: EvaluateOnCallFrameMethodArguments
-		): {
+		evaluateOnCallFrame(params: EvaluateOnCallFrameMethodArguments): {
 			result: RuntimeDomain.RemoteObject;
 			wasThrown?: boolean;
 			savedResultIndex?: number;
@@ -710,9 +706,7 @@ export namespace RuntimeDomain {
 		// Parses JavaScript source code for errors.
 		parse(params: ParseMethodArguments): { result: SyntaxErrorType; message?: string; range?: ErrorRange };
 		// Evaluates expression on global object.
-		evaluate(
-			params: EvaluateMethodArguments
-		): {
+		evaluate(params: EvaluateMethodArguments): {
 			result: RemoteObject;
 			wasThrown?: boolean;
 			savedResultIndex?: number;
@@ -720,16 +714,12 @@ export namespace RuntimeDomain {
 		// Calls function with given declaration on the given object. Object group of the result is inherited from the target object.
 		callFunctionOn(params: CallFunctionOnMethodArguments): { result: RemoteObject; wasThrown?: boolean };
 		// Returns properties of a given object. Object group of the result is inherited from the target object.
-		getProperties(
-			params: GetPropertiesMethodArguments
-		): {
+		getProperties(params: GetPropertiesMethodArguments): {
 			result: PropertyDescriptor[];
 			internalProperties?: InternalPropertyDescriptor[];
 		};
 		// Returns displayable properties of a given object. Object group of the result is inherited from the target object. Displayable properties are own properties, internal properties, and native getters in the prototype chain (assumed to be bindings and treated like own properties for the frontend).
-		getDisplayableProperties(
-			params: GetDisplayablePropertiesMethodArguments
-		): {
+		getDisplayableProperties(params: GetDisplayablePropertiesMethodArguments): {
 			properties: PropertyDescriptor[];
 			internalProperties?: InternalPropertyDescriptor[];
 		};
@@ -2114,9 +2104,7 @@ export namespace CSSDomain {
 		// Disables the CSS agent for the given page.
 		disable(): void;
 		// Returns requested styles for a DOM node identified by <code>nodeId</code>.
-		getMatchedStylesForNode(
-			params: GetMatchedStylesForNodeMethodArguments
-		): {
+		getMatchedStylesForNode(params: GetMatchedStylesForNodeMethodArguments): {
 			inlineStyle?: CSSStyle;
 			attributesStyle?: CSSStyle;
 			matchedCSSRules?: RuleMatch[];

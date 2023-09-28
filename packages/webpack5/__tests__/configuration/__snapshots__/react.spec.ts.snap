@@ -240,7 +240,10 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
               }
             },
             keep_fnames: true,
-            keep_classnames: true
+            keep_classnames: true,
+            format: {
+              keep_quoted_props: true
+            }
           }
         }
       )
@@ -572,7 +575,10 @@ exports[`react configuration > android > base config 1`] = `
               }
             },
             keep_fnames: true,
-            keep_classnames: true
+            keep_classnames: true,
+            format: {
+              keep_quoted_props: true
+            }
           }
         }
       )
@@ -911,7 +917,10 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
               }
             },
             keep_fnames: true,
-            keep_classnames: true
+            keep_classnames: true,
+            format: {
+              keep_quoted_props: true
+            }
           }
         }
       )
@@ -1244,7 +1253,10 @@ exports[`react configuration > ios > base config 1`] = `
               }
             },
             keep_fnames: true,
-            keep_classnames: true
+            keep_classnames: true,
+            format: {
+              keep_quoted_props: true
+            }
           }
         }
       )
