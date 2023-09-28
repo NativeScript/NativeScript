@@ -20,10 +20,19 @@ interface IConfigIOS extends IConfigPlatform {
 	SPMPackages?: Array<{
 		name: string;
 		libs: Array<string>;
-		repositoryURL: string;
-		version: string;
+		/**
+		 * Remote package url
+		 */
+		repositoryURL?: string;
+		version?: string;
+		/**
+		 * Local package path relative to project directory
+		 */
+		path?: string;
 	}>;
 }
+
+interface IConfigVisionOS extends IConfigIOS {}
 
 interface IConfigAndroid extends IConfigPlatform {
 	/**
@@ -194,6 +203,11 @@ export interface NativeScriptConfig {
 	 * Various iOS specific configurations including iOS runtime flags.
 	 */
 	ios?: IConfigIOS;
+	/**
+	 * Vision Pro specific configurations
+	 * Various VisionOS specific configurations including iOS runtime flags.
+	 */
+	visionos?: IConfigVisionOS;
 	/**
 	 * Android specific configurations
 	 * Various Android specific configurations including Android runtime flags.

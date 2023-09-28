@@ -1,13 +1,11 @@
 /* tslint:disable:class-name */
 import { Application } from '../application';
 import { SDK_VERSION } from '../utils/constants';
+import { platformNames } from './common';
 
 const MIN_TABLET_PIXELS = 600;
 
-export const platformNames = {
-	android: 'Android',
-	ios: 'iOS',
-};
+export * from './common';
 
 class MainScreen {
 	private _metrics: android.util.DisplayMetrics;
@@ -153,6 +151,3 @@ export const Device = new DeviceRef();
 
 // This retains compatibility with NS6
 export const device = Device;
-
-export const isAndroid = global.isAndroid;
-export const isIOS = global.isIOS;

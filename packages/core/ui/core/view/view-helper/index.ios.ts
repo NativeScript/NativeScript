@@ -200,10 +200,12 @@ export class IOSHelper {
 
 	static updateConstraints(controller: UIViewController, owner: View): void {
 		// Not needed on visionOS
-		// if (iOSUtils.MajorVersion <= 10) {
-		// 	const layoutGuide = IOSHelper.initLayoutGuide(controller);
-		// 	(<any>controller.view).safeAreaLayoutGuide = layoutGuide;
-		// }
+		if (!__VISIONOS__) {
+			if (iOSUtils.MajorVersion <= 10) {
+				const layoutGuide = IOSHelper.initLayoutGuide(controller);
+				(<any>controller.view).safeAreaLayoutGuide = layoutGuide;
+			}
+		}
 	}
 
 	static initLayoutGuide(controller: UIViewController) {

@@ -259,7 +259,9 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
     /* config.plugin('PlatformSuffixPlugin') */
     new PlatformSuffixPlugin(
       {
-        platform: 'android'
+        extensions: [
+          'android'
+        ]
       }
     ),
     /* config.plugin('ContextExclusionPlugin|App_Resources') */
@@ -268,7 +270,7 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
     ),
     /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
     new ContextExclusionPlugin(
-      /\\.(ios)\\.(\\w+)$/
+      /\\.(ios|visionos)\\.(\\w+)$/
     ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
@@ -282,8 +284,10 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
         __UI_USE_EXTERNAL_RENDERER__: false,
         __ANDROID__: true,
         __IOS__: false,
+        __VISIONOS__: false,
         'global.isAndroid': true,
         'global.isIOS': false,
+        'global.isVisionOS': false,
         process: 'global.process',
         __USE_TEST_ID__: false,
         __TEST__: false,
@@ -591,7 +595,9 @@ exports[`react configuration > android > base config 1`] = `
     /* config.plugin('PlatformSuffixPlugin') */
     new PlatformSuffixPlugin(
       {
-        platform: 'android'
+        extensions: [
+          'android'
+        ]
       }
     ),
     /* config.plugin('ContextExclusionPlugin|App_Resources') */
@@ -600,7 +606,7 @@ exports[`react configuration > android > base config 1`] = `
     ),
     /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
     new ContextExclusionPlugin(
-      /\\.(ios)\\.(\\w+)$/
+      /\\.(ios|visionos)\\.(\\w+)$/
     ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
@@ -614,8 +620,10 @@ exports[`react configuration > android > base config 1`] = `
         __UI_USE_EXTERNAL_RENDERER__: false,
         __ANDROID__: true,
         __IOS__: false,
+        __VISIONOS__: false,
         'global.isAndroid': true,
         'global.isIOS': false,
+        'global.isVisionOS': false,
         process: 'global.process',
         __USE_TEST_ID__: false,
         __TEST__: false,
@@ -930,7 +938,9 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
     /* config.plugin('PlatformSuffixPlugin') */
     new PlatformSuffixPlugin(
       {
-        platform: 'ios'
+        extensions: [
+          'ios'
+        ]
       }
     ),
     /* config.plugin('ContextExclusionPlugin|App_Resources') */
@@ -939,7 +949,7 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
     ),
     /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
     new ContextExclusionPlugin(
-      /\\.(android)\\.(\\w+)$/
+      /\\.(android|visionos)\\.(\\w+)$/
     ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
@@ -953,8 +963,10 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
         __UI_USE_EXTERNAL_RENDERER__: false,
         __ANDROID__: false,
         __IOS__: true,
+        __VISIONOS__: false,
         'global.isAndroid': false,
         'global.isIOS': true,
+        'global.isVisionOS': false,
         process: 'global.process',
         __USE_TEST_ID__: false,
         __TEST__: false,
@@ -1263,7 +1275,9 @@ exports[`react configuration > ios > base config 1`] = `
     /* config.plugin('PlatformSuffixPlugin') */
     new PlatformSuffixPlugin(
       {
-        platform: 'ios'
+        extensions: [
+          'ios'
+        ]
       }
     ),
     /* config.plugin('ContextExclusionPlugin|App_Resources') */
@@ -1272,7 +1286,7 @@ exports[`react configuration > ios > base config 1`] = `
     ),
     /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
     new ContextExclusionPlugin(
-      /\\.(android)\\.(\\w+)$/
+      /\\.(android|visionos)\\.(\\w+)$/
     ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
@@ -1286,8 +1300,10 @@ exports[`react configuration > ios > base config 1`] = `
         __UI_USE_EXTERNAL_RENDERER__: false,
         __ANDROID__: false,
         __IOS__: true,
+        __VISIONOS__: false,
         'global.isAndroid': false,
         'global.isIOS': true,
+        'global.isVisionOS': false,
         process: 'global.process',
         __USE_TEST_ID__: false,
         __TEST__: false,
