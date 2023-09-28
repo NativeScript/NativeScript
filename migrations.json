@@ -1,0 +1,20 @@
+{
+	"migrations": [
+		{
+			"cli": "nx",
+			"version": "16.9.0-beta.1",
+			"description": "Replace imports of Module Federation utils frm @nx/devkit to @nx/webpack",
+			"implementation": "./src/migrations/update-16-9-0/migrate-mf-util-usage",
+			"package": "@nx/devkit",
+			"name": "update-16-9-0-migrate-mf-usage-to-webpack"
+		},
+		{
+			"cli": "nx",
+			"version": "16.8.2-beta.0",
+			"description": "Remove invalid options (strict, noInterop) for ES6 type modules.",
+			"factory": "./src/migrations/update-16-8-2/update-swcrc",
+			"package": "@nx/js",
+			"name": "16-8-2-update-swcrc"
+		}
+	]
+}
