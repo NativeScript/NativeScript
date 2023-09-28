@@ -442,13 +442,28 @@ export function setupAccessibleView(view: View): void {
 	updateAccessibilityProperties(view);
 }
 
-export function updateAccessibilityProperties(view: View): void {
+let updateAccessibilityPropertiesMicroTask;
+let pendingViews = new Set<View>();
+export function updateAccessibilityProperties(view: View) {
 	if (!view.nativeViewProtected) {
 		return;
 	}
 
-	setAccessibilityDelegate(view);
-	applyContentDescription(view);
+	pendingViews.add(view);
+	if (updateAccessibilityPropertiesMicroTask) return;
+
+	updateAccessibilityPropertiesMicroTask = true;
+	Promise.resolve().then(() => {
+		updateAccessibilityPropertiesMicroTask = false;
+		let _pendingViews = Array.from(pendingViews);
+		pendingViews = new Set();
+		for (const view of _pendingViews) {
+			if (!view.nativeViewProtected) continue;
+			setAccessibilityDelegate(view);
+			applyContentDescription(view);
+		}
+		_pendingViews = [];
+	});
 }
 
 export function sendAccessibilityEvent(view: View, eventType: AndroidAccessibilityEvent, text?: string): void {
