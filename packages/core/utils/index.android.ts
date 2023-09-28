@@ -2,6 +2,7 @@ import { Trace } from '../trace';
 import { getFileExtension } from './common';
 import { SDK_VERSION } from './constants';
 import { android as AndroidUtils } from './native-helper';
+import { topmost } from '../ui/frame/frame-stack';
 
 export { clearInterval, clearTimeout, setInterval, setTimeout } from '../timer';
 export * from './common';
@@ -178,10 +179,10 @@ export function dismissSoftInput(nativeView?: any): void {
 
 export function dismissKeyboard() {
 	dismissSoftInput();
-
-	const activity = AndroidUtils.getCurrentActivity();
-	if (activity) {
-		const focus = activity.getCurrentFocus();
+	const modalDialog = (topmost()?._modalParent ?? topmost())?.modal?._dialogFragment?.getDialog();
+	const view = modalDialog ?? AndroidUtils.getCurrentActivity();
+	if (view) {
+		const focus = view.getCurrentFocus();
 
 		if (focus) {
 			focus.clearFocus();

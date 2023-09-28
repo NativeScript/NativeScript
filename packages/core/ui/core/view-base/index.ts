@@ -309,6 +309,8 @@ namespace SuspendType {
 	}
 }
 
+const DEFAULT_VIEW_PADDINGS: Map<string, any> = new Map();
+
 export abstract class ViewBase extends Observable implements ViewBaseDefinition {
 	/**
 	 * String value used when hooking to loaded event.
@@ -1048,14 +1050,21 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 			if (this._androidView !== nativeView || !this.reusable) {
 				this._androidView = nativeView;
 				if (nativeView) {
+					const className = this.constructor.name;
+
 					if (this._isPaddingRelative === undefined) {
 						this._isPaddingRelative = nativeView.isPaddingRelative();
 					}
 
-					let result: any /* android.graphics.Rect */ = (<any>nativeView).defaultPaddings;
+					let result: any /* android.graphics.Rect */ = DEFAULT_VIEW_PADDINGS.get(className) || (<any>nativeView).defaultPaddings;
 					if (result === undefined) {
-						result = org.nativescript.widgets.ViewHelper.getPadding(nativeView);
-						(<any>nativeView).defaultPaddings = result;
+						DEFAULT_VIEW_PADDINGS.set(className, org.nativescript.widgets.ViewHelper.getPadding(nativeView));
+						(<any>nativeView).defaultPaddings = DEFAULT_VIEW_PADDINGS.get(className);
+						result = DEFAULT_VIEW_PADDINGS.get(className);
+					}
+
+					if (!nativeView.defaultPaddings) {
+						nativeView.defaultPaddings = DEFAULT_VIEW_PADDINGS.get(className);
 					}
 
 					this._defaultPaddingTop = result.top;

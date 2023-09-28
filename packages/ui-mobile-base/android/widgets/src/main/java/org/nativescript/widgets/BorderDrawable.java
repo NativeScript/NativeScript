@@ -896,24 +896,29 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 	@Override
 	public void getOutline(@NonNull Outline outline) {
 		if (android.os.Build.VERSION.SDK_INT >= 21) {
-			outlineBackgroundPath.reset();
-			float[] backgroundRadii = {
-				Math.max(0, borderTopLeftRadius), Math.max(0, borderTopLeftRadius),
-				Math.max(0, borderTopRightRadius), Math.max(0, borderTopRightRadius),
-				Math.max(0, borderBottomRightRadius), Math.max(0, borderBottomRightRadius),
-				Math.max(0, borderBottomLeftRadius), Math.max(0, borderBottomLeftRadius)
-			};
 			outlineRectF.setEmpty();
 			outlineRectF.set(getBounds());
-			outlineBackgroundPath.addRoundRect(outlineRectF, backgroundRadii, Path.Direction.CW);
-
-			if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-				// see setConvexPath notes
-				outline.setPath(outlineBackgroundPath);
+			if (hasUniformBorderRadius()) {
+				outline.setRoundRect(getBounds(), borderTopLeftRadius);
 			} else {
-				outline.setConvexPath(outlineBackgroundPath);
-			}
+				// cliping with path is only support on API >= 33
+				// before it only works for rectangle, circle, or round rect
+				outlineBackgroundPath.reset();
+				float[] backgroundRadii = {
+					Math.max(0, borderTopLeftRadius), Math.max(0, borderTopLeftRadius),
+					Math.max(0, borderTopRightRadius), Math.max(0, borderTopRightRadius),
+					Math.max(0, borderBottomRightRadius), Math.max(0, borderBottomRightRadius),
+					Math.max(0, borderBottomLeftRadius), Math.max(0, borderBottomLeftRadius)
+				};
+				outlineBackgroundPath.addRoundRect(outlineRectF, backgroundRadii, Path.Direction.CW);
 
+				if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+					// see setConvexPath notes
+					outline.setPath(outlineBackgroundPath);
+				} else {
+					outline.setConvexPath(outlineBackgroundPath);
+				}
+			}
 		} else {
 			throw new IllegalStateException("Method supported on API 21 or higher");
 		}

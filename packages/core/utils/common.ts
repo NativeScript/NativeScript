@@ -173,12 +173,16 @@ export function mainThreadify(func: Function): (...args: any[]) => void {
 	};
 }
 
-export function debounce(fn: any, delay = 300) {
+export function debounce(fn: any, delay = 300, { leading }: { leading?: boolean } = {}) {
 	let timer: NodeJS.Timeout;
 	return (...args: Array<any>) => {
+		if (timer === undefined && leading) {
+			fn.apply(this, args);
+		}
 		clearTimeout(timer);
 		timer = setTimeout(() => {
 			fn.apply(this, args);
+			timer = undefined;
 		}, delay);
 	};
 }
