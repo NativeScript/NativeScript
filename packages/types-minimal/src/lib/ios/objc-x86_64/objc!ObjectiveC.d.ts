@@ -51,23 +51,47 @@ declare class NSObject implements NSObjectProtocol {
 
 	static superclass(): typeof NSObject;
 
+	static useStoredAccessor(): boolean;
+
 	static version(): number;
+
+	accessibilityActivateBlock: () => boolean;
 
 	accessibilityActivationPoint: CGPoint;
 
+	accessibilityActivationPointBlock: () => CGPoint;
+
 	accessibilityAttributedHint: NSAttributedString;
+
+	accessibilityAttributedHintBlock: () => NSAttributedString;
 
 	accessibilityAttributedLabel: NSAttributedString;
 
+	accessibilityAttributedLabelBlock: () => NSAttributedString;
+
 	accessibilityAttributedUserInputLabels: NSArray<NSAttributedString>;
+
+	accessibilityAttributedUserInputLabelsBlock: () => NSArray<NSAttributedString>;
 
 	accessibilityAttributedValue: NSAttributedString;
 
+	accessibilityAttributedValueBlock: () => NSAttributedString;
+
 	accessibilityContainerType: UIAccessibilityContainerType;
+
+	accessibilityContainerTypeBlock: () => UIAccessibilityContainerType;
 
 	accessibilityCustomActions: NSArray<UIAccessibilityCustomAction>;
 
+	accessibilityCustomActionsBlock: () => NSArray<UIAccessibilityCustomAction>;
+
 	accessibilityCustomRotors: NSArray<UIAccessibilityCustomRotor>;
+
+	accessibilityCustomRotorsBlock: () => NSArray<UIAccessibilityCustomRotor>;
+
+	accessibilityDecrementBlock: () => void;
+
+	accessibilityDirectTouchOptions: UIAccessibilityDirectTouchOptions;
 
 	accessibilityDragSourceDescriptors: NSArray<UIAccessibilityLocationDescriptor>;
 
@@ -75,39 +99,85 @@ declare class NSObject implements NSObjectProtocol {
 
 	accessibilityElements: NSArray<any>;
 
+	accessibilityElementsBlock: () => NSArray<any>;
+
 	accessibilityElementsHidden: boolean;
+
+	accessibilityElementsHiddenBlock: () => boolean;
 
 	accessibilityFrame: CGRect;
 
+	accessibilityFrameBlock: () => CGRect;
+
+	accessibilityHeaderElementsBlock: () => NSArray<any>;
+
 	accessibilityHint: string;
+
+	accessibilityHintBlock: () => string;
+
+	accessibilityIdentifierBlock: () => string;
+
+	accessibilityIncrementBlock: () => void;
 
 	accessibilityLabel: string;
 
+	accessibilityLabelBlock: () => string;
+
 	accessibilityLanguage: string;
+
+	accessibilityLanguageBlock: () => string;
+
+	accessibilityMagicTapBlock: () => boolean;
 
 	accessibilityNavigationStyle: UIAccessibilityNavigationStyle;
 
+	accessibilityNavigationStyleBlock: () => UIAccessibilityNavigationStyle;
+
 	accessibilityPath: UIBezierPath;
+
+	accessibilityPathBlock: () => UIBezierPath;
+
+	accessibilityPerformEscapeBlock: () => boolean;
 
 	accessibilityRespondsToUserInteraction: boolean;
 
+	accessibilityRespondsToUserInteractionBlock: () => boolean;
+
+	accessibilityShouldGroupAccessibilityChildrenBlock: () => boolean;
+
 	accessibilityTextualContext: string;
+
+	accessibilityTextualContextBlock: () => string;
 
 	accessibilityTraits: number;
 
+	accessibilityTraitsBlock: () => number;
+
 	accessibilityUserInputLabels: NSArray<string>;
+
+	accessibilityUserInputLabelsBlock: () => NSArray<string>;
 
 	accessibilityValue: string;
 
+	accessibilityValueBlock: () => string;
+
 	accessibilityViewIsModal: boolean;
 
+	accessibilityViewIsModalBlock: () => boolean;
+
 	readonly autoContentAccessingProxy: any;
+
+	automationElements: NSArray<any>;
+
+	automationElementsBlock: () => NSArray<any>;
 
 	readonly classForCoder: typeof NSObject;
 
 	readonly classForKeyedArchiver: typeof NSObject;
 
 	isAccessibilityElement: boolean;
+
+	isAccessibilityElementBlock: () => boolean;
 
 	observationInfo: interop.Pointer | interop.Reference<any>;
 
@@ -153,6 +223,10 @@ declare class NSObject implements NSObjectProtocol {
 
 	accessibilityScroll(direction: UIAccessibilityScrollDirection): boolean;
 
+	accessibilityZoomInAtPoint(point: CGPoint): boolean;
+
+	accessibilityZoomOutAtPoint(point: CGPoint): boolean;
+
 	addObserverForKeyPathOptionsContext(observer: NSObject, keyPath: string, options: NSKeyValueObservingOptions, context: interop.Pointer | interop.Reference<any>): void;
 
 	attemptRecoveryFromErrorOptionIndex(error: NSError, recoveryOptionIndex: number): boolean;
@@ -190,6 +264,10 @@ declare class NSObject implements NSObjectProtocol {
 	forwardInvocation(anInvocation: NSInvocation): void;
 
 	forwardingTargetForSelector(aSelector: string): any;
+
+	handleQueryWithUnboundKey(key: string): any;
+
+	handleTakeValueForUnboundKey(value: any, key: string): void;
 
 	indexOfAccessibilityElement(element: any): number;
 
@@ -269,6 +347,18 @@ declare class NSObject implements NSObjectProtocol {
 
 	setValuesForKeysWithDictionary(keyedValues: NSDictionary<string, any>): void;
 
+	storedValueForKey(key: string): any;
+
+	takeStoredValueForKey(value: any, key: string): void;
+
+	takeValueForKey(value: any, key: string): void;
+
+	takeValueForKeyPath(value: any, keyPath: string): void;
+
+	takeValuesFromDictionary(properties: NSDictionary<any, any>): void;
+
+	unableToSetNilForKey(key: string): void;
+
 	validateValueForKeyError(ioValue: interop.Pointer | interop.Reference<any>, inKey: string): boolean;
 
 	validateValueForKeyPathError(ioValue: interop.Pointer | interop.Reference<any>, inKeyPath: string): boolean;
@@ -278,6 +368,8 @@ declare class NSObject implements NSObjectProtocol {
 	valueForKeyPath(keyPath: string): any;
 
 	valueForUndefinedKey(key: string): any;
+
+	valuesForKeys(keys: NSArray<any> | any[]): NSDictionary<any, any>;
 
 	willChangeValueForKey(key: string): void;
 

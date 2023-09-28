@@ -1581,11 +1581,17 @@ declare class NERelay extends NSObject implements NSCopying, NSSecureCoding {
 
 	additionalHTTPHeaderFields: NSDictionary<string, string>;
 
+	dnsOverHTTPSURL: NSURL;
+
 	identityData: NSData;
 
 	identityDataPassword: string;
 
 	rawPublicKeys: NSArray<NSData>;
+
+	syntheticDNSAnswerIPv4Prefix: string;
+
+	syntheticDNSAnswerIPv6Prefix: string;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -1606,6 +1612,8 @@ declare class NERelayManager extends NSObject {
 
 	static alloc(): NERelayManager; // inherited from NSObject
 
+	static loadAllManagersFromPreferencesWithCompletionHandler(completionHandler: (p1: NSArray<NERelayManager>, p2: NSError) => void): void;
+
 	static new(): NERelayManager; // inherited from NSObject
 
 	static sharedManager(): NERelayManager;
@@ -1617,6 +1625,8 @@ declare class NERelayManager extends NSObject {
 	localizedDescription: string;
 
 	matchDomains: NSArray<string>;
+
+	onDemandRules: NSArray<NEOnDemandRule>;
 
 	relays: NSArray<NERelay>;
 

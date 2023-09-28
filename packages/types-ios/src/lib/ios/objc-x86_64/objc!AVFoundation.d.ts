@@ -1036,6 +1036,8 @@ declare class AVAssetWriter extends NSObject {
 
 	readonly error: NSError;
 
+	initialMovieFragmentInterval: CMTime;
+
 	initialMovieFragmentSequenceNumber: number;
 
 	initialSegmentStartTime: CMTime;
@@ -1515,7 +1517,9 @@ declare const enum AVCaptureColorSpace {
 
 	P3_D65 = 1,
 
-	HLG_BT2020 = 2
+	HLG_BT2020 = 2,
+
+	AppleLog = 3
 }
 
 declare class AVCaptureConnection extends NSObject {
@@ -2093,6 +2097,8 @@ declare var AVCaptureDeviceTypeBuiltInTrueDepthCamera: string;
 declare var AVCaptureDeviceTypeBuiltInUltraWideCamera: string;
 
 declare var AVCaptureDeviceTypeBuiltInWideAngleCamera: string;
+
+declare var AVCaptureDeviceTypeContinuityCamera: string;
 
 declare var AVCaptureDeviceTypeExternal: string;
 
@@ -3062,7 +3068,9 @@ declare const enum AVCaptureSystemPressureFactors {
 
 	PeakPower = 2,
 
-	DepthModuleTemperature = 4
+	DepthModuleTemperature = 4,
+
+	CameraTemperature = 8
 }
 
 declare var AVCaptureSystemPressureLevelCritical: string;
@@ -3131,6 +3139,8 @@ declare class AVCaptureVideoDataOutput extends AVCaptureOutput {
 	recommendedVideoSettingsForAssetWriterWithOutputFileType(outputFileType: string): NSDictionary<string, any>;
 
 	recommendedVideoSettingsForVideoCodecTypeAssetWriterOutputFileType(videoCodecType: string, outputFileType: string): NSDictionary<string, any>;
+
+	recommendedVideoSettingsForVideoCodecTypeAssetWriterOutputFileTypeOutputFileURL(videoCodecType: string, outputFileType: string, outputFileURL: NSURL): NSDictionary<string, any>;
 
 	setSampleBufferDelegateQueue(sampleBufferDelegate: AVCaptureVideoDataOutputSampleBufferDelegate, sampleBufferCallbackQueue: interop.Pointer | interop.Reference<any>): void;
 }
@@ -3217,6 +3227,8 @@ declare const enum AVCaptureVideoStabilizationMode {
 	Cinematic = 2,
 
 	CinematicExtended = 3,
+
+	PreviewOptimized = 4,
 
 	Auto = -1
 }
@@ -3905,6 +3917,44 @@ declare var AVErrorPresentationTimeStampKey: string;
 declare var AVErrorRecordingSuccessfullyFinishedKey: string;
 
 declare var AVErrorTimeKey: string;
+
+declare class AVExternalStorageDevice extends NSObject {
+
+	static alloc(): AVExternalStorageDevice; // inherited from NSObject
+
+	static new(): AVExternalStorageDevice; // inherited from NSObject
+
+	static requestAccessWithCompletionHandler(handler: (p1: boolean) => void): void;
+
+	readonly connected: boolean;
+
+	readonly displayName: string;
+
+	readonly freeSize: number;
+
+	readonly notRecommendedForCaptureUse: boolean;
+
+	readonly totalSize: number;
+
+	readonly uuid: NSUUID;
+
+	static readonly authorizationStatus: AVAuthorizationStatus;
+
+	nextAvailableURLsWithPathExtensionsError(extensionArray: NSArray<string> | string[]): NSArray<NSURL>;
+}
+
+declare class AVExternalStorageDeviceDiscoverySession extends NSObject {
+
+	static alloc(): AVExternalStorageDeviceDiscoverySession; // inherited from NSObject
+
+	static new(): AVExternalStorageDeviceDiscoverySession; // inherited from NSObject
+
+	readonly externalStorageDevices: NSArray<AVExternalStorageDevice>;
+
+	static readonly sharedSession: AVExternalStorageDeviceDiscoverySession;
+
+	static readonly supported: boolean;
+}
 
 declare var AVFileType3GPP: string;
 

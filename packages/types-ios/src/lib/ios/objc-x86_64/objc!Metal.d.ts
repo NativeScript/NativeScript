@@ -82,9 +82,9 @@ declare class MTLAccelerationStructureCurveGeometryDescriptor extends MTLAcceler
 
 	curveBasis: MTLCurveBasis;
 
-	curveType: MTLCurveType;
+	curveEndCaps: MTLCurveEndCaps;
 
-	endCaps: MTLCurveEndCaps;
+	curveType: MTLCurveType;
 
 	indexBuffer: MTLBuffer;
 
@@ -200,9 +200,9 @@ declare class MTLAccelerationStructureMotionCurveGeometryDescriptor extends MTLA
 
 	curveBasis: MTLCurveBasis;
 
-	curveType: MTLCurveType;
+	curveEndCaps: MTLCurveEndCaps;
 
-	endCaps: MTLCurveEndCaps;
+	curveType: MTLCurveType;
 
 	indexBuffer: MTLBuffer;
 
@@ -2055,6 +2055,8 @@ interface MTLDevice extends NSObjectProtocol {
 
 	readWriteTextureSupport: MTLReadWriteTextureTier;
 
+	recommendedMaxWorkingSetSize: number;
+
 	registryID: number;
 
 	sparseTileSizeInBytes: number;
@@ -2745,6 +2747,8 @@ declare const enum MTLGPUFamily {
 
 	Apple8 = 1008,
 
+	Apple9 = 1009,
+
 	Mac1 = 2001,
 
 	Mac2 = 2002,
@@ -2907,6 +2911,12 @@ declare class MTLIndirectCommandBufferDescriptor extends NSObject implements NSC
 
 	maxKernelThreadgroupMemoryBindCount: number;
 
+	maxMeshBufferBindCount: number;
+
+	maxObjectBufferBindCount: number;
+
+	maxObjectThreadgroupMemoryBindCount: number;
+
 	maxVertexBufferBindCount: number;
 
 	supportDynamicAttributeStride: boolean;
@@ -2934,7 +2944,11 @@ declare const enum MTLIndirectCommandType {
 
 	ConcurrentDispatch = 32,
 
-	ConcurrentDispatchThreads = 64
+	ConcurrentDispatchThreads = 64,
+
+	DrawMeshThreadgroups = 128,
+
+	DrawMeshThreads = 256
 }
 
 interface MTLIndirectComputeCommand extends NSObjectProtocol {
@@ -3001,9 +3015,15 @@ declare class MTLIndirectInstanceAccelerationStructureDescriptor extends MTLAcce
 
 interface MTLIndirectRenderCommand extends NSObjectProtocol {
 
+	clearBarrier(): void;
+
 	drawIndexedPatchesPatchStartPatchCountPatchIndexBufferPatchIndexBufferOffsetControlPointIndexBufferControlPointIndexBufferOffsetInstanceCountBaseInstanceTessellationFactorBufferTessellationFactorBufferOffsetTessellationFactorBufferInstanceStride(numberOfPatchControlPoints: number, patchStart: number, patchCount: number, patchIndexBuffer: MTLBuffer, patchIndexBufferOffset: number, controlPointIndexBuffer: MTLBuffer, controlPointIndexBufferOffset: number, instanceCount: number, baseInstance: number, buffer: MTLBuffer, offset: number, instanceStride: number): void;
 
 	drawIndexedPrimitivesIndexCountIndexTypeIndexBufferIndexBufferOffsetInstanceCountBaseVertexBaseInstance(primitiveType: MTLPrimitiveType, indexCount: number, indexType: MTLIndexType, indexBuffer: MTLBuffer, indexBufferOffset: number, instanceCount: number, baseVertex: number, baseInstance: number): void;
+
+	drawMeshThreadgroupsThreadsPerObjectThreadgroupThreadsPerMeshThreadgroup(threadgroupsPerGrid: MTLSize, threadsPerObjectThreadgroup: MTLSize, threadsPerMeshThreadgroup: MTLSize): void;
+
+	drawMeshThreadsThreadsPerObjectThreadgroupThreadsPerMeshThreadgroup(threadsPerGrid: MTLSize, threadsPerObjectThreadgroup: MTLSize, threadsPerMeshThreadgroup: MTLSize): void;
 
 	drawPatchesPatchStartPatchCountPatchIndexBufferPatchIndexBufferOffsetInstanceCountBaseInstanceTessellationFactorBufferTessellationFactorBufferOffsetTessellationFactorBufferInstanceStride(numberOfPatchControlPoints: number, patchStart: number, patchCount: number, patchIndexBuffer: MTLBuffer, patchIndexBufferOffset: number, instanceCount: number, baseInstance: number, buffer: MTLBuffer, offset: number, instanceStride: number): void;
 
@@ -3011,7 +3031,15 @@ interface MTLIndirectRenderCommand extends NSObjectProtocol {
 
 	reset(): void;
 
+	setBarrier(): void;
+
 	setFragmentBufferOffsetAtIndex(buffer: MTLBuffer, offset: number, index: number): void;
+
+	setMeshBufferOffsetAtIndex(buffer: MTLBuffer, offset: number, index: number): void;
+
+	setObjectBufferOffsetAtIndex(buffer: MTLBuffer, offset: number, index: number): void;
+
+	setObjectThreadgroupMemoryLengthAtIndex(length: number, index: number): void;
 
 	setRenderPipelineState(pipelineState: MTLRenderPipelineState): void;
 
@@ -3076,7 +3104,9 @@ declare const enum MTLIntersectionFunctionSignature {
 
 	ExtendedLimits = 32,
 
-	MaxLevels = 64
+	MaxLevels = 64,
+
+	CurveData = 128
 }
 
 interface MTLIntersectionFunctionTable extends MTLResource {
@@ -3090,6 +3120,10 @@ interface MTLIntersectionFunctionTable extends MTLResource {
 	setFunctionAtIndex(_function: MTLFunctionHandle, index: number): void;
 
 	setFunctionsWithRange(functions: interop.Reference<MTLFunctionHandle>, range: NSRange): void;
+
+	setOpaqueCurveIntersectionFunctionWithSignatureAtIndex(signature: MTLIntersectionFunctionSignature, index: number): void;
+
+	setOpaqueCurveIntersectionFunctionWithSignatureWithRange(signature: MTLIntersectionFunctionSignature, range: NSRange): void;
 
 	setOpaqueTriangleIntersectionFunctionWithSignatureAtIndex(signature: MTLIntersectionFunctionSignature, index: number): void;
 
@@ -3302,6 +3336,8 @@ declare class MTLMeshRenderPipelineDescriptor extends NSObject implements NSCopy
 	rasterizationEnabled: boolean;
 
 	stencilAttachmentPixelFormat: MTLPixelFormat;
+
+	supportIndirectCommandBuffers: boolean;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 

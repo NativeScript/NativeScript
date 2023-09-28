@@ -1819,9 +1819,9 @@ interface CKSyncEngineDelegate extends NSObjectProtocol {
 
 	syncEngineHandleEvent(syncEngine: CKSyncEngine, event: CKSyncEngineEvent): void;
 
-	syncEngineNextRecordZoneChangeBatchForContext(syncEngine: CKSyncEngine, context: CKSyncEngineSendChangesContext): CKSyncEngineRecordZoneChangeBatch;
+	syncEngineNextFetchChangesOptionsForContext?(syncEngine: CKSyncEngine, context: CKSyncEngineFetchChangesContext): CKSyncEngineFetchChangesOptions;
 
-	syncEngineShouldFetchChangesForZoneID?(syncEngine: CKSyncEngine, zoneID: CKRecordZoneID): boolean;
+	syncEngineNextRecordZoneChangeBatchForContext(syncEngine: CKSyncEngine, context: CKSyncEngineSendChangesContext): CKSyncEngineRecordZoneChangeBatch;
 }
 declare var CKSyncEngineDelegate: {
 
@@ -1937,7 +1937,18 @@ declare class CKSyncEngineFailedZoneSave extends NSObject {
 	readonly recordZone: CKRecordZone;
 }
 
-declare class CKSyncEngineFetchChangesOptions extends NSObject {
+declare class CKSyncEngineFetchChangesContext extends NSObject {
+
+	static alloc(): CKSyncEngineFetchChangesContext; // inherited from NSObject
+
+	static new(): CKSyncEngineFetchChangesContext; // inherited from NSObject
+
+	readonly options: CKSyncEngineFetchChangesOptions;
+
+	readonly reason: CKSyncEngineSyncReason;
+}
+
+declare class CKSyncEngineFetchChangesOptions extends NSObject implements NSCopying {
 
 	static alloc(): CKSyncEngineFetchChangesOptions; // inherited from NSObject
 
@@ -1945,11 +1956,36 @@ declare class CKSyncEngineFetchChangesOptions extends NSObject {
 
 	operationGroup: CKOperationGroup;
 
-	zoneIDs: NSArray<CKRecordZoneID>;
+	prioritizedZoneIDs: NSArray<CKRecordZoneID>;
 
-	constructor(o: { zoneIDs: NSArray<CKRecordZoneID> | CKRecordZoneID[]; operationGroup: CKOperationGroup; });
+	scope: CKSyncEngineFetchChangesScope;
 
-	initWithZoneIDsOperationGroup(zoneIDs: NSArray<CKRecordZoneID> | CKRecordZoneID[], operationGroup: CKOperationGroup): this;
+	constructor(o: { scope: CKSyncEngineFetchChangesScope; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithScope(scope: CKSyncEngineFetchChangesScope): this;
+}
+
+declare class CKSyncEngineFetchChangesScope extends NSObject implements NSCopying {
+
+	static alloc(): CKSyncEngineFetchChangesScope; // inherited from NSObject
+
+	static new(): CKSyncEngineFetchChangesScope; // inherited from NSObject
+
+	readonly excludedZoneIDs: NSSet<CKRecordZoneID>;
+
+	readonly zoneIDs: NSSet<CKRecordZoneID>;
+
+	constructor(o: { excludedZoneIDs: NSSet<CKRecordZoneID>; });
+
+	constructor(o: { zoneIDs: NSSet<CKRecordZoneID>; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithExcludedZoneIDs(zoneIDs: NSSet<CKRecordZoneID>): this;
+
+	initWithZoneIDs(zoneIDs: NSSet<CKRecordZoneID>): this;
 }
 
 declare class CKSyncEngineFetchedDatabaseChangesEvent extends CKSyncEngineEvent {
@@ -1993,8 +2029,6 @@ declare class CKSyncEngineFetchedZoneDeletion extends NSObject {
 
 	readonly reason: CKSyncEngineZoneDeletionReason;
 
-	readonly type: CKSyncEngineZoneDeletionType;
-
 	readonly zoneID: CKRecordZoneID;
 }
 
@@ -2011,9 +2045,9 @@ declare class CKSyncEnginePendingDatabaseChange extends NSObject {
 
 declare const enum CKSyncEnginePendingDatabaseChangeType {
 
-	Save = 0,
+	SaveZone = 0,
 
-	Delete = 1
+	DeleteZone = 1
 }
 
 declare class CKSyncEnginePendingRecordZoneChange extends NSObject {
@@ -2033,9 +2067,9 @@ declare class CKSyncEnginePendingRecordZoneChange extends NSObject {
 
 declare const enum CKSyncEnginePendingRecordZoneChangeType {
 
-	Save = 0,
+	SaveRecord = 0,
 
-	Delete = 1
+	DeleteRecord = 1
 }
 
 declare class CKSyncEnginePendingZoneDelete extends CKSyncEnginePendingDatabaseChange {
@@ -2094,7 +2128,7 @@ declare class CKSyncEngineSendChangesContext extends NSObject {
 	readonly reason: CKSyncEngineSyncReason;
 }
 
-declare class CKSyncEngineSendChangesOptions extends NSObject {
+declare class CKSyncEngineSendChangesOptions extends NSObject implements NSCopying {
 
 	static alloc(): CKSyncEngineSendChangesOptions; // inherited from NSObject
 
@@ -2102,11 +2136,44 @@ declare class CKSyncEngineSendChangesOptions extends NSObject {
 
 	operationGroup: CKOperationGroup;
 
-	zoneIDs: NSArray<CKRecordZoneID>;
+	scope: CKSyncEngineSendChangesScope;
 
-	constructor(o: { zoneIDs: NSArray<CKRecordZoneID> | CKRecordZoneID[]; operationGroup: CKOperationGroup; });
+	constructor(o: { scope: CKSyncEngineSendChangesScope; });
 
-	initWithZoneIDsOperationGroup(zoneIDs: NSArray<CKRecordZoneID> | CKRecordZoneID[], operationGroup: CKOperationGroup): this;
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithScope(scope: CKSyncEngineSendChangesScope): this;
+}
+
+declare class CKSyncEngineSendChangesScope extends NSObject implements NSCopying {
+
+	static alloc(): CKSyncEngineSendChangesScope; // inherited from NSObject
+
+	static new(): CKSyncEngineSendChangesScope; // inherited from NSObject
+
+	readonly excludedZoneIDs: NSSet<CKRecordZoneID>;
+
+	readonly recordIDs: NSSet<CKRecordID>;
+
+	readonly zoneIDs: NSSet<CKRecordZoneID>;
+
+	constructor(o: { excludedZoneIDs: NSSet<CKRecordZoneID>; });
+
+	constructor(o: { recordIDs: NSSet<CKRecordID>; });
+
+	constructor(o: { zoneIDs: NSSet<CKRecordZoneID>; });
+
+	containsPendingRecordZoneChange(pendingRecordZoneChange: CKSyncEnginePendingRecordZoneChange): boolean;
+
+	containsRecordID(recordID: CKRecordID): boolean;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithExcludedZoneIDs(excludedZoneIDs: NSSet<CKRecordZoneID>): this;
+
+	initWithRecordIDs(recordIDs: NSSet<CKRecordID>): this;
+
+	initWithZoneIDs(zoneIDs: NSSet<CKRecordZoneID>): this;
 }
 
 declare class CKSyncEngineSentDatabaseChangesEvent extends CKSyncEngineEvent {
@@ -2150,6 +2217,8 @@ declare class CKSyncEngineState extends NSObject {
 	readonly pendingDatabaseChanges: NSArray<CKSyncEnginePendingDatabaseChange>;
 
 	readonly pendingRecordZoneChanges: NSArray<CKSyncEnginePendingRecordZoneChange>;
+
+	readonly zoneIDsWithUnfetchedServerChanges: NSArray<CKRecordZoneID>;
 
 	addPendingDatabaseChanges(changes: NSArray<CKSyncEnginePendingDatabaseChange> | CKSyncEnginePendingDatabaseChange[]): void;
 
@@ -2221,15 +2290,6 @@ declare const enum CKSyncEngineZoneDeletionReason {
 	Deleted = 0,
 
 	Purged = 1,
-
-	EncryptedDataReset = 2
-}
-
-declare const enum CKSyncEngineZoneDeletionType {
-
-	Deleted = 0,
-
-	UserDeleted = 1,
 
 	EncryptedDataReset = 2
 }

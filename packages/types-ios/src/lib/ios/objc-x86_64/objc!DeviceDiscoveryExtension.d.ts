@@ -11,8 +11,6 @@ declare class DDDevice extends NSObject {
 
 	displayName: string;
 
-	groupIdentifier: string;
-
 	identifier: string;
 
 	mediaContentSubtitle: string;

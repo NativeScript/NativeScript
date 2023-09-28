@@ -390,6 +390,21 @@ declare var CIBloom: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+interface CIBlurredRectangleGenerator extends CIFilterProtocol {
+
+	color: CIColor;
+
+	extent: CGRect;
+
+	sigma: number;
+}
+declare var CIBlurredRectangleGenerator: {
+
+	prototype: CIBlurredRectangleGenerator;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
 interface CIBokehBlur extends CIFilterProtocol {
 
 	inputImage: CIImage;
@@ -1609,6 +1624,8 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 	static blendWithRedMaskFilter(): CIFilter;
 
 	static bloomFilter(): CIFilter;
+
+	static blurredRectangleGeneratorFilter(): CIFilter;
 
 	static bokehBlurFilter(): CIFilter;
 
@@ -3599,6 +3616,8 @@ declare var CIPerspectiveTransformWithExtent: {
 };
 
 interface CIPhotoEffect extends CIFilterProtocol {
+
+	extrapolate: boolean;
 
 	inputImage: CIImage;
 }

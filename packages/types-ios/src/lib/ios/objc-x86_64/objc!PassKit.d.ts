@@ -1070,14 +1070,7 @@ declare const enum PKPayLaterDisplayStyle {
 	Price = 3
 }
 
-declare class PKPayLaterUtilities extends NSObject {
-
-	static alloc(): PKPayLaterUtilities; // inherited from NSObject
-
-	static new(): PKPayLaterUtilities; // inherited from NSObject
-
-	static validateWithAmountLocaleCompletion(amount: NSDecimalNumber, locale: NSLocale, completion: (p1: boolean) => void): void;
-}
+declare function PKPayLaterValidateAmount(amount: NSDecimalNumber, currencyCode: string, completion: (p1: boolean) => void): void;
 
 declare class PKPayLaterView extends UIView {
 
@@ -1101,15 +1094,15 @@ declare class PKPayLaterView extends UIView {
 
 	amount: NSDecimalNumber;
 
+	currencyCode: string;
+
 	delegate: PKPayLaterViewDelegate;
 
 	displayStyle: PKPayLaterDisplayStyle;
 
-	locale: NSLocale;
+	constructor(o: { amount: NSDecimalNumber; currencyCode: string; });
 
-	constructor(o: { amount: NSDecimalNumber; locale: NSLocale; });
-
-	initWithAmountLocale(amount: NSDecimalNumber, locale: NSLocale): this;
+	initWithAmountCurrencyCode(amount: NSDecimalNumber, currencyCode: string): this;
 }
 
 interface PKPayLaterViewDelegate extends NSObjectProtocol {
@@ -1518,6 +1511,8 @@ declare var PKPaymentNetworkMasterCard: string;
 declare var PKPaymentNetworkMir: string;
 
 declare var PKPaymentNetworkNanaco: string;
+
+declare var PKPaymentNetworkPagoBancomat: string;
 
 declare var PKPaymentNetworkPostFinance: string;
 

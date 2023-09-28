@@ -3201,6 +3201,8 @@ declare var kCFURLCreationDateKey: string;
 
 declare var kCFURLCustomIconKey: string;
 
+declare var kCFURLDirectoryEntryCountKey: string;
+
 declare var kCFURLDocumentIdentifierKey: string;
 
 declare var kCFURLEffectiveIconKey: string;

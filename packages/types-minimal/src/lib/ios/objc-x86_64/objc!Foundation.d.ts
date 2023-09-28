@@ -1948,6 +1948,8 @@ declare const enum NSDataWritingOptions {
 
 	DataWritingFileProtectionCompleteUntilFirstUserAuthentication = 1073741824,
 
+	DataWritingFileProtectionCompleteWhenUserInactive = 1342177280,
+
 	DataWritingFileProtectionMask = 4026531840,
 
 	AtomicWrite = 1
@@ -3339,6 +3341,8 @@ declare class NSFileHandle extends NSObject implements NSSecureCoding {
 
 	static fileHandleForWritingToURLError(url: NSURL): NSFileHandle;
 
+	static fileHandleWithDataCompletion(path: string, data: NSData, callback: (p1: NSFileHandle, p2: NSError) => void): void;
+
 	static new(): NSFileHandle; // inherited from NSObject
 
 	readonly availableData: NSData;
@@ -3370,6 +3374,8 @@ declare class NSFileHandle extends NSObject implements NSSecureCoding {
 	acceptConnectionInBackgroundAndNotify(): void;
 
 	acceptConnectionInBackgroundAndNotifyForModes(modes: NSArray<string> | string[]): void;
+
+	appendDataCompletion(data: NSData, callback: (p1: NSError) => void): void;
 
 	closeAndReturnError(): boolean;
 
@@ -3690,6 +3696,8 @@ declare var NSFileProtectionCompleteUnlessOpen: string;
 
 declare var NSFileProtectionCompleteUntilFirstUserAuthentication: string;
 
+declare var NSFileProtectionCompleteWhenUserInactive: string;
+
 declare var NSFileProtectionKey: string;
 
 declare var NSFileProtectionNone: string;
@@ -3997,6 +4005,57 @@ declare function NSGetUncaughtExceptionHandler(): interop.Pointer | interop.Refe
 
 declare var NSGlobalDomain: string;
 
+declare const enum NSGrammaticalCase {
+
+	NotSet = 0,
+
+	Nominative = 1,
+
+	Accusative = 2,
+
+	Dative = 3,
+
+	Genitive = 4,
+
+	Prepositional = 5,
+
+	Ablative = 6,
+
+	Adessive = 7,
+
+	Allative = 8,
+
+	Elative = 9,
+
+	Illative = 10,
+
+	Essive = 11,
+
+	Inessive = 12,
+
+	Locative = 13,
+
+	Translative = 14
+}
+
+declare const enum NSGrammaticalDefiniteness {
+
+	NotSet = 0,
+
+	Indefinite = 1,
+
+	Definite = 2
+}
+
+declare const enum NSGrammaticalDetermination {
+
+	NotSet = 0,
+
+	Independent = 1,
+
+	Dependent = 2
+}
+
 declare const enum NSGrammaticalGender {
 
 	NotSet = 0,
@@ -4056,6 +4115,28 @@ declare const enum NSGrammaticalPartOfSpeech {
 	Preposition = 13,
 
 	Abbreviation = 14
+}
+
+declare const enum NSGrammaticalPerson {
+
+	NotSet = 0,
+
+	First = 1,
+
+	Second = 2,
+
+	Third = 3
+}
+
+declare const enum NSGrammaticalPronounType {
+
+	NotSet = 0,
+
+	Personal = 1,
+
+	Reflexive = 2,
+
+	Possessive = 3
 }
 
 declare var NSGregorianCalendar: string;
@@ -4522,7 +4603,15 @@ declare class NSIndexSet extends NSObject implements NSCopying, NSMutableCopying
 
 declare var NSIndianCalendar: string;
 
+declare var NSInflectionAgreementArgumentAttributeName: string;
+
+declare var NSInflectionAgreementConceptAttributeName: string;
+
 declare var NSInflectionAlternativeAttributeName: string;
+
+declare var NSInflectionConceptsKey: string;
+
+declare var NSInflectionReferentConceptAttributeName: string;
 
 declare class NSInflectionRule extends NSObject implements NSCopying, NSSecureCoding {
 
@@ -5314,11 +5403,15 @@ declare class NSLocale extends NSObject implements NSCopying, NSSecureCoding {
 
 	readonly languageCode: string;
 
+	readonly languageIdentifier: string;
+
 	readonly localeIdentifier: string;
 
 	readonly quotationBeginDelimiter: string;
 
 	readonly quotationEndDelimiter: string;
+
+	readonly regionCode: string;
 
 	readonly scriptCode: string;
 
@@ -6001,11 +6094,21 @@ declare class NSMorphology extends NSObject implements NSCopying, NSSecureCoding
 
 	static new(): NSMorphology; // inherited from NSObject
 
+	definiteness: NSGrammaticalDefiniteness;
+
+	determination: NSGrammaticalDetermination;
+
+	grammaticalCase: NSGrammaticalCase;
+
 	grammaticalGender: NSGrammaticalGender;
+
+	grammaticalPerson: NSGrammaticalPerson;
 
 	number: NSGrammaticalNumber;
 
 	partOfSpeech: NSGrammaticalPartOfSpeech;
+
+	pronounType: NSGrammaticalPronounType;
 
 	readonly unspecified: boolean;
 
@@ -6057,6 +6160,33 @@ declare class NSMorphologyCustomPronoun extends NSObject implements NSCopying, N
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
+}
+
+declare class NSMorphologyPronoun extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): NSMorphologyPronoun; // inherited from NSObject
+
+	static new(): NSMorphologyPronoun; // inherited from NSObject
+
+	readonly dependentMorphology: NSMorphology;
+
+	readonly morphology: NSMorphology;
+
+	readonly pronoun: string;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { pronoun: string; morphology: NSMorphology; dependentMorphology: NSMorphology; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithPronounMorphologyDependentMorphology(pronoun: string, morphology: NSMorphology, dependentMorphology: NSMorphology): this;
 }
 
 declare var NSMultipleUnderlyingErrorsKey: string;
@@ -7337,7 +7467,7 @@ declare class NSOperationQueue extends NSObject implements NSProgressReporting {
 
 	suspended: boolean;
 
-	underlyingQueue: NSObject;
+	underlyingQueue: interop.Pointer | interop.Reference<any>;
 
 	static readonly currentQueue: NSOperationQueue;
 
@@ -9794,6 +9924,35 @@ declare var NSSystemTimeZoneDidChangeNotification: string;
 
 declare function NSTemporaryDirectory(): string;
 
+declare class NSTermOfAddress extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): NSTermOfAddress; // inherited from NSObject
+
+	static feminine(): NSTermOfAddress;
+
+	static localizedForLanguageIdentifierWithPronouns(language: string, pronouns: NSArray<NSMorphologyPronoun> | NSMorphologyPronoun[]): NSTermOfAddress;
+
+	static masculine(): NSTermOfAddress;
+
+	static neutral(): NSTermOfAddress;
+
+	static new(): NSTermOfAddress; // inherited from NSObject
+
+	readonly languageIdentifier: string;
+
+	readonly pronouns: NSArray<NSMorphologyPronoun>;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
 declare var NSTextCheckingAirlineKey: string;
 
 declare const NSTextCheckingAllCustomTypes: number;
@@ -10144,6 +10303,8 @@ declare class NSURL extends NSObject implements NSCopying, NSItemProviderReading
 
 	static URLWithString(URLString: string): NSURL;
 
+	static URLWithStringEncodingInvalidCharacters(URLString: string, encodingInvalidCharacters: boolean): NSURL;
+
 	static URLWithStringRelativeToURL(URLString: string, baseURL: NSURL): NSURL;
 
 	static absoluteURLWithDataRepresentationRelativeToURL(data: NSData, baseURL: NSURL): NSURL;
@@ -10276,6 +10437,8 @@ declare class NSURL extends NSObject implements NSCopying, NSItemProviderReading
 
 	constructor(o: { string: string; });
 
+	constructor(o: { string: string; encodingInvalidCharacters: boolean; });
+
 	constructor(o: { string: string; relativeToURL: NSURL; });
 
 	URLByAppendingPathComponent(pathComponent: string): NSURL;
@@ -10331,6 +10494,8 @@ declare class NSURL extends NSObject implements NSCopying, NSItemProviderReading
 	initWithSchemeHostPath(scheme: string, host: string, path: string): this;
 
 	initWithString(URLString: string): this;
+
+	initWithStringEncodingInvalidCharacters(URLString: string, encodingInvalidCharacters: boolean): this;
 
 	initWithStringRelativeToURL(URLString: string, baseURL: NSURL): this;
 
@@ -10533,6 +10698,8 @@ declare class NSURLComponents extends NSObject implements NSCopying {
 
 	static componentsWithString(URLString: string): NSURLComponents;
 
+	static componentsWithStringEncodingInvalidCharacters(URLString: string, encodingInvalidCharacters: boolean): NSURLComponents;
+
 	static componentsWithURLResolvingAgainstBaseURL(url: NSURL, resolve: boolean): NSURLComponents;
 
 	static new(): NSURLComponents; // inherited from NSObject
@@ -10593,6 +10760,8 @@ declare class NSURLComponents extends NSObject implements NSCopying {
 
 	constructor(o: { string: string; });
 
+	constructor(o: { string: string; encodingInvalidCharacters: boolean; });
+
 	constructor(o: { URL: NSURL; resolvingAgainstBaseURL: boolean; });
 
 	URLRelativeToURL(baseURL: NSURL): NSURL;
@@ -10600,6 +10769,8 @@ declare class NSURLComponents extends NSObject implements NSCopying {
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	initWithString(URLString: string): this;
+
+	initWithStringEncodingInvalidCharacters(URLString: string, encodingInvalidCharacters: boolean): this;
 
 	initWithURLResolvingAgainstBaseURL(url: NSURL, resolve: boolean): this;
 }
@@ -10619,8 +10790,6 @@ declare class NSURLConnection extends NSObject {
 	static sendSynchronousRequestReturningResponseError(request: NSURLRequest, response: interop.Pointer | interop.Reference<NSURLResponse>): NSData;
 
 	readonly currentRequest: NSURLRequest;
-
-	readonly newsstandAssetDownload: NKAssetDownload;
 
 	readonly originalRequest: NSURLRequest;
 
@@ -10801,6 +10970,8 @@ declare var NSURLCredentialStorageRemoveSynchronizableCredentials: string;
 
 declare var NSURLCustomIconKey: string;
 
+declare var NSURLDirectoryEntryCountKey: string;
+
 declare var NSURLDocumentIdentifierKey: string;
 
 declare var NSURLEffectiveIconKey: string;
@@ -10943,6 +11114,8 @@ declare var NSURLFileProtectionComplete: string;
 declare var NSURLFileProtectionCompleteUnlessOpen: string;
 
 declare var NSURLFileProtectionCompleteUntilFirstUserAuthentication: string;
+
+declare var NSURLFileProtectionCompleteWhenUserInactive: string;
 
 declare var NSURLFileProtectionKey: string;
 
@@ -11410,6 +11583,10 @@ declare class NSURLSession extends NSObject {
 
 	uploadTaskWithRequestFromFileCompletionHandler(request: NSURLRequest, fileURL: NSURL, completionHandler: (p1: NSData, p2: NSURLResponse, p3: NSError) => void): NSURLSessionUploadTask;
 
+	uploadTaskWithResumeData(resumeData: NSData): NSURLSessionUploadTask;
+
+	uploadTaskWithResumeDataCompletionHandler(resumeData: NSData, completionHandler: (p1: NSData, p2: NSURLResponse, p3: NSError) => void): NSURLSessionUploadTask;
+
 	uploadTaskWithStreamedRequest(request: NSURLRequest): NSURLSessionUploadTask;
 
 	webSocketTaskWithRequest(request: NSURLRequest): NSURLSessionWebSocketTask;
@@ -11481,6 +11658,8 @@ declare class NSURLSessionConfiguration extends NSObject implements NSCopying {
 	networkServiceType: NSURLRequestNetworkServiceType;
 
 	protocolClasses: NSArray<typeof NSObject>;
+
+	proxyConfigurations: NSArray<any>;
 
 	requestCachePolicy: NSURLRequestCachePolicy;
 
@@ -11728,11 +11907,15 @@ interface NSURLSessionTaskDelegate extends NSURLSessionDelegate {
 
 	URLSessionTaskDidReceiveChallengeCompletionHandler?(session: NSURLSession, task: NSURLSessionTask, challenge: NSURLAuthenticationChallenge, completionHandler: (p1: NSURLSessionAuthChallengeDisposition, p2: NSURLCredential) => void): void;
 
+	URLSessionTaskDidReceiveInformationalResponse?(session: NSURLSession, task: NSURLSessionTask, response: NSHTTPURLResponse): void;
+
 	URLSessionTaskDidSendBodyDataTotalBytesSentTotalBytesExpectedToSend?(session: NSURLSession, task: NSURLSessionTask, bytesSent: number, totalBytesSent: number, totalBytesExpectedToSend: number): void;
 
 	URLSessionTaskIsWaitingForConnectivity?(session: NSURLSession, task: NSURLSessionTask): void;
 
 	URLSessionTaskNeedNewBodyStream?(session: NSURLSession, task: NSURLSessionTask, completionHandler: (p1: NSInputStream) => void): void;
+
+	URLSessionTaskNeedNewBodyStreamFromOffsetCompletionHandler?(session: NSURLSession, task: NSURLSessionTask, offset: number, completionHandler: (p1: NSInputStream) => void): void;
 
 	URLSessionTaskWillBeginDelayedRequestCompletionHandler?(session: NSURLSession, task: NSURLSessionTask, request: NSURLRequest, completionHandler: (p1: NSURLSessionDelayedRequestDisposition, p2: NSURLRequest) => void): void;
 
@@ -11879,7 +12062,11 @@ declare class NSURLSessionUploadTask extends NSURLSessionDataTask {
 	static alloc(): NSURLSessionUploadTask; // inherited from NSObject
 
 	static new(): NSURLSessionUploadTask; // inherited from NSObject
+
+	cancelByProducingResumeData(completionHandler: (p1: NSData) => void): void;
 }
+
+declare var NSURLSessionUploadTaskResumeData: string;
 
 declare const enum NSURLSessionWebSocketCloseCode {
 

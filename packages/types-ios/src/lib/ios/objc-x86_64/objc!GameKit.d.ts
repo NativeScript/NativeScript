@@ -65,8 +65,6 @@ declare class GKAchievement extends NSObject implements NSCoding, NSSecureCoding
 
 	readonly playerID: string;
 
-	readonly rarityPercent: number;
-
 	showsCompletionBanner: boolean;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
@@ -136,6 +134,8 @@ declare class GKAchievementDescription extends NSObject implements NSCoding, NSS
 	readonly image: UIImage;
 
 	readonly maximumPoints: number;
+
+	readonly rarityPercent: number;
 
 	readonly replayable: boolean;
 

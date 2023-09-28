@@ -136,6 +136,43 @@ declare var BADownloaderPriorityMax: number;
 
 declare var BADownloaderPriorityMin: number;
 
+declare const enum BAErrorCode {
+
+	DownloadInvalid = 0,
+
+	CallFromExtensionNotAllowed = 50,
+
+	CallFromInactiveProcessNotAllowed = 51,
+
+	CallerConnectionNotAccepted = 55,
+
+	CallerConnectionInvalid = 56,
+
+	DownloadAlreadyScheduled = 100,
+
+	DownloadNotScheduled = 101,
+
+	DownloadFailedToStart = 102,
+
+	DownloadAlreadyFailed = 103,
+
+	DownloadEssentialDownloadNotPermitted = 109,
+
+	DownloadBackgroundActivityProhibited = 111,
+
+	DownloadWouldExceedAllowance = 112,
+
+	SessionDownloadDisallowedByDomain = 202,
+
+	SessionDownloadDisallowedByAllowance = 203,
+
+	SessionDownloadAllowanceExceeded = 204,
+
+	SessionDownloadNotPermittedBeforeAppLaunch = 206
+}
+
+declare var BAErrorDomain: string;
+
 declare class BAURLDownload extends BADownload implements NSCopying {
 
 	static alloc(): BAURLDownload; // inherited from NSObject
