@@ -5,6 +5,7 @@ import { booleanConverter, ShowModalOptions, ViewBase } from '../view-base';
 import { getEventOrGestureName } from '../bindable';
 import { layout } from '../../../utils';
 import { isObject } from '../../../utils/types';
+import { sanitizeModuleName } from '../../../utils/common';
 import { Color } from '../../../color';
 import { Property, InheritedProperty } from '../properties';
 import { EventData } from '../../../data/observable';
@@ -18,7 +19,6 @@ import { observe as gestureObserve, GesturesObserver, GestureTypes, GestureEvent
 
 import { CSSUtils } from '../../../css/system-classes';
 import { Builder } from '../../builder';
-import { sanitizeModuleName } from '../../builder/module-name-sanitizer';
 import { StyleScope } from '../../styling/style-scope';
 import { LinearGradient } from '../../styling/linear-gradient';
 
@@ -26,7 +26,8 @@ import * as am from '../../animation';
 import { AccessibilityEventOptions, AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait } from '../../../accessibility/accessibility-types';
 import { accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityValueProperty, accessibilityIgnoresInvertColorsProperty } from '../../../accessibility/accessibility-properties';
 import { accessibilityBlurEvent, accessibilityFocusChangedEvent, accessibilityFocusEvent, accessibilityPerformEscapeEvent, getCurrentFontScale } from '../../../accessibility';
-import { CSSShadow } from '../../styling/css-shadow';
+import { ShadowCSSValues } from '../../styling/css-shadow';
+import { SharedTransition, SharedTransitionInteractiveOptions } from '../../transition/shared-transition';
 
 // helpers (these are okay re-exported here)
 export * from './view-helper';
@@ -68,6 +69,8 @@ export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator 
 
 export const _rootModalViews = new Array<ViewBase>();
 
+type InteractiveTransitionState = { began?: boolean; cancelled?: boolean; options?: SharedTransitionInteractiveOptions };
+
 export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public static layoutChangedEvent = 'layoutChanged';
 	public static shownModallyEvent = 'shownModally';
@@ -93,6 +96,11 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public _modalParent: ViewCommon;
 	private _modalContext: any;
 	private _modal: ViewCommon;
+
+	/**
+	 * Active transition instance id for tracking state
+	 */
+	transitionId: number;
 
 	private _measuredWidth: number;
 	private _measuredHeight: number;
@@ -271,7 +279,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
 			const gesture = gestureFromString(arg);
 			if (gesture && !this._isEvent(arg)) {
-				this._observe(gesture, callback, thisArg);
+				this._observe(gesture, callback as unknown as (data: GestureEventData) => void, thisArg);
 			} else {
 				const events = arg.split(',');
 				if (events.length > 0) {
@@ -279,7 +287,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 						const evt = events[i].trim();
 						const gst = gestureFromString(evt);
 						if (gst && !this._isEvent(arg)) {
-							this._observe(gst, callback, thisArg);
+							this._observe(gst, callback as unknown as (data: GestureEventData) => void, thisArg);
 						} else {
 							super.addEventListener(evt, callback, thisArg);
 						}
@@ -289,7 +297,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 				}
 			}
 		} else if (typeof arg === 'number') {
-			this._observe(<GestureTypes>arg, callback, thisArg);
+			this._observe(<GestureTypes>arg, callback as unknown as (data: GestureEventData) => void, thisArg);
 		}
 	}
 
@@ -362,7 +370,12 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
 	public showModal(...args): ViewDefinition {
 		const { view, options } = this.getModalOptions(args);
-
+		if (options.transition?.instance) {
+			SharedTransition.updateState(options.transition?.instance.id, {
+				page: this,
+				toPage: view,
+			});
+		}
 		view._showNativeModalView(this, options);
 
 		return view;
@@ -392,30 +405,46 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		modalRootViewCssClasses.forEach((c) => this.cssClasses.add(c));
 
 		parent._modal = this;
-		this.style._fontScale = getCurrentFontScale();
+		this.style.fontScaleInternal = getCurrentFontScale();
 		this._modalParent = parent;
 		this._modalContext = options.context;
-		const that = this;
-		this._closeModalCallback = function (...originalArgs) {
-			if (that._closeModalCallback) {
-				const modalIndex = _rootModalViews.indexOf(that);
+		this._closeModalCallback = (...originalArgs) => {
+			const cleanupModalViews = () => {
+				const modalIndex = _rootModalViews.indexOf(this);
 				_rootModalViews.splice(modalIndex);
-				that._modalParent = null;
-				that._modalContext = null;
-				that._closeModalCallback = null;
-				that._dialogClosed();
+				this._modalParent = null;
+				this._modalContext = null;
+				this._closeModalCallback = null;
+				this._dialogClosed();
 				parent._modal = null;
+			};
 
-				const whenClosedCallback = () => {
+			const whenClosedCallback = () => {
+				const transitionState = SharedTransition.getState(this.transitionId);
+				if (transitionState?.interactiveBegan) {
+					SharedTransition.updateState(this.transitionId, {
+						interactiveBegan: false,
+					});
+					if (!transitionState?.interactiveCancelled) {
+						cleanupModalViews();
+					}
+				}
+
+				if (!transitionState?.interactiveCancelled) {
 					if (typeof options.closeCallback === 'function') {
 						options.closeCallback.apply(undefined, originalArgs);
 					}
 
-					that._tearDownUI(true);
-				};
+					this._tearDownUI(true);
+				}
+			};
 
-				that._hideNativeModalView(parent, whenClosedCallback);
+			const transitionState = SharedTransition.getState(this.transitionId);
+			if (!transitionState?.interactiveBegan) {
+				cleanupModalViews();
 			}
+
+			this._hideNativeModalView(parent, whenClosedCallback);
 		};
 	}
 
@@ -617,10 +646,10 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		this.style.backgroundRepeat = value;
 	}
 
-	get boxShadow(): CSSShadow {
+	get boxShadow(): ShadowCSSValues {
 		return this.style.boxShadow;
 	}
-	set boxShadow(value: CSSShadow) {
+	set boxShadow(value: ShadowCSSValues) {
 		this.style.boxShadow = value;
 	}
 
@@ -828,6 +857,27 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	}
 	set accessibilityMediaSession(value: boolean) {
 		this.style.accessibilityMediaSession = value;
+	}
+
+	get iosAccessibilityAdjustsFontSize(): boolean {
+		return this.style.iosAccessibilityAdjustsFontSize;
+	}
+	set iosAccessibilityAdjustsFontSize(value: boolean) {
+		this.style.iosAccessibilityAdjustsFontSize = value;
+	}
+
+	get iosAccessibilityMinFontScale(): number {
+		return this.style.iosAccessibilityMinFontScale;
+	}
+	set iosAccessibilityMinFontScale(value: number) {
+		this.style.iosAccessibilityMinFontScale = value;
+	}
+
+	get iosAccessibilityMaxFontScale(): number {
+		return this.style.iosAccessibilityMaxFontScale;
+	}
+	set iosAccessibilityMaxFontScale(value: number) {
+		this.style.iosAccessibilityMaxFontScale = value;
 	}
 
 	get automationText(): string {

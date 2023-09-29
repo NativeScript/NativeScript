@@ -1,5 +1,7 @@
 import { IFileSystemAccess, FileSystemAccess, FileSystemAccess29 } from './file-system-access';
-import { SDK_VERSION } from '../utils/constants';
+import { SDK_VERSION } from '../utils';
+import { Application } from '../application';
+
 // The FileSystemAccess implementation, used through all the APIs.
 let fileAccess: IFileSystemAccess;
 
@@ -180,11 +182,167 @@ export class FileSystemEntity {
 	}
 }
 
+let applicationContext;
+function getApplicationContext() {
+	if (!applicationContext) {
+		applicationContext = Application.android.getNativeApplication().getApplicationContext();
+	}
+
+	return applicationContext;
+}
+
+export enum AndroidDirectory {
+	ALARMS = 'alarms',
+	AUDIOBOOKS = 'audiobooks',
+	DCIM = 'dcim',
+	DOCUMENTS = 'documents',
+	DOWNLOADS = 'downloads',
+	MOVIES = 'movies',
+	MUSIC = 'music',
+	NOTIFICATIONS = 'notifications',
+	PICTURES = 'pictures',
+	PODCASTS = 'podcasts',
+	RINGTONES = 'ringtones',
+	SCREENSHOTS = 'screenshots',
+}
+
+function getAndroidDirectory(value: AndroidDirectory): { path: string; column: android.net.Uri } | null {
+	switch (value) {
+		case AndroidDirectory.ALARMS:
+			return {
+				path: android.os.Environment.DIRECTORY_ALARMS,
+				column: android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+			};
+		case AndroidDirectory.AUDIOBOOKS:
+			return {
+				path: android.os.Environment.DIRECTORY_AUDIOBOOKS,
+				column: android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+			};
+		case AndroidDirectory.DCIM:
+			return {
+				path: android.os.Environment.DIRECTORY_DCIM,
+				column: android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+			};
+		case AndroidDirectory.DOCUMENTS:
+			return {
+				path: android.os.Environment.DIRECTORY_DOCUMENTS,
+				column: android.provider.MediaStore.Files.getContentUri('external'),
+			};
+		case AndroidDirectory.DOWNLOADS:
+			return {
+				path: android.os.Environment.DIRECTORY_DOWNLOADS,
+				column: android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI,
+			};
+		case AndroidDirectory.MOVIES:
+			return {
+				path: android.os.Environment.DIRECTORY_MOVIES,
+				column: android.provider.MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+			};
+		case AndroidDirectory.MUSIC:
+			return {
+				path: android.os.Environment.DIRECTORY_MUSIC,
+				column: android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+			};
+		case AndroidDirectory.NOTIFICATIONS:
+			return {
+				path: android.os.Environment.DIRECTORY_NOTIFICATIONS,
+				column: android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+			};
+		case AndroidDirectory.PICTURES:
+			return {
+				path: android.os.Environment.DIRECTORY_PICTURES,
+				column: android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+			};
+		case AndroidDirectory.PODCASTS:
+			return {
+				path: android.os.Environment.DIRECTORY_PODCASTS,
+				column: android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+			};
+		case AndroidDirectory.RINGTONES:
+			return {
+				path: android.os.Environment.DIRECTORY_RINGTONES,
+				column: android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+			};
+		case AndroidDirectory.SCREENSHOTS:
+			return {
+				path: android.os.Environment.DIRECTORY_SCREENSHOTS,
+				column: android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+			};
+		default:
+			return null;
+	}
+}
+
+class Android {
+	createFile(options: { relativePath?: string; name: string; mime: string; directory: AndroidDirectory }): File {
+		if (!global.isAndroid) {
+			throw new Error(`createFile is available on Android only!`);
+		}
+
+		const context = getApplicationContext() as android.content.Context;
+
+		const meta = new android.content.ContentValues();
+		meta.put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, options.name);
+		meta.put(android.provider.MediaStore.MediaColumns.MIME_TYPE, options.mime);
+		//meta.put(android.provider.MediaStore.MediaColumns.DATE_ADDED, java.lang.System.currentTimeMillis() as any);
+
+		const externalDirectory = getAndroidDirectory(options.directory);
+
+		if (SDK_VERSION >= 29) {
+			const relativePath = options?.relativePath ? `/${options.relativePath}` : '';
+			meta.put(android.provider.MediaStore.MediaColumns.RELATIVE_PATH, `${externalDirectory.path}${relativePath}`);
+			// todo
+			//	meta.put(android.provider.MediaStore.MediaColumns.IS_PENDING, java.lang.Integer.valueOf(1));
+		} else {
+			const relativePath = options?.relativePath ? `${options.relativePath}/` : '';
+			const directory = android.os.Environment.getExternalStoragePublicDirectory(externalDirectory.path);
+			const file = new java.io.File(directory, `${relativePath}${options.name}`);
+			meta.put(android.provider.MediaStore.MediaColumns.DATA, file.getAbsolutePath());
+		}
+
+		const uri = context.getContentResolver().insert(externalDirectory.column, meta);
+
+		return File.fromPath(uri.toString());
+	}
+}
+
+const ad = new Android();
+
+class iOS {}
+
+const ios = new iOS();
+
 export class File extends FileSystemEntity {
-	public static fromPath(path: string) {
+	public static get ios() {
+		return ios;
+	}
+
+	public static get android() {
+		return ad;
+	}
+
+	public static fromPath(path: string, copy: boolean = false) {
 		const onError = function (error) {
 			throw error;
 		};
+
+		if (global.isAndroid && copy) {
+			if (path.startsWith('content:')) {
+				const fileInfo = getFileAccess().getFile(path, onError);
+				// falls back to creating a temp file without a known extension.
+				if (!fileInfo) {
+					const tempFile = `${knownFolders.temp().path}/${java.util.UUID.randomUUID().toString()}`;
+					org.nativescript.widgets.Async.File.copySync(path, tempFile, getApplicationContext());
+					path = tempFile;
+				} else {
+					const ext = fileInfo.extension;
+					const name = `${fileInfo.name.replace(`.${ext}`, '')}.${ext}`;
+					const tempFile = `${knownFolders.temp().path}/${name}`;
+					getFileAccess().copySync(path, tempFile);
+					path = tempFile;
+				}
+			}
+		}
 
 		const fileInfo = getFileAccess().getFile(path, onError);
 		if (!fileInfo) {
@@ -209,6 +367,147 @@ export class File extends FileSystemEntity {
 
 	get size(): number {
 		return getFileAccess().getFileSize(this.path);
+	}
+
+	public append(content: any): Promise<void> {
+		return new Promise<void>((resolve, reject) => {
+			try {
+				this._checkAccess();
+			} catch (ex) {
+				reject(ex);
+
+				return;
+			}
+
+			this._locked = true;
+
+			getFileAccess()
+				.appendAsync(this.path, content)
+				.then(
+					() => {
+						resolve();
+						this._locked = false;
+					},
+					(error) => {
+						reject(error);
+						this._locked = false;
+					}
+				);
+		});
+	}
+
+	public appendSync(content: any, onError?: (error: any) => any): void {
+		this._checkAccess();
+
+		try {
+			this._locked = true;
+
+			const that = this;
+			const localError = function (error) {
+				that._locked = false;
+				if (onError) {
+					onError(error);
+				}
+			};
+
+			getFileAccess().appendSync(this.path, content, localError);
+		} finally {
+			this._locked = false;
+		}
+	}
+
+	public appendText(content: string, encoding?: string): Promise<any> {
+		return new Promise((resolve, reject) => {
+			try {
+				this._checkAccess();
+			} catch (ex) {
+				reject(ex);
+
+				return;
+			}
+
+			this._locked = true;
+
+			getFileAccess()
+				.appendTextAsync(this.path, content, encoding)
+				.then(
+					() => {
+						resolve(true);
+						this._locked = false;
+					},
+					(error) => {
+						reject(error);
+						this._locked = false;
+					}
+				);
+		});
+	}
+
+	public appendTextSync(content: string, onError?: (error: any) => any, encoding?: string): void {
+		this._checkAccess();
+
+		try {
+			this._locked = true;
+
+			const that = this;
+			const localError = function (error) {
+				that._locked = false;
+				if (onError) {
+					onError(error);
+				}
+			};
+
+			getFileAccess().appendTextSync(this.path, content, localError, encoding);
+		} finally {
+			this._locked = false;
+		}
+	}
+
+	public copy(dest: string): Promise<boolean> {
+		return new Promise<boolean>((resolve, reject) => {
+			try {
+				this._checkAccess();
+			} catch (ex) {
+				reject(ex);
+
+				return;
+			}
+
+			this._locked = true;
+
+			getFileAccess()
+				.copyAsync(this.path, dest)
+				.then(
+					(result) => {
+						resolve(result);
+						this._locked = false;
+					},
+					(error) => {
+						reject(error);
+						this._locked = false;
+					}
+				);
+		});
+	}
+
+	public copySync(dest: string, onError?: (error: any) => any): any {
+		this._checkAccess();
+
+		this._locked = true;
+
+		const that = this;
+		const localError = (error) => {
+			that._locked = false;
+			if (onError) {
+				onError(error);
+			}
+		};
+
+		const content = getFileAccess().copySync(this.path, dest, localError);
+
+		this._locked = false;
+
+		return content;
 	}
 
 	public read(): Promise<any> {
@@ -731,7 +1030,10 @@ export namespace knownFolders {
 			return _sharedPublic;
 		}
 
-		function getExistingFolderInfo(pathDirectory: any /* NSSearchPathDirectory */): { folder: Folder; path: string } {
+		function getExistingFolderInfo(pathDirectory: any /* NSSearchPathDirectory */): {
+			folder: Folder;
+			path: string;
+		} {
 			const fileAccess = <any>getFileAccess();
 			const folderPath = fileAccess.getKnownPath(pathDirectory);
 			const folderInfo = fileAccess.getExistingFolder(folderPath);

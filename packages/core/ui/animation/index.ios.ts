@@ -6,8 +6,10 @@ import { View } from '../core/view';
 import { AnimationBase, Properties, CubicBezierAnimationCurve } from './animation-common';
 import { Trace } from '../../trace';
 import { opacityProperty, backgroundColorProperty, rotateProperty, rotateXProperty, rotateYProperty, translateXProperty, translateYProperty, scaleXProperty, scaleYProperty, heightProperty, widthProperty, PercentLength } from '../styling/style-properties';
+import { ios as iosBackground } from '../styling/background';
+import { ios as iosViewUtils, NativeScriptUIView } from '../utils';
 
-import { iOSNativeHelper } from '../../utils/native-helper';
+import { ios as iosHelper } from '../../utils/native-helper';
 
 import { Screen } from '../../platform';
 
@@ -34,7 +36,7 @@ class AnimationDelegateImpl extends NSObject implements CAAnimationDelegate {
 	public nextAnimation: Function;
 
 	// The CAAnimationDelegate protocol has been introduced in the iOS 10 SDK
-	static ObjCProtocols = (<any>global).CAAnimationDelegate ? [(<any>global).CAAnimationDelegate] : [];
+	static ObjCProtocols = global.CAAnimationDelegate ? [global.CAAnimationDelegate] : [];
 
 	private _finishedCallback: Function;
 	private _propertyAnimation: PropertyAnimationInfo;
@@ -168,33 +170,29 @@ export class Animation extends AnimationBase {
 			this._mergedPropertyAnimations = this._propertyAnimations;
 		}
 
-		const that = this;
 		const animationFinishedCallback = (cancelled: boolean) => {
-			if (that._playSequentially) {
+			if (this._playSequentially) {
 				// This function will be called by the last animation when done or by another animation if the user cancels them halfway through.
-				if (cancelled) {
-					that._rejectAnimationFinishedPromise();
-				} else {
-					that._resolveAnimationFinishedPromise();
+				if (!cancelled) {
+					this._resolveAnimationFinishedPromise();
 				}
 			} else {
 				// This callback will be called by each INDIVIDUAL animation when it finishes or is cancelled.
 				if (cancelled) {
-					that._cancelledAnimations++;
+					this._cancelledAnimations++;
 				} else {
-					that._finishedAnimations++;
+					this._finishedAnimations++;
 				}
 
-				if (that._cancelledAnimations > 0 && that._cancelledAnimations + that._finishedAnimations === that._mergedPropertyAnimations.length) {
+				if (this._cancelledAnimations > 0 && this._cancelledAnimations + this._finishedAnimations === this._mergedPropertyAnimations.length) {
 					if (Trace.isEnabled()) {
-						Trace.write(that._cancelledAnimations + ' animations cancelled.', Trace.categories.Animation);
+						Trace.write(this._cancelledAnimations + ' animations cancelled.', Trace.categories.Animation);
 					}
-					that._rejectAnimationFinishedPromise();
-				} else if (that._finishedAnimations === that._mergedPropertyAnimations.length) {
+				} else if (this._finishedAnimations === this._mergedPropertyAnimations.length) {
 					if (Trace.isEnabled()) {
-						Trace.write(that._finishedAnimations + ' animations finished.', Trace.categories.Animation);
+						Trace.write(this._finishedAnimations + ' animations finished.', Trace.categories.Animation);
 					}
-					that._resolveAnimationFinishedPromise();
+					this._resolveAnimationFinishedPromise();
 				}
 			}
 		};
@@ -218,7 +216,6 @@ export class Animation extends AnimationBase {
 	public cancel(): void {
 		if (!this.isPlaying) {
 			Trace.write('Animation is not currently playing.', Trace.categories.Animation, Trace.messageType.warn);
-
 			return;
 		}
 
@@ -226,8 +223,54 @@ export class Animation extends AnimationBase {
 			for (let i = 0; i < this._mergedPropertyAnimations.length; i++) {
 				const propertyAnimation = this._mergedPropertyAnimations[i];
 				if (propertyAnimation) {
-					if (propertyAnimation.target?.nativeViewProtected?.layer) {
-						propertyAnimation.target.nativeViewProtected.layer.removeAllAnimations();
+					if (propertyAnimation.target?.nativeViewProtected) {
+						const nativeView: NativeScriptUIView = propertyAnimation.target.nativeViewProtected;
+						if (nativeView.layer.mask) {
+							nativeView.layer.mask.removeAllAnimations();
+						}
+						nativeView.layer.removeAllAnimations();
+
+						// Gradient background animations
+						if (nativeView.gradientLayer) {
+							nativeView.gradientLayer.removeAllAnimations();
+						}
+
+						// Border animations
+						if (nativeView.borderLayer) {
+							if (nativeView.borderLayer.mask) {
+								nativeView.borderLayer.mask.removeAllAnimations();
+							}
+
+							const borderLayers = nativeView.borderLayer.sublayers;
+							if (borderLayers?.count) {
+								for (let i = 0, count = borderLayers.count; i < count; i++) {
+									borderLayers[i].removeAllAnimations();
+								}
+							}
+
+							nativeView.borderLayer.removeAllAnimations();
+						}
+
+						// Shadow animations
+						if (nativeView.outerShadowContainerLayer) {
+							if (nativeView.outerShadowContainerLayer.mask) {
+								nativeView.outerShadowContainerLayer.mask.removeAllAnimations();
+							}
+
+							const outerShadowLayers = nativeView.outerShadowContainerLayer.sublayers;
+							if (outerShadowLayers?.count) {
+								for (let i = 0, count = outerShadowLayers.count; i < count; i++) {
+									const shadowLayer = outerShadowLayers[i];
+
+									if (shadowLayer.mask) {
+										shadowLayer.mask.removeAllAnimations();
+									}
+									shadowLayer.removeAllAnimations();
+								}
+							}
+
+							nativeView.outerShadowContainerLayer.removeAllAnimations();
+						}
 					}
 					if (propertyAnimation._propertyResetCallback) {
 						propertyAnimation._propertyResetCallback(propertyAnimation._originalValue, this._valueSource);
@@ -266,14 +309,14 @@ export class Animation extends AnimationBase {
 	private static _getNativeAnimationArguments(animation: PropertyAnimationInfo, valueSource: 'animation' | 'keyframe'): AnimationInfo {
 		const view = animation.target;
 		const style = view.style;
-		const nativeView = <UIView>view.nativeViewProtected;
+		const nativeView: NativeScriptUIView = view.nativeViewProtected;
 		const parent = view.parent as View;
 
 		let propertyNameToAnimate = animation.property;
 		let subPropertyNameToAnimate;
 		let toValue = animation.value;
 		let fromValue;
-		if (nativeView?.layer) {
+		if (nativeView) {
 			const setLocal = valueSource === 'animation';
 
 			switch (animation.property) {
@@ -283,10 +326,11 @@ export class Animation extends AnimationBase {
 						style[setLocal ? backgroundColorProperty.name : backgroundColorProperty.keyframe] = value;
 					};
 					fromValue = nativeView.layer.backgroundColor;
+
 					if (nativeView instanceof UILabel) {
 						nativeView.setValueForKey(UIColor.clearColor, 'backgroundColor');
 					}
-					toValue = toValue.CGColor;
+					toValue = toValue?.ios?.CGColor;
 					break;
 				case Properties.opacity:
 					animation._originalValue = view.opacity;
@@ -399,7 +443,7 @@ export class Animation extends AnimationBase {
 					const extentY = isHeight ? asNumber : currentBounds.size.height;
 					fromValue = NSValue.valueWithCGRect(currentBounds);
 					toValue = NSValue.valueWithCGRect(CGRectMake(currentBounds.origin.x, currentBounds.origin.y, extentX, extentY));
-					animation._originalValue = view.height;
+					animation._originalValue = view[isHeight ? 'height' : 'width'];
 					animation._propertyResetCallback = (value, valueSource) => {
 						const prop = isHeight ? heightProperty : widthProperty;
 						style[setLocal ? prop.name : prop.keyframe] = value;
@@ -442,7 +486,7 @@ export class Animation extends AnimationBase {
 	}
 
 	private static _createNativeAnimation(propertyAnimations: Array<PropertyAnimation>, index: number, playSequentially: boolean, args: AnimationInfo, animation: PropertyAnimation, valueSource: 'animation' | 'keyframe', finishedCallback: (cancelled?: boolean) => void) {
-		const nativeView = <UIView>animation.target.nativeViewProtected;
+		const nativeView: NativeScriptUIView = animation.target.nativeViewProtected;
 
 		let nativeAnimation;
 
@@ -454,8 +498,16 @@ export class Animation extends AnimationBase {
 
 		const animationDelegate = AnimationDelegateImpl.initWithFinishedCallback(finishedCallback, animation, valueSource);
 		nativeAnimation.setValueForKey(animationDelegate, 'delegate');
-		if (nativeView?.layer) {
+		if (nativeView) {
 			nativeView.layer.addAnimationForKey(nativeAnimation, args.propertyNameToAnimate);
+			if (args.propertyNameToAnimate === 'bounds') {
+				this.animateNestedLayerSizeUsingBasicAnimation(nativeView, args.toValue.CGRectValue, animation, args, nativeAnimation);
+			}
+
+			// Shadow layers do not inherit from animating view layer
+			if (nativeView.outerShadowContainerLayer) {
+				nativeView.outerShadowContainerLayer.addAnimationForKey(nativeAnimation, args.propertyNameToAnimate);
+			}
 		}
 		let callback = undefined;
 		if (index + 1 < propertyAnimations.length) {
@@ -516,7 +568,7 @@ export class Animation extends AnimationBase {
 	}
 
 	private static _createNativeSpringAnimation(propertyAnimations: Array<PropertyAnimationInfo>, index: number, playSequentially: boolean, args: AnimationInfo, animation: PropertyAnimationInfo, valueSource: 'animation' | 'keyframe', finishedCallback: (cancelled?: boolean) => void) {
-		const nativeView = <UIView>animation.target.nativeViewProtected;
+		const nativeView: NativeScriptUIView = animation.target.nativeViewProtected;
 
 		let callback = undefined;
 		let nextAnimation;
@@ -556,6 +608,10 @@ export class Animation extends AnimationBase {
 					case Properties.width:
 						animation._originalValue = animation.target[animation.property];
 						nativeView.layer.setValueForKey(args.toValue, args.propertyNameToAnimate);
+
+						// Resize background during animation
+						iosBackground.drawBackgroundVisualEffects(animation.target);
+
 						animation._propertyResetCallback = function (value) {
 							animation.target[animation.property] = value;
 						};
@@ -563,6 +619,12 @@ export class Animation extends AnimationBase {
 					case _transform:
 						animation._originalValue = nativeView.layer.transform;
 						nativeView.layer.setValueForKey(args.toValue, args.propertyNameToAnimate);
+
+						// Shadow layers do not inherit from animating view layer
+						if (nativeView.outerShadowContainerLayer) {
+							nativeView.outerShadowContainerLayer.setValueForKey(args.toValue, args.propertyNameToAnimate);
+						}
+
 						animation._propertyResetCallback = function (value) {
 							nativeView.layer.transform = value;
 						};
@@ -691,6 +753,182 @@ export class Animation extends AnimationBase {
 
 		return result;
 	}
+
+	private static animateNestedLayerSizeUsingBasicAnimation(nativeView: NativeScriptUIView, bounds: CGRect, animation: PropertyAnimation, args: AnimationInfo, nativeAnimation: CABasicAnimation) {
+		const view: View = animation.target;
+
+		// Gradient background animation
+		if (nativeView.gradientLayer) {
+			nativeView.gradientLayer.addAnimationForKey(nativeAnimation, 'bounds');
+		}
+
+		let clipPath; // This is also used for animating shadow
+
+		// Clipping mask animation
+		if (nativeView.layer.mask instanceof CAShapeLayer) {
+			let toValue;
+
+			if (nativeView.maskType === iosViewUtils.LayerMask.BORDER) {
+				toValue = iosBackground.generateNonUniformBorderOuterClipRoundedPath(view, bounds);
+			} else if (nativeView.maskType === iosViewUtils.LayerMask.CLIP_PATH) {
+				clipPath = iosBackground.generateClipPath(view, bounds);
+				toValue = clipPath;
+			} else {
+				Trace.write('Unknown mask on animating view: ' + view, Trace.categories.Animation, Trace.messageType.info);
+			}
+
+			if (toValue) {
+				nativeView.layer.mask.addAnimationForKey(
+					this._createBasicAnimation(
+						{
+							...args,
+							propertyNameToAnimate: 'path',
+							fromValue: nativeView.layer.mask.path,
+							toValue,
+						},
+						animation
+					),
+					'path'
+				);
+			}
+		}
+
+		// Border animations (uniform and non-uniform)
+		if (nativeView.hasNonUniformBorder) {
+			if (nativeView.borderLayer) {
+				const innerClipPath = iosBackground.generateNonUniformBorderInnerClipRoundedPath(animation.target, bounds);
+
+				if (nativeView.hasNonUniformBorderColor) {
+					const borderMask = nativeView.borderLayer.mask;
+					if (borderMask instanceof CAShapeLayer) {
+						borderMask.addAnimationForKey(
+							this._createBasicAnimation(
+								{
+									...args,
+									propertyNameToAnimate: 'path',
+									fromValue: borderMask.path,
+									toValue: innerClipPath,
+								},
+								animation
+							),
+							'path'
+						);
+					}
+
+					const borderLayers = nativeView.borderLayer.sublayers;
+					if (borderLayers?.count) {
+						const paths = iosBackground.generateNonUniformMultiColorBorderRoundedPaths(animation.target, bounds);
+
+						for (let i = 0, count = borderLayers.count; i < count; i++) {
+							const layer = nativeView.borderLayer.sublayers[i];
+							if (layer instanceof CAShapeLayer) {
+								layer.addAnimationForKey(
+									this._createBasicAnimation(
+										{
+											...args,
+											propertyNameToAnimate: 'path',
+											fromValue: layer.path,
+											toValue: paths[i],
+										},
+										animation
+									),
+									'path'
+								);
+							}
+						}
+					}
+				} else {
+					nativeView.borderLayer.addAnimationForKey(
+						this._createBasicAnimation(
+							{
+								...args,
+								propertyNameToAnimate: 'path',
+								fromValue: nativeView.borderLayer.path,
+								toValue: innerClipPath,
+							},
+							animation
+						),
+						'path'
+					);
+				}
+			}
+		} else {
+			// TODO: Animate border width when borders get support for percentage values
+			// Uniform corner radius also relies on view size
+			if (nativeView.layer.cornerRadius) {
+				nativeView.layer.addAnimationForKey(
+					this._createBasicAnimation(
+						{
+							...args,
+							propertyNameToAnimate: 'cornerRadius',
+							fromValue: nativeView.layer.cornerRadius,
+							toValue: iosBackground.getUniformBorderRadius(animation.target, bounds),
+						},
+						animation
+					),
+					'cornerRadius'
+				);
+			}
+		}
+
+		// Shadow layers do not inherit from animating view layer
+		if (nativeView.outerShadowContainerLayer) {
+			const shadowClipMask = nativeView.outerShadowContainerLayer.mask;
+
+			// This is for animating view clip path on shadow
+			if (clipPath && shadowClipMask instanceof CAShapeLayer) {
+				shadowClipMask.addAnimationForKey(
+					this._createBasicAnimation(
+						{
+							...args,
+							propertyNameToAnimate: 'path',
+							fromValue: shadowClipMask.path,
+							toValue: clipPath,
+						},
+						animation
+					),
+					'path'
+				);
+			}
+
+			const outerShadowLayers = nativeView.outerShadowContainerLayer.sublayers;
+			if (outerShadowLayers?.count) {
+				const { maskPath, shadowPath } = iosBackground.generateShadowLayerPaths(view, bounds);
+
+				for (let i = 0, count = outerShadowLayers.count; i < count; i++) {
+					const shadowLayer = outerShadowLayers[i];
+
+					shadowLayer.addAnimationForKey(
+						this._createBasicAnimation(
+							{
+								...args,
+								propertyNameToAnimate: 'shadowPath',
+								fromValue: shadowLayer.shadowPath,
+								toValue: shadowPath,
+							},
+							animation
+						),
+						'shadowPath'
+					);
+
+					if (shadowLayer.mask instanceof CAShapeLayer) {
+						shadowLayer.mask.addAnimationForKey(
+							this._createBasicAnimation(
+								{
+									...args,
+									propertyNameToAnimate: 'path',
+									fromValue: shadowLayer.mask.path,
+									toValue: maskPath,
+								},
+								animation
+							),
+							'path'
+						);
+					}
+				}
+			}
+		}
+	}
 }
 
 export function _getTransformMismatchErrorMessage(view: View): string {
@@ -719,7 +957,7 @@ function calculateTransform(view: View): CATransform3D {
 	}
 
 	expectedTransform = CATransform3DTranslate(expectedTransform, view.translateX, view.translateY, 0);
-	expectedTransform = iOSNativeHelper.applyRotateTransform(expectedTransform, view.rotateX, view.rotateY, view.rotate);
+	expectedTransform = iosHelper.applyRotateTransform(expectedTransform, view.rotateX, view.rotateY, view.rotate);
 	expectedTransform = CATransform3DScale(expectedTransform, scaleX, scaleY, 1);
 
 	return expectedTransform;

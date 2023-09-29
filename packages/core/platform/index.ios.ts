@@ -1,9 +1,8 @@
 ﻿/* tslint:disable:class-name */
 
-export const platformNames = {
-	android: 'Android',
-	ios: 'iOS',
-};
+import { platformNames } from './common';
+
+export * from './common';
 
 class DeviceRef {
 	private _model: string;
@@ -117,6 +116,3 @@ export class Screen {
 
 // This retains compatibility with NS6
 export const screen = Screen;
-
-export const isAndroid = global.isAndroid;
-export const isIOS = global.isIOS;

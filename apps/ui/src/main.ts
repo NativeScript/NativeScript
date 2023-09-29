@@ -11,15 +11,15 @@ var countResume = 0;
 var countSuspend = 0;
 
 Application.on('displayed', (args) => {
-	const uptime = global.android ? (<any>org).nativescript.Process.getUpTime : (<any>global).__tns_uptime;
+	const uptime = global.android ? (<any>org).nativescript.Process.getUpTime : global.__tns_uptime;
 	console.log('Startup time: ' + uptime() + 'ms.');
 });
 
 Application.on('uncaughtError', (args) => {
 	const error = args.error;
 	console.warn(error.message);
-	if (error.nativeError) {
-		console.warn('native error: ' + error.nativeError);
+	if (error.nativeException) {
+		console.warn('native error: ' + error.nativeException);
 	}
 });
 

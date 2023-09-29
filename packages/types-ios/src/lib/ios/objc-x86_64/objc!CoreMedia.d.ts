@@ -100,6 +100,8 @@ declare function CMBufferQueueCallForEachBuffer(queue: any, callback: interop.Fu
 
 declare function CMBufferQueueContainsEndOfData(queue: any): boolean;
 
+declare function CMBufferQueueCopyHead(queue: any): any;
+
 declare function CMBufferQueueCreate(allocator: any, capacity: number, callbacks: interop.Pointer | interop.Reference<CMBufferCallbacks>, queueOut: interop.Pointer | interop.Reference<any>): number;
 
 declare function CMBufferQueueCreateWithHandlers(allocator: any, capacity: number, handlers: interop.Pointer | interop.Reference<CMBufferHandlers>, queueOut: interop.Pointer | interop.Reference<any>): number;
@@ -260,6 +262,26 @@ declare function CMMetadataFormatDescriptionGetKeyWithLocalID(desc: any, localKe
 
 declare function CMMuxedFormatDescriptionCreate(allocator: any, muxType: number, extensions: NSDictionary<any, any>, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
+declare const enum CMPackingType {
+
+	kCMPackingType_None = 1852796517,
+
+	kCMPackingType_SideBySide = 1936286821,
+
+	kCMPackingType_OverUnder = 1870030194
+}
+
+declare const enum CMProjectionType {
+
+	kCMProjectionType_Rectangular = 1919247220,
+
+	kCMProjectionType_Equirectangular = 1701934441,
+
+	kCMProjectionType_HalfEquirectangular = 1751478645,
+
+	kCMProjectionType_Fisheye = 1718186856
+}
+
 declare function CMPropagateAttachments(source: any, destination: any): void;
 
 declare function CMRemoveAllAttachments(target: any): void;
@@ -283,6 +305,8 @@ declare function CMSampleBufferCreateCopyWithNewTiming(allocator: any, originalS
 declare function CMSampleBufferCreateForImageBuffer(allocator: any, imageBuffer: any, dataReady: boolean, makeDataReadyCallback: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any>) => number>, makeDataReadyRefcon: interop.Pointer | interop.Reference<any>, formatDescription: any, sampleTiming: interop.Pointer | interop.Reference<CMSampleTimingInfo>, sampleBufferOut: interop.Pointer | interop.Reference<any>): number;
 
 declare function CMSampleBufferCreateForImageBufferWithMakeDataReadyHandler(allocator: any, imageBuffer: any, dataReady: boolean, formatDescription: any, sampleTiming: interop.Pointer | interop.Reference<CMSampleTimingInfo>, sampleBufferOut: interop.Pointer | interop.Reference<any>, makeDataReadyHandler: (p1: any) => number): number;
+
+declare function CMSampleBufferCreateForTaggedBufferGroup(allocator: any, taggedBufferGroup: any, sbufPTS: CMTime, sbufDuration: CMTime, formatDescription: any, sBufOut: interop.Pointer | interop.Reference<any>): number;
 
 declare function CMSampleBufferCreateReady(allocator: any, dataBuffer: any, formatDescription: any, numSamples: number, numSampleTimingEntries: number, sampleTimingArray: interop.Pointer | interop.Reference<CMSampleTimingInfo>, numSampleSizeEntries: number, sampleSizeArray: interop.Pointer | interop.Reference<number>, sampleBufferOut: interop.Pointer | interop.Reference<any>): number;
 
@@ -329,6 +353,8 @@ declare function CMSampleBufferGetSampleSizeArray(sbuf: any, sizeArrayEntries: n
 declare function CMSampleBufferGetSampleTimingInfo(sbuf: any, sampleIndex: number, timingInfoOut: interop.Pointer | interop.Reference<CMSampleTimingInfo>): number;
 
 declare function CMSampleBufferGetSampleTimingInfoArray(sbuf: any, numSampleTimingEntries: number, timingArrayOut: interop.Pointer | interop.Reference<CMSampleTimingInfo>, timingArrayEntriesNeededOut: interop.Pointer | interop.Reference<number>): number;
+
+declare function CMSampleBufferGetTaggedBufferGroup(sbuf: any): any;
 
 declare function CMSampleBufferGetTotalSampleSize(sbuf: any): number;
 
@@ -385,6 +411,24 @@ declare function CMSimpleQueueGetTypeID(): number;
 
 declare function CMSimpleQueueReset(queue: any): number;
 
+declare const enum CMStereoViewComponents {
+
+	kCMStereoView_None = 0,
+
+	kCMStereoView_LeftEye = 1,
+
+	kCMStereoView_RightEye = 2
+}
+
+declare const enum CMStereoViewInterpretationOptions {
+
+	kCMStereoViewInterpretation_Default = 0,
+
+	kCMStereoViewInterpretation_StereoOrderReversed = 1,
+
+	kCMStereoViewInterpretation_AdditionalViews = 2
+}
+
 declare function CMSwapBigEndianClosedCaptionDescriptionToHost(closedCaptionDescriptionData: string | interop.Pointer | interop.Reference<any>, closedCaptionDescriptionSize: number): number;
 
 declare function CMSwapBigEndianImageDescriptionToHost(imageDescriptionData: string | interop.Pointer | interop.Reference<any>, imageDescriptionSize: number): number;
@@ -418,6 +462,236 @@ declare function CMSyncGetRelativeRateAndAnchorTime(ofClockOrTimebase: any, rela
 declare function CMSyncGetTime(clockOrTimebase: any): CMTime;
 
 declare function CMSyncMightDrift(clockOrTimebase1: any, clockOrTimebase2: any): boolean;
+
+interface CMTag {
+	category: CMTagCategory;
+	dataType: CMTagDataType;
+	value: number;
+}
+declare var CMTag: interop.StructType<CMTag>;
+
+declare const enum CMTagCategory {
+
+	kCMTagCategory_Undefined = 0,
+
+	kCMTagCategory_MediaType = 1835297121,
+
+	kCMTagCategory_MediaSubType = 1836283234,
+
+	kCMTagCategory_TrackID = 1953653099,
+
+	kCMTagCategory_ChannelID = 1986226286,
+
+	kCMTagCategory_VideoLayerID = 1986814329,
+
+	kCMTagCategory_PixelFormat = 1885960294,
+
+	kCMTagCategory_PackingType = 1885430635,
+
+	kCMTagCategory_ProjectionType = 1886547818,
+
+	kCMTagCategory_StereoView = 1702454643,
+
+	kCMTagCategory_StereoViewInterpretation = 1702455664
+}
+
+declare function CMTagCategoryEqualToTagCategory(tag1: CMTag, tag2: CMTag): boolean;
+
+declare function CMTagCategoryValueEqualToValue(tag1: CMTag, tag2: CMTag): boolean;
+
+declare function CMTagCollectionAddTag(tagCollection: any, tagToAdd: CMTag): number;
+
+declare function CMTagCollectionAddTagsFromArray(tagCollection: any, tags: interop.Pointer | interop.Reference<CMTag>, tagCount: number): number;
+
+declare function CMTagCollectionAddTagsFromCollection(tagCollection: any, collectionWithTagsToAdd: any): number;
+
+declare function CMTagCollectionApply(tagCollection: any, applier: interop.FunctionReference<(p1: CMTag, p2: interop.Pointer | interop.Reference<any>) => void>, context: interop.Pointer | interop.Reference<any>): void;
+
+declare function CMTagCollectionApplyUntil(tagCollection: any, applier: interop.FunctionReference<(p1: CMTag, p2: interop.Pointer | interop.Reference<any>) => boolean>, context: interop.Pointer | interop.Reference<any>): CMTag;
+
+declare function CMTagCollectionContainsCategory(tagCollection: any, category: CMTagCategory): boolean;
+
+declare function CMTagCollectionContainsSpecifiedTags(tagCollection: any, containedTags: interop.Pointer | interop.Reference<CMTag>, containedTagCount: number): boolean;
+
+declare function CMTagCollectionContainsTag(tagCollection: any, tag: CMTag): boolean;
+
+declare function CMTagCollectionContainsTagsOfCollection(tagCollection: any, containedTagCollection: any): boolean;
+
+declare function CMTagCollectionCopyAsData(tagCollection: any, allocator: any): NSData;
+
+declare function CMTagCollectionCopyAsDictionary(tagCollection: any, allocator: any): NSDictionary<any, any>;
+
+declare function CMTagCollectionCopyDescription(allocator: any, tagCollection: any): string;
+
+declare function CMTagCollectionCopyTagsOfCategories(allocator: any, tagCollection: any, categories: interop.Pointer | interop.Reference<CMTagCategory>, categoriesCount: number, collectionWithTagsOfCategories: interop.Pointer | interop.Reference<any>): number;
+
+declare function CMTagCollectionCountTagsWithFilterFunction(tagCollection: any, filterApplier: interop.FunctionReference<(p1: CMTag, p2: interop.Pointer | interop.Reference<any>) => boolean>, context: interop.Pointer | interop.Reference<any>): number;
+
+declare function CMTagCollectionCreate(allocator: any, tags: interop.Pointer | interop.Reference<CMTag>, tagCount: number, newCollectionOut: interop.Pointer | interop.Reference<any>): number;
+
+declare function CMTagCollectionCreateCopy(tagCollection: any, allocator: any, newCollectionCopyOut: interop.Pointer | interop.Reference<any>): number;
+
+declare function CMTagCollectionCreateDifference(tagCollectionMinuend: any, tagCollectionSubtrahend: any, tagCollectionOut: interop.Pointer | interop.Reference<any>): number;
+
+declare function CMTagCollectionCreateExclusiveOr(tagCollection1: any, tagCollection2: any, tagCollectionOut: interop.Pointer | interop.Reference<any>): number;
+
+declare function CMTagCollectionCreateFromData(data: NSData, allocator: any, newCollectionOut: interop.Pointer | interop.Reference<any>): number;
+
+declare function CMTagCollectionCreateFromDictionary(dict: NSDictionary<any, any>, allocator: any, newCollectionOut: interop.Pointer | interop.Reference<any>): number;
+
+declare function CMTagCollectionCreateIntersection(tagCollection1: any, tagCollection2: any, tagCollectionOut: interop.Pointer | interop.Reference<any>): number;
+
+declare function CMTagCollectionCreateMutable(allocator: any, capacity: number, newMutableCollectionOut: interop.Pointer | interop.Reference<any>): number;
+
+declare function CMTagCollectionCreateMutableCopy(tagCollection: any, allocator: any, newMutableCollectionCopyOut: interop.Pointer | interop.Reference<any>): number;
+
+declare function CMTagCollectionCreateUnion(tagCollection1: any, tagCollection2: any, tagCollectionOut: interop.Pointer | interop.Reference<any>): number;
+
+declare const enum CMTagCollectionError {
+
+	kCMTagCollectionError_ParamErr = -15740,
+
+	kCMTagCollectionError_AllocationFailed = -15741,
+
+	kCMTagCollectionError_InternalError = -15742,
+
+	kCMTagCollectionError_InvalidTag = -15743,
+
+	kCMTagCollectionError_InvalidTagCollectionDictionary = -15744,
+
+	kCMTagCollectionError_InvalidTagCollectionData = -15745,
+
+	kCMTagCollectionError_TagNotFound = -15746,
+
+	kCMTagCollectionError_InvalidTagCollectionDataVersion = -15747,
+
+	kCMTagCollectionError_ExhaustedBufferSize = -15748,
+
+	kCMTagCollectionError_NotYetImplemented = -15749
+}
+
+declare function CMTagCollectionGetCount(tagCollection: any): number;
+
+declare function CMTagCollectionGetCountOfCategory(tagCollection: any, category: CMTagCategory): number;
+
+declare function CMTagCollectionGetTags(tagCollection: any, tagBuffer: interop.Pointer | interop.Reference<CMTag>, tagBufferCount: number, numberOfTagsCopied: interop.Pointer | interop.Reference<number>): number;
+
+declare function CMTagCollectionGetTagsWithCategory(tagCollection: any, category: CMTagCategory, tagBuffer: interop.Pointer | interop.Reference<CMTag>, tagBufferCount: number, numberOfTagsCopied: interop.Pointer | interop.Reference<number>): number;
+
+declare function CMTagCollectionGetTagsWithFilterFunction(tagCollection: any, tagBuffer: interop.Pointer | interop.Reference<CMTag>, tagBufferCount: number, numberOfTagsCopied: interop.Pointer | interop.Reference<number>, filter: interop.FunctionReference<(p1: CMTag, p2: interop.Pointer | interop.Reference<any>) => boolean>, context: interop.Pointer | interop.Reference<any>): number;
+
+declare function CMTagCollectionGetTypeID(): number;
+
+declare function CMTagCollectionIsEmpty(tagCollection: any): boolean;
+
+declare function CMTagCollectionRemoveAllTags(tagCollection: any): number;
+
+declare function CMTagCollectionRemoveAllTagsOfCategory(tagCollection: any, category: CMTagCategory): number;
+
+declare function CMTagCollectionRemoveTag(tagCollection: any, tagToRemove: CMTag): number;
+
+declare function CMTagCompare(tag1: CMTag, tag2: CMTag): CFComparisonResult;
+
+declare function CMTagCopyAsDictionary(tag: CMTag, allocator: any): NSDictionary<any, any>;
+
+declare function CMTagCopyDescription(allocator: any, tag: CMTag): string;
+
+declare const enum CMTagDataType {
+
+	kCMTagDataType_Invalid = 0,
+
+	kCMTagDataType_SInt64 = 2,
+
+	kCMTagDataType_Float64 = 3,
+
+	kCMTagDataType_OSType = 5,
+
+	kCMTagDataType_Flags = 7
+}
+
+declare function CMTagEqualToTag(tag1: CMTag, tag2: CMTag): boolean;
+
+declare const enum CMTagError {
+
+	kCMTagError_ParamErr = -15730,
+
+	kCMTagError_AllocationFailed = -15731
+}
+
+declare function CMTagGetCategory(tag: CMTag): CMTagCategory;
+
+declare function CMTagGetFlagsValue(tag: CMTag): number;
+
+declare function CMTagGetFloat64Value(tag: CMTag): number;
+
+declare function CMTagGetOSTypeValue(tag: CMTag): number;
+
+declare function CMTagGetSInt64Value(tag: CMTag): number;
+
+declare function CMTagGetValue(tag: CMTag): number;
+
+declare function CMTagGetValueDataType(tag: CMTag): CMTagDataType;
+
+declare function CMTagHasCategory(tag: CMTag, category: CMTagCategory): boolean;
+
+declare function CMTagHasFlagsValue(tag: CMTag): boolean;
+
+declare function CMTagHasFloat64Value(tag: CMTag): boolean;
+
+declare function CMTagHasOSTypeValue(tag: CMTag): boolean;
+
+declare function CMTagHasSInt64Value(tag: CMTag): boolean;
+
+declare function CMTagHash(tag: CMTag): number;
+
+declare function CMTagIsValid(tag: CMTag): boolean;
+
+declare function CMTagMakeFromDictionary(dict: NSDictionary<any, any>): CMTag;
+
+declare function CMTagMakeWithFlagsValue(category: CMTagCategory, flagsForTag: number): CMTag;
+
+declare function CMTagMakeWithFloat64Value(category: CMTagCategory, value: number): CMTag;
+
+declare function CMTagMakeWithOSTypeValue(category: CMTagCategory, value: number): CMTag;
+
+declare function CMTagMakeWithSInt64Value(category: CMTagCategory, value: number): CMTag;
+
+declare function CMTaggedBufferGroupCreate(allocator: any, tagCollections: NSArray<any> | any[], buffers: NSArray<any> | any[], groupOut: interop.Pointer | interop.Reference<any>): number;
+
+declare function CMTaggedBufferGroupCreateCombined(allocator: any, taggedBufferGroups: NSArray<any> | any[], groupOut: interop.Pointer | interop.Reference<any>): number;
+
+declare const enum CMTaggedBufferGroupError {
+
+	kCMTaggedBufferGroupError_ParamErr = -15780,
+
+	kCMTaggedBufferGroupError_AllocationFailed = -15781,
+
+	kCMTaggedBufferGroupError_InternalError = -15782
+}
+
+declare function CMTaggedBufferGroupFormatDescriptionCreateForTaggedBufferGroup(allocator: any, taggedBufferGroup: any, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+
+declare function CMTaggedBufferGroupFormatDescriptionMatchesTaggedBufferGroup(desc: any, taggedBufferGroup: any): boolean;
+
+declare function CMTaggedBufferGroupGetCMSampleBufferAtIndex(group: any, index: number): any;
+
+declare function CMTaggedBufferGroupGetCMSampleBufferForTag(group: any, tag: CMTag, indexOut: interop.Pointer | interop.Reference<number>): any;
+
+declare function CMTaggedBufferGroupGetCMSampleBufferForTagCollection(group: any, tagCollection: any, indexOut: interop.Pointer | interop.Reference<number>): any;
+
+declare function CMTaggedBufferGroupGetCVPixelBufferAtIndex(group: any, index: number): any;
+
+declare function CMTaggedBufferGroupGetCVPixelBufferForTag(group: any, tag: CMTag, indexOut: interop.Pointer | interop.Reference<number>): any;
+
+declare function CMTaggedBufferGroupGetCVPixelBufferForTagCollection(group: any, tagCollection: any, indexOut: interop.Pointer | interop.Reference<number>): any;
+
+declare function CMTaggedBufferGroupGetCount(group: any): number;
+
+declare function CMTaggedBufferGroupGetNumberOfMatchesForTagCollection(group: any, tagCollection: any): number;
+
+declare function CMTaggedBufferGroupGetTagCollectionAtIndex(group: any, index: number): any;
+
+declare function CMTaggedBufferGroupGetTypeID(): number;
 
 declare function CMTextFormatDescriptionCopyAsBigEndianTextDescriptionBlockBuffer(allocator: any, textFormatDescription: any, flavor: any, blockBufferOut: interop.Pointer | interop.Reference<any>): number;
 
@@ -583,7 +857,7 @@ declare function CMTimeSubtract(lhs: CMTime, rhs: CMTime): CMTime;
 
 declare function CMTimebaseAddTimer(timebase: any, timer: NSTimer, runloop: any): number;
 
-declare function CMTimebaseAddTimerDispatchSource(timebase: any, timerSource: NSObject): number;
+declare function CMTimebaseAddTimerDispatchSource(timebase: any, timerSource: interop.Pointer | interop.Reference<any>): number;
 
 declare function CMTimebaseCopySource(timebase: any): any;
 
@@ -621,7 +895,7 @@ declare function CMTimebaseNotificationBarrier(timebase: any): number;
 
 declare function CMTimebaseRemoveTimer(timebase: any, timer: NSTimer): number;
 
-declare function CMTimebaseRemoveTimerDispatchSource(timebase: any, timerSource: NSObject): number;
+declare function CMTimebaseRemoveTimerDispatchSource(timebase: any, timerSource: interop.Pointer | interop.Reference<any>): number;
 
 declare function CMTimebaseSetAnchorTime(timebase: any, timebaseTime: CMTime, immediateSourceTime: CMTime): number;
 
@@ -635,9 +909,9 @@ declare function CMTimebaseSetSourceTimebase(timebase: any, newSourceTimebase: a
 
 declare function CMTimebaseSetTime(timebase: any, time: CMTime): number;
 
-declare function CMTimebaseSetTimerDispatchSourceNextFireTime(timebase: any, timerSource: NSObject, fireTime: CMTime, flags: number): number;
+declare function CMTimebaseSetTimerDispatchSourceNextFireTime(timebase: any, timerSource: interop.Pointer | interop.Reference<any>, fireTime: CMTime, flags: number): number;
 
-declare function CMTimebaseSetTimerDispatchSourceToFireImmediately(timebase: any, timerSource: NSObject): number;
+declare function CMTimebaseSetTimerDispatchSourceToFireImmediately(timebase: any, timerSource: interop.Pointer | interop.Reference<any>): number;
 
 declare function CMTimebaseSetTimerNextFireTime(timebase: any, timer: NSTimer, fireTime: CMTime, flags: number): number;
 
@@ -650,6 +924,8 @@ interface CMVideoDimensions {
 declare var CMVideoDimensions: interop.StructType<CMVideoDimensions>;
 
 declare function CMVideoFormatDescriptionCopyAsBigEndianImageDescriptionBlockBuffer(allocator: any, videoFormatDescription: any, stringEncoding: number, flavor: any, blockBufferOut: interop.Pointer | interop.Reference<any>): number;
+
+declare function CMVideoFormatDescriptionCopyTagCollectionArray(formatDescription: any, tagCollectionsOut: interop.Pointer | interop.Reference<NSArray<any>>): number;
 
 declare function CMVideoFormatDescriptionCreate(allocator: any, codecType: number, width: number, height: number, extensions: NSDictionary<any, any>, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
@@ -861,6 +1137,8 @@ declare var kCMFormatDescriptionExtension_ColorPrimaries: string;
 
 declare var kCMFormatDescriptionExtension_ContainsAlphaChannel: string;
 
+declare var kCMFormatDescriptionExtension_ContentColorVolume: string;
+
 declare var kCMFormatDescriptionExtension_ContentLightLevelInfo: string;
 
 declare var kCMFormatDescriptionExtension_Depth: string;
@@ -874,6 +1152,10 @@ declare var kCMFormatDescriptionExtension_FormatName: string;
 declare var kCMFormatDescriptionExtension_FullRangeVideo: string;
 
 declare var kCMFormatDescriptionExtension_GammaLevel: string;
+
+declare var kCMFormatDescriptionExtension_HeroEye: string;
+
+declare var kCMFormatDescriptionExtension_HorizontalDisparityAdjustment: string;
 
 declare var kCMFormatDescriptionExtension_HorizontalFieldOfView: string;
 
@@ -892,6 +1174,8 @@ declare var kCMFormatDescriptionExtension_RevisionLevel: string;
 declare var kCMFormatDescriptionExtension_SampleDescriptionExtensionAtoms: string;
 
 declare var kCMFormatDescriptionExtension_SpatialQuality: string;
+
+declare var kCMFormatDescriptionExtension_StereoCameraBaseline: string;
 
 declare var kCMFormatDescriptionExtension_TemporalQuality: string;
 
@@ -916,6 +1200,10 @@ declare var kCMFormatDescriptionFieldDetail_SpatialFirstLineLate: string;
 declare var kCMFormatDescriptionFieldDetail_TemporalBottomFirst: string;
 
 declare var kCMFormatDescriptionFieldDetail_TemporalTopFirst: string;
+
+declare var kCMFormatDescriptionHeroEye_Left: string;
+
+declare var kCMFormatDescriptionHeroEye_Right: string;
 
 declare var kCMFormatDescriptionKey_CleanApertureHeight: string;
 
@@ -1072,6 +1360,8 @@ declare const kCMMediaType_Metadata: number;
 declare const kCMMediaType_Muxed: number;
 
 declare const kCMMediaType_Subtitle: number;
+
+declare const kCMMediaType_TaggedBufferGroup: number;
 
 declare const kCMMediaType_Text: number;
 
@@ -1234,6 +1524,8 @@ declare var kCMMetadataKeySpace_QuickTimeUserData: string;
 declare var kCMMetadataKeySpace_iTunes: string;
 
 declare const kCMMuxedStreamType_DV: number;
+
+declare const kCMMuxedStreamType_EmbeddedDeviceScreenRecording: number;
 
 declare const kCMMuxedStreamType_MPEG1System: number;
 
@@ -1450,6 +1742,48 @@ declare const kCMSyncError_InvalidParameter: number;
 declare const kCMSyncError_MissingRequiredParameter: number;
 
 declare const kCMSyncError_RateMustBeNonZero: number;
+
+declare var kCMTagCategoryKey: string;
+
+declare var kCMTagCollectionTagsArrayKey: string;
+
+declare var kCMTagDataTypeKey: string;
+
+declare var kCMTagInvalid: CMTag;
+
+declare var kCMTagMediaSubTypeMebx: CMTag;
+
+declare var kCMTagMediaTypeAudio: CMTag;
+
+declare var kCMTagMediaTypeMetadata: CMTag;
+
+declare var kCMTagMediaTypeVideo: CMTag;
+
+declare var kCMTagPackingTypeNone: CMTag;
+
+declare var kCMTagPackingTypeOverUnder: CMTag;
+
+declare var kCMTagPackingTypeSideBySide: CMTag;
+
+declare var kCMTagProjectionTypeEquirectangular: CMTag;
+
+declare var kCMTagProjectionTypeFisheye: CMTag;
+
+declare var kCMTagProjectionTypeRectangular: CMTag;
+
+declare var kCMTagStereoInterpretationOrderReversed: CMTag;
+
+declare var kCMTagStereoLeftAndRightEye: CMTag;
+
+declare var kCMTagStereoLeftEye: CMTag;
+
+declare var kCMTagStereoNone: CMTag;
+
+declare var kCMTagStereoRightEye: CMTag;
+
+declare var kCMTagValueKey: string;
+
+declare const kCMTaggedBufferGroupFormatType_TaggedBufferGroup: number;
 
 declare const kCMTextDisplayFlag_allSubtitlesForced: number;
 

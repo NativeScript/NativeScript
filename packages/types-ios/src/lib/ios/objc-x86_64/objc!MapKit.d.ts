@@ -1309,6 +1309,8 @@ declare class MKMapSnapshotOptions extends NSObject implements NSCopying {
 
 	pointOfInterestFilter: MKPointOfInterestFilter;
 
+	preferredConfiguration: MKMapConfiguration;
+
 	region: MKCoordinateRegion;
 
 	scale: number;
@@ -1340,7 +1342,7 @@ declare class MKMapSnapshotter extends NSObject {
 
 	startWithCompletionHandler(completionHandler: (p1: MKMapSnapshot, p2: NSError) => void): void;
 
-	startWithQueueCompletionHandler(queue: NSObject, completionHandler: (p1: MKMapSnapshot, p2: NSError) => void): void;
+	startWithQueueCompletionHandler(queue: interop.Pointer | interop.Reference<any>, completionHandler: (p1: MKMapSnapshot, p2: NSError) => void): void;
 }
 
 declare const enum MKMapType {
@@ -1394,6 +1396,8 @@ declare class MKMapView extends UIView implements NSCoding {
 
 	readonly overlays: NSArray<MKOverlay>;
 
+	pitchButtonVisibility: MKFeatureVisibility;
+
 	pitchEnabled: boolean;
 
 	pointOfInterestFilter: MKPointOfInterestFilter;
@@ -1421,6 +1425,8 @@ declare class MKMapView extends UIView implements NSCoding {
 	showsTraffic: boolean;
 
 	showsUserLocation: boolean;
+
+	showsUserTrackingButton: boolean;
 
 	readonly userLocation: MKUserLocation;
 

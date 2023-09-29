@@ -315,6 +315,8 @@ declare var kCGImagePropertyAPNGLoopCount: string;
 
 declare var kCGImagePropertyAPNGUnclampedDelayTime: string;
 
+declare var kCGImagePropertyAVISDictionary: string;
+
 declare var kCGImagePropertyAuxiliaryData: string;
 
 declare var kCGImagePropertyAuxiliaryDataType: string;
@@ -1574,6 +1576,14 @@ declare var kCGImageSourceCreateThumbnailFromImageAlways: string;
 declare var kCGImageSourceCreateThumbnailFromImageIfAbsent: string;
 
 declare var kCGImageSourceCreateThumbnailWithTransform: string;
+
+declare var kCGImageSourceDecodeRequest: string;
+
+declare var kCGImageSourceDecodeRequestOptions: string;
+
+declare var kCGImageSourceDecodeToHDR: string;
+
+declare var kCGImageSourceDecodeToSDR: string;
 
 declare var kCGImageSourceShouldAllowFloat: string;
 

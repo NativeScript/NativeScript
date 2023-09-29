@@ -524,7 +524,7 @@ declare class CPInformationRatingItem extends CPInformationItem {
 	initWithRatingMaximumRatingTitleDetail(rating: number, maximumRating: number, title: string, detail: string): this;
 }
 
-declare class CPInformationTemplate extends CPTemplate {
+declare class CPInformationTemplate extends CPTemplate implements CPBarButtonProviding {
 
 	static alloc(): CPInformationTemplate; // inherited from NSObject
 
@@ -538,9 +538,49 @@ declare class CPInformationTemplate extends CPTemplate {
 
 	title: string;
 
+	backButton: CPBarButton; // inherited from CPBarButtonProviding
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	leadingNavigationBarButtons: NSArray<CPBarButton>; // inherited from CPBarButtonProviding
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	trailingNavigationBarButtons: NSArray<CPBarButton>; // inherited from CPBarButtonProviding
+
+	readonly  // inherited from NSObjectProtocol
+
 	constructor(o: { title: string; layout: CPInformationTemplateLayout; items: NSArray<CPInformationItem> | CPInformationItem[]; actions: NSArray<CPTextButton> | CPTextButton[]; });
 
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
 	initWithTitleLayoutItemsActions(title: string, layout: CPInformationTemplateLayout, items: NSArray<CPInformationItem> | CPInformationItem[], actions: NSArray<CPTextButton> | CPTextButton[]): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
 }
 
 declare const enum CPInformationTemplateLayout {
@@ -1756,6 +1796,10 @@ declare class CPTabBarTemplate extends CPTemplate {
 	constructor(o: { templates: NSArray<CPTemplate> | CPTemplate[]; });
 
 	initWithTemplates(templates: NSArray<CPTemplate> | CPTemplate[]): this;
+
+	selectTemplate(newTemplate: CPTemplate): void;
+
+	selectTemplateAtIndex(index: number): void;
 
 	updateTemplates(newTemplates: NSArray<CPTemplate> | CPTemplate[]): void;
 }

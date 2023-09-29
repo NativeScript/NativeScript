@@ -1,12 +1,12 @@
-import { CoreTypes } from '../core-types';
-
-export * from './mainthread-helper';
-export * from './macrotask-scheduler';
-export { Source } from './debug';
-
-export * from './layout-helper';
-export * from './native-helper';
+export { clearInterval, clearTimeout, setInterval, setTimeout } from '../timer';
 export * from './common';
+export * from './constants';
+export * from './debug';
+export * from './layout-helper';
+export * from './macrotask-scheduler';
+export * from './mainthread-helper';
+export * from './native-helper';
+export * from './types';
 
 export const RESOURCE_PREFIX: string;
 export const FILE_PREFIX: string;
@@ -20,88 +20,6 @@ interface Owned {
 	owner: any;
 }
 //@endprivate
-
-/**
- * Module with android specific utilities.
- */
-export namespace ad {
-	/**
-	 * Gets the native Android application instance.
-	 */
-	export function getApplication(): any; /* android.app.Application */
-
-	/**
-	 * Gets the Android application context.
-	 */
-	export function getApplicationContext(): any; /* android.content.Context */
-
-	/**
-	 * Gets the native Android input method manager.
-	 */
-	export function getInputMethodManager(): any; /* android.view.inputmethod.InputMethodManager */
-
-	/**
-	 * Hides the soft input method, usually a soft keyboard.
-	 */
-	export function dismissSoftInput(nativeView?: any /* android.view.View */): void;
-
-	/**
-	 * Shows the soft input method, usually a soft keyboard.
-	 */
-	export function showSoftInput(nativeView: any /* android.view.View */): void;
-
-	/**
-	 * Utility module dealing with some android collections.
-	 */
-	namespace collections {
-		/**
-		 * Converts string array into a String [hash set](http://developer.android.com/reference/java/util/HashSet.html).
-		 * @param str - An array of strings to convert.
-		 */
-		export function stringArrayToStringSet(str: string[]): any;
-
-		/**
-		 * Converts string hash set into array of strings.
-		 * @param stringSet - A string hash set to convert.
-		 */
-		export function stringSetToStringArray(stringSet: any): string[];
-	}
-
-	/**
-	 * Utility module related to android resources.
-	 */
-	export namespace resources {
-		/**
-		 * Gets the drawable id from a given name.
-		 * @param name - Name of the resource.
-		 */
-		export function getDrawableId(name);
-
-		/**
-		 * Gets the string id from a given name.
-		 * @param name - Name of the resource.
-		 */
-		export function getStringId(name);
-
-		/**
-		 * Gets the id from a given name.
-		 * @param name - Name of the resource.
-		 */
-		export function getId(name: string): number;
-
-		/**
-		 * [Obsolete - please use getPaletteColor] Gets a color from current theme.
-		 * @param name - Name of the color
-		 */
-		export function getPalleteColor();
-
-		/**
-		 * Gets a color from the current theme.
-		 * @param name - Name of the color resource.
-		 */
-		export function getPaletteColor(name: string, context: any /* android.content.Context */): number;
-	}
-}
 
 /**
  * An utility function that invokes garbage collection on the JavaScript side.
@@ -127,7 +45,7 @@ export function throttle(fn: any, delay?: number);
  * @param fn Function to debounce
  * @param delay Customize the delay (default is 300ms)
  */
-export function debounce(fn: any, delay?: number);
+export function debounce(fn: any, delay?: number, options?: { leading?: boolean });
 
 /**
  * Releases the reference to the wrapped native object

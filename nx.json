@@ -6,7 +6,7 @@
 	},
 	"tasksRunnerOptions": {
 		"default": {
-			"runner": "@nrwl/nx-cloud",
+			"runner": "nx-cloud",
 			"options": {
 				"useDaemonProcess": false,
 				"cacheableOperations": ["build", "lint", "test", "ios", "android", "e2e"],
@@ -18,11 +18,6 @@
 		}
 	},
 	"generators": {
-		"@nrwl/workspace": {
-			"library": {
-				"linter": "eslint"
-			}
-		},
 		"@nrwl/cypress": {
 			"cypress-project": {
 				"linter": "eslint"
@@ -46,14 +41,6 @@
 				"linter": "eslint"
 			}
 		},
-		"@nrwl/node": {
-			"application": {
-				"linter": "eslint"
-			},
-			"library": {
-				"linter": "eslint"
-			}
-		},
 		"@nrwl/nx-plugin": {
 			"plugin": {
 				"linter": "eslint"
@@ -71,6 +58,19 @@
 			"library": {
 				"linter": "eslint"
 			}
+		},
+		"@nx/workspace": {
+			"library": {
+				"linter": "eslint"
+			}
+		},
+		"@nx/node": {
+			"application": {
+				"linter": "eslint"
+			},
+			"library": {
+				"linter": "eslint"
+			}
 		}
 	},
 	"affected": {
@@ -80,7 +80,7 @@
 	"namedInputs": {
 		"default": ["{projectRoot}/**/*", "sharedGlobals"],
 		"sharedGlobals": ["{workspaceRoot}/workspace.json", "{workspaceRoot}/tsconfig.json", "{workspaceRoot}/nx.json"],
-		"production": ["default", "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)", "!{projectRoot}/tsconfig.spec.json", "!{projectRoot}/jest.config.[jt]s"]
+		"production": ["default", "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)", "!{projectRoot}/tsconfig.spec.json", "!{projectRoot}/jest.config.[jt]s", "!{projectRoot}/src/test-setup.[jt]s"]
 	},
 	"targetDefaults": {
 		"build": {

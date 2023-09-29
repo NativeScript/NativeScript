@@ -245,7 +245,10 @@ exports[`svelte configuration for android 1`] = `
               }
             },
             keep_fnames: true,
-            keep_classnames: true
+            keep_classnames: true,
+            format: {
+              keep_quoted_props: true
+            }
           }
         }
       )
@@ -264,7 +267,9 @@ exports[`svelte configuration for android 1`] = `
     /* config.plugin('PlatformSuffixPlugin') */
     new PlatformSuffixPlugin(
       {
-        platform: 'android'
+        extensions: [
+          'android'
+        ]
       }
     ),
     /* config.plugin('ContextExclusionPlugin|App_Resources') */
@@ -273,7 +278,7 @@ exports[`svelte configuration for android 1`] = `
     ),
     /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
     new ContextExclusionPlugin(
-      /\\.(ios)\\.(\\w+)$/
+      /\\.(ios|visionos)\\.(\\w+)$/
     ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
@@ -287,8 +292,10 @@ exports[`svelte configuration for android 1`] = `
         __UI_USE_EXTERNAL_RENDERER__: false,
         __ANDROID__: true,
         __IOS__: false,
+        __VISIONOS__: false,
         'global.isAndroid': true,
         'global.isIOS': false,
+        'global.isVisionOS': false,
         process: 'global.process',
         __USE_TEST_ID__: false
       }
@@ -587,7 +594,10 @@ exports[`svelte configuration for ios 1`] = `
               }
             },
             keep_fnames: true,
-            keep_classnames: true
+            keep_classnames: true,
+            format: {
+              keep_quoted_props: true
+            }
           }
         }
       )
@@ -606,7 +616,9 @@ exports[`svelte configuration for ios 1`] = `
     /* config.plugin('PlatformSuffixPlugin') */
     new PlatformSuffixPlugin(
       {
-        platform: 'ios'
+        extensions: [
+          'ios'
+        ]
       }
     ),
     /* config.plugin('ContextExclusionPlugin|App_Resources') */
@@ -615,7 +627,7 @@ exports[`svelte configuration for ios 1`] = `
     ),
     /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
     new ContextExclusionPlugin(
-      /\\.(android)\\.(\\w+)$/
+      /\\.(android|visionos)\\.(\\w+)$/
     ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
@@ -629,8 +641,10 @@ exports[`svelte configuration for ios 1`] = `
         __UI_USE_EXTERNAL_RENDERER__: false,
         __ANDROID__: false,
         __IOS__: true,
+        __VISIONOS__: false,
         'global.isAndroid': false,
         'global.isIOS': true,
+        'global.isVisionOS': false,
         process: 'global.process',
         __USE_TEST_ID__: false
       }

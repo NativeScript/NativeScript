@@ -6,13 +6,18 @@ import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUser
 import { ShowModalOptions, hiddenProperty } from '../view-base';
 import { Trace } from '../../../trace';
 import { layout, iOSNativeHelper } from '../../../utils';
+import { isNumber } from '../../../utils/types';
 import { IOSHelper } from './view-helper';
-import { ios as iosBackground, Background } from '../../styling/background';
-import { perspectiveProperty, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, clipPathProperty } from '../../styling/style-properties';
+import { ios as iosBackground, Background, BackgroundClearFlags } from '../../styling/background';
+import { perspectiveProperty, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty } from '../../styling/style-properties';
 import { profile } from '../../../profiling';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty, accessibilityIgnoresInvertColorsProperty } from '../../../accessibility/accessibility-properties';
-import { setupAccessibleView, IOSPostAccessibilityNotificationType, isAccessibilityServiceEnabled, updateAccessibilityProperties, AccessibilityEventOptions, AccessibilityRole, AccessibilityState } from '../../../accessibility';
+import { IOSPostAccessibilityNotificationType, isAccessibilityServiceEnabled, updateAccessibilityProperties, AccessibilityEventOptions, AccessibilityRole, AccessibilityState } from '../../../accessibility';
 import { CoreTypes } from '../../../core-types';
+import type { ModalTransition } from '../../transition/modal-transition';
+import { SharedTransition } from '../../transition/shared-transition';
+import { GestureStateTypes, PanGestureEventData } from '../../gestures';
+import { NativeScriptUIView } from '../../utils';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -27,10 +32,13 @@ const PFLAG_LAYOUT_REQUIRED = 1 << 2;
 const majorVersion = iOSNativeHelper.MajorVersion;
 
 export class View extends ViewCommon implements ViewDefinition {
+	// @ts-ignore
 	nativeViewProtected: UIView;
+	// @ts-ignore
 	viewController: UIViewController;
 	private _popoverPresentationDelegate: IOSHelper.UIPopoverPresentationControllerDelegateImp;
 	private _adaptivePresentationDelegate: IOSHelper.UIAdaptivePresentationControllerDelegateImp;
+	private _transitioningDelegate: UIViewControllerTransitioningDelegateImpl;
 
 	/**
 	 * Track modal open animated options to use same option upon close
@@ -58,12 +66,6 @@ export class View extends ViewCommon implements ViewDefinition {
 		return (this._privateFlags & PFLAG_FORCE_LAYOUT) === PFLAG_FORCE_LAYOUT;
 	}
 
-	constructor() {
-		super();
-
-		this.once(View.loadedEvent, () => setupAccessibleView(this));
-	}
-
 	disposeNativeView() {
 		super.disposeNativeView();
 
@@ -71,6 +73,12 @@ export class View extends ViewCommon implements ViewDefinition {
 		this._isLaidOut = false;
 		this._hasTransform = false;
 		this._hasPendingTransform = false;
+
+		// Make sure shadows get removed
+		this.style.backgroundInternal.clearFlags |= BackgroundClearFlags.CLEAR_BOX_SHADOW;
+
+		// Perform background cleanup
+		iosBackground.clearBackgroundVisualEffects(this);
 	}
 
 	public requestLayout(): void {
@@ -115,7 +123,8 @@ export class View extends ViewCommon implements ViewDefinition {
 			this.layoutNativeView(left, top, right, bottom);
 		}
 
-		if (boundsChanged || (this._privateFlags & PFLAG_LAYOUT_REQUIRED) === PFLAG_LAYOUT_REQUIRED) {
+		const needsLayout = boundsChanged || (this._privateFlags & PFLAG_LAYOUT_REQUIRED) === PFLAG_LAYOUT_REQUIRED;
+		if (needsLayout) {
 			let position = { left, top, right, bottom };
 			if (this.nativeViewProtected && majorVersion > 10) {
 				// on iOS 11+ it is possible to have a changed layout frame due to safe area insets
@@ -128,7 +137,7 @@ export class View extends ViewCommon implements ViewDefinition {
 			this._privateFlags &= ~PFLAG_LAYOUT_REQUIRED;
 		}
 
-		this.updateBackground(sizeChanged);
+		this.updateBackground(sizeChanged, needsLayout);
 		if (this._hasPendingTransform) {
 			this.updateNativeTransform();
 			this._hasPendingTransform = false;
@@ -136,12 +145,37 @@ export class View extends ViewCommon implements ViewDefinition {
 		this._privateFlags &= ~PFLAG_FORCE_LAYOUT;
 	}
 
-	private updateBackground(sizeChanged: boolean): void {
+	private updateBackground(sizeChanged: boolean, needsLayout: boolean): void {
 		if (sizeChanged) {
 			this._onSizeChanged();
 		} else if (this._nativeBackgroundState === 'invalid') {
 			const background = this.style.backgroundInternal;
 			this._redrawNativeBackground(background);
+		} else {
+			// Update layers that don't belong to view's layer (e.g. shadow layers)
+			if (needsLayout) {
+				this.layoutOuterShadows();
+			}
+		}
+	}
+
+	private layoutOuterShadows(): void {
+		const nativeView: NativeScriptUIView = <NativeScriptUIView>this.nativeViewProtected;
+		if (nativeView) {
+			const frame = nativeView.frame;
+			const needsUpdate: boolean = nativeView.outerShadowContainerLayer != null;
+
+			if (needsUpdate) {
+				CATransaction.setDisableActions(true);
+
+				if (nativeView.outerShadowContainerLayer) {
+					const { x: originX, y: originY }: CGPoint = nativeView.outerShadowContainerLayer.anchorPoint;
+					nativeView.outerShadowContainerLayer.bounds = nativeView.bounds;
+					nativeView.outerShadowContainerLayer.position = CGPointMake(frame.origin.x + frame.size.width * originX, frame.origin.y + frame.size.height * originY);
+				}
+
+				CATransaction.setDisableActions(false);
+			}
 		}
 	}
 
@@ -271,8 +305,8 @@ export class View extends ViewCommon implements ViewDefinition {
 		this._privateFlags &= ~PFLAG_FORCE_LAYOUT;
 		this.setMeasuredDimension(width, height);
 
-		const { sizeChanged } = this._setCurrentLayoutBounds(left, top, right, bottom);
-		this.updateBackground(sizeChanged);
+		const { boundsChanged, sizeChanged } = this._setCurrentLayoutBounds(left, top, right, bottom);
+		this.updateBackground(sizeChanged, boundsChanged);
 		this._privateFlags &= ~PFLAG_LAYOUT_REQUIRED;
 	}
 
@@ -364,15 +398,10 @@ export class View extends ViewCommon implements ViewDefinition {
 		}
 
 		const background = this.style.backgroundInternal;
-		const backgroundDependsOnSize = (background.image && background.image !== 'none') || !background.hasUniformBorder() || background.hasBorderRadius();
+		const backgroundDependsOnSize = (background.image && background.image !== 'none') || background.clipPath || !background.hasUniformBorder() || background.hasBorderRadius() || background.hasBoxShadow();
 
 		if (this._nativeBackgroundState === 'invalid' || (this._nativeBackgroundState === 'drawn' && backgroundDependsOnSize)) {
 			this._redrawNativeBackground(background);
-		}
-
-		const clipPath = this.style.clipPath;
-		if (clipPath !== '' && this[clipPathProperty.setNative]) {
-			this[clipPathProperty.setNative](clipPath);
 		}
 	}
 
@@ -385,6 +414,7 @@ export class View extends ViewCommon implements ViewDefinition {
 		const scaleX = this.scaleX || 1e-6;
 		const scaleY = this.scaleY || 1e-6;
 		const perspective = this.perspective || 300;
+		const nativeView: NativeScriptUIView = <NativeScriptUIView>this.nativeViewProtected;
 
 		let transform = new CATransform3D(CATransform3DIdentity);
 
@@ -396,13 +426,24 @@ export class View extends ViewCommon implements ViewDefinition {
 		transform = CATransform3DTranslate(transform, this.translateX, this.translateY, 0);
 		transform = iOSNativeHelper.applyRotateTransform(transform, this.rotateX, this.rotateY, this.rotate);
 		transform = CATransform3DScale(transform, scaleX, scaleY, 1);
-		if (!CATransform3DEqualToTransform(this.nativeViewProtected.layer.transform, transform)) {
+
+		const needsTransform: boolean = !CATransform3DEqualToTransform(this.nativeViewProtected.layer.transform, transform) || (nativeView.outerShadowContainerLayer && !CATransform3DEqualToTransform(nativeView.outerShadowContainerLayer.transform, transform));
+
+		if (needsTransform) {
 			const updateSuspended = this._isPresentationLayerUpdateSuspended();
 			if (!updateSuspended) {
 				CATransaction.begin();
 			}
+			// Disable CALayer animatable property changes
+			CATransaction.setDisableActions(true);
+
 			this.nativeViewProtected.layer.transform = transform;
+			if (nativeView.outerShadowContainerLayer) {
+				nativeView.outerShadowContainerLayer.transform = transform;
+			}
 			this._hasTransform = this.nativeViewProtected && !CATransform3DEqualToTransform(this.nativeViewProtected.transform3D, CATransform3DIdentity);
+
+			CATransaction.setDisableActions(false);
 			if (!updateSuspended) {
 				CATransaction.commit();
 			}
@@ -410,11 +451,27 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	public updateOriginPoint(originX: number, originY: number) {
+		const nativeView: NativeScriptUIView = <NativeScriptUIView>this.nativeViewProtected;
 		const newPoint = CGPointMake(originX, originY);
-		this.nativeViewProtected.layer.anchorPoint = newPoint;
+
+		// Disable CALayer animatable property changes
+		CATransaction.setDisableActions(true);
+
+		nativeView.layer.anchorPoint = newPoint;
 		if (this._cachedFrame) {
-			this._setNativeViewFrame(this.nativeViewProtected, this._cachedFrame);
+			this._setNativeViewFrame(nativeView, this._cachedFrame);
 		}
+
+		// Make sure new origin also applies to outer shadow layers
+		if (nativeView.outerShadowContainerLayer) {
+			// This is the new frame after view origin point update
+			const frame = nativeView.frame;
+
+			nativeView.outerShadowContainerLayer.anchorPoint = newPoint;
+			nativeView.outerShadowContainerLayer.position = CGPointMake(frame.origin.x + frame.size.width * originX, frame.origin.y + frame.size.height * originY);
+		}
+
+		CATransaction.setDisableActions(false);
 	}
 
 	// By default we update the view's presentation layer when setting backgroundColor and opacity properties.
@@ -468,7 +525,21 @@ export class View extends ViewCommon implements ViewDefinition {
 			this.viewController = controller;
 		}
 
-		if (options.fullscreen) {
+		if (options.transition) {
+			controller.modalPresentationStyle = UIModalPresentationStyle.Custom;
+			if (options.transition.instance) {
+				this._transitioningDelegate = UIViewControllerTransitioningDelegateImpl.initWithOwner(new WeakRef(options.transition.instance));
+				controller.transitioningDelegate = this._transitioningDelegate;
+				this.transitionId = options.transition.instance.id;
+				const transitionState = SharedTransition.getState(options.transition.instance.id);
+				if (transitionState?.interactive?.dismiss) {
+					// interactive transitions via gestures
+					// TODO - these could be typed as: boolean | (view: View) => void
+					// to allow users to define their own custom gesture dismissals
+					options.transition.instance.setupInteractiveGesture(this._closeModalCallback.bind(this), this);
+				}
+			}
+		} else if (options.fullscreen) {
 			controller.modalPresentationStyle = UIModalPresentationStyle.FullScreen;
 		} else {
 			controller.modalPresentationStyle = UIModalPresentationStyle.FormSheet;
@@ -563,9 +634,22 @@ export class View extends ViewCommon implements ViewDefinition {
 		}
 
 		const parentController = parent.viewController;
-		const animated = this._modalAnimatedOptions ? !!this._modalAnimatedOptions.pop() : true;
+		let animated = true;
+		if (this._modalAnimatedOptions?.length) {
+			animated = this._modalAnimatedOptions.slice(-1)[0];
+		}
 
-		parentController.dismissViewControllerAnimatedCompletion(animated, whenClosedCallback);
+		parentController.dismissViewControllerAnimatedCompletion(animated, () => {
+			const transitionState = SharedTransition.getState(this.transitionId);
+			if (!transitionState?.interactiveCancelled) {
+				this._transitioningDelegate = null;
+				// this.off('pan', this._interactiveDismissGesture);
+				if (this._modalAnimatedOptions) {
+					this._modalAnimatedOptions.pop();
+				}
+			}
+			whenClosedCallback();
+		});
 	}
 
 	[isEnabledProperty.getDefault](): boolean {
@@ -693,16 +777,23 @@ export class View extends ViewCommon implements ViewDefinition {
 		return this.nativeViewProtected.hidden ? CoreTypes.Visibility.collapse : CoreTypes.Visibility.visible;
 	}
 	[visibilityProperty.setNative](value: CoreTypes.VisibilityType) {
+		const nativeView: NativeScriptUIView = <NativeScriptUIView>this.nativeViewProtected;
+
 		switch (value) {
 			case CoreTypes.Visibility.visible:
-				this.nativeViewProtected.hidden = false;
+				nativeView.hidden = false;
 				break;
 			case CoreTypes.Visibility.hidden:
 			case CoreTypes.Visibility.collapse:
-				this.nativeViewProtected.hidden = true;
+				nativeView.hidden = true;
 				break;
 			default:
 				throw new Error(`Invalid visibility value: ${value}. Valid values are: "${CoreTypes.Visibility.visible}", "${CoreTypes.Visibility.hidden}", "${CoreTypes.Visibility.collapse}".`);
+		}
+
+		// Apply visibility value to shadows as well
+		if (nativeView.outerShadowContainerLayer) {
+			nativeView.outerShadowContainerLayer.hidden = nativeView.hidden;
 		}
 	}
 
@@ -710,12 +801,21 @@ export class View extends ViewCommon implements ViewDefinition {
 		return this.nativeViewProtected.alpha;
 	}
 	[opacityProperty.setNative](value: number) {
-		const nativeView = this.nativeViewProtected;
+		const nativeView: NativeScriptUIView = <NativeScriptUIView>this.nativeViewProtected;
 		const updateSuspended = this._isPresentationLayerUpdateSuspended();
 		if (!updateSuspended) {
 			CATransaction.begin();
 		}
+		// Disable CALayer animatable property changes
+		CATransaction.setDisableActions(true);
+
 		nativeView.alpha = value;
+		// Apply opacity value to shadows as well
+		if (nativeView.outerShadowContainerLayer) {
+			nativeView.outerShadowContainerLayer.opacity = value;
+		}
+
+		CATransaction.setDisableActions(false);
 		if (!updateSuspended) {
 			CATransaction.commit();
 		}
@@ -871,16 +971,22 @@ export class View extends ViewCommon implements ViewDefinition {
 		if (!updateSuspended) {
 			CATransaction.begin();
 		}
+		// Disable CALayer animatable property changes
+		CATransaction.setDisableActions(true);
 
-		if (value instanceof UIColor) {
-			this.nativeViewProtected.backgroundColor = value;
-		} else {
-			iosBackground.createBackgroundUIColor(this, (color: UIColor) => {
-				this.nativeViewProtected.backgroundColor = color;
-			});
-			this._setNativeClipToBounds();
+		const nativeView = this.nativeViewProtected;
+		if (nativeView) {
+			if (value instanceof UIColor) {
+				nativeView.backgroundColor = value;
+			} else {
+				iosBackground.createBackgroundUIColor(this, (color: UIColor) => {
+					nativeView.backgroundColor = color;
+				});
+				this._setNativeClipToBounds();
+			}
 		}
 
+		CATransaction.setDisableActions(false);
 		if (!updateSuspended) {
 			CATransaction.commit();
 		}
@@ -889,8 +995,11 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	_setNativeClipToBounds() {
-		const backgroundInternal = this.style.backgroundInternal;
-		this.nativeViewProtected.clipsToBounds = (this.nativeViewProtected instanceof UIScrollView || backgroundInternal.hasBorderWidth() || backgroundInternal.hasBorderRadius()) && !backgroundInternal.hasBoxShadow();
+		const view = this.nativeViewProtected;
+		if (view) {
+			const backgroundInternal = this.style.backgroundInternal;
+			view.clipsToBounds = view instanceof UIScrollView || backgroundInternal.hasBorderWidth() || backgroundInternal.hasBorderRadius();
+		}
 	}
 
 	private _setupPopoverControllerDelegate(controller: UIViewController, parent: View) {
@@ -906,14 +1015,61 @@ export class View extends ViewCommon implements ViewDefinition {
 
 	private _setupAdaptiveControllerDelegate(controller: UIViewController) {
 		this._adaptivePresentationDelegate = IOSHelper.UIAdaptivePresentationControllerDelegateImp.initWithOwnerAndCallback(new WeakRef(this), this._closeModalCallback);
-		controller.presentationController.delegate = <UIAdaptivePresentationControllerDelegate>this._adaptivePresentationDelegate;
+		if (controller?.presentationController) {
+			controller.presentationController.delegate = <UIAdaptivePresentationControllerDelegate>this._adaptivePresentationDelegate;
+		}
 	}
 }
 View.prototype._nativeBackgroundState = 'unset';
 
-export class ContainerView extends View {
-	public iosOverflowSafeArea: boolean;
+@NativeClass
+class UIViewControllerTransitioningDelegateImpl extends NSObject implements UIViewControllerTransitioningDelegate {
+	owner: WeakRef<ModalTransition>;
+	static ObjCProtocols = [UIViewControllerTransitioningDelegate];
 
+	static initWithOwner(owner: WeakRef<ModalTransition>) {
+		const delegate = <UIViewControllerTransitioningDelegateImpl>UIViewControllerTransitioningDelegateImpl.new();
+		delegate.owner = owner;
+		return delegate;
+	}
+
+	animationControllerForDismissedController?(dismissed: UIViewController): UIViewControllerAnimatedTransitioning {
+		const owner = this.owner?.deref();
+		if (owner?.iosDismissedController) {
+			return owner.iosDismissedController(dismissed);
+		}
+		return null;
+	}
+
+	animationControllerForPresentedControllerPresentingControllerSourceController?(presented: UIViewController, presenting: UIViewController, source: UIViewController): UIViewControllerAnimatedTransitioning {
+		const owner = this.owner?.deref();
+		if (owner?.iosPresentedController) {
+			return owner.iosPresentedController(presented, presenting, source);
+		}
+		return null;
+	}
+
+	interactionControllerForDismissal?(animator: UIViewControllerAnimatedTransitioning): UIViewControllerInteractiveTransitioning {
+		const owner = this.owner?.deref();
+		if (owner?.iosInteractionDismiss) {
+			const transitionState = SharedTransition.getState(owner.id);
+			if (transitionState?.interactiveBegan) {
+				return owner.iosInteractionDismiss(animator);
+			}
+		}
+		return null;
+	}
+
+	interactionControllerForPresentation?(animator: UIViewControllerAnimatedTransitioning): UIViewControllerInteractiveTransitioning {
+		const owner = this.owner?.deref();
+		if (owner?.iosInteractionPresented) {
+			return owner.iosInteractionPresented(animator);
+		}
+		return null;
+	}
+}
+
+export class ContainerView extends View {
 	constructor() {
 		super();
 		this.iosOverflowSafeArea = true;
@@ -921,6 +1077,7 @@ export class ContainerView extends View {
 }
 
 export class CustomLayoutView extends ContainerView {
+	// @ts-ignore
 	nativeViewProtected: UIView;
 
 	createNativeView() {

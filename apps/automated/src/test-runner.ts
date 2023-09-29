@@ -43,14 +43,19 @@ import * as xhrTests from './xhr/xhr-tests';
 import * as fetchTests from './fetch/fetch-tests';
 import * as timerTests from './timer/timer-tests';
 import * as profilingTests from './profiling/profiling-tests';
+
+allTests['HTTP'] = httpTests;
+allTests['XHR'] = xhrTests;
+allTests['FETCH'] = fetchTests;
+
 // don't run these on CI as they are flaky
 if (!__CI__) {
-	allTests['HTTP'] = httpTests;
-	allTests['XHR'] = xhrTests;
-	allTests['FETCH'] = fetchTests;
 	allTests['TIMER'] = timerTests;
 	allTests['PROFILING'] = profilingTests;
 }
+
+import * as a11yPropertiesTests from './accessibility/accessibility-properties-tests';
+allTests['A11Y-PROPERTIES'] = a11yPropertiesTests;
 
 import * as appSettingsTests from './application-settings/application-settings-tests';
 allTests['APPLICATION-SETTINGS'] = appSettingsTests;
@@ -222,6 +227,9 @@ allTests['LISTVIEW'] = listViewTests;
 import * as activityIndicatorTests from './ui/activity-indicator/activity-indicator-tests';
 allTests['ACTIVITY-INDICATOR'] = activityIndicatorTests;
 
+import * as textBaseTests from './ui/text-base/text-base-tests';
+allTests['TEXT-BASE'] = textBaseTests;
+
 import * as textFieldTests from './ui/text-field/text-field-tests';
 allTests['TEXT-FIELD'] = textFieldTests;
 
@@ -255,8 +263,8 @@ allTests['SEGMENTED-BAR'] = segmentedBarTests;
 import * as lifecycle from './ui/lifecycle/lifecycle-tests';
 allTests['LIFECYCLE'] = lifecycle;
 
-// import * as cssAnimationTests from './ui/animation/css-animation-tests';
-// allTests['CSS-ANIMATION'] = cssAnimationTests;
+import * as cssAnimationTests from './ui/animation/css-animation-tests';
+allTests['CSS-ANIMATION'] = cssAnimationTests;
 
 import * as transitionTests from './navigation/transition-tests';
 allTests['TRANSITIONS'] = transitionTests;

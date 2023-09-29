@@ -1,10 +1,13 @@
 package org.nativescript.widgets;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Looper;
 import android.util.Base64;
 import android.util.Log;
@@ -13,6 +16,7 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.DataInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -26,7 +30,11 @@ import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -593,6 +601,190 @@ public class Async {
 
 	public static class File {
 
+		static void updateValue(Context context, Uri uri) {
+			ContentValues values = new ContentValues();
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+				context.getContentResolver().update(uri, values, null);
+			} else {
+				context.getContentResolver().update(uri, values, null, null);
+			}
+		}
+
+		public static void append(final String path, final byte[] content, final CompleteCallback callback, final Object context) {
+			final android.os.Handler mHandler = new android.os.Handler(Looper.myLooper());
+			threadPoolExecutor().execute(new Runnable() {
+				@Override
+				public void run() {
+					final AppendTask task = new AppendTask(callback, context);
+					final boolean result = task.doInBackground(path, content);
+					mHandler.post(new Runnable() {
+						@Override
+						public void run() {
+							task.onPostExecute(result);
+						}
+					});
+				}
+			});
+		}
+
+		public static void appendBuffer(final String path, final ByteBuffer content, final CompleteCallback callback, final Object context) {
+			final android.os.Handler mHandler = new android.os.Handler(Looper.myLooper());
+			threadPoolExecutor().execute(new Runnable() {
+				@Override
+				public void run() {
+					final AppendBufferTask task = new AppendBufferTask(callback, context);
+					final boolean result = task.doInBackground(path, content);
+					mHandler.post(new Runnable() {
+						@Override
+						public void run() {
+							task.onPostExecute(result);
+						}
+					});
+				}
+			});
+		}
+
+		public static void appendText(final String path, final String content, final String encoding, final CompleteCallback callback, final Object context) {
+			final android.os.Handler mHandler = new android.os.Handler(Looper.myLooper());
+			threadPoolExecutor().execute(new Runnable() {
+				@Override
+				public void run() {
+					final AppendTextTask task = new AppendTextTask(callback, context);
+					final boolean result = task.doInBackground(path, content, encoding);
+					mHandler.post(new Runnable() {
+						@Override
+						public void run() {
+							task.onPostExecute(result);
+						}
+					});
+				}
+			});
+		}
+
+		public static boolean copySync(final String src, final String dest, final Context context) throws Exception {
+			InputStream is;
+			OutputStream os;
+			boolean requiresUpdate = false;
+			if(src.startsWith("content://")){
+				is = context.getContentResolver().openInputStream(Uri.parse(src));
+			}else is = new FileInputStream(new java.io.File(src));
+
+			if(dest.startsWith("content://")){
+				os = context.getContentResolver().openOutputStream(Uri.parse(dest));
+				requiresUpdate = true;
+			}else os = new FileOutputStream(new java.io.File(dest));
+
+			boolean ret = copySync(is, os, context);
+
+			if(ret && requiresUpdate){
+				updateValue(context, Uri.parse(dest));
+			}
+
+			return ret;
+
+		}
+
+		public static boolean copySync(final InputStream src, final OutputStream dest, final Object context) throws Exception {
+			ReadableByteChannel isc = java.nio.channels.Channels.newChannel(src);
+			WritableByteChannel osc = java.nio.channels.Channels.newChannel(dest);
+
+			int size = src.available();
+
+			int written = fastChannelCopy(isc, osc);
+
+			return size == written;
+		}
+
+		public static void copy(final String src, final String dest, final CompleteCallback callback, final Context context) {
+			try {
+				InputStream is;
+				OutputStream os;
+
+				boolean requiresUpdate = false;
+
+				if(src.startsWith("content://")){
+					is = context.getContentResolver().openInputStream(Uri.parse(src));
+				}else is = new FileInputStream(new java.io.File(src));
+
+				if(dest.startsWith("content://")){
+					requiresUpdate = true;
+					os = context.getContentResolver().openOutputStream(Uri.parse(dest));
+				}else os = new FileOutputStream(new java.io.File(dest));
+
+				boolean finalRequiresUpdate = requiresUpdate;
+				copy(is, os, new CompleteCallback() {
+					@Override
+					public void onComplete(Object result, Object tag) {
+						if(finalRequiresUpdate){
+							updateValue(context, Uri.parse(dest));
+						}
+						callback.onComplete(result, tag);
+					}
+
+					@Override
+					public void onError(String error, Object tag) {
+						callback.onError(error, tag);
+					}
+				}, context);
+
+			}catch (Exception exception){
+				callback.onError(exception.getMessage(), context);
+			}
+		}
+
+		private static int fastChannelCopy(final ReadableByteChannel src,
+											final WritableByteChannel dest) throws IOException {
+			int written = 0;
+			final ByteBuffer buffer = ByteBuffer.allocateDirect(16 * 1024);
+			while (src.read(buffer) != -1) {
+				// prepare the buffer to be drained
+				buffer.flip();
+				// write to the channel, may block
+				written += dest.write(buffer);
+				// If partial transfer, shift remainder down
+				// If buffer is empty, same as doing clear()
+				buffer.compact();
+			}
+			// EOF will leave buffer in fill state
+			buffer.flip();
+			// make sure the buffer is fully drained.
+			while (buffer.hasRemaining()) {
+				written += dest.write(buffer);
+			}
+			return written;
+		}
+
+		public static void copy(final InputStream src, final OutputStream dest, final CompleteCallback callback, final Object context) {
+			final android.os.Handler mHandler = new android.os.Handler(Looper.myLooper());
+			threadPoolExecutor().execute((Runnable) () -> {
+
+				boolean done = false;
+				Exception error = null;
+				try (InputStream is = src; OutputStream os = dest){
+					ReadableByteChannel isc = java.nio.channels.Channels.newChannel(is);
+					WritableByteChannel osc = java.nio.channels.Channels.newChannel(os);
+
+					int size = src.available();
+
+					int written = fastChannelCopy(isc, osc);
+
+					done = size == written;
+
+				} catch (Exception e) {
+					error = e;
+
+				}finally {
+					if (error != null){
+						Exception finalError = error;
+						mHandler.post(() -> callback.onError(finalError.getMessage(), context));
+					}else {
+						boolean finalDone = done;
+						mHandler.post(() -> callback.onComplete(finalDone, context));
+					}
+				}
+			});
+		}
+
 		public static void readText(final String path, final String encoding, final CompleteCallback callback, final Object context) {
 			final android.os.Handler mHandler = new android.os.Handler(Looper.myLooper());
 			threadPoolExecutor().execute(new Runnable() {
@@ -627,6 +819,23 @@ public class Async {
 			});
 		}
 
+		public static void readBuffer(final String path, final CompleteCallback callback, final Object context) {
+			final android.os.Handler mHandler = new android.os.Handler(Looper.myLooper());
+			threadPoolExecutor().execute(new Runnable() {
+				@Override
+				public void run() {
+					final ReadBufferTask task = new ReadBufferTask(callback, context);
+					final ByteBuffer result = task.doInBackground(path);
+					mHandler.post(new Runnable() {
+						@Override
+						public void run() {
+							task.onPostExecute(result);
+						}
+					});
+				}
+			});
+		}
+
 		public static void writeText(final String path, final String content, final String encoding, final CompleteCallback callback, final Object context) {
 			final android.os.Handler mHandler = new android.os.Handler(Looper.myLooper());
 			threadPoolExecutor().execute(new Runnable() {
@@ -650,6 +859,23 @@ public class Async {
 				@Override
 				public void run() {
 					final WriteTask task = new WriteTask(callback, context);
+					final boolean result = task.doInBackground(path, content);
+					mHandler.post(new Runnable() {
+						@Override
+						public void run() {
+							task.onPostExecute(result);
+						}
+					});
+				}
+			});
+		}
+
+		public static void writeBuffer(final String path, final ByteBuffer content, final CompleteCallback callback, final Object context) {
+			final android.os.Handler mHandler = new android.os.Handler(Looper.myLooper());
+			threadPoolExecutor().execute(new Runnable() {
+				@Override
+				public void run() {
+					final WriteBufferTask task = new WriteBufferTask(callback, context);
 					final boolean result = task.doInBackground(path, content);
 					mHandler.post(new Runnable() {
 						@Override
@@ -768,6 +994,55 @@ public class Async {
 			}
 		}
 
+		static class ReadBufferTask {
+			private final CompleteCallback callback;
+			private final Object context;
+
+			public ReadBufferTask(CompleteCallback callback, Object context) {
+				this.callback = callback;
+				this.context = context;
+			}
+
+			protected ByteBuffer doInBackground(String... params) {
+				java.io.File javaFile = new java.io.File(params[0]);
+				FileInputStream stream = null;
+
+				try {
+					stream = new FileInputStream(javaFile);
+
+					ByteBuffer buffer = ByteBuffer.allocateDirect((int) javaFile.length());
+
+					FileChannel channel = stream.getChannel();
+					channel.read(buffer);
+					buffer.rewind();
+
+					return buffer;
+				} catch (FileNotFoundException e) {
+					Log.e(TAG, "Failed to read file, FileNotFoundException: " + e.getMessage());
+					return null;
+				} catch (IOException e) {
+					Log.e(TAG, "Failed to read file, IOException: " + e.getMessage());
+					return null;
+				} finally {
+					if (stream != null) {
+						try {
+							stream.close();
+						} catch (IOException e) {
+							Log.e(TAG, "Failed to close stream, IOException: " + e.getMessage());
+						}
+					}
+				}
+			}
+
+			protected void onPostExecute(final ByteBuffer result) {
+				if (result != null) {
+					this.callback.onComplete(result, this.context);
+				} else {
+					this.callback.onError("ReadTask returns no result.", this.context);
+				}
+			}
+		}
+
 		static class WriteTextTask {
 			private final CompleteCallback callback;
 			private final Object context;
@@ -784,7 +1059,6 @@ public class Async {
 					stream = new FileOutputStream(javaFile);
 
 					OutputStreamWriter writer = new OutputStreamWriter(stream, params[2]);
-
 					writer.write(params[1]);
 					writer.close();
 
@@ -859,6 +1133,194 @@ public class Async {
 					this.callback.onComplete(null, this.context);
 				} else {
 					this.callback.onError("WriteTask returns no result.", this.context);
+				}
+			}
+		}
+
+		static class WriteBufferTask {
+			private final CompleteCallback callback;
+			private final Object context;
+
+			public WriteBufferTask(CompleteCallback callback, Object context) {
+				this.callback = callback;
+				this.context = context;
+			}
+
+			protected boolean doInBackground(Object... params) {
+				java.io.File javaFile = new java.io.File((String) params[0]);
+				FileOutputStream stream = null;
+				ByteBuffer content = (ByteBuffer) params[1];
+
+				try {
+					stream = new FileOutputStream(javaFile);
+					FileChannel channel = stream.getChannel();
+					content.rewind();
+					channel.write(content);
+					content.rewind();
+					return true;
+				} catch (FileNotFoundException e) {
+					Log.e(TAG, "Failed to write file, FileNotFoundException: " + e.getMessage());
+					return false;
+				} catch (IOException e) {
+					Log.e(TAG, "Failed to write file, IOException: " + e.getMessage());
+					return false;
+				} finally {
+					if (stream != null) {
+						try {
+							stream.close();
+						} catch (IOException e) {
+							Log.e(TAG, "Failed to close stream, IOException: " + e.getMessage());
+						}
+					}
+				}
+			}
+
+			protected void onPostExecute(final boolean result) {
+				if (result) {
+					this.callback.onComplete(null, this.context);
+				} else {
+					this.callback.onError("WriteTask returns no result.", this.context);
+				}
+			}
+		}
+
+		static class AppendTask {
+			private final CompleteCallback callback;
+			private final Object context;
+
+			public AppendTask(CompleteCallback callback, Object context) {
+				this.callback = callback;
+				this.context = context;
+			}
+
+			protected boolean doInBackground(Object... params) {
+				java.io.File javaFile = new java.io.File((String) params[0]);
+				FileOutputStream stream = null;
+				byte[] content = (byte[]) params[1];
+
+				try {
+					stream = new FileOutputStream(javaFile, true);
+					stream.write(content, 0, content.length);
+
+					return true;
+				} catch (FileNotFoundException e) {
+					Log.e(TAG, "Failed to append file, FileNotFoundException: " + e.getMessage());
+					return false;
+				} catch (IOException e) {
+					Log.e(TAG, "Failed to write file, IOException: " + e.getMessage());
+					return false;
+				} finally {
+					if (stream != null) {
+						try {
+							stream.close();
+						} catch (IOException e) {
+							Log.e(TAG, "Failed to close stream, IOException: " + e.getMessage());
+						}
+					}
+				}
+			}
+
+			protected void onPostExecute(final boolean result) {
+				if (result) {
+					this.callback.onComplete(null, this.context);
+				} else {
+					this.callback.onError("AppendTask returns no result.", this.context);
+				}
+			}
+		}
+
+		static class AppendBufferTask {
+			private final CompleteCallback callback;
+			private final Object context;
+
+			public AppendBufferTask(CompleteCallback callback, Object context) {
+				this.callback = callback;
+				this.context = context;
+			}
+
+			protected boolean doInBackground(Object... params) {
+				java.io.File javaFile = new java.io.File((String) params[0]);
+				FileOutputStream stream = null;
+				ByteBuffer content = (ByteBuffer) params[1];
+
+				try {
+					stream = new FileOutputStream(javaFile, true);
+					FileChannel channel = stream.getChannel();
+					content.rewind();
+					channel.write(content);
+					content.rewind();
+					return true;
+				} catch (FileNotFoundException e) {
+					Log.e(TAG, "Failed to append to file, FileNotFoundException: " + e.getMessage());
+					return false;
+				} catch (IOException e) {
+					Log.e(TAG, "Failed to append file, IOException: " + e.getMessage());
+					return false;
+				} finally {
+					if (stream != null) {
+						try {
+							stream.close();
+						} catch (IOException e) {
+							Log.e(TAG, "Failed to close stream, IOException: " + e.getMessage());
+						}
+					}
+				}
+			}
+
+			protected void onPostExecute(final boolean result) {
+				if (result) {
+					this.callback.onComplete(null, this.context);
+				} else {
+					this.callback.onError("AppendTask returns no result.", this.context);
+				}
+			}
+		}
+
+		static class AppendTextTask {
+			private final CompleteCallback callback;
+			private final Object context;
+
+			public AppendTextTask(CompleteCallback callback, Object context) {
+				this.callback = callback;
+				this.context = context;
+			}
+
+			protected boolean doInBackground(String... params) {
+				java.io.File javaFile = new java.io.File(params[0]);
+				FileOutputStream stream = null;
+				try {
+					stream = new FileOutputStream(javaFile, true);
+
+					OutputStreamWriter writer = new OutputStreamWriter(stream, params[2]);
+					writer.write(params[1]);
+					writer.close();
+
+					return true;
+				} catch (FileNotFoundException e) {
+					Log.e(TAG, "Failed to append file, FileNotFoundException: " + e.getMessage());
+					return false;
+				} catch (UnsupportedEncodingException e) {
+					Log.e(TAG, "Failed to append file, UnsupportedEncodingException: " + e.getMessage());
+					return false;
+				} catch (IOException e) {
+					Log.e(TAG, "Failed to append file, IOException: " + e.getMessage());
+					return false;
+				} finally {
+					if (stream != null) {
+						try {
+							stream.close();
+						} catch (IOException e) {
+							Log.e(TAG, "Failed to close stream, IOException: " + e.getMessage());
+						}
+					}
+				}
+			}
+
+			protected void onPostExecute(final boolean result) {
+				if (result) {
+					this.callback.onComplete(null, this.context);
+				} else {
+					this.callback.onError("AppendTextTask returns no result.", this.context);
 				}
 			}
 		}

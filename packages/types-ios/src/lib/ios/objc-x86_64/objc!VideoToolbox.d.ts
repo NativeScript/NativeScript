@@ -9,6 +9,10 @@ declare function VTCompressionSessionEncodeFrame(session: any, imageBuffer: any,
 
 declare function VTCompressionSessionEncodeFrameWithOutputHandler(session: any, imageBuffer: any, presentationTimeStamp: CMTime, duration: CMTime, frameProperties: NSDictionary<any, any>, infoFlagsOut: interop.Pointer | interop.Reference<VTEncodeInfoFlags>, outputHandler: (p1: number, p2: VTEncodeInfoFlags, p3: any) => void): number;
 
+declare function VTCompressionSessionEncodeMultiImageFrame(session: any, taggedBufferGroup: any, presentationTimeStamp: CMTime, duration: CMTime, frameProperties: NSDictionary<any, any>, sourceFrameRefcon: interop.Pointer | interop.Reference<any>, infoFlagsOut: interop.Pointer | interop.Reference<VTEncodeInfoFlags>): number;
+
+declare function VTCompressionSessionEncodeMultiImageFrameWithOutputHandler(session: any, taggedBufferGroup: any, presentationTimeStamp: CMTime, duration: CMTime, frameProperties: NSDictionary<any, any>, infoFlagsOut: interop.Pointer | interop.Reference<VTEncodeInfoFlags>, outputHandler: (p1: number, p2: VTEncodeInfoFlags, p3: any) => void): number;
+
 declare function VTCompressionSessionEndPass(session: any, furtherPassesRequestedOut: string | interop.Pointer | interop.Reference<any>, reserved: interop.Pointer | interop.Reference<number>): number;
 
 declare function VTCompressionSessionGetPixelBufferPool(session: any): any;
@@ -49,7 +53,9 @@ declare const enum VTDecodeInfoFlags {
 
 	kVTDecodeInfo_FrameDropped = 2,
 
-	kVTDecodeInfo_ImageBufferModifiable = 4
+	kVTDecodeInfo_ImageBufferModifiable = 4,
+
+	kVTDecodeInfo_SkippedLeadingFrameDropped = 8
 }
 
 interface VTDecompressionOutputCallbackRecord {
@@ -66,6 +72,8 @@ declare function VTDecompressionSessionCreate(allocator: any, videoFormatDescrip
 
 declare function VTDecompressionSessionDecodeFrame(session: any, sampleBuffer: any, decodeFlags: VTDecodeFrameFlags, sourceFrameRefCon: interop.Pointer | interop.Reference<any>, infoFlagsOut: interop.Pointer | interop.Reference<VTDecodeInfoFlags>): number;
 
+declare function VTDecompressionSessionDecodeFrameWithMultiImageCapableOutputHandler(session: any, sampleBuffer: any, decodeFlags: VTDecodeFrameFlags, infoFlagsOut: interop.Pointer | interop.Reference<VTDecodeInfoFlags>, multiImageCapableOutputHandler: (p1: number, p2: VTDecodeInfoFlags, p3: any, p4: any, p5: CMTime, p6: CMTime) => void): number;
+
 declare function VTDecompressionSessionDecodeFrameWithOutputHandler(session: any, sampleBuffer: any, decodeFlags: VTDecodeFrameFlags, infoFlagsOut: interop.Pointer | interop.Reference<VTDecodeInfoFlags>, outputHandler: (p1: number, p2: VTDecodeInfoFlags, p3: any, p4: CMTime, p5: CMTime) => void): number;
 
 declare function VTDecompressionSessionFinishDelayedFrames(session: any): number;
@@ -73,6 +81,8 @@ declare function VTDecompressionSessionFinishDelayedFrames(session: any): number
 declare function VTDecompressionSessionGetTypeID(): number;
 
 declare function VTDecompressionSessionInvalidate(session: any): void;
+
+declare function VTDecompressionSessionSetMultiImageCallback(decompressionSession: any, outputMultiImageCallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: VTDecodeInfoFlags, p5: any, p6: CMTime, p7: CMTime) => void>, outputMultiImageRefcon: interop.Pointer | interop.Reference<any>): number;
 
 declare function VTDecompressionSessionWaitForAsynchronousFrames(session: any): number;
 
@@ -110,6 +120,10 @@ interface VTInt32Size {
 declare var VTInt32Size: interop.StructType<VTInt32Size>;
 
 declare function VTIsHardwareDecodeSupported(codecType: number): boolean;
+
+declare function VTIsStereoMVHEVCDecodeSupported(): boolean;
+
+declare function VTIsStereoMVHEVCEncodeSupported(): boolean;
 
 declare function VTMultiPassStorageClose(multiPassStorage: any): number;
 
@@ -205,7 +219,17 @@ declare var kVTCompressionPropertyKey_H264EntropyMode: string;
 
 declare var kVTCompressionPropertyKey_HDRMetadataInsertionMode: string;
 
+declare var kVTCompressionPropertyKey_HeroEye: string;
+
+declare var kVTCompressionPropertyKey_HorizontalDisparityAdjustment: string;
+
 declare var kVTCompressionPropertyKey_ICCProfile: string;
+
+declare var kVTCompressionPropertyKey_MVHEVCLeftAndRightViewIDs: string;
+
+declare var kVTCompressionPropertyKey_MVHEVCVideoLayerIDs: string;
+
+declare var kVTCompressionPropertyKey_MVHEVCViewIDs: string;
 
 declare var kVTCompressionPropertyKey_MasteringDisplayColorVolume: string;
 
@@ -257,6 +281,8 @@ declare var kVTCompressionPropertyKey_ReferenceBufferCount: string;
 
 declare var kVTCompressionPropertyKey_SourceFrameCount: string;
 
+declare var kVTCompressionPropertyKey_StereoCameraBaseline: string;
+
 declare var kVTCompressionPropertyKey_SupportsBaseFrameQP: string;
 
 declare var kVTCompressionPropertyKey_TargetQualityForAlpha: string;
@@ -279,11 +305,15 @@ declare const kVTCouldNotFindVideoDecoderErr: number;
 
 declare const kVTCouldNotFindVideoEncoderErr: number;
 
+declare const kVTCouldNotOutputTaggedBufferGroupErr: number;
+
 declare var kVTDecompressionPropertyKey_ContentHasInterframeDependencies: string;
 
 declare var kVTDecompressionPropertyKey_DeinterlaceMode: string;
 
 declare var kVTDecompressionPropertyKey_FieldMode: string;
+
+declare var kVTDecompressionPropertyKey_GeneratePerFrameHDRDisplayMetadata: string;
 
 declare var kVTDecompressionPropertyKey_MaxOutputPresentationTimeStampOfFramesBeingDecoded: string;
 
@@ -315,6 +345,8 @@ declare var kVTDecompressionPropertyKey_ReducedFrameDelivery: string;
 
 declare var kVTDecompressionPropertyKey_ReducedResolutionDecode: string;
 
+declare var kVTDecompressionPropertyKey_RequestedMVHEVCVideoLayerIDs: string;
+
 declare var kVTDecompressionPropertyKey_SuggestedQualityOfServiceTiers: string;
 
 declare var kVTDecompressionPropertyKey_SupportedPixelFormatsOrderedByPerformance: string;
@@ -324,6 +356,8 @@ declare var kVTDecompressionPropertyKey_SupportedPixelFormatsOrderedByQuality: s
 declare var kVTDecompressionPropertyKey_ThreadCount: string;
 
 declare var kVTDecompressionPropertyKey_UsingGPURegistryID: string;
+
+declare var kVTDecompressionPropertyKey_UsingHardwareAcceleratedVideoDecoder: string;
 
 declare var kVTDecompressionProperty_DeinterlaceMode_Temporal: string;
 
@@ -364,6 +398,8 @@ declare var kVTEncodeFrameOptionKey_BaseFrameQP: string;
 declare var kVTEncodeFrameOptionKey_ForceKeyFrame: string;
 
 declare var kVTEncodeFrameOptionKey_ForceLTRRefresh: string;
+
+declare const kVTExtensionDisabledErr: number;
 
 declare const kVTFormatDescriptionChangeNotSupportedErr: number;
 
@@ -595,7 +631,11 @@ declare const kVTVideoDecoderReferenceMissingErr: number;
 
 declare const kVTVideoDecoderRemovedErr: number;
 
+declare var kVTVideoDecoderSpecification_EnableHardwareAcceleratedVideoDecoder: string;
+
 declare var kVTVideoDecoderSpecification_PreferredDecoderGPURegistryID: string;
+
+declare var kVTVideoDecoderSpecification_RequireHardwareAcceleratedVideoDecoder: string;
 
 declare var kVTVideoDecoderSpecification_RequiredDecoderGPURegistryID: string;
 
@@ -630,6 +670,8 @@ declare var kVTVideoEncoderList_QualityRating: string;
 declare var kVTVideoEncoderList_SupportedSelectionProperties: string;
 
 declare var kVTVideoEncoderList_SupportsFrameReordering: string;
+
+declare const kVTVideoEncoderMVHEVCVideoLayerIDsMismatchErr: number;
 
 declare const kVTVideoEncoderMalfunctionErr: number;
 

@@ -17,6 +17,22 @@ declare class BGAppRefreshTaskRequest extends BGTaskRequest {
 	initWithIdentifier(identifier: string): this;
 }
 
+declare class BGHealthResearchTask extends BGProcessingTask {
+
+	static alloc(): BGHealthResearchTask; // inherited from NSObject
+
+	static new(): BGHealthResearchTask; // inherited from NSObject
+}
+
+declare class BGHealthResearchTaskRequest extends BGProcessingTaskRequest {
+
+	static alloc(): BGHealthResearchTaskRequest; // inherited from NSObject
+
+	static new(): BGHealthResearchTaskRequest; // inherited from NSObject
+
+	protectionTypeOfRequiredData: string;
+}
+
 declare class BGProcessingTask extends BGTask {
 
 	static alloc(): BGProcessingTask; // inherited from NSObject
@@ -79,7 +95,7 @@ declare class BGTaskScheduler extends NSObject {
 
 	getPendingTaskRequestsWithCompletionHandler(completionHandler: (p1: NSArray<BGTaskRequest>) => void): void;
 
-	registerForTaskWithIdentifierUsingQueueLaunchHandler(identifier: string, queue: NSObject, launchHandler: (p1: BGTask) => void): boolean;
+	registerForTaskWithIdentifierUsingQueueLaunchHandler(identifier: string, queue: interop.Pointer | interop.Reference<any>, launchHandler: (p1: BGTask) => void): boolean;
 
 	submitTaskRequestError(taskRequest: BGTaskRequest): boolean;
 }

@@ -1,4 +1,4 @@
-import { Page, EventData, Application, File, Folder, knownFolders, path, getFileAccess, Utils } from '@nativescript/core';
+import { Page, EventData, Application, File, Folder, knownFolders, path, getFileAccess, Utils, Screen, Http, AndroidDirectory, ImageSource, alert } from '@nativescript/core';
 
 let page: Page;
 
@@ -109,7 +109,13 @@ export function pickFile() {
 			const file = args.intent.getData().toString();
 			//const file = File.fromPath(args.intent.getData().toString());
 			//console.log(file);
-			readFile(file);
+			//readFile(file);
+			//copyFile(file);
+			console.time('fromPath: copy');
+			const f = File.fromPath(file, true);
+			console.timeEnd('fromPath: copy');
+			console.log('old path: ', file);
+			console.log('new path: ', f.path, f.extension, f.size);
 		}
 	});
 	const Intent = android.content.Intent;
@@ -172,7 +178,142 @@ function saveFile(selected, readSync) {
 	console.log('==== SAVE END =========');
 }
 
+function copyFile(file) {
+	const picked = File.fromPath(file);
+	const ext = picked.extension;
+	const name = picked.name.replace(`.${ext}`, '');
+	const tempCopy = File.fromPath(path.join(knownFolders.temp().path, `${name}-copy.${ext}`));
+
+	// const done  = picked
+	// 	.copySync(tempCopy.path);
+	// 	console.log('done: ' + done + '\n' + 'Original path: ' + picked.path + '\n' + 'Copied to: ' + tempCopy.path + '\n' + 'Original size: ' + picked.size + '\n' + 'Copy size: ' + tempCopy.size + '\n');
+
+	picked
+		.copy(tempCopy.path)
+		.then((done) => {
+			console.log('done: ' + done + '\n' + 'Original path: ' + picked.path + '\n' + 'Copied to: ' + tempCopy.path + '\n' + 'Original size: ' + picked.size + '\n' + 'Copy size: ' + tempCopy.size + '\n');
+		})
+		.catch((error) => {
+			console.log(error);
+		});
+}
+
+export function copyTest() {
+	const now = Date.now();
+	const tempFile = File.fromPath(path.join(knownFolders.temp().path, `${now}.txt`));
+	tempFile.writeTextSync('Hello World: ' + now);
+	const tempCopy = File.fromPath(path.join(knownFolders.temp().path, `${now}-copy.txt`));
+	tempFile
+		.copy(tempCopy.path)
+		.then((done) => {
+			console.log('done: ' + done + '\n' + 'Original path: ' + tempFile.path + '\n' + 'Copied to: ' + tempCopy.path + '\n' + 'Original size: ' + tempFile.size + '\n' + 'Copy size: ' + tempCopy.size + '\n');
+		})
+		.catch((error) => {
+			console.log(error);
+		});
+}
+
 function getFileNameFromContent(content: string) {
 	const file = getFileAccess().getFile(content);
 	return decodeURIComponent(file.name).split('/').pop().toLowerCase();
+}
+
+let lastDownload: File;
+export function createFileInDownloads() {
+	if (!global.isAndroid) {
+		return;
+	}
+	const width = Screen.mainScreen.widthPixels;
+	const height = Screen.mainScreen.heightPixels;
+	const randomImageUrl = `https://picsum.photos/${width}/${height}.jpg?random=${Date.now()}`;
+
+	Http.getFile(randomImageUrl).then((result: File) => {
+		let file = File.android.createFile({
+			directory: AndroidDirectory.DOWNLOADS,
+			name: `${Date.now()}.jpg`,
+			mime: 'image/jpeg',
+			relativePath: `NativeScript`,
+		});
+		result
+			.copy(file.path)
+			.then((done) => {
+				lastDownload = file;
+				console.log('done: ' + done + '\n' + 'Original path: ' + result.path + '\n' + 'Copied to: ' + file.path + '\n' + 'Original size: ' + result.size + '\n' + 'Copy size: ' + file.size + '\n');
+				alert(`File saved in ${AndroidDirectory.DOWNLOADS}/NativeScript`);
+			})
+			.catch((error) => {
+				console.error(error);
+			});
+	});
+}
+
+export function createFileInGallery() {
+	if (!global.isAndroid) {
+		return;
+	}
+	const width = Screen.mainScreen.widthPixels;
+	const height = Screen.mainScreen.heightPixels;
+	const randomImageUrl = `https://picsum.photos/${width}/${height}.jpg?random=${Date.now()}`;
+
+	Http.getFile(randomImageUrl).then((result: File) => {
+		let file = File.android.createFile({
+			directory: AndroidDirectory.PICTURES,
+			name: `${Date.now()}.jpg`,
+			mime: 'image/jpeg',
+			relativePath: `NativeScript`,
+		});
+		result
+			.copy(file.path)
+			.then((done) => {
+				console.log('done: ' + done + '\n' + 'Original path: ' + result + '\n' + 'Copied to: ' + file.path + '\n' + 'Original size: ' + result.size + '\n' + 'Copy size: ' + file.size + '\n');
+				alert(`File saved in ${AndroidDirectory.PICTURES}/NativeScript`);
+			})
+			.catch((error) => {
+				console.error(error);
+			});
+	});
+}
+
+export function createFileInMusic() {
+	if (!global.isAndroid) {
+		return;
+	}
+
+	Http.getFile('https://github.com/rafaelreis-hotmart/Audio-Sample-files/raw/master/sample.mp3').then((result: File) => {
+		let file = File.android.createFile({
+			directory: AndroidDirectory.MUSIC,
+			name: `${Date.now()}.MP3`,
+			mime: 'audio/mp3',
+			relativePath: `NativeScript/MP3`,
+		});
+
+		result
+			.copy(file.path)
+			.then((done) => {
+				console.log('done: ' + done + '\n' + 'Original path: ' + result + '\n' + 'Copied to: ' + file.path + '\n' + 'Original size: ' + result.size + '\n' + 'Copy size: ' + file.size + '\n');
+
+				alert(`File saved in ${AndroidDirectory.MUSIC}/NativeScript/MP3`);
+			})
+			.catch((error) => {
+				console.error(error);
+			});
+	});
+}
+
+export function createAndAppendText() {
+	const file = File.fromPath(path.join(knownFolders.temp().path, `${Date.now()}-app.txt`));
+	file.appendTextSync('Hello');
+	file.appendTextSync(' World');
+	const data = file.readTextSync();
+	console.log('createAndAppend:', data === 'Hello World');
+}
+
+export function createAndAppendData() {
+	const file = File.fromPath(path.join(knownFolders.temp().path, `${Date.now()}-app.txt`));
+	const hello = global.isIOS ? NSString.stringWithString('Hello').dataUsingEncoding(NSUTF8StringEncoding) : new java.lang.String('Hello').getBytes('UTF-8');
+	const world = global.isIOS ? NSString.stringWithString(' World').dataUsingEncoding(NSUTF8StringEncoding) : new java.lang.String(' World').getBytes('UTF-8');
+	file.appendSync(hello);
+	file.appendSync(world);
+	const data = file.readTextSync();
+	console.log('createAndAppendData:', data === 'Hello World');
 }

@@ -8,6 +8,10 @@
 		<data>
 		9BsuK8QsA57YnHHgpWIgaHygSEk=
 		</data>
+		<key>Headers/NSFileHandle+Async.h</key>
+		<data>
+		iQtzsDHw/VTnFG27yW+QvGCeXGw=
+		</data>
 		<key>Headers/NSString+Async.h</key>
 		<data>
 		o8366y9zYMOVyObC3vtKKy/8jxA=
@@ -22,7 +26,7 @@
 		</data>
 		<key>Headers/TNSWidgets.h</key>
 		<data>
-		gUvu5bjZg5Aie5iJ1krxFmDrHwk=
+		ZFbCov7mFiXa4ZA/gAxqYHzRX7Q=
 		</data>
 		<key>Headers/UIImage+TNSBlocks.h</key>
 		<data>
@@ -34,11 +38,11 @@
 		</data>
 		<key>Info.plist</key>
 		<data>
-		RCfacSfbjEiH19hn34SSJzGdiFo=
+		VmspYkNgBMBwiG3xU7pa0kJ+ym0=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
-		ANIiDnbrCY8YCOtOm1xDrUyt8do=
+		/tkvRfxHVxmNhD1JzeHL7QIyPq0=
 		</data>
 		<key>PrivateHeaders/NSObject+Swizzling.h</key>
 		<data>
@@ -56,6 +60,13 @@
 			<key>hash2</key>
 			<data>
 			JdjuVUBed00Ged4cSDzYLXONUlESu+dae9KN0PYJ/nM=
+			</data>
+		</dict>
+		<key>Headers/NSFileHandle+Async.h</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			1IqS81dD1dbKccHZ0lYPMMF1zBPdp3InM+rdOFjBo+k=
 			</data>
 		</dict>
 		<key>Headers/NSString+Async.h</key>
@@ -83,7 +94,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			V99t2zLwRPOs90tbGiQbhbdAFJlW7mp7X2R5337ewUA=
+			6L3xStgKRHkPvDZAHAUF+EMI3Skf5jvnoA4ED/WbB1w=
 			</data>
 		</dict>
 		<key>Headers/UIImage+TNSBlocks.h</key>
@@ -104,7 +115,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			geXwbECY3V3psdekq89Ia+2j4/OludM5UatqEk+xhhc=
+			WpsCv2W1QB16vBBWGv6a8wyc4IjYUnJ+SSaY3j42OP4=
 			</data>
 		</dict>
 		<key>PrivateHeaders/NSObject+Swizzling.h</key>

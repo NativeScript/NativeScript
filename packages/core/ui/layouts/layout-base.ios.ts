@@ -23,7 +23,10 @@ export class LayoutBase extends LayoutBaseCommon {
 
 	_setNativeClipToBounds() {
 		if (this.clipToBounds) {
-			this.nativeViewProtected.clipsToBounds = true;
+			const view = this.nativeViewProtected;
+			if (view) {
+				view.clipsToBounds = true;
+			}
 		} else {
 			super._setNativeClipToBounds();
 		}

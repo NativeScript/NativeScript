@@ -275,7 +275,10 @@ export class ListView extends ListViewBase {
 
 	_setNativeClipToBounds() {
 		// Always set clipsToBounds for list-view
-		this.ios.clipsToBounds = true;
+		const view = this.nativeViewProtected;
+		if (view) {
+			view.clipsToBounds = true;
+		}
 	}
 
 	@profile
@@ -284,7 +287,7 @@ export class ListView extends ListViewBase {
 		if (this._isDataDirty) {
 			this.refresh();
 		}
-		this.ios.delegate = this._delegate;
+		this.nativeViewProtected.delegate = this._delegate;
 	}
 
 	// @ts-ignore
@@ -311,7 +314,7 @@ export class ListView extends ListViewBase {
 	}
 
 	private _scrollToIndex(index: number, animated = true) {
-		if (!this.ios) {
+		if (!this.nativeViewProtected) {
 			return;
 		}
 
@@ -324,7 +327,7 @@ export class ListView extends ListViewBase {
 				index = itemsLength - 1;
 			}
 
-			this.ios.scrollToRowAtIndexPathAtScrollPositionAnimated(NSIndexPath.indexPathForItemInSection(index, 0), UITableViewScrollPosition.Top, animated);
+			this.nativeViewProtected.scrollToRowAtIndexPathAtScrollPositionAnimated(NSIndexPath.indexPathForItemInSection(index, 0), UITableViewScrollPosition.Top, animated);
 		} else if (Trace.isEnabled()) {
 			Trace.write(`Cannot scroll listview to index ${index} when listview items not set`, Trace.categories.Binding);
 		}
@@ -339,7 +342,7 @@ export class ListView extends ListViewBase {
 		});
 
 		if (this.isLoaded) {
-			this.ios.reloadData();
+			this.nativeViewProtected.reloadData();
 			this.requestLayout();
 			this._isDataDirty = false;
 		} else {
@@ -348,7 +351,7 @@ export class ListView extends ListViewBase {
 	}
 
 	public isItemAtIndexVisible(itemIndex: number): boolean {
-		const indexes: NSIndexPath[] = Array.from(this.ios.indexPathsForVisibleRows);
+		const indexes: NSIndexPath[] = Array.from(this.nativeViewProtected.indexPathsForVisibleRows);
 
 		return indexes.some((visIndex) => visIndex.row === itemIndex);
 	}
@@ -363,7 +366,7 @@ export class ListView extends ListViewBase {
 
 	public _onRowHeightPropertyChanged(oldValue: CoreTypes.LengthType, newValue: CoreTypes.LengthType) {
 		const value = layout.toDeviceIndependentPixels(this._effectiveRowHeight);
-		const nativeView = this.ios;
+		const nativeView = this.nativeViewProtected;
 		if (value < 0) {
 			nativeView.rowHeight = UITableViewAutomaticDimension;
 			nativeView.estimatedRowHeight = DEFAULT_HEIGHT;
@@ -393,7 +396,7 @@ export class ListView extends ListViewBase {
 		const changed = this._setCurrentMeasureSpecs(widthMeasureSpec, heightMeasureSpec);
 		super.measure(widthMeasureSpec, heightMeasureSpec);
 		if (changed) {
-			this.ios.reloadData();
+			this.nativeViewProtected.reloadData();
 		}
 	}
 
@@ -430,7 +433,7 @@ export class ListView extends ListViewBase {
 			return height;
 		}
 
-		return this.ios.estimatedRowHeight;
+		return this.nativeViewProtected.estimatedRowHeight;
 	}
 
 	public _prepareCell(cell: ListViewCell, indexPath: NSIndexPath): number {
@@ -497,10 +500,10 @@ export class ListView extends ListViewBase {
 	}
 
 	[separatorColorProperty.getDefault](): UIColor {
-		return this.ios.separatorColor;
+		return this.nativeViewProtected.separatorColor;
 	}
 	[separatorColorProperty.setNative](value: Color | UIColor) {
-		this.ios.separatorColor = value instanceof Color ? value.ios : value;
+		this.nativeViewProtected.separatorColor = value instanceof Color ? value.ios : value;
 	}
 
 	[itemTemplatesProperty.getDefault](): KeyedTemplate[] {
@@ -510,7 +513,7 @@ export class ListView extends ListViewBase {
 		this._itemTemplatesInternal = new Array<KeyedTemplate>(this._defaultTemplate);
 		if (value) {
 			for (let i = 0, length = value.length; i < length; i++) {
-				this.ios.registerClassForCellReuseIdentifier(ListViewCell.class(), value[i].key);
+				this.nativeViewProtected.registerClassForCellReuseIdentifier(ListViewCell.class(), value[i].key);
 			}
 			this._itemTemplatesInternal = this._itemTemplatesInternal.concat(value);
 		}
@@ -522,7 +525,7 @@ export class ListView extends ListViewBase {
 		return DEFAULT_HEIGHT;
 	}
 	[iosEstimatedRowHeightProperty.setNative](value: CoreTypes.LengthType) {
-		const nativeView = this.ios;
+		const nativeView = this.nativeViewProtected;
 		const estimatedHeight = Length.toDevicePixels(value, 0);
 		nativeView.estimatedRowHeight = estimatedHeight < 0 ? DEFAULT_HEIGHT : estimatedHeight;
 	}

@@ -1,19 +1,19 @@
 // Types
 import { getClosestPropertyValue } from './text-base-common';
-import { CSSShadow } from '../styling/css-shadow';
+import { ShadowCSSValues } from '../styling/css-shadow';
 
 // Requires
 import { Font } from '../styling/font';
-import { TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textTransformProperty, textShadowProperty, letterSpacingProperty, lineHeightProperty, resetSymbol } from './text-base-common';
+import { iosAccessibilityAdjustsFontSizeProperty, iosAccessibilityMaxFontScaleProperty, iosAccessibilityMinFontScaleProperty } from '../../accessibility/accessibility-properties';
+import { TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textTransformProperty, textShadowProperty, letterSpacingProperty, lineHeightProperty, maxLinesProperty, resetSymbol } from './text-base-common';
 import { Color } from '../../color';
 import { FormattedString } from './formatted-string';
 import { Span } from './span';
-import { colorProperty, fontInternalProperty, Length } from '../styling/style-properties';
+import { colorProperty, fontInternalProperty, fontScaleInternalProperty, Length } from '../styling/style-properties';
 import { isString, isNullOrUndefined } from '../../utils/types';
-import { iOSNativeHelper } from '../../utils';
+import { iOSNativeHelper, layout } from '../../utils';
 import { Trace } from '../../trace';
 import { CoreTypes } from '../../core-types';
-import { maxLinesProperty } from './text-base-common';
 
 export * from './text-base-common';
 
@@ -192,6 +192,34 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
+	[fontScaleInternalProperty.setNative](value: number) {
+		const nativeView = this.nativeTextViewProtected instanceof UIButton ? this.nativeTextViewProtected.titleLabel : this.nativeTextViewProtected;
+		const font = this.style.fontInternal || Font.default.withFontSize(nativeView.font.pointSize);
+		const finalValue = adjustMinMaxFontScale(value, this);
+
+		// Request layout on font scale as it's not done automatically
+		if (font.fontScale !== finalValue) {
+			this.style.fontInternal = font.withFontScale(finalValue);
+			this.requestLayout();
+		} else {
+			if (!this.style.fontInternal) {
+				this.style.fontInternal = font;
+			}
+		}
+	}
+
+	[iosAccessibilityAdjustsFontSizeProperty.setNative](value: boolean) {
+		this[fontScaleInternalProperty.setNative](this.style.fontScaleInternal);
+	}
+
+	[iosAccessibilityMinFontScaleProperty.setNative](value: number) {
+		this[fontScaleInternalProperty.setNative](this.style.fontScaleInternal);
+	}
+
+	[iosAccessibilityMaxFontScaleProperty.setNative](value: number) {
+		this[fontScaleInternalProperty.setNative](this.style.fontScaleInternal);
+	}
+
 	[textAlignmentProperty.setNative](value: CoreTypes.TextAlignmentType) {
 		const nativeView = <UITextField | UITextView | UILabel>this.nativeTextViewProtected;
 		switch (value) {
@@ -227,7 +255,7 @@ export class TextBase extends TextBaseCommon {
 		this._setNativeText();
 	}
 
-	[textShadowProperty.setNative](value: CSSShadow) {
+	[textShadowProperty.setNative](value: ShadowCSSValues) {
 		this._setShadow(value);
 	}
 
@@ -321,7 +349,8 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	createMutableStringDetails(span: Span, text: string, index?: number): any {
-		const font = new Font(span.style.fontFamily, span.style.fontSize, span.style.fontStyle, span.style.fontWeight);
+		const fontScale = adjustMinMaxFontScale(span.style.fontScaleInternal, span);
+		const font = new Font(span.style.fontFamily, span.style.fontSize, span.style.fontStyle, span.style.fontWeight, fontScale);
 		const iosFont = font.getUIFont(this.nativeTextViewProtected.font);
 
 		const backgroundColor = <Color>(span.style.backgroundColor || (<FormattedString>span.parent).backgroundColor || (<TextBase>span.parent.parent).backgroundColor);
@@ -375,12 +404,8 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
-	_setShadow(value: CSSShadow): void {
-		const layer = iOSNativeHelper.getShadowLayer(this.nativeTextViewProtected, 'ns-text-shadow');
-		if (!layer) {
-			Trace.write('text-shadow not applied, no layer.', Trace.categories.Style, Trace.messageType.info);
-			return;
-		}
+	_setShadow(value: ShadowCSSValues): void {
+		const layer: CALayer = this.nativeTextViewProtected.layer;
 
 		if (isNullOrUndefined(value)) {
 			// clear the text shadow
@@ -392,14 +417,14 @@ export class TextBase extends TextBaseCommon {
 		}
 
 		// shadow opacity is handled on the shadow's color instance
-		layer.shadowOpacity = value.color?.a ? value.color?.a / 255 : 1;
+		layer.shadowOpacity = value.color?.a ? value.color.a / 255 : 1;
 		layer.shadowColor = value.color.ios.CGColor;
-		layer.shadowRadius = Length.toDevicePixels(value.blurRadius, 0.0);
+		layer.shadowRadius = layout.toDeviceIndependentPixels(Length.toDevicePixels(value.blurRadius, 0));
 
 		// prettier-ignore
 		layer.shadowOffset = CGSizeMake(
-			Length.toDevicePixels(value.offsetX, 0.0),
-			Length.toDevicePixels(value.offsetY, 0.0)
+			layout.toDeviceIndependentPixels(Length.toDevicePixels(value.offsetX, 0)),
+			layout.toDeviceIndependentPixels(Length.toDevicePixels(value.offsetY, 0))
 		);
 
 		layer.masksToBounds = false;
@@ -445,4 +470,21 @@ function isStringTappable(formattedString: FormattedString) {
 	}
 
 	return false;
+}
+
+function adjustMinMaxFontScale(value: number, view: TextBase | Span) {
+	let finalValue;
+	if (view.iosAccessibilityAdjustsFontSize) {
+		finalValue = value;
+
+		if (view.iosAccessibilityMinFontScale && view.iosAccessibilityMinFontScale > value) {
+			finalValue = view.iosAccessibilityMinFontScale;
+		}
+		if (view.iosAccessibilityMaxFontScale && view.iosAccessibilityMaxFontScale < value) {
+			finalValue = view.iosAccessibilityMaxFontScale;
+		}
+	} else {
+		finalValue = 1.0;
+	}
+	return finalValue;
 }

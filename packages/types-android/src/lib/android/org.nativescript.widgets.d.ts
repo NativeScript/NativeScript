@@ -29,10 +29,19 @@
                 }
 
                 export module File {
+                    export function copySync(src: string, dest: string, context: android.content.Context): boolean;
+                    export function copy(src: java.io.InputStream, dest: java.io.OutputStream, callback: org.nativescript.widgets.Async.CompleteCallback, context: any): void;
+					export function copySync(src: java.io.InputStream, dest: java.io.OutputStream, context: any): boolean;
+					export function copy(src: string, dest: string, callback: org.nativescript.widgets.Async.CompleteCallback, context: android.content.Context): void;
                     export function readText(path: string, encoding: string, callback: CompleteCallback, context: any);
                     export function read(path: string, callback: CompleteCallback, context: any);
+                    export function readBuffer(param0: string, param1: org.nativescript.widgets.Async.CompleteCallback, param2: any): void;
                     export function writeText(path: string, content: string, encoding: string, callback: CompleteCallback, context: any);
                     export function write(path: string, content: androidNative.Array<number>, callback: CompleteCallback, context: any);
+                    export function writeBuffer(param0: string, param1: java.nio.ByteBuffer, param2: org.nativescript.widgets.Async.CompleteCallback, param3: any): void;
+                    export function append(path: string, content: androidNative.Array<number>, callback: CompleteCallback, context: any);
+                    export function appendBuffer(param0: string, param1: java.nio.ByteBuffer, param2: org.nativescript.widgets.Async.CompleteCallback, param3: any): void;
+                    export function appendText(path: string, content: string, encoding: string, callback: CompleteCallback, context: any);
                 }
 
                 export module Http {
@@ -639,29 +648,39 @@ declare module org {
 	export module nativescript {
 		export module widgets {
 			export class FileHelper {
-				public static class: java.lang.Class<org.nativescript.widgets.FileHelper>;
+                public static class: java.lang.Class<org.nativescript.widgets.FileHelper>;
+				public appendSync(param0: globalAndroid.content.Context, param1: androidNative.Array<number>, param2: org.nativescript.widgets.FileHelper.Callback): void;
 				public readText(param0: globalAndroid.content.Context, param1: string, param2: org.nativescript.widgets.FileHelper.Callback): void;
-				public writeSync(param0: globalAndroid.content.Context, param1: androidNative.Array<number>, param2: org.nativescript.widgets.FileHelper.Callback): void;
-				public static fromString(param1: globalAndroid.content.Context, param0: string): org.nativescript.widgets.FileHelper;
-				public writeText(param0: globalAndroid.content.Context, param1: string, param2: string, param3: org.nativescript.widgets.FileHelper.Callback): void;
+				public writeBufferSync(param0: globalAndroid.content.Context, param1: java.nio.ByteBuffer, param2: org.nativescript.widgets.FileHelper.Callback): void;
 				public writeTextSync(param0: globalAndroid.content.Context, param1: string, param2: string, param3: org.nativescript.widgets.FileHelper.Callback): void;
 				public copyToFileSync(param0: globalAndroid.content.Context, param1: java.io.File, param2: org.nativescript.widgets.FileHelper.Callback): boolean;
-				public getName(): string;
+				public appendTextSync(param0: globalAndroid.content.Context, param1: string, param2: string, param3: org.nativescript.widgets.FileHelper.Callback): void;
 				public read(param0: globalAndroid.content.Context, param1: org.nativescript.widgets.FileHelper.Callback): void;
-				public copyToFile(param0: globalAndroid.content.Context, param1: java.io.File, param2: org.nativescript.widgets.FileHelper.Callback): void;
-				public static fromUri(param0: globalAndroid.content.Context, param1: globalAndroid.net.Uri): org.nativescript.widgets.FileHelper;
+				public renameSync(param0: globalAndroid.content.Context, param1: string, param2: org.nativescript.widgets.FileHelper.Callback): void;
+				public appendBufferSync(param0: globalAndroid.content.Context, param1: java.nio.ByteBuffer, param2: org.nativescript.widgets.FileHelper.Callback): void;
 				public readSync(param0: globalAndroid.content.Context, param1: org.nativescript.widgets.FileHelper.Callback): androidNative.Array<number>;
-				public write(param0: globalAndroid.content.Context, param1: androidNative.Array<number>, param2: org.nativescript.widgets.FileHelper.Callback): void;
+				public static fromString(param0: globalAndroid.content.Context, param1: string): org.nativescript.widgets.FileHelper;
 				public getSize(): number;
 				public getMime(): string;
-				public readTextSync(param0: globalAndroid.content.Context, param1: string, param2: org.nativescript.widgets.FileHelper.Callback): string;
+				public static exists(param0: globalAndroid.content.Context, param1: globalAndroid.net.Uri): boolean;
+				public append(param0: globalAndroid.content.Context, param1: androidNative.Array<number>, param2: org.nativescript.widgets.FileHelper.Callback): void;
+				public appendBuffer(param0: globalAndroid.content.Context, param1: java.nio.ByteBuffer, param2: org.nativescript.widgets.FileHelper.Callback): void;
 				public delete(param0: globalAndroid.content.Context): boolean;
-                public static exists(param0: globalAndroid.content.Context, param1: string): boolean;
-                public static exists(param0: globalAndroid.content.Context, param1: globalAndroid.net.Uri): boolean;
-                public getExtension(): string;
-                public getLastModified(): number;
-                public renameSync(param0: globalAndroid.content.Context, param1: string, param2: org.nativescript.widgets.FileHelper.Callback): string;
-                public rename(param0: globalAndroid.content.Context, param1: string, param2: org.nativescript.widgets.FileHelper.Callback): string;
+				public writeSync(param0: globalAndroid.content.Context, param1: androidNative.Array<number>, param2: org.nativescript.widgets.FileHelper.Callback): void;
+				public writeText(param0: globalAndroid.content.Context, param1: string, param2: string, param3: org.nativescript.widgets.FileHelper.Callback): void;
+				public readBuffer(param0: globalAndroid.content.Context, param1: org.nativescript.widgets.FileHelper.Callback): void;
+				public getName(): string;
+				public rename(param0: globalAndroid.content.Context, param1: string, param2: org.nativescript.widgets.FileHelper.Callback): void;
+				public writeBuffer(param0: globalAndroid.content.Context, param1: java.nio.ByteBuffer, param2: org.nativescript.widgets.FileHelper.Callback): void;
+				public copyToFile(param0: globalAndroid.content.Context, param1: java.io.File, param2: org.nativescript.widgets.FileHelper.Callback): void;
+				public readBufferSync(param0: globalAndroid.content.Context, param1: org.nativescript.widgets.FileHelper.Callback): java.nio.ByteBuffer;
+				public write(param0: globalAndroid.content.Context, param1: androidNative.Array<number>, param2: org.nativescript.widgets.FileHelper.Callback): void;
+				public getExtension(): string;
+				public readTextSync(param0: globalAndroid.content.Context, param1: string, param2: org.nativescript.widgets.FileHelper.Callback): string;
+				public static fromUri(param0: globalAndroid.content.Context, param1: globalAndroid.net.Uri): org.nativescript.widgets.FileHelper;
+				public static exists(param0: globalAndroid.content.Context, param1: string): boolean;
+				public appendText(param0: globalAndroid.content.Context, param1: string, param2: string, param3: org.nativescript.widgets.FileHelper.Callback): void;
+				public getLastModified(): number;
 			}
 			export module FileHelper {
 				export class Callback {

@@ -195,11 +195,13 @@ declare class CAEAGLLayer extends CALayer implements EAGLDrawable {
 	drawableProperties: NSDictionary<string, any>; // inherited from EAGLDrawable
 }
 
-declare class CAEDRMetadata extends NSObject {
+declare class CAEDRMetadata extends NSObject implements NSCopying, NSSecureCoding {
 
 	static HDR10MetadataWithDisplayInfoContentInfoOpticalOutputScale(displayData: NSData, contentData: NSData, scale: number): CAEDRMetadata;
 
 	static HDR10MetadataWithMinLuminanceMaxLuminanceOpticalOutputScale(minNits: number, maxNits: number, scale: number): CAEDRMetadata;
+
+	static HLGMetadataWithAmbientViewingEnvironment(data: NSData): CAEDRMetadata;
 
 	static alloc(): CAEDRMetadata; // inherited from NSObject
 
@@ -208,6 +210,16 @@ declare class CAEDRMetadata extends NSObject {
 	static readonly HLGMetadata: CAEDRMetadata;
 
 	static readonly available: boolean;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare const enum CAEdgeAntialiasingMask {
@@ -546,6 +558,8 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSSecureCoding 
 
 	readonly visibleRect: CGRect;
 
+	wantsExtendedDynamicRangeContent: boolean;
+
 	zPosition: number;
 
 	autoreverses: boolean; // inherited from CAMediaTiming
@@ -722,6 +736,53 @@ declare class CAMediaTimingFunction extends NSObject implements NSSecureCoding {
 	initWithControlPoints(c1x: number, c1y: number, c2x: number, c2y: number): this;
 }
 
+declare class CAMetalDisplayLink extends NSObject {
+
+	static alloc(): CAMetalDisplayLink; // inherited from NSObject
+
+	static new(): CAMetalDisplayLink; // inherited from NSObject
+
+	delegate: CAMetalDisplayLinkDelegate;
+
+	paused: boolean;
+
+	preferredFrameLatency: number;
+
+	preferredFrameRateRange: CAFrameRateRange;
+
+	constructor(o: { metalLayer: CAMetalLayer; });
+
+	addToRunLoopForMode(runloop: NSRunLoop, mode: string): void;
+
+	initWithMetalLayer(layer: CAMetalLayer): this;
+
+	invalidate(): void;
+
+	removeFromRunLoopForMode(runloop: NSRunLoop, mode: string): void;
+}
+
+interface CAMetalDisplayLinkDelegate {
+
+	metalDisplayLinkNeedsUpdate(link: CAMetalDisplayLink, update: CAMetalDisplayLinkUpdate): void;
+}
+declare var CAMetalDisplayLinkDelegate: {
+
+	prototype: CAMetalDisplayLinkDelegate;
+};
+
+declare class CAMetalDisplayLinkUpdate extends NSObject {
+
+	static alloc(): CAMetalDisplayLinkUpdate; // inherited from NSObject
+
+	static new(): CAMetalDisplayLinkUpdate; // inherited from NSObject
+
+	readonly drawable: CAMetalDrawable;
+
+	readonly targetPresentationTimestamp: number;
+
+	readonly targetTimestamp: number;
+}
+
 interface CAMetalDrawable extends MTLDrawable {
 
 	layer: CAMetalLayer;
@@ -762,8 +823,6 @@ declare class CAMetalLayer extends CALayer {
 	readonly preferredDevice: MTLDevice;
 
 	presentsWithTransaction: boolean;
-
-	wantsExtendedDynamicRangeContent: boolean;
 
 	nextDrawable(): CAMetalDrawable;
 }
@@ -899,15 +958,25 @@ declare class CASpringAnimation extends CABasicAnimation {
 
 	static new(): CASpringAnimation; // inherited from NSObject
 
+	allowsOverdamping: boolean;
+
+	readonly bounce: number;
+
 	damping: number;
 
 	initialVelocity: number;
 
 	mass: number;
 
+	readonly perceptualDuration: number;
+
 	readonly settlingDuration: number;
 
 	stiffness: number;
+
+	constructor(o: { perceptualDuration: number; bounce: number; });
+
+	initWithPerceptualDurationBounce(perceptualDuration: number, bounce: number): this;
 }
 
 declare class CATextLayer extends CALayer {
@@ -959,6 +1028,8 @@ declare class CATransaction extends NSObject {
 	static animationDuration(): number;
 
 	static animationTimingFunction(): CAMediaTimingFunction;
+
+	static batch(): void;
 
 	static begin(): void;
 

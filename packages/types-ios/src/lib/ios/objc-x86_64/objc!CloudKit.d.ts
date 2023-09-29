@@ -1256,6 +1256,10 @@ declare var CKRecordChangedErrorClientRecordKey: string;
 
 declare var CKRecordChangedErrorServerRecordKey: string;
 
+declare var CKRecordCreationDateKey: string;
+
+declare var CKRecordCreatorUserRecordIDKey: string;
+
 declare class CKRecordID extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CKRecordID; // inherited from NSObject
@@ -1304,9 +1308,15 @@ declare var CKRecordKeyValueSetting: {
 	prototype: CKRecordKeyValueSetting;
 };
 
+declare var CKRecordLastModifiedUserRecordIDKey: string;
+
+declare var CKRecordModificationDateKey: string;
+
 declare var CKRecordNameZoneWideShare: string;
 
 declare var CKRecordParentKey: string;
+
+declare var CKRecordRecordIDKey: string;
 
 declare const enum CKRecordSavePolicy {
 
@@ -1735,6 +1745,553 @@ declare const enum CKSubscriptionType {
 	RecordZone = 2,
 
 	Database = 3
+}
+
+declare class CKSyncEngine extends NSObject {
+
+	static alloc(): CKSyncEngine; // inherited from NSObject
+
+	static new(): CKSyncEngine; // inherited from NSObject
+
+	readonly database: CKDatabase;
+
+	readonly state: CKSyncEngineState;
+
+	constructor(o: { configuration: CKSyncEngineConfiguration; });
+
+	cancelOperationsWithCompletionHandler(completionHandler: () => void): void;
+
+	fetchChangesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+
+	fetchChangesWithOptionsCompletionHandler(options: CKSyncEngineFetchChangesOptions, completionHandler: (p1: NSError) => void): void;
+
+	initWithConfiguration(configuration: CKSyncEngineConfiguration): this;
+
+	sendChangesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+
+	sendChangesWithOptionsCompletionHandler(options: CKSyncEngineSendChangesOptions, completionHandler: (p1: NSError) => void): void;
+}
+
+declare class CKSyncEngineAccountChangeEvent extends CKSyncEngineEvent {
+
+	static alloc(): CKSyncEngineAccountChangeEvent; // inherited from NSObject
+
+	static new(): CKSyncEngineAccountChangeEvent; // inherited from NSObject
+
+	readonly changeType: CKSyncEngineAccountChangeType;
+
+	readonly currentUser: CKRecordID;
+
+	readonly previousUser: CKRecordID;
+}
+
+declare const enum CKSyncEngineAccountChangeType {
+
+	SignIn = 0,
+
+	SignOut = 1,
+
+	SwitchAccounts = 2
+}
+
+declare class CKSyncEngineConfiguration extends NSObject {
+
+	static alloc(): CKSyncEngineConfiguration; // inherited from NSObject
+
+	static new(): CKSyncEngineConfiguration; // inherited from NSObject
+
+	automaticallySync: boolean;
+
+	database: CKDatabase;
+
+	delegate: CKSyncEngineDelegate;
+
+	stateSerialization: CKSyncEngineStateSerialization;
+
+	subscriptionID: string;
+
+	constructor(o: { database: CKDatabase; stateSerialization: CKSyncEngineStateSerialization; delegate: CKSyncEngineDelegate; });
+
+	initWithDatabaseStateSerializationDelegate(database: CKDatabase, stateSerialization: CKSyncEngineStateSerialization, delegate: CKSyncEngineDelegate): this;
+}
+
+interface CKSyncEngineDelegate extends NSObjectProtocol {
+
+	syncEngineHandleEvent(syncEngine: CKSyncEngine, event: CKSyncEngineEvent): void;
+
+	syncEngineNextFetchChangesOptionsForContext?(syncEngine: CKSyncEngine, context: CKSyncEngineFetchChangesContext): CKSyncEngineFetchChangesOptions;
+
+	syncEngineNextRecordZoneChangeBatchForContext(syncEngine: CKSyncEngine, context: CKSyncEngineSendChangesContext): CKSyncEngineRecordZoneChangeBatch;
+}
+declare var CKSyncEngineDelegate: {
+
+	prototype: CKSyncEngineDelegate;
+};
+
+declare class CKSyncEngineDidFetchChangesEvent extends CKSyncEngineEvent {
+
+	static alloc(): CKSyncEngineDidFetchChangesEvent; // inherited from NSObject
+
+	static new(): CKSyncEngineDidFetchChangesEvent; // inherited from NSObject
+}
+
+declare class CKSyncEngineDidFetchRecordZoneChangesEvent extends CKSyncEngineEvent {
+
+	static alloc(): CKSyncEngineDidFetchRecordZoneChangesEvent; // inherited from NSObject
+
+	static new(): CKSyncEngineDidFetchRecordZoneChangesEvent; // inherited from NSObject
+
+	readonly error: NSError;
+
+	readonly zoneID: CKRecordZoneID;
+}
+
+declare class CKSyncEngineDidSendChangesEvent extends CKSyncEngineEvent {
+
+	static alloc(): CKSyncEngineDidSendChangesEvent; // inherited from NSObject
+
+	static new(): CKSyncEngineDidSendChangesEvent; // inherited from NSObject
+
+	readonly context: CKSyncEngineSendChangesContext;
+}
+
+declare class CKSyncEngineEvent extends NSObject {
+
+	static alloc(): CKSyncEngineEvent; // inherited from NSObject
+
+	static new(): CKSyncEngineEvent; // inherited from NSObject
+
+	readonly accountChangeEvent: CKSyncEngineAccountChangeEvent;
+
+	readonly didFetchChangesEvent: CKSyncEngineDidFetchChangesEvent;
+
+	readonly didFetchRecordZoneChangesEvent: CKSyncEngineDidFetchRecordZoneChangesEvent;
+
+	readonly didSendChangesEvent: CKSyncEngineDidSendChangesEvent;
+
+	readonly fetchedDatabaseChangesEvent: CKSyncEngineFetchedDatabaseChangesEvent;
+
+	readonly fetchedRecordZoneChangesEvent: CKSyncEngineFetchedRecordZoneChangesEvent;
+
+	readonly sentDatabaseChangesEvent: CKSyncEngineSentDatabaseChangesEvent;
+
+	readonly sentRecordZoneChangesEvent: CKSyncEngineSentRecordZoneChangesEvent;
+
+	readonly stateUpdateEvent: CKSyncEngineStateUpdateEvent;
+
+	readonly type: CKSyncEngineEventType;
+
+	readonly willFetchChangesEvent: CKSyncEngineWillFetchChangesEvent;
+
+	readonly willFetchRecordZoneChangesEvent: CKSyncEngineWillFetchRecordZoneChangesEvent;
+
+	readonly willSendChangesEvent: CKSyncEngineWillSendChangesEvent;
+}
+
+declare const enum CKSyncEngineEventType {
+
+	StateUpdate = 0,
+
+	AccountChange = 1,
+
+	FetchedDatabaseChanges = 2,
+
+	FetchedRecordZoneChanges = 3,
+
+	SentDatabaseChanges = 4,
+
+	SentRecordZoneChanges = 5,
+
+	WillFetchChanges = 6,
+
+	WillFetchRecordZoneChanges = 7,
+
+	DidFetchRecordZoneChanges = 8,
+
+	DidFetchChanges = 9,
+
+	WillSendChanges = 10,
+
+	DidSendChanges = 11
+}
+
+declare class CKSyncEngineFailedRecordSave extends NSObject {
+
+	static alloc(): CKSyncEngineFailedRecordSave; // inherited from NSObject
+
+	static new(): CKSyncEngineFailedRecordSave; // inherited from NSObject
+
+	readonly error: NSError;
+
+	readonly record: CKRecord;
+}
+
+declare class CKSyncEngineFailedZoneSave extends NSObject {
+
+	static alloc(): CKSyncEngineFailedZoneSave; // inherited from NSObject
+
+	static new(): CKSyncEngineFailedZoneSave; // inherited from NSObject
+
+	readonly error: NSError;
+
+	readonly recordZone: CKRecordZone;
+}
+
+declare class CKSyncEngineFetchChangesContext extends NSObject {
+
+	static alloc(): CKSyncEngineFetchChangesContext; // inherited from NSObject
+
+	static new(): CKSyncEngineFetchChangesContext; // inherited from NSObject
+
+	readonly options: CKSyncEngineFetchChangesOptions;
+
+	readonly reason: CKSyncEngineSyncReason;
+}
+
+declare class CKSyncEngineFetchChangesOptions extends NSObject implements NSCopying {
+
+	static alloc(): CKSyncEngineFetchChangesOptions; // inherited from NSObject
+
+	static new(): CKSyncEngineFetchChangesOptions; // inherited from NSObject
+
+	operationGroup: CKOperationGroup;
+
+	prioritizedZoneIDs: NSArray<CKRecordZoneID>;
+
+	scope: CKSyncEngineFetchChangesScope;
+
+	constructor(o: { scope: CKSyncEngineFetchChangesScope; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithScope(scope: CKSyncEngineFetchChangesScope): this;
+}
+
+declare class CKSyncEngineFetchChangesScope extends NSObject implements NSCopying {
+
+	static alloc(): CKSyncEngineFetchChangesScope; // inherited from NSObject
+
+	static new(): CKSyncEngineFetchChangesScope; // inherited from NSObject
+
+	readonly excludedZoneIDs: NSSet<CKRecordZoneID>;
+
+	readonly zoneIDs: NSSet<CKRecordZoneID>;
+
+	constructor(o: { excludedZoneIDs: NSSet<CKRecordZoneID>; });
+
+	constructor(o: { zoneIDs: NSSet<CKRecordZoneID>; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithExcludedZoneIDs(zoneIDs: NSSet<CKRecordZoneID>): this;
+
+	initWithZoneIDs(zoneIDs: NSSet<CKRecordZoneID>): this;
+}
+
+declare class CKSyncEngineFetchedDatabaseChangesEvent extends CKSyncEngineEvent {
+
+	static alloc(): CKSyncEngineFetchedDatabaseChangesEvent; // inherited from NSObject
+
+	static new(): CKSyncEngineFetchedDatabaseChangesEvent; // inherited from NSObject
+
+	readonly deletions: NSArray<CKSyncEngineFetchedZoneDeletion>;
+
+	readonly modifications: NSArray<CKRecordZone>;
+}
+
+declare class CKSyncEngineFetchedRecordDeletion extends NSObject {
+
+	static alloc(): CKSyncEngineFetchedRecordDeletion; // inherited from NSObject
+
+	static new(): CKSyncEngineFetchedRecordDeletion; // inherited from NSObject
+
+	readonly recordID: CKRecordID;
+
+	readonly recordType: string;
+}
+
+declare class CKSyncEngineFetchedRecordZoneChangesEvent extends CKSyncEngineEvent {
+
+	static alloc(): CKSyncEngineFetchedRecordZoneChangesEvent; // inherited from NSObject
+
+	static new(): CKSyncEngineFetchedRecordZoneChangesEvent; // inherited from NSObject
+
+	readonly deletions: NSArray<CKSyncEngineFetchedRecordDeletion>;
+
+	readonly modifications: NSArray<CKRecord>;
+}
+
+declare class CKSyncEngineFetchedZoneDeletion extends NSObject {
+
+	static alloc(): CKSyncEngineFetchedZoneDeletion; // inherited from NSObject
+
+	static new(): CKSyncEngineFetchedZoneDeletion; // inherited from NSObject
+
+	readonly reason: CKSyncEngineZoneDeletionReason;
+
+	readonly zoneID: CKRecordZoneID;
+}
+
+declare class CKSyncEnginePendingDatabaseChange extends NSObject {
+
+	static alloc(): CKSyncEnginePendingDatabaseChange; // inherited from NSObject
+
+	static new(): CKSyncEnginePendingDatabaseChange; // inherited from NSObject
+
+	readonly type: CKSyncEnginePendingDatabaseChangeType;
+
+	readonly zoneID: CKRecordZoneID;
+}
+
+declare const enum CKSyncEnginePendingDatabaseChangeType {
+
+	SaveZone = 0,
+
+	DeleteZone = 1
+}
+
+declare class CKSyncEnginePendingRecordZoneChange extends NSObject {
+
+	static alloc(): CKSyncEnginePendingRecordZoneChange; // inherited from NSObject
+
+	static new(): CKSyncEnginePendingRecordZoneChange; // inherited from NSObject
+
+	readonly recordID: CKRecordID;
+
+	readonly type: CKSyncEnginePendingRecordZoneChangeType;
+
+	constructor(o: { recordID: CKRecordID; type: CKSyncEnginePendingRecordZoneChangeType; });
+
+	initWithRecordIDType(recordID: CKRecordID, type: CKSyncEnginePendingRecordZoneChangeType): this;
+}
+
+declare const enum CKSyncEnginePendingRecordZoneChangeType {
+
+	SaveRecord = 0,
+
+	DeleteRecord = 1
+}
+
+declare class CKSyncEnginePendingZoneDelete extends CKSyncEnginePendingDatabaseChange {
+
+	static alloc(): CKSyncEnginePendingZoneDelete; // inherited from NSObject
+
+	static new(): CKSyncEnginePendingZoneDelete; // inherited from NSObject
+
+	constructor(o: { zoneID: CKRecordZoneID; });
+
+	initWithZoneID(zoneID: CKRecordZoneID): this;
+}
+
+declare class CKSyncEnginePendingZoneSave extends CKSyncEnginePendingDatabaseChange {
+
+	static alloc(): CKSyncEnginePendingZoneSave; // inherited from NSObject
+
+	static new(): CKSyncEnginePendingZoneSave; // inherited from NSObject
+
+	readonly 
+
+	constructor(o: { zone: CKRecordZone; });
+
+	initWithZone(zone: CKRecordZone): this;
+}
+
+declare class CKSyncEngineRecordZoneChangeBatch extends NSObject {
+
+	static alloc(): CKSyncEngineRecordZoneChangeBatch; // inherited from NSObject
+
+	static new(): CKSyncEngineRecordZoneChangeBatch; // inherited from NSObject
+
+	atomicByZone: boolean;
+
+	readonly recordIDsToDelete: NSArray<CKRecordID>;
+
+	readonly recordsToSave: NSArray<CKRecord>;
+
+	constructor(o: { pendingChanges: NSArray<CKSyncEnginePendingRecordZoneChange> | CKSyncEnginePendingRecordZoneChange[]; recordProvider: (p1: CKRecordID) => CKRecord; });
+
+	constructor(o: { recordsToSave: NSArray<CKRecord> | CKRecord[]; recordIDsToDelete: NSArray<CKRecordID> | CKRecordID[]; atomicByZone: boolean; });
+
+	initWithPendingChangesRecordProvider(pendingChanges: NSArray<CKSyncEnginePendingRecordZoneChange> | CKSyncEnginePendingRecordZoneChange[], recordProvider: (p1: CKRecordID) => CKRecord): this;
+
+	initWithRecordsToSaveRecordIDsToDeleteAtomicByZone(recordsToSave: NSArray<CKRecord> | CKRecord[], recordIDsToDelete: NSArray<CKRecordID> | CKRecordID[], atomicByZone: boolean): this;
+}
+
+declare class CKSyncEngineSendChangesContext extends NSObject {
+
+	static alloc(): CKSyncEngineSendChangesContext; // inherited from NSObject
+
+	static new(): CKSyncEngineSendChangesContext; // inherited from NSObject
+
+	readonly options: CKSyncEngineSendChangesOptions;
+
+	readonly reason: CKSyncEngineSyncReason;
+}
+
+declare class CKSyncEngineSendChangesOptions extends NSObject implements NSCopying {
+
+	static alloc(): CKSyncEngineSendChangesOptions; // inherited from NSObject
+
+	static new(): CKSyncEngineSendChangesOptions; // inherited from NSObject
+
+	operationGroup: CKOperationGroup;
+
+	scope: CKSyncEngineSendChangesScope;
+
+	constructor(o: { scope: CKSyncEngineSendChangesScope; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithScope(scope: CKSyncEngineSendChangesScope): this;
+}
+
+declare class CKSyncEngineSendChangesScope extends NSObject implements NSCopying {
+
+	static alloc(): CKSyncEngineSendChangesScope; // inherited from NSObject
+
+	static new(): CKSyncEngineSendChangesScope; // inherited from NSObject
+
+	readonly excludedZoneIDs: NSSet<CKRecordZoneID>;
+
+	readonly recordIDs: NSSet<CKRecordID>;
+
+	readonly zoneIDs: NSSet<CKRecordZoneID>;
+
+	constructor(o: { excludedZoneIDs: NSSet<CKRecordZoneID>; });
+
+	constructor(o: { recordIDs: NSSet<CKRecordID>; });
+
+	constructor(o: { zoneIDs: NSSet<CKRecordZoneID>; });
+
+	containsPendingRecordZoneChange(pendingRecordZoneChange: CKSyncEnginePendingRecordZoneChange): boolean;
+
+	containsRecordID(recordID: CKRecordID): boolean;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithExcludedZoneIDs(excludedZoneIDs: NSSet<CKRecordZoneID>): this;
+
+	initWithRecordIDs(recordIDs: NSSet<CKRecordID>): this;
+
+	initWithZoneIDs(zoneIDs: NSSet<CKRecordZoneID>): this;
+}
+
+declare class CKSyncEngineSentDatabaseChangesEvent extends CKSyncEngineEvent {
+
+	static alloc(): CKSyncEngineSentDatabaseChangesEvent; // inherited from NSObject
+
+	static new(): CKSyncEngineSentDatabaseChangesEvent; // inherited from NSObject
+
+	readonly deletedZoneIDs: NSArray<CKRecordZoneID>;
+
+	readonly failedZoneDeletes: NSDictionary<CKRecordZoneID, NSError>;
+
+	readonly failedZoneSaves: NSArray<CKSyncEngineFailedZoneSave>;
+
+	readonly savedZones: NSArray<CKRecordZone>;
+}
+
+declare class CKSyncEngineSentRecordZoneChangesEvent extends CKSyncEngineEvent {
+
+	static alloc(): CKSyncEngineSentRecordZoneChangesEvent; // inherited from NSObject
+
+	static new(): CKSyncEngineSentRecordZoneChangesEvent; // inherited from NSObject
+
+	readonly deletedRecordIDs: NSArray<CKRecordID>;
+
+	readonly failedRecordDeletes: NSDictionary<CKRecordID, NSError>;
+
+	readonly failedRecordSaves: NSArray<CKSyncEngineFailedRecordSave>;
+
+	readonly savedRecords: NSArray<CKRecord>;
+}
+
+declare class CKSyncEngineState extends NSObject {
+
+	static alloc(): CKSyncEngineState; // inherited from NSObject
+
+	static new(): CKSyncEngineState; // inherited from NSObject
+
+	hasPendingUntrackedChanges: boolean;
+
+	readonly pendingDatabaseChanges: NSArray<CKSyncEnginePendingDatabaseChange>;
+
+	readonly pendingRecordZoneChanges: NSArray<CKSyncEnginePendingRecordZoneChange>;
+
+	readonly zoneIDsWithUnfetchedServerChanges: NSArray<CKRecordZoneID>;
+
+	addPendingDatabaseChanges(changes: NSArray<CKSyncEnginePendingDatabaseChange> | CKSyncEnginePendingDatabaseChange[]): void;
+
+	addPendingRecordZoneChanges(changes: NSArray<CKSyncEnginePendingRecordZoneChange> | CKSyncEnginePendingRecordZoneChange[]): void;
+
+	removePendingDatabaseChanges(changes: NSArray<CKSyncEnginePendingDatabaseChange> | CKSyncEnginePendingDatabaseChange[]): void;
+
+	removePendingRecordZoneChanges(changes: NSArray<CKSyncEnginePendingRecordZoneChange> | CKSyncEnginePendingRecordZoneChange[]): void;
+}
+
+declare class CKSyncEngineStateSerialization extends NSObject implements NSSecureCoding {
+
+	static alloc(): CKSyncEngineStateSerialization; // inherited from NSObject
+
+	static new(): CKSyncEngineStateSerialization; // inherited from NSObject
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare class CKSyncEngineStateUpdateEvent extends CKSyncEngineEvent {
+
+	static alloc(): CKSyncEngineStateUpdateEvent; // inherited from NSObject
+
+	static new(): CKSyncEngineStateUpdateEvent; // inherited from NSObject
+
+	readonly stateSerialization: CKSyncEngineStateSerialization;
+}
+
+declare const enum CKSyncEngineSyncReason {
+
+	Scheduled = 0,
+
+	Manual = 1
+}
+
+declare class CKSyncEngineWillFetchChangesEvent extends CKSyncEngineEvent {
+
+	static alloc(): CKSyncEngineWillFetchChangesEvent; // inherited from NSObject
+
+	static new(): CKSyncEngineWillFetchChangesEvent; // inherited from NSObject
+}
+
+declare class CKSyncEngineWillFetchRecordZoneChangesEvent extends CKSyncEngineEvent {
+
+	static alloc(): CKSyncEngineWillFetchRecordZoneChangesEvent; // inherited from NSObject
+
+	static new(): CKSyncEngineWillFetchRecordZoneChangesEvent; // inherited from NSObject
+
+	readonly zoneID: CKRecordZoneID;
+}
+
+declare class CKSyncEngineWillSendChangesEvent extends CKSyncEngineEvent {
+
+	static alloc(): CKSyncEngineWillSendChangesEvent; // inherited from NSObject
+
+	static new(): CKSyncEngineWillSendChangesEvent; // inherited from NSObject
+
+	readonly context: CKSyncEngineSendChangesContext;
+}
+
+declare const enum CKSyncEngineZoneDeletionReason {
+
+	Deleted = 0,
+
+	Purged = 1,
+
+	EncryptedDataReset = 2
 }
 
 declare class CKSystemSharingUIObserver extends NSObject {

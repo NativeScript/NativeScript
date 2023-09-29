@@ -7,10 +7,10 @@ import { Page } from '../page';
 // Types.
 import { debug } from '../../utils/debug';
 import { isDefined } from '../../utils/types';
+import { sanitizeModuleName } from '../../utils/common';
 import { setPropertyValue, getComponentModule } from './component-builder';
 import type { ComponentModule } from './component-builder';
 import { platformNames } from '../../platform';
-import { sanitizeModuleName } from './module-name-sanitizer';
 import { resolveModuleName } from '../../module-name-resolver';
 import { xml2ui } from './xml2ui';
 

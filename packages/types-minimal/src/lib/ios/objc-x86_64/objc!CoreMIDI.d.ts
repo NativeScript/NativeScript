@@ -342,6 +342,8 @@ interface MIDIEventPacket {
 }
 declare var MIDIEventPacket: interop.StructType<MIDIEventPacket>;
 
+declare function MIDIEventPacketSysexBytesForGroup(pkt: interop.Pointer | interop.Reference<MIDIEventPacket>, groupIndex: number, outData: interop.Pointer | interop.Reference<NSData>): number;
+
 declare function MIDIExternalDeviceCreate(name: string, manufacturer: string, model: string, outDevice: interop.Pointer | interop.Reference<number>): number;
 
 declare function MIDIFlushOutput(dest: number): number;
@@ -656,6 +658,10 @@ declare function MIDISendEventList(port: number, dest: number, evtlist: interop.
 
 declare function MIDISendSysex(request: interop.Pointer | interop.Reference<MIDISysexSendRequest>): number;
 
+declare function MIDISendUMPSysex(umpRequest: interop.Pointer | interop.Reference<MIDISysexSendRequestUMP>): number;
+
+declare function MIDISendUMPSysex8(umpRequest: interop.Pointer | interop.Reference<MIDISysexSendRequestUMP>): number;
+
 declare function MIDISetupAddDevice(device: number): number;
 
 declare function MIDISetupAddExternalDevice(device: number): number;
@@ -693,6 +699,16 @@ interface MIDISysexSendRequest {
 	completionRefCon: interop.Pointer | interop.Reference<any>;
 }
 declare var MIDISysexSendRequest: interop.StructType<MIDISysexSendRequest>;
+
+interface MIDISysexSendRequestUMP {
+	destination: number;
+	words: interop.Pointer | interop.Reference<number>;
+	wordsToSend: number;
+	complete: boolean;
+	completionProc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<MIDISysexSendRequestUMP>) => void>;
+	completionRefCon: interop.Pointer | interop.Reference<any>;
+}
+declare var MIDISysexSendRequestUMP: interop.StructType<MIDISysexSendRequestUMP>;
 
 declare const enum MIDISystemStatus {
 
@@ -935,6 +951,10 @@ declare var kMIDIPropertyTransmitsMTC: string;
 declare var kMIDIPropertyTransmitsNotes: string;
 
 declare var kMIDIPropertyTransmitsProgramChanges: string;
+
+declare var kMIDIPropertyUMPActiveGroupBitmap: string;
+
+declare var kMIDIPropertyUMPCanTransmitGroupless: string;
 
 declare var kMIDIPropertyUniqueID: string;
 

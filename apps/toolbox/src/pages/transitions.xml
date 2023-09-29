@@ -1,0 +1,13 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+  <Page.actionBar>
+    <ActionBar title="Transitions" icon="" class="action-bar">
+    </ActionBar>
+  </Page.actionBar>
+
+  <GridLayout rows="*,auto,*" class="p-20">
+    <StackLayout row="1">
+      <Button text="Open Testing Examples" class="btn btn-primary btn-view-demo" tap="{{open}}" type="1" />
+      <Button text="Open Page and Modal Example" class="btn btn-primary btn-view-demo" tap="{{open}}" type="2" />
+    </StackLayout>
+  </GridLayout>
+</Page>

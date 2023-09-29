@@ -52,6 +52,8 @@ declare class JSContext extends NSObject {
 
 	readonly globalObject: JSValue;
 
+	inspectable: boolean;
+
 	name: string;
 
 	readonly virtualMachine: JSVirtualMachine;
@@ -98,9 +100,13 @@ declare function JSGlobalContextCreate(globalObjectClass: interop.Pointer | inte
 
 declare function JSGlobalContextCreateInGroup(group: interop.Pointer | interop.Reference<any>, globalObjectClass: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
+declare function JSGlobalContextIsInspectable(ctx: interop.Pointer | interop.Reference<any>): boolean;
+
 declare function JSGlobalContextRelease(ctx: interop.Pointer | interop.Reference<any>): void;
 
 declare function JSGlobalContextRetain(ctx: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+
+declare function JSGlobalContextSetInspectable(ctx: interop.Pointer | interop.Reference<any>, inspectable: boolean): void;
 
 declare function JSGlobalContextSetName(ctx: interop.Pointer | interop.Reference<any>, name: interop.Pointer | interop.Reference<any>): void;
 
@@ -381,11 +387,11 @@ declare class JSValue extends NSObject {
 
 	constructWithArguments(_arguments: NSArray<any> | any[]): JSValue;
 
-	definePropertyDescriptor(property: any, descriptor: any): void;
+	definePropertyDescriptor(property: string, descriptor: any): void;
 
-	deleteProperty(property: any): boolean;
+	deleteProperty(property: string): boolean;
 
-	hasProperty(property: any): boolean;
+	hasProperty(property: string): boolean;
 
 	invokeMethodWithArguments(method: string, _arguments: NSArray<any> | any[]): JSValue;
 
@@ -405,7 +411,7 @@ declare class JSValue extends NSObject {
 
 	setValueAtIndex(value: any, index: number): void;
 
-	setValueForProperty(value: any, property: any): void;
+	setValueForProperty(value: any, property: string): void;
 
 	toArray(): NSArray<any>;
 
@@ -439,7 +445,7 @@ declare class JSValue extends NSObject {
 
 	valueAtIndex(index: number): JSValue;
 
-	valueForProperty(property: any): JSValue;
+	valueForProperty(property: string): JSValue;
 }
 
 declare function JSValueCreateJSONString(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>, indent: number, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;

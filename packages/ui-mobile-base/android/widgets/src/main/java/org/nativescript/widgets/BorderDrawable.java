@@ -17,6 +17,7 @@ import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 
 import androidx.annotation.NonNull;
 
@@ -276,6 +277,44 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 		}
 	}
 
+
+	RectF backgroundBoundsF = new RectF();
+	Path backgroundPath = new Path();
+	RectF backgroundRect = new RectF();
+	Paint backgroundColorPaint = new Paint();
+	Path backgroundNoRepeatPath = new Path();
+	Paint backgroundImagePaint = new Paint();
+	Paint backgroundGradientPaint = new Paint();
+	Paint borderPaint = new Paint();
+	Path borderPath = new Path();
+	RectF borderOuterRect = new RectF();
+	RectF borderInnerRect = new RectF();
+
+	PointF lto = new PointF(); // left-top-outside
+	PointF lti = new PointF(); // left-top-inside
+
+	PointF rto = new PointF(); // right-top-outside
+	PointF rti = new PointF(); // right-top-outside
+
+	PointF rbo = new PointF(); // right-bottom-outside
+	PointF rbi = new PointF(); // right-bottom-inside
+
+	PointF lbo = new PointF(); // left-bottom-outside
+	PointF lbi = new PointF(); // left-bottom-inside
+
+
+	Paint topBorderPaint = new Paint();
+	Path topBorderPath = new Path();
+
+	Paint rightBorderPaint = new Paint();
+	Path rightBorderPath = new Path();
+
+	Paint bottomBorderPaint = new Paint();
+	Path bottomBorderPath = new Path();
+
+	Paint leftBorderPaint = new Paint();
+	Path leftBorderPath = new Path();
+
 	@Override
 	public void draw(Canvas canvas) {
 		Rect bounds = this.getBounds();
@@ -287,7 +326,7 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 			return;
 		}
 
-		RectF backgroundBoundsF = new RectF(bounds.left, bounds.top, bounds.right, bounds.bottom);
+		backgroundBoundsF.set(bounds.left, bounds.top, bounds.right, bounds.bottom);
 
 		float topBackoffAntialias = calculateBackoffAntialias(this.borderTopColor, this.borderTopWidth);
 		float rightBackoffAntialias = calculateBackoffAntialias(this.borderRightColor, this.borderRightWidth);
@@ -301,18 +340,18 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 			Math.max(0, borderBottomLeftRadius + leftBackoffAntialias), Math.max(0, borderBottomLeftRadius + bottomBackoffAntialias)
 		};
 
-		Path backgroundPath = new Path();
-		RectF backgroundRect = new RectF(
-			leftBackoffAntialias,
+		backgroundPath.reset();
+
+		backgroundRect.set(leftBackoffAntialias,
 			topBackoffAntialias,
 			width - rightBackoffAntialias,
-			height - bottomBackoffAntialias
-		);
+			height - bottomBackoffAntialias);
+
 		backgroundPath.addRoundRect(backgroundRect, backgroundRadii, Path.Direction.CW);
 
 		// draw background
 		if (this.backgroundColor != 0) {
-			Paint backgroundColorPaint = new Paint();
+			backgroundColorPaint.reset();
 			backgroundColorPaint.setStyle(Paint.Style.FILL);
 			backgroundColorPaint.setColor(this.backgroundColor);
 			backgroundColorPaint.setAntiAlias(true);
@@ -337,7 +376,9 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 			}
 			transform.postTranslate(params.posX, params.posY);
 
-			Paint backgroundImagePaint = new Paint();
+
+			backgroundImagePaint.reset();
+
 			BitmapShader shader = new BitmapShader(
 				this.backgroundBitmap,
 				params.repeatX ? Shader.TileMode.REPEAT : Shader.TileMode.CLAMP,
@@ -358,7 +399,7 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 			} else {
 				boolean supportsPathOp = android.os.Build.VERSION.SDK_INT >= 19;
 				if (supportsPathOp) {
-					Path backgroundNoRepeatPath = new Path();
+					backgroundNoRepeatPath.reset();
 					backgroundNoRepeatPath.addRect(params.posX, params.posY, params.posX + imageWidth, params.posY + imageHeight, Path.Direction.CCW);
 					intersect(backgroundNoRepeatPath, backgroundPath);
 					canvas.drawPath(backgroundNoRepeatPath, backgroundImagePaint);
@@ -374,7 +415,9 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 
 		if (this.backgroundGradient != null) {
 			LinearGradientDefinition def = this.backgroundGradient;
-			Paint backgroundGradientPaint = new Paint();
+
+			backgroundGradientPaint.reset();
+
 			LinearGradient shader = new LinearGradient(
 				def.getStartX() * width, def.getStartY() * height,
 				def.getEndX() * width, def.getEndY() * height,
@@ -394,7 +437,7 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 		if (this.clipPath != null && !this.clipPath.isEmpty()) {
 			float borderWidth = this.getUniformBorderWidth();
 			if (borderWidth > 0) {
-				Paint borderPaint = new Paint();
+				borderPaint.reset();
 				borderPaint.setColor(this.getUniformBorderColor());
 				borderPaint.setStyle(Paint.Style.STROKE);
 				borderPaint.setStrokeWidth(borderWidth);
@@ -405,13 +448,15 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 		} else if (this.hasUniformBorderColor()) {
 			// iOS and browsers use black when no color is specified.
 			if (borderLeftWidth > 0 || borderTopWidth > 0 || borderRightWidth > 0 || borderBottomWidth > 0) {
-				Paint borderPaint = new Paint();
+				borderPaint.reset();
 				borderPaint.setColor(this.getUniformBorderColor());
 				borderPaint.setStyle(Paint.Style.FILL);
 				borderPaint.setAntiAlias(true);
-				Path borderPath = new Path();
 
-				RectF borderOuterRect = new RectF(0, 0, width, height);
+				borderPath.reset();
+
+				borderOuterRect.set(0, 0, width, height);
+
 				float[] borderOuterRadii = {
 					borderTopLeftRadius, borderTopLeftRadius,
 					borderTopRightRadius, borderTopRightRadius,
@@ -420,7 +465,7 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 				};
 				borderPath.addRoundRect(borderOuterRect, borderOuterRadii, Path.Direction.CW);
 
-				RectF borderInnerRect = new RectF(
+				borderInnerRect.set(
 					borderLeftWidth,
 					borderTopWidth,
 					width - borderRightWidth,
@@ -453,23 +498,25 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 			//   +---------------------+
 			//lbo                       rbo
 
-			PointF lto = new PointF(0, 0); // left-top-outside
-			PointF lti = new PointF(left, top); // left-top-inside
+			lto.set(0, 0); // left-top-outside
+			lti.set(left, top); // left-top-inside
 
-			PointF rto = new PointF(bounds.right, 0); // right-top-outside
-			PointF rti = new PointF(bounds.right - right, top); // right-top-outside
+			rto.set(bounds.right, 0); // right-top-outside
+			rti.set(bounds.right - right, top); // right-top-outside
 
-			PointF rbo = new PointF(bounds.right, bounds.bottom); // right-bottom-outside
-			PointF rbi = new PointF(bounds.right - right, bounds.bottom - bottom); // right-bottom-inside
+			rbo.set(bounds.right, bounds.bottom); // right-bottom-outside
+			rbi.set(bounds.right - right, bounds.bottom - bottom); // right-bottom-inside
 
-			PointF lbo = new PointF(0, bounds.bottom); // left-bottom-outside
-			PointF lbi = new PointF(left, bounds.bottom - bottom); // left-bottom-inside
+			lbo.set(0, bounds.bottom); // left-bottom-outside
+			lbi.set(left, bounds.bottom - bottom); // left-bottom-inside
+
 
 			if (this.borderTopWidth > 0) {
-				Paint topBorderPaint = new Paint();
+				topBorderPaint.reset();
 				topBorderPaint.setColor(this.borderTopColor);
 				topBorderPaint.setAntiAlias(true);
-				Path topBorderPath = new Path();
+
+				topBorderPath.reset();
 				topBorderPath.setFillType(Path.FillType.EVEN_ODD);
 				topBorderPath.moveTo(lto.x, lto.y);
 				topBorderPath.lineTo(rto.x, rto.y);
@@ -480,10 +527,12 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 			}
 
 			if (this.borderRightWidth > 0) {
-				Paint rightBorderPaint = new Paint();
+
+				rightBorderPaint.reset();
 				rightBorderPaint.setColor(this.borderRightColor);
 				rightBorderPaint.setAntiAlias(true);
-				Path rightBorderPath = new Path();
+
+				rightBorderPath.reset();
 				rightBorderPath.setFillType(Path.FillType.EVEN_ODD);
 				rightBorderPath.moveTo(rto.x, rto.y);
 				rightBorderPath.lineTo(rbo.x, rbo.y);
@@ -494,10 +543,12 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 			}
 
 			if (this.borderBottomWidth > 0) {
-				Paint bottomBorderPaint = new Paint();
+
+				bottomBorderPaint.reset();
 				bottomBorderPaint.setColor(this.borderBottomColor);
 				bottomBorderPaint.setAntiAlias(true);
-				Path bottomBorderPath = new Path();
+
+				bottomBorderPath.reset();
 				bottomBorderPath.setFillType(Path.FillType.EVEN_ODD);
 				bottomBorderPath.moveTo(rbo.x, rbo.y);
 				bottomBorderPath.lineTo(lbo.x, lbo.y);
@@ -508,10 +559,11 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 			}
 
 			if (this.borderLeftWidth > 0) {
-				Paint leftBorderPaint = new Paint();
+				leftBorderPaint.reset();
 				leftBorderPaint.setColor(this.borderLeftColor);
 				leftBorderPaint.setAntiAlias(true);
-				Path leftBorderPath = new Path();
+
+				leftBorderPath.reset();
 				leftBorderPath.setFillType(Path.FillType.EVEN_ODD);
 				leftBorderPath.moveTo(lbo.x, lbo.y);
 				leftBorderPath.lineTo(lto.x, lto.y);
@@ -606,7 +658,12 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 				top = cY - rY;
 				right = (rX * 2) + left;
 				bottom = (rY * 2) + top;
-				canvas.drawOval(new RectF(left, top, right, bottom), paint);
+
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+					canvas.drawOval(left, top, right, bottom, paint);
+				} else {
+					canvas.drawOval(new RectF(left, top, right, bottom), paint);
+				}
 				break;
 			case "polygon":
 				Path path = new Path();
@@ -832,18 +889,36 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 		return drawable;
 	}
 
+
+	private final Path outlineBackgroundPath = new Path();
+	private final RectF outlineRectF = new RectF();
+
 	@Override
 	public void getOutline(@NonNull Outline outline) {
 		if (android.os.Build.VERSION.SDK_INT >= 21) {
-			Path backgroundPath = new Path();
-			float[] backgroundRadii = {
-				Math.max(0, borderTopLeftRadius), Math.max(0, borderTopLeftRadius),
-				Math.max(0, borderTopRightRadius), Math.max(0, borderTopRightRadius),
-				Math.max(0, borderBottomRightRadius), Math.max(0, borderBottomRightRadius),
-				Math.max(0, borderBottomLeftRadius), Math.max(0, borderBottomLeftRadius)
-			};
-			backgroundPath.addRoundRect(new RectF(getBounds()), backgroundRadii, Path.Direction.CW);
-			outline.setConvexPath(backgroundPath);
+			outlineRectF.setEmpty();
+			outlineRectF.set(getBounds());
+			if (hasUniformBorderRadius()) {
+				outline.setRoundRect(getBounds(), borderTopLeftRadius);
+			} else {
+				// cliping with path is only support on API >= 33
+				// before it only works for rectangle, circle, or round rect
+				outlineBackgroundPath.reset();
+				float[] backgroundRadii = {
+					Math.max(0, borderTopLeftRadius), Math.max(0, borderTopLeftRadius),
+					Math.max(0, borderTopRightRadius), Math.max(0, borderTopRightRadius),
+					Math.max(0, borderBottomRightRadius), Math.max(0, borderBottomRightRadius),
+					Math.max(0, borderBottomLeftRadius), Math.max(0, borderBottomLeftRadius)
+				};
+				outlineBackgroundPath.addRoundRect(outlineRectF, backgroundRadii, Path.Direction.CW);
+
+				if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+					// see setConvexPath notes
+					outline.setPath(outlineBackgroundPath);
+				} else {
+					outline.setConvexPath(outlineBackgroundPath);
+				}
+			}
 		} else {
 			throw new IllegalStateException("Method supported on API 21 or higher");
 		}

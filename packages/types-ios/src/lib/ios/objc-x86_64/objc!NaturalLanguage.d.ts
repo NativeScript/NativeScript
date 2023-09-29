@@ -1,4 +1,73 @@
 
+declare class NLContextualEmbedding extends NSObject {
+
+	static alloc(): NLContextualEmbedding; // inherited from NSObject
+
+	static contextualEmbeddingWithLanguage(language: string): NLContextualEmbedding;
+
+	static contextualEmbeddingWithModelIdentifier(modelIdentifier: string): NLContextualEmbedding;
+
+	static contextualEmbeddingWithScript(script: string): NLContextualEmbedding;
+
+	static contextualEmbeddingsForValues(valuesDictionary: NSDictionary<string, any>): NSArray<NLContextualEmbedding>;
+
+	static new(): NLContextualEmbedding; // inherited from NSObject
+
+	readonly dimension: number;
+
+	readonly hasAvailableAssets: boolean;
+
+	readonly languages: NSArray<string>;
+
+	readonly maximumSequenceLength: number;
+
+	readonly modelIdentifier: string;
+
+	readonly revision: number;
+
+	readonly scripts: NSArray<string>;
+
+	embeddingResultForStringLanguageError(string: string, language: string): NLContextualEmbeddingResult;
+
+	loadWithError(): boolean;
+
+	requestEmbeddingAssetsWithCompletionHandler(completionHandler: (p1: NLContextualEmbeddingAssetsResult, p2: NSError) => void): void;
+
+	unload(): void;
+}
+
+declare const enum NLContextualEmbeddingAssetsResult {
+
+	Available = 0,
+
+	NotAvailable = 1,
+
+	Error = 2
+}
+
+declare var NLContextualEmbeddingKeyLanguages: string;
+
+declare var NLContextualEmbeddingKeyRevision: string;
+
+declare var NLContextualEmbeddingKeyScripts: string;
+
+declare class NLContextualEmbeddingResult extends NSObject {
+
+	static alloc(): NLContextualEmbeddingResult; // inherited from NSObject
+
+	static new(): NLContextualEmbeddingResult; // inherited from NSObject
+
+	readonly language: string;
+
+	readonly sequenceLength: number;
+
+	readonly string: string;
+
+	enumerateTokenVectorsInRangeUsingBlock(range: NSRange, block: (p1: NSArray<number>, p2: NSRange, p3: interop.Pointer | interop.Reference<boolean>) => void): void;
+
+	tokenVectorAtIndexTokenRange(characterIndex: number, tokenRange: interop.Pointer | interop.Reference<NSRange>): NSArray<number>;
+}
+
 declare const enum NLDistanceType {
 
 	Cosine = 0
@@ -283,6 +352,68 @@ declare const enum NLModelType {
 
 	Sequence = 1
 }
+
+declare var NLScriptArabic: string;
+
+declare var NLScriptArmenian: string;
+
+declare var NLScriptBengali: string;
+
+declare var NLScriptCanadianAboriginalSyllabics: string;
+
+declare var NLScriptCherokee: string;
+
+declare var NLScriptCyrillic: string;
+
+declare var NLScriptDevanagari: string;
+
+declare var NLScriptEthiopic: string;
+
+declare var NLScriptGeorgian: string;
+
+declare var NLScriptGreek: string;
+
+declare var NLScriptGujarati: string;
+
+declare var NLScriptGurmukhi: string;
+
+declare var NLScriptHebrew: string;
+
+declare var NLScriptJapanese: string;
+
+declare var NLScriptKannada: string;
+
+declare var NLScriptKhmer: string;
+
+declare var NLScriptKorean: string;
+
+declare var NLScriptLao: string;
+
+declare var NLScriptLatin: string;
+
+declare var NLScriptMalayalam: string;
+
+declare var NLScriptMongolian: string;
+
+declare var NLScriptMyanmar: string;
+
+declare var NLScriptOriya: string;
+
+declare var NLScriptSimplifiedChinese: string;
+
+declare var NLScriptSinhala: string;
+
+declare var NLScriptTamil: string;
+
+declare var NLScriptTelugu: string;
+
+declare var NLScriptThai: string;
+
+declare var NLScriptTibetan: string;
+
+declare var NLScriptTraditionalChinese: string;
+
+declare var NLScriptUndetermined: string;
 
 declare var NLTagAdjective: string;
 

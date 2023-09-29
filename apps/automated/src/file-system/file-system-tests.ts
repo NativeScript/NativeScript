@@ -4,8 +4,7 @@ import * as fs from '@nativescript/core/file-system';
 // << file-system-require
 
 import * as TKUnit from '../tk-unit';
-import * as appModule from '@nativescript/core/application';
-import { isIOS, Device, platformNames } from '@nativescript/core';
+import { Application, isIOS, Device, platformNames, isAndroid } from '@nativescript/core';
 
 export var testPathNormalize = function () {
 	// >> file-system-normalize
@@ -600,7 +599,7 @@ export var testFolderClear = function () {
 // misc
 export var testKnownFolderRename = function () {
 	// You can rename known folders in android - so skip this test.
-	if (!appModule.android) {
+	if (!Application.android) {
 		var folder = fs.knownFolders.documents();
 		folder.rename('Something').then(
 			function (result) {
@@ -696,5 +695,85 @@ export function test_FolderClear_RemovesEmptySubfolders(done) {
 			rootFolder.remove();
 			done();
 		})
+		.catch(done);
+}
+
+export function test_FileCopy(done) {
+	const now = Date.now();
+	const tempFile = fs.File.fromPath(fs.path.join(fs.knownFolders.temp().path, `${now}.txt`));
+	const content = 'Hello World: ' + now;
+	tempFile.writeTextSync(content);
+	const tempCopy = fs.File.fromPath(fs.path.join(fs.knownFolders.temp().path, `${now}-copy.txt`));
+	tempFile
+		.copy(tempCopy.path)
+		.then(() => {
+			TKUnit.assert(tempCopy.size === tempFile.size);
+			return tempCopy.readText();
+		})
+		.then((value) => {
+			TKUnit.assert(value === content);
+
+			return Promise.allSettled([tempFile.remove(), tempCopy.remove()]);
+		})
+		.then(() => done())
+		.catch(done);
+}
+
+export function testAndroidCreate() {
+	let testFunc = function testFunc() {
+		const file = fs.File.android.createFile({
+			directory: fs.AndroidDirectory.DOWNLOADS,
+			name: `${Date.now()}.txt`,
+			mime: 'text/plain',
+			relativePath: `NativeScript`,
+		});
+
+		file.writeTextSync('some text');
+
+		return file;
+	};
+	if (isAndroid) {
+		const file = testFunc();
+		TKUnit.assertEqual(file.readTextSync(), 'some text', `The contents of the new file created in the 'AndroidDirectory.DOWNLOADS' folder are not as expected.`);
+		file.removeSync();
+		TKUnit.assertTrue(!fs.File.exists(file.path));
+	} else {
+		TKUnit.assertThrows(testFunc, `Trying to retrieve createFile on a platform different from Android should throw!`, `createFile is available on Android only!`);
+	}
+}
+
+export function test_FileAppend(done) {
+	const content = 'Hello World';
+	const hello_world = global.isIOS ? NSString.stringWithString(content).dataUsingEncoding(NSUTF8StringEncoding) : new java.lang.String(content).getBytes('UTF-8');
+	const file = fs.File.fromPath(fs.path.join(fs.knownFolders.temp().path, `${Date.now()}-app.txt`));
+	file
+		.appendText('Hello')
+		.then(() => file.appendText(' World'))
+		.then(() => {
+			TKUnit.assert(file.size === hello_world.length);
+			return file.readText();
+		})
+		.then((value) => {
+			TKUnit.assert(value === content);
+
+			return Promise.allSettled([file.remove()]);
+		})
+		.then(() => done())
+		.catch(done);
+}
+
+export function test_FileAppendText(done) {
+	const content = 'Hello World';
+	const file = fs.File.fromPath(fs.path.join(fs.knownFolders.temp().path, `${Date.now()}-app.txt`));
+	file
+		.appendText('Hello')
+		.then(() => file.appendText(' World'))
+		.then(() => file.readText())
+		.then((value) => {
+			TKUnit.assert(value === content);
+
+			return Promise.allSettled([file.remove()]);
+		})
+		.then(() => done())
 		.catch(done);
 }

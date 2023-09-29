@@ -10,7 +10,7 @@ import { FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent, Orde
 import { Trace } from '../../../trace';
 import { CoreTypes } from '../../../core-types';
 import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState } from '../../../accessibility/accessibility-types';
-import { CSSShadow } from '../css-shadow';
+import { ShadowCSSValues } from '../css-shadow';
 
 export interface CommonLayoutParams {
 	width: number;
@@ -105,7 +105,10 @@ export class Style extends Observable implements StyleDefinition {
 	}
 
 	public fontInternal: Font;
-	public _fontScale: number;
+	/**
+	 * This property ensures inheritance of a11y scale among views.
+	 */
+	public fontScaleInternal: number;
 	public backgroundInternal: Background;
 
 	public rotate: number;
@@ -146,7 +149,7 @@ export class Style extends Observable implements StyleDefinition {
 	public borderBottomRightRadius: CoreTypes.LengthType;
 	public borderBottomLeftRadius: CoreTypes.LengthType;
 
-	public boxShadow: CSSShadow;
+	public boxShadow: ShadowCSSValues;
 
 	public fontSize: number;
 	public fontFamily: string;
@@ -167,8 +170,9 @@ export class Style extends Observable implements StyleDefinition {
 	public textAlignment: CoreTypes.TextAlignmentType;
 	public textDecoration: CoreTypes.TextDecorationType;
 	public textTransform: CoreTypes.TextTransformType;
-	public textShadow: CSSShadow;
+	public textShadow: ShadowCSSValues;
 	public whiteSpace: CoreTypes.WhiteSpaceType;
+	public textOverflow: CoreTypes.TextOverflowType;
 
 	public minWidth: CoreTypes.LengthType;
 	public minHeight: CoreTypes.LengthType;
@@ -230,6 +234,9 @@ export class Style extends Observable implements StyleDefinition {
 	public accessibilityLanguage: string;
 	public accessibilityMediaSession: boolean;
 	public accessibilityStep: number;
+	public iosAccessibilityAdjustsFontSize: boolean;
+	public iosAccessibilityMinFontScale: number;
+	public iosAccessibilityMaxFontScale: number;
 
 	public PropertyBag: {
 		new (): { [property: string]: string };

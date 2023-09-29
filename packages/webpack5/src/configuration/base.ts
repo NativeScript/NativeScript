@@ -1,4 +1,4 @@
-import { extname, resolve } from 'path';
+import { extname, relative, resolve } from 'path';
 import {
 	ContextExclusionPlugin,
 	DefinePlugin,
@@ -15,7 +15,7 @@ import { PlatformSuffixPlugin } from '../plugins/PlatformSuffixPlugin';
 import { applyFileReplacements } from '../helpers/fileReplacements';
 import { addCopyRule, applyCopyRules } from '../helpers/copyRules';
 import { WatchStatePlugin } from '../plugins/WatchStatePlugin';
-import { getProjectFilePath } from '../helpers/project';
+import { getProjectFilePath, getProjectTSConfigPath } from '../helpers/project';
 import { hasDependency } from '../helpers/dependencies';
 import { applyDotEnvPlugin } from '../helpers/dotEnv';
 import { env as _env, IWebpackEnv } from '../index';
@@ -32,6 +32,7 @@ import {
 export default function (config: Config, env: IWebpackEnv = _env): Config {
 	const entryPath = getEntryPath();
 	const platform = getPlatformName();
+	const outputPath = getAbsoluteDistPath();
 	const mode = env.production ? 'production' : 'development';
 
 	// set mode
@@ -80,6 +81,15 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 	config.devtool(getSourceMapType(env.sourceMap));
 
+	// when using hidden-source-map, output source maps to the `platforms/{platformName}-sourceMaps` folder
+	if (env.sourceMap === 'hidden-source-map') {
+		const sourceMapAbsolutePath = getProjectFilePath(
+			`./platforms/${platform}-sourceMaps/[file].map[query]`
+		);
+		const sourceMapRelativePath = relative(outputPath, sourceMapAbsolutePath);
+		config.output.sourceMapFilename(sourceMapRelativePath);
+	}
+
 	// todo: figure out easiest way to make "node" target work in ns
 	// rather than the custom ns target implementation that's hard to maintain
 	// appears to be working - but we still have to deal with HMR
@@ -110,7 +120,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	});
 
 	config.output
-		.path(getAbsoluteDistPath())
+		.path(outputPath)
 		.pathinfo(false)
 		.publicPath('')
 		.libraryTarget('commonjs')
@@ -147,6 +157,9 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				},
 				keep_fnames: true,
 				keep_classnames: true,
+				format: {
+					keep_quoted_props: true,
+				},
 			},
 		},
 	]);
@@ -234,6 +247,13 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.use('nativescript-worker-loader')
 		.loader('nativescript-worker-loader');
 
+	const tsConfigPath = getProjectTSConfigPath();
+	const configFile = tsConfigPath
+		? {
+				configFile: tsConfigPath,
+		  }
+		: undefined;
+
 	// set up ts support
 	config.module
 		.rule('ts')
@@ -243,7 +263,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.options({
 			// todo: perhaps we can provide a default tsconfig
 			// and use that if the project doesn't have one?
-			// configFile: '',
+			...configFile,
 			transpileOnly: true,
 			allowTsInNodeModules: true,
 			compilerOptions: {
@@ -266,6 +286,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 					async: !!env.watch,
 					typescript: {
 						memoryLimit: 4096,
+						...configFile,
 					},
 				},
 			]);
@@ -370,7 +391,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 	config.plugin('PlatformSuffixPlugin').use(PlatformSuffixPlugin, [
 		{
-			platform,
+			extensions: platform === 'visionos' ? [platform, 'ios'] : [platform],
 		},
 	]);
 
@@ -421,8 +442,11 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			__UI_USE_EXTERNAL_RENDERER__: false,
 			__ANDROID__: platform === 'android',
 			__IOS__: platform === 'ios',
+			__VISIONOS__: platform === 'visionos',
 			/* for compat only */ 'global.isAndroid': platform === 'android',
-			/* for compat only */ 'global.isIOS': platform === 'ios',
+			/* for compat only */ 'global.isIOS':
+				platform === 'ios' || platform === 'visionos',
+			/* for compat only */ 'global.isVisionOS': platform === 'visionos',
 			process: 'global.process',
 
 			// enable testID when using --env.e2e

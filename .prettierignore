@@ -10,6 +10,7 @@ e2e
 js-libs
 platforms
 tests
+apps/**/*.xml
 packages/types-android
 packages/types-ios
 packages/types-minimal

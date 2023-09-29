@@ -55,11 +55,36 @@ declare class SRApplicationUsage extends NSObject {
 
 	readonly bundleIdentifier: string;
 
+	readonly relativeStartTime: number;
+
 	readonly reportApplicationIdentifier: string;
+
+	readonly supplementalCategories: NSArray<SRSupplementalCategory>;
 
 	readonly textInputSessions: NSArray<SRTextInputSession>;
 
 	readonly usageTime: number;
+}
+
+declare class SRAudioLevel extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): SRAudioLevel; // inherited from NSObject
+
+	static new(): SRAudioLevel; // inherited from NSObject
+
+	readonly loudness: number;
+
+	readonly timeRange: CMTimeRange;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare const enum SRAuthorizationStatus {
@@ -121,6 +146,8 @@ declare class SRDevice extends NSObject implements NSCopying, NSSecureCoding {
 	readonly model: string;
 
 	readonly name: string;
+
+	readonly productType: string;
 
 	readonly systemName: string;
 
@@ -215,6 +242,8 @@ declare class SRDeviceUsageReport extends NSObject {
 
 	readonly totalUnlocks: number;
 
+	readonly version: string;
+
 	readonly webUsageByCategory: NSDictionary<string, NSArray<SRWebUsage>>;
 }
 
@@ -232,6 +261,61 @@ declare const enum SRErrorCode {
 }
 
 declare var SRErrorDomain: string;
+
+declare class SRFaceMetrics extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): SRFaceMetrics; // inherited from NSObject
+
+	static new(): SRFaceMetrics; // inherited from NSObject
+
+	readonly context: SRFaceMetricsContext;
+
+	readonly partialFaceExpressions: NSArray<SRFaceMetricsExpression>;
+
+	readonly sessionIdentifier: string;
+
+	readonly version: string;
+
+	readonly wholeFaceExpressions: NSArray<SRFaceMetricsExpression>;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare const enum SRFaceMetricsContext {
+
+	DeviceUnlock = 1,
+
+	MessagingAppUsage = 2
+}
+
+declare class SRFaceMetricsExpression extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): SRFaceMetricsExpression; // inherited from NSObject
+
+	static new(): SRFaceMetricsExpression; // inherited from NSObject
+
+	readonly identifier: string;
+
+	readonly value: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
 
 declare class SRFetchRequest extends NSObject {
 
@@ -315,6 +399,8 @@ declare class SRKeyboardMetrics extends NSObject {
 
 	readonly longWordTouchDownUp: NSArray<SRKeyboardProbabilityMetric<NSUnitDuration>>;
 
+	readonly longWordTouchUpDown: NSArray<SRKeyboardProbabilityMetric<NSUnitDuration>>;
+
 	readonly longWordUpErrorDistance: NSArray<SRKeyboardProbabilityMetric<NSUnitLength>>;
 
 	readonly pathErrorDistanceRatio: NSArray<number>;
@@ -330,6 +416,8 @@ declare class SRKeyboardMetrics extends NSObject {
 	readonly planeChangeKeyToCharKey: SRKeyboardProbabilityMetric<NSUnitDuration>;
 
 	readonly planeChangeToAnyTap: SRKeyboardProbabilityMetric<NSUnitDuration>;
+
+	readonly sessionIdentifiers: NSArray<string>;
 
 	readonly shortWordCharKeyDownErrorDistance: SRKeyboardProbabilityMetric<NSUnitLength>;
 
@@ -407,6 +495,8 @@ declare class SRKeyboardMetrics extends NSObject {
 
 	readonly touchDownUp: SRKeyboardProbabilityMetric<NSUnitDuration>;
 
+	readonly touchUpDown: SRKeyboardProbabilityMetric<NSUnitDuration>;
+
 	readonly typingSpeed: number;
 
 	readonly upErrorDistance: SRKeyboardProbabilityMetric<NSUnitLength>;
@@ -463,6 +553,34 @@ declare const enum SRLocationCategory {
 	School = 3,
 
 	Gym = 4
+}
+
+declare class SRMediaEvent extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): SRMediaEvent; // inherited from NSObject
+
+	static new(): SRMediaEvent; // inherited from NSObject
+
+	readonly eventType: SRMediaEventType;
+
+	readonly mediaIdentifier: string;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare const enum SRMediaEventType {
+
+	OnScreen = 1,
+
+	OffScreen = 2
 }
 
 declare class SRMessagesUsageReport extends NSObject {
@@ -553,9 +671,17 @@ declare var SRSensorAmbientPressure: string;
 
 declare var SRSensorDeviceUsageReport: string;
 
+declare var SRSensorFaceMetrics: string;
+
+declare var SRSensorHeartRate: string;
+
 declare var SRSensorKeyboardMetrics: string;
 
+declare var SRSensorMediaEvents: string;
+
 declare var SRSensorMessagesUsageReport: string;
+
+declare var SRSensorOdometer: string;
 
 declare var SRSensorOnWristState: string;
 
@@ -625,6 +751,96 @@ declare var SRSensorTelephonySpeechMetrics: string;
 
 declare var SRSensorVisits: string;
 
+declare var SRSensorWristTemperature: string;
+
+declare class SRSpeechExpression extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): SRSpeechExpression; // inherited from NSObject
+
+	static new(): SRSpeechExpression; // inherited from NSObject
+
+	readonly activation: number;
+
+	readonly confidence: number;
+
+	readonly dominance: number;
+
+	readonly mood: number;
+
+	readonly timeRange: CMTimeRange;
+
+	readonly valence: number;
+
+	readonly version: string;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare class SRSpeechMetrics extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): SRSpeechMetrics; // inherited from NSObject
+
+	static new(): SRSpeechMetrics; // inherited from NSObject
+
+	readonly audioLevel: SRAudioLevel;
+
+	readonly sessionFlags: SRSpeechMetricsSessionFlags;
+
+	readonly sessionIdentifier: string;
+
+	readonly soundClassification: SNClassificationResult;
+
+	readonly speechExpression: SRSpeechExpression;
+
+	readonly speechRecognition: SFSpeechRecognitionResult;
+
+	readonly timestamp: Date;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare const enum SRSpeechMetricsSessionFlags {
+
+	Default = 0,
+
+	BypassVoiceProcessing = 1
+}
+
+declare class SRSupplementalCategory extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): SRSupplementalCategory; // inherited from NSObject
+
+	static new(): SRSupplementalCategory; // inherited from NSObject
+
+	readonly identifier: string;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
 declare class SRTextInputSession extends NSObject {
 
 	static alloc(): SRTextInputSession; // inherited from NSObject
@@ -632,6 +848,8 @@ declare class SRTextInputSession extends NSObject {
 	static new(): SRTextInputSession; // inherited from NSObject
 
 	readonly duration: number;
+
+	readonly sessionIdentifier: string;
 
 	readonly sessionType: SRTextInputSessionType;
 }
@@ -681,7 +899,11 @@ declare class SRWristDetection extends NSObject {
 
 	readonly crownOrientation: SRCrownOrientation;
 
+	readonly offWristDate: Date;
+
 	readonly onWrist: boolean;
+
+	readonly onWristDate: Date;
 
 	readonly wristLocation: SRWristLocation;
 }
@@ -691,4 +913,65 @@ declare const enum SRWristLocation {
 	Left = 0,
 
 	Right = 1
+}
+
+declare class SRWristTemperature extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): SRWristTemperature; // inherited from NSObject
+
+	static new(): SRWristTemperature; // inherited from NSObject
+
+	readonly condition: SRWristTemperatureCondition;
+
+	readonly errorEstimate: NSMeasurement<NSUnitTemperature>;
+
+	readonly timestamp: Date;
+
+	readonly value: NSMeasurement<NSUnitTemperature>;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare const enum SRWristTemperatureCondition {
+
+	None = 0,
+
+	OffWrist = 1,
+
+	OnCharger = 2,
+
+	InMotion = 4
+}
+
+declare class SRWristTemperatureSession extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): SRWristTemperatureSession; // inherited from NSObject
+
+	static new(): SRWristTemperatureSession; // inherited from NSObject
+
+	readonly duration: number;
+
+	readonly startDate: Date;
+
+	readonly temperatures: NSEnumerator<SRWristTemperature>;
+
+	readonly version: string;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 }

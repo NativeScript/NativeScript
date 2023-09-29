@@ -1,4 +1,4 @@
-import * as Application from '../application';
+import { Application } from '../application';
 import { FontScaleCategory, getClosestValidFontScale } from './font-scale-common';
 export * from './font-scale-common';
 

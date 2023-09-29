@@ -22,6 +22,84 @@ describe('base configuration', () => {
 		});
 	}
 
+	it('supports tsconfig.app.json if exists', () => {
+		const fsSpy = jest.spyOn(fs, 'existsSync');
+		fsSpy.withImplementation(
+			(path) => {
+				return path.toString().endsWith('tsconfig.app.json');
+			},
+			() => {
+				init({
+					ios: true,
+				});
+				const config = base(new Config());
+
+				expect(fsSpy).toHaveBeenCalledWith('__jest__/tsconfig.app.json');
+				expect(fsSpy).not.toHaveBeenCalledWith('__jest__/tsconfig.json');
+
+				let configFiles = [];
+
+				config.module
+					.rule('ts')
+					.use('ts-loader')
+					.tap((options) => {
+						configFiles.push(options.configFile);
+						return options;
+					});
+
+				config.plugin('ForkTsCheckerWebpackPlugin').tap((args) => {
+					configFiles.push(args.at(0).typescript.configFile);
+					return args;
+				});
+
+				expect(configFiles.length).toBe(2);
+				expect(configFiles).toEqual([
+					'__jest__/tsconfig.app.json', // ts-loader
+					'__jest__/tsconfig.app.json', // fork-ts-checker
+				]);
+			}
+		);
+	});
+
+	it('falls back to tsconfig.json if no tsconfig.app.json exists', () => {
+		const fsSpy = jest.spyOn(fs, 'existsSync');
+		fsSpy.withImplementation(
+			(path) => {
+				return path.toString().endsWith('tsconfig.json');
+			},
+			() => {
+				init({
+					ios: true,
+				});
+				const config = base(new Config());
+
+				expect(fsSpy).toHaveBeenCalledWith('__jest__/tsconfig.app.json');
+				expect(fsSpy).toHaveBeenCalledWith('__jest__/tsconfig.json');
+
+				let configFiles = [];
+
+				config.module
+					.rule('ts')
+					.use('ts-loader')
+					.tap((options) => {
+						configFiles.push(options.configFile);
+						return options;
+					});
+
+				config.plugin('ForkTsCheckerWebpackPlugin').tap((args) => {
+					configFiles.push(args.at(0).typescript.configFile);
+					return args;
+				});
+
+				expect(configFiles.length).toBe(2);
+				expect(configFiles).toEqual([
+					'__jest__/tsconfig.json', // ts-loader
+					'__jest__/tsconfig.json', // fork-ts-checker
+				]);
+			}
+		);
+	});
+
 	it('support env.watchNodeModules', () => {
 		init({
 			ios: true,
@@ -32,60 +110,73 @@ describe('base configuration', () => {
 
 	it('supports dotenv', () => {
 		const fsSpy = jest.spyOn(fs, 'existsSync');
-		fsSpy.mockReturnValue(true);
+		fsSpy.withImplementation(
+			(path) => {
+				return path.toString().endsWith('__jest__/.env');
+			},
+			() => {
+				init({
+					ios: true,
+				});
+				const config = base(new Config());
 
-		init({
-			ios: true,
-		});
-		const config = base(new Config());
-
-		expect(config.plugin('DotEnvPlugin')).toBeDefined();
-		config.plugin('DotEnvPlugin').tap((args) => {
-			expect(args[0].path).toEqual('__jest__/.env');
-			return args;
-		});
+				expect(config.plugin('DotEnvPlugin')).toBeDefined();
+				config.plugin('DotEnvPlugin').tap((args) => {
+					expect(args[0].path).toEqual('__jest__/.env');
+					return args;
+				});
+			}
+		);
 
 		fsSpy.mockRestore();
 	});
 
 	it('supports env specific dotenv', () => {
 		const fsSpy = jest.spyOn(fs, 'existsSync');
-		fsSpy.mockReturnValue(true);
+		fsSpy.withImplementation(
+			(path) => {
+				return path.toString().endsWith('__jest__/.env.prod');
+			},
+			() => {
+				init({
+					ios: true,
+					env: 'prod',
+				});
+				const config = base(new Config());
 
-		init({
-			ios: true,
-			env: 'prod',
-		});
-		const config = base(new Config());
-
-		expect(fsSpy).toHaveBeenCalledWith('__jest__/.env.prod');
-		expect(fsSpy).toHaveBeenCalledTimes(1);
-		expect(config.plugin('DotEnvPlugin')).toBeDefined();
-		config.plugin('DotEnvPlugin').tap((args) => {
-			expect(args[0].path).toEqual('__jest__/.env.prod');
-			return args;
-		});
+				expect(fsSpy).toHaveBeenCalledWith('__jest__/.env.prod');
+				expect(config.plugin('DotEnvPlugin')).toBeDefined();
+				config.plugin('DotEnvPlugin').tap((args) => {
+					expect(args[0].path).toEqual('__jest__/.env.prod');
+					return args;
+				});
+			}
+		);
 		fsSpy.mockRestore();
 	});
 
 	it('falls back to default .env', () => {
 		const fsSpy = jest.spyOn(fs, 'existsSync');
-		fsSpy.mockReturnValueOnce(false).mockReturnValueOnce(true);
+		fsSpy.withImplementation(
+			(path) => {
+				return path.toString().endsWith('__jest__/.env');
+			},
+			() => {
+				init({
+					ios: true,
+					env: 'prod',
+				});
+				const config = base(new Config());
 
-		init({
-			ios: true,
-			env: 'prod',
-		});
-		const config = base(new Config());
-
-		expect(fsSpy).toHaveBeenCalledWith('__jest__/.env.prod');
-		expect(fsSpy).toHaveBeenCalledWith('__jest__/.env');
-		expect(fsSpy).toHaveBeenCalledTimes(2);
-		expect(config.plugin('DotEnvPlugin')).toBeDefined();
-		config.plugin('DotEnvPlugin').tap((args) => {
-			expect(args[0].path).toEqual('__jest__/.env');
-			return args;
-		});
+				expect(fsSpy).toHaveBeenCalledWith('__jest__/.env.prod');
+				expect(fsSpy).toHaveBeenCalledWith('__jest__/.env');
+				expect(config.plugin('DotEnvPlugin')).toBeDefined();
+				config.plugin('DotEnvPlugin').tap((args) => {
+					expect(args[0].path).toEqual('__jest__/.env');
+					return args;
+				});
+			}
+		);
 		fsSpy.mockRestore();
 	});
 
@@ -118,5 +209,16 @@ describe('base configuration', () => {
 		const config = base(new Config());
 
 		expect(config.get('profile')).toBe(true);
+	});
+
+	it('supports env.sourceMap=hidden-source-map', () => {
+		init({
+			ios: true,
+			sourceMap: 'hidden-source-map',
+		});
+		const config = base(new Config());
+
+		expect(config.output.get('sourceMapFilename')).toMatchSnapshot();
+		expect(config.get('devtool')).toBe('hidden-source-map');
 	});
 });

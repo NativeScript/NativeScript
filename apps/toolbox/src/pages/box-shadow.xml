@@ -9,129 +9,48 @@
             <!-- layouts -->
             <ScrollView height="100%" visibility="{{ selectedComponentType === 'layouts' ? 'visible' : 'collapsed' }}">
                 <StackLayout padding="20">
-									<StackLayout
-                        width="300"
-                        height="100"
-                        class="demo-component"
-                        boxShadow="{{ appliedBoxShadow }}"
-                        borderWidth="{{ borderWidth }}"
-                        borderRadius="{{ borderRadius }}"
-                        background="{{ background }}"
-                        tap="{{ toggleAnimation }}"
-                    >
-                        <Label text="StackLayout"></Label>
+									<StackLayout width="300" height="100" class="demo-component" boxShadow="{{ appliedBoxShadow }}" borderColor="{{ borderColor }}" borderWidth="{{ borderWidth }}" borderRadius="{{ borderRadius }}" background="{{ background }}" tap="{{ toggleAnimation }}">
+                        <Label text="StackLayout" />
                     </StackLayout>
 
-                    <GridLayout
-                        width="300"
-                        height="100"
-                        class="demo-component"
-                        boxShadow="{{ appliedBoxShadow }}"
-                        borderWidth="{{ borderWidth }}"
-                        borderRadius="{{ borderRadius }}"
-                        background="{{ background }}"
-                        tap="{{ toggleAnimation }}"
-                    >
-                        <Label text="GridLayout"></Label>
+                    <GridLayout width="300" height="100" class="demo-component" boxShadow="{{ appliedBoxShadow }}" borderColor="{{ borderColor }}" borderWidth="{{ borderWidth }}" borderRadius="{{ borderRadius }}" background="{{ background }}" tap="{{ toggleAnimation }}">
+                        <Label text="GridLayout" />
                     </GridLayout>
 
-                    <AbsoluteLayout
-                        width="300"
-                        height="100"
-                        class="demo-component"
-                        boxShadow="{{ appliedBoxShadow }}"
-                        borderWidth="{{ borderWidth }}"
-                        borderRadius="{{ borderRadius }}"
-                        background="{{ background }}"
-                        tap="{{ toggleAnimation }}"
-                    >
-                        <Label text="AbsoluteLayout"></Label>
+                    <AbsoluteLayout width="300" height="100" class="demo-component" boxShadow="{{ appliedBoxShadow }}" borderColor="{{ borderColor }}" borderWidth="{{ borderWidth }}" borderRadius="{{ borderRadius }}" background="{{ background }}" tap="{{ toggleAnimation }}">
+                        <Label text="AbsoluteLayout" />
                     </AbsoluteLayout>
 
-                    <DockLayout
-                        width="300"
-                        height="100"
-                        class="demo-component"
-                        boxShadow="{{ appliedBoxShadow }}"
-                        borderWidth="{{ borderWidth }}"
-                        borderRadius="{{ borderRadius }}"
-                        background="{{ background }}"
-                        tap="{{ toggleAnimation }}"
-                    >
-                        <Label text="DockLayout"></Label>
+                    <DockLayout width="300" height="100" class="demo-component" boxShadow="{{ appliedBoxShadow }}" borderColor="{{ borderColor }}" borderWidth="{{ borderWidth }}" borderRadius="{{ borderRadius }}" background="{{ background }}" tap="{{ toggleAnimation }}">
+                        <Label text="DockLayout" />
                     </DockLayout>
 
-                    <FlexboxLayout
-                        width="300"
-                        height="100"
-                        class="demo-component"
-                        boxShadow="{{ appliedBoxShadow }}"
-                        borderWidth="{{ borderWidth }}"
-                        borderRadius="{{ borderRadius }}"
-                        background="{{ background }}"
-                        tap="{{ toggleAnimation }}"
-                    >
-                        <Label text="FlexboxLayout"></Label>
+                    <FlexboxLayout width="300" height="100" class="demo-component" boxShadow="{{ appliedBoxShadow }}" borderColor="{{ borderColor }}" borderWidth="{{ borderWidth }}" borderRadius="{{ borderRadius }}" background="{{ background }}" tap="{{ toggleAnimation }}">
+                        <Label text="FlexboxLayout" />
                     </FlexboxLayout>
 
                 </StackLayout>
             </ScrollView>
 
             <!-- labels -->
-            <GridLayout
-                rows="*"
-                height="100%"
-                visibility="{{ selectedComponentType === 'labels' ? 'visible' : 'collapsed' }}">
+            <GridLayout rows="*" height="100%" visibility="{{ selectedComponentType === 'labels' ? 'visible' : 'collapsed' }}">
 
-                <Label
-                    horizontalAlignment="center"
-                    verticalAlignment="center"
-                    class="demo-component"
-                    boxShadow="{{ appliedBoxShadow }}"
-                    borderWidth="{{ borderWidth }}"
-                    borderRadius="{{ borderRadius }}"
-                    background="{{ background }}"
-                    tap="{{ toggleAnimation }}"
-                    text="Label"></Label>
+                <Label horizontalAlignment="center" verticalAlignment="center" class="demo-component" boxShadow="{{ appliedBoxShadow }}" borderColor="{{ borderColor }}" borderWidth="{{ borderWidth }}" borderRadius="{{ borderRadius }}" background="{{ background }}" tap="{{ toggleAnimation }}" text="Label" />
 
             </GridLayout>
 
             <!-- buttons -->
-            <GridLayout
-                rows="*"
-                height="100%"
-                visibility="{{ selectedComponentType === 'buttons' ? 'visible' : 'collapsed' }}">
+            <GridLayout rows="*" height="100%" visibility="{{ selectedComponentType === 'buttons' ? 'visible' : 'collapsed' }}">
 
-                <Button
-                    horizontalAlignment="center"
-                    verticalAlignment="center"
-                    class="demo-component"
-                    boxShadow="{{ appliedBoxShadow }}"
-                    borderWidth="{{ borderWidth }}"
-                    borderRadius="{{ borderRadius }}"
-                    background="{{ background }}"
-                    tap="{{ toggleAnimation }}"
-                    text="button"
-                ></Button>
+                <Button horizontalAlignment="center" verticalAlignment="center" class="demo-component" boxShadow="{{ appliedBoxShadow }}" borderColor="{{ borderColor }}" borderWidth="{{ borderWidth }}" borderRadius="{{ borderRadius }}" background="{{ background }}" tap="{{ toggleAnimation }}" text="button" />
 
             </GridLayout>
 
 						<!-- images -->
-						<GridLayout
-							rows="*"
-							height="100%"
-							visibility="{{ selectedComponentType === 'images' ? 'visible' : 'collapsed' }}">
+						<GridLayout rows="*" height="100%" visibility="{{ selectedComponentType === 'images' ? 'visible' : 'collapsed' }}">
 
-							<ContentView width="100"
-													 height="100"
-													 horizontalAlignment="center"
-													 verticalAlignment="center"
-													 class="demo-component"
-													 boxShadow="{{ appliedBoxShadow }}"
-													 borderWidth="{{ borderWidth }}"
-													 borderRadius="{{ borderRadius }}"
-													 tap="{{ toggleAnimation }}">
-								<Image src="https://raw.githubusercontent.com/NativeScript/artwork/main/logo/export/NativeScript_Logo_Blue_Transparent.png"></Image>
+							<ContentView width="100" height="100" horizontalAlignment="center" verticalAlignment="center" class="demo-component" boxShadow="{{ appliedBoxShadow }}" borderColor="{{ borderColor }}" borderWidth="{{ borderWidth }}" borderRadius="{{ borderRadius }}" tap="{{ toggleAnimation }}">
+								<Image src="https://raw.githubusercontent.com/NativeScript/artwork/main/logo/export/NativeScript_Logo_Blue_Transparent.png" />
 							</ContentView>
 
 
@@ -139,61 +58,46 @@
 
         </StackLayout>
 
-        <GridLayout
-            row="1"
-            rows="auto"
-            columns="auto, *, auto"
-            class="box-shadow-prop-controls">
-            <Label
-                col="0"
-                verticalAlignment="center"
-                text="box-shadow:"></Label>
-            <TextField
-                col="1"
-                placeholder="box-shadow"
-								text="{{ boxShadow }}"
-                textChange="{{ textChange }}"
-            >
+        <GridLayout row="1" rows="auto" columns="auto, *, auto" class="box-shadow-prop-controls">
+            <Label col="0" verticalAlignment="center" text="box-shadow:" />
+            <TextField col="1" placeholder="box-shadow" text="{{ boxShadow }}" textChange="{{ textChange }}">
             </TextField>
-            <Button
-                col="2"
-                text="APPLY"
-                class="btn-apply"
-                tap="{{ applyBoxShadow }}"></Button>
+            <Button col="2" text="APPLY" class="btn-apply" tap="{{ applyBoxShadow }}" />
         </GridLayout>
         <ScrollView row="2">
             <StackLayout padding="10" class="controls">
-                <Label text="Components"></Label>
+                <Label text="Components" />
                 <FlexboxLayout flexDirection="row" flexWrap="wrap">
-                    <Button text="Layouts" componentType="layouts" tap="{{ selectComponentType }}"></Button>
-                    <Button text="Labels" componentType="labels" selectedAttr="{{ selectedComponentType }}" tap="{{ selectComponentType }}"></Button>
-                    <Button text="Buttons" componentType="buttons" selectedAttr="{{ selectedComponentType == 'buttons' }}" tap="{{ selectComponentType }}"></Button>
-                    <Button text="Images" componentType="images" selectedAttr="{{ selectedComponentType == 'images' }}" tap="{{ selectComponentType }}"></Button>
+                    <Button text="Layouts" componentType="layouts" tap="{{ selectComponentType }}" />
+                    <Button text="Labels" componentType="labels" selectedAttr="{{ selectedComponentType }}" tap="{{ selectComponentType }}" />
+                    <Button text="Buttons" componentType="buttons" selectedAttr="{{ selectedComponentType == 'buttons' }}" tap="{{ selectComponentType }}" />
+                    <Button text="Images" componentType="images" selectedAttr="{{ selectedComponentType == 'images' }}" tap="{{ selectComponentType }}" />
                 </FlexboxLayout>
 
-                <Label text="Background"></Label>
+                <Label text="Background" />
                 <FlexboxLayout flexDirection="row" flexWrap="wrap">
-                    <Button text="Solid" backgroundType="solid" tap="{{ selectBackgroundType }}"></Button>
-                    <Button text="Transparent" backgroundType="transparent" tap="{{ selectBackgroundType }}"></Button>
-                    <Button text="Gradient" backgroundType="gradient" tap="{{ selectBackgroundType }}"></Button>
+                    <Button text="Solid" backgroundType="solid" tap="{{ selectBackgroundType }}" />
+                    <Button text="Transparent" backgroundType="transparent" tap="{{ selectBackgroundType }}" />
+                    <Button text="Gradient" backgroundType="gradient" tap="{{ selectBackgroundType }}" />
                 </FlexboxLayout>
 
-                <Label text="Borders"></Label>
+                <Label text="Borders" />
                 <FlexboxLayout flexDirection="row" flexWrap="wrap">
-                    <Button text="Solid" borderType="solid" tap="{{ selectBorderType }}"></Button>
-                    <Button text="Rounded" borderType="rounded" tap="{{ selectBorderType }}"></Button>
-                    <Button text="None" borderType="none" tap="{{ selectBorderType }}"></Button>
+                    <Button text="Solid" borderType="solid" tap="{{ selectBorderType }}" />
+                    <Button text="Rounded" borderType="rounded" tap="{{ selectBorderType }}" />
+                    <Button text="Colorful" borderType="colorful" tap="{{ selectBorderType }}" />
+                    <Button text="None" borderType="none" tap="{{ selectBorderType }}" />
                 </FlexboxLayout>
 
-                <Label text="Animations"></Label>
-                <Label text="Tap on the component to start and stop animation" class="description"></Label>
+                <Label text="Animations" />
+                <Label text="Tap on the component to start and stop animation" class="description" />
                 <FlexboxLayout flexDirection="row" flexWrap="wrap">
-                    <Button text="Width" animationType="width" tap="{{ selectAnimationType }}"></Button>
-                    <Button text="Height" animationType="height" tap="{{ selectAnimationType }}"></Button>
-                    <Button text="Opacity" animationType="opacity" tap="{{ selectAnimationType }}"></Button>
-                    <Button text="Translate" animationType="translate" tap="{{ selectAnimationType }}"></Button>
-                    <Button text="Scale" animationType="scale" tap="{{ selectAnimationType }}"></Button>
-                    <Button text="Rotate" animationType="rotate" tap="{{ selectAnimationType }}"></Button>
+                    <Button text="Width" animationType="width" tap="{{ selectAnimationType }}" />
+                    <Button text="Height" animationType="height" tap="{{ selectAnimationType }}" />
+                    <Button text="Opacity" animationType="opacity" tap="{{ selectAnimationType }}" />
+                    <Button text="Translate" animationType="translate" tap="{{ selectAnimationType }}" />
+                    <Button text="Scale" animationType="scale" tap="{{ selectAnimationType }}" />
+                    <Button text="Rotate" animationType="rotate" tap="{{ selectAnimationType }}" />
                 </FlexboxLayout>
 
             </StackLayout>

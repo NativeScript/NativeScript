@@ -1,7 +1,97 @@
 
+declare class VNAnimalBodyPoseObservation extends VNRecognizedPointsObservation {
+
+	static alloc(): VNAnimalBodyPoseObservation; // inherited from NSObject
+
+	static new(): VNAnimalBodyPoseObservation; // inherited from NSObject
+
+	readonly availableJointGroupNames: NSArray<string>;
+
+	readonly availableJointNames: NSArray<string>;
+
+	recognizedPointForJointNameError(jointName: string): VNRecognizedPoint;
+
+	recognizedPointsForJointsGroupNameError(jointsGroupName: string): NSDictionary<string, VNRecognizedPoint>;
+}
+
+declare var VNAnimalBodyPoseObservationJointNameLeftBackElbow: string;
+
+declare var VNAnimalBodyPoseObservationJointNameLeftBackKnee: string;
+
+declare var VNAnimalBodyPoseObservationJointNameLeftBackPaw: string;
+
+declare var VNAnimalBodyPoseObservationJointNameLeftEarBottom: string;
+
+declare var VNAnimalBodyPoseObservationJointNameLeftEarMiddle: string;
+
+declare var VNAnimalBodyPoseObservationJointNameLeftEarTop: string;
+
+declare var VNAnimalBodyPoseObservationJointNameLeftEye: string;
+
+declare var VNAnimalBodyPoseObservationJointNameLeftFrontElbow: string;
+
+declare var VNAnimalBodyPoseObservationJointNameLeftFrontKnee: string;
+
+declare var VNAnimalBodyPoseObservationJointNameLeftFrontPaw: string;
+
+declare var VNAnimalBodyPoseObservationJointNameNeck: string;
+
+declare var VNAnimalBodyPoseObservationJointNameNose: string;
+
+declare var VNAnimalBodyPoseObservationJointNameRightBackElbow: string;
+
+declare var VNAnimalBodyPoseObservationJointNameRightBackKnee: string;
+
+declare var VNAnimalBodyPoseObservationJointNameRightBackPaw: string;
+
+declare var VNAnimalBodyPoseObservationJointNameRightEarBottom: string;
+
+declare var VNAnimalBodyPoseObservationJointNameRightEarMiddle: string;
+
+declare var VNAnimalBodyPoseObservationJointNameRightEarTop: string;
+
+declare var VNAnimalBodyPoseObservationJointNameRightEye: string;
+
+declare var VNAnimalBodyPoseObservationJointNameRightFrontElbow: string;
+
+declare var VNAnimalBodyPoseObservationJointNameRightFrontKnee: string;
+
+declare var VNAnimalBodyPoseObservationJointNameRightFrontPaw: string;
+
+declare var VNAnimalBodyPoseObservationJointNameTailBottom: string;
+
+declare var VNAnimalBodyPoseObservationJointNameTailMiddle: string;
+
+declare var VNAnimalBodyPoseObservationJointNameTailTop: string;
+
+declare var VNAnimalBodyPoseObservationJointsGroupNameAll: string;
+
+declare var VNAnimalBodyPoseObservationJointsGroupNameForelegs: string;
+
+declare var VNAnimalBodyPoseObservationJointsGroupNameHead: string;
+
+declare var VNAnimalBodyPoseObservationJointsGroupNameHindlegs: string;
+
+declare var VNAnimalBodyPoseObservationJointsGroupNameTail: string;
+
+declare var VNAnimalBodyPoseObservationJointsGroupNameTrunk: string;
+
 declare var VNAnimalIdentifierCat: string;
 
 declare var VNAnimalIdentifierDog: string;
+
+declare const enum VNBarcodeCompositeType {
+
+	None = 0,
+
+	Linked = 1,
+
+	GS1TypeA = 2,
+
+	GS1TypeB = 3,
+
+	GS1TypeC = 4
+}
 
 declare class VNBarcodeObservation extends VNRectangleObservation {
 
@@ -15,9 +105,23 @@ declare class VNBarcodeObservation extends VNRectangleObservation {
 
 	static rectangleObservationWithRequestRevisionTopLeftBottomLeftBottomRightTopRight(requestRevision: number, topLeft: CGPoint, bottomLeft: CGPoint, bottomRight: CGPoint, topRight: CGPoint): VNBarcodeObservation; // inherited from VNRectangleObservation
 
+	static rectangleObservationWithRequestRevisionTopLeftTopRightBottomRightBottomLeft(requestRevision: number, topLeft: CGPoint, topRight: CGPoint, bottomRight: CGPoint, bottomLeft: CGPoint): VNBarcodeObservation; // inherited from VNRectangleObservation
+
 	readonly barcodeDescriptor: CIBarcodeDescriptor;
 
+	readonly isColorInverted: boolean;
+
+	readonly isGS1DataCarrier: boolean;
+
+	readonly payloadData: NSData;
+
 	readonly payloadStringValue: string;
+
+	readonly supplementalCompositeType: VNBarcodeCompositeType;
+
+	readonly supplementalPayloadData: NSData;
+
+	readonly supplementalPayloadString: string;
 
 	readonly symbology: string;
 }
@@ -57,6 +161,8 @@ declare var VNBarcodeSymbologyI2of5: string;
 declare var VNBarcodeSymbologyI2of5Checksum: string;
 
 declare var VNBarcodeSymbologyITF14: string;
+
+declare var VNBarcodeSymbologyMSIPlessey: string;
 
 declare var VNBarcodeSymbologyMicroPDF417: string;
 
@@ -192,6 +298,12 @@ declare class VNClassifyImageRequest extends VNImageBasedRequest {
 
 declare var VNClassifyImageRequestRevision1: number;
 
+declare var VNClassifyImageRequestRevision2: number;
+
+declare var VNComputeStageMain: string;
+
+declare var VNComputeStagePostProcessing: string;
+
 declare class VNContour extends NSObject implements NSCopying, VNRequestRevisionProviding {
 
 	static alloc(): VNContour; // inherited from NSObject
@@ -285,11 +397,26 @@ declare class VNCoreMLRequest extends VNImageBasedRequest {
 
 declare var VNCoreMLRequestRevision1: number;
 
+declare class VNDetectAnimalBodyPoseRequest extends VNImageBasedRequest {
+
+	static alloc(): VNDetectAnimalBodyPoseRequest; // inherited from NSObject
+
+	static new(): VNDetectAnimalBodyPoseRequest; // inherited from NSObject
+
+	supportedJointNamesAndReturnError(): NSArray<string>;
+
+	supportedJointsGroupNamesAndReturnError(): NSArray<string>;
+}
+
+declare var VNDetectAnimalBodyPoseRequestRevision1: number;
+
 declare class VNDetectBarcodesRequest extends VNImageBasedRequest {
 
 	static alloc(): VNDetectBarcodesRequest; // inherited from NSObject
 
 	static new(): VNDetectBarcodesRequest; // inherited from NSObject
+
+	coalesceCompositeSymbologies: boolean;
 
 	symbologies: NSArray<string>;
 
@@ -303,6 +430,8 @@ declare var VNDetectBarcodesRequestRevision1: number;
 declare var VNDetectBarcodesRequestRevision2: number;
 
 declare var VNDetectBarcodesRequestRevision3: number;
+
+declare var VNDetectBarcodesRequestRevision4: number;
 
 declare var VNDetectContourRequestRevision1: number;
 
@@ -379,6 +508,8 @@ declare var VNDetectFaceCaptureQualityRequestRevision1: number;
 
 declare var VNDetectFaceCaptureQualityRequestRevision2: number;
 
+declare var VNDetectFaceCaptureQualityRequestRevision3: number;
+
 declare class VNDetectFaceLandmarksRequest extends VNImageBasedRequest implements VNFaceObservationAccepting {
 
 	static alloc(): VNDetectFaceLandmarksRequest; // inherited from NSObject
@@ -454,6 +585,19 @@ declare class VNDetectHorizonRequest extends VNImageBasedRequest {
 
 declare var VNDetectHorizonRequestRevision1: number;
 
+declare class VNDetectHumanBodyPose3DRequest extends VNStatefulRequest {
+
+	static alloc(): VNDetectHumanBodyPose3DRequest; // inherited from NSObject
+
+	static new(): VNDetectHumanBodyPose3DRequest; // inherited from NSObject
+
+	supportedJointNamesAndReturnError(): NSArray<string>;
+
+	supportedJointsGroupNamesAndReturnError(): NSArray<string>;
+}
+
+declare var VNDetectHumanBodyPose3DRequestRevision1: number;
+
 declare class VNDetectHumanBodyPoseRequest extends VNImageBasedRequest {
 
 	static alloc(): VNDetectHumanBodyPoseRequest; // inherited from NSObject
@@ -463,6 +607,10 @@ declare class VNDetectHumanBodyPoseRequest extends VNImageBasedRequest {
 	static supportedJointNamesForRevisionError(revision: number): NSArray<string>;
 
 	static supportedJointsGroupNamesForRevisionError(revision: number): NSArray<string>;
+
+	supportedJointNamesAndReturnError(): NSArray<string>;
+
+	supportedJointsGroupNamesAndReturnError(): NSArray<string>;
 }
 
 declare var VNDetectHumanBodyPoseRequestRevision1: number;
@@ -478,6 +626,10 @@ declare class VNDetectHumanHandPoseRequest extends VNImageBasedRequest {
 	static supportedJointsGroupNamesForRevisionError(revision: number): NSArray<string>;
 
 	maximumHandCount: number;
+
+	supportedJointNamesAndReturnError(): NSArray<string>;
+
+	supportedJointsGroupNamesAndReturnError(): NSArray<string>;
 }
 
 declare var VNDetectHumanHandPoseRequestRevision1: number;
@@ -631,7 +783,11 @@ declare const enum VNErrorCode {
 
 	UnsupportedRequest = 19,
 
-	Timeout = 20
+	Timeout = 20,
+
+	UnsupportedComputeStage = 21,
+
+	UnsupportedComputeDevice = 22
 }
 
 declare var VNErrorDomain: string;
@@ -784,6 +940,17 @@ declare class VNGenerateAttentionBasedSaliencyImageRequest extends VNImageBasedR
 
 declare var VNGenerateAttentionBasedSaliencyImageRequestRevision1: number;
 
+declare var VNGenerateAttentionBasedSaliencyImageRequestRevision2: number;
+
+declare class VNGenerateForegroundInstanceMaskRequest extends VNImageBasedRequest {
+
+	static alloc(): VNGenerateForegroundInstanceMaskRequest; // inherited from NSObject
+
+	static new(): VNGenerateForegroundInstanceMaskRequest; // inherited from NSObject
+}
+
+declare var VNGenerateForegroundInstanceMaskRequestRevision1: number;
+
 declare class VNGenerateImageFeaturePrintRequest extends VNImageBasedRequest {
 
 	static alloc(): VNGenerateImageFeaturePrintRequest; // inherited from NSObject
@@ -795,6 +962,8 @@ declare class VNGenerateImageFeaturePrintRequest extends VNImageBasedRequest {
 
 declare var VNGenerateImageFeaturePrintRequestRevision1: number;
 
+declare var VNGenerateImageFeaturePrintRequestRevision2: number;
+
 declare class VNGenerateObjectnessBasedSaliencyImageRequest extends VNImageBasedRequest {
 
 	static alloc(): VNGenerateObjectnessBasedSaliencyImageRequest; // inherited from NSObject
@@ -803,6 +972,8 @@ declare class VNGenerateObjectnessBasedSaliencyImageRequest extends VNImageBased
 }
 
 declare var VNGenerateObjectnessBasedSaliencyImageRequestRevision1: number;
+
+declare var VNGenerateObjectnessBasedSaliencyImageRequestRevision2: number;
 
 declare class VNGenerateOpticalFlowRequest extends VNTargetedImageRequest {
 
@@ -831,6 +1002,15 @@ declare const enum VNGenerateOpticalFlowRequestComputationAccuracy {
 declare var VNGenerateOpticalFlowRequestRevision1: number;
 
 declare var VNGenerateOpticalFlowRequestRevision2: number;
+
+declare class VNGeneratePersonInstanceMaskRequest extends VNImageBasedRequest {
+
+	static alloc(): VNGeneratePersonInstanceMaskRequest; // inherited from NSObject
+
+	static new(): VNGeneratePersonInstanceMaskRequest; // inherited from NSObject
+}
+
+declare var VNGeneratePersonInstanceMaskRequestRevision1: number;
 
 declare class VNGeneratePersonSegmentationRequest extends VNStatefulRequest {
 
@@ -892,6 +1072,88 @@ declare class VNHorizonObservation extends VNObservation {
 
 	transformForImageWidthHeight(width: number, height: number): CGAffineTransform;
 }
+
+declare class VNHumanBodyPose3DObservation extends VNRecognizedPoints3DObservation {
+
+	static alloc(): VNHumanBodyPose3DObservation; // inherited from NSObject
+
+	static new(): VNHumanBodyPose3DObservation; // inherited from NSObject
+
+	readonly availableJointNames: NSArray<string>;
+
+	readonly availableJointsGroupNames: NSArray<string>;
+
+	readonly bodyHeight: number;
+
+	readonly cameraOriginMatrix: simd_float4x4;
+
+	readonly heightEstimation: VNHumanBodyPose3DObservationHeightEstimation;
+
+	getCameraRelativePositionForJointNameError(modelPositionOut: interop.Pointer | interop.Reference<simd_float4x4>, jointName: string): boolean;
+
+	parentJointNameForJointName(jointName: string): string;
+
+	pointInImageForJointNameError(jointName: string): VNPoint;
+
+	recognizedPointForJointNameError(jointName: string): VNHumanBodyRecognizedPoint3D;
+
+	recognizedPointsForJointsGroupNameError(jointsGroupName: string): NSDictionary<string, VNHumanBodyRecognizedPoint3D>;
+}
+
+declare const enum VNHumanBodyPose3DObservationHeightEstimation {
+
+	Reference = 0,
+
+	Measured = 1
+}
+
+declare var VNHumanBodyPose3DObservationJointNameCenterHead: string;
+
+declare var VNHumanBodyPose3DObservationJointNameCenterShoulder: string;
+
+declare var VNHumanBodyPose3DObservationJointNameLeftAnkle: string;
+
+declare var VNHumanBodyPose3DObservationJointNameLeftElbow: string;
+
+declare var VNHumanBodyPose3DObservationJointNameLeftHip: string;
+
+declare var VNHumanBodyPose3DObservationJointNameLeftKnee: string;
+
+declare var VNHumanBodyPose3DObservationJointNameLeftShoulder: string;
+
+declare var VNHumanBodyPose3DObservationJointNameLeftWrist: string;
+
+declare var VNHumanBodyPose3DObservationJointNameRightAnkle: string;
+
+declare var VNHumanBodyPose3DObservationJointNameRightElbow: string;
+
+declare var VNHumanBodyPose3DObservationJointNameRightHip: string;
+
+declare var VNHumanBodyPose3DObservationJointNameRightKnee: string;
+
+declare var VNHumanBodyPose3DObservationJointNameRightShoulder: string;
+
+declare var VNHumanBodyPose3DObservationJointNameRightWrist: string;
+
+declare var VNHumanBodyPose3DObservationJointNameRoot: string;
+
+declare var VNHumanBodyPose3DObservationJointNameSpine: string;
+
+declare var VNHumanBodyPose3DObservationJointNameTopHead: string;
+
+declare var VNHumanBodyPose3DObservationJointsGroupNameAll: string;
+
+declare var VNHumanBodyPose3DObservationJointsGroupNameHead: string;
+
+declare var VNHumanBodyPose3DObservationJointsGroupNameLeftArm: string;
+
+declare var VNHumanBodyPose3DObservationJointsGroupNameLeftLeg: string;
+
+declare var VNHumanBodyPose3DObservationJointsGroupNameRightArm: string;
+
+declare var VNHumanBodyPose3DObservationJointsGroupNameRightLeg: string;
+
+declare var VNHumanBodyPose3DObservationJointsGroupNameTorso: string;
 
 declare class VNHumanBodyPoseObservation extends VNRecognizedPointsObservation {
 
@@ -959,6 +1221,17 @@ declare var VNHumanBodyPoseObservationJointsGroupNameRightArm: string;
 declare var VNHumanBodyPoseObservationJointsGroupNameRightLeg: string;
 
 declare var VNHumanBodyPoseObservationJointsGroupNameTorso: string;
+
+declare class VNHumanBodyRecognizedPoint3D extends VNRecognizedPoint3D {
+
+	static alloc(): VNHumanBodyRecognizedPoint3D; // inherited from NSObject
+
+	static new(): VNHumanBodyRecognizedPoint3D; // inherited from NSObject
+
+	readonly localPosition: simd_float4x4;
+
+	readonly parentJoint: string;
+}
 
 declare class VNHumanHandPoseObservation extends VNRecognizedPointsObservation {
 
@@ -1119,9 +1392,13 @@ declare class VNImageRequestHandler extends NSObject {
 
 	constructor(o: { CIImage: CIImage; orientation: CGImagePropertyOrientation; options: NSDictionary<string, any>; });
 
+	constructor(o: { CMSampleBuffer: any; depthData: AVDepthData; orientation: CGImagePropertyOrientation; options: NSDictionary<string, any>; });
+
 	constructor(o: { CMSampleBuffer: any; options: NSDictionary<string, any>; });
 
 	constructor(o: { CMSampleBuffer: any; orientation: CGImagePropertyOrientation; options: NSDictionary<string, any>; });
+
+	constructor(o: { CVPixelBuffer: any; depthData: AVDepthData; orientation: CGImagePropertyOrientation; options: NSDictionary<string, any>; });
 
 	constructor(o: { CVPixelBuffer: any; options: NSDictionary<string, any>; });
 
@@ -1143,9 +1420,13 @@ declare class VNImageRequestHandler extends NSObject {
 
 	initWithCIImageOrientationOptions(image: CIImage, orientation: CGImagePropertyOrientation, options: NSDictionary<string, any>): this;
 
+	initWithCMSampleBufferDepthDataOrientationOptions(sampleBuffer: any, depthData: AVDepthData, orientation: CGImagePropertyOrientation, options: NSDictionary<string, any>): this;
+
 	initWithCMSampleBufferOptions(sampleBuffer: any, options: NSDictionary<string, any>): this;
 
 	initWithCMSampleBufferOrientationOptions(sampleBuffer: any, orientation: CGImagePropertyOrientation, options: NSDictionary<string, any>): this;
+
+	initWithCVPixelBufferDepthDataOrientationOptions(pixelBuffer: any, depthData: AVDepthData, orientation: CGImagePropertyOrientation, options: NSDictionary<string, any>): this;
 
 	initWithCVPixelBufferOptions(pixelBuffer: any, options: NSDictionary<string, any>): this;
 
@@ -1169,6 +1450,23 @@ declare class VNImageTranslationAlignmentObservation extends VNImageAlignmentObs
 	static new(): VNImageTranslationAlignmentObservation; // inherited from NSObject
 
 	readonly alignmentTransform: CGAffineTransform;
+}
+
+declare class VNInstanceMaskObservation extends VNObservation {
+
+	static alloc(): VNInstanceMaskObservation; // inherited from NSObject
+
+	static new(): VNInstanceMaskObservation; // inherited from NSObject
+
+	readonly allInstances: NSIndexSet;
+
+	readonly instanceMask: any;
+
+	generateMaskForInstancesError(instances: NSIndexSet): any;
+
+	generateMaskedImageOfInstancesFromRequestHandlerCroppedToInstancesExtentError(instances: NSIndexSet, requestHandler: VNImageRequestHandler, cropResult: boolean): any;
+
+	generateScaledMaskForImageForInstancesFromRequestHandlerError(instances: NSIndexSet, requestHandler: VNImageRequestHandler): any;
 }
 
 declare function VNNormalizedFaceBoundingBoxPointForLandmarkPoint(faceLandmarkPoint: interop.Reference<number>, faceBoundingBox: CGRect, imageWidth: number, imageHeight: number): CGPoint;
@@ -1258,6 +1556,29 @@ declare class VNPoint extends NSObject implements NSCopying, NSSecureCoding {
 	initWithLocation(location: CGPoint): this;
 
 	initWithXY(x: number, y: number): this;
+}
+
+declare class VNPoint3D extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): VNPoint3D; // inherited from NSObject
+
+	static new(): VNPoint3D; // inherited from NSObject
+
+	readonly position: simd_float4x4;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { position: simd_float4x4; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithPosition(position: simd_float4x4): this;
 }
 
 declare const enum VNPointsClassification {
@@ -1373,7 +1694,33 @@ declare class VNRecognizedPoint extends VNDetectedPoint {
 	readonly identifier: string;
 }
 
+declare class VNRecognizedPoint3D extends VNPoint3D {
+
+	static alloc(): VNRecognizedPoint3D; // inherited from NSObject
+
+	static new(): VNRecognizedPoint3D; // inherited from NSObject
+
+	readonly identifier: string;
+}
+
+declare var VNRecognizedPoint3DGroupKeyAll: string;
+
 declare var VNRecognizedPointGroupKeyAll: string;
+
+declare class VNRecognizedPoints3DObservation extends VNObservation {
+
+	static alloc(): VNRecognizedPoints3DObservation; // inherited from NSObject
+
+	static new(): VNRecognizedPoints3DObservation; // inherited from NSObject
+
+	readonly availableGroupKeys: NSArray<string>;
+
+	readonly availableKeys: NSArray<string>;
+
+	recognizedPointForKeyError(pointKey: string): VNRecognizedPoint3D;
+
+	recognizedPointsForGroupKeyError(groupKey: string): NSDictionary<string, VNRecognizedPoint3D>;
+}
 
 declare class VNRecognizedPointsObservation extends VNObservation {
 
@@ -1429,6 +1776,8 @@ declare class VNRecognizedTextObservation extends VNRectangleObservation {
 
 	static rectangleObservationWithRequestRevisionTopLeftBottomLeftBottomRightTopRight(requestRevision: number, topLeft: CGPoint, bottomLeft: CGPoint, bottomRight: CGPoint, topRight: CGPoint): VNRecognizedTextObservation; // inherited from VNRectangleObservation
 
+	static rectangleObservationWithRequestRevisionTopLeftTopRightBottomRightBottomLeft(requestRevision: number, topLeft: CGPoint, topRight: CGPoint, bottomRight: CGPoint, bottomLeft: CGPoint): VNRecognizedTextObservation; // inherited from VNRectangleObservation
+
 	topCandidates(maxCandidateCount: number): NSArray<VNRecognizedText>;
 }
 
@@ -1443,6 +1792,8 @@ declare class VNRectangleObservation extends VNDetectedObjectObservation {
 	static observationWithRequestRevisionBoundingBox(requestRevision: number, boundingBox: CGRect): VNRectangleObservation; // inherited from VNDetectedObjectObservation
 
 	static rectangleObservationWithRequestRevisionTopLeftBottomLeftBottomRightTopRight(requestRevision: number, topLeft: CGPoint, bottomLeft: CGPoint, bottomRight: CGPoint, topRight: CGPoint): VNRectangleObservation;
+
+	static rectangleObservationWithRequestRevisionTopLeftTopRightBottomRightBottomLeft(requestRevision: number, topLeft: CGPoint, topRight: CGPoint, bottomRight: CGPoint, bottomLeft: CGPoint): VNRectangleObservation;
 
 	readonly bottomLeft: CGPoint;
 
@@ -1479,9 +1830,15 @@ declare class VNRequest extends NSObject implements NSCopying {
 
 	cancel(): void;
 
+	computeDeviceForComputeStage(computeStage: string): MLComputeDeviceProtocol;
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	initWithCompletionHandler(completionHandler: (p1: VNRequest, p2: NSError) => void): this;
+
+	setComputeDeviceForComputeStage(computeDevice: MLComputeDeviceProtocol, computeStage: string): void;
+
+	supportedComputeStageDevicesAndReturnError(): NSDictionary<string, NSArray<MLComputeDeviceProtocol>>;
 }
 
 declare const enum VNRequestFaceLandmarksConstellation {
@@ -1578,8 +1935,6 @@ declare class VNStatefulRequest extends VNImageBasedRequest {
 	readonly frameAnalysisSpacing: CMTime;
 
 	readonly minimumLatencyFrameCount: number;
-
-	readonly requestFrameAnalysisSpacing: CMTime;
 
 	constructor(o: { frameAnalysisSpacing: CMTime; completionHandler: (p1: VNRequest, p2: NSError) => void; });
 
@@ -1701,8 +2056,19 @@ declare class VNTextObservation extends VNRectangleObservation {
 
 	static rectangleObservationWithRequestRevisionTopLeftBottomLeftBottomRightTopRight(requestRevision: number, topLeft: CGPoint, bottomLeft: CGPoint, bottomRight: CGPoint, topRight: CGPoint): VNTextObservation; // inherited from VNRectangleObservation
 
+	static rectangleObservationWithRequestRevisionTopLeftTopRightBottomRightBottomLeft(requestRevision: number, topLeft: CGPoint, topRight: CGPoint, bottomRight: CGPoint, bottomLeft: CGPoint): VNTextObservation; // inherited from VNRectangleObservation
+
 	readonly characterBoxes: NSArray<VNRectangleObservation>;
 }
+
+declare class VNTrackHomographicImageRegistrationRequest extends VNStatefulRequest {
+
+	static alloc(): VNTrackHomographicImageRegistrationRequest; // inherited from NSObject
+
+	static new(): VNTrackHomographicImageRegistrationRequest; // inherited from NSObject
+}
+
+declare var VNTrackHomographicImageRegistrationRequestRevision1: number;
 
 declare class VNTrackObjectRequest extends VNTrackingRequest {
 
@@ -1723,6 +2089,32 @@ declare var VNTrackObjectRequestRevision1: number;
 
 declare var VNTrackObjectRequestRevision2: number;
 
+declare class VNTrackOpticalFlowRequest extends VNStatefulRequest {
+
+	static alloc(): VNTrackOpticalFlowRequest; // inherited from NSObject
+
+	static new(): VNTrackOpticalFlowRequest; // inherited from NSObject
+
+	computationAccuracy: VNTrackOpticalFlowRequestComputationAccuracy;
+
+	keepNetworkOutput: boolean;
+
+	outputPixelFormat: number;
+}
+
+declare const enum VNTrackOpticalFlowRequestComputationAccuracy {
+
+	Low = 0,
+
+	Medium = 1,
+
+	High = 2,
+
+	VeryHigh = 3
+}
+
+declare var VNTrackOpticalFlowRequestRevision1: number;
+
 declare class VNTrackRectangleRequest extends VNTrackingRequest {
 
 	static alloc(): VNTrackRectangleRequest; // inherited from NSObject
@@ -1740,6 +2132,15 @@ declare class VNTrackRectangleRequest extends VNTrackingRequest {
 
 declare var VNTrackRectangleRequestRevision1: number;
 
+declare class VNTrackTranslationalImageRegistrationRequest extends VNStatefulRequest {
+
+	static alloc(): VNTrackTranslationalImageRegistrationRequest; // inherited from NSObject
+
+	static new(): VNTrackTranslationalImageRegistrationRequest; // inherited from NSObject
+}
+
+declare var VNTrackTranslationalImageRegistrationRequestRevision1: number;
+
 declare class VNTrackingRequest extends VNImageBasedRequest {
 
 	static alloc(): VNTrackingRequest; // inherited from NSObject
@@ -1751,6 +2152,8 @@ declare class VNTrackingRequest extends VNImageBasedRequest {
 	lastFrame: boolean;
 
 	trackingLevel: VNRequestTrackingLevel;
+
+	supportedNumberOfTrackersAndReturnError(): number;
 }
 
 declare class VNTrajectoryObservation extends VNObservation {

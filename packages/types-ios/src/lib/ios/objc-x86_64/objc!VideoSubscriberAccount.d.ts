@@ -216,8 +216,6 @@ declare class VSUserAccount extends NSObject {
 
 	billingIdentifier: string;
 
-	deleted: boolean;
-
 	readonly deviceCategory: VSOriginatingDeviceCategory;
 
 	readonly fromCurrentDevice: boolean;
@@ -225,6 +223,8 @@ declare class VSUserAccount extends NSObject {
 	identifier: string;
 
 	requiresSystemTrust: boolean;
+
+	signedOut: boolean;
 
 	subscriptionBillingCycleEndDate: Date;
 

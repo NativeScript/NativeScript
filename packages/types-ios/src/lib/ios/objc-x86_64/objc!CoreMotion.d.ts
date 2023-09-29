@@ -122,6 +122,43 @@ declare const enum CMAuthorizationStatus {
 	Authorized = 3
 }
 
+declare class CMBatchedSensorManager extends NSObject {
+
+	static alloc(): CMBatchedSensorManager; // inherited from NSObject
+
+	static new(): CMBatchedSensorManager; // inherited from NSObject
+
+	readonly accelerometerActive: boolean;
+
+	readonly accelerometerBatch: NSArray<CMAccelerometerData>;
+
+	readonly accelerometerDataFrequency: number;
+
+	readonly deviceMotionActive: boolean;
+
+	readonly deviceMotionBatch: NSArray<CMDeviceMotion>;
+
+	readonly deviceMotionDataFrequency: number;
+
+	static readonly accelerometerSupported: boolean;
+
+	static readonly authorizationStatus: CMAuthorizationStatus;
+
+	static readonly deviceMotionSupported: boolean;
+
+	startAccelerometerUpdates(): void;
+
+	startAccelerometerUpdatesWithHandler(handler: (p1: NSArray<CMAccelerometerData>, p2: NSError) => void): void;
+
+	startDeviceMotionUpdates(): void;
+
+	startDeviceMotionUpdatesWithHandler(handler: (p1: NSArray<CMDeviceMotion>, p2: NSError) => void): void;
+
+	stopAccelerometerUpdates(): void;
+
+	stopDeviceMotionUpdates(): void;
+}
+
 interface CMCalibratedMagneticField {
 	field: CMMagneticField;
 	accuracy: CMMagneticFieldCalibrationAccuracy;
@@ -269,6 +306,30 @@ declare var CMHeadphoneMotionManagerDelegate: {
 
 	prototype: CMHeadphoneMotionManagerDelegate;
 };
+
+declare class CMHighFrequencyHeartRateData extends CMLogItem {
+
+	static alloc(): CMHighFrequencyHeartRateData; // inherited from NSObject
+
+	static new(): CMHighFrequencyHeartRateData; // inherited from NSObject
+
+	readonly confidence: CMHighFrequencyHeartRateDataConfidence;
+
+	readonly date: Date;
+
+	readonly heartRate: number;
+}
+
+declare const enum CMHighFrequencyHeartRateDataConfidence {
+
+	Low = 0,
+
+	Medium = 1,
+
+	High = 2,
+
+	Highest = 3
+}
 
 declare class CMLogItem extends NSObject implements NSCopying, NSSecureCoding {
 
@@ -436,6 +497,56 @@ declare class CMMotionManager extends NSObject {
 	stopGyroUpdates(): void;
 
 	stopMagnetometerUpdates(): void;
+}
+
+declare class CMOdometerData extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): CMOdometerData; // inherited from NSObject
+
+	static new(): CMOdometerData; // inherited from NSObject
+
+	readonly deltaAltitude: number;
+
+	readonly deltaDistance: number;
+
+	readonly deltaDistanceAccuracy: number;
+
+	readonly endDate: Date;
+
+	readonly gpsDate: Date;
+
+	readonly maxAbsSlope: number;
+
+	readonly originDevice: CMOdometerOriginDevice;
+
+	readonly slope: number;
+
+	readonly speed: number;
+
+	readonly speedAccuracy: number;
+
+	readonly startDate: Date;
+
+	readonly verticalAccuracy: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare const enum CMOdometerOriginDevice {
+
+	Unknown = 0,
+
+	Local = 1,
+
+	Remote = 2
 }
 
 declare class CMPedometer extends NSObject {
@@ -718,6 +829,8 @@ declare class CMWaterSubmersionManager extends NSObject {
 	static new(): CMWaterSubmersionManager; // inherited from NSObject
 
 	delegate: CMWaterSubmersionManagerDelegate;
+
+	readonly maximumDepth: NSMeasurement<NSUnitLength>;
 
 	static readonly authorizationStatus: CMAuthorizationStatus;
 

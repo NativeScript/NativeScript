@@ -1,8 +1,7 @@
 import * as TKUnit from '../../tk-unit';
 import * as helper from '../../ui-helper';
-import * as viewModule from '@nativescript/core/ui/core/view';
+import { View, Application } from '@nativescript/core';
 import * as listPickerTestsNative from './list-picker-tests-native';
-import * as application from '@nativescript/core/application';
 
 // >> article-require-listpicker-module
 import * as listPickerModule from '@nativescript/core/ui/list-picker';
@@ -31,7 +30,7 @@ export function test_recycling() {
 }
 
 export var testWhenlistPickerIsCreatedItemsAreUndefined = function () {
-	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<viewModule.View>) {
+	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
 		var listPicker = <listPickerModule.ListPicker>views[0];
 		var expectedValue = undefined;
 		var actualValue = listPicker.items;
@@ -40,7 +39,7 @@ export var testWhenlistPickerIsCreatedItemsAreUndefined = function () {
 };
 
 export var testWhenlistPickerIsCreatedSelectedIndexIsUndefined = function () {
-	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<viewModule.View>) {
+	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
 		var listPicker = <listPickerModule.ListPicker>views[0];
 		var expectedValue = -1;
 		var actualValue = listPicker.selectedIndex;
@@ -49,7 +48,7 @@ export var testWhenlistPickerIsCreatedSelectedIndexIsUndefined = function () {
 };
 
 export var testWhenSettingItemsToNonEmptyArrayTheSameAmountOfNativeItemsIsCreated = function () {
-	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<viewModule.View>) {
+	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
 		var listPicker = <listPickerModule.ListPicker>views[0];
 		listPicker.items = _createItems(10);
 		var expectedValue = listPicker.items.length;
@@ -59,7 +58,7 @@ export var testWhenSettingItemsToNonEmptyArrayTheSameAmountOfNativeItemsIsCreate
 };
 
 export var testWhenSettingItemsToEmptyArrayZeroNativeItemsAreCreated = function () {
-	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<viewModule.View>) {
+	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
 		var listPicker = <listPickerModule.ListPicker>views[0];
 		listPicker.items = [];
 		var expectedValue = listPicker.items.length;
@@ -69,7 +68,7 @@ export var testWhenSettingItemsToEmptyArrayZeroNativeItemsAreCreated = function 
 };
 
 export var testSelectedIndexBecomesZeroWhenItemsBoundToNonEmptyArray = function () {
-	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<viewModule.View>) {
+	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
 		var listPicker = <listPickerModule.ListPicker>views[0];
 		// >> article-binding-listpickeritems
 		listPicker.items = [1, 2, 3];
@@ -81,7 +80,7 @@ export var testSelectedIndexBecomesZeroWhenItemsBoundToNonEmptyArray = function 
 };
 
 export var testSelectedIndexBecomesUndefinedWhenItemsBoundToEmptyArray = function () {
-	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<viewModule.View>) {
+	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
 		var listPicker = <listPickerModule.ListPicker>views[0];
 		listPicker.items = _createItems(10);
 		// >> article-selecting-item
@@ -95,7 +94,7 @@ export var testSelectedIndexBecomesUndefinedWhenItemsBoundToEmptyArray = functio
 };
 
 export var testSelectedIndexBecomesUndefinedWhenItemsBoundToUndefined = function () {
-	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<viewModule.View>) {
+	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
 		var listPicker = <listPickerModule.ListPicker>views[0];
 		listPicker.items = _createItems(10);
 		listPicker.selectedIndex = 9;
@@ -107,7 +106,7 @@ export var testSelectedIndexBecomesUndefinedWhenItemsBoundToUndefined = function
 };
 
 export var testSelectedIndexBecomesUndefinedWhenItemsBoundToNull = function () {
-	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<viewModule.View>) {
+	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
 		var listPicker = <listPickerModule.ListPicker>views[0];
 		listPicker.items = _createItems(10);
 		listPicker.selectedIndex = 9;
@@ -123,7 +122,7 @@ export var testItemsIsResolvedCorrectlyIfSetBeforeViewIsLoaded = function () {
 	var expectedValue = 10;
 	listPicker.items = _createItems(expectedValue);
 	listPicker.selectedIndex = 9;
-	helper.buildUIAndRunTest(listPicker, function (views: Array<viewModule.View>) {
+	helper.buildUIAndRunTest(listPicker, function (views: Array<View>) {
 		var listPicker = <listPickerModule.ListPicker>views[0];
 		var actualValue = listPicker.items.length;
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
@@ -135,7 +134,7 @@ export var testSelectedIndexIsResolvedCorrectlyIfSetBeforeViewIsLoaded = functio
 	listPicker.items = _createItems(10);
 	var expectedValue = 9;
 	listPicker.selectedIndex = expectedValue;
-	helper.buildUIAndRunTest(listPicker, function (views: Array<viewModule.View>) {
+	helper.buildUIAndRunTest(listPicker, function (views: Array<View>) {
 		var listPicker = <listPickerModule.ListPicker>views[0];
 		var actualValue = listPicker.selectedIndex;
 		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
@@ -144,7 +143,7 @@ export var testSelectedIndexIsResolvedCorrectlyIfSetBeforeViewIsLoaded = functio
 
 // export var testSettingNegativeSelectedIndexShouldThrow = function () {
 //     var listPicker = _createListPicker();
-//     helper.buildUIAndRunTest(listPicker, function (views: Array<viewModule.View>) {
+//     helper.buildUIAndRunTest(listPicker, function (views: Array<View>) {
 //         var listPicker = <listPickerModule.ListPicker>views[0];
 //         listPicker.items = _createItems(10);
 
@@ -156,7 +155,7 @@ export var testSelectedIndexIsResolvedCorrectlyIfSetBeforeViewIsLoaded = functio
 
 // export var testSettingSelectedIndexLargerThanCountShouldThrow = function () {
 //     var listPicker = _createListPicker();
-//     helper.buildUIAndRunTest(listPicker, function (views: Array<viewModule.View>) {
+//     helper.buildUIAndRunTest(listPicker, function (views: Array<View>) {
 //         var listPicker = <listPickerModule.ListPicker>views[0];
 //         listPicker.items = _createItems(10);
 //         TKUnit.assertThrows(function () {
@@ -180,11 +179,11 @@ export var testWhenSelectingAnItemNativelySelectedIndexIsUpdatedProperly = funct
 };
 
 export var test_Android_MaxValueIsOneLessThanItemsCount = function () {
-	if (!application.android) {
+	if (!Application.android) {
 		return;
 	}
 
-	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<viewModule.View>) {
+	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
 		var listPicker = <listPickerModule.ListPicker>views[0];
 		listPicker.items = ['One', 'Two', 'Three'];
 		var expectedValue = listPicker.items.length - 1;
@@ -194,11 +193,11 @@ export var test_Android_MaxValueIsOneLessThanItemsCount = function () {
 };
 
 export var test_Android_WhenItemsAreEmptyNativeControlDoesNotShowZero = function () {
-	if (!application.android) {
+	if (!Application.android) {
 		return;
 	}
 
-	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<viewModule.View>) {
+	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
 		var listPicker = <listPickerModule.ListPicker>views[0];
 		var expectedValue = ' ';
 		var actualValue = listPicker.nativeViewProtected.editText.getText().toString();
@@ -207,11 +206,11 @@ export var test_Android_WhenItemsAreEmptyNativeControlDoesNotShowZero = function
 };
 
 export var test_Android_WhenBoundToSingleElementArrayEditTextIsUpdatedProperly = function () {
-	if (!application.android) {
+	if (!Application.android) {
 		return;
 	}
 
-	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<viewModule.View>) {
+	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
 		var listPicker = <listPickerModule.ListPicker>views[0];
 		listPicker.items = ['One'];
 		var expectedValue = 'One';
@@ -221,11 +220,11 @@ export var test_Android_WhenBoundToSingleElementArrayEditTextIsUpdatedProperly =
 };
 
 export var test_Android_WhenSelectedIndexChangesEditTextIsUpdatedProperly = function () {
-	if (!application.android) {
+	if (!Application.android) {
 		return;
 	}
 
-	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<viewModule.View>) {
+	helper.buildUIAndRunTest(_createListPicker(), function (views: Array<View>) {
 		var listPicker = <listPickerModule.ListPicker>views[0];
 		listPicker.items = ['One', 'Two'];
 		listPicker.selectedIndex = 1;

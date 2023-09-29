@@ -323,6 +323,8 @@ declare class CSSearchableIndex extends NSObject {
 
 	constructor(o: { name: string; protectionClass: string; });
 
+	constructor(o: { name: string; protectionClass: string; bundleIdentifier: string; options: number; });
+
 	beginIndexBatch(): void;
 
 	deleteAllSearchableItemsWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
@@ -342,6 +344,8 @@ declare class CSSearchableIndex extends NSObject {
 	initWithName(name: string): this;
 
 	initWithNameProtectionClass(name: string, protectionClass: string): this;
+
+	initWithNameProtectionClassBundleIdentifierOptions(name: string, protectionClass: string, bundleIdentifier: string, options: number): this;
 }
 
 interface CSSearchableIndexDelegate extends NSObjectProtocol {
@@ -824,6 +828,10 @@ declare class CSSuggestion extends NSObject implements NSCopying, NSSecureCoding
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
+
+	score(): number;
+
+	suggestionDataSources(): NSArray<any>;
 }
 
 declare var CSSuggestionHighlightAttributeName: string;

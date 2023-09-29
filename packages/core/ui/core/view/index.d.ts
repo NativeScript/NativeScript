@@ -7,7 +7,7 @@ import { GestureTypes, GesturesObserver } from '../../gestures';
 import { LinearGradient } from '../../styling/linear-gradient';
 import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait, AccessibilityEventOptions } from '../../../accessibility/accessibility-types';
 import { CoreTypes } from '../../../core-types';
-import { CSSShadow } from '../../styling/css-shadow';
+import { ShadowCSSValues } from '../../styling/css-shadow';
 import { ViewCommon } from './view-common';
 
 export * from './view-common';
@@ -283,6 +283,21 @@ export abstract class View extends ViewCommon {
 	accessibilityMediaSession: boolean;
 
 	/**
+	 * Defines whether accessibility font scale should affect font size.
+	 */
+	iosAccessibilityAdjustsFontSize: boolean;
+
+	/**
+	 * Gets or sets the minimum accessibility font scale.
+	 */
+	iosAccessibilityMinFontScale: number;
+
+	/**
+	 * Gets or sets the maximum accessibility font scale.
+	 */
+	iosAccessibilityMaxFontScale: number;
+
+	/**
 	 * Internal use only. This is used to limit the number of updates to android.view.View.setContentDescription()
 	 */
 	_androidContentDescriptionUpdated?: boolean;
@@ -317,7 +332,7 @@ export abstract class View extends ViewCommon {
 	/**
 	 * Gets or sets the box shadow of the view.
 	 */
-	boxShadow: string | CSSShadow;
+	boxShadow: string | ShadowCSSValues;
 
 	/**
 	 * Gets or sets the minimum width the view may grow to.

@@ -128,7 +128,9 @@ declare const enum NSAttributeType {
 
 	TransformableAttributeType = 1800,
 
-	ObjectIDAttributeType = 2000
+	ObjectIDAttributeType = 2000,
+
+	CompositeAttributeType = 2100
 }
 
 declare class NSBatchDeleteRequest extends NSPersistentStoreRequest {
@@ -294,6 +296,15 @@ declare var NSBinaryStoreSecureDecodingClasses: string;
 
 declare var NSBinaryStoreType: string;
 
+declare class NSCompositeAttributeDescription extends NSAttributeDescription {
+
+	static alloc(): NSCompositeAttributeDescription; // inherited from NSObject
+
+	static new(): NSCompositeAttributeDescription; // inherited from NSObject
+
+	elements: NSArray<NSAttributeDescription>;
+}
+
 declare class NSConstraintConflict extends NSObject {
 
 	static alloc(): NSConstraintConflict; // inherited from NSObject
@@ -357,6 +368,25 @@ declare var NSCoreDataCoreSpotlightExporter: string;
 declare const NSCoreDataError: number;
 
 declare var NSCoreDataVersionNumber: number;
+
+declare class NSCustomMigrationStage extends NSMigrationStage {
+
+	static alloc(): NSCustomMigrationStage; // inherited from NSObject
+
+	static new(): NSCustomMigrationStage; // inherited from NSObject
+
+	readonly currentModel: NSManagedObjectModelReference;
+
+	didMigrateHandler: (p1: NSStagedMigrationManager, p2: NSCustomMigrationStage, p3: interop.Pointer | interop.Reference<NSError>) => boolean;
+
+	readonly nextModel: NSManagedObjectModelReference;
+
+	willMigrateHandler: (p1: NSStagedMigrationManager, p2: NSCustomMigrationStage, p3: interop.Pointer | interop.Reference<NSError>) => boolean;
+
+	constructor(o: { currentModelReference: NSManagedObjectModelReference; nextModelReference: NSManagedObjectModelReference; });
+
+	initWithCurrentModelReferenceNextModelReference(currentModel: NSManagedObjectModelReference, nextModel: NSManagedObjectModelReference): this;
+}
 
 declare const enum NSDeleteRule {
 
@@ -844,6 +874,19 @@ declare var NSInvalidatedObjectIDsKey: string;
 
 declare var NSInvalidatedObjectsKey: string;
 
+declare class NSLightweightMigrationStage extends NSMigrationStage {
+
+	static alloc(): NSLightweightMigrationStage; // inherited from NSObject
+
+	static new(): NSLightweightMigrationStage; // inherited from NSObject
+
+	readonly versionChecksums: NSArray<string>;
+
+	constructor(o: { versionChecksums: NSArray<string> | string[]; });
+
+	initWithVersionChecksums(versionChecksums: NSArray<string> | string[]): this;
+}
+
 declare class NSManagedObject extends NSObject implements NSFetchRequestResult {
 
 	static alloc(): NSManagedObject; // inherited from NSObject
@@ -1156,6 +1199,8 @@ declare class NSManagedObjectModel extends NSObject implements NSCoding, NSCopyi
 
 	static alloc(): NSManagedObjectModel; // inherited from NSObject
 
+	static checksumsForVersionedModelAtURLError(modelURL: NSURL): NSDictionary<string, string>;
+
 	static mergedModelFromBundles(bundles: NSArray<NSBundle> | NSBundle[]): NSManagedObjectModel;
 
 	static mergedModelFromBundlesForStoreMetadata(bundles: NSArray<NSBundle> | NSBundle[], metadata: NSDictionary<string, any>): NSManagedObjectModel;
@@ -1177,6 +1222,8 @@ declare class NSManagedObjectModel extends NSObject implements NSCoding, NSCopyi
 	readonly fetchRequestTemplatesByName: NSDictionary<string, NSFetchRequest<any>>;
 
 	localizationDictionary: NSDictionary<string, string>;
+
+	readonly versionChecksum: string;
 
 	versionIdentifiers: NSSet<any>;
 	[Symbol.iterator](): Iterator<any>;
@@ -1205,6 +1252,35 @@ declare class NSManagedObjectModel extends NSObject implements NSCoding, NSCopyi
 
 	setFetchRequestTemplateForName(fetchRequestTemplate: NSFetchRequest<any>, name: string): void;
 }
+
+declare class NSManagedObjectModelReference extends NSObject {
+
+	static alloc(): NSManagedObjectModelReference; // inherited from NSObject
+
+	static new(): NSManagedObjectModelReference; // inherited from NSObject
+
+	readonly resolvedModel: NSManagedObjectModel;
+
+	readonly versionChecksum: string;
+
+	constructor(o: { entityVersionHashes: NSDictionary<any, any>; inBundle: NSBundle; versionChecksum: string; });
+
+	constructor(o: { fileURL: NSURL; versionChecksum: string; });
+
+	constructor(o: { model: NSManagedObjectModel; versionChecksum: string; });
+
+	constructor(o: { name: string; inBundle: NSBundle; versionChecksum: string; });
+
+	initWithEntityVersionHashesInBundleVersionChecksum(versionHash: NSDictionary<any, any>, bundle: NSBundle, versionChecksum: string): this;
+
+	initWithFileURLVersionChecksum(fileURL: NSURL, versionChecksum: string): this;
+
+	initWithModelVersionChecksum(model: NSManagedObjectModel, versionChecksum: string): this;
+
+	initWithNameInBundleVersionChecksum(modelName: string, bundle: NSBundle, versionChecksum: string): this;
+}
+
+declare const NSManagedObjectModelReferenceNotFoundError: number;
 
 declare const NSManagedObjectReferentialIntegrityError: number;
 
@@ -1374,6 +1450,15 @@ declare const NSMigrationMissingSourceModelError: number;
 declare var NSMigrationPropertyMappingKey: string;
 
 declare var NSMigrationSourceObjectKey: string;
+
+declare class NSMigrationStage extends NSObject {
+
+	static alloc(): NSMigrationStage; // inherited from NSObject
+
+	static new(): NSMigrationStage; // inherited from NSObject
+
+	label: string;
+}
 
 declare var NSOverwriteMergePolicy: any;
 
@@ -1797,6 +1882,10 @@ declare class NSPersistentStoreCoordinator extends NSObject implements NSLocking
 
 	executeRequestWithContextError(request: NSPersistentStoreRequest, context: NSManagedObjectContext): any;
 
+	finishDeferredLightweightMigration(): boolean;
+
+	finishDeferredLightweightMigrationTask(): boolean;
+
 	initWithManagedObjectModel(model: NSManagedObjectModel): this;
 
 	lock(): void;
@@ -1833,6 +1922,8 @@ declare var NSPersistentStoreCoordinatorStoresDidChangeNotification: string;
 declare var NSPersistentStoreCoordinatorStoresWillChangeNotification: string;
 
 declare var NSPersistentStoreCoordinatorWillRemoveStoreNotification: string;
+
+declare var NSPersistentStoreDeferredLightweightMigrationOptionKey: string;
 
 declare class NSPersistentStoreDescription extends NSObject implements NSCopying {
 
@@ -1941,6 +2032,8 @@ declare const NSPersistentStoreSaveConflictsError: number;
 declare var NSPersistentStoreSaveConflictsErrorKey: string;
 
 declare const NSPersistentStoreSaveError: number;
+
+declare var NSPersistentStoreStagedMigrationManagerOptionKey: string;
 
 declare const NSPersistentStoreTimeoutError: number;
 
@@ -2125,6 +2218,25 @@ declare const enum NSSnapshotEventType {
 	Refresh = 32,
 
 	MergePolicy = 64
+}
+
+declare const NSStagedMigrationBackwardMigrationError: number;
+
+declare const NSStagedMigrationFrameworkVersionMismatchError: number;
+
+declare class NSStagedMigrationManager extends NSObject {
+
+	static alloc(): NSStagedMigrationManager; // inherited from NSObject
+
+	static new(): NSStagedMigrationManager; // inherited from NSObject
+
+	readonly container: NSPersistentContainer;
+
+	readonly stages: NSArray<NSMigrationStage>;
+
+	constructor(o: { migrationStages: NSArray<NSMigrationStage> | NSMigrationStage[]; });
+
+	initWithMigrationStages(stages: NSArray<NSMigrationStage> | NSMigrationStage[]): this;
 }
 
 declare var NSStoreModelVersionHashesKey: string;

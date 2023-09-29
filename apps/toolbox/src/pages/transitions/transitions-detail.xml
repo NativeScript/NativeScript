@@ -1,0 +1,19 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+  <Page.actionBar>
+    <ActionBar title="Transition Detail" icon="" class="action-bar">
+    </ActionBar>
+  </Page.actionBar>
+
+  <GridLayout rows="auto,auto,*" columns="*" verticalAlignment="top">
+    <Image row="1" sharedTransitionTag="image" src="https://cdn.pixabay.com/photo/2012/08/27/14/19/mountains-55067__340.png" height="230" verticalAlignment="top" marginTop="10" />
+
+    <GridLayout row="2" rows="auto,auto,auto">
+      <Label text="Opened Navigated Page" verticalAlignment="top" marginTop="20" class="text-center" fontSize="28" color="black" />
+
+      <ContentView row="2" sharedTransitionTag="open-modal-box1" marginTop="20" width="200" height="200" borderRadius="100" backgroundColor="purple" />
+      <ContentView row="1" sharedTransitionTag="open-modal-box2" marginTop="20" width="75" height="75" borderRadius="37" backgroundColor="orange" />
+      <ContentView row="2" sharedTransitionTag="open-modal-box3" marginTop="20" width="30" height="30" borderRadius="15" backgroundColor="red" horizontalAlignment="right" marginRight="50" />
+      <ContentView row="1" sharedTransitionTag="open-modal-box4" marginTop="20" width="30" height="30" borderRadius="15" backgroundColor="pink" horizontalAlignment="left" marginLeft="50" />
+    </GridLayout>
+  </GridLayout>
+</Page>

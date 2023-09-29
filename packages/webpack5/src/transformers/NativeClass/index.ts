@@ -12,7 +12,7 @@ export default function (ctx: ts.TransformationContext) {
 			decorators = ts.getDecorators(node);
 		} else {
 			// fallback to old behavior on older typescript versions
-			decorators = node.decorators;
+			decorators = (node as any).decorators;
 		}
 
 		return !!decorators?.some((d) => {
@@ -38,6 +38,8 @@ export default function (ctx: ts.TransformationContext) {
 							noEmitHelpers: true,
 							module: ts.ModuleKind.ESNext,
 							target: ts.ScriptTarget.ES5,
+							experimentalDecorators: true,
+							emitDecoratorMetadata: true,
 						},
 					}
 				)
@@ -51,6 +53,6 @@ export default function (ctx: ts.TransformationContext) {
 	return (source: ts.SourceFile) =>
 		ts.factory.updateSourceFile(
 			source,
-			ts.visitNodes(source.statements, visitNode)
+			ts.visitNodes(source.statements, visitNode) as ts.NodeArray<ts.Statement>
 		);
 }

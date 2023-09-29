@@ -683,6 +683,8 @@ declare const enum CNErrorCode {
 
 	FeatureDisabledByUser = 103,
 
+	FeatureNotAvailable = 104,
+
 	RecordDoesNotExist = 200,
 
 	InsertedRecordAlreadyExists = 201,

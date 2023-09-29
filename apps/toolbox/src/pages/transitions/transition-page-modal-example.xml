@@ -1,0 +1,23 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+  <Page.actionBar>
+    <ActionBar title="Transitions" icon="" class="action-bar">
+    </ActionBar>
+  </Page.actionBar>
+
+  <GridLayout rows="*,auto,auto,*">
+    <GridLayout row="1" rows="auto,auto" tap="{{ open }}">
+      <Image sharedTransitionTag="image" src="https://cdn.pixabay.com/photo/2012/08/27/14/19/mountains-55067__340.png" width="100" />
+      <Label row="1" text="Open Page" class="text-center" color="black" />
+    </GridLayout>
+
+    <GridLayout row="2" rows="auto,auto,auto,auto" tap="{{ openModal }}" marginTop="50">
+      <Image sharedTransitionTag="image-modal" src="https://cdn.pixabay.com/photo/2012/08/27/14/19/mountains-55067__340.png" width="100" />
+      <Label row="1" text="NativeScript Rocks!" sharedTransitionTag="open-modal-label" class="text-center" color="black" />
+
+      <ContentView row="2" sharedTransitionTag="open-modal-box1" borderWidth="5" borderColor="yellow" marginTop="20" width="50" height="50" borderRadius="999" backgroundColor="purple" />
+      <ContentView row="3" sharedTransitionTag="open-modal-box2" marginTop="20" width="20" height="20" borderRadius="999" backgroundColor="orange" />
+      <ContentView row="3" sharedTransitionTag="open-modal-box3" marginTop="20" width="20" height="20" borderRadius="999" backgroundColor="red" horizontalAlignment="left" marginLeft="100" />
+      <ContentView row="4" sharedTransitionTag="open-modal-box4" marginTop="20" width="20" height="20" borderRadius="999" backgroundColor="pink" horizontalAlignment="right" marginRight="100" />
+    </GridLayout>
+  </GridLayout>
+</Page>

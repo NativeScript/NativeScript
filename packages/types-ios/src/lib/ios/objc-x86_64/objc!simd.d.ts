@@ -227,24 +227,6 @@ declare function __tg_coshFunction7(x: interop.Reference<number>): interop.Refer
 
 declare function __tg_coshFunction8(x: interop.Reference<number>): interop.Reference<number>;
 
-declare function __tg_cospi(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function __tg_cospiFunction(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function __tg_cospiFunction2(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function __tg_cospiFunction3(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function __tg_cospiFunction4(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function __tg_cospiFunction5(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function __tg_cospiFunction6(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function __tg_cospiFunction7(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function __tg_cospiFunction8(x: interop.Reference<number>): interop.Reference<number>;
-
 declare function __tg_erf(x: interop.Reference<number>): interop.Reference<number>;
 
 declare function __tg_erfFunction(x: interop.Reference<number>): interop.Reference<number>;
@@ -282,24 +264,6 @@ declare function __tg_erfcFunction7(x: interop.Reference<number>): interop.Refer
 declare function __tg_erfcFunction8(x: interop.Reference<number>): interop.Reference<number>;
 
 declare function __tg_exp(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function __tg_exp10(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function __tg_exp10Function(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function __tg_exp10Function2(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function __tg_exp10Function3(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function __tg_exp10Function4(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function __tg_exp10Function5(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function __tg_exp10Function6(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function __tg_exp10Function7(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function __tg_exp10Function8(x: interop.Reference<number>): interop.Reference<number>;
 
 declare function __tg_exp2(x: interop.Reference<number>): interop.Reference<number>;
 
@@ -797,42 +761,6 @@ declare function __tg_sinFunction7(x: interop.Reference<number>): interop.Refere
 
 declare function __tg_sinFunction8(x: interop.Reference<number>): interop.Reference<number>;
 
-declare function __tg_sincos(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
-
-declare function __tg_sincosFunction(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
-
-declare function __tg_sincosFunction2(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
-
-declare function __tg_sincosFunction3(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
-
-declare function __tg_sincosFunction4(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
-
-declare function __tg_sincosFunction5(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
-
-declare function __tg_sincosFunction6(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
-
-declare function __tg_sincosFunction7(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
-
-declare function __tg_sincosFunction8(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
-
-declare function __tg_sincospi(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
-
-declare function __tg_sincospiFunction(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
-
-declare function __tg_sincospiFunction2(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
-
-declare function __tg_sincospiFunction3(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
-
-declare function __tg_sincospiFunction4(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
-
-declare function __tg_sincospiFunction5(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
-
-declare function __tg_sincospiFunction6(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
-
-declare function __tg_sincospiFunction7(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
-
-declare function __tg_sincospiFunction8(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
-
 declare function __tg_sinh(x: interop.Reference<number>): interop.Reference<number>;
 
 declare function __tg_sinhFunction(x: interop.Reference<number>): interop.Reference<number>;
@@ -850,24 +778,6 @@ declare function __tg_sinhFunction6(x: interop.Reference<number>): interop.Refer
 declare function __tg_sinhFunction7(x: interop.Reference<number>): interop.Reference<number>;
 
 declare function __tg_sinhFunction8(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function __tg_sinpi(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function __tg_sinpiFunction(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function __tg_sinpiFunction2(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function __tg_sinpiFunction3(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function __tg_sinpiFunction4(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function __tg_sinpiFunction5(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function __tg_sinpiFunction6(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function __tg_sinpiFunction7(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function __tg_sinpiFunction8(x: interop.Reference<number>): interop.Reference<number>;
 
 declare function __tg_sqrt(x: interop.Reference<number>): interop.Reference<number>;
 
@@ -923,24 +833,6 @@ declare function __tg_tanhFunction7(x: interop.Reference<number>): interop.Refer
 
 declare function __tg_tanhFunction8(x: interop.Reference<number>): interop.Reference<number>;
 
-declare function __tg_tanpi(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function __tg_tanpiFunction(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function __tg_tanpiFunction2(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function __tg_tanpiFunction3(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function __tg_tanpiFunction4(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function __tg_tanpiFunction5(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function __tg_tanpiFunction6(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function __tg_tanpiFunction7(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function __tg_tanpiFunction8(x: interop.Reference<number>): interop.Reference<number>;
-
 declare function __tg_tgamma(x: interop.Reference<number>): interop.Reference<number>;
 
 declare function __tg_tgammaFunction(x: interop.Reference<number>): interop.Reference<number>;
@@ -976,182 +868,6 @@ declare function __tg_truncFunction6(x: interop.Reference<number>): interop.Refe
 declare function __tg_truncFunction7(x: interop.Reference<number>): interop.Reference<number>;
 
 declare function __tg_truncFunction8(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_acos_d2(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_acos_f4(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_acosh_d2(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_acosh_f4(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_asin_d2(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_asin_f4(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_asinh_d2(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_asinh_f4(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_atan2_d2(y: interop.Reference<number>, x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_atan2_f4(y: interop.Reference<number>, x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_atan_d2(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_atan_f4(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_atanh_d2(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_atanh_f4(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_cbrt_d2(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_cbrt_f4(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_cos_d2(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_cos_f4(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_cosh_d2(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_cosh_f4(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_cospi_d2(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_cospi_f4(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_erf_d2(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_erf_f4(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_erfc_d2(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_erfc_f4(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_exp10_d2(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_exp10_f4(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_exp2_d2(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_exp2_f4(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_exp_d2(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_exp_f4(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_expm1_d2(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_expm1_f4(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_fma_d2(x: interop.Reference<number>, y: interop.Reference<number>, z: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_fma_f4(x: interop.Reference<number>, y: interop.Reference<number>, z: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_fmod_d2(x: interop.Reference<number>, y: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_fmod_f4(x: interop.Reference<number>, y: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_hypot_d2(x: interop.Reference<number>, y: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_hypot_f4(x: interop.Reference<number>, y: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_incircle_pd2(p1: interop.Reference<number>, p2: interop.Reference<number>, p3: interop.Reference<number>, p4: interop.Reference<number>): number;
-
-declare function _simd_incircle_pf2(p1: interop.Reference<number>, p2: interop.Reference<number>, p3: interop.Reference<number>, p4: interop.Reference<number>): number;
-
-declare function _simd_insphere_pd3(p1: interop.Pointer | interop.Reference<number>): number;
-
-declare function _simd_insphere_pf3(p1: interop.Reference<number>, p2: interop.Reference<number>, p3: interop.Reference<number>, p4: interop.Reference<number>, p5: interop.Reference<number>): number;
-
-declare function _simd_lgamma_d2(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_lgamma_f4(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_log10_d2(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_log10_f4(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_log1p_d2(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_log1p_f4(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_log2_d2(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_log2_f4(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_log_d2(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_log_f4(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_nextafter_d2(x: interop.Reference<number>, y: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_nextafter_f4(x: interop.Reference<number>, y: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_orient_pd2(p1: interop.Reference<number>, p2: interop.Reference<number>, p3: interop.Reference<number>): number;
-
-declare function _simd_orient_pd3(p1: interop.Pointer | interop.Reference<number>): number;
-
-declare function _simd_orient_pf2(p1: interop.Reference<number>, p2: interop.Reference<number>, p3: interop.Reference<number>): number;
-
-declare function _simd_orient_pf3(p1: interop.Reference<number>, p2: interop.Reference<number>, p3: interop.Reference<number>, p4: interop.Reference<number>): number;
-
-declare function _simd_orient_vd2(p1: interop.Reference<number>, p2: interop.Reference<number>): number;
-
-declare function _simd_orient_vd3(p1: interop.Pointer | interop.Reference<number>): number;
-
-declare function _simd_orient_vf2(p1: interop.Reference<number>, p2: interop.Reference<number>): number;
-
-declare function _simd_orient_vf3(p1: interop.Reference<number>, p2: interop.Reference<number>, p3: interop.Reference<number>): number;
-
-declare function _simd_pow_d2(x: interop.Reference<number>, y: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_pow_f4(x: interop.Reference<number>, y: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_remainder_d2(x: interop.Reference<number>, y: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_remainder_f4(x: interop.Reference<number>, y: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_round_d2(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_round_f4(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_sin_d2(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_sin_f4(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_sincos_d2(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
-
-declare function _simd_sincos_f4(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
-
-declare function _simd_sincospi_d2(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
-
-declare function _simd_sincospi_f4(x: interop.Reference<number>, sinp: interop.Pointer | interop.Reference<interop.Reference<number>>, cosp: interop.Pointer | interop.Reference<interop.Reference<number>>): void;
-
-declare function _simd_sinh_d2(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_sinh_f4(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_sinpi_d2(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_sinpi_f4(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_tan_d2(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_tan_f4(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_tanh_d2(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_tanh_f4(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_tanpi_d2(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_tanpi_f4(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_tgamma_d2(x: interop.Reference<number>): interop.Reference<number>;
-
-declare function _simd_tgamma_f4(x: interop.Reference<number>): interop.Reference<number>;
 
 declare var matrix_identity_double2x2: simd_double2x2;
 
@@ -2483,14 +2199,6 @@ declare function simd_fractFunction8(x: interop.Reference<number>): interop.Refe
 
 declare function simd_fractFunction9(x: interop.Reference<number>): interop.Reference<number>;
 
-declare function simd_incircle(__x: interop.Reference<number>, __a: interop.Reference<number>, __b: interop.Reference<number>, __c: interop.Reference<number>): number;
-
-declare function simd_incircleFunction(__x: interop.Reference<number>, __a: interop.Reference<number>, __b: interop.Reference<number>, __c: interop.Reference<number>): number;
-
-declare function simd_insphere(__x: interop.Reference<number>, __a: interop.Reference<number>, __b: interop.Reference<number>, __c: interop.Reference<number>, __d: interop.Reference<number>): number;
-
-declare function simd_insphereFunction(__x: interop.Reference<number>, __a: interop.Reference<number>, __b: interop.Reference<number>, __c: interop.Reference<number>, __d: interop.Reference<number>): number;
-
 declare function simd_int(__x: interop.Reference<number>): interop.Reference<number>;
 
 declare function simd_intFunction(__x: interop.Reference<number>): interop.Reference<number>;
@@ -3582,22 +3290,6 @@ declare function simd_normalizeFunction7(__x: interop.Reference<number>): intero
 declare function simd_normalizeFunction8(__x: interop.Reference<number>): interop.Reference<number>;
 
 declare function simd_normalizeFunction9(q: simd_quatf): simd_quatf;
-
-declare function simd_orient(__x: interop.Reference<number>, __y: interop.Reference<number>): number;
-
-declare function simd_orientFunction(__x: interop.Reference<number>, __y: interop.Reference<number>): number;
-
-declare function simd_orientFunction2(__x: interop.Reference<number>, __y: interop.Reference<number>, __z: interop.Reference<number>): number;
-
-declare function simd_orientFunction3(__x: interop.Reference<number>, __y: interop.Reference<number>, __z: interop.Reference<number>): number;
-
-declare function simd_orientFunction4(__a: interop.Reference<number>, __b: interop.Reference<number>, __c: interop.Reference<number>): number;
-
-declare function simd_orientFunction5(__a: interop.Reference<number>, __b: interop.Reference<number>, __c: interop.Reference<number>): number;
-
-declare function simd_orientFunction6(__a: interop.Reference<number>, __b: interop.Reference<number>, __c: interop.Reference<number>, __d: interop.Reference<number>): number;
-
-declare function simd_orientFunction7(__a: interop.Reference<number>, __b: interop.Reference<number>, __c: interop.Reference<number>, __d: interop.Reference<number>): number;
 
 declare function simd_precise_distance(__x: interop.Reference<number>, __y: interop.Reference<number>): number;
 

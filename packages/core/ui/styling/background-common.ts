@@ -2,7 +2,7 @@ import { CoreTypes } from '../../core-types';
 import { LinearGradient } from './linear-gradient';
 // Types.
 import { Color } from '../../color';
-import { CSSShadow } from './css-shadow';
+import { BoxShadow } from './box-shadow';
 
 /**
  * Flags used to hint the background handler if it has to clear a specific property
@@ -40,7 +40,7 @@ export class Background {
 	public borderBottomLeftRadius = 0;
 	public borderBottomRightRadius = 0;
 	public clipPath: string;
-	public boxShadow: CSSShadow;
+	public boxShadow: BoxShadow;
 	public clearFlags: number = BackgroundClearFlags.NONE;
 
 	private clone(): Background {
@@ -199,7 +199,7 @@ export class Background {
 		return clone;
 	}
 
-	public withBoxShadow(value: CSSShadow): Background {
+	public withBoxShadow(value: BoxShadow): Background {
 		const clone = this.clone();
 		clone.boxShadow = value;
 		if (!value) {
@@ -266,6 +266,10 @@ export class Background {
 		return this.borderTopLeftRadius > 0 || this.borderTopRightRadius > 0 || this.borderBottomRightRadius > 0 || this.borderBottomLeftRadius > 0;
 	}
 
+	public hasBorder(): boolean {
+		return (this.hasBorderColor() && this.hasBorderWidth()) || this.hasBorderRadius();
+	}
+
 	public hasUniformBorderColor(): boolean {
 		return Color.equals(this.borderTopColor, this.borderRightColor) && Color.equals(this.borderTopColor, this.borderBottomColor) && Color.equals(this.borderTopColor, this.borderLeftColor);
 	}
@@ -310,7 +314,7 @@ export class Background {
 		return !!this.boxShadow;
 	}
 
-	public getBoxShadow(): CSSShadow {
+	public getBoxShadow(): BoxShadow {
 		return this.boxShadow;
 	}
 

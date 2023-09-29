@@ -6,7 +6,7 @@ import * as TKUnit from '../tk-unit';
 
 export * from './color-tests-common';
 
-export function testFromIosColorWhite () {
+export function testFromIosColorWhite() {
 	// >> color-ios-white
 	// Creates the white color
 	const color = Color.fromIosColor(UIColor.whiteColor);
@@ -17,4 +17,4 @@ export function testFromIosColorWhite () {
 	TKUnit.assertEqual(color.b, 255, 'Color.b not properly parsed');
 	TKUnit.assertEqual(color.hex, '#FFFFFF', 'Color.hex not properly parsed');
 	TKUnit.assertEqual(color.argb, 0xffffffff, 'Color.argb not properly parsed');
-};
+}

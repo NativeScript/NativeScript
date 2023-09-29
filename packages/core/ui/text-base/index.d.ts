@@ -4,7 +4,7 @@ import { Style } from '../styling/style';
 import { Length } from '../styling/style-properties';
 import { Property, CssProperty, InheritedCssProperty } from '../core/properties';
 import { CoreTypes } from '../../core-types';
-import { CSSShadow } from '../styling/css-shadow';
+import { ShadowCSSValues } from '../styling/css-shadow';
 
 export class TextBase extends View implements AddChildFromBuilder {
 	/**
@@ -56,12 +56,17 @@ export class TextBase extends View implements AddChildFromBuilder {
 	/**
 	 * Gets or sets text shadow style property.
 	 */
-	textShadow: CSSShadow;
+	textShadow: ShadowCSSValues;
 
 	/**
 	 * Gets or sets white space style property.
 	 */
 	whiteSpace: CoreTypes.WhiteSpaceType;
+
+	/**
+	 * Gets or sets text-overflow style property.
+	 */
+	textOverflow: CoreTypes.TextOverflowType;
 
 	/**
 	 * Gets or sets white space style property.
@@ -132,8 +137,9 @@ export const maxLinesProperty: InheritedCssProperty<Style, number>;
 export const textAlignmentProperty: InheritedCssProperty<Style, CoreTypes.TextAlignmentType>;
 export const textDecorationProperty: CssProperty<Style, CoreTypes.TextDecorationType>;
 export const textTransformProperty: CssProperty<Style, CoreTypes.TextTransformType>;
-export const textShadowProperty: CssProperty<Style, CSSShadow>;
+export const textShadowProperty: CssProperty<Style, ShadowCSSValues>;
 export const whiteSpaceProperty: CssProperty<Style, CoreTypes.WhiteSpaceType>;
+export const textOverflowProperty: CssProperty<Style, CoreTypes.TextOverflowType>;
 export const letterSpacingProperty: CssProperty<Style, number>;
 export const lineHeightProperty: CssProperty<Style, number>;
 
