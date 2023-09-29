@@ -202,6 +202,20 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.add(`.${platform}.json`)
 		.add('.json');
 
+	if (platform === 'visionos') {
+		// visionOS allows for both .ios and .visionos extensions
+		const extensions = config.resolve.extensions.values();
+		const newExtensions = [];
+		extensions.forEach((ext) => {
+			newExtensions.push(ext);
+			if (ext.includes('visionos')) {
+				newExtensions.push(ext.replace('visionos', 'ios'));
+			}
+		});
+
+		config.resolve.extensions.clear().merge(newExtensions);
+	}
+
 	// base aliases
 	config.resolve.alias.set('~', getEntryDirPath()).set('@', getEntryDirPath());
 
