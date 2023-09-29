@@ -4,11 +4,12 @@ import { Color } from '../../color';
 import { ad } from '../../utils';
 import { SDK_VERSION } from '../../utils/constants';
 import { CoreTypes } from '../../core-types';
+import * as timer from '../../timer';
 
 export * from './editable-text-base-common';
 
 //https://github.com/NativeScript/NativeScript/issues/2942
-export let dismissKeyboardTimeoutId: NodeJS.Timer;
+export let dismissKeyboardTimeoutId: number;
 
 interface EditTextListeners extends android.text.TextWatcher, android.view.View.OnFocusChangeListener, android.widget.TextView.OnEditorActionListener {}
 
@@ -29,7 +30,7 @@ function clearDismissTimer(): void {
 function dismissSoftInput(view: EditableTextBase): void {
 	clearDismissTimer();
 	if (!dismissKeyboardTimeoutId) {
-		dismissKeyboardTimeoutId = setTimeout(() => {
+		dismissKeyboardTimeoutId = timer.setTimeout(() => {
 			const activity = view._context as androidx.appcompat.app.AppCompatActivity;
 			dismissKeyboardTimeoutId = null;
 			const focused = activity && activity.getCurrentFocus();
