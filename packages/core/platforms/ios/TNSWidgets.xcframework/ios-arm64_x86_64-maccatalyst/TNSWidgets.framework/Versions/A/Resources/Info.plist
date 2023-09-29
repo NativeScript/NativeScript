@@ -35,15 +35,15 @@
 	<key>DTPlatformVersion</key>
 	<string>14.0</string>
 	<key>DTSDKBuild</key>
-	<string>23A334</string>
+	<string>23A5334a</string>
 	<key>DTSDKName</key>
 	<string>macosx14.0</string>
 	<key>DTXcode</key>
 	<string>1500</string>
 	<key>DTXcodeBuild</key>
-	<string>15A240d</string>
+	<string>15A5229m</string>
 	<key>LSMinimumSystemVersion</key>
-	<string>10.15</string>
+	<string>14.0</string>
 	<key>UIDeviceFamily</key>
 	<array>
 		<integer>2</integer>
