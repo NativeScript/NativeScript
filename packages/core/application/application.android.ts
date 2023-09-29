@@ -281,6 +281,8 @@ function initNativeScriptComponentCallbacks() {
 }
 
 export class AndroidApplication extends ApplicationCommon implements IAndroidApplication {
+	static readonly fragmentCreateEvent = 'fragmentCreate';
+	static readonly activityCreateEvent = 'activityCreate';
 	static readonly activityCreatedEvent = 'activityCreated';
 	static readonly activityDestroyedEvent = 'activityDestroyed';
 	static readonly activityStartedEvent = 'activityStarted';
@@ -293,6 +295,8 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 	static readonly activityNewIntentEvent = 'activityNewIntent';
 	static readonly activityRequestPermissionsEvent = 'activityRequestPermissions';
 
+	readonly fragmentCreateEvent = AndroidApplication.fragmentCreateEvent;
+	readonly activityCreateEvent = AndroidApplication.activityCreateEvent;
 	readonly activityCreatedEvent = AndroidApplication.activityCreatedEvent;
 	readonly activityDestroyedEvent = AndroidApplication.activityDestroyedEvent;
 	readonly activityStartedEvent = AndroidApplication.activityStartedEvent;

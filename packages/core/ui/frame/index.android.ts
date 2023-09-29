@@ -284,7 +284,11 @@ export class Frame extends FrameBase {
 		backstackEntry.fragment = newFragment;
 		backstackEntry.fragmentTag = fragmentTag;
 		backstackEntry.navDepth = navDepth;
-
+		Application.android.notify({
+			eventName: Application.AndroidApplication.fragmentCreateEvent,
+			object: Application.android,
+			fragment: newFragment,
+		});
 		return newFragment;
 	}
 
@@ -1145,6 +1149,12 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 				intent,
 			});
 		}
+
+		Application.android.notify({
+			eventName: Application.AndroidApplication.activityCreateEvent,
+			object: Application.android,
+			activity,
+		});
 
 		this.setActivityContent(activity, savedInstanceState, true);
 		moduleLoaded = true;
