@@ -151,7 +151,7 @@ export function _setAndroidFragmentTransitions(animated: boolean, navigationTran
 	if (currentEntry) {
 		currentEntry.transitionName = name;
 		if (name === 'custom') {
-			currentEntry.transition = transition;
+			currentEntry.transition = transition || customTransition;
 		}
 	}
 
