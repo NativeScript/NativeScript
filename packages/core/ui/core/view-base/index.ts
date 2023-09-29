@@ -332,7 +332,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	private _iosView: Object;
 	private _androidView: Object;
 	private _style: Style;
-	private _isLoaded: boolean;
+	private _isLoaded: boolean = false;
 	private _visualState: string;
 	private _templateParent: ViewBase;
 	private __nativeView: any;
