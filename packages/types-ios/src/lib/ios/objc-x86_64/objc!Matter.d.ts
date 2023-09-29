@@ -140,18 +140,11 @@ declare class MTRAccessControlClusterAccessControlExtensionStruct extends NSObje
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
-declare class MTRAccessControlClusterExtensionEntry extends MTRAccessControlClusterAccessControlExtensionStruct {
+declare class MTRAccessControlClusterAccessControlTargetStruct extends NSObject implements NSCopying {
 
-	static alloc(): MTRAccessControlClusterExtensionEntry; // inherited from NSObject
+	static alloc(): MTRAccessControlClusterAccessControlTargetStruct; // inherited from NSObject
 
-	static new(): MTRAccessControlClusterExtensionEntry; // inherited from NSObject
-}
-
-declare class MTRAccessControlClusterTarget extends NSObject implements NSCopying {
-
-	static alloc(): MTRAccessControlClusterTarget; // inherited from NSObject
-
-	static new(): MTRAccessControlClusterTarget; // inherited from NSObject
+	static new(): MTRAccessControlClusterAccessControlTargetStruct; // inherited from NSObject
 
 	cluster: number;
 
@@ -160,6 +153,20 @@ declare class MTRAccessControlClusterTarget extends NSObject implements NSCopyin
 	endpoint: number;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare class MTRAccessControlClusterExtensionEntry extends MTRAccessControlClusterAccessControlExtensionStruct {
+
+	static alloc(): MTRAccessControlClusterExtensionEntry; // inherited from NSObject
+
+	static new(): MTRAccessControlClusterExtensionEntry; // inherited from NSObject
+}
+
+declare class MTRAccessControlClusterTarget extends MTRAccessControlClusterAccessControlTargetStruct {
+
+	static alloc(): MTRAccessControlClusterTarget; // inherited from NSObject
+
+	static new(): MTRAccessControlClusterTarget; // inherited from NSObject
 }
 
 declare const enum MTRAccessControlEntryAuthMode {
@@ -222,7 +229,11 @@ declare class MTRAccountLoginClusterGetSetupPINResponseParams extends NSObject i
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRAccountLoginClusterLoginParams extends NSObject implements NSCopying {
@@ -804,7 +815,11 @@ declare class MTRApplicationLauncherClusterLauncherResponseParams extends NSObje
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRApplicationLauncherClusterStopAppParams extends NSObject implements NSCopying {
@@ -2403,7 +2418,11 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterTimeSynchronizationAttributeTimeSourceID = 2,
 
+	AttributeIDTypeClusterTimeSynchronizationAttributeTrustedTimeSourceID = 3,
+
 	AttributeIDTypeClusterTimeSynchronizationAttributeTrustedTimeNodeIdID = 3,
+
+	AttributeIDTypeClusterTimeSynchronizationAttributeDefaultNTPID = 4,
 
 	AttributeIDTypeClusterTimeSynchronizationAttributeDefaultNtpID = 4,
 
@@ -2416,6 +2435,8 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterTimeSynchronizationAttributeLocalTimeID = 7,
 
 	AttributeIDTypeClusterTimeSynchronizationAttributeTimeZoneDatabaseID = 8,
+
+	AttributeIDTypeClusterTimeSynchronizationAttributeNTPServerAvailableID = 9,
 
 	AttributeIDTypeClusterTimeSynchronizationAttributeNtpServerPortID = 9,
 
@@ -5446,6 +5467,10 @@ declare class MTRAttributeReport extends NSObject {
 	readonly path: MTRAttributePath;
 
 	readonly value: any;
+
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRAttributeRequestPath extends NSObject implements NSCopying {
@@ -12899,6 +12924,8 @@ declare class MTRBaseClusterGroupKeyManagement extends MTRCluster {
 	initWithDeviceEndpointIDQueue(device: MTRBaseDevice, endpointID: number, queue: interop.Pointer | interop.Reference<any>): this;
 
 	initWithDeviceEndpointQueue(device: MTRBaseDevice, endpoint: number, queue: interop.Pointer | interop.Reference<any>): this;
+
+	keySetReadAllIndicesWithCompletion(completion: (p1: MTRGroupKeyManagementClusterKeySetReadAllIndicesResponseParams, p2: NSError) => void): void;
 
 	keySetReadAllIndicesWithParamsCompletion(params: MTRGroupKeyManagementClusterKeySetReadAllIndicesParams, completion: (p1: MTRGroupKeyManagementClusterKeySetReadAllIndicesResponseParams, p2: NSError) => void): void;
 
@@ -22753,9 +22780,15 @@ declare class MTRCertificates extends NSObject {
 
 	static createIntermediateCertificateRootCertificateIntermediatePublicKeyIssuerIDFabricIDError(rootKeypair: MTRKeypair, rootCertificate: NSData, intermediatePublicKey: any, issuerID: number, fabricID: number): NSData;
 
+	static createIntermediateCertificateRootCertificateIntermediatePublicKeyIssuerIDFabricIDValidityPeriodError(rootKeypair: MTRKeypair, rootCertificate: NSData, intermediatePublicKey: any, issuerID: number, fabricID: number, validityPeriod: NSDateInterval): NSData;
+
 	static createOperationalCertificateSigningCertificateOperationalPublicKeyFabricIDNodeIDCaseAuthenticatedTagsError(signingKeypair: MTRKeypair, signingCertificate: NSData, operationalPublicKey: any, fabricID: number, nodeID: number, caseAuthenticatedTags: NSSet<number>): NSData;
 
+	static createOperationalCertificateSigningCertificateOperationalPublicKeyFabricIDNodeIDCaseAuthenticatedTagsValidityPeriodError(signingKeypair: MTRKeypair, signingCertificate: NSData, operationalPublicKey: any, fabricID: number, nodeID: number, caseAuthenticatedTags: NSSet<number>, validityPeriod: NSDateInterval): NSData;
+
 	static createRootCertificateIssuerIDFabricIDError(keypair: MTRKeypair, issuerID: number, fabricID: number): NSData;
+
+	static createRootCertificateIssuerIDFabricIDValidityPeriodError(keypair: MTRKeypair, issuerID: number, fabricID: number, validityPeriod: NSDateInterval): NSData;
 
 	static generateCertificateSigningRequestError(keypair: MTRKeypair): NSData;
 
@@ -22818,7 +22851,11 @@ declare class MTRChannelClusterChangeChannelResponseParams extends NSObject impl
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRChannelClusterChannelInfo extends MTRChannelClusterChannelInfoStruct {
@@ -24988,6 +25025,8 @@ declare class MTRClusterGroupKeyManagement extends MTRCluster {
 	initWithDeviceEndpointIDQueue(device: MTRDevice, endpointID: number, queue: interop.Pointer | interop.Reference<any>): this;
 
 	initWithDeviceEndpointQueue(device: MTRDevice, endpoint: number, queue: interop.Pointer | interop.Reference<any>): this;
+
+	keySetReadAllIndicesWithExpectedValuesExpectedValueIntervalCompletion(expectedValues: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: MTRGroupKeyManagementClusterKeySetReadAllIndicesResponseParams, p2: NSError) => void): void;
 
 	keySetReadAllIndicesWithParamsExpectedValuesExpectedValueIntervalCompletion(params: MTRGroupKeyManagementClusterKeySetReadAllIndicesParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: MTRGroupKeyManagementClusterKeySetReadAllIndicesResponseParams, p2: NSError) => void): void;
 
@@ -29782,6 +29821,34 @@ declare class MTRCommandPath extends MTRClusterPath {
 
 declare var MTRCommandPathKey: string;
 
+interface MTRCommissionableBrowserDelegate extends NSObjectProtocol {
+
+	controllerDidFindCommissionableDevice(controller: MTRDeviceController, device: MTRCommissionableBrowserResult): void;
+
+	controllerDidRemoveCommissionableDevice(controller: MTRDeviceController, device: MTRCommissionableBrowserResult): void;
+}
+declare var MTRCommissionableBrowserDelegate: {
+
+	prototype: MTRCommissionableBrowserDelegate;
+};
+
+declare class MTRCommissionableBrowserResult extends NSObject {
+
+	static alloc(): MTRCommissionableBrowserResult; // inherited from NSObject
+
+	static new(): MTRCommissionableBrowserResult; // inherited from NSObject
+
+	readonly commissioningMode: boolean;
+
+	readonly discriminator: number;
+
+	readonly instanceName: string;
+
+	readonly productID: number;
+
+	readonly vendorID: number;
+}
+
 declare const enum MTRCommissioningFlow {
 
 	Standard = 0,
@@ -29802,6 +29869,8 @@ declare class MTRCommissioningParameters extends NSObject {
 	CSRNonce: NSData;
 
 	attestationNonce: NSData;
+
+	countryCode: string;
 
 	csrNonce: NSData;
 
@@ -29976,7 +30045,11 @@ declare class MTRContentLauncherClusterLauncherResponseParams extends NSObject i
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRContentLauncherClusterParameter extends MTRContentLauncherClusterParameterStruct {
@@ -30200,6 +30273,10 @@ declare class MTRDeviceAttestationDeviceInfo extends NSObject {
 
 	static new(): MTRDeviceAttestationDeviceInfo; // inherited from NSObject
 
+	readonly basicInformationProductID: number;
+
+	readonly basicInformationVendorID: number;
+
 	readonly certificateDeclaration: NSData;
 
 	readonly dacCertificate: NSData;
@@ -30310,9 +30387,15 @@ declare class MTRDeviceController extends NSObject {
 
 	setPairingDelegateQueue(delegate: MTRDevicePairingDelegate, queue: interop.Pointer | interop.Reference<any>): void;
 
+	setupCommissioningSessionWithDiscoveredDevicePayloadNewNodeIDError(discoveredDevice: MTRCommissionableBrowserResult, payload: MTRSetupPayload, newNodeID: number): boolean;
+
 	setupCommissioningSessionWithPayloadNewNodeIDError(payload: MTRSetupPayload, newNodeID: number): boolean;
 
 	shutdown(): void;
+
+	startBrowseForCommissionablesQueue(delegate: MTRCommissionableBrowserDelegate, queue: interop.Pointer | interop.Reference<any>): boolean;
+
+	stopBrowseForCommissionables(): boolean;
 
 	stopDevicePairingError(deviceID: number): boolean;
 }
@@ -30541,7 +30624,11 @@ declare class MTRDiagnosticLogsClusterRetrieveLogsResponseParams extends NSObjec
 
 	utcTimeStamp: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare const enum MTRDiagnosticLogsIntent {
@@ -30809,7 +30896,11 @@ declare class MTRDoorLockClusterGetCredentialStatusResponseParams extends NSObje
 
 	userIndex: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRDoorLockClusterGetHolidayScheduleParams extends NSObject implements NSCopying {
@@ -30845,7 +30936,11 @@ declare class MTRDoorLockClusterGetHolidayScheduleResponseParams extends NSObjec
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRDoorLockClusterGetUserParams extends NSObject implements NSCopying {
@@ -30893,7 +30988,11 @@ declare class MTRDoorLockClusterGetUserResponseParams extends NSObject implement
 
 	userUniqueId: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRDoorLockClusterGetWeekDayScheduleParams extends NSObject implements NSCopying {
@@ -30937,7 +31036,11 @@ declare class MTRDoorLockClusterGetWeekDayScheduleResponseParams extends NSObjec
 
 	weekDayIndex: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRDoorLockClusterGetYearDayScheduleParams extends NSObject implements NSCopying {
@@ -30975,7 +31078,11 @@ declare class MTRDoorLockClusterGetYearDayScheduleResponseParams extends NSObjec
 
 	yearDayIndex: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRDoorLockClusterLockDoorParams extends NSObject implements NSCopying {
@@ -31099,7 +31206,11 @@ declare class MTRDoorLockClusterSetCredentialResponseParams extends NSObject imp
 
 	userIndex: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRDoorLockClusterSetHolidayScheduleParams extends NSObject implements NSCopying {
@@ -32002,7 +32113,11 @@ declare class MTRElectricalMeasurementClusterGetMeasurementProfileResponseComman
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRElectricalMeasurementClusterGetProfileInfoCommandParams extends NSObject implements NSCopying {
@@ -32034,7 +32149,11 @@ declare class MTRElectricalMeasurementClusterGetProfileInfoResponseCommandParams
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare const enum MTRErrorCode {
@@ -32059,7 +32178,13 @@ declare const enum MTRErrorCode {
 
 	BufferTooSmall = 10,
 
-	FabricExists = 11
+	FabricExists = 11,
+
+	UnknownSchema = 12,
+
+	SchemaMismatch = 13,
+
+	TLVDecodeFailed = 14
 }
 
 declare var MTRErrorDomain: string;
@@ -32420,6 +32545,10 @@ declare class MTREventReport extends NSObject {
 	readonly timestampDate: Date;
 
 	readonly value: any;
+
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTREventRequestPath extends NSObject implements NSCopying {
@@ -32483,6 +32612,38 @@ declare class MTRFabricInfo extends NSObject {
 	readonly vendorID: number;
 }
 
+declare const enum MTRFanControlFanMode {
+
+	Off = 0,
+
+	Low = 1,
+
+	Medium = 2,
+
+	High = 3,
+
+	On = 4,
+
+	Auto = 5,
+
+	Smart = 6
+}
+
+declare const enum MTRFanControlFanModeSequence {
+
+	OffLowMedHigh = 0,
+
+	OffLowHigh = 1,
+
+	OffLowMedHighAuto = 2,
+
+	OffLowHighAuto = 3,
+
+	OffOnAuto = 4,
+
+	OffOn = 5
+}
+
 declare const enum MTRFanControlFanModeSequenceType {
 
 	OffLowMedHigh = 0,
@@ -32526,6 +32687,15 @@ declare const enum MTRFanControlFeature {
 	Wind = 8
 }
 
+declare const enum MTRFanControlRockBitmap {
+
+	RockLeftRight = 1,
+
+	RockUpDown = 2,
+
+	RockRound = 4
+}
+
 declare const enum MTRFanControlRockSupportMask {
 
 	RockLeftRight = 1,
@@ -32533,6 +32703,13 @@ declare const enum MTRFanControlRockSupportMask {
 	RockUpDown = 2,
 
 	RockRound = 4
+}
+
+declare const enum MTRFanControlWindBitmap {
+
+	SleepWind = 1,
+
+	NaturalWind = 2
 }
 
 declare const enum MTRFanControlWindSettingMask {
@@ -32648,7 +32825,11 @@ declare class MTRGeneralCommissioningClusterArmFailSafeResponseParams extends NS
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRGeneralCommissioningClusterBasicCommissioningInfo extends NSObject implements NSCopying {
@@ -32689,7 +32870,11 @@ declare class MTRGeneralCommissioningClusterCommissioningCompleteResponseParams 
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRGeneralCommissioningClusterSetRegulatoryConfigParams extends NSObject implements NSCopying {
@@ -32723,7 +32908,11 @@ declare class MTRGeneralCommissioningClusterSetRegulatoryConfigResponseParams ex
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare const enum MTRGeneralCommissioningCommissioningError {
@@ -33084,7 +33273,11 @@ declare class MTRGroupKeyManagementClusterKeySetReadAllIndicesResponseParams ext
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRGroupKeyManagementClusterKeySetReadParams extends NSObject implements NSCopying {
@@ -33112,7 +33305,11 @@ declare class MTRGroupKeyManagementClusterKeySetReadResponseParams extends NSObj
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRGroupKeyManagementClusterKeySetRemoveParams extends NSObject implements NSCopying {
@@ -33204,7 +33401,11 @@ declare class MTRGroupsClusterAddGroupResponseParams extends NSObject implements
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRGroupsClusterGetGroupMembershipParams extends NSObject implements NSCopying {
@@ -33234,7 +33435,11 @@ declare class MTRGroupsClusterGetGroupMembershipResponseParams extends NSObject 
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRGroupsClusterRemoveAllGroupsParams extends NSObject implements NSCopying {
@@ -33281,7 +33486,11 @@ declare class MTRGroupsClusterRemoveGroupResponseParams extends NSObject impleme
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRGroupsClusterViewGroupParams extends NSObject implements NSCopying {
@@ -33317,7 +33526,11 @@ declare class MTRGroupsClusterViewGroupResponseParams extends NSObject implement
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare const enum MTRGroupsFeature {
@@ -33328,6 +33541,11 @@ declare const enum MTRGroupsFeature {
 declare const enum MTRGroupsGroupClusterFeature {
 
 	GroupNames = 1
+}
+
+declare const enum MTRGroupsNameSupportBitmap {
+
+	GroupNames = 128
 }
 
 declare class MTRIdentifyClusterIdentifyParams extends NSObject implements NSCopying {
@@ -33386,7 +33604,11 @@ declare const enum MTRIdentifyType {
 
 	None = 0,
 
+	LightOutput = 1,
+
 	VisibleLight = 1,
+
+	VisibleIndicator = 2,
 
 	VisibleLED = 2,
 
@@ -33659,7 +33881,11 @@ declare class MTRKeypadInputClusterSendKeyResponseParams extends NSObject implem
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare const enum MTRKeypadInputFeature {
@@ -34141,7 +34367,11 @@ declare class MTRMediaPlaybackClusterPlaybackResponseParams extends NSObject imp
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRMediaPlaybackClusterPreviousParams extends NSObject implements NSCopying {
@@ -34333,6 +34563,8 @@ declare class MTRModeSelectClusterSemanticTagStruct extends NSObject implements 
 
 declare const enum MTRModeSelectFeature {
 
+	OnOff = 1,
+
 	DEPONOFF = 1
 }
 
@@ -34412,7 +34644,11 @@ declare class MTRNetworkCommissioningClusterConnectNetworkResponseParams extends
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRNetworkCommissioningClusterNetworkConfigResponseParams extends NSObject implements NSCopying {
@@ -34429,14 +34665,25 @@ declare class MTRNetworkCommissioningClusterNetworkConfigResponseParams extends 
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
-declare class MTRNetworkCommissioningClusterNetworkInfo extends NSObject implements NSCopying {
+declare class MTRNetworkCommissioningClusterNetworkInfo extends MTRNetworkCommissioningClusterNetworkInfoStruct {
 
 	static alloc(): MTRNetworkCommissioningClusterNetworkInfo; // inherited from NSObject
 
 	static new(): MTRNetworkCommissioningClusterNetworkInfo; // inherited from NSObject
+}
+
+declare class MTRNetworkCommissioningClusterNetworkInfoStruct extends NSObject implements NSCopying {
+
+	static alloc(): MTRNetworkCommissioningClusterNetworkInfoStruct; // inherited from NSObject
+
+	static new(): MTRNetworkCommissioningClusterNetworkInfoStruct; // inherited from NSObject
 
 	connected: number;
 
@@ -34514,14 +34761,25 @@ declare class MTRNetworkCommissioningClusterScanNetworksResponseParams extends N
 
 	wiFiScanResults: NSArray<any>;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
-declare class MTRNetworkCommissioningClusterThreadInterfaceScanResult extends NSObject implements NSCopying {
+declare class MTRNetworkCommissioningClusterThreadInterfaceScanResult extends MTRNetworkCommissioningClusterThreadInterfaceScanResultStruct {
 
 	static alloc(): MTRNetworkCommissioningClusterThreadInterfaceScanResult; // inherited from NSObject
 
 	static new(): MTRNetworkCommissioningClusterThreadInterfaceScanResult; // inherited from NSObject
+}
+
+declare class MTRNetworkCommissioningClusterThreadInterfaceScanResultStruct extends NSObject implements NSCopying {
+
+	static alloc(): MTRNetworkCommissioningClusterThreadInterfaceScanResultStruct; // inherited from NSObject
+
+	static new(): MTRNetworkCommissioningClusterThreadInterfaceScanResultStruct; // inherited from NSObject
 
 	channel: number;
 
@@ -34542,11 +34800,18 @@ declare class MTRNetworkCommissioningClusterThreadInterfaceScanResult extends NS
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
-declare class MTRNetworkCommissioningClusterWiFiInterfaceScanResult extends NSObject implements NSCopying {
+declare class MTRNetworkCommissioningClusterWiFiInterfaceScanResult extends MTRNetworkCommissioningClusterWiFiInterfaceScanResultStruct {
 
 	static alloc(): MTRNetworkCommissioningClusterWiFiInterfaceScanResult; // inherited from NSObject
 
 	static new(): MTRNetworkCommissioningClusterWiFiInterfaceScanResult; // inherited from NSObject
+}
+
+declare class MTRNetworkCommissioningClusterWiFiInterfaceScanResultStruct extends NSObject implements NSCopying {
+
+	static alloc(): MTRNetworkCommissioningClusterWiFiInterfaceScanResultStruct; // inherited from NSObject
+
+	static new(): MTRNetworkCommissioningClusterWiFiInterfaceScanResultStruct; // inherited from NSObject
 
 	bssid: NSData;
 
@@ -34611,7 +34876,9 @@ declare const enum MTRNetworkCommissioningWiFiBand {
 
 	Band6G = 3,
 
-	Band60G = 4
+	Band60G = 4,
+
+	Band1G = 5
 }
 
 declare const enum MTRNetworkCommissioningWiFiSecurity {
@@ -34633,6 +34900,19 @@ declare const enum MTRNetworkCommissioningWiFiSecurity {
 	WPA3Personal = 16,
 
 	Wpa3Personal = 16
+}
+
+declare const enum MTRNetworkCommissioningWiFiSecurityBitmap {
+
+	Unencrypted = 1,
+
+	WEP = 2,
+
+	WPAPersonal = 4,
+
+	WPA2Personal = 8,
+
+	WPA3Personal = 16
 }
 
 declare var MTRNullValueType: string;
@@ -34762,7 +35042,11 @@ declare class MTROTASoftwareUpdateProviderClusterApplyUpdateResponseParams exten
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTROTASoftwareUpdateProviderClusterNotifyUpdateAppliedParams extends NSObject implements NSCopying {
@@ -34839,7 +35123,11 @@ declare class MTROTASoftwareUpdateProviderClusterQueryImageResponseParams extend
 
 	userConsentNeeded: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare const enum MTROTASoftwareUpdateProviderOTAApplyUpdateAction {
@@ -35317,7 +35605,11 @@ declare class MTROperationalCredentialsClusterAttestationResponseParams extends 
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTROperationalCredentialsClusterCSRRequestParams extends NSObject implements NSCopying {
@@ -35349,7 +35641,11 @@ declare class MTROperationalCredentialsClusterCSRResponseParams extends NSObject
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTROperationalCredentialsClusterCertificateChainRequestParams extends NSObject implements NSCopying {
@@ -35377,7 +35673,11 @@ declare class MTROperationalCredentialsClusterCertificateChainResponseParams ext
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTROperationalCredentialsClusterFabricDescriptor extends MTROperationalCredentialsClusterFabricDescriptorStruct {
@@ -35428,7 +35728,11 @@ declare class MTROperationalCredentialsClusterNOCResponseParams extends NSObject
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTROperationalCredentialsClusterNOCStruct extends NSObject implements NSCopying {
@@ -36535,7 +36839,11 @@ declare class MTRScenesClusterAddSceneResponseParams extends NSObject implements
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRScenesClusterAttributeValuePair extends NSObject implements NSCopying {
@@ -36548,7 +36856,7 @@ declare class MTRScenesClusterAttributeValuePair extends NSObject implements NSC
 
 	attributeId: number;
 
-	attributeValue: NSArray<any>;
+	attributeValue: number;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
@@ -36602,7 +36910,11 @@ declare class MTRScenesClusterCopySceneResponseParams extends NSObject implement
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRScenesClusterEnhancedAddSceneParams extends NSObject implements NSCopying {
@@ -36650,7 +36962,11 @@ declare class MTRScenesClusterEnhancedAddSceneResponseParams extends NSObject im
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRScenesClusterEnhancedViewSceneParams extends NSObject implements NSCopying {
@@ -36698,7 +37014,11 @@ declare class MTRScenesClusterEnhancedViewSceneResponseParams extends NSObject i
 
 	transitionTime: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRScenesClusterExtensionFieldSet extends NSObject implements NSCopying {
@@ -36751,7 +37071,11 @@ declare class MTRScenesClusterGetSceneMembershipResponseParams extends NSObject 
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRScenesClusterRecallSceneParams extends NSObject implements NSCopying {
@@ -36808,7 +37132,11 @@ declare class MTRScenesClusterRemoveAllScenesResponseParams extends NSObject imp
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRScenesClusterRemoveSceneParams extends NSObject implements NSCopying {
@@ -36850,7 +37178,11 @@ declare class MTRScenesClusterRemoveSceneResponseParams extends NSObject impleme
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRScenesClusterStoreSceneParams extends NSObject implements NSCopying {
@@ -36892,7 +37224,11 @@ declare class MTRScenesClusterStoreSceneResponseParams extends NSObject implemen
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRScenesClusterViewSceneParams extends NSObject implements NSCopying {
@@ -36940,7 +37276,11 @@ declare class MTRScenesClusterViewSceneResponseParams extends NSObject implement
 
 	transitionTime: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare const enum MTRScenesCopyMode {
@@ -37246,7 +37586,11 @@ declare class MTRTargetNavigatorClusterNavigateTargetResponseParams extends NSOb
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRTargetNavigatorClusterTargetInfo extends MTRTargetNavigatorClusterTargetInfoStruct {
@@ -37341,6 +37685,8 @@ declare class MTRTestClusterClusterNestedStruct extends MTRUnitTestingClusterNes
 	static alloc(): MTRTestClusterClusterNestedStruct; // inherited from NSObject
 
 	static new(): MTRTestClusterClusterNestedStruct; // inherited from NSObject
+
+	c: MTRTestClusterClusterSimpleStruct;
 }
 
 declare class MTRTestClusterClusterNestedStructList extends MTRUnitTestingClusterNestedStructList {
@@ -37348,6 +37694,8 @@ declare class MTRTestClusterClusterNestedStructList extends MTRUnitTestingCluste
 	static alloc(): MTRTestClusterClusterNestedStructList; // inherited from NSObject
 
 	static new(): MTRTestClusterClusterNestedStructList; // inherited from NSObject
+
+	c: MTRTestClusterClusterSimpleStruct;
 }
 
 declare class MTRTestClusterClusterNullablesAndOptionalsStruct extends MTRUnitTestingClusterNullablesAndOptionalsStruct {
@@ -37355,6 +37703,12 @@ declare class MTRTestClusterClusterNullablesAndOptionalsStruct extends MTRUnitTe
 	static alloc(): MTRTestClusterClusterNullablesAndOptionalsStruct; // inherited from NSObject
 
 	static new(): MTRTestClusterClusterNullablesAndOptionalsStruct; // inherited from NSObject
+
+	nullableOptionalStruct: MTRTestClusterClusterSimpleStruct;
+
+	nullableStruct: MTRTestClusterClusterSimpleStruct;
+
+	optionalStruct: MTRTestClusterClusterSimpleStruct;
 }
 
 declare class MTRTestClusterClusterSimpleStruct extends MTRUnitTestingClusterSimpleStruct {
@@ -37453,6 +37807,8 @@ declare class MTRTestClusterClusterTestEventEvent extends MTRUnitTestingClusterT
 	static alloc(): MTRTestClusterClusterTestEventEvent; // inherited from NSObject
 
 	static new(): MTRTestClusterClusterTestEventEvent; // inherited from NSObject
+
+	arg4: MTRTestClusterClusterSimpleStruct;
 }
 
 declare class MTRTestClusterClusterTestFabricScoped extends MTRUnitTestingClusterTestFabricScoped {
@@ -37460,6 +37816,8 @@ declare class MTRTestClusterClusterTestFabricScoped extends MTRUnitTestingCluste
 	static alloc(): MTRTestClusterClusterTestFabricScoped; // inherited from NSObject
 
 	static new(): MTRTestClusterClusterTestFabricScoped; // inherited from NSObject
+
+	fabricSensitiveStruct: MTRTestClusterClusterSimpleStruct;
 }
 
 declare class MTRTestClusterClusterTestFabricScopedEventEvent extends MTRUnitTestingClusterTestFabricScopedEventEvent {
@@ -37689,7 +38047,11 @@ declare class MTRThermostatClusterGetWeeklyScheduleResponseParams extends NSObje
 
 	transitions: NSArray<any>;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRThermostatClusterSetWeeklyScheduleParams extends NSObject implements NSCopying {
@@ -37797,7 +38159,9 @@ declare const enum MTRThermostatFeature {
 
 	AutoMode = 32,
 
-	Automode = 32
+	Automode = 32,
+
+	LocalTemperatureNotExposed = 64
 }
 
 declare const enum MTRThermostatModeForSequence {
@@ -37869,11 +38233,18 @@ declare class MTRThreadNetworkDiagnosticsClusterConnectionStatusEvent extends NS
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
-declare class MTRThreadNetworkDiagnosticsClusterNeighborTable extends NSObject implements NSCopying {
+declare class MTRThreadNetworkDiagnosticsClusterNeighborTable extends MTRThreadNetworkDiagnosticsClusterNeighborTableStruct {
 
 	static alloc(): MTRThreadNetworkDiagnosticsClusterNeighborTable; // inherited from NSObject
 
 	static new(): MTRThreadNetworkDiagnosticsClusterNeighborTable; // inherited from NSObject
+}
+
+declare class MTRThreadNetworkDiagnosticsClusterNeighborTableStruct extends NSObject implements NSCopying {
+
+	static alloc(): MTRThreadNetworkDiagnosticsClusterNeighborTableStruct; // inherited from NSObject
+
+	static new(): MTRThreadNetworkDiagnosticsClusterNeighborTableStruct; // inherited from NSObject
 
 	age: number;
 
@@ -37965,11 +38336,18 @@ declare class MTRThreadNetworkDiagnosticsClusterResetCountsParams extends NSObje
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
-declare class MTRThreadNetworkDiagnosticsClusterRouteTable extends NSObject implements NSCopying {
+declare class MTRThreadNetworkDiagnosticsClusterRouteTable extends MTRThreadNetworkDiagnosticsClusterRouteTableStruct {
 
 	static alloc(): MTRThreadNetworkDiagnosticsClusterRouteTable; // inherited from NSObject
 
 	static new(): MTRThreadNetworkDiagnosticsClusterRouteTable; // inherited from NSObject
+}
+
+declare class MTRThreadNetworkDiagnosticsClusterRouteTableStruct extends NSObject implements NSCopying {
+
+	static alloc(): MTRThreadNetworkDiagnosticsClusterRouteTableStruct; // inherited from NSObject
+
+	static new(): MTRThreadNetworkDiagnosticsClusterRouteTableStruct; // inherited from NSObject
 
 	age: number;
 
@@ -38325,7 +38703,11 @@ declare class MTRUnitTestingClusterBooleanResponseParams extends NSObject implem
 
 	value: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRUnitTestingClusterDoubleNestedStructList extends NSObject implements NSCopying {
@@ -38460,7 +38842,11 @@ declare class MTRUnitTestingClusterSimpleStructResponseParams extends NSObject i
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRUnitTestingClusterTestAddArgumentsParams extends NSObject implements NSCopying {
@@ -38490,7 +38876,11 @@ declare class MTRUnitTestingClusterTestAddArgumentsResponseParams extends NSObje
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRUnitTestingClusterTestComplexNullableOptionalRequestParams extends NSObject implements NSCopying {
@@ -38594,7 +38984,11 @@ declare class MTRUnitTestingClusterTestComplexNullableOptionalResponseParams ext
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRUnitTestingClusterTestEmitTestEventRequestParams extends NSObject implements NSCopying {
@@ -38626,7 +39020,11 @@ declare class MTRUnitTestingClusterTestEmitTestEventResponseParams extends NSObj
 
 	value: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRUnitTestingClusterTestEmitTestFabricScopedEventRequestParams extends NSObject implements NSCopying {
@@ -38654,7 +39052,11 @@ declare class MTRUnitTestingClusterTestEmitTestFabricScopedEventResponseParams e
 
 	value: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRUnitTestingClusterTestEnumsRequestParams extends NSObject implements NSCopying {
@@ -38686,7 +39088,11 @@ declare class MTRUnitTestingClusterTestEnumsResponseParams extends NSObject impl
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRUnitTestingClusterTestEventEvent extends NSObject implements NSCopying {
@@ -38786,7 +39192,11 @@ declare class MTRUnitTestingClusterTestListInt8UReverseResponseParams extends NS
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRUnitTestingClusterTestListNestedStructListArgumentRequestParams extends NSObject implements NSCopying {
@@ -38906,7 +39316,11 @@ declare class MTRUnitTestingClusterTestNullableOptionalResponseParams extends NS
 
 	wasPresent: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRUnitTestingClusterTestParams extends NSObject implements NSCopying {
@@ -38947,7 +39361,11 @@ declare class MTRUnitTestingClusterTestSimpleArgumentResponseParams extends NSOb
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRUnitTestingClusterTestSimpleOptionalArgumentRequestParams extends NSObject implements NSCopying {
@@ -38988,7 +39406,11 @@ declare class MTRUnitTestingClusterTestSpecificResponseParams extends NSObject i
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRUnitTestingClusterTestStructArgumentRequestParams extends NSObject implements NSCopying {
@@ -39051,7 +39473,11 @@ declare class MTRUnitTestingClusterTestStructArrayArgumentResponseParams extends
 
 	timedInvokeTimeoutMs: number;
 
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 declare class MTRUnitTestingClusterTestUnknownCommandParams extends NSObject implements NSCopying {
@@ -39224,7 +39650,9 @@ declare const enum MTRWiFiNetworkDiagnosticsWiFiVersion {
 
 	Ac = 4,
 
-	Ax = 5
+	Ax = 5,
+
+	Ah = 6
 }
 
 declare const enum MTRWiFiNetworkDiagnosticsWiFiVersionType {

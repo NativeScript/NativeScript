@@ -712,10 +712,6 @@ declare class CLLocationUpdater extends NSObject {
 
 	static alloc(): CLLocationUpdater; // inherited from NSObject
 
-	static historicalUpdaterWithCenterRadiusDateIntervalSampleCountQueueHandler(center: CLLocationCoordinate2D, radius: number, interestInterval: NSDateInterval, maxCount: number, queue: interop.Pointer | interop.Reference<any>, handler: (p1: CLUpdate) => void): CLLocationUpdater;
-
-	static historicalUpdaterWithDateIntervalSampleCountQueueHandler(interestInterval: NSDateInterval, maxCount: number, queue: interop.Pointer | interop.Reference<any>, handler: (p1: CLUpdate) => void): CLLocationUpdater;
-
 	static liveUpdaterWithConfigurationQueueHandler(configuration: CLLiveUpdateConfiguration, queue: interop.Pointer | interop.Reference<any>, handler: (p1: CLUpdate) => void): CLLocationUpdater;
 
 	static liveUpdaterWithQueueHandler(queue: interop.Pointer | interop.Reference<any>, handler: (p1: CLUpdate) => void): CLLocationUpdater;

@@ -204,6 +204,10 @@ export class ActionBar extends ActionBarBase {
 		}
 
 		const viewController = <UIViewController>page.ios;
+		// visionOS may init with different nav stack setup
+		if (!viewController) {
+			return;
+		}
 		const navigationItem: UINavigationItem = viewController.navigationItem;
 		const navController = <UINavigationController>viewController.navigationController;
 

@@ -416,6 +416,8 @@ declare var NSDefaultAttributesDocumentAttribute: string;
 
 declare var NSDefaultAttributesDocumentOption: string;
 
+declare var NSDefaultFontExcludedDocumentAttribute: string;
+
 declare var NSDefaultTabIntervalDocumentAttribute: string;
 
 declare class NSDiffableDataSourceSectionSnapshot<ItemIdentifierType> extends NSObject implements NSCopying {
@@ -11941,6 +11943,8 @@ declare class UIHoverAutomaticEffect extends NSObject implements UIHoverEffect {
 
 	static alloc(): UIHoverAutomaticEffect; // inherited from NSObject
 
+	static effect(): UIHoverAutomaticEffect;
+
 	static new(): UIHoverAutomaticEffect; // inherited from NSObject
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
@@ -12006,6 +12010,8 @@ declare class UIHoverHighlightEffect extends NSObject implements UIHoverEffect {
 
 	static alloc(): UIHoverHighlightEffect; // inherited from NSObject
 
+	static effect(): UIHoverHighlightEffect;
+
 	static new(): UIHoverHighlightEffect; // inherited from NSObject
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
@@ -12048,6 +12054,8 @@ declare class UIHoverHighlightEffect extends NSObject implements UIHoverEffect {
 declare class UIHoverLiftEffect extends NSObject implements UIHoverEffect {
 
 	static alloc(): UIHoverLiftEffect; // inherited from NSObject
+
+	static effect(): UIHoverLiftEffect;
 
 	static new(): UIHoverLiftEffect; // inherited from NSObject
 
@@ -12092,6 +12100,8 @@ declare class UIHoverStyle extends NSObject implements NSCopying {
 
 	static alloc(): UIHoverStyle; // inherited from NSObject
 
+	static automaticStyle(): UIHoverStyle;
+
 	static new(): UIHoverStyle; // inherited from NSObject
 
 	static styleWithEffectShape(effect: UIHoverEffect, shape: UIShape): UIHoverStyle;
@@ -12099,6 +12109,8 @@ declare class UIHoverStyle extends NSObject implements NSCopying {
 	static styleWithShape(shape: UIShape): UIHoverStyle;
 
 	effect: UIHoverEffect;
+
+	enabled: boolean;
 
 	shape: UIShape;
 
@@ -14594,6 +14606,8 @@ declare var UIMenuAlignment: string;
 
 declare var UIMenuApplication: string;
 
+declare var UIMenuAutoFill: string;
+
 declare var UIMenuBringAllToFront: string;
 
 interface UIMenuBuilder {
@@ -14761,7 +14775,9 @@ declare const enum UIMenuElementSize {
 
 	Medium = 1,
 
-	Large = 2
+	Large = 2,
+
+	Automatic = -1
 }
 
 declare const enum UIMenuElementState {
@@ -14786,8 +14802,6 @@ declare var UIMenuFullscreen: string;
 declare var UIMenuHelp: string;
 
 declare var UIMenuHide: string;
-
-declare var UIMenuInsert: string;
 
 declare class UIMenuItem extends NSObject {
 
@@ -15023,6 +15037,8 @@ interface UIMutableTraits extends NSObjectProtocol {
 	legibilityWeight: UILegibilityWeight;
 
 	preferredContentSizeCategory: string;
+
+	sceneCaptureState: UISceneCaptureState;
 
 	toolbarItemPresentationSize: UINSToolbarItemPresentationSize;
 
@@ -16616,6 +16632,8 @@ declare class UIPointerStyle extends UIHoverStyle implements NSCopying {
 
 	static alloc(): UIPointerStyle; // inherited from NSObject
 
+	static automaticStyle(): UIPointerStyle; // inherited from UIHoverStyle
+
 	static hiddenPointerStyle(): UIPointerStyle;
 
 	static new(): UIPointerStyle; // inherited from NSObject
@@ -17817,7 +17835,7 @@ declare const enum UIRemoteNotificationType {
 	NewsstandContentAvailability = 8
 }
 
-declare class UIResolvedShape extends NSObject {
+declare class UIResolvedShape extends NSObject implements NSCopying {
 
 	static alloc(): UIResolvedShape; // inherited from NSObject
 
@@ -17828,6 +17846,12 @@ declare class UIResolvedShape extends NSObject {
 	readonly path: UIBezierPath;
 
 	readonly shape: UIShape;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	shapeByApplyingInset(inset: number): UIResolvedShape;
+
+	shapeByApplyingInsets(insets: UIEdgeInsets): UIResolvedShape;
 }
 
 declare class UIResponder extends NSObject implements UIActivityItemsConfigurationProviding, UIPasteConfigurationSupporting, UIResponderStandardEditActions, UIUserActivityRestoring {
@@ -18176,6 +18200,15 @@ declare const enum UISceneActivationState {
 	ForegroundInactive = 1,
 
 	Background = 2
+}
+
+declare const enum UISceneCaptureState {
+
+	Unspecified = -1,
+
+	Inactive = 0,
+
+	Active = 1
 }
 
 declare class UISceneConfiguration extends NSObject implements NSCopying, NSSecureCoding {
@@ -19695,23 +19728,27 @@ declare const enum UISemanticContentAttribute {
 	ForceRightToLeft = 4
 }
 
-declare class UIShape extends NSObject implements NSCopying {
+declare class UIShape extends NSObject implements NSCopying, UIShapeProvider {
 
 	static alloc(): UIShape; // inherited from NSObject
 
-	static dynamicShapeWithProvider(provider: (p1: UIShapeResolutionContext) => UIResolvedShape): UIShape;
-
 	static fixedRectShapeWithRect(rect: CGRect): UIShape;
+
+	static fixedRectShapeWithRectCornerRadius(rect: CGRect, cornerRadius: number): UIShape;
+
+	static fixedRectShapeWithRectCornerRadiusCornerCurveMaskedCorners(rect: CGRect, cornerRadius: number, cornerCurve: UICornerCurve, maskedCorners: UIRectCorner): UIShape;
 
 	static new(): UIShape; // inherited from NSObject
 
-	static roundedRectShapeWithCornerRadius(cornerRadius: number): UIShape;
+	static rectShapeWithCornerRadius(cornerRadius: number): UIShape;
 
-	static roundedRectShapeWithCornerRadiusCornerCurve(cornerRadius: number, cornerCurve: UICornerCurve): UIShape;
+	static rectShapeWithCornerRadiusCornerCurve(cornerRadius: number, cornerCurve: UICornerCurve): UIShape;
 
-	static roundedRectShapeWithCornerRadiusCornerCurveMaskedCorners(cornerRadius: number, cornerCurve: UICornerCurve, maskedCorners: UIRectCorner): UIShape;
+	static rectShapeWithCornerRadiusCornerCurveMaskedCorners(cornerRadius: number, cornerCurve: UICornerCurve, maskedCorners: UIRectCorner): UIShape;
 
 	static shapeWithBezierPath(path: UIBezierPath): UIShape;
+
+	static shapeWithProvider(provider: UIShapeProvider): UIShape;
 
 	static readonly capsuleShape: UIShape;
 
@@ -19719,14 +19756,57 @@ declare class UIShape extends NSObject implements NSCopying {
 
 	static readonly rectShape: UIShape;
 
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
 	resolvedShapeInContext(context: UIShapeResolutionContext): UIResolvedShape;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
 
 	shapeByApplyingInset(inset: number): UIShape;
 
 	shapeByApplyingInsets(insets: UIEdgeInsets): UIShape;
 }
+
+interface UIShapeProvider extends NSObjectProtocol {
+
+	resolvedShapeInContext(context: UIShapeResolutionContext): UIResolvedShape;
+}
+declare var UIShapeProvider: {
+
+	prototype: UIShapeProvider;
+};
 
 declare class UIShapeResolutionContext extends NSObject {
 
@@ -24746,6 +24826,8 @@ declare class UITraitCollection extends NSObject implements NSCopying, NSSecureC
 
 	static traitCollectionWithPreferredContentSizeCategory(preferredContentSizeCategory: string): UITraitCollection;
 
+	static traitCollectionWithSceneCaptureState(sceneCaptureState: UISceneCaptureState): UITraitCollection;
+
 	static traitCollectionWithToolbarItemPresentationSize(toolbarItemPresentationSize: UINSToolbarItemPresentationSize): UITraitCollection;
 
 	static traitCollectionWithTraits(mutations: (p1: UIMutableTraits) => void): UITraitCollection;
@@ -24783,6 +24865,8 @@ declare class UITraitCollection extends NSObject implements NSCopying, NSSecureC
 	readonly legibilityWeight: UILegibilityWeight;
 
 	readonly preferredContentSizeCategory: string;
+
+	readonly sceneCaptureState: UISceneCaptureState;
 
 	readonly toolbarItemPresentationSize: UINSToolbarItemPresentationSize;
 
@@ -24993,6 +25077,21 @@ declare class UITraitPreferredContentSizeCategory extends NSObject implements UI
 	static readonly name: string; // inherited from UITraitDefinition
 }
 
+declare class UITraitSceneCaptureState extends NSObject implements UINSIntegerTraitDefinition {
+
+	static alloc(): UITraitSceneCaptureState; // inherited from NSObject
+
+	static new(): UITraitSceneCaptureState; // inherited from NSObject
+
+	static readonly affectsColorAppearance: boolean; // inherited from UITraitDefinition
+
+	static readonly defaultValue: number; // inherited from UINSIntegerTraitDefinition
+
+	static readonly identifier: string; // inherited from UITraitDefinition
+
+	static readonly name: string; // inherited from UITraitDefinition
+}
+
 declare class UITraitToolbarItemPresentationSize extends NSObject implements UINSIntegerTraitDefinition {
 
 	static alloc(): UITraitToolbarItemPresentationSize; // inherited from NSObject
@@ -25123,7 +25222,7 @@ declare const enum UIUserInterfaceIdiom {
 
 	Mac = 5,
 
-	Reality = 6
+	Vision = 6
 }
 
 declare const enum UIUserInterfaceLayoutDirection {
@@ -25819,6 +25918,8 @@ declare class UIView extends UIResponder implements CALayerDelegate, NSCoding, U
 
 	updateFocusIfNeeded(): void;
 
+	updateTraitsIfNeeded(): void;
+
 	viewForBaselineLayout(): UIView;
 
 	viewPrintFormatter(): UIViewPrintFormatter;
@@ -26434,6 +26535,8 @@ declare class UIViewController extends UIResponder implements NSCoding, NSExtens
 	updateContentUnavailableConfigurationUsingState(state: UIContentUnavailableConfigurationState): void;
 
 	updateFocusIfNeeded(): void;
+
+	updateTraitsIfNeeded(): void;
 
 	updateViewConstraints(): void;
 

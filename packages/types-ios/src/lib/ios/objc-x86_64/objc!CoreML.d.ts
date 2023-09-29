@@ -757,6 +757,8 @@ declare class MLNeuralEngineComputeDevice extends NSObject implements MLComputeD
 
 	static new(): MLNeuralEngineComputeDevice; // inherited from NSObject
 
+	readonly totalCoreCount: number;
+
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
 	readonly description: string; // inherited from NSObjectProtocol

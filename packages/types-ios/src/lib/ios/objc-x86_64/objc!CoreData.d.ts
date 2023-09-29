@@ -302,7 +302,7 @@ declare class NSCompositeAttributeDescription extends NSAttributeDescription {
 
 	static new(): NSCompositeAttributeDescription; // inherited from NSObject
 
-	elements: NSArray<any>;
+	elements: NSArray<NSAttributeDescription>;
 }
 
 declare class NSConstraintConflict extends NSObject {
@@ -1198,6 +1198,8 @@ declare const NSManagedObjectMergeError: number;
 declare class NSManagedObjectModel extends NSObject implements NSCoding, NSCopying, NSFastEnumeration {
 
 	static alloc(): NSManagedObjectModel; // inherited from NSObject
+
+	static checksumsForVersionedModelAtURLError(modelURL: NSURL): NSDictionary<string, string>;
 
 	static mergedModelFromBundles(bundles: NSArray<NSBundle> | NSBundle[]): NSManagedObjectModel;
 

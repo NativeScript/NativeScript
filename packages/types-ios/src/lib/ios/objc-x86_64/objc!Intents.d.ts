@@ -2398,7 +2398,9 @@ declare const enum INEditMessageIntentResponseCode {
 
 	FailureUnsupportedOnService = 9,
 
-	FailureMessageServiceNotAvailable = 10
+	FailureMessageServiceNotAvailable = 10,
+
+	FailureRequiringInAppAuthentication = 11
 }
 
 declare class INEndWorkoutIntent extends INIntent {
@@ -7610,7 +7612,9 @@ declare const enum INSearchForMessagesIntentResponseCode {
 
 	FailureMessageServiceNotAvailable = 6,
 
-	FailureMessageTooManyResults = 7
+	FailureMessageTooManyResults = 7,
+
+	FailureRequiringInAppAuthentication = 8
 }
 
 declare class INSearchForNotebookItemsIntent extends INIntent {
@@ -7989,7 +7993,9 @@ declare const enum INSendMessageIntentResponseCode {
 
 	FailureRequiringAppLaunch = 5,
 
-	FailureMessageServiceNotAvailable = 6
+	FailureMessageServiceNotAvailable = 6,
+
+	FailureRequiringInAppAuthentication = 7
 }
 
 declare class INSendMessageRecipientResolutionResult extends INPersonResolutionResult {
@@ -8033,7 +8039,9 @@ declare const enum INSendMessageRecipientUnsupportedReason {
 
 	RequestedHandleInvalid = 5,
 
-	NoHandleForLabel = 6
+	NoHandleForLabel = 6,
+
+	RequiringInAppAuthentication = 7
 }
 
 declare class INSendPaymentCurrencyAmountResolutionResult extends INCurrencyAmountResolutionResult {
@@ -9548,7 +9556,9 @@ declare const enum INStartCallContactUnsupportedReason {
 
 	NoCallHistoryForRedial = 6,
 
-	NoUsableHandleForRedial = 7
+	NoUsableHandleForRedial = 7,
+
+	RequiringInAppAuthentication = 8
 }
 
 declare class INStartCallIntent extends INIntent implements UNNotificationContentProviding {
@@ -9674,7 +9684,9 @@ declare const enum INStartCallIntentResponseCode {
 
 	FailureCallInProgress = 11,
 
-	FailureCallRinging = 12
+	FailureCallRinging = 12,
+
+	FailureRequiringInAppAuthentication = 13
 }
 
 declare class INStartPhotoPlaybackIntent extends INIntent {
@@ -10580,7 +10592,9 @@ declare const enum INUnsendMessagesIntentResponseCode {
 
 	FailureUnsupportedOnService = 9,
 
-	FailureMessageServiceNotAvailable = 10
+	FailureMessageServiceNotAvailable = 10,
+
+	FailureRequiringInAppAuthentication = 11
 }
 
 declare class INUpcomingMediaManager extends NSObject {

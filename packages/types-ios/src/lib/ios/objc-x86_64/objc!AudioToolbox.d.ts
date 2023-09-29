@@ -2820,6 +2820,8 @@ declare const kAudioFileNotOpenError: number;
 
 declare const kAudioFileNotOptimizedError: number;
 
+declare const kAudioFileOpenUsingHintError: number;
+
 declare const kAudioFileOperationNotSupportedError: number;
 
 declare const kAudioFilePermissionsError: number;
@@ -2917,6 +2919,8 @@ declare const kAudioFileStreamError_InvalidFile: number;
 declare const kAudioFileStreamError_InvalidPacketOffset: number;
 
 declare const kAudioFileStreamError_NotOptimized: number;
+
+declare const kAudioFileStreamError_OpenUsingHint: number;
 
 declare const kAudioFileStreamError_UnspecifiedError: number;
 

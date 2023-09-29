@@ -209,17 +209,19 @@ class UIViewControllerImpl extends UIViewController {
 
 			frame._processNavigationQueue(owner);
 
-			// _processNavigationQueue will shift navigationQueue. Check canGoBack after that.
-			// Workaround for disabled backswipe on second custom native transition
-			if (frame.canGoBack()) {
-				const transitionState = SharedTransition.getState(owner.transitionId);
-				if (!transitionState?.interactive) {
-					// only consider when interactive transitions are not enabled
-					navigationController.interactivePopGestureRecognizer.delegate = navigationController;
-					navigationController.interactivePopGestureRecognizer.enabled = owner.enableSwipeBackNavigation;
+			if (!__VISIONOS__) {
+				// _processNavigationQueue will shift navigationQueue. Check canGoBack after that.
+				// Workaround for disabled backswipe on second custom native transition
+				if (frame.canGoBack()) {
+					const transitionState = SharedTransition.getState(owner.transitionId);
+					if (!transitionState?.interactive) {
+						// only consider when interactive transitions are not enabled
+						navigationController.interactivePopGestureRecognizer.delegate = navigationController;
+						navigationController.interactivePopGestureRecognizer.enabled = owner.enableSwipeBackNavigation;
+					}
+				} else {
+					navigationController.interactivePopGestureRecognizer.enabled = false;
 				}
-			} else {
-				navigationController.interactivePopGestureRecognizer.enabled = false;
 			}
 		}
 

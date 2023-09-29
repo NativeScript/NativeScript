@@ -4,8 +4,7 @@ import { existsSync } from 'fs';
 const id = 'PlatformSuffixPlugin';
 
 interface PlatformSuffixPluginOptions {
-	platform: string;
-	// extensions: string[] | (() => string[])
+	extensions: Array<string>;
 }
 
 /**
@@ -20,11 +19,10 @@ interface PlatformSuffixPluginOptions {
  *
  */
 export class PlatformSuffixPlugin {
-	private readonly platform: string;
-	// private readonly extensions: string[]
+	private readonly extensions: string[];
 
 	constructor(options: PlatformSuffixPluginOptions) {
-		this.platform = options.platform;
+		this.extensions = options.extensions;
 
 		// if (typeof options.extensions === "function") {
 		// 	this.extensions = options.extensions()
@@ -34,7 +32,7 @@ export class PlatformSuffixPlugin {
 	}
 
 	apply(compiler: any) {
-		const platformRE = new RegExp(`\\.${this.platform}\\.`);
+		const platformRE = new RegExp(`\\.${this.extensions.join('|')}\\.`);
 
 		// require.context
 		compiler.hooks.contextModuleFactory.tap(id, (cmf) => {
@@ -78,47 +76,49 @@ export class PlatformSuffixPlugin {
 				resolver.hooks.normalResolve.tapAsync(
 					id,
 					(request_, resolveContext, callback) => {
-						const { path, request } = request_;
-						const ext = request && extname(request);
-						const platformExt = ext ? `.${this.platform}${ext}` : '';
+						for (const platform of this.extensions) {
+							const { path, request } = request_;
+							const ext = request && extname(request);
+							const platformExt = ext ? `.${platform}${ext}` : '';
 
-						if (path && request && ext && !request.includes(platformExt)) {
-							const platformRequest = request.replace(ext, platformExt);
-							const extPath = resolve(path, platformRequest);
+							if (path && request && ext && !request.includes(platformExt)) {
+								const platformRequest = request.replace(ext, platformExt);
+								const extPath = resolve(path, platformRequest);
 
-							// console.log({
-							// 	path,
-							// 	request,
-							// 	ext,
-							// 	extPath
-							// })
+								// console.log({
+								// 	path,
+								// 	request,
+								// 	ext,
+								// 	extPath
+								// })
 
-							// if a file with the same + a platform suffix exists
-							// we want to resolve that file instead
-							if (existsSync(extPath)) {
-								const message = `resolving "${request}" to "${platformRequest}"`;
-								const hook = resolver.ensureHook('normalResolve');
-								console.log(message);
+								// if a file with the same + a platform suffix exists
+								// we want to resolve that file instead
+								if (existsSync(extPath)) {
+									const message = `resolving "${request}" to "${platformRequest}"`;
+									const hook = resolver.ensureHook('normalResolve');
+									console.log(message);
 
-								// here we are creating a new resolve object and replacing the path
-								// with the .<platform>.<ext> suffix
-								const obj = {
-									...request_,
-									path: resolver.join(path, platformRequest),
-									relativePath:
-										request_.relativePath &&
-										resolver.join(request_.relativePath, platformRequest),
-									request: undefined,
-								};
+									// here we are creating a new resolve object and replacing the path
+									// with the .<platform>.<ext> suffix
+									const obj = {
+										...request_,
+										path: resolver.join(path, platformRequest),
+										relativePath:
+											request_.relativePath &&
+											resolver.join(request_.relativePath, platformRequest),
+										request: undefined,
+									};
 
-								// we call to the actual resolver to do the resolving of this new file
-								return resolver.doResolve(
-									hook,
-									obj,
-									message,
-									resolveContext,
-									callback
-								);
+									// we call to the actual resolver to do the resolving of this new file
+									return resolver.doResolve(
+										hook,
+										obj,
+										message,
+										resolveContext,
+										callback
+									);
+								}
 							}
 						}
 						callback();

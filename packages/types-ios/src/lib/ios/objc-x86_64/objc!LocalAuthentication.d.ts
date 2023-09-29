@@ -48,7 +48,9 @@ declare const enum LABiometryType {
 
 	TypeTouchID = 1,
 
-	TypeFaceID = 2
+	TypeFaceID = 2,
+
+	TypeOpticID = 4
 }
 
 declare class LAContext extends NSObject {

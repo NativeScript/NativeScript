@@ -134,6 +134,7 @@ declare const __UI_USE_XML_PARSER__: boolean;
 declare const __USE_TEST_ID__: boolean | undefined;
 declare const __ANDROID__: boolean;
 declare const __IOS__: boolean;
+declare const __VISIONOS__: boolean;
 
 declare function setTimeout(callback: (...args: any[]) => void, ms: number, ...args: any[]): number;
 declare function clearTimeout(timeoutId: number): void;

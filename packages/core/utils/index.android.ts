@@ -179,7 +179,7 @@ export function dismissSoftInput(nativeView?: any): void {
 
 export function dismissKeyboard() {
 	dismissSoftInput();
-	const modalDialog = (topmost()?._modalParent ?? topmost())?.modal?._dialogFragment?.getDialog();
+	const modalDialog = (topmost()?._modalParent ?? (topmost()?.modal as any))?._dialogFragment?.getDialog();
 	const view = modalDialog ?? AndroidUtils.getCurrentActivity();
 	if (view) {
 		const focus = view.getCurrentFocus();

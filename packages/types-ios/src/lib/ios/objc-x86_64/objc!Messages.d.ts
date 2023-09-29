@@ -232,7 +232,11 @@ declare class MSSticker extends NSObject {
 
 	constructor(o: { contentsOfFileURL: NSURL; localizedDescription: string; });
 
+	constructor(o: { fileURL: NSURL; identifier: NSUUID; localizedDescription: string; });
+
 	initWithContentsOfFileURLLocalizedDescriptionError(fileURL: NSURL, localizedDescription: string): this;
+
+	initWithFileURLIdentifierLocalizedDescription(url: NSURL, identifier: NSUUID, localizedDescription: string): this;
 }
 
 declare class MSStickerBrowserView extends UIView {
