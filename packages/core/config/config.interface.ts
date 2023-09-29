@@ -12,24 +12,27 @@ interface IConfigPlatform {
 	discardUncaughtJsExceptions?: boolean;
 }
 
+export interface IOSRemoteSPMPackage {
+	name: string;
+	libs: string[];
+	repositoryURL: string;
+	version: string;
+}
+
+export interface IOSLocalSPMPackage {
+	name: string;
+	libs: string[];
+	path: string;
+}
+
+export type IOSSPMPackage = IOSRemoteSPMPackage | IOSLocalSPMPackage;
+
 interface IConfigIOS extends IConfigPlatform {
 	/**
 	 * Swift Package Manager
 	 * List packages to be included in the iOS build.
 	 */
-	SPMPackages?: Array<{
-		name: string;
-		libs: Array<string>;
-		/**
-		 * Remote package url
-		 */
-		repositoryURL?: string;
-		version?: string;
-		/**
-		 * Local package path relative to project directory
-		 */
-		path?: string;
-	}>;
+	SPMPackages?: Array<IOSSPMPackage>;
 }
 
 interface IConfigVisionOS extends IConfigIOS {}
