@@ -5,7 +5,6 @@ import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
 import { colorProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../styling/style-properties';
 import { layout, isEmoji } from '../../utils';
-import { profile } from '../../profiling';
 
 export * from './text-field-common';
 
@@ -14,7 +13,6 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
 	public static ObjCProtocols = [UITextFieldDelegate];
 
 	private _owner: WeakRef<TextField>;
-	private firstEdit: boolean;
 
 	public static initWithOwner(owner: WeakRef<TextField>): UITextFieldDelegateImpl {
 		const delegate = <UITextFieldDelegateImpl>UITextFieldDelegateImpl.new();
@@ -115,6 +113,7 @@ class UITextFieldImpl extends UITextField {
 export class TextField extends TextFieldBase {
 	nativeViewProtected: UITextField;
 	private _delegate: UITextFieldDelegateImpl;
+	private _debounceInProgress: boolean = true;
 
 	createNativeView() {
 		return UITextFieldImpl.initWithOwner(new WeakRef(this));
@@ -124,10 +123,12 @@ export class TextField extends TextFieldBase {
 		super.initNativeView();
 		this._delegate = UITextFieldDelegateImpl.initWithOwner(new WeakRef(this));
 		this.nativeViewProtected.delegate = this._delegate;
+		this._debounceInProgress = false;
 	}
 
 	disposeNativeView() {
 		this._delegate = null;
+		this._debounceInProgress = null;
 		super.disposeNativeView();
 	}
 
@@ -174,6 +175,14 @@ export class TextField extends TextFieldBase {
 	}
 
 	public textFieldShouldChangeCharactersInRangeReplacementString(textField: UITextField, range: NSRange, replacementString: string): boolean {
+
+		if(this._debounceInProgress) {
+			// Debounce mechanism: if function is already in progress, skip invocation
+			return true;
+		}
+		// Set debounce flag to prevent multiple invocations
+		this._debounceInProgress = true;
+
 		if (this.secureWithoutAutofill && !textField.secureTextEntry) {
 			/**
 			 * Helps avoid iOS 12+ autofill strong password suggestion prompt
@@ -217,6 +226,11 @@ export class TextField extends TextFieldBase {
 					}
 				}
 			}
+			// Clear debounce flag after a delay to allow the function to be invoked again
+			setTimeout( () => {
+				this._debounceInProgress = false;
+			}, 10);
+			return true;
 		}
 
 		if (this.formattedText) {

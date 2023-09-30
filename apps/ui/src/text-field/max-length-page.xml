@@ -3,7 +3,7 @@
         <ActionBar title="maxLength" />
     </Page.actionBar>
     <StackLayout>
-        <TextField autocorrect="false" id="maxLenghtFromCodeBehindWithText" hint="max lenght and text from code behind" maxLength="3" />
+        <TextField autocorrect="false" id="maxLenghtFromCodeBehindWithText" hint="max length and text from code behind" maxLength="3" />
         <TextField autocorrect="false" id="maxLenghtFromCodeBehind" hint="set only max length from code behind" />
         <TextField autocorrect="false" id="inXml" text="in xml" hint="in xml" maxLength="3" />
         <TextField autocorrect="false" id="useInput" hint="user input" maxLength="3" />
