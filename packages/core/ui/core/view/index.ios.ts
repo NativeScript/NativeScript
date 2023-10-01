@@ -319,7 +319,7 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	protected applySafeAreaInsets(frame: CGRect): CGRect {
-		if (majorVersion <= 10) {
+		if (!__VISIONOS__ && majorVersion <= 10) {
 			return null;
 		}
 		if (this.iosIgnoreSafeArea) {
@@ -1081,7 +1081,7 @@ export class CustomLayoutView extends ContainerView {
 	nativeViewProtected: UIView;
 
 	createNativeView() {
-		return UIView.alloc().initWithFrame(UIScreen.mainScreen.bounds);
+		return UIView.alloc().initWithFrame(NativeScriptViewRegistry.getKeyWindow().screen.bounds);
 	}
 
 	get ios(): UIView {

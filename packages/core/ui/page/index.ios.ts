@@ -519,7 +519,7 @@ export class Page extends PageBase {
 
 		const insets = this.getSafeAreaInsets();
 
-		if (majorVersion <= 10) {
+		if (!__VISIONOS__ && majorVersion <= 10) {
 			// iOS 10 and below don't have safe area insets API,
 			// there we need only the top inset on the Page
 			insets.top = layout.round(layout.toDevicePixels(this.viewController.view.safeAreaLayoutGuide.layoutFrame.origin.y));

@@ -32,7 +32,7 @@ export function test_Transitions() {
 	});
 
 	var transitions;
-	if (Device.os === platformNames.ios) {
+	if (__APPLE__) {
 		transitions = ['curl'];
 	} else {
 		const _sdkVersion = parseInt(Device.sdkVersion);

@@ -457,6 +457,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			__ANDROID__: platform === 'android',
 			__IOS__: platform === 'ios',
 			__VISIONOS__: platform === 'visionos',
+			__APPLE__: platform === 'ios' || platform === 'visionos',
 			/* for compat only */ 'global.isAndroid': platform === 'android',
 			/* for compat only */ 'global.isIOS':
 				platform === 'ios' || platform === 'visionos',

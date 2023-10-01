@@ -4,18 +4,24 @@ import { platformNames } from './common';
 
 export * from './common';
 
+type DeviceType = 'Phone' | 'Tablet' | 'Vision';
+
 class DeviceRef {
 	private _model: string;
 	private _osVersion: string;
 	private _sdkVersion: string;
-	private _deviceType: 'Phone' | 'Tablet';
+	private _deviceType: DeviceType;
 
 	get manufacturer(): string {
 		return 'Apple';
 	}
 
 	get os(): string {
-		return platformNames.ios;
+		if (__VISIONOS__) {
+			return platformNames.visionos;
+		} else {
+			return platformNames.ios;
+		}
 	}
 
 	get osVersion(): string {
@@ -42,10 +48,14 @@ class DeviceRef {
 		return this._sdkVersion;
 	}
 
-	get deviceType(): 'Phone' | 'Tablet' {
+	get deviceType(): DeviceType {
 		if (!this._deviceType) {
 			if (UIDevice.currentDevice.userInterfaceIdiom === UIUserInterfaceIdiom.Phone) {
 				this._deviceType = 'Phone';
+			} else if (UIDevice.currentDevice.userInterfaceIdiom === UIUserInterfaceIdiom.Vision) {
+				this._deviceType = 'Tablet';
+				// TODO: could add conditions throughout core for this
+				// this._deviceType = 'Vision';
 			} else {
 				this._deviceType = 'Tablet';
 			}
@@ -78,14 +88,12 @@ class DeviceRef {
 }
 
 class MainScreen {
-	private _screen: UIScreen;
+	// private _screen: UIScreen;
 
 	private get screen(): UIScreen {
-		if (!this._screen) {
-			this._screen = UIScreen.mainScreen;
-		}
-
-		return this._screen;
+		// may not want to cache this value given the potential of multiple scenes
+		// particularly with SwiftUI app lifecycle apps
+		return NativeScriptViewRegistry.getKeyWindow().screen;
 	}
 
 	get widthPixels(): number {

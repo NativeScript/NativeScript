@@ -129,7 +129,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		}
 		this._rootView = rootView;
 		// Attach to the existing iOS app
-		const window = this.nativeApp.keyWindow || (this.nativeApp.windows.count > 0 && this.nativeApp.windows[0]);
+		const window = NativeScriptViewRegistry.getKeyWindow();
 
 		if (!window) {
 			return;
@@ -197,7 +197,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 
 			if (minFrameRateDisabled) {
 				let max = 120;
-				const deviceMaxFrames = UIScreen.mainScreen?.maximumFramesPerSecond;
+				const deviceMaxFrames = Utils.ios.getMainScreen().maximumFramesPerSecond;
 				if (options?.max) {
 					if (deviceMaxFrames) {
 						// iOS 10.3
@@ -208,7 +208,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 					}
 				}
 
-				if (Utils.ios.MajorVersion >= 15) {
+				if (Utils.ios.MajorVersion >= 15 || __VISIONOS__) {
 					const min = options?.min || max / 2;
 					const preferred = options?.preferred || max;
 					this.displayedLink.preferredFrameRateRange = CAFrameRateRangeMake(min, max, preferred);
@@ -239,8 +239,11 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	}
 
 	get window(): UIWindow {
-		if (NativeScriptEmbedder.sharedInstance().delegate && !this._window) {
-			this._window = UIApplication.sharedApplication.keyWindow;
+		// TODO: consideration
+		// may not want to cache this value given the potential of multiple scenes
+		// particularly with SwiftUI app lifecycle apps
+		if (!this._window) {
+			this._window = NativeScriptViewRegistry.getKeyWindow();
 		}
 
 		return this._window;
@@ -335,7 +338,12 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	}
 
 	protected getOrientation() {
-		const statusBarOrientation = UIApplication.sharedApplication.statusBarOrientation;
+		let statusBarOrientation: UIInterfaceOrientation;
+		if (__VISIONOS__) {
+			statusBarOrientation = NativeScriptEmbedder.sharedInstance().windowScene.interfaceOrientation;
+		} else {
+			statusBarOrientation = UIApplication.sharedApplication.statusBarOrientation;
+		}
 		return this.getOrientationValue(statusBarOrientation);
 	}
 
@@ -362,7 +370,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 				this.setWindowContent(root);
 			}
 		} else {
-			this._window = UIApplication.sharedApplication.keyWindow;
+			this._window = this.window; // UIApplication.sharedApplication.keyWindow;
 		}
 	}
 
@@ -381,11 +389,13 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 
 		this.setViewControllerView(rootView);
 
-		const haveController = this._window.rootViewController !== null;
-		this._window.rootViewController = controller;
+		const win = this.window;
+
+		const haveController = win.rootViewController !== null;
+		win.rootViewController = controller;
 
 		if (!haveController) {
-			this._window.makeKeyAndVisible();
+			win.makeKeyAndVisible();
 		}
 
 		this.initRootView(rootView);
@@ -402,13 +412,11 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	@profile
 	private didFinishLaunchingWithOptions(notification: NSNotification) {
 		this.setMaxRefreshRate();
+		// ensures window is assigned to proper window scene
+		this._window = this.window;
 
-		this._window = UIWindow.alloc().initWithFrame(UIScreen.mainScreen.bounds);
-
-		// TODO: Expose Window module so that it can we styled from XML & CSS
-		// Note: visionOS uses it's own material glass
 		if (!__VISIONOS__) {
-			this._window.backgroundColor = Utils.ios.MajorVersion <= 12 || !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
+			this.window.backgroundColor = Utils.ios.MajorVersion <= 12 || !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
 		}
 
 		this.notifyAppStarted(notification);

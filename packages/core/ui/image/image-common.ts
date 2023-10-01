@@ -134,7 +134,10 @@ export const imageSourceProperty = new Property<ImageBase, ImageSource>({
 });
 imageSourceProperty.register(ImageBase);
 
-export const srcProperty = new Property<ImageBase, string | ImageSource | ImageAsset>({ name: 'src' });
+export const srcProperty = new Property<ImageBase, string | ImageSource | ImageAsset>({
+	name: 'src',
+	affectsLayout: __APPLE__,
+});
 srcProperty.register(ImageBase);
 
 export const loadModeProperty = new Property<ImageBase, 'sync' | 'async'>({

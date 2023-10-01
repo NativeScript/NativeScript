@@ -188,7 +188,7 @@ export class IOSHelper {
 	}
 
 	static updateAutoAdjustScrollInsets(controller: UIViewController, owner: View): void {
-		if (iOSUtils.MajorVersion <= 10) {
+		if (!__VISIONOS__ && iOSUtils.MajorVersion <= 10) {
 			owner._automaticallyAdjustsScrollViewInsets = false;
 			// This API is deprecated, but has no alternative for <= iOS 10
 			// Defaults to true and results to appliyng the insets twice together with our logic
@@ -199,12 +199,9 @@ export class IOSHelper {
 	}
 
 	static updateConstraints(controller: UIViewController, owner: View): void {
-		// Not needed on visionOS
-		if (!__VISIONOS__) {
-			if (iOSUtils.MajorVersion <= 10) {
-				const layoutGuide = IOSHelper.initLayoutGuide(controller);
-				(<any>controller.view).safeAreaLayoutGuide = layoutGuide;
-			}
+		if (!__VISIONOS__ && iOSUtils.MajorVersion <= 10) {
+			const layoutGuide = IOSHelper.initLayoutGuide(controller);
+			(<any>controller.view).safeAreaLayoutGuide = layoutGuide;
 		}
 	}
 

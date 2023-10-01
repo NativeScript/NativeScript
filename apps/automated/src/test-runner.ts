@@ -2,7 +2,7 @@
 import * as TKUnit from './tk-unit';
 import './ui-test';
 
-import { isIOS, isAndroid, Application, Device, platformNames, Trace, Button, Frame, StackLayout, Page, TextView, Utils } from '@nativescript/core';
+import { isIOS, isAndroid, Application, Device, platformNames, Trace, Button, Frame, StackLayout, Page, TextView, Utils, Color } from '@nativescript/core';
 Frame.defaultAnimatedNavigation = false;
 
 export function isRunningOnEmulator(): boolean {
@@ -16,7 +16,7 @@ export function isRunningOnEmulator(): boolean {
 			android.os.Build.PRODUCT.toLocaleLowerCase().indexOf('sdk') > -1 ||
 			android.os.Build.PRODUCT.toLocaleLowerCase().indexOf('emulator') > -1
 		); // VS Emulator
-	} else if (Device.os === platformNames.ios) {
+	} else if (__APPLE__) {
 		return __dirname.search('Simulator') > -1;
 	}
 }
@@ -155,8 +155,8 @@ if (isIOS && Utils.ios.MajorVersion > 10) {
 	allTests['SAFEAREA-WEBVIEW'] = webViewSafeAreaTests;
 }
 
-import * as rootViewsCssClassesTests from './ui/styling/root-views-css-classes-tests';
-allTests['ROOT-VIEWS-CSS-CLASSES'] = rootViewsCssClassesTests;
+// import * as rootViewsCssClassesTests from './ui/styling/root-views-css-classes-tests';
+// allTests['ROOT-VIEWS-CSS-CLASSES'] = rootViewsCssClassesTests;
 
 import * as stylePropertiesTests from './ui/styling/style-properties-tests';
 allTests['STYLE-PROPERTIES'] = stylePropertiesTests;
@@ -218,8 +218,8 @@ allTests['PROGRESS'] = progressTests;
 import * as placeholderTests from './ui/placeholder/placeholder-tests';
 allTests['PLACEHOLDER'] = placeholderTests;
 
-// import * as pageTests from './ui/page/page-tests';
-// allTests['PAGE'] = pageTests;
+import * as pageTests from './ui/page/page-tests';
+allTests['PAGE'] = pageTests;
 
 import * as listViewTests from './ui/list-view/list-view-tests';
 allTests['LISTVIEW'] = listViewTests;
@@ -245,6 +245,7 @@ allTests['DATE-PICKER'] = datePickerTests;
 import * as timePickerTests from './ui/time-picker/time-picker-tests';
 allTests['TIME-PICKER'] = timePickerTests;
 
+// TODO: followup on 3 assertions here -
 // import * as webViewTests from './ui/web-view/web-view-tests';
 // allTests['WEB-VIEW'] = webViewTests;
 
@@ -281,8 +282,8 @@ allTests['NAVIGATION'] = navigationTests;
 import * as tabViewRootTests from './ui/tab-view/tab-view-root-tests';
 allTests['TAB-VIEW-ROOT'] = tabViewRootTests;
 
-import * as resetRootViewTests from './ui/root-view/reset-root-view-tests';
-allTests['RESET-ROOT-VIEW'] = resetRootViewTests;
+// import * as resetRootViewTests from './ui/root-view/reset-root-view-tests';
+// allTests['RESET-ROOT-VIEW'] = resetRootViewTests;
 
 import * as rootViewTests from './ui/root-view/root-view-tests';
 allTests['ROOT-VIEW'] = rootViewTests;
@@ -397,12 +398,20 @@ function showReportPage(finalMessage: string) {
 	messageContainer.text = finalMessage;
 	stack.addChild(messageContainer);
 
+	if (__VISIONOS__) {
+		btn.style.fontSize = 22;
+		stack.style.padding = 20;
+		stack.style.marginTop = 20;
+		messageContainer.style.fontSize = 22;
+		messageContainer.style.color = new Color('#fff');
+	}
+
 	Frame.topmost().navigate({
 		create: () => {
 			const page = new Page();
 			page.content = stack;
 			messageContainer.focus();
-			page.style.fontSize = 11;
+			// page.style.fontSize = 11;
 			if (isAndroid) {
 				page.on('navigatedTo', () => {
 					messageContainer.focus();

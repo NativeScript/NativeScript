@@ -9,7 +9,11 @@ declare class NativeScriptEmbedder extends NSObject {
 
 	readonly delegate: NativeScriptEmbedderDelegate;
 
+	readonly windowScene: UIWindowScene;
+
 	setDelegate(aDelegate: NativeScriptEmbedderDelegate): void;
+
+	setWindowScene(windowScene: UIWindowScene): void;
 }
 
 interface NativeScriptEmbedderDelegate {
@@ -20,3 +24,7 @@ declare var NativeScriptEmbedderDelegate: {
 
 	prototype: NativeScriptEmbedderDelegate;
 };
+
+declare class NativeScriptViewRegistry extends NSObject {
+	static getKeyWindow(): UIWindow;
+}

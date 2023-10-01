@@ -1,5 +1,5 @@
-@import 'nativescript-theme-core/css/core.light.css';
-@import './_app-platform.css';
+/* @import 'nativescript-theme-core/css/core.light.css'; */
+/* @import './_app-platform.css'; */
 
 /*
 The following CSS rule changes the font size of all UI
@@ -9,7 +9,7 @@ Button {
     text-transform: none;
 }
 .btn-view-demo {
-  background-color: #65ADF1;
+  /* background-color: #65ADF1; */
   border-radius: 5;
   font-size: 17;
   padding: 15;

@@ -207,7 +207,7 @@ export var testFileReadWriteBinary = function () {
 		error = e;
 	});
 	TKUnit.assertNull(error);
-	if (Device.os === platformNames.ios) {
+	if (__APPLE__) {
 		TKUnit.assertTrue(source.isEqualToData(destination));
 	} else {
 		TKUnit.assertEqual(new java.io.File(sourceFile.path).length(), new java.io.File(destinationFile.path).length());
@@ -235,7 +235,7 @@ export var testFileReadWriteBinaryAsync = function () {
 					// Succeded in writing the file
 					destinationFile.read().then(
 						function (destination) {
-							if (Device.os === platformNames.ios) {
+							if (__APPLE__) {
 								TKUnit.assertTrue(source.isEqualToData(destination));
 							} else {
 								TKUnit.assertEqual(new java.io.File(sourceFile.path).length(), new java.io.File(destinationFile.path).length());
