@@ -1173,7 +1173,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		return;
 	}
 
-	public setTestID(view: any, value: string) {
+	public setAccessibilityIdentifier(view: any, value: string) {
 		return;
 	}
 }

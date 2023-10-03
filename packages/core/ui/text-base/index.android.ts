@@ -465,21 +465,11 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	[testIDProperty.setNative](value: string): void {
-		this.setTestID(this.nativeTextViewProtected, value);
+		this.setAccessibilityIdentifier(this.nativeTextViewProtected, value);
 	}
 
 	[accessibilityIdentifierProperty.setNative](value: string): void {
-		if (typeof __USE_TEST_ID__ !== 'undefined' && __USE_TEST_ID__ && this.testID) {
-			// ignore when using testID;
-		} else {
-			// we override the default setter to apply it on nativeTextViewProtected
-			const id = Utils.ad.resources.getId(':id/nativescript_accessibility_id');
-
-			if (id) {
-				this.nativeTextViewProtected.setTag(id, value);
-				this.nativeTextViewProtected.setTag(value);
-			}
-		}
+		this.setAccessibilityIdentifier(this.nativeTextViewProtected, value);
 	}
 
 	[maxLinesProperty.setNative](value: number) {
