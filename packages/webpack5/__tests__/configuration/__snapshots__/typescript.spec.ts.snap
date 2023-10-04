@@ -269,8 +269,7 @@ exports[`typescript configuration for android 1`] = `
         'global.isAndroid': true,
         'global.isIOS': false,
         'global.isVisionOS': false,
-        process: 'global.process',
-        __USE_TEST_ID__: false
+        process: 'global.process'
       }
     ),
     /* config.plugin('CopyWebpackPlugin') */
@@ -596,8 +595,7 @@ exports[`typescript configuration for ios 1`] = `
         'global.isAndroid': false,
         'global.isIOS': true,
         'global.isVisionOS': false,
-        process: 'global.process',
-        __USE_TEST_ID__: false
+        process: 'global.process'
       }
     ),
     /* config.plugin('CopyWebpackPlugin') */
