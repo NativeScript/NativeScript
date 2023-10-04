@@ -679,13 +679,14 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	[testIDProperty.setNative](value: string) {
-		this.setTestID(this.nativeViewProtected, value);
+		this.setAccessibilityIdentifier(this.nativeViewProtected, value);
 	}
 
-	public setTestID(view: any, value: string): void {
-		if (typeof __USE_TEST_ID__ !== 'undefined' && __USE_TEST_ID__) {
-			view.accessibilityIdentifier = value;
-		}
+	public setAccessibilityIdentifier(view: any, value: string): void {
+		view.accessibilityIdentifier = value;
+
+		if (this.testID && this.testID !== value) this.testID = value;
+		if (this.accessibilityIdentifier !== value) this.accessibilityIdentifier = value;
 	}
 
 	[accessibilityEnabledProperty.setNative](value: boolean): void {
@@ -695,15 +696,11 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	[accessibilityIdentifierProperty.getDefault](): string {
-		return this.nativeViewProtected.accessibilityLabel;
+		return this.nativeViewProtected.accessibilityIdentifier;
 	}
 
 	[accessibilityIdentifierProperty.setNative](value: string): void {
-		if (typeof __USE_TEST_ID__ !== 'undefined' && __USE_TEST_ID__ && this.testID) {
-			// ignore when using testID
-		} else {
-			this.nativeViewProtected.accessibilityIdentifier = value;
-		}
+		this.setAccessibilityIdentifier(this.nativeViewProtected, value);
 	}
 
 	[accessibilityRoleProperty.setNative](value: AccessibilityRole): void {

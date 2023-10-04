@@ -1,6 +1,7 @@
 import { Application, ApplicationEventData } from '../application';
 import { Trace } from '../trace';
 import { SDK_VERSION } from '../utils/constants';
+import { resources } from '../utils/android';
 import type { View } from '../ui/core/view';
 import { GestureTypes } from '../ui/gestures';
 import { notifyAccessibilityFocusState } from './accessibility-common';
@@ -164,6 +165,12 @@ function ensureNativeClasses() {
 				}
 
 				return;
+			}
+
+			// Set resource id that can be used with test frameworks without polluting the content description.
+			const id = host.getTag(resources.getId(`:id/nativescript_accessibility_id`));
+			if (id != null) {
+				info.setViewIdResourceName(id);
 			}
 
 			const accessibilityRole = view.accessibilityRole;
@@ -660,11 +667,6 @@ function applyContentDescription(view: View, forceUpdate?: boolean) {
 	}
 
 	const contentDescription = contentDescriptionBuilder.join('. ').trim().replace(/^\.$/, '');
-
-	if (typeof __USE_TEST_ID__ !== 'undefined' && __USE_TEST_ID__ && view.testID) {
-		// ignore when testID is enabled
-		return;
-	}
 
 	if (contentDescription) {
 		if (Trace.isEnabled()) {
