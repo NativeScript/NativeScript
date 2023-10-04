@@ -4,12 +4,11 @@ import UIKit
 
 struct NativeScriptMainWindow: Scene {
     var body: some Scene {
-        // The main window that presents the app's modules.
         WindowGroup {
             NativeScriptAppView(found: { windowScene in
                 NativeScriptEmbedder.sharedInstance().setWindowScene(windowScene)
             }).onAppear {
-                print("NativeScriptAppView onAppear")
+                // print("NativeScriptAppView onAppear")
                 DispatchQueue.main.async {
                     NativeScriptStart.boot()
                 }
@@ -24,13 +23,12 @@ struct NativeScriptMainWindow: Scene {
     }
 }
 
-// NOTE: this likely should go into @nativescript/swift-ui:
 struct NativeScriptAppView: UIViewRepresentable {
     /// A closure that's called when the window is found.
     var found: ((UIWindowScene?) -> Void)
   
     func makeUIView(context: Context) -> UIView {
-        print("make NativeScriptAppView")
+        // print("NativeScriptAppView makeUIView")
         var window: UIWindow? {
             guard let scene = UIApplication.shared.connectedScenes.first,
                   let windowSceneDelegate = scene.delegate as? UIWindowSceneDelegate,

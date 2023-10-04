@@ -26,6 +26,16 @@
     "iOS",
     "TypeScript"
   ],
+  "funding": [
+    {
+      "type": "opencollective",
+      "url": "https://opencollective.com/NativeScript"
+    },
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/NativeScript"
+    }
+  ],
   "homepage": "https://nativescript.org",
   "repository": {
     "type": "git",

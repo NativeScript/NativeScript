@@ -1,5 +1,5 @@
-/* @import 'nativescript-theme-core/css/core.light.css'; */
-/* @import './_app-platform.css'; */
+@import 'nativescript-theme-core/css/core.light.css';
+@import './_app-platform.css';
 
 /*
 The following CSS rule changes the font size of all UI
@@ -221,4 +221,20 @@ Button {
 .switch-demo-page Switch.custom-switch:disabled:checked {
     color: #ddd;
     background-color: #777;
+}
+
+.ns-visionos Page {
+    background-color: transparent;
+}
+
+.ns-visionos Label, TextField, TextView {
+    font-size: 24;
+    padding: 12
+}
+
+.ns-visionos Button {
+    padding: 12;
+    font-size: 24;
+    background-color: transparent;
+    width: 400;
 }
