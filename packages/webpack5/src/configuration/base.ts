@@ -235,6 +235,9 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.use('app-css-loader')
 		.loader('app-css-loader')
 		.options({
+			// TODO: allow both visionos and ios to resolve for css
+			// only resolve .ios css on visionOS for now
+			// platform: platform === 'visionos' ? 'ios' : platform,
 			platform,
 		})
 		.end();
@@ -334,22 +337,26 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 						// custom resolver to resolve platform extensions in @import statements
 						// ie. @import "foo.css" would import "foo.ios.css" if the platform is ios and it exists
 						resolve(id, baseDir, importOptions) {
-							const ext = extname(id);
-							const platformExt = ext ? `.${platform}${ext}` : '';
+							const extensions =
+								platform === 'visionos' ? [platform, 'ios'] : [platform];
+							for (const platformTarget of extensions) {
+								const ext = extname(id);
+								const platformExt = ext ? `.${platformTarget}${ext}` : '';
 
-							if (!id.includes(platformExt)) {
-								const platformRequest = id.replace(ext, platformExt);
-								const extPath = resolve(baseDir, platformRequest);
+								if (!id.includes(platformExt)) {
+									const platformRequest = id.replace(ext, platformExt);
+									const extPath = resolve(baseDir, platformRequest);
 
-								try {
-									return require.resolve(platformRequest, {
-										paths: [baseDir],
-									});
-								} catch {}
+									try {
+										return require.resolve(platformRequest, {
+											paths: [baseDir],
+										});
+									} catch {}
 
-								if (existsSync(extPath)) {
-									console.log(`resolving "${id}" to "${platformRequest}"`);
-									return extPath;
+									if (existsSync(extPath)) {
+										console.log(`resolving "${id}" to "${platformRequest}"`);
+										return extPath;
+									}
 								}
 							}
 
