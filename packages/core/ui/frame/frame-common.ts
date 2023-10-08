@@ -200,12 +200,14 @@ export class FrameBase extends CustomLayoutView {
 
 	public _removeEntry(removed: BackstackEntry): void {
 		const page = removed.resolvedPage;
-		const frame = page.frame;
-		page._frame = null;
-		if (frame) {
-			frame._removeView(page);
-		} else {
-			page._tearDownUI(true);
+		if (page) {
+			const frame = page.frame;
+			page._frame = null;
+			if (frame) {
+				frame._removeView(page);
+			} else {
+				page._tearDownUI(true);
+			}
 		}
 
 		removed.resolvedPage = null;
