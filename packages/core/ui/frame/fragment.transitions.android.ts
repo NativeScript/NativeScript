@@ -366,6 +366,8 @@ function getTransitionListener(entry: ExpandedEntry, transition: androidx.transi
 					Trace.write(`END ${toShortString(transition)} transition for ${entry.fragmentTag} backEntry:${backEntry ? backEntry.fragmentTag : 'none'}`, Trace.categories.Transition);
 				}
 				transitionOrAnimationCompleted(entry, backEntry);
+				entry?.transition?.onTransitionEnd?.(entry);
+
 				if (entry?.transition) {
 					notifySharedTransition(entry.transition?.id, SharedTransition.finishedEvent);
 				}
