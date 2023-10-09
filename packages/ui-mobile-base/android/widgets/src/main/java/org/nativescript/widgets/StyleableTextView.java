@@ -20,8 +20,9 @@ public class StyleableTextView extends androidx.appcompat.widget.AppCompatTextVi
 	protected void onDraw(Canvas canvas) {
 		if (mTextStrokeWidth > 0) {
 			_applyStroke(canvas);
+		} else {
+			super.onDraw(canvas);
 		}
-		super.onDraw(canvas);
 	}
 
 	public void setTextStroke(int width, int color, int textColor) {
