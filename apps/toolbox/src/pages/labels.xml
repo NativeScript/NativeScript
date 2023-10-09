@@ -25,6 +25,9 @@
 		<GridLayout marginTop="10" borderWidth="1" borderColor="#efefef" height="60" paddingLeft="5">
 			<Button text="Test Button text-overflow: initial, this should be long sentence and truncated in the middle with ellipsis." textOverflow="initial" whiteSpace="nowrap" />
 		</GridLayout>
+		<GridLayout marginTop="10" height="60" paddingLeft="5" tap="{{toggleStrokeStyle}}">
+			<Label text=" text-stroke" style="text-stroke: 2px black; color: #fff; font-size: 35; font-weight: bold; font-family:Arial, Helvetica, sans-serif" loaded="{{loadedStrokeLabel}}"/>
+		</GridLayout>
         <Label text="maxLines 2" fontWeight="bold" marginTop="10" />
         <Label
 				text="Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."

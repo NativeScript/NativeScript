@@ -25831,8 +25831,11 @@ declare class UIView extends UIResponder implements CALayerDelegate, NSCoding, U
 	layoutSubviews(): void;
 
 	nativeScriptSetFormattedTextDecorationAndTransformLetterSpacingLineHeight(details: NSDictionary<any, any>, letterSpacing: number, lineHeight: number): void;
-
+	
+	nativeScriptSetFormattedTextStrokeColor(width: number, color: UIColor): void;
+	
 	nativeScriptSetTextDecorationAndTransformTextDecorationLetterSpacingLineHeight(text: string, textDecoration: string, letterSpacing: number, lineHeight: number): void;
+    
 
 	needsUpdateConstraints(): boolean;
 
