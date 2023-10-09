@@ -1,6 +1,5 @@
 import { Label as LabelDefinition } from '.';
 import { TextBase, whiteSpaceProperty } from '../text-base';
-import { StyleableTextView } from '../text-base/styleable-text-view';
 import { profile } from '../../profiling';
 import { CSSType } from '../core/view';
 import { booleanConverter } from '../core/view-base';
@@ -10,8 +9,8 @@ export * from '../text-base';
 
 @CSSType('Label')
 export class Label extends TextBase implements LabelDefinition {
-	nativeViewProtected: StyleableTextView;
-	nativeTextViewProtected: StyleableTextView;
+	nativeViewProtected: org.nativescript.widgets.StyleableTextView;
+	nativeTextViewProtected: org.nativescript.widgets.StyleableTextView;
 
 	get textWrap(): boolean {
 		return this.style.whiteSpace === 'normal';
@@ -26,9 +25,7 @@ export class Label extends TextBase implements LabelDefinition {
 
 	@profile
 	public createNativeView() {
-		const styleableTextView = new StyleableTextView(this._context);
-		styleableTextView.owner = new WeakRef(this);
-		return styleableTextView;
+		return new org.nativescript.widgets.StyleableTextView(this._context);
 	}
 
 	public initNativeView(): void {

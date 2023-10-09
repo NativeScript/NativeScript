@@ -5,11 +5,12 @@ import { ShadowCSSValues } from '../styling/css-shadow';
 // Requires
 import { Font } from '../styling/font';
 import { iosAccessibilityAdjustsFontSizeProperty, iosAccessibilityMaxFontScaleProperty, iosAccessibilityMinFontScaleProperty } from '../../accessibility/accessibility-properties';
-import { TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textTransformProperty, textShadowProperty, letterSpacingProperty, lineHeightProperty, maxLinesProperty, resetSymbol } from './text-base-common';
+import { TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textTransformProperty, textShadowProperty, textStrokeProperty, letterSpacingProperty, lineHeightProperty, maxLinesProperty, resetSymbol } from './text-base-common';
 import { Color } from '../../color';
 import { FormattedString } from './formatted-string';
 import { Span } from './span';
 import { colorProperty, fontInternalProperty, fontScaleInternalProperty, Length } from '../styling/style-properties';
+import { StrokeCSSValues } from '../styling/css-stroke';
 import { isString, isNullOrUndefined } from '../../utils/types';
 import { iOSNativeHelper, layout } from '../../utils';
 import { Trace } from '../../trace';
@@ -244,6 +245,10 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	[textTransformProperty.setNative](value: CoreTypes.TextTransformType) {
+		this._setNativeText();
+	}
+
+	[textStrokeProperty.setNative](value: StrokeCSSValues) {
 		this._setNativeText();
 	}
 

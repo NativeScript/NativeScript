@@ -25,8 +25,8 @@
 		<GridLayout marginTop="10" borderWidth="1" borderColor="#efefef" height="60" paddingLeft="5">
 			<Button text="Test Button text-overflow: initial, this should be long sentence and truncated in the middle with ellipsis." textOverflow="initial" whiteSpace="nowrap" />
 		</GridLayout>
-		<GridLayout marginTop="10" height="60" paddingLeft="5">
-			<Label text=" text-stroke" style="text-stroke: 1px black; color: #fff; font-size: 35; font-weight: bold; font-family:sans-serif"  />
+		<GridLayout marginTop="10" height="60" paddingLeft="5" tap="{{toggleStrokeStyle}}">
+			<Label text=" text-stroke" style="text-stroke: 2px black; color: #fff; font-size: 35; font-weight: bold; font-family:Arial, Helvetica, sans-serif" loaded="{{loadedStrokeLabel}}"/>
 		</GridLayout>
         <Label text="maxLines 2" fontWeight="bold" marginTop="10" />
         <Label
