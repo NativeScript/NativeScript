@@ -10,7 +10,8 @@ function sanitizeName(appName: string): string {
 }
 function getDistPath() {
 	const appName = sanitizeName(basename(getProjectRootPath()));
-	return `platforms/ios/${appName}/app`;
+	const platform = process.env.USER_PROJECT_PLATFORMS_IOS ? process.env.USER_PROJECT_PLATFORMS_IOS : "platforms/ios"
+	return `${platform}/${appName}/app`;
 }
 
 const iOSPlatform: INativeScriptPlatform = {
