@@ -104,7 +104,9 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 	// Add android app components to the bundle to SBG can generate the java classes
 	if (platform === 'android') {
-		const appComponents = Array.isArray(env.appComponents) ? env.appComponents : env.appComponents && [env.appComponents] || [];
+		const appComponents = Array.isArray(env.appComponents)
+			? env.appComponents
+			: (env.appComponents && [env.appComponents]) || [];
 		appComponents.push('@nativescript/core/ui/frame');
 		appComponents.push('@nativescript/core/ui/frame/activity');
 		appComponents.map((component) => {
