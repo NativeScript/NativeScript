@@ -10,4 +10,6 @@
 
 -(void)nativeScriptSetFormattedTextDecorationAndTransform:(NSDictionary*)details letterSpacing:(CGFloat)letterSpacing lineHeight:(CGFloat)lineHeight;
 
+-(void)nativeScriptSetFormattedTextStroke:(CGFloat)width color:(UIColor*)color;
+
 @end
