@@ -5,7 +5,7 @@ import { ShadowCSSValues } from '../styling/css-shadow';
 // Requires
 import { Font } from '../styling/font';
 import { backgroundColorProperty } from '../styling/style-properties';
-import { TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textProperty, textTransformProperty, textShadowProperty, letterSpacingProperty, whiteSpaceProperty, lineHeightProperty, isBold, resetSymbol } from './text-base-common';
+import { TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textProperty, textTransformProperty, textShadowProperty, textStrokeProperty, letterSpacingProperty, whiteSpaceProperty, lineHeightProperty, isBold, resetSymbol } from './text-base-common';
 import { Color } from '../../color';
 import { colorProperty, fontSizeProperty, fontInternalProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length } from '../styling/style-properties';
 import { FormattedString } from './formatted-string';
@@ -15,8 +15,8 @@ import { layout } from '../../utils';
 import { SDK_VERSION } from '../../utils/constants';
 import { isString, isNullOrUndefined } from '../../utils/types';
 import { accessibilityIdentifierProperty } from '../../accessibility/accessibility-properties';
-import * as Utils from '../../utils';
 import { testIDProperty } from '../../ui/core/view';
+import { StyleableTextView } from './styleable-text-view';
 
 export * from './text-base-common';
 
@@ -169,9 +169,9 @@ function initializeBaselineAdjustedSpan(): void {
 }
 
 export class TextBase extends TextBaseCommon {
-	nativeViewProtected: android.widget.TextView;
+	nativeViewProtected: StyleableTextView;
 	// @ts-ignore
-	nativeTextViewProtected: android.widget.TextView;
+	nativeTextViewProtected: StyleableTextView;
 	private _defaultTransformationMethod: android.text.method.TransformationMethod;
 	private _paintFlags: number;
 	private _minHeight: number;
@@ -386,7 +386,7 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
-	[textDecorationProperty.getDefault](value: number) {
+	[textDecorationProperty.getDefault]() {
 		return (this._paintFlags = this.nativeTextViewProtected.getPaintFlags());
 	}
 
@@ -410,7 +410,7 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
-	[textShadowProperty.getDefault](value: number) {
+	[textShadowProperty.getDefault]() {
 		return {
 			radius: this.nativeTextViewProtected.getShadowRadius(),
 			offsetX: this.nativeTextViewProtected.getShadowDx(),

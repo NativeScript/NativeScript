@@ -1,5 +1,6 @@
 import { Label as LabelDefinition } from '.';
 import { TextBase, whiteSpaceProperty } from '../text-base';
+import { StyleableTextView } from '../text-base/styleable-text-view';
 import { profile } from '../../profiling';
 import { CSSType } from '../core/view';
 import { booleanConverter } from '../core/view-base';
@@ -7,12 +8,10 @@ import { CoreTypes } from '../../core-types';
 
 export * from '../text-base';
 
-let TextView: typeof android.widget.TextView;
-
 @CSSType('Label')
 export class Label extends TextBase implements LabelDefinition {
-	nativeViewProtected: android.widget.TextView;
-	nativeTextViewProtected: android.widget.TextView;
+	nativeViewProtected: StyleableTextView;
+	nativeTextViewProtected: StyleableTextView;
 
 	get textWrap(): boolean {
 		return this.style.whiteSpace === 'normal';
@@ -27,11 +26,9 @@ export class Label extends TextBase implements LabelDefinition {
 
 	@profile
 	public createNativeView() {
-		if (!TextView) {
-			TextView = android.widget.TextView;
-		}
-
-		return new TextView(this._context);
+		const styleableTextView = new StyleableTextView(this._context);
+		styleableTextView.owner = new WeakRef(this);
+		return styleableTextView;
 	}
 
 	public initNativeView(): void {
