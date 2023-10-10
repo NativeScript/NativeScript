@@ -399,7 +399,7 @@ declare var kVTEncodeFrameOptionKey_ForceKeyFrame: string;
 
 declare var kVTEncodeFrameOptionKey_ForceLTRRefresh: string;
 
-declare const kVTFigAudioSessionInitializationErr: number;
+declare const kVTExtensionDisabledErr: number;
 
 declare const kVTFormatDescriptionChangeNotSupportedErr: number;
 

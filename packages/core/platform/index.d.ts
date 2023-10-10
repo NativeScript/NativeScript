@@ -14,13 +14,12 @@ export const isAndroid: boolean;
  */
 export const isIOS: boolean;
 
-/*
- * Enum holding platform names.
+/**
+ * Gets a value indicating if the app is running on the iOS platform.
  */
-export const platformNames: {
-	android: string;
-	ios: string;
-};
+export const isVisionOS: boolean;
+
+export * from './common';
 
 /*
  * An object containing device specific information.

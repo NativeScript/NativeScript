@@ -19,6 +19,8 @@ declare class NLContextualEmbedding extends NSObject {
 
 	readonly languages: NSArray<string>;
 
+	readonly maximumSequenceLength: number;
+
 	readonly modelIdentifier: string;
 
 	readonly revision: number;
@@ -56,6 +58,8 @@ declare class NLContextualEmbeddingResult extends NSObject {
 	static new(): NLContextualEmbeddingResult; // inherited from NSObject
 
 	readonly language: string;
+
+	readonly sequenceLength: number;
 
 	readonly string: string;
 

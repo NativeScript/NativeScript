@@ -806,20 +806,19 @@ export class View extends ViewCommon {
 	}
 
 	[testIDProperty.setNative](value: string) {
-		this.setTestID(this.nativeViewProtected, value);
+		this.setAccessibilityIdentifier(this.nativeViewProtected, value);
 	}
 
-	setTestID(view, value) {
-		if (typeof __USE_TEST_ID__ !== 'undefined' && __USE_TEST_ID__) {
-			const id = Utils.ad.resources.getId(':id/nativescript_accessibility_id');
+	setAccessibilityIdentifier(view, value) {
+		const id = Utils.android.resources.getId(':id/nativescript_accessibility_id');
 
-			if (id) {
-				view.setTag(id, value);
-				view.setTag(value);
-			}
-
-			view.setContentDescription(value);
+		if (id) {
+			view.setTag(id, value);
+			view.setTag(value);
 		}
+
+		if (this.testID && this.testID !== value) this.testID = value;
+		if (this.accessibilityIdentifier !== value) this.accessibilityIdentifier = value;
 	}
 
 	[accessibilityEnabledProperty.setNative](value: boolean): void {
@@ -829,16 +828,7 @@ export class View extends ViewCommon {
 	}
 
 	[accessibilityIdentifierProperty.setNative](value: string): void {
-		if (typeof __USE_TEST_ID__ !== 'undefined' && __USE_TEST_ID__ && this.testID) {
-			// ignore when using testID;
-		} else {
-			const id = Utils.ad.resources.getId(':id/nativescript_accessibility_id');
-
-			if (id) {
-				this.nativeViewProtected.setTag(id, value);
-				this.nativeViewProtected.setTag(value);
-			}
-		}
+		this.setAccessibilityIdentifier(this.nativeViewProtected, value);
 	}
 
 	[accessibilityRoleProperty.setNative](value: AccessibilityRole): void {

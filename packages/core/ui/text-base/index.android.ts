@@ -5,9 +5,10 @@ import { ShadowCSSValues } from '../styling/css-shadow';
 // Requires
 import { Font } from '../styling/font';
 import { backgroundColorProperty } from '../styling/style-properties';
-import { TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textProperty, textTransformProperty, textShadowProperty, letterSpacingProperty, whiteSpaceProperty, lineHeightProperty, isBold, resetSymbol } from './text-base-common';
+import { TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textProperty, textTransformProperty, textShadowProperty, textStrokeProperty, letterSpacingProperty, whiteSpaceProperty, lineHeightProperty, isBold, resetSymbol } from './text-base-common';
 import { Color } from '../../color';
 import { colorProperty, fontSizeProperty, fontInternalProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length } from '../styling/style-properties';
+import { StrokeCSSValues } from '../styling/css-stroke';
 import { FormattedString } from './formatted-string';
 import { Span } from './span';
 import { CoreTypes } from '../../core-types';
@@ -15,7 +16,6 @@ import { layout } from '../../utils';
 import { SDK_VERSION } from '../../utils/constants';
 import { isString, isNullOrUndefined } from '../../utils/types';
 import { accessibilityIdentifierProperty } from '../../accessibility/accessibility-properties';
-import * as Utils from '../../utils';
 import { testIDProperty } from '../../ui/core/view';
 
 export * from './text-base-common';
@@ -180,9 +180,9 @@ function initializeBaselineAdjustedSpan(): void {
 }
 
 export class TextBase extends TextBaseCommon {
-	nativeViewProtected: android.widget.TextView;
+	nativeViewProtected: org.nativescript.widgets.StyleableTextView;
 	// @ts-ignore
-	nativeTextViewProtected: android.widget.TextView;
+	nativeTextViewProtected: org.nativescript.widgets.StyleableTextView;
 	// private _defaultTransformationMethod: android.text.method.TransformationMethod;
 	private _paintFlags: number;
 	private _minHeight: number;
@@ -254,6 +254,9 @@ export class TextBase extends TextBaseCommon {
 		this._setTappableState(false);
 
 		this._setNativeText(reset);
+	}
+	[textStrokeProperty.setNative](value: StrokeCSSValues) {
+		this._setNativeText();
 	}
 	createFormattedTextNative(value: FormattedString) {
 		return createSpannableStringBuilder(value, this.style.fontSize);
@@ -410,7 +413,7 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
-	[textDecorationProperty.getDefault](value: number) {
+	[textDecorationProperty.getDefault]() {
 		return (this._paintFlags = this.nativeTextViewProtected.getPaintFlags());
 	}
 
@@ -434,7 +437,7 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
-	[textShadowProperty.getDefault](value: number) {
+	[textShadowProperty.getDefault]() {
 		return {
 			radius: this.nativeTextViewProtected.getShadowRadius(),
 			offsetX: this.nativeTextViewProtected.getShadowDx(),
@@ -489,21 +492,11 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	[testIDProperty.setNative](value: string): void {
-		this.setTestID(this.nativeTextViewProtected, value);
+		this.setAccessibilityIdentifier(this.nativeTextViewProtected, value);
 	}
 
 	[accessibilityIdentifierProperty.setNative](value: string): void {
-		if (typeof __USE_TEST_ID__ !== 'undefined' && __USE_TEST_ID__ && this.testID) {
-			// ignore when using testID;
-		} else {
-			// we override the default setter to apply it on nativeTextViewProtected
-			const id = Utils.ad.resources.getId(':id/nativescript_accessibility_id');
-
-			if (id) {
-				this.nativeTextViewProtected.setTag(id, value);
-				this.nativeTextViewProtected.setTag(value);
-			}
-		}
+		this.setAccessibilityIdentifier(this.nativeTextViewProtected, value);
 	}
 
 	[maxLinesProperty.setNative](value: number) {
@@ -533,7 +526,14 @@ export class TextBase extends TextBaseCommon {
 			const stringValue = text === null || text === undefined ? '' : text.toString();
 			transformedText = getTransformedText(stringValue, this.textTransform);
 		}
-		// this.ignoreNextTransform = true;
+
+		if (this.style?.textStroke) {
+			this.nativeViewProtected.setTextStroke(Length.toDevicePixels(this.style.textStroke.width), this.style.textStroke.color.android, this.style.color.android);
+		} else if (this.nativeViewProtected.setTextStroke) {
+			// reset
+			this.nativeViewProtected.setTextStroke(0, 0, 0);
+		}
+
 		this.nativeTextViewProtected.setText(<any>transformedText);
 	}
 

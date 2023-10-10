@@ -338,7 +338,9 @@ exports[`angular configuration for android 1`] = `
     /* config.plugin('PlatformSuffixPlugin') */
     new PlatformSuffixPlugin(
       {
-        platform: 'android'
+        extensions: [
+          'android'
+        ]
       }
     ),
     /* config.plugin('ContextExclusionPlugin|App_Resources') */
@@ -347,7 +349,7 @@ exports[`angular configuration for android 1`] = `
     ),
     /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
     new ContextExclusionPlugin(
-      /\\.(ios)\\.(\\w+)$/
+      /\\.(ios|visionos)\\.(\\w+)$/
     ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
@@ -361,10 +363,11 @@ exports[`angular configuration for android 1`] = `
         __UI_USE_EXTERNAL_RENDERER__: false,
         __ANDROID__: true,
         __IOS__: false,
+        __VISIONOS__: false,
         'global.isAndroid': true,
         'global.isIOS': false,
-        process: 'global.process',
-        __USE_TEST_ID__: false
+        'global.isVisionOS': false,
+        process: 'global.process'
       }
     ),
     /* config.plugin('CopyWebpackPlugin') */
@@ -767,7 +770,9 @@ exports[`angular configuration for ios 1`] = `
     /* config.plugin('PlatformSuffixPlugin') */
     new PlatformSuffixPlugin(
       {
-        platform: 'ios'
+        extensions: [
+          'ios'
+        ]
       }
     ),
     /* config.plugin('ContextExclusionPlugin|App_Resources') */
@@ -776,7 +781,7 @@ exports[`angular configuration for ios 1`] = `
     ),
     /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
     new ContextExclusionPlugin(
-      /\\.(android)\\.(\\w+)$/
+      /\\.(android|visionos)\\.(\\w+)$/
     ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
@@ -790,10 +795,11 @@ exports[`angular configuration for ios 1`] = `
         __UI_USE_EXTERNAL_RENDERER__: false,
         __ANDROID__: false,
         __IOS__: true,
+        __VISIONOS__: false,
         'global.isAndroid': false,
         'global.isIOS': true,
-        process: 'global.process',
-        __USE_TEST_ID__: false
+        'global.isVisionOS': false,
+        process: 'global.process'
       }
     ),
     /* config.plugin('CopyWebpackPlugin') */

@@ -371,6 +371,10 @@ declare class MPSGraph extends MPSGraphObject {
 
 	negativeWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	nonMaximumSuppressionWithBoxesTensorScoresTensorClassIndicesTensorIOUThresholdScoreThresholdPerClassSuppressionCoordinateModeName(boxesTensor: MPSGraphTensor, scoresTensor: MPSGraphTensor, classIndicesTensor: MPSGraphTensor, IOUThreshold: number, scoreThreshold: number, perClassSuppression: boolean, coordinateMode: MPSGraphNonMaximumSuppressionCoordinateMode, name: string): MPSGraphTensor;
+
+	nonMaximumSuppressionWithBoxesTensorScoresTensorIOUThresholdScoreThresholdPerClassSuppressionCoordinateModeName(boxesTensor: MPSGraphTensor, scoresTensor: MPSGraphTensor, IOUThreshold: number, scoreThreshold: number, perClassSuppression: boolean, coordinateMode: MPSGraphNonMaximumSuppressionCoordinateMode, name: string): MPSGraphTensor;
+
 	nonZeroIndicesOfTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
 	normalizationBetaGradientWithIncomingGradientTensorSourceTensorReductionAxesName(incomingGradientTensor: MPSGraphTensor, sourceTensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string): MPSGraphTensor;
@@ -1116,6 +1120,17 @@ declare const enum MPSGraphLossReductionType {
 	Sum = 1,
 
 	Mean = 2
+}
+
+declare const enum MPSGraphNonMaximumSuppressionCoordinateMode {
+
+	CornersHeightFirst = 0,
+
+	CornersWidthFirst = 1,
+
+	CentersHeightFirst = 2,
+
+	CentersWidthFirst = 3
 }
 
 declare class MPSGraphObject extends NSObject {

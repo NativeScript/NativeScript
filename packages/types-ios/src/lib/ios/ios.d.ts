@@ -64,7 +64,6 @@
 /// <reference path="objc-x86_64/objc!EventKit.d.ts" />
 /// <reference path="objc-x86_64/objc!EventKitUI.d.ts" />
 /// <reference path="objc-x86_64/objc!ExposureNotification.d.ts" />
-/// <reference path="objc-x86_64/objc!ExtensionKit.d.ts" />
 /// <reference path="objc-x86_64/objc!ExternalAccessory.d.ts" />
 /// <reference path="objc-x86_64/objc!FileProvider.d.ts" />
 /// <reference path="objc-x86_64/objc!FileProviderUI.d.ts" />

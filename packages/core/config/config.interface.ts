@@ -12,18 +12,30 @@ interface IConfigPlatform {
 	discardUncaughtJsExceptions?: boolean;
 }
 
+export interface IOSRemoteSPMPackage {
+	name: string;
+	libs: string[];
+	repositoryURL: string;
+	version: string;
+}
+
+export interface IOSLocalSPMPackage {
+	name: string;
+	libs: string[];
+	path: string;
+}
+
+export type IOSSPMPackage = IOSRemoteSPMPackage | IOSLocalSPMPackage;
+
 interface IConfigIOS extends IConfigPlatform {
 	/**
 	 * Swift Package Manager
 	 * List packages to be included in the iOS build.
 	 */
-	SPMPackages?: Array<{
-		name: string;
-		libs: Array<string>;
-		repositoryURL: string;
-		version: string;
-	}>;
+	SPMPackages?: Array<IOSSPMPackage>;
 }
+
+interface IConfigVisionOS extends IConfigIOS {}
 
 interface IConfigAndroid extends IConfigPlatform {
 	/**
@@ -194,6 +206,11 @@ export interface NativeScriptConfig {
 	 * Various iOS specific configurations including iOS runtime flags.
 	 */
 	ios?: IConfigIOS;
+	/**
+	 * Vision Pro specific configurations
+	 * Various VisionOS specific configurations including iOS runtime flags.
+	 */
+	visionos?: IConfigVisionOS;
 	/**
 	 * Android specific configurations
 	 * Various Android specific configurations including Android runtime flags.

@@ -1396,6 +1396,8 @@ declare class MKMapView extends UIView implements NSCoding {
 
 	readonly overlays: NSArray<MKOverlay>;
 
+	pitchButtonVisibility: MKFeatureVisibility;
+
 	pitchEnabled: boolean;
 
 	pointOfInterestFilter: MKPointOfInterestFilter;
@@ -1423,6 +1425,8 @@ declare class MKMapView extends UIView implements NSCoding {
 	showsTraffic: boolean;
 
 	showsUserLocation: boolean;
+
+	showsUserTrackingButton: boolean;
 
 	readonly userLocation: MKUserLocation;
 

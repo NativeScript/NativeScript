@@ -1040,6 +1040,8 @@ declare const kAudio_FilePermissionError: number;
 
 declare const kAudio_MemFullError: number;
 
+declare const kAudio_NoError: number;
+
 declare const kAudio_ParamError: number;
 
 declare const kAudio_TooManyFilesOpenError: number;

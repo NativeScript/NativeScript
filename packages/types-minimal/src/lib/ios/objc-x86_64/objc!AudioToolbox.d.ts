@@ -99,7 +99,7 @@ declare class AUAudioUnit extends NSObject {
 
 	musicalContextBlock: (p1: interop.Pointer | interop.Reference<number>, p2: interop.Pointer | interop.Reference<number>, p3: interop.Pointer | interop.Reference<number>, p4: interop.Pointer | interop.Reference<number>, p5: interop.Pointer | interop.Reference<number>, p6: interop.Pointer | interop.Reference<number>) => boolean;
 
-	readonly osWorkgroup: OS_os_workgroup;
+	readonly osWorkgroup: interop.Pointer | interop.Reference<any>;
 
 	readonly outputBusses: AUAudioUnitBusArray;
 
@@ -393,7 +393,7 @@ declare function AUListenerAddParameter(inListener: interop.Pointer | interop.Re
 
 declare function AUListenerCreate(inProc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<AudioUnitParameter>, p4: number) => void>, inUserData: interop.Pointer | interop.Reference<any>, inRunLoop: any, inRunLoopMode: string, inNotificationInterval: number, outListener: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
-declare function AUListenerCreateWithDispatchQueue(outListener: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, inNotificationInterval: number, inDispatchQueue: NSObject, inBlock: (p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<AudioUnitParameter>, p3: number) => void): number;
+declare function AUListenerCreateWithDispatchQueue(outListener: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, inNotificationInterval: number, inDispatchQueue: interop.Pointer | interop.Reference<any>, inBlock: (p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<AudioUnitParameter>, p3: number) => void): number;
 
 declare function AUListenerDispose(inListener: interop.Pointer | interop.Reference<any>): number;
 
@@ -756,6 +756,23 @@ declare const enum AUSpatializationAlgorithm {
 	kSpatializationAlgorithm_UseOutputType = 7
 }
 
+interface AUVoiceIOOtherAudioDuckingConfiguration {
+	mEnableAdvancedDucking: boolean;
+	mDuckingLevel: AUVoiceIOOtherAudioDuckingLevel;
+}
+declare var AUVoiceIOOtherAudioDuckingConfiguration: interop.StructType<AUVoiceIOOtherAudioDuckingConfiguration>;
+
+declare const enum AUVoiceIOOtherAudioDuckingLevel {
+
+	kAUVoiceIOOtherAudioDuckingLevelDefault = 0,
+
+	kAUVoiceIOOtherAudioDuckingLevelMin = 10,
+
+	kAUVoiceIOOtherAudioDuckingLevelMid = 20,
+
+	kAUVoiceIOOtherAudioDuckingLevelMax = 30
+}
+
 declare const enum AUVoiceIOSpeechActivityEvent {
 
 	kAUVoiceIOSpeechActivityHasStarted = 0,
@@ -960,7 +977,11 @@ declare function AudioFileGetPropertyInfo(inAudioFile: interop.Pointer | interop
 
 declare function AudioFileGetUserData(inAudioFile: interop.Pointer | interop.Reference<any>, inUserDataID: number, inIndex: number, ioUserDataSize: interop.Pointer | interop.Reference<number>, outUserData: interop.Pointer | interop.Reference<any>): number;
 
+declare function AudioFileGetUserDataAtOffset(inAudioFile: interop.Pointer | interop.Reference<any>, inUserDataID: number, inIndex: number, inOffset: number, ioUserDataSize: interop.Pointer | interop.Reference<number>, outUserData: interop.Pointer | interop.Reference<any>): number;
+
 declare function AudioFileGetUserDataSize(inAudioFile: interop.Pointer | interop.Reference<any>, inUserDataID: number, inIndex: number, outUserDataSize: interop.Pointer | interop.Reference<number>): number;
+
+declare function AudioFileGetUserDataSize64(inAudioFile: interop.Pointer | interop.Reference<any>, inUserDataID: number, inIndex: number, outUserDataSize: interop.Pointer | interop.Reference<number>): number;
 
 declare function AudioFileInitializeWithCallbacks(inClientData: interop.Pointer | interop.Reference<any>, inReadFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: interop.Pointer | interop.Reference<any>, p5: interop.Pointer | interop.Reference<number>) => number>, inWriteFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: interop.Pointer | interop.Reference<any>, p5: interop.Pointer | interop.Reference<number>) => number>, inGetSizeFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>, inSetSizeFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number) => number>, inFileType: number, inFormat: interop.Pointer | interop.Reference<AudioStreamBasicDescription>, inFlags: AudioFileFlags, outAudioFile: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
@@ -1231,11 +1252,11 @@ declare var AudioQueueLevelMeterState: interop.StructType<AudioQueueLevelMeterSt
 
 declare function AudioQueueNewInput(inFormat: interop.Pointer | interop.Reference<AudioStreamBasicDescription>, inCallbackProc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<AudioQueueBuffer>, p4: interop.Pointer | interop.Reference<AudioTimeStamp>, p5: number, p6: interop.Pointer | interop.Reference<AudioStreamPacketDescription>) => void>, inUserData: interop.Pointer | interop.Reference<any>, inCallbackRunLoop: any, inCallbackRunLoopMode: string, inFlags: number, outAQ: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
-declare function AudioQueueNewInputWithDispatchQueue(outAQ: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, inFormat: interop.Pointer | interop.Reference<AudioStreamBasicDescription>, inFlags: number, inCallbackDispatchQueue: NSObject, inCallbackBlock: (p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<AudioQueueBuffer>, p3: interop.Pointer | interop.Reference<AudioTimeStamp>, p4: number, p5: interop.Pointer | interop.Reference<AudioStreamPacketDescription>) => void): number;
+declare function AudioQueueNewInputWithDispatchQueue(outAQ: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, inFormat: interop.Pointer | interop.Reference<AudioStreamBasicDescription>, inFlags: number, inCallbackDispatchQueue: interop.Pointer | interop.Reference<any>, inCallbackBlock: (p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<AudioQueueBuffer>, p3: interop.Pointer | interop.Reference<AudioTimeStamp>, p4: number, p5: interop.Pointer | interop.Reference<AudioStreamPacketDescription>) => void): number;
 
 declare function AudioQueueNewOutput(inFormat: interop.Pointer | interop.Reference<AudioStreamBasicDescription>, inCallbackProc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<AudioQueueBuffer>) => void>, inUserData: interop.Pointer | interop.Reference<any>, inCallbackRunLoop: any, inCallbackRunLoopMode: string, inFlags: number, outAQ: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
-declare function AudioQueueNewOutputWithDispatchQueue(outAQ: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, inFormat: interop.Pointer | interop.Reference<AudioStreamBasicDescription>, inFlags: number, inCallbackDispatchQueue: NSObject, inCallbackBlock: (p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<AudioQueueBuffer>) => void): number;
+declare function AudioQueueNewOutputWithDispatchQueue(outAQ: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, inFormat: interop.Pointer | interop.Reference<AudioStreamBasicDescription>, inFlags: number, inCallbackDispatchQueue: interop.Pointer | interop.Reference<any>, inCallbackBlock: (p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<AudioQueueBuffer>) => void): number;
 
 declare function AudioQueueOfflineRender(inAQ: interop.Pointer | interop.Reference<any>, inTimestamp: interop.Pointer | interop.Reference<AudioTimeStamp>, ioBuffer: interop.Pointer | interop.Reference<AudioQueueBuffer>, inNumberFrames: number): number;
 
@@ -1597,7 +1618,7 @@ declare const enum AudioUnitRenderActionFlags {
 }
 
 interface AudioUnitRenderContext {
-	workgroup: OS_os_workgroup;
+	workgroup: interop.Pointer | interop.Reference<any>;
 	reserved: interop.Reference<number>;
 }
 declare var AudioUnitRenderContext: interop.StructType<AudioUnitRenderContext>;
@@ -1610,7 +1631,7 @@ declare function AudioUnitSetProperty(inUnit: interop.Pointer | interop.Referenc
 
 declare function AudioUnitUninitialize(inUnit: interop.Pointer | interop.Reference<any>): number;
 
-declare function AudioWorkIntervalCreate(name: string | interop.Pointer | interop.Reference<any>, clock: os_clockid_t, attr: interop.Pointer | interop.Reference<os_workgroup_attr_opaque_s>): OS_os_workgroup;
+declare function AudioWorkIntervalCreate(name: string | interop.Pointer | interop.Reference<any>, clock: os_clockid_t, attr: interop.Pointer | interop.Reference<os_workgroup_attr_opaque_s>): interop.Pointer | interop.Reference<any>;
 
 interface CABarBeatTime {
 	bar: number;
@@ -2331,6 +2352,8 @@ declare const kAUVoiceIOProperty_MuteOutput: number;
 
 declare const kAUVoiceIOProperty_MutedSpeechActivityEventListener: number;
 
+declare const kAUVoiceIOProperty_OtherAudioDuckingConfiguration: number;
+
 declare const kAUVoiceIOProperty_VoiceProcessingEnableAGC: number;
 
 declare const kAUVoiceIOProperty_VoiceProcessingQuality: number;
@@ -2797,6 +2820,8 @@ declare const kAudioFileNotOpenError: number;
 
 declare const kAudioFileNotOptimizedError: number;
 
+declare const kAudioFileOpenUsingHintError: number;
+
 declare const kAudioFileOperationNotSupportedError: number;
 
 declare const kAudioFilePermissionsError: number;
@@ -2894,6 +2919,8 @@ declare const kAudioFileStreamError_InvalidFile: number;
 declare const kAudioFileStreamError_InvalidPacketOffset: number;
 
 declare const kAudioFileStreamError_NotOptimized: number;
+
+declare const kAudioFileStreamError_OpenUsingHint: number;
 
 declare const kAudioFileStreamError_UnspecifiedError: number;
 
@@ -3440,6 +3467,8 @@ declare const kAudioUnitClumpID_System: number;
 declare const kAudioUnitComplexRenderSelect: number;
 
 declare const kAudioUnitErr_CannotDoInCurrentContext: number;
+
+declare const kAudioUnitErr_ComponentManagerNotSupported: number;
 
 declare const kAudioUnitErr_ExtensionNotFound: number;
 

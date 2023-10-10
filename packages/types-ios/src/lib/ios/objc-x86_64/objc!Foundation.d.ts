@@ -3341,6 +3341,8 @@ declare class NSFileHandle extends NSObject implements NSSecureCoding {
 
 	static fileHandleForWritingToURLError(url: NSURL): NSFileHandle;
 
+	static fileHandleWithDataCompletion(path: string, data: NSData, callback: (p1: NSFileHandle, p2: NSError) => void): void;
+
 	static new(): NSFileHandle; // inherited from NSObject
 
 	readonly availableData: NSData;
@@ -3372,6 +3374,8 @@ declare class NSFileHandle extends NSObject implements NSSecureCoding {
 	acceptConnectionInBackgroundAndNotify(): void;
 
 	acceptConnectionInBackgroundAndNotifyForModes(modes: NSArray<string> | string[]): void;
+
+	appendDataCompletion(data: NSData, callback: (p1: NSError) => void): void;
 
 	closeAndReturnError(): boolean;
 
@@ -10965,6 +10969,8 @@ declare var NSURLCredentialStorageChangedNotification: string;
 declare var NSURLCredentialStorageRemoveSynchronizableCredentials: string;
 
 declare var NSURLCustomIconKey: string;
+
+declare var NSURLDirectoryEntryCountKey: string;
 
 declare var NSURLDocumentIdentifierKey: string;
 

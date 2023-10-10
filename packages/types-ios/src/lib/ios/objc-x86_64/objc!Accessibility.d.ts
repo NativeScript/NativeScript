@@ -336,4 +336,8 @@ declare const enum AXNumericDataAxisDescriptorScale {
 	ScaleTypeLn = 2
 }
 
+declare function AXPrefersHorizontalTextLayout(): boolean;
+
+declare var AXPrefersHorizontalTextLayoutDidChangeNotification: string;
+
 declare function AXSupportsBidirectionalAXMFiHearingDeviceStreaming(): boolean;

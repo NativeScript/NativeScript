@@ -1,6 +1,7 @@
 import { Application, ApplicationEventData } from '../application';
 import { Trace } from '../trace';
 import { SDK_VERSION } from '../utils/constants';
+import { resources } from '../utils/android';
 import type { View } from '../ui/core/view';
 import { GestureTypes } from '../ui/gestures';
 import { notifyAccessibilityFocusState } from './accessibility-common';
@@ -166,6 +167,12 @@ function ensureNativeClasses() {
 				}
 
 				return;
+			}
+
+			// Set resource id that can be used with test frameworks without polluting the content description.
+			const id = host.getTag(resources.getId(`:id/nativescript_accessibility_id`));
+			if (id != null) {
+				info.setViewIdResourceName(id);
 			}
 
 			const accessibilityRole = view.accessibilityRole;
@@ -444,13 +451,28 @@ export function setupAccessibleView(view: View): void {
 	updateAccessibilityProperties(view);
 }
 
-export function updateAccessibilityProperties(view: View): void {
+let updateAccessibilityPropertiesMicroTask;
+let pendingViews = new Set<View>();
+export function updateAccessibilityProperties(view: View) {
 	if (!view.nativeViewProtected) {
 		return;
 	}
 
-	setAccessibilityDelegate(view);
-	applyContentDescription(view);
+	pendingViews.add(view);
+	if (updateAccessibilityPropertiesMicroTask) return;
+
+	updateAccessibilityPropertiesMicroTask = true;
+	Promise.resolve().then(() => {
+		updateAccessibilityPropertiesMicroTask = false;
+		let _pendingViews = Array.from(pendingViews);
+		pendingViews = new Set();
+		for (const view of _pendingViews) {
+			if (!view.nativeViewProtected) continue;
+			setAccessibilityDelegate(view);
+			applyContentDescription(view);
+		}
+		_pendingViews = [];
+	});
 }
 
 export function sendAccessibilityEvent(view: View, eventType: AndroidAccessibilityEvent, text?: string): void {
@@ -653,11 +675,6 @@ function applyContentDescription(view: View, forceUpdate?: boolean) {
 	}
 
 	const contentDescription = contentDescriptionBuilder.join('. ').trim().replace(/^\.$/, '');
-
-	if (typeof __USE_TEST_ID__ !== 'undefined' && __USE_TEST_ID__ && view.testID) {
-		// ignore when testID is enabled
-		return;
-	}
 
 	if (contentDescription) {
 		if (Trace.isEnabled()) {

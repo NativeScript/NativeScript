@@ -408,6 +408,13 @@
                 setImageLoadedListener(listener: image.Worker.OnImageLoadedListener): void;
             }
 
+            export class StyleableTextView extends android.widget.TextView {
+                public static class: java.lang.Class<org.nativescript.widgets.StyleableTextView>;
+                public onDraw(param0: globalAndroid.graphics.Canvas): void;
+                public setTextStroke(param0: number, param1: number, param2: number): void;
+                public constructor(param0: globalAndroid.content.Context);
+            }
+           
             export enum TabIconRenderingMode {
                 original,
                 template

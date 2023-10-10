@@ -1,8 +1,4 @@
-<p>
-  <a href="http://www.nativescript.org">
-    <img alt="NativeScript" src="https://raw.githubusercontent.com/NativeScript/artwork/main/logo/export/NativeScript_Logo_Wide_White_Blue_Rounded_Blue.png" height="50"/>
-  </a>
-</p>
+[![NativeScript](./tools/graphics/cover.png)](https://nativescript.org)
 
 <p>
 
@@ -43,20 +39,20 @@ We love you and your pull requests 🤗. Please follow our [contributing guide](
 
 ## @nativescript/*
 
-* [@nativescript/core](https://github.com/NativeScript/NativeScript/tree/main/packages/core)
-  * Core iOS/Android for NativeScript.
-* [@nativescript/types](https://www.npmjs.com/package/@nativescript/types)
-  * Types for both iOS/Android below wrapped up as a convenience. *Most commonly used.*
-* [@nativescript/types-ios](https://github.com/NativeScript/NativeScript/tree/main/packages/types-ios)
-  * Types for iOS.
-* [@nativescript/types-android](https://github.com/NativeScript/NativeScript/tree/main/packages/types-android)
-  * Types for Android.
-* [@nativescript/types-minimal](https://github.com/NativeScript/NativeScript/tree/main/packages/types-minimal)
-  * A very minimal set of types for only the latest Android and iOS sdks. Most commonly used to optimize Web-based IDE's which auto load all type declarations from node_modules.
-* [@nativescript/ui-mobile-base](https://github.com/NativeScript/NativeScript/tree/main/packages/ui-mobile-base)
-  * UI mobile base native classes used by core.
-* [@nativescript/webpack](https://github.com/NativeScript/NativeScript/tree/main/packages/webpack5)
-  * Webpack build utilities and configs used by NativeScript apps.
+- [@nativescript/core](https://github.com/NativeScript/NativeScript/tree/main/packages/core)
+  Core iOS/Android for NativeScript.
+- [@nativescript/types](https://www.npmjs.com/package/@nativescript/types)
+  Types for both iOS/Android below wrapped up as a convenience. *Most commonly used.*
+- [@nativescript/types-ios](https://github.com/NativeScript/NativeScript/tree/main/packages/types-ios)
+  Types for iOS.
+- [@nativescript/types-android](https://github.com/NativeScript/NativeScript/tree/main/packages/types-android)
+  Types for Android.
+- [@nativescript/types-minimal](https://github.com/NativeScript/NativeScript/tree/main/packages/types-minimal)
+  A very minimal set of types for only the latest Android and iOS sdks. Most commonly used to optimize Web-based IDE's which auto load all type declarations from node_modules.
+- [@nativescript/ui-mobile-base](https://github.com/NativeScript/NativeScript/tree/main/packages/ui-mobile-base)
+  UI mobile base native classes used by core.
+- [@nativescript/webpack](https://github.com/NativeScript/NativeScript/tree/main/packages/webpack5)
+  Webpack build utilities and configs used by NativeScript apps.
 
 ## Quick Links
 
@@ -77,23 +73,23 @@ We love you and your pull requests 🤗. Please follow our [contributing guide](
 
 Outside the source centralized in this repo, NativeScript consists of a few other source repos. Here are the major ones:
 
-- **[iOS Runtime](https://github.com/NativeScript/ns-v8ios-runtime)**
-	- This repo contains the NativeScript iOS Runtime — the code that hosts NativeScript iOS apps, and allows JavaScript code to be executed on iOS devices. The iOS runtime is written in a mix of C++, Objective-C, and more.
-- **[Android Runtime](https://github.com/NativeScript/android-runtime)**
-	- This repo contains the NativeScript Android Runtime — the code that hosts NativeScript Android apps, and allows JavaScript code to be executed on Android devices. The Android runtime is written in a mix of C++ and Java.
-- **[CLI](//github.com/NativeScript/nativescript-cli)**
-	- This repo contains the NativeScript command-line interface, which lets you create, build, and run apps using NativeScript. The CLI is written in TypeScript.
-- **[Docs](//github.com/NativeScript/docs-new)**
-	- This repo contains NativeScript documentation, which is available at <http://docs.nativescript.org/>. The docs are written in Markdown.
-- **[Plugins](https://github.com/NativeScript/plugins)**
-  - This repo contains a [plugin workspace](https://docs.nativescript.org/plugins/plugin-workspace-guide.html) with several often useful plugins.
-- **[Firebase](https://github.com/NativeScript/firebase)**
-  - Modular Firebase 🔥 implementation for iOS & Android.
-- **[ML Kit](https://github.com/NativeScript/mlkit)**
-  - Google's [ML Kit SDKs for iOS and Android](https://developers.google.com/ml-kit).
-- **[Payments](https://github.com/NativeScript/payments)**
-  - In-App Purchase, Subscriptions, Google Pay and Apple Pay.
-- **[Artwork](https://github.com/NativeScript/artwork)**
-  - Want to use our logo or colors? This repo contains ready to use media material.
+- [iOS Runtime](https://github.com/NativeScript/ns-v8ios-runtime)
+	NativeScript iOS Runtime: Empowers JavaScript code to be executed on iOS devices written in a mix of C++, Objective-C, and Swift.
+- [Android Runtime](https://github.com/NativeScript/android-runtime)
+	NativeScript Android Runtim: Empowers JavaScript code to be executed on Android devices written in a mix of C++, Java and Kotlin.
+- [CLI](//github.com/NativeScript/nativescript-cli)
+	NativeScript command-line interface empowering you to create, build, and run apps using NativeScript.
+- [Docs](//github.com/NativeScript/docs-new)
+	NativeScript documentation available at <http://docs.nativescript.org/> written in Markdown.
+- [Plugins](https://github.com/NativeScript/plugins)
+  A [plugin workspace](https://docs.nativescript.org/plugins/plugin-workspace-guide.html) with several useful plugins.
+- [Firebase](https://github.com/NativeScript/firebase)
+  Modular Firebase 🔥 implementation for supported platforms.
+- [ML Kit](https://github.com/NativeScript/mlkit)
+  Google's [ML Kit SDKs for supported platforms](https://developers.google.com/ml-kit).
+- [Payments](https://github.com/NativeScript/payments)
+  In-App Purchase, Subscriptions, Google Pay and Apple Pay.
+- [Artwork](https://github.com/NativeScript/artwork)
+  Want to use our logo or colors? Feel free to use any of our ready-to-use media material.
 
 <h3 align="center">Made with ❤️</h3>

@@ -962,6 +962,8 @@ declare class WKWebViewConfiguration extends NSObject implements NSCopying, NSSe
 
 	allowsInlineMediaPlayback: boolean;
 
+	allowsInlinePredictions: boolean;
+
 	allowsPictureInPictureMediaPlayback: boolean;
 
 	applicationNameForUserAgent: string;
@@ -1058,6 +1060,8 @@ declare class WKWebsiteDataStore extends NSObject implements NSSecureCoding {
 	readonly identifier: NSUUID;
 
 	readonly persistent: boolean;
+
+	proxyConfigurations: NSArray<any>;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 

@@ -1148,7 +1148,9 @@ declare const enum HKErrorCode {
 
 	ErrorWorkoutActivityNotAllowed = 12,
 
-	ErrorDataSizeExceeded = 13
+	ErrorDataSizeExceeded = 13,
+
+	ErrorBackgroundWorkoutSessionNotAllowed = 14
 }
 
 declare var HKErrorDomain: string;
@@ -1514,8 +1516,6 @@ declare var HKMetadataKeyAudioExposureDuration: string;
 
 declare var HKMetadataKeyAudioExposureLevel: string;
 
-declare var HKMetadataKeyAverageLightIntensity: string;
-
 declare var HKMetadataKeyAverageMETs: string;
 
 declare var HKMetadataKeyAverageSpeed: string;
@@ -1583,6 +1583,8 @@ declare var HKMetadataKeyInsulinDeliveryReason: string;
 declare var HKMetadataKeyLapLength: string;
 
 declare var HKMetadataKeyLowCardioFitnessEventThreshold: string;
+
+declare var HKMetadataKeyMaximumLightIntensity: string;
 
 declare var HKMetadataKeyMaximumSpeed: string;
 
@@ -3598,7 +3600,7 @@ interface HKWorkoutSessionDelegate extends NSObjectProtocol {
 
 	workoutSessionDidGenerateEvent?(workoutSession: HKWorkoutSession, event: HKWorkoutEvent): void;
 
-	workoutSessionDidReceiveDataFromRemoteDevice?(workoutSession: HKWorkoutSession, data: NSData): void;
+	workoutSessionDidReceiveDataFromRemoteWorkoutSession?(workoutSession: HKWorkoutSession, data: NSArray<NSData> | NSData[]): void;
 }
 declare var HKWorkoutSessionDelegate: {
 

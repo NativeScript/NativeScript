@@ -6020,7 +6020,9 @@ declare const enum cryptex_auth_type_t {
 
 	CRYPTEX1_AUTH_ENV_GENERIC_SUPPLEMENTAL = 5,
 
-	CRYPTEX_AUTH_PDI_NONCE = 6
+	CRYPTEX_AUTH_PDI_NONCE = 6,
+
+	CRYPTEX_AUTH_MAX = 7
 }
 
 declare function ctermid(p1: string | interop.Pointer | interop.Reference<any>): string;
@@ -7044,7 +7046,9 @@ declare const enum graftdmg_type_t {
 
 	GRAFTDMG_CRYPTEX_PDI_NONCE = 6,
 
-	GRAFTDMG_CRYPTEX_EFFECTIVE_AP = 7
+	GRAFTDMG_CRYPTEX_EFFECTIVE_AP = 7,
+
+	GRAFTDMG_CRYPTEX_MAX = 7
 }
 
 declare function grantpt(p1: number): number;

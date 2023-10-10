@@ -104,7 +104,9 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 	// Add android app components to the bundle to SBG can generate the java classes
 	if (platform === 'android') {
-		const appComponents = env.appComponents || [];
+		const appComponents = Array.isArray(env.appComponents)
+			? env.appComponents
+			: (env.appComponents && [env.appComponents]) || [];
 		appComponents.push('@nativescript/core/ui/frame');
 		appComponents.push('@nativescript/core/ui/frame/activity');
 		appComponents.map((component) => {
@@ -391,7 +393,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 	config.plugin('PlatformSuffixPlugin').use(PlatformSuffixPlugin, [
 		{
-			platform,
+			extensions: platform === 'visionos' ? [platform, 'ios'] : [platform],
 		},
 	]);
 
@@ -442,12 +444,12 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			__UI_USE_EXTERNAL_RENDERER__: false,
 			__ANDROID__: platform === 'android',
 			__IOS__: platform === 'ios',
+			__VISIONOS__: platform === 'visionos',
 			/* for compat only */ 'global.isAndroid': platform === 'android',
-			/* for compat only */ 'global.isIOS': platform === 'ios',
+			/* for compat only */ 'global.isIOS':
+				platform === 'ios' || platform === 'visionos',
+			/* for compat only */ 'global.isVisionOS': platform === 'visionos',
 			process: 'global.process',
-
-			// enable testID when using --env.e2e
-			__USE_TEST_ID__: !!env.e2e,
 
 			// todo: ?!?!
 			// profile: '() => {}',

@@ -20,26 +20,11 @@ declare class SFAcousticFeature extends NSObject implements NSCopying, NSSecureC
 	initWithCoder(coder: NSCoder): this;
 }
 
-declare var SFAnalysisContextTagContextualNamedEntities: string;
-
-declare var SFAnalysisContextTagGeoLMRegionID: string;
-
 declare var SFAnalysisContextTagLeftContext: string;
 
 declare var SFAnalysisContextTagRightContext: string;
 
 declare var SFAnalysisContextTagSelectedText: string;
-
-declare const enum SFCommandRecognizerArgumentPresence {
-
-	PresentAndDelimited = 0,
-
-	PresentMaybeIncomplete = 1,
-
-	MissingMaybeExpected = 2,
-
-	Missing = 3
-}
 
 declare class SFSpeechAudioBufferRecognitionRequest extends SFSpeechRecognitionRequest {
 
@@ -58,25 +43,11 @@ declare class SFSpeechAudioBufferRecognitionRequest extends SFSpeechRecognitionR
 
 declare const enum SFSpeechErrorCode {
 
-	InternalServiceError = 0,
+	InternalServiceError = 1,
 
-	AudioDisordered = 1,
+	UndefinedTemplateClassName = 7,
 
-	UnexpectedAudioFormat = 2,
-
-	NoModel = 3,
-
-	IncompatibleAudioFormats = 4,
-
-	InvalidJitProfile = 5,
-
-	UndefinedTemplateClassName = 6,
-
-	MalformedSupplementalModel = 7,
-
-	UnimplementedFunctionality = 8,
-
-	ModuleOutputFailed = 9
+	MalformedSupplementalModel = 8
 }
 
 declare var SFSpeechErrorDomain: string;
@@ -414,6 +385,16 @@ declare class _SFAnalysisContext extends NSObject {
 	userDataForKey(key: string): any;
 }
 
+declare var _SFAnalysisContextTagContextualNamedEntities: string;
+
+declare var _SFAnalysisContextTagGeoLMRegionID: string;
+
+declare var _SFAnalysisContextTagLeftContext: string;
+
+declare var _SFAnalysisContextTagRightContext: string;
+
+declare var _SFAnalysisContextTagSelectedText: string;
+
 declare class _SFAnalyzerTranscriptionSegment extends NSObject {
 
 	static alloc(): _SFAnalyzerTranscriptionSegment; // inherited from NSObject
@@ -439,11 +420,30 @@ declare class _SFCommandRecognizerArgument extends NSObject {
 
 	readonly indexes: NSIndexSet;
 
-	readonly presence: SFCommandRecognizerArgumentPresence;
+	readonly presence: _SFCommandRecognizerArgumentPresence;
 
-	constructor(o: { presence: SFCommandRecognizerArgumentPresence; indexes: NSIndexSet; adpositionIndexes: NSIndexSet; });
+	constructor(o: { presence: _SFCommandRecognizerArgumentPresence; indexes: NSIndexSet; adpositionIndexes: NSIndexSet; });
 
-	initWithPresenceIndexesAdpositionIndexes(presence: SFCommandRecognizerArgumentPresence, indexes: NSIndexSet, adpositionIndexes: NSIndexSet): this;
+	initWithPresenceIndexesAdpositionIndexes(presence: _SFCommandRecognizerArgumentPresence, indexes: NSIndexSet, adpositionIndexes: NSIndexSet): this;
+}
+
+declare const enum _SFCommandRecognizerArgumentPresence {
+
+	_SFCommandRecognizerArgumentPresencePresentAndDelimited = 0,
+
+	_SFCommandRecognizerArgumentPresencePresentMaybeIncomplete = 1,
+
+	_SFCommandRecognizerArgumentPresenceMissingMaybeExpected = 2,
+
+	_SFCommandRecognizerArgumentPresenceMissing = 3,
+
+	SFCommandRecognizerArgumentPresencePresentAndDelimited = 0,
+
+	SFCommandRecognizerArgumentPresencePresentMaybeIncomplete = 1,
+
+	SFCommandRecognizerArgumentPresenceMissingMaybeExpected = 2,
+
+	SFCommandRecognizerArgumentPresenceMissing = 3
 }
 
 declare class _SFCommandRecognizerInterpretation extends NSObject {
@@ -550,12 +550,6 @@ declare class _SFSpeechAnalyzer extends NSObject {
 
 	constructor(o: { clientIdentifier: string; inputSequence: _SFInputSequencer; audioFormat: AVAudioFormat; transcriberResultDelegate: _SFSpeechAnalyzerTranscriberResultDelegate; endpointingResultDelegate: _SFSpeechAnalyzerEndpointingResultDelegate; queue: NSOperationQueue; transcriberOptions: _SFSpeechAnalyzerTranscriberOptions; commandRecognizerOptions: _SFSpeechAnalyzerCommandRecognizerOptions; options: _SFSpeechAnalyzerOptions; restrictedLogging: boolean; geoLMRegionID: string; contextualNamedEntities: NSArray<_SFContextualNamedEntity> | _SFContextualNamedEntity[]; didChangeVolatileRange: (p1: CMTimeRange, p2: boolean, p3: boolean) => void; });
 
-	constructor(o: { clientIdentifier: string; inputSequence: _SFInputSequencer; audioFormat: AVAudioFormat; transcriberResultDelegate: _SFSpeechAnalyzerTranscriberResultDelegate; endpointingResultDelegate: _SFSpeechAnalyzerEndpointingResultDelegate; queue: NSOperationQueue; transcriberOptions: _SFSpeechAnalyzerTranscriberOptions; commandRecognizerOptions: _SFSpeechAnalyzerCommandRecognizerOptions; options: _SFSpeechAnalyzerOptions; restrictedLogging: boolean; geoLMRegionID: string; contextualNamedEntities: NSArray<_SFContextualNamedEntity> | _SFContextualNamedEntity[]; personalizedLMPath: string; didChangeVolatileRange: (p1: CMTimeRange, p2: boolean, p3: boolean) => void; });
-
-	constructor(o: { clientIdentifier: string; inputSequence: _SFInputSequencer; audioFormat: AVAudioFormat; transcriberResultDelegate: _SFSpeechAnalyzerTranscriberResultDelegate; endpointingResultDelegate: _SFSpeechAnalyzerEndpointingResultDelegate; queue: NSOperationQueue; transcriberOptions: _SFSpeechAnalyzerTranscriberOptions; commandRecognizerOptions: _SFSpeechAnalyzerCommandRecognizerOptions; options: _SFSpeechAnalyzerOptions; restrictedLogging: boolean; geoLMRegionID: string; personalizedLMPath: string; didChangeVolatileRange: (p1: CMTimeRange, p2: boolean, p3: boolean) => void; });
-
-	cancelInputTask(): void;
-
 	cancelPendingResultsAndPauseWithCompletion(completion: (p1: NSError) => void): void;
 
 	finalizeAndFinishThroughCompletion(time: CMTime, completion: (p1: NSError) => void): void;
@@ -581,10 +575,6 @@ declare class _SFSpeechAnalyzer extends NSObject {
 	getRecognitionUtterenceStatisticsWithCompletion(completion: (p1: NSDictionary<any, any>) => void): void;
 
 	initWithClientIdentifierInputSequenceAudioFormatTranscriberResultDelegateEndpointingResultDelegateQueueTranscriberOptionsCommandRecognizerOptionsOptionsRestrictedLoggingGeoLMRegionIDContextualNamedEntitiesDidChangeVolatileRange(clientIdentifier: string, inputSequence: _SFInputSequencer, audioFormat: AVAudioFormat, transcriberResultDelegate: _SFSpeechAnalyzerTranscriberResultDelegate, endpointingResultDelegate: _SFSpeechAnalyzerEndpointingResultDelegate, queue: NSOperationQueue, transcriberOptions: _SFSpeechAnalyzerTranscriberOptions, commandRecognizerOptions: _SFSpeechAnalyzerCommandRecognizerOptions, options: _SFSpeechAnalyzerOptions, restrictedLogging: boolean, geoLMRegionID: string, contextualNamedEntities: NSArray<_SFContextualNamedEntity> | _SFContextualNamedEntity[], didChangeVolatileRange: (p1: CMTimeRange, p2: boolean, p3: boolean) => void): this;
-
-	initWithClientIdentifierInputSequenceAudioFormatTranscriberResultDelegateEndpointingResultDelegateQueueTranscriberOptionsCommandRecognizerOptionsOptionsRestrictedLoggingGeoLMRegionIDContextualNamedEntitiesPersonalizedLMPathDidChangeVolatileRange(clientIdentifier: string, inputSequence: _SFInputSequencer, audioFormat: AVAudioFormat, transcriberResultDelegate: _SFSpeechAnalyzerTranscriberResultDelegate, endpointingResultDelegate: _SFSpeechAnalyzerEndpointingResultDelegate, queue: NSOperationQueue, transcriberOptions: _SFSpeechAnalyzerTranscriberOptions, commandRecognizerOptions: _SFSpeechAnalyzerCommandRecognizerOptions, options: _SFSpeechAnalyzerOptions, restrictedLogging: boolean, geoLMRegionID: string, contextualNamedEntities: NSArray<_SFContextualNamedEntity> | _SFContextualNamedEntity[], personalizedLMPath: string, didChangeVolatileRange: (p1: CMTimeRange, p2: boolean, p3: boolean) => void): this;
-
-	initWithClientIdentifierInputSequenceAudioFormatTranscriberResultDelegateEndpointingResultDelegateQueueTranscriberOptionsCommandRecognizerOptionsOptionsRestrictedLoggingGeoLMRegionIDPersonalizedLMPathDidChangeVolatileRange(clientIdentifier: string, inputSequence: _SFInputSequencer, audioFormat: AVAudioFormat, transcriberResultDelegate: _SFSpeechAnalyzerTranscriberResultDelegate, endpointingResultDelegate: _SFSpeechAnalyzerEndpointingResultDelegate, queue: NSOperationQueue, transcriberOptions: _SFSpeechAnalyzerTranscriberOptions, commandRecognizerOptions: _SFSpeechAnalyzerCommandRecognizerOptions, options: _SFSpeechAnalyzerOptions, restrictedLogging: boolean, geoLMRegionID: string, personalizedLMPath: string, didChangeVolatileRange: (p1: CMTimeRange, p2: boolean, p3: boolean) => void): this;
 
 	prepareToAnalyzeReportingIntoCompletion(progress: NSProgress, completion: (p1: NSError) => void): void;
 
@@ -737,13 +727,9 @@ declare class _SFTranscriberModelOptions extends NSObject implements NSCopying {
 
 	constructor(o: { supplementalModelURL: NSURL; farField: boolean; modelOverrideURL: NSURL; speechProfileURLs: NSArray<NSURL> | NSURL[]; taskForMemoryLock: string; });
 
-	constructor(o: { supplementalModelURL: NSURL; farField: boolean; modelOverrideURL: NSURL; taskForMemoryLock: string; });
-
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	initWithSupplementalModelURLFarFieldModelOverrideURLSpeechProfileURLsTaskForMemoryLock(supplementalModelURL: NSURL, farField: boolean, modelOverrideURL: NSURL, speechProfileURLs: NSArray<NSURL> | NSURL[], taskForMemoryLock: string): this;
-
-	initWithSupplementalModelURLFarFieldModelOverrideURLTaskForMemoryLock(supplementalModelURL: NSURL, farField: boolean, modelOverrideURL: NSURL, taskForMemoryLock: string): this;
 }
 
 declare class _SFTranscriberResult extends NSObject {

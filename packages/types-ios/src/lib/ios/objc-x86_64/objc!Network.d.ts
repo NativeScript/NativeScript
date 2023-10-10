@@ -865,6 +865,14 @@ declare function nw_protocol_stack_prepend_application_protocol(stack: interop.P
 
 declare function nw_protocol_stack_set_transport_protocol(stack: interop.Pointer | interop.Reference<any>, protocol: interop.Pointer | interop.Reference<any>): void;
 
+declare function nw_proxy_config_add_excluded_domain(config: interop.Pointer | interop.Reference<any>, excluded_domain: string | interop.Pointer | interop.Reference<any>): void;
+
+declare function nw_proxy_config_add_match_domain(config: interop.Pointer | interop.Reference<any>, match_domain: string | interop.Pointer | interop.Reference<any>): void;
+
+declare function nw_proxy_config_clear_excluded_domains(config: interop.Pointer | interop.Reference<any>): void;
+
+declare function nw_proxy_config_clear_match_domains(config: interop.Pointer | interop.Reference<any>): void;
+
 declare function nw_proxy_config_create_http_connect(proxy_endpoint: interop.Pointer | interop.Reference<any>, proxy_tls_options: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function nw_proxy_config_create_oblivious_http(relay: interop.Pointer | interop.Reference<any>, relay_resource_path: string | interop.Pointer | interop.Reference<any>, gateway_key_config: string | interop.Pointer | interop.Reference<any>, gateway_key_config_length: number): interop.Pointer | interop.Reference<any>;
@@ -872,6 +880,10 @@ declare function nw_proxy_config_create_oblivious_http(relay: interop.Pointer | 
 declare function nw_proxy_config_create_relay(first_hop: interop.Pointer | interop.Reference<any>, second_hop: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function nw_proxy_config_create_socksv5(proxy_endpoint: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+
+declare function nw_proxy_config_enumerate_excluded_domains(config: interop.Pointer | interop.Reference<any>, enumerator: (p1: string) => void): void;
+
+declare function nw_proxy_config_enumerate_match_domains(config: interop.Pointer | interop.Reference<any>, enumerator: (p1: string) => void): void;
 
 declare function nw_proxy_config_get_failover_allowed(proxy_config: interop.Pointer | interop.Reference<any>): boolean;
 

@@ -406,7 +406,10 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		this._window = UIWindow.alloc().initWithFrame(UIScreen.mainScreen.bounds);
 
 		// TODO: Expose Window module so that it can we styled from XML & CSS
-		this._window.backgroundColor = Utils.ios.MajorVersion <= 12 || !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
+		// Note: visionOS uses it's own material glass
+		if (!__VISIONOS__) {
+			this._window.backgroundColor = Utils.ios.MajorVersion <= 12 || !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
+		}
 
 		this.notifyAppStarted(notification);
 	}

@@ -3,6 +3,9 @@
 jest.mock('@nativescript/core/application', () => null, { virtual: true });
 
 global.__DEV__ = true;
+global.__ANDROID__ = false;
+global.__IOS__ = true;
+global.__VISIONOS__ = true;
 global.WeakRef.prototype.get = global.WeakRef.prototype.deref;
 global.NativeClass = function () {};
 global.NSTimer = class NSTimer {};

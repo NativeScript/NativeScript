@@ -454,6 +454,8 @@ declare class ASAuthorizationPlatformPublicKeyCredentialAssertion extends NSObje
 
 	readonly attachment: ASAuthorizationPublicKeyCredentialAttachment;
 
+	readonly largeBlob: ASAuthorizationPublicKeyCredentialLargeBlobAssertionOutput;
+
 	readonly credentialID: NSData; // inherited from ASPublicKeyCredential
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
@@ -514,6 +516,8 @@ declare class ASAuthorizationPlatformPublicKeyCredentialAssertionRequest extends
 	static alloc(): ASAuthorizationPlatformPublicKeyCredentialAssertionRequest; // inherited from NSObject
 
 	static new(): ASAuthorizationPlatformPublicKeyCredentialAssertionRequest; // inherited from NSObject
+
+	largeBlob: ASAuthorizationPublicKeyCredentialLargeBlobAssertionInput;
 
 	allowedCredentials: NSArray<ASAuthorizationPublicKeyCredentialDescriptor>; // inherited from ASAuthorizationPublicKeyCredentialAssertionRequest
 
@@ -684,6 +688,8 @@ declare class ASAuthorizationPlatformPublicKeyCredentialRegistration extends NSO
 
 	readonly attachment: ASAuthorizationPublicKeyCredentialAttachment;
 
+	readonly largeBlob: ASAuthorizationPublicKeyCredentialLargeBlobRegistrationOutput;
+
 	readonly credentialID: NSData; // inherited from ASPublicKeyCredential
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
@@ -740,6 +746,8 @@ declare class ASAuthorizationPlatformPublicKeyCredentialRegistrationRequest exte
 	static alloc(): ASAuthorizationPlatformPublicKeyCredentialRegistrationRequest; // inherited from NSObject
 
 	static new(): ASAuthorizationPlatformPublicKeyCredentialRegistrationRequest; // inherited from NSObject
+
+	largeBlob: ASAuthorizationPublicKeyCredentialLargeBlobRegistrationInput;
 
 	attestationPreference: string; // inherited from ASAuthorizationPublicKeyCredentialRegistrationRequest
 
@@ -943,6 +951,68 @@ declare var ASAuthorizationPublicKeyCredentialDescriptor: {
 
 	prototype: ASAuthorizationPublicKeyCredentialDescriptor;
 };
+
+declare class ASAuthorizationPublicKeyCredentialLargeBlobAssertionInput extends NSObject {
+
+	static alloc(): ASAuthorizationPublicKeyCredentialLargeBlobAssertionInput; // inherited from NSObject
+
+	static new(): ASAuthorizationPublicKeyCredentialLargeBlobAssertionInput; // inherited from NSObject
+
+	dataToWrite: NSData;
+
+	readonly operation: ASAuthorizationPublicKeyCredentialLargeBlobAssertionOperation;
+
+	constructor(o: { operation: ASAuthorizationPublicKeyCredentialLargeBlobAssertionOperation; });
+
+	initWithOperation(operation: ASAuthorizationPublicKeyCredentialLargeBlobAssertionOperation): this;
+}
+
+declare const enum ASAuthorizationPublicKeyCredentialLargeBlobAssertionOperation {
+
+	Read = 0,
+
+	Write = 1
+}
+
+declare class ASAuthorizationPublicKeyCredentialLargeBlobAssertionOutput extends NSObject {
+
+	static alloc(): ASAuthorizationPublicKeyCredentialLargeBlobAssertionOutput; // inherited from NSObject
+
+	static new(): ASAuthorizationPublicKeyCredentialLargeBlobAssertionOutput; // inherited from NSObject
+
+	readonly didWrite: boolean;
+
+	readonly readData: NSData;
+}
+
+declare class ASAuthorizationPublicKeyCredentialLargeBlobRegistrationInput extends NSObject {
+
+	static alloc(): ASAuthorizationPublicKeyCredentialLargeBlobRegistrationInput; // inherited from NSObject
+
+	static new(): ASAuthorizationPublicKeyCredentialLargeBlobRegistrationInput; // inherited from NSObject
+
+	supportRequirement: ASAuthorizationPublicKeyCredentialLargeBlobSupportRequirement;
+
+	constructor(o: { supportRequirement: ASAuthorizationPublicKeyCredentialLargeBlobSupportRequirement; });
+
+	initWithSupportRequirement(requirement: ASAuthorizationPublicKeyCredentialLargeBlobSupportRequirement): this;
+}
+
+declare class ASAuthorizationPublicKeyCredentialLargeBlobRegistrationOutput extends NSObject {
+
+	static alloc(): ASAuthorizationPublicKeyCredentialLargeBlobRegistrationOutput; // inherited from NSObject
+
+	static new(): ASAuthorizationPublicKeyCredentialLargeBlobRegistrationOutput; // inherited from NSObject
+
+	readonly isSupported: boolean;
+}
+
+declare const enum ASAuthorizationPublicKeyCredentialLargeBlobSupportRequirement {
+
+	Required = 0,
+
+	Preferred = 1
+}
 
 declare class ASAuthorizationPublicKeyCredentialParameters extends NSObject implements NSCopying, NSSecureCoding {
 
@@ -1619,6 +1689,8 @@ declare class ASCredentialProviderViewController extends UIViewController {
 
 	prepareCredentialListForServiceIdentifiers(serviceIdentifiers: NSArray<ASCredentialServiceIdentifier> | ASCredentialServiceIdentifier[]): void;
 
+	prepareCredentialListForServiceIdentifiersRequestParameters(serviceIdentifiers: NSArray<ASCredentialServiceIdentifier> | ASCredentialServiceIdentifier[], requestParameters: ASPasskeyCredentialRequestParameters): void;
+
 	prepareInterfaceForExtensionConfiguration(): void;
 
 	prepareInterfaceForPasskeyRegistration(registrationRequest: ASCredentialRequest): void;
@@ -1845,9 +1917,11 @@ declare class ASPasskeyCredentialRequest extends NSObject implements ASCredentia
 
 	static new(): ASPasskeyCredentialRequest; // inherited from NSObject
 
-	static requestWithCredentialIdentityClientDataHashUserVerificationPreference(credentialIdentity: ASPasskeyCredentialIdentity, clientDataHash: NSData, userVerificationPreference: string): ASPasskeyCredentialRequest;
+	static requestWithCredentialIdentityClientDataHashUserVerificationPreferenceSupportedAlgorithms(credentialIdentity: ASPasskeyCredentialIdentity, clientDataHash: NSData, userVerificationPreference: string, supportedAlgorithms: NSArray<number> | number[]): ASPasskeyCredentialRequest;
 
 	readonly clientDataHash: NSData;
+
+	readonly supportedAlgorithms: NSArray<number>;
 
 	userVerificationPreference: string;
 
@@ -1871,7 +1945,7 @@ declare class ASPasskeyCredentialRequest extends NSObject implements ASCredentia
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { credentialIdentity: ASPasskeyCredentialIdentity; clientDataHash: NSData; userVerificationPreference: string; });
+	constructor(o: { credentialIdentity: ASPasskeyCredentialIdentity; clientDataHash: NSData; userVerificationPreference: string; supportedAlgorithms: NSArray<number> | number[]; });
 
 	class(): typeof NSObject;
 
@@ -1883,7 +1957,7 @@ declare class ASPasskeyCredentialRequest extends NSObject implements ASCredentia
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithCredentialIdentityClientDataHashUserVerificationPreference(credentialIdentity: ASPasskeyCredentialIdentity, clientDataHash: NSData, userVerificationPreference: string): this;
+	initWithCredentialIdentityClientDataHashUserVerificationPreferenceSupportedAlgorithms(credentialIdentity: ASPasskeyCredentialIdentity, clientDataHash: NSData, userVerificationPreference: string, supportedAlgorithms: NSArray<number> | number[]): this;
 
 	isEqual(object: any): boolean;
 
@@ -1902,6 +1976,31 @@ declare class ASPasskeyCredentialRequest extends NSObject implements ASCredentia
 	retainCount(): number;
 
 	self(): this;
+}
+
+declare class ASPasskeyCredentialRequestParameters extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): ASPasskeyCredentialRequestParameters; // inherited from NSObject
+
+	static new(): ASPasskeyCredentialRequestParameters; // inherited from NSObject
+
+	readonly allowedCredentials: NSArray<NSData>;
+
+	readonly clientDataHash: NSData;
+
+	readonly relyingPartyIdentifier: string;
+
+	readonly userVerificationPreference: string;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class ASPasskeyRegistrationCredential extends NSObject implements ASAuthorizationCredential {

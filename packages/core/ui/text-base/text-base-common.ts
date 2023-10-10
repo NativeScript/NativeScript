@@ -14,6 +14,7 @@ import { CoreTypes } from '../../core-types';
 import { TextBase as TextBaseDefinition } from '.';
 import { Color } from '../../color';
 import { ShadowCSSValues, parseCSSShadow } from '../styling/css-shadow';
+import { StrokeCSSValues, parseCSSStroke } from '../styling/css-stroke';
 
 const CHILD_FORMATTED_TEXT = 'formattedText';
 
@@ -284,6 +285,16 @@ export const textShadowProperty = new CssProperty<Style, string | ShadowCSSValue
 	},
 });
 textShadowProperty.register(Style);
+
+export const textStrokeProperty = new CssProperty<Style, string | StrokeCSSValues>({
+	name: 'textStroke',
+	cssName: 'text-stroke',
+	affectsLayout: global.isIOS,
+	valueConverter: (value) => {
+		return parseCSSStroke(value);
+	},
+});
+textStrokeProperty.register(Style);
 
 const whiteSpaceConverter = makeParser<CoreTypes.WhiteSpaceType>(makeValidator<CoreTypes.WhiteSpaceType>('initial', 'normal', 'nowrap'));
 export const whiteSpaceProperty = new CssProperty<Style, CoreTypes.WhiteSpaceType>({

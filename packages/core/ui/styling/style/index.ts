@@ -11,6 +11,7 @@ import { Trace } from '../../../trace';
 import { CoreTypes } from '../../../core-types';
 import type { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState } from '../../../accessibility/accessibility-types';
 import { ShadowCSSValues } from '../css-shadow';
+import { StrokeCSSValues } from '../css-stroke';
 
 export interface CommonLayoutParams {
 	width: number;
@@ -171,6 +172,7 @@ export class Style extends Observable implements StyleDefinition {
 	public textDecoration: CoreTypes.TextDecorationType;
 	public textTransform: CoreTypes.TextTransformType;
 	public textShadow: ShadowCSSValues;
+	public textStroke: StrokeCSSValues;
 	public whiteSpace: CoreTypes.WhiteSpaceType;
 	public textOverflow: CoreTypes.TextOverflowType;
 
