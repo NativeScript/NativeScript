@@ -292,17 +292,22 @@
             export class GridLayout extends LayoutBase {
                 constructor(context: android.content.Context);
 
-                public addRow(itemSpec: ItemSpec): void;
-                public addColumn(itemSpec: ItemSpec): void;
-
-                public removeRow(itemSpec: ItemSpec): void;
-                public removeColumn(itemSpec: ItemSpec): void;
+                public addRow(value: number, type: org.nativescript.widgets.GridUnitType): void;
+                public addColumn(value: number, type: org.nativescript.widgets.GridUnitType): void;
 
                 public removeRowAt(index: number): void;
                 public removeColumnAt(index: number): void;
 
                 public getColumns(): Array<ItemSpec>;
                 public getRows(): Array<ItemSpec>;
+
+                public clearRows();
+		        public clearColumns();
+                public reset();
+
+                public addRowsFromJSON(value: string);
+                public addColumnsFromJSON(value: string);
+                public addRowsAndColumnsFromJSON(rows: string, columns: string);
             }
 
             export class FlexboxLayout extends LayoutBase {
