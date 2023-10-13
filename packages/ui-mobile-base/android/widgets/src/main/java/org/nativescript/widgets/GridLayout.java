@@ -851,20 +851,6 @@ class MeasureHelper {
 				this.measureChild(measureSpec, false);
 			}
 		}
-
-		// Measure auto & pixel columns and rows (with spans).
-		for (int i = 0; i < size; i++) {
-			ItemGroup columnGroup = this.columns.get(i);
-			for (int j = 0, childrenCount = columnGroup.children.size(); j < childrenCount; j++) {
-				MeasureSpecs measureSpec = columnGroup.children.get(j);
-				if (measureSpec.getIsStar() || !measureSpec.getSpanned()) {
-					continue;
-				}
-
-				this.measureChild(measureSpec, false);
-			}
-		}
-
 		// try fix stars!
 		boolean fixColumns = canFix(this.columns);
 		boolean fixRows = canFix(this.rows);
