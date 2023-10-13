@@ -134,4 +134,14 @@ describe('css-shadow', () => {
 		expect(shadow.spreadRadius).toBeUndefined();
 		expect(shadow.color).toEqual(new Color('#333'));
 	});
+
+	it('none', () => {
+		const shadow = parseCSSShadow('none');
+		expect(shadow.inset).toBe(false);
+		expect(shadow.offsetX).toBe(CoreTypes.zeroLength);
+		expect(shadow.offsetY).toBeUndefined();
+		expect(shadow.blurRadius).toBeUndefined();
+		expect(shadow.spreadRadius).toBeUndefined();
+		expect(shadow.color).toEqual(new Color('black'));
+	});
 });
