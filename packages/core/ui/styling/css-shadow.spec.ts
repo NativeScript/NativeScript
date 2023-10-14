@@ -7,11 +7,11 @@ describe('css-shadow', () => {
 	it('empty', () => {
 		const shadow = parseCSSShadow('');
 		expect(shadow.inset).toBe(false);
-		expect(shadow.offsetX).toBe(CoreTypes.zeroLength);
+		expect(shadow.offsetX).toBeUndefined();
 		expect(shadow.offsetY).toBeUndefined();
 		expect(shadow.blurRadius).toBeUndefined();
 		expect(shadow.spreadRadius).toBeUndefined();
-		expect(shadow.color).toEqual(new Color('black'));
+		expect(shadow.color).toBeUndefined();
 	});
 
 	it('1px 1px 2px black', () => {
@@ -138,10 +138,10 @@ describe('css-shadow', () => {
 	it('none', () => {
 		const shadow = parseCSSShadow('none');
 		expect(shadow.inset).toBe(false);
-		expect(shadow.offsetX).toBe(CoreTypes.zeroLength);
+		expect(shadow.offsetX).toBeUndefined();
 		expect(shadow.offsetY).toBeUndefined();
 		expect(shadow.blurRadius).toBeUndefined();
 		expect(shadow.spreadRadius).toBeUndefined();
-		expect(shadow.color).toEqual(new Color('black'));
+		expect(shadow.color).toBeUndefined();
 	});
 });
