@@ -34,9 +34,7 @@ export function parseCSSShorthand(value: string): {
 	inset: boolean;
 } {
 	const parts = value.trim().split(PARTS_RE);
-	const inset = parts.includes('inset');
 	const first = parts[0];
-	const last = parts[parts.length - 1];
 
 	if (['', 'none'].includes(first)) {
 		return {
@@ -45,6 +43,8 @@ export function parseCSSShorthand(value: string): {
 			values: [],
 		};
 	} else {
+		const inset = parts.includes('inset');
+		const last = parts[parts.length - 1];
 		let color = 'black';
 		if (first && !isLength(first) && first !== 'inset') {
 			color = first;
