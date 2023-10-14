@@ -38,14 +38,14 @@ export function queueGC(delay?: number, useThrottle?: boolean);
  * @param fn Function to throttle
  * @param delay Customize the delay (default is 300ms)
  */
-export function throttle(fn: any, delay?: number);
+export function throttle<T extends Function = any>(fn: T, delay?: number): T;
 
 /**
  * A simple debounce utility
  * @param fn Function to debounce
  * @param delay Customize the delay (default is 300ms)
  */
-export function debounce(fn: any, delay?: number, options?: { leading?: boolean });
+export function debounce<T extends Function = any>(fn: T, delay?: number, options?: { leading?: boolean }): T;
 
 /**
  * Releases the reference to the wrapped native object
