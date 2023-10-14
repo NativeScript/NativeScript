@@ -1,6 +1,6 @@
 import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
-import { parseCSSShorthand } from './css-shadow';
+import { parseCSSShorthand } from './css-utils';
 
 export interface StrokeCSSValues {
 	width: CoreTypes.LengthType;
@@ -18,6 +18,6 @@ export function parseCSSStroke(value: string): StrokeCSSValues {
 
 	return {
 		width,
-		color: new Color(data.color),
+		color: data.color ? new Color(data.color) : undefined,
 	};
 }

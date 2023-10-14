@@ -6,8 +6,8 @@ import { Color } from '../../color';
 describe('css-text-stroke', () => {
 	it('empty', () => {
 		const stroke = parseCSSStroke('');
-		expect(stroke.width).toBe(CoreTypes.zeroLength);
-		expect(stroke.color).toEqual(new Color('black'));
+		expect(stroke.width).toBeUndefined();
+		expect(stroke.color).toBeUndefined();
 	});
 
 	it('1px navy', () => {
