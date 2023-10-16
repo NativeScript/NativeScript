@@ -77,7 +77,7 @@ function setTransitionName(view: ViewBase) {
 }
 
 export class PageTransition extends Transition {
-	constructor(duration?: number, curve?: any) {
+	constructor(duration?: number, curve?: any, private pageLoadedTimeout: number = 0) {
 		// disable custom curves until we can fix the issue with the animation not completing
 		if (curve) {
 			console.warn('PageTransition does not support custom curves at the moment. The passed in curve will be ignored.');
@@ -220,7 +220,7 @@ export class PageTransition extends Transition {
 				// const sharedElementTags = sharedElements.map((v) => v.sharedTransitionTag);
 				presented.forEach(setTransitionName);
 				newFragment.startPostponedEnterTransition();
-			}, 0);
+			}, this.pageLoadedTimeout);
 		};
 
 		fragmentTransaction.setReorderingAllowed(true);
