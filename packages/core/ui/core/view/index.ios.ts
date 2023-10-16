@@ -157,10 +157,10 @@ export class View extends ViewCommon implements ViewDefinition {
 		const nativeView: NativeScriptUIView = <NativeScriptUIView>this.nativeViewProtected;
 		if (nativeView?.outerShadowContainerLayer) {
 			CATransaction.setDisableActions(true);
-			if (nativeView.outerShadowContainerLayer) {
-				nativeView.outerShadowContainerLayer.bounds = nativeView.bounds;
-				nativeView.outerShadowContainerLayer.position = nativeView.center;
-			}
+
+			nativeView.outerShadowContainerLayer.bounds = nativeView.bounds;
+			nativeView.outerShadowContainerLayer.position = nativeView.center;
+
 			CATransaction.setDisableActions(false);
 		}
 	}
