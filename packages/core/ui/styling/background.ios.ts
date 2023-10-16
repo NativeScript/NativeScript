@@ -1091,7 +1091,6 @@ function drawBoxShadow(view: View): void {
 	}
 
 	const bounds = nativeView.bounds;
-	const viewFrame = nativeView.frame;
 	const boxShadow: BoxShadow = background.getBoxShadow();
 
 	// Initialize outer shadows
@@ -1127,10 +1126,7 @@ function drawBoxShadow(view: View): void {
 
 	outerShadowContainerLayer.bounds = bounds;
 	outerShadowContainerLayer.anchorPoint = layer.anchorPoint;
-
-	// Since shadow uses superlayer's coordinate system, we have to be more specific about shadow layer position
-	const { x: originX, y: originY }: CGPoint = outerShadowContainerLayer.anchorPoint;
-	outerShadowContainerLayer.position = CGPointMake(viewFrame.origin.x + viewFrame.size.width * originX, viewFrame.origin.y + viewFrame.size.height * originY);
+	outerShadowContainerLayer.position = nativeView.center;
 
 	// Inherit view visibility values
 	outerShadowContainerLayer.opacity = layer.opacity;
