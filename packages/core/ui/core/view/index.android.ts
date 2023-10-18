@@ -173,7 +173,16 @@ function initializeDialogFragment() {
 
 			return global.__native(this);
 		}
-
+		public onCreate(savedInstanceState: android.os.Bundle) {
+			super.onCreate(savedInstanceState);
+			var ownerId = this.getArguments()?.getInt(DOMID);
+			var options = getModalOptions(ownerId);
+			// The teardown when the activity is destroyed happens after the state is saved, but is not recoverable,
+			// Cancel the native dialog in this case or the app will crash with subsequent errors.
+			if (savedInstanceState != null && options === undefined) {
+				this.dismissAllowingStateLoss();
+			}
+		}
 		public onCreateDialog(savedInstanceState: android.os.Bundle): android.app.Dialog {
 			const ownerId = this.getArguments().getInt(DOMID);
 			const options = getModalOptions(ownerId);
