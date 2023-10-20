@@ -7,7 +7,6 @@ import { Style } from '../styling/style';
 import { Color } from '../../color';
 import { EventData } from '../../data/observable';
 import type { Frame } from '../frame';
-import { isFrame } from '../frame/frame-helpers';
 import { ActionBar } from '../action-bar';
 import { KeyframeAnimationInfo } from '../animation/keyframe-animation';
 import { profile } from '../../profiling';
@@ -81,6 +80,12 @@ export class PageBase extends ContentView {
 		return this;
 	}
 
+	disposeNativeView() {
+		// There are cases that page gets disposed before removing its entry from frame so get rid of frame reference
+		this._frame = null;
+		super.disposeNativeView();
+	}
+
 	public _addChildFromBuilder(name: string, value: any) {
 		if (value instanceof ActionBar) {
 			this.actionBar = value;
@@ -94,9 +99,7 @@ export class PageBase extends ContentView {
 	}
 
 	get frame(): Frame {
-		const parent = this.parent;
-
-		return isFrame(parent) ? (parent as Frame) : undefined;
+		return this._frame;
 	}
 
 	private createNavigatedData(eventName: string, isBackNavigation: boolean): NavigatedData {

@@ -427,10 +427,6 @@ export class Page extends PageBase {
 		return this._ios;
 	}
 
-	get frame(): Frame {
-		return this._frame;
-	}
-
 	public layoutNativeView(left: number, top: number, right: number, bottom: number): void {
 		//
 	}
