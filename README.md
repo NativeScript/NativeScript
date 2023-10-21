@@ -20,7 +20,7 @@
 
 ## Contribute
 
-1. [Setup your local development environment](https://docs.nativescript.org/environment-setup.html)
+1. [Setup your local development environment](https://docs.nativescript.org/setup/)
 
 2. Clone to contribute:
 
@@ -41,7 +41,7 @@ We love you and your pull requests 🤗. Please follow our [contributing guide](
 
 - [@nativescript/core](https://github.com/NativeScript/NativeScript/tree/main/packages/core)
   Core iOS/Android for NativeScript.
-- [@nativescript/types](https://www.npmjs.com/package/@nativescript/types)
+- [@nativescript/types](https://github.com/NativeScript/NativeScript/tree/main/packages/types)
   Types for both iOS/Android below wrapped up as a convenience. *Most commonly used.*
 - [@nativescript/types-ios](https://github.com/NativeScript/NativeScript/tree/main/packages/types-ios)
   Types for iOS.
@@ -57,7 +57,7 @@ We love you and your pull requests 🤗. Please follow our [contributing guide](
 ## Quick Links
 
 - [NativeScript Home](https://nativescript.org)
-- [NativeScript Tutorials](https://docs.nativescript.org/tutorial/)
+- [NativeScript Tutorials]((https://docs.nativescript.org/tutorials/)
 - [NativeScript documentation](https://docs.nativescript.org/)
 - JavaScript starter: https://nativescript.new/javascript
 - TypeScript starter: https://nativescript.new/typescript
@@ -77,12 +77,12 @@ Outside the source centralized in this repo, NativeScript consists of a few othe
 	NativeScript iOS Runtime: Empowers JavaScript code to be executed on iOS devices written in a mix of C++, Objective-C, and Swift.
 - [Android Runtime](https://github.com/NativeScript/android-runtime)
 	NativeScript Android Runtim: Empowers JavaScript code to be executed on Android devices written in a mix of C++, Java and Kotlin.
-- [CLI](//github.com/NativeScript/nativescript-cli)
+- [CLI](https://github.com/NativeScript/nativescript-cli)
 	NativeScript command-line interface empowering you to create, build, and run apps using NativeScript.
-- [Docs](//github.com/NativeScript/docs-new)
+- [Docs](https://github.com/NativeScript/docs)
 	NativeScript documentation available at <http://docs.nativescript.org/> written in Markdown.
 - [Plugins](https://github.com/NativeScript/plugins)
-  A [plugin workspace](https://docs.nativescript.org/plugins/plugin-workspace-guide.html) with several useful plugins.
+  A [plugin marketplace](https://market.nativescript.org/) with several useful plugins.
 - [Firebase](https://github.com/NativeScript/firebase)
   Modular Firebase 🔥 implementation for supported platforms.
 - [ML Kit](https://github.com/NativeScript/mlkit)
