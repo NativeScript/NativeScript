@@ -80,12 +80,6 @@ export class PageBase extends ContentView {
 		return this;
 	}
 
-	disposeNativeView() {
-		// There are cases that page gets disposed before removing its entry from frame so get rid of frame reference
-		this._frame = null;
-		super.disposeNativeView();
-	}
-
 	public _addChildFromBuilder(name: string, value: any) {
 		if (value instanceof ActionBar) {
 			this.actionBar = value;

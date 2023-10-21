@@ -594,6 +594,10 @@ export class FrameBase extends CustomLayoutView {
 	// We don't need to put Page as visual child. Don't call super.
 	public _removeViewFromNativeVisualTree(child: View): void {
 		child._isAddedToNativeVisualTree = false;
+		// There are cases that page gets disposed before removing its entry from frame so get rid of frame reference
+		if (child instanceof Page) {
+			child._frame = null;
+		}
 	}
 
 	public _printFrameBackStack() {
