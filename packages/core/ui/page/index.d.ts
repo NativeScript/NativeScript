@@ -143,10 +143,6 @@ export declare class Page extends PageBase {
 	 * @private
 	 */
 	hasActionBar: boolean;
-	/**
-	 * @private
-	 */
-	_frame: Frame;
 
 	/**
 	 * A method called before navigating to the page.
