@@ -1,17 +1,18 @@
 // Types
 import { getClosestPropertyValue } from './text-base-common';
-import { CSSShadow } from '../styling/css-shadow';
+import { ShadowCSSValues } from '../styling/css-shadow';
 
 // Requires
 import { Font } from '../styling/font';
 import { iosAccessibilityAdjustsFontSizeProperty, iosAccessibilityMaxFontScaleProperty, iosAccessibilityMinFontScaleProperty } from '../../accessibility/accessibility-properties';
-import { TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textTransformProperty, textShadowProperty, letterSpacingProperty, lineHeightProperty, maxLinesProperty, resetSymbol } from './text-base-common';
+import { TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textTransformProperty, textShadowProperty, textStrokeProperty, letterSpacingProperty, lineHeightProperty, maxLinesProperty, resetSymbol } from './text-base-common';
 import { Color } from '../../color';
 import { FormattedString } from './formatted-string';
 import { Span } from './span';
 import { colorProperty, fontInternalProperty, fontScaleInternalProperty, Length } from '../styling/style-properties';
+import { StrokeCSSValues } from '../styling/css-stroke';
 import { isString, isNullOrUndefined } from '../../utils/types';
-import { iOSNativeHelper } from '../../utils';
+import { iOSNativeHelper, layout } from '../../utils';
 import { Trace } from '../../trace';
 import { CoreTypes } from '../../core-types';
 
@@ -247,6 +248,10 @@ export class TextBase extends TextBaseCommon {
 		this._setNativeText();
 	}
 
+	[textStrokeProperty.setNative](value: StrokeCSSValues) {
+		this._setNativeText();
+	}
+
 	[letterSpacingProperty.setNative](value: number) {
 		this._setNativeText();
 	}
@@ -255,7 +260,7 @@ export class TextBase extends TextBaseCommon {
 		this._setNativeText();
 	}
 
-	[textShadowProperty.setNative](value: CSSShadow) {
+	[textShadowProperty.setNative](value: ShadowCSSValues) {
 		this._setShadow(value);
 	}
 
@@ -306,15 +311,18 @@ export class TextBase extends TextBaseCommon {
 		const letterSpacing = this.style.letterSpacing ? this.style.letterSpacing : 0;
 		const lineHeight = this.style.lineHeight ? this.style.lineHeight : 0;
 		if (this.formattedText) {
-			(<any>this.nativeTextViewProtected).nativeScriptSetFormattedTextDecorationAndTransformLetterSpacingLineHeight(this.getFormattedStringDetails(this.formattedText), letterSpacing, lineHeight);
+			this.nativeTextViewProtected.nativeScriptSetFormattedTextDecorationAndTransformLetterSpacingLineHeight(this.getFormattedStringDetails(this.formattedText) as any, letterSpacing, lineHeight);
 		} else {
 			// console.log('setTextDecorationAndTransform...')
 			const text = getTransformedText(isNullOrUndefined(this.text) ? '' : `${this.text}`, this.textTransform);
-			(<any>this.nativeTextViewProtected).nativeScriptSetTextDecorationAndTransformTextDecorationLetterSpacingLineHeight(text, this.style.textDecoration || '', letterSpacing, lineHeight);
+			this.nativeTextViewProtected.nativeScriptSetTextDecorationAndTransformTextDecorationLetterSpacingLineHeight(text, this.style.textDecoration || '', letterSpacing, lineHeight);
 
 			if (!this.style?.color && majorVersion >= 13 && UIColor.labelColor) {
 				this._setColor(UIColor.labelColor);
 			}
+		}
+		if (this.style?.textStroke) {
+			this.nativeTextViewProtected.nativeScriptSetFormattedTextStrokeColor(Length.toDevicePixels(this.style.textStroke.width, 0), this.style.textStroke.color.ios);
 		}
 	}
 
@@ -404,12 +412,8 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
-	_setShadow(value: CSSShadow): void {
-		const layer = iOSNativeHelper.getShadowLayer(this.nativeTextViewProtected, 'ns-text-shadow');
-		if (!layer) {
-			Trace.write('text-shadow not applied, no layer.', Trace.categories.Style, Trace.messageType.info);
-			return;
-		}
+	_setShadow(value: ShadowCSSValues): void {
+		const layer: CALayer = this.nativeTextViewProtected.layer;
 
 		if (isNullOrUndefined(value)) {
 			// clear the text shadow
@@ -421,14 +425,14 @@ export class TextBase extends TextBaseCommon {
 		}
 
 		// shadow opacity is handled on the shadow's color instance
-		layer.shadowOpacity = value.color?.a ? value.color?.a / 255 : 1;
+		layer.shadowOpacity = value.color?.a ? value.color.a / 255 : 1;
 		layer.shadowColor = value.color.ios.CGColor;
-		layer.shadowRadius = Length.toDevicePixels(value.blurRadius, 0.0);
+		layer.shadowRadius = layout.toDeviceIndependentPixels(Length.toDevicePixels(value.blurRadius, 0));
 
 		// prettier-ignore
 		layer.shadowOffset = CGSizeMake(
-			Length.toDevicePixels(value.offsetX, 0.0),
-			Length.toDevicePixels(value.offsetY, 0.0)
+			layout.toDeviceIndependentPixels(Length.toDevicePixels(value.offsetX, 0)),
+			layout.toDeviceIndependentPixels(Length.toDevicePixels(value.offsetY, 0))
 		);
 
 		layer.masksToBounds = false;

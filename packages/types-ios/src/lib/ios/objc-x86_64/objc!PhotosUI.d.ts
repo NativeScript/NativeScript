@@ -43,6 +43,8 @@ declare class PHLivePhotoView extends UIView {
 
 	static new(): PHLivePhotoView; // inherited from NSObject
 
+	contentsRect: CGRect;
+
 	delegate: PHLivePhotoViewDelegate;
 
 	livePhoto: PHLivePhoto;
@@ -80,13 +82,34 @@ declare const enum PHLivePhotoViewPlaybackStyle {
 	Hint = 2
 }
 
+declare const enum PHPickerCapabilities {
+
+	None = 0,
+
+	Search = 1,
+
+	StagingArea = 2,
+
+	CollectionNavigation = 4,
+
+	SelectionActions = 8,
+
+	SensitivityAnalysisIntervention = 16
+}
+
 declare class PHPickerConfiguration extends NSObject implements NSCopying {
 
 	static alloc(): PHPickerConfiguration; // inherited from NSObject
 
 	static new(): PHPickerConfiguration; // inherited from NSObject
 
+	disabledCapabilities: PHPickerCapabilities;
+
+	edgesWithoutContentMargins: NSDirectionalRectEdge;
+
 	filter: PHPickerFilter;
+
+	mode: PHPickerMode;
 
 	preferredAssetRepresentationMode: PHPickerConfigurationAssetRepresentationMode;
 
@@ -116,7 +139,11 @@ declare const enum PHPickerConfigurationSelection {
 
 	Default = 0,
 
-	Ordered = 1
+	Ordered = 1,
+
+	Continuous = 2,
+
+	ContinuousAndOrdered = 3
 }
 
 declare class PHPickerFilter extends NSObject implements NSCopying {
@@ -158,6 +185,13 @@ declare class PHPickerFilter extends NSObject implements NSCopying {
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+declare const enum PHPickerMode {
+
+	Default = 0,
+
+	Compact = 1
+}
+
 declare class PHPickerResult extends NSObject {
 
 	static alloc(): PHPickerResult; // inherited from NSObject
@@ -167,6 +201,19 @@ declare class PHPickerResult extends NSObject {
 	readonly assetIdentifier: string;
 
 	readonly itemProvider: NSItemProvider;
+}
+
+declare class PHPickerUpdateConfiguration extends NSObject implements NSCopying {
+
+	static alloc(): PHPickerUpdateConfiguration; // inherited from NSObject
+
+	static new(): PHPickerUpdateConfiguration; // inherited from NSObject
+
+	edgesWithoutContentMargins: NSDirectionalRectEdge;
+
+	selectionLimit: number;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 declare class PHPickerViewController extends UIViewController {
@@ -186,6 +233,14 @@ declare class PHPickerViewController extends UIViewController {
 	initWithConfiguration(configuration: PHPickerConfiguration): this;
 
 	moveAssetWithIdentifierAfterAssetWithIdentifier(identifier: string, afterIdentifier: string): void;
+
+	scrollToInitialPosition(): void;
+
+	updatePickerUsingConfiguration(configuration: PHPickerUpdateConfiguration): void;
+
+	zoomIn(): void;
+
+	zoomOut(): void;
 }
 
 interface PHPickerViewControllerDelegate extends NSObjectProtocol {

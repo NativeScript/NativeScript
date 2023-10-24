@@ -435,17 +435,6 @@ declare class PHASEGeneratorNodeDefinition extends PHASESoundEventNodeDefinition
 	setCalibrationModeLevel(calibrationMode: PHASECalibrationMode, level: number): void;
 }
 
-declare class PHASEGeneratorParameters extends NSObject {
-
-	static alloc(): PHASEGeneratorParameters; // inherited from NSObject
-
-	static new(): PHASEGeneratorParameters; // inherited from NSObject
-
-	gain: number;
-
-	rate: number;
-}
-
 declare class PHASEGeometricSpreadingDistanceModelParameters extends PHASEDistanceModelParameters {
 
 	static alloc(): PHASEGeometricSpreadingDistanceModelParameters; // inherited from NSObject

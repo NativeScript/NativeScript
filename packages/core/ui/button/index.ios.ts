@@ -1,8 +1,8 @@
 import { ControlStateChangeListener } from '../core/control-state-change';
 import { ButtonBase } from './button-common';
 import { View, PseudoClassHandler } from '../core/view';
-import { backgroundColorProperty, borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty } from '../styling/style-properties';
-import { textAlignmentProperty, whiteSpaceProperty } from '../text-base';
+import { borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty } from '../styling/style-properties';
+import { textAlignmentProperty, whiteSpaceProperty, textOverflowProperty } from '../text-base';
 import { layout } from '../../utils';
 import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
@@ -54,14 +54,6 @@ export class Button extends ButtonBase {
 		} else {
 			this._stateChangedHandler.stop();
 		}
-	}
-
-	[backgroundColorProperty.getDefault](): UIColor {
-		return this.nativeViewProtected.backgroundColor;
-	}
-
-	[backgroundColorProperty.setNative](value: UIColor | Color) {
-		this.nativeViewProtected.backgroundColor = value instanceof Color ? value.ios : value;
 	}
 
 	[borderTopWidthProperty.getDefault](): CoreTypes.LengthType {
@@ -219,16 +211,41 @@ export class Button extends ButtonBase {
 	}
 
 	[whiteSpaceProperty.setNative](value: CoreTypes.WhiteSpaceType) {
+		this.adjustLineBreak();
+	}
+
+	[textOverflowProperty.setNative](value: CoreTypes.TextOverflowType) {
+		this.adjustLineBreak();
+	}
+
+	private adjustLineBreak() {
+		const whiteSpace = this.whiteSpace;
+		const textOverflow = this.textOverflow;
 		const nativeView = this.nativeViewProtected.titleLabel;
-		switch (value) {
+		switch (whiteSpace) {
 			case 'normal':
 				nativeView.lineBreakMode = NSLineBreakMode.ByWordWrapping;
 				nativeView.numberOfLines = this.maxLines;
 				break;
-			case 'nowrap':
 			case 'initial':
 				nativeView.lineBreakMode = NSLineBreakMode.ByTruncatingMiddle;
 				nativeView.numberOfLines = 1;
+				break;
+			case 'nowrap':
+				switch (textOverflow) {
+					case 'clip':
+						nativeView.lineBreakMode = NSLineBreakMode.ByClipping;
+						nativeView.numberOfLines = this.maxLines;
+						break;
+					case 'ellipsis':
+						nativeView.lineBreakMode = NSLineBreakMode.ByTruncatingTail;
+						nativeView.numberOfLines = 1;
+						break;
+					default:
+						nativeView.lineBreakMode = NSLineBreakMode.ByTruncatingMiddle;
+						nativeView.numberOfLines = 1;
+						break;
+				}
 				break;
 		}
 	}

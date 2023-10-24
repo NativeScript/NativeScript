@@ -269,8 +269,6 @@ declare class ENManager extends NSObject {
 
 	diagnosisKeysAvailableHandler: (p1: NSArray<ENTemporaryExposureKey>) => void;
 
-	dispatchQueue: NSObject;
-
 	readonly exposureNotificationEnabled: boolean;
 
 	readonly exposureNotificationStatus: ENStatus;

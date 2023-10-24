@@ -11,6 +11,7 @@ import { Observable, PropertyChangeData, WrappedValue } from '../../../data/obse
 import { Style } from '../../styling/style';
 import { paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../../styling/style-properties';
 import type { ModalTransition } from '../../transition/modal-transition';
+import type { GestureEventData } from '../../gestures';
 
 // TODO: Remove this import!
 import { getClass } from '../../../utils/types';
@@ -307,6 +308,8 @@ namespace SuspendType {
 		return (type ? 'suspended' : 'resumed') + '(' + 'Incremental: ' + (type & SuspendType.IncrementalCountMask) + ', ' + 'Loaded: ' + !(type & SuspendType.Loaded) + ', ' + 'NativeView: ' + !(type & SuspendType.NativeView) + ', ' + 'UISetup: ' + !(type & SuspendType.UISetup) + ')';
 	}
 }
+
+const DEFAULT_VIEW_PADDINGS: Map<string, any> = new Map();
 
 export abstract class ViewBase extends Observable implements ViewBaseDefinition {
 	/**
@@ -956,6 +959,12 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	 * Clean up references to the native view.
 	 */
 	public disposeNativeView() {
+		// Unset those values so that view will check for resize after being removed and re-added to view-tree
+		this._oldLeft = 0;
+		this._oldTop = 0;
+		this._oldRight = 0;
+		this._oldBottom = 0;
+
 		this.notify({
 			eventName: ViewBase.disposeNativeViewEvent,
 			object: this,
@@ -1041,14 +1050,21 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 			if (this._androidView !== nativeView || !this.reusable) {
 				this._androidView = nativeView;
 				if (nativeView) {
+					const className = this.constructor.name;
+
 					if (this._isPaddingRelative === undefined) {
 						this._isPaddingRelative = nativeView.isPaddingRelative();
 					}
 
-					let result: any /* android.graphics.Rect */ = (<any>nativeView).defaultPaddings;
+					let result: any /* android.graphics.Rect */ = DEFAULT_VIEW_PADDINGS.get(className) || (<any>nativeView).defaultPaddings;
 					if (result === undefined) {
-						result = org.nativescript.widgets.ViewHelper.getPadding(nativeView);
-						(<any>nativeView).defaultPaddings = result;
+						DEFAULT_VIEW_PADDINGS.set(className, org.nativescript.widgets.ViewHelper.getPadding(nativeView));
+						(<any>nativeView).defaultPaddings = DEFAULT_VIEW_PADDINGS.get(className);
+						result = DEFAULT_VIEW_PADDINGS.get(className);
+					}
+
+					if (!nativeView.defaultPaddings) {
+						nativeView.defaultPaddings = DEFAULT_VIEW_PADDINGS.get(className);
 					}
 
 					this._defaultPaddingTop = result.top;

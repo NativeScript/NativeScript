@@ -210,4 +210,15 @@ describe('base configuration', () => {
 
 		expect(config.get('profile')).toBe(true);
 	});
+
+	it('supports env.sourceMap=hidden-source-map', () => {
+		init({
+			ios: true,
+			sourceMap: 'hidden-source-map',
+		});
+		const config = base(new Config());
+
+		expect(config.output.get('sourceMapFilename')).toMatchSnapshot();
+		expect(config.get('devtool')).toBe('hidden-source-map');
+	});
 });

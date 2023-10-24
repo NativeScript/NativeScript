@@ -1,7 +1,19 @@
 // @ts-nocheck
+
+jest.mock('@nativescript/core/application', () => null, { virtual: true });
+
+global.__DEV__ = true;
+global.__ANDROID__ = false;
+global.__IOS__ = true;
+global.__VISIONOS__ = true;
 global.WeakRef.prototype.get = global.WeakRef.prototype.deref;
 global.NativeClass = function () {};
-global.NSObject = class NSObject {};
+global.NSTimer = class NSTimer {};
+global.NSObject = class NSObject {
+	static new() {
+		return new NSObject();
+	}
+};
 global.NSString = {
 	stringWithString() {
 		return {
@@ -20,6 +32,11 @@ global.NSFileManager = {
 		fileExistsAtPathIsDirectory(path: string, isDirectory?: boolean) {
 			return true;
 		},
+	},
+};
+global.NSNotificationCenter = {
+	defaultCenter: {
+		addObserverSelectorNameObject(observer: any, selector: any, name: any, object: any) {},
 	},
 };
 global.interop = {
@@ -87,6 +104,7 @@ global.CFRunLoopWakeUp = function (runloop) {};
 global.NativeScriptGlobals = {
 	events: {
 		on: (args) => {},
+		once: (args) => {},
 		off: (args) => {},
 		notify: (args) => {},
 		hasListeners: (args) => {},
@@ -96,9 +114,18 @@ global.NativeScriptGlobals = {
 global.CADisplayLink = function () {};
 global.NSNotification = function () {};
 global.UIApplicationDelegate = function () {};
+global.UIApplicationDidFinishLaunchingNotification = 'UIApplicationDidFinishLaunchingNotification';
+global.UIApplicationDidBecomeActiveNotification = 'UIApplicationDidBecomeActiveNotification';
+global.UIApplicationDidEnterBackgroundNotification = 'UIApplicationDidEnterBackgroundNotification';
+global.UIApplicationWillTerminateNotification = 'UIApplicationWillTerminateNotification';
+global.UIApplicationDidReceiveMemoryWarningNotification = 'UIApplicationDidReceiveMemoryWarningNotification';
+global.UIApplicationDidChangeStatusBarOrientationNotification = 'UIApplicationDidChangeStatusBarOrientationNotification';
 global.UIResponder = function () {};
 global.UIResponder.extend = function () {};
 global.UIViewController = function () {};
+global.UIViewControllerTransitioningDelegate = function () {};
+global.UIGestureRecognizer = function () {};
+global.UIGestureRecognizerDelegate = function () {};
 global.UIAdaptivePresentationControllerDelegate = function () {};
 global.UIPopoverPresentationControllerDelegate = function () {};
 global.UIContentSizeCategoryExtraSmall = 0.5;

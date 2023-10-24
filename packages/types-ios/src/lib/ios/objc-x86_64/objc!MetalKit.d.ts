@@ -226,6 +226,8 @@ declare var MTKTextureLoaderOptionCubeLayout: string;
 
 declare var MTKTextureLoaderOptionGenerateMipmaps: string;
 
+declare var MTKTextureLoaderOptionLoadAsArray: string;
+
 declare var MTKTextureLoaderOptionOrigin: string;
 
 declare var MTKTextureLoaderOptionSRGB: string;

@@ -1,12 +1,18 @@
-import { ad } from './native-helper';
 import { Trace } from '../trace';
 import { getFileExtension } from './common';
 import { SDK_VERSION } from './constants';
+import { android as AndroidUtils } from './native-helper';
+import { topmost } from '../ui/frame/frame-stack';
 
-export { ad, dataDeserialize, dataSerialize, iOSNativeHelper } from './native-helper';
-export * from './layout-helper';
+export { clearInterval, clearTimeout, setInterval, setTimeout } from '../timer';
 export * from './common';
-export { Source } from './debug';
+export * from './constants';
+export * from './debug';
+export * from './layout-helper';
+export * from './macrotask-scheduler';
+export * from './mainthread-helper';
+export * from './native-helper';
+export * from './types';
 
 const MIN_URI_SHARE_RESTRICTED_APK_VERSION = 24;
 
@@ -19,7 +25,7 @@ export function releaseNativeObject(object: java.lang.Object) {
 }
 
 export function openUrl(location: string): boolean {
-	const context = ad.getApplicationContext();
+	const context = AndroidUtils.getApplicationContext();
 	try {
 		const intent = new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(location.trim()));
 		intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -82,7 +88,7 @@ function getMimeTypeNameFromExtension(filePath: string): string {
  * @returns {boolean} whether opening the file succeeded or not
  */
 export function openFile(filePath: string, title: string = 'Open File...'): boolean {
-	const context = ad.getApplicationContext();
+	const context = AndroidUtils.getApplicationContext();
 	try {
 		// Ensure external storage is available
 		if (!isExternalStorageAvailable()) {
@@ -164,19 +170,19 @@ Please ensure you have your manifest correctly configured with the FileProvider.
 }
 
 export function isRealDevice(): boolean {
-	return ad.isRealDevice();
+	return AndroidUtils.isRealDevice();
 }
 
 export function dismissSoftInput(nativeView?: any): void {
-	ad.dismissSoftInput(nativeView);
+	AndroidUtils.dismissSoftInput(nativeView);
 }
 
 export function dismissKeyboard() {
 	dismissSoftInput();
-
-	const activity = ad.getCurrentActivity();
-	if (activity) {
-		const focus = activity.getCurrentFocus();
+	const modalDialog = (topmost()?._modalParent ?? (topmost()?.modal as any))?._dialogFragment?.getDialog();
+	const view = modalDialog ?? AndroidUtils.getCurrentActivity();
+	if (view) {
+		const focus = view.getCurrentFocus();
 
 		if (focus) {
 			focus.clearFocus();
@@ -186,7 +192,7 @@ export function dismissKeyboard() {
 
 export function copyToClipboard(value: string) {
 	try {
-		const clipboard = ad.getApplicationContext().getSystemService(android.content.Context.CLIPBOARD_SERVICE);
+		const clipboard = AndroidUtils.getApplicationContext().getSystemService(android.content.Context.CLIPBOARD_SERVICE);
 		const clip = android.content.ClipData.newPlainText('Clipboard value', value);
 		clipboard.setPrimaryClip(clip);
 	} catch (err) {

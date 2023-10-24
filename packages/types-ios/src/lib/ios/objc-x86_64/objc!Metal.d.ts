@@ -62,6 +62,49 @@ declare var MTLAccelerationStructureCommandEncoder: {
 	prototype: MTLAccelerationStructureCommandEncoder;
 };
 
+declare class MTLAccelerationStructureCurveGeometryDescriptor extends MTLAccelerationStructureGeometryDescriptor {
+
+	static alloc(): MTLAccelerationStructureCurveGeometryDescriptor; // inherited from NSObject
+
+	static descriptor(): MTLAccelerationStructureCurveGeometryDescriptor;
+
+	static new(): MTLAccelerationStructureCurveGeometryDescriptor; // inherited from NSObject
+
+	controlPointBuffer: MTLBuffer;
+
+	controlPointBufferOffset: number;
+
+	controlPointCount: number;
+
+	controlPointFormat: MTLAttributeFormat;
+
+	controlPointStride: number;
+
+	curveBasis: MTLCurveBasis;
+
+	curveEndCaps: MTLCurveEndCaps;
+
+	curveType: MTLCurveType;
+
+	indexBuffer: MTLBuffer;
+
+	indexBufferOffset: number;
+
+	indexType: MTLIndexType;
+
+	radiusBuffer: MTLBuffer;
+
+	radiusBufferOffset: number;
+
+	radiusFormat: MTLAttributeFormat;
+
+	radiusStride: number;
+
+	segmentControlPointCount: number;
+
+	segmentCount: number;
+}
+
 declare class MTLAccelerationStructureDescriptor extends NSObject implements NSCopying {
 
 	static alloc(): MTLAccelerationStructureDescriptor; // inherited from NSObject
@@ -104,7 +147,11 @@ declare const enum MTLAccelerationStructureInstanceDescriptorType {
 
 	UserID = 1,
 
-	Motion = 2
+	Motion = 2,
+
+	Indirect = 3,
+
+	IndirectMotion = 4
 }
 
 declare const enum MTLAccelerationStructureInstanceOptions {
@@ -133,6 +180,45 @@ declare class MTLAccelerationStructureMotionBoundingBoxGeometryDescriptor extend
 	boundingBoxCount: number;
 
 	boundingBoxStride: number;
+}
+
+declare class MTLAccelerationStructureMotionCurveGeometryDescriptor extends MTLAccelerationStructureGeometryDescriptor {
+
+	static alloc(): MTLAccelerationStructureMotionCurveGeometryDescriptor; // inherited from NSObject
+
+	static descriptor(): MTLAccelerationStructureMotionCurveGeometryDescriptor;
+
+	static new(): MTLAccelerationStructureMotionCurveGeometryDescriptor; // inherited from NSObject
+
+	controlPointBuffers: NSArray<MTLMotionKeyframeData>;
+
+	controlPointCount: number;
+
+	controlPointFormat: MTLAttributeFormat;
+
+	controlPointStride: number;
+
+	curveBasis: MTLCurveBasis;
+
+	curveEndCaps: MTLCurveEndCaps;
+
+	curveType: MTLCurveType;
+
+	indexBuffer: MTLBuffer;
+
+	indexBufferOffset: number;
+
+	indexType: MTLIndexType;
+
+	radiusBuffers: NSArray<MTLMotionKeyframeData>;
+
+	radiusFormat: MTLAttributeFormat;
+
+	radiusStride: number;
+
+	segmentControlPointCount: number;
+
+	segmentCount: number;
 }
 
 interface MTLAccelerationStructureMotionInstanceDescriptor {
@@ -271,13 +357,24 @@ declare const enum MTLAccelerationStructureUsage {
 	ExtendedLimits = 4
 }
 
+declare class MTLArchitecture extends NSObject implements NSCopying {
+
+	static alloc(): MTLArchitecture; // inherited from NSObject
+
+	static new(): MTLArchitecture; // inherited from NSObject
+
+	readonly name: string;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
 declare class MTLArgument extends NSObject {
 
 	static alloc(): MTLArgument; // inherited from NSObject
 
 	static new(): MTLArgument; // inherited from NSObject
 
-	readonly access: MTLArgumentAccess;
+	readonly access: MTLBindingAccess;
 
 	readonly active: boolean;
 
@@ -310,15 +407,6 @@ declare class MTLArgument extends NSObject {
 	readonly type: MTLArgumentType;
 }
 
-declare const enum MTLArgumentAccess {
-
-	ReadOnly = 0,
-
-	ReadWrite = 1,
-
-	WriteOnly = 2
-}
-
 declare const enum MTLArgumentBuffersTier {
 
 	Tier1 = 0,
@@ -334,7 +422,7 @@ declare class MTLArgumentDescriptor extends NSObject implements NSCopying {
 
 	static new(): MTLArgumentDescriptor; // inherited from NSObject
 
-	access: MTLArgumentAccess;
+	access: MTLBindingAccess;
 
 	arrayLength: number;
 
@@ -602,8 +690,14 @@ declare const enum MTLAttributeFormat {
 
 	ShortNormalized = 52,
 
-	Half = 53
+	Half = 53,
+
+	FloatRG11B10 = 54,
+
+	FloatRGB9E5 = 55
 }
+
+declare var MTLAttributeStrideStatic: number;
 
 declare const enum MTLBarrierScope {
 
@@ -663,7 +757,7 @@ declare const enum MTLBinaryArchiveError {
 
 interface MTLBinding extends NSObjectProtocol {
 
-	access: MTLArgumentAccess;
+	access: MTLBindingAccess;
 
 	argument: boolean;
 
@@ -679,6 +773,21 @@ declare var MTLBinding: {
 
 	prototype: MTLBinding;
 };
+
+declare const enum MTLBindingAccess {
+
+	BindingAccessReadOnly = 0,
+
+	BindingAccessReadWrite = 1,
+
+	BindingAccessWriteOnly = 2,
+
+	ArgumentAccessReadOnly = 0,
+
+	ArgumentAccessReadWrite = 1,
+
+	ArgumentAccessWriteOnly = 2
+}
 
 declare const enum MTLBindingType {
 
@@ -925,6 +1034,8 @@ declare class MTLBufferLayoutDescriptorArray extends NSObject {
 
 	setObjectAtIndexedSubscript(bufferDesc: MTLBufferLayoutDescriptor, index: number): void;
 }
+
+declare var MTLBufferLayoutStrideDynamic: number;
 
 declare const enum MTLCPUCacheMode {
 
@@ -1363,9 +1474,17 @@ interface MTLComputeCommandEncoder extends MTLCommandEncoder {
 
 	setBufferOffsetAtIndex(offset: number, index: number): void;
 
+	setBufferOffsetAttributeStrideAtIndex(buffer: MTLBuffer, offset: number, stride: number, index: number): void;
+
+	setBufferOffsetAttributeStrideAtIndex(offset: number, stride: number, index: number): void;
+
+	setBuffersOffsetsAttributeStridesWithRange(buffers: interop.Reference<MTLBuffer>, offsets: interop.Reference<number>, strides: interop.Reference<number>, range: NSRange): void;
+
 	setBuffersOffsetsWithRange(buffers: interop.Reference<MTLBuffer>, offsets: interop.Reference<number>, range: NSRange): void;
 
 	setBytesLengthAtIndex(bytes: interop.Pointer | interop.Reference<any>, length: number, index: number): void;
+
+	setBytesLengthAttributeStrideAtIndex(bytes: interop.Pointer | interop.Reference<any>, length: number, stride: number, index: number): void;
 
 	setComputePipelineState(state: MTLComputePipelineState): void;
 
@@ -1649,6 +1768,33 @@ declare const enum MTLCullMode {
 	Back = 2
 }
 
+declare const enum MTLCurveBasis {
+
+	BSpline = 0,
+
+	CatmullRom = 1,
+
+	Linear = 2,
+
+	Bezier = 3
+}
+
+declare const enum MTLCurveEndCaps {
+
+	None = 0,
+
+	Disk = 1,
+
+	Sphere = 2
+}
+
+declare const enum MTLCurveType {
+
+	Round = 0,
+
+	Flat = 1
+}
+
 declare const enum MTLDataType {
 
 	None = 0,
@@ -1831,7 +1977,15 @@ declare const enum MTLDataType {
 
 	PrimitiveAccelerationStructure = 117,
 
-	InstanceAccelerationStructure = 118
+	InstanceAccelerationStructure = 118,
+
+	BFloat = 121,
+
+	BFloat2 = 122,
+
+	BFloat3 = 123,
+
+	BFloat4 = 124
 }
 
 declare const enum MTLDepthClipMode {
@@ -1873,6 +2027,8 @@ declare var MTLDepthStencilState: {
 
 interface MTLDevice extends NSObjectProtocol {
 
+	architecture: MTLArchitecture;
+
 	argumentBuffersSupport: MTLArgumentBuffersTier;
 
 	barycentricCoordsSupported: boolean;
@@ -1898,6 +2054,8 @@ interface MTLDevice extends NSObjectProtocol {
 	rasterOrderGroupsSupported: boolean;
 
 	readWriteTextureSupport: MTLReadWriteTextureTier;
+
+	recommendedMaxWorkingSetSize: number;
 
 	registryID: number;
 
@@ -2001,7 +2159,7 @@ interface MTLDevice extends NSObjectProtocol {
 
 	newIndirectCommandBufferWithDescriptorMaxCommandCountOptions(descriptor: MTLIndirectCommandBufferDescriptor, maxCount: number, options: MTLResourceOptions): MTLIndirectCommandBuffer;
 
-	newLibraryWithDataError(data: NSObject): MTLLibrary;
+	newLibraryWithDataError(data: interop.Pointer | interop.Reference<any>): MTLLibrary;
 
 	newLibraryWithFileError(filepath: string): MTLLibrary;
 
@@ -2371,7 +2529,9 @@ declare const enum MTLFunctionOptions {
 
 	None = 0,
 
-	CompileToBinary = 1
+	CompileToBinary = 1,
+
+	StoreFunctionInMetalScript = 2
 }
 
 interface MTLFunctionStitchingAttribute extends NSObjectProtocol {
@@ -2587,6 +2747,8 @@ declare const enum MTLGPUFamily {
 
 	Apple8 = 1008,
 
+	Apple9 = 1009,
+
 	Mac1 = 2001,
 
 	Mac2 = 2002,
@@ -2649,7 +2811,7 @@ interface MTLHeap extends NSObjectProtocol {
 
 	newBufferWithLengthOptionsOffset(length: number, options: MTLResourceOptions, offset: number): MTLBuffer;
 
-	newTextureWithDescriptor(desc: MTLTextureDescriptor): MTLTexture;
+	newTextureWithDescriptor(descriptor: MTLTextureDescriptor): MTLTexture;
 
 	newTextureWithDescriptorOffset(descriptor: MTLTextureDescriptor, offset: number): MTLTexture;
 
@@ -2699,6 +2861,21 @@ declare const enum MTLIndexType {
 	UInt32 = 1
 }
 
+interface MTLIndirectAccelerationStructureMotionInstanceDescriptor {
+	options: MTLAccelerationStructureInstanceOptions;
+	mask: number;
+	intersectionFunctionTableOffset: number;
+	userID: number;
+	accelerationStructureID: MTLResourceID;
+	motionTransformsStartIndex: number;
+	motionTransformsCount: number;
+	motionStartBorderMode: MTLMotionBorderMode;
+	motionEndBorderMode: MTLMotionBorderMode;
+	motionStartTime: number;
+	motionEndTime: number;
+}
+declare var MTLIndirectAccelerationStructureMotionInstanceDescriptor: interop.StructType<MTLIndirectAccelerationStructureMotionInstanceDescriptor>;
+
 interface MTLIndirectCommandBuffer extends MTLResource {
 
 	gpuResourceID: MTLResourceID;
@@ -2732,7 +2909,17 @@ declare class MTLIndirectCommandBufferDescriptor extends NSObject implements NSC
 
 	maxKernelBufferBindCount: number;
 
+	maxKernelThreadgroupMemoryBindCount: number;
+
+	maxMeshBufferBindCount: number;
+
+	maxObjectBufferBindCount: number;
+
+	maxObjectThreadgroupMemoryBindCount: number;
+
 	maxVertexBufferBindCount: number;
+
+	supportDynamicAttributeStride: boolean;
 
 	supportRayTracing: boolean;
 
@@ -2757,7 +2944,11 @@ declare const enum MTLIndirectCommandType {
 
 	ConcurrentDispatch = 32,
 
-	ConcurrentDispatchThreads = 64
+	ConcurrentDispatchThreads = 64,
+
+	DrawMeshThreadgroups = 128,
+
+	DrawMeshThreads = 256
 }
 
 interface MTLIndirectComputeCommand extends NSObjectProtocol {
@@ -2778,6 +2969,8 @@ interface MTLIndirectComputeCommand extends NSObjectProtocol {
 
 	setKernelBufferOffsetAtIndex(buffer: MTLBuffer, offset: number, index: number): void;
 
+	setKernelBufferOffsetAttributeStrideAtIndex(buffer: MTLBuffer, offset: number, stride: number, index: number): void;
+
 	setStageInRegion(region: MTLRegion): void;
 
 	setThreadgroupMemoryLengthAtIndex(length: number, index: number): void;
@@ -2787,11 +2980,50 @@ declare var MTLIndirectComputeCommand: {
 	prototype: MTLIndirectComputeCommand;
 };
 
+declare class MTLIndirectInstanceAccelerationStructureDescriptor extends MTLAccelerationStructureDescriptor {
+
+	static alloc(): MTLIndirectInstanceAccelerationStructureDescriptor; // inherited from NSObject
+
+	static descriptor(): MTLIndirectInstanceAccelerationStructureDescriptor;
+
+	static new(): MTLIndirectInstanceAccelerationStructureDescriptor; // inherited from NSObject
+
+	instanceCountBuffer: MTLBuffer;
+
+	instanceCountBufferOffset: number;
+
+	instanceDescriptorBuffer: MTLBuffer;
+
+	instanceDescriptorBufferOffset: number;
+
+	instanceDescriptorStride: number;
+
+	instanceDescriptorType: MTLAccelerationStructureInstanceDescriptorType;
+
+	maxInstanceCount: number;
+
+	maxMotionTransformCount: number;
+
+	motionTransformBuffer: MTLBuffer;
+
+	motionTransformBufferOffset: number;
+
+	motionTransformCountBuffer: MTLBuffer;
+
+	motionTransformCountBufferOffset: number;
+}
+
 interface MTLIndirectRenderCommand extends NSObjectProtocol {
+
+	clearBarrier(): void;
 
 	drawIndexedPatchesPatchStartPatchCountPatchIndexBufferPatchIndexBufferOffsetControlPointIndexBufferControlPointIndexBufferOffsetInstanceCountBaseInstanceTessellationFactorBufferTessellationFactorBufferOffsetTessellationFactorBufferInstanceStride(numberOfPatchControlPoints: number, patchStart: number, patchCount: number, patchIndexBuffer: MTLBuffer, patchIndexBufferOffset: number, controlPointIndexBuffer: MTLBuffer, controlPointIndexBufferOffset: number, instanceCount: number, baseInstance: number, buffer: MTLBuffer, offset: number, instanceStride: number): void;
 
 	drawIndexedPrimitivesIndexCountIndexTypeIndexBufferIndexBufferOffsetInstanceCountBaseVertexBaseInstance(primitiveType: MTLPrimitiveType, indexCount: number, indexType: MTLIndexType, indexBuffer: MTLBuffer, indexBufferOffset: number, instanceCount: number, baseVertex: number, baseInstance: number): void;
+
+	drawMeshThreadgroupsThreadsPerObjectThreadgroupThreadsPerMeshThreadgroup(threadgroupsPerGrid: MTLSize, threadsPerObjectThreadgroup: MTLSize, threadsPerMeshThreadgroup: MTLSize): void;
+
+	drawMeshThreadsThreadsPerObjectThreadgroupThreadsPerMeshThreadgroup(threadsPerGrid: MTLSize, threadsPerObjectThreadgroup: MTLSize, threadsPerMeshThreadgroup: MTLSize): void;
 
 	drawPatchesPatchStartPatchCountPatchIndexBufferPatchIndexBufferOffsetInstanceCountBaseInstanceTessellationFactorBufferTessellationFactorBufferOffsetTessellationFactorBufferInstanceStride(numberOfPatchControlPoints: number, patchStart: number, patchCount: number, patchIndexBuffer: MTLBuffer, patchIndexBufferOffset: number, instanceCount: number, baseInstance: number, buffer: MTLBuffer, offset: number, instanceStride: number): void;
 
@@ -2799,11 +3031,21 @@ interface MTLIndirectRenderCommand extends NSObjectProtocol {
 
 	reset(): void;
 
+	setBarrier(): void;
+
 	setFragmentBufferOffsetAtIndex(buffer: MTLBuffer, offset: number, index: number): void;
+
+	setMeshBufferOffsetAtIndex(buffer: MTLBuffer, offset: number, index: number): void;
+
+	setObjectBufferOffsetAtIndex(buffer: MTLBuffer, offset: number, index: number): void;
+
+	setObjectThreadgroupMemoryLengthAtIndex(length: number, index: number): void;
 
 	setRenderPipelineState(pipelineState: MTLRenderPipelineState): void;
 
 	setVertexBufferOffsetAtIndex(buffer: MTLBuffer, offset: number, index: number): void;
+
+	setVertexBufferOffsetAttributeStrideAtIndex(buffer: MTLBuffer, offset: number, stride: number, index: number): void;
 }
 declare var MTLIndirectRenderCommand: {
 
@@ -2860,7 +3102,11 @@ declare const enum MTLIntersectionFunctionSignature {
 
 	PrimitiveMotion = 16,
 
-	ExtendedLimits = 32
+	ExtendedLimits = 32,
+
+	MaxLevels = 64,
+
+	CurveData = 128
 }
 
 interface MTLIntersectionFunctionTable extends MTLResource {
@@ -2874,6 +3120,10 @@ interface MTLIntersectionFunctionTable extends MTLResource {
 	setFunctionAtIndex(_function: MTLFunctionHandle, index: number): void;
 
 	setFunctionsWithRange(functions: interop.Reference<MTLFunctionHandle>, range: NSRange): void;
+
+	setOpaqueCurveIntersectionFunctionWithSignatureAtIndex(signature: MTLIntersectionFunctionSignature, index: number): void;
+
+	setOpaqueCurveIntersectionFunctionWithSignatureWithRange(signature: MTLIntersectionFunctionSignature, range: NSRange): void;
 
 	setOpaqueTriangleIntersectionFunctionWithSignatureAtIndex(signature: MTLIntersectionFunctionSignature, index: number): void;
 
@@ -2919,7 +3169,9 @@ declare const enum MTLLanguageVersion {
 
 	Version2_4 = 131076,
 
-	Version3_0 = 196608
+	Version3_0 = 196608,
+
+	Version3_1 = 196609
 }
 
 interface MTLLibrary extends NSObjectProtocol {
@@ -3049,6 +3301,8 @@ declare class MTLMeshRenderPipelineDescriptor extends NSObject implements NSCopy
 
 	fragmentFunction: MTLFunction;
 
+	fragmentLinkedFunctions: MTLLinkedFunctions;
+
 	label: string;
 
 	maxTotalThreadgroupsPerMeshGrid: number;
@@ -3063,11 +3317,15 @@ declare class MTLMeshRenderPipelineDescriptor extends NSObject implements NSCopy
 
 	meshFunction: MTLFunction;
 
+	meshLinkedFunctions: MTLLinkedFunctions;
+
 	meshThreadgroupSizeIsMultipleOfThreadExecutionWidth: boolean;
 
 	readonly objectBuffers: MTLPipelineBufferDescriptorArray;
 
 	objectFunction: MTLFunction;
+
+	objectLinkedFunctions: MTLLinkedFunctions;
 
 	objectThreadgroupSizeIsMultipleOfThreadExecutionWidth: boolean;
 
@@ -3078,6 +3336,8 @@ declare class MTLMeshRenderPipelineDescriptor extends NSObject implements NSCopy
 	rasterizationEnabled: boolean;
 
 	stencilAttachmentPixelFormat: MTLPixelFormat;
+
+	supportIndirectCommandBuffers: boolean;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
@@ -3498,7 +3758,7 @@ declare class MTLPointerType extends MTLType {
 
 	static new(): MTLPointerType; // inherited from NSObject
 
-	readonly access: MTLArgumentAccess;
+	readonly access: MTLBindingAccess;
 
 	readonly alignment: number;
 
@@ -3859,9 +4119,9 @@ interface MTLRenderCommandEncoder extends MTLCommandEncoder {
 
 	setTileAccelerationStructureAtBufferIndex(accelerationStructure: MTLAccelerationStructure, bufferIndex: number): void;
 
-	setTileBufferOffsetAtIndex(offset: number, index: number): void;
-
 	setTileBufferOffsetAtIndex(buffer: MTLBuffer, offset: number, index: number): void;
+
+	setTileBufferOffsetAtIndex(offset: number, index: number): void;
 
 	setTileBuffersOffsetsWithRange(buffers: interop.Reference<MTLBuffer>, offsets: interop.Reference<number>, range: NSRange): void;
 
@@ -3897,9 +4157,17 @@ interface MTLRenderCommandEncoder extends MTLCommandEncoder {
 
 	setVertexBufferOffsetAtIndex(offset: number, index: number): void;
 
+	setVertexBufferOffsetAttributeStrideAtIndex(buffer: MTLBuffer, offset: number, stride: number, index: number): void;
+
+	setVertexBufferOffsetAttributeStrideAtIndex(offset: number, stride: number, index: number): void;
+
+	setVertexBuffersOffsetsAttributeStridesWithRange(buffers: interop.Reference<MTLBuffer>, offsets: interop.Reference<number>, strides: interop.Reference<number>, range: NSRange): void;
+
 	setVertexBuffersOffsetsWithRange(buffers: interop.Reference<MTLBuffer>, offsets: interop.Reference<number>, range: NSRange): void;
 
 	setVertexBytesLengthAtIndex(bytes: interop.Pointer | interop.Reference<any>, length: number, index: number): void;
+
+	setVertexBytesLengthAttributeStrideAtIndex(bytes: interop.Pointer | interop.Reference<any>, length: number, stride: number, index: number): void;
 
 	setVertexIntersectionFunctionTableAtBufferIndex(intersectionFunctionTable: MTLIntersectionFunctionTable, bufferIndex: number): void;
 
@@ -4579,11 +4847,11 @@ declare class MTLSharedEventListener extends NSObject {
 
 	static new(): MTLSharedEventListener; // inherited from NSObject
 
-	readonly dispatchQueue: NSObject;
+	readonly dispatchQueue: interop.Pointer | interop.Reference<any>;
 
-	constructor(o: { dispatchQueue: NSObject; });
+	constructor(o: { dispatchQueue: interop.Pointer | interop.Reference<any>; });
 
-	initWithDispatchQueue(dispatchQueue: NSObject): this;
+	initWithDispatchQueue(dispatchQueue: interop.Pointer | interop.Reference<any>): this;
 }
 
 interface MTLSize {
@@ -4974,7 +5242,7 @@ declare class MTLTextureReferenceType extends MTLType {
 
 	static new(): MTLTextureReferenceType; // inherited from NSObject
 
-	readonly access: MTLArgumentAccess;
+	readonly access: MTLBindingAccess;
 
 	readonly isDepthTexture: boolean;
 
@@ -5039,7 +5307,9 @@ declare const enum MTLTextureUsage {
 
 	RenderTarget = 4,
 
-	PixelFormatView = 16
+	PixelFormatView = 16,
+
+	ShaderAtomic = 32
 }
 
 interface MTLThreadgroupBinding extends MTLBinding {
@@ -5333,7 +5603,11 @@ declare const enum MTLVertexFormat {
 
 	ShortNormalized = 52,
 
-	Half = 53
+	Half = 53,
+
+	FloatRG11B10 = 54,
+
+	FloatRGB9E5 = 55
 }
 
 declare const enum MTLVertexStepFunction {

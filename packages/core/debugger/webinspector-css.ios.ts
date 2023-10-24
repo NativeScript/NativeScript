@@ -46,9 +46,7 @@ export class CSSDomainDebugger implements inspectorCommandTypes.CSSDomain.CSSDom
 		this._enabled = false;
 	}
 
-	getMatchedStylesForNode(
-		params: inspectorCommandTypes.CSSDomain.GetMatchedStylesForNodeMethodArguments
-	): {
+	getMatchedStylesForNode(params: inspectorCommandTypes.CSSDomain.GetMatchedStylesForNodeMethodArguments): {
 		inlineStyle?: inspectorCommandTypes.CSSDomain.CSSStyle;
 		attributesStyle?: inspectorCommandTypes.CSSDomain.CSSStyle;
 		matchedCSSRules?: inspectorCommandTypes.CSSDomain.RuleMatch[];
@@ -59,18 +57,14 @@ export class CSSDomainDebugger implements inspectorCommandTypes.CSSDomain.CSSDom
 		return {};
 	}
 	// Returns the styles defined inline (explicitly in the "style" attribute and implicitly, using DOM attributes) for a DOM node identified by <code>nodeId</code>.
-	getInlineStylesForNode(
-		params: inspectorCommandTypes.CSSDomain.GetInlineStylesForNodeMethodArguments
-	): {
+	getInlineStylesForNode(params: inspectorCommandTypes.CSSDomain.GetInlineStylesForNodeMethodArguments): {
 		inlineStyle?: inspectorCommandTypes.CSSDomain.CSSStyle;
 		attributesStyle?: inspectorCommandTypes.CSSDomain.CSSStyle;
 	} {
 		return {};
 	}
 	// Returns the computed style for a DOM node identified by <code>nodeId</code>.
-	getComputedStyleForNode(
-		params: inspectorCommandTypes.CSSDomain.GetComputedStyleForNodeMethodArguments
-	): {
+	getComputedStyleForNode(params: inspectorCommandTypes.CSSDomain.GetComputedStyleForNodeMethodArguments): {
 		computedStyle: inspectorCommandTypes.CSSDomain.CSSComputedStyleProperty[];
 	} {
 		return {

@@ -1,8 +1,7 @@
 import type { Transition, TransitionNavigationType, SharedTransitionTagPropertiesToMatch } from '.';
 import { Observable } from '../../data/observable';
 import { Screen } from '../../platform';
-import { isNumber } from '../../utils/types';
-import { CORE_ANIMATION_DEFAULTS } from '../../utils/common';
+import { isNumber, CORE_ANIMATION_DEFAULTS } from '../../utils';
 import { querySelectorAll, ViewBase } from '../core/view-base';
 import type { View } from '../core/view';
 import type { PanGestureEventData } from '../gestures';
@@ -13,8 +12,16 @@ export enum SharedTransitionAnimationType {
 	dismiss,
 }
 type SharedTransitionEventAction = 'present' | 'dismiss' | 'interactiveStart' | 'interactiveFinish';
-export type SharedTransitionEventDataPayload = { id: number; type: TransitionNavigationType; action?: SharedTransitionEventAction; percent?: number };
-export type SharedTransitionEventData = { eventName: string; data: SharedTransitionEventDataPayload };
+export type SharedTransitionEventDataPayload = {
+	id: number;
+	type: TransitionNavigationType;
+	action?: SharedTransitionEventAction;
+	percent?: number;
+};
+export type SharedTransitionEventData = {
+	eventName: string;
+	data: SharedTransitionEventDataPayload;
+};
 export type SharedRect = { x?: number; y?: number; width?: number; height?: number };
 export type SharedProperties = SharedRect & {
 	opacity?: number;
@@ -97,13 +104,17 @@ export interface SharedTransitionConfig {
 		dismiss?: SharedTransitionInteractiveOptions;
 	};
 	/**
-	 * View settings to start your transition with.
+	 * View settings applied to the incoming page to start your transition with.
 	 */
 	pageStart?: SharedTransitionPageProperties;
 	/**
-	 * View settings to end your transition with.
+	 * View settings applied to the incoming page to end your transition with.
 	 */
 	pageEnd?: SharedTransitionPageWithDurationProperties;
+	/**
+	 * View settings applied to the outgoing page in your transition.
+	 */
+	pageOut?: SharedTransitionPageWithDurationProperties;
 	/**
 	 * View settings to return to the original page with.
 	 */

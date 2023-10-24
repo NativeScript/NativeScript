@@ -17,14 +17,14 @@ import { Background, BackgroundClearFlags, refreshBorderDrawable } from '../../s
 import { profile } from '../../../profiling';
 import { topmost } from '../../frame/frame-stack';
 import { Screen } from '../../../platform';
-import { AndroidActivityBackPressedEventData, android as androidApp } from '../../../application';
+import { AndroidActivityBackPressedEventData, Application } from '../../../application';
 import { Device } from '../../../platform';
 import lazy from '../../../utils/lazy';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty } from '../../../accessibility/accessibility-properties';
 import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, isAccessibilityServiceEnabled, sendAccessibilityEvent, updateAccessibilityProperties, updateContentDescription, AccessibilityState } from '../../../accessibility';
 import * as Utils from '../../../utils';
 import { SDK_VERSION } from '../../../utils/constants';
-import { CSSShadow } from '../../styling/css-shadow';
+import { BoxShadow } from '../../styling/box-shadow';
 import { _setAndroidFragmentTransitions, _getAnimatedEntries, _updateTransitions, _reverseTransitions, _clearEntry, _clearFragment, addNativeTransitionListener } from '../../frame/fragment.transitions';
 
 export * from './view-common';
@@ -143,7 +143,7 @@ function initializeDialogFragment() {
 			};
 
 			// Fist fire application.android global event
-			androidApp.notify(args);
+			Application.android.notify(args);
 			if (args.cancel) {
 				return;
 			}
@@ -794,20 +794,19 @@ export class View extends ViewCommon {
 	}
 
 	[testIDProperty.setNative](value: string) {
-		this.setTestID(this.nativeViewProtected, value);
+		this.setAccessibilityIdentifier(this.nativeViewProtected, value);
 	}
 
-	setTestID(view, value) {
-		if (typeof __USE_TEST_ID__ !== 'undefined' && __USE_TEST_ID__) {
-			const id = Utils.ad.resources.getId(':id/nativescript_accessibility_id');
+	setAccessibilityIdentifier(view, value) {
+		const id = Utils.android.resources.getId(':id/nativescript_accessibility_id');
 
-			if (id) {
-				view.setTag(id, value);
-				view.setTag(value);
-			}
-
-			view.setContentDescription(value);
+		if (id) {
+			view.setTag(id, value);
+			view.setTag(value);
 		}
+
+		if (this.testID && this.testID !== value) this.testID = value;
+		if (this.accessibilityIdentifier !== value) this.accessibilityIdentifier = value;
 	}
 
 	[accessibilityEnabledProperty.setNative](value: boolean): void {
@@ -817,16 +816,7 @@ export class View extends ViewCommon {
 	}
 
 	[accessibilityIdentifierProperty.setNative](value: string): void {
-		if (typeof __USE_TEST_ID__ !== 'undefined' && __USE_TEST_ID__ && this.testID) {
-			// ignore when using testID;
-		} else {
-			const id = Utils.ad.resources.getId(':id/nativescript_accessibility_id');
-
-			if (id) {
-				this.nativeViewProtected.setTag(id, value);
-				this.nativeViewProtected.setTag(value);
-			}
-		}
+		this.setAccessibilityIdentifier(this.nativeViewProtected, value);
 	}
 
 	[accessibilityRoleProperty.setNative](value: AccessibilityRole): void {
@@ -1150,15 +1140,15 @@ export class View extends ViewCommon {
 		}
 	}
 
-	protected _drawBoxShadow(boxShadow: CSSShadow) {
+	protected _drawBoxShadow(boxShadow: BoxShadow) {
 		const nativeView = this.nativeViewProtected;
 		const config = {
 			shadowColor: boxShadow.color.android,
 			cornerRadius: Length.toDevicePixels(this.borderRadius as CoreTypes.LengthType, 0.0),
-			spreadRadius: Length.toDevicePixels(boxShadow.spreadRadius, 0.0),
-			blurRadius: Length.toDevicePixels(boxShadow.blurRadius, 0.0),
-			offsetX: Length.toDevicePixels(boxShadow.offsetX, 0.0),
-			offsetY: Length.toDevicePixels(boxShadow.offsetY, 0.0),
+			spreadRadius: boxShadow.spreadRadius,
+			blurRadius: boxShadow.blurRadius,
+			offsetX: boxShadow.offsetX,
+			offsetY: boxShadow.offsetY,
 		};
 		org.nativescript.widgets.Utils.drawBoxShadow(nativeView, JSON.stringify(config));
 	}
@@ -1185,7 +1175,11 @@ export class View extends ViewCommon {
 	}
 
 	protected onBackgroundOrBorderPropertyChanged() {
-		const nativeView = <android.view.View & { _cachedDrawable: android.graphics.drawable.Drawable.ConstantState | android.graphics.drawable.Drawable }>this.nativeViewProtected;
+		const nativeView = <
+			android.view.View & {
+				_cachedDrawable: android.graphics.drawable.Drawable.ConstantState | android.graphics.drawable.Drawable;
+			}
+		>this.nativeViewProtected;
 		if (!nativeView) {
 			return;
 		}
@@ -1208,11 +1202,11 @@ export class View extends ViewCommon {
 		const isBorderDrawable = drawable instanceof org.nativescript.widgets.BorderDrawable;
 
 		// prettier-ignore
-		const onlyColor = !background.hasBorderWidth() 
-			&& !background.hasBorderRadius() 
-			&& !background.hasBoxShadow() 
-			&& !background.clipPath 
-			&& !background.image 
+		const onlyColor = !background.hasBorderWidth()
+			&& !background.hasBorderRadius()
+			&& !background.hasBoxShadow()
+			&& !background.clipPath
+			&& !background.image
 			&& !!background.color;
 
 		this._applyBackground(background, isBorderDrawable, onlyColor, drawable);

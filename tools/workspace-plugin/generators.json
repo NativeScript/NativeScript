@@ -1,0 +1,9 @@
+{
+	"generators": {
+		"app": {
+			"implementation": "./src/generators/app",
+			"schema": "./src/generators/app/schema.json",
+			"description": "Generator app"
+		}
+	}
+}

@@ -1,4 +1,6 @@
 
+declare function MLAllComputeDevices(): NSArray<MLComputeDeviceProtocol>;
+
 declare class MLArrayBatchProvider extends NSObject implements MLBatchProvider {
 
 	static alloc(): MLArrayBatchProvider; // inherited from NSObject
@@ -29,6 +31,54 @@ interface MLBatchProvider {
 declare var MLBatchProvider: {
 
 	prototype: MLBatchProvider;
+};
+
+declare class MLCPUComputeDevice extends NSObject implements MLComputeDeviceProtocol {
+
+	static alloc(): MLCPUComputeDevice; // inherited from NSObject
+
+	static new(): MLCPUComputeDevice; // inherited from NSObject
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
+interface MLComputeDeviceProtocol extends NSObjectProtocol {
+}
+declare var MLComputeDeviceProtocol: {
+
+	prototype: MLComputeDeviceProtocol;
 };
 
 declare const enum MLComputeUnits {
@@ -253,6 +303,49 @@ declare var MLFeatureValueImageOptionCropAndScale: string;
 
 declare var MLFeatureValueImageOptionCropRect: string;
 
+declare class MLGPUComputeDevice extends NSObject implements MLComputeDeviceProtocol {
+
+	static alloc(): MLGPUComputeDevice; // inherited from NSObject
+
+	static new(): MLGPUComputeDevice; // inherited from NSObject
+
+	readonly metalDevice: MTLDevice;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
 declare class MLImageConstraint extends NSObject implements NSSecureCoding {
 
 	static alloc(): MLImageConstraint; // inherited from NSObject
@@ -383,9 +476,15 @@ declare class MLModel extends NSObject {
 
 	readonly modelDescription: MLModelDescription;
 
+	static readonly availableComputeDevices: NSArray<MLComputeDeviceProtocol>;
+
 	parameterValueForKeyError(key: MLParameterKey): any;
 
+	predictionFromFeaturesCompletionHandler(input: MLFeatureProvider, completionHandler: (p1: MLFeatureProvider, p2: NSError) => void): void;
+
 	predictionFromFeaturesError(input: MLFeatureProvider): MLFeatureProvider;
+
+	predictionFromFeaturesOptionsCompletionHandler(input: MLFeatureProvider, options: MLPredictionOptions, completionHandler: (p1: MLFeatureProvider, p2: NSError) => void): void;
 
 	predictionFromFeaturesOptionsError(input: MLFeatureProvider, options: MLPredictionOptions): MLFeatureProvider;
 
@@ -521,7 +620,9 @@ declare const enum MLModelError {
 
 	ModelDecryption = 9,
 
-	ModelCollection = 10
+	ModelCollection = 10,
+
+	PredictionCancelled = 11
 }
 
 declare var MLModelErrorDomain: string;
@@ -648,6 +749,49 @@ declare const enum MLMultiArrayShapeConstraintType {
 	Enumerated = 2,
 
 	Range = 3
+}
+
+declare class MLNeuralEngineComputeDevice extends NSObject implements MLComputeDeviceProtocol {
+
+	static alloc(): MLNeuralEngineComputeDevice; // inherited from NSObject
+
+	static new(): MLNeuralEngineComputeDevice; // inherited from NSObject
+
+	readonly totalCoreCount: number;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
 }
 
 declare class MLNumericConstraint extends NSObject implements NSSecureCoding {

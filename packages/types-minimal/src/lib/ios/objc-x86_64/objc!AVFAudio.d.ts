@@ -94,6 +94,36 @@ interface AVAudio3DVectorOrientation {
 }
 declare var AVAudio3DVectorOrientation: interop.StructType<AVAudio3DVectorOrientation>;
 
+declare class AVAudioApplication extends NSObject {
+
+	static alloc(): AVAudioApplication; // inherited from NSObject
+
+	static new(): AVAudioApplication; // inherited from NSObject
+
+	static requestRecordPermissionWithCompletionHandler(response: (p1: boolean) => void): void;
+
+	readonly inputMuted: boolean;
+
+	readonly recordPermission: AVAudioApplicationRecordPermission;
+
+	static readonly sharedInstance: AVAudioApplication;
+
+	setInputMutedError(muted: boolean): boolean;
+}
+
+declare var AVAudioApplicationInputMuteStateChangeNotification: string;
+
+declare var AVAudioApplicationMuteStateKey: string;
+
+declare const enum AVAudioApplicationRecordPermission {
+
+	Undetermined = 1970168948,
+
+	Denied = 1684369017,
+
+	Granted = 1735552628
+}
+
 declare var AVAudioBitRateStrategy_Constant: string;
 
 declare var AVAudioBitRateStrategy_LongTermAverage: string;
@@ -679,6 +709,8 @@ declare class AVAudioInputNode extends AVAudioIONode implements AVAudioMixing {
 
 	voiceProcessingInputMuted: boolean;
 
+	voiceProcessingOtherAudioDuckingConfiguration: AVAudioVoiceProcessingOtherAudioDuckingConfiguration;
+
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
 	readonly description: string; // inherited from NSObjectProtocol
@@ -736,6 +768,8 @@ declare class AVAudioInputNode extends AVAudioIONode implements AVAudioMixing {
 	self(): this;
 
 	setManualRenderingInputPCMFormatInputBlock(format: AVAudioFormat, block: (p1: number) => interop.Pointer | interop.Reference<AudioBufferList>): boolean;
+
+	setMutedSpeechActivityEventListener(listenerBlock: (p1: AVAudioVoiceProcessingSpeechActivityEvent) => void): boolean;
 }
 
 declare class AVAudioMixerNode extends AVAudioNode implements AVAudioMixing {
@@ -1434,6 +1468,8 @@ declare class AVAudioSession extends NSObject {
 
 	readonly preferredSampleRate: number;
 
+	readonly prefersInterruptionOnRouteDisconnect: boolean;
+
 	readonly prefersNoInterruptionsFromSystemAlerts: boolean;
 
 	readonly promptStyle: AVAudioSessionPromptStyle;
@@ -1493,6 +1529,8 @@ declare class AVAudioSession extends NSObject {
 	setPreferredOutputNumberOfChannelsError(count: number): boolean;
 
 	setPreferredSampleRateError(sampleRate: number): boolean;
+
+	setPrefersInterruptionOnRouteDisconnectError(inValue: boolean): boolean;
 
 	setPrefersNoInterruptionsFromSystemAlertsError(inValue: boolean): boolean;
 
@@ -1614,7 +1652,9 @@ declare const enum AVAudioSessionInterruptionReason {
 
 	AppWasSuspended = 1,
 
-	BuiltInMicMuted = 2
+	BuiltInMicMuted = 2,
+
+	RouteDisconnected = 4
 }
 
 declare var AVAudioSessionInterruptionReasonKey: string;
@@ -1693,6 +1733,8 @@ declare var AVAudioSessionPortBuiltInReceiver: string;
 declare var AVAudioSessionPortBuiltInSpeaker: string;
 
 declare var AVAudioSessionPortCarAudio: string;
+
+declare var AVAudioSessionPortContinuityMicrophone: string;
 
 declare class AVAudioSessionPortDescription extends NSObject {
 
@@ -2287,71 +2329,15 @@ declare class AVAudioUnitGenerator extends AVAudioUnit implements AVAudioMixing 
 	self(): this;
 }
 
-declare class AVAudioUnitMIDIInstrument extends AVAudioUnit implements AVAudioMixing {
+declare class AVAudioUnitMIDIInstrument extends AVAudioUnit {
 
 	static alloc(): AVAudioUnitMIDIInstrument; // inherited from NSObject
 
 	static new(): AVAudioUnitMIDIInstrument; // inherited from NSObject
 
-	readonly debugDescription: string; // inherited from NSObjectProtocol
-
-	readonly description: string; // inherited from NSObjectProtocol
-
-	readonly hash: number; // inherited from NSObjectProtocol
-
-	readonly isProxy: boolean; // inherited from NSObjectProtocol
-
-	obstruction: number; // inherited from AVAudio3DMixing
-
-	occlusion: number; // inherited from AVAudio3DMixing
-
-	pan: number; // inherited from AVAudioStereoMixing
-
-	pointSourceInHeadMode: AVAudio3DMixingPointSourceInHeadMode; // inherited from AVAudio3DMixing
-
-	position: AVAudio3DPoint; // inherited from AVAudio3DMixing
-
-	rate: number; // inherited from AVAudio3DMixing
-
-	renderingAlgorithm: AVAudio3DMixingRenderingAlgorithm; // inherited from AVAudio3DMixing
-
-	reverbBlend: number; // inherited from AVAudio3DMixing
-
-	sourceMode: AVAudio3DMixingSourceMode; // inherited from AVAudio3DMixing
-
-	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
-
-	volume: number; // inherited from AVAudioMixing
-
-	readonly  // inherited from NSObjectProtocol
-
 	constructor(o: { audioComponentDescription: AudioComponentDescription; });
 
-	class(): typeof NSObject;
-
-	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
-
-	destinationForMixerBus(mixer: AVAudioNode, bus: number): AVAudioMixingDestination;
-
 	initWithAudioComponentDescription(description: AudioComponentDescription): this;
-
-	isEqual(object: any): boolean;
-
-	isKindOfClass(aClass: typeof NSObject): boolean;
-
-	isMemberOfClass(aClass: typeof NSObject): boolean;
-
-	performSelector(aSelector: string): any;
-
-	performSelectorWithObject(aSelector: string, object: any): any;
-
-	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
-
-	respondsToSelector(aSelector: string): boolean;
-
-	retainCount(): number;
-
-	self(): this;
 
 	sendControllerWithValueOnChannel(controller: number, value: number, channel: number): void;
 
@@ -2494,6 +2480,30 @@ declare class AVAudioUnitVarispeed extends AVAudioUnitTimeEffect {
 	static new(): AVAudioUnitVarispeed; // inherited from NSObject
 
 	rate: number;
+}
+
+interface AVAudioVoiceProcessingOtherAudioDuckingConfiguration {
+	enableAdvancedDucking: boolean;
+	duckingLevel: AVAudioVoiceProcessingOtherAudioDuckingLevel;
+}
+declare var AVAudioVoiceProcessingOtherAudioDuckingConfiguration: interop.StructType<AVAudioVoiceProcessingOtherAudioDuckingConfiguration>;
+
+declare const enum AVAudioVoiceProcessingOtherAudioDuckingLevel {
+
+	Default = 0,
+
+	Min = 10,
+
+	Mid = 20,
+
+	Max = 30
+}
+
+declare const enum AVAudioVoiceProcessingSpeechActivityEvent {
+
+	Started = 0,
+
+	Ended = 1
 }
 
 interface AVBeatRange {
@@ -2943,6 +2953,8 @@ declare const enum AVSpeechBoundary {
 	Word = 1
 }
 
+declare var AVSpeechSynthesisAvailableVoicesDidChangeNotification: string;
+
 declare var AVSpeechSynthesisIPANotationAttribute: string;
 
 declare class AVSpeechSynthesisMarker extends NSObject implements NSCopying, NSSecureCoding {
@@ -2951,25 +2963,49 @@ declare class AVSpeechSynthesisMarker extends NSObject implements NSCopying, NSS
 
 	static new(): AVSpeechSynthesisMarker; // inherited from NSObject
 
+	bookmarkName: string;
+
 	byteSampleOffset: number;
 
 	mark: AVSpeechSynthesisMarkerMark;
+
+	phoneme: string;
 
 	textRange: NSRange;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
+	constructor(o: { bookmarkName: string; atByteSampleOffset: number; });
+
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	constructor(o: { markerType: AVSpeechSynthesisMarkerMark; forTextRange: NSRange; atByteSampleOffset: number; });
+
+	constructor(o: { paragraphRange: NSRange; atByteSampleOffset: number; });
+
+	constructor(o: { phonemeString: string; atByteSampleOffset: number; });
+
+	constructor(o: { sentenceRange: NSRange; atByteSampleOffset: number; });
+
+	constructor(o: { wordRange: NSRange; atByteSampleOffset: number; });
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
+	initWithBookmarkNameAtByteSampleOffset(mark: string, byteSampleOffset: number): this;
+
 	initWithCoder(coder: NSCoder): this;
 
 	initWithMarkerTypeForTextRangeAtByteSampleOffset(type: AVSpeechSynthesisMarkerMark, range: NSRange, byteSampleOffset: number): this;
+
+	initWithParagraphRangeAtByteSampleOffset(range: NSRange, byteSampleOffset: number): this;
+
+	initWithPhonemeStringAtByteSampleOffset(phoneme: string, byteSampleOffset: number): this;
+
+	initWithSentenceRangeAtByteSampleOffset(range: NSRange, byteSampleOffset: number): this;
+
+	initWithWordRangeAtByteSampleOffset(range: NSRange, byteSampleOffset: number): this;
 }
 
 declare const enum AVSpeechSynthesisMarkerMark {
@@ -2980,7 +3016,20 @@ declare const enum AVSpeechSynthesisMarkerMark {
 
 	Sentence = 2,
 
-	Paragraph = 3
+	Paragraph = 3,
+
+	Bookmark = 4
+}
+
+declare const enum AVSpeechSynthesisPersonalVoiceAuthorizationStatus {
+
+	NotDetermined = 0,
+
+	Denied = 1,
+
+	Unsupported = 2,
+
+	Authorized = 3
 }
 
 declare class AVSpeechSynthesisProviderAudioUnit extends AUAudioUnit {
@@ -3088,6 +3137,8 @@ declare class AVSpeechSynthesisVoice extends NSObject implements NSSecureCoding 
 
 	readonly quality: AVSpeechSynthesisVoiceQuality;
 
+	readonly voiceTraits: AVSpeechSynthesisVoiceTraits;
+
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
@@ -3117,11 +3168,22 @@ declare const enum AVSpeechSynthesisVoiceQuality {
 	Premium = 3
 }
 
+declare const enum AVSpeechSynthesisVoiceTraits {
+
+	None = 0,
+
+	IsNoveltyVoice = 1,
+
+	IsPersonalVoice = 2
+}
+
 declare class AVSpeechSynthesizer extends NSObject {
 
 	static alloc(): AVSpeechSynthesizer; // inherited from NSObject
 
 	static new(): AVSpeechSynthesizer; // inherited from NSObject
+
+	static requestPersonalVoiceAuthorizationWithCompletionHandler(handler: (p1: AVSpeechSynthesisPersonalVoiceAuthorizationStatus) => void): void;
 
 	delegate: AVSpeechSynthesizerDelegate;
 
@@ -3134,6 +3196,8 @@ declare class AVSpeechSynthesizer extends NSObject {
 	readonly speaking: boolean;
 
 	usesApplicationAudioSession: boolean;
+
+	static readonly personalVoiceAuthorizationStatus: AVSpeechSynthesisPersonalVoiceAuthorizationStatus;
 
 	continueSpeaking(): boolean;
 
@@ -3159,6 +3223,8 @@ interface AVSpeechSynthesizerDelegate extends NSObjectProtocol {
 	speechSynthesizerDidPauseSpeechUtterance?(synthesizer: AVSpeechSynthesizer, utterance: AVSpeechUtterance): void;
 
 	speechSynthesizerDidStartSpeechUtterance?(synthesizer: AVSpeechSynthesizer, utterance: AVSpeechUtterance): void;
+
+	speechSynthesizerWillSpeakMarkerUtterance?(synthesizer: AVSpeechSynthesizer, marker: AVSpeechSynthesisMarker, utterance: AVSpeechUtterance): void;
 
 	speechSynthesizerWillSpeakRangeOfSpeechStringUtterance?(synthesizer: AVSpeechSynthesizer, characterRange: NSRange, utterance: AVSpeechUtterance): void;
 }

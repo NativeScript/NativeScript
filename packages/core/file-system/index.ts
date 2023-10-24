@@ -1,6 +1,7 @@
 import { IFileSystemAccess, FileSystemAccess, FileSystemAccess29 } from './file-system-access';
-import { SDK_VERSION } from '../utils/constants';
-import { getNativeApplication } from '../application';
+import { SDK_VERSION } from '../utils';
+import { Application } from '../application';
+
 // The FileSystemAccess implementation, used through all the APIs.
 let fileAccess: IFileSystemAccess;
 
@@ -184,7 +185,7 @@ export class FileSystemEntity {
 let applicationContext;
 function getApplicationContext() {
 	if (!applicationContext) {
-		applicationContext = (<android.app.Application>getNativeApplication()).getApplicationContext();
+		applicationContext = Application.android.getNativeApplication().getApplicationContext();
 	}
 
 	return applicationContext;
@@ -1029,7 +1030,10 @@ export namespace knownFolders {
 			return _sharedPublic;
 		}
 
-		function getExistingFolderInfo(pathDirectory: any /* NSSearchPathDirectory */): { folder: Folder; path: string } {
+		function getExistingFolderInfo(pathDirectory: any /* NSSearchPathDirectory */): {
+			folder: Folder;
+			path: string;
+		} {
 			const fileAccess = <any>getFileAccess();
 			const folderPath = fileAccess.getKnownPath(pathDirectory);
 			const folderInfo = fileAccess.getExistingFolder(folderPath);

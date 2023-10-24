@@ -11,7 +11,7 @@ declare class NEAppProxyFlow extends NSObject {
 
 	readonly metaData: NEFlowMetaData;
 
-	networkInterface: NSObject;
+	networkInterface: interop.Pointer | interop.Reference<any>;
 
 	readonly remoteHostname: string;
 
@@ -398,6 +398,15 @@ declare const enum NEEvaluateConnectionRuleAction {
 	ConnectIfNeeded = 1,
 
 	NeverConnect = 2
+}
+
+declare class NEFailureHandlerProvider extends NEProvider {
+
+	static alloc(): NEFailureHandlerProvider; // inherited from NSObject
+
+	static new(): NEFailureHandlerProvider; // inherited from NSObject
+
+	handleFailureCompletionHandler(error: NSError, completionHandler: () => void): void;
 }
 
 declare const enum NEFilterAction {
@@ -1018,7 +1027,7 @@ declare class NEHotspotHelper extends NSObject {
 
 	static new(): NEHotspotHelper; // inherited from NSObject
 
-	static registerWithOptionsQueueHandler(options: NSDictionary<string, NSObject>, queue: NSObject, handler: (p1: NEHotspotHelperCommand) => void): boolean;
+	static registerWithOptionsQueueHandler(options: NSDictionary<string, NSObject>, queue: interop.Pointer | interop.Reference<any>, handler: (p1: NEHotspotHelperCommand) => void): boolean;
 
 	static supportedNetworkInterfaces(): NSArray<any>;
 }
@@ -1560,6 +1569,85 @@ declare class NEProxySettings extends NSObject implements NSCopying, NSSecureCod
 	initWithCoder(coder: NSCoder): this;
 }
 
+declare class NERelay extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): NERelay; // inherited from NSObject
+
+	static new(): NERelay; // inherited from NSObject
+
+	HTTP2RelayURL: NSURL;
+
+	HTTP3RelayURL: NSURL;
+
+	additionalHTTPHeaderFields: NSDictionary<string, string>;
+
+	dnsOverHTTPSURL: NSURL;
+
+	identityData: NSData;
+
+	identityDataPassword: string;
+
+	rawPublicKeys: NSArray<NSData>;
+
+	syntheticDNSAnswerIPv4Prefix: string;
+
+	syntheticDNSAnswerIPv6Prefix: string;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare var NERelayConfigurationDidChangeNotification: string;
+
+declare var NERelayErrorDomain: string;
+
+declare class NERelayManager extends NSObject {
+
+	static alloc(): NERelayManager; // inherited from NSObject
+
+	static loadAllManagersFromPreferencesWithCompletionHandler(completionHandler: (p1: NSArray<NERelayManager>, p2: NSError) => void): void;
+
+	static new(): NERelayManager; // inherited from NSObject
+
+	static sharedManager(): NERelayManager;
+
+	enabled: boolean;
+
+	excludedDomains: NSArray<string>;
+
+	localizedDescription: string;
+
+	matchDomains: NSArray<string>;
+
+	onDemandRules: NSArray<NEOnDemandRule>;
+
+	relays: NSArray<NERelay>;
+
+	loadFromPreferencesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+
+	removeFromPreferencesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+
+	saveToPreferencesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+}
+
+declare const enum NERelayManagerError {
+
+	ConfigurationInvalid = 1,
+
+	ConfigurationDisabled = 2,
+
+	ConfigurationStale = 3,
+
+	ConfigurationCannotBeRemoved = 4
+}
+
 declare const enum NETrafficDirection {
 
 	Any = 0,
@@ -1778,7 +1866,9 @@ declare const enum NEVPNIKEv2CertificateType {
 
 	ECDSA521 = 4,
 
-	Ed25519 = 5
+	Ed25519 = 5,
+
+	RSAPSS = 6
 }
 
 declare const enum NEVPNIKEv2DeadPeerDetectionRate {
@@ -1818,7 +1908,9 @@ declare const enum NEVPNIKEv2DiffieHellmanGroup {
 
 	Group21 = 21,
 
-	Group31 = 31
+	Group31 = 31,
+
+	Group32 = 32
 }
 
 declare const enum NEVPNIKEv2EncryptionAlgorithm {

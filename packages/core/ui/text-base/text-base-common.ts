@@ -13,7 +13,8 @@ import { Observable } from '../../data/observable';
 import { CoreTypes } from '../../core-types';
 import { TextBase as TextBaseDefinition } from '.';
 import { Color } from '../../color';
-import { CSSShadow, parseCSSShadow } from '../styling/css-shadow';
+import { ShadowCSSValues, parseCSSShadow } from '../styling/css-shadow';
+import { StrokeCSSValues, parseCSSStroke } from '../styling/css-stroke';
 
 const CHILD_SPAN = 'Span';
 const CHILD_FORMATTED_TEXT = 'formattedText';
@@ -118,10 +119,10 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 		this.style.textTransform = value;
 	}
 
-	get textShadow(): CSSShadow {
+	get textShadow(): ShadowCSSValues {
 		return this.style.textShadow;
 	}
-	set textShadow(value: CSSShadow) {
+	set textShadow(value: ShadowCSSValues) {
 		this.style.textShadow = value;
 	}
 
@@ -130,6 +131,13 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 	}
 	set whiteSpace(value: CoreTypes.WhiteSpaceType) {
 		this.style.whiteSpace = value;
+	}
+
+	get textOverflow(): CoreTypes.TextOverflowType {
+		return this.style.textOverflow;
+	}
+	set textOverflow(value: CoreTypes.TextOverflowType) {
+		this.style.textOverflow = value;
 	}
 
 	get padding(): string | CoreTypes.LengthType {
@@ -271,7 +279,7 @@ export const textTransformProperty = new CssProperty<Style, CoreTypes.TextTransf
 });
 textTransformProperty.register(Style);
 
-export const textShadowProperty = new CssProperty<Style, string | CSSShadow>({
+export const textShadowProperty = new CssProperty<Style, string | ShadowCSSValues>({
 	name: 'textShadow',
 	cssName: 'text-shadow',
 	affectsLayout: global.isIOS,
@@ -280,6 +288,16 @@ export const textShadowProperty = new CssProperty<Style, string | CSSShadow>({
 	},
 });
 textShadowProperty.register(Style);
+
+export const textStrokeProperty = new CssProperty<Style, string | StrokeCSSValues>({
+	name: 'textStroke',
+	cssName: 'text-stroke',
+	affectsLayout: global.isIOS,
+	valueConverter: (value) => {
+		return parseCSSStroke(value);
+	},
+});
+textStrokeProperty.register(Style);
 
 const whiteSpaceConverter = makeParser<CoreTypes.WhiteSpaceType>(makeValidator<CoreTypes.WhiteSpaceType>('initial', 'normal', 'nowrap'));
 export const whiteSpaceProperty = new CssProperty<Style, CoreTypes.WhiteSpaceType>({
@@ -290,6 +308,16 @@ export const whiteSpaceProperty = new CssProperty<Style, CoreTypes.WhiteSpaceTyp
 	valueConverter: whiteSpaceConverter,
 });
 whiteSpaceProperty.register(Style);
+
+const textOverflowConverter = makeParser<CoreTypes.TextOverflowType>(makeValidator<CoreTypes.TextOverflowType>('clip', 'ellipsis', 'initial', 'unset'));
+export const textOverflowProperty = new CssProperty<Style, CoreTypes.TextOverflowType>({
+	name: 'textOverflow',
+	cssName: 'text-overflow',
+	defaultValue: 'initial',
+	affectsLayout: global.isIOS,
+	valueConverter: textOverflowConverter,
+});
+textOverflowProperty.register(Style);
 
 const textDecorationConverter = makeParser<CoreTypes.TextDecorationType>(makeValidator<CoreTypes.TextDecorationType>('none', 'underline', 'line-through', 'underline line-through'));
 export const textDecorationProperty = new CssProperty<Style, CoreTypes.TextDecorationType>({

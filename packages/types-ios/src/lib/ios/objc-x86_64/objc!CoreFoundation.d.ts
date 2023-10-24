@@ -964,7 +964,7 @@ declare function CFMessagePortIsValid(ms: NSMessagePort): boolean;
 
 declare function CFMessagePortSendRequest(remote: NSMessagePort, msgid: number, data: NSData, sendTimeout: number, rcvTimeout: number, replyMode: string, returnData: interop.Pointer | interop.Reference<NSData>): number;
 
-declare function CFMessagePortSetDispatchQueue(ms: NSMessagePort, queue: NSObject): void;
+declare function CFMessagePortSetDispatchQueue(ms: NSMessagePort, queue: interop.Pointer | interop.Reference<any>): void;
 
 declare function CFMessagePortSetInvalidationCallBack(ms: NSMessagePort, callout: interop.FunctionReference<(p1: NSMessagePort, p2: interop.Pointer | interop.Reference<any>) => void>): void;
 
@@ -1248,7 +1248,7 @@ declare var CFRange: interop.StructType<CFRange>;
 
 declare function CFReadStreamClose(stream: NSInputStream): void;
 
-declare function CFReadStreamCopyDispatchQueue(stream: NSInputStream): NSObject;
+declare function CFReadStreamCopyDispatchQueue(stream: NSInputStream): interop.Pointer | interop.Reference<any>;
 
 declare function CFReadStreamCopyError(stream: NSInputStream): NSError;
 
@@ -1276,7 +1276,7 @@ declare function CFReadStreamScheduleWithRunLoop(stream: NSInputStream, runLoop:
 
 declare function CFReadStreamSetClient(stream: NSInputStream, streamEvents: number, clientCB: interop.FunctionReference<(p1: NSInputStream, p2: CFStreamEventType, p3: interop.Pointer | interop.Reference<any>) => void>, clientContext: interop.Pointer | interop.Reference<CFStreamClientContext>): boolean;
 
-declare function CFReadStreamSetDispatchQueue(stream: NSInputStream, q: NSObject): void;
+declare function CFReadStreamSetDispatchQueue(stream: NSInputStream, q: interop.Pointer | interop.Reference<any>): void;
 
 declare function CFReadStreamSetProperty(stream: NSInputStream, propertyName: any, propertyValue: any): boolean;
 
@@ -2605,7 +2605,7 @@ declare function CFWriteStreamCanAcceptBytes(stream: NSOutputStream): boolean;
 
 declare function CFWriteStreamClose(stream: NSOutputStream): void;
 
-declare function CFWriteStreamCopyDispatchQueue(stream: NSOutputStream): NSObject;
+declare function CFWriteStreamCopyDispatchQueue(stream: NSOutputStream): interop.Pointer | interop.Reference<any>;
 
 declare function CFWriteStreamCopyError(stream: NSOutputStream): NSError;
 
@@ -2629,7 +2629,7 @@ declare function CFWriteStreamScheduleWithRunLoop(stream: NSOutputStream, runLoo
 
 declare function CFWriteStreamSetClient(stream: NSOutputStream, streamEvents: number, clientCB: interop.FunctionReference<(p1: NSOutputStream, p2: CFStreamEventType, p3: interop.Pointer | interop.Reference<any>) => void>, clientContext: interop.Pointer | interop.Reference<CFStreamClientContext>): boolean;
 
-declare function CFWriteStreamSetDispatchQueue(stream: NSOutputStream, q: NSObject): void;
+declare function CFWriteStreamSetDispatchQueue(stream: NSOutputStream, q: interop.Pointer | interop.Reference<any>): void;
 
 declare function CFWriteStreamSetProperty(stream: NSOutputStream, propertyName: any, propertyValue: any): boolean;
 
@@ -3201,6 +3201,8 @@ declare var kCFURLCreationDateKey: string;
 
 declare var kCFURLCustomIconKey: string;
 
+declare var kCFURLDirectoryEntryCountKey: string;
+
 declare var kCFURLDocumentIdentifierKey: string;
 
 declare var kCFURLEffectiveIconKey: string;
@@ -3228,6 +3230,8 @@ declare var kCFURLFileProtectionComplete: string;
 declare var kCFURLFileProtectionCompleteUnlessOpen: string;
 
 declare var kCFURLFileProtectionCompleteUntilFirstUserAuthentication: string;
+
+declare var kCFURLFileProtectionCompleteWhenUserInactive: string;
 
 declare var kCFURLFileProtectionKey: string;
 

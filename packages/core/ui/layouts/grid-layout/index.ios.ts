@@ -410,10 +410,14 @@ class MeasureHelper {
 	}
 
 	public addMeasureSpec(measureSpec: MeasureSpecs): void {
+		const columnIndex = measureSpec.getColumnIndex();
+		const columnSpanEnd = columnIndex + measureSpec.getColumnSpan();
+		const rowIndex = measureSpec.getRowIndex();
+		const rowSpanEnd = rowIndex + measureSpec.getRowSpan();
+
 		// Get column stats
-		let size = measureSpec.getColumnIndex() + measureSpec.getColumnSpan();
-		for (let i = measureSpec.getColumnIndex(); i < size; i++) {
-			const columnGroup: ItemGroup = this.columns[i];
+		for (let i = columnIndex; i < columnSpanEnd; i++) {
+			const columnGroup = this.columns[i];
 			if (columnGroup.getIsAuto()) {
 				measureSpec.autoColumnsCount++;
 			} else if (columnGroup.getIsStar()) {
@@ -425,8 +429,8 @@ class MeasureHelper {
 
 		if (measureSpec.autoColumnsCount > 0 && measureSpec.starColumnsCount === 0) {
 			// Determine which auto columns are affected by this element
-			for (let i = measureSpec.getColumnIndex(); i < size; i++) {
-				const columnGroup: ItemGroup = this.columns[i];
+			for (let i = columnIndex; i < columnSpanEnd; i++) {
+				const columnGroup = this.columns[i];
 				if (columnGroup.getIsAuto()) {
 					columnGroup.measureToFix++;
 				}
@@ -434,9 +438,8 @@ class MeasureHelper {
 		}
 
 		// Get row stats
-		size = measureSpec.getRowIndex() + measureSpec.getRowSpan();
-		for (let i = measureSpec.getRowIndex(); i < size; i++) {
-			const rowGroup: ItemGroup = this.rows[i];
+		for (let i = rowIndex; i < rowSpanEnd; i++) {
+			const rowGroup = this.rows[i];
 			if (rowGroup.getIsAuto()) {
 				measureSpec.autoRowsCount++;
 			} else if (rowGroup.getIsStar()) {
@@ -448,25 +451,24 @@ class MeasureHelper {
 
 		if (measureSpec.autoRowsCount > 0 && measureSpec.starRowsCount === 0) {
 			// Determine which auto rows are affected by this element
-			for (let i = measureSpec.getRowIndex(); i < size; i++) {
-				const rowGroup: ItemGroup = this.rows[i];
+			for (let i = rowIndex; i < rowSpanEnd; i++) {
+				const rowGroup = this.rows[i];
 				if (rowGroup.getIsAuto()) {
 					rowGroup.measureToFix++;
 				}
 			}
 		}
-
-		this.columns[measureSpec.getColumnIndex()].children.push(measureSpec);
-		this.rows[measureSpec.getRowIndex()].children.push(measureSpec);
+		this.columns[columnIndex].children.push(measureSpec);
+		this.rows[rowIndex].children.push(measureSpec);
 	}
 
 	public clearMeasureSpecs(): void {
 		for (let i = 0, size = this.columns.length; i < size; i++) {
-			this.columns[i].children.length = 0;
+			this.columns[i].children.splice(0);
 		}
 
 		for (let i = 0, size = this.rows.length; i < size; i++) {
-			this.rows[i].children.length = 0;
+			this.rows[i].children.splice(0);
 		}
 	}
 
@@ -479,23 +481,21 @@ class MeasureHelper {
 	}
 
 	init(): void {
-		const rows = this.rows.length;
-		if (rows === 0) {
+		if (this.rows.length === 0) {
 			this.singleRowGroup.setIsLengthInfinity(this.infinityHeight);
 			this.rows.push(this.singleRowGroup);
 			this.fakeRowAdded = true;
-		} else if (rows > 1 && this.fakeRowAdded) {
-			this.rows.splice(0, 1);
+		} else if (this.rows.length > 1 && this.fakeRowAdded) {
+			this.rows.shift();
 			this.fakeRowAdded = false;
 		}
 
-		const cols = this.columns.length;
-		if (cols === 0) {
+		if (this.columns.length === 0) {
 			this.fakeColumnAdded = true;
 			this.singleColumnGroup.setIsLengthInfinity(this.infinityWidth);
 			this.columns.push(this.singleColumnGroup);
-		} else if (cols > 1 && this.fakeColumnAdded) {
-			this.columns.splice(0, 1);
+		} else if (this.columns.length > 1 && this.fakeColumnAdded) {
+			this.columns.shift();
 			this.fakeColumnAdded = false;
 		}
 
@@ -509,29 +509,32 @@ class MeasureHelper {
 	}
 
 	private itemMeasured(measureSpec: MeasureSpecs, isFakeMeasure: boolean): void {
+		const columnIndex = measureSpec.getColumnIndex();
+		const rowIndex = measureSpec.getRowIndex();
+
 		if (!isFakeMeasure) {
-			this.columns[measureSpec.getColumnIndex()].measuredCount++;
-			this.rows[measureSpec.getRowIndex()].measuredCount++;
+			const column = this.columns[columnIndex];
+			const row = this.rows[rowIndex];
+
+			column.measuredCount++;
+			row.measuredCount++;
 			measureSpec.measured = true;
 		}
 
-		if (measureSpec.autoColumnsCount > 0 && measureSpec.starColumnsCount === 0) {
-			const size = measureSpec.getColumnIndex() + measureSpec.getColumnSpan();
-			for (let i = measureSpec.getColumnIndex(); i < size; i++) {
-				const columnGroup: ItemGroup = this.columns[i];
-				if (columnGroup.getIsAuto()) {
-					columnGroup.currentMeasureToFixCount++;
-				}
+		const sizeColumns = columnIndex + measureSpec.getColumnSpan();
+		const sizeRows = rowIndex + measureSpec.getRowSpan();
+
+		for (let i = columnIndex; i < sizeColumns; i++) {
+			const columnGroup = this.columns[i];
+			if (measureSpec.autoColumnsCount > 0 && measureSpec.starColumnsCount === 0 && columnGroup.getIsAuto()) {
+				columnGroup.currentMeasureToFixCount++;
 			}
 		}
 
-		if (measureSpec.autoRowsCount > 0 && measureSpec.starRowsCount === 0) {
-			const size = measureSpec.getRowIndex() + measureSpec.getRowSpan();
-			for (let i = measureSpec.getRowIndex(); i < size; i++) {
-				const rowGroup: ItemGroup = this.rows[i];
-				if (rowGroup.getIsAuto()) {
-					rowGroup.currentMeasureToFixCount++;
-				}
+		for (let i = rowIndex; i < sizeRows; i++) {
+			const rowGroup = this.rows[i];
+			if (measureSpec.autoRowsCount > 0 && measureSpec.starRowsCount === 0 && rowGroup.getIsAuto()) {
+				rowGroup.currentMeasureToFixCount++;
 			}
 		}
 	}
@@ -901,36 +904,41 @@ class MeasureHelper {
 		const rowSpanEnd = rowIndex + measureSpec.getRowSpan();
 
 		let measureWidth = 0;
-		for (let i = columnIndex; i < columnSpanEnd; i++) {
-			const columnGroup: ItemGroup = this.columns[i];
-			measureWidth += columnGroup.length;
-		}
-
 		let measureHeight = 0;
-		for (let i = rowIndex; i < rowSpanEnd; i++) {
-			const rowGroup: ItemGroup = this.rows[i];
-			measureHeight += rowGroup.length;
+
+		for (let i = columnIndex; i < columnSpanEnd; i++) {
+			measureWidth += this.columns[i].length;
 		}
 
-		// if (have stars) & (not stretch) - at most
-		const widthMeasureSpec = layout.makeMeasureSpec(measureWidth, measureSpec.starColumnsCount > 0 && !this.stretchedHorizontally ? layout.AT_MOST : layout.EXACTLY);
+		for (let i = rowIndex; i < rowSpanEnd; i++) {
+			measureHeight += this.rows[i].length;
+		}
 
+		// Determine width and height measure spec based on star columns/rows and stretching
+		const widthMeasureSpec = layout.makeMeasureSpec(measureWidth, measureSpec.starColumnsCount > 0 && !this.stretchedHorizontally ? layout.AT_MOST : layout.EXACTLY);
 		const heightMeasureSpec = layout.makeMeasureSpec(measureHeight, measureSpec.starRowsCount > 0 && !this.stretchedVertically ? layout.AT_MOST : layout.EXACTLY);
 
+		// Measure the child view
 		const childSize = View.measureChild(this.grid, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
 		const childMeasuredWidth = childSize.measuredWidth;
 		const childMeasuredHeight = childSize.measuredHeight;
 
+		// Update minimum column and row star values if needed
 		this.updateMinColumnStarValueIfNeeded(measureSpec, childMeasuredWidth);
 		this.updateMinRowStarValueIfNeeded(measureSpec, childMeasuredHeight);
+
+		// Notify that the item has been measured
 		this.itemMeasured(measureSpec, false);
 	}
 
 	private updateMinRowStarValueIfNeeded(measureSpec: MeasureSpecs, childMeasuredHeight: number): void {
 		if (!this.stretchedVertically && measureSpec.starRowsCount > 0) {
-			let remainingSpace = childMeasuredHeight;
 			const rowIndex = measureSpec.getRowIndex();
 			const rowSpanEnd = rowIndex + measureSpec.getRowSpan();
+
+			let remainingSpace = childMeasuredHeight;
+			let minRowStarValue = this.minRowStarValue;
+
 			for (let i = rowIndex; i < rowSpanEnd; i++) {
 				const rowGroup = this.rows[i];
 				if (!rowGroup.getIsStar()) {
@@ -939,8 +947,9 @@ class MeasureHelper {
 			}
 
 			if (remainingSpace > 0) {
-				this.minRowStarValue = Math.max(remainingSpace / measureSpec.starRowsCount, this.minRowStarValue);
+				minRowStarValue = Math.max(remainingSpace / measureSpec.starRowsCount, minRowStarValue);
 			}
+			this.minRowStarValue = minRowStarValue;
 		}
 	}
 

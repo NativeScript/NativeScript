@@ -1,12 +1,12 @@
-import { CoreTypes } from '../core-types';
-
-export * from './mainthread-helper';
-export * from './macrotask-scheduler';
-export { Source } from './debug';
-
-export * from './layout-helper';
-export * from './native-helper';
+export { clearInterval, clearTimeout, setInterval, setTimeout } from '../timer';
 export * from './common';
+export * from './constants';
+export * from './debug';
+export * from './layout-helper';
+export * from './macrotask-scheduler';
+export * from './mainthread-helper';
+export * from './native-helper';
+export * from './types';
 
 export const RESOURCE_PREFIX: string;
 export const FILE_PREFIX: string;
@@ -38,14 +38,14 @@ export function queueGC(delay?: number, useThrottle?: boolean);
  * @param fn Function to throttle
  * @param delay Customize the delay (default is 300ms)
  */
-export function throttle(fn: any, delay?: number);
+export function throttle<T extends Function = any>(fn: T, delay?: number): T;
 
 /**
  * A simple debounce utility
  * @param fn Function to debounce
  * @param delay Customize the delay (default is 300ms)
  */
-export function debounce(fn: any, delay?: number);
+export function debounce<T extends Function = any>(fn: T, delay?: number, options?: { leading?: boolean }): T;
 
 /**
  * Releases the reference to the wrapped native object

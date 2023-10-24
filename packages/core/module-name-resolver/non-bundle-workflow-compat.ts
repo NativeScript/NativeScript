@@ -1,5 +1,5 @@
+import { Application } from '../application';
 import * as fs from '../file-system';
-import * as appCommonModule from '../application/application-common';
 import { Trace } from '../trace';
 
 const cache = new Set<string>();
@@ -136,7 +136,7 @@ export function registerModulesFromFileSystem(moduleName: string) {
 
 function initialize() {
 	if (!initialized) {
-		appCommonModule.on('livesync', (args) => cache.clear());
+		Application.on('livesync', (args) => cache.clear());
 		initialized = true;
 	}
 }

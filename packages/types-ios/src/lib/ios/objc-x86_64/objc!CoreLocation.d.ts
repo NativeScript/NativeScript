@@ -34,6 +34,17 @@ declare const enum CLAuthorizationStatus {
 	kCLAuthorizationStatusAuthorized = 3
 }
 
+declare class CLBackgroundActivitySession extends NSObject {
+
+	static alloc(): CLBackgroundActivitySession; // inherited from NSObject
+
+	static backgroundActivitySession(): CLBackgroundActivitySession;
+
+	static new(): CLBackgroundActivitySession; // inherited from NSObject
+
+	invalidate(): void;
+}
+
 declare class CLBeacon extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CLBeacon; // inherited from NSObject
@@ -67,11 +78,11 @@ declare class CLBeacon extends NSObject implements NSCopying, NSSecureCoding {
 	initWithCoder(coder: NSCoder): this;
 }
 
-declare class CLBeaconIdentityConstraint extends NSObject implements NSCopying, NSSecureCoding {
+declare class CLBeaconIdentityCondition extends CLCondition implements NSCopying, NSSecureCoding {
 
-	static alloc(): CLBeaconIdentityConstraint; // inherited from NSObject
+	static alloc(): CLBeaconIdentityCondition; // inherited from NSObject
 
-	static new(): CLBeaconIdentityConstraint; // inherited from NSObject
+	static new(): CLBeaconIdentityCondition; // inherited from NSObject
 
 	readonly UUID: NSUUID;
 
@@ -100,6 +111,23 @@ declare class CLBeaconIdentityConstraint extends NSObject implements NSCopying, 
 	initWithUUIDMajor(uuid: NSUUID, major: number): this;
 
 	initWithUUIDMajorMinor(uuid: NSUUID, major: number, minor: number): this;
+}
+
+declare class CLBeaconIdentityConstraint extends CLBeaconIdentityCondition implements NSCopying, NSSecureCoding {
+
+	static alloc(): CLBeaconIdentityConstraint; // inherited from NSObject
+
+	static new(): CLBeaconIdentityConstraint; // inherited from NSObject
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class CLBeaconRegion extends CLRegion {
@@ -151,6 +179,29 @@ declare class CLBeaconRegion extends CLRegion {
 	peripheralDataWithMeasuredPower(measuredPower: number): NSMutableDictionary<string, any>;
 }
 
+declare class CLCircularGeographicCondition extends CLCondition implements NSSecureCoding {
+
+	static alloc(): CLCircularGeographicCondition; // inherited from NSObject
+
+	static new(): CLCircularGeographicCondition; // inherited from NSObject
+
+	readonly center: CLLocationCoordinate2D;
+
+	readonly radius: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { center: CLLocationCoordinate2D; radius: number; });
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCenterRadius(center: CLLocationCoordinate2D, radius: number): this;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
 declare class CLCircularRegion extends CLRegion {
 
 	static alloc(): CLCircularRegion; // inherited from NSObject
@@ -160,6 +211,23 @@ declare class CLCircularRegion extends CLRegion {
 	constructor(o: { center: CLLocationCoordinate2D; radius: number; identifier: string; });
 
 	initWithCenterRadiusIdentifier(center: CLLocationCoordinate2D, radius: number, identifier: string): this;
+}
+
+declare class CLCondition extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): CLCondition; // inherited from NSObject
+
+	static new(): CLCondition; // inherited from NSObject
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare const enum CLDeviceOrientation {
@@ -297,6 +365,19 @@ declare class CLHeading extends NSObject implements NSCopying, NSSecureCoding {
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
+}
+
+declare const enum CLLiveUpdateConfiguration {
+
+	Default = 0,
+
+	AutomotiveNavigation = 1,
+
+	OtherNavigation = 2,
+
+	Fitness = 3,
+
+	Airborne = 4
 }
 
 declare class CLLocation extends NSObject implements CKRecordValue, NSCopying, NSSecureCoding {
@@ -627,6 +708,110 @@ declare class CLLocationSourceInformation extends NSObject implements NSCopying,
 	initWithSoftwareSimulationStateAndExternalAccessoryState(isSoftware: boolean, isAccessory: boolean): this;
 }
 
+declare class CLLocationUpdater extends NSObject {
+
+	static alloc(): CLLocationUpdater; // inherited from NSObject
+
+	static liveUpdaterWithConfigurationQueueHandler(configuration: CLLiveUpdateConfiguration, queue: interop.Pointer | interop.Reference<any>, handler: (p1: CLUpdate) => void): CLLocationUpdater;
+
+	static liveUpdaterWithQueueHandler(queue: interop.Pointer | interop.Reference<any>, handler: (p1: CLUpdate) => void): CLLocationUpdater;
+
+	static new(): CLLocationUpdater; // inherited from NSObject
+
+	invalidate(): void;
+
+	pause(): void;
+
+	resume(): void;
+}
+
+declare class CLMonitor extends NSObject {
+
+	static alloc(): CLMonitor; // inherited from NSObject
+
+	static new(): CLMonitor; // inherited from NSObject
+
+	static requestMonitorWithConfigurationCompletion(config: CLMonitorConfiguration, completionHandler: (p1: CLMonitor) => void): void;
+
+	readonly monitoredIdentifiers: NSArray<string>;
+
+	readonly name: string;
+
+	addConditionForMonitoringIdentifier(condition: CLCondition, identifier: string): void;
+
+	addConditionForMonitoringIdentifierAssumedState(condition: CLCondition, identifier: string, state: CLMonitoringState): void;
+
+	monitoringRecordForIdentifier(identifier: string): CLMonitoringRecord;
+
+	removeConditionFromMonitoringWithIdentifier(identifier: string): void;
+}
+
+declare class CLMonitorConfiguration extends NSObject {
+
+	static alloc(): CLMonitorConfiguration; // inherited from NSObject
+
+	static configWithMonitorNameQueueEventHandler(name: string, queue: interop.Pointer | interop.Reference<any>, eventHandler: (p1: CLMonitor, p2: CLMonitoringEvent) => void): CLMonitorConfiguration;
+
+	static new(): CLMonitorConfiguration; // inherited from NSObject
+
+	readonly eventHandler: (p1: CLMonitor, p2: CLMonitoringEvent) => void;
+
+	readonly name: string;
+
+	readonly queue: interop.Pointer | interop.Reference<any>;
+}
+
+declare class CLMonitoringEvent extends NSObject implements NSSecureCoding {
+
+	static alloc(): CLMonitoringEvent; // inherited from NSObject
+
+	static new(): CLMonitoringEvent; // inherited from NSObject
+
+	readonly date: Date;
+
+	readonly identifier: string;
+
+	readonly refinement: CLCondition;
+
+	readonly state: CLMonitoringState;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare class CLMonitoringRecord extends NSObject implements NSSecureCoding {
+
+	static alloc(): CLMonitoringRecord; // inherited from NSObject
+
+	static new(): CLMonitoringRecord; // inherited from NSObject
+
+	readonly condition: CLCondition;
+
+	readonly lastEvent: CLMonitoringEvent;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare const enum CLMonitoringState {
+
+	Unknown = 0,
+
+	Satisfied = 1,
+
+	Unsatisfied = 2
+}
+
 declare class CLPlacemark extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CLPlacemark; // inherited from NSObject
@@ -740,6 +925,17 @@ declare const enum CLRegionState {
 }
 
 declare var CLTimeIntervalMax: number;
+
+declare class CLUpdate extends NSObject {
+
+	static alloc(): CLUpdate; // inherited from NSObject
+
+	static new(): CLUpdate; // inherited from NSObject
+
+	readonly isStationary: boolean;
+
+	readonly location: CLLocation;
+}
 
 declare class CLVisit extends NSObject implements NSCopying, NSSecureCoding {
 

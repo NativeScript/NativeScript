@@ -9,7 +9,7 @@ import { layout, iOSNativeHelper } from '../../../utils';
 import { isNumber } from '../../../utils/types';
 import { IOSHelper } from './view-helper';
 import { ios as iosBackground, Background } from '../../styling/background';
-import { perspectiveProperty, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, clipPathProperty } from '../../styling/style-properties';
+import { perspectiveProperty, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty } from '../../styling/style-properties';
 import { profile } from '../../../profiling';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty, accessibilityIgnoresInvertColorsProperty } from '../../../accessibility/accessibility-properties';
 import { IOSPostAccessibilityNotificationType, isAccessibilityServiceEnabled, updateAccessibilityProperties, AccessibilityEventOptions, AccessibilityRole, AccessibilityState } from '../../../accessibility';
@@ -17,6 +17,7 @@ import { CoreTypes } from '../../../core-types';
 import type { ModalTransition } from '../../transition/modal-transition';
 import { SharedTransition } from '../../transition/shared-transition';
 import { GestureStateTypes, PanGestureEventData } from '../../gestures';
+import { NativeScriptUIView } from '../../utils';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -31,7 +32,9 @@ const PFLAG_LAYOUT_REQUIRED = 1 << 2;
 const majorVersion = iOSNativeHelper.MajorVersion;
 
 export class View extends ViewCommon implements ViewDefinition {
+	// @ts-ignore
 	nativeViewProtected: UIView;
+	// @ts-ignore
 	viewController: UIViewController;
 	private _popoverPresentationDelegate: IOSHelper.UIPopoverPresentationControllerDelegateImp;
 	private _adaptivePresentationDelegate: IOSHelper.UIAdaptivePresentationControllerDelegateImp;
@@ -114,7 +117,8 @@ export class View extends ViewCommon implements ViewDefinition {
 			this.layoutNativeView(left, top, right, bottom);
 		}
 
-		if (boundsChanged || (this._privateFlags & PFLAG_LAYOUT_REQUIRED) === PFLAG_LAYOUT_REQUIRED) {
+		const needsLayout = boundsChanged || (this._privateFlags & PFLAG_LAYOUT_REQUIRED) === PFLAG_LAYOUT_REQUIRED;
+		if (needsLayout) {
 			let position = { left, top, right, bottom };
 			if (this.nativeViewProtected && majorVersion > 10) {
 				// on iOS 11+ it is possible to have a changed layout frame due to safe area insets
@@ -127,7 +131,7 @@ export class View extends ViewCommon implements ViewDefinition {
 			this._privateFlags &= ~PFLAG_LAYOUT_REQUIRED;
 		}
 
-		this.updateBackground(sizeChanged);
+		this.updateBackground(sizeChanged, needsLayout);
 		if (this._hasPendingTransform) {
 			this.updateNativeTransform();
 			this._hasPendingTransform = false;
@@ -135,12 +139,29 @@ export class View extends ViewCommon implements ViewDefinition {
 		this._privateFlags &= ~PFLAG_FORCE_LAYOUT;
 	}
 
-	private updateBackground(sizeChanged: boolean): void {
+	private updateBackground(sizeChanged: boolean, needsLayout: boolean): void {
 		if (sizeChanged) {
 			this._onSizeChanged();
 		} else if (this._nativeBackgroundState === 'invalid') {
 			const background = this.style.backgroundInternal;
 			this._redrawNativeBackground(background);
+		} else {
+			// Update layers that don't belong to view's layer (e.g. shadow layers)
+			if (needsLayout) {
+				this.layoutOuterShadows();
+			}
+		}
+	}
+
+	private layoutOuterShadows(): void {
+		const nativeView: NativeScriptUIView = <NativeScriptUIView>this.nativeViewProtected;
+		if (nativeView?.outerShadowContainerLayer) {
+			CATransaction.setDisableActions(true);
+
+			nativeView.outerShadowContainerLayer.bounds = nativeView.bounds;
+			nativeView.outerShadowContainerLayer.position = nativeView.center;
+
+			CATransaction.setDisableActions(false);
 		}
 	}
 
@@ -270,8 +291,8 @@ export class View extends ViewCommon implements ViewDefinition {
 		this._privateFlags &= ~PFLAG_FORCE_LAYOUT;
 		this.setMeasuredDimension(width, height);
 
-		const { sizeChanged } = this._setCurrentLayoutBounds(left, top, right, bottom);
-		this.updateBackground(sizeChanged);
+		const { boundsChanged, sizeChanged } = this._setCurrentLayoutBounds(left, top, right, bottom);
+		this.updateBackground(sizeChanged, boundsChanged);
 		this._privateFlags &= ~PFLAG_LAYOUT_REQUIRED;
 	}
 
@@ -363,15 +384,10 @@ export class View extends ViewCommon implements ViewDefinition {
 		}
 
 		const background = this.style.backgroundInternal;
-		const backgroundDependsOnSize = (background.image && background.image !== 'none') || !background.hasUniformBorder() || background.hasBorderRadius();
+		const backgroundDependsOnSize = (background.image && background.image !== 'none') || background.clipPath || !background.hasUniformBorder() || background.hasBorderRadius() || background.hasBoxShadow();
 
 		if (this._nativeBackgroundState === 'invalid' || (this._nativeBackgroundState === 'drawn' && backgroundDependsOnSize)) {
 			this._redrawNativeBackground(background);
-		}
-
-		const clipPath = this.style.clipPath;
-		if (clipPath !== '' && this[clipPathProperty.setNative]) {
-			this[clipPathProperty.setNative](clipPath);
 		}
 	}
 
@@ -384,6 +400,7 @@ export class View extends ViewCommon implements ViewDefinition {
 		const scaleX = this.scaleX || 1e-6;
 		const scaleY = this.scaleY || 1e-6;
 		const perspective = this.perspective || 300;
+		const nativeView: NativeScriptUIView = <NativeScriptUIView>this.nativeViewProtected;
 
 		let transform = new CATransform3D(CATransform3DIdentity);
 
@@ -395,13 +412,24 @@ export class View extends ViewCommon implements ViewDefinition {
 		transform = CATransform3DTranslate(transform, this.translateX, this.translateY, 0);
 		transform = iOSNativeHelper.applyRotateTransform(transform, this.rotateX, this.rotateY, this.rotate);
 		transform = CATransform3DScale(transform, scaleX, scaleY, 1);
-		if (!CATransform3DEqualToTransform(this.nativeViewProtected.layer.transform, transform)) {
+
+		const needsTransform: boolean = !CATransform3DEqualToTransform(this.nativeViewProtected.layer.transform, transform) || (nativeView.outerShadowContainerLayer && !CATransform3DEqualToTransform(nativeView.outerShadowContainerLayer.transform, transform));
+
+		if (needsTransform) {
 			const updateSuspended = this._isPresentationLayerUpdateSuspended();
 			if (!updateSuspended) {
 				CATransaction.begin();
 			}
+			// Disable CALayer animatable property changes
+			CATransaction.setDisableActions(true);
+
 			this.nativeViewProtected.layer.transform = transform;
+			if (nativeView.outerShadowContainerLayer) {
+				nativeView.outerShadowContainerLayer.transform = transform;
+			}
 			this._hasTransform = this.nativeViewProtected && !CATransform3DEqualToTransform(this.nativeViewProtected.transform3D, CATransform3DIdentity);
+
+			CATransaction.setDisableActions(false);
 			if (!updateSuspended) {
 				CATransaction.commit();
 			}
@@ -409,11 +437,27 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	public updateOriginPoint(originX: number, originY: number) {
+		const nativeView: NativeScriptUIView = <NativeScriptUIView>this.nativeViewProtected;
 		const newPoint = CGPointMake(originX, originY);
-		this.nativeViewProtected.layer.anchorPoint = newPoint;
+
+		// Disable CALayer animatable property changes
+		CATransaction.setDisableActions(true);
+
+		nativeView.layer.anchorPoint = newPoint;
 		if (this._cachedFrame) {
-			this._setNativeViewFrame(this.nativeViewProtected, this._cachedFrame);
+			this._setNativeViewFrame(nativeView, this._cachedFrame);
 		}
+
+		// Make sure new origin also applies to outer shadow layers
+		if (nativeView.outerShadowContainerLayer) {
+			// This is the new frame after view origin point update
+			const frame = nativeView.frame;
+
+			nativeView.outerShadowContainerLayer.anchorPoint = newPoint;
+			nativeView.outerShadowContainerLayer.position = CGPointMake(frame.origin.x + frame.size.width * originX, frame.origin.y + frame.size.height * originY);
+		}
+
+		CATransaction.setDisableActions(false);
 	}
 
 	// By default we update the view's presentation layer when setting backgroundColor and opacity properties.
@@ -621,13 +665,14 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	[testIDProperty.setNative](value: string) {
-		this.setTestID(this.nativeViewProtected, value);
+		this.setAccessibilityIdentifier(this.nativeViewProtected, value);
 	}
 
-	public setTestID(view: any, value: string): void {
-		if (typeof __USE_TEST_ID__ !== 'undefined' && __USE_TEST_ID__) {
-			view.accessibilityIdentifier = value;
-		}
+	public setAccessibilityIdentifier(view: any, value: string): void {
+		view.accessibilityIdentifier = value;
+
+		if (this.testID && this.testID !== value) this.testID = value;
+		if (this.accessibilityIdentifier !== value) this.accessibilityIdentifier = value;
 	}
 
 	[accessibilityEnabledProperty.setNative](value: boolean): void {
@@ -637,15 +682,11 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	[accessibilityIdentifierProperty.getDefault](): string {
-		return this.nativeViewProtected.accessibilityLabel;
+		return this.nativeViewProtected.accessibilityIdentifier;
 	}
 
 	[accessibilityIdentifierProperty.setNative](value: string): void {
-		if (typeof __USE_TEST_ID__ !== 'undefined' && __USE_TEST_ID__ && this.testID) {
-			// ignore when using testID
-		} else {
-			this.nativeViewProtected.accessibilityIdentifier = value;
-		}
+		this.setAccessibilityIdentifier(this.nativeViewProtected, value);
 	}
 
 	[accessibilityRoleProperty.setNative](value: AccessibilityRole): void {
@@ -719,16 +760,23 @@ export class View extends ViewCommon implements ViewDefinition {
 		return this.nativeViewProtected.hidden ? CoreTypes.Visibility.collapse : CoreTypes.Visibility.visible;
 	}
 	[visibilityProperty.setNative](value: CoreTypes.VisibilityType) {
+		const nativeView: NativeScriptUIView = <NativeScriptUIView>this.nativeViewProtected;
+
 		switch (value) {
 			case CoreTypes.Visibility.visible:
-				this.nativeViewProtected.hidden = false;
+				nativeView.hidden = false;
 				break;
 			case CoreTypes.Visibility.hidden:
 			case CoreTypes.Visibility.collapse:
-				this.nativeViewProtected.hidden = true;
+				nativeView.hidden = true;
 				break;
 			default:
 				throw new Error(`Invalid visibility value: ${value}. Valid values are: "${CoreTypes.Visibility.visible}", "${CoreTypes.Visibility.hidden}", "${CoreTypes.Visibility.collapse}".`);
+		}
+
+		// Apply visibility value to shadows as well
+		if (nativeView.outerShadowContainerLayer) {
+			nativeView.outerShadowContainerLayer.hidden = nativeView.hidden;
 		}
 	}
 
@@ -736,12 +784,21 @@ export class View extends ViewCommon implements ViewDefinition {
 		return this.nativeViewProtected.alpha;
 	}
 	[opacityProperty.setNative](value: number) {
-		const nativeView = this.nativeViewProtected;
+		const nativeView: NativeScriptUIView = <NativeScriptUIView>this.nativeViewProtected;
 		const updateSuspended = this._isPresentationLayerUpdateSuspended();
 		if (!updateSuspended) {
 			CATransaction.begin();
 		}
+		// Disable CALayer animatable property changes
+		CATransaction.setDisableActions(true);
+
 		nativeView.alpha = value;
+		// Apply opacity value to shadows as well
+		if (nativeView.outerShadowContainerLayer) {
+			nativeView.outerShadowContainerLayer.opacity = value;
+		}
+
+		CATransaction.setDisableActions(false);
 		if (!updateSuspended) {
 			CATransaction.commit();
 		}
@@ -897,18 +954,22 @@ export class View extends ViewCommon implements ViewDefinition {
 		if (!updateSuspended) {
 			CATransaction.begin();
 		}
-		const view = this.nativeViewProtected;
-		if (view) {
+		// Disable CALayer animatable property changes
+		CATransaction.setDisableActions(true);
+
+		const nativeView = this.nativeViewProtected;
+		if (nativeView) {
 			if (value instanceof UIColor) {
-				view.backgroundColor = value;
+				nativeView.backgroundColor = value;
 			} else {
 				iosBackground.createBackgroundUIColor(this, (color: UIColor) => {
-					view.backgroundColor = color;
+					nativeView.backgroundColor = color;
 				});
 				this._setNativeClipToBounds();
 			}
 		}
 
+		CATransaction.setDisableActions(false);
 		if (!updateSuspended) {
 			CATransaction.commit();
 		}
@@ -920,7 +981,7 @@ export class View extends ViewCommon implements ViewDefinition {
 		const view = this.nativeViewProtected;
 		if (view) {
 			const backgroundInternal = this.style.backgroundInternal;
-			view.clipsToBounds = (view instanceof UIScrollView || backgroundInternal.hasBorderWidth() || backgroundInternal.hasBorderRadius()) && !backgroundInternal.hasBoxShadow();
+			view.clipsToBounds = view instanceof UIScrollView || backgroundInternal.hasBorderWidth() || backgroundInternal.hasBorderRadius();
 		}
 	}
 
@@ -992,8 +1053,6 @@ class UIViewControllerTransitioningDelegateImpl extends NSObject implements UIVi
 }
 
 export class ContainerView extends View {
-	public iosOverflowSafeArea: boolean;
-
 	constructor() {
 		super();
 		this.iosOverflowSafeArea = true;
@@ -1001,6 +1060,7 @@ export class ContainerView extends View {
 }
 
 export class CustomLayoutView extends ContainerView {
+	// @ts-ignore
 	nativeViewProtected: UIView;
 
 	createNativeView() {
@@ -1019,13 +1079,18 @@ export class CustomLayoutView extends ContainerView {
 		super._addViewToNativeVisualTree(child, atIndex);
 
 		const parentNativeView = this.nativeViewProtected;
-		const childNativeView = child.nativeViewProtected;
+		const childNativeView: NativeScriptUIView = <NativeScriptUIView>child.nativeViewProtected;
 
 		if (parentNativeView && childNativeView) {
 			if (typeof atIndex !== 'number' || atIndex >= parentNativeView.subviews.count) {
 				parentNativeView.addSubview(childNativeView);
 			} else {
 				parentNativeView.insertSubviewAtIndex(childNativeView, atIndex);
+			}
+
+			// Add outer shadow layer manually as it belongs to parent layer tree (this is needed for reusable views)
+			if (childNativeView.outerShadowContainerLayer && !childNativeView.outerShadowContainerLayer.superlayer) {
+				parentNativeView.layer.insertSublayerBelow(childNativeView.outerShadowContainerLayer, childNativeView.layer);
 			}
 
 			return true;
@@ -1038,7 +1103,14 @@ export class CustomLayoutView extends ContainerView {
 		super._removeViewFromNativeVisualTree(child);
 
 		if (child.nativeViewProtected) {
-			child.nativeViewProtected.removeFromSuperview();
+			const nativeView: NativeScriptUIView = <NativeScriptUIView>child.nativeViewProtected;
+
+			// Remove outer shadow layer manually as it belongs to parent layer tree
+			if (nativeView.outerShadowContainerLayer) {
+				nativeView.outerShadowContainerLayer.removeFromSuperlayer();
+			}
+
+			nativeView.removeFromSuperview();
 		}
 	}
 }

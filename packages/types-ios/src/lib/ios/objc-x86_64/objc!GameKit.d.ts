@@ -77,6 +77,8 @@ declare class GKAchievement extends NSObject implements NSCoding, NSSecureCoding
 
 	constructor(o: { identifier: string; player: GKPlayer; });
 
+	challengeComposeControllerWithMessagePlayersCompletion(message: string, players: NSArray<GKPlayer> | GKPlayer[], completionHandler: (p1: UIViewController, p2: boolean, p3: NSArray<GKPlayer>) => void): UIViewController;
+
 	challengeComposeControllerWithMessagePlayersCompletionHandler(message: string, players: NSArray<GKPlayer> | GKPlayer[], completionHandler: (p1: UIViewController, p2: boolean, p3: NSArray<string>) => void): UIViewController;
 
 	challengeComposeControllerWithPlayersMessageCompletionHandler(playerIDs: NSArray<string> | string[], message: string, completionHandler: (p1: UIViewController, p2: boolean, p3: NSArray<string>) => void): UIViewController;
@@ -132,6 +134,8 @@ declare class GKAchievementDescription extends NSObject implements NSCoding, NSS
 	readonly image: UIImage;
 
 	readonly maximumPoints: number;
+
+	readonly rarityPercent: number;
 
 	readonly replayable: boolean;
 
@@ -721,6 +725,8 @@ declare class GKLeaderboardEntry extends NSObject {
 	readonly rank: number;
 
 	readonly score: number;
+
+	challengeComposeControllerWithMessagePlayersCompletion(message: string, players: NSArray<GKPlayer> | GKPlayer[], completionHandler: (p1: UIViewController, p2: boolean, p3: NSArray<GKPlayer>) => void): UIViewController;
 
 	challengeComposeControllerWithMessagePlayersCompletionHandler(message: string, players: NSArray<GKPlayer> | GKPlayer[], completionHandler: (p1: UIViewController, p2: boolean, p3: NSArray<string>) => void): UIViewController;
 }
@@ -1326,6 +1332,8 @@ declare class GKScore extends NSObject implements NSCoding, NSSecureCoding {
 	constructor(o: { leaderboardIdentifier: string; forPlayer: string; });
 
 	constructor(o: { leaderboardIdentifier: string; player: GKPlayer; });
+
+	challengeComposeControllerWithMessagePlayersCompletion(message: string, players: NSArray<GKPlayer> | GKPlayer[], completionHandler: (p1: UIViewController, p2: boolean, p3: NSArray<GKPlayer>) => void): UIViewController;
 
 	challengeComposeControllerWithMessagePlayersCompletionHandler(message: string, players: NSArray<GKPlayer> | GKPlayer[], completionHandler: (p1: UIViewController, p2: boolean, p3: NSArray<string>) => void): UIViewController;
 

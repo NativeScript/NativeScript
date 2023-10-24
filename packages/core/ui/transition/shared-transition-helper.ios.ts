@@ -3,7 +3,7 @@ import { getPageStartDefaultsForType, getRectFromProps, getSpringFromProps, Shar
 import { isNumber } from '../../utils/types';
 import { Screen } from '../../platform';
 import { CORE_ANIMATION_DEFAULTS } from '../../utils/common';
-import { iOSNativeHelper } from '../../utils/native-helper';
+import { ios as iOSUtils } from '../../utils/native-helper';
 
 interface PlatformTransitionInteractiveState extends TransitionInteractiveState {
 	transitionContext?: UIViewControllerContextTransitioning;
@@ -50,6 +50,7 @@ export class SharedTransitionHelper {
 						console.log(`2. Take snapshots of shared elements and position them based on presenting view:`);
 					}
 
+					const pageOut = state.pageOut;
 					const pageStart = state.pageStart;
 
 					const startFrame = getRectFromProps(pageStart, getPageStartDefaultsForType(type));
@@ -81,7 +82,7 @@ export class SharedTransitionHelper {
 								// in case the image is loaded async, we need to update the snapshot when it changes
 								// todo: remove listener on transition end
 								presentedView.on('imageSourceChange', () => {
-									snapshot.image = iOSNativeHelper.snapshotView(presentedSharedElement, Screen.mainScreen.scale);
+									snapshot.image = iOSUtils.snapshotView(presentedSharedElement, Screen.mainScreen.scale);
 									snapshot.tintColor = presentedSharedElement.tintColor;
 								});
 
@@ -89,7 +90,7 @@ export class SharedTransitionHelper {
 								snapshot.contentMode = presentedSharedElement.contentMode;
 							}
 
-							iOSNativeHelper.copyLayerProperties(snapshot, presentingSharedElement, pageEndProps?.propertiesToMatch);
+							iOSUtils.copyLayerProperties(snapshot, presentingSharedElement, pageEndProps?.propertiesToMatch as any);
 							snapshot.clipsToBounds = true;
 							// console.log('---> snapshot: ', snapshot);
 
@@ -97,7 +98,7 @@ export class SharedTransitionHelper {
 							const endFrame = presentedSharedElement.convertRectToView(presentedSharedElement.bounds, transitionContext.containerView);
 							snapshot.frame = startFrame;
 							if (SharedTransition.DEBUG) {
-								console.log('---> ', presentingView.sharedTransitionTag, ' frame:', iOSNativeHelper.printCGRect(snapshot.frame));
+								console.log('---> ', presentingView.sharedTransitionTag, ' frame:', iOSUtils.printCGRect(snapshot.frame));
 							}
 
 							transition.sharedElements.presenting.push({
@@ -151,11 +152,11 @@ export class SharedTransitionHelper {
 									await pageEndProps?.callback(independentView, 'present');
 								}
 
-								let snapshot: UIImageView;
+								// let snapshot: UIImageView;
 								// if (isPresented) {
 								// 	snapshot = UIImageView.alloc().init();
 								// } else {
-								snapshot = UIImageView.alloc().initWithImage(iOSNativeHelper.snapshotView(independentSharedElement, Screen.mainScreen.scale));
+								const snapshot = UIImageView.alloc().initWithImage(iOSUtils.snapshotView(independentSharedElement, Screen.mainScreen.scale));
 								// }
 
 								if (independentSharedElement instanceof UIImageView) {
@@ -184,7 +185,7 @@ export class SharedTransitionHelper {
 								snapshot.frame = startFrame; //startFrameAdjusted;
 								// }
 								if (SharedTransition.DEBUG) {
-									console.log('---> ', independentView.sharedTransitionTag, ' frame:', iOSNativeHelper.printCGRect(snapshot.frame));
+									console.log('---> ', independentView.sharedTransitionTag, ' frame:', iOSUtils.printCGRect(snapshot.frame));
 								}
 
 								const endFrameRect = getRectFromProps(pageEndProps);
@@ -273,6 +274,14 @@ export class SharedTransitionHelper {
 						const endFrame = getRectFromProps(pageEnd);
 						transition.presented.view.frame = CGRectMake(endFrame.x, endFrame.y, endFrame.width, endFrame.height);
 
+						if (pageOut) {
+							if (isNumber(pageOut.opacity)) {
+								transition.presenting.view.alpha = pageOut?.opacity;
+							}
+
+							const outFrame = getRectFromProps(pageOut);
+							transition.presenting.view.frame = CGRectMake(outFrame.x, outFrame.y, outFrame.width, outFrame.height);
+						}
 						// animate page properties to the following:
 						// https://stackoverflow.com/a/27997678/1418981
 						// In order to have proper layout. Seems mostly needed when presenting.
@@ -289,18 +298,18 @@ export class SharedTransitionHelper {
 							presentingMatch.snapshot.frame = correctedEndFrame;
 
 							// apply view and layer properties to the snapshot view to match the source/presented view
-							iOSNativeHelper.copyLayerProperties(presentingMatch.snapshot, presented.view.ios, presented.propertiesToMatch);
+							iOSUtils.copyLayerProperties(presentingMatch.snapshot, presented.view.ios, presented.propertiesToMatch as any);
 							// create a snapshot of the presented view
-							presentingMatch.snapshot.image = iOSNativeHelper.snapshotView(presented.view.ios, Screen.mainScreen.scale);
+							presentingMatch.snapshot.image = iOSUtils.snapshotView(presented.view.ios, Screen.mainScreen.scale);
 							// apply correct alpha
 							presentingMatch.snapshot.alpha = presentingMatch.endOpacity;
 
 							if (SharedTransition.DEBUG) {
-								console.log(`---> ${presentingMatch.view.sharedTransitionTag} animate to: `, iOSNativeHelper.printCGRect(correctedEndFrame));
+								console.log(`---> ${presentingMatch.view.sharedTransitionTag} animate to: `, iOSUtils.printCGRect(correctedEndFrame));
 							}
 						}
 						for (const independent of transition.sharedElements.independent) {
-							let endFrame: CGRect = independent.endFrame;
+							const endFrame: CGRect = independent.endFrame;
 							// if (independent.isPresented) {
 							// 	const updatedEndFrame = independent.view.ios.convertRectToView(independent.view.ios.bounds, transitionContext.containerView);
 							// 	endFrame = CGRectMake(updatedEndFrame.origin.x, updatedEndFrame.origin.y, independent.endFrame.size.width, independent.endFrame.size.height);
@@ -313,7 +322,7 @@ export class SharedTransitionHelper {
 							independent.snapshot.alpha = independent.endOpacity;
 
 							if (SharedTransition.DEBUG) {
-								console.log(`---> ${independent.view.sharedTransitionTag} animate to: `, iOSNativeHelper.printCGRect(independent.endFrame));
+								console.log(`---> ${independent.view.sharedTransitionTag} animate to: `, iOSUtils.printCGRect(independent.endFrame));
 							}
 						}
 					};
@@ -332,7 +341,7 @@ export class SharedTransitionHelper {
 							}
 						);
 					} else {
-						iOSNativeHelper.animateWithSpring({
+						iOSUtils.animateWithSpring({
 							...getSpringFromProps(pageEnd?.spring),
 							animations: () => {
 								animateProperties();
@@ -368,6 +377,7 @@ export class SharedTransitionHelper {
 						console.log(`2. Add back previously stored sharedElements to dismiss:`);
 					}
 
+					const pageOut = state.pageOut;
 					const pageEnd = state.pageEnd;
 					const pageEndTags = pageEnd?.sharedTransitionTags || {};
 					const pageReturn = state.pageReturn;
@@ -409,7 +419,7 @@ export class SharedTransitionHelper {
 						}
 
 						// take a new snapshot
-						data.snapshot.image = iOSNativeHelper.snapshotView(view, Screen.mainScreen.scale);
+						data.snapshot.image = iOSUtils.snapshotView(view, Screen.mainScreen.scale);
 
 						// find the currently visible view with the same sharedTransitionTag
 						const fromView = transition.sharedElements.presented.find((p) => p.view.sharedTransitionTag === data.view.sharedTransitionTag)?.view;
@@ -457,13 +467,21 @@ export class SharedTransitionHelper {
 						const endFrame = getRectFromProps(pageReturn, getPageStartDefaultsForType(type));
 						transition.presented.view.frame = CGRectMake(endFrame.x, endFrame.y, endFrame.width, endFrame.height);
 
+						if (pageOut) {
+							// always return to defaults if pageOut had been used
+							transition.presenting.view.alpha = 1;
+
+							const outFrame = getRectFromProps(null);
+							transition.presenting.view.frame = CGRectMake(0, 0, outFrame.width, outFrame.height);
+						}
+
 						for (const presenting of transition.sharedElements.presenting) {
-							iOSNativeHelper.copyLayerProperties(presenting.snapshot, presenting.view.ios, presenting.propertiesToMatch);
+							iOSUtils.copyLayerProperties(presenting.snapshot, presenting.view.ios, presenting.propertiesToMatch as any);
 							presenting.snapshot.frame = presenting.startFrame;
 							presenting.snapshot.alpha = presenting.startOpacity;
 
 							if (SharedTransition.DEBUG) {
-								console.log(`---> ${presenting.view.sharedTransitionTag} animate to: `, iOSNativeHelper.printCGRect(presenting.snapshot.frame));
+								console.log(`---> ${presenting.view.sharedTransitionTag} animate to: `, iOSUtils.printCGRect(presenting.snapshot.frame));
 							}
 						}
 
@@ -476,7 +494,7 @@ export class SharedTransitionHelper {
 							}
 
 							if (SharedTransition.DEBUG) {
-								console.log(`---> ${independent.view.sharedTransitionTag} animate to: `, iOSNativeHelper.printCGRect(independent.snapshot.frame));
+								console.log(`---> ${independent.view.sharedTransitionTag} animate to: `, iOSUtils.printCGRect(independent.snapshot.frame));
 							}
 						}
 					};
@@ -495,7 +513,7 @@ export class SharedTransitionHelper {
 							}
 						);
 					} else {
-						iOSNativeHelper.animateWithSpring({
+						iOSUtils.animateWithSpring({
 							...getSpringFromProps(pageReturn?.spring),
 							animations: () => {
 								animateProperties();
@@ -526,36 +544,39 @@ export class SharedTransitionHelper {
 	}
 
 	static interactiveUpdate(state: SharedTransitionState, interactiveState: PlatformTransitionInteractiveState, type: TransitionNavigationType, percent: number) {
-		if (!interactiveState?.added) {
-			interactiveState.added = true;
-			for (const p of state.instance.sharedElements.presented) {
-				p.view.opacity = 0;
-			}
-			for (const p of state.instance.sharedElements.presenting) {
-				p.snapshot.alpha = p.endOpacity;
-				interactiveState.transitionContext.containerView.addSubview(p.snapshot);
-			}
-
-			const pageStart = state.pageStart;
-
-			const startFrame = getRectFromProps(pageStart, getPageStartDefaultsForType(type));
-			interactiveState.propertyAnimator = UIViewPropertyAnimator.alloc().initWithDurationDampingRatioAnimations(1, 1, () => {
-				for (const p of state.instance.sharedElements.presenting) {
-					p.snapshot.frame = p.startFrame;
-					iOSNativeHelper.copyLayerProperties(p.snapshot, p.view.ios, p.propertiesToMatch);
-
-					p.snapshot.alpha = 1;
+		if (interactiveState) {
+			if (!interactiveState.added) {
+				interactiveState.added = true;
+				for (const p of state.instance.sharedElements.presented) {
+					p.view.opacity = 0;
 				}
-				state.instance.presented.view.alpha = isNumber(state.pageReturn?.opacity) ? state.pageReturn?.opacity : 0;
-				state.instance.presented.view.frame = CGRectMake(startFrame.x, startFrame.y, state.instance.presented.view.bounds.size.width, state.instance.presented.view.bounds.size.height);
+				for (const p of state.instance.sharedElements.presenting) {
+					p.snapshot.alpha = p.endOpacity;
+					interactiveState.transitionContext.containerView.addSubview(p.snapshot);
+				}
+
+				const pageStart = state.pageStart;
+
+				const startFrame = getRectFromProps(pageStart, getPageStartDefaultsForType(type));
+				interactiveState.propertyAnimator = UIViewPropertyAnimator.alloc().initWithDurationDampingRatioAnimations(1, 1, () => {
+					for (const p of state.instance.sharedElements.presenting) {
+						p.snapshot.frame = p.startFrame;
+						iOSUtils.copyLayerProperties(p.snapshot, p.view.ios, p.propertiesToMatch as any);
+
+						p.snapshot.alpha = 1;
+					}
+					state.instance.presented.view.alpha = isNumber(state.pageReturn?.opacity) ? state.pageReturn?.opacity : 0;
+					state.instance.presented.view.frame = CGRectMake(startFrame.x, startFrame.y, state.instance.presented.view.bounds.size.width, state.instance.presented.view.bounds.size.height);
+				});
+			}
+
+			interactiveState.propertyAnimator.fractionComplete = percent;
+			SharedTransition.notifyEvent(SharedTransition.interactiveUpdateEvent, {
+				id: state?.instance?.id,
+				type,
+				percent,
 			});
 		}
-		interactiveState.propertyAnimator.fractionComplete = percent;
-		SharedTransition.notifyEvent(SharedTransition.interactiveUpdateEvent, {
-			id: state?.instance?.id,
-			type,
-			percent,
-		});
 	}
 
 	static interactiveCancel(state: SharedTransitionState, interactiveState: PlatformTransitionInteractiveState, type: TransitionNavigationType) {

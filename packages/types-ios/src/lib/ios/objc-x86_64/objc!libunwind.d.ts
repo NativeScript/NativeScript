@@ -575,6 +575,134 @@ declare const UNW_HEXAGON_R8: number;
 
 declare const UNW_HEXAGON_R9: number;
 
+declare const UNW_LOONGARCH_F0: number;
+
+declare const UNW_LOONGARCH_F1: number;
+
+declare const UNW_LOONGARCH_F10: number;
+
+declare const UNW_LOONGARCH_F11: number;
+
+declare const UNW_LOONGARCH_F12: number;
+
+declare const UNW_LOONGARCH_F13: number;
+
+declare const UNW_LOONGARCH_F14: number;
+
+declare const UNW_LOONGARCH_F15: number;
+
+declare const UNW_LOONGARCH_F16: number;
+
+declare const UNW_LOONGARCH_F17: number;
+
+declare const UNW_LOONGARCH_F18: number;
+
+declare const UNW_LOONGARCH_F19: number;
+
+declare const UNW_LOONGARCH_F2: number;
+
+declare const UNW_LOONGARCH_F20: number;
+
+declare const UNW_LOONGARCH_F21: number;
+
+declare const UNW_LOONGARCH_F22: number;
+
+declare const UNW_LOONGARCH_F23: number;
+
+declare const UNW_LOONGARCH_F24: number;
+
+declare const UNW_LOONGARCH_F25: number;
+
+declare const UNW_LOONGARCH_F26: number;
+
+declare const UNW_LOONGARCH_F27: number;
+
+declare const UNW_LOONGARCH_F28: number;
+
+declare const UNW_LOONGARCH_F29: number;
+
+declare const UNW_LOONGARCH_F3: number;
+
+declare const UNW_LOONGARCH_F30: number;
+
+declare const UNW_LOONGARCH_F31: number;
+
+declare const UNW_LOONGARCH_F4: number;
+
+declare const UNW_LOONGARCH_F5: number;
+
+declare const UNW_LOONGARCH_F6: number;
+
+declare const UNW_LOONGARCH_F7: number;
+
+declare const UNW_LOONGARCH_F8: number;
+
+declare const UNW_LOONGARCH_F9: number;
+
+declare const UNW_LOONGARCH_R0: number;
+
+declare const UNW_LOONGARCH_R1: number;
+
+declare const UNW_LOONGARCH_R10: number;
+
+declare const UNW_LOONGARCH_R11: number;
+
+declare const UNW_LOONGARCH_R12: number;
+
+declare const UNW_LOONGARCH_R13: number;
+
+declare const UNW_LOONGARCH_R14: number;
+
+declare const UNW_LOONGARCH_R15: number;
+
+declare const UNW_LOONGARCH_R16: number;
+
+declare const UNW_LOONGARCH_R17: number;
+
+declare const UNW_LOONGARCH_R18: number;
+
+declare const UNW_LOONGARCH_R19: number;
+
+declare const UNW_LOONGARCH_R2: number;
+
+declare const UNW_LOONGARCH_R20: number;
+
+declare const UNW_LOONGARCH_R21: number;
+
+declare const UNW_LOONGARCH_R22: number;
+
+declare const UNW_LOONGARCH_R23: number;
+
+declare const UNW_LOONGARCH_R24: number;
+
+declare const UNW_LOONGARCH_R25: number;
+
+declare const UNW_LOONGARCH_R26: number;
+
+declare const UNW_LOONGARCH_R27: number;
+
+declare const UNW_LOONGARCH_R28: number;
+
+declare const UNW_LOONGARCH_R29: number;
+
+declare const UNW_LOONGARCH_R3: number;
+
+declare const UNW_LOONGARCH_R30: number;
+
+declare const UNW_LOONGARCH_R31: number;
+
+declare const UNW_LOONGARCH_R4: number;
+
+declare const UNW_LOONGARCH_R5: number;
+
+declare const UNW_LOONGARCH_R6: number;
+
+declare const UNW_LOONGARCH_R7: number;
+
+declare const UNW_LOONGARCH_R8: number;
+
+declare const UNW_LOONGARCH_R9: number;
+
 declare const UNW_MIPS_F0: number;
 
 declare const UNW_MIPS_F1: number;
@@ -1418,6 +1546,8 @@ declare const UNW_RISCV_F7: number;
 declare const UNW_RISCV_F8: number;
 
 declare const UNW_RISCV_F9: number;
+
+declare const UNW_RISCV_VLENB: number;
 
 declare const UNW_RISCV_X0: number;
 

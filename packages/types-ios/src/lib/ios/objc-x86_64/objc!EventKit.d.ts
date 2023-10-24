@@ -48,6 +48,10 @@ declare const enum EKAuthorizationStatus {
 
 	Denied = 2,
 
+	FullAccess = 3,
+
+	WriteOnly = 4,
+
 	Authorized = 3
 }
 
@@ -376,6 +380,12 @@ declare class EKEventStore extends NSObject {
 	removeReminderCommitError(reminder: EKReminder, commit: boolean): boolean;
 
 	requestAccessToEntityTypeCompletion(entityType: EKEntityType, completion: (p1: boolean, p2: NSError) => void): void;
+
+	requestFullAccessToEventsWithCompletion(completion: (p1: boolean, p2: NSError) => void): void;
+
+	requestFullAccessToRemindersWithCompletion(completion: (p1: boolean, p2: NSError) => void): void;
+
+	requestWriteOnlyAccessToEventsWithCompletion(completion: (p1: boolean, p2: NSError) => void): void;
 
 	reset(): void;
 

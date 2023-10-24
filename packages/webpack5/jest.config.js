@@ -13,5 +13,6 @@ module.exports = {
 	],
 	globals: {
 		__TEST__: true,
-	}
+	},
+	resolver: '<rootDir>/scripts/resolver.js',
 };

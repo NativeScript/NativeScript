@@ -3,12 +3,10 @@ import { View } from '..';
 
 // Requires
 import { ViewHelper } from './view-helper-common';
-import { iOSNativeHelper, layout } from '../../../../utils';
+import { ios as iOSUtils, layout } from '../../../../utils';
 import { Trace } from '../../../../trace';
 
 export * from './view-helper-common';
-
-const majorVersion = iOSNativeHelper.MajorVersion;
 
 @NativeClass
 class UILayoutViewController extends UIViewController {
@@ -41,7 +39,7 @@ class UILayoutViewController extends UIViewController {
 		super.viewDidLayoutSubviews();
 		const owner = this.owner?.deref();
 		if (owner) {
-			if (majorVersion >= 11) {
+			if (iOSUtils.MajorVersion >= 11) {
 				// Handle nested UILayoutViewController safe area application.
 				// Currently, UILayoutViewController can be nested only in a TabView.
 				// The TabView itself is handled by the OS, so we check the TabView's parent (usually a Page, but can be a Layout).
@@ -116,7 +114,7 @@ class UILayoutViewController extends UIViewController {
 	public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
 		super.traitCollectionDidChange(previousTraitCollection);
 
-		if (majorVersion >= 13) {
+		if (iOSUtils.MajorVersion >= 13) {
 			const owner = this.owner?.deref();
 			if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
 				owner.notify({
@@ -190,7 +188,7 @@ export class IOSHelper {
 	}
 
 	static updateAutoAdjustScrollInsets(controller: UIViewController, owner: View): void {
-		if (majorVersion <= 10) {
+		if (iOSUtils.MajorVersion <= 10) {
 			owner._automaticallyAdjustsScrollViewInsets = false;
 			// This API is deprecated, but has no alternative for <= iOS 10
 			// Defaults to true and results to appliyng the insets twice together with our logic
@@ -201,9 +199,12 @@ export class IOSHelper {
 	}
 
 	static updateConstraints(controller: UIViewController, owner: View): void {
-		if (majorVersion <= 10) {
-			const layoutGuide = IOSHelper.initLayoutGuide(controller);
-			(<any>controller.view).safeAreaLayoutGuide = layoutGuide;
+		// Not needed on visionOS
+		if (!__VISIONOS__) {
+			if (iOSUtils.MajorVersion <= 10) {
+				const layoutGuide = IOSHelper.initLayoutGuide(controller);
+				(<any>controller.view).safeAreaLayoutGuide = layoutGuide;
+			}
 		}
 	}
 

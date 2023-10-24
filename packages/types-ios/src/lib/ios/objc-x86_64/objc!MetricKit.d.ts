@@ -185,6 +185,8 @@ declare class MXCrashDiagnostic extends MXDiagnostic {
 
 	readonly exceptionCode: number;
 
+	readonly exceptionReason: MXCrashDiagnosticObjectiveCExceptionReason;
+
 	readonly exceptionType: number;
 
 	readonly signal: number;
@@ -192,6 +194,37 @@ declare class MXCrashDiagnostic extends MXDiagnostic {
 	readonly terminationReason: string;
 
 	readonly virtualMemoryRegionInfo: string;
+}
+
+declare class MXCrashDiagnosticObjectiveCExceptionReason extends NSObject implements NSSecureCoding {
+
+	static alloc(): MXCrashDiagnosticObjectiveCExceptionReason; // inherited from NSObject
+
+	static new(): MXCrashDiagnosticObjectiveCExceptionReason; // inherited from NSObject
+
+	readonly arguments: NSArray<string>;
+
+	readonly className: string;
+
+	readonly composedMessage: string;
+
+	readonly exceptionName: string;
+
+	readonly exceptionType: string;
+
+	readonly formatString: string;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	JSONRepresentation(): NSData;
+
+	dictionaryRepresentation(): NSDictionary<any, any>;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class MXDiagnostic extends NSObject implements NSSecureCoding {
@@ -203,6 +236,8 @@ declare class MXDiagnostic extends NSObject implements NSSecureCoding {
 	readonly applicationVersion: string;
 
 	readonly metaData: MXMetaData;
+
+	readonly signpostData: NSArray<MXSignpostRecord>;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -423,7 +458,13 @@ declare class MXMetaData extends NSObject implements NSSecureCoding {
 
 	readonly deviceType: string;
 
+	readonly isTestFlightApp: boolean;
+
+	readonly lowPowerModeEnabled: boolean;
+
 	readonly osVersion: string;
+
+	readonly pid: number;
 
 	readonly platformArchitecture: string;
 
@@ -473,7 +514,7 @@ declare class MXMetricManager extends NSObject {
 
 	static finishExtendedLaunchMeasurementForTaskIDError(taskID: string): boolean;
 
-	static makeLogHandleWithCategory(category: string): NSObject;
+	static makeLogHandleWithCategory(category: string): interop.Pointer | interop.Reference<any>;
 
 	static new(): MXMetricManager; // inherited from NSObject
 
@@ -611,6 +652,39 @@ declare class MXSignpostMetric extends MXMetric {
 	readonly signpostName: string;
 
 	readonly totalCount: number;
+}
+
+declare class MXSignpostRecord extends NSObject implements NSSecureCoding {
+
+	static alloc(): MXSignpostRecord; // inherited from NSObject
+
+	static new(): MXSignpostRecord; // inherited from NSObject
+
+	readonly beginTimeStamp: Date;
+
+	readonly category: string;
+
+	readonly duration: NSMeasurement<NSUnitDuration>;
+
+	readonly endTimeStamp: Date;
+
+	readonly isInterval: boolean;
+
+	readonly name: string;
+
+	readonly subsystem: string;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	JSONRepresentation(): NSData;
+
+	dictionaryRepresentation(): NSDictionary<any, any>;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class MXUnitAveragePixelLuminance extends NSDimension {

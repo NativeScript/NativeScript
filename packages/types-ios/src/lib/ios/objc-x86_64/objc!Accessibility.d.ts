@@ -1,4 +1,8 @@
 
+declare function AXAnimatedImagesEnabled(): boolean;
+
+declare var AXAnimatedImagesEnabledDidChangeNotification: string;
+
 declare class AXBrailleMap extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): AXBrailleMap; // inherited from NSObject
@@ -166,6 +170,8 @@ declare const enum AXCustomContentImportance {
 interface AXCustomContentProvider extends NSObjectProtocol {
 
 	accessibilityCustomContent: NSArray<AXCustomContent>;
+
+	accessibilityCustomContentBlock?: () => NSArray<AXCustomContent>;
 }
 declare var AXCustomContentProvider: {
 
@@ -329,5 +335,9 @@ declare const enum AXNumericDataAxisDescriptorScale {
 
 	ScaleTypeLn = 2
 }
+
+declare function AXPrefersHorizontalTextLayout(): boolean;
+
+declare var AXPrefersHorizontalTextLayoutDidChangeNotification: string;
 
 declare function AXSupportsBidirectionalAXMFiHearingDeviceStreaming(): boolean;

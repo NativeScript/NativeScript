@@ -62,6 +62,8 @@ interface NIDeviceCapability {
 
 	supportsDirectionMeasurement: boolean;
 
+	supportsExtendedDistanceMeasurement: boolean;
+
 	supportsPreciseDistanceMeasurement: boolean;
 }
 declare var NIDeviceCapability: {
@@ -74,6 +76,8 @@ declare class NIDiscoveryToken extends NSObject implements NSCopying, NSSecureCo
 	static alloc(): NIDiscoveryToken; // inherited from NSObject
 
 	static new(): NIDiscoveryToken; // inherited from NSObject
+
+	readonly deviceCapabilities: NIDeviceCapability;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -102,7 +106,11 @@ declare const enum NIErrorCode {
 
 	InvalidARConfiguration = -5883,
 
-	AccessoryPeerDeviceUnavailable = -5882
+	AccessoryPeerDeviceUnavailable = -5882,
+
+	IncompatiblePeerDevice = -5881,
+
+	ActiveExtendedDistanceSessionsLimitExceeded = -5880
 }
 
 declare var NIErrorDomain: string;
@@ -189,6 +197,8 @@ declare class NINearbyPeerConfiguration extends NIConfiguration {
 
 	cameraAssistanceEnabled: boolean;
 
+	extendedDistanceMeasurementEnabled: boolean;
+
 	readonly peerDiscoveryToken: NIDiscoveryToken;
 
 	constructor(o: { peerToken: NIDiscoveryToken; });
@@ -205,8 +215,6 @@ declare class NISession extends NSObject {
 	readonly configuration: NIConfiguration;
 
 	delegate: NISessionDelegate;
-
-	delegateQueue: NSObject;
 
 	readonly discoveryToken: NIDiscoveryToken;
 

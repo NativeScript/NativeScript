@@ -1,8 +1,5 @@
-import * as gridModule from '@nativescript/core/ui/layouts/grid-layout';
-import * as pages from '@nativescript/core/ui/page';
-import * as buttons from '@nativescript/core/ui/button';
-import * as app from '@nativescript/core/application';
 import * as platform from '@nativescript/core/platform';
+import { Application, Page, Button, GridLayout } from '@nativescript/core';
 
 function printDeviceInfoAndroid() {
 	console.log('android.os.Build.DEVICE = ' + android.os.Build.DEVICE); //android.os.Build.DEVICE = hammerhead
@@ -10,7 +7,7 @@ function printDeviceInfoAndroid() {
 	console.log('android.os.Build.VERSION.SDK_INT = ' + android.os.Build.VERSION.SDK_INT); //android.os.Build.VERSION.SDK_INT = 19
 	console.log('android.os.Build.VERSION.CODENAME = ' + android.os.Build.VERSION.CODENAME); //android.os.Build.VERSION.CODENAME = REL
 	console.log('android.os.Build.VERSION.RELEASE = ' + android.os.Build.VERSION.RELEASE); //android.os.Build.VERSION.RELEASE = 4.4.4
-	var metrics: android.util.DisplayMetrics = app.android.context.getResources().getDisplayMetrics();
+	var metrics: android.util.DisplayMetrics = Application.android.context.getResources().getDisplayMetrics();
 	console.log('metrics.density = ' + metrics.density); //metrics.density = 3
 	console.log('metrics.scaledDensity = ' + metrics.scaledDensity); //metrics.scaledDensity = 3
 	console.log('metrics.densityDpi = ' + metrics.densityDpi); //metrics.densityDpi = 480
@@ -19,7 +16,7 @@ function printDeviceInfoAndroid() {
 	console.log('metrics.widthPixels = ' + metrics.widthPixels); //metrics.widthPixels = 1080
 	console.log('metrics.heightPixels = ' + metrics.heightPixels); //metrics.heightPixels = 1776
 
-	var config = app.android.context.getResources().getConfiguration();
+	var config = Application.android.context.getResources().getConfiguration();
 	console.log('config.screenWidthDp = ' + config.screenWidthDp);
 	console.log('config.screenHeightDp = ' + config.screenHeightDp);
 	console.log('config.smallestScreenWidthDp = ' + config.smallestScreenWidthDp);
@@ -57,7 +54,7 @@ function printTNSInfo() {
 }
 
 function print() {
-	if (app.android) {
+	if (Application.android) {
 		printDeviceInfoAndroid();
 	} else {
 		printDeviceInfoIOS();
@@ -67,10 +64,10 @@ function print() {
 //print();
 
 export function createPage() {
-	var page = new pages.Page();
-	var grid = new gridModule.GridLayout();
+	var page = new Page();
+	var grid = new GridLayout();
 
-	var btn = new buttons.Button();
+	var btn = new Button();
 	btn.text = 'print';
 	btn.on('tap', (d) => {
 		print();

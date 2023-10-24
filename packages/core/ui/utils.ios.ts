@@ -1,23 +1,26 @@
-﻿import * as utils from '../utils';
+﻿import { Screen } from '../platform';
+import * as utils from '../utils';
 import { LinearGradient } from './styling/linear-gradient';
 
 interface NativeScriptUIView extends UIView {
 	hasNonUniformBorder: boolean;
-	borderLayer: CALayer;
+	hasNonUniformBorderColor: boolean;
+	borderLayer: CAShapeLayer;
 
-	hasBorderMask: boolean;
-	borderOriginalMask: CALayer;
-
-	topBorderLayer: CALayer;
-	rightBorderLayer: CALayer;
-	bottomBorderLayer: CALayer;
-	leftBorderLayer: CALayer;
+	maskType: ios.LayerMaskType;
+	originalMask: CALayer;
 
 	gradientLayer: CAGradientLayer;
-	boxShadowLayer: CALayer;
+	outerShadowContainerLayer: CALayer;
 }
 
 export namespace ios {
+	export type LayerMaskType = 'BORDER' | 'CLIP_PATH';
+	export namespace LayerMask {
+		export const BORDER = 'BORDER';
+		export const CLIP_PATH = 'CLIP_PATH';
+	}
+
 	export function getActualHeight(view: UIView): number {
 		if (view.window && !view.hidden) {
 			return utils.layout.toDevicePixels(view.frame.size.height);
@@ -42,50 +45,46 @@ export namespace ios {
 		return utils.layout.toDevicePixels(min);
 	}
 
-	export function drawGradient(nativeView: NativeScriptUIView, gradient: LinearGradient, gradientLayerOpacity?: number, index?: number): CAGradientLayer {
-		let gradientLayer: CAGradientLayer;
-		if (nativeView && gradient) {
-			gradientLayer = CAGradientLayer.layer();
-			if (typeof gradientLayerOpacity === 'number') {
-				gradientLayer.opacity = gradientLayerOpacity;
-			}
-			gradientLayer.frame = nativeView.bounds;
-			nativeView.gradientLayer = gradientLayer;
-
-			const iosColors = NSMutableArray.alloc().initWithCapacity(gradient.colorStops.length);
-			const iosStops = NSMutableArray.alloc<number>().initWithCapacity(gradient.colorStops.length);
-			let hasStops = false;
-
-			gradient.colorStops.forEach((stop) => {
-				iosColors.addObject(stop.color.ios.CGColor);
-				if (stop.offset) {
-					iosStops.addObject(stop.offset.value);
-					hasStops = true;
-				}
-			});
-
-			gradientLayer.colors = iosColors;
-
-			if (hasStops) {
-				gradientLayer.locations = iosStops;
-			}
-
-			const alpha = gradient.angle / (Math.PI * 2);
-			const startX = Math.pow(Math.sin(Math.PI * (alpha + 0.75)), 2);
-			const startY = Math.pow(Math.sin(Math.PI * (alpha + 0.5)), 2);
-			const endX = Math.pow(Math.sin(Math.PI * (alpha + 0.25)), 2);
-			const endY = Math.pow(Math.sin(Math.PI * alpha), 2);
-			gradientLayer.startPoint = { x: startX, y: startY };
-			gradientLayer.endPoint = { x: endX, y: endY };
-
-			nativeView.layer.insertSublayerAtIndex(gradientLayer, index || 0);
+	export function drawGradient(nativeView: NativeScriptUIView, gradientLayer: CAGradientLayer, gradient: LinearGradient, gradientLayerOpacity?: number): void {
+		if (!nativeView || !gradient) {
+			return;
 		}
-		return gradientLayer;
-	}
 
-	export function clearGradient(nativeView: NativeScriptUIView): void {
-		if (nativeView?.gradientLayer) {
-			nativeView.gradientLayer.removeFromSuperlayer();
+		if (typeof gradientLayerOpacity === 'number') {
+			gradientLayer.opacity = gradientLayerOpacity;
 		}
+
+		// Update these properties instead of layer frame as the latter messes with animations
+		gradientLayer.bounds = nativeView.bounds;
+		gradientLayer.anchorPoint = CGPointMake(0, 0);
+
+		gradientLayer.allowsEdgeAntialiasing = true;
+		gradientLayer.contentsScale = Screen.mainScreen.scale;
+
+		const iosColors = NSMutableArray.alloc().initWithCapacity(gradient.colorStops.length);
+		const iosStops = NSMutableArray.alloc<number>().initWithCapacity(gradient.colorStops.length);
+		let hasStops = false;
+
+		gradient.colorStops.forEach((stop) => {
+			iosColors.addObject(stop.color.ios.CGColor);
+			if (stop.offset) {
+				iosStops.addObject(stop.offset.value);
+				hasStops = true;
+			}
+		});
+
+		gradientLayer.colors = iosColors;
+
+		if (hasStops) {
+			gradientLayer.locations = iosStops;
+		}
+
+		const alpha = gradient.angle / (Math.PI * 2);
+		const startX = Math.pow(Math.sin(Math.PI * (alpha + 0.75)), 2);
+		const startY = Math.pow(Math.sin(Math.PI * (alpha + 0.5)), 2);
+		const endX = Math.pow(Math.sin(Math.PI * (alpha + 0.25)), 2);
+		const endY = Math.pow(Math.sin(Math.PI * alpha), 2);
+		gradientLayer.startPoint = { x: startX, y: startY };
+		gradientLayer.endPoint = { x: endX, y: endY };
 	}
 }

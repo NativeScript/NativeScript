@@ -1,7 +1,7 @@
 import * as TKUnit from '../../tk-unit';
 import { View, eachDescendant, getViewById, InheritedProperty, CssProperty, CssAnimationProperty, ShorthandProperty, Property, Style, Frame, Page, Button, Label, Color, StackLayout, AbsoluteLayout, Observable, Utils, BindingOptions, isAndroid, LayoutBase } from '@nativescript/core';
 import * as helper from '../../ui-helper';
-import * as definition from './view-tests';
+import { checkNativeBackgroundColor, checkNativeBackgroundImage } from './view-tests';
 
 export function test_eachDescendant() {
 	const test = function (views: Array<View>) {
@@ -237,8 +237,14 @@ export function test_InheritableStylePropertiesWhenUsedWithExtendedClass_AreInhe
 }
 
 // TestView definition START
-const customCssProperty = new CssProperty<Style, string>({ name: 'customCssProperty', cssName: 'custom-css-property' });
-const customCssAnimationProperty = new CssAnimationProperty<Style, string>({ name: 'customCssAnimationProperty', cssName: 'custom-css-animation-property' });
+const customCssProperty = new CssProperty<Style, string>({
+	name: 'customCssProperty',
+	cssName: 'custom-css-property',
+});
+const customCssAnimationProperty = new CssAnimationProperty<Style, string>({
+	name: 'customCssAnimationProperty',
+	cssName: 'custom-css-animation-property',
+});
 const customViewProperty = new Property<TestView, string>({ name: 'custom' });
 
 const customCssAProperty = new CssProperty<Style, string>({
@@ -380,14 +386,23 @@ customCssAnimationProperty.register(Style);
 customViewProperty.register(TestView);
 
 const inheritanceTestDefaultValue = 42;
-const inheritanceTestProperty = new InheritedProperty<TestView, number>({ name: 'inheritanceTest', defaultValue: inheritanceTestDefaultValue });
+const inheritanceTestProperty = new InheritedProperty<TestView, number>({
+	name: 'inheritanceTest',
+	defaultValue: inheritanceTestDefaultValue,
+});
 inheritanceTestProperty.register(TestView);
 
 const booleanInheritanceTestDefaultValue = true;
-const booleanInheritanceTestProperty = new InheritedProperty<TestView, boolean>({ name: 'booleanInheritanceTest', defaultValue: booleanInheritanceTestDefaultValue });
+const booleanInheritanceTestProperty = new InheritedProperty<TestView, boolean>({
+	name: 'booleanInheritanceTest',
+	defaultValue: booleanInheritanceTestDefaultValue,
+});
 booleanInheritanceTestProperty.register(TestView);
 
-const dummyProperty = new InheritedProperty<TestView, number>({ name: 'dummy', defaultValue: 0 });
+const dummyProperty = new InheritedProperty<TestView, number>({
+	name: 'dummy',
+	defaultValue: 0,
+});
 dummyProperty.register(TestView);
 
 /////// TestView definition END
@@ -941,7 +956,7 @@ export function testBackgroundColor() {
 	helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<View>) {
 		const lbl = views[0];
 		helper.waitUntilLayoutReady(lbl);
-		TKUnit.assertEqual(definition.checkNativeBackgroundColor(lbl), true, 'BackgroundColor not applied correctly!');
+		TKUnit.assertEqual(checkNativeBackgroundColor(lbl), true, 'BackgroundColor not applied correctly!');
 	});
 }
 
@@ -949,16 +964,16 @@ export function testBackgroundBorderColor() {
 	helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<View>) {
 		const lbl = views[0];
 		helper.waitUntilLayoutReady(lbl);
-		TKUnit.assertEqual(definition.checkNativeBackgroundColor(lbl), true, 'BackgroundColor not applied correctly!');
+		TKUnit.assertEqual(checkNativeBackgroundColor(lbl), true, 'BackgroundColor not applied correctly!');
 	});
 }
 export function testSetAndRemoveBackgroundColor() {
 	helper.buildUIAndRunTest(_createBackgroundColorView(), function (views: Array<View>) {
 		const lbl = views[0];
 		helper.waitUntilLayoutReady(lbl);
-		TKUnit.assertEqual(definition.checkNativeBackgroundColor(lbl), true, 'BackgroundColor not applied correctly!');
+		TKUnit.assertEqual(checkNativeBackgroundColor(lbl), true, 'BackgroundColor not applied correctly!');
 		lbl.backgroundColor = null;
-		TKUnit.assertEqual(definition.checkNativeBackgroundColor(lbl), true, 'BackgroundColor not applied correctly!');
+		TKUnit.assertEqual(checkNativeBackgroundColor(lbl), true, 'BackgroundColor not applied correctly!');
 	});
 }
 
@@ -968,7 +983,7 @@ export function testBackgroundImage() {
 	helper.buildUIAndRunTest(lbl, function (views: Array<View>) {
 		const page = <Page>views[1];
 		page.css = ".myClass { background-image: url('~/assets/logo.png') }";
-		TKUnit.assertEqual(definition.checkNativeBackgroundImage(lbl), true, 'Style background-image not loaded correctly.');
+		TKUnit.assertEqual(checkNativeBackgroundImage(lbl), true, 'Style background-image not loaded correctly.');
 	});
 }
 

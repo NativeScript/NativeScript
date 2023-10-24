@@ -134,7 +134,6 @@ class UIViewControllerImpl extends UIViewController {
 			frame._resolvedPage = owner;
 
 			if (!owner.parent) {
-				owner._frame = frame;
 				if (!frame._styleScope) {
 					// Make sure page will have styleScope even if frame don't.
 					owner._updateStyleScope();
@@ -209,17 +208,19 @@ class UIViewControllerImpl extends UIViewController {
 
 			frame._processNavigationQueue(owner);
 
-			// _processNavigationQueue will shift navigationQueue. Check canGoBack after that.
-			// Workaround for disabled backswipe on second custom native transition
-			if (frame.canGoBack()) {
-				const transitionState = SharedTransition.getState(owner.transitionId);
-				if (!transitionState?.interactive) {
-					// only consider when interactive transitions are not enabled
-					navigationController.interactivePopGestureRecognizer.delegate = navigationController;
-					navigationController.interactivePopGestureRecognizer.enabled = owner.enableSwipeBackNavigation;
+			if (!__VISIONOS__) {
+				// _processNavigationQueue will shift navigationQueue. Check canGoBack after that.
+				// Workaround for disabled backswipe on second custom native transition
+				if (frame.canGoBack()) {
+					const transitionState = SharedTransition.getState(owner.transitionId);
+					if (!transitionState?.interactive) {
+						// only consider when interactive transitions are not enabled
+						navigationController.interactivePopGestureRecognizer.delegate = navigationController;
+						navigationController.interactivePopGestureRecognizer.enabled = owner.enableSwipeBackNavigation;
+					}
+				} else {
+					navigationController.interactivePopGestureRecognizer.enabled = false;
 				}
-			} else {
-				navigationController.interactivePopGestureRecognizer.enabled = false;
 			}
 		}
 
@@ -425,10 +426,6 @@ export class Page extends PageBase {
 		return this._ios;
 	}
 
-	get frame(): Frame {
-		return this._frame;
-	}
-
 	public layoutNativeView(left: number, top: number, right: number, bottom: number): void {
 		//
 	}
@@ -438,7 +435,7 @@ export class Page extends PageBase {
 	}
 
 	public _shouldDelayLayout(): boolean {
-		return this._frame && this._frame._animationInProgress;
+		return this.frame && this.frame._animationInProgress;
 	}
 
 	public onLoaded(): void {
@@ -467,7 +464,7 @@ export class Page extends PageBase {
 
 	public _updateStatusBarStyle(value?: string) {
 		const frame = this.frame;
-		if (this.frame && value) {
+		if (frame && value) {
 			const navigationController: UINavigationController = frame.ios.controller;
 			const navigationBar = navigationController.navigationBar;
 

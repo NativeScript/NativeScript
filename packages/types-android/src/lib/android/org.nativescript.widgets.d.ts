@@ -403,6 +403,13 @@
                 setImageLoadedListener(listener: image.Worker.OnImageLoadedListener): void;
             }
 
+            export class StyleableTextView extends android.widget.TextView {
+                public static class: java.lang.Class<org.nativescript.widgets.StyleableTextView>;
+                public onDraw(param0: globalAndroid.graphics.Canvas): void;
+                public setTextStroke(param0: number, param1: number, param2: number): void;
+                public constructor(param0: globalAndroid.content.Context);
+            }
+           
             export enum TabIconRenderingMode {
                 original,
                 template
@@ -648,24 +655,23 @@ declare module org {
 	export module nativescript {
 		export module widgets {
 			export class FileHelper {
-				public static class: java.lang.Class<org.nativescript.widgets.FileHelper>;
-                public appendTextSync(param0: globalAndroid.content.Context, param1: string, param2: string, param3: org.nativescript.widgets.FileHelper.Callback): void;
-                public appendText(param0: globalAndroid.content.Context, param1: string, param2: string, param3: org.nativescript.widgets.FileHelper.Callback): void;
+                public static class: java.lang.Class<org.nativescript.widgets.FileHelper>;
+				public appendSync(param0: globalAndroid.content.Context, param1: androidNative.Array<number>, param2: org.nativescript.widgets.FileHelper.Callback): void;
 				public readText(param0: globalAndroid.content.Context, param1: string, param2: org.nativescript.widgets.FileHelper.Callback): void;
-                public appendSync(param0: globalAndroid.content.Context, param1: androidNative.Array<number>, param2: org.nativescript.widgets.FileHelper.Callback): void;
-                public append(param0: globalAndroid.content.Context, param1: androidNative.Array<number>, param2: org.nativescript.widgets.FileHelper.Callback): void;
-                public appendBufferSync(param0: globalAndroid.content.Context, param1: java.nio.ByteBuffer, param2: org.nativescript.widgets.FileHelper.Callback): void;
-                public appendBuffer(param0: globalAndroid.content.Context, param1: java.nio.ByteBuffer, param2: org.nativescript.widgets.FileHelper.Callback): void;
 				public writeBufferSync(param0: globalAndroid.content.Context, param1: java.nio.ByteBuffer, param2: org.nativescript.widgets.FileHelper.Callback): void;
 				public writeTextSync(param0: globalAndroid.content.Context, param1: string, param2: string, param3: org.nativescript.widgets.FileHelper.Callback): void;
 				public copyToFileSync(param0: globalAndroid.content.Context, param1: java.io.File, param2: org.nativescript.widgets.FileHelper.Callback): boolean;
+				public appendTextSync(param0: globalAndroid.content.Context, param1: string, param2: string, param3: org.nativescript.widgets.FileHelper.Callback): void;
 				public read(param0: globalAndroid.content.Context, param1: org.nativescript.widgets.FileHelper.Callback): void;
 				public renameSync(param0: globalAndroid.content.Context, param1: string, param2: org.nativescript.widgets.FileHelper.Callback): void;
+				public appendBufferSync(param0: globalAndroid.content.Context, param1: java.nio.ByteBuffer, param2: org.nativescript.widgets.FileHelper.Callback): void;
 				public readSync(param0: globalAndroid.content.Context, param1: org.nativescript.widgets.FileHelper.Callback): androidNative.Array<number>;
 				public static fromString(param0: globalAndroid.content.Context, param1: string): org.nativescript.widgets.FileHelper;
 				public getSize(): number;
 				public getMime(): string;
 				public static exists(param0: globalAndroid.content.Context, param1: globalAndroid.net.Uri): boolean;
+				public append(param0: globalAndroid.content.Context, param1: androidNative.Array<number>, param2: org.nativescript.widgets.FileHelper.Callback): void;
+				public appendBuffer(param0: globalAndroid.content.Context, param1: java.nio.ByteBuffer, param2: org.nativescript.widgets.FileHelper.Callback): void;
 				public delete(param0: globalAndroid.content.Context): boolean;
 				public writeSync(param0: globalAndroid.content.Context, param1: androidNative.Array<number>, param2: org.nativescript.widgets.FileHelper.Callback): void;
 				public writeText(param0: globalAndroid.content.Context, param1: string, param2: string, param3: org.nativescript.widgets.FileHelper.Callback): void;
@@ -680,6 +686,7 @@ declare module org {
 				public readTextSync(param0: globalAndroid.content.Context, param1: string, param2: org.nativescript.widgets.FileHelper.Callback): string;
 				public static fromUri(param0: globalAndroid.content.Context, param1: globalAndroid.net.Uri): org.nativescript.widgets.FileHelper;
 				public static exists(param0: globalAndroid.content.Context, param1: string): boolean;
+				public appendText(param0: globalAndroid.content.Context, param1: string, param2: string, param3: org.nativescript.widgets.FileHelper.Callback): void;
 				public getLastModified(): number;
 			}
 			export module FileHelper {

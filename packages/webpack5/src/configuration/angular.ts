@@ -13,6 +13,16 @@ import {
 	getPlatformName,
 } from '../helpers/platform';
 import base from './base';
+// until we can switch to async/await on the webpack config, copy this from '@angular/compiler-cli'
+const GLOBAL_DEFS_FOR_TERSER = {
+	ngDevMode: false,
+	ngI18nClosureMode: false,
+};
+
+const GLOBAL_DEFS_FOR_TERSER_WITH_AOT = {
+	...GLOBAL_DEFS_FOR_TERSER,
+	ngJitMode: false,
+};
 
 export default function (config: Config, env: IWebpackEnv = _env): Config {
 	base(config, env);
@@ -204,7 +214,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				.end()
 				.before('angular')
 				.use('webpack-loader')
-				.loader('@angular-devkit/build-angular/src/babel/webpack-loader')
+				.loader(getWebpackLoaderPath())
 				.options(buildAngularOptions);
 		} else {
 			warnOnce(
@@ -269,6 +279,19 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		])
 	);
 
+	config.optimization.minimizer('TerserPlugin').tap((args) => {
+		args[0].terserOptions ??= {};
+		args[0].terserOptions.compress ??= {};
+		args[0].terserOptions.compress.global_defs ??= {};
+		args[0].terserOptions.compress.global_defs = {
+			...args[0].terserOptions.compress.global_defs,
+			...(disableAOT
+				? GLOBAL_DEFS_FOR_TERSER
+				: GLOBAL_DEFS_FOR_TERSER_WITH_AOT),
+		};
+		return args;
+	});
+
 	// todo: re-visit later, disabling by default now
 	// config.plugin('DefinePlugin').tap((args) => {
 	// 	args[0] = merge(args[0], {
@@ -310,4 +333,25 @@ function getBuildAngularMajorVersion() {
 	}
 
 	return null;
+}
+
+function tryRequireResolve(path: string) {
+	try {
+		return require.resolve(path);
+	} catch (err) {
+		return null;
+	}
+}
+
+function getWebpackLoaderPath() {
+	return (
+		tryRequireResolve(
+			'@angular-devkit/build-angular/src/babel/webpack-loader'
+		) ||
+		tryRequireResolve(
+			'@angular-devkit/build-angular/src/tools/babel/webpack-loader'
+		) ||
+		// fallback to angular 16.1+
+		'@angular-devkit/build-angular/src/tools/babel/webpack-loader'
+	);
 }

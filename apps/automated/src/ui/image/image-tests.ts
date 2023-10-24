@@ -16,7 +16,7 @@ import * as ViewModule from '@nativescript/core/ui/core/view';
 import * as helper from '../../ui-helper';
 import * as color from '@nativescript/core/color';
 import * as backgroundModule from '@nativescript/core/ui/styling/background';
-import { android as androidApp } from '@nativescript/core/application';
+import { Application } from '@nativescript/core';
 const imagePath = '~/assets/logo.png';
 
 export function test_recycling() {
@@ -24,7 +24,7 @@ export function test_recycling() {
 }
 
 if (global.isAndroid) {
-	(<any>backgroundModule).initImageCache(androidApp.startActivity, (<any>backgroundModule).CacheMode.memory); // use memory cache only.
+	(<any>backgroundModule).initImageCache(Application.android.startActivity, (<any>backgroundModule).CacheMode.memory); // use memory cache only.
 }
 
 export const test_Image_Members = function () {
