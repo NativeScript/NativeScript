@@ -349,7 +349,9 @@ function clearLayerMask(nativeView: NativeScriptUIView, background: BackgroundDe
 	if (nativeView.outerShadowContainerLayer) {
 		nativeView.outerShadowContainerLayer.mask = null;
 	}
-	nativeView.layer.mask = nativeView.originalMask;
+	if (nativeView.layer) {
+		nativeView.layer.mask = nativeView.originalMask;
+	}
 	nativeView.originalMask = null;
 	nativeView.maskType = null;
 }
