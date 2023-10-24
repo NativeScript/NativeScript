@@ -25,7 +25,6 @@ export class Page extends PageBase {
 				{ value: 1, type: 2 /* org.nativescript.widgets.GridUnitType.star */ },
 			])
 		);
-		console.log('Page', 'createNativeView');
 		return layout;
 	}
 
