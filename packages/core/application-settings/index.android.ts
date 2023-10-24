@@ -116,3 +116,15 @@ export function getAllKeys(): Array<string> {
 
 	return result;
 }
+
+export function getAllJSON() {
+	ensureSharedPreferences();
+	const mappedPreferences = sharedPreferences.getAll();
+	const json = new org.json.JSONObject(mappedPreferences);
+	return json.toString();
+}
+
+export function getNative() {
+	ensureSharedPreferences();
+	return sharedPreferences;
+}

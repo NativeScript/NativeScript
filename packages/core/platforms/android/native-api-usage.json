@@ -295,6 +295,7 @@
         "java.util:Locale",
         "java.util:Map",
         "java.util:Set",
+        "org.json:JSONObject",
         "org.nativescript*:*"
     ]
 }

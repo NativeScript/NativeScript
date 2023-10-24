@@ -73,3 +73,15 @@ export function flush(): boolean {
 export function getAllKeys(): Array<string> {
 	return utils.iOSNativeHelper.collections.nsArrayToJSArray(userDefaults.dictionaryRepresentation().allKeys);
 }
+export function getAllJSON(): string {
+	const nsDictionary = userDefaults.dictionaryRepresentation();
+	const jsonData = NSJSONSerialization.dataWithJSONObjectOptionsError(nsDictionary, 0);
+	if (jsonData) {
+		return NSString.alloc().initWithDataEncoding(jsonData, NSUTF8StringEncoding).toString();
+	}
+	return null;
+}
+
+export function getNative() {
+	return userDefaults;
+}
