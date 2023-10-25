@@ -1,6 +1,6 @@
 {
 	"name": "@nativescript/webpack",
-	"version": "5.0.18-embed.0",
+	"version": "5.0.18-embed.1",
 	"private": false,
 	"main": "dist/index.js",
 	"files": [
