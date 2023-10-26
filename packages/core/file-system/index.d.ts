@@ -269,19 +269,19 @@ export class Folder extends FileSystemEntity {
 	/**
 	 * Gets all the top-level entities residing within this folder.
 	 */
-	getEntities(): Promise<Array<FileSystemEntity>>;
+	getEntities(): Promise<Array<File | Folder>>;
 
 	/**
 	 * Gets all the top-level entities residing within this folder synchronously.
 	 * @param onError An optional function to be called if some error occurs.
 	 */
-	getEntitiesSync(onError?: (error: any) => any): Array<FileSystemEntity>;
+	getEntitiesSync(onError?: (error: any) => any): Array<File | Folder>;
 
 	/**
 	 * Enumerates all the top-level FileSystem entities residing within this folder.
 	 * @param onEntity A callback that receives the current entity. If the callback returns false this will mean for the iteration to stop.
 	 */
-	eachEntity(onEntity: (entity: FileSystemEntity) => boolean);
+	eachEntity(onEntity: (entity: File | Folder) => boolean);
 }
 
 /**

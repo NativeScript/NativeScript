@@ -788,7 +788,7 @@ export class Folder extends FileSystemEntity {
 		return createFolder(folderInfo);
 	}
 
-	public getEntities(): Promise<Array<FileSystemEntity>> {
+	public getEntities(): Promise<Array<File | Folder>> {
 		return new Promise((resolve, reject) => {
 			let hasError = false;
 			const localError = function (error) {
@@ -803,13 +803,13 @@ export class Folder extends FileSystemEntity {
 		});
 	}
 
-	public getEntitiesSync(onError?: (error: any) => any): Array<FileSystemEntity> {
+	public getEntitiesSync(onError?: (error: any) => any): Array<File | Folder> {
 		const fileInfos = getFileAccess().getEntities(this.path, onError);
 		if (!fileInfos) {
 			return null;
 		}
 
-		const entities = new Array<FileSystemEntity>();
+		const entities = new Array<File | Folder>();
 		for (let i = 0; i < fileInfos.length; i++) {
 			if (fileInfos[i].extension) {
 				entities.push(createFile(fileInfos[i]));
@@ -821,7 +821,7 @@ export class Folder extends FileSystemEntity {
 		return entities;
 	}
 
-	public eachEntity(onEntity: (entity: FileSystemEntity) => boolean) {
+	public eachEntity(onEntity: (entity: File | Folder) => boolean) {
 		if (!onEntity) {
 			return;
 		}
