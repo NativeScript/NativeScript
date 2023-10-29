@@ -4,6 +4,8 @@ import UIKit
 
 struct NativeScriptMainWindow: Scene {
     var body: some Scene {
+        #if os(visionOS)
+        // windowStyle is only supported on visionOS
         WindowGroup {
             NativeScriptAppView(found: { windowScene in
                 NativeScriptEmbedder.sharedInstance().setWindowScene(windowScene)
@@ -15,6 +17,18 @@ struct NativeScriptMainWindow: Scene {
             }
         }
         .windowStyle(.plain)
+        #else
+        WindowGroup {
+            NativeScriptAppView(found: { windowScene in
+                NativeScriptEmbedder.sharedInstance().setWindowScene(windowScene)
+            }).onAppear {
+                // print("NativeScriptAppView onAppear")
+                DispatchQueue.main.async {
+                    NativeScriptStart.boot()
+                }
+            }
+        }
+        #endif
     }
 
     init() {

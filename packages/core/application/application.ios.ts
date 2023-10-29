@@ -241,8 +241,9 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	get window(): UIWindow {
 		// TODO: consideration
 		// may not want to cache this value given the potential of multiple scenes
-		// particularly with SwiftUI app lifecycle apps
+		// particularly with SwiftUI app lifecycle based apps
 		if (!this._window) {
+			// Note: NativeScriptViewRegistry.getKeyWindow will always be used in SwiftUI app lifecycle based apps
 			this._window = NativeScriptViewRegistry.getKeyWindow();
 		}
 
@@ -414,6 +415,11 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		this.setMaxRefreshRate();
 		// ensures window is assigned to proper window scene
 		this._window = this.window;
+
+		if (!this._window) {
+			// if still no window, create one
+			this._window = UIWindow.alloc().initWithFrame(UIScreen.mainScreen.bounds);
+		}
 
 		if (!__VISIONOS__) {
 			this.window.backgroundColor = Utils.ios.MajorVersion <= 12 || !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;

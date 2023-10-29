@@ -88,12 +88,16 @@ class DeviceRef {
 }
 
 class MainScreen {
-	// private _screen: UIScreen;
+	private _screen: UIScreen;
 
 	private get screen(): UIScreen {
-		// may not want to cache this value given the potential of multiple scenes
-		// particularly with SwiftUI app lifecycle apps
-		return NativeScriptViewRegistry.getKeyWindow().screen;
+		if (!this._screen) {
+			// NOTE: may not want to cache this value with SwiftUI app lifecycle based apps (using NativeScriptViewRegistry) given the potential of multiple scenes
+			const registryWindow = NativeScriptViewRegistry.getKeyWindow();
+			this._screen = registryWindow ? registryWindow.screen : UIScreen.mainScreen;
+		}
+
+		return this._screen;
 	}
 
 	get widthPixels(): number {

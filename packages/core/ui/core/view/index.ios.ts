@@ -1064,7 +1064,8 @@ export class CustomLayoutView extends ContainerView {
 	nativeViewProtected: UIView;
 
 	createNativeView() {
-		return UIView.alloc().initWithFrame(NativeScriptViewRegistry.getKeyWindow().screen.bounds);
+		const registryWindow = NativeScriptViewRegistry.getKeyWindow();
+		return UIView.alloc().initWithFrame(registryWindow ? registryWindow.screen.bounds : UIScreen.mainScreen.bounds);
 	}
 
 	get ios(): UIView {

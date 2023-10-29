@@ -63,15 +63,16 @@ export function getRootViewController(): UIViewController {
 }
 
 export function getWindow(): UIWindow {
-	if (!UIApplication.sharedApplication) {
+	const app = UIApplication.sharedApplication;
+	if (!app) {
 		return;
 	}
-	return NativeScriptViewRegistry.getKeyWindow();
+	return NativeScriptViewRegistry.getKeyWindow() || app.keyWindow || (app.windows && app.windows.count > 0 && app.windows.objectAtIndex(0));
 }
 
-let mainScreen: UIScreen;
 export function getMainScreen(): UIScreen {
-	return NativeScriptViewRegistry.getKeyWindow().screen;
+	const registryWindow = NativeScriptViewRegistry.getKeyWindow();
+	return registryWindow ? registryWindow.screen : UIScreen.mainScreen;
 }
 
 export function setWindowBackgroundColor(value: string) {
@@ -159,10 +160,7 @@ export function createUIDocumentInteractionControllerDelegate(): NSObject {
 		public static ObjCProtocols = [UIDocumentInteractionControllerDelegate];
 
 		public getViewController(): UIViewController {
-			// const app = UIApplication.sharedApplication;
-
-			// return app.keyWindow.rootViewController;
-			return NativeScriptViewRegistry.getKeyWindow().rootViewController;
+			return getWindow().rootViewController;
 		}
 
 		public documentInteractionControllerViewControllerForPreview(controller: UIDocumentInteractionController) {
