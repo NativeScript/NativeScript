@@ -5,11 +5,12 @@ import { ShadowCSSValues } from '../styling/css-shadow';
 // Requires
 import { Font } from '../styling/font';
 import { iosAccessibilityAdjustsFontSizeProperty, iosAccessibilityMaxFontScaleProperty, iosAccessibilityMinFontScaleProperty } from '../../accessibility/accessibility-properties';
-import { TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textTransformProperty, textShadowProperty, letterSpacingProperty, lineHeightProperty, maxLinesProperty, resetSymbol } from './text-base-common';
+import { TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textTransformProperty, textShadowProperty, textStrokeProperty, letterSpacingProperty, lineHeightProperty, maxLinesProperty, resetSymbol } from './text-base-common';
 import { Color } from '../../color';
 import { FormattedString } from './formatted-string';
 import { Span } from './span';
 import { colorProperty, fontInternalProperty, fontScaleInternalProperty, Length } from '../styling/style-properties';
+import { StrokeCSSValues } from '../styling/css-stroke';
 import { isString, isNullOrUndefined } from '../../utils/types';
 import { iOSNativeHelper, layout } from '../../utils';
 import { Trace } from '../../trace';
@@ -247,6 +248,10 @@ export class TextBase extends TextBaseCommon {
 		this._setNativeText();
 	}
 
+	[textStrokeProperty.setNative](value: StrokeCSSValues) {
+		this._setNativeText();
+	}
+
 	[letterSpacingProperty.setNative](value: number) {
 		this._setNativeText();
 	}
@@ -306,15 +311,18 @@ export class TextBase extends TextBaseCommon {
 		const letterSpacing = this.style.letterSpacing ? this.style.letterSpacing : 0;
 		const lineHeight = this.style.lineHeight ? this.style.lineHeight : 0;
 		if (this.formattedText) {
-			(<any>this.nativeTextViewProtected).nativeScriptSetFormattedTextDecorationAndTransformLetterSpacingLineHeight(this.getFormattedStringDetails(this.formattedText), letterSpacing, lineHeight);
+			this.nativeTextViewProtected.nativeScriptSetFormattedTextDecorationAndTransformLetterSpacingLineHeight(this.getFormattedStringDetails(this.formattedText) as any, letterSpacing, lineHeight);
 		} else {
 			// console.log('setTextDecorationAndTransform...')
 			const text = getTransformedText(isNullOrUndefined(this.text) ? '' : `${this.text}`, this.textTransform);
-			(<any>this.nativeTextViewProtected).nativeScriptSetTextDecorationAndTransformTextDecorationLetterSpacingLineHeight(text, this.style.textDecoration || '', letterSpacing, lineHeight);
+			this.nativeTextViewProtected.nativeScriptSetTextDecorationAndTransformTextDecorationLetterSpacingLineHeight(text, this.style.textDecoration || '', letterSpacing, lineHeight);
 
 			if (!this.style?.color && majorVersion >= 13 && UIColor.labelColor) {
 				this._setColor(UIColor.labelColor);
 			}
+		}
+		if (this.style?.textStroke) {
+			this.nativeTextViewProtected.nativeScriptSetFormattedTextStrokeColor(Length.toDevicePixels(this.style.textStroke.width, 0), this.style.textStroke.color.ios);
 		}
 	}
 

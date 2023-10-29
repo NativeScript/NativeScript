@@ -202,7 +202,6 @@ export class FrameBase extends CustomLayoutView {
 		const page = removed.resolvedPage;
 		if (page) {
 			const frame = page.frame;
-			page._frame = null;
 			if (frame) {
 				frame._removeView(page);
 			} else {
@@ -252,7 +251,6 @@ export class FrameBase extends CustomLayoutView {
 			this._resolvedPage = newPage;
 
 			this._addView(newPage);
-			newPage._frame = this;
 		}
 
 		this._currentEntry = entry;

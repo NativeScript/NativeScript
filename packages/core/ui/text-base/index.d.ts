@@ -5,6 +5,7 @@ import { Length } from '../styling/style-properties';
 import { Property, CssProperty, InheritedCssProperty } from '../core/properties';
 import { CoreTypes } from '../../core-types';
 import { ShadowCSSValues } from '../styling/css-shadow';
+import { StrokeCSSValues } from '../styling/css-stroke';
 
 export class TextBase extends View implements AddChildFromBuilder {
 	/**
@@ -138,6 +139,7 @@ export const textAlignmentProperty: InheritedCssProperty<Style, CoreTypes.TextAl
 export const textDecorationProperty: CssProperty<Style, CoreTypes.TextDecorationType>;
 export const textTransformProperty: CssProperty<Style, CoreTypes.TextTransformType>;
 export const textShadowProperty: CssProperty<Style, ShadowCSSValues>;
+export const textStrokeProperty: CssProperty<Style, StrokeCSSValues>;
 export const whiteSpaceProperty: CssProperty<Style, CoreTypes.WhiteSpaceType>;
 export const textOverflowProperty: CssProperty<Style, CoreTypes.TextOverflowType>;
 export const letterSpacingProperty: CssProperty<Style, number>;
