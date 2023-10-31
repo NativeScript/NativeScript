@@ -168,7 +168,7 @@ Sample scopes for the `@nativescript/core` package:
 * **profiling**
 
 ### Subject
-The subject contains succinct description of the change:
+The subject contains a succinct description of the change:
 
 * use the imperative, present tense: "change" not "changed" nor "changes"
 * don't capitalize first letter
