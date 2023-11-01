@@ -79,10 +79,11 @@ export namespace FontVariationSettings {
 		if (chunks.length) {
 			const parsed: Array<FontVariationSettingsType> = [];
 			for (const chunk of chunks) {
-				const axisChunks = chunk.trim();
+				const trimmedChunk = chunk.trim();
+				const axisChunks = trimmedChunk.split(' ');
 				if (axisChunks.length === 2) {
-					const axisName = chunk[0].trim();
-					const axisValue = parseFloat(chunk[0]);
+					const axisName = axisChunks[0].trim();
+					const axisValue = parseFloat(axisChunks[1]);
 					// See https://drafts.csswg.org/css-fonts/#font-variation-settings-def.
 					// Axis name strings longer or shorter than four characters are invalid.
 					if (!isNaN(axisValue) && axisName.length === 6 && ((axisName.startsWith("'") && axisName.endsWith("'")) || (axisName.startsWith('"') && axisName.endsWith('"')))) {
