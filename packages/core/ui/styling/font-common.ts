@@ -1,6 +1,7 @@
 import { Font as FontDefinition } from './font';
 import { ParsedFont, FontStyleType, FontWeightType, FontVariationSettingsType } from './font-interfaces';
 import { makeValidator, makeParser } from '../core/properties';
+import { Trace } from '../../trace';
 
 export abstract class Font implements FontDefinition {
 	public static default = undefined;
@@ -69,41 +70,47 @@ export namespace FontWeight {
 
 export namespace FontVariationSettings {
 	export function parse(fontVariationSettings: string): Array<FontVariationSettingsType> | null {
-		const allowedValues = ['normal', 'inherit', 'initial', 'revert', 'revert-layer', 'unset'];
-		const lower = fontVariationSettings?.toLowerCase().trim();
-		if (allowedValues.indexOf(lower) !== -1) {
+		if (!fontVariationSettings) {
 			return null;
 		}
 
-		const chunks = lower.split(',');
+		const allowedValues = ['normal', 'inherit', 'initial', 'revert', 'revert-layer', 'unset'];
+		const variationSettingsValue: string = fontVariationSettings.trim();
+
+		if (allowedValues.indexOf(variationSettingsValue.toLowerCase()) !== -1) {
+			return null;
+		}
+
+		const chunks = variationSettingsValue.split(',');
 		if (chunks.length) {
 			const parsed: Array<FontVariationSettingsType> = [];
 			for (const chunk of chunks) {
-				const axisChunks = chunk.trim();
+				const trimmedChunk = chunk.trim();
+				const axisChunks = trimmedChunk.split(' ');
 				if (axisChunks.length === 2) {
-					const axisName = chunk[0].trim();
-					const axisValue = parseFloat(chunk[0]);
+					const axisName = axisChunks[0].trim();
+					const axisValue = parseFloat(axisChunks[1]);
 					// See https://drafts.csswg.org/css-fonts/#font-variation-settings-def.
 					// Axis name strings longer or shorter than four characters are invalid.
 					if (!isNaN(axisValue) && axisName.length === 6 && ((axisName.startsWith("'") && axisName.endsWith("'")) || (axisName.startsWith('"') && axisName.endsWith('"')))) {
 						parsed.push({ axis: axisName, value: axisValue });
 					} else {
-						console.error('Invalid value (font-variation-settings): ' + fontVariationSettings);
+						Trace.write('Invalid value (font-variation-settings): ' + variationSettingsValue, Trace.categories.Error, Trace.messageType.error);
 					}
 				} else {
-					console.error('Invalid value (font-variation-settings): ' + fontVariationSettings);
+					Trace.write('Invalid value (font-variation-settings): ' + variationSettingsValue, Trace.categories.Error, Trace.messageType.error);
 				}
 			}
 
 			return parsed;
 		}
 
-		console.error('Invalid value (font-variation-settings): ' + fontVariationSettings);
+		Trace.write('Invalid value (font-variation-settings): ' + variationSettingsValue, Trace.categories.Error, Trace.messageType.error);
 	}
 
 	export function toString(fontVariationSettings: FontVariationSettingsType[] | null): string | null {
 		if (fontVariationSettings?.length) {
-			return fontVariationSettings.map(({ axis, value }) => `'${axis}' ${value}`).join(', ');
+			return fontVariationSettings.map(({ axis, value }) => `${axis} ${value}`).join(', ');
 		}
 
 		return null;
