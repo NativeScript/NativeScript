@@ -36,24 +36,25 @@ export function parseCSSShorthand(value: string): {
 	const parts = value.trim().split(PARTS_RE);
 	const first = parts[0];
 
-	if (['', 'none'].includes(first)) {
+	if (['', 'none', 'unset'].includes(first)) {
 		return {
 			inset: false,
 			color: undefined,
 			values: [],
 		};
 	} else {
+		const invalidColors = ['inset', 'unset'];
 		const inset = parts.includes('inset');
 		const last = parts[parts.length - 1];
 		let color = 'black';
-		if (first && !isLength(first) && first !== 'inset') {
+		if (first && !isLength(first) && !invalidColors.includes(first)) {
 			color = first;
-		} else if (last && !isLength(last)) {
+		} else if (last && !isLength(last) && !invalidColors.includes(last)) {
 			color = last;
 		}
 
 		const values = parts
-			.filter((n) => n !== 'inset')
+			.filter((n) => !invalidColors.includes(n))
 			.filter((n) => n !== color)
 			.map((val) => {
 				try {
