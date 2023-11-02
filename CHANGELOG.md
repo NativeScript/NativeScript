@@ -1,3 +1,24 @@
+## [8.6.1](https://github.com/NativeScript/NativeScript/compare/5.0.18-webpack...8.6.1) (2023-11-02)
+
+
+### Bug Fixes
+
+* **android:** prevent rehydration on destroyed dialogs ([#10414](https://github.com/NativeScript/NativeScript/issues/10414)) ([7563549](https://github.com/NativeScript/NativeScript/commit/756354952c88c00794e586cbb316928b7f9dbbff))
+* **core:** box-shadow 'none' handling  ([#10405](https://github.com/NativeScript/NativeScript/issues/10405)) ([c23695c](https://github.com/NativeScript/NativeScript/commit/c23695c477dc1363e4f30fb45d3666c5b8101e4f))
+* **core:** font variation settings parser invalid axis ([#10427](https://github.com/NativeScript/NativeScript/issues/10427)) ([0847855](https://github.com/NativeScript/NativeScript/commit/08478556a9e39af9b1524c12e9e330d0a8aae9c7))
+* **core:** page frame reference not unset on native view disposal ([#10417](https://github.com/NativeScript/NativeScript/issues/10417)) ([22c21b7](https://github.com/NativeScript/NativeScript/commit/22c21b7e062b851a635d96aede9c936fb8e9749a))
+* **css:** prevent shorthand parse error on 'unset' and 'inset' ([#10424](https://github.com/NativeScript/NativeScript/issues/10424)) ([d70b48b](https://github.com/NativeScript/NativeScript/commit/d70b48bbe9c42044204e6887b18f95f628656d69))
+* **ios:** add/remove shadow for reusable views ([#10409](https://github.com/NativeScript/NativeScript/issues/10409)) ([ee87b52](https://github.com/NativeScript/NativeScript/commit/ee87b52ac323e220b7b154d27a55cbf4cdbd59c4))
+* **ios:** property mask on 'undefined' during view disposal ([#10404](https://github.com/NativeScript/NativeScript/issues/10404)) ([212d086](https://github.com/NativeScript/NativeScript/commit/212d086676a3246fd225f346af2ab920634a7643))
+* **ios:** shadow position after translate transform ([#10413](https://github.com/NativeScript/NativeScript/issues/10413)) ([c78ea79](https://github.com/NativeScript/NativeScript/commit/c78ea79f0f63f49506120aeef3bc603426c155b2))
+
+
+### Features
+
+* **android:** allow shared element transitions to work with ListView/CollectionView/Pager ([#10411](https://github.com/NativeScript/NativeScript/issues/10411)) ([e8c093d](https://github.com/NativeScript/NativeScript/commit/e8c093d7a2ca94edd2f5d35ca3725c7a27e74b74))
+
+
+
 # [8.6.0](https://github.com/NativeScript/NativeScript/compare/8.5.9-core...8.6.0-core) (2023-10-10)
 
 
