@@ -63,8 +63,7 @@ function computeFontCacheKey(fontFamily: string, font: Font) {
 }
 
 function loadFontFromFile(fontFamily: string, font: Font): android.graphics.Typeface {
-	const apiLevel = android.os.Build.VERSION.SDK_INT;
-	const cacheKey = apiLevel >= 26 ? computeFontCacheKey(fontFamily, font) : fontFamily;
+	const cacheKey = SDK_VERSION >= 26 ? computeFontCacheKey(fontFamily, font) : fontFamily;
 
 	appAssets = appAssets || (ad.getApplicationContext() as android.content.Context).getAssets();
 	if (!appAssets) {
@@ -89,7 +88,7 @@ function loadFontFromFile(fontFamily: string, font: Font): android.graphics.Type
 		if (fontAssetPath) {
 			try {
 				fontAssetPath = fs.path.join(fs.knownFolders.currentApp().path, fontAssetPath);
-				if (apiLevel >= 26) {
+				if (SDK_VERSION >= 26) {
 					const builder = new android.graphics.Typeface.Builder(fontAssetPath);
 					if (builder) {
 						if (font.fontVariationSettings !== undefined) {
