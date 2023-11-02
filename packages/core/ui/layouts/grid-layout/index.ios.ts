@@ -602,29 +602,29 @@ class MeasureHelper {
 		for (let i = 0, rowCount = list.length; i < rowCount; i++) {
 			const item = list[i];
 			if (item.getIsStar()) {
-                const roundedLength = Math.round(item.rowOrColumn.value * starValue);
-                item.length = roundedLength;
-                offset += roundedLength;
-                roundedOffset += roundedLength;
+				const roundedLength = Math.round(item.rowOrColumn.value * starValue);
+				item.length = roundedLength;
+				offset += roundedLength;
+				roundedOffset += roundedLength;
 			}
 		}
 	}
 
 	private fakeMeasure(): void {
-        // Fake measure - measure all elements that have star rows and auto columns - with infinity Width and infinity Height
-        for (let i = 0, size = this.columns.length; i < size; i++) {
-            const columnGroup = this.columns[i];
-            if (columnGroup.getAllMeasured()) {
-                continue;
-            }
-            for (let j = 0, childrenCount = columnGroup.children.length; j < childrenCount; j++) {
-                const measureSpec = columnGroup.children[j];
-                const hasStarRowsAndAutoColumns = measureSpec.starRowsCount > 0 && measureSpec.autoColumnsCount > 0 && measureSpec.starColumnsCount === 0;
-                if (hasStarRowsAndAutoColumns) {
-                    this.measureChild(measureSpec, true);
-                }
-            }
-        }
+			// Fake measure - measure all elements that have star rows and auto columns - with infinity Width and infinity Height
+			for (let i = 0, size = this.columns.length; i < size; i++) {
+					const columnGroup = this.columns[i];
+					if (columnGroup.getAllMeasured()) {
+							continue;
+					}
+					for (let j = 0, childrenCount = columnGroup.children.length; j < childrenCount; j++) {
+							const measureSpec = columnGroup.children[j];
+							const hasStarRowsAndAutoColumns = measureSpec.starRowsCount > 0 && measureSpec.autoColumnsCount > 0 && measureSpec.starColumnsCount === 0;
+							if (hasStarRowsAndAutoColumns) {
+									this.measureChild(measureSpec, true);
+							}
+					}
+			}
 	}
 
 	private measureFixedColumnsNoStarRows(): void {
@@ -764,191 +764,191 @@ class MeasureHelper {
 	}
 
 	private measureChild(measureSpec: MeasureSpecs, isFakeMeasure: boolean): void {
-        const { child } = measureSpec;
-        const columnIndex = measureSpec.getColumnIndex();
-        const columnSpan = measureSpec.getColumnSpan();
-        const rowIndex = measureSpec.getRowIndex();
-        const rowSpan = measureSpec.getRowSpan();
+		const { child } = measureSpec;
+		const columnIndex = measureSpec.getColumnIndex();
+		const columnSpan = measureSpec.getColumnSpan();
+		const rowIndex = measureSpec.getRowIndex();
+		const rowSpan = measureSpec.getRowSpan();
+	
+		const widthMeasureSpec = measureSpec.autoColumnsCount > 0 ? this.infinity : layout.makeMeasureSpec(measureSpec.pixelWidth, layout.EXACTLY);
+		const heightMeasureSpec = isFakeMeasure || measureSpec.autoRowsCount > 0 ? this.infinity : layout.makeMeasureSpec(measureSpec.pixelHeight, layout.EXACTLY);
+	
+		const { measuredWidth: childMeasuredWidth, measuredHeight: childMeasuredHeight } = View.measureChild(this.grid, child, widthMeasureSpec, heightMeasureSpec);
+	
+		const columnStart = columnIndex;
+		const columnEnd = columnIndex + columnSpan;
+		const rowStart = rowIndex;
+		const rowEnd = rowIndex + rowSpan;
+	
+		let remainingSpace;
 
-        const widthMeasureSpec = measureSpec.autoColumnsCount > 0 ? this.infinity : layout.makeMeasureSpec(measureSpec.pixelWidth, layout.EXACTLY);
-        const heightMeasureSpec = isFakeMeasure || measureSpec.autoRowsCount > 0 ? this.infinity : layout.makeMeasureSpec(measureSpec.pixelHeight, layout.EXACTLY);
+		if (measureSpec.autoColumnsCount > 0) {
+			remainingSpace = childMeasuredWidth;
+			for (let i = columnStart; i < columnEnd; i++) {
+				const columnGroup = this.columns[i];
+				remainingSpace -= columnGroup.length;
+			}
+			if (remainingSpace > 0) {
+				const growSize = remainingSpace / measureSpec.autoColumnsCount;
+				for (let i = columnStart; i < columnEnd; i++) {
+					const columnGroup = this.columns[i];
+					if (columnGroup.getIsAuto()) {
+						columnGroup.length += growSize;
+					}
+				}
+			}
+		}
 
-        const { measuredWidth: childMeasuredWidth, measuredHeight: childMeasuredHeight } = View.measureChild(this.grid, child, widthMeasureSpec, heightMeasureSpec);
+		if (!isFakeMeasure && measureSpec.autoRowsCount > 0) {
+			remainingSpace = childMeasuredHeight;
+			for (let i = rowStart; i < rowEnd; i++) {
+				const rowGroup = this.rows[i];
+				remainingSpace -= rowGroup.length;
+			}
+			if (remainingSpace > 0) {
+				const growSize = remainingSpace / measureSpec.autoRowsCount;
+				for (let i = rowStart; i < rowEnd; i++) {
+					const rowGroup = this.rows[i];
+					if (rowGroup.getIsAuto()) {
+						rowGroup.length += growSize;
+					}
+				}
+			}
+		}
 
-        const columnStart = columnIndex;
-        const columnEnd = columnIndex + columnSpan;
-        const rowStart = rowIndex;
-        const rowEnd = rowIndex + rowSpan;
-
-        let remainingSpace;
-
-        if (measureSpec.autoColumnsCount > 0) {
-            remainingSpace = childMeasuredWidth;
-            for (let i = columnStart; i < columnEnd; i++) {
-                const columnGroup = this.columns[i];
-                remainingSpace -= columnGroup.length;
-            }
-            if (remainingSpace > 0) {
-                const growSize = remainingSpace / measureSpec.autoColumnsCount;
-                for (let i = columnStart; i < columnEnd; i++) {
-                    const columnGroup = this.columns[i];
-                    if (columnGroup.getIsAuto()) {
-                    columnGroup.length += growSize;
-                    }
-                }
-            }
-        }
-
-        if (!isFakeMeasure && measureSpec.autoRowsCount > 0) {
-            remainingSpace = childMeasuredHeight;
-            for (let i = rowStart; i < rowEnd; i++) {
-                const rowGroup = this.rows[i];
-                remainingSpace -= rowGroup.length;
-            }
-            if (remainingSpace > 0) {
-                const growSize = remainingSpace / measureSpec.autoRowsCount;
-                for (let i = rowStart; i < rowEnd; i++) {
-                    const rowGroup = this.rows[i];
-                    if (rowGroup.getIsAuto()) {
-                        rowGroup.length += growSize;
-                    }
-                }
-            }
-        }
-
-        this.itemMeasured(measureSpec, isFakeMeasure);
+		this.itemMeasured(measureSpec, isFakeMeasure);
 	}
 
 	private measureChildFixedColumns(measureSpec: MeasureSpecs): void {
-        const columnIndex = measureSpec.getColumnIndex();
-        const columnSpanEnd = columnIndex + measureSpec.getColumnSpan();
-        const rowIndex = measureSpec.getRowIndex();
-        const rowSpanEnd = rowIndex + measureSpec.getRowSpan();
+		const columnIndex = measureSpec.getColumnIndex();
+		const columnSpanEnd = columnIndex + measureSpec.getColumnSpan();
+		const rowIndex = measureSpec.getRowIndex();
+		const rowSpanEnd = rowIndex + measureSpec.getRowSpan();
+	
+		let measureWidth = 0;
+		let remainingSpace = 0;
+		let growSize = 0;
+	
+		for (let i = columnIndex; i < columnSpanEnd; i++) {
+			const columnGroup: ItemGroup = this.columns[i];
+			measureWidth += columnGroup.length;
+		}
 
-        let measureWidth = 0;
-        let remainingSpace = 0;
-        let growSize = 0;
+		const widthMeasureSpec = layout.makeMeasureSpec(measureWidth, this.stretchedHorizontally ? layout.EXACTLY : layout.AT_MOST);
+		const heightMeasureSpec = measureSpec.autoRowsCount > 0 ? this.infinity : layout.makeMeasureSpec(measureSpec.pixelHeight, layout.EXACTLY);
 
-        for (let i = columnIndex; i < columnSpanEnd; i++) {
-            const columnGroup: ItemGroup = this.columns[i];
-            measureWidth += columnGroup.length;
-        }
+		const { measuredWidth: childMeasuredWidth, measuredHeight: childMeasuredHeight } = View.measureChild(this.grid, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
 
-        const widthMeasureSpec = layout.makeMeasureSpec(measureWidth, this.stretchedHorizontally ? layout.EXACTLY : layout.AT_MOST);
-        const heightMeasureSpec = measureSpec.autoRowsCount > 0 ? this.infinity : layout.makeMeasureSpec(measureSpec.pixelHeight, layout.EXACTLY);
+		this.updateMinColumnStarValueIfNeeded(measureSpec, childMeasuredWidth);
 
-        const { measuredWidth: childMeasuredWidth, measuredHeight: childMeasuredHeight } = View.measureChild(this.grid, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
-
-        this.updateMinColumnStarValueIfNeeded(measureSpec, childMeasuredWidth);
-
-        // Distribute height over auto rows
-        if (measureSpec.autoRowsCount > 0) {
-            remainingSpace = childMeasuredHeight;
-            for (let i = rowIndex; i < rowSpanEnd; i++) {
-                const rowGroup = this.rows[i];
-                remainingSpace -= rowGroup.length;
-            }
-            if (remainingSpace > 0) {
-                growSize = remainingSpace / measureSpec.autoRowsCount;
-                for (let i = rowIndex; i < rowSpanEnd; i++) {
-                    const rowGroup: ItemGroup = this.rows[i];
-                    if (rowGroup.getIsAuto()) {
-                        rowGroup.length += growSize;
-                    }
-                }
-            }
-        }
-        this.itemMeasured(measureSpec, false);
+		// Distribute height over auto rows
+		if (measureSpec.autoRowsCount > 0) {
+			remainingSpace = childMeasuredHeight;
+			for (let i = rowIndex; i < rowSpanEnd; i++) {
+				const rowGroup = this.rows[i];
+				remainingSpace -= rowGroup.length;
+			}
+			if (remainingSpace > 0) {
+				growSize = remainingSpace / measureSpec.autoRowsCount;
+				for (let i = rowIndex; i < rowSpanEnd; i++) {
+					const rowGroup: ItemGroup = this.rows[i];
+					if (rowGroup.getIsAuto()) {
+						rowGroup.length += growSize;
+					}
+				}
+			}
+		}
+		this.itemMeasured(measureSpec, false);
 	}
 
 	private measureChildFixedRows(measureSpec: MeasureSpecs): void {
-        const columnIndex = measureSpec.getColumnIndex();
-        const columnSpanEnd = columnIndex + measureSpec.getColumnSpan();
-        const rowIndex = measureSpec.getRowIndex();
-        const rowSpanEnd = rowIndex + measureSpec.getRowSpan();
-        let measureHeight = 0;
+		const columnIndex = measureSpec.getColumnIndex();
+		const columnSpanEnd = columnIndex + measureSpec.getColumnSpan();
+		const rowIndex = measureSpec.getRowIndex();
+		const rowSpanEnd = rowIndex + measureSpec.getRowSpan();
+		let measureHeight = 0;
+	
+		const rows = this.rows;
+		for (let i = rowIndex; i < rowSpanEnd; i++) {
+				const rowGroup = rows[i];
+				measureHeight += rowGroup.length;
+		}
 
-        const rows = this.rows;
-        for (let i = rowIndex; i < rowSpanEnd; i++) {
-            const rowGroup = rows[i];
-            measureHeight += rowGroup.length;
-        }
+		const widthMeasureSpec = measureSpec.autoColumnsCount > 0 ? this.infinity : layout.makeMeasureSpec(measureSpec.pixelWidth, layout.EXACTLY);
+		const heightMeasureSpec = layout.makeMeasureSpec(measureHeight, this.stretchedVertically ? layout.EXACTLY : layout.AT_MOST);
 
-        const widthMeasureSpec = measureSpec.autoColumnsCount > 0 ? this.infinity : layout.makeMeasureSpec(measureSpec.pixelWidth, layout.EXACTLY);
-        const heightMeasureSpec = layout.makeMeasureSpec(measureHeight, this.stretchedVertically ? layout.EXACTLY : layout.AT_MOST);
+		const child = measureSpec.child;
+		const childSize = View.measureChild(this.grid, child, widthMeasureSpec, heightMeasureSpec);
+		const childMeasuredWidth = childSize.measuredWidth;
+		const childMeasuredHeight = childSize.measuredHeight;
 
-        const child = measureSpec.child;
-        const childSize = View.measureChild(this.grid, child, widthMeasureSpec, heightMeasureSpec);
-        const childMeasuredWidth = childSize.measuredWidth;
-        const childMeasuredHeight = childSize.measuredHeight;
+		let remainingSpace = 0;
+		let growSize = 0;
 
-        let remainingSpace = 0;
-        let growSize = 0;
+		// Distribute width over auto columns
+		if (measureSpec.autoColumnsCount > 0) {
+				remainingSpace = childMeasuredWidth;
 
-        // Distribute width over auto columns
-        if (measureSpec.autoColumnsCount > 0) {
-            remainingSpace = childMeasuredWidth;
+				const columns = this.columns;
+				for (let i = columnIndex; i < columnSpanEnd; i++) {
+						const columnGroup = columns[i];
+						remainingSpace -= columnGroup.length;
+				}
 
-            const columns = this.columns;
-            for (let i = columnIndex; i < columnSpanEnd; i++) {
-                const columnGroup = columns[i];
-                remainingSpace -= columnGroup.length;
-            }
+				if (remainingSpace > 0) {
+						growSize = remainingSpace / measureSpec.autoColumnsCount;
 
-            if (remainingSpace > 0) {
-                growSize = remainingSpace / measureSpec.autoColumnsCount;
+						for (let i = columnIndex; i < columnSpanEnd; i++) {
+								const columnGroup = columns[i];
+								if (columnGroup.getIsAuto()) {
+										columnGroup.length += growSize;
+								}
+						}
+				}
+		}
 
-                for (let i = columnIndex; i < columnSpanEnd; i++) {
-                    const columnGroup = columns[i];
-                    if (columnGroup.getIsAuto()) {
-                        columnGroup.length += growSize;
-                    }
-                }
-            }
-        }
-
-        this.updateMinRowStarValueIfNeeded(measureSpec, childMeasuredHeight);
-        this.itemMeasured(measureSpec, false);
+		this.updateMinRowStarValueIfNeeded(measureSpec, childMeasuredHeight);
+		this.itemMeasured(measureSpec, false);
 	}
 
 	private measureChildFixedColumnsAndRows(measureSpec: MeasureSpecs): void {
-        const columnIndex = measureSpec.getColumnIndex();
-        const columnSpanEnd = columnIndex + measureSpec.getColumnSpan();
-        const rowIndex = measureSpec.getRowIndex();
-        const rowSpanEnd = rowIndex + measureSpec.getRowSpan();
+		const columnIndex = measureSpec.getColumnIndex();
+		const columnSpanEnd = columnIndex + measureSpec.getColumnSpan();
+		const rowIndex = measureSpec.getRowIndex();
+		const rowSpanEnd = rowIndex + measureSpec.getRowSpan();
+	
+		let measureWidth = 0;
+		let measureHeight = 0;
+	
+		// Calculate total width and height
+		for (let i = columnIndex; i < columnSpanEnd; i++) {
+			measureWidth += this.columns[i].length;
+		}
+		for (let i = rowIndex; i < rowSpanEnd; i++) {
+			measureHeight += this.rows[i].length;
+		}
+	
+		// Determine width and height measure spec based on star columns/rows and stretching
+		const widthMeasureSpec = layout.makeMeasureSpec(
+			measureWidth,
+			measureSpec.starColumnsCount > 0 && !this.stretchedHorizontally ? layout.AT_MOST : layout.EXACTLY
+		);
+		const heightMeasureSpec = layout.makeMeasureSpec(
+			measureHeight,
+			measureSpec.starRowsCount > 0 && !this.stretchedVertically ? layout.AT_MOST : layout.EXACTLY
+		);
 
-        let measureWidth = 0;
-        let measureHeight = 0;
+		// Measure the child view
+		const childSize = View.measureChild(this.grid, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
+		const childMeasuredWidth = childSize.measuredWidth;
+		const childMeasuredHeight = childSize.measuredHeight;
 
-        // Calculate total width and height
-        for (let i = columnIndex; i < columnSpanEnd; i++) {
-            measureWidth += this.columns[i].length;
-        }
-        for (let i = rowIndex; i < rowSpanEnd; i++) {
-            measureHeight += this.rows[i].length;
-        }
+		// Update minimum column and row star values if needed
+		this.updateMinColumnStarValueIfNeeded(measureSpec, childMeasuredWidth);
+		this.updateMinRowStarValueIfNeeded(measureSpec, childMeasuredHeight);
 
-        // Determine width and height measure spec based on star columns/rows and stretching
-        const widthMeasureSpec = layout.makeMeasureSpec(
-            measureWidth,
-            measureSpec.starColumnsCount > 0 && !this.stretchedHorizontally ? layout.AT_MOST : layout.EXACTLY
-        );
-        const heightMeasureSpec = layout.makeMeasureSpec(
-            measureHeight,
-            measureSpec.starRowsCount > 0 && !this.stretchedVertically ? layout.AT_MOST : layout.EXACTLY
-        );
-
-        // Measure the child view
-        const childSize = View.measureChild(this.grid, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
-        const childMeasuredWidth = childSize.measuredWidth;
-        const childMeasuredHeight = childSize.measuredHeight;
-
-        // Update minimum column and row star values if needed
-        this.updateMinColumnStarValueIfNeeded(measureSpec, childMeasuredWidth);
-        this.updateMinRowStarValueIfNeeded(measureSpec, childMeasuredHeight);
-
-        // Notify that the item has been measured
-        this.itemMeasured(measureSpec, false);
+		// Notify that the item has been measured
+		this.itemMeasured(measureSpec, false);
 	}
 
 	private updateMinRowStarValueIfNeeded(measureSpec: MeasureSpecs, childMeasuredHeight: number): void {
@@ -976,25 +976,25 @@ class MeasureHelper {
 	private updateMinColumnStarValueIfNeeded(measureSpec: MeasureSpecs, childMeasuredWidth: number): void {
 		// When not stretched star columns are not fixed so we may grow them here
 		// if there is an element that spans on multiple columns
-        if (!this.stretchedHorizontally && measureSpec.starColumnsCount > 0) {
-            const columnIndex = measureSpec.getColumnIndex();
-            const columnSpanEnd = columnIndex + measureSpec.getColumnSpan();
+		if (!this.stretchedHorizontally && measureSpec.starColumnsCount > 0) {
+			const columnIndex = measureSpec.getColumnIndex();
+			const columnSpanEnd = columnIndex + measureSpec.getColumnSpan();
 
-            let remainingSpace = childMeasuredWidth;
-            let minColumnStarValue = this.minColumnStarValue;
+			let remainingSpace = childMeasuredWidth;
+			let minColumnStarValue = this.minColumnStarValue;
 
-            for (let i = columnIndex; i < columnSpanEnd; i++) {
-                const columnGroup = this.columns[i];
-                if (!columnGroup.getIsStar()) {
-                    remainingSpace -= columnGroup.length;
-                }
-            }
+			for (let i = columnIndex; i < columnSpanEnd; i++) {
+				const columnGroup = this.columns[i];
+				if (!columnGroup.getIsStar()) {
+					remainingSpace -= columnGroup.length;
+				}
+			}
 
-            if (remainingSpace > 0) {
-                minColumnStarValue = Math.max(remainingSpace / measureSpec.starColumnsCount, minColumnStarValue);
-            }
+			if (remainingSpace > 0) {
+				minColumnStarValue = Math.max(remainingSpace / measureSpec.starColumnsCount, minColumnStarValue);
+			}
 
-            this.minColumnStarValue = minColumnStarValue;
-        }
+			this.minColumnStarValue = minColumnStarValue;
+		}
 	}
 }
