@@ -38,7 +38,7 @@ function getUIFontCached(fontDescriptor: FontDescriptor) {
 		const variationAxes: NSArray<NSDictionary<FontVariationAxisType, string | number>> = CGFontCopyVariationAxes(font);
 		// This can be null if font doesn't support axes
 		if (variationAxes?.count) {
-			const variationSettings = {};
+			const variationSettings = NSMutableDictionary.new();
 			const variationAxesCount = variationAxes.count;
 			const variationAxesNames: string[] = [];
 
@@ -49,11 +49,11 @@ function getUIFontCached(fontDescriptor: FontDescriptor) {
 			for (const variationSetting of fontDescriptor.fontVariationSettings) {
 				const axisName = fuzzySearch(variationSetting.axis, variationAxesNames);
 				if (axisName?.length) {
-					variationSettings[axisName[0]] = variationSetting.value;
+					variationSettings.setValueForKey(variationSetting.value, axisName[0]);
 				}
 			}
 
-			font = CGFontCreateCopyWithVariations(font, variationSettings as any);
+			font = CGFontCreateCopyWithVariations(font, variationSettings);
 			uiFont = CTFontCreateWithGraphicsFont(font, fontDescriptor.fontSize, null, null);
 		}
 	}
