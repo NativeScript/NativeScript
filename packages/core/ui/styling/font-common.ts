@@ -30,7 +30,7 @@ export abstract class Font implements FontDefinition {
 	public abstract withFontWeight(weight: FontWeightType): Font;
 	public abstract withFontSize(size: number): Font;
 	public abstract withFontScale(scale: number): Font;
-	public abstract withFontVariationSettings(variationSettings: Array<FontVariationSettingsType> | null): Font;
+	public abstract withFontVariationSettings(variationSettings: FontVariationSettingsType[]): Font;
 
 	public static equals(value1: Font, value2: Font): boolean {
 		// both values are falsy
@@ -43,7 +43,7 @@ export abstract class Font implements FontDefinition {
 			return false;
 		}
 
-		return value1.fontFamily === value2.fontFamily && value1.fontSize === value2.fontSize && value1.fontStyle === value2.fontStyle && value1.fontWeight === value2.fontWeight;
+		return value1.fontFamily === value2.fontFamily && value1.fontSize === value2.fontSize && value1.fontStyle === value2.fontStyle && value1.fontWeight === value2.fontWeight && value1.fontScale === value2.fontScale && FontVariationSettings.toString(value1.fontVariationSettings) === FontVariationSettings.toString(value2.fontVariationSettings);
 	}
 }
 
