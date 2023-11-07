@@ -1,4 +1,4 @@
-import { EditableTextBase as EditableTextBaseCommon, autofillTypeProperty, keyboardTypeProperty, returnKeyTypeProperty, autocapitalizationTypeProperty, autocorrectProperty } from './editable-text-base-common';
+import { EditableTextBase as EditableTextBaseCommon, autofillTypeProperty, keyboardTypeProperty, returnKeyTypeProperty, autocapitalizationTypeProperty, autocorrectProperty, selectableProperty } from './editable-text-base-common';
 import { FormattedString } from '../text-base/formatted-string';
 import { CoreTypes } from '../../core-types';
 
@@ -243,6 +243,13 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 
 		this.nativeTextViewProtected.autocorrectionType = newValue;
 		this.nativeTextViewProtected.spellCheckingType = spelling;
+	}
+
+	[selectableProperty.getDefault](): boolean {
+		return true;
+	}
+	[selectableProperty.setNative](value: boolean) {
+		this.nativeViewProtected['selectable'] = value;
 	}
 	public setSelection(start: number, stop?: number) {
 		const view = this.nativeTextViewProtected;

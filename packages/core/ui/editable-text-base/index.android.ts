@@ -1,4 +1,4 @@
-import { EditableTextBase as EditableTextBaseCommon, autofillTypeProperty, keyboardTypeProperty, returnKeyTypeProperty, editableProperty, autocapitalizationTypeProperty, autocorrectProperty, hintProperty, placeholderColorProperty, maxLengthProperty } from './editable-text-base-common';
+import { EditableTextBase as EditableTextBaseCommon, autofillTypeProperty, keyboardTypeProperty, returnKeyTypeProperty, editableProperty, autocapitalizationTypeProperty, autocorrectProperty, hintProperty, placeholderColorProperty, maxLengthProperty, selectableProperty } from './editable-text-base-common';
 import { textTransformProperty, textProperty, resetSymbol } from '../text-base';
 import { Color } from '../../color';
 import { ad } from '../../utils';
@@ -108,6 +108,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 	public initNativeView(): void {
 		super.initNativeView();
 		const editText = this.nativeTextViewProtected;
+		editText.setTextIsSelectable(this.selectable);
 		this._configureEditText(editText);
 		initializeEditTextListeners();
 		const listeners = new EditTextListeners(new WeakRef(this));
@@ -163,10 +164,11 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 	}
 
 	public _setInputType(inputType: number): void {
+		console.log('_setInputType', inputType, this.selectable, this.editable);
 		const nativeView = this.nativeTextViewProtected;
 		try {
 			this._changeFromCode = true;
-			nativeView.setInputType(parseInt(<any>inputType, 10));
+			nativeView.setInputType(this.editable ? parseInt(<any>inputType, 10) : 0);
 		} finally {
 			this._changeFromCode = false;
 		}
@@ -179,7 +181,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 
 		// clear these fields instead of clearing listener.
 		// this allows input Type to be changed even after editable is false.
-		if (!this.editable) {
+		if (!this.editable && !this.selectable) {
 			nativeView.setFocusable(false);
 			nativeView.setFocusableInTouchMode(false);
 			nativeView.setLongClickable(false);
@@ -365,6 +367,13 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 			}
 			nativeView.setKeyListener(null);
 		}
+	}
+
+	[selectableProperty.getDefault](): boolean {
+		return true;
+	}
+	[selectableProperty.setNative](value: boolean) {
+		this.nativeViewProtected.setTextIsSelectable(value);
 	}
 
 	[autocapitalizationTypeProperty.getDefault](): 'none' | 'words' | 'sentences' | 'allcharacters' | string {

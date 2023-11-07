@@ -19,6 +19,7 @@ export abstract class EditableTextBase extends TextBase implements EditableTextB
 	public autocapitalizationType: CoreTypes.AutocapitalizationInputType;
 	public autofillType: CoreTypes.AutofillType;
 	public editable: boolean;
+	public selectable: boolean;
 	public autocorrect: boolean;
 	public hint: string;
 	public maxLength: number;
@@ -70,6 +71,13 @@ export const editableProperty = new Property<EditableTextBase, boolean>({
 	valueConverter: booleanConverter,
 });
 editableProperty.register(EditableTextBase);
+
+export const selectableProperty = new Property<EditableTextBase, boolean>({
+	name: 'selectable',
+	defaultValue: true,
+	valueConverter: booleanConverter,
+});
+selectableProperty.register(EditableTextBase);
 
 export const updateTextTriggerProperty = new Property<EditableTextBase, CoreTypes.UpdateTextTriggerType>({ name: 'updateTextTrigger', defaultValue: CoreTypes.UpdateTextTrigger.textChanged });
 updateTextTriggerProperty.register(EditableTextBase);
