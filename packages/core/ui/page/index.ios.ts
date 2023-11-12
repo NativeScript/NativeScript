@@ -2,7 +2,7 @@
 import { Frame, BackstackEntry, NavigationType } from '../frame';
 
 // Types.
-import { View, IOSHelper } from '../core/view';
+import { View, IOSHelper, propagateInheritableProperties, propagateInheritableCssProperties } from '../core/view';
 import { PageBase, actionBarHiddenProperty, statusBarStyleProperty } from './page-common';
 
 import { profile } from '../../profiling';
@@ -133,15 +133,20 @@ class UIViewControllerImpl extends UIViewController {
 		if (frame) {
 			frame._resolvedPage = owner;
 
-			if (!owner.parent) {
-				if (!frame._styleScope) {
-					// Make sure page will have styleScope even if frame don't.
-					owner._updateStyleScope();
-				}
+			if (owner.parent === frame) {
+				propagateInheritableProperties(frame, owner);
+				propagateInheritableCssProperties(frame.style, owner.style);
+			} else {
+				if (!owner.parent) {
+					if (!frame._styleScope) {
+						// Make sure page will have styleScope even if frame don't.
+						owner._updateStyleScope();
+					}
 
-				frame._addView(owner);
-			} else if (owner.parent !== frame) {
-				throw new Error('Page is already shown on another frame.');
+					frame._addView(owner);
+				} else {
+					throw new Error('Page is already shown on another frame.');
+				}
 			}
 
 			frame._updateActionBar(owner);

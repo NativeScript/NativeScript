@@ -2,7 +2,7 @@ import type { BackstackEntry, NavigationContext, NavigationEntry, NavigationTran
 import { NavigationType } from './frame-interfaces';
 import { Page } from '../page';
 import { View, CustomLayoutView, CSSType } from '../core/view';
-import { Property } from '../core/properties';
+import { Property, propagateInheritableCssProperties, propagateInheritableProperties } from '../core/properties';
 import { Trace } from '../../trace';
 import { frameStack, topmost as frameStackTopmost, _pushInFrameStack, _popFromFrameStack, _removeFromFrameStack } from './frame-stack';
 import { viewMatchesModuleContext } from '../core/view/view-common';
@@ -243,12 +243,17 @@ export class FrameBase extends CustomLayoutView {
 
 	public setCurrent(entry: BackstackEntry, navigationType: NavigationType): void {
 		const newPage = entry.resolvedPage;
+		const frame = newPage.frame;
+
+		this._resolvedPage = newPage;
+
 		// In case we navigated forward to a page that was in the backstack
 		// with clearHistory: true
-		if (!newPage.frame) {
-			this._resolvedPage = newPage;
-
+		if (!frame) {
 			this._addView(newPage);
+		} else {
+			propagateInheritableProperties(frame, newPage);
+			propagateInheritableCssProperties(frame.style, newPage.style);
 		}
 
 		this._currentEntry = entry;
