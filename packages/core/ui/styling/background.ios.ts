@@ -913,7 +913,7 @@ function generateNonUniformBorderInnerClipPath(bounds: CGRect, background: Backg
 }
 
 /**
- * Calculates the needed width for creating triangular shapes for each border.
+ * Calculates the needed widths for creating triangular shapes for each border.
  * To achieve this, all border widths are scaled according to view bounds.
  *
  * @param bounds
