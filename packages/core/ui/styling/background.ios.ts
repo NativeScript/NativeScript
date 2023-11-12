@@ -300,7 +300,6 @@ export namespace ios {
 
 	export function generateNonUniformBorderInnerClipRoundedPath(view: View, bounds: CGRect): any {
 		const background = view.style.backgroundInternal;
-		const nativeView = <NativeScriptUIView>view.nativeViewProtected;
 
 		const cappedOuterRadii = calculateNonUniformBorderCappedRadii(bounds, background);
 		return generateNonUniformBorderInnerClipPath(bounds, background, cappedOuterRadii);
@@ -308,7 +307,6 @@ export namespace ios {
 
 	export function generateNonUniformBorderOuterClipRoundedPath(view: View, bounds: CGRect): any {
 		const background = view.style.backgroundInternal;
-		const nativeView = <NativeScriptUIView>view.nativeViewProtected;
 
 		const cappedOuterRadii = calculateNonUniformBorderCappedRadii(bounds, background);
 		return generateNonUniformBorderOuterClipPath(bounds, cappedOuterRadii);
@@ -316,7 +314,6 @@ export namespace ios {
 
 	export function generateNonUniformMultiColorBorderRoundedPaths(view: View, bounds: CGRect): Array<any> {
 		const background = view.style.backgroundInternal;
-		const nativeView = <NativeScriptUIView>view.nativeViewProtected;
 
 		return generateNonUniformMultiColorBorderPaths(bounds, background);
 	}
