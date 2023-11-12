@@ -9,7 +9,7 @@ import { AndroidActivityBackPressedEventData, AndroidActivityNewIntentEventData,
 import { Color } from '../../color';
 import { Observable } from '../../data/observable';
 import { Trace } from '../../trace';
-import { propagateInheritableCssProperties, propagateInheritableProperties, View } from '../core/view';
+import { View } from '../core/view';
 import { _stack, FrameBase, NavigationType } from './frame-common';
 
 import { _clearEntry, _clearFragment, _getAnimatedEntries, _reverseTransitions, _setAndroidFragmentTransitions, _updateTransitions, addNativeTransitionListener } from './fragment.transitions';
@@ -916,8 +916,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 		frame._resolvedPage = page;
 
 		if (page.parent === frame) {
-			propagateInheritableProperties(frame, page);
-			propagateInheritableCssProperties(frame.style, page.style);
+			frame._inheritStyles(page);
 
 			// If we are navigating to a page that was destroyed
 			// reinitialize its UI.

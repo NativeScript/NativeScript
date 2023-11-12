@@ -2,7 +2,7 @@ import type { BackstackEntry, NavigationContext, NavigationEntry, NavigationTran
 import { NavigationType } from './frame-interfaces';
 import { Page } from '../page';
 import { View, CustomLayoutView, CSSType } from '../core/view';
-import { Property, propagateInheritableCssProperties, propagateInheritableProperties } from '../core/properties';
+import { Property } from '../core/properties';
 import { Trace } from '../../trace';
 import { frameStack, topmost as frameStackTopmost, _pushInFrameStack, _popFromFrameStack, _removeFromFrameStack } from './frame-stack';
 import { viewMatchesModuleContext } from '../core/view/view-common';
@@ -252,8 +252,7 @@ export class FrameBase extends CustomLayoutView {
 		if (!frame) {
 			this._addView(newPage);
 		} else {
-			propagateInheritableProperties(frame, newPage);
-			propagateInheritableCssProperties(frame.style, newPage.style);
+			frame._inheritStyles(newPage);
 		}
 
 		this._currentEntry = entry;

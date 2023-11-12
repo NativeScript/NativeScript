@@ -2,7 +2,7 @@
 import { Frame, BackstackEntry, NavigationType } from '../frame';
 
 // Types.
-import { View, IOSHelper, propagateInheritableProperties, propagateInheritableCssProperties } from '../core/view';
+import { View, IOSHelper } from '../core/view';
 import { PageBase, actionBarHiddenProperty, statusBarStyleProperty } from './page-common';
 
 import { profile } from '../../profiling';
@@ -134,8 +134,7 @@ class UIViewControllerImpl extends UIViewController {
 			frame._resolvedPage = owner;
 
 			if (owner.parent === frame) {
-				propagateInheritableProperties(frame, owner);
-				propagateInheritableCssProperties(frame.style, owner.style);
+				frame._inheritStyles(owner);
 			} else {
 				if (!owner.parent) {
 					if (!frame._styleScope) {
