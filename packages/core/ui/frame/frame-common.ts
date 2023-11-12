@@ -252,7 +252,7 @@ export class FrameBase extends CustomLayoutView {
 		if (!frame) {
 			this._addView(newPage);
 		} else {
-			frame._inheritStyles(newPage);
+			frame._inheritStyles(newPage, false);
 		}
 
 		this._currentEntry = entry;

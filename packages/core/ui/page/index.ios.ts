@@ -134,7 +134,7 @@ class UIViewControllerImpl extends UIViewController {
 			frame._resolvedPage = owner;
 
 			if (owner.parent === frame) {
-				frame._inheritStyles(owner);
+				frame._inheritStyles(owner, false);
 			} else {
 				if (!owner.parent) {
 					if (!frame._styleScope) {
