@@ -154,9 +154,10 @@ export function _setAndroidFragmentTransitions(animated: boolean, navigationTran
 			currentEntry.transition = transition || customTransition;
 		}
 	}
-
-	printTransitions(currentEntry);
-	printTransitions(newEntry);
+	if (Trace.isEnabled()) {
+		printTransitions(currentEntry);
+		printTransitions(newEntry);
+	}
 }
 
 function setupAllAnimation(entry: ExpandedEntry, transition: Transition): void {
@@ -678,7 +679,7 @@ function toShortString(nativeTransition: androidx.transition.Transition): string
 }
 
 function printTransitions(entry: ExpandedEntry) {
-	if (entry && Trace.isEnabled()) {
+	if (entry) {
 		let result = `${entry.fragmentTag} Transitions:`;
 		if (entry.transitionName) {
 			result += `transitionName=${entry.transitionName}, `;
