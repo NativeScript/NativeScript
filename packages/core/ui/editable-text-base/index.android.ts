@@ -164,7 +164,6 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 	}
 
 	public _setInputType(inputType: number): void {
-		console.log('_setInputType', inputType, this.selectable, this.editable);
 		const nativeView = this.nativeTextViewProtected;
 		try {
 			this._changeFromCode = true;
