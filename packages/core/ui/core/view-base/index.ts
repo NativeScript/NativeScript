@@ -381,6 +381,11 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	 */
 	public sharedTransitionIgnore: boolean;
 
+	/**
+	 * Default visual state, defaults to 'normal'
+	 */
+	public defaultVisualState: string = 'normal';
+
 	public _domId: number;
 	public _context: any /* android.content.Context */;
 	public _isAddedToNativeVisualTree: boolean;
@@ -1256,6 +1261,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	 */
 	public _removeViewFromNativeVisualTree(view: ViewBase) {
 		view._isAddedToNativeVisualTree = false;
+	}
+
+	public get visualState() {
+		return this._visualState;
 	}
 
 	public _goToVisualState(state: string) {
