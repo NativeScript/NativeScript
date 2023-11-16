@@ -18,6 +18,7 @@ import type { ModalTransition } from '../../transition/modal-transition';
 import { SharedTransition } from '../../transition/shared-transition';
 import { GestureStateTypes, PanGestureEventData } from '../../gestures';
 import { NativeScriptUIView } from '../../utils';
+import { Application } from '../../../application';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -503,6 +504,7 @@ export class View extends ViewCommon implements ViewDefinition {
 		if (!controller) {
 			const nativeView = this.ios || this.nativeViewProtected;
 			controller = <UIViewController>IOSHelper.UILayoutViewController.initWithOwner(new WeakRef(this));
+			this.parent = Application.getRootView();
 
 			if (nativeView instanceof UIView) {
 				controller.view.addSubview(nativeView);
