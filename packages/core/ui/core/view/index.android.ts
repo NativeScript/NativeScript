@@ -295,6 +295,7 @@ function initializeDialogFragment() {
 
 				owner._isAddedToNativeVisualTree = false;
 				owner._tearDownUI(true);
+				owner.parent = null;
 			}
 		}
 	}
