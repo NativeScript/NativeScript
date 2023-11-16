@@ -12,7 +12,7 @@ import type { Frame } from '../ui/frame';
 import type { NavigationEntry } from '../ui/frame/frame-interfaces';
 import type { StyleScope } from '../ui/styling/style-scope';
 import type { AndroidApplication as IAndroidApplication, iOSApplication as IiOSApplication } from './';
-import type { ApplicationEventData, CssChangedEventData, DiscardedErrorEventData, FontScaleChangedEventData, LaunchEventData, LoadAppCSSEventData, NativeScriptError, OrientationChangedEventData, SystemAppearanceChangedEventData, UnhandledErrorEventData } from './application-interfaces';
+import type { ApplicationEventData, CssChangedEventData, DiscardedErrorEventData, FontScaleChangedEventData, InitRootViewEventData, LaunchEventData, LoadAppCSSEventData, NativeScriptError, OrientationChangedEventData, SystemAppearanceChangedEventData, UnhandledErrorEventData } from './application-interfaces';
 
 // prettier-ignore
 const ORIENTATION_CSS_CLASSES = [
@@ -126,6 +126,7 @@ export class ApplicationCommon {
 	readonly livesyncEvent = 'livesync';
 	readonly loadAppCssEvent = 'loadAppCss';
 	readonly cssChangedEvent = 'cssChanged';
+	readonly initRootViewEvent = 'initRootView';
 
 	// Expose statically for backwards compat on AndroidApplication.on etc.
 	/**
@@ -369,6 +370,7 @@ export class ApplicationCommon {
 		this.setRootViewCSSClasses(rootView);
 		initAccessibilityCssHelper();
 		initAccessibilityFontScale();
+		this.notify(<InitRootViewEventData>{ eventName: this.initRootViewEvent, rootView });
 	}
 
 	/**
