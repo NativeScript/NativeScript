@@ -338,6 +338,9 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	private _visualState: string;
 	private _templateParent: ViewBase;
 	private __nativeView: any;
+
+	private _needsCssChange = false;
+
 	// private _disableNativeViewRecycling: boolean;
 
 	public domNode: dnm.DOMNode;
@@ -595,7 +598,9 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		// called a lot and going all up the chain to the page
 		this.suspendRequestLayout = true;
 		this._isLoaded = true;
-		if (!this.disableCss) {
+		if (this._needsCssChange) {
+			this._onCssStateChange();
+		} else if (!this.disableCss) {
 			this._cssState.onLoaded();
 		}
 		this._resumeNativeUpdates(SuspendType.Loaded);
@@ -1348,15 +1353,17 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	 * Notifies each child's css state for change, recursively.
 	 * Either the style scope, className or id properties were changed.
 	 */
-	_onCssStateChange(): void {
+	_onCssStateChange(): boolean {
 		if (this.disableCss) {
-			return;
+			return false;
+		}
+		if (!this.isLoaded) {
+			this._needsCssChange = true;
+			return false;
 		}
 		this._cssState.onChange();
 		eachDescendant(this, (child: ViewBase) => {
-			child._cssState.onChange();
-
-			return true;
+			return child._onCssStateChange();
 		});
 	}
 

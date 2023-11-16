@@ -545,6 +545,12 @@ export class FrameBase extends CustomLayoutView {
 		if (page) {
 			callback(page);
 		}
+		for (let index = 0; index < this.backStack.length; index++) {
+			const backstackEntry = this.backStack[index];
+			if (backstackEntry.resolvedPage) {
+				callback(backstackEntry.resolvedPage);
+			}
+		}
 	}
 
 	public _getIsAnimatedNavigation(entry: NavigationEntry): boolean {
