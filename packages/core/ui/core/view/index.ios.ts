@@ -500,10 +500,11 @@ export class View extends ViewCommon implements ViewDefinition {
 		this._setupAsRootView({});
 
 		super._showNativeModalView(<ViewCommon>parentWithController, options);
-		let controller = this.viewController;
+		let controller: IOSHelper.UILayoutViewController = this.viewController;
 		if (!controller) {
 			const nativeView = this.ios || this.nativeViewProtected;
-			controller = <UIViewController>IOSHelper.UILayoutViewController.initWithOwner(new WeakRef(this));
+			controller = <IOSHelper.UILayoutViewController>IOSHelper.UILayoutViewController.initWithOwner(new WeakRef(this));
+			controller.modal = true;
 			this.parent = Application.getRootView();
 
 			if (nativeView instanceof UIView) {
