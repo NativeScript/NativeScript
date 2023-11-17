@@ -185,13 +185,18 @@ export class PageTransition extends Transition {
 			return;
 		}
 
+		const pageStart = state.pageStart;
 		const pageEnd = state.pageEnd;
 
 		//we can't look for presented right now as the toPage might not be loaded
 		// and thus some views like ListView/Pager... might not have loaded their "children"
 		// presented will be handled in loaded event of toPage
-		const { presenting } = SharedTransition.getSharedElements(fromPage, toPage);
+		let { presenting } = SharedTransition.getSharedElements(fromPage, toPage);
 
+		if (pageStart?.sharedTransitionTags) {
+			const keys = Object.keys(pageStart?.sharedTransitionTags);
+			presenting = presenting.filter((v) => keys.indexOf(v.sharedTransitionTag) !== -1);
+		}
 		// Note: we can enhance android more over time with element targeting across different screens
 		// const pageStart = state.pageStart;
 		// const pageEndIndependentTags = Object.keys(pageEnd?.sharedTransitionTags || {});
@@ -225,7 +230,11 @@ export class PageTransition extends Transition {
 		const onPageLoaded = () => {
 			// add a timeout so that Views like ListView / CollectionView can have their children instantiated
 			setTimeout(() => {
-				const { presented } = SharedTransition.getSharedElements(fromPage, toPage);
+				let { presented } = SharedTransition.getSharedElements(fromPage, toPage);
+				if (pageEnd?.sharedTransitionTags) {
+					const keys = Object.keys(pageEnd?.sharedTransitionTags);
+					presented = presented.filter((v) => keys.indexOf(v.sharedTransitionTag) !== -1);
+				}
 				// const sharedElementTags = sharedElements.map((v) => v.sharedTransitionTag);
 				presented.forEach((v) => setTransitionName(v));
 				newFragment.startPostponedEnterTransition();
