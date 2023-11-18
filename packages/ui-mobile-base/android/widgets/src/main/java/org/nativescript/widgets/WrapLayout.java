@@ -2,6 +2,7 @@ package org.nativescript.widgets;
 
 import android.content.Context;
 import android.view.View;
+import android.util.AttributeSet;
 
 import java.util.ArrayList;
 
