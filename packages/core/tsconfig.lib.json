@@ -2,7 +2,7 @@
 	"extends": "./tsconfig.json",
 	"compilerOptions": {
 		"noEmitOnError": true,
-		"noEmitHelpers": true,
+		"noEmitHelpers": false,
 		"declaration": true,
 		"ignoreDeprecations": "5.0",
 		"removeComments": false,

@@ -274,7 +274,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			},
 			getCustomTransformers() {
 				return {
-					before: [require('../transformers/NativeClass').default],
+					before: [],
 				};
 			},
 		});
