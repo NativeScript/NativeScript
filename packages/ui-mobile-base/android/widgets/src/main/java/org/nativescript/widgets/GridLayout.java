@@ -28,10 +28,16 @@ public class GridLayout extends LayoutBase {
 	private final HashMap<View, MeasureSpecs> map = new HashMap<>();
 
 	public GridLayout(Context context) {
-		super(context);
+		this(context, null);
+	}
+	public GridLayout(Context context, AttributeSet attrs) {
+		this(context, attrs, 0);
+	}
+	public GridLayout(Context context, AttributeSet attrs, int defStyleAttr) {
+		super(context, attrs, defStyleAttr);
 	}
 	public GridLayout(Context context, String rows) {
-		this(context);
+		this(context, null, 0);
 		this.addRowsFromJSON(rows);
 	}
 	public GridLayout(Context context, String rows, String columns) {

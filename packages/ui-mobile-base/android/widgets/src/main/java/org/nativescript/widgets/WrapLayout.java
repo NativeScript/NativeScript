@@ -16,9 +16,14 @@ public class WrapLayout extends LayoutBase {
 	private final ArrayList<Integer> _lengths = new ArrayList<>();
 
 	public WrapLayout(Context context) {
-		super(context);
+		this(context, null);
 	}
-
+	public WrapLayout(Context context, AttributeSet attrs) {
+		this(context, attrs, 0);
+	}
+	public WrapLayout(Context context, AttributeSet attrs, int defStyleAttr) {
+		super(context, attrs, defStyleAttr);
+	}
 	public Orientation getOrientation() {
 		return this._orientation;
 	}

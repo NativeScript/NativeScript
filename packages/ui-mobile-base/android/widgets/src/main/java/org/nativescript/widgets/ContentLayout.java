@@ -13,7 +13,13 @@ import android.view.View;
 public class ContentLayout extends LayoutBase {
 
 	public ContentLayout(Context context) {
-		super(context);
+		this(context, null);
+	}
+	public ContentLayout(Context context, AttributeSet attrs) {
+		this(context, attrs, 0);
+	}
+	public ContentLayout(Context context, AttributeSet attrs, int defStyleAttr) {
+		super(context, attrs, defStyleAttr);
 	}
 
 	@Override
