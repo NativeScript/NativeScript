@@ -14,6 +14,9 @@ export interface StrokeCSSValues {
  */
 export function parseCSSStroke(value: string): StrokeCSSValues {
 	const data = parseCSSShorthand(value);
+	if (!data) {
+		return null;
+	}
 	const [width] = data.values;
 
 	return {
