@@ -37,11 +37,7 @@ export function parseCSSShorthand(value: string): {
 	const first = parts[0];
 
 	if (['', 'none', 'unset'].includes(first)) {
-		return {
-			inset: false,
-			color: undefined,
-			values: [],
-		};
+		return null;
 	} else {
 		const invalidColors = ['inset', 'unset'];
 		const inset = parts.includes('inset');
