@@ -35,13 +35,12 @@ export class ImageAsset extends ImageAssetBase {
 		if (!this.ios && !this.nativeImage) {
 			callback(null, 'Asset cannot be found.');
 		}
-
 		const srcWidth = this.nativeImage ? this.nativeImage.size.width : this.ios.pixelWidth;
 		const srcHeight = this.nativeImage ? this.nativeImage.size.height : this.ios.pixelHeight;
 		const requestedSize = getRequestedImageSize({ width: srcWidth, height: srcHeight }, this.options);
 
 		if (this.nativeImage) {
-			callback(this.scaleImage(this.nativeImage, CGSizeMake(requestedSize.width, requestedSize.height)), null);
+			callback(requestedSize ? this.scaleImage(this.nativeImage, CGSizeMake(requestedSize.width, requestedSize.height)) : this.nativeImage, null);
 			queueGC();
 			return;
 		}
