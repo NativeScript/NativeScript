@@ -605,6 +605,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		}
 		this._resumeNativeUpdates(SuspendType.Loaded);
 
+		// we remove suspend before going through children so that
+		// if children ask for a layout we propagate it
+		this.suspendRequestLayout = false;
+
 		this.eachChild((child) => {
 			this.loadView(child);
 
@@ -612,7 +616,9 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		});
 		setupAccessibleView(<any>this);
 
-		this.suspendRequestLayout = false;
+		if (this.isLayoutRequestNeeded) {
+			this.requestLayout();
+		}
 		this._emit(ViewBase.loadedEvent);
 	}
 
