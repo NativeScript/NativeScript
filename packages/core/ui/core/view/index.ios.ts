@@ -8,7 +8,7 @@ import { Trace } from '../../../trace';
 import { layout, iOSNativeHelper } from '../../../utils';
 import { isNumber } from '../../../utils/types';
 import { IOSHelper } from './view-helper';
-import { ios as iosBackground, Background, BackgroundClearFlags } from '../../styling/background';
+import { ios as iosBackground, Background } from '../../styling/background';
 import { perspectiveProperty, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty } from '../../styling/style-properties';
 import { profile } from '../../../profiling';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty, accessibilityIgnoresInvertColorsProperty } from '../../../accessibility/accessibility-properties';
@@ -97,12 +97,6 @@ export class View extends ViewCommon implements ViewDefinition {
 		this._isLaidOut = false;
 		this._hasTransform = false;
 		this._hasPendingTransform = false;
-
-		// Make sure shadows get removed
-		this.style.backgroundInternal.clearFlags |= BackgroundClearFlags.CLEAR_BOX_SHADOW;
-
-		// Perform background cleanup
-		iosBackground.clearBackgroundVisualEffects(this);
 	}
 
 	public requestLayout(): void {
@@ -190,21 +184,13 @@ export class View extends ViewCommon implements ViewDefinition {
 
 	private layoutOuterShadows(): void {
 		const nativeView: NativeScriptUIView = <NativeScriptUIView>this.nativeViewProtected;
-		if (nativeView) {
-			const frame = nativeView.frame;
-			const needsUpdate: boolean = nativeView.outerShadowContainerLayer != null;
+		if (nativeView?.outerShadowContainerLayer) {
+			CATransaction.setDisableActions(true);
 
-			if (needsUpdate) {
-				CATransaction.setDisableActions(true);
+			nativeView.outerShadowContainerLayer.bounds = nativeView.bounds;
+			nativeView.outerShadowContainerLayer.position = nativeView.center;
 
-				if (nativeView.outerShadowContainerLayer) {
-					const { x: originX, y: originY }: CGPoint = nativeView.outerShadowContainerLayer.anchorPoint;
-					nativeView.outerShadowContainerLayer.bounds = nativeView.bounds;
-					nativeView.outerShadowContainerLayer.position = CGPointMake(frame.origin.x + frame.size.width * originX, frame.origin.y + frame.size.height * originY);
-				}
-
-				CATransaction.setDisableActions(false);
-			}
+			CATransaction.setDisableActions(false);
 		}
 	}
 
@@ -1125,13 +1111,18 @@ export class CustomLayoutView extends ContainerView {
 		super._addViewToNativeVisualTree(child, atIndex);
 
 		const parentNativeView = this.nativeViewProtected;
-		const childNativeView = child.nativeViewProtected;
+		const childNativeView: NativeScriptUIView = <NativeScriptUIView>child.nativeViewProtected;
 
 		if (parentNativeView && childNativeView) {
 			if (typeof atIndex !== 'number' || atIndex >= parentNativeView.subviews.count) {
 				parentNativeView.addSubview(childNativeView);
 			} else {
 				parentNativeView.insertSubviewAtIndex(childNativeView, atIndex);
+			}
+
+			// Add outer shadow layer manually as it belongs to parent layer tree (this is needed for reusable views)
+			if (childNativeView.outerShadowContainerLayer && !childNativeView.outerShadowContainerLayer.superlayer) {
+				parentNativeView.layer.insertSublayerBelow(childNativeView.outerShadowContainerLayer, childNativeView.layer);
 			}
 
 			return true;
@@ -1151,7 +1142,14 @@ export class CustomLayoutView extends ContainerView {
 		super._removeViewFromNativeVisualTree(child);
 
 		if (child.nativeViewProtected) {
-			child.nativeViewProtected.removeFromSuperview();
+			const nativeView: NativeScriptUIView = <NativeScriptUIView>child.nativeViewProtected;
+
+			// Remove outer shadow layer manually as it belongs to parent layer tree
+			if (nativeView.outerShadowContainerLayer) {
+				nativeView.outerShadowContainerLayer.removeFromSuperlayer();
+			}
+
+			nativeView.removeFromSuperview();
 		}
 	}
 }

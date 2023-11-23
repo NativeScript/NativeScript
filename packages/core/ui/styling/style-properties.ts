@@ -1415,7 +1415,7 @@ const fontProperty = new ShorthandProperty<Style, string>({
 });
 fontProperty.register(Style);
 
-export const fontVariationSettingsProperty = new InheritedCssProperty<Style, Array<FontVariationSettingsType> | null>({
+export const fontVariationSettingsProperty = new InheritedCssProperty<Style, FontVariationSettingsType[]>({
 	name: 'fontVariationSettings',
 	cssName: 'font-variation-settings',
 	affectsLayout: __IOS__,

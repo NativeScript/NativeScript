@@ -1,7 +1,7 @@
 ﻿import { Color } from '../../color';
 import { Span as SpanDefinition } from './span';
 import { ViewBase } from '../core/view-base';
-import { FontStyleType, FontWeightType } from '../styling/font';
+import { FontStyleType, FontVariationSettingsType, FontWeightType } from '../styling/font';
 import { CoreTypes } from '../../core-types';
 import { EventData } from '../../data/observable';
 import { isNullOrUndefined, isString } from '../../utils/types';
@@ -39,6 +39,13 @@ export class Span extends ViewBase implements SpanDefinition {
 	}
 	set fontWeight(value: FontWeightType) {
 		this.style.fontWeight = value;
+	}
+
+	get fontVariationSettings(): FontVariationSettingsType[] {
+		return this.style.fontVariationSettings;
+	}
+	set fontVariationSettings(value: FontVariationSettingsType[]) {
+		this.style.fontVariationSettings = value;
 	}
 
 	get textDecoration(): CoreTypes.TextDecorationType {

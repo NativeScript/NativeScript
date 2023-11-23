@@ -28,8 +28,6 @@ export class PageBase extends ContentView {
 	private _navigationContext: any;
 	private _actionBar: ActionBar;
 
-	public _frame: Frame;
-
 	public actionBarHidden: boolean;
 	public enableSwipeBackNavigation: boolean;
 	public backgroundSpanUnderStatusBar: boolean;
@@ -82,6 +80,15 @@ export class PageBase extends ContentView {
 		return this;
 	}
 
+	public _parentChanged(oldParent: View): void {
+		const newParent = this.parent;
+		if (newParent && !isFrame(newParent)) {
+			throw new Error(`Page can only be nested inside Frame. New parent: ${newParent}`);
+		}
+
+		super._parentChanged(oldParent);
+	}
+
 	public _addChildFromBuilder(name: string, value: any) {
 		if (value.constructor.name === 'ActionBar') {
 			this.actionBar = value;
@@ -95,9 +102,7 @@ export class PageBase extends ContentView {
 	}
 
 	get frame(): Frame {
-		const parent = this.parent;
-
-		return isFrame(parent) ? (parent as Frame) : undefined;
+		return <Frame>this.parent;
 	}
 
 	private createNavigatedData(eventName: string, isBackNavigation: boolean): NavigatedData {

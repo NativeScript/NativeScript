@@ -16,32 +16,28 @@ export class Font extends FontBase {
 
 	private _typeface: android.graphics.Typeface;
 
-	constructor(family: string, size: number, style?: FontStyleType, weight?: FontWeightType, fontVariationSettings?: Array<FontVariationSettingsType>) {
-		super(family, size, style, weight, 1, fontVariationSettings);
-	}
-
 	public withFontFamily(family: string): Font {
-		return new Font(family, this.fontSize, this.fontStyle, this.fontWeight, this.fontVariationSettings);
+		return new Font(family, this.fontSize, this.fontStyle, this.fontWeight, 1, this.fontVariationSettings);
 	}
 
 	public withFontStyle(style: FontStyleType): Font {
-		return new Font(this.fontFamily, this.fontSize, style, this.fontWeight, this.fontVariationSettings);
+		return new Font(this.fontFamily, this.fontSize, style, this.fontWeight, 1, this.fontVariationSettings);
 	}
 
 	public withFontWeight(weight: FontWeightType): Font {
-		return new Font(this.fontFamily, this.fontSize, this.fontStyle, weight, this.fontVariationSettings);
+		return new Font(this.fontFamily, this.fontSize, this.fontStyle, weight, 1, this.fontVariationSettings);
 	}
 
 	public withFontSize(size: number): Font {
-		return new Font(this.fontFamily, size, this.fontStyle, this.fontWeight, this.fontVariationSettings);
+		return new Font(this.fontFamily, size, this.fontStyle, this.fontWeight, 1, this.fontVariationSettings);
 	}
 
 	public withFontScale(scale: number): Font {
-		return new Font(this.fontFamily, this.fontSize, this.fontStyle, this.fontWeight, this.fontVariationSettings);
+		return new Font(this.fontFamily, this.fontSize, this.fontStyle, this.fontWeight, 1, this.fontVariationSettings);
 	}
 
 	public withFontVariationSettings(variationSettings: Array<FontVariationSettingsType> | null): Font {
-		return new Font(this.fontFamily, this.fontSize, this.fontStyle, this.fontWeight, variationSettings);
+		return new Font(this.fontFamily, this.fontSize, this.fontStyle, this.fontWeight, 1, variationSettings);
 	}
 
 	getAndroidTypeface(): android.graphics.Typeface {
@@ -63,8 +59,7 @@ function computeFontCacheKey(fontFamily: string, font: Font) {
 }
 
 function loadFontFromFile(fontFamily: string, font: Font): android.graphics.Typeface {
-	const apiLevel = android.os.Build.VERSION.SDK_INT;
-	const cacheKey = apiLevel >= 26 ? computeFontCacheKey(fontFamily, font) : fontFamily;
+	const cacheKey = SDK_VERSION >= 26 ? computeFontCacheKey(fontFamily, font) : fontFamily;
 
 	appAssets = appAssets || (ad.getApplicationContext() as android.content.Context).getAssets();
 	if (!appAssets) {
@@ -89,12 +84,10 @@ function loadFontFromFile(fontFamily: string, font: Font): android.graphics.Type
 		if (fontAssetPath) {
 			try {
 				fontAssetPath = fs.path.join(fs.knownFolders.currentApp().path, fontAssetPath);
-				if (apiLevel >= 26) {
+				if (SDK_VERSION >= 26) {
 					const builder = new android.graphics.Typeface.Builder(fontAssetPath);
 					if (builder) {
-						if (font.fontVariationSettings !== undefined) {
-							builder.setFontVariationSettings(font.fontVariationSettings?.length ? FontVariationSettings.toString(font.fontVariationSettings) : '');
-						}
+						builder.setFontVariationSettings(font.fontVariationSettings?.length ? FontVariationSettings.toString(font.fontVariationSettings) : '');
 						result = builder.build();
 					} else {
 						result = android.graphics.Typeface.createFromFile(fontAssetPath);
@@ -134,16 +127,13 @@ function createTypeface(font: Font): android.graphics.Typeface {
 			case genericFontFamilies.serif:
 				result = android.graphics.Typeface.create('serif' + getFontWeightSuffix(font.fontWeight), fontStyle);
 				break;
-
 			case genericFontFamilies.sansSerif:
 			case genericFontFamilies.system:
 				result = android.graphics.Typeface.create('sans-serif' + getFontWeightSuffix(font.fontWeight), fontStyle);
 				break;
-
 			case genericFontFamilies.monospace:
 				result = android.graphics.Typeface.create('monospace' + getFontWeightSuffix(font.fontWeight), fontStyle);
 				break;
-
 			default: {
 				result = loadFontFromFile(fontFamily, font);
 				if (result && fontStyle) {

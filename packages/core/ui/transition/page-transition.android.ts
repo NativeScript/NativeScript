@@ -281,14 +281,16 @@ export class PageTransition extends Transition {
 		}
 	}
 	onTransitionEnd(entry) {
-		// as we use hide on fragments instead of remove
-		// we need to reset setTransitionName after transition end
-		// otherwise it will break next transitions using the same transitionName
-		const fromPage = entry?.resolvedPage;
-		const { presenting } = SharedTransition.getSharedElements(fromPage, null);
-		presenting.forEach((v) => {
-			setTransitionName(v, null);
-		});
+		if (__ANDROID__) {
+			// as we use hide on fragments instead of remove
+			// we need to reset setTransitionName after transition end
+			// otherwise it will break next transitions using the same transitionName
+			const fromPage = entry?.resolvedPage;
+			const { presenting } = SharedTransition.getSharedElements(fromPage, null);
+			presenting.forEach((v) => {
+				setTransitionName(v, null);
+			});
+		}
 	}
 }
 
