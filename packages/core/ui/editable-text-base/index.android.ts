@@ -203,7 +203,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 	[keyboardTypeProperty.getDefault](): number {
 		return this.nativeTextViewProtected.getInputType();
 	}
-	[keyboardTypeProperty.setNative](value: 'datetime' | 'phone' | 'number' | 'url' | 'email' | 'integer' | number) {
+	[keyboardTypeProperty.setNative](value: 'datetime' | 'phone' | 'number' | 'url' | 'email' | 'integer' | 'decimal' | number) {
 		let newInputType;
 
 		switch (value) {

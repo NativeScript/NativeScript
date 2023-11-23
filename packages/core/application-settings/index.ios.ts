@@ -75,7 +75,7 @@ export function getAllKeys(): Array<string> {
 }
 export function getAllJSON(): string {
 	const nsDictionary = userDefaults.dictionaryRepresentation();
-	const jsonData = NSJSONSerialization.dataWithJSONObjectOptionsError(nsDictionary, 0);
+	const jsonData = NSJSONSerialization.dataWithJSONObjectOptionsError(nsDictionary, 0 as any);
 	if (jsonData) {
 		return NSString.alloc().initWithDataEncoding(jsonData, NSUTF8StringEncoding).toString();
 	}
