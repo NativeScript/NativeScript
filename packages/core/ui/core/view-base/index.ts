@@ -987,7 +987,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
 	private resetNativeViewInternal(): void {
 		// const nativeView = this.nativeViewProtected;
-		// if (nativeView && global.isAndroid) {
+		// if (nativeView && __ANDROID__) {
 		//     const recycle = this.recycleNativeView;
 		//     if (recycle === "always" || (recycle === "auto" && !this._disableNativeViewRecycling)) {
 		//         resetNativeView(this);
@@ -1034,7 +1034,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		// or for backward compatibility - set before _setupUI in iOS constructor.
 		let nativeView = this.nativeViewProtected;
 
-		// if (global.isAndroid) {
+		// if (__ANDROID__) {
 		//     const recycle = this.recycleNativeView;
 		//     if (recycle === "always" || (recycle === "auto" && !this._disableNativeViewRecycling)) {
 		//         nativeView = <android.view.View>getNativeView(context, this.typeName);
@@ -1044,7 +1044,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 			nativeView = this.createNativeView();
 		}
 
-		if (global.isAndroid) {
+		if (__ANDROID__) {
 			// this check is also unecessary as this code should never be reached with _androidView != null unless reusable = true
 			// also adding this check for feature flag safety
 			if (this._androidView !== nativeView || !this.reusable) {
@@ -1168,7 +1168,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		}
 
 		// const nativeView = this.nativeViewProtected;
-		// if (nativeView && global.isAndroid) {
+		// if (nativeView && __ANDROID__) {
 		//     const recycle = this.recycleNativeView;
 		//     let shouldRecycle = false;
 		//     if (recycle === "always") {
@@ -1178,7 +1178,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		//         shouldRecycle = propertiesSet <= this.recyclePropertyCounter;
 		//     }
 
-		//     // const nativeParent = global.isAndroid ? (<android.view.View>nativeView).getParent() : (<UIView>nativeView).superview;
+		//     // const nativeParent = __ANDROID__ ? (<android.view.View>nativeView).getParent() : (<UIView>nativeView).superview;
 		//     const nativeParent = (<android.view.View>nativeView).getParent();
 		//     const animation = (<android.view.View>nativeView).getAnimation();
 		//     if (shouldRecycle && !nativeParent && !animation) {
@@ -1429,7 +1429,7 @@ bindingContextProperty.register(ViewBase);
 export const hiddenProperty = new Property<ViewBase, boolean>({
 	name: 'hidden',
 	defaultValue: false,
-	affectsLayout: global.isIOS,
+	affectsLayout: __IOS__,
 	valueConverter: booleanConverter,
 	valueChanged: (target, oldValue, newValue) => {
 		if (target) {
