@@ -29,7 +29,7 @@ ignoreErrors
 throwErrors
 
 # only build ios widgets framework on macOS
-if [ "$OSTYPE" = "darwin" ]
+if [[ "$OSTYPE" =~ "darwin" ]];
 then
   ./build.ios.sh
 fi
