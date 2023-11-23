@@ -46,9 +46,9 @@
     "url": "https://github.com/NativeScript/NativeScript.git"
   },
   "dependencies": {
+    "@nativescript/theme": "*",
     "@nx/devkit": "16.9.1",
     "@swc/helpers": "0.5.2",
-    "nativescript-theme-core": "^1.0.4",
     "nx-cloud": "16.4.0"
   },
   "devDependencies": {

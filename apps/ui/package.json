@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "@nativescript/core": "*",
-    "nativescript-theme-core": "*"
+    "@nativescript/theme": "*"
   },
   "devDependencies": {
     "@nativescript/android": "~8.5.0",

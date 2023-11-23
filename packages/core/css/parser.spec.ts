@@ -465,7 +465,7 @@ describe('css', () => {
 
 			it('serialization', () => {
 				const outReworkFile = path.resolve(testingToolsDir, 'out/rework.css.json');
-				const reworkAst = reworkCss.parse(themeCoreLightIos, { source: 'nativescript-theme-core/css/core.light.css' });
+				const reworkAst = reworkCss.parse(themeCoreLightIos, { source: '@nativescript/theme/css/core.light.css' });
 				fs.writeFileSync(
 					outReworkFile,
 					JSON.stringify(reworkAst, (k, v) => (k === 'position' ? undefined : v), '  ')
@@ -533,7 +533,7 @@ describe('css', () => {
 					expect(char).toBe('\n');
 				});
 				const reworkDuration = trapDuration(() => {
-					const ast = reworkCss.parse(themeCoreLightIos, { source: 'nativescript-theme-core/css/core.light.css' });
+					const ast = reworkCss.parse(themeCoreLightIos, { source: '@nativescript/theme/css/core.light.css' });
 					// fs.writeFileSync("rework.css.json", JSON.stringify(ast, null, "\t"));
 				});
 				const shadyDuration = trapDuration(() => {
