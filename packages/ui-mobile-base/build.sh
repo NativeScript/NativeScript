@@ -29,7 +29,6 @@ ignoreErrors
 throwErrors
 
 
-echo "$OSTYPE"
 # only build ios widgets framework on macOS
 if [[ "$OSTYPE" =~ "darwin" ]];
 then
