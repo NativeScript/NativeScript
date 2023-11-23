@@ -7,11 +7,12 @@
     "url": "https://github.com/NativeScript/NativeScript.git"
   },
   "dependencies": {
-    "@nativescript/core": "*",
+    "@akylas/nativescript": "*",
     "@nativescript/theme": "*"
   },
   "devDependencies": {
     "@nativescript/android": "~8.5.0",
+    "@nativescript/core": "*",
     "@nativescript/ios": "~8.5.0",
     "@nativescript/webpack": "*",
     "typescript": "~5.2.0"

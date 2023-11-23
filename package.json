@@ -111,11 +111,7 @@
     ]
   },
   "workspaces": [
-    "dist/packages/*",
-    "apps/*"
-  ],
-  "resolutions": {
-    "@nativescript/core": "link:node_modules/@akylas/nativescript"
-  }
+    "dist/packages/core",
+    "apps/toolbox"
+  ]
 }
-
