@@ -153,7 +153,7 @@ isLoadingProperty.register(ImageBase);
 export const stretchProperty = new Property<ImageBase, CoreTypes.ImageStretchType>({
 	name: 'stretch',
 	defaultValue: 'aspectFit',
-	affectsLayout: global.isIOS,
+	affectsLayout: __IOS__,
 });
 stretchProperty.register(ImageBase);
 
