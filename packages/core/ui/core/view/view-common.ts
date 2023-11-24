@@ -389,7 +389,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		if (closeCallback) {
 			closeCallback(...args);
 		} else {
-			const parent = this.parent;
+			const parent = this._modalParent || this.parent;
 			if (parent) {
 				parent.closeModal(...args);
 			}
@@ -423,6 +423,11 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 			};
 
 			const whenClosedCallback = () => {
+				// if we are closing a modal which itself has modals we need
+				// to clean up and fire events
+				if (this._modal?._closeModalCallback) {
+					this._modal._closeModalCallback();
+				}
 				const transitionState = SharedTransition.getState(this.transitionId);
 				if (transitionState?.interactiveBegan) {
 					SharedTransition.updateState(this.transitionId, {
@@ -447,7 +452,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 			if (!transitionState?.interactiveBegan) {
 				cleanupModalViews();
 			}
-
 			this._hideNativeModalView(parent, whenClosedCallback);
 		};
 	}

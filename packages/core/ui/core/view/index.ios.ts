@@ -505,23 +505,22 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	protected _showNativeModalView(parent: View, options: ShowModalOptions) {
-		const parentWithController = IOSHelper.getParentWithViewController(parent);
+		let parentWithController = IOSHelper.getParentWithViewController(parent);
 		if (!parentWithController) {
 			Trace.write(`Could not find parent with viewController for ${parent} while showing modal view.`, Trace.categories.ViewHierarchy, Trace.messageType.error);
 
 			return;
 		}
 
-		const parentController = parentWithController.viewController;
-		if (parentController.presentedViewController) {
-			Trace.write('Parent is already presenting view controller. Close the current modal page before showing another one!', Trace.categories.ViewHierarchy, Trace.messageType.error);
-
-			return;
+		let parentController = parentWithController.viewController;
+		// we loop to ensure we are showing from the top presented view controller
+		while (parentController.presentedViewController) {
+			parentController = parentController.presentedViewController;
+			parentWithController = parentWithController['_modal'] || parentWithController;
 		}
 
 		if (!parentController.view || !parentController.view.window) {
 			Trace.write('Parent page is not part of the window hierarchy.', Trace.categories.ViewHierarchy, Trace.messageType.error);
-
 			return;
 		}
 
@@ -622,7 +621,6 @@ export class View extends ViewCommon implements ViewDefinition {
 		//   console.log('accessibilityPerformEscape!!')
 		//   return true;
 		// }
-
 		parentController.presentViewControllerAnimatedCompletion(controller, animated, null);
 		const transitionCoordinator = parentController.transitionCoordinator;
 		if (transitionCoordinator) {
@@ -651,12 +649,20 @@ export class View extends ViewCommon implements ViewDefinition {
 			return;
 		}
 
-		const parentController = parent.viewController;
+		let parentController = parent.viewController;
+		// if a dialog (UIAlertController or custom one defining isAlertController) we need to loop over to get the
+		// top presentedViewController to correctly hide without hiding the dialog
+		// though we dont want to go "over" to not go into possible top shown modal
+		if (parentController.presentedViewController && parentController.presentedViewController.presentedViewController && (parentController.presentedViewController instanceof UIAlertController || parentController.presentedViewController['isAlertController'])) {
+			parentController = parentController.presentedViewController;
+		}
+
+		// while(parentController.presentedViewController && parentController.presentedViewController.presentedViewController) {
+		// }
 		let animated = true;
 		if (this._modalAnimatedOptions?.length) {
 			animated = this._modalAnimatedOptions.slice(-1)[0];
 		}
-
 		parentController.dismissViewControllerAnimatedCompletion(animated, () => {
 			const transitionState = SharedTransition.getState(this.transitionId);
 			if (!transitionState?.interactiveCancelled) {
