@@ -519,11 +519,6 @@ export class View extends ViewCommon implements ViewDefinition {
 			parentWithController = parentWithController['_modal'] || parentWithController;
 		}
 
-		if (!parentController.view || !parentController.view.window) {
-			Trace.write('Parent page is not part of the window hierarchy.', Trace.categories.ViewHierarchy, Trace.messageType.error);
-			return;
-		}
-
 		this._setupAsRootView({});
 
 		super._showNativeModalView(<ViewCommon>parentWithController, options);
