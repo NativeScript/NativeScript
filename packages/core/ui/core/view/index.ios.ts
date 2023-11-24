@@ -113,8 +113,9 @@ export class View extends ViewCommon implements ViewDefinition {
 			nativeView.setNeedsLayout();
 		}
 
-		if (this.viewController && this.viewController.view !== nativeView) {
-			this.viewController.view.setNeedsLayout();
+		const controller = this.viewController;
+		if (controller && controller.view !== nativeView) {
+			controller.view.setNeedsLayout();
 		}
 	}
 
