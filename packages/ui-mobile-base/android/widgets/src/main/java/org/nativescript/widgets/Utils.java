@@ -293,11 +293,13 @@ public class Utils {
 					ImageAssetOptions opts = new ImageAssetOptions();
 					opts.keepAspectRatio = true;
 					opts.autoScaleFactor = true;
+					opts.width = bitmapOptions.outWidth;
+					opts.height = bitmapOptions.outHeight;
 
 					try {
 						JSONObject object = new JSONObject(options);
-						opts.width = object.optInt("width", 0);
-						opts.height = object.optInt("height", 0);
+						opts.width = object.optInt("width", bitmapOptions.outWidth);
+						opts.height = object.optInt("height", bitmapOptions.outHeight);
 						opts.keepAspectRatio = object.optBoolean("keepAspectRatio", true);
 						opts.autoScaleFactor = object.optBoolean("autoScaleFactor", true);
 					} catch (JSONException ignored) {

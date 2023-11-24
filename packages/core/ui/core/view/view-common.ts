@@ -23,9 +23,9 @@ import { StyleScope } from '../../styling/style-scope';
 import { LinearGradient } from '../../styling/linear-gradient';
 
 import * as am from '../../animation';
-import { AccessibilityEventOptions, AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait } from '../../../accessibility/accessibility-types';
+import type { AccessibilityEventOptions, AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait } from '../../../accessibility/accessibility-types';
 import { accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityValueProperty, accessibilityIgnoresInvertColorsProperty } from '../../../accessibility/accessibility-properties';
-import { accessibilityBlurEvent, accessibilityFocusChangedEvent, accessibilityFocusEvent, accessibilityPerformEscapeEvent, getCurrentFontScale } from '../../../accessibility';
+import { getCurrentFontScale } from '../../../accessibility';
 import { ShadowCSSValues } from '../../styling/css-shadow';
 import { SharedTransition, SharedTransitionInteractiveOptions } from '../../transition/shared-transition';
 
@@ -75,10 +75,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public static layoutChangedEvent = 'layoutChanged';
 	public static shownModallyEvent = 'shownModally';
 	public static showingModallyEvent = 'showingModally';
-	public static accessibilityBlurEvent = accessibilityBlurEvent;
-	public static accessibilityFocusEvent = accessibilityFocusEvent;
-	public static accessibilityFocusChangedEvent = accessibilityFocusChangedEvent;
-	public static accessibilityPerformEscapeEvent = accessibilityPerformEscapeEvent;
+	public static closingModallyEvent = 'closingModally';
 
 	public accessibilityIdentifier: string;
 	public accessibilityLabel: string;
@@ -138,6 +135,9 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	}
 
 	public changeCssFile(cssFileName: string): void {
+		if (this.disableCss) {
+			return;
+		}
 		const scope = this._styleScope;
 		if (scope && cssFileName) {
 			scope.changeCssFile(cssFileName);
@@ -146,6 +146,9 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	}
 
 	public _updateStyleScope(cssFileName?: string, cssString?: string, css?: string): void {
+		if (this.disableCss) {
+			return;
+		}
 		let scope = this._styleScope;
 		if (!scope) {
 			scope = new StyleScope();
@@ -386,7 +389,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		if (closeCallback) {
 			closeCallback(...args);
 		} else {
-			const parent = this.parent;
+			const parent = this._modalParent || this.parent;
 			if (parent) {
 				parent.closeModal(...args);
 			}
@@ -420,6 +423,11 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 			};
 
 			const whenClosedCallback = () => {
+				// if we are closing a modal which itself has modals we need
+				// to clean up and fire events
+				if (this._modal?._closeModalCallback) {
+					this._modal._closeModalCallback();
+				}
 				const transitionState = SharedTransition.getState(this.transitionId);
 				if (transitionState?.interactiveBegan) {
 					SharedTransition.updateState(this.transitionId, {
@@ -436,6 +444,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 					}
 
 					this._tearDownUI(true);
+					this.parent = null;
 				}
 			};
 
@@ -443,7 +452,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 			if (!transitionState?.interactiveBegan) {
 				cleanupModalViews();
 			}
-
 			this._hideNativeModalView(parent, whenClosedCallback);
 		};
 	}
@@ -474,6 +482,13 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 			object: this,
 			context: this._modalContext,
 			closeCallback: this._closeModalCallback,
+		};
+		this.notify(args);
+	}
+	protected _raiseClosingModallyEvent() {
+		const args: EventData = {
+			eventName: ViewCommon.closingModallyEvent,
+			object: this,
 		};
 		this.notify(args);
 	}
@@ -1068,6 +1083,12 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		return this.createAnimation(animation).play();
 	}
 
+	public cancelAllAnimations() {
+		if (this._localAnimations) {
+			this._localAnimations.forEach((a) => this._removeAnimation(a));
+		}
+	}
+
 	public createAnimation(animation: any): am.Animation {
 		ensureAnimationModule();
 		if (!this._localAnimations) {
@@ -1095,10 +1116,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	}
 
 	public resetNativeView(): void {
-		if (this._localAnimations) {
-			this._localAnimations.forEach((a) => this._removeAnimation(a));
-		}
-
+		this.cancelAllAnimations();
 		super.resetNativeView();
 	}
 
@@ -1192,12 +1210,24 @@ export const originYProperty = new Property<ViewCommon, number>({
 });
 originYProperty.register(ViewCommon);
 
+export const defaultVisualStateProperty = new Property<ViewCommon, string>({
+	name: 'defaultVisualState',
+	defaultValue: 'normal',
+	valueChanged(this: void, target, oldValue, newValue): void {
+		target.defaultVisualState = newValue || 'normal';
+		if (!target.visualState || target.visualState === oldValue) {
+			target._goToVisualState(target.defaultVisualState);
+		}
+	},
+});
+defaultVisualStateProperty.register(ViewCommon);
+
 export const isEnabledProperty = new Property<ViewCommon, boolean>({
 	name: 'isEnabled',
 	defaultValue: true,
 	valueConverter: booleanConverter,
 	valueChanged(this: void, target, oldValue, newValue): void {
-		target._goToVisualState(newValue ? 'normal' : 'disabled');
+		target._goToVisualState(newValue ? target.defaultVisualState : 'disabled');
 	},
 });
 isEnabledProperty.register(ViewCommon);

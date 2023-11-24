@@ -6,6 +6,7 @@ import { booleanConverter } from '../core/view-base';
 import { Style } from '../styling/style';
 import { Color } from '../../color';
 import { CoreTypes } from '../../core-types';
+import { colorConverter } from '../styling/style-properties';
 
 export abstract class EditableTextBase extends TextBase implements EditableTextBaseDefinition {
 	public static blurEvent = 'blur';
@@ -18,6 +19,7 @@ export abstract class EditableTextBase extends TextBase implements EditableTextB
 	public autocapitalizationType: CoreTypes.AutocapitalizationInputType;
 	public autofillType: CoreTypes.AutofillType;
 	public editable: boolean;
+	public selectable: boolean;
 	public autocorrect: boolean;
 	public hint: string;
 	public maxLength: number;
@@ -46,11 +48,11 @@ export const placeholderColorProperty = new CssProperty<Style, Color>({
 	name: 'placeholderColor',
 	cssName: 'placeholder-color',
 	equalityComparer: Color.equals,
-	valueConverter: (v) => new Color(v),
+	valueConverter: colorConverter,
 });
 placeholderColorProperty.register(Style);
 
-const keyboardTypeConverter = makeParser<CoreTypes.KeyboardInputType>(makeValidator<CoreTypes.KeyboardInputType>(CoreTypes.KeyboardType.datetime, CoreTypes.KeyboardType.phone, CoreTypes.KeyboardType.number, CoreTypes.KeyboardType.url, CoreTypes.KeyboardType.email, CoreTypes.KeyboardType.integer), true);
+const keyboardTypeConverter = makeParser<CoreTypes.KeyboardInputType>(makeValidator<CoreTypes.KeyboardInputType>(CoreTypes.KeyboardType.datetime, CoreTypes.KeyboardType.phone, CoreTypes.KeyboardType.number, CoreTypes.KeyboardType.url, CoreTypes.KeyboardType.email, CoreTypes.KeyboardType.integer, CoreTypes.KeyboardType.decimal), true);
 
 export const autofillTypeProperty = new Property<EditableTextBase, CoreTypes.AutofillType>({ name: 'autofillType' });
 autofillTypeProperty.register(EditableTextBase);
@@ -69,6 +71,13 @@ export const editableProperty = new Property<EditableTextBase, boolean>({
 	valueConverter: booleanConverter,
 });
 editableProperty.register(EditableTextBase);
+
+export const selectableProperty = new Property<EditableTextBase, boolean>({
+	name: 'selectable',
+	defaultValue: true,
+	valueConverter: booleanConverter,
+});
+selectableProperty.register(EditableTextBase);
 
 export const updateTextTriggerProperty = new Property<EditableTextBase, CoreTypes.UpdateTextTriggerType>({ name: 'updateTextTrigger', defaultValue: CoreTypes.UpdateTextTrigger.textChanged });
 updateTextTriggerProperty.register(EditableTextBase);

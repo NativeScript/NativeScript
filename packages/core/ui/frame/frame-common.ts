@@ -275,8 +275,8 @@ export class FrameBase extends CustomLayoutView {
 	public _updateBackstack(entry: BackstackEntry, navigationType: NavigationType): void {
 		const isBack = navigationType === NavigationType.back;
 		const isReplace = navigationType === NavigationType.replace;
-		this.raiseCurrentPageNavigatedEvents(isBack);
 		const current = this._currentEntry;
+		this.raiseCurrentPageNavigatedEvents(isBack);
 
 		// Do nothing for Hot Module Replacement
 		if (isBack) {
@@ -442,6 +442,9 @@ export class FrameBase extends CustomLayoutView {
 		if (this.currentPage) {
 			this.currentPage.onNavigatingFrom(isBack);
 		}
+		if (isBack) {
+			backstackEntry.resolvedPage.callLoaded();
+		}
 
 		backstackEntry.resolvedPage.onNavigatingTo(backstackEntry.entry.context, isBack, backstackEntry.entry.bindingContext);
 		this.notify({
@@ -540,6 +543,12 @@ export class FrameBase extends CustomLayoutView {
 		if (page) {
 			callback(page);
 		}
+		for (let index = 0; index < this.backStack.length; index++) {
+			const backstackEntry = this.backStack[index];
+			if (backstackEntry.resolvedPage) {
+				callback(backstackEntry.resolvedPage);
+			}
+		}
 	}
 
 	public _getIsAnimatedNavigation(entry: NavigationEntry): boolean {
@@ -556,11 +565,11 @@ export class FrameBase extends CustomLayoutView {
 
 	public _getNavigationTransition(entry: NavigationEntry): NavigationTransition {
 		if (entry) {
-			if (global.isIOS && entry.transitioniOS !== undefined) {
+			if (__IOS__ && entry.transitioniOS !== undefined) {
 				return entry.transitioniOS;
 			}
 
-			if (global.isAndroid && entry.transitionAndroid !== undefined) {
+			if (__ANDROID__ && entry.transitionAndroid !== undefined) {
 				return entry.transitionAndroid;
 			}
 
@@ -767,5 +776,5 @@ export const defaultPage = new Property<FrameBase, string>({
 });
 defaultPage.register(FrameBase);
 
-export const actionBarVisibilityProperty = new Property<FrameBase, 'auto' | 'never' | 'always'>({ name: 'actionBarVisibility', defaultValue: 'auto', affectsLayout: global.isIOS });
+export const actionBarVisibilityProperty = new Property<FrameBase, 'auto' | 'never' | 'always'>({ name: 'actionBarVisibility', defaultValue: 'auto', affectsLayout: __IOS__ });
 actionBarVisibilityProperty.register(FrameBase);

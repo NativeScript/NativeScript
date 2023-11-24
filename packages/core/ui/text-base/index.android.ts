@@ -20,46 +20,57 @@ import { testIDProperty } from '../../ui/core/view';
 
 export * from './text-base-common';
 
-let TextTransformation: TextTransformation;
+// let TextTransformation: TextTransformation;
 
-export interface TextTransformation {
-	new (owner: TextBase): any /* android.text.method.TransformationMethod */;
-}
+// export interface TextTransformation {
+// 	new (owner: WeakRef<TextBase>): any /* android.text.method.TransformationMethod */;
+// }
 
-function initializeTextTransformation(): void {
-	if (TextTransformation) {
-		return;
-	}
+// function initializeTextTransformation(): void {
+// 	if (TextTransformation) {
+// 		return;
+// 	}
 
-	@NativeClass
-	@Interfaces([android.text.method.TransformationMethod])
-	class TextTransformationImpl extends java.lang.Object implements android.text.method.TransformationMethod {
-		constructor(public textBase: TextBase) {
-			super();
+// 	@NativeClass
+// 	@Interfaces([android.text.method.TransformationMethod])
+// 	class TextTransformationImpl extends java.lang.Object implements android.text.method.TransformationMethod {
+// 		constructor(public owner: WeakRef<TextBase>) {
+// 			super();
 
-			return global.__native(this);
-		}
+// 			return global.__native(this);
+// 		}
 
-		public getTransformation(charSeq: any, view: android.view.View): any {
-			// NOTE: Do we need to transform the new text here?
-			const formattedText = this.textBase.formattedText;
-			if (formattedText) {
-				return this.textBase.createFormattedTextNative(formattedText);
-			} else {
-				const text = this.textBase.text;
-				const stringValue = isNullOrUndefined(text) ? '' : text.toString();
+// 		public getTransformation(charSeq: any, view: android.view.View): any {
+// 			const owner = this.owner?.get();
+// 			if (!owner) {
+// 				return charSeq;
+// 			}
+// 			if (owner.ignoreNextTransform) {
+// 				owner.ignoreNextTransform = false;
+// 				return charSeq;
+// 			}
+// 			const transform = owner.textTransform;
+// 			if (transform === 'none') {
+// 				return charSeq
+// 			}
+// 			// NOTE: Do we need to transform the new text here?
+// 			const formattedText = owner.formattedText;
+// 			if (formattedText) {
+// 				return owner.createFormattedTextNative(formattedText);;
+// 			} else {
+// 				const text = owner.text;
+// 				const stringValue = isNullOrUndefined(text) ? '' : text.toString();
+// 				return getTransformedText(stringValue, transform);
+// 			}
+// 		}
 
-				return getTransformedText(stringValue, this.textBase.textTransform);
-			}
-		}
+// 		public onFocusChanged(view: android.view.View, sourceText: string, focused: boolean, direction: number, previouslyFocusedRect: android.graphics.Rect): void {
+// 			// Do nothing for now.
+// 		}
+// 	}
 
-		public onFocusChanged(view: android.view.View, sourceText: string, focused: boolean, direction: number, previouslyFocusedRect: android.graphics.Rect): void {
-			// Do nothing for now.
-		}
-	}
-
-	TextTransformation = TextTransformationImpl;
-}
+// 	TextTransformation = TextTransformationImpl;
+// }
 
 interface ClickableSpan {
 	new (owner: Span): android.text.style.ClickableSpan;
@@ -172,7 +183,7 @@ export class TextBase extends TextBaseCommon {
 	nativeViewProtected: org.nativescript.widgets.StyleableTextView;
 	// @ts-ignore
 	nativeTextViewProtected: org.nativescript.widgets.StyleableTextView;
-	private _defaultTransformationMethod: android.text.method.TransformationMethod;
+	// private _defaultTransformationMethod: android.text.method.TransformationMethod;
 	private _paintFlags: number;
 	private _minHeight: number;
 	private _maxHeight: number;
@@ -181,12 +192,17 @@ export class TextBase extends TextBaseCommon {
 	private _tappable = false;
 	private _defaultMovementMethod: android.text.method.MovementMethod;
 
+	// public ignoreNextTransform = false;
+
+	// so that we dont set fontInternal when setting fontSize (useless)
+	handleFontSize = true;
+
 	public initNativeView(): void {
 		super.initNativeView();
-		initializeTextTransformation();
+		// initializeTextTransformation();
 		const nativeView = this.nativeTextViewProtected;
-		this._defaultTransformationMethod = nativeView.getTransformationMethod();
-		this._defaultMovementMethod = nativeView.getMovementMethod();
+		// this._defaultTransformationMethod = nativeView.getTransformationMethod();
+		// this._defaultMovementMethod = nativeView.getMovementMethod();
 		this._minHeight = nativeView.getMinHeight();
 		this._maxHeight = nativeView.getMaxHeight();
 		this._minLines = nativeView.getMinLines();
@@ -198,8 +214,10 @@ export class TextBase extends TextBaseCommon {
 		const nativeView = this.nativeTextViewProtected;
 		// We reset it here too because this could be changed by multiple properties - whiteSpace, secure, textTransform
 		nativeView.setSingleLine(this._isSingleLine);
-		nativeView.setTransformationMethod(this._defaultTransformationMethod);
-		this._defaultTransformationMethod = null;
+		// if (this._defaultTransformationMethod) {
+		// 	nativeView.setTransformationMethod(this._defaultTransformationMethod);
+		// 	this._defaultTransformationMethod = null;
+		// }
 
 		if (this._paintFlags !== undefined) {
 			nativeView.setPaintFlags(this._paintFlags);
@@ -245,11 +263,12 @@ export class TextBase extends TextBaseCommon {
 	}
 	[formattedTextProperty.setNative](value: FormattedString) {
 		const nativeView = this.nativeTextViewProtected;
-		if (!value) {
-			if (nativeView instanceof android.widget.Button && nativeView.getTransformationMethod() instanceof TextTransformation) {
-				nativeView.setTransformationMethod(this._defaultTransformationMethod);
-			}
-		}
+		// TODO: does not seem needed anymore as native textTransform behaves correctly with spannableStringBuilder
+		// if (!value) {
+		// 	if (nativeView instanceof android.widget.Button && nativeView.getTransformationMethod() instanceof TextTransformation) {
+		// 		nativeView.setTransformationMethod(this._defaultTransformationMethod);
+		// 	}
+		// }
 
 		// Don't change the transformation method if this is secure TextField or we'll lose the hiding characters.
 		if ((<any>this).secure) {
@@ -260,29 +279,34 @@ export class TextBase extends TextBaseCommon {
 		nativeView.setText(<any>spannableStringBuilder);
 		this._setTappableState(isStringTappable(value));
 
-		textProperty.nativeValueChange(this, value === null || value === undefined ? '' : value.toString());
+		// textProperty.nativeValueChange(this, value === null || value === undefined ? '' : value.toString());
 
-		if (spannableStringBuilder && nativeView instanceof android.widget.Button && !(nativeView.getTransformationMethod() instanceof TextTransformation)) {
-			// Replace Android Button's default transformation (in case the developer has not already specified a text-transform) method
-			// with our transformation method which can handle formatted text.
-			// Otherwise, the default tranformation method of the Android Button will overwrite and ignore our spannableStringBuilder.
-			nativeView.setTransformationMethod(new TextTransformation(this));
-		}
+		// TODO: this seems not needed anymore. textTransform and spannableStringBuilder work ok
+		// if (spannableStringBuilder && nativeView instanceof android.widget.Button && !(nativeView.getTransformationMethod() instanceof TextTransformation)) {
+		// 	// Replace Android Button's default transformation (in case the developer has not already specified a text-transform) method
+		// 	// with our transformation method which can handle formatted text.
+		// 	// Otherwise, the default tranformation method of the Android Button will overwrite and ignore our spannableStringBuilder.
+		// 	nativeView.setTransformationMethod(new TextTransformation(this));
+		// }
 	}
 
+	[textTransformProperty.getDefault](): CoreTypes.TextTransformType {
+		return 'initial';
+	}
 	[textTransformProperty.setNative](value: CoreTypes.TextTransformType) {
-		if (value === 'initial') {
-			this.nativeTextViewProtected.setTransformationMethod(this._defaultTransformationMethod);
-
-			return;
-		}
-
-		// Don't change the transformation method if this is secure TextField or we'll lose the hiding characters.
-		if ((<any>this).secure) {
-			return;
-		}
-
-		this.nativeTextViewProtected.setTransformationMethod(new TextTransformation(this));
+		// const nativeView = this.nativeTextViewProtected;
+		// if (this._defaultTransformationMethod && (value === 'initial' || value === 'none')) {
+		// 	nativeView.setTransformationMethod(this._defaultTransformationMethod);
+		// 	return;
+		// }
+		// // Don't change the transformation method if this is secure TextField or we'll lose the hiding characters.
+		// if ((<any>this).secure) {
+		// 	return;
+		// }
+		// if (!this._defaultTransformationMethod) {
+		// 	this._defaultTransformationMethod = nativeView.getTransformationMethod()
+		// }
+		// nativeView.setTransformationMethod(new TextTransformation(this));
 	}
 
 	[textAlignmentProperty.getDefault](): CoreTypes.TextAlignmentType {
@@ -495,6 +519,8 @@ export class TextBase extends TextBaseCommon {
 		let transformedText: any;
 		if (this.formattedText) {
 			transformedText = this.createFormattedTextNative(this.formattedText);
+		} else if ((this.text as any) instanceof android.text.Spannable) {
+			transformedText = this.text;
 		} else {
 			const text = this.text;
 			const stringValue = text === null || text === undefined ? '' : text.toString();
@@ -514,14 +540,18 @@ export class TextBase extends TextBaseCommon {
 	_setTappableState(tappable: boolean) {
 		if (this._tappable !== tappable) {
 			this._tappable = tappable;
+			const nativeView = this.nativeViewProtected;
 			if (this._tappable) {
 				// Setting singleLine to true results in conflicts with LinkMovementMethod
 				// See https://stackoverflow.com/a/34407901
-				this.nativeTextViewProtected.setSingleLine(false);
-				this.nativeTextViewProtected.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
-				this.nativeTextViewProtected.setHighlightColor(null);
-			} else {
-				this.nativeTextViewProtected.setMovementMethod(this._defaultMovementMethod);
+				nativeView.setSingleLine(false);
+				if (!this._defaultMovementMethod) {
+					this._defaultMovementMethod = nativeView.getMovementMethod();
+				}
+				nativeView.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
+				nativeView.setHighlightColor(null);
+			} else if (this._defaultMovementMethod) {
+				nativeView.setMovementMethod(this._defaultMovementMethod);
 			}
 		}
 	}

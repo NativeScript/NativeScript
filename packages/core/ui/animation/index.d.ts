@@ -70,6 +70,8 @@ export interface AnimationDefinition {
 	 * Alternatively, you can pass an instance of type UIViewAnimationCurve for iOS or android.animation.TimeInterpolator for Android.
 	 */
 	curve?: any;
+
+	[k: string]: any;
 }
 
 /**

@@ -1,7 +1,7 @@
 import { ListView as ListViewDefinition, ItemsSource, ItemEventData, TemplatedItemsView } from '.';
 import { View, ContainerView, Template, KeyedTemplate, CSSType } from '../core/view';
 import { Property, CoercibleProperty, CssProperty } from '../core/properties';
-import { Length } from '../styling/style-properties';
+import { Length, colorConverter } from '../styling/style-properties';
 import { Style } from '../styling/style';
 import { Color } from '../../color';
 import { Builder } from '../builder';
@@ -245,6 +245,6 @@ export const separatorColorProperty = new CssProperty<Style, Color>({
 	name: 'separatorColor',
 	cssName: 'separator-color',
 	equalityComparer: Color.equals,
-	valueConverter: (v) => new Color(v),
+	valueConverter: colorConverter,
 });
 separatorColorProperty.register(Style);

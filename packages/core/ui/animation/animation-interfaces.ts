@@ -34,12 +34,14 @@ export interface Cancelable {
 
 export interface PropertyAnimation {
 	target: View;
-	property: string;
+	property: any;
+	propertyName: string;
 	value: any;
 	duration?: number;
 	delay?: number;
 	iterations?: number;
 	curve?: any;
+	animationBlock?: Function;
 }
 
 export interface PropertyAnimationInfo extends PropertyAnimation {
@@ -60,6 +62,7 @@ export interface AnimationDefinition {
 	delay?: number;
 	iterations?: number;
 	curve?: any;
+	animationBlock?: any;
 }
 
 export interface AnimationDefinitionInternal extends AnimationDefinition {

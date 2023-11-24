@@ -12,7 +12,7 @@ import type { Frame } from '../ui/frame';
 import type { NavigationEntry } from '../ui/frame/frame-interfaces';
 import type { StyleScope } from '../ui/styling/style-scope';
 import type { AndroidApplication as IAndroidApplication, iOSApplication as IiOSApplication } from './';
-import type { ApplicationEventData, CssChangedEventData, DiscardedErrorEventData, FontScaleChangedEventData, LaunchEventData, LoadAppCSSEventData, NativeScriptError, OrientationChangedEventData, SystemAppearanceChangedEventData, UnhandledErrorEventData } from './application-interfaces';
+import type { ApplicationEventData, CssChangedEventData, DiscardedErrorEventData, FontScaleChangedEventData, InitRootViewEventData, LaunchEventData, LoadAppCSSEventData, NativeScriptError, OrientationChangedEventData, SystemAppearanceChangedEventData, UnhandledErrorEventData } from './application-interfaces';
 
 // prettier-ignore
 const ORIENTATION_CSS_CLASSES = [
@@ -35,6 +35,7 @@ interface ApplicationEvents {
 	notify<T = ApplicationEventData>(eventData: T): void;
 	hasListeners(eventName: string): boolean;
 
+	once(eventNames: string, callback: (args: ApplicationEventData) => void, thisArg?: any): void;
 	on(eventNames: string, callback: (args: ApplicationEventData) => void, thisArg?: any): void;
 	/**
 	 * This event is raised when application css is changed.
@@ -125,6 +126,7 @@ export class ApplicationCommon {
 	readonly livesyncEvent = 'livesync';
 	readonly loadAppCssEvent = 'loadAppCss';
 	readonly cssChangedEvent = 'cssChanged';
+	readonly initRootViewEvent = 'initRootView';
 
 	// Expose statically for backwards compat on AndroidApplication.on etc.
 	/**
@@ -150,8 +152,8 @@ export class ApplicationCommon {
 
 	// Application events go through the global events.
 	on: ApplicationEvents['on'] = globalEvents.on.bind(globalEvents);
-	once: ApplicationEvents['on'] = globalEvents.once.bind(globalEvents);
 	off: ApplicationEvents['off'] = globalEvents.off.bind(globalEvents);
+	once: ApplicationEvents['once'] = globalEvents.on.bind(globalEvents);
 	notify: ApplicationEvents['notify'] = globalEvents.notify.bind(globalEvents);
 	hasListeners: ApplicationEvents['hasListeners'] = globalEvents.hasListeners.bind(globalEvents);
 
@@ -368,6 +370,7 @@ export class ApplicationCommon {
 		this.setRootViewCSSClasses(rootView);
 		initAccessibilityCssHelper();
 		initAccessibilityFontScale();
+		this.notify(<InitRootViewEventData>{ eventName: this.initRootViewEvent, rootView });
 	}
 
 	/**

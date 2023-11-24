@@ -19,9 +19,12 @@ export class Page extends PageBase {
 
 	public createNativeView() {
 		const layout = new org.nativescript.widgets.GridLayout(this._context);
-		layout.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
-		layout.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
-
+		layout.addRowsFromJSON(
+			JSON.stringify([
+				{ value: 1, type: 0 /* org.nativescript.widgets.GridUnitType.auto */ },
+				{ value: 1, type: 2 /* org.nativescript.widgets.GridUnitType.star */ },
+			])
+		);
 		return layout;
 	}
 
@@ -162,7 +165,8 @@ export class Page extends PageBase {
 
 			return;
 		}
-
-		this.actionBar.accessibilityScreenChanged();
+		if (this.hasActionBar) {
+			this.actionBar.accessibilityScreenChanged();
+		}
 	}
 }

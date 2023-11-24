@@ -379,7 +379,7 @@ export function waitUntilReady(isReady: () => boolean, timeoutSec: number = 5, s
 
 // Setup for the Android modal loop implementation
 // TODO: If these platform-specific implementations continue to grow, think of per-platform separation (TKUnit.android)
-let nextMethod;
+let nextMethod: java.lang.reflect.Method;
 let targetField;
 let prepared;
 

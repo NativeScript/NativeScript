@@ -41,7 +41,7 @@ export function createPage() {
 	var counter = 0;
 	var btn = new btns.Button();
 	btn.text = 'tap';
-	btn.on(btns.Button.tapEvent, function () {
+	btn.on(btns.tapEvent, function () {
 		btn.text = 'hi: ' + counter++;
 	});
 	btn.isEnabled = false;
@@ -52,7 +52,7 @@ export function createPage() {
 	var info = new btns.Button();
 	info.text = 'info';
 	info.className = 'info';
-	info.on(btns.Button.tapEvent, function () {
+	info.on(btns.tapEvent, function () {
 		info.text = 'hi: ' + counter++;
 		btn.isEnabled = true;
 	});

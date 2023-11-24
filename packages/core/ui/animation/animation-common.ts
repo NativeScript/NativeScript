@@ -1,13 +1,18 @@
 // Types.
-import { CubicBezierAnimationCurve as CubicBezierAnimationCurveDefinition, Animation as AnimationBaseDefinition, Point3D } from '.';
+import { CubicBezierAnimationCurve as CubicBezierAnimationCurveDefinition, Animation as AnimationBaseDefinition } from '.';
 import { AnimationDefinition, AnimationPromise as AnimationPromiseDefinition, Pair, PropertyAnimation } from './animation-interfaces';
 
 // Requires.
-import { Color } from '../../color';
 import { Trace } from '../../trace';
-import { PercentLength } from '../styling/style-properties';
+import { Style } from '../styling/style';
+import { CssAnimationProperty, CssProperty, InheritedCssProperty, ShorthandProperty } from '../core/properties';
+import { View } from '../core/view';
 
 export * from './animation-interfaces';
+
+export function getPropertyFromKey(key: string, view: View) {
+	return CssAnimationProperty.properties[key] || ShorthandProperty.properties[key] || InheritedCssProperty.properties[key] || CssProperty.properties[key] || Style.prototype[key] || view.constructor['registeredProps']?.[key] || Object.getPrototypeOf(view)[key];
+}
 
 export namespace Properties {
 	export const opacity = 'opacity';
@@ -18,6 +23,8 @@ export namespace Properties {
 	export const height = 'height';
 	export const width = 'width';
 }
+
+export const AnimationNonAnimatableProperties = ['duration', 'valueSource', 'delay', 'iterations', 'curve', 'target'];
 
 export class CubicBezierAnimationCurve implements CubicBezierAnimationCurveDefinition {
 	public x1: number;
@@ -51,12 +58,12 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 		}
 
 		this._propertyAnimations = new Array<PropertyAnimation>();
-		for (let i = 0, length = animationDefinitions.length; i < length; i++) {
-			if (animationDefinitions[i].curve) {
-				animationDefinitions[i].curve = this._resolveAnimationCurve(animationDefinitions[i].curve);
+		animationDefinitions.forEach((animationDefinition) => {
+			if (animationDefinition.curve) {
+				animationDefinition.curve = this._resolveAnimationCurve(animationDefinition.curve);
 			}
-			this._propertyAnimations = this._propertyAnimations.concat(AnimationBase._createPropertyAnimations(animationDefinitions[i]));
-		}
+			this._propertyAnimations.push(...this._createPropertyAnimations(animationDefinition));
+		});
 
 		if (this._propertyAnimations.length === 0) {
 			if (Trace.isEnabled()) {
@@ -97,7 +104,7 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 		return animationFinishedPromise;
 	}
 
-	private fixupAnimationPromise(promise: AnimationPromiseDefinition): void {
+	protected fixupAnimationPromise(promise: AnimationPromiseDefinition): void {
 		// Since we are using function() below because of arguments, TS won't automatically do a _this for those functions.
 		const _this = this;
 		promise.cancel = () => {
@@ -129,148 +136,72 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 		return this._isPlaying;
 	}
 
-	public _resolveAnimationFinishedPromise() {
+	protected _resolveAnimationFinishedPromise() {
 		this._isPlaying = false;
 		this._resolve();
 	}
 
-	public _rejectAnimationFinishedPromise() {
+	protected _rejectAnimationFinishedPromise() {
 		this._isPlaying = false;
 		this._reject(new Error('Animation cancelled.'));
 	}
 
-	private static _createPropertyAnimations(animationDefinition: AnimationDefinition): Array<PropertyAnimation> {
+	protected _createPropertyAnimations(animationDefinition: AnimationDefinition): Array<PropertyAnimation> {
 		if (!animationDefinition.target) {
 			console.error('No animation target specified.');
 			return;
 		}
 
+		const propertyAnimations = new Array<PropertyAnimation>();
 		for (const item in animationDefinition) {
 			const value = animationDefinition[item];
 			if (value === undefined) {
 				continue;
 			}
-
-			if ((item === Properties.opacity || item === 'duration' || item === 'delay' || item === 'iterations') && typeof value !== 'number') {
-				console.error(`Property ${item} must be valid number. Value: ${value}`);
-				return;
-			} else if ((item === Properties.scale || item === Properties.translate) && (typeof (<Pair>value).x !== 'number' || typeof (<Pair>value).y !== 'number')) {
-				console.error(`Property ${item} must be valid Pair. Value: ${value}`);
-				return;
-			} else if (item === Properties.backgroundColor && !Color.isValid(animationDefinition.backgroundColor)) {
-				console.error(`Property ${item} must be valid color. Value: ${value}`);
-				return;
-			} else if (item === Properties.width || item === Properties.height) {
-				// Coerce input into a PercentLength object in case it's a string.
-				animationDefinition[item] = PercentLength.parse(<any>value);
-			} else if (item === Properties.rotate) {
-				const rotate: number | Point3D = value;
-				if (typeof rotate !== 'number' && !(typeof rotate.x === 'number' && typeof rotate.y === 'number' && typeof rotate.z === 'number')) {
-					console.error(`Property ${rotate} must be valid number or Point3D. Value: ${value}`);
-					return;
+			if (AnimationNonAnimatableProperties.indexOf(item) !== -1) {
+				if (item === 'duration' || item === 'delay' || item === 'iterations') {
+					if (typeof value !== 'number') {
+						console.error(`Property ${item} must be valid number. Value: ${value}`);
+					}
 				}
+				continue;
 			}
-		}
-
-		const propertyAnimations = new Array<PropertyAnimation>();
-
-		// opacity
-		if (animationDefinition.opacity !== undefined) {
-			propertyAnimations.push({
-				target: animationDefinition.target,
-				property: Properties.opacity,
-				value: animationDefinition.opacity,
-				duration: animationDefinition.duration,
-				delay: animationDefinition.delay,
-				iterations: animationDefinition.iterations,
-				curve: animationDefinition.curve,
-			});
-		}
-
-		// backgroundColor
-		if (animationDefinition.backgroundColor !== undefined) {
-			propertyAnimations.push({
-				target: animationDefinition.target,
-				property: Properties.backgroundColor,
-				value: typeof animationDefinition.backgroundColor === 'string' ? new Color(<any>animationDefinition.backgroundColor) : animationDefinition.backgroundColor,
-				duration: animationDefinition.duration,
-				delay: animationDefinition.delay,
-				iterations: animationDefinition.iterations,
-				curve: animationDefinition.curve,
-			});
-		}
-
-		// translate
-		if (animationDefinition.translate !== undefined) {
-			propertyAnimations.push({
-				target: animationDefinition.target,
-				property: Properties.translate,
-				value: animationDefinition.translate,
-				duration: animationDefinition.duration,
-				delay: animationDefinition.delay,
-				iterations: animationDefinition.iterations,
-				curve: animationDefinition.curve,
-			});
-		}
-
-		// scale
-		if (animationDefinition.scale !== undefined) {
-			propertyAnimations.push({
-				target: animationDefinition.target,
-				property: Properties.scale,
-				value: animationDefinition.scale,
-				duration: animationDefinition.duration,
-				delay: animationDefinition.delay,
-				iterations: animationDefinition.iterations,
-				curve: animationDefinition.curve,
-			});
-		}
-
-		// rotate
-		if (animationDefinition.rotate !== undefined) {
-			// Make sure the value of the rotation property is always Point3D
-			let rotationValue: Point3D;
-			if (typeof animationDefinition.rotate === 'number') {
-				rotationValue = { x: 0, y: 0, z: animationDefinition.rotate };
-			} else {
-				rotationValue = animationDefinition.rotate;
+			let property = getPropertyFromKey(item, animationDefinition.target);
+			if (item === Properties.scale || item === Properties.translate) {
+				property = CssAnimationProperty.properties[item + 'X'];
 			}
-
-			propertyAnimations.push({
-				target: animationDefinition.target,
-				property: Properties.rotate,
-				value: rotationValue,
-				duration: animationDefinition.duration,
-				delay: animationDefinition.delay,
-				iterations: animationDefinition.iterations,
-				curve: animationDefinition.curve,
-			});
-		}
-
-		// height
-		if (animationDefinition.height !== undefined) {
-			propertyAnimations.push({
-				target: animationDefinition.target,
-				property: Properties.height,
-				value: animationDefinition.height,
-				duration: animationDefinition.duration,
-				delay: animationDefinition.delay,
-				iterations: animationDefinition.iterations,
-				curve: animationDefinition.curve,
-			});
-		}
-
-		// width
-		if (animationDefinition.width !== undefined) {
-			propertyAnimations.push({
-				target: animationDefinition.target,
-				property: Properties.width,
-				value: animationDefinition.width,
-				duration: animationDefinition.duration,
-				delay: animationDefinition.delay,
-				iterations: animationDefinition.iterations,
-				curve: animationDefinition.curve,
-			});
+			if (property) {
+				let newValue = value;
+				const valueConverter = property.valueConverter;
+				if ((item === Properties.scale || item === Properties.translate) && typeof value !== 'object') {
+					console.error(`Property ${item} must be valid Pair. Value: ${value}`);
+				}
+				if (valueConverter) {
+					if (item === Properties.translate || item === Properties.rotate || item === Properties.scale) {
+						newValue = {};
+						if (Properties.rotate && typeof value !== 'object') {
+							newValue = { x: 0, y: 0, z: typeof value === 'string' ? valueConverter(value) : value };
+						} else {
+							Object.keys(value).forEach((k2) => {
+								newValue[k2] = typeof value[k2] === 'string' ? valueConverter(value[k2]) : value[k2];
+							});
+						}
+					} else {
+						newValue = typeof value === 'string' ? valueConverter(value) : value;
+					}
+				}
+				propertyAnimations.push({
+					target: animationDefinition.target,
+					propertyName: item,
+					property,
+					value: newValue,
+					animationBlock: animationDefinition.animationBlock,
+					duration: animationDefinition.duration,
+					delay: animationDefinition.delay,
+					iterations: animationDefinition.iterations,
+					curve: animationDefinition.curve,
+				});
+			}
 		}
 
 		if (propertyAnimations.length === 0) {
@@ -283,7 +214,7 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 	public static _getAnimationInfo(animation: PropertyAnimation): string {
 		return JSON.stringify({
 			target: animation.target.id,
-			property: animation.property,
+			propertyName: animation.propertyName,
 			value: animation.value,
 			duration: animation.duration,
 			delay: animation.delay,

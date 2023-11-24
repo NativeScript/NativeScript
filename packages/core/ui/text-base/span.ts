@@ -99,7 +99,7 @@ export class Span extends ViewBase implements SpanDefinition {
 				this._text = '';
 			} else {
 				// value can be a number
-				this._text = isString(value) ? `${value}`.replace('\\n', '\n').replace('\\t', '\t') : `${value}`;
+				this._text = value + '';
 			}
 			this.notifyPropertyChange('text', this._text);
 		}

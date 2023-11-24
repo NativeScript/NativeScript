@@ -41,16 +41,20 @@ const statePressed = 16842919; // android.R.attr.state_pressed
 const stateEnabled = 16842910; // android.R.attr.state_enabled
 const styleAnimationDialog = 16973826; // android.R.style.Animation_Dialog
 
-const VERTICAL_GRAVITY_MASK = 112; // android.view.Gravity.VERTICAL_GRAVITY_MASK
-const HORIZONTAL_GRAVITY_MASK = 7; // android.view.Gravity.HORIZONTAL_GRAVITY_MASK
-const GRAVITY_LEFT = 3; // android.view.Gravity.LEFT
-const GRAVITY_RIGHT = 5; // android.view.Gravity.RIGHT
-const GRAVITY_TOP = 48; // android.view.Gravity.TOP
-const GRAVITY_BOTTOM = 80; // android.view.Gravity.BOTTOM
-const GRAVITY_CENTER_HORIZONTAL = 1; // android.view.Gravity.CENTER_HORIZONTAL
-const GRAVITY_FILL_HORIZONTAL = 7; // android.view.Gravity.FILL_HORIZONTAL
-const GRAVITY_CENTER_VERTICAL = 16; // android.view.Gravity.CENTER_VERTICAL
-const GRAVITY_FILL_VERTICAL = 112; // android.view.Gravity.FILL_VERTICAL
+export const VERTICAL_GRAVITY_MASK = 112; // android.view.Gravity.VERTICAL_GRAVITY_MASK
+export const HORIZONTAL_GRAVITY_MASK = 7; // android.view.Gravity.HORIZONTAL_GRAVITY_MASK
+export const GRAVITY_LEFT = 3; // android.view.Gravity.LEFT
+export const GRAVITY_RIGHT = 5; // android.view.Gravity.RIGHT
+export const GRAVITY_TOP = 48; // android.view.Gravity.TOP
+export const GRAVITY_BOTTOM = 80; // android.view.Gravity.BOTTOM
+export const GRAVITY_CENTER_HORIZONTAL = 1; // android.view.Gravity.CENTER_HORIZONTAL
+export const GRAVITY_FILL_HORIZONTAL = 7; // android.view.Gravity.FILL_HORIZONTAL
+export const GRAVITY_CENTER_VERTICAL = 16; // android.view.Gravity.CENTER_VERTICAL
+export const GRAVITY_FILL_VERTICAL = 112; // android.view.Gravity.FILL_VERTICAL
+
+export const VIEW_GONE = 8; //android.view.View.GONE;
+export const VIEW_VISIBLE = 0; //android.view.View.VISIBLE;
+export const VIEW_INVISIBLE = 4; //android.view.View.INVISIBLE;
 
 const modalMap = new Map<number, DialogOptions>();
 
@@ -232,6 +236,7 @@ function initializeDialogFragment() {
 			const owner = this.owner;
 			this.activity = new WeakRef(this.getActivity());
 			owner._setupAsRootView(this.getActivity());
+			owner.parent = Application.getRootView();
 			owner._isAddedToNativeVisualTree = true;
 
 			// we need to set the window SoftInputMode here.
@@ -252,6 +257,8 @@ function initializeDialogFragment() {
 			if (this._fullscreen) {
 				const window = this.getDialog().getWindow();
 				const length = android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+				// set the animations to use on showing and hiding the dialog
+				window.setWindowAnimations(16973826); //android.R.style.Animation_Dialog
 				window.setLayout(length, length);
 				// This removes the default backgroundDrawable so there are no margins.
 				window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.WHITE));
@@ -297,6 +304,7 @@ function initializeDialogFragment() {
 
 				owner._isAddedToNativeVisualTree = false;
 				owner._tearDownUI(true);
+				owner.parent = null;
 			}
 		}
 	}
@@ -489,7 +497,8 @@ export class View extends ViewCommon {
 	}
 
 	setOnTouchListener() {
-		if (this.touchListenerIsSet || !this.nativeViewProtected || !this.hasGestureObservers()) {
+		const view = this.nativeViewProtected;
+		if (this.touchListenerIsSet || !view || !this.hasGestureObservers()) {
 			return;
 		}
 
@@ -497,12 +506,11 @@ export class View extends ViewCommon {
 		// false as we might need the ability for the event to pass through to a parent view
 		initializeTouchListener();
 		this.touchListener = this.touchListener || new TouchListener(this);
-		this.nativeViewProtected.setOnTouchListener(this.touchListener);
+		view.setOnTouchListener(this.touchListener);
 
 		this.touchListenerIsSet = true;
-
-		if (this.nativeViewProtected.setClickable) {
-			this.nativeViewProtected.setClickable(this.isUserInteractionEnabled);
+		if (view.setClickable) {
+			view.setClickable(this.isUserInteractionEnabled);
 		}
 	}
 
@@ -548,6 +556,11 @@ export class View extends ViewCommon {
 
 	@profile
 	public requestLayout(): void {
+		if (this.mSuspendRequestLayout) {
+			this._requetLayoutNeeded = true;
+			return;
+		}
+		this._requetLayoutNeeded = false;
 		super.requestLayout();
 		if (this.nativeViewProtected) {
 			this.nativeViewProtected.requestLayout();
@@ -727,6 +740,7 @@ export class View extends ViewCommon {
 	}
 
 	protected _hideNativeModalView(parent: View, whenClosedCallback: () => void) {
+		this._raiseClosingModallyEvent();
 		const manager = this._dialogFragment.getFragmentManager();
 		if (manager) {
 			this._dialogFragment.dismissAllowingStateLoss();
@@ -760,20 +774,20 @@ export class View extends ViewCommon {
 	}
 
 	[hiddenProperty.getDefault](): boolean {
-		return this.nativeViewProtected.getVisibility() === android.view.View.GONE;
+		return this.nativeViewProtected.getVisibility() === VIEW_GONE;
 	}
 	[hiddenProperty.setNative](value: boolean) {
-		this.nativeViewProtected.setVisibility(value ? android.view.View.GONE : android.view.View.VISIBLE);
+		this.nativeViewProtected.setVisibility(value ? VIEW_GONE : VIEW_VISIBLE);
 	}
 
 	[visibilityProperty.getDefault](): CoreTypes.VisibilityType {
 		const nativeVisibility = this.nativeViewProtected.getVisibility();
 		switch (nativeVisibility) {
-			case android.view.View.VISIBLE:
+			case VIEW_VISIBLE:
 				return 'visible';
-			case android.view.View.INVISIBLE:
+			case VIEW_INVISIBLE:
 				return 'hidden';
-			case android.view.View.GONE:
+			case VIEW_GONE:
 				return 'collapse';
 			default:
 				throw new Error(`Unsupported android.view.View visibility: ${nativeVisibility}. Currently supported values are android.view.View.VISIBLE, android.view.View.INVISIBLE, android.view.View.GONE.`);
@@ -782,13 +796,13 @@ export class View extends ViewCommon {
 	[visibilityProperty.setNative](value: CoreTypes.VisibilityType) {
 		switch (value) {
 			case 'visible':
-				this.nativeViewProtected.setVisibility(android.view.View.VISIBLE);
+				this.nativeViewProtected.setVisibility(VIEW_VISIBLE);
 				break;
 			case 'hidden':
-				this.nativeViewProtected.setVisibility(android.view.View.INVISIBLE);
+				this.nativeViewProtected.setVisibility(VIEW_INVISIBLE);
 				break;
 			case 'collapse':
-				this.nativeViewProtected.setVisibility(android.view.View.GONE);
+				this.nativeViewProtected.setVisibility(VIEW_GONE);
 				break;
 			default:
 				throw new Error(`Invalid visibility value: ${value}. Valid values are: visible, hidden, collapse.`);
@@ -830,7 +844,9 @@ export class View extends ViewCommon {
 
 	[accessibilityRoleProperty.setNative](value: AccessibilityRole): void {
 		this.accessibilityRole = value;
-		updateAccessibilityProperties(this);
+		if (this.accessible) {
+			updateAccessibilityProperties(this);
+		}
 
 		if (SDK_VERSION >= 28) {
 			this.nativeViewProtected?.setAccessibilityHeading(value === AccessibilityRole.Header);
@@ -1087,21 +1103,19 @@ export class View extends ViewCommon {
 
 	[backgroundInternalProperty.getDefault](): android.graphics.drawable.Drawable {
 		const nativeView = this.nativeViewProtected;
-		const drawable = nativeView.getBackground();
+		let drawable = nativeView.getBackground();
 		if (drawable) {
 			const constantState = drawable.getConstantState();
 			if (constantState) {
 				try {
-					return constantState.newDrawable(nativeView.getResources());
-				} catch (e) {
-					return drawable;
-				}
-			} else {
-				return drawable;
+					drawable = constantState.newDrawable(nativeView.getResources());
+					// eslint-disable-next-line no-empty
+				} catch {}
 			}
 		}
+		(<any>nativeView)._cachedDrawable = drawable;
 
-		return null;
+		return drawable;
 	}
 	[backgroundInternalProperty.setNative](value: android.graphics.drawable.Drawable | Background) {
 		this._redrawNativeBackground(value);
@@ -1161,7 +1175,6 @@ export class View extends ViewCommon {
 		};
 		org.nativescript.widgets.Utils.drawBoxShadow(nativeView, JSON.stringify(config));
 	}
-
 	_redrawNativeBackground(value: android.graphics.drawable.Drawable | Background): void {
 		if (value instanceof Background) {
 			this.onBackgroundOrBorderPropertyChanged();
@@ -1294,6 +1307,14 @@ export class CustomLayoutView extends ContainerView implements CustomLayoutViewD
 
 	public _setChildMinHeightNative(child: View, value: CoreTypes.LengthType): void {
 		child._setMinHeightNative(value);
+	}
+
+	public _removeFromNativeVisualTree(): void {
+		super._removeFromNativeVisualTree();
+		const parent = this.nativeViewProtected?.getParent();
+		if (parent && parent['removeView']) {
+			parent['removeView'](this.nativeViewProtected);
+		}
 	}
 
 	public _removeViewFromNativeVisualTree(child: ViewCommon): void {

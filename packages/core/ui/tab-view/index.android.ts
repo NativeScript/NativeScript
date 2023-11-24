@@ -83,49 +83,6 @@ function initializeNativeClasses() {
 
 			return tabItem.view.nativeViewProtected;
 		}
-
-		public onDestroyView() {
-			const hasRemovingParent = this.getRemovingParentFragment();
-
-			// Get view as bitmap and set it as background. This is workaround for the disapearing nested fragments.
-			// TODO: Consider removing it when update to androidx.fragment:1.2.0
-			if (hasRemovingParent && this.owner.selectedIndex === this.index) {
-				const bitmapDrawable = new android.graphics.drawable.BitmapDrawable(appResources, this.backgroundBitmap);
-				this.owner._originalBackground = this.owner.backgroundColor || new Color('White');
-				this.owner.nativeViewProtected.setBackground(bitmapDrawable);
-				this.backgroundBitmap = null;
-			}
-
-			super.onDestroyView();
-		}
-
-		public onPause(): void {
-			const hasRemovingParent = this.getRemovingParentFragment();
-
-			// Get view as bitmap and set it as background. This is workaround for the disapearing nested fragments.
-			// TODO: Consider removing it when update to androidx.fragment:1.2.0
-			if (hasRemovingParent && this.owner.selectedIndex === this.index) {
-				this.backgroundBitmap = this.loadBitmapFromView(this.owner.nativeViewProtected);
-			}
-
-			super.onPause();
-		}
-
-		private loadBitmapFromView(view: android.view.View): android.graphics.Bitmap {
-			// Another way to get view bitmap. Test performance vs setDrawingCacheEnabled
-			// const width = view.getWidth();
-			// const height = view.getHeight();
-			// const bitmap = android.graphics.Bitmap.createBitmap(width, height, android.graphics.Bitmap.Config.ARGB_8888);
-			// const canvas = new android.graphics.Canvas(bitmap);
-			// view.layout(0, 0, width, height);
-			// view.draw(canvas);
-
-			view.setDrawingCacheEnabled(true);
-			const bitmap = android.graphics.Bitmap.createBitmap(view.getDrawingCache());
-			view.setDrawingCacheEnabled(false);
-
-			return bitmap;
-		}
 	}
 
 	const POSITION_UNCHANGED = -1;
@@ -449,7 +406,6 @@ export class TabView extends TabViewBase {
 	private _viewPager: androidx.viewpager.widget.ViewPager;
 	private _pagerAdapter: androidx.viewpager.widget.PagerAdapter;
 	private _androidViewId = -1;
-	public _originalBackground: any;
 
 	constructor() {
 		super();
@@ -489,18 +445,24 @@ export class TabView extends TabViewBase {
 		lp.row = 1;
 
 		if (this.androidTabsPosition === 'top') {
-			nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
-			nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
-
+			nativeView.addRowsFromJSON(
+				JSON.stringify([
+					{ value: 1, type: 0 /* org.nativescript.widgets.GridUnitType.auto */ },
+					{ value: 1, type: 2 /* org.nativescript.widgets.GridUnitType.star */ },
+				])
+			);
 			viewPager.setLayoutParams(lp);
 
 			if (!this.androidSwipeEnabled) {
 				viewPager.setSwipePageEnabled(false);
 			}
 		} else {
-			nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
-			nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
-
+			nativeView.addRowsFromJSON(
+				JSON.stringify([
+					{ value: 1, type: 2 /* org.nativescript.widgets.GridUnitType.star */ },
+					{ value: 1, type: 0 /* org.nativescript.widgets.GridUnitType.auto */ },
+				])
+			);
 			tabLayout.setLayoutParams(lp);
 			viewPager.setSwipePageEnabled(false);
 			// set completely transparent accent color for tab selected indicator.
@@ -590,20 +552,14 @@ export class TabView extends TabViewBase {
 
 	public onLoaded(): void {
 		super.onLoaded();
-
-		if (this._originalBackground) {
-			this.backgroundColor = null;
-			this.backgroundColor = this._originalBackground;
-			this._originalBackground = null;
-		}
-
 		this.setAdapterItems(this.items);
 	}
 
 	public onUnloaded(): void {
-		super.onUnloaded();
-
+		// clear fragments before calling super to ensure the fragmentManager is the
+		// same as the one used during item instantiation
 		this.setAdapterItems(null);
+		super.onUnloaded();
 	}
 
 	public disposeNativeView() {

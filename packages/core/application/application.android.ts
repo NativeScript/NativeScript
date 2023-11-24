@@ -67,6 +67,9 @@ function initNativeScriptLifecycleCallbacks() {
 			if (!Application.android.startActivity) {
 				Application.android.setStartActivity(activity);
 			}
+			if (!Application.android.foregroundActivity) {
+				Application.android.setForegroundActivity(activity);
+			}
 
 			if (!this.nativescriptActivity && 'isNativeScriptActivity' in activity) {
 				this.nativescriptActivity = activity;
@@ -278,6 +281,8 @@ function initNativeScriptComponentCallbacks() {
 }
 
 export class AndroidApplication extends ApplicationCommon implements IAndroidApplication {
+	static readonly fragmentCreateEvent = 'fragmentCreate';
+	static readonly activityCreateEvent = 'activityCreate';
 	static readonly activityCreatedEvent = 'activityCreated';
 	static readonly activityDestroyedEvent = 'activityDestroyed';
 	static readonly activityStartedEvent = 'activityStarted';
@@ -290,6 +295,8 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 	static readonly activityNewIntentEvent = 'activityNewIntent';
 	static readonly activityRequestPermissionsEvent = 'activityRequestPermissions';
 
+	readonly fragmentCreateEvent = AndroidApplication.fragmentCreateEvent;
+	readonly activityCreateEvent = AndroidApplication.activityCreateEvent;
 	readonly activityCreatedEvent = AndroidApplication.activityCreatedEvent;
 	readonly activityDestroyedEvent = AndroidApplication.activityDestroyedEvent;
 	readonly activityStartedEvent = AndroidApplication.activityStartedEvent;
@@ -311,7 +318,7 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 	private componentCallbacks: NativeScriptComponentCallbacks;
 
 	init(nativeApp: android.app.Application): void {
-		if (this.nativeApp === nativeApp) {
+		if (!nativeApp || this.nativeApp === nativeApp) {
 			return;
 		}
 
@@ -319,18 +326,22 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 			throw new Error('Application.android already initialized.');
 		}
 
-		this._nativeApp = nativeApp;
-		this._context = nativeApp.getApplicationContext();
-		this._packageName = nativeApp.getPackageName();
+		try {
+			this._nativeApp = nativeApp;
+			this._context = nativeApp.getApplicationContext();
+			this._packageName = nativeApp.getPackageName();
 
-		// we store those callbacks and add a function for clearing them later so that the objects will be eligable for GC
-		this.lifecycleCallbacks = new (initNativeScriptLifecycleCallbacks())();
-		this.nativeApp.registerActivityLifecycleCallbacks(this.lifecycleCallbacks);
+			// we store those callbacks and add a function for clearing them later so that the objects will be eligable for GC
+			this.lifecycleCallbacks = new (initNativeScriptLifecycleCallbacks())();
+			this.nativeApp.registerActivityLifecycleCallbacks(this.lifecycleCallbacks);
 
-		this.componentCallbacks = new (initNativeScriptComponentCallbacks())();
-		this.nativeApp.registerComponentCallbacks(this.componentCallbacks);
+			this.componentCallbacks = new (initNativeScriptComponentCallbacks())();
+			this.nativeApp.registerComponentCallbacks(this.componentCallbacks);
 
-		this._registerPendingReceivers();
+			this._registerPendingReceivers();
+		} catch (err) {
+			console.error('Error initializing AndroidApplication', err, err.stack);
+		}
 	}
 
 	private _registeredReceivers = {};
@@ -459,7 +470,7 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 	}
 
 	getRootView(): View {
-		const activity = this.foregroundActivity || this.startActivity;
+		const activity = this.startActivity;
 		if (!activity) {
 			return undefined;
 		}
@@ -471,7 +482,7 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 	resetRootView(entry?: NavigationEntry | string): void {
 		super.resetRootView(entry);
 
-		const activity = this.foregroundActivity || this.startActivity;
+		const activity = this.startActivity;
 		if (!activity) {
 			throw new Error('Cannot find android activity.');
 		}

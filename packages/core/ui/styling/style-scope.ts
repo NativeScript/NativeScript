@@ -1,7 +1,7 @@
 import { Keyframes } from '../animation/keyframe-animation';
 import { ViewBase } from '../core/view-base';
 import { View } from '../core/view';
-import { unsetValue, _evaluateCssVariableExpression, _evaluateCssCalcExpression, isCssVariable, isCssVariableExpression, isCssCalcExpression } from '../core/properties';
+import { CssAnimationProperty, unsetValue, _evaluateCssVariableExpression, _evaluateCssCalcExpression, isCssVariable, isCssVariableExpression, isCssCalcExpression } from '../core/properties';
 import { SyntaxTree, Keyframes as KeyframesDefinition, Node as CssNode } from '../../css';
 
 import { RuleSet, SelectorsMap, SelectorCore, SelectorsMatch, ChangeMap, fromAstNodes, Node } from './css-selector';
@@ -449,6 +449,7 @@ export class CssState {
 		return this.viewRef.get()._styleScope.getSelectorsVersion() === this._appliedSelectorsVersion;
 	}
 
+	@profile
 	public onLoaded(): void {
 		if (this._matchInvalid) {
 			this.updateMatch();
@@ -538,15 +539,9 @@ export class CssState {
 
 		const view = this.viewRef.get();
 		if (view) {
-			view.style['keyframe:rotate'] = unsetValue;
-			view.style['keyframe:rotateX'] = unsetValue;
-			view.style['keyframe:rotateY'] = unsetValue;
-			view.style['keyframe:scaleX'] = unsetValue;
-			view.style['keyframe:scaleY'] = unsetValue;
-			view.style['keyframe:translateX'] = unsetValue;
-			view.style['keyframe:translateY'] = unsetValue;
-			view.style['keyframe:backgroundColor'] = unsetValue;
-			view.style['keyframe:opacity'] = unsetValue;
+			Object.values(CssAnimationProperty.properties).forEach((property) => {
+				view.style[property.keyframe] = unsetValue;
+			});
 		} else {
 			Trace.write(`KeyframeAnimations cannot be stopped because ".viewRef" is cleared`, Trace.categories.Animation, Trace.messageType.warn);
 		}
@@ -920,28 +915,35 @@ function resolveFilePathFromImport(importSource: string, fileName: string): stri
 export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase, styleStr: string) {
 	const localStyle = `local { ${styleStr} }`;
 	const inlineRuleSet = CSSSource.fromSource(localStyle, new Map()).selectors;
+	const oldInlineRuleSet = view['oldInlineStyle'] ? CSSSource.fromSource(`local { ${view['oldInlineStyle']} }`, new Map()).selectors : null;
 
 	// Reset unscoped css-variables
 	view.style.resetUnscopedCssVariables();
 
+	const declarations = inlineRuleSet?.[0]?.declarations || [];
+	const oldDeclarations = oldInlineRuleSet?.[0]?.declarations;
 	// Set all the css-variables first, so we can be sure they are up-to-date
-	inlineRuleSet[0].declarations.forEach((d) => {
+	for (let index = declarations.length - 1; index >= 0; index--) {
+		const d = declarations[index];
 		// Use the actual property name so that a local value is set.
 		const property = d.property;
 		if (isCssVariable(property)) {
 			view.style.setUnscopedCssVariable(property, d.value);
+			declarations.splice(index, 1);
 		}
-	});
+		if (oldDeclarations) {
+			const oldIndex = oldDeclarations.findIndex((d2) => d2.property === d.property);
+			if (oldIndex >= 0) {
+				oldDeclarations.splice(oldIndex, 1);
+			}
+		}
+	}
 
-	inlineRuleSet[0].declarations.forEach((d) => {
+	for (let index = declarations.length - 1; index >= 0; index--) {
+		const d = declarations[index];
 		// Use the actual property name so that a local value is set.
 		const property = d.property;
 		try {
-			if (isCssVariable(property)) {
-				// Skip css-variables, they have been handled
-				return;
-			}
-
 			const value = evaluateCssExpressions(view, property, d.value);
 			if (property in view.style) {
 				view.style[property] = value;
@@ -951,7 +953,24 @@ export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase
 		} catch (e) {
 			Trace.write(`Failed to apply property [${d.property}] with value [${d.value}] to ${view}. ${e}`, Trace.categories.Error, Trace.messageType.error);
 		}
-	});
+	}
+	if (oldDeclarations) {
+		for (let index = oldDeclarations.length - 1; index >= 0; index--) {
+			const d = oldDeclarations[index];
+			// Use the actual property name so that a local value is set.
+			const property = d.property;
+			try {
+				if (property in view.style) {
+					view.style[property] = '';
+				} else {
+					view[property] = null;
+				}
+			} catch (e) {
+				Trace.write(`Failed to apply property [${d.property}] with value [${d.value}] to ${view}. ${e}`, Trace.categories.Error, Trace.messageType.error);
+			}
+		}
+	}
+	view['oldInlineStyle'] = styleStr;
 
 	// This is needed in case of changes to css-variable or css-calc expressions.
 	view._onCssStateChange();

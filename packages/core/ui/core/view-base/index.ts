@@ -18,14 +18,14 @@ import { getClass } from '../../../utils/types';
 
 import { profile } from '../../../profiling';
 
-import * as dnm from '../../../debugger/dom-node';
+import type * as dnm from '../../../debugger/dom-node';
 import * as ssm from '../../styling/style-scope';
 import { ViewBase as ViewBaseDefinition } from '.';
 
 let domNodeModule: typeof dnm;
 
 function ensuredomNodeModule(): void {
-	if (!domNodeModule) {
+	if (__DEV__ && !domNodeModule) {
 		domNodeModule = require('../../../debugger/dom-node');
 	}
 }
@@ -334,10 +334,13 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	private _iosView: Object;
 	private _androidView: Object;
 	private _style: Style;
-	private _isLoaded: boolean;
+	private _isLoaded: boolean = false;
 	private _visualState: string;
 	private _templateParent: ViewBase;
 	private __nativeView: any;
+
+	private _needsCssChange = false;
+
 	// private _disableNativeViewRecycling: boolean;
 
 	public domNode: dnm.DOMNode;
@@ -371,6 +374,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	 * Gets or sets the CSS class name for this view.
 	 */
 	public className: string;
+	public disableCss: boolean;
 	/**
 	 * Gets or sets the shared transition tag for animated view transitions
 	 */
@@ -379,6 +383,11 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	 * Opt out of shared transition under different binding conditions
 	 */
 	public sharedTransitionIgnore: boolean;
+
+	/**
+	 * Default visual state, defaults to 'normal'
+	 */
+	public defaultVisualState: string = 'normal';
 
 	public _domId: number;
 	public _context: any /* android.content.Context */;
@@ -584,9 +593,16 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		if (this._isLoaded) {
 			return;
 		}
-
+		// the view is going to be layed out after
+		// no need for requestLayout which can be pretty slow because
+		// called a lot and going all up the chain to the page
+		this.suspendRequestLayout = true;
 		this._isLoaded = true;
-		this._cssState.onLoaded();
+		if (this._needsCssChange) {
+			this._onCssStateChange();
+		} else if (!this.disableCss) {
+			this._cssState.onLoaded();
+		}
 		this._resumeNativeUpdates(SuspendType.Loaded);
 
 		this.eachChild((child) => {
@@ -596,7 +612,14 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		});
 		setupAccessibleView(<any>this);
 
-		this._emit('loaded');
+		// we remove suspend before going through children so that
+		// if children ask for a layout we propagate it
+		this.suspendRequestLayout = false;
+
+		if (this.isLayoutRequestNeeded) {
+			this.requestLayout();
+		}
+		this._emit(ViewBase.loadedEvent);
 	}
 
 	@profile
@@ -615,7 +638,9 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		});
 
 		this._isLoaded = false;
-		this._cssState.onUnloaded();
+		if (!this.disableCss) {
+			this._cssState.onUnloaded();
+		}
 		this._emit('unloaded');
 	}
 
@@ -825,6 +850,19 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		}
 	}
 
+	_requetLayoutNeeded = false;
+	get isLayoutRequestNeeded() {
+		return this._requetLayoutNeeded;
+	}
+	// we can initialize it to true for less unwanted requestLayout calls
+	mSuspendRequestLayout = true;
+	set suspendRequestLayout(value: boolean) {
+		this.mSuspendRequestLayout = value;
+	}
+	get suspendRequestLayout() {
+		return this.mSuspendRequestLayout;
+	}
+
 	/**
 	 * Invalidates the layout of the view and triggers a new layout pass.
 	 */
@@ -987,7 +1025,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
 	private resetNativeViewInternal(): void {
 		// const nativeView = this.nativeViewProtected;
-		// if (nativeView && global.isAndroid) {
+		// if (nativeView && __ANDROID__) {
 		//     const recycle = this.recycleNativeView;
 		//     if (recycle === "always" || (recycle === "auto" && !this._disableNativeViewRecycling)) {
 		//         resetNativeView(this);
@@ -1034,7 +1072,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		// or for backward compatibility - set before _setupUI in iOS constructor.
 		let nativeView = this.nativeViewProtected;
 
-		// if (global.isAndroid) {
+		// if (__ANDROID__) {
 		//     const recycle = this.recycleNativeView;
 		//     if (recycle === "always" || (recycle === "auto" && !this._disableNativeViewRecycling)) {
 		//         nativeView = <android.view.View>getNativeView(context, this.typeName);
@@ -1044,7 +1082,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 			nativeView = this.createNativeView();
 		}
 
-		if (global.isAndroid) {
+		if (__ANDROID__) {
 			// this check is also unecessary as this code should never be reached with _androidView != null unless reusable = true
 			// also adding this check for feature flag safety
 			if (this._androidView !== nativeView || !this.reusable) {
@@ -1162,13 +1200,15 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 				return true;
 			});
 		}
-
 		if (this.parent) {
 			this.parent._removeViewFromNativeVisualTree(this);
+		} else {
+			//ensure we still remove the view or we could create memory leaks
+			this._removeFromNativeVisualTree();
 		}
 
 		// const nativeView = this.nativeViewProtected;
-		// if (nativeView && global.isAndroid) {
+		// if (nativeView && __ANDROID__) {
 		//     const recycle = this.recycleNativeView;
 		//     let shouldRecycle = false;
 		//     if (recycle === "always") {
@@ -1178,7 +1218,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		//         shouldRecycle = propertiesSet <= this.recyclePropertyCounter;
 		//     }
 
-		//     // const nativeParent = global.isAndroid ? (<android.view.View>nativeView).getParent() : (<UIView>nativeView).superview;
+		//     // const nativeParent = __ANDROID__ ? (<android.view.View>nativeView).getParent() : (<UIView>nativeView).superview;
 		//     const nativeParent = (<android.view.View>nativeView).getParent();
 		//     const animation = (<android.view.View>nativeView).getAnimation();
 		//     if (shouldRecycle && !nativeParent && !animation) {
@@ -1223,8 +1263,19 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	/**
 	 * Method is intended to be overridden by inheritors and used as "protected"
 	 */
+	public _removeFromNativeVisualTree(): void {
+		this._isAddedToNativeVisualTree = false;
+	}
+
+	/**
+	 * Method is intended to be overridden by inheritors and used as "protected"
+	 */
 	public _removeViewFromNativeVisualTree(view: ViewBase) {
 		view._isAddedToNativeVisualTree = false;
+	}
+
+	public get visualState() {
+		return this._visualState;
 	}
 
 	public _goToVisualState(state: string) {
@@ -1308,16 +1359,24 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	 * Notifies each child's css state for change, recursively.
 	 * Either the style scope, className or id properties were changed.
 	 */
-	_onCssStateChange(): void {
+	_onCssStateChange(): boolean {
+		if (this.disableCss) {
+			return false;
+		}
+		if (!this.isLoaded) {
+			this._needsCssChange = true;
+			return false;
+		}
 		this._cssState.onChange();
 		eachDescendant(this, (child: ViewBase) => {
-			child._cssState.onChange();
-
-			return true;
+			return child._onCssStateChange();
 		});
 	}
 
 	_inheritStyleScope(styleScope: ssm.StyleScope): void {
+		if (this.disableCss) {
+			return;
+		}
 		// If we are styleScope don't inherit parent stylescope.
 		// TODO: Consider adding parent scope and merge selectors.
 		if (this._isStyleScopeHost) {
@@ -1429,7 +1488,7 @@ bindingContextProperty.register(ViewBase);
 export const hiddenProperty = new Property<ViewBase, boolean>({
 	name: 'hidden',
 	defaultValue: false,
-	affectsLayout: global.isIOS,
+	affectsLayout: __IOS__,
 	valueConverter: booleanConverter,
 	valueChanged: (target, oldValue, newValue) => {
 		if (target) {
@@ -1442,26 +1501,28 @@ hiddenProperty.register(ViewBase);
 export const classNameProperty = new Property<ViewBase, string>({
 	name: 'className',
 	valueChanged(view: ViewBase, oldValue: string, newValue: string) {
+		if (view.disableCss) {
+			return;
+		}
 		const cssClasses = view.cssClasses;
-		const rootViewsCssClasses = CSSUtils.getSystemCssClasses();
+		// const rootViewsCssClasses = CSSUtils.getSystemCssClasses();
 
-		const shouldAddModalRootViewCssClasses = cssClasses.has(CSSUtils.MODAL_ROOT_VIEW_CSS_CLASS);
-		const shouldAddRootViewCssClasses = cssClasses.has(CSSUtils.ROOT_VIEW_CSS_CLASS);
+		// const shouldAddModalRootViewCssClasses = cssClasses.has(CSSUtils.MODAL_ROOT_VIEW_CSS_CLASS);
+		// const shouldAddRootViewCssClasses = cssClasses.has(CSSUtils.ROOT_VIEW_CSS_CLASS);
 
 		cssClasses.clear();
 
-		if (shouldAddModalRootViewCssClasses) {
-			cssClasses.add(CSSUtils.MODAL_ROOT_VIEW_CSS_CLASS);
-		} else if (shouldAddRootViewCssClasses) {
-			cssClasses.add(CSSUtils.ROOT_VIEW_CSS_CLASS);
-		}
+		// if (shouldAddModalRootViewCssClasses) {
+		// 	cssClasses.add(CSSUtils.MODAL_ROOT_VIEW_CSS_CLASS);
+		// } else if (shouldAddRootViewCssClasses) {
+		// 	cssClasses.add(CSSUtils.ROOT_VIEW_CSS_CLASS);
+		// }
 
-		rootViewsCssClasses.forEach((c) => cssClasses.add(c));
+		// rootViewsCssClasses.forEach((c) => cssClasses.add(c));
 
 		if (typeof newValue === 'string' && newValue !== '') {
 			newValue.split(' ').forEach((c) => cssClasses.add(c));
 		}
-
 		view._onCssStateChange();
 	},
 });
@@ -1472,6 +1533,12 @@ export const idProperty = new Property<ViewBase, string>({
 	valueChanged: (view, oldValue, newValue) => view._onCssStateChange(),
 });
 idProperty.register(ViewBase);
+export const disableCssProperty = new InheritedProperty<ViewBase, boolean>({
+	name: 'disableCss',
+	defaultValue: false,
+	valueConverter: booleanConverter,
+});
+disableCssProperty.register(ViewBase);
 
 export function booleanConverter(v: string | boolean): boolean {
 	const lowercase = (v + '').toLowerCase();

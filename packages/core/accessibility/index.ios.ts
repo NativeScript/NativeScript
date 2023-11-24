@@ -2,7 +2,9 @@ import { Application } from '../application';
 import type { ViewBase } from '../ui/core/view-base';
 import type { View } from '../ui/core/view';
 import { notifyAccessibilityFocusState } from './accessibility-common';
+import { initAccessibilityCssHelper } from './accessibility-css-helper';
 import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait } from './accessibility-types';
+import { initAccessibilityFontScale } from './font-scale';
 
 export * from './accessibility-common';
 export * from './accessibility-types';
@@ -36,7 +38,7 @@ function inputArrayToBitMask(values: string | string[], map: Map<string, number>
 	);
 }
 
-let AccessibilityTraitsMap: Map<string, number>;
+let AccessibilityTraitsMap: Map<number, number>;
 let RoleTypeMap: Map<AccessibilityRole, number>;
 
 let nativeFocusedNotificationObserver;
@@ -122,6 +124,11 @@ function ensureNativeClasses() {
 }
 
 export function setupAccessibleView(view: View): void {
+	updateAccessibilityProperties(view);
+}
+
+let started = false;
+export function updateAccessibilityProperties(view: View): void {
 	const uiView = view.nativeViewProtected as UIView;
 	if (!uiView) {
 		return;
@@ -134,14 +141,11 @@ export function setupAccessibleView(view: View): void {
 	 * This way we can do reverse lookup.
 	 */
 	uiView.tag = view._domId;
-}
-
-export function updateAccessibilityProperties(view: View): void {
-	const uiView = view.nativeViewProtected as UIView;
-	if (!uiView) {
-		return;
+	if (!started) {
+		started = true;
+		initAccessibilityCssHelper();
+		initAccessibilityFontScale();
 	}
-
 	ensureNativeClasses();
 
 	const accessibilityRole = view.accessibilityRole;

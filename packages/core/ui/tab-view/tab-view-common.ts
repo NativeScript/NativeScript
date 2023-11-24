@@ -2,6 +2,7 @@ import { TabView as TabViewDefinition, TabViewItem as TabViewItemDefinition, Sel
 import { View, AddArrayFromBuilder, AddChildFromBuilder, CSSType } from '../core/view';
 import { ViewBase, booleanConverter } from '../core/view-base';
 import { Style } from '../styling/style';
+import { colorConverter } from '../styling/style-properties';
 import { EventData } from '../../data/observable';
 import { Color } from '../../color';
 import { Property, CssProperty, CoercibleProperty } from '../core/properties';
@@ -216,7 +217,7 @@ export function traceMissingIcon(icon: string) {
 export const selectedIndexProperty = new CoercibleProperty<TabViewBase, number>({
 	name: 'selectedIndex',
 	defaultValue: -1,
-	affectsLayout: global.isIOS,
+	affectsLayout: __IOS__,
 	valueChanged: (target, oldValue, newValue) => {
 		target.onSelectedIndexChanged(oldValue, newValue);
 	},
@@ -257,7 +258,7 @@ androidIconRenderingModeProperty.register(TabViewBase);
 export const androidOffscreenTabLimitProperty = new Property<TabViewBase, number>({
 	name: 'androidOffscreenTabLimit',
 	defaultValue: 1,
-	affectsLayout: global.isIOS,
+	affectsLayout: __IOS__,
 	valueConverter: (v) => parseInt(v),
 });
 androidOffscreenTabLimitProperty.register(TabViewBase);
@@ -283,7 +284,7 @@ export const tabTextColorProperty = new CssProperty<Style, Color>({
 	name: 'tabTextColor',
 	cssName: 'tab-text-color',
 	equalityComparer: Color.equals,
-	valueConverter: (v) => new Color(v),
+	valueConverter: colorConverter,
 });
 tabTextColorProperty.register(Style);
 
@@ -291,7 +292,7 @@ export const tabBackgroundColorProperty = new CssProperty<Style, Color>({
 	name: 'tabBackgroundColor',
 	cssName: 'tab-background-color',
 	equalityComparer: Color.equals,
-	valueConverter: (v) => new Color(v),
+	valueConverter: colorConverter,
 });
 tabBackgroundColorProperty.register(Style);
 
@@ -299,7 +300,7 @@ export const selectedTabTextColorProperty = new CssProperty<Style, Color>({
 	name: 'selectedTabTextColor',
 	cssName: 'selected-tab-text-color',
 	equalityComparer: Color.equals,
-	valueConverter: (v) => new Color(v),
+	valueConverter: colorConverter,
 });
 selectedTabTextColorProperty.register(Style);
 
@@ -307,6 +308,6 @@ export const androidSelectedTabHighlightColorProperty = new CssProperty<Style, C
 	name: 'androidSelectedTabHighlightColor',
 	cssName: 'android-selected-tab-highlight-color',
 	equalityComparer: Color.equals,
-	valueConverter: (v) => new Color(v),
+	valueConverter: colorConverter,
 });
 androidSelectedTabHighlightColorProperty.register(Style);

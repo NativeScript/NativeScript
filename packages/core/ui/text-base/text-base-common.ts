@@ -16,9 +16,7 @@ import { Color } from '../../color';
 import { ShadowCSSValues, parseCSSShadow } from '../styling/css-shadow';
 import { StrokeCSSValues, parseCSSStroke } from '../styling/css-stroke';
 
-const CHILD_SPAN = 'Span';
 const CHILD_FORMATTED_TEXT = 'formattedText';
-const CHILD_FORMATTED_STRING = 'FormattedString';
 
 export abstract class TextBaseCommon extends View implements TextBaseDefinition {
 	public _isSingleLine: boolean;
@@ -183,7 +181,7 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 	}
 
 	public _addChildFromBuilder(name: string, value: any): void {
-		if (name === CHILD_SPAN) {
+		if (name === Span.name) {
 			if (!this.formattedText) {
 				const formattedText = new FormattedString();
 				formattedText.spans.push(value);
@@ -191,7 +189,7 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 			} else {
 				this.formattedText.spans.push(value);
 			}
-		} else if (name === CHILD_FORMATTED_TEXT || name === CHILD_FORMATTED_STRING) {
+		} else if (name === CHILD_FORMATTED_TEXT || name === FormattedString.name) {
 			this.formattedText = value;
 		}
 	}
@@ -221,7 +219,7 @@ export function isBold(fontWeight: FontWeightType): boolean {
 export const textProperty = new Property<TextBaseCommon, string>({
 	name: 'text',
 	defaultValue: '',
-	affectsLayout: global.isAndroid,
+	affectsLayout: __ANDROID__,
 });
 textProperty.register(TextBaseCommon);
 
@@ -274,7 +272,6 @@ const textTransformConverter = makeParser<CoreTypes.TextTransformType>(makeValid
 export const textTransformProperty = new CssProperty<Style, CoreTypes.TextTransformType>({
 	name: 'textTransform',
 	cssName: 'text-transform',
-	defaultValue: 'initial',
 	valueConverter: textTransformConverter,
 });
 textTransformProperty.register(Style);
@@ -282,7 +279,7 @@ textTransformProperty.register(Style);
 export const textShadowProperty = new CssProperty<Style, string | ShadowCSSValues>({
 	name: 'textShadow',
 	cssName: 'text-shadow',
-	affectsLayout: global.isIOS,
+	affectsLayout: __IOS__,
 	valueConverter: (value) => {
 		return parseCSSShadow(value);
 	},
@@ -292,7 +289,7 @@ textShadowProperty.register(Style);
 export const textStrokeProperty = new CssProperty<Style, string | StrokeCSSValues>({
 	name: 'textStroke',
 	cssName: 'text-stroke',
-	affectsLayout: global.isIOS,
+	affectsLayout: __IOS__,
 	valueConverter: (value) => {
 		return parseCSSStroke(value);
 	},
@@ -304,7 +301,7 @@ export const whiteSpaceProperty = new CssProperty<Style, CoreTypes.WhiteSpaceTyp
 	name: 'whiteSpace',
 	cssName: 'white-space',
 	defaultValue: 'initial',
-	affectsLayout: global.isIOS,
+	affectsLayout: __IOS__,
 	valueConverter: whiteSpaceConverter,
 });
 whiteSpaceProperty.register(Style);
@@ -314,7 +311,7 @@ export const textOverflowProperty = new CssProperty<Style, CoreTypes.TextOverflo
 	name: 'textOverflow',
 	cssName: 'text-overflow',
 	defaultValue: 'initial',
-	affectsLayout: global.isIOS,
+	affectsLayout: __IOS__,
 	valueConverter: textOverflowConverter,
 });
 textOverflowProperty.register(Style);
@@ -332,7 +329,7 @@ export const letterSpacingProperty = new InheritedCssProperty<Style, number>({
 	name: 'letterSpacing',
 	cssName: 'letter-spacing',
 	defaultValue: 0,
-	affectsLayout: global.isIOS,
+	affectsLayout: __IOS__,
 	valueConverter: (v) => parseFloat(v),
 });
 letterSpacingProperty.register(Style);
@@ -340,7 +337,7 @@ letterSpacingProperty.register(Style);
 export const lineHeightProperty = new InheritedCssProperty<Style, number>({
 	name: 'lineHeight',
 	cssName: 'line-height',
-	affectsLayout: global.isIOS,
+	affectsLayout: __IOS__,
 	valueConverter: (v) => parseFloat(v),
 });
 lineHeightProperty.register(Style);

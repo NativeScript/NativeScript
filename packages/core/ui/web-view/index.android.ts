@@ -127,8 +127,9 @@ export class WebView extends WebViewBase {
 				(<any>nativeView).client.owner = null;
 			}
 			nativeView.destroy();
+			nativeView.setWebViewClient(null);
+			(<any>nativeView).client.owner = null;
 		}
-
 		super.disposeNativeView();
 	}
 

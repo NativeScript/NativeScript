@@ -3,7 +3,7 @@ import { AnimationDefinitionInternal, AnimationPromise, PropertyAnimation } from
 import { View } from '../core/view';
 
 // Requires
-import { AnimationBase, Properties, CubicBezierAnimationCurve } from './animation-common';
+import { AnimationBase, CubicBezierAnimationCurve } from './animation-common';
 import { Color } from '../../color';
 import { Trace } from '../../trace';
 import { opacityProperty, backgroundColorProperty, rotateProperty, rotateXProperty, rotateYProperty, translateXProperty, translateYProperty, scaleXProperty, scaleYProperty, heightProperty, widthProperty, PercentLength } from '../styling/style-properties';
@@ -109,15 +109,15 @@ function createAnimationSet(animators: android.animation.ObjectAnimator[], itera
 }
 
 export class Animation extends AnimationBase {
-	private _animatorListener: android.animation.Animator.AnimatorListener;
-	private _nativeAnimatorsArray: any;
-	private _animatorSet: android.animation.AnimatorSet;
-	private _animators: Array<android.animation.Animator>;
-	private _propertyUpdateCallbacks: Array<Function>;
-	private _propertyResetCallbacks: Array<Function>;
-	private _valueSource: 'animation' | 'keyframe';
-	private _target: View;
-	private _resetOnFinish = true;
+	protected _animatorListener: android.animation.Animator.AnimatorListener;
+	protected _nativeAnimatorsArray: any;
+	protected _animatorSet: android.animation.AnimatorSet;
+	protected _animators: Array<android.animation.Animator>;
+	protected _propertyUpdateCallbacks: Array<Function>;
+	protected _propertyResetCallbacks: Array<Function>;
+	protected _valueSource: 'animation' | 'keyframe';
+	protected _target: View;
+	protected _resetOnFinish = true;
 
 	constructor(animationDefinitions: Array<AnimationDefinitionInternal>, playSequentially?: boolean) {
 		super(animationDefinitions, playSequentially);
@@ -215,6 +215,8 @@ export class Animation extends AnimationBase {
 		}
 
 		if (this._animators.length > 0) {
+			// TODO: fix sequentially which wont work because all animators values are computed before
+			// the first one starts...
 			if (this._playSequentially) {
 				this._animatorSet.playSequentially(this._nativeAnimatorsArray);
 			} else {
@@ -230,8 +232,7 @@ export class Animation extends AnimationBase {
 		this._animatorSet.start();
 	}
 
-	private _onAndroidAnimationEnd() {
-		// tslint:disable-line
+	protected _onAndroidAnimationEnd() {
 		if (!this.isPlaying) {
 			// It has been cancelled
 			return;
@@ -245,8 +246,7 @@ export class Animation extends AnimationBase {
 		}
 	}
 
-	private _onAndroidAnimationCancel() {
-		// tslint:disable-line
+	protected _onAndroidAnimationCancel() {
 		this._propertyResetCallbacks.forEach((v) => v());
 		this._resolveAnimationFinishedPromise();
 
@@ -255,7 +255,7 @@ export class Animation extends AnimationBase {
 		}
 	}
 
-	private _createAnimators(propertyAnimation: PropertyAnimation): void {
+	protected _createAnimators(propertyAnimation: PropertyAnimation): void {
 		if (!propertyAnimation.target.nativeViewProtected) {
 			return;
 		}
@@ -265,15 +265,15 @@ export class Animation extends AnimationBase {
 		}
 
 		if (propertyAnimation.target === null || propertyAnimation.target === undefined) {
-			throw new Error(`Animation target cannot be null or undefined; property: ${propertyAnimation.property}; value: ${propertyAnimation.value};`);
+			throw new Error(`Animation target cannot be null or undefined; property: ${propertyAnimation.propertyName}; value: ${propertyAnimation.value};`);
 		}
 
-		if (propertyAnimation.property === null || propertyAnimation.property === undefined) {
+		if (propertyAnimation.propertyName === null || propertyAnimation.propertyName === undefined) {
 			throw new Error(`Animation property cannot be null or undefined; target: ${propertyAnimation.target}; value: ${propertyAnimation.value};`);
 		}
 
 		if (propertyAnimation.value === null || propertyAnimation.value === undefined) {
-			throw new Error(`Animation value cannot be null or undefined; target: ${propertyAnimation.target}; property: ${propertyAnimation.property};`);
+			throw new Error(`Animation value cannot be null or undefined; target: ${propertyAnimation.target}; property: ${propertyAnimation.propertyName};`);
 		}
 
 		this._target = propertyAnimation.target;
@@ -289,8 +289,9 @@ export class Animation extends AnimationBase {
 
 		const setLocal = this._valueSource === 'animation';
 		const style = propertyAnimation.target.style;
-		switch (propertyAnimation.property) {
-			case Properties.opacity:
+		const propName = propertyAnimation.propertyName;
+		switch (propName) {
+			case 'opacity':
 				opacityProperty._initDefaultNativeValue(style);
 
 				originalValue1 = nativeView.getAlpha();
@@ -310,7 +311,7 @@ export class Animation extends AnimationBase {
 				animators.push(createObjectAnimator(nativeView, 'alpha', propertyAnimation.value));
 				break;
 
-			case Properties.backgroundColor: {
+			case 'backgroundColor': {
 				backgroundColorProperty._initDefaultNativeValue(style);
 
 				ensureArgbEvaluator();
@@ -345,7 +346,7 @@ export class Animation extends AnimationBase {
 				animators.push(animator);
 				break;
 			}
-			case Properties.translate:
+			case 'translate':
 				translateXProperty._initDefaultNativeValue(style);
 				translateYProperty._initDefaultNativeValue(style);
 
@@ -375,7 +376,7 @@ export class Animation extends AnimationBase {
 				animators.push(createAnimationSet([createObjectAnimator(nativeView, 'translationX', propertyAnimation.value.x * density), createObjectAnimator(nativeView, 'translationY', propertyAnimation.value.y * density)], propertyAnimation.iterations));
 				break;
 
-			case Properties.scale:
+			case 'scale':
 				scaleXProperty._initDefaultNativeValue(style);
 				scaleYProperty._initDefaultNativeValue(style);
 
@@ -405,7 +406,7 @@ export class Animation extends AnimationBase {
 				animators.push(createAnimationSet([createObjectAnimator(nativeView, 'scaleX', propertyAnimation.value.x), createObjectAnimator(nativeView, 'scaleY', propertyAnimation.value.y)], propertyAnimation.iterations));
 				break;
 
-			case Properties.rotate:
+			case 'rotate':
 				rotateProperty._initDefaultNativeValue(style);
 				rotateXProperty._initDefaultNativeValue(style);
 				rotateYProperty._initDefaultNativeValue(style);
@@ -440,9 +441,9 @@ export class Animation extends AnimationBase {
 				animators.push(createAnimationSet([createObjectAnimator(nativeView, 'rotationX', propertyAnimation.value.x), createObjectAnimator(nativeView, 'rotationY', propertyAnimation.value.y), createObjectAnimator(nativeView, 'rotation', propertyAnimation.value.z)], propertyAnimation.iterations));
 				break;
 
-			case Properties.width:
-			case Properties.height: {
-				const isVertical: boolean = propertyAnimation.property === 'height';
+			case 'width':
+			case 'height': {
+				const isVertical: boolean = propertyAnimation.propertyName === 'height';
 				const extentProperty = isVertical ? heightProperty : widthProperty;
 
 				extentProperty._initDefaultNativeValue(style);
@@ -450,21 +451,41 @@ export class Animation extends AnimationBase {
 				let toValue = propertyAnimation.value;
 				const parent = propertyAnimation.target.parent as View;
 				if (!parent) {
-					throw new Error(`cannot animate ${propertyAnimation.property} on root view`);
+					throw new Error(`cannot animate ${propertyAnimation.propertyName} on root view`);
 				}
 				const parentExtent: number = isVertical ? parent.getMeasuredHeight() : parent.getMeasuredWidth();
-				toValue = PercentLength.toDevicePixels(toValue, parentExtent, parentExtent) / Screen.mainScreen.scale;
+				const scale = Screen.mainScreen.scale;
+				if (toValue === 'auto') {
+					const target = propertyAnimation.target;
+					let widthSpec = target._currentWidthMeasureSpec;
+					let heightSpec = target._currentHeightMeasureSpec;
+					//we need to measure ourselves
+					if (propName === 'width') {
+						widthSpec = layout.makeMeasureSpec(0, layout.UNSPECIFIED);
+						target.measure(widthSpec, heightSpec);
+						toValue = target.getMeasuredWidth() / scale;
+					} else {
+						heightSpec = layout.makeMeasureSpec(0, layout.UNSPECIFIED);
+						target.measure(widthSpec, heightSpec);
+						toValue = target.getMeasuredHeight() / scale;
+					}
+				} else {
+					toValue = PercentLength.toDevicePixels(toValue, parentExtent, parentExtent) / scale;
+				}
 				const nativeHeight: number = isVertical ? nativeView.getHeight() : nativeView.getWidth();
 				const targetStyle: string = setLocal ? extentProperty.name : extentProperty.keyframe;
-				originalValue1 = nativeHeight / Screen.mainScreen.scale;
+				originalValue1 = nativeHeight / scale;
 				nativeArray[0] = originalValue1;
 				nativeArray[1] = toValue;
 				const extentAnimator = android.animation.ValueAnimator.ofFloat(nativeArray);
 				extentAnimator.addUpdateListener(
 					new android.animation.ValueAnimator.AnimatorUpdateListener({
 						onAnimationUpdate(animator: android.animation.ValueAnimator) {
-							const argb = (<java.lang.Float>animator.getAnimatedValue()).floatValue();
-							propertyAnimation.target.style[setLocal ? extentProperty.name : extentProperty.keyframe] = argb;
+							let result = animator.getAnimatedValue();
+							if (result instanceof java.lang.Number) {
+								result = result.floatValue();
+							}
+							propertyAnimation.target.style[setLocal ? extentProperty.name : extentProperty.keyframe] = result;
 						},
 					})
 				);
@@ -475,14 +496,71 @@ export class Animation extends AnimationBase {
 					propertyAnimation.target.style[targetStyle] = originalValue1;
 					if (propertyAnimation.target.nativeViewProtected) {
 						const setter = propertyAnimation.target[extentProperty.setNative];
-						setter(propertyAnimation.target.style[propertyAnimation.property]);
+						setter.call(propertyAnimation.target, propertyAnimation.target.style[propertyAnimation.propertyName]);
 					}
 				});
 				animators.push(extentAnimator);
 				break;
 			}
 			default:
-				throw new Error(`Animating property '${propertyAnimation.property}' is unsupported`);
+				if (propertyAnimation.property) {
+					const property = propertyAnimation.property;
+					if (property._initDefaultNativeValue) {
+						property._initDefaultNativeValue(style);
+					}
+					originalValue1 = propertyAnimation.target[propertyAnimation.propertyName];
+					let nativeArray;
+					if (propertyAnimation.value instanceof Color) {
+						ensureArgbEvaluator();
+						nativeArray = Array.create(java.lang.Object, 2);
+						nativeArray[0] = java.lang.Integer.valueOf(originalValue1.android);
+						nativeArray[1] = java.lang.Integer.valueOf(propertyAnimation.value.android);
+						const animator = android.animation.ValueAnimator.ofObject(argbEvaluator, nativeArray);
+						animator.addUpdateListener(
+							new android.animation.ValueAnimator.AnimatorUpdateListener({
+								onAnimationUpdate(animator: android.animation.ValueAnimator) {
+									const argb = (<java.lang.Integer>animator.getAnimatedValue()).intValue();
+									propertyAnimation.target[setLocal ? property.name : property.keyframe] = new Color(argb);
+								},
+							})
+						);
+						animators.push(animator);
+					} else {
+						nativeArray = Array.create('float', 2);
+						nativeArray[0] = originalValue1;
+						nativeArray[1] = propertyAnimation.value;
+						const animator = android.animation.ValueAnimator.ofFloat(nativeArray);
+						animator.addUpdateListener(
+							new android.animation.ValueAnimator.AnimatorUpdateListener({
+								onAnimationUpdate(animator: android.animation.ValueAnimator) {
+									let result = animator.getAnimatedValue();
+									if (result instanceof java.lang.Number) {
+										result = result.floatValue();
+									}
+									propertyAnimation.target[setLocal ? property.name : property.keyframe] = result;
+								},
+							})
+						);
+						animators.push(animator);
+					}
+
+					propertyUpdateCallbacks.push(() => {
+						propertyAnimation.target[setLocal ? property.name : property.keyframe] = propertyAnimation.value;
+					});
+					propertyResetCallbacks.push(() => {
+						if (setLocal) {
+							propertyAnimation.target[property.name] = originalValue1;
+						} else {
+							propertyAnimation.target[property.keyframe] = originalValue1;
+						}
+
+						if (propertyAnimation.target.nativeViewProtected && propertyAnimation.target[property.setNative]) {
+							propertyAnimation.target[property.setNative](propertyAnimation.target.style[propertyAnimation.propertyName]);
+						}
+					});
+				} else {
+					throw new Error(`Animating property '${propertyAnimation.propertyName}' is unsupported`);
+				}
 		}
 
 		for (let i = 0, length = animators.length; i < length; i++) {

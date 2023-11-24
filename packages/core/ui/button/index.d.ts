@@ -2,14 +2,14 @@
 import { EventData } from '../../data/observable';
 
 /**
+ * String value used when hooking to tap event.
+ */
+export const tapEvent: string;
+
+/**
  * Represents a standard Button widget.
  */
 export class Button extends TextBase {
-	/**
-	 * String value used when hooking to tap event.
-	 */
-	public static tapEvent: string;
-
 	/**
 	 * Gets the native [android widget](http://developer.android.com/reference/android/widget/Button.html) that represents the user interface for this component. Valid only when running on Android OS.
 	 */

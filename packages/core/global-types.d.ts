@@ -209,7 +209,7 @@ declare type HeaderInit = Headers | Array<string>;
 declare function fetch(url: string, init?: RequestInit): Promise<Response>;
 
 // declare var console: Console;
-declare var require: NodeRequire;
+declare let require: NodeRequire;
 
 // Extend NodeRequire with the webpack's require context extension.
 interface RequireContext {
@@ -234,9 +234,9 @@ interface WeakRef<T extends object> {
 declare var __dirname: string;
 declare var __filename: string;
 
-declare var module: NodeModule;
+declare let module: NodeModule;
 // Same as module.exports
-declare var exports: any;
+declare let exports: any;
 
 // Global functions
 declare function Deprecated(target: Object, key?: string | symbol, value?: any): void;

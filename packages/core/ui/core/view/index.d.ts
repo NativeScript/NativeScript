@@ -652,6 +652,11 @@ export abstract class View extends ViewCommon {
 	public createAnimation(options: AnimationDefinition): Animation;
 
 	/**
+	 * Cancel all animations started with `animate`
+	 */
+	public cancelAllAnimations();
+
+	/**
 	 * Returns the iOS safe area insets of this view.
 	 */
 	public getSafeAreaInsets(): { left; top; right; bottom };

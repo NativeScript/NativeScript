@@ -20,12 +20,19 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 
 import org.nativescript.widgets.image.BitmapOwner;
 import org.nativescript.widgets.image.Fetcher;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.regex.Pattern;
+
+import android.os.Build;
+import android.util.Log;
 
 /**
  * Created by hristov on 6/15/2016.

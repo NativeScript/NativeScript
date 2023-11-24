@@ -3,6 +3,7 @@ import { View, CSSType } from '../core/view';
 import { booleanConverter } from '../core/view-base';
 import { Property } from '../core/properties';
 import { Style } from '../styling/style';
+import { colorConverter } from '../styling/style-properties';
 import { Color } from '../../color';
 import { HtmlView as HtmlViewDefinition } from '.';
 
@@ -33,6 +34,6 @@ export const linkColorProperty = new CssProperty<Style, Color>({
 	name: 'linkColor',
 	cssName: 'link-color',
 	equalityComparer: Color.equals,
-	valueConverter: (value) => new Color(value),
+	valueConverter: colorConverter,
 });
 linkColorProperty.register(Style);

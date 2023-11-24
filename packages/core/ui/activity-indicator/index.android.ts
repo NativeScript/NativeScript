@@ -2,6 +2,7 @@ import { ActivityIndicatorBase, busyProperty } from './activity-indicator-common
 import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
 import { colorProperty, visibilityProperty } from '../styling/style-properties';
+import { VIEW_GONE, VIEW_INVISIBLE, VIEW_VISIBLE } from '../core/view/index.android';
 
 export * from './activity-indicator-common';
 
@@ -10,7 +11,7 @@ export class ActivityIndicator extends ActivityIndicatorBase {
 
 	public createNativeView() {
 		const progressBar = new android.widget.ProgressBar(this._context);
-		progressBar.setVisibility(android.view.View.INVISIBLE);
+		progressBar.setVisibility(VIEW_INVISIBLE);
 		progressBar.setIndeterminate(true);
 
 		return progressBar;
@@ -21,7 +22,7 @@ export class ActivityIndicator extends ActivityIndicatorBase {
 	}
 	[busyProperty.setNative](value: boolean) {
 		if (this.visibility === CoreTypes.Visibility.visible) {
-			this.nativeViewProtected.setVisibility(value ? android.view.View.VISIBLE : android.view.View.INVISIBLE);
+			this.nativeViewProtected.setVisibility(value ? VIEW_VISIBLE : VIEW_INVISIBLE);
 		}
 	}
 
@@ -31,13 +32,13 @@ export class ActivityIndicator extends ActivityIndicatorBase {
 	[visibilityProperty.setNative](value: CoreTypes.VisibilityType) {
 		switch (value) {
 			case CoreTypes.Visibility.visible:
-				this.nativeViewProtected.setVisibility(this.busy ? android.view.View.VISIBLE : android.view.View.INVISIBLE);
+				this.nativeViewProtected.setVisibility(this.busy ? VIEW_VISIBLE : VIEW_INVISIBLE);
 				break;
 			case CoreTypes.Visibility.hidden:
-				this.nativeViewProtected.setVisibility(android.view.View.INVISIBLE);
+				this.nativeViewProtected.setVisibility(VIEW_INVISIBLE);
 				break;
 			case CoreTypes.Visibility.collapse:
-				this.nativeViewProtected.setVisibility(android.view.View.GONE);
+				this.nativeViewProtected.setVisibility(VIEW_GONE);
 				break;
 			default:
 				throw new Error(`Invalid visibility value: ${value}. Valid values are: "${CoreTypes.Visibility.visible}", "${CoreTypes.Visibility.hidden}", "${CoreTypes.Visibility.collapse}".`);

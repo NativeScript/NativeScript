@@ -75,33 +75,53 @@ class UIViewControllerImpl extends UIViewController {
 
 	public isBackstackSkipped: boolean;
 	public isBackstackCleared: boolean;
-	private didFirstLayout: boolean;
+	// private didFirstLayout: boolean;
 	// this is initialized in initWithOwner since the constructor doesn't run on native classes
-	private _isRunningLayout: number;
-	private get isRunningLayout() {
-		return this._isRunningLayout !== 0;
-	}
-	private startRunningLayout() {
-		this._isRunningLayout++;
-	}
-	private finishRunningLayout() {
-		this._isRunningLayout--;
-		this.didFirstLayout = true;
-	}
-	private runLayout(cb: () => void) {
-		try {
-			this.startRunningLayout();
-			cb();
-		} finally {
-			this.finishRunningLayout();
-		}
-	}
+	// private _isRunningLayout: number;
+	// private get isRunningLayout() {
+	// 	return this._isRunningLayout !== 0;
+	// }
+	// private startRunningLayout() {
+	// 	this._isRunningLayout++;
+	// }
+	// private finishRunningLayout() {
+	// 	this._isRunningLayout--;
+	// 	this.clearScheduledLayout();
+	// }
+	// private runLayout(cb: () => void) {
+	// 	try {
+	// 		this.startRunningLayout();
+	// 		cb();
+	// 	} finally {
+	// 		this.finishRunningLayout();
+	// 	}
+	// }
+
+	// layoutTimer: number;
+
+	// private clearScheduledLayout() {
+	// 	if (this.layoutTimer) {
+	// 		clearTimeout(this.layoutTimer);
+	// 		this.layoutTimer = null;
+	// 	}
+	// }
+
+	// private scheduleLayout() {
+	// 	if (this.layoutTimer) {
+	// 		return;
+	// 	}
+	// 	setTimeout(() => {
+	// 		this.layoutTimer = null;
+	// 		if (!this.isRunningLayout) {
+	// 			this.runLayout(() => this.layoutOwner());
+	// 		}
+	// 	});
+	// }
 
 	public static initWithOwner(owner: WeakRef<Page>): UIViewControllerImpl {
 		const controller = <UIViewControllerImpl>UIViewControllerImpl.new();
 		controller._owner = owner;
-		controller._isRunningLayout = 0;
-		controller.didFirstLayout = false;
+		// controller._isRunningLayout = 0;
 
 		return controller;
 	}
@@ -287,17 +307,17 @@ class UIViewControllerImpl extends UIViewController {
 
 	public viewSafeAreaInsetsDidChange(): void {
 		super.viewSafeAreaInsetsDidChange();
-		if (this.isRunningLayout || !this.didFirstLayout) {
-			return;
-		}
-		const owner = this._owner?.deref();
-		if (owner) {
-			this.runLayout(() => IOSHelper.layoutView(this, owner));
-		}
+		// if (this.isRunningLayout || !this.didFirstLayout) {
+		// 	return;
+		// }
+		// const owner = this._owner?.deref();
+		// if (owner) {
+		// 	this.runLayout(() => IOSHelper.layoutView(this, owner));
+		// }
 	}
 
 	public viewDidLayoutSubviews(): void {
-		this.startRunningLayout();
+		// this.startRunningLayout();
 		super.viewDidLayoutSubviews();
 		const owner = this._owner?.deref();
 		if (owner) {
@@ -351,7 +371,7 @@ class UIViewControllerImpl extends UIViewController {
 
 			IOSHelper.layoutView(this, owner);
 		}
-		this.finishRunningLayout();
+		// this.finishRunningLayout();
 	}
 
 	// Mind implementation for other controllerss
@@ -631,7 +651,7 @@ export class Page extends PageBase {
 			return;
 		}
 
-		if (this.actionBar.accessibilityLabel || this.actionBar.title) {
+		if (this.hasActionBar && (this.actionBar.accessibilityLabel || this.actionBar.title)) {
 			UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, this.actionBar.nativeView);
 
 			return;

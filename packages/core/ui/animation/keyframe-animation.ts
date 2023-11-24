@@ -8,7 +8,8 @@ import { Trace } from '../../trace';
 // Types.
 import { unsetValue } from '../core/properties';
 import { Animation } from '.';
-import { backgroundColorProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, rotateProperty, opacityProperty, rotateXProperty, rotateYProperty, widthProperty, heightProperty } from '../styling/style-properties';
+import { scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, rotateProperty, rotateXProperty, rotateYProperty } from '../styling/style-properties';
+import { AnimationNonAnimatableProperties, getPropertyFromKey } from './animation-common';
 
 export class Keyframes {
 	name: string;
@@ -53,7 +54,6 @@ interface Keyframe {
 	valueSource?: 'keyframe' | 'animation';
 	duration?: number;
 	curve?: any;
-	forceLayer?: boolean;
 }
 
 export class KeyframeAnimation {
@@ -103,7 +103,7 @@ export class KeyframeAnimation {
 		return animation;
 	}
 
-	private static parseKeyframe(info: KeyframeAnimationInfo, keyframe: KeyframeInfo, animations: Array<Object>, startDuration: number): number {
+	private static parseKeyframe(info: KeyframeAnimationInfo, keyframe: KeyframeInfo, animations: Array<Keyframe>, startDuration: number): number {
 		const animation: Keyframe = {};
 		for (const declaration of keyframe.declarations) {
 			animation[declaration.property] = declaration.value;
@@ -118,7 +118,6 @@ export class KeyframeAnimation {
 		}
 		animation.duration = info.isReverse ? info.duration - duration : duration;
 		animation.curve = keyframe.curve;
-		animation.forceLayer = true;
 		animation.valueSource = 'keyframe';
 		animations.push(animation);
 
@@ -182,32 +181,27 @@ export class KeyframeAnimation {
 		}
 		if (index === 0) {
 			const animation = this.animations[0];
-
-			if ('backgroundColor' in animation) {
-				view.style[backgroundColorProperty.keyframe] = animation.backgroundColor;
-			}
-			if ('scale' in animation) {
-				view.style[scaleXProperty.keyframe] = animation.scale.x;
-				view.style[scaleYProperty.keyframe] = animation.scale.y;
-			}
-			if ('translate' in animation) {
-				view.style[translateXProperty.keyframe] = animation.translate.x;
-				view.style[translateYProperty.keyframe] = animation.translate.y;
-			}
-			if ('rotate' in animation) {
-				view.style[rotateXProperty.keyframe] = animation.rotate.x;
-				view.style[rotateYProperty.keyframe] = animation.rotate.y;
-				view.style[rotateProperty.keyframe] = animation.rotate.z;
-			}
-			if ('opacity' in animation) {
-				view.style[opacityProperty.keyframe] = animation.opacity;
-			}
-			if ('height' in animation) {
-				view.style[heightProperty.keyframe] = animation.height;
-			}
-			if ('width' in animation) {
-				view.style[widthProperty.keyframe] = animation.width;
-			}
+			Object.keys(animation).forEach((key) => {
+				if (AnimationNonAnimatableProperties.indexOf(key) !== -1) {
+					return;
+				}
+				if ('scale' === key) {
+					view.style[scaleXProperty.keyframe] = animation.scale.x;
+					view.style[scaleYProperty.keyframe] = animation.scale.y;
+				} else if ('translate' === key) {
+					view.style[translateXProperty.keyframe] = animation.translate.x;
+					view.style[translateYProperty.keyframe] = animation.translate.y;
+				} else if ('rotate' === key) {
+					view.style[rotateXProperty.keyframe] = animation.rotate.x;
+					view.style[rotateYProperty.keyframe] = animation.rotate.y;
+					view.style[rotateProperty.keyframe] = animation.rotate.z;
+				} else {
+					const property = getPropertyFromKey(key, view);
+					if (property?.keyframe) {
+						view.style[property.keyframe] = animation[key];
+					}
+				}
+			});
 
 			setTimeout(() => this.animate(view, 1, iterations), 1);
 		} else if (index < 0 || index >= this.animations.length) {
@@ -248,7 +242,7 @@ export class KeyframeAnimation {
 				)
 				.catch((error: any) => {
 					Trace.write(typeof error === 'string' ? error : error.message, Trace.categories.Animation, Trace.messageType.warn);
-				}); // tslint:disable-line
+				});
 		}
 	}
 
@@ -265,29 +259,27 @@ export class KeyframeAnimation {
 		this._target = null;
 	}
 
-	private _resetAnimationValues(view: View, animation: Object) {
-		if ('backgroundColor' in animation) {
-			view.style[backgroundColorProperty.keyframe] = unsetValue;
-		}
-		if ('scale' in animation) {
-			view.style[scaleXProperty.keyframe] = unsetValue;
-			view.style[scaleYProperty.keyframe] = unsetValue;
-		}
-		if ('translate' in animation) {
-			view.style[translateXProperty.keyframe] = unsetValue;
-			view.style[translateYProperty.keyframe] = unsetValue;
-		}
-		if ('rotate' in animation) {
-			view.style[rotateProperty.keyframe] = unsetValue;
-		}
-		if ('opacity' in animation) {
-			view.style[opacityProperty.keyframe] = unsetValue;
-		}
-		if ('height' in animation) {
-			view.style[heightProperty.keyframe] = unsetValue;
-		}
-		if ('width' in animation) {
-			view.style[widthProperty.keyframe] = unsetValue;
-		}
+	private _resetAnimationValues(view: View, animation: Animation | Keyframe) {
+		Object.keys(animation).forEach((key) => {
+			if (AnimationNonAnimatableProperties.indexOf(key) !== -1) {
+				return;
+			}
+			if ('scale' === key) {
+				view.style[scaleXProperty.keyframe] = unsetValue;
+				view.style[scaleYProperty.keyframe] = unsetValue;
+			} else if ('translate' === key) {
+				view.style[translateXProperty.keyframe] = unsetValue;
+				view.style[translateYProperty.keyframe] = unsetValue;
+			} else if ('rotate' === key) {
+				view.style[rotateXProperty.keyframe] = unsetValue;
+				view.style[rotateYProperty.keyframe] = unsetValue;
+				view.style[rotateProperty.keyframe] = unsetValue;
+			} else {
+				const property = getPropertyFromKey(key, view);
+				if (property?.keyframe) {
+					view.style[property.keyframe] = unsetValue;
+				}
+			}
+		});
 	}
 }

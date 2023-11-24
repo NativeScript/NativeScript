@@ -1,11 +1,12 @@
 import * as definition from '.';
 import * as types from '../utils/types';
 import * as knownColors from './known-colors';
+import { Color } from '.';
 
 const SHARP = '#';
 const HEX_REGEX = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)|(^#[0-9A-F]{8}$)/i;
 
-export class Color implements definition.Color {
+export class ColorBase implements definition.Color {
 	private _argb: number;
 	private _name: string;
 
@@ -577,7 +578,7 @@ function hsvToRgb(h1, s1, v1) {
 	const s = s1 / 100;
 	const v = v1 / 100;
 
-	var i = Math.floor(h),
+	const i = Math.floor(h),
 		f = h - i,
 		p = v * (1 - s),
 		q = v * (1 - f * s),

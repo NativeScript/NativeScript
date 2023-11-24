@@ -116,3 +116,24 @@ export function getAllKeys(): Array<string> {
 
 	return result;
 }
+
+export function getAllJSON() {
+	ensureSharedPreferences();
+	const mappedPreferences = sharedPreferences.getAll();
+	const iterator = mappedPreferences.keySet().iterator();
+	// we need to transform numbers which are stored as longBits
+	while (iterator.hasNext()) {
+		const key = iterator.next();
+		const value = mappedPreferences.get(key);
+		if (value instanceof java.lang.Long) {
+			mappedPreferences.put(key, java.lang.Double.valueOf(java.lang.Double.longBitsToDouble(value.longValue())));
+		}
+	}
+	const json = new org.json.JSONObject(mappedPreferences);
+	return json.toString();
+}
+
+export function getNative() {
+	ensureSharedPreferences();
+	return sharedPreferences;
+}

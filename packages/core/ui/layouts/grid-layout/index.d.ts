@@ -48,6 +48,16 @@ export class ItemSpec {
  */
 export class GridLayout extends LayoutBase {
 	/**
+	 * Get or set the array of row specifications defined on this instance of GridLayout.
+	 */
+	public rows: string;
+
+	/**
+	 * Get or set the array of row specifications defined on this instance of GridLayout.
+	 */
+	public columns: string;
+
+	/**
 	 * Gets the value of the Column attached property from a given View.
 	 */
 	static getColumn(view: View): number;

@@ -8,8 +8,9 @@ import { getPageStartDefaultsForType, getRectFromProps, SharedTransition, Shared
 import { ImageSource } from '../../image-source';
 import { ContentView } from '../content-view';
 import { GridLayout } from '../layouts/grid-layout';
-import { ad } from '../../utils';
 import { Screen } from '../../platform';
+import { ExpandedEntry } from '../frame/fragment.transitions.android';
+import { android as AndroidUtils } from '../../utils/native-helper';
 // import { Image } from '../image';
 
 @NativeClass
@@ -65,12 +66,12 @@ class CustomLinearInterpolator extends android.view.animation.LinearInterpolator
 	}
 }
 
-function setTransitionName(view: ViewBase) {
+function setTransitionName(view: ViewBase, value?) {
 	if (!view?.sharedTransitionTag) {
 		return;
 	}
 	try {
-		androidx.core.view.ViewCompat.setTransitionName(view.nativeView, view.sharedTransitionTag);
+		androidx.core.view.ViewCompat.setTransitionName(view.nativeView, value !== undefined ? value : view.sharedTransitionTag);
 	} catch (err) {
 		// ignore
 	}
@@ -171,18 +172,31 @@ export class PageTransition extends Transition {
 		return animationSet;
 	}
 
-	androidFragmentTransactionCallback(fragmentTransaction: androidx.fragment.app.FragmentTransaction, currentEntry: BackstackEntry, newEntry: BackstackEntry) {
+	androidFragmentTransactionCallback(fragmentTransaction: androidx.fragment.app.FragmentTransaction, currentEntry: ExpandedEntry, newEntry: BackstackEntry) {
 		const fromPage = currentEntry.resolvedPage;
 		const toPage = newEntry.resolvedPage;
 		const newFragment: androidx.fragment.app.Fragment = newEntry.fragment;
 		const state = SharedTransition.getState(this.id);
+		if (!state) {
+			// when navigating transition is set on the currentEntry but never cleaned up
+			// which means that on a next navigation forward (without transition) and back
+			// we will go here with an empty state!
+			currentEntry.transition = null;
+			return;
+		}
+
+		const pageStart = state.pageStart;
 		const pageEnd = state.pageEnd;
 
 		//we can't look for presented right now as the toPage might not be loaded
 		// and thus some views like ListView/Pager... might not have loaded their "children"
 		// presented will be handled in loaded event of toPage
-		const { presenting } = SharedTransition.getSharedElements(fromPage, toPage);
+		let { presenting } = SharedTransition.getSharedElements(fromPage, toPage);
 
+		if (pageStart?.sharedTransitionTags) {
+			const keys = Object.keys(pageStart?.sharedTransitionTags);
+			presenting = presenting.filter((v) => keys.indexOf(v.sharedTransitionTag) !== -1);
+		}
 		// Note: we can enhance android more over time with element targeting across different screens
 		// const pageStart = state.pageStart;
 		// const pageEndIndependentTags = Object.keys(pageEnd?.sharedTransitionTags || {});
@@ -216,9 +230,13 @@ export class PageTransition extends Transition {
 		const onPageLoaded = () => {
 			// add a timeout so that Views like ListView / CollectionView can have their children instantiated
 			setTimeout(() => {
-				const { presented } = SharedTransition.getSharedElements(fromPage, toPage);
+				let { presented } = SharedTransition.getSharedElements(fromPage, toPage);
+				if (pageEnd?.sharedTransitionTags) {
+					const keys = Object.keys(pageEnd?.sharedTransitionTags);
+					presented = presented.filter((v) => keys.indexOf(v.sharedTransitionTag) !== -1);
+				}
 				// const sharedElementTags = sharedElements.map((v) => v.sharedTransitionTag);
-				presented.forEach(setTransitionName);
+				presented.forEach((v) => setTransitionName(v));
 				newFragment.startPostponedEnterTransition();
 			}, this.pageLoadedTimeout);
 		};
@@ -235,7 +253,9 @@ export class PageTransition extends Transition {
 		const transitionSet = new androidx.transition.TransitionSet();
 		transitionSet.setDuration(customDuration > -1 ? customDuration : this.getDuration());
 		transitionSet.addTransition(new androidx.transition.ChangeBounds());
+		transitionSet.addTransition(new androidx.transition.ChangeClipBounds());
 		transitionSet.addTransition(new androidx.transition.ChangeTransform());
+		transitionSet.addTransition(new androidx.transition.ChangeImageTransform());
 		transitionSet.setOrdering(androidx.transition.TransitionSet.ORDERING_TOGETHER);
 
 		if (customDuration) {
@@ -260,6 +280,18 @@ export class PageTransition extends Transition {
 			toPage.once('loaded', onPageLoaded);
 		}
 	}
+	onTransitionEnd(entry) {
+		if (__ANDROID__) {
+			// as we use hide on fragments instead of remove
+			// we need to reset setTransitionName after transition end
+			// otherwise it will break next transitions using the same transitionName
+			const fromPage = entry?.resolvedPage;
+			const { presenting } = SharedTransition.getSharedElements(fromPage, null);
+			presenting.forEach((v) => {
+				setTransitionName(v, null);
+			});
+		}
+	}
 }
 
 function renderToImageSource(hostView: View): ImageSource {
@@ -277,10 +309,10 @@ function loadViewInBackground(view: View) {
 	hiddenHost.content = hostView;
 	hiddenHost.visibility = 'collapse';
 	hostView.addChild(view);
-	hiddenHost._setupAsRootView(ad.getApplicationContext());
+	hiddenHost._setupAsRootView(AndroidUtils.getApplicationContext());
 	hiddenHost.callLoaded();
 
-	ad.getCurrentActivity().addContentView(hiddenHost.android, new android.view.ViewGroup.LayoutParams(0, 0));
+	AndroidUtils.getCurrentActivity().addContentView(hiddenHost.android, new android.view.ViewGroup.LayoutParams(0, 0));
 
 	return {
 		hiddenHost,

@@ -11,7 +11,7 @@ let fileAccess: IFileSystemAccess;
  */
 export function getFileAccess(): IFileSystemAccess {
 	if (!fileAccess) {
-		if (global.isAndroid && SDK_VERSION >= 29) {
+		if (__ANDROID__ && SDK_VERSION >= 29) {
 			fileAccess = new FileSystemAccess29();
 		} else {
 			fileAccess = new FileSystemAccess();
@@ -275,7 +275,7 @@ function getAndroidDirectory(value: AndroidDirectory): { path: string; column: a
 
 class Android {
 	createFile(options: { relativePath?: string; name: string; mime: string; directory: AndroidDirectory }): File {
-		if (!global.isAndroid) {
+		if (!__ANDROID__) {
 			throw new Error(`createFile is available on Android only!`);
 		}
 
@@ -326,7 +326,7 @@ export class File extends FileSystemEntity {
 			throw error;
 		};
 
-		if (global.isAndroid && copy) {
+		if (__ANDROID__ && copy) {
 			if (path.startsWith('content:')) {
 				const fileInfo = getFileAccess().getFile(path, onError);
 				// falls back to creating a temp file without a known extension.
@@ -788,7 +788,7 @@ export class Folder extends FileSystemEntity {
 		return createFolder(folderInfo);
 	}
 
-	public getEntities(): Promise<Array<FileSystemEntity>> {
+	public getEntities(): Promise<Array<File | Folder>> {
 		return new Promise((resolve, reject) => {
 			let hasError = false;
 			const localError = function (error) {
@@ -803,13 +803,13 @@ export class Folder extends FileSystemEntity {
 		});
 	}
 
-	public getEntitiesSync(onError?: (error: any) => any): Array<FileSystemEntity> {
+	public getEntitiesSync(onError?: (error: any) => any): Array<File | Folder> {
 		const fileInfos = getFileAccess().getEntities(this.path, onError);
 		if (!fileInfos) {
 			return null;
 		}
 
-		const entities = new Array<FileSystemEntity>();
+		const entities = new Array<File | Folder>();
 		for (let i = 0; i < fileInfos.length; i++) {
 			if (fileInfos[i].extension) {
 				entities.push(createFile(fileInfos[i]));
@@ -821,7 +821,7 @@ export class Folder extends FileSystemEntity {
 		return entities;
 	}
 
-	public eachEntity(onEntity: (entity: FileSystemEntity) => boolean) {
+	public eachEntity(onEntity: (entity: File | Folder) => boolean) {
 		if (!onEntity) {
 			return;
 		}
@@ -897,7 +897,7 @@ export namespace knownFolders {
 
 	export namespace ios {
 		function _checkPlatform(knownFolderName: string) {
-			if (!global.isIOS) {
+			if (!__IOS__) {
 				throw new Error(`The "${knownFolderName}" known folder is available on iOS only!`);
 			}
 		}

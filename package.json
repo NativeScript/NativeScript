@@ -2,15 +2,43 @@
   "name": "nativescript",
   "version": "8.6.2",
   "license": "MIT",
+  "config": {
+    "npm_alias": "npm"
+  },
   "scripts": {
     "clean": "git clean -f -X -d --exclude=!.idea/ --exclude=!.vscode/* --exclude=!.npmrc",
-    "clean.all": "npm run setup && nx run-many --target=clean --all",
-    "setup": "npm run clean && npm install --legacy-peer-deps",
-    "setup:yarn": "yarn clean && yarn",
-    "setup:pnpm": "pnpm run clean && pnpm install",
-    "postinstall": "ts-patch install && husky install && nx run webpack5:build",
+    "clean.all": "npm run setup ; nx run-many --target=clean --all",
+    "setup": "npm run clean ; npm install --legacy-peer-deps",
+    "setup:yarn": "yarn clean ; yarn",
+    "setup:pnpm": "pnpm run clean ; pnpm install",
+    "postinstall": "ts-patch install ; husky install",
     "start": "nps",
-    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s"
+    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s",
+    "apps-automated:ios": "cd apps/automated ; tns debug ios --no-hmr --emulator --env.testing",
+    "apps-automated:android": "cd apps/automated ; tns debug android --no-hmr --emulator --env.testing",
+    "apps-automated:clean": "cd apps/automated ; rimraf -- hooks node_modules platforms package-lock.json webpack.config.js ; rimraf -- package-lock.json",
+    "apps-toolbox:ios": "cd apps/toolbox ; tns debug ios --no-hmr --emulator --env.testing",
+    "apps-toolbox:android": "cd apps/toolbox ; tns debug android --no-hmr --emulator --env.testing",
+    "apps-toolbox:clean": "cd apps/toolbox ; rimraf -- hooks node_modules platforms package-lock.json webpack.config.js ; rimraf -- package-lock.json",
+    "apps-ui:ios": "cd apps/ui ; tns debug ios --no-hmr --emulator --env.testing",
+    "apps-ui:android": "cd apps/ui ; tns debug android --no-hmr --emulator --env.testing",
+    "apps-ui:clean": "cd apps/ui ; rimraf -- hooks node_modules platforms package-lock.json webpack.config.js ; rimraf -- package-lock.json",
+    "core:lint": "cd packages/core ; eslint -c .eslintrc --ignore-pattern **/node_modules/** --ignore-pattern !packages/core/**",
+    "core:setup": "npm run webpack:build",
+    "core:build": "ts-patch install ; cpy 'packages/core/*.md' 'packages/core/package.json' 'packages/core/.npmignore' 'dist/packages/core' ; replace-json-property 'dist/packages/core/package.json' name @akylas/nativescript ; copyfiles -e '**/*.ts' 'packages/core/css/**/*' 'packages/core/css-value/**/*' 'packages/core/fetch/**/*' 'packages/core/js-libs/**/*' 'packages/core/cli-hooks/**/*.js' dist ; copyfiles -e 'packages/core/__tests__/**/*' 'packages/core/**/*.d.ts' dist ; tsc -p packages/core/tsconfig.lib.json",
+    "core:build.npm": "ts-patch install ; rimraf dist/packages/core ; npm run postinstall ; npm run ui-mobile-base:build ; npm run core:build ; copyfiles 'packages/core/platforms/**/*' dist ; cd dist/packages/core ; npm pack ; mv *.tgz ..",
+    "core:unit": "cd packages/core/__tests__ ; tsc ; mocha",
+    "core:unit.watch": "cd packages/core/__tests__ ; tsc ; mocha --watch",
+    "core-compat:build": "cd packages/core-compat ; rimraf node_modules package-lock.json ; $npm_package_config_npm_alias i  ; tsc -p tsconfig.json ; mv \"$(npm pack | tail -n 1)\" ../../dist/packages/tns-core-modules.tgz",
+    "types-ios:lint": "cd packages/types-ios ; eslint -c .eslintrc --ignore-pattern **/node_modules/** --ignore-pattern !packages/types-ios/**",
+    "types-ios:build": "rimraf dist/packages/types-ios ; cpy '**/*' '../../../dist/packages/types-ios' --cwd=packages/types-ios/src --parents ; cpy 'package.json' '*.md' '../../dist/packages/types-ios' --cwd=packages/types-ios --parents",
+    "types-android:lint": "cd packages/types-android ; eslint -c .eslintrc --ignore-pattern **/node_modules/** --ignore-pattern !packages/types-android/**",
+    "types-android:test": "cd packages/types-android ; jest --config jest.config.js --ignore-pattern **/node_modules/** --ignore-pattern !packages/types-android/**",
+    "types-android:build": "rimraf dist/packages/types-android ; cpy '**/*' '../../../dist/packages/types-android' --cwd=packages/types-android/src --parents ; cpy 'package.json' '*.md' '../../dist/packages/types-android' --cwd=packages/types-android --parents",
+    "ui-mobile-base:build": "cd packages/ui-mobile-base ; ./build.sh ; cd dist/package/platforms; copyfiles '**/*' '../../../../../packages/core/platforms' ; copyfiles '**/*' '../../../../../dist/packages/core/platforms'",
+    "webpack:lint": "cd packages/webpack5 ; eslint -c .eslintrc --ignore-pattern **/node_modules/** --ignore-pattern !packages/webpack/**",
+    "webpack:test": "cd packages/webpack5 ; npm run tsc ; npm run jasmine",
+    "webpack:build": "cd packages/webpack5 npm run build ; mkdir -p ../../dist/packages ; mv \"$(npm pack | tail -n 1)\" ../../dist/packages/nativescript-webpack.tgz"
   },
   "private": true,
   "repository": {
@@ -18,9 +46,9 @@
     "url": "https://github.com/NativeScript/NativeScript.git"
   },
   "dependencies": {
+    "@nativescript/theme": "*",
     "@nx/devkit": "16.9.1",
     "@swc/helpers": "0.5.2",
-    "nativescript-theme-core": "^1.0.4",
     "nx-cloud": "16.4.0"
   },
   "devDependencies": {
@@ -28,15 +56,15 @@
     "@nativescript/nx": "^16.5.0",
     "@nstudio/focus": "^16.5.0",
     "@nstudio/nps-i": "~2.0.0",
-    "@nx/eslint-plugin": "16.9.1",
+    "@nx/eslint-plugin": "17.1.3",
     "@nx/jest": "16.9.1",
     "@nx/js": "16.9.1",
     "@nx/node": "16.9.1",
     "@nx/plugin": "16.9.1",
     "@nx/workspace": "16.9.1",
     "@prettier/plugin-xml": "^2.2.0",
-    "@swc-node/register": "~1.4.2",
-    "@swc/cli": "~0.1.62",
+    "@swc-node/register": "^1.4.2",
+    "@swc/cli": "^0.1.62",
     "@swc/core": "1.3.90",
     "@types/jest": "~29.5.0",
     "@types/node": "^18.7.1",
@@ -44,12 +72,13 @@
     "@typescript-eslint/parser": "^6.6.0",
     "conventional-changelog-cli": "^4.1.0",
     "copyfiles": "^2.4.0",
+    "cpy-cli": "^3.1.1",
     "css": "^3.0.0",
     "css-tree": "^1.1.2",
     "dotenv": "~16.3.1",
     "emoji-regex": "^10.2.1",
     "eslint": "~8.43.0",
-    "eslint-config-prettier": "~8.8.0",
+    "eslint-config-prettier": "^9.0.0",
     "gonzales": "^1.0.7",
     "husky": "^8.0.1",
     "jest": "~29.6.0",
@@ -63,6 +92,8 @@
     "parserlib": "^1.1.1",
     "prettier": "^2.6.2",
     "reduce-css-calc": "~2.1.7",
+    "replace-json-property": "^1.8.0",
+    "rimraf": "3.0.2",
     "sass": "^1.45.2",
     "shady-css-parser": "^0.1.0",
     "tree-kill": "^1.2.2",
@@ -70,7 +101,7 @@
     "ts-node": "10.9.1",
     "ts-patch": "^3.0.0",
     "tslib": "^2.6.0",
-    "typedoc": "^0.24.8",
+    "typedoc": "^0.25.3",
     "typescript": "~5.2.0",
     "zx": "^7.0.5"
   },
@@ -78,6 +109,9 @@
     "**/*.{js,ts,css,scss,json,html}": [
       "npx prettier --write"
     ]
-  }
+  },
+  "workspaces": [
+    "dist/packages/core",
+    "apps/toolbox"
+  ]
 }
-

@@ -11,6 +11,7 @@
 **/yarn.lock
 **/pnpm-lock.yaml
 .npmrc
+.yarn
 
 # IDEs and editors
 .idea
@@ -55,3 +56,4 @@ Thumbs.db
 
 # types
 ios-typings-prj
+/packages/core/platforms/android/core.aar

@@ -17,7 +17,9 @@ import { CoreTypes } from '../../../core-types';
 import type { ModalTransition } from '../../transition/modal-transition';
 import { SharedTransition } from '../../transition/shared-transition';
 import { GestureStateTypes, PanGestureEventData } from '../../gestures';
+import { applyRotateTransform } from '../../../utils/ios';
 import { NativeScriptUIView } from '../../utils';
+import { Application } from '../../../application';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -65,9 +67,31 @@ export class View extends ViewCommon implements ViewDefinition {
 	get isLayoutRequested(): boolean {
 		return (this._privateFlags & PFLAG_FORCE_LAYOUT) === PFLAG_FORCE_LAYOUT;
 	}
+	initNativeView() {
+		super.initNativeView();
+		const nativeView = this.nativeViewProtected;
+		/**
+		 * We need to map back from the UIView to the NativeScript View for accessibility.
+		 *
+		 * We do that by setting the uiView's tag to the View's domId.
+		 * This way we can do reverse lookup.
+		 */
+		nativeView.tag = this._domId;
+	}
+
+	requestlayoutIfNeeded() {
+		if (this.isLayoutRequired) {
+			this._requetLayoutNeeded = false;
+			this.requestLayout();
+		}
+	}
 
 	disposeNativeView() {
 		super.disposeNativeView();
+
+		if (this.viewController) {
+			this.viewController = null;
+		}
 
 		this._cachedFrame = null;
 		this._isLaidOut = false;
@@ -76,6 +100,11 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	public requestLayout(): void {
+		if (this.mSuspendRequestLayout) {
+			this._requetLayoutNeeded = true;
+			return;
+		}
+		this._requetLayoutNeeded = false;
 		this._privateFlags |= PFLAG_FORCE_LAYOUT;
 		super.requestLayout();
 
@@ -410,7 +439,7 @@ export class View extends ViewCommon implements ViewDefinition {
 		}
 
 		transform = CATransform3DTranslate(transform, this.translateX, this.translateY, 0);
-		transform = iOSNativeHelper.applyRotateTransform(transform, this.rotateX, this.rotateY, this.rotate);
+		transform = applyRotateTransform(transform, this.rotateX, this.rotateY, this.rotate);
 		transform = CATransform3DScale(transform, scaleX, scaleY, 1);
 
 		const needsTransform: boolean = !CATransform3DEqualToTransform(this.nativeViewProtected.layer.transform, transform) || (nativeView.outerShadowContainerLayer && !CATransform3DEqualToTransform(nativeView.outerShadowContainerLayer.transform, transform));
@@ -476,33 +505,29 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	protected _showNativeModalView(parent: View, options: ShowModalOptions) {
-		const parentWithController = IOSHelper.getParentWithViewController(parent);
+		let parentWithController = IOSHelper.getParentWithViewController(parent);
 		if (!parentWithController) {
 			Trace.write(`Could not find parent with viewController for ${parent} while showing modal view.`, Trace.categories.ViewHierarchy, Trace.messageType.error);
 
 			return;
 		}
 
-		const parentController = parentWithController.viewController;
-		if (parentController.presentedViewController) {
-			Trace.write('Parent is already presenting view controller. Close the current modal page before showing another one!', Trace.categories.ViewHierarchy, Trace.messageType.error);
-
-			return;
-		}
-
-		if (!parentController.view || !parentController.view.window) {
-			Trace.write('Parent page is not part of the window hierarchy.', Trace.categories.ViewHierarchy, Trace.messageType.error);
-
-			return;
+		let parentController = parentWithController.viewController;
+		// we loop to ensure we are showing from the top presented view controller
+		while (parentController.presentedViewController) {
+			parentController = parentController.presentedViewController;
+			parentWithController = parentWithController['_modal'] || parentWithController;
 		}
 
 		this._setupAsRootView({});
 
 		super._showNativeModalView(<ViewCommon>parentWithController, options);
-		let controller = this.viewController;
+		let controller: IOSHelper.UILayoutViewController = this.viewController;
 		if (!controller) {
 			const nativeView = this.ios || this.nativeViewProtected;
-			controller = <UIViewController>IOSHelper.UILayoutViewController.initWithOwner(new WeakRef(this));
+			controller = <IOSHelper.UILayoutViewController>IOSHelper.UILayoutViewController.initWithOwner(new WeakRef(this));
+			controller.modal = true;
+			this.parent = Application.getRootView();
 
 			if (nativeView instanceof UIView) {
 				controller.view.addSubview(nativeView);
@@ -591,7 +616,6 @@ export class View extends ViewCommon implements ViewDefinition {
 		//   console.log('accessibilityPerformEscape!!')
 		//   return true;
 		// }
-
 		parentController.presentViewControllerAnimatedCompletion(controller, animated, null);
 		const transitionCoordinator = parentController.transitionCoordinator;
 		if (transitionCoordinator) {
@@ -611,6 +635,7 @@ export class View extends ViewCommon implements ViewDefinition {
 
 			return;
 		}
+		this._raiseClosingModallyEvent();
 
 		// modal view has already been closed by UI, probably as a popover
 		if (!parent.viewController.presentedViewController) {
@@ -619,12 +644,20 @@ export class View extends ViewCommon implements ViewDefinition {
 			return;
 		}
 
-		const parentController = parent.viewController;
+		let parentController = parent.viewController;
+		// if a dialog (UIAlertController or custom one defining isAlertController) we need to loop over to get the
+		// top presentedViewController to correctly hide without hiding the dialog
+		// though we dont want to go "over" to not go into possible top shown modal
+		if (parentController.presentedViewController && parentController.presentedViewController.presentedViewController && (parentController.presentedViewController instanceof UIAlertController || parentController.presentedViewController['isAlertController'])) {
+			parentController = parentController.presentedViewController;
+		}
+
+		// while(parentController.presentedViewController && parentController.presentedViewController.presentedViewController) {
+		// }
 		let animated = true;
 		if (this._modalAnimatedOptions?.length) {
 			animated = this._modalAnimatedOptions.slice(-1)[0];
 		}
-
 		parentController.dismissViewControllerAnimatedCompletion(animated, () => {
 			const transitionState = SharedTransition.getState(this.transitionId);
 			if (!transitionState?.interactiveCancelled) {
@@ -898,7 +931,7 @@ export class View extends ViewCommon implements ViewDefinition {
 			args = msg;
 		}
 
-		switch (options.iosNotificationType) {
+		switch (options.iosNotificationType as IOSPostAccessibilityNotificationType) {
 			case IOSPostAccessibilityNotificationType.Announcement: {
 				notification = UIAccessibilityAnnouncementNotification;
 				break;
@@ -1103,6 +1136,13 @@ export class CustomLayoutView extends ContainerView {
 		}
 
 		return false;
+	}
+
+	public _removeFromNativeVisualTree(): void {
+		super._removeFromNativeVisualTree();
+		if (this.nativeViewProtected) {
+			this.nativeViewProtected.removeFromSuperview();
+		}
 	}
 
 	public _removeViewFromNativeVisualTree(child: View): void {

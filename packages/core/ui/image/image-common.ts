@@ -7,7 +7,7 @@ import { ImageSource } from '../../image-source';
 import { isDataURI, isFontIconURI, isFileOrResourcePath, RESOURCE_PREFIX } from '../../utils';
 import { Color } from '../../color';
 import { Style } from '../styling/style';
-import { Length } from '../styling/style-properties';
+import { Length, colorConverter } from '../styling/style-properties';
 import { Property, InheritedCssProperty } from '../core/properties';
 import { Trace } from '../../trace';
 
@@ -153,7 +153,7 @@ isLoadingProperty.register(ImageBase);
 export const stretchProperty = new Property<ImageBase, CoreTypes.ImageStretchType>({
 	name: 'stretch',
 	defaultValue: 'aspectFit',
-	affectsLayout: global.isIOS,
+	affectsLayout: __IOS__,
 });
 stretchProperty.register(ImageBase);
 
@@ -161,7 +161,7 @@ export const tintColorProperty = new InheritedCssProperty<Style, Color>({
 	name: 'tintColor',
 	cssName: 'tint-color',
 	equalityComparer: Color.equals,
-	valueConverter: (value) => new Color(value),
+	valueConverter: colorConverter,
 });
 tintColorProperty.register(Style);
 

@@ -78,7 +78,7 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
 	}
 
 	// send response data (for requestId) to network debugger
-	if (global.__inspector && global.__inspector.isConnected) {
+	if (__DEV__ && global.__inspector && global.__inspector.isConnected) {
 		NetworkAgent.responseReceived(requestId, result, headers);
 	}
 
@@ -217,7 +217,7 @@ export function request(options: httpModule.HttpRequestOptions): Promise<httpMod
 			const javaOptions = buildJavaOptions(options);
 
 			// send request data to network debugger
-			if (global.__inspector && global.__inspector.isConnected) {
+			if (__DEV__ && global.__inspector && global.__inspector.isConnected) {
 				NetworkAgent.requestWillBeSent(requestIdCounter, options);
 			}
 

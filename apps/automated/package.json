@@ -7,13 +7,13 @@
     "url": "https://github.com/NativeScript/NativeScript.git"
   },
   "dependencies": {
-    "@nativescript/core": "file:../../packages/core",
-    "nativescript-theme-core": "file:../../node_modules/nativescript-theme-core"
+    "@nativescript/core": "*",
+    "@nativescript/theme": "*"
   },
   "devDependencies": {
     "@nativescript/android": "~8.5.0",
     "@nativescript/ios": "~8.5.0",
-    "@nativescript/webpack": "file:../../dist/packages/nativescript-webpack.tgz",
+    "@nativescript/webpack": "*",
     "circular-dependency-plugin": "^5.2.2",
     "typescript": "~5.2.0"
   },

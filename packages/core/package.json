@@ -9,16 +9,6 @@
     "./globals/index.js",
     "./globals"
   ],
-  "files": [
-    "**/*.d.ts",
-    "**/*.js",
-    "**/*.map",
-    "**/platforms/ios/**",
-    "platforms/android/native-api-usage.json",
-    "platforms/android/res/values/ids.xml",
-    "platforms/android/widgets-release.aar",
-    "**/package.json"
-  ],
   "keywords": [
     "NativeScript",
     "JavaScript",

@@ -7,6 +7,14 @@ export const Application: ApplicationCommon;
 
 export class AndroidApplication extends ApplicationCommon {
 	/**
+	 * @deprecated Use `Application.android.fragmentCreateEvent` instead.
+	 */
+	static readonly fragmentCreateEvent = 'fragmentCreate';
+	/**
+	 * @deprecated Use `Application.android.activityCreateEvent` instead.
+	 */
+	static readonly activityCreateEvent = 'activityCreate';
+	/**
 	 * @deprecated Use `Application.android.activityCreatedEvent` instead.
 	 */
 	static readonly activityCreatedEvent = 'activityCreated';
@@ -51,6 +59,8 @@ export class AndroidApplication extends ApplicationCommon {
 	 */
 	static readonly activityRequestPermissionsEvent = 'activityRequestPermissions';
 
+	readonly fragmentCreateEvent = AndroidApplication.fragmentCreateEvent;
+	readonly activityCreateEvent = AndroidApplication.activityCreateEvent;
 	readonly activityCreatedEvent = AndroidApplication.activityCreatedEvent;
 	readonly activityDestroyedEvent = AndroidApplication.activityDestroyedEvent;
 	readonly activityStartedEvent = AndroidApplication.activityStartedEvent;

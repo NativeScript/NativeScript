@@ -264,6 +264,8 @@ export class ActionItems implements ActionItemsDefinition {
 }
 
 export class ActionItemBase extends ViewBase implements ActionItemDefinition {
+	// defining this here means tap event wont be handled
+	// by the gesture observers
 	public static tapEvent = 'tap';
 
 	private _actionBar: ActionBarDefinition;

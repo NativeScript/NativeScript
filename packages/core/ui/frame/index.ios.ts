@@ -282,7 +282,7 @@ export class Frame extends FrameBase {
 						if (page && page.actionBarHidden !== undefined) {
 							newValue = !page.actionBarHidden;
 						} else {
-							newValue = this.ios.controller.viewControllers.count > 1 || (page && page.actionBar && !page.actionBar._isEmpty());
+							newValue = this.ios.controller.viewControllers.count > 1 || (page && page.hasActionBar && !page.actionBar._isEmpty());
 						}
 
 						newValue = !!newValue;

@@ -3,6 +3,7 @@
 	"compilerOptions": {
 		"diagnostics": false,
 		"paths": {
+			"@nativescript/core": ["@akylas/nativescript"],
 			"~/*": ["src/*"]
 		}
 	}

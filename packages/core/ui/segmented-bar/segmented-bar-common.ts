@@ -4,6 +4,7 @@ import { ViewBase } from '../core/view-base';
 import { Property, CoercibleProperty, InheritedCssProperty } from '../core/properties';
 import { Color } from '../../color';
 import { Style } from '../styling/style';
+import { colorConverter } from '../styling/style-properties';
 import { EventData } from '../../data/observable';
 
 @CSSType('SegmentedBarItem')
@@ -141,6 +142,6 @@ export const selectedBackgroundColorProperty = new InheritedCssProperty<Style, C
 	name: 'selectedBackgroundColor',
 	cssName: 'selected-background-color',
 	equalityComparer: Color.equals,
-	valueConverter: (v) => new Color(v),
+	valueConverter: colorConverter,
 });
 selectedBackgroundColorProperty.register(Style);
