@@ -505,7 +505,6 @@ export class View extends ViewCommon implements ViewDefinition {
 			const nativeView = this.ios || this.nativeViewProtected;
 			controller = <IOSHelper.UILayoutViewController>IOSHelper.UILayoutViewController.initWithOwner(new WeakRef(this));
 			controller.modal = true;
-			this.parent = Application.getRootView();
 
 			if (nativeView instanceof UIView) {
 				controller.view.addSubview(nativeView);
@@ -513,6 +512,8 @@ export class View extends ViewCommon implements ViewDefinition {
 
 			this.viewController = controller;
 		}
+		// we set the parent to root to access all css root variables
+		this.parent = Application.getRootView();
 
 		if (options.transition) {
 			controller.modalPresentationStyle = UIModalPresentationStyle.Custom;
