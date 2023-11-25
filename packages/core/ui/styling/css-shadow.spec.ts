@@ -6,12 +6,7 @@ import { Color } from '../../color';
 describe('css-shadow', () => {
 	it('empty', () => {
 		const shadow = parseCSSShadow('');
-		expect(shadow.inset).toBe(false);
-		expect(shadow.offsetX).toBeUndefined();
-		expect(shadow.offsetY).toBeUndefined();
-		expect(shadow.blurRadius).toBeUndefined();
-		expect(shadow.spreadRadius).toBeUndefined();
-		expect(shadow.color).toBeUndefined();
+		expect(shadow).toBeNull();
 	});
 
 	it('1px 1px 2px black', () => {
@@ -137,33 +132,18 @@ describe('css-shadow', () => {
 
 	it('none', () => {
 		const shadow = parseCSSShadow('none');
-		expect(shadow.inset).toBe(false);
-		expect(shadow.offsetX).toBeUndefined();
-		expect(shadow.offsetY).toBeUndefined();
-		expect(shadow.blurRadius).toBeUndefined();
-		expect(shadow.spreadRadius).toBeUndefined();
-		expect(shadow.color).toBeUndefined();
+		expect(shadow).toBeNull();
 	});
 
 	it('unset', () => {
 		const shadow = parseCSSShadow('unset');
-		expect(shadow.inset).toBe(false);
-		expect(shadow.offsetX).toBeUndefined();
-		expect(shadow.offsetY).toBeUndefined();
-		expect(shadow.blurRadius).toBeUndefined();
-		expect(shadow.spreadRadius).toBeUndefined();
-		expect(shadow.color).toBeUndefined();
+		expect(shadow).toBeNull();
 	});
 
 	it('unset 5em 1em gold', () => {
 		// invalid shorthand should result in nothing being applied
 		const shadow = parseCSSShadow('unset 5em 1em gold');
-		expect(shadow.inset).toBe(false);
-		expect(shadow.offsetX).toBeUndefined();
-		expect(shadow.offsetY).toBeUndefined();
-		expect(shadow.blurRadius).toBeUndefined();
-		expect(shadow.spreadRadius).toBeUndefined();
-		expect(shadow.color).toBeUndefined();
+		expect(shadow).toBeNull();
 	});
 
 	it('5em 1em gold unset', () => {

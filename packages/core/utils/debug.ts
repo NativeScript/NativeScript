@@ -61,7 +61,7 @@ export class ScopeError extends Error {
 			formattedMessage = message || inner.message || undefined;
 		}
 		super(formattedMessage);
-		this.stack = global.isAndroid ? 'Error: ' + this.message + '\n' + inner.stack.substr(inner.stack.indexOf('\n') + 1) : inner.stack;
+		this.stack = __ANDROID__ ? 'Error: ' + this.message + '\n' + inner.stack.substr(inner.stack.indexOf('\n') + 1) : inner.stack;
 		this.message = formattedMessage;
 	}
 }

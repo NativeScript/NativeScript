@@ -30,7 +30,7 @@ export abstract class Font implements FontDefinition {
 	public abstract withFontWeight(weight: FontWeightType): Font;
 	public abstract withFontSize(size: number): Font;
 	public abstract withFontScale(scale: number): Font;
-	public abstract withFontVariationSettings(variationSettings: Array<FontVariationSettingsType> | null): Font;
+	public abstract withFontVariationSettings(variationSettings: FontVariationSettingsType[]): Font;
 
 	public static equals(value1: Font, value2: Font): boolean {
 		// both values are falsy
@@ -43,7 +43,7 @@ export abstract class Font implements FontDefinition {
 			return false;
 		}
 
-		return value1.fontFamily === value2.fontFamily && value1.fontSize === value2.fontSize && value1.fontStyle === value2.fontStyle && value1.fontWeight === value2.fontWeight;
+		return value1.fontFamily === value2.fontFamily && value1.fontSize === value2.fontSize && value1.fontStyle === value2.fontStyle && value1.fontWeight === value2.fontWeight && value1.fontScale === value2.fontScale && FontVariationSettings.toString(value1.fontVariationSettings) === FontVariationSettings.toString(value2.fontVariationSettings);
 	}
 }
 
@@ -93,7 +93,9 @@ export namespace FontVariationSettings {
 					// See https://drafts.csswg.org/css-fonts/#font-variation-settings-def.
 					// Axis name strings longer or shorter than four characters are invalid.
 					if (!isNaN(axisValue) && axisName.length === 6 && ((axisName.startsWith("'") && axisName.endsWith("'")) || (axisName.startsWith('"') && axisName.endsWith('"')))) {
-						parsed.push({ axis: axisName, value: axisValue });
+						// Remove quotes as they might cause problems when using name as an object key
+						const unquotedAxisName = axisName.substring(1, axisName.length - 1);
+						parsed.push({ axis: unquotedAxisName, value: axisValue });
 					} else {
 						Trace.write('Invalid value (font-variation-settings): ' + variationSettingsValue, Trace.categories.Error, Trace.messageType.error);
 					}
@@ -110,7 +112,7 @@ export namespace FontVariationSettings {
 
 	export function toString(fontVariationSettings: FontVariationSettingsType[] | null): string | null {
 		if (fontVariationSettings?.length) {
-			return fontVariationSettings.map(({ axis, value }) => `${axis} ${value}`).join(', ');
+			return fontVariationSettings.map(({ axis, value }) => `'${axis}' ${value}`).join(', ');
 		}
 
 		return null;
