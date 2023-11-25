@@ -21,6 +21,9 @@ export interface ShadowCSSValues {
  */
 export function parseCSSShadow(value: string): ShadowCSSValues {
 	const data = parseCSSShorthand(value);
+	if (!data) {
+		return null;
+	}
 	const [offsetX, offsetY, blurRadius, spreadRadius] = data.values;
 
 	return {
