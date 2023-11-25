@@ -46,7 +46,7 @@
   "dependencies": {
     "@nativescript/hook": "~2.0.0",
     "acorn": "^8.7.0",
-    "css-tree": "^1.1.2",
+    "css-tree": "^2.3.0",
     "emoji-regex": "^10.2.1",
     "reduce-css-calc": "^2.1.7",
     "tslib": "^2.0.0"

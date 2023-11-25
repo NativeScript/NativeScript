@@ -44,7 +44,7 @@
     "conventional-changelog-cli": "^4.1.0",
     "copyfiles": "^2.4.0",
     "css": "^3.0.0",
-    "css-tree": "^1.1.2",
+    "css-tree": "^2.3.0",
     "dotenv": "~16.3.1",
     "emoji-regex": "^10.3.0",
     "eslint": "~8.43.0",
