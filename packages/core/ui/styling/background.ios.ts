@@ -6,7 +6,6 @@ import { LinearGradient } from './linear-gradient';
 import { Color } from '../../color';
 import { Screen } from '../../platform';
 import { isDataURI, isFileOrResourcePath, layout } from '../../utils';
-import { extendPointsToTargetY } from '../../utils/number-utils';
 import { ios as iosViewUtils, NativeScriptUIView } from '../utils';
 import { ImageSource } from '../../image-source';
 import { CSSValue, parse as cssParse } from '../../css-value';
@@ -301,7 +300,6 @@ export namespace ios {
 
 	export function generateNonUniformBorderInnerClipRoundedPath(view: View, bounds: CGRect): any {
 		const background = view.style.backgroundInternal;
-		const nativeView = <NativeScriptUIView>view.nativeViewProtected;
 
 		const cappedOuterRadii = calculateNonUniformBorderCappedRadii(bounds, background);
 		return generateNonUniformBorderInnerClipPath(bounds, background, cappedOuterRadii);
@@ -309,7 +307,6 @@ export namespace ios {
 
 	export function generateNonUniformBorderOuterClipRoundedPath(view: View, bounds: CGRect): any {
 		const background = view.style.backgroundInternal;
-		const nativeView = <NativeScriptUIView>view.nativeViewProtected;
 
 		const cappedOuterRadii = calculateNonUniformBorderCappedRadii(bounds, background);
 		return generateNonUniformBorderOuterClipPath(bounds, cappedOuterRadii);
@@ -317,10 +314,8 @@ export namespace ios {
 
 	export function generateNonUniformMultiColorBorderRoundedPaths(view: View, bounds: CGRect): Array<any> {
 		const background = view.style.backgroundInternal;
-		const nativeView = <NativeScriptUIView>view.nativeViewProtected;
 
-		const cappedOuterRadii = calculateNonUniformBorderCappedRadii(bounds, background);
-		return generateNonUniformMultiColorBorderPaths(bounds, background, cappedOuterRadii);
+		return generateNonUniformMultiColorBorderPaths(bounds, background);
 	}
 }
 
@@ -779,7 +774,7 @@ function drawNonUniformBorders(nativeView: NativeScriptUIView, background: Backg
 				borderLeftLayer = nativeView.borderLayer.sublayers[3];
 			}
 
-			const paths = generateNonUniformMultiColorBorderPaths(layerBounds, background, cappedOuterRadii);
+			const paths = generateNonUniformMultiColorBorderPaths(layerBounds, background);
 
 			borderTopLayer.fillColor = background.borderTopColor?.ios?.CGColor || UIColor.blackColor.CGColor;
 			borderTopLayer.path = paths[0];
@@ -918,16 +913,55 @@ function generateNonUniformBorderInnerClipPath(bounds: CGRect, background: Backg
 }
 
 /**
- * Generates paths for visualizing borders with different color per side.
- * This is achieved by extending all borders enough to consume entire view size and
- * use an inner path along with even-odd fill rule to render borders according to their corresponding width.
+ * Calculates the needed widths for creating triangular shapes for each border.
+ * To achieve this, all border widths are scaled according to view bounds.
  *
  * @param bounds
  * @param background
- * @param cappedOuterRadii
  * @returns
  */
-function generateNonUniformMultiColorBorderPaths(bounds: CGRect, background: BackgroundDefinition, cappedOuterRadii: CappedOuterRadii): Array<any> {
+function getBorderTriangleWidths(bounds: CGRect, background: BackgroundDefinition): Position {
+	const width: number = bounds.origin.x + bounds.size.width;
+	const height: number = bounds.origin.y + bounds.size.height;
+
+	const borderTopWidth: number = Math.max(0, layout.toDeviceIndependentPixels(background.borderTopWidth));
+	const borderRightWidth: number = Math.max(0, layout.toDeviceIndependentPixels(background.borderRightWidth));
+	const borderBottomWidth: number = Math.max(0, layout.toDeviceIndependentPixels(background.borderBottomWidth));
+	const borderLeftWidth: number = Math.max(0, layout.toDeviceIndependentPixels(background.borderLeftWidth));
+
+	const verticalBorderWidth: number = borderTopWidth + borderBottomWidth;
+	const horizontalBorderWidth: number = borderLeftWidth + borderRightWidth;
+
+	let verticalBorderMultiplier = verticalBorderWidth > 0 ? height / verticalBorderWidth : 0;
+	let horizontalBorderMultiplier = horizontalBorderWidth > 0 ? width / horizontalBorderWidth : 0;
+
+	// Both directions should consider each other in order to scale widths properly, as a view might have different width and height
+	if (verticalBorderMultiplier > 0 && verticalBorderMultiplier < horizontalBorderMultiplier) {
+		horizontalBorderMultiplier -= horizontalBorderMultiplier - verticalBorderMultiplier;
+	}
+
+	if (horizontalBorderMultiplier > 0 && horizontalBorderMultiplier < verticalBorderMultiplier) {
+		verticalBorderMultiplier -= verticalBorderMultiplier - horizontalBorderMultiplier;
+	}
+
+	return {
+		top: borderTopWidth * verticalBorderMultiplier,
+		right: borderRightWidth * horizontalBorderMultiplier,
+		bottom: borderBottomWidth * verticalBorderMultiplier,
+		left: borderLeftWidth * horizontalBorderMultiplier,
+	};
+}
+
+/**
+ * Generates paths for visualizing borders with different colors per side.
+ * This is achieved by extending all borders enough to consume entire view size,
+ * then using an even-odd inner mask to clip and eventually render borders according to their corresponding width.
+ *
+ * @param bounds
+ * @param background
+ * @returns
+ */
+function generateNonUniformMultiColorBorderPaths(bounds: CGRect, background: BackgroundDefinition): Array<any> {
 	const { width, height } = bounds.size;
 	const { x, y } = bounds.origin;
 
@@ -938,17 +972,7 @@ function generateNonUniformMultiColorBorderPaths(bounds: CGRect, background: Bac
 		right: x + width,
 	};
 
-	const topWidth: number = layout.toDeviceIndependentPixels(background.borderTopWidth);
-	const rightWidth: number = layout.toDeviceIndependentPixels(background.borderRightWidth);
-	const bottomWidth: number = layout.toDeviceIndependentPixels(background.borderBottomWidth);
-	const leftWidth: number = layout.toDeviceIndependentPixels(background.borderLeftWidth);
-
-	// These values have 1 as fallback in order to handler borders with zero values
-	const safeTopWidth: number = Math.max(topWidth, 1);
-	const safeRightWidth: number = Math.max(rightWidth, 1);
-	const safeBottomWidth: number = Math.max(bottomWidth, 1);
-	const safeLeftWidth: number = Math.max(leftWidth, 1);
-
+	const borderWidths: Position = getBorderTriangleWidths(bounds, background);
 	const paths = new Array(4);
 
 	const lto: Point = {
@@ -956,8 +980,8 @@ function generateNonUniformMultiColorBorderPaths(bounds: CGRect, background: Bac
 		y: position.top,
 	}; // left-top-outside
 	const lti: Point = {
-		x: position.left + safeLeftWidth,
-		y: position.top + safeTopWidth,
+		x: position.left + borderWidths.left,
+		y: position.top + borderWidths.top,
 	}; // left-top-inside
 
 	const rto: Point = {
@@ -965,8 +989,8 @@ function generateNonUniformMultiColorBorderPaths(bounds: CGRect, background: Bac
 		y: position.top,
 	}; // right-top-outside
 	const rti: Point = {
-		x: position.right - safeRightWidth,
-		y: position.top + safeTopWidth,
+		x: position.right - borderWidths.right,
+		y: position.top + borderWidths.top,
 	}; // right-top-inside
 
 	const rbo: Point = {
@@ -974,8 +998,8 @@ function generateNonUniformMultiColorBorderPaths(bounds: CGRect, background: Bac
 		y: position.bottom,
 	}; // right-bottom-outside
 	const rbi: Point = {
-		x: position.right - safeRightWidth,
-		y: position.bottom - safeBottomWidth,
+		x: position.right - borderWidths.right,
+		y: position.bottom - borderWidths.bottom,
 	}; // right-bottom-inside
 
 	const lbo: Point = {
@@ -983,94 +1007,62 @@ function generateNonUniformMultiColorBorderPaths(bounds: CGRect, background: Bac
 		y: position.bottom,
 	}; // left-bottom-outside
 	const lbi: Point = {
-		x: position.left + safeLeftWidth,
-		y: position.bottom - safeBottomWidth,
+		x: position.left + borderWidths.left,
+		y: position.bottom - borderWidths.bottom,
 	}; // left-bottom-inside
-
-	const centerX: number = position.right / 2;
-	const centerY: number = position.bottom / 2;
-
-	// These values help calculate the size that each border shape should consume
-	const averageHorizontalBorderWidth: number = Math.max((leftWidth + rightWidth) / 2, 1);
-	const averageVerticalBorderWidth: number = Math.max((topWidth + bottomWidth) / 2, 1);
-	const viewRatioMultiplier: number = width > 0 && height > 0 ? width / height : 1;
 
 	const borderTopColor = background.borderTopColor;
 	const borderRightColor = background.borderRightColor;
 	const borderBottomColor = background.borderBottomColor;
 	const borderLeftColor = background.borderLeftColor;
 
-	let borderTopY: number = centerY * (safeTopWidth / averageHorizontalBorderWidth) * viewRatioMultiplier;
-	let borderRightX: number = position.right - (centerX * (safeRightWidth / averageVerticalBorderWidth)) / viewRatioMultiplier;
-	let borderBottomY: number = position.bottom - centerY * (safeBottomWidth / averageHorizontalBorderWidth) * viewRatioMultiplier;
-	let borderLeftX: number = (centerX * (safeLeftWidth / averageVerticalBorderWidth)) / viewRatioMultiplier;
-
-	// Adjust border triangle width in case of borders colliding between each other or borders being less than 4
-	const hasHorizontalIntersection: boolean = borderLeftX > borderRightX;
-	const hasVerticalIntersection: boolean = borderTopY > borderBottomY;
-	if (hasVerticalIntersection) {
-		borderTopY = extendPointsToTargetY(lto.y, lto.x, lti.y, lti.x, borderLeftX);
-		borderBottomY = extendPointsToTargetY(lbo.y, lbo.x, lbi.y, lbi.x, borderLeftX);
-	} else if (hasHorizontalIntersection) {
-		borderLeftX = extendPointsToTargetY(lto.x, lto.y, lti.x, lti.y, borderTopY);
-		borderRightX = extendPointsToTargetY(rto.x, rto.y, rti.x, rti.y, borderTopY);
-	}
-
-	if (topWidth > 0 && borderTopColor?.ios) {
+	if (borderWidths.top > 0 && borderTopColor?.ios) {
 		const topBorderPath = CGPathCreateMutable();
-		const borderTopLeftX: number = extendPointsToTargetY(lto.x, lto.y, lti.x, lti.y, borderTopY);
-		const borderTopRightX: number = extendPointsToTargetY(rto.x, rto.y, rti.x, rti.y, borderTopY);
 
 		CGPathMoveToPoint(topBorderPath, null, lto.x, lto.y);
 		CGPathAddLineToPoint(topBorderPath, null, rto.x, rto.y);
-		CGPathAddLineToPoint(topBorderPath, null, borderTopRightX, borderTopY);
-		if (borderTopRightX !== borderTopLeftX) {
-			CGPathAddLineToPoint(topBorderPath, null, borderTopLeftX, borderTopY);
+		CGPathAddLineToPoint(topBorderPath, null, rti.x, rti.y);
+		if (rti.x !== lti.x) {
+			CGPathAddLineToPoint(topBorderPath, null, lti.x, lti.y);
 		}
 		CGPathAddLineToPoint(topBorderPath, null, lto.x, lto.y);
 
 		paths[0] = topBorderPath;
 	}
-	if (rightWidth > 0 && borderRightColor?.ios) {
+	if (borderWidths.right > 0 && borderRightColor?.ios) {
 		const rightBorderPath = CGPathCreateMutable();
-		const borderRightBottomY: number = extendPointsToTargetY(rbo.y, rbo.x, rbi.y, rbi.x, borderRightX);
-		const borderRightTopY: number = extendPointsToTargetY(rto.y, rto.x, rti.y, rti.x, borderRightX);
 
 		CGPathMoveToPoint(rightBorderPath, null, rto.x, rto.y);
 		CGPathAddLineToPoint(rightBorderPath, null, rbo.x, rbo.y);
-		CGPathAddLineToPoint(rightBorderPath, null, borderRightX, borderRightBottomY);
-		if (borderRightBottomY !== borderRightTopY) {
-			CGPathAddLineToPoint(rightBorderPath, null, borderRightX, borderRightTopY);
+		CGPathAddLineToPoint(rightBorderPath, null, rbi.x, rbi.y);
+		if (rbi.y !== rti.y) {
+			CGPathAddLineToPoint(rightBorderPath, null, rti.x, rti.y);
 		}
 		CGPathAddLineToPoint(rightBorderPath, null, rto.x, rto.y);
 
 		paths[1] = rightBorderPath;
 	}
-	if (bottomWidth > 0 && borderBottomColor?.ios) {
+	if (borderWidths.bottom > 0 && borderBottomColor?.ios) {
 		const bottomBorderPath = CGPathCreateMutable();
-		const borderBottomLeftX: number = extendPointsToTargetY(lbo.x, lbo.y, lbi.x, lbi.y, borderBottomY);
-		const borderBottomRightX: number = extendPointsToTargetY(rbo.x, rbo.y, rbi.x, rbi.y, borderBottomY);
 
 		CGPathMoveToPoint(bottomBorderPath, null, rbo.x, rbo.y);
 		CGPathAddLineToPoint(bottomBorderPath, null, lbo.x, lbo.y);
-		CGPathAddLineToPoint(bottomBorderPath, null, borderBottomLeftX, borderBottomY);
-		if (borderBottomLeftX !== borderBottomRightX) {
-			CGPathAddLineToPoint(bottomBorderPath, null, borderBottomRightX, borderBottomY);
+		CGPathAddLineToPoint(bottomBorderPath, null, lbi.x, lbi.y);
+		if (lbi.x !== rbi.x) {
+			CGPathAddLineToPoint(bottomBorderPath, null, rbi.x, rbi.y);
 		}
 		CGPathAddLineToPoint(bottomBorderPath, null, rbo.x, rbo.y);
 
 		paths[2] = bottomBorderPath;
 	}
-	if (leftWidth > 0 && borderLeftColor?.ios) {
+	if (borderWidths.left > 0 && borderLeftColor?.ios) {
 		const leftBorderPath = CGPathCreateMutable();
-		const borderLeftTopY: number = extendPointsToTargetY(lto.y, lto.x, lti.y, lti.x, borderLeftX);
-		const borderLeftBottomY: number = extendPointsToTargetY(lbo.y, lbo.x, lbi.y, lbi.x, borderLeftX);
 
 		CGPathMoveToPoint(leftBorderPath, null, lbo.x, lbo.y);
 		CGPathAddLineToPoint(leftBorderPath, null, lto.x, lto.y);
-		CGPathAddLineToPoint(leftBorderPath, null, borderLeftX, borderLeftTopY);
-		if (borderLeftTopY !== borderLeftBottomY) {
-			CGPathAddLineToPoint(leftBorderPath, null, borderLeftX, borderLeftBottomY);
+		CGPathAddLineToPoint(leftBorderPath, null, lti.x, lti.y);
+		if (lti.y !== lbi.y) {
+			CGPathAddLineToPoint(leftBorderPath, null, lbi.x, lbi.y);
 		}
 		CGPathAddLineToPoint(leftBorderPath, null, lbo.x, lbo.y);
 
