@@ -845,6 +845,12 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		//
 	}
 
+	public _inheritStyles(view: ViewBase): void {
+		propagateInheritableProperties(this, view);
+		view._inheritStyleScope(this._styleScope);
+		propagateInheritableCssProperties(this.style, view.style);
+	}
+
 	@profile
 	public _addView(view: ViewBase, atIndex?: number) {
 		if (Trace.isEnabled()) {
@@ -874,9 +880,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	 * Method is intended to be overridden by inheritors and used as "protected"
 	 */
 	public _addViewCore(view: ViewBase, atIndex?: number) {
-		propagateInheritableProperties(this, view);
-		view._inheritStyleScope(this._styleScope);
-		propagateInheritableCssProperties(this.style, view.style);
+		this._inheritStyles(view);
 
 		if (this._context) {
 			view._setupUI(this._context, atIndex);

@@ -44,24 +44,3 @@ export const degreesToRadians = (a: number) => a * (Math.PI / 180);
 export function valueMap(val: number, in_min: number, in_max: number, out_min: number, out_max: number) {
 	return ((val - in_min) * (out_max - out_min)) / (in_max - in_min) + out_min;
 }
-
-/**
- * A method that calculates the target X based on the angle of 2 points and target Y.
- *
- * @param x1
- * @param y1
- * @param x2
- * @param y2
- * @param yTarget
- * @returns
- */
-export function extendPointsToTargetY(x1: number, y1: number, x2: number, y2: number, yTarget: number) {
-	const deltaX: number = x2 - x1;
-	const deltaY: number = y2 - y1;
-	const angleRadians: number = Math.atan2(deltaY, deltaX);
-
-	const targetDeltaY: number = yTarget - y1;
-	const targetDeltaX: number = targetDeltaY / Math.tan(angleRadians);
-
-	return x1 + targetDeltaX;
-}

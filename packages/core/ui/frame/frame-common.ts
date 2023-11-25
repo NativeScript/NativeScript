@@ -243,6 +243,7 @@ export class FrameBase extends CustomLayoutView {
 
 	public setCurrent(entry: BackstackEntry, navigationType: NavigationType): void {
 		const newPage = entry.resolvedPage;
+
 		// In case we navigated forward to a page that was in the backstack
 		// with clearHistory: true
 		if (!newPage.frame) {
