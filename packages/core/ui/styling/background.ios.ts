@@ -142,7 +142,7 @@ export namespace ios {
 		}
 
 		if (!needsMask) {
-			clearLayerMask(nativeView, background);
+			clearLayerMask(nativeView);
 		}
 
 		// Clear box shadow if it's no longer needed
@@ -340,7 +340,7 @@ function maskLayerIfNeeded(nativeView: NativeScriptUIView, background: Backgroun
 	}
 }
 
-function clearLayerMask(nativeView: NativeScriptUIView, background: BackgroundDefinition) {
+function clearLayerMask(nativeView: NativeScriptUIView) {
 	if (nativeView.outerShadowContainerLayer) {
 		nativeView.outerShadowContainerLayer.mask = null;
 	}
@@ -1119,6 +1119,7 @@ function drawBoxShadow(view: View): void {
 	outerShadowContainerLayer.bounds = bounds;
 	outerShadowContainerLayer.anchorPoint = layer.anchorPoint;
 	outerShadowContainerLayer.position = nativeView.center;
+	outerShadowContainerLayer.zPosition = layer.zPosition;
 
 	// Inherit view visibility values
 	outerShadowContainerLayer.opacity = layer.opacity;
