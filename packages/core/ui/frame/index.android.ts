@@ -916,6 +916,8 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 		frame._resolvedPage = page;
 
 		if (page.parent === frame) {
+			frame._inheritStyles(page);
+
 			// If we are navigating to a page that was destroyed
 			// reinitialize its UI.
 			if (!page._context) {
@@ -927,12 +929,16 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 				page.callLoaded();
 			}
 		} else {
-			if (!frame._styleScope) {
-				// Make sure page will have styleScope even if parents don't.
-				page._updateStyleScope();
-			}
+			if (!page.parent) {
+				if (!frame._styleScope) {
+					// Make sure page will have styleScope even if parents don't.
+					page._updateStyleScope();
+				}
 
-			frame._addView(page);
+				frame._addView(page);
+			} else {
+				throw new Error('Page is already shown on another frame.');
+			}
 		}
 
 		const savedState = entry.viewSavedState;
