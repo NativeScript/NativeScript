@@ -2,6 +2,7 @@ import { basename } from "path";
 
 import { INativeScriptPlatform } from "../helpers/platform";
 import { getProjectRootPath } from "../helpers/project";
+import { env } from '../';
 
 function sanitizeName(appName: string): string {
 	return appName.split("").filter((c) =>
@@ -10,7 +11,7 @@ function sanitizeName(appName: string): string {
 }
 function getDistPath() {
 	const appName = sanitizeName(basename(getProjectRootPath()));
-	return `platforms/ios/${appName}/app`;
+	return `${env.buildPath ?? "platforms"}/ios/${appName}/app`;
 }
 
 const iOSPlatform: INativeScriptPlatform = {
