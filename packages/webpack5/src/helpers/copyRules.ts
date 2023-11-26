@@ -1,7 +1,7 @@
 import CopyWebpackPlugin from 'copy-webpack-plugin';
 import { basename, relative, resolve } from 'path';
 import Config from 'webpack-chain';
-import { sync as globbySync } from 'globby';
+import { globbySync } from 'globby';
 
 import { getProjectRootPath } from './project';
 import { getEntryDirPath } from './platform';

@@ -84,7 +84,9 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// when using hidden-source-map, output source maps to the `platforms/{platformName}-sourceMaps` folder
 	if (env.sourceMap === 'hidden-source-map') {
 		const sourceMapAbsolutePath = getProjectFilePath(
-			`./platforms/${platform}-sourceMaps/[file].map[query]`
+			`./${
+				env.buildPath || 'platforms'
+			}/${platform}-sourceMaps/[file].map[query]`
 		);
 		const sourceMapRelativePath = relative(outputPath, sourceMapAbsolutePath);
 		config.output.sourceMapFilename(sourceMapRelativePath);
@@ -131,7 +133,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 	config.watchOptions({
 		ignored: [
-			`${getProjectFilePath('platforms')}/**`,
+			`${getProjectFilePath(env.buildPath ?? 'platforms')}/**`,
 			`${getProjectFilePath(env.appResourcesPath ?? 'App_Resources')}/**`,
 		],
 	});
