@@ -111,6 +111,7 @@
     ]
   },
   "workspaces": [
+    "packages/webpack5",
     "dist/packages/core",
     "apps/toolbox"
   ]
