@@ -15,7 +15,7 @@
 			"executor": "nx:run-commands",
 			"outputs": ["{workspaceRoot}/dist/packages"],
 			"options": {
-				"command": "npx zx ./tools/scripts/pack-webpack5.mjs"
+				"command": "echo \"Omitting Webpack5 build\""
 			}
 		}
 	}
