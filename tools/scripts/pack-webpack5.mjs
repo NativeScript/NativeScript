@@ -11,7 +11,7 @@ const tgzName = `nativescript-webpack-${packageJSON.version}.tgz`;
 
 cd(webpack5Path);
 
-await $`npm install`;
+await $`npm install --force`;
 await $`npm pack`;
 
 const from = path.join(webpack5Path, tgzName);
