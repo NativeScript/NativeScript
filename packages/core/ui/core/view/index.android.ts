@@ -460,8 +460,6 @@ export class View extends ViewCommon {
 	public initNativeView(): void {
 		super.initNativeView();
 
-		const nativeView = <NativeScriptAndroidView>this.nativeViewProtected;
-
 		this._isClickable = this.nativeViewProtected.isClickable();
 
 		if (this.needsOnLayoutChangeListener()) {
