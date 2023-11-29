@@ -1,4 +1,8 @@
-﻿export interface NativeScriptUIView extends UIView {
+﻿export interface NativeScriptAndroidView extends android.view.View {
+	_cachedDrawable: android.graphics.drawable.Drawable;
+}
+
+export interface NativeScriptUIView extends UIView {
 	hasNonUniformBorder: boolean;
 	hasNonUniformBorderColor: boolean;
 	borderLayer: CAShapeLayer;

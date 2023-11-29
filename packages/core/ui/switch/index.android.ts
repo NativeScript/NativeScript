@@ -1,6 +1,7 @@
 import { SwitchBase, checkedProperty, offBackgroundColorProperty } from './switch-common';
 import { colorProperty, backgroundColorProperty, backgroundInternalProperty } from '../styling/style-properties';
 import { Color } from '../../color';
+import { AndroidHelper } from '../core/view';
 
 export * from './switch-common';
 
@@ -60,11 +61,11 @@ export class Switch extends SwitchBase {
 
 	private setNativeBackgroundColor(value: string | number | Color) {
 		if (this.nativeViewProtected) {
+			const drawable = this.nativeViewProtected.getTrackDrawable();
 			if (value instanceof Color) {
-				// todo: use https://developer.android.com/reference/androidx/core/graphics/BlendModeColorFilterCompat
-				this.nativeViewProtected.getTrackDrawable().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_OVER);
+				AndroidHelper.setDrawableColor(value.android, drawable, androidx.core.graphics.BlendModeCompat.SRC_OVER);
 			} else {
-				this.nativeViewProtected.getTrackDrawable().clearColorFilter();
+				AndroidHelper.clearDrawableColor(drawable);
 			}
 		}
 	}
@@ -92,11 +93,11 @@ export class Switch extends SwitchBase {
 		return -1;
 	}
 	[colorProperty.setNative](value: number | Color) {
+		const drawable = this.nativeViewProtected.getThumbDrawable();
 		if (value instanceof Color) {
-			// todo: use https://developer.android.com/reference/androidx/core/graphics/BlendModeColorFilterCompat
-			this.nativeViewProtected.getThumbDrawable().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_ATOP);
+			AndroidHelper.setDrawableColor(value.android, drawable, androidx.core.graphics.BlendModeCompat.SRC_ATOP);
 		} else {
-			this.nativeViewProtected.getThumbDrawable().clearColorFilter();
+			AndroidHelper.clearDrawableColor(drawable);
 		}
 	}
 

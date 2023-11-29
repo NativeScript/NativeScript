@@ -1,6 +1,6 @@
 import { AndroidActionItemSettings, AndroidActionBarSettings as AndroidActionBarSettingsDefinition, ActionItem as ActionItemDefinition } from '.';
 import { ActionItemBase, ActionBarBase, isVisible, flatProperty, traceMissingIcon, androidContentInsetLeftProperty, androidContentInsetRightProperty } from './action-bar-common';
-import { View } from '../core/view';
+import { AndroidHelper, View } from '../core/view';
 import { Color } from '../../color';
 import { layout, RESOURCE_PREFIX, isFontIconURI } from '../../utils';
 import { colorProperty } from '../styling/style-properties';
@@ -9,6 +9,7 @@ import { Application } from '../../application';
 import { isAccessibilityServiceEnabled, updateContentDescription } from '../../accessibility';
 import type { Background } from '../styling/background';
 import { SDK_VERSION } from '../../utils/constants';
+import { NativeScriptAndroidView } from '../utils';
 
 export * from './action-bar-common';
 
@@ -214,32 +215,6 @@ export class ActionBar extends ActionBarBase {
 
 		// Set navigation button
 		this._updateNavigationButton();
-	}
-
-	public _applyBackground(background: Background, isBorderDrawable, onlyColor: boolean, backgroundDrawable: any) {
-		const nativeView = this.nativeViewProtected;
-		if (backgroundDrawable && onlyColor && SDK_VERSION >= 21) {
-			if (isBorderDrawable && (<any>nativeView)._cachedDrawable) {
-				backgroundDrawable = (<any>nativeView)._cachedDrawable;
-				// we need to duplicate the drawable or we lose the "default" cached drawable
-				const constantState = backgroundDrawable.getConstantState();
-				if (constantState) {
-					try {
-						backgroundDrawable = constantState.newDrawable(nativeView.getResources());
-						// eslint-disable-next-line no-empty
-					} catch {}
-				}
-				nativeView.setBackground(backgroundDrawable);
-			}
-
-			const backgroundColor = ((<any>backgroundDrawable).backgroundColor = background.color.android);
-			backgroundDrawable.mutate();
-			backgroundDrawable.setColorFilter(backgroundColor, android.graphics.PorterDuff.Mode.SRC_IN);
-			backgroundDrawable.invalidateSelf(); // Make sure the drawable is invalidated. Android forgets to invalidate it in some cases: toolbar
-			(<any>backgroundDrawable).backgroundColor = backgroundColor;
-		} else {
-			super._applyBackground(background, isBorderDrawable, onlyColor, backgroundDrawable);
-		}
 	}
 
 	public _onAndroidItemSelected(itemId: number): boolean {
