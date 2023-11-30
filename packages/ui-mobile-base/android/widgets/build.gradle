@@ -20,7 +20,7 @@ def computeBuildToolsVersion() {
         return buildToolsVersion
     }
     else {
-        return "32.0.0"
+        return "34.0.0"
     }
 }
 
@@ -35,6 +35,8 @@ def computeTargetSdkVersion() {
 
 
 android {
+    namespace 'com.nativescript.widgets'
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
