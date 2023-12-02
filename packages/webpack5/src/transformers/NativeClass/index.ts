@@ -5,8 +5,6 @@ import ts from 'typescript';
  */
 export default function (ctx: ts.TransformationContext) {
 	function isNativeClassExtension(node: ts.ClassDeclaration) {
-		return false;
-
 		let decorators: Readonly<ts.Decorator[]>;
 
 		if ('canHaveDecorators' in ts && ts.canHaveDecorators(node)) {
@@ -37,7 +35,7 @@ export default function (ctx: ts.TransformationContext) {
 					node.getText().replace(/@NativeClass(\((.|\n)*?\))?/gm, ''),
 					{
 						compilerOptions: {
-							noEmitHelpers: false,
+							noEmitHelpers: true,
 							module: ts.ModuleKind.ESNext,
 							target: ts.ScriptTarget.ES5,
 							experimentalDecorators: true,

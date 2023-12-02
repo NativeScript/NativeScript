@@ -2,8 +2,7 @@
  * @internal Util used for exporting opposing platform utils and warning the user if they are trying to access them.
  */
 export function platformCheck(parent?: string) {
-	// @ts-ignore
-	if (globalThis.__DEV__) {
+	if (__DEV__) {
 		return new Proxy(
 			{},
 			{
