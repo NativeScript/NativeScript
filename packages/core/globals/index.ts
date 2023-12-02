@@ -15,23 +15,27 @@ interface ExtensionMap {
 }
 
 function registerOnGlobalContext(moduleName: string, exportName: string): void {
-	Object.defineProperty(global, exportName, {
-		get: function () {
-			// We do not need to cache require() call since it is already cached in the runtime.
-			const m = global.loadModule(moduleName);
+	try {
+		Object.defineProperty(global, exportName, {
+			get: function () {
+				// We do not need to cache require() call since it is already cached in the runtime.
+				const m = global.loadModule(moduleName);
 
-			// Redefine the property to make sure the above code is executed only once.
-			const resolvedValue = m[exportName];
-			Object.defineProperty(global, exportName, {
-				value: resolvedValue,
-				configurable: true,
-				writable: true,
-			});
+				// Redefine the property to make sure the above code is executed only once.
+				const resolvedValue = m[exportName];
+				Object.defineProperty(global, exportName, {
+					value: resolvedValue,
+					configurable: true,
+					writable: true,
+				});
 
-			return resolvedValue;
-		},
-		configurable: true,
-	});
+				return resolvedValue;
+			},
+			configurable: true,
+		});
+	} catch (_e) {
+		// TODO: On Hermes, some globals are non-configurable and we cannot override them.
+	}
 }
 
 /**
