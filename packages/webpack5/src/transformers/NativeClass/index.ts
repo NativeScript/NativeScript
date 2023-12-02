@@ -5,6 +5,8 @@ import ts from 'typescript';
  */
 export default function (ctx: ts.TransformationContext) {
 	function isNativeClassExtension(node: ts.ClassDeclaration) {
+		return false;
+
 		let decorators: Readonly<ts.Decorator[]>;
 
 		if ('canHaveDecorators' in ts && ts.canHaveDecorators(node)) {
