@@ -245,9 +245,8 @@ export class FrameBase extends CustomLayoutView {
 		const newPage = entry.resolvedPage;
 		// In case we navigated forward to a page that was in the backstack
 		// with clearHistory: true
+		this._resolvedPage = newPage;
 		if (!newPage.frame) {
-			this._resolvedPage = newPage;
-
 			this._addView(newPage);
 		}
 
