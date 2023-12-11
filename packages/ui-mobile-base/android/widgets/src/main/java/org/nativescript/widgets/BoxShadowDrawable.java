@@ -40,8 +40,6 @@ public class BoxShadowDrawable extends LayerDrawable {
 	public BoxShadowDrawable(Drawable wrappedDrawable, String value) {
 		super(new Drawable[]{});
 
-		Log.d(TAG, "Constructing BoxShadowDrawable!");
-
 		this.shadowLayer = new ShapeDrawable(new RectShape());
 		this.wrappedLayer = wrappedDrawable;
 
@@ -105,7 +103,6 @@ public class BoxShadowDrawable extends LayerDrawable {
 			}
 
 			if (!Arrays.equals(outerRadius, currentCornerRadii)) {
-				Log.d(TAG, "Update layer shape");
 				shadowLayer.setShape(new RoundRectShape(outerRadius, null, null));
 				if(overlayLayer != null) {
 					overlayLayer.setShape(new RoundRectShape(outerRadius, null, null));
@@ -118,13 +115,11 @@ public class BoxShadowDrawable extends LayerDrawable {
 			// apply new shadow parameters
 			this.applyShadow();
 		} catch (JSONException exception) {
-			Log.d(TAG, "Caught JSONException...");
 			exception.printStackTrace();
 		}
 	}
 
 	private void applyShadow() {
-		Log.d(TAG, "applyShadow: " + this);
 
 		// apply boxShadow
 		shadowLayer.getPaint().setColor(shadowColor);
@@ -136,12 +131,7 @@ public class BoxShadowDrawable extends LayerDrawable {
 
 		// apply insets that mimic offsets/spread to the shadowLayer
 		int inset = -spreadRadius;
-		Log.d(TAG, "Insets:"
-			+ "\n l: " + (inset + offsetX)
-			+ "\n t: " + (inset + offsetY)
-			+ "\n r: " + (inset - offsetX)
-			+ "\n b: " + (inset - offsetY)
-		);
+
 		this.setLayerInset(0,
 			inset + offsetX,
 			inset + offsetY,
