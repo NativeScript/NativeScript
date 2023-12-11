@@ -246,7 +246,7 @@ export class ApplicationCommon {
 		rootView.cssClasses.delete(cssClass);
 	}
 
-	private increaseStyleScopeApplicationCssSelectorVersion(rootView: View) {
+	public increaseStyleScopeApplicationCssSelectorVersion(rootView: View) {
 		const styleScope: StyleScope = rootView._styleScope ?? (rootView as Frame)?.currentPage?._styleScope;
 
 		if (styleScope) {
