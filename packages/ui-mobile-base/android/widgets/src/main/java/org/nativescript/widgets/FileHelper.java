@@ -11,6 +11,7 @@ import android.os.Looper;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.webkit.MimeTypeMap;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.documentfile.provider.DocumentFile;
@@ -35,6 +36,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class FileHelper {
+	static final String TAG = "FileHelper";
 	private Uri uri;
 	private final ExecutorService executor = Executors.newSingleThreadExecutor();
 	private final Handler handler;
@@ -567,7 +569,11 @@ public class FileHelper {
 		os.write(content, 0, content.length);
 		os.flush();
 		os.close();
-		updateInternal(context);
+		try {
+			updateInternal(context);
+		} catch (Exception exception){
+			Log.e(TAG, "Failed to updateValue: " + exception.getMessage());
+		}
 	}
 
 	private void writeBufferSyncInternal(Context context, ByteBuffer content) throws Exception {
@@ -580,7 +586,11 @@ public class FileHelper {
 		channel.write(content);
 		os.flush();
 		os.close();
-		updateInternal(context);
+		try {
+			updateInternal(context);
+		} catch (Exception exception){
+			Log.e(TAG, "Failed to updateValue: " + exception.getMessage());
+		}
 	}
 
 	public void writeSync(Context context, byte[] content, @Nullable Callback callback) {
@@ -639,7 +649,11 @@ public class FileHelper {
 		osw.write(content);
 		osw.flush();
 		osw.close();
-		updateInternal(context);
+		try {
+			updateInternal(context);
+		} catch (Exception exception){
+			Log.e(TAG, "Failed to updateValue: " + exception.getMessage());
+		}
 	}
 
 	public void writeTextSync(Context context, String content, @Nullable String encoding, @Nullable Callback callback) {
@@ -765,14 +779,17 @@ public class FileHelper {
 			}
 
 		}
-
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-			context.getContentResolver().update(uri, values, null);
-		} else {
-			context.getContentResolver().update(uri, values, null, null);
+		try {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+				context.getContentResolver().update(uri, values, null);
+			} else {
+				context.getContentResolver().update(uri, values, null, null);
+			}
+			updateInternal(context, false);
+		} catch (Exception exception){
+			Log.e(TAG, "Failed to updateValue: " + exception.getMessage());
 		}
-
-		updateInternal(context, false);
+		
 	}
 
 	public void renameSync(Context context, String newName, @Nullable Callback callback) {
