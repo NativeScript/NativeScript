@@ -50,7 +50,7 @@ jobs:
       - name: Create Emulator
         uses: rigor789/action-create-emulator@main
         with:
-          package: system-images;android-34;default;arm64-v8a
+          package: system-images;android-34;default;x86_64
 
       - name: Test (Android)
         run: node tools/scripts/run-automated.js android
