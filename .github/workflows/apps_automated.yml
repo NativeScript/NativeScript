@@ -21,12 +21,12 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20.10.0
 
       - uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '11'
+          java-version: '17'
 
       - name: Install Python
         uses: actions/setup-python@v4
@@ -49,6 +49,8 @@ jobs:
 
       - name: Create Emulator
         uses: rigor789/action-create-emulator@main
+        with:
+          package: system-images;android-34;default;x86_64
 
       - name: Test (Android)
         run: node tools/scripts/run-automated.js android

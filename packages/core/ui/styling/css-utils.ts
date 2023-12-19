@@ -2,7 +2,11 @@ import { Trace } from '../../trace';
 import { CoreTypes } from '../../core-types';
 import { Length } from './style-properties';
 
-export function cleanupImportantFlags(value: string, propertyName: string) {
+export function cleanupImportantFlags(value: unknown, propertyName: string) {
+	if (typeof value !== 'string') {
+		return '' + value;
+	}
+
 	const index = value?.indexOf('!important');
 	if (index >= 0) {
 		if (Trace.isEnabled()) {
