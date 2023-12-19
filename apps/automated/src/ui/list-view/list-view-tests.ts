@@ -626,9 +626,9 @@ export class ListViewTest extends UITest<ListView> {
 
 	public test_no_memory_leak_when_items_is_regular_array() {
 		let weakRef = new WeakRef<ListView>(this.testView);
-		weakRef.get().items = FEW_ITEMS;
+		weakRef.deref().items = FEW_ITEMS;
 		this.waitUntilTestElementIsLoaded();
-		TKUnit.assertTrue(weakRef.get().isLoaded, 'ListView should be loaded here');
+		TKUnit.assertTrue(weakRef.deref().isLoaded, 'ListView should be loaded here');
 		this.assertNoMemoryLeak(weakRef);
 	}
 
@@ -637,9 +637,9 @@ export class ListViewTest extends UITest<ListView> {
 		var colors = new ObservableArray(['red', 'green', 'blue']);
 
 		let weakRef = new WeakRef<ListView>(this.testView);
-		weakRef.get().items = colors;
+		weakRef.deref().items = colors;
 		this.waitUntilTestElementIsLoaded();
-		TKUnit.assertTrue(weakRef.get().isLoaded, 'ListView should be loaded here');
+		TKUnit.assertTrue(weakRef.deref().isLoaded, 'ListView should be loaded here');
 		this.assertNoMemoryLeak(weakRef);
 	}
 
@@ -729,7 +729,7 @@ export class ListViewTest extends UITest<ListView> {
 		}
 
 		Utils.GC();
-		TKUnit.assert(weakRef.get(), weakRef.get() + ' died prematurely!');
+		TKUnit.assert(weakRef.deref(), weakRef.deref() + ' died prematurely!');
 	}
 
 	public test_check_if_item_at_index_is_visible() {
@@ -772,10 +772,10 @@ export class ListViewTest extends UITest<ListView> {
 		// 	}
 		// 	Utils.GC();
 		//
-		// 	return !weakRef.get();
+		// 	return !weakRef.deref();
 		// });
 
-		// TKUnit.assert(!weakRef.get(), weakRef.get() + ' leaked!');
+		// TKUnit.assert(!weakRef.deref(), weakRef.deref() + ' leaked!');
 	}
 
 	private loadViewWithItemNumber(args: ItemEventData) {

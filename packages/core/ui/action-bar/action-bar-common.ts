@@ -434,7 +434,7 @@ export const androidContentInsetLeftProperty = new CssProperty<Style, CoreTypes.
 	defaultValue: 'auto',
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
-		const view = <ActionBarBase>target.viewRef.get();
+		const view = <ActionBarBase>target.viewRef.deref();
 		if (view) {
 			view.effectiveContentInsetLeft = Length.toDevicePixels(newValue);
 		} else {
@@ -451,7 +451,7 @@ export const androidContentInsetRightProperty = new CssProperty<Style, CoreTypes
 	defaultValue: 'auto',
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
-		const view = <ActionBarBase>target.viewRef.get();
+		const view = <ActionBarBase>target.viewRef.deref();
 		if (view) {
 			view.effectiveContentInsetRight = Length.toDevicePixels(newValue);
 		} else {

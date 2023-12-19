@@ -371,7 +371,7 @@ class UIViewControllerImpl extends UIViewController {
 
 	// TODO: a11y
 	// public accessibilityPerformEscape() {
-	// 	const owner = this._owner.get();
+	// 	const owner = this._owner.deref();
 	// 	if (!owner) {
 	// 		return false;
 	// 	}

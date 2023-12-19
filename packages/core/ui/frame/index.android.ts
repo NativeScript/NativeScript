@@ -807,7 +807,7 @@ function startActivity(activity: androidx.appcompat.app.AppCompatActivity, frame
 function getFrameByNumberId(frameId: number): Frame {
 	// Find the frame for this activity.
 	for (let i = 0; i < framesCache.length; i++) {
-		const aliveFrame = framesCache[i].get();
+		const aliveFrame = framesCache[i].deref();
 		if (aliveFrame && aliveFrame.frameId === frameId) {
 			return aliveFrame.owner;
 		}
@@ -1050,7 +1050,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 		// also, to be compatible with fragments 1.2.x we need this setTimeout as animations haven't run on onResume yet
 		const weakRef = new WeakRef(this);
 		setTimeout(() => {
-			const owner = weakRef.get();
+			const owner = weakRef.deref();
 			if (!owner) {
 				return;
 			}
@@ -1133,7 +1133,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 		if (savedInstanceState) {
 			const rootViewId = savedInstanceState.getInt(ROOT_VIEW_ID_EXTRA, -1);
 			if (rootViewId !== -1 && activityRootViewsMap.has(rootViewId)) {
-				this._rootView = activityRootViewsMap.get(rootViewId)?.get();
+				this._rootView = activityRootViewsMap.get(rootViewId)?.deref();
 			}
 		}
 

@@ -95,7 +95,7 @@ export class Style extends Observable implements StyleDefinition {
 	}
 
 	toString() {
-		const view = this.viewRef.get();
+		const view = this.viewRef.deref();
 		if (!view) {
 			Trace.write(`toString() of Style cannot execute correctly because ".viewRef" is cleared`, Trace.categories.Animation, Trace.messageType.warn);
 
@@ -249,7 +249,7 @@ export class Style extends Observable implements StyleDefinition {
 
 	public get view(): ViewBase {
 		if (this.viewRef) {
-			return this.viewRef.get();
+			return this.viewRef.deref();
 		}
 
 		return undefined;

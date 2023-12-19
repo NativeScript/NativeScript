@@ -42,7 +42,7 @@ export class Cache extends common.Cache {
 		const that = new WeakRef(this);
 		this._callback = new org.nativescript.widgets.Async.CompleteCallback({
 			onComplete: function (result: any, context: any) {
-				const instance = that?.get();
+				const instance = that?.deref();
 				if (instance) {
 					if (result) {
 						instance._onDownloadCompleted(context, result);
@@ -52,7 +52,7 @@ export class Cache extends common.Cache {
 				}
 			},
 			onError: function (err: string, context: any) {
-				const instance = that?.get();
+				const instance = that?.deref();
 				if (instance) {
 					instance._onDownloadError(context, new Error(err));
 				}

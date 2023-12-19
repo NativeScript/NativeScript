@@ -136,7 +136,7 @@ export class Binding {
 		}
 
 		if (options.twoWay) {
-			const target = this.targetOptions.instance.get();
+			const target = this.targetOptions.instance.deref();
 			if (target instanceof Observable) {
 				target.on(`${this.targetOptions.property}Change`, this.onTargetPropertyChanged, this);
 			}
@@ -189,7 +189,7 @@ export class Binding {
 	}
 
 	private bindingContextChanged(data: PropertyChangeData): void {
-		const target = this.targetOptions.instance.get();
+		const target = this.targetOptions.instance.deref();
 		if (!target) {
 			this.unbind();
 
@@ -209,7 +209,7 @@ export class Binding {
 	}
 
 	public bind(source: any): void {
-		const target = this.targetOptions.instance.get();
+		const target = this.targetOptions.instance.deref();
 		if (this.sourceIsBindingContext && target instanceof Observable && this.targetOptions.property !== 'bindingContext') {
 			target.on('bindingContextChange', this.bindingContextChanged, this);
 		}
@@ -238,7 +238,7 @@ export class Binding {
 	}
 
 	public unbind() {
-		const target = this.targetOptions.instance.get();
+		const target = this.targetOptions.instance.deref();
 		if (target instanceof Observable) {
 			if (this.options.twoWay) {
 				target.off(`${this.targetOptions.property}Change`, this.onTargetPropertyChanged, this);
@@ -273,11 +273,11 @@ export class Binding {
 			}
 
 			if (property === bc.parentValueKey || property.indexOf(bc.parentsValueKey) === 0) {
-				const parentView = this.getParentView(this.target.get(), property).view;
+				const parentView = this.getParentView(this.target.deref(), property).view;
 				if (parentView) {
 					currentObject = parentView.bindingContext;
 				} else {
-					const targetInstance = this.target.get();
+					const targetInstance = this.target.deref();
 					targetInstance.off('loaded', this.loadedHandlerVisualTreeBinding, this);
 					targetInstance.on('loaded', this.loadedHandlerVisualTreeBinding, this);
 				}
@@ -303,7 +303,7 @@ export class Binding {
 	}
 
 	private addPropertyChangeListeners(source: WeakRef<Object>, sourceProperty: Array<string>, parentProperies?: string) {
-		const objectsAndProperties = this.resolveObjectsAndProperties(source.get(), sourceProperty);
+		const objectsAndProperties = this.resolveObjectsAndProperties(source.deref(), sourceProperty);
 		let prop = parentProperies || '';
 
 		for (let i = 0, length = objectsAndProperties.length; i < length; i++) {
@@ -345,7 +345,7 @@ export class Binding {
 		if (__UI_USE_EXTERNAL_RENDERER__) {
 		} else if (this.options.expression) {
 			const changedModel = {};
-			const targetInstance = this.target.get();
+			const targetInstance = this.target.deref();
 			let sourcePropertyName = '';
 			if (this.sourceOptions) {
 				sourcePropertyName = this.sourceOptions.property;
@@ -382,7 +382,7 @@ export class Binding {
 
 		if (!__UI_USE_EXTERNAL_RENDERER__) {
 			let context;
-			const targetInstance = this.target.get();
+			const targetInstance = this.target.deref();
 			const addedProps = [];
 			try {
 				let exp;
@@ -393,7 +393,7 @@ export class Binding {
 				}
 
 				if (exp) {
-					context = (this.source && this.source.get && this.source.get()) || global;
+					context = (this.source && this.source.deref && this.source.deref()) || global;
 					const resources = bindableResources.get();
 					for (const prop in resources) {
 						if (resources.hasOwnProperty(prop) && !context.hasOwnProperty(prop)) {
@@ -526,7 +526,7 @@ export class Binding {
 		if (__UI_USE_EXTERNAL_RENDERER__) {
 		} else if (this.options.expression) {
 			const changedModel = {};
-			changedModel[bc.bindingValueKey] = this.source ? this.source.get() : undefined;
+			changedModel[bc.bindingValueKey] = this.source ? this.source.deref() : undefined;
 			const expressionValue = this._getExpressionValue(this.options.expression, false, changedModel);
 			if (expressionValue instanceof Error) {
 				Trace.write((<Error>expressionValue).message, Trace.categories.Binding, Trace.messageType.error);
@@ -536,7 +536,7 @@ export class Binding {
 		}
 
 		if (this.sourceOptions) {
-			const sourceOptionsInstance = this.sourceOptions.instance.get();
+			const sourceOptionsInstance = this.sourceOptions.instance.deref();
 			if (this.sourceOptions.property === bc.bindingValueKey) {
 				return sourceOptionsInstance;
 			} else if (sourceOptionsInstance instanceof Observable && this.sourceOptions.property && this.sourceOptions.property !== '') {
@@ -565,7 +565,7 @@ export class Binding {
 	}
 
 	private updateSource(value: any) {
-		if (this.updating || !this.source || !this.source.get()) {
+		if (this.updating || !this.source || !this.source.deref()) {
 			return;
 		}
 
@@ -624,7 +624,7 @@ export class Binding {
 	private updateOptions(options: { instance: WeakRef<any>; property: string }, value: any) {
 		let optionsInstance;
 		if (options && options.instance) {
-			optionsInstance = options.instance.get();
+			optionsInstance = options.instance.deref();
 		}
 
 		if (!optionsInstance) {

@@ -36,7 +36,7 @@ function getHandlerForEventName(eventName: string): (eventData: EventData) => vo
 			let target;
 			for (let i = 0; i < targetHandlerPairList.length; i++) {
 				pair = targetHandlerPairList[i];
-				target = pair.tagetRef.get();
+				target = pair.tagetRef.deref();
 				if (target) {
 					pair.handler.call(target, eventData);
 				} else {
@@ -130,7 +130,7 @@ export function removeWeakEventListener(source: Observable, eventName: string, h
 	for (let i = 0; i < targetHandlerPairList.length; i++) {
 		pair = targetHandlerPairList[i];
 
-		registeredTarget = pair.tagetRef.get();
+		registeredTarget = pair.tagetRef.deref();
 		if (!registeredTarget || (registeredTarget === target && handler === pair.handler)) {
 			targetHandlerPairsToRemove.push(i);
 		}

@@ -15,7 +15,7 @@ import { ViewHelper } from './view-helper';
 
 import { PercentLength } from '../../styling/style-properties';
 
-import { observe as gestureObserve, GesturesObserver, GestureTypes, GestureEventData, fromString as gestureFromString, TouchManager, TouchAnimationOptions } from '../../gestures';
+import { observe as gestureObserve, GesturesObserver, GestureTypes, GestureEventData, fromString as gestureFromString, type TouchAnimationOptions } from '../../gestures';
 
 import { CSSUtils } from '../../../css/system-classes';
 import { Builder } from '../../builder';
@@ -170,6 +170,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
 	onLoaded() {
 		if (!this.isLoaded) {
+			const { TouchManager } = require('../../gestures/touch-manager');
 			const enableTapAnimations = TouchManager.enableGlobalTapAnimations && (this.hasListeners('tap') || this.hasListeners('tapChange') || this.getGestureObservers(GestureTypes.tap));
 			if (!this.ignoreTouchAnimation && (this.touchAnimation || enableTapAnimations)) {
 				// console.log('view:', Object.keys((<any>this)._observers));

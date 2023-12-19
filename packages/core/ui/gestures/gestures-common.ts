@@ -2,8 +2,6 @@
 import type { View } from '../core/view';
 import type { EventData } from '../../data/observable';
 
-export * from './touch-manager';
-
 /**
  * Events emitted during gesture lifecycle
  */

@@ -216,18 +216,18 @@ export function test_bindingContext_Change_IsReflected_Properly() {
 // 		const weakRef = createButton(model);
 
 // 		try {
-// 			stack.addChild(weakRef.get());
-// 			TKUnit.waitUntilReady(() => weakRef.get().isLoaded);
+// 			stack.addChild(weakRef.deref());
+// 			TKUnit.waitUntilReady(() => weakRef.deref().isLoaded);
 
-// 			TKUnit.assertEqual(weakRef.get().text, expectedValue, 'Binding is not working properly!');
-// 			stack.removeChild(weakRef.get());
-// 			TKUnit.waitUntilReady(() => !weakRef.get().isLoaded);
+// 			TKUnit.assertEqual(weakRef.deref().text, expectedValue, 'Binding is not working properly!');
+// 			stack.removeChild(weakRef.deref());
+// 			TKUnit.waitUntilReady(() => !weakRef.deref().isLoaded);
 
 // 			utils.GC();
 // 			// Give time for the GC to kick in
 // 			setTimeout(() => {
 // 				utils.GC();
-// 				TKUnit.assert(!weakRef.get(), 'UIElement is still alive!');
+// 				TKUnit.assert(!weakRef.deref(), 'UIElement is still alive!');
 // 				testFinished = true;
 // 			}, 100);
 // 		} catch (e) {

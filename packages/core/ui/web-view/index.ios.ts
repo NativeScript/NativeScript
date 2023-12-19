@@ -116,8 +116,9 @@ class WKUIDelegateImpl extends NSObject implements WKUIDelegate {
 }
 
 @NativeClass
-@ObjCClass(UIScrollViewDelegate)
 class UIScrollViewDelegateImpl extends NSObject implements UIScrollViewDelegate {
+	public static ObjCProtocols = [UIScrollViewDelegate];
+
 	public static initWithOwner(owner: WeakRef<WebView>): UIScrollViewDelegateImpl {
 		const handler = <UIScrollViewDelegateImpl>UIScrollViewDelegateImpl.new();
 		handler._owner = owner;

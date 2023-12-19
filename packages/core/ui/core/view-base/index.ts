@@ -270,7 +270,7 @@ let viewIdCounter = 1;
 //         let nativeView;
 //         while (array.length > 0) {
 //             const weakRef = array.pop();
-//             nativeView = weakRef.get();
+//             nativeView = weakRef.deref();
 //             if (nativeView) {
 //                 return nativeView;
 //             }

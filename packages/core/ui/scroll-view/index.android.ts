@@ -133,7 +133,7 @@ export class ScrollView extends ScrollViewBase {
 			const viewRef = new WeakRef(this);
 			this.handler = new android.view.ViewTreeObserver.OnScrollChangedListener({
 				onScrollChanged: function () {
-					const owner: ScrollView = viewRef.get();
+					const owner: ScrollView = viewRef.deref();
 					if (owner) {
 						owner._onScrollChanged();
 					}
