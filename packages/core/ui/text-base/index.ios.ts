@@ -358,7 +358,7 @@ export class TextBase extends TextBaseCommon {
 
 	createMutableStringDetails(span: Span, text: string, index?: number): any {
 		const fontScale = adjustMinMaxFontScale(span.style.fontScaleInternal, span);
-		const font = new Font(span.style.fontFamily, span.style.fontSize, span.style.fontStyle, span.style.fontWeight, fontScale);
+		const font = new Font(span.style.fontFamily, span.style.fontSize, span.style.fontStyle, span.style.fontWeight, fontScale, span.style.fontVariationSettings);
 		const iosFont = font.getUIFont(this.nativeTextViewProtected.font);
 
 		const backgroundColor = <Color>(span.style.backgroundColor || (<FormattedString>span.parent).backgroundColor || (<TextBase>span.parent.parent).backgroundColor);
