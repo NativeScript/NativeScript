@@ -509,11 +509,13 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 			return;
 		}
 		// called by android.text.TextWatcher
-		const newValue = <any>this.text instanceof java.lang.CharSequence ? this.text : this.valueFormatter?.(text.toString()) || text.toString();
-		// prevent infinite loop
-		if (newValue !== this.text) {
-			this.text = newValue;
-			this.nativeTextViewProtected.setSelection((newValue || '').length);
+		if (this.valueFormatter) {
+			const newValue = <any>this.text instanceof java.lang.CharSequence ? this.text : this.valueFormatter?.(text.toString()) || text.toString();
+			// prevent infinite loop
+			if (newValue !== this.text) {
+				this.text = newValue;
+				this.nativeTextViewProtected.setSelection((newValue || '').length);
+			}
 		}
 		// const owner = this.owner;
 		// let selectionStart = owner.android.getSelectionStart();
