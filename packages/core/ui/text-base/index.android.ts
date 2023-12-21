@@ -241,6 +241,19 @@ export class TextBase extends TextBaseCommon {
 		this._maxHeight = this._maxLines = undefined;
 	}
 
+	createFormattedTextNative(value: FormattedString) {
+		return createSpannableStringBuilder(value, this.style.fontSize);
+	}
+
+	_getNativeTextTransform(value: CoreTypes.TextTransformType): android.text.method.TransformationMethod {
+		// if (value === 'initial') {
+		// 	return this._defaultTransformationMethod;
+		// }
+
+		// return new TextTransformation(this);
+		return null;
+	}
+
 	[textProperty.getDefault](): symbol | number {
 		return resetSymbol;
 	}
@@ -255,12 +268,11 @@ export class TextBase extends TextBaseCommon {
 
 		this._setNativeText(reset);
 	}
+
 	[textStrokeProperty.setNative](value: StrokeCSSValues) {
 		this._setNativeText();
 	}
-	createFormattedTextNative(value: FormattedString) {
-		return createSpannableStringBuilder(value, this.style.fontSize);
-	}
+
 	[formattedTextProperty.setNative](value: FormattedString) {
 		const nativeView = this.nativeTextViewProtected;
 		// TODO: does not seem needed anymore as native textTransform behaves correctly with spannableStringBuilder
@@ -294,19 +306,10 @@ export class TextBase extends TextBaseCommon {
 		return 'initial';
 	}
 	[textTransformProperty.setNative](value: CoreTypes.TextTransformType) {
-		// const nativeView = this.nativeTextViewProtected;
-		// if (this._defaultTransformationMethod && (value === 'initial' || value === 'none')) {
-		// 	nativeView.setTransformationMethod(this._defaultTransformationMethod);
-		// 	return;
+		// const transformationMethod = this._getNativeTextTransform(value);
+		// if (transformationMethod != null) {
+		// 	this.nativeTextViewProtected.setTransformationMethod(transformationMethod);
 		// }
-		// // Don't change the transformation method if this is secure TextField or we'll lose the hiding characters.
-		// if ((<any>this).secure) {
-		// 	return;
-		// }
-		// if (!this._defaultTransformationMethod) {
-		// 	this._defaultTransformationMethod = nativeView.getTransformationMethod()
-		// }
-		// nativeView.setTransformationMethod(new TextTransformation(this));
 	}
 
 	[textAlignmentProperty.getDefault](): CoreTypes.TextAlignmentType {

@@ -153,15 +153,19 @@ class UIViewControllerImpl extends UIViewController {
 		if (frame) {
 			frame._resolvedPage = owner;
 
-			if (!owner.parent) {
-				if (!frame._styleScope) {
-					// Make sure page will have styleScope even if frame don't.
-					owner._updateStyleScope();
-				}
+			if (owner.parent === frame) {
+				frame._inheritStyles(owner);
+			} else {
+				if (!owner.parent) {
+					if (!frame._styleScope) {
+						// Make sure page will have styleScope even if frame don't.
+						owner._updateStyleScope();
+					}
 
-				frame._addView(owner);
-			} else if (owner.parent !== frame) {
-				throw new Error('Page is already shown on another frame.');
+					frame._addView(owner);
+				} else {
+					throw new Error('Page is already shown on another frame.');
+				}
 			}
 
 			frame._updateActionBar(owner);

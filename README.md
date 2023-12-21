@@ -13,7 +13,7 @@
 
 </p>
 
-[NativeScript](http://www.nativescript.org) empowers you to access native APIs from JavaScript directly. Currently iOS and Android runtimes are provided for rich mobile development across a variety of diverse use cases.
+[NativeScript](http://www.nativescript.org) empowers you to access native APIs from JavaScript directly. Currently iOS, Android, and visionOS runtimes are provided for rich mobile development across a variety of diverse use cases.
 
 
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FNativeScript%2FNativeScript.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FNativeScript%2FNativeScript?ref=badge_large)
@@ -40,7 +40,7 @@ We love you and your pull requests 🤗. Please follow our [contributing guide](
 ## @nativescript/*
 
 - [@nativescript/core](https://github.com/NativeScript/NativeScript/tree/main/packages/core)
-  Core iOS/Android for NativeScript.
+  Singular primitives offering an easy-to-use API surface for diverse iOS/Android APIs implemented with NativeScript.
 - [@nativescript/types](https://www.npmjs.com/package/@nativescript/types)
   Types for both iOS/Android below wrapped up as a convenience. *Most commonly used.*
 - [@nativescript/types-ios](https://github.com/NativeScript/NativeScript/tree/main/packages/types-ios)
@@ -73,14 +73,14 @@ We love you and your pull requests 🤗. Please follow our [contributing guide](
 
 Outside the source centralized in this repo, NativeScript consists of a few other source repos. Here are the major ones:
 
-- [iOS Runtime](https://github.com/NativeScript/ns-v8ios-runtime)
-	NativeScript iOS Runtime: Empowers JavaScript code to be executed on iOS devices written in a mix of C++, Objective-C, and Swift.
+- [iOS and visionOS Runtime](https://github.com/NativeScript/ns-v8ios-runtime)
+	Empowers JavaScript code to be executed on iOS and visionOS devices written in a mix of C++, Objective-C, and Swift.
 - [Android Runtime](https://github.com/NativeScript/android-runtime)
-	NativeScript Android Runtim: Empowers JavaScript code to be executed on Android devices written in a mix of C++, Java and Kotlin.
+	Empowers JavaScript code to be executed on Android devices written in a mix of C++, Java and Kotlin.
 - [CLI](//github.com/NativeScript/nativescript-cli)
-	NativeScript command-line interface empowering you to create, build, and run apps using NativeScript.
+	Command-line interface empowering you to create, build, and run apps using NativeScript.
 - [Docs](//github.com/NativeScript/docs-new)
-	NativeScript documentation available at <http://docs.nativescript.org/> written in Markdown.
+	Documentation available at <http://docs.nativescript.org/> written in Markdown.
 - [Plugins](https://github.com/NativeScript/plugins)
   A [plugin workspace](https://docs.nativescript.org/plugins/plugin-workspace-guide.html) with several useful plugins.
 - [Firebase](https://github.com/NativeScript/firebase)

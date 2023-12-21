@@ -208,6 +208,10 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 	_setNativeText(reset = false): void {
 		//
 	}
+
+	_getNativeTextTransform(value: CoreTypes.TextTransformType): any {
+		//
+	}
 }
 
 TextBaseCommon.prototype._isSingleLine = false;

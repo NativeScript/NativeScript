@@ -22,10 +22,11 @@ export class DemoModel extends Observable {
 			.then(() => {
 				return context.present();
 			})
-			.then((selection) => {
-				const imageAsset = selection.length > 0 ? selection[0] : null;
-				if (imageAsset) {
+			.then((selections) => {
+				const selection = selections.length > 0 ? selections[0] : null;
+				if (selection) {
 					this.addingPhoto = true;
+					const imageAsset = selection.asset;
 
 					ImageSource.fromAsset(imageAsset).then(
 						(savedImage) => {
