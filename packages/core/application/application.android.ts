@@ -56,7 +56,7 @@ function initNativeScriptLifecycleCallbacks() {
 	@NativeClass
 	@JavaProxy('org.nativescript.NativeScriptLifecycleCallbacks')
 	class NativeScriptLifecycleCallbacksImpl extends android.app.Application.ActivityLifecycleCallbacks {
-		private activitiesCount: number = 0;
+		private activitiesCount: number;
 		private nativescriptActivity: androidx.appcompat.app.AppCompatActivity;
 
 		@profile
@@ -161,7 +161,7 @@ function initNativeScriptLifecycleCallbacks() {
 		public onActivityStarted(activity: androidx.appcompat.app.AppCompatActivity): void {
 			// console.log('NativeScriptLifecycleCallbacks onActivityStarted');
 
-			this.activitiesCount++;
+			this.activitiesCount = (this.activitiesCount ?? 0) + 1;
 			if (this.activitiesCount === 1) {
 				Application.android.setInBackground(false, {
 					// todo: deprecate event.android in favor of event.activity
