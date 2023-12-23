@@ -461,6 +461,7 @@ export class Frame extends FrameBase {
 
 		const manager: androidx.fragment.app.FragmentManager = this._getFragmentManager();
 		const transaction = manager.beginTransaction();
+		let wasCreated = false;
 		if (!backstackEntry.fragment) {
 			// Happens on newer API levels. On older all fragments
 			// are recreated once activity is created.
@@ -468,6 +469,7 @@ export class Frame extends FrameBase {
 			// We need to recreate its animations and then reverse it.
 			backstackEntry.fragment = this.createFragment(backstackEntry, backstackEntry.fragmentTag);
 			_updateTransitions(backstackEntry);
+			wasCreated = true;
 		}
 
 		_reverseTransitions(backstackEntry, this._currentEntry);
@@ -498,7 +500,11 @@ export class Frame extends FrameBase {
 			transaction.hide(this._currentEntry.fragment);
 
 			// let's show the previous fragment
-			transaction.show(backstackEntry.fragment);
+			if (wasCreated) {
+				transaction.add(this.containerViewId, backstackEntry.fragment, backstackEntry.fragmentTag);
+			} else {
+				transaction.show(backstackEntry.fragment);
+			}
 		}
 
 		backstackEntry.transition?.androidFragmentTransactionCallback?.(transaction, this._currentEntry, backstackEntry);
