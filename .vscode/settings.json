@@ -1,10 +1,34 @@
 {
-	"search.exclude": {
-		"**/node_modules": true,
-		"**/bower_components": true,
-		"**/platforms": true,
-		"**/*.js": true,
-		"**/*.js.map": true
-	},
-	"eslint.validate": ["json"]
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/bower_components": true,
+    "**/platforms": true,
+    "**/*.js": true,
+    "**/*.js.map": true,
+    "**/apps/automated": false,
+    "**/apps/toolbox": false,
+    "**/apps/ui": false,
+    "**/packages/core": false,
+    "**/packages/types": true,
+    "**/packages/types-android": true,
+    "**/packages/types-ios": true,
+    "**/packages/types-minimal": true,
+    "**/packages/ui-mobile-base": true,
+    "**/packages/webpack5": true
+  },
+  "eslint.validate": [
+    "json"
+  ],
+  "files.exclude": {
+    "**/apps/automated": false,
+    "**/apps/toolbox": false,
+    "**/apps/ui": false,
+    "**/packages/core": false,
+    "**/packages/types": true,
+    "**/packages/types-android": true,
+    "**/packages/types-ios": true,
+    "**/packages/types-minimal": true,
+    "**/packages/ui-mobile-base": true,
+    "**/packages/webpack5": true
+  }
 }

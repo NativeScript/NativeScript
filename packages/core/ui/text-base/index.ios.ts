@@ -176,7 +176,8 @@ export class TextBase extends TextBaseCommon {
 	}
 	[colorProperty.setNative](value: Color | UIColor) {
 		const color = value instanceof Color ? value.ios : value;
-		this._setColor(color);
+		//this._setColor(color);
+		this._setColor(UIColor.redColor);
 	}
 
 	[fontInternalProperty.getDefault](): UIFont {
