@@ -1150,6 +1150,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 		// was destroyed and we are now recreating it.
 		if (savedInstanceState) {
 			const rootViewId = savedInstanceState.getInt(ROOT_VIEW_ID_EXTRA, -1);
+			console.log('onCreate savedInstanceState', rootViewId, this._rootView, this._subRootView);
 			if (rootViewId !== -1 && activityRootViewsMap.has(rootViewId)) {
 				this._rootView = activityRootViewsMap.get(rootViewId)?.get();
 				this._subRootView = this._rootView.getChildAt(0);
@@ -1265,6 +1266,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 			}
 			this._rootView = null;
 			this._subRootView = null;
+			console.log('onDestroy');
 
 			// this may happen when the user changes the system theme
 			// In such case, isFinishing() is false (and isChangingConfigurations is true), and the app will start again (onCreate) with a savedInstanceState
@@ -1302,6 +1304,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 		}
 
 		const view = this._subRootView;
+		console.log('onBackPressed', this._rootView, this._subRootView);
 		let callSuper = false;
 
 		const viewArgs = <AndroidActivityBackPressedEventData>{
@@ -1402,6 +1405,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 			// no root view created
 			return;
 		}
+		this._subRootView = subRootView;
 		if (subRootView.parent) {
 			(subRootView.parent as GridLayout).removeChild(subRootView);
 		}

@@ -401,6 +401,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 			// no root view created
 			return;
 		}
+		this._subRootView = subRootView;
 		if (subRootView.parent) {
 			(subRootView.parent as GridLayout).removeChild(subRootView);
 		}
