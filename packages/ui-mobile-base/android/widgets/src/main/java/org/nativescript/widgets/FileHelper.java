@@ -375,12 +375,12 @@ public class FileHelper {
 
 	private OutputStream getOutputStream(Context context, Uri uri, boolean append) throws Exception {
 		if (Build.VERSION.SDK_INT >= 19) {
+			if (DocumentsContract.isDocumentUri(context, uri)) {
+				return context.getContentResolver().openOutputStream(DocumentFile.fromSingleUri(context, uri).getUri(), append ? "wa" : "w");
+			}
 			if (isExternalStorageDocument(uri)) {
 				File file = getFile(context, uri);
 				return new FileOutputStream(file, append);
-			}
-			if (DocumentsContract.isDocumentUri(context, uri)) {
-				return context.getContentResolver().openOutputStream(DocumentFile.fromSingleUri(context, uri).getUri(), append ? "wa" : "w");
 			}
 		}
 		return context.getContentResolver().openOutputStream(uri, append ? "wa" : "w");
