@@ -18,6 +18,16 @@ export interface NavigationData extends EventData {
  */
 export class Frame extends FrameBase {
 	/**
+	 * @private
+	 */
+	_originalBackground?: any;
+
+	/**
+	 * @private
+	 */
+	_saveFragmentsState?();
+
+	/**
 	 * Gets a frame by id.
 	 */
 	static getFrameById(id: string): Frame;
@@ -432,6 +442,7 @@ export interface BackstackEntry {
  * To start a new Activity, a new Frame instance should be created and navigated to the desired Page.
  */
 export interface AndroidFrame extends Observable {
+	frameId: any;
 	/**
 	 * Gets the native [android ViewGroup](http://developer.android.com/reference/android/view/ViewGroup.html) instance that represents the root layout part of the Frame.
 	 */

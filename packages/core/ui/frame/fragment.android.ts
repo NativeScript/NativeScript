@@ -1,4 +1,8 @@
-import { AndroidFragmentCallbacks, setFragmentCallbacks, setFragmentClass } from '.';
+import { getContentView, setContentView } from '../../ui/embedding';
+import { AndroidFragmentCallbacks, setFragmentCallbacks } from '.';
+import { View } from 'ui/core/view';
+
+declare const com: any;
 
 const superProto = org.nativescript.widgets.FragmentBase.prototype;
 const FragmentClass = (<any>org.nativescript.widgets.FragmentBase).extend('com.tns.FragmentClass', {
@@ -33,9 +37,7 @@ const FragmentClass = (<any>org.nativescript.widgets.FragmentBase).extend('com.t
 	},
 
 	onCreateView(inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle) {
-		const result = this._callbacks.onCreateView(this, inflater, container, savedInstanceState, superProto.onCreateView);
-
-		return result;
+		return this._callbacks.onCreateView(this, inflater, container, savedInstanceState, superProto.onCreateView);
 	},
 
 	onSaveInstanceState(outState: android.os.Bundle) {
@@ -60,5 +62,48 @@ const FragmentClass = (<any>org.nativescript.widgets.FragmentBase).extend('com.t
 		}
 	},
 });
+
+export let fragmentClass: any;
+
+export function ensureFragmentClass() {
+	if (fragmentClass) {
+		return;
+	}
+
+	// this require will apply the FragmentClass implementation
+	require('./fragment');
+
+	if (!fragmentClass) {
+		throw new Error('Failed to initialize the extended androidx.fragment.app.Fragment class');
+	}
+}
+
+export function setFragmentClass(clazz: any) {
+	if (fragmentClass) {
+		throw new Error('Fragment class already initialized');
+	}
+
+	attachEmbeddableFragmentCallbacks();
+	fragmentClass = clazz;
+}
+
+function attachEmbeddableFragmentCallbacks() {
+	const Callbacks = com.tns.embedding.EmbeddableFragmentCallbacks.extend({
+		init() {
+			// init must at least be defined
+		},
+		onCreateView() {
+			console.log('!!!! VM: EmbeddableFragmentCallbacks: onCreateView');
+			return getContentView().nativeViewProtected;
+		},
+		onResume() {
+			getContentView().callLoaded();
+		},
+		onPause() {
+			getContentView().callUnloaded();
+		},
+	});
+	com.tns.embedding.CallbacksStore.setFragmentCallbacks(new Callbacks());
+}
 
 setFragmentClass(FragmentClass);
