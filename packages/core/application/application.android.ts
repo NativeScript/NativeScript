@@ -10,6 +10,12 @@ declare namespace com {
 		class NativeScriptApplication extends android.app.Application {
 			static getInstance(): NativeScriptApplication;
 		}
+
+		namespace embedding {
+			class ApplicationHolder {
+				static getInstance(): android.app.Application;
+			}
+		}
 	}
 }
 
@@ -356,6 +362,10 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 		// check whether the com.tns.NativeScriptApplication type exists
 		if (com.tns.NativeScriptApplication) {
 			nativeApp = com.tns.NativeScriptApplication.getInstance();
+		}
+
+		if (!nativeApp && com.tns.embedding.ApplicationHolder) {
+			nativeApp = com.tns.embedding.ApplicationHolder.getInstance();
 		}
 
 		// the getInstance might return null if com.tns.NativeScriptApplication exists but is not the starting app type
