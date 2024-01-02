@@ -279,7 +279,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 							resolve(result);
 						},
 						onError: (err) => {
-							reject(new Error(err));
+							reject(err);
 						},
 					}),
 					getApplicationContext()
@@ -302,7 +302,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 							resolve((ArrayBuffer as any).from(result));
 						},
 						onError: (err) => {
-							reject(new Error(err));
+							reject(err);
 						},
 					}),
 					null
@@ -340,7 +340,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 							resolve(result);
 						},
 						onError: (err) => {
-							reject(new Error(err));
+							reject(err);
 						},
 					}),
 					null
@@ -388,7 +388,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 							resolve();
 						},
 						onError: (err) => {
-							reject(new Error(err));
+							reject(err);
 						},
 					}),
 					null
@@ -426,7 +426,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 							resolve();
 						},
 						onError: (err) => {
-							reject(new Error(err));
+							reject(err);
 						},
 					}),
 					null
@@ -463,7 +463,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 							resolve();
 						},
 						onError: (err) => {
-							reject(new Error(err));
+							reject(err);
 						},
 					}),
 					null
@@ -501,7 +501,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 							resolve();
 						},
 						onError: (err) => {
-							reject(new Error(err));
+							reject(err);
 						},
 					}),
 					null
@@ -547,7 +547,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 							resolve(result);
 						},
 						onError: (err) => {
-							reject(new Error(err));
+							reject(err);
 						},
 					}),
 					null
@@ -632,7 +632,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 							resolve();
 						},
 						onError: (err) => {
-							reject(new Error(err));
+							reject(err);
 						},
 					}),
 					null
@@ -682,7 +682,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 							resolve();
 						},
 						onError: (err) => {
-							reject(new Error(err));
+							reject(err);
 						},
 					}),
 					null
