@@ -1,5 +1,5 @@
 import { profile } from '../profiling';
-import { View } from '../ui';
+import { GridLayout, View } from '../ui';
 import { IOSHelper } from '../ui/core/view/view-helper';
 import { NavigationEntry } from '../ui/frame/frame-interfaces';
 import * as Utils from '../utils';
@@ -78,6 +78,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	private _window: UIWindow;
 	private _notificationObservers: NotificationObserver[] = [];
 	private _rootView: View;
+	private _subRootView: View;
 
 	displayedOnce = false;
 	displayedLinkTarget: CADisplayLinkTarget;
@@ -98,7 +99,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	}
 
 	getRootView(): View {
-		return this._rootView;
+		return this._subRootView || this._rootView;
 	}
 
 	resetRootView(view?: View) {
@@ -371,14 +372,10 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 			// if we already have a root view, we reset it.
 			this._rootView._onRootViewReset();
 		}
-		const rootView = this.createRootView(view);
-		const controller = this.getViewController(rootView);
-
-		this._rootView = rootView;
-
+		const rootView = (this._rootView = new GridLayout());
 		// setup view as styleScopeHost
 		rootView._setupAsRootView({});
-
+		const controller = this.getViewController(rootView);
 		this.setViewControllerView(rootView);
 
 		const haveController = this._window.rootViewController !== null;
@@ -389,13 +386,25 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		}
 
 		this.initRootView(rootView);
-
 		rootView.on(IOSHelper.traitCollectionColorAppearanceChangedEvent, () => {
 			const userInterfaceStyle = controller.traitCollection.userInterfaceStyle;
 			const newSystemAppearance = this.getSystemAppearanceValue(userInterfaceStyle);
 
 			this.setSystemAppearance(newSystemAppearance);
 		});
+
+		let subRootView = this._subRootView;
+
+		subRootView = this.createRootView(view);
+		// this._rootView = rootView;
+		if (!subRootView) {
+			// no root view created
+			return;
+		}
+		if (subRootView.parent) {
+			(subRootView.parent as GridLayout).removeChild(subRootView);
+		}
+		rootView.addChild(subRootView);
 	}
 
 	// Observers

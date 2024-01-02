@@ -426,9 +426,9 @@ export class CssState {
 	 * Called when a change had occurred that may invalidate the statically matching selectors (class, id, ancestor selectors).
 	 * As a result, at some point in time, the selectors matched have to be requerried from the style scope and applied to the view.
 	 */
-	public onChange(): void {
+	public onChange(force = false): void {
 		const view = this.viewRef.get();
-		if (view && view.isLoaded) {
+		if (view && (force || view.isLoaded)) {
 			this.unsubscribeFromDynamicUpdates();
 			this.updateMatch();
 			this.subscribeForDynamicUpdates();

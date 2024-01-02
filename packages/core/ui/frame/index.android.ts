@@ -17,6 +17,7 @@ import { _clearEntry, _clearFragment, _getAnimatedEntries, _reverseTransitions, 
 import { profile } from '../../profiling';
 import { android as androidUtils } from '../../utils/native-helper';
 import type { ExpandedEntry } from './fragment.transitions.android';
+import { GridLayout } from '../layouts/grid-layout';
 
 export * from './frame-common';
 
@@ -26,7 +27,7 @@ const FRAMEID = '_frameId';
 const CALLBACKS = '_callbacks';
 
 const ownerSymbol = Symbol('_owner');
-const activityRootViewsMap = new Map<number, WeakRef<View>>();
+const activityRootViewsMap = new Map<number, WeakRef<GridLayout>>();
 
 let navDepth = -1;
 let fragmentId = -1;
@@ -1117,10 +1118,11 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 }
 
 class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
-	private _rootView: View;
+	private _rootView: GridLayout;
+	private _subRootView: View;
 
 	public getRootView(): View {
-		return this._rootView;
+		return this._subRootView || this._rootView;
 	}
 
 	@profile
@@ -1150,6 +1152,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 			const rootViewId = savedInstanceState.getInt(ROOT_VIEW_ID_EXTRA, -1);
 			if (rootViewId !== -1 && activityRootViewsMap.has(rootViewId)) {
 				this._rootView = activityRootViewsMap.get(rootViewId)?.get();
+				this._subRootView = this._rootView.getChildAt(0);
 			}
 		}
 
@@ -1260,6 +1263,8 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 			if (rootView) {
 				rootView._tearDownUI(true);
 			}
+			this._rootView = null;
+			this._subRootView = null;
 
 			// this may happen when the user changes the system theme
 			// In such case, isFinishing() is false (and isChangingConfigurations is true), and the app will start again (onCreate) with a savedInstanceState
@@ -1296,7 +1301,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 			return;
 		}
 
-		const view = this._rootView;
+		const view = this._subRootView;
 		let callSuper = false;
 
 		const viewArgs = <AndroidActivityBackPressedEventData>{
@@ -1361,6 +1366,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 		}
 		// Delete previously cached root view in order to recreate it.
 		this._rootView = null;
+		this._subRootView = null;
 		this.setActivityContent(activity, null, false);
 		this._rootView.callLoaded();
 	}
@@ -1371,36 +1377,35 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 	// 3. Livesync if rootView has no custom _onLivesync. this._rootView should have been cleared upfront. Launch event should not fired
 	// 4. resetRootView method. this._rootView should have been cleared upfront. Launch event should not fired
 	private setActivityContent(activity: androidx.appcompat.app.AppCompatActivity, savedInstanceState: android.os.Bundle, fireLaunchEvent: boolean): void {
-		let rootView = this._rootView;
+		const rootView = (this._rootView = new GridLayout());
+		activityRootViewsMap.set(rootView._domId, new WeakRef(rootView));
+		// setup view as styleScopeHost
+		rootView._setupAsRootView(activity);
+		// sets root classes once rootView is ready...
+		Application.initRootView(rootView);
+		activity.setContentView(rootView.nativeViewProtected, new org.nativescript.widgets.CommonLayoutParams());
 
+		let subRootView = this._subRootView;
 		if (Trace.isEnabled()) {
-			Trace.write(`Frame.setActivityContent rootView: ${rootView} shouldCreateRootFrame: false fireLaunchEvent: ${fireLaunchEvent}`, Trace.categories.NativeLifecycle);
+			Trace.write(`Frame.setActivityContent rootView: ${rootView} subRootView: ${subRootView} shouldCreateRootFrame: false fireLaunchEvent: ${fireLaunchEvent}`, Trace.categories.NativeLifecycle);
 		}
 
 		const intent = activity.getIntent();
-		rootView = Application.createRootView(rootView, fireLaunchEvent, {
+		subRootView = Application.createRootView(subRootView, fireLaunchEvent, {
 			// todo: deprecate in favor of args.intent?
 			android: intent,
 			intent,
 			savedInstanceState,
 		});
 
-		if (!rootView) {
+		if (!subRootView) {
 			// no root view created
 			return;
 		}
-
-		activityRootViewsMap.set(rootView._domId, new WeakRef(rootView));
-
-		// setup view as styleScopeHost
-		rootView._setupAsRootView(activity);
-
-		activity.setContentView(rootView.nativeViewProtected, new org.nativescript.widgets.CommonLayoutParams());
-
-		this._rootView = rootView;
-
-		// sets root classes once rootView is ready...
-		Application.initRootView(rootView);
+		if (subRootView.parent) {
+			(subRootView.parent as GridLayout).removeChild(subRootView);
+		}
+		rootView.addChild(subRootView);
 	}
 }
 

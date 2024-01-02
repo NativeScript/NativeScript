@@ -1363,15 +1363,15 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	 * Notifies each child's css state for change, recursively.
 	 * Either the style scope, className or id properties were changed.
 	 */
-	_onCssStateChange(): boolean {
+	_onCssStateChange(force = false): boolean {
 		if (this.disableCss) {
 			return false;
 		}
-		if (!this.isLoaded) {
+		if (!this.isLoaded && !force) {
 			this._needsCssChange = true;
 			return false;
 		}
-		this._cssState.onChange();
+		this._cssState.onChange(force);
 		eachDescendant(this, (child: ViewBase) => {
 			return child._onCssStateChange();
 		});

@@ -370,6 +370,8 @@ export class ApplicationCommon {
 		this.setRootViewCSSClasses(rootView);
 		initAccessibilityCssHelper();
 		initAccessibilityFontScale();
+		// ensure css is "loaded" on the rootview so that user rootview can access css variables right away
+		rootView._onCssStateChange(true);
 		this.notify(<InitRootViewEventData>{ eventName: this.initRootViewEvent, rootView });
 	}
 
