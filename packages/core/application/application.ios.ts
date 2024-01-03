@@ -1,5 +1,5 @@
 import { profile } from '../profiling';
-import { GridLayout, View } from '../ui';
+import type { GridLayout, View } from '../ui';
 import { IOSHelper } from '../ui/core/view/view-helper';
 import { NavigationEntry } from '../ui/frame/frame-interfaces';
 import * as Utils from '../utils';
@@ -372,18 +372,19 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 			// if we already have a root view, we reset it.
 			this._rootView._onRootViewReset();
 		}
-		const rootView = (this._rootView = new GridLayout());
+
+		// TODO: using import crashes. Must be a circular dependency. Have to find it
+		const GridLayout = require('../ui/layouts/grid-layout').GridLayout;
+
+		const rootView = new GridLayout();
+		const controller = this.getViewController(rootView);
+		this._rootView = rootView;
 		// setup view as styleScopeHost
 		rootView._setupAsRootView({});
-		const controller = this.getViewController(rootView);
 		this.setViewControllerView(rootView);
 
 		const haveController = this._window.rootViewController !== null;
 		this._window.rootViewController = controller;
-
-		if (!haveController) {
-			this._window.makeKeyAndVisible();
-		}
 
 		this.initRootView(rootView);
 		rootView.on(IOSHelper.traitCollectionColorAppearanceChangedEvent, () => {
@@ -406,6 +407,10 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 			(subRootView.parent as GridLayout).removeChild(subRootView);
 		}
 		rootView.addChild(subRootView);
+
+		if (!haveController) {
+			this._window.makeKeyAndVisible();
+		}
 	}
 
 	// Observers
