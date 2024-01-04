@@ -1304,7 +1304,6 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 		}
 
 		const view = this._subRootView;
-		console.log('onBackPressed', this._rootView, this._subRootView);
 		let callSuper = false;
 
 		const viewArgs = <AndroidActivityBackPressedEventData>{
