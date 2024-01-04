@@ -208,7 +208,10 @@ exports[`angular configuration for android 1`] = `
           {
             loader: '<rootDir>/node_modules/@angular-devkit/build-angular/src/tools/babel/webpack-loader.js',
             options: {
-              aot: true
+              aot: true,
+              supportedBrowsers: [
+                'chrome 83'
+              ]
             }
           }
         ],
@@ -640,7 +643,10 @@ exports[`angular configuration for ios 1`] = `
           {
             loader: '<rootDir>/node_modules/@angular-devkit/build-angular/src/tools/babel/webpack-loader.js',
             options: {
-              aot: true
+              aot: true,
+              supportedBrowsers: [
+                'chrome 103'
+              ]
             }
           }
         ],
