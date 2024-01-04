@@ -1,5 +1,5 @@
 import { profile } from '../profiling';
-import type { GridLayout, View } from '../ui';
+import type { ContentView, View } from '../ui';
 import { IOSHelper } from '../ui/core/view/view-helper';
 import { NavigationEntry } from '../ui/frame/frame-interfaces';
 import * as Utils from '../utils';
@@ -373,10 +373,10 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 			this._rootView._onRootViewReset();
 		}
 
-		// TODO: using import crashes. Must be a circular dependency. Have to find it
-		const GridLayout = require('../ui/layouts/grid-layout').GridLayout;
+		// TODO: using import crashes. it creates a circular dependency  which is tricky to fix right now
+		const ContentView = require('../ui/content-view').ContentView;
 
-		const rootView = new GridLayout();
+		const rootView = new ContentView();
 		const controller = this.getViewController(rootView);
 		this._rootView = rootView;
 		// setup view as styleScopeHost
@@ -397,16 +397,12 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		let subRootView = this._subRootView;
 
 		subRootView = this.createRootView(view);
-		// this._rootView = rootView;
 		if (!subRootView) {
 			// no root view created
 			return;
 		}
 		this._subRootView = subRootView;
-		if (subRootView.parent) {
-			(subRootView.parent as GridLayout).removeChild(subRootView);
-		}
-		rootView.addChild(subRootView);
+		(rootView as ContentView).content = subRootView;
 
 		if (!haveController) {
 			this._window.makeKeyAndVisible();
