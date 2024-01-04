@@ -17,7 +17,7 @@ import { _clearEntry, _clearFragment, _getAnimatedEntries, _reverseTransitions, 
 import { profile } from '../../profiling';
 import { android as androidUtils } from '../../utils/native-helper';
 import type { ExpandedEntry } from './fragment.transitions.android';
-import { GridLayout } from '../layouts/grid-layout';
+import { ContentView } from '../content-view';
 
 export * from './frame-common';
 
@@ -27,7 +27,7 @@ const FRAMEID = '_frameId';
 const CALLBACKS = '_callbacks';
 
 const ownerSymbol = Symbol('_owner');
-const activityRootViewsMap = new Map<number, WeakRef<GridLayout>>();
+const activityRootViewsMap = new Map<number, WeakRef<ContentView>>();
 
 let navDepth = -1;
 let fragmentId = -1;
@@ -1118,7 +1118,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 }
 
 class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
-	private _rootView: GridLayout;
+	private _rootView: ContentView;
 	private _subRootView: View;
 
 	public getRootView(): View {
@@ -1153,7 +1153,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 			console.log('onCreate savedInstanceState', rootViewId, this._rootView, this._subRootView);
 			if (rootViewId !== -1 && activityRootViewsMap.has(rootViewId)) {
 				this._rootView = activityRootViewsMap.get(rootViewId)?.get();
-				this._subRootView = this._rootView.getChildAt(0);
+				this._subRootView = this._rootView.content;
 			}
 		}
 
@@ -1380,10 +1380,11 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 	// 3. Livesync if rootView has no custom _onLivesync. this._rootView should have been cleared upfront. Launch event should not fired
 	// 4. resetRootView method. this._rootView should have been cleared upfront. Launch event should not fired
 	private setActivityContent(activity: androidx.appcompat.app.AppCompatActivity, savedInstanceState: android.os.Bundle, fireLaunchEvent: boolean): void {
-		const rootView = (this._rootView = new GridLayout());
+		const rootView = new ContentView();
 		activityRootViewsMap.set(rootView._domId, new WeakRef(rootView));
 		// setup view as styleScopeHost
 		rootView._setupAsRootView(activity);
+		this._rootView = rootView;
 		// sets root classes once rootView is ready...
 		Application.initRootView(rootView);
 		activity.setContentView(rootView.nativeViewProtected, new org.nativescript.widgets.CommonLayoutParams());
@@ -1406,10 +1407,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 			return;
 		}
 		this._subRootView = subRootView;
-		if (subRootView.parent) {
-			(subRootView.parent as GridLayout).removeChild(subRootView);
-		}
-		rootView.addChild(subRootView);
+		rootView.content = subRootView;
 	}
 }
 
