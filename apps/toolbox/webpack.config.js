@@ -13,7 +13,11 @@ module.exports = (env) => {
 		  })
 	})
 
-	return webpack.resolveConfig();
+	const config = webpack.resolveConfig();
+	Object.assign(config.resolve.alias, {
+		'@nativescript/core': '@akylas/nativescript'
+	})
+	return config;
 };
 
 
