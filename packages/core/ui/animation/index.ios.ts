@@ -628,10 +628,12 @@ export class Animation extends AnimationBase {
 		};
 		let finished = false;
 		const startTime = Date.now();
+		let finishedCalledOnce = false;
 		const finish = (animationDidFinish: boolean = true) => {
-			if (finished || (animationDidFinish && Date.now() - startTime < args.duration * 1000)) {
+			if (finished || (animationDidFinish && !finishedCalledOnce && Date.now() - startTime < args.duration * 1000)) {
 				//ignoring finished. Called to soon
 				// will be called again byt the CATransaction completion block
+				finishedCalledOnce = true;
 				return;
 			}
 			finished = true;
