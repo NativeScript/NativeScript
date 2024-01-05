@@ -402,6 +402,9 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 			return;
 		}
 		this._subRootView = subRootView;
+		if (subRootView.parent) {
+			subRootView.parent._removeView(subRootView);
+		}
 		(rootView as ContentView).content = subRootView;
 
 		if (!haveController) {

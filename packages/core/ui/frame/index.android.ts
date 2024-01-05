@@ -1406,6 +1406,9 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 			return;
 		}
 		this._subRootView = subRootView;
+		if (subRootView.parent) {
+			subRootView.parent._removeView(subRootView);
+		}
 		rootView.content = subRootView;
 	}
 }
