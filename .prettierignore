@@ -25,3 +25,5 @@ package.json
 *.scss
 *.sh
 !packages/webpack/templates/*.js
+
+/.nx/cache

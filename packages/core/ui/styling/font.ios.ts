@@ -13,6 +13,8 @@ interface FontDescriptor {
 	isItalic: boolean;
 }
 
+type FontVariationAxisType = 'kCGFontVariationAxisDefaultValue' | 'kCGFontVariationAxisMaxValue' | 'kCGFontVariationAxisMinValue' | 'kCGFontVariationAxisName';
+
 const uiFontCache = new Map<string, UIFont>();
 
 function computeFontCacheKey(fontDescriptor: FontDescriptor) {
@@ -33,20 +35,27 @@ function getUIFontCached(fontDescriptor: FontDescriptor) {
 	let uiFont = NativeScriptUtils.createUIFont(fontDescriptor as any);
 	if (fontDescriptor.fontVariationSettings?.length) {
 		let font = CGFontCreateWithFontName(uiFont.fontName);
-		const variationAxes: NSArray<NSDictionary<'kCGFontVariationAxisDefaultValue' | 'kCGFontVariationAxisMaxValue' | 'kCGFontVariationAxisMinValue' | 'kCGFontVariationAxisName', string | number>> = CGFontCopyVariationAxes(font);
-		const variationAxesNames: string[] = [];
-		for (const axis of variationAxes) {
-			variationAxesNames.push(String(axis.objectForKey('kCGFontVariationAxisName')));
-		}
-		const variationSettings = {};
-		for (const variationSetting of fontDescriptor.fontVariationSettings) {
-			const axisName = fuzzySearch(variationSetting.axis, variationAxesNames);
-			if (axisName?.length) {
-				variationSettings[axisName[0]] = variationSetting.value;
+		const variationAxes: NSArray<NSDictionary<FontVariationAxisType, string | number>> = CGFontCopyVariationAxes(font);
+		// This can be null if font doesn't support axes
+		if (variationAxes?.count) {
+			const variationSettings = NSMutableDictionary.new();
+			const variationAxesCount = variationAxes.count;
+			const variationAxesNames: string[] = [];
+
+			for (let i = 0, length = variationAxes.count; i < length; i++) {
+				variationAxesNames.push(String(variationAxes[i].objectForKey('kCGFontVariationAxisName')));
 			}
+
+			for (const variationSetting of fontDescriptor.fontVariationSettings) {
+				const axisName = fuzzySearch(variationSetting.axis, variationAxesNames);
+				if (axisName?.length) {
+					variationSettings.setValueForKey(variationSetting.value, axisName[0]);
+				}
+			}
+
+			font = CGFontCreateCopyWithVariations(font, variationSettings);
+			uiFont = CTFontCreateWithGraphicsFont(font, fontDescriptor.fontSize, null, null);
 		}
-		font = CGFontCreateCopyWithVariations(font, variationSettings as any);
-		uiFont = CTFontCreateWithGraphicsFont(font, fontDescriptor.fontSize, null, null);
 	}
 
 	uiFontCache.set(cacheKey, uiFont);

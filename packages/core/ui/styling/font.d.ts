@@ -9,7 +9,7 @@ export declare class Font extends FontBase {
 	public fontWeight: FontWeightType;
 	public fontSize: number;
 	public fontScale: number;
-	public fontVariationSettings?: FontVariationSettings[];
+	public fontVariationSettings?: FontVariationSettingsType[];
 
 	public isBold: boolean;
 	public isItalic: boolean;
@@ -24,7 +24,7 @@ export declare class Font extends FontBase {
 	public withFontWeight(weight: FontWeightType): Font;
 	public withFontSize(size: number): Font;
 	public withFontScale(scale: number): Font;
-	public withFontVariationSettings(variationSettings: FontVariationSettings[] | null): Font;
+	public withFontVariationSettings(variationSettings: FontVariationSettings[]): Font;
 
 	public static equals(value1: Font, value2: Font): boolean;
 }

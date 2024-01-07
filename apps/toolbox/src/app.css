@@ -222,3 +222,7 @@ Button {
     color: #ddd;
     background-color: #777;
 }
+
+.no-shadow {
+    box-shadow: none;
+}

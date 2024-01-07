@@ -9,7 +9,7 @@
             <!-- layouts -->
             <ScrollView height="100%" visibility="{{ selectedComponentType === 'layouts' ? 'visible' : 'collapsed' }}">
                 <StackLayout padding="20">
-									<StackLayout width="300" height="100" class="demo-component" boxShadow="{{ appliedBoxShadow }}" borderColor="{{ borderColor }}" borderWidth="{{ borderWidth }}" borderRadius="{{ borderRadius }}" background="{{ background }}" tap="{{ toggleAnimation }}">
+					<StackLayout width="300" height="100" class="demo-component" boxShadow="{{ appliedBoxShadow }}" borderColor="{{ borderColor }}" borderWidth="{{ borderWidth }}" borderRadius="{{ borderRadius }}" background="{{ background }}" tap="{{ toggleAnimation }}">
                         <Label text="StackLayout" />
                     </StackLayout>
 
@@ -40,9 +40,11 @@
             </GridLayout>
 
             <!-- buttons -->
-            <GridLayout rows="*" height="100%" visibility="{{ selectedComponentType === 'buttons' ? 'visible' : 'collapsed' }}">
+            <GridLayout rows="*,*" height="100%" visibility="{{ selectedComponentType === 'buttons' ? 'visible' : 'collapsed' }}">
 
                 <Button horizontalAlignment="center" verticalAlignment="center" class="demo-component" boxShadow="{{ appliedBoxShadow }}" borderColor="{{ borderColor }}" borderWidth="{{ borderWidth }}" borderRadius="{{ borderRadius }}" background="{{ background }}" tap="{{ toggleAnimation }}" text="button" />
+
+                <Button row="1" horizontalAlignment="center" verticalAlignment="center" class="demo-component no-shadow" text="button no shadow" />
 
             </GridLayout>
 

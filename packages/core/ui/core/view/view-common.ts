@@ -1192,12 +1192,24 @@ export const originYProperty = new Property<ViewCommon, number>({
 });
 originYProperty.register(ViewCommon);
 
+export const defaultVisualStateProperty = new Property<ViewCommon, string>({
+	name: 'defaultVisualState',
+	defaultValue: 'normal',
+	valueChanged(this: void, target, oldValue, newValue): void {
+		target.defaultVisualState = newValue || 'normal';
+		if (!target.visualState || target.visualState === oldValue) {
+			target._goToVisualState(target.defaultVisualState);
+		}
+	},
+});
+defaultVisualStateProperty.register(ViewCommon);
+
 export const isEnabledProperty = new Property<ViewCommon, boolean>({
 	name: 'isEnabled',
 	defaultValue: true,
 	valueConverter: booleanConverter,
 	valueChanged(this: void, target, oldValue, newValue): void {
-		target._goToVisualState(newValue ? 'normal' : 'disabled');
+		target._goToVisualState(newValue ? target.defaultVisualState : 'disabled');
 	},
 });
 isEnabledProperty.register(ViewCommon);

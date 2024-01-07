@@ -11,7 +11,7 @@ let fileAccess: IFileSystemAccess;
  */
 export function getFileAccess(): IFileSystemAccess {
 	if (!fileAccess) {
-		if (global.isAndroid && SDK_VERSION >= 29) {
+		if (__ANDROID__ && SDK_VERSION >= 29) {
 			fileAccess = new FileSystemAccess29();
 		} else {
 			fileAccess = new FileSystemAccess();
@@ -275,7 +275,7 @@ function getAndroidDirectory(value: AndroidDirectory): { path: string; column: a
 
 class Android {
 	createFile(options: { relativePath?: string; name: string; mime: string; directory: AndroidDirectory }): File {
-		if (!global.isAndroid) {
+		if (!__ANDROID__) {
 			throw new Error(`createFile is available on Android only!`);
 		}
 
@@ -326,7 +326,7 @@ export class File extends FileSystemEntity {
 			throw error;
 		};
 
-		if (global.isAndroid && copy) {
+		if (__ANDROID__ && copy) {
 			if (path.startsWith('content:')) {
 				const fileInfo = getFileAccess().getFile(path, onError);
 				// falls back to creating a temp file without a known extension.
@@ -897,7 +897,7 @@ export namespace knownFolders {
 
 	export namespace ios {
 		function _checkPlatform(knownFolderName: string) {
-			if (!global.isIOS) {
+			if (!__IOS__) {
 				throw new Error(`The "${knownFolderName}" known folder is available on iOS only!`);
 			}
 		}

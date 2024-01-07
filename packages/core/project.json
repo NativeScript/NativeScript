@@ -21,13 +21,7 @@
 			"outputs": ["{workspaceRoot}/dist/out-tsc"],
 			"options": {
 				"jestConfig": "packages/core/jest.config.ts",
-				"passWithNoTests": true,
 				"verbose": true
-			},
-			"configurations": {
-				"ci": {
-					"ci": true
-				}
 			}
 		},
 		"build": {

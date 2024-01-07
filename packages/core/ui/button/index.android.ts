@@ -119,7 +119,7 @@ export class Button extends ButtonBase {
 					switch (args.action) {
 						case TouchAction.up:
 						case TouchAction.cancel:
-							this._goToVisualState('normal');
+							this._goToVisualState(this.defaultVisualState);
 							break;
 						case TouchAction.down:
 							this._goToVisualState('highlighted');

@@ -2,7 +2,11 @@ import { Trace } from '../../trace';
 import { CoreTypes } from '../../core-types';
 import { Length } from './style-properties';
 
-export function cleanupImportantFlags(value: string, propertyName: string) {
+export function cleanupImportantFlags(value: unknown, propertyName: string) {
+	if (typeof value !== 'string') {
+		return '' + value;
+	}
+
 	const index = value?.indexOf('!important');
 	if (index >= 0) {
 		if (Trace.isEnabled()) {
@@ -36,24 +40,21 @@ export function parseCSSShorthand(value: string): {
 	const parts = value.trim().split(PARTS_RE);
 	const first = parts[0];
 
-	if (['', 'none'].includes(first)) {
-		return {
-			inset: false,
-			color: undefined,
-			values: [],
-		};
+	if (['', 'none', 'unset'].includes(first)) {
+		return null;
 	} else {
+		const invalidColors = ['inset', 'unset'];
 		const inset = parts.includes('inset');
 		const last = parts[parts.length - 1];
 		let color = 'black';
-		if (first && !isLength(first) && first !== 'inset') {
+		if (first && !isLength(first) && !invalidColors.includes(first)) {
 			color = first;
-		} else if (last && !isLength(last)) {
+		} else if (last && !isLength(last) && !invalidColors.includes(last)) {
 			color = last;
 		}
 
 		const values = parts
-			.filter((n) => n !== 'inset')
+			.filter((n) => !invalidColors.includes(n))
 			.filter((n) => n !== color)
 			.map((val) => {
 				try {

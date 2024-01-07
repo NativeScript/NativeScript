@@ -1,6 +1,6 @@
 ﻿import { Color } from '../../color';
 import { ViewBase } from '../core/view-base';
-import { FontStyleType, FontWeightType } from '../styling/font';
+import { FontStyleType, FontVariationSettingsType, FontWeightType } from '../styling/font';
 import { CoreTypes } from '../../core-types';
 
 /**
@@ -26,6 +26,11 @@ export class Span extends ViewBase {
 	 * Gets or sets the font weight of the span.
 	 */
 	public fontWeight: FontWeightType;
+
+	/**
+	 * Gets or sets the font variation settings of the span.
+	 */
+	public fontVariationSettings: FontVariationSettingsType[];
 
 	/**
 	 * Gets or sets text decorations for the span.

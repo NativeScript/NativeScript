@@ -3,7 +3,7 @@ import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
 import { CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssProperty } from '../core/properties';
 import { Style } from './style';
-import { Font, FontStyleType, FontWeightType } from './font';
+import { Font, FontStyleType, FontWeightType, FontVariationSettingsType } from './font';
 import { Background } from './background';
 
 export namespace Length {
@@ -101,6 +101,7 @@ export const fontWeightProperty: InheritedCssProperty<Style, FontWeightType>;
 export const backgroundInternalProperty: CssProperty<Style, Background>;
 export const fontInternalProperty: InheritedCssProperty<Style, Font>;
 export const fontScaleInternalProperty: InheritedCssProperty<Style, number>;
+export const fontVariationSettingsProperty: InheritedCssProperty<Style, FontVariationSettingsType[]>;
 
 export const androidElevationProperty: CssProperty<Style, number>;
 export const androidDynamicElevationOffsetProperty: CssProperty<Style, number>;

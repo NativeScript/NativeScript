@@ -210,6 +210,10 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 	_setNativeText(reset = false): void {
 		//
 	}
+
+	_getNativeTextTransform(value: CoreTypes.TextTransformType): any {
+		//
+	}
 }
 
 TextBaseCommon.prototype._isSingleLine = false;
@@ -221,7 +225,7 @@ export function isBold(fontWeight: FontWeightType): boolean {
 export const textProperty = new Property<TextBaseCommon, string>({
 	name: 'text',
 	defaultValue: '',
-	affectsLayout: global.isAndroid,
+	affectsLayout: __ANDROID__,
 });
 textProperty.register(TextBaseCommon);
 
@@ -282,7 +286,7 @@ textTransformProperty.register(Style);
 export const textShadowProperty = new CssProperty<Style, string | ShadowCSSValues>({
 	name: 'textShadow',
 	cssName: 'text-shadow',
-	affectsLayout: global.isIOS,
+	affectsLayout: __IOS__,
 	valueConverter: (value) => {
 		return parseCSSShadow(value);
 	},
@@ -292,7 +296,7 @@ textShadowProperty.register(Style);
 export const textStrokeProperty = new CssProperty<Style, string | StrokeCSSValues>({
 	name: 'textStroke',
 	cssName: 'text-stroke',
-	affectsLayout: global.isIOS,
+	affectsLayout: __IOS__,
 	valueConverter: (value) => {
 		return parseCSSStroke(value);
 	},
@@ -304,7 +308,7 @@ export const whiteSpaceProperty = new CssProperty<Style, CoreTypes.WhiteSpaceTyp
 	name: 'whiteSpace',
 	cssName: 'white-space',
 	defaultValue: 'initial',
-	affectsLayout: global.isIOS,
+	affectsLayout: __IOS__,
 	valueConverter: whiteSpaceConverter,
 });
 whiteSpaceProperty.register(Style);
@@ -314,7 +318,7 @@ export const textOverflowProperty = new CssProperty<Style, CoreTypes.TextOverflo
 	name: 'textOverflow',
 	cssName: 'text-overflow',
 	defaultValue: 'initial',
-	affectsLayout: global.isIOS,
+	affectsLayout: __IOS__,
 	valueConverter: textOverflowConverter,
 });
 textOverflowProperty.register(Style);
@@ -332,7 +336,7 @@ export const letterSpacingProperty = new InheritedCssProperty<Style, number>({
 	name: 'letterSpacing',
 	cssName: 'letter-spacing',
 	defaultValue: 0,
-	affectsLayout: global.isIOS,
+	affectsLayout: __IOS__,
 	valueConverter: (v) => parseFloat(v),
 });
 letterSpacingProperty.register(Style);
@@ -340,7 +344,7 @@ letterSpacingProperty.register(Style);
 export const lineHeightProperty = new InheritedCssProperty<Style, number>({
 	name: 'lineHeight',
 	cssName: 'line-height',
-	affectsLayout: global.isIOS,
+	affectsLayout: __IOS__,
 	valueConverter: (v) => parseFloat(v),
 });
 lineHeightProperty.register(Style);

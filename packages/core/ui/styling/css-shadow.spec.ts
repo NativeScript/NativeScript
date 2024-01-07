@@ -6,12 +6,7 @@ import { Color } from '../../color';
 describe('css-shadow', () => {
 	it('empty', () => {
 		const shadow = parseCSSShadow('');
-		expect(shadow.inset).toBe(false);
-		expect(shadow.offsetX).toBeUndefined();
-		expect(shadow.offsetY).toBeUndefined();
-		expect(shadow.blurRadius).toBeUndefined();
-		expect(shadow.spreadRadius).toBeUndefined();
-		expect(shadow.color).toBeUndefined();
+		expect(shadow).toBeNull();
 	});
 
 	it('1px 1px 2px black', () => {
@@ -137,11 +132,28 @@ describe('css-shadow', () => {
 
 	it('none', () => {
 		const shadow = parseCSSShadow('none');
+		expect(shadow).toBeNull();
+	});
+
+	it('unset', () => {
+		const shadow = parseCSSShadow('unset');
+		expect(shadow).toBeNull();
+	});
+
+	it('unset 5em 1em gold', () => {
+		// invalid shorthand should result in nothing being applied
+		const shadow = parseCSSShadow('unset 5em 1em gold');
+		expect(shadow).toBeNull();
+	});
+
+	it('5em 1em gold unset', () => {
+		// partially invalid shorthand should result in standard default fallback
+		const shadow = parseCSSShadow('5em 1em gold unset');
 		expect(shadow.inset).toBe(false);
-		expect(shadow.offsetX).toBeUndefined();
-		expect(shadow.offsetY).toBeUndefined();
-		expect(shadow.blurRadius).toBeUndefined();
+		expect(shadow.offsetX).toBe(5);
+		expect(shadow.offsetY).toBe(1);
+		expect(shadow.blurRadius).toEqual(CoreTypes.zeroLength);
 		expect(shadow.spreadRadius).toBeUndefined();
-		expect(shadow.color).toBeUndefined();
+		expect(shadow.color).toEqual(new Color('black'));
 	});
 });

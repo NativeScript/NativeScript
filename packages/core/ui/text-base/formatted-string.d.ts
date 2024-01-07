@@ -6,7 +6,7 @@ import { Span } from './span';
 import { ObservableArray } from '../../data/observable-array';
 import { ViewBase } from '../core/view-base';
 import { Color } from '../../color';
-import { FontStyleType, FontWeightType } from '../styling/font';
+import { FontStyleType, FontVariationSettingsType, FontWeightType } from '../styling/font';
 import { CoreTypes } from '../../core-types';
 
 /**
@@ -42,6 +42,11 @@ export class FormattedString extends ViewBase {
 	 * Gets or sets the font weight which will be used for all spans that doesn't have a specific value.
 	 */
 	public fontWeight: FontWeightType;
+
+	/**
+	 * Gets or sets the font variation settings which will be used for all spans that doesn't have a specific value.
+	 */
+	public fontVariationSettings: FontVariationSettingsType[];
 
 	/**
 	 * Gets or sets text decorations which will be used for all spans that doesn't have a specific value.

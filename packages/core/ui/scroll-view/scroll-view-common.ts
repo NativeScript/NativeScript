@@ -9,18 +9,23 @@ import { CoreTypes } from '../../core-types';
 
 @CSSType('ScrollView')
 export abstract class ScrollViewBase extends ContentView implements ScrollViewDefinition {
-	private _scrollChangeCount = 0;
 	public static scrollEvent = 'scroll';
 
 	public orientation: CoreTypes.OrientationType;
 	public scrollBarIndicatorVisible: boolean;
 	public isScrollEnabled: boolean;
 
+	private _addedScrollEvent = false;
+
 	public addEventListener(arg: string, callback: (data: EventData) => void, thisArg?: any): void {
+		const hasExistingScrollListeners: boolean = this.hasListeners(ScrollViewBase.scrollEvent);
+
 		super.addEventListener(arg, callback, thisArg);
 
-		if (arg === ScrollViewBase.scrollEvent) {
-			this._scrollChangeCount++;
+		// This indicates that a scroll listener was added for first time
+		if (!hasExistingScrollListeners && this.hasListeners(ScrollViewBase.scrollEvent)) {
+			this._addedScrollEvent = true;
+
 			if (this.nativeViewProtected) {
 				this.attachNative();
 			}
@@ -28,28 +33,29 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
 	}
 
 	public removeEventListener(arg: string, callback?: (data: EventData) => void, thisArg?: any): void {
+		const hasExistingScrollListeners: boolean = this.hasListeners(ScrollViewBase.scrollEvent);
+
 		super.removeEventListener(arg, callback, thisArg);
 
-		if (arg === ScrollViewBase.scrollEvent) {
-			if (this._scrollChangeCount > 0) {
-				this._scrollChangeCount--;
+		// This indicates that the final scroll listener was removed
+		if (hasExistingScrollListeners && !this.hasListeners(ScrollViewBase.scrollEvent)) {
+			this._addedScrollEvent = false;
 
-				if (this.nativeViewProtected && this._scrollChangeCount === 0) {
-					this.detachNative();
-				}
+			if (this.nativeViewProtected) {
+				this.detachNative();
 			}
 		}
 	}
 
 	initNativeView() {
 		super.initNativeView();
-		if (this._scrollChangeCount > 0) {
+		if (this._addedScrollEvent) {
 			this.attachNative();
 		}
 	}
 
 	public disposeNativeView() {
-		if (this._scrollChangeCount > 0) {
+		if (this._addedScrollEvent) {
 			this.detachNative();
 		}
 		super.disposeNativeView();

@@ -6,6 +6,10 @@ import { CoreTypes } from '../../core-types';
 export * from './text-field-common';
 
 export class TextField extends TextFieldBase {
+	nativeViewProtected: android.widget.EditText;
+
+	private _pendingTransformationMethod: android.text.method.TransformationMethod;
+
 	public _configureEditText(editText: android.widget.EditText) {
 		editText.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_NORMAL | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES | android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
 		editText.setLines(1);
@@ -17,43 +21,52 @@ export class TextField extends TextFieldBase {
 		this.notify({ eventName: TextField.returnPressEvent, object: this });
 	}
 
-	[secureProperty.setNative]() {
-		this.setSecureAndKeyboardType();
+	public disposeNativeView(): void {
+		this._pendingTransformationMethod = null;
+		super.disposeNativeView();
 	}
 
-	[keyboardTypeProperty.setNative]() {
-		this.setSecureAndKeyboardType();
+	_getNativeTextTransform(value: CoreTypes.TextTransformType): android.text.method.TransformationMethod {
+		const transformationMethod = super._getNativeTextTransform(value);
+
+		if (this.secure) {
+			this._pendingTransformationMethod = transformationMethod;
+			return null;
+		}
+
+		return transformationMethod;
 	}
 
 	setSecureAndKeyboardType(): void {
 		let inputType: number;
 
-		// Check for a passed in Number value
-		const value = +this.keyboardType;
-		if (typeof this.keyboardType !== 'boolean' && !isNaN(value)) {
-			this._setInputType(value);
-			return;
-		}
+		const nativeView = this.nativeTextViewProtected;
+		const numericKeyboardType = +this.keyboardType;
 
-		// Password variations are supported only for Text and Number classes.
-		if (this.secure) {
+		// Check for a passed in numeric value
+		if (typeof this.keyboardType !== 'boolean' && !isNaN(numericKeyboardType)) {
+			inputType = numericKeyboardType;
+		} else if (this.secure) {
+			// Password variations are supported only for Text and Number classes
 			if (this.keyboardType === 'number') {
 				inputType = android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD;
 			} else {
 				inputType = android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD;
 			}
+
+			this._pendingTransformationMethod = nativeView.getTransformationMethod();
 		} else {
-			// default
+			// Default
 			inputType = android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_NORMAL;
 
-			// add autocorrect flags
+			// Add autocorrect flags
 			if (this.autocorrect) {
 				inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_AUTO_COMPLETE;
 				inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_AUTO_CORRECT;
 				inputType = inputType & ~android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
 			}
 
-			// add autocapitalization type
+			// Add autocapitalization type
 			switch (this.autocapitalizationType) {
 				case 'words':
 					inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_CAP_WORDS; //8192 (0x00020000) 14th bit
@@ -68,8 +81,7 @@ export class TextField extends TextFieldBase {
 					break;
 			}
 
-			// add keyboardType flags.
-			// They override previous if set.
+			// Add keyboardType flags (they override previous if set)
 			switch (this.keyboardType) {
 				case 'datetime':
 					inputType = android.text.InputType.TYPE_CLASS_DATETIME | android.text.InputType.TYPE_DATETIME_VARIATION_NORMAL;
@@ -95,6 +107,23 @@ export class TextField extends TextFieldBase {
 		}
 
 		this._setInputType(inputType);
+
+		// Restore text transformation when secure is set back to false
+		// This also takes care of transformation issues when toggling secure while view is not editable
+		if (!this.secure && this._pendingTransformationMethod) {
+			if (this._pendingTransformationMethod != nativeView.getTransformationMethod()) {
+				nativeView.setTransformationMethod(this._pendingTransformationMethod);
+			}
+			this._pendingTransformationMethod = null;
+		}
+	}
+
+	[secureProperty.setNative]() {
+		this.setSecureAndKeyboardType();
+	}
+
+	[keyboardTypeProperty.setNative]() {
+		this.setSecureAndKeyboardType();
 	}
 
 	[whiteSpaceProperty.getDefault](): CoreTypes.WhiteSpaceType {

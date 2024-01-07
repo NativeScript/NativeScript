@@ -10,6 +10,8 @@ export function navigatingTo(args: EventData) {
 export class SampleData extends Observable {
 	minDate = new Date();
 	maxDate = new Date(2030, 7, 1);
+	hour = 8;
+	minute = 0;
 	displayDate = {
 		day: new Date().getDate(),
 		month: new Date().getMonth(),

@@ -864,7 +864,13 @@ export class View extends ViewCommon implements ViewDefinition {
 		return 0;
 	}
 	[zIndexProperty.setNative](value: number) {
-		this.nativeViewProtected.layer.zPosition = value;
+		const nativeView: NativeScriptUIView = <NativeScriptUIView>this.nativeViewProtected;
+
+		nativeView.layer.zPosition = value;
+		// Apply z-index to shadows as well
+		if (nativeView.outerShadowContainerLayer) {
+			nativeView.outerShadowContainerLayer.zPosition = value;
+		}
 	}
 
 	[backgroundInternalProperty.getDefault](): UIColor {
