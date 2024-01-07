@@ -1,7 +1,15 @@
 import { View } from '../../ui/core/view';
 
+declare namespace org {
+	namespace nativescript {
+		class Bootstrap {
+			static isEmbeddedNativeScript: boolean;
+		}
+	}
+}
+
 export function embedded(): boolean {
-	return true;
+	return org.nativescript.Bootstrap.isEmbeddedNativeScript;
 }
 
 let view: View | undefined;

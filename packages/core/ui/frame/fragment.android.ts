@@ -1,6 +1,5 @@
-import { getContentView, setContentView } from '../../ui/embedding';
-import { AndroidFragmentCallbacks, setFragmentCallbacks } from '.';
-import { View } from 'ui/core/view';
+import { embedded, getContentView } from '../../ui/embedding';
+import { setFragmentCallbacks } from '.';
 
 declare const com: any;
 
@@ -83,7 +82,10 @@ export function setFragmentClass(clazz: any) {
 		throw new Error('Fragment class already initialized');
 	}
 
-	attachEmbeddableFragmentCallbacks();
+	if (embedded()) {
+		attachEmbeddableFragmentCallbacks();
+	}
+
 	fragmentClass = clazz;
 }
 
@@ -93,7 +95,6 @@ function attachEmbeddableFragmentCallbacks() {
 			// init must at least be defined
 		},
 		onCreateView() {
-			console.log('!!!! VM: EmbeddableFragmentCallbacks: onCreateView');
 			return getContentView().nativeViewProtected;
 		},
 		onResume() {

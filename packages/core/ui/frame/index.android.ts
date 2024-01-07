@@ -16,9 +16,9 @@ import { _clearEntry, _clearFragment, _getAnimatedEntries, _reverseTransitions, 
 import { profile } from '../../profiling';
 import { android as androidUtils } from '../../utils/native-helper';
 import type { ExpandedEntry } from './fragment.transitions.android';
+import { ensureFragmentClass, fragmentClass } from './fragment.android';
 import { FragmentCallbacksImplementation } from './callbacks/fragment-callbacks';
 import { ActivityCallbacksImplementation } from './callbacks/activity-callbacks';
-import { ensureFragmentClass, fragmentClass } from './fragment.android';
 
 export * from './frame-common';
 export { setFragmentClass } from './fragment.android';
