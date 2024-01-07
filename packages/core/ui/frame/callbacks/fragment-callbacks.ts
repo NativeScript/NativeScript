@@ -88,6 +88,8 @@ export class FragmentCallbacksImplementation implements AndroidFragmentCallbacks
 		frame._resolvedPage = page;
 
 		if (page.parent === frame) {
+			frame._inheritStyles(page);
+
 			// If we are navigating to a page that was destroyed
 			// reinitialize its UI.
 			if (!page._context) {
