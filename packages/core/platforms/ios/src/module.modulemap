@@ -12,3 +12,8 @@ module UIViewNativeScript {
     header "UIView+NativeScript.h"
     export *
 }
+
+module NativeScriptCoreModuleInstaller {
+    header "NativeScriptCoreModuleInstaller.h"
+    export *
+}

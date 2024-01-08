@@ -1,0 +1,10 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+
+   <StackLayout>
+            <Button text="Create URL" tap="createURL" />
+            <Button text="Encode Text" tap="encode" />
+            <Button text="Decode Text" tap="decode" />
+            <Button text="Base64 Encode" tap="btoaFunc" />
+            <Button text="Base64 Decode" tap="atobFunc" />
+    </StackLayout>
+</Page>

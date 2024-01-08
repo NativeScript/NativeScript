@@ -25,6 +25,7 @@
         <Button text="visibility-vs-hidden" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="fs-helper" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="webview" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
+        <Button text="wintercg" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
       </StackLayout>
     </ScrollView>
   </StackLayout>

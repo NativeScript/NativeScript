@@ -1,0 +1,2 @@
+# Exposes NativeScript v8 headers to our module sources
+pod 'NativeScript', path: "../../node_modules/@nativescript/core/src-native/ios/NativeScript.podspec"

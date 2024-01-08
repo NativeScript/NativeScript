@@ -311,13 +311,16 @@ export function initGlobal() {
 		installPolyfills('ui-dialogs', ['alert', 'confirm', 'prompt', 'login', 'action']);
 
 		global.registerModule('text', () => require('../text'));
-		installPolyfills('text', ['TextDecoder', 'TextEncoder']);
+		installPolyfills('text', ['TextDecoder', 'TextEncoder', 'atob', 'btoa']);
 
 		global.registerModule('xhr', () => require('../xhr'));
 		installPolyfills('xhr', ['XMLHttpRequest', 'FormData', 'Blob', 'File', 'FileReader']);
 
 		global.registerModule('fetch', () => require('../fetch'));
 		installPolyfills('fetch', ['fetch', 'Headers', 'Request', 'Response']);
+
+		global.registerModule('url', () => require('../url'));
+		installPolyfills('url', ['URL']);
 
 		// global.registerModule('abortcontroller', () => require('../abortcontroller'));
 		// installPolyfills('abortcontroller', ['AbortController', 'AbortSignal']);

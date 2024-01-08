@@ -1,0 +1,19 @@
+[package]
+name = "nativescript-core"
+version = "0.1.0"
+edition = "2021"
+
+[build]
+rustflags = ["-Cpanic=abort", "-C target-cpu=native", "-C target-feature=-outline-atomics"]
+
+
+[lib]
+name = "nativescriptcore"
+crate-type = ["cdylib", "staticlib"]
+
+
+[dependencies]
+ada-url = {git = "https://github.com/triniwiz/ada-url-rust" , rev = "bc35ae9"}
+encoding_rs = "0.8.33"
+bytes = "1.5.0"
+base64 = "0.21.5"

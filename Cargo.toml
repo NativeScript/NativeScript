@@ -1,0 +1,18 @@
+[workspace]
+members = [
+    "crates/libs/*"
+]
+
+resolver = "2"
+
+#[dev.release]
+#panic = "abort"
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+opt-level = 3
+debug = false
+incremental = false
+strip = true
