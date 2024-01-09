@@ -820,12 +820,12 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 	[opacityProperty.setNative](value: number) {
 		const nativeView: NativeScriptUIView = <NativeScriptUIView>this.nativeViewProtected;
-		const updateSuspended = this._isPresentationLayerUpdateSuspended();
-		if (!updateSuspended) {
-			CATransaction.begin();
-		}
-		// Disable CALayer animatable property changes
-		CATransaction.setDisableActions(true);
+		// const updateSuspended = this._isPresentationLayerUpdateSuspended();
+		// if (!updateSuspended) {
+		// 	CATransaction.begin();
+		// }
+		// // Disable CALayer animatable property changes
+		// CATransaction.setDisableActions(true);
 
 		nativeView.alpha = value;
 		// Apply opacity value to shadows as well
@@ -833,10 +833,10 @@ export class View extends ViewCommon implements ViewDefinition {
 			nativeView.outerShadowContainerLayer.opacity = value;
 		}
 
-		CATransaction.setDisableActions(false);
-		if (!updateSuspended) {
-			CATransaction.commit();
-		}
+		// CATransaction.setDisableActions(false);
+		// if (!updateSuspended) {
+		// 	CATransaction.commit();
+		// }
 	}
 
 	[rotateProperty.getDefault](): number {
