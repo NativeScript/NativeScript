@@ -414,19 +414,19 @@ export class Animation extends AnimationBase {
 					break;
 				case Properties.width:
 				case Properties.height: {
+					const direction: string = animation.propertyName;
+					const isHeight: boolean = direction === 'height';
+					if (!parent) {
+						throw new Error(`cannot animate ${direction} on root view`);
+					}
+					const parentExtent: number = isHeight ? parent.getMeasuredHeight() : parent.getMeasuredWidth();
+					const asNumber = PercentLength.toDevicePixels(PercentLength.parse(toValue), parentExtent, parentExtent) / Screen.mainScreen.scale;
+					const currentBounds = nativeView.layer.bounds;
+					const extentX = isHeight ? currentBounds.size.width : asNumber;
+					const extentY = isHeight ? asNumber : currentBounds.size.height;
+					fromValue = NSValue.valueWithCGRect(currentBounds);
+					toValue = NSValue.valueWithCGRect(CGRectMake(currentBounds.origin.x, currentBounds.origin.y, extentX, extentY));
 					if (useCABasicAnimation) {
-						const direction: string = animation.propertyName;
-						const isHeight: boolean = direction === 'height';
-						if (!parent) {
-							throw new Error(`cannot animate ${direction} on root view`);
-						}
-						const parentExtent: number = isHeight ? parent.getMeasuredHeight() : parent.getMeasuredWidth();
-						const asNumber = PercentLength.toDevicePixels(PercentLength.parse(toValue), parentExtent, parentExtent) / Screen.mainScreen.scale;
-						const currentBounds = nativeView.layer.bounds;
-						const extentX = isHeight ? currentBounds.size.width : asNumber;
-						const extentY = isHeight ? asNumber : currentBounds.size.height;
-						fromValue = NSValue.valueWithCGRect(currentBounds);
-						toValue = NSValue.valueWithCGRect(CGRectMake(currentBounds.origin.x, currentBounds.origin.y, extentX, extentY));
 						animation._originalValue = view.height;
 						animation._propertyResetCallback = (value) => {
 							const prop = isHeight ? heightProperty : widthProperty;
@@ -435,7 +435,7 @@ export class Animation extends AnimationBase {
 						break;
 					}
 				}
-				// eslint-disable no-fallthrough
+				// eslint-disable-next-line no-fallthrough
 				default:
 					if (animation.property) {
 						// animation._originalValue = view.backgroundColor;
@@ -618,6 +618,7 @@ export class Animation extends AnimationBase {
 					iosBackground.drawBackgroundVisualEffects(animationInfo.target);
 					this.animateNestedLayerSizeUsingBasicAnimation(nativeView, args.toValue.CGRectValue, animationInfo, args /* nativeAnimation */);
 				}
+				// eslint-disable-next-line no-fallthrough
 				default:
 					applyAnimationProperty(animationInfo.target, animationInfo.property, animationInfo.value, setKeyFrame);
 					if (animationInfo.property.affectsLayout) {
@@ -683,6 +684,7 @@ export class Animation extends AnimationBase {
 			} else {
 				CATransaction.begin();
 				CATransaction.setAnimationTimingFunction(animationInfo.curve);
+				CATransaction.setAnimationDuration(args.duration);
 				CATransaction.setCompletionBlock(finish);
 				UIViewPropertyAnimator.runningPropertyAnimatorWithDurationDelayOptionsAnimationsCompletion(args.duration, args.delay, animationOptions, animate, finishCallback);
 				CATransaction.commit();
@@ -690,11 +692,13 @@ export class Animation extends AnimationBase {
 		} else {
 			if (isSpring) {
 				CATransaction.begin();
+				CATransaction.setAnimationDuration(args.duration);
 				CATransaction.setCompletionBlock(finish);
 				UIView.animateWithDurationDelayUsingSpringWithDampingInitialSpringVelocityOptionsAnimationsCompletion(args.duration, delay, 0.2, 0, UIViewAnimationOptions.CurveLinear | animationOptions, animate, finish);
 				CATransaction.commit();
 			} else {
 				CATransaction.begin();
+				CATransaction.setAnimationDuration(args.duration);
 				CATransaction.setAnimationTimingFunction(animationInfo.curve);
 				CATransaction.setCompletionBlock(finish);
 				UIView.animateWithDurationDelayOptionsAnimationsCompletion(args.duration, delay, animationOptions, animate, finish);
