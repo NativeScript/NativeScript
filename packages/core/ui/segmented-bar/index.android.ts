@@ -300,26 +300,28 @@ export class SegmentedBar extends SegmentedBarBase {
 	}
 	public setTabColor(index) {
 		try {
-			const tabWidget = this.nativeViewProtected.getTabWidget();
-			const unselectedTextColor = this.getColorForAndroid(this.color ?? '#6e6e6e');
-			const selectedTextColor = this.getColorForAndroid(this?.selectedTextColor ?? '#000000');
-			const unselectedBackgroundColor = this.getColorForAndroid(this?.backgroundColor ?? '#dbdbdb');
-			const selectedBackgroundColor = this.getColorForAndroid(this?.selectedBackgroundColor ?? this?.backgroundColor ?? 'blue');
+			const tabWidget = this.nativeViewProtected?.getTabWidget();
 			if (tabWidget) {
-				for (let i = 0; i < tabWidget.getTabCount(); i++) {
-					const view = tabWidget.getChildTabViewAt(i);
-					const item = this.items[i];
-					const textView = item?.nativeViewProtected;
-					view.setBackgroundColor(unselectedBackgroundColor);
-					if (textView) {
-						textView.setTextColor(unselectedTextColor);
-					}
-					if (index == i) {
-						view.setBackgroundColor(selectedBackgroundColor);
+				const unselectedTextColor = this.getColorForAndroid(this.color ?? '#6e6e6e');
+				const selectedTextColor = this.getColorForAndroid(this?.selectedTextColor ?? '#000000');
+				const unselectedBackgroundColor = this.getColorForAndroid(this?.backgroundColor ?? '#dbdbdb');
+				const selectedBackgroundColor = this.getColorForAndroid(this?.selectedBackgroundColor ?? this?.backgroundColor ?? 'blue');
+				if (tabWidget) {
+					for (let i = 0; i < tabWidget.getTabCount(); i++) {
+						const view = tabWidget.getChildTabViewAt(i);
+						const item = this.items[i];
+						const textView = item?.nativeViewProtected;
+						view.setBackgroundColor(unselectedBackgroundColor);
 						if (textView) {
-							textView.setTextColor(selectedTextColor);
+							textView.setTextColor(unselectedTextColor);
 						}
-						continue;
+						if (index == i) {
+							view.setBackgroundColor(selectedBackgroundColor);
+							if (textView) {
+								textView.setTextColor(selectedTextColor);
+							}
+							continue;
+						}
 					}
 				}
 			}
