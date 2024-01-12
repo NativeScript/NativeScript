@@ -51,8 +51,13 @@ function initializeNativeClasses(): void {
 
 		onTabChanged(id: string): void {
 			const owner = this.owner;
-			if (owner.shouldChangeSelectedIndex()) {
-				owner.selectedIndex = parseInt(id);
+			if (owner) {
+				setTimeout(() => {
+					owner.setTabColor(id);
+				});
+				if (owner.shouldChangeSelectedIndex()) {
+					owner.selectedIndex = parseInt(id);
+				}
 			}
 		}
 	}
@@ -290,6 +295,43 @@ export class SegmentedBar extends SegmentedBarBase {
 		const tabWidget = this.nativeViewProtected.getTabWidget();
 		if (tabWidget) {
 			tabWidget.setEnabled(value);
+		}
+	}
+	public setTabColor(index) {
+		try {
+			const tabWidget = this.nativeViewProtected.getTabWidget();
+			const unselectedTextColor = this.getColorForAndroid(this.color);
+			const selectedTextColor = this.getColorForAndroid(this?.selectedTextColor ?? this?.color);
+			const unselectedBackgroundColor = this.getColorForAndroid(this.backgroundColor);
+			const selectedBackgroundColor = this.getColorForAndroid(this?.selectedBackgroundColor ?? this?.backgroundColor);
+			if (tabWidget) {
+				for (let i = 0; i < tabWidget.getTabCount(); i++) {
+					const view = tabWidget.getChildTabViewAt(i);
+					const item = this.items[i];
+					const textView = item?.nativeViewProtected;
+					view.setBackgroundColor(unselectedBackgroundColor);
+					if (textView) {
+						textView.setTextColor(unselectedTextColor);
+					}
+					console.log('this.backgroundColor', this.backgroundColor);
+					if (index == i) {
+						view.setBackgroundColor(selectedBackgroundColor);
+						if (textView) {
+							textView.setTextColor(selectedTextColor);
+						}
+						continue;
+					}
+				}
+			}
+		} catch (e) {
+			console.error(e);
+		}
+	}
+	private getColorForAndroid(color: string | Color): number {
+		if (typeof color === 'string') {
+			return new Color(color).android;
+		} else if (color instanceof Color) {
+			return color.android;
 		}
 	}
 }
