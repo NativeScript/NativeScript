@@ -1,10 +1,11 @@
 import { Font } from '../styling/font';
-import { SegmentedBarItemBase, SegmentedBarBase, selectedIndexProperty, itemsProperty, selectedBackgroundColorProperty } from './segmented-bar-common';
+import { SegmentedBarItemBase, SegmentedBarBase, selectedIndexProperty, itemsProperty, selectedBackgroundColorProperty, selectedTextColorProperty } from './segmented-bar-common';
 import { isEnabledProperty } from '../core/view';
 import { colorProperty, fontInternalProperty, fontSizeProperty } from '../styling/style-properties';
 import { Color } from '../../color';
 import { layout } from '../../utils';
 import { SDK_VERSION } from '../../utils/constants';
+import { Trace } from '../../trace';
 
 export * from './segmented-bar-common';
 
@@ -300,10 +301,10 @@ export class SegmentedBar extends SegmentedBarBase {
 	public setTabColor(index) {
 		try {
 			const tabWidget = this.nativeViewProtected.getTabWidget();
-			const unselectedTextColor = this.getColorForAndroid(this.color);
-			const selectedTextColor = this.getColorForAndroid(this?.selectedTextColor ?? this?.color);
-			const unselectedBackgroundColor = this.getColorForAndroid(this.backgroundColor);
-			const selectedBackgroundColor = this.getColorForAndroid(this?.selectedBackgroundColor ?? this?.backgroundColor);
+			const unselectedTextColor = this.getColorForAndroid(this.color ?? '#6e6e6e');
+			const selectedTextColor = this.getColorForAndroid(this?.selectedTextColor ?? '#000000');
+			const unselectedBackgroundColor = this.getColorForAndroid(this?.backgroundColor ?? '#dbdbdb');
+			const selectedBackgroundColor = this.getColorForAndroid(this?.selectedBackgroundColor ?? this?.backgroundColor ?? 'blue');
 			if (tabWidget) {
 				for (let i = 0; i < tabWidget.getTabCount(); i++) {
 					const view = tabWidget.getChildTabViewAt(i);
@@ -313,7 +314,6 @@ export class SegmentedBar extends SegmentedBarBase {
 					if (textView) {
 						textView.setTextColor(unselectedTextColor);
 					}
-					console.log('this.backgroundColor', this.backgroundColor);
 					if (index == i) {
 						view.setBackgroundColor(selectedBackgroundColor);
 						if (textView) {
@@ -324,7 +324,7 @@ export class SegmentedBar extends SegmentedBarBase {
 				}
 			}
 		} catch (e) {
-			console.error(e);
+			Trace.error(e);
 		}
 	}
 	private getColorForAndroid(color: string | Color): number {
