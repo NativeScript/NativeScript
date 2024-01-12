@@ -2,8 +2,8 @@ import { Font } from '../styling/font';
 import { SegmentedBarItemBase, SegmentedBarBase, selectedIndexProperty, itemsProperty, selectedBackgroundColorProperty } from './segmented-bar-common';
 import { colorProperty, fontInternalProperty } from '../styling/style-properties';
 import { Color } from '../../color';
-import { Trace } from 'trace';
-import { Utils } from 'index';
+import { Trace } from '../../trace';
+import { Utils } from '../../index';
 export * from './segmented-bar-common';
 
 export class SegmentedBarItem extends SegmentedBarItemBase {
@@ -110,8 +110,7 @@ export class SegmentedBar extends SegmentedBarBase {
 	}
 	setSelectedTextColor(bar: UISegmentedControl) {
 		try {
-			this.selectedTextColor = this?.selectedTextColor ?? this?.color;
-			const selectedTextColor = this.selectedTextColor instanceof Color ? this.selectedTextColor.ios : new Color(this.selectedTextColor).ios;
+			const selectedTextColor = this.getColorForIOS(this?.selectedTextColor ?? this?.color ?? '#000000');
 			if (!selectedTextColor) {
 				Trace.write(`unable te set selectedTextColor`, Trace.categories.Error);
 			}
@@ -121,6 +120,13 @@ export class SegmentedBar extends SegmentedBarBase {
 			bar.setTitleTextAttributesForState(attrsSelected, UIControlState.Selected);
 		} catch (e) {
 			console.error(`SegmentedBar:`, e);
+		}
+	}
+	private getColorForIOS(color: string | Color): UIColor {
+		if (typeof color === 'string') {
+			return new Color(color).ios;
+		} else if (color instanceof Color) {
+			return color.ios;
 		}
 	}
 }
