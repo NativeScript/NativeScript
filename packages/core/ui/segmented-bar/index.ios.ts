@@ -2,7 +2,8 @@ import { Font } from '../styling/font';
 import { SegmentedBarItemBase, SegmentedBarBase, selectedIndexProperty, itemsProperty, selectedBackgroundColorProperty } from './segmented-bar-common';
 import { colorProperty, fontInternalProperty } from '../styling/style-properties';
 import { Color } from '../../color';
-import { iOSNativeHelper } from '../../utils';
+import { Trace } from 'trace';
+import { Utils } from 'index';
 export * from './segmented-bar-common';
 
 export class SegmentedBarItem extends SegmentedBarItemBase {
@@ -68,12 +69,12 @@ export class SegmentedBar extends SegmentedBarBase {
 	}
 
 	[selectedBackgroundColorProperty.getDefault](): UIColor {
-		const currentOsVersion = iOSNativeHelper.MajorVersion;
+		const currentOsVersion = Utils.ios.MajorVersion;
 
 		return currentOsVersion < 13 ? this.ios.tintColor : this.ios.selectedSegmentTintColor;
 	}
 	[selectedBackgroundColorProperty.setNative](value: UIColor | Color) {
-		const currentOsVersion = iOSNativeHelper.MajorVersion;
+		const currentOsVersion = Utils.ios.MajorVersion;
 		const color = value instanceof Color ? value.ios : value;
 		if (currentOsVersion < 13) {
 			this.ios.tintColor = color;
@@ -92,6 +93,8 @@ export class SegmentedBar extends SegmentedBarBase {
 		const attrs = currentAttrs ? currentAttrs.mutableCopy() : NSMutableDictionary.new();
 		attrs.setValueForKey(color, NSForegroundColorAttributeName);
 		bar.setTitleTextAttributesForState(attrs, UIControlState.Normal);
+		// Set the selected text color
+		this.setSelectedTextColor(bar);
 	}
 
 	[fontInternalProperty.getDefault](): Font {
@@ -104,6 +107,21 @@ export class SegmentedBar extends SegmentedBarBase {
 		const attrs = currentAttrs ? currentAttrs.mutableCopy() : NSMutableDictionary.new();
 		attrs.setValueForKey(font, NSFontAttributeName);
 		bar.setTitleTextAttributesForState(attrs, UIControlState.Normal);
+	}
+	setSelectedTextColor(bar: UISegmentedControl) {
+		try {
+			this.selectedTextColor = this?.selectedTextColor ?? this?.color;
+			const selectedTextColor = this.selectedTextColor instanceof Color ? this.selectedTextColor.ios : new Color(this.selectedTextColor).ios;
+			if (!selectedTextColor) {
+				Trace.write(`unable te set selectedTextColor`, Trace.categories.Error);
+			}
+			const selectedText = bar.titleTextAttributesForState(UIControlState.Selected);
+			const attrsSelected = selectedText ? selectedText.mutableCopy() : NSMutableDictionary.new();
+			attrsSelected.setValueForKey(selectedTextColor, NSForegroundColorAttributeName);
+			bar.setTitleTextAttributesForState(attrsSelected, UIControlState.Selected);
+		} catch (e) {
+			console.error(`SegmentedBar:`, e);
+		}
 	}
 }
 
@@ -122,6 +140,7 @@ class SelectionHandlerImpl extends NSObject {
 		const owner = this._owner?.deref();
 		if (owner) {
 			owner.selectedIndex = sender.selectedSegmentIndex;
+			owner.setSelectedTextColor(sender);
 		}
 	}
 
