@@ -165,7 +165,7 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
 			const backgroundDrawable = viewGroup.getBackground();
 			if (SDK_VERSION > 21 && backgroundDrawable) {
 				const newDrawable = tryCloneDrawable(backgroundDrawable, nativeView.getResources());
-				newDrawable.setColorFilter(color, android.graphics.PorterDuff.Mode.SRC_IN);
+				newDrawable.setColorFilter(new android.graphics.Paint(color).getColorFilter());
 				viewGroup.setBackground(newDrawable);
 			} else {
 				const stateDrawable = new android.graphics.drawable.StateListDrawable();
