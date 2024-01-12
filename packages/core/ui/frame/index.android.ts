@@ -1266,7 +1266,6 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 			}
 			this._rootView = null;
 			this._subRootView = null;
-			console.log('onDestroy');
 
 			// this may happen when the user changes the system theme
 			// In such case, isFinishing() is false (and isChangingConfigurations is true), and the app will start again (onCreate) with a savedInstanceState
