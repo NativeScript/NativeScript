@@ -39,10 +39,10 @@ export abstract class SegmentedBarBase extends View implements SegmentedBarDefin
 	}
 
 	public get selectedTextColor(): Color {
-		return this.style.selectedBackgroundColor;
+		return this.style.selectedTabTextColor;
 	}
 	public set selectedTextColor(value: Color) {
-		this.style.selectedBackgroundColor = value;
+		this.style.selectedTabTextColor = value;
 	}
 
 	public _addArrayFromBuilder(name: string, value: Array<any>): void {
