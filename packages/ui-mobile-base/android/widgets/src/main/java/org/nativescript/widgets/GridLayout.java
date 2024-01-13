@@ -56,8 +56,8 @@ public class GridLayout extends LayoutBase {
 		}
 	}
 
-	public void addRow(int value, GridUnitType type) {
-		ItemSpec itemSpec = new ItemSpec(value, type);
+	public void addRow(ItemSpec itemSpec) {
+		validateItemSpec(itemSpec);
 		itemSpec.owner = this;
 		this._rows.add(itemSpec);
 
@@ -67,8 +67,12 @@ public class GridLayout extends LayoutBase {
 		this.requestLayout();
 	}
 
-	public void addColumn(int value, GridUnitType type) {
-		ItemSpec itemSpec = new ItemSpec(value, type);
+	public void addRow(int value, GridUnitType type) {
+		addRow(new ItemSpec(value, type));
+	}
+
+	public void addColumn(ItemSpec itemSpec) {
+		validateItemSpec(itemSpec);
 		itemSpec.owner = this;
 		this._cols.add(itemSpec);
 
@@ -76,6 +80,10 @@ public class GridLayout extends LayoutBase {
 		this.helper.columns.add(columnGroup);
 
 		this.requestLayout();
+	}
+
+	public void addColumn(int value, GridUnitType type) {
+		addColumn(new ItemSpec(value, type));
 	}
 
 	public void addRowsFromJSON(String value) {
