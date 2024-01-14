@@ -3,6 +3,7 @@ import { CoreTypes } from '../../core-types';
 import { View, CustomLayoutView, AddChildFromBuilder } from '../core/view';
 import { booleanConverter, getViewById } from '../core/view-base';
 import { Property } from '../core/properties';
+import { profile } from 'profiling';
 
 export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefinition, AddChildFromBuilder {
 	private _subViews = new Array<View>();
@@ -42,6 +43,7 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
 		//Overridden
 	}
 
+	@profile()
 	public addChild(child: View): void {
 		// TODO: Do we need this method since we have the core logic in the View implementation?
 		this._subViews.push(child);
@@ -49,12 +51,14 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
 		this._registerLayoutChild(child);
 	}
 
+	@profile
 	public insertChild(child: View, atIndex: number): void {
 		this._subViews.splice(atIndex, 0, child);
 		this._addView(child, atIndex);
 		this._registerLayoutChild(child);
 	}
 
+	@profile
 	public removeChild(child: View): void {
 		this._removeView(child);
 
