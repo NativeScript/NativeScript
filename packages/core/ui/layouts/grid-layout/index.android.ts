@@ -52,9 +52,11 @@ export class GridLayout extends GridLayoutBase {
 	public initNativeView(): void {
 		super.initNativeView();
 		// Update native GridLayout
-		const jsonRows = JSON.stringify(this.rowsInternal.map((itemSpec: ItemSpec) => itemSpec.toJSON()).filter((j) => !!j));
-		const jsonColumns = JSON.stringify(this.columnsInternal.map((itemSpec: ItemSpec) => itemSpec.toJSON()).filter((j) => !!j));
-		this.nativeViewProtected.addRowsAndColumnsFromJSON(jsonRows, jsonColumns);
+		if (this.rowsInternal.length || this.columnsInternal.length) {
+			const jsonRows = JSON.stringify(this.rowsInternal.map((itemSpec: ItemSpec) => itemSpec.toJSON()).filter((j) => !!j));
+			const jsonColumns = JSON.stringify(this.columnsInternal.map((itemSpec: ItemSpec) => itemSpec.toJSON()).filter((j) => !!j));
+			this.nativeViewProtected.addRowsAndColumnsFromJSON(jsonRows, jsonColumns);
+		}
 	}
 
 	public resetNativeView() {
