@@ -1061,7 +1061,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 			// which is only possible by setting reusable = true. Adding it either way for feature flag safety
 			if (this.reusable) {
 				if (this.parent && !this._isAddedToNativeVisualTree) {
-					const nativeIndex = this.parent._childIndexToNativeChildIndex(atIndex);
+					const nativeIndex = atIndex !== undefined ? this.parent._childIndexToNativeChildIndex(atIndex) : atIndex;
 					this._isAddedToNativeVisualTree = this.parent._addViewToNativeVisualTree(this, nativeIndex);
 				}
 			}
@@ -1136,7 +1136,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		this.setNativeView(nativeView);
 
 		if (this.parent) {
-			const nativeIndex = this.parent._childIndexToNativeChildIndex(atIndex);
+			const nativeIndex = atIndex !== undefined ? this.parent._childIndexToNativeChildIndex(atIndex) : undefined;
 			this._isAddedToNativeVisualTree = this.parent._addViewToNativeVisualTree(this, nativeIndex);
 		}
 
