@@ -603,20 +603,17 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		} else if (!this.disableCss) {
 			this._cssState.onLoaded();
 		}
-		this._resumeNativeUpdates(SuspendType.Loaded);
 
 		this.eachChild((child) => {
 			this.loadView(child);
-
 			return true;
 		});
+		this._resumeNativeUpdates(SuspendType.Loaded, false, this.parent?.mSuspendRequestLayout);
 		setupAccessibleView(<any>this);
 
-		// we remove suspend before going through children so that
-		// if children ask for a layout we propagate it
 		this.suspendRequestLayout = false;
 
-		if (this.isLayoutRequestNeeded) {
+		if (!this.parent?.mSuspendRequestLayout && this.isLayoutRequestNeeded) {
 			this.requestLayout();
 		}
 		this._emit(ViewBase.loadedEvent);
@@ -650,14 +647,29 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		}
 	}
 
-	public _suspendNativeUpdates(type: SuspendType): void {
+	public _suspendNativeUpdates(type: SuspendType, recursive = false, shouldSuspendRequestLayout = false): void {
+		if (shouldSuspendRequestLayout) {
+			this.suspendRequestLayout = true;
+		}
 		if (type) {
 			this._suspendNativeUpdatesCount = this._suspendNativeUpdatesCount | type;
 		} else {
 			this._suspendNativeUpdatesCount++;
 		}
+		if (recursive) {
+			this.eachChild((child) => {
+				child._suspendNativeUpdates(type, recursive, shouldSuspendRequestLayout);
+				return true;
+			});
+		}
 	}
-	public _resumeNativeUpdates(type: SuspendType): void {
+	public _resumeNativeUpdates(type: SuspendType, recursive = false, preventRequestLayout = false, shouldResumeRequestLayout = false): void {
+		if (recursive) {
+			this.eachChild((child) => {
+				child._resumeNativeUpdates(type, recursive, true, shouldResumeRequestLayout);
+				return true;
+			});
+		}
 		if (type) {
 			this._suspendNativeUpdatesCount = this._suspendNativeUpdatesCount & ~type;
 		} else {
@@ -666,9 +678,11 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 			}
 			this._suspendNativeUpdatesCount--;
 		}
-
+		if (shouldResumeRequestLayout) {
+			this.suspendRequestLayout = false;
+		}
 		if (!this._suspendNativeUpdatesCount) {
-			this.onResumeNativeUpdates();
+			this.onResumeNativeUpdates(preventRequestLayout);
 		}
 	}
 
@@ -1338,9 +1352,9 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		}
 	}
 
-	public onResumeNativeUpdates(): void {
+	public onResumeNativeUpdates(preventRequestLayout = false): void {
 		// Apply native setters...
-		initNativeView(this, undefined, undefined);
+		initNativeView(this, preventRequestLayout);
 	}
 
 	public toString(): string {
