@@ -57,7 +57,6 @@ public class GridLayout extends LayoutBase {
 	}
 
 	public void addRow(ItemSpec itemSpec) {
-		validateItemSpec(itemSpec);
 		itemSpec.owner = this;
 		this._rows.add(itemSpec);
 
@@ -72,7 +71,6 @@ public class GridLayout extends LayoutBase {
 	}
 
 	public void addColumn(ItemSpec itemSpec) {
-		validateItemSpec(itemSpec);
 		itemSpec.owner = this;
 		this._cols.add(itemSpec);
 
