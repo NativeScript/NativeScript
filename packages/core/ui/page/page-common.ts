@@ -102,7 +102,7 @@ export class PageBase extends ContentView {
 	}
 
 	get frame(): Frame {
-		return <Frame>this.parent;
+		return isFrame(this.parent) ? <Frame>this.parent : null;
 	}
 
 	private createNavigatedData(eventName: string, isBackNavigation: boolean): NavigatedData {
