@@ -199,7 +199,7 @@ class UIViewControllerImpl extends UIViewController {
 		const navigationController = this.navigationController;
 		const frame: Frame = navigationController ? (<any>navigationController).owner : null;
 		// Skip navigation events if modal page is shown.
-		if (!owner._presentedViewController && frame) {
+		if (frame) {
 			const newEntry: BackstackEntry = this[ENTRY];
 
 			// frame.setCurrent(...) will reset executing context so retrieve it here
