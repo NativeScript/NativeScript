@@ -80,15 +80,6 @@ export class PageBase extends ContentView {
 		return this;
 	}
 
-	public _parentChanged(oldParent: View): void {
-		const newParent = this.parent;
-		if (newParent && !isFrame(newParent)) {
-			throw new Error(`Page can only be nested inside Frame. New parent: ${newParent}`);
-		}
-
-		super._parentChanged(oldParent);
-	}
-
 	public _addChildFromBuilder(name: string, value: any) {
 		if (value.constructor.name === 'ActionBar') {
 			this.actionBar = value;
