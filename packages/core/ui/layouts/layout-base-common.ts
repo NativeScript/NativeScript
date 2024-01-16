@@ -3,7 +3,7 @@ import { CoreTypes } from '../../core-types';
 import { View, CustomLayoutView, AddChildFromBuilder } from '../core/view';
 import { booleanConverter, getViewById } from '../core/view-base';
 import { Property } from '../core/properties';
-import { profile } from 'profiling';
+import { profile } from '../../profiling';
 
 export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefinition, AddChildFromBuilder {
 	private _subViews = new Array<View>();
