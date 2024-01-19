@@ -602,12 +602,17 @@ public class Async {
 	public static class File {
 
 		static void updateValue(Context context, Uri uri) {
-			ContentValues values = new ContentValues();
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-				context.getContentResolver().update(uri, values, null);
-			} else {
-				context.getContentResolver().update(uri, values, null, null);
+			try {
+				ContentValues values = new ContentValues();
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+					context.getContentResolver().update(uri, values, null);
+				} else {
+					context.getContentResolver().update(uri, values, null, null);
+				}
+			} catch (Exception exception){
+				Log.e(TAG, "Failed to updateValue: " + exception.getMessage());
 			}
+			
 		}
 
 		public static void append(final String path, final byte[] content, final CompleteCallback callback, final Object context) {

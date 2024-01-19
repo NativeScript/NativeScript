@@ -133,16 +133,19 @@ class UIViewControllerImpl extends UIViewController {
 		if (frame) {
 			frame._resolvedPage = owner;
 
-			if (!owner.parent) {
-				owner._frame = frame;
-				if (!frame._styleScope) {
-					// Make sure page will have styleScope even if frame don't.
-					owner._updateStyleScope();
-				}
+			if (owner.parent === frame) {
+				frame._inheritStyles(owner);
+			} else {
+				if (!owner.parent) {
+					if (!frame._styleScope) {
+						// Make sure page will have styleScope even if frame don't.
+						owner._updateStyleScope();
+					}
 
-				frame._addView(owner);
-			} else if (owner.parent !== frame) {
-				throw new Error('Page is already shown on another frame.');
+					frame._addView(owner);
+				} else {
+					throw new Error('Page is already shown on another frame.');
+				}
 			}
 
 			frame._updateActionBar(owner);
@@ -427,10 +430,6 @@ export class Page extends PageBase {
 		return this._ios;
 	}
 
-	get frame(): Frame {
-		return this._frame;
-	}
-
 	public layoutNativeView(left: number, top: number, right: number, bottom: number): void {
 		//
 	}
@@ -440,7 +439,7 @@ export class Page extends PageBase {
 	}
 
 	public _shouldDelayLayout(): boolean {
-		return this._frame && this._frame._animationInProgress;
+		return this.frame && this.frame._animationInProgress;
 	}
 
 	public onLoaded(): void {
@@ -469,7 +468,7 @@ export class Page extends PageBase {
 
 	public _updateStatusBarStyle(value?: string) {
 		const frame = this.frame;
-		if (this.frame && value) {
+		if (frame && value) {
 			const navigationController: UINavigationController = frame.ios.controller;
 			const navigationBar = navigationController.navigationBar;
 

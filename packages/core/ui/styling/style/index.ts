@@ -1,6 +1,6 @@
 import { Style as StyleDefinition } from '.';
 import { Color } from '../../../color';
-import { Font, FontStyleType, FontWeightType } from '../font';
+import { Font, FontStyleType, FontWeightType, FontVariationSettingsType } from '../font';
 import { Background } from '../background';
 import { ViewBase } from '../../core/view-base';
 import { LinearGradient } from '../../styling/linear-gradient';
@@ -156,6 +156,7 @@ export class Style extends Observable implements StyleDefinition {
 	public fontFamily: string;
 	public fontStyle: FontStyleType;
 	public fontWeight: FontWeightType;
+	public fontVariationSettings: FontVariationSettingsType[];
 	public font: string;
 
 	public maxLines: CoreTypes.MaxLinesType;
@@ -205,6 +206,7 @@ export class Style extends Observable implements StyleDefinition {
 
 	//SegmentedBar-specific props
 	public selectedBackgroundColor: Color;
+	public selectedTextColor: Color;
 
 	// Page-specific props
 	public statusBarStyle: 'light' | 'dark';

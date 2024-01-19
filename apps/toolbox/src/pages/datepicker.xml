@@ -16,5 +16,9 @@ year="{{displayDate?.year}}"
         <Switch checked="true" col="0" checkedChange="{{checkedChange}}" />
         <Label text="Show Time" col="1" class="m-l-10" />
       </GridLayout>
+      <GridLayout rows="auto,auto" columns="">
+          <Label text="Time Picker standalone:" row="0" col="0" class="m-t-10" />
+          <TimePicker row="1" hour="{{hour}}" minute="{{minute}}"></TimePicker>
+      </GridLayout>
     </StackLayout>
 </Page>

@@ -5,7 +5,7 @@ import { ObservableArray, ChangedData } from '../../data/observable-array';
 import { AddArrayFromBuilder, AddChildFromBuilder } from '../core/view';
 import { ViewBase } from '../core/view-base';
 import { Color } from '../../color';
-import { FontStyleType, FontWeightType } from '../styling/font';
+import { FontStyleType, FontVariationSettingsType, FontWeightType } from '../styling/font';
 import { CoreTypes } from '../../core-types';
 
 export class FormattedString extends ViewBase implements FormattedStringDefinition, AddArrayFromBuilder, AddChildFromBuilder {
@@ -43,6 +43,13 @@ export class FormattedString extends ViewBase implements FormattedStringDefiniti
 	}
 	set fontWeight(value: FontWeightType) {
 		this.style.fontWeight = value;
+	}
+
+	get fontVariationSettings(): FontVariationSettingsType[] {
+		return this.style.fontVariationSettings;
+	}
+	set fontVariationSettings(value: FontVariationSettingsType[]) {
+		this.style.fontVariationSettings = value;
 	}
 
 	get textDecoration(): CoreTypes.TextDecorationType {
@@ -153,6 +160,7 @@ export class FormattedString extends ViewBase implements FormattedStringDefiniti
 		style.on('fontSizeChange', this.onPropertyChange, this);
 		style.on('fontStyleChange', this.onPropertyChange, this);
 		style.on('fontWeightChange', this.onPropertyChange, this);
+		style.on('fontVariationSettingsChange', this.onPropertyChange, this);
 		style.on('textDecorationChange', this.onPropertyChange, this);
 		style.on('colorChange', this.onPropertyChange, this);
 		style.on('backgroundColorChange', this.onPropertyChange, this);
@@ -171,6 +179,7 @@ export class FormattedString extends ViewBase implements FormattedStringDefiniti
 		style.off('fontSizeChange', this.onPropertyChange, this);
 		style.off('fontStyleChange', this.onPropertyChange, this);
 		style.off('fontWeightChange', this.onPropertyChange, this);
+		style.off('fontVariationSettingsChange', this.onPropertyChange, this);
 		style.off('textDecorationChange', this.onPropertyChange, this);
 		style.off('colorChange', this.onPropertyChange, this);
 		style.off('backgroundColorChange', this.onPropertyChange, this);

@@ -45,6 +45,11 @@ export class SegmentedBar extends View implements AddChildFromBuilder, AddArrayF
 	selectedBackgroundColor: Color;
 
 	/**
+	 * Gets or sets the selected text color of the SegmentedBar component.
+	 */
+	selectedTextColor: Color;
+
+	/**
 	 * Gets or sets the items of the SegmentedBar.
 	 */
 	items: Array<SegmentedBarItem>;
@@ -90,3 +95,8 @@ export const selectedBackgroundColorProperty: CssProperty<Style, Color>;
  * Gets or sets the items dependency property of the SegmentedBar.
  */
 export const itemsProperty: Property<SegmentedBar, SegmentedBarItem[]>;
+
+/**
+ * Gets or sets the selected text color property of the SegmentedBar.
+ */
+export const selectedTextColorProperty: CssProperty<Style, Color>;
