@@ -138,7 +138,7 @@ export function getDistPath() {
 	}
 
 	// fallback to a generic platforms/<platform>/dist folder
-	return `platforms/${getPlatformName()}/dist`;
+	return `${env.buildPath ?? 'platforms'}/${getPlatformName()}/dist`;
 }
 
 /**

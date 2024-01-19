@@ -1,3 +1,48 @@
+## [8.6.2](https://github.com/NativeScript/NativeScript/compare/8.6.1-core...8.6.2) (2023-12-22)
+
+
+### Bug Fixes
+
+* **android:** proper change of input interaction mode programmatically ([#10434](https://github.com/NativeScript/NativeScript/issues/10434)) ([07d2129](https://github.com/NativeScript/NativeScript/commit/07d2129f9c9b387c238c9a7c2da29b5690bac986))
+* **android:** use nativeTextViewProtected in TextField ([#10450](https://github.com/NativeScript/NativeScript/issues/10450)) ([c5561d6](https://github.com/NativeScript/NativeScript/commit/c5561d60df0fb093c88a30e072ffdc10f31015b8))
+* **core:** inheritable property changes backstack propagation ([#10438](https://github.com/NativeScript/NativeScript/issues/10438)) ([48b1856](https://github.com/NativeScript/NativeScript/commit/48b1856d6cb024ee2a42082e6cf0b8923b0cd8f4))
+* **core:** safe important check ([#10455](https://github.com/NativeScript/NativeScript/issues/10455)) ([172d346](https://github.com/NativeScript/NativeScript/commit/172d3463a30cf1ee3727aaa42d6a33505332c6bf))
+* **css:** box-shadow none handling ([#10445](https://github.com/NativeScript/NativeScript/issues/10445)) ([6744009](https://github.com/NativeScript/NativeScript/commit/67440095f4fafd68da528e9a88e6a42a86136d9c))
+* **ios:** font variation settings not applied to labels ([#10429](https://github.com/NativeScript/NativeScript/issues/10429)) ([2cf166d](https://github.com/NativeScript/NativeScript/commit/2cf166da5974083d1f1431624a4ff06ad648913b))
+* **ios:** non-uniform border angle ([#10437](https://github.com/NativeScript/NativeScript/issues/10437)) ([aba3093](https://github.com/NativeScript/NativeScript/commit/aba3093e69004e44aa4afa1f245e7cfa3f6e7b97))
+* **ios:** ScrollView with listeners removed scroll delegate ([#10432](https://github.com/NativeScript/NativeScript/issues/10432)) ([9fae9c4](https://github.com/NativeScript/NativeScript/commit/9fae9c428185ed2f99b3710e3fe16cf060bc072b))
+* **ios:** shadow does not consider z-index ([#10433](https://github.com/NativeScript/NativeScript/issues/10433)) ([5a4bb7c](https://github.com/NativeScript/NativeScript/commit/5a4bb7c38cc694a312135e44022d5a4c8dc79d1c))
+* **time-picker:** properly handle 0 on hour and minutes with valueChanged ([#10460](https://github.com/NativeScript/NativeScript/issues/10460)) ([4762699](https://github.com/NativeScript/NativeScript/commit/4762699fa19fb81a766310724ad2cf0741b105c3))
+
+
+### Features
+
+* **core:** initRootView event ([#10442](https://github.com/NativeScript/NativeScript/issues/10442)) ([82e9c67](https://github.com/NativeScript/NativeScript/commit/82e9c67d3398c376be1641c5f23bf82a492a48c3))
+* **core:** new `defaultVisualState` property option to override 'normal' default visualState ([#10440](https://github.com/NativeScript/NativeScript/issues/10440)) ([31ed40c](https://github.com/NativeScript/NativeScript/commit/31ed40c17ab6ff026dde65c786a3c8ad8e625b3b))
+
+
+
+## [8.6.1](https://github.com/NativeScript/NativeScript/compare/5.0.18-webpack...8.6.1) (2023-11-02)
+
+
+### Bug Fixes
+
+* **android:** prevent rehydration on destroyed dialogs ([#10414](https://github.com/NativeScript/NativeScript/issues/10414)) ([7563549](https://github.com/NativeScript/NativeScript/commit/756354952c88c00794e586cbb316928b7f9dbbff))
+* **core:** box-shadow 'none' handling  ([#10405](https://github.com/NativeScript/NativeScript/issues/10405)) ([c23695c](https://github.com/NativeScript/NativeScript/commit/c23695c477dc1363e4f30fb45d3666c5b8101e4f))
+* **core:** font variation settings parser invalid axis ([#10427](https://github.com/NativeScript/NativeScript/issues/10427)) ([0847855](https://github.com/NativeScript/NativeScript/commit/08478556a9e39af9b1524c12e9e330d0a8aae9c7))
+* **core:** page frame reference not unset on native view disposal ([#10417](https://github.com/NativeScript/NativeScript/issues/10417)) ([22c21b7](https://github.com/NativeScript/NativeScript/commit/22c21b7e062b851a635d96aede9c936fb8e9749a))
+* **css:** prevent shorthand parse error on 'unset' and 'inset' ([#10424](https://github.com/NativeScript/NativeScript/issues/10424)) ([d70b48b](https://github.com/NativeScript/NativeScript/commit/d70b48bbe9c42044204e6887b18f95f628656d69))
+* **ios:** add/remove shadow for reusable views ([#10409](https://github.com/NativeScript/NativeScript/issues/10409)) ([ee87b52](https://github.com/NativeScript/NativeScript/commit/ee87b52ac323e220b7b154d27a55cbf4cdbd59c4))
+* **ios:** property mask on 'undefined' during view disposal ([#10404](https://github.com/NativeScript/NativeScript/issues/10404)) ([212d086](https://github.com/NativeScript/NativeScript/commit/212d086676a3246fd225f346af2ab920634a7643))
+* **ios:** shadow position after translate transform ([#10413](https://github.com/NativeScript/NativeScript/issues/10413)) ([c78ea79](https://github.com/NativeScript/NativeScript/commit/c78ea79f0f63f49506120aeef3bc603426c155b2))
+
+
+### Features
+
+* **android:** allow shared element transitions to work with ListView/CollectionView/Pager ([#10411](https://github.com/NativeScript/NativeScript/issues/10411)) ([e8c093d](https://github.com/NativeScript/NativeScript/commit/e8c093d7a2ca94edd2f5d35ca3725c7a27e74b74))
+
+
+
 # [8.6.0](https://github.com/NativeScript/NativeScript/compare/8.5.9-core...8.6.0-core) (2023-10-10)
 
 

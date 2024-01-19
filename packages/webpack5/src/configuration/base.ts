@@ -11,11 +11,11 @@ import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import TerserPlugin from 'terser-webpack-plugin';
 
+import { getProjectFilePath, getProjectTSConfigPath } from '../helpers/project';
 import { PlatformSuffixPlugin } from '../plugins/PlatformSuffixPlugin';
 import { applyFileReplacements } from '../helpers/fileReplacements';
 import { addCopyRule, applyCopyRules } from '../helpers/copyRules';
 import { WatchStatePlugin } from '../plugins/WatchStatePlugin';
-import { getProjectFilePath, getProjectTSConfigPath } from '../helpers/project';
 import { hasDependency } from '../helpers/dependencies';
 import { applyDotEnvPlugin } from '../helpers/dotEnv';
 import { env as _env, IWebpackEnv } from '../index';
@@ -84,7 +84,9 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// when using hidden-source-map, output source maps to the `platforms/{platformName}-sourceMaps` folder
 	if (env.sourceMap === 'hidden-source-map') {
 		const sourceMapAbsolutePath = getProjectFilePath(
-			`./platforms/${platform}-sourceMaps/[file].map[query]`
+			`./${
+				env.buildPath ?? 'platforms'
+			}/${platform}-sourceMaps/[file].map[query]`
 		);
 		const sourceMapRelativePath = relative(outputPath, sourceMapAbsolutePath);
 		config.output.sourceMapFilename(sourceMapRelativePath);
@@ -131,7 +133,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 	config.watchOptions({
 		ignored: [
-			`${getProjectFilePath('platforms')}/**`,
+			`${getProjectFilePath(env.buildPath ?? 'platforms')}/**`,
 			`${getProjectFilePath(env.appResourcesPath ?? 'App_Resources')}/**`,
 		],
 	});

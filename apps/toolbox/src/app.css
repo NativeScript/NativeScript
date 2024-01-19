@@ -238,3 +238,7 @@ Button {
     background-color: transparent;
     width: 400;
 }
+
+.no-shadow {
+    box-shadow: none;
+}

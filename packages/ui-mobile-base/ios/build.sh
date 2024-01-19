@@ -17,8 +17,7 @@ xcodebuild \
     SKIP_INSTALL=NO \
     -quiet
 
-# This needs to stay on 'vision' tag of core until Xcode includes in final release
-# Only available in Xcode beta 15 still
+# Only available with Xcode >= 15.2
 echo "Build for visionOS"
 xcodebuild \
     -project TNSWidgets/TNSWidgets.xcodeproj \

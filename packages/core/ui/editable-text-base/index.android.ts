@@ -1,5 +1,6 @@
 import { EditableTextBase as EditableTextBaseCommon, autofillTypeProperty, keyboardTypeProperty, returnKeyTypeProperty, editableProperty, autocapitalizationTypeProperty, autocorrectProperty, hintProperty, placeholderColorProperty, maxLengthProperty } from './editable-text-base-common';
 import { textTransformProperty, textProperty, resetSymbol } from '../text-base';
+import { isUserInteractionEnabledProperty } from '../core/view';
 import { Color } from '../../color';
 import { ad } from '../../utils';
 import { SDK_VERSION } from '../../utils/constants';
@@ -177,13 +178,8 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 			this._keyListenerCache = listener;
 		}
 
-		// clear these fields instead of clearing listener.
-		// this allows input Type to be changed even after editable is false.
 		if (!this.editable) {
-			nativeView.setFocusable(false);
-			nativeView.setFocusableInTouchMode(false);
-			nativeView.setLongClickable(false);
-			nativeView.setClickable(false);
+			nativeView.setKeyListener(null);
 		}
 	}
 
@@ -356,6 +352,9 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 		if (value) {
 			nativeView.setKeyListener(this._keyListenerCache);
 		} else {
+			// Dismiss input if property changes to false programmatically or user will keep typing
+			this.dismissSoftInput();
+
 			if (!this._keyListenerCache) {
 				this._keyListenerCache = nativeView.getKeyListener();
 			}
@@ -475,6 +474,20 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 			newFilters.push(lengthFilter);
 			this.nativeTextViewProtected.setFilters(newFilters);
 		}
+	}
+
+	[isUserInteractionEnabledProperty.setNative](value) {
+		const nativeView = this.nativeTextViewProtected;
+
+		// Dismiss input before view loses focus
+		if (!value) {
+			this.dismissSoftInput();
+		}
+
+		nativeView.setClickable(value);
+		nativeView.setFocusable(value);
+		nativeView.setFocusableInTouchMode(value);
+		nativeView.setLongClickable(value);
 	}
 
 	public setSelection(start: number, stop?: number) {
