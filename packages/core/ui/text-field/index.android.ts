@@ -40,7 +40,7 @@ export class TextField extends TextFieldBase {
 	setSecureAndKeyboardType(): void {
 		let inputType: number;
 
-		const nativeView = this.nativeViewProtected;
+		const nativeView = this.nativeTextViewProtected;
 		const numericKeyboardType = +this.keyboardType;
 
 		// Check for a passed in numeric value
