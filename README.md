@@ -57,7 +57,7 @@ We love you and your pull requests 🤗. Please follow our [contributing guide](
 ## Quick Links
 
 - [NativeScript Home](https://nativescript.org)
-- [NativeScript Tutorials]((https://docs.nativescript.org/tutorials/)
+- [NativeScript Tutorials](https://docs.nativescript.org/tutorials/)
 - [NativeScript documentation](https://docs.nativescript.org/)
 - JavaScript starter: https://nativescript.new/javascript
 - TypeScript starter: https://nativescript.new/typescript
