@@ -5,6 +5,7 @@ package org.nativescript.widgets;
 
 import android.content.Context;
 import android.view.View;
+import android.util.AttributeSet;
 
 /**
  * @author hhristov
@@ -13,7 +14,13 @@ import android.view.View;
 public class AbsoluteLayout extends LayoutBase {
 
 	public AbsoluteLayout(Context context) {
-		super(context);
+		this(context, null);
+	}
+	public AbsoluteLayout(Context context, AttributeSet attrs) {
+		this(context, attrs, 0);
+	}
+	public AbsoluteLayout(Context context, AttributeSet attrs, int defStyleAttr) {
+		super(context, attrs, defStyleAttr);
 	}
 
 	@Override
