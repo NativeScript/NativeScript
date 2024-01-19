@@ -1,5 +1,5 @@
-import dedent from 'ts-dedent';
 import { env } from '@nativescript/webpack';
+import dedent from 'ts-dedent';
 
 // de-indents strings so multi-line string literals can be used
 function cleanup(data: any[]) {
