@@ -1,3 +1,27 @@
+## [8.6.2](https://github.com/NativeScript/NativeScript/compare/8.6.1-core...8.6.2) (2023-12-22)
+
+
+### Bug Fixes
+
+* **android:** proper change of input interaction mode programmatically ([#10434](https://github.com/NativeScript/NativeScript/issues/10434)) ([07d2129](https://github.com/NativeScript/NativeScript/commit/07d2129f9c9b387c238c9a7c2da29b5690bac986))
+* **android:** use nativeTextViewProtected in TextField ([#10450](https://github.com/NativeScript/NativeScript/issues/10450)) ([c5561d6](https://github.com/NativeScript/NativeScript/commit/c5561d60df0fb093c88a30e072ffdc10f31015b8))
+* **core:** inheritable property changes backstack propagation ([#10438](https://github.com/NativeScript/NativeScript/issues/10438)) ([48b1856](https://github.com/NativeScript/NativeScript/commit/48b1856d6cb024ee2a42082e6cf0b8923b0cd8f4))
+* **core:** safe important check ([#10455](https://github.com/NativeScript/NativeScript/issues/10455)) ([172d346](https://github.com/NativeScript/NativeScript/commit/172d3463a30cf1ee3727aaa42d6a33505332c6bf))
+* **css:** box-shadow none handling ([#10445](https://github.com/NativeScript/NativeScript/issues/10445)) ([6744009](https://github.com/NativeScript/NativeScript/commit/67440095f4fafd68da528e9a88e6a42a86136d9c))
+* **ios:** font variation settings not applied to labels ([#10429](https://github.com/NativeScript/NativeScript/issues/10429)) ([2cf166d](https://github.com/NativeScript/NativeScript/commit/2cf166da5974083d1f1431624a4ff06ad648913b))
+* **ios:** non-uniform border angle ([#10437](https://github.com/NativeScript/NativeScript/issues/10437)) ([aba3093](https://github.com/NativeScript/NativeScript/commit/aba3093e69004e44aa4afa1f245e7cfa3f6e7b97))
+* **ios:** ScrollView with listeners removed scroll delegate ([#10432](https://github.com/NativeScript/NativeScript/issues/10432)) ([9fae9c4](https://github.com/NativeScript/NativeScript/commit/9fae9c428185ed2f99b3710e3fe16cf060bc072b))
+* **ios:** shadow does not consider z-index ([#10433](https://github.com/NativeScript/NativeScript/issues/10433)) ([5a4bb7c](https://github.com/NativeScript/NativeScript/commit/5a4bb7c38cc694a312135e44022d5a4c8dc79d1c))
+* **time-picker:** properly handle 0 on hour and minutes with valueChanged ([#10460](https://github.com/NativeScript/NativeScript/issues/10460)) ([4762699](https://github.com/NativeScript/NativeScript/commit/4762699fa19fb81a766310724ad2cf0741b105c3))
+
+
+### Features
+
+* **core:** initRootView event ([#10442](https://github.com/NativeScript/NativeScript/issues/10442)) ([82e9c67](https://github.com/NativeScript/NativeScript/commit/82e9c67d3398c376be1641c5f23bf82a492a48c3))
+* **core:** new `defaultVisualState` property option to override 'normal' default visualState ([#10440](https://github.com/NativeScript/NativeScript/issues/10440)) ([31ed40c](https://github.com/NativeScript/NativeScript/commit/31ed40c17ab6ff026dde65c786a3c8ad8e625b3b))
+
+
+
 ## [8.6.1](https://github.com/NativeScript/NativeScript/compare/5.0.18-webpack...8.6.1) (2023-11-02)
 
 
