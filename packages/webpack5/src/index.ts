@@ -66,6 +66,7 @@ let webpackMerges: any[] = [];
 let explicitUseConfig = false;
 let hasInitialized = false;
 let currentPlugin: string | undefined;
+
 /**
  * @internal
  */
@@ -86,6 +87,7 @@ export function clearCurrentPlugin() {
 }
 
 ////// PUBLIC API
+
 /**
  * The default flavor specific configs
  */
