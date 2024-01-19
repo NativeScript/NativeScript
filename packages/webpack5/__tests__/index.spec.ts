@@ -15,7 +15,7 @@ describe('@nativescript/webpack', () => {
 		expect(webpack.resolveConfig).toBeInstanceOf(Function);
 	});
 
-	it('applies chain configs', () => {
+	it('applies chain configs', async () => {
 		webpack.useConfig(false);
 
 		const chainFn = jest.fn();
@@ -26,13 +26,13 @@ describe('@nativescript/webpack', () => {
 
 		// chainFn should only be called when
 		// resolving a chainable config
-		const config = webpack.resolveChainableConfig();
+		const config = await webpack.resolveChainableConfig();
 
 		expect(chainFn).toHaveBeenCalledTimes(1);
 		expect(chainFn).toHaveBeenCalledWith(config, {});
 	});
 
-	it('applies chain configs in the right order', () => {
+	it('applies chain configs in the right order', async () => {
 		webpack.useConfig(false);
 		let lastCalled = false;
 
@@ -52,26 +52,29 @@ describe('@nativescript/webpack', () => {
 		});
 		webpack.chainWebpack(chainFnNormal);
 
-		webpack.resolveChainableConfig();
+		await webpack.resolveChainableConfig();
 	});
 
-	it('prints plugin name that has a chain function that throws an error', () => {
+	it('prints plugin name that has a chain function that throws an error', async () => {
 		webpack.useConfig(false);
 		webpack.setCurrentPlugin('test-plugin');
 		const chainFn = jest.fn(() => {
 			throw new Error('something wrong');
 		});
 		webpack.chainWebpack(chainFn);
+		let resolvable: Promise<any>;
 
 		// should not throw
-		expect(() => webpack.resolveChainableConfig()).not.toThrow();
+		expect(() => (resolvable = webpack.resolveChainableConfig())).not.toThrow();
+		expect(resolvable).resolves.toBeDefined();
+		await resolvable;
 
 		expect(
 			'Unable to apply chain function from: test-plugin'
 		).toHaveBeenWarned();
 	});
 
-	it('applies merge configs', () => {
+	it('applies merge configs', async () => {
 		const dummyEnv = { foo: true };
 		webpack.init(dummyEnv);
 		webpack.useConfig(false);
@@ -82,20 +85,20 @@ describe('@nativescript/webpack', () => {
 		// mergeFn should not be called yet
 		expect(mergeFn).not.toHaveBeenCalled();
 
-		const config = webpack.resolveChainableConfig();
+		const config = await webpack.resolveChainableConfig();
 
 		// mergeFn should not be called yet
 		expect(mergeFn).not.toHaveBeenCalled();
 
 		// mergeFn should only be called when
 		// resolving the final config
-		webpack.resolveConfig();
+		await webpack.resolveConfig();
 
 		expect(mergeFn).toHaveBeenCalledTimes(1);
 		expect(mergeFn).toHaveBeenCalledWith(config.toConfig(), dummyEnv);
 	});
 
-	it('merges mutate config', () => {
+	it('merges mutate config', async () => {
 		const dummyEnv = { foo: true };
 		webpack.init(dummyEnv);
 		webpack.useConfig(false);
@@ -104,12 +107,12 @@ describe('@nativescript/webpack', () => {
 			(config as any).mutated = true;
 		});
 
-		expect(webpack.resolveConfig()).toMatchObject({
+		expect(await webpack.resolveConfig()).toMatchObject({
 			mutated: true,
 		});
 	});
 
-	it('merges returned config', () => {
+	it('merges returned config', async () => {
 		const dummyEnv = { foo: true };
 		webpack.init(dummyEnv);
 		webpack.useConfig(false);
@@ -120,12 +123,12 @@ describe('@nativescript/webpack', () => {
 			};
 		});
 
-		expect(webpack.resolveConfig()).toMatchObject({
+		expect(await webpack.resolveConfig()).toMatchObject({
 			returned: true,
 		});
 	});
 
-	it('merges objects', () => {
+	it('merges objects', async () => {
 		const dummyEnv = { foo: true };
 		webpack.init(dummyEnv);
 		webpack.useConfig(false);
@@ -134,7 +137,7 @@ describe('@nativescript/webpack', () => {
 			object: true,
 		} as any);
 
-		expect(webpack.resolveConfig()).toMatchObject({
+		expect(await webpack.resolveConfig()).toMatchObject({
 			object: true,
 		});
 	});

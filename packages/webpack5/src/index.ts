@@ -169,7 +169,7 @@ export function mergeWebpack(
 /**
  * Resolve a new instance of the internal chain config with all chain functions applied.
  */
-export function resolveChainableConfig(): Config {
+export async function resolveChainableConfig(): Promise<Config> {
 	const config = new Config();
 
 	if (!explicitUseConfig) {
@@ -178,30 +178,30 @@ export function resolveChainableConfig(): Config {
 
 	// apply configs from dependencies
 	// todo: allow opt-out
-	applyExternalConfigs();
+	await applyExternalConfigs();
 
-	webpackChains
-		.splice(0)
-		.sort((a, b) => {
-			return a.order - b.order;
-		})
-		.forEach(({ chainFn, plugin }) => {
-			try {
-				chainFn(config, env);
-			} catch (err) {
-				if (plugin) {
-					// catch and print errors from plugins
-					return error(`
-						Unable to apply chain function from: ${plugin}.
-						Error is: ${err}
-					`);
-				}
+	const chains = webpackChains.splice(0).sort((a, b) => {
+		return a.order - b.order;
+	});
 
-				// otherwise throw - as the error is likely from the user config
-				// or missing env flags (eg. missing platform)
-				throw err;
+	for (const { chainFn, plugin } of chains) {
+		try {
+			await chainFn(config, env);
+		} catch (err) {
+			if (plugin) {
+				// catch and print errors from plugins
+				error(`
+					Unable to apply chain function from: ${plugin}.
+					Error is: ${err}
+				`);
+				continue;
 			}
-		});
+
+			// otherwise throw - as the error is likely from the user config
+			// or missing env flags (eg. missing platform)
+			throw err;
+		}
+	}
 
 	if (env.verbose) {
 		info('Resolved chainable config (before merges):');
@@ -216,12 +216,13 @@ export function resolveChainableConfig(): Config {
  *
  * @param chainableConfig Optional chain config to use.
  */
-export function resolveConfig(
-	chainableConfig = resolveChainableConfig()
-): webpack.Configuration {
+export async function resolveConfig(
+	chainableConfig: Config | Promise<Config> = resolveChainableConfig()
+): Promise<webpack.Configuration> {
 	if (!hasInitialized) {
 		throw error('resolveConfig() must be called after init()');
 	}
+	chainableConfig = await chainableConfig;
 
 	let config = chainableConfig.toConfig();
 

@@ -3,31 +3,39 @@ import fs from 'fs';
 
 import { getAllDependencies, getDependencyPath } from './dependencies';
 import { clearCurrentPlugin, setCurrentPlugin } from '../index';
+import { tryRequireThenImport } from './dynamicImports';
 import { info, warn } from './log';
 import * as lib from '../index';
 
 /**
  * @internal
  */
-export function applyExternalConfigs() {
-	getAllDependencies().forEach((dependency) => {
+export async function applyExternalConfigs() {
+	for (const dependency of getAllDependencies()) {
 		const packagePath = getDependencyPath(dependency);
 
 		if (!packagePath) {
-			return;
+			continue;
 		}
 
-		const configPath = path.join(packagePath, 'nativescript.webpack.js');
+		const configPaths = [
+			path.join(packagePath, 'nativescript.webpack.mjs'),
+			path.join(packagePath, 'nativescript.webpack.js'),
+		];
 
-		if (fs.existsSync(configPath)) {
+		const configPath = configPaths.find((_configPath) =>
+			fs.existsSync(_configPath)
+		);
+
+		if (configPath) {
 			info(`Discovered config: ${configPath}`);
 			setCurrentPlugin(dependency);
 			try {
-				const externalConfig = require(configPath);
+				const externalConfig = await tryRequireThenImport(configPath);
 
 				if (typeof externalConfig === 'function') {
 					info('Applying external config...');
-					externalConfig(lib);
+					await externalConfig(lib);
 				} else if (externalConfig) {
 					info('Merging external config...');
 					lib.mergeWebpack(externalConfig);
@@ -43,7 +51,7 @@ export function applyExternalConfigs() {
 				`);
 			}
 		}
-	});
+	}
 
 	clearCurrentPlugin();
 }
