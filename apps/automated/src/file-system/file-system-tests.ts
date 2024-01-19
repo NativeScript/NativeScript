@@ -306,14 +306,16 @@ function _testIOSSpecificKnownFolder(knownFolderName: string) {
 }
 
 export var testIOSSpecificKnownFolders = function () {
-	_testIOSSpecificKnownFolder('library');
-	_testIOSSpecificKnownFolder('developer');
-	_testIOSSpecificKnownFolder('desktop');
-	_testIOSSpecificKnownFolder('downloads');
-	_testIOSSpecificKnownFolder('movies');
-	_testIOSSpecificKnownFolder('music');
-	_testIOSSpecificKnownFolder('pictures');
-	_testIOSSpecificKnownFolder('sharedPublic');
+	if (__IOS__) {
+		_testIOSSpecificKnownFolder('library');
+		_testIOSSpecificKnownFolder('developer');
+		_testIOSSpecificKnownFolder('desktop');
+		_testIOSSpecificKnownFolder('downloads');
+		_testIOSSpecificKnownFolder('movies');
+		_testIOSSpecificKnownFolder('music');
+		_testIOSSpecificKnownFolder('pictures');
+		_testIOSSpecificKnownFolder('sharedPublic');
+	}
 };
 
 export var testGetEntities = function () {
