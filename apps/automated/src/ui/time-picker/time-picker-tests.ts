@@ -197,8 +197,22 @@ export class TimePickerTest extends testModule.UITest<timePickerModule.TimePicke
 		TKUnit.assertEqual(actualValue, expectedValue);
 	}
 
+	public testHourZeroFromLocalToNative() {
+		let expectedValue = 0;
+		this.testView.hour = expectedValue;
+		let actualValue = timePickerTestsNative.getNativeHour(this.testView);
+		TKUnit.assertEqual(actualValue, expectedValue);
+	}
+
 	public testMinuteFromLocalToNative() {
 		let expectedValue = 59;
+		this.testView.minute = expectedValue;
+		let actualValue = timePickerTestsNative.getNativeMinute(this.testView);
+		TKUnit.assertEqual(actualValue, expectedValue);
+	}
+
+	public testMinuteZeroFromLocalToNative() {
+		let expectedValue = 0;
 		this.testView.minute = expectedValue;
 		let actualValue = timePickerTestsNative.getNativeMinute(this.testView);
 		TKUnit.assertEqual(actualValue, expectedValue);

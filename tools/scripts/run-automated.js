@@ -8,7 +8,7 @@ const spawn = require('child_process').spawn
 const kill = require('tree-kill');
 const path = require('path');
 
-const TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
+const TIMEOUT_MS = 20 * 60 * 1000; // 20 minutes (is Github CI this slow to boot AVDs?)
 const workspaceDir = path.resolve(__dirname, '../..');
 const platform = process.argv[2];
 const spawned_process = spawn(
