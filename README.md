@@ -13,14 +13,14 @@
 
 </p>
 
-[NativeScript](http://www.nativescript.org) empowers you to access native APIs from JavaScript directly. Currently iOS and Android runtimes are provided for rich mobile development across a variety of diverse use cases.
+[NativeScript](http://www.nativescript.org) empowers you to access native APIs from JavaScript directly. Currently iOS, Android, and visionOS runtimes are provided for rich mobile development across a variety of diverse use cases.
 
 
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FNativeScript%2FNativeScript.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FNativeScript%2FNativeScript?ref=badge_large)
 
 ## Contribute
 
-1. [Setup your local development environment](https://docs.nativescript.org/environment-setup.html)
+1. [Setup your local development environment](https://docs.nativescript.org/setup/)
 
 2. Clone to contribute:
 
@@ -40,8 +40,8 @@ We love you and your pull requests 🤗. Please follow our [contributing guide](
 ## @nativescript/*
 
 - [@nativescript/core](https://github.com/NativeScript/NativeScript/tree/main/packages/core)
-  Core iOS/Android for NativeScript.
-- [@nativescript/types](https://www.npmjs.com/package/@nativescript/types)
+  Singular primitives offering an easy-to-use API surface for diverse iOS/visionOS/Android APIs implemented with NativeScript.
+- [@nativescript/types](https://github.com/NativeScript/NativeScript/tree/main/packages/types)
   Types for both iOS/Android below wrapped up as a convenience. *Most commonly used.*
 - [@nativescript/types-ios](https://github.com/NativeScript/NativeScript/tree/main/packages/types-ios)
   Types for iOS.
@@ -57,7 +57,7 @@ We love you and your pull requests 🤗. Please follow our [contributing guide](
 ## Quick Links
 
 - [NativeScript Home](https://nativescript.org)
-- [NativeScript Tutorials](https://docs.nativescript.org/tutorial/)
+- [NativeScript Tutorials](https://docs.nativescript.org/tutorials/)
 - [NativeScript documentation](https://docs.nativescript.org/)
 - JavaScript starter: https://nativescript.new/javascript
 - TypeScript starter: https://nativescript.new/typescript
@@ -73,16 +73,16 @@ We love you and your pull requests 🤗. Please follow our [contributing guide](
 
 Outside the source centralized in this repo, NativeScript consists of a few other source repos. Here are the major ones:
 
-- [iOS Runtime](https://github.com/NativeScript/ns-v8ios-runtime)
-	NativeScript iOS Runtime: Empowers JavaScript code to be executed on iOS devices written in a mix of C++, Objective-C, and Swift.
-- [Android Runtime](https://github.com/NativeScript/android-runtime)
-	NativeScript Android Runtim: Empowers JavaScript code to be executed on Android devices written in a mix of C++, Java and Kotlin.
-- [CLI](//github.com/NativeScript/nativescript-cli)
-	NativeScript command-line interface empowering you to create, build, and run apps using NativeScript.
-- [Docs](//github.com/NativeScript/docs-new)
-	NativeScript documentation available at <http://docs.nativescript.org/> written in Markdown.
+- [iOS and visionOS Runtime](https://github.com/NativeScript/ios)
+	Empowers JavaScript code to be executed on iOS and visionOS devices written in a mix of C++, Objective-C, and Swift.
+- [Android Runtime](https://github.com/NativeScript/android)
+	Empowers JavaScript code to be executed on Android devices written in a mix of C++, Java and Kotlin.
+- [CLI](https://github.com/NativeScript/nativescript-cli)
+	Command-line interface empowering you to create, build, and run apps using NativeScript.
+- [Docs](https://github.com/NativeScript/docs)
+	Documentation available at <http://docs.nativescript.org/> written in Markdown.
 - [Plugins](https://github.com/NativeScript/plugins)
-  A [plugin workspace](https://docs.nativescript.org/plugins/plugin-workspace-guide.html) with several useful plugins.
+  Various TSC managed plugins. Also a good reference is the [plugin marketplace](https://market.nativescript.org/) with several additional plugins.
 - [Firebase](https://github.com/NativeScript/firebase)
   Modular Firebase 🔥 implementation for supported platforms.
 - [ML Kit](https://github.com/NativeScript/mlkit)
