@@ -43,7 +43,7 @@
 	<key>DTXcodeBuild</key>
 	<string>15C500b</string>
 	<key>LSMinimumSystemVersion</key>
-	<string>14.0</string>
+	<string>10.15</string>
 	<key>UIDeviceFamily</key>
 	<array>
 		<integer>2</integer>
