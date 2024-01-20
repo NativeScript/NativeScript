@@ -3,7 +3,7 @@ import * as view from '@nativescript/core/ui/core/view';
 import * as testModule from '../../ui-test';
 import * as platform from '@nativescript/core/platform';
 import * as helper from '../../ui-helper';
-import { Builder, Page, Label, GridLayout } from '@nativescript/core';
+import { Builder, Page, Label, GridLayout, Utils } from '@nativescript/core';
 import { dipToDp, left, top, right, bottom, height, width, equal, closeEnough, lessOrCloseEnough, greaterOrCloseEnough, isLeftAlignedWith, isRightAlignedWith, isTopAlignedWith, isBottomAlignedWith, isLeftWith, isAboveWith, isRightWith, isBelowWith } from './layout-tests-helper';
 
 export class SafeAreaTests extends testModule.UITest<any> {
@@ -84,7 +84,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 	}
 
 	private layout_insets_top_action_bar_hidden_test(layout: view.View) {
-		const keyWindow = NativeScriptViewRegistry.getKeyWindow();
+		const keyWindow = Utils.ios.getWindow();
 		// const statusBarHeight = round(dipToDp(app.statusBarFrame.size.height));
 		// use window inset instead of status bar frame as that's unreliable on iOS 16+
 		const topInset = round(dipToDp(keyWindow ? keyWindow.safeAreaInsets.top : UIApplication.sharedApplication.keyWindow.safeAreaInsets.top));

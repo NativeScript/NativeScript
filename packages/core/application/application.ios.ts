@@ -129,7 +129,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		}
 		this._rootView = rootView;
 		// Attach to the existing iOS app
-		const window = NativeScriptViewRegistry.getKeyWindow();
+		const window = Utils.ios.getWindow();
 
 		if (!window) {
 			return;
@@ -244,7 +244,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		// particularly with SwiftUI app lifecycle based apps
 		if (!this._window) {
 			// Note: NativeScriptViewRegistry.getKeyWindow will always be used in SwiftUI app lifecycle based apps
-			this._window = NativeScriptViewRegistry.getKeyWindow();
+			this._window = Utils.ios.getWindow();
 		}
 
 		return this._window;

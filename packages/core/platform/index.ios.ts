@@ -1,7 +1,7 @@
 ﻿/* tslint:disable:class-name */
 
 import { platformNames } from './common';
-
+import { ios } from '../utils';
 export * from './common';
 
 type DeviceType = 'Phone' | 'Tablet' | 'Vision';
@@ -93,8 +93,8 @@ class MainScreen {
 	private get screen(): UIScreen {
 		if (!this._screen) {
 			// NOTE: may not want to cache this value with SwiftUI app lifecycle based apps (using NativeScriptViewRegistry) given the potential of multiple scenes
-			const registryWindow = NativeScriptViewRegistry.getKeyWindow();
-			this._screen = registryWindow ? registryWindow.screen : UIScreen.mainScreen;
+			const window = ios.getWindow();
+			this._screen = window ? window.screen : UIScreen.mainScreen;
 		}
 
 		return this._screen;

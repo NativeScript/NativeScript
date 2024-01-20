@@ -2,6 +2,7 @@ import SwiftUI
 import NativeScriptEmbedder
 import UIKit
 
+@available(iOS 14.0, *)
 struct NativeScriptMainWindow: Scene {
     var body: some Scene {
         #if os(visionOS)
@@ -37,6 +38,7 @@ struct NativeScriptMainWindow: Scene {
     }
 }
 
+@available(iOS 13.0, *)
 struct NativeScriptAppView: UIViewRepresentable {
     /// A closure that's called when the window is found.
     var found: ((UIWindowScene?) -> Void)
@@ -65,6 +67,7 @@ struct NativeScriptAppView: UIViewRepresentable {
     }
 }
 
+@available(iOS 13.0, *)
 @objc public class NativeScriptViewRegistry: NSObject, NativeScriptEmbedderDelegate {
     @objc public static let shared = NativeScriptViewRegistry()
     @objc public static let app = UIKitContainerCtrl()
@@ -72,6 +75,7 @@ struct NativeScriptAppView: UIViewRepresentable {
     @objc public let views = NSMutableDictionary()
     @objc public var callback: ((String, UIKitContainerView) -> Void)? = nil
     
+    @available(iOS 15.0, *)
     @objc public static func getKeyWindow() -> UIWindow? {
         return UIApplication
             .shared

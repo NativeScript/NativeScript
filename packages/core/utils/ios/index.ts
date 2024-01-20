@@ -1,6 +1,7 @@
 import { Color } from '../../color';
 import { Trace } from '../../trace';
 import { CORE_ANIMATION_DEFAULTS, getDurationWithDampingFromSpring } from '../common';
+import { SDK_VERSION } from '../constants';
 
 declare let UIImagePickerControllerSourceType: any;
 
@@ -63,16 +64,24 @@ export function getRootViewController(): UIViewController {
 }
 
 export function getWindow(): UIWindow {
+	let window: UIWindow;
+	if (SDK_VERSION >= 15) {
+		// UIWindowScene.keyWindow is only available 15+
+		window = NativeScriptViewRegistry.getKeyWindow();
+	}
+	if (window) {
+		return window;
+	}
 	const app = UIApplication.sharedApplication;
 	if (!app) {
 		return;
 	}
-	return NativeScriptViewRegistry.getKeyWindow() || app.keyWindow || (app.windows && app.windows.count > 0 && app.windows.objectAtIndex(0));
+	return app.keyWindow || (app.windows && app.windows.count > 0 && app.windows.objectAtIndex(0));
 }
 
 export function getMainScreen(): UIScreen {
-	const registryWindow = NativeScriptViewRegistry.getKeyWindow();
-	return registryWindow ? registryWindow.screen : UIScreen.mainScreen;
+	const window = getWindow();
+	return window ? window.screen : UIScreen.mainScreen;
 }
 
 export function setWindowBackgroundColor(value: string) {

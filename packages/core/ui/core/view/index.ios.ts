@@ -5,7 +5,7 @@ import { Point, View as ViewDefinition } from '.';
 import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty } from './view-common';
 import { ShowModalOptions, hiddenProperty } from '../view-base';
 import { Trace } from '../../../trace';
-import { layout, iOSNativeHelper } from '../../../utils';
+import { layout, ios as iosUtils, SDK_VERSION } from '../../../utils';
 import { isNumber } from '../../../utils/types';
 import { IOSHelper } from './view-helper';
 import { ios as iosBackground, Background } from '../../styling/background';
@@ -28,8 +28,6 @@ export * from '../properties';
 const PFLAG_FORCE_LAYOUT = 1;
 const PFLAG_MEASURED_DIMENSION_SET = 1 << 1;
 const PFLAG_LAYOUT_REQUIRED = 1 << 2;
-
-const majorVersion = iOSNativeHelper.MajorVersion;
 
 export class View extends ViewCommon implements ViewDefinition {
 	// @ts-ignore
@@ -120,7 +118,7 @@ export class View extends ViewCommon implements ViewDefinition {
 		const needsLayout = boundsChanged || (this._privateFlags & PFLAG_LAYOUT_REQUIRED) === PFLAG_LAYOUT_REQUIRED;
 		if (needsLayout) {
 			let position = { left, top, right, bottom };
-			if (this.nativeViewProtected && majorVersion > 10) {
+			if (this.nativeViewProtected && SDK_VERSION > 10) {
 				// on iOS 11+ it is possible to have a changed layout frame due to safe area insets
 				// get the frame and adjust the position, so that onLayout works correctly
 				const frame = this.nativeViewProtected.frame;
@@ -305,7 +303,7 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	protected applySafeAreaInsets(frame: CGRect): CGRect {
-		if (!__VISIONOS__ && majorVersion <= 10) {
+		if (!__VISIONOS__ && SDK_VERSION <= 10) {
 			return null;
 		}
 		if (this.iosIgnoreSafeArea) {
@@ -410,7 +408,7 @@ export class View extends ViewCommon implements ViewDefinition {
 		}
 
 		transform = CATransform3DTranslate(transform, this.translateX, this.translateY, 0);
-		transform = iOSNativeHelper.applyRotateTransform(transform, this.rotateX, this.rotateY, this.rotate);
+		transform = iosUtils.applyRotateTransform(transform, this.rotateX, this.rotateY, this.rotate);
 		transform = CATransform3DScale(transform, scaleX, scaleY, 1);
 
 		const needsTransform: boolean = !CATransform3DEqualToTransform(this.nativeViewProtected.layer.transform, transform) || (nativeView.outerShadowContainerLayer && !CATransform3DEqualToTransform(nativeView.outerShadowContainerLayer.transform, transform));
@@ -564,7 +562,7 @@ export class View extends ViewCommon implements ViewDefinition {
 
 		const cancelable = options.cancelable !== undefined ? !!options.cancelable : true;
 
-		if (majorVersion >= 13) {
+		if (SDK_VERSION >= 13) {
 			if (cancelable) {
 				// Listen for dismiss modal callback.
 				this._setupAdaptiveControllerDelegate(controller);
@@ -1070,8 +1068,8 @@ export class CustomLayoutView extends ContainerView {
 	nativeViewProtected: UIView;
 
 	createNativeView() {
-		const registryWindow = NativeScriptViewRegistry.getKeyWindow();
-		return UIView.alloc().initWithFrame(registryWindow ? registryWindow.screen.bounds : UIScreen.mainScreen.bounds);
+		const window = iosUtils.getWindow();
+		return UIView.alloc().initWithFrame(window ? window.screen.bounds : UIScreen.mainScreen.bounds);
 	}
 
 	get ios(): UIView {
