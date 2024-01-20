@@ -84,7 +84,7 @@ export class TouchManager {
 		const handleDown = (view?.touchAnimation && (<TouchAnimationOptions>view?.touchAnimation).down) || (TouchManager.animations && TouchManager.animations.down);
 		const handleUp = (view?.touchAnimation && (<TouchAnimationOptions>view?.touchAnimation).up) || (TouchManager.animations && TouchManager.animations.up);
 
-		if (__IOS__) {
+		if (__APPLE__) {
 			if (view?.ios?.addTargetActionForControlEvents) {
 				// can use UIControlEvents
 				if (!TouchManager.touchHandlers) {
@@ -301,7 +301,7 @@ export let TouchControlHandler: {
 ensureTouchControlHandlers();
 
 function ensureTouchControlHandlers() {
-	if (__IOS__) {
+	if (__APPLE__) {
 		@NativeClass
 		class TouchHandlerImpl extends NSObject {
 			private _owner: WeakRef<View>;
