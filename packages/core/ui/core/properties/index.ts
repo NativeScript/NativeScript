@@ -17,7 +17,7 @@ export interface PropertyOptions<T, U> {
 	readonly name: string;
 	readonly defaultValue?: U;
 	readonly affectsLayout?: boolean;
-	readonly equalityComparer?: (x: U, y: U) => boolean;
+	readonly equalityComparer?: (x: U, y: U, target: T) => boolean;
 	readonly valueChanged?: (target: T, oldValue: U, newValue: U) => void;
 	readonly valueConverter?: (value: string) => U;
 }
@@ -522,8 +522,7 @@ function setCssFunc<T extends Style, U>(property: CssProperty<T, U>, valueSource
 		}
 
 		const oldValue = <U>(key in this ? this[key] : defaultValue);
-		const changed: boolean = property.equalityComparer ? !property.equalityComparer(oldValue, value) : oldValue !== value;
-
+		const changed: boolean = property.equalityComparer ? !property.equalityComparer(oldValue, value, this) : oldValue !== value;
 		if (changed) {
 			const setNative = property.setNative;
 			const defaultValueKey = property.defaultValueKey;
@@ -611,7 +610,7 @@ export class CssProperty<T extends Style, U> implements CssProperty<T, U> {
 	public readonly defaultValue: U;
 
 	public affectsLayout?: boolean;
-	public equalityComparer?: (x: U, y: U) => boolean;
+	public equalityComparer?: (x: U, y: U, target: T) => boolean;
 	public valueChanged?: (target: T, oldValue: U, newValue: U) => void;
 	public valueConverter?: (value: string) => U;
 
@@ -959,7 +958,7 @@ function setCssInheritedFunc<T extends Style, U>(property: InheritedCssProperty<
 			this[key] = value;
 		}
 
-		const changed: boolean = property.equalityComparer ? !property.equalityComparer(oldValue, value) : oldValue !== value;
+		const changed: boolean = property.equalityComparer ? !property.equalityComparer(oldValue, value, this) : oldValue !== value;
 
 		if (changed) {
 			const setNative = property.setNative;
