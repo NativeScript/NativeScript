@@ -70,15 +70,11 @@ function convertToStringCommon(length: CoreTypes.LengthType | CoreTypes.PercentL
 }
 
 function toDevicePixelsCommon(length: CoreTypes.PercentLengthType, auto: number = Number.NaN, parentAvailableWidth: number = Number.NaN): number {
-	if (length == 'auto') {
-		// tslint:disable-line
+	if (length === 'auto' || !length) {
 		return auto;
 	}
 	if (typeof length === 'number') {
 		return layout.round(layout.toDevicePixels(length));
-	}
-	if (!length) {
-		return auto;
 	}
 	switch (length.unit) {
 		case 'px':
@@ -156,14 +152,13 @@ export namespace PercentLength {
 
 export namespace Length {
 	export function parse(fromValue: string | CoreTypes.LengthType): CoreTypes.LengthType {
-		if (fromValue == 'auto') {
-			// tslint:disable-line
-			return 'auto';
-		}
 		if (typeof fromValue === 'string') {
+			if (fromValue === 'auto') {
+				return 'auto';
+			}
 			let stringValue = fromValue.trim();
-			if (stringValue.indexOf('px') !== -1) {
-				stringValue = stringValue.replace('px', '').trim();
+			if (stringValue.endsWith('px')) {
+				stringValue = stringValue.slice(-2).trim();
 				const value: CoreTypes.px = parseFloat(stringValue);
 				if (isNaN(value) || !isFinite(value)) {
 					throw new Error(`Invalid value: ${stringValue}`);
@@ -415,7 +410,7 @@ interface Thickness {
 
 function parseThickness(value: string): Thickness {
 	if (typeof value === 'string') {
-		const arr = value.split(/[ ,]+/);
+		const arr = value.split(',');
 
 		let top: string;
 		let right: string;
@@ -546,10 +541,10 @@ export const scaleYProperty = new CssAnimationProperty<Style, number>({
 scaleYProperty.register(Style);
 
 function parseDIPs(value: string): CoreTypes.dip {
-	if (value.indexOf('px') !== -1) {
-		return layout.toDeviceIndependentPixels(parseFloat(value.replace('px', '').trim()));
+	if (value.endsWith('px')) {
+		return layout.toDeviceIndependentPixels(parseFloat(value.trim().slice(-2).trim()));
 	} else {
-		return parseFloat(value.replace('dip', '').trim());
+		return parseFloat(value.slice(-3).trim());
 	}
 }
 
