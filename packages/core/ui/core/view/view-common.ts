@@ -13,7 +13,7 @@ import { Trace } from '../../../trace';
 import { CoreTypes } from '../../../core-types';
 import { ViewHelper } from './view-helper';
 
-import { PercentLength } from '../../styling/style-properties';
+import { backgroundInternalProperty, PercentLength } from '../../styling/style-properties';
 
 import { observe as gestureObserve, GesturesObserver, GestureTypes, GestureEventData, fromString as gestureFromString, TouchManager, TouchAnimationOptions } from '../../gestures';
 
@@ -504,6 +504,15 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 				observers[i].disconnect();
 			}
 		}
+	}
+
+	public onResumeNativeUpdates(preventRequestLayout = false): void {
+		// special handling of backgroundInternal property to prevent too many slow updates
+		const background = this.style.backgroundInternal;
+		if (background?.isDirty) {
+			this._suspendedUpdates?.set('backgroundInternal', backgroundInternalProperty);
+		}
+		super.onResumeNativeUpdates(preventRequestLayout);
 	}
 
 	// START Style property shortcuts
