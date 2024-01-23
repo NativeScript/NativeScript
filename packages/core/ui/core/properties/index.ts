@@ -158,6 +158,14 @@ export function _evaluateCssCalcExpression(value: string) {
 	}
 }
 
+export function _getStoredClassDefaultPropertyValue(property, view, defaultBlock) {
+	let defaultValue = view.constructor.prototype[property.defaultValueKey];
+	if (!defaultValue) {
+		defaultValue = view.constructor.prototype[property.defaultValueKey] = defaultBlock();
+	}
+	return defaultValue;
+}
+
 function getPropertiesFromMap(map): Property<any, any>[] | CssProperty<any, any>[] {
 	const props = [];
 	Object.getOwnPropertySymbols(map).forEach((symbol) => props.push(map[symbol]));

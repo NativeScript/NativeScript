@@ -26,6 +26,7 @@ import * as Utils from '../../../utils';
 import { SDK_VERSION } from '../../../utils/constants';
 import { BoxShadow } from '../../styling/box-shadow';
 import { _setAndroidFragmentTransitions, _getAnimatedEntries, _updateTransitions, _reverseTransitions, _clearEntry, _clearFragment, addNativeTransitionListener } from '../../frame/fragment.transitions';
+import { _getStoredClassDefaultPropertyValue } from '../properties';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -777,24 +778,26 @@ export class View extends ViewCommon {
 	}
 
 	[hiddenProperty.getDefault](): boolean {
-		return this.nativeViewProtected.getVisibility() === VIEW_GONE;
+		return _getStoredClassDefaultPropertyValue(hiddenProperty, this, () => this.nativeViewProtected.getVisibility() === VIEW_GONE);
 	}
 	[hiddenProperty.setNative](value: boolean) {
 		this.nativeViewProtected.setVisibility(value ? VIEW_GONE : VIEW_VISIBLE);
 	}
 
 	[visibilityProperty.getDefault](): CoreTypes.VisibilityType {
-		const nativeVisibility = this.nativeViewProtected.getVisibility();
-		switch (nativeVisibility) {
-			case VIEW_VISIBLE:
-				return 'visible';
-			case VIEW_INVISIBLE:
-				return 'hidden';
-			case VIEW_GONE:
-				return 'collapse';
-			default:
-				throw new Error(`Unsupported android.view.View visibility: ${nativeVisibility}. Currently supported values are android.view.View.VISIBLE, android.view.View.INVISIBLE, android.view.View.GONE.`);
-		}
+		return _getStoredClassDefaultPropertyValue(visibilityProperty, this, () => {
+			const nativeVisibility = this.nativeViewProtected.getVisibility();
+			switch (nativeVisibility) {
+				case VIEW_VISIBLE:
+					return 'visible';
+				case VIEW_INVISIBLE:
+					return 'hidden';
+				case VIEW_GONE:
+					return 'collapse';
+				default:
+					throw new Error(`Unsupported android.view.View visibility: ${nativeVisibility}. Currently supported values are android.view.View.VISIBLE, android.view.View.INVISIBLE, android.view.View.GONE.`);
+			}
+		});
 	}
 	[visibilityProperty.setNative](value: CoreTypes.VisibilityType) {
 		switch (value) {
@@ -814,7 +817,7 @@ export class View extends ViewCommon {
 	}
 
 	[opacityProperty.getDefault](): number {
-		return this.nativeViewProtected.getAlpha();
+		return _getStoredClassDefaultPropertyValue(opacityProperty, this, () => this.nativeViewProtected.getAlpha());
 	}
 	[opacityProperty.setNative](value: number) {
 		this.nativeViewProtected.setAlpha(float(value));
@@ -907,7 +910,7 @@ export class View extends ViewCommon {
 	}
 
 	[androidElevationProperty.getDefault](): number {
-		return this.getDefaultElevation();
+		return _getStoredClassDefaultPropertyValue(androidElevationProperty, this, () => this.getDefaultElevation());
 	}
 	[androidElevationProperty.setNative](value: number) {
 		if (SDK_VERSION < 21) {
@@ -987,7 +990,7 @@ export class View extends ViewCommon {
 	}
 
 	[horizontalAlignmentProperty.getDefault](): CoreTypes.HorizontalAlignmentType {
-		return <CoreTypes.HorizontalAlignmentType>org.nativescript.widgets.ViewHelper.getHorizontalAlignment(this.nativeViewProtected);
+		return _getStoredClassDefaultPropertyValue(horizontalAlignmentProperty, this, () => <CoreTypes.VerticalAlignmentType>ViewHelper.getHorizontalAlignment(this.nativeViewProtected));
 	}
 	[horizontalAlignmentProperty.setNative](value: CoreTypes.HorizontalAlignmentType) {
 		const nativeView = this.nativeViewProtected;
@@ -1028,7 +1031,7 @@ export class View extends ViewCommon {
 	}
 
 	[verticalAlignmentProperty.getDefault](): CoreTypes.VerticalAlignmentType {
-		return <CoreTypes.VerticalAlignmentType>org.nativescript.widgets.ViewHelper.getVerticalAlignment(this.nativeViewProtected);
+		return _getStoredClassDefaultPropertyValue(verticalAlignmentProperty, this, () => <CoreTypes.VerticalAlignmentType>ViewHelper.getVerticalAlignment(this.nativeViewProtected));
 	}
 	[verticalAlignmentProperty.setNative](value: CoreTypes.VerticalAlignmentType) {
 		const nativeView = this.nativeViewProtected;

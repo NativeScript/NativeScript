@@ -17,6 +17,7 @@ import { SDK_VERSION } from '../../utils/constants';
 import { isString, isNullOrUndefined } from '../../utils/types';
 import { accessibilityIdentifierProperty } from '../../accessibility/accessibility-properties';
 import { testIDProperty } from '../../ui/core/view';
+import { _getStoredClassDefaultPropertyValue } from '../core/properties';
 
 export * from './text-base-common';
 
@@ -375,7 +376,7 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	[colorProperty.getDefault](): android.content.res.ColorStateList {
-		return this.nativeTextViewProtected.getTextColors();
+		return _getStoredClassDefaultPropertyValue(colorProperty, this, () => this.nativeTextViewProtected.getTextColors());
 	}
 	[colorProperty.setNative](value: Color | android.content.res.ColorStateList) {
 		if (!this.formattedText || !(value instanceof Color)) {
@@ -401,14 +402,14 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	[lineHeightProperty.getDefault](): number {
-		return this.nativeTextViewProtected.getLineSpacingExtra() / layout.getDisplayDensity();
+		return _getStoredClassDefaultPropertyValue(lineHeightProperty, this, () => this.nativeTextViewProtected.getLineSpacingExtra() / layout.getDisplayDensity());
 	}
 	[lineHeightProperty.setNative](value: number) {
 		this.nativeTextViewProtected.setLineSpacing(value * layout.getDisplayDensity(), 1);
 	}
 
 	[fontInternalProperty.getDefault](): android.graphics.Typeface {
-		return this.nativeTextViewProtected.getTypeface();
+		return _getStoredClassDefaultPropertyValue(fontInternalProperty, this, () => this.nativeTextViewProtected.getTypeface());
 	}
 	[fontInternalProperty.setNative](value: Font | android.graphics.Typeface) {
 		if (!this.formattedText || !(value instanceof Font)) {
@@ -417,7 +418,7 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	[textDecorationProperty.getDefault]() {
-		return (this._paintFlags = this.nativeTextViewProtected.getPaintFlags());
+		return (this._paintFlags = _getStoredClassDefaultPropertyValue(textDecorationProperty, this, () => this.nativeTextViewProtected.getPaintFlags()));
 	}
 
 	[textDecorationProperty.setNative](value: number | CoreTypes.TextDecorationType) {
@@ -441,12 +442,12 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	[textShadowProperty.getDefault]() {
-		return {
+		return (this._paintFlags = _getStoredClassDefaultPropertyValue(textShadowProperty, this, () => ({
 			radius: this.nativeTextViewProtected.getShadowRadius(),
 			offsetX: this.nativeTextViewProtected.getShadowDx(),
 			offsetY: this.nativeTextViewProtected.getShadowDy(),
 			color: this.nativeTextViewProtected.getShadowColor(),
-		};
+		})));
 	}
 
 	[textShadowProperty.setNative](value: ShadowCSSValues) {
@@ -460,7 +461,7 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	[letterSpacingProperty.getDefault](): number {
-		return org.nativescript.widgets.ViewHelper.getLetterspacing(this.nativeTextViewProtected);
+		return _getStoredClassDefaultPropertyValue(letterSpacingProperty, this, () => org.nativescript.widgets.ViewHelper.getLetterspacing(this.nativeTextViewProtected));
 	}
 	[letterSpacingProperty.setNative](value: number) {
 		org.nativescript.widgets.ViewHelper.setLetterspacing(this.nativeTextViewProtected, value);
