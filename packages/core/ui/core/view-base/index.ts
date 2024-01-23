@@ -399,11 +399,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	 * Native setters that had to execute while there was no native view,
 	 * or the view was detached from the visual tree etc. will accumulate in this object,
 	 * and will be applied when all prerequisites are met.
+	 * Initializing ensure we never call `applyAllNativeSetters` and always use _suspendedUpdates
 	 * @private
 	 */
-	public _suspendedUpdates: {
-		[propertyName: string]: Property<ViewBase, any> | CssProperty<Style, any> | CssAnimationProperty<Style, any>;
-	};
+	public _suspendedUpdates: Map<string, Property<ViewBase, any> | CssProperty<Style, any> | CssAnimationProperty<Style, any>> = new Map();
 	//@endprivate
 	/**
 	 * Determines the depth of suspended updates.
@@ -1180,7 +1179,6 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
 		this.__nativeView = this.nativeViewProtected = value;
 		if (this.__nativeView) {
-			this._suspendedUpdates = undefined;
 			this.initNativeView();
 			this._resumeNativeUpdates(SuspendType.NativeView);
 		}
