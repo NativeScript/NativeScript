@@ -763,7 +763,7 @@ export const backgroundImageProperty = new CssProperty<Style, string | LinearGra
 	name: 'backgroundImage',
 	cssName: 'background-image',
 	valueChanged: (target, oldValue, newValue) => {
-		target.backgroundInternal.image = newValue;
+		target.backgroundInternal = target.backgroundInternal.withImage(newValue);
 	},
 	equalityComparer: (value1, value2) => {
 		if (value1 instanceof LinearGradient && value2 instanceof LinearGradient) {
@@ -789,7 +789,7 @@ export const backgroundColorProperty = new CssAnimationProperty<Style, Color>({
 	name: 'backgroundColor',
 	cssName: 'background-color',
 	valueChanged: (target, oldValue, newValue) => {
-		target.backgroundInternal.color = newValue;
+		target.backgroundInternal = target.backgroundInternal.withColor(newValue);
 	},
 	equalityComparer: Color.equals,
 	valueConverter: colorConverter,
@@ -801,7 +801,7 @@ export const backgroundRepeatProperty = new CssProperty<Style, CoreTypes.Backgro
 	cssName: 'background-repeat',
 	valueConverter: CoreTypes.BackgroundRepeat.parse,
 	valueChanged: (target, oldValue, newValue) => {
-		target.backgroundInternal.repeat = newValue;
+		target.backgroundInternal = target.backgroundInternal.withRepeat(newValue);
 	},
 });
 backgroundRepeatProperty.register(Style);
@@ -810,7 +810,7 @@ export const backgroundSizeProperty = new CssProperty<Style, string>({
 	name: 'backgroundSize',
 	cssName: 'background-size',
 	valueChanged: (target, oldValue, newValue) => {
-		target.backgroundInternal.size = newValue;
+		target.backgroundInternal = target.backgroundInternal.withSize(newValue);
 	},
 });
 backgroundSizeProperty.register(Style);
@@ -819,7 +819,7 @@ export const backgroundPositionProperty = new CssProperty<Style, string>({
 	name: 'backgroundPosition',
 	cssName: 'background-position',
 	valueChanged: (target, oldValue, newValue) => {
-		target.backgroundInternal.position = newValue;
+		target.backgroundInternal = target.backgroundInternal.withPosition(newValue);
 	},
 });
 backgroundPositionProperty.register(Style);
@@ -946,7 +946,7 @@ export const borderTopColorProperty = new CssProperty<Style, Color>({
 	name: 'borderTopColor',
 	cssName: 'border-top-color',
 	valueChanged: (target, oldValue, newValue) => {
-		target.backgroundInternal.borderTopColor = newValue;
+		target.backgroundInternal = target.backgroundInternal.withBorderTopColor(newValue);
 	},
 	equalityComparer: Color.equals,
 	valueConverter: colorConverter,
@@ -957,7 +957,7 @@ export const borderRightColorProperty = new CssProperty<Style, Color>({
 	name: 'borderRightColor',
 	cssName: 'border-right-color',
 	valueChanged: (target, oldValue, newValue) => {
-		target.backgroundInternal.borderRightColor = newValue;
+		target.backgroundInternal = target.backgroundInternal.withBorderRightColor(newValue);
 	},
 	equalityComparer: Color.equals,
 	valueConverter: colorConverter,
@@ -968,7 +968,7 @@ export const borderBottomColorProperty = new CssProperty<Style, Color>({
 	name: 'borderBottomColor',
 	cssName: 'border-bottom-color',
 	valueChanged: (target, oldValue, newValue) => {
-		target.backgroundInternal.borderBottomColor = newValue;
+		target.backgroundInternal = target.backgroundInternal.withBorderBottomColor(newValue);
 	},
 	equalityComparer: Color.equals,
 	valueConverter: colorConverter,
@@ -979,7 +979,7 @@ export const borderLeftColorProperty = new CssProperty<Style, Color>({
 	name: 'borderLeftColor',
 	cssName: 'border-left-color',
 	valueChanged: (target, oldValue, newValue) => {
-		target.backgroundInternal.borderLeftColor = newValue;
+		target.backgroundInternal = target.backgroundInternal.withBorderLeftColor(newValue);
 	},
 	equalityComparer: Color.equals,
 	valueConverter: colorConverter,
@@ -1037,7 +1037,7 @@ export const borderTopWidthProperty = new CssProperty<Style, CoreTypes.LengthTyp
 		} else {
 			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 		}
-		target.backgroundInternal.borderTopWidth = value;
+		target.backgroundInternal = target.backgroundInternal.withBorderTopWidth(value);
 	},
 	valueConverter: Length.parse,
 });
@@ -1061,7 +1061,7 @@ export const borderRightWidthProperty = new CssProperty<Style, CoreTypes.LengthT
 		} else {
 			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 		}
-		target.backgroundInternal.borderRightWidth = value;
+		target.backgroundInternal = target.backgroundInternal.withBorderRightWidth(value);
 	},
 	valueConverter: Length.parse,
 });
@@ -1085,7 +1085,7 @@ export const borderBottomWidthProperty = new CssProperty<Style, CoreTypes.Length
 		} else {
 			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 		}
-		target.backgroundInternal.borderBottomWidth = value;
+		target.backgroundInternal = target.backgroundInternal.withBorderBottomWidth(value);
 	},
 	valueConverter: Length.parse,
 });
@@ -1109,7 +1109,7 @@ export const borderLeftWidthProperty = new CssProperty<Style, CoreTypes.LengthTy
 		} else {
 			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 		}
-		target.backgroundInternal.borderLeftWidth = value;
+		target.backgroundInternal = target.backgroundInternal.withBorderLeftWidth(value);
 	},
 	valueConverter: Length.parse,
 });
@@ -1158,7 +1158,7 @@ export const borderTopLeftRadiusProperty = new CssProperty<Style, CoreTypes.Leng
 		if (!isNonNegativeFiniteNumber(value)) {
 			value = 0;
 		}
-		target.backgroundInternal.borderTopLeftRadius = value;
+		target.backgroundInternal = target.backgroundInternal.withBorderTopLeftRadius(value);
 	},
 	valueConverter: Length.parse,
 	equalityComparer: Length.equals,
@@ -1175,7 +1175,7 @@ export const borderTopRightRadiusProperty = new CssProperty<Style, CoreTypes.Len
 		if (!isNonNegativeFiniteNumber(value)) {
 			value = 0;
 		}
-		target.backgroundInternal.borderTopRightRadius = value;
+		target.backgroundInternal = target.backgroundInternal.withBorderTopRightRadius(value);
 	},
 	valueConverter: Length.parse,
 	equalityComparer: Length.equals,
@@ -1192,7 +1192,7 @@ export const borderBottomRightRadiusProperty = new CssProperty<Style, CoreTypes.
 		if (!isNonNegativeFiniteNumber(value)) {
 			value = 0;
 		}
-		target.backgroundInternal.borderBottomRightRadius = value;
+		target.backgroundInternal = target.backgroundInternal.withBorderBottomRightRadius(value);
 	},
 	valueConverter: Length.parse,
 	equalityComparer: Length.equals,
@@ -1209,7 +1209,7 @@ export const borderBottomLeftRadiusProperty = new CssProperty<Style, CoreTypes.L
 		if (!isNonNegativeFiniteNumber(value)) {
 			value = 0;
 		}
-		target.backgroundInternal.borderBottomLeftRadius = value;
+		target.backgroundInternal = target.backgroundInternal.withBorderBottomLeftRadius(value);
 	},
 	valueConverter: Length.parse,
 	equalityComparer: Length.equals,
@@ -1220,7 +1220,7 @@ const boxShadowProperty = new CssProperty<Style, ShadowCSSValues>({
 	name: 'boxShadow',
 	cssName: 'box-shadow',
 	valueChanged: (target, oldValue, newValue) => {
-		target.backgroundInternal.withBoxShadow(
+		target.backgroundInternal = target.backgroundInternal.withBoxShadow(
 			newValue
 				? {
 						inset: newValue.inset,
@@ -1261,7 +1261,7 @@ export const clipPathProperty = new CssProperty<Style, string>({
 			throw new Error('clip-path is not valid.');
 		}
 
-		target.backgroundInternal.clipPath = newValue;
+		target.backgroundInternal = target.backgroundInternal.withClipPath(newValue);
 	},
 });
 clipPathProperty.register(Style);
