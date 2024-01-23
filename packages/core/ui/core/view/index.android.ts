@@ -805,6 +805,7 @@ export class View extends ViewCommon {
 				this.nativeViewProtected.setVisibility(VIEW_INVISIBLE);
 				break;
 			case 'collapse':
+			case 'collapsed':
 				this.nativeViewProtected.setVisibility(VIEW_GONE);
 				break;
 			default:
@@ -1002,6 +1003,7 @@ export class View extends ViewCommon {
 						lp.weight = -2;
 					}
 					break;
+				case 'middle':
 				case 'center':
 					lp.gravity = GRAVITY_CENTER_HORIZONTAL | (gravity & VERTICAL_GRAVITY_MASK);
 					if (weight < 0) {
@@ -1042,6 +1044,7 @@ export class View extends ViewCommon {
 						lp.height = -2;
 					}
 					break;
+				case 'center':
 				case 'middle':
 					lp.gravity = GRAVITY_CENTER_VERTICAL | (gravity & HORIZONTAL_GRAVITY_MASK);
 					if (height < 0) {

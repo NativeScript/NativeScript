@@ -118,20 +118,22 @@ export namespace CoreTypes {
 		export const unknown = 'unknown';
 	}
 
-	export type HorizontalAlignmentType = 'left' | 'center' | 'right' | 'stretch';
+	export type HorizontalAlignmentType = 'left' | 'middle' | 'center' | 'right' | 'stretch';
 	export namespace HorizontalAlignment {
 		export const left = 'left';
+		export const middle = 'middle';
 		export const center = 'center';
 		export const right = 'right';
 		export const stretch = 'stretch';
-		export const isValid = makeValidator<HorizontalAlignmentType>(left, center, right, stretch);
+		export const isValid = makeValidator<HorizontalAlignmentType>(left, center, middle, right, stretch);
 		export const parse = makeParser<HorizontalAlignmentType>(isValid);
 	}
 
-	export type VerticalAlignmentType = 'top' | 'middle' | 'bottom' | 'stretch';
+	export type VerticalAlignmentType = 'top' | 'middle' | 'center' | 'bottom' | 'stretch';
 	export namespace VerticalAlignment {
 		export const top = 'top';
 		export const middle = 'middle';
+		export const center = 'center';
 		export const bottom = 'bottom';
 		export const stretch = 'stretch';
 		export const isValid = makeValidator<VerticalAlignmentType>(top, center, middle, bottom, stretch);
@@ -149,8 +151,8 @@ export namespace CoreTypes {
 		export const sub = 'sub';
 		export const baseline = 'baseline';
 		export const isValid = makeValidator<VerticalAlignmentTextType>(top, middle, bottom, stretch, texttop, textbottom, sup, sub, baseline);
-		export const parse = (value: string) => (value.toLowerCase() === 'center' ? middle : parseStrict(value));
 		const parseStrict = makeParser<CoreTypes.VerticalAlignmentTextType>(isValid);
+		export const parse = parseStrict;
 	}
 
 	export type ImageStretchType = 'none' | 'aspectFill' | 'aspectFit' | 'fill';
@@ -167,9 +169,9 @@ export namespace CoreTypes {
 		export const collapse: VisibilityType = 'collapse';
 		export const collapsed: VisibilityType = 'collapsed';
 		export const hidden: VisibilityType = 'hidden';
-		export const isValid = makeValidator<CoreTypes.VisibilityType>(visible, hidden, collapse);
-		export const parse = (value: string) => (value.toLowerCase() === 'collapsed' ? collapse : parseStrict(value));
+		export const isValid = makeValidator<CoreTypes.VisibilityType>(visible, hidden, collapse, collapsed);
 		const parseStrict = makeParser<CoreTypes.VisibilityType>(isValid);
+		export const parse = parseStrict;
 	}
 
 	export namespace FontAttributes {

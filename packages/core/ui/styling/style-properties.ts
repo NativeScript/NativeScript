@@ -1441,7 +1441,7 @@ export const visibilityProperty = new CssProperty<Style, CoreTypes.VisibilityTyp
 	valueChanged: (target, oldValue, newValue) => {
 		const view = target.viewRef.get();
 		if (view) {
-			view.isCollapsed = newValue === CoreTypes.Visibility.collapse;
+			view.isCollapsed = newValue === CoreTypes.Visibility.collapse || newValue === CoreTypes.Visibility.collapsed;
 		} else {
 			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 		}
