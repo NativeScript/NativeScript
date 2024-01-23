@@ -25,11 +25,6 @@ export class HtmlView extends HtmlViewBase {
 		nativeView.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
 	}
 
-	public resetNativeView(): void {
-		super.resetNativeView();
-		this.nativeViewProtected.setAutoLinkMask(0);
-	}
-
 	[htmlProperty.getDefault](): string {
 		return '';
 	}

@@ -54,12 +54,6 @@ export class GridLayout extends GridLayoutBase {
 		}
 	}
 
-	public resetNativeView() {
-		// Update native GridLayout
-		this.nativeViewProtected.reset();
-		super.resetNativeView();
-	}
-
 	public _onRowAdded(itemSpec: ItemSpec) {
 		if (this.nativeViewProtected) {
 			const nativeData = itemSpec.toJSON();

@@ -133,5 +133,3 @@ export class TextField extends TextFieldBase {
 		// Don't change it otherwise TextField will go to multiline mode.
 	}
 }
-
-TextField.prototype._isSingleLine = true;

@@ -185,11 +185,6 @@ export class TextBase extends TextBaseCommon {
 	// @ts-ignore
 	nativeTextViewProtected: org.nativescript.widgets.StyleableTextView;
 	// private _defaultTransformationMethod: android.text.method.TransformationMethod;
-	private _paintFlags: number;
-	private _minHeight: number;
-	private _maxHeight: number;
-	private _minLines: number;
-	private _maxLines: number;
 	private _tappable = false;
 	private _defaultMovementMethod: android.text.method.MovementMethod;
 
@@ -197,50 +192,6 @@ export class TextBase extends TextBaseCommon {
 
 	// so that we dont set fontInternal when setting fontSize (useless)
 	handleFontSize = true;
-
-	public initNativeView(): void {
-		super.initNativeView();
-		// initializeTextTransformation();
-		const nativeView = this.nativeTextViewProtected;
-		// this._defaultTransformationMethod = nativeView.getTransformationMethod();
-		// this._defaultMovementMethod = nativeView.getMovementMethod();
-		this._minHeight = nativeView.getMinHeight();
-		this._maxHeight = nativeView.getMaxHeight();
-		this._minLines = nativeView.getMinLines();
-		this._maxLines = nativeView.getMaxLines();
-	}
-
-	public resetNativeView(): void {
-		super.resetNativeView();
-		const nativeView = this.nativeTextViewProtected;
-		// We reset it here too because this could be changed by multiple properties - whiteSpace, secure, textTransform
-		nativeView.setSingleLine(this._isSingleLine);
-		// if (this._defaultTransformationMethod) {
-		// 	nativeView.setTransformationMethod(this._defaultTransformationMethod);
-		// 	this._defaultTransformationMethod = null;
-		// }
-
-		if (this._paintFlags !== undefined) {
-			nativeView.setPaintFlags(this._paintFlags);
-			this._paintFlags = undefined;
-		}
-
-		if (this._minLines !== -1) {
-			nativeView.setMinLines(this._minLines);
-		} else {
-			nativeView.setMinHeight(this._minHeight);
-		}
-
-		this._minHeight = this._minLines = undefined;
-
-		if (this._maxLines !== -1) {
-			nativeView.setMaxLines(this._maxLines);
-		} else {
-			nativeView.setMaxHeight(this._maxHeight);
-		}
-
-		this._maxHeight = this._maxLines = undefined;
-	}
 
 	createFormattedTextNative(value: FormattedString) {
 		return createSpannableStringBuilder(value, this.style.fontSize);
@@ -418,7 +369,7 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	[textDecorationProperty.getDefault]() {
-		return (this._paintFlags = _getStoredClassDefaultPropertyValue(textDecorationProperty, this, () => this.nativeTextViewProtected.getPaintFlags()));
+		return _getStoredClassDefaultPropertyValue(textDecorationProperty, this, () => this.nativeTextViewProtected.getPaintFlags());
 	}
 
 	[textDecorationProperty.setNative](value: number | CoreTypes.TextDecorationType) {
@@ -442,12 +393,12 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	[textShadowProperty.getDefault]() {
-		return (this._paintFlags = _getStoredClassDefaultPropertyValue(textShadowProperty, this, () => ({
+		return _getStoredClassDefaultPropertyValue(textShadowProperty, this, () => ({
 			radius: this.nativeTextViewProtected.getShadowRadius(),
 			offsetX: this.nativeTextViewProtected.getShadowDx(),
 			offsetY: this.nativeTextViewProtected.getShadowDy(),
 			color: this.nativeTextViewProtected.getShadowColor(),
-		})));
+		}));
 	}
 
 	[textShadowProperty.setNative](value: ShadowCSSValues) {

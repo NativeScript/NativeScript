@@ -131,11 +131,6 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 		super.disposeNativeView();
 	}
 
-	public resetNativeView(): void {
-		super.resetNativeView();
-		this.nativeTextViewProtected.setInputType(this._inputType);
-	}
-
 	public onUnloaded() {
 		this.dismissSoftInput();
 		super.onUnloaded();
