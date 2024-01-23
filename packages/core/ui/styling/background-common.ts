@@ -43,170 +43,170 @@ export class Background {
 	public boxShadow: BoxShadow;
 	public clearFlags: number = BackgroundClearFlags.NONE;
 
-	private clone(): Background {
-		const clone = new Background();
+	// private clone(): Background {
+	// 	const clone = new Background();
 
-		clone.color = this.color;
-		clone.image = this.image;
-		clone.repeat = this.repeat;
-		clone.position = this.position;
-		clone.size = this.size;
-		clone.borderTopColor = this.borderTopColor;
-		clone.borderRightColor = this.borderRightColor;
-		clone.borderBottomColor = this.borderBottomColor;
-		clone.borderLeftColor = this.borderLeftColor;
-		clone.borderTopWidth = this.borderTopWidth;
-		clone.borderRightWidth = this.borderRightWidth;
-		clone.borderBottomWidth = this.borderBottomWidth;
-		clone.borderLeftWidth = this.borderLeftWidth;
-		clone.borderTopLeftRadius = this.borderTopLeftRadius;
-		clone.borderTopRightRadius = this.borderTopRightRadius;
-		clone.borderBottomRightRadius = this.borderBottomRightRadius;
-		clone.borderBottomLeftRadius = this.borderBottomLeftRadius;
-		clone.clipPath = this.clipPath;
-		clone.boxShadow = this.boxShadow;
-		clone.clearFlags = this.clearFlags;
+	// 	this.color = this.color;
+	// 	this.image = this.image;
+	// 	this.repeat = this.repeat;
+	// 	this.position = this.position;
+	// 	this.size = this.size;
+	// 	this.borderTopColor = this.borderTopColor;
+	// 	this.borderRightColor = this.borderRightColor;
+	// 	this.borderBottomColor = this.borderBottomColor;
+	// 	this.borderLeftColor = this.borderLeftColor;
+	// 	this.borderTopWidth = this.borderTopWidth;
+	// 	this.borderRightWidth = this.borderRightWidth;
+	// 	this.borderBottomWidth = this.borderBottomWidth;
+	// 	this.borderLeftWidth = this.borderLeftWidth;
+	// 	this.borderTopLeftRadius = this.borderTopLeftRadius;
+	// 	this.borderTopRightRadius = this.borderTopRightRadius;
+	// 	this.borderBottomRightRadius = this.borderBottomRightRadius;
+	// 	this.borderBottomLeftRadius = this.borderBottomLeftRadius;
+	// 	this.clipPath = this.clipPath;
+	// 	this.boxShadow = this.boxShadow;
+	// 	this.clearFlags = this.clearFlags;
 
-		return clone;
-	}
+	// 	return this;
+	// }
 
 	public withColor(value: Color): Background {
-		const clone = this.clone();
-		clone.color = value;
+		// const clone = this.clone();
+		this.color = value;
 		if (!value) {
-			clone.clearFlags |= BackgroundClearFlags.CLEAR_BACKGROUND_COLOR;
+			this.clearFlags |= BackgroundClearFlags.CLEAR_BACKGROUND_COLOR;
 		}
 
-		return clone;
+		return this;
 	}
 
 	public withImage(value: string | LinearGradient): Background {
-		const clone = this.clone();
-		clone.image = value;
+		// const clone = this.clone();
+		this.image = value;
 
-		return clone;
+		return this;
 	}
 
 	public withRepeat(value: CoreTypes.BackgroundRepeatType): Background {
-		const clone = this.clone();
-		clone.repeat = value;
+		// const clone = this.clone();
+		this.repeat = value;
 
-		return clone;
+		return this;
 	}
 
 	public withPosition(value: string): Background {
-		const clone = this.clone();
-		clone.position = value;
+		// const clone = this.clone();
+		this.position = value;
 
-		return clone;
+		return this;
 	}
 
 	public withSize(value: string): Background {
-		const clone = this.clone();
-		clone.size = value;
+		// const clone = this.clone();
+		this.size = value;
 
-		return clone;
+		return this;
 	}
 
 	public withBorderTopColor(value: Color): Background {
-		const clone = this.clone();
-		clone.borderTopColor = value;
+		// const clone = this.clone();
+		this.borderTopColor = value;
 
-		return clone;
+		return this;
 	}
 
 	public withBorderRightColor(value: Color): Background {
-		const clone = this.clone();
-		clone.borderRightColor = value;
+		// const clone = this.clone();
+		this.borderRightColor = value;
 
-		return clone;
+		return this;
 	}
 
 	public withBorderBottomColor(value: Color): Background {
-		const clone = this.clone();
-		clone.borderBottomColor = value;
+		// const clone = this.clone();
+		this.borderBottomColor = value;
 
-		return clone;
+		return this;
 	}
 
 	public withBorderLeftColor(value: Color): Background {
-		const clone = this.clone();
-		clone.borderLeftColor = value;
+		// const clone = this.clone();
+		this.borderLeftColor = value;
 
-		return clone;
+		return this;
 	}
 
 	public withBorderTopWidth(value: number): Background {
-		const clone = this.clone();
-		clone.borderTopWidth = value;
+		// const clone = this.clone();
+		this.borderTopWidth = value;
 
-		return clone;
+		return this;
 	}
 
 	public withBorderRightWidth(value: number): Background {
-		const clone = this.clone();
-		clone.borderRightWidth = value;
+		// const clone = this.clone();
+		this.borderRightWidth = value;
 
-		return clone;
+		return this;
 	}
 
 	public withBorderBottomWidth(value: number): Background {
-		const clone = this.clone();
-		clone.borderBottomWidth = value;
+		// const clone = this.clone();
+		this.borderBottomWidth = value;
 
-		return clone;
+		return this;
 	}
 
 	public withBorderLeftWidth(value: number): Background {
-		const clone = this.clone();
-		clone.borderLeftWidth = value;
+		// const clone = this.clone();
+		this.borderLeftWidth = value;
 
-		return clone;
+		return this;
 	}
 
 	public withBorderTopLeftRadius(value: number): Background {
-		const clone = this.clone();
-		clone.borderTopLeftRadius = value;
+		// const clone = this.clone();
+		this.borderTopLeftRadius = value;
 
-		return clone;
+		return this;
 	}
 
 	public withBorderTopRightRadius(value: number): Background {
-		const clone = this.clone();
-		clone.borderTopRightRadius = value;
+		// // const clone = this.clone();
+		this.borderTopRightRadius = value;
 
-		return clone;
+		return this;
 	}
 
 	public withBorderBottomRightRadius(value: number): Background {
-		const clone = this.clone();
-		clone.borderBottomRightRadius = value;
+		// const clone = this.clone();
+		this.borderBottomRightRadius = value;
 
-		return clone;
+		return this;
 	}
 
 	public withBorderBottomLeftRadius(value: number): Background {
-		const clone = this.clone();
-		clone.borderBottomLeftRadius = value;
+		// const clone = this.clone();
+		this.borderBottomLeftRadius = value;
 
-		return clone;
+		return this;
 	}
 
 	public withClipPath(value: string): Background {
-		const clone = this.clone();
-		clone.clipPath = value;
+		// const clone = this.clone();
+		this.clipPath = value;
 
-		return clone;
+		return this;
 	}
 
 	public withBoxShadow(value: BoxShadow): Background {
-		const clone = this.clone();
-		clone.boxShadow = value;
+		// const clone = this.clone();
+		this.boxShadow = value;
 		if (!value) {
-			clone.clearFlags |= BackgroundClearFlags.CLEAR_BOX_SHADOW;
+			this.clearFlags |= BackgroundClearFlags.CLEAR_BOX_SHADOW;
 		}
 
-		return clone;
+		return this;
 	}
 
 	public isEmpty(): boolean {
