@@ -1331,25 +1331,21 @@ function _propagateInheritableProperties<U extends ViewBase | Style, T extends I
 }
 
 export function makeValidator<T>(...values: T[]): (value: any) => value is T {
-	const set = new Set(values);
-
-	return (value: any): value is T => set.has(value);
+	return (value: any): value is T => values.includes(value);
 }
 
 export function makeParser<T>(isValid: (value: any) => boolean, allowNumbers = false): (value: any) => T {
 	return (value) => {
-		const lower = value && value.toLowerCase();
+		const lower = value?.toLowerCase();
 		if (isValid(lower)) {
 			return lower;
-		} else {
-			if (allowNumbers) {
-				const convNumber = +value;
-				if (!isNaN(convNumber)) {
-					return value;
-				}
+		} else if (allowNumbers) {
+			const convNumber = +value;
+			if (!isNaN(convNumber)) {
+				return value;
 			}
-			throw new Error('Invalid value: ' + value);
 		}
+		throw new Error('Invalid value: ' + value);
 	};
 }
 
