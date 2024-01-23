@@ -522,7 +522,7 @@ export class TextBase extends TextBaseCommon {
 		let transformedText: any;
 		if (this.formattedText) {
 			transformedText = this.createFormattedTextNative(this.formattedText);
-		} else if ((this.text as any) instanceof android.text.Spannable) {
+		} else if ((this.text as any) instanceof android.text.Spanned) {
 			transformedText = this.text;
 		} else {
 			const text = this.text;
