@@ -400,7 +400,7 @@ interface Thickness {
 
 function parseThickness(value: string): Thickness {
 	if (typeof value === 'string') {
-		const arr = value.split(',');
+		const arr = value.split(' ');
 
 		let top: string;
 		let right: string;
