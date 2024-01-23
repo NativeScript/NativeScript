@@ -1235,7 +1235,7 @@ const boxShadowProperty = new CssProperty<Style, ShadowCSSValues>({
 boxShadowProperty.register(Style);
 
 function isNonNegativeFiniteNumber(value: number): boolean {
-	return isFinite(value) && !isNaN(value) && value >= 0;
+	return isFinite(value) && value >= 0;
 }
 
 const supportedPaths = ['rect', 'circle', 'ellipse', 'polygon', 'inset'];
