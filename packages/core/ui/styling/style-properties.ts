@@ -751,7 +751,7 @@ export const backgroundInternalProperty = new CssProperty<Style, Background>({
 			}
 			return true;
 		}
-		return value1 === value2;
+		return Background.equals(value1, value2);
 	},
 });
 backgroundInternalProperty.register(Style);
