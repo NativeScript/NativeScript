@@ -544,7 +544,6 @@ function setCssFunc<T extends Style, U>(property: CssProperty<T, U>, valueSource
 					} else {
 						if (defaultValueKey in this) {
 							view[setNative](this[defaultValueKey]);
-							delete this[defaultValueKey];
 						} else {
 							view[setNative](defaultValue);
 						}
@@ -980,7 +979,6 @@ function setCssInheritedFunc<T extends Style, U>(property: InheritedCssProperty<
 					if (unsetNativeValue) {
 						if (defaultValueKey in this) {
 							view[setNative](this[defaultValueKey]);
-							delete this[defaultValueKey];
 						} else {
 							view[setNative](defaultValue);
 						}
