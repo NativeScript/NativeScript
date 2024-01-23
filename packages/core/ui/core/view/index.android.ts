@@ -1086,13 +1086,21 @@ export class View extends ViewCommon {
 
 	public _applyBackground(background: Background, isBorderDrawable: boolean, onlyColor: boolean, backgroundDrawable: any) {
 		const nativeView = this.nativeViewProtected;
-		if (!isBorderDrawable && onlyColor) {
-			if (backgroundDrawable && backgroundDrawable.setColor) {
-				// android.graphics.drawable.ColorDrawable
-				backgroundDrawable.setColor(background.color.android);
-				backgroundDrawable.invalidateSelf();
-			} else {
-				nativeView.setBackgroundColor(background.color.android);
+		const canUseOutlineProvider = !background.hasBorderWidth() && !background.clipPath && !background.image && SDK_VERSION >= 21 && (SDK_VERSION >= 33 || background.hasUniformBorderRadius());
+		if (!isBorderDrawable && (onlyColor || canUseOutlineProvider)) {
+			if (!!background.color) {
+				if (backgroundDrawable && backgroundDrawable.setColor) {
+					// android.graphics.drawable.ColorDrawable
+					backgroundDrawable.setColor(background.color.android);
+					backgroundDrawable.invalidateSelf();
+				} else {
+					nativeView.setBackgroundColor(background.color.android);
+				}
+			}
+			if (background.hasBorderRadius()) {
+				// borderDrawable is slow
+				// let s use outline provider when we can
+				ViewHelper.setOutlineProvider(nativeView, background.borderTopLeftRadius, background.borderTopRightRadius, background.borderBottomRightRadius, background.borderBottomLeftRadius);
 			}
 		} else if (!background.isEmpty()) {
 			if (isBorderDrawable) {
@@ -1104,6 +1112,7 @@ export class View extends ViewCommon {
 				nativeView.setBackground(backgroundDrawable);
 			}
 		} else {
+			ViewHelper.clearOutlineProvider(nativeView);
 			//empty background let's reset
 			const cachedDrawable = (<any>nativeView)._cachedDrawable;
 			nativeView.setBackground(cachedDrawable);
@@ -1173,7 +1182,6 @@ export class View extends ViewCommon {
 		// prettier-ignore
 		const onlyColor = !background.hasBorderWidth()
 			&& !background.hasBorderRadius()
-			&& !background.hasBoxShadow()
 			&& !background.clipPath
 			&& !background.image
 			&& !!background.color;

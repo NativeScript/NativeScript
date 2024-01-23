@@ -1,9 +1,13 @@
 package org.nativescript.widgets;
 
 import android.annotation.TargetApi;
+import android.graphics.Outline;
+import android.graphics.Path;
 import android.graphics.Rect;
 import android.view.Gravity;
+import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewOutlineProvider;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
@@ -21,6 +25,7 @@ public class ViewHelper {
 
 	static final int version = android.os.Build.VERSION.SDK_INT;
 	static final boolean LOLLIPOP = android.os.Build.VERSION.SDK_INT >= 21;
+	static final boolean TIRAMISU = android.os.Build.VERSION.SDK_INT >= 33;
 
 	public static int getMinWidth(android.view.View view) {
 		return view.getMinimumWidth();
@@ -636,5 +641,38 @@ public class ViewHelper {
 			view.setLayoutParams(params);
 		}
 		
+	}
+
+	@TargetApi(21)
+	public static void setOutlineProvider(android.view.View view, int borderTopLeftRadius,
+		int borderTopRightRadius,
+		int borderBottomRightRadius,
+		int borderBottomLeftRadius) {
+		if (LOLLIPOP) {
+			view.setOutlineProvider(new ViewOutlineProvider() {
+				@Override
+				public void getOutline(View view, Outline outline) {
+					if (borderTopLeftRadius == borderTopRightRadius  && borderTopLeftRadius == borderBottomRightRadius && borderTopLeftRadius == borderBottomLeftRadius) {
+						outline.setRoundRect(0,0, view.getWidth(), view.getHeight(), borderTopLeftRadius);
+					} else if (TIRAMISU) {
+						Path path = new Path();
+						float[] radii = {
+							borderTopLeftRadius,
+							borderTopRightRadius,
+							borderBottomRightRadius,
+							borderBottomLeftRadius}
+						;
+						path.addRoundRect(
+						0, 0, view.getWidth(), view.getHeight(), radii, Path.Direction.CW);
+						outline.setConvexPath(path);
+					}
+				}
+			});
+		}
+	}
+
+	@TargetApi(21)
+	public static void clearOutlineProvider(android.view.View view) {
+		view.setOutlineProvider(null);
 	}
 }

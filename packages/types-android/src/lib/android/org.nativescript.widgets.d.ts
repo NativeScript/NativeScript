@@ -641,6 +641,12 @@
                 public static setBackground(view: android.view.View, background: android.graphics.drawable.Drawable): void;
 
                 public static setCommonGridLayoutParam(view: android.view.View, type: string, value: number): void;
+
+                public static setOutlineProvider(view: android.view.View, borderTopLeftRadius: number,
+                     borderTopRightRadius: number,
+                     borderBottomRightRadius: number,
+                     borderBottomLeftRadius: number);
+                public static clearOutlineProvider(view: android.view.View);
             }
 
             export class DisableUserInteractionListener extends java.lang.Object implements android.view.View.OnTouchListener {
