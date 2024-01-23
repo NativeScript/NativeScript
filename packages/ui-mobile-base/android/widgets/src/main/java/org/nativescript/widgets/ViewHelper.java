@@ -672,11 +672,13 @@ public class ViewHelper {
 					}
 				}
 			});
+			view.setClipToOutline(true);
 		}
 	}
 
 	@TargetApi(21)
 	public static void clearOutlineProvider(android.view.View view) {
+		view.setClipToOutline(false);
 		view.setOutlineProvider(null);
 	}
 
