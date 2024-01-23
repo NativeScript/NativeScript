@@ -13,7 +13,7 @@ import { Trace } from '../../../trace';
 import { CoreTypes } from '../../../core-types';
 import { ViewHelper } from './view-helper';
 
-import { backgroundInternalProperty, PercentLength } from '../../styling/style-properties';
+import { backgroundInternalProperty, fontInternalProperty, PercentLength } from '../../styling/style-properties';
 
 import { observe as gestureObserve, GesturesObserver, GestureTypes, GestureEventData, fromString as gestureFromString, TouchManager, TouchAnimationOptions } from '../../gestures';
 
@@ -511,6 +511,11 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		const background = this.style.backgroundInternal;
 		if (background?.isDirty) {
 			this._suspendedUpdates?.set('backgroundInternal', backgroundInternalProperty);
+		}
+		// special handling of fontInternal property to prevent too many slow updates
+		const font = this.style.fontInternal;
+		if (font?.isDirty) {
+			this._suspendedUpdates?.set('fontInternal', fontInternalProperty);
 		}
 		super.onResumeNativeUpdates(preventRequestLayout);
 	}

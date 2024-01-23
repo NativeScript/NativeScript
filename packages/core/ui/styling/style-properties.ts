@@ -1302,21 +1302,48 @@ colorProperty.register(Style);
 
 export const fontInternalProperty = new CssProperty<Style, Font>({
 	name: 'fontInternal',
+	defaultValue: Font.default,
 	cssName: '_fontInternal',
+	equalityComparer: (value1: Font, value2: Font, target) => {
+		if (value1 === value2) {
+			const view = target.viewRef.get();
+
+			// if view layout or updates are suspended we will check the backgroundInternal at the end
+			if (value1.isDirty && !view._suspendNativeUpdatesCount) {
+				value1.isDirty = false;
+				return false;
+			}
+			return true;
+		}
+		return Font.equals(value1, value2);
+	},
 });
 fontInternalProperty.register(Style);
+
+function fontInternalSubPropertyValueChanged<T extends Style, U>(block: (target: T, oldValue: U, newValue: U) => Font, shouldIgnore?: Function) {
+	return function (target: T, oldValue: U, newValue: U) {
+		if (shouldIgnore?.(target, oldValue, newValue)) {
+			return;
+		}
+		let newFontInternal = block(target, oldValue, newValue);
+		if (newFontInternal.isEqualToDefaultFont()) {
+			newFontInternal = unsetValue;
+		}
+		const view = target.viewRef.get();
+		if (target.fontInternal !== newFontInternal || !view._suspendNativeUpdatesCount) {
+			target.fontInternal = newFontInternal;
+		} else {
+			// let s not go through another property set which takes time during batch updates
+			// we will check and update fontInternal once the update is done
+		}
+	};
+}
 
 export const fontFamilyProperty = new InheritedCssProperty<Style, string>({
 	name: 'fontFamily',
 	cssName: 'font-family',
 	affectsLayout: __IOS__,
-	valueChanged: (target, oldValue, newValue) => {
-		const currentFont = target.fontInternal || Font.default;
-		if (currentFont.fontFamily !== newValue) {
-			const newFont = currentFont.withFontFamily(newValue);
-			target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
-		}
-	},
+	valueChanged: fontInternalSubPropertyValueChanged((target, oldValue, newValue) => target.fontInternal.withFontFamily(newValue)),
 });
 fontFamilyProperty.register(Style);
 
@@ -1324,7 +1351,7 @@ export const fontScaleInternalProperty = new InheritedCssProperty<Style, number>
 	name: 'fontScaleInternal',
 	cssName: '_fontScaleInternal',
 	defaultValue: 1.0,
-	valueConverter: (v) => parseFloat(v),
+	valueConverter: parseFloat,
 });
 fontScaleInternalProperty.register(Style);
 
@@ -1332,17 +1359,10 @@ export const fontSizeProperty = new InheritedCssProperty<Style, number>({
 	name: 'fontSize',
 	cssName: 'font-size',
 	affectsLayout: __IOS__,
-	valueChanged: (target, oldValue, newValue) => {
-		const view = target.viewRef.get();
-		if (view?.['handleFontSize'] === true) {
-			return;
-		}
-		const currentFont = target.fontInternal || Font.default;
-		if (currentFont.fontSize !== newValue) {
-			const newFont = currentFont.withFontSize(newValue);
-			target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
-		}
-	},
+	valueChanged: fontInternalSubPropertyValueChanged(
+		(target, oldValue, newValue) => target.fontInternal.withFontSize(newValue),
+		(target) => target.viewRef.get()?.['handleFontSize'] === true
+	),
 	valueConverter: (v) => parseFloat(v),
 });
 fontSizeProperty.register(Style);
@@ -1353,13 +1373,8 @@ export const fontStyleProperty = new InheritedCssProperty<Style, FontStyleType>(
 	affectsLayout: __IOS__,
 	defaultValue: FontStyle.NORMAL,
 	valueConverter: FontStyle.parse,
-	valueChanged: (target, oldValue, newValue) => {
-		const currentFont = target.fontInternal || Font.default;
-		if (currentFont.fontStyle !== newValue) {
-			const newFont = currentFont.withFontStyle(newValue);
-			target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
-		}
-	},
+
+	valueChanged: fontInternalSubPropertyValueChanged((target, oldValue, newValue) => target.fontInternal.withFontStyle(newValue)),
 });
 fontStyleProperty.register(Style);
 
@@ -1369,13 +1384,7 @@ export const fontWeightProperty = new InheritedCssProperty<Style, FontWeightType
 	affectsLayout: __IOS__,
 	defaultValue: FontWeight.NORMAL,
 	valueConverter: FontWeight.parse,
-	valueChanged: (target, oldValue, newValue) => {
-		const currentFont = target.fontInternal || Font.default;
-		if (currentFont.fontWeight !== newValue) {
-			const newFont = currentFont.withFontWeight(newValue);
-			target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
-		}
-	},
+	valueChanged: fontInternalSubPropertyValueChanged((target, oldValue, newValue) => target.fontInternal.withFontWeight(newValue)),
 });
 fontWeightProperty.register(Style);
 
@@ -1412,13 +1421,7 @@ export const fontVariationSettingsProperty = new InheritedCssProperty<Style, Fon
 	name: 'fontVariationSettings',
 	cssName: 'font-variation-settings',
 	affectsLayout: __IOS__,
-	valueChanged: (target, oldValue, newValue) => {
-		const currentFont = target.fontInternal || Font.default;
-		if (currentFont.fontVariationSettings !== newValue) {
-			const newFont = currentFont.withFontVariationSettings(newValue);
-			target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
-		}
-	},
+	valueChanged: fontInternalSubPropertyValueChanged((target, oldValue, newValue) => target.fontInternal.withFontVariationSettings(newValue)),
 	valueConverter: (value) => {
 		return FontVariationSettings.parse(value);
 	},
