@@ -639,6 +639,8 @@
                 public static setLetterspacing(view: android.view.View, value: number): void;
 
                 public static setBackground(view: android.view.View, background: android.graphics.drawable.Drawable): void;
+
+                public static setCommonGridLayoutParam(view: android.view.View, type: string, value: number): void;
             }
 
             export class DisableUserInteractionListener extends java.lang.Object implements android.view.View.OnTouchListener {

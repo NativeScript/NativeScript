@@ -611,4 +611,30 @@ public class ViewHelper {
 			textView.setLetterSpacing(value);
 		}
 	}
+
+	public static void setCommonGridLayoutParam(android.view.View view, String type, int value) throws Throwable {
+		ViewGroup.LayoutParams params = view.getLayoutParams();
+		// Initialize if empty.
+		if (params == null) {
+			params = new CommonLayoutParams();
+		}
+		if (params instanceof CommonLayoutParams) {
+			switch(type) {
+				case "row":
+					((CommonLayoutParams)params).row = value;
+					break;
+				case "rowSpan":
+					((CommonLayoutParams)params).rowSpan = value;
+					break;
+				case "column":
+					((CommonLayoutParams)params).column = value;
+					break;
+				case "columnSpan":
+					((CommonLayoutParams)params).columnSpan = value;
+					break;
+			}
+			view.setLayoutParams(params);
+		}
+		
+	}
 }
