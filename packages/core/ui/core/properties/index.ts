@@ -629,17 +629,13 @@ export class CssProperty<T extends Style, U> implements CssProperty<T, U> {
 		const key = Symbol(propertyName + ':propertyKey');
 		this.key = key;
 
-		const sourceKey = Symbol(propertyName + ':valueSourceKey');
-		this.sourceKey = sourceKey;
+		this.sourceKey = Symbol(propertyName + ':valueSourceKey');
 
-		const getDefault = Symbol(propertyName + ':getDefault');
-		this.getDefault = getDefault;
+		this.getDefault = Symbol(propertyName + ':getDefault');
 
-		const setNative = Symbol(propertyName + ':setNative');
-		this.setNative = setNative;
+		this.setNative = Symbol(propertyName + ':setNative');
 
-		const defaultValueKey = Symbol(propertyName + ':nativeDefaultValue');
-		this.defaultValueKey = defaultValueKey;
+		this.defaultValueKey = Symbol(propertyName + ':nativeDefaultValue');
 
 		this.eventName = propertyName + 'Change';
 
