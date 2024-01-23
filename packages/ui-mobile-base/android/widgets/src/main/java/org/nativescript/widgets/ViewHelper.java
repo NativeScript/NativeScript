@@ -7,6 +7,9 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import java.lang.reflect.Field;
+import java.lang.Class;
+
 /**
  * Created by hhristov on 8/23/16.
  */
@@ -17,6 +20,7 @@ public class ViewHelper {
 	}
 
 	static final int version = android.os.Build.VERSION.SDK_INT;
+	static final boolean LOLLIPOP = android.os.Build.VERSION.SDK_INT >= 21;
 
 	public static int getMinWidth(android.view.View view) {
 		return view.getMinimumWidth();
@@ -350,31 +354,64 @@ public class ViewHelper {
 		return "stretch";
 	}
 
-	public static void setHorizontalAlignment(android.view.View view, String value) {
+	private static Field getField(Class clazz, String field) {
+		Field result = null;
+		try {
+			result = clazz.getDeclaredField(field);
+		} catch (Throwable e) {}
+		if (result != null) {
+			return result;
+		}
+		while((clazz = clazz.getSuperclass()) != null) {
+			try {
+				result = clazz.getDeclaredField(field);
+			} catch (Throwable e) {}
+			if (result != null) {
+				return result;
+			}
+		}
+		return result;
+	}
+
+	public static void setHorizontalAlignment(android.view.View view, String value) throws Throwable {
 		ViewGroup.LayoutParams params = view.getLayoutParams();
 		// Initialize if empty.
 		if (params == null) {
 			params = new CommonLayoutParams();
 		}
 
-		// Set margins only if params are of the correct type.
-		if (params instanceof FrameLayout.LayoutParams) {
-			FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) params;
+		Field field = getField(params.getClass(), "gravity");
+		if (field != null) {
+			int gravity = field.getInt(params);
+			Field weightField = getField(params.getClass(), "weight");
 			switch (value) {
 				case "left":
-					lp.gravity = Gravity.LEFT | (lp.gravity & Gravity.VERTICAL_GRAVITY_MASK);
+					gravity = Gravity.LEFT | (gravity & Gravity.VERTICAL_GRAVITY_MASK);
+					if (weightField != null && weightField.getFloat(params) < 0) {
+						weightField.setFloat(params, -2.0f);
+					}
 					break;
 				case "center":
 				case "middle":
-					lp.gravity = Gravity.CENTER_HORIZONTAL | (lp.gravity & Gravity.VERTICAL_GRAVITY_MASK);
+					gravity = Gravity.CENTER_HORIZONTAL | (gravity & Gravity.VERTICAL_GRAVITY_MASK);
+					if (weightField != null && weightField.getFloat(params) < 0) {
+						weightField.setFloat(params, -2.0f);
+					}
 					break;
 				case "right":
-					lp.gravity = Gravity.RIGHT | (lp.gravity & Gravity.VERTICAL_GRAVITY_MASK);
+					gravity = Gravity.RIGHT | (gravity & Gravity.VERTICAL_GRAVITY_MASK);
+					if (weightField != null && weightField.getFloat(params) < 0) {
+						weightField.setFloat(params, -2.0f);
+					}
 					break;
 				case "stretch":
-					lp.gravity = Gravity.FILL_HORIZONTAL | (lp.gravity & Gravity.VERTICAL_GRAVITY_MASK);
+					gravity = Gravity.FILL_HORIZONTAL | (gravity & Gravity.VERTICAL_GRAVITY_MASK);
+					if (weightField != null && weightField.getFloat(params) < 0) {
+						weightField.setFloat(params, -1.0f);
+					}
 					break;
 			}
+			field.setInt(params, gravity);
 			view.setLayoutParams(params);
 		}
 	}
@@ -401,31 +438,44 @@ public class ViewHelper {
 		return "stretch";
 	}
 
-	public static void setVerticalAlignment(android.view.View view, String value) {
+	public static void setVerticalAlignment(android.view.View view, String value) throws Throwable{
 		ViewGroup.LayoutParams params = view.getLayoutParams();
 		// Initialize if empty.
 		if (params == null) {
 			params = new CommonLayoutParams();
 		}
 
-		// Set margins only if params are of the correct type.
-		if (params instanceof FrameLayout.LayoutParams) {
-			FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) params;
+		Field field = getField(params.getClass(), "gravity");
+		if (field != null) {
+			int gravity = field.getInt(params);
 			switch (value) {
 				case "top":
-					lp.gravity = Gravity.TOP | (lp.gravity & Gravity.HORIZONTAL_GRAVITY_MASK);
+					gravity = Gravity.TOP | (gravity & Gravity.HORIZONTAL_GRAVITY_MASK);
+					if (params.height < 0) {
+						params.height = -2;
+					}
 					break;
 				case "center":
 				case "middle":
-					lp.gravity = Gravity.CENTER_VERTICAL | (lp.gravity & Gravity.HORIZONTAL_GRAVITY_MASK);
+					gravity = Gravity.CENTER_VERTICAL | (gravity & Gravity.HORIZONTAL_GRAVITY_MASK);
+					if (params.height < 0) {
+						params.height = -2;
+					}
 					break;
 				case "bottom":
-					lp.gravity = Gravity.BOTTOM | (lp.gravity & Gravity.HORIZONTAL_GRAVITY_MASK);
+					gravity = Gravity.BOTTOM | (gravity & Gravity.HORIZONTAL_GRAVITY_MASK);
+					if (params.height < 0) {
+						params.height = -2;
+					}
 					break;
 				case "stretch":
-					lp.gravity = Gravity.FILL_VERTICAL | (lp.gravity & Gravity.HORIZONTAL_GRAVITY_MASK);
+					gravity = Gravity.FILL_VERTICAL | (gravity & Gravity.HORIZONTAL_GRAVITY_MASK);
+					if (params.height < 0) {
+						params.height = -1;
+					}
 					break;
 			}
+			field.setInt(params, gravity);
 			view.setLayoutParams(params);
 		}
 	}
@@ -532,7 +582,7 @@ public class ViewHelper {
 
 	@TargetApi(21)
 	public static float getZIndex(android.view.View view) {
-		if (ViewHelper.version >= 21) {
+		if (LOLLIPOP) {
 			return view.getZ();
 		}
 
@@ -541,14 +591,14 @@ public class ViewHelper {
 
 	@TargetApi(21)
 	public static void setZIndex(android.view.View view, float value) {
-		if (ViewHelper.version >= 21) {
+		if (LOLLIPOP) {
 			view.setZ(value);
 		}
 	}
 
 	@TargetApi(21)
 	public static float getLetterspacing(android.widget.TextView textView) {
-		if (ViewHelper.version >= 21) {
+		if (LOLLIPOP) {
 			return textView.getLetterSpacing();
 		}
 
@@ -557,7 +607,7 @@ public class ViewHelper {
 
 	@TargetApi(21)
 	public static void setLetterspacing(android.widget.TextView textView, float value) {
-		if (ViewHelper.version >= 21) {
+		if (LOLLIPOP) {
 			textView.setLetterSpacing(value);
 		}
 	}

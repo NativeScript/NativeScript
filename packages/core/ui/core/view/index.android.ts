@@ -57,6 +57,8 @@ export const VIEW_GONE = 8; //android.view.View.GONE;
 export const VIEW_VISIBLE = 0; //android.view.View.VISIBLE;
 export const VIEW_INVISIBLE = 4; //android.view.View.INVISIBLE;
 
+const ViewHelper = org.nativescript.widgets.ViewHelper;
+
 const modalMap = new Map<number, DialogOptions>();
 
 let TouchListener: TouchListener;
@@ -993,121 +995,53 @@ export class View extends ViewCommon {
 		return _getStoredClassDefaultPropertyValue(horizontalAlignmentProperty, this, () => <CoreTypes.VerticalAlignmentType>ViewHelper.getHorizontalAlignment(this.nativeViewProtected));
 	}
 	[horizontalAlignmentProperty.setNative](value: CoreTypes.HorizontalAlignmentType) {
-		const nativeView = this.nativeViewProtected;
-		const lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
-		const gravity = lp.gravity;
-		const weight = lp.weight;
-		// Set only if params gravity exists.
-		if (gravity !== undefined) {
-			switch (value) {
-				case 'left':
-					lp.gravity = GRAVITY_LEFT | (gravity & VERTICAL_GRAVITY_MASK);
-					if (weight < 0) {
-						lp.weight = -2;
-					}
-					break;
-				case 'middle':
-				case 'center':
-					lp.gravity = GRAVITY_CENTER_HORIZONTAL | (gravity & VERTICAL_GRAVITY_MASK);
-					if (weight < 0) {
-						lp.weight = -2;
-					}
-					break;
-				case 'right':
-					lp.gravity = GRAVITY_RIGHT | (gravity & VERTICAL_GRAVITY_MASK);
-					if (weight < 0) {
-						lp.weight = -2;
-					}
-					break;
-				case 'stretch':
-					lp.gravity = GRAVITY_FILL_HORIZONTAL | (gravity & VERTICAL_GRAVITY_MASK);
-					if (weight < 0) {
-						lp.weight = -1;
-					}
-					break;
-			}
-			nativeView.setLayoutParams(lp);
-		}
+		ViewHelper.setHorizontalAlignment(this.nativeViewProtected, value);
 	}
 
 	[verticalAlignmentProperty.getDefault](): CoreTypes.VerticalAlignmentType {
 		return _getStoredClassDefaultPropertyValue(verticalAlignmentProperty, this, () => <CoreTypes.VerticalAlignmentType>ViewHelper.getVerticalAlignment(this.nativeViewProtected));
 	}
 	[verticalAlignmentProperty.setNative](value: CoreTypes.VerticalAlignmentType) {
-		const nativeView = this.nativeViewProtected;
-		const lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
-		const gravity = lp.gravity;
-		const height = lp.height;
-		// Set only if params gravity exists.
-		if (gravity !== undefined) {
-			switch (value) {
-				case 'top':
-					lp.gravity = GRAVITY_TOP | (gravity & HORIZONTAL_GRAVITY_MASK);
-					if (height < 0) {
-						lp.height = -2;
-					}
-					break;
-				case 'center':
-				case 'middle':
-					lp.gravity = GRAVITY_CENTER_VERTICAL | (gravity & HORIZONTAL_GRAVITY_MASK);
-					if (height < 0) {
-						lp.height = -2;
-					}
-					break;
-				case 'bottom':
-					lp.gravity = GRAVITY_BOTTOM | (gravity & HORIZONTAL_GRAVITY_MASK);
-					if (height < 0) {
-						lp.height = -2;
-					}
-					break;
-				case 'stretch':
-					lp.gravity = GRAVITY_FILL_VERTICAL | (gravity & HORIZONTAL_GRAVITY_MASK);
-					if (height < 0) {
-						lp.height = -1;
-					}
-					break;
-			}
-			nativeView.setLayoutParams(lp);
-		}
+		ViewHelper.setVerticalAlignment(this.nativeViewProtected, value);
 	}
 
 	[rotateProperty.setNative](value: number) {
-		org.nativescript.widgets.ViewHelper.setRotate(this.nativeViewProtected, float(value));
+		ViewHelper.setRotate(this.nativeViewProtected, float(value));
 	}
 
 	[rotateXProperty.setNative](value: number) {
-		org.nativescript.widgets.ViewHelper.setRotateX(this.nativeViewProtected, float(value));
+		ViewHelper.setRotateX(this.nativeViewProtected, float(value));
 	}
 
 	[rotateYProperty.setNative](value: number) {
-		org.nativescript.widgets.ViewHelper.setRotateY(this.nativeViewProtected, float(value));
+		ViewHelper.setRotateY(this.nativeViewProtected, float(value));
 	}
 
 	[perspectiveProperty.setNative](value: number) {
-		org.nativescript.widgets.ViewHelper.setPerspective(this.nativeViewProtected, float(value * Screen.mainScreen.scale));
+		ViewHelper.setPerspective(this.nativeViewProtected, float(value * Screen.mainScreen.scale));
 	}
 
 	[scaleXProperty.setNative](value: number) {
-		org.nativescript.widgets.ViewHelper.setScaleX(this.nativeViewProtected, float(value));
+		ViewHelper.setScaleX(this.nativeViewProtected, float(value));
 	}
 
 	[scaleYProperty.setNative](value: number) {
-		org.nativescript.widgets.ViewHelper.setScaleY(this.nativeViewProtected, float(value));
+		ViewHelper.setScaleY(this.nativeViewProtected, float(value));
 	}
 
 	[translateXProperty.setNative](value: CoreTypes.dip) {
-		org.nativescript.widgets.ViewHelper.setTranslateX(this.nativeViewProtected, layout.toDevicePixels(value));
+		ViewHelper.setTranslateX(this.nativeViewProtected, layout.toDevicePixels(value));
 	}
 
 	[translateYProperty.setNative](value: CoreTypes.dip) {
-		org.nativescript.widgets.ViewHelper.setTranslateY(this.nativeViewProtected, layout.toDevicePixels(value));
+		ViewHelper.setTranslateY(this.nativeViewProtected, layout.toDevicePixels(value));
 	}
 
 	[zIndexProperty.getDefault](): number {
 		return 0;
 	}
 	[zIndexProperty.setNative](value: number) {
-		org.nativescript.widgets.ViewHelper.setZIndex(this.nativeViewProtected, value);
+		ViewHelper.setZIndex(this.nativeViewProtected, value);
 	}
 
 	[backgroundInternalProperty.getDefault](): android.graphics.drawable.Drawable {
@@ -1411,40 +1345,40 @@ function createNativePercentLengthProperty(options: NativePercentLengthPropertyO
 createNativePercentLengthProperty({
 	setter: marginTopProperty.setNative,
 	get setPixels() {
-		return org.nativescript.widgets.ViewHelper.setMarginTop;
+		return ViewHelper.setMarginTop;
 	},
 	get setPercent() {
-		return org.nativescript.widgets.ViewHelper.setMarginTopPercent;
+		return ViewHelper.setMarginTopPercent;
 	},
 });
 
 createNativePercentLengthProperty({
 	setter: marginRightProperty.setNative,
 	get setPixels() {
-		return org.nativescript.widgets.ViewHelper.setMarginRight;
+		return ViewHelper.setMarginRight;
 	},
 	get setPercent() {
-		return org.nativescript.widgets.ViewHelper.setMarginRightPercent;
+		return ViewHelper.setMarginRightPercent;
 	},
 });
 
 createNativePercentLengthProperty({
 	setter: marginBottomProperty.setNative,
 	get setPixels() {
-		return org.nativescript.widgets.ViewHelper.setMarginBottom;
+		return ViewHelper.setMarginBottom;
 	},
 	get setPercent() {
-		return org.nativescript.widgets.ViewHelper.setMarginBottomPercent;
+		return ViewHelper.setMarginBottomPercent;
 	},
 });
 
 createNativePercentLengthProperty({
 	setter: marginLeftProperty.setNative,
 	get setPixels() {
-		return org.nativescript.widgets.ViewHelper.setMarginLeft;
+		return ViewHelper.setMarginLeft;
 	},
 	get setPercent() {
-		return org.nativescript.widgets.ViewHelper.setMarginLeftPercent;
+		return ViewHelper.setMarginLeftPercent;
 	},
 });
 
@@ -1452,10 +1386,10 @@ createNativePercentLengthProperty({
 	setter: widthProperty.setNative,
 	auto: -1, //android.view.ViewGroup.LayoutParams.MATCH_PARENT,
 	get setPixels() {
-		return org.nativescript.widgets.ViewHelper.setWidth;
+		return ViewHelper.setWidth;
 	},
 	get setPercent() {
-		return org.nativescript.widgets.ViewHelper.setWidthPercent;
+		return ViewHelper.setWidthPercent;
 	},
 });
 
@@ -1463,23 +1397,23 @@ createNativePercentLengthProperty({
 	setter: heightProperty.setNative,
 	auto: -1, //android.view.ViewGroup.LayoutParams.MATCH_PARENT,
 	get setPixels() {
-		return org.nativescript.widgets.ViewHelper.setHeight;
+		return ViewHelper.setHeight;
 	},
 	get setPercent() {
-		return org.nativescript.widgets.ViewHelper.setHeightPercent;
+		return ViewHelper.setHeightPercent;
 	},
 });
 
 createNativePercentLengthProperty({
 	setter: '_setMinWidthNative',
 	get setPixels() {
-		return org.nativescript.widgets.ViewHelper.setMinWidth;
+		return ViewHelper.setMinWidth;
 	},
 });
 
 createNativePercentLengthProperty({
 	setter: '_setMinHeightNative',
 	get setPixels() {
-		return org.nativescript.widgets.ViewHelper.setMinHeight;
+		return ViewHelper.setMinHeight;
 	},
 });
