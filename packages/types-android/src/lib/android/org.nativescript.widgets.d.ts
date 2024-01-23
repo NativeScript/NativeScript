@@ -647,6 +647,10 @@
                      borderBottomRightRadius: number,
                      borderBottomLeftRadius: number);
                 public static clearOutlineProvider(view: android.view.View);
+
+                public static isTextView(view: android.view.View): boolean;
+                public static getChildAppCompatTextView(view: android.view.View): androidx.appcompat.widget.AppCompatTextView;
+                public static toolbarAccessibilityScreenChanged(view: androidx.appcompat.widget.Toolbar);
             }
 
             export class DisableUserInteractionListener extends java.lang.Object implements android.view.View.OnTouchListener {

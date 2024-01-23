@@ -516,7 +516,6 @@ export class TextBase extends TextBaseCommon {
 	_setNativeText(reset = false): void {
 		if (reset) {
 			this.nativeTextViewProtected.setText(null);
-
 			return;
 		}
 

@@ -11,6 +11,9 @@ import android.view.ViewOutlineProvider;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+
+import androidx.appcompat.widget.AppCompatTextView;
+
 import java.lang.reflect.Field;
 import java.lang.Class;
 
@@ -25,6 +28,7 @@ public class ViewHelper {
 
 	static final int version = android.os.Build.VERSION.SDK_INT;
 	static final boolean LOLLIPOP = android.os.Build.VERSION.SDK_INT >= 21;
+	static final boolean PI = android.os.Build.VERSION.SDK_INT >= 28;
 	static final boolean TIRAMISU = android.os.Build.VERSION.SDK_INT >= 33;
 
 	public static int getMinWidth(android.view.View view) {
@@ -674,5 +678,52 @@ public class ViewHelper {
 	@TargetApi(21)
 	public static void clearOutlineProvider(android.view.View view) {
 		view.setOutlineProvider(null);
+	}
+
+	public static boolean isTextView(View view) {
+		return view instanceof android.widget.TextView;
+	}
+
+	public static View getChildAppCompatTextView(ViewGroup view) {
+		int numChildren = view.getChildCount();
+
+		for (int i = 0; i < numChildren; i += 1) {
+			View childAndroidView = view.getChildAt(i);
+			if (childAndroidView instanceof AppCompatTextView) {
+				return childAndroidView;
+			}
+		}
+		return null;
+	}
+
+	public static void toolbarAccessibilityScreenChanged(androidx.appcompat.widget.Toolbar nativeView) {
+		nativeView.setFocusable(false);
+		nativeView.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+
+		android.view.View announceView = null;
+		int numChildren = nativeView.getChildCount();
+		for (int i = 0; i < numChildren; i += 1) {
+			View childView = nativeView.getChildAt(i);
+			if (childView == null) {
+				continue;
+			}
+
+			childView.setFocusable(true);
+			if (childView instanceof AppCompatTextView) {
+				announceView = childView;
+				if (PI) {
+					announceView.setAccessibilityHeading(true);
+				}
+			}
+		}
+		if (announceView == null) {
+			announceView = nativeView;
+		}
+
+		announceView.setFocusable(true);
+		announceView.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
+
+		announceView.sendAccessibilityEvent(android.view.accessibility.AccessibilityEvent.TYPE_VIEW_FOCUSED);
+		announceView.sendAccessibilityEvent(android.view.accessibility.AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
 	}
 }

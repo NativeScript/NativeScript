@@ -10,6 +10,7 @@ import { Application } from '../../application';
 import { isAccessibilityServiceEnabled, updateContentDescription } from '../../accessibility';
 import type { Background } from '../styling/background';
 import { SDK_VERSION } from '../../utils/constants';
+import { ViewHelper } from 'ui/core/view/view-helper/view-helper-common';
 
 export * from './action-bar-common';
 
@@ -17,7 +18,6 @@ const R_ID_HOME = 0x0102002c;
 const ACTION_ITEM_ID_OFFSET = 10000;
 const DEFAULT_ELEVATION = 4;
 
-let AppCompatTextView;
 let actionItemIdGenerator = ACTION_ITEM_ID_OFFSET;
 function generateItemId(): number {
 	actionItemIdGenerator++;
@@ -61,8 +61,6 @@ function initializeMenuItemClickListener(): void {
 	if (MenuItemClickListener) {
 		return;
 	}
-
-	AppCompatTextView = androidx.appcompat.widget.AppCompatTextView;
 
 	@NativeClass
 	@Interfaces([androidx.appcompat.widget.Toolbar.OnMenuItemClickListener])
@@ -494,36 +492,7 @@ export class ActionBar extends ActionBarBase {
 		const originalIsAccessibilityHeading = SDK_VERSION >= 28 && nativeView.isAccessibilityHeading();
 
 		try {
-			nativeView.setFocusable(false);
-			nativeView.setImportantForAccessibility(android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO);
-
-			let announceView: android.view.View | null = null;
-
-			const numChildren = nativeView.getChildCount();
-			for (let i = 0; i < numChildren; i += 1) {
-				const childView = nativeView.getChildAt(i);
-				if (!childView) {
-					continue;
-				}
-
-				childView.setFocusable(true);
-				if (childView instanceof androidx.appcompat.widget.AppCompatTextView) {
-					announceView = childView;
-					if (SDK_VERSION >= 28) {
-						announceView.setAccessibilityHeading(true);
-					}
-				}
-			}
-
-			if (!announceView) {
-				announceView = nativeView;
-			}
-
-			announceView.setFocusable(true);
-			announceView.setImportantForAccessibility(android.view.View.IMPORTANT_FOR_ACCESSIBILITY_YES);
-
-			announceView.sendAccessibilityEvent(android.view.accessibility.AccessibilityEvent.TYPE_VIEW_FOCUSED);
-			announceView.sendAccessibilityEvent(android.view.accessibility.AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
+			org.nativescript.widgets.ViewHelper.toolbarAccessibilityScreenChanged(nativeView);
 		} catch {
 			// ignore
 		} finally {
@@ -535,7 +504,7 @@ export class ActionBar extends ActionBarBase {
 				}
 
 				if (SDK_VERSION >= 28) {
-					nativeView.setAccessibilityHeading(originalIsAccessibilityHeading);
+					localNativeView.setAccessibilityHeading(originalIsAccessibilityHeading);
 				}
 
 				if (SDK_VERSION >= 26) {
@@ -548,15 +517,8 @@ export class ActionBar extends ActionBarBase {
 	}
 }
 
-function getAppCompatTextView(toolbar: androidx.appcompat.widget.Toolbar): typeof AppCompatTextView {
-	for (let i = 0, count = toolbar.getChildCount(); i < count; i++) {
-		const child = toolbar.getChildAt(i);
-		if (child instanceof AppCompatTextView) {
-			return child;
-		}
-	}
-
-	return null;
+function getAppCompatTextView(toolbar: androidx.appcompat.widget.Toolbar) {
+	return org.nativescript.widgets.ViewHelper.getChildAppCompatTextView(toolbar);
 }
 
 ActionBar.prototype.recycleNativeView = 'auto';

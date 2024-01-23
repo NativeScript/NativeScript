@@ -596,20 +596,13 @@ function setAccessibilityDelegate(view: View): void {
 
 function applyContentDescription(view: View, forceUpdate?: boolean) {
 	let androidView = view.nativeViewProtected as android.view.View;
-	if (!androidView || (androidView instanceof android.widget.TextView && !view._androidContentDescriptionUpdated)) {
+	const constructorName = androidView.constructor;
+	if (!androidView || (org.nativescript.widgets.ViewHelper.isTextView(androidView) && !view._androidContentDescriptionUpdated)) {
 		return null;
 	}
 
 	if (androidView instanceof androidx.appcompat.widget.Toolbar) {
-		const numChildren = androidView.getChildCount();
-
-		for (let i = 0; i < numChildren; i += 1) {
-			const childAndroidView = androidView.getChildAt(i);
-			if (childAndroidView instanceof androidx.appcompat.widget.AppCompatTextView) {
-				androidView = childAndroidView;
-				break;
-			}
-		}
+		androidView = org.nativescript.widgets.ViewHelper.getChildAppCompatTextView(androidView) || androidView;
 	}
 
 	const cls = `applyContentDescription(${view})`;
@@ -626,7 +619,7 @@ function applyContentDescription(view: View, forceUpdate?: boolean) {
 
 	// Workaround: TalkBack won't read the checked state for fake Switch.
 	if (view.accessibilityRole === AccessibilityRole.Switch) {
-		const androidSwitch = new android.widget.Switch(Application.android.context);
+		const androidSwitch = new android.widget.Switch(view._context);
 		if (view.accessibilityState === AccessibilityState.Checked) {
 			contentDescriptionBuilder.push(androidSwitch.getTextOn());
 		} else {
