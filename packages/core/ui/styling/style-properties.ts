@@ -102,25 +102,15 @@ export namespace PercentLength {
 		}
 		if (typeof fromValue === 'string') {
 			let stringValue = fromValue.trim();
-			const percentIndex = stringValue.indexOf('%');
-			if (percentIndex !== -1) {
-				let value: CoreTypes.percent;
-				// if only % or % is not last we treat it as invalid value.
-				if (percentIndex !== stringValue.length - 1 || percentIndex === 0) {
-					value = Number.NaN;
-				} else {
-					// Normalize result to values between -1 and 1
-					value = parseFloat(stringValue.substring(0, stringValue.length - 1).trim()) / 100;
-				}
-
+			if (stringValue.endsWith('%')) {
+				// Normalize result to values between -1 and 1
+				const value = parseFloat(stringValue.substring(0, stringValue.length - 1).trim()) / 100;
 				if (isNaN(value) || !isFinite(value)) {
 					throw new Error(`Invalid value: ${fromValue}`);
 				}
-
 				return { unit: '%', value };
-			} else if (stringValue.indexOf('px') !== -1) {
-				stringValue = stringValue.replace('px', '').trim();
-				const value: CoreTypes.px = parseFloat(stringValue);
+			} else if (stringValue.endsWith('px')) {
+				const value: CoreTypes.px = parseFloat(stringValue.slice(-2).trim());
 				if (isNaN(value) || !isFinite(value)) {
 					throw new Error(`Invalid value: ${fromValue}`);
 				}
