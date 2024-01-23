@@ -134,6 +134,8 @@ export namespace CoreTypes {
 		export const middle = 'middle';
 		export const bottom = 'bottom';
 		export const stretch = 'stretch';
+		export const isValid = makeValidator<VerticalAlignmentType>(top, center, middle, bottom, stretch);
+		export const parse = makeParser<VerticalAlignmentType>(isValid);
 	}
 	export type VerticalAlignmentTextType = VerticalAlignmentType | 'text-top' | 'text-bottom' | 'sup' | 'sub' | 'baseline';
 	export namespace VerticalAlignmentText {

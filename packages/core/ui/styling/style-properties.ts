@@ -397,12 +397,12 @@ export const horizontalAlignmentProperty = new CssProperty<Style, CoreTypes.Hori
 });
 horizontalAlignmentProperty.register(Style);
 
-export const verticalAlignmentProperty = new CssProperty<Style, CoreTypes.VerticalAlignmentTextType>({
+export const verticalAlignmentProperty = new CssProperty<Style, CoreTypes.VerticalAlignmentType>({
 	name: 'verticalAlignment',
 	cssName: 'vertical-align',
-	defaultValue: CoreTypes.VerticalAlignmentText.stretch,
+	defaultValue: CoreTypes.VerticalAlignment.stretch,
 	affectsLayout: __IOS__,
-	valueConverter: CoreTypes.VerticalAlignmentText.parse,
+	valueConverter: CoreTypes.VerticalAlignment.parse,
 });
 verticalAlignmentProperty.register(Style);
 
