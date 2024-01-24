@@ -1150,11 +1150,19 @@ function inheritablePropertyValuesOn<T extends InheritedProperty<any, any> | Inh
 type PropertyInterface = Property<ViewBase, any> | CssProperty<Style, any> | CssAnimationProperty<Style, any>;
 
 export const initNativeView = profile('"properties".initNativeView', function initNativeView(view: ViewBase): void {
+	if (view._suspendNativeUpdatesCount) {
+		return;
+	}
 	const wasSuspended = view.suspendRequestLayout;
 	view.suspendRequestLayout = true;
-	if (view._suspendedUpdates) {
+
+	if (view._suspendedUpdates.size) {
 		applyPendingNativeSetters(view);
 	} else {
+		// this case can happen for example after a _teardownUI / _setupUI.
+		// in this case style props are already set to the right values
+		// so they wont trigger a change => _suspendedUpdates
+		// so we need to iterate over them all (slow but not that slow)
 		applyAllNativeSetters(view);
 	}
 	// Would it be faster to delete all members of the old object?
