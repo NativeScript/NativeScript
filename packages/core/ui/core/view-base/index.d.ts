@@ -423,11 +423,6 @@ export abstract class ViewBase extends Observable {
 	disposeNativeView(): void;
 
 	/**
-	 * Resets properties/listeners set to the native view.
-	 */
-	resetNativeView(): void;
-
-	/**
 	 * Set the nativeView field performing extra checks and updates to the native properties on the new view.
 	 * Use in cases where the createNativeView is not suitable.
 	 * As an example use in item controls where the native parent view will create the native views for child items.

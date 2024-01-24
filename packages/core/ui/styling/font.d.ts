@@ -14,6 +14,10 @@ export declare class Font extends FontBase {
 	public isBold: boolean;
 	public isItalic: boolean;
 
+	public isDirty: boolean;
+
+	public isEqualToDefaultFont();
+
 	constructor(family: string, size: number, style?: FontStyleType, weight?: FontWeightType, scale?: number, fontVariationSettings?: FontVariationSettings[]);
 
 	public getAndroidTypeface(): any /* android.graphics.Typeface */;

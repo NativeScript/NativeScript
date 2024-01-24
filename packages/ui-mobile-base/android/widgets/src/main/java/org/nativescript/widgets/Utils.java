@@ -132,7 +132,10 @@ public class Utils {
 		view.setBackground(new BoxShadowDrawable(currentBg, value));
 
 		// Drawable bg = view.getBackground();
-
+		if (view.getParent() != null && view.getParent() instanceof ViewGroup) {
+			ViewGroup parent = (ViewGroup) view.getParent();
+			parent.setClipChildren(false);
+		}
 		// int count = 0;
 		// while (view.getParent() != null && view.getParent() instanceof ViewGroup) {
 		// 	count++;

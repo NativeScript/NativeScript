@@ -4,21 +4,16 @@ import { layout } from '../../../utils';
 
 export * from './grid-layout-common';
 
-function makeNativeSetter<T>(setter: (lp: org.nativescript.widgets.CommonLayoutParams, value: T) => void) {
-	return function (this: View, value: T) {
-		const nativeView: android.view.View = this.nativeViewProtected;
-		const lp = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
-		if (lp instanceof org.nativescript.widgets.CommonLayoutParams) {
-			setter(lp, value);
-			nativeView.setLayoutParams(lp);
-		}
+function makeNativeSetter(type: string) {
+	return function (this: View, value: number) {
+		org.nativescript.widgets.ViewHelper.setCommonGridLayoutParam(this.nativeViewProtected, type, value);
 	};
 }
 
-View.prototype[rowProperty.setNative] = makeNativeSetter<number>((lp, value) => (lp.row = value));
-View.prototype[columnProperty.setNative] = makeNativeSetter<number>((lp, value) => (lp.column = value));
-View.prototype[rowSpanProperty.setNative] = makeNativeSetter<number>((lp, value) => (lp.rowSpan = value));
-View.prototype[columnSpanProperty.setNative] = makeNativeSetter<number>((lp, value) => (lp.columnSpan = value));
+View.prototype[rowProperty.setNative] = makeNativeSetter('row');
+View.prototype[columnProperty.setNative] = makeNativeSetter('column');
+View.prototype[rowSpanProperty.setNative] = makeNativeSetter('rowSpan');
+View.prototype[columnSpanProperty.setNative] = makeNativeSetter('columnSpan');
 
 ItemSpecBase.prototype.toJSON = function () {
 	let result;
@@ -57,12 +52,6 @@ export class GridLayout extends GridLayoutBase {
 			const jsonColumns = JSON.stringify(this.columnsInternal.map((itemSpec: ItemSpec) => itemSpec.toJSON()).filter((j) => !!j));
 			this.nativeViewProtected.addRowsAndColumnsFromJSON(jsonRows, jsonColumns);
 		}
-	}
-
-	public resetNativeView() {
-		// Update native GridLayout
-		this.nativeViewProtected.reset();
-		super.resetNativeView();
 	}
 
 	public _onRowAdded(itemSpec: ItemSpec) {

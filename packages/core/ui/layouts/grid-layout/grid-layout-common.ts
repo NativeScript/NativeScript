@@ -149,7 +149,7 @@ export class ItemSpec extends Observable implements ItemSpecDefinition {
 }
 
 @CSSType('GridLayout')
-export class GridLayoutBase extends LayoutBase implements GridLayoutDefinition {
+export abstract class GridLayoutBase extends LayoutBase implements GridLayoutDefinition {
 	protected _rows: Array<ItemSpec> = new Array<ItemSpec>();
 	protected _cols: Array<ItemSpec> = new Array<ItemSpec>();
 
@@ -291,37 +291,13 @@ export class GridLayoutBase extends LayoutBase implements GridLayoutDefinition {
 		this.invalidate();
 	}
 
-	public onRowChanged(element: View, oldValue: number, newValue: number) {
-		this.invalidate();
-	}
+	public abstract _onRowAdded(itemSpec: ItemSpec);
 
-	public onRowSpanChanged(element: View, oldValue: number, newValue: number) {
-		this.invalidate();
-	}
+	public abstract _onColumnAdded(itemSpec: ItemSpec);
 
-	public onColumnChanged(element: View, oldValue: number, newValue: number) {
-		this.invalidate();
-	}
+	public abstract _onRowRemoved(itemSpec: ItemSpec, index: number): void;
 
-	public onColumnSpanChanged(element: View, oldValue: number, newValue: number) {
-		this.invalidate();
-	}
-
-	public _onRowAdded(itemSpec: ItemSpec) {
-		//
-	}
-
-	public _onColumnAdded(itemSpec: ItemSpec) {
-		//
-	}
-
-	public _onRowRemoved(itemSpec: ItemSpec, index: number): void {
-		//
-	}
-
-	public _onColumnRemoved(itemSpec: ItemSpec, index: number): void {
-		//
-	}
+	public abstract _onColumnRemoved(itemSpec: ItemSpec, index: number): void;
 
 	public getColumns(): Array<ItemSpec> {
 		return this._cols.slice();
@@ -339,9 +315,7 @@ export class GridLayoutBase extends LayoutBase implements GridLayoutDefinition {
 		return this._rows;
 	}
 
-	protected invalidate(): void {
-		// handled natively in android and overridden in ios.
-	}
+	protected abstract invalidate();
 
 	set rows(value: string) {
 		this.removeRows();
@@ -361,12 +335,7 @@ GridLayoutBase.prototype.recycleNativeView = 'auto';
 export const columnProperty = new Property<View, number>({
 	name: 'col',
 	defaultValue: 0,
-	valueChanged: (target, oldValue, newValue) => {
-		const grid = target.parent;
-		if (grid instanceof GridLayoutBase) {
-			grid.onColumnChanged(target, oldValue, newValue);
-		}
-	},
+	affectsLayout: __IOS__,
 	valueConverter: (v) => Math.max(0, parseInt(v)),
 });
 columnProperty.register(View);
@@ -374,12 +343,7 @@ columnProperty.register(View);
 export const columnSpanProperty = new Property<View, number>({
 	name: 'colSpan',
 	defaultValue: 1,
-	valueChanged: (target, oldValue, newValue) => {
-		const grid = target.parent;
-		if (grid instanceof GridLayoutBase) {
-			grid.onColumnSpanChanged(target, oldValue, newValue);
-		}
-	},
+	affectsLayout: __IOS__,
 	valueConverter: (v) => Math.max(1, parseInt(v)),
 });
 columnSpanProperty.register(View);
@@ -387,12 +351,7 @@ columnSpanProperty.register(View);
 export const rowProperty = new Property<View, number>({
 	name: 'row',
 	defaultValue: 0,
-	valueChanged: (target, oldValue, newValue) => {
-		const grid = target.parent;
-		if (grid instanceof GridLayoutBase) {
-			grid.onRowChanged(target, oldValue, newValue);
-		}
-	},
+	affectsLayout: __IOS__,
 	valueConverter: (v) => Math.max(0, parseInt(v)),
 });
 rowProperty.register(View);
@@ -400,12 +359,7 @@ rowProperty.register(View);
 export const rowSpanProperty = new Property<View, number>({
 	name: 'rowSpan',
 	defaultValue: 1,
-	valueChanged: (target, oldValue, newValue) => {
-		const grid = target.parent;
-		if (grid instanceof GridLayoutBase) {
-			grid.onRowSpanChanged(target, oldValue, newValue);
-		}
-	},
+	affectsLayout: __IOS__,
 	valueConverter: (v) => Math.max(1, parseInt(v)),
 });
 rowSpanProperty.register(View);

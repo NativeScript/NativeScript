@@ -399,11 +399,19 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	 * Native setters that had to execute while there was no native view,
 	 * or the view was detached from the visual tree etc. will accumulate in this object,
 	 * and will be applied when all prerequisites are met.
+	 * Initializing ensure we never call `applyAllNativeSetters` and always use _suspendedUpdates
 	 * @private
 	 */
-	public _suspendedUpdates: {
-		[propertyName: string]: Property<ViewBase, any> | CssProperty<Style, any> | CssAnimationProperty<Style, any>;
-	};
+	public _suspendedUpdates: Map<string, Property<ViewBase, any> | CssProperty<Style, any> | CssAnimationProperty<Style, any>> = new Map();
+
+	/**
+	 * used to know when initNativeView should enforce all native setters are called again
+	 * it is set on _tearDownUI which would trigger native to be disposed while properties on
+	 * view/style would still be set. Thus a next _setupUI would not trigger native properties change
+	 * and thus would not feel _suspendedUpdates
+	 */
+	public _needsAllNativePropsUpdate: boolean = false;
+
 	//@endprivate
 	/**
 	 * Determines the depth of suspended updates.
@@ -608,7 +616,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 			this.loadView(child);
 			return true;
 		});
-		this._resumeNativeUpdates(SuspendType.Loaded, false, this.parent?.mSuspendRequestLayout);
+		this._resumeNativeUpdates(SuspendType.Loaded);
 		setupAccessibleView(<any>this);
 
 		this.suspendRequestLayout = false;
@@ -663,10 +671,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 			});
 		}
 	}
-	public _resumeNativeUpdates(type: SuspendType, recursive = false, preventRequestLayout = false, shouldResumeRequestLayout = false): void {
+	public _resumeNativeUpdates(type: SuspendType, recursive = false, shouldResumeRequestLayout = false): void {
 		if (recursive) {
 			this.eachChild((child) => {
-				child._resumeNativeUpdates(type, recursive, true, shouldResumeRequestLayout);
+				child._resumeNativeUpdates(type, recursive, shouldResumeRequestLayout);
 				return true;
 			});
 		}
@@ -682,7 +690,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 			this.suspendRequestLayout = false;
 		}
 		if (!this._suspendNativeUpdatesCount) {
-			this.onResumeNativeUpdates(preventRequestLayout);
+			this.onResumeNativeUpdates();
 		}
 	}
 
@@ -1034,32 +1042,6 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		//
 	}
 
-	/**
-	 * Resets properties/listeners set to the native view.
-	 */
-	public resetNativeView(): void {
-		//
-	}
-
-	private resetNativeViewInternal(): void {
-		// const nativeView = this.nativeViewProtected;
-		// if (nativeView && __ANDROID__) {
-		//     const recycle = this.recycleNativeView;
-		//     if (recycle === "always" || (recycle === "auto" && !this._disableNativeViewRecycling)) {
-		//         resetNativeView(this);
-		//         if (this._isPaddingRelative) {
-		//             nativeView.setPaddingRelative(this._defaultPaddingLeft, this._defaultPaddingTop, this._defaultPaddingRight, this._defaultPaddingBottom);
-		//         } else {
-		//             nativeView.setPadding(this._defaultPaddingLeft, this._defaultPaddingTop, this._defaultPaddingRight, this._defaultPaddingBottom);
-		//         }
-		//         this.resetNativeView();
-		//     }
-		// }
-		// if (this._cssState) {
-		//     this._cancelAllAnimations();
-		// }
-	}
-
 	_setupAsRootView(context: any): void {
 		this._setupUI(context);
 	}
@@ -1175,12 +1157,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
 		if (this.__nativeView) {
 			this._suspendNativeUpdates(SuspendType.NativeView);
-			// We may do a `this.resetNativeView()` here?
 		}
 
 		this.__nativeView = this.nativeViewProtected = value;
 		if (this.__nativeView) {
-			this._suspendedUpdates = undefined;
 			this.initNativeView();
 			this._resumeNativeUpdates(SuspendType.NativeView);
 		}
@@ -1208,8 +1188,6 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 			return;
 		}
 		const preserveNativeView = this.reusable && !force;
-
-		this.resetNativeViewInternal();
 
 		if (!preserveNativeView) {
 			this.eachChild((child) => {
@@ -1248,6 +1226,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 			this.disposeNativeView();
 
 			this._suspendNativeUpdates(SuspendType.UISetup);
+			this._needsAllNativePropsUpdate = true;
 
 			this.setNativeView(null);
 			this._androidView = null;
@@ -1352,9 +1331,9 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		}
 	}
 
-	public onResumeNativeUpdates(preventRequestLayout = false): void {
+	public onResumeNativeUpdates(): void {
 		// Apply native setters...
-		initNativeView(this, preventRequestLayout);
+		initNativeView(this);
 	}
 
 	public toString(): string {

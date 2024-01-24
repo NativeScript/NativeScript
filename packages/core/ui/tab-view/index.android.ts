@@ -298,14 +298,6 @@ export class TabViewItem extends TabViewItemBase {
 		super.onLoaded();
 	}
 
-	public resetNativeView(): void {
-		super.resetNativeView();
-		if (this.nativeViewProtected) {
-			// We reset it here too because this could be changed by multiple properties - whiteSpace, secure, textTransform
-			this.nativeViewProtected.setTransformationMethod(this._defaultTransformationMethod);
-		}
-	}
-
 	public disposeNativeView(): void {
 		(<TabViewItemDefinition>this).canBeLoaded = false;
 		super.disposeNativeView();

@@ -1,13 +1,26 @@
-import { Font as FontDefinition } from './font';
+import { Font } from './font';
 import { ParsedFont, FontStyleType, FontWeightType, FontVariationSettingsType } from './font-interfaces';
 import { makeValidator, makeParser } from '../core/properties';
 import { Trace } from '../../trace';
 
-export abstract class Font implements FontDefinition {
+export abstract class FontBase implements Font {
 	public static default = undefined;
 	public readonly fontStyle: FontStyleType;
 	public readonly fontWeight: FontWeightType;
 	public readonly fontScale: number;
+
+	isDirty = false;
+
+	cloneOrDirty() {
+		let clone = <Font>this;
+		if (clone === Font.default) {
+			clone = new Font(undefined, undefined);
+			Object.assign(clone, this);
+		} else {
+			clone.isDirty = true;
+		}
+		return clone;
+	}
 
 	get isItalic(): boolean {
 		return this.fontStyle === FontStyle.ITALIC;
@@ -25,12 +38,46 @@ export abstract class Font implements FontDefinition {
 
 	public abstract getAndroidTypeface(): any; /* android.graphics.Typeface */
 	public abstract getUIFont(defaultFont: any /* UIFont */): any; /* UIFont */
-	public abstract withFontFamily(family: string): Font;
-	public abstract withFontStyle(style: FontStyleType): Font;
-	public abstract withFontWeight(weight: FontWeightType): Font;
-	public abstract withFontSize(size: number): Font;
-	public abstract withFontScale(scale: number): Font;
-	public abstract withFontVariationSettings(variationSettings: FontVariationSettingsType[]): Font;
+
+	public withFontFamily(family: string): Font {
+		let clone = this.cloneOrDirty();
+		clone.fontFamily = family;
+		return clone;
+	}
+
+	public withFontStyle(style: FontStyleType): Font {
+		let clone = this.cloneOrDirty();
+		clone.fontStyle = style;
+		return clone;
+	}
+
+	public withFontWeight(weight: FontWeightType): Font {
+		let clone = this.cloneOrDirty();
+		clone.fontWeight = weight;
+		return clone;
+	}
+
+	public withFontSize(size: number): Font {
+		let clone = this.cloneOrDirty();
+		clone.fontSize = size;
+		return clone;
+	}
+
+	public withFontScale(scale: number): Font {
+		let clone = this.cloneOrDirty();
+		clone.fontScale = scale;
+		return clone;
+	}
+
+	public withFontVariationSettings(variationSettings: Array<FontVariationSettingsType> | null): Font {
+		let clone = this.cloneOrDirty();
+		clone.fontVariationSettings = variationSettings;
+		return clone;
+	}
+
+	public isEqualToDefaultFont() {
+		return this === Font.default || (!this.fontFamily && this.fontScale === undefined && this.fontSize === undefined && !this.fontStyle && !this.fontWeight && !this.fontVariationSettings);
+	}
 
 	public static equals(value1: Font, value2: Font): boolean {
 		// both values are falsy

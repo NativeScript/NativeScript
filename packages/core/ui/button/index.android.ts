@@ -104,15 +104,6 @@ export class Button extends ButtonBase {
 		super.disposeNativeView();
 	}
 
-	public resetNativeView(): void {
-		super.resetNativeView();
-
-		if (this._stateListAnimator && SDK_VERSION >= 21) {
-			(<any>this.nativeViewProtected).setStateListAnimator(this._stateListAnimator);
-			this._stateListAnimator = undefined;
-		}
-	}
-
 	@PseudoClassHandler('normal', 'highlighted', 'pressed', 'active')
 	_updateButtonStateChangeHandler(subscribe: boolean) {
 		if (subscribe) {

@@ -13,7 +13,7 @@ import { Trace } from '../../../trace';
 import { CoreTypes } from '../../../core-types';
 import { ViewHelper } from './view-helper';
 
-import { PercentLength } from '../../styling/style-properties';
+import { backgroundInternalProperty, fontInternalProperty, PercentLength } from '../../styling/style-properties';
 
 import { observe as gestureObserve, GesturesObserver, GestureTypes, GestureEventData, fromString as gestureFromString, TouchManager, TouchAnimationOptions } from '../../gestures';
 
@@ -504,6 +504,20 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 				observers[i].disconnect();
 			}
 		}
+	}
+
+	public onResumeNativeUpdates(): void {
+		// special handling of backgroundInternal property to prevent too many slow updates
+		const background = this.style.backgroundInternal;
+		if (background?.isDirty) {
+			this._suspendedUpdates?.set('backgroundInternal', backgroundInternalProperty);
+		}
+		// special handling of fontInternal property to prevent too many slow updates
+		const font = this.style.fontInternal;
+		if (font?.isDirty) {
+			this._suspendedUpdates?.set('fontInternal', fontInternalProperty);
+		}
+		super.onResumeNativeUpdates();
 	}
 
 	// START Style property shortcuts
@@ -1113,11 +1127,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		}
 
 		return false;
-	}
-
-	public resetNativeView(): void {
-		this.cancelAllAnimations();
-		super.resetNativeView();
 	}
 
 	public _setNativeViewFrame(nativeView: any, frame: any) {

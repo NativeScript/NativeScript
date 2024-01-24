@@ -1,11 +1,21 @@
 package org.nativescript.widgets;
 
 import android.annotation.TargetApi;
+import android.graphics.Outline;
+import android.graphics.Path;
 import android.graphics.Rect;
 import android.view.Gravity;
+import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewOutlineProvider;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+
+
+import androidx.appcompat.widget.AppCompatTextView;
+
+import java.lang.reflect.Field;
+import java.lang.Class;
 
 /**
  * Created by hhristov on 8/23/16.
@@ -17,6 +27,9 @@ public class ViewHelper {
 	}
 
 	static final int version = android.os.Build.VERSION.SDK_INT;
+	static final boolean LOLLIPOP = android.os.Build.VERSION.SDK_INT >= 21;
+	static final boolean PI = android.os.Build.VERSION.SDK_INT >= 28;
+	static final boolean TIRAMISU = android.os.Build.VERSION.SDK_INT >= 33;
 
 	public static int getMinWidth(android.view.View view) {
 		return view.getMinimumWidth();
@@ -350,31 +363,64 @@ public class ViewHelper {
 		return "stretch";
 	}
 
-	public static void setHorizontalAlignment(android.view.View view, String value) {
+	private static Field getField(Class clazz, String field) {
+		Field result = null;
+		try {
+			result = clazz.getDeclaredField(field);
+		} catch (Throwable e) {}
+		if (result != null) {
+			return result;
+		}
+		while((clazz = clazz.getSuperclass()) != null) {
+			try {
+				result = clazz.getDeclaredField(field);
+			} catch (Throwable e) {}
+			if (result != null) {
+				return result;
+			}
+		}
+		return result;
+	}
+
+	public static void setHorizontalAlignment(android.view.View view, String value) throws Throwable {
 		ViewGroup.LayoutParams params = view.getLayoutParams();
 		// Initialize if empty.
 		if (params == null) {
 			params = new CommonLayoutParams();
 		}
 
-		// Set margins only if params are of the correct type.
-		if (params instanceof FrameLayout.LayoutParams) {
-			FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) params;
+		Field field = getField(params.getClass(), "gravity");
+		if (field != null) {
+			int gravity = field.getInt(params);
+			Field weightField = getField(params.getClass(), "weight");
 			switch (value) {
 				case "left":
-					lp.gravity = Gravity.LEFT | (lp.gravity & Gravity.VERTICAL_GRAVITY_MASK);
+					gravity = Gravity.LEFT | (gravity & Gravity.VERTICAL_GRAVITY_MASK);
+					if (weightField != null && weightField.getFloat(params) < 0) {
+						weightField.setFloat(params, -2.0f);
+					}
 					break;
 				case "center":
 				case "middle":
-					lp.gravity = Gravity.CENTER_HORIZONTAL | (lp.gravity & Gravity.VERTICAL_GRAVITY_MASK);
+					gravity = Gravity.CENTER_HORIZONTAL | (gravity & Gravity.VERTICAL_GRAVITY_MASK);
+					if (weightField != null && weightField.getFloat(params) < 0) {
+						weightField.setFloat(params, -2.0f);
+					}
 					break;
 				case "right":
-					lp.gravity = Gravity.RIGHT | (lp.gravity & Gravity.VERTICAL_GRAVITY_MASK);
+					gravity = Gravity.RIGHT | (gravity & Gravity.VERTICAL_GRAVITY_MASK);
+					if (weightField != null && weightField.getFloat(params) < 0) {
+						weightField.setFloat(params, -2.0f);
+					}
 					break;
 				case "stretch":
-					lp.gravity = Gravity.FILL_HORIZONTAL | (lp.gravity & Gravity.VERTICAL_GRAVITY_MASK);
+					gravity = Gravity.FILL_HORIZONTAL | (gravity & Gravity.VERTICAL_GRAVITY_MASK);
+					if (weightField != null && weightField.getFloat(params) < 0) {
+						weightField.setFloat(params, -1.0f);
+					}
 					break;
 			}
+			field.setInt(params, gravity);
 			view.setLayoutParams(params);
 		}
 	}
@@ -401,31 +447,44 @@ public class ViewHelper {
 		return "stretch";
 	}
 
-	public static void setVerticalAlignment(android.view.View view, String value) {
+	public static void setVerticalAlignment(android.view.View view, String value) throws Throwable{
 		ViewGroup.LayoutParams params = view.getLayoutParams();
 		// Initialize if empty.
 		if (params == null) {
 			params = new CommonLayoutParams();
 		}
 
-		// Set margins only if params are of the correct type.
-		if (params instanceof FrameLayout.LayoutParams) {
-			FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) params;
+		Field field = getField(params.getClass(), "gravity");
+		if (field != null) {
+			int gravity = field.getInt(params);
 			switch (value) {
 				case "top":
-					lp.gravity = Gravity.TOP | (lp.gravity & Gravity.HORIZONTAL_GRAVITY_MASK);
+					gravity = Gravity.TOP | (gravity & Gravity.HORIZONTAL_GRAVITY_MASK);
+					if (params.height < 0) {
+						params.height = -2;
+					}
 					break;
 				case "center":
 				case "middle":
-					lp.gravity = Gravity.CENTER_VERTICAL | (lp.gravity & Gravity.HORIZONTAL_GRAVITY_MASK);
+					gravity = Gravity.CENTER_VERTICAL | (gravity & Gravity.HORIZONTAL_GRAVITY_MASK);
+					if (params.height < 0) {
+						params.height = -2;
+					}
 					break;
 				case "bottom":
-					lp.gravity = Gravity.BOTTOM | (lp.gravity & Gravity.HORIZONTAL_GRAVITY_MASK);
+					gravity = Gravity.BOTTOM | (gravity & Gravity.HORIZONTAL_GRAVITY_MASK);
+					if (params.height < 0) {
+						params.height = -2;
+					}
 					break;
 				case "stretch":
-					lp.gravity = Gravity.FILL_VERTICAL | (lp.gravity & Gravity.HORIZONTAL_GRAVITY_MASK);
+					gravity = Gravity.FILL_VERTICAL | (gravity & Gravity.HORIZONTAL_GRAVITY_MASK);
+					if (params.height < 0) {
+						params.height = -1;
+					}
 					break;
 			}
+			field.setInt(params, gravity);
 			view.setLayoutParams(params);
 		}
 	}
@@ -532,7 +591,7 @@ public class ViewHelper {
 
 	@TargetApi(21)
 	public static float getZIndex(android.view.View view) {
-		if (ViewHelper.version >= 21) {
+		if (LOLLIPOP) {
 			return view.getZ();
 		}
 
@@ -541,14 +600,14 @@ public class ViewHelper {
 
 	@TargetApi(21)
 	public static void setZIndex(android.view.View view, float value) {
-		if (ViewHelper.version >= 21) {
+		if (LOLLIPOP) {
 			view.setZ(value);
 		}
 	}
 
 	@TargetApi(21)
 	public static float getLetterspacing(android.widget.TextView textView) {
-		if (ViewHelper.version >= 21) {
+		if (LOLLIPOP) {
 			return textView.getLetterSpacing();
 		}
 
@@ -557,8 +616,116 @@ public class ViewHelper {
 
 	@TargetApi(21)
 	public static void setLetterspacing(android.widget.TextView textView, float value) {
-		if (ViewHelper.version >= 21) {
+		if (LOLLIPOP) {
 			textView.setLetterSpacing(value);
 		}
+	}
+
+	public static void setCommonGridLayoutParam(android.view.View view, String type, int value) throws Throwable {
+		ViewGroup.LayoutParams params = view.getLayoutParams();
+		// Initialize if empty.
+		if (params == null) {
+			params = new CommonLayoutParams();
+		}
+		if (params instanceof CommonLayoutParams) {
+			switch(type) {
+				case "row":
+					((CommonLayoutParams)params).row = value;
+					break;
+				case "rowSpan":
+					((CommonLayoutParams)params).rowSpan = value;
+					break;
+				case "column":
+					((CommonLayoutParams)params).column = value;
+					break;
+				case "columnSpan":
+					((CommonLayoutParams)params).columnSpan = value;
+					break;
+			}
+			view.setLayoutParams(params);
+		}
+		
+	}
+
+	@TargetApi(21)
+	public static void setOutlineProvider(android.view.View view, int borderTopLeftRadius,
+		int borderTopRightRadius,
+		int borderBottomRightRadius,
+		int borderBottomLeftRadius) {
+		if (LOLLIPOP) {
+			view.setOutlineProvider(new ViewOutlineProvider() {
+				@Override
+				public void getOutline(View view, Outline outline) {
+					if (borderTopLeftRadius == borderTopRightRadius  && borderTopLeftRadius == borderBottomRightRadius && borderTopLeftRadius == borderBottomLeftRadius) {
+						outline.setRoundRect(0,0, view.getWidth(), view.getHeight(), borderTopLeftRadius);
+					} else if (TIRAMISU) {
+						Path path = new Path();
+						float[] radii = {
+							borderTopLeftRadius,
+							borderTopRightRadius,
+							borderBottomRightRadius,
+							borderBottomLeftRadius}
+						;
+						path.addRoundRect(
+						0, 0, view.getWidth(), view.getHeight(), radii, Path.Direction.CW);
+						outline.setConvexPath(path);
+					}
+				}
+			});
+			view.setClipToOutline(true);
+		}
+	}
+
+	@TargetApi(21)
+	public static void clearOutlineProvider(android.view.View view) {
+		view.setClipToOutline(false);
+		view.setOutlineProvider(null);
+	}
+
+	public static boolean isTextView(View view) {
+		return view instanceof android.widget.TextView;
+	}
+
+	public static View getChildAppCompatTextView(ViewGroup view) {
+		int numChildren = view.getChildCount();
+
+		for (int i = 0; i < numChildren; i += 1) {
+			View childAndroidView = view.getChildAt(i);
+			if (childAndroidView instanceof AppCompatTextView) {
+				return childAndroidView;
+			}
+		}
+		return null;
+	}
+
+	public static void toolbarAccessibilityScreenChanged(androidx.appcompat.widget.Toolbar nativeView) {
+		nativeView.setFocusable(false);
+		nativeView.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+
+		android.view.View announceView = null;
+		int numChildren = nativeView.getChildCount();
+		for (int i = 0; i < numChildren; i += 1) {
+			View childView = nativeView.getChildAt(i);
+			if (childView == null) {
+				continue;
+			}
+
+			childView.setFocusable(true);
+			if (childView instanceof AppCompatTextView) {
+				announceView = childView;
+				if (PI) {
+					announceView.setAccessibilityHeading(true);
+				}
+			}
+		}
+		if (announceView == null) {
+			announceView = nativeView;
+		}
+
+		announceView.setFocusable(true);
+		announceView.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
+
+		announceView.sendAccessibilityEvent(android.view.accessibility.AccessibilityEvent.TYPE_VIEW_FOCUSED);
+		announceView.sendAccessibilityEvent(android.view.accessibility.AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
 	}
 }

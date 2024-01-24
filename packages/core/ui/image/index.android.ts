@@ -73,11 +73,6 @@ export class Image extends ImageBase {
 		super.disposeNativeView();
 	}
 
-	public resetNativeView(): void {
-		super.resetNativeView();
-		this.nativeViewProtected.setImageMatrix(new android.graphics.Matrix());
-	}
-
 	public _createImageSourceFromSrc(value: string | ImageSource | ImageAsset) {
 		const imageView = this.nativeViewProtected;
 		if (!imageView) {

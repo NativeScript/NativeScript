@@ -70,15 +70,11 @@ function convertToStringCommon(length: CoreTypes.LengthType | CoreTypes.PercentL
 }
 
 function toDevicePixelsCommon(length: CoreTypes.PercentLengthType, auto: number = Number.NaN, parentAvailableWidth: number = Number.NaN): number {
-	if (length == 'auto') {
-		// tslint:disable-line
+	if (length === 'auto' || !length) {
 		return auto;
 	}
 	if (typeof length === 'number') {
 		return layout.round(layout.toDevicePixels(length));
-	}
-	if (!length) {
-		return auto;
 	}
 	switch (length.unit) {
 		case 'px':
@@ -106,25 +102,15 @@ export namespace PercentLength {
 		}
 		if (typeof fromValue === 'string') {
 			let stringValue = fromValue.trim();
-			const percentIndex = stringValue.indexOf('%');
-			if (percentIndex !== -1) {
-				let value: CoreTypes.percent;
-				// if only % or % is not last we treat it as invalid value.
-				if (percentIndex !== stringValue.length - 1 || percentIndex === 0) {
-					value = Number.NaN;
-				} else {
-					// Normalize result to values between -1 and 1
-					value = parseFloat(stringValue.substring(0, stringValue.length - 1).trim()) / 100;
-				}
-
+			if (stringValue.endsWith('%')) {
+				// Normalize result to values between -1 and 1
+				const value = parseFloat(stringValue.substring(0, stringValue.length - 1).trim()) / 100;
 				if (isNaN(value) || !isFinite(value)) {
 					throw new Error(`Invalid value: ${fromValue}`);
 				}
-
 				return { unit: '%', value };
-			} else if (stringValue.indexOf('px') !== -1) {
-				stringValue = stringValue.replace('px', '').trim();
-				const value: CoreTypes.px = parseFloat(stringValue);
+			} else if (stringValue.endsWith('px')) {
+				const value: CoreTypes.px = parseFloat(stringValue.slice(-2).trim());
 				if (isNaN(value) || !isFinite(value)) {
 					throw new Error(`Invalid value: ${fromValue}`);
 				}
@@ -156,14 +142,13 @@ export namespace PercentLength {
 
 export namespace Length {
 	export function parse(fromValue: string | CoreTypes.LengthType): CoreTypes.LengthType {
-		if (fromValue == 'auto') {
-			// tslint:disable-line
-			return 'auto';
-		}
 		if (typeof fromValue === 'string') {
+			if (fromValue === 'auto') {
+				return 'auto';
+			}
 			let stringValue = fromValue.trim();
-			if (stringValue.indexOf('px') !== -1) {
-				stringValue = stringValue.replace('px', '').trim();
+			if (stringValue.endsWith('px')) {
+				stringValue = stringValue.slice(-2).trim();
 				const value: CoreTypes.px = parseFloat(stringValue);
 				if (isNaN(value) || !isFinite(value)) {
 					throw new Error(`Invalid value: ${stringValue}`);
@@ -397,12 +382,12 @@ export const horizontalAlignmentProperty = new CssProperty<Style, CoreTypes.Hori
 });
 horizontalAlignmentProperty.register(Style);
 
-export const verticalAlignmentProperty = new CssProperty<Style, CoreTypes.VerticalAlignmentTextType>({
+export const verticalAlignmentProperty = new CssProperty<Style, CoreTypes.VerticalAlignmentType>({
 	name: 'verticalAlignment',
 	cssName: 'vertical-align',
-	defaultValue: CoreTypes.VerticalAlignmentText.stretch,
+	defaultValue: CoreTypes.VerticalAlignment.stretch,
 	affectsLayout: __IOS__,
-	valueConverter: CoreTypes.VerticalAlignmentText.parse,
+	valueConverter: CoreTypes.VerticalAlignment.parse,
 });
 verticalAlignmentProperty.register(Style);
 
@@ -415,7 +400,7 @@ interface Thickness {
 
 function parseThickness(value: string): Thickness {
 	if (typeof value === 'string') {
-		const arr = value.split(/[ ,]+/);
+		const arr = value.split(' ');
 
 		let top: string;
 		let right: string;
@@ -546,10 +531,10 @@ export const scaleYProperty = new CssAnimationProperty<Style, number>({
 scaleYProperty.register(Style);
 
 function parseDIPs(value: string): CoreTypes.dip {
-	if (value.indexOf('px') !== -1) {
-		return layout.toDeviceIndependentPixels(parseFloat(value.replace('px', '').trim()));
+	if (value.endsWith('px')) {
+		return layout.toDeviceIndependentPixels(parseFloat(value.trim().slice(-2).trim()));
 	} else {
-		return parseFloat(value.replace('dip', '').trim());
+		return parseFloat(value.slice(-3).trim());
 	}
 }
 
@@ -755,16 +740,40 @@ export const backgroundInternalProperty = new CssProperty<Style, Background>({
 	name: 'backgroundInternal',
 	cssName: '_backgroundInternal',
 	defaultValue: Background.default,
+	equalityComparer: (value1: Background, value2: Background, target) => {
+		if (value1 === value2) {
+			const view = target.viewRef.get();
+
+			// if view layout or updates are suspended we will check the backgroundInternal at the end
+			if (value1.isDirty && !view._suspendNativeUpdatesCount) {
+				value1.isDirty = false;
+				return false;
+			}
+			return true;
+		}
+		return Background.equals(value1, value2);
+	},
 });
 backgroundInternalProperty.register(Style);
+
+function backgroundInternalSubPropertyValueChanged<T extends Style, U>(block: (target: T, oldValue: U, newValue: U) => Background) {
+	return function (target: T, oldValue: U, newValue: U) {
+		const newBackgroundInternal = block(target, oldValue, newValue);
+		const view = target.viewRef.get();
+		if (target.backgroundInternal !== newBackgroundInternal || !view._suspendNativeUpdatesCount) {
+			target.backgroundInternal = newBackgroundInternal;
+		} else {
+			// let s not go through another property set which takes time during batch updates
+			// we will check and update backgroundInternal once the update is done
+		}
+	};
+}
 
 // const pattern: RegExp = /url\(('|")(.*?)\1\)/;
 export const backgroundImageProperty = new CssProperty<Style, string | LinearGradient>({
 	name: 'backgroundImage',
 	cssName: 'background-image',
-	valueChanged: (target, oldValue, newValue) => {
-		target.backgroundInternal = target.backgroundInternal.withImage(newValue);
-	},
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => target.backgroundInternal.withImage(newValue)),
 	equalityComparer: (value1, value2) => {
 		if (value1 instanceof LinearGradient && value2 instanceof LinearGradient) {
 			return LinearGradient.equals(value1, value2);
@@ -788,9 +797,7 @@ backgroundImageProperty.register(Style);
 export const backgroundColorProperty = new CssAnimationProperty<Style, Color>({
 	name: 'backgroundColor',
 	cssName: 'background-color',
-	valueChanged: (target, oldValue, newValue) => {
-		target.backgroundInternal = target.backgroundInternal.withColor(newValue);
-	},
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => target.backgroundInternal.withColor(newValue)),
 	equalityComparer: Color.equals,
 	valueConverter: colorConverter,
 });
@@ -800,27 +807,21 @@ export const backgroundRepeatProperty = new CssProperty<Style, CoreTypes.Backgro
 	name: 'backgroundRepeat',
 	cssName: 'background-repeat',
 	valueConverter: CoreTypes.BackgroundRepeat.parse,
-	valueChanged: (target, oldValue, newValue) => {
-		target.backgroundInternal = target.backgroundInternal.withRepeat(newValue);
-	},
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => target.backgroundInternal.withRepeat(newValue)),
 });
 backgroundRepeatProperty.register(Style);
 
 export const backgroundSizeProperty = new CssProperty<Style, string>({
 	name: 'backgroundSize',
 	cssName: 'background-size',
-	valueChanged: (target, oldValue, newValue) => {
-		target.backgroundInternal = target.backgroundInternal.withSize(newValue);
-	},
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => target.backgroundInternal.withSize(newValue)),
 });
 backgroundSizeProperty.register(Style);
 
 export const backgroundPositionProperty = new CssProperty<Style, string>({
 	name: 'backgroundPosition',
 	cssName: 'background-position',
-	valueChanged: (target, oldValue, newValue) => {
-		target.backgroundInternal = target.backgroundInternal.withPosition(newValue);
-	},
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => target.backgroundInternal.withPosition(newValue)),
 });
 backgroundPositionProperty.register(Style);
 
@@ -945,9 +946,7 @@ borderColorProperty.register(Style);
 export const borderTopColorProperty = new CssProperty<Style, Color>({
 	name: 'borderTopColor',
 	cssName: 'border-top-color',
-	valueChanged: (target, oldValue, newValue) => {
-		target.backgroundInternal = target.backgroundInternal.withBorderTopColor(newValue);
-	},
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => target.backgroundInternal.withBorderTopColor(newValue)),
 	equalityComparer: Color.equals,
 	valueConverter: colorConverter,
 });
@@ -956,9 +955,7 @@ borderTopColorProperty.register(Style);
 export const borderRightColorProperty = new CssProperty<Style, Color>({
 	name: 'borderRightColor',
 	cssName: 'border-right-color',
-	valueChanged: (target, oldValue, newValue) => {
-		target.backgroundInternal = target.backgroundInternal.withBorderRightColor(newValue);
-	},
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => target.backgroundInternal.withBorderRightColor(newValue)),
 	equalityComparer: Color.equals,
 	valueConverter: colorConverter,
 });
@@ -967,9 +964,7 @@ borderRightColorProperty.register(Style);
 export const borderBottomColorProperty = new CssProperty<Style, Color>({
 	name: 'borderBottomColor',
 	cssName: 'border-bottom-color',
-	valueChanged: (target, oldValue, newValue) => {
-		target.backgroundInternal = target.backgroundInternal.withBorderBottomColor(newValue);
-	},
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => target.backgroundInternal.withBorderBottomColor(newValue)),
 	equalityComparer: Color.equals,
 	valueConverter: colorConverter,
 });
@@ -978,9 +973,7 @@ borderBottomColorProperty.register(Style);
 export const borderLeftColorProperty = new CssProperty<Style, Color>({
 	name: 'borderLeftColor',
 	cssName: 'border-left-color',
-	valueChanged: (target, oldValue, newValue) => {
-		target.backgroundInternal = target.backgroundInternal.withBorderLeftColor(newValue);
-	},
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => target.backgroundInternal.withBorderLeftColor(newValue)),
 	equalityComparer: Color.equals,
 	valueConverter: colorConverter,
 });
@@ -1025,7 +1018,7 @@ export const borderTopWidthProperty = new CssProperty<Style, CoreTypes.LengthTyp
 	defaultValue: CoreTypes.zeroLength,
 	affectsLayout: __IOS__,
 	equalityComparer: Length.equals,
-	valueChanged: (target, oldValue, newValue) => {
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => {
 		let value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
 			value = 0;
@@ -1037,8 +1030,8 @@ export const borderTopWidthProperty = new CssProperty<Style, CoreTypes.LengthTyp
 		} else {
 			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 		}
-		target.backgroundInternal = target.backgroundInternal.withBorderTopWidth(value);
-	},
+		return target.backgroundInternal.withBorderTopWidth(value);
+	}),
 	valueConverter: Length.parse,
 });
 borderTopWidthProperty.register(Style);
@@ -1049,7 +1042,7 @@ export const borderRightWidthProperty = new CssProperty<Style, CoreTypes.LengthT
 	defaultValue: CoreTypes.zeroLength,
 	affectsLayout: __IOS__,
 	equalityComparer: Length.equals,
-	valueChanged: (target, oldValue, newValue) => {
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => {
 		let value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
 			value = 0;
@@ -1061,8 +1054,8 @@ export const borderRightWidthProperty = new CssProperty<Style, CoreTypes.LengthT
 		} else {
 			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 		}
-		target.backgroundInternal = target.backgroundInternal.withBorderRightWidth(value);
-	},
+		return target.backgroundInternal.withBorderRightWidth(value);
+	}),
 	valueConverter: Length.parse,
 });
 borderRightWidthProperty.register(Style);
@@ -1073,7 +1066,7 @@ export const borderBottomWidthProperty = new CssProperty<Style, CoreTypes.Length
 	defaultValue: CoreTypes.zeroLength,
 	affectsLayout: __IOS__,
 	equalityComparer: Length.equals,
-	valueChanged: (target, oldValue, newValue) => {
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => {
 		let value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
 			value = 0;
@@ -1085,8 +1078,8 @@ export const borderBottomWidthProperty = new CssProperty<Style, CoreTypes.Length
 		} else {
 			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 		}
-		target.backgroundInternal = target.backgroundInternal.withBorderBottomWidth(value);
-	},
+		return target.backgroundInternal.withBorderBottomWidth(value);
+	}),
 	valueConverter: Length.parse,
 });
 borderBottomWidthProperty.register(Style);
@@ -1097,7 +1090,7 @@ export const borderLeftWidthProperty = new CssProperty<Style, CoreTypes.LengthTy
 	defaultValue: CoreTypes.zeroLength,
 	affectsLayout: __IOS__,
 	equalityComparer: Length.equals,
-	valueChanged: (target, oldValue, newValue) => {
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => {
 		let value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
 			value = 0;
@@ -1109,8 +1102,8 @@ export const borderLeftWidthProperty = new CssProperty<Style, CoreTypes.LengthTy
 		} else {
 			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 		}
-		target.backgroundInternal = target.backgroundInternal.withBorderLeftWidth(value);
-	},
+		return target.backgroundInternal.withBorderLeftWidth(value);
+	}),
 	valueConverter: Length.parse,
 });
 borderLeftWidthProperty.register(Style);
@@ -1153,13 +1146,13 @@ export const borderTopLeftRadiusProperty = new CssProperty<Style, CoreTypes.Leng
 	cssName: 'border-top-left-radius',
 	defaultValue: 0,
 	affectsLayout: __IOS__,
-	valueChanged: (target, oldValue, newValue) => {
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => {
 		let value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
 			value = 0;
 		}
-		target.backgroundInternal = target.backgroundInternal.withBorderTopLeftRadius(value);
-	},
+		return target.backgroundInternal.withBorderTopLeftRadius(value);
+	}),
 	valueConverter: Length.parse,
 	equalityComparer: Length.equals,
 });
@@ -1170,13 +1163,13 @@ export const borderTopRightRadiusProperty = new CssProperty<Style, CoreTypes.Len
 	cssName: 'border-top-right-radius',
 	defaultValue: 0,
 	affectsLayout: __IOS__,
-	valueChanged: (target, oldValue, newValue) => {
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => {
 		let value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
 			value = 0;
 		}
-		target.backgroundInternal = target.backgroundInternal.withBorderTopRightRadius(value);
-	},
+		return target.backgroundInternal.withBorderTopRightRadius(value);
+	}),
 	valueConverter: Length.parse,
 	equalityComparer: Length.equals,
 });
@@ -1187,13 +1180,13 @@ export const borderBottomRightRadiusProperty = new CssProperty<Style, CoreTypes.
 	cssName: 'border-bottom-right-radius',
 	defaultValue: 0,
 	affectsLayout: __IOS__,
-	valueChanged: (target, oldValue, newValue) => {
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => {
 		let value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
 			value = 0;
 		}
-		target.backgroundInternal = target.backgroundInternal.withBorderBottomRightRadius(value);
-	},
+		return target.backgroundInternal.withBorderBottomRightRadius(value);
+	}),
 	valueConverter: Length.parse,
 	equalityComparer: Length.equals,
 });
@@ -1204,13 +1197,13 @@ export const borderBottomLeftRadiusProperty = new CssProperty<Style, CoreTypes.L
 	cssName: 'border-bottom-left-radius',
 	defaultValue: 0,
 	affectsLayout: __IOS__,
-	valueChanged: (target, oldValue, newValue) => {
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => {
 		let value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
 			value = 0;
 		}
-		target.backgroundInternal = target.backgroundInternal.withBorderBottomLeftRadius(value);
-	},
+		return target.backgroundInternal.withBorderBottomLeftRadius(value);
+	}),
 	valueConverter: Length.parse,
 	equalityComparer: Length.equals,
 });
@@ -1219,8 +1212,8 @@ borderBottomLeftRadiusProperty.register(Style);
 const boxShadowProperty = new CssProperty<Style, ShadowCSSValues>({
 	name: 'boxShadow',
 	cssName: 'box-shadow',
-	valueChanged: (target, oldValue, newValue) => {
-		target.backgroundInternal = target.backgroundInternal.withBoxShadow(
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => {
+		return target.backgroundInternal.withBoxShadow(
 			newValue
 				? {
 						inset: newValue.inset,
@@ -1232,7 +1225,7 @@ const boxShadowProperty = new CssProperty<Style, ShadowCSSValues>({
 				  }
 				: null
 		);
-	},
+	}),
 	valueConverter: (value) => {
 		return parseCSSShadow(value);
 	},
@@ -1240,7 +1233,7 @@ const boxShadowProperty = new CssProperty<Style, ShadowCSSValues>({
 boxShadowProperty.register(Style);
 
 function isNonNegativeFiniteNumber(value: number): boolean {
-	return isFinite(value) && !isNaN(value) && value >= 0;
+	return isFinite(value) && value >= 0;
 }
 
 const supportedPaths = ['rect', 'circle', 'ellipse', 'polygon', 'inset'];
@@ -1256,13 +1249,13 @@ function isClipPathValid(value: string): boolean {
 export const clipPathProperty = new CssProperty<Style, string>({
 	name: 'clipPath',
 	cssName: 'clip-path',
-	valueChanged: (target, oldValue, newValue) => {
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => {
 		if (!isClipPathValid(newValue)) {
 			throw new Error('clip-path is not valid.');
 		}
 
-		target.backgroundInternal = target.backgroundInternal.withClipPath(newValue);
-	},
+		return target.backgroundInternal.withClipPath(newValue);
+	}),
 });
 clipPathProperty.register(Style);
 
@@ -1309,21 +1302,48 @@ colorProperty.register(Style);
 
 export const fontInternalProperty = new CssProperty<Style, Font>({
 	name: 'fontInternal',
+	defaultValue: Font.default,
 	cssName: '_fontInternal',
+	equalityComparer: (value1: Font, value2: Font, target) => {
+		if (value1 === value2) {
+			const view = target.viewRef.get();
+
+			// if view layout or updates are suspended we will check the backgroundInternal at the end
+			if (value1.isDirty && !view._suspendNativeUpdatesCount) {
+				value1.isDirty = false;
+				return false;
+			}
+			return true;
+		}
+		return Font.equals(value1, value2);
+	},
 });
 fontInternalProperty.register(Style);
+
+function fontInternalSubPropertyValueChanged<T extends Style, U>(block: (target: T, oldValue: U, newValue: U) => Font, shouldIgnore?: Function) {
+	return function (target: T, oldValue: U, newValue: U) {
+		if (shouldIgnore?.(target, oldValue, newValue)) {
+			return;
+		}
+		let newFontInternal = block(target, oldValue, newValue);
+		if (newFontInternal.isEqualToDefaultFont()) {
+			newFontInternal = unsetValue;
+		}
+		const view = target.viewRef.get();
+		if (target.fontInternal !== newFontInternal || !view._suspendNativeUpdatesCount) {
+			target.fontInternal = newFontInternal;
+		} else {
+			// let s not go through another property set which takes time during batch updates
+			// we will check and update fontInternal once the update is done
+		}
+	};
+}
 
 export const fontFamilyProperty = new InheritedCssProperty<Style, string>({
 	name: 'fontFamily',
 	cssName: 'font-family',
 	affectsLayout: __IOS__,
-	valueChanged: (target, oldValue, newValue) => {
-		const currentFont = target.fontInternal || Font.default;
-		if (currentFont.fontFamily !== newValue) {
-			const newFont = currentFont.withFontFamily(newValue);
-			target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
-		}
-	},
+	valueChanged: fontInternalSubPropertyValueChanged((target, oldValue, newValue) => target.fontInternal.withFontFamily(newValue)),
 });
 fontFamilyProperty.register(Style);
 
@@ -1331,7 +1351,7 @@ export const fontScaleInternalProperty = new InheritedCssProperty<Style, number>
 	name: 'fontScaleInternal',
 	cssName: '_fontScaleInternal',
 	defaultValue: 1.0,
-	valueConverter: (v) => parseFloat(v),
+	valueConverter: parseFloat,
 });
 fontScaleInternalProperty.register(Style);
 
@@ -1339,17 +1359,10 @@ export const fontSizeProperty = new InheritedCssProperty<Style, number>({
 	name: 'fontSize',
 	cssName: 'font-size',
 	affectsLayout: __IOS__,
-	valueChanged: (target, oldValue, newValue) => {
-		const view = target.viewRef.get();
-		if (view?.['handleFontSize'] === true) {
-			return;
-		}
-		const currentFont = target.fontInternal || Font.default;
-		if (currentFont.fontSize !== newValue) {
-			const newFont = currentFont.withFontSize(newValue);
-			target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
-		}
-	},
+	valueChanged: fontInternalSubPropertyValueChanged(
+		(target, oldValue, newValue) => target.fontInternal.withFontSize(newValue),
+		(target) => target.viewRef.get()?.['handleFontSize'] === true
+	),
 	valueConverter: (v) => parseFloat(v),
 });
 fontSizeProperty.register(Style);
@@ -1360,13 +1373,8 @@ export const fontStyleProperty = new InheritedCssProperty<Style, FontStyleType>(
 	affectsLayout: __IOS__,
 	defaultValue: FontStyle.NORMAL,
 	valueConverter: FontStyle.parse,
-	valueChanged: (target, oldValue, newValue) => {
-		const currentFont = target.fontInternal || Font.default;
-		if (currentFont.fontStyle !== newValue) {
-			const newFont = currentFont.withFontStyle(newValue);
-			target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
-		}
-	},
+
+	valueChanged: fontInternalSubPropertyValueChanged((target, oldValue, newValue) => target.fontInternal.withFontStyle(newValue)),
 });
 fontStyleProperty.register(Style);
 
@@ -1376,13 +1384,7 @@ export const fontWeightProperty = new InheritedCssProperty<Style, FontWeightType
 	affectsLayout: __IOS__,
 	defaultValue: FontWeight.NORMAL,
 	valueConverter: FontWeight.parse,
-	valueChanged: (target, oldValue, newValue) => {
-		const currentFont = target.fontInternal || Font.default;
-		if (currentFont.fontWeight !== newValue) {
-			const newFont = currentFont.withFontWeight(newValue);
-			target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
-		}
-	},
+	valueChanged: fontInternalSubPropertyValueChanged((target, oldValue, newValue) => target.fontInternal.withFontWeight(newValue)),
 });
 fontWeightProperty.register(Style);
 
@@ -1419,13 +1421,7 @@ export const fontVariationSettingsProperty = new InheritedCssProperty<Style, Fon
 	name: 'fontVariationSettings',
 	cssName: 'font-variation-settings',
 	affectsLayout: __IOS__,
-	valueChanged: (target, oldValue, newValue) => {
-		const currentFont = target.fontInternal || Font.default;
-		if (currentFont.fontVariationSettings !== newValue) {
-			const newFont = currentFont.withFontVariationSettings(newValue);
-			target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
-		}
-	},
+	valueChanged: fontInternalSubPropertyValueChanged((target, oldValue, newValue) => target.fontInternal.withFontVariationSettings(newValue)),
 	valueConverter: (value) => {
 		return FontVariationSettings.parse(value);
 	},
@@ -1441,7 +1437,7 @@ export const visibilityProperty = new CssProperty<Style, CoreTypes.VisibilityTyp
 	valueChanged: (target, oldValue, newValue) => {
 		const view = target.viewRef.get();
 		if (view) {
-			view.isCollapsed = newValue === CoreTypes.Visibility.collapse;
+			view.isCollapsed = newValue === CoreTypes.Visibility.collapse || newValue === CoreTypes.Visibility.collapsed;
 		} else {
 			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 		}
