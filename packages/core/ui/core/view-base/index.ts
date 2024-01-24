@@ -2,7 +2,6 @@ import { AlignSelf, FlexGrow, FlexShrink, FlexWrapBefore, Order } from '../../la
 import { Page } from '../../page';
 import { CoreTypes } from '../../../core-types';
 import { Property, CssProperty, CssAnimationProperty, InheritedProperty, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, initNativeView } from '../properties';
-import { setupAccessibleView } from '../../../accessibility';
 import { CSSUtils } from '../../../css/system-classes';
 import { Source } from '../../../utils/debug';
 import { Binding, BindingOptions } from '../bindable';
@@ -617,7 +616,6 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 			return true;
 		});
 		this._resumeNativeUpdates(SuspendType.Loaded);
-		setupAccessibleView(<any>this);
 
 		this.suspendRequestLayout = false;
 
