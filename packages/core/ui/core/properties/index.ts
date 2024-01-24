@@ -239,13 +239,10 @@ function getPropertySetter<T extends ViewBase, U>(property: Property<T, U>) {
 				}
 				if (this[setNative]) {
 					if (this._suspendNativeUpdatesCount) {
-						if (this._suspendedUpdates) {
-							this._suspendedUpdates.set(propertyName, property);
-						}
+						this._suspendedUpdates.set(propertyName, property);
 					} else {
 						if (defaultValueKey in this) {
 							this[setNative](this[defaultValueKey]);
-							delete this[defaultValueKey];
 						} else {
 							this[setNative](defaultValue);
 						}
@@ -259,9 +256,7 @@ function getPropertySetter<T extends ViewBase, U>(property: Property<T, U>) {
 
 				if (this[setNative]) {
 					if (this._suspendNativeUpdatesCount) {
-						if (this._suspendedUpdates) {
-							this._suspendedUpdates.set(propertyName, property);
-						}
+						this._suspendedUpdates.set(propertyName, property);
 					} else {
 						if (!(defaultValueKey in this)) {
 							this[defaultValueKey] = this[getDefault] ? this[getDefault]() : defaultValue;
@@ -537,9 +532,7 @@ function setCssFunc<T extends Style, U>(property: CssProperty<T, U>, valueSource
 
 				if (view[setNative]) {
 					if (view._suspendNativeUpdatesCount) {
-						if (view._suspendedUpdates) {
-							view._suspendedUpdates.set(propertyName, property);
-						}
+						view._suspendedUpdates.set(propertyName, property);
 					} else {
 						if (defaultValueKey in this) {
 							view[setNative](this[defaultValueKey]);
@@ -556,9 +549,7 @@ function setCssFunc<T extends Style, U>(property: CssProperty<T, U>, valueSource
 
 				if (view[setNative]) {
 					if (view._suspendNativeUpdatesCount) {
-						if (view._suspendedUpdates) {
-							view._suspendedUpdates.set(propertyName, property);
-						}
+						view._suspendedUpdates.set(propertyName, property);
 					} else {
 						if (!(defaultValueKey in this)) {
 							const getDefault = property.getDefault;
@@ -806,9 +797,7 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 
 					if (view[setNative] && (computedValueChanged || isSet !== wasSet)) {
 						if (view._suspendNativeUpdatesCount) {
-							if (view._suspendedUpdates) {
-								view._suspendedUpdates.set(propertyName, property);
-							}
+							view._suspendedUpdates.set(propertyName, property);
 						} else {
 							if (isSet) {
 								if (!wasSet && !(defaultValueKey in this)) {
@@ -967,9 +956,7 @@ function setCssInheritedFunc<T extends Style, U>(property: InheritedCssProperty<
 
 			if (view[setNative]) {
 				if (view._suspendNativeUpdatesCount) {
-					if (view._suspendedUpdates) {
-						view._suspendedUpdates.set(propertyName, property);
-					}
+					view._suspendedUpdates.set(propertyName, property);
 				} else {
 					if (unsetNativeValue) {
 						if (defaultValueKey in this) {
@@ -1158,15 +1145,14 @@ export const initNativeView = profile('"properties".initNativeView', function in
 
 	if (view._suspendedUpdates.size) {
 		applyPendingNativeSetters(view);
-	} else {
+	} else if (view._needsAllNativePropsUpdate) {
+		view._needsAllNativePropsUpdate = false;
 		// this case can happen for example after a _teardownUI / _setupUI.
 		// in this case style props are already set to the right values
 		// so they wont trigger a change => _suspendedUpdates
 		// so we need to iterate over them all (slow but not that slow)
 		applyAllNativeSetters(view);
 	}
-	// Would it be faster to delete all members of the old object?
-	view._suspendedUpdates = {};
 	view._suspendedUpdates.clear();
 
 	// if the view requestLayout was not suspended before
@@ -1180,8 +1166,7 @@ export const initNativeView = profile('"properties".initNativeView', function in
 
 export function applyPendingNativeSetters(view: ViewBase): void {
 	// TODO: Check what happens if a view was suspended and its value was reset, or set back to default!
-	const suspendedUpdates = view._suspendedUpdates;
-	suspendedUpdates.forEach((property, propertyName) => {
+	view._suspendedUpdates.forEach((property, propertyName) => {
 		const setNative = property.setNative;
 		if (view[setNative]) {
 			const { getDefault, isStyleProperty, defaultValueKey, defaultValue } = property;
@@ -1264,7 +1249,6 @@ export function resetNativeView(view: ViewBase): void {
 		if (view[property.setNative]) {
 			if (property.defaultValueKey in view) {
 				view[property.setNative](view[property.defaultValueKey]);
-				delete view[property.defaultValueKey];
 			} else {
 				view[property.setNative](property.defaultValue);
 			}
@@ -1283,7 +1267,6 @@ export function resetNativeView(view: ViewBase): void {
 		if (view[property.setNative]) {
 			if (property.defaultValueKey in style) {
 				view[property.setNative](style[property.defaultValueKey]);
-				delete style[property.defaultValueKey];
 			} else {
 				view[property.setNative](property.defaultValue);
 			}

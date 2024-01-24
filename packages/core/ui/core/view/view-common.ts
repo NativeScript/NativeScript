@@ -506,7 +506,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		}
 	}
 
-	public onResumeNativeUpdates(preventRequestLayout = false): void {
+	public onResumeNativeUpdates(): void {
 		// special handling of backgroundInternal property to prevent too many slow updates
 		const background = this.style.backgroundInternal;
 		if (background?.isDirty) {
@@ -517,7 +517,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		if (font?.isDirty) {
 			this._suspendedUpdates?.set('fontInternal', fontInternalProperty);
 		}
-		super.onResumeNativeUpdates(preventRequestLayout);
+		super.onResumeNativeUpdates();
 	}
 
 	// START Style property shortcuts

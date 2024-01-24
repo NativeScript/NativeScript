@@ -403,6 +403,15 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	 * @private
 	 */
 	public _suspendedUpdates: Map<string, Property<ViewBase, any> | CssProperty<Style, any> | CssAnimationProperty<Style, any>> = new Map();
+
+	/**
+	 * used to know when initNativeView should enforce all native setters are called again
+	 * it is set on _tearDownUI which would trigger native to be disposed while properties on
+	 * view/style would still be set. Thus a next _setupUI would not trigger native properties change
+	 * and thus would not feel _suspendedUpdates
+	 */
+	public _needsAllNativePropsUpdate: boolean = false;
+
 	//@endprivate
 	/**
 	 * Determines the depth of suspended updates.
@@ -607,7 +616,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 			this.loadView(child);
 			return true;
 		});
-		this._resumeNativeUpdates(SuspendType.Loaded, false, this.parent?.mSuspendRequestLayout);
+		this._resumeNativeUpdates(SuspendType.Loaded);
 		setupAccessibleView(<any>this);
 
 		this.suspendRequestLayout = false;
@@ -662,10 +671,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 			});
 		}
 	}
-	public _resumeNativeUpdates(type: SuspendType, recursive = false, preventRequestLayout = false, shouldResumeRequestLayout = false): void {
+	public _resumeNativeUpdates(type: SuspendType, recursive = false, shouldResumeRequestLayout = false): void {
 		if (recursive) {
 			this.eachChild((child) => {
-				child._resumeNativeUpdates(type, recursive, true, shouldResumeRequestLayout);
+				child._resumeNativeUpdates(type, recursive, shouldResumeRequestLayout);
 				return true;
 			});
 		}
@@ -681,7 +690,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 			this.suspendRequestLayout = false;
 		}
 		if (!this._suspendNativeUpdatesCount) {
-			this.onResumeNativeUpdates(preventRequestLayout);
+			this.onResumeNativeUpdates();
 		}
 	}
 
@@ -1217,6 +1226,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 			this.disposeNativeView();
 
 			this._suspendNativeUpdates(SuspendType.UISetup);
+			this._needsAllNativePropsUpdate = true;
 
 			this.setNativeView(null);
 			this._androidView = null;
@@ -1321,9 +1331,9 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		}
 	}
 
-	public onResumeNativeUpdates(preventRequestLayout = false): void {
+	public onResumeNativeUpdates(): void {
 		// Apply native setters...
-		initNativeView(this, preventRequestLayout);
+		initNativeView(this);
 	}
 
 	public toString(): string {
