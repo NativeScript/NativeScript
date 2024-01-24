@@ -24,7 +24,7 @@ export function sendAccessibilityEvent(View: View, eventName: AndroidAccessibili
 /**
  * Android: Update the content description for views
  */
-export function updateContentDescription(View: View, forceUpdate?: boolean): string | null;
+export function updateContentDescription(View: View, forceUpdate?: boolean);
 
 /**
  * Is Android TalkBack or iOS VoiceOver enabled?

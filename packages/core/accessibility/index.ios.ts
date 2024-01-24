@@ -228,7 +228,7 @@ export function updateAccessibilityProperties(view: View): void {
 }
 
 export const sendAccessibilityEvent = (): void => {};
-export const updateContentDescription = (): string | null => null;
+export const updateContentDescription = (): void => null;
 
 let accessibilityServiceEnabled: boolean;
 let nativeObserver;

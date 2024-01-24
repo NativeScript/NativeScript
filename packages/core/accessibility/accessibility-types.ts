@@ -143,125 +143,103 @@ export enum AndroidAccessibilityEvent {
 	/**
 	 * Invalid selection/focus position.
 	 */
-	INVALID_POSITION,
-
+	INVALID_POSITION = -1 /* android.view.accessibility.AccessibilityEvent.INVALID_POSITION */,
 	/**
 	 * Maximum length of the text fields.
 	 */
-	MAX_TEXT_LENGTH,
-
+	MAX_TEXT_LENGTH = 500 /* android.view.accessibility.AccessibilityEvent.MAX_TEXT_LENGTH */,
 	/**
-	 * Represents the event of clicking on a android.view.View like android.widget.Button, android.widget.CompoundButton, etc.
+	 * Represents the event of clicking on a android.view.View like android.widget.Button = android.widget.CompoundButton = etc.
 	 */
-	VIEW_CLICKED,
-
+	VIEW_CLICKED = 1 /* android.view.accessibility.AccessibilityEvent.TYPE_VIEW_CLICKED */,
 	/**
-	 * Represents the event of long clicking on a android.view.View like android.widget.Button, android.widget.CompoundButton, etc.
+	 * Represents the event of long clicking on a android.view.View like android.widget.Button = android.widget.CompoundButton = etc.
 	 */
-	VIEW_LONG_CLICKED,
-
+	VIEW_LONG_CLICKED = 2 /* android.view.accessibility.AccessibilityEvent.TYPE_VIEW_LONG_CLICKED */,
 	/**
 	 * Represents the event of selecting an item usually in the context of an android.widget.AdapterView.
 	 */
-	VIEW_SELECTED,
-
+	VIEW_SELECTED = 4 /* android.view.accessibility.AccessibilityEvent.TYPE_VIEW_SELECTED */,
 	/**
 	 * Represents the event of setting input focus of a android.view.View.
 	 */
-	VIEW_FOCUSED,
-
+	VIEW_FOCUSED = 8 /* android.view.accessibility.AccessibilityEvent.TYPE_VIEW_FOCUSED */,
 	/**
 	 * Represents the event of changing the text of an android.widget.EditText.
 	 */
-	VIEW_TEXT_CHANGED,
-
+	VIEW_TEXT_CHANGED = 16 /* android.view.accessibility.AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED */,
 	/**
-	 * Represents the event of opening a android.widget.PopupWindow, android.view.Menu, android.app.Dialog, etc.
+	 * Represents the event of opening a android.widget.PopupWindow = android.view.Menu = android.app.Dialog = etc.
 	 */
-	WINDOW_STATE_CHANGED,
-
+	WINDOW_STATE_CHANGED = 32 /* android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED */,
 	/**
 	 * Represents the event showing a android.app.Notification.
 	 */
-	NOTIFICATION_STATE_CHANGED,
-
+	NOTIFICATION_STATE_CHANGED = 64 /* android.view.accessibility.AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED */,
 	/**
 	 * Represents the event of a hover enter over a android.view.View.
 	 */
-	VIEW_HOVER_ENTER,
-
+	VIEW_HOVER_ENTER = 128 /* android.view.accessibility.AccessibilityEvent.TYPE_VIEW_HOVER_ENTER */,
 	/**
 	 * Represents the event of a hover exit over a android.view.View.
 	 */
-	VIEW_HOVER_EXIT,
+	VIEW_HOVER_EXIT = 256 /* android.view.accessibility.AccessibilityEvent.TYPE_VIEW_HOVER_EXIT */,
 	/**
 	 * Represents the event of starting a touch exploration gesture.
 	 */
-	TOUCH_EXPLORATION_GESTURE_START,
+	TOUCH_EXPLORATION_GESTURE_START = 512 /* android.view.accessibility.AccessibilityEvent.TYPE_TOUCH_EXPLORATION_GESTURE_START */,
 	/**
 	 * Represents the event of ending a touch exploration gesture.
 	 */
-	TOUCH_EXPLORATION_GESTURE_END,
-
+	TOUCH_EXPLORATION_GESTURE_END = 1024 /* android.view.accessibility.AccessibilityEvent.TYPE_TOUCH_EXPLORATION_GESTURE_END */,
 	/**
 	 * Represents the event of changing the content of a window and more specifically the sub-tree rooted at the event's source.
 	 */
-	WINDOW_CONTENT_CHANGED,
-
+	WINDOW_CONTENT_CHANGED = 2048 /* android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED */,
 	/**
 	 * Represents the event of scrolling a view.
 	 */
-	VIEW_SCROLLED,
-
+	VIEW_SCROLLED = 4096 /* android.view.accessibility.AccessibilityEvent.TYPE_VIEW_SCROLLED */,
 	/**
 	 * Represents the event of changing the selection in an android.widget.EditText.
 	 */
-	VIEW_TEXT_SELECTION_CHANGED,
-
+	VIEW_TEXT_SELECTION_CHANGED = 8192 /* android.view.accessibility.AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED */,
 	/**
 	 * Represents the event of an application making an announcement.
 	 */
-	ANNOUNCEMENT,
-
+	ANNOUNCEMENT = 16384 /* android.view.accessibility.AccessibilityEvent.TYPE_ANNOUNCEMENT */,
 	/**
 	 * Represents the event of gaining accessibility focus.
 	 */
-	VIEW_ACCESSIBILITY_FOCUSED,
-
+	VIEW_ACCESSIBILITY_FOCUSED = 32768 /* android.view.accessibility.AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED */,
 	/**
 	 * Represents the event of clearing accessibility focus.
 	 */
-	VIEW_ACCESSIBILITY_FOCUS_CLEARED,
-
+	VIEW_ACCESSIBILITY_FOCUS_CLEARED = 65536 /* android.view.accessibility.AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUS_CLEARED */,
 	/**
 	 * Represents the event of traversing the text of a view at a given movement granularity.
 	 */
-	VIEW_TEXT_TRAVERSED_AT_MOVEMENT_GRANULARITY,
-
+	VIEW_TEXT_TRAVERSED_AT_MOVEMENT_GRANULARITY = 131072 /* android.view.accessibility.AccessibilityEvent.TYPE_VIEW_TEXT_TRAVERSED_AT_MOVEMENT_GRANULARITY */,
 	/**
 	 * Represents the event of beginning gesture detection.
 	 */
-	GESTURE_DETECTION_START,
-
+	GESTURE_DETECTION_START = 262144 /* android.view.accessibility.AccessibilityEvent.TYPE_GESTURE_DETECTION_START */,
 	/**
 	 * Represents the event of ending gesture detection.
 	 */
-	GESTURE_DETECTION_END,
-
+	GESTURE_DETECTION_END = 524288 /* android.view.accessibility.AccessibilityEvent.TYPE_GESTURE_DETECTION_END */,
 	/**
 	 * Represents the event of the user starting to touch the screen.
 	 */
-	TOUCH_INTERACTION_START,
-
+	TOUCH_INTERACTION_START = 1048576 /* android.view.accessibility.AccessibilityEvent.TYPE_TOUCH_INTERACTION_START */,
 	/**
 	 * Represents the event of the user ending to touch the screen.
 	 */
-	TOUCH_INTERACTION_END,
-
+	TOUCH_INTERACTION_END = 2097152 /* android.view.accessibility.AccessibilityEvent.TYPE_TOUCH_INTERACTION_END */,
 	/**
 	 * Mask for AccessibilityEvent all types.
 	 */
-	ALL_MASK,
+	ALL_MASK = -1 /* android.view.accessibility.AccessibilityEvent.TYPES_ALL_MASK */,
 }
 
 export interface AccessibilityEventPerformEscape extends EventData {

@@ -644,3 +644,4 @@ function setSpanModifiers(ssb: android.text.SpannableStringBuilder, span: Span, 
 	//     ssb.setSpan(new android.text.style.ScaleXSpan((letterSpacing + 1) / 10), start, end, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 	// }
 }
+TextBase.prototype._hasDefaultAccessibilityContentDescription = true;

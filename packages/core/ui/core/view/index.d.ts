@@ -295,7 +295,12 @@ export abstract class View extends ViewCommon {
 	/**
 	 * Internal use only. This is used to limit the number of updates to android.view.View.setContentDescription()
 	 */
-	_androidContentDescriptionUpdated?: boolean;
+	_androidContentDescriptionNeedsUpdate?: boolean;
+
+	/**
+	 * Internal use only. Determine if the view has a default contentDescription
+	 */
+	_hasDefaultAccessibilityContentDescription?: boolean;
 
 	automationText: string;
 

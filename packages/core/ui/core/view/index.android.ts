@@ -864,17 +864,17 @@ export class View extends ViewCommon {
 	}
 
 	[accessibilityValueProperty.setNative](): void {
-		this._androidContentDescriptionUpdated = true;
+		this._androidContentDescriptionNeedsUpdate = true;
 		updateContentDescription(this);
 	}
 
 	[accessibilityLabelProperty.setNative](): void {
-		this._androidContentDescriptionUpdated = true;
+		this._androidContentDescriptionNeedsUpdate = true;
 		updateContentDescription(this);
 	}
 
 	[accessibilityHintProperty.setNative](): void {
-		this._androidContentDescriptionUpdated = true;
+		this._androidContentDescriptionNeedsUpdate = true;
 		updateContentDescription(this);
 	}
 

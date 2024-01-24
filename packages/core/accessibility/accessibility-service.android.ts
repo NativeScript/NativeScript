@@ -5,13 +5,17 @@ import * as Utils from '../utils';
 import { SDK_VERSION } from '../utils/constants';
 import { CommonA11YServiceEnabledObservable, SharedA11YObservable } from './accessibility-service-common';
 
+let accessibilityManager: android.view.accessibility.AccessibilityManager;
 export function getAndroidAccessibilityManager(): android.view.accessibility.AccessibilityManager | null {
-	const context = Utils.ad.getApplicationContext() as android.content.Context;
-	if (!context) {
-		return null;
-	}
+	if (!accessibilityManager) {
+		const context = Utils.android.getApplicationContext() as android.content.Context;
+		if (!context) {
+			return null;
+		}
 
-	return context.getSystemService(android.content.Context.ACCESSIBILITY_SERVICE) as android.view.accessibility.AccessibilityManager;
+		accessibilityManager = context.getSystemService(android.content.Context.ACCESSIBILITY_SERVICE) as android.view.accessibility.AccessibilityManager;
+	}
+	return accessibilityManager;
 }
 
 const accessibilityStateEnabledPropName = 'accessibilityStateEnabled';
