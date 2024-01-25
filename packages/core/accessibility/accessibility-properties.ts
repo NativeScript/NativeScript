@@ -26,7 +26,7 @@ function makePropertyEnumConverter<T>(enumValues) {
 
 export const accessibilityEnabledProperty = new CssProperty<Style, boolean>({
 	name: 'accessible',
-	defaultValue: true,
+	defaultValue: typeof __ACCESSIBILITY_DEFAULT_ENABLED__ === 'undefined' ? true : __ACCESSIBILITY_DEFAULT_ENABLED__,
 	cssName: 'a11y-enabled',
 	valueConverter: booleanConverter,
 });
