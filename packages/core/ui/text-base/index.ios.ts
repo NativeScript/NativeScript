@@ -295,28 +295,32 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
-	_setNativeText(reset = false): void {
-		if (reset) {
-			const nativeView = this.nativeTextViewProtected;
-			if (nativeView instanceof UIButton) {
-				// Clear attributedText or title won't be affected.
-				nativeView.setAttributedTitleForState(null, UIControlState.Normal);
-				nativeView.setTitleForState(null, UIControlState.Normal);
-			} else {
-				// Clear attributedText or text won't be affected.
-				nativeView.attributedText = null;
-				nativeView.text = null;
-			}
+	clearText() {
+		const nativeView = this.nativeTextViewProtected;
+		if (nativeView instanceof UIButton) {
+			// Clear attributedText or title won't be affected.
+			nativeView.setAttributedTitleForState(null, UIControlState.Normal);
+			nativeView.setTitleForState(null, UIControlState.Normal);
+		} else {
+			// Clear attributedText or text won't be affected.
+			nativeView.attributedText = null;
+			nativeView.text = null;
+		}
+	}
 
+	_setNativeText(reset = false): void {
+		const nativeView = this.nativeTextViewProtected;
+		if (reset) {
+			this.clearText();
 			return;
 		}
 
-		const letterSpacing = this.style.letterSpacing ? this.style.letterSpacing : 0;
-		const lineHeight = this.style.lineHeight ? this.style.lineHeight : 0;
+		// const letterSpacing = this.style.letterSpacing ? this.style.letterSpacing : 0;
+		// const lineHeight = this.style.lineHeight ? this.style.lineHeight : 0;
 		if (this.formattedText) {
 			this.setFormattedTextDecorationAndTransform();
 			// this.nativeTextViewProtected.nativeScriptSetFormattedTextDecorationAndTransformLetterSpacingLineHeight(this.getFormattedStringDetails(this.formattedText), letterSpacing, lineHeight);
-		} else {
+		} else if (this.text) {
 			this.setTextDecorationAndTransform();
 			// console.log('setTextDecorationAndTransform...')
 			// const text = getTransformedText(isNullOrUndefined(this.text) ? '' : `${this.text}`, this.textTransform);
@@ -325,6 +329,13 @@ export class TextBase extends TextBaseCommon {
 			// if (!this.style?.color && majorVersion >= 13 && UIColor.labelColor) {
 			// 	this._setColor(UIColor.labelColor);
 			// }
+		} else {
+			this.clearText();
+			return;
+		}
+
+		if (this.style?.textStroke && nativeView instanceof UILabel) {
+			nativeView.nativeScriptSetFormattedTextStrokeColor(Length.toDevicePixels(this.style.textStroke.width, 0), this.style.textStroke.color.ios);
 		}
 	}
 	setFormattedTextDecorationAndTransform() {
@@ -445,9 +456,6 @@ export class TextBase extends TextBaseCommon {
 
 		if (!style.color && majorVersion >= 13 && UIColor.labelColor) {
 			this._setColor(UIColor.labelColor);
-		}
-		if (this.style?.textStroke) {
-			this.nativeTextViewProtected.nativeScriptSetFormattedTextStrokeColor(Length.toDevicePixels(this.style.textStroke.width, 0), this.style.textStroke.color.ios);
 		}
 	}
 

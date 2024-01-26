@@ -807,10 +807,11 @@ export class View extends ViewCommon implements ViewDefinition {
 				break;
 			case CoreTypes.Visibility.hidden:
 			case CoreTypes.Visibility.collapse:
+			case CoreTypes.Visibility.collapsed:
 				nativeView.hidden = true;
 				break;
 			default:
-				throw new Error(`Invalid visibility value: ${value}. Valid values are: "${CoreTypes.Visibility.visible}", "${CoreTypes.Visibility.hidden}", "${CoreTypes.Visibility.collapse}".`);
+				throw new Error(`Invalid visibility value: ${value}. Valid values are: "${CoreTypes.Visibility.visible}", "${CoreTypes.Visibility.hidden}", "${CoreTypes.Visibility.collapse}", "${CoreTypes.Visibility.collapsed}".`);
 		}
 
 		// Apply visibility value to shadows as well
