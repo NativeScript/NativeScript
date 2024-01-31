@@ -15,6 +15,8 @@ struct NativeScriptMainWindow: Scene {
                 DispatchQueue.main.async {
                     NativeScriptStart.boot()
                 }
+            }.onOpenURL { (url) in
+                NotificationCenter.default.post(name: Notification.Name("NativeScriptOpenURL"), object: nil, userInfo: ["url": url.absoluteString ])
             }
         }
         .windowStyle(.plain)
