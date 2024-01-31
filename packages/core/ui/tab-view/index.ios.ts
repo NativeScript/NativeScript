@@ -46,7 +46,7 @@ class UITabBarControllerImpl extends UITabBarController {
 			return;
 		}
 
-		IOSHelper.updateAutoAdjustScrollInsets(this, owner);
+		// IOSHelper.updateAutoAdjustScrollInsets(this, owner);
 
 		if (!owner.parent) {
 			owner.callLoaded();
@@ -185,7 +185,7 @@ function updateTitleAndIconPositions(tabItem: TabViewItem, tabBarItem: UITabBarI
 	// For iOS 11 icon is above the text *only* on phones in portrait mode.
 	const orientation = controller.interfaceOrientation;
 	const isPortrait = orientation !== UIInterfaceOrientation.LandscapeLeft && orientation !== UIInterfaceOrientation.LandscapeRight;
-	const isIconAboveTitle = majorVersion < 11 || (isPhone && isPortrait);
+	const isIconAboveTitle = (!__VISIONOS__ && majorVersion < 11) || (isPhone && isPortrait);
 
 	if (!tabItem.iconSource) {
 		if (isIconAboveTitle) {
@@ -253,7 +253,7 @@ export class TabViewItem extends TabViewItemBase {
 			updateTitleAndIconPositions(this, tabBarItem, controller);
 
 			// There is no need to request title styles update here in newer versions as styling is handled by bar appearance instance
-			if (majorVersion < 15) {
+			if (!__VISIONOS__ && majorVersion < 15) {
 				// TODO: Repeating code. Make TabViewItemBase - ViewBase and move the colorProperty on tabViewItem.
 				// Delete the repeating code.
 				const states = getTitleAttributesForStates(parent);
@@ -466,7 +466,7 @@ export class TabView extends TabViewBase {
 			const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(item.title || '', icon, i);
 			updateTitleAndIconPositions(item, tabBarItem, controller);
 
-			if (majorVersion < 15) {
+			if (!__VISIONOS__ && majorVersion < 15) {
 				applyStatesToItem(tabBarItem, states);
 			}
 

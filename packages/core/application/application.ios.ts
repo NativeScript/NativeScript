@@ -320,7 +320,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 
 	protected getSystemAppearance(): 'light' | 'dark' {
 		// userInterfaceStyle is available on UITraitCollection since iOS 12.
-		if (Utils.ios.MajorVersion <= 11 || !this.rootController) {
+		if (!this.rootController) {
 			return null;
 		}
 

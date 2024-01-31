@@ -152,7 +152,7 @@ class UIViewControllerImpl extends UIViewController {
 		}
 
 		// Set autoAdjustScrollInsets in will appear - as early as possible
-		IOSHelper.updateAutoAdjustScrollInsets(this, owner);
+		// IOSHelper.updateAutoAdjustScrollInsets(this, owner);
 
 		// Pages in backstack are unloaded so raise loaded here.
 		if (!owner.isLoaded) {
@@ -278,14 +278,6 @@ class UIViewControllerImpl extends UIViewController {
 		// Forward navigation does not remove page from frame so we raise unloaded manually.
 		if (page.isLoaded) {
 			page.callUnloaded();
-		}
-	}
-
-	public viewWillLayoutSubviews(): void {
-		super.viewWillLayoutSubviews();
-		const owner = this._owner?.deref();
-		if (owner) {
-			IOSHelper.updateConstraints(this, owner);
 		}
 	}
 
@@ -518,11 +510,11 @@ export class Page extends PageBase {
 
 		const insets = this.getSafeAreaInsets();
 
-		if (!__VISIONOS__ && majorVersion <= 10) {
-			// iOS 10 and below don't have safe area insets API,
-			// there we need only the top inset on the Page
-			insets.top = layout.round(layout.toDevicePixels(this.viewController.view.safeAreaLayoutGuide.layoutFrame.origin.y));
-		}
+		// if (!__VISIONOS__ && majorVersion <= 10) {
+		// 	// iOS 10 and below don't have safe area insets API,
+		// 	// there we need only the top inset on the Page
+		// 	insets.top = layout.round(layout.toDevicePixels(this.viewController.view.safeAreaLayoutGuide.layoutFrame.origin.y));
+		// }
 
 		const childLeft = 0 + insets.left;
 		const childTop = 0 + insets.top;
