@@ -510,14 +510,18 @@ export class ApplicationCommon {
 			return;
 		}
 		this._systemAppearance = value;
-		this.systemAppearanceChanged(this.getRootView(), value);
-		this.notify(<SystemAppearanceChangedEventData>{
+		const args = <SystemAppearanceChangedEventData>{
 			eventName: this.systemAppearanceChangedEvent,
 			android: this.android,
 			ios: this.ios,
 			newValue: value,
+			cancel: false,
 			object: this,
-		});
+		};
+		this.notify(args);
+		if (args.cancel === false) {
+			this.systemAppearanceChanged(this.getRootView(), value);
+		}
 	}
 
 	systemAppearance(): 'dark' | 'light' | null {

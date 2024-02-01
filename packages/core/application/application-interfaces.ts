@@ -81,6 +81,7 @@ export interface SystemAppearanceChangedEventData extends ApplicationEventData {
 	 * New system appearance value.
 	 */
 	newValue: 'light' | 'dark';
+	cancel: boolean;
 }
 
 /**
