@@ -2,6 +2,8 @@ import groovy.json.JsonSlurper // used to parse package.json
 import groovy.json.JsonBuilder
 import groovy.json.JsonOutput
 
+import static org.gradle.internal.logging.text.StyledTextOutput.Style
+
 def isWinOs = System.properties['os.name'].toLowerCase().contains('windows')
 
 apply plugin: 'com.android.library'
@@ -47,8 +49,6 @@ android {
     defaultConfig {
         minSdkVersion 17
         targetSdkVersion computeTargetSdkVersion()
-        versionCode 1
-        versionName "1.0"
     }
     buildTypes {
         release {
