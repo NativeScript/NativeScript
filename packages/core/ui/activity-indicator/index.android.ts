@@ -38,10 +38,11 @@ export class ActivityIndicator extends ActivityIndicatorBase {
 				this.nativeViewProtected.setVisibility(VIEW_INVISIBLE);
 				break;
 			case CoreTypes.Visibility.collapse:
+			case CoreTypes.Visibility.collapsed:
 				this.nativeViewProtected.setVisibility(VIEW_GONE);
 				break;
 			default:
-				throw new Error(`Invalid visibility value: ${value}. Valid values are: "${CoreTypes.Visibility.visible}", "${CoreTypes.Visibility.hidden}", "${CoreTypes.Visibility.collapse}".`);
+				throw new Error(`Invalid visibility value: ${value}. Valid values are: "${CoreTypes.Visibility.visible}", "${CoreTypes.Visibility.hidden}", "${CoreTypes.Visibility.collapse}", "${CoreTypes.Visibility.collapsed}".`);
 		}
 	}
 
