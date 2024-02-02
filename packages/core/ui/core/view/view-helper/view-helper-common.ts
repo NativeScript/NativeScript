@@ -70,6 +70,7 @@ export class ViewHelper {
 				childTop = top + effectiveMarginTop;
 				break;
 
+			case 'center':
 			case 'middle':
 				childTop = top + (bottom - top - childHeight + (effectiveMarginTop - effectiveMarginBottom)) / 2;
 				break;
@@ -95,6 +96,7 @@ export class ViewHelper {
 				childLeft = left + effectiveMarginLeft;
 				break;
 
+			case 'middle':
 			case 'center':
 				childLeft = left + (right - left - childWidth + (effectiveMarginLeft - effectiveMarginRight)) / 2;
 				break;
