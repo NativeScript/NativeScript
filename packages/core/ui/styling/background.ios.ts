@@ -74,6 +74,8 @@ export namespace ios {
 	}
 
 	export function drawBackgroundVisualEffects(view: View): void {
+		CATransaction.begin();
+		CATransaction.setDisableActions(true);
 		const background = view.style.backgroundInternal;
 		const nativeView = <NativeScriptUIView>view.nativeViewProtected;
 		const layer: CALayer = nativeView.layer;
@@ -116,6 +118,8 @@ export namespace ios {
 		if (needsLayerAdjustmentOnScroll) {
 			registerAdjustLayersOnScrollListener(view);
 		}
+		CATransaction.setDisableActions(false);
+		CATransaction.commit();
 	}
 
 	export function clearBackgroundVisualEffects(view: View): void {
