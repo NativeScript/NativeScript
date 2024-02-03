@@ -559,9 +559,6 @@ export class View extends ViewCommon {
 
 	@profile
 	public requestLayout(): void {
-		if (this.parent?.mSuspendRequestLayout) {
-			return;
-		}
 		if (this.mSuspendRequestLayout) {
 			this._requetLayoutNeeded = true;
 			return;
