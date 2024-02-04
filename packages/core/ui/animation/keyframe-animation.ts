@@ -47,7 +47,7 @@ interface Keyframe {
 	backgroundColor?: Color;
 	scale?: { x: number; y: number };
 	translate?: { x: number; y: number };
-	rotate?: { x: number; y: number; z: number };
+	rotate?: { x: number; y: number; z: number } | number;
 	opacity?: number;
 	width?: CoreTypes.PercentLengthType;
 	height?: CoreTypes.PercentLengthType;
@@ -192,9 +192,13 @@ export class KeyframeAnimation {
 					view.style[translateXProperty.keyframe] = animation.translate.x;
 					view.style[translateYProperty.keyframe] = animation.translate.y;
 				} else if ('rotate' === key) {
-					view.style[rotateXProperty.keyframe] = animation.rotate.x;
-					view.style[rotateYProperty.keyframe] = animation.rotate.y;
-					view.style[rotateProperty.keyframe] = animation.rotate.z;
+					if (typeof animation.rotate == 'object') {
+						view.style[rotateXProperty.keyframe] = animation.rotate.x;
+						view.style[rotateYProperty.keyframe] = animation.rotate.y;
+						view.style[rotateProperty.keyframe] = animation.rotate.z;
+					} else {
+						view.style[rotateProperty.keyframe] = animation.rotate;
+					}
 				} else {
 					const property = getPropertyFromKey(key, view);
 					if (property?.keyframe) {
