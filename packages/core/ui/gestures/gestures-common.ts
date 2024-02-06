@@ -1,6 +1,6 @@
 ﻿import type { GesturesObserver as GesturesObserverDefinition } from '.';
 import type { View } from '../core/view';
-import type { EventData } from '../../data/observable';
+import type { EventData, Observable } from '../../data/observable';
 
 export * from './touch-manager';
 
@@ -133,7 +133,7 @@ export enum TouchAction {
 /**
  * Provides gesture event data.
  */
-export interface GestureEventData extends EventData {
+export interface GestureEventData<T = Observable> extends EventData<T> {
 	/**
 	 * Gets the type of the gesture.
 	 */

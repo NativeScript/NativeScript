@@ -48,7 +48,7 @@ export interface ApplicationEventData {
 /**
  * Event data containing information for launch event.
  */
-export interface LaunchEventData extends EventData {
+export interface LaunchEventData extends EventData<ApplicationCommon> {
 	/**
 	 * The root view for this Window on iOS or Activity for Android.
 	 * If not set a new Frame will be created as a root view in order to maintain backwards compatibility.
