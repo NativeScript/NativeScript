@@ -4,6 +4,8 @@ import { ViewBase } from '../view-base';
 import { PropertyChangeData, WrappedValue } from '../../../data/observable';
 import { Trace } from '../../../trace';
 
+import { Application } from '../../../application';
+
 import { Style } from '../../styling/style';
 
 import { profile } from '../../../profiling';
@@ -130,7 +132,12 @@ export function _evaluateCssVariableExpression(view: ViewBase, cssName: string, 
 			.map((v) => v.trim())
 			.filter((v) => !!v);
 		const cssVariableName = matched.shift();
-		let cssVariableValue = view.style.getCssVariable(cssVariableName);
+		let cssVariableValue;
+		if (typeof __ONLY_ALLOW_ROOT_VARIABLES__ !== 'undefined' && __ONLY_ALLOW_ROOT_VARIABLES__ === true) {
+			cssVariableValue = Application.getRootView().style.getCssVariable(cssVariableName);
+		} else {
+			cssVariableValue = view.style.getCssVariable(cssVariableName);
+		}
 		if (cssVariableValue === null && matched.length) {
 			cssVariableValue = _evaluateCssVariableExpression(view, cssName, matched.join(', ')).split(',')[0];
 		}
