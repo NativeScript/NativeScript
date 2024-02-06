@@ -12,7 +12,7 @@ import { ActionBar } from '../action-bar';
 import { KeyframeAnimationInfo } from '../animation/keyframe-animation';
 import { profile } from '../../profiling';
 
-interface NavigatedData extends EventData {
+interface NavigatedData extends EventData<PageDefinition> {
 	context: any;
 	isBackNavigation: boolean;
 }

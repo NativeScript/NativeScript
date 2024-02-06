@@ -3,7 +3,7 @@ import { Optional } from '../../utils/typescript-utils';
 /**
  * Base event data.
  */
-export interface EventData {
+export interface EventData<T = Observable> {
 	/**
 	 * The name of the event.
 	 */
@@ -11,17 +11,17 @@ export interface EventData {
 	/**
 	 * The Observable instance that has raised the event.
 	 */
-	object: Observable;
+	object: T;
 }
 
-export interface EventDataValue extends EventData {
+export interface EventDataValue<T = Observable> extends EventData<T> {
 	value?: boolean;
 }
 
 /**
  * Data for the "propertyChange" event.
  */
-export interface PropertyChangeData extends EventData {
+export interface PropertyChangeData<T = Observable> extends EventData<T> {
 	/**
 	 * The name of the property that has changed.
 	 */
@@ -36,8 +36,8 @@ export interface PropertyChangeData extends EventData {
 	oldValue?: any;
 }
 
-interface ListenerEntry {
-	callback: (data: EventData) => void;
+interface ListenerEntry<T = Observable> {
+	callback: (data: EventData<T>) => void;
 	thisArg: any;
 	once?: true;
 }
@@ -106,7 +106,7 @@ export class Observable {
 	 */
 	public _isViewBase: boolean;
 
-	private readonly _observers: { [eventName: string]: ListenerEntry[] } = {};
+	private readonly _observers: { [eventName: string]: ListenerEntry<any>[] } = {};
 
 	/**
 	 * Gets the value of the specified property.
@@ -465,7 +465,7 @@ export class Observable {
 		return list;
 	}
 
-	private static _indexOfListener(list: Array<ListenerEntry>, callback: (data: EventData) => void, thisArg?: any): number {
+	private static _indexOfListener<T = Observable>(list: Array<ListenerEntry<T>>, callback: (data: EventData<T>) => void, thisArg?: any): number {
 		for (let i = 0; i < list.length; i++) {
 			const entry = list[i];
 			if (thisArg) {
