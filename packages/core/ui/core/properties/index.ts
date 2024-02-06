@@ -246,7 +246,7 @@ function getPropertySetter<T extends ViewBase, U>(property: Property<T, U>) {
 				}
 				if (this[setNative]) {
 					if (this._suspendNativeUpdatesCount) {
-						this._suspendedUpdates.set(propertyName, property);
+						this._suspendedUpdates?.set(propertyName, property);
 					} else {
 						if (defaultValueKey in this) {
 							this[setNative](this[defaultValueKey]);
@@ -263,7 +263,7 @@ function getPropertySetter<T extends ViewBase, U>(property: Property<T, U>) {
 
 				if (this[setNative]) {
 					if (this._suspendNativeUpdatesCount) {
-						this._suspendedUpdates.set(propertyName, property);
+						this._suspendedUpdates?.set(propertyName, property);
 					} else {
 						if (!(defaultValueKey in this)) {
 							this[defaultValueKey] = this[getDefault] ? this[getDefault]() : defaultValue;
@@ -539,7 +539,7 @@ function setCssFunc<T extends Style, U>(property: CssProperty<T, U>, valueSource
 
 				if (view[setNative]) {
 					if (view._suspendNativeUpdatesCount) {
-						view._suspendedUpdates.set(propertyName, property);
+						view._suspendedUpdates?.set(propertyName, property);
 					} else {
 						if (defaultValueKey in this) {
 							view[setNative](this[defaultValueKey]);
@@ -556,7 +556,7 @@ function setCssFunc<T extends Style, U>(property: CssProperty<T, U>, valueSource
 
 				if (view[setNative]) {
 					if (view._suspendNativeUpdatesCount) {
-						view._suspendedUpdates.set(propertyName, property);
+						view._suspendedUpdates?.set(propertyName, property);
 					} else {
 						if (!(defaultValueKey in this)) {
 							const getDefault = property.getDefault;
@@ -804,7 +804,7 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 
 					if (view[setNative] && (computedValueChanged || isSet !== wasSet)) {
 						if (view._suspendNativeUpdatesCount) {
-							view._suspendedUpdates.set(propertyName, property);
+							view._suspendedUpdates?.set(propertyName, property);
 						} else {
 							if (isSet) {
 								if (!wasSet && !(defaultValueKey in this)) {
@@ -963,7 +963,7 @@ function setCssInheritedFunc<T extends Style, U>(property: InheritedCssProperty<
 
 			if (view[setNative]) {
 				if (view._suspendNativeUpdatesCount) {
-					view._suspendedUpdates.set(propertyName, property);
+					view._suspendedUpdates?.set(propertyName, property);
 				} else {
 					if (unsetNativeValue) {
 						if (defaultValueKey in this) {
@@ -1150,17 +1150,16 @@ export const initNativeView = profile('"properties".initNativeView', function in
 	const wasSuspended = view.suspendRequestLayout;
 	view.suspendRequestLayout = true;
 
-	if (view._suspendedUpdates.size) {
+	if (view._suspendedUpdates) {
 		applyPendingNativeSetters(view);
-	} else if (view._needsAllNativePropsUpdate) {
-		view._needsAllNativePropsUpdate = false;
+		view._suspendedUpdates.clear();
+	} else {
 		// this case can happen for example after a _teardownUI / _setupUI.
 		// in this case style props are already set to the right values
 		// so they wont trigger a change => _suspendedUpdates
 		// so we need to iterate over them all (slow but not that slow)
 		applyAllNativeSetters(view);
 	}
-	view._suspendedUpdates.clear();
 
 	// if the view requestLayout was not suspended before
 	// it means we can request a layout if needed.

@@ -403,14 +403,6 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	 */
 	public _suspendedUpdates: Map<string, Property<ViewBase, any> | CssProperty<Style, any> | CssAnimationProperty<Style, any>> = new Map();
 
-	/**
-	 * used to know when initNativeView should enforce all native setters are called again
-	 * it is set on _tearDownUI which would trigger native to be disposed while properties on
-	 * view/style would still be set. Thus a next _setupUI would not trigger native properties change
-	 * and thus would not feel _suspendedUpdates
-	 */
-	public _needsAllNativePropsUpdate: boolean = false;
-
 	//@endprivate
 	/**
 	 * Determines the depth of suspended updates.
@@ -1161,6 +1153,8 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		if (this.__nativeView) {
 			this.initNativeView();
 			this._resumeNativeUpdates(SuspendType.NativeView);
+		} else {
+			this._suspendedUpdates = undefined;
 		}
 	}
 
@@ -1224,7 +1218,6 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 			this.disposeNativeView();
 
 			this._suspendNativeUpdates(SuspendType.UISetup);
-			this._needsAllNativePropsUpdate = true;
 
 			this.setNativeView(null);
 			this._androidView = null;
