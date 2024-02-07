@@ -273,7 +273,7 @@ function getPropertySetter<T extends ViewBase, U>(property: Property<T, U>) {
 				}
 			}
 
-			if (this.hasListeners(eventName)) {
+			if (!this._suspendNativeUpdatesCount && this.hasListeners(eventName)) {
 				this.notify<PropertyChangeData>({
 					object: this,
 					eventName,
@@ -567,7 +567,7 @@ function setCssFunc<T extends Style, U>(property: CssProperty<T, U>, valueSource
 				}
 			}
 
-			if (this.hasListeners(eventName)) {
+			if (!view._suspendNativeUpdatesCount && this.hasListeners(eventName)) {
 				this.notify<PropertyChangeData>({
 					object: this,
 					eventName,
@@ -821,7 +821,7 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 						}
 					}
 					const eventName = property.eventName;
-					if (computedValueChanged && this.hasListeners(eventName)) {
+					if (computedValueChanged && !view._suspendNativeUpdatesCount && this.hasListeners(eventName)) {
 						this.notify<PropertyChangeData>({
 							object: this,
 							eventName,
@@ -981,7 +981,7 @@ function setCssInheritedFunc<T extends Style, U>(property: InheritedCssProperty<
 				}
 			}
 
-			if (this.hasListeners(eventName)) {
+			if (!view._suspendNativeUpdatesCount && this.hasListeners(eventName)) {
 				this.notify<PropertyChangeData>({
 					object: this,
 					eventName,
