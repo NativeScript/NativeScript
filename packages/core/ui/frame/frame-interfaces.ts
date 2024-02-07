@@ -58,6 +58,10 @@ export interface BackstackEntry {
 	viewSavedState?: any;
 	frameId?: number;
 	recreated?: boolean;
+
+	transition?: NavigationTransition;
+	transitioniOS?: NavigationTransition;
+	transitionAndroid?: NavigationTransition;
 }
 
 export interface AndroidFrame extends Observable {

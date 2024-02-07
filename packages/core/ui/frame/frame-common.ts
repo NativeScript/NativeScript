@@ -563,7 +563,7 @@ export class FrameBase extends CustomLayoutView {
 		return FrameBase.defaultAnimatedNavigation;
 	}
 
-	public _getNavigationTransition(entry: NavigationEntry): NavigationTransition {
+	public _getNavigationTransition(entry: NavigationEntry, returnDefault = true): NavigationTransition {
 		if (entry) {
 			if (__IOS__ && entry.transitioniOS !== undefined) {
 				return entry.transitioniOS;
@@ -582,7 +582,7 @@ export class FrameBase extends CustomLayoutView {
 			return this.transition;
 		}
 
-		return FrameBase.defaultTransition;
+		return returnDefault ? FrameBase.defaultTransition : undefined;
 	}
 
 	public get navigationBarHeight(): number {

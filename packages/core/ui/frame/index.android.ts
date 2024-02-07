@@ -18,6 +18,7 @@ import { profile } from '../../profiling';
 import { android as androidUtils } from '../../utils/native-helper';
 import type { ExpandedEntry } from './fragment.transitions.android';
 import { ContentView } from '../content-view';
+import { Transition } from 'ui/transition';
 
 export * from './frame-common';
 
@@ -508,7 +509,15 @@ export class Frame extends FrameBase {
 			}
 		}
 
-		backstackEntry.transition?.androidFragmentTransactionCallback?.(transaction, this._currentEntry, backstackEntry);
+		let navigationTransition: Transition;
+		if (backstackEntry) {
+			navigationTransition = this._getNavigationTransition(backstackEntry, false)?.instance;
+		}
+		if (navigationTransition === undefined) {
+			navigationTransition = backstackEntry.transition;
+		}
+
+		navigationTransition?.androidFragmentTransactionCallback?.(transaction, this._currentEntry, backstackEntry);
 
 		transaction.commitNowAllowingStateLoss();
 	}

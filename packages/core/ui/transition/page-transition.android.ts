@@ -289,6 +289,11 @@ export class PageTransition extends Transition {
 			const { presenting } = SharedTransition.getSharedElements(fromPage, null);
 			presenting.forEach((v) => {
 				setTransitionName(v, null);
+				// androidx.transition.ChangeTransform does not restore setTransitionAlpha
+				// which makes the view invisible.
+				// can be a problem when the transition view on the return animation is not the same as enter
+				// one example is RecyclerView to ViewPager transition
+				(v.nativeViewProtected as android.view.View).setTransitionAlpha(1);
 			});
 		}
 	}
