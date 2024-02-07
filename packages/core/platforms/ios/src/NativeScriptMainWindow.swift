@@ -4,6 +4,16 @@ import UIKit
 
 @available(iOS 14.0, *)
 struct NativeScriptMainWindow: Scene {
+    
+    #if os(visionOS)
+    // Environment control
+    @State var openedScenes: [String:Bool] = [:]
+    @Environment(\.openWindow) private var openWindow
+    @Environment(\.dismissWindow) private var dismissWindow
+    @Environment(\.openImmersiveSpace) private var openImmersiveSpace
+    @Environment(\.dismissImmersiveSpace) private var dismissImmersiveSpace
+    #endif
+    
     var body: some Scene {
         #if os(visionOS)
         // windowStyle is only supported on visionOS
@@ -15,7 +25,42 @@ struct NativeScriptMainWindow: Scene {
                 DispatchQueue.main.async {
                     NativeScriptStart.boot()
                 }
-            }.onOpenURL { (url) in
+            }.onReceive(NotificationCenter.default
+                .publisher(for: NSNotification.Name("NativeScriptOpenScene")), perform: { obj in
+                Task {
+                    if let userInfo = obj.userInfo {
+                        var sceneType: String = ""
+                        var isImmersive = false
+                        for (key, value) in userInfo {
+                            let k = key as! String
+                            if (k == "type") {
+                                sceneType = value as! String
+                            } else if (k == "isImmersive") {
+                                isImmersive = value as! Bool
+                            }
+                        }
+           
+                        let isOpened = openedScenes[sceneType] ?? false
+                        if isOpened {
+                            openedScenes[sceneType] = false
+                            if (isImmersive) {
+                                await dismissImmersiveSpace()
+                            } else {
+                                dismissWindow(id: sceneType)
+                            }
+                        } else {
+                            openedScenes[sceneType] = true
+                            if (isImmersive) {
+                                await openImmersiveSpace(id: sceneType)
+                            } else {
+                                openWindow(id: sceneType)
+                            }
+                        }
+                    }
+                    
+                }
+            })
+            .onOpenURL { (url) in
                 NotificationCenter.default.post(name: Notification.Name("NativeScriptOpenURL"), object: nil, userInfo: ["url": url.absoluteString ])
             }
         }
