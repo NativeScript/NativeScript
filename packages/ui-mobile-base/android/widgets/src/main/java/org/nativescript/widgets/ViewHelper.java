@@ -662,8 +662,12 @@ public class ViewHelper {
 						Path path = new Path();
 						float[] radii = {
 							borderTopLeftRadius,
+							borderTopLeftRadius,
+							borderTopRightRadius,
 							borderTopRightRadius,
 							borderBottomRightRadius,
+							borderBottomRightRadius,
+							borderBottomLeftRadius,
 							borderBottomLeftRadius}
 						;
 						path.addRoundRect(
