@@ -677,8 +677,9 @@ export class View extends ViewCommon implements ViewDefinition {
 
 	[accessibilityEnabledProperty.setNative](value: boolean): void {
 		this.nativeViewProtected.isAccessibilityElement = !!value;
-
-		updateAccessibilityProperties(this);
+		if (value) {
+			updateAccessibilityProperties(this);
+		}
 	}
 
 	[accessibilityIdentifierProperty.getDefault](): string {
@@ -1062,6 +1063,11 @@ export class ContainerView extends View {
 	constructor() {
 		super();
 		this.iosOverflowSafeArea = true;
+		/**
+		 * mark accessible as false without triggering proerty change
+		 * equivalent to changing the default
+		 */
+		this.style[accessibilityEnabledProperty.key] = false;
 	}
 }
 
