@@ -26,6 +26,7 @@ export interface IWebpackEnv {
 
 	appPath?: string;
 	appResourcesPath?: string;
+	buildPath?: string;
 	appComponents?: string[];
 
 	nativescriptLibPath?: string | boolean;
@@ -65,6 +66,7 @@ let webpackMerges: any[] = [];
 let explicitUseConfig = false;
 let hasInitialized = false;
 let currentPlugin: string | undefined;
+
 /**
  * @internal
  */
@@ -85,6 +87,7 @@ export function clearCurrentPlugin() {
 }
 
 ////// PUBLIC API
+
 /**
  * The default flavor specific configs
  */

@@ -13,6 +13,7 @@ import {
 	getPlatformName,
 } from '../helpers/platform';
 import base from './base';
+
 // until we can switch to async/await on the webpack config, copy this from '@angular/compiler-cli'
 const GLOBAL_DEFS_FOR_TERSER = {
 	ngDevMode: false,
