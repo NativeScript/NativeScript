@@ -148,7 +148,7 @@ export namespace Length {
 			}
 			let stringValue = fromValue.trim();
 			if (stringValue.endsWith('px')) {
-				stringValue = stringValue.slice(-2).trim();
+				stringValue = stringValue.slice(0, -2).trim();
 				const value: CoreTypes.px = parseFloat(stringValue);
 				if (isNaN(value) || !isFinite(value)) {
 					throw new Error(`Invalid value: ${stringValue}`);
