@@ -157,7 +157,7 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
 // by default android view are not clipped while iOS are
 export const clipToBoundsProperty = new Property<LayoutBaseCommon, boolean>({
 	name: 'clipToBounds',
-	defaultValue: __IOS__ ? true : true,
+	defaultValue: __IOS__ ? false : true,
 	valueConverter: booleanConverter,
 });
 clipToBoundsProperty.register(LayoutBaseCommon);

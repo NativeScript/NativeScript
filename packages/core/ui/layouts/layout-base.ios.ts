@@ -32,9 +32,6 @@ export class LayoutBase extends LayoutBaseCommon {
 		}
 	}
 
-	[clipToBoundsProperty.getDefault](): boolean {
-		return false;
-	}
 	[clipToBoundsProperty.setNative](value: boolean) {
 		this._setNativeClipToBounds();
 	}
