@@ -60,6 +60,7 @@ export function parseCSSShorthand(value: string): {
 				try {
 					return Length.parse(val);
 				} catch (err) {
+					console.error(err, err.stack);
 					return CoreTypes.zeroLength;
 				}
 			});
