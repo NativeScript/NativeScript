@@ -186,12 +186,17 @@ export class View extends ViewCommon implements ViewDefinition {
 	private layoutOuterShadows(): void {
 		const nativeView: NativeScriptUIView = <NativeScriptUIView>this.nativeViewProtected;
 		if (nativeView?.outerShadowContainerLayer) {
-			CATransaction.setDisableActions(true);
+			const isInTheMiddleOfAnimation = UIView.inheritedAnimationDuration > 0;
+			if (!isInTheMiddleOfAnimation) {
+				CATransaction.setDisableActions(true);
+			}
 
 			nativeView.outerShadowContainerLayer.bounds = nativeView.bounds;
 			nativeView.outerShadowContainerLayer.position = nativeView.center;
 
-			CATransaction.setDisableActions(false);
+			if (!isInTheMiddleOfAnimation) {
+				CATransaction.setDisableActions(false);
+			}
 		}
 	}
 
@@ -451,15 +456,19 @@ export class View extends ViewCommon implements ViewDefinition {
 				CATransaction.begin();
 			}
 			// Disable CALayer animatable property changes
-			CATransaction.setDisableActions(true);
-
+			const isInTheMiddleOfAnimation = UIView.inheritedAnimationDuration > 0;
+			if (!isInTheMiddleOfAnimation) {
+				CATransaction.setDisableActions(true);
+			}
 			this.nativeViewProtected.layer.transform = transform;
 			if (nativeView.outerShadowContainerLayer) {
 				nativeView.outerShadowContainerLayer.transform = transform;
 			}
 			this._hasTransform = this.nativeViewProtected && !CATransform3DEqualToTransform(this.nativeViewProtected.transform3D, CATransform3DIdentity);
 
-			CATransaction.setDisableActions(false);
+			if (!isInTheMiddleOfAnimation) {
+				CATransaction.setDisableActions(false);
+			}
 			if (!updateSuspended) {
 				CATransaction.commit();
 			}
@@ -471,7 +480,10 @@ export class View extends ViewCommon implements ViewDefinition {
 		const newPoint = CGPointMake(originX, originY);
 
 		// Disable CALayer animatable property changes
-		CATransaction.setDisableActions(true);
+		const isInTheMiddleOfAnimation = UIView.inheritedAnimationDuration > 0;
+		if (!isInTheMiddleOfAnimation) {
+			CATransaction.setDisableActions(true);
+		}
 
 		nativeView.layer.anchorPoint = newPoint;
 		if (this._cachedFrame) {
@@ -487,7 +499,9 @@ export class View extends ViewCommon implements ViewDefinition {
 			nativeView.outerShadowContainerLayer.position = CGPointMake(frame.origin.x + frame.size.width * originX, frame.origin.y + frame.size.height * originY);
 		}
 
-		CATransaction.setDisableActions(false);
+		if (!isInTheMiddleOfAnimation) {
+			CATransaction.setDisableActions(false);
+		}
 	}
 
 	// By default we update the view's presentation layer when setting backgroundColor and opacity properties.
@@ -822,12 +836,15 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 	[opacityProperty.setNative](value: number) {
 		const nativeView: NativeScriptUIView = <NativeScriptUIView>this.nativeViewProtected;
-		// const updateSuspended = this._isPresentationLayerUpdateSuspended();
-		// if (!updateSuspended) {
-		// 	CATransaction.begin();
-		// }
-		// // Disable CALayer animatable property changes
-		// CATransaction.setDisableActions(true);
+		const updateSuspended = this._isPresentationLayerUpdateSuspended();
+		if (!updateSuspended) {
+			CATransaction.begin();
+		}
+		// Disable CALayer animatable property changes
+		const isInTheMiddleOfAnimation = UIView.inheritedAnimationDuration > 0;
+		if (!isInTheMiddleOfAnimation) {
+			CATransaction.setDisableActions(true);
+		}
 
 		nativeView.alpha = value;
 		// Apply opacity value to shadows as well
@@ -835,10 +852,12 @@ export class View extends ViewCommon implements ViewDefinition {
 			nativeView.outerShadowContainerLayer.opacity = value;
 		}
 
-		// CATransaction.setDisableActions(false);
-		// if (!updateSuspended) {
-		// 	CATransaction.commit();
-		// }
+		if (!isInTheMiddleOfAnimation) {
+			CATransaction.setDisableActions(false);
+		}
+		if (!updateSuspended) {
+			CATransaction.commit();
+		}
 	}
 
 	[rotateProperty.getDefault](): number {
@@ -993,12 +1012,16 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	_redrawNativeBackground(value: UIColor | Background): void {
+		const isInTheMiddleOfAnimation = UIView.inheritedAnimationDuration > 0;
 		const updateSuspended = this._isPresentationLayerUpdateSuspended();
+
 		if (!updateSuspended) {
 			CATransaction.begin();
 		}
-		// Disable CALayer animatable property changes
-		CATransaction.setDisableActions(true);
+		if (!isInTheMiddleOfAnimation) {
+			// Disable CALayer animatable property changes
+			CATransaction.setDisableActions(true);
+		}
 
 		const nativeView = this.nativeViewProtected;
 		if (nativeView) {
@@ -1012,7 +1035,9 @@ export class View extends ViewCommon implements ViewDefinition {
 			}
 		}
 
-		CATransaction.setDisableActions(false);
+		if (!isInTheMiddleOfAnimation) {
+			CATransaction.setDisableActions(false);
+		}
 		if (!updateSuspended) {
 			CATransaction.commit();
 		}

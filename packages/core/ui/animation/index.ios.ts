@@ -308,8 +308,7 @@ export class Animation extends AnimationBase {
 
 				return;
 			}
-			const animationInfo = propertyAnimations[index];
-			this._createNativeUIViewAnimation(propertyAnimations, index, playSequentially, animationInfo);
+			this._createNativeUIViewAnimation(propertyAnimations, index, playSequentially);
 		};
 	}
 
@@ -569,19 +568,16 @@ export class Animation extends AnimationBase {
 		return basicAnimation;
 	}
 	usePropertyAnimator = false;
-	protected _createNativeUIViewAnimation(propertyAnimations: Array<PropertyAnimationInfo>, index: number, playSequentially: boolean, animationInfo: PropertyAnimationInfo) {
-		const args = this._getNativeAnimationArguments(animationInfo);
-		const nativeView = <NativeScriptUIView>animationInfo.target.nativeViewProtected;
-
+	protected _createNativeUIViewAnimation(propertyAnimations: Array<PropertyAnimationInfo>, index: number, playSequentially: boolean) {
+		const animationInfos = playSequentially ? [propertyAnimations[index]] : propertyAnimations;
+		const firstAnimation = animationInfos[0];
+		const args = this._getNativeAnimationArguments(firstAnimation);
+		const nativeView = <NativeScriptUIView>firstAnimation.target.nativeViewProtected;
 		let callback = undefined;
 		let nextAnimation;
-		if (index + 1 < propertyAnimations.length) {
+		if (playSequentially && index + 1 < propertyAnimations.length) {
 			callback = this._createiOSAnimationFunction(propertyAnimations, index + 1, playSequentially);
-			if (!playSequentially) {
-				callback();
-			} else {
-				nextAnimation = callback;
-			}
+			nextAnimation = callback;
 		}
 
 		let delay = 0;
@@ -589,7 +585,6 @@ export class Animation extends AnimationBase {
 			delay = args.delay;
 		}
 
-		const isSpring = animationInfo.curve === 'spring';
 		const animationOptions = UIViewAnimationOptions.AllowUserInteraction;
 
 		const animate = () => {
@@ -600,32 +595,37 @@ export class Animation extends AnimationBase {
 				UIView.setAnimationRepeatCount(args.repeatCount);
 			}
 			const setKeyFrame = this._valueSource === 'keyframe';
-			switch (animationInfo.propertyName) {
-				case _transform:
-					animationInfo._originalValue = nativeView.layer.transform;
-					nativeView.layer.setValueForKey(args.toValue, args.propertyNameToAnimate);
-					animationInfo._propertyResetCallback = function (value) {
-						nativeView.layer.transform = value;
-					};
-					// Shadow layers do not inherit from animating view layer
-					if (nativeView.outerShadowContainerLayer) {
-						nativeView.outerShadowContainerLayer.setValueForKey(args.toValue, args.propertyNameToAnimate);
+			animationInfos.forEach((animationInfo) => {
+				switch (animationInfo.propertyName) {
+					case _transform:
+						animationInfo._originalValue = nativeView.layer.transform;
+						nativeView.layer.setValueForKey(args.toValue, args.propertyNameToAnimate);
+						animationInfo._propertyResetCallback = function (value) {
+							nativeView.layer.transform = value;
+						};
+						// Shadow layers do not inherit from animating view layer
+						if (nativeView.outerShadowContainerLayer) {
+							nativeView.outerShadowContainerLayer.setValueForKey(args.toValue, args.propertyNameToAnimate);
+						}
+						break;
+					case Properties.width:
+					case Properties.height: {
+						// Resize background during animation
+						iosBackground.drawBackgroundVisualEffects(animationInfo.target);
+						this.animateNestedLayerSizeUsingBasicAnimation(nativeView, args.toValue.CGRectValue, animationInfo, args /* nativeAnimation */);
 					}
-					break;
-				case Properties.width:
-				case Properties.height: {
-					// Resize background during animation
-					iosBackground.drawBackgroundVisualEffects(animationInfo.target);
-					this.animateNestedLayerSizeUsingBasicAnimation(nativeView, args.toValue.CGRectValue, animationInfo, args /* nativeAnimation */);
+					// eslint-disable-next-line no-fallthrough
+					default:
+						applyAnimationProperty(animationInfo.target, animationInfo.property, animationInfo.value, setKeyFrame);
+						// if (animationInfo.property.affectsLayout) {
+						// 	const view = (animationInfo.target.page || animationInfo.target).nativeViewProtected;
+						// 	view.layoutIfNeeded();
+						// }
+						break;
 				}
-				// eslint-disable-next-line no-fallthrough
-				default:
-					applyAnimationProperty(animationInfo.target, animationInfo.property, animationInfo.value, setKeyFrame);
-					if (animationInfo.property.affectsLayout) {
-						(animationInfo.target.page || animationInfo.target).nativeViewProtected.layoutIfNeeded();
-					}
-					break;
-			}
+			});
+			const view = (firstAnimation.target.page || firstAnimation.target).nativeViewProtected;
+			view.layoutIfNeeded();
 		};
 		let finished = false;
 		const startTime = Date.now();
@@ -638,33 +638,38 @@ export class Animation extends AnimationBase {
 				return;
 			}
 			finished = true;
-			if (animationDidFinish) {
-				if (animationInfo.propertyName === _transform) {
-					if (animationInfo.value[Properties.translate] !== undefined) {
-						animationInfo.target.translateX = animationInfo.value[Properties.translate].x;
-						animationInfo.target.translateY = animationInfo.value[Properties.translate].y;
+			animationInfos.forEach((animationInfo) => {
+				if (animationDidFinish) {
+					if (animationInfo.propertyName === _transform) {
+						if (animationInfo.value[Properties.translate] !== undefined) {
+							animationInfo.target.translateX = animationInfo.value[Properties.translate].x;
+							animationInfo.target.translateY = animationInfo.value[Properties.translate].y;
+						}
+						if (animationInfo.value[Properties.rotate] !== undefined) {
+							animationInfo.target.rotateX = animationInfo.value[Properties.rotate].x;
+							animationInfo.target.rotateY = animationInfo.value[Properties.rotate].y;
+							animationInfo.target.rotate = animationInfo.value[Properties.rotate].z;
+						}
+						if (animationInfo.value[Properties.scale] !== undefined) {
+							animationInfo.target.scaleX = animationInfo.value[Properties.scale].x;
+							animationInfo.target.scaleY = animationInfo.value[Properties.scale].y;
+						}
 					}
-					if (animationInfo.value[Properties.rotate] !== undefined) {
-						animationInfo.target.rotateX = animationInfo.value[Properties.rotate].x;
-						animationInfo.target.rotateY = animationInfo.value[Properties.rotate].y;
-						animationInfo.target.rotate = animationInfo.value[Properties.rotate].z;
-					}
-					if (animationInfo.value[Properties.scale] !== undefined) {
-						animationInfo.target.scaleX = animationInfo.value[Properties.scale].x;
-						animationInfo.target.scaleY = animationInfo.value[Properties.scale].y;
+				} else {
+					if (animationInfo._propertyResetCallback) {
+						animationInfo._propertyResetCallback(animationInfo._originalValue);
 					}
 				}
-			} else {
-				if (animationInfo._propertyResetCallback) {
-					animationInfo._propertyResetCallback(animationInfo._originalValue);
-				}
-			}
+			});
 			const cancelled = !animationDidFinish;
 			this.animationFinishedCallback(cancelled);
 			if (animationDidFinish && nextAnimation && !this._wasCancelled) {
 				nextAnimation();
 			}
 		};
+
+		const curve = firstAnimation.curve;
+		const isSpring = curve === 'spring';
 		if (this.usePropertyAnimator) {
 			const finishCallback = (position: UIViewAnimatingPosition) => finish(position === UIViewAnimatingPosition.End);
 			if (isSpring) {
@@ -683,7 +688,7 @@ export class Animation extends AnimationBase {
 				}
 			} else {
 				CATransaction.begin();
-				CATransaction.setAnimationTimingFunction(animationInfo.curve);
+				CATransaction.setAnimationTimingFunction(curve);
 				CATransaction.setAnimationDuration(args.duration);
 				CATransaction.setCompletionBlock(finish);
 				UIViewPropertyAnimator.runningPropertyAnimatorWithDurationDelayOptionsAnimationsCompletion(args.duration, args.delay, animationOptions, animate, finishCallback);
@@ -699,7 +704,7 @@ export class Animation extends AnimationBase {
 			} else {
 				CATransaction.begin();
 				CATransaction.setAnimationDuration(args.duration);
-				CATransaction.setAnimationTimingFunction(animationInfo.curve);
+				CATransaction.setAnimationTimingFunction(curve);
 				CATransaction.setCompletionBlock(finish);
 				UIView.animateWithDurationDelayOptionsAnimationsCompletion(args.duration, delay, animationOptions, animate, finish);
 				CATransaction.commit();
