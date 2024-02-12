@@ -820,8 +820,9 @@ export class View extends ViewCommon {
 
 	[accessibilityEnabledProperty.setNative](value: boolean): void {
 		this.nativeViewProtected.setFocusable(!!value);
-
-		updateAccessibilityProperties(this);
+		if (value) {
+			updateAccessibilityProperties(this);
+		}
 	}
 
 	[accessibilityIdentifierProperty.setNative](value: string): void {
@@ -1257,6 +1258,15 @@ export class View extends ViewCommon {
 
 export class ContainerView extends View {
 	public iosOverflowSafeArea: boolean;
+
+	constructor() {
+		super();
+		/**
+		 * mark accessible as false without triggering proerty change
+		 * equivalent to changing the default
+		 */
+		this.style[accessibilityEnabledProperty.key] = false;
+	}
 }
 
 export class CustomLayoutView extends ContainerView implements CustomLayoutViewDefinition {

@@ -12,6 +12,7 @@ import { EventData } from '../../../data/observable';
 import { Trace } from '../../../trace';
 import { CoreTypes } from '../../../core-types';
 import { ViewHelper } from './view-helper';
+import { setupAccessibleView } from '../../../accessibility';
 
 import { PercentLength } from '../../styling/style-properties';
 
@@ -190,6 +191,9 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 			}
 		}
 		super.onLoaded();
+		if (this.accessible) {
+			setupAccessibleView(this);
+		}
 	}
 
 	public _closeAllModalViewsInternal(): boolean {
@@ -823,11 +827,9 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
 	get accessible(): boolean {
 		return this.style.accessible;
-		// return this._accessible;
 	}
 	set accessible(value: boolean) {
 		this.style.accessible = value;
-		// this._accessible = value;
 	}
 
 	get accessibilityHidden(): boolean {
