@@ -1084,7 +1084,7 @@ export class View extends ViewCommon {
 
 	public _applyBackground(background: Background, isBorderDrawable: boolean, onlyColor: boolean, backgroundDrawable: any) {
 		const nativeView = this.nativeViewProtected;
-		const canUseOutlineProvider = !background.hasBorderWidth() && !background.clipPath && !background.image && SDK_VERSION >= 21 && (SDK_VERSION >= 33 || background.hasUniformBorderRadius());
+		const canUseOutlineProvider = !background.hasBorderWidth() && !background.hasBoxShadow() && !background.clipPath && !background.image && SDK_VERSION >= 21 && (SDK_VERSION >= 33 || background.hasUniformBorderRadius());
 		if (!isBorderDrawable && (onlyColor || canUseOutlineProvider)) {
 			if (!!background.color) {
 				if (backgroundDrawable && backgroundDrawable.setColor) {
@@ -1101,6 +1101,7 @@ export class View extends ViewCommon {
 				ViewHelper.setOutlineProvider(nativeView, background.borderTopLeftRadius, background.borderTopRightRadius, background.borderBottomRightRadius, background.borderBottomLeftRadius);
 			}
 		} else if (!background.isEmpty()) {
+			ViewHelper.clearOutlineProvider(nativeView);
 			if (isBorderDrawable) {
 				// org.nativescript.widgets.BorderDrawable
 				refreshBorderDrawable(this, backgroundDrawable);
@@ -1183,7 +1184,6 @@ export class View extends ViewCommon {
 			&& !background.clipPath
 			&& !background.image
 			&& !!background.color;
-
 		this._applyBackground(background, isBorderDrawable, onlyColor, drawable);
 
 		if (background.hasBoxShadow()) {

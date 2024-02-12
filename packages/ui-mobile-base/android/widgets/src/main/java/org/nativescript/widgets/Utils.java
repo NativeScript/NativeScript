@@ -121,17 +121,15 @@ public class Utils {
 
 		Drawable currentBg = view.getBackground();
 
-
-		if (currentBg == null) {
-			currentBg = new ColorDrawable(Color.TRANSPARENT);
-		} else if (currentBg instanceof BoxShadowDrawable) {
-			currentBg = ((BoxShadowDrawable) view.getBackground()).getWrappedDrawable();
+		if (currentBg instanceof BoxShadowDrawable) {
+			((BoxShadowDrawable) currentBg).setValue(value);
+		} else {
+			if (currentBg == null) {
+				currentBg = new ColorDrawable(Color.TRANSPARENT);
+			}
+			view.setBackground(new BoxShadowDrawable(currentBg, value));
 		}
 
-		// replace background
-		view.setBackground(new BoxShadowDrawable(currentBg, value));
-
-		// Drawable bg = view.getBackground();
 		if (view.getParent() != null && view.getParent() instanceof ViewGroup) {
 			ViewGroup parent = (ViewGroup) view.getParent();
 			parent.setClipChildren(false);
