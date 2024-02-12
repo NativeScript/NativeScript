@@ -29,8 +29,8 @@ class AnimationInfo {
 	public fromValue: any;
 	public toValue: any;
 	public duration: number;
-	public repeatCount: number;
 	public delay: number;
+	public repeatCount: number;
 	public animationBlock?: Function;
 }
 
@@ -312,7 +312,7 @@ export class Animation extends AnimationBase {
 		};
 	}
 
-	protected _getNativeAnimationArguments(animation: PropertyAnimationInfo, useCABasicAnimation = false): AnimationInfo {
+	protected _getNativeAnimationArguments(animation: PropertyAnimationInfo, duration, delay, repeatCount, useCABasicAnimation = false): AnimationInfo {
 		const view = animation.target;
 		const style = view.style;
 		const nativeView: NativeScriptUIView = view.nativeViewProtected;
@@ -459,34 +459,16 @@ export class Animation extends AnimationBase {
 					break;
 			}
 		}
-		let duration = 0.3;
-		if (animation.duration !== undefined) {
-			duration = animation.duration / 1000.0;
-		}
-
-		let delay = undefined;
-		if (animation.delay) {
-			delay = animation.delay / 1000.0;
-		}
-
-		let repeatCount = undefined;
-		if (animation.iterations !== undefined) {
-			if (animation.iterations === Number.POSITIVE_INFINITY) {
-				repeatCount = Number.MAX_VALUE;
-			} else {
-				repeatCount = animation.iterations;
-			}
-		}
 
 		return {
 			propertyNameToAnimate: propertyNameToAnimate,
 			fromValue: fromValue,
 			subPropertiesToAnimate: subPropertyNameToAnimate,
 			toValue: toValue,
+			duration,
+			delay,
+			repeatCount,
 			animationBlock: animation.animationBlock,
-			duration: duration,
-			repeatCount: repeatCount,
-			delay: delay,
 		};
 	}
 
@@ -549,20 +531,20 @@ export class Animation extends AnimationBase {
 	// 	return groupAnimation;
 	// }
 
-	private _createBasicAnimation(args: AnimationInfo, animation: PropertyAnimation) {
-		const basicAnimation = (animation.curve === 'spring' ? CASpringAnimation : CABasicAnimation).animationWithKeyPath(args.propertyNameToAnimate);
+	private _createBasicAnimation(args: AnimationInfo, curve, duration, delay, repeatCount) {
+		const basicAnimation = (curve === 'spring' ? CASpringAnimation : CABasicAnimation).animationWithKeyPath(args.propertyNameToAnimate);
 		basicAnimation['damping'] = 0.2;
 		basicAnimation.fromValue = args.fromValue;
 		basicAnimation.toValue = args.toValue;
-		basicAnimation.duration = args.duration;
-		if (args.repeatCount !== undefined) {
+		basicAnimation.duration = duration;
+		if (repeatCount !== undefined) {
 			basicAnimation.repeatCount = args.repeatCount;
 		}
-		if (args.delay !== undefined) {
-			basicAnimation.beginTime = CACurrentMediaTime() + args.delay;
+		if (delay !== undefined) {
+			basicAnimation.beginTime = CACurrentMediaTime() + delay;
 		}
-		if (animation.curve !== undefined) {
-			basicAnimation.timingFunction = animation.curve;
+		if (curve !== undefined) {
+			basicAnimation.timingFunction = curve;
 		}
 
 		return basicAnimation;
@@ -571,7 +553,6 @@ export class Animation extends AnimationBase {
 	protected _createNativeUIViewAnimation(propertyAnimations: Array<PropertyAnimationInfo>, index: number, playSequentially: boolean) {
 		const animationInfos = playSequentially ? [propertyAnimations[index]] : propertyAnimations;
 		const firstAnimation = animationInfos[0];
-		const args = this._getNativeAnimationArguments(firstAnimation);
 		const nativeView = <NativeScriptUIView>firstAnimation.target.nativeViewProtected;
 		let callback = undefined;
 		let nextAnimation;
@@ -581,46 +562,73 @@ export class Animation extends AnimationBase {
 		}
 
 		let delay = 0;
-		if (args.delay) {
-			delay = args.delay;
+		if (firstAnimation.delay) {
+			delay = firstAnimation.delay / 1000.0;
+		}
+
+		let duration = 0.3;
+		if (firstAnimation.duration !== undefined) {
+			duration = firstAnimation.duration / 1000.0;
+		}
+
+		let repeatCount = undefined;
+		if (firstAnimation.iterations !== undefined) {
+			if (firstAnimation.iterations === Number.POSITIVE_INFINITY) {
+				repeatCount = Number.MAX_VALUE;
+			} else {
+				repeatCount = firstAnimation.iterations;
+			}
 		}
 
 		const animationOptions = UIViewAnimationOptions.AllowUserInteraction;
 
 		const animate = () => {
-			if (args.animationBlock) {
-				args.animationBlock();
+			// only one animationBlock so we can test on first
+			if (firstAnimation.animationBlock) {
+				firstAnimation.animationBlock();
 			}
-			if (args.repeatCount !== undefined) {
-				UIView.setAnimationRepeatCount(args.repeatCount);
+			// only one animationBlock so we can test on first
+			if (repeatCount !== undefined) {
+				UIView.setAnimationRepeatCount(repeatCount);
 			}
 			const setKeyFrame = this._valueSource === 'keyframe';
 			animationInfos.forEach((animationInfo) => {
 				switch (animationInfo.propertyName) {
-					case _transform:
+					case _transform: {
+						const args = this._getNativeAnimationArguments(animationInfo, duration, delay, repeatCount, true);
 						animationInfo._originalValue = nativeView.layer.transform;
-						nativeView.layer.setValueForKey(args.toValue, args.propertyNameToAnimate);
+						const basicAnimation = this._createBasicAnimation(
+							{
+								...args,
+							},
+							curve,
+							duration,
+							delay,
+							repeatCount
+						);
+						nativeView.layer.addAnimationForKey(basicAnimation, args.propertyNameToAnimate);
+						// nativeView.layer.setValueForKey(args.toValue, args.propertyNameToAnimate);
 						animationInfo._propertyResetCallback = function (value) {
 							nativeView.layer.transform = value;
 						};
 						// Shadow layers do not inherit from animating view layer
 						if (nativeView.outerShadowContainerLayer) {
-							nativeView.outerShadowContainerLayer.setValueForKey(args.toValue, args.propertyNameToAnimate);
+							nativeView.outerShadowContainerLayer.addAnimationForKey(basicAnimation, args.propertyNameToAnimate);
+							// nativeView.outerShadowContainerLayer.setValueForKey(args.toValue, args.propertyNameToAnimate);
 						}
 						break;
+					}
 					case Properties.width:
 					case Properties.height: {
+						const args = this._getNativeAnimationArguments(animationInfo, duration, delay, repeatCount);
 						// Resize background during animation
 						iosBackground.drawBackgroundVisualEffects(animationInfo.target);
-						this.animateNestedLayerSizeUsingBasicAnimation(nativeView, args.toValue.CGRectValue, animationInfo, args /* nativeAnimation */);
+						this.animateNestedLayerSizeUsingBasicAnimation(nativeView, args.toValue.CGRectValue, animationInfo, args /* nativeAnimation */, curve, duration, delay, repeatCount);
+						applyAnimationProperty(animationInfo.target, animationInfo.property, animationInfo.value, setKeyFrame);
+						break;
 					}
-					// eslint-disable-next-line no-fallthrough
 					default:
 						applyAnimationProperty(animationInfo.target, animationInfo.property, animationInfo.value, setKeyFrame);
-						// if (animationInfo.property.affectsLayout) {
-						// 	const view = (animationInfo.target.page || animationInfo.target).nativeViewProtected;
-						// 	view.layoutIfNeeded();
-						// }
 						break;
 				}
 			});
@@ -631,7 +639,7 @@ export class Animation extends AnimationBase {
 		const startTime = Date.now();
 		let finishedCalledOnce = false;
 		const finish = (animationDidFinish: boolean = true) => {
-			if (finished || (animationDidFinish && !finishedCalledOnce && Date.now() - startTime < args.duration * 1000)) {
+			if (finished || (animationDidFinish && !finishedCalledOnce && Date.now() - startTime < duration * 1000)) {
 				//ignoring finished. Called to soon
 				// will be called again byt the CATransaction completion block
 				finishedCalledOnce = true;
@@ -668,45 +676,45 @@ export class Animation extends AnimationBase {
 			}
 		};
 
-		const curve = firstAnimation.curve;
+		const curve = firstAnimation.curve || CAMediaTimingFunction.functionWithName(kCAMediaTimingFunctionLinear);
 		const isSpring = curve === 'spring';
 		if (this.usePropertyAnimator) {
 			const finishCallback = (position: UIViewAnimatingPosition) => finish(position === UIViewAnimatingPosition.End);
 			if (isSpring) {
-				const animator = UIViewPropertyAnimator.alloc().initWithDurationDampingRatioAnimations(args.duration, 0.2, null);
+				const animator = UIViewPropertyAnimator.alloc().initWithDurationDampingRatioAnimations(duration, 0.2, null);
 				animator.manualHitTestingEnabled = true;
 				animator.addAnimations(animate);
 				animator.addCompletion(finishCallback);
 				// for seems to be the only way to use a timeout. It is not too bad but would be better to be handled natively
 				// for this example this breaks slow animations in debugger
-				if (args.delay) {
+				if (delay) {
 					setTimeout(() => {
 						animator.startAnimation();
-					}, args.delay * 1000);
+					}, delay * 1000);
 				} else {
 					animator.startAnimation();
 				}
 			} else {
 				CATransaction.begin();
 				CATransaction.setAnimationTimingFunction(curve);
-				CATransaction.setAnimationDuration(args.duration);
+				CATransaction.setAnimationDuration(duration);
 				CATransaction.setCompletionBlock(finish);
-				UIViewPropertyAnimator.runningPropertyAnimatorWithDurationDelayOptionsAnimationsCompletion(args.duration, args.delay, animationOptions, animate, finishCallback);
+				UIViewPropertyAnimator.runningPropertyAnimatorWithDurationDelayOptionsAnimationsCompletion(duration, delay, animationOptions, animate, finishCallback);
 				CATransaction.commit();
 			}
 		} else {
 			if (isSpring) {
 				CATransaction.begin();
-				CATransaction.setAnimationDuration(args.duration);
+				CATransaction.setAnimationDuration(duration);
 				CATransaction.setCompletionBlock(finish);
-				UIView.animateWithDurationDelayUsingSpringWithDampingInitialSpringVelocityOptionsAnimationsCompletion(args.duration, delay, 0.2, 0, UIViewAnimationOptions.CurveLinear | animationOptions, animate, finish);
+				UIView.animateWithDurationDelayUsingSpringWithDampingInitialSpringVelocityOptionsAnimationsCompletion(duration, delay, 0.2, 0, UIViewAnimationOptions.CurveLinear | animationOptions, animate, finish);
 				CATransaction.commit();
 			} else {
 				CATransaction.begin();
-				CATransaction.setAnimationDuration(args.duration);
+				CATransaction.setAnimationDuration(duration);
 				CATransaction.setAnimationTimingFunction(curve);
 				CATransaction.setCompletionBlock(finish);
-				UIView.animateWithDurationDelayOptionsAnimationsCompletion(args.duration, delay, animationOptions, animate, finish);
+				UIView.animateWithDurationDelayOptionsAnimationsCompletion(duration, delay, animationOptions, animate, finish);
 				CATransaction.commit();
 			}
 		}
@@ -814,7 +822,7 @@ export class Animation extends AnimationBase {
 		return result;
 	}
 
-	protected animateNestedLayerSizeUsingBasicAnimation(nativeView: NativeScriptUIView, bounds: CGRect, animation: PropertyAnimation, args: AnimationInfo /* , nativeAnimation: CABasicAnimation */) {
+	protected animateNestedLayerSizeUsingBasicAnimation(nativeView: NativeScriptUIView, bounds: CGRect, animation: PropertyAnimation, args: AnimationInfo /* , nativeAnimation: CABasicAnimation */, curve, duration, delay, repeatCount) {
 		const view: View = animation.target;
 
 		// Gradient background animation
@@ -846,7 +854,10 @@ export class Animation extends AnimationBase {
 							fromValue: nativeView.layer.mask.path,
 							toValue,
 						},
-						animation
+						curve,
+						duration,
+						delay,
+						repeatCount
 					),
 					'path'
 				);
@@ -869,7 +880,10 @@ export class Animation extends AnimationBase {
 									fromValue: borderMask.path,
 									toValue: innerClipPath,
 								},
-								animation
+								curve,
+								duration,
+								delay,
+								repeatCount
 							),
 							'path'
 						);
@@ -890,7 +904,10 @@ export class Animation extends AnimationBase {
 											fromValue: layer.path,
 											toValue: paths[i],
 										},
-										animation
+										curve,
+										duration,
+										delay,
+										repeatCount
 									),
 									'path'
 								);
@@ -906,7 +923,10 @@ export class Animation extends AnimationBase {
 								fromValue: nativeView.borderLayer.path,
 								toValue: innerClipPath,
 							},
-							animation
+							curve,
+							duration,
+							delay,
+							repeatCount
 						),
 						'path'
 					);
@@ -924,7 +944,10 @@ export class Animation extends AnimationBase {
 							fromValue: nativeView.layer.cornerRadius,
 							toValue: iosBackground.getUniformBorderRadius(animation.target, bounds),
 						},
-						animation
+						curve,
+						duration,
+						delay,
+						repeatCount
 					),
 					'cornerRadius'
 				);
@@ -945,7 +968,10 @@ export class Animation extends AnimationBase {
 							fromValue: shadowClipMask.path,
 							toValue: clipPath,
 						},
-						animation
+						curve,
+						duration,
+						delay,
+						repeatCount
 					),
 					'path'
 				);
@@ -966,7 +992,10 @@ export class Animation extends AnimationBase {
 								fromValue: shadowLayer.shadowPath,
 								toValue: shadowPath,
 							},
-							animation
+							curve,
+							duration,
+							delay,
+							repeatCount
 						),
 						'shadowPath'
 					);
@@ -980,7 +1009,10 @@ export class Animation extends AnimationBase {
 									fromValue: shadowLayer.mask.path,
 									toValue: maskPath,
 								},
-								animation
+								curve,
+								duration,
+								delay,
+								repeatCount
 							),
 							'path'
 						);
