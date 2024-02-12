@@ -199,12 +199,12 @@ export class Animation extends AnimationBase {
 				this._finishedAnimations++;
 			}
 
-			if (this._cancelledAnimations) {
+			if (this._cancelledAnimations > 0 && this._cancelledAnimations + this._finishedAnimations === this._mergedPropertyAnimations.length) {
 				if (Trace.isEnabled()) {
 					Trace.write(this._cancelledAnimations + ' animations cancelled.', Trace.categories.Animation);
 				}
 				this._rejectAnimationFinishedPromise();
-			} else if (this._finishedAnimations) {
+			} else if (this._finishedAnimations === this._mergedPropertyAnimations.length) {
 				if (Trace.isEnabled()) {
 					Trace.write(this._finishedAnimations + ' animations finished.', Trace.categories.Animation);
 				}
@@ -551,14 +551,20 @@ export class Animation extends AnimationBase {
 	}
 	usePropertyAnimator = false;
 	protected _createNativeUIViewAnimation(propertyAnimations: Array<PropertyAnimationInfo>, index: number, playSequentially: boolean) {
-		const animationInfos = playSequentially ? [propertyAnimations[index]] : propertyAnimations;
+		// const animationInfos = playSequentially ? [propertyAnimations[index]] : propertyAnimations;
+		// TODO: need to investigate why we cant handle all animations in one block
+		const animationInfos = [propertyAnimations[index]];
 		const firstAnimation = animationInfos[0];
 		const nativeView = <NativeScriptUIView>firstAnimation.target.nativeViewProtected;
 		let callback = undefined;
 		let nextAnimation;
-		if (playSequentially && index + 1 < propertyAnimations.length) {
+		if (index + 1 < propertyAnimations.length) {
 			callback = this._createiOSAnimationFunction(propertyAnimations, index + 1, playSequentially);
-			nextAnimation = callback;
+			if (!playSequentially) {
+				callback();
+			} else {
+				nextAnimation = callback;
+			}
 		}
 
 		let delay = 0;
@@ -608,15 +614,22 @@ export class Animation extends AnimationBase {
 							delay,
 							repeatCount
 						);
+
+						// we set the destination value in animate to persist it after animation end
+						nativeView.layer.transform = args.toValue.CATransform3DValue;
+
+						// we start the animation
 						nativeView.layer.addAnimationForKey(basicAnimation, args.propertyNameToAnimate);
+
 						// nativeView.layer.setValueForKey(args.toValue, args.propertyNameToAnimate);
 						animationInfo._propertyResetCallback = function (value) {
 							nativeView.layer.transform = value;
 						};
 						// Shadow layers do not inherit from animating view layer
 						if (nativeView.outerShadowContainerLayer) {
+							// we set the destination value in animate to persist it after animation end
+							nativeView.outerShadowContainerLayer.transform = args.toValue.CATransform3DValue;
 							nativeView.outerShadowContainerLayer.addAnimationForKey(basicAnimation, args.propertyNameToAnimate);
-							// nativeView.outerShadowContainerLayer.setValueForKey(args.toValue, args.propertyNameToAnimate);
 						}
 						break;
 					}
@@ -650,21 +663,22 @@ export class Animation extends AnimationBase {
 			finished = true;
 			animationInfos.forEach((animationInfo) => {
 				if (animationDidFinish) {
-					if (animationInfo.propertyName === _transform) {
-						if (animationInfo.value[Properties.translate] !== undefined) {
-							animationInfo.target.translateX = animationInfo.value[Properties.translate].x;
-							animationInfo.target.translateY = animationInfo.value[Properties.translate].y;
-						}
-						if (animationInfo.value[Properties.rotate] !== undefined) {
-							animationInfo.target.rotateX = animationInfo.value[Properties.rotate].x;
-							animationInfo.target.rotateY = animationInfo.value[Properties.rotate].y;
-							animationInfo.target.rotate = animationInfo.value[Properties.rotate].z;
-						}
-						if (animationInfo.value[Properties.scale] !== undefined) {
-							animationInfo.target.scaleX = animationInfo.value[Properties.scale].x;
-							animationInfo.target.scaleY = animationInfo.value[Properties.scale].y;
-						}
-					}
+					// not needed anymore as we set the destination value in animate to persist it
+					// if (animationInfo.propertyName === _transform) {
+					// 	if (animationInfo.value[Properties.translate] !== undefined) {
+					// 		animationInfo.target.translateX = animationInfo.value[Properties.translate].x;
+					// 		animationInfo.target.translateY = animationInfo.value[Properties.translate].y;
+					// 	}
+					// 	if (animationInfo.value[Properties.rotate] !== undefined) {
+					// 		animationInfo.target.rotateX = animationInfo.value[Properties.rotate].x;
+					// 		animationInfo.target.rotateY = animationInfo.value[Properties.rotate].y;
+					// 		animationInfo.target.rotate = animationInfo.value[Properties.rotate].z;
+					// 	}
+					// 	if (animationInfo.value[Properties.scale] !== undefined) {
+					// 		animationInfo.target.scaleX = animationInfo.value[Properties.scale].x;
+					// 		animationInfo.target.scaleY = animationInfo.value[Properties.scale].y;
+					// 	}
+					// }
 				} else {
 					if (animationInfo._propertyResetCallback) {
 						animationInfo._propertyResetCallback(animationInfo._originalValue);
