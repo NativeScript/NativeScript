@@ -640,15 +640,18 @@ export class Animation extends AnimationBase {
 						iosBackground.drawBackgroundVisualEffects(animationInfo.target);
 						this.animateNestedLayerSizeUsingBasicAnimation(nativeView, args.toValue.CGRectValue, animationInfo, args /* nativeAnimation */, curve, duration, delay, repeatCount);
 						applyAnimationProperty(animationInfo.target, animationInfo.property, animationInfo.value, setKeyFrame);
+
+						(animationInfo.target.page || animationInfo.target).nativeViewProtected.layoutIfNeeded();
 						break;
 					}
 					default:
 						applyAnimationProperty(animationInfo.target, animationInfo.property, animationInfo.value, setKeyFrame);
+						if (animationInfo.property.affectsLayout) {
+							(animationInfo.target.page || animationInfo.target).nativeViewProtected.layoutIfNeeded();
+						}
 						break;
 				}
 			});
-			const view = (firstAnimation.target.page || firstAnimation.target).nativeViewProtected;
-			view.layoutIfNeeded();
 		};
 		let finished = false;
 		const startTime = Date.now();
