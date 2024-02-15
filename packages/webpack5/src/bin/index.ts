@@ -83,6 +83,7 @@ program
 
 		if (!configuration) {
 			console.log('No configuration!');
+			process.exitCode = 1;
 			return;
 		}
 
