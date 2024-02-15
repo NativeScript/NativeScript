@@ -39,11 +39,33 @@ static dispatch_queue_t image_queue;
         }
     });
 }
++ (void) tns_safeDecodeImageNamed: (NSString*) name scale:(CGFloat)scale completion: (void (^) (UIImage*))callback {
+    dispatch_async(image_queue, ^(void){
+        @autoreleasepool {
+            UIImage* image = [UIImage imageNamed: name];
+            image = [UIImage imageWithCGImage:[image CGImage] scale:scale orientation:[image imageOrientation]];
+            [image tns_forceDecode];
+            
+            dispatch_async(dispatch_get_main_queue(), ^(void) {
+                callback(image);
+            });
+        }
+    });
+}
 
 + (UIImage*) tns_safeImageNamed: (NSString*) name {
     UIImage* image;
     @autoreleasepool {
         image = [UIImage imageNamed: name];
+    }
+    return image;
+}
+
++ (UIImage*) tns_safeImageNamed: (NSString*) name scale:(CGFloat)scale {
+    UIImage* image;
+    @autoreleasepool {
+        image = [UIImage imageNamed: name];
+        image = [UIImage imageWithCGImage:[image CGImage] scale:scale orientation:[image imageOrientation]];
     }
     return image;
 }
@@ -61,10 +83,36 @@ static dispatch_queue_t image_queue;
     });
 }
 
++ (void) tns_decodeImageWithData:(NSData *)data scale:(CGFloat)scale completion:(void (^)(UIImage *))callback {
+    dispatch_async(image_queue, ^(void) {
+        @autoreleasepool {
+            UIImage* image = [UIImage imageWithData: data scale: scale];
+            [image tns_forceDecode];
+            
+            dispatch_async(dispatch_get_main_queue(), ^(void) {
+                callback(image);
+            });
+        }
+    });
+}
+
 + (void) tns_decodeImageWidthContentsOfFile: (NSString*) file completion: (void (^) (UIImage*))callback {
     dispatch_async(image_queue, ^(void) {
         @autoreleasepool {
             UIImage* image = [UIImage imageWithContentsOfFile: file];
+            [image tns_forceDecode];
+            
+            dispatch_async(dispatch_get_main_queue(), ^(void) {
+                callback(image);
+            });
+        }
+    });
+}
+
++ (void) tns_decodeImageWidthContentsOfFile: (NSString*) file scale: (CGFloat) scale completion: (void (^) (UIImage*))callback {
+    dispatch_async(image_queue, ^(void) {
+        @autoreleasepool {
+            UIImage* image = [UIImage imageWithData:[NSData dataWithContentsOfFile:file] scale:scale];
             [image tns_forceDecode];
             
             dispatch_async(dispatch_get_main_queue(), ^(void) {

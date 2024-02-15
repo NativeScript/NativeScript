@@ -13,14 +13,18 @@
  * It also draws the UIImage in a small thumb to force decoding potentially avoiding UI hicckups when displayed.
  */
 + (void) tns_safeDecodeImageNamed: (NSString*) name completion: (void (^) (UIImage*))callback;
-
++ (void) tns_safeDecodeImageNamed: (NSString*) name scale: (CGFloat) scale completion: (void (^) (UIImage*))callback;
 /**
  * Same as imageNamed, however calls to this method are sinchronized to be thread safe in iOS8 along with calls to tns_safeImageNamed and tns_safeDecodeImageNamed:completion:
  * imageNamed is thread safe in iOS 9 and later so in later versions this methods simply fallbacks to imageNamed:
  */
 + (UIImage*) tns_safeImageNamed: (NSString*) name;
++ (UIImage*) tns_safeImageNamed: (NSString*) name scale: (CGFloat) scale;
 
 + (void) tns_decodeImageWithData: (NSData*) data completion: (void (^) (UIImage*))callback;
++ (void) tns_decodeImageWithData: (NSData*) data scale: (CGFloat)scale completion: (void (^) (UIImage*))callback;
+
++ (void) tns_decodeImageWidthContentsOfFile: (NSString*) file scale: (CGFloat)scale completion: (void (^) (UIImage*))callback;
 + (void) tns_decodeImageWidthContentsOfFile: (NSString*) file completion: (void (^) (UIImage*))callback;
 
 @end
