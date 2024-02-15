@@ -13,5 +13,5 @@ export interface ImageAssetOptions {
 	width?: number;
 	height?: number;
 	keepAspectRatio?: boolean;
-	autoScaleFactor?: boolean;
+	autoScaleFactor?: boolean; // iOS only
 }

@@ -30,8 +30,6 @@ export class ImageAsset extends ImageAssetBase {
 			android.getApplicationContext(),
 			this.android,
 			JSON.stringify(this.options || {}),
-			Screen.mainScreen.widthPixels,
-			Screen.mainScreen.heightPixels,
 			new org.nativescript.widgets.Utils.AsyncImageCallback({
 				onSuccess(bitmap) {
 					callback(bitmap, null);

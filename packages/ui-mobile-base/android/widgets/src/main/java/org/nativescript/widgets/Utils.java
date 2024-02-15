@@ -172,14 +172,14 @@ public class Utils {
 	}
 
 
-	private static Pair<Integer, Integer> getRequestedImageSize(Pair<Integer, Integer> src, Pair<Integer, Integer> maxSize, ImageAssetOptions options) {
+	private static Pair<Integer, Integer> getRequestedImageSize(Pair<Integer, Integer> src, ImageAssetOptions options) {
 		int reqWidth = options.width;
 		if (reqWidth <= 0) {
-			reqWidth = Math.min(src.first, maxSize.first);
+			reqWidth = src.first;
 		}
 		int reqHeight = options.height;
 		if (reqHeight <= 0) {
-			reqHeight = Math.min(src.second, maxSize.second);
+			reqHeight = src.second;
 		}
 
 		if (options.keepAspectRatio) {
@@ -250,7 +250,7 @@ public class Utils {
 		return rotationAngle;
 	}
 
-	public static void loadImageAsync(final Context context, final String src, final String options, final int maxWidth, final int maxHeight, final AsyncImageCallback callback) {
+	public static void loadImageAsync(final Context context, final String src, final String options, final AsyncImageCallback callback) {
 		final Handler mHandler = new Handler(Looper.myLooper());
 		executors.execute(new Runnable() {
 			@Override
@@ -298,8 +298,7 @@ public class Utils {
 
 
 					Pair<Integer, Integer> sourceSize = new Pair<>(bitmapOptions.outWidth, bitmapOptions.outHeight);
-					Pair<Integer, Integer> maxSize = new Pair<>(maxWidth, maxHeight);
-					Pair<Integer, Integer> requestedSize = getRequestedImageSize(sourceSize, maxSize, opts);
+					Pair<Integer, Integer> requestedSize = getRequestedImageSize(sourceSize, opts);
 					int sampleSize = org.nativescript.widgets.image.Fetcher.calculateInSampleSize(bitmapOptions.outWidth, bitmapOptions.outHeight, requestedSize.first, requestedSize.second);
 					BitmapFactory.Options finalBitmapOptions = new BitmapFactory.Options();
 					finalBitmapOptions.inSampleSize = sampleSize;
