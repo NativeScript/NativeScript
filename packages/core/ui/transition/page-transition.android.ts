@@ -8,8 +8,9 @@ import { getPageStartDefaultsForType, getRectFromProps, SharedTransition, Shared
 import { ImageSource } from '../../image-source';
 import { ContentView } from '../content-view';
 import { GridLayout } from '../layouts/grid-layout';
-import { ad } from '../../utils';
 import { Screen } from '../../platform';
+import { ExpandedEntry } from '../frame/fragment.transitions.android';
+import { android as AndroidUtils } from '../../utils/native-helper';
 // import { Image } from '../image';
 
 @NativeClass
@@ -171,11 +172,19 @@ export class PageTransition extends Transition {
 		return animationSet;
 	}
 
-	androidFragmentTransactionCallback(fragmentTransaction: androidx.fragment.app.FragmentTransaction, currentEntry: BackstackEntry, newEntry: BackstackEntry) {
+	androidFragmentTransactionCallback(fragmentTransaction: androidx.fragment.app.FragmentTransaction, currentEntry: ExpandedEntry, newEntry: BackstackEntry) {
 		const fromPage = currentEntry.resolvedPage;
 		const toPage = newEntry.resolvedPage;
 		const newFragment: androidx.fragment.app.Fragment = newEntry.fragment;
 		const state = SharedTransition.getState(this.id);
+		if (!state) {
+			// when navigating transition is set on the currentEntry but never cleaned up
+			// which means that on a next navigation forward (without transition) and back
+			// we will go here with an empty state!
+			currentEntry.transition = null;
+			return;
+		}
+
 		const pageEnd = state.pageEnd;
 
 		//we can't look for presented right now as the toPage might not be loaded
@@ -277,10 +286,10 @@ function loadViewInBackground(view: View) {
 	hiddenHost.content = hostView;
 	hiddenHost.visibility = 'collapse';
 	hostView.addChild(view);
-	hiddenHost._setupAsRootView(ad.getApplicationContext());
+	hiddenHost._setupAsRootView(AndroidUtils.getApplicationContext());
 	hiddenHost.callLoaded();
 
-	ad.getCurrentActivity().addContentView(hiddenHost.android, new android.view.ViewGroup.LayoutParams(0, 0));
+	AndroidUtils.getCurrentActivity().addContentView(hiddenHost.android, new android.view.ViewGroup.LayoutParams(0, 0));
 
 	return {
 		hiddenHost,
