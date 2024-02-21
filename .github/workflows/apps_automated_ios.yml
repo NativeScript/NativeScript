@@ -1,4 +1,4 @@
-name: 'apps/automated'
+name: 'apps/automated/ios'
 
 on:
   push:
@@ -13,25 +13,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
-    runs-on: macos-12
+  test-ios:
+    runs-on: flyci-macos-14-m2
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 20.10.0
-
-      - uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '17'
 
       - name: Install Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3' 
+          python-version: '3'
 
       - name: Install NativeScript
         run: |
@@ -47,21 +42,8 @@ jobs:
       - name: Unit Tests
         run: npx nx run-many --target=test --configuration=ci --projects=core
 
-      - name: Create Emulator
-        uses: rigor789/action-create-emulator@main
-        with:
-          package: system-images;android-34;default;x86_64
-
-      - name: Test (Android)
-        run: node tools/scripts/run-automated.js android
-
       - name: Start iOS Simulator
-        if: ${{ always() && !cancelled() }} # run iOS tests even if Android tests failed
-        uses: futureware-tech/simulator-action@v2
-        with:
-          model: 'iPhone 13 Pro Max'
-          os_version: '>=15.0'
+        uses: futureware-tech/simulator-action@v3
 
-      - name: Test (iOS)
-        if: ${{ always() && !cancelled() }} # run iOS tests even if Android tests failed
+      - name: Run tests on iOS Simulator
         run: node tools/scripts/run-automated.js ios
