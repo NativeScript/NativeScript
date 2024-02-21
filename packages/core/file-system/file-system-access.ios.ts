@@ -293,6 +293,8 @@ export class FileSystemAccess {
 	}
 
 	public copyAsync(src: string, dest: string): Promise<boolean> {
+		// TODO: use  fileManager.copyItem in swift running on a background thread
+		// would be safer and prevent loading the whole thing in memory
 		return new Promise<boolean>((resolve, reject) => {
 			try {
 				NSData.dataWithContentsOfFileCompletion(src, (data) => {
