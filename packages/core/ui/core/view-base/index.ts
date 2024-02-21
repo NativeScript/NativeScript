@@ -671,10 +671,9 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		if (type) {
 			this._suspendNativeUpdatesCount = this._suspendNativeUpdatesCount & ~type;
 		} else {
-			if ((this._suspendNativeUpdatesCount & SuspendType.IncrementalCountMask) === 0) {
-				throw new Error(`Invalid call to ${this}._resumeNativeUpdates`);
+			if (this._suspendNativeUpdatesCount > 0) {
+				this._suspendNativeUpdatesCount--;
 			}
-			this._suspendNativeUpdatesCount--;
 		}
 		if (shouldResumeRequestLayout) {
 			this.suspendRequestLayout = false;
