@@ -47,9 +47,9 @@ export function getAspectSafeDimensions(sourceWidth, sourceHeight, reqWidth, req
 }
 
 export function getRequestedImageSize(src: { width: number; height: number }, options: ImageAssetOptions): { width: number; height: number } {
-	if (options.width || options.height) {
-		let reqWidth = options.width || src.width;
-		let reqHeight = options.height || src.height;
+	if (options.width || options.height || options.maxWidth || options.maxHeight) {
+		let reqWidth = options.width || options.maxWidth ? Math.min(options.maxWidth, src.width) : src.width;
+		let reqHeight = options.height || options.maxHeight ? Math.min(options.maxHeight, src.height) : src.height;
 
 		if (options && options.keepAspectRatio) {
 			const safeAspectSize = getAspectSafeDimensions(src.width, src.height, reqWidth, reqHeight);

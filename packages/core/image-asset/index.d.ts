@@ -12,6 +12,8 @@ export class ImageAsset extends Observable {
 export interface ImageAssetOptions {
 	width?: number;
 	height?: number;
+	maxWidth?: number;
+	maxHeight?: number;
 	keepAspectRatio?: boolean;
 	autoScaleFactor?: boolean; // iOS only
 }

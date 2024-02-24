@@ -289,8 +289,16 @@ public class Utils {
 
 					try {
 						JSONObject object = new JSONObject(options);
-						opts.width = object.optInt("width", bitmapOptions.outWidth);
-						opts.height = object.optInt("height", bitmapOptions.outHeight);
+						if (opts.has("width")) {
+							opts.width = object.optInt("width", bitmapOptions.outWidth);
+						} else if (opts.has("maxWidth")) {
+							opts.width = Math.min(bitmapOptions.outWidth, object.optInt("maxWidth", bitmapOptions.outWidth));
+						}
+						if (opts.has("height")) {
+							opts.height = object.optInt("height", bitmapOptions.outHeight);
+						} else if (opts.has("maxHeight")) {
+							opts.height = Math.min(bitmapOptions.outHeight, object.optInt("maxHeight", bitmapOptions.outHeight));
+						}
 						opts.keepAspectRatio = object.optBoolean("keepAspectRatio", true);
 						opts.autoScaleFactor = object.optBoolean("autoScaleFactor", true);
 					} catch (JSONException ignored) {
