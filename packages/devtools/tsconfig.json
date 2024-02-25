@@ -1,0 +1,26 @@
+{
+	"compilerOptions": {
+		"rootDir": "./src",
+		"baseUrl": ".",
+		"target": "ES2020",
+		"module": "esnext",
+		"moduleResolution": "node",
+		"outDir": "./dist",
+		"declaration": true,
+		"emitDecoratorMetadata": true,
+		"experimentalDecorators": true,
+		"lib": ["es2017"],
+		"sourceMap": true,
+		"skipLibCheck": true,
+		"skipDefaultLibCheck": true,
+		"diagnostics": true,
+		"paths": {
+			"@nativescript/devtools": ["src"]
+		},
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
+		"stripInternal": true
+	},
+	"include": ["src"],
+	"exclude": ["node_modules"]
+}
