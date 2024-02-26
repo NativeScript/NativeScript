@@ -35,13 +35,24 @@ export class ImageAsset extends ImageAssetBase {
 					callback(bitmap, null);
 				},
 				onError(ex) {
-					try {
-						org.nativescript.widgets.Utils.rethrowException(ex);
-					} catch (error) {
-						callback(null, error);
-					}
+					callback(null, android.wrapJavaException(ex));
 				},
 			})
 		);
+	}
+	public getImage() {
+		return new Promise((resolve, reject) => {
+			org.nativescript.widgets.Utils.loadImageAsync(
+				android.getApplicationContext(),
+				this.android,
+				JSON.stringify(this.options || {}),
+				new org.nativescript.widgets.Utils.AsyncImageCallback({
+					onSuccess: resolve,
+					onError: reject,
+				})
+			);
+		}).catch((ex) => {
+			throw android.wrapJavaException(ex);
+		});
 	}
 }

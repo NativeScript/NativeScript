@@ -33,6 +33,9 @@ export class ImageAssetBase extends Observable implements ImageAssetDefinition {
 	public getImageAsync(callback: (image: any, error: Error) => void) {
 		//
 	}
+	getImage(): Promise<any> {
+		throw new Error('Method not implemented.');
+	}
 }
 
 export function getAspectSafeDimensions(sourceWidth, sourceHeight, reqWidth, reqHeight) {

@@ -181,3 +181,11 @@ export function isRealDevice(): boolean {
 
 	return fingerprint != null && (fingerprint.indexOf('vbox') > -1 || fingerprint.indexOf('generic') > -1);
 }
+
+export function wrapJavaException(ex) {
+	const err = new Error(ex.toString());
+	err['nativeException'] = ex;
+	//@ts-ignore
+	err['stackTrace'] = com.tns.NativeScriptException.getStackTraceAsString(ex);
+	return err;
+}

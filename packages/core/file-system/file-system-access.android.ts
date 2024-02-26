@@ -1,6 +1,6 @@
 import * as textModule from '../text';
 import { Application } from '../application';
-import { getFileExtension } from '../utils';
+import { android as ad, getFileExtension } from '../utils';
 import { SDK_VERSION } from '../utils/constants';
 
 import type { IFileSystemAccess } from './file-system-access';
@@ -964,11 +964,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 				callback = new org.nativescript.widgets.FileHelper.Callback({
 					onSuccess(result) {},
 					onError(ex) {
-						try {
-							org.nativescript.widgets.Utils.rethrowException(ex);
-						} catch (error) {
-							onError(error);
-						}
+						onError(ad.wrapJavaException(ex));
 					},
 				});
 			}
@@ -987,15 +983,11 @@ export class FileSystemAccess29 extends FileSystemAccess {
 					onSuccess(result) {
 						resolve();
 					},
-					onError(ex) {
-						try {
-							org.nativescript.widgets.Utils.rethrowException(ex);
-						} catch (error) {
-							reject(error);
-						}
-					},
+					onError: reject,
 				})
 			);
+		}).catch((ex) => {
+			throw ad.wrapJavaException(ex);
 		});
 	}
 
@@ -1024,15 +1016,11 @@ export class FileSystemAccess29 extends FileSystemAccess {
 						onSuccess(result) {
 							resolve();
 						},
-						onError(ex) {
-							try {
-								org.nativescript.widgets.Utils.rethrowException(ex);
-							} catch (error) {
-								reject(error);
-							}
-						},
+						onError: reject,
 					})
 				);
+			}).catch((ex) => {
+				throw ad.wrapJavaException(ex);
 			});
 		}
 		return super.appendAsync(path, content);
@@ -1045,11 +1033,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 				callback = new org.nativescript.widgets.FileHelper.Callback({
 					onSuccess(result) {},
 					onError(ex) {
-						try {
-							org.nativescript.widgets.Utils.rethrowException(ex);
-						} catch (error) {
-							onError(error);
-						}
+						onError(ad.wrapJavaException(ex));
 					},
 				});
 			}
@@ -1071,15 +1055,11 @@ export class FileSystemAccess29 extends FileSystemAccess {
 						onSuccess(result) {
 							resolve();
 						},
-						onError(ex) {
-							try {
-								org.nativescript.widgets.Utils.rethrowException(ex);
-							} catch (error) {
-								reject(error);
-							}
-						},
+						onError: reject,
 					})
 				);
+			}).catch((ex) => {
+				throw ad.wrapJavaException(ex);
 			});
 		}
 		return super.appendAsync(path, content);
@@ -1092,11 +1072,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 				callback = new org.nativescript.widgets.FileHelper.Callback({
 					onSuccess(result) {},
 					onError(ex) {
-						try {
-							org.nativescript.widgets.Utils.rethrowException(ex);
-						} catch (error) {
-							onError(error);
-						}
+						onError(ad.wrapJavaException(ex));
 					},
 				});
 			}
@@ -1119,15 +1095,11 @@ export class FileSystemAccess29 extends FileSystemAccess {
 						onSuccess(result) {
 							resolve();
 						},
-						onError(ex) {
-							try {
-								org.nativescript.widgets.Utils.rethrowException(ex);
-							} catch (error) {
-								reject(error);
-							}
-						},
+						onError: reject,
 					})
 				);
+			}).catch((ex) => {
+				throw ad.wrapJavaException(ex);
 			});
 		}
 		return super.appendTextAsync(path, content, encoding);
@@ -1140,11 +1112,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 				callback = new org.nativescript.widgets.FileHelper.Callback({
 					onSuccess(result) {},
 					onError(ex) {
-						try {
-							org.nativescript.widgets.Utils.rethrowException(ex);
-						} catch (error) {
-							onError(error);
-						}
+						onError(ad.wrapJavaException(ex));
 					},
 				});
 			}
@@ -1158,7 +1126,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 
 	readTextAsync(path: string, encoding?: any): Promise<string> {
 		if (isContentUri(path)) {
-			return new Promise((resolve, reject) => {
+			return new Promise<string>((resolve, reject) => {
 				getOrSetHelper(path).readText(
 					applicationContext,
 					encoding ?? null,
@@ -1166,15 +1134,11 @@ export class FileSystemAccess29 extends FileSystemAccess {
 						onSuccess(result) {
 							resolve(result);
 						},
-						onError(ex) {
-							try {
-								org.nativescript.widgets.Utils.rethrowException(ex);
-							} catch (error) {
-								reject(error);
-							}
-						},
+						onError: reject,
 					})
 				);
+			}).catch((ex) => {
+				throw ad.wrapJavaException(ex);
 			});
 		}
 		return super.readTextAsync(path, encoding);
@@ -1186,11 +1150,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 				callback = new org.nativescript.widgets.FileHelper.Callback({
 					onSuccess(result) {},
 					onError(ex) {
-						try {
-							org.nativescript.widgets.Utils.rethrowException(ex);
-						} catch (error) {
-							onError(error);
-						}
+						onError(ad.wrapJavaException(ex));
 					},
 				});
 			}
@@ -1211,15 +1171,11 @@ export class FileSystemAccess29 extends FileSystemAccess {
 						onSuccess(result) {
 							resolve(result);
 						},
-						onError(ex) {
-							try {
-								org.nativescript.widgets.Utils.rethrowException(ex);
-							} catch (error) {
-								reject(error);
-							}
-						},
+						onError: reject,
 					})
 				);
+			}).catch((ex) => {
+				throw ad.wrapJavaException(ex);
 			});
 		}
 		return super.readBufferAsync(path);
@@ -1232,11 +1188,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 				callback = new org.nativescript.widgets.FileHelper.Callback({
 					onSuccess(result) {},
 					onError(ex) {
-						try {
-							org.nativescript.widgets.Utils.rethrowException(ex);
-						} catch (error) {
-							onError(error);
-						}
+						onError(ad.wrapJavaException(ex));
 					},
 				});
 			}
@@ -1260,15 +1212,11 @@ export class FileSystemAccess29 extends FileSystemAccess {
 						onSuccess(result) {
 							resolve(result);
 						},
-						onError(ex) {
-							try {
-								org.nativescript.widgets.Utils.rethrowException(ex);
-							} catch (error) {
-								reject(error);
-							}
-						},
+						onError: reject,
 					})
 				);
+			}).catch((ex) => {
+				throw ad.wrapJavaException(ex);
 			});
 		}
 		return super.readAsync(path);
@@ -1281,11 +1229,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 				callback = new org.nativescript.widgets.FileHelper.Callback({
 					onSuccess(result) {},
 					onError(ex) {
-						try {
-							org.nativescript.widgets.Utils.rethrowException(ex);
-						} catch (error) {
-							onError(error);
-						}
+						onError(ad.wrapJavaException(ex));
 					},
 				});
 			}
@@ -1307,15 +1251,11 @@ export class FileSystemAccess29 extends FileSystemAccess {
 						onSuccess(result) {
 							resolve();
 						},
-						onError(ex) {
-							try {
-								org.nativescript.widgets.Utils.rethrowException(ex);
-							} catch (error) {
-								reject(error);
-							}
-						},
+						onError: reject,
 					})
 				);
+			}).catch((ex) => {
+				throw ad.wrapJavaException(ex);
 			});
 		}
 		return super.writeTextAsync(path, content, encoding);
@@ -1328,11 +1268,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 				callback = new org.nativescript.widgets.FileHelper.Callback({
 					onSuccess(result) {},
 					onError(ex) {
-						try {
-							org.nativescript.widgets.Utils.rethrowException(ex);
-						} catch (error) {
-							onError(error);
-						}
+						onError(ad.wrapJavaException(ex));
 					},
 				});
 			}
@@ -1354,15 +1290,11 @@ export class FileSystemAccess29 extends FileSystemAccess {
 						onSuccess(result) {
 							resolve();
 						},
-						onError(ex) {
-							try {
-								org.nativescript.widgets.Utils.rethrowException(ex);
-							} catch (error) {
-								reject(error);
-							}
-						},
+						onError: reject,
 					})
 				);
+			}).catch((ex) => {
+				throw ad.wrapJavaException(ex);
 			});
 		}
 		return super.writeAsync(path, content);
@@ -1375,11 +1307,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 				callback = new org.nativescript.widgets.FileHelper.Callback({
 					onSuccess(result) {},
 					onError(ex) {
-						try {
-							org.nativescript.widgets.Utils.rethrowException(ex);
-						} catch (error) {
-							onError(error);
-						}
+						onError(ad.wrapJavaException(ex));
 					},
 				});
 			}
@@ -1401,15 +1329,11 @@ export class FileSystemAccess29 extends FileSystemAccess {
 						onSuccess(result) {
 							resolve();
 						},
-						onError(ex) {
-							try {
-								org.nativescript.widgets.Utils.rethrowException(ex);
-							} catch (error) {
-								reject(error);
-							}
-						},
+						onError: reject,
 					})
 				);
+			}).catch((ex) => {
+				throw ad.wrapJavaException(ex);
 			});
 		}
 		return super.writeAsync(path, content);
@@ -1422,11 +1346,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 				callback = new org.nativescript.widgets.FileHelper.Callback({
 					onSuccess(result) {},
 					onError(ex) {
-						try {
-							org.nativescript.widgets.Utils.rethrowException(ex);
-						} catch (error) {
-							onError(error);
-						}
+						onError(ad.wrapJavaException(ex));
 					},
 				});
 			}

@@ -526,10 +526,6 @@ public class Utils {
 		return (childParent instanceof ViewGroup) && isViewDescendantOf((View) childParent, parent);
 	}
 
-	public static void rethrowException(Throwable throwable) throws Throwable {
-		throw throwable;
-	}
-
 //	public static void clearBoxShadow(View view) {
 //		if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M) {
 //			return;
