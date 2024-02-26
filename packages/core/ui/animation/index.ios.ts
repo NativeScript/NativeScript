@@ -556,6 +556,9 @@ export class Animation extends AnimationBase {
 		const animationInfos = [propertyAnimations[index]];
 		const firstAnimation = animationInfos[0];
 		const nativeView = <NativeScriptUIView>firstAnimation.target.nativeViewProtected;
+		if (!nativeView) {
+			throw new Error('trying to animate view without nativeView');
+		}
 		let callback = undefined;
 		let nextAnimation;
 		if (index + 1 < propertyAnimations.length) {
