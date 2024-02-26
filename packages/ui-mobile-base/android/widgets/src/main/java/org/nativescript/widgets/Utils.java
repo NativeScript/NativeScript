@@ -30,6 +30,7 @@ import androidx.exifinterface.media.ExifInterface;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.Throwable;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileDescriptor;
@@ -289,14 +290,14 @@ public class Utils {
 
 					try {
 						JSONObject object = new JSONObject(options);
-						if (opts.has("width")) {
+						if (object.has("width")) {
 							opts.width = object.optInt("width", bitmapOptions.outWidth);
-						} else if (opts.has("maxWidth")) {
+						} else if (object.has("maxWidth")) {
 							opts.width = Math.min(bitmapOptions.outWidth, object.optInt("maxWidth", bitmapOptions.outWidth));
 						}
-						if (opts.has("height")) {
+						if (object.has("height")) {
 							opts.height = object.optInt("height", bitmapOptions.outHeight);
-						} else if (opts.has("maxHeight")) {
+						} else if (object.has("maxHeight")) {
 							opts.height = Math.min(bitmapOptions.outHeight, object.optInt("maxHeight", bitmapOptions.outHeight));
 						}
 						opts.keepAspectRatio = object.optBoolean("keepAspectRatio", true);
@@ -523,6 +524,10 @@ public class Utils {
 
 		final ViewParent childParent = child.getParent();
 		return (childParent instanceof ViewGroup) && isViewDescendantOf((View) childParent, parent);
+	}
+
+	public static void rethrowException(Throwable throwable) throws Throwable {
+		throw throwable;
 	}
 
 //	public static void clearBoxShadow(View view) {

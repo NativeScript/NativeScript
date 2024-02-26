@@ -963,8 +963,12 @@ export class FileSystemAccess29 extends FileSystemAccess {
 			if (typeof onError === 'function') {
 				callback = new org.nativescript.widgets.FileHelper.Callback({
 					onSuccess(result) {},
-					onError(error) {
-						onError(error);
+					onError(ex) {
+						try {
+							org.nativescript.widgets.Utils.rethrowException(ex);
+						} catch (error) {
+							onError(error);
+						}
 					},
 				});
 			}
@@ -983,8 +987,12 @@ export class FileSystemAccess29 extends FileSystemAccess {
 					onSuccess(result) {
 						resolve();
 					},
-					onError(error) {
-						reject(error);
+					onError(ex) {
+						try {
+							org.nativescript.widgets.Utils.rethrowException(ex);
+						} catch (error) {
+							reject(error);
+						}
 					},
 				})
 			);
@@ -1016,8 +1024,12 @@ export class FileSystemAccess29 extends FileSystemAccess {
 						onSuccess(result) {
 							resolve();
 						},
-						onError(error) {
-							reject(error);
+						onError(ex) {
+							try {
+								org.nativescript.widgets.Utils.rethrowException(ex);
+							} catch (error) {
+								reject(error);
+							}
 						},
 					})
 				);
@@ -1032,8 +1044,12 @@ export class FileSystemAccess29 extends FileSystemAccess {
 			if (typeof onError === 'function') {
 				callback = new org.nativescript.widgets.FileHelper.Callback({
 					onSuccess(result) {},
-					onError(error) {
-						onError(error);
+					onError(ex) {
+						try {
+							org.nativescript.widgets.Utils.rethrowException(ex);
+						} catch (error) {
+							onError(error);
+						}
 					},
 				});
 			}
@@ -1055,8 +1071,12 @@ export class FileSystemAccess29 extends FileSystemAccess {
 						onSuccess(result) {
 							resolve();
 						},
-						onError(error) {
-							reject(error);
+						onError(ex) {
+							try {
+								org.nativescript.widgets.Utils.rethrowException(ex);
+							} catch (error) {
+								reject(error);
+							}
 						},
 					})
 				);
@@ -1071,8 +1091,12 @@ export class FileSystemAccess29 extends FileSystemAccess {
 			if (typeof onError === 'function') {
 				callback = new org.nativescript.widgets.FileHelper.Callback({
 					onSuccess(result) {},
-					onError(error) {
-						onError(error);
+					onError(ex) {
+						try {
+							org.nativescript.widgets.Utils.rethrowException(ex);
+						} catch (error) {
+							onError(error);
+						}
 					},
 				});
 			}
@@ -1095,8 +1119,12 @@ export class FileSystemAccess29 extends FileSystemAccess {
 						onSuccess(result) {
 							resolve();
 						},
-						onError(error) {
-							reject(error);
+						onError(ex) {
+							try {
+								org.nativescript.widgets.Utils.rethrowException(ex);
+							} catch (error) {
+								reject(error);
+							}
 						},
 					})
 				);
@@ -1111,8 +1139,12 @@ export class FileSystemAccess29 extends FileSystemAccess {
 			if (typeof onError === 'function') {
 				callback = new org.nativescript.widgets.FileHelper.Callback({
 					onSuccess(result) {},
-					onError(error) {
-						onError(error);
+					onError(ex) {
+						try {
+							org.nativescript.widgets.Utils.rethrowException(ex);
+						} catch (error) {
+							onError(error);
+						}
 					},
 				});
 			}
@@ -1134,8 +1166,12 @@ export class FileSystemAccess29 extends FileSystemAccess {
 						onSuccess(result) {
 							resolve(result);
 						},
-						onError(error) {
-							reject(error);
+						onError(ex) {
+							try {
+								org.nativescript.widgets.Utils.rethrowException(ex);
+							} catch (error) {
+								reject(error);
+							}
 						},
 					})
 				);
@@ -1149,8 +1185,12 @@ export class FileSystemAccess29 extends FileSystemAccess {
 			if (typeof onError === 'function') {
 				callback = new org.nativescript.widgets.FileHelper.Callback({
 					onSuccess(result) {},
-					onError(error) {
-						onError(error);
+					onError(ex) {
+						try {
+							org.nativescript.widgets.Utils.rethrowException(ex);
+						} catch (error) {
+							onError(error);
+						}
 					},
 				});
 			}
@@ -1171,8 +1211,12 @@ export class FileSystemAccess29 extends FileSystemAccess {
 						onSuccess(result) {
 							resolve(result);
 						},
-						onError(error) {
-							reject(error);
+						onError(ex) {
+							try {
+								org.nativescript.widgets.Utils.rethrowException(ex);
+							} catch (error) {
+								reject(error);
+							}
 						},
 					})
 				);
@@ -1187,8 +1231,12 @@ export class FileSystemAccess29 extends FileSystemAccess {
 			if (typeof onError === 'function') {
 				callback = new org.nativescript.widgets.FileHelper.Callback({
 					onSuccess(result) {},
-					onError(error) {
-						onError(error);
+					onError(ex) {
+						try {
+							org.nativescript.widgets.Utils.rethrowException(ex);
+						} catch (error) {
+							onError(error);
+						}
 					},
 				});
 			}
@@ -1212,8 +1260,12 @@ export class FileSystemAccess29 extends FileSystemAccess {
 						onSuccess(result) {
 							resolve(result);
 						},
-						onError(error) {
-							reject(error);
+						onError(ex) {
+							try {
+								org.nativescript.widgets.Utils.rethrowException(ex);
+							} catch (error) {
+								reject(error);
+							}
 						},
 					})
 				);
@@ -1228,8 +1280,12 @@ export class FileSystemAccess29 extends FileSystemAccess {
 			if (typeof onError === 'function') {
 				callback = new org.nativescript.widgets.FileHelper.Callback({
 					onSuccess(result) {},
-					onError(error) {
-						onError(error);
+					onError(ex) {
+						try {
+							org.nativescript.widgets.Utils.rethrowException(ex);
+						} catch (error) {
+							onError(error);
+						}
 					},
 				});
 			}
@@ -1251,8 +1307,12 @@ export class FileSystemAccess29 extends FileSystemAccess {
 						onSuccess(result) {
 							resolve();
 						},
-						onError(error) {
-							reject(error);
+						onError(ex) {
+							try {
+								org.nativescript.widgets.Utils.rethrowException(ex);
+							} catch (error) {
+								reject(error);
+							}
 						},
 					})
 				);
@@ -1267,8 +1327,12 @@ export class FileSystemAccess29 extends FileSystemAccess {
 			if (typeof onError === 'function') {
 				callback = new org.nativescript.widgets.FileHelper.Callback({
 					onSuccess(result) {},
-					onError(error) {
-						onError(error);
+					onError(ex) {
+						try {
+							org.nativescript.widgets.Utils.rethrowException(ex);
+						} catch (error) {
+							onError(error);
+						}
 					},
 				});
 			}
@@ -1290,8 +1354,12 @@ export class FileSystemAccess29 extends FileSystemAccess {
 						onSuccess(result) {
 							resolve();
 						},
-						onError(error) {
-							reject(error);
+						onError(ex) {
+							try {
+								org.nativescript.widgets.Utils.rethrowException(ex);
+							} catch (error) {
+								reject(error);
+							}
 						},
 					})
 				);
@@ -1306,8 +1374,12 @@ export class FileSystemAccess29 extends FileSystemAccess {
 			if (typeof onError === 'function') {
 				callback = new org.nativescript.widgets.FileHelper.Callback({
 					onSuccess(result) {},
-					onError(error) {
-						onError(error);
+					onError(ex) {
+						try {
+							org.nativescript.widgets.Utils.rethrowException(ex);
+						} catch (error) {
+							onError(error);
+						}
 					},
 				});
 			}
@@ -1329,8 +1401,12 @@ export class FileSystemAccess29 extends FileSystemAccess {
 						onSuccess(result) {
 							resolve();
 						},
-						onError(error) {
-							reject(error);
+						onError(ex) {
+							try {
+								org.nativescript.widgets.Utils.rethrowException(ex);
+							} catch (error) {
+								reject(error);
+							}
 						},
 					})
 				);
@@ -1345,8 +1421,12 @@ export class FileSystemAccess29 extends FileSystemAccess {
 			if (typeof onError === 'function') {
 				callback = new org.nativescript.widgets.FileHelper.Callback({
 					onSuccess(result) {},
-					onError(error) {
-						onError(error);
+					onError(ex) {
+						try {
+							org.nativescript.widgets.Utils.rethrowException(ex);
+						} catch (error) {
+							onError(error);
+						}
 					},
 				});
 			}

@@ -35,7 +35,11 @@ export class ImageAsset extends ImageAssetBase {
 					callback(bitmap, null);
 				},
 				onError(ex) {
-					callback(null, ex);
+					try {
+						org.nativescript.widgets.Utils.rethrowException(ex);
+					} catch (error) {
+						callback(null, error);
+					}
 				},
 			})
 		);
