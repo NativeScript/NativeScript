@@ -248,119 +248,119 @@ export class Observable {
 		}
 	}
 
-	// public static on(eventName: string, callback: (data: EventData) => void, thisArg?: any): void {
-	// 	this.addEventListener(eventName, callback, thisArg);
-	// }
+	public static on(eventName: string, callback: (data: EventData) => void, thisArg?: any): void {
+		this.addEventListener(eventName, callback, thisArg);
+	}
 
-	// public static once(eventName: string, callback: (data: EventData) => void, thisArg?: any): void {
-	// 	if (typeof eventName !== 'string') {
-	// 		throw new TypeError('Event must be string.');
-	// 	}
+	public static once(eventName: string, callback: (data: EventData) => void, thisArg?: any): void {
+		if (typeof eventName !== 'string') {
+			throw new TypeError('Event must be string.');
+		}
 
-	// 	if (typeof callback !== 'function') {
-	// 		throw new TypeError('callback must be function.');
-	// 	}
+		if (typeof callback !== 'function') {
+			throw new TypeError('callback must be function.');
+		}
 
-	// 	const eventClass = this.name === 'Observable' ? '*' : this.name;
-	// 	if (!_globalEventHandlers[eventClass]) {
-	// 		_globalEventHandlers[eventClass] = {};
-	// 	}
-	// 	if (!Array.isArray(_globalEventHandlers[eventClass][eventName])) {
-	// 		_globalEventHandlers[eventClass][eventName] = [];
-	// 	}
-	// 	_globalEventHandlers[eventClass][eventName].push({ callback, thisArg, once: true });
-	// }
+		const eventClass = this.name === 'Observable' ? '*' : this.name;
+		if (!_globalEventHandlers[eventClass]) {
+			_globalEventHandlers[eventClass] = {};
+		}
+		if (!Array.isArray(_globalEventHandlers[eventClass][eventName])) {
+			_globalEventHandlers[eventClass][eventName] = [];
+		}
+		_globalEventHandlers[eventClass][eventName].push({ callback, thisArg, once: true });
+	}
 
-	// public static off(eventName: string, callback?: (data: EventData) => void, thisArg?: any): void {
-	// 	this.removeEventListener(eventName, callback, thisArg);
-	// }
+	public static off(eventName: string, callback?: (data: EventData) => void, thisArg?: any): void {
+		this.removeEventListener(eventName, callback, thisArg);
+	}
 
-	// public static removeEventListener(eventName: string, callback?: (data: EventData) => void, thisArg?: any): void {
-	// 	if (typeof eventName !== 'string') {
-	// 		throw new TypeError('Event must be string.');
-	// 	}
+	public static removeEventListener(eventName: string, callback?: (data: EventData) => void, thisArg?: any): void {
+		if (typeof eventName !== 'string') {
+			throw new TypeError('Event must be string.');
+		}
 
-	// 	if (callback && typeof callback !== 'function') {
-	// 		throw new TypeError('callback must be function.');
-	// 	}
+		if (callback && typeof callback !== 'function') {
+			throw new TypeError('callback must be function.');
+		}
 
-	// 	const eventClass = this.name === 'Observable' ? '*' : this.name;
+		const eventClass = this.name === 'Observable' ? '*' : this.name;
 
-	// 	// Short Circuit if no handlers exist..
-	// 	if (!_globalEventHandlers[eventClass] || !Array.isArray(_globalEventHandlers[eventClass][eventName])) {
-	// 		return;
-	// 	}
+		// Short Circuit if no handlers exist..
+		if (!_globalEventHandlers[eventClass] || !Array.isArray(_globalEventHandlers[eventClass][eventName])) {
+			return;
+		}
 
-	// 	const events = _globalEventHandlers[eventClass][eventName];
-	// 	if (thisArg) {
-	// 		for (let i = 0; i < events.length; i++) {
-	// 			if (events[i].callback === callback && events[i].thisArg === thisArg) {
-	// 				events.splice(i, 1);
-	// 				i--;
-	// 			}
-	// 		}
-	// 	} else if (callback) {
-	// 		for (let i = 0; i < events.length; i++) {
-	// 			if (events[i].callback === callback) {
-	// 				events.splice(i, 1);
-	// 				i--;
-	// 			}
-	// 		}
-	// 	} else {
-	// 		// Clear all events of this type
-	// 		delete _globalEventHandlers[eventClass][eventName];
-	// 	}
+		const events = _globalEventHandlers[eventClass][eventName];
+		if (thisArg) {
+			for (let i = 0; i < events.length; i++) {
+				if (events[i].callback === callback && events[i].thisArg === thisArg) {
+					events.splice(i, 1);
+					i--;
+				}
+			}
+		} else if (callback) {
+			for (let i = 0; i < events.length; i++) {
+				if (events[i].callback === callback) {
+					events.splice(i, 1);
+					i--;
+				}
+			}
+		} else {
+			// Clear all events of this type
+			delete _globalEventHandlers[eventClass][eventName];
+		}
 
-	// 	if (events.length === 0) {
-	// 		// Clear all events of this type
-	// 		delete _globalEventHandlers[eventClass][eventName];
-	// 	}
+		if (events.length === 0) {
+			// Clear all events of this type
+			delete _globalEventHandlers[eventClass][eventName];
+		}
 
-	// 	// Clear the primary class grouping if no events are left
-	// 	const keys = Object.keys(_globalEventHandlers[eventClass]);
-	// 	if (keys.length === 0) {
-	// 		delete _globalEventHandlers[eventClass];
-	// 	}
-	// }
+		// Clear the primary class grouping if no events are left
+		const keys = Object.keys(_globalEventHandlers[eventClass]);
+		if (keys.length === 0) {
+			delete _globalEventHandlers[eventClass];
+		}
+	}
 
-	// public static addEventListener(eventName: string, callback: (data: EventData) => void, thisArg?: any): void {
-	// 	if (typeof eventName !== 'string') {
-	// 		throw new TypeError('Event must be string.');
-	// 	}
+	public static addEventListener(eventName: string, callback: (data: EventData) => void, thisArg?: any): void {
+		if (typeof eventName !== 'string') {
+			throw new TypeError('Event must be string.');
+		}
 
-	// 	if (typeof callback !== 'function') {
-	// 		throw new TypeError('callback must be function.');
-	// 	}
+		if (typeof callback !== 'function') {
+			throw new TypeError('callback must be function.');
+		}
 
-	// 	const eventClass = this.name === 'Observable' ? '*' : this.name;
-	// 	if (!_globalEventHandlers[eventClass]) {
-	// 		_globalEventHandlers[eventClass] = {};
-	// 	}
-	// 	if (!Array.isArray(_globalEventHandlers[eventClass][eventName])) {
-	// 		_globalEventHandlers[eventClass][eventName] = [];
-	// 	}
-	// 	_globalEventHandlers[eventClass][eventName].push({ callback, thisArg });
-	// }
+		const eventClass = this.name === 'Observable' ? '*' : this.name;
+		if (!_globalEventHandlers[eventClass]) {
+			_globalEventHandlers[eventClass] = {};
+		}
+		if (!Array.isArray(_globalEventHandlers[eventClass][eventName])) {
+			_globalEventHandlers[eventClass][eventName] = [];
+		}
+		_globalEventHandlers[eventClass][eventName].push({ callback, thisArg });
+	}
 
-	// private _globalNotify<T extends EventData>(eventClass: string, eventType: string, data: T): void {
-	// 	// Check for the Global handlers for JUST this class
-	// 	if (_globalEventHandlers[eventClass]) {
-	// 		const event = data.eventName + eventType;
-	// 		const events = _globalEventHandlers[eventClass][event];
-	// 		if (events) {
-	// 			Observable._handleEvent(events, data);
-	// 		}
-	// 	}
+	private _globalNotify<T extends EventData>(eventClass: string, eventType: string, data: T): void {
+		// Check for the Global handlers for JUST this class
+		if (_globalEventHandlers[eventClass]) {
+			const event = data.eventName + eventType;
+			const events = _globalEventHandlers[eventClass][event];
+			if (events) {
+				Observable._handleEvent(events, data);
+			}
+		}
 
-	// 	// Check for he Global handlers for ALL classes
-	// 	if (_globalEventHandlers['*']) {
-	// 		const event = data.eventName + eventType;
-	// 		const events = _globalEventHandlers['*'][event];
-	// 		if (events) {
-	// 			Observable._handleEvent(events, data);
-	// 		}
-	// 	}
-	// }
+		// Check for he Global handlers for ALL classes
+		if (_globalEventHandlers['*']) {
+			const event = data.eventName + eventType;
+			const events = _globalEventHandlers['*'][event];
+			if (events) {
+				Observable._handleEvent(events, data);
+			}
+		}
+	}
 
 	/**
 	 * Notify this Observable instance with some data. This causes all event
@@ -375,7 +375,6 @@ export class Observable {
 		data.object = data.object || this;
 		const dataWithObject = data as EventData;
 
-		const eventClass = this.constructor.name;
 		// this._globalNotify(eventClass, 'First', dataWithObject);
 
 		const observers = this._observers[data.eventName];
@@ -383,7 +382,8 @@ export class Observable {
 			Observable._handleEvent(observers, dataWithObject);
 		}
 
-		// this._globalNotify(eventClass, '', dataWithObject);
+		const eventClass = this.constructor.name;
+		this._globalNotify(eventClass, '', dataWithObject);
 	}
 
 	private static _handleEvent<T extends EventData>(observers: Array<ListenerEntry>, data: T): void {
