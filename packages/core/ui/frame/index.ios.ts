@@ -28,6 +28,8 @@ export class Frame extends FrameBase {
 	viewController: UINavigationControllerImpl;
 	_animatedDelegate: UINavigationControllerDelegate;
 	public _ios: iOSFrame;
+	iosNavigationBarClass: typeof NSObject;
+	iosToolbarClass: typeof NSObject;
 
 	constructor() {
 		super();
@@ -467,7 +469,9 @@ class UINavigationControllerImpl extends UINavigationController {
 	private _owner: WeakRef<Frame>;
 
 	public static initWithOwner(owner: WeakRef<Frame>): UINavigationControllerImpl {
-		const controller = <UINavigationControllerImpl>UINavigationControllerImpl.new();
+		const navigationBarClass = owner.deref()?.iosNavigationBarClass ?? null;
+		const toolbarClass = owner.deref()?.iosToolbarClass ?? null;
+		const controller = navigationBarClass || toolbarClass ? <UINavigationControllerImpl>UINavigationControllerImpl.alloc().initWithNavigationBarClassToolbarClass(navigationBarClass, toolbarClass) : <UINavigationControllerImpl>UINavigationControllerImpl.new();
 		controller._owner = owner;
 
 		return controller;
