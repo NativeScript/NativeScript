@@ -1,5 +1,6 @@
 import * as common from './application-settings-common';
-import { Application } from '../application';
+import { Application, DiscardedErrorEventData } from '../application';
+import { android as ad } from '../utils';
 
 let sharedPreferences: android.content.SharedPreferences;
 function ensureSharedPreferences() {
@@ -23,7 +24,16 @@ export function hasKey(key: string): boolean {
 export function getBoolean(key: string, defaultValue?: boolean): boolean {
 	verify(key);
 	if (hasKey(key)) {
-		return sharedPreferences.getBoolean(key, false);
+		try {
+			return sharedPreferences.getBoolean(key, false);
+		} catch (ex) {
+			Application.notify({
+				eventName: Application.uncaughtErrorEvent,
+				object: Application,
+				android: ex,
+				error: ad.wrapJavaException(ex),
+			} as DiscardedErrorEventData);
+		}
 	}
 
 	return defaultValue;
@@ -32,7 +42,16 @@ export function getBoolean(key: string, defaultValue?: boolean): boolean {
 export function getString(key: string, defaultValue?: string): string {
 	verify(key);
 	if (hasKey(key)) {
-		return sharedPreferences.getString(key, '');
+		try {
+			return sharedPreferences.getString(key, '');
+		} catch (ex) {
+			Application.notify({
+				eventName: Application.uncaughtErrorEvent,
+				object: Application,
+				android: ex,
+				error: ad.wrapJavaException(ex),
+			} as DiscardedErrorEventData);
+		}
 	}
 
 	return defaultValue;
@@ -47,11 +66,20 @@ export function getNumber(key: string, defaultValue?: number): number {
 		try {
 			val = sharedPreferences.getLong(key, long(0));
 		} catch (err) {
-			// If value is old, it might have been stored as a float so we store it anew as a long value to avoid errors
-			const oldVal = sharedPreferences.getFloat(key, float(0.0));
-			setNumber(key, oldVal);
+			try {
+				// If value is old, it might have been stored as a float so we store it anew as a long value to avoid errors
+				const oldVal = sharedPreferences.getFloat(key, float(0.0));
+				setNumber(key, oldVal);
 
-			val = sharedPreferences.getLong(key, long(0));
+				val = sharedPreferences.getLong(key, long(0));
+			} catch (ex) {
+				Application.notify({
+					eventName: Application.uncaughtErrorEvent,
+					object: Application,
+					android: ex,
+					error: ad.wrapJavaException(ex),
+				} as DiscardedErrorEventData);
+			}
 		}
 		// SharedPreferences has no getter or setter for double so we retrieve value as a long and convert it to double
 		return java.lang.Double.longBitsToDouble(val);
