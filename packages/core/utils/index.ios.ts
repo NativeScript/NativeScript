@@ -27,6 +27,11 @@ export function openFile(filePath: string): boolean {
 	return false;
 }
 
+export function wrapNativeException(ex) {
+	// TODO: wrap NSError into a JS Error
+	return ex;
+}
+
 export function GC() {
 	__collect();
 }

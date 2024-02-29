@@ -24,6 +24,17 @@ export function releaseNativeObject(object: java.lang.Object) {
 	__releaseNativeCounterpart(object);
 }
 
+export function wrapNativeException(ex) {
+	if (!(ex instanceof Error)) {
+		const err = new Error(ex.toString());
+		err['nativeException'] = ex;
+		//@ts-ignore
+		err['stackTrace'] = com.tns.NativeScriptException.getStackTraceAsString(ex);
+		return err;
+	}
+	return ex;
+}
+
 export function openUrl(location: string): boolean {
 	const context = AndroidUtils.getApplicationContext();
 	try {

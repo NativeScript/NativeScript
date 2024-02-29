@@ -54,6 +54,11 @@ export function debounce<T extends Function = any>(fn: T, delay?: number, option
 export function releaseNativeObject(object: any /*java.lang.Object | NSObject*/);
 
 /**
+ * Wrap native exception in a JS Error
+ */
+export function wrapNativeException(exception: any): Error;
+
+/**
  * Queues the passed function to be ran in a macroTask
  * @param task the function to execute as a macroTask
  */
