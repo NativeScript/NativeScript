@@ -75,24 +75,33 @@ export function getAllKeys(): Array<string> {
 }
 export function getAllJSON(): string {
 	const nsDictionary = userDefaults.dictionaryRepresentation();
-	// const jsonDictionary = NSMutableDictionary.new();
-	// nsDictionary.enumerateKeysAndObjectsUsingBlock((key, value)=>{
-	// 	let valueClassString = NSStringFromClass(value.classForCoder?.() ?? value.class())
-	// 	if (valueClassString.startsWith('__')) {
-	// 		valueClassString = valueClassString.slice(2)
-	// 	}
-	// 	switch(valueClassString) {
-	// 		case 'NSDate':
-	// 			jsonDictionary.setObjectForKey(NSISO8601DateFormatter.alloc().init().stringFromDate(value), key);
-	// 			break;
-	// 		case 'NSURL':
-	// 			jsonDictionary.setObjectForKey((value as NSURL).absoluteString, key);
-	// 			break;
-	// 			default:
-	// 			jsonDictionary.setObjectForKey(value, key);
-	// 	}
-	// })
-	const jsonData = NSJSONSerialization.dataWithJSONObjectOptionsError(nsDictionary, 0 as any);
+	const jsonDictionary = NSMutableDictionary.new();
+	nsDictionary.enumerateKeysAndObjectsUsingBlock((key, value, stop) => {
+		// we try to filter Apple internal settings. Though some might still be there like AddingEmojiKeybordHandled
+		if (key.startsWith('AK') || key.startsWith('Apple') || key.startsWith('NS') || key.startsWith('PK')) {
+			return;
+		}
+
+		let valueClassString = value.classForCoder || value.class ? NSStringFromClass(value.classForCoder?.() ?? value.class?.()) : undefined;
+		if (valueClassString) {
+			if (valueClassString.startsWith('__')) {
+				valueClassString = valueClassString.slice(2);
+			}
+			switch (valueClassString) {
+				case 'NSDate':
+					jsonDictionary.setObjectForKey(NSISO8601DateFormatter.alloc().init().stringFromDate(value), key);
+					break;
+				case 'NSURL':
+					jsonDictionary.setObjectForKey((value as NSURL).absoluteString, key);
+					break;
+				default:
+					jsonDictionary.setObjectForKey(value, key);
+			}
+		} else {
+			jsonDictionary.setObjectForKey(value, key);
+		}
+	});
+	const jsonData = NSJSONSerialization.dataWithJSONObjectOptionsError(jsonDictionary, 0 as any);
 	if (jsonData) {
 		return NSString.alloc().initWithDataEncoding(jsonData, NSUTF8StringEncoding).toString();
 	}
