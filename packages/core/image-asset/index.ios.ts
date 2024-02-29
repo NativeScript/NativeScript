@@ -59,6 +59,36 @@ export class ImageAsset extends ImageAssetBase {
 		});
 	}
 
+	public getImage() {
+		return new Promise((resolve, reject) => {
+			if (!this.ios && !this.nativeImage) {
+				reject(new Error('Asset cannot be found.'));
+			}
+			const srcWidth = this.nativeImage ? this.nativeImage.size.width : this.ios.pixelWidth;
+			const srcHeight = this.nativeImage ? this.nativeImage.size.height : this.ios.pixelHeight;
+			const requestedSize = getRequestedImageSize({ width: srcWidth, height: srcHeight }, this.options);
+
+			if (this.nativeImage) {
+				resolve(requestedSize ? this.scaleImage(this.nativeImage, CGSizeMake(requestedSize.width, requestedSize.height)) : this.nativeImage);
+				queueGC();
+				return;
+			}
+
+			const imageRequestOptions = PHImageRequestOptions.alloc().init();
+			imageRequestOptions.deliveryMode = PHImageRequestOptionsDeliveryMode.HighQualityFormat;
+			imageRequestOptions.networkAccessAllowed = true;
+
+			PHImageManager.defaultManager().requestImageForAssetTargetSizeContentModeOptionsResultHandler(this.ios, requestedSize, PHImageContentMode.AspectFit, imageRequestOptions, (image, imageResultInfo) => {
+				if (image) {
+					resolve(this.scaleImage(image, requestedSize));
+				} else {
+					reject(new Error(imageResultInfo.valueForKey(PHImageErrorKey)));
+				}
+				queueGC();
+			});
+		});
+	}
+
 	private scaleImage(image: UIImage, requestedSize: { width: number; height: number }): UIImage {
 		return NativeScriptUtils.scaleImageWidthHeightScaleFactor(image, requestedSize.width, requestedSize.height, this.options?.autoScaleFactor === false ? 1.0 : 0.0);
 	}
