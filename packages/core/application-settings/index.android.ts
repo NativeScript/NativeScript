@@ -1,6 +1,6 @@
 import * as common from './application-settings-common';
 import { Application, DiscardedErrorEventData } from '../application';
-import { android as ad } from '../utils';
+import { wrapNativeException } from '../utils';
 
 let sharedPreferences: android.content.SharedPreferences;
 function ensureSharedPreferences() {
@@ -31,7 +31,7 @@ export function getBoolean(key: string, defaultValue?: boolean): boolean {
 				eventName: Application.uncaughtErrorEvent,
 				object: Application,
 				android: ex,
-				error: ad.wrapJavaException(ex),
+				error: wrapNativeException(ex),
 			} as DiscardedErrorEventData);
 		}
 	}
@@ -49,7 +49,7 @@ export function getString(key: string, defaultValue?: string): string {
 				eventName: Application.uncaughtErrorEvent,
 				object: Application,
 				android: ex,
-				error: ad.wrapJavaException(ex),
+				error: wrapNativeException(ex),
 			} as DiscardedErrorEventData);
 		}
 	}
@@ -77,7 +77,7 @@ export function getNumber(key: string, defaultValue?: number): number {
 					eventName: Application.uncaughtErrorEvent,
 					object: Application,
 					android: ex,
-					error: ad.wrapJavaException(ex),
+					error: wrapNativeException(ex),
 				} as DiscardedErrorEventData);
 			}
 		}

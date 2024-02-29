@@ -1,6 +1,6 @@
 import { ImageAssetBase, getRequestedImageSize } from './image-asset-common';
 import { path as fsPath, knownFolders } from '../file-system';
-import { android } from '../utils';
+import { android, wrapNativeException } from '../utils';
 import { Screen } from '../platform';
 export * from './image-asset-common';
 
@@ -35,7 +35,7 @@ export class ImageAsset extends ImageAssetBase {
 					callback(bitmap, null);
 				},
 				onError(ex) {
-					callback(null, android.wrapJavaException(ex));
+					callback(null, wrapNativeException(ex));
 				},
 			})
 		);
@@ -52,7 +52,7 @@ export class ImageAsset extends ImageAssetBase {
 				})
 			);
 		}).catch((ex) => {
-			throw android.wrapJavaException(ex);
+			throw wrapNativeException(ex);
 		});
 	}
 }
