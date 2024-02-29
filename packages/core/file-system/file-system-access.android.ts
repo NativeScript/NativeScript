@@ -261,7 +261,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 			return org.nativescript.widgets.Async.File.copySync(src, dest, getApplicationContext());
 		} catch (error) {
 			if (onError) {
-				onError(exception);
+				onError(ad.wrapJavaException(error));
 			}
 		}
 
@@ -270,23 +270,19 @@ export class FileSystemAccess implements IFileSystemAccess {
 
 	public copyAsync(src: string, dest: string): Promise<boolean> {
 		return new Promise<boolean>((resolve, reject) => {
-			try {
-				org.nativescript.widgets.Async.File.copy(
-					src,
-					dest,
-					new org.nativescript.widgets.Async.CompleteCallback({
-						onComplete: (result: boolean) => {
-							resolve(result);
-						},
-						onError: (err) => {
-							reject(err);
-						},
-					}),
-					getApplicationContext()
-				);
-			} catch (ex) {
-				reject(ex);
-			}
+			org.nativescript.widgets.Async.File.copy(
+				src,
+				dest,
+				new org.nativescript.widgets.Async.CompleteCallback({
+					onComplete: (result: boolean) => {
+						resolve(result);
+					},
+					onError: reject,
+				}),
+				getApplicationContext()
+			);
+		}).catch((ex) => {
+			throw ad.wrapJavaException(ex);
 		});
 	}
 
@@ -294,22 +290,18 @@ export class FileSystemAccess implements IFileSystemAccess {
 
 	public readBufferAsync(path: string): Promise<ArrayBuffer> {
 		return new Promise<ArrayBuffer>((resolve, reject) => {
-			try {
-				org.nativescript.widgets.Async.File.readBuffer(
-					path,
-					new org.nativescript.widgets.Async.CompleteCallback({
-						onComplete: (result: java.nio.ByteBuffer) => {
-							resolve((ArrayBuffer as any).from(result));
-						},
-						onError: (err) => {
-							reject(err);
-						},
-					}),
-					null
-				);
-			} catch (ex) {
-				reject(ex);
-			}
+			org.nativescript.widgets.Async.File.readBuffer(
+				path,
+				new org.nativescript.widgets.Async.CompleteCallback({
+					onComplete: (result: java.nio.ByteBuffer) => {
+						resolve((ArrayBuffer as any).from(result));
+					},
+					onError: reject,
+				}),
+				null
+			);
+		}).catch((ex) => {
+			throw ad.wrapJavaException(ex);
 		});
 	}
 
@@ -323,7 +315,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 			return buffer;
 		} catch (exception) {
 			if (onError) {
-				onError(exception);
+				onError(ad.wrapJavaException(exception));
 			}
 		}
 	}
@@ -332,22 +324,18 @@ export class FileSystemAccess implements IFileSystemAccess {
 
 	public readAsync(path: string): Promise<number[]> {
 		return new Promise<number[]>((resolve, reject) => {
-			try {
-				org.nativescript.widgets.Async.File.read(
-					path,
-					new org.nativescript.widgets.Async.CompleteCallback({
-						onComplete: (result: number[]) => {
-							resolve(result);
-						},
-						onError: (err) => {
-							reject(err);
-						},
-					}),
-					null
-				);
-			} catch (ex) {
-				reject(ex);
-			}
+			org.nativescript.widgets.Async.File.read(
+				path,
+				new org.nativescript.widgets.Async.CompleteCallback({
+					onComplete: (result: number[]) => {
+						resolve(result);
+					},
+					onError: reject,
+				}),
+				null
+			);
+		}).catch((ex) => {
+			throw ad.wrapJavaException(ex);
 		});
 	}
 
@@ -379,23 +367,19 @@ export class FileSystemAccess implements IFileSystemAccess {
 
 	public appendBufferAsync(path: string, buffer: ArrayBuffer | Uint8Array | Uint8ClampedArray): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
-			try {
-				org.nativescript.widgets.Async.File.appendBuffer(
-					path,
-					FileSystemAccess.getBuffer(buffer),
-					new org.nativescript.widgets.Async.CompleteCallback({
-						onComplete: () => {
-							resolve();
-						},
-						onError: (err) => {
-							reject(err);
-						},
-					}),
-					null
-				);
-			} catch (ex) {
-				reject(ex);
-			}
+			org.nativescript.widgets.Async.File.appendBuffer(
+				path,
+				FileSystemAccess.getBuffer(buffer),
+				new org.nativescript.widgets.Async.CompleteCallback({
+					onComplete: () => {
+						resolve();
+					},
+					onError: reject,
+				}),
+				null
+			);
+		}).catch((ex) => {
+			throw ad.wrapJavaException(ex);
 		});
 	}
 
@@ -408,7 +392,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 			stream.close();
 		} catch (exception) {
 			if (onError) {
-				onError(exception);
+				onError(ad.wrapJavaException(exception));
 			}
 		}
 	}
@@ -417,23 +401,19 @@ export class FileSystemAccess implements IFileSystemAccess {
 
 	public appendAsync(path: string, bytes: androidNative.Array<number>): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
-			try {
-				org.nativescript.widgets.Async.File.append(
-					path,
-					bytes,
-					new org.nativescript.widgets.Async.CompleteCallback({
-						onComplete: () => {
-							resolve();
-						},
-						onError: (err) => {
-							reject(err);
-						},
-					}),
-					null
-				);
-			} catch (ex) {
-				reject(ex);
-			}
+			org.nativescript.widgets.Async.File.append(
+				path,
+				bytes,
+				new org.nativescript.widgets.Async.CompleteCallback({
+					onComplete: () => {
+						resolve();
+					},
+					onError: reject,
+				}),
+				null
+			);
+		}).catch((ex) => {
+			throw ad.wrapJavaException(ex);
 		});
 	}
 
@@ -445,7 +425,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 			stream.close();
 		} catch (exception) {
 			if (onError) {
-				onError(exception);
+				onError(ad.wrapJavaException(exception));
 			}
 		}
 	}
@@ -454,23 +434,19 @@ export class FileSystemAccess implements IFileSystemAccess {
 
 	public writeBufferAsync(path: string, buffer: ArrayBuffer | Uint8Array | Uint8ClampedArray): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
-			try {
-				org.nativescript.widgets.Async.File.writeBuffer(
-					path,
-					FileSystemAccess.getBuffer(buffer),
-					new org.nativescript.widgets.Async.CompleteCallback({
-						onComplete: () => {
-							resolve();
-						},
-						onError: (err) => {
-							reject(err);
-						},
-					}),
-					null
-				);
-			} catch (ex) {
-				reject(ex);
-			}
+			org.nativescript.widgets.Async.File.writeBuffer(
+				path,
+				FileSystemAccess.getBuffer(buffer),
+				new org.nativescript.widgets.Async.CompleteCallback({
+					onComplete: () => {
+						resolve();
+					},
+					onError: reject,
+				}),
+				null
+			);
+		}).catch((ex) => {
+			throw ad.wrapJavaException(ex);
 		});
 	}
 
@@ -483,7 +459,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 			stream.close();
 		} catch (exception) {
 			if (onError) {
-				onError(exception);
+				onError(ad.wrapJavaException(exception));
 			}
 		}
 	}
@@ -492,23 +468,19 @@ export class FileSystemAccess implements IFileSystemAccess {
 
 	public writeAsync(path: string, bytes: androidNative.Array<number>): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
-			try {
-				org.nativescript.widgets.Async.File.write(
-					path,
-					bytes,
-					new org.nativescript.widgets.Async.CompleteCallback({
-						onComplete: () => {
-							resolve();
-						},
-						onError: (err) => {
-							reject(err);
-						},
-					}),
-					null
-				);
-			} catch (ex) {
-				reject(ex);
-			}
+			org.nativescript.widgets.Async.File.write(
+				path,
+				bytes,
+				new org.nativescript.widgets.Async.CompleteCallback({
+					onComplete: () => {
+						resolve();
+					},
+					onError: reject,
+				}),
+				null
+			);
+		}).catch((ex) => {
+			throw ad.wrapJavaException(ex);
 		});
 	}
 
@@ -520,7 +492,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 			stream.close();
 		} catch (exception) {
 			if (onError) {
-				onError(exception);
+				onError(ad.wrapJavaException(exception));
 			}
 		}
 	}
@@ -534,27 +506,23 @@ export class FileSystemAccess implements IFileSystemAccess {
 		}
 
 		return new Promise<string>((resolve, reject) => {
-			try {
-				org.nativescript.widgets.Async.File.readText(
-					path,
-					actualEncoding,
-					new org.nativescript.widgets.Async.CompleteCallback({
-						onComplete: (result: string) => {
-							if (actualEncoding === textModule.encoding.UTF_8) {
-								// Remove UTF8 BOM if present. http://www.rgagnon.com/javadetails/java-handle-utf8-file-with-bom.html
-								result = FileSystemAccess._removeUtf8Bom(result);
-							}
-							resolve(result);
-						},
-						onError: (err) => {
-							reject(err);
-						},
-					}),
-					null
-				);
-			} catch (ex) {
-				reject(ex);
-			}
+			org.nativescript.widgets.Async.File.readText(
+				path,
+				actualEncoding,
+				new org.nativescript.widgets.Async.CompleteCallback({
+					onComplete: (result: string) => {
+						if (actualEncoding === textModule.encoding.UTF_8) {
+							// Remove UTF8 BOM if present. http://www.rgagnon.com/javadetails/java-handle-utf8-file-with-bom.html
+							result = FileSystemAccess._removeUtf8Bom(result);
+						}
+						resolve(result);
+					},
+					onError: reject,
+				}),
+				null
+			);
+		}).catch((ex) => {
+			throw ad.wrapJavaException(ex);
 		});
 	}
 
@@ -599,7 +567,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 			return result;
 		} catch (exception) {
 			if (onError) {
-				onError(exception);
+				onError(ad.wrapJavaException(exception));
 			}
 		}
 	}
@@ -622,24 +590,20 @@ export class FileSystemAccess implements IFileSystemAccess {
 		}
 
 		return new Promise<void>((resolve, reject) => {
-			try {
-				org.nativescript.widgets.Async.File.appendText(
-					path,
-					content,
-					actualEncoding,
-					new org.nativescript.widgets.Async.CompleteCallback({
-						onComplete: () => {
-							resolve();
-						},
-						onError: (err) => {
-							reject(err);
-						},
-					}),
-					null
-				);
-			} catch (ex) {
-				reject(ex);
-			}
+			org.nativescript.widgets.Async.File.appendText(
+				path,
+				content,
+				actualEncoding,
+				new org.nativescript.widgets.Async.CompleteCallback({
+					onComplete: () => {
+						resolve();
+					},
+					onError: reject,
+				}),
+				null
+			);
+		}).catch((ex) => {
+			throw ad.wrapJavaException(ex);
 		});
 	}
 
@@ -658,7 +622,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 			writer.close();
 		} catch (exception) {
 			if (onError) {
-				onError(exception);
+				onError(ad.wrapJavaException(exception));
 			}
 		}
 	}
@@ -672,24 +636,20 @@ export class FileSystemAccess implements IFileSystemAccess {
 		}
 
 		return new Promise<void>((resolve, reject) => {
-			try {
-				org.nativescript.widgets.Async.File.writeText(
-					path,
-					content,
-					actualEncoding,
-					new org.nativescript.widgets.Async.CompleteCallback({
-						onComplete: () => {
-							resolve();
-						},
-						onError: (err) => {
-							reject(err);
-						},
-					}),
-					null
-				);
-			} catch (ex) {
-				reject(ex);
-			}
+			org.nativescript.widgets.Async.File.writeText(
+				path,
+				content,
+				actualEncoding,
+				new org.nativescript.widgets.Async.CompleteCallback({
+					onComplete: () => {
+						resolve();
+					},
+					onError: reject,
+				}),
+				null
+			);
+		}).catch((ex) => {
+			throw ad.wrapJavaException(ex);
 		});
 	}
 
@@ -708,7 +668,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 			writer.close();
 		} catch (exception) {
 			if (onError) {
-				onError(exception);
+				onError(ad.wrapJavaException(exception));
 			}
 		}
 	}
@@ -771,7 +731,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 		} catch (exception) {
 			// TODO: unified approach for error messages
 			if (onError) {
-				onError(exception);
+				onError(ad.wrapJavaException(exception));
 			}
 
 			return undefined;
@@ -819,7 +779,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 			}
 		} catch (exception) {
 			if (onError) {
-				onError(exception);
+				onError(ad.wrapJavaException(exception));
 			}
 		}
 	}
@@ -899,7 +859,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 				};
 			} catch (e) {
 				if (typeof onError === 'function') {
-					onError(e);
+					onError(ad.wrapJavaException(e));
 				}
 				return;
 			}
@@ -941,7 +901,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 			try {
 				getOrSetHelper(path).delete(applicationContext);
 			} catch (e) {
-				onError?.(e);
+				onError?.(ad.wrapJavaException(e));
 			}
 		} else {
 			super.deleteFile(path, onError);
