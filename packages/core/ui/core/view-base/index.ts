@@ -886,6 +886,13 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		}
 	}
 
+	requestlayoutIfNeeded() {
+		if (this._requetLayoutNeeded) {
+			this._requetLayoutNeeded = false;
+			this.requestLayout();
+		}
+	}
+
 	/**
 	 * Iterates over children of type ViewBase.
 	 * @param callback Called for each child of type ViewBase. Iteration stops if this method returns falsy value.

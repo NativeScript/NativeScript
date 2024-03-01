@@ -1165,8 +1165,8 @@ export const initNativeView = profile('"properties".initNativeView', function in
 	// it means we can request a layout if needed.
 	// will be done after otherwise
 	view.suspendRequestLayout = wasSuspended;
-	if (!wasSuspended && view.isLayoutRequestNeeded) {
-		view.requestLayout();
+	if (!wasSuspended) {
+		view.requestlayoutIfNeeded();
 	}
 });
 
