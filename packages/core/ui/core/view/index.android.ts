@@ -232,6 +232,7 @@ function initializeDialogFragment() {
 			const owner = this.owner;
 			this.activity = new WeakRef(this.getActivity());
 			owner._setupAsRootView(this.getActivity());
+			owner.parent = Application.getRootView();
 			owner._isAddedToNativeVisualTree = true;
 
 			// we need to set the window SoftInputMode here.
@@ -297,6 +298,7 @@ function initializeDialogFragment() {
 
 				owner._isAddedToNativeVisualTree = false;
 				owner._tearDownUI(true);
+				owner.parent = null;
 			}
 		}
 	}
