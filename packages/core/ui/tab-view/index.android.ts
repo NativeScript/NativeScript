@@ -489,18 +489,24 @@ export class TabView extends TabViewBase {
 		lp.row = 1;
 
 		if (this.androidTabsPosition === 'top') {
-			nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
-			nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
-
+			nativeView.addRowsFromJSON(
+				JSON.stringify([
+					{ value: 1, type: 0 /* org.nativescript.widgets.GridUnitType.auto */ },
+					{ value: 1, type: 2 /* org.nativescript.widgets.GridUnitType.star */ },
+				])
+			);
 			viewPager.setLayoutParams(lp);
 
 			if (!this.androidSwipeEnabled) {
 				viewPager.setSwipePageEnabled(false);
 			}
 		} else {
-			nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
-			nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
-
+			nativeView.addRowsFromJSON(
+				JSON.stringify([
+					{ value: 1, type: 2 /* org.nativescript.widgets.GridUnitType.star */ },
+					{ value: 1, type: 0 /* org.nativescript.widgets.GridUnitType.auto */ },
+				])
+			);
 			tabLayout.setLayoutParams(lp);
 			viewPager.setSwipePageEnabled(false);
 			// set completely transparent accent color for tab selected indicator.
