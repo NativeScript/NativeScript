@@ -39,6 +39,7 @@ export function pageLoaded(args: EventData) {
 	examples.set('date-picker', 'date-picker/date-picker-page');
 	examples.set('nested-frames', 'nested-frames/main-page');
 	examples.set('screen-qualifiers', 'screen-qualifiers/main-page');
+	examples.set('grid-layout', 'grid-layout/grid-layout-page');
 	page.bindingContext = new MainPageViewModel(wrapLayout, examples);
 
 	const parent = page.getViewById('parentLayout');
