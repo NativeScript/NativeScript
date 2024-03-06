@@ -140,10 +140,12 @@ export class FileSystemEntity {
 		// call rename for FileSystemAccess29
 		if ((<any>fileAccess).__skip) {
 			fileAccess.rename(this.path, newName, localError);
-			const fileInfo = getFileAccess().getFile(this.path, null);
-			if (fileInfo) {
-				this._name = fileInfo.name;
-				this._extension = fileInfo.extension;
+			if (File.exists(this.path)) {
+				const fileInfo = getFileAccess().getFile(this.path, null);
+				if (fileInfo) {
+					this._name = fileInfo.name;
+					this._extension = fileInfo.extension;
+				}
 			}
 			return;
 		}
@@ -321,14 +323,14 @@ export class File extends FileSystemEntity {
 		return ad;
 	}
 
-	public static fromPath(path: string, copy: boolean = false) {
+	public static fromPath(path: string, copy: boolean = false, create: boolean = true) {
 		const onError = function (error) {
 			throw error;
 		};
 
 		if (__ANDROID__ && copy) {
 			if (path.startsWith('content:')) {
-				const fileInfo = getFileAccess().getFile(path, onError);
+				const fileInfo = getFileAccess().getFile(path, onError, create);
 				// falls back to creating a temp file without a known extension.
 				if (!fileInfo) {
 					const tempFile = `${knownFolders.temp().path}/${java.util.UUID.randomUUID().toString()}`;
@@ -344,7 +346,7 @@ export class File extends FileSystemEntity {
 			}
 		}
 
-		const fileInfo = getFileAccess().getFile(path, onError);
+		const fileInfo = getFileAccess().getFile(path, onError, create);
 		if (!fileInfo) {
 			return undefined;
 		}
@@ -705,12 +707,12 @@ export class File extends FileSystemEntity {
 }
 
 export class Folder extends FileSystemEntity {
-	public static fromPath(path: string): Folder {
+	public static fromPath(path: string, create = true): Folder {
 		const onError = function (error) {
 			throw error;
 		};
 
-		const folderInfo = getFileAccess().getFolder(path, onError);
+		const folderInfo = getFileAccess().getFolder(path, onError, create);
 		if (!folderInfo) {
 			return undefined;
 		}
@@ -756,7 +758,7 @@ export class Folder extends FileSystemEntity {
 		return this._isKnown;
 	}
 
-	public getFile(name: string): File {
+	public getFile(name: string, create = true): File {
 		const fileAccess = getFileAccess();
 		const path = fileAccess.joinPath(this.path, name);
 
@@ -764,7 +766,7 @@ export class Folder extends FileSystemEntity {
 			throw error;
 		};
 
-		const fileInfo = fileAccess.getFile(path, onError);
+		const fileInfo = fileAccess.getFile(path, onError, create);
 		if (!fileInfo) {
 			return undefined;
 		}
@@ -772,7 +774,7 @@ export class Folder extends FileSystemEntity {
 		return createFile(fileInfo);
 	}
 
-	public getFolder(name: string): Folder {
+	public getFolder(name: string, create = true): Folder {
 		const fileAccess = getFileAccess();
 		const path = fileAccess.joinPath(this.path, name);
 
@@ -780,7 +782,7 @@ export class Folder extends FileSystemEntity {
 			throw error;
 		};
 
-		const folderInfo = fileAccess.getFolder(path, onError);
+		const folderInfo = fileAccess.getFolder(path, onError, create);
 		if (!folderInfo) {
 			return undefined;
 		}

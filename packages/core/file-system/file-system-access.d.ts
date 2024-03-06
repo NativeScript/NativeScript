@@ -103,7 +103,7 @@ export interface IFileSystemAccess {
 	 * @param onError A callback function to use if any error occurs.
 	 * Returns path Absolute path of the file, name Name of the file, extension Extension of the file.
 	 */
-	getFile(path: string, onError?: (error: any) => any): { path: string; name: string; extension: string };
+	getFile(path: string, onError?: (error: any) => any, create?: boolean): { path: string; name: string; extension: string };
 
 	/**
 	 * Gets the folder of a file with a given path.
@@ -111,7 +111,7 @@ export interface IFileSystemAccess {
 	 * @param onError A callback function to use if any error occurs.
 	 * Returns path Absolute path of the folder, name Name of the folder.
 	 */
-	getFolder(path: string, onError?: (error: any) => any): { path: string; name: string };
+	getFolder(path: string, onError?: (error: any) => any, create?: boolean): { path: string; name: string };
 
 	/**
 	 * Gets all entities of a given path (folder)
@@ -361,9 +361,9 @@ export class FileSystemAccess implements IFileSystemAccess {
 
 	getParent(path: string, onError?: (error: any) => any): { path: string; name: string };
 
-	getFile(path: string, onError?: (error: any) => any): { path: string; name: string; extension: string };
+	getFile(path: string, onError?: (error: any) => any, create?: boolean): { path: string; name: string; extension: string };
 
-	getFolder(path: string, onError?: (error: any) => any): { path: string; name: string };
+	getFolder(path: string, onError?: (error: any) => any, create?: boolean): { path: string; name: string };
 
 	getEntities(path: string, onError?: (error: any) => any): Array<{ path: string; name: string; extension: string }>;
 

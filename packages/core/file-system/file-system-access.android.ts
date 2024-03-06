@@ -56,18 +56,32 @@ export class FileSystemAccess implements IFileSystemAccess {
 		}
 	}
 
-	public getFile(path: string, onError?: (error: any) => any): { path: string; name: string; extension: string } {
-		return this.ensureFile(new java.io.File(path), false, onError);
+	public getFile(path: string, onError?: (error: any) => any, create: boolean = true): { path: string; name: string; extension: string } {
+		if (create) {
+			return this.ensureFile(new java.io.File(path), false, onError);
+		} else {
+			return {
+				path: path,
+				name: path.split('/').pop(),
+				extension: path.split('.').pop(),
+			};
+		}
 	}
 
-	public getFolder(path: string, onError?: (error: any) => any): { path: string; name: string } {
+	public getFolder(path: string, onError?: (error: any) => any, create: boolean = true): { path: string; name: string } {
 		const javaFile = new java.io.File(path);
-		const dirInfo = this.ensureFile(javaFile, true, onError);
-		if (!dirInfo) {
-			return undefined;
-		}
+		if (create) {
+			const dirInfo = this.ensureFile(javaFile, true, onError);
+			if (!dirInfo) {
+				return undefined;
+			}
 
-		return { path: dirInfo.path, name: dirInfo.name };
+			return { path: dirInfo.path, name: dirInfo.name };
+		}
+		return {
+			path,
+			name: path.split('/').pop(),
+		};
 	}
 
 	public eachEntity(path: string, onEntity: (file: { path: string; name: string; extension: string }) => boolean, onError?: (error: any) => any) {
@@ -866,11 +880,11 @@ export class FileSystemAccess29 extends FileSystemAccess {
 		}
 		return super.getFile(path, onError);
 	}
-	getFolder(path: string, onError?: (error: any) => any): { path: string; name: string } {
+	getFolder(path: string, onError?: (error: any) => any, create: boolean = true): { path: string; name: string } {
 		if (isContentUri(path)) {
 			return null;
 		}
-		return super.getFolder(path, onError);
+		return super.getFolder(path, onError, create);
 	}
 	getEntities(path: string, onError?: (error: any) => any): { path: string; name: string; extension: string }[] {
 		if (isContentUri(path)) {

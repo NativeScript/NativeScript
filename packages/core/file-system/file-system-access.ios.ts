@@ -46,12 +46,12 @@ export class FileSystemAccess {
 		}
 	}
 
-	public getFile(path: string, onError?: (error: any) => any): { path: string; name: string; extension: string } {
+	public getFile(path: string, onError?: (error: any) => any, create: boolean = true): { path: string; name: string; extension: string } {
 		try {
 			const fileManager = NSFileManager.defaultManager;
 			const exists = fileManager.fileExistsAtPath(path);
 
-			if (!exists) {
+			if (create && !exists) {
 				const parentPath = this.getParent(path, onError).path;
 				if (!fileManager.createDirectoryAtPathWithIntermediateDirectoriesAttributesError(parentPath, true, null) || !fileManager.createFileAtPathContentsAttributes(path, null, null)) {
 					if (onError) {
@@ -62,7 +62,7 @@ export class FileSystemAccess {
 				}
 			}
 
-			const fileName = fileManager.displayNameAtPath(path);
+			const fileName = create ? fileManager.displayNameAtPath(path) : path.split('/').pop();
 
 			return {
 				path: path,
@@ -78,12 +78,12 @@ export class FileSystemAccess {
 		}
 	}
 
-	public getFolder(path: string, onError?: (error: any) => any): { path: string; name: string } {
+	public getFolder(path: string, onError?: (error: any) => any, create: boolean = true): { path: string; name: string } {
 		try {
 			const fileManager = NSFileManager.defaultManager;
 			const exists = this.folderExists(path);
 
-			if (!exists) {
+			if (create && !exists) {
 				try {
 					fileManager.createDirectoryAtPathWithIntermediateDirectoriesAttributesError(path, true, null);
 				} catch (ex) {
@@ -95,7 +95,7 @@ export class FileSystemAccess {
 				}
 			}
 
-			const dirName = fileManager.displayNameAtPath(path);
+			const dirName = create ? fileManager.displayNameAtPath(path) : path.split('/').pop();
 
 			return {
 				path: path,
