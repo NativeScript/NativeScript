@@ -25,6 +25,9 @@ export function releaseNativeObject(object: java.lang.Object) {
 }
 
 export function wrapNativeException(ex) {
+	if (typeof ex === 'string') {
+		return new Error(ex);
+	}
 	if (!(ex instanceof Error)) {
 		const err = new Error(ex.toString());
 		err['nativeException'] = ex;
