@@ -89,6 +89,12 @@ dependencies {
 		outLogger.withStyle(Style.SuccessHeader).println "\t + using android X library androidx.documentfile:documentfile:$androidXDocumentFileVersion"
 	}
 
+    def okHttpVersion = "4.10.0"
+    if (project.hasProperty("okHttp")) {
+        okHttpVersion = okHttp
+        println "\t + using okHttp library com.squareup.okhttp3:okhttp:$okHttpVersion"
+    }
+
 
     implementation fileTree(include: ['*.jar'], dir: 'libs')
 
@@ -100,6 +106,8 @@ dependencies {
     implementation "androidx.exifinterface:exifinterface:$androidXExifInterfaceVersion"
     implementation "androidx.appcompat:appcompat:$androidXAppCompatVersion"
 		implementation "androidx.documentfile:documentfile:$androidXDocumentFileVersion"
+        
+    implementation "com.squareup.okhttp3:okhttp:$okHttpVersion"
 }
 
 task cleanBuildDir (type: Delete) {

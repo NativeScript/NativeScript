@@ -22,7 +22,13 @@ function parseJSON(source: string): any {
 }
 
 let requestIdCounter = 0;
-const pendingRequests = {};
+interface Call {
+	url: string;
+	resolveCallback: (value: httpModule.HttpResponse | PromiseLike<httpModule.HttpResponse>) => void;
+	rejectCallback: (reason?: any) => void;
+	call: okhttp3.Call;
+}
+const pendingRequests: Record<number, Call> = {};
 
 let imageSource: typeof imageSourceModule;
 function ensureImageSource() {
@@ -55,43 +61,47 @@ function ensureCompleteCallback() {
 	});
 }
 
-function onRequestComplete(requestId: number, result: org.nativescript.widgets.Async.Http.RequestResult) {
+function onRequestComplete(requestId: number, call: okhttp3.Call, result: okhttp3.Response) {
 	const callbacks = pendingRequests[requestId];
 	delete pendingRequests[requestId];
 
-	if (result.error) {
-		callbacks.rejectCallback(new Error(result.error.toString()));
+	// if (result.error) {
+	// 	callbacks.rejectCallback(new Error(result.error.toString()));
 
-		return;
-	}
+	// 	return;
+	// }
 
 	// read the headers
 	const headers: httpModule.Headers = {};
 	if (result.headers) {
-		const jHeaders = result.headers;
-		const length = jHeaders.size();
-		let pair: org.nativescript.widgets.Async.Http.KeyValuePair;
-		for (let i = 0; i < length; i++) {
-			pair = jHeaders.get(i);
-			addHeader(headers, pair.key, pair.value);
-		}
+		const jHeaders = result.headers();
+		const names = jHeaders.names();
+		Array.from(names.toArray()).forEach((name: string) => {
+			addHeader(headers, name, jHeaders.get(name));
+		});
 	}
 
 	// send response data (for requestId) to network debugger
 	if (global.__inspector && global.__inspector.isConnected) {
-		NetworkAgent.responseReceived(requestId, result, headers);
+		// TODO: adapt network agent to support okHttp results
+		// NetworkAgent.responseReceived(requestId, result, headers);
 	}
+	// TODO: process the full result.body in java and in a background thread
+	const bytes = result.body().bytes();
+	const raw = new java.io.ByteArrayOutputStream(bytes.length);
+	raw.write(bytes, 0, bytes.length);
+	result.body().close();
 
 	callbacks.resolveCallback({
 		content: {
-			raw: result.raw,
-			toArrayBuffer: () => Uint8Array.from(result.raw.toByteArray()).buffer,
+			raw: raw,
+			toArrayBuffer: () => Uint8Array.from(raw.toByteArray()).buffer,
 			toString: (encoding?: HttpResponseEncoding) => {
 				let str: string;
 				if (encoding) {
-					str = decodeResponse(result.raw, encoding);
+					str = decodeResponse(raw, encoding);
 				} else {
-					str = result.responseAsString;
+					str = raw.toString();
 				}
 				if (typeof str === 'string') {
 					return str;
@@ -102,9 +112,9 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
 			toJSON: (encoding?: HttpResponseEncoding) => {
 				let str: string;
 				if (encoding) {
-					str = decodeResponse(result.raw, encoding);
+					str = decodeResponse(raw, encoding);
 				} else {
-					str = result.responseAsString;
+					str = raw.toString();
 				}
 
 				return parseJSON(str);
@@ -113,11 +123,46 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
 				ensureImageSource();
 
 				return new Promise<any>((resolveImage, rejectImage) => {
-					if (result.responseAsImage != null) {
-						resolveImage(new imageSource.ImageSource(result.responseAsImage));
-					} else {
+					// TODO: this should be done in a background thread
+					// currently it's done for every request, even if `toImage` is not called
+					// so ideally we should do it lazily
+					try {
+						const bitmapOptions = new android.graphics.BitmapFactory.Options();
+						bitmapOptions.inJustDecodeBounds = true;
+						let nativeImage: android.graphics.Bitmap = null;
+						android.graphics.BitmapFactory.decodeByteArray(raw.buf, null, raw.size(), bitmapOptions);
+						if (bitmapOptions.outWidth > 0 && bitmapOptions.outHeight > 0) {
+							let scale = 1;
+							const height = bitmapOptions.outHeight;
+							const width = bitmapOptions.outWidth;
+
+							// if ((options.screenWidth > 0 && bitmapOptions.outWidth > options.screenWidth) ||
+							// 	(options.screenHeight > 0 && bitmapOptions.outHeight > options.screenHeight)) {
+							// 	final int halfHeight = height / 2;
+							// 	final int halfWidth = width / 2;
+
+							// 	// scale down the image since it is larger than the
+							// 	// screen resolution
+							// 	while ((halfWidth / scale) > options.screenWidth && (halfHeight / scale) > options.screenHeight) {
+							// 		scale *= 2;
+							// 	}
+							// }
+
+							bitmapOptions.inJustDecodeBounds = false;
+							bitmapOptions.inSampleSize = scale;
+							nativeImage = android.graphics.BitmapFactory.decodeByteArray(raw.buf, null, raw.size(), bitmapOptions);
+						}
+
+						resolveImage(new imageSource.ImageSource(nativeImage));
+					} catch (e) {
+						console.log(e.stack);
 						rejectImage(new Error('Response content may not be converted to an Image'));
 					}
+					// if (result.responseAsImage != null) {
+					// 	resolveImage(new imageSource.ImageSource(result.responseAsImage));
+					// } else {
+					// 	rejectImage(new Error('Response content may not be converted to an Image'));
+					// }
 				});
 			},
 			toFile: (destinationFilePath: string) => {
@@ -133,7 +178,7 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
 
 					const javaFile = new java.io.File(destinationFilePath);
 					stream = new java.io.FileOutputStream(javaFile);
-					stream.write(result.raw.toByteArray());
+					stream.write(raw.toByteArray());
 
 					return file;
 				} catch (exception) {
@@ -145,7 +190,7 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
 				}
 			},
 		},
-		statusCode: result.statusCode,
+		statusCode: result.code(),
 		headers: headers,
 	});
 }
@@ -166,19 +211,34 @@ function buildJavaOptions(options: httpModule.HttpRequestOptions) {
 	const javaOptions = new org.nativescript.widgets.Async.Http.RequestOptions();
 
 	javaOptions.url = options.url;
+	const builder = new okhttp3.Request.Builder().url(options.url);
 
-	if (typeof options.method === 'string') {
-		javaOptions.method = options.method;
+	let contentType: string | null = null;
+	if (options.headers) {
+		for (const key in options.headers) {
+			if (key.toLowerCase() === 'content-type') {
+				contentType = options.headers[key];
+			}
+			builder.addHeader(key, `${options.headers[key]}`);
+		}
 	}
+	const mediaType = contentType ? okhttp3.MediaType.parse(contentType) : null;
+
+	let body: okhttp3.RequestBody | null = null;
 	if (typeof options.content === 'string' || options.content instanceof FormData) {
 		const nativeString = new java.lang.String(options.content.toString());
 		const nativeBytes = nativeString.getBytes('UTF-8');
 		const nativeBuffer = java.nio.ByteBuffer.wrap(nativeBytes);
-		javaOptions.content = nativeBuffer;
+		body = okhttp3.RequestBody.create(nativeBuffer, mediaType);
 	} else if (options.content instanceof ArrayBuffer) {
 		const typedArray = new Uint8Array(options.content as ArrayBuffer);
 		const nativeBuffer = java.nio.ByteBuffer.wrap(Array.from(typedArray));
-		javaOptions.content = nativeBuffer;
+		body = okhttp3.RequestBody.create(nativeBuffer, mediaType);
+	}
+
+	if (typeof options.method === 'string') {
+		builder.method(options.method, body);
+		javaOptions.method = options.method;
 	}
 	if (typeof options.timeout === 'number') {
 		javaOptions.timeout = options.timeout;
@@ -187,22 +247,12 @@ function buildJavaOptions(options: httpModule.HttpRequestOptions) {
 		javaOptions.dontFollowRedirects = options.dontFollowRedirects;
 	}
 
-	if (options.headers) {
-		const arrayList = new java.util.ArrayList<org.nativescript.widgets.Async.Http.KeyValuePair>();
-		const pair = org.nativescript.widgets.Async.Http.KeyValuePair;
-
-		for (const key in options.headers) {
-			arrayList.add(new pair(key, options.headers[key] + ''));
-		}
-
-		javaOptions.headers = arrayList;
-	}
-
 	// pass the maximum available image size to the request options in case we need a bitmap conversion
 	javaOptions.screenWidth = Screen.mainScreen.widthPixels;
 	javaOptions.screenHeight = Screen.mainScreen.heightPixels;
 
-	return javaOptions;
+	// return javaOptions;
+	return builder.build();
 }
 
 export function request(options: httpModule.HttpRequestOptions): Promise<httpModule.HttpResponse> {
@@ -220,18 +270,49 @@ export function request(options: httpModule.HttpRequestOptions): Promise<httpMod
 			if (global.__inspector && global.__inspector.isConnected) {
 				NetworkAgent.requestWillBeSent(requestIdCounter, options);
 			}
+			const clientBuilder = new okhttp3.OkHttpClient.Builder();
+			clientBuilder.followRedirects(!options.dontFollowRedirects);
+			if (options.timeout) {
+				// TODO: which one should we use?
+				// clientBuilder.callTimeout(options.timeout, java.util.concurrent.TimeUnit.MILLISECONDS);
+				// clientBuilder.readTimeout(options.timeout, java.util.concurrent.TimeUnit.MILLISECONDS);
+				clientBuilder.connectTimeout(options.timeout, java.util.concurrent.TimeUnit.MILLISECONDS);
+			}
+			const client = clientBuilder.build();
+
+			const call = client.newCall(javaOptions);
+			const requestId = requestIdCounter;
+			call.enqueue(
+				new okhttp3.Callback({
+					onFailure(param0, param1) {
+						onRequestError(param1.getLocalizedMessage(), requestId);
+					},
+					onResponse(param0, param1) {
+						onRequestComplete(requestId, param0, param1);
+					},
+				})
+			);
 
 			// remember the callbacks so that we can use them when the CompleteCallback is called
 			const callbacks = {
 				url: options.url,
 				resolveCallback: resolve,
 				rejectCallback: reject,
+				call,
 			};
+			if (options.signal) {
+				(options.signal as any).on('abort', () => {
+					call.cancel();
+				});
+				// ).onabort = () => {
+				// 	call.cancel();
+				// }
+			}
 			pendingRequests[requestIdCounter] = callbacks;
 
-			ensureCompleteCallback();
+			// ensureCompleteCallback();
 			//make the actual async call
-			org.nativescript.widgets.Async.Http.MakeRequest(javaOptions, completeCallback, new java.lang.Integer(requestIdCounter));
+			// org.nativescript.widgets.Async.Http.MakeRequest(javaOptions, completeCallback, new java.lang.Integer(requestIdCounter));
 
 			// increment the id counter
 			requestIdCounter++;
@@ -241,7 +322,7 @@ export function request(options: httpModule.HttpRequestOptions): Promise<httpMod
 	});
 }
 
-function decodeResponse(raw: any, encoding?: HttpResponseEncoding) {
+function decodeResponse(raw: java.io.ByteArrayOutputStream, encoding?: HttpResponseEncoding) {
 	let charsetName = 'UTF-8';
 	if (encoding === HttpResponseEncoding.GBK) {
 		charsetName = 'GBK';
