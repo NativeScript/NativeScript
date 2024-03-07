@@ -92,7 +92,7 @@ class MainScreen {
 
 	private get screen(): UIScreen {
 		if (!this._screen) {
-			// NOTE: may not want to cache this value with SwiftUI app lifecycle based apps (using NativeScriptViewRegistry) given the potential of multiple scenes
+			// NOTE: may not want to cache this value with SwiftUI app lifecycle based apps (using NativeScriptViewFactory) given the potential of multiple scenes
 			const window = ios.getWindow();
 			this._screen = window ? window.screen : UIScreen.mainScreen;
 		}

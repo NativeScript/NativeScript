@@ -7,7 +7,6 @@ struct NativeScriptMainWindow: Scene {
     
     #if os(visionOS)
     // Environment control
-    @State var openedScenes: [String:Bool] = [:]
     @Environment(\.openWindow) private var openWindow
     @Environment(\.dismissWindow) private var dismissWindow
     @Environment(\.openImmersiveSpace) private var openImmersiveSpace
@@ -26,40 +25,28 @@ struct NativeScriptMainWindow: Scene {
                     NativeScriptStart.boot()
                 }
             }.onReceive(NotificationCenter.default
-                .publisher(for: NSNotification.Name("NativeScriptOpenScene")), perform: { obj in
-                Task {
-                    if let userInfo = obj.userInfo {
-                        var sceneType: String = ""
-                        var isImmersive = false
-                        for (key, value) in userInfo {
-                            let k = key as! String
-                            if (k == "type") {
-                                sceneType = value as! String
-                            } else if (k == "isImmersive") {
-                                isImmersive = value as! Bool
-                            }
-                        }
-           
-                        let isOpened = openedScenes[sceneType] ?? false
-                        if isOpened {
-                            openedScenes[sceneType] = false
-                            if (isImmersive) {
-                                await dismissImmersiveSpace()
-                            } else {
-                                dismissWindow(id: sceneType)
-                            }
+                .publisher(for: NSNotification.Name("NativeScriptWindowOpen")), perform: { obj in
+                    let info = parseWindowInfo(obj: obj)
+                    let id = info.keys.first
+                    Task {
+                        if (info[id!]!) {
+                            await openImmersiveSpace(id: id!)
                         } else {
-                            openedScenes[sceneType] = true
-                            if (isImmersive) {
-                                await openImmersiveSpace(id: sceneType)
-                            } else {
-                                openWindow(id: sceneType)
-                            }
+                            openWindow(id: id!)
                         }
                     }
-                    
-                }
-            })
+            }).onReceive(NotificationCenter.default
+                .publisher(for: NSNotification.Name("NativeScriptWindowClose")), perform: { obj in
+                    let info = parseWindowInfo(obj: obj)
+                    let id = info.keys.first
+                    Task {
+                        if (info[id!]!) {
+                            await dismissImmersiveSpace()
+                        } else {
+                            dismissWindow(id: id!)
+                        }
+                    }
+                })
             .onOpenURL { (url) in
                 NotificationCenter.default.post(name: Notification.Name("NativeScriptOpenURL"), object: nil, userInfo: ["url": url.absoluteString ])
             }
@@ -80,9 +67,30 @@ struct NativeScriptMainWindow: Scene {
     }
 
     init() {
-        NativeScriptEmbedder.sharedInstance().setDelegate(NativeScriptViewRegistry.shared)
+        NativeScriptViewFactory.initShared()
+        NativeScriptEmbedder.sharedInstance().setDelegate(NativeScriptViewFactory.shared)
         NativeScriptStart.setup()
     }
+
+    #if os(visionOS)
+    func parseWindowInfo(obj: Notification, close: Bool = false) -> [String:Bool] {
+        if let userInfo = obj.userInfo {
+            var id: String = ""
+            var isImmersive = false
+            for (key, value) in userInfo {
+                let k = key as! String
+                if (k == "type") {
+                    id = value as! String
+                } else if (k == "isImmersive") {
+                    isImmersive = value as! Bool
+                }
+            }
+            return [id: isImmersive]
+            
+        }
+        return ["_": false]
+    }
+    #endif
 }
 
 @available(iOS 13.0, *)
@@ -105,22 +113,36 @@ struct NativeScriptAppView: UIViewRepresentable {
             found(window?.windowScene)
         }
         
-        return NativeScriptViewRegistry.app.view
+        return NativeScriptViewFactory.app!.view
     }
     
     func updateUIView(_ uiView: UIView, context: Context) {
-        print("NativeScriptAppView updateUIView")
+        // print("NativeScriptAppView updateUIView")
         // could update data through the controller
     }
 }
 
 @available(iOS 13.0, *)
-@objc public class NativeScriptViewRegistry: NSObject, NativeScriptEmbedderDelegate {
-    @objc public static let shared = NativeScriptViewRegistry()
-    @objc public static let app = UIKitContainerCtrl()
+@objc public class NativeScriptViewFactory: NSObject, NativeScriptEmbedderDelegate {
+    @objc static var shared: NativeScriptViewFactory?
+    @objc static var app: NativeScriptContainerCtrl?
+    
+    // holds key/value map of views for lifecycle handling
+    @objc public var views: NSMutableDictionary?
 
-    @objc public let views = NSMutableDictionary()
-    @objc public var callback: ((String, UIKitContainerView) -> Void)? = nil
+    // provided by NativeScript to coordinate view lifecycle
+    @objc public var viewCreator: ((String) -> Void)? = nil
+    @objc public var viewDestroyer: ((String) -> Void)? = nil
+
+    // get or create (if needed) NativeScript views to represent in SwiftUI
+    @objc public func getViewById(_ id: String) -> UIView {
+        let vc = views!.object(forKey: id) as? UIView
+        if (vc == nil) {
+            // create the NativeScript view
+            viewCreator!(id)
+        }
+        return views!.object(forKey: id) as! UIView
+    }
     
     @available(iOS 15.0, *)
     @objc public static func getKeyWindow() -> UIWindow? {
@@ -130,31 +152,27 @@ struct NativeScriptAppView: UIViewRepresentable {
             .compactMap { ($0 as? UIWindowScene)?.keyWindow }
             .last
     }
+
+    @objc public static func initShared() {
+        if (NativeScriptViewFactory.shared == nil) {
+            NativeScriptViewFactory.app = NativeScriptContainerCtrl()
+            NativeScriptViewFactory.shared = NativeScriptViewFactory()
+            NativeScriptViewFactory.shared!.views = NSMutableDictionary()
+        }
+    }
     
     public func presentNativeScriptApp(_ vc: UIViewController!) -> Any! {
-        vc.view.frame = NativeScriptViewRegistry.app.view.bounds
+        vc.view.frame = NativeScriptViewFactory.app!.view.bounds
         vc.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        NativeScriptViewRegistry.app.addChild(vc)
-        NativeScriptViewRegistry.app.view.addSubview(vc.view)
-        vc.didMove(toParent: NativeScriptViewRegistry.app)
-        return NativeScriptViewRegistry.app
+        NativeScriptViewFactory.app!.addChild(vc)
+        NativeScriptViewFactory.app!.view.addSubview(vc.view)
+        vc.didMove(toParent: NativeScriptViewFactory.app)
+        return NativeScriptViewFactory.app
     }
 }
 
 // UIViewController
-@objc public class UIKitContainerCtrl: UIViewController {
+@objc public class NativeScriptContainerCtrl: UIViewController {
     // allow NativeScript to override updateData for custom handling
     @objc public var updateData: ((_ data: NSMutableDictionary) -> Void)? = nil
 }
-
-// UIView
-@objc public class UIKitContainerView: UIView {
-    // allow NativeScript to override updateData for custom handling
-    @objc public var updateData: ((_ data: NSMutableDictionary) -> Void)? = nil
-}
-
-// Notes:
-// importing RealityKit causes App protocol to fail:
-// Type 'VisionProApp' does not conform to protocol 'App'
-// (likely expected, just interesting)
-//import RealityKit

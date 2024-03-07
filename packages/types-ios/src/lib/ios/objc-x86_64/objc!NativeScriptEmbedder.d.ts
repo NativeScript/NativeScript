@@ -25,6 +25,10 @@ declare var NativeScriptEmbedderDelegate: {
 	prototype: NativeScriptEmbedderDelegate;
 };
 
-declare class NativeScriptViewRegistry extends NSObject {
+declare class NativeScriptViewFactory extends NSObject {
 	static getKeyWindow(): UIWindow;
+	static shared: NativeScriptViewFactory;
+	views: NSMutableDictionary<string, any>;
+	viewCreator: (id: string, ctrl: UIViewController) => void;
+	viewDestroyer: (id: string) => void;
 }

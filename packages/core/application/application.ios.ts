@@ -243,7 +243,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		// may not want to cache this value given the potential of multiple scenes
 		// particularly with SwiftUI app lifecycle based apps
 		if (!this._window) {
-			// Note: NativeScriptViewRegistry.getKeyWindow will always be used in SwiftUI app lifecycle based apps
+			// Note: NativeScriptViewFactory.getKeyWindow will always be used in SwiftUI app lifecycle based apps
 			this._window = Utils.ios.getWindow();
 		}
 

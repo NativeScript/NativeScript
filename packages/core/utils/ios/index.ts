@@ -67,7 +67,7 @@ export function getWindow(): UIWindow {
 	let window: UIWindow;
 	if (SDK_VERSION >= 15) {
 		// UIWindowScene.keyWindow is only available 15+
-		window = NativeScriptViewRegistry.getKeyWindow();
+		window = NativeScriptViewFactory.getKeyWindow();
 	}
 	if (window) {
 		return window;
