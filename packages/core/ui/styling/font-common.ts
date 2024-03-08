@@ -18,6 +18,8 @@ export abstract class FontBase implements Font {
 			Object.assign(clone, this);
 		} else {
 			clone.isDirty = true;
+			// clear android cached typeface. need to find a better way
+			clone['_typeface'] = null;
 		}
 		return clone;
 	}
@@ -40,37 +42,37 @@ export abstract class FontBase implements Font {
 	public abstract getUIFont(defaultFont: any /* UIFont */): any; /* UIFont */
 
 	public withFontFamily(family: string): Font {
-		let clone = this.cloneOrDirty();
+		const clone = this.cloneOrDirty();
 		clone.fontFamily = family;
 		return clone;
 	}
 
 	public withFontStyle(style: FontStyleType): Font {
-		let clone = this.cloneOrDirty();
+		const clone = this.cloneOrDirty();
 		clone.fontStyle = style;
 		return clone;
 	}
 
 	public withFontWeight(weight: FontWeightType): Font {
-		let clone = this.cloneOrDirty();
+		const clone = this.cloneOrDirty();
 		clone.fontWeight = weight;
 		return clone;
 	}
 
 	public withFontSize(size: number): Font {
-		let clone = this.cloneOrDirty();
+		const clone = this.cloneOrDirty();
 		clone.fontSize = size;
 		return clone;
 	}
 
 	public withFontScale(scale: number): Font {
-		let clone = this.cloneOrDirty();
+		const clone = this.cloneOrDirty();
 		clone.fontScale = scale;
 		return clone;
 	}
 
 	public withFontVariationSettings(variationSettings: Array<FontVariationSettingsType> | null): Font {
-		let clone = this.cloneOrDirty();
+		const clone = this.cloneOrDirty();
 		clone.fontVariationSettings = variationSettings;
 		return clone;
 	}
