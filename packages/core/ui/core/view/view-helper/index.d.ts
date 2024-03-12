@@ -37,6 +37,7 @@ export class ViewHelper {
  * Various Android view helper methods
  */
 export namespace AndroidHelper {
+	export function getDrawableColor(drawable: any /* android.graphics.drawable.Drawable */): Color;
 	export function setDrawableColor(color: number, drawable: any /* android.graphics.drawable.Drawable */, blendMode?: any /* androidx.core.graphics.BlendModeCompat */): void;
 	export function clearDrawableColor(drawable: any /* android.graphics.drawable.Drawable */): void;
 	export function getCopyOrDrawable(drawable: any /* android.graphics.drawable.Drawable */, resources?: any /* android.content.res.Resources */): any; /* android.graphics.drawable.Drawable */

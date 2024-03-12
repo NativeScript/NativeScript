@@ -1,6 +1,6 @@
 import * as labelModule from '@nativescript/core/ui/label';
-import { CoreTypes } from '@nativescript/core';
-import * as colorModule from '@nativescript/core/color';
+import { Color, CoreTypes } from '@nativescript/core';
+import { AndroidHelper } from '@nativescript/core/ui/core/view';
 
 export function getNativeTextAlignment(label: labelModule.Label): string {
 	let gravity = label.android.getGravity();
@@ -20,13 +20,6 @@ export function getNativeTextAlignment(label: labelModule.Label): string {
 	return 'unexpected value';
 }
 
-export function getNativeBackgroundColor(label: labelModule.Label): colorModule.Color {
-	let bg = <any>label.android.getBackground();
-	if (bg instanceof org.nativescript.widgets.BorderDrawable) {
-		return new colorModule.Color(bg.getBackgroundColor());
-	} else if (bg instanceof android.graphics.drawable.ColorDrawable) {
-		return new colorModule.Color(bg.getColor());
-	} else {
-		return new colorModule.Color(bg.backgroundColor);
-	}
+export function getNativeBackgroundColor(label: labelModule.Label): Color {
+	return AndroidHelper.getDrawableColor(label.android.getBackground());
 }
