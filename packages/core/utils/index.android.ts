@@ -40,17 +40,9 @@ export function wrapNativeException(ex) {
 
 export function openUrl(location: string): boolean {
 	const context = AndroidUtils.getApplicationContext();
-	try {
-		const intent = new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(location.trim()));
-		intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
-		context.startActivity(intent);
-	} catch (e) {
-		// We don't do anything with an error. We just output it
-		Trace.write(`Failed to start activity for handling URL: ${location}`, Trace.categories.Error, Trace.messageType.error);
-
-		return false;
-	}
-
+	const intent = new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(location.trim()));
+	intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+	context.startActivity(intent);
 	return true;
 }
 

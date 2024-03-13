@@ -41,17 +41,10 @@ export function releaseNativeObject(object: NSObject) {
 }
 
 export function openUrl(location: string): boolean {
-	try {
-		const url = NSURL.URLWithString(location.trim());
-		if (UIApplication.sharedApplication.canOpenURL(url)) {
-			return UIApplication.sharedApplication.openURL(url);
-		}
-	} catch (e) {
-		// We Don't do anything with an error.  We just output it
-		Trace.write('Error in OpenURL', Trace.categories.Error, Trace.messageType.error);
+	const url = NSURL.URLWithString(location.trim());
+	if (UIApplication.sharedApplication.canOpenURL(url)) {
+		return UIApplication.sharedApplication.openURL(url);
 	}
-
-	return false;
 }
 
 export function isRealDevice(): boolean {
