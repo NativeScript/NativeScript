@@ -40,9 +40,14 @@ export function wrapNativeException(ex) {
 
 export function openUrl(location: string): boolean {
 	const context = AndroidUtils.getApplicationContext();
-	const intent = new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(location.trim()));
-	intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
-	context.startActivity(intent);
+	try {
+		const intent = new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(location.trim()));
+		intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+		context.startActivity(intent);
+	} catch (e) {
+		throw wrapNativeException(e);
+	}
+
 	return true;
 }
 
