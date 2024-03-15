@@ -1,5 +1,5 @@
 import { ButtonBase } from './button-common';
-import { PseudoClassHandler } from '../core/view';
+import { AndroidHelper, PseudoClassHandler } from '../core/view';
 import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length, zIndexProperty, minWidthProperty, minHeightProperty } from '../styling/style-properties';
 import { textAlignmentProperty } from '../text-base';
 import { CoreTypes } from '../../core-types';
@@ -7,8 +7,8 @@ import { profile } from '../../profiling';
 import { TouchGestureEventData, GestureTypes, TouchAction } from '../gestures';
 import { Device } from '../../platform';
 import { SDK_VERSION } from '../../utils/constants';
-import lazy from '../../utils/lazy';
 import type { Background } from '../styling/background';
+import { NativeScriptAndroidView } from '../utils';
 
 export * from './button-common';
 
@@ -49,32 +49,6 @@ export class Button extends ButtonBase {
 
 	private _stateListAnimator: any;
 	private _highlightedHandler: (args: TouchGestureEventData) => void;
-
-	public _applyBackground(background: Background, isBorderDrawable, onlyColor: boolean, backgroundDrawable: any) {
-		const nativeView = this.nativeViewProtected;
-		if (backgroundDrawable && onlyColor) {
-			if (isBorderDrawable && (<any>nativeView)._cachedDrawable) {
-				backgroundDrawable = (<any>nativeView)._cachedDrawable;
-				// we need to duplicate the drawable or we lose the "default" cached drawable
-				const constantState = backgroundDrawable.getConstantState();
-				if (constantState) {
-					try {
-						backgroundDrawable = constantState.newDrawable(nativeView.getResources());
-						// eslint-disable-next-line no-empty
-					} catch {}
-				}
-				nativeView.setBackground(backgroundDrawable);
-			}
-
-			const backgroundColor = ((<any>backgroundDrawable).backgroundColor = background.color.android);
-			backgroundDrawable.mutate();
-			backgroundDrawable.setColorFilter(backgroundColor, android.graphics.PorterDuff.Mode.SRC_IN);
-			backgroundDrawable.invalidateSelf(); // Make sure the drawable is invalidated. Android forgets to invalidate it in some cases: toolbar
-			(<any>backgroundDrawable).backgroundColor = backgroundColor;
-		} else {
-			super._applyBackground(background, isBorderDrawable, onlyColor, backgroundDrawable);
-		}
-	}
 
 	@profile
 	public createNativeView() {

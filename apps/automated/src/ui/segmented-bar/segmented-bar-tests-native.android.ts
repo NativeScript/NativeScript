@@ -1,5 +1,6 @@
 ﻿import * as segmentedBarModule from '@nativescript/core/ui/segmented-bar';
 import { Color } from '@nativescript/core';
+import { AndroidHelper } from '@nativescript/core/ui/core/view';
 
 export function getNativeTabWidget(bar: segmentedBarModule.SegmentedBar): android.widget.TabWidget {
 	return (<android.widget.TabHost>bar.android).getTabWidget();
@@ -44,7 +45,7 @@ export var checkBackgroundColorUpdatedAfterItemSelected = function (bar: segment
 			const item = bar.items[i];
 			const textView = item?.nativeViewProtected;
 
-			const newDrawable = tryCloneDrawable(view.getBackground(), view.getResources());
+			const newDrawable = AndroidHelper.getCopyOrDrawable(view.getBackground(), view.getResources());
 			newDrawable.setColorFilter(new android.graphics.Paint(bar.selectedBackgroundColor.android).getColorFilter());
 
 			if (bar.selectedIndex == i) {
@@ -66,17 +67,6 @@ export var checkBackgroundColorUpdatedAfterItemSelected = function (bar: segment
 				}
 			}
 		}
-	}
-
-	function tryCloneDrawable(value: android.graphics.drawable.Drawable, resources: android.content.res.Resources): android.graphics.drawable.Drawable {
-		if (value) {
-			const constantState = value.getConstantState();
-			if (constantState) {
-				return constantState.newDrawable(resources);
-			}
-		}
-
-		return value;
 	}
 
 	return isValid === 0;
