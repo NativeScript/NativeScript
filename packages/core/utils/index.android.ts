@@ -45,10 +45,7 @@ export function openUrl(location: string): boolean {
 		intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
 		context.startActivity(intent);
 	} catch (e) {
-		// We don't do anything with an error. We just output it
-		Trace.write(`Failed to start activity for handling URL: ${location}`, Trace.categories.Error, Trace.messageType.error);
-
-		return false;
+		throw wrapNativeException(e);
 	}
 
 	return true;
