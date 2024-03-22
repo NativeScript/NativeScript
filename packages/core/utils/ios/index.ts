@@ -1,3 +1,4 @@
+import { Application } from '../../application';
 import { Color } from '../../color';
 import { Trace } from '../../trace';
 import { CORE_ANIMATION_DEFAULTS, getDurationWithDampingFromSpring } from '../common';
@@ -153,11 +154,33 @@ export function createUIDocumentInteractionControllerDelegate(): NSObject {
 	@NativeClass
 	class UIDocumentInteractionControllerDelegateImpl extends NSObject implements UIDocumentInteractionControllerDelegate {
 		public static ObjCProtocols = [UIDocumentInteractionControllerDelegate];
-
+		viewController: UIViewController;
 		public getViewController(): UIViewController {
-			const app = UIApplication.sharedApplication;
-
-			return app.keyWindow.rootViewController;
+			if (!this.viewController) {
+				//TODO: refactor to give access to that code to plugins
+				let rootView = Application.getRootView();
+				if (rootView.parent) {
+					rootView = rootView.parent as any;
+				}
+				let currentView = rootView;
+				currentView = currentView.modal || currentView;
+				let viewController = currentView.viewController;
+				if (!viewController.presentedViewController && rootView.viewController.presentedViewController) {
+					viewController = rootView.viewController.presentedViewController;
+				}
+				while (viewController.presentedViewController) {
+					while (viewController.presentedViewController instanceof UIAlertController || (viewController.presentedViewController['isAlertController'] && viewController.presentedViewController.presentedViewController)) {
+						viewController = viewController.presentedViewController;
+					}
+					if (viewController.presentedViewController instanceof UIAlertController || viewController.presentedViewController['isAlertController']) {
+						break;
+					} else {
+						viewController = viewController.presentedViewController;
+					}
+				}
+				this.viewController = viewController;
+			}
+			return this.viewController;
 		}
 
 		public documentInteractionControllerViewControllerForPreview(controller: UIDocumentInteractionController) {
