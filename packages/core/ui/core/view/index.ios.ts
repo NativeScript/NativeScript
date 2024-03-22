@@ -80,7 +80,7 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	requestlayoutIfNeeded() {
-		if (this.isLayoutRequired) {
+		if (this.isLayoutRequired || this._requetLayoutNeeded) {
 			this._requetLayoutNeeded = false;
 			this.requestLayout();
 		}
