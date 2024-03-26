@@ -67,9 +67,6 @@
 			}
 		}
 	},
-	"affected": {
-		"defaultBase": "master"
-	},
 	"$schema": "./node_modules/nx/schemas/nx-schema.json",
 	"namedInputs": {
 		"default": ["{projectRoot}/**/*", "sharedGlobals"],
@@ -113,5 +110,7 @@
 	},
 	"useDaemonProcess": false,
 	"nxCloudAccessToken": "NzRmNDM3NDgtZjlmNy00MTUwLWIxZDktYjJlZTRhMWM5ODY3fHJlYWQtd3JpdGU=",
-	"parallel": 1
+	"parallel": 1,
+	"useInferencePlugins": false,
+	"defaultBase": "master"
 }

@@ -15,6 +15,6 @@
     "@nativescript/ios": "~8.6.0",
     "@nativescript/visionos": "~8.6.0",
     "@nativescript/webpack": "file:../../dist/packages/nativescript-webpack.tgz",
-    "typescript": "~5.2.0"
+    "typescript": "~5.4.0"
   }
 }
