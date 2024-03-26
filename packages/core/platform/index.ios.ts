@@ -1,21 +1,27 @@
 ﻿/* tslint:disable:class-name */
 
 import { platformNames } from './common';
-
+import { ios } from '../utils';
 export * from './common';
+
+type DeviceType = 'Phone' | 'Tablet' | 'Vision';
 
 class DeviceRef {
 	private _model: string;
 	private _osVersion: string;
 	private _sdkVersion: string;
-	private _deviceType: 'Phone' | 'Tablet';
+	private _deviceType: DeviceType;
 
 	get manufacturer(): string {
 		return 'Apple';
 	}
 
 	get os(): string {
-		return platformNames.ios;
+		if (__VISIONOS__) {
+			return platformNames.visionos;
+		} else {
+			return platformNames.ios;
+		}
 	}
 
 	get osVersion(): string {
@@ -42,10 +48,14 @@ class DeviceRef {
 		return this._sdkVersion;
 	}
 
-	get deviceType(): 'Phone' | 'Tablet' {
+	get deviceType(): DeviceType {
 		if (!this._deviceType) {
 			if (UIDevice.currentDevice.userInterfaceIdiom === UIUserInterfaceIdiom.Phone) {
 				this._deviceType = 'Phone';
+			} else if (UIDevice.currentDevice.userInterfaceIdiom === UIUserInterfaceIdiom.Vision) {
+				this._deviceType = 'Tablet';
+				// TODO: could add conditions throughout core for this
+				// this._deviceType = 'Vision';
 			} else {
 				this._deviceType = 'Tablet';
 			}
@@ -82,7 +92,9 @@ class MainScreen {
 
 	private get screen(): UIScreen {
 		if (!this._screen) {
-			this._screen = UIScreen.mainScreen;
+			// NOTE: may not want to cache this value with SwiftUI app lifecycle based apps (using NativeScriptViewFactory) given the potential of multiple scenes
+			const window = ios.getWindow();
+			this._screen = window ? window.screen : UIScreen.mainScreen;
 		}
 
 		return this._screen;

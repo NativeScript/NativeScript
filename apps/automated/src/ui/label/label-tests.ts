@@ -16,7 +16,7 @@ import * as fs from '@nativescript/core/file-system';
 
 import { StackLayout } from '@nativescript/core/ui/layouts/stack-layout';
 import { GridLayout } from '@nativescript/core/ui/layouts/grid-layout';
-import { isIOS, isAndroid } from '@nativescript/core/platform';
+import { isIOS, isAndroid, isApple } from '@nativescript/core/platform';
 import { Label } from '@nativescript/core/ui/label';
 import { LayoutBase } from '@nativescript/core/ui/layouts/layout-base';
 import * as helper from '../../ui-helper';
@@ -606,7 +606,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 	}
 
 	private requestLayoutFixture(expectRequestLayout: boolean, initialValue: string, setup: (label: Label) => LayoutBase): void {
-		if (!isIOS) {
+		if (!isApple) {
 			return;
 		}
 
@@ -633,7 +633,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 	}
 
 	public test_SettingTextWhenInFixedSizeGridShouldNotRequestLayout() {
-		this.requestLayoutFixture(false, '', (label) => {
+		this.requestLayoutFixture(__APPLE__, '', (label) => {
 			label.textWrap = false;
 			let host = new GridLayout();
 			host.width = 100;
@@ -644,7 +644,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 	}
 
 	public test_ChangingTextWhenInFixedSizeGridShouldNotRequestLayout() {
-		this.requestLayoutFixture(false, 'Hello World', (label) => {
+		this.requestLayoutFixture(__APPLE__, 'Hello World', (label) => {
 			label.textWrap = false;
 			let host = new GridLayout();
 			host.width = 100;
@@ -655,7 +655,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 	}
 
 	public test_SettingTextWhenFixedWidthAndHeightDoesNotRequestLayout() {
-		this.requestLayoutFixture(false, '', (label) => {
+		this.requestLayoutFixture(__APPLE__, '', (label) => {
 			label.textWrap = false;
 			let host = new StackLayout();
 			label.width = 100;
@@ -666,7 +666,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 	}
 
 	public test_ChangingTextWhenFixedWidthAndHeightDoesNotRequestLayout() {
-		this.requestLayoutFixture(false, 'Hello World', (label) => {
+		this.requestLayoutFixture(__APPLE__, 'Hello World', (label) => {
 			label.textWrap = false;
 			let host = new StackLayout();
 			label.width = 100;
@@ -707,7 +707,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 	}
 
 	public test_ChangingTextOnSingleLineTextWhenWidthIsSizedToParentAndHeightIsSizedToContentShouldNotRequestLayout() {
-		this.requestLayoutFixture(false, 'Hello World', (label) => {
+		this.requestLayoutFixture(__APPLE__, 'Hello World', (label) => {
 			label.textWrap = false;
 			let host = new StackLayout();
 			host.width = 100;

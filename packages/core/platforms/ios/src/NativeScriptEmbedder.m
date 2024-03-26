@@ -16,4 +16,9 @@
     _delegate = aDelegate;
 }
 
+- (void)setWindowScene:(UIWindowScene *)windowScene {
+    NSLog(@"Found Window Scene!");
+    _windowScene = windowScene;
+}
+
 @end

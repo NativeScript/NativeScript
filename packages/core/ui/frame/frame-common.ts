@@ -200,11 +200,13 @@ export class FrameBase extends CustomLayoutView {
 
 	public _removeEntry(removed: BackstackEntry): void {
 		const page = removed.resolvedPage;
-		const frame = page.frame;
-		if (frame) {
-			frame._removeView(page);
-		} else {
-			page._tearDownUI(true);
+		if (page) {
+			const frame = page.frame;
+			if (frame) {
+				frame._removeView(page);
+			} else {
+				page._tearDownUI(true);
+			}
 		}
 
 		removed.resolvedPage = null;
@@ -557,7 +559,7 @@ export class FrameBase extends CustomLayoutView {
 
 	public _getNavigationTransition(entry: NavigationEntry): NavigationTransition {
 		if (entry) {
-			if (__IOS__ && entry.transitioniOS !== undefined) {
+			if (__APPLE__ && entry.transitioniOS !== undefined) {
 				return entry.transitioniOS;
 			}
 
@@ -768,5 +770,5 @@ export const defaultPage = new Property<FrameBase, string>({
 });
 defaultPage.register(FrameBase);
 
-export const actionBarVisibilityProperty = new Property<FrameBase, 'auto' | 'never' | 'always'>({ name: 'actionBarVisibility', defaultValue: 'auto', affectsLayout: __IOS__ });
+export const actionBarVisibilityProperty = new Property<FrameBase, 'auto' | 'never' | 'always'>({ name: 'actionBarVisibility', defaultValue: 'auto', affectsLayout: __APPLE__ });
 actionBarVisibilityProperty.register(FrameBase);

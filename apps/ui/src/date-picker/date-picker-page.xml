@@ -1,6 +1,8 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd" class="page">
-    <StackLayout>
-        <DatePicker day="1" month="9" year="2017" verticalAlignment="center"/>
-        <DatePicker day="1" month="10" year="2017" verticalAlignment="center"/>
-    </StackLayout>
+    <ActionBar title="@nativescript/core DatePicker"/>
+    <GridLayout rows="auto,auto,auto,*" width="270" horizontalAlignment="center" marginRight="60">
+        <DatePicker row="0" day="2" month="10" year="2023" verticalAlignment="center" horizontalAlignment="center" fontSize="40" marginTop="50" marginRight="30" />
+        <DatePicker row="1" day="2" month="10" year="2023" verticalAlignment="center" horizontalAlignment="center" fontSize="40" marginTop="10" marginRight="30" />
+        <DatePicker row="2" day="2" month="10" year="2023" verticalAlignment="center" horizontalAlignment="center" fontSize="40" marginTop="10" showTime="true" />
+    </GridLayout>
 </Page>

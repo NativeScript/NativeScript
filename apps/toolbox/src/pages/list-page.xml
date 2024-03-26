@@ -12,6 +12,9 @@
                 <StackLayout class="list-row-item">
                     <GridLayout>
                         <FlexboxLayout flexDirection="row" class="list-view-row" verticalAlignment="center">
+                            <visionos>
+                                <Label text="{{ iconText }}" class="icon-around icon-label"/>
+                            </visionos>
                             <ios>
                                 <Label text="{{ iconText }}" class="icon-around icon-label"/>
                             </ios>
@@ -33,6 +36,9 @@
                 <StackLayout class="list-row-item">
                     <GridLayout>
                         <FlexboxLayout flexDirection="row" class="list-view-row" verticalAlignment="center">
+                            <visionos>
+                                <Label text="{{ iconText }}" class="icon-around icon-label"/>
+                            </visionos>
                             <ios>
                                 <Label text="{{ iconText }}" class="icon-around icon-label"/>
                             </ios>

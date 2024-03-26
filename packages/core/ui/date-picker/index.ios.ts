@@ -5,8 +5,8 @@ import { Device } from '../../platform';
 
 export * from './date-picker-common';
 
-const SUPPORT_DATE_PICKER_STYLE = parseFloat(Device.osVersion) >= 13.4;
-const SUPPORT_TEXT_COLOR = parseFloat(Device.osVersion) < 14.0;
+const SUPPORT_DATE_PICKER_STYLE = __VISIONOS__ || parseFloat(Device.osVersion) >= 13.4;
+const SUPPORT_TEXT_COLOR = !__VISIONOS__ && parseFloat(Device.osVersion) < 14.0;
 
 export class DatePicker extends DatePickerBase {
 	private _changeHandler: NSObject;

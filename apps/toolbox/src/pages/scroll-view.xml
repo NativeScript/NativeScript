@@ -5,7 +5,7 @@
     </Page.actionBar>
  
       <ScrollView scroll="{{ scroll }}">
-          <StackLayout>
+          <StackLayout class="p-20">
 
             <Label text="{{longText}}" textWrap="true" />
 

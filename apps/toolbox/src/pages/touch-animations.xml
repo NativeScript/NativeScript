@@ -4,7 +4,7 @@
         </ActionBar>
     </Page.actionBar>
 
-    <!-- <ScrollView> -->
+    <ScrollView>
     
       <StackLayout class="p-x-20" loaded="{{ loadedContainer }}">
           <Label id="label" tap="{{ onTapAnything }}" text="Touchable label" class="t-18 c-black text-center m-t-5" touchAnimation="{{ touchAnimationLabel }}" />
@@ -36,5 +36,5 @@
           <Button text="TAP" tap="{{ onTapAnything }}" class="btn btn-primary btn-view-demo" touchAnimation="true" /> -->
           
       </StackLayout>
-    <!-- </ScrollView> -->
+    </ScrollView>
 </Page>

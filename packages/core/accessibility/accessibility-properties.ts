@@ -56,7 +56,7 @@ export const iosAccessibilityMaxFontScaleProperty = new InheritedCssProperty<Sty
 });
 iosAccessibilityMaxFontScaleProperty.register(Style);
 
-export const accessibilityHiddenProperty = new (__IOS__ ? InheritedCssProperty : CssProperty)({
+export const accessibilityHiddenProperty = new (__APPLE__ ? InheritedCssProperty : CssProperty)({
 	name: 'accessibilityHidden',
 	cssName: 'a11y-hidden',
 	valueConverter: booleanConverter,

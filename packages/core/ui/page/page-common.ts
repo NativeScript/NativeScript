@@ -185,7 +185,7 @@ export interface PageBase {
  */
 export const actionBarHiddenProperty = new Property<PageBase, boolean>({
 	name: 'actionBarHidden',
-	affectsLayout: __IOS__,
+	affectsLayout: __APPLE__,
 	valueConverter: booleanConverter,
 });
 actionBarHiddenProperty.register(PageBase);
@@ -196,7 +196,7 @@ actionBarHiddenProperty.register(PageBase);
 export const backgroundSpanUnderStatusBarProperty = new Property<PageBase, boolean>({
 	name: 'backgroundSpanUnderStatusBar',
 	defaultValue: false,
-	affectsLayout: __IOS__,
+	affectsLayout: __APPLE__,
 	valueConverter: booleanConverter,
 });
 backgroundSpanUnderStatusBarProperty.register(PageBase);

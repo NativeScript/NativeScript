@@ -18,6 +18,13 @@ export enum TouchAnimationTypes {
 	up = 'up',
 	down = 'down',
 }
+export type VisionHoverEffect = 'automatic' | 'highlight' | 'lift';
+export type VisionHoverShape = 'circle' | 'rect';
+export type VisionHoverOptions = {
+	effect: VisionHoverEffect;
+	shape?: VisionHoverShape;
+	shapeCornerRadius?: number;
+};
 
 /**
  * Manage interactivity in your apps easily with TouchManager.
@@ -28,6 +35,18 @@ export class TouchManager {
 	 * Enable animations for all tap bindings in the UI.
 	 */
 	static enableGlobalTapAnimations: boolean;
+	/**
+	 * (visionOS Only) Enable hoverStyle for all tap bindings in the UI.
+	 */
+	static enableGlobalHoverWhereTap: boolean;
+	/**
+	 * Define reusable hover styles keyed by name to use throughout your UI.
+	 */
+	static visionHoverOptions: { [key: string]: VisionHoverOptions };
+	/**
+	 * Used internally - defines reusable UIHoverStyle's
+	 */
+	static visionHoverStyleCache: { [key: string]: UIHoverStyle };
 	/**
 	 * Define reusable touch animations to use on views with touchAnimation defined or with enableGlobalTapAnimations on.
 	 */
@@ -65,7 +84,7 @@ export class TouchManager {
 		const handleDown = (view?.touchAnimation && (<TouchAnimationOptions>view?.touchAnimation).down) || (TouchManager.animations && TouchManager.animations.down);
 		const handleUp = (view?.touchAnimation && (<TouchAnimationOptions>view?.touchAnimation).up) || (TouchManager.animations && TouchManager.animations.up);
 
-		if (__IOS__) {
+		if (__APPLE__) {
 			if (view?.ios?.addTargetActionForControlEvents) {
 				// can use UIControlEvents
 				if (!TouchManager.touchHandlers) {
@@ -207,6 +226,73 @@ export class TouchManager {
 			}
 		}
 	}
+
+	/**
+	 * The TouchManager uses this internally.
+	 * Adds visionOS hover styles to views based upon it's visionHoverStyle property
+	 * @param view NativeScript view instance
+	 */
+	static addHoverStyle(view: View) {
+		if (__VISIONOS__ && view?.ios) {
+			if (!TouchManager.visionHoverOptions) {
+				TouchManager.visionHoverOptions = {};
+			}
+			if (!TouchManager.visionHoverOptions['default']) {
+				// Add default hoverStyle to apply everywhere (no custom hover style being defined on this view)
+				TouchManager.visionHoverOptions['default'] = {
+					effect: 'automatic',
+				};
+			}
+			if (!TouchManager.visionHoverStyleCache) {
+				TouchManager.visionHoverStyleCache = {};
+			}
+			const createHoverStyleFromOptions = function (options: VisionHoverOptions) {
+				let effect: UIHoverEffect;
+				switch (options.effect) {
+					case 'automatic':
+						effect = UIHoverAutomaticEffect.effect();
+						break;
+					case 'highlight':
+						effect = UIHoverHighlightEffect.effect();
+						break;
+					case 'lift':
+						effect = UIHoverLiftEffect.effect();
+						break;
+				}
+				let shape: UIShape;
+				switch (options.shape) {
+					case 'circle':
+						shape = UIShape.circleShape;
+						break;
+					case 'rect':
+						if (options.shapeCornerRadius) {
+							shape = UIShape.rectShapeWithCornerRadius(options.shapeCornerRadius);
+						} else {
+							shape = UIShape.rectShape;
+						}
+						break;
+				}
+				return UIHoverStyle.styleWithEffectShape(effect, shape);
+			};
+			if (!TouchManager.visionHoverStyleCache['default']) {
+				const defaultOptions = TouchManager.visionHoverOptions['default'];
+
+				TouchManager.visionHoverStyleCache['default'] = createHoverStyleFromOptions(
+					defaultOptions || {
+						effect: 'automatic',
+					}
+				);
+			}
+
+			if (view.visionHoverStyle) {
+				if (typeof view.visionHoverStyle === 'string') {
+					(view.ios as UIView).hoverStyle = TouchManager.visionHoverStyleCache[view.visionHoverStyle] || TouchManager.visionHoverStyleCache['default'];
+				}
+			} else {
+				(view.ios as UIView).hoverStyle = TouchManager.visionHoverStyleCache['default'];
+			}
+		}
+	}
 }
 
 export let TouchControlHandler: {
@@ -215,7 +301,7 @@ export let TouchControlHandler: {
 ensureTouchControlHandlers();
 
 function ensureTouchControlHandlers() {
-	if (__IOS__) {
+	if (__APPLE__) {
 		@NativeClass
 		class TouchHandlerImpl extends NSObject {
 			private _owner: WeakRef<View>;

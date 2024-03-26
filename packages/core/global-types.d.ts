@@ -119,6 +119,7 @@ declare module globalThis {
 	var TNS_WEBPACK: boolean;
 	var isIOS: boolean;
 	var isAndroid: boolean;
+	var isVisionOS: boolean;
 	var isDisplayedEventFired: boolean;
 	var autoLoadPolyfills: boolean;
 	var __requireOverride: (name: string, dir: string) => any;
@@ -134,6 +135,7 @@ declare const __UI_USE_XML_PARSER__: boolean;
 declare const __ANDROID__: boolean;
 declare const __IOS__: boolean;
 declare const __VISIONOS__: boolean;
+declare const __APPLE__: boolean;
 
 declare function setTimeout(callback: (...args: any[]) => void, ms: number, ...args: any[]): number;
 declare function clearTimeout(timeoutId: number): void;

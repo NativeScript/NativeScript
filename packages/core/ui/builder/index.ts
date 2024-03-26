@@ -16,6 +16,7 @@ import { xml2ui } from './xml2ui';
 
 export const ios = platformNames.ios.toLowerCase();
 export const android = platformNames.android.toLowerCase();
+export const visionos = platformNames.visionos.toLowerCase();
 export const defaultNameSpaceMatcher = /tns\.xsd$/i;
 
 export interface LoadOptions {

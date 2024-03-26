@@ -5,7 +5,8 @@ export function navigatingTo(args: EventData) {
 	const page = <Page>args.object;
 	page.bindingContext = new HelloWorldModel();
 
-	if (global.isIOS) {
-		Utils.ios.setWindowBackgroundColor('blue');
-	}
+	// Testing setting window background color
+	// if (global.isIOS) {
+	// 	Utils.ios.setWindowBackgroundColor('blue');
+	// }
 }

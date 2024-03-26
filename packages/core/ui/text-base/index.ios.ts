@@ -293,37 +293,40 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	_setNativeText(reset = false): void {
-		if (reset) {
-			const nativeView = this.nativeTextViewProtected;
-			if (nativeView instanceof UIButton) {
-				// Clear attributedText or title won't be affected.
-				nativeView.setAttributedTitleForState(null, UIControlState.Normal);
-				nativeView.setTitleForState(null, UIControlState.Normal);
+		// always avoid flickering text updates from default animating ios changes
+		UIView.performWithoutAnimation(() => {
+			if (reset) {
+				const nativeView = this.nativeTextViewProtected;
+				if (nativeView instanceof UIButton) {
+					// Clear attributedText or title won't be affected.
+					nativeView.setAttributedTitleForState(null, UIControlState.Normal);
+					nativeView.setTitleForState(null, UIControlState.Normal);
+				} else {
+					// Clear attributedText or text won't be affected.
+					nativeView.attributedText = null;
+					nativeView.text = null;
+				}
+
+				return;
+			}
+
+			const letterSpacing = this.style.letterSpacing ? this.style.letterSpacing : 0;
+			const lineHeight = this.style.lineHeight ? this.style.lineHeight : 0;
+			if (this.formattedText) {
+				this.nativeTextViewProtected.nativeScriptSetFormattedTextDecorationAndTransformLetterSpacingLineHeight(this.getFormattedStringDetails(this.formattedText) as any, letterSpacing, lineHeight);
 			} else {
-				// Clear attributedText or text won't be affected.
-				nativeView.attributedText = null;
-				nativeView.text = null;
+				// console.log('setTextDecorationAndTransform...')
+				const text = getTransformedText(isNullOrUndefined(this.text) ? '' : `${this.text}`, this.textTransform);
+				this.nativeTextViewProtected.nativeScriptSetTextDecorationAndTransformTextDecorationLetterSpacingLineHeight(text, this.style.textDecoration || '', letterSpacing, lineHeight);
+
+				if (!this.style?.color && majorVersion >= 13 && UIColor.labelColor) {
+					this._setColor(UIColor.labelColor);
+				}
 			}
-
-			return;
-		}
-
-		const letterSpacing = this.style.letterSpacing ? this.style.letterSpacing : 0;
-		const lineHeight = this.style.lineHeight ? this.style.lineHeight : 0;
-		if (this.formattedText) {
-			this.nativeTextViewProtected.nativeScriptSetFormattedTextDecorationAndTransformLetterSpacingLineHeight(this.getFormattedStringDetails(this.formattedText) as any, letterSpacing, lineHeight);
-		} else {
-			// console.log('setTextDecorationAndTransform...')
-			const text = getTransformedText(isNullOrUndefined(this.text) ? '' : `${this.text}`, this.textTransform);
-			this.nativeTextViewProtected.nativeScriptSetTextDecorationAndTransformTextDecorationLetterSpacingLineHeight(text, this.style.textDecoration || '', letterSpacing, lineHeight);
-
-			if (!this.style?.color && majorVersion >= 13 && UIColor.labelColor) {
-				this._setColor(UIColor.labelColor);
+			if (this.style?.textStroke) {
+				this.nativeTextViewProtected.nativeScriptSetFormattedTextStrokeColor(Length.toDevicePixels(this.style.textStroke.width, 0), this.style.textStroke.color.ios);
 			}
-		}
-		if (this.style?.textStroke) {
-			this.nativeTextViewProtected.nativeScriptSetFormattedTextStrokeColor(Length.toDevicePixels(this.style.textStroke.width, 0), this.style.textStroke.color.ios);
-		}
+		});
 	}
 
 	createFormattedTextNative(value: FormattedString) {
