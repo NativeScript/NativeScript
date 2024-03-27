@@ -35,7 +35,7 @@ function callAnimationCallbacks(thisFrameCbs: AnimationFrameCallbacks, frameTime
 	for (const animationId in thisFrameCbs) {
 		if (thisFrameCbs[animationId]) {
 			try {
-				thisFrameCbs[animationId](Date.now());
+				thisFrameCbs[animationId](frameTime);
 			} catch (err) {
 				const msg = err ? err.stack || err : err;
 				Trace.write(`Error in requestAnimationFrame: ${msg}`, Trace.categories.Error, Trace.messageType.error);
@@ -57,8 +57,8 @@ function doCurrentFrame() {
 	callAnimationCallbacks(thisFrameCbs, lastFrameTime);
 }
 
-function doFrame(currentTimeMillis: number) {
-	lastFrameTime = currentTimeMillis;
+function doFrame(currentMonotonicTimeMs: number) {
+	lastFrameTime = currentMonotonicTimeMs;
 	shouldStop = true;
 	const thisFrameCbs = nextFrameAnimationCallbacks;
 	nextFrameAnimationCallbacks = {};
