@@ -77,6 +77,14 @@ declare module interop {
     function bufferFromData(data: NSData): ArrayBuffer;
 
     /**
+     * Converts a CString to a JavaScript string.
+     * @param cString A pointer to a CString.
+     * @param lengthInBytes The length of the string in bytes. UTF-8 characters may be more than one byte. If not provided the string is assumed to be null-terminated.
+     * @returns A JavaScript string with length <= lengthInBytes.
+     */
+    function stringFromCString(cString: Pointer | Reference<number>, lengthInBytes?: number): string;
+
+    /**
      * A type that wraps a pointer and allows read/write operations on its value.
      */
     interface Reference<T> {
