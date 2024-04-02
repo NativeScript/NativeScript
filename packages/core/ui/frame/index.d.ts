@@ -134,6 +134,15 @@ export class Frame extends FrameBase {
 	 */
 	ios: iOSFrame;
 
+	/**
+	 * Specify a custom UINavigationBar class (iOS only)
+	 */
+	iosNavigationBarClass: any;
+	/**
+	 * Specify a custom UIToolbar class (iOS only)
+	 */
+	iosToolBarClass: any;
+
 	//@private
 	/**
 	 * @private

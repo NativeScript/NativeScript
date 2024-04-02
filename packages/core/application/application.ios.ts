@@ -375,6 +375,21 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		}
 	}
 
+	public _onLivesync(context?: ModuleContext): void {
+		// Handle application root module
+		const isAppRootModuleChanged = context && context.path && context.path.includes(this.getMainEntry().moduleName) && context.type !== 'style';
+
+		// Set window content when:
+		// + Application root module is changed
+		// + View did not handle the change
+		// Note:
+		// The case when neither app root module is changed, nor livesync is handled on View,
+		// then changes will not apply until navigate forward to the module.
+		if (isAppRootModuleChanged || (this._rootView && !this._rootView._onLivesync(context))) {
+			this.setWindowContent();
+		}
+	}
+
 	private setWindowContent(view?: View): void {
 		if (this._rootView) {
 			// if we already have a root view, we reset it.
@@ -487,6 +502,14 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		return this;
 	}
 }
+
+const iosApp = new iOSApplication();
+
+// Attach on global, so it can also be overwritten to implement different logic based on flavor
+global.__onLiveSyncCore = function (context?: ModuleContext) {
+	iosApp._onLivesync(context);
+};
+
 export * from './application-common';
-export const Application = new iOSApplication();
+export const Application = iosApp;
 export const AndroidApplication = undefined;
