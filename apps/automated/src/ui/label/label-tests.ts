@@ -633,7 +633,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 	}
 
 	public test_SettingTextWhenInFixedSizeGridShouldNotRequestLayout() {
-		this.requestLayoutFixture(__APPLE__, '', (label) => {
+		this.requestLayoutFixture(false, '', (label) => {
 			label.textWrap = false;
 			let host = new GridLayout();
 			host.width = 100;
@@ -644,7 +644,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 	}
 
 	public test_ChangingTextWhenInFixedSizeGridShouldNotRequestLayout() {
-		this.requestLayoutFixture(__APPLE__, 'Hello World', (label) => {
+		this.requestLayoutFixture(false, 'Hello World', (label) => {
 			label.textWrap = false;
 			let host = new GridLayout();
 			host.width = 100;
@@ -655,7 +655,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 	}
 
 	public test_SettingTextWhenFixedWidthAndHeightDoesNotRequestLayout() {
-		this.requestLayoutFixture(__APPLE__, '', (label) => {
+		this.requestLayoutFixture(false, '', (label) => {
 			label.textWrap = false;
 			let host = new StackLayout();
 			label.width = 100;
@@ -666,7 +666,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 	}
 
 	public test_ChangingTextWhenFixedWidthAndHeightDoesNotRequestLayout() {
-		this.requestLayoutFixture(__APPLE__, 'Hello World', (label) => {
+		this.requestLayoutFixture(false, 'Hello World', (label) => {
 			label.textWrap = false;
 			let host = new StackLayout();
 			label.width = 100;
@@ -707,7 +707,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 	}
 
 	public test_ChangingTextOnSingleLineTextWhenWidthIsSizedToParentAndHeightIsSizedToContentShouldNotRequestLayout() {
-		this.requestLayoutFixture(__APPLE__, 'Hello World', (label) => {
+		this.requestLayoutFixture(false, 'Hello World', (label) => {
 			label.textWrap = false;
 			let host = new StackLayout();
 			host.width = 100;
