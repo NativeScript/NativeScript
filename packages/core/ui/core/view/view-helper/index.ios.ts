@@ -3,6 +3,7 @@ import { View } from '..';
 
 // Requires
 import { ViewHelper } from './view-helper-common';
+import { SDK_VERSION } from '../../../../utils/constants';
 import { ios as iOSUtils, layout } from '../../../../utils';
 import { Trace } from '../../../../trace';
 
@@ -87,7 +88,9 @@ class UILayoutViewController extends UIViewController {
 			return;
 		}
 
-		// IOSHelper.updateAutoAdjustScrollInsets(this, owner);
+		if (!__VISIONOS__) {
+			IOSHelper.updateAutoAdjustScrollInsets(this, owner);
+		}
 
 		if (!owner.isLoaded && !owner.parent) {
 			owner.callLoaded();
@@ -177,6 +180,24 @@ export class IOSHelper {
 
 		// Note: Might return undefined if no parent with viewController is found
 		return view;
+	}
+
+	static updateAutoAdjustScrollInsets(controller: UIViewController, owner: View): void {
+		if (!__VISIONOS__ && SDK_VERSION <= 10) {
+			owner._automaticallyAdjustsScrollViewInsets = false;
+			// This API is deprecated, but has no alternative for <= iOS 10
+			// Defaults to true and results to appliyng the insets twice together with our logic
+			// for iOS 11+ we use the contentInsetAdjustmentBehavior property in scrollview
+			// https://developer.apple.com/documentation/uikit/uiviewcontroller/1621372-automaticallyadjustsscrollviewin
+			controller.automaticallyAdjustsScrollViewInsets = false;
+		}
+	}
+
+	static updateConstraints(controller: UIViewController, owner: View): void {
+		if (!__VISIONOS__ && SDK_VERSION <= 10) {
+			const layoutGuide = IOSHelper.initLayoutGuide(controller);
+			(<any>controller.view).safeAreaLayoutGuide = layoutGuide;
+		}
 	}
 
 	static initLayoutGuide(controller: UIViewController) {

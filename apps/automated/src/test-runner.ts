@@ -155,8 +155,9 @@ if (isIOS && Utils.ios.MajorVersion > 10) {
 	allTests['SAFEAREA-WEBVIEW'] = webViewSafeAreaTests;
 }
 
-// import * as rootViewsCssClassesTests from './ui/styling/root-views-css-classes-tests';
-// allTests['ROOT-VIEWS-CSS-CLASSES'] = rootViewsCssClassesTests;
+// todo: confirm on visionos with >= core 8.8
+import * as rootViewsCssClassesTests from './ui/styling/root-views-css-classes-tests';
+allTests['ROOT-VIEWS-CSS-CLASSES'] = rootViewsCssClassesTests;
 
 import * as stylePropertiesTests from './ui/styling/style-properties-tests';
 allTests['STYLE-PROPERTIES'] = stylePropertiesTests;
@@ -282,8 +283,9 @@ allTests['NAVIGATION'] = navigationTests;
 import * as tabViewRootTests from './ui/tab-view/tab-view-root-tests';
 allTests['TAB-VIEW-ROOT'] = tabViewRootTests;
 
-// import * as resetRootViewTests from './ui/root-view/reset-root-view-tests';
-// allTests['RESET-ROOT-VIEW'] = resetRootViewTests;
+// todo: confirm on visionos with >= core 8.8
+import * as resetRootViewTests from './ui/root-view/reset-root-view-tests';
+allTests['RESET-ROOT-VIEW'] = resetRootViewTests;
 
 import * as rootViewTests from './ui/root-view/root-view-tests';
 allTests['ROOT-VIEW'] = rootViewTests;
@@ -482,7 +484,7 @@ export function runAll(testSelector?: string) {
 		new TestInfo(() => {
 			running = true;
 			startTime = TKUnit.time();
-		})
+		}),
 	);
 	for (const name in allTests) {
 		if (singleModuleName && singleModuleName !== name.toLowerCase()) {
@@ -528,7 +530,7 @@ export function runAll(testSelector?: string) {
 		new TestInfo(function () {
 			testsQueue = [];
 			running = false;
-		})
+		}),
 	);
 
 	TKUnit.runTests(testsQueue, 0);
