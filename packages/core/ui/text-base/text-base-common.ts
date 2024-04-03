@@ -1,6 +1,6 @@
 // Types
 import { PropertyChangeData } from '../../data/observable';
-import { ViewBase } from '../core/view-base';
+import { ViewBase, booleanConverter } from '../core/view-base';
 import { FontStyleType, FontWeightType } from '../styling/font-interfaces';
 
 // Requires.
@@ -24,6 +24,8 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 	public _isSingleLine: boolean;
 	public text: string;
 	public formattedText: FormattedString;
+	public iosTextAnimation: 'inherit' | boolean;
+	static iosTextAnimationFallback = true;
 
 	/***
 	 * In the NativeScript Core; by default the nativeTextViewProtected points to the same value as nativeViewProtected.
@@ -235,6 +237,20 @@ export const formattedTextProperty = new Property<TextBaseCommon, FormattedStrin
 	valueChanged: onFormattedTextPropertyChanged,
 });
 formattedTextProperty.register(TextBaseCommon);
+
+export const iosTextAnimationProperty = new Property<TextBaseCommon, 'inherit' | boolean>({
+	name: 'iosTextAnimation',
+	defaultValue: 'inherit',
+	affectsLayout: false,
+	valueConverter(value: string) {
+		try {
+			return booleanConverter(value);
+		} catch (e) {
+			return 'inherit';
+		}
+	},
+});
+iosTextAnimationProperty.register(TextBaseCommon);
 
 function onFormattedTextPropertyChanged(textBase: TextBaseCommon, oldValue: FormattedString, newValue: FormattedString) {
 	if (oldValue) {
