@@ -219,8 +219,8 @@ allTests['PROGRESS'] = progressTests;
 import * as placeholderTests from './ui/placeholder/placeholder-tests';
 allTests['PLACEHOLDER'] = placeholderTests;
 
-// import * as pageTests from './ui/page/page-tests';
-// allTests['PAGE'] = pageTests;
+import * as pageTests from './ui/page/page-tests';
+allTests['PAGE'] = pageTests;
 
 import * as listViewTests from './ui/list-view/list-view-tests';
 allTests['LISTVIEW'] = listViewTests;
@@ -486,7 +486,7 @@ export function runAll(testSelector?: string) {
 		new TestInfo(() => {
 			running = true;
 			startTime = TKUnit.time();
-		})
+		}),
 	);
 	for (const name in allTests) {
 		if (singleModuleName && singleModuleName !== name.toLowerCase()) {
@@ -532,7 +532,7 @@ export function runAll(testSelector?: string) {
 		new TestInfo(function () {
 			testsQueue = [];
 			running = false;
-		})
+		}),
 	);
 
 	TKUnit.runTests(testsQueue, 0);
