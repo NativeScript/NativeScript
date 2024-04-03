@@ -149,7 +149,7 @@ Applications cannot access internal storage of other application on Android (see
 		const providerName = `${context.getPackageName()}.provider`;
 		Trace.write(`fully-qualified provider name [${providerName}]`, Trace.categories.Debug);
 
-		const apkURI = androidx.core.content.FileProvider.getUriForFile(context, providerName, new java.io.File(filePath));
+		const apkURI = filePath.startsWith('content://') ? android.net.Uri.parse(filePath) : androidx.core.content.FileProvider.getUriForFile(context, providerName, new java.io.File(filePath));
 
 		// Set flags & URI as data type on the view action
 		intent.addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION);
