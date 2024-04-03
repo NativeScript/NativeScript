@@ -20,6 +20,8 @@ export class SliderBase extends View implements SliderDefinition {
 	set accessibilityStep(value: number) {
 		this.style.accessibilityStep = value;
 	}
+
+	accessibilityRole = AccessibilityRole.Adjustable;
 }
 
 SliderBase.prototype.recycleNativeView = 'auto';

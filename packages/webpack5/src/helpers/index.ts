@@ -1,8 +1,9 @@
 import { merge } from 'webpack-merge';
 
 import { addCopyRule, removeCopyRule } from './copyRules';
+import { error, info, warn, warnOnce } from './log';
 import { determineProjectFlavor, projectUsesCustomFlavor } from './flavor';
-import { error, info, warn } from './log';
+import { readTsConfig } from './typescript';
 import { getValue } from './config';
 import {
 	getAllDependencies,
@@ -19,7 +20,6 @@ import {
 	getPlatform,
 	getPlatformName,
 } from './platform';
-import { readTsConfig } from './typescript';
 
 // intentionally populated manually
 // as this generates nicer typings
@@ -40,7 +40,7 @@ export default {
 	},
 	flavor: {
 		determineProjectFlavor,
-		projectUsesCustomFlavor
+		projectUsesCustomFlavor,
 	},
 	log: {
 		error,

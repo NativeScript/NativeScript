@@ -5,6 +5,8 @@
 	<key>AvailableLibraries</key>
 	<array>
 		<dict>
+			<key>BinaryPath</key>
+			<string>TNSWidgets.framework/TNSWidgets</string>
 			<key>DebugSymbolsPath</key>
 			<string>dSYMs</string>
 			<key>LibraryIdentifier</key>
@@ -22,6 +24,8 @@
 			<string>simulator</string>
 		</dict>
 		<dict>
+			<key>BinaryPath</key>
+			<string>TNSWidgets.framework/Versions/A/TNSWidgets</string>
 			<key>DebugSymbolsPath</key>
 			<string>dSYMs</string>
 			<key>LibraryIdentifier</key>
@@ -39,6 +43,8 @@
 			<string>maccatalyst</string>
 		</dict>
 		<dict>
+			<key>BinaryPath</key>
+			<string>TNSWidgets.framework/TNSWidgets</string>
 			<key>DebugSymbolsPath</key>
 			<string>dSYMs</string>
 			<key>LibraryIdentifier</key>

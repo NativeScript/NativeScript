@@ -39,6 +39,13 @@ export abstract class SegmentedBarBase extends View implements SegmentedBarDefin
 		this.style.selectedBackgroundColor = value;
 	}
 
+	public get selectedTextColor(): Color {
+		return this.style.selectedTabTextColor;
+	}
+	public set selectedTextColor(value: Color) {
+		this.style.selectedTabTextColor = value;
+	}
+
 	public _addArrayFromBuilder(name: string, value: Array<any>): void {
 		if (name === 'items') {
 			this.items = value;
@@ -145,3 +152,12 @@ export const selectedBackgroundColorProperty = new InheritedCssProperty<Style, C
 	valueConverter: colorConverter,
 });
 selectedBackgroundColorProperty.register(Style);
+
+export const selectedTextColorProperty = new InheritedCssProperty<Style, Color>({
+	name: 'selectedTextColor',
+	cssName: 'selected-text-color',
+	equalityComparer: Color.equals,
+	defaultValue: new Color('black'),
+	valueConverter: (v) => new Color(v),
+});
+selectedTextColorProperty.register(Style);

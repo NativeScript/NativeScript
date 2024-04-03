@@ -1,8 +1,8 @@
 import { resolve } from 'path';
 
 import { env as _env, IWebpackEnv } from '../index';
-import { addCopyRule } from './copyRules';
 import { getProjectRootPath } from './project';
+import { addCopyRule } from './copyRules';
 
 interface IReplacementMap {
 	[_replace: string]: /* _with */ string;

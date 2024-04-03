@@ -206,6 +206,7 @@ export class Style extends Observable implements StyleDefinition {
 
 	//SegmentedBar-specific props
 	public selectedBackgroundColor: Color;
+	public selectedTextColor: Color;
 
 	// Page-specific props
 	public statusBarStyle: 'light' | 'dark';

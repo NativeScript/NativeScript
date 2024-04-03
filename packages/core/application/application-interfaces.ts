@@ -119,7 +119,7 @@ export interface CssChangedEventData extends ApplicationEventData {
 }
 
 /**
- * Event data containing information about application css change.
+ * Event data containing information about root view application.
  */
 export interface InitRootViewEventData extends ApplicationEventData {
 	rootView: View;

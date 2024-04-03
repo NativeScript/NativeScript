@@ -276,3 +276,21 @@ export function test_SettingNumberAsTitleFromXML_DoesNotThrow() {
 		TKUnit.assertEqual(item.title, '1');
 	});
 }
+
+/*export function testBackgroundColorUpdatedAfterItemSelected() {
+    let segmentedBar = new segmentedBarModule.SegmentedBar();
+	let item1 = new segmentedBarModule.SegmentedBarItem();
+	(<any>item1).title = 1;
+	let item2 = new segmentedBarModule.SegmentedBarItem();
+	(<any>item2).title = 2;
+	let item3 = new segmentedBarModule.SegmentedBarItem();
+	(<any>item3).title = 3;
+	let item4 = new segmentedBarModule.SegmentedBarItem();
+	(<any>item4).title = 4;
+
+	segmentedBar.items = [item1, item2, item3, item4];
+
+    buildUIAndRunTest(segmentedBar, function (views: Array<View>) {
+		TKUnit.assertTrue(segmentedBarTestsNative.checkBackgroundColorUpdatedAfterItemSelected(segmentedBar));
+	});
+}*/

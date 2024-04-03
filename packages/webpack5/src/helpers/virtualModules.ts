@@ -1,11 +1,11 @@
-import { ContextExclusionPlugin } from 'webpack';
-import Config from 'webpack-chain';
-import { dirname, join } from 'path';
-import { writeFileSync, mkdirSync } from 'fs';
-
 import VirtualModulesPlugin from 'webpack-virtual-modules';
-import { getEntryDirPath } from './platform';
+import { ContextExclusionPlugin } from 'webpack';
+import { mkdirSync, writeFileSync } from 'fs';
+import { dirname, join } from 'path';
+import Config from 'webpack-chain';
 import dedent from 'ts-dedent';
+
+import { getEntryDirPath } from './platform';
 import { getProjectFilePath } from './project';
 
 /**

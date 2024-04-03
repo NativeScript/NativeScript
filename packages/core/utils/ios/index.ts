@@ -95,6 +95,9 @@ export function isLandscape(): boolean {
 	return isDeviceOrientationLandscape || isStatusBarOrientationLandscape;
 }
 
+/**
+ * @deprecated use Utils.SDK_VERSION instead which is a float of the {major}.{minor} verison
+ */
 export const MajorVersion = NSString.stringWithString(UIDevice.currentDevice.systemVersion).intValue;
 
 export function openFile(filePath: string): boolean {
