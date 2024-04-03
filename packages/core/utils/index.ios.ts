@@ -27,8 +27,18 @@ export function openFile(filePath: string): boolean {
 	return false;
 }
 
-export function wrapNativeException(ex) {
-	// TODO: wrap NSError into a JS Error
+export function wrapNativeException(ex: NSError) {
+	if (typeof ex === 'string') {
+		return new Error(ex);
+	}
+	if (!(ex instanceof Error)) {
+		const err = new Error(ex.localizedDescription);
+		err['nativeException'] = ex;
+		err['code'] = ex.code;
+		err['domain'] = ex.domain;
+		// TODO: we loose native stack. see how to get it
+		return err;
+	}
 	return ex;
 }
 
