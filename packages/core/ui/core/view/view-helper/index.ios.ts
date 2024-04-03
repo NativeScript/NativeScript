@@ -28,6 +28,14 @@ class UILayoutViewController extends UIViewController {
 		this.extendedLayoutIncludesOpaqueBars = true;
 	}
 
+	public viewWillLayoutSubviews(): void {
+		super.viewWillLayoutSubviews();
+		const owner = this.owner?.deref();
+		if (owner) {
+			IOSHelper.updateConstraints(this, owner);
+		}
+	}
+
 	public viewDidLayoutSubviews(): void {
 		super.viewDidLayoutSubviews();
 		const owner = this.owner?.deref();

@@ -44,9 +44,7 @@ class UITabBarControllerImpl extends UITabBarController {
 			return;
 		}
 
-		if (!__VISIONOS__) {
-			IOSHelper.updateAutoAdjustScrollInsets(this, owner);
-		}
+		IOSHelper.updateAutoAdjustScrollInsets(this, owner);
 
 		if (!owner.parent) {
 			owner.callLoaded();

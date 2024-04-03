@@ -207,6 +207,10 @@ export class FrameBase extends CustomLayoutView {
 			} else {
 				page._tearDownUI(true);
 			}
+		} else {
+			if (Trace.isEnabled()) {
+				Trace.write(`_removeEntry: backstack entry missing page`, Trace.categories.Navigation);
+			}
 		}
 
 		removed.resolvedPage = null;

@@ -151,9 +151,7 @@ class UIViewControllerImpl extends UIViewController {
 		}
 
 		// Set autoAdjustScrollInsets in will appear - as early as possible
-		if (!__VISIONOS__) {
-			IOSHelper.updateAutoAdjustScrollInsets(this, owner);
-		}
+		IOSHelper.updateAutoAdjustScrollInsets(this, owner);
 
 		// Pages in backstack are unloaded so raise loaded here.
 		if (!owner.isLoaded) {
@@ -279,6 +277,14 @@ class UIViewControllerImpl extends UIViewController {
 		// Forward navigation does not remove page from frame so we raise unloaded manually.
 		if (page.isLoaded) {
 			page.callUnloaded();
+		}
+	}
+
+	public viewWillLayoutSubviews(): void {
+		super.viewWillLayoutSubviews();
+		const owner = this._owner?.deref();
+		if (owner) {
+			IOSHelper.updateConstraints(this, owner);
 		}
 	}
 
