@@ -1153,6 +1153,12 @@ declare var kCMFormatDescriptionExtension_FullRangeVideo: string;
 
 declare var kCMFormatDescriptionExtension_GammaLevel: string;
 
+declare var kCMFormatDescriptionExtension_HasAdditionalViews: string;
+
+declare var kCMFormatDescriptionExtension_HasLeftStereoEyeView: string;
+
+declare var kCMFormatDescriptionExtension_HasRightStereoEyeView: string;
+
 declare var kCMFormatDescriptionExtension_HeroEye: string;
 
 declare var kCMFormatDescriptionExtension_HorizontalDisparityAdjustment: string;
@@ -1160,6 +1166,8 @@ declare var kCMFormatDescriptionExtension_HorizontalDisparityAdjustment: string;
 declare var kCMFormatDescriptionExtension_HorizontalFieldOfView: string;
 
 declare var kCMFormatDescriptionExtension_ICCProfile: string;
+
+declare var kCMFormatDescriptionExtension_LogTransferFunction: string;
 
 declare var kCMFormatDescriptionExtension_MasteringDisplayColorVolume: string;
 
@@ -1224,6 +1232,8 @@ declare var kCMFormatDescriptionKey_CleanApertureWidthRational: string;
 declare var kCMFormatDescriptionKey_PixelAspectRatioHorizontalSpacing: string;
 
 declare var kCMFormatDescriptionKey_PixelAspectRatioVerticalSpacing: string;
+
+declare var kCMFormatDescriptionLogTransferFunction_AppleLog: string;
 
 declare var kCMFormatDescriptionTransferFunction_ITU_R_2020: string;
 

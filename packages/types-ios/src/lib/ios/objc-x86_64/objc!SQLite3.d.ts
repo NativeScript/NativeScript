@@ -343,6 +343,8 @@ interface sqlite3_io_methods {
 }
 declare var sqlite3_io_methods: interop.StructType<sqlite3_io_methods>;
 
+declare function sqlite3_is_interrupted(p1: interop.Pointer | interop.Reference<any>): number;
+
 declare function sqlite3_keyword_check(p1: string | interop.Pointer | interop.Reference<any>, p2: number): number;
 
 declare function sqlite3_keyword_count(): number;
@@ -634,6 +636,8 @@ declare function sqlite3_step(p1: interop.Pointer | interop.Reference<any>): num
 
 declare function sqlite3_stmt_busy(p1: interop.Pointer | interop.Reference<any>): number;
 
+declare function sqlite3_stmt_explain(pStmt: interop.Pointer | interop.Reference<any>, eMode: number): number;
+
 declare function sqlite3_stmt_isexplain(pStmt: interop.Pointer | interop.Reference<any>): number;
 
 declare function sqlite3_stmt_readonly(pStmt: interop.Pointer | interop.Reference<any>): number;
@@ -641,6 +645,8 @@ declare function sqlite3_stmt_readonly(pStmt: interop.Pointer | interop.Referenc
 declare function sqlite3_stmt_scanstatus(pStmt: interop.Pointer | interop.Reference<any>, idx: number, iScanStatusOp: number, pOut: interop.Pointer | interop.Reference<any>): number;
 
 declare function sqlite3_stmt_scanstatus_reset(p1: interop.Pointer | interop.Reference<any>): void;
+
+declare function sqlite3_stmt_scanstatus_v2(pStmt: interop.Pointer | interop.Reference<any>, idx: number, iScanStatusOp: number, flags: number, pOut: interop.Pointer | interop.Reference<any>): number;
 
 declare function sqlite3_stmt_status(p1: interop.Pointer | interop.Reference<any>, op: number, resetFlg: number): number;
 
@@ -694,13 +700,13 @@ declare function sqlite3_txn_state(p1: interop.Pointer | interop.Reference<any>,
 
 declare function sqlite3_update_hook(p1: interop.Pointer | interop.Reference<any>, p2: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: string, p4: string, p5: number) => void>, p3: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function sqlite3_uri_boolean(zFile: string | interop.Pointer | interop.Reference<any>, zParam: string | interop.Pointer | interop.Reference<any>, bDefault: number): number;
+declare function sqlite3_uri_boolean(z: string | interop.Pointer | interop.Reference<any>, zParam: string | interop.Pointer | interop.Reference<any>, bDefault: number): number;
 
 declare function sqlite3_uri_int64(p1: string | interop.Pointer | interop.Reference<any>, p2: string | interop.Pointer | interop.Reference<any>, p3: number): number;
 
-declare function sqlite3_uri_key(zFilename: string | interop.Pointer | interop.Reference<any>, N: number): string;
+declare function sqlite3_uri_key(z: string | interop.Pointer | interop.Reference<any>, N: number): string;
 
-declare function sqlite3_uri_parameter(zFilename: string | interop.Pointer | interop.Reference<any>, zParam: string | interop.Pointer | interop.Reference<any>): string;
+declare function sqlite3_uri_parameter(z: string | interop.Pointer | interop.Reference<any>, zParam: string | interop.Pointer | interop.Reference<any>): string;
 
 declare function sqlite3_user_data(p1: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
@@ -713,6 +719,8 @@ declare function sqlite3_value_bytes16(p1: interop.Pointer | interop.Reference<a
 declare function sqlite3_value_double(p1: interop.Pointer | interop.Reference<any>): number;
 
 declare function sqlite3_value_dup(p1: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+
+declare function sqlite3_value_encoding(p1: interop.Pointer | interop.Reference<any>): number;
 
 declare function sqlite3_value_free(p1: interop.Pointer | interop.Reference<any>): void;
 
@@ -780,6 +788,8 @@ interface sqlite3_vtab {
 	zErrMsg: string;
 }
 declare var sqlite3_vtab: interop.StructType<sqlite3_vtab>;
+
+declare function sqlite3_vtab_collation(p1: interop.Pointer | interop.Reference<sqlite3_index_info>, p2: number): string;
 
 interface sqlite3_vtab_cursor {
 	pVtab: interop.Pointer | interop.Reference<sqlite3_vtab>;

@@ -1,4 +1,17 @@
 
+interface SFAddToHomeScreenActivityItem extends NSObjectProtocol {
+
+	URL: NSURL;
+
+	iconItemProvider?: NSItemProvider;
+
+	title: string;
+}
+declare var SFAddToHomeScreenActivityItem: {
+
+	prototype: SFAddToHomeScreenActivityItem;
+};
+
 declare const enum SFAuthenticationError {
 
 	CanceledLogin = 1

@@ -6,6 +6,27 @@ interface GCAcceleration {
 }
 declare var GCAcceleration: interop.StructType<GCAcceleration>;
 
+interface GCAxis2DInput extends NSObjectProtocol {
+
+	analog: boolean;
+
+	canWrap: boolean;
+
+	lastValueLatency: number;
+
+	lastValueTimestamp: number;
+
+	sources: NSSet<GCPhysicalInputSource>;
+
+	value: GCPoint2;
+
+	valueDidChangeHandler: (p1: GCPhysicalInputElement, p2: GCAxis2DInput, p3: GCPoint2) => void;
+}
+declare var GCAxis2DInput: {
+
+	prototype: GCAxis2DInput;
+};
+
 interface GCAxisElement extends GCPhysicalInputElement {
 
 	absoluteInput: GCAxisInput;
@@ -575,6 +596,8 @@ interface GCDirectionPadElement extends GCPhysicalInputElement {
 
 	xAxis: GCAxisInput;
 
+	xyAxes: GCAxis2DInput;
+
 	yAxis: GCAxisInput;
 }
 declare var GCDirectionPadElement: {
@@ -917,6 +940,10 @@ declare var GCHapticsLocalityTriggers: string;
 
 declare function GCInputArcadeButtonName(row: number, column: number): string;
 
+declare function GCInputBackLeftButton(position: number): string;
+
+declare function GCInputBackRightButton(position: number): string;
+
 declare var GCInputButtonA: string;
 
 declare var GCInputButtonB: string;
@@ -949,6 +976,8 @@ declare var GCInputDualShockTouchpadOne: string;
 
 declare var GCInputDualShockTouchpadTwo: string;
 
+declare var GCInputLeftBumper: string;
+
 declare var GCInputLeftShoulder: string;
 
 declare var GCInputLeftThumbstick: string;
@@ -964,6 +993,8 @@ declare var GCInputMicroGamepadButtonMenu: string;
 declare var GCInputMicroGamepadButtonX: string;
 
 declare var GCInputMicroGamepadDpad: string;
+
+declare var GCInputRightBumper: string;
 
 declare var GCInputRightShoulder: string;
 
@@ -1913,6 +1944,14 @@ declare const enum GCPhysicalInputSourceDirection {
 	Left = 8
 }
 
+interface GCPoint2 {
+	x: number;
+	y: number;
+}
+declare var GCPoint2: interop.StructType<GCPoint2>;
+
+declare var GCPoint2Zero: GCPoint2;
+
 interface GCPressedStateInput extends NSObjectProtocol {
 
 	lastPressedStateLatency: number;
@@ -2139,3 +2178,5 @@ declare function NSDataFromGCGamepadSnapShotDataV100(snapshotData: interop.Point
 declare function NSDataFromGCMicroGamepadSnapShotDataV100(snapshotData: interop.Pointer | interop.Reference<GCMicroGamepadSnapShotDataV100>): NSData;
 
 declare function NSDataFromGCMicroGamepadSnapshotData(snapshotData: interop.Pointer | interop.Reference<GCMicroGamepadSnapshotData>): NSData;
+
+declare function NSStringFromGCPoint2(point: GCPoint2): string;
