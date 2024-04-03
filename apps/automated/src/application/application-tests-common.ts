@@ -17,10 +17,11 @@ export function testInitialized() {
 }
 
 export function testDisplayedEvent() {
-	if (!__VISIONOS__) {
-		// global.isDisplayedEventFired flag is set in app.ts application.displayedEvent handler
-		TKUnit.assert(global.isDisplayedEventFired, 'application.displayedEvent not fired');
+	if (__VISIONOS__) {
+		return;
 	}
+	// global.isDisplayedEventFired flag is set in app.ts application.displayedEvent handler
+	TKUnit.assert(global.isDisplayedEventFired, 'application.displayedEvent not fired');
 }
 
 export function testOrientation() {

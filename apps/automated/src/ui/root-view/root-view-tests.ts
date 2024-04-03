@@ -38,20 +38,21 @@ export function test_custom_component_rootview_layout_updates() {
 }
 
 export function test_tabview_rootview_css_applied() {
-	if (!__VISIONOS__) {
+	if (__VISIONOS__) {
 		// TODO: investigate resetRootView cases with visionOS setup
-		var entry = {
-			moduleName: 'ui/root-view/root-modules/tabview-root',
-		};
-
-		Application.resetRootView(entry);
-
-		var rootView = Application.getRootView();
-		TKUnit.waitUntilReady(() => rootView.isLoaded);
-
-		TKUnit.assert(rootView instanceof TabView);
-		helper.assertTabSelectedTabTextColor(rootView, '#0000FF');
+		return;
 	}
+	var entry = {
+		moduleName: 'ui/root-view/root-modules/tabview-root',
+	};
+
+	Application.resetRootView(entry);
+
+	var rootView = Application.getRootView();
+	TKUnit.waitUntilReady(() => rootView.isLoaded);
+
+	TKUnit.assert(rootView instanceof TabView);
+	helper.assertTabSelectedTabTextColor(rootView, '#0000FF');
 }
 
 export function test_gridlayout_rootview_css_applied() {
