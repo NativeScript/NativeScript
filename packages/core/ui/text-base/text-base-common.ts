@@ -227,7 +227,7 @@ export function isBold(fontWeight: FontWeightType): boolean {
 export const textProperty = new Property<TextBaseCommon, string>({
 	name: 'text',
 	defaultValue: '',
-	affectsLayout: __ANDROID__ || __VISIONOS__,
+	affectsLayout: __ANDROID__,
 });
 textProperty.register(TextBaseCommon);
 
