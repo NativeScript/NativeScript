@@ -6,7 +6,6 @@ import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUser
 import { ShowModalOptions, hiddenProperty } from '../view-base';
 import { Trace } from '../../../trace';
 import { layout, ios as iosUtils, SDK_VERSION } from '../../../utils';
-import { isNumber } from '../../../utils/types';
 import { IOSHelper } from './view-helper';
 import { ios as iosBackground, Background } from '../../styling/background';
 import { perspectiveProperty, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty } from '../../styling/style-properties';
@@ -16,7 +15,6 @@ import { IOSPostAccessibilityNotificationType, isAccessibilityServiceEnabled, up
 import { CoreTypes } from '../../../core-types';
 import type { ModalTransition } from '../../transition/modal-transition';
 import { SharedTransition } from '../../transition/shared-transition';
-import { GestureStateTypes, PanGestureEventData } from '../../gestures';
 import { NativeScriptUIView } from '../../utils';
 
 export * from './view-common';
@@ -598,7 +596,12 @@ export class View extends ViewCommon implements ViewDefinition {
 		parentController.presentViewControllerAnimatedCompletion(controller, animated, null);
 		const transitionCoordinator = parentController.transitionCoordinator;
 		if (transitionCoordinator) {
-			transitionCoordinator.animateAlongsideTransitionCompletion(null, () => this._raiseShownModallyEvent());
+			transitionCoordinator.animateAlongsideTransitionCompletion(null, () => {
+				setTimeout(() => {
+					// ensure raised on main queue
+					this._raiseShownModallyEvent();
+				});
+			});
 		} else {
 			// Apparently iOS 9+ stops all transitions and animations upon application suspend and transitionCoordinator becomes null here in this case.
 			// Since we are not waiting for any transition to complete, i.e. transitionCoordinator is null, we can directly raise our shownModally event.

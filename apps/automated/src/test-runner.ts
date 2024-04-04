@@ -155,7 +155,6 @@ if (isIOS && Utils.ios.MajorVersion > 10) {
 	allTests['SAFEAREA-WEBVIEW'] = webViewSafeAreaTests;
 }
 
-// todo: confirm on visionos with >= core 8.8
 import * as rootViewsCssClassesTests from './ui/styling/root-views-css-classes-tests';
 allTests['ROOT-VIEWS-CSS-CLASSES'] = rootViewsCssClassesTests;
 
@@ -283,7 +282,6 @@ allTests['NAVIGATION'] = navigationTests;
 import * as tabViewRootTests from './ui/tab-view/tab-view-root-tests';
 allTests['TAB-VIEW-ROOT'] = tabViewRootTests;
 
-// todo: confirm on visionos with >= core 8.8
 import * as resetRootViewTests from './ui/root-view/reset-root-view-tests';
 allTests['RESET-ROOT-VIEW'] = resetRootViewTests;
 
@@ -401,6 +399,7 @@ function showReportPage(finalMessage: string) {
 	stack.addChild(messageContainer);
 
 	if (__VISIONOS__) {
+		// just helps make the results screen more clear on Vision Pro
 		btn.style.fontSize = 22;
 		stack.style.padding = 20;
 		stack.style.marginTop = 20;

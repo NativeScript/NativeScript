@@ -208,7 +208,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 					}
 				}
 
-				if (Utils.ios.MajorVersion >= 15 || __VISIONOS__) {
+				if (Utils.SDK_VERSION >= 15 || __VISIONOS__) {
 					const min = options?.min || max / 2;
 					const preferred = options?.preferred || max;
 					this.displayedLink.preferredFrameRateRange = CAFrameRateRangeMake(min, max, preferred);
@@ -437,7 +437,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		}
 
 		if (!__VISIONOS__) {
-			this.window.backgroundColor = Utils.ios.MajorVersion <= 12 || !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
+			this.window.backgroundColor = Utils.SDK_VERSION <= 12 || !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
 		}
 
 		this.notifyAppStarted(notification);

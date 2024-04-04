@@ -273,11 +273,7 @@ export const test_SettingImageSourceWhenSizedToParentDoesNotRequestLayout = ios(
 	image.requestLayout = () => (called = true);
 	image.src = '~/assets/logo.png';
 
-	if (__APPLE__) {
-		TKUnit.assertTrue(called, 'image.requestLayout should be called.');
-	} else {
-		TKUnit.assertFalse(called, 'image.requestLayout should not be called.');
-	}
+	TKUnit.assertFalse(called, 'image.requestLayout should not be called.');
 });
 
 export const test_SettingImageSourceWhenFixedWidthAndHeightDoesNotRequestLayout = ios(() => {
@@ -295,11 +291,7 @@ export const test_SettingImageSourceWhenFixedWidthAndHeightDoesNotRequestLayout 
 	image.requestLayout = () => (called = true);
 	image.src = '~/assets/logo.png';
 
-	if (__APPLE__) {
-		TKUnit.assertTrue(called, 'image.requestLayout should be called.');
-	} else {
-		TKUnit.assertFalse(called, 'image.requestLayout should not be called.');
-	}
+	TKUnit.assertFalse(called, 'image.requestLayout should not be called.');
 });
 
 export const test_SettingImageSourceWhenSizedToContentShouldInvalidate = ios(() => {

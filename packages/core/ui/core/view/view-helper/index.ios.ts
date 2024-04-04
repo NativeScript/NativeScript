@@ -96,9 +96,7 @@ class UILayoutViewController extends UIViewController {
 			return;
 		}
 
-		if (!__VISIONOS__) {
-			IOSHelper.updateAutoAdjustScrollInsets(this, owner);
-		}
+		IOSHelper.updateAutoAdjustScrollInsets(this, owner);
 
 		if (!owner.isLoaded && !owner.parent) {
 			owner.callLoaded();
