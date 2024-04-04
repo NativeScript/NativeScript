@@ -22,7 +22,7 @@ struct NativeScriptMainWindow: Scene {
             }).onAppear {
                 // print("NativeScriptAppView onAppear")
                 DispatchQueue.main.async {
-                    NativeScriptStart.boot()
+                    NativeScriptEmbedder.boot()
                 }
             }.onReceive(NotificationCenter.default
                 .publisher(for: NSNotification.Name("NativeScriptWindowOpen")), perform: { obj in
@@ -59,8 +59,9 @@ struct NativeScriptMainWindow: Scene {
             }).onAppear {
                 // print("NativeScriptAppView onAppear")
                 DispatchQueue.main.async {
-                    NativeScriptStart.boot()
+                    NativeScriptEmbedder.boot()
                 }
+                
             }
         }
         #endif
@@ -69,7 +70,7 @@ struct NativeScriptMainWindow: Scene {
     init() {
         NativeScriptViewFactory.initShared()
         NativeScriptEmbedder.sharedInstance().setDelegate(NativeScriptViewFactory.shared)
-        NativeScriptStart.setup()
+        NativeScriptEmbedder.setup()
     }
 
     #if os(visionOS)

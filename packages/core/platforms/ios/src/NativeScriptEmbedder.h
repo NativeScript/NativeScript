@@ -23,6 +23,9 @@
 - (void)setDelegate:(id <NativeScriptEmbedderDelegate>)aDelegate;
 - (void)setWindowScene:(UIWindowScene *)windowScene;
 
++ (void)setup;
++ (void)boot;
+
 
 @end
 
