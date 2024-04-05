@@ -122,7 +122,11 @@ function initializeDialogFragment() {
 
 	@NativeClass
 	class DialogImpl extends android.app.Dialog {
-		constructor(public fragment: DialogFragmentImpl, context: android.content.Context, themeResId: number) {
+		constructor(
+			public fragment: DialogFragmentImpl,
+			context: android.content.Context,
+			themeResId: number,
+		) {
 			super(context, themeResId);
 
 			return global.__native(this);
@@ -727,9 +731,11 @@ export class View extends ViewCommon {
 	}
 
 	protected _hideNativeModalView(parent: View, whenClosedCallback: () => void) {
-		const manager = this._dialogFragment.getFragmentManager();
-		if (manager) {
-			this._dialogFragment.dismissAllowingStateLoss();
+		if (this._dialogFragment) {
+			const manager = this._dialogFragment.getFragmentManager();
+			if (manager) {
+				this._dialogFragment.dismissAllowingStateLoss();
+			}
 		}
 
 		this._dialogFragment = null;

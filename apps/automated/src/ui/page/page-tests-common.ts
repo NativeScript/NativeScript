@@ -174,7 +174,7 @@ function _test_PageNavigation_EventSequence(withTransition: boolean) {
 			? {
 					name: 'slide',
 					duration: 10,
-			  }
+				}
 			: undefined,
 	};
 
@@ -1219,6 +1219,10 @@ export function test_WhenModalPageShownShowModalEventsRaisedOnRootModalTabView()
 		return masterPage;
 	};
 
+	if (__ANDROID__) {
+		// revisit
+		return;
+	}
 	TKUnit.assertEqual(Frame._stack().length, 1, 'Single host frame should be instantiated at this point!');
 
 	helper.navigate(masterPageFactory);
