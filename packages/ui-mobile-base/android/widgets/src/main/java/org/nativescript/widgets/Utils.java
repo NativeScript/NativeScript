@@ -315,7 +315,7 @@ public class Utils {
 						// scale to exact size
 						finalBitmapOptions.inScaled = true;
 						finalBitmapOptions.inDensity = sourceSize.first;
-						finalBitmapOptions.inTargetDensity =  first * sampleSize;
+						finalBitmapOptions.inTargetDensity =  bitmapOptions.outWidth * sampleSize;
 					} else {
 						finalBitmapOptions.inScaled = false;
 					}
