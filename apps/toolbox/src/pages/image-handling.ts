@@ -1,5 +1,5 @@
 import { Observable, EventData, Page, ImageSource, knownFolders, path } from '@nativescript/core';
-// import { create, ImagePickerMediaType } from '@nativescript/imagepicker';
+import { create, ImagePickerMediaType } from '@nativescript/imagepicker';
 
 let page: Page;
 
@@ -44,7 +44,7 @@ export class DemoModel extends Observable {
 						},
 						(err) => {
 							this.addingPhoto = false;
-						}
+						},
 					);
 				}
 			})
