@@ -311,7 +311,14 @@ public class Utils {
 					int sampleSize = org.nativescript.widgets.image.Fetcher.calculateInSampleSize(bitmapOptions.outWidth, bitmapOptions.outHeight, requestedSize.first, requestedSize.second);
 					BitmapFactory.Options finalBitmapOptions = new BitmapFactory.Options();
 					finalBitmapOptions.inSampleSize = sampleSize;
-
+					if (sampleSize != 1) {
+						// scale to exact size
+						finalBitmapOptions.inScaled = true;
+						finalBitmapOptions.inDensity = sourceSize.first;
+						finalBitmapOptions.inTargetDensity =  first * sampleSize;
+					} else {
+						finalBitmapOptions.inScaled = false;
+					}
 
 					String error = null;
 					// read as minimum bitmap as possible (slightly bigger than the requested size)
@@ -325,10 +332,6 @@ public class Utils {
 
 
 					if (bitmap != null) {
-						if (requestedSize.first != bitmap.getWidth() || requestedSize.second != bitmap.getHeight()) {
-							// scale to exact size
-							bitmap = android.graphics.Bitmap.createScaledBitmap(bitmap, requestedSize.first, requestedSize.second, true);
-						}
 						int rotationAngle;
 
 						if (pfd != null) {
