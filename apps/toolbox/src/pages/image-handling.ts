@@ -44,7 +44,7 @@ export class DemoModel extends Observable {
 						},
 						(err) => {
 							this.addingPhoto = false;
-						}
+						},
 					);
 				}
 			})

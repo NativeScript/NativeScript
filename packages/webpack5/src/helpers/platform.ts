@@ -62,7 +62,7 @@ export function getPlatformName(): Platform {
 		return 'ios';
 	}
 
-	if (env?.visionos) {
+	if (env?.visionos || env?.vision) {
 		return 'visionos';
 	}
 

@@ -703,6 +703,66 @@ declare var CPInterfaceControllerDelegate: {
 	prototype: CPInterfaceControllerDelegate;
 };
 
+declare const enum CPJunctionType {
+
+	Intersection = 0,
+
+	Roundabout = 1
+}
+
+declare class CPLane extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): CPLane; // inherited from NSObject
+
+	static new(): CPLane; // inherited from NSObject
+
+	primaryAngle: NSMeasurement<NSUnitAngle>;
+
+	secondaryAngles: NSArray<NSMeasurement<NSUnitAngle>>;
+
+	status: CPLaneStatus;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare class CPLaneGuidance extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): CPLaneGuidance; // inherited from NSObject
+
+	static new(): CPLaneGuidance; // inherited from NSObject
+
+	instructionVariants: NSArray<string>;
+
+	lanes: NSArray<CPLane>;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare const enum CPLaneStatus {
+
+	NotGood = 0,
+
+	Good = 1,
+
+	Preferred = 2
+}
+
 declare const enum CPLimitableUserInterface {
 
 	Keyboard = 1,
@@ -717,6 +777,8 @@ declare class CPListImageRowItem extends NSObject implements CPSelectableListIte
 	static new(): CPListImageRowItem; // inherited from NSObject
 
 	readonly gridImages: NSArray<UIImage>;
+
+	imageTitles: NSArray<string>;
 
 	listImageRowHandler: (p1: CPListImageRowItem, p2: number, p3: () => void) => void;
 
@@ -744,11 +806,15 @@ declare class CPListImageRowItem extends NSObject implements CPSelectableListIte
 
 	constructor(o: { text: string; images: NSArray<UIImage> | UIImage[]; });
 
+	constructor(o: { text: string; images: NSArray<UIImage> | UIImage[]; imageTitles: NSArray<string> | string[]; });
+
 	class(): typeof NSObject;
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
 	initWithTextImages(text: string, images: NSArray<UIImage> | UIImage[]): this;
+
+	initWithTextImagesImageTitles(text: string, images: NSArray<UIImage> | UIImage[], imageTitles: NSArray<string> | string[]): this;
 
 	isEqual(object: any): boolean;
 
@@ -1044,11 +1110,23 @@ declare class CPManeuver extends NSObject implements NSCopying, NSSecureCoding {
 
 	dashboardSymbolImage: UIImage;
 
+	highwayExitLabel: string;
+
 	initialTravelEstimates: CPTravelEstimates;
 
 	instructionVariants: NSArray<string>;
 
+	junctionElementAngles: NSSet<NSMeasurement<NSUnitAngle>>;
+
+	junctionExitAngle: NSMeasurement<NSUnitAngle>;
+
 	junctionImage: UIImage;
+
+	junctionType: CPJunctionType;
+
+	linkedLaneGuidance: CPLaneGuidance;
+
+	maneuverType: CPManeuverType;
 
 	notificationAttributedInstructionVariants: NSArray<NSAttributedString>;
 
@@ -1056,9 +1134,13 @@ declare class CPManeuver extends NSObject implements NSCopying, NSSecureCoding {
 
 	notificationSymbolImage: UIImage;
 
+	roadFollowingManeuverVariants: NSArray<string>;
+
 	symbolImage: UIImage;
 
 	symbolSet: CPImageSet;
+
+	trafficSide: CPTrafficSide;
 
 	userInfo: any;
 
@@ -1084,6 +1166,128 @@ declare const enum CPManeuverDisplayStyle {
 	SymbolOnly = 3,
 
 	InstructionOnly = 4
+}
+
+declare const enum CPManeuverState {
+
+	Continue = 0,
+
+	Initial = 1,
+
+	Prepare = 2,
+
+	Execute = 3
+}
+
+declare const enum CPManeuverType {
+
+	NoTurn = 0,
+
+	LeftTurn = 1,
+
+	RightTurn = 2,
+
+	StraightAhead = 3,
+
+	UTurn = 4,
+
+	FollowRoad = 5,
+
+	EnterRoundabout = 6,
+
+	ExitRoundabout = 7,
+
+	OffRamp = 8,
+
+	OnRamp = 9,
+
+	ArriveEndOfNavigation = 10,
+
+	StartRoute = 11,
+
+	ArriveAtDestination = 12,
+
+	KeepLeft = 13,
+
+	KeepRight = 14,
+
+	Enter_Ferry = 15,
+
+	ExitFerry = 16,
+
+	ChangeFerry = 17,
+
+	StartRouteWithUTurn = 18,
+
+	UTurnAtRoundabout = 19,
+
+	LeftTurnAtEnd = 20,
+
+	RightTurnAtEnd = 21,
+
+	HighwayOffRampLeft = 22,
+
+	HighwayOffRampRight = 23,
+
+	ArriveAtDestinationLeft = 24,
+
+	ArriveAtDestinationRight = 25,
+
+	UTurnWhenPossible = 26,
+
+	ArriveEndOfDirections = 27,
+
+	RoundaboutExit1 = 28,
+
+	RoundaboutExit2 = 29,
+
+	RoundaboutExit3 = 30,
+
+	RoundaboutExit4 = 31,
+
+	RoundaboutExit5 = 32,
+
+	RoundaboutExit6 = 33,
+
+	RoundaboutExit7 = 34,
+
+	RoundaboutExit8 = 35,
+
+	RoundaboutExit9 = 36,
+
+	RoundaboutExit10 = 37,
+
+	RoundaboutExit11 = 38,
+
+	RoundaboutExit12 = 39,
+
+	RoundaboutExit13 = 40,
+
+	RoundaboutExit14 = 41,
+
+	RoundaboutExit15 = 42,
+
+	RoundaboutExit16 = 43,
+
+	RoundaboutExit17 = 44,
+
+	RoundaboutExit18 = 45,
+
+	RoundaboutExit19 = 46,
+
+	SharpLeftTurn = 47,
+
+	SharpRightTurn = 48,
+
+	SlightLeftTurn = 49,
+
+	SlightRightTurn = 50,
+
+	ChangeHighway = 51,
+
+	ChangeHighwayLeft = 52,
+
+	ChangeHighwayRight = 53
 }
 
 declare class CPMapButton extends NSObject implements NSSecureCoding {
@@ -1225,6 +1429,8 @@ interface CPMapTemplateDelegate extends NSObjectProtocol {
 	mapTemplatePanWithDirection?(mapTemplate: CPMapTemplate, direction: CPPanDirection): void;
 
 	mapTemplateSelectedPreviewForTripUsingRouteChoice?(mapTemplate: CPMapTemplate, trip: CPTrip, routeChoice: CPRouteChoice): void;
+
+	mapTemplateShouldProvideNavigationMetadata?(mapTemplate: CPMapTemplate): boolean;
 
 	mapTemplateShouldShowNotificationForManeuver?(mapTemplate: CPMapTemplate, maneuver: CPManeuver): boolean;
 
@@ -1433,9 +1639,19 @@ declare class CPNavigationSession extends NSObject {
 
 	static new(): CPNavigationSession; // inherited from NSObject
 
+	currentLaneGuidance: CPLaneGuidance;
+
+	currentRoadNameVariants: NSArray<string>;
+
+	maneuverState: CPManeuverState;
+
 	readonly trip: CPTrip;
 
 	upcomingManeuvers: NSArray<CPManeuver>;
+
+	addLaneGuidances(laneGuidances: NSArray<CPLaneGuidance> | CPLaneGuidance[]): void;
+
+	addManeuvers(maneuvers: NSArray<CPManeuver> | CPManeuver[]): void;
 
 	cancelTrip(): void;
 
@@ -1444,6 +1660,8 @@ declare class CPNavigationSession extends NSObject {
 	pauseTripForReasonDescription(reason: CPTripPauseReason, description: string): void;
 
 	pauseTripForReasonDescriptionTurnCardColor(reason: CPTripPauseReason, description: string, turnCardColor: UIColor): void;
+
+	resumeTripWithUpdatedRouteInformation(routeInformation: CPRouteInformation): void;
 
 	updateTravelEstimatesForManeuver(estimates: CPTravelEstimates, maneuver: CPManeuver): void;
 }
@@ -1720,6 +1938,29 @@ declare class CPRouteChoice extends NSObject implements NSCopying, NSSecureCodin
 	initWithSummaryVariantsAdditionalInformationVariantsSelectionSummaryVariants(summaryVariants: NSArray<string> | string[], additionalInformationVariants: NSArray<string> | string[], selectionSummaryVariants: NSArray<string> | string[]): this;
 }
 
+declare class CPRouteInformation extends NSObject {
+
+	static alloc(): CPRouteInformation; // inherited from NSObject
+
+	static new(): CPRouteInformation; // inherited from NSObject
+
+	readonly currentLaneGuidance: CPLaneGuidance;
+
+	readonly currentManeuvers: NSArray<CPManeuver>;
+
+	readonly laneGuidances: NSArray<CPLaneGuidance>;
+
+	readonly maneuverTravelEstimates: CPTravelEstimates;
+
+	readonly maneuvers: NSArray<CPManeuver>;
+
+	readonly tripTravelEstimates: CPTravelEstimates;
+
+	constructor(o: { maneuvers: NSArray<CPManeuver> | CPManeuver[]; laneGuidances: NSArray<CPLaneGuidance> | CPLaneGuidance[]; currentManeuvers: NSArray<CPManeuver> | CPManeuver[]; currentLaneGuidance: CPLaneGuidance; tripTravelEstimates: CPTravelEstimates; maneuverTravelEstimates: CPTravelEstimates; });
+
+	initWithManeuversLaneGuidancesCurrentManeuversCurrentLaneGuidanceTripTravelEstimatesManeuverTravelEstimates(maneuvers: NSArray<CPManeuver> | CPManeuver[], laneGuidances: NSArray<CPLaneGuidance> | CPLaneGuidance[], currentManeuvers: NSArray<CPManeuver> | CPManeuver[], currentLaneGuidance: CPLaneGuidance, tripTravelEstimates: CPTravelEstimates, maneuverTravelEstimates: CPTravelEstimates): this;
+}
+
 declare class CPSearchTemplate extends CPTemplate {
 
 	static alloc(): CPSearchTemplate; // inherited from NSObject
@@ -1965,6 +2206,13 @@ declare const enum CPTimeRemainingColor {
 	Red = 3
 }
 
+declare const enum CPTrafficSide {
+
+	Right = 0,
+
+	Left = 1
+}
+
 declare class CPTravelEstimates extends NSObject implements NSSecureCoding {
 
 	static alloc(): CPTravelEstimates; // inherited from NSObject
@@ -1973,17 +2221,23 @@ declare class CPTravelEstimates extends NSObject implements NSSecureCoding {
 
 	readonly distanceRemaining: NSMeasurement<NSUnitLength>;
 
+	readonly distanceRemainingToDisplay: NSMeasurement<NSUnitLength>;
+
 	readonly timeRemaining: number;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
+	constructor(o: { distanceRemaining: NSMeasurement<NSUnitLength>; distanceRemainingToDisplay: NSMeasurement<NSUnitLength>; timeRemaining: number; });
+
 	constructor(o: { distanceRemaining: NSMeasurement<NSUnitLength>; timeRemaining: number; });
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
+
+	initWithDistanceRemainingDistanceRemainingToDisplayTimeRemaining(distanceRemaining: NSMeasurement<NSUnitLength>, distanceRemainingToDisplay: NSMeasurement<NSUnitLength>, time: number): this;
 
 	initWithDistanceRemainingTimeRemaining(distance: NSMeasurement<NSUnitLength>, time: number): this;
 }
@@ -1995,6 +2249,8 @@ declare class CPTrip extends NSObject implements NSSecureCoding {
 	static new(): CPTrip; // inherited from NSObject
 
 	readonly destination: MKMapItem;
+
+	destinationNameVariants: NSArray<string>;
 
 	readonly origin: MKMapItem;
 

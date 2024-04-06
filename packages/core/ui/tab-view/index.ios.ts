@@ -12,12 +12,10 @@ import { CoreTypes } from '../../core-types';
 import { ImageSource } from '../../image-source';
 import { profile } from '../../profiling';
 import { Frame } from '../frame';
-import { layout, iOSNativeHelper } from '../../utils';
+import { layout } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 import { Device } from '../../platform';
 export * from './tab-view-common';
-
-const majorVersion = iOSNativeHelper.MajorVersion;
-const isPhone = Device.deviceType === 'Phone';
 
 @NativeClass
 class UITabBarControllerImpl extends UITabBarController {
@@ -76,7 +74,7 @@ class UITabBarControllerImpl extends UITabBarController {
 	public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
 		super.traitCollectionDidChange(previousTraitCollection);
 
-		if (majorVersion >= 13) {
+		if (SDK_VERSION >= 13) {
 			const owner = this._owner?.deref();
 			if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
 				owner.notify({
@@ -185,7 +183,7 @@ function updateTitleAndIconPositions(tabItem: TabViewItem, tabBarItem: UITabBarI
 	// For iOS 11 icon is above the text *only* on phones in portrait mode.
 	const orientation = controller.interfaceOrientation;
 	const isPortrait = orientation !== UIInterfaceOrientation.LandscapeLeft && orientation !== UIInterfaceOrientation.LandscapeRight;
-	const isIconAboveTitle = majorVersion < 11 || (isPhone && isPortrait);
+	const isIconAboveTitle = (!__VISIONOS__ && SDK_VERSION < 11) || (Device.deviceType === 'Phone' && isPortrait);
 
 	if (!tabItem.iconSource) {
 		if (isIconAboveTitle) {
@@ -253,7 +251,7 @@ export class TabViewItem extends TabViewItemBase {
 			updateTitleAndIconPositions(this, tabBarItem, controller);
 
 			// There is no need to request title styles update here in newer versions as styling is handled by bar appearance instance
-			if (majorVersion < 15) {
+			if (!__VISIONOS__ && SDK_VERSION < 15) {
 				// TODO: Repeating code. Make TabViewItemBase - ViewBase and move the colorProperty on tabViewItem.
 				// Delete the repeating code.
 				const states = getTitleAttributesForStates(parent);
@@ -466,7 +464,7 @@ export class TabView extends TabViewBase {
 			const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(item.title || '', icon, i);
 			updateTitleAndIconPositions(item, tabBarItem, controller);
 
-			if (majorVersion < 15) {
+			if (!__VISIONOS__ && SDK_VERSION < 15) {
 				applyStatesToItem(tabBarItem, states);
 			}
 
@@ -475,7 +473,7 @@ export class TabView extends TabViewBase {
 			(<TabViewItemDefinition>item).canBeLoaded = true;
 		});
 
-		if (majorVersion >= 15) {
+		if (SDK_VERSION >= 15) {
 			this.updateBarItemAppearance(<UITabBar>this._ios.tabBar, states);
 		}
 
@@ -525,7 +523,7 @@ export class TabView extends TabViewBase {
 
 		const tabBar = <UITabBar>this.ios.tabBar;
 		const states = getTitleAttributesForStates(this);
-		if (majorVersion >= 15) {
+		if (SDK_VERSION >= 15) {
 			this.updateBarItemAppearance(tabBar, states);
 		} else {
 			for (let i = 0; i < tabBar.items.count; i++) {
@@ -555,7 +553,7 @@ export class TabView extends TabViewBase {
 
 	private _updateAppearance(tabBar: UITabBar, appearance: UITabBarAppearance) {
 		tabBar.standardAppearance = appearance;
-		if (majorVersion >= 15) {
+		if (SDK_VERSION >= 15) {
 			tabBar.scrollEdgeAppearance = appearance;
 		}
 	}
@@ -597,7 +595,7 @@ export class TabView extends TabViewBase {
 		return this._ios.tabBar.barTintColor;
 	}
 	[tabBackgroundColorProperty.setNative](value: UIColor | Color) {
-		if (majorVersion >= 13) {
+		if (SDK_VERSION >= 13) {
 			const appearance = this._getAppearance(this._ios.tabBar);
 			appearance.configureWithDefaultBackground();
 			appearance.backgroundColor = value instanceof Color ? value.ios : value;

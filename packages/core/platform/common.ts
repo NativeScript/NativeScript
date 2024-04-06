@@ -10,3 +10,4 @@ export const platformNames = {
 export const isAndroid = !!__ANDROID__;
 export const isIOS = !!__IOS__ || !!__VISIONOS__;
 export const isVisionOS = !!__VISIONOS__;
+export const isApple = !!__APPLE__;

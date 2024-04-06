@@ -108,7 +108,7 @@ export abstract class ImageBase extends View implements ImageDefinition {
 							}
 							Trace.write(err, Trace.categories.Debug);
 						}
-					}
+					},
 				);
 			}
 		} else if (value instanceof ImageSource) {
@@ -153,7 +153,7 @@ isLoadingProperty.register(ImageBase);
 export const stretchProperty = new Property<ImageBase, CoreTypes.ImageStretchType>({
 	name: 'stretch',
 	defaultValue: 'aspectFit',
-	affectsLayout: __IOS__,
+	affectsLayout: __APPLE__,
 });
 stretchProperty.register(ImageBase);
 
