@@ -86,7 +86,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		const sourceMapAbsolutePath = getProjectFilePath(
 			`./${
 				env.buildPath ?? 'platforms'
-			}/${platform}-sourceMaps/[file].map[query]`
+			}/${platform}-sourceMaps/[file].map[query]`,
 		);
 		const sourceMapRelativePath = relative(outputPath, sourceMapAbsolutePath);
 		config.output.sourceMapFilename(sourceMapRelativePath);
@@ -272,7 +272,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	const configFile = tsConfigPath
 		? {
 				configFile: tsConfigPath,
-		  }
+			}
 		: undefined;
 
 	// set up ts support
@@ -451,7 +451,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			 * +-----------------------------------------------------------------------------------------+
 			 */
 			/System.import\(\) is deprecated/,
-		])
+		]),
 	);
 
 	// todo: refine defaults
@@ -518,5 +518,5 @@ function shouldIncludeInspectorModules(): boolean {
 	const platform = getPlatformName();
 	// todo: check if core modules are external
 	// todo: check if we are testing
-	return platform === 'ios';
+	return platform === 'ios' || platform === 'android';
 }

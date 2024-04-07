@@ -55,7 +55,7 @@ export namespace HeapDomain {
 				JSON.stringify({
 					method: 'Heap.garbageCollected',
 					params: { collection: collection },
-				})
+				}),
 			);
 		}
 		// Tracking started.
@@ -67,7 +67,7 @@ export namespace HeapDomain {
 						timestamp: timestamp,
 						snapshotData: snapshotData,
 					},
-				})
+				}),
 			);
 		}
 		// Tracking stopped.
@@ -79,7 +79,7 @@ export namespace HeapDomain {
 						timestamp: timestamp,
 						snapshotData: snapshotData,
 					},
-				})
+				}),
 			);
 		}
 	}
@@ -328,7 +328,7 @@ export namespace DebuggerDomain {
 				JSON.stringify({
 					method: 'Debugger.globalObjectCleared',
 					params: {},
-				})
+				}),
 			);
 		}
 		// Fired when virtual machine parses script. This event is also fired for all known and uncollected scripts upon enabling debugger.
@@ -347,7 +347,7 @@ export namespace DebuggerDomain {
 						sourceURL: sourceURL,
 						sourceMapURL: sourceMapURL,
 					},
-				})
+				}),
 			);
 		}
 		// Fired when virtual machine fails to parse the script.
@@ -362,7 +362,7 @@ export namespace DebuggerDomain {
 						errorLine: errorLine,
 						errorMessage: errorMessage,
 					},
-				})
+				}),
 			);
 		}
 		// Fired when breakpoint is resolved to an actual script and location.
@@ -371,7 +371,7 @@ export namespace DebuggerDomain {
 				JSON.stringify({
 					method: 'Debugger.breakpointResolved',
 					params: { breakpointId: breakpointId, location: location },
-				})
+				}),
 			);
 		}
 		// Fired when the virtual machine stopped on breakpoint or exception or any other stop criteria.
@@ -384,7 +384,7 @@ export namespace DebuggerDomain {
 						reason: reason,
 						data: data,
 					},
-				})
+				}),
 			);
 		}
 		// Fired when the virtual machine resumed execution.
@@ -397,7 +397,7 @@ export namespace DebuggerDomain {
 				JSON.stringify({
 					method: 'Debugger.didSampleProbe',
 					params: { sample: sample },
-				})
+				}),
 			);
 		}
 		// Fired when a "sound" breakpoint action is triggered on a breakpoint.
@@ -406,7 +406,7 @@ export namespace DebuggerDomain {
 				JSON.stringify({
 					method: 'Debugger.playBreakpointActionSound',
 					params: { breakpointActionId: breakpointActionId },
-				})
+				}),
 			);
 		}
 	}
@@ -755,7 +755,7 @@ export namespace RuntimeDomain {
 				JSON.stringify({
 					method: 'Runtime.executionContextCreated',
 					params: { context: context },
-				})
+				}),
 			);
 		}
 	}
@@ -829,7 +829,7 @@ export namespace ConsoleDomain {
 				JSON.stringify({
 					method: 'Console.messageAdded',
 					params: { message: message },
-				})
+				}),
 			);
 		}
 		// Issued when subsequent message(s) are equal to the previous one(s).
@@ -838,7 +838,7 @@ export namespace ConsoleDomain {
 				JSON.stringify({
 					method: 'Console.messageRepeatCountUpdated',
 					params: { count: count },
-				})
+				}),
 			);
 		}
 		// Issued when console is cleared. This happens either upon <code>clearMessages</code> command or after page navigation.
@@ -847,7 +847,7 @@ export namespace ConsoleDomain {
 				JSON.stringify({
 					method: 'Console.messagesCleared',
 					params: {},
-				})
+				}),
 			);
 		}
 		// Issued from console.takeHeapSnapshot.
@@ -860,7 +860,7 @@ export namespace ConsoleDomain {
 						snapshotData: snapshotData,
 						title: title,
 					},
-				})
+				}),
 			);
 		}
 	}
@@ -1126,7 +1126,7 @@ export namespace PageDomain {
 				JSON.stringify({
 					method: 'Page.domContentEventFired',
 					params: { timestamp: timestamp },
-				})
+				}),
 			);
 		}
 		loadEventFired(timestamp: number): void {
@@ -1134,7 +1134,7 @@ export namespace PageDomain {
 				JSON.stringify({
 					method: 'Page.loadEventFired',
 					params: { timestamp: timestamp },
-				})
+				}),
 			);
 		}
 		// Fired once navigation of the frame has completed. Frame is now associated with the new loader.
@@ -1143,7 +1143,7 @@ export namespace PageDomain {
 				JSON.stringify({
 					method: 'Page.frameNavigated',
 					params: { frame: frame },
-				})
+				}),
 			);
 		}
 		// Fired when frame has been detached from its parent.
@@ -1152,7 +1152,7 @@ export namespace PageDomain {
 				JSON.stringify({
 					method: 'Page.frameDetached',
 					params: { frameId: frameId },
-				})
+				}),
 			);
 		}
 		// Fired when frame has started loading.
@@ -1161,7 +1161,7 @@ export namespace PageDomain {
 				JSON.stringify({
 					method: 'Page.frameStartedLoading',
 					params: { frameId: frameId },
-				})
+				}),
 			);
 		}
 		// Fired when frame has stopped loading.
@@ -1170,7 +1170,7 @@ export namespace PageDomain {
 				JSON.stringify({
 					method: 'Page.frameStoppedLoading',
 					params: { frameId: frameId },
-				})
+				}),
 			);
 		}
 		// Fired when frame schedules a potential navigation.
@@ -1179,7 +1179,7 @@ export namespace PageDomain {
 				JSON.stringify({
 					method: 'Page.frameScheduledNavigation',
 					params: { frameId: frameId, delay: delay },
-				})
+				}),
 			);
 		}
 		// Fired when frame no longer has a scheduled navigation.
@@ -1188,7 +1188,7 @@ export namespace PageDomain {
 				JSON.stringify({
 					method: 'Page.frameClearedScheduledNavigation',
 					params: { frameId: frameId },
-				})
+				}),
 			);
 		}
 		// Fired when a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload) is about to open.
@@ -1197,7 +1197,7 @@ export namespace PageDomain {
 				JSON.stringify({
 					method: 'Page.javascriptDialogOpening',
 					params: { message: message },
-				})
+				}),
 			);
 		}
 		// Fired when a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload) has been closed.
@@ -1206,7 +1206,7 @@ export namespace PageDomain {
 				JSON.stringify({
 					method: 'Page.javascriptDialogClosed',
 					params: {},
-				})
+				}),
 			);
 		}
 		// Fired when the JavaScript is enabled/disabled on the page
@@ -1215,7 +1215,7 @@ export namespace PageDomain {
 				JSON.stringify({
 					method: 'Page.scriptsEnabled',
 					params: { isEnabled: isEnabled },
-				})
+				}),
 			);
 		}
 	}
@@ -1384,7 +1384,7 @@ export namespace NetworkDomain {
 						redirectResponse: redirectResponse,
 						type: type,
 					},
-				})
+				}),
 			);
 		}
 		// Fired if request ended up loading from cache.
@@ -1393,7 +1393,7 @@ export namespace NetworkDomain {
 				JSON.stringify({
 					method: 'Network.requestServedFromCache',
 					params: { requestId: requestId },
-				})
+				}),
 			);
 		}
 		// Fired when HTTP response is available.
@@ -1409,7 +1409,7 @@ export namespace NetworkDomain {
 						type: type,
 						response: response,
 					},
-				})
+				}),
 			);
 		}
 		// Fired when data chunk was received over the network.
@@ -1423,7 +1423,7 @@ export namespace NetworkDomain {
 						dataLength: dataLength,
 						encodedDataLength: encodedDataLength,
 					},
-				})
+				}),
 			);
 		}
 		// Fired when HTTP request has finished loading.
@@ -1436,7 +1436,7 @@ export namespace NetworkDomain {
 						timestamp: timestamp,
 						sourceMapURL: sourceMapURL,
 					},
-				})
+				}),
 			);
 		}
 		// Fired when HTTP request has failed to load.
@@ -1450,7 +1450,7 @@ export namespace NetworkDomain {
 						errorText: errorText,
 						canceled: canceled,
 					},
-				})
+				}),
 			);
 		}
 		// Fired when HTTP request has been served from memory cache.
@@ -1467,7 +1467,7 @@ export namespace NetworkDomain {
 						initiator: initiator,
 						resource: resource,
 					},
-				})
+				}),
 			);
 		}
 		// Fired when WebSocket is about to initiate handshake.
@@ -1480,7 +1480,7 @@ export namespace NetworkDomain {
 						timestamp: timestamp,
 						request: request,
 					},
-				})
+				}),
 			);
 		}
 		// Fired when WebSocket handshake response becomes available.
@@ -1493,7 +1493,7 @@ export namespace NetworkDomain {
 						timestamp: timestamp,
 						response: response,
 					},
-				})
+				}),
 			);
 		}
 		// Fired upon WebSocket creation.
@@ -1502,7 +1502,7 @@ export namespace NetworkDomain {
 				JSON.stringify({
 					method: 'Network.webSocketCreated',
 					params: { requestId: requestId, url: url },
-				})
+				}),
 			);
 		}
 		// Fired when WebSocket is closed.
@@ -1511,7 +1511,7 @@ export namespace NetworkDomain {
 				JSON.stringify({
 					method: 'Network.webSocketClosed',
 					params: { requestId: requestId, timestamp: timestamp },
-				})
+				}),
 			);
 		}
 		// Fired when WebSocket frame is received.
@@ -1524,7 +1524,7 @@ export namespace NetworkDomain {
 						timestamp: timestamp,
 						response: response,
 					},
-				})
+				}),
 			);
 		}
 		// Fired when WebSocket frame error occurs.
@@ -1537,7 +1537,7 @@ export namespace NetworkDomain {
 						timestamp: timestamp,
 						errorMessage: errorMessage,
 					},
-				})
+				}),
 			);
 		}
 		// Fired when WebSocket frame is sent.
@@ -1550,7 +1550,7 @@ export namespace NetworkDomain {
 						timestamp: timestamp,
 						response: response,
 					},
-				})
+				}),
 			);
 		}
 	}
@@ -1751,7 +1751,7 @@ export namespace DOMDomain {
 				JSON.stringify({
 					method: 'DOM.setChildNodes',
 					params: { parentId: parentId, nodes: nodes },
-				})
+				}),
 			);
 		}
 		// Fired when <code>Element</code>'s attribute is modified.
@@ -1760,7 +1760,7 @@ export namespace DOMDomain {
 				JSON.stringify({
 					method: 'DOM.attributeModified',
 					params: { nodeId: nodeId, name: name, value: value },
-				})
+				}),
 			);
 		}
 		// Fired when <code>Element</code>'s attribute is removed.
@@ -1769,7 +1769,7 @@ export namespace DOMDomain {
 				JSON.stringify({
 					method: 'DOM.attributeRemoved',
 					params: { nodeId: nodeId, name: name },
-				})
+				}),
 			);
 		}
 		// Fired when <code>Element</code>'s inline style is modified via a CSS property modification.
@@ -1778,7 +1778,7 @@ export namespace DOMDomain {
 				JSON.stringify({
 					method: 'DOM.inlineStyleInvalidated',
 					params: { nodeIds: nodeIds },
-				})
+				}),
 			);
 		}
 		// Mirrors <code>DOMCharacterDataModified</code> event.
@@ -1787,7 +1787,7 @@ export namespace DOMDomain {
 				JSON.stringify({
 					method: 'DOM.characterDataModified',
 					params: { nodeId: nodeId, characterData: characterData },
-				})
+				}),
 			);
 		}
 		// Fired when <code>Container</code>'s child node count has changed.
@@ -1796,7 +1796,7 @@ export namespace DOMDomain {
 				JSON.stringify({
 					method: 'DOM.childNodeCountUpdated',
 					params: { nodeId: nodeId, childNodeCount: childNodeCount },
-				})
+				}),
 			);
 		}
 		// Mirrors <code>DOMNodeInserted</code> event.
@@ -1809,7 +1809,7 @@ export namespace DOMDomain {
 						previousNodeId: previousNodeId,
 						node: node,
 					},
-				})
+				}),
 			);
 		}
 		// Mirrors <code>DOMNodeRemoved</code> event.
@@ -1818,7 +1818,7 @@ export namespace DOMDomain {
 				JSON.stringify({
 					method: 'DOM.childNodeRemoved',
 					params: { parentNodeId: parentNodeId, nodeId: nodeId },
-				})
+				}),
 			);
 		}
 		// Called when shadow root is pushed into the element.
@@ -1827,7 +1827,7 @@ export namespace DOMDomain {
 				JSON.stringify({
 					method: 'DOM.shadowRootPushed',
 					params: { hostId: hostId, root: root },
-				})
+				}),
 			);
 		}
 		// Called when shadow root is popped from the element.
@@ -1836,7 +1836,7 @@ export namespace DOMDomain {
 				JSON.stringify({
 					method: 'DOM.shadowRootPopped',
 					params: { hostId: hostId, rootId: rootId },
-				})
+				}),
 			);
 		}
 		// Called when a pseudo element is added to an element.
@@ -1848,7 +1848,7 @@ export namespace DOMDomain {
 						parentId: parentId,
 						pseudoElement: pseudoElement,
 					},
-				})
+				}),
 			);
 		}
 		// Called when a pseudo element is removed from an element.
@@ -1860,7 +1860,7 @@ export namespace DOMDomain {
 						parentId: parentId,
 						pseudoElementId: pseudoElementId,
 					},
-				})
+				}),
 			);
 		}
 	}
@@ -2128,7 +2128,7 @@ export namespace CSSDomain {
 				JSON.stringify({
 					method: 'CSS.mediaQueryResultChanged',
 					params: {},
-				})
+				}),
 			);
 		}
 		// Fires whenever a web font gets loaded.
@@ -2141,7 +2141,7 @@ export namespace CSSDomain {
 				JSON.stringify({
 					method: 'CSS.styleSheetChanged',
 					params: { styleSheetId: styleSheetId },
-				})
+				}),
 			);
 		}
 		// Fired whenever an active document stylesheet is added.
@@ -2150,7 +2150,7 @@ export namespace CSSDomain {
 				JSON.stringify({
 					method: 'CSS.styleSheetAdded',
 					params: { header: header },
-				})
+				}),
 			);
 		}
 		// Fired whenever an active document stylesheet is removed.
@@ -2159,7 +2159,7 @@ export namespace CSSDomain {
 				JSON.stringify({
 					method: 'CSS.styleSheetRemoved',
 					params: { styleSheetId: styleSheetId },
-				})
+				}),
 			);
 		}
 		layoutEditorChange(styleSheetId: StyleSheetId, changeRange: SourceRange): void {
@@ -2170,7 +2170,7 @@ export namespace CSSDomain {
 						styleSheetId: styleSheetId,
 						changeRange: changeRange,
 					},
-				})
+				}),
 			);
 		}
 	}
