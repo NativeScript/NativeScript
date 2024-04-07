@@ -2,6 +2,7 @@ import * as inspectorCommandTypes from './InspectorBackendCommands';
 const inspectorCommands: typeof inspectorCommandTypes = require('./InspectorBackendCommands');
 
 import * as debuggerDomains from '.';
+const getApplicationContext = () => require('../utils/android').getApplicationContext();
 
 declare let __inspectorSendEvent;
 
@@ -172,8 +173,8 @@ export class NetworkDomainDebugger implements inspectorCommandTypes.NetworkDomai
 	 */
 	getResponseBody(params: inspectorCommandTypes.NetworkDomain.GetResponseBodyMethodArguments): { body: string; base64Encoded: boolean } {
 		const resource_data = resources_datas[params.requestId];
-		const body = resource_data.hasTextContent ? NSString.alloc().initWithDataEncoding(resource_data.data, 4).toString() : resource_data.data.base64EncodedStringWithOptions(0);
-
+		// java.io.ByteArrayOutputStream
+		const body = resource_data.hasTextContent ? resource_data.data.toString('UTF-8') : android.util.Base64.encodeToString(resource_data.data?.buf?.(), android.util.Base64.NO_WRAP);
 		if (resource_data) {
 			return {
 				body: body,
@@ -225,12 +226,13 @@ export class NetworkDomainDebugger implements inspectorCommandTypes.NetworkDomai
 	 * Loads a resource in the context of a frame on the inspected page without cross origin checks.
 	 */
 	loadResource(params: inspectorCommandTypes.NetworkDomain.LoadResourceMethodArguments): { content: string; mimeType: string; status: number } {
-		const appPath = NSBundle.mainBundle.bundlePath;
+		const appPath = getApplicationContext().getFilesDir().getCanonicalPath() + '/app';
 		const pathUrl = params.url.replace('file://', appPath);
-		const fileManager = NSFileManager.defaultManager;
-		const data = fileManager.fileExistsAtPath(pathUrl) ? fileManager.contentsAtPath(pathUrl) : undefined;
-		const content = data ? NSString.alloc().initWithDataEncoding(data, NSUTF8StringEncoding) : '';
-
+		const file = new java.io.File(pathUrl);
+		const is = file.exists() ? new java.io.FileInputStream(file) : undefined;
+		const data = is ? Array.create('bytes', file.length()) : undefined;
+		const read = data ? is.read(data) : 0;
+		const content = read ? new java.lang.String(data) : '';
 		return {
 			content: content.toString(), // Not sure why however we need to call toString() for NSString
 			mimeType: 'application/octet-stream',
