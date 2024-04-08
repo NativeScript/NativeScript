@@ -1,4 +1,4 @@
-require('./globals');
+import './globals';
 
 require('./debugger/webinspector-network');
 require('./debugger/webinspector-dom');
