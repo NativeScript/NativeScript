@@ -392,38 +392,50 @@ export class FrameBase extends CustomLayoutView {
 
 	@profile
 	public performNavigation(navigationContext: NavigationContext) {
-		this._executingContext = navigationContext;
+		try {
+			this._executingContext = navigationContext;
 
-		const backstackEntry = navigationContext.entry;
-		const isBackNavigation = navigationContext.navigationType === NavigationType.back;
-		this._onNavigatingTo(backstackEntry, isBackNavigation);
-		const navigationTransition = this._getNavigationTransition(backstackEntry.entry);
-		if (navigationTransition?.instance) {
-			const state = SharedTransition.getState(navigationTransition?.instance.id);
-			SharedTransition.updateState(navigationTransition?.instance.id, {
-				// Allow setting custom page context to override default (from) page
-				// helpful for deeply nested frame navigation setups (eg: Nested Tab Navigation)
-				// when sharing elements in this condition, the (from) page would
-				// get overridden on each frame preventing shared element matching
-				page: state?.page || this.currentPage,
-				toPage: this,
-			});
+			const backstackEntry = navigationContext.entry;
+			const isBackNavigation = navigationContext.navigationType === NavigationType.back;
+			this._onNavigatingTo(backstackEntry, isBackNavigation);
+			const navigationTransition = this._getNavigationTransition(backstackEntry.entry);
+			if (navigationTransition?.instance) {
+				const state = SharedTransition.getState(navigationTransition?.instance.id);
+				SharedTransition.updateState(navigationTransition?.instance.id, {
+					// Allow setting custom page context to override default (from) page
+					// helpful for deeply nested frame navigation setups (eg: Nested Tab Navigation)
+					// when sharing elements in this condition, the (from) page would
+					// get overridden on each frame preventing shared element matching
+					page: state?.page || this.currentPage,
+					toPage: this,
+				});
+			}
+			this._navigateCore(backstackEntry);
+		} catch (error) {
+			// reset _executingContext or next navigations will be blocked
+			this._executingContext = null;
+			throw error;
 		}
-		this._navigateCore(backstackEntry);
 	}
 
 	@profile
 	performGoBack(navigationContext: NavigationContext) {
-		let backstackEntry = navigationContext.entry;
-		const backstack = this._backStack;
-		if (!backstackEntry) {
-			backstackEntry = backstack[backstack.length - 1];
-			navigationContext.entry = backstackEntry;
-		}
+		try {
+			let backstackEntry = navigationContext.entry;
+			const backstack = this._backStack;
+			if (!backstackEntry) {
+				backstackEntry = backstack[backstack.length - 1];
+				navigationContext.entry = backstackEntry;
+			}
 
-		this._executingContext = navigationContext;
-		this._onNavigatingTo(backstackEntry, true);
-		this._goBackCore(backstackEntry);
+			this._executingContext = navigationContext;
+			this._onNavigatingTo(backstackEntry, true);
+			this._goBackCore(backstackEntry);
+		} catch (error) {
+			// reset _executingContext or next navigations will be blocked
+			this._executingContext = null;
+			throw error;
+		}
 	}
 
 	public _goBackCore(backstackEntry: BackstackEntry) {
