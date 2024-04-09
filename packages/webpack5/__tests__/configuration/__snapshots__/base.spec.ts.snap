@@ -56,7 +56,7 @@ exports[`base configuration for android 1`] = `
   },
   resolveLoader: {
     modules: [
-      '__jest__/node_modules/@nativescript/webpack/dist/loaders',
+      '__jest__/node_modules/@akylas/nativescript-webpack/dist/loaders',
       '__jest__/node_modules',
       'node_modules'
     ]
@@ -387,7 +387,7 @@ exports[`base configuration for ios 1`] = `
   },
   resolveLoader: {
     modules: [
-      '__jest__/node_modules/@nativescript/webpack/dist/loaders',
+      '__jest__/node_modules/@akylas/nativescript-webpack/dist/loaders',
       '__jest__/node_modules',
       'node_modules'
     ]

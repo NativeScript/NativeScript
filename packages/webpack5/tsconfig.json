@@ -14,7 +14,7 @@
 		"skipDefaultLibCheck": true,
 		"diagnostics": true,
 		"paths": {
-			"@nativescript/webpack": ["src"]
+			"@akylas/nativescript-webpack": ["src"]
 		},
 		"esModuleInterop": true,
 		"allowSyntheticDefaultImports": true,

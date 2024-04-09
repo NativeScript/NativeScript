@@ -86,7 +86,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		const sourceMapAbsolutePath = getProjectFilePath(
 			`./${
 				env.buildPath ?? 'platforms'
-			}/${platform}-sourceMaps/[file].map[query]`
+			}/${platform}-sourceMaps/[file].map[query]`,
 		);
 		const sourceMapRelativePath = relative(outputPath, sourceMapAbsolutePath);
 		config.output.sourceMapFilename(sourceMapRelativePath);
@@ -182,8 +182,8 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	});
 
 	// look for loaders in
-	//  - node_modules/@nativescript/webpack/dist/loaders
-	//  - node_modules/@nativescript/webpack/node_modules
+	//  - node_modules/@akylas/nativescript-webpack/dist/loaders
+	//  - node_modules/@akylas/nativescript-webpack/node_modules
 	//  - node_modules
 	// allows for cleaner rules, without having to specify full paths to loaders
 	config.resolveLoader.modules
@@ -272,7 +272,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	const configFile = tsConfigPath
 		? {
 				configFile: tsConfigPath,
-		  }
+			}
 		: undefined;
 
 	// set up ts support
@@ -451,7 +451,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			 * +-----------------------------------------------------------------------------------------+
 			 */
 			/System.import\(\) is deprecated/,
-		])
+		]),
 	);
 
 	// todo: refine defaults

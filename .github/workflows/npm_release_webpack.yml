@@ -1,4 +1,4 @@
-name: '@nativescript/webpack -> npm'
+name: '@akylas/nativescript-webpack -> npm'
 
 on:
   push:
@@ -28,14 +28,14 @@ jobs:
         working-directory: packages/webpack
         run: npm version $NPM_VERSION
 
-      - name: Build @nativescript/webpack
+      - name: Build @akylas/nativescript-webpack
         run: npm run run webpack:build
 
-      - name: Publish @nativescript/webpack
+      - name: Publish @akylas/nativescript-webpack
         working-directory: dist/packages
         env:
           NPM_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
         run: |
           echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ../../.npmrc
-          echo "Publishing @nativescript/webpack@$NPM_VERSION to NPM with tag $NPM_TAG..."
+          echo "Publishing @akylas/nativescript-webpack@$NPM_VERSION to NPM with tag $NPM_TAG..."
           npm publish nativescript-webpack.tgz --tag $NPM_TAG --dry-run

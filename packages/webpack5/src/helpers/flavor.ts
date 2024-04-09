@@ -1,4 +1,4 @@
-import { defaultConfigs } from '@nativescript/webpack';
+import { defaultConfigs } from '@akylas/nativescript-webpack';
 import { getAllDependencies } from './dependencies';
 import { error } from './log';
 
@@ -9,13 +9,14 @@ import { error } from './log';
 export function projectUsesCustomFlavor(): boolean {
 	const dependencies = getAllDependencies();
 	return [
-	  'vue', 
-	  'angular',
-	  'react',
-	  'svelte'
-	//@ts-ignore
-	].includes(determineProjectFlavor())
-	if (dependencies.includes('nativescript-vue') ||
+		'vue',
+		'angular',
+		'react',
+		'svelte',
+		//@ts-ignore
+	].includes(determineProjectFlavor());
+	if (
+		dependencies.includes('nativescript-vue') ||
 		dependencies.includes('@nativescript/angular') ||
 		dependencies.includes('react-nativescript') ||
 		dependencies.includes('svelte-native')

@@ -1,4 +1,4 @@
-describe('@nativescript/webpack', () => {
+describe('@akylas/nativescript-webpack', () => {
 	let webpack: typeof import('../src');
 
 	beforeEach(() => {
@@ -67,7 +67,7 @@ describe('@nativescript/webpack', () => {
 		expect(() => webpack.resolveChainableConfig()).not.toThrow();
 
 		expect(
-			'Unable to apply chain function from: test-plugin'
+			'Unable to apply chain function from: test-plugin',
 		).toHaveBeenWarned();
 	});
 

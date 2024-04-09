@@ -56,7 +56,7 @@ exports[`javascript configuration for android 1`] = `
   },
   resolveLoader: {
     modules: [
-      '__jest__/node_modules/@nativescript/webpack/dist/loaders',
+      '__jest__/node_modules/@akylas/nativescript-webpack/dist/loaders',
       '__jest__/node_modules',
       'node_modules'
     ]
@@ -317,7 +317,7 @@ exports[`javascript configuration for android 1`] = `
   entry: {
     bundle: [
       '@nativescript/core/globals/index',
-      '__jest__/node_modules/@nativescript/webpack/dist/stubs/virtual-entry-javascript',
+      '__jest__/node_modules/@akylas/nativescript-webpack/dist/stubs/virtual-entry-javascript',
       '@nativescript/core/bundle-entry-points',
       '__jest__/src/app.js',
       '@nativescript/core/ui/frame',
@@ -386,7 +386,7 @@ exports[`javascript configuration for ios 1`] = `
   },
   resolveLoader: {
     modules: [
-      '__jest__/node_modules/@nativescript/webpack/dist/loaders',
+      '__jest__/node_modules/@akylas/nativescript-webpack/dist/loaders',
       '__jest__/node_modules',
       'node_modules'
     ]
@@ -647,7 +647,7 @@ exports[`javascript configuration for ios 1`] = `
   entry: {
     bundle: [
       '@nativescript/core/globals/index',
-      '__jest__/node_modules/@nativescript/webpack/dist/stubs/virtual-entry-javascript',
+      '__jest__/node_modules/@akylas/nativescript-webpack/dist/stubs/virtual-entry-javascript',
       '@nativescript/core/bundle-entry-points',
       '__jest__/src/app.js'
     ],

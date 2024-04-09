@@ -75,7 +75,7 @@ jest.mock('path', () => {
 				if (newPath.startsWith('__jest__/src')) {
 					return newPath.replace(
 						'__jest__/src',
-						'__jest__/node_modules/@nativescript/webpack/dist'
+						'__jest__/node_modules/@akylas/nativescript-webpack/dist',
 					);
 				}
 
@@ -96,5 +96,5 @@ jest.mock(
 			typescript: '*',
 		},
 	}),
-	{ virtual: true }
+	{ virtual: true },
 );

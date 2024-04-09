@@ -1,5 +1,5 @@
 {
-	"name": "@nativescript/webpack",
+	"name": "@akylas/nativescript-webpack",
 	"version": "5.0.19",
 	"main": "dist/index.js",
 	"files": [
@@ -11,7 +11,7 @@
 	"license": "Apache-2.0",
 	"scripts": {
 		"build": "tsc --project tsconfig.build.json",
-		"package": "npx zx ./tools/scripts/pack-webpack5.mjs",
+		"package": "npx zx ../../tools/scripts/pack-webpack5.mjs",
 		"test": "jest",
 		"copy-stubs": "mkdirp dist/stubs && cp -R src/stubs/* dist/stubs",
 		"prepack": "npm run test && npm run build && npm run copy-stubs && chmod +x dist/bin/index.js"

@@ -7,7 +7,7 @@ const webpack5Path = path.resolve(__dirname, '../../packages/webpack5');
 const distPath = path.resolve(__dirname, '../../dist/packages');
 
 const packageJSON = await fs.readJSON(`${webpack5Path}/package.json`);
-const tgzName = `nativescript-webpack-${packageJSON.version}.tgz`;
+const tgzName = `${packageJSON.name.replace('@', '').replaceAll('/', '-')}-${packageJSON.version}.tgz`;
 
 cd(webpack5Path);
 
@@ -15,7 +15,7 @@ cd(webpack5Path);
 await $`npm pack`;
 
 const from = path.join(webpack5Path, tgzName);
-const to = path.join(distPath, 'nativescript-webpack.tgz');
+const to = path.join(distPath, tgzName);
 
 await fs.move(from, to, {
 	overwrite: true,
