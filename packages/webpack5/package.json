@@ -1,13 +1,11 @@
 {
 	"name": "@akylas/nativescript-webpack",
-	"version": "5.0.19",
+	"version": "5.0.19.1",
 	"main": "dist/index.js",
 	"files": [
 		"dist"
 	],
-	"bin": {
-		"nativescript-webpack": "dist/bin/index.js"
-	},
+	"bin": "dist/bin/index.js",
 	"license": "Apache-2.0",
 	"scripts": {
 		"build": "tsc --project tsconfig.build.json",

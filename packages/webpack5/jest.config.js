@@ -2,7 +2,7 @@ module.exports = {
 	preset: 'ts-jest',
 	testEnvironment: 'node',
 	moduleNameMapper: {
-		'^@nativescript/webpack$': '<rootDir>/src'
+		'^@akylas/nativescript-webpack$': '<rootDir>/src'
 	},
 	setupFiles: [
 		'<rootDir>/scripts/jest.setup.ts'
