@@ -114,6 +114,7 @@ export function request(options: httpModule.HttpRequestOptions): Promise<httpMod
 				session = defaultSession;
 			}
 
+			let timestamp = -1;
 			const dataTask = session.dataTaskWithRequestCompletionHandler(urlRequest, function (data: NSData, response: NSHTTPURLResponse, error: NSError) {
 				if (error) {
 					reject(new Error(error.localizedDescription));
@@ -137,6 +138,24 @@ export function request(options: httpModule.HttpRequestOptions): Promise<httpMod
 							headers: headers,
 							mimeType: response.MIMEType,
 							fromDiskCache: false,
+							timing: {
+								requestTime: timestamp,
+								proxyStart: -1,
+								proxyEnd: -1,
+								dnsStart: -1,
+								dnsEnd: -1,
+								connectStart: -1,
+								connectEnd: -1,
+								sslStart: -1,
+								sslEnd: -1,
+								serviceWorkerFetchStart: -1,
+								serviceWorkerFetchReady: -1,
+								serviceWorkerFetchEnd: -1,
+								sendStart: -1,
+								sendEnd: -1,
+								receiveHeadersEnd: -1,
+							},
+							headersSize: headers?.length ?? -1,
 						};
 						debugRequest.responseReceived(debugResponse);
 						debugRequest.loadingFinished();
@@ -193,10 +212,13 @@ export function request(options: httpModule.HttpRequestOptions): Promise<httpMod
 			});
 
 			if (options.url && debugRequest) {
+				timestamp = Date.now() / 1000;
 				const request = {
 					url: options.url,
 					method: 'GET',
 					headers: options.headers,
+					timestamp,
+					headersSize: options?.headers?.length ?? -1,
 				};
 				debugRequest.requestWillBeSent(request);
 			}

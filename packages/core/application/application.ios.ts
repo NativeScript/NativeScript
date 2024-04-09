@@ -130,7 +130,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		}
 		this._rootView = rootView;
 		// Attach to the existing iOS app
-		const window = this.nativeApp.keyWindow || (this.nativeApp.windows.count > 0 && this.nativeApp.windows[0]);
+		const window = Utils.ios.getWindow();
 
 		if (!window) {
 			return;
@@ -198,7 +198,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 
 			if (minFrameRateDisabled) {
 				let max = 120;
-				const deviceMaxFrames = UIScreen.mainScreen?.maximumFramesPerSecond;
+				const deviceMaxFrames = Utils.ios.getMainScreen().maximumFramesPerSecond;
 				if (options?.max) {
 					if (deviceMaxFrames) {
 						// iOS 10.3
@@ -209,7 +209,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 					}
 				}
 
-				if (Utils.ios.MajorVersion >= 15) {
+				if (Utils.SDK_VERSION >= 15 || __VISIONOS__) {
 					const min = options?.min || max / 2;
 					const preferred = options?.preferred || max;
 					this.displayedLink.preferredFrameRateRange = CAFrameRateRangeMake(min, max, preferred);
@@ -240,8 +240,12 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	}
 
 	get window(): UIWindow {
-		if (NativeScriptEmbedder.sharedInstance().delegate && !this._window) {
-			this._window = UIApplication.sharedApplication.keyWindow;
+		// TODO: consideration
+		// may not want to cache this value given the potential of multiple scenes
+		// particularly with SwiftUI app lifecycle based apps
+		if (!this._window) {
+			// Note: NativeScriptViewFactory.getKeyWindow will always be used in SwiftUI app lifecycle based apps
+			this._window = Utils.ios.getWindow();
 		}
 
 		return this._window;
@@ -317,7 +321,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 
 	protected getSystemAppearance(): 'light' | 'dark' {
 		// userInterfaceStyle is available on UITraitCollection since iOS 12.
-		if (Utils.ios.MajorVersion <= 11 || !this.rootController) {
+		if ((!__VISIONOS__ && Utils.SDK_VERSION <= 11) || !this.rootController) {
 			return null;
 		}
 
@@ -336,7 +340,12 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	}
 
 	protected getOrientation() {
-		const statusBarOrientation = UIApplication.sharedApplication.statusBarOrientation;
+		let statusBarOrientation: UIInterfaceOrientation;
+		if (__VISIONOS__) {
+			statusBarOrientation = NativeScriptEmbedder.sharedInstance().windowScene.interfaceOrientation;
+		} else {
+			statusBarOrientation = UIApplication.sharedApplication.statusBarOrientation;
+		}
 		return this.getOrientationValue(statusBarOrientation);
 	}
 
@@ -363,7 +372,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 				this.setWindowContent(root);
 			}
 		} else {
-			this._window = UIApplication.sharedApplication.keyWindow;
+			this._window = this.window; // UIApplication.sharedApplication.keyWindow;
 		}
 	}
 
@@ -398,8 +407,14 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		rootView._setupAsRootView({});
 		this.setViewControllerView(rootView);
 
-		const haveController = this._window.rootViewController !== null;
-		this._window.rootViewController = controller;
+		const win = this.window;
+
+		const haveController = win.rootViewController !== null;
+		win.rootViewController = controller;
+
+		if (!haveController) {
+			win.makeKeyAndVisible();
+		}
 
 		this.initRootView(rootView);
 		rootView.on(IOSHelper.traitCollectionColorAppearanceChangedEvent, () => {
@@ -431,13 +446,16 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	@profile
 	private didFinishLaunchingWithOptions(notification: NSNotification) {
 		this.setMaxRefreshRate();
+		// ensures window is assigned to proper window scene
+		this._window = this.window;
 
-		this._window = UIWindow.alloc().initWithFrame(UIScreen.mainScreen.bounds);
+		if (!this._window) {
+			// if still no window, create one
+			this._window = UIWindow.alloc().initWithFrame(UIScreen.mainScreen.bounds);
+		}
 
-		// TODO: Expose Window module so that it can we styled from XML & CSS
-		// Note: visionOS uses it's own material glass
 		if (!__VISIONOS__) {
-			this._window.backgroundColor = Utils.ios.MajorVersion <= 12 || !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
+			this.window.backgroundColor = Utils.SDK_VERSION <= 12 || !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
 		}
 
 		this.notifyAppStarted(notification);

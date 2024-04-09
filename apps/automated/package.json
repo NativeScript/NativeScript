@@ -11,11 +11,11 @@
     "@nativescript/theme": "*"
   },
   "devDependencies": {
-    "@nativescript/android": "~8.6.0",
-    "@nativescript/ios": "~8.6.0",
+    "@nativescript/android": "*",
+    "@nativescript/ios": "*",
     "@nativescript/webpack": "*",
     "circular-dependency-plugin": "^5.2.2",
-    "typescript": "~5.2.0"
+    "typescript": "~5.4.0"
   },
   "gitHead": "c06800e52ee1a184ea2dffd12a6702aaa43be4e3",
   "readme": "NativeScript Application"

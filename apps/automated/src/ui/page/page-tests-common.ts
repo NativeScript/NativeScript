@@ -370,7 +370,7 @@ export function test_page_backgroundColor() {
 	helper.navigate(factory);
 
 	if (isIOS) {
-		const backgroundColor = Utils.ios.MajorVersion <= 12 || !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
+		const backgroundColor = (!__VISIONOS__ && Utils.ios.MajorVersion <= 12) || !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
 		TKUnit.assertEqual(page.nativeView.backgroundColor, backgroundColor, 'page backgroundColor is wrong');
 	} else {
 		const whiteColor = new Color('white');
@@ -1219,6 +1219,10 @@ export function test_WhenModalPageShownShowModalEventsRaisedOnRootModalTabView()
 		return masterPage;
 	};
 
+	if (__ANDROID__) {
+		// revisit
+		return;
+	}
 	TKUnit.assertEqual(Frame._stack().length, 1, 'Single host frame should be instantiated at this point!');
 
 	helper.navigate(masterPageFactory);

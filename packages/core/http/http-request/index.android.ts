@@ -5,7 +5,7 @@ import { Screen } from '../../platform';
 import * as fsModule from '../../file-system';
 
 import { getFilenameFromUrl } from './http-request-common';
-import { NetworkAgent } from '../../debugger';
+import * as domainDebugger from '../../debugger';
 
 export enum HttpResponseEncoding {
 	UTF8,
@@ -37,7 +37,10 @@ function ensureFileSystem() {
 		fs = require('../../file-system');
 	}
 }
-
+let debugRequests: Map<number, { debugRequest: domainDebugger.domains.network.NetworkRequest; timestamp: number }>;
+if (__DEV__) {
+	debugRequests = new Map();
+}
 let completeCallback: org.nativescript.widgets.Async.CompleteCallback;
 function ensureCompleteCallback() {
 	if (completeCallback) {
@@ -77,9 +80,47 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
 		}
 	}
 
-	// send response data (for requestId) to network debugger
-	if (__DEV__ && global.__inspector && global.__inspector.isConnected) {
-		NetworkAgent.responseReceived(requestId, result, headers);
+	if (__DEV__) {
+		const debugRequestInfo = debugRequests.get(requestId);
+
+		if (debugRequestInfo) {
+			const debugRequest = debugRequestInfo.debugRequest;
+			let mime = (headers['Content-Type'] ?? 'text/plain') as string;
+			if (typeof mime === 'string') {
+				mime = mime.split(';')[0] ?? 'text/plain';
+			}
+
+			debugRequest.mimeType = mime;
+			debugRequest.data = result.raw;
+			const debugResponse = {
+				url: result.url,
+				status: result.statusCode,
+				statusText: result.statusText,
+				headers: headers,
+				mimeType: mime,
+				fromDiskCache: false,
+				timing: {
+					requestTime: debugRequestInfo.timestamp,
+					proxyStart: -1,
+					proxyEnd: -1,
+					dnsStart: -1,
+					dnsEnd: -1,
+					connectStart: -1,
+					connectEnd: -1,
+					sslStart: -1,
+					sslEnd: -1,
+					serviceWorkerFetchStart: -1,
+					serviceWorkerFetchReady: -1,
+					serviceWorkerFetchEnd: -1,
+					sendStart: -1,
+					sendEnd: -1,
+					receiveHeadersEnd: -1,
+				},
+			};
+			debugRequest.responseReceived(debugResponse);
+			debugRequest.loadingFinished();
+			debugRequests.delete(requestId);
+		}
 	}
 
 	callbacks.resolveCallback({
@@ -216,9 +257,29 @@ export function request(options: httpModule.HttpRequestOptions): Promise<httpMod
 			// initialize the options
 			const javaOptions = buildJavaOptions(options);
 
-			// send request data to network debugger
-			if (__DEV__ && global.__inspector && global.__inspector.isConnected) {
-				NetworkAgent.requestWillBeSent(requestIdCounter, options);
+			// // send request data to network debugger
+			// if (global.__inspector && global.__inspector.isConnected) {
+			// 	NetworkAgent.requestWillBeSent(requestIdCounter, options);
+			// }
+
+			if (__DEV__) {
+				const network = domainDebugger.getNetwork();
+				const debugRequest = network && network.create();
+
+				if (options.url && debugRequest) {
+					const timestamp = Date.now() / 1000;
+					debugRequests.set(requestIdCounter, {
+						debugRequest,
+						timestamp,
+					});
+					const request = {
+						url: options.url,
+						method: 'GET',
+						headers: options.headers,
+						timestamp,
+					};
+					debugRequest.requestWillBeSent(request);
+				}
 			}
 
 			// remember the callbacks so that we can use them when the CompleteCallback is called

@@ -5,14 +5,18 @@ import * as utils from '../utils';
 const userDefaults = NSUserDefaults.standardUserDefaults;
 
 export function hasKey(key: string): boolean {
-	Common.checkKey(key);
+	if (!Common.checkKey(key)) {
+		return;
+	}
 
 	return userDefaults.objectForKey(key) !== null;
 }
 
 // utils.ios.getters
 export function getBoolean(key: string, defaultValue?: boolean): boolean {
-	Common.checkKey(key);
+	if (!Common.checkKey(key)) {
+		return;
+	}
 	if (hasKey(key)) {
 		return userDefaults.boolForKey(key);
 	}
@@ -21,7 +25,9 @@ export function getBoolean(key: string, defaultValue?: boolean): boolean {
 }
 
 export function getString(key: string, defaultValue?: string): string {
-	Common.checkKey(key);
+	if (!Common.checkKey(key)) {
+		return;
+	}
 	if (hasKey(key)) {
 		return userDefaults.stringForKey(key);
 	}
@@ -30,7 +36,9 @@ export function getString(key: string, defaultValue?: string): string {
 }
 
 export function getNumber(key: string, defaultValue?: number): number {
-	Common.checkKey(key);
+	if (!Common.checkKey(key)) {
+		return;
+	}
 	if (hasKey(key)) {
 		return userDefaults.doubleForKey(key);
 	}
@@ -40,25 +48,39 @@ export function getNumber(key: string, defaultValue?: number): number {
 
 // setters
 export function setBoolean(key: string, value: boolean): void {
-	Common.checkKey(key);
-	Common.ensureValidValue(value, 'boolean');
+	if (!Common.checkKey(key)) {
+		return;
+	}
+	if (!Common.ensureValidValue(value, 'boolean')) {
+		return;
+	}
 	userDefaults.setBoolForKey(value, key);
 }
 
 export function setString(key: string, value: string): void {
-	Common.checkKey(key);
-	Common.ensureValidValue(value, 'string');
+	if (!Common.checkKey(key)) {
+		return;
+	}
+	if (!Common.ensureValidValue(value, 'string')) {
+		return;
+	}
 	userDefaults.setObjectForKey(value, key);
 }
 
 export function setNumber(key: string, value: number): void {
-	Common.checkKey(key);
-	Common.ensureValidValue(value, 'number');
+	if (!Common.checkKey(key)) {
+		return;
+	}
+	if (!Common.ensureValidValue(value, 'number')) {
+		return;
+	}
 	userDefaults.setDoubleForKey(value, key);
 }
 
 export function remove(key: string): void {
-	Common.checkKey(key);
+	if (!Common.checkKey(key)) {
+		return;
+	}
 	userDefaults.removeObjectForKey(key);
 }
 
@@ -71,7 +93,7 @@ export function flush(): boolean {
 }
 
 export function getAllKeys(): Array<string> {
-	return utils.iOSNativeHelper.collections.nsArrayToJSArray(userDefaults.dictionaryRepresentation().allKeys);
+	return utils.ios.collections.nsArrayToJSArray(userDefaults.dictionaryRepresentation().allKeys);
 }
 export function getAllJSON(): string {
 	const nsDictionary = userDefaults.dictionaryRepresentation();

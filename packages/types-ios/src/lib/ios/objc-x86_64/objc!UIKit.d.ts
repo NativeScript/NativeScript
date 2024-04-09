@@ -8843,6 +8843,8 @@ declare class UIControl extends UIView implements UIContextMenuInteractionDelega
 
 	menuAttachmentPointForConfiguration(configuration: UIContextMenuConfiguration): CGPoint;
 
+	performPrimaryAction(): void;
+
 	performSelector(aSelector: string): any;
 
 	performSelectorWithObject(aSelector: string, object: any): any;
@@ -9129,7 +9131,9 @@ declare const enum UIDatePickerMode {
 
 	DateAndTime = 2,
 
-	CountDownTimer = 3
+	CountDownTimer = 3,
+
+	YearAndMonth = 4
 }
 
 declare const enum UIDatePickerStyle {
@@ -9317,6 +9321,8 @@ declare class UIDocument extends NSObject implements NSFilePresenter, NSProgress
 	constructor(o: { fileURL: NSURL; });
 
 	accommodatePresentedItemDeletionWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+
+	accommodatePresentedItemEvictionWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
 
 	accommodatePresentedSubitemDeletionAtURLCompletionHandler(url: NSURL, completionHandler: (p1: NSError) => void): void;
 
@@ -10082,6 +10088,8 @@ declare class UIDragItem extends NSObject {
 	constructor(o: { itemProvider: NSItemProvider; });
 
 	initWithItemProvider(itemProvider: NSItemProvider): this;
+
+	setNeedsDropPreviewUpdate(): void;
 }
 
 declare class UIDragPreview extends NSObject implements NSCopying {
@@ -13154,6 +13162,26 @@ declare var UIItemProviderPresentationSizeProviding: {
 	prototype: UIItemProviderPresentationSizeProviding;
 };
 
+interface UIItemProviderReadingAugmentationDesignating extends NSItemProviderReading {
+}
+declare var UIItemProviderReadingAugmentationDesignating: {
+
+	prototype: UIItemProviderReadingAugmentationDesignating;
+
+	_ui_augmentingNSItemProviderReadingClass(): typeof NSObject;
+
+	objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): UIItemProviderReadingAugmentationDesignating;
+};
+
+interface UIItemProviderReadingAugmentationProviding {
+}
+declare var UIItemProviderReadingAugmentationProviding: {
+
+	prototype: UIItemProviderReadingAugmentationProviding;
+
+	objectWithItemProviderDataTypeIdentifierRequestedClassError(data: NSData, typeIdentifier: string, requestedClass: typeof NSObject): any;
+};
+
 declare class UIKey extends NSObject implements NSCoding, NSCopying {
 
 	static alloc(): UIKey; // inherited from NSObject
@@ -14589,6 +14617,8 @@ declare class UIMenu extends UIMenuElement {
 
 	readonly children: NSArray<UIMenuElement>;
 
+	displayPreferences: UIMenuDisplayPreferences;
+
 	readonly identifier: string;
 
 	readonly options: UIMenuOptions;
@@ -14694,6 +14724,25 @@ declare var UIMenuControllerMenuFrameDidChangeNotification: string;
 declare var UIMenuControllerWillHideMenuNotification: string;
 
 declare var UIMenuControllerWillShowMenuNotification: string;
+
+declare class UIMenuDisplayPreferences extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): UIMenuDisplayPreferences; // inherited from NSObject
+
+	static new(): UIMenuDisplayPreferences; // inherited from NSObject
+
+	maximumNumberOfTitleLines: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
 
 declare var UIMenuDocument: string;
 
@@ -18723,9 +18772,15 @@ declare class UIScrollView extends UIView implements NSCoding, UIFocusItemScroll
 
 	bounces: boolean;
 
+	bouncesHorizontally: boolean;
+
+	bouncesVertically: boolean;
+
 	bouncesZoom: boolean;
 
 	canCancelContentTouches: boolean;
+
+	contentAlignmentPoint: CGPoint;
 
 	contentInset: UIEdgeInsets;
 
@@ -18771,6 +18826,8 @@ declare class UIScrollView extends UIView implements NSCoding, UIFocusItemScroll
 
 	refreshControl: UIRefreshControl;
 
+	readonly scrollAnimating: boolean;
+
 	scrollEnabled: boolean;
 
 	scrollIndicatorInsets: UIEdgeInsets;
@@ -18783,7 +18840,13 @@ declare class UIScrollView extends UIView implements NSCoding, UIFocusItemScroll
 
 	readonly tracking: boolean;
 
+	transfersHorizontalScrollingToParent: boolean;
+
+	transfersVerticalScrollingToParent: boolean;
+
 	verticalScrollIndicatorInsets: UIEdgeInsets;
+
+	readonly zoomAnimating: boolean;
 
 	readonly zoomBouncing: boolean;
 
@@ -18849,9 +18912,13 @@ declare class UIScrollView extends UIView implements NSCoding, UIFocusItemScroll
 
 	setZoomScaleAnimated(scale: number, animated: boolean): void;
 
+	stopScrollingAndZooming(): void;
+
 	touchesShouldBeginWithEventInContentView(touches: NSSet<UITouch>, event: _UIEvent, view: UIView): boolean;
 
 	touchesShouldCancelInContentView(view: UIView): boolean;
+
+	withScrollIndicatorsShownForContentOffsetChanges(changes: () => void): void;
 
 	zoomToRectAnimated(rect: CGRect, animated: boolean): void;
 }
@@ -20446,6 +20513,73 @@ declare const enum UIStackViewDistribution {
 declare var UIStackViewSpacingUseDefault: number;
 
 declare var UIStackViewSpacingUseSystem: number;
+
+declare class UIStandardTextCursorView extends UIView implements UITextCursorView {
+
+	static alloc(): UIStandardTextCursorView; // inherited from NSObject
+
+	static appearance(): UIStandardTextCursorView; // inherited from UIAppearance
+
+	static appearanceForTraitCollection(trait: UITraitCollection): UIStandardTextCursorView; // inherited from UIAppearance
+
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): UIStandardTextCursorView; // inherited from UIAppearance
+
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIStandardTextCursorView; // inherited from UIAppearance
+
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): UIStandardTextCursorView; // inherited from UIAppearance
+
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): UIStandardTextCursorView; // inherited from UIAppearance
+
+	static new(): UIStandardTextCursorView; // inherited from NSObject
+
+	blinking: boolean; // inherited from UITextCursorView
+
+	readonly bounds: CGRect; // inherited from UICoordinateSpace
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	convertPointFromCoordinateSpace(point: CGPoint, coordinateSpace: UICoordinateSpace): CGPoint;
+
+	convertPointToCoordinateSpace(point: CGPoint, coordinateSpace: UICoordinateSpace): CGPoint;
+
+	convertRectFromCoordinateSpace(rect: CGRect, coordinateSpace: UICoordinateSpace): CGRect;
+
+	convertRectToCoordinateSpace(rect: CGRect, coordinateSpace: UICoordinateSpace): CGRect;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	resetBlinkAnimation(): void;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
 
 declare var UIStateRestorationViewControllerStoryboardKey: string;
 
@@ -22546,6 +22680,10 @@ declare var UITextContentTypeBirthdateMonth: string;
 
 declare var UITextContentTypeBirthdateYear: string;
 
+declare var UITextContentTypeCellularEID: string;
+
+declare var UITextContentTypeCellularIMEI: string;
+
 declare var UITextContentTypeCountryName: string;
 
 declare var UITextContentTypeCreditCardExpiration: string;
@@ -22617,6 +22755,27 @@ declare var UITextContentTypeTelephoneNumber: string;
 declare var UITextContentTypeURL: string;
 
 declare var UITextContentTypeUsername: string;
+
+declare class UITextCursorDropPositionAnimator extends NSObject {
+
+	static alloc(): UITextCursorDropPositionAnimator; // inherited from NSObject
+
+	static new(): UITextCursorDropPositionAnimator; // inherited from NSObject
+
+	readonly cursorView: UIView;
+
+	readonly textInput: UIView;
+
+	constructor(o: { textCursorView: UIView; textInput: UIView; });
+
+	animateAlongsideChangesCompletion(animation: () => void, completion: () => void): void;
+
+	initWithTextCursorViewTextInput(cursorView: UIView, textInput: UIView): this;
+
+	placeCursorAtPositionAnimated(position: UITextPosition, animated: boolean): void;
+
+	setCursorVisibleAnimated(visible: boolean, animated: boolean): void;
+}
 
 interface UITextCursorView extends UICoordinateSpace {
 
@@ -23003,6 +23162,8 @@ declare class UITextField extends UIControl implements NSCoding, UIContentSizeCa
 
 	caretRectForPosition(position: UITextPosition): CGRect;
 
+	caretTransformForPosition(position: UITextPosition): CGAffineTransform;
+
 	characterOffsetOfPositionWithinRange(position: UITextPosition, range: UITextRange): number;
 
 	characterRangeAtPoint(point: CGPoint): UITextRange;
@@ -23298,6 +23459,8 @@ interface UITextInput extends UIKeyInput {
 	beginFloatingCursorAtPoint?(point: CGPoint): void;
 
 	caretRectForPosition(position: UITextPosition): CGRect;
+
+	caretTransformForPosition?(position: UITextPosition): CGAffineTransform;
 
 	characterOffsetOfPositionWithinRange?(position: UITextPosition, range: UITextRange): number;
 
@@ -24014,6 +24177,8 @@ declare class UITextSelectionRect extends NSObject {
 
 	readonly rect: CGRect;
 
+	readonly transform: CGAffineTransform;
+
 	readonly writingDirection: NSWritingDirection;
 }
 
@@ -24229,6 +24394,8 @@ declare class UITextView extends UIScrollView implements UIContentSizeCategoryAd
 	canPasteItemProviders(itemProviders: NSArray<NSItemProvider> | NSItemProvider[]): boolean;
 
 	caretRectForPosition(position: UITextPosition): CGRect;
+
+	caretTransformForPosition(position: UITextPosition): CGAffineTransform;
 
 	characterOffsetOfPositionWithinRange(position: UITextPosition, range: UITextRange): number;
 
@@ -25831,11 +25998,10 @@ declare class UIView extends UIResponder implements CALayerDelegate, NSCoding, U
 	layoutSubviews(): void;
 
 	nativeScriptSetFormattedTextDecorationAndTransformLetterSpacingLineHeight(details: NSDictionary<any, any>, letterSpacing: number, lineHeight: number): void;
-	
+
 	nativeScriptSetFormattedTextStrokeColor(width: number, color: UIColor): void;
-	
+
 	nativeScriptSetTextDecorationAndTransformTextDecorationLetterSpacingLineHeight(text: string, textDecoration: string, letterSpacing: number, lineHeight: number): void;
-    
 
 	needsUpdateConstraints(): boolean;
 

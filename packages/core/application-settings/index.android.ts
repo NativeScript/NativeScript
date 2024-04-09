@@ -9,20 +9,27 @@ function ensureSharedPreferences() {
 	}
 }
 
-function verify(key: string) {
-	common.checkKey(key);
+function verify(key: string): boolean {
+	if (!common.checkKey(key)) {
+		return false;
+	}
 	ensureSharedPreferences();
+	return true;
 }
 
 export function hasKey(key: string): boolean {
-	verify(key);
+	if (!verify(key)) {
+		return;
+	}
 
 	return sharedPreferences.contains(key);
 }
 
 // getters
 export function getBoolean(key: string, defaultValue?: boolean): boolean {
-	verify(key);
+	if (!verify(key)) {
+		return;
+	}
 	if (hasKey(key)) {
 		try {
 			return sharedPreferences.getBoolean(key, false);
@@ -40,7 +47,9 @@ export function getBoolean(key: string, defaultValue?: boolean): boolean {
 }
 
 export function getString(key: string, defaultValue?: string): string {
-	verify(key);
+	if (!verify(key)) {
+		return;
+	}
 	if (hasKey(key)) {
 		try {
 			return sharedPreferences.getString(key, '');
@@ -58,7 +67,9 @@ export function getString(key: string, defaultValue?: string): string {
 }
 
 export function getNumber(key: string, defaultValue?: number): number {
-	verify(key);
+	if (!verify(key)) {
+		return;
+	}
 	if (hasKey(key)) {
 		let val;
 
@@ -90,24 +101,36 @@ export function getNumber(key: string, defaultValue?: number): number {
 
 // setters
 export function setBoolean(key: string, value: boolean): void {
-	verify(key);
-	common.ensureValidValue(value, 'boolean');
+	if (!verify(key)) {
+		return;
+	}
+	if (!common.ensureValidValue(value, 'boolean')) {
+		return;
+	}
 	const editor = sharedPreferences.edit();
 	editor.putBoolean(key, value);
 	editor.apply();
 }
 
 export function setString(key: string, value: string): void {
-	verify(key);
-	common.ensureValidValue(value, 'string');
+	if (!verify(key)) {
+		return;
+	}
+	if (!common.ensureValidValue(value, 'string')) {
+		return;
+	}
 	const editor = sharedPreferences.edit();
 	editor.putString(key, value);
 	editor.apply();
 }
 
 export function setNumber(key: string, value: number): void {
-	verify(key);
-	common.ensureValidValue(value, 'number');
+	if (!verify(key)) {
+		return;
+	}
+	if (!common.ensureValidValue(value, 'number')) {
+		return;
+	}
 	const editor = sharedPreferences.edit();
 	// SharedPreferences has no getter or setter for double so we convert value and store it as a long
 	editor.putLong(key, java.lang.Double.doubleToRawLongBits(double(value)));
@@ -115,7 +138,9 @@ export function setNumber(key: string, value: number): void {
 }
 
 export function remove(key: string): void {
-	verify(key);
+	if (!verify(key)) {
+		return;
+	}
 	const editor = sharedPreferences.edit();
 	editor.remove(key);
 	editor.apply();

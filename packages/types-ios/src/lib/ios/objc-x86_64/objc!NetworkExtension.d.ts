@@ -400,15 +400,6 @@ declare const enum NEEvaluateConnectionRuleAction {
 	NeverConnect = 2
 }
 
-declare class NEFailureHandlerProvider extends NEProvider {
-
-	static alloc(): NEFailureHandlerProvider; // inherited from NSObject
-
-	static new(): NEFailureHandlerProvider; // inherited from NSObject
-
-	handleFailureCompletionHandler(error: NSError, completionHandler: () => void): void;
-}
-
 declare const enum NEFilterAction {
 
 	Invalid = 0,
@@ -2021,6 +2012,8 @@ declare class NEVPNProtocol extends NSObject implements NSCopying, NSSecureCodin
 	excludeAPNs: boolean;
 
 	excludeCellularServices: boolean;
+
+	excludeDeviceCommunication: boolean;
 
 	excludeLocalNetworks: boolean;
 

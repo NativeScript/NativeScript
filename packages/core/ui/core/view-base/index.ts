@@ -1482,7 +1482,7 @@ bindingContextProperty.register(ViewBase);
 export const hiddenProperty = new Property<ViewBase, boolean>({
 	name: 'hidden',
 	defaultValue: false,
-	affectsLayout: __IOS__,
+	affectsLayout: __APPLE__,
 	valueConverter: booleanConverter,
 	valueChanged: (target, oldValue, newValue) => {
 		if (target) {

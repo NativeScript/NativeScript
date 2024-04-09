@@ -6,7 +6,8 @@ import { View, IOSHelper } from '../core/view';
 import { PageBase, actionBarHiddenProperty, statusBarStyleProperty } from './page-common';
 
 import { profile } from '../../profiling';
-import { iOSNativeHelper, layout } from '../../utils';
+import { layout } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 import { getLastFocusedViewOnPage, isAccessibilityServiceEnabled } from '../../accessibility';
 import { SharedTransition } from '../transition/shared-transition';
 
@@ -16,8 +17,6 @@ const ENTRY = '_entry';
 const DELEGATE = '_delegate';
 const TRANSITION = '_transition';
 const NON_ANIMATED_TRANSITION = 'non-animated';
-
-const majorVersion = iOSNativeHelper.MajorVersion;
 
 function isBackNavigationTo(page: Page, entry): boolean {
 	const frame = page.frame;
@@ -328,7 +327,7 @@ class UIViewControllerImpl extends UIViewController {
 			// layout(owner.actionBar)
 			// layout(owner.content)
 
-			if (majorVersion >= 11) {
+			if (SDK_VERSION >= 11) {
 				// Handle nested Page safe area insets application.
 				// A Page is nested if its Frame has a parent.
 				// If the Page is nested, cross check safe area insets on top and bottom with Frame parent.
@@ -382,7 +381,7 @@ class UIViewControllerImpl extends UIViewController {
 	public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
 		super.traitCollectionDidChange(previousTraitCollection);
 
-		if (majorVersion >= 13) {
+		if (SDK_VERSION >= 13) {
 			const owner = this._owner?.deref();
 			if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
 				owner.notify({
@@ -424,7 +423,7 @@ export class Page extends PageBase {
 	viewController: UIViewControllerImpl;
 	onAccessibilityPerformEscape: () => boolean;
 
-	private _backgroundColor = majorVersion <= 12 && !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
+	private _backgroundColor = SDK_VERSION <= 12 && !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
 	private _ios: UIViewControllerImpl;
 	public _presentedViewController: UIViewController; // used when our page present native viewController without going through our abstraction.
 
@@ -538,7 +537,7 @@ export class Page extends PageBase {
 
 		const insets = this.getSafeAreaInsets();
 
-		if (majorVersion <= 10) {
+		if (!__VISIONOS__ && SDK_VERSION <= 10) {
 			// iOS 10 and below don't have safe area insets API,
 			// there we need only the top inset on the Page
 			insets.top = layout.round(layout.toDevicePixels(this.viewController.view.safeAreaLayoutGuide.layoutFrame.origin.y));

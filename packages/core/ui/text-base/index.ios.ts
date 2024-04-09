@@ -294,6 +294,14 @@ export class TextBase extends TextBaseCommon {
 			this.nativeTextViewProtected.textColor = color;
 		}
 	}
+	_animationWrap(fn: () => void) {
+		const shouldAnimate = this.iosTextAnimation === 'inherit' ? TextBase.iosTextAnimationFallback : this.iosTextAnimation;
+		if (shouldAnimate) {
+			fn();
+		} else {
+			UIView.performWithoutAnimation(fn);
+		}
+	}
 
 	clearText() {
 		const nativeView = this.nativeTextViewProtected;
@@ -309,34 +317,36 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	_setNativeText(reset = false): void {
-		const nativeView = this.nativeTextViewProtected;
-		if (reset) {
-			this.clearText();
-			return;
-		}
+		this._animationWrap(() => {
+			const nativeView = this.nativeTextViewProtected;
+			if (reset) {
+				this.clearText();
+				return;
+			}
 
-		// const letterSpacing = this.style.letterSpacing ? this.style.letterSpacing : 0;
-		// const lineHeight = this.style.lineHeight ? this.style.lineHeight : 0;
-		if (this.formattedText) {
-			this.setFormattedTextDecorationAndTransform();
-			// this.nativeTextViewProtected.nativeScriptSetFormattedTextDecorationAndTransformLetterSpacingLineHeight(this.getFormattedStringDetails(this.formattedText), letterSpacing, lineHeight);
-		} else if (this.text) {
-			this.setTextDecorationAndTransform();
-			// console.log('setTextDecorationAndTransform...')
-			// const text = getTransformedText(isNullOrUndefined(this.text) ? '' : `${this.text}`, this.textTransform);
-			// this.nativeTextViewProtected.nativeScriptSetTextDecorationAndTransformTextDecorationLetterSpacingLineHeight(text, this.style.textDecoration || '', letterSpacing, lineHeight);
+			// const letterSpacing = this.style.letterSpacing ? this.style.letterSpacing : 0;
+			// const lineHeight = this.style.lineHeight ? this.style.lineHeight : 0;
+			if (this.formattedText) {
+				this.setFormattedTextDecorationAndTransform();
+				// this.nativeTextViewProtected.nativeScriptSetFormattedTextDecorationAndTransformLetterSpacingLineHeight(this.getFormattedStringDetails(this.formattedText), letterSpacing, lineHeight);
+			} else if (this.text) {
+				this.setTextDecorationAndTransform();
+				// console.log('setTextDecorationAndTransform...')
+				// const text = getTransformedText(isNullOrUndefined(this.text) ? '' : `${this.text}`, this.textTransform);
+				// this.nativeTextViewProtected.nativeScriptSetTextDecorationAndTransformTextDecorationLetterSpacingLineHeight(text, this.style.textDecoration || '', letterSpacing, lineHeight);
 
-			// if (!this.style?.color && majorVersion >= 13 && UIColor.labelColor) {
-			// 	this._setColor(UIColor.labelColor);
-			// }
-		} else {
-			this.clearText();
-			return;
-		}
+				// if (!this.style?.color && majorVersion >= 13 && UIColor.labelColor) {
+				// 	this._setColor(UIColor.labelColor);
+				// }
+			} else {
+				this.clearText();
+				return;
+			}
 
-		if (this.style?.textStroke && nativeView instanceof UILabel) {
-			nativeView.nativeScriptSetFormattedTextStrokeColor(Length.toDevicePixels(this.style.textStroke.width, 0), this.style.textStroke.color.ios);
-		}
+			if (this.style?.textStroke && nativeView instanceof UILabel) {
+				nativeView.nativeScriptSetFormattedTextStrokeColor(Length.toDevicePixels(this.style.textStroke.width, 0), this.style.textStroke.color.ios);
+			}
+		});
 	}
 	setFormattedTextDecorationAndTransform() {
 		const attrText = this.createFormattedTextNative(this.formattedText);

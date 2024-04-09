@@ -46,7 +46,7 @@ export function testIOSApplicationInitialized() {
 	TKUnit.assert(Application.ios.nativeApp, 'iOS nativeApp not initialized.');
 	TKUnit.assert(Application.ios.orientation(), 'iOS orientation not initialized.');
 
-	if (Utils.ios.MajorVersion <= 11) {
+	if (!__VISIONOS__ && Utils.SDK_VERSION <= 11) {
 		TKUnit.assertNull(Application.ios.systemAppearance(), 'iOS system appearance should be `null` on iOS <= 11.');
 	} else {
 		TKUnit.assert(Application.ios.systemAppearance(), 'iOS system appearance not initialized.');
@@ -57,7 +57,7 @@ export function testIOSApplicationInitialized() {
 }
 
 export function testSystemAppearance() {
-	if (Utils.ios.MajorVersion <= 11) {
+	if (!__VISIONOS__ && Utils.SDK_VERSION <= 11) {
 		TKUnit.assertNull(Application.ios.systemAppearance(), 'System appearance should be `null` on iOS <= 11.');
 	} else {
 		TKUnit.assert(Application.ios.systemAppearance(), 'System appearance not initialized.');

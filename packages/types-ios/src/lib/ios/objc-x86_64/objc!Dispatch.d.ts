@@ -39,6 +39,8 @@ declare function dispatch_after(when: number, queue: interop.Pointer | interop.R
 
 declare function dispatch_after_f(when: number, queue: interop.Pointer | interop.Reference<any>, context: interop.Pointer | interop.Reference<any>, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
 
+declare function dispatch_allow_send_signals(preserve_signum: number): number;
+
 declare function dispatch_apply(iterations: number, queue: interop.Pointer | interop.Reference<any>, block: (p1: number) => void): void;
 
 declare function dispatch_apply_f(iterations: number, queue: interop.Pointer | interop.Reference<any>, context: interop.Pointer | interop.Reference<any>, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number) => void>): void;

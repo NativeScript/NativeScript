@@ -1476,11 +1476,15 @@ declare class AVAudioSession extends NSObject {
 
 	readonly recordPermission: AVAudioSessionRecordPermission;
 
+	readonly renderingMode: AVAudioSessionRenderingMode;
+
 	readonly routeSharingPolicy: AVAudioSessionRouteSharingPolicy;
 
 	readonly sampleRate: number;
 
 	readonly secondaryAudioShouldBeSilencedHint: boolean;
+
+	readonly supportedOutputChannelLayouts: NSArray<AVAudioChannelLayout>;
 
 	readonly supportsMultichannelContent: boolean;
 
@@ -1809,6 +1813,27 @@ declare const enum AVAudioSessionRecordPermission {
 
 	Granted = 1735552628
 }
+
+declare var AVAudioSessionRenderingCapabilitiesChangeNotification: string;
+
+declare const enum AVAudioSessionRenderingMode {
+
+	NotApplicable = 0,
+
+	MonoStereo = 1,
+
+	Surround = 2,
+
+	SpatialAudio = 3,
+
+	DolbyAudio = 4,
+
+	DolbyAtmos = 5
+}
+
+declare var AVAudioSessionRenderingModeChangeNotification: string;
+
+declare var AVAudioSessionRenderingModeNewRenderingModeKey: string;
 
 declare var AVAudioSessionRouteChangeNotification: string;
 

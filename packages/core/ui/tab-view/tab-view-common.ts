@@ -217,7 +217,7 @@ export function traceMissingIcon(icon: string) {
 export const selectedIndexProperty = new CoercibleProperty<TabViewBase, number>({
 	name: 'selectedIndex',
 	defaultValue: -1,
-	affectsLayout: __IOS__,
+	affectsLayout: __APPLE__,
 	valueChanged: (target, oldValue, newValue) => {
 		target.onSelectedIndexChanged(oldValue, newValue);
 	},
@@ -258,7 +258,7 @@ androidIconRenderingModeProperty.register(TabViewBase);
 export const androidOffscreenTabLimitProperty = new Property<TabViewBase, number>({
 	name: 'androidOffscreenTabLimit',
 	defaultValue: 1,
-	affectsLayout: __IOS__,
+	affectsLayout: __APPLE__,
 	valueConverter: (v) => parseInt(v),
 });
 androidOffscreenTabLimitProperty.register(TabViewBase);

@@ -28,6 +28,16 @@
 				"platform": "ios"
 			}
 		},
+		"vision": {
+			"executor": "@nativescript/nx:build",
+			"inputs": ["default", "^production"],
+			"outputs": [],
+			"options": {
+				"noHmr": true,
+				"debug": false,
+				"platform": "vision"
+			}
+		},
 		"android": {
 			"executor": "@nativescript/nx:build",
 			"inputs": ["default", "^production"],

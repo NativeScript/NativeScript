@@ -2,6 +2,7 @@ import { Application } from '../../application';
 import { Color } from '../../color';
 import { Trace } from '../../trace';
 import { CORE_ANIMATION_DEFAULTS, getDurationWithDampingFromSpring } from '../common';
+import { SDK_VERSION } from '../constants';
 
 declare let UIImagePickerControllerSourceType: any;
 
@@ -64,11 +65,24 @@ export function getRootViewController(): UIViewController {
 }
 
 export function getWindow(): UIWindow {
+	let window: UIWindow;
+	if (SDK_VERSION >= 15) {
+		// UIWindowScene.keyWindow is only available 15+
+		window = NativeScriptViewFactory.getKeyWindow();
+	}
+	if (window) {
+		return window;
+	}
 	const app = UIApplication.sharedApplication;
 	if (!app) {
 		return;
 	}
 	return app.keyWindow || (app.windows && app.windows.count > 0 && app.windows.objectAtIndex(0));
+}
+
+export function getMainScreen(): UIScreen {
+	const window = getWindow();
+	return window ? window.screen : UIScreen.mainScreen;
 }
 
 export function setWindowBackgroundColor(value: string) {
@@ -159,31 +173,32 @@ export function createUIDocumentInteractionControllerDelegate(): NSObject {
 		public static ObjCProtocols = [UIDocumentInteractionControllerDelegate];
 		viewController: UIViewController;
 		public getViewController(): UIViewController {
-			if (!this.viewController) {
-				//TODO: refactor to give access to that code to plugins
-				let rootView = Application.getRootView();
-				if (rootView.parent) {
-					rootView = rootView.parent as any;
-				}
-				let currentView = rootView;
-				currentView = currentView.modal || currentView;
-				let viewController = currentView.viewController;
-				if (!viewController.presentedViewController && rootView.viewController.presentedViewController) {
-					viewController = rootView.viewController.presentedViewController;
-				}
-				while (viewController.presentedViewController) {
-					while (viewController.presentedViewController instanceof UIAlertController || (viewController.presentedViewController['isAlertController'] && viewController.presentedViewController.presentedViewController)) {
-						viewController = viewController.presentedViewController;
-					}
-					if (viewController.presentedViewController instanceof UIAlertController || viewController.presentedViewController['isAlertController']) {
-						break;
-					} else {
-						viewController = viewController.presentedViewController;
-					}
-				}
-				this.viewController = viewController;
-			}
-			return this.viewController;
+			// if (!this.viewController) {
+			// 	//TODO: refactor to give access to that code to plugins
+			// 	let rootView = Application.getRootView();
+			// 	if (rootView.parent) {
+			// 		rootView = rootView.parent as any;
+			// 	}
+			// 	let currentView = rootView;
+			// 	currentView = currentView.modal || currentView;
+			// 	let viewController = currentView.viewController;
+			// 	if (!viewController.presentedViewController && rootView.viewController.presentedViewController) {
+			// 		viewController = rootView.viewController.presentedViewController;
+			// 	}
+			// 	while (viewController.presentedViewController) {
+			// 		while (viewController.presentedViewController instanceof UIAlertController || (viewController.presentedViewController['isAlertController'] && viewController.presentedViewController.presentedViewController)) {
+			// 			viewController = viewController.presentedViewController;
+			// 		}
+			// 		if (viewController.presentedViewController instanceof UIAlertController || viewController.presentedViewController['isAlertController']) {
+			// 			break;
+			// 		} else {
+			// 			viewController = viewController.presentedViewController;
+			// 		}
+			// 	}
+			// 	this.viewController = viewController;
+			// }
+			// return this.viewController;
+			return getWindow().rootViewController;
 		}
 
 		public documentInteractionControllerViewControllerForPreview(controller: UIDocumentInteractionController) {
