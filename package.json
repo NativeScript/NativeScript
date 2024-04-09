@@ -27,18 +27,21 @@
     "core:setup": "npm run webpack:build",
     "core:build": "ts-patch install ; cpy 'packages/core/*.md' 'packages/core/package.json' 'packages/core/.npmignore' 'dist/packages/core' ; replace-json-property 'dist/packages/core/package.json' name @akylas/nativescript ; copyfiles 'packages/core/platforms/**/*' dist ;  copyfiles -e '**/*.ts' 'packages/core/css/**/*' 'packages/core/css-value/**/*' 'packages/core/fetch/**/*' 'packages/core/js-libs/**/*' 'packages/core/cli-hooks/**/*.js' dist ; copyfiles -e 'packages/core/__tests__/**/*' 'packages/core/**/*.d.ts' dist ; tsc -p packages/core/tsconfig.lib.json",
     "core:build.npm": "ts-patch install ; rimraf dist/packages/core ; npm run postinstall ; npm run ui-mobile-base:build ; npm run core:build ; cd dist/packages/core ; npm pack ; mv *.tgz ..",
+    "core:test": "jest --config packages/core/jest.config.ts",
     "core:unit": "cd packages/core/__tests__ ; tsc ; mocha",
     "core:unit.watch": "cd packages/core/__tests__ ; tsc ; mocha --watch",
     "core-compat:build": "cd packages/core-compat ; rimraf node_modules package-lock.json ; $npm_package_config_npm_alias i  ; tsc -p tsconfig.json ; mv \"$(npm pack | tail -n 1)\" ../../dist/packages/tns-core-modules.tgz",
+    "doc:build": "rimraf dist/api-reference; npx typedoc --tsconfig ./tools/scripts/tsconfig.typedoc.json",
     "types-ios:lint": "cd packages/types-ios ; eslint -c .eslintrc --ignore-pattern **/node_modules/** --ignore-pattern !packages/types-ios/**",
     "types-ios:build": "rimraf dist/packages/types-ios ; cpy '**/*' '../../../dist/packages/types-ios' --cwd=packages/types-ios/src --parents ; cpy 'package.json' '*.md' '../../dist/packages/types-ios' --cwd=packages/types-ios --parents",
     "types-android:lint": "cd packages/types-android ; eslint -c .eslintrc --ignore-pattern **/node_modules/** --ignore-pattern !packages/types-android/**",
     "types-android:test": "cd packages/types-android ; jest --config jest.config.js --ignore-pattern **/node_modules/** --ignore-pattern !packages/types-android/**",
     "types-android:build": "rimraf dist/packages/types-android ; cpy '**/*' '../../../dist/packages/types-android' --cwd=packages/types-android/src --parents ; cpy 'package.json' '*.md' '../../dist/packages/types-android' --cwd=packages/types-android --parents",
+    "types-minimal:build": "rimraf dist/packages/types-minimal ; ./tools/scripts/typings-minimal-copy.sh; cpy '**/*' '../../../dist/packages/types-minimal' --cwd=packages/types-minimal/src --parents ; cpy 'package.json' '*.md' '../../dist/packages/types-minimal' --cwd=packages/types-minimal --parents",
     "ui-mobile-base:build": "cd packages/ui-mobile-base ; ./build.sh ; cd dist/package/platforms; copyfiles '**/*' '../../../../../packages/core/platforms' ; copyfiles '**/*' '../../../../../dist/packages/core/platforms'",
     "webpack:lint": "cd packages/webpack5 ; eslint -c .eslintrc --ignore-pattern **/node_modules/** --ignore-pattern !packages/webpack/**",
     "webpack:test": "cd packages/webpack5 ; npm run tsc ; npm run jasmine",
-    "webpack:build": "cd packages/webpack5 npm run build ; mkdir -p ../../dist/packages ; mv \"$(npm pack | tail -n 1)\" ../../dist/packages/nativescript-webpack.tgz"
+    "webpack:build": "cd packages/webpack5; npm run build ; npm run package"
   },
   "private": true,
   "repository": {
@@ -50,16 +53,6 @@
   },
   "devDependencies": {
     "@nativescript/hook": "^2.0.0",
-    "@nativescript/nx": "^17.1.0",
-    "@nstudio/focus": "^17.0.1",
-    "@nstudio/nps-i": "~2.0.0",
-    "@nx/devkit": "18.2.2",
-    "@nx/eslint-plugin": "18.2.2",
-    "@nx/jest": "18.2.2",
-    "@nx/js": "18.2.2",
-    "@nx/node": "18.2.2",
-    "@nx/plugin": "18.2.2",
-    "@nx/workspace": "18.2.2",
     "@prettier/plugin-xml": "^3.4.1",
     "@swc-node/register": "1.9.0",
     "@swc/cli": "~0.3.0",
@@ -86,7 +79,6 @@
     "module-alias": "^2.2.2",
     "nativescript": "rc",
     "nativescript-typedoc-theme": "1.1.0",
-    "nx": "18.2.2",
     "parse-css": "git+https://github.com/tabatkins/parse-css.git",
     "parserlib": "^1.1.1",
     "prettier": "^3.2.5",
@@ -103,16 +95,6 @@
     "typedoc": "^0.25.12",
     "typescript": "~5.4.0",
     "zx": "^7.2.0"
-  },
-  "overrides": {
-    "@nx/devkit": "18.2.2",
-    "@nx/eslint-plugin": "18.2.2",
-    "@nx/jest": "18.2.2",
-    "@nx/js": "18.2.2",
-    "@nx/node": "18.2.2",
-    "@nx/plugin": "18.2.2",
-    "@nx/workspace": "18.2.2",
-    "nx": "18.2.2"
   },
   "lint-staged": {
     "**/*.{js,ts,css,scss,json,html}": [

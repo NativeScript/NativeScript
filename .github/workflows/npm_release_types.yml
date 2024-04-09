@@ -33,7 +33,7 @@ jobs:
 #        run: npm version $NPM_VERSION
 #
 #      - name: Build @nativescript/types
-#        run: npx nx run core:build
+#        run: npm run run core:build
 #
 #      - name: Publish @nativescript/types
 #        working-directory: dist/packages

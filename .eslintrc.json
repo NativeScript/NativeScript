@@ -1,7 +1,6 @@
 {
 	"root": true,
 	"ignorePatterns": ["**/*"],
-	"plugins": ["@nx"],
 	"parser": "@typescript-eslint/parser",
 	"parserOptions": {
 		"ecmaFeatures": {
@@ -14,26 +13,8 @@
 	},
 	"overrides": [
 		{
-			"files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
-			"rules": {
-				"@nx/enforce-module-boundaries": [
-					"error",
-					{
-						"enforceBuildableLibDependency": true,
-						"allow": [],
-						"depConstraints": [
-							{
-								"sourceTag": "*",
-								"onlyDependOnLibsWithTags": ["*"]
-							}
-						]
-					}
-				]
-			}
-		},
-		{
 			"files": ["*.ts", "*.tsx"],
-			"extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier", "plugin:@nx/typescript"],
+			"extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier"],
 			"rules": {
 				"no-empty": "off",
 				"no-useless-escape": "off",
@@ -53,7 +34,6 @@
 		},
 		{
 			"files": ["*.js", "*.jsx"],
-			"extends": ["plugin:@nx/javascript"],
 			"rules": {}
 		},
 		{

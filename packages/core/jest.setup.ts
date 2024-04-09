@@ -7,6 +7,7 @@ global.__ANDROID__ = false;
 global.__IOS__ = true;
 global.__VISIONOS__ = false;
 global.__APPLE__ = true;
+global.__UI_USE_EXTERNAL_RENDERER__ = true;
 global.WeakRef.prototype.get = global.WeakRef.prototype.deref;
 global.NativeClass = function () {};
 global.NSTimer = class NSTimer {};

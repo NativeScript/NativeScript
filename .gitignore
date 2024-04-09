@@ -58,5 +58,3 @@ Thumbs.db
 ios-typings-prj
 
 /packages/core/platforms/android/core.aar
-
-.nx/cache
