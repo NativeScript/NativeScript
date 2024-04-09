@@ -73,7 +73,7 @@ export class FileSystemEntity {
 /**
  * Contains Android-specific the file system helpers.
  */
-class Android {
+export class Android {
 	createFile(options: { relativePath?: string; name: string; mime: string; directory: AndroidDirectory }): File;
 }
 
@@ -81,7 +81,7 @@ class Android {
  * Contains iOS-specific the file system helpers.
  */
 
-class iOS {}
+export class iOS {}
 
 /**
  * Represents a File entity on the file system.
