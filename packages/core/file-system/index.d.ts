@@ -160,7 +160,7 @@ export class File extends FileSystemEntity {
 	 * @param path The path to get/create the file at.
 	 * @param copy An optional value when set, copies the content-uri to a temp file enabling the legacy behaviour
 	 */
-	static fromPath(path: string, copy?: boolean): File;
+	static fromPath(path: string, copy?: boolean, create?: boolean): File;
 
 	/**
 	 * Reads the content of the file as a string using the specified encoding (defaults to UTF-8).
@@ -228,7 +228,7 @@ export class Folder extends FileSystemEntity {
 	 * Gets or creates a Folder entity at the specified path.
 	 * @param path The path to get/create the folder at.
 	 */
-	static fromPath(path: string): Folder;
+	static fromPath(path: string, create: boolean): Folder;
 
 	/**
 	 * Checks whether a Folder with the specified path already exists.
