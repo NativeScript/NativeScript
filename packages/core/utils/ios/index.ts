@@ -173,32 +173,33 @@ export function createUIDocumentInteractionControllerDelegate(): NSObject {
 		public static ObjCProtocols = [UIDocumentInteractionControllerDelegate];
 		viewController: UIViewController;
 		public getViewController(): UIViewController {
-			// if (!this.viewController) {
-			// 	//TODO: refactor to give access to that code to plugins
-			// 	let rootView = Application.getRootView();
-			// 	if (rootView.parent) {
-			// 		rootView = rootView.parent as any;
-			// 	}
-			// 	let currentView = rootView;
-			// 	currentView = currentView.modal || currentView;
-			// 	let viewController = currentView.viewController;
-			// 	if (!viewController.presentedViewController && rootView.viewController.presentedViewController) {
-			// 		viewController = rootView.viewController.presentedViewController;
-			// 	}
-			// 	while (viewController.presentedViewController) {
-			// 		while (viewController.presentedViewController instanceof UIAlertController || (viewController.presentedViewController['isAlertController'] && viewController.presentedViewController.presentedViewController)) {
-			// 			viewController = viewController.presentedViewController;
-			// 		}
-			// 		if (viewController.presentedViewController instanceof UIAlertController || viewController.presentedViewController['isAlertController']) {
-			// 			break;
-			// 		} else {
-			// 			viewController = viewController.presentedViewController;
-			// 		}
-			// 	}
-			// 	this.viewController = viewController;
-			// }
-			// return this.viewController;
-			return getWindow().rootViewController;
+			if (!this.viewController) {
+				//TODO: refactor to give access to that code to plugins
+				let rootView = Application.getRootView();
+				if (rootView.parent) {
+					rootView = rootView.parent as any;
+				}
+				let currentView = rootView;
+				currentView = currentView.modal || currentView;
+				let viewController = getWindow().rootViewController;
+				// let viewController = currentView.viewController;
+				if (!viewController.presentedViewController && rootView.viewController.presentedViewController) {
+					viewController = rootView.viewController.presentedViewController;
+				}
+				while (viewController.presentedViewController) {
+					while (viewController.presentedViewController instanceof UIAlertController || (viewController.presentedViewController['isAlertController'] && viewController.presentedViewController.presentedViewController)) {
+						viewController = viewController.presentedViewController;
+					}
+					if (viewController.presentedViewController instanceof UIAlertController || viewController.presentedViewController['isAlertController']) {
+						break;
+					} else {
+						viewController = viewController.presentedViewController;
+					}
+				}
+				this.viewController = viewController;
+			}
+			return this.viewController;
+			// return getWindow().rootViewController;
 		}
 
 		public documentInteractionControllerViewControllerForPreview(controller: UIDocumentInteractionController) {
