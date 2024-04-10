@@ -422,10 +422,10 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	public updateNativeTransform() {
-		if (!this.isLayoutValid) {
-			this._hasPendingTransform = true;
-			return;
-		}
+		// if (!this.isLayoutValid) {
+		// 	this._hasPendingTransform = true;
+		// 	return;
+		// }
 
 		const scaleX = this.scaleX || 1e-6;
 		const scaleY = this.scaleY || 1e-6;
