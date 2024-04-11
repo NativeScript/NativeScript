@@ -557,7 +557,8 @@ export class Animation extends AnimationBase {
 		const firstAnimation = animationInfos[0];
 		const nativeView = <NativeScriptUIView>firstAnimation.target.nativeViewProtected;
 		if (!nativeView) {
-			throw new Error('trying to animate view without nativeView');
+			this._rejectAnimationFinishedPromise(new Error('trying to animate view without nativeView'));
+			return;
 		}
 		let callback = undefined;
 		let nextAnimation;
@@ -615,7 +616,7 @@ export class Animation extends AnimationBase {
 							curve,
 							duration,
 							delay,
-							repeatCount
+							repeatCount,
 						);
 
 						// we set the destination value in animate to persist it after animation end
@@ -879,9 +880,9 @@ export class Animation extends AnimationBase {
 						curve,
 						duration,
 						delay,
-						repeatCount
+						repeatCount,
 					),
-					'path'
+					'path',
 				);
 			}
 		}
@@ -905,9 +906,9 @@ export class Animation extends AnimationBase {
 								curve,
 								duration,
 								delay,
-								repeatCount
+								repeatCount,
 							),
-							'path'
+							'path',
 						);
 					}
 
@@ -929,9 +930,9 @@ export class Animation extends AnimationBase {
 										curve,
 										duration,
 										delay,
-										repeatCount
+										repeatCount,
 									),
-									'path'
+									'path',
 								);
 							}
 						}
@@ -948,9 +949,9 @@ export class Animation extends AnimationBase {
 							curve,
 							duration,
 							delay,
-							repeatCount
+							repeatCount,
 						),
-						'path'
+						'path',
 					);
 				}
 			}
@@ -969,9 +970,9 @@ export class Animation extends AnimationBase {
 						curve,
 						duration,
 						delay,
-						repeatCount
+						repeatCount,
 					),
-					'cornerRadius'
+					'cornerRadius',
 				);
 			}
 		}
@@ -993,9 +994,9 @@ export class Animation extends AnimationBase {
 						curve,
 						duration,
 						delay,
-						repeatCount
+						repeatCount,
 					),
-					'path'
+					'path',
 				);
 			}
 
@@ -1017,9 +1018,9 @@ export class Animation extends AnimationBase {
 							curve,
 							duration,
 							delay,
-							repeatCount
+							repeatCount,
 						),
-						'shadowPath'
+						'shadowPath',
 					);
 
 					if (shadowLayer.mask instanceof CAShapeLayer) {
@@ -1034,9 +1035,9 @@ export class Animation extends AnimationBase {
 								curve,
 								duration,
 								delay,
-								repeatCount
+								repeatCount,
 							),
-							'path'
+							'path',
 						);
 					}
 				}

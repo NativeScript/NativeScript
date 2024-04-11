@@ -83,10 +83,7 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 	protected _rejectAlreadyPlaying(): AnimationPromiseDefinition {
 		const reason = 'Animation is already playing.';
 		Trace.write(reason, Trace.categories.Animation, Trace.messageType.warn);
-
-		return <AnimationPromiseDefinition>new Promise<void>((resolve, reject) => {
-			reject(reason);
-		});
+		return <AnimationPromiseDefinition>Promise.reject(reason);
 	}
 
 	public play(): AnimationPromiseDefinition {
@@ -141,9 +138,13 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 		this._resolve();
 	}
 
-	protected _rejectAnimationFinishedPromise() {
+	protected _rejectAnimationFinishedPromise(error = new Error('Animation cancelled.')) {
 		this._isPlaying = false;
-		this._reject(new Error('Animation cancelled.'));
+		if (this._reject) {
+			this._reject(error);
+		} else {
+			throw error;
+		}
 	}
 
 	protected _createPropertyAnimations(animationDefinition: AnimationDefinition): Array<PropertyAnimation> {
