@@ -129,7 +129,11 @@ function initializeDialogFragment() {
 
 	@NativeClass
 	class DialogImpl extends android.app.Dialog {
-		constructor(public fragment: DialogFragmentImpl, context: android.content.Context, themeResId: number) {
+		constructor(
+			public fragment: DialogFragmentImpl,
+			context: android.content.Context,
+			themeResId: number,
+		) {
 			super(context, themeResId);
 
 			return global.__native(this);
@@ -182,8 +186,8 @@ function initializeDialogFragment() {
 		}
 		public onCreate(savedInstanceState: android.os.Bundle) {
 			super.onCreate(savedInstanceState);
-			var ownerId = this.getArguments()?.getInt(DOMID);
-			var options = getModalOptions(ownerId);
+			const ownerId = this.getArguments()?.getInt(DOMID);
+			const options = getModalOptions(ownerId);
 			// The teardown when the activity is destroyed happens after the state is saved, but is not recoverable,
 			// Cancel the native dialog in this case or the app will crash with subsequent errors.
 			if (savedInstanceState != null && options === undefined) {
@@ -1088,7 +1092,7 @@ export class View extends ViewCommon {
 		const nativeView = this.nativeViewProtected;
 		const canUseOutlineProvider = !background.hasBorderWidth() && !background.hasBoxShadow() && !background.clipPath && !background.image && SDK_VERSION >= 21 && (SDK_VERSION >= 33 || background.hasUniformBorderRadius());
 		if (!isBorderDrawable && (onlyColor || canUseOutlineProvider)) {
-			if (!!background.color) {
+			if (background.color) {
 				if (backgroundDrawable && backgroundDrawable.setColor) {
 					// android.graphics.drawable.ColorDrawable
 					backgroundDrawable.setColor(background.color.android);

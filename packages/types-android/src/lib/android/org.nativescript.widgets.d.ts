@@ -725,6 +725,48 @@ declare module org {
 	}
 }
 
+declare namespace org {
+	export namespace nativescript {
+		export namespace widgets {
+			export class FolderHelper extends java.lang.Object {
+				public static class: java.lang.Class<org.nativescript.widgets.FolderHelper>;
+				public getParent(): androidx.documentfile.provider.DocumentFile;
+				public createFile(param0: string, param1: string): string;
+				public rename(param0: globalAndroid.content.Context, param1: string, param2: org.nativescript.widgets.FolderHelper.Callback): void;
+				public static fromUri(param0: globalAndroid.content.Context, param1: globalAndroid.net.Uri): org.nativescript.widgets.FolderHelper;
+				public getOrCreateFile(param0: string, param1: boolean): androidx.documentfile.provider.DocumentFile;
+				public getName(): string;
+				public getDocumentFile(): androidx.documentfile.provider.DocumentFile;
+				public createDirectory(param0: string): string;
+				public static fromString(param0: globalAndroid.content.Context, param1: string): org.nativescript.widgets.FolderHelper;
+				public getOrCreateFolder(param0: string, param1: boolean): androidx.documentfile.provider.DocumentFile;
+				public exists(): boolean;
+				public renameSync(param0: globalAndroid.content.Context, param1: string, param2: org.nativescript.widgets.FolderHelper.Callback): void;
+				public static exists(param0: globalAndroid.content.Context, param1: globalAndroid.net.Uri): boolean;
+				public static exists(param0: globalAndroid.content.Context, param1: string): boolean;
+				public containsFileOrFolder(param0: string): boolean;
+				public getLastModified(): number;
+				public delete(param0: globalAndroid.content.Context): boolean;
+			}
+			export namespace FolderHelper {
+				export class Callback extends java.lang.Object {
+					public static class: java.lang.Class<org.nativescript.widgets.FolderHelper.Callback>;
+					/**
+					 * Constructs a new instance of the org.nativescript.widgets.FolderHelper$Callback interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
+					 */
+					public constructor(implementation: {
+						onError(param0: java.lang.Exception): void;
+						onSuccess(param0: any): void;
+					});
+					public constructor();
+					public onError(param0: java.lang.Exception): void;
+					public onSuccess(param0: any): void;
+				}
+			}
+		}
+	}
+}
+
 declare module org {
 	export module nativescript {
 		export module widgets {

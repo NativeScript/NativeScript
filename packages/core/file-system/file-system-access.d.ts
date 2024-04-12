@@ -328,6 +328,44 @@ export interface IFileSystemAccess {
 	 * Returns the joined path.
 	 */
 	joinPaths(paths: string[]): string;
+
+	/**
+	 * check if a folder contains a file.
+	 * @param path folder path.
+	 * @param fileName filename to check
+	 * Returns boolean
+	 */
+	contains?(path: string, fileName: string): boolean;
+
+	/**
+	 *get a file inside a folder.
+	 * @param path folder path.
+	 * @param fileName filename to check
+	 * Returns boolean
+	 */
+	getOrCreateFile?(
+		path: string,
+		fileName: string,
+		create?: boolean,
+	): {
+		path: string;
+		name: string;
+		extension: string;
+	};
+	/**
+	 *get a file inside a folder.
+	 * @param path folder path.
+	 * @param fileName filename to check
+	 * Returns boolean
+	 */
+	getOrCreateFolder?(
+		path: string,
+		fileName: string,
+		create?: boolean,
+	): {
+		path: string;
+		name: string;
+	};
 }
 
 export class FileSystemAccess implements IFileSystemAccess {
