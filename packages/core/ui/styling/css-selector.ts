@@ -340,7 +340,7 @@ export class PseudoClassSelector extends SimpleSelector {
 	}
 }
 
-@SelectorProperties(Specificity.PseudoClass, Rarity.PseudoClass, Match.Static)
+@SelectorProperties(Specificity.PseudoClass, Rarity.PseudoClass, Match.Dynamic)
 export class NotPseudoClassSelector extends SimpleSelector {
 	private selectorGroups: SimpleSelector[][];
 
@@ -380,6 +380,13 @@ export class NotPseudoClassSelector extends SimpleSelector {
 	}
 	public mayMatch(node: Node): boolean {
 		return true;
+	}
+	public trackChanges(node, map): void {
+		for (const selectors of this.selectorGroups) {
+			for (const selector of selectors) {
+				selector.trackChanges(node, map);
+			}
+		}
 	}
 }
 
