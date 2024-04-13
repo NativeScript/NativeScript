@@ -336,15 +336,17 @@ export class PseudoClassSelector extends SimpleSelector {
 
 @SelectorProperties(Specificity.PseudoClass, Rarity.PseudoClass, Match.Dynamic)
 export class NotPseudoClassSelector extends SimpleSelector {
-	private selectors: SimpleSelector[];
+	private selectorGroups: SimpleSelector[][];
 
 	constructor(dataType: CSSWhat.DataType) {
 		super();
 
-		const selectors: SimpleSelector[] = [];
+		const selectorGroups: SimpleSelector[][] = [];
 
 		if (Array.isArray(dataType)) {
 			for (const asts of dataType) {
+				const selectors: SimpleSelector[] = [];
+
 				for (const ast of asts) {
 					const combinator = Combinator[ast.type];
 					if (combinator != null) {
@@ -354,16 +356,21 @@ export class NotPseudoClassSelector extends SimpleSelector {
 
 					selectors.push(createSimpleSelectorFromAst(ast));
 				}
+
+				if (selectors.length) {
+					selectorGroups.push(selectors);
+				}
 			}
 		}
 
-		this.selectors = selectors;
+		this.selectorGroups = selectorGroups;
 	}
 	public toString(): string {
-		return `:not(${this.selectors.join(', ')})${wrap(this.combinator)}`;
+		const selectors = this.selectorGroups.map((group) => group.join(''));
+		return `:not(${selectors.join(', ')})${wrap(this.combinator)}`;
 	}
 	public match(node: Node): boolean {
-		return !this.selectors.some((selector) => selector.match(node));
+		return !this.selectorGroups.some((selectors) => !selectors.some((selector) => !selector.match(node)));
 	}
 	public mayMatch(node: Node): boolean {
 		return true;
@@ -604,7 +611,7 @@ function createSimpleSelectorFromAst(ast: CSSWhat.Selector): SimpleSelector {
 			return new IdSelector(ast.value);
 		}
 
-		return new AttributeSelector(ast.name, <any>ast.action, ast.value);
+		return new AttributeSelector(ast.name, <AttributeTest>ast.action, ast.value);
 	}
 
 	if (ast.type === 'tag') {
