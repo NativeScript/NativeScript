@@ -1,6 +1,8 @@
+import * as CSSWhat from 'css-what';
 import '../../globals';
 import { isCssVariable } from '../core/properties';
-import { isNullOrUndefined } from '../../utils/types';
+import { Trace } from '../../trace';
+import { isNullOrUndefined, isUndefined } from '../../utils/types';
 
 import * as ReworkCSS from '../../css';
 import { Combinator as ICombinator, SimpleSelectorSequence as ISimpleSelectorSequence, Selector as ISelector, SimpleSelector as ISimpleSelector, parseSelector } from '../../css/parser';
@@ -34,6 +36,7 @@ export interface Changes {
 	pseudoClasses?: Set<string>;
 }
 
+/* eslint-disable @typescript-eslint/no-duplicate-enum-values */
 const enum Specificity {
 	Inline = 1000,
 	Id = 100,
@@ -55,6 +58,30 @@ const enum Rarity {
 	Universal = 0,
 	Inline = 0,
 }
+/* eslint-enable @typescript-eslint/no-duplicate-enum-values */
+
+enum Combinator {
+	'descendant' = ' ',
+	'child' = '>',
+	'adjacent' = '+',
+
+	// Not supported
+	'parent' = '<',
+	'sibling' = '~',
+	'column-combinator' = '||',
+}
+
+enum AttributeSelectorOperator {
+	exists = '',
+	equals = '=',
+	start = '^=',
+	end = '$=',
+	any = '*=',
+	element = '~=',
+	hyphen = '|=',
+}
+
+declare type AttributeTest = 'exists' | 'equals' | 'start' | 'end' | 'any' | 'element' | 'hyphen';
 
 interface LookupSorter {
 	sortById(id: string, sel: SelectorCore);
@@ -73,6 +100,8 @@ namespace Match {
 	 */
 	export const Static = false;
 }
+
+const SUPPORTED_COMBINATORS: Array<Combinator> = [Combinator.descendant, Combinator.child, Combinator.adjacent];
 
 function getNodeDirectSibling(node): null | Node {
 	if (!node.parent || !node.parent.getChildIndex || !node.parent.getChildAt) {
@@ -97,7 +126,6 @@ function SelectorProperties(specificity: Specificity, rarity: Rarity, dynamic = 
 	};
 }
 
-declare type Combinator = '+' | '>' | '~' | ' ';
 @SelectorProperties(Specificity.Universal, Rarity.Universal, Match.Static)
 export abstract class SelectorCore {
 	public pos: number;
@@ -221,63 +249,62 @@ export class ClassSelector extends SimpleSelector {
 	}
 }
 
-declare type AttributeTest = '=' | '^=' | '$=' | '*=' | '=' | '~=' | '|=';
 @SelectorProperties(Specificity.Attribute, Rarity.Attribute, Match.Dynamic)
 export class AttributeSelector extends SimpleSelector {
-	constructor(public attribute: string, public test?: AttributeTest, public value?: string) {
+	constructor(
+		public attribute: string,
+		public test: AttributeTest,
+		public value?: string,
+	) {
 		super();
-
-		if (!test) {
-			// HasAttribute
-			this.match = (node) => !isNullOrUndefined(node[attribute]);
-
-			return;
-		}
-
-		if (!value) {
-			this.match = (node) => false;
-		}
-
-		this.match = (node) => {
-			const attr = node[attribute] + '';
-
-			if (test === '=') {
-				// Equals
-				return attr === value;
-			}
-
-			if (test === '^=') {
-				// PrefixMatch
-				return attr.startsWith(value);
-			}
-
-			if (test === '$=') {
-				// SuffixMatch
-				return attr.endsWith(value);
-			}
-
-			if (test === '*=') {
-				// SubstringMatch
-				return attr.indexOf(value) !== -1;
-			}
-
-			if (test === '~=') {
-				// Includes
-				const words = attr.split(' ');
-
-				return words && words.indexOf(value) !== -1;
-			}
-
-			if (test === '|=') {
-				// DashMatch
-				return attr === value || attr.startsWith(value + '-');
-			}
-		};
 	}
 	public toString(): string {
-		return `[${this.attribute}${wrap(this.test)}${(this.test && this.value) || ''}]${wrap(this.combinator)}`;
+		return `[${this.attribute}${wrap(AttributeSelectorOperator[this.test] ?? this.test)}${this.value || ''}]${wrap(this.combinator)}`;
 	}
 	public match(node: Node): boolean {
+		let attr = node[this.attribute];
+
+		if (this.test === 'exists') {
+			return !isNullOrUndefined(attr);
+		}
+
+		if (!this.value) {
+			return false;
+		}
+
+		// Now, convert value to string
+		attr += '';
+
+		// =
+		if (this.test === 'equals') {
+			return attr === this.value;
+		}
+
+		// ^=
+		if (this.test === 'start') {
+			return attr.startsWith(this.value);
+		}
+
+		// $=
+		if (this.test === 'end') {
+			return attr.endsWith(this.value);
+		}
+
+		// *=
+		if (this.test === 'any') {
+			return attr.indexOf(this.value) !== -1;
+		}
+
+		// ~=
+		if (this.test === 'element') {
+			const words = attr.split(' ');
+			return words && words.indexOf(this.value) !== -1;
+		}
+
+		// |=
+		if (this.test === 'hyphen') {
+			return attr === this.value || attr.startsWith(this.value + '-');
+		}
 		return false;
 	}
 	public mayMatch(node: Node): boolean {
@@ -304,6 +331,42 @@ export class PseudoClassSelector extends SimpleSelector {
 	}
 	public trackChanges(node: Node, map: ChangeAccumulator): void {
 		map.addPseudoClass(node, this.cssPseudoClass);
+	}
+}
+
+@SelectorProperties(Specificity.PseudoClass, Rarity.PseudoClass, Match.Dynamic)
+export class NotPseudoClassSelector extends SimpleSelector {
+	private selectors: SimpleSelector[];
+
+	constructor(dataType: CSSWhat.DataType) {
+		super();
+
+		const selectors: SimpleSelector[] = [];
+
+		if (Array.isArray(dataType)) {
+			for (const asts of dataType) {
+				for (const ast of asts) {
+					const combinator = Combinator[ast.type];
+					if (combinator != null) {
+						Trace.write(`Invalid combinator ${combinator ?? ast.type} inside :not() pseudo-class!`, Trace.categories.Style, Trace.messageType.warn);
+						break;
+					}
+
+					selectors.push(createSimpleSelectorFromAst(ast));
+				}
+			}
+		}
+
+		this.selectors = selectors;
+	}
+	public toString(): string {
+		return `:not(${this.selectors.join(', ')})${wrap(this.combinator)}`;
+	}
+	public match(node: Node): boolean {
+		return !this.selectors.some((selector) => selector.match(node));
+	}
+	public mayMatch(node: Node): boolean {
+		return true;
 	}
 }
 
@@ -339,7 +402,6 @@ export class Selector extends SelectorCore {
 
 	constructor(public selectors: SimpleSelector[]) {
 		super();
-		const supportedCombinator = [undefined, ' ', '>', '+'];
 		let siblingGroup: SimpleSelector[];
 		let lastGroup: SimpleSelector[][];
 		const groups: SimpleSelector[][][] = [];
@@ -349,11 +411,12 @@ export class Selector extends SelectorCore {
 
 		for (let i = selectors.length - 1; i > -1; i--) {
 			const sel = selectors[i];
+			const isCombinatorSet = !isUndefined(sel.combinator);
 
-			if (supportedCombinator.indexOf(sel.combinator) === -1) {
-				throw new Error(`Unsupported combinator "${sel.combinator}".`);
+			if (isCombinatorSet && !SUPPORTED_COMBINATORS.includes(sel.combinator)) {
+				throw new Error(`Unsupported combinator "${sel.combinator}" for selector ${sel}.`);
 			}
-			if (sel.combinator === undefined || sel.combinator === ' ') {
+			if (!isCombinatorSet || sel.combinator === ' ') {
 				groups.push((lastGroup = [(siblingGroup = [])]));
 			}
 			if (sel.combinator === '>') {
@@ -504,7 +567,10 @@ export namespace Selector {
 export class RuleSet {
 	tag: string | number;
 	scopedTag: string;
-	constructor(public selectors: SelectorCore[], public declarations: Declaration[]) {
+	constructor(
+		public selectors: SelectorCore[],
+		public declarations: Declaration[],
+	) {
 		this.selectors.forEach((sel) => (sel.ruleset = this));
 	}
 	public toString(): string {
@@ -528,72 +594,91 @@ function createDeclaration(decl: ReworkCSS.Declaration): any {
 	return { property: isCssVariable(decl.property) ? decl.property : decl.property.toLowerCase(), value: decl.value };
 }
 
-function createSimpleSelectorFromAst(ast: ISimpleSelector): SimpleSelector {
-	if (ast.type === '.') {
-		return new ClassSelector(ast.identifier);
+function createSimpleSelectorFromAst(ast: CSSWhat.Selector): SimpleSelector {
+	if (ast.type === 'attribute') {
+		if (ast.name === 'class') {
+			return new ClassSelector(ast.value);
+		}
+
+		if (ast.name === 'id') {
+			return new IdSelector(ast.value);
+		}
+
+		return new AttributeSelector(ast.name, <any>ast.action, ast.value);
 	}
 
-	if (ast.type === '') {
-		return new TypeSelector(ast.identifier.replace('-', '').toLowerCase());
+	if (ast.type === 'tag') {
+		return new TypeSelector(ast.name.replace('-', '').toLowerCase());
 	}
 
-	if (ast.type === '#') {
-		return new IdSelector(ast.identifier);
+	if (ast.type === 'pseudo') {
+		if (ast.name === 'not') {
+			return new NotPseudoClassSelector(ast.data);
+		}
+		return new PseudoClassSelector(ast.name);
 	}
 
-	if (ast.type === '[]') {
-		return new AttributeSelector(ast.property, ast.test, ast.test && ast.value);
-	}
-
-	if (ast.type === ':') {
-		return new PseudoClassSelector(ast.identifier);
-	}
-
-	if (ast.type === '*') {
+	if (ast.type === 'universal') {
 		return new UniversalSelector();
 	}
 }
 
-function createSimpleSelectorSequenceFromAst(ast: ISimpleSelectorSequence): SimpleSelectorSequence | SimpleSelector {
-	if (ast.length === 0) {
-		return new InvalidSelector(new Error('Empty simple selector sequence.'));
-	} else if (ast.length === 1) {
-		return createSimpleSelectorFromAst(ast[0]);
-	} else {
-		return new SimpleSelectorSequence(ast.map(createSimpleSelectorFromAst));
-	}
+function createSimpleSelectorSequence(selectors: Array<CSSWhat.Selector>): SimpleSelectorSequence {
+	return new SimpleSelectorSequence(selectors.map(createSimpleSelectorFromAst));
 }
 
-function createSelectorFromAst(ast: ISelector): SimpleSelector | SimpleSelectorSequence | Selector {
-	if (ast.length === 0) {
-		return new InvalidSelector(new Error('Empty selector.'));
-	} else if (ast.length === 1) {
-		return createSimpleSelectorSequenceFromAst(ast[0][0]);
+function createSelectorFromAst(asts: CSSWhat.Selector[]): SimpleSelector | SimpleSelectorSequence | Selector {
+	let result: SimpleSelector | SimpleSelectorSequence | Selector;
+
+	if (asts.length === 0) {
+		result = new InvalidSelector(new Error('Empty selector.'));
+	} else if (asts.length === 1) {
+		result = createSimpleSelectorFromAst(asts[0]);
 	} else {
-		const simpleSelectorSequences = [];
-		let simpleSelectorSequence: SimpleSelectorSequence | SimpleSelector;
-		let combinator: ICombinator;
-		for (let i = 0; i < ast.length; i++) {
-			simpleSelectorSequence = createSimpleSelectorSequenceFromAst(<ISimpleSelectorSequence>ast[i][0]);
-			combinator = <ICombinator>ast[i][1];
-			if (combinator) {
+		const simpleSelectorSequences: Array<SimpleSelectorSequence> = [];
+
+		let pendingSelectorInstances: Array<CSSWhat.Selector> = [];
+		let combinatorCount: number = 0;
+
+		for (const ast of asts) {
+			const combinator = Combinator[ast.type];
+
+			// Combinator means the end of a sequence
+			if (combinator != null) {
+				const simpleSelectorSequence = createSimpleSelectorSequence(pendingSelectorInstances);
 				simpleSelectorSequence.combinator = combinator;
+				simpleSelectorSequences.push(simpleSelectorSequence);
+
+				combinatorCount++;
+				// Cleanup stored selectors for the new sequence to take place
+				pendingSelectorInstances = [];
+			} else {
+				pendingSelectorInstances.push(ast);
 			}
-			simpleSelectorSequences.push(simpleSelectorSequence);
 		}
 
-		return new Selector(simpleSelectorSequences);
+		if (combinatorCount > 0) {
+			// Create a sequence using the remaining selectors after the last combinator
+			if (pendingSelectorInstances.length) {
+				simpleSelectorSequences.push(createSimpleSelectorSequence(pendingSelectorInstances));
+			}
+			result = new Selector(simpleSelectorSequences);
+		} else {
+			result = createSimpleSelectorSequence(pendingSelectorInstances);
+		}
 	}
+
+	return result;
 }
 
 export function createSelector(sel: string): SimpleSelector | SimpleSelectorSequence | Selector {
 	try {
-		const parsedSelector = parseSelector(sel);
-		if (!parsedSelector) {
+		const result = CSSWhat.parse(sel);
+		if (!result?.length) {
 			return new InvalidSelector(new Error('Empty selector'));
 		}
 
-		return createSelectorFromAst(parsedSelector.value);
+		return createSelectorFromAst(result[0]);
 	} catch (e) {
 		return new InvalidSelector(e);
 	}
