@@ -350,7 +350,7 @@ export class NotPseudoClassSelector extends SimpleSelector {
 				for (const ast of asts) {
 					const combinator = Combinator[ast.type];
 					if (combinator != null) {
-						Trace.write(`Invalid combinator ${combinator ?? ast.type} inside :not() pseudo-class!`, Trace.categories.Style, Trace.messageType.warn);
+						Trace.write(`Invalid combinator ${combinator} inside :not() pseudo-class!`, Trace.categories.Style, Trace.messageType.warn);
 						break;
 					}
 
