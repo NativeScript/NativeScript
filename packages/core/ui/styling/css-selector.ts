@@ -254,7 +254,8 @@ export class AttributeSelector extends SimpleSelector {
 	constructor(
 		public attribute: string,
 		public test: AttributeTest,
-		public value?: string,
+		public value: string,
+		public ignoreCase: boolean,
 	) {
 		super();
 	}
@@ -274,6 +275,11 @@ export class AttributeSelector extends SimpleSelector {
 
 		// Now, convert value to string
 		attr += '';
+
+		if (this.ignoreCase) {
+			attr = attr.toLowerCase();
+			this.value = this.value.toLowerCase();
+		}
 
 		// =
 		if (this.test === 'equals') {
@@ -611,7 +617,7 @@ function createSimpleSelectorFromAst(ast: CSSWhat.Selector): SimpleSelector {
 			return new IdSelector(ast.value);
 		}
 
-		return new AttributeSelector(ast.name, <AttributeTest>ast.action, ast.value);
+		return new AttributeSelector(ast.name, <AttributeTest>ast.action, ast.value, !!ast.ignoreCase);
 	}
 
 	if (ast.type === 'tag') {
