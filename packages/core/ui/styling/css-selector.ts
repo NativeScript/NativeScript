@@ -334,7 +334,7 @@ export class PseudoClassSelector extends SimpleSelector {
 	}
 }
 
-@SelectorProperties(Specificity.PseudoClass, Rarity.PseudoClass, Match.Dynamic)
+@SelectorProperties(Specificity.PseudoClass, Rarity.PseudoClass, Match.Static)
 export class NotPseudoClassSelector extends SimpleSelector {
 	private selectorGroups: SimpleSelector[][];
 
