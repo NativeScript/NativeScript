@@ -46,6 +46,11 @@ const enum Specificity {
 	Type = 1,
 	Universal = 0,
 	Invalid = 0,
+	Zero = 0,
+	/**
+	 * Selector has the specificity of the selector with the highest specificity inside selector list.
+	 */
+	SelectorListHighest = -1,
 }
 
 const enum Rarity {
@@ -348,14 +353,17 @@ export class PseudoClassSelector extends SimpleSelector {
 	}
 }
 
-@SelectorProperties(Specificity.PseudoClass, Rarity.PseudoClass, Match.Dynamic, PseudoClassSelectorList.Regular)
+@SelectorProperties(Specificity.SelectorListHighest, Rarity.PseudoClass, Match.Dynamic, PseudoClassSelectorList.Regular)
 export class FunctionalPseudoClassSelector extends PseudoClassSelector {
-	protected selectorGroups: SimpleSelector[][];
+	protected selectorSequences: SimpleSelectorSequence[];
 
 	constructor(cssPseudoClass: string, dataType: CSSWhat.DataType) {
 		super(cssPseudoClass);
 
-		const selectorGroups: SimpleSelector[][] = [];
+		const selectorSequences: SimpleSelectorSequence[] = [];
+		const needsHighestSpecificity: boolean = this.specificity === Specificity.SelectorListHighest;
+
+		let specificity: number = 0;
 
 		if (Array.isArray(dataType)) {
 			let hasInvalidSelector: boolean = false;
@@ -385,22 +393,30 @@ export class FunctionalPseudoClassSelector extends PseudoClassSelector {
 				if (hasInvalidSelector) {
 					// Only forgiving selector list can ignore invalid selectors
 					if (this.pseudoSelectorListType !== PseudoClassSelectorList.Forgiving) {
-						selectorGroups.splice(0);
+						selectorSequences.splice(0);
+						specificity = 0;
 						break;
 					}
 				} else {
 					if (selectors.length) {
-						selectorGroups.push(selectors);
+						const selectorSequence = new SimpleSelectorSequence(selectors);
+
+						// The specificity of some pseudo-classes is replaced by the specificity of the most specific selector in its comma-separated argument of selectors
+						if (needsHighestSpecificity && selectorSequence.specificity > specificity) {
+							specificity = selectorSequence.specificity;
+						}
+
+						selectorSequences.push(selectorSequence);
 					}
 				}
 			}
 		}
 
-		this.selectorGroups = selectorGroups;
+		this.selectorSequences = selectorSequences;
+		this.specificity = specificity;
 	}
 	public toString(): string {
-		const selectors = this.selectorGroups.map((group) => group.join(''));
-		return `:${this.cssPseudoClass}(${selectors.join(', ')})${wrap(this.combinator)}`;
+		return `:${this.cssPseudoClass}(${this.selectorSequences.join(', ')})${wrap(this.combinator)}`;
 	}
 	public match(node: Node): boolean {
 		return false;
@@ -409,25 +425,36 @@ export class FunctionalPseudoClassSelector extends PseudoClassSelector {
 		return true;
 	}
 	public trackChanges(node, map): void {
-		for (const selectors of this.selectorGroups) {
-			for (const selector of selectors) {
-				selector.trackChanges(node, map);
-			}
+		for (const sequence of this.selectorSequences) {
+			sequence.trackChanges(node, map);
+		}
+	}
+
+	public lookupSort(sorter: LookupSorter, base?: SelectorCore): void {
+		for (const sequence of this.selectorSequences) {
+			sequence.lookupSort(sorter, base);
 		}
 	}
 }
 
-@SelectorProperties(Specificity.PseudoClass, Rarity.PseudoClass, Match.Dynamic, PseudoClassSelectorList.Regular)
+@SelectorProperties(Specificity.SelectorListHighest, Rarity.PseudoClass, Match.Dynamic, PseudoClassSelectorList.Regular)
 export class NotFunctionalPseudoClassSelector extends FunctionalPseudoClassSelector {
 	public match(node: Node): boolean {
-		return !this.selectorGroups.some((selectors) => !selectors.some((selector) => !selector.match(node)));
+		return !this.selectorSequences.some((sequence) => sequence.match(node));
 	}
 }
 
-@SelectorProperties(Specificity.PseudoClass, Rarity.PseudoClass, Match.Dynamic, PseudoClassSelectorList.Forgiving)
+@SelectorProperties(Specificity.SelectorListHighest, Rarity.PseudoClass, Match.Dynamic, PseudoClassSelectorList.Forgiving)
 export class IsFunctionalPseudoClassSelector extends FunctionalPseudoClassSelector {
 	public match(node: Node): boolean {
-		return this.selectorGroups.some((selectors) => !selectors.some((selector) => !selector.match(node)));
+		return this.selectorSequences.some((sequence) => sequence.match(node));
+	}
+}
+
+@SelectorProperties(Specificity.Zero, Rarity.PseudoClass, Match.Dynamic, PseudoClassSelectorList.Forgiving)
+export class WhereFunctionalPseudoClassSelector extends FunctionalPseudoClassSelector {
+	public match(node: Node): boolean {
+		return this.selectorSequences.some((sequence) => sequence.match(node));
 	}
 }
 
@@ -677,6 +704,10 @@ function createSimpleSelectorFromAst(ast: CSSWhat.Selector): SimpleSelector {
 			return new IsFunctionalPseudoClassSelector(ast.name, ast.data);
 		}
 
+		if (ast.name === 'where') {
+			return new WhereFunctionalPseudoClassSelector(ast.name, ast.data);
+		}
+
 		if (ast.name === 'not') {
 			return new NotFunctionalPseudoClassSelector(ast.name, ast.data);
 		}
@@ -691,7 +722,7 @@ function createSimpleSelectorFromAst(ast: CSSWhat.Selector): SimpleSelector {
 	return new InvalidSelector(new Error(ast.type));
 }
 
-function createSimpleSelectorSequence(selectors: Array<CSSWhat.Selector>): SimpleSelectorSequence {
+function initSimpleSelectorSequenceWithSelectors(selectors: Array<CSSWhat.Selector>): SimpleSelectorSequence {
 	return new SimpleSelectorSequence(selectors.map(createSimpleSelectorFromAst));
 }
 
@@ -713,7 +744,7 @@ function createSelectorFromAst(asts: CSSWhat.Selector[]): SimpleSelector | Simpl
 
 			// Combinator means the end of a sequence
 			if (combinator != null) {
-				const simpleSelectorSequence = createSimpleSelectorSequence(pendingSelectorInstances);
+				const simpleSelectorSequence = initSimpleSelectorSequenceWithSelectors(pendingSelectorInstances);
 				simpleSelectorSequence.combinator = combinator;
 				simpleSelectorSequences.push(simpleSelectorSequence);
 
@@ -728,11 +759,11 @@ function createSelectorFromAst(asts: CSSWhat.Selector[]): SimpleSelector | Simpl
 		if (combinatorCount > 0) {
 			// Create a sequence using the remaining selectors after the last combinator
 			if (pendingSelectorInstances.length) {
-				simpleSelectorSequences.push(createSimpleSelectorSequence(pendingSelectorInstances));
+				simpleSelectorSequences.push(initSimpleSelectorSequenceWithSelectors(pendingSelectorInstances));
 			}
 			result = new Selector(simpleSelectorSequences);
 		} else {
-			result = createSimpleSelectorSequence(pendingSelectorInstances);
+			result = initSimpleSelectorSequenceWithSelectors(pendingSelectorInstances);
 		}
 	}
 
