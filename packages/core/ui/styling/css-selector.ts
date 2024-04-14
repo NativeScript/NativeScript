@@ -126,12 +126,23 @@ function getNodeDirectSibling(node): null | Node {
 	return node.parent.getChildAt(nodeIndex - 1);
 }
 
-function SelectorProperties(specificity: Specificity, rarity: Rarity, dynamic = false, pseudoSelectorListType?: PseudoClassSelectorList): ClassDecorator {
+function SelectorProperties(specificity: Specificity, rarity: Rarity, dynamic = false): ClassDecorator {
 	return (cls) => {
 		cls.prototype.specificity = specificity;
 		cls.prototype.rarity = rarity;
 		cls.prototype.combinator = undefined;
 		cls.prototype.dynamic = dynamic;
+
+		return cls;
+	};
+}
+
+function FunctionalPseudoClassProperties(specificity: Specificity, rarity: Rarity, pseudoSelectorListType: PseudoClassSelectorList): ClassDecorator {
+	return (cls) => {
+		cls.prototype.specificity = specificity;
+		cls.prototype.rarity = rarity;
+		cls.prototype.combinator = undefined;
+		cls.prototype.dynamic = false;
 		cls.prototype.pseudoSelectorListType = pseudoSelectorListType;
 
 		return cls;
@@ -145,7 +156,6 @@ export abstract class SelectorCore {
 	public rarity: Rarity;
 	public combinator: Combinator;
 	public ruleset: RuleSet;
-	public pseudoSelectorListType?: PseudoClassSelectorList;
 	/**
 	 * Dynamic selectors depend on attributes and pseudo classes.
 	 */
@@ -353,9 +363,10 @@ export class PseudoClassSelector extends SimpleSelector {
 	}
 }
 
-@SelectorProperties(Specificity.SelectorListHighest, Rarity.PseudoClass, Match.Dynamic, PseudoClassSelectorList.Regular)
+@FunctionalPseudoClassProperties(Specificity.SelectorListHighest, Rarity.PseudoClass, PseudoClassSelectorList.Regular)
 export class FunctionalPseudoClassSelector extends PseudoClassSelector {
 	protected selectorSequences: SimpleSelectorSequence[];
+	protected selectorListType?: PseudoClassSelectorList;
 
 	constructor(cssPseudoClass: string, dataType: CSSWhat.DataType) {
 		super(cssPseudoClass);
@@ -392,7 +403,7 @@ export class FunctionalPseudoClassSelector extends PseudoClassSelector {
 
 				if (hasInvalidSelector) {
 					// Only forgiving selector list can ignore invalid selectors
-					if (this.pseudoSelectorListType !== PseudoClassSelectorList.Forgiving) {
+					if (this.selectorListType !== PseudoClassSelectorList.Forgiving) {
 						selectorSequences.splice(0);
 						specificity = 0;
 						break;
@@ -414,6 +425,8 @@ export class FunctionalPseudoClassSelector extends PseudoClassSelector {
 
 		this.selectorSequences = selectorSequences;
 		this.specificity = specificity;
+		// Functional pseudo-classes become dynamic based on selectors in selector list
+		this.dynamic = this.selectorSequences.some((sequence) => sequence.dynamic);
 	}
 	public toString(): string {
 		return `:${this.cssPseudoClass}(${this.selectorSequences.join(', ')})${wrap(this.combinator)}`;
@@ -431,21 +444,21 @@ export class FunctionalPseudoClassSelector extends PseudoClassSelector {
 	}
 }
 
-@SelectorProperties(Specificity.SelectorListHighest, Rarity.PseudoClass, Match.Dynamic, PseudoClassSelectorList.Regular)
+@FunctionalPseudoClassProperties(Specificity.SelectorListHighest, Rarity.PseudoClass, PseudoClassSelectorList.Regular)
 export class NotFunctionalPseudoClassSelector extends FunctionalPseudoClassSelector {
 	public match(node: Node): boolean {
 		return !this.selectorSequences.some((sequence) => sequence.match(node));
 	}
 }
 
-@SelectorProperties(Specificity.SelectorListHighest, Rarity.PseudoClass, Match.Dynamic, PseudoClassSelectorList.Forgiving)
+@FunctionalPseudoClassProperties(Specificity.SelectorListHighest, Rarity.PseudoClass, PseudoClassSelectorList.Forgiving)
 export class IsFunctionalPseudoClassSelector extends FunctionalPseudoClassSelector {
 	public match(node: Node): boolean {
 		return this.selectorSequences.some((sequence) => sequence.match(node));
 	}
 }
 
-@SelectorProperties(Specificity.Zero, Rarity.PseudoClass, Match.Dynamic, PseudoClassSelectorList.Forgiving)
+@FunctionalPseudoClassProperties(Specificity.Zero, Rarity.PseudoClass, PseudoClassSelectorList.Forgiving)
 export class WhereFunctionalPseudoClassSelector extends FunctionalPseudoClassSelector {
 	public match(node: Node): boolean {
 		return this.selectorSequences.some((sequence) => sequence.match(node));
