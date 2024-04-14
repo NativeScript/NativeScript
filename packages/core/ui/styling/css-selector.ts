@@ -436,6 +436,11 @@ export abstract class FunctionalPseudoClassSelector extends PseudoClassSelector 
 	public mayMatch(node: Node): boolean {
 		return true;
 	}
+	public trackChanges(node, map): void {
+		for (const sequence of this.selectorSequences) {
+			sequence.trackChanges(node, map);
+		}
+	}
 }
 
 @FunctionalPseudoClassProperties(Specificity.SelectorListHighest, Rarity.PseudoClass, PseudoClassSelectorList.Regular)
