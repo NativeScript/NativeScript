@@ -341,11 +341,11 @@ export class PseudoClassSelector extends SimpleSelector {
 }
 
 @SelectorProperties(Specificity.PseudoClass, Rarity.PseudoClass, Match.Dynamic)
-export class NotPseudoClassSelector extends SimpleSelector {
+export class FunctionalPseudoClassSelector extends PseudoClassSelector {
 	private selectorGroups: SimpleSelector[][];
 
-	constructor(dataType: CSSWhat.DataType) {
-		super();
+	constructor(cssPseudoClass: string, dataType: CSSWhat.DataType) {
+		super(cssPseudoClass);
 
 		const selectorGroups: SimpleSelector[][] = [];
 
@@ -356,7 +356,7 @@ export class NotPseudoClassSelector extends SimpleSelector {
 				for (const ast of asts) {
 					const combinator = Combinator[ast.type];
 					if (combinator != null) {
-						Trace.write(`Invalid combinator ${combinator} inside :not() pseudo-class!`, Trace.categories.Style, Trace.messageType.warn);
+						Trace.write(`Invalid :${this.cssPseudoClass}() selector list format (${combinator}). Pseudo-class list does not accept selectors with combinators`, Trace.categories.Style, Trace.messageType.warn);
 						break;
 					}
 
@@ -373,10 +373,24 @@ export class NotPseudoClassSelector extends SimpleSelector {
 	}
 	public toString(): string {
 		const selectors = this.selectorGroups.map((group) => group.join(''));
-		return `:not(${selectors.join(', ')})${wrap(this.combinator)}`;
+		return `:${this.cssPseudoClass}(${selectors.join(', ')})${wrap(this.combinator)}`;
 	}
 	public match(node: Node): boolean {
-		return !this.selectorGroups.some((selectors) => !selectors.some((selector) => !selector.match(node)));
+		let matches;
+
+		switch (this.cssPseudoClass) {
+			case 'is':
+				matches = this.selectorGroups.some((selectors) => !selectors.some((selector) => !selector.match(node)));
+				break;
+			case 'not':
+				matches = !this.selectorGroups.some((selectors) => !selectors.some((selector) => !selector.match(node)));
+				break;
+			default:
+				matches = false;
+				break;
+		}
+
+		return matches;
 	}
 	public mayMatch(node: Node): boolean {
 		return true;
@@ -632,8 +646,8 @@ function createSimpleSelectorFromAst(ast: CSSWhat.Selector): SimpleSelector {
 	}
 
 	if (ast.type === 'pseudo') {
-		if (ast.name === 'not') {
-			return new NotPseudoClassSelector(ast.data);
+		if (ast.data) {
+			return new FunctionalPseudoClassSelector(ast.name, ast.data);
 		}
 		return new PseudoClassSelector(ast.name);
 	}
