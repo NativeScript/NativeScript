@@ -1,11 +1,10 @@
-import * as CSSWhat from 'css-what';
+import { parse as convertToCSSWhatSelector, Selector as CSSWhatSelector, DataType as CSSWhatDataType } from 'css-what';
 import '../../globals';
 import { isCssVariable } from '../core/properties';
 import { Trace } from '../../trace';
 import { isNullOrUndefined, isUndefined } from '../../utils/types';
 
 import * as ReworkCSS from '../../css';
-import { Combinator as ICombinator, SimpleSelectorSequence as ISimpleSelectorSequence, Selector as ISelector, SimpleSelector as ISimpleSelector, parseSelector } from '../../css/parser';
 
 /**
  * An interface describing the shape of a type on which the selectors may apply.
@@ -368,7 +367,7 @@ export class FunctionalPseudoClassSelector extends PseudoClassSelector {
 	protected selectorSequences: SimpleSelectorSequence[];
 	protected selectorListType?: PseudoClassSelectorList;
 
-	constructor(cssPseudoClass: string, dataType: CSSWhat.DataType) {
+	constructor(cssPseudoClass: string, dataType: CSSWhatDataType) {
 		super(cssPseudoClass);
 
 		const selectorSequences: SimpleSelectorSequence[] = [];
@@ -689,7 +688,7 @@ function createDeclaration(decl: ReworkCSS.Declaration): any {
 	return { property: isCssVariable(decl.property) ? decl.property : decl.property.toLowerCase(), value: decl.value };
 }
 
-function createSimpleSelectorFromAst(ast: CSSWhat.Selector): SimpleSelector {
+function createSimpleSelectorFromAst(ast: CSSWhatSelector): SimpleSelector {
 	if (ast.type === 'attribute') {
 		if (ast.name === 'class') {
 			return new ClassSelector(ast.value);
@@ -729,11 +728,11 @@ function createSimpleSelectorFromAst(ast: CSSWhat.Selector): SimpleSelector {
 	return new InvalidSelector(new Error(ast.type));
 }
 
-function initSimpleSelectorSequenceWithSelectors(selectors: Array<CSSWhat.Selector>): SimpleSelectorSequence {
+function initSimpleSelectorSequenceWithSelectors(selectors: Array<CSSWhatSelector>): SimpleSelectorSequence {
 	return new SimpleSelectorSequence(selectors.map(createSimpleSelectorFromAst));
 }
 
-function createSelectorFromAst(asts: CSSWhat.Selector[]): SimpleSelector | SimpleSelectorSequence | Selector {
+function createSelectorFromAst(asts: CSSWhatSelector[]): SimpleSelector | SimpleSelectorSequence | Selector {
 	let result: SimpleSelector | SimpleSelectorSequence | Selector;
 
 	if (asts.length === 0) {
@@ -743,7 +742,7 @@ function createSelectorFromAst(asts: CSSWhat.Selector[]): SimpleSelector | Simpl
 	} else {
 		const simpleSelectorSequences: Array<SimpleSelectorSequence> = [];
 
-		let pendingSelectorInstances: Array<CSSWhat.Selector> = [];
+		let pendingSelectorInstances: Array<CSSWhatSelector> = [];
 		let combinatorCount: number = 0;
 
 		for (const ast of asts) {
@@ -779,7 +778,7 @@ function createSelectorFromAst(asts: CSSWhat.Selector[]): SimpleSelector | Simpl
 
 export function createSelector(sel: string): SimpleSelector | SimpleSelectorSequence | Selector {
 	try {
-		const result = CSSWhat.parse(sel);
+		const result = convertToCSSWhatSelector(sel);
 		if (!result?.length) {
 			return new InvalidSelector(new Error('Empty selector'));
 		}
