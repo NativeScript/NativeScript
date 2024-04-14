@@ -356,7 +356,7 @@ export class FunctionalPseudoClassSelector extends PseudoClassSelector {
 				for (const ast of asts) {
 					const combinator = Combinator[ast.type];
 					if (combinator != null) {
-						Trace.write(`Invalid :${this.cssPseudoClass}() selector list format (${combinator}). Pseudo-class list does not accept selectors with combinators`, Trace.categories.Style, Trace.messageType.warn);
+						Trace.write(`Invalid :${this.cssPseudoClass}() selector list format '${combinator}'(${ast.type}). Pseudo-class list does not accept selectors with combinators`, Trace.categories.Style, Trace.messageType.warn);
 						break;
 					}
 
