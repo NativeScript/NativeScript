@@ -429,12 +429,6 @@ export class FunctionalPseudoClassSelector extends PseudoClassSelector {
 			sequence.trackChanges(node, map);
 		}
 	}
-	public lookupSort(sorter: LookupSorter, base?: SelectorCore): void {
-		const baseSelector = base || this;
-		for (const sequence of this.selectorSequences) {
-			sequence.lookupSort(sorter, baseSelector);
-		}
-	}
 }
 
 @SelectorProperties(Specificity.SelectorListHighest, Rarity.PseudoClass, Match.Dynamic, PseudoClassSelectorList.Regular)
