@@ -60,6 +60,12 @@ const enum Rarity {
 }
 /* eslint-enable @typescript-eslint/no-duplicate-enum-values */
 
+const enum PseudoClassSelectorList {
+	Regular = 0,
+	Forgiving = 1,
+	Relative = 2,
+}
+
 enum Combinator {
 	'descendant' = ' ',
 	'child' = '>',
@@ -115,12 +121,13 @@ function getNodeDirectSibling(node): null | Node {
 	return node.parent.getChildAt(nodeIndex - 1);
 }
 
-function SelectorProperties(specificity: Specificity, rarity: Rarity, dynamic = false): ClassDecorator {
+function SelectorProperties(specificity: Specificity, rarity: Rarity, dynamic = false, pseudoSelectorListType?: PseudoClassSelectorList): ClassDecorator {
 	return (cls) => {
 		cls.prototype.specificity = specificity;
 		cls.prototype.rarity = rarity;
 		cls.prototype.combinator = undefined;
 		cls.prototype.dynamic = dynamic;
+		cls.prototype.pseudoSelectorListType = pseudoSelectorListType;
 
 		return cls;
 	};
@@ -133,6 +140,7 @@ export abstract class SelectorCore {
 	public rarity: Rarity;
 	public combinator: Combinator;
 	public ruleset: RuleSet;
+	public pseudoSelectorListType?: PseudoClassSelectorList;
 	/**
 	 * Dynamic selectors depend on attributes and pseudo classes.
 	 */
@@ -179,7 +187,7 @@ export class InvalidSelector extends SimpleSelector {
 		super();
 	}
 	public toString(): string {
-		return `<error: ${this.e}>`;
+		return `<${this.e}>`;
 	}
 	public match(node: Node): boolean {
 		return false;
@@ -340,9 +348,9 @@ export class PseudoClassSelector extends SimpleSelector {
 	}
 }
 
-@SelectorProperties(Specificity.PseudoClass, Rarity.PseudoClass, Match.Dynamic)
+@SelectorProperties(Specificity.PseudoClass, Rarity.PseudoClass, Match.Dynamic, PseudoClassSelectorList.Regular)
 export class FunctionalPseudoClassSelector extends PseudoClassSelector {
-	private selectorGroups: SimpleSelector[][];
+	protected selectorGroups: SimpleSelector[][];
 
 	constructor(cssPseudoClass: string, dataType: CSSWhat.DataType) {
 		super(cssPseudoClass);
@@ -350,21 +358,40 @@ export class FunctionalPseudoClassSelector extends PseudoClassSelector {
 		const selectorGroups: SimpleSelector[][] = [];
 
 		if (Array.isArray(dataType)) {
+			let hasInvalidSelector: boolean = false;
+
 			for (const asts of dataType) {
 				const selectors: SimpleSelector[] = [];
 
 				for (const ast of asts) {
-					const combinator = Combinator[ast.type];
-					if (combinator != null) {
-						Trace.write(`Invalid :${this.cssPseudoClass}() selector list format '${combinator}'(${ast.type}). Pseudo-class list does not accept selectors with combinators`, Trace.categories.Style, Trace.messageType.warn);
+					const selector = createSimpleSelectorFromAst(ast);
+					if (selector instanceof InvalidSelector) {
+						if (Trace.isEnabled()) {
+							let message = `Invalid :${this.cssPseudoClass}() list selector '${selectors.join('') + selector}`;
+							if (Combinator[ast.type] != null) {
+								message += '. Pseudo-class selector list does not currently accept combinators';
+							}
+
+							Trace.write(message, Trace.categories.Style, Trace.messageType.warn);
+						}
+
+						hasInvalidSelector = true;
 						break;
 					}
 
-					selectors.push(createSimpleSelectorFromAst(ast));
+					selectors.push(selector);
 				}
 
-				if (selectors.length) {
-					selectorGroups.push(selectors);
+				if (hasInvalidSelector) {
+					// Only forgiving selector list can ignore invalid selectors
+					if (this.pseudoSelectorListType !== PseudoClassSelectorList.Forgiving) {
+						selectorGroups.splice(0);
+						break;
+					}
+				} else {
+					if (selectors.length) {
+						selectorGroups.push(selectors);
+					}
 				}
 			}
 		}
@@ -376,21 +403,7 @@ export class FunctionalPseudoClassSelector extends PseudoClassSelector {
 		return `:${this.cssPseudoClass}(${selectors.join(', ')})${wrap(this.combinator)}`;
 	}
 	public match(node: Node): boolean {
-		let matches;
-
-		switch (this.cssPseudoClass) {
-			case 'is':
-				matches = this.selectorGroups.some((selectors) => !selectors.some((selector) => !selector.match(node)));
-				break;
-			case 'not':
-				matches = !this.selectorGroups.some((selectors) => !selectors.some((selector) => !selector.match(node)));
-				break;
-			default:
-				matches = false;
-				break;
-		}
-
-		return matches;
+		return false;
 	}
 	public mayMatch(node: Node): boolean {
 		return true;
@@ -401,6 +414,20 @@ export class FunctionalPseudoClassSelector extends PseudoClassSelector {
 				selector.trackChanges(node, map);
 			}
 		}
+	}
+}
+
+@SelectorProperties(Specificity.PseudoClass, Rarity.PseudoClass, Match.Dynamic, PseudoClassSelectorList.Regular)
+export class NotFunctionalPseudoClassSelector extends FunctionalPseudoClassSelector {
+	public match(node: Node): boolean {
+		return !this.selectorGroups.some((selectors) => !selectors.some((selector) => !selector.match(node)));
+	}
+}
+
+@SelectorProperties(Specificity.PseudoClass, Rarity.PseudoClass, Match.Dynamic, PseudoClassSelectorList.Forgiving)
+export class IsFunctionalPseudoClassSelector extends FunctionalPseudoClassSelector {
+	public match(node: Node): boolean {
+		return this.selectorGroups.some((selectors) => !selectors.some((selector) => !selector.match(node)));
 	}
 }
 
@@ -646,15 +673,22 @@ function createSimpleSelectorFromAst(ast: CSSWhat.Selector): SimpleSelector {
 	}
 
 	if (ast.type === 'pseudo') {
-		if (ast.data) {
-			return new FunctionalPseudoClassSelector(ast.name, ast.data);
+		if (ast.name === 'is') {
+			return new IsFunctionalPseudoClassSelector(ast.name, ast.data);
 		}
+
+		if (ast.name === 'not') {
+			return new NotFunctionalPseudoClassSelector(ast.name, ast.data);
+		}
+
 		return new PseudoClassSelector(ast.name);
 	}
 
 	if (ast.type === 'universal') {
 		return new UniversalSelector();
 	}
+
+	return new InvalidSelector(new Error(ast.type));
 }
 
 function createSimpleSelectorSequence(selectors: Array<CSSWhat.Selector>): SimpleSelectorSequence {
