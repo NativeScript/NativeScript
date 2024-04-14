@@ -363,7 +363,7 @@ export class PseudoClassSelector extends SimpleSelector {
 }
 
 @FunctionalPseudoClassProperties(Specificity.SelectorListHighest, Rarity.PseudoClass, PseudoClassSelectorList.Regular)
-export class FunctionalPseudoClassSelector extends PseudoClassSelector {
+export abstract class FunctionalPseudoClassSelector extends PseudoClassSelector {
 	protected selectorSequences: SimpleSelectorSequence[];
 	protected selectorListType?: PseudoClassSelectorList;
 
