@@ -825,7 +825,8 @@ export class View extends ViewCommon {
 	}
 
 	[accessibilityEnabledProperty.setNative](value: boolean): void {
-		this.nativeViewProtected.setFocusable(!!value);
+		// ensure `accessibilityEnabled=false` does not disable focus for view with `isUserInteractionEnabled=true`
+		this.nativeViewProtected.setFocusable(!!value || this.isUserInteractionEnabled);
 		if (value) {
 			updateAccessibilityProperties(this);
 		}
