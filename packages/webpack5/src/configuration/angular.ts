@@ -1,5 +1,6 @@
 import { extname, resolve } from 'path';
 import Config from 'webpack-chain';
+import { satisfies } from 'semver';
 import { existsSync } from 'fs';
 
 import { getTypescript, readTsConfig } from '../helpers/typescript';
@@ -13,7 +14,6 @@ import {
 	getPlatformName,
 } from '../helpers/platform';
 import base from './base';
-import { satisfies } from 'semver';
 
 // until we can switch to async/await on the webpack config, copy this from '@angular/compiler-cli'
 const GLOBAL_DEFS_FOR_TERSER = {
