@@ -4,6 +4,7 @@ import fs from 'fs';
 import base from '../../src/configuration/base';
 import { init } from '../../src';
 import { applyFileReplacements } from '../../src/helpers/fileReplacements';
+import * as dependenciesHelpers from '../../src/helpers/dependencies';
 import { additionalCopyRules } from '../../src/helpers/copyRules';
 
 describe('base configuration', () => {
@@ -220,5 +221,31 @@ describe('base configuration', () => {
 
 		expect(config.output.get('sourceMapFilename')).toMatchSnapshot();
 		expect(config.get('devtool')).toBe('hidden-source-map');
+	});
+
+	it('includes inspector_modules on android when @nativescript/core version is >= 8.7.0', () => {
+		const getDependencyVersionSpy = jest.spyOn(
+			dependenciesHelpers,
+			'getDependencyVersion'
+		);
+		getDependencyVersionSpy.withImplementation(
+			(name) => {
+				if (name === '@nativescript/core') {
+					return '8.7.0';
+				}
+				return null;
+			},
+			() => {
+				init({
+					android: true,
+				});
+
+				const config = base(new Config());
+				const entry = config.entryPoints.get('tns_modules/inspector_modules');
+
+				expect(entry).toBeDefined();
+				expect(entry.values().length).toBe(1);
+			}
+		);
 	});
 });

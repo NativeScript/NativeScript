@@ -3,7 +3,7 @@ import Config from 'webpack-chain';
 import { existsSync } from 'fs';
 
 import { getTypescript, readTsConfig } from '../helpers/typescript';
-import { getDependencyPath } from '../helpers/dependencies';
+import { getDependencyVersion } from '../helpers/dependencies';
 import { getProjectTSConfigPath } from '../helpers/project';
 import { env as _env, IWebpackEnv } from '../index';
 import { warnOnce } from '../helpers/log';
@@ -13,6 +13,7 @@ import {
 	getPlatformName,
 } from '../helpers/platform';
 import base from './base';
+import { satisfies } from 'semver';
 
 // until we can switch to async/await on the webpack config, copy this from '@angular/compiler-cli'
 const GLOBAL_DEFS_FOR_TERSER = {
@@ -187,13 +188,16 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				.loader('angular-hot-loader');
 		});
 
-		const buildAngularMajorVersion = getBuildAngularMajorVersion();
-		if (buildAngularMajorVersion) {
+		const buildAngularVersion = getDependencyVersion(
+			'@angular-devkit/build-angular'
+		);
+
+		if (buildAngularVersion) {
 			const buildAngularOptions: any = {
 				aot: !disableAOT,
 			};
 
-			if (buildAngularMajorVersion < 15) {
+			if (satisfies(buildAngularVersion, '<15.0.0')) {
 				const tsConfig = readTsConfig(tsConfigPath);
 				const { ScriptTarget } = getTypescript();
 				buildAngularOptions.scriptTarget =
@@ -315,27 +319,6 @@ function getAngularWebpackPlugin(): any {
 	return AngularWebpackPlugin;
 }
 
-const MAJOR_VER_RE = /^(\d+)\./;
-function getBuildAngularMajorVersion() {
-	const buildAngularPath = getDependencyPath('@angular-devkit/build-angular');
-	if (!buildAngularPath) {
-		return null;
-	}
-
-	try {
-		const buildAngularVersion =
-			require(`${buildAngularPath}/package.json`).version;
-
-		const [_, majorStr] = buildAngularVersion.match(MAJOR_VER_RE);
-
-		return Number(majorStr);
-	} catch (err) {
-		// ignore
-	}
-
-	return null;
-}
-
 function tryRequireResolve(path: string) {
 	try {
 		return require.resolve(path);
@@ -348,10 +331,10 @@ function getWebpackLoaderPath() {
 	return (
 		tryRequireResolve(
 			'@angular-devkit/build-angular/src/babel/webpack-loader'
-		) ||
+		) ??
 		tryRequireResolve(
 			'@angular-devkit/build-angular/src/tools/babel/webpack-loader'
-		) ||
+		) ??
 		// fallback to angular 16.1+
 		'@angular-devkit/build-angular/src/tools/babel/webpack-loader'
 	);
