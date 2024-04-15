@@ -728,7 +728,15 @@ function createSimpleSelectorFromAst(ast: CSSWhatSelector): SimpleSelector {
 	return new InvalidSelector(new Error(ast.type));
 }
 
-function initSimpleSelectorSequenceWithSelectors(selectors: Array<CSSWhatSelector>): SimpleSelectorSequence {
+function createSimpleSelectorSequenceFromAst(selectors: Array<CSSWhatSelector>): SimpleSelectorSequence | SimpleSelector {
+	if (selectors.length === 0) {
+		return new InvalidSelector(new Error('Empty simple selector sequence.'));
+	}
+
+	if (selectors.length === 1) {
+		return createSimpleSelectorFromAst(selectors[0]);
+	}
+
 	return new SimpleSelectorSequence(selectors.map(createSimpleSelectorFromAst));
 }
 
@@ -740,7 +748,7 @@ function createSelectorFromAst(asts: CSSWhatSelector[]): SimpleSelector | Simple
 	} else if (asts.length === 1) {
 		result = createSimpleSelectorFromAst(asts[0]);
 	} else {
-		const simpleSelectorSequences: Array<SimpleSelectorSequence> = [];
+		const simpleSelectorSequences: Array<SimpleSelector | SimpleSelectorSequence> = [];
 
 		let pendingSelectorInstances: Array<CSSWhatSelector> = [];
 		let combinatorCount: number = 0;
@@ -750,7 +758,7 @@ function createSelectorFromAst(asts: CSSWhatSelector[]): SimpleSelector | Simple
 
 			// Combinator means the end of a sequence
 			if (combinator != null) {
-				const simpleSelectorSequence = initSimpleSelectorSequenceWithSelectors(pendingSelectorInstances);
+				const simpleSelectorSequence = createSimpleSelectorSequenceFromAst(pendingSelectorInstances);
 				simpleSelectorSequence.combinator = combinator;
 				simpleSelectorSequences.push(simpleSelectorSequence);
 
@@ -765,11 +773,11 @@ function createSelectorFromAst(asts: CSSWhatSelector[]): SimpleSelector | Simple
 		if (combinatorCount > 0) {
 			// Create a sequence using the remaining selectors after the last combinator
 			if (pendingSelectorInstances.length) {
-				simpleSelectorSequences.push(initSimpleSelectorSequenceWithSelectors(pendingSelectorInstances));
+				simpleSelectorSequences.push(createSimpleSelectorSequenceFromAst(pendingSelectorInstances));
 			}
 			result = new Selector(simpleSelectorSequences);
 		} else {
-			result = initSimpleSelectorSequenceWithSelectors(pendingSelectorInstances);
+			result = createSimpleSelectorSequenceFromAst(pendingSelectorInstances);
 		}
 	}
 
