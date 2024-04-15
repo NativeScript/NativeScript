@@ -165,6 +165,7 @@ export abstract class SelectorCore {
 	 * If the selector is dynamic returns if it may match the node, and accumulates any changes that may affect its state.
 	 */
 	public abstract accumulateChanges(node: Node, map: ChangeAccumulator): boolean;
+	public abstract trackChanges(node: Node, map: ChangeAccumulator): void;
 	public lookupSort(sorter: LookupSorter, base?: SelectorCore): void {
 		sorter.sortAsUniversal(base || this);
 	}
@@ -362,73 +363,49 @@ export class PseudoClassSelector extends SimpleSelector {
 	}
 }
 
-@FunctionalPseudoClassProperties(Specificity.SelectorListHighest, Rarity.PseudoClass, PseudoClassSelectorList.Regular)
 export abstract class FunctionalPseudoClassSelector extends PseudoClassSelector {
-	protected selectorSequences: SimpleSelectorSequence[];
+	protected selectors: Array<SimpleSelector | SimpleSelectorSequence | Selector>;
 	protected selectorListType?: PseudoClassSelectorList;
 
 	constructor(cssPseudoClass: string, dataType: CSSWhatDataType) {
 		super(cssPseudoClass);
 
-		const selectorSequences: SimpleSelectorSequence[] = [];
+		const selectors: Array<SimpleSelector | SimpleSelectorSequence | Selector> = [];
 		const needsHighestSpecificity: boolean = this.specificity === Specificity.SelectorListHighest;
 
 		let specificity: number = 0;
 
 		if (Array.isArray(dataType)) {
-			let hasInvalidSelector: boolean = false;
-
 			for (const asts of dataType) {
-				const selectors: SimpleSelector[] = [];
+				const selector: SimpleSelector | SimpleSelectorSequence | Selector = createSelectorFromAst(asts);
 
-				for (const ast of asts) {
-					const selector = createSimpleSelectorFromAst(ast);
-					if (selector instanceof InvalidSelector) {
-						if (Trace.isEnabled()) {
-							let message = `Invalid :${this.cssPseudoClass}() list selector '${selectors.join('') + selector}`;
-							if (Combinator[ast.type] != null) {
-								message += '. Pseudo-class selector list does not currently accept combinators';
-							}
-
-							Trace.write(message, Trace.categories.Style, Trace.messageType.warn);
-						}
-
-						hasInvalidSelector = true;
-						break;
-					}
-
-					selectors.push(selector);
-				}
-
-				if (hasInvalidSelector) {
+				if (selector instanceof InvalidSelector) {
 					// Only forgiving selector list can ignore invalid selectors
 					if (this.selectorListType !== PseudoClassSelectorList.Forgiving) {
-						selectorSequences.splice(0);
+						selectors.splice(0);
 						specificity = 0;
 						break;
 					}
-				} else {
-					if (selectors.length) {
-						const selectorSequence = new SimpleSelectorSequence(selectors);
 
-						// The specificity of some pseudo-classes is replaced by the specificity of the most specific selector in its comma-separated argument of selectors
-						if (needsHighestSpecificity && selectorSequence.specificity > specificity) {
-							specificity = selectorSequence.specificity;
-						}
-
-						selectorSequences.push(selectorSequence);
-					}
+					continue;
 				}
+
+				// The specificity of some pseudo-classes is replaced by the specificity of the most specific selector in its comma-separated argument of selectors
+				if (needsHighestSpecificity && selector.specificity > specificity) {
+					specificity = selector.specificity;
+				}
+
+				selectors.push(selector);
 			}
 		}
 
-		this.selectorSequences = selectorSequences;
+		this.selectors = selectors;
 		this.specificity = specificity;
 		// Functional pseudo-classes become dynamic based on selectors in selector list
-		this.dynamic = this.selectorSequences.some((sequence) => sequence.dynamic);
+		this.dynamic = this.selectors.some((sel) => sel.dynamic);
 	}
 	public toString(): string {
-		return `:${this.cssPseudoClass}(${this.selectorSequences.join(', ')})${wrap(this.combinator)}`;
+		return `:${this.cssPseudoClass}(${this.selectors.join(', ')})${wrap(this.combinator)}`;
 	}
 	public match(node: Node): boolean {
 		return false;
@@ -436,31 +413,29 @@ export abstract class FunctionalPseudoClassSelector extends PseudoClassSelector 
 	public mayMatch(node: Node): boolean {
 		return true;
 	}
-	public trackChanges(node, map): void {
-		for (const sequence of this.selectorSequences) {
-			sequence.trackChanges(node, map);
-		}
+	public trackChanges(node: Node, map: ChangeAccumulator): void {
+		this.selectors.forEach((sel) => sel.trackChanges(node, map));
 	}
 }
 
 @FunctionalPseudoClassProperties(Specificity.SelectorListHighest, Rarity.PseudoClass, PseudoClassSelectorList.Regular)
 export class NotFunctionalPseudoClassSelector extends FunctionalPseudoClassSelector {
 	public match(node: Node): boolean {
-		return !this.selectorSequences.some((sequence) => sequence.match(node));
+		return !this.selectors.some((sel) => sel.match(node));
 	}
 }
 
 @FunctionalPseudoClassProperties(Specificity.SelectorListHighest, Rarity.PseudoClass, PseudoClassSelectorList.Forgiving)
 export class IsFunctionalPseudoClassSelector extends FunctionalPseudoClassSelector {
 	public match(node: Node): boolean {
-		return this.selectorSequences.some((sequence) => sequence.match(node));
+		return this.selectors.some((sel) => sel.match(node));
 	}
 }
 
 @FunctionalPseudoClassProperties(Specificity.Zero, Rarity.PseudoClass, PseudoClassSelectorList.Forgiving)
 export class WhereFunctionalPseudoClassSelector extends FunctionalPseudoClassSelector {
 	public match(node: Node): boolean {
-		return this.selectorSequences.some((sequence) => sequence.match(node));
+		return this.selectors.some((sel) => sel.match(node));
 	}
 }
 
@@ -481,7 +456,7 @@ export class SimpleSelectorSequence extends SimpleSelector {
 	public mayMatch(node: Node): boolean {
 		return this.selectors.every((sel) => sel.mayMatch(node));
 	}
-	public trackChanges(node, map): void {
+	public trackChanges(node: Node, map: ChangeAccumulator): void {
 		this.selectors.forEach((sel) => sel.trackChanges(node, map));
 	}
 	public lookupSort(sorter: LookupSorter, base?: SelectorCore): void {
@@ -551,6 +526,10 @@ export class Selector extends SelectorCore {
 				return false;
 			}
 		});
+	}
+
+	public trackChanges(node: Node, map: ChangeAccumulator): void {
+		this.selectors.forEach((sel) => sel.trackChanges(node, map));
 	}
 
 	public lookupSort(sorter: LookupSorter, base?: SelectorCore): void {
@@ -728,60 +707,82 @@ function createSimpleSelectorFromAst(ast: CSSWhatSelector): SimpleSelector {
 	return new InvalidSelector(new Error(ast.type));
 }
 
-function createSimpleSelectorSequenceFromAst(selectors: Array<CSSWhatSelector>): SimpleSelectorSequence | SimpleSelector {
-	if (selectors.length === 0) {
+function createSimpleSelectorSequenceFromAst(asts: CSSWhatSelector[]): SimpleSelectorSequence | SimpleSelector {
+	if (asts.length === 0) {
 		return new InvalidSelector(new Error('Empty simple selector sequence.'));
 	}
 
-	if (selectors.length === 1) {
-		return createSimpleSelectorFromAst(selectors[0]);
+	if (asts.length === 1) {
+		return createSimpleSelectorFromAst(asts[0]);
 	}
 
-	return new SimpleSelectorSequence(selectors.map(createSimpleSelectorFromAst));
+	const sequenceSelectors: SimpleSelector[] = [];
+
+	for (const ast of asts) {
+		const selector = createSimpleSelectorFromAst(ast);
+		if (selector instanceof InvalidSelector) {
+			return selector;
+		}
+
+		sequenceSelectors.push(selector);
+	}
+
+	return new SimpleSelectorSequence(sequenceSelectors);
 }
 
-function createSelectorFromAst(asts: CSSWhatSelector[]): SimpleSelector | SimpleSelectorSequence | Selector {
+function createSelectorFromAst(asts: Array<CSSWhatSelector>): SimpleSelector | SimpleSelectorSequence | Selector {
 	let result: SimpleSelector | SimpleSelectorSequence | Selector;
 
 	if (asts.length === 0) {
-		result = new InvalidSelector(new Error('Empty selector.'));
-	} else if (asts.length === 1) {
-		result = createSimpleSelectorFromAst(asts[0]);
-	} else {
-		const simpleSelectorSequences: Array<SimpleSelector | SimpleSelectorSequence> = [];
+		return new InvalidSelector(new Error('Empty selector.'));
+	}
 
-		let pendingSelectorInstances: Array<CSSWhatSelector> = [];
-		let combinatorCount: number = 0;
+	if (asts.length === 1) {
+		return createSimpleSelectorFromAst(asts[0]);
+	}
 
-		for (const ast of asts) {
-			const combinator = Combinator[ast.type];
+	const simpleSelectorSequences: Array<SimpleSelector | SimpleSelectorSequence> = [];
 
-			// Combinator means the end of a sequence
-			if (combinator != null) {
-				const simpleSelectorSequence = createSimpleSelectorSequenceFromAst(pendingSelectorInstances);
-				simpleSelectorSequence.combinator = combinator;
-				simpleSelectorSequences.push(simpleSelectorSequence);
+	let sequenceAsts: CSSWhatSelector[] = [];
+	let combinatorCount: number = 0;
 
-				combinatorCount++;
-				// Cleanup stored selectors for the new sequence to take place
-				pendingSelectorInstances = [];
-			} else {
-				pendingSelectorInstances.push(ast);
+	for (const ast of asts) {
+		const combinator = Combinator[ast.type];
+
+		// Combinator means the end of a sequence
+		if (combinator != null) {
+			const selector = createSimpleSelectorSequenceFromAst(sequenceAsts);
+
+			if (selector instanceof InvalidSelector) {
+				return selector;
 			}
-		}
 
-		if (combinatorCount > 0) {
-			// Create a sequence using the remaining selectors after the last combinator
-			if (pendingSelectorInstances.length) {
-				simpleSelectorSequences.push(createSimpleSelectorSequenceFromAst(pendingSelectorInstances));
-			}
-			result = new Selector(simpleSelectorSequences);
+			selector.combinator = combinator;
+			simpleSelectorSequences.push(selector);
+
+			combinatorCount++;
+			// Cleanup stored selectors for the new sequence to take place
+			sequenceAsts = [];
 		} else {
-			result = createSimpleSelectorSequenceFromAst(pendingSelectorInstances);
+			sequenceAsts.push(ast);
 		}
 	}
 
-	return result;
+	if (combinatorCount > 0) {
+		// Create a sequence using the remaining selectors after the last combinator
+		if (sequenceAsts.length) {
+			const selector = createSimpleSelectorSequenceFromAst(sequenceAsts);
+
+			if (selector instanceof InvalidSelector) {
+				return selector;
+			}
+
+			simpleSelectorSequences.push(selector);
+		}
+		return new Selector(simpleSelectorSequences);
+	}
+
+	return createSimpleSelectorSequenceFromAst(sequenceAsts);
 }
 
 export function createSelector(sel: string): SimpleSelector | SimpleSelectorSequence | Selector {
