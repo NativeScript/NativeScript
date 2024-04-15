@@ -344,6 +344,17 @@ interface dylib_table_of_contents {
 }
 declare var dylib_table_of_contents: interop.StructType<dylib_table_of_contents>;
 
+interface dylib_use_command {
+	cmd: number;
+	cmdsize: number;
+	nameoff: number;
+	marker: number;
+	current_version: number;
+	compat_version: number;
+	flags: number;
+}
+declare var dylib_use_command: interop.StructType<dylib_use_command>;
+
 interface dysymtab_command {
 	cmd: number;
 	cmdsize: number;

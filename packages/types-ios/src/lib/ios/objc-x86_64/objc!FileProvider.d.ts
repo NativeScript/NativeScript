@@ -204,7 +204,13 @@ declare const enum NSFileProviderErrorCode {
 
 	ExcludedFromSync = -2010,
 
-	DomainDisabled = -2011
+	DomainDisabled = -2011,
+
+	ProviderDomainTemporarilyUnavailable = -2012,
+
+	ProviderDomainNotFound = -2013,
+
+	ApplicationExtensionNotFound = -2014
 }
 
 declare var NSFileProviderErrorCollidingItemKey: string;

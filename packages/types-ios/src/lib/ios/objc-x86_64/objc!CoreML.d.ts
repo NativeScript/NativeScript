@@ -81,6 +81,45 @@ declare var MLComputeDeviceProtocol: {
 	prototype: MLComputeDeviceProtocol;
 };
 
+declare class MLComputePlan extends NSObject {
+
+	static alloc(): MLComputePlan; // inherited from NSObject
+
+	static loadContentsOfURLConfigurationCompletionHandler(url: NSURL, configuration: MLModelConfiguration, handler: (p1: MLComputePlan, p2: NSError) => void): void;
+
+	static loadModelAssetConfigurationCompletionHandler(asset: MLModelAsset, configuration: MLModelConfiguration, handler: (p1: MLComputePlan, p2: NSError) => void): void;
+
+	static new(): MLComputePlan; // inherited from NSObject
+
+	readonly modelStructure: MLModelStructure;
+
+	computeDeviceUsageForMLProgramOperation(operation: MLModelStructureProgramOperation): MLComputePlanDeviceUsage;
+
+	computeDeviceUsageForNeuralNetworkLayer(layer: MLModelStructureNeuralNetworkLayer): MLComputePlanDeviceUsage;
+
+	estimatedCostOfMLProgramOperation(operation: MLModelStructureProgramOperation): MLComputePlanCost;
+}
+
+declare class MLComputePlanCost extends NSObject {
+
+	static alloc(): MLComputePlanCost; // inherited from NSObject
+
+	static new(): MLComputePlanCost; // inherited from NSObject
+
+	readonly weight: number;
+}
+
+declare class MLComputePlanDeviceUsage extends NSObject {
+
+	static alloc(): MLComputePlanDeviceUsage; // inherited from NSObject
+
+	static new(): MLComputePlanDeviceUsage; // inherited from NSObject
+
+	readonly preferredComputeDevice: MLComputeDeviceProtocol;
+
+	readonly supportedComputeDevices: NSArray<MLComputeDeviceProtocol>;
+}
+
 declare const enum MLComputeUnits {
 
 	CPUOnly = 0,
@@ -548,6 +587,8 @@ declare class MLModelConfiguration extends NSObject implements NSCopying, NSSecu
 
 	modelDisplayName: string;
 
+	optimizationHints: MLOptimizationHints;
+
 	parameters: NSDictionary<MLParameterKey, any>;
 
 	preferredMetalDevice: MTLDevice;
@@ -628,6 +669,151 @@ declare const enum MLModelError {
 declare var MLModelErrorDomain: string;
 
 declare var MLModelLicenseKey: string;
+
+declare class MLModelStructure extends NSObject {
+
+	static alloc(): MLModelStructure; // inherited from NSObject
+
+	static loadContentsOfURLCompletionHandler(url: NSURL, handler: (p1: MLModelStructure, p2: NSError) => void): void;
+
+	static loadModelAssetCompletionHandler(asset: MLModelAsset, handler: (p1: MLModelStructure, p2: NSError) => void): void;
+
+	static new(): MLModelStructure; // inherited from NSObject
+
+	readonly neuralNetwork: MLModelStructureNeuralNetwork;
+
+	readonly pipeline: MLModelStructurePipeline;
+
+	readonly program: MLModelStructureProgram;
+}
+
+declare class MLModelStructureNeuralNetwork extends NSObject {
+
+	static alloc(): MLModelStructureNeuralNetwork; // inherited from NSObject
+
+	static new(): MLModelStructureNeuralNetwork; // inherited from NSObject
+
+	readonly layers: NSArray<MLModelStructureNeuralNetworkLayer>;
+}
+
+declare class MLModelStructureNeuralNetworkLayer extends NSObject {
+
+	static alloc(): MLModelStructureNeuralNetworkLayer; // inherited from NSObject
+
+	static new(): MLModelStructureNeuralNetworkLayer; // inherited from NSObject
+
+	readonly inputNames: NSArray<string>;
+
+	readonly name: string;
+
+	readonly outputNames: NSArray<string>;
+
+	readonly type: string;
+}
+
+declare class MLModelStructurePipeline extends NSObject {
+
+	static alloc(): MLModelStructurePipeline; // inherited from NSObject
+
+	static new(): MLModelStructurePipeline; // inherited from NSObject
+
+	readonly subModelNames: NSArray<string>;
+
+	readonly subModels: NSArray<MLModelStructure>;
+}
+
+declare class MLModelStructureProgram extends NSObject {
+
+	static alloc(): MLModelStructureProgram; // inherited from NSObject
+
+	static new(): MLModelStructureProgram; // inherited from NSObject
+
+	readonly functions: NSDictionary<string, MLModelStructureProgramFunction>;
+}
+
+declare class MLModelStructureProgramArgument extends NSObject {
+
+	static alloc(): MLModelStructureProgramArgument; // inherited from NSObject
+
+	static new(): MLModelStructureProgramArgument; // inherited from NSObject
+
+	readonly bindings: NSArray<MLModelStructureProgramBinding>;
+}
+
+declare class MLModelStructureProgramBinding extends NSObject {
+
+	static alloc(): MLModelStructureProgramBinding; // inherited from NSObject
+
+	static new(): MLModelStructureProgramBinding; // inherited from NSObject
+
+	readonly name: string;
+
+	readonly value: MLModelStructureProgramValue;
+}
+
+declare class MLModelStructureProgramBlock extends NSObject {
+
+	static alloc(): MLModelStructureProgramBlock; // inherited from NSObject
+
+	static new(): MLModelStructureProgramBlock; // inherited from NSObject
+
+	readonly inputs: NSArray<MLModelStructureProgramNamedValueType>;
+
+	readonly operations: NSArray<MLModelStructureProgramOperation>;
+
+	readonly outputNames: NSArray<string>;
+}
+
+declare class MLModelStructureProgramFunction extends NSObject {
+
+	static alloc(): MLModelStructureProgramFunction; // inherited from NSObject
+
+	static new(): MLModelStructureProgramFunction; // inherited from NSObject
+
+	readonly block: MLModelStructureProgramBlock;
+
+	readonly inputs: NSArray<MLModelStructureProgramNamedValueType>;
+}
+
+declare class MLModelStructureProgramNamedValueType extends NSObject {
+
+	static alloc(): MLModelStructureProgramNamedValueType; // inherited from NSObject
+
+	static new(): MLModelStructureProgramNamedValueType; // inherited from NSObject
+
+	readonly name: string;
+
+	readonly type: MLModelStructureProgramValueType;
+}
+
+declare class MLModelStructureProgramOperation extends NSObject {
+
+	static alloc(): MLModelStructureProgramOperation; // inherited from NSObject
+
+	static new(): MLModelStructureProgramOperation; // inherited from NSObject
+
+	readonly blocks: NSArray<MLModelStructureProgramBlock>;
+
+	readonly inputs: NSDictionary<string, MLModelStructureProgramArgument>;
+
+	readonly operatorName: string;
+
+	readonly outputs: NSArray<MLModelStructureProgramNamedValueType>;
+}
+
+declare class MLModelStructureProgramValue extends NSObject {
+
+	static alloc(): MLModelStructureProgramValue; // inherited from NSObject
+
+	static new(): MLModelStructureProgramValue; // inherited from NSObject
+}
+
+declare class MLModelStructureProgramValueType extends NSObject {
+
+	static alloc(): MLModelStructureProgramValueType; // inherited from NSObject
+
+	static new(): MLModelStructureProgramValueType; // inherited from NSObject
+}
 
 declare var MLModelVersionStringKey: string;
 
@@ -815,6 +1001,25 @@ declare class MLNumericConstraint extends NSObject implements NSSecureCoding {
 	initWithCoder(coder: NSCoder): this;
 }
 
+declare class MLOptimizationHints extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): MLOptimizationHints; // inherited from NSObject
+
+	static new(): MLOptimizationHints; // inherited from NSObject
+
+	reshapeFrequency: MLReshapeFrequencyHint;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
 declare class MLParameterDescription extends NSObject implements NSSecureCoding {
 
 	static alloc(): MLParameterDescription; // inherited from NSObject
@@ -882,6 +1087,13 @@ declare class MLPredictionOptions extends NSObject {
 	outputBackings: NSDictionary<string, any>;
 
 	usesCPUOnly: boolean;
+}
+
+declare const enum MLReshapeFrequencyHint {
+
+	Frequent = 0,
+
+	Infrequent = 1
 }
 
 declare class MLSequence extends NSObject implements NSSecureCoding {

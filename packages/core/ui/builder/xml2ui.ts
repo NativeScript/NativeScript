@@ -6,7 +6,7 @@ import { getComponentModule } from './component-builder';
 import type { ComponentModule } from './component-builder';
 import { Device } from '../../platform';
 import { profile } from '../../profiling';
-import { android, ios, loadCustomComponent, defaultNameSpaceMatcher, getExports, Builder } from './index';
+import { android, ios, visionos, loadCustomComponent, defaultNameSpaceMatcher, getExports, Builder } from './index';
 
 export namespace xml2ui {
 	/**
@@ -135,7 +135,7 @@ export namespace xml2ui {
 			if (value) {
 				const toLower = value.toLowerCase();
 
-				return toLower === android || toLower === ios;
+				return toLower === android || toLower === ios || toLower === visionos;
 			}
 
 			return false;

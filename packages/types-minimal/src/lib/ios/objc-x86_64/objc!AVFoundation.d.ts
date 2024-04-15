@@ -1992,6 +1992,8 @@ declare class AVCaptureDeviceFormat extends NSObject {
 
 	readonly supportedVideoZoomFactorsForDepthDataDelivery: NSArray<number>;
 
+	readonly supportedVideoZoomRangesForDepthDataDelivery: NSArray<AVZoomRange>;
+
 	readonly unsupportedCaptureOutputClasses: NSArray<typeof NSObject>;
 
 	readonly videoBinned: boolean;
@@ -2023,6 +2025,8 @@ declare class AVCaptureDeviceFormat extends NSObject {
 	readonly videoSupportedFrameRateRanges: NSArray<AVFrameRateRange>;
 
 	readonly videoZoomFactorUpscaleThreshold: number;
+
+	readonly zoomFactorsOutsideOfVideoZoomRangesForDepthDeliverySupported: boolean;
 
 	isVideoStabilizationModeSupported(videoStabilizationMode: AVCaptureVideoStabilizationMode): boolean;
 }
@@ -3340,6 +3344,10 @@ declare class AVContentKey extends NSObject {
 	static new(): AVContentKey; // inherited from NSObject
 
 	readonly contentKeySpecifier: AVContentKeySpecifier;
+
+	readonly externalContentProtectionStatus: AVExternalContentProtectionStatus;
+
+	revoke(): void;
 }
 
 interface AVContentKeyRecipient {
@@ -3483,11 +3491,15 @@ interface AVContentKeySessionDelegate extends NSObjectProtocol {
 
 	contentKeySessionDidProvideContentKeyRequest(session: AVContentKeySession, keyRequest: AVContentKeyRequest): void;
 
+	contentKeySessionDidProvideContentKeyRequestsForInitializationData?(session: AVContentKeySession, keyRequests: NSArray<AVContentKeyRequest> | AVContentKeyRequest[], initializationData: NSData): void;
+
 	contentKeySessionDidProvidePersistableContentKeyRequest?(session: AVContentKeySession, keyRequest: AVPersistableContentKeyRequest): void;
 
 	contentKeySessionDidProvideRenewingContentKeyRequest?(session: AVContentKeySession, keyRequest: AVContentKeyRequest): void;
 
 	contentKeySessionDidUpdatePersistableContentKeyForContentKeyIdentifier?(session: AVContentKeySession, persistableContentKey: NSData, keyIdentifier: any): void;
+
+	contentKeySessionExternalProtectionStatusDidChangeForContentKey?(session: AVContentKeySession, contentKey: AVContentKey): void;
 
 	contentKeySessionShouldRetryContentKeyRequestReason?(session: AVContentKeySession, keyRequest: AVContentKeyRequest, retryReason: string): boolean;
 }
@@ -3917,6 +3929,15 @@ declare var AVErrorPresentationTimeStampKey: string;
 declare var AVErrorRecordingSuccessfullyFinishedKey: string;
 
 declare var AVErrorTimeKey: string;
+
+declare const enum AVExternalContentProtectionStatus {
+
+	Pending = 0,
+
+	Sufficient = 1,
+
+	Insufficient = 2
+}
 
 declare class AVExternalStorageDevice extends NSObject {
 
@@ -6347,6 +6368,8 @@ declare class AVPlayer extends NSObject {
 
 	usesExternalPlaybackWhileExternalScreenIsActive: boolean;
 
+	videoOutput: AVPlayerVideoOutput;
+
 	volume: number;
 
 	static readonly availableHDRModes: AVPlayerHDRMode;
@@ -7177,6 +7200,32 @@ declare const enum AVPlayerTimeControlStatus {
 	Playing = 2
 }
 
+declare class AVPlayerVideoOutput extends NSObject {
+
+	static alloc(): AVPlayerVideoOutput; // inherited from NSObject
+
+	static new(): AVPlayerVideoOutput; // inherited from NSObject
+
+	constructor(o: { specification: AVVideoOutputSpecification; });
+
+	copyTaggedBufferGroupForHostTimePresentationTimeStampActiveConfiguration(hostTime: CMTime, presentationTimeStampOut: interop.Pointer | interop.Reference<CMTime>, activeConfigurationOut: interop.Pointer | interop.Reference<AVPlayerVideoOutputConfiguration>): any;
+
+	initWithSpecification(specification: AVVideoOutputSpecification): this;
+}
+
+declare class AVPlayerVideoOutputConfiguration extends NSObject {
+
+	static alloc(): AVPlayerVideoOutputConfiguration; // inherited from NSObject
+
+	static new(): AVPlayerVideoOutputConfiguration; // inherited from NSObject
+
+	readonly activationTime: CMTime;
+
+	readonly dataChannelDescriptions: NSArray<any>;
+
+	readonly sourcePlayerItem: AVPlayerItem;
+}
+
 declare var AVPlayerWaitingDuringInterstitialEventReason: string;
 
 declare var AVPlayerWaitingForCoordinatedPlaybackReason: string;
@@ -7375,6 +7424,8 @@ declare class AVSampleBufferDisplayLayer extends CALayer implements AVQueuedSamp
 
 	preventsDisplaySleepDuringVideoPlayback: boolean;
 
+	readonly readyForDisplay: boolean;
+
 	readonly requiresFlushToResumeDecoding: boolean;
 
 	readonly sampleBufferRenderer: AVSampleBufferVideoRenderer;
@@ -7439,6 +7490,8 @@ declare var AVSampleBufferDisplayLayerFailedToDecodeNotification: string;
 declare var AVSampleBufferDisplayLayerFailedToDecodeNotificationErrorKey: string;
 
 declare var AVSampleBufferDisplayLayerOutputObscuredDueToInsufficientExternalProtectionDidChangeNotification: string;
+
+declare var AVSampleBufferDisplayLayerReadyForDisplayDidChangeNotification: string;
 
 declare var AVSampleBufferDisplayLayerRequiresFlushToResumeDecodingDidChangeNotification: string;
 
@@ -7582,7 +7635,13 @@ declare class AVSampleBufferVideoRenderer extends NSObject implements AVQueuedSa
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
+	copyDisplayedPixelBuffer(): any;
+
 	enqueueSampleBuffer(sampleBuffer: any): void;
+
+	expectMinimumUpcomingSampleBufferPresentationTime(minimumUpcomingPresentationTime: CMTime): void;
+
+	expectMonotonicallyIncreasingUpcomingSampleBufferPresentationTimes(): void;
 
 	flush(): void;
 
@@ -7594,6 +7653,8 @@ declare class AVSampleBufferVideoRenderer extends NSObject implements AVQueuedSa
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
 
+	loadVideoPerformanceMetricsWithCompletionHandler(completionHandler: (p1: AVVideoPerformanceMetrics) => void): void;
+
 	performSelector(aSelector: string): any;
 
 	performSelectorWithObject(aSelector: string, object: any): any;
@@ -7601,6 +7662,8 @@ declare class AVSampleBufferVideoRenderer extends NSObject implements AVQueuedSa
 	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 
 	requestMediaDataWhenReadyOnQueueUsingBlock(queue: interop.Pointer | interop.Reference<any>, block: () => void): void;
+
+	resetUpcomingSampleBufferPresentationTimeExpectations(): void;
 
 	respondsToSelector(aSelector: string): boolean;
 
@@ -8250,6 +8313,8 @@ declare var AVVideoCompositionValidationHandling: {
 
 declare var AVVideoCompressionPropertiesKey: string;
 
+declare var AVVideoDecompressionPropertiesKey: string;
+
 declare var AVVideoExpectedSourceFrameRateKey: string;
 
 declare var AVVideoH264EntropyModeCABAC: string;
@@ -8263,6 +8328,42 @@ declare var AVVideoHeightKey: string;
 declare var AVVideoMaxKeyFrameIntervalDurationKey: string;
 
 declare var AVVideoMaxKeyFrameIntervalKey: string;
+
+declare class AVVideoOutputSpecification extends NSObject implements NSCopying {
+
+	static alloc(): AVVideoOutputSpecification; // inherited from NSObject
+
+	static new(): AVVideoOutputSpecification; // inherited from NSObject
+
+	defaultPixelBufferAttributes: NSDictionary<string, any>;
+
+	readonly preferredTagCollections: NSArray<any>;
+
+	constructor(o: { tagCollections: NSArray<any> | any[]; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithTagCollections(tagCollections: NSArray<any> | any[]): this;
+
+	setOutputPixelBufferAttributesForTagCollection(pixelBufferAttributes: NSDictionary<string, any>, tagCollection: any): void;
+}
+
+declare class AVVideoPerformanceMetrics extends NSObject {
+
+	static alloc(): AVVideoPerformanceMetrics; // inherited from NSObject
+
+	static new(): AVVideoPerformanceMetrics; // inherited from NSObject
+
+	readonly numberOfCorruptedFrames: number;
+
+	readonly numberOfDroppedFrames: number;
+
+	readonly numberOfFramesDisplayedUsingOptimizedCompositing: number;
+
+	readonly totalAccumulatedFrameDelay: number;
+
+	readonly totalNumberOfFrames: number;
+}
 
 declare var AVVideoPixelAspectRatioHorizontalSpacingKey: string;
 
@@ -8333,3 +8434,25 @@ declare var AVVideoYCbCrMatrix_ITU_R_2020: string;
 declare var AVVideoYCbCrMatrix_ITU_R_601_4: string;
 
 declare var AVVideoYCbCrMatrix_ITU_R_709_2: string;
+
+declare class AVZoomRange extends NSObject {
+
+	static alloc(): AVZoomRange; // inherited from NSObject
+
+	static new(): AVZoomRange; // inherited from NSObject
+
+	readonly maxZoomFactor: number;
+
+	readonly minZoomFactor: number;
+
+	containsZoomFactor(zoomFactor: number): boolean;
+}
+
+declare function CMTagCollectionCreateWithVideoOutputPreset(allocator: any, preset: CMTagCollectionVideoOutputPreset, newCollectionOut: interop.Pointer | interop.Reference<any>): number;
+
+declare const enum CMTagCollectionVideoOutputPreset {
+
+	kCMTagCollectionVideoOutputPreset_Monoscopic = 0,
+
+	kCMTagCollectionVideoOutputPreset_Stereoscopic = 1
+}

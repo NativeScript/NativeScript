@@ -2438,6 +2438,8 @@ declare class NSDecimalNumber extends NSNumber {
 
 	static new(): NSDecimalNumber; // inherited from NSObject
 
+	static valueWithGCPoint2(point: GCPoint2): NSDecimalNumber; // inherited from NSValue
+
 	static defaultBehavior: NSDecimalNumberBehaviors;
 
 	static readonly maximumDecimalNumber: NSDecimalNumber;
@@ -3653,6 +3655,8 @@ interface NSFilePresenter extends NSObjectProtocol {
 
 	accommodatePresentedItemDeletionWithCompletionHandler?(completionHandler: (p1: NSError) => void): void;
 
+	accommodatePresentedItemEvictionWithCompletionHandler?(completionHandler: (p1: NSError) => void): void;
+
 	accommodatePresentedSubitemDeletionAtURLCompletionHandler?(url: NSURL, completionHandler: (p1: NSError) => void): void;
 
 	presentedItemDidChange?(): void;
@@ -4814,6 +4818,8 @@ declare class NSItemProvider extends NSObject implements NSCopying {
 	constructor(o: { item: NSSecureCoding; typeIdentifier: string; });
 
 	constructor(o: { object: NSItemProviderWriting; });
+
+	_availableTypes(): NSArray<string>;
 
 	canLoadObjectOfClass(aClass: typeof NSObject): boolean;
 
@@ -7052,6 +7058,8 @@ declare class NSNumber extends NSValue implements CKRecordValue, NSFetchRequestR
 	static numberWithUnsignedLongLong(value: number): number;
 
 	static numberWithUnsignedShort(value: number): number;
+
+	static valueWithGCPoint2(point: GCPoint2): NSNumber; // inherited from NSValue
 
 	readonly boolValue: boolean;
 
@@ -12465,6 +12473,8 @@ declare class NSUndoManager extends NSObject {
 
 	readonly redoActionName: string;
 
+	readonly redoCount: number;
+
 	readonly redoMenuItemTitle: string;
 
 	readonly redoing: boolean;
@@ -12474,6 +12484,8 @@ declare class NSUndoManager extends NSObject {
 	readonly undoActionIsDiscardable: boolean;
 
 	readonly undoActionName: string;
+
+	readonly undoCount: number;
 
 	readonly undoMenuItemTitle: string;
 
@@ -12497,7 +12509,7 @@ declare class NSUndoManager extends NSObject {
 
 	registerUndoWithTargetHandler(target: any, undoHandler: (p1: any) => void): void;
 
-	registerUndoWithTargetSelectorObject(target: any, selector: string, anObject: any): void;
+	registerUndoWithTargetSelectorObject(target: any, selector: string, object: any): void;
 
 	removeAllActions(): void;
 
@@ -13668,6 +13680,8 @@ declare class NSValue extends NSObject implements NSCopying, NSSecureCoding {
 
 	static valueWithDirectionalEdgeInsets(insets: NSDirectionalEdgeInsets): NSValue;
 
+	static valueWithGCPoint2(point: GCPoint2): NSValue;
+
 	static valueWithMKCoordinate(coordinate: CLLocationCoordinate2D): NSValue;
 
 	static valueWithMKCoordinateSpan(span: MKCoordinateSpan): NSValue;
@@ -13709,6 +13723,8 @@ declare class NSValue extends NSObject implements NSCopying, NSSecureCoding {
 	readonly CMTimeValue: CMTime;
 
 	readonly CMVideoDimensionsValue: CMVideoDimensions;
+
+	readonly GCPoint2Value: GCPoint2;
 
 	readonly MKCoordinateSpanValue: MKCoordinateSpan;
 
@@ -14104,6 +14120,10 @@ declare class NSXPCCoder extends NSCoder {
 	readonly connection: NSXPCConnection;
 
 	userInfo: NSObjectProtocol;
+
+	decodeXPCObjectOfTypeForKey(type: interop.Pointer | interop.Reference<any>, key: string): interop.Pointer | interop.Reference<any>;
+
+	encodeXPCObjectForKey(xpcObject: interop.Pointer | interop.Reference<any>, key: string): void;
 }
 
 declare class NSXPCConnection extends NSObject implements NSXPCProxyCreating {
@@ -14184,6 +14204,8 @@ declare class NSXPCInterface extends NSObject {
 
 	protocol: any /* Protocol */;
 
+	XPCTypeForSelectorArgumentIndexOfReply(sel: string, arg: number, ofReply: boolean): interop.Pointer | interop.Reference<any>;
+
 	classesForSelectorArgumentIndexOfReply(sel: string, arg: number, ofReply: boolean): NSSet<typeof NSObject>;
 
 	interfaceForSelectorArgumentIndexOfReply(sel: string, arg: number, ofReply: boolean): NSXPCInterface;
@@ -14191,6 +14213,8 @@ declare class NSXPCInterface extends NSObject {
 	setClassesForSelectorArgumentIndexOfReply(classes: NSSet<typeof NSObject>, sel: string, arg: number, ofReply: boolean): void;
 
 	setInterfaceForSelectorArgumentIndexOfReply(ifc: NSXPCInterface, sel: string, arg: number, ofReply: boolean): void;
+
+	setXPCTypeForSelectorArgumentIndexOfReply(type: interop.Pointer | interop.Reference<any>, sel: string, arg: number, ofReply: boolean): void;
 }
 
 declare class NSXPCListener extends NSObject {

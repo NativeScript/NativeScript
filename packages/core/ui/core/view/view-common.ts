@@ -12,10 +12,11 @@ import { EventData } from '../../../data/observable';
 import { Trace } from '../../../trace';
 import { CoreTypes } from '../../../core-types';
 import { ViewHelper } from './view-helper';
+import { setupAccessibleView } from '../../../accessibility';
 
 import { PercentLength } from '../../styling/style-properties';
 
-import { observe as gestureObserve, GesturesObserver, GestureTypes, GestureEventData, fromString as gestureFromString, TouchManager, TouchAnimationOptions } from '../../gestures';
+import { observe as gestureObserve, GesturesObserver, GestureTypes, GestureEventData, fromString as gestureFromString, TouchManager, TouchAnimationOptions, VisionHoverOptions } from '../../gestures';
 
 import { CSSUtils } from '../../../css/system-classes';
 import { Builder } from '../../builder';
@@ -90,6 +91,12 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public touchAnimation: boolean | TouchAnimationOptions;
 	public ignoreTouchAnimation: boolean;
 	public touchDelay: number;
+
+	/**
+	 * visionOS only
+	 */
+	public visionHoverStyle: string | VisionHoverOptions;
+	public visionIgnoreHoverStyle: boolean;
 
 	protected _closeModalCallback: Function;
 	public _manager: any;
@@ -170,13 +177,23 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
 	onLoaded() {
 		if (!this.isLoaded) {
-			const enableTapAnimations = TouchManager.enableGlobalTapAnimations && (this.hasListeners('tap') || this.hasListeners('tapChange') || this.getGestureObservers(GestureTypes.tap));
+			const hasTap = this.hasListeners('tap') || this.hasListeners('tapChange') || this.getGestureObservers(GestureTypes.tap);
+			const enableTapAnimations = TouchManager.enableGlobalTapAnimations && hasTap;
 			if (!this.ignoreTouchAnimation && (this.touchAnimation || enableTapAnimations)) {
-				// console.log('view:', Object.keys((<any>this)._observers));
 				TouchManager.addAnimations(this);
+			}
+
+			if (__VISIONOS__) {
+				const enableHoverStyle = TouchManager.enableGlobalHoverWhereTap && hasTap;
+				if (!this.visionIgnoreHoverStyle && (this.visionHoverStyle || enableHoverStyle)) {
+					TouchManager.addHoverStyle(this);
+				}
 			}
 		}
 		super.onLoaded();
+		if (this.accessible) {
+			setupAccessibleView(this);
+		}
 	}
 
 	public _closeAllModalViewsInternal(): boolean {
@@ -810,11 +827,9 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
 	get accessible(): boolean {
 		return this.style.accessible;
-		// return this._accessible;
 	}
 	set accessible(value: boolean) {
 		this.style.accessible = value;
-		// this._accessible = value;
 	}
 
 	get accessibilityHidden(): boolean {
@@ -1240,6 +1255,23 @@ export const iosIgnoreSafeAreaProperty = new InheritedProperty({
 	valueConverter: booleanConverter,
 });
 iosIgnoreSafeAreaProperty.register(ViewCommon);
+
+export const visionHoverStyleProperty = new Property<ViewCommon, string | VisionHoverOptions>({
+	name: 'visionHoverStyle',
+	valueChanged(view, oldValue, newValue) {
+		view.visionHoverStyle = newValue;
+	},
+});
+visionHoverStyleProperty.register(ViewCommon);
+
+const visionIgnoreHoverStyleProperty = new Property<ViewCommon, boolean>({
+	name: 'visionIgnoreHoverStyle',
+	valueChanged(view, oldValue, newValue) {
+		view.visionIgnoreHoverStyle = newValue;
+	},
+	valueConverter: booleanConverter,
+});
+visionIgnoreHoverStyleProperty.register(ViewCommon);
 
 const touchAnimationProperty = new Property<ViewCommon, boolean | TouchAnimationOptions>({
 	name: 'touchAnimation',

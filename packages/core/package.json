@@ -1,6 +1,6 @@
 {
   "name": "@nativescript/core",
-  "version": "8.6.3",
+  "version": "8.7.1",
   "description": "A JavaScript library providing an easy to use api for interacting with iOS and Android platform APIs.",
   "main": "index",
   "types": "index.d.ts",
@@ -25,6 +25,16 @@
     "Android",
     "iOS",
     "TypeScript"
+  ],
+  "funding": [
+    {
+      "type": "opencollective",
+      "url": "https://opencollective.com/NativeScript"
+    },
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/NativeScript"
+    }
   ],
   "homepage": "https://nativescript.org",
   "repository": {

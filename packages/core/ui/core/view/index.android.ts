@@ -122,7 +122,11 @@ function initializeDialogFragment() {
 
 	@NativeClass
 	class DialogImpl extends android.app.Dialog {
-		constructor(public fragment: DialogFragmentImpl, context: android.content.Context, themeResId: number) {
+		constructor(
+			public fragment: DialogFragmentImpl,
+			context: android.content.Context,
+			themeResId: number,
+		) {
 			super(context, themeResId);
 
 			return global.__native(this);
@@ -727,9 +731,11 @@ export class View extends ViewCommon {
 	}
 
 	protected _hideNativeModalView(parent: View, whenClosedCallback: () => void) {
-		const manager = this._dialogFragment.getFragmentManager();
-		if (manager) {
-			this._dialogFragment.dismissAllowingStateLoss();
+		if (this._dialogFragment) {
+			const manager = this._dialogFragment.getFragmentManager();
+			if (manager) {
+				this._dialogFragment.dismissAllowingStateLoss();
+			}
 		}
 
 		this._dialogFragment = null;
@@ -820,8 +826,9 @@ export class View extends ViewCommon {
 
 	[accessibilityEnabledProperty.setNative](value: boolean): void {
 		this.nativeViewProtected.setFocusable(!!value);
-
-		updateAccessibilityProperties(this);
+		if (value) {
+			updateAccessibilityProperties(this);
+		}
 	}
 
 	[accessibilityIdentifierProperty.setNative](value: string): void {
@@ -1257,6 +1264,15 @@ export class View extends ViewCommon {
 
 export class ContainerView extends View {
 	public iosOverflowSafeArea: boolean;
+
+	constructor() {
+		super();
+		/**
+		 * mark accessible as false without triggering proerty change
+		 * equivalent to changing the default
+		 */
+		this.style[accessibilityEnabledProperty.key] = false;
+	}
 }
 
 export class CustomLayoutView extends ContainerView implements CustomLayoutViewDefinition {

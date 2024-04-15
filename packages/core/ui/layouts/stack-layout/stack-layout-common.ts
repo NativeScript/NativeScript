@@ -16,7 +16,7 @@ const converter = makeParser<CoreTypes.OrientationType>(makeValidator('horizonta
 export const orientationProperty = new Property<StackLayoutBase, CoreTypes.OrientationType>({
 	name: 'orientation',
 	defaultValue: 'vertical',
-	affectsLayout: __IOS__,
+	affectsLayout: __APPLE__,
 	valueConverter: converter,
 });
 orientationProperty.register(StackLayoutBase);

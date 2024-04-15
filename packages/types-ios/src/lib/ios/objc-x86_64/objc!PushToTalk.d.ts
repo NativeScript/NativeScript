@@ -111,6 +111,8 @@ interface PTChannelManagerDelegate extends NSObjectProtocol {
 	channelManagerReceivedEphemeralPushToken(channelManager: PTChannelManager, pushToken: NSData): void;
 
 	incomingPushResultForChannelManagerChannelUUIDPushPayload(channelManager: PTChannelManager, channelUUID: NSUUID, pushPayload: NSDictionary<string, any>): PTPushResult;
+
+	incomingServiceUpdatePushForChannelManagerChannelUUIDPushPayloadIsHighPriorityRemainingHighPriorityBudgetWithCompletionHandler?(channelManager: PTChannelManager, channelUUID: NSUUID, pushPayload: NSDictionary<string, any>, isHighPriority: boolean, remainingHighPriorityBudget: number, completion: () => void): void;
 }
 declare var PTChannelManagerDelegate: {
 

@@ -177,7 +177,7 @@ export class SharedTransition {
 		if (isNumber(pageEnd?.duration)) {
 			// Android uses milliseconds/iOS uses seconds
 			// users pass in milliseconds
-			transition.setDuration(__IOS__ ? pageEnd?.duration / 1000 : pageEnd?.duration);
+			transition.setDuration(__APPLE__ ? pageEnd?.duration / 1000 : pageEnd?.duration);
 		}
 		return { instance: transition };
 	}

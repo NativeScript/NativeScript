@@ -266,6 +266,7 @@ exports[`typescript configuration for android 1`] = `
         __ANDROID__: true,
         __IOS__: false,
         __VISIONOS__: false,
+        __APPLE__: false,
         'global.isAndroid': true,
         'global.isIOS': false,
         'global.isVisionOS': false,
@@ -321,6 +322,9 @@ exports[`typescript configuration for android 1`] = `
       '__jest__/src/app.js',
       '@nativescript/core/ui/frame',
       '@nativescript/core/ui/frame/activity'
+    ],
+    'tns_modules/inspector_modules': [
+      '@nativescript/core/inspector_modules'
     ]
   }
 }"
@@ -592,6 +596,7 @@ exports[`typescript configuration for ios 1`] = `
         __ANDROID__: false,
         __IOS__: true,
         __VISIONOS__: false,
+        __APPLE__: true,
         'global.isAndroid': false,
         'global.isIOS': true,
         'global.isVisionOS': false,

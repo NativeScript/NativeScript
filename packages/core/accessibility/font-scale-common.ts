@@ -1,4 +1,4 @@
-export const VALID_FONT_SCALES = __IOS__ // iOS supports a wider number of font scales than Android does.
+export const VALID_FONT_SCALES = __APPLE__ // Apple supports a wider number of font scales than Android does.
 	? [0.5, 0.7, 0.85, 1, 1.15, 1.3, 1.5, 2, 2.5, 3, 3.5, 4]
 	: [0.85, 1, 1.15, 1.3];
 

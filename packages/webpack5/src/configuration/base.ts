@@ -86,7 +86,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		const sourceMapAbsolutePath = getProjectFilePath(
 			`./${
 				env.buildPath ?? 'platforms'
-			}/${platform}-sourceMaps/[file].map[query]`
+			}/${platform}-sourceMaps/[file].map[query]`,
 		);
 		const sourceMapRelativePath = relative(outputPath, sourceMapAbsolutePath);
 		config.output.sourceMapFilename(sourceMapRelativePath);
@@ -206,6 +206,20 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.add(`.${platform}.json`)
 		.add('.json');
 
+	if (platform === 'visionos') {
+		// visionOS allows for both .ios and .visionos extensions
+		const extensions = config.resolve.extensions.values();
+		const newExtensions = [];
+		extensions.forEach((ext) => {
+			newExtensions.push(ext);
+			if (ext.includes('visionos')) {
+				newExtensions.push(ext.replace('visionos', 'ios'));
+			}
+		});
+
+		config.resolve.extensions.clear().merge(newExtensions);
+	}
+
 	// base aliases
 	config.resolve.alias.set('~', getEntryDirPath()).set('@', getEntryDirPath());
 
@@ -225,6 +239,9 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.use('app-css-loader')
 		.loader('app-css-loader')
 		.options({
+			// TODO: allow both visionos and ios to resolve for css
+			// only resolve .ios css on visionOS for now
+			// platform: platform === 'visionos' ? 'ios' : platform,
 			platform,
 		})
 		.end();
@@ -255,7 +272,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	const configFile = tsConfigPath
 		? {
 				configFile: tsConfigPath,
-		  }
+			}
 		: undefined;
 
 	// set up ts support
@@ -324,22 +341,26 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 						// custom resolver to resolve platform extensions in @import statements
 						// ie. @import "foo.css" would import "foo.ios.css" if the platform is ios and it exists
 						resolve(id, baseDir, importOptions) {
-							const ext = extname(id);
-							const platformExt = ext ? `.${platform}${ext}` : '';
+							const extensions =
+								platform === 'visionos' ? [platform, 'ios'] : [platform];
+							for (const platformTarget of extensions) {
+								const ext = extname(id);
+								const platformExt = ext ? `.${platformTarget}${ext}` : '';
 
-							if (!id.includes(platformExt)) {
-								const platformRequest = id.replace(ext, platformExt);
-								const extPath = resolve(baseDir, platformRequest);
+								if (!id.includes(platformExt)) {
+									const platformRequest = id.replace(ext, platformExt);
+									const extPath = resolve(baseDir, platformRequest);
 
-								try {
-									return require.resolve(platformRequest, {
-										paths: [baseDir],
-									});
-								} catch {}
+									try {
+										return require.resolve(platformRequest, {
+											paths: [baseDir],
+										});
+									} catch {}
 
-								if (existsSync(extPath)) {
-									console.log(`resolving "${id}" to "${platformRequest}"`);
-									return extPath;
+									if (existsSync(extPath)) {
+										console.log(`resolving "${id}" to "${platformRequest}"`);
+										return extPath;
+									}
 								}
 							}
 
@@ -430,7 +451,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			 * +-----------------------------------------------------------------------------------------+
 			 */
 			/System.import\(\) is deprecated/,
-		])
+		]),
 	);
 
 	// todo: refine defaults
@@ -447,6 +468,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			__ANDROID__: platform === 'android',
 			__IOS__: platform === 'ios',
 			__VISIONOS__: platform === 'visionos',
+			__APPLE__: platform === 'ios' || platform === 'visionos',
 			/* for compat only */ 'global.isAndroid': platform === 'android',
 			/* for compat only */ 'global.isIOS':
 				platform === 'ios' || platform === 'visionos',
@@ -496,5 +518,5 @@ function shouldIncludeInspectorModules(): boolean {
 	const platform = getPlatformName();
 	// todo: check if core modules are external
 	// todo: check if we are testing
-	return platform === 'ios';
+	return platform === 'ios' || platform === 'android';
 }
