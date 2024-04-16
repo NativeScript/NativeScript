@@ -489,8 +489,9 @@ export class Selector extends SelectorCore {
 
 	constructor(public selectors: SimpleSelector[]) {
 		super();
-		let siblingGroup: SimpleSelector[];
-		let currentGroup: SimpleSelector[][];
+
+		let siblingsToGroup: SimpleSelector[];
+		let childrenToGroup: SimpleSelector[][];
 		const groups: SimpleSelector[][][] = [];
 
 		this.specificity = 0;
@@ -502,15 +503,15 @@ export class Selector extends SelectorCore {
 			switch (sel.combinator) {
 				case undefined:
 				case Combinator.descendant:
-					siblingGroup = [];
-					currentGroup = [siblingGroup];
+					siblingsToGroup = [];
+					childrenToGroup = [siblingsToGroup];
 
-					groups.push(currentGroup);
+					groups.push(childrenToGroup);
 					break;
 				case Combinator.child:
-					siblingGroup = [];
+					siblingsToGroup = [];
 
-					currentGroup.push(siblingGroup);
+					childrenToGroup.push(siblingsToGroup);
 					break;
 				case Combinator.adjacent:
 				case Combinator.sibling:
@@ -525,10 +526,10 @@ export class Selector extends SelectorCore {
 				this.dynamic = true;
 			}
 
-			siblingGroup.push(sel);
+			siblingsToGroup.push(sel);
 		}
 
-		this.groups = groups.map((g) => new Selector.ChildGroup(g.map((sg) => new Selector.SiblingGroup(sg))));
+		this.groups = groups.map((cg) => new Selector.ChildGroup(cg.map((sg) => new Selector.SiblingGroup(sg))));
 		this.last = selectors[selectors.length - 1];
 	}
 
