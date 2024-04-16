@@ -21,6 +21,7 @@ export interface Node {
 	cssPseudoClasses?: Set<string>;
 	getChildIndex?(node: Node): number;
 	getChildAt?(index: number): Node;
+	getChildrenCount?(): number;
 }
 
 export interface Declaration {
@@ -111,9 +112,28 @@ namespace Match {
 	export const Static = false;
 }
 
-const SUPPORTED_COMBINATORS: Array<Combinator> = [Combinator.descendant, Combinator.child, Combinator.adjacent];
+const SUPPORTED_COMBINATORS: Array<Combinator> = [Combinator.descendant, Combinator.child, Combinator.adjacent, Combinator.sibling];
 
-function getNodeDirectSibling(node): null | Node {
+function eachNodePreviousGeneralSibling(node: Node, callback: (sibling: Node) => boolean): void {
+	if (!node.parent || !node.parent.getChildIndex || !node.parent.getChildAt || !node.parent.getChildrenCount) {
+		return;
+	}
+
+	const nodeIndex = node.parent.getChildIndex(node);
+	if (nodeIndex === 0) {
+		return;
+	}
+
+	const count = node.parent.getChildrenCount();
+	let retVal: boolean = true;
+
+	for (let i = nodeIndex - 1; i >= 0 && retVal; i--) {
+		const sibling = node.parent.getChildAt(i);
+		retVal = callback(sibling);
+	}
+}
+
+function getNodePreviousDirectSibling(node: Node): null | Node {
 	if (!node.parent || !node.parent.getChildIndex || !node.parent.getChildAt) {
 		return null;
 	}
@@ -486,10 +506,15 @@ export class Selector extends SelectorCore {
 				throw new Error(`Unsupported combinator "${sel.combinator}" for selector ${sel}.`);
 			}
 			if (!isCombinatorSet || sel.combinator === ' ') {
-				groups.push((lastGroup = [(siblingGroup = [])]));
+				siblingGroup = [];
+				lastGroup = [siblingGroup];
+
+				groups.push(lastGroup);
 			}
 			if (sel.combinator === '>') {
-				lastGroup.push((siblingGroup = []));
+				siblingGroup = [];
+
+				lastGroup.push(siblingGroup);
 			}
 
 			this.specificity += sel.specificity;
@@ -593,10 +618,17 @@ export class Selector extends SelectorCore {
 }
 export namespace Selector {
 	// Non-spec. Selector sequences are grouped by ancestor then by child combinators for easier backtracking.
-	export class ChildGroup {
+	export abstract class Group {
 		public dynamic: boolean;
+		public abstract match(node: Node): Node;
+		public abstract mayMatch(node: Node): Node;
+		public abstract trackChanges(node: Node, map: ChangeAccumulator): void;
+	}
 
+	export class ChildGroup extends Group {
 		constructor(private selectors: SiblingGroup[]) {
+			super();
+
 			this.dynamic = selectors.some((sel) => sel.dynamic);
 		}
 
@@ -608,29 +640,108 @@ export namespace Selector {
 			return this.selectors.every((sel, i) => (node = i === 0 ? node : node.parent) && sel.mayMatch(node)) ? node : null;
 		}
 
-		public trackChanges(node: Node, map: ChangeAccumulator) {
-			this.selectors.forEach((sel, i) => (node = i === 0 ? node : node.parent) && sel.trackChanges(node, map));
+		public trackChanges(node: Node, map: ChangeAccumulator): void {
+			this.selectors.forEach((sel, i) => {
+				if (i === 0) {
+					node && sel.trackChanges(node, map);
+				} else {
+					node = node.parent;
+
+					if (node && sel.mayMatch(node)) {
+						sel.trackChanges(node, map);
+					}
+				}
+			});
 		}
 	}
-	export class SiblingGroup {
-		public dynamic: boolean;
 
+	export class SiblingGroup extends Group {
 		constructor(private selectors: SimpleSelector[]) {
+			super();
+
 			this.dynamic = selectors.some((sel) => sel.dynamic);
 		}
 
 		public match(node: Node): Node {
-			return this.selectors.every((sel, i) => (node = i === 0 ? node : getNodeDirectSibling(node)) && sel.match(node)) ? node : null;
+			return this.selectors.every((sel, i) => {
+				if (i === 0) {
+					return node && sel.match(node);
+				}
+
+				if (sel.combinator === Combinator.adjacent) {
+					node = getNodePreviousDirectSibling(node);
+					return node && sel.match(node);
+				}
+
+				// Sibling combinator
+				let isMatching: boolean = false;
+
+				eachNodePreviousGeneralSibling(node, (sibling) => {
+					isMatching = sel.match(sibling);
+					return !isMatching;
+				});
+
+				return isMatching;
+			})
+				? node
+				: null;
 		}
 
 		public mayMatch(node: Node): Node {
-			return this.selectors.every((sel, i) => (node = i === 0 ? node : getNodeDirectSibling(node)) && sel.mayMatch(node)) ? node : null;
+			return this.selectors.every((sel, i) => {
+				if (i === 0) {
+					return node && sel.mayMatch(node);
+				}
+
+				if (sel.combinator === Combinator.adjacent) {
+					node = getNodePreviousDirectSibling(node);
+					return node && sel.mayMatch(node);
+				}
+
+				// Sibling combinator
+				let isMatching: boolean = false;
+
+				eachNodePreviousGeneralSibling(node, (sibling) => {
+					isMatching = sel.mayMatch(sibling);
+					return !isMatching;
+				});
+
+				return isMatching;
+			})
+				? node
+				: null;
 		}
 
-		public trackChanges(node: Node, map: ChangeAccumulator) {
-			this.selectors.forEach((sel, i) => (node = i === 0 ? node : getNodeDirectSibling(node)) && sel.trackChanges(node, map));
+		public trackChanges(node: Node, map: ChangeAccumulator): void {
+			this.selectors.forEach((sel, i) => {
+				if (i === 0) {
+					node && sel.trackChanges(node, map);
+				} else {
+					if (sel.combinator === Combinator.adjacent) {
+						node = getNodePreviousDirectSibling(node);
+						if (node && sel.mayMatch(node)) {
+							sel.trackChanges(node, map);
+						}
+					} else {
+						// Sibling combinator
+						let matchingSibling: Node;
+
+						eachNodePreviousGeneralSibling(node, (sibling) => {
+							const isMatching = sel.mayMatch(sibling);
+							if (isMatching) {
+								matchingSibling = sibling;
+							}
+
+							return !isMatching;
+						});
+
+						matchingSibling && sel.trackChanges(matchingSibling, map);
+					}
+				}
+			});
 		}
 	}
+
 	export interface Bound {
 		left: Node;
 		right: Node;
