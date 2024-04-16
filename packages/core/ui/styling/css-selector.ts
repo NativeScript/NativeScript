@@ -2,7 +2,7 @@ import { parse as convertToCSSWhatSelector, Selector as CSSWhatSelector, DataTyp
 import '../../globals';
 import { isCssVariable } from '../core/properties';
 import { Trace } from '../../trace';
-import { isNullOrUndefined, isUndefined } from '../../utils/types';
+import { isNullOrUndefined } from '../../utils/types';
 
 import * as ReworkCSS from '../../css';
 
@@ -111,8 +111,6 @@ namespace Match {
 	 */
 	export const Static = false;
 }
-
-const SUPPORTED_COMBINATORS: Array<Combinator> = [Combinator.descendant, Combinator.child, Combinator.adjacent, Combinator.sibling];
 
 function eachNodePreviousGeneralSibling(node: Node, callback: (sibling: Node) => boolean): void {
 	if (!node.parent || !node.parent.getChildIndex || !node.parent.getChildAt || !node.parent.getChildrenCount) {
@@ -485,36 +483,40 @@ export class SimpleSelectorSequence extends SimpleSelector {
 }
 
 export class Selector extends SelectorCore {
-	// Grouped by ancestor combinators, then by direct child combinators.
+	// Grouped by ancestor combinators, then by child combinators.
 	private groups: Selector.ChildGroup[];
 	private last: SelectorCore;
 
 	constructor(public selectors: SimpleSelector[]) {
 		super();
 		let siblingGroup: SimpleSelector[];
-		let lastGroup: SimpleSelector[][];
+		let currentGroup: SimpleSelector[][];
 		const groups: SimpleSelector[][][] = [];
 
 		this.specificity = 0;
 		this.dynamic = false;
 
-		for (let i = selectors.length - 1; i > -1; i--) {
+		for (let i = selectors.length - 1; i >= 0; i--) {
 			const sel = selectors[i];
-			const isCombinatorSet = !isUndefined(sel.combinator);
 
-			if (isCombinatorSet && !SUPPORTED_COMBINATORS.includes(sel.combinator)) {
-				throw new Error(`Unsupported combinator "${sel.combinator}" for selector ${sel}.`);
-			}
-			if (!isCombinatorSet || sel.combinator === ' ') {
-				siblingGroup = [];
-				lastGroup = [siblingGroup];
+			switch (sel.combinator) {
+				case undefined:
+				case Combinator.descendant:
+					siblingGroup = [];
+					currentGroup = [siblingGroup];
 
-				groups.push(lastGroup);
-			}
-			if (sel.combinator === '>') {
-				siblingGroup = [];
+					groups.push(currentGroup);
+					break;
+				case Combinator.child:
+					siblingGroup = [];
 
-				lastGroup.push(siblingGroup);
+					currentGroup.push(siblingGroup);
+					break;
+				case Combinator.adjacent:
+				case Combinator.sibling:
+					break;
+				default:
+					throw new Error(`Unsupported combinator "${sel.combinator}" for selector ${sel}.`);
 			}
 
 			this.specificity += sel.specificity;
