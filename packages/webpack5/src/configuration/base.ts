@@ -5,6 +5,7 @@ import {
 	HotModuleReplacementPlugin,
 } from 'webpack';
 import Config from 'webpack-chain';
+import { satisfies } from 'semver';
 import { existsSync } from 'fs';
 
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
@@ -12,11 +13,11 @@ import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import TerserPlugin from 'terser-webpack-plugin';
 
 import { getProjectFilePath, getProjectTSConfigPath } from '../helpers/project';
+import { getDependencyVersion, hasDependency } from '../helpers/dependencies';
 import { PlatformSuffixPlugin } from '../plugins/PlatformSuffixPlugin';
 import { applyFileReplacements } from '../helpers/fileReplacements';
 import { addCopyRule, applyCopyRules } from '../helpers/copyRules';
 import { WatchStatePlugin } from '../plugins/WatchStatePlugin';
-import { hasDependency } from '../helpers/dependencies';
 import { applyDotEnvPlugin } from '../helpers/dotEnv';
 import { env as _env, IWebpackEnv } from '../index';
 import { getValue } from '../helpers/config';
@@ -86,7 +87,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		const sourceMapAbsolutePath = getProjectFilePath(
 			`./${
 				env.buildPath ?? 'platforms'
-			}/${platform}-sourceMaps/[file].map[query]`,
+			}/${platform}-sourceMaps/[file].map[query]`
 		);
 		const sourceMapRelativePath = relative(outputPath, sourceMapAbsolutePath);
 		config.output.sourceMapFilename(sourceMapRelativePath);
@@ -272,7 +273,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	const configFile = tsConfigPath
 		? {
 				configFile: tsConfigPath,
-			}
+		  }
 		: undefined;
 
 	// set up ts support
@@ -451,7 +452,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			 * +-----------------------------------------------------------------------------------------+
 			 */
 			/System.import\(\) is deprecated/,
-		]),
+		])
 	);
 
 	// todo: refine defaults
@@ -516,7 +517,11 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 function shouldIncludeInspectorModules(): boolean {
 	const platform = getPlatformName();
-	// todo: check if core modules are external
-	// todo: check if we are testing
-	return platform === 'ios' || platform === 'android';
+	const coreVersion = getDependencyVersion('@nativescript/core');
+
+	if (coreVersion && satisfies(coreVersion, '>=8.7.0')) {
+		return platform === 'ios' || platform === 'android';
+	}
+
+	return platform === 'ios';
 }
