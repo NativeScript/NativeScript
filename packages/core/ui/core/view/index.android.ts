@@ -326,6 +326,7 @@ export class View extends ViewCommon {
 	public _dialogFragment: androidx.fragment.app.DialogFragment;
 	public _manager: androidx.fragment.app.FragmentManager;
 	private _isClickable: boolean;
+	private _isFocusable: boolean;
 	private touchListenerIsSet: boolean;
 	private touchListener: android.view.View.OnTouchListener;
 	private layoutChangeListenerIsSet: boolean;
@@ -466,6 +467,7 @@ export class View extends ViewCommon {
 	public initNativeView(): void {
 		super.initNativeView();
 		this._isClickable = this.nativeViewProtected.isClickable();
+		this._isFocusable = this.nativeViewProtected.isFocusable();
 		if (this.needsOnLayoutChangeListener()) {
 			this.setOnLayoutChangeListener();
 		}
@@ -825,8 +827,8 @@ export class View extends ViewCommon {
 	}
 
 	[accessibilityEnabledProperty.setNative](value: boolean): void {
-		// ensure `accessibilityEnabled=false` does not disable focus for view with `isUserInteractionEnabled=true`
-		this.nativeViewProtected.setFocusable(!!value || this.isUserInteractionEnabled);
+		// ensure `accessibilityEnabled=false` does not disable focus for focusable views or enable it for non-focusable ones
+		this.nativeViewProtected.setFocusable(!!value || this._isFocusable);
 		if (value) {
 			updateAccessibilityProperties(this);
 		}
