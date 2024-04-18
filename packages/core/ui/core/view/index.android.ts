@@ -1269,17 +1269,6 @@ export class ContainerView extends View {
 export class CustomLayoutView extends ContainerView implements CustomLayoutViewDefinition {
 	nativeViewProtected: android.view.ViewGroup;
 
-	constructor() {
-		super();
-
-		/**
-		 * mark accessible as false without triggering property change
-		 * equivalent to changing the default
-		 * TODO: Remove this when we have a more flexible API for declaring default property values per type of view
-		 */
-		this.style[accessibilityEnabledProperty.key] = false;
-	}
-
 	public createNativeView() {
 		return new org.nativescript.widgets.ContentLayout(this._context);
 	}
