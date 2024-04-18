@@ -1275,7 +1275,7 @@ export class CustomLayoutView extends ContainerView implements CustomLayoutViewD
 		/**
 		 * mark accessible as false without triggering property change
 		 * equivalent to changing the default
-		 * TODO: Remove this when we have a more flexible API for having default property values per type of view
+		 * TODO: Remove this when we have a more flexible API for declaring default property values per type of view
 		 */
 		this.style[accessibilityEnabledProperty.key] = false;
 	}
