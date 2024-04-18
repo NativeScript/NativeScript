@@ -466,11 +466,17 @@ export class View extends ViewCommon {
 	public initNativeView(): void {
 		super.initNativeView();
 
-		this._isFocusableByDefault = this.nativeViewProtected.isFocusable();
-
 		if (this.needsOnLayoutChangeListener()) {
 			this.setOnLayoutChangeListener();
 		}
+	}
+
+	public afterInitNativeView(): void {
+		super.afterInitNativeView();
+
+		// Setting this during initNativeView would result in skipping the right focusable state on views
+		// like ListView which becomes focusable in initNativeView scope
+		this._isFocusableByDefault = this.nativeViewProtected.isFocusable();
 	}
 
 	public needsOnLayoutChangeListener() {
