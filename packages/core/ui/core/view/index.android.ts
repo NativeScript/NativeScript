@@ -325,7 +325,7 @@ export class View extends ViewCommon {
 
 	public _dialogFragment: androidx.fragment.app.DialogFragment;
 	public _manager: androidx.fragment.app.FragmentManager;
-	private _isFocusable: boolean = false;
+	private _isFocusableByDefault: boolean = false;
 	private touchListenerIsSet: boolean;
 	private touchListener: android.view.View.OnTouchListener;
 	private layoutChangeListenerIsSet: boolean;
@@ -465,7 +465,9 @@ export class View extends ViewCommon {
 
 	public initNativeView(): void {
 		super.initNativeView();
-		this._isFocusable = this.nativeViewProtected.isFocusable();
+
+		this._isFocusableByDefault = this.nativeViewProtected.isFocusable();
+
 		if (this.needsOnLayoutChangeListener()) {
 			this.setOnLayoutChangeListener();
 		}
@@ -825,10 +827,14 @@ export class View extends ViewCommon {
 	}
 
 	[accessibilityEnabledProperty.setNative](value: boolean): void {
-		// ensure `accessibilityEnabled=false` does not disable focus for focusable views or enable it for non-focusable ones
-		this.nativeViewProtected.setFocusable(!!value || this._isFocusable);
 		if (value) {
+			this.nativeViewProtected.setFocusable(true);
 			updateAccessibilityProperties(this);
+		} else {
+			// Mark as non-focusable only if view is supposed to be so by default
+			if (!this._isFocusableByDefault) {
+				this.nativeViewProtected.setFocusable(false);
+			}
 		}
 	}
 
@@ -1269,7 +1275,7 @@ export class ContainerView extends View {
 	constructor() {
 		super();
 		/**
-		 * mark accessible as false without triggering proerty change
+		 * mark accessible as false without triggering property change
 		 * equivalent to changing the default
 		 */
 		this.style[accessibilityEnabledProperty.key] = false;
