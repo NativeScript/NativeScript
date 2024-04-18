@@ -179,8 +179,8 @@ function initializeDialogFragment() {
 		}
 		public onCreate(savedInstanceState: android.os.Bundle) {
 			super.onCreate(savedInstanceState);
-			var ownerId = this.getArguments()?.getInt(DOMID);
-			var options = getModalOptions(ownerId);
+			const ownerId = this.getArguments()?.getInt(DOMID);
+			const options = getModalOptions(ownerId);
 			// The teardown when the activity is destroyed happens after the state is saved, but is not recoverable,
 			// Cancel the native dialog in this case or the app will crash with subsequent errors.
 			if (savedInstanceState != null && options === undefined) {
@@ -325,8 +325,7 @@ export class View extends ViewCommon {
 
 	public _dialogFragment: androidx.fragment.app.DialogFragment;
 	public _manager: androidx.fragment.app.FragmentManager;
-	private _isClickable: boolean;
-	private _isFocusable: boolean;
+	private _isFocusable: boolean = false;
 	private touchListenerIsSet: boolean;
 	private touchListener: android.view.View.OnTouchListener;
 	private layoutChangeListenerIsSet: boolean;
@@ -466,7 +465,6 @@ export class View extends ViewCommon {
 
 	public initNativeView(): void {
 		super.initNativeView();
-		this._isClickable = this.nativeViewProtected.isClickable();
 		this._isFocusable = this.nativeViewProtected.isFocusable();
 		if (this.needsOnLayoutChangeListener()) {
 			this.setOnLayoutChangeListener();
