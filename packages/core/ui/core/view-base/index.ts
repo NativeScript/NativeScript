@@ -986,13 +986,6 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	}
 
 	/**
-	 * This is called after the initialization of properties/listeners of the native view.
-	 */
-	public afterInitNativeView(): void {
-		//
-	}
-
-	/**
 	 * Resets properties/listeners set to the native view.
 	 */
 	public resetNativeView(): void {
@@ -1140,7 +1133,6 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		if (this.__nativeView) {
 			this._suspendedUpdates = undefined;
 			this.initNativeView();
-			this.afterInitNativeView();
 			this._resumeNativeUpdates(SuspendType.NativeView);
 		}
 	}

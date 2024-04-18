@@ -325,7 +325,6 @@ export class View extends ViewCommon {
 
 	public _dialogFragment: androidx.fragment.app.DialogFragment;
 	public _manager: androidx.fragment.app.FragmentManager;
-	private _isFocusableByDefault: boolean = false;
 	private touchListenerIsSet: boolean;
 	private touchListener: android.view.View.OnTouchListener;
 	private layoutChangeListenerIsSet: boolean;
@@ -469,14 +468,6 @@ export class View extends ViewCommon {
 		if (this.needsOnLayoutChangeListener()) {
 			this.setOnLayoutChangeListener();
 		}
-	}
-
-	public afterInitNativeView(): void {
-		super.afterInitNativeView();
-
-		// Setting this during initNativeView would result in skipping the right focusable state on views
-		// like ListView which becomes focusable in initNativeView scope
-		this._isFocusableByDefault = this.nativeViewProtected.isFocusable();
 	}
 
 	public needsOnLayoutChangeListener() {
@@ -833,14 +824,10 @@ export class View extends ViewCommon {
 	}
 
 	[accessibilityEnabledProperty.setNative](value: boolean): void {
+		this.nativeViewProtected.setFocusable(!!value);
+
 		if (value) {
-			this.nativeViewProtected.setFocusable(true);
 			updateAccessibilityProperties(this);
-		} else {
-			// Mark as non-focusable only if view is supposed to be so by default
-			if (!this._isFocusableByDefault) {
-				this.nativeViewProtected.setFocusable(false);
-			}
 		}
 	}
 
@@ -1277,19 +1264,21 @@ export class View extends ViewCommon {
 
 export class ContainerView extends View {
 	public iosOverflowSafeArea: boolean;
-
-	constructor() {
-		super();
-		/**
-		 * mark accessible as false without triggering property change
-		 * equivalent to changing the default
-		 */
-		this.style[accessibilityEnabledProperty.key] = false;
-	}
 }
 
 export class CustomLayoutView extends ContainerView implements CustomLayoutViewDefinition {
 	nativeViewProtected: android.view.ViewGroup;
+
+	constructor() {
+		super();
+
+		/**
+		 * mark accessible as false without triggering property change
+		 * equivalent to changing the default
+		 * TODO: Remove this when we have a more flexible API for having default property values per type of view
+		 */
+		this.style[accessibilityEnabledProperty.key] = false;
+	}
 
 	public createNativeView() {
 		return new org.nativescript.widgets.ContentLayout(this._context);
