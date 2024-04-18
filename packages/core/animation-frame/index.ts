@@ -96,14 +96,10 @@ export function cancelAnimationFrame(id: number): void {
 }
 
 // ensure window exists and so does performances so that svelte and others work correctly
-// we cant do it in globals because then vue would think we are web and would try to access navigator in window which does not exist
 if (!global.window) {
-	const window = global as any;
+	let window = global as any;
 	window.window = global;
 }
-
-global.window.requestAnimationFrame = requestAnimationFrame;
-global.window.cancelAnimationFrame = cancelAnimationFrame;
 
 if (!global.performance) {
 	global.performance = {
