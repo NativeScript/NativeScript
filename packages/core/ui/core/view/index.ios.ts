@@ -1069,11 +1069,6 @@ export class ContainerView extends View {
 	constructor() {
 		super();
 		this.iosOverflowSafeArea = true;
-		/**
-		 * mark accessible as false without triggering proerty change
-		 * equivalent to changing the default
-		 */
-		this.style[accessibilityEnabledProperty.key] = false;
 	}
 }
 
