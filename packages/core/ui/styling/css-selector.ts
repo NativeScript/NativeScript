@@ -166,24 +166,29 @@ function FunctionalPseudoClassProperties(specificity: Specificity, rarity: Rarit
 	};
 }
 
-@SelectorProperties(Specificity.Universal, Rarity.Universal, Match.Static)
-export abstract class SelectorCore {
-	public pos: number;
-	public specificity: number;
-	public rarity: Rarity;
-	public combinator: Combinator;
-	public ruleset: RuleSet;
+export abstract class SelectorBase {
 	/**
 	 * Dynamic selectors depend on attributes and pseudo classes.
 	 */
 	public dynamic: boolean;
 	public abstract match(node: Node): boolean;
+	public abstract mayMatch(node: Node): boolean;
+	public abstract trackChanges(node: Node, map: ChangeAccumulator): void;
+}
+
+@SelectorProperties(Specificity.Universal, Rarity.Universal, Match.Static)
+export abstract class SelectorCore extends SelectorBase {
+	public pos: number;
+	public specificity: number;
+	public rarity: Rarity;
+	public combinator: Combinator;
+	public ruleset: RuleSet;
+
 	/**
 	 * If the selector is static returns if it matches the node.
 	 * If the selector is dynamic returns if it may match the node, and accumulates any changes that may affect its state.
 	 */
 	public abstract accumulateChanges(node: Node, map: ChangeAccumulator): boolean;
-	public abstract trackChanges(node: Node, map: ChangeAccumulator): void;
 	public lookupSort(sorter: LookupSorter, base?: SelectorCore): void {
 		sorter.sortAsUniversal(base || this);
 	}
@@ -382,20 +387,20 @@ export class PseudoClassSelector extends SimpleSelector {
 }
 
 export abstract class FunctionalPseudoClassSelector extends PseudoClassSelector {
-	protected selectors: Array<SimpleSelector | SimpleSelectorSequence | Selector>;
+	protected selectors: Array<SimpleSelector | SimpleSelectorSequence | ComplexSelector>;
 	protected selectorListType?: PseudoClassSelectorList;
 
 	constructor(cssPseudoClass: string, dataType: CSSWhatDataType) {
 		super(cssPseudoClass);
 
-		const selectors: Array<SimpleSelector | SimpleSelectorSequence | Selector> = [];
+		const selectors: Array<SimpleSelector | SimpleSelectorSequence | ComplexSelector> = [];
 		const needsHighestSpecificity: boolean = this.specificity === Specificity.SelectorListHighest;
 
 		let specificity: number = 0;
 
 		if (Array.isArray(dataType)) {
 			for (const asts of dataType) {
-				const selector: SimpleSelector | SimpleSelectorSequence | Selector = createSelectorFromAst(asts);
+				const selector: SimpleSelector | SimpleSelectorSequence | ComplexSelector = createSelectorFromAst(asts);
 
 				if (selector instanceof InvalidSelector) {
 					// Only forgiving selector list can ignore invalid selectors
@@ -459,10 +464,11 @@ export class WhereFunctionalPseudoClassSelector extends FunctionalPseudoClassSel
 
 export class SimpleSelectorSequence extends SimpleSelector {
 	private head: SimpleSelector;
+
 	constructor(public selectors: SimpleSelector[]) {
 		super();
 		this.specificity = selectors.reduce((sum, sel) => sel.specificity + sum, 0);
-		this.head = this.selectors.reduce((prev, curr) => (!prev || curr.rarity > prev.rarity ? curr : prev), null);
+		this.head = selectors.reduce((prev, curr) => (!prev || curr.rarity > prev.rarity ? curr : prev), null);
 		this.dynamic = selectors.some((sel) => sel.dynamic);
 	}
 	public toString(): string {
@@ -482,7 +488,7 @@ export class SimpleSelectorSequence extends SimpleSelector {
 	}
 }
 
-export class Selector extends SelectorCore {
+export class ComplexSelector extends SelectorCore {
 	// Grouped by ancestor combinators, then by child combinators.
 	private groups: Selector.ChildGroup[];
 	private last: SelectorCore;
@@ -491,7 +497,7 @@ export class Selector extends SelectorCore {
 		super();
 
 		let siblingsToGroup: SimpleSelector[];
-		let childrenToGroup: SimpleSelector[][];
+		let currentGroup: SimpleSelector[][];
 		const groups: SimpleSelector[][][] = [];
 
 		this.specificity = 0;
@@ -504,14 +510,14 @@ export class Selector extends SelectorCore {
 				case undefined:
 				case Combinator.descendant:
 					siblingsToGroup = [];
-					childrenToGroup = [siblingsToGroup];
+					currentGroup = [siblingsToGroup];
 
-					groups.push(childrenToGroup);
+					groups.push(currentGroup);
 					break;
 				case Combinator.child:
 					siblingsToGroup = [];
 
-					childrenToGroup.push(siblingsToGroup);
+					currentGroup.push(siblingsToGroup);
 					break;
 				case Combinator.adjacent:
 				case Combinator.sibling:
@@ -529,7 +535,7 @@ export class Selector extends SelectorCore {
 			siblingsToGroup.push(sel);
 		}
 
-		this.groups = groups.map((cg) => new Selector.ChildGroup(cg.map((sg) => new Selector.SiblingGroup(sg))));
+		this.groups = groups.map((g) => new Selector.ChildGroup(g.map((selectors) => (selectors.length > 1 ? new Selector.SiblingGroup(selectors) : selectors[0]))));
 		this.last = selectors[selectors.length - 1];
 	}
 
@@ -540,13 +546,13 @@ export class Selector extends SelectorCore {
 	public match(node: Node): boolean {
 		return this.groups.every((group, i) => {
 			if (i === 0) {
-				node = group.match(node);
+				node = group.getMatchingNode(node, true);
 
 				return !!node;
 			} else {
 				let ancestor = node;
 				while ((ancestor = ancestor.parent ?? ancestor._modalParent)) {
-					if ((node = group.match(ancestor))) {
+					if ((node = group.getMatchingNode(ancestor, true))) {
 						return true;
 					}
 				}
@@ -554,6 +560,10 @@ export class Selector extends SelectorCore {
 				return false;
 			}
 		});
+	}
+
+	public mayMatch(node: Node): boolean {
+		return false;
 	}
 
 	public trackChanges(node: Node, map: ChangeAccumulator): void {
@@ -572,7 +582,7 @@ export class Selector extends SelectorCore {
 		const bounds: Selector.Bound[] = [];
 		const mayMatch = this.groups.every((group, i) => {
 			if (i === 0) {
-				const nextNode = group.mayMatch(node);
+				const nextNode = group.getMatchingNode(node, false);
 				bounds.push({ left: node, right: node });
 				node = nextNode;
 
@@ -580,7 +590,7 @@ export class Selector extends SelectorCore {
 			} else {
 				let ancestor = node;
 				while ((ancestor = ancestor.parent)) {
-					const nextNode = group.mayMatch(ancestor);
+					const nextNode = group.getMatchingNode(ancestor, false);
 					if (nextNode) {
 						bounds.push({ left: ancestor, right: null });
 						node = nextNode;
@@ -621,26 +631,24 @@ export class Selector extends SelectorCore {
 }
 export namespace Selector {
 	// Non-spec. Selector sequences are grouped by ancestor then by child combinators for easier backtracking.
-	export abstract class Group {
-		public dynamic: boolean;
-		public abstract match(node: Node): Node;
-		public abstract mayMatch(node: Node): Node;
-		public abstract trackChanges(node: Node, map: ChangeAccumulator): void;
-	}
-
-	export class ChildGroup extends Group {
-		constructor(private selectors: SiblingGroup[]) {
+	export class ChildGroup extends SelectorBase {
+		constructor(private selectors: SelectorBase[]) {
 			super();
 
 			this.dynamic = selectors.some((sel) => sel.dynamic);
 		}
 
-		public match(node: Node): Node {
-			return this.selectors.every((sel, i) => (node = i === 0 ? node : node.parent) && sel.match(node)) ? node : null;
+		public getMatchingNode(node: Node, strict: boolean) {
+			const funcName = strict ? 'match' : 'mayMatch';
+			return this.selectors.every((sel, i) => (node = i === 0 ? node : node.parent) && sel[funcName](node)) ? node : null;
 		}
 
-		public mayMatch(node: Node): Node {
-			return this.selectors.every((sel, i) => (node = i === 0 ? node : node.parent) && sel.mayMatch(node)) ? node : null;
+		public match(node: Node): boolean {
+			return this.getMatchingNode(node, true) != null;
+		}
+
+		public mayMatch(node: Node): boolean {
+			return this.getMatchingNode(node, false) != null;
 		}
 
 		public trackChanges(node: Node, map: ChangeAccumulator): void {
@@ -658,14 +666,14 @@ export namespace Selector {
 		}
 	}
 
-	export class SiblingGroup extends Group {
+	export class SiblingGroup extends SelectorBase {
 		constructor(private selectors: SimpleSelector[]) {
 			super();
 
 			this.dynamic = selectors.some((sel) => sel.dynamic);
 		}
 
-		public match(node: Node): Node {
+		public match(node: Node): boolean {
 			return this.selectors.every((sel, i) => {
 				if (i === 0) {
 					return node && sel.match(node);
@@ -685,12 +693,10 @@ export namespace Selector {
 				});
 
 				return isMatching;
-			})
-				? node
-				: null;
+			});
 		}
 
-		public mayMatch(node: Node): Node {
+		public mayMatch(node: Node): boolean {
 			return this.selectors.every((sel, i) => {
 				if (i === 0) {
 					return node && sel.mayMatch(node);
@@ -710,15 +716,15 @@ export namespace Selector {
 				});
 
 				return isMatching;
-			})
-				? node
-				: null;
+			});
 		}
 
 		public trackChanges(node: Node, map: ChangeAccumulator): void {
 			this.selectors.forEach((sel, i) => {
 				if (i === 0) {
-					node && sel.trackChanges(node, map);
+					if (node) {
+						sel.trackChanges(node, map);
+					}
 				} else {
 					if (sel.combinator === Combinator.adjacent) {
 						node = getNodePreviousDirectSibling(node);
@@ -738,7 +744,9 @@ export namespace Selector {
 							return !isMatching;
 						});
 
-						matchingSibling && sel.trackChanges(matchingSibling, map);
+						if (matchingSibling) {
+							sel.trackChanges(matchingSibling, map);
+						}
 					}
 				}
 			});
@@ -844,8 +852,8 @@ function createSimpleSelectorSequenceFromAst(asts: CSSWhatSelector[]): SimpleSel
 	return new SimpleSelectorSequence(sequenceSelectors);
 }
 
-function createSelectorFromAst(asts: Array<CSSWhatSelector>): SimpleSelector | SimpleSelectorSequence | Selector {
-	let result: SimpleSelector | SimpleSelectorSequence | Selector;
+function createSelectorFromAst(asts: Array<CSSWhatSelector>): SimpleSelector | SimpleSelectorSequence | ComplexSelector {
+	let result: SimpleSelector | SimpleSelectorSequence | ComplexSelector;
 
 	if (asts.length === 0) {
 		return new InvalidSelector(new Error('Empty selector.'));
@@ -893,13 +901,13 @@ function createSelectorFromAst(asts: Array<CSSWhatSelector>): SimpleSelector | S
 
 			simpleSelectorSequences.push(selector);
 		}
-		return new Selector(simpleSelectorSequences);
+		return new ComplexSelector(simpleSelectorSequences);
 	}
 
 	return createSimpleSelectorSequenceFromAst(sequenceAsts);
 }
 
-export function createSelector(sel: string): SimpleSelector | SimpleSelectorSequence | Selector {
+export function createSelector(sel: string): SimpleSelector | SimpleSelectorSequence | ComplexSelector {
 	try {
 		const result = convertToCSSWhatSelector(sel);
 		if (!result?.length) {
