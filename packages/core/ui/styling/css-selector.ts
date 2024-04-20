@@ -75,10 +75,10 @@ enum Combinator {
 	'descendant' = ' ',
 	'child' = '>',
 	'adjacent' = '+',
+	'sibling' = '~',
 
 	// Not supported
 	'parent' = '<',
-	'sibling' = '~',
 	'column-combinator' = '||',
 }
 
