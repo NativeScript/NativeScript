@@ -6,6 +6,9 @@ import { isNullOrUndefined } from '../../utils/types';
 
 import * as ReworkCSS from '../../css';
 import { CSSUtils } from '../../css/system-classes';
+import { validateMediaQuery } from '../../media-query';
+
+export const MEDIA_QUERY_SEPARATOR = '&&';
 
 /**
  * An interface describing the shape of a type on which the selectors may apply.
@@ -779,29 +782,36 @@ export namespace Selector {
 }
 
 export class RuleSet {
-	tag: string | number;
-	scopedTag: string;
-	constructor(
-		public selectors: SelectorCore[],
-		public declarations: Declaration[],
-	) {
+	public selectors: SelectorCore[];
+	public declarations: Declaration[];
+	public mediaQueryString: string;
+	public tag: string | number;
+	public scopedTag: string;
+
+	constructor(selectors: SelectorCore[], declarations: Declaration[], mediaQueryString: string) {
+		this.selectors = selectors;
+		this.declarations = declarations;
+		this.mediaQueryString = mediaQueryString;
+
 		this.selectors.forEach((sel) => (sel.ruleset = this));
 	}
 	public toString(): string {
-		return `${this.selectors.join(', ')} {${this.declarations.map((d, i) => `${i === 0 ? ' ' : ''}${d.property}: ${d.value}`).join('; ')} }`;
+		let desc = `${this.selectors.join(', ')} {${this.declarations.map((d, i) => `${i === 0 ? ' ' : ''}${d.property}: ${d.value}`).join('; ')} }`;
+		if (this.mediaQueryString) {
+			desc = `@media ${this.mediaQueryString} { ${desc} }`;
+		}
+		return desc;
 	}
 	public lookupSort(sorter: LookupSorter): void {
 		this.selectors.forEach((sel) => sel.lookupSort(sorter));
 	}
 }
 
-export function fromAstNodes(astRules: ReworkCSS.Node[]): RuleSet[] {
-	return (<ReworkCSS.Rule[]>astRules.filter(isRule)).map((rule) => {
-		const declarations = rule.declarations.filter(isDeclaration).map(createDeclaration);
-		const selectors = rule.selectors.map(createSelector);
+export function fromAstNode(astRule: ReworkCSS.Rule, mediaQueryString: string): RuleSet {
+	const declarations = astRule.declarations.filter(isDeclaration).map(createDeclaration);
+	const selectors = astRule.selectors.map(createSelector);
 
-		return new RuleSet(selectors, declarations);
-	});
+	return new RuleSet(selectors, declarations, mediaQueryString);
 }
 
 function createDeclaration(decl: ReworkCSS.Declaration): any {
@@ -939,9 +949,6 @@ export function createSelector(sel: string): SimpleSelector | SimpleSelectorSequ
 	}
 }
 
-function isRule(node: ReworkCSS.Node): node is ReworkCSS.Rule {
-	return node.type === 'rule';
-}
 function isDeclaration(node: ReworkCSS.Node): node is ReworkCSS.Declaration {
 	return node.type === 'declaration';
 }
@@ -949,20 +956,26 @@ function isDeclaration(node: ReworkCSS.Node): node is ReworkCSS.Declaration {
 interface SelectorMap {
 	[key: string]: SelectorCore[];
 }
+
 export class SelectorsMap<T extends Node> implements LookupSorter {
 	private id: SelectorMap = {};
 	private class: SelectorMap = {};
 	private type: SelectorMap = {};
 	private universal: SelectorCore[] = [];
 
-	private position = 0;
+	protected position: number;
+	protected mediaQuerySelectorsMaps: Map<string, SelectorsMap<T>>;
 
-	constructor(rulesets: RuleSet[]) {
-		rulesets.forEach((rule) => rule.lookupSort(this));
+	constructor(rulesets: RuleSet[], position: number) {
+		this.position = position;
+		this.lookupRulesets(rulesets);
 	}
 
-	query(node: T): SelectorsMatch<T> {
-		const selectorsMatch = new SelectorsMatch<T>();
+	protected lookupRulesets(rulesets: RuleSet[]) {
+		rulesets.forEach((ruleset) => ruleset.lookupSort(this));
+	}
+
+	getSelectorCandidates(node: T) {
 		const { cssClasses, id, cssType } = node;
 		const selectorClasses = [this.universal, this.id[id], this.type[cssType]];
 
@@ -970,11 +983,7 @@ export class SelectorsMap<T extends Node> implements LookupSorter {
 			cssClasses.forEach((c) => selectorClasses.push(this.class[c]));
 		}
 
-		const selectors = selectorClasses.reduce((cur, next) => cur.concat(next || []), []);
-
-		selectorsMatch.selectors = selectors.filter((sel) => sel.accumulateChanges(node, selectorsMatch)).sort((a, b) => a.specificity - b.specificity || a.pos - b.pos);
-
-		return selectorsMatch;
+		return selectorClasses.reduce((cur, next) => cur.concat(next || []), []);
 	}
 
 	sortById(id: string, sel: SelectorCore): void {
@@ -1002,6 +1011,70 @@ export class SelectorsMap<T extends Node> implements LookupSorter {
 		sel.pos = this.position++;
 
 		return sel;
+	}
+}
+
+export class QuerySelectorsMap<T extends Node> extends SelectorsMap<T> {
+	protected lookupRulesets(rulesets: RuleSet[]) {
+		let currentMediaString: string;
+		let pendingMediaRulesets: RuleSet[];
+
+		rulesets.forEach((ruleset) => {
+			// Check if there are no more rulesets for the same media query and create the selectors map
+			if (currentMediaString && currentMediaString !== ruleset.mediaQueryString) {
+				// Initialization becomes inside iteration to maintain the correct selectors starting position and increment it appropriately
+				this.mediaQuerySelectorsMaps.set(currentMediaString, new SelectorsMap(pendingMediaRulesets, this.position));
+				currentMediaString = null;
+				pendingMediaRulesets = null;
+			}
+
+			if (ruleset.mediaQueryString) {
+				if (!this.mediaQuerySelectorsMaps) {
+					this.mediaQuerySelectorsMaps = new Map<string, SelectorsMap<T>>();
+				}
+
+				// Store rulesets as they're needed for next selectors map instance
+				if (!currentMediaString) {
+					currentMediaString = ruleset.mediaQueryString;
+					pendingMediaRulesets = [ruleset];
+				} else {
+					if (ruleset.mediaQueryString === currentMediaString) {
+						pendingMediaRulesets.push(ruleset);
+					}
+				}
+			} else {
+				ruleset.lookupSort(this);
+			}
+		});
+
+		// There are still pending rulesets so it's time to create the final selectors map
+		if (currentMediaString) {
+			this.mediaQuerySelectorsMaps.set(currentMediaString, new SelectorsMap(pendingMediaRulesets, this.position));
+			currentMediaString = null;
+			pendingMediaRulesets = null;
+		}
+	}
+
+	query(node: T): SelectorsMatch<T> {
+		const selectorsMatch = new SelectorsMatch<T>();
+		const selectors = this.getSelectorCandidates(node);
+
+		// Validate media queries and include their selectors if needed
+		if (this.mediaQuerySelectorsMaps) {
+			for (const [mediaQueryString, selectorsMap] of this.mediaQuerySelectorsMaps) {
+				const mediaQueryStrings = mediaQueryString.split(MEDIA_QUERY_SEPARATOR);
+				const success = mediaQueryStrings.every((mq) => validateMediaQuery(mq));
+
+				if (success) {
+					const mediaQuerySelectors = selectorsMap.getSelectorCandidates(node);
+					selectors.push(...mediaQuerySelectors);
+				}
+			}
+		}
+
+		selectorsMatch.selectors = selectors.filter((sel) => sel.accumulateChanges(node, selectorsMatch)).sort((a, b) => a.specificity - b.specificity || a.pos - b.pos);
+
+		return selectorsMatch;
 	}
 }
 
@@ -1057,6 +1130,6 @@ export const CSSHelper = {
 	Selector,
 	RuleSet,
 	SelectorsMap,
-	fromAstNodes,
+	fromAstNode,
 	SelectorsMatch,
 };

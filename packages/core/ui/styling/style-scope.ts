@@ -2,13 +2,12 @@ import { Keyframes } from '../animation/keyframe-animation';
 import { ViewBase } from '../core/view-base';
 import { View } from '../core/view';
 import { unsetValue, _evaluateCssVariableExpression, _evaluateCssCalcExpression, isCssVariable, isCssVariableExpression, isCssCalcExpression } from '../core/properties';
-import { SyntaxTree, Keyframes as KeyframesDefinition, Node as CssNode, Media } from '../../css';
+import * as ReworkCSS from '../../css';
 
-import { RuleSet, SelectorsMap, SelectorCore, SelectorsMatch, ChangeMap, fromAstNodes, Node } from './css-selector';
+import { RuleSet, QuerySelectorsMap, SelectorCore, SelectorsMatch, ChangeMap, fromAstNode, Node, MEDIA_QUERY_SEPARATOR } from './css-selector';
 import { Trace } from '../../trace';
 import { File, knownFolders, path } from '../../file-system';
 import { Application, CssChangedEventData, LoadAppCSSEventData } from '../../application';
-import { validateMediaQuery } from '../../media-query';
 import { profile } from '../../profiling';
 
 import * as kam from '../animation/keyframe-animation';
@@ -89,7 +88,7 @@ class CSSSource {
 	private _selectors: RuleSet[] = [];
 
 	private constructor(
-		private _ast: SyntaxTree,
+		private _ast: ReworkCSS.SyntaxTree,
 		private _url: string,
 		private _file: string,
 		private _keyframes: KeyframesMap,
@@ -187,7 +186,7 @@ class CSSSource {
 		return new CSSSource(undefined, url, undefined, keyframes, source);
 	}
 
-	public static fromAST(ast: SyntaxTree, keyframes: KeyframesMap, url?: string): CSSSource {
+	public static fromAST(ast: ReworkCSS.SyntaxTree, keyframes: KeyframesMap, url?: string): CSSSource {
 		return new CSSSource(ast, url, undefined, keyframes, undefined);
 	}
 
@@ -257,7 +256,7 @@ class CSSSource {
 		}
 	}
 
-	private createSelectorsFromImports(nodes: CssNode[]): RuleSet[] {
+	private createSelectorsFromImports(nodes: ReworkCSS.Node[]): RuleSet[] {
 		const imports = nodes.filter((r) => r.type === 'import');
 
 		const urlFromImportObject = (importObject) => {
@@ -286,27 +285,26 @@ class CSSSource {
 		return selectors.reduce((acc, val) => acc.concat(val), []);
 	}
 
-	private getAllNodesFromSyntaxTree(nodes: CssNode[]): CssNode[] {
-		const ruleNodes: CssNode[] = [];
+	private generateRulesets(nodes: ReworkCSS.Node[], mediaQueryString: string): RuleSet[] {
+		const rulesets: RuleSet[] = [];
 
 		for (const node of nodes) {
 			if (isKeyframe(node)) {
 				this._keyframes[node.name] = node;
 			} else if (isMedia(node)) {
-				if (validateMediaQuery(node.media)) {
-					ruleNodes.push(...this.getAllNodesFromSyntaxTree(node.rules));
-				}
-			} else {
-				ruleNodes.push(node);
+				// Media query is composite in the case of nested media queries
+				const compositeMediaQuery = mediaQueryString ? mediaQueryString + MEDIA_QUERY_SEPARATOR + node.media : node.media;
+				rulesets.push(...this.generateRulesets(node.rules, compositeMediaQuery));
+			} else if (isRule(node)) {
+				rulesets.push(fromAstNode(node, mediaQueryString));
 			}
 		}
 
-		return ruleNodes;
+		return rulesets;
 	}
 
-	private createSelectorsFromSyntaxTree(nodes: CssNode[]): RuleSet[] {
-		const ruleNodes: CssNode[] = this.getAllNodesFromSyntaxTree(nodes);
-		const rulesets = fromAstNodes(ruleNodes);
+	private createSelectorsFromSyntaxTree(nodes: ReworkCSS.Node[]): RuleSet[] {
+		const rulesets: RuleSet[] = this.generateRulesets(nodes, null);
 
 		if (rulesets && rulesets.length) {
 			ensureCssAnimationParserModule();
@@ -735,7 +733,7 @@ CssState.prototype._appliedAnimations = CssState.emptyAnimationArray;
 CssState.prototype._matchInvalid = true;
 
 export class StyleScope {
-	private _selectors: SelectorsMap<any>;
+	private _selectors: QuerySelectorsMap<any>;
 	private _css = '';
 	private _mergedCssSelectors: RuleSet[];
 	private _localCssSelectors: RuleSet[] = [];
@@ -852,7 +850,7 @@ export class StyleScope {
 		if (toMerge.length > 0) {
 			this._mergedCssSelectors = toMerge.reduce((merged, next) => merged.concat(next || []), []);
 			this._applyKeyframesOnSelectors();
-			this._selectors = new SelectorsMap(this._mergedCssSelectors);
+			this._selectors = new QuerySelectorsMap(this._mergedCssSelectors, 0);
 		}
 	}
 
@@ -997,10 +995,14 @@ function isParentDirectory(uriPart: string): boolean {
 	return uriPart === '..';
 }
 
-function isMedia(node: CssNode): node is Media {
+function isMedia(node: ReworkCSS.Node): node is ReworkCSS.Media {
 	return node.type === 'media';
 }
 
-function isKeyframe(node: CssNode): node is KeyframesDefinition {
+function isKeyframe(node: ReworkCSS.Node): node is ReworkCSS.Keyframes {
 	return node.type === 'keyframes';
+}
+
+function isRule(node: ReworkCSS.Node): node is ReworkCSS.Rule {
+	return node.type === 'rule';
 }
