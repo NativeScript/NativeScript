@@ -68,6 +68,11 @@ export class KeyframeAnimation {
 	private _target: View;
 
 	public static keyframeAnimationFromInfo(info: KeyframeAnimationInfo): KeyframeAnimation {
+		if (!info.keyframes) {
+			Trace.write(`No keyframe found for animation '${info.name}'.`, Trace.categories.Animation, Trace.messageType.warn);
+			return null;
+		}
+
 		const length = info.keyframes.length;
 		const animations = new Array<Keyframe>();
 		let startDuration = 0;
@@ -244,7 +249,7 @@ export class KeyframeAnimation {
 					},
 					(error: any) => {
 						Trace.write(typeof error === 'string' ? error : error.message, Trace.categories.Animation, Trace.messageType.warn);
-					}
+					},
 				)
 				.catch((error: any) => {
 					Trace.write(typeof error === 'string' ? error : error.message, Trace.categories.Animation, Trace.messageType.warn);

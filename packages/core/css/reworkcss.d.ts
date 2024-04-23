@@ -4,7 +4,7 @@ export interface Position {
 }
 
 export interface Node {
-	type: 'rule' | 'keyframes' | 'declaration' | 'import';
+	type: 'rule' | 'keyframes' | 'declaration' | 'import' | 'media';
 	position: Position;
 }
 
@@ -20,6 +20,11 @@ export interface Rule extends Node {
 
 export interface Keyframes extends Rule {
 	name: string;
+}
+
+export interface Media extends Node {
+	media: string;
+	rules: Array<Rule | Comment | AtRule>;
 }
 
 export interface StyleSheet {

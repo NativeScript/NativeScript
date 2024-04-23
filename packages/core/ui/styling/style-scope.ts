@@ -2,12 +2,13 @@ import { Keyframes } from '../animation/keyframe-animation';
 import { ViewBase } from '../core/view-base';
 import { View } from '../core/view';
 import { unsetValue, _evaluateCssVariableExpression, _evaluateCssCalcExpression, isCssVariable, isCssVariableExpression, isCssCalcExpression } from '../core/properties';
-import { SyntaxTree, Keyframes as KeyframesDefinition, Node as CssNode } from '../../css';
+import { SyntaxTree, Keyframes as KeyframesDefinition, Node as CssNode, Media } from '../../css';
 
 import { RuleSet, SelectorsMap, SelectorCore, SelectorsMatch, ChangeMap, fromAstNodes, Node } from './css-selector';
 import { Trace } from '../../trace';
 import { File, knownFolders, path } from '../../file-system';
 import { Application, CssChangedEventData, LoadAppCSSEventData } from '../../application';
+import { validateMediaQuery } from '../../media-query';
 import { profile } from '../../profiling';
 
 import * as kam from '../animation/keyframe-animation';
@@ -251,12 +252,13 @@ class CSSSource {
 	@profile
 	private createSelectors() {
 		if (this._ast) {
-			this._selectors = [...this.createSelectorsFromImports(), ...this.createSelectorsFromSyntaxTree()];
+			const nodes = this._ast.stylesheet.rules;
+			this._selectors = [...this.createSelectorsFromImports(nodes), ...this.createSelectorsFromSyntaxTree(nodes)];
 		}
 	}
 
-	private createSelectorsFromImports(): RuleSet[] {
-		const imports = this._ast['stylesheet']['rules'].filter((r) => r.type === 'import');
+	private createSelectorsFromImports(nodes: CssNode[]): RuleSet[] {
+		const imports = nodes.filter((r) => r.type === 'import');
 
 		const urlFromImportObject = (importObject) => {
 			const importItem = importObject['import'] as string;
@@ -284,11 +286,28 @@ class CSSSource {
 		return selectors.reduce((acc, val) => acc.concat(val), []);
 	}
 
-	private createSelectorsFromSyntaxTree(): RuleSet[] {
-		const nodes = this._ast.stylesheet.rules;
-		(<KeyframesDefinition[]>nodes.filter(isKeyframe)).forEach((node) => (this._keyframes[node.name] = node));
+	private getAllNodesFromSyntaxTree(nodes: CssNode[]): CssNode[] {
+		const ruleNodes: CssNode[] = [];
 
-		const rulesets = fromAstNodes(nodes);
+		for (const node of nodes) {
+			if (isKeyframe(node)) {
+				this._keyframes[node.name] = node;
+			} else if (isMedia(node)) {
+				if (validateMediaQuery(node.media)) {
+					ruleNodes.push(...this.getAllNodesFromSyntaxTree(node.rules));
+				}
+			} else {
+				ruleNodes.push(node);
+			}
+		}
+
+		return ruleNodes;
+	}
+
+	private createSelectorsFromSyntaxTree(nodes: CssNode[]): RuleSet[] {
+		const ruleNodes: CssNode[] = this.getAllNodesFromSyntaxTree(nodes);
+		const rulesets = fromAstNodes(ruleNodes);
+
 		if (rulesets && rulesets.length) {
 			ensureCssAnimationParserModule();
 
@@ -976,6 +995,10 @@ function isCurrentDirectory(uriPart: string): boolean {
 
 function isParentDirectory(uriPart: string): boolean {
 	return uriPart === '..';
+}
+
+function isMedia(node: CssNode): node is Media {
+	return node.type === 'media';
 }
 
 function isKeyframe(node: CssNode): node is KeyframesDefinition {
