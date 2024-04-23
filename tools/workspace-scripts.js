@@ -119,23 +119,16 @@ module.exports = {
           description: '@nativescript/ui-mobile-base: Build for npm'
         },
 			},
-			// @nativescript/webpack
-			webpack: {
-				build: {
-          script: 'nx run webpack:build',
-          description: '@nativescript/webpack: Build for npm'
-        },
-				test: {
-          script: 'nx run webpack:test',
-          description: '@nativescript/webpack: Unit tests'
-        },
-      },
       // @nativescript/webpack (5)
 			webpack5: {
 				build: {
           script: 'nx run webpack5:build',
           description: '@nativescript/webpack(5): Build for npm'
         },
+				test: {
+					script: 'nx run webpack5:test',
+					description: '@nativescript/webpack(5): Unit tests'
+				},
 			},
     },
     "⚡": {
