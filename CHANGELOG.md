@@ -1,3 +1,14 @@
+## [8.7.1](https://github.com/NativeScript/NativeScript/compare/8.7.0-core...8.7.1) (2024-04-15)
+
+
+### Bug Fixes
+
+* **android:** image tintColor setter ([#10516](https://github.com/NativeScript/NativeScript/issues/10516)) ([7e1cb19](https://github.com/NativeScript/NativeScript/commit/7e1cb190843216978bb37cf2f1d59f1abc8df0a3))
+* **webview:** regression fix for [#10482](https://github.com/NativeScript/NativeScript/issues/10482) ([#10518](https://github.com/NativeScript/NativeScript/issues/10518)) ([92b2ff8](https://github.com/NativeScript/NativeScript/commit/92b2ff83a038ece4ab4411cf983ee9e252bba141))
+* **webpack:** set exitCode if the configuration failed ([#10327](https://github.com/NativeScript/NativeScript/issues/10327)) ([adb4e9d](https://github.com/NativeScript/NativeScript/commit/adb4e9d419d4f51f9a45fe5fbca06349a6881de8)), closes [#10314](https://github.com/NativeScript/NativeScript/issues/10314)
+
+
+
 # [8.7.0](https://github.com/NativeScript/NativeScript/compare/8.6.2-core...8.7.0-core) (2024-04-08)
 
 

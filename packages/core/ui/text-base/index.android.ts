@@ -193,19 +193,6 @@ export class TextBase extends TextBaseCommon {
 	// so that we dont set fontInternal when setting fontSize (useless)
 	handleFontSize = true;
 
-	createFormattedTextNative(value: FormattedString) {
-		return createSpannableStringBuilder(value, this.style.fontSize);
-	}
-
-	_getNativeTextTransform(value: CoreTypes.TextTransformType): android.text.method.TransformationMethod {
-		// if (value === 'initial') {
-		// 	return this._defaultTransformationMethod;
-		// }
-
-		// return new TextTransformation(this);
-		return null;
-	}
-
 	[textProperty.getDefault](): symbol | number {
 		return resetSymbol;
 	}
@@ -220,11 +207,12 @@ export class TextBase extends TextBaseCommon {
 
 		this._setNativeText(reset);
 	}
-
 	[textStrokeProperty.setNative](value: StrokeCSSValues) {
 		this._setNativeText();
 	}
-
+	createFormattedTextNative(value: FormattedString) {
+		return createSpannableStringBuilder(value, this.style.fontSize);
+	}
 	[formattedTextProperty.setNative](value: FormattedString) {
 		const nativeView = this.nativeTextViewProtected;
 		// TODO: does not seem needed anymore as native textTransform behaves correctly with spannableStringBuilder
@@ -258,10 +246,15 @@ export class TextBase extends TextBaseCommon {
 		return 'initial';
 	}
 	[textTransformProperty.setNative](value: CoreTypes.TextTransformType) {
-		// const transformationMethod = this._getNativeTextTransform(value);
-		// if (transformationMethod != null) {
-		// 	this.nativeTextViewProtected.setTransformationMethod(transformationMethod);
+		// if (value === 'initial') {
+		// 	this.nativeTextViewProtected.setTransformationMethod(this._defaultTransformationMethod);
+		// 	return;
 		// }
+		// // Don't change the transformation method if this is secure TextField or we'll lose the hiding characters.
+		// if ((<any>this).secure) {
+		// 	return;
+		// }
+		// this.nativeTextViewProtected.setTransformationMethod(new TextTransformation(this));
 	}
 
 	[textAlignmentProperty.getDefault](): CoreTypes.TextAlignmentType {

@@ -323,9 +323,6 @@ exports[`base configuration for android 1`] = `
       '__jest__/src/app.js',
       '@nativescript/core/ui/frame',
       '@nativescript/core/ui/frame/activity'
-    ],
-    'tns_modules/inspector_modules': [
-      '@nativescript/core/inspector_modules'
     ]
   }
 }"

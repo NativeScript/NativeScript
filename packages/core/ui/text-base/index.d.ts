@@ -129,11 +129,6 @@ export class TextBase extends View implements AddChildFromBuilder {
 	 * @private
 	 */
 	_setNativeText(reset?: boolean): void;
-
-	/**
-	 * @private
-	 */
-	_getNativeTextTransform(value: CoreTypes.TextTransformType): android.text.method.TransformationMethod;
 }
 
 export interface TextTransformation {

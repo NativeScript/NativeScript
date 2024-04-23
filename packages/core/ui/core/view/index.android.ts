@@ -336,7 +336,6 @@ export class View extends ViewCommon {
 
 	public _dialogFragment: androidx.fragment.app.DialogFragment;
 	public _manager: androidx.fragment.app.FragmentManager;
-	private _isClickable: boolean;
 	private touchListenerIsSet: boolean;
 	private touchListener: android.view.View.OnTouchListener;
 	private layoutChangeListenerIsSet: boolean;
@@ -476,7 +475,7 @@ export class View extends ViewCommon {
 
 	public initNativeView(): void {
 		super.initNativeView();
-		this._isClickable = this.nativeViewProtected.isClickable();
+
 		if (this.needsOnLayoutChangeListener()) {
 			this.setOnLayoutChangeListener();
 		}
