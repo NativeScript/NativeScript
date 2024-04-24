@@ -220,15 +220,15 @@ export class ApplicationCommon {
 	 * @param rootView
 	 * @param cssClasses
 	 * @param newCssClass
-	 * @param updateCss
+	 * @param skipCssUpdate
 	 */
-	applyCssClass(rootView: View, cssClasses: string[], newCssClass: string, updateCss: boolean = true): void {
+	applyCssClass(rootView: View, cssClasses: string[], newCssClass: string, skipCssUpdate: boolean = false): void {
 		if (!rootView.cssClasses.has(newCssClass)) {
 			cssClasses.forEach((cssClass) => this.removeCssClass(rootView, cssClass));
 			this.addCssClass(rootView, newCssClass);
 			this.increaseStyleScopeApplicationCssSelectorVersion(rootView);
 
-			if (updateCss) {
+			if (!skipCssUpdate) {
 				rootView._onCssStateChange();
 			}
 
@@ -465,7 +465,7 @@ export class ApplicationCommon {
 		this._orientation = value;
 
 		// Update metrics early enough regardless of the existence of root view
-		// This way, CSS will also use the correct size values
+		// Also, CSS will use the correct size values during update trigger
 		Screen.mainScreen._updateMetrics();
 
 		this.orientationChanged(this.getRootView(), value);
@@ -488,11 +488,11 @@ export class ApplicationCommon {
 		}
 
 		const newOrientationCssClass = `${CSSUtils.CLASS_PREFIX}${newOrientation}`;
-		this.applyCssClass(rootView, ORIENTATION_CSS_CLASSES, newOrientationCssClass, false);
+		this.applyCssClass(rootView, ORIENTATION_CSS_CLASSES, newOrientationCssClass, true);
 
 		const rootModalViews = <Array<View>>rootView._getRootModalViews();
 		rootModalViews.forEach((rootModalView) => {
-			this.applyCssClass(rootModalView, ORIENTATION_CSS_CLASSES, newOrientationCssClass, false);
+			this.applyCssClass(rootModalView, ORIENTATION_CSS_CLASSES, newOrientationCssClass, true);
 
 			// Trigger state change for root modal view classes and media queries
 			rootModalView._onCssStateChange();
@@ -561,11 +561,11 @@ export class ApplicationCommon {
 		}
 
 		const newSystemAppearanceCssClass = `${CSSUtils.CLASS_PREFIX}${newSystemAppearance}`;
-		this.applyCssClass(rootView, SYSTEM_APPEARANCE_CSS_CLASSES, newSystemAppearanceCssClass, false);
+		this.applyCssClass(rootView, SYSTEM_APPEARANCE_CSS_CLASSES, newSystemAppearanceCssClass, true);
 
 		const rootModalViews = rootView._getRootModalViews();
 		rootModalViews.forEach((rootModalView) => {
-			this.applyCssClass(rootModalView as View, SYSTEM_APPEARANCE_CSS_CLASSES, newSystemAppearanceCssClass, false);
+			this.applyCssClass(rootModalView as View, SYSTEM_APPEARANCE_CSS_CLASSES, newSystemAppearanceCssClass, true);
 
 			// Trigger state change for root modal view classes and media queries
 			rootModalView._onCssStateChange();
