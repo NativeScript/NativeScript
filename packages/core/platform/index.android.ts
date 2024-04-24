@@ -10,13 +10,6 @@ export * from './common';
 class MainScreen {
 	private _metrics: android.util.DisplayMetrics;
 
-	private reinitMetrics(): void {
-		if (!this._metrics) {
-			this._metrics = new android.util.DisplayMetrics();
-		}
-		this.initMetrics();
-	}
-
 	private initMetrics(): void {
 		const nativeApp = Application.android.getNativeApplication();
 		nativeApp.getSystemService(android.content.Context.WINDOW_SERVICE).getDefaultDisplay().getRealMetrics(this._metrics);
@@ -24,10 +17,6 @@ class MainScreen {
 
 	private get metrics(): android.util.DisplayMetrics {
 		if (!this._metrics) {
-			// NOTE: This will be memory leak but we MainScreen is singleton
-			Application.on('cssChanged', this.reinitMetrics, this);
-			Application.on(Application.orientationChangedEvent, this.reinitMetrics, this);
-
 			this._metrics = new android.util.DisplayMetrics();
 			this.initMetrics();
 		}
@@ -49,6 +38,13 @@ class MainScreen {
 	}
 	get heightDIPs(): number {
 		return this.metrics.heightPixels / this.metrics.density;
+	}
+
+	public _updateMetrics(): void {
+		if (!this._metrics) {
+			this._metrics = new android.util.DisplayMetrics();
+		}
+		this.initMetrics();
 	}
 }
 

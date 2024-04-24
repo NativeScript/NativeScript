@@ -2,7 +2,7 @@ import { initAccessibilityCssHelper } from '../accessibility/accessibility-css-h
 import { initAccessibilityFontScale } from '../accessibility/font-scale';
 import { CoreTypes } from '../core-types';
 import { CSSUtils } from '../css/system-classes';
-import { Device } from '../platform';
+import { Device, Screen } from '../platform';
 import { profile } from '../profiling';
 import { Trace } from '../trace';
 import { Builder } from '../ui/builder';
@@ -457,7 +457,13 @@ export class ApplicationCommon {
 		if (this._orientation === value) {
 			return;
 		}
+
 		this._orientation = value;
+
+		// Update metrics early enough regardless of the existence of root view
+		// This way, CSS will also use the correct size values
+		Screen.mainScreen._updateMetrics();
+
 		this.orientationChanged(this.getRootView(), value);
 		this.notify(<OrientationChangedEventData>{
 			eventName: this.orientationChangedEvent,

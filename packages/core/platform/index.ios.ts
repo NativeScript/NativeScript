@@ -115,6 +115,10 @@ class MainScreen {
 	get heightDIPs(): number {
 		return this.screen.bounds.size.height;
 	}
+
+	public _updateMetrics(): void {
+		// UIScreen handles the update on iOS
+	}
 }
 
 export const Device = new DeviceRef();

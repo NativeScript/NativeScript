@@ -88,7 +88,7 @@ export interface IDevice {
 /**
  * An object containing screen information.
  */
-export interface ScreenMetrics {
+export class ScreenMetrics {
 	/**
 	 * Gets the absolute width of the screen in pixels.
 	 */
@@ -113,6 +113,8 @@ export interface ScreenMetrics {
 	 * The logical density of the display. This is a scaling factor for the Density Independent Pixel unit.
 	 */
 	scale: number;
+
+	public _updateMetrics(): void;
 }
 
 /**
