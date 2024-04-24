@@ -1,4 +1,3 @@
-import { Keyframes } from '../animation/keyframe-animation';
 import { ViewBase } from '../core/view-base';
 import { View } from '../core/view';
 import { unsetValue, _evaluateCssVariableExpression, _evaluateCssCalcExpression, isCssVariable, isCssVariableExpression, isCssCalcExpression } from '../core/properties';
@@ -76,10 +75,12 @@ export function mergeCssSelectors(): void {
 let applicationCssSelectors: RuleSet[] = [];
 let applicationCssSelectorVersion = 0;
 let applicationSelectors: RuleSet[] = [];
+
 const tagToScopeTag: Map<string | number, string> = new Map();
 let currentScopeTag: string = null;
+
 const applicationAdditionalSelectors: RuleSet[] = [];
-const applicationKeyframes: any = {};
+const applicationKeyframes = new Map<string, ReworkCSS.Keyframes>();
 const animationsSymbol = Symbol('animations');
 const kebabCasePattern = /-([a-z])/g;
 const pattern = /('|")(.*?)\1/;
@@ -290,7 +291,7 @@ class CSSSource {
 
 		for (const node of nodes) {
 			if (isKeyframe(node)) {
-				this._keyframes[node.name] = node;
+				this._keyframes.set(node.name, node);
 			} else if (isMedia(node)) {
 				// Media query is composite in the case of nested media queries
 				const compositeMediaQuery = mediaQueryString ? mediaQueryString + MEDIA_QUERY_SEPARATOR + node.media : node.media;
@@ -740,7 +741,7 @@ export class StyleScope {
 	private _localCssSelectorVersion = 0;
 	private _localCssSelectorsAppliedVersion = 0;
 	private _applicationCssSelectorsAppliedVersion = 0;
-	private _keyframes = new Map<string, Keyframes>();
+	private _keyframes = new Map<string, ReworkCSS.Keyframes>();
 	private _cssFiles: string[] = [];
 
 	get css(): string {
@@ -803,7 +804,7 @@ export class StyleScope {
 	}
 
 	public getKeyframeAnimationWithName(animationName: string): kam.KeyframeAnimationInfo {
-		const cssKeyframes = this._keyframes[animationName];
+		const cssKeyframes = this._keyframes.get(animationName);
 		if (!cssKeyframes) {
 			return;
 		}
@@ -843,8 +844,9 @@ export class StyleScope {
 		this._applicationCssSelectorsAppliedVersion = applicationCssSelectorVersion;
 		toMerge.push(this._localCssSelectors);
 		this._localCssSelectorsAppliedVersion = this._localCssSelectorVersion;
-		for (const keyframe in applicationKeyframes) {
-			this._keyframes[keyframe] = applicationKeyframes[keyframe];
+
+		for (const [key, value] of applicationKeyframes) {
+			this._keyframes.set(key, value);
 		}
 
 		if (toMerge.length > 0) {
@@ -883,8 +885,8 @@ export class StyleScope {
 			if (animations !== undefined && animations.length) {
 				ensureCssAnimationParserModule();
 				for (const animation of animations) {
-					const cssKeyframe = this._keyframes[animation.name];
-					if (cssKeyframe !== undefined) {
+					const cssKeyframe = this._keyframes.get(animation.name);
+					if (cssKeyframe != null) {
 						animation.keyframes = cssAnimationParserModule.CssAnimationParser.keyframesArrayFromCSS(cssKeyframe.keyframes);
 					}
 				}
@@ -897,7 +899,7 @@ export class StyleScope {
 	}
 }
 
-type KeyframesMap = Map<string, Keyframes>;
+type KeyframesMap = Map<string, ReworkCSS.Keyframes>;
 
 export function resolveFileNameFromUrl(url: string, appDirectory: string, fileExists: (name: string) => boolean, importSource?: string): string {
 	let fileName: string = typeof url === 'string' ? url.trim() : '';
@@ -949,7 +951,7 @@ function resolveFilePathFromImport(importSource: string, fileName: string): stri
 
 export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase, styleStr: string) {
 	const localStyle = `local { ${styleStr} }`;
-	const inlineRuleSet = CSSSource.fromSource(localStyle, new Map()).selectors;
+	const inlineRuleSet = CSSSource.fromSource(localStyle, new Map<string, ReworkCSS.Keyframes>()).selectors;
 
 	// Reset unscoped css-variables
 	view.style.resetUnscopedCssVariables();
