@@ -10,6 +10,12 @@ import { unsetValue } from '../core/properties';
 import { Animation } from '.';
 import { backgroundColorProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, rotateProperty, opacityProperty, rotateXProperty, rotateYProperty, widthProperty, heightProperty } from '../styling/style-properties';
 
+export interface Keyframes {
+	name: string;
+	keyframes: Array<UnparsedKeyframe>;
+	mediaQueryString?: string;
+}
+
 export class UnparsedKeyframe {
 	values: Array<any>;
 	declarations: Array<KeyframeDeclaration>;
@@ -63,8 +69,8 @@ export class KeyframeAnimation {
 	private _target: View;
 
 	public static keyframeAnimationFromInfo(info: KeyframeAnimationInfo): KeyframeAnimation {
-		if (!info.keyframes) {
-			Trace.write(`No keyframe found for animation '${info.name}'.`, Trace.categories.Animation, Trace.messageType.warn);
+		if (!info?.keyframes?.length) {
+			Trace.write(`No keyframes found for animation '${info.name}'.`, Trace.categories.Animation, Trace.messageType.warn);
 			return null;
 		}
 

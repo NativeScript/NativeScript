@@ -22,6 +22,7 @@ import { sanitizeModuleName } from '../../utils/common';
 import { resolveModuleName } from '../../module-name-resolver';
 import { cleanupImportantFlags } from './css-utils';
 import { Observable, PropertyChangeData } from '../../data/observable';
+import { validateMediaQuery } from '../../media-query';
 
 let cssAnimationParserModule: typeof capm;
 function ensureCssAnimationParserModule() {
@@ -80,7 +81,7 @@ const tagToScopeTag: Map<string | number, string> = new Map();
 let currentScopeTag: string = null;
 
 const applicationAdditionalSelectors: RuleSet[] = [];
-const applicationKeyframes = new Map<string, ReworkCSS.Keyframes>();
+const applicationKeyframeGroups = new Map<string, kam.Keyframes[]>();
 const animationsSymbol = Symbol('animations');
 const kebabCasePattern = /-([a-z])/g;
 const pattern = /('|")(.*?)\1/;
@@ -92,7 +93,7 @@ class CSSSource {
 		private _ast: ReworkCSS.SyntaxTree,
 		private _url: string,
 		private _file: string,
-		private _keyframes: KeyframesMap,
+		private _keyframeGroups: KeyframesMap,
 		private _source: string,
 	) {
 		this.parse();
@@ -149,7 +150,7 @@ class CSSSource {
 			return uri;
 		}
 
-		const relativeUri = `.${uri.substr(appPath.length)}`;
+		const relativeUri = `.${uri.substring(appPath.length)}`;
 
 		return relativeUri;
 	}
@@ -274,7 +275,7 @@ class CSSSource {
 			source: sourceFromImportObject(importObject),
 		});
 
-		const getCssFile = ({ url, source }) => (source ? CSSSource.fromFileImport(url, this._keyframes, source) : CSSSource.fromURI(url, this._keyframes));
+		const getCssFile = ({ url, source }) => (source ? CSSSource.fromFileImport(url, this._keyframeGroups, source) : CSSSource.fromURI(url, this._keyframeGroups));
 
 		const cssFiles = imports
 			.map(toUrlSourcePair)
@@ -286,26 +287,35 @@ class CSSSource {
 		return selectors.reduce((acc, val) => acc.concat(val), []);
 	}
 
-	private generateRulesets(nodes: ReworkCSS.Node[], mediaQueryString: string): RuleSet[] {
-		const rulesets: RuleSet[] = [];
-
+	private generateKeyframesAndRulesets(nodes: ReworkCSS.Node[], keyframes: KeyframesMap, rulesets: RuleSet[], mediaQueryString: string): void {
 		for (const node of nodes) {
 			if (isKeyframe(node)) {
-				this._keyframes.set(node.name, node);
+				const keyframeRule: kam.Keyframes = {
+					name: node.name,
+					keyframes: node.keyframes,
+					mediaQueryString: mediaQueryString,
+				};
+
+				if (keyframes.has(node.name)) {
+					keyframes.get(node.name).push(keyframeRule);
+				} else {
+					keyframes.set(node.name, [keyframeRule]);
+				}
 			} else if (isMedia(node)) {
 				// Media query is composite in the case of nested media queries
 				const compositeMediaQuery = mediaQueryString ? mediaQueryString + MEDIA_QUERY_SEPARATOR + node.media : node.media;
-				rulesets.push(...this.generateRulesets(node.rules, compositeMediaQuery));
+
+				this.generateKeyframesAndRulesets(node.rules, keyframes, rulesets, compositeMediaQuery);
 			} else if (isRule(node)) {
 				rulesets.push(fromAstNode(node, mediaQueryString));
 			}
 		}
-
-		return rulesets;
 	}
 
 	private createSelectorsFromSyntaxTree(nodes: ReworkCSS.Node[]): RuleSet[] {
-		const rulesets: RuleSet[] = this.generateRulesets(nodes, null);
+		const rulesets: RuleSet[] = [];
+
+		this.generateKeyframesAndRulesets(nodes, this._keyframeGroups, rulesets, null);
 
 		if (rulesets && rulesets.length) {
 			ensureCssAnimationParserModule();
@@ -340,7 +350,9 @@ export function removeTaggedAdditionalCSS(tag: string | number): boolean {
 }
 
 export function addTaggedAdditionalCSS(cssText: string, tag?: string | number): boolean {
-	const parsed: RuleSet[] = CSSSource.fromDetect(cssText, applicationKeyframes, undefined).selectors;
+	applicationKeyframeGroups.clear();
+
+	const parsed: RuleSet[] = CSSSource.fromDetect(cssText, applicationKeyframeGroups, undefined).selectors;
 	const tagScope = currentScopeTag || (tag && tagToScopeTag.has(tag) && tagToScopeTag.get(tag)) || null;
 	if (tagScope && tag) {
 		tagToScopeTag.set(tag, tagScope);
@@ -363,7 +375,9 @@ export function addTaggedAdditionalCSS(cssText: string, tag?: string | number): 
 
 const onCssChanged = profile('"style-scope".onCssChanged', (args: CssChangedEventData) => {
 	if (args.cssText) {
-		const parsed = CSSSource.fromSource(args.cssText, applicationKeyframes, args.cssFile).selectors;
+		applicationKeyframeGroups.clear();
+
+		const parsed = CSSSource.fromSource(args.cssText, applicationKeyframeGroups, args.cssFile).selectors;
 		if (parsed) {
 			applicationAdditionalSelectors.push(...parsed);
 			mergeCssSelectors();
@@ -377,17 +391,19 @@ function onLiveSync(args: CssChangedEventData): void {
 	loadCss(Application.getCssFileName(), null, null);
 }
 
-const loadCss = profile(`"style-scope".loadCss`, (cssModule: string) => {
+const loadCss = profile(`"style-scope".loadCss`, (cssModule: string): void => {
 	if (!cssModule) {
-		return undefined;
+		return;
 	}
 
 	// safely remove "./" as global CSS should be resolved relative to app folder
 	if (cssModule.startsWith('./')) {
-		cssModule = cssModule.substr(2);
+		cssModule = cssModule.substring(2);
 	}
 
-	const result = CSSSource.fromURI(cssModule, applicationKeyframes).selectors;
+	applicationKeyframeGroups.clear();
+
+	const result = CSSSource.fromURI(cssModule, applicationKeyframeGroups).selectors;
 	if (result.length > 0) {
 		applicationSelectors = result;
 		mergeCssSelectors();
@@ -493,8 +509,11 @@ export class CssState {
 	private updateMatch() {
 		const view = this.viewRef.get();
 		if (view && view._styleScope) {
-			this._match = view._styleScope.matchSelectors(view);
+			this._match = view._styleScope.matchSelectors(view) ?? CssState.emptyMatch;
 			this._appliedSelectorsVersion = view._styleScope.getSelectorsVersion();
+
+			// Match keyframes with animations as well
+			view._styleScope.applyKeyframesOnSelectors();
 		} else {
 			this._match = CssState.emptyMatch;
 		}
@@ -512,12 +531,14 @@ export class CssState {
 		}
 
 		const matchingSelectors = this._match.selectors.filter((sel) => (sel.dynamic ? sel.match(view) : true));
-		if (!matchingSelectors || matchingSelectors.length === 0) {
-			// Ideally we should return here if there are no matching selectors, however
-			// if there are property removals, returning here would not remove them
-			// this is seen in STYLE test in automated.
-			// return;
-		}
+
+		// Ideally we should return here if there are no matching selectors, however
+		// if there are property removals, returning here would not remove them
+		// this is seen in STYLE test in automated.
+		// if (!matchingSelectors || matchingSelectors.length === 0) {
+		// 		return;
+		// }
+
 		view._batchUpdate(() => {
 			this.stopKeyframeAnimations();
 			this.setPropertyValues(matchingSelectors);
@@ -734,14 +755,19 @@ CssState.prototype._appliedAnimations = CssState.emptyAnimationArray;
 CssState.prototype._matchInvalid = true;
 
 export class StyleScope {
-	private _selectors: StyleSheetSelectorsMap<any>;
+	private _selectorsMap: StyleSheetSelectorsMap<any>;
 	private _css = '';
+
 	private _mergedCssSelectors: RuleSet[];
+	private _mergedKeyframeGroups: KeyframesMap;
+
 	private _localCssSelectors: RuleSet[] = [];
 	private _localCssSelectorVersion = 0;
+
+	private _localKeyframeGroups: KeyframesMap = new Map<string, kam.Keyframes[]>();
+
 	private _localCssSelectorsAppliedVersion = 0;
 	private _applicationCssSelectorsAppliedVersion = 0;
-	private _keyframes = new Map<string, ReworkCSS.Keyframes>();
 	private _cssFiles: string[] = [];
 
 	get css(): string {
@@ -767,7 +793,9 @@ export class StyleScope {
 		this._cssFiles.push(cssFileName);
 		currentScopeTag = cssFileName;
 
-		const cssSelectors = CSSSource.fromURI(cssFileName, this._keyframes);
+		this._localKeyframeGroups.clear();
+
+		const cssSelectors = CSSSource.fromURI(cssFileName, this._localKeyframeGroups);
 		currentScopeTag = null;
 		this._css = cssSelectors.source;
 		this._localCssSelectors = cssSelectors.selectors;
@@ -779,7 +807,9 @@ export class StyleScope {
 	private setCss(cssString: string, cssFileName?): void {
 		this._css = cssString;
 
-		const cssFile = CSSSource.fromSource(cssString, this._keyframes, cssFileName);
+		this._localKeyframeGroups.clear();
+
+		const cssFile = CSSSource.fromSource(cssString, this._localKeyframeGroups, cssFileName);
 		this._localCssSelectors = cssFile.selectors;
 		this._localCssSelectorVersion++;
 		this.ensureSelectors();
@@ -795,7 +825,7 @@ export class StyleScope {
 			currentScopeTag = cssFileName;
 		}
 
-		const parsedCssSelectors = cssString ? CSSSource.fromSource(cssString, this._keyframes, cssFileName) : CSSSource.fromURI(cssFileName, this._keyframes);
+		const parsedCssSelectors = cssString ? CSSSource.fromSource(cssString, this._localKeyframeGroups, cssFileName) : CSSSource.fromURI(cssFileName, this._localKeyframeGroups);
 		currentScopeTag = null;
 		this._css = this._css + parsedCssSelectors.source;
 		this._localCssSelectors.push(...parsedCssSelectors.selectors);
@@ -804,15 +834,17 @@ export class StyleScope {
 	}
 
 	public getKeyframeAnimationWithName(animationName: string): kam.KeyframeAnimationInfo {
-		const cssKeyframes = this._keyframes.get(animationName);
+		const cssKeyframes = this._mergedKeyframeGroups && this._mergedKeyframeGroups.get(animationName);
 		if (!cssKeyframes) {
 			return;
 		}
 
+		const keyframeRule = this.getAvailableKeyframeRule(cssKeyframes);
+
 		ensureKeyframeAnimationModule();
 		const animation = new keyframeAnimationModule.KeyframeAnimationInfo();
 		ensureCssAnimationParserModule();
-		animation.keyframes = cssAnimationParserModule.CssAnimationParser.keyframesArrayFromCSS(cssKeyframes.keyframes);
+		animation.keyframes = keyframeRule ? cssAnimationParserModule.CssAnimationParser.keyframesArrayFromCSS(keyframeRule.keyframes) : null;
 
 		return animation;
 	}
@@ -840,20 +872,35 @@ export class StyleScope {
 	@profile
 	private _createSelectors() {
 		const toMerge: RuleSet[][] = [];
+		const toMergeKeyframes: KeyframesMap = applicationKeyframeGroups.size || this._localKeyframeGroups.size ? new Map<string, kam.Keyframes[]>() : null;
+
 		toMerge.push(applicationCssSelectors.filter((v) => !v.scopedTag || this._cssFiles.indexOf(v.scopedTag) >= 0));
 		this._applicationCssSelectorsAppliedVersion = applicationCssSelectorVersion;
 		toMerge.push(this._localCssSelectors);
 		this._localCssSelectorsAppliedVersion = this._localCssSelectorVersion;
 
-		for (const [key, value] of applicationKeyframes) {
-			this._keyframes.set(key, value);
+		for (const [key, values] of applicationKeyframeGroups) {
+			toMergeKeyframes.set(key, values);
+		}
+
+		// Local keyframes have higher priority than application keyframes
+		for (const [key, values] of this._localKeyframeGroups) {
+			if (toMergeKeyframes.has(key)) {
+				toMergeKeyframes.get(key).push(...values);
+			} else {
+				toMergeKeyframes.set(key, values);
+			}
 		}
 
 		if (toMerge.length > 0) {
 			this._mergedCssSelectors = toMerge.reduce((merged, next) => merged.concat(next || []), []);
-			this._applyKeyframesOnSelectors();
-			this._selectors = new StyleSheetSelectorsMap(this._mergedCssSelectors);
+			this._selectorsMap = new StyleSheetSelectorsMap(this._mergedCssSelectors);
+		} else {
+			this._mergedCssSelectors = null;
+			this._selectorsMap = null;
 		}
+
+		this._mergedKeyframeGroups = toMergeKeyframes;
 	}
 
 	// HACK: This @profile decorator creates a circular dependency
@@ -863,13 +910,13 @@ export class StyleScope {
 		// should be (view: ViewBase): SelectorsMatch<ViewBase>
 		this.ensureSelectors();
 
-		return this._selectors.query(view);
+		return this._selectorsMap ? this._selectorsMap.query(view) : null;
 	}
 
 	public query(node: Node): SelectorCore[] {
 		this.ensureSelectors();
 
-		return this._selectors.query(node).selectors;
+		return this._selectorsMap ? this._selectorsMap.query(node).selectors : [];
 	}
 
 	getSelectorsVersion() {
@@ -878,16 +925,23 @@ export class StyleScope {
 		return 100000 * this._applicationCssSelectorsAppliedVersion + this._localCssSelectorsAppliedVersion;
 	}
 
-	private _applyKeyframesOnSelectors() {
+	public applyKeyframesOnSelectors() {
+		if (!this._mergedCssSelectors || !this._mergedKeyframeGroups) {
+			return;
+		}
+
 		for (let i = this._mergedCssSelectors.length - 1; i >= 0; i--) {
 			const ruleset = this._mergedCssSelectors[i];
 			const animations: kam.KeyframeAnimationInfo[] = ruleset[animationsSymbol];
-			if (animations !== undefined && animations.length) {
+
+			if (animations != null && animations.length) {
 				ensureCssAnimationParserModule();
+
 				for (const animation of animations) {
-					const cssKeyframe = this._keyframes.get(animation.name);
-					if (cssKeyframe != null) {
-						animation.keyframes = cssAnimationParserModule.CssAnimationParser.keyframesArrayFromCSS(cssKeyframe.keyframes);
+					const cssKeyframes = this._mergedKeyframeGroups.get(animation.name);
+					if (cssKeyframes != null) {
+						const keyframeRule = this.getAvailableKeyframeRule(cssKeyframes);
+						animation.keyframes = keyframeRule ? cssAnimationParserModule.CssAnimationParser.keyframesArrayFromCSS(keyframeRule.keyframes) : null;
 					}
 				}
 			}
@@ -897,9 +951,28 @@ export class StyleScope {
 	public getAnimations(ruleset: RuleSet): kam.KeyframeAnimationInfo[] {
 		return ruleset[animationsSymbol];
 	}
+
+	private getAvailableKeyframeRule(keyframes: kam.Keyframes[]): kam.Keyframes {
+		// Iterate in reverse order as the last usable keyframe rule matters the most
+		for (let i = keyframes.length - 1; i >= 0; i--) {
+			const rule = keyframes[i];
+
+			if (!rule.mediaQueryString) {
+				return rule;
+			}
+
+			const mediaQueryStrings = rule.mediaQueryString.split(MEDIA_QUERY_SEPARATOR);
+			const success = mediaQueryStrings.every((mq) => validateMediaQuery(mq));
+			if (success) {
+				return rule;
+			}
+		}
+
+		return null;
+	}
 }
 
-type KeyframesMap = Map<string, ReworkCSS.Keyframes>;
+type KeyframesMap = Map<string, kam.Keyframes[]>;
 
 export function resolveFileNameFromUrl(url: string, appDirectory: string, fileExists: (name: string) => boolean, importSource?: string): string {
 	let fileName: string = typeof url === 'string' ? url.trim() : '';
@@ -915,7 +988,7 @@ export function resolveFileNameFromUrl(url: string, appDirectory: string, fileEx
 
 	if (!isAbsolutePath) {
 		if (fileName[0] === '~' && fileName[1] !== '/' && fileName[1] !== '"') {
-			fileName = fileName.substr(1);
+			fileName = fileName.substring(1);
 		}
 
 		if (importSource) {
@@ -951,7 +1024,7 @@ function resolveFilePathFromImport(importSource: string, fileName: string): stri
 
 export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase, styleStr: string) {
 	const localStyle = `local { ${styleStr} }`;
-	const inlineRuleSet = CSSSource.fromSource(localStyle, new Map<string, ReworkCSS.Keyframes>()).selectors;
+	const inlineRuleSet = CSSSource.fromSource(localStyle, new Map<string, kam.Keyframes[]>()).selectors;
 
 	// Reset unscoped css-variables
 	view.style.resetUnscopedCssVariables();
