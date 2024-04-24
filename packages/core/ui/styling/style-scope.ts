@@ -4,7 +4,7 @@ import { View } from '../core/view';
 import { unsetValue, _evaluateCssVariableExpression, _evaluateCssCalcExpression, isCssVariable, isCssVariableExpression, isCssCalcExpression } from '../core/properties';
 import * as ReworkCSS from '../../css';
 
-import { RuleSet, QuerySelectorsMap, SelectorCore, SelectorsMatch, ChangeMap, fromAstNode, Node, MEDIA_QUERY_SEPARATOR } from './css-selector';
+import { RuleSet, StyleSheetSelectorsMap, SelectorCore, SelectorsMatch, ChangeMap, fromAstNode, Node, MEDIA_QUERY_SEPARATOR } from './css-selector';
 import { Trace } from '../../trace';
 import { File, knownFolders, path } from '../../file-system';
 import { Application, CssChangedEventData, LoadAppCSSEventData } from '../../application';
@@ -733,7 +733,7 @@ CssState.prototype._appliedAnimations = CssState.emptyAnimationArray;
 CssState.prototype._matchInvalid = true;
 
 export class StyleScope {
-	private _selectors: QuerySelectorsMap<any>;
+	private _selectors: StyleSheetSelectorsMap<any>;
 	private _css = '';
 	private _mergedCssSelectors: RuleSet[];
 	private _localCssSelectors: RuleSet[] = [];
@@ -850,7 +850,7 @@ export class StyleScope {
 		if (toMerge.length > 0) {
 			this._mergedCssSelectors = toMerge.reduce((merged, next) => merged.concat(next || []), []);
 			this._applyKeyframesOnSelectors();
-			this._selectors = new QuerySelectorsMap(this._mergedCssSelectors, 0);
+			this._selectors = new StyleSheetSelectorsMap(this._mergedCssSelectors);
 		}
 	}
 

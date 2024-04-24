@@ -963,8 +963,9 @@ export class SelectorsMap<T extends Node> implements LookupSorter {
 	private type: SelectorMap = {};
 	private universal: SelectorCore[] = [];
 
-	protected position: number;
 	protected mediaQuerySelectorsMaps: Map<string, SelectorsMap<T>>;
+
+	public position: number;
 
 	constructor(rulesets: RuleSet[], position: number) {
 		this.position = position;
@@ -1014,7 +1015,21 @@ export class SelectorsMap<T extends Node> implements LookupSorter {
 	}
 }
 
-export class QuerySelectorsMap<T extends Node> extends SelectorsMap<T> {
+export class StyleSheetSelectorsMap<T extends Node> extends SelectorsMap<T> {
+	constructor(rulesets: RuleSet[]) {
+		super(rulesets, 0);
+	}
+
+	private addMediaSelectorsMap(mediaQueryString: string, rulesets: RuleSet[]) {
+		const selectorsMap = new SelectorsMap(rulesets, this.position);
+		this.position = selectorsMap.position;
+
+		if (!this.mediaQuerySelectorsMaps) {
+			this.mediaQuerySelectorsMaps = new Map<string, SelectorsMap<T>>();
+		}
+		this.mediaQuerySelectorsMaps.set(mediaQueryString, selectorsMap);
+	}
+
 	protected lookupRulesets(rulesets: RuleSet[]) {
 		let currentMediaString: string;
 		let pendingMediaRulesets: RuleSet[];
@@ -1023,16 +1038,13 @@ export class QuerySelectorsMap<T extends Node> extends SelectorsMap<T> {
 			// Check if there are no more rulesets for the same media query and create the selectors map
 			if (currentMediaString && currentMediaString !== ruleset.mediaQueryString) {
 				// Initialization becomes inside iteration to maintain the correct selectors starting position and increment it appropriately
-				this.mediaQuerySelectorsMaps.set(currentMediaString, new SelectorsMap(pendingMediaRulesets, this.position));
+				this.addMediaSelectorsMap(currentMediaString, pendingMediaRulesets);
+
 				currentMediaString = null;
 				pendingMediaRulesets = null;
 			}
 
 			if (ruleset.mediaQueryString) {
-				if (!this.mediaQuerySelectorsMaps) {
-					this.mediaQuerySelectorsMaps = new Map<string, SelectorsMap<T>>();
-				}
-
 				// Store rulesets as they're needed for next selectors map instance
 				if (!currentMediaString) {
 					currentMediaString = ruleset.mediaQueryString;
@@ -1049,7 +1061,8 @@ export class QuerySelectorsMap<T extends Node> extends SelectorsMap<T> {
 
 		// There are still pending rulesets so it's time to create the final selectors map
 		if (currentMediaString) {
-			this.mediaQuerySelectorsMaps.set(currentMediaString, new SelectorsMap(pendingMediaRulesets, this.position));
+			this.addMediaSelectorsMap(currentMediaString, pendingMediaRulesets);
+
 			currentMediaString = null;
 			pendingMediaRulesets = null;
 		}
