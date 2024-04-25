@@ -63,9 +63,10 @@ We love you and your pull requests 🤗. Please follow our [contributing guide](
 - JavaScript starter: https://nativescript.new/javascript
 - TypeScript starter: https://nativescript.new/typescript
 - Angular starter: https://nativescript.new/angular
-- Vue starter: https://nativescript.new/vue
-- Svelte starter: https://nativescript.new/svelte
 - React starter: https://nativescript.new/react
+- Solid starter: https://nativescript.new/solid
+- Svelte starter: https://nativescript.new/svelte
+- Vue starter: https://nativescript.new/vue
 - [NativeScript on Twitter](http://twitter.com/NativeScript)
 - [NativeScript on Discord](https://nativescript.org/discord)
 - [NativeScript on Stack Overflow](http://stackoverflow.com/questions/tagged/nativescript)

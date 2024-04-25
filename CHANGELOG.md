@@ -1,3 +1,12 @@
+## [8.7.2](https://github.com/NativeScript/NativeScript/compare/5.0.21-webpack...8.7.2) (2024-04-23)
+
+
+### Bug Fixes
+
+* **android:** ListView tap handling after setting children as focusable ([#10522](https://github.com/NativeScript/NativeScript/issues/10522)) ([03268cc](https://github.com/NativeScript/NativeScript/commit/03268cc60bbd0f0fc52711dd5187dd86044f0ba0))
+
+
+
 ## [8.7.1](https://github.com/NativeScript/NativeScript/compare/8.7.0-core...8.7.1) (2024-04-15)
 
 
