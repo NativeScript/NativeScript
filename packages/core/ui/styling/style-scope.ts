@@ -885,11 +885,17 @@ export class StyleScope {
 
 		// Local keyframes have higher priority than application keyframes
 		for (const [key, values] of this._localKeyframeGroups) {
+			let keyframes: kam.Keyframes[];
+
 			if (toMergeKeyframes.has(key)) {
-				toMergeKeyframes.get(key).push(...values);
+				// Pushing to existing array will affect application keyframes
+				// so create a new one to add the keyframes of both
+				keyframes = [...toMergeKeyframes.get(key), ...values];
 			} else {
-				toMergeKeyframes.set(key, values);
+				keyframes = values;
 			}
+
+			toMergeKeyframes.set(key, keyframes);
 		}
 
 		if (toMerge.length > 0) {
