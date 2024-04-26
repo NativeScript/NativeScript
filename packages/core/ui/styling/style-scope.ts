@@ -3,7 +3,7 @@ import { View } from '../core/view';
 import { unsetValue, _evaluateCssVariableExpression, _evaluateCssCalcExpression, isCssVariable, isCssVariableExpression, isCssCalcExpression } from '../core/properties';
 import * as ReworkCSS from '../../css';
 
-import { RuleSet, StyleSheetSelectorsMap, SelectorCore, SelectorsMatch, ChangeMap, fromAstNode, Node, MEDIA_QUERY_SEPARATOR } from './css-selector';
+import { RuleSet, StyleSheetSelectorScope, SelectorCore, SelectorsMatch, ChangeMap, fromAstNode, Node, MEDIA_QUERY_SEPARATOR } from './css-selector';
 import { Trace } from '../../trace';
 import { File, knownFolders, path } from '../../file-system';
 import { Application, CssChangedEventData, LoadAppCSSEventData } from '../../application';
@@ -755,7 +755,7 @@ CssState.prototype._appliedAnimations = CssState.emptyAnimationArray;
 CssState.prototype._matchInvalid = true;
 
 export class StyleScope {
-	private _selectorsMap: StyleSheetSelectorsMap<any>;
+	private _selectorScope: StyleSheetSelectorScope<any>;
 	private _css = '';
 
 	private _mergedCssSelectors: RuleSet[];
@@ -900,10 +900,10 @@ export class StyleScope {
 
 		if (toMerge.length > 0) {
 			this._mergedCssSelectors = toMerge.reduce((merged, next) => merged.concat(next || []), []);
-			this._selectorsMap = new StyleSheetSelectorsMap(this._mergedCssSelectors);
+			this._selectorScope = new StyleSheetSelectorScope(this._mergedCssSelectors);
 		} else {
 			this._mergedCssSelectors = null;
-			this._selectorsMap = null;
+			this._selectorScope = null;
 		}
 
 		this._mergedKeyframeGroups = toMergeKeyframes;
@@ -916,13 +916,13 @@ export class StyleScope {
 		// should be (view: ViewBase): SelectorsMatch<ViewBase>
 		this.ensureSelectors();
 
-		return this._selectorsMap ? this._selectorsMap.query(view) : null;
+		return this._selectorScope ? this._selectorScope.query(view) : null;
 	}
 
 	public query(node: Node): SelectorCore[] {
 		this.ensureSelectors();
 
-		return this._selectorsMap ? this._selectorsMap.query(node).selectors : [];
+		return this._selectorScope ? this._selectorScope.query(node).selectors : [];
 	}
 
 	getSelectorsVersion() {

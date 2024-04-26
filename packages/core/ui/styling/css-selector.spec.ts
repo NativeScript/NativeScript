@@ -1,5 +1,5 @@
 import { parse } from '../../css/reworkcss';
-import { createSelector, RuleSet, SelectorsMap, fromAstNodes, Node, Changes } from './css-selector';
+import { createSelector, RuleSet, StyleSheetSelectorScope, fromAstNode, Node, Changes } from './css-selector';
 
 describe('css-selector', () => {
 	it('button[attr]', () => {
@@ -17,11 +17,11 @@ describe('css-selector', () => {
 		).toBeFalsy();
 	});
 
-	function create(css: string, source = 'css-selectors.ts@test'): { rules: RuleSet[]; map: SelectorsMap<any> } {
+	function create(css: string, source = 'css-selectors.ts@test'): { rules: RuleSet[]; map: StyleSheetSelectorScope<any> } {
 		const parsed = parse(css, { source });
 		const rulesAst = parsed.stylesheet.rules.filter((n) => n.type === 'rule');
-		const rules = fromAstNodes(rulesAst);
-		const map = new SelectorsMap(rules);
+		const rules = rulesAst.map((rule) => fromAstNode(rule, null));
+		const map = new StyleSheetSelectorScope(rules);
 
 		return { rules, map };
 	}

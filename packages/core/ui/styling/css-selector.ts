@@ -957,13 +957,13 @@ interface SelectorMap {
 	[key: string]: SelectorCore[];
 }
 
-export class SelectorsMap<T extends Node> implements LookupSorter {
+export class SelectorScope<T extends Node> implements LookupSorter {
 	private id: SelectorMap = {};
 	private class: SelectorMap = {};
 	private type: SelectorMap = {};
 	private universal: SelectorCore[] = [];
 
-	protected mediaQuerySelectorsMaps: Map<string, SelectorsMap<T>>;
+	protected mediaQuerySelectorsMaps: Map<string, SelectorScope<T>>;
 
 	public position: number;
 
@@ -1015,17 +1015,17 @@ export class SelectorsMap<T extends Node> implements LookupSorter {
 	}
 }
 
-export class StyleSheetSelectorsMap<T extends Node> extends SelectorsMap<T> {
+export class StyleSheetSelectorScope<T extends Node> extends SelectorScope<T> {
 	constructor(rulesets: RuleSet[]) {
 		super(rulesets, 0);
 	}
 
 	private addMediaSelectorsMap(mediaQueryString: string, rulesets: RuleSet[]) {
-		const selectorsMap = new SelectorsMap(rulesets, this.position);
+		const selectorsMap = new SelectorScope(rulesets, this.position);
 		this.position = selectorsMap.position;
 
 		if (!this.mediaQuerySelectorsMaps) {
-			this.mediaQuerySelectorsMaps = new Map<string, SelectorsMap<T>>();
+			this.mediaQuerySelectorsMaps = new Map<string, SelectorScope<T>>();
 		}
 		this.mediaQuerySelectorsMaps.set(mediaQueryString, selectorsMap);
 	}
@@ -1142,7 +1142,8 @@ export const CSSHelper = {
 	SimpleSelectorSequence,
 	Selector,
 	RuleSet,
-	SelectorsMap,
+	SelectorScope,
+	StyleSheetSelectorScope,
 	fromAstNode,
 	SelectorsMatch,
 };
