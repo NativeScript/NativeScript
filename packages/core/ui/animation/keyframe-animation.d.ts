@@ -18,6 +18,14 @@ interface Keyframe {
 	forceLayer?: boolean;
 }
 
+export interface Keyframes {
+	name: string;
+	keyframes: Array<UnparsedKeyframe>;
+	tag?: string | number;
+	scopedTag?: string;
+	mediaQueryString?: string;
+}
+
 export interface UnparsedKeyframe {
 	values: Array<any>;
 	declarations: Array<KeyframeDeclaration>;

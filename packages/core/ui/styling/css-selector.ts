@@ -785,14 +785,12 @@ export class RuleSet {
 	public selectors: SelectorCore[];
 	public declarations: Declaration[];
 	public mediaQueryString: string;
-	public tag: string | number;
-	public scopedTag: string;
+	public tag?: string | number;
+	public scopedTag?: string;
 
-	constructor(selectors: SelectorCore[], declarations: Declaration[], mediaQueryString: string) {
+	constructor(selectors: SelectorCore[], declarations: Declaration[]) {
 		this.selectors = selectors;
 		this.declarations = declarations;
-		this.mediaQueryString = mediaQueryString;
-
 		this.selectors.forEach((sel) => (sel.ruleset = this));
 	}
 	public toString(): string {
@@ -807,11 +805,11 @@ export class RuleSet {
 	}
 }
 
-export function fromAstNode(astRule: ReworkCSS.Rule, mediaQueryString: string): RuleSet {
+export function fromAstNode(astRule: ReworkCSS.Rule): RuleSet {
 	const declarations = astRule.declarations.filter(isDeclaration).map(createDeclaration);
 	const selectors = astRule.selectors.map(createSelector);
 
-	return new RuleSet(selectors, declarations, mediaQueryString);
+	return new RuleSet(selectors, declarations);
 }
 
 function createDeclaration(decl: ReworkCSS.Declaration): any {

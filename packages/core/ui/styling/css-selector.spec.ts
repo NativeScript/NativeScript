@@ -20,7 +20,7 @@ describe('css-selector', () => {
 	function create(css: string, source = 'css-selectors.ts@test'): { rules: RuleSet[]; map: StyleSheetSelectorScope<any> } {
 		const parsed = parse(css, { source });
 		const rulesAst = parsed.stylesheet.rules.filter((n) => n.type === 'rule');
-		const rules = rulesAst.map((rule) => fromAstNode(rule, null));
+		const rules = rulesAst.map((rule) => fromAstNode(rule));
 		const map = new StyleSheetSelectorScope(rules);
 
 		return { rules, map };

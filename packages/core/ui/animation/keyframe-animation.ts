@@ -13,6 +13,8 @@ import { backgroundColorProperty, scaleXProperty, scaleYProperty, translateXProp
 export interface Keyframes {
 	name: string;
 	keyframes: Array<UnparsedKeyframe>;
+	tag?: string | number;
+	scopedTag?: string;
 	mediaQueryString?: string;
 }
 
