@@ -271,6 +271,8 @@ class CSSSource {
 			const rulesets: RuleSet[] = [];
 			const keyframes: kam.Keyframes[] = [];
 
+			// When css2json-loader is enabled, imports are handled there and removed from AST rules
+			this.populateRulesFromImports(nodes, rulesets, keyframes);
 			this.populateRules(nodes, rulesets, keyframes, null);
 
 			if (rulesets && rulesets.length) {
@@ -283,6 +285,41 @@ class CSSSource {
 
 			this._selectors = rulesets;
 			this._keyframes = keyframes;
+		}
+	}
+
+	private populateRulesFromImports(nodes: ReworkCSS.Node[], rulesets: RuleSet[], keyframes: kam.Keyframes[]): void {
+		const imports = nodes.filter((r) => r.type === 'import');
+		if (!imports.length) {
+			return;
+		}
+
+		const urlFromImportObject = (importObject) => {
+			const importItem = importObject['import'] as string;
+			const urlMatch = importItem && importItem.match(pattern);
+
+			return urlMatch && urlMatch[2];
+		};
+
+		const sourceFromImportObject = (importObject) => importObject['position'] && importObject['position']['source'];
+
+		const toUrlSourcePair = (importObject) => ({
+			url: urlFromImportObject(importObject),
+			source: sourceFromImportObject(importObject),
+		});
+
+		const getCssFile = ({ url, source }) => (source ? CSSSource.fromFileImport(url, source) : CSSSource.fromURI(url));
+
+		const cssFiles = imports
+			.map(toUrlSourcePair)
+			.filter(({ url }) => !!url)
+			.map(getCssFile);
+
+		for (const cssFile of cssFiles) {
+			if (cssFile) {
+				rulesets.push(...cssFile.selectors);
+				keyframes.push(...cssFile.keyframes);
+			}
 		}
 	}
 
