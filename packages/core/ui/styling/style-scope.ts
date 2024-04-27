@@ -562,9 +562,6 @@ export class CssState {
 		if (view && view._styleScope) {
 			this._match = view._styleScope.matchSelectors(view) ?? CssState.emptyMatch;
 			this._appliedSelectorsVersion = view._styleScope.getSelectorsVersion();
-
-			// Match keyframes with animations as well
-			view._styleScope.applyKeyframesOnSelectors();
 		} else {
 			this._match = CssState.emptyMatch;
 		}
@@ -947,16 +944,28 @@ export class StyleScope {
 	// HACK: because the function parameter type is evaluated with 'typeof'
 	@profile
 	public matchSelectors(view): SelectorsMatch<ViewBase> {
+		let match: SelectorsMatch<ViewBase>;
+
 		// should be (view: ViewBase): SelectorsMatch<ViewBase>
 		this.ensureSelectors();
 
-		return this._selectorScope ? this._selectorScope.query(view) : null;
+		if (this._selectorScope) {
+			match = this._selectorScope.query(view);
+
+			// Make sure to re-apply keyframes to matching selectors as a media query keyframe might be applicable at this point
+			this._applyKeyframesToSelectors(match.selectors);
+		} else {
+			match = null;
+		}
+
+		return match;
 	}
 
 	public query(node: Node): SelectorCore[] {
 		this.ensureSelectors();
 
-		return this._selectorScope ? this._selectorScope.query(node).selectors : [];
+		const match = this.matchSelectors(node);
+		return match ? match.selectors : [];
 	}
 
 	getSelectorsVersion() {
@@ -965,13 +974,13 @@ export class StyleScope {
 		return 100000 * this._applicationCssSelectorsAppliedVersion + this._localCssSelectorsAppliedVersion;
 	}
 
-	public applyKeyframesOnSelectors() {
-		if (!this._mergedCssSelectors || !this._mergedCssKeyframes) {
+	private _applyKeyframesToSelectors(selectors: SelectorCore[]) {
+		if (!selectors?.length) {
 			return;
 		}
 
-		for (let i = this._mergedCssSelectors.length - 1; i >= 0; i--) {
-			const ruleset = this._mergedCssSelectors[i];
+		for (let i = selectors.length - 1; i >= 0; i--) {
+			const ruleset = selectors[i].ruleset;
 			const animations: kam.KeyframeAnimationInfo[] = ruleset[animationsSymbol];
 
 			if (animations != null && animations.length) {
@@ -990,6 +999,10 @@ export class StyleScope {
 	}
 
 	private findKeyframeRule(animationName: string): kam.Keyframes {
+		if (!this._mergedCssKeyframes) {
+			return null;
+		}
+
 		// Iterate in reverse order as the last usable keyframe rule matters the most
 		for (let i = this._mergedCssKeyframes.length - 1; i >= 0; i--) {
 			const rule = this._mergedCssKeyframes[i];
