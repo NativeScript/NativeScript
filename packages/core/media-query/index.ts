@@ -1,7 +1,7 @@
-import { compileQuery, matches, Environment } from 'media-query-fns';
 import { EventData, Observable } from '../data/observable';
 import { Screen } from '../platform';
 import { Application, ApplicationEventData } from '../application';
+import { matchQuery, MediaQueryType } from '../css-mediaquery';
 
 const mediaQueryLists: MediaQueryListImpl[] = [];
 const applicationEvents: string[] = [Application.orientationChangedEvent, Application.systemAppearanceChangedEvent];
@@ -36,14 +36,15 @@ function onDeviceChange(args: ApplicationEventData) {
 }
 
 function validateMediaQuery(mediaQueryString: string): boolean {
-	const complexQuery = compileQuery(mediaQueryString);
-	return matches(complexQuery, {
-		widthPx: Screen.mainScreen.widthPixels,
-		heightPx: Screen.mainScreen.heightPixels,
-		deviceWidthPx: Screen.mainScreen.widthPixels,
-		deviceHeightPx: Screen.mainScreen.heightPixels,
-		prefersColorScheme: Application.systemAppearance(),
-	} as any);
+	return matchQuery(mediaQueryString, {
+		type: MediaQueryType.screen,
+		width: Screen.mainScreen.widthPixels,
+		height: Screen.mainScreen.heightPixels,
+		'device-width': Screen.mainScreen.widthPixels,
+		'device-height': Screen.mainScreen.heightPixels,
+		orientation: Application.orientation(),
+		'prefers-color-scheme': Application.systemAppearance(),
+	});
 }
 
 function matchMedia(mediaQueryString: string): MediaQueryListImpl {
