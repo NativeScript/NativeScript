@@ -481,13 +481,15 @@ const loadCss = profile(`"style-scope".loadCss`, (cssModule: string): void => {
 	const { selectors, keyframes } = CSSSource.fromURI(cssModule);
 	let updated = false;
 
-	if (selectors.length > 0) {
+	// Check for existing application css selectors too in case the app is undergoing a live-sync
+	if (selectors.length > 0 || applicationCssSelectors.length > 0) {
 		applicationCssSelectors = selectors;
 		mergeCssSelectors();
 		updated = true;
 	}
 
-	if (keyframes.length > 0) {
+	// Check for existing application css keyframes too in case the app is undergoing a live-sync
+	if (keyframes.length > 0 || applicationCssKeyframes.length > 0) {
 		applicationCssKeyframes = keyframes;
 		mergeCssKeyframes();
 		updated = true;
