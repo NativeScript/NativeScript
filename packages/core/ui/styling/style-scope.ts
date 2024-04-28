@@ -3,7 +3,7 @@ import { View } from '../core/view';
 import { unsetValue, _evaluateCssVariableExpression, _evaluateCssCalcExpression, isCssVariable, isCssVariableExpression, isCssCalcExpression } from '../core/properties';
 import * as ReworkCSS from '../../css';
 
-import { RuleSet, StyleSheetSelectorScope, SelectorCore, SelectorsMatch, ChangeMap, fromAstNode, Node, MEDIA_QUERY_SEPARATOR } from './css-selector';
+import { RuleSet, StyleSheetSelectorScope, SelectorCore, SelectorsMatch, ChangeMap, fromAstNode, Node, MEDIA_QUERY_SEPARATOR, matchMediaQueryString } from './css-selector';
 import { Trace } from '../../trace';
 import { File, knownFolders, path } from '../../file-system';
 import { Application, CssChangedEventData, LoadAppCSSEventData } from '../../application';
@@ -45,6 +45,25 @@ try {
 	//
 }
 
+type KeyframesMap = Map<string, kam.Keyframes[]>;
+
+let mergedApplicationCssSelectors: RuleSet[] = [];
+let applicationCssSelectors: RuleSet[] = [];
+const applicationAdditionalSelectors: RuleSet[] = [];
+
+let mergedApplicationCssKeyframes: kam.Keyframes[] = [];
+let applicationCssKeyframes: kam.Keyframes[] = [];
+const applicationAdditionalKeyframes: kam.Keyframes[] = [];
+
+let applicationCssSelectorVersion = 0;
+
+const tagToScopeTag: Map<string | number, string> = new Map();
+let currentScopeTag: string = null;
+
+const animationsSymbol = Symbol('animations');
+const kebabCasePattern = /-([a-z])/g;
+const pattern = /('|")(.*?)\1/;
+
 /**
  * Evaluate css-variable and css-calc expressions
  */
@@ -76,23 +95,6 @@ export function mergeCssKeyframes(): void {
 	mergedApplicationCssKeyframes = applicationCssKeyframes.slice();
 	mergedApplicationCssKeyframes.push(...applicationAdditionalKeyframes);
 }
-
-let mergedApplicationCssSelectors: RuleSet[] = [];
-let applicationCssSelectors: RuleSet[] = [];
-const applicationAdditionalSelectors: RuleSet[] = [];
-
-let mergedApplicationCssKeyframes: kam.Keyframes[] = [];
-let applicationCssKeyframes: kam.Keyframes[] = [];
-const applicationAdditionalKeyframes: kam.Keyframes[] = [];
-
-let applicationCssSelectorVersion = 0;
-
-const tagToScopeTag: Map<string | number, string> = new Map();
-let currentScopeTag: string = null;
-
-const animationsSymbol = Symbol('animations');
-const kebabCasePattern = /-([a-z])/g;
-const pattern = /('|")(.*?)\1/;
 
 class CSSSource {
 	private _selectors: RuleSet[] = [];
@@ -1042,6 +1044,9 @@ export class StyleScope {
 			return null;
 		}
 
+		// Cache media query results to avoid validations of other identical queries
+		let validatedMediaQueries: string[];
+
 		// Iterate in reverse order as the last usable keyframe rule matters the most
 		for (let i = this._mergedCssKeyframes.length - 1; i >= 0; i--) {
 			const rule = this._mergedCssKeyframes[i];
@@ -1053,9 +1058,12 @@ export class StyleScope {
 				return rule;
 			}
 
-			const mediaQueryStrings = rule.mediaQueryString.split(MEDIA_QUERY_SEPARATOR);
-			const success = mediaQueryStrings.every((mq) => validateMediaQuery(mq));
-			if (success) {
+			if (!validatedMediaQueries) {
+				validatedMediaQueries = [];
+			}
+
+			const isMatchingAllQueries = matchMediaQueryString(rule.mediaQueryString, validatedMediaQueries);
+			if (isMatchingAllQueries) {
 				return rule;
 			}
 		}
@@ -1063,8 +1071,6 @@ export class StyleScope {
 		return null;
 	}
 }
-
-type KeyframesMap = Map<string, kam.Keyframes[]>;
 
 export function resolveFileNameFromUrl(url: string, appDirectory: string, fileExists: (name: string) => boolean, importSource?: string): string {
 	let fileName: string = typeof url === 'string' ? url.trim() : '';

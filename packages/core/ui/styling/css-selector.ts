@@ -951,6 +951,26 @@ function isDeclaration(node: ReworkCSS.Node): node is ReworkCSS.Declaration {
 	return node.type === 'declaration';
 }
 
+export function matchMediaQueryString(mediaQueryString: string, cachedQueries: string[]): boolean {
+	// It can be a single or multiple queries in case of nested media queries
+	const mediaQueryStrings = mediaQueryString.split(MEDIA_QUERY_SEPARATOR);
+
+	return mediaQueryStrings.every((mq) => {
+		let isMatching: boolean;
+
+		// Query has already been validated
+		if (cachedQueries.includes(mq)) {
+			isMatching = true;
+		} else {
+			isMatching = validateMediaQuery(mq);
+			if (isMatching) {
+				cachedQueries.push(mq);
+			}
+		}
+		return isMatching;
+	});
+}
+
 interface SelectorMap {
 	[key: string]: SelectorCore[];
 }
@@ -1032,14 +1052,14 @@ export class StyleSheetSelectorScope<T extends Node> extends SelectorScope<T> {
 		super(rulesets, 0);
 	}
 
-	private addMediaSelectorsMap(mediaQueryString: string, rulesets: RuleSet[]) {
-		const selectorsMap = new MediaQuerySelectorScope(rulesets, this.position, mediaQueryString);
-		this.position = selectorsMap.position;
+	private addMediaSelectorScope(mediaQueryString: string, rulesets: RuleSet[]) {
+		const selectorScope = new MediaQuerySelectorScope(rulesets, this.position, mediaQueryString);
+		this.position = selectorScope.position;
 
 		if (!this.mediaQuerySelectorGroups) {
 			this.mediaQuerySelectorGroups = [];
 		}
-		this.mediaQuerySelectorGroups.push(selectorsMap);
+		this.mediaQuerySelectorGroups.push(selectorScope);
 	}
 
 	protected lookupRulesets(rulesets: RuleSet[]) {
@@ -1047,17 +1067,17 @@ export class StyleSheetSelectorScope<T extends Node> extends SelectorScope<T> {
 		let pendingMediaRulesets: RuleSet[];
 
 		rulesets.forEach((ruleset) => {
-			// Check if there are no more rulesets for the same media query and create the selectors map
+			// Check if there are no more rulesets for the same media query and create the selector scope
 			if (currentMediaString && currentMediaString !== ruleset.mediaQueryString) {
 				// Initialization becomes inside iteration to maintain the correct selectors starting position and increment it appropriately
-				this.addMediaSelectorsMap(currentMediaString, pendingMediaRulesets);
+				this.addMediaSelectorScope(currentMediaString, pendingMediaRulesets);
 
 				currentMediaString = null;
 				pendingMediaRulesets = null;
 			}
 
 			if (ruleset.mediaQueryString) {
-				// Store rulesets as they're needed for next selectors map instance
+				// Store rulesets as they're needed for next selector scope instance
 				if (!currentMediaString) {
 					currentMediaString = ruleset.mediaQueryString;
 					pendingMediaRulesets = [ruleset];
@@ -1071,9 +1091,9 @@ export class StyleSheetSelectorScope<T extends Node> extends SelectorScope<T> {
 			}
 		});
 
-		// There are still pending rulesets so it's time to create the final selectors map
+		// There are still pending rulesets so it's time to create the final selector scope
 		if (currentMediaString) {
-			this.addMediaSelectorsMap(currentMediaString, pendingMediaRulesets);
+			this.addMediaSelectorScope(currentMediaString, pendingMediaRulesets);
 
 			currentMediaString = null;
 			pendingMediaRulesets = null;
@@ -1086,12 +1106,13 @@ export class StyleSheetSelectorScope<T extends Node> extends SelectorScope<T> {
 
 		// Validate media queries and include their selectors if needed
 		if (this.mediaQuerySelectorGroups) {
-			for (const selectorsMap of this.mediaQuerySelectorGroups) {
-				const mediaQueryStrings = selectorsMap.mediaQueryString.split(MEDIA_QUERY_SEPARATOR);
-				const success = mediaQueryStrings.every((mq) => validateMediaQuery(mq));
+			// Cache media query results to avoid validations of other identical queries
+			const validatedMediaQueries: string[] = [];
 
-				if (success) {
-					const mediaQuerySelectors = selectorsMap.getSelectorCandidates(node);
+			for (const selectorScope of this.mediaQuerySelectorGroups) {
+				const isMatchingAllQueries = matchMediaQueryString(selectorScope.mediaQueryString, validatedMediaQueries);
+				if (isMatchingAllQueries) {
+					const mediaQuerySelectors = selectorScope.getSelectorCandidates(node);
 					selectors.push(...mediaQuerySelectors);
 				}
 			}
