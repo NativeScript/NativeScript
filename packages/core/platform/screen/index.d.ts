@@ -1,7 +1,7 @@
 /**
  * An object containing screen information.
  */
-export class ScreenMetrics {
+export interface ScreenMetrics {
 	/**
 	 * Gets the absolute width of the screen in pixels.
 	 */
@@ -27,7 +27,7 @@ export class ScreenMetrics {
 	 */
 	scale: number;
 
-	public _updateMetrics(): void;
+	_updateMetrics(): void;
 }
 
 /**
