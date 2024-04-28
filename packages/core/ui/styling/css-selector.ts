@@ -961,8 +961,6 @@ export class SelectorScope<T extends Node> implements LookupSorter {
 	private type: SelectorMap = {};
 	private universal: SelectorCore[] = [];
 
-	protected mediaQuerySelectorsMaps: Map<string, SelectorScope<T>>;
-
 	public position: number;
 
 	constructor(rulesets: RuleSet[], position: number) {
@@ -1013,19 +1011,35 @@ export class SelectorScope<T extends Node> implements LookupSorter {
 	}
 }
 
+export class MediaQuerySelectorScope<T extends Node> extends SelectorScope<T> {
+	private _mediaQueryString: string;
+
+	constructor(rulesets: RuleSet[], position: number, mediaQueryString: string) {
+		super(rulesets, position);
+
+		this._mediaQueryString = mediaQueryString;
+	}
+
+	get mediaQueryString(): string {
+		return this._mediaQueryString;
+	}
+}
+
 export class StyleSheetSelectorScope<T extends Node> extends SelectorScope<T> {
+	private mediaQuerySelectorGroups: MediaQuerySelectorScope<T>[];
+
 	constructor(rulesets: RuleSet[]) {
 		super(rulesets, 0);
 	}
 
 	private addMediaSelectorsMap(mediaQueryString: string, rulesets: RuleSet[]) {
-		const selectorsMap = new SelectorScope(rulesets, this.position);
+		const selectorsMap = new MediaQuerySelectorScope(rulesets, this.position, mediaQueryString);
 		this.position = selectorsMap.position;
 
-		if (!this.mediaQuerySelectorsMaps) {
-			this.mediaQuerySelectorsMaps = new Map<string, SelectorScope<T>>();
+		if (!this.mediaQuerySelectorGroups) {
+			this.mediaQuerySelectorGroups = [];
 		}
-		this.mediaQuerySelectorsMaps.set(mediaQueryString, selectorsMap);
+		this.mediaQuerySelectorGroups.push(selectorsMap);
 	}
 
 	protected lookupRulesets(rulesets: RuleSet[]) {
@@ -1071,9 +1085,9 @@ export class StyleSheetSelectorScope<T extends Node> extends SelectorScope<T> {
 		const selectors = this.getSelectorCandidates(node);
 
 		// Validate media queries and include their selectors if needed
-		if (this.mediaQuerySelectorsMaps) {
-			for (const [mediaQueryString, selectorsMap] of this.mediaQuerySelectorsMaps) {
-				const mediaQueryStrings = mediaQueryString.split(MEDIA_QUERY_SEPARATOR);
+		if (this.mediaQuerySelectorGroups) {
+			for (const selectorsMap of this.mediaQuerySelectorGroups) {
+				const mediaQueryStrings = selectorsMap.mediaQueryString.split(MEDIA_QUERY_SEPARATOR);
 				const success = mediaQueryStrings.every((mq) => validateMediaQuery(mq));
 
 				if (success) {
@@ -1141,6 +1155,7 @@ export const CSSHelper = {
 	Selector,
 	RuleSet,
 	SelectorScope,
+	MediaQuerySelectorScope,
 	StyleSheetSelectorScope,
 	fromAstNode,
 	SelectorsMatch,
