@@ -4,6 +4,7 @@ import fs from 'fs';
 import base from '../../src/configuration/base';
 import { init } from '../../src';
 import { applyFileReplacements } from '../../src/helpers/fileReplacements';
+import * as dependenciesHelpers from '../../src/helpers/dependencies';
 import { additionalCopyRules } from '../../src/helpers/copyRules';
 
 describe('base configuration', () => {
@@ -57,7 +58,7 @@ describe('base configuration', () => {
 					'__jest__/tsconfig.app.json', // ts-loader
 					'__jest__/tsconfig.app.json', // fork-ts-checker
 				]);
-			}
+			},
 		);
 	});
 
@@ -96,7 +97,7 @@ describe('base configuration', () => {
 					'__jest__/tsconfig.json', // ts-loader
 					'__jest__/tsconfig.json', // fork-ts-checker
 				]);
-			}
+			},
 		);
 	});
 
@@ -125,7 +126,7 @@ describe('base configuration', () => {
 					expect(args[0].path).toEqual('__jest__/.env');
 					return args;
 				});
-			}
+			},
 		);
 
 		fsSpy.mockRestore();
@@ -150,7 +151,7 @@ describe('base configuration', () => {
 					expect(args[0].path).toEqual('__jest__/.env.prod');
 					return args;
 				});
-			}
+			},
 		);
 		fsSpy.mockRestore();
 	});
@@ -175,7 +176,7 @@ describe('base configuration', () => {
 					expect(args[0].path).toEqual('__jest__/.env');
 					return args;
 				});
-			}
+			},
 		);
 		fsSpy.mockRestore();
 	});
@@ -220,5 +221,31 @@ describe('base configuration', () => {
 
 		expect(config.output.get('sourceMapFilename')).toMatchSnapshot();
 		expect(config.get('devtool')).toBe('hidden-source-map');
+	});
+
+	it('includes inspector_modules on android when @nativescript/core version is >= 8.7.0', () => {
+		const getDependencyVersionSpy = jest.spyOn(
+			dependenciesHelpers,
+			'getDependencyVersion',
+		);
+		getDependencyVersionSpy.withImplementation(
+			(name) => {
+				if (name === '@nativescript/core') {
+					return '8.7.0';
+				}
+				return null;
+			},
+			() => {
+				init({
+					android: true,
+				});
+
+				const config = base(new Config());
+				const entry = config.entryPoints.get('tns_modules/inspector_modules');
+
+				expect(entry).toBeDefined();
+				expect(entry.values().length).toBe(1);
+			},
+		);
 	});
 });

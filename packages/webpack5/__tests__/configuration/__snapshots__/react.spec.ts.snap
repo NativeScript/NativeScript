@@ -352,9 +352,6 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
       '__jest__/src/app.js',
       '@nativescript/core/ui/frame',
       '@nativescript/core/ui/frame/activity'
-    ],
-    'tns_modules/inspector_modules': [
-      '@nativescript/core/inspector_modules'
     ]
   }
 }"
@@ -683,9 +680,6 @@ exports[`react configuration > android > base config 1`] = `
       '__jest__/src/app.js',
       '@nativescript/core/ui/frame',
       '@nativescript/core/ui/frame/activity'
-    ],
-    'tns_modules/inspector_modules': [
-      '@nativescript/core/inspector_modules'
     ]
   }
 }"

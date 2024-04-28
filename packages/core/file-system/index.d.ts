@@ -228,7 +228,7 @@ export class Folder extends FileSystemEntity {
 	 * Gets or creates a Folder entity at the specified path.
 	 * @param path The path to get/create the folder at.
 	 */
-	static fromPath(path: string, create: boolean): Folder;
+	static fromPath(path: string, create?: boolean): Folder;
 
 	/**
 	 * Checks whether a Folder with the specified path already exists.

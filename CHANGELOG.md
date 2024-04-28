@@ -1,3 +1,23 @@
+## [8.7.2](https://github.com/NativeScript/NativeScript/compare/5.0.21-webpack...8.7.2) (2024-04-23)
+
+
+### Bug Fixes
+
+* **android:** ListView tap handling after setting children as focusable ([#10522](https://github.com/NativeScript/NativeScript/issues/10522)) ([03268cc](https://github.com/NativeScript/NativeScript/commit/03268cc60bbd0f0fc52711dd5187dd86044f0ba0))
+
+
+
+## [8.7.1](https://github.com/NativeScript/NativeScript/compare/8.7.0-core...8.7.1) (2024-04-15)
+
+
+### Bug Fixes
+
+* **android:** image tintColor setter ([#10516](https://github.com/NativeScript/NativeScript/issues/10516)) ([7e1cb19](https://github.com/NativeScript/NativeScript/commit/7e1cb190843216978bb37cf2f1d59f1abc8df0a3))
+* **webview:** regression fix for [#10482](https://github.com/NativeScript/NativeScript/issues/10482) ([#10518](https://github.com/NativeScript/NativeScript/issues/10518)) ([92b2ff8](https://github.com/NativeScript/NativeScript/commit/92b2ff83a038ece4ab4411cf983ee9e252bba141))
+* **webpack:** set exitCode if the configuration failed ([#10327](https://github.com/NativeScript/NativeScript/issues/10327)) ([adb4e9d](https://github.com/NativeScript/NativeScript/commit/adb4e9d419d4f51f9a45fe5fbca06349a6881de8)), closes [#10314](https://github.com/NativeScript/NativeScript/issues/10314)
+
+
+
 # [8.7.0](https://github.com/NativeScript/NativeScript/compare/8.6.2-core...8.7.0-core) (2024-04-08)
 
 

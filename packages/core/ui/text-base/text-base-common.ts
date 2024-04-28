@@ -209,10 +209,6 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 	_setNativeText(reset = false): void {
 		//
 	}
-
-	_getNativeTextTransform(value: CoreTypes.TextTransformType): any {
-		//
-	}
 }
 
 export function isBold(fontWeight: FontWeightType): boolean {

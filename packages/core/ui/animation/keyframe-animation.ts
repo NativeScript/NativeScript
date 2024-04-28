@@ -131,7 +131,6 @@ export class KeyframeAnimation {
 	public cancel() {
 		if (!this.isPlaying) {
 			Trace.write('Keyframe animation is already playing.', Trace.categories.Animation, Trace.messageType.warn);
-
 			return;
 		}
 
@@ -220,7 +219,7 @@ export class KeyframeAnimation {
 				this._resolveAnimationFinishedPromise();
 			}
 		} else {
-			let animation;
+			let animation: Animation;
 			const cachedAnimation = this._nativeAnimations[index - 1];
 
 			if (cachedAnimation) {
@@ -236,16 +235,13 @@ export class KeyframeAnimation {
 			// Catch the animation cancel to prevent unhandled promise rejection warnings
 			animation
 				.play(isLastIteration)
-				.then(
-					() => {
-						this.animate(view, index + 1, iterations);
-					},
-					(error: any) => {
+				.then(() => {
+					this.animate(view, index + 1, iterations);
+				})
+				.catch((error: any) => {
+					if (Trace.isEnabled()) {
 						Trace.write(typeof error === 'string' ? error : error.message, Trace.categories.Animation, Trace.messageType.warn);
 					}
-				)
-				.catch((error: any) => {
-					Trace.write(typeof error === 'string' ? error : error.message, Trace.categories.Animation, Trace.messageType.warn);
 				});
 		}
 	}

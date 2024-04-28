@@ -617,11 +617,13 @@ export class File extends FileSystemEntity {
 
 export class Folder extends FileSystemEntity {
 	public static fromPath(path: string, create = true): Folder {
-		const onError = function (error) {
-			throw error;
-		};
-
-		const folderInfo = getFileAccess().getFolder(path, onError, create);
+		const folderInfo = getFileAccess().getFolder(
+			path,
+			(error) => {
+				throw error;
+			},
+			create,
+		);
 		if (!folderInfo) {
 			return undefined;
 		}
@@ -635,6 +637,9 @@ export class Folder extends FileSystemEntity {
 
 	public contains(name: string): boolean {
 		const fileAccess = getFileAccess();
+		if (fileAccess.contains) {
+			return fileAccess.contains(this.path, name);
+		}
 		const path = fileAccess.joinPath(this.path, name);
 
 		if (fileAccess.fileExists(path)) {
@@ -669,13 +674,19 @@ export class Folder extends FileSystemEntity {
 
 	public getFile(name: string, create = true): File {
 		const fileAccess = getFileAccess();
+		if (fileAccess.getOrCreateFile) {
+			const fileInfo = fileAccess.getOrCreateFile(this.path, name, create);
+			return fileInfo ? createFile(fileInfo) : undefined;
+		}
 		const path = fileAccess.joinPath(this.path, name);
 
-		const onError = function (error) {
-			throw error;
-		};
-
-		const fileInfo = fileAccess.getFile(path, onError, create);
+		const fileInfo = fileAccess.getFile(
+			path,
+			(error) => {
+				throw error;
+			},
+			create,
+		);
 		if (!fileInfo) {
 			return undefined;
 		}
@@ -685,13 +696,19 @@ export class Folder extends FileSystemEntity {
 
 	public getFolder(name: string, create = true): Folder {
 		const fileAccess = getFileAccess();
+		if (fileAccess.getOrCreateFolder) {
+			const folderInfo = fileAccess.getOrCreateFolder(this.path, name, create);
+			return folderInfo ? createFolder(folderInfo) : undefined;
+		}
 		const path = fileAccess.joinPath(this.path, name);
 
-		const onError = function (error) {
-			throw error;
-		};
-
-		const folderInfo = fileAccess.getFolder(path, onError, create);
+		const folderInfo = fileAccess.getFolder(
+			path,
+			(error) => {
+				throw error;
+			},
+			create,
+		);
 		if (!folderInfo) {
 			return undefined;
 		}

@@ -129,7 +129,11 @@ function initializeDialogFragment() {
 
 	@NativeClass
 	class DialogImpl extends android.app.Dialog {
-		constructor(public fragment: DialogFragmentImpl, context: android.content.Context, themeResId: number) {
+		constructor(
+			public fragment: DialogFragmentImpl,
+			context: android.content.Context,
+			themeResId: number,
+		) {
 			super(context, themeResId);
 
 			return global.__native(this);
@@ -182,8 +186,8 @@ function initializeDialogFragment() {
 		}
 		public onCreate(savedInstanceState: android.os.Bundle) {
 			super.onCreate(savedInstanceState);
-			var ownerId = this.getArguments()?.getInt(DOMID);
-			var options = getModalOptions(ownerId);
+			const ownerId = this.getArguments()?.getInt(DOMID);
+			const options = getModalOptions(ownerId);
 			// The teardown when the activity is destroyed happens after the state is saved, but is not recoverable,
 			// Cancel the native dialog in this case or the app will crash with subsequent errors.
 			if (savedInstanceState != null && options === undefined) {
@@ -332,7 +336,6 @@ export class View extends ViewCommon {
 
 	public _dialogFragment: androidx.fragment.app.DialogFragment;
 	public _manager: androidx.fragment.app.FragmentManager;
-	private _isClickable: boolean;
 	private touchListenerIsSet: boolean;
 	private touchListener: android.view.View.OnTouchListener;
 	private layoutChangeListenerIsSet: boolean;
@@ -472,7 +475,7 @@ export class View extends ViewCommon {
 
 	public initNativeView(): void {
 		super.initNativeView();
-		this._isClickable = this.nativeViewProtected.isClickable();
+
 		if (this.needsOnLayoutChangeListener()) {
 			this.setOnLayoutChangeListener();
 		}
@@ -841,7 +844,10 @@ export class View extends ViewCommon {
 	}
 
 	[accessibilityEnabledProperty.setNative](value: boolean): void {
-		this.nativeViewProtected.setFocusable(!!value);
+		// we should only call set focusable if user interaction is enabled and if not a layout
+		if (!this['addChild']) {
+			this.nativeViewProtected.setFocusable(!!value && this.isUserInteractionEnabled);
+		}
 		if (value) {
 			updateAccessibilityProperties(this);
 		}
@@ -1088,7 +1094,7 @@ export class View extends ViewCommon {
 		const nativeView = this.nativeViewProtected;
 		const canUseOutlineProvider = !background.hasBorderWidth() && !background.hasBoxShadow() && !background.clipPath && !background.image && SDK_VERSION >= 21 && (SDK_VERSION >= 33 || background.hasUniformBorderRadius());
 		if (!isBorderDrawable && (onlyColor || canUseOutlineProvider)) {
-			if (!!background.color) {
+			if (background.color) {
 				if (backgroundDrawable && backgroundDrawable.setColor) {
 					// android.graphics.drawable.ColorDrawable
 					backgroundDrawable.setColor(background.color.android);
@@ -1225,15 +1231,6 @@ export class View extends ViewCommon {
 
 export class ContainerView extends View {
 	public iosOverflowSafeArea: boolean;
-
-	constructor() {
-		super();
-		/**
-		 * mark accessible as false without triggering proerty change
-		 * equivalent to changing the default
-		 */
-		this.style[accessibilityEnabledProperty.key] = false;
-	}
 }
 
 export class CustomLayoutView extends ContainerView implements CustomLayoutViewDefinition {
