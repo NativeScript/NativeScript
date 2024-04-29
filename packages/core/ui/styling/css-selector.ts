@@ -6,7 +6,7 @@ import { isNullOrUndefined } from '../../utils/types';
 
 import * as ReworkCSS from '../../css';
 import { CSSUtils } from '../../css/system-classes';
-import { validateMediaQuery } from '../../media-query';
+import { validateMediaQuery } from '../../media-query-list';
 
 export const MEDIA_QUERY_SEPARATOR = '&&';
 
@@ -1054,6 +1054,8 @@ export class StyleSheetSelectorScope<T extends Node> extends SelectorScope<T> {
 
 	private addMediaSelectorScope(mediaQueryString: string, rulesets: RuleSet[]) {
 		const selectorScope = new MediaQuerySelectorScope(rulesets, this.position, mediaQueryString);
+
+		// Update the position of current scope based on where the media query scope left off
 		this.position = selectorScope.position;
 
 		if (!this.mediaQuerySelectorGroups) {

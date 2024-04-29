@@ -22,7 +22,6 @@ import { sanitizeModuleName } from '../../utils/common';
 import { resolveModuleName } from '../../module-name-resolver';
 import { cleanupImportantFlags } from './css-utils';
 import { Observable, PropertyChangeData } from '../../data/observable';
-import { validateMediaQuery } from '../../media-query';
 
 let cssAnimationParserModule: typeof capm;
 function ensureCssAnimationParserModule() {

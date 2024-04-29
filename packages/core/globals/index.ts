@@ -307,8 +307,8 @@ export function initGlobal() {
 		global.registerModule('animation', () => require('../animation-frame'));
 		installPolyfills('animation', ['requestAnimationFrame', 'cancelAnimationFrame']);
 
-		global.registerModule('media-query', () => require('../media-query'));
-		installPolyfills('media-query', ['matchMedia', 'MediaQueryList']);
+		global.registerModule('media-query-list', () => require('../media-query-list'));
+		installPolyfills('media-query-list', ['matchMedia', 'MediaQueryList']);
 
 		global.registerModule('ui-dialogs', () => require('../ui/dialogs'));
 		installPolyfills('ui-dialogs', ['alert', 'confirm', 'prompt', 'login', 'action']);
