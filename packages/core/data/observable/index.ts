@@ -103,19 +103,6 @@ export class Observable {
 	public static propertyChangeEvent = 'propertyChange';
 
 	/**
-	 * This is a simple constant to allow renderers to confirm, at runtime, what
-	 * the call signatures of Observable.addEventListener() and
-	 * Observable.prototype.addEventListener() are. This may help us one day
-	 * migrate to an EventTarget-conformant signature (i.e. dropping `thisArg`).
-	 *
-	 * Full context of what each version number means would require referring to
-	 * the source. It's intended that any time a change is made to the call
-	 * signature, we increment the number. Once we've completed the migration, we
-	 * can remove it altogether.
-	 */
-	public static readonly addEventListenerSchemaVersion = 1;
-
-	/**
 	 * Alternative to `instanceof ViewBase`.
 	 * @private
 	 */
