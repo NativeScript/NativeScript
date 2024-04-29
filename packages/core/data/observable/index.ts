@@ -219,6 +219,7 @@ export class Observable {
 			list.push({
 				callback,
 				thisArg,
+				once,
 			});
 		}
 	}
