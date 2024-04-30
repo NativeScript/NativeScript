@@ -1,5 +1,5 @@
 import { IFileSystemAccess, FileSystemAccess, FileSystemAccess29 } from './file-system-access';
-import { SDK_VERSION } from '../utils';
+import { FILE_PREFIX, SDK_VERSION } from '../utils';
 import { Application } from '../application';
 
 // The FileSystemAccess implementation, used through all the APIs.
@@ -327,7 +327,10 @@ export class File extends FileSystemEntity {
 		const onError = function (error) {
 			throw error;
 		};
-
+		if (__IOS__ && path.startsWith(FILE_PREFIX)) {
+			// if the path starts with file:// then fileAccess will see it as non existing even if it exists
+			path = path.substring(FILE_PREFIX.length);
+		}
 		if (__ANDROID__ && copy) {
 			if (path.startsWith('content:')) {
 				const fileInfo = getFileAccess().getFile(path, onError, create);
@@ -617,6 +620,10 @@ export class File extends FileSystemEntity {
 
 export class Folder extends FileSystemEntity {
 	public static fromPath(path: string, create = true): Folder {
+		if (__IOS__ && path.startsWith(FILE_PREFIX)) {
+			// if the path starts with file:// then fileAccess will see it as non existing even if it exists
+			path = path.substring(FILE_PREFIX.length);
+		}
 		const folderInfo = getFileAccess().getFolder(
 			path,
 			(error) => {
