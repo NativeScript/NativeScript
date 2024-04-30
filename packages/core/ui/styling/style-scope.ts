@@ -638,7 +638,7 @@ export class CssState {
 		const animations: kam.KeyframeAnimation[] = [];
 
 		matchingSelectors.forEach((selector) => {
-			const ruleAnimations: kam.KeyframeAnimationInfo[] = selector.ruleset[animationsSymbol];
+			const ruleAnimations: kam.KeyframeAnimationInfo[] = selector.ruleset?.[animationsSymbol];
 			if (ruleAnimations) {
 				ensureKeyframeAnimationModule();
 				for (const animationInfo of ruleAnimations) {

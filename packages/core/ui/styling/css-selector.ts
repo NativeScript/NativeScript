@@ -975,22 +975,13 @@ interface SelectorMap {
 	[key: string]: SelectorCore[];
 }
 
-export class SelectorScope<T extends Node> implements LookupSorter {
+export abstract class SelectorScope<T extends Node> implements LookupSorter {
 	private id: SelectorMap = {};
 	private class: SelectorMap = {};
 	private type: SelectorMap = {};
 	private universal: SelectorCore[] = [];
 
-	public position: number;
-
-	constructor(rulesets: RuleSet[], position: number) {
-		this.position = position;
-		this.lookupRulesets(rulesets);
-	}
-
-	protected lookupRulesets(rulesets: RuleSet[]) {
-		rulesets.forEach((ruleset) => ruleset.lookupSort(this));
-	}
+	public position: number = 0;
 
 	getSelectorCandidates(node: T) {
 		const { cssClasses, id, cssType } = node;
@@ -1034,8 +1025,8 @@ export class SelectorScope<T extends Node> implements LookupSorter {
 export class MediaQuerySelectorScope<T extends Node> extends SelectorScope<T> {
 	private _mediaQueryString: string;
 
-	constructor(rulesets: RuleSet[], position: number, mediaQueryString: string) {
-		super(rulesets, position);
+	constructor(mediaQueryString: string) {
+		super();
 
 		this._mediaQueryString = mediaQueryString;
 	}
@@ -1046,59 +1037,57 @@ export class MediaQuerySelectorScope<T extends Node> extends SelectorScope<T> {
 }
 
 export class StyleSheetSelectorScope<T extends Node> extends SelectorScope<T> {
-	private mediaQuerySelectorGroups: MediaQuerySelectorScope<T>[];
+	private mediaQuerySelectorScopes: MediaQuerySelectorScope<T>[];
 
 	constructor(rulesets: RuleSet[]) {
-		super(rulesets, 0);
+		super();
+
+		this.lookupRulesets(rulesets);
 	}
 
-	private addMediaSelectorScope(mediaQueryString: string, rulesets: RuleSet[]) {
-		const selectorScope = new MediaQuerySelectorScope(rulesets, this.position, mediaQueryString);
+	private createMediaQuerySelectorScope(mediaQueryString: string): MediaQuerySelectorScope<T> {
+		const selectorScope = new MediaQuerySelectorScope(mediaQueryString);
+		selectorScope.position = this.position;
 
-		// Update the position of current scope based on where the media query scope left off
-		this.position = selectorScope.position;
-
-		if (!this.mediaQuerySelectorGroups) {
-			this.mediaQuerySelectorGroups = [];
+		if (this.mediaQuerySelectorScopes) {
+			this.mediaQuerySelectorScopes.push(selectorScope);
+		} else {
+			this.mediaQuerySelectorScopes = [selectorScope];
 		}
-		this.mediaQuerySelectorGroups.push(selectorScope);
+
+		return selectorScope;
 	}
 
-	protected lookupRulesets(rulesets: RuleSet[]) {
-		let currentMediaString: string;
-		let pendingMediaRulesets: RuleSet[];
+	private lookupRulesets(rulesets: RuleSet[]) {
+		let lastMediaSelectorScope: MediaQuerySelectorScope<T>;
 
-		rulesets.forEach((ruleset) => {
-			// Check if there are no more rulesets for the same media query and create the selector scope
-			if (currentMediaString && currentMediaString !== ruleset.mediaQueryString) {
-				// Initialization becomes inside iteration to maintain the correct selectors starting position and increment it appropriately
-				this.addMediaSelectorScope(currentMediaString, pendingMediaRulesets);
-
-				currentMediaString = null;
-				pendingMediaRulesets = null;
-			}
+		for (let i = 0, length = rulesets.length; i < length; i++) {
+			const ruleset = rulesets[i];
 
 			if (ruleset.mediaQueryString) {
-				// Store rulesets as they're needed for next selector scope instance
-				if (!currentMediaString) {
-					currentMediaString = ruleset.mediaQueryString;
-					pendingMediaRulesets = [ruleset];
+				// Create media query selector scope and register selector lookups there
+				if (!lastMediaSelectorScope) {
+					lastMediaSelectorScope = this.createMediaQuerySelectorScope(ruleset.mediaQueryString);
 				} else {
-					if (ruleset.mediaQueryString === currentMediaString) {
-						pendingMediaRulesets.push(ruleset);
+					if (lastMediaSelectorScope.mediaQueryString !== ruleset.mediaQueryString) {
+						// Once done with current media query scope, update stylesheet scope position
+						this.position = lastMediaSelectorScope.position;
+						lastMediaSelectorScope = null;
 					}
 				}
+			}
+
+			if (lastMediaSelectorScope) {
+				ruleset.lookupSort(lastMediaSelectorScope);
 			} else {
 				ruleset.lookupSort(this);
 			}
-		});
+		}
 
-		// There are still pending rulesets so it's time to create the final selector scope
-		if (currentMediaString) {
-			this.addMediaSelectorScope(currentMediaString, pendingMediaRulesets);
-
-			currentMediaString = null;
-			pendingMediaRulesets = null;
+		// If reference of last media selector scope is still kept, update stylesheet scope position
+		if (lastMediaSelectorScope) {
+			this.position = lastMediaSelectorScope.position;
+			lastMediaSelectorScope = null;
 		}
 	}
 
@@ -1107,12 +1096,14 @@ export class StyleSheetSelectorScope<T extends Node> extends SelectorScope<T> {
 		const selectors = this.getSelectorCandidates(node);
 
 		// Validate media queries and include their selectors if needed
-		if (this.mediaQuerySelectorGroups) {
+		if (this.mediaQuerySelectorScopes) {
 			// Cache media query results to avoid validations of other identical queries
 			const validatedMediaQueries: string[] = [];
 
-			for (const selectorScope of this.mediaQuerySelectorGroups) {
+			for (let i = 0, length = this.mediaQuerySelectorScopes.length; i < length; i++) {
+				const selectorScope = this.mediaQuerySelectorScopes[i];
 				const isMatchingAllQueries = matchMediaQueryString(selectorScope.mediaQueryString, validatedMediaQueries);
+
 				if (isMatchingAllQueries) {
 					const mediaQuerySelectors = selectorScope.getSelectorCandidates(node);
 					selectors.push(...mediaQuerySelectors);
