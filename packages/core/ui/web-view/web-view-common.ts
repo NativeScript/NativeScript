@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unsafe-declaration-merging */
 import { LoadEventData, WebViewNavigationType } from './web-view-interfaces';
 import { ContainerView, CSSType } from '../core/view';
 import { Property } from '../core/properties';
 import { EventData } from '../../data/observable';
 import { knownFolders } from '../../file-system';
 import { booleanConverter } from '../core/view-base';
+import { FILE_PREFIX } from 'utils/common';
 
 export * from './web-view-interfaces';
 
@@ -84,11 +86,11 @@ export abstract class WebViewBase extends ContainerView {
 		}
 
 		// loading local files from paths with spaces may fail
-		if (src.toLowerCase().indexOf('file:///') === 0) {
+		if (src.toLowerCase().indexOf(FILE_PREFIX) === 0) {
 			src = encodeURI(src);
 		}
 
-		if (src.toLowerCase().indexOf('http://') === 0 || src.toLowerCase().indexOf('https://') === 0 || src.toLowerCase().indexOf('file:///') === 0) {
+		if (src.toLowerCase().indexOf('http://') === 0 || src.toLowerCase().indexOf('https://') === 0 || src.toLowerCase().indexOf(FILE_PREFIX) === 0) {
 			this._loadUrl(src);
 		} else {
 			this._loadData(src);

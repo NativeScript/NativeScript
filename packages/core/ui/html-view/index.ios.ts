@@ -3,11 +3,9 @@ import { Font } from '../styling/font';
 import { colorProperty, fontInternalProperty } from '../styling/style-properties';
 import { HtmlViewBase, htmlProperty, selectableProperty, linkColorProperty } from './html-view-common';
 import { View } from '../core/view';
-import { iOSNativeHelper, layout } from '../../utils';
+import { SDK_VERSION, layout } from '../../utils';
 
 export * from './html-view-common';
-
-const majorVersion = iOSNativeHelper.MajorVersion;
 
 export class HtmlView extends HtmlViewBase {
 	nativeViewProtected: UITextView;
@@ -77,7 +75,7 @@ export class HtmlView extends HtmlViewBase {
 		const nsData = htmlString.dataUsingEncoding(NSUnicodeStringEncoding);
 		this.nativeViewProtected.attributedText = NSAttributedString.alloc().initWithDataOptionsDocumentAttributesError(nsData, <any>{ [NSDocumentTypeDocumentAttribute]: NSHTMLTextDocumentType }, null);
 
-		if (majorVersion >= 13 && UIColor.labelColor) {
+		if (SDK_VERSION >= 13 && UIColor.labelColor) {
 			this.nativeViewProtected.textColor = UIColor.labelColor;
 		}
 	}

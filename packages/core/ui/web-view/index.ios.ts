@@ -5,6 +5,7 @@ import { Trace } from '../../trace';
 export * from './web-view-common';
 import { knownFolders } from '../../file-system';
 import { booleanConverter } from '../core/view-base';
+import { FILE_PREFIX } from 'utils';
 
 @NativeClass
 class WKNavigationDelegateImpl extends NSObject implements WKNavigationDelegate {
@@ -224,7 +225,7 @@ export class WebView extends WebViewBase {
 	}
 
 	public _loadUrl(src: string) {
-		if (src.startsWith('file:///')) {
+		if (src.startsWith(FILE_PREFIX)) {
 			const cachePath = src.substring(0, src.lastIndexOf('/'));
 			this.nativeViewProtected.loadFileURLAllowingReadAccessToURL(NSURL.URLWithString(src), NSURL.URLWithString(cachePath));
 		} else {
@@ -233,7 +234,7 @@ export class WebView extends WebViewBase {
 	}
 
 	public _loadData(content: string) {
-		this.nativeViewProtected.loadHTMLStringBaseURL(content, NSURL.alloc().initWithString(`file:///${knownFolders.currentApp().path}/`));
+		this.nativeViewProtected.loadHTMLStringBaseURL(content, NSURL.alloc().initWithString(`${FILE_PREFIX}${knownFolders.currentApp().path}/`));
 	}
 
 	get canGoBack(): boolean {

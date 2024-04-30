@@ -1,11 +1,9 @@
 import { SwitchBase, checkedProperty, offBackgroundColorProperty } from './switch-common';
 import { colorProperty, backgroundColorProperty, backgroundInternalProperty } from '../styling/style-properties';
 import { Color } from '../../color';
-import { iOSNativeHelper, layout } from '../../utils';
+import { SDK_VERSION, layout } from '../../utils';
 
 export * from './switch-common';
-
-const majorVersion = iOSNativeHelper.MajorVersion;
 
 @NativeClass
 class SwitchChangeHandlerImpl extends NSObject {
@@ -75,7 +73,7 @@ export class Switch extends SwitchBase {
 		// only add :checked pseudo handling on supported iOS versions
 		// ios <13 works but causes glitchy animations when toggling
 		// so we decided to keep the old behavior on older versions.
-		if (majorVersion >= 13) {
+		if (SDK_VERSION >= 13) {
 			super._onCheckedPropertyChanged(newValue);
 
 			if (this.offBackgroundColor) {
@@ -130,7 +128,7 @@ export class Switch extends SwitchBase {
 		return this.nativeViewProtected.onTintColor;
 	}
 	[backgroundColorProperty.setNative](value: UIColor | Color) {
-		if (majorVersion >= 13) {
+		if (SDK_VERSION >= 13) {
 			if (!this.offBackgroundColor || this.checked) {
 				this.setNativeBackgroundColor(value);
 			}
@@ -151,7 +149,7 @@ export class Switch extends SwitchBase {
 		return this.nativeViewProtected.backgroundColor;
 	}
 	[offBackgroundColorProperty.setNative](value: Color | UIColor) {
-		if (majorVersion >= 13) {
+		if (SDK_VERSION >= 13) {
 			if (!this.checked) {
 				this.setNativeBackgroundColor(value);
 			}

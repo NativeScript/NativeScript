@@ -1,5 +1,5 @@
 import { encoding as textEncoding } from '../text';
-import { iOSNativeHelper } from '../utils';
+import { ios as IOSUtils } from '../utils';
 
 // TODO: Implement all the APIs receiving callback using async blocks
 // TODO: Check whether we need try/catch blocks for the iOS implementation
@@ -257,7 +257,7 @@ export class FileSystemAccess {
 	}
 
 	public getCurrentAppPath(): string {
-		return iOSNativeHelper.getCurrentAppPath();
+		return IOSUtils.getCurrentAppPath();
 	}
 
 	public copy = this.copySync.bind(this);
@@ -702,7 +702,7 @@ export class FileSystemAccess {
 	}
 
 	public joinPaths(paths: string[]): string {
-		return iOSNativeHelper.joinPaths(...paths);
+		return IOSUtils.joinPaths(...paths);
 	}
 }
 

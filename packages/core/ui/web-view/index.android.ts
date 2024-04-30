@@ -2,6 +2,7 @@ import { disableZoomProperty, WebViewBase, WebViewClient } from './web-view-comm
 import { Trace } from '../../trace';
 import { knownFolders } from '../../file-system';
 import { openUrl } from '../../utils';
+import { FILE_PREFIX } from 'utils/common';
 
 export * from './web-view-common';
 
@@ -161,7 +162,7 @@ export class WebView extends WebViewBase {
 			return;
 		}
 
-		const baseUrl = `file:///${knownFolders.currentApp().path}/`;
+		const baseUrl = `${FILE_PREFIX}${knownFolders.currentApp().path}/`;
 		nativeView.loadDataWithBaseURL(baseUrl, src, 'text/html', 'utf-8', null);
 	}
 

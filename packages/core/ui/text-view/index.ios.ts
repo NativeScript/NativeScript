@@ -6,11 +6,7 @@ import { CoreTypes } from '../../core-types';
 import { CSSType } from '../core/view';
 import { Color } from '../../color';
 import { colorProperty, borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, Length } from '../styling/style-properties';
-import { iOSNativeHelper, layout } from '../../utils';
-
-import { profile } from '../../profiling';
-
-const majorVersion = iOSNativeHelper.MajorVersion;
+import { SDK_VERSION, layout } from '../../utils';
 
 @NativeClass
 class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
@@ -91,8 +87,8 @@ export class TextView extends TextViewBaseCommon {
 	_isShowingHint: boolean;
 	public _isEditing: boolean;
 
-	private _hintColor = majorVersion <= 12 || !UIColor.placeholderTextColor ? UIColor.blackColor.colorWithAlphaComponent(0.22) : UIColor.placeholderTextColor;
-	private _textColor = majorVersion <= 12 || !UIColor.labelColor ? null : UIColor.labelColor;
+	private _hintColor = SDK_VERSION <= 12 || !UIColor.placeholderTextColor ? UIColor.blackColor.colorWithAlphaComponent(0.22) : UIColor.placeholderTextColor;
+	private _textColor = SDK_VERSION <= 12 || !UIColor.labelColor ? null : UIColor.labelColor;
 
 	createNativeView() {
 		const textView = NoScrollAnimationUITextView.new();
