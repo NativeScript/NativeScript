@@ -453,12 +453,30 @@ export class IsFunctionalPseudoClassSelector extends FunctionalPseudoClassSelect
 	public match(node: Node): boolean {
 		return this.selectors.some((sel) => sel.match(node));
 	}
+
+	public lookupSort(sorter: LookupSorter, base?: SelectorCore): void {
+		// A faster lookup can be performed when selector list contains just a single selector
+		if (this.selectors.length === 1) {
+			this.selectors[0].lookupSort(sorter, base || this);
+		} else {
+			super.lookupSort(sorter, base || this);
+		}
+	}
 }
 
 @FunctionalPseudoClassProperties(Specificity.Zero, Rarity.PseudoClass, PseudoClassSelectorList.Forgiving)
 export class WhereFunctionalPseudoClassSelector extends FunctionalPseudoClassSelector {
 	public match(node: Node): boolean {
 		return this.selectors.some((sel) => sel.match(node));
+	}
+
+	public lookupSort(sorter: LookupSorter, base?: SelectorCore): void {
+		// A faster lookup can be performed when selector list contains just a single selector
+		if (this.selectors.length === 1) {
+			this.selectors[0].lookupSort(sorter, base || this);
+		} else {
+			super.lookupSort(sorter, base || this);
+		}
 	}
 }
 
@@ -571,7 +589,7 @@ export class ComplexSelector extends SelectorCore {
 	}
 
 	public lookupSort(sorter: LookupSorter, base?: SelectorCore): void {
-		this.last.lookupSort(sorter, this);
+		this.last.lookupSort(sorter, base || this);
 	}
 
 	public accumulateChanges(node: Node, map?: ChangeAccumulator): boolean {
