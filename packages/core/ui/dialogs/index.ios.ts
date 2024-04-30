@@ -2,7 +2,7 @@
  * iOS specific dialogs functions implementation.
  */
 import { Trace } from '../../trace';
-import { ConfirmOptions, PromptOptions, PromptResult, LoginOptions, LoginResult, ActionOptions, getCurrentPage, getLabelColor, getButtonColors, getTextFieldColor, isDialogOptions, inputType, capitalizationType, DialogStrings, parseLoginOptions } from './dialogs-common';
+import { ConfirmOptions, PromptOptions, PromptResult, LoginOptions, LoginResult, ActionOptions, getCurrentPage, getLabelColor, getButtonColors, getTextFieldColor, isDialogOptions, inputType, capitalizationType, DialogStrings, parseLoginOptions, CancelableOptions } from './dialogs-common';
 import { isString, isDefined, isFunction } from '../../utils/types';
 import { Application } from '../../application';
 
@@ -17,7 +17,7 @@ function addButtonsToAlertController(alertController: UIAlertController, options
 		alertController.addAction(
 			UIAlertAction.actionWithTitleStyleHandler(options.cancelButtonText, UIAlertActionStyle.Default, () => {
 				raiseCallback(callback, false);
-			})
+			}),
 		);
 	}
 
@@ -25,7 +25,7 @@ function addButtonsToAlertController(alertController: UIAlertController, options
 		alertController.addAction(
 			UIAlertAction.actionWithTitleStyleHandler(options.neutralButtonText, UIAlertActionStyle.Default, () => {
 				raiseCallback(callback, undefined);
-			})
+			}),
 		);
 	}
 
@@ -33,7 +33,7 @@ function addButtonsToAlertController(alertController: UIAlertController, options
 		alertController.addAction(
 			UIAlertAction.actionWithTitleStyleHandler(options.okButtonText, UIAlertActionStyle.Default, () => {
 				raiseCallback(callback, true);
-			})
+			}),
 		);
 	}
 }
@@ -44,43 +44,73 @@ function raiseCallback(callback, result) {
 	}
 }
 
-function showUIAlertController(alertController: UIAlertController) {
-	let viewController = Application.ios.rootController;
-
-	while (viewController && viewController.presentedViewController && !viewController.presentedViewController.beingDismissed) {
-		viewController = viewController.presentedViewController;
+function showUIAlertController(alertController: UIAlertController, options: CancelableOptions) {
+	let rootView = Application.getRootView();
+	if (rootView.parent) {
+		rootView = rootView.parent as any;
 	}
-
-	if (!viewController) {
-		Trace.write(`No root controller found to open dialog.`, Trace.categories.Error, Trace.messageType.warn);
-
-		return;
-	}
-
-	if (alertController.popoverPresentationController) {
-		alertController.popoverPresentationController.sourceView = viewController.view;
-		alertController.popoverPresentationController.sourceRect = CGRectMake(viewController.view.bounds.size.width / 2.0, viewController.view.bounds.size.height / 2.0, 1.0, 1.0);
-		alertController.popoverPresentationController.permittedArrowDirections = 0 as UIPopoverArrowDirection;
-	}
-
-	const color = getButtonColors().color;
-	if (color) {
-		alertController.view.tintColor = color.ios;
-	}
-
-	const lblColor = getLabelColor();
-	if (lblColor) {
-		if (alertController.title) {
-			const title = NSAttributedString.alloc().initWithStringAttributes(alertController.title, <any>{ [NSForegroundColorAttributeName]: lblColor.ios });
-			alertController.setValueForKey(title, 'attributedTitle');
+	let currentView = getCurrentPage() || rootView;
+	if (currentView) {
+		currentView = currentView.modal || currentView;
+		let viewController = currentView.viewController;
+		if (!viewController) {
+			Trace.write(`No root controller found to open dialog.`, Trace.categories.Error, Trace.messageType.warn);
+			return;
 		}
-		if (alertController.message) {
-			const message = NSAttributedString.alloc().initWithStringAttributes(alertController.message, <any>{ [NSForegroundColorAttributeName]: lblColor.ios });
-			alertController.setValueForKey(message, 'attributedMessage');
+		if (!viewController.presentedViewController && rootView.viewController.presentedViewController && !rootView.viewController.presentedViewController.beingDismissed) {
+			viewController = rootView.viewController.presentedViewController;
 		}
-	}
 
-	viewController.presentModalViewControllerAnimated(alertController, true);
+		while (viewController.presentedViewController && !viewController.presentedViewController.beingDismissed) {
+			while (viewController.presentedViewController instanceof UIAlertController || (viewController.presentedViewController['isAlertController'] && viewController.presentedViewController.presentedViewController)) {
+				viewController = viewController.presentedViewController;
+			}
+			if (viewController.presentedViewController instanceof UIAlertController || viewController.presentedViewController['isAlertController']) {
+				break;
+			} else {
+				viewController = viewController.presentedViewController;
+			}
+		}
+
+		const color = getButtonColors().color;
+		if (color) {
+			alertController.view.tintColor = color.ios;
+		}
+
+		const lblColor = getLabelColor();
+		if (lblColor) {
+			if (alertController.title) {
+				const title = NSAttributedString.alloc().initWithStringAttributes(alertController.title, <any>{ [NSForegroundColorAttributeName]: lblColor.ios });
+				alertController.setValueForKey(title, 'attributedTitle');
+			}
+			if (alertController.message) {
+				const message = NSAttributedString.alloc().initWithStringAttributes(alertController.message, <any>{ [NSForegroundColorAttributeName]: lblColor.ios });
+				alertController.setValueForKey(message, 'attributedMessage');
+			}
+		}
+		function block() {
+			if (alertController.popoverPresentationController) {
+				alertController.popoverPresentationController.sourceView = viewController.view;
+				alertController.popoverPresentationController.sourceRect = CGRectMake(viewController.view.bounds.size.width / 2.0, viewController.view.bounds.size.height / 2.0, 1.0, 1.0);
+				alertController.popoverPresentationController.permittedArrowDirections = 0 as UIPopoverArrowDirection;
+			}
+			viewController.presentViewControllerAnimatedCompletion(alertController, true, null);
+		}
+		if (viewController.presentedViewController) {
+			if (viewController.presentedViewController.beingDismissed || options.iosForceClosePresentedViewController === true) {
+				viewController.dismissViewControllerAnimatedCompletion(true, () => {
+					block();
+				});
+			} else {
+				throw new Error('controller_already_presented');
+			}
+		} else {
+			block();
+		}
+		viewController.presentModalViewControllerAnimated(alertController, true);
+	} else {
+		Trace.write(`No root view found to open dialog.`, Trace.categories.Error, Trace.messageType.warn);
+	}
 }
 
 export function alert(arg: any): Promise<void> {
@@ -91,7 +121,7 @@ export function alert(arg: any): Promise<void> {
 						title: DialogStrings.ALERT,
 						okButtonText: DialogStrings.OK,
 						message: arg + '',
-				  }
+					}
 				: arg;
 			const alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.Alert);
 
@@ -99,7 +129,7 @@ export function alert(arg: any): Promise<void> {
 				resolve();
 			});
 
-			showUIAlertController(alertController);
+			showUIAlertController(alertController, options);
 		} catch (ex) {
 			reject(ex);
 		}
@@ -115,7 +145,7 @@ export function confirm(arg: any): Promise<boolean> {
 						okButtonText: DialogStrings.OK,
 						cancelButtonText: DialogStrings.CANCEL,
 						message: arg + '',
-				  }
+					}
 				: arg;
 			const alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.Alert);
 
@@ -123,7 +153,7 @@ export function confirm(arg: any): Promise<boolean> {
 				resolve(r);
 			});
 
-			showUIAlertController(alertController);
+			showUIAlertController(alertController, options);
 		} catch (ex) {
 			reject(ex);
 		}
@@ -205,7 +235,7 @@ export function prompt(...args): Promise<PromptResult> {
 				resolve({ result: r, text: textField.text });
 			});
 
-			showUIAlertController(alertController);
+			showUIAlertController(alertController, options);
 		} catch (ex) {
 			reject(ex);
 		}
@@ -252,7 +282,7 @@ export function login(...args: any[]): Promise<LoginResult> {
 				});
 			});
 
-			showUIAlertController(alertController);
+			showUIAlertController(alertController, options);
 		} catch (ex) {
 			reject(ex);
 		}
@@ -301,7 +331,7 @@ export function action(...args): Promise<string> {
 						alertController.addAction(
 							UIAlertAction.actionWithTitleStyleHandler(action, dialogType, (arg: UIAlertAction) => {
 								resolve(arg.title);
-							})
+							}),
 						);
 					}
 				}
@@ -311,11 +341,11 @@ export function action(...args): Promise<string> {
 				alertController.addAction(
 					UIAlertAction.actionWithTitleStyleHandler(options.cancelButtonText, UIAlertActionStyle.Cancel, (arg: UIAlertAction) => {
 						resolve(arg.title);
-					})
+					}),
 				);
 			}
 
-			showUIAlertController(alertController);
+			showUIAlertController(alertController, options);
 		} catch (ex) {
 			reject(ex);
 		}
