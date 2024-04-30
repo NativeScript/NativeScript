@@ -279,7 +279,7 @@ export class Observable {
 				continue;
 			}
 
-			// If we have a `thisArg`, refine only on `callback`.
+			// If we don't have a `thisArg`, refine only on `callback`.
 			if (callback && entry.callback !== callback) {
 				continue;
 			}
