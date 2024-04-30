@@ -1064,20 +1064,18 @@ export class StyleSheetSelectorScope<T extends Node> extends SelectorScope<T> {
 		for (let i = 0, length = rulesets.length; i < length; i++) {
 			const ruleset = rulesets[i];
 
+			if (lastMediaSelectorScope && lastMediaSelectorScope.mediaQueryString !== ruleset.mediaQueryString) {
+				// Once done with current media query scope, update stylesheet scope position
+				this.position = lastMediaSelectorScope.position;
+				lastMediaSelectorScope = null;
+			}
+
 			if (ruleset.mediaQueryString) {
 				// Create media query selector scope and register selector lookups there
 				if (!lastMediaSelectorScope) {
 					lastMediaSelectorScope = this.createMediaQuerySelectorScope(ruleset.mediaQueryString);
-				} else {
-					if (lastMediaSelectorScope.mediaQueryString !== ruleset.mediaQueryString) {
-						// Once done with current media query scope, update stylesheet scope position
-						this.position = lastMediaSelectorScope.position;
-						lastMediaSelectorScope = null;
-					}
 				}
-			}
 
-			if (lastMediaSelectorScope) {
 				ruleset.lookupSort(lastMediaSelectorScope);
 			} else {
 				ruleset.lookupSort(this);
