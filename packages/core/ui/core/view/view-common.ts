@@ -33,8 +33,6 @@ import { SharedTransition, SharedTransitionInteractiveOptions } from '../../tran
 // helpers (these are okay re-exported here)
 export * from './view-helper';
 
-const eventNamesRegex = /\s*,\s*/;
-
 let animationModule: typeof am;
 function ensureAnimationModule() {
 	if (!animationModule) {
@@ -311,9 +309,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 			return;
 		}
 
-		for (const eventName of normalizedName.trim().split(eventNamesRegex)) {
-			super.addEventListener(eventName, callback, thisArg);
-		}
+		super.addEventListener(normalizedName, callback, thisArg);
 	}
 
 	public removeEventListener(arg: string | GestureTypes, callback?: (data: EventData) => void, thisArg?: any) {
@@ -335,9 +331,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 			return;
 		}
 
-		for (const eventName of normalizedName.trim().split(eventNamesRegex)) {
-			super.removeEventListener(eventName, callback, thisArg);
-		}
+		super.removeEventListener(normalizedName, callback, thisArg);
 	}
 
 	public onBackPressed(): boolean {
