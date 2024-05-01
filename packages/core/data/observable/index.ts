@@ -196,19 +196,29 @@ export class Observable {
 			throw new TypeError('Callback, if provided, must be a function.');
 		}
 
-		for (const eventName of eventNames.trim().split(eventNamesRegex)) {
-			const list = this._getEventList(eventName, true);
-			if (Observable._indexOfListener(list, callback, thisArg) !== -1) {
-				// Already added.
-				continue;
+		if (eventNames.trim().split(eventNamesRegex).join('') !== eventNames) {
+			if (__DEV__) {
+				console.error(`Legacy event ${eventNames}`);
 			}
-
-			list.push({
-				callback,
-				thisArg,
-				once,
-			});
+			for (const eventName of eventNames.trim().split(eventNamesRegex)) {
+				this.addEventListener(eventName, callback, thisArg);
+			}
+			return;
 		}
+
+		const eventName = eventNames;
+
+		const list = this._getEventList(eventName, true);
+		if (Observable._indexOfListener(list, callback, thisArg) !== -1) {
+			// Already added.
+			return;
+		}
+
+		list.push({
+			callback,
+			thisArg,
+			once,
+		});
 	}
 
 	/**
@@ -228,18 +238,28 @@ export class Observable {
 			throw new TypeError('callback must be function.');
 		}
 
-		for (const eventName of eventNames.trim().split(eventNamesRegex)) {
-			const entries = this._observers[eventName];
-			if (!entries) {
-				continue;
+		if (eventNames.trim().split(eventNamesRegex).join('') !== eventNames) {
+			if (__DEV__) {
+				console.error(`Legacy event ${eventNames}`);
 			}
-
-			Observable.innerRemoveEventListener(entries, callback, thisArg);
-
-			if (!entries.length) {
-				// Clear all entries of this type
-				delete this._observers[eventName];
+			for (const eventName of eventNames.trim().split(eventNamesRegex)) {
+				this.removeEventListener(eventName, callback, thisArg);
 			}
+			return;
+		}
+
+		const eventName = eventNames;
+
+		const entries = this._observers[eventName];
+		if (!entries) {
+			return;
+		}
+
+		Observable.innerRemoveEventListener(entries, callback, thisArg);
+
+		if (!entries.length) {
+			// Clear all entries of this type
+			delete this._observers[eventName];
 		}
 	}
 
@@ -291,7 +311,6 @@ export class Observable {
 			i--;
 		}
 	}
-
 	/**
 	 * Please avoid using the static event-handling APIs as they will be removed
 	 * in future.
@@ -310,24 +329,34 @@ export class Observable {
 
 		const eventClass = this.name === 'Observable' ? '*' : this.name;
 
-		for (const eventName of eventNames.trim().split(eventNamesRegex)) {
-			const entries = _globalEventHandlers?.[eventClass]?.[eventName];
-			if (!entries) {
-				continue;
+		if (eventNames.trim().split(eventNamesRegex).join('') !== eventNames) {
+			if (__DEV__) {
+				console.error(`Legacy event ${eventNames}`);
 			}
-
-			Observable.innerRemoveEventListener(entries, callback, thisArg);
-
-			if (!entries.length) {
-				// Clear all entries of this type
-				delete _globalEventHandlers[eventClass][eventName];
+			for (const eventName of eventNames.trim().split(eventNamesRegex)) {
+				this.removeEventListener(eventName, callback, thisArg);
 			}
+			return;
+		}
 
-			// Clear the primary class grouping if no list are left
-			const keys = Object.keys(_globalEventHandlers[eventClass]);
-			if (keys.length === 0) {
-				delete _globalEventHandlers[eventClass];
-			}
+		const eventName = eventNames;
+
+		const entries = _globalEventHandlers?.[eventClass]?.[eventName];
+		if (!entries) {
+			return;
+		}
+
+		Observable.innerRemoveEventListener(entries, callback, thisArg);
+
+		if (!entries.length) {
+			// Clear all entries of this type
+			delete _globalEventHandlers[eventClass][eventName];
+		}
+
+		// Clear the primary class grouping if no list are left
+		const keys = Object.keys(_globalEventHandlers[eventClass]);
+		if (keys.length === 0) {
+			delete _globalEventHandlers[eventClass];
 		}
 	}
 
@@ -353,17 +382,27 @@ export class Observable {
 			_globalEventHandlers[eventClass] = {};
 		}
 
-		for (const eventName of eventNames.trim().split(eventNamesRegex)) {
-			if (!_globalEventHandlers[eventClass][eventName]) {
-				_globalEventHandlers[eventClass][eventName] = [];
+		if (eventNames.trim().split(eventNamesRegex).join('') !== eventNames) {
+			if (__DEV__) {
+				console.error(`Legacy event ${eventNames}`);
 			}
-			if (Observable._indexOfListener(_globalEventHandlers[eventClass][eventName], callback, thisArg) !== -1) {
-				// Already added.
-				return;
+			for (const eventName of eventNames.trim().split(eventNamesRegex)) {
+				this.addEventListener(eventName, callback, thisArg);
 			}
-
-			_globalEventHandlers[eventClass][eventName].push({ callback, thisArg, once });
+			return;
 		}
+
+		const eventName = eventNames;
+
+		if (!_globalEventHandlers[eventClass][eventName]) {
+			_globalEventHandlers[eventClass][eventName] = [];
+		}
+		if (Observable._indexOfListener(_globalEventHandlers[eventClass][eventName], callback, thisArg) !== -1) {
+			// Already added.
+			return;
+		}
+
+		_globalEventHandlers[eventClass][eventName].push({ callback, thisArg, once });
 	}
 
 	private _globalNotify<T extends EventData>(eventClass: string, eventType: string, data: T): void {
@@ -465,9 +504,19 @@ export class Observable {
 	}
 
 	public _emit(eventNames: string): void {
-		for (const eventName of eventNames.trim().split(eventNamesRegex)) {
-			this.notify({ eventName, object: this });
+		if (eventNames.trim().split(eventNamesRegex).join('') !== eventNames) {
+			if (__DEV__) {
+				console.error(`Legacy event ${eventNames}`);
+			}
+			for (const eventName of eventNames.trim().split(eventNamesRegex)) {
+				this._emit(eventName);
+			}
+			return;
 		}
+
+		const eventName = eventNames;
+
+		this.notify({ eventName, object: this });
 	}
 
 	private _getEventList(eventName: string, createIfNeeded?: boolean): Array<ListenerEntry> | undefined {
