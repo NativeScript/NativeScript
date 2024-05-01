@@ -89,7 +89,7 @@ const _globalEventHandlers: {
 	};
 } = {};
 
-const eventNamesRegex = /\s*,\s*/;
+export const eventNamesRegex = /\s*,\s*/;
 
 /**
  * Observable is used when you want to be notified when a change occurs. Use on/off methods to add/remove listener.
