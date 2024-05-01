@@ -125,7 +125,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	_setMinWidthNative: (value: CoreTypes.LengthType) => void;
 	_setMinHeightNative: (value: CoreTypes.LengthType) => void;
 
-	public _gestureObservers = {};
+	public readonly _gestureObservers = {} as Record<GestureTypes, Array<GesturesObserver>>;
 
 	_androidContentDescriptionUpdated?: boolean;
 
@@ -179,7 +179,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
 	onLoaded() {
 		if (!this.isLoaded) {
-			const hasTap = this.hasListeners('tap') || this.hasListeners('tapChange') || this.getGestureObservers(GestureTypes.tap);
+			const hasTap = this.hasListeners('tap') || this.hasListeners('tapChange') || !!this.getGestureObservers(GestureTypes.tap);
 			const enableTapAnimations = TouchManager.enableGlobalTapAnimations && hasTap;
 			if (!this.ignoreTouchAnimation && (this.touchAnimation || enableTapAnimations)) {
 				TouchManager.addAnimations(this);
@@ -288,7 +288,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		this._gestureObservers[type].push(gestureObserve(this, type, callback, thisArg));
 	}
 
-	public getGestureObservers(type: GestureTypes): Array<GesturesObserver> {
+	public getGestureObservers(type: GestureTypes): Array<GesturesObserver> | undefined {
 		return this._gestureObservers[type];
 	}
 
@@ -497,10 +497,12 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
 	private _disconnectGestureObservers(type: GestureTypes): void {
 		const observers = this.getGestureObservers(type);
-		if (observers) {
-			for (let i = 0; i < observers.length; i++) {
-				observers[i].disconnect();
-			}
+		if (!observers) {
+			return;
+		}
+
+		for (const observer of observers) {
+			observer.disconnect();
 		}
 	}
 
