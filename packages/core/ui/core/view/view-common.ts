@@ -33,6 +33,8 @@ import { SharedTransition, SharedTransitionInteractiveOptions } from '../../tran
 // helpers (these are okay re-exported here)
 export * from './view-helper';
 
+const eventNamesRegex = /\s*,\s*/;
+
 let animationModule: typeof am;
 function ensureAnimationModule() {
 	if (!animationModule) {
@@ -291,56 +293,50 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	}
 
 	public addEventListener(arg: string | GestureTypes, callback: (data: EventData) => void, thisArg?: any) {
-		if (typeof arg === 'string') {
-			arg = getEventOrGestureName(arg);
+		if (typeof arg === 'number') {
+			this._observe(arg, callback as unknown as (data: GestureEventData) => void, thisArg);
+			return;
+		}
 
-			const gesture = gestureFromString(arg);
-			if (gesture && !this._isEvent(arg)) {
-				this._observe(gesture, callback as unknown as (data: GestureEventData) => void, thisArg);
-			} else {
-				const events = arg.split(',');
-				if (events.length > 0) {
-					for (let i = 0; i < events.length; i++) {
-						const evt = events[i].trim();
-						const gst = gestureFromString(evt);
-						if (gst && !this._isEvent(arg)) {
-							this._observe(gst, callback as unknown as (data: GestureEventData) => void, thisArg);
-						} else {
-							super.addEventListener(evt, callback, thisArg);
-						}
-					}
-				} else {
-					super.addEventListener(arg, callback, thisArg);
-				}
-			}
-		} else if (typeof arg === 'number') {
-			this._observe(<GestureTypes>arg, callback as unknown as (data: GestureEventData) => void, thisArg);
+		// Normalize "ontap" -> "tap"
+		const normalizedName = getEventOrGestureName(arg);
+
+		// Coerce "tap" -> GestureTypes.tap
+		// Coerce "loaded" -> undefined
+		const gesture: GestureTypes | undefined = gestureFromString(normalizedName);
+
+		// If it's a gesture (and this Observable declares e.g. `static tapEvent`)
+		if (gesture && !this._isEvent(normalizedName)) {
+			this._observe(gesture, callback as unknown as (data: GestureEventData) => void, thisArg);
+			return;
+		}
+
+		for (const eventName of normalizedName.trim().split(eventNamesRegex)) {
+			super.addEventListener(eventName, callback, thisArg);
 		}
 	}
 
 	public removeEventListener(arg: string | GestureTypes, callback?: (data: EventData) => void, thisArg?: any) {
-		if (typeof arg === 'string') {
-			const gesture = gestureFromString(arg);
-			if (gesture && !this._isEvent(arg)) {
-				this._disconnectGestureObservers(gesture);
-			} else {
-				const events = arg.split(',');
-				if (events.length > 0) {
-					for (let i = 0; i < events.length; i++) {
-						const evt = events[i].trim();
-						const gst = gestureFromString(evt);
-						if (gst && !this._isEvent(arg)) {
-							this._disconnectGestureObservers(gst);
-						} else {
-							super.removeEventListener(evt, callback, thisArg);
-						}
-					}
-				} else {
-					super.removeEventListener(arg, callback, thisArg);
-				}
-			}
-		} else if (typeof arg === 'number') {
-			this._disconnectGestureObservers(<GestureTypes>arg);
+		if (typeof arg === 'number') {
+			this._disconnectGestureObservers(arg);
+			return;
+		}
+
+		// Normalize "ontap" -> "tap"
+		const normalizedName = getEventOrGestureName(arg);
+
+		// Coerce "tap" -> GestureTypes.tap
+		// Coerce "loaded" -> undefined
+		const gesture: GestureTypes | undefined = gestureFromString(normalizedName);
+
+		// If it's a gesture (and this Observable declares e.g. `static tapEvent`)
+		if (gesture && !this._isEvent(normalizedName)) {
+			this._disconnectGestureObservers(gesture);
+			return;
+		}
+
+		for (const eventName of normalizedName.trim().split(eventNamesRegex)) {
+			super.removeEventListener(eventName, callback, thisArg);
 		}
 	}
 
@@ -379,7 +375,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 			const firstArgument = args[0];
 			const view = firstArgument instanceof ViewCommon ? firstArgument : <ViewCommon>Builder.createViewFromEntry({
 							moduleName: firstArgument,
-					  });
+						});
 
 			return { view, options };
 		}
