@@ -12,13 +12,11 @@ import { Span } from './span';
 import { colorProperty, fontInternalProperty, fontScaleInternalProperty, Length } from '../styling/style-properties';
 import { StrokeCSSValues } from '../styling/css-stroke';
 import { isString, isNullOrUndefined } from '../../utils/types';
-import { iOSNativeHelper, layout } from '../../utils';
+import { SDK_VERSION, layout } from '../../utils';
 import { Trace } from '../../trace';
 import { CoreTypes } from '../../core-types';
 
 export * from './text-base-common';
-
-const majorVersion = iOSNativeHelper.MajorVersion;
 
 @NativeClass
 class UILabelClickHandlerImpl extends NSObject {
@@ -82,7 +80,7 @@ class UILabelClickHandlerImpl extends NSObject {
 						location: glyphIndex,
 						length: 1,
 					},
-					textContainer
+					textContainer,
 				);
 
 				// Ensure that an actual glyph was tapped
@@ -335,7 +333,7 @@ export class TextBase extends TextBaseCommon {
 				// const text = getTransformedText(isNullOrUndefined(this.text) ? '' : `${this.text}`, this.textTransform);
 				// this.nativeTextViewProtected.nativeScriptSetTextDecorationAndTransformTextDecorationLetterSpacingLineHeight(text, this.style.textDecoration || '', letterSpacing, lineHeight);
 
-				// if (!this.style?.color && majorVersion >= 13 && UIColor.labelColor) {
+				// if (!this.style?.color && SDK_VERSION >= 13 && UIColor.labelColor) {
 				// 	this._setColor(UIColor.labelColor);
 				// }
 			} else {
@@ -378,7 +376,7 @@ export class TextBase extends TextBaseCommon {
 		if (this.nativeTextViewProtected instanceof UIButton) {
 			this.nativeTextViewProtected.setAttributedTitleForState(attrText, UIControlState.Normal);
 		} else {
-			if (majorVersion >= 13 && UIColor.labelColor) {
+			if (SDK_VERSION >= 13 && UIColor.labelColor) {
 				this.nativeTextViewProtected.textColor = UIColor.labelColor;
 			}
 
@@ -464,7 +462,7 @@ export class TextBase extends TextBaseCommon {
 			}
 		}
 
-		if (!style.color && majorVersion >= 13 && UIColor.labelColor) {
+		if (!style.color && SDK_VERSION >= 13 && UIColor.labelColor) {
 			this._setColor(UIColor.labelColor);
 		}
 	}

@@ -1,16 +1,14 @@
 import { ActivityIndicatorBase, busyProperty } from './activity-indicator-common';
 import { colorProperty } from '../styling/style-properties';
 import { Color } from '../../color';
-import { iOSNativeHelper } from '../../utils';
+import { SDK_VERSION } from '../../utils';
 
 export * from './activity-indicator-common';
-
-const majorVersion = iOSNativeHelper.MajorVersion;
 
 export class ActivityIndicator extends ActivityIndicatorBase {
 	nativeViewProtected: UIActivityIndicatorView;
 
-	private _activityIndicatorViewStyle = majorVersion <= 12 || !UIActivityIndicatorViewStyle.Medium ? UIActivityIndicatorViewStyle.Gray : UIActivityIndicatorViewStyle.Medium;
+	private _activityIndicatorViewStyle = SDK_VERSION <= 12 || !UIActivityIndicatorViewStyle.Medium ? UIActivityIndicatorViewStyle.Gray : UIActivityIndicatorViewStyle.Medium;
 
 	createNativeView() {
 		const viewStyle = this._activityIndicatorViewStyle;

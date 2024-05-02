@@ -28,6 +28,11 @@ export interface CancelableOptions {
 	 * [Android only] Sets the theme of the Dialog. Usable themes can be found: https://developer.android.com/reference/android/R.style
 	 */
 	theme?: number;
+
+	/**
+	 * [iOS only] if a viewController is already presenting this will close it.If set to false an error will be thrown
+	 */
+	iosForceClosePresentedViewController?: boolean;
 }
 
 /**
