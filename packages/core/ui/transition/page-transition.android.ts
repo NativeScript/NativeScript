@@ -176,7 +176,7 @@ export class PageTransition extends Transition {
 		const toPage = newEntry.resolvedPage;
 		const newFragment: androidx.fragment.app.Fragment = newEntry.fragment;
 		const state = SharedTransition.getState(this.id);
-		const pageEnd = state.pageEnd;
+		const pageEnd = state?.pageEnd;
 
 		//we can't look for presented right now as the toPage might not be loaded
 		// and thus some views like ListView/Pager... might not have loaded their "children"
