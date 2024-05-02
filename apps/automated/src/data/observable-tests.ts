@@ -273,7 +273,65 @@ export var test_Observable_removeEventListener_SingleEvent_MultipleCallbacks = f
 	TKUnit.assert(receivedCount === 3, 'Observable.removeEventListener not working properly with multiple listeners.');
 };
 
-export var test_Observable_removeEventListener_MutlipleEvents_SingleCallback = function () {
+export var test_Observable_identity = function () {
+	const obj = new Observable();
+
+	let receivedCount = 0;
+	const callback = () => receivedCount++;
+	const eventName = Observable.propertyChangeEvent;
+
+	// The identity of an event listener is determined by the tuple of
+	// [eventType, callback, thisArg], and influences addition and removal.
+
+	// If you try to add the same callback for a given event name twice, without
+	// distinguishing by its thisArg, the second addition will no-op.
+	obj.addEventListener(eventName, callback);
+	obj.addEventListener(eventName, callback);
+	obj.set('testName', 1);
+	TKUnit.assert(receivedCount === 1, 'Expected Observable to fire exactly once upon a property change, having passed the same callback into addEventListener() twice');
+	obj.removeEventListener(eventName, callback);
+	TKUnit.assert(!obj.hasListeners(eventName), 'Expected removeEventListener(eventName, callback) to remove all matching callbacks regardless of thisArg');
+	receivedCount = 0;
+
+	// All truthy thisArgs are distinct, so we have three distinct identities here
+	// and they should all get added.
+	obj.addEventListener(eventName, callback);
+	obj.addEventListener(eventName, callback, 1);
+	obj.addEventListener(eventName, callback, 2);
+	obj.set('testName', 2);
+	TKUnit.assert(receivedCount === 3, 'Expected Observable to fire exactly three times upon a property change, having passed the same callback into addEventListener() three times, with the latter two distinguished by each having a different truthy thisArg');
+	obj.removeEventListener(eventName, callback);
+	TKUnit.assert(!obj.hasListeners(eventName), 'Expected removeEventListener(eventName, callback) to remove all matching callbacks regardless of thisArg');
+	receivedCount = 0;
+
+	// If you specify thisArg when removing an event listener, it should remove
+	// just the event listener with the corresponding thisArg.
+	obj.addEventListener(eventName, callback, 1);
+	obj.addEventListener(eventName, callback, 2);
+	obj.set('testName', 3);
+	TKUnit.assert(receivedCount === 2, 'Expected Observable to fire exactly three times upon a property change, having passed the same callback into addEventListener() three times, with the latter two distinguished by each having a different truthy thisArg');
+	obj.removeEventListener(eventName, callback, 2);
+	TKUnit.assert(obj.hasListeners(eventName), 'Expected removeEventListener(eventName, callback, thisArg) to remove just the event listener that matched the callback and thisArg');
+	obj.removeEventListener(eventName, callback, 1);
+	TKUnit.assert(!obj.hasListeners(eventName), 'Expected removeEventListener(eventName, callback, thisArg) to remove the remaining event listener that matched the callback and thisArg');
+	receivedCount = 0;
+
+	// All falsy thisArgs are treated alike, so these all have the same identity
+	// and only the first should get added.
+	obj.addEventListener(eventName, callback);
+	obj.addEventListener(eventName, callback, 0);
+	obj.addEventListener(eventName, callback, false);
+	obj.addEventListener(eventName, callback, null);
+	obj.addEventListener(eventName, callback, undefined);
+	obj.addEventListener(eventName, callback, '');
+	obj.set('testName', 4);
+	TKUnit.assert(receivedCount === 1, 'Expected Observable to fire exactly once upon a property change, having passed the same callback into addEventListener() multiple times, each time with a different falsy (and therefore indistinct) thisArg');
+	obj.removeEventListener(eventName, callback);
+	TKUnit.assert(!obj.hasListeners(eventName), 'Expected removeEventListener(eventName, callback) to remove all matching callbacks regardless of thisArg');
+	receivedCount = 0;
+};
+
+export var test_Observable_removeEventListener_MultipleEvents_SingleCallback = function () {
 	var obj = new TestObservable();
 
 	var receivedCount = 0;
