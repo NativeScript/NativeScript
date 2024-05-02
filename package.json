@@ -37,6 +37,7 @@
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^7.5.0",
     "@typescript-eslint/parser": "^7.5.0",
+    "acorn": "^8.7.0",
     "conventional-changelog-cli": "^4.1.0",
     "copyfiles": "^2.4.0",
     "css": "^3.0.0",
