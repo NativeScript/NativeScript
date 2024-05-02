@@ -281,7 +281,7 @@ function initializeDialogFragment() {
 
 		public onDismiss(dialog: android.content.DialogInterface): void {
 			super.onDismiss(dialog);
-			const manager = this.getFragmentManager();
+			const manager = this.getParentFragmentManager();
 			const activity = this.activity?.get();
 			if (manager && !activity?.isChangingConfigurations()) {
 				removeModal(this.owner._domId);
@@ -742,16 +742,14 @@ export class View extends ViewCommon {
 		this._dialogFragment = df;
 		this._raiseShowingModallyEvent();
 
-		this._dialogFragment.show(parent._getRootFragmentManager(), this._domId.toString());
+		df.show(parent._getRootFragmentManager(), this._domId.toString());
 	}
 
 	protected _hideNativeModalView(parent: View, whenClosedCallback: () => void) {
 		this._raiseClosingModallyEvent();
-		if (this._dialogFragment) {
-			const manager = this._dialogFragment.getFragmentManager();
-			if (manager) {
-				this._dialogFragment.dismissAllowingStateLoss();
-			}
+		const df = this._dialogFragment;
+		if (df?.getParentFragmentManager()) {
+			df.dismissAllowingStateLoss();
 		}
 
 		this._dialogFragment = null;
