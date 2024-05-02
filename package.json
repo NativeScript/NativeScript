@@ -18,7 +18,6 @@
     "url": "https://github.com/NativeScript/NativeScript.git"
   },
   "dependencies": {
-    "css-what": "^6.1.0",
     "nativescript-theme-core": "^1.0.4"
   },
   "devDependencies": {
