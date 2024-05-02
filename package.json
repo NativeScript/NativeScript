@@ -18,7 +18,6 @@
     "url": "https://github.com/NativeScript/NativeScript.git"
   },
   "dependencies": {
-    "css-what": "^6.1.0",
     "nativescript-theme-core": "^1.0.4"
   },
   "devDependencies": {
@@ -46,6 +45,7 @@
     "copyfiles": "^2.4.0",
     "css": "^3.0.0",
     "css-tree": "^1.1.2",
+    "css-what": "^6.1.0",
     "dotenv": "~16.4.0",
     "emoji-regex": "^10.3.0",
     "eslint": "~8.57.0",
