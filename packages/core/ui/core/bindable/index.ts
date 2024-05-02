@@ -635,8 +635,9 @@ export class Binding {
 
 		try {
 			if (isEventOrGesture(options.property, <any>optionsInstance) && types.isFunction(value)) {
-				// calling off method with null as handler will remove all handlers for options.property event
-				optionsInstance.off(options.property, null, optionsInstance.bindingContext);
+				// Calling Observable.prototype.off() with just the event name will
+				// remove all handlers under that event name.
+				optionsInstance.off(options.property);
 				optionsInstance.on(options.property, value, optionsInstance.bindingContext);
 			} else if (optionsInstance instanceof Observable) {
 				optionsInstance.set(options.property, value);
