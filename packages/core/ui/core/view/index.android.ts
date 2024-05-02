@@ -1103,11 +1103,9 @@ export class View extends ViewCommon {
 					nativeView.setBackgroundColor(background.color.android);
 				}
 			}
-			if (background.hasBorderRadius()) {
-				// borderDrawable is slow
-				// let s use outline provider when we can
-				ViewHelper.setOutlineProvider(nativeView, background.borderTopLeftRadius, background.borderTopRightRadius, background.borderBottomRightRadius, background.borderBottomLeftRadius);
-			}
+			// borderDrawable is slow
+			// let s use outline provider when we can
+			ViewHelper.setOutlineProvider(nativeView, background.borderTopLeftRadius, background.borderTopRightRadius, background.borderBottomRightRadius, background.borderBottomLeftRadius);
 		} else if (!background.isEmpty()) {
 			ViewHelper.clearOutlineProvider(nativeView);
 			if (isBorderDrawable) {
