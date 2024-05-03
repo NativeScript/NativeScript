@@ -7,7 +7,7 @@ import { Animation } from '../animation';
 import { AnimationDefinition } from '../animation/animation-interfaces';
 import { View } from '../core/view';
 import { isObject, isFunction } from '../../utils/types';
-import { GestureEvents, GestureStateTypes, GestureTypeNames, GestureTypes } from './gestures-common';
+import { GestureEvents, GestureStateTypes, GestureTypes } from './gestures-common';
 
 export type TouchAnimationFn = (view: View) => void;
 export type TouchAnimationOptions = {
@@ -114,7 +114,7 @@ export class TouchManager {
 							(<UILongPressGestureRecognizer>args.ios).minimumPressDuration = (<View>args.object)?.touchDelay || 0;
 						}
 					});
-					view.on(GestureTypeNames.longPress, (args: GestureEventDataWithState) => {
+					view.on(GestureTypes[GestureTypes.longPress], (args: GestureEventDataWithState) => {
 						switch (args.state) {
 							case GestureStateTypes.began:
 								if (handleDown) {
@@ -133,7 +133,7 @@ export class TouchManager {
 			}
 		} else {
 			if (handleDown || handleUp) {
-				view.on(GestureTypeNames.touch, (args: TouchGestureEventData) => {
+				view.on(GestureTypes[GestureTypes.touch], (args: TouchGestureEventData) => {
 					switch (args.action) {
 						case 'down':
 							if (handleDown) {

@@ -61,18 +61,6 @@ export enum GestureTypes {
 	touch = 1 << 7,
 }
 
-/** @see GestureTypes */
-export const GestureTypeNames = {
-	tap: 'tap',
-	doubleTap: 'doubleTap',
-	pinch: 'pinch',
-	pan: 'pan',
-	swipe: 'swipe',
-	rotation: 'rotation',
-	longPress: 'longPress',
-	touch: 'touch',
-} as const;
-
 /**
  * Defines an enum with supported gesture states.
  */
@@ -296,38 +284,42 @@ export interface RotationGestureEventData extends GestureEventDataWithState {
  * @param separator(optional) - Text separator between gesture type strings.
  */
 export function toString(type: GestureTypes, separator?: string): string {
-	const types = new Array<keyof typeof GestureTypeNames>();
+	// We can get stronger typings with `keyof typeof GestureTypes`, but sadly
+	// indexing into an enum simply returns `string`, so we'd have to type-assert
+	// all of the below anyway. Even this `(typeof GestureTypes)[GestureTypes]` is
+	// more for documentation than for type-safety (it resolves to `string`, too).
+	const types = new Array<(typeof GestureTypes)[GestureTypes]>();
 
 	if (type & GestureTypes.tap) {
-		types.push(GestureTypeNames.tap);
+		types.push(GestureTypes[GestureTypes.tap]);
 	}
 
 	if (type & GestureTypes.doubleTap) {
-		types.push(GestureTypeNames.doubleTap);
+		types.push(GestureTypes[GestureTypes.doubleTap]);
 	}
 
 	if (type & GestureTypes.pinch) {
-		types.push(GestureTypeNames.pinch);
+		types.push(GestureTypes[GestureTypes.pinch]);
 	}
 
 	if (type & GestureTypes.pan) {
-		types.push(GestureTypeNames.pan);
+		types.push(GestureTypes[GestureTypes.pan]);
 	}
 
 	if (type & GestureTypes.swipe) {
-		types.push(GestureTypeNames.swipe);
+		types.push(GestureTypes[GestureTypes.swipe]);
 	}
 
 	if (type & GestureTypes.rotation) {
-		types.push(GestureTypeNames.rotation);
+		types.push(GestureTypes[GestureTypes.rotation]);
 	}
 
 	if (type & GestureTypes.longPress) {
-		types.push(GestureTypeNames.longPress);
+		types.push(GestureTypes[GestureTypes.longPress]);
 	}
 
 	if (type & GestureTypes.touch) {
-		types.push(GestureTypeNames.touch);
+		types.push(GestureTypes[GestureTypes.touch]);
 	}
 
 	return types.join(separator);
@@ -340,7 +332,7 @@ export function toString(type: GestureTypes, separator?: string): string {
  * @param type - A string representation of a gesture type (e.g. Tap).
  */
 export function fromString(type: string): GestureTypes | undefined {
-	return GestureTypeNames[type.trim()];
+	return GestureTypes[type.trim()];
 }
 
 export abstract class GesturesObserverBase implements GesturesObserverDefinition {

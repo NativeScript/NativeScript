@@ -27,7 +27,7 @@ export * from './editable-text-base';
 export { Frame, setActivityCallbacks } from './frame';
 export type { NavigationEntry, NavigationContext, NavigationTransition, BackstackEntry, ViewEntry, AndroidActivityCallbacks } from './frame';
 
-export { GesturesObserver, TouchAction, GestureTypes, GestureTypeNames, GestureStateTypes, SwipeDirection, GestureEvents, TouchManager } from './gestures';
+export { GesturesObserver, TouchAction, GestureTypes, GestureStateTypes, SwipeDirection, GestureEvents, TouchManager } from './gestures';
 export type { GestureEventData, GestureEventDataWithState, TapGestureEventData, PanGestureEventData, PinchGestureEventData, RotationGestureEventData, SwipeGestureEventData, TouchGestureEventData, TouchAnimationOptions, VisionHoverOptions } from './gestures';
 
 export { HtmlView } from './html-view';
