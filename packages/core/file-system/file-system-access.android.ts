@@ -850,10 +850,8 @@ export class FileSystemAccess29 extends FileSystemAccess {
 		return super.getFile(path, onError);
 	}
 	getFolder(path: string, onError?: (error: any) => any, create: boolean = true): { path: string; name: string } {
-		console.log('getFolder', path, isContentUri(path));
 		if (isContentUri(path)) {
 			const folder = getOrSetFolderHelper(path);
-			console.log('folder', folder, folder.getDocumentFile(), folder?.getName());
 			if (folder) {
 				return {
 					path,
@@ -1418,10 +1416,8 @@ export class FileSystemAccess29 extends FileSystemAccess {
 		name: string;
 		extension: string;
 	} {
-		console.log('getOrCreateFile', path, fileName);
 		if (isContentUri(path)) {
 			const documentFile = getOrSetFolderHelper(path).getOrCreateFile(fileName, create);
-			console.log('documentFile', documentFile);
 			const subPath = documentFile.getUri().toString();
 			return documentFile
 				? {
