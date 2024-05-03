@@ -4,7 +4,7 @@ import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingB
 import { textAlignmentProperty } from '../text-base';
 import { CoreTypes } from '../../core-types';
 import { profile } from '../../profiling';
-import { TouchGestureEventData, GestureTypes, TouchAction } from '../gestures';
+import { TouchGestureEventData, TouchAction, GestureTypeNames } from '../gestures';
 import { Device } from '../../platform';
 import { SDK_VERSION } from '../../utils/constants';
 import lazy from '../../utils/lazy';
@@ -126,9 +126,9 @@ export class Button extends ButtonBase {
 							break;
 					}
 				});
-			this.on('touch', this._highlightedHandler);
+			this.on(GestureTypeNames.touch, this._highlightedHandler);
 		} else {
-			this.off('touch', this._highlightedHandler);
+			this.off(GestureTypeNames.touch, this._highlightedHandler);
 		}
 	}
 

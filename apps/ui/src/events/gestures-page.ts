@@ -1,4 +1,4 @@
-import { Screen, StackLayout, Page, Label, Button, GestureEventData, RotationGestureEventData, GestureTypes, SwipeGestureEventData, PanGestureEventData, PinchGestureEventData, GestureStateTypes } from '@nativescript/core';
+import { Screen, StackLayout, Page, Label, Button, GestureEventData, GestureTypeNames, RotationGestureEventData, GestureTypes, SwipeGestureEventData, PanGestureEventData, PinchGestureEventData, GestureStateTypes } from '@nativescript/core';
 
 export function createPage() {
 	const stack = new StackLayout();
@@ -65,55 +65,55 @@ export function createPage() {
 		tapAndDoubleTapLabel.automationText = 'Gestures detection disabled';
 	});
 
-	tapLabel.on('tap', function (args: GestureEventData) {
+	tapLabel.on(GestureTypeNames.tap, function (args: GestureEventData) {
 		tapLabel.text = 'Tap gesture detected, ' + (args.object === tapLabel);
 	});
 
 	const observer1 = tapLabel.getGestureObservers(GestureTypes.tap)[0];
 
-	doubleTapLabel.on('doubleTap', function (args: GestureEventData) {
+	doubleTapLabel.on(GestureTypeNames.doubleTap, function (args: GestureEventData) {
 		doubleTapLabel.text = 'Double Tap gesture detected, ' + (args.object === doubleTapLabel);
 	});
 
 	const observer2 = doubleTapLabel.getGestureObservers(GestureTypes.doubleTap)[0];
 
-	longPressLabel.on('longPress', function (args: GestureEventData) {
+	longPressLabel.on(GestureTypeNames.longPress, function (args: GestureEventData) {
 		longPressLabel.text = 'Long Press gesture detected, ' + (args.object === longPressLabel);
 	});
 
 	const observer3 = longPressLabel.getGestureObservers(GestureTypes.longPress)[0];
 
-	swipeLabel.on('swipe', function (args: SwipeGestureEventData) {
+	swipeLabel.on(GestureTypeNames.swipe, function (args: SwipeGestureEventData) {
 		swipeLabel.text = 'Swipe Direction: ' + args.direction + ', ' + (args.object === swipeLabel); // + getStateAsString(args.state);
 	});
 
 	const observer4 = swipeLabel.getGestureObservers(GestureTypes.swipe)[0];
 
-	panLabel.on('pan', function (args: PanGestureEventData) {
+	panLabel.on(GestureTypeNames.pan, function (args: PanGestureEventData) {
 		panLabel.text = 'Pan deltaX:' + Math.round(args.deltaX) + '; deltaY:' + Math.round(args.deltaY) + ';' + ', ' + (args.object === panLabel) + getStateAsString(args.state);
 	});
 
 	const observer5 = panLabel.getGestureObservers(GestureTypes.pan)[0];
 
-	pinchLabel.on('pinch', function (args: PinchGestureEventData) {
+	pinchLabel.on(GestureTypeNames.pinch, function (args: PinchGestureEventData) {
 		pinchLabel.text = 'Pinch Scale: ' + Math.round(args.scale) + ', ' + (args.object === pinchLabel) + getStateAsString(args.state);
 	});
 
 	const observer6 = pinchLabel.getGestureObservers(GestureTypes.pinch)[0];
 
-	rotationLabel.on('rotation', function (args: RotationGestureEventData) {
+	rotationLabel.on(GestureTypeNames.rotation, function (args: RotationGestureEventData) {
 		rotationLabel.text = 'Rotation: ' + Math.round(args.rotation) + ', ' + (args.object === rotationLabel) + getStateAsString(args.state);
 	});
 
 	const observer7 = rotationLabel.getGestureObservers(GestureTypes.rotation)[0];
 
-	tapAndDoubleTapLabel.on('doubleTap', function (args: GestureEventData) {
+	tapAndDoubleTapLabel.on(GestureTypeNames.doubleTap, function (args: GestureEventData) {
 		tapAndDoubleTapLabel.text = 'Last action: Double tap gesture, ' + (args.object === tapAndDoubleTapLabel);
 	});
 
 	const observer8 = tapAndDoubleTapLabel.getGestureObservers(GestureTypes.doubleTap)[0];
 
-	tapAndDoubleTapLabel.on('tap', function (args: GestureEventData) {
+	tapAndDoubleTapLabel.on(GestureTypeNames.tap, function (args: GestureEventData) {
 		tapAndDoubleTapLabel.text = 'Last action: Tap gesture, ' + (args.object === tapAndDoubleTapLabel);
 	});
 
