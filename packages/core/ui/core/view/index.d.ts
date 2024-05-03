@@ -595,7 +595,7 @@ export abstract class View extends ViewCommon {
 	 * @param callback An optional parameter pointing to a specific listener. If not defined, all listeners for the event names will be removed.
 	 * @param thisArg An optional parameter which when set will be used to refine search of the correct callback which will be removed as event listener.
 	 */
-	off(eventNames: string | GestureTypes, callback?: (args: EventData) => void, thisArg?: any);
+	off(eventNames: string, callback?: (args: EventData) => void, thisArg?: any);
 
 	/**
 	 * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
@@ -603,7 +603,7 @@ export abstract class View extends ViewCommon {
 	 * @param callback - Callback function which will be executed when event is raised.
 	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
 	 */
-	on(eventNames: string | GestureTypes, callback: (args: EventData) => void, thisArg?: any);
+	on(eventNames: string, callback: (args: EventData) => void, thisArg?: any);
 
 	/**
 	 * Raised when a loaded event occurs.

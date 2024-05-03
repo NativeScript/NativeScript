@@ -126,9 +126,9 @@ export class Button extends ButtonBase {
 							break;
 					}
 				});
-			this.on(GestureTypes.touch, this._highlightedHandler);
+			this.on('touch', this._highlightedHandler);
 		} else {
-			this.off(GestureTypes.touch, this._highlightedHandler);
+			this.off('touch', this._highlightedHandler);
 		}
 	}
 
