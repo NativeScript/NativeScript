@@ -40,6 +40,7 @@ apps/**/*/*.js
 apps/**/*/*.map
 apps/**/*/platforms
 apps/**/*/webpack.*.js
+apps/**/package-lock.json
 *.tgz
 .npmrc
 **/**/*.log
