@@ -51,10 +51,6 @@ export function matchQuery(mediaQuery: string, values: MediaQueryEnvironmentPara
 	const expressions = parseQuery(mediaQuery);
 
 	return expressions.some((query) => {
-		if (query == null) {
-			return false;
-		}
-
 		const { type, inverse, features } = query;
 
 		// Either the parsed or specified `type` is "all", or the types must be
@@ -67,36 +63,52 @@ export function matchQuery(mediaQuery: string, values: MediaQueryEnvironmentPara
 		}
 
 		const expressionsMatch = features.every((feature) => {
-			const value: string | number = values[feature.property];
-			let featureValue: string | number = feature.value;
+			const value: any = values[feature.property];
 
 			// Missing or falsy values don't match
-			if (!value) {
+			if (!value && value !== 0) {
 				return false;
 			}
 
 			switch (feature.property) {
 				case 'orientation':
 				case 'prefers-color-scheme':
-					if (typeof value !== 'string' || typeof featureValue !== 'string') {
+					if (typeof value !== 'string') {
 						return false;
 					}
-					return value.toLowerCase() === featureValue.toLowerCase();
-				case 'width':
-				case 'height':
-				case 'device-width':
-				case 'device-height':
-					featureValue = Length.toDevicePixels(Length.parse(featureValue), 0);
-					break;
-			}
 
-			switch (feature.modifier) {
-				case 'min':
-					return value >= featureValue;
-				case 'max':
-					return value <= featureValue;
-				default:
-					return value === featureValue;
+					return value.toLowerCase() === feature.value.toLowerCase();
+				default: {
+					// Numeric properties
+					let numVal: number;
+
+					if (typeof value !== 'number') {
+						return false;
+					}
+
+					switch (feature.property) {
+						case 'width':
+						case 'height':
+						case 'device-width':
+						case 'device-height': {
+							numVal = Length.toDevicePixels(Length.parse(feature.value), 0);
+							break;
+						}
+						default:
+							throw new SyntaxError(`Invalid CSS media query feature property: '${feature.property}'`);
+					}
+
+					switch (feature.modifier) {
+						case 'min':
+							return value >= numVal;
+						case 'max':
+							return value <= numVal;
+						default:
+							return value === numVal;
+					}
+
+					break;
+				}
 			}
 		});
 
