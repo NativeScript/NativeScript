@@ -7,7 +7,6 @@ See the accompanying LICENSE file for terms.
 // https://github.com/ericf/css-mediaquery
 
 import { Length } from '../ui/styling/style-properties';
-import { isString } from '../utils';
 
 // -----------------------------------------------------------------------------
 
@@ -95,7 +94,7 @@ export function matchQuery(mediaQuery: string, values: MediaQueryEnvironmentPara
 							break;
 						}
 						default:
-							throw new SyntaxError(`Invalid CSS media query feature property: '${feature.property}'`);
+							throw new SyntaxError(`Invalid CSS media query feature property: '${feature.property}' on '${query}'`);
 					}
 
 					switch (feature.modifier) {
@@ -149,7 +148,7 @@ export function parseQuery(mediaQuery: string): MediaQueryExpression[] {
 
 		// Media query must be valid
 		if (!features) {
-			throw new SyntaxError(`Invalid CSS media query features: '${featureString}'`);
+			throw new SyntaxError(`Invalid CSS media query features: '${featureString}' on '${query}'`);
 		}
 
 		for (const feature of features) {
@@ -157,7 +156,7 @@ export function parseQuery(mediaQuery: string): MediaQueryExpression[] {
 
 			// Media query must be valid
 			if (!captures) {
-				throw new SyntaxError(`Invalid CSS media query feature: '${feature}'`);
+				throw new SyntaxError(`Invalid CSS media query feature: '${feature}' on '${query}'`);
 			}
 
 			const featureData = captures[1].toLowerCase().match(RE_MQ_FEATURE);

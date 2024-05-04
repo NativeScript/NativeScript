@@ -48,9 +48,9 @@ global.interop = {
 		bool: {},
 	},
 };
-// global.UIApplication = {
-
-// }
+global.UIApplication = {
+	sharedApplication: null,
+};
 global.UIDevice = {
 	currentDevice: {
 		systemVersion: '13.0',
