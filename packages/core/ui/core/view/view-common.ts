@@ -278,25 +278,23 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		}
 	}
 
-	protected _observe(pluralType: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
+	protected _observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
 		thisArg = thisArg || undefined;
 
-		if (this._gestureObservers[pluralType]?.find((observer) => observer.callback === callback && observer.context === thisArg)) {
+		if (this._gestureObservers[type]?.find((observer) => observer.callback === callback && observer.context === thisArg)) {
 			// Already added.
 			return;
 		}
 
-		if (!this._gestureObservers[pluralType]) {
-			this._gestureObservers[pluralType] = [];
+		if (!this._gestureObservers[type]) {
+			this._gestureObservers[type] = [];
 		}
 
-		this._gestureObservers[pluralType].push(gestureObserve(this, pluralType, callback, thisArg));
+		this._gestureObservers[type].push(gestureObserve(this, type, callback, thisArg));
 	}
 
-	// Although this method accepts a plural type, in practice, the only case in
-	// which it is used searches for a singular type.
-	public getGestureObservers(pluralType: GestureTypes): Array<GesturesObserver> | undefined {
-		return this._gestureObservers[pluralType];
+	public getGestureObservers(type: GestureTypes): Array<GesturesObserver> | undefined {
+		return this._gestureObservers[type];
 	}
 
 	public addEventListener(eventNames: string, callback: (data: EventData) => void, thisArg?: any) {
@@ -307,11 +305,11 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
 		// Coerce "tap" -> GestureTypes.tap
 		// Coerce "loaded" -> undefined
-		const pluralGestureType: GestureTypes | undefined = gestureFromString(normalizedName);
+		const gestureType: GestureTypes | undefined = gestureFromString(normalizedName);
 
 		// If it's a gesture (and this Observable declares e.g. `static tapEvent`)
-		if (pluralGestureType && !this._isEvent(normalizedName)) {
-			this._observe(pluralGestureType, callback, thisArg);
+		if (gestureType && !this._isEvent(normalizedName)) {
+			this._observe(gestureType, callback, thisArg);
 			return;
 		}
 
@@ -326,11 +324,11 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
 		// Coerce "tap" -> GestureTypes.tap
 		// Coerce "loaded" -> undefined
-		const pluralGestureType: GestureTypes | undefined = gestureFromString(normalizedName);
+		const gestureType: GestureTypes | undefined = gestureFromString(normalizedName);
 
 		// If it's a gesture (and this Observable declares e.g. `static tapEvent`)
-		if (pluralGestureType && !this._isEvent(normalizedName)) {
-			this._disconnectGestureObservers(pluralGestureType, callback, thisArg);
+		if (gestureType && !this._isEvent(normalizedName)) {
+			this._disconnectGestureObservers(gestureType, callback, thisArg);
 			return;
 		}
 
@@ -492,10 +490,10 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		return this.constructor && `${name}Event` in this.constructor;
 	}
 
-	private _disconnectGestureObservers(pluralType: GestureTypes, callback?: (data: EventData) => void, thisArg?: any): void {
+	private _disconnectGestureObservers(type: GestureTypes, callback?: (data: EventData) => void, thisArg?: any): void {
 		// Largely mirrors the implementation of Observable.innerRemoveEventListener().
 
-		const observers = this.getGestureObservers(pluralType);
+		const observers = this.getGestureObservers(type);
 		if (!observers) {
 			return;
 		}
@@ -519,7 +517,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		}
 
 		if (!observers.length) {
-			delete this._gestureObservers[pluralType];
+			delete this._gestureObservers[type];
 		}
 	}
 

@@ -91,7 +91,7 @@ class UIGestureRecognizerImpl extends NSObject {
 }
 
 export class GesturesObserver extends GesturesObserverBase {
-	private readonly _recognizers: { [singularGestureType: string]: RecognizerCache } = {};
+	private readonly _recognizers: { [type: string]: RecognizerCache } = {};
 
 	private _onTargetLoaded: (data: EventData) => void;
 	private _onTargetUnloaded: (data: EventData) => void;
@@ -101,47 +101,51 @@ export class GesturesObserver extends GesturesObserverBase {
 	}
 
 	/**
-	 * Given a plural GestureTypes value, observes each of the constituent
-	 * GestureTypes values.
+	 * Observes a singular GestureTypes value (e.g. GestureTypes.tap).
 	 *
-	 * For example, if given the plural GestureTypes.tap & GestureTypes.doubleTap,
-	 * would observe both "tap" and "doubleTap" gestures.
+	 * Does not support observing plural GestureTypes values, e.g.
+	 * GestureTypes.tap & GestureTypes.doubleTap.
 	 */
-	public observe(pluralType: GestureTypes) {
-		if (this.target) {
-			this._pluralType = pluralType;
-			this._onTargetLoaded = () => {
-				this._attach(this.target, pluralType);
-			};
-			this._onTargetUnloaded = () => {
-				this._detach();
-			};
+	public observe(type: GestureTypes) {
+		this.type = type;
 
-			this.target.on('loaded', this._onTargetLoaded);
-			this.target.on('unloaded', this._onTargetUnloaded);
+		if (!this.target) {
+			return;
+		}
 
-			if (this.target.isLoaded) {
-				this._attach(this.target, pluralType);
-			}
+		this._onTargetLoaded = () => {
+			this._attach(this.target, type);
+		};
+		this._onTargetUnloaded = () => {
+			this._detach();
+		};
+
+		this.target.on('loaded', this._onTargetLoaded);
+		this.target.on('unloaded', this._onTargetUnloaded);
+
+		if (this.target.isLoaded) {
+			this._attach(this.target, type);
 		}
 	}
 
 	/**
-	 * Given a plural GestureTypes value, adds a UIGestureRecognizer for each
-	 * constituent GestureTypes value and populates a RecognizerCache entry in
+	 * Given a singular GestureTypes value (e.g. GestureTypes.tap), adds a
+	 * UIGestureRecognizer for it and populates a RecognizerCache entry in
 	 * this._recognizers.
 	 *
-	 * For example, if given the plural GestureTypes.tap & GestureTypes.doubleTap,
-	 * would add a gesture recognizer for both "tap" and "doubleTap" gestures,
-	 * firing the same callback for each.
+	 * Does not support attaching plural GestureTypes values, e.g.
+	 * GestureTypes.tap & GestureTypes.doubleTap.
 	 */
-	private _attach(target: View, pluralType: GestureTypes) {
+	private _attach(target: View, type: GestureTypes) {
 		this._detach();
 
-		if (target?.nativeViewProtected?.addGestureRecognizer) {
-			const nativeView = <UIView>target.nativeViewProtected;
+		const nativeView = target?.nativeViewProtected as UIView | undefined;
+		if (!nativeView?.addGestureRecognizer) {
+			return;
+		}
 
-			if (pluralType & GestureTypes.tap) {
+		switch (type) {
+			case GestureTypes.tap: {
 				nativeView.addGestureRecognizer(
 					this._createRecognizer(GestureTypes.tap, (args) => {
 						if (args.view) {
@@ -149,9 +153,10 @@ export class GesturesObserver extends GesturesObserverBase {
 						}
 					}),
 				);
+				break;
 			}
 
-			if (pluralType & GestureTypes.doubleTap) {
+			case GestureTypes.doubleTap: {
 				nativeView.addGestureRecognizer(
 					this._createRecognizer(GestureTypes.doubleTap, (args) => {
 						if (args.view) {
@@ -159,9 +164,10 @@ export class GesturesObserver extends GesturesObserverBase {
 						}
 					}),
 				);
+				break;
 			}
 
-			if (pluralType & GestureTypes.pinch) {
+			case GestureTypes.pinch: {
 				nativeView.addGestureRecognizer(
 					this._createRecognizer(GestureTypes.pinch, (args) => {
 						if (args.view) {
@@ -169,9 +175,10 @@ export class GesturesObserver extends GesturesObserverBase {
 						}
 					}),
 				);
+				break;
 			}
 
-			if (pluralType & GestureTypes.pan) {
+			case GestureTypes.pan: {
 				nativeView.addGestureRecognizer(
 					this._createRecognizer(GestureTypes.pan, (args) => {
 						if (args.view) {
@@ -179,9 +186,10 @@ export class GesturesObserver extends GesturesObserverBase {
 						}
 					}),
 				);
+				break;
 			}
 
-			if (pluralType & GestureTypes.swipe) {
+			case GestureTypes.swipe: {
 				nativeView.addGestureRecognizer(
 					this._createRecognizer(
 						GestureTypes.swipe,
@@ -229,9 +237,10 @@ export class GesturesObserver extends GesturesObserverBase {
 						UISwipeGestureRecognizerDirection.Up,
 					),
 				);
+				break;
 			}
 
-			if (pluralType & GestureTypes.rotation) {
+			case GestureTypes.rotation: {
 				nativeView.addGestureRecognizer(
 					this._createRecognizer(GestureTypes.rotation, (args) => {
 						if (args.view) {
@@ -239,9 +248,10 @@ export class GesturesObserver extends GesturesObserverBase {
 						}
 					}),
 				);
+				break;
 			}
 
-			if (pluralType & GestureTypes.longPress) {
+			case GestureTypes.longPress: {
 				nativeView.addGestureRecognizer(
 					this._createRecognizer(GestureTypes.longPress, (args) => {
 						if (args.view) {
@@ -249,22 +259,24 @@ export class GesturesObserver extends GesturesObserverBase {
 						}
 					}),
 				);
+				break;
 			}
 
-			if (pluralType & GestureTypes.touch) {
+			case GestureTypes.touch: {
 				nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.touch));
+				break;
 			}
 		}
 	}
 
 	private _detach() {
-		for (const pluralGestureType in this._recognizers) {
-			const item = this._recognizers[pluralGestureType];
+		for (const type in this._recognizers) {
+			const item = this._recognizers[type];
 			this.target?.nativeViewProtected?.removeGestureRecognizer(item.recognizer);
 
 			item.recognizer = null;
 			item.target = null;
-			delete this._recognizers[pluralGestureType];
+			delete this._recognizers[type];
 		}
 	}
 
@@ -278,6 +290,7 @@ export class GesturesObserver extends GesturesObserverBase {
 			this._onTargetLoaded = null;
 			this._onTargetUnloaded = null;
 		}
+
 		// clears target, context and callback references
 		super.disconnect();
 	}
@@ -293,28 +306,28 @@ export class GesturesObserver extends GesturesObserverBase {
 	 * this._recognizers) corresponding to the singular GestureTypes value passed
 	 * in.
 	 */
-	private _createRecognizer(singularType: GestureTypes, callback?: (args: GestureEventData) => void, swipeDirection?: UISwipeGestureRecognizerDirection): UIGestureRecognizer | undefined {
+	private _createRecognizer(type: GestureTypes, callback?: (args: GestureEventData) => void, swipeDirection?: UISwipeGestureRecognizerDirection): UIGestureRecognizer | undefined {
 		let recognizer: UIGestureRecognizer | undefined;
-		let singularTypeString = toString(singularType);
-		const target = _createUIGestureRecognizerTarget(this, singularType, callback, this.context);
-		const recognizerType = _getUIGestureRecognizerType(singularType);
+		let typeString = toString(type);
+		const target = _createUIGestureRecognizerTarget(this, type, callback, this.context);
+		const recognizerType = _getUIGestureRecognizerType(type);
 
 		if (recognizerType) {
 			recognizer = recognizerType.alloc().initWithTargetAction(target, 'recognize');
 
-			if (singularType === GestureTypes.swipe && swipeDirection) {
+			if (type === GestureTypes.swipe && swipeDirection) {
 				// e.g. "swipe1"
-				singularTypeString += swipeDirection.toString();
+				typeString += swipeDirection.toString();
 				(<UISwipeGestureRecognizer>recognizer).direction = swipeDirection;
-			} else if (singularType === GestureTypes.touch) {
+			} else if (type === GestureTypes.touch) {
 				(<TouchGestureRecognizer>recognizer).observer = this;
-			} else if (singularType === GestureTypes.doubleTap) {
+			} else if (type === GestureTypes.doubleTap) {
 				(<UITapGestureRecognizer>recognizer).numberOfTapsRequired = 2;
 			}
 
 			if (recognizer) {
 				recognizer.delegate = recognizerDelegateInstance;
-				this._recognizers[singularTypeString] = {
+				this._recognizers[typeString] = {
 					recognizer,
 					target,
 				};
@@ -323,7 +336,7 @@ export class GesturesObserver extends GesturesObserverBase {
 			this.target.notify({
 				eventName: GestureEvents.gestureAttached,
 				object: this.target,
-				type: singularType,
+				type: type,
 				view: this.target,
 				ios: recognizer,
 			});
@@ -342,28 +355,27 @@ interface RecognizerCache {
 	target: any;
 }
 
-function _getUIGestureRecognizerType(singularType: GestureTypes): typeof UIGestureRecognizer | null {
-	let nativeType: typeof UIGestureRecognizer | null = null;
-
-	if (singularType === GestureTypes.tap) {
-		nativeType = UITapGestureRecognizer;
-	} else if (singularType === GestureTypes.doubleTap) {
-		nativeType = UITapGestureRecognizer;
-	} else if (singularType === GestureTypes.pinch) {
-		nativeType = UIPinchGestureRecognizer;
-	} else if (singularType === GestureTypes.pan) {
-		nativeType = UIPanGestureRecognizer;
-	} else if (singularType === GestureTypes.swipe) {
-		nativeType = UISwipeGestureRecognizer;
-	} else if (singularType === GestureTypes.rotation) {
-		nativeType = UIRotationGestureRecognizer;
-	} else if (singularType === GestureTypes.longPress) {
-		nativeType = UILongPressGestureRecognizer;
-	} else if (singularType === GestureTypes.touch) {
-		nativeType = TouchGestureRecognizer;
+function _getUIGestureRecognizerType(type: GestureTypes): typeof UIGestureRecognizer | null {
+	switch (type) {
+		case GestureTypes.tap:
+			return UITapGestureRecognizer;
+		case GestureTypes.doubleTap:
+			return UITapGestureRecognizer;
+		case GestureTypes.pinch:
+			return UIPinchGestureRecognizer;
+		case GestureTypes.pan:
+			return UIPanGestureRecognizer;
+		case GestureTypes.swipe:
+			return UISwipeGestureRecognizer;
+		case GestureTypes.rotation:
+			return UIRotationGestureRecognizer;
+		case GestureTypes.longPress:
+			return UILongPressGestureRecognizer;
+		case GestureTypes.touch:
+			return TouchGestureRecognizer;
+		default:
+			return null;
 	}
-
-	return nativeType;
 }
 
 function getState(recognizer: UIGestureRecognizer) {
