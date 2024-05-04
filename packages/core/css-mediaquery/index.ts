@@ -6,7 +6,6 @@ See the accompanying LICENSE file for terms.
 
 // https://github.com/ericf/css-mediaquery
 
-import { Trace } from '../trace';
 import { Length } from '../ui/styling/style-properties';
 import { isString } from '../utils';
 
@@ -115,8 +114,7 @@ export function parseQuery(mediaQuery: string): MediaQueryExpression[] {
 
 		// Media query must be valid
 		if (!captures) {
-			Trace.write('Invalid CSS media query: "' + query + '"', Trace.categories.Style, Trace.messageType.error);
-			return null;
+			throw new SyntaxError(`Invalid CSS media query: '${query}'`);
 		}
 
 		const modifier = captures[1];
@@ -135,21 +133,19 @@ export function parseQuery(mediaQuery: string): MediaQueryExpression[] {
 		}
 
 		// Split features string into a list
-		const featureStrings = featureString.match(/\([^\)]+\)/g);
+		const features = featureString.match(/\([^\)]+\)/g);
 
 		// Media query must be valid
-		if (!featureStrings) {
-			Trace.write('Invalid CSS media query: "' + query + '"', Trace.categories.Style, Trace.messageType.error);
-			return null;
+		if (!features) {
+			throw new SyntaxError(`Invalid CSS media query features: '${featureString}'`);
 		}
 
-		for (const featureString of featureStrings) {
-			const captures = featureString.match(RE_MQ_EXPRESSION);
+		for (const feature of features) {
+			const captures = feature.match(RE_MQ_EXPRESSION);
 
 			// Media query must be valid
 			if (!captures) {
-				Trace.write('Invalid CSS media query: "' + query + '"', Trace.categories.Style, Trace.messageType.error);
-				return null;
+				throw new SyntaxError(`Invalid CSS media query feature: '${feature}'`);
 			}
 
 			const featureData = captures[1].toLowerCase().match(RE_MQ_FEATURE);
