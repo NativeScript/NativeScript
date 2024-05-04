@@ -280,45 +280,45 @@ export interface RotationGestureEventData extends GestureEventDataWithState {
 
 /**
  * Returns a string representation of a gesture type.
- * @param type - Type of the gesture.
+ * @param pluralType - Type of the gesture.
  * @param separator(optional) - Text separator between gesture type strings.
  */
-export function toString(type: GestureTypes, separator?: string): string {
+export function toString(pluralType: GestureTypes, separator?: string): string {
 	// We can get stronger typings with `keyof typeof GestureTypes`, but sadly
 	// indexing into an enum simply returns `string`, so we'd have to type-assert
 	// all of the below anyway. Even this `(typeof GestureTypes)[GestureTypes]` is
 	// more for documentation than for type-safety (it resolves to `string`, too).
 	const types = new Array<(typeof GestureTypes)[GestureTypes]>();
 
-	if (type & GestureTypes.tap) {
+	if (pluralType & GestureTypes.tap) {
 		types.push(GestureTypes[GestureTypes.tap]);
 	}
 
-	if (type & GestureTypes.doubleTap) {
+	if (pluralType & GestureTypes.doubleTap) {
 		types.push(GestureTypes[GestureTypes.doubleTap]);
 	}
 
-	if (type & GestureTypes.pinch) {
+	if (pluralType & GestureTypes.pinch) {
 		types.push(GestureTypes[GestureTypes.pinch]);
 	}
 
-	if (type & GestureTypes.pan) {
+	if (pluralType & GestureTypes.pan) {
 		types.push(GestureTypes[GestureTypes.pan]);
 	}
 
-	if (type & GestureTypes.swipe) {
+	if (pluralType & GestureTypes.swipe) {
 		types.push(GestureTypes[GestureTypes.swipe]);
 	}
 
-	if (type & GestureTypes.rotation) {
+	if (pluralType & GestureTypes.rotation) {
 		types.push(GestureTypes[GestureTypes.rotation]);
 	}
 
-	if (type & GestureTypes.longPress) {
+	if (pluralType & GestureTypes.longPress) {
 		types.push(GestureTypes[GestureTypes.longPress]);
 	}
 
-	if (type & GestureTypes.touch) {
+	if (pluralType & GestureTypes.touch) {
 		types.push(GestureTypes[GestureTypes.touch]);
 	}
 
@@ -340,7 +340,10 @@ export abstract class GesturesObserverBase implements GesturesObserverDefinition
 	private _target: View;
 	private _context?: any;
 
-	public type: GestureTypes;
+	protected _pluralType: GestureTypes;
+	public get type(): GestureTypes {
+		return this._pluralType;
+	}
 
 	public get callback(): (args: GestureEventData) => void {
 		return this._callback;
@@ -361,7 +364,7 @@ export abstract class GesturesObserverBase implements GesturesObserverDefinition
 	}
 
 	public abstract androidOnTouchEvent(motionEvent: android.view.MotionEvent);
-	public abstract observe(type: GestureTypes);
+	public abstract observe(pluralType: GestureTypes);
 
 	public disconnect() {
 		this._target = null;
