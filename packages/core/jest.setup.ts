@@ -49,7 +49,9 @@ global.interop = {
 	},
 };
 global.UIApplication = {
-	sharedApplication: null,
+	sharedApplication: {
+		statusBarOrientation: 1, // Portrait by default
+	},
 };
 global.UIDevice = {
 	currentDevice: {

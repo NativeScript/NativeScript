@@ -1,5 +1,7 @@
 import { parse } from '../../css/reworkcss';
+import { Screen } from '../../platform';
 import { createSelector, RuleSet, StyleSheetSelectorScope, fromAstNode, Node, Changes } from './css-selector';
+import { _populateRules } from './style-scope';
 
 describe('css-selector', () => {
 	it('button[attr]', () => {
@@ -17,20 +19,23 @@ describe('css-selector', () => {
 		).toBeFalsy();
 	});
 
-	function create(css: string, source = 'css-selectors.ts@test'): { rules: RuleSet[]; map: StyleSheetSelectorScope<any> } {
+	function create(css: string, source = 'css-selectors.ts@test'): { rulesets: RuleSet[]; selectorScope: StyleSheetSelectorScope<any> } {
 		const parsed = parse(css, { source });
-		const rulesAst = parsed.stylesheet.rules.filter((n) => n.type === 'rule');
-		const rules = rulesAst.map((rule) => fromAstNode(rule));
-		const map = new StyleSheetSelectorScope(rules);
+		const rulesAst = parsed.stylesheet.rules;
+		const rulesets = [];
 
-		return { rules, map };
+		_populateRules(rulesAst, rulesets, []);
+
+		const selectorScope = new StyleSheetSelectorScope(rulesets);
+
+		return { rulesets, selectorScope };
 	}
 
 	function createOne(css: string, source = 'css-selectors.ts@test'): RuleSet {
-		const { rules } = create(css, source);
-		expect(rules.length).toBe(1);
+		const { rulesets } = create(css, source);
+		expect(rulesets.length).toBe(1);
 
-		return rules[0];
+		return rulesets[0];
 	}
 
 	it('single selector', () => {
@@ -48,21 +53,21 @@ describe('css-selector', () => {
 	});
 
 	it('narrow selection', () => {
-		const { map } = create(`
+		const { selectorScope } = create(`
 	        .login { color: blue; }
 	        button { color: red; }
 	        image { color: green; }
 	    `);
 
-		const buttonQuerry = map.query({ cssType: 'button' }).selectors;
-		expect(buttonQuerry.length).toBe(1);
-		expect(buttonQuerry[0].ruleset.declarations).toEqual([{ property: 'color', value: 'red' }]);
+		const buttonQuery = selectorScope.query({ cssType: 'button' }).selectors;
+		expect(buttonQuery.length).toBe(1);
+		expect(buttonQuery[0].ruleset.declarations).toEqual([{ property: 'color', value: 'red' }]);
 
-		const imageQuerry = map.query({ cssType: 'image', cssClasses: new Set(['login']) }).selectors;
-		expect(imageQuerry.length).toBe(2);
+		const imageQuery = selectorScope.query({ cssType: 'image', cssClasses: new Set(['login']) }).selectors;
+		expect(imageQuery.length).toBe(2);
 		// Note class before type
-		expect(imageQuerry[0].ruleset.declarations).toEqual([{ property: 'color', value: 'blue' }]);
-		expect(imageQuerry[1].ruleset.declarations).toEqual([{ property: 'color', value: 'green' }]);
+		expect(imageQuery[0].ruleset.declarations).toEqual([{ property: 'color', value: 'blue' }]);
+		expect(imageQuery[1].ruleset.declarations).toEqual([{ property: 'color', value: 'green' }]);
 	});
 
 	const positiveMatches = {
@@ -271,8 +276,91 @@ describe('css-selector', () => {
 				},
 			}),
 		).toBe(false);
-		// TODO: Re-add this when decorators actually work with ts-jest
+		// TODO: Re-add this when decorators actually work properly on ts-jest
 		//expect(rule.selectors[0].specificity).toEqual(0);
+	});
+
+	describe('media queries', () => {
+		const { widthDIPs } = Screen.mainScreen;
+
+		it('should apply css rules of matching media query', () => {
+			const { selectorScope } = create(`
+				@media only screen and (max-width: ${widthDIPs}) {
+	        .login { color: blue; }
+	        button { color: red; }
+	        image { color: green; }
+				}
+	    `);
+
+			const { selectors: buttonSelectors } = selectorScope.query({ cssType: 'button' });
+			expect(buttonSelectors.length).toBe(1);
+			expect(buttonSelectors[0].ruleset.declarations).toEqual([{ property: 'color', value: 'red' }]);
+
+			const { selectors: imageSelectors } = selectorScope.query({ cssType: 'image', cssClasses: new Set(['login']) });
+			expect(imageSelectors.length).toBe(2);
+			// Note class before type
+			expect(imageSelectors[0].ruleset.declarations).toEqual([{ property: 'color', value: 'blue' }]);
+			expect(imageSelectors[1].ruleset.declarations).toEqual([{ property: 'color', value: 'green' }]);
+		});
+
+		it('should not apply css rules of non-matching media query', () => {
+			const { selectorScope } = create(`
+				@media only screen and (max-width: ${widthDIPs - 1}) {
+	        .login { color: blue; }
+	        button { color: red; }
+	        image { color: green; }
+				}
+	    `);
+
+			const { selectors: buttonSelectors } = selectorScope.query({ cssType: 'button' });
+			expect(buttonSelectors.length).toBe(0);
+
+			const { selectors: imageSelectors } = selectorScope.query({ cssType: 'image', cssClasses: new Set(['login']) });
+			expect(imageSelectors.length).toBe(0);
+		});
+
+		it('should apply css rules of matching media and nested media queries', () => {
+			const { selectorScope } = create(`
+				@media only screen and (max-width: ${widthDIPs}) {
+	        .login { color: blue; }
+	        button { color: red; }
+					@media only screen and (orientation: portrait) {
+	        	image { color: green; }
+					}
+				}
+	    `);
+
+			const { selectors: buttonSelectors } = selectorScope.query({ cssType: 'button' });
+			expect(buttonSelectors.length).toBe(1);
+			expect(buttonSelectors[0].ruleset.declarations).toEqual([{ property: 'color', value: 'red' }]);
+
+			const { selectors: imageSelectors } = selectorScope.query({ cssType: 'image', cssClasses: new Set(['login']) });
+			expect(imageSelectors.length).toBe(2);
+			// Note class before type
+			expect(imageSelectors[0].ruleset.declarations).toEqual([{ property: 'color', value: 'blue' }]);
+			expect(imageSelectors[1].ruleset.declarations).toEqual([{ property: 'color', value: 'green' }]);
+		});
+
+		it('should apply css rules of matching media queries but not non-matching nested media queries', () => {
+			const { selectorScope } = create(`
+				@media only screen and (max-width: ${widthDIPs}) {
+	        .login { color: blue; }
+
+					@media only screen and (orientation: none) {
+						button { color: red; }
+	        	image { color: green; }
+					}
+				}
+	    `);
+
+			const { selectors: buttonSelectors } = selectorScope.query({ cssType: 'button' });
+			expect(buttonSelectors.length).toBe(0);
+
+			const { selectors: imageSelectors } = selectorScope.query({ cssType: 'image', cssClasses: new Set(['login']) });
+			expect(imageSelectors.length).toBe(1);
+
+			expect(imageSelectors[0].ruleset.declarations).toEqual([{ property: 'color', value: 'blue' }]);
+		});
 	});
 
 	function toString() {

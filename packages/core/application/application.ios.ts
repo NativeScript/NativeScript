@@ -343,7 +343,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		if (__VISIONOS__) {
 			statusBarOrientation = NativeScriptEmbedder.sharedInstance().windowScene.interfaceOrientation;
 		} else {
-			statusBarOrientation = UIApplication.sharedApplication?.statusBarOrientation ?? UIInterfaceOrientation.Unknown;
+			statusBarOrientation = UIApplication.sharedApplication.statusBarOrientation;
 		}
 		return this.getOrientationValue(statusBarOrientation);
 	}
