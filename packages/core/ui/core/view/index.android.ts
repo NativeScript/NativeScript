@@ -742,7 +742,7 @@ export class View extends ViewCommon {
 		this._dialogFragment = df;
 		this._raiseShowingModallyEvent();
 
-		df.show(parent._getRootFragmentManager(), this._domId.toString());
+		df.show(parent._getFragmentManager(), this._domId.toString());
 	}
 
 	protected _hideNativeModalView(parent: View, whenClosedCallback: () => void) {

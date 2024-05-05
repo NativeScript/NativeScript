@@ -250,7 +250,7 @@ export class Frame extends FrameBase {
 			return;
 		}
 		const fragment: androidx.fragment.app.Fragment = this._currentEntry.fragment;
-		const fragmentManager: androidx.fragment.app.FragmentManager = fragment.getFragmentManager();
+		const fragmentManager: androidx.fragment.app.FragmentManager = fragment.getParentFragmentManager();
 
 		const transaction = fragmentManager.beginTransaction();
 		const fragmentExitTransition = fragment.getExitTransition();
