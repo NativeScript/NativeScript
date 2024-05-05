@@ -75,7 +75,6 @@ class MediaQueryListImpl extends Observable implements MediaQueryList {
 	public _media: string;
 	public _matches: boolean;
 
-	private readonly _isInitialized: boolean = false;
 	private _onChange: (this: MediaQueryList, ev: MediaQueryListEvent) => any;
 	private mediaQueryChangeListeners: Map<(this: MediaQueryList, ev: MediaQueryListEvent) => any, (data: EventData) => void>;
 
@@ -83,13 +82,10 @@ class MediaQueryListImpl extends Observable implements MediaQueryList {
 		super();
 
 		if (!isMediaInitializationEnabled) {
-			throw new TypeError('Illegal constructor.');
+			throw new TypeError('Illegal constructor');
 		}
 
 		Object.defineProperties(this, {
-			_isInitialized: {
-				value: true,
-			},
 			_media: {
 				writable: true,
 			},
@@ -103,24 +99,27 @@ class MediaQueryListImpl extends Observable implements MediaQueryList {
 			mediaQueryChangeListeners: {
 				value: new Map<(this: MediaQueryList, ev: MediaQueryListEvent) => any, (data: EventData) => void>(),
 			},
+			_throwInvocationError: {
+				value: null,
+			},
 		});
 	}
 
 	get media(): string {
-		this._throwInvocationErrorIfNeeded();
+		this._throwInvocationError?.();
 
 		return this._media;
 	}
 
 	get matches(): boolean {
-		this._throwInvocationErrorIfNeeded();
+		this._throwInvocationError?.();
 
 		return this._matches;
 	}
 
 	// @ts-ignore
 	public addEventListener(eventName: string, callback: (data: EventData) => void, thisArg?: any): void {
-		this._throwInvocationErrorIfNeeded();
+		this._throwInvocationError?.();
 
 		const hasChangeListeners = this.hasListeners(MediaQueryListImpl.changeEvent);
 
@@ -138,7 +137,7 @@ class MediaQueryListImpl extends Observable implements MediaQueryList {
 
 	// @ts-ignore
 	public removeEventListener(eventName: string, callback?: (data: EventData) => void, thisArg?: any): void {
-		this._throwInvocationErrorIfNeeded();
+		this._throwInvocationError?.();
 
 		// Call super method first since it throws in the case of bad parameters
 		super.removeEventListener(eventName, callback, thisArg);
@@ -160,7 +159,7 @@ class MediaQueryListImpl extends Observable implements MediaQueryList {
 	}
 
 	addListener(callback: (this: MediaQueryList, ev: MediaQueryListEvent) => any): void {
-		this._throwInvocationErrorIfNeeded();
+		this._throwInvocationError?.();
 
 		// This kind of implementation helps maintain listener registration order
 		// regardless of using the deprecated methods or property onchange
@@ -177,7 +176,7 @@ class MediaQueryListImpl extends Observable implements MediaQueryList {
 	}
 
 	removeListener(callback: (this: MediaQueryList, ev: MediaQueryListEvent) => any): void {
-		this._throwInvocationErrorIfNeeded();
+		this._throwInvocationError?.();
 
 		if (this.mediaQueryChangeListeners.has(callback)) {
 			// Call this method first since it throws in the case of bad parameters
@@ -187,13 +186,13 @@ class MediaQueryListImpl extends Observable implements MediaQueryList {
 	}
 
 	public get onchange(): (this: MediaQueryList, ev: MediaQueryListEvent) => any {
-		this._throwInvocationErrorIfNeeded();
+		this._throwInvocationError?.();
 
 		return this._onChange;
 	}
 
 	public set onchange(callback: (this: MediaQueryList, ev: MediaQueryListEvent) => any) {
-		this._throwInvocationErrorIfNeeded();
+		this._throwInvocationError?.();
 
 		// Remove old listener if any
 		if (this._onChange) {
@@ -207,10 +206,8 @@ class MediaQueryListImpl extends Observable implements MediaQueryList {
 		this._onChange = callback;
 	}
 
-	private _throwInvocationErrorIfNeeded() {
-		if (!this._isInitialized) {
-			throw new TypeError('Illegal invocation');
-		}
+	private _throwInvocationError() {
+		throw new TypeError('Illegal invocation');
 	}
 }
 

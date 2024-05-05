@@ -59,6 +59,16 @@ global.UIDevice = {
 global.UIScreen = {
 	mainScreen: {
 		scale: 1,
+		bounds: {
+			origin: {
+				x: 0,
+				y: 0,
+			},
+			size: {
+				height: 1000,
+				width: 1000,
+			},
+		},
 	},
 };
 const cgColors = { CGColor: 1 };

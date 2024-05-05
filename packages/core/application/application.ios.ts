@@ -231,7 +231,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	}
 
 	get rootController() {
-		return this.window.rootViewController;
+		return this.window?.rootViewController;
 	}
 
 	get nativeApp() {
@@ -343,7 +343,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		if (__VISIONOS__) {
 			statusBarOrientation = NativeScriptEmbedder.sharedInstance().windowScene.interfaceOrientation;
 		} else {
-			statusBarOrientation = UIApplication.sharedApplication.statusBarOrientation;
+			statusBarOrientation = UIApplication.sharedApplication?.statusBarOrientation ?? UIInterfaceOrientation.Unknown;
 		}
 		return this.getOrientationValue(statusBarOrientation);
 	}
