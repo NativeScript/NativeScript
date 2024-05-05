@@ -93,7 +93,19 @@ export function getEventOrGestureName(name: string): string {
 }
 
 export function isGesture(eventOrGestureName: string): boolean {
-	return !!gestureFromString(eventOrGestureName);
+	// I believe we perform a case-insensitive lookup rather than an exact match
+	// for the original camelCase, mainly out of caution for upstream callers that
+	// might have converted the event name to lowercase (which was certainly a
+	// problem in Svelte 3).
+	//
+	// Not sure whether it's still needed in practice, though (all Core tests pass
+	// without case-insensitive matching and without trimming whitespace), so
+	// worth revisiting in future.
+	const t = eventOrGestureName.trim().toLowerCase();
+
+	// Would be nice to have a convenience function for getting all GestureState
+	// names in `gestures-common.ts`, but it creates a circular dependency.
+	return t === 'tap' || t === 'doubletap' || t === 'pinch' || t === 'pan' || t === 'swipe' || t === 'rotation' || t === 'longpress' || t === 'touch';
 }
 
 // TODO: Make this instance function so that we dont need public statc tapEvent = "tap"
