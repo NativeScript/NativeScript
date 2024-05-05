@@ -1,16 +1,16 @@
-import { matchMedia, validateMediaQuery, MediaQueryList } from '.';
+import { matchMedia, checkIfMediaQueryMatches, MediaQueryList } from '.';
 import { Screen } from '../platform';
 
 describe('media-query-list', () => {
 	const { widthDIPs } = Screen.mainScreen;
 
-	describe('validateMediaQuery', () => {
+	describe('checkIfMediaQueryMatches', () => {
 		it('should return true for a correct match', () => {
-			expect(validateMediaQuery(`only screen and (max-width: ${widthDIPs})`)).toBe(true);
+			expect(checkIfMediaQueryMatches(`only screen and (max-width: ${widthDIPs})`)).toBe(true);
 		});
 
 		it('should return false for an incorrect match', () => {
-			expect(validateMediaQuery(`only screen and (max-width: ${widthDIPs - 1})`)).toBe(false);
+			expect(checkIfMediaQueryMatches(`only screen and (max-width: ${widthDIPs - 1})`)).toBe(false);
 		});
 	});
 

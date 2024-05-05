@@ -22,7 +22,7 @@ function toggleApplicationEventListeners(toAdd: boolean) {
 
 function onDeviceChange(args: ApplicationEventData) {
 	for (const mql of mediaQueryLists) {
-		const matches = validateMediaQuery(mql.media);
+		const matches = checkIfMediaQueryMatches(mql.media);
 		if (mql.matches !== matches) {
 			mql._matches = matches;
 
@@ -36,7 +36,7 @@ function onDeviceChange(args: ApplicationEventData) {
 	}
 }
 
-function validateMediaQuery(mediaQueryString: string): boolean {
+function checkIfMediaQueryMatches(mediaQueryString: string): boolean {
 	const { widthPixels, heightPixels } = Screen.mainScreen;
 
 	let matches: boolean;
@@ -65,7 +65,7 @@ function matchMedia(mediaQueryString: string): MediaQueryListImpl {
 	isMediaInitializationEnabled = false;
 
 	mediaQueryList._media = mediaQueryString;
-	mediaQueryList._matches = validateMediaQuery(mediaQueryString);
+	mediaQueryList._matches = checkIfMediaQueryMatches(mediaQueryString);
 	return mediaQueryList;
 }
 
@@ -211,4 +211,4 @@ class MediaQueryListImpl extends Observable implements MediaQueryList {
 	}
 }
 
-export { matchMedia, MediaQueryListImpl as MediaQueryList, validateMediaQuery };
+export { matchMedia, MediaQueryListImpl as MediaQueryList, checkIfMediaQueryMatches };

@@ -273,8 +273,8 @@ class CSSSource {
 			const keyframes: kam.Keyframes[] = [];
 
 			// When css2json-loader is enabled, imports are handled there and removed from AST rules
-			this.populateRulesFromImports(nodes, rulesets, keyframes);
-			this.populateRules(nodes, rulesets, keyframes, null);
+			populateRulesFromImports(nodes, rulesets, keyframes);
+			_populateRules(nodes, rulesets, keyframes);
 
 			if (rulesets && rulesets.length) {
 				ensureCssAnimationParserModule();
@@ -289,67 +289,67 @@ class CSSSource {
 		}
 	}
 
-	private populateRulesFromImports(nodes: ReworkCSS.Node[], rulesets: RuleSet[], keyframes: kam.Keyframes[]): void {
-		const imports = nodes.filter((r) => r.type === 'import');
-		if (!imports.length) {
-			return;
-		}
-
-		const urlFromImportObject = (importObject) => {
-			const importItem = importObject['import'] as string;
-			const urlMatch = importItem && importItem.match(pattern);
-
-			return urlMatch && urlMatch[2];
-		};
-
-		const sourceFromImportObject = (importObject) => importObject['position'] && importObject['position']['source'];
-
-		const toUrlSourcePair = (importObject) => ({
-			url: urlFromImportObject(importObject),
-			source: sourceFromImportObject(importObject),
-		});
-
-		const getCssFile = ({ url, source }) => (source ? CSSSource.fromFileImport(url, source) : CSSSource.fromURI(url));
-
-		const cssFiles = imports
-			.map(toUrlSourcePair)
-			.filter(({ url }) => !!url)
-			.map(getCssFile);
-
-		for (const cssFile of cssFiles) {
-			if (cssFile) {
-				rulesets.push(...cssFile.selectors);
-				keyframes.push(...cssFile.keyframes);
-			}
-		}
-	}
-
-	private populateRules(nodes: ReworkCSS.Node[], rulesets: RuleSet[], keyframes: kam.Keyframes[], mediaQueryString: string): void {
-		for (const node of nodes) {
-			if (isKeyframe(node)) {
-				const keyframeRule: kam.Keyframes = {
-					name: node.name,
-					keyframes: node.keyframes,
-					mediaQueryString: mediaQueryString,
-				};
-
-				keyframes.push(keyframeRule);
-			} else if (isMedia(node)) {
-				// Media query is composite in the case of nested media queries
-				const compositeMediaQuery = mediaQueryString ? mediaQueryString + MEDIA_QUERY_SEPARATOR + node.media : node.media;
-
-				this.populateRules(node.rules, rulesets, keyframes, compositeMediaQuery);
-			} else if (isRule(node)) {
-				const ruleset = fromAstNode(node);
-				ruleset.mediaQueryString = mediaQueryString;
-
-				rulesets.push(ruleset);
-			}
-		}
-	}
-
 	toString(): string {
 		return this._file || this._url || '(in-memory)';
+	}
+}
+
+function populateRulesFromImports(nodes: ReworkCSS.Node[], rulesets: RuleSet[], keyframes: kam.Keyframes[]): void {
+	const imports = nodes.filter((r) => r.type === 'import');
+	if (!imports.length) {
+		return;
+	}
+
+	const urlFromImportObject = (importObject) => {
+		const importItem = importObject['import'] as string;
+		const urlMatch = importItem && importItem.match(pattern);
+
+		return urlMatch && urlMatch[2];
+	};
+
+	const sourceFromImportObject = (importObject) => importObject['position'] && importObject['position']['source'];
+
+	const toUrlSourcePair = (importObject) => ({
+		url: urlFromImportObject(importObject),
+		source: sourceFromImportObject(importObject),
+	});
+
+	const getCssFile = ({ url, source }) => (source ? CSSSource.fromFileImport(url, source) : CSSSource.fromURI(url));
+
+	const cssFiles = imports
+		.map(toUrlSourcePair)
+		.filter(({ url }) => !!url)
+		.map(getCssFile);
+
+	for (const cssFile of cssFiles) {
+		if (cssFile) {
+			rulesets.push(...cssFile.selectors);
+			keyframes.push(...cssFile.keyframes);
+		}
+	}
+}
+
+export function _populateRules(nodes: ReworkCSS.Node[], rulesets: RuleSet[], keyframes: kam.Keyframes[], mediaQueryString?: string): void {
+	for (const node of nodes) {
+		if (isKeyframe(node)) {
+			const keyframeRule: kam.Keyframes = {
+				name: node.name,
+				keyframes: node.keyframes,
+				mediaQueryString: mediaQueryString,
+			};
+
+			keyframes.push(keyframeRule);
+		} else if (isMedia(node)) {
+			// Media query is composite in the case of nested media queries
+			const compositeMediaQuery = mediaQueryString ? mediaQueryString + MEDIA_QUERY_SEPARATOR + node.media : node.media;
+
+			_populateRules(node.rules, rulesets, keyframes, compositeMediaQuery);
+		} else if (isRule(node)) {
+			const ruleset = fromAstNode(node);
+			ruleset.mediaQueryString = mediaQueryString;
+
+			rulesets.push(ruleset);
+		}
 	}
 }
 
