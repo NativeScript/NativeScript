@@ -163,7 +163,7 @@ export var test_Observable_addEventListener_MultipleEvents = function () {
 	obj.addEventListener(events, callback);
 	obj.set('testName', 1);
 	obj.test();
-	TKUnit.assert(receivedCount === 2, 'Callbacks not raised properly.');
+	TKUnit.assert(receivedCount === 0, "Expected no event handlers to fire upon the 'propertyChange' event when listening for event name 'propertyChange,tested', as we have dropped support for listening to plural event names.");
 };
 
 export var test_Observable_addEventListener_MultipleEvents_ShouldTrim = function () {
@@ -176,13 +176,14 @@ export var test_Observable_addEventListener_MultipleEvents_ShouldTrim = function
 
 	var events = Observable.propertyChangeEvent + '  ,  ' + TESTED_NAME;
 	obj.addEventListener(events, callback);
-	TKUnit.assert(obj.hasListeners(Observable.propertyChangeEvent), 'Observable.addEventListener for multiple events should trim each event name.');
-	TKUnit.assert(obj.hasListeners(TESTED_NAME), 'Observable.addEventListener for multiple events should trim each event name.');
+	TKUnit.assert(obj.hasListeners(events), "Expected a listener to be present for event name 'propertyChange  ,  tested', as we have dropped support for splitting plural event names.");
+	TKUnit.assert(!obj.hasListeners(Observable.propertyChangeEvent), "Expected no listeners to be present for event name 'propertyChange', as we have dropped support for splitting plural event names.");
+	TKUnit.assert(!obj.hasListeners(TESTED_NAME), "Expected no listeners to be present for event name 'tested', as we have dropped support for splitting plural event names.");
 
 	obj.set('testName', 1);
 	obj.test();
 
-	TKUnit.assert(receivedCount === 2, 'Callbacks not raised properly.');
+	TKUnit.assert(receivedCount === 0, "Expected no event handlers to fire upon the 'propertyChange' event when listening for event name 'propertyChange  ,  tested', as we have dropped support for listening to plural event names (and trimming whitespace in event names).");
 };
 
 export var test_Observable_addEventListener_MultipleCallbacks = function () {
@@ -223,7 +224,7 @@ export var test_Observable_addEventListener_MultipleCallbacks_MultipleEvents = f
 	obj.set('testName', 1);
 	obj.test();
 
-	TKUnit.assert(receivedCount === 4, 'The propertyChanged notification should be raised twice.');
+	TKUnit.assert(receivedCount === 0, "Expected no event handlers to fire upon the 'propertyChange' event when listening for event name 'propertyChange  ,  tested' with two different callbacks, as we have dropped support for listening to plural event names (and trimming whitespace in event names).");
 };
 
 export var test_Observable_removeEventListener_SingleEvent_SingleCallback = function () {
@@ -341,19 +342,22 @@ export var test_Observable_removeEventListener_MultipleEvents_SingleCallback = f
 
 	var events = Observable.propertyChangeEvent + '  ,  ' + TESTED_NAME;
 	obj.addEventListener(events, callback);
+	TKUnit.assert(obj.hasListeners(events), "Expected a listener to be present for event name 'propertyChange  ,  tested', as we have dropped support for splitting plural event names.");
+	TKUnit.assert(!obj.hasListeners(Observable.propertyChangeEvent), "Expected no listeners to be present for event name 'propertyChange', as we have dropped support for splitting plural event names.");
+	TKUnit.assert(!obj.hasListeners(TESTED_NAME), "Expected no listeners to be present for event name 'tested', as we have dropped support for splitting plural event names.");
+	TKUnit.assert(receivedCount === 0, "Expected no event handlers to fire upon the 'propertyChange' event when listening for event name 'propertyChange  ,  tested', as we have dropped support for listening to plural event names (and trimming whitespace in event names).");
 
 	obj.set('testName', 1);
 	obj.test();
 
 	obj.removeEventListener(events, callback);
 
-	TKUnit.assert(!obj.hasListeners(Observable.propertyChangeEvent), 'Expected result for hasObservers is false');
-	TKUnit.assert(!obj.hasListeners(TESTED_NAME), 'Expected result for hasObservers is false.');
+	TKUnit.assert(!obj.hasListeners(events), "Expected the listener for event name 'propertyChange  ,  tested' to have been removed, as we have dropped support for splitting plural event names.");
 
 	obj.set('testName', 2);
 	obj.test();
 
-	TKUnit.assert(receivedCount === 2, 'Expected receive count is 2');
+	TKUnit.assert(receivedCount === 0, "Expected no event handlers to fire upon the 'propertyChange' event when listening for event name 'propertyChange  ,  tested', as we have dropped support for listening to plural event names (and trimming whitespace in event names).");
 };
 
 export var test_Observable_removeEventListener_SingleEvent_NoCallbackSpecified = function () {
