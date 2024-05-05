@@ -4,6 +4,7 @@ import { ViewBase } from '../view-base';
 // Requires
 import { unsetValue } from '../properties';
 import { Observable, PropertyChangeData } from '../../../data/observable';
+import { fromString as gestureFromString } from '../../../ui/gestures/gestures-common';
 import { addWeakEventListener, removeWeakEventListener } from '../weak-event-listener';
 import { bindingConstants, parentsRegex } from '../../builder/binding-builder';
 import { escapeRegexSymbols } from '../../../utils';
@@ -91,11 +92,8 @@ export function getEventOrGestureName(name: string): string {
 	return name.indexOf('on') === 0 ? name.substr(2, name.length - 2) : name;
 }
 
-// NOTE: method fromString from "ui/gestures";
 export function isGesture(eventOrGestureName: string): boolean {
-	const t = eventOrGestureName.trim().toLowerCase();
-
-	return t === 'tap' || t === 'doubletap' || t === 'pinch' || t === 'pan' || t === 'swipe' || t === 'rotation' || t === 'longpress' || t === 'touch';
+	return !!gestureFromString(eventOrGestureName);
 }
 
 // TODO: Make this instance function so that we dont need public statc tapEvent = "tap"
@@ -105,7 +103,7 @@ export function isEventOrGesture(name: string, view: ViewBase): boolean {
 		const eventOrGestureName = getEventOrGestureName(name);
 		const evt = `${eventOrGestureName}Event`;
 
-		return (view.constructor && evt in view.constructor) || isGesture(eventOrGestureName.toLowerCase());
+		return (view.constructor && evt in view.constructor) || isGesture(eventOrGestureName);
 	}
 
 	return false;
