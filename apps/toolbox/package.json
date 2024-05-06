@@ -12,9 +12,9 @@
     "nativescript-theme-core": "file:../../node_modules/nativescript-theme-core"
   },
   "devDependencies": {
-    "@nativescript/android": "rc",
-    "@nativescript/ios": "rc",
-    "@nativescript/visionos": "rc",
+    "@nativescript/android": "~8.7.0",
+    "@nativescript/ios": "~8.7.0",
+    "@nativescript/visionos": "~8.7.0",
     "@nativescript/webpack": "file:../../dist/packages/nativescript-webpack.tgz",
     "typescript": "~5.4.0"
   }
