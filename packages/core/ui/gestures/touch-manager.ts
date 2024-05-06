@@ -114,7 +114,7 @@ export class TouchManager {
 							(<UILongPressGestureRecognizer>args.ios).minimumPressDuration = (<View>args.object)?.touchDelay || 0;
 						}
 					});
-					view.on(GestureTypes.longPress, (args: GestureEventDataWithState) => {
+					view.on(GestureTypes[GestureTypes.longPress], (args: GestureEventDataWithState) => {
 						switch (args.state) {
 							case GestureStateTypes.began:
 								if (handleDown) {
@@ -133,7 +133,7 @@ export class TouchManager {
 			}
 		} else {
 			if (handleDown || handleUp) {
-				view.on(GestureTypes.touch, (args: TouchGestureEventData) => {
+				view.on(GestureTypes[GestureTypes.touch], (args: TouchGestureEventData) => {
 					switch (args.action) {
 						case 'down':
 							if (handleDown) {
@@ -280,7 +280,7 @@ export class TouchManager {
 				TouchManager.visionHoverStyleCache['default'] = createHoverStyleFromOptions(
 					defaultOptions || {
 						effect: 'automatic',
-					}
+					},
 				);
 			}
 
