@@ -284,38 +284,42 @@ export interface RotationGestureEventData extends GestureEventDataWithState {
  * @param separator(optional) - Text separator between gesture type strings.
  */
 export function toString(type: GestureTypes, separator?: string): string {
-	const types = new Array<string>();
+	// We can get stronger typings with `keyof typeof GestureTypes`, but sadly
+	// indexing into an enum simply returns `string`, so we'd have to type-assert
+	// all of the below anyway. Even this `(typeof GestureTypes)[GestureTypes]` is
+	// more for documentation than for type-safety (it resolves to `string`, too).
+	const types = new Array<(typeof GestureTypes)[GestureTypes]>();
 
 	if (type & GestureTypes.tap) {
-		types.push('tap');
+		types.push(GestureTypes[GestureTypes.tap]);
 	}
 
 	if (type & GestureTypes.doubleTap) {
-		types.push('doubleTap');
+		types.push(GestureTypes[GestureTypes.doubleTap]);
 	}
 
 	if (type & GestureTypes.pinch) {
-		types.push('pinch');
+		types.push(GestureTypes[GestureTypes.pinch]);
 	}
 
 	if (type & GestureTypes.pan) {
-		types.push('pan');
+		types.push(GestureTypes[GestureTypes.pan]);
 	}
 
 	if (type & GestureTypes.swipe) {
-		types.push('swipe');
+		types.push(GestureTypes[GestureTypes.swipe]);
 	}
 
 	if (type & GestureTypes.rotation) {
-		types.push('rotation');
+		types.push(GestureTypes[GestureTypes.rotation]);
 	}
 
 	if (type & GestureTypes.longPress) {
-		types.push('longPress');
+		types.push(GestureTypes[GestureTypes.longPress]);
 	}
 
 	if (type & GestureTypes.touch) {
-		types.push('touch');
+		types.push(GestureTypes[GestureTypes.touch]);
 	}
 
 	return types.join(separator);
@@ -327,28 +331,8 @@ export function toString(type: GestureTypes, separator?: string): string {
  * Returns a gesture type enum value from a string (case insensitive).
  * @param type - A string representation of a gesture type (e.g. Tap).
  */
-export function fromString(type: string): GestureTypes {
-	const t = type.trim().toLowerCase();
-
-	if (t === 'tap') {
-		return GestureTypes.tap;
-	} else if (t === 'doubletap') {
-		return GestureTypes.doubleTap;
-	} else if (t === 'pinch') {
-		return GestureTypes.pinch;
-	} else if (t === 'pan') {
-		return GestureTypes.pan;
-	} else if (t === 'swipe') {
-		return GestureTypes.swipe;
-	} else if (t === 'rotation') {
-		return GestureTypes.rotation;
-	} else if (t === 'longpress') {
-		return GestureTypes.longPress;
-	} else if (t === 'touch') {
-		return GestureTypes.touch;
-	}
-
-	return undefined;
+export function fromString(type: string): GestureTypes | undefined {
+	return GestureTypes[type.trim()];
 }
 
 export abstract class GesturesObserverBase implements GesturesObserverDefinition {

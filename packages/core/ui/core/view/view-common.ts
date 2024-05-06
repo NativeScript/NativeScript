@@ -290,14 +290,9 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		return this._gestureObservers[type];
 	}
 
-	public addEventListener(arg: string | GestureTypes, callback: (data: EventData) => void, thisArg?: any) {
-		if (typeof arg === 'number') {
-			this._observe(arg, callback as unknown as (data: GestureEventData) => void, thisArg);
-			return;
-		}
-
+	public addEventListener(eventNames: string, callback: (data: EventData) => void, thisArg?: any) {
 		// Normalize "ontap" -> "tap"
-		const normalizedName = getEventOrGestureName(arg);
+		const normalizedName = getEventOrGestureName(eventNames);
 
 		// Coerce "tap" -> GestureTypes.tap
 		// Coerce "loaded" -> undefined
@@ -312,14 +307,9 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		super.addEventListener(normalizedName, callback, thisArg);
 	}
 
-	public removeEventListener(arg: string | GestureTypes, callback?: (data: EventData) => void, thisArg?: any) {
-		if (typeof arg === 'number') {
-			this._disconnectGestureObservers(arg);
-			return;
-		}
-
+	public removeEventListener(eventNames: string, callback?: (data: EventData) => void, thisArg?: any) {
 		// Normalize "ontap" -> "tap"
-		const normalizedName = getEventOrGestureName(arg);
+		const normalizedName = getEventOrGestureName(eventNames);
 
 		// Coerce "tap" -> GestureTypes.tap
 		// Coerce "loaded" -> undefined
