@@ -587,7 +587,7 @@ export abstract class View extends ViewCommon {
 	 */
 	public focus(): boolean;
 
-	public getGestureObservers(type: GestureTypes): Array<GesturesObserver>;
+	public getGestureObservers(type: GestureTypes): Array<GesturesObserver> | undefined;
 
 	/**
 	 * Removes listener(s) for the specified event name.

@@ -338,7 +338,7 @@ export function fromString(type: string): GestureTypes | undefined {
 export abstract class GesturesObserverBase implements GesturesObserverDefinition {
 	private _callback: (args: GestureEventData) => void;
 	private _target: View;
-	private _context: any;
+	private _context?: any;
 
 	public type: GestureTypes;
 
@@ -354,7 +354,7 @@ export abstract class GesturesObserverBase implements GesturesObserverDefinition
 		return this._context;
 	}
 
-	constructor(target: View, callback: (args: GestureEventData) => void, context: any) {
+	constructor(target: View, callback: (args: GestureEventData) => void, context?: any) {
 		this._target = target;
 		this._callback = callback;
 		this._context = context;
@@ -364,21 +364,6 @@ export abstract class GesturesObserverBase implements GesturesObserverDefinition
 	public abstract observe(type: GestureTypes);
 
 	public disconnect() {
-		// remove gesture observer from map
-		if (this.target) {
-			const list = this.target.getGestureObservers(this.type);
-			if (list && list.length > 0) {
-				for (let i = 0; i < list.length; i++) {
-					if (list[i].callback === this.callback) {
-						break;
-					}
-				}
-				list.length = 0;
-
-				this.target._gestureObservers[this.type] = undefined;
-				delete this.target._gestureObservers[this.type];
-			}
-		}
 		this._target = null;
 		this._callback = null;
 		this._context = null;
