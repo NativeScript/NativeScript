@@ -52,7 +52,7 @@ function equalsCommon(a: CoreTypes.PercentLengthType, b: CoreTypes.PercentLength
 }
 
 function convertToStringCommon(length: CoreTypes.LengthType | CoreTypes.PercentLengthType): string {
-	if (length == 'auto') {
+	if (length == 'auto' || length === null || length === undefined) {
 		// tslint:disable-line
 		return 'auto';
 	}
@@ -70,7 +70,7 @@ function convertToStringCommon(length: CoreTypes.LengthType | CoreTypes.PercentL
 }
 
 function toDevicePixelsCommon(length: CoreTypes.PercentLengthType, auto: number = Number.NaN, parentAvailableWidth: number = Number.NaN): number {
-	if (length === 'auto' || !length) {
+	if (length === 'auto' || length === null || length === undefined) {
 		return auto;
 	}
 	if (typeof length === 'number') {
@@ -1222,8 +1222,8 @@ const boxShadowProperty = new CssProperty<Style, ShadowCSSValues>({
 						blurRadius: Length.toDevicePixels(newValue.blurRadius, 0),
 						spreadRadius: Length.toDevicePixels(newValue.spreadRadius, 0),
 						color: newValue.color,
-				  }
-				: null
+					}
+				: null,
 		);
 	}),
 	valueConverter: (value) => {
@@ -1361,7 +1361,7 @@ export const fontSizeProperty = new InheritedCssProperty<Style, number>({
 	affectsLayout: __IOS__,
 	valueChanged: fontInternalSubPropertyValueChanged(
 		(target, oldValue, newValue) => target.fontInternal.withFontSize(newValue),
-		(target) => target.viewRef.get()?.['handleFontSize'] === true
+		(target) => target.viewRef.get()?.['handleFontSize'] === true,
 	),
 	valueConverter: (v) => parseFloat(v),
 });
