@@ -136,8 +136,9 @@ export function _evaluateCssVariableExpression(view: ViewBase, cssName: string, 
 			.filter((v) => !!v);
 		const cssVariableName = matched.shift();
 		let cssVariableValue;
-		if (typeof __ONLY_ALLOW_ROOT_VARIABLES__ !== 'undefined' && __ONLY_ALLOW_ROOT_VARIABLES__ === true) {
-			cssVariableValue = Application.getRootView().style.getCssVariable(cssVariableName);
+		const rootView = Application.getRootView();
+		if (typeof __ONLY_ALLOW_ROOT_VARIABLES__ !== 'undefined' && __ONLY_ALLOW_ROOT_VARIABLES__ === true && rootView) {
+			cssVariableValue = rootView.style.getCssVariable(cssVariableName);
 		} else {
 			cssVariableValue = view.style.getCssVariable(cssVariableName);
 		}
