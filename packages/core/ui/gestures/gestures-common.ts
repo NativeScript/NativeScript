@@ -280,59 +280,45 @@ export interface RotationGestureEventData extends GestureEventDataWithState {
 
 /**
  * Returns a string representation of a gesture type.
- * @param type - Type of the gesture.
- * @param separator(optional) - Text separator between gesture type strings.
+ * @param type - The singular type of the gesture. Looks for an exact match, so
+ *   passing plural types like `GestureTypes.tap & GestureTypes.doubleTap` will
+ *   simply return undefined.
  */
-export function toString(type: GestureTypes, separator?: string): string {
-	// We can get stronger typings with `keyof typeof GestureTypes`, but sadly
-	// indexing into an enum simply returns `string`, so we'd have to type-assert
-	// all of the below anyway. Even this `(typeof GestureTypes)[GestureTypes]` is
-	// more for documentation than for type-safety (it resolves to `string`, too).
-	const types = new Array<(typeof GestureTypes)[GestureTypes]>();
+export function toString(type: GestureTypes): (typeof GestureTypes)[GestureTypes] | undefined {
+	switch (type) {
+		case GestureTypes.tap:
+			return GestureTypes[GestureTypes.tap];
 
-	if (type & GestureTypes.tap) {
-		types.push(GestureTypes[GestureTypes.tap]);
+		case GestureTypes.doubleTap:
+			return GestureTypes[GestureTypes.doubleTap];
+
+		case GestureTypes.pinch:
+			return GestureTypes[GestureTypes.pinch];
+
+		case GestureTypes.pan:
+			return GestureTypes[GestureTypes.pan];
+
+		case GestureTypes.swipe:
+			return GestureTypes[GestureTypes.swipe];
+
+		case GestureTypes.rotation:
+			return GestureTypes[GestureTypes.rotation];
+
+		case GestureTypes.longPress:
+			return GestureTypes[GestureTypes.longPress];
+
+		case GestureTypes.touch:
+			return GestureTypes[GestureTypes.touch];
 	}
-
-	if (type & GestureTypes.doubleTap) {
-		types.push(GestureTypes[GestureTypes.doubleTap]);
-	}
-
-	if (type & GestureTypes.pinch) {
-		types.push(GestureTypes[GestureTypes.pinch]);
-	}
-
-	if (type & GestureTypes.pan) {
-		types.push(GestureTypes[GestureTypes.pan]);
-	}
-
-	if (type & GestureTypes.swipe) {
-		types.push(GestureTypes[GestureTypes.swipe]);
-	}
-
-	if (type & GestureTypes.rotation) {
-		types.push(GestureTypes[GestureTypes.rotation]);
-	}
-
-	if (type & GestureTypes.longPress) {
-		types.push(GestureTypes[GestureTypes.longPress]);
-	}
-
-	if (type & GestureTypes.touch) {
-		types.push(GestureTypes[GestureTypes.touch]);
-	}
-
-	return types.join(separator);
 }
 
-// NOTE: toString could return the text of multiple GestureTypes.
-// Souldn't fromString do split on separator and return multiple GestureTypes?
 /**
  * Returns a gesture type enum value from a string (case insensitive).
- * @param type - A string representation of a gesture type (e.g. Tap).
+ *
+ * @param type - A string representation of a single gesture type (e.g. "tap").
  */
-export function fromString(type: string): GestureTypes | undefined {
-	return GestureTypes[type.trim()];
+export function fromString(type: (typeof GestureTypes)[GestureTypes]): GestureTypes | undefined {
+	return GestureTypes[type];
 }
 
 export abstract class GesturesObserverBase implements GesturesObserverDefinition {
@@ -340,7 +326,8 @@ export abstract class GesturesObserverBase implements GesturesObserverDefinition
 	private _target: View;
 	private _context?: any;
 
-	public type: GestureTypes;
+	/** This is populated on the first call to observe(). */
+	type: GestureTypes;
 
 	public get callback(): (args: GestureEventData) => void {
 		return this._callback;

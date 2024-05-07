@@ -89,8 +89,6 @@ const _globalEventHandlers: {
 	};
 } = {};
 
-const eventNamesRegex = /\s*,\s*/;
-
 /**
  * Observable is used when you want to be notified when a change occurs. Use on/off methods to add/remove listener.
  * Please note that should you be using the `new Observable({})` constructor, it is **obsolete** since v3.0,
@@ -153,74 +151,72 @@ export class Observable {
 
 	/**
 	 * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
-	 * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change").
+	 * @param eventName Name of the event to attach to.
 	 * @param callback - Callback function which will be executed when event is raised.
 	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
 	 */
-	public on(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void {
-		this.addEventListener(eventNames, callback, thisArg);
+	public on(eventName: string, callback: (data: EventData) => void, thisArg?: any): void {
+		this.addEventListener(eventName, callback, thisArg);
 	}
 
 	/**
 	 * Adds one-time listener function for the event named `event`.
-	 * @param event Name of the event to attach to.
+	 * @param eventName Name of the event to attach to.
 	 * @param callback A function to be called when the specified event is raised.
 	 * @param thisArg An optional parameter which when set will be used as "this" in callback method call.
 	 */
-	public once(event: string, callback: (data: EventData) => void, thisArg?: any): void {
-		this.addEventListener(event, callback, thisArg, true);
+	public once(eventName: string, callback: (data: EventData) => void, thisArg?: any): void {
+		this.addEventListener(eventName, callback, thisArg, true);
 	}
 
 	/**
 	 * Shortcut alias to the removeEventListener method.
 	 */
-	public off(eventNames: string, callback?: (data: EventData) => void, thisArg?: any): void {
-		this.removeEventListener(eventNames, callback, thisArg);
+	public off(eventName: string, callback?: (data: EventData) => void, thisArg?: any): void {
+		this.removeEventListener(eventName, callback, thisArg);
 	}
 
 	/**
 	 * Adds a listener for the specified event name.
-	 * @param eventNames Comma delimited names of the events to attach the listener to.
+	 * @param eventName Name of the event to attach to.
 	 * @param callback A function to be called when some of the specified event(s) is raised.
 	 * @param thisArg An optional parameter which when set will be used as "this" in callback method call.
 	 */
-	public addEventListener(eventNames: string, callback: (data: EventData) => void, thisArg?: any, once?: boolean): void {
+	public addEventListener(eventName: string, callback: (data: EventData) => void, thisArg?: any, once?: boolean): void {
 		once = once || undefined;
 		thisArg = thisArg || undefined;
 
-		if (typeof eventNames !== 'string') {
-			throw new TypeError('Event name(s) must be a string.');
+		if (typeof eventName !== 'string') {
+			throw new TypeError('Event name must be a string.');
 		}
 
 		if (typeof callback !== 'function') {
 			throw new TypeError('Callback, if provided, must be a function.');
 		}
 
-		for (const eventName of eventNames.trim().split(eventNamesRegex)) {
-			const list = this._getEventList(eventName, true);
-			if (Observable._indexOfListener(list, callback, thisArg) !== -1) {
-				// Already added.
-				continue;
-			}
-
-			list.push({
-				callback,
-				thisArg,
-				once,
-			});
+		const list = this._getEventList(eventName, true);
+		if (Observable._indexOfListener(list, callback, thisArg) !== -1) {
+			// Already added.
+			return;
 		}
+
+		list.push({
+			callback,
+			thisArg,
+			once,
+		});
 	}
 
 	/**
 	 * Removes listener(s) for the specified event name.
-	 * @param eventNames Comma delimited names of the events the specified listener is associated with.
+	 * @param eventName Name of the event to attach to.
 	 * @param callback An optional parameter pointing to a specific listener. If not defined, all listeners for the event names will be removed.
 	 * @param thisArg An optional parameter which when set will be used to refine search of the correct callback which will be removed as event listener.
 	 */
-	public removeEventListener(eventNames: string, callback?: (data: EventData) => void, thisArg?: any): void {
+	public removeEventListener(eventName: string, callback?: (data: EventData) => void, thisArg?: any): void {
 		thisArg = thisArg || undefined;
 
-		if (typeof eventNames !== 'string') {
+		if (typeof eventName !== 'string') {
 			throw new TypeError('Events name(s) must be string.');
 		}
 
@@ -228,18 +224,16 @@ export class Observable {
 			throw new TypeError('callback must be function.');
 		}
 
-		for (const eventName of eventNames.trim().split(eventNamesRegex)) {
-			const entries = this._observers[eventName];
-			if (!entries) {
-				continue;
-			}
+		const entries = this._observers[eventName];
+		if (!entries) {
+			return;
+		}
 
-			Observable.innerRemoveEventListener(entries, callback, thisArg);
+		Observable.innerRemoveEventListener(entries, callback, thisArg);
 
-			if (!entries.length) {
-				// Clear all entries of this type
-				delete this._observers[eventName];
-			}
+		if (!entries.length) {
+			// Clear all entries of this type
+			delete this._observers[eventName];
 		}
 	}
 
@@ -297,11 +291,11 @@ export class Observable {
 	 * in future.
 	 * @deprecated
 	 */
-	public static removeEventListener(eventNames: string, callback?: (data: EventData) => void, thisArg?: any): void {
+	public static removeEventListener(eventName: string, callback?: (data: EventData) => void, thisArg?: any): void {
 		thisArg = thisArg || undefined;
 
-		if (typeof eventNames !== 'string') {
-			throw new TypeError('Event name(s) must be a string.');
+		if (typeof eventName !== 'string') {
+			throw new TypeError('Event name must be a string.');
 		}
 
 		if (callback && typeof callback !== 'function') {
@@ -310,24 +304,22 @@ export class Observable {
 
 		const eventClass = this.name === 'Observable' ? '*' : this.name;
 
-		for (const eventName of eventNames.trim().split(eventNamesRegex)) {
-			const entries = _globalEventHandlers?.[eventClass]?.[eventName];
-			if (!entries) {
-				continue;
-			}
+		const entries = _globalEventHandlers?.[eventClass]?.[eventName];
+		if (!entries) {
+			return;
+		}
 
-			Observable.innerRemoveEventListener(entries, callback, thisArg);
+		Observable.innerRemoveEventListener(entries, callback, thisArg);
 
-			if (!entries.length) {
-				// Clear all entries of this type
-				delete _globalEventHandlers[eventClass][eventName];
-			}
+		if (!entries.length) {
+			// Clear all entries of this type
+			delete _globalEventHandlers[eventClass][eventName];
+		}
 
-			// Clear the primary class grouping if no list are left
-			const keys = Object.keys(_globalEventHandlers[eventClass]);
-			if (keys.length === 0) {
-				delete _globalEventHandlers[eventClass];
-			}
+		// Clear the primary class grouping if no list are left
+		const keys = Object.keys(_globalEventHandlers[eventClass]);
+		if (keys.length === 0) {
+			delete _globalEventHandlers[eventClass];
 		}
 	}
 
@@ -336,12 +328,12 @@ export class Observable {
 	 * in future.
 	 * @deprecated
 	 */
-	public static addEventListener(eventNames: string, callback: (data: EventData) => void, thisArg?: any, once?: boolean): void {
+	public static addEventListener(eventName: string, callback: (data: EventData) => void, thisArg?: any, once?: boolean): void {
 		once = once || undefined;
 		thisArg = thisArg || undefined;
 
-		if (typeof eventNames !== 'string') {
-			throw new TypeError('Event name(s) must be a string.');
+		if (typeof eventName !== 'string') {
+			throw new TypeError('Event name must be a string.');
 		}
 
 		if (typeof callback !== 'function') {
@@ -353,17 +345,15 @@ export class Observable {
 			_globalEventHandlers[eventClass] = {};
 		}
 
-		for (const eventName of eventNames.trim().split(eventNamesRegex)) {
-			if (!_globalEventHandlers[eventClass][eventName]) {
-				_globalEventHandlers[eventClass][eventName] = [];
-			}
-			if (Observable._indexOfListener(_globalEventHandlers[eventClass][eventName], callback, thisArg) !== -1) {
-				// Already added.
-				return;
-			}
-
-			_globalEventHandlers[eventClass][eventName].push({ callback, thisArg, once });
+		if (!_globalEventHandlers[eventClass][eventName]) {
+			_globalEventHandlers[eventClass][eventName] = [];
 		}
+		if (Observable._indexOfListener(_globalEventHandlers[eventClass][eventName], callback, thisArg) !== -1) {
+			// Already added.
+			return;
+		}
+
+		_globalEventHandlers[eventClass][eventName].push({ callback, thisArg, once });
 	}
 
 	private _globalNotify<T extends EventData>(eventClass: string, eventType: string, data: T): void {
@@ -464,10 +454,8 @@ export class Observable {
 		};
 	}
 
-	public _emit(eventNames: string): void {
-		for (const eventName of eventNames.trim().split(eventNamesRegex)) {
-			this.notify({ eventName, object: this });
-		}
+	public _emit(eventName: string): void {
+		this.notify({ eventName, object: this });
 	}
 
 	private _getEventList(eventName: string, createIfNeeded?: boolean): Array<ListenerEntry> | undefined {

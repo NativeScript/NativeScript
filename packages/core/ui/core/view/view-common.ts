@@ -305,11 +305,11 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
 		// Coerce "tap" -> GestureTypes.tap
 		// Coerce "loaded" -> undefined
-		const gesture: GestureTypes | undefined = gestureFromString(normalizedName);
+		const gestureType: GestureTypes | undefined = gestureFromString(normalizedName);
 
 		// If it's a gesture (and this Observable declares e.g. `static tapEvent`)
-		if (gesture && !this._isEvent(normalizedName)) {
-			this._observe(gesture, callback, thisArg);
+		if (gestureType && !this._isEvent(normalizedName)) {
+			this._observe(gestureType, callback, thisArg);
 			return;
 		}
 
@@ -324,11 +324,11 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
 		// Coerce "tap" -> GestureTypes.tap
 		// Coerce "loaded" -> undefined
-		const gesture: GestureTypes | undefined = gestureFromString(normalizedName);
+		const gestureType: GestureTypes | undefined = gestureFromString(normalizedName);
 
 		// If it's a gesture (and this Observable declares e.g. `static tapEvent`)
-		if (gesture && !this._isEvent(normalizedName)) {
-			this._disconnectGestureObservers(gesture, callback, thisArg);
+		if (gestureType && !this._isEvent(normalizedName)) {
+			this._disconnectGestureObservers(gestureType, callback, thisArg);
 			return;
 		}
 
