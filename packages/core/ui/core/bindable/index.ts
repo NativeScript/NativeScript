@@ -88,27 +88,38 @@ export interface ValueConverter {
 	toView: (...params: any[]) => any;
 }
 
+/**
+ * Normalizes "ontap" to "tap", and "ondoubletap" to "ondoubletap".
+ *
+ * Removes the leading "on" from an event gesture name, for example:
+ * - "ontap" -> "tap"
+ * - "ondoubletap" -> "doubletap"
+ * - "onTap" -> "Tap"
+ *
+ * Be warned that, as event/gesture names in NativeScript are case-sensitive,
+ * this may produce an invalid event/gesture name (i.e. "doubletap" would fail
+ * to match the "doubleTap" gesture name), and so it is up to the consumer to
+ * handle the output properly.
+ */
 export function getEventOrGestureName(name: string): string {
-	return name.indexOf('on') === 0 ? name.substr(2, name.length - 2) : name;
+	return name.indexOf('on') === 0 ? name.slice(2) : name;
 }
 
 export function isGesture(eventOrGestureName: string): boolean {
-	// I believe we perform a case-insensitive lookup rather than an exact match
-	// for the original camelCase, mainly out of caution for upstream callers that
-	// might have converted the event name to lowercase (which was certainly a
-	// problem in Svelte 3).
-	//
-	// Not sure whether it's still needed in practice, though (all Core tests pass
-	// without case-insensitive matching and without trimming whitespace), so
-	// worth revisiting in future.
+	// Not sure whether this trimming and lowercasing is still needed in practice
+	// (all Core tests pass without it), so worth revisiting in future. I think
+	// this is used exclusively by the XML flavour, and my best guess is that
+	// maybe it's to handle how getEventOrGestureName("onTap") might pass "Tap"
+	// into this.
 	const t = eventOrGestureName.trim().toLowerCase();
 
 	// Would be nice to have a convenience function for getting all GestureState
-	// names in `gestures-common.ts`, but it creates a circular dependency.
+	// names in `gestures-common.ts`, but when I tried introducing it, it created
+	// a circular dependency that crashed the automated tests app.
 	return t === 'tap' || t === 'doubletap' || t === 'pinch' || t === 'pan' || t === 'swipe' || t === 'rotation' || t === 'longpress' || t === 'touch';
 }
 
-// TODO: Make this instance function so that we dont need public statc tapEvent = "tap"
+// TODO: Make this instance function so that we dont need public static tapEvent = "tap"
 // in controls. They will just override this one and provide their own event support.
 export function isEventOrGesture(name: string, view: ViewBase): boolean {
 	if (typeof name === 'string') {
