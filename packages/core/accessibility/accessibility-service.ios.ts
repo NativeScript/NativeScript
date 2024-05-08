@@ -56,7 +56,7 @@ function getSharedA11YObservable(): SharedA11YObservable {
 			nativeObserver = null;
 
 			if (sharedA11YObservable) {
-				sharedA11YObservable.removeEventListener(Observable.propertyChangeEvent);
+				sharedA11YObservable.off(Observable.propertyChangeEvent);
 
 				sharedA11YObservable = null;
 			}

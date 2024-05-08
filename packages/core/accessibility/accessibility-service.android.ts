@@ -111,7 +111,7 @@ function ensureStateListener(): SharedA11YObservable {
 		touchExplorationStateChangeListener = null;
 
 		if (sharedA11YObservable) {
-			sharedA11YObservable.removeEventListener(Observable.propertyChangeEvent);
+			sharedA11YObservable.off(Observable.propertyChangeEvent);
 			sharedA11YObservable = null;
 		}
 

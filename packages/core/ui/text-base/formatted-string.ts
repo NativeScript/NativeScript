@@ -14,7 +14,7 @@ export class FormattedString extends ViewBase implements FormattedStringDefiniti
 	constructor() {
 		super();
 		this._spans = new ObservableArray<Span>();
-		this._spans.addEventListener(ObservableArray.changeEvent, this.onSpansCollectionChanged, this);
+		this._spans.addEventListener(ObservableArray.changeEvent, this.onSpansCollectionChanged, false, this);
 	}
 
 	get fontFamily(): string {

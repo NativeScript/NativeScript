@@ -297,11 +297,11 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		return this._gestureObservers[type];
 	}
 
-	public addEventListener(eventNames: string, callback: (data: EventData) => void, thisArg?: any) {
+	public addEventListener(eventName: string, callback: (data: EventData) => void, options?: AddEventListenerOptions | boolean, thisArg?: any) {
 		thisArg = thisArg || undefined;
 
 		// Normalize "ontap" -> "tap"
-		const normalizedName = getEventOrGestureName(eventNames);
+		const normalizedName = getEventOrGestureName(eventName);
 
 		// Coerce "tap" -> GestureTypes.tap
 		// Coerce "loaded" -> undefined
@@ -313,14 +313,14 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 			return;
 		}
 
-		super.addEventListener(normalizedName, callback, thisArg);
+		super.addEventListener(normalizedName, callback, options, thisArg);
 	}
 
-	public removeEventListener(eventNames: string, callback?: (data: EventData) => void, thisArg?: any) {
+	public removeEventListener(eventName: string, callback?: (data: EventData) => void, options?: EventListenerOptions | boolean, thisArg?: any) {
 		thisArg = thisArg || undefined;
 
 		// Normalize "ontap" -> "tap"
-		const normalizedName = getEventOrGestureName(eventNames);
+		const normalizedName = getEventOrGestureName(eventName);
 
 		// Coerce "tap" -> GestureTypes.tap
 		// Coerce "loaded" -> undefined
@@ -332,7 +332,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 			return;
 		}
 
-		super.removeEventListener(normalizedName, callback, thisArg);
+		super.removeEventListener(normalizedName, callback, options, thisArg);
 	}
 
 	public onBackPressed(): boolean {

@@ -21,7 +21,7 @@ function getHandlerForEventName(eventName: string): (eventData: EventData) => vo
 			const sourceEventMap = sourcesMap.get(source);
 			if (!sourceEventMap) {
 				// There is no event map for this source - it is safe to detach the listener;
-				source.removeEventListener(eventName, handlersForEventName.get(eventName));
+				source.off(eventName, handlersForEventName.get(eventName));
 
 				return;
 			}
@@ -46,7 +46,7 @@ function getHandlerForEventName(eventName: string): (eventData: EventData) => vo
 
 			if (deadPairsIndexes.length === targetHandlerPairList.length) {
 				// There are no alive targets for this event - unsubscribe
-				source.removeEventListener(eventName, handlersForEventName.get(eventName));
+				source.off(eventName, handlersForEventName.get(eventName));
 				sourceEventMap.delete(eventName);
 			} else {
 				for (let j = deadPairsIndexes.length - 1; j >= 0; j--) {

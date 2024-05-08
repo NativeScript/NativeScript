@@ -109,13 +109,13 @@ export class Span extends ViewBase implements SpanDefinition {
 		return this._tappable;
 	}
 
-	addEventListener(arg: string, callback: (data: EventData) => void, thisArg?: any): void {
-		super.addEventListener(arg, callback, thisArg);
+	addEventListener(arg: string, callback: (data: EventData) => void, options?: AddEventListenerOptions | boolean, thisArg?: any): void {
+		super.addEventListener(arg, callback, options, thisArg);
 		this._setTappable(this.hasListeners(Span.linkTapEvent));
 	}
 
-	removeEventListener(arg: string, callback?: (data: EventData) => void, thisArg?: any): void {
-		super.removeEventListener(arg, callback, thisArg);
+	removeEventListener(arg: string, callback?: (data: EventData) => void, options?: EventListenerOptions | boolean, thisArg?: any): void {
+		super.removeEventListener(arg, callback, options, thisArg);
 		this._setTappable(this.hasListeners(Span.linkTapEvent));
 	}
 
