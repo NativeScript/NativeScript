@@ -1,7 +1,7 @@
 // Types
 import { PropertyChangeData } from '../../data/observable';
 import { ViewBase, booleanConverter } from '../core/view-base';
-import { FontStyleType, FontWeightType } from '../styling/font-interfaces';
+import { FontStyleType, FontVariationSettingsType, FontWeightType } from '../styling/font-interfaces';
 
 // Requires.
 import { FormattedString } from './formatted-string';
@@ -74,6 +74,13 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 	}
 	set fontWeight(value: FontWeightType) {
 		this.style.fontWeight = value;
+	}
+
+	get fontVariationSettings(): FontVariationSettingsType[] {
+		return this.style.fontVariationSettings;
+	}
+	set fontVariationSettings(value: FontVariationSettingsType[]) {
+		this.style.fontVariationSettings = value;
 	}
 
 	get letterSpacing(): number {
