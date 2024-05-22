@@ -95,12 +95,12 @@ export function flush(): boolean {
 export function getAllKeys(): Array<string> {
 	return utils.ios.collections.nsArrayToJSArray(userDefaults.dictionaryRepresentation().allKeys);
 }
-export function getAllJSON(): string {
+export function getAllJSON(ignoreRegexp?: string | RegExp): string {
 	const nsDictionary = userDefaults.dictionaryRepresentation();
 	const jsonDictionary = NSMutableDictionary.new();
 	nsDictionary.enumerateKeysAndObjectsUsingBlock((key, value, stop) => {
 		// we try to filter Apple internal settings. Though some might still be there like AddingEmojiKeybordHandled
-		if (key.startsWith('AK') || key.startsWith('Apple') || key.startsWith('NS') || key.startsWith('PK')) {
+		if (key.startsWith('AK') || key.startsWith('Apple') || key.startsWith('NS') || key.startsWith('PK') || (ignoreRegexp && key.match(ignoreRegexp))) {
 			return;
 		}
 

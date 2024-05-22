@@ -73,7 +73,7 @@ export function getAllKeys(): Array<string>;
  * Get a JSON representation of all store dictionary
  * @return JSON string representation
  */
-export function getAllJSON(): string;
+export function getAllJSON(ignoreRegexp?: string | RegExp): string;
 
 /**
  * Returns the native object handling shared preferences

@@ -158,8 +158,7 @@ export function flush(): boolean {
 }
 
 export function getAllKeys(): Array<string> {
-	ensureSharedPreferences();
-	const mappedPreferences = sharedPreferences.getAll();
+	const mappedPreferences = getNative().getAll();
 	const iterator = mappedPreferences.keySet().iterator();
 	const result = [];
 	while (iterator.hasNext()) {
@@ -170,13 +169,16 @@ export function getAllKeys(): Array<string> {
 	return result;
 }
 
-export function getAllJSON() {
-	ensureSharedPreferences();
-	const mappedPreferences = sharedPreferences.getAll();
+export function getAllJSON(ignoreRegexp?: string | RegExp) {
+	const mappedPreferences = getNative().getAll();
 	const iterator = mappedPreferences.keySet().iterator();
+
 	// we need to transform numbers which are stored as longBits
 	while (iterator.hasNext()) {
-		const key = iterator.next();
+		const key = iterator.next() as string;
+		if (ignoreRegexp && key.match(ignoreRegexp)) {
+			continue;
+		}
 		const value = mappedPreferences.get(key);
 		if (value instanceof java.lang.Long) {
 			mappedPreferences.put(key, java.lang.Double.valueOf(java.lang.Double.longBitsToDouble(value.longValue())));
