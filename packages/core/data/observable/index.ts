@@ -150,27 +150,42 @@ export class Observable {
 	}
 
 	/**
-	 * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
-	 * @param eventName Name of the event to attach to.
-	 * @param callback - Callback function which will be executed when event is raised.
-	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
+	 * Adds a listener for the specified event name.
+	 *
+	 * @param eventName The name of the event.
+	 * @param callback The event listener to add. Will be called when an event of
+	 * the given name is raised.
+	 * @param thisArg An optional parameter which, when set, will be bound as the
+	 * `this` context when the callback is called. Falsy values will be not be
+	 * bound.
 	 */
 	public on(eventName: string, callback: (data: EventData) => void, thisArg?: any): void {
 		this.addEventListener(eventName, callback, thisArg);
 	}
 
 	/**
-	 * Adds one-time listener function for the event named `event`.
-	 * @param eventName Name of the event to attach to.
-	 * @param callback A function to be called when the specified event is raised.
-	 * @param thisArg An optional parameter which when set will be used as "this" in callback method call.
+	 * Adds a listener for the specified event name, which, once fired, will
+	 * remove itself.
+	 *
+	 * @param eventName The name of the event.
+	 * @param callback The event listener to add. Will be called when an event of
+	 * the given name is raised.
+	 * @param thisArg An optional parameter which, when set, will be bound as the
+	 * `this` context when the callback is called. Falsy values will be not be
+	 * bound.
 	 */
 	public once(eventName: string, callback: (data: EventData) => void, thisArg?: any): void {
 		this.addEventListener(eventName, callback, thisArg, true);
 	}
 
 	/**
-	 * Shortcut alias to the removeEventListener method.
+	 * Removes the listener(s) for the specified event name.
+	 *
+	 * @param eventName The name of the event.
+	 * @param callback An optional specific event listener to remove (if omitted,
+	 * all event listeners by this name will be removed).
+	 * @param thisArg An optional parameter which, when set, will be used to
+	 * refine search of the correct event listener to be removed.
 	 */
 	public off(eventName: string, callback?: (data: EventData) => void, thisArg?: any): void {
 		this.removeEventListener(eventName, callback, thisArg);
