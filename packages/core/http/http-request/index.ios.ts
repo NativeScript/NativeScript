@@ -94,7 +94,7 @@ export function request(options: httpModule.HttpRequestOptions): Promise<httpMod
 				}
 			}
 
-			if (types.isString(options.content) || options.content instanceof FormData) {
+			if (types.isString(options.content) || (typeof FormData !== 'undefined' && options.content instanceof FormData)) {
 				urlRequest.HTTPBody = NSString.stringWithString(options.content.toString()).dataUsingEncoding(4);
 			} else if (options.content instanceof ArrayBuffer) {
 				const buffer = options.content as ArrayBuffer;
