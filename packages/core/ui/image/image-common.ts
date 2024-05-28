@@ -4,7 +4,7 @@ import { booleanConverter } from '../core/view-base';
 import { CoreTypes } from '../../core-types';
 import { ImageAsset } from '../../image-asset';
 import { ImageSource } from '../../image-source';
-import { isDataURI, isFontIconURI, isFileOrResourcePath, RESOURCE_PREFIX } from '../../utils';
+import { isDataURI, isFontIconURI, isFileOrResourcePath, RESOURCE_PREFIX, SYSTEM_PREFIX } from '../../utils';
 import { Color } from '../../color';
 import { Style } from '../styling/style';
 import { Length } from '../styling/style-properties';
@@ -75,12 +75,20 @@ export abstract class ImageBase extends View implements ImageDefinition {
 				}
 			} else if (isFileOrResourcePath(value)) {
 				if (value.indexOf(RESOURCE_PREFIX) === 0) {
-					const resPath = value.substr(RESOURCE_PREFIX.length);
+					const resPath = value.slice(RESOURCE_PREFIX.length);
 					if (sync) {
 						imageLoaded(ImageSource.fromResourceSync(resPath));
 					} else {
 						this.imageSource = null;
 						ImageSource.fromResource(resPath).then(imageLoaded);
+					}
+				} else if (value.indexOf(SYSTEM_PREFIX) === 0) {
+					const sysPath = value.slice(SYSTEM_PREFIX.length);
+					if (sync) {
+						imageLoaded(ImageSource.fromSystemImageSync(sysPath));
+					} else {
+						this.imageSource = null;
+						ImageSource.fromSystemImage(sysPath).then(imageLoaded);
 					}
 				} else {
 					if (sync) {
