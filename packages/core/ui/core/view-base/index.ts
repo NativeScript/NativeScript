@@ -1038,8 +1038,17 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		//
 	}
 
+	/**
+	 * if _setupAsRootView is called it means it is not supposed to be
+	 * added to a parent. However parent can be set before for the purpose
+	 * of CSS variables/classes. That variable ensures that _addViewToNativeVisualTree
+	 * is not called in _setupAsRootView
+	 */
+	mIsRootView = false;
 	_setupAsRootView(context: any): void {
+		this.mIsRootView = true;
 		this._setupUI(context);
+		this.mIsRootView = false;
 	}
 
 	/**
@@ -1052,7 +1061,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 			// this check is unnecessary as this function should never be called when this._context === context as it means the view was somehow detached,
 			// which is only possible by setting reusable = true. Adding it either way for feature flag safety
 			if (this.reusable) {
-				if (this.parent && !this._isAddedToNativeVisualTree) {
+				if (!this.mIsRootView && this.parent && !this._isAddedToNativeVisualTree) {
 					const nativeIndex = atIndex !== undefined ? this.parent._childIndexToNativeChildIndex(atIndex) : atIndex;
 					this._isAddedToNativeVisualTree = this.parent._addViewToNativeVisualTree(this, nativeIndex);
 				}
@@ -1127,7 +1136,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
 		this.setNativeView(nativeView);
 
-		if (this.parent) {
+		if (!this.mIsRootView && this.parent) {
 			const nativeIndex = atIndex !== undefined ? this.parent._childIndexToNativeChildIndex(atIndex) : undefined;
 			this._isAddedToNativeVisualTree = this.parent._addViewToNativeVisualTree(this, nativeIndex);
 		}
