@@ -1153,7 +1153,6 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 		// was destroyed and we are now recreating it.
 		if (savedInstanceState) {
 			const rootViewId = savedInstanceState.getInt(ROOT_VIEW_ID_EXTRA, -1);
-			console.log('onCreate savedInstanceState', rootViewId, this._rootView, this._subRootView);
 			if (rootViewId !== -1 && activityRootViewsMap.has(rootViewId)) {
 				this._rootView = activityRootViewsMap.get(rootViewId)?.get();
 				this._subRootView = this._rootView.content;
