@@ -2129,20 +2129,44 @@ interface unw_cursor_t {
 }
 declare var unw_cursor_t: interop.StructType<unw_cursor_t>;
 
+/**
+ * @since 5.0
+ */
 declare function unw_get_fpreg(p1: interop.Pointer | interop.Reference<unw_cursor_t>, p2: number, p3: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 5.0
+ */
 declare function unw_get_proc_info(p1: interop.Pointer | interop.Reference<unw_cursor_t>, p2: interop.Pointer | interop.Reference<unw_proc_info_t>): number;
 
+/**
+ * @since 5.0
+ */
 declare function unw_get_proc_name(p1: interop.Pointer | interop.Reference<unw_cursor_t>, p2: string | interop.Pointer | interop.Reference<any>, p3: number, p4: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 5.0
+ */
 declare function unw_get_reg(p1: interop.Pointer | interop.Reference<unw_cursor_t>, p2: number, p3: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 5.0
+ */
 declare function unw_getcontext(p1: interop.Pointer | interop.Reference<unw_context_t>): number;
 
+/**
+ * @since 5.0
+ */
 declare function unw_init_local(p1: interop.Pointer | interop.Reference<unw_cursor_t>, p2: interop.Pointer | interop.Reference<unw_context_t>): number;
 
+/**
+ * @since 5.0
+ */
 declare function unw_is_fpreg(p1: interop.Pointer | interop.Reference<unw_cursor_t>, p2: number): number;
 
+/**
+ * @since 5.0
+ */
 declare function unw_is_signal_frame(p1: interop.Pointer | interop.Reference<unw_cursor_t>): number;
 
 declare var unw_local_addr_space: interop.Pointer | interop.Reference<any>;
@@ -2161,12 +2185,27 @@ interface unw_proc_info_t {
 }
 declare var unw_proc_info_t: interop.StructType<unw_proc_info_t>;
 
+/**
+ * @since 5.0
+ */
 declare function unw_regname(p1: interop.Pointer | interop.Reference<unw_cursor_t>, p2: number): string;
 
+/**
+ * @since 5.0
+ */
 declare function unw_resume(p1: interop.Pointer | interop.Reference<unw_cursor_t>): number;
 
+/**
+ * @since 5.0
+ */
 declare function unw_set_fpreg(p1: interop.Pointer | interop.Reference<unw_cursor_t>, p2: number, p3: number): number;
 
+/**
+ * @since 5.0
+ */
 declare function unw_set_reg(p1: interop.Pointer | interop.Reference<unw_cursor_t>, p2: number, p3: number): number;
 
+/**
+ * @since 5.0
+ */
 declare function unw_step(p1: interop.Pointer | interop.Reference<unw_cursor_t>): number;

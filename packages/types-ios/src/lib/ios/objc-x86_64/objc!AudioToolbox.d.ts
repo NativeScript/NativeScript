@@ -27,6 +27,9 @@ declare const enum AU3DMixerRenderingFlags {
 	k3DMixerRenderingFlags_ConstantReverbBlend = 64
 }
 
+/**
+ * @since 9.0
+ */
 declare class AUAudioUnit extends NSObject {
 
 	static alloc(): AUAudioUnit; // inherited from NSObject
@@ -37,20 +40,38 @@ declare class AUAudioUnit extends NSObject {
 
 	static registerSubclassAsComponentDescriptionNameVersion(cls: typeof NSObject, componentDescription: AudioComponentDescription, name: string, version: number): void;
 
+	/**
+	 * @since 15.0
+	 */
 	readonly AudioUnitMIDIProtocol: MIDIProtocolID;
 
+	/**
+	 * @since 11.0
+	 */
 	MIDIOutputBufferSizeHint: number;
 
+	/**
+	 * @since 11.0
+	 */
 	MIDIOutputEventBlock: (p1: number, p2: number, p3: number, p4: string) => number;
 
+	/**
+	 * @since 15.0
+	 */
 	MIDIOutputEventListBlock: (p1: number, p2: number, p3: interop.Pointer | interop.Reference<MIDIEventList>) => number;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly MIDIOutputNames: NSArray<string>;
 
 	readonly allParameterValues: boolean;
 
 	readonly audioUnitName: string;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly audioUnitShortName: string;
 
 	readonly canPerformInput: boolean;
@@ -61,6 +82,9 @@ declare class AUAudioUnit extends NSObject {
 
 	readonly channelCapabilities: NSArray<number>;
 
+	/**
+	 * @since 10.0
+	 */
 	channelMap: NSArray<number>;
 
 	readonly component: interop.Pointer | interop.Reference<any>;
@@ -81,6 +105,9 @@ declare class AUAudioUnit extends NSObject {
 
 	fullStateForDocument: NSDictionary<string, any>;
 
+	/**
+	 * @since 15.0
+	 */
 	hostMIDIProtocol: MIDIProtocolID;
 
 	readonly inputBusses: AUAudioUnitBusArray;
@@ -95,11 +122,19 @@ declare class AUAudioUnit extends NSObject {
 
 	maximumFramesToRender: number;
 
+	/**
+	 * @since 16.0
+	 */
+	readonly migrateFromPlugin: NSArray<any>;
+
 	readonly musicDeviceOrEffect: boolean;
 
 	musicalContextBlock: (p1: interop.Pointer | interop.Reference<number>, p2: interop.Pointer | interop.Reference<number>, p3: interop.Pointer | interop.Reference<number>, p4: interop.Pointer | interop.Reference<number>, p5: interop.Pointer | interop.Reference<number>, p6: interop.Pointer | interop.Reference<number>) => boolean;
 
-	readonly osWorkgroup: interop.Pointer | interop.Reference<any>;
+	/**
+	 * @since 14.0
+	 */
+	readonly osWorkgroup: OS_os_workgroup;
 
 	readonly outputBusses: AUAudioUnitBusArray;
 
@@ -109,12 +144,21 @@ declare class AUAudioUnit extends NSObject {
 
 	parameterTree: AUParameterTree;
 
+	/**
+	 * @since 12.0
+	 */
 	profileChangedBlock: (p1: number, p2: number, p3: MIDICIProfile, p4: boolean) => void;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly providesUserInterface: boolean;
 
 	readonly renderBlock: (p1: interop.Pointer | interop.Reference<AudioUnitRenderActionFlags>, p2: interop.Pointer | interop.Reference<AudioTimeStamp>, p3: number, p4: number, p5: interop.Pointer | interop.Reference<AudioBufferList>, p6: (p1: interop.Pointer | interop.Reference<AudioUnitRenderActionFlags>, p2: interop.Pointer | interop.Reference<AudioTimeStamp>, p3: number, p4: number, p5: interop.Pointer | interop.Reference<AudioBufferList>) => number) => number;
 
+	/**
+	 * @since 14.0
+	 */
 	readonly renderContextObserver: (p1: interop.Pointer | interop.Reference<AudioUnitRenderContext>) => void;
 
 	renderQuality: number;
@@ -123,24 +167,39 @@ declare class AUAudioUnit extends NSObject {
 
 	renderingOffline: boolean;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly running: boolean;
 
 	readonly scheduleMIDIEventBlock: (p1: number, p2: number, p3: number, p4: string) => void;
 
+	/**
+	 * @since 15.0
+	 */
 	readonly scheduleMIDIEventListBlock: (p1: number, p2: number, p3: interop.Pointer | interop.Reference<MIDIEventList>) => number;
 
 	readonly scheduleParameterBlock: (p1: number, p2: number, p3: number, p4: number) => void;
 
 	shouldBypassEffect: boolean;
 
+	/**
+	 * @since 10.0
+	 */
 	readonly supportsMPE: boolean;
 
+	/**
+	 * @since 13.0
+	 */
 	readonly supportsUserPresets: boolean;
 
 	readonly tailTime: number;
 
 	transportStateBlock: (p1: interop.Pointer | interop.Reference<AUHostTransportStateFlags>, p2: interop.Pointer | interop.Reference<number>, p3: interop.Pointer | interop.Reference<number>, p4: interop.Pointer | interop.Reference<number>) => boolean;
 
+	/**
+	 * @since 13.0
+	 */
 	readonly userPresets: NSArray<AUAudioUnitPreset>;
 
 	readonly virtualMIDICableCount: number;
@@ -153,22 +212,40 @@ declare class AUAudioUnit extends NSObject {
 
 	deallocateRenderResources(): void;
 
+	/**
+	 * @since 13.0
+	 */
 	deleteUserPresetError(userPreset: AUAudioUnitPreset): boolean;
 
+	/**
+	 * @since 12.0
+	 */
 	disableProfileCableOnChannelError(profile: MIDICIProfile, cable: number, channel: number): boolean;
 
+	/**
+	 * @since 12.0
+	 */
 	enableProfileCableOnChannelError(profile: MIDICIProfile, cable: number, channel: number): boolean;
 
 	initWithComponentDescriptionError(componentDescription: AudioComponentDescription): this;
 
 	initWithComponentDescriptionOptionsError(componentDescription: AudioComponentDescription, options: AudioComponentInstantiationOptions): this;
 
+	/**
+	 * @since 16.0
+	 */
 	messageChannelFor(channelName: string): AUMessageChannel;
 
 	parametersForOverviewWithCount(count: number): NSArray<number>;
 
+	/**
+	 * @since 13.0
+	 */
 	presetStateForError(userPreset: AUAudioUnitPreset): NSDictionary<string, any>;
 
+	/**
+	 * @since 12.0
+	 */
 	profileStateForCableChannel(cable: number, channel: number): MIDICIProfileState;
 
 	removeRenderObserver(token: number): void;
@@ -177,8 +254,14 @@ declare class AUAudioUnit extends NSObject {
 
 	reset(): void;
 
+	/**
+	 * @since 13.0
+	 */
 	saveUserPresetError(userPreset: AUAudioUnitPreset): boolean;
 
+	/**
+	 * @since 11.0
+	 */
 	selectViewConfiguration(viewConfiguration: AUAudioUnitViewConfiguration): void;
 
 	setRenderResourcesAllocated(flag: boolean): void;
@@ -189,11 +272,17 @@ declare class AUAudioUnit extends NSObject {
 
 	stopHardware(): void;
 
+	/**
+	 * @since 11.0
+	 */
 	supportedViewConfigurations(availableViewConfigurations: NSArray<AUAudioUnitViewConfiguration> | AUAudioUnitViewConfiguration[]): NSIndexSet;
 
 	tokenByAddingRenderObserver(observer: (p1: AudioUnitRenderActionFlags, p2: interop.Pointer | interop.Reference<AudioTimeStamp>, p3: number, p4: number) => void): number;
 }
 
+/**
+ * @since 9.0
+ */
 declare class AUAudioUnitBus extends NSObject {
 
 	static alloc(): AUAudioUnitBus; // inherited from NSObject
@@ -216,6 +305,9 @@ declare class AUAudioUnitBus extends NSObject {
 
 	readonly ownerAudioUnit: AUAudioUnit;
 
+	/**
+	 * @since 11.0
+	 */
 	shouldAllocateBuffer: boolean;
 
 	supportedChannelCounts: NSArray<number>;
@@ -229,6 +321,9 @@ declare class AUAudioUnitBus extends NSObject {
 	setFormatError(format: AVAudioFormat): boolean;
 }
 
+/**
+ * @since 9.0
+ */
 declare class AUAudioUnitBusArray extends NSObject implements NSFastEnumeration {
 
 	static alloc(): AUAudioUnitBusArray; // inherited from NSObject
@@ -280,6 +375,9 @@ declare var AUAudioUnitFactory: {
 	prototype: AUAudioUnitFactory;
 };
 
+/**
+ * @since 9.0
+ */
 declare class AUAudioUnitPreset extends NSObject implements NSSecureCoding {
 
 	static alloc(): AUAudioUnitPreset; // inherited from NSObject
@@ -299,12 +397,18 @@ declare class AUAudioUnitPreset extends NSObject implements NSSecureCoding {
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 9.0
+ */
 declare class AUAudioUnitV2Bridge extends AUAudioUnit {
 
 	static alloc(): AUAudioUnitV2Bridge; // inherited from NSObject
 
 	static new(): AUAudioUnitV2Bridge; // inherited from NSObject
 
+	/**
+	 * @since 14.0
+	 */
 	readonly audioUnit: interop.Pointer | interop.Reference<any>;
 }
 
@@ -322,54 +426,154 @@ declare var AUDependentParameter: interop.StructType<AUDependentParameter>;
 
 declare const AUEventSampleTimeImmediate: number;
 
+/**
+ * @since 2.0
+ * @deprecated 100000
+ */
 declare function AUGraphAddNode(inGraph: interop.Pointer | interop.Reference<any>, inDescription: interop.Pointer | interop.Reference<AudioComponentDescription>, outNode: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 2.0
+ * @deprecated 100000
+ */
 declare function AUGraphAddRenderNotify(inGraph: interop.Pointer | interop.Reference<any>, inCallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<AudioUnitRenderActionFlags>, p3: interop.Pointer | interop.Reference<AudioTimeStamp>, p4: number, p5: number, p6: interop.Pointer | interop.Reference<AudioBufferList>) => number>, inRefCon: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ * @deprecated 100000
+ */
 declare function AUGraphClearConnections(inGraph: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ * @deprecated 100000
+ */
 declare function AUGraphClose(inGraph: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ * @deprecated 100000
+ */
 declare function AUGraphConnectNodeInput(inGraph: interop.Pointer | interop.Reference<any>, inSourceNode: number, inSourceOutputNumber: number, inDestNode: number, inDestInputNumber: number): number;
 
+/**
+ * @since 2.0
+ * @deprecated 100000
+ */
 declare function AUGraphCountNodeInteractions(inGraph: interop.Pointer | interop.Reference<any>, inNode: number, outNumInteractions: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 2.0
+ * @deprecated 100000
+ */
 declare function AUGraphDisconnectNodeInput(inGraph: interop.Pointer | interop.Reference<any>, inDestNode: number, inDestInputNumber: number): number;
 
+/**
+ * @since 2.0
+ * @deprecated 100000
+ */
 declare function AUGraphGetCPULoad(inGraph: interop.Pointer | interop.Reference<any>, outAverageCPULoad: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 2.0
+ * @deprecated 100000
+ */
 declare function AUGraphGetIndNode(inGraph: interop.Pointer | interop.Reference<any>, inIndex: number, outNode: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 2.0
+ * @deprecated 100000
+ */
 declare function AUGraphGetMaxCPULoad(inGraph: interop.Pointer | interop.Reference<any>, outMaxLoad: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 2.0
+ * @deprecated 100000
+ */
 declare function AUGraphGetNodeCount(inGraph: interop.Pointer | interop.Reference<any>, outNumberOfNodes: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 2.0
+ * @deprecated 100000
+ */
 declare function AUGraphGetNumberOfInteractions(inGraph: interop.Pointer | interop.Reference<any>, outNumInteractions: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 2.0
+ * @deprecated 100000
+ */
 declare function AUGraphInitialize(inGraph: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ * @deprecated 100000
+ */
 declare function AUGraphIsInitialized(inGraph: interop.Pointer | interop.Reference<any>, outIsInitialized: string | interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ * @deprecated 100000
+ */
 declare function AUGraphIsOpen(inGraph: interop.Pointer | interop.Reference<any>, outIsOpen: string | interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ * @deprecated 100000
+ */
 declare function AUGraphIsRunning(inGraph: interop.Pointer | interop.Reference<any>, outIsRunning: string | interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ * @deprecated 100000
+ */
 declare function AUGraphNodeInfo(inGraph: interop.Pointer | interop.Reference<any>, inNode: number, outDescription: interop.Pointer | interop.Reference<AudioComponentDescription>, outAudioUnit: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
+/**
+ * @since 2.0
+ * @deprecated 100000
+ */
 declare function AUGraphOpen(inGraph: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ * @deprecated 100000
+ */
 declare function AUGraphRemoveNode(inGraph: interop.Pointer | interop.Reference<any>, inNode: number): number;
 
+/**
+ * @since 2.0
+ * @deprecated 100000
+ */
 declare function AUGraphRemoveRenderNotify(inGraph: interop.Pointer | interop.Reference<any>, inCallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<AudioUnitRenderActionFlags>, p3: interop.Pointer | interop.Reference<AudioTimeStamp>, p4: number, p5: number, p6: interop.Pointer | interop.Reference<AudioBufferList>) => number>, inRefCon: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ * @deprecated 100000
+ */
 declare function AUGraphSetNodeInputCallback(inGraph: interop.Pointer | interop.Reference<any>, inDestNode: number, inDestInputNumber: number, inInputCallback: interop.Pointer | interop.Reference<AURenderCallbackStruct>): number;
 
+/**
+ * @since 2.0
+ * @deprecated 100000
+ */
 declare function AUGraphStart(inGraph: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ * @deprecated 100000
+ */
 declare function AUGraphStop(inGraph: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ * @deprecated 100000
+ */
 declare function AUGraphUninitialize(inGraph: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ * @deprecated 100000
+ */
 declare function AUGraphUpdate(inGraph: interop.Pointer | interop.Reference<any>, outIsUpdated: string | interop.Pointer | interop.Reference<any>): number;
 
 declare const enum AUHostTransportStateFlags {
@@ -389,14 +593,29 @@ interface AUInputSamplesInOutputCallbackStruct {
 }
 declare var AUInputSamplesInOutputCallbackStruct: interop.StructType<AUInputSamplesInOutputCallbackStruct>;
 
+/**
+ * @since 6.0
+ */
 declare function AUListenerAddParameter(inListener: interop.Pointer | interop.Reference<any>, inObject: interop.Pointer | interop.Reference<any>, inParameter: interop.Pointer | interop.Reference<AudioUnitParameter>): number;
 
+/**
+ * @since 6.0
+ */
 declare function AUListenerCreate(inProc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<AudioUnitParameter>, p4: number) => void>, inUserData: interop.Pointer | interop.Reference<any>, inRunLoop: any, inRunLoopMode: string, inNotificationInterval: number, outListener: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
-declare function AUListenerCreateWithDispatchQueue(outListener: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, inNotificationInterval: number, inDispatchQueue: interop.Pointer | interop.Reference<any>, inBlock: (p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<AudioUnitParameter>, p3: number) => void): number;
+/**
+ * @since 6.0
+ */
+declare function AUListenerCreateWithDispatchQueue(outListener: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, inNotificationInterval: number, inDispatchQueue: NSObject & OS_dispatch_queue, inBlock: (p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<AudioUnitParameter>, p3: number) => void): number;
 
+/**
+ * @since 6.0
+ */
 declare function AUListenerDispose(inListener: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 6.0
+ */
 declare function AUListenerRemoveParameter(inListener: interop.Pointer | interop.Reference<any>, inObject: interop.Pointer | interop.Reference<any>, inParameter: interop.Pointer | interop.Reference<AudioUnitParameter>): number;
 
 interface AUMIDIOutputCallbackStruct {
@@ -405,6 +624,9 @@ interface AUMIDIOutputCallbackStruct {
 }
 declare var AUMIDIOutputCallbackStruct: interop.StructType<AUMIDIOutputCallbackStruct>;
 
+/**
+ * @since 16.0
+ */
 interface AUMessageChannel {
 
 	callHostBlock?: (p1: NSDictionary<any, any>) => NSDictionary<any, any>;
@@ -423,6 +645,9 @@ interface AUNodeRenderCallback {
 }
 declare var AUNodeRenderCallback: interop.StructType<AUNodeRenderCallback>;
 
+/**
+ * @since 9.0
+ */
 declare class AUParameter extends AUParameterNode implements NSSecureCoding {
 
 	static alloc(): AUParameter; // inherited from NSObject
@@ -459,6 +684,9 @@ declare class AUParameter extends AUParameterNode implements NSSecureCoding {
 
 	setValueOriginatorAtHostTime(value: number, originator: interop.Pointer | interop.Reference<any>, hostTime: number): void;
 
+	/**
+	 * @since 10.0
+	 */
 	setValueOriginatorAtHostTimeEventType(value: number, originator: interop.Pointer | interop.Reference<any>, hostTime: number, eventType: AUParameterAutomationEventType): void;
 
 	stringFromValue(value: interop.Pointer | interop.Reference<number>): string;
@@ -491,8 +719,14 @@ declare const enum AUParameterEventType {
 	kParameterEvent_Ramped = 2
 }
 
+/**
+ * @since 6.0
+ */
 declare function AUParameterFormatValue(inParameterValue: number, inParameter: interop.Pointer | interop.Reference<AudioUnitParameter>, inTextBuffer: string | interop.Pointer | interop.Reference<any>, inDigits: number): string;
 
+/**
+ * @since 9.0
+ */
 declare class AUParameterGroup extends AUParameterNode implements NSSecureCoding {
 
 	static alloc(): AUParameterGroup; // inherited from NSObject
@@ -512,8 +746,14 @@ declare class AUParameterGroup extends AUParameterNode implements NSSecureCoding
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 6.0
+ */
 declare function AUParameterListenerNotify(inSendingListener: interop.Pointer | interop.Reference<any>, inSendingObject: interop.Pointer | interop.Reference<any>, inParameter: interop.Pointer | interop.Reference<AudioUnitParameter>): number;
 
+/**
+ * @since 9.0
+ */
 declare class AUParameterNode extends NSObject {
 
 	static alloc(): AUParameterNode; // inherited from NSObject
@@ -540,6 +780,9 @@ declare class AUParameterNode extends NSObject {
 
 	removeParameterObserver(token: interop.Pointer | interop.Reference<any>): void;
 
+	/**
+	 * @since 10.0
+	 */
 	tokenByAddingParameterAutomationObserver(observer: (p1: number, p2: interop.Pointer | interop.Reference<AUParameterAutomationEvent>) => void): interop.Pointer | interop.Reference<any>;
 
 	tokenByAddingParameterObserver(observer: (p1: number, p2: number) => void): interop.Pointer | interop.Reference<any>;
@@ -547,8 +790,14 @@ declare class AUParameterNode extends NSObject {
 	tokenByAddingParameterRecordingObserver(observer: (p1: number, p2: interop.Pointer | interop.Reference<AURecordedParameterEvent>) => void): interop.Pointer | interop.Reference<any>;
 }
 
+/**
+ * @since 6.0
+ */
 declare function AUParameterSet(inSendingListener: interop.Pointer | interop.Reference<any>, inSendingObject: interop.Pointer | interop.Reference<any>, inParameter: interop.Pointer | interop.Reference<AudioUnitParameter>, inValue: number, inBufferOffsetInFrames: number): number;
 
+/**
+ * @since 9.0
+ */
 declare class AUParameterTree extends AUParameterGroup implements NSSecureCoding {
 
 	static alloc(): AUParameterTree; // inherited from NSObject
@@ -578,8 +827,14 @@ declare class AUParameterTree extends AUParameterGroup implements NSSecureCoding
 	parameterWithIDScopeElement(paramID: number, scope: number, element: number): AUParameter;
 }
 
+/**
+ * @since 6.0
+ */
 declare function AUParameterValueFromLinear(inLinearValue: number, inParameter: interop.Pointer | interop.Reference<AudioUnitParameter>): number;
 
+/**
+ * @since 6.0
+ */
 declare function AUParameterValueToLinear(inParameterValue: number, inParameter: interop.Pointer | interop.Reference<AudioUnitParameter>): number;
 
 interface AUPreset {
@@ -808,14 +1063,29 @@ declare const enum AudioBytePacketTranslationFlags {
 	kBytePacketTranslationFlag_IsEstimate = 1
 }
 
+/**
+ * @since 4.0
+ */
 declare function AudioCodecAppendInputBufferList(inCodec: interop.Pointer | interop.Reference<any>, inBufferList: interop.Pointer | interop.Reference<AudioBufferList>, ioNumberPackets: interop.Pointer | interop.Reference<number>, inPacketDescription: interop.Pointer | interop.Reference<AudioStreamPacketDescription>, outBytesConsumed: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioCodecAppendInputData(inCodec: interop.Pointer | interop.Reference<any>, inInputData: interop.Pointer | interop.Reference<any>, ioInputDataByteSize: interop.Pointer | interop.Reference<number>, ioNumberPackets: interop.Pointer | interop.Reference<number>, inPacketDescription: interop.Pointer | interop.Reference<AudioStreamPacketDescription>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioCodecGetProperty(inCodec: interop.Pointer | interop.Reference<any>, inPropertyID: number, ioPropertyDataSize: interop.Pointer | interop.Reference<number>, outPropertyData: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioCodecGetPropertyInfo(inCodec: interop.Pointer | interop.Reference<any>, inPropertyID: number, outSize: interop.Pointer | interop.Reference<number>, outWritable: string | interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioCodecInitialize(inCodec: interop.Pointer | interop.Reference<any>, inInputFormat: interop.Pointer | interop.Reference<AudioStreamBasicDescription>, inOutputFormat: interop.Pointer | interop.Reference<AudioStreamBasicDescription>, inMagicCookie: interop.Pointer | interop.Reference<any>, inMagicCookieByteSize: number): number;
 
 interface AudioCodecMagicCookieInfo {
@@ -830,22 +1100,49 @@ interface AudioCodecPrimeInfo {
 }
 declare var AudioCodecPrimeInfo: interop.StructType<AudioCodecPrimeInfo>;
 
+/**
+ * @since 4.0
+ */
 declare function AudioCodecProduceOutputBufferList(inCodec: interop.Pointer | interop.Reference<any>, ioBufferList: interop.Pointer | interop.Reference<AudioBufferList>, ioNumberPackets: interop.Pointer | interop.Reference<number>, outPacketDescription: interop.Pointer | interop.Reference<AudioStreamPacketDescription>, outStatus: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioCodecProduceOutputPackets(inCodec: interop.Pointer | interop.Reference<any>, outOutputData: interop.Pointer | interop.Reference<any>, ioOutputDataByteSize: interop.Pointer | interop.Reference<number>, ioNumberPackets: interop.Pointer | interop.Reference<number>, outPacketDescription: interop.Pointer | interop.Reference<AudioStreamPacketDescription>, outStatus: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioCodecReset(inCodec: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioCodecSetProperty(inCodec: interop.Pointer | interop.Reference<any>, inPropertyID: number, inPropertyDataSize: number, inPropertyData: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioCodecUninitialize(inCodec: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 16.0
+ */
 declare function AudioComponentCopyConfigurationInfo(inComponent: interop.Pointer | interop.Reference<any>, outConfigurationInfo: interop.Pointer | interop.Reference<NSDictionary<any, any>>): number;
 
+/**
+ * @since 14.0
+ */
 declare function AudioComponentCopyIcon(comp: interop.Pointer | interop.Reference<any>): UIImage;
 
+/**
+ * @since 2.0
+ */
 declare function AudioComponentCopyName(inComponent: interop.Pointer | interop.Reference<any>, outName: interop.Pointer | interop.Reference<string>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioComponentCount(inDesc: interop.Pointer | interop.Reference<AudioComponentDescription>): number;
 
 interface AudioComponentDescription {
@@ -857,6 +1154,9 @@ interface AudioComponentDescription {
 }
 declare var AudioComponentDescription: interop.StructType<AudioComponentDescription>;
 
+/**
+ * @since 2.0
+ */
 declare function AudioComponentFindNext(inComponent: interop.Pointer | interop.Reference<any>, inDesc: interop.Pointer | interop.Reference<AudioComponentDescription>): interop.Pointer | interop.Reference<any>;
 
 declare const enum AudioComponentFlags {
@@ -872,22 +1172,51 @@ declare const enum AudioComponentFlags {
 	kAudioComponentFlag_CanLoadInProcess = 16
 }
 
+/**
+ * @since 2.0
+ */
 declare function AudioComponentGetDescription(inComponent: interop.Pointer | interop.Reference<any>, outDesc: interop.Pointer | interop.Reference<AudioComponentDescription>): number;
 
+/**
+ * @since 7.0
+ * @deprecated 14.0
+ */
 declare function AudioComponentGetIcon(comp: interop.Pointer | interop.Reference<any>, desiredPointSize: number): UIImage;
 
+/**
+ * @since 7.0
+ * @deprecated 13.0
+ */
 declare function AudioComponentGetLastActiveTime(comp: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioComponentGetVersion(inComponent: interop.Pointer | interop.Reference<any>, outVersion: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 3.0
+ */
 declare function AudioComponentInstanceCanDo(inInstance: interop.Pointer | interop.Reference<any>, inSelectorID: number): boolean;
 
+/**
+ * @since 2.0
+ */
 declare function AudioComponentInstanceDispose(inInstance: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioComponentInstanceGetComponent(inInstance: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 2.0
+ */
 declare function AudioComponentInstanceNew(inComponent: interop.Pointer | interop.Reference<any>, outInstance: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
+/**
+ * @since 9.0
+ */
 declare function AudioComponentInstantiate(inComponent: interop.Pointer | interop.Reference<any>, inOptions: AudioComponentInstantiationOptions, inCompletionHandler: (p1: interop.Pointer | interop.Reference<any>, p2: number) => void): void;
 
 declare const enum AudioComponentInstantiationOptions {
@@ -907,10 +1236,19 @@ interface AudioComponentPlugInInterface {
 }
 declare var AudioComponentPlugInInterface: interop.StructType<AudioComponentPlugInInterface>;
 
+/**
+ * @since 5.0
+ */
 declare function AudioComponentRegister(inDesc: interop.Pointer | interop.Reference<AudioComponentDescription>, inName: string, inVersion: number, inFactory: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<AudioComponentDescription>) => interop.Pointer | interop.Reference<AudioComponentPlugInInterface>>): interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 16.0
+ */
 declare function AudioComponentValidate(inComponent: interop.Pointer | interop.Reference<any>, inValidationParameters: NSDictionary<any, any>, outValidationResult: interop.Pointer | interop.Reference<AudioComponentValidationResult>): number;
 
+/**
+ * @since 16.0
+ */
 declare function AudioComponentValidateWithResults(inComponent: interop.Pointer | interop.Reference<any>, inValidationParameters: NSDictionary<any, any>, inCompletionHandler: (p1: AudioComponentValidationResult, p2: NSDictionary<any, any>) => void): number;
 
 declare const enum AudioComponentValidationResult {
@@ -928,21 +1266,60 @@ declare const enum AudioComponentValidationResult {
 	kAudioComponentValidationResult_UnauthorizedError_Init = 5
 }
 
+/**
+ * @since 2.0
+ */
 declare function AudioConverterConvertBuffer(inAudioConverter: interop.Pointer | interop.Reference<any>, inInputDataSize: number, inInputData: interop.Pointer | interop.Reference<any>, ioOutputDataSize: interop.Pointer | interop.Reference<number>, outOutputData: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 5.0
+ */
 declare function AudioConverterConvertComplexBuffer(inAudioConverter: interop.Pointer | interop.Reference<any>, inNumberPCMFrames: number, inInputData: interop.Pointer | interop.Reference<AudioBufferList>, outOutputData: interop.Pointer | interop.Reference<AudioBufferList>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioConverterDispose(inAudioConverter: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioConverterFillComplexBuffer(inAudioConverter: interop.Pointer | interop.Reference<any>, inInputDataProc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<number>, p3: interop.Pointer | interop.Reference<AudioBufferList>, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<AudioStreamPacketDescription>>, p5: interop.Pointer | interop.Reference<any>) => number>, inInputDataProcUserData: interop.Pointer | interop.Reference<any>, ioOutputDataPacketSize: interop.Pointer | interop.Reference<number>, outOutputData: interop.Pointer | interop.Reference<AudioBufferList>, outPacketDescription: interop.Pointer | interop.Reference<AudioStreamPacketDescription>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioConverterGetProperty(inAudioConverter: interop.Pointer | interop.Reference<any>, inPropertyID: number, ioPropertyDataSize: interop.Pointer | interop.Reference<number>, outPropertyData: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioConverterGetPropertyInfo(inAudioConverter: interop.Pointer | interop.Reference<any>, inPropertyID: number, outSize: interop.Pointer | interop.Reference<number>, outWritable: string | interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioConverterNew(inSourceFormat: interop.Pointer | interop.Reference<AudioStreamBasicDescription>, inDestinationFormat: interop.Pointer | interop.Reference<AudioStreamBasicDescription>, outAudioConverter: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioConverterNewSpecific(inSourceFormat: interop.Pointer | interop.Reference<AudioStreamBasicDescription>, inDestinationFormat: interop.Pointer | interop.Reference<AudioStreamBasicDescription>, inNumberClassDescriptions: number, inClassDescriptions: interop.Pointer | interop.Reference<AudioClassDescription>, outAudioConverter: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+
+/**
+ * @since 18.0
+ */
+declare function AudioConverterNewWithOptions(inSourceFormat: interop.Pointer | interop.Reference<AudioStreamBasicDescription>, inDestinationFormat: interop.Pointer | interop.Reference<AudioStreamBasicDescription>, inOptions: AudioConverterOptions, outAudioConverter: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+
+declare const enum AudioConverterOptions {
+
+	kAudioConverterOption_Unbuffered = 65536
+}
+
+/**
+ * @since 18.0
+ */
+declare function AudioConverterPrepare(inFlags: number, ioReserved: interop.Pointer | interop.Reference<any>, inCompletionBlock: (p1: number) => void): void;
 
 interface AudioConverterPrimeInfo {
 	leadingFrames: number;
@@ -950,14 +1327,29 @@ interface AudioConverterPrimeInfo {
 }
 declare var AudioConverterPrimeInfo: interop.StructType<AudioConverterPrimeInfo>;
 
+/**
+ * @since 2.0
+ */
 declare function AudioConverterReset(inAudioConverter: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioConverterSetProperty(inAudioConverter: interop.Pointer | interop.Reference<any>, inPropertyID: number, inPropertyDataSize: number, inPropertyData: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioFileClose(inAudioFile: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioFileCountUserData(inAudioFile: interop.Pointer | interop.Reference<any>, inUserDataID: number, outNumberItems: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioFileCreateWithURL(inFileRef: NSURL, inFileType: number, inFormat: interop.Pointer | interop.Reference<AudioStreamBasicDescription>, inFlags: AudioFileFlags, outAudioFile: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 declare const enum AudioFileFlags {
@@ -967,22 +1359,49 @@ declare const enum AudioFileFlags {
 	kAudioFileFlags_DontPageAlignAudioData = 2
 }
 
+/**
+ * @since 2.0
+ */
 declare function AudioFileGetGlobalInfo(inPropertyID: number, inSpecifierSize: number, inSpecifier: interop.Pointer | interop.Reference<any>, ioDataSize: interop.Pointer | interop.Reference<number>, outPropertyData: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioFileGetGlobalInfoSize(inPropertyID: number, inSpecifierSize: number, inSpecifier: interop.Pointer | interop.Reference<any>, outDataSize: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioFileGetProperty(inAudioFile: interop.Pointer | interop.Reference<any>, inPropertyID: number, ioDataSize: interop.Pointer | interop.Reference<number>, outPropertyData: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioFileGetPropertyInfo(inAudioFile: interop.Pointer | interop.Reference<any>, inPropertyID: number, outDataSize: interop.Pointer | interop.Reference<number>, isWritable: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioFileGetUserData(inAudioFile: interop.Pointer | interop.Reference<any>, inUserDataID: number, inIndex: number, ioUserDataSize: interop.Pointer | interop.Reference<number>, outUserData: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 17.0
+ */
 declare function AudioFileGetUserDataAtOffset(inAudioFile: interop.Pointer | interop.Reference<any>, inUserDataID: number, inIndex: number, inOffset: number, ioUserDataSize: interop.Pointer | interop.Reference<number>, outUserData: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioFileGetUserDataSize(inAudioFile: interop.Pointer | interop.Reference<any>, inUserDataID: number, inIndex: number, outUserDataSize: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 17.0
+ */
 declare function AudioFileGetUserDataSize64(inAudioFile: interop.Pointer | interop.Reference<any>, inUserDataID: number, inIndex: number, outUserDataSize: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioFileInitializeWithCallbacks(inClientData: interop.Pointer | interop.Reference<any>, inReadFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: interop.Pointer | interop.Reference<any>, p5: interop.Pointer | interop.Reference<number>) => number>, inWriteFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: interop.Pointer | interop.Reference<any>, p5: interop.Pointer | interop.Reference<number>) => number>, inGetSizeFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>, inSetSizeFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number) => number>, inFileType: number, inFormat: interop.Pointer | interop.Reference<AudioStreamBasicDescription>, inFlags: AudioFileFlags, outAudioFile: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 interface AudioFileMarker {
@@ -1003,10 +1422,19 @@ interface AudioFileMarkerList {
 }
 declare var AudioFileMarkerList: interop.StructType<AudioFileMarkerList>;
 
+/**
+ * @since 2.0
+ */
 declare function AudioFileOpenURL(inFileRef: NSURL, inPermissions: AudioFilePermissions, inFileTypeHint: number, outAudioFile: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioFileOpenWithCallbacks(inClientData: interop.Pointer | interop.Reference<any>, inReadFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: interop.Pointer | interop.Reference<any>, p5: interop.Pointer | interop.Reference<number>) => number>, inWriteFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: interop.Pointer | interop.Reference<any>, p5: interop.Pointer | interop.Reference<number>) => number>, inGetSizeFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>, inSetSizeFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number) => number>, inFileTypeHint: number, outAudioFile: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioFileOptimize(inAudioFile: interop.Pointer | interop.Reference<any>): number;
 
 interface AudioFilePacketTableInfo {
@@ -1025,10 +1453,20 @@ declare const enum AudioFilePermissions {
 	kAudioFileReadWritePermission = 3
 }
 
+/**
+ * @since 2.0
+ */
 declare function AudioFileReadBytes(inAudioFile: interop.Pointer | interop.Reference<any>, inUseCache: boolean, inStartingByte: number, ioNumBytes: interop.Pointer | interop.Reference<number>, outBuffer: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.2
+ */
 declare function AudioFileReadPacketData(inAudioFile: interop.Pointer | interop.Reference<any>, inUseCache: boolean, ioNumBytes: interop.Pointer | interop.Reference<number>, outPacketDescriptions: interop.Pointer | interop.Reference<AudioStreamPacketDescription>, inStartingPacket: number, ioNumPackets: interop.Pointer | interop.Reference<number>, outBuffer: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ * @deprecated 8.0
+ */
 declare function AudioFileReadPackets(inAudioFile: interop.Pointer | interop.Reference<any>, inUseCache: boolean, outNumBytes: interop.Pointer | interop.Reference<number>, outPacketDescriptions: interop.Pointer | interop.Reference<AudioStreamPacketDescription>, inStartingPacket: number, ioNumPackets: interop.Pointer | interop.Reference<number>, outBuffer: interop.Pointer | interop.Reference<any>): number;
 
 interface AudioFileRegion {
@@ -1056,20 +1494,44 @@ interface AudioFileRegionList {
 }
 declare var AudioFileRegionList: interop.StructType<AudioFileRegionList>;
 
+/**
+ * @since 2.0
+ */
 declare function AudioFileRemoveUserData(inAudioFile: interop.Pointer | interop.Reference<any>, inUserDataID: number, inIndex: number): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioFileSetProperty(inAudioFile: interop.Pointer | interop.Reference<any>, inPropertyID: number, inDataSize: number, inPropertyData: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioFileSetUserData(inAudioFile: interop.Pointer | interop.Reference<any>, inUserDataID: number, inIndex: number, inUserDataSize: number, inUserData: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioFileStreamClose(inAudioFileStream: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioFileStreamGetProperty(inAudioFileStream: interop.Pointer | interop.Reference<any>, inPropertyID: number, ioPropertyDataSize: interop.Pointer | interop.Reference<number>, outPropertyData: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioFileStreamGetPropertyInfo(inAudioFileStream: interop.Pointer | interop.Reference<any>, inPropertyID: number, outPropertyDataSize: interop.Pointer | interop.Reference<number>, outWritable: string | interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioFileStreamOpen(inClientData: interop.Pointer | interop.Reference<any>, inPropertyListenerProc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: interop.Pointer | interop.Reference<AudioFileStreamPropertyFlags>) => void>, inPacketsProc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: interop.Pointer | interop.Reference<any>, p5: interop.Pointer | interop.Reference<AudioStreamPacketDescription>) => void>, inFileTypeHint: number, outAudioFileStream: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioFileStreamParseBytes(inAudioFileStream: interop.Pointer | interop.Reference<any>, inDataByteSize: number, inData: interop.Pointer | interop.Reference<any>, inFlags: AudioFileStreamParseFlags): number;
 
 declare const enum AudioFileStreamParseFlags {
@@ -1084,6 +1546,9 @@ declare const enum AudioFileStreamPropertyFlags {
 	kAudioFileStreamPropertyFlag_CacheProperty = 2
 }
 
+/**
+ * @since 2.0
+ */
 declare function AudioFileStreamSeek(inAudioFileStream: interop.Pointer | interop.Reference<any>, inPacketOffset: number, outDataByteOffset: interop.Pointer | interop.Reference<number>, ioFlags: interop.Pointer | interop.Reference<AudioFileStreamSeekFlags>): number;
 
 declare const enum AudioFileStreamSeekFlags {
@@ -1091,6 +1556,9 @@ declare const enum AudioFileStreamSeekFlags {
 	kAudioFileStreamSeekFlag_OffsetIsEstimated = 1
 }
 
+/**
+ * @since 2.0
+ */
 declare function AudioFileStreamSetProperty(inAudioFileStream: interop.Pointer | interop.Reference<any>, inPropertyID: number, inPropertyDataSize: number, inPropertyData: interop.Pointer | interop.Reference<any>): number;
 
 interface AudioFileTypeAndFormatID {
@@ -1099,8 +1567,14 @@ interface AudioFileTypeAndFormatID {
 }
 declare var AudioFileTypeAndFormatID: interop.StructType<AudioFileTypeAndFormatID>;
 
+/**
+ * @since 2.0
+ */
 declare function AudioFileWriteBytes(inAudioFile: interop.Pointer | interop.Reference<any>, inUseCache: boolean, inStartingByte: number, ioNumBytes: interop.Pointer | interop.Reference<number>, inBuffer: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioFileWritePackets(inAudioFile: interop.Pointer | interop.Reference<any>, inUseCache: boolean, inNumBytes: number, inPacketDescriptions: interop.Pointer | interop.Reference<AudioStreamPacketDescription>, inStartingPacket: number, ioNumPackets: interop.Pointer | interop.Reference<number>, inBuffer: interop.Pointer | interop.Reference<any>): number;
 
 interface AudioFile_SMPTE_Time {
@@ -1112,8 +1586,14 @@ interface AudioFile_SMPTE_Time {
 }
 declare var AudioFile_SMPTE_Time: interop.StructType<AudioFile_SMPTE_Time>;
 
+/**
+ * @since 2.0
+ */
 declare function AudioFormatGetProperty(inPropertyID: number, inSpecifierSize: number, inSpecifier: interop.Pointer | interop.Reference<any>, ioPropertyDataSize: interop.Pointer | interop.Reference<number>, outPropertyData: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioFormatGetPropertyInfo(inPropertyID: number, inSpecifierSize: number, inSpecifier: interop.Pointer | interop.Reference<any>, outPropertyDataSize: interop.Pointer | interop.Reference<number>): number;
 
 interface AudioFormatInfo {
@@ -1136,6 +1616,10 @@ interface AudioIndependentPacketTranslation {
 }
 declare var AudioIndependentPacketTranslation: interop.StructType<AudioIndependentPacketTranslation>;
 
+/**
+ * @since 7.0
+ * @deprecated 13.0
+ */
 declare function AudioOutputUnitGetHostIcon(au: interop.Pointer | interop.Reference<any>, desiredPointSize: number): UIImage;
 
 interface AudioOutputUnitMIDICallbacks {
@@ -1145,8 +1629,15 @@ interface AudioOutputUnitMIDICallbacks {
 }
 declare var AudioOutputUnitMIDICallbacks: interop.StructType<AudioOutputUnitMIDICallbacks>;
 
+/**
+ * @since 7.0
+ * @deprecated 13.0
+ */
 declare function AudioOutputUnitPublish(inDesc: interop.Pointer | interop.Reference<AudioComponentDescription>, inName: string, inVersion: number, inOutputUnit: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioOutputUnitStart(ci: interop.Pointer | interop.Reference<any>): number;
 
 interface AudioOutputUnitStartAtTimeParams {
@@ -1155,6 +1646,9 @@ interface AudioOutputUnitStartAtTimeParams {
 }
 declare var AudioOutputUnitStartAtTimeParams: interop.StructType<AudioOutputUnitStartAtTimeParams>;
 
+/**
+ * @since 2.0
+ */
 declare function AudioOutputUnitStop(ci: interop.Pointer | interop.Reference<any>): number;
 
 interface AudioPacketDependencyInfoTranslation {
@@ -1193,10 +1687,19 @@ declare const enum AudioPanningMode {
 	kPanningMode_VectorBasedPanning = 4
 }
 
+/**
+ * @since 2.0
+ */
 declare function AudioQueueAddPropertyListener(inAQ: interop.Pointer | interop.Reference<any>, inID: number, inProc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number) => void>, inUserData: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioQueueAllocateBuffer(inAQ: interop.Pointer | interop.Reference<any>, inBufferByteSize: number, outBuffer: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<AudioQueueBuffer>>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioQueueAllocateBufferWithPacketDescriptions(inAQ: interop.Pointer | interop.Reference<any>, inBufferByteSize: number, inNumberPacketDescriptions: number, outBuffer: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<AudioQueueBuffer>>): number;
 
 interface AudioQueueBuffer {
@@ -1216,32 +1719,74 @@ interface AudioQueueChannelAssignment {
 }
 declare var AudioQueueChannelAssignment: interop.StructType<AudioQueueChannelAssignment>;
 
+/**
+ * @since 2.0
+ */
 declare function AudioQueueCreateTimeline(inAQ: interop.Pointer | interop.Reference<any>, outTimeline: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioQueueDeviceGetCurrentTime(inAQ: interop.Pointer | interop.Reference<any>, outTimeStamp: interop.Pointer | interop.Reference<AudioTimeStamp>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioQueueDeviceGetNearestStartTime(inAQ: interop.Pointer | interop.Reference<any>, ioRequestedStartTime: interop.Pointer | interop.Reference<AudioTimeStamp>, inFlags: number): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioQueueDeviceTranslateTime(inAQ: interop.Pointer | interop.Reference<any>, inTime: interop.Pointer | interop.Reference<AudioTimeStamp>, outTime: interop.Pointer | interop.Reference<AudioTimeStamp>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioQueueDispose(inAQ: interop.Pointer | interop.Reference<any>, inImmediate: boolean): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioQueueDisposeTimeline(inAQ: interop.Pointer | interop.Reference<any>, inTimeline: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioQueueEnqueueBuffer(inAQ: interop.Pointer | interop.Reference<any>, inBuffer: interop.Pointer | interop.Reference<AudioQueueBuffer>, inNumPacketDescs: number, inPacketDescs: interop.Pointer | interop.Reference<AudioStreamPacketDescription>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioQueueEnqueueBufferWithParameters(inAQ: interop.Pointer | interop.Reference<any>, inBuffer: interop.Pointer | interop.Reference<AudioQueueBuffer>, inNumPacketDescs: number, inPacketDescs: interop.Pointer | interop.Reference<AudioStreamPacketDescription>, inTrimFramesAtStart: number, inTrimFramesAtEnd: number, inNumParamValues: number, inParamValues: interop.Pointer | interop.Reference<AudioQueueParameterEvent>, inStartTime: interop.Pointer | interop.Reference<AudioTimeStamp>, outActualStartTime: interop.Pointer | interop.Reference<AudioTimeStamp>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioQueueFlush(inAQ: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioQueueFreeBuffer(inAQ: interop.Pointer | interop.Reference<any>, inBuffer: interop.Pointer | interop.Reference<AudioQueueBuffer>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioQueueGetCurrentTime(inAQ: interop.Pointer | interop.Reference<any>, inTimeline: interop.Pointer | interop.Reference<any>, outTimeStamp: interop.Pointer | interop.Reference<AudioTimeStamp>, outTimelineDiscontinuity: string | interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioQueueGetParameter(inAQ: interop.Pointer | interop.Reference<any>, inParamID: number, outValue: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioQueueGetProperty(inAQ: interop.Pointer | interop.Reference<any>, inID: number, outData: interop.Pointer | interop.Reference<any>, ioDataSize: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioQueueGetPropertySize(inAQ: interop.Pointer | interop.Reference<any>, inID: number, outDataSize: interop.Pointer | interop.Reference<number>): number;
 
 interface AudioQueueLevelMeterState {
@@ -1250,14 +1795,29 @@ interface AudioQueueLevelMeterState {
 }
 declare var AudioQueueLevelMeterState: interop.StructType<AudioQueueLevelMeterState>;
 
+/**
+ * @since 2.0
+ */
 declare function AudioQueueNewInput(inFormat: interop.Pointer | interop.Reference<AudioStreamBasicDescription>, inCallbackProc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<AudioQueueBuffer>, p4: interop.Pointer | interop.Reference<AudioTimeStamp>, p5: number, p6: interop.Pointer | interop.Reference<AudioStreamPacketDescription>) => void>, inUserData: interop.Pointer | interop.Reference<any>, inCallbackRunLoop: any, inCallbackRunLoopMode: string, inFlags: number, outAQ: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
-declare function AudioQueueNewInputWithDispatchQueue(outAQ: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, inFormat: interop.Pointer | interop.Reference<AudioStreamBasicDescription>, inFlags: number, inCallbackDispatchQueue: interop.Pointer | interop.Reference<any>, inCallbackBlock: (p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<AudioQueueBuffer>, p3: interop.Pointer | interop.Reference<AudioTimeStamp>, p4: number, p5: interop.Pointer | interop.Reference<AudioStreamPacketDescription>) => void): number;
+/**
+ * @since 10.0
+ */
+declare function AudioQueueNewInputWithDispatchQueue(outAQ: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, inFormat: interop.Pointer | interop.Reference<AudioStreamBasicDescription>, inFlags: number, inCallbackDispatchQueue: NSObject & OS_dispatch_queue, inCallbackBlock: (p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<AudioQueueBuffer>, p3: interop.Pointer | interop.Reference<AudioTimeStamp>, p4: number, p5: interop.Pointer | interop.Reference<AudioStreamPacketDescription>) => void): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioQueueNewOutput(inFormat: interop.Pointer | interop.Reference<AudioStreamBasicDescription>, inCallbackProc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<AudioQueueBuffer>) => void>, inUserData: interop.Pointer | interop.Reference<any>, inCallbackRunLoop: any, inCallbackRunLoopMode: string, inFlags: number, outAQ: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
-declare function AudioQueueNewOutputWithDispatchQueue(outAQ: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, inFormat: interop.Pointer | interop.Reference<AudioStreamBasicDescription>, inFlags: number, inCallbackDispatchQueue: interop.Pointer | interop.Reference<any>, inCallbackBlock: (p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<AudioQueueBuffer>) => void): number;
+/**
+ * @since 10.0
+ */
+declare function AudioQueueNewOutputWithDispatchQueue(outAQ: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, inFormat: interop.Pointer | interop.Reference<AudioStreamBasicDescription>, inFlags: number, inCallbackDispatchQueue: NSObject & OS_dispatch_queue, inCallbackBlock: (p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<AudioQueueBuffer>) => void): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioQueueOfflineRender(inAQ: interop.Pointer | interop.Reference<any>, inTimestamp: interop.Pointer | interop.Reference<AudioTimeStamp>, ioBuffer: interop.Pointer | interop.Reference<AudioQueueBuffer>, inNumberFrames: number): number;
 
 interface AudioQueueParameterEvent {
@@ -1266,10 +1826,19 @@ interface AudioQueueParameterEvent {
 }
 declare var AudioQueueParameterEvent: interop.StructType<AudioQueueParameterEvent>;
 
+/**
+ * @since 2.0
+ */
 declare function AudioQueuePause(inAQ: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioQueuePrime(inAQ: interop.Pointer | interop.Reference<any>, inNumberOfFramesToPrepare: number, outNumberOfFramesPrepared: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 6.0
+ */
 declare function AudioQueueProcessingTapDispose(inAQTap: interop.Pointer | interop.Reference<any>): number;
 
 declare const enum AudioQueueProcessingTapFlags {
@@ -1285,64 +1854,163 @@ declare const enum AudioQueueProcessingTapFlags {
 	kAudioQueueProcessingTap_EndOfStream = 512
 }
 
+/**
+ * @since 6.0
+ */
 declare function AudioQueueProcessingTapGetQueueTime(inAQTap: interop.Pointer | interop.Reference<any>, outQueueSampleTime: interop.Pointer | interop.Reference<number>, outQueueFrameCount: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 6.0
+ */
 declare function AudioQueueProcessingTapGetSourceAudio(inAQTap: interop.Pointer | interop.Reference<any>, inNumberFrames: number, ioTimeStamp: interop.Pointer | interop.Reference<AudioTimeStamp>, outFlags: interop.Pointer | interop.Reference<AudioQueueProcessingTapFlags>, outNumberFrames: interop.Pointer | interop.Reference<number>, ioData: interop.Pointer | interop.Reference<AudioBufferList>): number;
 
+/**
+ * @since 6.0
+ */
 declare function AudioQueueProcessingTapNew(inAQ: interop.Pointer | interop.Reference<any>, inCallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: interop.Pointer | interop.Reference<AudioTimeStamp>, p5: interop.Pointer | interop.Reference<AudioQueueProcessingTapFlags>, p6: interop.Pointer | interop.Reference<number>, p7: interop.Pointer | interop.Reference<AudioBufferList>) => void>, inClientData: interop.Pointer | interop.Reference<any>, inFlags: AudioQueueProcessingTapFlags, outMaxFrames: interop.Pointer | interop.Reference<number>, outProcessingFormat: interop.Pointer | interop.Reference<AudioStreamBasicDescription>, outAQTap: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioQueueRemovePropertyListener(inAQ: interop.Pointer | interop.Reference<any>, inID: number, inProc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number) => void>, inUserData: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioQueueReset(inAQ: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioQueueSetOfflineRenderFormat(inAQ: interop.Pointer | interop.Reference<any>, inFormat: interop.Pointer | interop.Reference<AudioStreamBasicDescription>, inLayout: interop.Pointer | interop.Reference<AudioChannelLayout>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioQueueSetParameter(inAQ: interop.Pointer | interop.Reference<any>, inParamID: number, inValue: number): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioQueueSetProperty(inAQ: interop.Pointer | interop.Reference<any>, inID: number, inData: interop.Pointer | interop.Reference<any>, inDataSize: number): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioQueueStart(inAQ: interop.Pointer | interop.Reference<any>, inStartTime: interop.Pointer | interop.Reference<AudioTimeStamp>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioQueueStop(inAQ: interop.Pointer | interop.Reference<any>, inImmediate: boolean): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioServicesAddSystemSoundCompletion(inSystemSoundID: number, inRunLoop: any, inRunLoopMode: string, inCompletionRoutine: interop.FunctionReference<(p1: number, p2: interop.Pointer | interop.Reference<any>) => void>, inClientData: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioServicesCreateSystemSoundID(inFileURL: NSURL, outSystemSoundID: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioServicesDisposeSystemSoundID(inSystemSoundID: number): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioServicesGetProperty(inPropertyID: number, inSpecifierSize: number, inSpecifier: interop.Pointer | interop.Reference<any>, ioPropertyDataSize: interop.Pointer | interop.Reference<number>, outPropertyData: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioServicesGetPropertyInfo(inPropertyID: number, inSpecifierSize: number, inSpecifier: interop.Pointer | interop.Reference<any>, outPropertyDataSize: interop.Pointer | interop.Reference<number>, outWritable: string | interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioServicesPlayAlertSound(inSystemSoundID: number): void;
 
+/**
+ * @since 9.0
+ */
 declare function AudioServicesPlayAlertSoundWithCompletion(inSystemSoundID: number, inCompletionBlock: () => void): void;
 
+/**
+ * @since 2.0
+ */
 declare function AudioServicesPlaySystemSound(inSystemSoundID: number): void;
 
+/**
+ * @since 9.0
+ */
 declare function AudioServicesPlaySystemSoundWithCompletion(inSystemSoundID: number, inCompletionBlock: () => void): void;
 
+/**
+ * @since 2.0
+ */
 declare function AudioServicesRemoveSystemSoundCompletion(inSystemSoundID: number): void;
 
+/**
+ * @since 2.0
+ */
 declare function AudioServicesSetProperty(inPropertyID: number, inSpecifierSize: number, inSpecifier: interop.Pointer | interop.Reference<any>, inPropertyDataSize: number, inPropertyData: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ * @deprecated 7.0
+ */
 declare function AudioSessionAddPropertyListener(inID: number, inProc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: interop.Pointer | interop.Reference<any>) => void>, inClientData: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ * @deprecated 7.0
+ */
 declare function AudioSessionGetProperty(inID: number, ioDataSize: interop.Pointer | interop.Reference<number>, outData: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ * @deprecated 7.0
+ */
 declare function AudioSessionGetPropertySize(inID: number, outDataSize: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 2.0
+ * @deprecated 7.0
+ */
 declare function AudioSessionInitialize(inRunLoop: any, inRunLoopMode: string, inInterruptionListener: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number) => void>, inClientData: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ * @deprecated 2.0
+ */
 declare function AudioSessionRemovePropertyListener(inID: number): number;
 
+/**
+ * @since 2.1
+ * @deprecated 7.0
+ */
 declare function AudioSessionRemovePropertyListenerWithUserData(inID: number, inProc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: interop.Pointer | interop.Reference<any>) => void>, inClientData: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ * @deprecated 7.0
+ */
 declare function AudioSessionSetActive(active: boolean): number;
 
+/**
+ * @since 4.0
+ * @deprecated 7.0
+ */
 declare function AudioSessionSetActiveWithFlags(active: boolean, inFlags: number): number;
 
+/**
+ * @since 2.0
+ * @deprecated 7.0
+ */
 declare function AudioSessionSetProperty(inID: number, inDataSize: number, inData: interop.Pointer | interop.Reference<any>): number;
 
 declare const enum AudioSettingsFlags {
@@ -1356,8 +2024,14 @@ declare const enum AudioSettingsFlags {
 	kAudioSettingsFlags_UserInterfaceParameter = 8
 }
 
+/**
+ * @since 2.0
+ */
 declare function AudioUnitAddPropertyListener(inUnit: interop.Pointer | interop.Reference<any>, inID: number, inProc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: number, p5: number) => void>, inProcUserData: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioUnitAddRenderNotify(inUnit: interop.Pointer | interop.Reference<any>, inProc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<AudioUnitRenderActionFlags>, p3: interop.Pointer | interop.Reference<AudioTimeStamp>, p4: number, p5: number, p6: interop.Pointer | interop.Reference<AudioBufferList>) => number>, inProcUserData: interop.Pointer | interop.Reference<any>): number;
 
 interface AudioUnitConnection {
@@ -1378,8 +2052,14 @@ declare const enum AudioUnitEventType {
 	kAudioUnitEvent_PropertyChange = 3
 }
 
+/**
+ * @since 11.0
+ */
 declare function AudioUnitExtensionCopyComponentList(extensionIdentifier: string): interop.Unmanaged<NSArray<any>>;
 
+/**
+ * @since 11.0
+ */
 declare function AudioUnitExtensionSetComponentList(extensionIdentifier: string, audioComponentInfo: NSArray<any> | any[]): number;
 
 interface AudioUnitExternalBuffer {
@@ -1394,12 +2074,24 @@ interface AudioUnitFrequencyResponseBin {
 }
 declare var AudioUnitFrequencyResponseBin: interop.StructType<AudioUnitFrequencyResponseBin>;
 
+/**
+ * @since 2.0
+ */
 declare function AudioUnitGetParameter(inUnit: interop.Pointer | interop.Reference<any>, inID: number, inScope: number, inElement: number, outValue: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioUnitGetProperty(inUnit: interop.Pointer | interop.Reference<any>, inID: number, inScope: number, inElement: number, outData: interop.Pointer | interop.Reference<any>, ioDataSize: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioUnitGetPropertyInfo(inUnit: interop.Pointer | interop.Reference<any>, inID: number, inScope: number, inElement: number, outDataSize: interop.Pointer | interop.Reference<number>, outWritable: string | interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioUnitInitialize(inUnit: interop.Pointer | interop.Reference<any>): number;
 
 interface AudioUnitMeterClipping {
@@ -1571,8 +2263,14 @@ interface AudioUnitParameterValueFromString {
 }
 declare var AudioUnitParameterValueFromString: interop.StructType<AudioUnitParameterValueFromString>;
 
+/**
+ * @since 6.0
+ */
 declare function AudioUnitProcess(inUnit: interop.Pointer | interop.Reference<any>, ioActionFlags: interop.Pointer | interop.Reference<AudioUnitRenderActionFlags>, inTimeStamp: interop.Pointer | interop.Reference<AudioTimeStamp>, inNumberFrames: number, ioData: interop.Pointer | interop.Reference<AudioBufferList>): number;
 
+/**
+ * @since 6.0
+ */
 declare function AudioUnitProcessMultiple(inUnit: interop.Pointer | interop.Reference<any>, ioActionFlags: interop.Pointer | interop.Reference<AudioUnitRenderActionFlags>, inTimeStamp: interop.Pointer | interop.Reference<AudioTimeStamp>, inNumberFrames: number, inNumberInputBufferLists: number, inInputBufferLists: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<AudioBufferList>>, inNumberOutputBufferLists: number, ioOutputBufferLists: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<AudioBufferList>>): number;
 
 interface AudioUnitProperty {
@@ -1592,10 +2290,19 @@ declare const enum AudioUnitRemoteControlEvent {
 	kAudioUnitRemoteControlEvent_Rewind = 3
 }
 
+/**
+ * @since 2.0
+ */
 declare function AudioUnitRemovePropertyListenerWithUserData(inUnit: interop.Pointer | interop.Reference<any>, inID: number, inProc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: number, p5: number) => void>, inProcUserData: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioUnitRemoveRenderNotify(inUnit: interop.Pointer | interop.Reference<any>, inProc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<AudioUnitRenderActionFlags>, p3: interop.Pointer | interop.Reference<AudioTimeStamp>, p4: number, p5: number, p6: interop.Pointer | interop.Reference<AudioBufferList>) => number>, inProcUserData: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioUnitRender(inUnit: interop.Pointer | interop.Reference<any>, ioActionFlags: interop.Pointer | interop.Reference<AudioUnitRenderActionFlags>, inTimeStamp: interop.Pointer | interop.Reference<AudioTimeStamp>, inOutputBusNumber: number, inNumberFrames: number, ioData: interop.Pointer | interop.Reference<AudioBufferList>): number;
 
 declare const enum AudioUnitRenderActionFlags {
@@ -1618,20 +2325,35 @@ declare const enum AudioUnitRenderActionFlags {
 }
 
 interface AudioUnitRenderContext {
-	workgroup: interop.Pointer | interop.Reference<any>;
+	workgroup: OS_os_workgroup;
 	reserved: interop.Reference<number>;
 }
 declare var AudioUnitRenderContext: interop.StructType<AudioUnitRenderContext>;
 
+/**
+ * @since 2.0
+ */
 declare function AudioUnitReset(inUnit: interop.Pointer | interop.Reference<any>, inScope: number, inElement: number): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioUnitSetParameter(inUnit: interop.Pointer | interop.Reference<any>, inID: number, inScope: number, inElement: number, inValue: number, inBufferOffsetInFrames: number): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioUnitSetProperty(inUnit: interop.Pointer | interop.Reference<any>, inID: number, inScope: number, inElement: number, inData: interop.Pointer | interop.Reference<any>, inDataSize: number): number;
 
+/**
+ * @since 2.0
+ */
 declare function AudioUnitUninitialize(inUnit: interop.Pointer | interop.Reference<any>): number;
 
-declare function AudioWorkIntervalCreate(name: string | interop.Pointer | interop.Reference<any>, clock: os_clockid_t, attr: interop.Pointer | interop.Reference<os_workgroup_attr_opaque_s>): interop.Pointer | interop.Reference<any>;
+/**
+ * @since 14.0
+ */
+declare function AudioWorkIntervalCreate(name: string | interop.Pointer | interop.Reference<any>, clock: os_clockid_t, attr: interop.Pointer | interop.Reference<os_workgroup_attr_opaque_s>): OS_os_workgroup & OS_os_workgroup_intervalProtocol;
 
 interface CABarBeatTime {
 	bar: number;
@@ -1810,44 +2532,105 @@ interface CAF_UUID_ChunkHeader {
 }
 declare var CAF_UUID_ChunkHeader: interop.StructType<CAF_UUID_ChunkHeader>;
 
+/**
+ * @since 2.0
+ */
 declare function CAShow(inObject: interop.Pointer | interop.Reference<any>): void;
 
+/**
+ * @since 2.0
+ */
 declare function CAShowFile(inObject: interop.Pointer | interop.Reference<any>, inFile: interop.Pointer | interop.Reference<FILE>): void;
 
+/**
+ * @since 7.0
+ */
 declare function CopyInstrumentInfoFromSoundBank(inURL: NSURL, outInstrumentInfo: interop.Pointer | interop.Reference<NSArray<any>>): number;
 
+/**
+ * @since 7.0
+ */
 declare function CopyNameFromSoundBank(inURL: NSURL, outName: interop.Pointer | interop.Reference<string>): number;
 
+/**
+ * @since 2.0
+ * @deprecated 100000
+ */
 declare function DisposeAUGraph(inGraph: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 5.0
+ */
 declare function DisposeMusicEventIterator(inIterator: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 5.0
+ */
 declare function DisposeMusicPlayer(inPlayer: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 5.0
+ */
 declare function DisposeMusicSequence(inSequence: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.1
+ */
 declare function ExtAudioFileCreateWithURL(inURL: NSURL, inFileType: number, inStreamDesc: interop.Pointer | interop.Reference<AudioStreamBasicDescription>, inChannelLayout: interop.Pointer | interop.Reference<AudioChannelLayout>, inFlags: number, outExtAudioFile: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
+/**
+ * @since 2.1
+ */
 declare function ExtAudioFileDispose(inExtAudioFile: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.1
+ */
 declare function ExtAudioFileGetProperty(inExtAudioFile: interop.Pointer | interop.Reference<any>, inPropertyID: number, ioPropertyDataSize: interop.Pointer | interop.Reference<number>, outPropertyData: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.1
+ */
 declare function ExtAudioFileGetPropertyInfo(inExtAudioFile: interop.Pointer | interop.Reference<any>, inPropertyID: number, outSize: interop.Pointer | interop.Reference<number>, outWritable: string | interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.1
+ */
 declare function ExtAudioFileOpenURL(inURL: NSURL, outExtAudioFile: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
+/**
+ * @since 2.1
+ */
 declare function ExtAudioFileRead(inExtAudioFile: interop.Pointer | interop.Reference<any>, ioNumberFrames: interop.Pointer | interop.Reference<number>, ioData: interop.Pointer | interop.Reference<AudioBufferList>): number;
 
+/**
+ * @since 2.1
+ */
 declare function ExtAudioFileSeek(inExtAudioFile: interop.Pointer | interop.Reference<any>, inFrameOffset: number): number;
 
+/**
+ * @since 2.1
+ */
 declare function ExtAudioFileSetProperty(inExtAudioFile: interop.Pointer | interop.Reference<any>, inPropertyID: number, inPropertyDataSize: number, inPropertyData: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.1
+ */
 declare function ExtAudioFileTell(inExtAudioFile: interop.Pointer | interop.Reference<any>, outFrameOffset: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 2.1
+ */
 declare function ExtAudioFileWrapAudioFileID(inFileID: interop.Pointer | interop.Reference<any>, inForWriting: boolean, outExtAudioFile: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
+/**
+ * @since 2.1
+ */
 declare function ExtAudioFileWrite(inExtAudioFile: interop.Pointer | interop.Reference<any>, inNumberFrames: number, ioData: interop.Pointer | interop.Reference<AudioBufferList>): number;
 
+/**
+ * @since 2.1
+ */
 declare function ExtAudioFileWriteAsync(inExtAudioFile: interop.Pointer | interop.Reference<any>, inNumberFrames: number, ioData: interop.Pointer | interop.Reference<AudioBufferList>): number;
 
 interface ExtendedAudioFormatInfo {
@@ -1920,8 +2703,14 @@ interface MixerDistanceParams {
 }
 declare var MixerDistanceParams: interop.StructType<MixerDistanceParams>;
 
+/**
+ * @since 5.0
+ */
 declare function MusicDeviceMIDIEvent(inUnit: interop.Pointer | interop.Reference<any>, inStatus: number, inData1: number, inData2: number, inOffsetSampleFrame: number): number;
 
+/**
+ * @since 15.0
+ */
 declare function MusicDeviceMIDIEventList(inUnit: interop.Pointer | interop.Reference<any>, inOffsetSampleFrame: number, evtList: interop.Pointer | interop.Reference<MIDIEventList>): number;
 
 interface MusicDeviceNoteParams {
@@ -1932,6 +2721,9 @@ interface MusicDeviceNoteParams {
 }
 declare var MusicDeviceNoteParams: interop.StructType<MusicDeviceNoteParams>;
 
+/**
+ * @since 5.0
+ */
 declare function MusicDeviceStartNote(inUnit: interop.Pointer | interop.Reference<any>, inInstrument: number, inGroupID: number, outNoteInstanceID: interop.Pointer | interop.Reference<number>, inOffsetSampleFrame: number, inParams: interop.Pointer | interop.Reference<MusicDeviceNoteParams>): number;
 
 interface MusicDeviceStdNoteParams {
@@ -1941,28 +2733,64 @@ interface MusicDeviceStdNoteParams {
 }
 declare var MusicDeviceStdNoteParams: interop.StructType<MusicDeviceStdNoteParams>;
 
+/**
+ * @since 5.0
+ */
 declare function MusicDeviceStopNote(inUnit: interop.Pointer | interop.Reference<any>, inGroupID: number, inNoteInstanceID: number, inOffsetSampleFrame: number): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicDeviceSysEx(inUnit: interop.Pointer | interop.Reference<any>, inData: string | interop.Pointer | interop.Reference<any>, inLength: number): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicEventIteratorDeleteEvent(inIterator: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicEventIteratorGetEventInfo(inIterator: interop.Pointer | interop.Reference<any>, outTimeStamp: interop.Pointer | interop.Reference<number>, outEventType: interop.Pointer | interop.Reference<number>, outEventData: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, outEventDataSize: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicEventIteratorHasCurrentEvent(inIterator: interop.Pointer | interop.Reference<any>, outHasCurEvent: string | interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicEventIteratorHasNextEvent(inIterator: interop.Pointer | interop.Reference<any>, outHasNextEvent: string | interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicEventIteratorHasPreviousEvent(inIterator: interop.Pointer | interop.Reference<any>, outHasPrevEvent: string | interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicEventIteratorNextEvent(inIterator: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicEventIteratorPreviousEvent(inIterator: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicEventIteratorSeek(inIterator: interop.Pointer | interop.Reference<any>, inTimeStamp: number): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicEventIteratorSetEventInfo(inIterator: interop.Pointer | interop.Reference<any>, inEventType: number, inEventData: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicEventIteratorSetEventTime(inIterator: interop.Pointer | interop.Reference<any>, inTimeStamp: number): number;
 
 interface MusicEventUserData {
@@ -1971,38 +2799,89 @@ interface MusicEventUserData {
 }
 declare var MusicEventUserData: interop.StructType<MusicEventUserData>;
 
+/**
+ * @since 5.0
+ */
 declare function MusicPlayerGetBeatsForHostTime(inPlayer: interop.Pointer | interop.Reference<any>, inHostTime: number, outBeats: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicPlayerGetHostTimeForBeats(inPlayer: interop.Pointer | interop.Reference<any>, inBeats: number, outHostTime: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicPlayerGetPlayRateScalar(inPlayer: interop.Pointer | interop.Reference<any>, outScaleRate: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicPlayerGetSequence(inPlayer: interop.Pointer | interop.Reference<any>, outSequence: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicPlayerGetTime(inPlayer: interop.Pointer | interop.Reference<any>, outTime: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicPlayerIsPlaying(inPlayer: interop.Pointer | interop.Reference<any>, outIsPlaying: string | interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicPlayerPreroll(inPlayer: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicPlayerSetPlayRateScalar(inPlayer: interop.Pointer | interop.Reference<any>, inScaleRate: number): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicPlayerSetSequence(inPlayer: interop.Pointer | interop.Reference<any>, inSequence: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicPlayerSetTime(inPlayer: interop.Pointer | interop.Reference<any>, inTime: number): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicPlayerStart(inPlayer: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicPlayerStop(inPlayer: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicSequenceBarBeatTimeToBeats(inSequence: interop.Pointer | interop.Reference<any>, inBarBeatTime: interop.Pointer | interop.Reference<CABarBeatTime>, outBeats: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicSequenceBeatsToBarBeatTime(inSequence: interop.Pointer | interop.Reference<any>, inBeats: number, inSubbeatDivisor: number, outBarBeatTime: interop.Pointer | interop.Reference<CABarBeatTime>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicSequenceDisposeTrack(inSequence: interop.Pointer | interop.Reference<any>, inTrack: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicSequenceFileCreate(inSequence: interop.Pointer | interop.Reference<any>, inFileRef: NSURL, inFileType: MusicSequenceFileTypeID, inFlags: MusicSequenceFileFlags, inResolution: number): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicSequenceFileCreateData(inSequence: interop.Pointer | interop.Reference<any>, inFileType: MusicSequenceFileTypeID, inFlags: MusicSequenceFileFlags, inResolution: number, outData: interop.Pointer | interop.Reference<NSData>): number;
 
 declare const enum MusicSequenceFileFlags {
@@ -2012,8 +2891,14 @@ declare const enum MusicSequenceFileFlags {
 	kMusicSequenceFileFlags_EraseFile = 1
 }
 
+/**
+ * @since 5.0
+ */
 declare function MusicSequenceFileLoad(inSequence: interop.Pointer | interop.Reference<any>, inFileRef: NSURL, inFileTypeHint: MusicSequenceFileTypeID, inFlags: MusicSequenceLoadFlags): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicSequenceFileLoadData(inSequence: interop.Pointer | interop.Reference<any>, inData: NSData, inFileTypeHint: MusicSequenceFileTypeID, inFlags: MusicSequenceLoadFlags): number;
 
 declare const enum MusicSequenceFileTypeID {
@@ -2025,22 +2910,49 @@ declare const enum MusicSequenceFileTypeID {
 	kMusicSequenceFile_iMelodyType = 1768777068
 }
 
+/**
+ * @since 5.0
+ */
 declare function MusicSequenceGetAUGraph(inSequence: interop.Pointer | interop.Reference<any>, outGraph: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicSequenceGetBeatsForSeconds(inSequence: interop.Pointer | interop.Reference<any>, inSeconds: number, outBeats: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicSequenceGetIndTrack(inSequence: interop.Pointer | interop.Reference<any>, inTrackIndex: number, outTrack: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicSequenceGetInfoDictionary(inSequence: interop.Pointer | interop.Reference<any>): NSDictionary<any, any>;
 
+/**
+ * @since 5.0
+ */
 declare function MusicSequenceGetSecondsForBeats(inSequence: interop.Pointer | interop.Reference<any>, inBeats: number, outSeconds: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicSequenceGetSequenceType(inSequence: interop.Pointer | interop.Reference<any>, outType: interop.Pointer | interop.Reference<MusicSequenceType>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicSequenceGetTempoTrack(inSequence: interop.Pointer | interop.Reference<any>, outTrack: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicSequenceGetTrackCount(inSequence: interop.Pointer | interop.Reference<any>, outNumberOfTracks: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicSequenceGetTrackIndex(inSequence: interop.Pointer | interop.Reference<any>, inTrack: interop.Pointer | interop.Reference<any>, outTrackIndex: interop.Pointer | interop.Reference<number>): number;
 
 declare const enum MusicSequenceLoadFlags {
@@ -2050,16 +2962,34 @@ declare const enum MusicSequenceLoadFlags {
 	kMusicSequenceLoadSMF_ChannelsToTracks = 1
 }
 
+/**
+ * @since 5.0
+ */
 declare function MusicSequenceNewTrack(inSequence: interop.Pointer | interop.Reference<any>, outTrack: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicSequenceReverse(inSequence: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicSequenceSetAUGraph(inSequence: interop.Pointer | interop.Reference<any>, inGraph: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicSequenceSetMIDIEndpoint(inSequence: interop.Pointer | interop.Reference<any>, inEndpoint: number): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicSequenceSetSequenceType(inSequence: interop.Pointer | interop.Reference<any>, inType: MusicSequenceType): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicSequenceSetUserCallback(inSequence: interop.Pointer | interop.Reference<any>, inCallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: number, p5: interop.Pointer | interop.Reference<MusicEventUserData>, p6: number, p7: number) => void>, inClientData: interop.Pointer | interop.Reference<any>): number;
 
 declare const enum MusicSequenceType {
@@ -2071,18 +3001,39 @@ declare const enum MusicSequenceType {
 	kMusicSequenceType_Samples = 1935764848
 }
 
+/**
+ * @since 5.0
+ */
 declare function MusicTrackClear(inTrack: interop.Pointer | interop.Reference<any>, inStartTime: number, inEndTime: number): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicTrackCopyInsert(inSourceTrack: interop.Pointer | interop.Reference<any>, inSourceStartTime: number, inSourceEndTime: number, inDestTrack: interop.Pointer | interop.Reference<any>, inDestInsertTime: number): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicTrackCut(inTrack: interop.Pointer | interop.Reference<any>, inStartTime: number, inEndTime: number): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicTrackGetDestMIDIEndpoint(inTrack: interop.Pointer | interop.Reference<any>, outEndpoint: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicTrackGetDestNode(inTrack: interop.Pointer | interop.Reference<any>, outNode: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicTrackGetProperty(inTrack: interop.Pointer | interop.Reference<any>, inPropertyID: number, outData: interop.Pointer | interop.Reference<any>, ioLength: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicTrackGetSequence(inTrack: interop.Pointer | interop.Reference<any>, outSequence: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 interface MusicTrackLoopInfo {
@@ -2091,40 +3042,95 @@ interface MusicTrackLoopInfo {
 }
 declare var MusicTrackLoopInfo: interop.StructType<MusicTrackLoopInfo>;
 
+/**
+ * @since 5.0
+ */
 declare function MusicTrackMerge(inSourceTrack: interop.Pointer | interop.Reference<any>, inSourceStartTime: number, inSourceEndTime: number, inDestTrack: interop.Pointer | interop.Reference<any>, inDestInsertTime: number): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicTrackMoveEvents(inTrack: interop.Pointer | interop.Reference<any>, inStartTime: number, inEndTime: number, inMoveTime: number): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicTrackNewAUPresetEvent(inTrack: interop.Pointer | interop.Reference<any>, inTimeStamp: number, inPresetEvent: interop.Pointer | interop.Reference<AUPresetEvent>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicTrackNewExtendedNoteEvent(inTrack: interop.Pointer | interop.Reference<any>, inTimeStamp: number, inInfo: interop.Pointer | interop.Reference<ExtendedNoteOnEvent>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicTrackNewExtendedTempoEvent(inTrack: interop.Pointer | interop.Reference<any>, inTimeStamp: number, inBPM: number): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicTrackNewMIDIChannelEvent(inTrack: interop.Pointer | interop.Reference<any>, inTimeStamp: number, inMessage: interop.Pointer | interop.Reference<MIDIChannelMessage>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicTrackNewMIDINoteEvent(inTrack: interop.Pointer | interop.Reference<any>, inTimeStamp: number, inMessage: interop.Pointer | interop.Reference<MIDINoteMessage>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicTrackNewMIDIRawDataEvent(inTrack: interop.Pointer | interop.Reference<any>, inTimeStamp: number, inRawData: interop.Pointer | interop.Reference<MIDIRawData>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicTrackNewMetaEvent(inTrack: interop.Pointer | interop.Reference<any>, inTimeStamp: number, inMetaEvent: interop.Pointer | interop.Reference<MIDIMetaEvent>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicTrackNewParameterEvent(inTrack: interop.Pointer | interop.Reference<any>, inTimeStamp: number, inInfo: interop.Pointer | interop.Reference<ParameterEvent>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicTrackNewUserEvent(inTrack: interop.Pointer | interop.Reference<any>, inTimeStamp: number, inUserData: interop.Pointer | interop.Reference<MusicEventUserData>): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicTrackSetDestMIDIEndpoint(inTrack: interop.Pointer | interop.Reference<any>, inEndpoint: number): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicTrackSetDestNode(inTrack: interop.Pointer | interop.Reference<any>, inNode: number): number;
 
+/**
+ * @since 5.0
+ */
 declare function MusicTrackSetProperty(inTrack: interop.Pointer | interop.Reference<any>, inPropertyID: number, inData: interop.Pointer | interop.Reference<any>, inLength: number): number;
 
+/**
+ * @since 2.0
+ * @deprecated 100000
+ */
 declare function NewAUGraph(outGraph: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
+/**
+ * @since 5.0
+ */
 declare function NewMusicEventIterator(inTrack: interop.Pointer | interop.Reference<any>, outIterator: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
+/**
+ * @since 5.0
+ */
 declare function NewMusicPlayer(outPlayer: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
+/**
+ * @since 5.0
+ */
 declare function NewMusicSequence(outSequence: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 interface NoteParamsControlValue {
@@ -2341,6 +3347,8 @@ declare const kAUSampler_DefaultPercussionBankMSB: number;
 declare const kAUSoundIsolationParam_SoundToIsolate: number;
 
 declare const kAUSoundIsolationParam_WetDryMixPercent: number;
+
+declare const kAUSoundIsolationSoundType_HighQualityVoice: number;
 
 declare const kAUSoundIsolationSoundType_Voice: number;
 
@@ -2608,8 +3616,14 @@ declare const kAudioComponentErr_TooManyInstances: number;
 
 declare const kAudioComponentErr_UnsupportedType: number;
 
+/**
+ * @since 9.0
+ */
 declare var kAudioComponentInstanceInvalidationNotification: string;
 
+/**
+ * @since 7.0
+ */
 declare var kAudioComponentRegistrationsChangedNotification: string;
 
 declare const kAudioConverterApplicableEncodeBitRates: number;
@@ -3284,14 +4298,34 @@ declare const kAudioSessionIncompatibleCategory: number;
 
 declare const kAudioSessionInitializationError: number;
 
+/**
+ * @since 5.0
+ * @deprecated 7.0
+ */
 declare var kAudioSessionInputRoute_BluetoothHFP: string;
 
+/**
+ * @since 5.0
+ * @deprecated 7.0
+ */
 declare var kAudioSessionInputRoute_BuiltInMic: string;
 
+/**
+ * @since 5.0
+ * @deprecated 7.0
+ */
 declare var kAudioSessionInputRoute_HeadsetMic: string;
 
+/**
+ * @since 5.0
+ * @deprecated 7.0
+ */
 declare var kAudioSessionInputRoute_LineIn: string;
 
+/**
+ * @since 5.0
+ * @deprecated 7.0
+ */
 declare var kAudioSessionInputRoute_USBAudio: string;
 
 declare const kAudioSessionInterruptionType_ShouldNotResume: number;
@@ -3316,22 +4350,58 @@ declare const kAudioSessionNotActiveError: number;
 
 declare const kAudioSessionNotInitialized: number;
 
+/**
+ * @since 5.0
+ * @deprecated 7.0
+ */
 declare var kAudioSessionOutputRoute_AirPlay: string;
 
+/**
+ * @since 5.0
+ * @deprecated 7.0
+ */
 declare var kAudioSessionOutputRoute_BluetoothA2DP: string;
 
+/**
+ * @since 5.0
+ * @deprecated 7.0
+ */
 declare var kAudioSessionOutputRoute_BluetoothHFP: string;
 
+/**
+ * @since 5.0
+ * @deprecated 7.0
+ */
 declare var kAudioSessionOutputRoute_BuiltInReceiver: string;
 
+/**
+ * @since 5.0
+ * @deprecated 7.0
+ */
 declare var kAudioSessionOutputRoute_BuiltInSpeaker: string;
 
+/**
+ * @since 5.0
+ * @deprecated 7.0
+ */
 declare var kAudioSessionOutputRoute_HDMI: string;
 
+/**
+ * @since 5.0
+ * @deprecated 7.0
+ */
 declare var kAudioSessionOutputRoute_Headphones: string;
 
+/**
+ * @since 5.0
+ * @deprecated 7.0
+ */
 declare var kAudioSessionOutputRoute_LineOut: string;
 
+/**
+ * @since 5.0
+ * @deprecated 7.0
+ */
 declare var kAudioSessionOutputRoute_USBAudio: string;
 
 declare const kAudioSessionOverrideAudioRoute_None: number;
@@ -3418,24 +4488,64 @@ declare const kAudioSessionUnspecifiedError: number;
 
 declare const kAudioSessionUnsupportedPropertyError: number;
 
+/**
+ * @since 5.0
+ * @deprecated 7.0
+ */
 declare var kAudioSession_AudioRouteChangeKey_CurrentRouteDescription: string;
 
+/**
+ * @since 5.0
+ * @deprecated 7.0
+ */
 declare var kAudioSession_AudioRouteChangeKey_PreviousRouteDescription: string;
 
+/**
+ * @since 5.0
+ * @deprecated 7.0
+ */
 declare var kAudioSession_AudioRouteKey_Inputs: string;
 
+/**
+ * @since 5.0
+ * @deprecated 7.0
+ */
 declare var kAudioSession_AudioRouteKey_Outputs: string;
 
+/**
+ * @since 5.0
+ * @deprecated 7.0
+ */
 declare var kAudioSession_AudioRouteKey_Type: string;
 
+/**
+ * @since 5.0
+ * @deprecated 7.0
+ */
 declare var kAudioSession_InputSourceKey_Description: string;
 
+/**
+ * @since 5.0
+ * @deprecated 7.0
+ */
 declare var kAudioSession_InputSourceKey_ID: string;
 
+/**
+ * @since 5.0
+ * @deprecated 7.0
+ */
 declare var kAudioSession_OutputDestinationKey_Description: string;
 
+/**
+ * @since 5.0
+ * @deprecated 7.0
+ */
 declare var kAudioSession_OutputDestinationKey_ID: string;
 
+/**
+ * @since 5.0
+ * @deprecated 7.0
+ */
 declare var kAudioSession_RouteChangeKey_Reason: string;
 
 declare const kAudioToolboxErr_CannotDoInCurrentContext: number;
@@ -3684,11 +4794,17 @@ declare const kAudioUnitProperty_SetRenderCallback: number;
 
 declare const kAudioUnitProperty_ShouldAllocateBuffer: number;
 
+declare const kAudioUnitProperty_SpatialMixerAnyInputIsUsingPersonalizedHRTF: number;
+
 declare const kAudioUnitProperty_SpatialMixerAttenuationCurve: number;
 
 declare const kAudioUnitProperty_SpatialMixerDistanceParams: number;
 
+declare const kAudioUnitProperty_SpatialMixerEnableHeadTracking: number;
+
 declare const kAudioUnitProperty_SpatialMixerOutputType: number;
+
+declare const kAudioUnitProperty_SpatialMixerPersonalizedHRTFMode: number;
 
 declare const kAudioUnitProperty_SpatialMixerPointSourceInHeadMode: number;
 

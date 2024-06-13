@@ -8,6 +8,9 @@ declare const enum SAAuthorizationStatus {
 	Authorized = 2
 }
 
+/**
+ * @since 16.0
+ */
 interface SACrashDetectionDelegate extends NSObjectProtocol {
 
 	crashDetectionManagerDidDetectEvent?(crashDetectionManager: SACrashDetectionManager, event: SACrashDetectionEvent): void;
@@ -17,6 +20,9 @@ declare var SACrashDetectionDelegate: {
 	prototype: SACrashDetectionDelegate;
 };
 
+/**
+ * @since 16.0
+ */
 declare class SACrashDetectionEvent extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SACrashDetectionEvent; // inherited from NSObject
@@ -40,6 +46,9 @@ declare class SACrashDetectionEvent extends NSObject implements NSCopying, NSSec
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 16.0
+ */
 declare const enum SACrashDetectionEventResponse {
 
 	Attempted = 0,
@@ -47,6 +56,9 @@ declare const enum SACrashDetectionEventResponse {
 	Disabled = 1
 }
 
+/**
+ * @since 16.0
+ */
 declare class SACrashDetectionManager extends NSObject {
 
 	static alloc(): SACrashDetectionManager; // inherited from NSObject
@@ -62,6 +74,9 @@ declare class SACrashDetectionManager extends NSObject {
 	requestAuthorizationWithCompletionHandler(handler: (p1: SAAuthorizationStatus, p2: NSError) => void): void;
 }
 
+/**
+ * @since 16.0
+ */
 interface SAEmergencyResponseDelegate extends NSObjectProtocol {
 
 	emergencyResponseManagerDidUpdateVoiceCallStatus?(emergencyResponseManager: SAEmergencyResponseManager, voiceCallStatus: SAEmergencyResponseManagerVoiceCallStatus): void;
@@ -71,6 +86,9 @@ declare var SAEmergencyResponseDelegate: {
 	prototype: SAEmergencyResponseDelegate;
 };
 
+/**
+ * @since 16.0
+ */
 declare class SAEmergencyResponseManager extends NSObject {
 
 	static alloc(): SAEmergencyResponseManager; // inherited from NSObject
@@ -82,6 +100,9 @@ declare class SAEmergencyResponseManager extends NSObject {
 	dialVoiceCallToPhoneNumberCompletionHandler(phoneNumber: string, handler: (p1: boolean, p2: NSError) => void): void;
 }
 
+/**
+ * @since 16.0
+ */
 declare const enum SAEmergencyResponseManagerVoiceCallStatus {
 
 	Dialing = 0,
@@ -93,6 +114,9 @@ declare const enum SAEmergencyResponseManagerVoiceCallStatus {
 	Failed = 3
 }
 
+/**
+ * @since 16.0
+ */
 declare const enum SAErrorCode {
 
 	NotAuthorized = 1,
@@ -104,4 +128,7 @@ declare const enum SAErrorCode {
 	OperationFailed = 4
 }
 
+/**
+ * @since 16.0
+ */
 declare var SAErrorDomain: string;

@@ -1,16 +1,40 @@
 
+/**
+ * @since 2.0
+ * @deprecated 8.0
+ */
 declare function CFAbsoluteTimeAddGregorianUnits(at: number, tz: NSTimeZone, units: CFGregorianUnits): number;
 
 declare function CFAbsoluteTimeGetCurrent(): number;
 
+/**
+ * @since 2.0
+ * @deprecated 8.0
+ */
 declare function CFAbsoluteTimeGetDayOfWeek(at: number, tz: NSTimeZone): number;
 
+/**
+ * @since 2.0
+ * @deprecated 8.0
+ */
 declare function CFAbsoluteTimeGetDayOfYear(at: number, tz: NSTimeZone): number;
 
+/**
+ * @since 2.0
+ * @deprecated 8.0
+ */
 declare function CFAbsoluteTimeGetDifferenceAsGregorianUnits(at1: number, at2: number, tz: NSTimeZone, unitFlags: number): CFGregorianUnits;
 
+/**
+ * @since 2.0
+ * @deprecated 8.0
+ */
 declare function CFAbsoluteTimeGetGregorianDate(at: number, tz: NSTimeZone): CFGregorianDate;
 
+/**
+ * @since 2.0
+ * @deprecated 8.0
+ */
 declare function CFAbsoluteTimeGetWeekOfYear(at: number, tz: NSTimeZone): number;
 
 declare function CFAllocatorAllocate(allocator: any, size: number, hint: number): interop.Pointer | interop.Reference<any>;
@@ -121,6 +145,8 @@ declare function CFAttributedStringGetAttributes(aStr: NSAttributedString, loc: 
 
 declare function CFAttributedStringGetAttributesAndLongestEffectiveRange(aStr: NSAttributedString, loc: number, inRange: CFRange, longestEffectiveRange: interop.Pointer | interop.Reference<CFRange>): NSDictionary<any, any>;
 
+declare function CFAttributedStringGetBidiLevelsAndResolvedDirections(attributedString: NSAttributedString, range: CFRange, baseDirection: number, bidiLevels: string | interop.Pointer | interop.Reference<any>, baseDirections: string | interop.Pointer | interop.Reference<any>): boolean;
+
 declare function CFAttributedStringGetLength(aStr: NSAttributedString): number;
 
 declare function CFAttributedStringGetMutableString(aStr: NSAttributedString): string;
@@ -139,6 +165,9 @@ declare function CFAttributedStringSetAttribute(aStr: NSAttributedString, range:
 
 declare function CFAttributedStringSetAttributes(aStr: NSAttributedString, range: CFRange, replacement: NSDictionary<any, any>, clearOtherAttributes: boolean): void;
 
+/**
+ * @since 7.0
+ */
 declare function CFAutorelease(arg: any): any;
 
 declare function CFBagAddValue(theBag: any, value: interop.Pointer | interop.Reference<any>): void;
@@ -277,8 +306,14 @@ declare function CFBundleCopyBundleLocalizations(bundle: any): NSArray<any>;
 
 declare function CFBundleCopyBundleURL(bundle: any): NSURL;
 
+/**
+ * @since 2.0
+ */
 declare function CFBundleCopyExecutableArchitectures(bundle: any): NSArray<any>;
 
+/**
+ * @since 2.0
+ */
 declare function CFBundleCopyExecutableArchitecturesForURL(url: NSURL): NSArray<any>;
 
 declare function CFBundleCopyExecutableURL(bundle: any): NSURL;
@@ -359,8 +394,14 @@ declare function CFBundleIsExecutableLoaded(bundle: any): boolean;
 
 declare function CFBundleLoadExecutable(bundle: any): boolean;
 
+/**
+ * @since 2.0
+ */
 declare function CFBundleLoadExecutableAndReturnError(bundle: any, error: interop.Pointer | interop.Reference<NSError>): boolean;
 
+/**
+ * @since 2.0
+ */
 declare function CFBundlePreflightExecutable(bundle: any, error: interop.Pointer | interop.Reference<NSError>): boolean;
 
 declare function CFBundleUnloadExecutable(bundle: any): void;
@@ -371,11 +412,11 @@ declare function CFCalendarCopyLocale(calendar: NSCalendar): NSLocale;
 
 declare function CFCalendarCopyTimeZone(calendar: NSCalendar): NSTimeZone;
 
-declare function CFCalendarCreateWithIdentifier(allocator: any, identifier: any): NSCalendar;
+declare function CFCalendarCreateWithIdentifier(allocator: any, identifier: string): NSCalendar;
 
 declare function CFCalendarGetFirstWeekday(calendar: NSCalendar): number;
 
-declare function CFCalendarGetIdentifier(calendar: NSCalendar): any;
+declare function CFCalendarGetIdentifier(calendar: NSCalendar): string;
 
 declare function CFCalendarGetMaximumRangeOfUnit(calendar: NSCalendar, unit: CFCalendarUnit): CFRange;
 
@@ -387,6 +428,9 @@ declare function CFCalendarGetOrdinalityOfUnit(calendar: NSCalendar, smallerUnit
 
 declare function CFCalendarGetRangeOfUnit(calendar: NSCalendar, smallerUnit: CFCalendarUnit, biggerUnit: CFCalendarUnit, at: number): CFRange;
 
+/**
+ * @since 2.0
+ */
 declare function CFCalendarGetTimeRangeOfUnit(calendar: NSCalendar, unit: CFCalendarUnit, at: number, startp: interop.Pointer | interop.Reference<number>, tip: interop.Pointer | interop.Reference<number>): boolean;
 
 declare function CFCalendarGetTypeID(): number;
@@ -427,7 +471,9 @@ declare const enum CFCalendarUnit {
 
 	kCFCalendarUnitWeekOfYear = 8192,
 
-	kCFCalendarUnitYearForWeekOfYear = 16384
+	kCFCalendarUnitYearForWeekOfYear = 16384,
+
+	kCFCalendarUnitDayOfYear = 65536
 }
 
 declare function CFCharacterSetAddCharactersInRange(theSet: NSCharacterSet, theRange: CFRange): void;
@@ -516,6 +562,9 @@ declare const enum CFComparisonResult {
 
 declare function CFCopyDescription(cf: any): string;
 
+/**
+ * @since 5.0
+ */
 declare function CFCopyHomeDirectoryURL(): NSURL;
 
 declare function CFCopyTypeIDDescription(type_id: number): string;
@@ -534,6 +583,9 @@ declare function CFDataCreateWithBytesNoCopy(allocator: any, bytes: string | int
 
 declare function CFDataDeleteBytes(theData: NSData, range: CFRange): void;
 
+/**
+ * @since 4.0
+ */
 declare function CFDataFind(theData: NSData, dataToFind: NSData, searchRange: CFRange, compareOptions: CFDataSearchFlags): CFRange;
 
 declare function CFDataGetBytePtr(theData: NSData): string;
@@ -550,6 +602,9 @@ declare function CFDataIncreaseLength(theData: NSData, extraLength: number): voi
 
 declare function CFDataReplaceBytes(theData: NSData, range: CFRange, newBytes: string | interop.Pointer | interop.Reference<any>, newLength: number): void;
 
+/**
+ * @since 4.0
+ */
 declare const enum CFDataSearchFlags {
 
 	kCFDataSearchBackwards = 1,
@@ -563,14 +618,20 @@ declare function CFDateCompare(theDate: Date, otherDate: Date, context: interop.
 
 declare function CFDateCreate(allocator: any, at: number): Date;
 
-declare function CFDateFormatterCopyProperty(formatter: any, key: any): any;
+declare function CFDateFormatterCopyProperty(formatter: any, key: string): any;
 
 declare function CFDateFormatterCreate(allocator: any, locale: NSLocale, dateStyle: CFDateFormatterStyle, timeStyle: CFDateFormatterStyle): any;
 
+/**
+ * @since 4.0
+ */
 declare function CFDateFormatterCreateDateFormatFromTemplate(allocator: any, tmplate: string, options: number, locale: NSLocale): string;
 
 declare function CFDateFormatterCreateDateFromString(allocator: any, formatter: any, string: string, rangep: interop.Pointer | interop.Reference<CFRange>): Date;
 
+/**
+ * @since 10.0
+ */
 declare function CFDateFormatterCreateISO8601Formatter(allocator: any, formatOptions: CFISO8601DateFormatOptions): any;
 
 declare function CFDateFormatterCreateStringWithAbsoluteTime(allocator: any, formatter: any, at: number): string;
@@ -671,22 +732,49 @@ declare var CFDictionaryValueCallBacks: interop.StructType<CFDictionaryValueCall
 
 declare function CFEqual(cf1: any, cf2: any): boolean;
 
+/**
+ * @since 2.0
+ */
 declare function CFErrorCopyDescription(err: NSError): string;
 
+/**
+ * @since 2.0
+ */
 declare function CFErrorCopyFailureReason(err: NSError): string;
 
+/**
+ * @since 2.0
+ */
 declare function CFErrorCopyRecoverySuggestion(err: NSError): string;
 
+/**
+ * @since 2.0
+ */
 declare function CFErrorCopyUserInfo(err: NSError): NSDictionary<any, any>;
 
-declare function CFErrorCreate(allocator: any, domain: any, code: number, userInfo: NSDictionary<any, any>): NSError;
+/**
+ * @since 2.0
+ */
+declare function CFErrorCreate(allocator: any, domain: string, code: number, userInfo: NSDictionary<any, any>): NSError;
 
-declare function CFErrorCreateWithUserInfoKeysAndValues(allocator: any, domain: any, code: number, userInfoKeys: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, userInfoValues: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, numUserInfoValues: number): NSError;
+/**
+ * @since 2.0
+ */
+declare function CFErrorCreateWithUserInfoKeysAndValues(allocator: any, domain: string, code: number, userInfoKeys: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, userInfoValues: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, numUserInfoValues: number): NSError;
 
+/**
+ * @since 2.0
+ */
 declare function CFErrorGetCode(err: NSError): number;
 
-declare function CFErrorGetDomain(err: NSError): any;
+/**
+ * @since 2.0
+ */
+declare function CFErrorGetDomain(err: NSError): string;
 
+/**
+ * @since 2.0
+ */
 declare function CFErrorGetTypeID(): number;
 
 interface CFFileDescriptorContext {
@@ -698,24 +786,54 @@ interface CFFileDescriptorContext {
 }
 declare var CFFileDescriptorContext: interop.StructType<CFFileDescriptorContext>;
 
+/**
+ * @since 2.0
+ */
 declare function CFFileDescriptorCreate(allocator: any, fd: number, closeOnInvalidate: boolean, callout: interop.FunctionReference<(p1: any, p2: number, p3: interop.Pointer | interop.Reference<any>) => void>, context: interop.Pointer | interop.Reference<CFFileDescriptorContext>): any;
 
+/**
+ * @since 2.0
+ */
 declare function CFFileDescriptorCreateRunLoopSource(allocator: any, f: any, order: number): any;
 
+/**
+ * @since 2.0
+ */
 declare function CFFileDescriptorDisableCallBacks(f: any, callBackTypes: number): void;
 
+/**
+ * @since 2.0
+ */
 declare function CFFileDescriptorEnableCallBacks(f: any, callBackTypes: number): void;
 
+/**
+ * @since 2.0
+ */
 declare function CFFileDescriptorGetContext(f: any, context: interop.Pointer | interop.Reference<CFFileDescriptorContext>): void;
 
+/**
+ * @since 2.0
+ */
 declare function CFFileDescriptorGetNativeDescriptor(f: any): number;
 
+/**
+ * @since 2.0
+ */
 declare function CFFileDescriptorGetTypeID(): number;
 
+/**
+ * @since 2.0
+ */
 declare function CFFileDescriptorInvalidate(f: any): void;
 
+/**
+ * @since 2.0
+ */
 declare function CFFileDescriptorIsValid(f: any): boolean;
 
+/**
+ * @since 6.0
+ */
 declare const enum CFFileSecurityClearOptions {
 
 	kCFFileSecurityClearOwner = 1,
@@ -731,36 +849,84 @@ declare const enum CFFileSecurityClearOptions {
 	kCFFileSecurityClearAccessControlList = 32
 }
 
+/**
+ * @since 6.0
+ */
 declare function CFFileSecurityClearProperties(fileSec: NSFileSecurity, clearPropertyMask: CFFileSecurityClearOptions): boolean;
 
+/**
+ * @since 5.0
+ */
 declare function CFFileSecurityCopyAccessControlList(fileSec: NSFileSecurity, accessControlList: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
 
+/**
+ * @since 5.0
+ */
 declare function CFFileSecurityCopyGroupUUID(fileSec: NSFileSecurity, groupUUID: interop.Pointer | interop.Reference<any>): boolean;
 
+/**
+ * @since 5.0
+ */
 declare function CFFileSecurityCopyOwnerUUID(fileSec: NSFileSecurity, ownerUUID: interop.Pointer | interop.Reference<any>): boolean;
 
+/**
+ * @since 5.0
+ */
 declare function CFFileSecurityCreate(allocator: any): NSFileSecurity;
 
+/**
+ * @since 5.0
+ */
 declare function CFFileSecurityCreateCopy(allocator: any, fileSec: NSFileSecurity): NSFileSecurity;
 
+/**
+ * @since 5.0
+ */
 declare function CFFileSecurityGetGroup(fileSec: NSFileSecurity, group: interop.Pointer | interop.Reference<number>): boolean;
 
+/**
+ * @since 5.0
+ */
 declare function CFFileSecurityGetMode(fileSec: NSFileSecurity, mode: interop.Pointer | interop.Reference<number>): boolean;
 
+/**
+ * @since 5.0
+ */
 declare function CFFileSecurityGetOwner(fileSec: NSFileSecurity, owner: interop.Pointer | interop.Reference<number>): boolean;
 
+/**
+ * @since 5.0
+ */
 declare function CFFileSecurityGetTypeID(): number;
 
+/**
+ * @since 5.0
+ */
 declare function CFFileSecuritySetAccessControlList(fileSec: NSFileSecurity, accessControlList: interop.Pointer | interop.Reference<any>): boolean;
 
+/**
+ * @since 5.0
+ */
 declare function CFFileSecuritySetGroup(fileSec: NSFileSecurity, group: number): boolean;
 
+/**
+ * @since 5.0
+ */
 declare function CFFileSecuritySetGroupUUID(fileSec: NSFileSecurity, groupUUID: any): boolean;
 
+/**
+ * @since 5.0
+ */
 declare function CFFileSecuritySetMode(fileSec: NSFileSecurity, mode: number): boolean;
 
+/**
+ * @since 5.0
+ */
 declare function CFFileSecuritySetOwner(fileSec: NSFileSecurity, owner: number): boolean;
 
+/**
+ * @since 5.0
+ */
 declare function CFFileSecuritySetOwnerUUID(fileSec: NSFileSecurity, ownerUUID: any): boolean;
 
 declare function CFGetAllocator(cf: any): any;
@@ -779,8 +945,16 @@ interface CFGregorianDate {
 }
 declare var CFGregorianDate: interop.StructType<CFGregorianDate>;
 
+/**
+ * @since 2.0
+ * @deprecated 8.0
+ */
 declare function CFGregorianDateGetAbsoluteTime(gdate: CFGregorianDate, tz: NSTimeZone): number;
 
+/**
+ * @since 2.0
+ * @deprecated 8.0
+ */
 declare function CFGregorianDateIsValid(gdate: CFGregorianDate, unitFlags: number): boolean;
 
 declare const enum CFGregorianUnitFlags {
@@ -845,11 +1019,14 @@ declare const enum CFISO8601DateFormatOptions {
 
 declare function CFLocaleCopyAvailableLocaleIdentifiers(): NSArray<any>;
 
+/**
+ * @since 2.0
+ */
 declare function CFLocaleCopyCommonISOCurrencyCodes(): NSArray<any>;
 
 declare function CFLocaleCopyCurrent(): NSLocale;
 
-declare function CFLocaleCopyDisplayNameForPropertyValue(displayLocale: NSLocale, key: any, value: string): string;
+declare function CFLocaleCopyDisplayNameForPropertyValue(displayLocale: NSLocale, key: string, value: string): string;
 
 declare function CFLocaleCopyISOCountryCodes(): NSArray<any>;
 
@@ -857,37 +1034,52 @@ declare function CFLocaleCopyISOCurrencyCodes(): NSArray<any>;
 
 declare function CFLocaleCopyISOLanguageCodes(): NSArray<any>;
 
+/**
+ * @since 2.0
+ */
 declare function CFLocaleCopyPreferredLanguages(): NSArray<any>;
 
-declare function CFLocaleCreate(allocator: any, localeIdentifier: any): NSLocale;
+declare function CFLocaleCreate(allocator: any, localeIdentifier: string): NSLocale;
 
-declare function CFLocaleCreateCanonicalLanguageIdentifierFromString(allocator: any, localeIdentifier: string): any;
+declare function CFLocaleCreateCanonicalLanguageIdentifierFromString(allocator: any, localeIdentifier: string): string;
 
-declare function CFLocaleCreateCanonicalLocaleIdentifierFromScriptManagerCodes(allocator: any, lcode: number, rcode: number): any;
+declare function CFLocaleCreateCanonicalLocaleIdentifierFromScriptManagerCodes(allocator: any, lcode: number, rcode: number): string;
 
-declare function CFLocaleCreateCanonicalLocaleIdentifierFromString(allocator: any, localeIdentifier: string): any;
+declare function CFLocaleCreateCanonicalLocaleIdentifierFromString(allocator: any, localeIdentifier: string): string;
 
-declare function CFLocaleCreateComponentsFromLocaleIdentifier(allocator: any, localeID: any): NSDictionary<any, any>;
+declare function CFLocaleCreateComponentsFromLocaleIdentifier(allocator: any, localeID: string): NSDictionary<any, any>;
 
 declare function CFLocaleCreateCopy(allocator: any, locale: NSLocale): NSLocale;
 
-declare function CFLocaleCreateLocaleIdentifierFromComponents(allocator: any, dictionary: NSDictionary<any, any>): any;
+declare function CFLocaleCreateLocaleIdentifierFromComponents(allocator: any, dictionary: NSDictionary<any, any>): string;
 
-declare function CFLocaleCreateLocaleIdentifierFromWindowsLocaleCode(allocator: any, lcid: number): any;
+/**
+ * @since 4.0
+ */
+declare function CFLocaleCreateLocaleIdentifierFromWindowsLocaleCode(allocator: any, lcid: number): string;
 
-declare function CFLocaleGetIdentifier(locale: NSLocale): any;
+declare function CFLocaleGetIdentifier(locale: NSLocale): string;
 
+/**
+ * @since 4.0
+ */
 declare function CFLocaleGetLanguageCharacterDirection(isoLangCode: string): CFLocaleLanguageDirection;
 
+/**
+ * @since 4.0
+ */
 declare function CFLocaleGetLanguageLineDirection(isoLangCode: string): CFLocaleLanguageDirection;
 
 declare function CFLocaleGetSystem(): NSLocale;
 
 declare function CFLocaleGetTypeID(): number;
 
-declare function CFLocaleGetValue(locale: NSLocale, key: any): any;
+declare function CFLocaleGetValue(locale: NSLocale, key: string): any;
 
-declare function CFLocaleGetWindowsLocaleCodeFromLocaleIdentifier(localeIdentifier: any): number;
+/**
+ * @since 4.0
+ */
+declare function CFLocaleGetWindowsLocaleCodeFromLocaleIdentifier(localeIdentifier: string): number;
 
 declare const enum CFLocaleLanguageDirection {
 
@@ -964,13 +1156,16 @@ declare function CFMessagePortIsValid(ms: NSMessagePort): boolean;
 
 declare function CFMessagePortSendRequest(remote: NSMessagePort, msgid: number, data: NSData, sendTimeout: number, rcvTimeout: number, replyMode: string, returnData: interop.Pointer | interop.Reference<NSData>): number;
 
-declare function CFMessagePortSetDispatchQueue(ms: NSMessagePort, queue: interop.Pointer | interop.Reference<any>): void;
+/**
+ * @since 4.0
+ */
+declare function CFMessagePortSetDispatchQueue(ms: NSMessagePort, queue: NSObject & OS_dispatch_queue): void;
 
 declare function CFMessagePortSetInvalidationCallBack(ms: NSMessagePort, callout: interop.FunctionReference<(p1: NSMessagePort, p2: interop.Pointer | interop.Reference<any>) => void>): void;
 
 declare function CFMessagePortSetName(ms: NSMessagePort, newName: string): boolean;
 
-declare function CFNotificationCenterAddObserver(center: any, observer: interop.Pointer | interop.Reference<any>, callBack: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any>, p3: any, p4: interop.Pointer | interop.Reference<any>, p5: NSDictionary<any, any>) => void>, name: string, object: interop.Pointer | interop.Reference<any>, suspensionBehavior: CFNotificationSuspensionBehavior): void;
+declare function CFNotificationCenterAddObserver(center: any, observer: interop.Pointer | interop.Reference<any>, callBack: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any>, p3: string, p4: interop.Pointer | interop.Reference<any>, p5: NSDictionary<any, any>) => void>, name: string, object: interop.Pointer | interop.Reference<any>, suspensionBehavior: CFNotificationSuspensionBehavior): void;
 
 declare function CFNotificationCenterGetDarwinNotifyCenter(): any;
 
@@ -978,13 +1173,13 @@ declare function CFNotificationCenterGetLocalCenter(): any;
 
 declare function CFNotificationCenterGetTypeID(): number;
 
-declare function CFNotificationCenterPostNotification(center: any, name: any, object: interop.Pointer | interop.Reference<any>, userInfo: NSDictionary<any, any>, deliverImmediately: boolean): void;
+declare function CFNotificationCenterPostNotification(center: any, name: string, object: interop.Pointer | interop.Reference<any>, userInfo: NSDictionary<any, any>, deliverImmediately: boolean): void;
 
-declare function CFNotificationCenterPostNotificationWithOptions(center: any, name: any, object: interop.Pointer | interop.Reference<any>, userInfo: NSDictionary<any, any>, options: number): void;
+declare function CFNotificationCenterPostNotificationWithOptions(center: any, name: string, object: interop.Pointer | interop.Reference<any>, userInfo: NSDictionary<any, any>, options: number): void;
 
 declare function CFNotificationCenterRemoveEveryObserver(center: any, observer: interop.Pointer | interop.Reference<any>): void;
 
-declare function CFNotificationCenterRemoveObserver(center: any, observer: interop.Pointer | interop.Reference<any>, name: any, object: interop.Pointer | interop.Reference<any>): void;
+declare function CFNotificationCenterRemoveObserver(center: any, observer: interop.Pointer | interop.Reference<any>, name: string, object: interop.Pointer | interop.Reference<any>): void;
 
 declare const enum CFNotificationSuspensionBehavior {
 
@@ -1003,7 +1198,7 @@ declare function CFNumberCompare(number: number, otherNumber: number, context: i
 
 declare function CFNumberCreate(allocator: any, theType: CFNumberType, valuePtr: interop.Pointer | interop.Reference<any>): number;
 
-declare function CFNumberFormatterCopyProperty(formatter: any, key: any): any;
+declare function CFNumberFormatterCopyProperty(formatter: any, key: string): any;
 
 declare function CFNumberFormatterCreate(allocator: any, locale: NSLocale, style: CFNumberFormatterStyle): any;
 
@@ -1060,7 +1255,7 @@ declare const enum CFNumberFormatterRoundingMode {
 
 declare function CFNumberFormatterSetFormat(formatter: any, formatString: string): void;
 
-declare function CFNumberFormatterSetProperty(formatter: any, key: any, value: any): void;
+declare function CFNumberFormatterSetProperty(formatter: any, key: string, value: any): void;
 
 declare const enum CFNumberFormatterStyle {
 
@@ -1180,6 +1375,10 @@ declare function CFPreferencesAppValueIsForced(key: string, applicationID: strin
 
 declare function CFPreferencesCopyAppValue(key: string, applicationID: string): any;
 
+/**
+ * @since 2.0
+ * @deprecated 7.0
+ */
 declare function CFPreferencesCopyApplicationList(userName: string, hostName: string): NSArray<any>;
 
 declare function CFPreferencesCopyKeyList(applicationID: string, userName: string, hostName: string): NSArray<any>;
@@ -1202,18 +1401,39 @@ declare function CFPreferencesSetValue(key: string, value: any, applicationID: s
 
 declare function CFPreferencesSynchronize(applicationID: string, userName: string, hostName: string): boolean;
 
+/**
+ * @since 4.0
+ */
 declare function CFPropertyListCreateData(allocator: any, propertyList: any, format: CFPropertyListFormat, options: number, error: interop.Pointer | interop.Reference<NSError>): interop.Unmanaged<NSData>;
 
 declare function CFPropertyListCreateDeepCopy(allocator: any, propertyList: any, mutabilityOption: number): any;
 
+/**
+ * @since 2.0
+ * @deprecated 8.0
+ */
 declare function CFPropertyListCreateFromStream(allocator: any, stream: NSInputStream, streamLength: number, mutabilityOption: number, format: interop.Pointer | interop.Reference<CFPropertyListFormat>, errorString: interop.Pointer | interop.Reference<string>): interop.Unmanaged<any>;
 
+/**
+ * @since 2.0
+ * @deprecated 8.0
+ */
 declare function CFPropertyListCreateFromXMLData(allocator: any, xmlData: NSData, mutabilityOption: number, errorString: interop.Pointer | interop.Reference<string>): interop.Unmanaged<any>;
 
+/**
+ * @since 4.0
+ */
 declare function CFPropertyListCreateWithData(allocator: any, data: NSData, options: number, format: interop.Pointer | interop.Reference<CFPropertyListFormat>, error: interop.Pointer | interop.Reference<NSError>): interop.Unmanaged<any>;
 
+/**
+ * @since 4.0
+ */
 declare function CFPropertyListCreateWithStream(allocator: any, stream: NSInputStream, streamLength: number, options: number, format: interop.Pointer | interop.Reference<CFPropertyListFormat>, error: interop.Pointer | interop.Reference<NSError>): interop.Unmanaged<any>;
 
+/**
+ * @since 2.0
+ * @deprecated 8.0
+ */
 declare function CFPropertyListCreateXMLData(allocator: any, propertyList: any): interop.Unmanaged<NSData>;
 
 declare const enum CFPropertyListFormat {
@@ -1236,8 +1456,15 @@ declare const enum CFPropertyListMutabilityOptions {
 	kCFPropertyListMutableContainersAndLeaves = 2
 }
 
+/**
+ * @since 4.0
+ */
 declare function CFPropertyListWrite(propertyList: any, stream: NSOutputStream, format: CFPropertyListFormat, options: number, error: interop.Pointer | interop.Reference<NSError>): number;
 
+/**
+ * @since 2.0
+ * @deprecated 8.0
+ */
 declare function CFPropertyListWriteToStream(propertyList: any, stream: NSOutputStream, format: CFPropertyListFormat, errorString: interop.Pointer | interop.Reference<string>): number;
 
 interface CFRange {
@@ -1248,11 +1475,17 @@ declare var CFRange: interop.StructType<CFRange>;
 
 declare function CFReadStreamClose(stream: NSInputStream): void;
 
-declare function CFReadStreamCopyDispatchQueue(stream: NSInputStream): interop.Pointer | interop.Reference<any>;
+/**
+ * @since 7.0
+ */
+declare function CFReadStreamCopyDispatchQueue(stream: NSInputStream): NSObject & OS_dispatch_queue;
 
+/**
+ * @since 2.0
+ */
 declare function CFReadStreamCopyError(stream: NSInputStream): NSError;
 
-declare function CFReadStreamCopyProperty(stream: NSInputStream, propertyName: any): any;
+declare function CFReadStreamCopyProperty(stream: NSInputStream, propertyName: string): any;
 
 declare function CFReadStreamCreateWithBytesNoCopy(alloc: any, bytes: string | interop.Pointer | interop.Reference<any>, length: number, bytesDeallocator: any): NSInputStream;
 
@@ -1272,15 +1505,18 @@ declare function CFReadStreamOpen(stream: NSInputStream): boolean;
 
 declare function CFReadStreamRead(stream: NSInputStream, buffer: string | interop.Pointer | interop.Reference<any>, bufferLength: number): number;
 
-declare function CFReadStreamScheduleWithRunLoop(stream: NSInputStream, runLoop: any, runLoopMode: any): void;
+declare function CFReadStreamScheduleWithRunLoop(stream: NSInputStream, runLoop: any, runLoopMode: string): void;
 
 declare function CFReadStreamSetClient(stream: NSInputStream, streamEvents: number, clientCB: interop.FunctionReference<(p1: NSInputStream, p2: CFStreamEventType, p3: interop.Pointer | interop.Reference<any>) => void>, clientContext: interop.Pointer | interop.Reference<CFStreamClientContext>): boolean;
 
-declare function CFReadStreamSetDispatchQueue(stream: NSInputStream, q: interop.Pointer | interop.Reference<any>): void;
+/**
+ * @since 7.0
+ */
+declare function CFReadStreamSetDispatchQueue(stream: NSInputStream, q: NSObject & OS_dispatch_queue): void;
 
-declare function CFReadStreamSetProperty(stream: NSInputStream, propertyName: any, propertyValue: any): boolean;
+declare function CFReadStreamSetProperty(stream: NSInputStream, propertyName: string, propertyValue: any): boolean;
 
-declare function CFReadStreamUnscheduleFromRunLoop(stream: NSInputStream, runLoop: any, runLoopMode: any): void;
+declare function CFReadStreamUnscheduleFromRunLoop(stream: NSInputStream, runLoop: any, runLoopMode: string): void;
 
 declare function CFRelease(cf: any): void;
 
@@ -1303,29 +1539,29 @@ declare const enum CFRunLoopActivity {
 	kCFRunLoopAllActivities = 268435455
 }
 
-declare function CFRunLoopAddCommonMode(rl: any, mode: any): void;
+declare function CFRunLoopAddCommonMode(rl: any, mode: string): void;
 
-declare function CFRunLoopAddObserver(rl: any, observer: any, mode: any): void;
+declare function CFRunLoopAddObserver(rl: any, observer: any, mode: string): void;
 
-declare function CFRunLoopAddSource(rl: any, source: any, mode: any): void;
+declare function CFRunLoopAddSource(rl: any, source: any, mode: string): void;
 
-declare function CFRunLoopAddTimer(rl: any, timer: NSTimer, mode: any): void;
+declare function CFRunLoopAddTimer(rl: any, timer: NSTimer, mode: string): void;
 
-declare function CFRunLoopContainsObserver(rl: any, observer: any, mode: any): boolean;
+declare function CFRunLoopContainsObserver(rl: any, observer: any, mode: string): boolean;
 
-declare function CFRunLoopContainsSource(rl: any, source: any, mode: any): boolean;
+declare function CFRunLoopContainsSource(rl: any, source: any, mode: string): boolean;
 
-declare function CFRunLoopContainsTimer(rl: any, timer: NSTimer, mode: any): boolean;
+declare function CFRunLoopContainsTimer(rl: any, timer: NSTimer, mode: string): boolean;
 
 declare function CFRunLoopCopyAllModes(rl: any): NSArray<any>;
 
-declare function CFRunLoopCopyCurrentMode(rl: any): any;
+declare function CFRunLoopCopyCurrentMode(rl: any): string;
 
 declare function CFRunLoopGetCurrent(): any;
 
 declare function CFRunLoopGetMain(): any;
 
-declare function CFRunLoopGetNextTimerFireDate(rl: any, mode: any): number;
+declare function CFRunLoopGetNextTimerFireDate(rl: any, mode: string): number;
 
 declare function CFRunLoopGetTypeID(): number;
 
@@ -1342,6 +1578,9 @@ declare var CFRunLoopObserverContext: interop.StructType<CFRunLoopObserverContex
 
 declare function CFRunLoopObserverCreate(allocator: any, activities: number, repeats: boolean, order: number, callout: interop.FunctionReference<(p1: any, p2: CFRunLoopActivity, p3: interop.Pointer | interop.Reference<any>) => void>, context: interop.Pointer | interop.Reference<CFRunLoopObserverContext>): any;
 
+/**
+ * @since 5.0
+ */
 declare function CFRunLoopObserverCreateWithHandler(allocator: any, activities: number, repeats: boolean, order: number, block: (p1: any, p2: CFRunLoopActivity) => void): any;
 
 declare function CFRunLoopObserverDoesRepeat(observer: any): boolean;
@@ -1358,17 +1597,20 @@ declare function CFRunLoopObserverInvalidate(observer: any): void;
 
 declare function CFRunLoopObserverIsValid(observer: any): boolean;
 
+/**
+ * @since 4.0
+ */
 declare function CFRunLoopPerformBlock(rl: any, mode: any, block: () => void): void;
 
-declare function CFRunLoopRemoveObserver(rl: any, observer: any, mode: any): void;
+declare function CFRunLoopRemoveObserver(rl: any, observer: any, mode: string): void;
 
-declare function CFRunLoopRemoveSource(rl: any, source: any, mode: any): void;
+declare function CFRunLoopRemoveSource(rl: any, source: any, mode: string): void;
 
-declare function CFRunLoopRemoveTimer(rl: any, timer: NSTimer, mode: any): void;
+declare function CFRunLoopRemoveTimer(rl: any, timer: NSTimer, mode: string): void;
 
 declare function CFRunLoopRun(): void;
 
-declare function CFRunLoopRunInMode(mode: any, seconds: number, returnAfterSourceHandled: boolean): CFRunLoopRunResult;
+declare function CFRunLoopRunInMode(mode: string, seconds: number, returnAfterSourceHandled: boolean): CFRunLoopRunResult;
 
 declare const enum CFRunLoopRunResult {
 
@@ -1389,8 +1631,8 @@ interface CFRunLoopSourceContext {
 	copyDescription: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => string>;
 	equal: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => boolean>;
 	hash: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>;
-	schedule: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: any, p3: any) => void>;
-	cancel: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: any, p3: any) => void>;
+	schedule: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: any, p3: string) => void>;
+	cancel: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: any, p3: string) => void>;
 	perform: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
 }
 declare var CFRunLoopSourceContext: interop.StructType<CFRunLoopSourceContext>;
@@ -1435,6 +1677,9 @@ declare var CFRunLoopTimerContext: interop.StructType<CFRunLoopTimerContext>;
 
 declare function CFRunLoopTimerCreate(allocator: any, fireDate: number, interval: number, flags: number, order: number, callout: interop.FunctionReference<(p1: NSTimer, p2: interop.Pointer | interop.Reference<any>) => void>, context: interop.Pointer | interop.Reference<CFRunLoopTimerContext>): NSTimer;
 
+/**
+ * @since 5.0
+ */
 declare function CFRunLoopTimerCreateWithHandler(allocator: any, fireDate: number, interval: number, flags: number, order: number, block: (p1: NSTimer) => void): NSTimer;
 
 declare function CFRunLoopTimerDoesRepeat(timer: NSTimer): boolean;
@@ -1447,6 +1692,9 @@ declare function CFRunLoopTimerGetNextFireDate(timer: NSTimer): number;
 
 declare function CFRunLoopTimerGetOrder(timer: NSTimer): number;
 
+/**
+ * @since 7.0
+ */
 declare function CFRunLoopTimerGetTolerance(timer: NSTimer): number;
 
 declare function CFRunLoopTimerGetTypeID(): number;
@@ -1457,6 +1705,9 @@ declare function CFRunLoopTimerIsValid(timer: NSTimer): boolean;
 
 declare function CFRunLoopTimerSetNextFireDate(timer: NSTimer, fireDate: number): void;
 
+/**
+ * @since 7.0
+ */
 declare function CFRunLoopTimerSetTolerance(timer: NSTimer, tolerance: number): void;
 
 declare function CFRunLoopWakeUp(rl: any): void;
@@ -1613,10 +1864,22 @@ declare var CFStreamClientContext: interop.StructType<CFStreamClientContext>;
 
 declare function CFStreamCreateBoundPair(alloc: any, readStream: interop.Pointer | interop.Reference<NSInputStream>, writeStream: interop.Pointer | interop.Reference<NSOutputStream>, transferBufferSize: number): void;
 
+/**
+ * @since 2.0
+ * @deprecated 100000
+ */
 declare function CFStreamCreatePairWithPeerSocketSignature(alloc: any, signature: interop.Pointer | interop.Reference<CFSocketSignature>, readStream: interop.Pointer | interop.Reference<NSInputStream>, writeStream: interop.Pointer | interop.Reference<NSOutputStream>): void;
 
+/**
+ * @since 2.0
+ * @deprecated 100000
+ */
 declare function CFStreamCreatePairWithSocket(alloc: any, sock: number, readStream: interop.Pointer | interop.Reference<NSInputStream>, writeStream: interop.Pointer | interop.Reference<NSOutputStream>): void;
 
+/**
+ * @since 2.0
+ * @deprecated 100000
+ */
 declare function CFStreamCreatePairWithSocketToHost(alloc: any, host: string, port: number, readStream: interop.Pointer | interop.Reference<NSInputStream>, writeStream: interop.Pointer | interop.Reference<NSOutputStream>): void;
 
 interface CFStreamError {
@@ -1734,6 +1997,9 @@ declare const enum CFStringCompareFlags {
 
 declare function CFStringCompareWithOptions(theString1: string, theString2: string, rangeToCompare: CFRange, compareOptions: CFStringCompareFlags): CFComparisonResult;
 
+/**
+ * @since 2.0
+ */
 declare function CFStringCompareWithOptionsAndLocale(theString1: string, theString2: string, rangeToCompare: CFRange, compareOptions: CFStringCompareFlags, locale: NSLocale): CFComparisonResult;
 
 declare function CFStringConvertEncodingToIANACharSetName(encoding: number): string;
@@ -2057,8 +2323,14 @@ declare function CFStringFindCharacterFromSet(theString: string, theSet: NSChara
 
 declare function CFStringFindWithOptions(theString: string, stringToFind: string, rangeToSearch: CFRange, searchOptions: CFStringCompareFlags, result: interop.Pointer | interop.Reference<CFRange>): boolean;
 
+/**
+ * @since 2.0
+ */
 declare function CFStringFindWithOptionsAndLocale(theString: string, stringToFind: string, rangeToSearch: CFRange, searchOptions: CFStringCompareFlags, locale: NSLocale, result: interop.Pointer | interop.Reference<CFRange>): boolean;
 
+/**
+ * @since 2.0
+ */
 declare function CFStringFold(theString: string, theFlags: CFStringCompareFlags, theLocale: NSLocale): void;
 
 declare function CFStringGetBytes(theString: string, range: CFRange, encoding: number, lossByte: number, isExternalRepresentation: boolean, buffer: string | interop.Pointer | interop.Reference<any>, maxBufLen: number, usedBufLen: interop.Pointer | interop.Reference<number>): number;
@@ -2079,6 +2351,9 @@ declare function CFStringGetFastestEncoding(theString: string): number;
 
 declare function CFStringGetFileSystemRepresentation(string: string, buffer: string | interop.Pointer | interop.Reference<any>, maxBufLen: number): boolean;
 
+/**
+ * @since 4.2
+ */
 declare function CFStringGetHyphenationLocationBeforeIndex(string: string, location: number, limitRange: CFRange, options: number, locale: NSLocale, character: interop.Pointer | interop.Reference<number>): number;
 
 declare function CFStringGetIntValue(str: string): number;
@@ -2097,6 +2372,9 @@ declare function CFStringGetMostCompatibleMacStringEncoding(encoding: number): n
 
 declare function CFStringGetNameOfEncoding(encoding: number): string;
 
+/**
+ * @since 2.0
+ */
 declare function CFStringGetParagraphBounds(string: string, range: CFRange, parBeginIndex: interop.Pointer | interop.Reference<number>, parEndIndex: interop.Pointer | interop.Reference<number>, contentsEndIndex: interop.Pointer | interop.Reference<number>): void;
 
 declare function CFStringGetPascalString(theString: string, buffer: string | interop.Pointer | interop.Reference<any>, bufferSize: number, encoding: number): boolean;
@@ -2130,6 +2408,9 @@ declare function CFStringInsert(str: string, idx: number, insertedStr: string): 
 
 declare function CFStringIsEncodingAvailable(encoding: number): boolean;
 
+/**
+ * @since 4.3
+ */
 declare function CFStringIsHyphenationAvailableForLocale(locale: NSLocale): boolean;
 
 declare function CFStringLowercase(theString: string, locale: NSLocale): void;
@@ -2155,22 +2436,49 @@ declare function CFStringReplaceAll(theString: string, replacement: string): voi
 
 declare function CFStringSetExternalCharactersNoCopy(theString: string, chars: interop.Pointer | interop.Reference<number>, length: number, capacity: number): void;
 
+/**
+ * @since 3.0
+ */
 declare function CFStringTokenizerAdvanceToNextToken(tokenizer: any): CFStringTokenizerTokenType;
 
+/**
+ * @since 3.0
+ */
 declare function CFStringTokenizerCopyBestStringLanguage(string: string, range: CFRange): string;
 
+/**
+ * @since 3.0
+ */
 declare function CFStringTokenizerCopyCurrentTokenAttribute(tokenizer: any, attribute: number): any;
 
+/**
+ * @since 3.0
+ */
 declare function CFStringTokenizerCreate(alloc: any, string: string, range: CFRange, options: number, locale: NSLocale): any;
 
+/**
+ * @since 3.0
+ */
 declare function CFStringTokenizerGetCurrentSubTokens(tokenizer: any, ranges: interop.Pointer | interop.Reference<CFRange>, maxRangeLength: number, derivedSubTokens: NSArray<any> | any[]): number;
 
+/**
+ * @since 3.0
+ */
 declare function CFStringTokenizerGetCurrentTokenRange(tokenizer: any): CFRange;
 
+/**
+ * @since 3.0
+ */
 declare function CFStringTokenizerGetTypeID(): number;
 
+/**
+ * @since 3.0
+ */
 declare function CFStringTokenizerGoToTokenAtIndex(tokenizer: any, index: number): CFStringTokenizerTokenType;
 
+/**
+ * @since 3.0
+ */
 declare function CFStringTokenizerSetString(tokenizer: any, string: string, range: CFRange): void;
 
 declare const enum CFStringTokenizerTokenType {
@@ -2216,6 +2524,9 @@ declare function CFTimeZoneCopyDefault(): NSTimeZone;
 
 declare function CFTimeZoneCopyKnownNames(): NSArray<any>;
 
+/**
+ * @since 2.0
+ */
 declare function CFTimeZoneCopyLocalizedName(tz: NSTimeZone, style: CFTimeZoneNameStyle, locale: NSLocale): string;
 
 declare function CFTimeZoneCopySystem(): NSTimeZone;
@@ -2228,10 +2539,16 @@ declare function CFTimeZoneCreateWithTimeIntervalFromGMT(allocator: any, ti: num
 
 declare function CFTimeZoneGetData(tz: NSTimeZone): NSData;
 
+/**
+ * @since 2.0
+ */
 declare function CFTimeZoneGetDaylightSavingTimeOffset(tz: NSTimeZone, at: number): number;
 
 declare function CFTimeZoneGetName(tz: NSTimeZone): string;
 
+/**
+ * @since 2.0
+ */
 declare function CFTimeZoneGetNextDaylightSavingTimeTransition(tz: NSTimeZone, at: number): number;
 
 declare function CFTimeZoneGetSecondsFromGMT(tz: NSTimeZone, at: number): number;
@@ -2240,6 +2557,9 @@ declare function CFTimeZoneGetTypeID(): number;
 
 declare function CFTimeZoneIsDaylightSavingTime(tz: NSTimeZone, at: number): boolean;
 
+/**
+ * @since 2.0
+ */
 declare const enum CFTimeZoneNameStyle {
 
 	kCFTimeZoneNameStyleStandard = 0,
@@ -2306,6 +2626,9 @@ declare function CFTreeSetContext(tree: any, context: interop.Pointer | interop.
 
 declare function CFTreeSortChildren(tree: any, comparator: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => CFComparisonResult>, context: interop.Pointer | interop.Reference<any>): void;
 
+/**
+ * @since 4.0
+ */
 declare const enum CFURLBookmarkCreationOptions {
 
 	kCFURLBookmarkCreationMinimalBookmarkMask = 512,
@@ -2321,6 +2644,9 @@ declare const enum CFURLBookmarkCreationOptions {
 	kCFURLBookmarkCreationPreferFileIDResolutionMask = 256
 }
 
+/**
+ * @since 4.0
+ */
 declare const enum CFURLBookmarkResolutionOptions {
 
 	kCFURLBookmarkResolutionWithoutUIMask = 256,
@@ -2338,8 +2664,14 @@ declare const enum CFURLBookmarkResolutionOptions {
 
 declare function CFURLCanBeDecomposed(anURL: NSURL): boolean;
 
+/**
+ * @since 4.0
+ */
 declare function CFURLClearResourcePropertyCache(url: NSURL): void;
 
+/**
+ * @since 4.0
+ */
 declare function CFURLClearResourcePropertyCacheForKey(url: NSURL, key: string): void;
 
 declare const enum CFURLComponentType {
@@ -2381,6 +2713,10 @@ declare function CFURLCopyLastPathComponent(url: NSURL): string;
 
 declare function CFURLCopyNetLocation(anURL: NSURL): string;
 
+/**
+ * @since 2.0
+ * @deprecated 13.0
+ */
 declare function CFURLCopyParameterString(anURL: NSURL, charactersToLeaveEscaped: string): string;
 
 declare function CFURLCopyPassword(anURL: NSURL): string;
@@ -2391,8 +2727,14 @@ declare function CFURLCopyPathExtension(url: NSURL): string;
 
 declare function CFURLCopyQueryString(anURL: NSURL, charactersToLeaveEscaped: string): string;
 
+/**
+ * @since 4.0
+ */
 declare function CFURLCopyResourcePropertiesForKeys(url: NSURL, keys: NSArray<any> | any[], error: interop.Pointer | interop.Reference<NSError>): interop.Unmanaged<NSDictionary<any, any>>;
 
+/**
+ * @since 4.0
+ */
 declare function CFURLCopyResourcePropertyForKey(url: NSURL, key: string, propertyValueTypeRefPtr: interop.Pointer | interop.Reference<any>, error: interop.Pointer | interop.Reference<NSError>): boolean;
 
 declare function CFURLCopyResourceSpecifier(anURL: NSURL): string;
@@ -2405,10 +2747,19 @@ declare function CFURLCopyUserName(anURL: NSURL): string;
 
 declare function CFURLCreateAbsoluteURLWithBytes(alloc: any, relativeURLBytes: string | interop.Pointer | interop.Reference<any>, length: number, encoding: number, baseURL: NSURL, useCompatibilityMode: boolean): NSURL;
 
+/**
+ * @since 4.0
+ */
 declare function CFURLCreateBookmarkData(allocator: any, url: NSURL, options: CFURLBookmarkCreationOptions, resourcePropertiesToInclude: NSArray<any> | any[], relativeToURL: NSURL, error: interop.Pointer | interop.Reference<NSError>): interop.Unmanaged<NSData>;
 
+/**
+ * @since 5.0
+ */
 declare function CFURLCreateBookmarkDataFromFile(allocator: any, fileURL: NSURL, errorRef: interop.Pointer | interop.Reference<NSError>): interop.Unmanaged<NSData>;
 
+/**
+ * @since 4.0
+ */
 declare function CFURLCreateByResolvingBookmarkData(allocator: any, bookmark: NSData, options: CFURLBookmarkResolutionOptions, relativeToURL: NSURL, resourcePropertiesToInclude: NSArray<any> | any[], isStale: string | interop.Pointer | interop.Reference<any>, error: interop.Pointer | interop.Reference<NSError>): interop.Unmanaged<NSURL>;
 
 declare function CFURLCreateCopyAppendingPathComponent(allocator: any, url: NSURL, pathComponent: string, isDirectory: boolean): NSURL;
@@ -2421,28 +2772,60 @@ declare function CFURLCreateCopyDeletingPathExtension(allocator: any, url: NSURL
 
 declare function CFURLCreateData(allocator: any, url: NSURL, encoding: number, escapeWhitespace: boolean): NSData;
 
+/**
+ * @since 2.0
+ * @deprecated 7.0
+ */
 declare function CFURLCreateDataAndPropertiesFromResource(alloc: any, url: NSURL, resourceData: interop.Pointer | interop.Reference<NSData>, properties: interop.Pointer | interop.Reference<NSDictionary<any, any>>, desiredProperties: NSArray<any> | any[], errorCode: interop.Pointer | interop.Reference<number>): boolean;
 
+/**
+ * @since 4.0
+ */
 declare function CFURLCreateFilePathURL(allocator: any, url: NSURL, error: interop.Pointer | interop.Reference<NSError>): interop.Unmanaged<NSURL>;
 
+/**
+ * @since 4.0
+ */
 declare function CFURLCreateFileReferenceURL(allocator: any, url: NSURL, error: interop.Pointer | interop.Reference<NSError>): interop.Unmanaged<NSURL>;
 
+/**
+ * @since 2.0
+ * @deprecated 7.0
+ */
 declare function CFURLCreateFromFSRef(allocator: any, fsRef: interop.Pointer | interop.Reference<any>): NSURL;
 
 declare function CFURLCreateFromFileSystemRepresentation(allocator: any, buffer: string | interop.Pointer | interop.Reference<any>, bufLen: number, isDirectory: boolean): NSURL;
 
 declare function CFURLCreateFromFileSystemRepresentationRelativeToBase(allocator: any, buffer: string | interop.Pointer | interop.Reference<any>, bufLen: number, isDirectory: boolean, baseURL: NSURL): NSURL;
 
+/**
+ * @since 2.0
+ * @deprecated 7.0
+ */
 declare function CFURLCreatePropertyFromResource(alloc: any, url: NSURL, property: string, errorCode: interop.Pointer | interop.Reference<number>): any;
 
+/**
+ * @since 4.0
+ */
 declare function CFURLCreateResourcePropertiesForKeysFromBookmarkData(allocator: any, resourcePropertiesToReturn: NSArray<any> | any[], bookmark: NSData): interop.Unmanaged<NSDictionary<any, any>>;
 
+/**
+ * @since 4.0
+ */
 declare function CFURLCreateResourcePropertyForKeyFromBookmarkData(allocator: any, resourcePropertyKey: string, bookmark: NSData): interop.Unmanaged<any>;
 
+/**
+ * @since 2.0
+ * @deprecated 9.0
+ */
 declare function CFURLCreateStringByAddingPercentEscapes(allocator: any, originalString: string, charactersToLeaveUnescaped: string, legalURLCharactersToBeEscaped: string, encoding: number): string;
 
 declare function CFURLCreateStringByReplacingPercentEscapes(allocator: any, originalString: string, charactersToLeaveEscaped: string): string;
 
+/**
+ * @since 2.0
+ * @deprecated 9.0
+ */
 declare function CFURLCreateStringByReplacingPercentEscapesUsingEncoding(allocator: any, origString: string, charsToLeaveEscaped: string, encoding: number): string;
 
 declare function CFURLCreateWithBytes(allocator: any, URLBytes: string | interop.Pointer | interop.Reference<any>, length: number, encoding: number, baseURL: NSURL): NSURL;
@@ -2453,18 +2836,41 @@ declare function CFURLCreateWithFileSystemPathRelativeToBase(allocator: any, fil
 
 declare function CFURLCreateWithString(allocator: any, URLString: string, baseURL: NSURL): NSURL;
 
+/**
+ * @since 2.0
+ * @deprecated 7.0
+ */
 declare function CFURLDestroyResource(url: NSURL, errorCode: interop.Pointer | interop.Reference<number>): boolean;
 
+/**
+ * @since 4.0
+ */
 declare function CFURLEnumeratorCreateForDirectoryURL(alloc: any, directoryURL: NSURL, option: CFURLEnumeratorOptions, propertyKeys: NSArray<any> | any[]): any;
 
+/**
+ * @since 4.0
+ */
 declare function CFURLEnumeratorCreateForMountedVolumes(alloc: any, option: CFURLEnumeratorOptions, propertyKeys: NSArray<any> | any[]): any;
 
+/**
+ * @since 4.0
+ */
 declare function CFURLEnumeratorGetDescendentLevel(enumerator: any): number;
 
+/**
+ * @since 4.0
+ */
 declare function CFURLEnumeratorGetNextURL(enumerator: any, url: interop.Pointer | interop.Reference<NSURL>, error: interop.Pointer | interop.Reference<NSError>): CFURLEnumeratorResult;
 
+/**
+ * @since 4.0
+ * @deprecated 5.0
+ */
 declare function CFURLEnumeratorGetSourceDidChange(enumerator: any): boolean;
 
+/**
+ * @since 4.0
+ */
 declare function CFURLEnumeratorGetTypeID(): number;
 
 declare const enum CFURLEnumeratorOptions {
@@ -2497,8 +2903,15 @@ declare const enum CFURLEnumeratorResult {
 	kCFURLEnumeratorDirectoryPostOrderSuccess = 4
 }
 
+/**
+ * @since 4.0
+ */
 declare function CFURLEnumeratorSkipDescendents(enumerator: any): void;
 
+/**
+ * @since 2.0
+ * @deprecated 7.0
+ */
 declare const enum CFURLError {
 
 	kCFURLUnknownError = -10,
@@ -2526,6 +2939,10 @@ declare function CFURLGetByteRangeForComponent(url: NSURL, component: CFURLCompo
 
 declare function CFURLGetBytes(url: NSURL, buffer: string | interop.Pointer | interop.Reference<any>, bufferLength: number): number;
 
+/**
+ * @since 2.0
+ * @deprecated 7.0
+ */
 declare function CFURLGetFSRef(url: NSURL, fsRef: interop.Pointer | interop.Reference<any>): boolean;
 
 declare function CFURLGetFileSystemRepresentation(url: NSURL, resolveAgainstBase: boolean, buffer: string | interop.Pointer | interop.Reference<any>, maxBufLen: number): boolean;
@@ -2538,6 +2955,9 @@ declare function CFURLGetTypeID(): number;
 
 declare function CFURLHasDirectoryPath(anURL: NSURL): boolean;
 
+/**
+ * @since 7.0
+ */
 declare function CFURLIsFileReferenceURL(url: NSURL): boolean;
 
 declare const enum CFURLPathStyle {
@@ -2549,20 +2969,45 @@ declare const enum CFURLPathStyle {
 	kCFURLWindowsPathStyle = 2
 }
 
+/**
+ * @since 4.0
+ */
 declare function CFURLResourceIsReachable(url: NSURL, error: interop.Pointer | interop.Reference<NSError>): boolean;
 
+/**
+ * @since 4.0
+ */
 declare function CFURLSetResourcePropertiesForKeys(url: NSURL, keyedPropertyValues: NSDictionary<any, any>, error: interop.Pointer | interop.Reference<NSError>): boolean;
 
+/**
+ * @since 4.0
+ */
 declare function CFURLSetResourcePropertyForKey(url: NSURL, key: string, propertyValue: any, error: interop.Pointer | interop.Reference<NSError>): boolean;
 
+/**
+ * @since 4.0
+ */
 declare function CFURLSetTemporaryResourcePropertyForKey(url: NSURL, key: string, propertyValue: any): void;
 
+/**
+ * @since 8.0
+ */
 declare function CFURLStartAccessingSecurityScopedResource(url: NSURL): boolean;
 
+/**
+ * @since 8.0
+ */
 declare function CFURLStopAccessingSecurityScopedResource(url: NSURL): void;
 
+/**
+ * @since 5.0
+ */
 declare function CFURLWriteBookmarkDataToFile(bookmarkRef: NSData, fileURL: NSURL, options: number, errorRef: interop.Pointer | interop.Reference<NSError>): boolean;
 
+/**
+ * @since 2.0
+ * @deprecated 7.0
+ */
 declare function CFURLWriteDataAndPropertiesToResource(url: NSURL, dataToWrite: NSData, propertiesToWrite: NSDictionary<any, any>, errorCode: interop.Pointer | interop.Reference<number>): boolean;
 
 interface CFUUIDBytes {
@@ -2605,11 +3050,17 @@ declare function CFWriteStreamCanAcceptBytes(stream: NSOutputStream): boolean;
 
 declare function CFWriteStreamClose(stream: NSOutputStream): void;
 
-declare function CFWriteStreamCopyDispatchQueue(stream: NSOutputStream): interop.Pointer | interop.Reference<any>;
+/**
+ * @since 7.0
+ */
+declare function CFWriteStreamCopyDispatchQueue(stream: NSOutputStream): NSObject & OS_dispatch_queue;
 
+/**
+ * @since 2.0
+ */
 declare function CFWriteStreamCopyError(stream: NSOutputStream): NSError;
 
-declare function CFWriteStreamCopyProperty(stream: NSOutputStream, propertyName: any): any;
+declare function CFWriteStreamCopyProperty(stream: NSOutputStream, propertyName: string): any;
 
 declare function CFWriteStreamCreateWithAllocatedBuffers(alloc: any, bufferAllocator: any): NSOutputStream;
 
@@ -2625,15 +3076,18 @@ declare function CFWriteStreamGetTypeID(): number;
 
 declare function CFWriteStreamOpen(stream: NSOutputStream): boolean;
 
-declare function CFWriteStreamScheduleWithRunLoop(stream: NSOutputStream, runLoop: any, runLoopMode: any): void;
+declare function CFWriteStreamScheduleWithRunLoop(stream: NSOutputStream, runLoop: any, runLoopMode: string): void;
 
 declare function CFWriteStreamSetClient(stream: NSOutputStream, streamEvents: number, clientCB: interop.FunctionReference<(p1: NSOutputStream, p2: CFStreamEventType, p3: interop.Pointer | interop.Reference<any>) => void>, clientContext: interop.Pointer | interop.Reference<CFStreamClientContext>): boolean;
 
-declare function CFWriteStreamSetDispatchQueue(stream: NSOutputStream, q: interop.Pointer | interop.Reference<any>): void;
+/**
+ * @since 7.0
+ */
+declare function CFWriteStreamSetDispatchQueue(stream: NSOutputStream, q: NSObject & OS_dispatch_queue): void;
 
-declare function CFWriteStreamSetProperty(stream: NSOutputStream, propertyName: any, propertyValue: any): boolean;
+declare function CFWriteStreamSetProperty(stream: NSOutputStream, propertyName: string, propertyValue: any): boolean;
 
-declare function CFWriteStreamUnscheduleFromRunLoop(stream: NSOutputStream, runLoop: any, runLoopMode: any): void;
+declare function CFWriteStreamUnscheduleFromRunLoop(stream: NSOutputStream, runLoop: any, runLoopMode: string): void;
 
 declare function CFWriteStreamWrite(stream: NSOutputStream, buffer: string | interop.Pointer | interop.Reference<any>, bufferLength: number): number;
 
@@ -2731,7 +3185,7 @@ declare var kCFBooleanFalse: number;
 
 declare var kCFBooleanTrue: number;
 
-declare var kCFBuddhistCalendar: any;
+declare var kCFBuddhistCalendar: string;
 
 declare var kCFBundleDevelopmentRegionKey: string;
 
@@ -2759,7 +3213,7 @@ declare var kCFBundleVersionKey: string;
 
 declare const kCFCalendarComponentsWrap: number;
 
-declare var kCFChineseCalendar: any;
+declare var kCFChineseCalendar: string;
 
 declare var kCFCopyStringBagCallBacks: CFBagCallBacks;
 
@@ -2769,151 +3223,262 @@ declare var kCFCopyStringSetCallBacks: CFSetCallBacks;
 
 declare var kCFCoreFoundationVersionNumber: number;
 
-declare var kCFDateFormatterAMSymbol: any;
+declare var kCFDateFormatterAMSymbol: string;
 
-declare var kCFDateFormatterCalendar: any;
+declare var kCFDateFormatterCalendar: string;
 
-declare var kCFDateFormatterCalendarName: any;
+declare var kCFDateFormatterCalendarName: string;
 
-declare var kCFDateFormatterDefaultDate: any;
+declare var kCFDateFormatterDefaultDate: string;
 
-declare var kCFDateFormatterDefaultFormat: any;
+declare var kCFDateFormatterDefaultFormat: string;
 
-declare var kCFDateFormatterDoesRelativeDateFormattingKey: any;
+/**
+ * @since 4.0
+ */
+declare var kCFDateFormatterDoesRelativeDateFormattingKey: string;
 
-declare var kCFDateFormatterEraSymbols: any;
+declare var kCFDateFormatterEraSymbols: string;
 
-declare var kCFDateFormatterGregorianStartDate: any;
+/**
+ * @since 2.0
+ */
+declare var kCFDateFormatterGregorianStartDate: string;
 
-declare var kCFDateFormatterIsLenient: any;
+declare var kCFDateFormatterIsLenient: string;
 
-declare var kCFDateFormatterLongEraSymbols: any;
+/**
+ * @since 2.0
+ */
+declare var kCFDateFormatterLongEraSymbols: string;
 
-declare var kCFDateFormatterMonthSymbols: any;
+declare var kCFDateFormatterMonthSymbols: string;
 
-declare var kCFDateFormatterPMSymbol: any;
+declare var kCFDateFormatterPMSymbol: string;
 
-declare var kCFDateFormatterQuarterSymbols: any;
+/**
+ * @since 2.0
+ */
+declare var kCFDateFormatterQuarterSymbols: string;
 
-declare var kCFDateFormatterShortMonthSymbols: any;
+declare var kCFDateFormatterShortMonthSymbols: string;
 
-declare var kCFDateFormatterShortQuarterSymbols: any;
+/**
+ * @since 2.0
+ */
+declare var kCFDateFormatterShortQuarterSymbols: string;
 
-declare var kCFDateFormatterShortStandaloneMonthSymbols: any;
+/**
+ * @since 2.0
+ */
+declare var kCFDateFormatterShortStandaloneMonthSymbols: string;
 
-declare var kCFDateFormatterShortStandaloneQuarterSymbols: any;
+/**
+ * @since 2.0
+ */
+declare var kCFDateFormatterShortStandaloneQuarterSymbols: string;
 
-declare var kCFDateFormatterShortStandaloneWeekdaySymbols: any;
+/**
+ * @since 2.0
+ */
+declare var kCFDateFormatterShortStandaloneWeekdaySymbols: string;
 
-declare var kCFDateFormatterShortWeekdaySymbols: any;
+declare var kCFDateFormatterShortWeekdaySymbols: string;
 
-declare var kCFDateFormatterStandaloneMonthSymbols: any;
+/**
+ * @since 2.0
+ */
+declare var kCFDateFormatterStandaloneMonthSymbols: string;
 
-declare var kCFDateFormatterStandaloneQuarterSymbols: any;
+/**
+ * @since 2.0
+ */
+declare var kCFDateFormatterStandaloneQuarterSymbols: string;
 
-declare var kCFDateFormatterStandaloneWeekdaySymbols: any;
+/**
+ * @since 2.0
+ */
+declare var kCFDateFormatterStandaloneWeekdaySymbols: string;
 
-declare var kCFDateFormatterTimeZone: any;
+declare var kCFDateFormatterTimeZone: string;
 
-declare var kCFDateFormatterTwoDigitStartDate: any;
+declare var kCFDateFormatterTwoDigitStartDate: string;
 
-declare var kCFDateFormatterVeryShortMonthSymbols: any;
+/**
+ * @since 2.0
+ */
+declare var kCFDateFormatterVeryShortMonthSymbols: string;
 
-declare var kCFDateFormatterVeryShortStandaloneMonthSymbols: any;
+/**
+ * @since 2.0
+ */
+declare var kCFDateFormatterVeryShortStandaloneMonthSymbols: string;
 
-declare var kCFDateFormatterVeryShortStandaloneWeekdaySymbols: any;
+/**
+ * @since 2.0
+ */
+declare var kCFDateFormatterVeryShortStandaloneWeekdaySymbols: string;
 
-declare var kCFDateFormatterVeryShortWeekdaySymbols: any;
+/**
+ * @since 2.0
+ */
+declare var kCFDateFormatterVeryShortWeekdaySymbols: string;
 
-declare var kCFDateFormatterWeekdaySymbols: any;
+declare var kCFDateFormatterWeekdaySymbols: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCFErrorDescriptionKey: string;
 
-declare var kCFErrorDomainCocoa: any;
+/**
+ * @since 2.0
+ */
+declare var kCFErrorDomainCocoa: string;
 
-declare var kCFErrorDomainMach: any;
+/**
+ * @since 2.0
+ */
+declare var kCFErrorDomainMach: string;
 
-declare var kCFErrorDomainOSStatus: any;
+/**
+ * @since 2.0
+ */
+declare var kCFErrorDomainOSStatus: string;
 
-declare var kCFErrorDomainPOSIX: any;
+/**
+ * @since 2.0
+ */
+declare var kCFErrorDomainPOSIX: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFErrorFilePathKey: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCFErrorLocalizedDescriptionKey: string;
 
+/**
+ * @since 11.0
+ */
 declare var kCFErrorLocalizedFailureKey: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCFErrorLocalizedFailureReasonKey: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCFErrorLocalizedRecoverySuggestionKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFErrorURLKey: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCFErrorUnderlyingErrorKey: string;
 
 declare const kCFFileDescriptorReadCallBack: number;
 
 declare const kCFFileDescriptorWriteCallBack: number;
 
-declare var kCFGregorianCalendar: any;
+declare var kCFGregorianCalendar: string;
 
-declare var kCFHebrewCalendar: any;
+declare var kCFHebrewCalendar: string;
 
-declare var kCFISO8601Calendar: any;
+/**
+ * @since 4.0
+ */
+declare var kCFISO8601Calendar: string;
 
-declare var kCFIndianCalendar: any;
+/**
+ * @since 4.0
+ */
+declare var kCFIndianCalendar: string;
 
-declare var kCFIslamicCalendar: any;
+declare var kCFIslamicCalendar: string;
 
-declare var kCFIslamicCivilCalendar: any;
+declare var kCFIslamicCivilCalendar: string;
 
-declare var kCFIslamicTabularCalendar: any;
+/**
+ * @since 8.0
+ */
+declare var kCFIslamicTabularCalendar: string;
 
-declare var kCFIslamicUmmAlQuraCalendar: any;
+/**
+ * @since 8.0
+ */
+declare var kCFIslamicUmmAlQuraCalendar: string;
 
-declare var kCFJapaneseCalendar: any;
+declare var kCFJapaneseCalendar: string;
 
-declare var kCFLocaleAlternateQuotationBeginDelimiterKey: any;
+/**
+ * @since 4.0
+ */
+declare var kCFLocaleAlternateQuotationBeginDelimiterKey: string;
 
-declare var kCFLocaleAlternateQuotationEndDelimiterKey: any;
+/**
+ * @since 4.0
+ */
+declare var kCFLocaleAlternateQuotationEndDelimiterKey: string;
 
-declare var kCFLocaleCalendar: any;
+declare var kCFLocaleCalendar: string;
 
-declare var kCFLocaleCalendarIdentifier: any;
+declare var kCFLocaleCalendarIdentifier: string;
 
-declare var kCFLocaleCollationIdentifier: any;
+declare var kCFLocaleCollationIdentifier: string;
 
-declare var kCFLocaleCollatorIdentifier: any;
+/**
+ * @since 4.0
+ */
+declare var kCFLocaleCollatorIdentifier: string;
 
-declare var kCFLocaleCountryCode: any;
+declare var kCFLocaleCountryCode: string;
 
-declare var kCFLocaleCurrencyCode: any;
+declare var kCFLocaleCurrencyCode: string;
 
-declare var kCFLocaleCurrencySymbol: any;
+declare var kCFLocaleCurrencySymbol: string;
 
-declare var kCFLocaleCurrentLocaleDidChangeNotification: any;
+/**
+ * @since 2.0
+ */
+declare var kCFLocaleCurrentLocaleDidChangeNotification: string;
 
-declare var kCFLocaleDecimalSeparator: any;
+declare var kCFLocaleDecimalSeparator: string;
 
-declare var kCFLocaleExemplarCharacterSet: any;
+declare var kCFLocaleExemplarCharacterSet: string;
 
-declare var kCFLocaleGroupingSeparator: any;
+declare var kCFLocaleGroupingSeparator: string;
 
-declare var kCFLocaleIdentifier: any;
+declare var kCFLocaleIdentifier: string;
 
-declare var kCFLocaleLanguageCode: any;
+declare var kCFLocaleLanguageCode: string;
 
-declare var kCFLocaleMeasurementSystem: any;
+declare var kCFLocaleMeasurementSystem: string;
 
-declare var kCFLocaleQuotationBeginDelimiterKey: any;
+/**
+ * @since 4.0
+ */
+declare var kCFLocaleQuotationBeginDelimiterKey: string;
 
-declare var kCFLocaleQuotationEndDelimiterKey: any;
+/**
+ * @since 4.0
+ */
+declare var kCFLocaleQuotationEndDelimiterKey: string;
 
-declare var kCFLocaleScriptCode: any;
+declare var kCFLocaleScriptCode: string;
 
-declare var kCFLocaleUsesMetricSystem: any;
+declare var kCFLocaleUsesMetricSystem: string;
 
-declare var kCFLocaleVariantCode: any;
+declare var kCFLocaleVariantCode: string;
 
 declare const kCFMessagePortBecameInvalidError: number;
 
@@ -2935,81 +3500,101 @@ declare const kCFNotificationPostToAllSessions: number;
 
 declare var kCFNull: NSNull;
 
-declare var kCFNumberFormatterAlwaysShowDecimalSeparator: any;
+declare var kCFNumberFormatterAlwaysShowDecimalSeparator: string;
 
-declare var kCFNumberFormatterCurrencyCode: any;
+declare var kCFNumberFormatterCurrencyCode: string;
 
-declare var kCFNumberFormatterCurrencyDecimalSeparator: any;
+declare var kCFNumberFormatterCurrencyDecimalSeparator: string;
 
-declare var kCFNumberFormatterCurrencyGroupingSeparator: any;
+/**
+ * @since 2.0
+ */
+declare var kCFNumberFormatterCurrencyGroupingSeparator: string;
 
-declare var kCFNumberFormatterCurrencySymbol: any;
+declare var kCFNumberFormatterCurrencySymbol: string;
 
-declare var kCFNumberFormatterDecimalSeparator: any;
+declare var kCFNumberFormatterDecimalSeparator: string;
 
-declare var kCFNumberFormatterDefaultFormat: any;
+declare var kCFNumberFormatterDefaultFormat: string;
 
-declare var kCFNumberFormatterExponentSymbol: any;
+declare var kCFNumberFormatterExponentSymbol: string;
 
-declare var kCFNumberFormatterFormatWidth: any;
+declare var kCFNumberFormatterFormatWidth: string;
 
-declare var kCFNumberFormatterGroupingSeparator: any;
+declare var kCFNumberFormatterGroupingSeparator: string;
 
-declare var kCFNumberFormatterGroupingSize: any;
+declare var kCFNumberFormatterGroupingSize: string;
 
-declare var kCFNumberFormatterInfinitySymbol: any;
+declare var kCFNumberFormatterInfinitySymbol: string;
 
-declare var kCFNumberFormatterInternationalCurrencySymbol: any;
+declare var kCFNumberFormatterInternationalCurrencySymbol: string;
 
-declare var kCFNumberFormatterIsLenient: any;
+/**
+ * @since 2.0
+ */
+declare var kCFNumberFormatterIsLenient: string;
 
-declare var kCFNumberFormatterMaxFractionDigits: any;
+declare var kCFNumberFormatterMaxFractionDigits: string;
 
-declare var kCFNumberFormatterMaxIntegerDigits: any;
+declare var kCFNumberFormatterMaxIntegerDigits: string;
 
-declare var kCFNumberFormatterMaxSignificantDigits: any;
+/**
+ * @since 2.0
+ */
+declare var kCFNumberFormatterMaxSignificantDigits: string;
 
-declare var kCFNumberFormatterMinFractionDigits: any;
+declare var kCFNumberFormatterMinFractionDigits: string;
 
-declare var kCFNumberFormatterMinIntegerDigits: any;
+/**
+ * @since 18.0
+ */
+declare var kCFNumberFormatterMinGroupingDigits: string;
 
-declare var kCFNumberFormatterMinSignificantDigits: any;
+declare var kCFNumberFormatterMinIntegerDigits: string;
 
-declare var kCFNumberFormatterMinusSign: any;
+/**
+ * @since 2.0
+ */
+declare var kCFNumberFormatterMinSignificantDigits: string;
 
-declare var kCFNumberFormatterMultiplier: any;
+declare var kCFNumberFormatterMinusSign: string;
 
-declare var kCFNumberFormatterNaNSymbol: any;
+declare var kCFNumberFormatterMultiplier: string;
 
-declare var kCFNumberFormatterNegativePrefix: any;
+declare var kCFNumberFormatterNaNSymbol: string;
 
-declare var kCFNumberFormatterNegativeSuffix: any;
+declare var kCFNumberFormatterNegativePrefix: string;
 
-declare var kCFNumberFormatterPaddingCharacter: any;
+declare var kCFNumberFormatterNegativeSuffix: string;
 
-declare var kCFNumberFormatterPaddingPosition: any;
+declare var kCFNumberFormatterPaddingCharacter: string;
 
-declare var kCFNumberFormatterPerMillSymbol: any;
+declare var kCFNumberFormatterPaddingPosition: string;
 
-declare var kCFNumberFormatterPercentSymbol: any;
+declare var kCFNumberFormatterPerMillSymbol: string;
 
-declare var kCFNumberFormatterPlusSign: any;
+declare var kCFNumberFormatterPercentSymbol: string;
 
-declare var kCFNumberFormatterPositivePrefix: any;
+declare var kCFNumberFormatterPlusSign: string;
 
-declare var kCFNumberFormatterPositiveSuffix: any;
+declare var kCFNumberFormatterPositivePrefix: string;
 
-declare var kCFNumberFormatterRoundingIncrement: any;
+declare var kCFNumberFormatterPositiveSuffix: string;
 
-declare var kCFNumberFormatterRoundingMode: any;
+declare var kCFNumberFormatterRoundingIncrement: string;
 
-declare var kCFNumberFormatterSecondaryGroupingSize: any;
+declare var kCFNumberFormatterRoundingMode: string;
 
-declare var kCFNumberFormatterUseGroupingSeparator: any;
+declare var kCFNumberFormatterSecondaryGroupingSize: string;
 
-declare var kCFNumberFormatterUseSignificantDigits: any;
+declare var kCFNumberFormatterUseGroupingSeparator: string;
 
-declare var kCFNumberFormatterZeroSymbol: any;
+/**
+ * @since 2.0
+ */
+declare var kCFNumberFormatterUseSignificantDigits: string;
+
+declare var kCFNumberFormatterZeroSymbol: string;
 
 declare var kCFNumberNaN: number;
 
@@ -3017,7 +3602,10 @@ declare var kCFNumberNegativeInfinity: number;
 
 declare var kCFNumberPositiveInfinity: number;
 
-declare var kCFPersianCalendar: any;
+/**
+ * @since 4.0
+ */
+declare var kCFPersianCalendar: string;
 
 declare var kCFPlugInDynamicRegisterFunctionKey: string;
 
@@ -3049,11 +3637,14 @@ declare const kCFPropertyListReadUnknownVersionError: number;
 
 declare const kCFPropertyListWriteStreamError: number;
 
-declare var kCFRepublicOfChinaCalendar: any;
+/**
+ * @since 4.0
+ */
+declare var kCFRepublicOfChinaCalendar: string;
 
-declare var kCFRunLoopCommonModes: any;
+declare var kCFRunLoopCommonModes: string;
 
-declare var kCFRunLoopDefaultMode: any;
+declare var kCFRunLoopDefaultMode: string;
 
 declare const kCFSocketAutomaticallyReenableAcceptCallBack: number;
 
@@ -3081,50 +3672,103 @@ declare var kCFSocketRetrieveCommand: string;
 
 declare var kCFSocketValueKey: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCFStreamErrorDomainSOCKS: number;
 
+/**
+ * @since 2.0
+ */
 declare var kCFStreamErrorDomainSSL: number;
 
-declare var kCFStreamPropertyAppendToFile: any;
+declare var kCFStreamPropertyAppendToFile: string;
 
-declare var kCFStreamPropertyDataWritten: any;
+declare var kCFStreamPropertyDataWritten: string;
 
-declare var kCFStreamPropertyFileCurrentOffset: any;
+declare var kCFStreamPropertyFileCurrentOffset: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCFStreamPropertySOCKSPassword: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCFStreamPropertySOCKSProxy: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCFStreamPropertySOCKSProxyHost: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCFStreamPropertySOCKSProxyPort: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCFStreamPropertySOCKSUser: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCFStreamPropertySOCKSVersion: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCFStreamPropertyShouldCloseNativeSocket: string;
 
-declare var kCFStreamPropertySocketNativeHandle: any;
+declare var kCFStreamPropertySocketNativeHandle: string;
 
-declare var kCFStreamPropertySocketRemoteHostName: any;
+declare var kCFStreamPropertySocketRemoteHostName: string;
 
-declare var kCFStreamPropertySocketRemotePortNumber: any;
+declare var kCFStreamPropertySocketRemotePortNumber: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCFStreamPropertySocketSecurityLevel: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCFStreamSocketSOCKSVersion4: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCFStreamSocketSOCKSVersion5: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCFStreamSocketSecurityLevelNegotiatedSSL: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCFStreamSocketSecurityLevelNone: string;
 
+/**
+ * @since 2.0
+ * @deprecated 10.0
+ */
 declare var kCFStreamSocketSecurityLevelSSLv2: string;
 
+/**
+ * @since 2.0
+ * @deprecated 10.0
+ */
 declare var kCFStreamSocketSecurityLevelSSLv3: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCFStreamSocketSecurityLevelTLSv1: string;
 
 declare var kCFStringBinaryHeapCallBacks: CFBinaryHeapCallBacks;
@@ -3167,6 +3811,9 @@ declare var kCFStringTransformMandarinLatin: string;
 
 declare var kCFStringTransformStripCombiningMarks: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCFStringTransformStripDiacritics: string;
 
 declare var kCFStringTransformToLatin: string;
@@ -3175,7 +3822,10 @@ declare var kCFStringTransformToUnicodeName: string;
 
 declare var kCFStringTransformToXMLHex: string;
 
-declare var kCFTimeZoneSystemTimeZoneDidChangeNotification: any;
+/**
+ * @since 2.0
+ */
+declare var kCFTimeZoneSystemTimeZoneDidChangeNotification: string;
 
 declare var kCFTypeArrayCallBacks: CFArrayCallBacks;
 
@@ -3187,274 +3837,697 @@ declare var kCFTypeDictionaryValueCallBacks: CFDictionaryValueCallBacks;
 
 declare var kCFTypeSetCallBacks: CFSetCallBacks;
 
+/**
+ * @since 8.0
+ */
 declare var kCFURLAddedToDirectoryDateKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLAttributeModificationDateKey: string;
 
+/**
+ * @since 10.0
+ */
 declare var kCFURLCanonicalPathKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLContentAccessDateKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLContentModificationDateKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLCreationDateKey: string;
 
+/**
+ * @since 4.0
+ * @deprecated 10.0
+ */
 declare var kCFURLCustomIconKey: string;
 
+/**
+ * @since 17.0
+ */
 declare var kCFURLDirectoryEntryCountKey: string;
 
+/**
+ * @since 8.0
+ */
 declare var kCFURLDocumentIdentifierKey: string;
 
+/**
+ * @since 4.0
+ * @deprecated 10.0
+ */
 declare var kCFURLEffectiveIconKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLFileAllocatedSizeKey: string;
 
+/**
+ * @since 14.0
+ */
 declare var kCFURLFileContentIdentifierKey: string;
 
+/**
+ * @since 2.0
+ * @deprecated 7.0
+ */
 declare var kCFURLFileDirectoryContents: string;
 
+/**
+ * @since 2.0
+ * @deprecated 7.0
+ */
 declare var kCFURLFileExists: string;
 
+/**
+ * @since 16.4
+ */
 declare var kCFURLFileIdentifierKey: string;
 
+/**
+ * @since 2.0
+ * @deprecated 7.0
+ */
 declare var kCFURLFileLastModificationTime: string;
 
+/**
+ * @since 2.0
+ * @deprecated 7.0
+ */
 declare var kCFURLFileLength: string;
 
+/**
+ * @since 2.0
+ * @deprecated 7.0
+ */
 declare var kCFURLFileOwnerID: string;
 
+/**
+ * @since 2.0
+ * @deprecated 7.0
+ */
 declare var kCFURLFilePOSIXMode: string;
 
+/**
+ * @since 9.0
+ */
 declare var kCFURLFileProtectionComplete: string;
 
+/**
+ * @since 9.0
+ */
 declare var kCFURLFileProtectionCompleteUnlessOpen: string;
 
+/**
+ * @since 9.0
+ */
 declare var kCFURLFileProtectionCompleteUntilFirstUserAuthentication: string;
 
+/**
+ * @since 17.0
+ */
 declare var kCFURLFileProtectionCompleteWhenUserInactive: string;
 
+/**
+ * @since 9.0
+ */
 declare var kCFURLFileProtectionKey: string;
 
+/**
+ * @since 9.0
+ */
 declare var kCFURLFileProtectionNone: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLFileResourceIdentifierKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLFileResourceTypeBlockSpecial: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLFileResourceTypeCharacterSpecial: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLFileResourceTypeDirectory: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLFileResourceTypeKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLFileResourceTypeNamedPipe: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLFileResourceTypeRegular: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLFileResourceTypeSocket: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLFileResourceTypeSymbolicLink: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLFileResourceTypeUnknown: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLFileSecurityKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLFileSizeKey: string;
 
+/**
+ * @since 8.0
+ */
 declare var kCFURLGenerationIdentifierKey: string;
 
+/**
+ * @since 2.0
+ * @deprecated 7.0
+ */
 declare var kCFURLHTTPStatusCode: string;
 
+/**
+ * @since 2.0
+ * @deprecated 7.0
+ */
 declare var kCFURLHTTPStatusLine: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLHasHiddenExtensionKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLIsAliasFileKey: string;
 
+/**
+ * @since 9.0
+ */
 declare var kCFURLIsApplicationKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLIsDirectoryKey: string;
 
+/**
+ * @since 5.1
+ */
 declare var kCFURLIsExcludedFromBackupKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLIsExecutableKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLIsHiddenKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLIsMountTriggerKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLIsPackageKey: string;
 
+/**
+ * @since 14.0
+ */
 declare var kCFURLIsPurgeableKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLIsReadableKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLIsRegularFileKey: string;
 
+/**
+ * @since 14.0
+ */
 declare var kCFURLIsSparseKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLIsSymbolicLinkKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLIsSystemImmutableKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLIsUbiquitousItemKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLIsUserImmutableKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLIsVolumeKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLIsWritableKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLKeysOfUnsetValuesKey: string;
 
+/**
+ * @since 4.0
+ * @deprecated 10.0
+ */
 declare var kCFURLLabelColorKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLLabelNumberKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLLinkCountKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLLocalizedLabelKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLLocalizedNameKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLLocalizedTypeDescriptionKey: string;
 
+/**
+ * @since 14.0
+ */
 declare var kCFURLMayHaveExtendedAttributesKey: string;
 
+/**
+ * @since 14.0
+ */
 declare var kCFURLMayShareFileContentKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLNameKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLParentDirectoryURLKey: string;
 
+/**
+ * @since 6.0
+ */
 declare var kCFURLPathKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLPreferredIOBlockSizeKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLTotalFileAllocatedSizeKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLTotalFileSizeKey: string;
 
+/**
+ * @since 4.0
+ * @deprecated 100000
+ */
 declare var kCFURLTypeIdentifierKey: string;
 
+/**
+ * @since 7.0
+ */
 declare var kCFURLUbiquitousItemDownloadingErrorKey: string;
 
+/**
+ * @since 7.0
+ */
 declare var kCFURLUbiquitousItemDownloadingStatusCurrent: string;
 
+/**
+ * @since 7.0
+ */
 declare var kCFURLUbiquitousItemDownloadingStatusDownloaded: string;
 
+/**
+ * @since 7.0
+ */
 declare var kCFURLUbiquitousItemDownloadingStatusKey: string;
 
+/**
+ * @since 7.0
+ */
 declare var kCFURLUbiquitousItemDownloadingStatusNotDownloaded: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLUbiquitousItemHasUnresolvedConflictsKey: string;
 
+/**
+ * @since 5.0
+ * @deprecated 7.0
+ */
 declare var kCFURLUbiquitousItemIsDownloadedKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLUbiquitousItemIsDownloadingKey: string;
 
+/**
+ * @since 14.5
+ */
 declare var kCFURLUbiquitousItemIsExcludedFromSyncKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLUbiquitousItemIsUploadedKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLUbiquitousItemIsUploadingKey: string;
 
+/**
+ * @since 5.0
+ * @deprecated 6.0
+ */
 declare var kCFURLUbiquitousItemPercentDownloadedKey: string;
 
+/**
+ * @since 5.0
+ * @deprecated 6.0
+ */
 declare var kCFURLUbiquitousItemPercentUploadedKey: string;
 
+/**
+ * @since 7.0
+ */
 declare var kCFURLUbiquitousItemUploadingErrorKey: string;
 
+/**
+ * @since 11.0
+ */
 declare var kCFURLVolumeAvailableCapacityForImportantUsageKey: string;
 
+/**
+ * @since 11.0
+ */
 declare var kCFURLVolumeAvailableCapacityForOpportunisticUsageKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLVolumeAvailableCapacityKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLVolumeCreationDateKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLVolumeIdentifierKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLVolumeIsAutomountedKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLVolumeIsBrowsableKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLVolumeIsEjectableKey: string;
 
+/**
+ * @since 10.0
+ */
 declare var kCFURLVolumeIsEncryptedKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLVolumeIsInternalKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLVolumeIsJournalingKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLVolumeIsLocalKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLVolumeIsReadOnlyKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLVolumeIsRemovableKey: string;
 
+/**
+ * @since 10.0
+ */
 declare var kCFURLVolumeIsRootFileSystemKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLVolumeLocalizedFormatDescriptionKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLVolumeLocalizedNameKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLVolumeMaximumFileSizeKey: string;
 
+/**
+ * @since 16.4
+ */
 declare var kCFURLVolumeMountFromLocationKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLVolumeNameKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLVolumeResourceCountKey: string;
 
+/**
+ * @since 16.4
+ */
 declare var kCFURLVolumeSubtypeKey: string;
 
+/**
+ * @since 11.0
+ */
 declare var kCFURLVolumeSupportsAccessPermissionsKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLVolumeSupportsAdvisoryFileLockingKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLVolumeSupportsCasePreservedNamesKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLVolumeSupportsCaseSensitiveNamesKey: string;
 
+/**
+ * @since 10.0
+ */
 declare var kCFURLVolumeSupportsCompressionKey: string;
 
+/**
+ * @since 10.0
+ */
 declare var kCFURLVolumeSupportsExclusiveRenamingKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLVolumeSupportsExtendedSecurityKey: string;
 
+/**
+ * @since 10.0
+ */
 declare var kCFURLVolumeSupportsFileCloningKey: string;
 
+/**
+ * @since 14.0
+ */
 declare var kCFURLVolumeSupportsFileProtectionKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLVolumeSupportsHardLinksKey: string;
 
+/**
+ * @since 11.0
+ */
 declare var kCFURLVolumeSupportsImmutableFilesKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLVolumeSupportsJournalingKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLVolumeSupportsPersistentIDsKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLVolumeSupportsRenamingKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLVolumeSupportsRootDirectoryDatesKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLVolumeSupportsSparseFilesKey: string;
 
+/**
+ * @since 10.0
+ */
 declare var kCFURLVolumeSupportsSwapRenamingKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLVolumeSupportsSymbolicLinksKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLVolumeSupportsVolumeSizesKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLVolumeSupportsZeroRunsKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLVolumeTotalCapacityKey: string;
 
+/**
+ * @since 16.4
+ */
 declare var kCFURLVolumeTypeNameKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLVolumeURLForRemountingKey: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCFURLVolumeURLKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCFURLVolumeUUIDStringKey: string;

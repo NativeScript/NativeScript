@@ -1,4 +1,7 @@
 
+/**
+ * @since 13.0
+ */
 declare class VNDocumentCameraScan extends NSObject {
 
 	static alloc(): VNDocumentCameraScan; // inherited from NSObject
@@ -12,6 +15,9 @@ declare class VNDocumentCameraScan extends NSObject {
 	imageOfPageAtIndex(index: number): UIImage;
 }
 
+/**
+ * @since 13.0
+ */
 declare class VNDocumentCameraViewController extends UIViewController {
 
 	static alloc(): VNDocumentCameraViewController; // inherited from NSObject
@@ -23,6 +29,9 @@ declare class VNDocumentCameraViewController extends UIViewController {
 	static readonly supported: boolean;
 }
 
+/**
+ * @since 13.0
+ */
 interface VNDocumentCameraViewControllerDelegate extends NSObjectProtocol {
 
 	documentCameraViewControllerDidCancel?(controller: VNDocumentCameraViewController): void;

@@ -91,6 +91,9 @@ declare var _htmlEntityDesc: interop.StructType<_htmlEntityDesc>;
 interface _uconv_t {
 	uconv: interop.Pointer | interop.Reference<any>;
 	utf8: interop.Pointer | interop.Reference<any>;
+	pivot_buf: interop.Reference<number>;
+	pivot_source: interop.Pointer | interop.Reference<number>;
+	pivot_target: interop.Pointer | interop.Reference<number>;
 }
 declare var _uconv_t: interop.StructType<_uconv_t>;
 
@@ -933,6 +936,9 @@ interface _xmlXPathContext {
 	dict: interop.Pointer | interop.Reference<any>;
 	flags: number;
 	cache: interop.Pointer | interop.Reference<any>;
+	opLimit: number;
+	opCount: number;
+	depth: number;
 }
 declare var _xmlXPathContext: interop.StructType<_xmlXPathContext>;
 
@@ -2260,6 +2266,9 @@ declare function xmlHashCreate(size: number): interop.Pointer | interop.Referenc
 
 declare function xmlHashCreateDict(size: number, dict: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 16.0
+ */
 declare function xmlHashDefaultDeallocator(entry: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>): void;
 
 declare function xmlHashFree(table: interop.Pointer | interop.Reference<any>, f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>): void;
@@ -2484,6 +2493,9 @@ declare function xmlMemSetup(freeFunc: interop.FunctionReference<(p1: interop.Po
 
 declare function xmlMemShow(fp: interop.Pointer | interop.Reference<FILE>, nr: number): void;
 
+/**
+ * @since 17.0
+ */
 declare function xmlMemSize(ptr: interop.Pointer | interop.Reference<any>): number;
 
 declare var xmlMemStrdup: interop.FunctionReference<(p1: string) => string>;
@@ -4572,6 +4584,9 @@ declare function xmlPopInput(ctxt: interop.Pointer | interop.Reference<_xmlParse
 
 declare function xmlPopInputCallbacks(): number;
 
+/**
+ * @since 16.0
+ */
 declare function xmlPopOutputCallbacks(): number;
 
 declare function xmlPreviousElementSibling(node: interop.Pointer | interop.Reference<_xmlNode>): interop.Pointer | interop.Reference<_xmlNode>;
@@ -6434,7 +6449,11 @@ declare const enum xmlXPathError {
 
 	XPATH_STACK_ERROR = 23,
 
-	XPATH_FORBID_VARIABLE_ERROR = 24
+	XPATH_FORBID_VARIABLE_ERROR = 24,
+
+	XPATH_OP_LIMIT_EXCEEDED = 25,
+
+	XPATH_RECURSION_LIMIT_EXCEEDED = 26
 }
 
 declare function xmlXPathEval(str: string | interop.Pointer | interop.Reference<any>, ctx: interop.Pointer | interop.Reference<_xmlXPathContext>): interop.Pointer | interop.Reference<_xmlXPathObject>;
@@ -6700,44 +6719,101 @@ declare function xmlXPathWrapString(val: string | interop.Pointer | interop.Refe
 
 declare function xmlXPatherror(ctxt: interop.Pointer | interop.Reference<_xmlXPathParserContext>, file: string | interop.Pointer | interop.Reference<any>, line: number, no: number): void;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrBuildNodeList(obj: interop.Pointer | interop.Reference<_xmlXPathObject>): interop.Pointer | interop.Reference<_xmlNode>;
 
 declare function xmlXPtrEval(str: string | interop.Pointer | interop.Reference<any>, ctx: interop.Pointer | interop.Reference<_xmlXPathContext>): interop.Pointer | interop.Reference<_xmlXPathObject>;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrEvalRangePredicate(ctxt: interop.Pointer | interop.Reference<_xmlXPathParserContext>): void;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrFreeLocationSet(obj: interop.Pointer | interop.Reference<_xmlLocationSet>): void;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrLocationSetAdd(cur: interop.Pointer | interop.Reference<_xmlLocationSet>, val: interop.Pointer | interop.Reference<_xmlXPathObject>): void;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrLocationSetCreate(val: interop.Pointer | interop.Reference<_xmlXPathObject>): interop.Pointer | interop.Reference<_xmlLocationSet>;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrLocationSetDel(cur: interop.Pointer | interop.Reference<_xmlLocationSet>, val: interop.Pointer | interop.Reference<_xmlXPathObject>): void;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrLocationSetMerge(val1: interop.Pointer | interop.Reference<_xmlLocationSet>, val2: interop.Pointer | interop.Reference<_xmlLocationSet>): interop.Pointer | interop.Reference<_xmlLocationSet>;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrLocationSetRemove(cur: interop.Pointer | interop.Reference<_xmlLocationSet>, val: number): void;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrNewCollapsedRange(start: interop.Pointer | interop.Reference<_xmlNode>): interop.Pointer | interop.Reference<_xmlXPathObject>;
 
 declare function xmlXPtrNewContext(doc: interop.Pointer | interop.Reference<_xmlDoc>, here: interop.Pointer | interop.Reference<_xmlNode>, origin: interop.Pointer | interop.Reference<_xmlNode>): interop.Pointer | interop.Reference<_xmlXPathContext>;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrNewLocationSetNodeSet(set: interop.Pointer | interop.Reference<_xmlNodeSet>): interop.Pointer | interop.Reference<_xmlXPathObject>;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrNewLocationSetNodes(start: interop.Pointer | interop.Reference<_xmlNode>, end: interop.Pointer | interop.Reference<_xmlNode>): interop.Pointer | interop.Reference<_xmlXPathObject>;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrNewRange(start: interop.Pointer | interop.Reference<_xmlNode>, startindex: number, end: interop.Pointer | interop.Reference<_xmlNode>, endindex: number): interop.Pointer | interop.Reference<_xmlXPathObject>;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrNewRangeNodeObject(start: interop.Pointer | interop.Reference<_xmlNode>, end: interop.Pointer | interop.Reference<_xmlXPathObject>): interop.Pointer | interop.Reference<_xmlXPathObject>;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrNewRangeNodePoint(start: interop.Pointer | interop.Reference<_xmlNode>, end: interop.Pointer | interop.Reference<_xmlXPathObject>): interop.Pointer | interop.Reference<_xmlXPathObject>;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrNewRangeNodes(start: interop.Pointer | interop.Reference<_xmlNode>, end: interop.Pointer | interop.Reference<_xmlNode>): interop.Pointer | interop.Reference<_xmlXPathObject>;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrNewRangePointNode(start: interop.Pointer | interop.Reference<_xmlXPathObject>, end: interop.Pointer | interop.Reference<_xmlNode>): interop.Pointer | interop.Reference<_xmlXPathObject>;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrNewRangePoints(start: interop.Pointer | interop.Reference<_xmlXPathObject>, end: interop.Pointer | interop.Reference<_xmlXPathObject>): interop.Pointer | interop.Reference<_xmlXPathObject>;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrRangeToFunction(ctxt: interop.Pointer | interop.Reference<_xmlXPathParserContext>, nargs: number): void;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrWrapLocationSet(val: interop.Pointer | interop.Reference<_xmlLocationSet>): interop.Pointer | interop.Reference<_xmlXPathObject>;

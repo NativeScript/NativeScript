@@ -1,4 +1,7 @@
 
+/**
+ * @since 2.0
+ */
 interface CAAction {
 
 	runActionForKeyObjectArguments(event: string, anObject: any, dict: NSDictionary<any, any>): void;
@@ -8,12 +11,18 @@ declare var CAAction: {
 	prototype: CAAction;
 };
 
+/**
+ * @since 2.0
+ */
 declare class CAAnimation extends NSObject implements CAAction, CAMediaTiming, NSCopying, NSSecureCoding, SCNAnimationProtocol {
 
 	static alloc(): CAAnimation; // inherited from NSObject
 
 	static animation(): CAAnimation;
 
+	/**
+	 * @since 11.0
+	 */
 	static animationWithSCNAnimation(animation: SCNAnimation): CAAnimation;
 
 	static defaultValueForKey(key: string): any;
@@ -28,6 +37,9 @@ declare class CAAnimation extends NSObject implements CAAction, CAMediaTiming, N
 
 	fadeOutDuration: number;
 
+	/**
+	 * @since 15.0
+	 */
 	preferredFrameRateRange: CAFrameRateRange;
 
 	removedOnCompletion: boolean;
@@ -101,6 +113,9 @@ declare class CAAnimation extends NSObject implements CAAction, CAMediaTiming, N
 	shouldArchiveValueForKey(key: string): boolean;
 }
 
+/**
+ * @since 10.0
+ */
 interface CAAnimationDelegate extends NSObjectProtocol {
 
 	animationDidStart?(anim: CAAnimation): void;
@@ -112,6 +127,9 @@ declare var CAAnimationDelegate: {
 	prototype: CAAnimationDelegate;
 };
 
+/**
+ * @since 2.0
+ */
 declare class CAAnimationGroup extends CAAnimation {
 
 	static alloc(): CAAnimationGroup; // inherited from NSObject
@@ -123,6 +141,9 @@ declare class CAAnimationGroup extends CAAnimation {
 	animations: NSArray<CAAnimation>;
 }
 
+/**
+ * @since 2.0
+ */
 declare class CABasicAnimation extends CAPropertyAnimation {
 
 	static alloc(): CABasicAnimation; // inherited from NSObject
@@ -140,6 +161,9 @@ declare class CABasicAnimation extends CAPropertyAnimation {
 	toValue: any;
 }
 
+/**
+ * @since 11.0
+ */
 declare const enum CACornerMask {
 
 	kCALayerMinXMinYCorner = 1,
@@ -151,8 +175,14 @@ declare const enum CACornerMask {
 	kCALayerMaxXMaxYCorner = 8
 }
 
+/**
+ * @since 2.0
+ */
 declare function CACurrentMediaTime(): number;
 
+/**
+ * @since 3.1
+ */
 declare class CADisplayLink extends NSObject {
 
 	static alloc(): CADisplayLink; // inherited from NSObject
@@ -163,14 +193,28 @@ declare class CADisplayLink extends NSObject {
 
 	readonly duration: number;
 
+	/**
+	 * @since 3.1
+	 * @deprecated 10.0
+	 */
 	frameInterval: number;
 
 	paused: boolean;
 
+	/**
+	 * @since 15.0
+	 */
 	preferredFrameRateRange: CAFrameRateRange;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 100000
+	 */
 	preferredFramesPerSecond: number;
 
+	/**
+	 * @since 10.0
+	 */
 	readonly targetTimestamp: number;
 
 	readonly timestamp: number;
@@ -182,6 +226,10 @@ declare class CADisplayLink extends NSObject {
 	removeFromRunLoopForMode(runloop: NSRunLoop, mode: string): void;
 }
 
+/**
+ * @since 2.0
+ * @deprecated 12.0
+ */
 declare class CAEAGLLayer extends CALayer implements EAGLDrawable {
 
 	static alloc(): CAEAGLLayer; // inherited from NSObject
@@ -190,17 +238,26 @@ declare class CAEAGLLayer extends CALayer implements EAGLDrawable {
 
 	static new(): CAEAGLLayer; // inherited from NSObject
 
+	/**
+	 * @since 9.0
+	 */
 	presentsWithTransaction: boolean;
 
 	drawableProperties: NSDictionary<string, any>; // inherited from EAGLDrawable
 }
 
+/**
+ * @since 16.0
+ */
 declare class CAEDRMetadata extends NSObject implements NSCopying, NSSecureCoding {
 
 	static HDR10MetadataWithDisplayInfoContentInfoOpticalOutputScale(displayData: NSData, contentData: NSData, scale: number): CAEDRMetadata;
 
 	static HDR10MetadataWithMinLuminanceMaxLuminanceOpticalOutputScale(minNits: number, maxNits: number, scale: number): CAEDRMetadata;
 
+	/**
+	 * @since 17.0
+	 */
 	static HLGMetadataWithAmbientViewingEnvironment(data: NSData): CAEDRMetadata;
 
 	static alloc(): CAEDRMetadata; // inherited from NSObject
@@ -209,6 +266,9 @@ declare class CAEDRMetadata extends NSObject implements NSCopying, NSSecureCodin
 
 	static readonly HLGMetadata: CAEDRMetadata;
 
+	/**
+	 * @since 16.0
+	 */
 	static readonly available: boolean;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
@@ -222,6 +282,9 @@ declare class CAEDRMetadata extends NSObject implements NSCopying, NSSecureCodin
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 8.0
+ */
 declare const enum CAEdgeAntialiasingMask {
 
 	kCALayerLeftEdge = 1,
@@ -233,6 +296,9 @@ declare const enum CAEdgeAntialiasingMask {
 	kCALayerTopEdge = 8
 }
 
+/**
+ * @since 5.0
+ */
 declare class CAEmitterCell extends NSObject implements CAMediaTiming, NSSecureCoding {
 
 	static alloc(): CAEmitterCell; // inherited from NSObject
@@ -340,6 +406,9 @@ declare class CAEmitterCell extends NSObject implements CAMediaTiming, NSSecureC
 	shouldArchiveValueForKey(key: string): boolean;
 }
 
+/**
+ * @since 5.0
+ */
 declare class CAEmitterLayer extends CALayer {
 
 	static alloc(): CAEmitterLayer; // inherited from NSObject
@@ -379,6 +448,9 @@ declare class CAEmitterLayer extends CALayer {
 	velocity: number;
 }
 
+/**
+ * @since 15.0
+ */
 interface CAFrameRateRange {
 	minimum: number;
 	maximum: number;
@@ -386,12 +458,24 @@ interface CAFrameRateRange {
 }
 declare var CAFrameRateRange: interop.StructType<CAFrameRateRange>;
 
+/**
+ * @since 15.0
+ */
 declare var CAFrameRateRangeDefault: CAFrameRateRange;
 
+/**
+ * @since 15.0
+ */
 declare function CAFrameRateRangeIsEqualToRange(range: CAFrameRateRange, other: CAFrameRateRange): boolean;
 
+/**
+ * @since 15.0
+ */
 declare function CAFrameRateRangeMake(minimum: number, maximum: number, preferred: number): CAFrameRateRange;
 
+/**
+ * @since 3.0
+ */
 declare class CAGradientLayer extends CALayer {
 
 	static alloc(): CAGradientLayer; // inherited from NSObject
@@ -411,6 +495,9 @@ declare class CAGradientLayer extends CALayer {
 	type: string;
 }
 
+/**
+ * @since 2.0
+ */
 declare class CAKeyframeAnimation extends CAPropertyAnimation {
 
 	static alloc(): CAKeyframeAnimation; // inherited from NSObject
@@ -440,10 +527,16 @@ declare class CAKeyframeAnimation extends CAPropertyAnimation {
 	values: NSArray<any>;
 }
 
+/**
+ * @since 2.0
+ */
 declare class CALayer extends NSObject implements CAMediaTiming, NSSecureCoding {
 
 	static alloc(): CALayer; // inherited from NSObject
 
+	/**
+	 * @since 13.0
+	 */
 	static cornerCurveExpansionFactor(curve: string): number;
 
 	static defaultActionForKey(event: string): CAAction;
@@ -458,8 +551,14 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSSecureCoding 
 
 	actions: NSDictionary<string, CAAction>;
 
+	/**
+	 * @since 2.0
+	 */
 	allowsEdgeAntialiasing: boolean;
 
+	/**
+	 * @since 2.0
+	 */
 	allowsGroupOpacity: boolean;
 
 	anchorPoint: CGPoint;
@@ -482,14 +581,23 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSSecureCoding 
 
 	contentsCenter: CGRect;
 
+	/**
+	 * @since 10.0
+	 */
 	contentsFormat: string;
 
 	contentsGravity: string;
 
 	contentsRect: CGRect;
 
+	/**
+	 * @since 4.0
+	 */
 	contentsScale: number;
 
+	/**
+	 * @since 13.0
+	 */
 	cornerCurve: string;
 
 	cornerRadius: number;
@@ -498,6 +606,9 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSSecureCoding 
 
 	doubleSided: boolean;
 
+	/**
+	 * @since 6.0
+	 */
 	drawsAsynchronously: boolean;
 
 	edgeAntialiasingMask: CAEdgeAntialiasingMask;
@@ -514,6 +625,9 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSSecureCoding 
 
 	mask: CALayer;
 
+	/**
+	 * @since 11.0
+	 */
 	maskedCorners: CACornerMask;
 
 	masksToBounds: boolean;
@@ -558,6 +672,9 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSSecureCoding 
 
 	readonly visibleRect: CGRect;
 
+	/**
+	 * @since 17.0
+	 */
 	wantsExtendedDynamicRangeContent: boolean;
 
 	zPosition: number;
@@ -671,6 +788,9 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSSecureCoding 
 	shouldArchiveValueForKey(key: string): boolean;
 }
 
+/**
+ * @since 10.0
+ */
 interface CALayerDelegate extends NSObjectProtocol {
 
 	actionForLayerForKey?(layer: CALayer, event: string): CAAction;
@@ -679,6 +799,9 @@ interface CALayerDelegate extends NSObjectProtocol {
 
 	drawLayerInContext?(layer: CALayer, ctx: any): void;
 
+	/**
+	 * @since 10.0
+	 */
 	layerWillDraw?(layer: CALayer): void;
 
 	layoutSublayersOfLayer?(layer: CALayer): void;
@@ -688,6 +811,9 @@ declare var CALayerDelegate: {
 	prototype: CALayerDelegate;
 };
 
+/**
+ * @since 2.0
+ */
 interface CAMediaTiming {
 
 	autoreverses: boolean;
@@ -711,6 +837,9 @@ declare var CAMediaTiming: {
 	prototype: CAMediaTiming;
 };
 
+/**
+ * @since 2.0
+ */
 declare class CAMediaTimingFunction extends NSObject implements NSSecureCoding {
 
 	static alloc(): CAMediaTimingFunction; // inherited from NSObject
@@ -736,6 +865,9 @@ declare class CAMediaTimingFunction extends NSObject implements NSSecureCoding {
 	initWithControlPoints(c1x: number, c1y: number, c2x: number, c2y: number): this;
 }
 
+/**
+ * @since 17.0
+ */
 declare class CAMetalDisplayLink extends NSObject {
 
 	static alloc(): CAMetalDisplayLink; // inherited from NSObject
@@ -761,6 +893,9 @@ declare class CAMetalDisplayLink extends NSObject {
 	removeFromRunLoopForMode(runloop: NSRunLoop, mode: string): void;
 }
 
+/**
+ * @since 17.0
+ */
 interface CAMetalDisplayLinkDelegate {
 
 	metalDisplayLinkNeedsUpdate(link: CAMetalDisplayLink, update: CAMetalDisplayLinkUpdate): void;
@@ -770,6 +905,9 @@ declare var CAMetalDisplayLinkDelegate: {
 	prototype: CAMetalDisplayLinkDelegate;
 };
 
+/**
+ * @since 17.0
+ */
 declare class CAMetalDisplayLinkUpdate extends NSObject {
 
 	static alloc(): CAMetalDisplayLinkUpdate; // inherited from NSObject
@@ -794,6 +932,9 @@ declare var CAMetalDrawable: {
 	prototype: CAMetalDrawable;
 };
 
+/**
+ * @since 13.0
+ */
 declare class CAMetalLayer extends CALayer {
 
 	static alloc(): CAMetalLayer; // inherited from NSObject
@@ -802,12 +943,21 @@ declare class CAMetalLayer extends CALayer {
 
 	static new(): CAMetalLayer; // inherited from NSObject
 
+	/**
+	 * @since 16.0
+	 */
 	EDRMetadata: CAEDRMetadata;
 
+	/**
+	 * @since 11.0
+	 */
 	allowsNextDrawableTimeout: boolean;
 
 	colorspace: any;
 
+	/**
+	 * @since 16.0
+	 */
 	developerHUDProperties: NSDictionary<any, any>;
 
 	device: MTLDevice;
@@ -816,10 +966,16 @@ declare class CAMetalLayer extends CALayer {
 
 	framebufferOnly: boolean;
 
+	/**
+	 * @since 11.2
+	 */
 	maximumDrawableCount: number;
 
 	pixelFormat: MTLPixelFormat;
 
+	/**
+	 * @since 13.0
+	 */
 	readonly preferredDevice: MTLDevice;
 
 	presentsWithTransaction: boolean;
@@ -827,6 +983,9 @@ declare class CAMetalLayer extends CALayer {
 	nextDrawable(): CAMetalDrawable;
 }
 
+/**
+ * @since 2.0
+ */
 declare class CAPropertyAnimation extends CAAnimation {
 
 	static alloc(): CAPropertyAnimation; // inherited from NSObject
@@ -846,12 +1005,18 @@ declare class CAPropertyAnimation extends CAAnimation {
 	valueFunction: CAValueFunction;
 }
 
+/**
+ * @since 2.0
+ */
 declare class CARenderer extends NSObject {
 
 	static alloc(): CARenderer; // inherited from NSObject
 
 	static new(): CARenderer; // inherited from NSObject
 
+	/**
+	 * @since 11.0
+	 */
 	static rendererWithMTLTextureOptions(tex: MTLTexture, dict: NSDictionary<any, any>): CARenderer;
 
 	bounds: CGRect;
@@ -873,6 +1038,9 @@ declare class CARenderer extends NSObject {
 	updateBounds(): CGRect;
 }
 
+/**
+ * @since 3.0
+ */
 declare class CAReplicatorLayer extends CALayer {
 
 	static alloc(): CAReplicatorLayer; // inherited from NSObject
@@ -900,6 +1068,9 @@ declare class CAReplicatorLayer extends CALayer {
 	preservesDepth: boolean;
 }
 
+/**
+ * @since 2.0
+ */
 declare class CAScrollLayer extends CALayer {
 
 	static alloc(): CAScrollLayer; // inherited from NSObject
@@ -915,6 +1086,9 @@ declare class CAScrollLayer extends CALayer {
 	scrollToRect(r: CGRect): void;
 }
 
+/**
+ * @since 3.0
+ */
 declare class CAShapeLayer extends CALayer {
 
 	static alloc(): CAShapeLayer; // inherited from NSObject
@@ -948,6 +1122,9 @@ declare class CAShapeLayer extends CALayer {
 	strokeStart: number;
 }
 
+/**
+ * @since 9.0
+ */
 declare class CASpringAnimation extends CABasicAnimation {
 
 	static alloc(): CASpringAnimation; // inherited from NSObject
@@ -958,8 +1135,14 @@ declare class CASpringAnimation extends CABasicAnimation {
 
 	static new(): CASpringAnimation; // inherited from NSObject
 
+	/**
+	 * @since 17.0
+	 */
 	allowsOverdamping: boolean;
 
+	/**
+	 * @since 17.0
+	 */
 	readonly bounce: number;
 
 	damping: number;
@@ -968,17 +1151,29 @@ declare class CASpringAnimation extends CABasicAnimation {
 
 	mass: number;
 
+	/**
+	 * @since 17.0
+	 */
 	readonly perceptualDuration: number;
 
 	readonly settlingDuration: number;
 
 	stiffness: number;
 
+	/**
+	 * @since 17.0
+	 */
 	constructor(o: { perceptualDuration: number; bounce: number; });
 
+	/**
+	 * @since 17.0
+	 */
 	initWithPerceptualDurationBounce(perceptualDuration: number, bounce: number): this;
 }
 
+/**
+ * @since 2.0
+ */
 declare class CATextLayer extends CALayer {
 
 	static alloc(): CATextLayer; // inherited from NSObject
@@ -1004,6 +1199,9 @@ declare class CATextLayer extends CALayer {
 	wrapped: boolean;
 }
 
+/**
+ * @since 2.0
+ */
 declare class CATiledLayer extends CALayer {
 
 	static alloc(): CATiledLayer; // inherited from NSObject
@@ -1021,6 +1219,9 @@ declare class CATiledLayer extends CALayer {
 	tileSize: CGSize;
 }
 
+/**
+ * @since 2.0
+ */
 declare class CATransaction extends NSObject {
 
 	static alloc(): CATransaction; // inherited from NSObject
@@ -1058,6 +1259,9 @@ declare class CATransaction extends NSObject {
 	static valueForKey(key: string): any;
 }
 
+/**
+ * @since 2.0
+ */
 interface CATransform3D {
 	m11: number;
 	m12: number;
@@ -1078,34 +1282,79 @@ interface CATransform3D {
 }
 declare var CATransform3D: interop.StructType<CATransform3D>;
 
+/**
+ * @since 2.0
+ */
 declare function CATransform3DConcat(a: CATransform3D, b: CATransform3D): CATransform3D;
 
+/**
+ * @since 2.0
+ */
 declare function CATransform3DEqualToTransform(a: CATransform3D, b: CATransform3D): boolean;
 
+/**
+ * @since 2.0
+ */
 declare function CATransform3DGetAffineTransform(t: CATransform3D): CGAffineTransform;
 
+/**
+ * @since 2.0
+ */
 declare var CATransform3DIdentity: CATransform3D;
 
+/**
+ * @since 2.0
+ */
 declare function CATransform3DInvert(t: CATransform3D): CATransform3D;
 
+/**
+ * @since 2.0
+ */
 declare function CATransform3DIsAffine(t: CATransform3D): boolean;
 
+/**
+ * @since 2.0
+ */
 declare function CATransform3DIsIdentity(t: CATransform3D): boolean;
 
+/**
+ * @since 2.0
+ */
 declare function CATransform3DMakeAffineTransform(m: CGAffineTransform): CATransform3D;
 
+/**
+ * @since 2.0
+ */
 declare function CATransform3DMakeRotation(angle: number, x: number, y: number, z: number): CATransform3D;
 
+/**
+ * @since 2.0
+ */
 declare function CATransform3DMakeScale(sx: number, sy: number, sz: number): CATransform3D;
 
+/**
+ * @since 2.0
+ */
 declare function CATransform3DMakeTranslation(tx: number, ty: number, tz: number): CATransform3D;
 
+/**
+ * @since 2.0
+ */
 declare function CATransform3DRotate(t: CATransform3D, angle: number, x: number, y: number, z: number): CATransform3D;
 
+/**
+ * @since 2.0
+ */
 declare function CATransform3DScale(t: CATransform3D, sx: number, sy: number, sz: number): CATransform3D;
 
+/**
+ * @since 2.0
+ */
 declare function CATransform3DTranslate(t: CATransform3D, tx: number, ty: number, tz: number): CATransform3D;
 
+/**
+ * @since 3.0
+ */
 declare class CATransformLayer extends CALayer {
 
 	static alloc(): CATransformLayer; // inherited from NSObject
@@ -1115,6 +1364,9 @@ declare class CATransformLayer extends CALayer {
 	static new(): CATransformLayer; // inherited from NSObject
 }
 
+/**
+ * @since 2.0
+ */
 declare class CATransition extends CAAnimation {
 
 	static alloc(): CATransition; // inherited from NSObject
@@ -1132,6 +1384,9 @@ declare class CATransition extends CAAnimation {
 	type: string;
 }
 
+/**
+ * @since 3.0
+ */
 declare class CAValueFunction extends NSObject implements NSSecureCoding {
 
 	static alloc(): CAValueFunction; // inherited from NSObject
@@ -1151,208 +1406,517 @@ declare class CAValueFunction extends NSObject implements NSSecureCoding {
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 3.2
+ */
 declare var kCAAlignmentCenter: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCAAlignmentJustified: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCAAlignmentLeft: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCAAlignmentNatural: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCAAlignmentRight: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCAAnimationCubic: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCAAnimationCubicPaced: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCAAnimationDiscrete: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCAAnimationLinear: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCAAnimationPaced: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCAAnimationRotateAuto: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCAAnimationRotateAutoReverse: string;
 
+/**
+ * @since 10.0
+ */
 declare var kCAContentsFormatGray8Uint: string;
 
+/**
+ * @since 10.0
+ */
 declare var kCAContentsFormatRGBA16Float: string;
 
+/**
+ * @since 10.0
+ */
 declare var kCAContentsFormatRGBA8Uint: string;
 
+/**
+ * @since 13.0
+ */
 declare var kCACornerCurveCircular: string;
 
+/**
+ * @since 13.0
+ */
 declare var kCACornerCurveContinuous: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCAEmitterLayerAdditive: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCAEmitterLayerBackToFront: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCAEmitterLayerCircle: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCAEmitterLayerCuboid: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCAEmitterLayerLine: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCAEmitterLayerOldestFirst: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCAEmitterLayerOldestLast: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCAEmitterLayerOutline: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCAEmitterLayerPoint: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCAEmitterLayerPoints: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCAEmitterLayerRectangle: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCAEmitterLayerSphere: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCAEmitterLayerSurface: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCAEmitterLayerUnordered: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCAEmitterLayerVolume: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCAFillModeBackwards: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCAFillModeBoth: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCAFillModeForwards: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCAFillModeRemoved: string;
 
+/**
+ * @since 3.0
+ */
 declare var kCAFillRuleEvenOdd: string;
 
+/**
+ * @since 3.0
+ */
 declare var kCAFillRuleNonZero: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCAFilterLinear: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCAFilterNearest: string;
 
+/**
+ * @since 3.0
+ */
 declare var kCAFilterTrilinear: string;
 
+/**
+ * @since 3.0
+ */
 declare var kCAGradientLayerAxial: string;
 
+/**
+ * @since 12.0
+ */
 declare var kCAGradientLayerConic: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCAGradientLayerRadial: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCAGravityBottom: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCAGravityBottomLeft: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCAGravityBottomRight: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCAGravityCenter: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCAGravityLeft: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCAGravityResize: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCAGravityResizeAspect: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCAGravityResizeAspectFill: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCAGravityRight: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCAGravityTop: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCAGravityTopLeft: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCAGravityTopRight: string;
 
+/**
+ * @since 3.0
+ */
 declare var kCALineCapButt: string;
 
+/**
+ * @since 3.0
+ */
 declare var kCALineCapRound: string;
 
+/**
+ * @since 3.0
+ */
 declare var kCALineCapSquare: string;
 
+/**
+ * @since 3.0
+ */
 declare var kCALineJoinBevel: string;
 
+/**
+ * @since 3.0
+ */
 declare var kCALineJoinMiter: string;
 
+/**
+ * @since 3.0
+ */
 declare var kCALineJoinRound: string;
 
+/**
+ * @since 3.0
+ */
 declare var kCAMediaTimingFunctionDefault: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCAMediaTimingFunctionEaseIn: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCAMediaTimingFunctionEaseInEaseOut: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCAMediaTimingFunctionEaseOut: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCAMediaTimingFunctionLinear: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCAOnOrderIn: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCAOnOrderOut: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCARendererColorSpace: string;
 
+/**
+ * @since 12.0
+ */
 declare var kCARendererMetalCommandQueue: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCAScrollBoth: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCAScrollHorizontally: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCAScrollNone: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCAScrollVertically: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCATransactionAnimationDuration: string;
 
+/**
+ * @since 3.0
+ */
 declare var kCATransactionAnimationTimingFunction: string;
 
+/**
+ * @since 4.0
+ */
 declare var kCATransactionCompletionBlock: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCATransactionDisableActions: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCATransition: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCATransitionFade: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCATransitionFromBottom: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCATransitionFromLeft: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCATransitionFromRight: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCATransitionFromTop: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCATransitionMoveIn: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCATransitionPush: string;
 
+/**
+ * @since 2.0
+ */
 declare var kCATransitionReveal: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCATruncationEnd: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCATruncationMiddle: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCATruncationNone: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCATruncationStart: string;
 
+/**
+ * @since 3.0
+ */
 declare var kCAValueFunctionRotateX: string;
 
+/**
+ * @since 3.0
+ */
 declare var kCAValueFunctionRotateY: string;
 
+/**
+ * @since 3.0
+ */
 declare var kCAValueFunctionRotateZ: string;
 
+/**
+ * @since 3.0
+ */
 declare var kCAValueFunctionScale: string;
 
+/**
+ * @since 3.0
+ */
 declare var kCAValueFunctionScaleX: string;
 
+/**
+ * @since 3.0
+ */
 declare var kCAValueFunctionScaleY: string;
 
+/**
+ * @since 3.0
+ */
 declare var kCAValueFunctionScaleZ: string;
 
+/**
+ * @since 3.0
+ */
 declare var kCAValueFunctionTranslate: string;
 
+/**
+ * @since 3.0
+ */
 declare var kCAValueFunctionTranslateX: string;
 
+/**
+ * @since 3.0
+ */
 declare var kCAValueFunctionTranslateY: string;
 
+/**
+ * @since 3.0
+ */
 declare var kCAValueFunctionTranslateZ: string;

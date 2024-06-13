@@ -1,4 +1,7 @@
 
+/**
+ * @since 13.0
+ */
 declare class SNAudioFileAnalyzer extends NSObject {
 
 	static alloc(): SNAudioFileAnalyzer; // inherited from NSObject
@@ -22,6 +25,9 @@ declare class SNAudioFileAnalyzer extends NSObject {
 	removeRequest(request: SNRequest): void;
 }
 
+/**
+ * @since 13.0
+ */
 declare class SNAudioStreamAnalyzer extends NSObject {
 
 	static alloc(): SNAudioStreamAnalyzer; // inherited from NSObject
@@ -43,6 +49,9 @@ declare class SNAudioStreamAnalyzer extends NSObject {
 	removeRequest(request: SNRequest): void;
 }
 
+/**
+ * @since 13.0
+ */
 declare class SNClassification extends NSObject {
 
 	static alloc(): SNClassification; // inherited from NSObject
@@ -54,6 +63,9 @@ declare class SNClassification extends NSObject {
 	readonly identifier: string;
 }
 
+/**
+ * @since 13.0
+ */
 declare class SNClassificationResult extends NSObject implements SNResult {
 
 	static alloc(): SNClassificationResult; // inherited from NSObject
@@ -78,6 +90,9 @@ declare class SNClassificationResult extends NSObject implements SNResult {
 
 	class(): typeof NSObject;
 
+	/**
+	 * @since 15.0
+	 */
 	classificationForIdentifier(identifier: string): SNClassification;
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
@@ -101,20 +116,35 @@ declare class SNClassificationResult extends NSObject implements SNResult {
 	self(): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare var SNClassifierIdentifierVersion1: string;
 
+/**
+ * @since 13.0
+ */
 declare class SNClassifySoundRequest extends NSObject implements SNRequest {
 
 	static alloc(): SNClassifySoundRequest; // inherited from NSObject
 
 	static new(): SNClassifySoundRequest; // inherited from NSObject
 
+	/**
+	 * @since 15.0
+	 */
 	readonly knownClassifications: NSArray<string>;
 
 	overlapFactor: number;
 
+	/**
+	 * @since 15.0
+	 */
 	windowDuration: CMTime;
 
+	/**
+	 * @since 15.0
+	 */
 	readonly windowDurationConstraint: SNTimeDurationConstraint;
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
@@ -129,6 +159,9 @@ declare class SNClassifySoundRequest extends NSObject implements SNRequest {
 
 	readonly  // inherited from NSObjectProtocol
 
+	/**
+	 * @since 15.0
+	 */
 	constructor(o: { classifierIdentifier: string; });
 
 	constructor(o: { MLModel: MLModel; });
@@ -137,6 +170,9 @@ declare class SNClassifySoundRequest extends NSObject implements SNRequest {
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
+	/**
+	 * @since 15.0
+	 */
 	initWithClassifierIdentifierError(classifierIdentifier: string): this;
 
 	initWithMLModelError(mlModel: MLModel): this;
@@ -173,8 +209,14 @@ declare const enum SNErrorCode {
 	InvalidFile = 5
 }
 
+/**
+ * @since 13.0
+ */
 declare var SNErrorDomain: string;
 
+/**
+ * @since 13.0
+ */
 interface SNRequest extends NSObjectProtocol {
 }
 declare var SNRequest: {
@@ -182,6 +224,9 @@ declare var SNRequest: {
 	prototype: SNRequest;
 };
 
+/**
+ * @since 13.0
+ */
 interface SNResult extends NSObjectProtocol {
 }
 declare var SNResult: {
@@ -189,6 +234,9 @@ declare var SNResult: {
 	prototype: SNResult;
 };
 
+/**
+ * @since 13.0
+ */
 interface SNResultsObserving extends NSObjectProtocol {
 
 	requestDidComplete?(request: SNRequest): void;
@@ -202,6 +250,9 @@ declare var SNResultsObserving: {
 	prototype: SNResultsObserving;
 };
 
+/**
+ * @since 15.0
+ */
 declare class SNTimeDurationConstraint extends NSObject {
 
 	static alloc(): SNTimeDurationConstraint; // inherited from NSObject
@@ -223,6 +274,9 @@ declare class SNTimeDurationConstraint extends NSObject {
 	initWithEnumeratedDurations(enumeratedDurations: NSArray<NSValue> | NSValue[]): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare const enum SNTimeDurationConstraintType {
 
 	Enumerated = 1,

@@ -1,4 +1,78 @@
 
+/**
+ * @since 18.0
+ */
+declare const enum BEAccessibilityContainerType {
+
+	None = 0,
+
+	Landmark = 1,
+
+	Table = 2,
+
+	List = 4,
+
+	Fieldset = 8,
+
+	Dialog = 16,
+
+	Tree = 32,
+
+	Frame = 64,
+
+	Article = 128,
+
+	SemanticGroup = 256,
+
+	ScrollArea = 512,
+
+	Alert = 1024,
+
+	DescriptionList = 2048
+}
+
+/**
+ * @since 18.0
+ */
+declare const enum BEAccessibilityPressedState {
+
+	Undefined = 0,
+
+	False = 1,
+
+	True = 2,
+
+	Mixed = 3
+}
+
+/**
+ * @since 18.0
+ */
+declare var BEAccessibilityTraitMenuItem: number;
+
+/**
+ * @since 18.0
+ */
+declare var BEAccessibilityTraitPopUpButton: number;
+
+/**
+ * @since 18.0
+ */
+declare var BEAccessibilityTraitRadioButton: number;
+
+/**
+ * @since 18.0
+ */
+declare var BEAccessibilityTraitReadOnly: number;
+
+/**
+ * @since 18.0
+ */
+declare var BEAccessibilityTraitVisited: number;
+
+/**
+ * @since 17.4
+ */
 declare class BEAutoFillTextSuggestion extends BETextSuggestion {
 
 	static alloc(): BEAutoFillTextSuggestion; // inherited from NSObject
@@ -8,6 +82,9 @@ declare class BEAutoFillTextSuggestion extends BETextSuggestion {
 	readonly contents: NSDictionary<string, string>;
 }
 
+/**
+ * @since 17.4
+ */
 declare class BEContextMenuConfiguration extends UIContextMenuConfiguration {
 
 	static alloc(): BEContextMenuConfiguration; // inherited from NSObject
@@ -25,6 +102,9 @@ interface BEDirectionalTextRange {
 }
 declare var BEDirectionalTextRange: interop.StructType<BEDirectionalTextRange>;
 
+/**
+ * @since 17.4
+ */
 declare class BEDragInteraction extends UIDragInteraction {
 
 	static alloc(): BEDragInteraction; // inherited from NSObject
@@ -38,6 +118,9 @@ declare class BEDragInteraction extends UIDragInteraction {
 	initWithDelegate(delegate: BEDragInteractionDelegate): this;
 }
 
+/**
+ * @since 17.4
+ */
 interface BEDragInteractionDelegate extends UIDragInteractionDelegate {
 
 	dragInteractionItemsForAddingToSessionForTouchAtPointCompletion?(dragInteraction: BEDragInteraction, session: UIDragSession, point: CGPoint, completion: (p1: NSArray<UIDragItem>) => boolean): void;
@@ -49,6 +132,9 @@ declare var BEDragInteractionDelegate: {
 	prototype: BEDragInteractionDelegate;
 };
 
+/**
+ * @since 17.4
+ */
 interface BEExtendedTextInputTraits extends UITextInputTraits {
 
 	insertionPointColor?: UIColor;
@@ -66,6 +152,9 @@ declare var BEExtendedTextInputTraits: {
 	prototype: BEExtendedTextInputTraits;
 };
 
+/**
+ * @since 17.4
+ */
 declare const enum BEGestureType {
 
 	Loupe = 0,
@@ -89,6 +178,9 @@ declare const enum BEGestureType {
 	ForceTouch = 15
 }
 
+/**
+ * @since 17.4
+ */
 declare class BEKeyEntry extends NSObject {
 
 	static alloc(): BEKeyEntry; // inherited from NSObject
@@ -104,6 +196,9 @@ declare class BEKeyEntry extends NSObject {
 	readonly timestamp: number;
 }
 
+/**
+ * @since 17.4
+ */
 declare class BEKeyEntryContext extends NSObject {
 
 	static alloc(): BEKeyEntryContext; // inherited from NSObject
@@ -123,6 +218,9 @@ declare class BEKeyEntryContext extends NSObject {
 	initWithKeyEntry(keyEntry: BEKeyEntry): this;
 }
 
+/**
+ * @since 17.4
+ */
 declare const enum BEKeyModifierFlags {
 
 	None = 0,
@@ -132,6 +230,9 @@ declare const enum BEKeyModifierFlags {
 	CapsLock = 2
 }
 
+/**
+ * @since 17.4
+ */
 declare const enum BEKeyPressState {
 
 	Down = 1,
@@ -139,6 +240,9 @@ declare const enum BEKeyPressState {
 	Up = 2
 }
 
+/**
+ * @since 17.4
+ */
 declare class BELayerHierarchy extends NSObject {
 
 	static alloc(): BELayerHierarchy; // inherited from NSObject
@@ -154,11 +258,14 @@ declare class BELayerHierarchy extends NSObject {
 	invalidate(): void;
 }
 
+/**
+ * @since 17.4
+ */
 declare class BELayerHierarchyHandle extends NSObject implements NSSecureCoding {
 
 	static alloc(): BELayerHierarchyHandle; // inherited from NSObject
 
-	static handleWithXPCRepresentationError(xpcRepresentation: interop.Pointer | interop.Reference<any>): BELayerHierarchyHandle;
+	static handleWithXPCRepresentationError(xpcRepresentation: NSObject & OS_xpc_object): BELayerHierarchyHandle;
 
 	static new(): BELayerHierarchyHandle; // inherited from NSObject
 
@@ -166,20 +273,23 @@ declare class BELayerHierarchyHandle extends NSObject implements NSSecureCoding 
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	createXPCRepresentation(): interop.Pointer | interop.Reference<any>;
+	createXPCRepresentation(): NSObject & OS_xpc_object;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 17.4
+ */
 declare class BELayerHierarchyHostingTransactionCoordinator extends NSObject implements NSSecureCoding {
 
 	static alloc(): BELayerHierarchyHostingTransactionCoordinator; // inherited from NSObject
 
 	static coordinatorWithError(): BELayerHierarchyHostingTransactionCoordinator;
 
-	static coordinatorWithXPCRepresentationError(xpcRepresentation: interop.Pointer | interop.Reference<any>): BELayerHierarchyHostingTransactionCoordinator;
+	static coordinatorWithXPCRepresentationError(xpcRepresentation: NSObject & OS_xpc_object): BELayerHierarchyHostingTransactionCoordinator;
 
 	static new(): BELayerHierarchyHostingTransactionCoordinator; // inherited from NSObject
 
@@ -193,27 +303,47 @@ declare class BELayerHierarchyHostingTransactionCoordinator extends NSObject imp
 
 	commit(): void;
 
-	createXPCRepresentation(): interop.Pointer | interop.Reference<any>;
+	createXPCRepresentation(): NSObject & OS_xpc_object;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 17.4
+ */
 declare class BELayerHierarchyHostingView extends UIView {
 
 	static alloc(): BELayerHierarchyHostingView; // inherited from NSObject
 
 	static appearance(): BELayerHierarchyHostingView; // inherited from UIAppearance
 
+	/**
+	 * @since 8.0
+	 */
 	static appearanceForTraitCollection(trait: UITraitCollection): BELayerHierarchyHostingView; // inherited from UIAppearance
 
+	/**
+	 * @since 8.0
+	 * @deprecated 9.0
+	 */
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): BELayerHierarchyHostingView; // inherited from UIAppearance
 
+	/**
+	 * @since 9.0
+	 */
 	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): BELayerHierarchyHostingView; // inherited from UIAppearance
 
+	/**
+	 * @since 5.0
+	 * @deprecated 9.0
+	 */
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): BELayerHierarchyHostingView; // inherited from UIAppearance
 
+	/**
+	 * @since 9.0
+	 */
 	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): BELayerHierarchyHostingView; // inherited from UIAppearance
 
 	static new(): BELayerHierarchyHostingView; // inherited from NSObject
@@ -221,6 +351,9 @@ declare class BELayerHierarchyHostingView extends UIView {
 	handle: BELayerHierarchyHandle;
 }
 
+/**
+ * @since 17.4
+ */
 declare class BEMediaEnvironment extends NSObject {
 
 	static alloc(): BEMediaEnvironment; // inherited from NSObject
@@ -229,21 +362,24 @@ declare class BEMediaEnvironment extends NSObject {
 
 	constructor(o: { webPageURL: NSURL; });
 
-	constructor(o: { XPCRepresentation: interop.Pointer | interop.Reference<any>; });
+	constructor(o: { XPCRepresentation: NSObject & OS_xpc_object; });
 
 	activateWithError(): boolean;
 
-	createXPCRepresentation(): interop.Pointer | interop.Reference<any>;
+	createXPCRepresentation(): NSObject & OS_xpc_object;
 
 	initWithWebPageURL(url: NSURL): this;
 
-	initWithXPCRepresentationError(xpcRepresentation: interop.Pointer | interop.Reference<any>): this;
+	initWithXPCRepresentationError(xpcRepresentation: NSObject & OS_xpc_object): this;
 
 	makeCaptureSessionWithError(): AVCaptureSession;
 
 	suspendWithError(): boolean;
 }
 
+/**
+ * @since 17.4
+ */
 declare class BENetworkingProcess extends NSObject {
 
 	static alloc(): BENetworkingProcess; // inherited from NSObject
@@ -254,11 +390,16 @@ declare class BENetworkingProcess extends NSObject {
 
 	grantCapabilityError(capability: BEProcessCapability): BEProcessCapabilityGrant;
 
+	grantCapabilityErrorInvalidationHandler(capability: BEProcessCapability, error: interop.Pointer | interop.Reference<NSError>, invalidationHandler: () => void): BEProcessCapabilityGrant;
+
 	invalidate(): void;
 
-	makeLibXPCConnectionError(): interop.Pointer | interop.Reference<any>;
+	makeLibXPCConnectionError(): NSObject & OS_xpc_object;
 }
 
+/**
+ * @since 17.4
+ */
 declare class BEProcessCapability extends NSObject {
 
 	static alloc(): BEProcessCapability; // inherited from NSObject
@@ -276,6 +417,9 @@ declare class BEProcessCapability extends NSObject {
 	requestWithError(): BEProcessCapabilityGrant;
 }
 
+/**
+ * @since 17.4
+ */
 interface BEProcessCapabilityGrant extends NSObjectProtocol {
 
 	valid: boolean;
@@ -287,6 +431,9 @@ declare var BEProcessCapabilityGrant: {
 	prototype: BEProcessCapabilityGrant;
 };
 
+/**
+ * @since 17.4
+ */
 declare class BERenderingProcess extends NSObject {
 
 	static alloc(): BERenderingProcess; // inherited from NSObject
@@ -299,11 +446,16 @@ declare class BERenderingProcess extends NSObject {
 
 	grantCapabilityError(capability: BEProcessCapability): BEProcessCapabilityGrant;
 
+	grantCapabilityErrorInvalidationHandler(capability: BEProcessCapability, error: interop.Pointer | interop.Reference<NSError>, invalidationHandler: () => void): BEProcessCapabilityGrant;
+
 	invalidate(): void;
 
-	makeLibXPCConnectionError(): interop.Pointer | interop.Reference<any>;
+	makeLibXPCConnectionError(): NSObject & OS_xpc_object;
 }
 
+/**
+ * @since 17.4
+ */
 interface BEResponderEditActions extends UIResponderStandardEditActions {
 
 	addShortcut?(sender: any): void;
@@ -327,20 +479,40 @@ declare var BEResponderEditActions: {
 	prototype: BEResponderEditActions;
 };
 
+/**
+ * @since 17.4
+ */
 declare class BEScrollView extends UIScrollView {
 
 	static alloc(): BEScrollView; // inherited from NSObject
 
 	static appearance(): BEScrollView; // inherited from UIAppearance
 
+	/**
+	 * @since 8.0
+	 */
 	static appearanceForTraitCollection(trait: UITraitCollection): BEScrollView; // inherited from UIAppearance
 
+	/**
+	 * @since 8.0
+	 * @deprecated 9.0
+	 */
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): BEScrollView; // inherited from UIAppearance
 
+	/**
+	 * @since 9.0
+	 */
 	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): BEScrollView; // inherited from UIAppearance
 
+	/**
+	 * @since 5.0
+	 * @deprecated 9.0
+	 */
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): BEScrollView; // inherited from UIAppearance
 
+	/**
+	 * @since 9.0
+	 */
 	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): BEScrollView; // inherited from UIAppearance
 
 	static new(): BEScrollView; // inherited from NSObject
@@ -348,6 +520,9 @@ declare class BEScrollView extends UIScrollView {
 	delegate: BEScrollViewDelegate;
 }
 
+/**
+ * @since 17.4
+ */
 interface BEScrollViewDelegate extends UIScrollViewDelegate {
 
 	parentScrollViewForScrollView?(scrollView: BEScrollView): BEScrollView;
@@ -359,6 +534,9 @@ declare var BEScrollViewDelegate: {
 	prototype: BEScrollViewDelegate;
 };
 
+/**
+ * @since 17.4
+ */
 declare class BEScrollViewScrollUpdate extends NSObject {
 
 	static alloc(): BEScrollViewScrollUpdate; // inherited from NSObject
@@ -374,6 +552,9 @@ declare class BEScrollViewScrollUpdate extends NSObject {
 	translationInView(view: UIView): CGPoint;
 }
 
+/**
+ * @since 17.4
+ */
 declare const enum BEScrollViewScrollUpdatePhase {
 
 	Began = 0,
@@ -385,6 +566,9 @@ declare const enum BEScrollViewScrollUpdatePhase {
 	Cancelled = 3
 }
 
+/**
+ * @since 17.4
+ */
 declare const enum BESelectionFlags {
 
 	SelectionFlagsNone = 0,
@@ -396,6 +580,9 @@ declare const enum BESelectionFlags {
 	PhraseBoundaryChanged = 4
 }
 
+/**
+ * @since 17.4
+ */
 declare const enum BESelectionTouchPhase {
 
 	Started = 0,
@@ -411,6 +598,9 @@ declare const enum BESelectionTouchPhase {
 	EndedNotMoving = 5
 }
 
+/**
+ * @since 17.4
+ */
 declare class BETextAlternatives extends NSObject {
 
 	static alloc(): BETextAlternatives; // inherited from NSObject
@@ -422,6 +612,9 @@ declare class BETextAlternatives extends NSObject {
 	readonly primaryString: string;
 }
 
+/**
+ * @since 17.4
+ */
 declare class BETextDocumentContext extends NSObject {
 
 	static alloc(): BETextDocumentContext; // inherited from NSObject
@@ -441,6 +634,9 @@ declare class BETextDocumentContext extends NSObject {
 	initWithSelectedTextContextBeforeContextAfterMarkedTextSelectedRangeInMarkedText(selectedText: string, contextBefore: string, contextAfter: string, markedText: string, selectedRangeInMarkedText: NSRange): this;
 }
 
+/**
+ * @since 17.4
+ */
 declare class BETextDocumentRequest extends NSObject {
 
 	static alloc(): BETextDocumentRequest; // inherited from NSObject
@@ -454,6 +650,9 @@ declare class BETextDocumentRequest extends NSObject {
 	surroundingGranularity: UITextGranularity;
 }
 
+/**
+ * @since 17.4
+ */
 declare const enum BETextDocumentRequestOptions {
 
 	OptionNone = 0,
@@ -469,6 +668,9 @@ declare const enum BETextDocumentRequestOptions {
 	OptionAutocorrectedRanges = 128
 }
 
+/**
+ * @since 17.4
+ */
 interface BETextInput extends BEResponderEditActions, BETextSelectionDirectionNavigation, UIKeyInput {
 
 	asyncInputDelegate: BETextInputDelegate;
@@ -606,6 +808,9 @@ declare var BETextInput: {
 	prototype: BETextInput;
 };
 
+/**
+ * @since 17.4
+ */
 interface BETextInputDelegate {
 
 	invalidateTextEntryContextForTextInput(textInput: BETextInput): void;
@@ -625,6 +830,9 @@ declare var BETextInputDelegate: {
 	prototype: BETextInputDelegate;
 };
 
+/**
+ * @since 17.4
+ */
 declare class BETextInteraction extends NSObject implements UIInteraction {
 
 	static alloc(): BETextInteraction; // inherited from NSObject
@@ -704,6 +912,9 @@ declare class BETextInteraction extends NSObject implements UIInteraction {
 	willMoveToView(view: UIView): void;
 }
 
+/**
+ * @since 17.4
+ */
 interface BETextInteractionDelegate {
 
 	systemDidChangeSelectionForInteraction(textInteraction: BETextInteraction): void;
@@ -715,6 +926,9 @@ declare var BETextInteractionDelegate: {
 	prototype: BETextInteractionDelegate;
 };
 
+/**
+ * @since 17.4
+ */
 declare const enum BETextReplacementOptions {
 
 	None = 0,
@@ -722,6 +936,9 @@ declare const enum BETextReplacementOptions {
 	AddUnderline = 1
 }
 
+/**
+ * @since 17.4
+ */
 interface BETextSelectionDirectionNavigation {
 
 	extendInLayoutDirection(direction: UITextLayoutDirection): void;
@@ -737,6 +954,9 @@ declare var BETextSelectionDirectionNavigation: {
 	prototype: BETextSelectionDirectionNavigation;
 };
 
+/**
+ * @since 17.4
+ */
 declare class BETextSuggestion extends NSObject {
 
 	static alloc(): BETextSuggestion; // inherited from NSObject
@@ -750,6 +970,27 @@ declare class BETextSuggestion extends NSObject {
 	initWithInputText(inputText: string): this;
 }
 
+/**
+ * @since 17.5
+ */
+declare class BEWebAppManifest extends NSObject {
+
+	static alloc(): BEWebAppManifest; // inherited from NSObject
+
+	static new(): BEWebAppManifest; // inherited from NSObject
+
+	readonly jsonData: NSData;
+
+	readonly manifestURL: NSURL;
+
+	constructor(o: { JSONData: NSData; manifestURL: NSURL; });
+
+	initWithJSONDataManifestURL(jsonData: NSData, manifestURL: NSURL): this;
+}
+
+/**
+ * @since 17.4
+ */
 declare class BEWebContentProcess extends NSObject {
 
 	static alloc(): BEWebContentProcess; // inherited from NSObject
@@ -762,7 +1003,9 @@ declare class BEWebContentProcess extends NSObject {
 
 	grantCapabilityError(capability: BEProcessCapability): BEProcessCapabilityGrant;
 
+	grantCapabilityErrorInvalidationHandler(capability: BEProcessCapability, error: interop.Pointer | interop.Reference<NSError>, invalidationHandler: () => void): BEProcessCapabilityGrant;
+
 	invalidate(): void;
 
-	makeLibXPCConnectionError(): interop.Pointer | interop.Reference<any>;
+	makeLibXPCConnectionError(): NSObject & OS_xpc_object;
 }

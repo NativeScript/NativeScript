@@ -1,4 +1,7 @@
 
+/**
+ * @since 10.0
+ */
 declare class MSConversation extends NSObject {
 
 	static alloc(): MSConversation; // inherited from NSObject
@@ -19,15 +22,30 @@ declare class MSConversation extends NSObject {
 
 	insertTextCompletionHandler(text: string, completionHandler: (p1: NSError) => void): void;
 
+	/**
+	 * @since 11.0
+	 */
 	sendAttachmentWithAlternateFilenameCompletionHandler(URL: NSURL, filename: string, completionHandler: (p1: NSError) => void): void;
 
+	/**
+	 * @since 11.0
+	 */
 	sendMessageCompletionHandler(message: MSMessage, completionHandler: (p1: NSError) => void): void;
 
+	/**
+	 * @since 11.0
+	 */
 	sendStickerCompletionHandler(sticker: MSSticker, completionHandler: (p1: NSError) => void): void;
 
+	/**
+	 * @since 11.0
+	 */
 	sendTextCompletionHandler(text: string, completionHandler: (p1: NSError) => void): void;
 }
 
+/**
+ * @since 10.0
+ */
 declare class MSMessage extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): MSMessage; // inherited from NSObject
@@ -40,6 +58,9 @@ declare class MSMessage extends NSObject implements NSCopying, NSSecureCoding {
 
 	layout: MSMessageLayout;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly pending: boolean;
 
 	readonly senderParticipantIdentifier: NSUUID;
@@ -65,6 +86,9 @@ declare class MSMessage extends NSObject implements NSCopying, NSSecureCoding {
 	initWithSession(session: MSSession): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum MSMessageErrorCode {
 
 	Unknown = -1,
@@ -92,6 +116,9 @@ declare const enum MSMessageErrorCode {
 	APIUnavailableInPresentationContext = 11
 }
 
+/**
+ * @since 10.0
+ */
 declare class MSMessageLayout extends NSObject implements NSCopying {
 
 	static alloc(): MSMessageLayout; // inherited from NSObject
@@ -101,6 +128,9 @@ declare class MSMessageLayout extends NSObject implements NSCopying {
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+/**
+ * @since 11.0
+ */
 declare class MSMessageLiveLayout extends MSMessageLayout {
 
 	static alloc(): MSMessageLiveLayout; // inherited from NSObject
@@ -114,6 +144,9 @@ declare class MSMessageLiveLayout extends MSMessageLayout {
 	initWithAlternateLayout(alternateLayout: MSMessageTemplateLayout): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class MSMessageTemplateLayout extends MSMessageLayout {
 
 	static alloc(): MSMessageTemplateLayout; // inherited from NSObject
@@ -137,6 +170,9 @@ declare class MSMessageTemplateLayout extends MSMessageLayout {
 	trailingSubcaption: string;
 }
 
+/**
+ * @since 12.0
+ */
 declare const enum MSMessagesAppPresentationContext {
 
 	Messages = 0,
@@ -144,6 +180,9 @@ declare const enum MSMessagesAppPresentationContext {
 	Media = 1
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum MSMessagesAppPresentationStyle {
 
 	Compact = 0,
@@ -153,8 +192,14 @@ declare const enum MSMessagesAppPresentationStyle {
 	Transcript = 2
 }
 
+/**
+ * @since 11.0
+ */
 interface MSMessagesAppTranscriptPresentation {
 
+	/**
+	 * @since 11.0
+	 */
 	contentSizeThatFits(size: CGSize): CGSize;
 }
 declare var MSMessagesAppTranscriptPresentation: {
@@ -162,6 +207,9 @@ declare var MSMessagesAppTranscriptPresentation: {
 	prototype: MSMessagesAppTranscriptPresentation;
 };
 
+/**
+ * @since 10.0
+ */
 declare class MSMessagesAppViewController extends UIViewController implements MSMessagesAppTranscriptPresentation {
 
 	static alloc(): MSMessagesAppViewController; // inherited from NSObject
@@ -170,26 +218,50 @@ declare class MSMessagesAppViewController extends UIViewController implements MS
 
 	readonly activeConversation: MSConversation;
 
+	/**
+	 * @since 12.0
+	 */
 	readonly presentationContext: MSMessagesAppPresentationContext;
 
 	readonly presentationStyle: MSMessagesAppPresentationStyle;
 
+	/**
+	 * @since 11.0
+	 */
 	contentSizeThatFits(size: CGSize): CGSize;
 
 	didBecomeActiveWithConversation(conversation: MSConversation): void;
 
+	/**
+	 * @since 10.0
+	 */
 	didCancelSendingMessageConversation(message: MSMessage, conversation: MSConversation): void;
 
+	/**
+	 * @since 10.0
+	 */
 	didReceiveMessageConversation(message: MSMessage, conversation: MSConversation): void;
 
 	didResignActiveWithConversation(conversation: MSConversation): void;
 
+	/**
+	 * @since 10.0
+	 */
 	didSelectMessageConversation(message: MSMessage, conversation: MSConversation): void;
 
+	/**
+	 * @since 10.0
+	 */
 	didStartSendingMessageConversation(message: MSMessage, conversation: MSConversation): void;
 
+	/**
+	 * @since 10.0
+	 */
 	didTransitionToPresentationStyle(presentationStyle: MSMessagesAppPresentationStyle): void;
 
+	/**
+	 * @since 10.0
+	 */
 	dismiss(): void;
 
 	requestPresentationStyle(presentationStyle: MSMessagesAppPresentationStyle): void;
@@ -198,13 +270,25 @@ declare class MSMessagesAppViewController extends UIViewController implements MS
 
 	willResignActiveWithConversation(conversation: MSConversation): void;
 
+	/**
+	 * @since 10.0
+	 */
 	willSelectMessageConversation(message: MSMessage, conversation: MSConversation): void;
 
+	/**
+	 * @since 10.0
+	 */
 	willTransitionToPresentationStyle(presentationStyle: MSMessagesAppPresentationStyle): void;
 }
 
+/**
+ * @since 10.0
+ */
 declare var MSMessagesErrorDomain: string;
 
+/**
+ * @since 10.0
+ */
 declare class MSSession extends NSObject implements NSSecureCoding {
 
 	static alloc(): MSSession; // inherited from NSObject
@@ -220,6 +304,9 @@ declare class MSSession extends NSObject implements NSSecureCoding {
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class MSSticker extends NSObject {
 
 	static alloc(): MSSticker; // inherited from NSObject
@@ -239,20 +326,40 @@ declare class MSSticker extends NSObject {
 	initWithFileURLIdentifierLocalizedDescription(url: NSURL, identifier: NSUUID, localizedDescription: string): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class MSStickerBrowserView extends UIView {
 
 	static alloc(): MSStickerBrowserView; // inherited from NSObject
 
 	static appearance(): MSStickerBrowserView; // inherited from UIAppearance
 
+	/**
+	 * @since 8.0
+	 */
 	static appearanceForTraitCollection(trait: UITraitCollection): MSStickerBrowserView; // inherited from UIAppearance
 
+	/**
+	 * @since 8.0
+	 * @deprecated 9.0
+	 */
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MSStickerBrowserView; // inherited from UIAppearance
 
+	/**
+	 * @since 9.0
+	 */
 	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MSStickerBrowserView; // inherited from UIAppearance
 
+	/**
+	 * @since 5.0
+	 * @deprecated 9.0
+	 */
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MSStickerBrowserView; // inherited from UIAppearance
 
+	/**
+	 * @since 9.0
+	 */
 	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MSStickerBrowserView; // inherited from UIAppearance
 
 	static new(): MSStickerBrowserView; // inherited from NSObject
@@ -274,6 +381,9 @@ declare class MSStickerBrowserView extends UIView {
 	setContentOffsetAnimated(contentOffset: CGPoint, animated: boolean): void;
 }
 
+/**
+ * @since 10.0
+ */
 declare class MSStickerBrowserViewController extends UIViewController implements MSStickerBrowserViewDataSource {
 
 	static alloc(): MSStickerBrowserViewController; // inherited from NSObject
@@ -327,6 +437,9 @@ declare class MSStickerBrowserViewController extends UIViewController implements
 	stickerBrowserViewStickerAtIndex(stickerBrowserView: MSStickerBrowserView, index: number): MSSticker;
 }
 
+/**
+ * @since 10.0
+ */
 interface MSStickerBrowserViewDataSource extends NSObjectProtocol {
 
 	numberOfStickersInStickerBrowserView(stickerBrowserView: MSStickerBrowserView): number;
@@ -338,6 +451,9 @@ declare var MSStickerBrowserViewDataSource: {
 	prototype: MSStickerBrowserViewDataSource;
 };
 
+/**
+ * @since 10.0
+ */
 declare const enum MSStickerSize {
 
 	Small = 0,
@@ -347,20 +463,40 @@ declare const enum MSStickerSize {
 	Large = 2
 }
 
+/**
+ * @since 10.0
+ */
 declare class MSStickerView extends UIView {
 
 	static alloc(): MSStickerView; // inherited from NSObject
 
 	static appearance(): MSStickerView; // inherited from UIAppearance
 
+	/**
+	 * @since 8.0
+	 */
 	static appearanceForTraitCollection(trait: UITraitCollection): MSStickerView; // inherited from UIAppearance
 
+	/**
+	 * @since 8.0
+	 * @deprecated 9.0
+	 */
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MSStickerView; // inherited from UIAppearance
 
+	/**
+	 * @since 9.0
+	 */
 	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MSStickerView; // inherited from UIAppearance
 
+	/**
+	 * @since 5.0
+	 * @deprecated 9.0
+	 */
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MSStickerView; // inherited from UIAppearance
 
+	/**
+	 * @since 9.0
+	 */
 	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MSStickerView; // inherited from UIAppearance
 
 	static new(): MSStickerView; // inherited from NSObject
@@ -380,4 +516,7 @@ declare class MSStickerView extends UIView {
 	stopAnimating(): void;
 }
 
+/**
+ * @since 10.0
+ */
 declare var MSStickersErrorDomain: string;

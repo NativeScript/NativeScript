@@ -1,4 +1,50 @@
 
+interface OS_sec_certificate extends NSObjectProtocol {
+}
+declare var OS_sec_certificate: {
+
+	prototype: OS_sec_certificate;
+};
+
+interface OS_sec_identity extends NSObjectProtocol {
+}
+declare var OS_sec_identity: {
+
+	prototype: OS_sec_identity;
+};
+
+interface OS_sec_object extends NSObjectProtocol {
+}
+declare var OS_sec_object: {
+
+	prototype: OS_sec_object;
+};
+
+interface OS_sec_protocol_metadata extends NSObjectProtocol {
+}
+declare var OS_sec_protocol_metadata: {
+
+	prototype: OS_sec_protocol_metadata;
+};
+
+interface OS_sec_protocol_options extends NSObjectProtocol {
+}
+declare var OS_sec_protocol_options: {
+
+	prototype: OS_sec_protocol_options;
+};
+
+interface OS_sec_trust extends NSObjectProtocol {
+}
+declare var OS_sec_trust: {
+
+	prototype: OS_sec_trust;
+};
+
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLAddDistinguishedName(context: any, derDN: interop.Pointer | interop.Reference<any>, derDNLen: number): number;
 
 declare const enum SSLAuthenticate {
@@ -34,6 +80,10 @@ declare const enum SSLClientCertificateState {
 	kSSLClientCertRejected = 3
 }
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLClose(context: any): number;
 
 declare const enum SSLConnectionType {
@@ -43,56 +93,160 @@ declare const enum SSLConnectionType {
 	kSSLDatagramType = 1
 }
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLContextGetTypeID(): number;
 
+/**
+ * @since 11.0
+ * @deprecated 13.0
+ */
 declare function SSLCopyALPNProtocols(context: any, protocols: interop.Pointer | interop.Reference<NSArray<any>>): number;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLCopyDistinguishedNames(context: any, names: interop.Pointer | interop.Reference<NSArray<any>>): number;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLCopyPeerTrust(context: any, trust: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 9.0
+ * @deprecated 13.0
+ */
 declare function SSLCopyRequestedPeerName(context: any, peerName: string | interop.Pointer | interop.Reference<any>, peerNameLen: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 9.0
+ * @deprecated 13.0
+ */
 declare function SSLCopyRequestedPeerNameLength(ctx: any, peerNameLen: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLCreateContext(alloc: any, protocolSide: SSLProtocolSide, connectionType: SSLConnectionType): any;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLGetBufferedReadSize(context: any, bufferSize: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLGetClientCertificateState(context: any, clientState: interop.Pointer | interop.Reference<SSLClientCertificateState>): number;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLGetConnection(context: any, connection: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLGetDatagramWriteSize(dtlsContext: any, bufSize: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLGetEnabledCiphers(context: any, ciphers: interop.Pointer | interop.Reference<number>, numCiphers: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLGetMaxDatagramRecordSize(dtlsContext: any, maxSize: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLGetNegotiatedCipher(context: any, cipherSuite: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLGetNegotiatedProtocolVersion(context: any, protocol: interop.Pointer | interop.Reference<SSLProtocol>): number;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLGetNumberEnabledCiphers(context: any, numCiphers: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLGetNumberSupportedCiphers(context: any, numCiphers: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLGetPeerDomainName(context: any, peerName: string | interop.Pointer | interop.Reference<any>, peerNameLen: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLGetPeerDomainNameLength(context: any, peerNameLen: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLGetPeerID(context: any, peerID: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, peerIDLen: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLGetProtocolVersionMax(context: any, maxVersion: interop.Pointer | interop.Reference<SSLProtocol>): number;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLGetProtocolVersionMin(context: any, minVersion: interop.Pointer | interop.Reference<SSLProtocol>): number;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLGetSessionOption(context: any, option: SSLSessionOption, value: string | interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLGetSessionState(context: any, state: interop.Pointer | interop.Reference<SSLSessionState>): number;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLGetSupportedCiphers(context: any, ciphers: interop.Pointer | interop.Reference<number>, numCiphers: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLHandshake(context: any): number;
 
 declare const enum SSLProtocol {
@@ -131,8 +285,16 @@ declare const enum SSLProtocolSide {
 	kSSLClientSide = 1
 }
 
+/**
+ * @since 10.0
+ * @deprecated 13.0
+ */
 declare function SSLReHandshake(context: any): number;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLRead(context: any, data: interop.Pointer | interop.Reference<any>, dataLength: number, processed: interop.Pointer | interop.Reference<number>): number;
 
 declare const enum SSLSessionOption {
@@ -171,42 +333,118 @@ declare const enum SSLSessionState {
 	kSSLAborted = 4
 }
 
+/**
+ * @since 11.0
+ * @deprecated 13.0
+ */
 declare function SSLSetALPNProtocols(context: any, protocols: NSArray<any> | any[]): number;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLSetCertificate(context: any, certRefs: NSArray<any> | any[]): number;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLSetClientSideAuthenticate(context: any, auth: SSLAuthenticate): number;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLSetConnection(context: any, connection: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLSetDatagramHelloCookie(dtlsContext: any, cookie: interop.Pointer | interop.Reference<any>, cookieLen: number): number;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLSetEnabledCiphers(context: any, ciphers: interop.Pointer | interop.Reference<number>, numCiphers: number): number;
 
+/**
+ * @since 5.0
+ * @deprecated 9.0
+ */
 declare function SSLSetEncryptionCertificate(context: any, certRefs: NSArray<any> | any[]): number;
 
+/**
+ * @since 11.0
+ * @deprecated 13.0
+ */
 declare function SSLSetError(context: any, status: number): number;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLSetIOFuncs(context: any, readFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<number>) => number>, writeFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<number>) => number>): number;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLSetMaxDatagramRecordSize(dtlsContext: any, maxSize: number): number;
 
+/**
+ * @since 11.0
+ * @deprecated 13.0
+ */
 declare function SSLSetOCSPResponse(context: any, response: NSData): number;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLSetPeerDomainName(context: any, peerName: string | interop.Pointer | interop.Reference<any>, peerNameLen: number): number;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLSetPeerID(context: any, peerID: interop.Pointer | interop.Reference<any>, peerIDLen: number): number;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLSetProtocolVersionMax(context: any, maxVersion: SSLProtocol): number;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLSetProtocolVersionMin(context: any, minVersion: SSLProtocol): number;
 
+/**
+ * @since 10.0
+ * @deprecated 13.0
+ */
 declare function SSLSetSessionConfig(context: any, config: string): number;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLSetSessionOption(context: any, option: SSLSessionOption, value: boolean): number;
 
+/**
+ * @since 11.0
+ * @deprecated 13.0
+ */
 declare function SSLSetSessionTicketsEnabled(context: any, enabled: boolean): number;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare function SSLWrite(context: any, data: interop.Pointer | interop.Reference<any>, dataLength: number, processed: interop.Pointer | interop.Reference<number>): number;
 
 declare const SSL_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA: number;
@@ -279,6 +517,9 @@ declare const SSL_RSA_WITH_RC4_128_MD5: number;
 
 declare const SSL_RSA_WITH_RC4_128_SHA: number;
 
+/**
+ * @since 8.0
+ */
 declare const enum SecAccessControlCreateFlags {
 
 	kSecAccessControlUserPresence = 1,
@@ -295,6 +536,8 @@ declare const enum SecAccessControlCreateFlags {
 
 	kSecAccessControlWatch = 32,
 
+	kSecAccessControlCompanion = 32,
+
 	kSecAccessControlOr = 16384,
 
 	kSecAccessControlAnd = 32768,
@@ -304,84 +547,219 @@ declare const enum SecAccessControlCreateFlags {
 	kSecAccessControlApplicationPassword = 2147483648
 }
 
+/**
+ * @since 8.0
+ */
 declare function SecAccessControlCreateWithFlags(allocator: any, protection: any, flags: SecAccessControlCreateFlags, error: interop.Pointer | interop.Reference<NSError>): any;
 
+/**
+ * @since 8.0
+ */
 declare function SecAccessControlGetTypeID(): number;
 
+/**
+ * @since 8.0
+ */
 declare function SecAddSharedWebCredential(fqdn: string, account: string, password: string, completionHandler: (p1: NSError) => void): void;
 
+/**
+ * @since 10.3
+ */
 declare function SecCertificateCopyCommonName(certificate: any, commonName: interop.Pointer | interop.Reference<string>): number;
 
+/**
+ * @since 2.0
+ */
 declare function SecCertificateCopyData(certificate: any): NSData;
 
+/**
+ * @since 10.3
+ */
 declare function SecCertificateCopyEmailAddresses(certificate: any, emailAddresses: interop.Pointer | interop.Reference<NSArray<any>>): number;
 
+/**
+ * @since 12.0
+ */
 declare function SecCertificateCopyKey(certificate: any): any;
 
+/**
+ * @since 10.3
+ */
 declare function SecCertificateCopyNormalizedIssuerSequence(certificate: any): NSData;
 
+/**
+ * @since 10.3
+ */
 declare function SecCertificateCopyNormalizedSubjectSequence(certificate: any): NSData;
 
+/**
+ * @since 18.0
+ */
+declare function SecCertificateCopyNotValidAfterDate(certificate: any): Date;
+
+/**
+ * @since 18.0
+ */
+declare function SecCertificateCopyNotValidBeforeDate(certificate: any): Date;
+
+/**
+ * @since 10.3
+ * @deprecated 12.0
+ */
 declare function SecCertificateCopyPublicKey(certificate: any): any;
 
+/**
+ * @since 10.3
+ * @deprecated 11.0
+ */
 declare function SecCertificateCopySerialNumber(certificate: any): NSData;
 
+/**
+ * @since 11.0
+ */
 declare function SecCertificateCopySerialNumberData(certificate: any, error: interop.Pointer | interop.Reference<NSError>): NSData;
 
+/**
+ * @since 2.0
+ */
 declare function SecCertificateCopySubjectSummary(certificate: any): string;
 
+/**
+ * @since 2.0
+ */
 declare function SecCertificateCreateWithData(allocator: any, data: NSData): any;
 
+/**
+ * @since 2.0
+ */
 declare function SecCertificateGetTypeID(): number;
 
+/**
+ * @since 11.3
+ */
 declare function SecCopyErrorMessageString(status: number, reserved: interop.Pointer | interop.Reference<any>): string;
 
+/**
+ * @since 8.0
+ */
 declare function SecCreateSharedWebCredentialPassword(): string;
 
+/**
+ * @since 2.0
+ */
 declare function SecIdentityCopyCertificate(identityRef: any, certificateRef: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function SecIdentityCopyPrivateKey(identityRef: any, privateKeyRef: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function SecIdentityGetTypeID(): number;
 
+/**
+ * @since 2.0
+ */
 declare function SecItemAdd(attributes: NSDictionary<any, any>, result: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function SecItemCopyMatching(query: NSDictionary<any, any>, result: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function SecItemDelete(query: NSDictionary<any, any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function SecItemUpdate(query: NSDictionary<any, any>, attributesToUpdate: NSDictionary<any, any>): number;
 
+/**
+ * @since 10.0
+ */
 declare function SecKeyCopyAttributes(key: any): NSDictionary<any, any>;
 
+/**
+ * @since 10.0
+ */
 declare function SecKeyCopyExternalRepresentation(key: any, error: interop.Pointer | interop.Reference<NSError>): NSData;
 
-declare function SecKeyCopyKeyExchangeResult(privateKey: any, algorithm: any, publicKey: any, parameters: NSDictionary<any, any>, error: interop.Pointer | interop.Reference<NSError>): NSData;
+/**
+ * @since 10.0
+ */
+declare function SecKeyCopyKeyExchangeResult(privateKey: any, algorithm: string, publicKey: any, parameters: NSDictionary<any, any>, error: interop.Pointer | interop.Reference<NSError>): NSData;
 
+/**
+ * @since 10.0
+ */
 declare function SecKeyCopyPublicKey(key: any): any;
 
-declare function SecKeyCreateDecryptedData(key: any, algorithm: any, ciphertext: NSData, error: interop.Pointer | interop.Reference<NSError>): NSData;
+/**
+ * @since 10.0
+ */
+declare function SecKeyCreateDecryptedData(key: any, algorithm: string, ciphertext: NSData, error: interop.Pointer | interop.Reference<NSError>): NSData;
 
-declare function SecKeyCreateEncryptedData(key: any, algorithm: any, plaintext: NSData, error: interop.Pointer | interop.Reference<NSError>): NSData;
+/**
+ * @since 10.0
+ */
+declare function SecKeyCreateEncryptedData(key: any, algorithm: string, plaintext: NSData, error: interop.Pointer | interop.Reference<NSError>): NSData;
 
+/**
+ * @since 10.0
+ */
 declare function SecKeyCreateRandomKey(parameters: NSDictionary<any, any>, error: interop.Pointer | interop.Reference<NSError>): any;
 
-declare function SecKeyCreateSignature(key: any, algorithm: any, dataToSign: NSData, error: interop.Pointer | interop.Reference<NSError>): NSData;
+/**
+ * @since 10.0
+ */
+declare function SecKeyCreateSignature(key: any, algorithm: string, dataToSign: NSData, error: interop.Pointer | interop.Reference<NSError>): NSData;
 
+/**
+ * @since 10.0
+ */
 declare function SecKeyCreateWithData(keyData: NSData, attributes: NSDictionary<any, any>, error: interop.Pointer | interop.Reference<NSError>): any;
 
+/**
+ * @since 2.0
+ * @deprecated 15.0
+ */
 declare function SecKeyDecrypt(key: any, padding: SecPadding, cipherText: string | interop.Pointer | interop.Reference<any>, cipherTextLen: number, plainText: string | interop.Pointer | interop.Reference<any>, plainTextLen: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 2.0
+ * @deprecated 15.0
+ */
 declare function SecKeyEncrypt(key: any, padding: SecPadding, plainText: string | interop.Pointer | interop.Reference<any>, plainTextLen: number, cipherText: string | interop.Pointer | interop.Reference<any>, cipherTextLen: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 2.0
+ * @deprecated 15.0
+ */
 declare function SecKeyGeneratePair(parameters: NSDictionary<any, any>, publicKey: interop.Pointer | interop.Reference<any>, privateKey: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function SecKeyGetBlockSize(key: any): number;
 
+/**
+ * @since 2.0
+ */
 declare function SecKeyGetTypeID(): number;
 
-declare function SecKeyIsAlgorithmSupported(key: any, operation: SecKeyOperationType, algorithm: any): boolean;
+/**
+ * @since 10.0
+ */
+declare function SecKeyIsAlgorithmSupported(key: any, operation: SecKeyOperationType, algorithm: string): boolean;
 
+/**
+ * @since 10.0
+ */
 declare const enum SecKeyOperationType {
 
 	kSecKeyOperationTypeSign = 0,
@@ -395,14 +773,32 @@ declare const enum SecKeyOperationType {
 	kSecKeyOperationTypeKeyExchange = 4
 }
 
+/**
+ * @since 2.0
+ * @deprecated 15.0
+ */
 declare function SecKeyRawSign(key: any, padding: SecPadding, dataToSign: string | interop.Pointer | interop.Reference<any>, dataToSignLen: number, sig: string | interop.Pointer | interop.Reference<any>, sigLen: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 2.0
+ * @deprecated 15.0
+ */
 declare function SecKeyRawVerify(key: any, padding: SecPadding, signedData: string | interop.Pointer | interop.Reference<any>, signedDataLen: number, sig: string | interop.Pointer | interop.Reference<any>, sigLen: number): number;
 
-declare function SecKeyVerifySignature(key: any, algorithm: any, signedData: NSData, signature: NSData, error: interop.Pointer | interop.Reference<NSError>): boolean;
+/**
+ * @since 10.0
+ */
+declare function SecKeyVerifySignature(key: any, algorithm: string, signedData: NSData, signature: NSData, error: interop.Pointer | interop.Reference<NSError>): boolean;
 
+/**
+ * @since 2.0
+ */
 declare function SecPKCS12Import(pkcs12_data: NSData, options: NSDictionary<any, any>, items: interop.Pointer | interop.Reference<NSArray<any>>): number;
 
+/**
+ * @since 2.0
+ * @deprecated 15.0
+ */
 declare const enum SecPadding {
 
 	kSecPaddingNone = 0,
@@ -428,58 +824,145 @@ declare const enum SecPadding {
 	kSecPaddingPKCS1SHA512 = 32774
 }
 
+/**
+ * @since 7.0
+ */
 declare function SecPolicyCopyProperties(policyRef: any): NSDictionary<any, any>;
 
+/**
+ * @since 2.0
+ */
 declare function SecPolicyCreateBasicX509(): any;
 
+/**
+ * @since 7.0
+ */
 declare function SecPolicyCreateRevocation(revocationFlags: number): any;
 
+/**
+ * @since 2.0
+ */
 declare function SecPolicyCreateSSL(server: boolean, hostname: string): any;
 
+/**
+ * @since 7.0
+ */
 declare function SecPolicyCreateWithProperties(policyIdentifier: any, properties: NSDictionary<any, any>): any;
 
+/**
+ * @since 2.0
+ */
 declare function SecPolicyGetTypeID(): number;
 
+/**
+ * @since 2.0
+ */
 declare function SecRandomCopyBytes(rnd: interop.Pointer | interop.Reference<any>, count: number, bytes: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 8.0
+ * @deprecated 14.0
+ */
 declare function SecRequestSharedWebCredential(fqdn: string, account: string, completionHandler: (p1: NSArray<any>, p2: NSError) => void): void;
 
+/**
+ * @since 15.0
+ */
 declare function SecTrustCopyCertificateChain(trust: any): NSArray<any>;
 
+/**
+ * @since 7.0
+ */
 declare function SecTrustCopyCustomAnchorCertificates(trust: any, anchors: interop.Pointer | interop.Reference<NSArray<any>>): number;
 
+/**
+ * @since 4.0
+ */
 declare function SecTrustCopyExceptions(trust: any): NSData;
 
+/**
+ * @since 14.0
+ */
 declare function SecTrustCopyKey(trust: any): any;
 
+/**
+ * @since 7.0
+ */
 declare function SecTrustCopyPolicies(trust: any, policies: interop.Pointer | interop.Reference<NSArray<any>>): number;
 
+/**
+ * @since 2.0
+ * @deprecated 15.0
+ */
 declare function SecTrustCopyProperties(trust: any): NSArray<any>;
 
+/**
+ * @since 2.0
+ * @deprecated 14.0
+ */
 declare function SecTrustCopyPublicKey(trust: any): any;
 
+/**
+ * @since 7.0
+ */
 declare function SecTrustCopyResult(trust: any): NSDictionary<any, any>;
 
+/**
+ * @since 2.0
+ */
 declare function SecTrustCreateWithCertificates(certificates: any, policies: any, trust: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ * @deprecated 13.0
+ */
 declare function SecTrustEvaluate(trust: any, result: interop.Pointer | interop.Reference<SecTrustResultType>): number;
 
-declare function SecTrustEvaluateAsync(trust: any, queue: interop.Pointer | interop.Reference<any>, result: (p1: any, p2: SecTrustResultType) => void): number;
+/**
+ * @since 7.0
+ * @deprecated 13.0
+ */
+declare function SecTrustEvaluateAsync(trust: any, queue: NSObject & OS_dispatch_queue, result: (p1: any, p2: SecTrustResultType) => void): number;
 
-declare function SecTrustEvaluateAsyncWithError(trust: any, queue: interop.Pointer | interop.Reference<any>, result: (p1: any, p2: boolean, p3: NSError) => void): number;
+/**
+ * @since 13.0
+ */
+declare function SecTrustEvaluateAsyncWithError(trust: any, queue: NSObject & OS_dispatch_queue, result: (p1: any, p2: boolean, p3: NSError) => void): number;
 
+/**
+ * @since 12.0
+ */
 declare function SecTrustEvaluateWithError(trust: any, error: interop.Pointer | interop.Reference<NSError>): boolean;
 
+/**
+ * @since 2.0
+ * @deprecated 15.0
+ */
 declare function SecTrustGetCertificateAtIndex(trust: any, ix: number): any;
 
+/**
+ * @since 2.0
+ */
 declare function SecTrustGetCertificateCount(trust: any): number;
 
+/**
+ * @since 7.0
+ */
 declare function SecTrustGetNetworkFetchAllowed(trust: any, allowFetch: string | interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 7.0
+ */
 declare function SecTrustGetTrustResult(trust: any, result: interop.Pointer | interop.Reference<SecTrustResultType>): number;
 
+/**
+ * @since 2.0
+ */
 declare function SecTrustGetTypeID(): number;
 
+/**
+ * @since 2.0
+ */
 declare function SecTrustGetVerifyTime(trust: any): number;
 
 declare const enum SecTrustResultType {
@@ -501,20 +984,44 @@ declare const enum SecTrustResultType {
 	kSecTrustResultOtherError = 7
 }
 
+/**
+ * @since 2.0
+ */
 declare function SecTrustSetAnchorCertificates(trust: any, anchorCertificates: NSArray<any> | any[]): number;
 
+/**
+ * @since 2.0
+ */
 declare function SecTrustSetAnchorCertificatesOnly(trust: any, anchorCertificatesOnly: boolean): number;
 
+/**
+ * @since 4.0
+ */
 declare function SecTrustSetExceptions(trust: any, exceptions: NSData): boolean;
 
+/**
+ * @since 7.0
+ */
 declare function SecTrustSetNetworkFetchAllowed(trust: any, allowFetch: boolean): number;
 
+/**
+ * @since 7.0
+ */
 declare function SecTrustSetOCSPResponse(trust: any, responseData: any): number;
 
+/**
+ * @since 6.0
+ */
 declare function SecTrustSetPolicies(trust: any, policies: any): number;
 
+/**
+ * @since 12.1.1
+ */
 declare function SecTrustSetSignedCertificateTimestamps(trust: any, sctArray: NSArray<any> | any[]): number;
 
+/**
+ * @since 2.0
+ */
 declare function SecTrustSetVerifyDate(trust: any, verifyDate: Date): number;
 
 declare const TLS_AES_128_CCM_8_SHA256: number;
@@ -1699,514 +2206,1304 @@ declare const errSecWrPerm: number;
 
 declare const errSecWrongSecVersion: number;
 
+/**
+ * @since 5.0
+ * @deprecated 11.0
+ */
 declare var kSSLSessionConfig_3DES_fallback: string;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare var kSSLSessionConfig_ATSv1: string;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare var kSSLSessionConfig_ATSv1_noPFS: string;
 
+/**
+ * @since 5.0
+ * @deprecated 11.0
+ */
 declare var kSSLSessionConfig_RC4_fallback: string;
 
+/**
+ * @since 5.0
+ * @deprecated 11.0
+ */
 declare var kSSLSessionConfig_TLSv1_3DES_fallback: string;
 
+/**
+ * @since 5.0
+ * @deprecated 11.0
+ */
 declare var kSSLSessionConfig_TLSv1_RC4_fallback: string;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare var kSSLSessionConfig_TLSv1_fallback: string;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare var kSSLSessionConfig_anonymous: string;
 
+/**
+ * @since 5.0
+ * @deprecated 11.0
+ */
 declare var kSSLSessionConfig_default: string;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare var kSSLSessionConfig_legacy: string;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare var kSSLSessionConfig_legacy_DHE: string;
 
+/**
+ * @since 5.0
+ * @deprecated 13.0
+ */
 declare var kSSLSessionConfig_standard: string;
 
+/**
+ * @since 8.0
+ */
 declare var kSecAttrAccessControl: string;
 
+/**
+ * @since 3.0
+ */
 declare var kSecAttrAccessGroup: string;
 
+/**
+ * @since 10.0
+ */
 declare var kSecAttrAccessGroupToken: string;
 
+/**
+ * @since 4.0
+ */
 declare var kSecAttrAccessible: string;
 
+/**
+ * @since 4.0
+ */
 declare var kSecAttrAccessibleAfterFirstUnlock: string;
 
+/**
+ * @since 4.0
+ */
 declare var kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly: string;
 
+/**
+ * @since 4.0
+ * @deprecated 12.0
+ */
 declare var kSecAttrAccessibleAlways: string;
 
+/**
+ * @since 4.0
+ * @deprecated 12.0
+ */
 declare var kSecAttrAccessibleAlwaysThisDeviceOnly: string;
 
+/**
+ * @since 8.0
+ */
 declare var kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly: string;
 
+/**
+ * @since 4.0
+ */
 declare var kSecAttrAccessibleWhenUnlocked: string;
 
+/**
+ * @since 4.0
+ */
 declare var kSecAttrAccessibleWhenUnlockedThisDeviceOnly: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrAccount: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrApplicationLabel: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrApplicationTag: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrAuthenticationType: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrAuthenticationTypeDPA: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrAuthenticationTypeDefault: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrAuthenticationTypeHTMLForm: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrAuthenticationTypeHTTPBasic: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrAuthenticationTypeHTTPDigest: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrAuthenticationTypeMSN: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrAuthenticationTypeNTLM: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrAuthenticationTypeRPA: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrCanDecrypt: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrCanDerive: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrCanEncrypt: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrCanSign: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrCanUnwrap: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrCanVerify: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrCanWrap: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrCertificateEncoding: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrCertificateType: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrComment: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrCreationDate: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrCreator: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrDescription: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrEffectiveKeySize: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrGeneric: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrIsExtractable: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrIsInvisible: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrIsNegative: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrIsPermanent: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrIsSensitive: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrIssuer: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrKeyClass: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrKeyClassPrivate: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrKeyClassPublic: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrKeyClassSymmetric: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrKeySizeInBits: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrKeyType: string;
 
+/**
+ * @since 4.0
+ */
 declare var kSecAttrKeyTypeEC: string;
 
+/**
+ * @since 10.0
+ */
 declare var kSecAttrKeyTypeECSECPrimeRandom: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrKeyTypeRSA: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrLabel: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrModificationDate: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrPath: string;
 
+/**
+ * @since 11.0
+ */
 declare var kSecAttrPersistantReference: string;
 
+/**
+ * @since 11.0
+ */
 declare var kSecAttrPersistentReference: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrPort: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrProtocol: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrProtocolAFP: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrProtocolAppleTalk: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrProtocolDAAP: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrProtocolEPPC: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrProtocolFTP: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrProtocolFTPAccount: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrProtocolFTPProxy: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrProtocolFTPS: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrProtocolHTTP: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrProtocolHTTPProxy: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrProtocolHTTPS: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrProtocolHTTPSProxy: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrProtocolIMAP: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrProtocolIMAPS: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrProtocolIPP: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrProtocolIRC: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrProtocolIRCS: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrProtocolLDAP: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrProtocolLDAPS: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrProtocolNNTP: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrProtocolNNTPS: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrProtocolPOP3: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrProtocolPOP3S: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrProtocolRTSP: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrProtocolRTSPProxy: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrProtocolSMB: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrProtocolSMTP: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrProtocolSOCKS: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrProtocolSSH: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrProtocolTelnet: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrProtocolTelnetS: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrPublicKeyHash: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrSecurityDomain: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrSerialNumber: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrServer: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrService: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrSubject: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrSubjectKeyID: string;
 
+/**
+ * @since 9.0
+ */
 declare var kSecAttrSyncViewHint: string;
 
+/**
+ * @since 7.0
+ */
 declare var kSecAttrSynchronizable: string;
 
+/**
+ * @since 7.0
+ */
 declare var kSecAttrSynchronizableAny: string;
 
+/**
+ * @since 9.0
+ */
 declare var kSecAttrTokenID: string;
 
+/**
+ * @since 9.0
+ */
 declare var kSecAttrTokenIDSecureEnclave: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecAttrType: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecClass: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecClassCertificate: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecClassGenericPassword: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecClassIdentity: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecClassInternetPassword: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecClassKey: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecImportExportPassphrase: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecImportItemCertChain: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecImportItemIdentity: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecImportItemKeyID: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecImportItemLabel: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecImportItemTrust: string;
 
-declare var kSecKeyAlgorithmECDHKeyExchangeCofactor: any;
-
-declare var kSecKeyAlgorithmECDHKeyExchangeCofactorX963SHA1: any;
-
-declare var kSecKeyAlgorithmECDHKeyExchangeCofactorX963SHA224: any;
-
-declare var kSecKeyAlgorithmECDHKeyExchangeCofactorX963SHA256: any;
-
-declare var kSecKeyAlgorithmECDHKeyExchangeCofactorX963SHA384: any;
-
-declare var kSecKeyAlgorithmECDHKeyExchangeCofactorX963SHA512: any;
-
-declare var kSecKeyAlgorithmECDHKeyExchangeStandard: any;
-
-declare var kSecKeyAlgorithmECDHKeyExchangeStandardX963SHA1: any;
-
-declare var kSecKeyAlgorithmECDHKeyExchangeStandardX963SHA224: any;
-
-declare var kSecKeyAlgorithmECDHKeyExchangeStandardX963SHA256: any;
-
-declare var kSecKeyAlgorithmECDHKeyExchangeStandardX963SHA384: any;
-
-declare var kSecKeyAlgorithmECDHKeyExchangeStandardX963SHA512: any;
-
-declare var kSecKeyAlgorithmECDSASignatureDigestRFC4754: any;
-
-declare var kSecKeyAlgorithmECDSASignatureDigestRFC4754SHA1: any;
-
-declare var kSecKeyAlgorithmECDSASignatureDigestRFC4754SHA224: any;
-
-declare var kSecKeyAlgorithmECDSASignatureDigestRFC4754SHA256: any;
-
-declare var kSecKeyAlgorithmECDSASignatureDigestRFC4754SHA384: any;
-
-declare var kSecKeyAlgorithmECDSASignatureDigestRFC4754SHA512: any;
-
-declare var kSecKeyAlgorithmECDSASignatureDigestX962: any;
-
-declare var kSecKeyAlgorithmECDSASignatureDigestX962SHA1: any;
-
-declare var kSecKeyAlgorithmECDSASignatureDigestX962SHA224: any;
-
-declare var kSecKeyAlgorithmECDSASignatureDigestX962SHA256: any;
-
-declare var kSecKeyAlgorithmECDSASignatureDigestX962SHA384: any;
-
-declare var kSecKeyAlgorithmECDSASignatureDigestX962SHA512: any;
-
-declare var kSecKeyAlgorithmECDSASignatureMessageRFC4754SHA1: any;
-
-declare var kSecKeyAlgorithmECDSASignatureMessageRFC4754SHA224: any;
-
-declare var kSecKeyAlgorithmECDSASignatureMessageRFC4754SHA256: any;
-
-declare var kSecKeyAlgorithmECDSASignatureMessageRFC4754SHA384: any;
-
-declare var kSecKeyAlgorithmECDSASignatureMessageRFC4754SHA512: any;
-
-declare var kSecKeyAlgorithmECDSASignatureMessageX962SHA1: any;
-
-declare var kSecKeyAlgorithmECDSASignatureMessageX962SHA224: any;
-
-declare var kSecKeyAlgorithmECDSASignatureMessageX962SHA256: any;
-
-declare var kSecKeyAlgorithmECDSASignatureMessageX962SHA384: any;
-
-declare var kSecKeyAlgorithmECDSASignatureMessageX962SHA512: any;
-
-declare var kSecKeyAlgorithmECDSASignatureRFC4754: any;
-
-declare var kSecKeyAlgorithmECIESEncryptionCofactorVariableIVX963SHA224AESGCM: any;
-
-declare var kSecKeyAlgorithmECIESEncryptionCofactorVariableIVX963SHA256AESGCM: any;
-
-declare var kSecKeyAlgorithmECIESEncryptionCofactorVariableIVX963SHA384AESGCM: any;
-
-declare var kSecKeyAlgorithmECIESEncryptionCofactorVariableIVX963SHA512AESGCM: any;
-
-declare var kSecKeyAlgorithmECIESEncryptionCofactorX963SHA1AESGCM: any;
-
-declare var kSecKeyAlgorithmECIESEncryptionCofactorX963SHA224AESGCM: any;
-
-declare var kSecKeyAlgorithmECIESEncryptionCofactorX963SHA256AESGCM: any;
-
-declare var kSecKeyAlgorithmECIESEncryptionCofactorX963SHA384AESGCM: any;
-
-declare var kSecKeyAlgorithmECIESEncryptionCofactorX963SHA512AESGCM: any;
-
-declare var kSecKeyAlgorithmECIESEncryptionStandardVariableIVX963SHA224AESGCM: any;
-
-declare var kSecKeyAlgorithmECIESEncryptionStandardVariableIVX963SHA256AESGCM: any;
-
-declare var kSecKeyAlgorithmECIESEncryptionStandardVariableIVX963SHA384AESGCM: any;
-
-declare var kSecKeyAlgorithmECIESEncryptionStandardVariableIVX963SHA512AESGCM: any;
-
-declare var kSecKeyAlgorithmECIESEncryptionStandardX963SHA1AESGCM: any;
-
-declare var kSecKeyAlgorithmECIESEncryptionStandardX963SHA224AESGCM: any;
-
-declare var kSecKeyAlgorithmECIESEncryptionStandardX963SHA256AESGCM: any;
-
-declare var kSecKeyAlgorithmECIESEncryptionStandardX963SHA384AESGCM: any;
-
-declare var kSecKeyAlgorithmECIESEncryptionStandardX963SHA512AESGCM: any;
-
-declare var kSecKeyAlgorithmRSAEncryptionOAEPSHA1: any;
-
-declare var kSecKeyAlgorithmRSAEncryptionOAEPSHA1AESGCM: any;
-
-declare var kSecKeyAlgorithmRSAEncryptionOAEPSHA224: any;
-
-declare var kSecKeyAlgorithmRSAEncryptionOAEPSHA224AESGCM: any;
-
-declare var kSecKeyAlgorithmRSAEncryptionOAEPSHA256: any;
-
-declare var kSecKeyAlgorithmRSAEncryptionOAEPSHA256AESGCM: any;
-
-declare var kSecKeyAlgorithmRSAEncryptionOAEPSHA384: any;
-
-declare var kSecKeyAlgorithmRSAEncryptionOAEPSHA384AESGCM: any;
-
-declare var kSecKeyAlgorithmRSAEncryptionOAEPSHA512: any;
-
-declare var kSecKeyAlgorithmRSAEncryptionOAEPSHA512AESGCM: any;
-
-declare var kSecKeyAlgorithmRSAEncryptionPKCS1: any;
-
-declare var kSecKeyAlgorithmRSAEncryptionRaw: any;
-
-declare var kSecKeyAlgorithmRSASignatureDigestPKCS1v15Raw: any;
-
-declare var kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA1: any;
-
-declare var kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA224: any;
-
-declare var kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA256: any;
-
-declare var kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA384: any;
-
-declare var kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA512: any;
-
-declare var kSecKeyAlgorithmRSASignatureDigestPSSSHA1: any;
-
-declare var kSecKeyAlgorithmRSASignatureDigestPSSSHA224: any;
-
-declare var kSecKeyAlgorithmRSASignatureDigestPSSSHA256: any;
-
-declare var kSecKeyAlgorithmRSASignatureDigestPSSSHA384: any;
-
-declare var kSecKeyAlgorithmRSASignatureDigestPSSSHA512: any;
-
-declare var kSecKeyAlgorithmRSASignatureMessagePKCS1v15SHA1: any;
-
-declare var kSecKeyAlgorithmRSASignatureMessagePKCS1v15SHA224: any;
-
-declare var kSecKeyAlgorithmRSASignatureMessagePKCS1v15SHA256: any;
-
-declare var kSecKeyAlgorithmRSASignatureMessagePKCS1v15SHA384: any;
-
-declare var kSecKeyAlgorithmRSASignatureMessagePKCS1v15SHA512: any;
-
-declare var kSecKeyAlgorithmRSASignatureMessagePSSSHA1: any;
-
-declare var kSecKeyAlgorithmRSASignatureMessagePSSSHA224: any;
-
-declare var kSecKeyAlgorithmRSASignatureMessagePSSSHA256: any;
-
-declare var kSecKeyAlgorithmRSASignatureMessagePSSSHA384: any;
-
-declare var kSecKeyAlgorithmRSASignatureMessagePSSSHA512: any;
-
-declare var kSecKeyAlgorithmRSASignatureRaw: any;
-
-declare var kSecKeyKeyExchangeParameterRequestedSize: any;
-
-declare var kSecKeyKeyExchangeParameterSharedInfo: any;
-
+/**
+ * @since 18.0
+ */
+declare var kSecImportToMemoryOnly: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmECDHKeyExchangeCofactor: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmECDHKeyExchangeCofactorX963SHA1: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmECDHKeyExchangeCofactorX963SHA224: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmECDHKeyExchangeCofactorX963SHA256: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmECDHKeyExchangeCofactorX963SHA384: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmECDHKeyExchangeCofactorX963SHA512: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmECDHKeyExchangeStandard: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmECDHKeyExchangeStandardX963SHA1: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmECDHKeyExchangeStandardX963SHA224: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmECDHKeyExchangeStandardX963SHA256: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmECDHKeyExchangeStandardX963SHA384: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmECDHKeyExchangeStandardX963SHA512: string;
+
+/**
+ * @since 17.0
+ */
+declare var kSecKeyAlgorithmECDSASignatureDigestRFC4754: string;
+
+/**
+ * @since 17.0
+ */
+declare var kSecKeyAlgorithmECDSASignatureDigestRFC4754SHA1: string;
+
+/**
+ * @since 17.0
+ */
+declare var kSecKeyAlgorithmECDSASignatureDigestRFC4754SHA224: string;
+
+/**
+ * @since 17.0
+ */
+declare var kSecKeyAlgorithmECDSASignatureDigestRFC4754SHA256: string;
+
+/**
+ * @since 17.0
+ */
+declare var kSecKeyAlgorithmECDSASignatureDigestRFC4754SHA384: string;
+
+/**
+ * @since 17.0
+ */
+declare var kSecKeyAlgorithmECDSASignatureDigestRFC4754SHA512: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmECDSASignatureDigestX962: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmECDSASignatureDigestX962SHA1: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmECDSASignatureDigestX962SHA224: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmECDSASignatureDigestX962SHA256: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmECDSASignatureDigestX962SHA384: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmECDSASignatureDigestX962SHA512: string;
+
+/**
+ * @since 17.0
+ */
+declare var kSecKeyAlgorithmECDSASignatureMessageRFC4754SHA1: string;
+
+/**
+ * @since 17.0
+ */
+declare var kSecKeyAlgorithmECDSASignatureMessageRFC4754SHA224: string;
+
+/**
+ * @since 17.0
+ */
+declare var kSecKeyAlgorithmECDSASignatureMessageRFC4754SHA256: string;
+
+/**
+ * @since 17.0
+ */
+declare var kSecKeyAlgorithmECDSASignatureMessageRFC4754SHA384: string;
+
+/**
+ * @since 17.0
+ */
+declare var kSecKeyAlgorithmECDSASignatureMessageRFC4754SHA512: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmECDSASignatureMessageX962SHA1: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmECDSASignatureMessageX962SHA224: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmECDSASignatureMessageX962SHA256: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmECDSASignatureMessageX962SHA384: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmECDSASignatureMessageX962SHA512: string;
+
+/**
+ * @since 10.0
+ * @deprecated 17.0
+ */
+declare var kSecKeyAlgorithmECDSASignatureRFC4754: string;
+
+/**
+ * @since 11.0
+ */
+declare var kSecKeyAlgorithmECIESEncryptionCofactorVariableIVX963SHA224AESGCM: string;
+
+/**
+ * @since 11.0
+ */
+declare var kSecKeyAlgorithmECIESEncryptionCofactorVariableIVX963SHA256AESGCM: string;
+
+/**
+ * @since 11.0
+ */
+declare var kSecKeyAlgorithmECIESEncryptionCofactorVariableIVX963SHA384AESGCM: string;
+
+/**
+ * @since 11.0
+ */
+declare var kSecKeyAlgorithmECIESEncryptionCofactorVariableIVX963SHA512AESGCM: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmECIESEncryptionCofactorX963SHA1AESGCM: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmECIESEncryptionCofactorX963SHA224AESGCM: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmECIESEncryptionCofactorX963SHA256AESGCM: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmECIESEncryptionCofactorX963SHA384AESGCM: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmECIESEncryptionCofactorX963SHA512AESGCM: string;
+
+/**
+ * @since 11.0
+ */
+declare var kSecKeyAlgorithmECIESEncryptionStandardVariableIVX963SHA224AESGCM: string;
+
+/**
+ * @since 11.0
+ */
+declare var kSecKeyAlgorithmECIESEncryptionStandardVariableIVX963SHA256AESGCM: string;
+
+/**
+ * @since 11.0
+ */
+declare var kSecKeyAlgorithmECIESEncryptionStandardVariableIVX963SHA384AESGCM: string;
+
+/**
+ * @since 11.0
+ */
+declare var kSecKeyAlgorithmECIESEncryptionStandardVariableIVX963SHA512AESGCM: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmECIESEncryptionStandardX963SHA1AESGCM: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmECIESEncryptionStandardX963SHA224AESGCM: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmECIESEncryptionStandardX963SHA256AESGCM: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmECIESEncryptionStandardX963SHA384AESGCM: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmECIESEncryptionStandardX963SHA512AESGCM: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmRSAEncryptionOAEPSHA1: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmRSAEncryptionOAEPSHA1AESGCM: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmRSAEncryptionOAEPSHA224: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmRSAEncryptionOAEPSHA224AESGCM: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmRSAEncryptionOAEPSHA256: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmRSAEncryptionOAEPSHA256AESGCM: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmRSAEncryptionOAEPSHA384: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmRSAEncryptionOAEPSHA384AESGCM: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmRSAEncryptionOAEPSHA512: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmRSAEncryptionOAEPSHA512AESGCM: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmRSAEncryptionPKCS1: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmRSAEncryptionRaw: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmRSASignatureDigestPKCS1v15Raw: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA1: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA224: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA256: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA384: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA512: string;
+
+/**
+ * @since 11.0
+ */
+declare var kSecKeyAlgorithmRSASignatureDigestPSSSHA1: string;
+
+/**
+ * @since 11.0
+ */
+declare var kSecKeyAlgorithmRSASignatureDigestPSSSHA224: string;
+
+/**
+ * @since 11.0
+ */
+declare var kSecKeyAlgorithmRSASignatureDigestPSSSHA256: string;
+
+/**
+ * @since 11.0
+ */
+declare var kSecKeyAlgorithmRSASignatureDigestPSSSHA384: string;
+
+/**
+ * @since 11.0
+ */
+declare var kSecKeyAlgorithmRSASignatureDigestPSSSHA512: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmRSASignatureMessagePKCS1v15SHA1: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmRSASignatureMessagePKCS1v15SHA224: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmRSASignatureMessagePKCS1v15SHA256: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmRSASignatureMessagePKCS1v15SHA384: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmRSASignatureMessagePKCS1v15SHA512: string;
+
+/**
+ * @since 11.0
+ */
+declare var kSecKeyAlgorithmRSASignatureMessagePSSSHA1: string;
+
+/**
+ * @since 11.0
+ */
+declare var kSecKeyAlgorithmRSASignatureMessagePSSSHA224: string;
+
+/**
+ * @since 11.0
+ */
+declare var kSecKeyAlgorithmRSASignatureMessagePSSSHA256: string;
+
+/**
+ * @since 11.0
+ */
+declare var kSecKeyAlgorithmRSASignatureMessagePSSSHA384: string;
+
+/**
+ * @since 11.0
+ */
+declare var kSecKeyAlgorithmRSASignatureMessagePSSSHA512: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyAlgorithmRSASignatureRaw: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyKeyExchangeParameterRequestedSize: string;
+
+/**
+ * @since 10.0
+ */
+declare var kSecKeyKeyExchangeParameterSharedInfo: string;
+
+/**
+ * @since 2.0
+ */
 declare var kSecMatchCaseInsensitive: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecMatchEmailAddressIfPresent: string;
 
+/**
+ * @since 18.0
+ */
+declare var kSecMatchHostOrSubdomainOfHost: string;
+
+/**
+ * @since 2.0
+ */
 declare var kSecMatchIssuers: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecMatchItemList: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecMatchLimit: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecMatchLimitAll: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecMatchLimitOne: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecMatchPolicy: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecMatchSearchList: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecMatchSubjectContains: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecMatchTrustedOnly: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecMatchValidOnDate: string;
 
+/**
+ * @since 7.0
+ */
 declare var kSecPolicyAppleCodeSigning: string;
 
+/**
+ * @since 7.0
+ */
 declare var kSecPolicyAppleEAP: string;
 
+/**
+ * @since 7.0
+ */
 declare var kSecPolicyAppleIDValidation: string;
 
+/**
+ * @since 7.0
+ */
 declare var kSecPolicyAppleIPsec: string;
 
+/**
+ * @since 7.0
+ */
 declare var kSecPolicyApplePassbookSigning: string;
 
+/**
+ * @since 9.0
+ */
 declare var kSecPolicyApplePayIssuerEncryption: string;
 
+/**
+ * @since 7.0
+ */
 declare var kSecPolicyAppleRevocation: string;
 
+/**
+ * @since 7.0
+ */
 declare var kSecPolicyAppleSMIME: string;
 
+/**
+ * @since 7.0
+ */
 declare var kSecPolicyAppleSSL: string;
 
+/**
+ * @since 7.0
+ */
 declare var kSecPolicyAppleTimeStamping: string;
 
+/**
+ * @since 7.0
+ */
 declare var kSecPolicyAppleX509Basic: string;
 
+/**
+ * @since 7.0
+ */
 declare var kSecPolicyClient: string;
 
+/**
+ * @since 9.0
+ */
 declare var kSecPolicyMacAppStoreReceipt: string;
 
+/**
+ * @since 7.0
+ */
 declare var kSecPolicyName: string;
 
+/**
+ * @since 7.0
+ */
 declare var kSecPolicyOid: string;
 
+/**
+ * @since 7.0
+ */
 declare var kSecPolicyRevocationFlags: string;
 
+/**
+ * @since 7.0
+ */
 declare var kSecPolicyTeamIdentifier: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecPrivateKeyAttrs: string;
 
+/**
+ * @since 7.0
+ */
 declare var kSecPropertyTypeError: string;
 
+/**
+ * @since 7.0
+ */
 declare var kSecPropertyTypeTitle: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecPublicKeyAttrs: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecRandomDefault: interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 2.0
+ */
 declare var kSecReturnAttributes: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecReturnData: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecReturnPersistentRef: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecReturnRef: string;
 
 declare const kSecRevocationCRLMethod: number;
@@ -2221,165 +3518,412 @@ declare const kSecRevocationRequirePositiveResponse: number;
 
 declare const kSecRevocationUseAnyAvailableMethod: number;
 
+/**
+ * @since 8.0
+ */
 declare var kSecSharedPassword: string;
 
+/**
+ * @since 9.0
+ */
 declare var kSecTrustCertificateTransparency: string;
 
+/**
+ * @since 10.0
+ * @deprecated 11.0
+ */
 declare var kSecTrustCertificateTransparencyWhiteList: string;
 
+/**
+ * @since 7.0
+ */
 declare var kSecTrustEvaluationDate: string;
 
+/**
+ * @since 7.0
+ */
 declare var kSecTrustExtendedValidation: string;
 
+/**
+ * @since 7.0
+ */
 declare var kSecTrustOrganizationName: string;
 
+/**
+ * @since 7.0
+ */
 declare var kSecTrustResultValue: string;
 
+/**
+ * @since 7.0
+ */
 declare var kSecTrustRevocationChecked: string;
 
+/**
+ * @since 7.0
+ */
 declare var kSecTrustRevocationValidUntilDate: string;
 
+/**
+ * @since 9.0
+ */
 declare var kSecUseAuthenticationContext: string;
 
+/**
+ * @since 9.0
+ */
 declare var kSecUseAuthenticationUI: string;
 
+/**
+ * @since 9.0
+ * @deprecated 14.0
+ */
 declare var kSecUseAuthenticationUIAllow: string;
 
+/**
+ * @since 9.0
+ * @deprecated 14.0
+ */
 declare var kSecUseAuthenticationUIFail: string;
 
+/**
+ * @since 9.0
+ */
 declare var kSecUseAuthenticationUISkip: string;
 
+/**
+ * @since 13.0
+ */
 declare var kSecUseDataProtectionKeychain: string;
 
+/**
+ * @since 2.0
+ * @deprecated 12.0
+ */
 declare var kSecUseItemList: string;
 
+/**
+ * @since 8.0
+ * @deprecated 9.0
+ */
 declare var kSecUseNoAuthenticationUI: string;
 
+/**
+ * @since 8.0
+ * @deprecated 14.0
+ */
 declare var kSecUseOperationPrompt: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecValueData: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecValuePersistentRef: string;
 
+/**
+ * @since 2.0
+ */
 declare var kSecValueRef: string;
 
-declare function sec_certificate_copy_ref(certificate: interop.Pointer | interop.Reference<any>): interop.Unmanaged<any>;
+/**
+ * @since 12.0
+ */
+declare function sec_certificate_copy_ref(certificate: NSObject & OS_sec_certificate): interop.Unmanaged<any>;
 
-declare function sec_certificate_create(certificate: any): interop.Pointer | interop.Reference<any>;
+/**
+ * @since 12.0
+ */
+declare function sec_certificate_create(certificate: any): NSObject & OS_sec_certificate;
 
-declare function sec_identity_access_certificates(identity: interop.Pointer | interop.Reference<any>, handler: (p1: interop.Pointer | interop.Reference<any>) => void): boolean;
+/**
+ * @since 13.0
+ */
+declare function sec_identity_access_certificates(identity: NSObject & OS_sec_identity, handler: (p1: NSObject & OS_sec_certificate) => void): boolean;
 
-declare function sec_identity_copy_certificates_ref(identity: interop.Pointer | interop.Reference<any>): interop.Unmanaged<NSArray<any>>;
+/**
+ * @since 12.0
+ */
+declare function sec_identity_copy_certificates_ref(identity: NSObject & OS_sec_identity): interop.Unmanaged<NSArray<any>>;
 
-declare function sec_identity_copy_ref(identity: interop.Pointer | interop.Reference<any>): interop.Unmanaged<any>;
+/**
+ * @since 12.0
+ */
+declare function sec_identity_copy_ref(identity: NSObject & OS_sec_identity): interop.Unmanaged<any>;
 
-declare function sec_identity_create(identity: any): interop.Pointer | interop.Reference<any>;
+/**
+ * @since 12.0
+ */
+declare function sec_identity_create(identity: any): NSObject & OS_sec_identity;
 
-declare function sec_identity_create_with_certificates(identity: any, certificates: NSArray<any> | any[]): interop.Pointer | interop.Reference<any>;
+/**
+ * @since 12.0
+ */
+declare function sec_identity_create_with_certificates(identity: any, certificates: NSArray<any> | any[]): NSObject & OS_sec_identity;
 
-declare function sec_protocol_metadata_access_distinguished_names(metadata: interop.Pointer | interop.Reference<any>, handler: (p1: interop.Pointer | interop.Reference<any>) => void): boolean;
+/**
+ * @since 12.0
+ */
+declare function sec_protocol_metadata_access_distinguished_names(metadata: NSObject & OS_sec_protocol_metadata, handler: (p1: NSObject & OS_dispatch_data) => void): boolean;
 
-declare function sec_protocol_metadata_access_ocsp_response(metadata: interop.Pointer | interop.Reference<any>, handler: (p1: interop.Pointer | interop.Reference<any>) => void): boolean;
+/**
+ * @since 12.0
+ */
+declare function sec_protocol_metadata_access_ocsp_response(metadata: NSObject & OS_sec_protocol_metadata, handler: (p1: NSObject & OS_dispatch_data) => void): boolean;
 
-declare function sec_protocol_metadata_access_peer_certificate_chain(metadata: interop.Pointer | interop.Reference<any>, handler: (p1: interop.Pointer | interop.Reference<any>) => void): boolean;
+/**
+ * @since 12.0
+ */
+declare function sec_protocol_metadata_access_peer_certificate_chain(metadata: NSObject & OS_sec_protocol_metadata, handler: (p1: NSObject & OS_sec_certificate) => void): boolean;
 
-declare function sec_protocol_metadata_access_pre_shared_keys(metadata: interop.Pointer | interop.Reference<any>, handler: (p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void): boolean;
+/**
+ * @since 13.0
+ */
+declare function sec_protocol_metadata_access_pre_shared_keys(metadata: NSObject & OS_sec_protocol_metadata, handler: (p1: NSObject & OS_dispatch_data, p2: NSObject & OS_dispatch_data) => void): boolean;
 
-declare function sec_protocol_metadata_access_supported_signature_algorithms(metadata: interop.Pointer | interop.Reference<any>, handler: (p1: number) => void): boolean;
+/**
+ * @since 12.0
+ */
+declare function sec_protocol_metadata_access_supported_signature_algorithms(metadata: NSObject & OS_sec_protocol_metadata, handler: (p1: number) => void): boolean;
 
-declare function sec_protocol_metadata_challenge_parameters_are_equal(metadataA: interop.Pointer | interop.Reference<any>, metadataB: interop.Pointer | interop.Reference<any>): boolean;
+/**
+ * @since 12.0
+ */
+declare function sec_protocol_metadata_challenge_parameters_are_equal(metadataA: NSObject & OS_sec_protocol_metadata, metadataB: NSObject & OS_sec_protocol_metadata): boolean;
 
-declare function sec_protocol_metadata_copy_peer_public_key(metadata: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+/**
+ * @since 12.0
+ */
+declare function sec_protocol_metadata_copy_peer_public_key(metadata: NSObject & OS_sec_protocol_metadata): NSObject & OS_dispatch_data;
 
-declare function sec_protocol_metadata_create_secret(metadata: interop.Pointer | interop.Reference<any>, label_len: number, label: string | interop.Pointer | interop.Reference<any>, exporter_length: number): interop.Pointer | interop.Reference<any>;
+/**
+ * @since 12.0
+ */
+declare function sec_protocol_metadata_create_secret(metadata: NSObject & OS_sec_protocol_metadata, label_len: number, label: string | interop.Pointer | interop.Reference<any>, exporter_length: number): NSObject & OS_dispatch_data;
 
-declare function sec_protocol_metadata_create_secret_with_context(metadata: interop.Pointer | interop.Reference<any>, label_len: number, label: string | interop.Pointer | interop.Reference<any>, context_len: number, context: string | interop.Pointer | interop.Reference<any>, exporter_length: number): interop.Pointer | interop.Reference<any>;
+/**
+ * @since 12.0
+ */
+declare function sec_protocol_metadata_create_secret_with_context(metadata: NSObject & OS_sec_protocol_metadata, label_len: number, label: string | interop.Pointer | interop.Reference<any>, context_len: number, context: string | interop.Pointer | interop.Reference<any>, exporter_length: number): NSObject & OS_dispatch_data;
 
-declare function sec_protocol_metadata_get_early_data_accepted(metadata: interop.Pointer | interop.Reference<any>): boolean;
+/**
+ * @since 12.0
+ */
+declare function sec_protocol_metadata_get_early_data_accepted(metadata: NSObject & OS_sec_protocol_metadata): boolean;
 
-declare function sec_protocol_metadata_get_negotiated_ciphersuite(metadata: interop.Pointer | interop.Reference<any>): number;
+/**
+ * @since 12.0
+ * @deprecated 13.0
+ */
+declare function sec_protocol_metadata_get_negotiated_ciphersuite(metadata: NSObject & OS_sec_protocol_metadata): number;
 
-declare function sec_protocol_metadata_get_negotiated_protocol(metadata: interop.Pointer | interop.Reference<any>): string;
+/**
+ * @since 12.0
+ */
+declare function sec_protocol_metadata_get_negotiated_protocol(metadata: NSObject & OS_sec_protocol_metadata): string;
 
-declare function sec_protocol_metadata_get_negotiated_protocol_version(metadata: interop.Pointer | interop.Reference<any>): SSLProtocol;
+/**
+ * @since 12.0
+ * @deprecated 13.0
+ */
+declare function sec_protocol_metadata_get_negotiated_protocol_version(metadata: NSObject & OS_sec_protocol_metadata): SSLProtocol;
 
-declare function sec_protocol_metadata_get_negotiated_tls_ciphersuite(metadata: interop.Pointer | interop.Reference<any>): tls_ciphersuite_t;
+/**
+ * @since 13.0
+ */
+declare function sec_protocol_metadata_get_negotiated_tls_ciphersuite(metadata: NSObject & OS_sec_protocol_metadata): tls_ciphersuite_t;
 
-declare function sec_protocol_metadata_get_negotiated_tls_protocol_version(metadata: interop.Pointer | interop.Reference<any>): tls_protocol_version_t;
+/**
+ * @since 13.0
+ */
+declare function sec_protocol_metadata_get_negotiated_tls_protocol_version(metadata: NSObject & OS_sec_protocol_metadata): tls_protocol_version_t;
 
-declare function sec_protocol_metadata_get_server_name(metadata: interop.Pointer | interop.Reference<any>): string;
+/**
+ * @since 12.0
+ */
+declare function sec_protocol_metadata_get_server_name(metadata: NSObject & OS_sec_protocol_metadata): string;
 
-declare function sec_protocol_metadata_peers_are_equal(metadataA: interop.Pointer | interop.Reference<any>, metadataB: interop.Pointer | interop.Reference<any>): boolean;
+/**
+ * @since 12.0
+ */
+declare function sec_protocol_metadata_peers_are_equal(metadataA: NSObject & OS_sec_protocol_metadata, metadataB: NSObject & OS_sec_protocol_metadata): boolean;
 
-declare function sec_protocol_options_add_pre_shared_key(options: interop.Pointer | interop.Reference<any>, psk: interop.Pointer | interop.Reference<any>, psk_identity: interop.Pointer | interop.Reference<any>): void;
+/**
+ * @since 12.0
+ */
+declare function sec_protocol_options_add_pre_shared_key(options: NSObject & OS_sec_protocol_options, psk: NSObject & OS_dispatch_data, psk_identity: NSObject & OS_dispatch_data): void;
 
-declare function sec_protocol_options_add_tls_application_protocol(options: interop.Pointer | interop.Reference<any>, application_protocol: string | interop.Pointer | interop.Reference<any>): void;
+/**
+ * @since 12.0
+ */
+declare function sec_protocol_options_add_tls_application_protocol(options: NSObject & OS_sec_protocol_options, application_protocol: string | interop.Pointer | interop.Reference<any>): void;
 
-declare function sec_protocol_options_add_tls_ciphersuite(options: interop.Pointer | interop.Reference<any>, ciphersuite: number): void;
+/**
+ * @since 12.0
+ * @deprecated 13.0
+ */
+declare function sec_protocol_options_add_tls_ciphersuite(options: NSObject & OS_sec_protocol_options, ciphersuite: number): void;
 
-declare function sec_protocol_options_add_tls_ciphersuite_group(options: interop.Pointer | interop.Reference<any>, group: SSLCiphersuiteGroup): void;
+/**
+ * @since 12.0
+ * @deprecated 13.0
+ */
+declare function sec_protocol_options_add_tls_ciphersuite_group(options: NSObject & OS_sec_protocol_options, group: SSLCiphersuiteGroup): void;
 
-declare function sec_protocol_options_append_tls_ciphersuite(options: interop.Pointer | interop.Reference<any>, ciphersuite: tls_ciphersuite_t): void;
+/**
+ * @since 13.0
+ */
+declare function sec_protocol_options_append_tls_ciphersuite(options: NSObject & OS_sec_protocol_options, ciphersuite: tls_ciphersuite_t): void;
 
-declare function sec_protocol_options_append_tls_ciphersuite_group(options: interop.Pointer | interop.Reference<any>, group: tls_ciphersuite_group_t): void;
+/**
+ * @since 13.0
+ */
+declare function sec_protocol_options_append_tls_ciphersuite_group(options: NSObject & OS_sec_protocol_options, group: tls_ciphersuite_group_t): void;
 
-declare function sec_protocol_options_are_equal(optionsA: interop.Pointer | interop.Reference<any>, optionsB: interop.Pointer | interop.Reference<any>): boolean;
+/**
+ * @since 13.0
+ */
+declare function sec_protocol_options_are_equal(optionsA: NSObject & OS_sec_protocol_options, optionsB: NSObject & OS_sec_protocol_options): boolean;
 
+/**
+ * @since 13.0
+ */
 declare function sec_protocol_options_get_default_max_dtls_protocol_version(): tls_protocol_version_t;
 
+/**
+ * @since 13.0
+ */
 declare function sec_protocol_options_get_default_max_tls_protocol_version(): tls_protocol_version_t;
 
+/**
+ * @since 13.0
+ */
 declare function sec_protocol_options_get_default_min_dtls_protocol_version(): tls_protocol_version_t;
 
+/**
+ * @since 13.0
+ */
 declare function sec_protocol_options_get_default_min_tls_protocol_version(): tls_protocol_version_t;
 
-declare function sec_protocol_options_set_challenge_block(options: interop.Pointer | interop.Reference<any>, challenge_block: (p1: interop.Pointer | interop.Reference<any>, p2: (p1: interop.Pointer | interop.Reference<any>) => void) => void, challenge_queue: interop.Pointer | interop.Reference<any>): void;
+/**
+ * @since 12.0
+ */
+declare function sec_protocol_options_set_challenge_block(options: NSObject & OS_sec_protocol_options, challenge_block: (p1: NSObject & OS_sec_protocol_metadata, p2: (p1: NSObject & OS_sec_identity) => void) => void, challenge_queue: NSObject & OS_dispatch_queue): void;
 
-declare function sec_protocol_options_set_key_update_block(options: interop.Pointer | interop.Reference<any>, key_update_block: (p1: interop.Pointer | interop.Reference<any>, p2: () => void) => void, key_update_queue: interop.Pointer | interop.Reference<any>): void;
+/**
+ * @since 12.0
+ */
+declare function sec_protocol_options_set_key_update_block(options: NSObject & OS_sec_protocol_options, key_update_block: (p1: NSObject & OS_sec_protocol_metadata, p2: () => void) => void, key_update_queue: NSObject & OS_dispatch_queue): void;
 
-declare function sec_protocol_options_set_local_identity(options: interop.Pointer | interop.Reference<any>, identity: interop.Pointer | interop.Reference<any>): void;
+/**
+ * @since 12.0
+ */
+declare function sec_protocol_options_set_local_identity(options: NSObject & OS_sec_protocol_options, identity: NSObject & OS_sec_identity): void;
 
-declare function sec_protocol_options_set_max_tls_protocol_version(options: interop.Pointer | interop.Reference<any>, version: tls_protocol_version_t): void;
+/**
+ * @since 13.0
+ */
+declare function sec_protocol_options_set_max_tls_protocol_version(options: NSObject & OS_sec_protocol_options, version: tls_protocol_version_t): void;
 
-declare function sec_protocol_options_set_min_tls_protocol_version(options: interop.Pointer | interop.Reference<any>, version: tls_protocol_version_t): void;
+/**
+ * @since 13.0
+ */
+declare function sec_protocol_options_set_min_tls_protocol_version(options: NSObject & OS_sec_protocol_options, version: tls_protocol_version_t): void;
 
-declare function sec_protocol_options_set_peer_authentication_required(options: interop.Pointer | interop.Reference<any>, peer_authentication_required: boolean): void;
+/**
+ * @since 12.0
+ */
+declare function sec_protocol_options_set_peer_authentication_required(options: NSObject & OS_sec_protocol_options, peer_authentication_required: boolean): void;
 
-declare function sec_protocol_options_set_pre_shared_key_selection_block(options: interop.Pointer | interop.Reference<any>, psk_selection_block: (p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: (p1: interop.Pointer | interop.Reference<any>) => void) => void, psk_selection_queue: interop.Pointer | interop.Reference<any>): void;
+/**
+ * @since 13.0
+ */
+declare function sec_protocol_options_set_pre_shared_key_selection_block(options: NSObject & OS_sec_protocol_options, psk_selection_block: (p1: NSObject & OS_sec_protocol_metadata, p2: NSObject & OS_dispatch_data, p3: (p1: NSObject & OS_dispatch_data) => void) => void, psk_selection_queue: NSObject & OS_dispatch_queue): void;
 
-declare function sec_protocol_options_set_tls_diffie_hellman_parameters(options: interop.Pointer | interop.Reference<any>, params: interop.Pointer | interop.Reference<any>): void;
+/**
+ * @since 12.0
+ * @deprecated 13.0
+ */
+declare function sec_protocol_options_set_tls_diffie_hellman_parameters(options: NSObject & OS_sec_protocol_options, params: NSObject & OS_dispatch_data): void;
 
-declare function sec_protocol_options_set_tls_false_start_enabled(options: interop.Pointer | interop.Reference<any>, false_start_enabled: boolean): void;
+/**
+ * @since 12.0
+ */
+declare function sec_protocol_options_set_tls_false_start_enabled(options: NSObject & OS_sec_protocol_options, false_start_enabled: boolean): void;
 
-declare function sec_protocol_options_set_tls_is_fallback_attempt(options: interop.Pointer | interop.Reference<any>, is_fallback_attempt: boolean): void;
+/**
+ * @since 12.0
+ */
+declare function sec_protocol_options_set_tls_is_fallback_attempt(options: NSObject & OS_sec_protocol_options, is_fallback_attempt: boolean): void;
 
-declare function sec_protocol_options_set_tls_max_version(options: interop.Pointer | interop.Reference<any>, version: SSLProtocol): void;
+/**
+ * @since 12.0
+ * @deprecated 13.0
+ */
+declare function sec_protocol_options_set_tls_max_version(options: NSObject & OS_sec_protocol_options, version: SSLProtocol): void;
 
-declare function sec_protocol_options_set_tls_min_version(options: interop.Pointer | interop.Reference<any>, version: SSLProtocol): void;
+/**
+ * @since 12.0
+ * @deprecated 13.0
+ */
+declare function sec_protocol_options_set_tls_min_version(options: NSObject & OS_sec_protocol_options, version: SSLProtocol): void;
 
-declare function sec_protocol_options_set_tls_ocsp_enabled(options: interop.Pointer | interop.Reference<any>, ocsp_enabled: boolean): void;
+/**
+ * @since 12.0
+ */
+declare function sec_protocol_options_set_tls_ocsp_enabled(options: NSObject & OS_sec_protocol_options, ocsp_enabled: boolean): void;
 
-declare function sec_protocol_options_set_tls_pre_shared_key_identity_hint(options: interop.Pointer | interop.Reference<any>, psk_identity_hint: interop.Pointer | interop.Reference<any>): void;
+/**
+ * @since 13.0
+ */
+declare function sec_protocol_options_set_tls_pre_shared_key_identity_hint(options: NSObject & OS_sec_protocol_options, psk_identity_hint: NSObject & OS_dispatch_data): void;
 
-declare function sec_protocol_options_set_tls_renegotiation_enabled(options: interop.Pointer | interop.Reference<any>, renegotiation_enabled: boolean): void;
+/**
+ * @since 12.0
+ */
+declare function sec_protocol_options_set_tls_renegotiation_enabled(options: NSObject & OS_sec_protocol_options, renegotiation_enabled: boolean): void;
 
-declare function sec_protocol_options_set_tls_resumption_enabled(options: interop.Pointer | interop.Reference<any>, resumption_enabled: boolean): void;
+/**
+ * @since 12.0
+ */
+declare function sec_protocol_options_set_tls_resumption_enabled(options: NSObject & OS_sec_protocol_options, resumption_enabled: boolean): void;
 
-declare function sec_protocol_options_set_tls_sct_enabled(options: interop.Pointer | interop.Reference<any>, sct_enabled: boolean): void;
+/**
+ * @since 12.0
+ */
+declare function sec_protocol_options_set_tls_sct_enabled(options: NSObject & OS_sec_protocol_options, sct_enabled: boolean): void;
 
-declare function sec_protocol_options_set_tls_server_name(options: interop.Pointer | interop.Reference<any>, server_name: string | interop.Pointer | interop.Reference<any>): void;
+/**
+ * @since 12.0
+ */
+declare function sec_protocol_options_set_tls_server_name(options: NSObject & OS_sec_protocol_options, server_name: string | interop.Pointer | interop.Reference<any>): void;
 
-declare function sec_protocol_options_set_tls_tickets_enabled(options: interop.Pointer | interop.Reference<any>, tickets_enabled: boolean): void;
+/**
+ * @since 12.0
+ */
+declare function sec_protocol_options_set_tls_tickets_enabled(options: NSObject & OS_sec_protocol_options, tickets_enabled: boolean): void;
 
-declare function sec_protocol_options_set_verify_block(options: interop.Pointer | interop.Reference<any>, verify_block: (p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: (p1: boolean) => void) => void, verify_block_queue: interop.Pointer | interop.Reference<any>): void;
+/**
+ * @since 12.0
+ */
+declare function sec_protocol_options_set_verify_block(options: NSObject & OS_sec_protocol_options, verify_block: (p1: NSObject & OS_sec_protocol_metadata, p2: NSObject & OS_sec_trust, p3: (p1: boolean) => void) => void, verify_block_queue: NSObject & OS_dispatch_queue): void;
 
 declare function sec_release(obj: interop.Pointer | interop.Reference<any>): void;
 
 declare function sec_retain(obj: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function sec_trust_copy_ref(trust: interop.Pointer | interop.Reference<any>): interop.Unmanaged<any>;
+/**
+ * @since 12.0
+ */
+declare function sec_trust_copy_ref(trust: NSObject & OS_sec_trust): interop.Unmanaged<any>;
 
-declare function sec_trust_create(trust: any): interop.Pointer | interop.Reference<any>;
+/**
+ * @since 12.0
+ */
+declare function sec_trust_create(trust: any): NSObject & OS_sec_trust;
 
 declare const enum tls_ciphersuite_group_t {
 

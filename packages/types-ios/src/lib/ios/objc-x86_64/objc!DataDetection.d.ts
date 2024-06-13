@@ -1,4 +1,7 @@
 
+/**
+ * @since 15.0
+ */
 declare class DDMatch extends NSObject {
 
 	static alloc(): DDMatch; // inherited from NSObject
@@ -8,6 +11,9 @@ declare class DDMatch extends NSObject {
 	readonly matchedString: string;
 }
 
+/**
+ * @since 15.0
+ */
 declare class DDMatchCalendarEvent extends DDMatch {
 
 	static alloc(): DDMatchCalendarEvent; // inherited from NSObject
@@ -25,6 +31,9 @@ declare class DDMatchCalendarEvent extends DDMatch {
 	readonly startTimeZone: NSTimeZone;
 }
 
+/**
+ * @since 15.0
+ */
 declare class DDMatchEmailAddress extends DDMatch {
 
 	static alloc(): DDMatchEmailAddress; // inherited from NSObject
@@ -36,6 +45,9 @@ declare class DDMatchEmailAddress extends DDMatch {
 	readonly label: string;
 }
 
+/**
+ * @since 15.0
+ */
 declare class DDMatchFlightNumber extends DDMatch {
 
 	static alloc(): DDMatchFlightNumber; // inherited from NSObject
@@ -47,6 +59,9 @@ declare class DDMatchFlightNumber extends DDMatch {
 	readonly flightNumber: string;
 }
 
+/**
+ * @since 15.0
+ */
 declare class DDMatchLink extends DDMatch {
 
 	static alloc(): DDMatchLink; // inherited from NSObject
@@ -56,6 +71,9 @@ declare class DDMatchLink extends DDMatch {
 	readonly URL: NSURL;
 }
 
+/**
+ * @since 15.0
+ */
 declare class DDMatchMoneyAmount extends DDMatch {
 
 	static alloc(): DDMatchMoneyAmount; // inherited from NSObject
@@ -67,6 +85,9 @@ declare class DDMatchMoneyAmount extends DDMatch {
 	readonly currency: string;
 }
 
+/**
+ * @since 15.0
+ */
 declare class DDMatchPhoneNumber extends DDMatch {
 
 	static alloc(): DDMatchPhoneNumber; // inherited from NSObject
@@ -78,6 +99,9 @@ declare class DDMatchPhoneNumber extends DDMatch {
 	readonly phoneNumber: string;
 }
 
+/**
+ * @since 15.0
+ */
 declare class DDMatchPostalAddress extends DDMatch {
 
 	static alloc(): DDMatchPostalAddress; // inherited from NSObject
@@ -95,6 +119,9 @@ declare class DDMatchPostalAddress extends DDMatch {
 	readonly street: string;
 }
 
+/**
+ * @since 15.0
+ */
 declare class DDMatchShipmentTrackingNumber extends DDMatch {
 
 	static alloc(): DDMatchShipmentTrackingNumber; // inherited from NSObject

@@ -1,4 +1,24 @@
 
+/**
+ * @since 18.0
+ */
+declare function JSBigIntCreateWithDouble(ctx: interop.Pointer | interop.Reference<any>, value: number, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
+
+/**
+ * @since 18.0
+ */
+declare function JSBigIntCreateWithInt64(ctx: interop.Pointer | interop.Reference<any>, integer: number, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
+
+/**
+ * @since 18.0
+ */
+declare function JSBigIntCreateWithString(ctx: interop.Pointer | interop.Reference<any>, string: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
+
+/**
+ * @since 18.0
+ */
+declare function JSBigIntCreateWithUInt64(ctx: interop.Pointer | interop.Reference<any>, integer: number, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
+
 declare function JSCheckScriptSyntax(ctx: interop.Pointer | interop.Reference<any>, script: interop.Pointer | interop.Reference<any>, sourceURL: interop.Pointer | interop.Reference<any>, startingLineNumber: number, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
 
 declare function JSClassCreate(definition: interop.Pointer | interop.Reference<JSClassDefinition>): interop.Pointer | interop.Reference<any>;
@@ -28,6 +48,9 @@ declare function JSClassRelease(jsClass: interop.Pointer | interop.Reference<any
 
 declare function JSClassRetain(jsClass: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 7.0
+ */
 declare class JSContext extends NSObject {
 
 	static alloc(): JSContext; // inherited from NSObject
@@ -36,6 +59,9 @@ declare class JSContext extends NSObject {
 
 	static currentArguments(): NSArray<any>;
 
+	/**
+	 * @since 8.0
+	 */
 	static currentCallee(): JSValue;
 
 	static currentContext(): JSContext;
@@ -52,8 +78,14 @@ declare class JSContext extends NSObject {
 
 	readonly globalObject: JSValue;
 
+	/**
+	 * @since 16.4
+	 */
 	inspectable: boolean;
 
+	/**
+	 * @since 8.0
+	 */
 	name: string;
 
 	readonly virtualMachine: JSVirtualMachine;
@@ -62,6 +94,9 @@ declare class JSContext extends NSObject {
 
 	evaluateScript(script: string): JSValue;
 
+	/**
+	 * @since 8.0
+	 */
 	evaluateScriptWithSourceURL(script: string, sourceURL: NSURL): JSValue;
 
 	initWithVirtualMachine(virtualMachine: JSVirtualMachine): this;
@@ -71,16 +106,31 @@ declare class JSContext extends NSObject {
 	setObjectForKeyedSubscript(object: any, key: NSObject): void;
 }
 
+/**
+ * @since 7.0
+ */
 declare function JSContextGetGlobalContext(ctx: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function JSContextGetGlobalObject(ctx: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 7.0
+ */
 declare function JSContextGetGroup(ctx: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 7.0
+ */
 declare function JSContextGroupCreate(): interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 7.0
+ */
 declare function JSContextGroupRelease(group: interop.Pointer | interop.Reference<any>): void;
 
+/**
+ * @since 7.0
+ */
 declare function JSContextGroupRetain(group: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function JSEvaluateScript(ctx: interop.Pointer | interop.Reference<any>, script: interop.Pointer | interop.Reference<any>, thisObject: interop.Pointer | interop.Reference<any>, sourceURL: interop.Pointer | interop.Reference<any>, startingLineNumber: number, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
@@ -94,28 +144,52 @@ declare var JSExport: {
 
 declare function JSGarbageCollect(ctx: interop.Pointer | interop.Reference<any>): void;
 
+/**
+ * @since 8.0
+ */
 declare function JSGlobalContextCopyName(ctx: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 7.0
+ */
 declare function JSGlobalContextCreate(globalObjectClass: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 7.0
+ */
 declare function JSGlobalContextCreateInGroup(group: interop.Pointer | interop.Reference<any>, globalObjectClass: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 16.4
+ */
 declare function JSGlobalContextIsInspectable(ctx: interop.Pointer | interop.Reference<any>): boolean;
 
 declare function JSGlobalContextRelease(ctx: interop.Pointer | interop.Reference<any>): void;
 
 declare function JSGlobalContextRetain(ctx: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 16.4
+ */
 declare function JSGlobalContextSetInspectable(ctx: interop.Pointer | interop.Reference<any>, inspectable: boolean): void;
 
+/**
+ * @since 8.0
+ */
 declare function JSGlobalContextSetName(ctx: interop.Pointer | interop.Reference<any>, name: interop.Pointer | interop.Reference<any>): void;
 
+/**
+ * @since 7.0
+ */
 declare class JSManagedValue extends NSObject {
 
 	static alloc(): JSManagedValue; // inherited from NSObject
 
 	static managedValueWithValue(value: JSValue): JSManagedValue;
 
+	/**
+	 * @since 8.0
+	 */
 	static managedValueWithValueAndOwner(value: JSValue, owner: any): JSManagedValue;
 
 	static new(): JSManagedValue; // inherited from NSObject
@@ -135,10 +209,19 @@ declare function JSObjectCopyPropertyNames(ctx: interop.Pointer | interop.Refere
 
 declare function JSObjectDeleteProperty(ctx: interop.Pointer | interop.Reference<any>, object: interop.Pointer | interop.Reference<any>, propertyName: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
 
+/**
+ * @since 13.0
+ */
 declare function JSObjectDeletePropertyForKey(ctx: interop.Pointer | interop.Reference<any>, object: interop.Pointer | interop.Reference<any>, propertyKey: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
 
+/**
+ * @since 10.0
+ */
 declare function JSObjectGetArrayBufferByteLength(ctx: interop.Pointer | interop.Reference<any>, object: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
+/**
+ * @since 10.0
+ */
 declare function JSObjectGetArrayBufferBytesPtr(ctx: interop.Pointer | interop.Reference<any>, object: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
 declare function JSObjectGetPrivate(object: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
@@ -147,22 +230,43 @@ declare function JSObjectGetProperty(ctx: interop.Pointer | interop.Reference<an
 
 declare function JSObjectGetPropertyAtIndex(ctx: interop.Pointer | interop.Reference<any>, object: interop.Pointer | interop.Reference<any>, propertyIndex: number, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 13.0
+ */
 declare function JSObjectGetPropertyForKey(ctx: interop.Pointer | interop.Reference<any>, object: interop.Pointer | interop.Reference<any>, propertyKey: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
 declare function JSObjectGetPrototype(ctx: interop.Pointer | interop.Reference<any>, object: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 10.0
+ */
 declare function JSObjectGetTypedArrayBuffer(ctx: interop.Pointer | interop.Reference<any>, object: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 10.0
+ */
 declare function JSObjectGetTypedArrayByteLength(ctx: interop.Pointer | interop.Reference<any>, object: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
+/**
+ * @since 10.0
+ */
 declare function JSObjectGetTypedArrayByteOffset(ctx: interop.Pointer | interop.Reference<any>, object: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
+/**
+ * @since 10.0
+ */
 declare function JSObjectGetTypedArrayBytesPtr(ctx: interop.Pointer | interop.Reference<any>, object: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 10.0
+ */
 declare function JSObjectGetTypedArrayLength(ctx: interop.Pointer | interop.Reference<any>, object: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 declare function JSObjectHasProperty(ctx: interop.Pointer | interop.Reference<any>, object: interop.Pointer | interop.Reference<any>, propertyName: interop.Pointer | interop.Reference<any>): boolean;
 
+/**
+ * @since 13.0
+ */
 declare function JSObjectHasPropertyForKey(ctx: interop.Pointer | interop.Reference<any>, object: interop.Pointer | interop.Reference<any>, propertyKey: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
 
 declare function JSObjectIsConstructor(ctx: interop.Pointer | interop.Reference<any>, object: interop.Pointer | interop.Reference<any>): boolean;
@@ -171,30 +275,60 @@ declare function JSObjectIsFunction(ctx: interop.Pointer | interop.Reference<any
 
 declare function JSObjectMake(ctx: interop.Pointer | interop.Reference<any>, jsClass: interop.Pointer | interop.Reference<any>, data: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 7.0
+ */
 declare function JSObjectMakeArray(ctx: interop.Pointer | interop.Reference<any>, argumentCount: number, _arguments: interop.Reference<interop.Pointer | interop.Reference<any>>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 10.0
+ */
 declare function JSObjectMakeArrayBufferWithBytesNoCopy(ctx: interop.Pointer | interop.Reference<any>, bytes: interop.Pointer | interop.Reference<any>, byteLength: number, bytesDeallocator: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>, deallocatorContext: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
 declare function JSObjectMakeConstructor(ctx: interop.Pointer | interop.Reference<any>, jsClass: interop.Pointer | interop.Reference<any>, callAsConstructor: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: interop.Reference<interop.Pointer | interop.Reference<any>>, p5: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 7.0
+ */
 declare function JSObjectMakeDate(ctx: interop.Pointer | interop.Reference<any>, argumentCount: number, _arguments: interop.Reference<interop.Pointer | interop.Reference<any>>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 13.0
+ */
 declare function JSObjectMakeDeferredPromise(ctx: interop.Pointer | interop.Reference<any>, resolve: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, reject: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 7.0
+ */
 declare function JSObjectMakeError(ctx: interop.Pointer | interop.Reference<any>, argumentCount: number, _arguments: interop.Reference<interop.Pointer | interop.Reference<any>>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
 declare function JSObjectMakeFunction(ctx: interop.Pointer | interop.Reference<any>, name: interop.Pointer | interop.Reference<any>, parameterCount: number, parameterNames: interop.Reference<interop.Pointer | interop.Reference<any>>, body: interop.Pointer | interop.Reference<any>, sourceURL: interop.Pointer | interop.Reference<any>, startingLineNumber: number, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
 declare function JSObjectMakeFunctionWithCallback(ctx: interop.Pointer | interop.Reference<any>, name: interop.Pointer | interop.Reference<any>, callAsFunction: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: number, p5: interop.Reference<interop.Pointer | interop.Reference<any>>, p6: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 7.0
+ */
 declare function JSObjectMakeRegExp(ctx: interop.Pointer | interop.Reference<any>, argumentCount: number, _arguments: interop.Reference<interop.Pointer | interop.Reference<any>>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 10.0
+ */
 declare function JSObjectMakeTypedArray(ctx: interop.Pointer | interop.Reference<any>, arrayType: JSTypedArrayType, length: number, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 10.0
+ */
 declare function JSObjectMakeTypedArrayWithArrayBuffer(ctx: interop.Pointer | interop.Reference<any>, arrayType: JSTypedArrayType, buffer: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 10.0
+ */
 declare function JSObjectMakeTypedArrayWithArrayBufferAndOffset(ctx: interop.Pointer | interop.Reference<any>, arrayType: JSTypedArrayType, buffer: interop.Pointer | interop.Reference<any>, byteOffset: number, length: number, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 10.0
+ */
 declare function JSObjectMakeTypedArrayWithBytesNoCopy(ctx: interop.Pointer | interop.Reference<any>, arrayType: JSTypedArrayType, bytes: interop.Pointer | interop.Reference<any>, byteLength: number, bytesDeallocator: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>, deallocatorContext: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
 declare function JSObjectSetPrivate(object: interop.Pointer | interop.Reference<any>, data: interop.Pointer | interop.Reference<any>): boolean;
@@ -203,6 +337,9 @@ declare function JSObjectSetProperty(ctx: interop.Pointer | interop.Reference<an
 
 declare function JSObjectSetPropertyAtIndex(ctx: interop.Pointer | interop.Reference<any>, object: interop.Pointer | interop.Reference<any>, propertyIndex: number, value: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): void;
 
+/**
+ * @since 13.0
+ */
 declare function JSObjectSetPropertyForKey(ctx: interop.Pointer | interop.Reference<any>, object: interop.Pointer | interop.Reference<any>, propertyKey: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>, attributes: number, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): void;
 
 declare function JSObjectSetPrototype(ctx: interop.Pointer | interop.Reference<any>, object: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>): void;
@@ -228,6 +365,20 @@ declare function JSPropertyNameArrayGetNameAtIndex(array: interop.Pointer | inte
 declare function JSPropertyNameArrayRelease(array: interop.Pointer | interop.Reference<any>): void;
 
 declare function JSPropertyNameArrayRetain(array: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+
+/**
+ * @since 18.0
+ */
+declare const enum JSRelationCondition {
+
+	kJSRelationConditionUndefined = 0,
+
+	kJSRelationConditionEqual = 1,
+
+	kJSRelationConditionGreaterThan = 2,
+
+	kJSRelationConditionLessThan = 3
+}
 
 interface JSStaticFunction {
 	name: string;
@@ -282,7 +433,9 @@ declare const enum JSType {
 
 	kJSTypeObject = 5,
 
-	kJSTypeSymbol = 6
+	kJSTypeSymbol = 6,
+
+	kJSTypeBigInt = 7
 }
 
 declare const enum JSTypedArrayType {
@@ -314,6 +467,9 @@ declare const enum JSTypedArrayType {
 	kJSTypedArrayTypeBigUint64Array = 12
 }
 
+/**
+ * @since 7.0
+ */
 declare class JSValue extends NSObject {
 
 	static alloc(): JSValue; // inherited from NSObject
@@ -330,18 +486,50 @@ declare class JSValue extends NSObject {
 
 	static valueWithNewArrayInContext(context: JSContext): JSValue;
 
+	/**
+	 * @since 18.0
+	 */
+	static valueWithNewBigIntFromDoubleInContext(value: number, context: JSContext): JSValue;
+
+	/**
+	 * @since 18.0
+	 */
+	static valueWithNewBigIntFromInt64InContext(int64: number, context: JSContext): JSValue;
+
+	/**
+	 * @since 18.0
+	 */
+	static valueWithNewBigIntFromStringInContext(string: string, context: JSContext): JSValue;
+
+	/**
+	 * @since 18.0
+	 */
+	static valueWithNewBigIntFromUInt64InContext(uint64: number, context: JSContext): JSValue;
+
 	static valueWithNewErrorFromMessageInContext(message: string, context: JSContext): JSValue;
 
 	static valueWithNewObjectInContext(context: JSContext): JSValue;
 
+	/**
+	 * @since 13.0
+	 */
 	static valueWithNewPromiseInContextFromExecutor(context: JSContext, callback: (p1: JSValue, p2: JSValue) => void): JSValue;
 
+	/**
+	 * @since 13.0
+	 */
 	static valueWithNewPromiseRejectedWithReasonInContext(reason: any, context: JSContext): JSValue;
 
+	/**
+	 * @since 13.0
+	 */
 	static valueWithNewPromiseResolvedWithResultInContext(result: any, context: JSContext): JSValue;
 
 	static valueWithNewRegularExpressionFromPatternFlagsInContext(pattern: string, flags: string, context: JSContext): JSValue;
 
+	/**
+	 * @since 13.0
+	 */
 	static valueWithNewSymbolFromDescriptionInContext(description: string, context: JSContext): JSValue;
 
 	static valueWithNullInContext(context: JSContext): JSValue;
@@ -364,10 +552,21 @@ declare class JSValue extends NSObject {
 
 	readonly context: JSContext;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly isArray: boolean;
+
+	/**
+	 * @since 18.0
+	 */
+	readonly isBigInt: boolean;
 
 	readonly isBoolean: boolean;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly isDate: boolean;
 
 	readonly isNull: boolean;
@@ -378,6 +577,9 @@ declare class JSValue extends NSObject {
 
 	readonly isString: boolean;
 
+	/**
+	 * @since 13.0
+	 */
 	readonly isSymbol: boolean;
 
 	readonly isUndefined: boolean;
@@ -385,13 +587,33 @@ declare class JSValue extends NSObject {
 
 	callWithArguments(_arguments: NSArray<any> | any[]): JSValue;
 
+	/**
+	 * @since 18.0
+	 */
+	compareDouble(other: number): JSRelationCondition;
+
+	/**
+	 * @since 18.0
+	 */
+	compareInt64(other: number): JSRelationCondition;
+
+	/**
+	 * @since 18.0
+	 */
+	compareJSValue(other: JSValue): JSRelationCondition;
+
+	/**
+	 * @since 18.0
+	 */
+	compareUInt64(other: number): JSRelationCondition;
+
 	constructWithArguments(_arguments: NSArray<any> | any[]): JSValue;
 
-	definePropertyDescriptor(property: string, descriptor: any): void;
+	definePropertyDescriptor(property: any, descriptor: any): void;
 
-	deleteProperty(property: string): boolean;
+	deleteProperty(property: any): boolean;
 
-	hasProperty(property: string): boolean;
+	hasProperty(property: any): boolean;
 
 	invokeMethodWithArguments(method: string, _arguments: NSArray<any> | any[]): JSValue;
 
@@ -411,7 +633,7 @@ declare class JSValue extends NSObject {
 
 	setValueAtIndex(value: any, index: number): void;
 
-	setValueForProperty(value: any, property: string): void;
+	setValueForProperty(value: any, property: any): void;
 
 	toArray(): NSArray<any>;
 
@@ -424,6 +646,11 @@ declare class JSValue extends NSObject {
 	toDouble(): number;
 
 	toInt32(): number;
+
+	/**
+	 * @since 18.0
+	 */
+	toInt64(): number;
 
 	toNumber(): number;
 
@@ -443,21 +670,63 @@ declare class JSValue extends NSObject {
 
 	toUInt32(): number;
 
+	/**
+	 * @since 18.0
+	 */
+	toUInt64(): number;
+
 	valueAtIndex(index: number): JSValue;
 
-	valueForProperty(property: string): JSValue;
+	valueForProperty(property: any): JSValue;
 }
 
+/**
+ * @since 18.0
+ */
+declare function JSValueCompare(ctx: interop.Pointer | interop.Reference<any>, left: interop.Pointer | interop.Reference<any>, right: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): JSRelationCondition;
+
+/**
+ * @since 18.0
+ */
+declare function JSValueCompareDouble(ctx: interop.Pointer | interop.Reference<any>, left: interop.Pointer | interop.Reference<any>, right: number, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): JSRelationCondition;
+
+/**
+ * @since 18.0
+ */
+declare function JSValueCompareInt64(ctx: interop.Pointer | interop.Reference<any>, left: interop.Pointer | interop.Reference<any>, right: number, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): JSRelationCondition;
+
+/**
+ * @since 18.0
+ */
+declare function JSValueCompareUInt64(ctx: interop.Pointer | interop.Reference<any>, left: interop.Pointer | interop.Reference<any>, right: number, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): JSRelationCondition;
+
+/**
+ * @since 7.0
+ */
 declare function JSValueCreateJSONString(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>, indent: number, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
 declare function JSValueGetType(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>): JSType;
 
+/**
+ * @since 10.0
+ */
 declare function JSValueGetTypedArrayType(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): JSTypedArrayType;
 
+/**
+ * @since 9.0
+ */
 declare function JSValueIsArray(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>): boolean;
+
+/**
+ * @since 18.0
+ */
+declare function JSValueIsBigInt(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>): boolean;
 
 declare function JSValueIsBoolean(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>): boolean;
 
+/**
+ * @since 9.0
+ */
 declare function JSValueIsDate(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>): boolean;
 
 declare function JSValueIsEqual(ctx: interop.Pointer | interop.Reference<any>, a: interop.Pointer | interop.Reference<any>, b: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
@@ -476,12 +745,18 @@ declare function JSValueIsStrictEqual(ctx: interop.Pointer | interop.Reference<a
 
 declare function JSValueIsString(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>): boolean;
 
+/**
+ * @since 13.0
+ */
 declare function JSValueIsSymbol(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>): boolean;
 
 declare function JSValueIsUndefined(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>): boolean;
 
 declare function JSValueMakeBoolean(ctx: interop.Pointer | interop.Reference<any>, boolean: boolean): interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 7.0
+ */
 declare function JSValueMakeFromJSONString(ctx: interop.Pointer | interop.Reference<any>, string: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function JSValueMakeNull(ctx: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
@@ -490,6 +765,9 @@ declare function JSValueMakeNumber(ctx: interop.Pointer | interop.Reference<any>
 
 declare function JSValueMakeString(ctx: interop.Pointer | interop.Reference<any>, string: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 13.0
+ */
 declare function JSValueMakeSymbol(ctx: interop.Pointer | interop.Reference<any>, description: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function JSValueMakeUndefined(ctx: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
@@ -498,14 +776,37 @@ declare function JSValueProtect(ctx: interop.Pointer | interop.Reference<any>, v
 
 declare function JSValueToBoolean(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>): boolean;
 
+/**
+ * @since 18.0
+ */
+declare function JSValueToInt32(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+
+/**
+ * @since 18.0
+ */
+declare function JSValueToInt64(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+
 declare function JSValueToNumber(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 declare function JSValueToObject(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
 declare function JSValueToStringCopy(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 18.0
+ */
+declare function JSValueToUInt32(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+
+/**
+ * @since 18.0
+ */
+declare function JSValueToUInt64(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+
 declare function JSValueUnprotect(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>): void;
 
+/**
+ * @since 7.0
+ */
 declare class JSVirtualMachine extends NSObject {
 
 	static alloc(): JSVirtualMachine; // inherited from NSObject

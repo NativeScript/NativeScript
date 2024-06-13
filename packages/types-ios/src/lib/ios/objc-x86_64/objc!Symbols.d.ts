@@ -1,4 +1,7 @@
 
+/**
+ * @since 17.0
+ */
 declare class NSSymbolAppearEffect extends NSSymbolEffect {
 
 	static alloc(): NSSymbolAppearEffect; // inherited from NSObject
@@ -16,6 +19,9 @@ declare class NSSymbolAppearEffect extends NSSymbolEffect {
 	effectWithWholeSymbol(): this;
 }
 
+/**
+ * @since 17.0
+ */
 declare class NSSymbolAutomaticContentTransition extends NSSymbolContentTransition {
 
 	static alloc(): NSSymbolAutomaticContentTransition; // inherited from NSObject
@@ -25,6 +31,9 @@ declare class NSSymbolAutomaticContentTransition extends NSSymbolContentTransiti
 	static transition(): NSSymbolAutomaticContentTransition;
 }
 
+/**
+ * @since 17.0
+ */
 declare class NSSymbolBounceEffect extends NSSymbolEffect {
 
 	static alloc(): NSSymbolBounceEffect; // inherited from NSObject
@@ -42,6 +51,29 @@ declare class NSSymbolBounceEffect extends NSSymbolEffect {
 	effectWithWholeSymbol(): this;
 }
 
+/**
+ * @since 18.0
+ */
+declare class NSSymbolBreatheEffect extends NSSymbolEffect {
+
+	static alloc(): NSSymbolBreatheEffect; // inherited from NSObject
+
+	static breathePlainEffect(): NSSymbolBreatheEffect;
+
+	static breathePulseEffect(): NSSymbolBreatheEffect;
+
+	static effect(): NSSymbolBreatheEffect;
+
+	static new(): NSSymbolBreatheEffect; // inherited from NSObject
+
+	effectWithByLayer(): this;
+
+	effectWithWholeSymbol(): this;
+}
+
+/**
+ * @since 17.0
+ */
 declare class NSSymbolContentTransition extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): NSSymbolContentTransition; // inherited from NSObject
@@ -59,6 +91,9 @@ declare class NSSymbolContentTransition extends NSObject implements NSCopying, N
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 17.0
+ */
 declare class NSSymbolDisappearEffect extends NSSymbolEffect {
 
 	static alloc(): NSSymbolDisappearEffect; // inherited from NSObject
@@ -76,6 +111,9 @@ declare class NSSymbolDisappearEffect extends NSSymbolEffect {
 	effectWithWholeSymbol(): this;
 }
 
+/**
+ * @since 17.0
+ */
 declare class NSSymbolEffect extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): NSSymbolEffect; // inherited from NSObject
@@ -93,6 +131,9 @@ declare class NSSymbolEffect extends NSObject implements NSCopying, NSSecureCodi
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 17.0
+ */
 declare class NSSymbolEffectOptions extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): NSSymbolEffectOptions; // inherited from NSObject
@@ -103,8 +144,21 @@ declare class NSSymbolEffectOptions extends NSObject implements NSCopying, NSSec
 
 	static optionsWithNonRepeating(): NSSymbolEffectOptions;
 
+	/**
+	 * @since 18.0
+	 */
+	static optionsWithRepeatBehavior(behavior: NSSymbolEffectOptionsRepeatBehavior): NSSymbolEffectOptions;
+
+	/**
+	 * @since 17.0
+	 * @deprecated 100000
+	 */
 	static optionsWithRepeatCount(count: number): NSSymbolEffectOptions;
 
+	/**
+	 * @since 17.0
+	 * @deprecated 100000
+	 */
 	static optionsWithRepeating(): NSSymbolEffectOptions;
 
 	static optionsWithSpeed(speed: number): NSSymbolEffectOptions;
@@ -121,13 +175,69 @@ declare class NSSymbolEffectOptions extends NSObject implements NSCopying, NSSec
 
 	optionsWithNonRepeating(): this;
 
+	/**
+	 * @since 18.0
+	 */
+	optionsWithRepeatBehavior(behavior: NSSymbolEffectOptionsRepeatBehavior): this;
+
+	/**
+	 * @since 17.0
+	 * @deprecated 100000
+	 */
 	optionsWithRepeatCount(count: number): this;
 
+	/**
+	 * @since 17.0
+	 * @deprecated 100000
+	 */
 	optionsWithRepeating(): this;
 
 	optionsWithSpeed(speed: number): this;
 }
 
+/**
+ * @since 18.0
+ */
+declare class NSSymbolEffectOptionsRepeatBehavior extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): NSSymbolEffectOptionsRepeatBehavior; // inherited from NSObject
+
+	static behaviorContinuous(): NSSymbolEffectOptionsRepeatBehavior;
+
+	static behaviorPeriodic(): NSSymbolEffectOptionsRepeatBehavior;
+
+	static behaviorPeriodicWithCount(count: number): NSSymbolEffectOptionsRepeatBehavior;
+
+	static behaviorPeriodicWithCountDelay(count: number, delay: number): NSSymbolEffectOptionsRepeatBehavior;
+
+	static behaviorPeriodicWithDelay(delay: number): NSSymbolEffectOptionsRepeatBehavior;
+
+	static new(): NSSymbolEffectOptionsRepeatBehavior; // inherited from NSObject
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
+ * @since 18.0
+ */
+declare class NSSymbolMagicReplaceContentTransition extends NSSymbolContentTransition {
+
+	static alloc(): NSSymbolMagicReplaceContentTransition; // inherited from NSObject
+
+	static new(): NSSymbolMagicReplaceContentTransition; // inherited from NSObject
+}
+
+/**
+ * @since 17.0
+ */
 declare class NSSymbolPulseEffect extends NSSymbolEffect {
 
 	static alloc(): NSSymbolPulseEffect; // inherited from NSObject
@@ -141,9 +251,17 @@ declare class NSSymbolPulseEffect extends NSSymbolEffect {
 	effectWithWholeSymbol(): this;
 }
 
+/**
+ * @since 17.0
+ */
 declare class NSSymbolReplaceContentTransition extends NSSymbolContentTransition {
 
 	static alloc(): NSSymbolReplaceContentTransition; // inherited from NSObject
+
+	/**
+	 * @since 18.0
+	 */
+	static magicTransitionWithFallback(fallback: NSSymbolReplaceContentTransition): NSSymbolMagicReplaceContentTransition;
 
 	static new(): NSSymbolReplaceContentTransition; // inherited from NSObject
 
@@ -160,6 +278,29 @@ declare class NSSymbolReplaceContentTransition extends NSSymbolContentTransition
 	transitionWithWholeSymbol(): this;
 }
 
+/**
+ * @since 18.0
+ */
+declare class NSSymbolRotateEffect extends NSSymbolEffect {
+
+	static alloc(): NSSymbolRotateEffect; // inherited from NSObject
+
+	static effect(): NSSymbolRotateEffect;
+
+	static new(): NSSymbolRotateEffect; // inherited from NSObject
+
+	static rotateClockwiseEffect(): NSSymbolRotateEffect;
+
+	static rotateCounterClockwiseEffect(): NSSymbolRotateEffect;
+
+	effectWithByLayer(): this;
+
+	effectWithWholeSymbol(): this;
+}
+
+/**
+ * @since 17.0
+ */
 declare class NSSymbolScaleEffect extends NSSymbolEffect {
 
 	static alloc(): NSSymbolScaleEffect; // inherited from NSObject
@@ -177,6 +318,9 @@ declare class NSSymbolScaleEffect extends NSSymbolEffect {
 	effectWithWholeSymbol(): this;
 }
 
+/**
+ * @since 17.0
+ */
 declare class NSSymbolVariableColorEffect extends NSSymbolEffect {
 
 	static alloc(): NSSymbolVariableColorEffect; // inherited from NSObject
@@ -196,4 +340,38 @@ declare class NSSymbolVariableColorEffect extends NSSymbolEffect {
 	effectWithNonReversing(): this;
 
 	effectWithReversing(): this;
+}
+
+/**
+ * @since 18.0
+ */
+declare class NSSymbolWiggleEffect extends NSSymbolEffect {
+
+	static alloc(): NSSymbolWiggleEffect; // inherited from NSObject
+
+	static effect(): NSSymbolWiggleEffect;
+
+	static new(): NSSymbolWiggleEffect; // inherited from NSObject
+
+	static wiggleBackwardEffect(): NSSymbolWiggleEffect;
+
+	static wiggleClockwiseEffect(): NSSymbolWiggleEffect;
+
+	static wiggleCounterClockwiseEffect(): NSSymbolWiggleEffect;
+
+	static wiggleCustomAngleEffect(angle: number): NSSymbolWiggleEffect;
+
+	static wiggleDownEffect(): NSSymbolWiggleEffect;
+
+	static wiggleForwardEffect(): NSSymbolWiggleEffect;
+
+	static wiggleLeftEffect(): NSSymbolWiggleEffect;
+
+	static wiggleRightEffect(): NSSymbolWiggleEffect;
+
+	static wiggleUpEffect(): NSSymbolWiggleEffect;
+
+	effectWithByLayer(): this;
+
+	effectWithWholeSymbol(): this;
 }
