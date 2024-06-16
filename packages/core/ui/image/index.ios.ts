@@ -1,4 +1,4 @@
-import { ImageBase, stretchProperty, imageSourceProperty, tintColorProperty, srcProperty } from './image-common';
+import { ImageBase, stretchProperty, imageSourceProperty, tintColorProperty, srcProperty, symbolEffectProperty, ImageSymbolEffect } from './image-common';
 import { ImageSource } from '../../image-source';
 import { ImageAsset } from '../../image-asset';
 import { Color } from '../../color';
@@ -193,5 +193,15 @@ export class Image extends ImageBase {
 
 	[srcProperty.setNative](value: string | ImageSource | ImageAsset) {
 		this._createImageSourceFromSrc(value);
+	}
+
+	[symbolEffectProperty.setNative](value: ImageSymbolEffect) {
+		if (this.nativeViewProtected) {
+			if (value?.start) {
+				this.nativeViewProtected.addSymbolEffectOptionsAnimatedCompletion(value.effect || NSSymbolScaleEffect.effect(), value.options || NSSymbolEffectOptions.optionsWithRepeating(), true, value.completion || null);
+			} else {
+				this.nativeViewProtected.removeAllSymbolEffects();
+			}
+		}
 	}
 }
