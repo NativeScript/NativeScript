@@ -419,7 +419,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		this._closeModalCallback = (...originalArgs) => {
 			const cleanupModalViews = () => {
 				const modalIndex = _rootModalViews.indexOf(this);
-				_rootModalViews.splice(modalIndex);
+				_rootModalViews.splice(modalIndex, 1);
 				this._modalParent = null;
 				this._modalContext = null;
 				this._closeModalCallback = null;
