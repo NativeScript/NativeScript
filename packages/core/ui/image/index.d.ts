@@ -6,6 +6,7 @@ import { Color } from '../../color';
 import { Property, InheritedCssProperty } from '../core/properties';
 import { CoreTypes } from '../../core-types';
 
+export type { ImageSymbolEffect } from './image-common';
 /**
  * Represents a class that provides functionality for loading and streching image(s).
  */

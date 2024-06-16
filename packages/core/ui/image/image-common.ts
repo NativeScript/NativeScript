@@ -186,3 +186,22 @@ export const decodeWidthProperty = new Property<ImageBase, CoreTypes.LengthType>
 	valueConverter: Length.parse,
 });
 decodeWidthProperty.register(ImageBase);
+
+/**
+ * iOS only
+ * Symbol effects: https://developer.apple.com/documentation/symbols?language=objc
+ */
+export type ImageSymbolEffect = {
+	effect?: NSSymbolEffect;
+	options?: NSSymbolEffectOptions;
+	completion?: (context: UISymbolEffectCompletionContext) => void;
+	start?: boolean;
+};
+
+/**
+ * iOS only
+ */
+export const symbolEffectProperty = new Property<ImageBase, ImageSymbolEffect>({
+	name: 'symbolEffect',
+});
+symbolEffectProperty.register(ImageBase);
