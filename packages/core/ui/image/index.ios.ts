@@ -1,9 +1,10 @@
-import { ImageBase, stretchProperty, imageSourceProperty, tintColorProperty, srcProperty, symbolEffectProperty, ImageSymbolEffect } from './image-common';
+import { ImageBase, stretchProperty, imageSourceProperty, tintColorProperty, srcProperty, iosSymbolEffectProperty, ImageSymbolEffect, ImageSymbolEffects } from './image-common';
 import { ImageSource } from '../../image-source';
 import { ImageAsset } from '../../image-asset';
 import { Color } from '../../color';
 import { Trace } from '../../trace';
 import { layout, queueGC } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 
 export * from './image-common';
 
@@ -195,13 +196,15 @@ export class Image extends ImageBase {
 		this._createImageSourceFromSrc(value);
 	}
 
-	[symbolEffectProperty.setNative](value: ImageSymbolEffect) {
-		if (this.nativeViewProtected) {
-			if (value?.start) {
-				this.nativeViewProtected.addSymbolEffectOptionsAnimatedCompletion(value.effect || NSSymbolScaleEffect.effect(), value.options || NSSymbolEffectOptions.optionsWithRepeating(), true, value.completion || null);
-			} else {
-				this.nativeViewProtected.removeAllSymbolEffects();
-			}
+	[iosSymbolEffectProperty.setNative](value: ImageSymbolEffect | ImageSymbolEffects) {
+		if (SDK_VERSION < 17) {
+			return;
+		}
+		const symbol = typeof value === 'string' ? ImageSymbolEffect.fromSymbol(value) : value;
+		if (symbol && symbol.effect) {
+			this.nativeViewProtected.addSymbolEffectOptionsAnimatedCompletion(symbol.effect, symbol.options || NSSymbolEffectOptions.optionsWithRepeating(), true, symbol.completion || null);
+		} else {
+			this.nativeViewProtected.removeAllSymbolEffects();
 		}
 	}
 }

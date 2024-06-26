@@ -10,6 +10,7 @@ import { Style } from '../styling/style';
 import { Length } from '../styling/style-properties';
 import { Property, InheritedCssProperty } from '../core/properties';
 import { Trace } from '../../trace';
+import { ImageSymbolEffect, ImageSymbolEffects } from './symbol-effects';
 
 @CSSType('Image')
 export abstract class ImageBase extends View implements ImageDefinition {
@@ -189,19 +190,10 @@ decodeWidthProperty.register(ImageBase);
 
 /**
  * iOS only
- * Symbol effects: https://developer.apple.com/documentation/symbols?language=objc
  */
-export type ImageSymbolEffect = {
-	effect?: NSSymbolEffect;
-	options?: NSSymbolEffectOptions;
-	completion?: (context: UISymbolEffectCompletionContext) => void;
-	start?: boolean;
-};
-
-/**
- * iOS only
- */
-export const symbolEffectProperty = new Property<ImageBase, ImageSymbolEffect>({
-	name: 'symbolEffect',
+export const iosSymbolEffectProperty = new Property<ImageBase, ImageSymbolEffect | ImageSymbolEffects>({
+	name: 'iosSymbolEffect',
 });
-symbolEffectProperty.register(ImageBase);
+iosSymbolEffectProperty.register(ImageBase);
+
+export { ImageSymbolEffect, ImageSymbolEffects };

@@ -1,4 +1,4 @@
-import { Observable, EventData, Page, ImageSource, knownFolders, path, ImageSymbolEffect } from '@nativescript/core';
+import { Observable, EventData, Page, ImageSource, knownFolders, path, ImageSymbolEffects } from '@nativescript/core';
 import { create, ImagePickerMediaType } from '@nativescript/imagepicker';
 
 let page: Page;
@@ -10,32 +10,10 @@ export function navigatingTo(args: EventData) {
 
 export class DemoModel extends Observable {
 	addingPhoto = false;
-	symbolWiggleEffect: ImageSymbolEffect;
-	symbolBounceEffect: ImageSymbolEffect;
-	symbolBreathEffect: ImageSymbolEffect;
-	symbolRotateEffect: ImageSymbolEffect;
-
-	constructor() {
-		super();
-		if (__APPLE__) {
-			this.symbolWiggleEffect = {
-				effect: NSSymbolWiggleEffect.effect(),
-				start: true,
-			};
-			this.symbolBounceEffect = {
-				effect: NSSymbolBounceEffect.effect(),
-				start: true,
-			};
-			this.symbolBreathEffect = {
-				effect: NSSymbolBreatheEffect.effect(),
-				start: true,
-			};
-			this.symbolRotateEffect = {
-				effect: NSSymbolRotateEffect.effect(),
-				start: true,
-			};
-		}
-	}
+	symbolWiggleEffect: ImageSymbolEffects.Wiggle;
+	symbolBounceEffect: ImageSymbolEffects.Bounce;
+	symbolBreathEffect: ImageSymbolEffects.Breathe;
+	symbolRotateEffect: ImageSymbolEffects.Rotate;
 
 	pickImage() {
 		const context = create({
