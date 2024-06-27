@@ -11,6 +11,7 @@ import { isAccessibilityServiceEnabled, updateContentDescription } from '../../a
 import type { Background } from '../styling/background';
 import { SDK_VERSION } from '../../utils/constants';
 import { ViewHelper } from 'ui/core/view/view-helper/view-helper-common';
+import * as Utils from '../../utils';
 
 export * from './action-bar-common';
 
@@ -79,7 +80,7 @@ function initializeMenuItemClickListener(): void {
 	}
 
 	MenuItemClickListener = MenuItemClickListenerImpl;
-	appResources = Application.android.context.getResources();
+	appResources = Utils.android.getApplicationContext().getResources();
 }
 
 export class ActionItem extends ActionItemBase {
@@ -297,7 +298,7 @@ export class ActionBar extends ActionBarBase {
 							owner._raiseTap();
 						}
 					},
-				})
+				}),
 			);
 		} else {
 			this.nativeViewProtected.setNavigationIcon(null);
@@ -331,7 +332,7 @@ export class ActionBar extends ActionBarBase {
 			if (title !== undefined) {
 				this.nativeViewProtected.setTitle(title);
 			} else {
-				const appContext = Application.android.context;
+				const appContext = Utils.android.getApplicationContext();
 				const appInfo = appContext.getApplicationInfo();
 				const appLabel = appContext.getPackageManager().getApplicationLabel(appInfo);
 				if (appLabel) {
@@ -386,7 +387,7 @@ export class ActionBar extends ActionBarBase {
 						owner._raiseTap();
 					}
 				},
-			})
+			}),
 		);
 	}
 

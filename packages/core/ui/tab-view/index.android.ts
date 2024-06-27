@@ -11,6 +11,7 @@ import { fontSizeProperty, fontInternalProperty } from '../styling/style-propert
 import { RESOURCE_PREFIX, ad, layout } from '../../utils';
 import { Frame } from '../frame';
 import { Application } from '../../application';
+import * as Utils from '../../utils';
 
 export * from './tab-view-common';
 
@@ -240,7 +241,7 @@ function initializeNativeClasses() {
 	}
 
 	PagerAdapter = FragmentPagerAdapter;
-	appResources = Application.android.context.getResources();
+	appResources = Utils.android.getResources();
 }
 
 function createTabItemSpec(item: TabViewItem): org.nativescript.widgets.TabItemSpec {
@@ -441,7 +442,7 @@ export class TabView extends TabViewBase {
 				JSON.stringify([
 					{ value: 1, type: 0 /* org.nativescript.widgets.GridUnitType.auto */ },
 					{ value: 1, type: 2 /* org.nativescript.widgets.GridUnitType.star */ },
-				])
+				]),
 			);
 			viewPager.setLayoutParams(lp);
 
@@ -453,7 +454,7 @@ export class TabView extends TabViewBase {
 				JSON.stringify([
 					{ value: 1, type: 2 /* org.nativescript.widgets.GridUnitType.star */ },
 					{ value: 1, type: 0 /* org.nativescript.widgets.GridUnitType.auto */ },
-				])
+				]),
 			);
 			tabLayout.setLayoutParams(lp);
 			viewPager.setSwipePageEnabled(false);
