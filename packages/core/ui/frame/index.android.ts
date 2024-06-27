@@ -1267,13 +1267,15 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 				rootView._tearDownUI(true);
 			}
 			this._rootView = null;
-			this._subRootView = null;
 
 			// this may happen when the user changes the system theme
 			// In such case, isFinishing() is false (and isChangingConfigurations is true), and the app will start again (onCreate) with a savedInstanceState
 			// as a result, launchEvent will never be called
 			// possible alternative: always fire launchEvent and exitEvent, but pass extra flags to make it clear what kind of launch/destroy is happening
 			if (activity.isFinishing()) {
+				// only clear _subRootView is finishing
+				// other we might reuse it
+				this._subRootView = null;
 				const exitArgs = {
 					eventName: Application.exitEvent,
 					object: Application.android,
@@ -1386,10 +1388,21 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 		rootView._setupAsRootView(activity);
 		this._rootView = rootView;
 		// sets root classes once rootView is ready...
+		let subRootView = this._subRootView;
+		// in case we recreate the activity, subRootView is already created.
+		// we just want to set it as content
+		if (subRootView) {
+			if (subRootView.parent && subRootView.parent !== rootView) {
+				try {
+					// we might catch errors if the nativeView is already disposed
+					subRootView.parent._removeView(subRootView);
+				} catch (err) {}
+			}
+			rootView.content = subRootView;
+		}
 		Application.initRootView(rootView);
 		activity.setContentView(rootView.nativeViewProtected, new org.nativescript.widgets.CommonLayoutParams());
 
-		let subRootView = this._subRootView;
 		if (Trace.isEnabled()) {
 			Trace.write(`Frame.setActivityContent rootView: ${rootView} subRootView: ${subRootView} shouldCreateRootFrame: false fireLaunchEvent: ${fireLaunchEvent}`, Trace.categories.NativeLifecycle);
 		}
@@ -1407,7 +1420,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 			return;
 		}
 		this._subRootView = subRootView;
-		if (subRootView.parent) {
+		if (subRootView.parent && subRootView.parent !== rootView) {
 			subRootView.parent._removeView(subRootView);
 		}
 		rootView.content = subRootView;
