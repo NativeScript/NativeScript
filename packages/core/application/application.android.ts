@@ -1,3 +1,4 @@
+import { ApplicationSettings } from 'index';
 import { profile } from '../profiling';
 import { View } from '../ui';
 import { AndroidActivityCallbacks, NavigationEntry } from '../ui/frame/frame-common';
@@ -199,12 +200,15 @@ function initNativeScriptLifecycleCallbacks() {
 		@profile
 		setThemeOnLaunch(activity: androidx.appcompat.app.AppCompatActivity) {
 			// Set app theme after launch screen was used during startup
-			const activityInfo = activity.getPackageManager().getActivityInfo(activity.getComponentName(), android.content.pm.PackageManager.GET_META_DATA);
-			if (activityInfo.metaData) {
-				const setThemeOnLaunch = activityInfo.metaData.getInt('SET_THEME_ON_LAUNCH', -1);
-				if (setThemeOnLaunch !== -1) {
-					activity.setTheme(setThemeOnLaunch);
+			let setThemeOnLaunch = ApplicationSettings.getNumber('SET_THEME_ON_LAUNCH', -1);
+			if (setThemeOnLaunch === -1) {
+				const activityInfo = activity.getPackageManager().getActivityInfo(activity.getComponentName(), android.content.pm.PackageManager.GET_META_DATA);
+				if (activityInfo.metaData) {
+					setThemeOnLaunch = activityInfo.metaData.getInt('SET_THEME_ON_LAUNCH', -1);
 				}
+			}
+			if (setThemeOnLaunch !== -1) {
+				activity.setTheme(setThemeOnLaunch);
 			}
 		}
 
