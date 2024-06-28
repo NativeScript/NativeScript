@@ -397,7 +397,7 @@ export class ActionBar extends ActionBarBase {
 		}
 
 		if (page.frame) {
-			page.frame._updateActionBar();
+			page.frame._updateActionBar(page);
 		}
 
 		const navigationItem: UINavigationItem = (<UIViewController>page.ios).navigationItem;
