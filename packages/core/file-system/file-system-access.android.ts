@@ -279,10 +279,10 @@ export class FileSystemAccess implements IFileSystemAccess {
 							resolve(result);
 						},
 						onError: (err) => {
-							reject(new Error(err));
+							reject(err);
 						},
 					}),
-					getApplicationContext()
+					getApplicationContext(),
 				);
 			} catch (ex) {
 				reject(ex);
@@ -302,10 +302,10 @@ export class FileSystemAccess implements IFileSystemAccess {
 							resolve((ArrayBuffer as any).from(result));
 						},
 						onError: (err) => {
-							reject(new Error(err));
+							reject(err);
 						},
 					}),
-					null
+					null,
 				);
 			} catch (ex) {
 				reject(ex);
@@ -340,10 +340,10 @@ export class FileSystemAccess implements IFileSystemAccess {
 							resolve(result);
 						},
 						onError: (err) => {
-							reject(new Error(err));
+							reject(err);
 						},
 					}),
-					null
+					null,
 				);
 			} catch (ex) {
 				reject(ex);
@@ -388,10 +388,10 @@ export class FileSystemAccess implements IFileSystemAccess {
 							resolve();
 						},
 						onError: (err) => {
-							reject(new Error(err));
+							reject(err);
 						},
 					}),
-					null
+					null,
 				);
 			} catch (ex) {
 				reject(ex);
@@ -426,10 +426,10 @@ export class FileSystemAccess implements IFileSystemAccess {
 							resolve();
 						},
 						onError: (err) => {
-							reject(new Error(err));
+							reject(err);
 						},
 					}),
-					null
+					null,
 				);
 			} catch (ex) {
 				reject(ex);
@@ -463,10 +463,10 @@ export class FileSystemAccess implements IFileSystemAccess {
 							resolve();
 						},
 						onError: (err) => {
-							reject(new Error(err));
+							reject(err);
 						},
 					}),
-					null
+					null,
 				);
 			} catch (ex) {
 				reject(ex);
@@ -501,10 +501,10 @@ export class FileSystemAccess implements IFileSystemAccess {
 							resolve();
 						},
 						onError: (err) => {
-							reject(new Error(err));
+							reject(err);
 						},
 					}),
-					null
+					null,
 				);
 			} catch (ex) {
 				reject(ex);
@@ -547,10 +547,10 @@ export class FileSystemAccess implements IFileSystemAccess {
 							resolve(result);
 						},
 						onError: (err) => {
-							reject(new Error(err));
+							reject(err);
 						},
 					}),
-					null
+					null,
 				);
 			} catch (ex) {
 				reject(ex);
@@ -632,10 +632,10 @@ export class FileSystemAccess implements IFileSystemAccess {
 							resolve();
 						},
 						onError: (err) => {
-							reject(new Error(err));
+							reject(err);
 						},
 					}),
-					null
+					null,
 				);
 			} catch (ex) {
 				reject(ex);
@@ -682,10 +682,10 @@ export class FileSystemAccess implements IFileSystemAccess {
 							resolve();
 						},
 						onError: (err) => {
-							reject(new Error(err));
+							reject(err);
 						},
 					}),
-					null
+					null,
 				);
 			} catch (ex) {
 				reject(ex);
@@ -986,7 +986,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 					onError(error) {
 						reject(error);
 					},
-				})
+				}),
 			);
 		});
 	}
@@ -1019,7 +1019,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 						onError(error) {
 							reject(error);
 						},
-					})
+					}),
 				);
 			});
 		}
@@ -1058,7 +1058,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 						onError(error) {
 							reject(error);
 						},
-					})
+					}),
 				);
 			});
 		}
@@ -1098,7 +1098,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 						onError(error) {
 							reject(error);
 						},
-					})
+					}),
 				);
 			});
 		}
@@ -1137,7 +1137,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 						onError(error) {
 							reject(error);
 						},
-					})
+					}),
 				);
 			});
 		}
@@ -1174,7 +1174,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 						onError(error) {
 							reject(error);
 						},
-					})
+					}),
 				);
 			});
 		}
@@ -1215,7 +1215,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 						onError(error) {
 							reject(error);
 						},
-					})
+					}),
 				);
 			});
 		}
@@ -1254,7 +1254,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 						onError(error) {
 							reject(error);
 						},
-					})
+					}),
 				);
 			});
 		}
@@ -1293,7 +1293,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 						onError(error) {
 							reject(error);
 						},
-					})
+					}),
 				);
 			});
 		}
@@ -1332,7 +1332,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 						onError(error) {
 							reject(error);
 						},
-					})
+					}),
 				);
 			});
 		}

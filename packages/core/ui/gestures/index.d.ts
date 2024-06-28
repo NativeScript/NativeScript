@@ -27,7 +27,9 @@ export class GesturesObserver {
 	disconnect();
 
 	/**
-	 * Gesture type attached to the observer.
+	 * Singular gesture type (e.g. GestureTypes.tap) attached to the observer.
+	 * Does not support plural gesture types (e.g.
+	 * GestureTypes.tap & GestureTypes.doubleTap).
 	 */
 	type: GestureTypes;
 

@@ -683,6 +683,11 @@ declare const enum MTRAdministratorCommissioningCommissioningWindowStatus {
 	BasicWindowOpen = 2
 }
 
+declare const enum MTRAdministratorCommissioningFeature {
+
+	Basic = 1
+}
+
 declare const enum MTRAdministratorCommissioningStatusCode {
 
 	Busy = 2,
@@ -912,6 +917,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeGlobalAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeGlobalAttributeEventListID = 65530,
+
 	AttributeIDTypeGlobalAttributeAttributeListID = 65531,
 
 	AttributeIDTypeGlobalAttributeFeatureMapID = 65532,
@@ -940,6 +947,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterIdentifyAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeClusterIdentifyAttributeEventListID = 65530,
+
 	AttributeIDTypeClusterIdentifyAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterIdentifyAttributeFeatureMapID = 65532,
@@ -963,6 +972,8 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterGroupsAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterGroupsAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterGroupsAttributeEventListID = 65530,
 
 	AttributeIDTypeClusterGroupsAttributeAttributeListID = 65531,
 
@@ -1004,9 +1015,15 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterScenesAttributeLastConfiguredByID = 5,
 
+	AttributeIDTypeClusterScenesAttributeSceneTableSizeID = 6,
+
+	AttributeIDTypeClusterScenesAttributeFabricSceneInfoID = 7,
+
 	AttributeIDTypeClusterScenesAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterScenesAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterScenesAttributeEventListID = 65530,
 
 	AttributeIDTypeClusterScenesAttributeAttributeListID = 65531,
 
@@ -1048,6 +1065,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterOnOffAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeClusterOnOffAttributeEventListID = 65530,
+
 	AttributeIDTypeClusterOnOffAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterOnOffAttributeFeatureMapID = 65532,
@@ -1075,6 +1094,8 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterOnOffSwitchConfigurationAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterOnOffSwitchConfigurationAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterOnOffSwitchConfigurationAttributeEventListID = 65530,
 
 	AttributeIDTypeClusterOnOffSwitchConfigurationAttributeAttributeListID = 65531,
 
@@ -1152,6 +1173,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterLevelControlAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeClusterLevelControlAttributeEventListID = 65530,
+
 	AttributeIDTypeClusterLevelControlAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterLevelControlAttributeFeatureMapID = 65532,
@@ -1208,6 +1231,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterBinaryInputBasicAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeClusterBinaryInputBasicAttributeEventListID = 65530,
+
 	AttributeIDTypeClusterBinaryInputBasicAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterBinaryInputBasicAttributeFeatureMapID = 65532,
@@ -1227,6 +1252,8 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterPulseWidthModulationAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterPulseWidthModulationAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterPulseWidthModulationAttributeEventListID = 65530,
 
 	AttributeIDTypeClusterPulseWidthModulationAttributeAttributeListID = 65531,
 
@@ -1262,9 +1289,13 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterDescriptorAttributePartsListID = 3,
 
+	AttributeIDTypeClusterDescriptorAttributeTagListID = 4,
+
 	AttributeIDTypeClusterDescriptorAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterDescriptorAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterDescriptorAttributeEventListID = 65530,
 
 	AttributeIDTypeClusterDescriptorAttributeAttributeListID = 65531,
 
@@ -1289,6 +1320,8 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterBindingAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterBindingAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterBindingAttributeEventListID = 65530,
 
 	AttributeIDTypeClusterBindingAttributeAttributeListID = 65531,
 
@@ -1330,6 +1363,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterAccessControlAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeClusterAccessControlAttributeEventListID = 65530,
+
 	AttributeIDTypeClusterAccessControlAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterAccessControlAttributeFeatureMapID = 65532,
@@ -1361,6 +1396,8 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterActionsAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterActionsAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterActionsAttributeEventListID = 65530,
 
 	AttributeIDTypeClusterActionsAttributeAttributeListID = 65531,
 
@@ -1460,9 +1497,15 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterBasicInformationAttributeProductAppearanceID = 20,
 
+	AttributeIDTypeClusterBasicInformationAttributeSpecificationVersionID = 21,
+
+	AttributeIDTypeClusterBasicInformationAttributeMaxPathsPerInvokeID = 22,
+
 	AttributeIDTypeClusterBasicInformationAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterBasicInformationAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterBasicInformationAttributeEventListID = 65530,
 
 	AttributeIDTypeClusterBasicInformationAttributeAttributeListID = 65531,
 
@@ -1483,6 +1526,8 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterOTASoftwareUpdateProviderAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterOTASoftwareUpdateProviderAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterOTASoftwareUpdateProviderAttributeEventListID = 65530,
 
 	AttributeIDTypeClusterOTASoftwareUpdateProviderAttributeAttributeListID = 65531,
 
@@ -1520,6 +1565,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterOTASoftwareUpdateRequestorAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeClusterOTASoftwareUpdateRequestorAttributeEventListID = 65530,
+
 	AttributeIDTypeClusterOTASoftwareUpdateRequestorAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterOTASoftwareUpdateRequestorAttributeFeatureMapID = 65532,
@@ -1547,6 +1594,8 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterLocalizationConfigurationAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterLocalizationConfigurationAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterLocalizationConfigurationAttributeEventListID = 65530,
 
 	AttributeIDTypeClusterLocalizationConfigurationAttributeAttributeListID = 65531,
 
@@ -1580,6 +1629,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterTimeFormatLocalizationAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeClusterTimeFormatLocalizationAttributeEventListID = 65530,
+
 	AttributeIDTypeClusterTimeFormatLocalizationAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterTimeFormatLocalizationAttributeFeatureMapID = 65532,
@@ -1604,6 +1655,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterUnitLocalizationAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeClusterUnitLocalizationAttributeEventListID = 65530,
+
 	AttributeIDTypeClusterUnitLocalizationAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterUnitLocalizationAttributeFeatureMapID = 65532,
@@ -1627,6 +1680,8 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterPowerSourceConfigurationAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterPowerSourceConfigurationAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterPowerSourceConfigurationAttributeEventListID = 65530,
 
 	AttributeIDTypeClusterPowerSourceConfigurationAttributeAttributeListID = 65531,
 
@@ -1768,9 +1823,13 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterPowerSourceAttributeActiveBatChargeFaultsID = 30,
 
+	AttributeIDTypeClusterPowerSourceAttributeEndpointListID = 31,
+
 	AttributeIDTypeClusterPowerSourceAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterPowerSourceAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterPowerSourceAttributeEventListID = 65530,
 
 	AttributeIDTypeClusterPowerSourceAttributeAttributeListID = 65531,
 
@@ -1811,6 +1870,8 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterGeneralCommissioningAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterGeneralCommissioningAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterGeneralCommissioningAttributeEventListID = 65530,
 
 	AttributeIDTypeClusterGeneralCommissioningAttributeAttributeListID = 65531,
 
@@ -1860,9 +1921,17 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterNetworkCommissioningAttributeLastConnectErrorValueID = 7,
 
+	AttributeIDTypeClusterNetworkCommissioningAttributeSupportedWiFiBandsID = 8,
+
+	AttributeIDTypeClusterNetworkCommissioningAttributeSupportedThreadFeaturesID = 9,
+
+	AttributeIDTypeClusterNetworkCommissioningAttributeThreadVersionID = 10,
+
 	AttributeIDTypeClusterNetworkCommissioningAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterNetworkCommissioningAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterNetworkCommissioningAttributeEventListID = 65530,
 
 	AttributeIDTypeClusterNetworkCommissioningAttributeAttributeListID = 65531,
 
@@ -1883,6 +1952,8 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterDiagnosticLogsAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterDiagnosticLogsAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterDiagnosticLogsAttributeEventListID = 65530,
 
 	AttributeIDTypeClusterDiagnosticLogsAttributeAttributeListID = 65531,
 
@@ -1940,6 +2011,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterGeneralDiagnosticsAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeClusterGeneralDiagnosticsAttributeEventListID = 65530,
+
 	AttributeIDTypeClusterGeneralDiagnosticsAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterGeneralDiagnosticsAttributeFeatureMapID = 65532,
@@ -1975,6 +2048,8 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterSoftwareDiagnosticsAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterSoftwareDiagnosticsAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterSoftwareDiagnosticsAttributeEventListID = 65530,
 
 	AttributeIDTypeClusterSoftwareDiagnosticsAttributeAttributeListID = 65531,
 
@@ -2248,6 +2323,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterThreadNetworkDiagnosticsAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeClusterThreadNetworkDiagnosticsAttributeEventListID = 65530,
+
 	AttributeIDTypeClusterThreadNetworkDiagnosticsAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterThreadNetworkDiagnosticsAttributeFeatureMapID = 65532,
@@ -2320,6 +2397,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterWiFiNetworkDiagnosticsAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeClusterWiFiNetworkDiagnosticsAttributeEventListID = 65530,
+
 	AttributeIDTypeClusterWiFiNetworkDiagnosticsAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterWiFiNetworkDiagnosticsAttributeFeatureMapID = 65532,
@@ -2375,6 +2454,8 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterEthernetNetworkDiagnosticsAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterEthernetNetworkDiagnosticsAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterEthernetNetworkDiagnosticsAttributeEventListID = 65530,
 
 	AttributeIDTypeClusterEthernetNetworkDiagnosticsAttributeAttributeListID = 65531,
 
@@ -2440,9 +2521,17 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterTimeSynchronizationAttributeNtpServerPortID = 9,
 
+	AttributeIDTypeClusterTimeSynchronizationAttributeTimeZoneListMaxSizeID = 10,
+
+	AttributeIDTypeClusterTimeSynchronizationAttributeDSTOffsetListMaxSizeID = 11,
+
+	AttributeIDTypeClusterTimeSynchronizationAttributeSupportsDNSResolveID = 12,
+
 	AttributeIDTypeClusterTimeSynchronizationAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterTimeSynchronizationAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterTimeSynchronizationAttributeEventListID = 65530,
 
 	AttributeIDTypeClusterTimeSynchronizationAttributeAttributeListID = 65531,
 
@@ -2526,6 +2615,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterBridgedDeviceBasicInformationAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeClusterBridgedDeviceBasicInformationAttributeEventListID = 65530,
+
 	AttributeIDTypeClusterBridgedDeviceBasicInformationAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterBridgedDeviceBasicInformationAttributeFeatureMapID = 65532,
@@ -2558,6 +2649,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterSwitchAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeClusterSwitchAttributeEventListID = 65530,
+
 	AttributeIDTypeClusterSwitchAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterSwitchAttributeFeatureMapID = 65532,
@@ -2589,6 +2682,8 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterAdministratorCommissioningAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterAdministratorCommissioningAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterAdministratorCommissioningAttributeEventListID = 65530,
 
 	AttributeIDTypeClusterAdministratorCommissioningAttributeAttributeListID = 65531,
 
@@ -2634,6 +2729,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterOperationalCredentialsAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeClusterOperationalCredentialsAttributeEventListID = 65530,
+
 	AttributeIDTypeClusterOperationalCredentialsAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterOperationalCredentialsAttributeFeatureMapID = 65532,
@@ -2670,6 +2767,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterGroupKeyManagementAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeClusterGroupKeyManagementAttributeEventListID = 65530,
+
 	AttributeIDTypeClusterGroupKeyManagementAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterGroupKeyManagementAttributeFeatureMapID = 65532,
@@ -2693,6 +2792,8 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterFixedLabelAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterFixedLabelAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterFixedLabelAttributeEventListID = 65530,
 
 	AttributeIDTypeClusterFixedLabelAttributeAttributeListID = 65531,
 
@@ -2718,71 +2819,13 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterUserLabelAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeClusterUserLabelAttributeEventListID = 65530,
+
 	AttributeIDTypeClusterUserLabelAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterUserLabelAttributeFeatureMapID = 65532,
 
 	AttributeIDTypeClusterUserLabelAttributeClusterRevisionID = 65533,
-
-	ClusterProxyConfigurationAttributeGeneratedCommandListID = 65528,
-
-	ClusterProxyConfigurationAttributeAcceptedCommandListID = 65529,
-
-	ClusterProxyConfigurationAttributeAttributeListID = 65531,
-
-	ClusterProxyConfigurationAttributeFeatureMapID = 65532,
-
-	ClusterProxyConfigurationAttributeClusterRevisionID = 65533,
-
-	AttributeIDTypeClusterProxyConfigurationAttributeGeneratedCommandListID = 65528,
-
-	AttributeIDTypeClusterProxyConfigurationAttributeAcceptedCommandListID = 65529,
-
-	AttributeIDTypeClusterProxyConfigurationAttributeAttributeListID = 65531,
-
-	AttributeIDTypeClusterProxyConfigurationAttributeFeatureMapID = 65532,
-
-	AttributeIDTypeClusterProxyConfigurationAttributeClusterRevisionID = 65533,
-
-	ClusterProxyDiscoveryAttributeGeneratedCommandListID = 65528,
-
-	ClusterProxyDiscoveryAttributeAcceptedCommandListID = 65529,
-
-	ClusterProxyDiscoveryAttributeAttributeListID = 65531,
-
-	ClusterProxyDiscoveryAttributeFeatureMapID = 65532,
-
-	ClusterProxyDiscoveryAttributeClusterRevisionID = 65533,
-
-	AttributeIDTypeClusterProxyDiscoveryAttributeGeneratedCommandListID = 65528,
-
-	AttributeIDTypeClusterProxyDiscoveryAttributeAcceptedCommandListID = 65529,
-
-	AttributeIDTypeClusterProxyDiscoveryAttributeAttributeListID = 65531,
-
-	AttributeIDTypeClusterProxyDiscoveryAttributeFeatureMapID = 65532,
-
-	AttributeIDTypeClusterProxyDiscoveryAttributeClusterRevisionID = 65533,
-
-	ClusterProxyValidAttributeGeneratedCommandListID = 65528,
-
-	ClusterProxyValidAttributeAcceptedCommandListID = 65529,
-
-	ClusterProxyValidAttributeAttributeListID = 65531,
-
-	ClusterProxyValidAttributeFeatureMapID = 65532,
-
-	ClusterProxyValidAttributeClusterRevisionID = 65533,
-
-	AttributeIDTypeClusterProxyValidAttributeGeneratedCommandListID = 65528,
-
-	AttributeIDTypeClusterProxyValidAttributeAcceptedCommandListID = 65529,
-
-	AttributeIDTypeClusterProxyValidAttributeAttributeListID = 65531,
-
-	AttributeIDTypeClusterProxyValidAttributeFeatureMapID = 65532,
-
-	AttributeIDTypeClusterProxyValidAttributeClusterRevisionID = 65533,
 
 	ClusterBooleanStateAttributeStateValueID = 0,
 
@@ -2802,11 +2845,119 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterBooleanStateAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeClusterBooleanStateAttributeEventListID = 65530,
+
 	AttributeIDTypeClusterBooleanStateAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterBooleanStateAttributeFeatureMapID = 65532,
 
 	AttributeIDTypeClusterBooleanStateAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterICDManagementAttributeIdleModeDurationID = 0,
+
+	AttributeIDTypeClusterICDManagementAttributeActiveModeDurationID = 1,
+
+	AttributeIDTypeClusterICDManagementAttributeActiveModeThresholdID = 2,
+
+	AttributeIDTypeClusterICDManagementAttributeRegisteredClientsID = 3,
+
+	AttributeIDTypeClusterICDManagementAttributeICDCounterID = 4,
+
+	AttributeIDTypeClusterICDManagementAttributeClientsSupportedPerFabricID = 5,
+
+	AttributeIDTypeClusterICDManagementAttributeUserActiveModeTriggerHintID = 6,
+
+	AttributeIDTypeClusterICDManagementAttributeUserActiveModeTriggerInstructionID = 7,
+
+	AttributeIDTypeClusterICDManagementAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterICDManagementAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterICDManagementAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterICDManagementAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterICDManagementAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterICDManagementAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterTimerAttributeSetTimeID = 0,
+
+	AttributeIDTypeClusterTimerAttributeTimeRemainingID = 1,
+
+	AttributeIDTypeClusterTimerAttributeTimerStateID = 2,
+
+	AttributeIDTypeClusterTimerAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterTimerAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterTimerAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterTimerAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterTimerAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterTimerAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterOvenCavityOperationalStateAttributePhaseListID = 0,
+
+	AttributeIDTypeClusterOvenCavityOperationalStateAttributeCurrentPhaseID = 1,
+
+	AttributeIDTypeClusterOvenCavityOperationalStateAttributeCountdownTimeID = 2,
+
+	AttributeIDTypeClusterOvenCavityOperationalStateAttributeOperationalStateListID = 3,
+
+	AttributeIDTypeClusterOvenCavityOperationalStateAttributeOperationalStateID = 4,
+
+	AttributeIDTypeClusterOvenCavityOperationalStateAttributeOperationalErrorID = 5,
+
+	AttributeIDTypeClusterOvenCavityOperationalStateAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterOvenCavityOperationalStateAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterOvenCavityOperationalStateAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterOvenCavityOperationalStateAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterOvenCavityOperationalStateAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterOvenCavityOperationalStateAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterOvenModeAttributeSupportedModesID = 0,
+
+	AttributeIDTypeClusterOvenModeAttributeCurrentModeID = 1,
+
+	AttributeIDTypeClusterOvenModeAttributeStartUpModeID = 2,
+
+	AttributeIDTypeClusterOvenModeAttributeOnModeID = 3,
+
+	AttributeIDTypeClusterOvenModeAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterOvenModeAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterOvenModeAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterOvenModeAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterOvenModeAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterOvenModeAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterLaundryDryerControlsAttributeSupportedDrynessLevelsID = 0,
+
+	AttributeIDTypeClusterLaundryDryerControlsAttributeSelectedDrynessLevelID = 1,
+
+	AttributeIDTypeClusterLaundryDryerControlsAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterLaundryDryerControlsAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterLaundryDryerControlsAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterLaundryDryerControlsAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterLaundryDryerControlsAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterLaundryDryerControlsAttributeClusterRevisionID = 65533,
 
 	ClusterModeSelectAttributeDescriptionID = 0,
 
@@ -2846,11 +2997,597 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterModeSelectAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeClusterModeSelectAttributeEventListID = 65530,
+
 	AttributeIDTypeClusterModeSelectAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterModeSelectAttributeFeatureMapID = 65532,
 
 	AttributeIDTypeClusterModeSelectAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterLaundryWasherModeAttributeSupportedModesID = 0,
+
+	AttributeIDTypeClusterLaundryWasherModeAttributeCurrentModeID = 1,
+
+	AttributeIDTypeClusterLaundryWasherModeAttributeStartUpModeID = 2,
+
+	AttributeIDTypeClusterLaundryWasherModeAttributeOnModeID = 3,
+
+	AttributeIDTypeClusterLaundryWasherModeAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterLaundryWasherModeAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterLaundryWasherModeAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterLaundryWasherModeAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterLaundryWasherModeAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterLaundryWasherModeAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterRefrigeratorAndTemperatureControlledCabinetModeAttributeSupportedModesID = 0,
+
+	AttributeIDTypeClusterRefrigeratorAndTemperatureControlledCabinetModeAttributeCurrentModeID = 1,
+
+	AttributeIDTypeClusterRefrigeratorAndTemperatureControlledCabinetModeAttributeStartUpModeID = 2,
+
+	AttributeIDTypeClusterRefrigeratorAndTemperatureControlledCabinetModeAttributeOnModeID = 3,
+
+	AttributeIDTypeClusterRefrigeratorAndTemperatureControlledCabinetModeAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterRefrigeratorAndTemperatureControlledCabinetModeAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterRefrigeratorAndTemperatureControlledCabinetModeAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterRefrigeratorAndTemperatureControlledCabinetModeAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterRefrigeratorAndTemperatureControlledCabinetModeAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterRefrigeratorAndTemperatureControlledCabinetModeAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterLaundryWasherControlsAttributeSpinSpeedsID = 0,
+
+	AttributeIDTypeClusterLaundryWasherControlsAttributeSpinSpeedCurrentID = 1,
+
+	AttributeIDTypeClusterLaundryWasherControlsAttributeNumberOfRinsesID = 2,
+
+	AttributeIDTypeClusterLaundryWasherControlsAttributeSupportedRinsesID = 3,
+
+	AttributeIDTypeClusterLaundryWasherControlsAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterLaundryWasherControlsAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterLaundryWasherControlsAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterLaundryWasherControlsAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterLaundryWasherControlsAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterLaundryWasherControlsAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterRVCRunModeAttributeSupportedModesID = 0,
+
+	AttributeIDTypeClusterRVCRunModeAttributeCurrentModeID = 1,
+
+	AttributeIDTypeClusterRVCRunModeAttributeOnModeID = 3,
+
+	AttributeIDTypeClusterRVCRunModeAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterRVCRunModeAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterRVCRunModeAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterRVCRunModeAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterRVCRunModeAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterRVCRunModeAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterRVCCleanModeAttributeSupportedModesID = 0,
+
+	AttributeIDTypeClusterRVCCleanModeAttributeCurrentModeID = 1,
+
+	AttributeIDTypeClusterRVCCleanModeAttributeOnModeID = 3,
+
+	AttributeIDTypeClusterRVCCleanModeAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterRVCCleanModeAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterRVCCleanModeAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterRVCCleanModeAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterRVCCleanModeAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterRVCCleanModeAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterTemperatureControlAttributeTemperatureSetpointID = 0,
+
+	AttributeIDTypeClusterTemperatureControlAttributeMinTemperatureID = 1,
+
+	AttributeIDTypeClusterTemperatureControlAttributeMaxTemperatureID = 2,
+
+	AttributeIDTypeClusterTemperatureControlAttributeStepID = 3,
+
+	AttributeIDTypeClusterTemperatureControlAttributeSelectedTemperatureLevelID = 4,
+
+	AttributeIDTypeClusterTemperatureControlAttributeSupportedTemperatureLevelsID = 5,
+
+	AttributeIDTypeClusterTemperatureControlAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterTemperatureControlAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterTemperatureControlAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterTemperatureControlAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterTemperatureControlAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterTemperatureControlAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterRefrigeratorAlarmAttributeMaskID = 0,
+
+	AttributeIDTypeClusterRefrigeratorAlarmAttributeStateID = 2,
+
+	AttributeIDTypeClusterRefrigeratorAlarmAttributeSupportedID = 3,
+
+	AttributeIDTypeClusterRefrigeratorAlarmAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterRefrigeratorAlarmAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterRefrigeratorAlarmAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterRefrigeratorAlarmAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterRefrigeratorAlarmAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterRefrigeratorAlarmAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterDishwasherModeAttributeSupportedModesID = 0,
+
+	AttributeIDTypeClusterDishwasherModeAttributeCurrentModeID = 1,
+
+	AttributeIDTypeClusterDishwasherModeAttributeStartUpModeID = 2,
+
+	AttributeIDTypeClusterDishwasherModeAttributeOnModeID = 3,
+
+	AttributeIDTypeClusterDishwasherModeAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterDishwasherModeAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterDishwasherModeAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterDishwasherModeAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterDishwasherModeAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterDishwasherModeAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterAirQualityAttributeAirQualityID = 0,
+
+	AttributeIDTypeClusterAirQualityAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterAirQualityAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterAirQualityAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterAirQualityAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterAirQualityAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterAirQualityAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterSmokeCOAlarmAttributeExpressedStateID = 0,
+
+	AttributeIDTypeClusterSmokeCOAlarmAttributeSmokeStateID = 1,
+
+	AttributeIDTypeClusterSmokeCOAlarmAttributeCOStateID = 2,
+
+	AttributeIDTypeClusterSmokeCOAlarmAttributeBatteryAlertID = 3,
+
+	AttributeIDTypeClusterSmokeCOAlarmAttributeDeviceMutedID = 4,
+
+	AttributeIDTypeClusterSmokeCOAlarmAttributeTestInProgressID = 5,
+
+	AttributeIDTypeClusterSmokeCOAlarmAttributeHardwareFaultAlertID = 6,
+
+	AttributeIDTypeClusterSmokeCOAlarmAttributeEndOfServiceAlertID = 7,
+
+	AttributeIDTypeClusterSmokeCOAlarmAttributeInterconnectSmokeAlarmID = 8,
+
+	AttributeIDTypeClusterSmokeCOAlarmAttributeInterconnectCOAlarmID = 9,
+
+	AttributeIDTypeClusterSmokeCOAlarmAttributeContaminationStateID = 10,
+
+	AttributeIDTypeClusterSmokeCOAlarmAttributeSmokeSensitivityLevelID = 11,
+
+	AttributeIDTypeClusterSmokeCOAlarmAttributeExpiryDateID = 12,
+
+	AttributeIDTypeClusterSmokeCOAlarmAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterSmokeCOAlarmAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterSmokeCOAlarmAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterSmokeCOAlarmAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterSmokeCOAlarmAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterSmokeCOAlarmAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterDishwasherAlarmAttributeMaskID = 0,
+
+	AttributeIDTypeClusterDishwasherAlarmAttributeLatchID = 1,
+
+	AttributeIDTypeClusterDishwasherAlarmAttributeStateID = 2,
+
+	AttributeIDTypeClusterDishwasherAlarmAttributeSupportedID = 3,
+
+	AttributeIDTypeClusterDishwasherAlarmAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterDishwasherAlarmAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterDishwasherAlarmAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterDishwasherAlarmAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterDishwasherAlarmAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterDishwasherAlarmAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterMicrowaveOvenModeAttributeSupportedModesID = 0,
+
+	AttributeIDTypeClusterMicrowaveOvenModeAttributeCurrentModeID = 1,
+
+	AttributeIDTypeClusterMicrowaveOvenModeAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterMicrowaveOvenModeAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterMicrowaveOvenModeAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterMicrowaveOvenModeAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterMicrowaveOvenModeAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterMicrowaveOvenModeAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterMicrowaveOvenControlAttributeCookTimeID = 1,
+
+	AttributeIDTypeClusterMicrowaveOvenControlAttributePowerSettingID = 2,
+
+	AttributeIDTypeClusterMicrowaveOvenControlAttributeMinPowerID = 3,
+
+	AttributeIDTypeClusterMicrowaveOvenControlAttributeMaxPowerID = 4,
+
+	AttributeIDTypeClusterMicrowaveOvenControlAttributePowerStepID = 5,
+
+	AttributeIDTypeClusterMicrowaveOvenControlAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterMicrowaveOvenControlAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterMicrowaveOvenControlAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterMicrowaveOvenControlAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterMicrowaveOvenControlAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterMicrowaveOvenControlAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterOperationalStateAttributePhaseListID = 0,
+
+	AttributeIDTypeClusterOperationalStateAttributeCurrentPhaseID = 1,
+
+	AttributeIDTypeClusterOperationalStateAttributeCountdownTimeID = 2,
+
+	AttributeIDTypeClusterOperationalStateAttributeOperationalStateListID = 3,
+
+	AttributeIDTypeClusterOperationalStateAttributeOperationalStateID = 4,
+
+	AttributeIDTypeClusterOperationalStateAttributeOperationalErrorID = 5,
+
+	AttributeIDTypeClusterOperationalStateAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterOperationalStateAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterOperationalStateAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterOperationalStateAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterOperationalStateAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterOperationalStateAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterRVCOperationalStateAttributePhaseListID = 0,
+
+	AttributeIDTypeClusterRVCOperationalStateAttributeCurrentPhaseID = 1,
+
+	AttributeIDTypeClusterRVCOperationalStateAttributeCountdownTimeID = 2,
+
+	AttributeIDTypeClusterRVCOperationalStateAttributeOperationalStateListID = 3,
+
+	AttributeIDTypeClusterRVCOperationalStateAttributeOperationalStateID = 4,
+
+	AttributeIDTypeClusterRVCOperationalStateAttributeOperationalErrorID = 5,
+
+	AttributeIDTypeClusterRVCOperationalStateAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterRVCOperationalStateAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterRVCOperationalStateAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterRVCOperationalStateAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterRVCOperationalStateAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterRVCOperationalStateAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterHEPAFilterMonitoringAttributeConditionID = 0,
+
+	AttributeIDTypeClusterHEPAFilterMonitoringAttributeDegradationDirectionID = 1,
+
+	AttributeIDTypeClusterHEPAFilterMonitoringAttributeChangeIndicationID = 2,
+
+	AttributeIDTypeClusterHEPAFilterMonitoringAttributeInPlaceIndicatorID = 3,
+
+	AttributeIDTypeClusterHEPAFilterMonitoringAttributeLastChangedTimeID = 4,
+
+	AttributeIDTypeClusterHEPAFilterMonitoringAttributeReplacementProductListID = 5,
+
+	AttributeIDTypeClusterHEPAFilterMonitoringAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterHEPAFilterMonitoringAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterHEPAFilterMonitoringAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterHEPAFilterMonitoringAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterHEPAFilterMonitoringAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterHEPAFilterMonitoringAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterActivatedCarbonFilterMonitoringAttributeConditionID = 0,
+
+	AttributeIDTypeClusterActivatedCarbonFilterMonitoringAttributeDegradationDirectionID = 1,
+
+	AttributeIDTypeClusterActivatedCarbonFilterMonitoringAttributeChangeIndicationID = 2,
+
+	AttributeIDTypeClusterActivatedCarbonFilterMonitoringAttributeInPlaceIndicatorID = 3,
+
+	AttributeIDTypeClusterActivatedCarbonFilterMonitoringAttributeLastChangedTimeID = 4,
+
+	AttributeIDTypeClusterActivatedCarbonFilterMonitoringAttributeReplacementProductListID = 5,
+
+	AttributeIDTypeClusterActivatedCarbonFilterMonitoringAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterActivatedCarbonFilterMonitoringAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterActivatedCarbonFilterMonitoringAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterActivatedCarbonFilterMonitoringAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterActivatedCarbonFilterMonitoringAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterActivatedCarbonFilterMonitoringAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterBooleanStateConfigurationAttributeCurrentSensitivityLevelID = 0,
+
+	AttributeIDTypeClusterBooleanStateConfigurationAttributeSupportedSensitivityLevelsID = 1,
+
+	AttributeIDTypeClusterBooleanStateConfigurationAttributeDefaultSensitivityLevelID = 2,
+
+	AttributeIDTypeClusterBooleanStateConfigurationAttributeAlarmsActiveID = 3,
+
+	AttributeIDTypeClusterBooleanStateConfigurationAttributeAlarmsSuppressedID = 4,
+
+	AttributeIDTypeClusterBooleanStateConfigurationAttributeAlarmsEnabledID = 5,
+
+	AttributeIDTypeClusterBooleanStateConfigurationAttributeAlarmsSupportedID = 6,
+
+	AttributeIDTypeClusterBooleanStateConfigurationAttributeSensorFaultID = 7,
+
+	AttributeIDTypeClusterBooleanStateConfigurationAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterBooleanStateConfigurationAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterBooleanStateConfigurationAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterBooleanStateConfigurationAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterBooleanStateConfigurationAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterBooleanStateConfigurationAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterValveConfigurationAndControlAttributeOpenDurationID = 0,
+
+	AttributeIDTypeClusterValveConfigurationAndControlAttributeDefaultOpenDurationID = 1,
+
+	AttributeIDTypeClusterValveConfigurationAndControlAttributeAutoCloseTimeID = 2,
+
+	AttributeIDTypeClusterValveConfigurationAndControlAttributeRemainingDurationID = 3,
+
+	AttributeIDTypeClusterValveConfigurationAndControlAttributeCurrentStateID = 4,
+
+	AttributeIDTypeClusterValveConfigurationAndControlAttributeTargetStateID = 5,
+
+	AttributeIDTypeClusterValveConfigurationAndControlAttributeCurrentLevelID = 6,
+
+	AttributeIDTypeClusterValveConfigurationAndControlAttributeTargetLevelID = 7,
+
+	AttributeIDTypeClusterValveConfigurationAndControlAttributeDefaultOpenLevelID = 8,
+
+	AttributeIDTypeClusterValveConfigurationAndControlAttributeValveFaultID = 9,
+
+	AttributeIDTypeClusterValveConfigurationAndControlAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterValveConfigurationAndControlAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterValveConfigurationAndControlAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterValveConfigurationAndControlAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterValveConfigurationAndControlAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterValveConfigurationAndControlAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterElectricalEnergyMeasurementAttributeAccuracyID = 0,
+
+	AttributeIDTypeClusterElectricalEnergyMeasurementAttributeCumulativeEnergyImportedID = 1,
+
+	AttributeIDTypeClusterElectricalEnergyMeasurementAttributeCumulativeEnergyExportedID = 2,
+
+	AttributeIDTypeClusterElectricalEnergyMeasurementAttributePeriodicEnergyImportedID = 3,
+
+	AttributeIDTypeClusterElectricalEnergyMeasurementAttributePeriodicEnergyExportedID = 4,
+
+	AttributeIDTypeClusterElectricalEnergyMeasurementAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterElectricalEnergyMeasurementAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterElectricalEnergyMeasurementAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterElectricalEnergyMeasurementAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterElectricalEnergyMeasurementAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterElectricalEnergyMeasurementAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterDemandResponseLoadControlAttributeLoadControlProgramsID = 0,
+
+	AttributeIDTypeClusterDemandResponseLoadControlAttributeNumberOfLoadControlProgramsID = 1,
+
+	AttributeIDTypeClusterDemandResponseLoadControlAttributeEventsID = 2,
+
+	AttributeIDTypeClusterDemandResponseLoadControlAttributeActiveEventsID = 3,
+
+	AttributeIDTypeClusterDemandResponseLoadControlAttributeNumberOfEventsPerProgramID = 4,
+
+	AttributeIDTypeClusterDemandResponseLoadControlAttributeNumberOfTransitionsID = 5,
+
+	AttributeIDTypeClusterDemandResponseLoadControlAttributeDefaultRandomStartID = 6,
+
+	AttributeIDTypeClusterDemandResponseLoadControlAttributeDefaultRandomDurationID = 7,
+
+	AttributeIDTypeClusterDemandResponseLoadControlAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterDemandResponseLoadControlAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterDemandResponseLoadControlAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterDemandResponseLoadControlAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterDemandResponseLoadControlAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterDemandResponseLoadControlAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterDeviceEnergyManagementAttributeESATypeID = 0,
+
+	AttributeIDTypeClusterDeviceEnergyManagementAttributeESACanGenerateID = 1,
+
+	AttributeIDTypeClusterDeviceEnergyManagementAttributeESAStateID = 2,
+
+	AttributeIDTypeClusterDeviceEnergyManagementAttributeAbsMinPowerID = 3,
+
+	AttributeIDTypeClusterDeviceEnergyManagementAttributeAbsMaxPowerID = 4,
+
+	AttributeIDTypeClusterDeviceEnergyManagementAttributePowerAdjustmentCapabilityID = 5,
+
+	AttributeIDTypeClusterDeviceEnergyManagementAttributeForecastID = 6,
+
+	AttributeIDTypeClusterDeviceEnergyManagementAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterDeviceEnergyManagementAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterDeviceEnergyManagementAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterDeviceEnergyManagementAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterDeviceEnergyManagementAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterDeviceEnergyManagementAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterEnergyEVSEAttributeStateID = 0,
+
+	AttributeIDTypeClusterEnergyEVSEAttributeSupplyStateID = 1,
+
+	AttributeIDTypeClusterEnergyEVSEAttributeFaultStateID = 2,
+
+	AttributeIDTypeClusterEnergyEVSEAttributeChargingEnabledUntilID = 3,
+
+	AttributeIDTypeClusterEnergyEVSEAttributeDischargingEnabledUntilID = 4,
+
+	AttributeIDTypeClusterEnergyEVSEAttributeCircuitCapacityID = 5,
+
+	AttributeIDTypeClusterEnergyEVSEAttributeMinimumChargeCurrentID = 6,
+
+	AttributeIDTypeClusterEnergyEVSEAttributeMaximumChargeCurrentID = 7,
+
+	AttributeIDTypeClusterEnergyEVSEAttributeMaximumDischargeCurrentID = 8,
+
+	AttributeIDTypeClusterEnergyEVSEAttributeUserMaximumChargeCurrentID = 9,
+
+	AttributeIDTypeClusterEnergyEVSEAttributeRandomizationDelayWindowID = 10,
+
+	AttributeIDTypeClusterEnergyEVSEAttributeNumberOfWeeklyTargetsID = 33,
+
+	AttributeIDTypeClusterEnergyEVSEAttributeNumberOfDailyTargetsID = 34,
+
+	AttributeIDTypeClusterEnergyEVSEAttributeNextChargeStartTimeID = 35,
+
+	AttributeIDTypeClusterEnergyEVSEAttributeNextChargeTargetTimeID = 36,
+
+	AttributeIDTypeClusterEnergyEVSEAttributeNextChargeRequiredEnergyID = 37,
+
+	AttributeIDTypeClusterEnergyEVSEAttributeNextChargeTargetSoCID = 38,
+
+	AttributeIDTypeClusterEnergyEVSEAttributeApproximateEVEfficiencyID = 39,
+
+	AttributeIDTypeClusterEnergyEVSEAttributeStateOfChargeID = 48,
+
+	AttributeIDTypeClusterEnergyEVSEAttributeBatteryCapacityID = 49,
+
+	AttributeIDTypeClusterEnergyEVSEAttributeVehicleIDID = 50,
+
+	AttributeIDTypeClusterEnergyEVSEAttributeSessionIDID = 64,
+
+	AttributeIDTypeClusterEnergyEVSEAttributeSessionDurationID = 65,
+
+	AttributeIDTypeClusterEnergyEVSEAttributeSessionEnergyChargedID = 66,
+
+	AttributeIDTypeClusterEnergyEVSEAttributeSessionEnergyDischargedID = 67,
+
+	AttributeIDTypeClusterEnergyEVSEAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterEnergyEVSEAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterEnergyEVSEAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterEnergyEVSEAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterEnergyEVSEAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterEnergyEVSEAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterEnergyPreferenceAttributeEnergyBalancesID = 0,
+
+	AttributeIDTypeClusterEnergyPreferenceAttributeCurrentEnergyBalanceID = 1,
+
+	AttributeIDTypeClusterEnergyPreferenceAttributeEnergyPrioritiesID = 2,
+
+	AttributeIDTypeClusterEnergyPreferenceAttributeLowPowerModeSensitivitiesID = 3,
+
+	AttributeIDTypeClusterEnergyPreferenceAttributeCurrentLowPowerModeSensitivityID = 4,
+
+	AttributeIDTypeClusterEnergyPreferenceAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterEnergyPreferenceAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterEnergyPreferenceAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterEnergyPreferenceAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterEnergyPreferenceAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterEnergyPreferenceAttributeClusterRevisionID = 65533,
 
 	ClusterDoorLockAttributeLockStateID = 0,
 
@@ -3010,6 +3747,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterDoorLockAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeClusterDoorLockAttributeEventListID = 65530,
+
 	AttributeIDTypeClusterDoorLockAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterDoorLockAttributeFeatureMapID = 65532,
@@ -3118,6 +3857,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterWindowCoveringAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeClusterWindowCoveringAttributeEventListID = 65530,
+
 	AttributeIDTypeClusterWindowCoveringAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterWindowCoveringAttributeFeatureMapID = 65532,
@@ -3177,6 +3918,8 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterBarrierControlAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterBarrierControlAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterBarrierControlAttributeEventListID = 65530,
 
 	AttributeIDTypeClusterBarrierControlAttributeAttributeListID = 65531,
 
@@ -3289,6 +4032,8 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterPumpConfigurationAndControlAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterPumpConfigurationAndControlAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterPumpConfigurationAndControlAttributeEventListID = 65530,
 
 	AttributeIDTypeClusterPumpConfigurationAndControlAttributeAttributeListID = 65531,
 
@@ -3506,6 +4251,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterThermostatAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeClusterThermostatAttributeEventListID = 65530,
+
 	AttributeIDTypeClusterThermostatAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterThermostatAttributeFeatureMapID = 65532,
@@ -3566,9 +4313,13 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterFanControlAttributeWindSettingID = 10,
 
+	AttributeIDTypeClusterFanControlAttributeAirflowDirectionID = 11,
+
 	AttributeIDTypeClusterFanControlAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterFanControlAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterFanControlAttributeEventListID = 65530,
 
 	AttributeIDTypeClusterFanControlAttributeAttributeListID = 65531,
 
@@ -3601,6 +4352,8 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterThermostatUserInterfaceConfigurationAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterThermostatUserInterfaceConfigurationAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterThermostatUserInterfaceConfigurationAttributeEventListID = 65530,
 
 	AttributeIDTypeClusterThermostatUserInterfaceConfigurationAttributeAttributeListID = 65531,
 
@@ -3830,6 +4583,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterColorControlAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeClusterColorControlAttributeEventListID = 65530,
+
 	AttributeIDTypeClusterColorControlAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterColorControlAttributeFeatureMapID = 65532,
@@ -3906,6 +4661,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterBallastConfigurationAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeClusterBallastConfigurationAttributeEventListID = 65530,
+
 	AttributeIDTypeClusterBallastConfigurationAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterBallastConfigurationAttributeFeatureMapID = 65532,
@@ -3946,6 +4703,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterIlluminanceMeasurementAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeClusterIlluminanceMeasurementAttributeEventListID = 65530,
+
 	AttributeIDTypeClusterIlluminanceMeasurementAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterIlluminanceMeasurementAttributeFeatureMapID = 65532,
@@ -3981,6 +4740,8 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterTemperatureMeasurementAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterTemperatureMeasurementAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterTemperatureMeasurementAttributeEventListID = 65530,
 
 	AttributeIDTypeClusterTemperatureMeasurementAttributeAttributeListID = 65531,
 
@@ -4038,6 +4799,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterPressureMeasurementAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeClusterPressureMeasurementAttributeEventListID = 65530,
+
 	AttributeIDTypeClusterPressureMeasurementAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterPressureMeasurementAttributeFeatureMapID = 65532,
@@ -4074,6 +4837,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterFlowMeasurementAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeClusterFlowMeasurementAttributeEventListID = 65530,
+
 	AttributeIDTypeClusterFlowMeasurementAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterFlowMeasurementAttributeFeatureMapID = 65532,
@@ -4109,6 +4874,8 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterRelativeHumidityMeasurementAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterRelativeHumidityMeasurementAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterRelativeHumidityMeasurementAttributeEventListID = 65530,
 
 	AttributeIDTypeClusterRelativeHumidityMeasurementAttributeAttributeListID = 65531,
 
@@ -4178,11 +4945,353 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterOccupancySensingAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeClusterOccupancySensingAttributeEventListID = 65530,
+
 	AttributeIDTypeClusterOccupancySensingAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterOccupancySensingAttributeFeatureMapID = 65532,
 
 	AttributeIDTypeClusterOccupancySensingAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterCarbonMonoxideConcentrationMeasurementAttributeMeasuredValueID = 0,
+
+	AttributeIDTypeClusterCarbonMonoxideConcentrationMeasurementAttributeMinMeasuredValueID = 1,
+
+	AttributeIDTypeClusterCarbonMonoxideConcentrationMeasurementAttributeMaxMeasuredValueID = 2,
+
+	AttributeIDTypeClusterCarbonMonoxideConcentrationMeasurementAttributePeakMeasuredValueID = 3,
+
+	AttributeIDTypeClusterCarbonMonoxideConcentrationMeasurementAttributePeakMeasuredValueWindowID = 4,
+
+	AttributeIDTypeClusterCarbonMonoxideConcentrationMeasurementAttributeAverageMeasuredValueID = 5,
+
+	AttributeIDTypeClusterCarbonMonoxideConcentrationMeasurementAttributeAverageMeasuredValueWindowID = 6,
+
+	AttributeIDTypeClusterCarbonMonoxideConcentrationMeasurementAttributeUncertaintyID = 7,
+
+	AttributeIDTypeClusterCarbonMonoxideConcentrationMeasurementAttributeMeasurementUnitID = 8,
+
+	AttributeIDTypeClusterCarbonMonoxideConcentrationMeasurementAttributeMeasurementMediumID = 9,
+
+	AttributeIDTypeClusterCarbonMonoxideConcentrationMeasurementAttributeLevelValueID = 10,
+
+	AttributeIDTypeClusterCarbonMonoxideConcentrationMeasurementAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterCarbonMonoxideConcentrationMeasurementAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterCarbonMonoxideConcentrationMeasurementAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterCarbonMonoxideConcentrationMeasurementAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterCarbonMonoxideConcentrationMeasurementAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterCarbonMonoxideConcentrationMeasurementAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterCarbonDioxideConcentrationMeasurementAttributeMeasuredValueID = 0,
+
+	AttributeIDTypeClusterCarbonDioxideConcentrationMeasurementAttributeMinMeasuredValueID = 1,
+
+	AttributeIDTypeClusterCarbonDioxideConcentrationMeasurementAttributeMaxMeasuredValueID = 2,
+
+	AttributeIDTypeClusterCarbonDioxideConcentrationMeasurementAttributePeakMeasuredValueID = 3,
+
+	AttributeIDTypeClusterCarbonDioxideConcentrationMeasurementAttributePeakMeasuredValueWindowID = 4,
+
+	AttributeIDTypeClusterCarbonDioxideConcentrationMeasurementAttributeAverageMeasuredValueID = 5,
+
+	AttributeIDTypeClusterCarbonDioxideConcentrationMeasurementAttributeAverageMeasuredValueWindowID = 6,
+
+	AttributeIDTypeClusterCarbonDioxideConcentrationMeasurementAttributeUncertaintyID = 7,
+
+	AttributeIDTypeClusterCarbonDioxideConcentrationMeasurementAttributeMeasurementUnitID = 8,
+
+	AttributeIDTypeClusterCarbonDioxideConcentrationMeasurementAttributeMeasurementMediumID = 9,
+
+	AttributeIDTypeClusterCarbonDioxideConcentrationMeasurementAttributeLevelValueID = 10,
+
+	AttributeIDTypeClusterCarbonDioxideConcentrationMeasurementAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterCarbonDioxideConcentrationMeasurementAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterCarbonDioxideConcentrationMeasurementAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterCarbonDioxideConcentrationMeasurementAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterCarbonDioxideConcentrationMeasurementAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterCarbonDioxideConcentrationMeasurementAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterNitrogenDioxideConcentrationMeasurementAttributeMeasuredValueID = 0,
+
+	AttributeIDTypeClusterNitrogenDioxideConcentrationMeasurementAttributeMinMeasuredValueID = 1,
+
+	AttributeIDTypeClusterNitrogenDioxideConcentrationMeasurementAttributeMaxMeasuredValueID = 2,
+
+	AttributeIDTypeClusterNitrogenDioxideConcentrationMeasurementAttributePeakMeasuredValueID = 3,
+
+	AttributeIDTypeClusterNitrogenDioxideConcentrationMeasurementAttributePeakMeasuredValueWindowID = 4,
+
+	AttributeIDTypeClusterNitrogenDioxideConcentrationMeasurementAttributeAverageMeasuredValueID = 5,
+
+	AttributeIDTypeClusterNitrogenDioxideConcentrationMeasurementAttributeAverageMeasuredValueWindowID = 6,
+
+	AttributeIDTypeClusterNitrogenDioxideConcentrationMeasurementAttributeUncertaintyID = 7,
+
+	AttributeIDTypeClusterNitrogenDioxideConcentrationMeasurementAttributeMeasurementUnitID = 8,
+
+	AttributeIDTypeClusterNitrogenDioxideConcentrationMeasurementAttributeMeasurementMediumID = 9,
+
+	AttributeIDTypeClusterNitrogenDioxideConcentrationMeasurementAttributeLevelValueID = 10,
+
+	AttributeIDTypeClusterNitrogenDioxideConcentrationMeasurementAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterNitrogenDioxideConcentrationMeasurementAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterNitrogenDioxideConcentrationMeasurementAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterNitrogenDioxideConcentrationMeasurementAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterNitrogenDioxideConcentrationMeasurementAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterNitrogenDioxideConcentrationMeasurementAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterOzoneConcentrationMeasurementAttributeMeasuredValueID = 0,
+
+	AttributeIDTypeClusterOzoneConcentrationMeasurementAttributeMinMeasuredValueID = 1,
+
+	AttributeIDTypeClusterOzoneConcentrationMeasurementAttributeMaxMeasuredValueID = 2,
+
+	AttributeIDTypeClusterOzoneConcentrationMeasurementAttributePeakMeasuredValueID = 3,
+
+	AttributeIDTypeClusterOzoneConcentrationMeasurementAttributePeakMeasuredValueWindowID = 4,
+
+	AttributeIDTypeClusterOzoneConcentrationMeasurementAttributeAverageMeasuredValueID = 5,
+
+	AttributeIDTypeClusterOzoneConcentrationMeasurementAttributeAverageMeasuredValueWindowID = 6,
+
+	AttributeIDTypeClusterOzoneConcentrationMeasurementAttributeUncertaintyID = 7,
+
+	AttributeIDTypeClusterOzoneConcentrationMeasurementAttributeMeasurementUnitID = 8,
+
+	AttributeIDTypeClusterOzoneConcentrationMeasurementAttributeMeasurementMediumID = 9,
+
+	AttributeIDTypeClusterOzoneConcentrationMeasurementAttributeLevelValueID = 10,
+
+	AttributeIDTypeClusterOzoneConcentrationMeasurementAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterOzoneConcentrationMeasurementAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterOzoneConcentrationMeasurementAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterOzoneConcentrationMeasurementAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterOzoneConcentrationMeasurementAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterOzoneConcentrationMeasurementAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterPM25ConcentrationMeasurementAttributeMeasuredValueID = 0,
+
+	AttributeIDTypeClusterPM25ConcentrationMeasurementAttributeMinMeasuredValueID = 1,
+
+	AttributeIDTypeClusterPM25ConcentrationMeasurementAttributeMaxMeasuredValueID = 2,
+
+	AttributeIDTypeClusterPM25ConcentrationMeasurementAttributePeakMeasuredValueID = 3,
+
+	AttributeIDTypeClusterPM25ConcentrationMeasurementAttributePeakMeasuredValueWindowID = 4,
+
+	AttributeIDTypeClusterPM25ConcentrationMeasurementAttributeAverageMeasuredValueID = 5,
+
+	AttributeIDTypeClusterPM25ConcentrationMeasurementAttributeAverageMeasuredValueWindowID = 6,
+
+	AttributeIDTypeClusterPM25ConcentrationMeasurementAttributeUncertaintyID = 7,
+
+	AttributeIDTypeClusterPM25ConcentrationMeasurementAttributeMeasurementUnitID = 8,
+
+	AttributeIDTypeClusterPM25ConcentrationMeasurementAttributeMeasurementMediumID = 9,
+
+	AttributeIDTypeClusterPM25ConcentrationMeasurementAttributeLevelValueID = 10,
+
+	AttributeIDTypeClusterPM25ConcentrationMeasurementAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterPM25ConcentrationMeasurementAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterPM25ConcentrationMeasurementAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterPM25ConcentrationMeasurementAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterPM25ConcentrationMeasurementAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterPM25ConcentrationMeasurementAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterFormaldehydeConcentrationMeasurementAttributeMeasuredValueID = 0,
+
+	AttributeIDTypeClusterFormaldehydeConcentrationMeasurementAttributeMinMeasuredValueID = 1,
+
+	AttributeIDTypeClusterFormaldehydeConcentrationMeasurementAttributeMaxMeasuredValueID = 2,
+
+	AttributeIDTypeClusterFormaldehydeConcentrationMeasurementAttributePeakMeasuredValueID = 3,
+
+	AttributeIDTypeClusterFormaldehydeConcentrationMeasurementAttributePeakMeasuredValueWindowID = 4,
+
+	AttributeIDTypeClusterFormaldehydeConcentrationMeasurementAttributeAverageMeasuredValueID = 5,
+
+	AttributeIDTypeClusterFormaldehydeConcentrationMeasurementAttributeAverageMeasuredValueWindowID = 6,
+
+	AttributeIDTypeClusterFormaldehydeConcentrationMeasurementAttributeUncertaintyID = 7,
+
+	AttributeIDTypeClusterFormaldehydeConcentrationMeasurementAttributeMeasurementUnitID = 8,
+
+	AttributeIDTypeClusterFormaldehydeConcentrationMeasurementAttributeMeasurementMediumID = 9,
+
+	AttributeIDTypeClusterFormaldehydeConcentrationMeasurementAttributeLevelValueID = 10,
+
+	AttributeIDTypeClusterFormaldehydeConcentrationMeasurementAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterFormaldehydeConcentrationMeasurementAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterFormaldehydeConcentrationMeasurementAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterFormaldehydeConcentrationMeasurementAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterFormaldehydeConcentrationMeasurementAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterFormaldehydeConcentrationMeasurementAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterPM1ConcentrationMeasurementAttributeMeasuredValueID = 0,
+
+	AttributeIDTypeClusterPM1ConcentrationMeasurementAttributeMinMeasuredValueID = 1,
+
+	AttributeIDTypeClusterPM1ConcentrationMeasurementAttributeMaxMeasuredValueID = 2,
+
+	AttributeIDTypeClusterPM1ConcentrationMeasurementAttributePeakMeasuredValueID = 3,
+
+	AttributeIDTypeClusterPM1ConcentrationMeasurementAttributePeakMeasuredValueWindowID = 4,
+
+	AttributeIDTypeClusterPM1ConcentrationMeasurementAttributeAverageMeasuredValueID = 5,
+
+	AttributeIDTypeClusterPM1ConcentrationMeasurementAttributeAverageMeasuredValueWindowID = 6,
+
+	AttributeIDTypeClusterPM1ConcentrationMeasurementAttributeUncertaintyID = 7,
+
+	AttributeIDTypeClusterPM1ConcentrationMeasurementAttributeMeasurementUnitID = 8,
+
+	AttributeIDTypeClusterPM1ConcentrationMeasurementAttributeMeasurementMediumID = 9,
+
+	AttributeIDTypeClusterPM1ConcentrationMeasurementAttributeLevelValueID = 10,
+
+	AttributeIDTypeClusterPM1ConcentrationMeasurementAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterPM1ConcentrationMeasurementAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterPM1ConcentrationMeasurementAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterPM1ConcentrationMeasurementAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterPM1ConcentrationMeasurementAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterPM1ConcentrationMeasurementAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterPM10ConcentrationMeasurementAttributeMeasuredValueID = 0,
+
+	AttributeIDTypeClusterPM10ConcentrationMeasurementAttributeMinMeasuredValueID = 1,
+
+	AttributeIDTypeClusterPM10ConcentrationMeasurementAttributeMaxMeasuredValueID = 2,
+
+	AttributeIDTypeClusterPM10ConcentrationMeasurementAttributePeakMeasuredValueID = 3,
+
+	AttributeIDTypeClusterPM10ConcentrationMeasurementAttributePeakMeasuredValueWindowID = 4,
+
+	AttributeIDTypeClusterPM10ConcentrationMeasurementAttributeAverageMeasuredValueID = 5,
+
+	AttributeIDTypeClusterPM10ConcentrationMeasurementAttributeAverageMeasuredValueWindowID = 6,
+
+	AttributeIDTypeClusterPM10ConcentrationMeasurementAttributeUncertaintyID = 7,
+
+	AttributeIDTypeClusterPM10ConcentrationMeasurementAttributeMeasurementUnitID = 8,
+
+	AttributeIDTypeClusterPM10ConcentrationMeasurementAttributeMeasurementMediumID = 9,
+
+	AttributeIDTypeClusterPM10ConcentrationMeasurementAttributeLevelValueID = 10,
+
+	AttributeIDTypeClusterPM10ConcentrationMeasurementAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterPM10ConcentrationMeasurementAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterPM10ConcentrationMeasurementAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterPM10ConcentrationMeasurementAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterPM10ConcentrationMeasurementAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterPM10ConcentrationMeasurementAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterTotalVolatileOrganicCompoundsConcentrationMeasurementAttributeMeasuredValueID = 0,
+
+	AttributeIDTypeClusterTotalVolatileOrganicCompoundsConcentrationMeasurementAttributeMinMeasuredValueID = 1,
+
+	AttributeIDTypeClusterTotalVolatileOrganicCompoundsConcentrationMeasurementAttributeMaxMeasuredValueID = 2,
+
+	AttributeIDTypeClusterTotalVolatileOrganicCompoundsConcentrationMeasurementAttributePeakMeasuredValueID = 3,
+
+	AttributeIDTypeClusterTotalVolatileOrganicCompoundsConcentrationMeasurementAttributePeakMeasuredValueWindowID = 4,
+
+	AttributeIDTypeClusterTotalVolatileOrganicCompoundsConcentrationMeasurementAttributeAverageMeasuredValueID = 5,
+
+	AttributeIDTypeClusterTotalVolatileOrganicCompoundsConcentrationMeasurementAttributeAverageMeasuredValueWindowID = 6,
+
+	AttributeIDTypeClusterTotalVolatileOrganicCompoundsConcentrationMeasurementAttributeUncertaintyID = 7,
+
+	AttributeIDTypeClusterTotalVolatileOrganicCompoundsConcentrationMeasurementAttributeMeasurementUnitID = 8,
+
+	AttributeIDTypeClusterTotalVolatileOrganicCompoundsConcentrationMeasurementAttributeMeasurementMediumID = 9,
+
+	AttributeIDTypeClusterTotalVolatileOrganicCompoundsConcentrationMeasurementAttributeLevelValueID = 10,
+
+	AttributeIDTypeClusterTotalVolatileOrganicCompoundsConcentrationMeasurementAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterTotalVolatileOrganicCompoundsConcentrationMeasurementAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterTotalVolatileOrganicCompoundsConcentrationMeasurementAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterTotalVolatileOrganicCompoundsConcentrationMeasurementAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterTotalVolatileOrganicCompoundsConcentrationMeasurementAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterTotalVolatileOrganicCompoundsConcentrationMeasurementAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterRadonConcentrationMeasurementAttributeMeasuredValueID = 0,
+
+	AttributeIDTypeClusterRadonConcentrationMeasurementAttributeMinMeasuredValueID = 1,
+
+	AttributeIDTypeClusterRadonConcentrationMeasurementAttributeMaxMeasuredValueID = 2,
+
+	AttributeIDTypeClusterRadonConcentrationMeasurementAttributePeakMeasuredValueID = 3,
+
+	AttributeIDTypeClusterRadonConcentrationMeasurementAttributePeakMeasuredValueWindowID = 4,
+
+	AttributeIDTypeClusterRadonConcentrationMeasurementAttributeAverageMeasuredValueID = 5,
+
+	AttributeIDTypeClusterRadonConcentrationMeasurementAttributeAverageMeasuredValueWindowID = 6,
+
+	AttributeIDTypeClusterRadonConcentrationMeasurementAttributeUncertaintyID = 7,
+
+	AttributeIDTypeClusterRadonConcentrationMeasurementAttributeMeasurementUnitID = 8,
+
+	AttributeIDTypeClusterRadonConcentrationMeasurementAttributeMeasurementMediumID = 9,
+
+	AttributeIDTypeClusterRadonConcentrationMeasurementAttributeLevelValueID = 10,
+
+	AttributeIDTypeClusterRadonConcentrationMeasurementAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterRadonConcentrationMeasurementAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterRadonConcentrationMeasurementAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterRadonConcentrationMeasurementAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterRadonConcentrationMeasurementAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterRadonConcentrationMeasurementAttributeClusterRevisionID = 65533,
 
 	ClusterWakeOnLanAttributeMACAddressID = 0,
 
@@ -4198,9 +5307,13 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterWakeOnLANAttributeMACAddressID = 0,
 
+	AttributeIDTypeClusterWakeOnLANAttributeLinkLocalAddressID = 1,
+
 	AttributeIDTypeClusterWakeOnLANAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterWakeOnLANAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterWakeOnLANAttributeEventListID = 65530,
 
 	AttributeIDTypeClusterWakeOnLANAttributeAttributeListID = 65531,
 
@@ -4234,6 +5347,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterChannelAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeClusterChannelAttributeEventListID = 65530,
+
 	AttributeIDTypeClusterChannelAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterChannelAttributeFeatureMapID = 65532,
@@ -4261,6 +5376,8 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterTargetNavigatorAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterTargetNavigatorAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterTargetNavigatorAttributeEventListID = 65530,
 
 	AttributeIDTypeClusterTargetNavigatorAttributeAttributeListID = 65531,
 
@@ -4306,9 +5423,19 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterMediaPlaybackAttributeSeekRangeStartID = 6,
 
+	AttributeIDTypeClusterMediaPlaybackAttributeActiveAudioTrackID = 7,
+
+	AttributeIDTypeClusterMediaPlaybackAttributeAvailableAudioTracksID = 8,
+
+	AttributeIDTypeClusterMediaPlaybackAttributeActiveTextTrackID = 9,
+
+	AttributeIDTypeClusterMediaPlaybackAttributeAvailableTextTracksID = 10,
+
 	AttributeIDTypeClusterMediaPlaybackAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterMediaPlaybackAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterMediaPlaybackAttributeEventListID = 65530,
 
 	AttributeIDTypeClusterMediaPlaybackAttributeAttributeListID = 65531,
 
@@ -4338,6 +5465,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterMediaInputAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeClusterMediaInputAttributeEventListID = 65530,
+
 	AttributeIDTypeClusterMediaInputAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterMediaInputAttributeFeatureMapID = 65532,
@@ -4358,6 +5487,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterLowPowerAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeClusterLowPowerAttributeEventListID = 65530,
+
 	AttributeIDTypeClusterLowPowerAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterLowPowerAttributeFeatureMapID = 65532,
@@ -4377,6 +5508,8 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterKeypadInputAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterKeypadInputAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterKeypadInputAttributeEventListID = 65530,
 
 	AttributeIDTypeClusterKeypadInputAttributeAttributeListID = 65531,
 
@@ -4406,6 +5539,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterContentLauncherAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeClusterContentLauncherAttributeEventListID = 65530,
+
 	AttributeIDTypeClusterContentLauncherAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterContentLauncherAttributeFeatureMapID = 65532,
@@ -4434,6 +5569,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterAudioOutputAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeClusterAudioOutputAttributeEventListID = 65530,
+
 	AttributeIDTypeClusterAudioOutputAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterAudioOutputAttributeFeatureMapID = 65532,
@@ -4461,6 +5598,8 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterApplicationLauncherAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterApplicationLauncherAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterApplicationLauncherAttributeEventListID = 65530,
 
 	AttributeIDTypeClusterApplicationLauncherAttributeAttributeListID = 65531,
 
@@ -4514,6 +5653,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterApplicationBasicAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeClusterApplicationBasicAttributeEventListID = 65530,
+
 	AttributeIDTypeClusterApplicationBasicAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterApplicationBasicAttributeFeatureMapID = 65532,
@@ -4534,11 +5675,53 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterAccountLoginAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeClusterAccountLoginAttributeEventListID = 65530,
+
 	AttributeIDTypeClusterAccountLoginAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterAccountLoginAttributeFeatureMapID = 65532,
 
 	AttributeIDTypeClusterAccountLoginAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterContentControlAttributeEnabledID = 0,
+
+	AttributeIDTypeClusterContentControlAttributeOnDemandRatingsID = 1,
+
+	AttributeIDTypeClusterContentControlAttributeOnDemandRatingThresholdID = 2,
+
+	AttributeIDTypeClusterContentControlAttributeScheduledContentRatingsID = 3,
+
+	AttributeIDTypeClusterContentControlAttributeScheduledContentRatingThresholdID = 4,
+
+	AttributeIDTypeClusterContentControlAttributeScreenDailyTimeID = 5,
+
+	AttributeIDTypeClusterContentControlAttributeRemainingScreenTimeID = 6,
+
+	AttributeIDTypeClusterContentControlAttributeBlockUnratedID = 7,
+
+	AttributeIDTypeClusterContentControlAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterContentControlAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterContentControlAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterContentControlAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterContentControlAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterContentControlAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterContentAppObserverAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterContentAppObserverAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterContentAppObserverAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterContentAppObserverAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterContentAppObserverAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterContentAppObserverAttributeClusterRevisionID = 65533,
 
 	ClusterElectricalMeasurementAttributeMeasurementTypeID = 0,
 
@@ -5066,6 +6249,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterElectricalMeasurementAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeClusterElectricalMeasurementAttributeEventListID = 65530,
+
 	AttributeIDTypeClusterElectricalMeasurementAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterElectricalMeasurementAttributeFeatureMapID = 65532,
@@ -5414,31 +6599,27 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterUnitTestingAttributeAcceptedCommandListID = 65529,
 
+	AttributeIDTypeClusterUnitTestingAttributeEventListID = 65530,
+
 	AttributeIDTypeClusterUnitTestingAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterUnitTestingAttributeFeatureMapID = 65532,
 
 	AttributeIDTypeClusterUnitTestingAttributeClusterRevisionID = 65533,
 
-	ClusterFaultInjectionAttributeGeneratedCommandListID = 65528,
+	AttributeIDTypeClusterSampleMEIAttributeFlipFlopID = 0,
 
-	ClusterFaultInjectionAttributeAcceptedCommandListID = 65529,
+	AttributeIDTypeClusterSampleMEIAttributeGeneratedCommandListID = 65528,
 
-	ClusterFaultInjectionAttributeAttributeListID = 65531,
+	AttributeIDTypeClusterSampleMEIAttributeAcceptedCommandListID = 65529,
 
-	ClusterFaultInjectionAttributeFeatureMapID = 65532,
+	AttributeIDTypeClusterSampleMEIAttributeEventListID = 65530,
 
-	ClusterFaultInjectionAttributeClusterRevisionID = 65533,
+	AttributeIDTypeClusterSampleMEIAttributeAttributeListID = 65531,
 
-	AttributeIDTypeClusterFaultInjectionAttributeGeneratedCommandListID = 65528,
+	AttributeIDTypeClusterSampleMEIAttributeFeatureMapID = 65532,
 
-	AttributeIDTypeClusterFaultInjectionAttributeAcceptedCommandListID = 65529,
-
-	AttributeIDTypeClusterFaultInjectionAttributeAttributeListID = 65531,
-
-	AttributeIDTypeClusterFaultInjectionAttributeFeatureMapID = 65532,
-
-	AttributeIDTypeClusterFaultInjectionAttributeClusterRevisionID = 65533
+	AttributeIDTypeClusterSampleMEIAttributeClusterRevisionID = 65533
 }
 
 declare class MTRAttributePath extends MTRClusterPath {
@@ -5596,7 +6777,7 @@ declare class MTRBarrierControlClusterBarrierControlStopParams extends NSObject 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
-declare class MTRBaseClusterAccessControl extends MTRCluster {
+declare class MTRBaseClusterAccessControl extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterAccessControl; // inherited from NSObject
 
@@ -5747,7 +6928,7 @@ declare class MTRBaseClusterAccessControl extends MTRCluster {
 	writeAttributeExtensionWithValueParamsCompletionHandler(value: NSArray<any> | any[], params: MTRWriteParams, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRBaseClusterAccountLogin extends MTRCluster {
+declare class MTRBaseClusterAccountLogin extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterAccountLogin; // inherited from NSObject
 
@@ -5838,7 +7019,7 @@ declare class MTRBaseClusterAccountLogin extends MTRCluster {
 	subscribeAttributeGeneratedCommandListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
 }
 
-declare class MTRBaseClusterActions extends MTRCluster {
+declare class MTRBaseClusterActions extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterActions; // inherited from NSObject
 
@@ -5997,7 +7178,7 @@ declare class MTRBaseClusterActions extends MTRCluster {
 	subscribeAttributeSetupURLWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: string, p2: NSError) => void): void;
 }
 
-declare class MTRBaseClusterAdministratorCommissioning extends MTRCluster {
+declare class MTRBaseClusterAdministratorCommissioning extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterAdministratorCommissioning; // inherited from NSObject
 
@@ -6124,7 +7305,7 @@ declare class MTRBaseClusterAdministratorCommissioning extends MTRCluster {
 	subscribeAttributeWindowStatusWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 }
 
-declare class MTRBaseClusterApplicationBasic extends MTRCluster {
+declare class MTRBaseClusterApplicationBasic extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterApplicationBasic; // inherited from NSObject
 
@@ -6295,7 +7476,7 @@ declare class MTRBaseClusterApplicationBasic extends MTRCluster {
 	subscribeAttributeVendorNameWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: string, p2: NSError) => void): void;
 }
 
-declare class MTRBaseClusterApplicationLauncher extends MTRCluster {
+declare class MTRBaseClusterApplicationLauncher extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterApplicationLauncher; // inherited from NSObject
 
@@ -6333,6 +7514,8 @@ declare class MTRBaseClusterApplicationLauncher extends MTRCluster {
 
 	constructor(o: { device: MTRBaseDevice; endpoint: number; queue: interop.Pointer | interop.Reference<any>; });
 
+	hideAppWithCompletion(completion: (p1: MTRApplicationLauncherClusterLauncherResponseParams, p2: NSError) => void): void;
+
 	hideAppWithParamsCompletion(params: MTRApplicationLauncherClusterHideAppParams, completion: (p1: MTRApplicationLauncherClusterLauncherResponseParams, p2: NSError) => void): void;
 
 	hideAppWithParamsCompletionHandler(params: MTRApplicationLauncherClusterHideAppParams, completionHandler: (p1: MTRApplicationLauncherClusterLauncherResponseParams, p2: NSError) => void): void;
@@ -6340,6 +7523,8 @@ declare class MTRBaseClusterApplicationLauncher extends MTRCluster {
 	initWithDeviceEndpointIDQueue(device: MTRBaseDevice, endpointID: number, queue: interop.Pointer | interop.Reference<any>): this;
 
 	initWithDeviceEndpointQueue(device: MTRBaseDevice, endpoint: number, queue: interop.Pointer | interop.Reference<any>): this;
+
+	launchAppWithCompletion(completion: (p1: MTRApplicationLauncherClusterLauncherResponseParams, p2: NSError) => void): void;
 
 	launchAppWithParamsCompletion(params: MTRApplicationLauncherClusterLaunchAppParams, completion: (p1: MTRApplicationLauncherClusterLauncherResponseParams, p2: NSError) => void): void;
 
@@ -6372,6 +7557,8 @@ declare class MTRBaseClusterApplicationLauncher extends MTRCluster {
 	readAttributeGeneratedCommandListWithCompletion(completion: (p1: NSArray<any>, p2: NSError) => void): void;
 
 	readAttributeGeneratedCommandListWithCompletionHandler(completionHandler: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	stopAppWithCompletion(completion: (p1: MTRApplicationLauncherClusterLauncherResponseParams, p2: NSError) => void): void;
 
 	stopAppWithParamsCompletion(params: MTRApplicationLauncherClusterStopAppParams, completion: (p1: MTRApplicationLauncherClusterLauncherResponseParams, p2: NSError) => void): void;
 
@@ -6414,7 +7601,7 @@ declare class MTRBaseClusterApplicationLauncher extends MTRCluster {
 	writeAttributeCurrentAppWithValueParamsCompletionHandler(value: MTRApplicationLauncherClusterApplicationEP, params: MTRWriteParams, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRBaseClusterAudioOutput extends MTRCluster {
+declare class MTRBaseClusterAudioOutput extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterAudioOutput; // inherited from NSObject
 
@@ -6521,7 +7708,7 @@ declare class MTRBaseClusterAudioOutput extends MTRCluster {
 	subscribeAttributeOutputListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
 }
 
-declare class MTRBaseClusterBallastConfiguration extends MTRCluster {
+declare class MTRBaseClusterBallastConfiguration extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterBallastConfiguration; // inherited from NSObject
 
@@ -6844,7 +8031,7 @@ declare class MTRBaseClusterBallastConfiguration extends MTRCluster {
 	writeAttributeMinLevelWithValueParamsCompletionHandler(value: number, params: MTRWriteParams, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRBaseClusterBarrierControl extends MTRCluster {
+declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterBarrierControl; // inherited from NSObject
 
@@ -7276,7 +8463,7 @@ declare class MTRBaseClusterBasic extends MTRBaseClusterBasicInformation {
 	writeAttributeNodeLabelWithValueParamsCompletionHandler(value: string, params: MTRWriteParams, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRBaseClusterBasicInformation extends MTRCluster {
+declare class MTRBaseClusterBasicInformation extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterBasicInformation; // inherited from NSObject
 
@@ -7455,7 +8642,7 @@ declare class MTRBaseClusterBasicInformation extends MTRCluster {
 	writeAttributeNodeLabelWithValueParamsCompletion(value: string, params: MTRWriteParams, completion: (p1: NSError) => void): void;
 }
 
-declare class MTRBaseClusterBinaryInputBasic extends MTRCluster {
+declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterBinaryInputBasic; // inherited from NSObject
 
@@ -7686,7 +8873,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRCluster {
 	writeAttributeReliabilityWithValueParamsCompletionHandler(value: number, params: MTRWriteParams, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRBaseClusterBinding extends MTRCluster {
+declare class MTRBaseClusterBinding extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterBinding; // inherited from NSObject
 
@@ -7781,7 +8968,7 @@ declare class MTRBaseClusterBinding extends MTRCluster {
 	writeAttributeBindingWithValueParamsCompletionHandler(value: NSArray<any> | any[], params: MTRWriteParams, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRBaseClusterBooleanState extends MTRCluster {
+declare class MTRBaseClusterBooleanState extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterBooleanState; // inherited from NSObject
 
@@ -8003,7 +9190,7 @@ declare class MTRBaseClusterBridgedDeviceBasic extends MTRBaseClusterBridgedDevi
 	writeAttributeNodeLabelWithValueParamsCompletionHandler(value: string, params: MTRWriteParams, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRBaseClusterBridgedDeviceBasicInformation extends MTRCluster {
+declare class MTRBaseClusterBridgedDeviceBasicInformation extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterBridgedDeviceBasicInformation; // inherited from NSObject
 
@@ -8144,7 +9331,7 @@ declare class MTRBaseClusterBridgedDeviceBasicInformation extends MTRCluster {
 	writeAttributeNodeLabelWithValueParamsCompletion(value: string, params: MTRWriteParams, completion: (p1: NSError) => void): void;
 }
 
-declare class MTRBaseClusterChannel extends MTRCluster {
+declare class MTRBaseClusterChannel extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterChannel; // inherited from NSObject
 
@@ -8267,7 +9454,7 @@ declare class MTRBaseClusterChannel extends MTRCluster {
 	subscribeAttributeLineupWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: MTRChannelClusterLineupInfoStruct, p2: NSError) => void): void;
 }
 
-declare class MTRBaseClusterColorControl extends MTRCluster {
+declare class MTRBaseClusterColorControl extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterColorControl; // inherited from NSObject
 
@@ -9146,7 +10333,7 @@ declare class MTRBaseClusterColorControl extends MTRCluster {
 	writeAttributeWhitePointYWithValueParamsCompletionHandler(value: number, params: MTRWriteParams, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRBaseClusterContentLauncher extends MTRCluster {
+declare class MTRBaseClusterContentLauncher extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterContentLauncher; // inherited from NSObject
 
@@ -9261,7 +10448,7 @@ declare class MTRBaseClusterContentLauncher extends MTRCluster {
 	writeAttributeSupportedStreamingProtocolsWithValueParamsCompletionHandler(value: number, params: MTRWriteParams, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRBaseClusterDescriptor extends MTRCluster {
+declare class MTRBaseClusterDescriptor extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterDescriptor; // inherited from NSObject
 
@@ -9384,7 +10571,7 @@ declare class MTRBaseClusterDescriptor extends MTRCluster {
 	subscribeAttributeServerListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
 }
 
-declare class MTRBaseClusterDiagnosticLogs extends MTRCluster {
+declare class MTRBaseClusterDiagnosticLogs extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterDiagnosticLogs; // inherited from NSObject
 
@@ -9463,7 +10650,7 @@ declare class MTRBaseClusterDiagnosticLogs extends MTRCluster {
 	subscribeAttributeGeneratedCommandListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
 }
 
-declare class MTRBaseClusterDoorLock extends MTRCluster {
+declare class MTRBaseClusterDoorLock extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterDoorLock; // inherited from NSObject
 
@@ -9680,6 +10867,8 @@ declare class MTRBaseClusterDoorLock extends MTRCluster {
 	initWithDeviceEndpointIDQueue(device: MTRBaseDevice, endpointID: number, queue: interop.Pointer | interop.Reference<any>): this;
 
 	initWithDeviceEndpointQueue(device: MTRBaseDevice, endpoint: number, queue: interop.Pointer | interop.Reference<any>): this;
+
+	lockDoorWithCompletion(completion: (p1: NSError) => void): void;
 
 	lockDoorWithParamsCompletion(params: MTRDoorLockClusterLockDoorParams, completion: (p1: NSError) => void): void;
 
@@ -10033,6 +11222,8 @@ declare class MTRBaseClusterDoorLock extends MTRCluster {
 
 	subscribeAttributeWrongCodeEntryLimitWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
+	unlockDoorWithCompletion(completion: (p1: NSError) => void): void;
+
 	unlockDoorWithParamsCompletion(params: MTRDoorLockClusterUnlockDoorParams, completion: (p1: NSError) => void): void;
 
 	unlockDoorWithParamsCompletionHandler(params: MTRDoorLockClusterUnlockDoorParams, completionHandler: (p1: NSError) => void): void;
@@ -10186,7 +11377,7 @@ declare class MTRBaseClusterDoorLock extends MTRCluster {
 	writeAttributeWrongCodeEntryLimitWithValueParamsCompletionHandler(value: number, params: MTRWriteParams, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRBaseClusterElectricalMeasurement extends MTRCluster {
+declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterElectricalMeasurement; // inherited from NSObject
 
@@ -11873,7 +13064,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRCluster {
 	writeAttributeRmsVoltageSwellPeriodWithValueParamsCompletionHandler(value: number, params: MTRWriteParams, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRBaseClusterEthernetNetworkDiagnostics extends MTRCluster {
+declare class MTRBaseClusterEthernetNetworkDiagnostics extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterEthernetNetworkDiagnostics; // inherited from NSObject
 
@@ -12064,7 +13255,7 @@ declare class MTRBaseClusterEthernetNetworkDiagnostics extends MTRCluster {
 	subscribeAttributeTxErrCountWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 }
 
-declare class MTRBaseClusterFanControl extends MTRCluster {
+declare class MTRBaseClusterFanControl extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterFanControl; // inherited from NSObject
 
@@ -12319,7 +13510,7 @@ declare class MTRBaseClusterFanControl extends MTRCluster {
 	writeAttributeWindSettingWithValueParamsCompletionHandler(value: number, params: MTRWriteParams, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRBaseClusterFixedLabel extends MTRCluster {
+declare class MTRBaseClusterFixedLabel extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterFixedLabel; // inherited from NSObject
 
@@ -12406,7 +13597,7 @@ declare class MTRBaseClusterFixedLabel extends MTRCluster {
 	subscribeAttributeLabelListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
 }
 
-declare class MTRBaseClusterFlowMeasurement extends MTRCluster {
+declare class MTRBaseClusterFlowMeasurement extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterFlowMeasurement; // inherited from NSObject
 
@@ -12529,7 +13720,7 @@ declare class MTRBaseClusterFlowMeasurement extends MTRCluster {
 	subscribeAttributeToleranceWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 }
 
-declare class MTRBaseClusterGeneralCommissioning extends MTRCluster {
+declare class MTRBaseClusterGeneralCommissioning extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterGeneralCommissioning; // inherited from NSObject
 
@@ -12688,7 +13879,7 @@ declare class MTRBaseClusterGeneralCommissioning extends MTRCluster {
 	writeAttributeBreadcrumbWithValueParamsCompletionHandler(value: number, params: MTRWriteParams, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRBaseClusterGeneralDiagnostics extends MTRCluster {
+declare class MTRBaseClusterGeneralDiagnostics extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterGeneralDiagnostics; // inherited from NSObject
 
@@ -12875,7 +14066,7 @@ declare class MTRBaseClusterGeneralDiagnostics extends MTRCluster {
 	testEventTriggerWithParamsCompletionHandler(params: MTRGeneralDiagnosticsClusterTestEventTriggerParams, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRBaseClusterGroupKeyManagement extends MTRCluster {
+declare class MTRBaseClusterGroupKeyManagement extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterGroupKeyManagement; // inherited from NSObject
 
@@ -13024,7 +14215,7 @@ declare class MTRBaseClusterGroupKeyManagement extends MTRCluster {
 	writeAttributeGroupKeyMapWithValueParamsCompletionHandler(value: NSArray<any> | any[], params: MTRWriteParams, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRBaseClusterGroups extends MTRCluster {
+declare class MTRBaseClusterGroups extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterGroups; // inherited from NSObject
 
@@ -13139,7 +14330,7 @@ declare class MTRBaseClusterGroups extends MTRCluster {
 	viewGroupWithParamsCompletionHandler(params: MTRGroupsClusterViewGroupParams, completionHandler: (p1: MTRGroupsClusterViewGroupResponseParams, p2: NSError) => void): void;
 }
 
-declare class MTRBaseClusterIdentify extends MTRCluster {
+declare class MTRBaseClusterIdentify extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterIdentify; // inherited from NSObject
 
@@ -13254,7 +14445,7 @@ declare class MTRBaseClusterIdentify extends MTRCluster {
 	writeAttributeIdentifyTimeWithValueParamsCompletionHandler(value: number, params: MTRWriteParams, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRBaseClusterIlluminanceMeasurement extends MTRCluster {
+declare class MTRBaseClusterIlluminanceMeasurement extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterIlluminanceMeasurement; // inherited from NSObject
 
@@ -13389,7 +14580,7 @@ declare class MTRBaseClusterIlluminanceMeasurement extends MTRCluster {
 	subscribeAttributeToleranceWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 }
 
-declare class MTRBaseClusterKeypadInput extends MTRCluster {
+declare class MTRBaseClusterKeypadInput extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterKeypadInput; // inherited from NSObject
 
@@ -13468,7 +14659,7 @@ declare class MTRBaseClusterKeypadInput extends MTRCluster {
 	subscribeAttributeGeneratedCommandListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
 }
 
-declare class MTRBaseClusterLevelControl extends MTRCluster {
+declare class MTRBaseClusterLevelControl extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterLevelControl; // inherited from NSObject
 
@@ -13803,7 +14994,7 @@ declare class MTRBaseClusterLevelControl extends MTRCluster {
 	writeAttributeStartUpCurrentLevelWithValueParamsCompletionHandler(value: number, params: MTRWriteParams, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRBaseClusterLocalizationConfiguration extends MTRCluster {
+declare class MTRBaseClusterLocalizationConfiguration extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterLocalizationConfiguration; // inherited from NSObject
 
@@ -13910,7 +15101,7 @@ declare class MTRBaseClusterLocalizationConfiguration extends MTRCluster {
 	writeAttributeActiveLocaleWithValueParamsCompletionHandler(value: string, params: MTRWriteParams, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRBaseClusterLowPower extends MTRCluster {
+declare class MTRBaseClusterLowPower extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterLowPower; // inherited from NSObject
 
@@ -13993,7 +15184,7 @@ declare class MTRBaseClusterLowPower extends MTRCluster {
 	subscribeAttributeGeneratedCommandListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
 }
 
-declare class MTRBaseClusterMediaInput extends MTRCluster {
+declare class MTRBaseClusterMediaInput extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterMediaInput; // inherited from NSObject
 
@@ -14116,7 +15307,7 @@ declare class MTRBaseClusterMediaInput extends MTRCluster {
 	subscribeAttributeInputListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
 }
 
-declare class MTRBaseClusterMediaPlayback extends MTRCluster {
+declare class MTRBaseClusterMediaPlayback extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterMediaPlayback; // inherited from NSObject
 
@@ -14351,7 +15542,7 @@ declare class MTRBaseClusterMediaPlayback extends MTRCluster {
 	subscribeAttributeStartTimeWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 }
 
-declare class MTRBaseClusterModeSelect extends MTRCluster {
+declare class MTRBaseClusterModeSelect extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterModeSelect; // inherited from NSObject
 
@@ -14518,7 +15709,7 @@ declare class MTRBaseClusterModeSelect extends MTRCluster {
 	writeAttributeStartUpModeWithValueParamsCompletionHandler(value: number, params: MTRWriteParams, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRBaseClusterNetworkCommissioning extends MTRCluster {
+declare class MTRBaseClusterNetworkCommissioning extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterNetworkCommissioning; // inherited from NSObject
 
@@ -14656,6 +15847,8 @@ declare class MTRBaseClusterNetworkCommissioning extends MTRCluster {
 
 	reorderNetworkWithParamsCompletionHandler(params: MTRNetworkCommissioningClusterReorderNetworkParams, completionHandler: (p1: MTRNetworkCommissioningClusterNetworkConfigResponseParams, p2: NSError) => void): void;
 
+	scanNetworksWithCompletion(completion: (p1: MTRNetworkCommissioningClusterScanNetworksResponseParams, p2: NSError) => void): void;
+
 	scanNetworksWithParamsCompletion(params: MTRNetworkCommissioningClusterScanNetworksParams, completion: (p1: MTRNetworkCommissioningClusterScanNetworksResponseParams, p2: NSError) => void): void;
 
 	scanNetworksWithParamsCompletionHandler(params: MTRNetworkCommissioningClusterScanNetworksParams, completionHandler: (p1: MTRNetworkCommissioningClusterScanNetworksResponseParams, p2: NSError) => void): void;
@@ -14721,7 +15914,7 @@ declare class MTRBaseClusterNetworkCommissioning extends MTRCluster {
 	writeAttributeInterfaceEnabledWithValueParamsCompletionHandler(value: number, params: MTRWriteParams, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRBaseClusterOTASoftwareUpdateProvider extends MTRCluster {
+declare class MTRBaseClusterOTASoftwareUpdateProvider extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterOTASoftwareUpdateProvider; // inherited from NSObject
 
@@ -14768,7 +15961,7 @@ declare class MTRBaseClusterOTASoftwareUpdateProvider extends MTRCluster {
 	subscribeAttributeGeneratedCommandListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
 }
 
-declare class MTRBaseClusterOTASoftwareUpdateRequestor extends MTRCluster {
+declare class MTRBaseClusterOTASoftwareUpdateRequestor extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterOTASoftwareUpdateRequestor; // inherited from NSObject
 
@@ -14839,7 +16032,7 @@ declare class MTRBaseClusterOTASoftwareUpdateRequestor extends MTRCluster {
 	writeAttributeDefaultOTAProvidersWithValueParamsCompletion(value: NSArray<any> | any[], params: MTRWriteParams, completion: (p1: NSError) => void): void;
 }
 
-declare class MTRBaseClusterOccupancySensing extends MTRCluster {
+declare class MTRBaseClusterOccupancySensing extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterOccupancySensing; // inherited from NSObject
 
@@ -15130,7 +16323,7 @@ declare class MTRBaseClusterOccupancySensing extends MTRCluster {
 	writeAttributeUltrasonicUnoccupiedToOccupiedThresholdWithValueParamsCompletionHandler(value: number, params: MTRWriteParams, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRBaseClusterOnOff extends MTRCluster {
+declare class MTRBaseClusterOnOff extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterOnOff; // inherited from NSObject
 
@@ -15329,7 +16522,7 @@ declare class MTRBaseClusterOnOff extends MTRCluster {
 	writeAttributeStartUpOnOffWithValueParamsCompletionHandler(value: number, params: MTRWriteParams, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRBaseClusterOnOffSwitchConfiguration extends MTRCluster {
+declare class MTRBaseClusterOnOffSwitchConfiguration extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterOnOffSwitchConfiguration; // inherited from NSObject
 
@@ -15436,7 +16629,7 @@ declare class MTRBaseClusterOnOffSwitchConfiguration extends MTRCluster {
 	writeAttributeSwitchActionsWithValueParamsCompletionHandler(value: number, params: MTRWriteParams, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRBaseClusterOperationalCredentials extends MTRCluster {
+declare class MTRBaseClusterOperationalCredentials extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterOperationalCredentials; // inherited from NSObject
 
@@ -15615,6 +16808,99 @@ declare class MTRBaseClusterOperationalCredentials extends MTRCluster {
 	updateNOCWithParamsCompletionHandler(params: MTROperationalCredentialsClusterUpdateNOCParams, completionHandler: (p1: MTROperationalCredentialsClusterNOCResponseParams, p2: NSError) => void): void;
 }
 
+declare class MTRBaseClusterOperationalState extends MTRGenericBaseCluster {
+
+	static alloc(): MTRBaseClusterOperationalState; // inherited from NSObject
+
+	static new(): MTRBaseClusterOperationalState; // inherited from NSObject
+
+	static readAttributeAcceptedCommandListWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	static readAttributeAttributeListWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	static readAttributeClusterRevisionWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: number, p2: NSError) => void): void;
+
+	static readAttributeCountdownTimeWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: number, p2: NSError) => void): void;
+
+	static readAttributeCurrentPhaseWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: number, p2: NSError) => void): void;
+
+	static readAttributeFeatureMapWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: number, p2: NSError) => void): void;
+
+	static readAttributeGeneratedCommandListWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	static readAttributeOperationalErrorWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: MTROperationalStateClusterErrorStateStruct, p2: NSError) => void): void;
+
+	static readAttributeOperationalStateListWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	static readAttributeOperationalStateWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: number, p2: NSError) => void): void;
+
+	static readAttributePhaseListWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	constructor(o: { device: MTRBaseDevice; endpointID: number; queue: interop.Pointer | interop.Reference<any>; });
+
+	initWithDeviceEndpointIDQueue(device: MTRBaseDevice, endpointID: number, queue: interop.Pointer | interop.Reference<any>): this;
+
+	pauseWithCompletion(completion: (p1: MTROperationalStateClusterOperationalCommandResponseParams, p2: NSError) => void): void;
+
+	pauseWithParamsCompletion(params: MTROperationalStateClusterPauseParams, completion: (p1: MTROperationalStateClusterOperationalCommandResponseParams, p2: NSError) => void): void;
+
+	readAttributeAcceptedCommandListWithCompletion(completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	readAttributeAttributeListWithCompletion(completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	readAttributeClusterRevisionWithCompletion(completion: (p1: number, p2: NSError) => void): void;
+
+	readAttributeCountdownTimeWithCompletion(completion: (p1: number, p2: NSError) => void): void;
+
+	readAttributeCurrentPhaseWithCompletion(completion: (p1: number, p2: NSError) => void): void;
+
+	readAttributeFeatureMapWithCompletion(completion: (p1: number, p2: NSError) => void): void;
+
+	readAttributeGeneratedCommandListWithCompletion(completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	readAttributeOperationalErrorWithCompletion(completion: (p1: MTROperationalStateClusterErrorStateStruct, p2: NSError) => void): void;
+
+	readAttributeOperationalStateListWithCompletion(completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	readAttributeOperationalStateWithCompletion(completion: (p1: number, p2: NSError) => void): void;
+
+	readAttributePhaseListWithCompletion(completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	resumeWithCompletion(completion: (p1: MTROperationalStateClusterOperationalCommandResponseParams, p2: NSError) => void): void;
+
+	resumeWithParamsCompletion(params: MTROperationalStateClusterResumeParams, completion: (p1: MTROperationalStateClusterOperationalCommandResponseParams, p2: NSError) => void): void;
+
+	startWithCompletion(completion: (p1: MTROperationalStateClusterOperationalCommandResponseParams, p2: NSError) => void): void;
+
+	startWithParamsCompletion(params: MTROperationalStateClusterStartParams, completion: (p1: MTROperationalStateClusterOperationalCommandResponseParams, p2: NSError) => void): void;
+
+	stopWithCompletion(completion: (p1: MTROperationalStateClusterOperationalCommandResponseParams, p2: NSError) => void): void;
+
+	stopWithParamsCompletion(params: MTROperationalStateClusterStopParams, completion: (p1: MTROperationalStateClusterOperationalCommandResponseParams, p2: NSError) => void): void;
+
+	subscribeAttributeAcceptedCommandListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	subscribeAttributeAttributeListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	subscribeAttributeClusterRevisionWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
+
+	subscribeAttributeCountdownTimeWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
+
+	subscribeAttributeCurrentPhaseWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
+
+	subscribeAttributeFeatureMapWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
+
+	subscribeAttributeGeneratedCommandListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	subscribeAttributeOperationalErrorWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: MTROperationalStateClusterErrorStateStruct, p2: NSError) => void): void;
+
+	subscribeAttributeOperationalStateListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	subscribeAttributeOperationalStateWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
+
+	subscribeAttributePhaseListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
+}
+
 declare class MTRBaseClusterOtaSoftwareUpdateProvider extends MTRBaseClusterOTASoftwareUpdateProvider {
 
 	static alloc(): MTRBaseClusterOtaSoftwareUpdateProvider; // inherited from NSObject
@@ -15733,7 +17019,7 @@ declare class MTRBaseClusterOtaSoftwareUpdateRequestor extends MTRBaseClusterOTA
 	writeAttributeDefaultOtaProvidersWithValueParamsCompletionHandler(value: NSArray<any> | any[], params: MTRWriteParams, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRBaseClusterPowerSource extends MTRCluster {
+declare class MTRBaseClusterPowerSource extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterPowerSource; // inherited from NSObject
 
@@ -15838,6 +17124,8 @@ declare class MTRBaseClusterPowerSource extends MTRCluster {
 	static readAttributeDescriptionWithAttributeCacheEndpointQueueCompletionHandler(attributeCacheContainer: MTRAttributeCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completionHandler: (p1: string, p2: NSError) => void): void;
 
 	static readAttributeDescriptionWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: string, p2: NSError) => void): void;
+
+	static readAttributeEndpointListWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: NSArray<any>, p2: NSError) => void): void;
 
 	static readAttributeFeatureMapWithAttributeCacheEndpointQueueCompletionHandler(attributeCacheContainer: MTRAttributeCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completionHandler: (p1: number, p2: NSError) => void): void;
 
@@ -15991,6 +17279,8 @@ declare class MTRBaseClusterPowerSource extends MTRCluster {
 
 	readAttributeDescriptionWithCompletionHandler(completionHandler: (p1: string, p2: NSError) => void): void;
 
+	readAttributeEndpointListWithCompletion(completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
 	readAttributeFeatureMapWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
 	readAttributeFeatureMapWithCompletionHandler(completionHandler: (p1: number, p2: NSError) => void): void;
@@ -16135,6 +17425,8 @@ declare class MTRBaseClusterPowerSource extends MTRCluster {
 
 	subscribeAttributeDescriptionWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: string, p2: NSError) => void): void;
 
+	subscribeAttributeEndpointListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
+
 	subscribeAttributeFeatureMapWithMinIntervalMaxIntervalParamsSubscriptionEstablishedReportHandler(minInterval: number, maxInterval: number, params: MTRSubscribeParams, subscriptionEstablishedHandler: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
 	subscribeAttributeFeatureMapWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
@@ -16180,7 +17472,7 @@ declare class MTRBaseClusterPowerSource extends MTRCluster {
 	subscribeAttributeWiredPresentWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 }
 
-declare class MTRBaseClusterPowerSourceConfiguration extends MTRCluster {
+declare class MTRBaseClusterPowerSourceConfiguration extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterPowerSourceConfiguration; // inherited from NSObject
 
@@ -16267,7 +17559,7 @@ declare class MTRBaseClusterPowerSourceConfiguration extends MTRCluster {
 	subscribeAttributeSourcesWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
 }
 
-declare class MTRBaseClusterPressureMeasurement extends MTRCluster {
+declare class MTRBaseClusterPressureMeasurement extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterPressureMeasurement; // inherited from NSObject
 
@@ -16450,7 +17742,7 @@ declare class MTRBaseClusterPressureMeasurement extends MTRCluster {
 	subscribeAttributeToleranceWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 }
 
-declare class MTRBaseClusterPumpConfigurationAndControl extends MTRCluster {
+declare class MTRBaseClusterPumpConfigurationAndControl extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterPumpConfigurationAndControl; // inherited from NSObject
 
@@ -16833,7 +18125,202 @@ declare class MTRBaseClusterPumpConfigurationAndControl extends MTRCluster {
 	writeAttributeOperationModeWithValueParamsCompletionHandler(value: number, params: MTRWriteParams, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRBaseClusterRelativeHumidityMeasurement extends MTRCluster {
+declare class MTRBaseClusterRVCCleanMode extends MTRGenericBaseCluster {
+
+	static alloc(): MTRBaseClusterRVCCleanMode; // inherited from NSObject
+
+	static new(): MTRBaseClusterRVCCleanMode; // inherited from NSObject
+
+	static readAttributeAcceptedCommandListWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	static readAttributeAttributeListWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	static readAttributeClusterRevisionWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: number, p2: NSError) => void): void;
+
+	static readAttributeCurrentModeWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: number, p2: NSError) => void): void;
+
+	static readAttributeFeatureMapWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: number, p2: NSError) => void): void;
+
+	static readAttributeGeneratedCommandListWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	static readAttributeSupportedModesWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	constructor(o: { device: MTRBaseDevice; endpointID: number; queue: interop.Pointer | interop.Reference<any>; });
+
+	changeToModeWithParamsCompletion(params: MTRRVCCleanModeClusterChangeToModeParams, completion: (p1: MTRRVCCleanModeClusterChangeToModeResponseParams, p2: NSError) => void): void;
+
+	initWithDeviceEndpointIDQueue(device: MTRBaseDevice, endpointID: number, queue: interop.Pointer | interop.Reference<any>): this;
+
+	readAttributeAcceptedCommandListWithCompletion(completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	readAttributeAttributeListWithCompletion(completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	readAttributeClusterRevisionWithCompletion(completion: (p1: number, p2: NSError) => void): void;
+
+	readAttributeCurrentModeWithCompletion(completion: (p1: number, p2: NSError) => void): void;
+
+	readAttributeFeatureMapWithCompletion(completion: (p1: number, p2: NSError) => void): void;
+
+	readAttributeGeneratedCommandListWithCompletion(completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	readAttributeSupportedModesWithCompletion(completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	subscribeAttributeAcceptedCommandListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	subscribeAttributeAttributeListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	subscribeAttributeClusterRevisionWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
+
+	subscribeAttributeCurrentModeWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
+
+	subscribeAttributeFeatureMapWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
+
+	subscribeAttributeGeneratedCommandListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	subscribeAttributeSupportedModesWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
+}
+
+declare class MTRBaseClusterRVCOperationalState extends MTRGenericBaseCluster {
+
+	static alloc(): MTRBaseClusterRVCOperationalState; // inherited from NSObject
+
+	static new(): MTRBaseClusterRVCOperationalState; // inherited from NSObject
+
+	static readAttributeAcceptedCommandListWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	static readAttributeAttributeListWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	static readAttributeClusterRevisionWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: number, p2: NSError) => void): void;
+
+	static readAttributeCountdownTimeWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: number, p2: NSError) => void): void;
+
+	static readAttributeCurrentPhaseWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: number, p2: NSError) => void): void;
+
+	static readAttributeFeatureMapWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: number, p2: NSError) => void): void;
+
+	static readAttributeGeneratedCommandListWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	static readAttributeOperationalErrorWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: MTRRVCOperationalStateClusterErrorStateStruct, p2: NSError) => void): void;
+
+	static readAttributeOperationalStateListWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	static readAttributeOperationalStateWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: number, p2: NSError) => void): void;
+
+	static readAttributePhaseListWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	constructor(o: { device: MTRBaseDevice; endpointID: number; queue: interop.Pointer | interop.Reference<any>; });
+
+	initWithDeviceEndpointIDQueue(device: MTRBaseDevice, endpointID: number, queue: interop.Pointer | interop.Reference<any>): this;
+
+	pauseWithCompletion(completion: (p1: MTRRVCOperationalStateClusterOperationalCommandResponseParams, p2: NSError) => void): void;
+
+	pauseWithParamsCompletion(params: MTRRVCOperationalStateClusterPauseParams, completion: (p1: MTRRVCOperationalStateClusterOperationalCommandResponseParams, p2: NSError) => void): void;
+
+	readAttributeAcceptedCommandListWithCompletion(completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	readAttributeAttributeListWithCompletion(completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	readAttributeClusterRevisionWithCompletion(completion: (p1: number, p2: NSError) => void): void;
+
+	readAttributeCountdownTimeWithCompletion(completion: (p1: number, p2: NSError) => void): void;
+
+	readAttributeCurrentPhaseWithCompletion(completion: (p1: number, p2: NSError) => void): void;
+
+	readAttributeFeatureMapWithCompletion(completion: (p1: number, p2: NSError) => void): void;
+
+	readAttributeGeneratedCommandListWithCompletion(completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	readAttributeOperationalErrorWithCompletion(completion: (p1: MTRRVCOperationalStateClusterErrorStateStruct, p2: NSError) => void): void;
+
+	readAttributeOperationalStateListWithCompletion(completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	readAttributeOperationalStateWithCompletion(completion: (p1: number, p2: NSError) => void): void;
+
+	readAttributePhaseListWithCompletion(completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	resumeWithCompletion(completion: (p1: MTRRVCOperationalStateClusterOperationalCommandResponseParams, p2: NSError) => void): void;
+
+	resumeWithParamsCompletion(params: MTRRVCOperationalStateClusterResumeParams, completion: (p1: MTRRVCOperationalStateClusterOperationalCommandResponseParams, p2: NSError) => void): void;
+
+	subscribeAttributeAcceptedCommandListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	subscribeAttributeAttributeListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	subscribeAttributeClusterRevisionWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
+
+	subscribeAttributeCountdownTimeWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
+
+	subscribeAttributeCurrentPhaseWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
+
+	subscribeAttributeFeatureMapWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
+
+	subscribeAttributeGeneratedCommandListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	subscribeAttributeOperationalErrorWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: MTRRVCOperationalStateClusterErrorStateStruct, p2: NSError) => void): void;
+
+	subscribeAttributeOperationalStateListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	subscribeAttributeOperationalStateWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
+
+	subscribeAttributePhaseListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
+}
+
+declare class MTRBaseClusterRVCRunMode extends MTRGenericBaseCluster {
+
+	static alloc(): MTRBaseClusterRVCRunMode; // inherited from NSObject
+
+	static new(): MTRBaseClusterRVCRunMode; // inherited from NSObject
+
+	static readAttributeAcceptedCommandListWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	static readAttributeAttributeListWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	static readAttributeClusterRevisionWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: number, p2: NSError) => void): void;
+
+	static readAttributeCurrentModeWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: number, p2: NSError) => void): void;
+
+	static readAttributeFeatureMapWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: number, p2: NSError) => void): void;
+
+	static readAttributeGeneratedCommandListWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	static readAttributeSupportedModesWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	constructor(o: { device: MTRBaseDevice; endpointID: number; queue: interop.Pointer | interop.Reference<any>; });
+
+	changeToModeWithParamsCompletion(params: MTRRVCRunModeClusterChangeToModeParams, completion: (p1: MTRRVCRunModeClusterChangeToModeResponseParams, p2: NSError) => void): void;
+
+	initWithDeviceEndpointIDQueue(device: MTRBaseDevice, endpointID: number, queue: interop.Pointer | interop.Reference<any>): this;
+
+	readAttributeAcceptedCommandListWithCompletion(completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	readAttributeAttributeListWithCompletion(completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	readAttributeClusterRevisionWithCompletion(completion: (p1: number, p2: NSError) => void): void;
+
+	readAttributeCurrentModeWithCompletion(completion: (p1: number, p2: NSError) => void): void;
+
+	readAttributeFeatureMapWithCompletion(completion: (p1: number, p2: NSError) => void): void;
+
+	readAttributeGeneratedCommandListWithCompletion(completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	readAttributeSupportedModesWithCompletion(completion: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	subscribeAttributeAcceptedCommandListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	subscribeAttributeAttributeListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	subscribeAttributeClusterRevisionWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
+
+	subscribeAttributeCurrentModeWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
+
+	subscribeAttributeFeatureMapWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
+
+	subscribeAttributeGeneratedCommandListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
+
+	subscribeAttributeSupportedModesWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
+}
+
+declare class MTRBaseClusterRelativeHumidityMeasurement extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterRelativeHumidityMeasurement; // inherited from NSObject
 
@@ -16956,7 +18443,7 @@ declare class MTRBaseClusterRelativeHumidityMeasurement extends MTRCluster {
 	subscribeAttributeToleranceWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 }
 
-declare class MTRBaseClusterScenes extends MTRCluster {
+declare class MTRBaseClusterScenes extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterScenes; // inherited from NSObject
 
@@ -17143,7 +18630,7 @@ declare class MTRBaseClusterScenes extends MTRCluster {
 	viewSceneWithParamsCompletionHandler(params: MTRScenesClusterViewSceneParams, completionHandler: (p1: MTRScenesClusterViewSceneResponseParams, p2: NSError) => void): void;
 }
 
-declare class MTRBaseClusterSoftwareDiagnostics extends MTRCluster {
+declare class MTRBaseClusterSoftwareDiagnostics extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterSoftwareDiagnostics; // inherited from NSObject
 
@@ -17274,7 +18761,7 @@ declare class MTRBaseClusterSoftwareDiagnostics extends MTRCluster {
 	subscribeAttributeThreadMetricsWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
 }
 
-declare class MTRBaseClusterSwitch extends MTRCluster {
+declare class MTRBaseClusterSwitch extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterSwitch; // inherited from NSObject
 
@@ -17385,7 +18872,7 @@ declare class MTRBaseClusterSwitch extends MTRCluster {
 	subscribeAttributeNumberOfPositionsWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 }
 
-declare class MTRBaseClusterTargetNavigator extends MTRCluster {
+declare class MTRBaseClusterTargetNavigator extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterTargetNavigator; // inherited from NSObject
 
@@ -17488,7 +18975,7 @@ declare class MTRBaseClusterTargetNavigator extends MTRCluster {
 	subscribeAttributeTargetListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
 }
 
-declare class MTRBaseClusterTemperatureMeasurement extends MTRCluster {
+declare class MTRBaseClusterTemperatureMeasurement extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterTemperatureMeasurement; // inherited from NSObject
 
@@ -18171,9 +19658,13 @@ declare class MTRBaseClusterTestCluster extends MTRBaseClusterUnitTesting {
 
 	testNotHandledWithParamsCompletionHandler(params: MTRTestClusterClusterTestNotHandledParams, completionHandler: (p1: NSError) => void): void;
 
+	testNullableOptionalRequestWithCompletionHandler(completionHandler: (p1: MTRTestClusterClusterTestNullableOptionalResponseParams, p2: NSError) => void): void;
+
 	testNullableOptionalRequestWithParamsCompletionHandler(params: MTRTestClusterClusterTestNullableOptionalRequestParams, completionHandler: (p1: MTRTestClusterClusterTestNullableOptionalResponseParams, p2: NSError) => void): void;
 
 	testSimpleArgumentRequestWithParamsCompletionHandler(params: MTRTestClusterClusterTestSimpleArgumentRequestParams, completionHandler: (p1: MTRTestClusterClusterTestSimpleArgumentResponseParams, p2: NSError) => void): void;
+
+	testSimpleOptionalArgumentRequestWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
 
 	testSimpleOptionalArgumentRequestWithParamsCompletionHandler(params: MTRTestClusterClusterTestSimpleOptionalArgumentRequestParams, completionHandler: (p1: NSError) => void): void;
 
@@ -18526,7 +20017,7 @@ declare class MTRBaseClusterTestCluster extends MTRBaseClusterUnitTesting {
 	writeAttributeWriteOnlyInt8uWithValueParamsCompletionHandler(value: number, params: MTRWriteParams, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRBaseClusterThermostat extends MTRCluster {
+declare class MTRBaseClusterThermostat extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterThermostat; // inherited from NSObject
 
@@ -19425,7 +20916,7 @@ declare class MTRBaseClusterThermostat extends MTRCluster {
 	writeAttributeUnoccupiedSetbackWithValueParamsCompletionHandler(value: number, params: MTRWriteParams, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRBaseClusterThermostatUserInterfaceConfiguration extends MTRCluster {
+declare class MTRBaseClusterThermostatUserInterfaceConfiguration extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterThermostatUserInterfaceConfiguration; // inherited from NSObject
 
@@ -19560,7 +21051,7 @@ declare class MTRBaseClusterThermostatUserInterfaceConfiguration extends MTRClus
 	writeAttributeTemperatureDisplayModeWithValueParamsCompletionHandler(value: number, params: MTRWriteParams, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRBaseClusterThreadNetworkDiagnostics extends MTRCluster {
+declare class MTRBaseClusterThreadNetworkDiagnostics extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterThreadNetworkDiagnostics; // inherited from NSObject
 
@@ -20399,7 +21890,7 @@ declare class MTRBaseClusterThreadNetworkDiagnostics extends MTRCluster {
 	subscribeAttributeWeightingWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 }
 
-declare class MTRBaseClusterTimeFormatLocalization extends MTRCluster {
+declare class MTRBaseClusterTimeFormatLocalization extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterTimeFormatLocalization; // inherited from NSObject
 
@@ -20526,7 +22017,7 @@ declare class MTRBaseClusterTimeFormatLocalization extends MTRCluster {
 	writeAttributeHourFormatWithValueParamsCompletionHandler(value: number, params: MTRWriteParams, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRBaseClusterUnitLocalization extends MTRCluster {
+declare class MTRBaseClusterUnitLocalization extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterUnitLocalization; // inherited from NSObject
 
@@ -20621,7 +22112,7 @@ declare class MTRBaseClusterUnitLocalization extends MTRCluster {
 	writeAttributeTemperatureUnitWithValueParamsCompletionHandler(value: number, params: MTRWriteParams, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRBaseClusterUnitTesting extends MTRCluster {
+declare class MTRBaseClusterUnitTesting extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterUnitTesting; // inherited from NSObject
 
@@ -21181,9 +22672,13 @@ declare class MTRBaseClusterUnitTesting extends MTRCluster {
 
 	testNotHandledWithParamsCompletion(params: MTRUnitTestingClusterTestNotHandledParams, completion: (p1: NSError) => void): void;
 
+	testNullableOptionalRequestWithCompletion(completion: (p1: MTRUnitTestingClusterTestNullableOptionalResponseParams, p2: NSError) => void): void;
+
 	testNullableOptionalRequestWithParamsCompletion(params: MTRUnitTestingClusterTestNullableOptionalRequestParams, completion: (p1: MTRUnitTestingClusterTestNullableOptionalResponseParams, p2: NSError) => void): void;
 
 	testSimpleArgumentRequestWithParamsCompletion(params: MTRUnitTestingClusterTestSimpleArgumentRequestParams, completion: (p1: MTRUnitTestingClusterTestSimpleArgumentResponseParams, p2: NSError) => void): void;
+
+	testSimpleOptionalArgumentRequestWithCompletion(completion: (p1: NSError) => void): void;
 
 	testSimpleOptionalArgumentRequestWithParamsCompletion(params: MTRUnitTestingClusterTestSimpleOptionalArgumentRequestParams, completion: (p1: NSError) => void): void;
 
@@ -21536,7 +23031,7 @@ declare class MTRBaseClusterUnitTesting extends MTRCluster {
 	writeAttributeWriteOnlyInt8uWithValueParamsCompletion(value: number, params: MTRWriteParams, completion: (p1: NSError) => void): void;
 }
 
-declare class MTRBaseClusterUserLabel extends MTRCluster {
+declare class MTRBaseClusterUserLabel extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterUserLabel; // inherited from NSObject
 
@@ -21631,7 +23126,7 @@ declare class MTRBaseClusterUserLabel extends MTRCluster {
 	writeAttributeLabelListWithValueParamsCompletionHandler(value: NSArray<any> | any[], params: MTRWriteParams, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRBaseClusterWakeOnLAN extends MTRCluster {
+declare class MTRBaseClusterWakeOnLAN extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterWakeOnLAN; // inherited from NSObject
 
@@ -21725,7 +23220,7 @@ declare class MTRBaseClusterWakeOnLan extends MTRBaseClusterWakeOnLAN {
 	subscribeAttributeMACAddressWithMinIntervalMaxIntervalParamsSubscriptionEstablishedReportHandler(minInterval: number, maxInterval: number, params: MTRSubscribeParams, subscriptionEstablishedHandler: () => void, reportHandler: (p1: string, p2: NSError) => void): void;
 }
 
-declare class MTRBaseClusterWiFiNetworkDiagnostics extends MTRCluster {
+declare class MTRBaseClusterWiFiNetworkDiagnostics extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterWiFiNetworkDiagnostics; // inherited from NSObject
 
@@ -21964,7 +23459,7 @@ declare class MTRBaseClusterWiFiNetworkDiagnostics extends MTRCluster {
 	subscribeAttributeWiFiVersionWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 }
 
-declare class MTRBaseClusterWindowCovering extends MTRCluster {
+declare class MTRBaseClusterWindowCovering extends MTRGenericBaseCluster {
 
 	static alloc(): MTRBaseClusterWindowCovering; // inherited from NSObject
 
@@ -22927,7 +24422,11 @@ declare const enum MTRChannelFeature {
 
 	ChannelList = 1,
 
-	LineupInfo = 2
+	LineupInfo = 2,
+
+	ElectronicGuide = 3,
+
+	RecordProgram = 4
 }
 
 declare const enum MTRChannelLineupInfoType {
@@ -22951,9 +24450,11 @@ declare class MTRCluster extends NSObject {
 	static alloc(): MTRCluster; // inherited from NSObject
 
 	static new(): MTRCluster; // inherited from NSObject
+
+	readonly endpointID: number;
 }
 
-declare class MTRClusterAccessControl extends MTRCluster {
+declare class MTRClusterAccessControl extends MTRGenericCluster {
 
 	static alloc(): MTRClusterAccessControl; // inherited from NSObject
 
@@ -23002,7 +24503,7 @@ declare class MTRClusterAccessControl extends MTRCluster {
 	writeAttributeExtensionWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 }
 
-declare class MTRClusterAccountLogin extends MTRCluster {
+declare class MTRClusterAccountLogin extends MTRGenericCluster {
 
 	static alloc(): MTRClusterAccountLogin; // inherited from NSObject
 
@@ -23043,7 +24544,7 @@ declare class MTRClusterAccountLogin extends MTRCluster {
 	readAttributeGeneratedCommandListWithParams(params: MTRReadParams): NSDictionary<string, any>;
 }
 
-declare class MTRClusterActions extends MTRCluster {
+declare class MTRClusterActions extends MTRGenericCluster {
 
 	static alloc(): MTRClusterActions; // inherited from NSObject
 
@@ -23122,7 +24623,7 @@ declare class MTRClusterActions extends MTRCluster {
 	stopActionWithParamsExpectedValuesExpectedValueIntervalCompletionHandler(params: MTRActionsClusterStopActionParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRClusterAdministratorCommissioning extends MTRCluster {
+declare class MTRClusterAdministratorCommissioning extends MTRGenericCluster {
 
 	static alloc(): MTRClusterAdministratorCommissioning; // inherited from NSObject
 
@@ -23169,7 +24670,7 @@ declare class MTRClusterAdministratorCommissioning extends MTRCluster {
 	revokeCommissioningWithParamsExpectedValuesExpectedValueIntervalCompletionHandler(params: MTRAdministratorCommissioningClusterRevokeCommissioningParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRClusterApplicationBasic extends MTRCluster {
+declare class MTRClusterApplicationBasic extends MTRGenericCluster {
 
 	static alloc(): MTRClusterApplicationBasic; // inherited from NSObject
 
@@ -23210,7 +24711,7 @@ declare class MTRClusterApplicationBasic extends MTRCluster {
 	readAttributeVendorNameWithParams(params: MTRReadParams): NSDictionary<string, any>;
 }
 
-declare class MTRClusterApplicationLauncher extends MTRCluster {
+declare class MTRClusterApplicationLauncher extends MTRGenericCluster {
 
 	static alloc(): MTRClusterApplicationLauncher; // inherited from NSObject
 
@@ -23220,6 +24721,8 @@ declare class MTRClusterApplicationLauncher extends MTRCluster {
 
 	constructor(o: { device: MTRDevice; endpoint: number; queue: interop.Pointer | interop.Reference<any>; });
 
+	hideAppWithExpectedValuesExpectedValueIntervalCompletion(expectedValues: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: MTRApplicationLauncherClusterLauncherResponseParams, p2: NSError) => void): void;
+
 	hideAppWithParamsExpectedValuesExpectedValueIntervalCompletion(params: MTRApplicationLauncherClusterHideAppParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: MTRApplicationLauncherClusterLauncherResponseParams, p2: NSError) => void): void;
 
 	hideAppWithParamsExpectedValuesExpectedValueIntervalCompletionHandler(params: MTRApplicationLauncherClusterHideAppParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completionHandler: (p1: MTRApplicationLauncherClusterLauncherResponseParams, p2: NSError) => void): void;
@@ -23227,6 +24730,8 @@ declare class MTRClusterApplicationLauncher extends MTRCluster {
 	initWithDeviceEndpointIDQueue(device: MTRDevice, endpointID: number, queue: interop.Pointer | interop.Reference<any>): this;
 
 	initWithDeviceEndpointQueue(device: MTRDevice, endpoint: number, queue: interop.Pointer | interop.Reference<any>): this;
+
+	launchAppWithExpectedValuesExpectedValueIntervalCompletion(expectedValues: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: MTRApplicationLauncherClusterLauncherResponseParams, p2: NSError) => void): void;
 
 	launchAppWithParamsExpectedValuesExpectedValueIntervalCompletion(params: MTRApplicationLauncherClusterLaunchAppParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: MTRApplicationLauncherClusterLauncherResponseParams, p2: NSError) => void): void;
 
@@ -23246,6 +24751,8 @@ declare class MTRClusterApplicationLauncher extends MTRCluster {
 
 	readAttributeGeneratedCommandListWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
+	stopAppWithExpectedValuesExpectedValueIntervalCompletion(expectedValues: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: MTRApplicationLauncherClusterLauncherResponseParams, p2: NSError) => void): void;
+
 	stopAppWithParamsExpectedValuesExpectedValueIntervalCompletion(params: MTRApplicationLauncherClusterStopAppParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: MTRApplicationLauncherClusterLauncherResponseParams, p2: NSError) => void): void;
 
 	stopAppWithParamsExpectedValuesExpectedValueIntervalCompletionHandler(params: MTRApplicationLauncherClusterStopAppParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completionHandler: (p1: MTRApplicationLauncherClusterLauncherResponseParams, p2: NSError) => void): void;
@@ -23255,7 +24762,7 @@ declare class MTRClusterApplicationLauncher extends MTRCluster {
 	writeAttributeCurrentAppWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 }
 
-declare class MTRClusterAudioOutput extends MTRCluster {
+declare class MTRClusterAudioOutput extends MTRGenericCluster {
 
 	static alloc(): MTRClusterAudioOutput; // inherited from NSObject
 
@@ -23292,7 +24799,7 @@ declare class MTRClusterAudioOutput extends MTRCluster {
 	selectOutputWithParamsExpectedValuesExpectedValueIntervalCompletionHandler(params: MTRAudioOutputClusterSelectOutputParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRClusterBallastConfiguration extends MTRCluster {
+declare class MTRClusterBallastConfiguration extends MTRGenericCluster {
 
 	static alloc(): MTRClusterBallastConfiguration; // inherited from NSObject
 
@@ -23391,7 +24898,7 @@ declare class MTRClusterBallastConfiguration extends MTRCluster {
 	writeAttributeMinLevelWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 }
 
-declare class MTRClusterBarrierControl extends MTRCluster {
+declare class MTRClusterBarrierControl extends MTRGenericCluster {
 
 	static alloc(): MTRClusterBarrierControl; // inherited from NSObject
 
@@ -23487,7 +24994,7 @@ declare class MTRClusterBasic extends MTRClusterBasicInformation {
 	mfgSpecificPingWithParamsExpectedValuesExpectedValueIntervalCompletionHandler(params: MTRBasicClusterMfgSpecificPingParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRClusterBasicInformation extends MTRCluster {
+declare class MTRClusterBasicInformation extends MTRGenericCluster {
 
 	static alloc(): MTRClusterBasicInformation; // inherited from NSObject
 
@@ -23562,7 +25069,7 @@ declare class MTRClusterBasicInformation extends MTRCluster {
 	writeAttributeNodeLabelWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 }
 
-declare class MTRClusterBinaryInputBasic extends MTRCluster {
+declare class MTRClusterBinaryInputBasic extends MTRGenericCluster {
 
 	static alloc(): MTRClusterBinaryInputBasic; // inherited from NSObject
 
@@ -23629,7 +25136,7 @@ declare class MTRClusterBinaryInputBasic extends MTRCluster {
 	writeAttributeReliabilityWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 }
 
-declare class MTRClusterBinding extends MTRCluster {
+declare class MTRClusterBinding extends MTRGenericCluster {
 
 	static alloc(): MTRClusterBinding; // inherited from NSObject
 
@@ -23660,7 +25167,7 @@ declare class MTRClusterBinding extends MTRCluster {
 	writeAttributeBindingWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 }
 
-declare class MTRClusterBooleanState extends MTRCluster {
+declare class MTRClusterBooleanState extends MTRGenericCluster {
 
 	static alloc(): MTRClusterBooleanState; // inherited from NSObject
 
@@ -23698,7 +25205,7 @@ declare class MTRClusterBridgedDeviceBasic extends MTRClusterBridgedDeviceBasicI
 	initWithDeviceEndpointQueue(device: MTRDevice, endpoint: number, queue: interop.Pointer | interop.Reference<any>): this;
 }
 
-declare class MTRClusterBridgedDeviceBasicInformation extends MTRCluster {
+declare class MTRClusterBridgedDeviceBasicInformation extends MTRGenericCluster {
 
 	static alloc(): MTRClusterBridgedDeviceBasicInformation; // inherited from NSObject
 
@@ -23755,7 +25262,7 @@ declare class MTRClusterBridgedDeviceBasicInformation extends MTRCluster {
 	writeAttributeNodeLabelWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 }
 
-declare class MTRClusterChannel extends MTRCluster {
+declare class MTRClusterChannel extends MTRGenericCluster {
 
 	static alloc(): MTRClusterChannel; // inherited from NSObject
 
@@ -23798,7 +25305,7 @@ declare class MTRClusterChannel extends MTRCluster {
 	skipChannelWithParamsExpectedValuesExpectedValueIntervalCompletionHandler(params: MTRChannelClusterSkipChannelParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRClusterColorControl extends MTRCluster {
+declare class MTRClusterColorControl extends MTRGenericCluster {
 
 	static alloc(): MTRClusterColorControl; // inherited from NSObject
 
@@ -24055,7 +25562,7 @@ declare class MTRClusterColorControl extends MTRCluster {
 	writeAttributeWhitePointYWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 }
 
-declare class MTRClusterContentLauncher extends MTRCluster {
+declare class MTRClusterContentLauncher extends MTRGenericCluster {
 
 	static alloc(): MTRClusterContentLauncher; // inherited from NSObject
 
@@ -24096,7 +25603,7 @@ declare class MTRClusterContentLauncher extends MTRCluster {
 	writeAttributeSupportedStreamingProtocolsWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 }
 
-declare class MTRClusterDescriptor extends MTRCluster {
+declare class MTRClusterDescriptor extends MTRGenericCluster {
 
 	static alloc(): MTRClusterDescriptor; // inherited from NSObject
 
@@ -24131,7 +25638,7 @@ declare class MTRClusterDescriptor extends MTRCluster {
 	readAttributeServerListWithParams(params: MTRReadParams): NSDictionary<string, any>;
 }
 
-declare class MTRClusterDiagnosticLogs extends MTRCluster {
+declare class MTRClusterDiagnosticLogs extends MTRGenericCluster {
 
 	static alloc(): MTRClusterDiagnosticLogs; // inherited from NSObject
 
@@ -24160,7 +25667,7 @@ declare class MTRClusterDiagnosticLogs extends MTRCluster {
 	retrieveLogsRequestWithParamsExpectedValuesExpectedValueIntervalCompletionHandler(params: MTRDiagnosticLogsClusterRetrieveLogsRequestParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completionHandler: (p1: MTRDiagnosticLogsClusterRetrieveLogsResponseParams, p2: NSError) => void): void;
 }
 
-declare class MTRClusterDoorLock extends MTRCluster {
+declare class MTRClusterDoorLock extends MTRGenericCluster {
 
 	static alloc(): MTRClusterDoorLock; // inherited from NSObject
 
@@ -24213,6 +25720,8 @@ declare class MTRClusterDoorLock extends MTRCluster {
 	initWithDeviceEndpointIDQueue(device: MTRDevice, endpointID: number, queue: interop.Pointer | interop.Reference<any>): this;
 
 	initWithDeviceEndpointQueue(device: MTRDevice, endpoint: number, queue: interop.Pointer | interop.Reference<any>): this;
+
+	lockDoorWithExpectedValuesExpectedValueIntervalCompletion(expectedValues: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: NSError) => void): void;
 
 	lockDoorWithParamsExpectedValuesExpectedValueIntervalCompletion(params: MTRDoorLockClusterLockDoorParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: NSError) => void): void;
 
@@ -24320,6 +25829,8 @@ declare class MTRClusterDoorLock extends MTRCluster {
 
 	setYearDayScheduleWithParamsExpectedValuesExpectedValueIntervalCompletionHandler(params: MTRDoorLockClusterSetYearDayScheduleParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completionHandler: (p1: NSError) => void): void;
 
+	unlockDoorWithExpectedValuesExpectedValueIntervalCompletion(expectedValues: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: NSError) => void): void;
+
 	unlockDoorWithParamsExpectedValuesExpectedValueIntervalCompletion(params: MTRDoorLockClusterUnlockDoorParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: NSError) => void): void;
 
 	unlockDoorWithParamsExpectedValuesExpectedValueIntervalCompletionHandler(params: MTRDoorLockClusterUnlockDoorParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completionHandler: (p1: NSError) => void): void;
@@ -24401,7 +25912,7 @@ declare class MTRClusterDoorLock extends MTRCluster {
 	writeAttributeWrongCodeEntryLimitWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 }
 
-declare class MTRClusterElectricalMeasurement extends MTRCluster {
+declare class MTRClusterElectricalMeasurement extends MTRGenericCluster {
 
 	static alloc(): MTRClusterElectricalMeasurement; // inherited from NSObject
 
@@ -24726,7 +26237,7 @@ declare class MTRClusterElectricalMeasurement extends MTRCluster {
 	writeAttributeRmsVoltageSwellPeriodWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 }
 
-declare class MTRClusterEthernetNetworkDiagnostics extends MTRCluster {
+declare class MTRClusterEthernetNetworkDiagnostics extends MTRGenericCluster {
 
 	static alloc(): MTRClusterEthernetNetworkDiagnostics; // inherited from NSObject
 
@@ -24777,7 +26288,7 @@ declare class MTRClusterEthernetNetworkDiagnostics extends MTRCluster {
 	resetCountsWithParamsExpectedValuesExpectedValueIntervalCompletionHandler(params: MTREthernetNetworkDiagnosticsClusterResetCountsParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRClusterFanControl extends MTRCluster {
+declare class MTRClusterFanControl extends MTRGenericCluster {
 
 	static alloc(): MTRClusterFanControl; // inherited from NSObject
 
@@ -24848,7 +26359,7 @@ declare class MTRClusterFanControl extends MTRCluster {
 	writeAttributeWindSettingWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 }
 
-declare class MTRClusterFixedLabel extends MTRCluster {
+declare class MTRClusterFixedLabel extends MTRGenericCluster {
 
 	static alloc(): MTRClusterFixedLabel; // inherited from NSObject
 
@@ -24875,7 +26386,7 @@ declare class MTRClusterFixedLabel extends MTRCluster {
 	readAttributeLabelListWithParams(params: MTRReadParams): NSDictionary<string, any>;
 }
 
-declare class MTRClusterFlowMeasurement extends MTRCluster {
+declare class MTRClusterFlowMeasurement extends MTRGenericCluster {
 
 	static alloc(): MTRClusterFlowMeasurement; // inherited from NSObject
 
@@ -24908,7 +26419,7 @@ declare class MTRClusterFlowMeasurement extends MTRCluster {
 	readAttributeToleranceWithParams(params: MTRReadParams): NSDictionary<string, any>;
 }
 
-declare class MTRClusterGeneralCommissioning extends MTRCluster {
+declare class MTRClusterGeneralCommissioning extends MTRGenericCluster {
 
 	static alloc(): MTRClusterGeneralCommissioning; // inherited from NSObject
 
@@ -24963,7 +26474,7 @@ declare class MTRClusterGeneralCommissioning extends MTRCluster {
 	writeAttributeBreadcrumbWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 }
 
-declare class MTRClusterGeneralDiagnostics extends MTRCluster {
+declare class MTRClusterGeneralDiagnostics extends MTRGenericCluster {
 
 	static alloc(): MTRClusterGeneralDiagnostics; // inherited from NSObject
 
@@ -25012,7 +26523,7 @@ declare class MTRClusterGeneralDiagnostics extends MTRCluster {
 	testEventTriggerWithParamsExpectedValuesExpectedValueIntervalCompletionHandler(params: MTRGeneralDiagnosticsClusterTestEventTriggerParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRClusterGroupKeyManagement extends MTRCluster {
+declare class MTRClusterGroupKeyManagement extends MTRGenericCluster {
 
 	static alloc(): MTRClusterGroupKeyManagement; // inherited from NSObject
 
@@ -25067,7 +26578,7 @@ declare class MTRClusterGroupKeyManagement extends MTRCluster {
 	writeAttributeGroupKeyMapWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 }
 
-declare class MTRClusterGroups extends MTRCluster {
+declare class MTRClusterGroups extends MTRGenericCluster {
 
 	static alloc(): MTRClusterGroups; // inherited from NSObject
 
@@ -25196,12 +26707,6 @@ declare const enum MTRClusterIDType {
 
 	UserLabelID = 65,
 
-	ProxyConfigurationID = 66,
-
-	ProxyDiscoveryID = 67,
-
-	ProxyValidID = 68,
-
 	BooleanStateID = 69,
 
 	ModeSelectID = 80,
@@ -25263,8 +26768,6 @@ declare const enum MTRClusterIDType {
 	ElectricalMeasurementID = 2820,
 
 	TestClusterID = 4294048773,
-
-	FaultInjectionID = 4294048774,
 
 	IDTypeIdentifyID = 3,
 
@@ -25338,15 +26841,67 @@ declare const enum MTRClusterIDType {
 
 	IDTypeUserLabelID = 65,
 
-	IDTypeProxyConfigurationID = 66,
-
-	IDTypeProxyDiscoveryID = 67,
-
-	IDTypeProxyValidID = 68,
-
 	IDTypeBooleanStateID = 69,
 
+	IDTypeICDManagementID = 70,
+
+	IDTypeTimerID = 71,
+
+	IDTypeOvenCavityOperationalStateID = 72,
+
+	IDTypeOvenModeID = 73,
+
+	IDTypeLaundryDryerControlsID = 74,
+
 	IDTypeModeSelectID = 80,
+
+	IDTypeLaundryWasherModeID = 81,
+
+	IDTypeRefrigeratorAndTemperatureControlledCabinetModeID = 82,
+
+	IDTypeLaundryWasherControlsID = 83,
+
+	IDTypeRVCRunModeID = 84,
+
+	IDTypeRVCCleanModeID = 85,
+
+	IDTypeTemperatureControlID = 86,
+
+	IDTypeRefrigeratorAlarmID = 87,
+
+	IDTypeDishwasherModeID = 89,
+
+	IDTypeAirQualityID = 91,
+
+	IDTypeSmokeCOAlarmID = 92,
+
+	IDTypeDishwasherAlarmID = 93,
+
+	IDTypeMicrowaveOvenModeID = 94,
+
+	IDTypeMicrowaveOvenControlID = 95,
+
+	IDTypeOperationalStateID = 96,
+
+	IDTypeRVCOperationalStateID = 97,
+
+	IDTypeHEPAFilterMonitoringID = 113,
+
+	IDTypeActivatedCarbonFilterMonitoringID = 114,
+
+	IDTypeBooleanStateConfigurationID = 128,
+
+	IDTypeValveConfigurationAndControlID = 129,
+
+	IDTypeElectricalEnergyMeasurementID = 145,
+
+	IDTypeDemandResponseLoadControlID = 150,
+
+	IDTypeDeviceEnergyManagementID = 152,
+
+	IDTypeEnergyEVSEID = 153,
+
+	IDTypeEnergyPreferenceID = 155,
 
 	IDTypeDoorLockID = 257,
 
@@ -25378,6 +26933,26 @@ declare const enum MTRClusterIDType {
 
 	IDTypeOccupancySensingID = 1030,
 
+	IDTypeCarbonMonoxideConcentrationMeasurementID = 1036,
+
+	IDTypeCarbonDioxideConcentrationMeasurementID = 1037,
+
+	IDTypeNitrogenDioxideConcentrationMeasurementID = 1043,
+
+	IDTypeOzoneConcentrationMeasurementID = 1045,
+
+	IDTypePM25ConcentrationMeasurementID = 1066,
+
+	IDTypeFormaldehydeConcentrationMeasurementID = 1067,
+
+	IDTypePM1ConcentrationMeasurementID = 1068,
+
+	IDTypePM10ConcentrationMeasurementID = 1069,
+
+	IDTypeTotalVolatileOrganicCompoundsConcentrationMeasurementID = 1070,
+
+	IDTypeRadonConcentrationMeasurementID = 1071,
+
 	IDTypeWakeOnLANID = 1283,
 
 	IDTypeChannelID = 1284,
@@ -25402,14 +26977,18 @@ declare const enum MTRClusterIDType {
 
 	IDTypeAccountLoginID = 1294,
 
+	IDTypeContentControlID = 1295,
+
+	IDTypeContentAppObserverID = 1296,
+
 	IDTypeElectricalMeasurementID = 2820,
 
 	IDTypeUnitTestingID = 4294048773,
 
-	IDTypeFaultInjectionID = 4294048774
+	IDTypeSampleMEIID = 4294048800
 }
 
-declare class MTRClusterIdentify extends MTRCluster {
+declare class MTRClusterIdentify extends MTRGenericCluster {
 
 	static alloc(): MTRClusterIdentify; // inherited from NSObject
 
@@ -25450,7 +27029,7 @@ declare class MTRClusterIdentify extends MTRCluster {
 	writeAttributeIdentifyTimeWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 }
 
-declare class MTRClusterIlluminanceMeasurement extends MTRCluster {
+declare class MTRClusterIlluminanceMeasurement extends MTRGenericCluster {
 
 	static alloc(): MTRClusterIlluminanceMeasurement; // inherited from NSObject
 
@@ -25485,7 +27064,7 @@ declare class MTRClusterIlluminanceMeasurement extends MTRCluster {
 	readAttributeToleranceWithParams(params: MTRReadParams): NSDictionary<string, any>;
 }
 
-declare class MTRClusterKeypadInput extends MTRCluster {
+declare class MTRClusterKeypadInput extends MTRGenericCluster {
 
 	static alloc(): MTRClusterKeypadInput; // inherited from NSObject
 
@@ -25514,7 +27093,7 @@ declare class MTRClusterKeypadInput extends MTRCluster {
 	sendKeyWithParamsExpectedValuesExpectedValueIntervalCompletionHandler(params: MTRKeypadInputClusterSendKeyParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completionHandler: (p1: MTRKeypadInputClusterSendKeyResponseParams, p2: NSError) => void): void;
 }
 
-declare class MTRClusterLevelControl extends MTRCluster {
+declare class MTRClusterLevelControl extends MTRGenericCluster {
 
 	static alloc(): MTRClusterLevelControl; // inherited from NSObject
 
@@ -25631,7 +27210,7 @@ declare class MTRClusterLevelControl extends MTRCluster {
 	writeAttributeStartUpCurrentLevelWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 }
 
-declare class MTRClusterLocalizationConfiguration extends MTRCluster {
+declare class MTRClusterLocalizationConfiguration extends MTRGenericCluster {
 
 	static alloc(): MTRClusterLocalizationConfiguration; // inherited from NSObject
 
@@ -25664,7 +27243,7 @@ declare class MTRClusterLocalizationConfiguration extends MTRCluster {
 	writeAttributeActiveLocaleWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 }
 
-declare class MTRClusterLowPower extends MTRCluster {
+declare class MTRClusterLowPower extends MTRGenericCluster {
 
 	static alloc(): MTRClusterLowPower; // inherited from NSObject
 
@@ -25697,7 +27276,7 @@ declare class MTRClusterLowPower extends MTRCluster {
 	sleepWithParamsExpectedValuesExpectedValueIntervalCompletionHandler(params: MTRLowPowerClusterSleepParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRClusterMediaInput extends MTRCluster {
+declare class MTRClusterMediaInput extends MTRGenericCluster {
 
 	static alloc(): MTRClusterMediaInput; // inherited from NSObject
 
@@ -25750,7 +27329,7 @@ declare class MTRClusterMediaInput extends MTRCluster {
 	showInputStatusWithParamsExpectedValuesExpectedValueIntervalCompletionHandler(params: MTRMediaInputClusterShowInputStatusParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRClusterMediaPlayback extends MTRCluster {
+declare class MTRClusterMediaPlayback extends MTRGenericCluster {
 
 	static alloc(): MTRClusterMediaPlayback; // inherited from NSObject
 
@@ -25865,7 +27444,7 @@ declare class MTRClusterMediaPlayback extends MTRCluster {
 	stopWithParamsExpectedValuesExpectedValueIntervalCompletion(params: MTRMediaPlaybackClusterStopParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: MTRMediaPlaybackClusterPlaybackResponseParams, p2: NSError) => void): void;
 }
 
-declare class MTRClusterModeSelect extends MTRCluster {
+declare class MTRClusterModeSelect extends MTRGenericCluster {
 
 	static alloc(): MTRClusterModeSelect; // inherited from NSObject
 
@@ -25914,7 +27493,7 @@ declare class MTRClusterModeSelect extends MTRCluster {
 	writeAttributeStartUpModeWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 }
 
-declare class MTRClusterNetworkCommissioning extends MTRCluster {
+declare class MTRClusterNetworkCommissioning extends MTRGenericCluster {
 
 	static alloc(): MTRClusterNetworkCommissioning; // inherited from NSObject
 
@@ -25974,6 +27553,8 @@ declare class MTRClusterNetworkCommissioning extends MTRCluster {
 
 	reorderNetworkWithParamsExpectedValuesExpectedValueIntervalCompletionHandler(params: MTRNetworkCommissioningClusterReorderNetworkParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completionHandler: (p1: MTRNetworkCommissioningClusterNetworkConfigResponseParams, p2: NSError) => void): void;
 
+	scanNetworksWithExpectedValuesExpectedValueIntervalCompletion(expectedValues: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: MTRNetworkCommissioningClusterScanNetworksResponseParams, p2: NSError) => void): void;
+
 	scanNetworksWithParamsExpectedValuesExpectedValueIntervalCompletion(params: MTRNetworkCommissioningClusterScanNetworksParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: MTRNetworkCommissioningClusterScanNetworksResponseParams, p2: NSError) => void): void;
 
 	scanNetworksWithParamsExpectedValuesExpectedValueIntervalCompletionHandler(params: MTRNetworkCommissioningClusterScanNetworksParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completionHandler: (p1: MTRNetworkCommissioningClusterScanNetworksResponseParams, p2: NSError) => void): void;
@@ -25983,7 +27564,7 @@ declare class MTRClusterNetworkCommissioning extends MTRCluster {
 	writeAttributeInterfaceEnabledWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 }
 
-declare class MTRClusterOTASoftwareUpdateProvider extends MTRCluster {
+declare class MTRClusterOTASoftwareUpdateProvider extends MTRGenericCluster {
 
 	static alloc(): MTRClusterOTASoftwareUpdateProvider; // inherited from NSObject
 
@@ -26010,7 +27591,7 @@ declare class MTRClusterOTASoftwareUpdateProvider extends MTRCluster {
 	readAttributeGeneratedCommandListWithParams(params: MTRReadParams): NSDictionary<string, any>;
 }
 
-declare class MTRClusterOTASoftwareUpdateRequestor extends MTRCluster {
+declare class MTRClusterOTASoftwareUpdateRequestor extends MTRGenericCluster {
 
 	static alloc(): MTRClusterOTASoftwareUpdateRequestor; // inherited from NSObject
 
@@ -26045,7 +27626,7 @@ declare class MTRClusterOTASoftwareUpdateRequestor extends MTRCluster {
 	writeAttributeDefaultOTAProvidersWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 }
 
-declare class MTRClusterOccupancySensing extends MTRCluster {
+declare class MTRClusterOccupancySensing extends MTRGenericCluster {
 
 	static alloc(): MTRClusterOccupancySensing; // inherited from NSObject
 
@@ -26148,7 +27729,7 @@ declare class MTRClusterOccupancySensing extends MTRCluster {
 	writeAttributeUltrasonicUnoccupiedToOccupiedThresholdWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 }
 
-declare class MTRClusterOnOff extends MTRCluster {
+declare class MTRClusterOnOff extends MTRGenericCluster {
 
 	static alloc(): MTRClusterOnOff; // inherited from NSObject
 
@@ -26235,7 +27816,7 @@ declare class MTRClusterOnOff extends MTRCluster {
 	writeAttributeStartUpOnOffWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 }
 
-declare class MTRClusterOnOffSwitchConfiguration extends MTRCluster {
+declare class MTRClusterOnOffSwitchConfiguration extends MTRGenericCluster {
 
 	static alloc(): MTRClusterOnOffSwitchConfiguration; // inherited from NSObject
 
@@ -26268,7 +27849,7 @@ declare class MTRClusterOnOffSwitchConfiguration extends MTRCluster {
 	writeAttributeSwitchActionsWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 }
 
-declare class MTRClusterOperationalCredentials extends MTRCluster {
+declare class MTRClusterOperationalCredentials extends MTRGenericCluster {
 
 	static alloc(): MTRClusterOperationalCredentials; // inherited from NSObject
 
@@ -26337,6 +27918,55 @@ declare class MTRClusterOperationalCredentials extends MTRCluster {
 	updateNOCWithParamsExpectedValuesExpectedValueIntervalCompletionHandler(params: MTROperationalCredentialsClusterUpdateNOCParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completionHandler: (p1: MTROperationalCredentialsClusterNOCResponseParams, p2: NSError) => void): void;
 }
 
+declare class MTRClusterOperationalState extends MTRGenericCluster {
+
+	static alloc(): MTRClusterOperationalState; // inherited from NSObject
+
+	static new(): MTRClusterOperationalState; // inherited from NSObject
+
+	constructor(o: { device: MTRDevice; endpointID: number; queue: interop.Pointer | interop.Reference<any>; });
+
+	initWithDeviceEndpointIDQueue(device: MTRDevice, endpointID: number, queue: interop.Pointer | interop.Reference<any>): this;
+
+	pauseWithExpectedValuesExpectedValueIntervalCompletion(expectedValues: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: MTROperationalStateClusterOperationalCommandResponseParams, p2: NSError) => void): void;
+
+	pauseWithParamsExpectedValuesExpectedValueIntervalCompletion(params: MTROperationalStateClusterPauseParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: MTROperationalStateClusterOperationalCommandResponseParams, p2: NSError) => void): void;
+
+	readAttributeAcceptedCommandListWithParams(params: MTRReadParams): NSDictionary<string, any>;
+
+	readAttributeAttributeListWithParams(params: MTRReadParams): NSDictionary<string, any>;
+
+	readAttributeClusterRevisionWithParams(params: MTRReadParams): NSDictionary<string, any>;
+
+	readAttributeCountdownTimeWithParams(params: MTRReadParams): NSDictionary<string, any>;
+
+	readAttributeCurrentPhaseWithParams(params: MTRReadParams): NSDictionary<string, any>;
+
+	readAttributeFeatureMapWithParams(params: MTRReadParams): NSDictionary<string, any>;
+
+	readAttributeGeneratedCommandListWithParams(params: MTRReadParams): NSDictionary<string, any>;
+
+	readAttributeOperationalErrorWithParams(params: MTRReadParams): NSDictionary<string, any>;
+
+	readAttributeOperationalStateListWithParams(params: MTRReadParams): NSDictionary<string, any>;
+
+	readAttributeOperationalStateWithParams(params: MTRReadParams): NSDictionary<string, any>;
+
+	readAttributePhaseListWithParams(params: MTRReadParams): NSDictionary<string, any>;
+
+	resumeWithExpectedValuesExpectedValueIntervalCompletion(expectedValues: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: MTROperationalStateClusterOperationalCommandResponseParams, p2: NSError) => void): void;
+
+	resumeWithParamsExpectedValuesExpectedValueIntervalCompletion(params: MTROperationalStateClusterResumeParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: MTROperationalStateClusterOperationalCommandResponseParams, p2: NSError) => void): void;
+
+	startWithExpectedValuesExpectedValueIntervalCompletion(expectedValues: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: MTROperationalStateClusterOperationalCommandResponseParams, p2: NSError) => void): void;
+
+	startWithParamsExpectedValuesExpectedValueIntervalCompletion(params: MTROperationalStateClusterStartParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: MTROperationalStateClusterOperationalCommandResponseParams, p2: NSError) => void): void;
+
+	stopWithExpectedValuesExpectedValueIntervalCompletion(expectedValues: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: MTROperationalStateClusterOperationalCommandResponseParams, p2: NSError) => void): void;
+
+	stopWithParamsExpectedValuesExpectedValueIntervalCompletion(params: MTROperationalStateClusterStopParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: MTROperationalStateClusterOperationalCommandResponseParams, p2: NSError) => void): void;
+}
+
 declare class MTRClusterOtaSoftwareUpdateProvider extends MTRClusterOTASoftwareUpdateProvider {
 
 	static alloc(): MTRClusterOtaSoftwareUpdateProvider; // inherited from NSObject
@@ -26388,7 +28018,7 @@ declare class MTRClusterPath extends NSObject implements NSCopying {
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
-declare class MTRClusterPowerSource extends MTRCluster {
+declare class MTRClusterPowerSource extends MTRGenericCluster {
 
 	static alloc(): MTRClusterPowerSource; // inherited from NSObject
 
@@ -26452,6 +28082,8 @@ declare class MTRClusterPowerSource extends MTRCluster {
 
 	readAttributeDescriptionWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
+	readAttributeEndpointListWithParams(params: MTRReadParams): NSDictionary<string, any>;
+
 	readAttributeFeatureMapWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	readAttributeGeneratedCommandListWithParams(params: MTRReadParams): NSDictionary<string, any>;
@@ -26475,7 +28107,7 @@ declare class MTRClusterPowerSource extends MTRCluster {
 	readAttributeWiredPresentWithParams(params: MTRReadParams): NSDictionary<string, any>;
 }
 
-declare class MTRClusterPowerSourceConfiguration extends MTRCluster {
+declare class MTRClusterPowerSourceConfiguration extends MTRGenericCluster {
 
 	static alloc(): MTRClusterPowerSourceConfiguration; // inherited from NSObject
 
@@ -26502,7 +28134,7 @@ declare class MTRClusterPowerSourceConfiguration extends MTRCluster {
 	readAttributeSourcesWithParams(params: MTRReadParams): NSDictionary<string, any>;
 }
 
-declare class MTRClusterPressureMeasurement extends MTRCluster {
+declare class MTRClusterPressureMeasurement extends MTRGenericCluster {
 
 	static alloc(): MTRClusterPressureMeasurement; // inherited from NSObject
 
@@ -26545,7 +28177,7 @@ declare class MTRClusterPressureMeasurement extends MTRCluster {
 	readAttributeToleranceWithParams(params: MTRReadParams): NSDictionary<string, any>;
 }
 
-declare class MTRClusterPumpConfigurationAndControl extends MTRCluster {
+declare class MTRClusterPumpConfigurationAndControl extends MTRGenericCluster {
 
 	static alloc(): MTRClusterPumpConfigurationAndControl; // inherited from NSObject
 
@@ -26632,7 +28264,102 @@ declare class MTRClusterPumpConfigurationAndControl extends MTRCluster {
 	writeAttributeOperationModeWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 }
 
-declare class MTRClusterRelativeHumidityMeasurement extends MTRCluster {
+declare class MTRClusterRVCCleanMode extends MTRGenericCluster {
+
+	static alloc(): MTRClusterRVCCleanMode; // inherited from NSObject
+
+	static new(): MTRClusterRVCCleanMode; // inherited from NSObject
+
+	constructor(o: { device: MTRDevice; endpointID: number; queue: interop.Pointer | interop.Reference<any>; });
+
+	changeToModeWithParamsExpectedValuesExpectedValueIntervalCompletion(params: MTRRVCCleanModeClusterChangeToModeParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: MTRRVCCleanModeClusterChangeToModeResponseParams, p2: NSError) => void): void;
+
+	initWithDeviceEndpointIDQueue(device: MTRDevice, endpointID: number, queue: interop.Pointer | interop.Reference<any>): this;
+
+	readAttributeAcceptedCommandListWithParams(params: MTRReadParams): NSDictionary<string, any>;
+
+	readAttributeAttributeListWithParams(params: MTRReadParams): NSDictionary<string, any>;
+
+	readAttributeClusterRevisionWithParams(params: MTRReadParams): NSDictionary<string, any>;
+
+	readAttributeCurrentModeWithParams(params: MTRReadParams): NSDictionary<string, any>;
+
+	readAttributeFeatureMapWithParams(params: MTRReadParams): NSDictionary<string, any>;
+
+	readAttributeGeneratedCommandListWithParams(params: MTRReadParams): NSDictionary<string, any>;
+
+	readAttributeSupportedModesWithParams(params: MTRReadParams): NSDictionary<string, any>;
+}
+
+declare class MTRClusterRVCOperationalState extends MTRGenericCluster {
+
+	static alloc(): MTRClusterRVCOperationalState; // inherited from NSObject
+
+	static new(): MTRClusterRVCOperationalState; // inherited from NSObject
+
+	constructor(o: { device: MTRDevice; endpointID: number; queue: interop.Pointer | interop.Reference<any>; });
+
+	initWithDeviceEndpointIDQueue(device: MTRDevice, endpointID: number, queue: interop.Pointer | interop.Reference<any>): this;
+
+	pauseWithExpectedValuesExpectedValueIntervalCompletion(expectedValues: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: MTRRVCOperationalStateClusterOperationalCommandResponseParams, p2: NSError) => void): void;
+
+	pauseWithParamsExpectedValuesExpectedValueIntervalCompletion(params: MTRRVCOperationalStateClusterPauseParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: MTRRVCOperationalStateClusterOperationalCommandResponseParams, p2: NSError) => void): void;
+
+	readAttributeAcceptedCommandListWithParams(params: MTRReadParams): NSDictionary<string, any>;
+
+	readAttributeAttributeListWithParams(params: MTRReadParams): NSDictionary<string, any>;
+
+	readAttributeClusterRevisionWithParams(params: MTRReadParams): NSDictionary<string, any>;
+
+	readAttributeCountdownTimeWithParams(params: MTRReadParams): NSDictionary<string, any>;
+
+	readAttributeCurrentPhaseWithParams(params: MTRReadParams): NSDictionary<string, any>;
+
+	readAttributeFeatureMapWithParams(params: MTRReadParams): NSDictionary<string, any>;
+
+	readAttributeGeneratedCommandListWithParams(params: MTRReadParams): NSDictionary<string, any>;
+
+	readAttributeOperationalErrorWithParams(params: MTRReadParams): NSDictionary<string, any>;
+
+	readAttributeOperationalStateListWithParams(params: MTRReadParams): NSDictionary<string, any>;
+
+	readAttributeOperationalStateWithParams(params: MTRReadParams): NSDictionary<string, any>;
+
+	readAttributePhaseListWithParams(params: MTRReadParams): NSDictionary<string, any>;
+
+	resumeWithExpectedValuesExpectedValueIntervalCompletion(expectedValues: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: MTRRVCOperationalStateClusterOperationalCommandResponseParams, p2: NSError) => void): void;
+
+	resumeWithParamsExpectedValuesExpectedValueIntervalCompletion(params: MTRRVCOperationalStateClusterResumeParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: MTRRVCOperationalStateClusterOperationalCommandResponseParams, p2: NSError) => void): void;
+}
+
+declare class MTRClusterRVCRunMode extends MTRGenericCluster {
+
+	static alloc(): MTRClusterRVCRunMode; // inherited from NSObject
+
+	static new(): MTRClusterRVCRunMode; // inherited from NSObject
+
+	constructor(o: { device: MTRDevice; endpointID: number; queue: interop.Pointer | interop.Reference<any>; });
+
+	changeToModeWithParamsExpectedValuesExpectedValueIntervalCompletion(params: MTRRVCRunModeClusterChangeToModeParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: MTRRVCRunModeClusterChangeToModeResponseParams, p2: NSError) => void): void;
+
+	initWithDeviceEndpointIDQueue(device: MTRDevice, endpointID: number, queue: interop.Pointer | interop.Reference<any>): this;
+
+	readAttributeAcceptedCommandListWithParams(params: MTRReadParams): NSDictionary<string, any>;
+
+	readAttributeAttributeListWithParams(params: MTRReadParams): NSDictionary<string, any>;
+
+	readAttributeClusterRevisionWithParams(params: MTRReadParams): NSDictionary<string, any>;
+
+	readAttributeCurrentModeWithParams(params: MTRReadParams): NSDictionary<string, any>;
+
+	readAttributeFeatureMapWithParams(params: MTRReadParams): NSDictionary<string, any>;
+
+	readAttributeGeneratedCommandListWithParams(params: MTRReadParams): NSDictionary<string, any>;
+
+	readAttributeSupportedModesWithParams(params: MTRReadParams): NSDictionary<string, any>;
+}
+
+declare class MTRClusterRelativeHumidityMeasurement extends MTRGenericCluster {
 
 	static alloc(): MTRClusterRelativeHumidityMeasurement; // inherited from NSObject
 
@@ -26665,7 +28392,7 @@ declare class MTRClusterRelativeHumidityMeasurement extends MTRCluster {
 	readAttributeToleranceWithParams(params: MTRReadParams): NSDictionary<string, any>;
 }
 
-declare class MTRClusterScenes extends MTRCluster {
+declare class MTRClusterScenes extends MTRGenericCluster {
 
 	static alloc(): MTRClusterScenes; // inherited from NSObject
 
@@ -26742,7 +28469,7 @@ declare class MTRClusterScenes extends MTRCluster {
 	viewSceneWithParamsExpectedValuesExpectedValueIntervalCompletionHandler(params: MTRScenesClusterViewSceneParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completionHandler: (p1: MTRScenesClusterViewSceneResponseParams, p2: NSError) => void): void;
 }
 
-declare class MTRClusterSoftwareDiagnostics extends MTRCluster {
+declare class MTRClusterSoftwareDiagnostics extends MTRGenericCluster {
 
 	static alloc(): MTRClusterSoftwareDiagnostics; // inherited from NSObject
 
@@ -26792,7 +28519,7 @@ declare class MTRClusterStateCacheContainer extends NSObject {
 	readAttributesWithEndpointIDClusterIDAttributeIDQueueCompletion(endpointID: number, clusterID: number, attributeID: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: NSArray<NSDictionary<string, any>>, p2: NSError) => void): void;
 }
 
-declare class MTRClusterSwitch extends MTRCluster {
+declare class MTRClusterSwitch extends MTRGenericCluster {
 
 	static alloc(): MTRClusterSwitch; // inherited from NSObject
 
@@ -26823,7 +28550,7 @@ declare class MTRClusterSwitch extends MTRCluster {
 	readAttributeNumberOfPositionsWithParams(params: MTRReadParams): NSDictionary<string, any>;
 }
 
-declare class MTRClusterTargetNavigator extends MTRCluster {
+declare class MTRClusterTargetNavigator extends MTRGenericCluster {
 
 	static alloc(): MTRClusterTargetNavigator; // inherited from NSObject
 
@@ -26856,7 +28583,7 @@ declare class MTRClusterTargetNavigator extends MTRCluster {
 	readAttributeTargetListWithParams(params: MTRReadParams): NSDictionary<string, any>;
 }
 
-declare class MTRClusterTemperatureMeasurement extends MTRCluster {
+declare class MTRClusterTemperatureMeasurement extends MTRGenericCluster {
 
 	static alloc(): MTRClusterTemperatureMeasurement; // inherited from NSObject
 
@@ -26927,9 +28654,13 @@ declare class MTRClusterTestCluster extends MTRClusterUnitTesting {
 
 	testNotHandledWithParamsExpectedValuesExpectedValueIntervalCompletionHandler(params: MTRTestClusterClusterTestNotHandledParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completionHandler: (p1: NSError) => void): void;
 
+	testNullableOptionalRequestWithExpectedValuesExpectedValueIntervalCompletionHandler(expectedValues: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completionHandler: (p1: MTRTestClusterClusterTestNullableOptionalResponseParams, p2: NSError) => void): void;
+
 	testNullableOptionalRequestWithParamsExpectedValuesExpectedValueIntervalCompletionHandler(params: MTRTestClusterClusterTestNullableOptionalRequestParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completionHandler: (p1: MTRTestClusterClusterTestNullableOptionalResponseParams, p2: NSError) => void): void;
 
 	testSimpleArgumentRequestWithParamsExpectedValuesExpectedValueIntervalCompletionHandler(params: MTRTestClusterClusterTestSimpleArgumentRequestParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completionHandler: (p1: MTRTestClusterClusterTestSimpleArgumentResponseParams, p2: NSError) => void): void;
+
+	testSimpleOptionalArgumentRequestWithExpectedValuesExpectedValueIntervalCompletionHandler(expectedValues: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completionHandler: (p1: NSError) => void): void;
 
 	testSimpleOptionalArgumentRequestWithParamsExpectedValuesExpectedValueIntervalCompletionHandler(params: MTRTestClusterClusterTestSimpleOptionalArgumentRequestParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completionHandler: (p1: NSError) => void): void;
 
@@ -26954,7 +28685,7 @@ declare class MTRClusterTestCluster extends MTRClusterUnitTesting {
 	timedInvokeRequestWithParamsExpectedValuesExpectedValueIntervalCompletionHandler(params: MTRTestClusterClusterTimedInvokeRequestParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRClusterThermostat extends MTRCluster {
+declare class MTRClusterThermostat extends MTRGenericCluster {
 
 	static alloc(): MTRClusterThermostat; // inherited from NSObject
 
@@ -27205,7 +28936,7 @@ declare class MTRClusterThermostat extends MTRCluster {
 	writeAttributeUnoccupiedSetbackWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 }
 
-declare class MTRClusterThermostatUserInterfaceConfiguration extends MTRCluster {
+declare class MTRClusterThermostatUserInterfaceConfiguration extends MTRGenericCluster {
 
 	static alloc(): MTRClusterThermostatUserInterfaceConfiguration; // inherited from NSObject
 
@@ -27248,7 +28979,7 @@ declare class MTRClusterThermostatUserInterfaceConfiguration extends MTRCluster 
 	writeAttributeTemperatureDisplayModeWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 }
 
-declare class MTRClusterThreadNetworkDiagnostics extends MTRCluster {
+declare class MTRClusterThreadNetworkDiagnostics extends MTRGenericCluster {
 
 	static alloc(): MTRClusterThreadNetworkDiagnostics; // inherited from NSObject
 
@@ -27411,7 +29142,7 @@ declare class MTRClusterThreadNetworkDiagnostics extends MTRCluster {
 	resetCountsWithParamsExpectedValuesExpectedValueIntervalCompletionHandler(params: MTRThreadNetworkDiagnosticsClusterResetCountsParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRClusterTimeFormatLocalization extends MTRCluster {
+declare class MTRClusterTimeFormatLocalization extends MTRGenericCluster {
 
 	static alloc(): MTRClusterTimeFormatLocalization; // inherited from NSObject
 
@@ -27450,7 +29181,7 @@ declare class MTRClusterTimeFormatLocalization extends MTRCluster {
 	writeAttributeHourFormatWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 }
 
-declare class MTRClusterUnitLocalization extends MTRCluster {
+declare class MTRClusterUnitLocalization extends MTRGenericCluster {
 
 	static alloc(): MTRClusterUnitLocalization; // inherited from NSObject
 
@@ -27481,7 +29212,7 @@ declare class MTRClusterUnitLocalization extends MTRCluster {
 	writeAttributeTemperatureUnitWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 }
 
-declare class MTRClusterUnitTesting extends MTRCluster {
+declare class MTRClusterUnitTesting extends MTRGenericCluster {
 
 	static alloc(): MTRClusterUnitTesting; // inherited from NSObject
 
@@ -27693,9 +29424,13 @@ declare class MTRClusterUnitTesting extends MTRCluster {
 
 	testNotHandledWithParamsExpectedValuesExpectedValueIntervalCompletion(params: MTRUnitTestingClusterTestNotHandledParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: NSError) => void): void;
 
+	testNullableOptionalRequestWithExpectedValuesExpectedValueIntervalCompletion(expectedValues: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: MTRUnitTestingClusterTestNullableOptionalResponseParams, p2: NSError) => void): void;
+
 	testNullableOptionalRequestWithParamsExpectedValuesExpectedValueIntervalCompletion(params: MTRUnitTestingClusterTestNullableOptionalRequestParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: MTRUnitTestingClusterTestNullableOptionalResponseParams, p2: NSError) => void): void;
 
 	testSimpleArgumentRequestWithParamsExpectedValuesExpectedValueIntervalCompletion(params: MTRUnitTestingClusterTestSimpleArgumentRequestParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: MTRUnitTestingClusterTestSimpleArgumentResponseParams, p2: NSError) => void): void;
+
+	testSimpleOptionalArgumentRequestWithExpectedValuesExpectedValueIntervalCompletion(expectedValues: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: NSError) => void): void;
 
 	testSimpleOptionalArgumentRequestWithParamsExpectedValuesExpectedValueIntervalCompletion(params: MTRUnitTestingClusterTestSimpleOptionalArgumentRequestParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: NSError) => void): void;
 
@@ -28048,7 +29783,7 @@ declare class MTRClusterUnitTesting extends MTRCluster {
 	writeAttributeWriteOnlyInt8uWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 }
 
-declare class MTRClusterUserLabel extends MTRCluster {
+declare class MTRClusterUserLabel extends MTRGenericCluster {
 
 	static alloc(): MTRClusterUserLabel; // inherited from NSObject
 
@@ -28079,7 +29814,7 @@ declare class MTRClusterUserLabel extends MTRCluster {
 	writeAttributeLabelListWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 }
 
-declare class MTRClusterWakeOnLAN extends MTRCluster {
+declare class MTRClusterWakeOnLAN extends MTRGenericCluster {
 
 	static alloc(): MTRClusterWakeOnLAN; // inherited from NSObject
 
@@ -28113,7 +29848,7 @@ declare class MTRClusterWakeOnLan extends MTRClusterWakeOnLAN {
 	initWithDeviceEndpointQueue(device: MTRDevice, endpoint: number, queue: interop.Pointer | interop.Reference<any>): this;
 }
 
-declare class MTRClusterWiFiNetworkDiagnostics extends MTRCluster {
+declare class MTRClusterWiFiNetworkDiagnostics extends MTRGenericCluster {
 
 	static alloc(): MTRClusterWiFiNetworkDiagnostics; // inherited from NSObject
 
@@ -28176,7 +29911,7 @@ declare class MTRClusterWiFiNetworkDiagnostics extends MTRCluster {
 	resetCountsWithParamsExpectedValuesExpectedValueIntervalCompletionHandler(params: MTRWiFiNetworkDiagnosticsClusterResetCountsParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completionHandler: (p1: NSError) => void): void;
 }
 
-declare class MTRClusterWindowCovering extends MTRCluster {
+declare class MTRClusterWindowCovering extends MTRGenericCluster {
 
 	static alloc(): MTRClusterWindowCovering; // inherited from NSObject
 
@@ -29145,6 +30880,10 @@ declare const enum MTRCommandIDType {
 
 	CommandIDTypeClusterNetworkCommissioningCommandReorderNetworkID = 8,
 
+	CommandIDTypeClusterNetworkCommissioningCommandQueryIdentityID = 9,
+
+	CommandIDTypeClusterNetworkCommissioningCommandQueryIdentityResponseID = 10,
+
 	ClusterDiagnosticLogsCommandRetrieveLogsRequestID = 0,
 
 	ClusterDiagnosticLogsCommandRetrieveLogsResponseID = 1,
@@ -29156,6 +30895,10 @@ declare const enum MTRCommandIDType {
 	ClusterGeneralDiagnosticsCommandTestEventTriggerID = 0,
 
 	CommandIDTypeClusterGeneralDiagnosticsCommandTestEventTriggerID = 0,
+
+	CommandIDTypeClusterGeneralDiagnosticsCommandTimeSnapshotID = 1,
+
+	CommandIDTypeClusterGeneralDiagnosticsCommandTimeSnapshotResponseID = 2,
 
 	ClusterSoftwareDiagnosticsCommandResetWatermarksID = 0,
 
@@ -29175,7 +30918,19 @@ declare const enum MTRCommandIDType {
 
 	ClusterTimeSynchronizationCommandSetUtcTimeID = 0,
 
+	CommandIDTypeClusterTimeSynchronizationCommandSetUTCTimeID = 0,
+
 	CommandIDTypeClusterTimeSynchronizationCommandSetUtcTimeID = 0,
+
+	CommandIDTypeClusterTimeSynchronizationCommandSetTrustedTimeSourceID = 1,
+
+	CommandIDTypeClusterTimeSynchronizationCommandSetTimeZoneID = 2,
+
+	CommandIDTypeClusterTimeSynchronizationCommandSetTimeZoneResponseID = 3,
+
+	CommandIDTypeClusterTimeSynchronizationCommandSetDSTOffsetID = 4,
+
+	CommandIDTypeClusterTimeSynchronizationCommandSetDefaultNTPID = 5,
 
 	ClusterAdministratorCommissioningCommandOpenCommissioningWindowID = 0,
 
@@ -29261,9 +31016,145 @@ declare const enum MTRCommandIDType {
 
 	CommandIDTypeClusterGroupKeyManagementCommandKeySetReadAllIndicesResponseID = 5,
 
+	CommandIDTypeClusterICDManagementCommandRegisterClientID = 0,
+
+	CommandIDTypeClusterICDManagementCommandRegisterClientResponseID = 1,
+
+	CommandIDTypeClusterICDManagementCommandUnregisterClientID = 2,
+
+	CommandIDTypeClusterICDManagementCommandStayActiveRequestID = 3,
+
+	CommandIDTypeClusterICDManagementCommandStayActiveResponseID = 4,
+
+	CommandIDTypeClusterTimerCommandSetTimerID = 0,
+
+	CommandIDTypeClusterTimerCommandResetTimerID = 1,
+
+	CommandIDTypeClusterTimerCommandAddTimeID = 2,
+
+	CommandIDTypeClusterTimerCommandReduceTimeID = 3,
+
+	CommandIDTypeClusterOvenCavityOperationalStateCommandPauseID = 0,
+
+	CommandIDTypeClusterOvenCavityOperationalStateCommandStopID = 1,
+
+	CommandIDTypeClusterOvenCavityOperationalStateCommandStartID = 2,
+
+	CommandIDTypeClusterOvenCavityOperationalStateCommandResumeID = 3,
+
+	CommandIDTypeClusterOvenCavityOperationalStateCommandOperationalCommandResponseID = 4,
+
+	CommandIDTypeClusterOvenModeCommandChangeToModeID = 0,
+
+	CommandIDTypeClusterOvenModeCommandChangeToModeResponseID = 1,
+
 	ClusterModeSelectCommandChangeToModeID = 0,
 
 	CommandIDTypeClusterModeSelectCommandChangeToModeID = 0,
+
+	CommandIDTypeClusterLaundryWasherModeCommandChangeToModeID = 0,
+
+	CommandIDTypeClusterLaundryWasherModeCommandChangeToModeResponseID = 1,
+
+	CommandIDTypeClusterRefrigeratorAndTemperatureControlledCabinetModeCommandChangeToModeID = 0,
+
+	CommandIDTypeClusterRefrigeratorAndTemperatureControlledCabinetModeCommandChangeToModeResponseID = 1,
+
+	CommandIDTypeClusterRVCRunModeCommandChangeToModeID = 0,
+
+	CommandIDTypeClusterRVCRunModeCommandChangeToModeResponseID = 1,
+
+	CommandIDTypeClusterRVCCleanModeCommandChangeToModeID = 0,
+
+	CommandIDTypeClusterRVCCleanModeCommandChangeToModeResponseID = 1,
+
+	CommandIDTypeClusterTemperatureControlCommandSetTemperatureID = 0,
+
+	CommandIDTypeClusterDishwasherModeCommandChangeToModeID = 0,
+
+	CommandIDTypeClusterDishwasherModeCommandChangeToModeResponseID = 1,
+
+	CommandIDTypeClusterSmokeCOAlarmCommandSelfTestRequestID = 0,
+
+	CommandIDTypeClusterDishwasherAlarmCommandResetID = 0,
+
+	CommandIDTypeClusterDishwasherAlarmCommandModifyEnabledAlarmsID = 1,
+
+	CommandIDTypeClusterMicrowaveOvenControlCommandSetCookingParametersID = 0,
+
+	CommandIDTypeClusterMicrowaveOvenControlCommandAddMoreTimeID = 1,
+
+	CommandIDTypeClusterOperationalStateCommandPauseID = 0,
+
+	CommandIDTypeClusterOperationalStateCommandStopID = 1,
+
+	CommandIDTypeClusterOperationalStateCommandStartID = 2,
+
+	CommandIDTypeClusterOperationalStateCommandResumeID = 3,
+
+	CommandIDTypeClusterOperationalStateCommandOperationalCommandResponseID = 4,
+
+	CommandIDTypeClusterRVCOperationalStateCommandPauseID = 0,
+
+	CommandIDTypeClusterRVCOperationalStateCommandStopID = 1,
+
+	CommandIDTypeClusterRVCOperationalStateCommandStartID = 2,
+
+	CommandIDTypeClusterRVCOperationalStateCommandResumeID = 3,
+
+	CommandIDTypeClusterRVCOperationalStateCommandOperationalCommandResponseID = 4,
+
+	CommandIDTypeClusterHEPAFilterMonitoringCommandResetConditionID = 0,
+
+	CommandIDTypeClusterActivatedCarbonFilterMonitoringCommandResetConditionID = 0,
+
+	CommandIDTypeClusterBooleanStateConfigurationCommandSuppressAlarmID = 0,
+
+	CommandIDTypeClusterBooleanStateConfigurationCommandEnableDisableAlarmID = 1,
+
+	CommandIDTypeClusterValveConfigurationAndControlCommandOpenID = 0,
+
+	CommandIDTypeClusterValveConfigurationAndControlCommandCloseID = 1,
+
+	CommandIDTypeClusterDemandResponseLoadControlCommandRegisterLoadControlProgramRequestID = 0,
+
+	CommandIDTypeClusterDemandResponseLoadControlCommandUnregisterLoadControlProgramRequestID = 1,
+
+	CommandIDTypeClusterDemandResponseLoadControlCommandAddLoadControlEventRequestID = 2,
+
+	CommandIDTypeClusterDemandResponseLoadControlCommandRemoveLoadControlEventRequestID = 3,
+
+	CommandIDTypeClusterDemandResponseLoadControlCommandClearLoadControlEventsRequestID = 4,
+
+	CommandIDTypeClusterDeviceEnergyManagementCommandPowerAdjustRequestID = 0,
+
+	CommandIDTypeClusterDeviceEnergyManagementCommandCancelPowerAdjustRequestID = 1,
+
+	CommandIDTypeClusterDeviceEnergyManagementCommandStartTimeAdjustRequestID = 2,
+
+	CommandIDTypeClusterDeviceEnergyManagementCommandPauseRequestID = 3,
+
+	CommandIDTypeClusterDeviceEnergyManagementCommandResumeRequestID = 4,
+
+	CommandIDTypeClusterDeviceEnergyManagementCommandModifyForecastRequestID = 5,
+
+	CommandIDTypeClusterDeviceEnergyManagementCommandRequestConstraintBasedForecastID = 6,
+
+	CommandIDTypeClusterEnergyEVSECommandGetTargetsResponseID = 0,
+
+	CommandIDTypeClusterEnergyEVSECommandDisableID = 1,
+
+	CommandIDTypeClusterEnergyEVSECommandEnableChargingID = 2,
+
+	CommandIDTypeClusterEnergyEVSECommandEnableDischargingID = 3,
+
+	CommandIDTypeClusterEnergyEVSECommandStartDiagnosticsID = 4,
+
+	CommandIDTypeClusterEnergyEVSECommandSetTargetsID = 5,
+
+	CommandIDTypeClusterEnergyEVSECommandGetTargetsID = 6,
+
+	CommandIDTypeClusterEnergyEVSECommandClearTargetsID = 7,
 
 	ClusterDoorLockCommandLockDoorID = 0,
 
@@ -29361,6 +31252,8 @@ declare const enum MTRCommandIDType {
 
 	CommandIDTypeClusterDoorLockCommandClearCredentialID = 38,
 
+	CommandIDTypeClusterDoorLockCommandUnboltDoorID = 39,
+
 	ClusterWindowCoveringCommandUpOrOpenID = 0,
 
 	ClusterWindowCoveringCommandDownOrCloseID = 1,
@@ -29416,6 +31309,8 @@ declare const enum MTRCommandIDType {
 	CommandIDTypeClusterThermostatCommandGetWeeklyScheduleID = 2,
 
 	CommandIDTypeClusterThermostatCommandClearWeeklyScheduleID = 3,
+
+	CommandIDTypeClusterFanControlCommandStepID = 0,
 
 	ClusterColorControlCommandMoveToHueID = 0,
 
@@ -29509,6 +31404,14 @@ declare const enum MTRCommandIDType {
 
 	CommandIDTypeClusterChannelCommandSkipChannelID = 3,
 
+	CommandIDTypeClusterChannelCommandGetProgramGuideID = 4,
+
+	CommandIDTypeClusterChannelCommandProgramGuideResponseID = 5,
+
+	CommandIDTypeClusterChannelCommandRecordProgramID = 6,
+
+	CommandIDTypeClusterChannelCommandCancelRecordProgramID = 7,
+
 	ClusterTargetNavigatorCommandNavigateTargetID = 0,
 
 	ClusterTargetNavigatorCommandNavigateTargetResponseID = 1,
@@ -29564,6 +31467,12 @@ declare const enum MTRCommandIDType {
 	CommandIDTypeClusterMediaPlaybackCommandPlaybackResponseID = 10,
 
 	CommandIDTypeClusterMediaPlaybackCommandSeekID = 11,
+
+	CommandIDTypeClusterMediaPlaybackCommandActivateAudioTrackID = 12,
+
+	CommandIDTypeClusterMediaPlaybackCommandActivateTextTrackID = 13,
+
+	CommandIDTypeClusterMediaPlaybackCommandDeactivateTextTrackID = 14,
 
 	ClusterMediaInputCommandSelectInputID = 0,
 
@@ -29644,6 +31553,32 @@ declare const enum MTRCommandIDType {
 	CommandIDTypeClusterAccountLoginCommandLoginID = 2,
 
 	CommandIDTypeClusterAccountLoginCommandLogoutID = 3,
+
+	CommandIDTypeClusterContentControlCommandUpdatePINID = 0,
+
+	CommandIDTypeClusterContentControlCommandResetPINID = 1,
+
+	CommandIDTypeClusterContentControlCommandResetPINResponseID = 2,
+
+	CommandIDTypeClusterContentControlCommandEnableID = 3,
+
+	CommandIDTypeClusterContentControlCommandDisableID = 4,
+
+	CommandIDTypeClusterContentControlCommandAddBonusTimeID = 5,
+
+	CommandIDTypeClusterContentControlCommandSetScreenDailyTimeID = 6,
+
+	CommandIDTypeClusterContentControlCommandBlockUnratedContentID = 7,
+
+	CommandIDTypeClusterContentControlCommandUnblockUnratedContentID = 8,
+
+	CommandIDTypeClusterContentControlCommandSetOnDemandRatingThresholdID = 9,
+
+	CommandIDTypeClusterContentControlCommandSetScheduledContentRatingThresholdID = 10,
+
+	CommandIDTypeClusterContentAppObserverCommandContentAppMessageID = 0,
+
+	CommandIDTypeClusterContentAppObserverCommandContentAppMessageResponseID = 1,
 
 	ClusterElectricalMeasurementCommandGetProfileInfoResponseCommandID = 0,
 
@@ -29797,13 +31732,11 @@ declare const enum MTRCommandIDType {
 
 	CommandIDTypeClusterUnitTestingCommandTestEmitTestFabricScopedEventRequestID = 21,
 
-	ClusterFaultInjectionCommandFailAtFaultID = 0,
+	CommandIDTypeClusterSampleMEICommandPingID = 0,
 
-	ClusterFaultInjectionCommandFailRandomlyAtFaultID = 1,
+	CommandIDTypeClusterSampleMEICommandAddArgumentsResponseID = 1,
 
-	CommandIDTypeClusterFaultInjectionCommandFailAtFaultID = 0,
-
-	CommandIDTypeClusterFaultInjectionCommandFailRandomlyAtFaultID = 1
+	CommandIDTypeClusterSampleMEICommandAddArgumentsID = 2
 }
 
 declare class MTRCommandPath extends MTRClusterPath {
@@ -30111,7 +32044,13 @@ declare const enum MTRContentLauncherFeature {
 
 	ContentSearch = 1,
 
-	URLPlayback = 2
+	URLPlayback = 2,
+
+	AdvancedSeek = 3,
+
+	TextTracks = 4,
+
+	AudioTracks = 5
 }
 
 declare const enum MTRContentLauncherMetricType {
@@ -30153,7 +32092,35 @@ declare const enum MTRContentLauncherParameter {
 
 	Type = 12,
 
-	Video = 13
+	Video = 13,
+
+	Season = 14,
+
+	Episode = 15,
+
+	Any = 16
+}
+
+declare const enum MTRContentLauncherStatus {
+
+	Success = 0,
+
+	URLNotAvailable = 1,
+
+	AuthFailed = 2,
+
+	TextTrackNotAvailable = 3,
+
+	AudioTrackNotAvailable = 4
+}
+
+declare const enum MTRContentLauncherSupportedProtocolsBitmap {
+
+	DASH = 1,
+
+	HLS = 2,
+
+	WebRTC = 2
 }
 
 declare const enum MTRContentLauncherSupportedStreamingProtocol {
@@ -30233,9 +32200,15 @@ declare class MTRDevice extends NSObject {
 
 	static new(): MTRDevice; // inherited from NSObject
 
+	readonly deviceController: MTRDeviceController;
+
 	readonly estimatedStartTime: Date;
 
+	readonly nodeID: number;
+
 	readonly state: MTRDeviceState;
+
+	invokeCommandWithEndpointIDClusterIDCommandIDCommandFieldsExpectedValuesExpectedValueIntervalQueueCompletion(endpointID: number, clusterID: number, commandID: number, commandFields: NSDictionary<string, any>, expectedValues: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueInterval: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: NSArray<NSDictionary<string, any>>, p2: NSError) => void): void;
 
 	invokeCommandWithEndpointIDClusterIDCommandIDCommandFieldsExpectedValuesExpectedValueIntervalTimedInvokeTimeoutClientQueueCompletion(endpointID: number, clusterID: number, commandID: number, commandFields: any, expectedValues: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueInterval: number, timeout: number, queue: interop.Pointer | interop.Reference<any>, completion: (p1: NSArray<NSDictionary<string, any>>, p2: NSError) => void): void;
 
@@ -31606,7 +33579,9 @@ declare const enum MTRDoorLockDlLockState {
 
 	Locked = 1,
 
-	Unlocked = 2
+	Unlocked = 2,
+
+	Unlatched = 3
 }
 
 declare const enum MTRDoorLockDlLockType {
@@ -31631,7 +33606,9 @@ declare const enum MTRDoorLockDlLockType {
 
 	DeadLatch = 9,
 
-	DoorFurniture = 10
+	DoorFurniture = 10,
+
+	Eurocylinder = 11
 }
 
 declare const enum MTRDoorLockDlManualOperationEventMask {
@@ -31883,7 +33860,9 @@ declare const enum MTRDoorLockFeature {
 
 	YearDaySchedules = 1024,
 
-	HolidaySchedules = 2048
+	HolidaySchedules = 2048,
+
+	Unbolt = 4096
 }
 
 declare const enum MTRDoorLockLockDataType {
@@ -31919,7 +33898,9 @@ declare const enum MTRDoorLockLockOperationType {
 
 	NonAccessUserEvent = 2,
 
-	ForcedUserEvent = 3
+	ForcedUserEvent = 3,
+
+	Unlatch = 4
 }
 
 declare const enum MTRDoorLockOperatingMode {
@@ -32184,7 +34165,9 @@ declare const enum MTRErrorCode {
 
 	SchemaMismatch = 13,
 
-	TLVDecodeFailed = 14
+	TLVDecodeFailed = 14,
+
+	DNSSDUnauthorized = 15
 }
 
 declare var MTRErrorDomain: string;
@@ -32349,6 +34332,16 @@ declare const enum MTREventIDType {
 
 	EventIDTypeClusterWiFiNetworkDiagnosticsEventConnectionStatusID = 2,
 
+	EventIDTypeClusterTimeSynchronizationEventDSTTableEmptyID = 0,
+
+	EventIDTypeClusterTimeSynchronizationEventDSTStatusID = 1,
+
+	EventIDTypeClusterTimeSynchronizationEventTimeZoneStatusID = 2,
+
+	EventIDTypeClusterTimeSynchronizationEventTimeFailureID = 3,
+
+	EventIDTypeClusterTimeSynchronizationEventMissingTrustedTimeSourceID = 4,
+
 	ClusterBridgedDeviceBasicEventStartUpID = 0,
 
 	ClusterBridgedDeviceBasicEventShutDownID = 1,
@@ -32396,6 +34389,78 @@ declare const enum MTREventIDType {
 	ClusterBooleanStateEventStateChangeID = 0,
 
 	EventIDTypeClusterBooleanStateEventStateChangeID = 0,
+
+	EventIDTypeClusterOvenCavityOperationalStateEventOperationalErrorID = 0,
+
+	EventIDTypeClusterOvenCavityOperationalStateEventOperationCompletionID = 1,
+
+	EventIDTypeClusterRefrigeratorAlarmEventNotifyID = 0,
+
+	EventIDTypeClusterSmokeCOAlarmEventSmokeAlarmID = 0,
+
+	EventIDTypeClusterSmokeCOAlarmEventCOAlarmID = 1,
+
+	EventIDTypeClusterSmokeCOAlarmEventLowBatteryID = 2,
+
+	EventIDTypeClusterSmokeCOAlarmEventHardwareFaultID = 3,
+
+	EventIDTypeClusterSmokeCOAlarmEventEndOfServiceID = 4,
+
+	EventIDTypeClusterSmokeCOAlarmEventSelfTestCompleteID = 5,
+
+	EventIDTypeClusterSmokeCOAlarmEventAlarmMutedID = 6,
+
+	EventIDTypeClusterSmokeCOAlarmEventMuteEndedID = 7,
+
+	EventIDTypeClusterSmokeCOAlarmEventInterconnectSmokeAlarmID = 8,
+
+	EventIDTypeClusterSmokeCOAlarmEventInterconnectCOAlarmID = 9,
+
+	EventIDTypeClusterSmokeCOAlarmEventAllClearID = 10,
+
+	EventIDTypeClusterDishwasherAlarmEventNotifyID = 0,
+
+	EventIDTypeClusterOperationalStateEventOperationalErrorID = 0,
+
+	EventIDTypeClusterOperationalStateEventOperationCompletionID = 1,
+
+	EventIDTypeClusterRVCOperationalStateEventOperationalErrorID = 0,
+
+	EventIDTypeClusterRVCOperationalStateEventOperationCompletionID = 1,
+
+	EventIDTypeClusterBooleanStateConfigurationEventAlarmsStateChangedID = 0,
+
+	EventIDTypeClusterBooleanStateConfigurationEventSensorFaultID = 1,
+
+	EventIDTypeClusterValveConfigurationAndControlEventValveStateChangedID = 0,
+
+	EventIDTypeClusterValveConfigurationAndControlEventValveFaultID = 1,
+
+	EventIDTypeClusterElectricalEnergyMeasurementEventCumulativeEnergyMeasuredID = 0,
+
+	EventIDTypeClusterElectricalEnergyMeasurementEventPeriodicEnergyMeasuredID = 1,
+
+	EventIDTypeClusterDemandResponseLoadControlEventLoadControlEventStatusChangeID = 0,
+
+	EventIDTypeClusterDeviceEnergyManagementEventPowerAdjustStartID = 0,
+
+	EventIDTypeClusterDeviceEnergyManagementEventPowerAdjustEndID = 1,
+
+	EventIDTypeClusterDeviceEnergyManagementEventPausedID = 2,
+
+	EventIDTypeClusterDeviceEnergyManagementEventResumedID = 3,
+
+	EventIDTypeClusterEnergyEVSEEventEVConnectedID = 0,
+
+	EventIDTypeClusterEnergyEVSEEventEVNotDetectedID = 1,
+
+	EventIDTypeClusterEnergyEVSEEventEnergyTransferStartedID = 2,
+
+	EventIDTypeClusterEnergyEVSEEventEnergyTransferStoppedID = 3,
+
+	EventIDTypeClusterEnergyEVSEEventFaultID = 4,
+
+	EventIDTypeClusterEnergyEVSEEventRFIDID = 5,
 
 	ClusterDoorLockEventDoorLockAlarmID = 0,
 
@@ -32485,14 +34550,26 @@ declare const enum MTREventIDType {
 
 	EventIDTypeClusterPumpConfigurationAndControlEventTurbineOperationID = 16,
 
+	EventIDTypeClusterTargetNavigatorEventTargetUpdatedID = 0,
+
+	EventIDTypeClusterMediaPlaybackEventStateChangedID = 0,
+
+	EventIDTypeClusterAccountLoginEventLoggedOutID = 0,
+
+	EventIDTypeClusterContentControlEventRemainingScreenTimeExpiredID = 0,
+
 	ClusterTestClusterEventTestEventID = 1,
 
 	ClusterTestClusterEventTestFabricScopedEventID = 2,
 
 	EventIDTypeClusterUnitTestingEventTestEventID = 1,
 
-	EventIDTypeClusterUnitTestingEventTestFabricScopedEventID = 2
+	EventIDTypeClusterUnitTestingEventTestFabricScopedEventID = 2,
+
+	EventIDTypeClusterSampleMEIEventPingCountEventID = 0
 }
+
+declare var MTREventIsHistoricalKey: string;
 
 declare var MTREventNumberKey: string;
 
@@ -32639,7 +34716,11 @@ declare const enum MTRFanControlFanModeSequence {
 
 	OffLowHighAuto = 3,
 
+	OffHighAuto = 4,
+
 	OffOnAuto = 4,
+
+	OffHigh = 5,
 
 	OffOn = 5
 }
@@ -32684,7 +34765,11 @@ declare const enum MTRFanControlFeature {
 
 	Rocking = 4,
 
-	Wind = 8
+	Wind = 8,
+
+	Step = 16,
+
+	AirflowDirection = 32
 }
 
 declare const enum MTRFanControlRockBitmap {
@@ -32724,61 +34809,6 @@ declare const enum MTRFanControlWindSupportMask {
 	SleepWind = 1,
 
 	NaturalWind = 2
-}
-
-declare class MTRFaultInjectionClusterFailAtFaultParams extends NSObject implements NSCopying {
-
-	static alloc(): MTRFaultInjectionClusterFailAtFaultParams; // inherited from NSObject
-
-	static new(): MTRFaultInjectionClusterFailAtFaultParams; // inherited from NSObject
-
-	id: number;
-
-	numCallsToFail: number;
-
-	numCallsToSkip: number;
-
-	serverSideProcessingTimeout: number;
-
-	takeMutex: number;
-
-	timedInvokeTimeoutMs: number;
-
-	type: number;
-
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
-}
-
-declare class MTRFaultInjectionClusterFailRandomlyAtFaultParams extends NSObject implements NSCopying {
-
-	static alloc(): MTRFaultInjectionClusterFailRandomlyAtFaultParams; // inherited from NSObject
-
-	static new(): MTRFaultInjectionClusterFailRandomlyAtFaultParams; // inherited from NSObject
-
-	id: number;
-
-	percentage: number;
-
-	serverSideProcessingTimeout: number;
-
-	timedInvokeTimeoutMs: number;
-
-	type: number;
-
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
-}
-
-declare const enum MTRFaultInjectionFaultType {
-
-	Unspecified = 0,
-
-	SystemFault = 1,
-
-	InetFault = 2,
-
-	ChipFault = 3,
-
-	CertFault = 4
 }
 
 declare class MTRFixedLabelClusterLabelStruct extends NSObject implements NSCopying {
@@ -33189,6 +35219,22 @@ declare const enum MTRGeneralDiagnosticsRadioFaultType {
 	BLEFault = 5,
 
 	EthernetFault = 6
+}
+
+declare class MTRGenericBaseCluster extends MTRCluster {
+
+	static alloc(): MTRGenericBaseCluster; // inherited from NSObject
+
+	static new(): MTRGenericBaseCluster; // inherited from NSObject
+}
+
+declare class MTRGenericCluster extends MTRCluster {
+
+	static alloc(): MTRGenericCluster; // inherited from NSObject
+
+	static new(): MTRGenericCluster; // inherited from NSObject
+
+	readonly device: MTRDevice;
 }
 
 declare class MTRGroupKeyManagementClusterGroupInfoMapStruct extends NSObject implements NSCopying {
@@ -33681,6 +35727,181 @@ declare const enum MTRInteractionErrorCode {
 
 declare var MTRInteractionErrorDomain: string;
 
+declare const enum MTRKeypadInputCECKeyCode {
+
+	Select = 0,
+
+	Up = 1,
+
+	Down = 2,
+
+	Left = 3,
+
+	Right = 4,
+
+	RightUp = 5,
+
+	RightDown = 6,
+
+	LeftUp = 7,
+
+	LeftDown = 8,
+
+	RootMenu = 9,
+
+	SetupMenu = 10,
+
+	ContentsMenu = 11,
+
+	FavoriteMenu = 12,
+
+	Exit = 13,
+
+	MediaTopMenu = 16,
+
+	MediaContextSensitiveMenu = 17,
+
+	NumberEntryMode = 29,
+
+	Number11 = 30,
+
+	Number12 = 31,
+
+	Number0OrNumber10 = 32,
+
+	Numbers1 = 33,
+
+	Numbers2 = 34,
+
+	Numbers3 = 35,
+
+	Numbers4 = 36,
+
+	Numbers5 = 37,
+
+	Numbers6 = 38,
+
+	Numbers7 = 39,
+
+	Numbers8 = 40,
+
+	Numbers9 = 41,
+
+	Dot = 42,
+
+	Enter = 43,
+
+	Clear = 44,
+
+	NextFavorite = 47,
+
+	ChannelUp = 48,
+
+	ChannelDown = 49,
+
+	PreviousChannel = 50,
+
+	SoundSelect = 51,
+
+	InputSelect = 52,
+
+	DisplayInformation = 53,
+
+	Help = 54,
+
+	PageUp = 55,
+
+	PageDown = 56,
+
+	Power = 64,
+
+	VolumeUp = 65,
+
+	VolumeDown = 66,
+
+	Mute = 67,
+
+	Play = 68,
+
+	Stop = 69,
+
+	Pause = 70,
+
+	Record = 71,
+
+	Rewind = 72,
+
+	FastForward = 73,
+
+	Eject = 74,
+
+	Forward = 75,
+
+	Backward = 76,
+
+	StopRecord = 77,
+
+	PauseRecord = 78,
+
+	Reserved = 79,
+
+	Angle = 80,
+
+	SubPicture = 81,
+
+	VideoOnDemand = 82,
+
+	ElectronicProgramGuide = 83,
+
+	TimerProgramming = 84,
+
+	InitialConfiguration = 85,
+
+	SelectBroadcastType = 86,
+
+	SelectSoundPresentation = 87,
+
+	PlayFunction = 96,
+
+	PausePlayFunction = 97,
+
+	RecordFunction = 98,
+
+	PauseRecordFunction = 99,
+
+	StopFunction = 100,
+
+	MuteFunction = 101,
+
+	RestoreVolumeFunction = 102,
+
+	TuneFunction = 103,
+
+	SelectMediaFunction = 104,
+
+	SelectAvInputFunction = 105,
+
+	SelectAudioInputFunction = 106,
+
+	PowerToggleFunction = 107,
+
+	PowerOffFunction = 108,
+
+	PowerOnFunction = 109,
+
+	F1Blue = 113,
+
+	F2Red = 114,
+
+	F3Green = 115,
+
+	F4Yellow = 116,
+
+	F5 = 117,
+
+	Data = 118
+}
+
 declare const enum MTRKeypadInputCecKeyCode {
 
 	Select = 0,
@@ -34121,6 +36342,13 @@ declare const enum MTRLevelControlOptions {
 	CoupleColorTempToLevel = 2
 }
 
+declare const enum MTRLevelControlOptionsBitmap {
+
+	ExecuteIfOff = 1,
+
+	CoupleColorTempToLevel = 2
+}
+
 declare const enum MTRLevelControlStepMode {
 
 	Up = 0,
@@ -34482,7 +36710,13 @@ declare const enum MTRMediaPlaybackFeature {
 
 	AdvancedSeek = 1,
 
-	VariableSpeed = 2
+	VariableSpeed = 2,
+
+	TextTracks = 3,
+
+	AudioTracks = 4,
+
+	AudioAdvance = 5
 }
 
 declare const enum MTRMediaPlaybackPlaybackState {
@@ -34834,7 +37068,9 @@ declare const enum MTRNetworkCommissioningFeature {
 
 	ThreadNetworkInterface = 2,
 
-	EthernetNetworkInterface = 4
+	EthernetNetworkInterface = 4,
+
+	PerDeviceCredentials = 8
 }
 
 declare const enum MTRNetworkCommissioningStatus {
@@ -34912,7 +37148,9 @@ declare const enum MTRNetworkCommissioningWiFiSecurityBitmap {
 
 	WPA2Personal = 8,
 
-	WPA3Personal = 16
+	WPA3Personal = 16,
+
+	WPA3MatterPDC = 32
 }
 
 declare var MTRNullValueType: string;
@@ -35012,6 +37250,15 @@ declare var MTROTAProviderDelegate: {
 
 	prototype: MTROTAProviderDelegate;
 };
+
+declare const enum MTROTASoftwareUpdateProviderApplyUpdateAction {
+
+	Proceed = 0,
+
+	AwaitNextAction = 1,
+
+	Discontinue = 2
+}
 
 declare class MTROTASoftwareUpdateProviderClusterApplyUpdateRequestParams extends NSObject implements NSCopying {
 
@@ -35130,6 +37377,17 @@ declare class MTROTASoftwareUpdateProviderClusterQueryImageResponseParams extend
 	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
+declare const enum MTROTASoftwareUpdateProviderDownloadProtocol {
+
+	BDXSynchronous = 0,
+
+	BDXAsynchronous = 1,
+
+	HTTPS = 2,
+
+	VendorSpecific = 3
+}
+
 declare const enum MTROTASoftwareUpdateProviderOTAApplyUpdateAction {
 
 	Proceed = 0,
@@ -35159,6 +37417,39 @@ declare const enum MTROTASoftwareUpdateProviderOTAQueryStatus {
 	NotAvailable = 2,
 
 	DownloadProtocolNotSupported = 3
+}
+
+declare const enum MTROTASoftwareUpdateProviderStatus {
+
+	UpdateAvailable = 0,
+
+	Busy = 1,
+
+	NotAvailable = 2,
+
+	DownloadProtocolNotSupported = 3
+}
+
+declare const enum MTROTASoftwareUpdateRequestorAnnouncementReason {
+
+	SimpleAnnouncement = 0,
+
+	UpdateAvailable = 1,
+
+	UrgentUpdateAvailable = 2
+}
+
+declare const enum MTROTASoftwareUpdateRequestorChangeReason {
+
+	Unknown = 0,
+
+	Success = 1,
+
+	Failure = 2,
+
+	TimeOut = 3,
+
+	DelayByProvider = 4
 }
 
 declare class MTROTASoftwareUpdateRequestorClusterAnnounceOTAProviderParams extends NSObject implements NSCopying {
@@ -35273,6 +37564,27 @@ declare const enum MTROTASoftwareUpdateRequestorOTAChangeReason {
 }
 
 declare const enum MTROTASoftwareUpdateRequestorOTAUpdateState {
+
+	Unknown = 0,
+
+	Idle = 1,
+
+	Querying = 2,
+
+	DelayedOnQuery = 3,
+
+	Downloading = 4,
+
+	Applying = 5,
+
+	DelayedOnApply = 6,
+
+	RollingBack = 7,
+
+	DelayedOnUserConsent = 8
+}
+
+declare const enum MTROTASoftwareUpdateRequestorUpdateState {
 
 	Unknown = 0,
 
@@ -35415,16 +37727,27 @@ declare const enum MTROnOffControl {
 	AcceptOnlyWhenOn = 1
 }
 
+declare const enum MTROnOffControlBitmap {
+
+	AcceptOnlyWhenOn = 1
+}
+
 declare const enum MTROnOffDelayedAllOffEffectVariant {
+
+	VariantDelayedOffFastFade = 0,
 
 	VariantFadeToOffIn0p8Seconds = 0,
 
 	VariantNoFade = 1,
 
+	VariantDelayedOffSlowFade = 2,
+
 	Variant50PercentDimDownIn0p8SecondsThenFadeToOffIn12Seconds = 2
 }
 
 declare const enum MTROnOffDyingLightEffectVariant {
+
+	VariantDyingLightFadeOff = 0,
 
 	Variant20PercenterDimUpIn0p5SecondsThenFadeToOffIn1Second = 0
 }
@@ -35438,7 +37761,13 @@ declare const enum MTROnOffEffectIdentifier {
 
 declare const enum MTROnOffFeature {
 
-	Lighting = 1
+	Lighting = 1,
+
+	DeadFrontBehavior = 2,
+
+	DeadFront = 2,
+
+	OffOnly = 4
 }
 
 declare const enum MTROnOffStartUpOnOff {
@@ -35446,6 +37775,8 @@ declare const enum MTROnOffStartUpOnOff {
 	Off = 0,
 
 	On = 1,
+
+	Toggle = 2,
 
 	TogglePreviousOnOff = 2
 }
@@ -35841,6 +38172,149 @@ declare const enum MTROperationalCredentialsOperationalCertStatus {
 	LabelConflict = 10,
 
 	InvalidFabricIndex = 11
+}
+
+declare const enum MTROperationalState {
+
+	Stopped = 0,
+
+	Running = 1,
+
+	Paused = 2,
+
+	Error = 3
+}
+
+declare class MTROperationalStateClusterErrorStateStruct extends NSObject implements NSCopying {
+
+	static alloc(): MTROperationalStateClusterErrorStateStruct; // inherited from NSObject
+
+	static new(): MTROperationalStateClusterErrorStateStruct; // inherited from NSObject
+
+	errorStateDetails: string;
+
+	errorStateID: number;
+
+	errorStateLabel: string;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare class MTROperationalStateClusterOperationCompletionEvent extends NSObject implements NSCopying {
+
+	static alloc(): MTROperationalStateClusterOperationCompletionEvent; // inherited from NSObject
+
+	static new(): MTROperationalStateClusterOperationCompletionEvent; // inherited from NSObject
+
+	completionErrorCode: number;
+
+	pausedTime: number;
+
+	totalOperationalTime: number;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare class MTROperationalStateClusterOperationalCommandResponseParams extends NSObject implements NSCopying {
+
+	static alloc(): MTROperationalStateClusterOperationalCommandResponseParams; // inherited from NSObject
+
+	static new(): MTROperationalStateClusterOperationalCommandResponseParams; // inherited from NSObject
+
+	commandResponseState: MTROperationalStateClusterErrorStateStruct;
+
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+}
+
+declare class MTROperationalStateClusterOperationalErrorEvent extends NSObject implements NSCopying {
+
+	static alloc(): MTROperationalStateClusterOperationalErrorEvent; // inherited from NSObject
+
+	static new(): MTROperationalStateClusterOperationalErrorEvent; // inherited from NSObject
+
+	errorState: MTROperationalStateClusterErrorStateStruct;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare class MTROperationalStateClusterOperationalStateStruct extends NSObject implements NSCopying {
+
+	static alloc(): MTROperationalStateClusterOperationalStateStruct; // inherited from NSObject
+
+	static new(): MTROperationalStateClusterOperationalStateStruct; // inherited from NSObject
+
+	operationalStateID: number;
+
+	operationalStateLabel: string;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare class MTROperationalStateClusterPauseParams extends NSObject implements NSCopying {
+
+	static alloc(): MTROperationalStateClusterPauseParams; // inherited from NSObject
+
+	static new(): MTROperationalStateClusterPauseParams; // inherited from NSObject
+
+	serverSideProcessingTimeout: number;
+
+	timedInvokeTimeoutMs: number;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare class MTROperationalStateClusterResumeParams extends NSObject implements NSCopying {
+
+	static alloc(): MTROperationalStateClusterResumeParams; // inherited from NSObject
+
+	static new(): MTROperationalStateClusterResumeParams; // inherited from NSObject
+
+	serverSideProcessingTimeout: number;
+
+	timedInvokeTimeoutMs: number;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare class MTROperationalStateClusterStartParams extends NSObject implements NSCopying {
+
+	static alloc(): MTROperationalStateClusterStartParams; // inherited from NSObject
+
+	static new(): MTROperationalStateClusterStartParams; // inherited from NSObject
+
+	serverSideProcessingTimeout: number;
+
+	timedInvokeTimeoutMs: number;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare class MTROperationalStateClusterStopParams extends NSObject implements NSCopying {
+
+	static alloc(): MTROperationalStateClusterStopParams; // inherited from NSObject
+
+	static new(): MTROperationalStateClusterStopParams; // inherited from NSObject
+
+	serverSideProcessingTimeout: number;
+
+	timedInvokeTimeoutMs: number;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare const enum MTROperationalStateErrorState {
+
+	NoError = 0,
+
+	UnableToStartOrResume = 1,
+
+	UnableToCompleteOperation = 2,
+
+	CommandInvalidInState = 3
 }
 
 declare class MTROptionalQRCodeInfo extends NSObject {
@@ -36749,6 +39223,8 @@ declare const enum MTRPumpConfigurationAndControlPumpStatusBitmap {
 
 	DeviceFault = 1,
 
+	SupplyFault = 2,
+
 	Supplyfault = 2,
 
 	SpeedLow = 4,
@@ -36777,6 +39253,299 @@ declare class MTRQRCodeSetupPayloadParser extends NSObject {
 	initWithBase38Representation(base38Representation: string): this;
 
 	populatePayload(): MTRSetupPayload;
+}
+
+declare class MTRRVCCleanModeClusterChangeToModeParams extends NSObject implements NSCopying {
+
+	static alloc(): MTRRVCCleanModeClusterChangeToModeParams; // inherited from NSObject
+
+	static new(): MTRRVCCleanModeClusterChangeToModeParams; // inherited from NSObject
+
+	newMode: number;
+
+	serverSideProcessingTimeout: number;
+
+	timedInvokeTimeoutMs: number;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare class MTRRVCCleanModeClusterChangeToModeResponseParams extends NSObject implements NSCopying {
+
+	static alloc(): MTRRVCCleanModeClusterChangeToModeResponseParams; // inherited from NSObject
+
+	static new(): MTRRVCCleanModeClusterChangeToModeResponseParams; // inherited from NSObject
+
+	status: number;
+
+	statusText: string;
+
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+}
+
+declare class MTRRVCCleanModeClusterModeOptionStruct extends NSObject implements NSCopying {
+
+	static alloc(): MTRRVCCleanModeClusterModeOptionStruct; // inherited from NSObject
+
+	static new(): MTRRVCCleanModeClusterModeOptionStruct; // inherited from NSObject
+
+	label: string;
+
+	mode: number;
+
+	modeTags: NSArray<any>;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare class MTRRVCCleanModeClusterModeTagStruct extends NSObject implements NSCopying {
+
+	static alloc(): MTRRVCCleanModeClusterModeTagStruct; // inherited from NSObject
+
+	static new(): MTRRVCCleanModeClusterModeTagStruct; // inherited from NSObject
+
+	mfgCode: number;
+
+	value: number;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare const enum MTRRVCCleanModeFeature {
+
+	OnOff = 1
+}
+
+declare const enum MTRRVCCleanModeModeTag {
+
+	DeepClean = 16384,
+
+	Vacuum = 16385,
+
+	Mop = 16386
+}
+
+declare const enum MTRRVCCleanModeStatusCode {
+
+	CleaningInProgress = 64
+}
+
+declare class MTRRVCOperationalStateClusterErrorStateStruct extends NSObject implements NSCopying {
+
+	static alloc(): MTRRVCOperationalStateClusterErrorStateStruct; // inherited from NSObject
+
+	static new(): MTRRVCOperationalStateClusterErrorStateStruct; // inherited from NSObject
+
+	errorStateDetails: string;
+
+	errorStateID: number;
+
+	errorStateLabel: string;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare class MTRRVCOperationalStateClusterOperationCompletionEvent extends NSObject implements NSCopying {
+
+	static alloc(): MTRRVCOperationalStateClusterOperationCompletionEvent; // inherited from NSObject
+
+	static new(): MTRRVCOperationalStateClusterOperationCompletionEvent; // inherited from NSObject
+
+	completionErrorCode: number;
+
+	pausedTime: number;
+
+	totalOperationalTime: number;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare class MTRRVCOperationalStateClusterOperationalCommandResponseParams extends NSObject implements NSCopying {
+
+	static alloc(): MTRRVCOperationalStateClusterOperationalCommandResponseParams; // inherited from NSObject
+
+	static new(): MTRRVCOperationalStateClusterOperationalCommandResponseParams; // inherited from NSObject
+
+	commandResponseState: MTRRVCOperationalStateClusterErrorStateStruct;
+
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+}
+
+declare class MTRRVCOperationalStateClusterOperationalErrorEvent extends NSObject implements NSCopying {
+
+	static alloc(): MTRRVCOperationalStateClusterOperationalErrorEvent; // inherited from NSObject
+
+	static new(): MTRRVCOperationalStateClusterOperationalErrorEvent; // inherited from NSObject
+
+	errorState: MTRRVCOperationalStateClusterErrorStateStruct;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare class MTRRVCOperationalStateClusterOperationalStateStruct extends NSObject implements NSCopying {
+
+	static alloc(): MTRRVCOperationalStateClusterOperationalStateStruct; // inherited from NSObject
+
+	static new(): MTRRVCOperationalStateClusterOperationalStateStruct; // inherited from NSObject
+
+	operationalStateID: number;
+
+	operationalStateLabel: string;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare class MTRRVCOperationalStateClusterPauseParams extends NSObject implements NSCopying {
+
+	static alloc(): MTRRVCOperationalStateClusterPauseParams; // inherited from NSObject
+
+	static new(): MTRRVCOperationalStateClusterPauseParams; // inherited from NSObject
+
+	serverSideProcessingTimeout: number;
+
+	timedInvokeTimeoutMs: number;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare class MTRRVCOperationalStateClusterResumeParams extends NSObject implements NSCopying {
+
+	static alloc(): MTRRVCOperationalStateClusterResumeParams; // inherited from NSObject
+
+	static new(): MTRRVCOperationalStateClusterResumeParams; // inherited from NSObject
+
+	serverSideProcessingTimeout: number;
+
+	timedInvokeTimeoutMs: number;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare const enum MTRRVCOperationalStateErrorState {
+
+	FailedToFindChargingDock = 64,
+
+	Stuck = 65,
+
+	DustBinMissing = 66,
+
+	DustBinFull = 67,
+
+	WaterTankEmpty = 68,
+
+	WaterTankMissing = 69,
+
+	WaterTankLidOpen = 70,
+
+	MopCleaningPadMissing = 71
+}
+
+declare const enum MTRRVCOperationalStateOperationalState {
+
+	SeekingCharger = 64,
+
+	Charging = 65,
+
+	Docked = 66
+}
+
+declare class MTRRVCRunModeClusterChangeToModeParams extends NSObject implements NSCopying {
+
+	static alloc(): MTRRVCRunModeClusterChangeToModeParams; // inherited from NSObject
+
+	static new(): MTRRVCRunModeClusterChangeToModeParams; // inherited from NSObject
+
+	newMode: number;
+
+	serverSideProcessingTimeout: number;
+
+	timedInvokeTimeoutMs: number;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare class MTRRVCRunModeClusterChangeToModeResponseParams extends NSObject implements NSCopying {
+
+	static alloc(): MTRRVCRunModeClusterChangeToModeResponseParams; // inherited from NSObject
+
+	static new(): MTRRVCRunModeClusterChangeToModeResponseParams; // inherited from NSObject
+
+	status: number;
+
+	statusText: string;
+
+	constructor(o: { responseValue: NSDictionary<string, any>; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
+}
+
+declare class MTRRVCRunModeClusterModeOptionStruct extends NSObject implements NSCopying {
+
+	static alloc(): MTRRVCRunModeClusterModeOptionStruct; // inherited from NSObject
+
+	static new(): MTRRVCRunModeClusterModeOptionStruct; // inherited from NSObject
+
+	label: string;
+
+	mode: number;
+
+	modeTags: NSArray<any>;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare class MTRRVCRunModeClusterModeTagStruct extends NSObject implements NSCopying {
+
+	static alloc(): MTRRVCRunModeClusterModeTagStruct; // inherited from NSObject
+
+	static new(): MTRRVCRunModeClusterModeTagStruct; // inherited from NSObject
+
+	mfgCode: number;
+
+	value: number;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare const enum MTRRVCRunModeFeature {
+
+	OnOff = 1
+}
+
+declare const enum MTRRVCRunModeModeTag {
+
+	Idle = 16384,
+
+	Cleaning = 16385
+}
+
+declare const enum MTRRVCRunModeStatusCode {
+
+	Stuck = 65,
+
+	DustBinMissing = 66,
+
+	DustBinFull = 67,
+
+	WaterTankEmpty = 68,
+
+	WaterTankMissing = 69,
+
+	WaterTankLidOpen = 70,
+
+	MopCleaningPadMissing = 71,
+
+	BatteryLow = 72
 }
 
 declare class MTRReadParams extends NSObject implements NSCopying {
@@ -37288,9 +40057,20 @@ declare const enum MTRScenesCopyMode {
 	CopyAllScenes = 1
 }
 
+declare const enum MTRScenesCopyModeBitmap {
+
+	CopyAllScenes = 1
+}
+
 declare const enum MTRScenesFeature {
 
-	SceneNames = 1
+	SceneNames = 1,
+
+	Explicit = 2,
+
+	TableSize = 4,
+
+	FabricScenes = 8
 }
 
 declare function MTRSetLogCallback(logTypeThreshold: MTRLogType, callback: (p1: MTRLogType, p2: string, p3: string) => void): void;
@@ -37417,6 +40197,8 @@ declare class MTRSoftwareDiagnosticsClusterThreadMetricsStruct extends NSObject 
 }
 
 declare const enum MTRSoftwareDiagnosticsFeature {
+
+	Watermarks = 1,
 
 	WaterMarks = 1
 }
@@ -38092,11 +40874,18 @@ declare class MTRThermostatClusterSetpointRaiseLowerParams extends NSObject impl
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
-declare class MTRThermostatClusterThermostatScheduleTransition extends NSObject implements NSCopying {
+declare class MTRThermostatClusterThermostatScheduleTransition extends MTRThermostatClusterWeeklyScheduleTransitionStruct {
 
 	static alloc(): MTRThermostatClusterThermostatScheduleTransition; // inherited from NSObject
 
 	static new(): MTRThermostatClusterThermostatScheduleTransition; // inherited from NSObject
+}
+
+declare class MTRThermostatClusterWeeklyScheduleTransitionStruct extends NSObject implements NSCopying {
+
+	static alloc(): MTRThermostatClusterWeeklyScheduleTransitionStruct; // inherited from NSObject
+
+	static new(): MTRThermostatClusterWeeklyScheduleTransitionStruct; // inherited from NSObject
 
 	coolSetpoint: number;
 
@@ -38108,6 +40897,21 @@ declare class MTRThermostatClusterThermostatScheduleTransition extends NSObject 
 }
 
 declare const enum MTRThermostatControlSequence {
+
+	CoolingOnly = 0,
+
+	CoolingWithReheat = 1,
+
+	HeatingOnly = 2,
+
+	HeatingWithReheat = 3,
+
+	CoolingAndHeating = 4,
+
+	CoolingAndHeatingWithReheat = 5
+}
+
+declare const enum MTRThermostatControlSequenceOfOperation {
 
 	CoolingOnly = 0,
 
@@ -38184,6 +40988,32 @@ declare const enum MTRThermostatRunningMode {
 	Heat = 4
 }
 
+declare const enum MTRThermostatScheduleDayOfWeekBitmap {
+
+	Sunday = 1,
+
+	Monday = 2,
+
+	Tuesday = 4,
+
+	Wednesday = 8,
+
+	Thursday = 16,
+
+	Friday = 32,
+
+	Saturday = 64,
+
+	Away = 128
+}
+
+declare const enum MTRThermostatScheduleModeBitmap {
+
+	HeatSetpointPresent = 1,
+
+	CoolSetpointPresent = 2
+}
+
 declare const enum MTRThermostatSetpointAdjustMode {
 
 	Heat = 0,
@@ -38197,6 +41027,15 @@ declare const enum MTRThermostatSetpointAdjustMode {
 	Both = 2,
 
 	HeatAndCoolSetpoints = 2
+}
+
+declare const enum MTRThermostatSetpointRaiseLowerMode {
+
+	Heat = 0,
+
+	Cool = 1,
+
+	Both = 2
 }
 
 declare const enum MTRThermostatSystemMode {
@@ -38220,6 +41059,35 @@ declare const enum MTRThermostatSystemMode {
 	Dry = 8,
 
 	Sleep = 9
+}
+
+declare const enum MTRThermostatUserInterfaceConfigurationKeypadLockout {
+
+	NoLockout = 0,
+
+	Lockout1 = 1,
+
+	Lockout2 = 2,
+
+	Lockout3 = 3,
+
+	Lockout4 = 4,
+
+	Lockout5 = 5
+}
+
+declare const enum MTRThermostatUserInterfaceConfigurationScheduleProgrammingVisibility {
+
+	ScheduleProgrammingPermitted = 0,
+
+	ScheduleProgrammingDenied = 1
+}
+
+declare const enum MTRThermostatUserInterfaceConfigurationTemperatureDisplayMode {
+
+	Celsius = 0,
+
+	Fahrenheit = 1
 }
 
 declare class MTRThreadNetworkDiagnosticsClusterConnectionStatusEvent extends NSObject implements NSCopying {
@@ -38497,14 +41365,23 @@ declare const enum MTRTimeFormatLocalizationCalendarType {
 
 	Persian = 10,
 
-	Taiwanese = 11
+	Taiwanese = 11,
+
+	UseActiveLocale = 255
+}
+
+declare const enum MTRTimeFormatLocalizationFeature {
+
+	CalendarFormat = 1
 }
 
 declare const enum MTRTimeFormatLocalizationHourFormat {
 
 	Format12hr = 0,
 
-	Format24hr = 1
+	Format24hr = 1,
+
+	FormatUseActiveLocale = 255
 }
 
 declare class MTRTimeSynchronizationClusterDSTOffsetStruct extends NSObject implements NSCopying {
@@ -38529,11 +41406,11 @@ declare class MTRTimeSynchronizationClusterDstOffsetType extends MTRTimeSynchron
 	static new(): MTRTimeSynchronizationClusterDstOffsetType; // inherited from NSObject
 }
 
-declare class MTRTimeSynchronizationClusterSetUtcTimeParams extends NSObject implements NSCopying {
+declare class MTRTimeSynchronizationClusterSetUTCTimeParams extends NSObject implements NSCopying {
 
-	static alloc(): MTRTimeSynchronizationClusterSetUtcTimeParams; // inherited from NSObject
+	static alloc(): MTRTimeSynchronizationClusterSetUTCTimeParams; // inherited from NSObject
 
-	static new(): MTRTimeSynchronizationClusterSetUtcTimeParams; // inherited from NSObject
+	static new(): MTRTimeSynchronizationClusterSetUTCTimeParams; // inherited from NSObject
 
 	granularity: number;
 
@@ -38546,6 +41423,13 @@ declare class MTRTimeSynchronizationClusterSetUtcTimeParams extends NSObject imp
 	utcTime: number;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare class MTRTimeSynchronizationClusterSetUtcTimeParams extends MTRTimeSynchronizationClusterSetUTCTimeParams {
+
+	static alloc(): MTRTimeSynchronizationClusterSetUtcTimeParams; // inherited from NSObject
+
+	static new(): MTRTimeSynchronizationClusterSetUtcTimeParams; // inherited from NSObject
 }
 
 declare class MTRTimeSynchronizationClusterTimeZoneStruct extends NSObject implements NSCopying {
@@ -38593,29 +41477,53 @@ declare const enum MTRTimeSynchronizationTimeSource {
 
 	NodeTimeCluster = 3,
 
+	NonMatterSNTP = 4,
+
 	NonFabricSntp = 4,
+
+	NonMatterNTP = 5,
 
 	NonFabricNtp = 5,
 
+	MatterSNTP = 6,
+
 	FabricSntp = 6,
+
+	MatterNTP = 7,
 
 	FabricNtp = 7,
 
+	MixedNTP = 8,
+
 	MixedNtp = 8,
+
+	NonMatterSNTPNTS = 9,
 
 	NonFabricSntpNts = 9,
 
+	NonMatterNTPNTS = 10,
+
 	NonFabricNtpNts = 10,
+
+	MatterSNTPNTS = 11,
 
 	FabricSntpNts = 11,
 
+	MatterNTPNTS = 12,
+
 	FabricNtpNts = 12,
+
+	MixedNTPNTS = 13,
 
 	MixedNtpNts = 13,
 
 	CloudSource = 14,
 
+	PTP = 15,
+
 	Ptp = 15,
+
+	GNSS = 16,
 
 	Gnss = 16
 }
@@ -39561,6 +42469,8 @@ declare class MTRWiFiNetworkDiagnosticsClusterAssociationFailureEvent extends NS
 	static new(): MTRWiFiNetworkDiagnosticsClusterAssociationFailureEvent; // inherited from NSObject
 
 	associationFailure: number;
+
+	associationFailureCause: number;
 
 	status: number;
 

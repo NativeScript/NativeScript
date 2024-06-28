@@ -672,7 +672,9 @@ declare const enum UBlockCode {
 
 	LOCK_NAG_MUNDARI = 327,
 
-	LOCK_COUNT = 328,
+	LOCK_CJK_UNIFIED_IDEOGRAPHS_EXTENSION_I = 328,
+
+	LOCK_COUNT = 329,
 
 	LOCK_INVALID_CODE = -1
 }
@@ -1785,7 +1787,17 @@ declare const enum ULineBreak {
 
 	U_LB_ZWJ = 42,
 
-	U_LB_COUNT = 43
+	U_LB_AKSARA = 43,
+
+	U_LB_AKSARA_PREBASE = 44,
+
+	U_LB_AKSARA_START = 45,
+
+	U_LB_VIRAMA_FINAL = 46,
+
+	U_LB_VIRAMA = 47,
+
+	U_LB_COUNT = 48
 }
 
 declare const enum UNumericType {
@@ -1957,7 +1969,13 @@ declare const enum UProperty {
 
 	CHAR_RGI_EMOJI = 71,
 
-	CHAR_BINARY_LIMIT = 72,
+	CHAR_IDS_UNARY_OPERATOR = 72,
+
+	CHAR_ID_COMPAT_MATH_START = 73,
+
+	CHAR_ID_COMPAT_MATH_CONTINUE = 74,
+
+	CHAR_BINARY_LIMIT = 75,
 
 	CHAR_BIDI_CLASS = 4096,
 

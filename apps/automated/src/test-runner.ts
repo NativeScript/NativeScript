@@ -2,7 +2,7 @@
 import * as TKUnit from './tk-unit';
 import './ui-test';
 
-import { isIOS, isAndroid, Application, Device, platformNames, Trace, Button, Frame, StackLayout, Page, TextView, Utils } from '@nativescript/core';
+import { isIOS, isAndroid, Application, Device, platformNames, Trace, Button, Frame, StackLayout, Page, TextView, Utils, Color } from '@nativescript/core';
 Frame.defaultAnimatedNavigation = false;
 
 export function isRunningOnEmulator(): boolean {
@@ -16,7 +16,7 @@ export function isRunningOnEmulator(): boolean {
 			android.os.Build.PRODUCT.toLocaleLowerCase().indexOf('sdk') > -1 ||
 			android.os.Build.PRODUCT.toLocaleLowerCase().indexOf('emulator') > -1
 		); // VS Emulator
-	} else if (Device.os === platformNames.ios) {
+	} else if (__APPLE__) {
 		return __dirname.search('Simulator') > -1;
 	}
 }
@@ -218,8 +218,8 @@ allTests['PROGRESS'] = progressTests;
 import * as placeholderTests from './ui/placeholder/placeholder-tests';
 allTests['PLACEHOLDER'] = placeholderTests;
 
-// import * as pageTests from './ui/page/page-tests';
-// allTests['PAGE'] = pageTests;
+import * as pageTests from './ui/page/page-tests';
+allTests['PAGE'] = pageTests;
 
 import * as listViewTests from './ui/list-view/list-view-tests';
 allTests['LISTVIEW'] = listViewTests;
@@ -245,6 +245,7 @@ allTests['DATE-PICKER'] = datePickerTests;
 import * as timePickerTests from './ui/time-picker/time-picker-tests';
 allTests['TIME-PICKER'] = timePickerTests;
 
+// TODO: followup on 3 assertions here -
 // import * as webViewTests from './ui/web-view/web-view-tests';
 // allTests['WEB-VIEW'] = webViewTests;
 
@@ -397,12 +398,23 @@ function showReportPage(finalMessage: string) {
 	messageContainer.text = finalMessage;
 	stack.addChild(messageContainer);
 
+	if (__VISIONOS__) {
+		// just helps make the results screen more clear on Vision Pro
+		btn.style.fontSize = 22;
+		stack.style.padding = 20;
+		stack.style.marginTop = 20;
+		messageContainer.style.fontSize = 22;
+		messageContainer.style.color = new Color('#fff');
+	}
+
 	Frame.topmost().navigate({
 		create: () => {
 			const page = new Page();
 			page.content = stack;
 			messageContainer.focus();
-			page.style.fontSize = 11;
+			if (!__VISIONOS__) {
+				page.style.fontSize = 11;
+			}
 			if (isAndroid) {
 				page.on('navigatedTo', () => {
 					messageContainer.focus();
@@ -473,7 +485,7 @@ export function runAll(testSelector?: string) {
 		new TestInfo(() => {
 			running = true;
 			startTime = TKUnit.time();
-		})
+		}),
 	);
 	for (const name in allTests) {
 		if (singleModuleName && singleModuleName !== name.toLowerCase()) {
@@ -519,7 +531,7 @@ export function runAll(testSelector?: string) {
 		new TestInfo(function () {
 			testsQueue = [];
 			running = false;
-		})
+		}),
 	);
 
 	TKUnit.runTests(testsQueue, 0);

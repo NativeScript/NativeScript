@@ -1,19 +1,13 @@
 {
-	"npmScope": "nativescript",
 	"workspaceLayout": {
 		"appsDir": "apps",
 		"libsDir": "packages"
 	},
 	"tasksRunnerOptions": {
 		"default": {
-			"runner": "nx-cloud",
 			"options": {
-				"useDaemonProcess": false,
-				"cacheableOperations": ["build", "lint", "test", "ios", "android", "e2e"],
 				"canTrackAnalytics": false,
-				"showUsageWarnings": true,
-				"parallel": 1,
-				"accessToken": "NzRmNDM3NDgtZjlmNy00MTUwLWIxZDktYjJlZTRhMWM5ODY3fHJlYWQtd3JpdGU="
+				"showUsageWarnings": true
 			}
 		}
 	},
@@ -73,9 +67,6 @@
 			}
 		}
 	},
-	"affected": {
-		"defaultBase": "master"
-	},
 	"$schema": "./node_modules/nx/schemas/nx-schema.json",
 	"namedInputs": {
 		"default": ["{projectRoot}/**/*", "sharedGlobals"],
@@ -84,10 +75,42 @@
 	},
 	"targetDefaults": {
 		"build": {
-			"inputs": ["production", "^production"]
+			"inputs": ["production", "^production"],
+			"cache": true
 		},
 		"test": {
-			"inputs": ["default", "^production", "{workspaceRoot}/jest.preset.js"]
+			"inputs": ["default", "^production", "{workspaceRoot}/jest.preset.js"],
+			"cache": true
+		},
+		"lint": {
+			"cache": true
+		},
+		"ios": {
+			"cache": true
+		},
+		"android": {
+			"cache": true
+		},
+		"e2e": {
+			"cache": true
+		},
+		"@nx/jest:jest": {
+			"inputs": ["default", "^production", "{workspaceRoot}/jest.preset.js"],
+			"cache": true,
+			"options": {
+				"passWithNoTests": true
+			},
+			"configurations": {
+				"ci": {
+					"ci": true,
+					"codeCoverage": true
+				}
+			}
 		}
-	}
+	},
+	"useDaemonProcess": false,
+	"nxCloudAccessToken": "NzRmNDM3NDgtZjlmNy00MTUwLWIxZDktYjJlZTRhMWM5ODY3fHJlYWQtd3JpdGU=",
+	"parallel": 1,
+	"useInferencePlugins": false,
+	"defaultBase": "master"
 }

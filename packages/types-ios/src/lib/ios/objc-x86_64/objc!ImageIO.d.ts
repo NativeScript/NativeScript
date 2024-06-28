@@ -180,6 +180,8 @@ declare function CGImageSourceGetTypeID(): number;
 
 declare function CGImageSourceRemoveCacheAtIndex(isrc: any, index: number): void;
 
+declare function CGImageSourceSetAllowableTypes(allowableTypes: NSArray<any> | any[]): number;
+
 declare const enum CGImageSourceStatus {
 
 	kCGImageStatusUnexpectedEOF = -5,
@@ -1549,7 +1551,11 @@ declare var kCGImagePropertyTIFFTransferFunction: string;
 
 declare var kCGImagePropertyTIFFWhitePoint: string;
 
+declare var kCGImagePropertyTIFFXPosition: string;
+
 declare var kCGImagePropertyTIFFXResolution: string;
+
+declare var kCGImagePropertyTIFFYPosition: string;
 
 declare var kCGImagePropertyTIFFYResolution: string;
 

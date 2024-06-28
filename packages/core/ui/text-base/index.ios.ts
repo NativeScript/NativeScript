@@ -82,7 +82,7 @@ class UILabelClickHandlerImpl extends NSObject {
 						location: glyphIndex,
 						length: 1,
 					},
-					textContainer
+					textContainer,
 				);
 
 				// Ensure that an actual glyph was tapped
@@ -291,39 +291,49 @@ export class TextBase extends TextBaseCommon {
 			this.nativeTextViewProtected.textColor = color;
 		}
 	}
+	_animationWrap(fn: () => void) {
+		const shouldAnimate = this.iosTextAnimation === 'inherit' ? TextBase.iosTextAnimationFallback : this.iosTextAnimation;
+		if (shouldAnimate) {
+			fn();
+		} else {
+			UIView.performWithoutAnimation(fn);
+		}
+	}
 
 	_setNativeText(reset = false): void {
-		if (reset) {
-			const nativeView = this.nativeTextViewProtected;
-			if (nativeView instanceof UIButton) {
-				// Clear attributedText or title won't be affected.
-				nativeView.setAttributedTitleForState(null, UIControlState.Normal);
-				nativeView.setTitleForState(null, UIControlState.Normal);
+		this._animationWrap(() => {
+			if (reset) {
+				const nativeView = this.nativeTextViewProtected;
+				if (nativeView instanceof UIButton) {
+					// Clear attributedText or title won't be affected.
+					nativeView.setAttributedTitleForState(null, UIControlState.Normal);
+					nativeView.setTitleForState(null, UIControlState.Normal);
+				} else {
+					// Clear attributedText or text won't be affected.
+					nativeView.attributedText = null;
+					nativeView.text = null;
+				}
+
+				return;
+			}
+
+			const letterSpacing = this.style.letterSpacing ? this.style.letterSpacing : 0;
+			const lineHeight = this.style.lineHeight ? this.style.lineHeight : 0;
+			if (this.formattedText) {
+				this.nativeTextViewProtected.nativeScriptSetFormattedTextDecorationAndTransformLetterSpacingLineHeight(this.getFormattedStringDetails(this.formattedText) as any, letterSpacing, lineHeight);
 			} else {
-				// Clear attributedText or text won't be affected.
-				nativeView.attributedText = null;
-				nativeView.text = null;
+				// console.log('setTextDecorationAndTransform...')
+				const text = getTransformedText(isNullOrUndefined(this.text) ? '' : `${this.text}`, this.textTransform);
+				this.nativeTextViewProtected.nativeScriptSetTextDecorationAndTransformTextDecorationLetterSpacingLineHeight(text, this.style.textDecoration || '', letterSpacing, lineHeight);
+
+				if (!this.style?.color && majorVersion >= 13 && UIColor.labelColor) {
+					this._setColor(UIColor.labelColor);
+				}
 			}
-
-			return;
-		}
-
-		const letterSpacing = this.style.letterSpacing ? this.style.letterSpacing : 0;
-		const lineHeight = this.style.lineHeight ? this.style.lineHeight : 0;
-		if (this.formattedText) {
-			this.nativeTextViewProtected.nativeScriptSetFormattedTextDecorationAndTransformLetterSpacingLineHeight(this.getFormattedStringDetails(this.formattedText) as any, letterSpacing, lineHeight);
-		} else {
-			// console.log('setTextDecorationAndTransform...')
-			const text = getTransformedText(isNullOrUndefined(this.text) ? '' : `${this.text}`, this.textTransform);
-			this.nativeTextViewProtected.nativeScriptSetTextDecorationAndTransformTextDecorationLetterSpacingLineHeight(text, this.style.textDecoration || '', letterSpacing, lineHeight);
-
-			if (!this.style?.color && majorVersion >= 13 && UIColor.labelColor) {
-				this._setColor(UIColor.labelColor);
+			if (this.style?.textStroke) {
+				this.nativeTextViewProtected.nativeScriptSetFormattedTextStrokeColor(Length.toDevicePixels(this.style.textStroke.width, 0), this.style.textStroke.color.ios);
 			}
-		}
-		if (this.style?.textStroke) {
-			this.nativeTextViewProtected.nativeScriptSetFormattedTextStrokeColor(Length.toDevicePixels(this.style.textStroke.width, 0), this.style.textStroke.color.ios);
-		}
+		});
 	}
 
 	createFormattedTextNative(value: FormattedString) {
@@ -358,7 +368,7 @@ export class TextBase extends TextBaseCommon {
 
 	createMutableStringDetails(span: Span, text: string, index?: number): any {
 		const fontScale = adjustMinMaxFontScale(span.style.fontScaleInternal, span);
-		const font = new Font(span.style.fontFamily, span.style.fontSize, span.style.fontStyle, span.style.fontWeight, fontScale);
+		const font = new Font(span.style.fontFamily, span.style.fontSize, span.style.fontStyle, span.style.fontWeight, fontScale, span.style.fontVariationSettings);
 		const iosFont = font.getUIFont(this.nativeTextViewProtected.font);
 
 		const backgroundColor = <Color>(span.style.backgroundColor || (<FormattedString>span.parent).backgroundColor || (<TextBase>span.parent.parent).backgroundColor);

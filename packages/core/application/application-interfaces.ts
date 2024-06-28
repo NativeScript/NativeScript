@@ -118,6 +118,13 @@ export interface CssChangedEventData extends ApplicationEventData {
 }
 
 /**
+ * Event data containing information about root view application.
+ */
+export interface InitRootViewEventData extends ApplicationEventData {
+	rootView: View;
+}
+
+/**
  * Data for the Android activity events.
  */
 export interface AndroidActivityEventData {

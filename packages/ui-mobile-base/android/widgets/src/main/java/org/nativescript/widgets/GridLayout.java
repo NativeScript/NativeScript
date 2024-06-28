@@ -4,6 +4,7 @@ import android.content.Context;
 import android.view.Gravity;
 import android.view.View;
 import android.view.View.MeasureSpec;
+import android.util.AttributeSet;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,7 +23,13 @@ public class GridLayout extends LayoutBase {
 	private final HashMap<View, MeasureSpecs> map = new HashMap<>();
 
 	public GridLayout(Context context) {
-		super(context);
+		this(context, (AttributeSet)null);
+	}
+	public GridLayout(Context context, AttributeSet attrs) {
+		this(context, attrs, 0);
+	}
+	public GridLayout(Context context, AttributeSet attrs, int defStyleAttr) {
+		super(context, attrs, defStyleAttr);
 	}
 
 	private static void validateItemSpec(ItemSpec itemSpec) {

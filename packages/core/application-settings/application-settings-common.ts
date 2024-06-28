@@ -1,11 +1,15 @@
-﻿export function checkKey(key: string): void {
+﻿export function checkKey(key: string): boolean {
 	if (typeof key !== 'string') {
-		throw new Error("key: '" + key + "' must be a string");
+		console.error("key: '" + key + "' must be a string");
+		return false;
 	}
+	return true;
 }
 
-export function ensureValidValue(value: any, valueType: string): void {
+export function ensureValidValue(value: any, valueType: string): boolean {
 	if (typeof value !== valueType) {
-		throw new Error("value: '" + value + "' must be a " + valueType);
+		console.error("value: '" + value + "' must be a " + valueType);
+		return false;
 	}
+	return true;
 }

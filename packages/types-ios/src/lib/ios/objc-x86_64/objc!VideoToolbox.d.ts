@@ -187,6 +187,8 @@ declare var kVTCompressionPropertyKey_BaseLayerFrameRate: string;
 
 declare var kVTCompressionPropertyKey_BaseLayerFrameRateFraction: string;
 
+declare var kVTCompressionPropertyKey_CalculateMeanSquaredError: string;
+
 declare var kVTCompressionPropertyKey_CleanAperture: string;
 
 declare var kVTCompressionPropertyKey_ColorPrimaries: string;
@@ -219,9 +221,15 @@ declare var kVTCompressionPropertyKey_H264EntropyMode: string;
 
 declare var kVTCompressionPropertyKey_HDRMetadataInsertionMode: string;
 
+declare var kVTCompressionPropertyKey_HasLeftStereoEyeView: string;
+
+declare var kVTCompressionPropertyKey_HasRightStereoEyeView: string;
+
 declare var kVTCompressionPropertyKey_HeroEye: string;
 
 declare var kVTCompressionPropertyKey_HorizontalDisparityAdjustment: string;
+
+declare var kVTCompressionPropertyKey_HorizontalFieldOfView: string;
 
 declare var kVTCompressionPropertyKey_ICCProfile: string;
 
@@ -290,6 +298,8 @@ declare var kVTCompressionPropertyKey_TargetQualityForAlpha: string;
 declare var kVTCompressionPropertyKey_TransferFunction: string;
 
 declare var kVTCompressionPropertyKey_UsingGPURegistryID: string;
+
+declare var kVTCompressionPropertyKey_UsingHardwareAcceleratedVideoEncoder: string;
 
 declare var kVTCompressionPropertyKey_VideoEncoderPixelBufferAttributes: string;
 
@@ -601,7 +611,15 @@ declare var kVTRotation_CCW90: string;
 
 declare var kVTRotation_CW90: string;
 
+declare var kVTSampleAttachmentKey_QualityMetrics: string;
+
 declare var kVTSampleAttachmentKey_RequireLTRAcknowledgementToken: string;
+
+declare var kVTSampleAttachmentQualityMetricsKey_ChromaBlueMeanSquaredError: string;
+
+declare var kVTSampleAttachmentQualityMetricsKey_ChromaRedMeanSquaredError: string;
+
+declare var kVTSampleAttachmentQualityMetricsKey_LumaMeanSquaredError: string;
 
 declare var kVTScalingMode_CropSourceToCleanAperture: string;
 
@@ -679,10 +697,14 @@ declare const kVTVideoEncoderNeedsRosettaErr: number;
 
 declare const kVTVideoEncoderNotAvailableNowErr: number;
 
+declare var kVTVideoEncoderSpecification_EnableHardwareAcceleratedVideoEncoder: string;
+
 declare var kVTVideoEncoderSpecification_EnableLowLatencyRateControl: string;
 
 declare var kVTVideoEncoderSpecification_EncoderID: string;
 
 declare var kVTVideoEncoderSpecification_PreferredEncoderGPURegistryID: string;
+
+declare var kVTVideoEncoderSpecification_RequireHardwareAcceleratedVideoEncoder: string;
 
 declare var kVTVideoEncoderSpecification_RequiredEncoderGPURegistryID: string;

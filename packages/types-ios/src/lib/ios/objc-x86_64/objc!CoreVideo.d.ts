@@ -394,6 +394,10 @@ declare var kCVImageBufferGammaLevelKey: string;
 
 declare var kCVImageBufferICCProfileKey: string;
 
+declare var kCVImageBufferLogTransferFunctionKey: string;
+
+declare var kCVImageBufferLogTransferFunction_AppleLog: string;
+
 declare var kCVImageBufferMasteringDisplayColorVolumeKey: string;
 
 declare var kCVImageBufferPixelAspectRatioHorizontalSpacingKey: string;

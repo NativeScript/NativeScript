@@ -2442,7 +2442,13 @@ declare const kAudioCodecProduceOutputPacketSuccessConcealed: number;
 
 declare const kAudioCodecProduceOutputPacketSuccessHasMore: number;
 
+declare const kAudioCodecPropertyAdjustCompressionProfile: number;
+
 declare const kAudioCodecPropertyAdjustLocalQuality: number;
+
+declare const kAudioCodecPropertyAdjustTargetLevel: number;
+
+declare const kAudioCodecPropertyAdjustTargetLevelConstant: number;
 
 declare const kAudioCodecPropertyApplicableBitRateRange: number;
 
@@ -2820,8 +2826,6 @@ declare const kAudioFileNotOpenError: number;
 
 declare const kAudioFileNotOptimizedError: number;
 
-declare const kAudioFileOpenUsingHintError: number;
-
 declare const kAudioFileOperationNotSupportedError: number;
 
 declare const kAudioFilePermissionsError: number;
@@ -2919,8 +2923,6 @@ declare const kAudioFileStreamError_InvalidFile: number;
 declare const kAudioFileStreamError_InvalidPacketOffset: number;
 
 declare const kAudioFileStreamError_NotOptimized: number;
-
-declare const kAudioFileStreamError_OpenUsingHint: number;
 
 declare const kAudioFileStreamError_UnspecifiedError: number;
 
@@ -4017,6 +4019,16 @@ declare const kDistortionParam_Rounding: number;
 declare const kDistortionParam_SoftClipGain: number;
 
 declare const kDistortionParam_SquaredTerm: number;
+
+declare const kDynamicRangeCompressionProfile_GeneralCompression: number;
+
+declare const kDynamicRangeCompressionProfile_LateNight: number;
+
+declare const kDynamicRangeCompressionProfile_LimitedPlaybackRange: number;
+
+declare const kDynamicRangeCompressionProfile_NoisyEnvironment: number;
+
+declare const kDynamicRangeCompressionProfile_None: number;
 
 declare const kDynamicRangeControlMode_Heavy: number;
 

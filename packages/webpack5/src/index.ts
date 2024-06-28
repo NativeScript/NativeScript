@@ -26,6 +26,7 @@ export interface IWebpackEnv {
 
 	appPath?: string;
 	appResourcesPath?: string;
+	buildPath?: string;
 	appComponents?: string[];
 
 	nativescriptLibPath?: string | boolean;
@@ -65,6 +66,7 @@ let webpackMerges: any[] = [];
 let explicitUseConfig = false;
 let hasInitialized = false;
 let currentPlugin: string | undefined;
+
 /**
  * @internal
  */
@@ -85,6 +87,7 @@ export function clearCurrentPlugin() {
 }
 
 ////// PUBLIC API
+
 /**
  * The default flavor specific configs
  */
@@ -140,7 +143,7 @@ export function useConfig(config: keyof typeof defaultConfigs | false) {
  */
 export function chainWebpack(
 	chainFn: (config: Config, env: IWebpackEnv) => any,
-	options?: { order?: number }
+	options?: { order?: number },
 ) {
 	webpackChains.push({
 		order: options?.order || 0,
@@ -157,8 +160,8 @@ export function chainWebpack(
 export function mergeWebpack(
 	mergeFn: (
 		config: Partial<webpack.Configuration>,
-		env: IWebpackEnv
-	) => any | Partial<webpack.Configuration>
+		env: IWebpackEnv,
+	) => any | Partial<webpack.Configuration>,
 ) {
 	webpackMerges.push(mergeFn);
 }
@@ -214,7 +217,7 @@ export function resolveChainableConfig(): Config {
  * @param chainableConfig Optional chain config to use.
  */
 export function resolveConfig(
-	chainableConfig = resolveChainableConfig()
+	chainableConfig = resolveChainableConfig(),
 ): webpack.Configuration {
 	if (!hasInitialized) {
 		throw error('resolveConfig() must be called after init()');

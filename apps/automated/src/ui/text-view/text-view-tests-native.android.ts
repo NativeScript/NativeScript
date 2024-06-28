@@ -1,4 +1,5 @@
 import { TextView, Color, Utils, CoreTypes } from '@nativescript/core';
+import { AndroidHelper } from '@nativescript/core/ui/core/view';
 
 export function getNativeText(textView: TextView): string {
 	return textView.android.getText().toString();
@@ -27,14 +28,7 @@ export function getNativeColor(textView: TextView): Color {
 }
 
 export function getNativeBackgroundColor(textView: TextView): Color {
-	let bg = <any>textView.android.getBackground();
-	if (bg instanceof org.nativescript.widgets.BorderDrawable) {
-		return new Color(bg.getBackgroundColor());
-	} else if (bg instanceof android.graphics.drawable.ColorDrawable) {
-		return new Color(bg.getColor());
-	} else {
-		return new Color(bg.backgroundColor);
-	}
+	return AndroidHelper.getDrawableColor(textView.android.getBackground());
 }
 
 export function getNativeTextAlignment(textView: TextView): string {

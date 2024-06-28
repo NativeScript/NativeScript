@@ -5,6 +5,8 @@ export function test_platform() {
 	let expectedPlatform;
 	if (isAndroid) {
 		expectedPlatform = 'Android';
+	} else if (__VISIONOS__) {
+		expectedPlatform = 'visionOS';
 	} else {
 		expectedPlatform = 'iOS';
 	}

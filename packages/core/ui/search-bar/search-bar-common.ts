@@ -20,7 +20,7 @@ SearchBarBase.prototype.recycleNativeView = 'auto';
 export const textProperty = new Property<SearchBarBase, string>({
 	name: 'text',
 	defaultValue: '',
-	affectsLayout: global.isIOS,
+	affectsLayout: __APPLE__,
 });
 textProperty.register(SearchBarBase);
 
