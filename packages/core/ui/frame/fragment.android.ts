@@ -1,4 +1,4 @@
-import { embedded, getContentView } from '../../ui/embedding';
+import { isEmbedded, getEmbeddedView } from '../embedding';
 import { setFragmentCallbacks } from '.';
 
 declare const com: any;
@@ -82,7 +82,7 @@ export function setFragmentClass(clazz: any) {
 		throw new Error('Fragment class already initialized');
 	}
 
-	if (embedded()) {
+	if (isEmbedded()) {
 		attachEmbeddableFragmentCallbacks();
 	}
 
@@ -95,13 +95,13 @@ function attachEmbeddableFragmentCallbacks() {
 			// init must at least be defined
 		},
 		onCreateView() {
-			return getContentView().nativeViewProtected;
+			return getEmbeddedView().nativeViewProtected;
 		},
 		onResume() {
-			getContentView().callLoaded();
+			getEmbeddedView().callLoaded();
 		},
 		onPause() {
-			getContentView().callUnloaded();
+			getEmbeddedView().callUnloaded();
 		},
 	});
 	com.tns.embedding.CallbacksStore.setFragmentCallbacks(new Callbacks());

@@ -1,14 +1,12 @@
 import '../../globals';
 import { setActivityCallbacks } from '.';
 import { Application } from '../../application';
-import { embedded } from 'ui/embedding';
-
-const isEmbedded = embedded();
+import { isEmbedded } from '../embedding';
 
 const EMPTY_FN = () => {};
 declare const com: any;
 
-if (!isEmbedded) {
+if (!isEmbedded()) {
 	/**
 	 * NOTE: We cannot use NativeClass here because this is used in appComponents in webpack.config
 	 * Whereby it bypasses the decorator transformation, hence pure es5 style written here

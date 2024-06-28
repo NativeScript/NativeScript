@@ -1,15 +1,14 @@
-import { AndroidActivityCallbacks, Frame } from './..';
+import { AndroidActivityCallbacks, Frame } from '..';
 
 import { AndroidActivityBackPressedEventData, AndroidActivityNewIntentEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, Application } from '../../../application';
 
 import { Trace } from '../../../trace';
 import { View } from '../../core/view';
-import { _stack, FrameBase } from './../frame-common';
 
-import { _clearEntry, _clearFragment, _getAnimatedEntries, _reverseTransitions, _setAndroidFragmentTransitions, _updateTransitions } from './../fragment.transitions';
+import { _clearEntry, _clearFragment, _getAnimatedEntries, _reverseTransitions, _setAndroidFragmentTransitions, _updateTransitions } from '../fragment.transitions';
 
 import { profile } from '../../../profiling';
-import { embedded, setContentView as embeddedSetContentView } from '../../../ui/embedding';
+import { isEmbedded, setEmbeddedView } from '../../embedding';
 
 const activityRootViewsMap = new Map<number, WeakRef<View>>();
 const INTENT_EXTRA = 'com.tns.activity';
@@ -103,7 +102,7 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 		}
 
 		const rootView = this._rootView;
-		if (rootView && !rootView.isLoaded && !embedded()) {
+		if (rootView && !rootView.isLoaded && !isEmbedded()) {
 			rootView.callLoaded();
 		}
 	}
@@ -117,7 +116,7 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 		}
 
 		const rootView = this._rootView;
-		if (rootView && rootView.isLoaded && !embedded()) {
+		if (rootView && rootView.isLoaded && !isEmbedded()) {
 			rootView.callUnloaded();
 		}
 	}
@@ -204,7 +203,7 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 
 		// In the case of Frame, use this callback only if it was overridden, since the original will cause navigation issues
 		if (!viewArgs.cancel && (view.onBackPressed === Frame.prototype.onBackPressed || !view.onBackPressed())) {
-			callSuper = view instanceof Frame ? !FrameBase.goBack() : true;
+			callSuper = view instanceof Frame ? !Frame.goBack() : true;
 		}
 
 		if (callSuper) {
@@ -290,8 +289,8 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 		// setup view as styleScopeHost
 		rootView._setupAsRootView(activity);
 
-		if (embedded()) {
-			embeddedSetContentView(rootView);
+		if (isEmbedded()) {
+			setEmbeddedView(rootView);
 		} else {
 			activity.setContentView(rootView.nativeViewProtected, new org.nativescript.widgets.CommonLayoutParams());
 		}

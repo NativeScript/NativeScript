@@ -1,11 +1,10 @@
 import { profile } from '../../../profiling';
-import { AndroidFragmentCallbacks, BackstackEntry, Frame } from '..';
+import { AndroidFragmentCallbacks, BackstackEntry, Frame, getFrameByNumberId } from '..';
 import { Trace } from '../../../trace';
 import { Application } from '../../../application';
 import { Color } from '../../../color';
-import { getFrameByNumberId } from '../index.android';
 import { _updateTransitions } from '../fragment.transitions';
-import { Page } from 'ui/page';
+import { Page } from '../../page';
 
 const FRAMEID = '_frameId';
 const CALLBACKS = '_callbacks';

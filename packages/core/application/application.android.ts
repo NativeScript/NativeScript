@@ -1,6 +1,5 @@
-import { embedded } from 'ui/embedding';
 import { profile } from '../profiling';
-import { View } from '../ui';
+import { View, isEmbedded } from '../ui';
 import { AndroidActivityCallbacks, NavigationEntry } from '../ui/frame/frame-common';
 import type { AndroidApplication as IAndroidApplication } from './application';
 import { ApplicationCommon } from './application-common';
@@ -365,7 +364,7 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 			nativeApp = com.tns.NativeScriptApplication.getInstance();
 		}
 
-		if (!nativeApp && embedded()) {
+		if (!nativeApp && isEmbedded()) {
 			nativeApp = com.tns.embedding.ApplicationHolder.getInstance();
 		}
 
