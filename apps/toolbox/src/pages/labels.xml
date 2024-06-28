@@ -5,24 +5,24 @@
     </Page.actionBar>
     <ScrollView>
       <StackLayout padding="20">
-	  	<GridLayout borderWidth="1" borderColor="#efefef" height="60" paddingLeft="5">
+	  	<GridLayout marginTop="10" borderWidth="1" borderColor="#dedede" height="60" paddingLeft="5">
 			<Label text="Test Label 1: should be aligned middle" />
 		</GridLayout>
-		<GridLayout marginTop="10" borderWidth="1" borderColor="#efefef" height="60" paddingLeft="5">
+		<GridLayout marginTop="10" borderWidth="1" borderColor="#dedede" height="60" paddingLeft="5">
 			<Label text="Test Label 2: should be aligned bottom" verticalAlignment="bottom" />
 		</GridLayout>
-		<GridLayout marginTop="10" borderWidth="1" borderColor="#efefef" height="60" paddingLeft="5">
+		<GridLayout marginTop="10" borderWidth="1" borderColor="#dedede" height="60" paddingLeft="5">
 			<Label text="Test Label 3: should be aligned top" verticalAlignment="top" />
 		</GridLayout>
-		<GridLayout marginTop="10" borderWidth="1" borderColor="#efefef" height="60" paddingLeft="5">
+		<GridLayout marginTop="10" borderWidth="1" borderColor="#dedede" height="60" paddingLeft="5">
 			<Label text="Test Label text-overflow: ellipsis, this should be long sentence and clipped at very end." textOverflow="ellipsis" whiteSpace="nowrap" />
 		</GridLayout>
 
-		<GridLayout marginTop="10" borderWidth="1" borderColor="#efefef" height="60" paddingLeft="5">
+		<GridLayout marginTop="10" borderWidth="1" borderColor="#dedede" height="60" paddingLeft="5">
 			<Button text="Test Button text-overflow: ellipsis, this should be long sentence and clipped at very end." textOverflow="ellipsis" whiteSpace="nowrap" />
 		</GridLayout>
 
-		<GridLayout marginTop="10" borderWidth="1" borderColor="#efefef" height="60" paddingLeft="5">
+		<GridLayout marginTop="10" borderWidth="1" borderColor="#dedede" height="60" paddingLeft="5">
 			<Button text="Test Button text-overflow: initial, this should be long sentence and truncated in the middle with ellipsis." textOverflow="initial" whiteSpace="nowrap" />
 		</GridLayout>
 		<GridLayout marginTop="10" height="60" paddingLeft="5" tap="{{toggleStrokeStyle}}">

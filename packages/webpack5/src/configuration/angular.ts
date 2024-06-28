@@ -1,9 +1,10 @@
 import { extname, resolve } from 'path';
 import Config from 'webpack-chain';
+import { satisfies } from 'semver';
 import { existsSync } from 'fs';
 
 import { getTypescript, readTsConfig } from '../helpers/typescript';
-import { getDependencyPath } from '../helpers/dependencies';
+import { getDependencyVersion } from '../helpers/dependencies';
 import { getProjectTSConfigPath } from '../helpers/project';
 import { env as _env, IWebpackEnv } from '../index';
 import { warnOnce } from '../helpers/log';
@@ -160,11 +161,11 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			}
 			if (this.pluginOptions.jitMode) {
 				transformers.before.unshift(
-					require('../transformers/NativeClass').default
+					require('../transformers/NativeClass').default,
 				);
 			} else {
 				transformers.before.push(
-					require('../transformers/NativeClass').default
+					require('../transformers/NativeClass').default,
 				);
 			}
 			args[1] = transformers;
@@ -187,13 +188,16 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				.loader('angular-hot-loader');
 		});
 
-		const buildAngularMajorVersion = getBuildAngularMajorVersion();
-		if (buildAngularMajorVersion) {
+		const buildAngularVersion = getDependencyVersion(
+			'@angular-devkit/build-angular',
+		);
+
+		if (buildAngularVersion) {
 			const buildAngularOptions: any = {
 				aot: !disableAOT,
 			};
 
-			if (buildAngularMajorVersion < 15) {
+			if (satisfies(buildAngularVersion, '<15.0.0')) {
 				const tsConfig = readTsConfig(tsConfigPath);
 				const { ScriptTarget } = getTypescript();
 				buildAngularOptions.scriptTarget =
@@ -208,7 +212,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				.rule('angular-webpack-loader')
 				.test(/\.[cm]?[tj]sx?$/)
 				.exclude.add(
-					/[/\\](?:core-js|@babel|tslib|web-animations-js|web-streams-polyfill)[/\\]/
+					/[/\\](?:core-js|@babel|tslib|web-animations-js|web-streams-polyfill)[/\\]/,
 				)
 				.end()
 				.resolve.set('fullySpecified', false)
@@ -222,7 +226,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				'build-angular-missing',
 				`
 				@angular-devkit/build-angular is missing! Some features may not work as expected. Please install it manually to get rid of this warning.
-				`
+				`,
 			);
 		}
 	}
@@ -277,7 +281,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			},
 			/core\/profiling/,
 			/core\/ui\/styling/,
-		])
+		]),
 	);
 
 	config.optimization.minimizer('TerserPlugin').tap((args) => {
@@ -315,27 +319,6 @@ function getAngularWebpackPlugin(): any {
 	return AngularWebpackPlugin;
 }
 
-const MAJOR_VER_RE = /^(\d+)\./;
-function getBuildAngularMajorVersion() {
-	const buildAngularPath = getDependencyPath('@angular-devkit/build-angular');
-	if (!buildAngularPath) {
-		return null;
-	}
-
-	try {
-		const buildAngularVersion =
-			require(`${buildAngularPath}/package.json`).version;
-
-		const [_, majorStr] = buildAngularVersion.match(MAJOR_VER_RE);
-
-		return Number(majorStr);
-	} catch (err) {
-		// ignore
-	}
-
-	return null;
-}
-
 function tryRequireResolve(path: string) {
 	try {
 		return require.resolve(path);
@@ -347,11 +330,11 @@ function tryRequireResolve(path: string) {
 function getWebpackLoaderPath() {
 	return (
 		tryRequireResolve(
-			'@angular-devkit/build-angular/src/babel/webpack-loader'
-		) ||
+			'@angular-devkit/build-angular/src/babel/webpack-loader',
+		) ??
 		tryRequireResolve(
-			'@angular-devkit/build-angular/src/tools/babel/webpack-loader'
-		) ||
+			'@angular-devkit/build-angular/src/tools/babel/webpack-loader',
+		) ??
 		// fallback to angular 16.1+
 		'@angular-devkit/build-angular/src/tools/babel/webpack-loader'
 	);

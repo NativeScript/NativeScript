@@ -1,4 +1,5 @@
 import * as layoutCommon from './layout-helper-common';
+import { getMainScreen } from '../ios';
 
 export namespace layout {
 	// cache the MeasureSpec constants here, to prevent extensive marshaling calls to and from Objective C
@@ -32,15 +33,15 @@ export namespace layout {
 	}
 
 	export function getDisplayDensity(): number {
-		return UIScreen.mainScreen.scale;
+		return getMainScreen().scale;
 	}
 
 	export function toDevicePixels(value: number): number {
-		return value * UIScreen.mainScreen.scale;
+		return value * getMainScreen().scale;
 	}
 
 	export function toDeviceIndependentPixels(value: number): number {
-		return value / UIScreen.mainScreen.scale;
+		return value / getMainScreen().scale;
 	}
 
 	export function round(value: number) {

@@ -16,6 +16,7 @@ import { xml2ui } from './xml2ui';
 
 export const ios = platformNames.ios.toLowerCase();
 export const android = platformNames.android.toLowerCase();
+export const visionos = platformNames.visionos.toLowerCase();
 export const defaultNameSpaceMatcher = /tns\.xsd$/i;
 
 export interface LoadOptions {
@@ -243,7 +244,7 @@ function parseInternal(value: string, context: any, xmlModule?: string, moduleNa
 				? xml2ui.ComponentSourceTracker(xmlModule)
 				: () => {
 						// no-op
-				  };
+					};
 
 		(start = new xml2ui.XmlStringParser(errorFormat)).pipe(new xml2ui.PlatformFilter()).pipe(new xml2ui.XmlStateParser((ui = new xml2ui.ComponentParser(context, errorFormat, componentSourceTracker, moduleName))));
 

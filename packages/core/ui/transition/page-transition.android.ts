@@ -77,7 +77,11 @@ function setTransitionName(view: ViewBase) {
 }
 
 export class PageTransition extends Transition {
-	constructor(duration?: number, curve?: any, private pageLoadedTimeout: number = 0) {
+	constructor(
+		duration?: number,
+		curve?: any,
+		private pageLoadedTimeout: number = 0,
+	) {
 		// disable custom curves until we can fix the issue with the animation not completing
 		if (curve) {
 			console.warn('PageTransition does not support custom curves at the moment. The passed in curve will be ignored.');
@@ -176,7 +180,7 @@ export class PageTransition extends Transition {
 		const toPage = newEntry.resolvedPage;
 		const newFragment: androidx.fragment.app.Fragment = newEntry.fragment;
 		const state = SharedTransition.getState(this.id);
-		const pageEnd = state.pageEnd;
+		const pageEnd = state?.pageEnd;
 
 		//we can't look for presented right now as the toPage might not be loaded
 		// and thus some views like ListView/Pager... might not have loaded their "children"

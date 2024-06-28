@@ -100,6 +100,16 @@ export class TextBase extends View implements AddChildFromBuilder {
 	paddingTop: CoreTypes.LengthType;
 
 	/**
+	 * Specify wether the native text should be applied with or without animations
+	 */
+	iosTextAnimation: 'inherit' | boolean;
+
+	/**
+	 * The value used when the iosTextAnimation is set to 'inherit'
+	 */
+	static iosTextAnimationFallback: boolean;
+
+	/**
 	 * Called for every child element declared in xml.
 	 * This method will add a child element (value) to current element.
 	 * @private
@@ -119,11 +129,6 @@ export class TextBase extends View implements AddChildFromBuilder {
 	 * @private
 	 */
 	_setNativeText(reset?: boolean): void;
-
-	/**
-	 * @private
-	 */
-	_getNativeTextTransform(value: CoreTypes.TextTransformType): android.text.method.TransformationMethod;
 
 	/**
 	 * @private

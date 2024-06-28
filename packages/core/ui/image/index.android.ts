@@ -161,10 +161,10 @@ export class Image extends ImageBase {
 		return undefined;
 	}
 	[tintColorProperty.setNative](value: Color) {
-		if (value === undefined) {
-			this.nativeViewProtected.clearColorFilter();
-		} else {
+		if (value) {
 			this.nativeViewProtected.setColorFilter(value.android);
+		} else {
+			this.nativeViewProtected.clearColorFilter();
 		}
 	}
 

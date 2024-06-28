@@ -809,7 +809,9 @@ declare const enum CLMonitoringState {
 
 	Satisfied = 1,
 
-	Unsatisfied = 2
+	Unsatisfied = 2,
+
+	Unmonitored = 3
 }
 
 declare class CLPlacemark extends NSObject implements NSCopying, NSSecureCoding {

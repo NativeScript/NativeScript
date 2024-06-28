@@ -1,6 +1,6 @@
 // Types
 import { PropertyChangeData } from '../../data/observable';
-import { ViewBase } from '../core/view-base';
+import { ViewBase, booleanConverter } from '../core/view-base';
 import { FontStyleType, FontWeightType } from '../styling/font-interfaces';
 
 // Requires.
@@ -24,6 +24,8 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 	public _isSingleLine: boolean;
 	public text: string;
 	public formattedText: FormattedString;
+	public iosTextAnimation: 'inherit' | boolean;
+	static iosTextAnimationFallback = true;
 
 	/***
 	 * In the NativeScript Core; by default the nativeTextViewProtected points to the same value as nativeViewProtected.
@@ -210,10 +212,6 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 	_setNativeText(reset = false): void {
 		//
 	}
-
-	_getNativeTextTransform(value: CoreTypes.TextTransformType): any {
-		//
-	}
 }
 
 TextBaseCommon.prototype._isSingleLine = false;
@@ -235,6 +233,20 @@ export const formattedTextProperty = new Property<TextBaseCommon, FormattedStrin
 	valueChanged: onFormattedTextPropertyChanged,
 });
 formattedTextProperty.register(TextBaseCommon);
+
+export const iosTextAnimationProperty = new Property<TextBaseCommon, 'inherit' | boolean>({
+	name: 'iosTextAnimation',
+	defaultValue: 'inherit',
+	affectsLayout: false,
+	valueConverter(value: string) {
+		try {
+			return booleanConverter(value);
+		} catch (e) {
+			return 'inherit';
+		}
+	},
+});
+iosTextAnimationProperty.register(TextBaseCommon);
 
 function onFormattedTextPropertyChanged(textBase: TextBaseCommon, oldValue: FormattedString, newValue: FormattedString) {
 	if (oldValue) {
@@ -286,7 +298,7 @@ textTransformProperty.register(Style);
 export const textShadowProperty = new CssProperty<Style, string | ShadowCSSValues>({
 	name: 'textShadow',
 	cssName: 'text-shadow',
-	affectsLayout: __IOS__,
+	affectsLayout: __APPLE__,
 	valueConverter: (value) => {
 		return parseCSSShadow(value);
 	},
@@ -296,7 +308,7 @@ textShadowProperty.register(Style);
 export const textStrokeProperty = new CssProperty<Style, string | StrokeCSSValues>({
 	name: 'textStroke',
 	cssName: 'text-stroke',
-	affectsLayout: __IOS__,
+	affectsLayout: __APPLE__,
 	valueConverter: (value) => {
 		return parseCSSStroke(value);
 	},
@@ -308,7 +320,7 @@ export const whiteSpaceProperty = new CssProperty<Style, CoreTypes.WhiteSpaceTyp
 	name: 'whiteSpace',
 	cssName: 'white-space',
 	defaultValue: 'initial',
-	affectsLayout: __IOS__,
+	affectsLayout: __APPLE__,
 	valueConverter: whiteSpaceConverter,
 });
 whiteSpaceProperty.register(Style);
@@ -318,7 +330,7 @@ export const textOverflowProperty = new CssProperty<Style, CoreTypes.TextOverflo
 	name: 'textOverflow',
 	cssName: 'text-overflow',
 	defaultValue: 'initial',
-	affectsLayout: __IOS__,
+	affectsLayout: __APPLE__,
 	valueConverter: textOverflowConverter,
 });
 textOverflowProperty.register(Style);
@@ -336,7 +348,7 @@ export const letterSpacingProperty = new InheritedCssProperty<Style, number>({
 	name: 'letterSpacing',
 	cssName: 'letter-spacing',
 	defaultValue: 0,
-	affectsLayout: __IOS__,
+	affectsLayout: __APPLE__,
 	valueConverter: (v) => parseFloat(v),
 });
 letterSpacingProperty.register(Style);
@@ -344,7 +356,7 @@ letterSpacingProperty.register(Style);
 export const lineHeightProperty = new InheritedCssProperty<Style, number>({
 	name: 'lineHeight',
 	cssName: 'line-height',
-	affectsLayout: __IOS__,
+	affectsLayout: __APPLE__,
 	valueConverter: (v) => parseFloat(v),
 });
 lineHeightProperty.register(Style);

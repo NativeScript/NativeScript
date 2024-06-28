@@ -325,6 +325,8 @@ declare const enum BNNSDataLayout {
 	Layout8DFirstMajor = 557057
 }
 
+declare function BNNSDataLayoutGetRank(layout: BNNSDataLayout): number;
+
 declare const enum BNNSDataType {
 
 	FloatBit = 65536,

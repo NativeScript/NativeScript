@@ -362,6 +362,12 @@ declare const enum GKErrorCode {
 
 	APIObsolete = 34,
 
+	ICloudUnavailable = 35,
+
+	LockdownMode = 36,
+
+	AppUnlisted = 37,
+
 	FriendListDescriptionMissing = 100,
 
 	FriendListRestricted = 101,
@@ -948,7 +954,11 @@ declare class GKMatch extends NSObject {
 
 	readonly playerIDs: NSArray<string>;
 
+	readonly playerProperties: NSDictionary<GKPlayer, NSDictionary<string, any>>;
+
 	readonly players: NSArray<GKPlayer>;
+
+	readonly properties: NSDictionary<string, any>;
 
 	chooseBestHostPlayerWithCompletionHandler(completionHandler: (p1: string) => void): void;
 
@@ -1014,6 +1024,12 @@ declare class GKMatchRequest extends NSObject {
 
 	playersToInvite: NSArray<string>;
 
+	properties: NSDictionary<string, any>;
+
+	queueName: string;
+
+	recipientProperties: NSDictionary<GKPlayer, NSDictionary<string, any>>;
+
 	recipientResponseHandler: (p1: GKPlayer, p2: GKInviteRecipientResponse) => void;
 
 	recipients: NSArray<GKPlayer>;
@@ -1037,6 +1053,19 @@ declare const enum GKMatchType {
 	TurnBased = 2
 }
 
+declare class GKMatchedPlayers extends NSObject {
+
+	static alloc(): GKMatchedPlayers; // inherited from NSObject
+
+	static new(): GKMatchedPlayers; // inherited from NSObject
+
+	readonly playerProperties: NSDictionary<GKPlayer, NSDictionary<string, any>>;
+
+	readonly players: NSArray<GKPlayer>;
+
+	readonly properties: NSDictionary<string, any>;
+}
+
 declare class GKMatchmaker extends NSObject {
 
 	static alloc(): GKMatchmaker; // inherited from NSObject
@@ -1057,6 +1086,8 @@ declare class GKMatchmaker extends NSObject {
 
 	findMatchForRequestWithCompletionHandler(request: GKMatchRequest, completionHandler: (p1: GKMatch, p2: NSError) => void): void;
 
+	findMatchedPlayersWithCompletionHandler(request: GKMatchRequest, completionHandler: (p1: GKMatchedPlayers, p2: NSError) => void): void;
+
 	findPlayersForHostedMatchRequestWithCompletionHandler(request: GKMatchRequest, completionHandler: (p1: NSArray<string>, p2: NSError) => void): void;
 
 	findPlayersForHostedRequestWithCompletionHandler(request: GKMatchRequest, completionHandler: (p1: NSArray<GKPlayer>, p2: NSError) => void): void;
@@ -1068,6 +1099,8 @@ declare class GKMatchmaker extends NSObject {
 	queryActivityWithCompletionHandler(completionHandler: (p1: number, p2: NSError) => void): void;
 
 	queryPlayerGroupActivityWithCompletionHandler(playerGroup: number, completionHandler: (p1: number, p2: NSError) => void): void;
+
+	queryQueueActivityWithCompletionHandler(queueName: string, completionHandler: (p1: number, p2: NSError) => void): void;
 
 	startBrowsingForNearbyPlayersWithHandler(reachableHandler: (p1: GKPlayer, p2: boolean) => void): void;
 
@@ -1126,6 +1159,8 @@ interface GKMatchmakerViewControllerDelegate extends NSObjectProtocol {
 	matchmakerViewControllerDidFindPlayers?(viewController: GKMatchmakerViewController, playerIDs: NSArray<string> | string[]): void;
 
 	matchmakerViewControllerDidReceiveAcceptFromHostedPlayer?(viewController: GKMatchmakerViewController, playerID: string): void;
+
+	matchmakerViewControllerGetMatchPropertiesForRecipientWithCompletionHandler?(viewController: GKMatchmakerViewController, recipient: GKPlayer, completionHandler: (p1: NSDictionary<string, any>) => void): void;
 
 	matchmakerViewControllerHostedPlayerDidAccept?(viewController: GKMatchmakerViewController, player: GKPlayer): void;
 
@@ -1361,6 +1396,8 @@ declare class GKScoreChallenge extends GKChallenge {
 	static alloc(): GKScoreChallenge; // inherited from NSObject
 
 	static new(): GKScoreChallenge; // inherited from NSObject
+
+	readonly leaderboardEntry: GKLeaderboardEntry;
 
 	readonly score: GKScore;
 }

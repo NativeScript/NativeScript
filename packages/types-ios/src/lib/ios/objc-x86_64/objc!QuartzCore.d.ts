@@ -1029,8 +1029,6 @@ declare class CATransaction extends NSObject {
 
 	static animationTimingFunction(): CAMediaTimingFunction;
 
-	static batch(): void;
-
 	static begin(): void;
 
 	static commit(): void;

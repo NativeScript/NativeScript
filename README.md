@@ -2,7 +2,8 @@
 
 <p>
 
-  [![Automated Tests Passing](https://github.com/NativeScript/NativeScript/actions/workflows/apps_automated.yml/badge.svg)](https://github.com/NativeScript/NativeScript/actions/workflows/apps_automated.yml)
+  [![Automated Android Tests Passing](https://github.com/NativeScript/NativeScript/actions/workflows/apps_automated_android.yml/badge.svg)](https://github.com/NativeScript/NativeScript/actions/workflows/apps_automated_android.yml)
+  [![Automated iOS Tests Passing](https://github.com/NativeScript/NativeScript/actions/workflows/apps_automated_ios.yml/badge.svg)](https://github.com/NativeScript/NativeScript/actions/workflows/apps_automated_ios.yml)
   [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/NativeScript/NativeScript/blob/main/LICENSE)
   [![NPM Version](https://badge.fury.io/js/%40nativescript%2Fcore.svg)](https://www.npmjs.com/@nativescript/core)
   [![Discord](https://badgen.net/badge/icon/discord?icon=discord&label)](https://nativescript.org/discord)
@@ -62,9 +63,10 @@ We love you and your pull requests 🤗. Please follow our [contributing guide](
 - JavaScript starter: https://nativescript.new/javascript
 - TypeScript starter: https://nativescript.new/typescript
 - Angular starter: https://nativescript.new/angular
-- Vue starter: https://nativescript.new/vue
-- Svelte starter: https://nativescript.new/svelte
 - React starter: https://nativescript.new/react
+- Solid starter: https://nativescript.new/solid
+- Svelte starter: https://nativescript.new/svelte
+- Vue starter: https://nativescript.new/vue
 - [NativeScript on Twitter](http://twitter.com/NativeScript)
 - [NativeScript on Discord](https://nativescript.org/discord)
 - [NativeScript on Stack Overflow](http://stackoverflow.com/questions/tagged/nativescript)

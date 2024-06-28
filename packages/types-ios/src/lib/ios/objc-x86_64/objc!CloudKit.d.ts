@@ -1833,6 +1833,8 @@ declare class CKSyncEngineDidFetchChangesEvent extends CKSyncEngineEvent {
 	static alloc(): CKSyncEngineDidFetchChangesEvent; // inherited from NSObject
 
 	static new(): CKSyncEngineDidFetchChangesEvent; // inherited from NSObject
+
+	readonly context: CKSyncEngineFetchChangesContext;
 }
 
 declare class CKSyncEngineDidFetchRecordZoneChangesEvent extends CKSyncEngineEvent {
@@ -1980,6 +1982,8 @@ declare class CKSyncEngineFetchChangesScope extends NSObject implements NSCopyin
 	constructor(o: { excludedZoneIDs: NSSet<CKRecordZoneID>; });
 
 	constructor(o: { zoneIDs: NSSet<CKRecordZoneID>; });
+
+	containsZoneID(zoneID: CKRecordZoneID): boolean;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
@@ -2265,6 +2269,8 @@ declare class CKSyncEngineWillFetchChangesEvent extends CKSyncEngineEvent {
 	static alloc(): CKSyncEngineWillFetchChangesEvent; // inherited from NSObject
 
 	static new(): CKSyncEngineWillFetchChangesEvent; // inherited from NSObject
+
+	readonly context: CKSyncEngineFetchChangesContext;
 }
 
 declare class CKSyncEngineWillFetchRecordZoneChangesEvent extends CKSyncEngineEvent {

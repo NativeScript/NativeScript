@@ -15,6 +15,11 @@ export const isAndroid: boolean;
 export const isIOS: boolean;
 
 /**
+ * Gets a value indicating if the app is running on an Apple platform.
+ */
+export const isApple: boolean;
+
+/**
  * Gets a value indicating if the app is running on the iOS platform.
  */
 export const isVisionOS: boolean;

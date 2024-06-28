@@ -1,9 +1,9 @@
 import { Font } from '../styling/font';
 import { SearchBarBase, textProperty, hintProperty, textFieldHintColorProperty, textFieldBackgroundColorProperty } from './search-bar-common';
 import { isUserInteractionEnabledProperty, isEnabledProperty } from '../core/view';
-import { colorProperty, backgroundColorProperty, backgroundInternalProperty, fontInternalProperty, fontSizeProperty } from '../styling/style-properties';
 import { ad } from '../../utils';
 import { Color } from '../../color';
+import { colorProperty, backgroundColorProperty, backgroundInternalProperty, fontInternalProperty, fontSizeProperty } from '../styling/style-properties';
 
 export * from './search-bar-common';
 
@@ -97,19 +97,6 @@ function enableSearchView(nativeView: any, value: boolean) {
 }
 
 function enableUserInteractionSearchView(nativeView: any, value: boolean) {
-	if (nativeView instanceof android.widget.TextView) {
-		// Dismiss input before view loses focus
-		if (!value) {
-			ad.dismissSoftInput(nativeView);
-		}
-
-		nativeView.setClickable(value);
-		nativeView.setFocusable(value);
-		nativeView.setFocusableInTouchMode(value);
-		nativeView.setLongClickable(value);
-		return;
-	}
-
 	nativeView.setClickable(value);
 	nativeView.setFocusable(value);
 

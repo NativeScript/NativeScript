@@ -47,3 +47,23 @@ export function getDependencyPath(dependencyName: string): string | null {
 		return null;
 	}
 }
+
+/**
+ * Utility to get the version of a dependency.
+ *
+ * @param dependencyName
+ * @returns string | null - version of the dependency or null if not found
+ */
+export function getDependencyVersion(dependencyName: string): string | null {
+	const dependencyPath = getDependencyPath(dependencyName);
+	if (!dependencyPath) {
+		return null;
+	}
+
+	try {
+		return require(`${dependencyPath}/package.json`).version;
+	} catch (err) {
+		// ignore
+	}
+	return null;
+}

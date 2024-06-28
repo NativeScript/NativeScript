@@ -9,6 +9,7 @@ const ROOT_CSS_CLASS = 'ns-root';
 const MODAL_CSS_CLASS = 'ns-modal';
 const ANDROID_PLATFORM_CSS_CLASS = 'ns-android';
 const IOS_PLATFORM_CSS_CLASS = 'ns-ios';
+const VISIONOS_PLATFORM_CSS_CLASS = 'ns-visionos';
 const PHONE_DEVICE_TYPE_CSS_CLASS = 'ns-phone';
 const TABLET_DEVICE_TYPE_CSS_CLASS = 'ns-tablet';
 const PORTRAIT_ORIENTATION_CSS_CLASS = 'ns-portrait';
@@ -41,7 +42,8 @@ function _test_platform_css_class(rootView: View, shouldSetClassName: boolean) {
 		TKUnit.assertTrue(cssClasses.has(ANDROID_PLATFORM_CSS_CLASS), `${ANDROID_PLATFORM_CSS_CLASS} CSS class is missing`);
 		TKUnit.assertFalse(cssClasses.has(IOS_PLATFORM_CSS_CLASS), `${IOS_PLATFORM_CSS_CLASS} CSS class is present`);
 	} else {
-		TKUnit.assertTrue(cssClasses.has(IOS_PLATFORM_CSS_CLASS), `${IOS_PLATFORM_CSS_CLASS} CSS class is missing`);
+		const cssClass = __VISIONOS__ ? VISIONOS_PLATFORM_CSS_CLASS : IOS_PLATFORM_CSS_CLASS;
+		TKUnit.assertTrue(cssClasses.has(cssClass), `${cssClass} CSS class is missing`);
 		TKUnit.assertFalse(cssClasses.has(ANDROID_PLATFORM_CSS_CLASS), `${ANDROID_PLATFORM_CSS_CLASS} CSS class is present`);
 	}
 
@@ -113,7 +115,7 @@ function _test_system_appearance_css_class(rootView: View, shouldSetClassName: b
 	} else {
 		systemAppearance = Application.ios.systemAppearance;
 	}
-	if (isIOS && Utils.ios.MajorVersion <= 12) {
+	if (isIOS && !__VISIONOS__ && Utils.SDK_VERSION <= 12) {
 		TKUnit.assertFalse(cssClasses.has(DARK_SYSTEM_APPEARANCE_CSS_CLASS), `${DARK_SYSTEM_APPEARANCE_CSS_CLASS} CSS class is present`);
 		TKUnit.assertFalse(cssClasses.has(LIGHT_SYSTEM_APPEARANCE_CSS_CLASS), `${LIGHT_SYSTEM_APPEARANCE_CSS_CLASS} CSS class is present`);
 	} else if (systemAppearance === 'dark') {

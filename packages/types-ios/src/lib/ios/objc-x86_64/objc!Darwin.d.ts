@@ -8858,6 +8858,8 @@ declare const enum mach_port_guard_exception_codes {
 
 	kGUARD_EXC_THREAD_SET_STATE = 5,
 
+	kGUARD_EXC_EXCEPTION_BEHAVIOR_ENFORCE = 6,
+
 	kGUARD_EXC_UNGUARDED = 8,
 
 	kGUARD_EXC_INCORRECT_GUARD = 16,
@@ -8898,9 +8900,7 @@ declare const enum mach_port_guard_exception_codes {
 
 	kGUARD_EXC_IMMOVABLE_NON_FATAL = 4194304,
 
-	kGUARD_EXC_REQUIRE_REPLY_PORT_SEMANTICS = 8388608,
-
-	kGUARD_EXC_EXCEPTION_BEHAVIOR_ENFORCE = 16777216
+	kGUARD_EXC_REQUIRE_REPLY_PORT_SEMANTICS = 8388608
 }
 
 interface mach_port_guard_info_t {
@@ -9271,6 +9271,7 @@ interface malloc_zone_t {
 	pressure_relief: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>, p2: number) => number>;
 	claimed_address: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>, p2: interop.Pointer | interop.Reference<any>) => number>;
 	try_free_default: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>, p2: interop.Pointer | interop.Reference<any>) => void>;
+	malloc_with_options: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<malloc_zone_t>, p2: number, p3: number, p4: number) => interop.Pointer | interop.Reference<any>>;
 }
 declare var malloc_zone_t: interop.StructType<malloc_zone_t>;
 
@@ -10210,6 +10211,12 @@ declare function pthread_getugid_np(p1: interop.Pointer | interop.Reference<numb
 
 declare function pthread_is_threaded_np(): number;
 
+declare function pthread_jit_write_freeze_callbacks_np(): void;
+
+declare function pthread_jit_write_protect_supported_np(): number;
+
+declare function pthread_jit_write_with_callback_np(callback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>, ctx: interop.Pointer | interop.Reference<any>): number;
+
 declare function pthread_join(p1: interop.Pointer | interop.Reference<_opaque_pthread_t>, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 declare function pthread_key_create(p1: interop.Pointer | interop.Reference<number>, p2: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): number;
@@ -10847,6 +10854,8 @@ interface rusage_info_v6 {
 	ri_pcycles: number;
 	ri_energy_nj: number;
 	ri_penergy_nj: number;
+	ri_secure_time_in_system: number;
+	ri_secure_ptime_in_system: number;
 	ri_reserved: interop.Reference<number>;
 }
 declare var rusage_info_v6: interop.StructType<rusage_info_v6>;
