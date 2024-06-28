@@ -31,7 +31,7 @@ export { GesturesObserver, TouchAction, GestureTypes, GestureStateTypes, SwipeDi
 export type { GestureEventData, GestureEventDataWithState, TapGestureEventData, PanGestureEventData, PinchGestureEventData, RotationGestureEventData, SwipeGestureEventData, TouchGestureEventData, TouchAnimationOptions, VisionHoverOptions } from './gestures';
 
 export { HtmlView } from './html-view';
-export { Image } from './image';
+export { Image, ImageSymbolEffect, ImageSymbolEffects } from './image';
 export { Cache as ImageCache } from './image-cache';
 export type { DownloadError, DownloadRequest, DownloadedData } from './image-cache';
 export { Label } from './label';
