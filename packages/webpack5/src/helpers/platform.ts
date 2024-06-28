@@ -89,7 +89,7 @@ export function getPlatformName(): Platform {
 		Use --env.platform=<platform> or --env.android, --env.ios, --env.visionos to specify the target platform.
 
 		Defaulting to "ios".
-	`
+	`,
 	);
 
 	return 'ios';

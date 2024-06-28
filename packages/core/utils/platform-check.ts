@@ -18,7 +18,7 @@ export function platformCheck(parent?: string) {
 
 					throw new Error(errorMsg);
 				},
-			}
+			},
 		);
 	}
 

@@ -391,7 +391,7 @@ export class File extends FileSystemEntity {
 					(error) => {
 						reject(error);
 						this._locked = false;
-					}
+					},
 				);
 		});
 	}
@@ -438,7 +438,7 @@ export class File extends FileSystemEntity {
 					(error) => {
 						reject(error);
 						this._locked = false;
-					}
+					},
 				);
 		});
 	}
@@ -485,7 +485,7 @@ export class File extends FileSystemEntity {
 					(error) => {
 						reject(error);
 						this._locked = false;
-					}
+					},
 				);
 		});
 	}
@@ -532,7 +532,7 @@ export class File extends FileSystemEntity {
 					(error) => {
 						reject(error);
 						this._locked = false;
-					}
+					},
 				);
 		});
 	}
@@ -579,7 +579,7 @@ export class File extends FileSystemEntity {
 					(error) => {
 						reject(error);
 						this._locked = false;
-					}
+					},
 				);
 		});
 	}
@@ -626,7 +626,7 @@ export class File extends FileSystemEntity {
 					(error) => {
 						reject(error);
 						this._locked = false;
-					}
+					},
 				);
 		});
 	}
@@ -672,7 +672,7 @@ export class File extends FileSystemEntity {
 					(error) => {
 						reject(error);
 						this._locked = false;
-					}
+					},
 				);
 		});
 	}

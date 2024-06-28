@@ -17,7 +17,7 @@ export function error(...data: any): Error {
 	// we return the error - the caller can throw or ignore
 	if (typeof data[0] === 'string') {
 		return new Error(
-			'\n\n[@nativescript/webpack]\n---\n\n' + dedent(data[0]) + '\n\n---\n'
+			'\n\n[@nativescript/webpack]\n---\n\n' + dedent(data[0]) + '\n\n---\n',
 		);
 	}
 

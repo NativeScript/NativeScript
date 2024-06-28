@@ -119,7 +119,7 @@ function timelineProfileFunctionFactory<F extends Function>(fn: F, name: string,
 					const end = time();
 					console.log(`Timeline: Modules: ${name} ${this}  (${start}ms. - ${end}ms.)`);
 				}
-		  }
+			}
 		: function () {
 				const start = time();
 				try {
@@ -128,7 +128,7 @@ function timelineProfileFunctionFactory<F extends Function>(fn: F, name: string,
 					const end = time();
 					console.log(`Timeline: Modules: ${name}  (${start}ms. - ${end}ms.)`);
 				}
-		  };
+			};
 }
 
 const enum MemberType {
