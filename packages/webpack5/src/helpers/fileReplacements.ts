@@ -12,7 +12,7 @@ interface IReplacementMap {
  * @internal
  */
 export function getFileReplacementsFromEnv(
-	env: IWebpackEnv = _env
+	env: IWebpackEnv = _env,
 ): IReplacementMap {
 	const fileReplacements: IReplacementMap = {};
 
@@ -50,7 +50,7 @@ export function getFileReplacementsFromEnv(
 
 export function applyFileReplacements(
 	config,
-	fileReplacements: IReplacementMap = getFileReplacementsFromEnv()
+	fileReplacements: IReplacementMap = getFileReplacementsFromEnv(),
 ) {
 	Object.entries(fileReplacements).forEach(([_replace, _with]) => {
 		// in case we are replacing source files - we'll use aliases
