@@ -278,6 +278,111 @@ export function test_id_selector() {
 	TKUnit.assert(btnWithNoId.style.color === undefined, 'Color should not have a value');
 }
 
+export function test_not_pseudo_class_selector() {
+	let page = helper.getClearCurrentPage();
+	page.style.color = unsetValue;
+	let btnWithId: Button;
+	let btnWithNoId: Button;
+
+	// >> article-using-not-pseudo-class-selector
+	page.css = 'Button:not(#myButton) { color: red; }';
+
+	//// Will be styled
+	btnWithNoId = new Button();
+	// << article-using-not-pseudo-class-selector
+
+	//// Won't be styled
+	btnWithId = new Button();
+	btnWithId.id = 'myButton';
+
+	const stack = new StackLayout();
+	page.content = stack;
+	stack.addChild(btnWithNoId);
+	stack.addChild(btnWithId);
+
+	helper.assertViewColor(btnWithNoId, '#FF0000');
+	TKUnit.assert(btnWithId.style.color === undefined, 'Color should not have a value');
+}
+
+export function test_is_pseudo_class_selector() {
+	let page = helper.getClearCurrentPage();
+	page.style.color = unsetValue;
+	let btnWithId: Button;
+	let btnWithNoId: Button;
+
+	// >> article-using-is-pseudo-class-selector
+	page.css = 'Button:is(#myButton) { color: red; }';
+
+	//// Will be styled
+	btnWithId = new Button();
+	btnWithId.id = 'myButton';
+
+	//// Won't be styled
+	btnWithNoId = new Button();
+	// << article-using-is-pseudo-class-selector
+
+	const stack = new StackLayout();
+	page.content = stack;
+	stack.addChild(btnWithId);
+	stack.addChild(btnWithNoId);
+
+	helper.assertViewColor(btnWithId, '#FF0000');
+	TKUnit.assert(btnWithNoId.style.color === undefined, 'Color should not have a value');
+}
+
+export function test_where_pseudo_class_selector() {
+	let page = helper.getClearCurrentPage();
+	page.style.color = unsetValue;
+	let btnWithId: Button;
+	let btnWithNoId: Button;
+
+	// >> article-using-where-pseudo-class-selector
+	page.css = 'Button:where(#myButton) { color: red; }';
+
+	//// Will be styled
+	btnWithId = new Button();
+	btnWithId.id = 'myButton';
+
+	//// Won't be styled
+	btnWithNoId = new Button();
+	// << article-using-where-pseudo-class-selector
+
+	const stack = new StackLayout();
+	page.content = stack;
+	stack.addChild(btnWithId);
+	stack.addChild(btnWithNoId);
+
+	helper.assertViewColor(btnWithId, '#FF0000');
+	TKUnit.assert(btnWithNoId.style.color === undefined, 'Color should not have a value');
+}
+
+export function test_where_pseudo_class_selector_zero_specificity() {
+	let page = helper.getClearCurrentPage();
+	page.style.color = unsetValue;
+	let btnWithId: Button;
+	let btnWithNoId: Button;
+
+	// >> article-using-where-pseudo-class-selector-zero-specificity
+	page.css = '#myButton { color: green; } Button:where(#myButton) { color: red; }';
+
+	//// Will be styled
+	btnWithId = new Button();
+	btnWithId.id = 'myButton';
+
+	//// Won't be styled
+	btnWithNoId = new Button();
+	// << article-using-where-pseudo-class-selector-zero-specificity
+
+	const stack = new StackLayout();
+	page.content = stack;
+	stack.addChild(btnWithId);
+	stack.addChild(btnWithNoId);
+
+	// Pseudo-class :where() has zero specificity, therefore we expect the first rule to be applied
+	helper.assertViewColor(btnWithId, '#008000');
+	TKUnit.assert(btnWithNoId.style.color === undefined, 'Color should not have a value');
+}
+
 // State selector tests
 export function test_state_selector() {
 	let page = helper.getClearCurrentPage();
@@ -763,7 +868,7 @@ export function test_set_invalid_CSS_values_dont_cause_crash() {
 		(views: Array<View>) => {
 			TKUnit.assertEqual(30, testButton.style.fontSize);
 		},
-		{ pageCss: invalidCSS }
+		{ pageCss: invalidCSS },
 	);
 }
 
@@ -782,7 +887,7 @@ export function test_set_mixed_CSS_cases_works() {
 			helper.assertViewBackgroundColor(testButton, '#FF0000');
 			helper.assertViewColor(testButton, '#0000FF');
 		},
-		{ pageCss: casedCSS }
+		{ pageCss: casedCSS },
 	);
 }
 

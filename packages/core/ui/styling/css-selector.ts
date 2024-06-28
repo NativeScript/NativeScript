@@ -1,9 +1,10 @@
+import { parse as convertToCSSWhatSelector, Selector as CSSWhatSelector, DataType as CSSWhatDataType } from 'css-what';
 import '../../globals';
 import { isCssVariable } from '../core/properties';
+import { Trace } from '../../trace';
 import { isNullOrUndefined } from '../../utils/types';
 
 import * as ReworkCSS from '../../css';
-import { Combinator as ICombinator, SimpleSelectorSequence as ISimpleSelectorSequence, Selector as ISelector, SimpleSelector as ISimpleSelector, parseSelector } from '../../css/parser';
 
 /**
  * An interface describing the shape of a type on which the selectors may apply.
@@ -20,6 +21,7 @@ export interface Node {
 	cssPseudoClasses?: Set<string>;
 	getChildIndex?(node: Node): number;
 	getChildAt?(index: number): Node;
+	getChildrenCount?(): number;
 }
 
 export interface Declaration {
@@ -34,6 +36,7 @@ export interface Changes {
 	pseudoClasses?: Set<string>;
 }
 
+/* eslint-disable @typescript-eslint/no-duplicate-enum-values */
 const enum Specificity {
 	Inline = 1000,
 	Id = 100,
@@ -43,6 +46,11 @@ const enum Specificity {
 	Type = 1,
 	Universal = 0,
 	Invalid = 0,
+	Zero = 0,
+	/**
+	 * Selector has the specificity of the selector with the highest specificity inside selector list.
+	 */
+	SelectorListHighest = -1,
 }
 
 const enum Rarity {
@@ -55,6 +63,36 @@ const enum Rarity {
 	Universal = 0,
 	Inline = 0,
 }
+/* eslint-enable @typescript-eslint/no-duplicate-enum-values */
+
+const enum PseudoClassSelectorList {
+	Regular = 0,
+	Forgiving = 1,
+	Relative = 2,
+}
+
+enum Combinator {
+	'descendant' = ' ',
+	'child' = '>',
+	'adjacent' = '+',
+	'sibling' = '~',
+
+	// Not supported
+	'parent' = '<',
+	'column-combinator' = '||',
+}
+
+enum AttributeSelectorOperator {
+	exists = '',
+	equals = '=',
+	start = '^=',
+	end = '$=',
+	any = '*=',
+	element = '~=',
+	hyphen = '|=',
+}
+
+declare type AttributeTest = 'exists' | 'equals' | 'start' | 'end' | 'any' | 'element' | 'hyphen';
 
 interface LookupSorter {
 	sortById(id: string, sel: SelectorCore);
@@ -74,7 +112,26 @@ namespace Match {
 	export const Static = false;
 }
 
-function getNodeDirectSibling(node): null | Node {
+function eachNodePreviousGeneralSibling(node: Node, callback: (sibling: Node) => boolean): void {
+	if (!node.parent || !node.parent.getChildIndex || !node.parent.getChildAt || !node.parent.getChildrenCount) {
+		return;
+	}
+
+	const nodeIndex = node.parent.getChildIndex(node);
+	if (nodeIndex === 0) {
+		return;
+	}
+
+	const count = node.parent.getChildrenCount();
+	let retVal: boolean = true;
+
+	for (let i = nodeIndex - 1; i >= 0 && retVal; i--) {
+		const sibling = node.parent.getChildAt(i);
+		retVal = callback(sibling);
+	}
+}
+
+function getNodePreviousDirectSibling(node: Node): null | Node {
 	if (!node.parent || !node.parent.getChildIndex || !node.parent.getChildAt) {
 		return null;
 	}
@@ -97,19 +154,36 @@ function SelectorProperties(specificity: Specificity, rarity: Rarity, dynamic = 
 	};
 }
 
-declare type Combinator = '+' | '>' | '~' | ' ';
-@SelectorProperties(Specificity.Universal, Rarity.Universal, Match.Static)
-export abstract class SelectorCore {
-	public pos: number;
-	public specificity: number;
-	public rarity: Rarity;
-	public combinator: Combinator;
-	public ruleset: RuleSet;
+function FunctionalPseudoClassProperties(specificity: Specificity, rarity: Rarity, pseudoSelectorListType: PseudoClassSelectorList): ClassDecorator {
+	return (cls) => {
+		cls.prototype.specificity = specificity;
+		cls.prototype.rarity = rarity;
+		cls.prototype.combinator = undefined;
+		cls.prototype.dynamic = false;
+		cls.prototype.pseudoSelectorListType = pseudoSelectorListType;
+
+		return cls;
+	};
+}
+
+export abstract class SelectorBase {
 	/**
 	 * Dynamic selectors depend on attributes and pseudo classes.
 	 */
 	public dynamic: boolean;
 	public abstract match(node: Node): boolean;
+	public abstract mayMatch(node: Node): boolean;
+	public abstract trackChanges(node: Node, map: ChangeAccumulator): void;
+}
+
+@SelectorProperties(Specificity.Universal, Rarity.Universal, Match.Static)
+export abstract class SelectorCore extends SelectorBase {
+	public pos: number;
+	public specificity: number;
+	public rarity: Rarity;
+	public combinator: Combinator;
+	public ruleset: RuleSet;
+
 	/**
 	 * If the selector is static returns if it matches the node.
 	 * If the selector is dynamic returns if it may match the node, and accumulates any changes that may affect its state.
@@ -151,7 +225,7 @@ export class InvalidSelector extends SimpleSelector {
 		super();
 	}
 	public toString(): string {
-		return `<error: ${this.e}>`;
+		return `<${this.e}>`;
 	}
 	public match(node: Node): boolean {
 		return false;
@@ -221,63 +295,68 @@ export class ClassSelector extends SimpleSelector {
 	}
 }
 
-declare type AttributeTest = '=' | '^=' | '$=' | '*=' | '=' | '~=' | '|=';
 @SelectorProperties(Specificity.Attribute, Rarity.Attribute, Match.Dynamic)
 export class AttributeSelector extends SimpleSelector {
-	constructor(public attribute: string, public test?: AttributeTest, public value?: string) {
+	constructor(
+		public attribute: string,
+		public test: AttributeTest,
+		public value: string,
+		public ignoreCase: boolean,
+	) {
 		super();
-
-		if (!test) {
-			// HasAttribute
-			this.match = (node) => !isNullOrUndefined(node[attribute]);
-
-			return;
-		}
-
-		if (!value) {
-			this.match = (node) => false;
-		}
-
-		this.match = (node) => {
-			const attr = node[attribute] + '';
-
-			if (test === '=') {
-				// Equals
-				return attr === value;
-			}
-
-			if (test === '^=') {
-				// PrefixMatch
-				return attr.startsWith(value);
-			}
-
-			if (test === '$=') {
-				// SuffixMatch
-				return attr.endsWith(value);
-			}
-
-			if (test === '*=') {
-				// SubstringMatch
-				return attr.indexOf(value) !== -1;
-			}
-
-			if (test === '~=') {
-				// Includes
-				const words = attr.split(' ');
-
-				return words && words.indexOf(value) !== -1;
-			}
-
-			if (test === '|=') {
-				// DashMatch
-				return attr === value || attr.startsWith(value + '-');
-			}
-		};
 	}
 	public toString(): string {
-		return `[${this.attribute}${wrap(this.test)}${(this.test && this.value) || ''}]${wrap(this.combinator)}`;
+		return `[${this.attribute}${wrap(AttributeSelectorOperator[this.test] ?? this.test)}${this.value || ''}]${wrap(this.combinator)}`;
 	}
 	public match(node: Node): boolean {
+		let attr = node[this.attribute];
+
+		if (this.test === 'exists') {
+			return !isNullOrUndefined(attr);
+		}
+
+		if (!this.value) {
+			return false;
+		}
+
+		// Now, convert value to string
+		attr += '';
+
+		if (this.ignoreCase) {
+			attr = attr.toLowerCase();
+			this.value = this.value.toLowerCase();
+		}
+
+		// =
+		if (this.test === 'equals') {
+			return attr === this.value;
+		}
+
+		// ^=
+		if (this.test === 'start') {
+			return attr.startsWith(this.value);
+		}
+
+		// $=
+		if (this.test === 'end') {
+			return attr.endsWith(this.value);
+		}
+
+		// *=
+		if (this.test === 'any') {
+			return attr.indexOf(this.value) !== -1;
+		}
+
+		// ~=
+		if (this.test === 'element') {
+			const words = attr.split(' ');
+			return words && words.indexOf(this.value) !== -1;
+		}
+
+		// |=
+		if (this.test === 'hyphen') {
+			return attr === this.value || attr.startsWith(this.value + '-');
+		}
 		return false;
 	}
 	public mayMatch(node: Node): boolean {
@@ -307,12 +386,107 @@ export class PseudoClassSelector extends SimpleSelector {
 	}
 }
 
+export abstract class FunctionalPseudoClassSelector extends PseudoClassSelector {
+	protected selectors: Array<SimpleSelector | SimpleSelectorSequence | ComplexSelector>;
+	protected selectorListType?: PseudoClassSelectorList;
+
+	constructor(cssPseudoClass: string, dataType: CSSWhatDataType) {
+		super(cssPseudoClass);
+
+		const selectors: Array<SimpleSelector | SimpleSelectorSequence | ComplexSelector> = [];
+		const needsHighestSpecificity: boolean = this.specificity === Specificity.SelectorListHighest;
+
+		let specificity: number = 0;
+
+		if (Array.isArray(dataType)) {
+			for (const asts of dataType) {
+				const selector: SimpleSelector | SimpleSelectorSequence | ComplexSelector = createSelectorFromAst(asts);
+
+				if (selector instanceof InvalidSelector) {
+					// Only forgiving selector list can ignore invalid selectors
+					if (this.selectorListType !== PseudoClassSelectorList.Forgiving) {
+						selectors.splice(0);
+						specificity = 0;
+						break;
+					}
+
+					continue;
+				}
+
+				// The specificity of some pseudo-classes is replaced by the specificity of the most specific selector in its comma-separated argument of selectors
+				if (needsHighestSpecificity && selector.specificity > specificity) {
+					specificity = selector.specificity;
+				}
+
+				selectors.push(selector);
+			}
+		}
+
+		this.selectors = selectors;
+		this.specificity = specificity;
+		// Functional pseudo-classes become dynamic based on selectors in selector list
+		this.dynamic = this.selectors.some((sel) => sel.dynamic);
+	}
+	public toString(): string {
+		return `:${this.cssPseudoClass}(${this.selectors.join(', ')})${wrap(this.combinator)}`;
+	}
+	public match(node: Node): boolean {
+		return false;
+	}
+	public mayMatch(node: Node): boolean {
+		return true;
+	}
+	public trackChanges(node: Node, map: ChangeAccumulator): void {
+		this.selectors.forEach((sel) => sel.trackChanges(node, map));
+	}
+}
+
+@FunctionalPseudoClassProperties(Specificity.SelectorListHighest, Rarity.PseudoClass, PseudoClassSelectorList.Regular)
+export class NotFunctionalPseudoClassSelector extends FunctionalPseudoClassSelector {
+	public match(node: Node): boolean {
+		return !this.selectors.some((sel) => sel.match(node));
+	}
+}
+
+@FunctionalPseudoClassProperties(Specificity.SelectorListHighest, Rarity.PseudoClass, PseudoClassSelectorList.Forgiving)
+export class IsFunctionalPseudoClassSelector extends FunctionalPseudoClassSelector {
+	public match(node: Node): boolean {
+		return this.selectors.some((sel) => sel.match(node));
+	}
+
+	public lookupSort(sorter: LookupSorter, base?: SelectorCore): void {
+		// A faster lookup can be performed when selector list contains just a single selector
+		if (this.selectors.length === 1) {
+			this.selectors[0].lookupSort(sorter, base || this);
+		} else {
+			super.lookupSort(sorter, base || this);
+		}
+	}
+}
+
+@FunctionalPseudoClassProperties(Specificity.Zero, Rarity.PseudoClass, PseudoClassSelectorList.Forgiving)
+export class WhereFunctionalPseudoClassSelector extends FunctionalPseudoClassSelector {
+	public match(node: Node): boolean {
+		return this.selectors.some((sel) => sel.match(node));
+	}
+
+	public lookupSort(sorter: LookupSorter, base?: SelectorCore): void {
+		// A faster lookup can be performed when selector list contains just a single selector
+		if (this.selectors.length === 1) {
+			this.selectors[0].lookupSort(sorter, base || this);
+		} else {
+			super.lookupSort(sorter, base || this);
+		}
+	}
+}
+
 export class SimpleSelectorSequence extends SimpleSelector {
 	private head: SimpleSelector;
+
 	constructor(public selectors: SimpleSelector[]) {
 		super();
 		this.specificity = selectors.reduce((sum, sel) => sel.specificity + sum, 0);
-		this.head = this.selectors.reduce((prev, curr) => (!prev || curr.rarity > prev.rarity ? curr : prev), null);
+		this.head = selectors.reduce((prev, curr) => (!prev || curr.rarity > prev.rarity ? curr : prev), null);
 		this.dynamic = selectors.some((sel) => sel.dynamic);
 	}
 	public toString(): string {
@@ -324,7 +498,7 @@ export class SimpleSelectorSequence extends SimpleSelector {
 	public mayMatch(node: Node): boolean {
 		return this.selectors.every((sel) => sel.mayMatch(node));
 	}
-	public trackChanges(node, map): void {
+	public trackChanges(node: Node, map: ChangeAccumulator): void {
 		this.selectors.forEach((sel) => sel.trackChanges(node, map));
 	}
 	public lookupSort(sorter: LookupSorter, base?: SelectorCore): void {
@@ -332,32 +506,42 @@ export class SimpleSelectorSequence extends SimpleSelector {
 	}
 }
 
-export class Selector extends SelectorCore {
-	// Grouped by ancestor combinators, then by direct child combinators.
+export class ComplexSelector extends SelectorCore {
+	// Grouped by ancestor combinators, then by child combinators.
 	private groups: Selector.ChildGroup[];
 	private last: SelectorCore;
 
 	constructor(public selectors: SimpleSelector[]) {
 		super();
-		const supportedCombinator = [undefined, ' ', '>', '+'];
-		let siblingGroup: SimpleSelector[];
-		let lastGroup: SimpleSelector[][];
+
+		let siblingsToGroup: SimpleSelector[];
+		let currentGroup: SimpleSelector[][];
 		const groups: SimpleSelector[][][] = [];
 
 		this.specificity = 0;
 		this.dynamic = false;
 
-		for (let i = selectors.length - 1; i > -1; i--) {
+		for (let i = selectors.length - 1; i >= 0; i--) {
 			const sel = selectors[i];
 
-			if (supportedCombinator.indexOf(sel.combinator) === -1) {
-				throw new Error(`Unsupported combinator "${sel.combinator}".`);
-			}
-			if (sel.combinator === undefined || sel.combinator === ' ') {
-				groups.push((lastGroup = [(siblingGroup = [])]));
-			}
-			if (sel.combinator === '>') {
-				lastGroup.push((siblingGroup = []));
+			switch (sel.combinator) {
+				case undefined:
+				case Combinator.descendant:
+					siblingsToGroup = [];
+					currentGroup = [siblingsToGroup];
+
+					groups.push(currentGroup);
+					break;
+				case Combinator.child:
+					siblingsToGroup = [];
+
+					currentGroup.push(siblingsToGroup);
+					break;
+				case Combinator.adjacent:
+				case Combinator.sibling:
+					break;
+				default:
+					throw new Error(`Unsupported combinator "${sel.combinator}" for selector ${sel}.`);
 			}
 
 			this.specificity += sel.specificity;
@@ -366,10 +550,10 @@ export class Selector extends SelectorCore {
 				this.dynamic = true;
 			}
 
-			siblingGroup.push(sel);
+			siblingsToGroup.push(sel);
 		}
 
-		this.groups = groups.map((g) => new Selector.ChildGroup(g.map((sg) => new Selector.SiblingGroup(sg))));
+		this.groups = groups.map((g) => new Selector.ChildGroup(g.map((selectors) => (selectors.length > 1 ? new Selector.SiblingGroup(selectors) : selectors[0]))));
 		this.last = selectors[selectors.length - 1];
 	}
 
@@ -380,13 +564,13 @@ export class Selector extends SelectorCore {
 	public match(node: Node): boolean {
 		return this.groups.every((group, i) => {
 			if (i === 0) {
-				node = group.match(node);
+				node = group.getMatchingNode(node, true);
 
 				return !!node;
 			} else {
 				let ancestor = node;
 				while ((ancestor = ancestor.parent ?? ancestor._modalParent)) {
-					if ((node = group.match(ancestor))) {
+					if ((node = group.getMatchingNode(ancestor, true))) {
 						return true;
 					}
 				}
@@ -396,8 +580,16 @@ export class Selector extends SelectorCore {
 		});
 	}
 
+	public mayMatch(node: Node): boolean {
+		return false;
+	}
+
+	public trackChanges(node: Node, map: ChangeAccumulator): void {
+		this.selectors.forEach((sel) => sel.trackChanges(node, map));
+	}
+
 	public lookupSort(sorter: LookupSorter, base?: SelectorCore): void {
-		this.last.lookupSort(sorter, this);
+		this.last.lookupSort(sorter, base || this);
 	}
 
 	public accumulateChanges(node: Node, map?: ChangeAccumulator): boolean {
@@ -408,7 +600,7 @@ export class Selector extends SelectorCore {
 		const bounds: Selector.Bound[] = [];
 		const mayMatch = this.groups.every((group, i) => {
 			if (i === 0) {
-				const nextNode = group.mayMatch(node);
+				const nextNode = group.getMatchingNode(node, false);
 				bounds.push({ left: node, right: node });
 				node = nextNode;
 
@@ -416,7 +608,7 @@ export class Selector extends SelectorCore {
 			} else {
 				let ancestor = node;
 				while ((ancestor = ancestor.parent)) {
-					const nextNode = group.mayMatch(ancestor);
+					const nextNode = group.getMatchingNode(ancestor, false);
 					if (nextNode) {
 						bounds.push({ left: ancestor, right: null });
 						node = nextNode;
@@ -457,44 +649,128 @@ export class Selector extends SelectorCore {
 }
 export namespace Selector {
 	// Non-spec. Selector sequences are grouped by ancestor then by child combinators for easier backtracking.
-	export class ChildGroup {
-		public dynamic: boolean;
+	export class ChildGroup extends SelectorBase {
+		constructor(private selectors: SelectorBase[]) {
+			super();
 
-		constructor(private selectors: SiblingGroup[]) {
 			this.dynamic = selectors.some((sel) => sel.dynamic);
 		}
 
-		public match(node: Node): Node {
-			return this.selectors.every((sel, i) => (node = i === 0 ? node : node.parent) && sel.match(node)) ? node : null;
+		public getMatchingNode(node: Node, strict: boolean) {
+			const funcName = strict ? 'match' : 'mayMatch';
+			return this.selectors.every((sel, i) => (node = i === 0 ? node : node.parent) && sel[funcName](node)) ? node : null;
 		}
 
-		public mayMatch(node: Node): Node {
-			return this.selectors.every((sel, i) => (node = i === 0 ? node : node.parent) && sel.mayMatch(node)) ? node : null;
+		public match(node: Node): boolean {
+			return this.getMatchingNode(node, true) != null;
 		}
 
-		public trackChanges(node: Node, map: ChangeAccumulator) {
-			this.selectors.forEach((sel, i) => (node = i === 0 ? node : node.parent) && sel.trackChanges(node, map));
+		public mayMatch(node: Node): boolean {
+			return this.getMatchingNode(node, false) != null;
+		}
+
+		public trackChanges(node: Node, map: ChangeAccumulator): void {
+			this.selectors.forEach((sel, i) => {
+				if (i === 0) {
+					node && sel.trackChanges(node, map);
+				} else {
+					node = node.parent;
+
+					if (node && sel.mayMatch(node)) {
+						sel.trackChanges(node, map);
+					}
+				}
+			});
 		}
 	}
-	export class SiblingGroup {
-		public dynamic: boolean;
 
+	export class SiblingGroup extends SelectorBase {
 		constructor(private selectors: SimpleSelector[]) {
+			super();
+
 			this.dynamic = selectors.some((sel) => sel.dynamic);
 		}
 
-		public match(node: Node): Node {
-			return this.selectors.every((sel, i) => (node = i === 0 ? node : getNodeDirectSibling(node)) && sel.match(node)) ? node : null;
+		public match(node: Node): boolean {
+			return this.selectors.every((sel, i) => {
+				if (i === 0) {
+					return node && sel.match(node);
+				}
+
+				if (sel.combinator === Combinator.adjacent) {
+					node = getNodePreviousDirectSibling(node);
+					return node && sel.match(node);
+				}
+
+				// Sibling combinator
+				let isMatching: boolean = false;
+
+				eachNodePreviousGeneralSibling(node, (sibling) => {
+					isMatching = sel.match(sibling);
+					return !isMatching;
+				});
+
+				return isMatching;
+			});
 		}
 
-		public mayMatch(node: Node): Node {
-			return this.selectors.every((sel, i) => (node = i === 0 ? node : getNodeDirectSibling(node)) && sel.mayMatch(node)) ? node : null;
+		public mayMatch(node: Node): boolean {
+			return this.selectors.every((sel, i) => {
+				if (i === 0) {
+					return node && sel.mayMatch(node);
+				}
+
+				if (sel.combinator === Combinator.adjacent) {
+					node = getNodePreviousDirectSibling(node);
+					return node && sel.mayMatch(node);
+				}
+
+				// Sibling combinator
+				let isMatching: boolean = false;
+
+				eachNodePreviousGeneralSibling(node, (sibling) => {
+					isMatching = sel.mayMatch(sibling);
+					return !isMatching;
+				});
+
+				return isMatching;
+			});
 		}
 
-		public trackChanges(node: Node, map: ChangeAccumulator) {
-			this.selectors.forEach((sel, i) => (node = i === 0 ? node : getNodeDirectSibling(node)) && sel.trackChanges(node, map));
+		public trackChanges(node: Node, map: ChangeAccumulator): void {
+			this.selectors.forEach((sel, i) => {
+				if (i === 0) {
+					if (node) {
+						sel.trackChanges(node, map);
+					}
+				} else {
+					if (sel.combinator === Combinator.adjacent) {
+						node = getNodePreviousDirectSibling(node);
+						if (node && sel.mayMatch(node)) {
+							sel.trackChanges(node, map);
+						}
+					} else {
+						// Sibling combinator
+						let matchingSibling: Node;
+
+						eachNodePreviousGeneralSibling(node, (sibling) => {
+							const isMatching = sel.mayMatch(sibling);
+							if (isMatching) {
+								matchingSibling = sibling;
+							}
+
+							return !isMatching;
+						});
+
+						if (matchingSibling) {
+							sel.trackChanges(matchingSibling, map);
+						}
+					}
+				}
+			});
 		}
 	}
+
 	export interface Bound {
 		left: Node;
 		right: Node;
@@ -504,7 +780,10 @@ export namespace Selector {
 export class RuleSet {
 	tag: string | number;
 	scopedTag: string;
-	constructor(public selectors: SelectorCore[], public declarations: Declaration[]) {
+	constructor(
+		public selectors: SelectorCore[],
+		public declarations: Declaration[],
+	) {
 		this.selectors.forEach((sel) => (sel.ruleset = this));
 	}
 	public toString(): string {
@@ -528,72 +807,132 @@ function createDeclaration(decl: ReworkCSS.Declaration): any {
 	return { property: isCssVariable(decl.property) ? decl.property : decl.property.toLowerCase(), value: decl.value };
 }
 
-function createSimpleSelectorFromAst(ast: ISimpleSelector): SimpleSelector {
-	if (ast.type === '.') {
-		return new ClassSelector(ast.identifier);
-	}
-
-	if (ast.type === '') {
-		return new TypeSelector(ast.identifier.replace('-', '').toLowerCase());
-	}
-
-	if (ast.type === '#') {
-		return new IdSelector(ast.identifier);
-	}
-
-	if (ast.type === '[]') {
-		return new AttributeSelector(ast.property, ast.test, ast.test && ast.value);
-	}
-
-	if (ast.type === ':') {
-		return new PseudoClassSelector(ast.identifier);
-	}
-
-	if (ast.type === '*') {
-		return new UniversalSelector();
-	}
-}
-
-function createSimpleSelectorSequenceFromAst(ast: ISimpleSelectorSequence): SimpleSelectorSequence | SimpleSelector {
-	if (ast.length === 0) {
-		return new InvalidSelector(new Error('Empty simple selector sequence.'));
-	} else if (ast.length === 1) {
-		return createSimpleSelectorFromAst(ast[0]);
-	} else {
-		return new SimpleSelectorSequence(ast.map(createSimpleSelectorFromAst));
-	}
-}
-
-function createSelectorFromAst(ast: ISelector): SimpleSelector | SimpleSelectorSequence | Selector {
-	if (ast.length === 0) {
-		return new InvalidSelector(new Error('Empty selector.'));
-	} else if (ast.length === 1) {
-		return createSimpleSelectorSequenceFromAst(ast[0][0]);
-	} else {
-		const simpleSelectorSequences = [];
-		let simpleSelectorSequence: SimpleSelectorSequence | SimpleSelector;
-		let combinator: ICombinator;
-		for (let i = 0; i < ast.length; i++) {
-			simpleSelectorSequence = createSimpleSelectorSequenceFromAst(<ISimpleSelectorSequence>ast[i][0]);
-			combinator = <ICombinator>ast[i][1];
-			if (combinator) {
-				simpleSelectorSequence.combinator = combinator;
-			}
-			simpleSelectorSequences.push(simpleSelectorSequence);
+function createSimpleSelectorFromAst(ast: CSSWhatSelector): SimpleSelector {
+	if (ast.type === 'attribute') {
+		if (ast.name === 'class') {
+			return new ClassSelector(ast.value);
 		}
 
-		return new Selector(simpleSelectorSequences);
+		if (ast.name === 'id') {
+			return new IdSelector(ast.value);
+		}
+
+		return new AttributeSelector(ast.name, <AttributeTest>ast.action, ast.value, !!ast.ignoreCase);
 	}
+
+	if (ast.type === 'tag') {
+		return new TypeSelector(ast.name.replace('-', '').toLowerCase());
+	}
+
+	if (ast.type === 'pseudo') {
+		if (ast.name === 'is') {
+			return new IsFunctionalPseudoClassSelector(ast.name, ast.data);
+		}
+
+		if (ast.name === 'where') {
+			return new WhereFunctionalPseudoClassSelector(ast.name, ast.data);
+		}
+
+		if (ast.name === 'not') {
+			return new NotFunctionalPseudoClassSelector(ast.name, ast.data);
+		}
+
+		return new PseudoClassSelector(ast.name);
+	}
+
+	if (ast.type === 'universal') {
+		return new UniversalSelector();
+	}
+
+	return new InvalidSelector(new Error(ast.type));
 }
 
-export function createSelector(sel: string): SimpleSelector | SimpleSelectorSequence | Selector {
+function createSimpleSelectorSequenceFromAst(asts: CSSWhatSelector[]): SimpleSelectorSequence | SimpleSelector {
+	if (asts.length === 0) {
+		return new InvalidSelector(new Error('Empty simple selector sequence.'));
+	}
+
+	if (asts.length === 1) {
+		return createSimpleSelectorFromAst(asts[0]);
+	}
+
+	const sequenceSelectors: SimpleSelector[] = [];
+
+	for (const ast of asts) {
+		const selector = createSimpleSelectorFromAst(ast);
+		if (selector instanceof InvalidSelector) {
+			return selector;
+		}
+
+		sequenceSelectors.push(selector);
+	}
+
+	return new SimpleSelectorSequence(sequenceSelectors);
+}
+
+function createSelectorFromAst(asts: Array<CSSWhatSelector>): SimpleSelector | SimpleSelectorSequence | ComplexSelector {
+	let result: SimpleSelector | SimpleSelectorSequence | ComplexSelector;
+
+	if (asts.length === 0) {
+		return new InvalidSelector(new Error('Empty selector.'));
+	}
+
+	if (asts.length === 1) {
+		return createSimpleSelectorFromAst(asts[0]);
+	}
+
+	const simpleSelectorSequences: Array<SimpleSelector | SimpleSelectorSequence> = [];
+
+	let sequenceAsts: CSSWhatSelector[] = [];
+	let combinatorCount: number = 0;
+
+	for (const ast of asts) {
+		const combinator = Combinator[ast.type];
+
+		// Combinator means the end of a sequence
+		if (combinator != null) {
+			const selector = createSimpleSelectorSequenceFromAst(sequenceAsts);
+
+			if (selector instanceof InvalidSelector) {
+				return selector;
+			}
+
+			selector.combinator = combinator;
+			simpleSelectorSequences.push(selector);
+
+			combinatorCount++;
+			// Cleanup stored selectors for the new sequence to take place
+			sequenceAsts = [];
+		} else {
+			sequenceAsts.push(ast);
+		}
+	}
+
+	if (combinatorCount > 0) {
+		// Create a sequence using the remaining selectors after the last combinator
+		if (sequenceAsts.length) {
+			const selector = createSimpleSelectorSequenceFromAst(sequenceAsts);
+
+			if (selector instanceof InvalidSelector) {
+				return selector;
+			}
+
+			simpleSelectorSequences.push(selector);
+		}
+		return new ComplexSelector(simpleSelectorSequences);
+	}
+
+	return createSimpleSelectorSequenceFromAst(sequenceAsts);
+}
+
+export function createSelector(sel: string): SimpleSelector | SimpleSelectorSequence | ComplexSelector {
 	try {
-		const parsedSelector = parseSelector(sel);
-		if (!parsedSelector) {
+		const result = convertToCSSWhatSelector(sel);
+		if (!result?.length) {
 			return new InvalidSelector(new Error('Empty selector'));
 		}
 
-		return createSelectorFromAst(parsedSelector.value);
+		return createSelectorFromAst(result[0]);
 	} catch (e) {
 		return new InvalidSelector(e);
 	}
