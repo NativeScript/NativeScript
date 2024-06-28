@@ -229,11 +229,6 @@ export abstract class View extends ViewCommon {
 	color: Color;
 
 	/**
-	 * If `true` the element is an accessibility element and all the children will be treated as a single selectable component.
-	 */
-	accessible: boolean;
-
-	/**
 	 * Hide the view and its children from the a11y service
 	 */
 	accessibilityHidden: boolean;
@@ -592,23 +587,30 @@ export abstract class View extends ViewCommon {
 	 */
 	public focus(): boolean;
 
-	public getGestureObservers(type: GestureTypes): Array<GesturesObserver>;
+	public getGestureObservers(type: GestureTypes): Array<GesturesObserver> | undefined;
 
 	/**
-	 * Removes listener(s) for the specified event name.
-	 * @param eventNames Comma delimited names of the events or gesture types the specified listener is associated with.
-	 * @param callback An optional parameter pointing to a specific listener. If not defined, all listeners for the event names will be removed.
-	 * @param thisArg An optional parameter which when set will be used to refine search of the correct callback which will be removed as event listener.
+	 * Removes the listener(s) for the specified event name.
+	 *
+	 * @param eventName The name of the event.
+	 * @param callback An optional specific event listener to remove (if omitted,
+	 * all event listeners by this name will be removed).
+	 * @param thisArg An optional parameter which, when set, will be used to
+	 * refine search of the correct event listener to be removed.
 	 */
-	off(eventNames: string | GestureTypes, callback?: (args: EventData) => void, thisArg?: any);
+	off(eventName: string, callback?: (args: EventData) => void, thisArg?: any);
 
 	/**
-	 * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
-	 * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change") or you can use gesture types.
-	 * @param callback - Callback function which will be executed when event is raised.
-	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
+	 * Adds a listener for the specified event name.
+	 *
+	 * @param eventName The name of the event.
+	 * @param callback The event listener to add. Will be called when an event of
+	 * the given name is raised.
+	 * @param thisArg An optional parameter which, when set, will be bound as the
+	 * `this` context when the callback is called. Falsy values will be not be
+	 * bound.
 	 */
-	on(eventNames: string | GestureTypes, callback: (args: EventData) => void, thisArg?: any);
+	on(eventName: string, callback: (args: EventData) => void, thisArg?: any);
 
 	/**
 	 * Raised when a loaded event occurs.

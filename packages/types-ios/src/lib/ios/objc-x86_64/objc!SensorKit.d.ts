@@ -247,6 +247,109 @@ declare class SRDeviceUsageReport extends NSObject {
 	readonly webUsageByCategory: NSDictionary<string, NSArray<SRWebUsage>>;
 }
 
+declare class SRElectrocardiogramData extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): SRElectrocardiogramData; // inherited from NSObject
+
+	static new(): SRElectrocardiogramData; // inherited from NSObject
+
+	readonly flags: SRElectrocardiogramDataFlags;
+
+	readonly value: NSMeasurement<NSUnitElectricPotentialDifference>;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare const enum SRElectrocardiogramDataFlags {
+
+	None = 0,
+
+	SignalInvalid = 1,
+
+	CrownTouched = 2
+}
+
+declare const enum SRElectrocardiogramLead {
+
+	RightArmMinusLeftArm = 1,
+
+	LeftArmMinusRightArm = 2
+}
+
+declare class SRElectrocardiogramSample extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): SRElectrocardiogramSample; // inherited from NSObject
+
+	static new(): SRElectrocardiogramSample; // inherited from NSObject
+
+	readonly data: NSArray<SRElectrocardiogramData>;
+
+	readonly date: Date;
+
+	readonly frequency: NSMeasurement<NSUnitFrequency>;
+
+	readonly lead: SRElectrocardiogramLead;
+
+	readonly session: SRElectrocardiogramSession;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare class SRElectrocardiogramSession extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): SRElectrocardiogramSession; // inherited from NSObject
+
+	static new(): SRElectrocardiogramSession; // inherited from NSObject
+
+	readonly identifier: string;
+
+	readonly sessionGuidance: SRElectrocardiogramSessionGuidance;
+
+	readonly state: SRElectrocardiogramSessionState;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare const enum SRElectrocardiogramSessionGuidance {
+
+	Guided = 1,
+
+	Unguided = 2
+}
+
+declare const enum SRElectrocardiogramSessionState {
+
+	Begin = 1,
+
+	Active = 2,
+
+	End = 3
+}
+
 declare const enum SRErrorCode {
 
 	InvalidEntitlement = 0,
@@ -663,6 +766,117 @@ declare class SRPhoneUsageReport extends NSObject {
 	readonly totalUniqueContacts: number;
 }
 
+declare class SRPhotoplethysmogramAccelerometerSample extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): SRPhotoplethysmogramAccelerometerSample; // inherited from NSObject
+
+	static new(): SRPhotoplethysmogramAccelerometerSample; // inherited from NSObject
+
+	readonly nanosecondsSinceStart: number;
+
+	readonly samplingFrequency: NSMeasurement<NSUnitFrequency>;
+
+	readonly x: NSMeasurement<NSUnitAcceleration>;
+
+	readonly y: NSMeasurement<NSUnitAcceleration>;
+
+	readonly z: NSMeasurement<NSUnitAcceleration>;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare class SRPhotoplethysmogramOpticalSample extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): SRPhotoplethysmogramOpticalSample; // inherited from NSObject
+
+	static new(): SRPhotoplethysmogramOpticalSample; // inherited from NSObject
+
+	readonly activePhotodiodeIndexes: NSIndexSet;
+
+	readonly backgroundNoise: number;
+
+	readonly backgroundNoiseOffset: number;
+
+	readonly conditions: NSArray<string>;
+
+	readonly effectiveWavelength: NSMeasurement<NSUnitLength>;
+
+	readonly emitter: number;
+
+	readonly nanosecondsSinceStart: number;
+
+	readonly nominalWavelength: NSMeasurement<NSUnitLength>;
+
+	readonly normalizedReflectance: number;
+
+	readonly pinkNoise: number;
+
+	readonly samplingFrequency: NSMeasurement<NSUnitFrequency>;
+
+	readonly signalIdentifier: number;
+
+	readonly whiteNoise: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare var SRPhotoplethysmogramOpticalSampleConditionSignalSaturation: string;
+
+declare var SRPhotoplethysmogramOpticalSampleConditionUnreliableNoise: string;
+
+declare class SRPhotoplethysmogramSample extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): SRPhotoplethysmogramSample; // inherited from NSObject
+
+	static new(): SRPhotoplethysmogramSample; // inherited from NSObject
+
+	readonly accelerometerSamples: NSArray<SRPhotoplethysmogramAccelerometerSample>;
+
+	readonly nanosecondsSinceStart: number;
+
+	readonly opticalSamples: NSArray<SRPhotoplethysmogramOpticalSample>;
+
+	readonly startDate: Date;
+
+	readonly temperature: NSMeasurement<NSUnitTemperature>;
+
+	readonly usage: NSArray<string>;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare var SRPhotoplethysmogramSampleUsageBackgroundSystem: string;
+
+declare var SRPhotoplethysmogramSampleUsageDeepBreathing: string;
+
+declare var SRPhotoplethysmogramSampleUsageForegroundBloodOxygen: string;
+
+declare var SRPhotoplethysmogramSampleUsageForegroundHeartRate: string;
+
 declare var SRSensorAccelerometer: string;
 
 declare var SRSensorAmbientLightSensor: string;
@@ -670,6 +884,8 @@ declare var SRSensorAmbientLightSensor: string;
 declare var SRSensorAmbientPressure: string;
 
 declare var SRSensorDeviceUsageReport: string;
+
+declare var SRSensorElectrocardiogram: string;
 
 declare var SRSensorFaceMetrics: string;
 
@@ -688,6 +904,8 @@ declare var SRSensorOnWristState: string;
 declare var SRSensorPedometerData: string;
 
 declare var SRSensorPhoneUsageReport: string;
+
+declare var SRSensorPhotoplethysmogram: string;
 
 declare class SRSensorReader extends NSObject {
 
@@ -801,6 +1019,8 @@ declare class SRSpeechMetrics extends NSObject implements NSCopying, NSSecureCod
 	readonly speechExpression: SRSpeechExpression;
 
 	readonly speechRecognition: SFSpeechRecognitionResult;
+
+	readonly timeSinceAudioStart: number;
 
 	readonly timestamp: Date;
 

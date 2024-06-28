@@ -607,7 +607,7 @@ function setSpanModifiers(ssb: android.text.SpannableStringBuilder, span: Span, 
 
 	const fontFamily = span.fontFamily;
 	if (fontFamily) {
-		const font = new Font(fontFamily, 0, italic ? 'italic' : 'normal', bold ? 'bold' : 'normal');
+		const font = new Font(fontFamily, 0, italic ? 'italic' : 'normal', bold ? 'bold' : 'normal', spanStyle.fontScaleInternal, spanStyle.fontVariationSettings);
 		const typeface = font.getAndroidTypeface() || android.graphics.Typeface.create(fontFamily, 0);
 		const typefaceSpan: android.text.style.TypefaceSpan = new org.nativescript.widgets.CustomTypefaceSpan(fontFamily, typeface);
 		ssb.setSpan(typefaceSpan, start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);

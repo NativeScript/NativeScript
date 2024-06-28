@@ -45,6 +45,11 @@ export class SegmentedBar extends View implements AddChildFromBuilder, AddArrayF
 	selectedBackgroundColor: Color;
 
 	/**
+	 * Gets or sets the selected text color of the SegmentedBar component.
+	 */
+	selectedTextColor: Color;
+
+	/**
 	 * Gets or sets the items of the SegmentedBar.
 	 */
 	items: Array<SegmentedBarItem>;
@@ -55,12 +60,16 @@ export class SegmentedBar extends View implements AddChildFromBuilder, AddArrayF
 	public static selectedIndexChangedEvent: string;
 
 	/**
-	 * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
-	 * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change").
-	 * @param callback - Callback function which will be executed when event is raised.
-	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
+	 * Adds a listener for the specified event name.
+	 *
+	 * @param eventName The name of the event.
+	 * @param callback The event listener to add. Will be called when an event of
+	 * the given name is raised.
+	 * @param thisArg An optional parameter which, when set, will be bound as the
+	 * `this` context when the callback is called. Falsy values will be not be
+	 * bound.
 	 */
-	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void;
+	on(eventName: string, callback: (data: EventData) => void, thisArg?: any): void;
 
 	/**
 	 * Raised when the selected index changes.
@@ -90,3 +99,8 @@ export const selectedBackgroundColorProperty: CssProperty<Style, Color>;
  * Gets or sets the items dependency property of the SegmentedBar.
  */
 export const itemsProperty: Property<SegmentedBar, SegmentedBarItem[]>;
+
+/**
+ * Gets or sets the selected text color property of the SegmentedBar.
+ */
+export const selectedTextColorProperty: CssProperty<Style, Color>;

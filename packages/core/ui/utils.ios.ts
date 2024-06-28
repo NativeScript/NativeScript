@@ -1,18 +1,7 @@
 ﻿import { Screen } from '../platform';
 import * as utils from '../utils';
 import { LinearGradient } from './styling/linear-gradient';
-
-interface NativeScriptUIView extends UIView {
-	hasNonUniformBorder: boolean;
-	hasNonUniformBorderColor: boolean;
-	borderLayer: CAShapeLayer;
-
-	maskType: ios.LayerMaskType;
-	originalMask: CALayer;
-
-	gradientLayer: CAGradientLayer;
-	outerShadowContainerLayer: CALayer;
-}
+import { NativeScriptUIView } from './utils';
 
 export namespace ios {
 	export type LayerMaskType = 'BORDER' | 'CLIP_PATH';

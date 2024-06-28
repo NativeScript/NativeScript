@@ -5,6 +5,7 @@ import android.content.Context;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.util.AttributeSet;
 
 /**
  * @author hhristov
@@ -15,7 +16,13 @@ public class StackLayout extends LayoutBase {
 	private Orientation _orientation = Orientation.vertical;
 
 	public StackLayout(Context context) {
-		super(context);
+		this(context, null);
+	}
+	public StackLayout(Context context, AttributeSet attrs) {
+		this(context, attrs, 0);
+	}
+	public StackLayout(Context context, AttributeSet attrs, int defStyleAttr) {
+		super(context, attrs, defStyleAttr);
 	}
 
 	public Orientation getOrientation() {

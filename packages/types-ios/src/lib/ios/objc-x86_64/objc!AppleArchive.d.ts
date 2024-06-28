@@ -11,7 +11,7 @@ declare const enum AAACEQualifierTypes {
 }
 
 interface AAAccessControlEntry {
-	tag: acl_tag_t;
+	tag: number;
 	perms: number;
 	flags: number;
 	qualifier_type: number;

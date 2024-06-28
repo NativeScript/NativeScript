@@ -77,7 +77,11 @@ function setTransitionName(view: ViewBase) {
 }
 
 export class PageTransition extends Transition {
-	constructor(duration?: number, curve?: any) {
+	constructor(
+		duration?: number,
+		curve?: any,
+		private pageLoadedTimeout: number = 0,
+	) {
 		// disable custom curves until we can fix the issue with the animation not completing
 		if (curve) {
 			console.warn('PageTransition does not support custom curves at the moment. The passed in curve will be ignored.');
@@ -176,14 +180,12 @@ export class PageTransition extends Transition {
 		const toPage = newEntry.resolvedPage;
 		const newFragment: androidx.fragment.app.Fragment = newEntry.fragment;
 		const state = SharedTransition.getState(this.id);
-		const pageEnd = state.pageEnd;
+		const pageEnd = state?.pageEnd;
 
-		const { sharedElements, presented, presenting } = SharedTransition.getSharedElements(fromPage, toPage);
-		const sharedElementTags = sharedElements.map((v) => v.sharedTransitionTag);
-		if (SharedTransition.DEBUG) {
-			console.log(`  Page: ${state.activeType === SharedTransitionAnimationType.present ? 'Present' : 'Dismiss'}`);
-			console.log(`1. Found sharedTransitionTags to animate:`, sharedElementTags);
-		}
+		//we can't look for presented right now as the toPage might not be loaded
+		// and thus some views like ListView/Pager... might not have loaded their "children"
+		// presented will be handled in loaded event of toPage
+		const { presenting } = SharedTransition.getSharedElements(fromPage, toPage);
 
 		// Note: we can enhance android more over time with element targeting across different screens
 		// const pageStart = state.pageStart;
@@ -215,16 +217,15 @@ export class PageTransition extends Transition {
 		// 		independentView.opacity = 0;
 		// 	}
 		// }
-
-		toPage.once('loaded', () => {
-			presented.filter((v) => sharedElementTags.includes(v.sharedTransitionTag)).forEach(setTransitionName);
-			newFragment.startPostponedEnterTransition();
-		});
-
-		sharedElements.forEach((v) => {
-			setTransitionName(v);
-			fragmentTransaction.addSharedElement(v.nativeView, v.sharedTransitionTag);
-		});
+		const onPageLoaded = () => {
+			// add a timeout so that Views like ListView / CollectionView can have their children instantiated
+			setTimeout(() => {
+				const { presented } = SharedTransition.getSharedElements(fromPage, toPage);
+				// const sharedElementTags = sharedElements.map((v) => v.sharedTransitionTag);
+				presented.forEach(setTransitionName);
+				newFragment.startPostponedEnterTransition();
+			}, this.pageLoadedTimeout);
+		};
 
 		fragmentTransaction.setReorderingAllowed(true);
 
@@ -252,6 +253,16 @@ export class PageTransition extends Transition {
 		newFragment.postponeEnterTransition();
 		newFragment.setSharedElementEnterTransition(transitionSet);
 		newFragment.setSharedElementReturnTransition(transitionSet);
+
+		presenting.forEach((v) => {
+			setTransitionName(v);
+			fragmentTransaction.addSharedElement(v.nativeView, v.sharedTransitionTag);
+		});
+		if (toPage.isLoaded) {
+			onPageLoaded();
+		} else {
+			toPage.once('loaded', onPageLoaded);
+		}
 	}
 }
 

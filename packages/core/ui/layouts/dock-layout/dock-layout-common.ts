@@ -53,7 +53,7 @@ dockProperty.register(View);
 export const stretchLastChildProperty = new Property<DockLayoutBase, boolean>({
 	name: 'stretchLastChild',
 	defaultValue: true,
-	affectsLayout: global.isIOS,
+	affectsLayout: __APPLE__,
 	valueConverter: booleanConverter,
 });
 stretchLastChildProperty.register(DockLayoutBase);

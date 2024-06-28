@@ -200,12 +200,17 @@ export class FrameBase extends CustomLayoutView {
 
 	public _removeEntry(removed: BackstackEntry): void {
 		const page = removed.resolvedPage;
-		const frame = page.frame;
-		page._frame = null;
-		if (frame) {
-			frame._removeView(page);
+		if (page) {
+			const frame = page.frame;
+			if (frame) {
+				frame._removeView(page);
+			} else {
+				page._tearDownUI(true);
+			}
 		} else {
-			page._tearDownUI(true);
+			if (Trace.isEnabled()) {
+				Trace.write(`_removeEntry: backstack entry missing page`, Trace.categories.Navigation);
+			}
 		}
 
 		removed.resolvedPage = null;
@@ -244,13 +249,13 @@ export class FrameBase extends CustomLayoutView {
 
 	public setCurrent(entry: BackstackEntry, navigationType: NavigationType): void {
 		const newPage = entry.resolvedPage;
+
 		// In case we navigated forward to a page that was in the backstack
 		// with clearHistory: true
 		if (!newPage.frame) {
 			this._resolvedPage = newPage;
 
 			this._addView(newPage);
-			newPage._frame = this;
 		}
 
 		this._currentEntry = entry;
@@ -558,11 +563,11 @@ export class FrameBase extends CustomLayoutView {
 
 	public _getNavigationTransition(entry: NavigationEntry): NavigationTransition {
 		if (entry) {
-			if (global.isIOS && entry.transitioniOS !== undefined) {
+			if (__APPLE__ && entry.transitioniOS !== undefined) {
 				return entry.transitioniOS;
 			}
 
-			if (global.isAndroid && entry.transitionAndroid !== undefined) {
+			if (__ANDROID__ && entry.transitionAndroid !== undefined) {
 				return entry.transitionAndroid;
 			}
 
@@ -769,5 +774,5 @@ export const defaultPage = new Property<FrameBase, string>({
 });
 defaultPage.register(FrameBase);
 
-export const actionBarVisibilityProperty = new Property<FrameBase, 'auto' | 'never' | 'always'>({ name: 'actionBarVisibility', defaultValue: 'auto', affectsLayout: global.isIOS });
+export const actionBarVisibilityProperty = new Property<FrameBase, 'auto' | 'never' | 'always'>({ name: 'actionBarVisibility', defaultValue: 'auto', affectsLayout: __APPLE__ });
 actionBarVisibilityProperty.register(FrameBase);

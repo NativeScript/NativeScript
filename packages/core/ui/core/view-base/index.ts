@@ -2,7 +2,6 @@ import { AlignSelf, FlexGrow, FlexShrink, FlexWrapBefore, Order } from '../../la
 import { Page } from '../../page';
 import { CoreTypes } from '../../../core-types';
 import { Property, CssProperty, CssAnimationProperty, InheritedProperty, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, initNativeView } from '../properties';
-import { setupAccessibleView } from '../../../accessibility';
 import { CSSUtils } from '../../../css/system-classes';
 import { Source } from '../../../utils/debug';
 import { Binding, BindingOptions } from '../bindable';
@@ -380,6 +379,11 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	 */
 	public sharedTransitionIgnore: boolean;
 
+	/**
+	 * Default visual state, defaults to 'normal'
+	 */
+	public defaultVisualState: string = 'normal';
+
 	public _domId: number;
 	public _context: any /* android.content.Context */;
 	public _isAddedToNativeVisualTree: boolean;
@@ -594,7 +598,6 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
 			return true;
 		});
-		setupAccessibleView(<any>this);
 
 		this._emit('loaded');
 	}
@@ -845,6 +848,12 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		//
 	}
 
+	public _inheritStyles(view: ViewBase): void {
+		propagateInheritableProperties(this, view);
+		view._inheritStyleScope(this._styleScope);
+		propagateInheritableCssProperties(this.style, view.style);
+	}
+
 	@profile
 	public _addView(view: ViewBase, atIndex?: number) {
 		if (Trace.isEnabled()) {
@@ -874,9 +883,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	 * Method is intended to be overridden by inheritors and used as "protected"
 	 */
 	public _addViewCore(view: ViewBase, atIndex?: number) {
-		propagateInheritableProperties(this, view);
-		view._inheritStyleScope(this._styleScope);
-		propagateInheritableCssProperties(this.style, view.style);
+		this._inheritStyles(view);
 
 		if (this._context) {
 			view._setupUI(this._context, atIndex);
@@ -987,7 +994,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
 	private resetNativeViewInternal(): void {
 		// const nativeView = this.nativeViewProtected;
-		// if (nativeView && global.isAndroid) {
+		// if (nativeView && __ANDROID__) {
 		//     const recycle = this.recycleNativeView;
 		//     if (recycle === "always" || (recycle === "auto" && !this._disableNativeViewRecycling)) {
 		//         resetNativeView(this);
@@ -1004,8 +1011,17 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		// }
 	}
 
+	/**
+	 * if _setupAsRootView is called it means it is not supposed to be
+	 * added to a parent. However parent can be set before for the purpose
+	 * of CSS variables/classes. That variable ensures that _addViewToNativeVisualTree
+	 * is not called in _setupAsRootView
+	 */
+	mIsRootView = false;
 	_setupAsRootView(context: any): void {
+		this.mIsRootView = true;
 		this._setupUI(context);
+		this.mIsRootView = false;
 	}
 
 	/**
@@ -1018,7 +1034,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 			// this check is unnecessary as this function should never be called when this._context === context as it means the view was somehow detached,
 			// which is only possible by setting reusable = true. Adding it either way for feature flag safety
 			if (this.reusable) {
-				if (this.parent && !this._isAddedToNativeVisualTree) {
+				if (!this.mIsRootView && this.parent && !this._isAddedToNativeVisualTree) {
 					const nativeIndex = this.parent._childIndexToNativeChildIndex(atIndex);
 					this._isAddedToNativeVisualTree = this.parent._addViewToNativeVisualTree(this, nativeIndex);
 				}
@@ -1034,7 +1050,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		// or for backward compatibility - set before _setupUI in iOS constructor.
 		let nativeView = this.nativeViewProtected;
 
-		// if (global.isAndroid) {
+		// if (__ANDROID__) {
 		//     const recycle = this.recycleNativeView;
 		//     if (recycle === "always" || (recycle === "auto" && !this._disableNativeViewRecycling)) {
 		//         nativeView = <android.view.View>getNativeView(context, this.typeName);
@@ -1044,7 +1060,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 			nativeView = this.createNativeView();
 		}
 
-		if (global.isAndroid) {
+		if (__ANDROID__) {
 			// this check is also unecessary as this code should never be reached with _androidView != null unless reusable = true
 			// also adding this check for feature flag safety
 			if (this._androidView !== nativeView || !this.reusable) {
@@ -1093,7 +1109,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
 		this.setNativeView(nativeView);
 
-		if (this.parent) {
+		if (!this.mIsRootView && this.parent) {
 			const nativeIndex = this.parent._childIndexToNativeChildIndex(atIndex);
 			this._isAddedToNativeVisualTree = this.parent._addViewToNativeVisualTree(this, nativeIndex);
 		}
@@ -1168,7 +1184,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		}
 
 		// const nativeView = this.nativeViewProtected;
-		// if (nativeView && global.isAndroid) {
+		// if (nativeView && __ANDROID__) {
 		//     const recycle = this.recycleNativeView;
 		//     let shouldRecycle = false;
 		//     if (recycle === "always") {
@@ -1178,7 +1194,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		//         shouldRecycle = propertiesSet <= this.recyclePropertyCounter;
 		//     }
 
-		//     // const nativeParent = global.isAndroid ? (<android.view.View>nativeView).getParent() : (<UIView>nativeView).superview;
+		//     // const nativeParent = __ANDROID__ ? (<android.view.View>nativeView).getParent() : (<UIView>nativeView).superview;
 		//     const nativeParent = (<android.view.View>nativeView).getParent();
 		//     const animation = (<android.view.View>nativeView).getAnimation();
 		//     if (shouldRecycle && !nativeParent && !animation) {
@@ -1225,6 +1241,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	 */
 	public _removeViewFromNativeVisualTree(view: ViewBase) {
 		view._isAddedToNativeVisualTree = false;
+	}
+
+	public get visualState() {
+		return this._visualState;
 	}
 
 	public _goToVisualState(state: string) {
@@ -1429,7 +1449,7 @@ bindingContextProperty.register(ViewBase);
 export const hiddenProperty = new Property<ViewBase, boolean>({
 	name: 'hidden',
 	defaultValue: false,
-	affectsLayout: global.isIOS,
+	affectsLayout: __APPLE__,
 	valueConverter: booleanConverter,
 	valueChanged: (target, oldValue, newValue) => {
 		if (target) {

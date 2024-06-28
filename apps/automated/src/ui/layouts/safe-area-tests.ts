@@ -3,7 +3,7 @@ import * as view from '@nativescript/core/ui/core/view';
 import * as testModule from '../../ui-test';
 import * as platform from '@nativescript/core/platform';
 import * as helper from '../../ui-helper';
-import { Builder, Page, Label, GridLayout } from '@nativescript/core';
+import { Builder, Page, Label, GridLayout, Utils } from '@nativescript/core';
 import { dipToDp, left, top, right, bottom, height, width, equal, closeEnough, lessOrCloseEnough, greaterOrCloseEnough, isLeftAlignedWith, isRightAlignedWith, isTopAlignedWith, isBottomAlignedWith, isLeftWith, isAboveWith, isRightWith, isBelowWith } from './layout-tests-helper';
 
 export class SafeAreaTests extends testModule.UITest<any> {
@@ -25,7 +25,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 				waitUntilTestElementLayoutIsValid(ui.root);
 				test(ui);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -84,10 +84,10 @@ export class SafeAreaTests extends testModule.UITest<any> {
 	}
 
 	private layout_insets_top_action_bar_hidden_test(layout: view.View) {
-		const app = UIApplication.sharedApplication;
+		const keyWindow = Utils.ios.getWindow();
 		// const statusBarHeight = round(dipToDp(app.statusBarFrame.size.height));
 		// use window inset instead of status bar frame as that's unreliable on iOS 16+
-		const topInset = round(dipToDp(app.keyWindow.safeAreaInsets.top));
+		const topInset = round(dipToDp(keyWindow ? keyWindow.safeAreaInsets.top : UIApplication.sharedApplication.keyWindow.safeAreaInsets.top));
 
 		const insets = layout.getSafeAreaInsets();
 		equal(insets.top, topInset, `${layout}.topInset - actual:${insets.top}; expected: ${topInset}`);
@@ -116,7 +116,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_in_full_screen_test(root, pageOptions);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -151,7 +151,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_test(root);
 			},
-			{ actionBar: true }
+			{ actionBar: true },
 		);
 	}
 
@@ -166,7 +166,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_hidden_test(root);
 			},
-			{ actionBarHidden: true }
+			{ actionBarHidden: true },
 		);
 	}
 
@@ -181,7 +181,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_test(root);
 			},
-			{ actionBarFlat: true }
+			{ actionBarFlat: true },
 		);
 	}
 
@@ -196,7 +196,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_hidden_test(root);
 			},
-			{ tabBar: true }
+			{ tabBar: true },
 		);
 	}
 
@@ -211,7 +211,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_test(root);
 			},
-			{ actionBar: true, tabBar: true }
+			{ actionBar: true, tabBar: true },
 		);
 	}
 
@@ -233,7 +233,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 				equal(left(child0), insets.left, `${child0}.left - actual: ${left(child0)} expected: ${insets.left}`);
 				equal(top(child0), insets.top, `${child0}.top - actual: ${top(child0)} expected: ${insets.top}`);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -274,7 +274,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 				isLeftAlignedWith(root, child0);
 				isTopAlignedWith(root, child0);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -315,7 +315,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_in_full_screen_test(root, pageOptions);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -350,7 +350,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_test(root);
 			},
-			{ actionBar: true }
+			{ actionBar: true },
 		);
 	}
 
@@ -365,7 +365,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_hidden_test(root);
 			},
-			{ actionBarHidden: true }
+			{ actionBarHidden: true },
 		);
 	}
 
@@ -380,7 +380,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_test(root);
 			},
-			{ actionBarFlat: true }
+			{ actionBarFlat: true },
 		);
 	}
 
@@ -395,7 +395,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_hidden_test(root);
 			},
-			{ tabBar: true }
+			{ tabBar: true },
 		);
 	}
 
@@ -410,7 +410,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_test(root);
 			},
-			{ actionBar: true, tabBar: true }
+			{ actionBar: true, tabBar: true },
 		);
 	}
 
@@ -447,7 +447,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 				isRightWith(childFill, childRight, width(childRight));
 				isAboveWith(childFill, childBottom, height(childBottom));
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -505,7 +505,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 				const sumOfNestedDockWidths = width(childLeft) + width(childFill) + width(childRight);
 				equal(width(root), sumOfNestedDockWidths, `dock width<${width(root)}> sum of nested docks width <${sumOfNestedDockWidths}>`);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -533,7 +533,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_in_full_screen_test(root, pageOptions);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -568,7 +568,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_test(root);
 			},
-			{ actionBar: true }
+			{ actionBar: true },
 		);
 	}
 
@@ -583,7 +583,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_hidden_test(root);
 			},
-			{ actionBarHidden: true }
+			{ actionBarHidden: true },
 		);
 	}
 
@@ -598,7 +598,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_test(root);
 			},
-			{ actionBarFlat: true }
+			{ actionBarFlat: true },
 		);
 	}
 
@@ -613,7 +613,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_hidden_test(root);
 			},
-			{ tabBar: true }
+			{ tabBar: true },
 		);
 	}
 
@@ -628,7 +628,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_test(root);
 			},
-			{ actionBar: true, tabBar: true }
+			{ actionBar: true, tabBar: true },
 		);
 	}
 
@@ -655,7 +655,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 				equal(bottom(child2), height(root) - insets.bottom, `${child2}.bottom - actual: ${bottom(child2)} expected: ${height(root) - insets.bottom}`);
 				equal(right(child2), width(root) - insets.right, `${child2}.right - actual: ${right(child2)} expected: ${width(root) - insets.right}`);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -694,7 +694,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 				equal(right(child2), width(root) - insets.right, `${child2}.right - actual: ${right(child2)} expected: ${width(root) - insets.right}`);
 				equal(bottom(child2), height(root) - insets.bottom, `${child2}.bottom - actual: ${bottom(child2)} expected: ${height(root) - insets.bottom}`);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -740,7 +740,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 				const sumOfChildrenHeights = height(child0) + height(child1) + height(child2);
 				equal(height(root), sumOfChildrenHeights, `flex height <${height(root)}> is NOT equal to sum of its children's heights <${sumOfChildrenHeights}>`);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -786,7 +786,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 				const sumOfChildrenWidths = width(child0) + width(child1) + width(child2);
 				equal(width(root), sumOfChildrenWidths, `flex width <${width(root)}> is NOT equal to sum of its children's width <${sumOfChildrenWidths}>`);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -828,7 +828,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_in_full_screen_test(root, pageOptions);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -863,7 +863,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_test(root);
 			},
-			{ actionBar: true }
+			{ actionBar: true },
 		);
 	}
 
@@ -878,7 +878,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_hidden_test(root);
 			},
-			{ actionBarHidden: true }
+			{ actionBarHidden: true },
 		);
 	}
 
@@ -893,7 +893,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_test(root);
 			},
-			{ actionBarFlat: true }
+			{ actionBarFlat: true },
 		);
 	}
 
@@ -908,7 +908,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_hidden_test(root);
 			},
-			{ tabBar: true }
+			{ tabBar: true },
 		);
 	}
 
@@ -923,7 +923,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_test(root);
 			},
-			{ actionBar: true, tabBar: true }
+			{ actionBar: true, tabBar: true },
 		);
 	}
 
@@ -974,7 +974,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 				const sumOfLabelWidthsAndInsets = insets.left + width(cells[1][0]) + width(cells[1][1]) + width(cells[1][2]) + insets.right;
 				equal(width(grid), sumOfLabelWidthsAndInsets, `grid width<${width(grid)}> sum of nested grids width and insets<${sumOfLabelWidthsAndInsets}>`);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -1037,7 +1037,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 				const sumOfNestedGridWidths = width(cells[1][0]) + width(cells[1][1]) + width(cells[1][2]);
 				equal(width(grid), sumOfNestedGridWidths, `grid width<${width(grid)}> sum of nested grids width <${sumOfNestedGridWidths}>`);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -1065,7 +1065,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_in_full_screen_test(root, pageOptions);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -1100,7 +1100,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_test(root);
 			},
-			{ actionBar: true }
+			{ actionBar: true },
 		);
 	}
 
@@ -1115,7 +1115,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_hidden_test(root);
 			},
-			{ actionBarHidden: true }
+			{ actionBarHidden: true },
 		);
 	}
 
@@ -1130,7 +1130,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_test(root);
 			},
-			{ actionBarFlat: true }
+			{ actionBarFlat: true },
 		);
 	}
 
@@ -1145,7 +1145,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_hidden_test(root);
 			},
-			{ tabBar: true }
+			{ tabBar: true },
 		);
 	}
 
@@ -1160,7 +1160,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_test(root);
 			},
-			{ actionBar: true, tabBar: true }
+			{ actionBar: true, tabBar: true },
 		);
 	}
 
@@ -1182,7 +1182,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 				equal(bottom(child0), height(root) - insets.bottom, `${child0}.bottom - actual: ${bottom(child0)} expected: ${height(root) - insets.bottom}`);
 				isLeftWith(child0, child1, width(child0));
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -1216,7 +1216,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 				equal(right(child0), width(root) - insets.right, `${child0}.right - actual: ${right(child0)} expected: ${width(root) - insets.right}`);
 				isBelowWith(child0, child1, height(child0));
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -1251,7 +1251,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 				isTopAlignedWith(root, child0);
 				isRightAlignedWith(root, child0);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -1279,7 +1279,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_in_full_screen_test(root, pageOptions);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -1314,7 +1314,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_test(root);
 			},
-			{ actionBar: true }
+			{ actionBar: true },
 		);
 	}
 
@@ -1329,7 +1329,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_hidden_test(root);
 			},
-			{ actionBarHidden: true }
+			{ actionBarHidden: true },
 		);
 	}
 
@@ -1344,7 +1344,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_test(root);
 			},
-			{ actionBarFlat: true }
+			{ actionBarFlat: true },
 		);
 	}
 
@@ -1359,7 +1359,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_hidden_test(root);
 			},
-			{ tabBar: true }
+			{ tabBar: true },
 		);
 	}
 
@@ -1374,7 +1374,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_test(root);
 			},
-			{ actionBar: true, tabBar: true }
+			{ actionBar: true, tabBar: true },
 		);
 	}
 
@@ -1398,7 +1398,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 				equal(height(child1), 0, `${child1} has been laid out, but should not`);
 				equal(width(child1), 0, `${child1} has been laid out, but should not`);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -1434,7 +1434,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 				equal(height(child1), 0, `${child1} has been laid out, but should not`);
 				equal(width(child1), 0, `${child1} has been laid out, but should not`);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -1467,7 +1467,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 				isTopAlignedWith(root, child0);
 				isRightAlignedWith(root, child0);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 

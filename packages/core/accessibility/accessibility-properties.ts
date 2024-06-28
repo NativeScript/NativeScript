@@ -26,6 +26,7 @@ function makePropertyEnumConverter<T>(enumValues) {
 
 export const accessibilityEnabledProperty = new CssProperty<Style, boolean>({
 	name: 'accessible',
+	defaultValue: true,
 	cssName: 'a11y-enabled',
 	valueConverter: booleanConverter,
 });
@@ -55,7 +56,7 @@ export const iosAccessibilityMaxFontScaleProperty = new InheritedCssProperty<Sty
 });
 iosAccessibilityMaxFontScaleProperty.register(Style);
 
-export const accessibilityHiddenProperty = new (global.isIOS ? InheritedCssProperty : CssProperty)({
+export const accessibilityHiddenProperty = new (__APPLE__ ? InheritedCssProperty : CssProperty)({
 	name: 'accessibilityHidden',
 	cssName: 'a11y-hidden',
 	valueConverter: booleanConverter,

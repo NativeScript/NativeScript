@@ -16,7 +16,7 @@ import * as fs from '@nativescript/core/file-system';
 
 import { StackLayout } from '@nativescript/core/ui/layouts/stack-layout';
 import { GridLayout } from '@nativescript/core/ui/layouts/grid-layout';
-import { isIOS, isAndroid } from '@nativescript/core/platform';
+import { isIOS, isAndroid, isApple } from '@nativescript/core/platform';
 import { Label } from '@nativescript/core/ui/label';
 import { LayoutBase } from '@nativescript/core/ui/layouts/layout-base';
 import * as helper from '../../ui-helper';
@@ -606,7 +606,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 	}
 
 	private requestLayoutFixture(expectRequestLayout: boolean, initialValue: string, setup: (label: Label) => LayoutBase): void {
-		if (!isIOS) {
+		if (!isApple) {
 			return;
 		}
 

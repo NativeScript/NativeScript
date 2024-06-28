@@ -61,7 +61,7 @@ export var testFileFromPath = function () {
 				function (error) {
 					TKUnit.assert(false, 'Failed to read/write text');
 					//console.dir(error);
-				}
+				},
 			);
 			// << (hide)
 		},
@@ -71,7 +71,7 @@ export var testFileFromPath = function () {
 			TKUnit.assert(false, 'Failed to read/write text');
 			//console.dir(error);
 			// << (hide)
-		}
+		},
 	);
 	// << file-system-create
 };
@@ -106,7 +106,7 @@ export var testFileWrite = function () {
 				function (error) {
 					TKUnit.assert(false, 'Failed to read/write text');
 					//console.dir(error);
-				}
+				},
 			);
 			// << (hide)
 		},
@@ -116,7 +116,7 @@ export var testFileWrite = function () {
 			TKUnit.assert(false, 'Failed to read/write text');
 			//console.dir(error);
 			// << (hide)
-		}
+		},
 	);
 	// << file-system-write-string
 };
@@ -172,7 +172,7 @@ export var testFileRead = function () {
 					TKUnit.assert(false, 'Failed to read/write text');
 					//console.dir(error);
 					// << (hide)
-				}
+				},
 			);
 		},
 		function (error) {
@@ -181,7 +181,7 @@ export var testFileRead = function () {
 			TKUnit.assert(false, 'Failed to read/write text');
 			//console.dir(error);
 			// << (hide)
-		}
+		},
 	);
 	// << file-system-example-text
 };
@@ -207,7 +207,7 @@ export var testFileReadWriteBinary = function () {
 		error = e;
 	});
 	TKUnit.assertNull(error);
-	if (Device.os === platformNames.ios) {
+	if (__APPLE__) {
 		TKUnit.assertTrue(source.isEqualToData(destination));
 	} else {
 		TKUnit.assertEqual(new java.io.File(sourceFile.path).length(), new java.io.File(destinationFile.path).length());
@@ -235,7 +235,7 @@ export var testFileReadWriteBinaryAsync = function () {
 					// Succeded in writing the file
 					destinationFile.read().then(
 						function (destination) {
-							if (Device.os === platformNames.ios) {
+							if (__APPLE__) {
 								TKUnit.assertTrue(source.isEqualToData(destination));
 							} else {
 								TKUnit.assertEqual(new java.io.File(sourceFile.path).length(), new java.io.File(destinationFile.path).length());
@@ -245,13 +245,13 @@ export var testFileReadWriteBinaryAsync = function () {
 						},
 						function (error) {
 							TKUnit.assert(false, 'Failed to read destination binary async');
-						}
+						},
 					);
 				},
 				function (error) {
 					// Failed to write the file.
 					TKUnit.assert(false, 'Failed to write binary async');
-				}
+				},
 			);
 			// << (hide)
 		},
@@ -260,7 +260,7 @@ export var testFileReadWriteBinaryAsync = function () {
 			// >> (hide)
 			TKUnit.assert(false, 'Failed to read binary async');
 			// << (hide)
-		}
+		},
 	);
 	// << file-system-read-binary-async
 };
@@ -306,14 +306,16 @@ function _testIOSSpecificKnownFolder(knownFolderName: string) {
 }
 
 export var testIOSSpecificKnownFolders = function () {
-	_testIOSSpecificKnownFolder('library');
-	_testIOSSpecificKnownFolder('developer');
-	_testIOSSpecificKnownFolder('desktop');
-	_testIOSSpecificKnownFolder('downloads');
-	_testIOSSpecificKnownFolder('movies');
-	_testIOSSpecificKnownFolder('music');
-	_testIOSSpecificKnownFolder('pictures');
-	_testIOSSpecificKnownFolder('sharedPublic');
+	if (__IOS__) {
+		_testIOSSpecificKnownFolder('library');
+		_testIOSSpecificKnownFolder('developer');
+		_testIOSSpecificKnownFolder('desktop');
+		_testIOSSpecificKnownFolder('downloads');
+		_testIOSSpecificKnownFolder('movies');
+		_testIOSSpecificKnownFolder('music');
+		_testIOSSpecificKnownFolder('pictures');
+		_testIOSSpecificKnownFolder('sharedPublic');
+	}
 };
 
 export var testGetEntities = function () {
@@ -356,7 +358,7 @@ export var testGetEntities = function () {
 		function (error) {
 			// Failed to obtain folder's contents.
 			// globalConsole.error(error.message);
-		}
+		},
 	);
 	// << file-system-folders-content
 };
@@ -491,7 +493,7 @@ export var testFileRename = function () {
 			// >> (hide)
 			TKUnit.assert(false, 'Failed to rename file');
 			// << (hide)
-		}
+		},
 	);
 	// << file-system-renaming
 };
@@ -515,7 +517,7 @@ export var testFolderRename = function () {
 			// >> (hide)
 			TKUnit.assert(false, 'Folder.rename API not working.');
 			// << (hide)
-		}
+		},
 	);
 	// << file-system-renaming-folder
 };
@@ -536,7 +538,7 @@ export var testFileRemove = function () {
 			// >> (hide)
 			TKUnit.assert(false, 'File.remove API not working.');
 			// << (hide)
-		}
+		},
 	);
 	// << file-system-remove-file
 };
@@ -558,7 +560,7 @@ export var testFolderRemove = function () {
 			// >> (hide)
 			TKUnit.assert(false, 'File.remove API not working.');
 			// << (hide)
-		}
+		},
 	);
 	// << file-system-remove-folder
 };
@@ -585,7 +587,7 @@ export var testFolderClear = function () {
 			// >> (hide)
 			TKUnit.assert(false, error.message);
 			// << (hide)
-		}
+		},
 	);
 	// >> (hide)
 	folder.getEntities().then(function (entities) {
@@ -607,7 +609,7 @@ export var testKnownFolderRename = function () {
 			},
 			function (error) {
 				TKUnit.assert(true);
-			}
+			},
 		);
 	}
 };
@@ -623,7 +625,7 @@ export function testKnownFolderRemove(done) {
 		},
 		function (error) {
 			done(null);
-		}
+		},
 	);
 }
 

@@ -8,12 +8,12 @@ describe('css-selector', () => {
 			sel.match(<any>{
 				cssType: 'button',
 				testAttr: true,
-			})
+			}),
 		).toBeTruthy();
 		expect(
 			sel.match(<any>{
 				cssType: 'button',
-			})
+			}),
 		).toBeFalsy();
 	});
 
@@ -119,7 +119,7 @@ describe('css-selector', () => {
 		}
 	});
 
-	it('direct parent combinator', () => {
+	it('direct child combinator', () => {
 		const rule = createOne(`listview > item:selected { color: red; }`);
 		expect(
 			rule.selectors[0].match({
@@ -128,7 +128,7 @@ describe('css-selector', () => {
 				parent: {
 					cssType: 'listview',
 				},
-			})
+			}),
 		).toBe(true);
 		expect(
 			rule.selectors[0].match({
@@ -140,11 +140,11 @@ describe('css-selector', () => {
 						cssType: 'listview',
 					},
 				},
-			})
+			}),
 		).toBe(false);
 	});
 
-	it('ancestor combinator', () => {
+	it('descendant combinator', () => {
 		const rule = createOne(`listview item:selected { color: red; }`);
 		expect(
 			rule.selectors[0].match({
@@ -153,7 +153,7 @@ describe('css-selector', () => {
 				parent: {
 					cssType: 'listview',
 				},
-			})
+			}),
 		).toBe(true);
 		expect(
 			rule.selectors[0].match({
@@ -165,7 +165,7 @@ describe('css-selector', () => {
 						cssType: 'listview',
 					},
 				},
-			})
+			}),
 		).toBe(true);
 		expect(
 			rule.selectors[0].match({
@@ -177,7 +177,7 @@ describe('css-selector', () => {
 						cssType: 'page',
 					},
 				},
-			})
+			}),
 		).toBe(false);
 	});
 
@@ -200,6 +200,79 @@ describe('css-selector', () => {
 		};
 
 		expect(sel.match(child)).toBe(true);
+	});
+
+	it(':not() pseudo-class', () => {
+		const rule = createOne(`listview :not(item:selected) { color: red; }`);
+		expect(
+			rule.selectors[0].match({
+				cssType: 'item',
+				cssPseudoClasses: new Set(['selected']),
+				parent: {
+					cssType: 'listview',
+				},
+			}),
+		).toBe(false);
+		expect(
+			rule.selectors[0].match({
+				cssType: 'item',
+				parent: {
+					cssType: 'listview',
+				},
+			}),
+		).toBe(true);
+		expect(
+			rule.selectors[0].match({
+				cssType: 'label',
+				parent: {
+					cssType: 'listview',
+				},
+			}),
+		).toBe(true);
+	});
+
+	it(':is() pseudo-class', () => {
+		const rule = createOne(`listview :is(item:selected) { color: red; }`);
+		expect(
+			rule.selectors[0].match({
+				cssType: 'item',
+				cssPseudoClasses: new Set(['selected']),
+				parent: {
+					cssType: 'listview',
+				},
+			}),
+		).toBe(true);
+		expect(
+			rule.selectors[0].match({
+				cssType: 'item',
+				parent: {
+					cssType: 'listview',
+				},
+			}),
+		).toBe(false);
+	});
+
+	it(':where() pseudo-class', () => {
+		const rule = createOne(`listview :is(item:selected) { color: red; }`);
+		expect(
+			rule.selectors[0].match({
+				cssType: 'item',
+				cssPseudoClasses: new Set(['selected']),
+				parent: {
+					cssType: 'listview',
+				},
+			}),
+		).toBe(true);
+		expect(
+			rule.selectors[0].match({
+				cssType: 'item',
+				parent: {
+					cssType: 'listview',
+				},
+			}),
+		).toBe(false);
+		// TODO: Re-add this when decorators actually work with ts-jest
+		//expect(rule.selectors[0].specificity).toEqual(0);
 	});
 
 	function toString() {

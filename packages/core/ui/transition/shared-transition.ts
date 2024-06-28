@@ -177,7 +177,7 @@ export class SharedTransition {
 		if (isNumber(pageEnd?.duration)) {
 			// Android uses milliseconds/iOS uses seconds
 			// users pass in milliseconds
-			transition.setDuration(global.isIOS ? pageEnd?.duration / 1000 : pageEnd?.duration);
+			transition.setDuration(__APPLE__ ? pageEnd?.duration / 1000 : pageEnd?.duration);
 		}
 		return { instance: transition };
 	}
@@ -286,7 +286,7 @@ export class SharedTransition {
 	 */
 	static getSharedElements(
 		fromPage: ViewBase,
-		toPage: ViewBase
+		toPage: ViewBase,
 	): {
 		sharedElements: Array<View>;
 		presented: Array<View>;
@@ -365,9 +365,9 @@ export function getPageStartDefaultsForType(type: TransitionNavigationType) {
 }
 
 function getPlatformWidth() {
-	return global.isAndroid ? Screen.mainScreen.widthPixels : Screen.mainScreen.widthDIPs;
+	return __ANDROID__ ? Screen.mainScreen.widthPixels : Screen.mainScreen.widthDIPs;
 }
 
 function getPlatformHeight() {
-	return global.isAndroid ? Screen.mainScreen.heightPixels : Screen.mainScreen.heightDIPs;
+	return __ANDROID__ ? Screen.mainScreen.heightPixels : Screen.mainScreen.heightDIPs;
 }

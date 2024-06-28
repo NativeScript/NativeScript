@@ -9,7 +9,7 @@ Button {
     text-transform: none;
 }
 .btn-view-demo {
-  background-color: #65ADF1;
+  /* background-color: #65ADF1; */
   border-radius: 5;
   font-size: 17;
   padding: 15;
@@ -221,4 +221,24 @@ Button {
 .switch-demo-page Switch.custom-switch:disabled:checked {
     color: #ddd;
     background-color: #777;
+}
+
+.ns-visionos Page {
+    background-color: transparent;
+}
+
+.ns-visionos Label, TextField, TextView {
+    font-size: 24;
+    padding: 12
+}
+
+.ns-visionos Button {
+    padding: 12;
+    font-size: 24;
+    background-color: transparent;
+    width: 400;
+}
+
+.no-shadow {
+    box-shadow: none;
 }

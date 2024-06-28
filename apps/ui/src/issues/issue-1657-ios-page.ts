@@ -4,7 +4,7 @@ var platform = require('@nativescript/core/platform');
 var defaultSpeed = -1;
 
 export function navigatingTo(args: EventData) {
-	if (platform.device.os === platform.platformNames.ios) {
+	if (__APPLE__) {
 		if (defaultSpeed === -1) {
 			defaultSpeed = frameModule.topmost().ios.controller.view.layer.speed;
 			frameModule.topmost().ios.controller.navigationBar.translucent = false;
@@ -19,7 +19,7 @@ export function onTap() {
 }
 
 export function changeTranslucent() {
-	if (platform.device.os === platform.platformNames.ios) {
+	if (__APPLE__) {
 		frameModule.topmost().ios.controller.navigationBar.translucent = frameModule.topmost().ios.controller.navigationBar.translucent === true ? false : true;
 	}
 }

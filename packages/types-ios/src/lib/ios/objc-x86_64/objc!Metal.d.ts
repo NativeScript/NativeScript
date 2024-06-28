@@ -4600,6 +4600,8 @@ interface MTLResource extends NSObjectProtocol {
 
 	makeAliasable(): void;
 
+	setOwnerWithIdentity(task_id_token: number): number;
+
 	setPurgeableState(state: MTLPurgeableState): MTLPurgeableState;
 }
 declare var MTLResource: {
@@ -4818,6 +4820,8 @@ interface MTLSharedEvent extends MTLEvent {
 	newSharedEventHandle(): MTLSharedEventHandle;
 
 	notifyListenerAtValueBlock(listener: MTLSharedEventListener, value: number, block: (p1: MTLSharedEvent, p2: number) => void): void;
+
+	waitUntilSignaledValueTimeoutMS(value: number, milliseconds: number): boolean;
 }
 declare var MTLSharedEvent: {
 
