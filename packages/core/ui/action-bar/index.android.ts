@@ -273,7 +273,7 @@ export class ActionBar extends ActionBarBase {
 							owner._raiseTap();
 						}
 					},
-				})
+				}),
 			);
 		} else {
 			this.nativeViewProtected.setNavigationIcon(null);
@@ -362,7 +362,7 @@ export class ActionBar extends ActionBarBase {
 						owner._raiseTap();
 					}
 				},
-			})
+			}),
 		);
 	}
 

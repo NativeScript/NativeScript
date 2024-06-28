@@ -282,7 +282,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 							reject(err);
 						},
 					}),
-					getApplicationContext()
+					getApplicationContext(),
 				);
 			} catch (ex) {
 				reject(ex);
@@ -305,7 +305,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 							reject(err);
 						},
 					}),
-					null
+					null,
 				);
 			} catch (ex) {
 				reject(ex);
@@ -343,7 +343,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 							reject(err);
 						},
 					}),
-					null
+					null,
 				);
 			} catch (ex) {
 				reject(ex);
@@ -391,7 +391,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 							reject(err);
 						},
 					}),
-					null
+					null,
 				);
 			} catch (ex) {
 				reject(ex);
@@ -429,7 +429,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 							reject(err);
 						},
 					}),
-					null
+					null,
 				);
 			} catch (ex) {
 				reject(ex);
@@ -466,7 +466,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 							reject(err);
 						},
 					}),
-					null
+					null,
 				);
 			} catch (ex) {
 				reject(ex);
@@ -504,7 +504,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 							reject(err);
 						},
 					}),
-					null
+					null,
 				);
 			} catch (ex) {
 				reject(ex);
@@ -550,7 +550,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 							reject(err);
 						},
 					}),
-					null
+					null,
 				);
 			} catch (ex) {
 				reject(ex);
@@ -635,7 +635,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 							reject(err);
 						},
 					}),
-					null
+					null,
 				);
 			} catch (ex) {
 				reject(ex);
@@ -685,7 +685,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 							reject(err);
 						},
 					}),
-					null
+					null,
 				);
 			} catch (ex) {
 				reject(ex);
@@ -986,7 +986,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 					onError(error) {
 						reject(error);
 					},
-				})
+				}),
 			);
 		});
 	}
@@ -1019,7 +1019,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 						onError(error) {
 							reject(error);
 						},
-					})
+					}),
 				);
 			});
 		}
@@ -1058,7 +1058,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 						onError(error) {
 							reject(error);
 						},
-					})
+					}),
 				);
 			});
 		}
@@ -1098,7 +1098,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 						onError(error) {
 							reject(error);
 						},
-					})
+					}),
 				);
 			});
 		}
@@ -1137,7 +1137,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 						onError(error) {
 							reject(error);
 						},
-					})
+					}),
 				);
 			});
 		}
@@ -1174,7 +1174,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 						onError(error) {
 							reject(error);
 						},
-					})
+					}),
 				);
 			});
 		}
@@ -1215,7 +1215,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 						onError(error) {
 							reject(error);
 						},
-					})
+					}),
 				);
 			});
 		}
@@ -1254,7 +1254,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 						onError(error) {
 							reject(error);
 						},
-					})
+					}),
 				);
 			});
 		}
@@ -1293,7 +1293,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 						onError(error) {
 							reject(error);
 						},
-					})
+					}),
 				);
 			});
 		}
@@ -1332,7 +1332,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 						onError(error) {
 							reject(error);
 						},
-					})
+					}),
 				);
 			});
 		}
