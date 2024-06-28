@@ -123,7 +123,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	_setMinWidthNative: (value: CoreTypes.LengthType) => void;
 	_setMinHeightNative: (value: CoreTypes.LengthType) => void;
 
-	public _gestureObservers = {};
+	public readonly _gestureObservers = {} as Record<GestureTypes, Array<GesturesObserver>>;
 
 	_androidContentDescriptionUpdated?: boolean;
 
@@ -177,7 +177,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
 	onLoaded() {
 		if (!this.isLoaded) {
-			const hasTap = this.hasListeners('tap') || this.hasListeners('tapChange') || this.getGestureObservers(GestureTypes.tap);
+			const hasTap = this.hasListeners('tap') || this.hasListeners('tapChange') || !!this.getGestureObservers(GestureTypes.tap);
 			const enableTapAnimations = TouchManager.enableGlobalTapAnimations && hasTap;
 			if (!this.ignoreTouchAnimation && (this.touchAnimation || enableTapAnimations)) {
 				TouchManager.addAnimations(this);
@@ -278,7 +278,14 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		}
 	}
 
-	_observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
+	protected _observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
+		thisArg = thisArg || undefined;
+
+		if (this._gestureObservers[type]?.find((observer) => observer.callback === callback && observer.context === thisArg)) {
+			// Already added.
+			return;
+		}
+
 		if (!this._gestureObservers[type]) {
 			this._gestureObservers[type] = [];
 		}
@@ -286,62 +293,46 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		this._gestureObservers[type].push(gestureObserve(this, type, callback, thisArg));
 	}
 
-	public getGestureObservers(type: GestureTypes): Array<GesturesObserver> {
+	public getGestureObservers(type: GestureTypes): Array<GesturesObserver> | undefined {
 		return this._gestureObservers[type];
 	}
 
-	public addEventListener(arg: string | GestureTypes, callback: (data: EventData) => void, thisArg?: any) {
-		if (typeof arg === 'string') {
-			arg = getEventOrGestureName(arg);
+	public addEventListener(eventNames: string, callback: (data: EventData) => void, thisArg?: any) {
+		thisArg = thisArg || undefined;
 
-			const gesture = gestureFromString(arg);
-			if (gesture && !this._isEvent(arg)) {
-				this._observe(gesture, callback as unknown as (data: GestureEventData) => void, thisArg);
-			} else {
-				const events = arg.split(',');
-				if (events.length > 0) {
-					for (let i = 0; i < events.length; i++) {
-						const evt = events[i].trim();
-						const gst = gestureFromString(evt);
-						if (gst && !this._isEvent(arg)) {
-							this._observe(gst, callback as unknown as (data: GestureEventData) => void, thisArg);
-						} else {
-							super.addEventListener(evt, callback, thisArg);
-						}
-					}
-				} else {
-					super.addEventListener(arg, callback, thisArg);
-				}
-			}
-		} else if (typeof arg === 'number') {
-			this._observe(<GestureTypes>arg, callback as unknown as (data: GestureEventData) => void, thisArg);
+		// Normalize "ontap" -> "tap"
+		const normalizedName = getEventOrGestureName(eventNames);
+
+		// Coerce "tap" -> GestureTypes.tap
+		// Coerce "loaded" -> undefined
+		const gestureType: GestureTypes | undefined = gestureFromString(normalizedName);
+
+		// If it's a gesture (and this Observable declares e.g. `static tapEvent`)
+		if (gestureType && !this._isEvent(normalizedName)) {
+			this._observe(gestureType, callback, thisArg);
+			return;
 		}
+
+		super.addEventListener(normalizedName, callback, thisArg);
 	}
 
-	public removeEventListener(arg: string | GestureTypes, callback?: (data: EventData) => void, thisArg?: any) {
-		if (typeof arg === 'string') {
-			const gesture = gestureFromString(arg);
-			if (gesture && !this._isEvent(arg)) {
-				this._disconnectGestureObservers(gesture);
-			} else {
-				const events = arg.split(',');
-				if (events.length > 0) {
-					for (let i = 0; i < events.length; i++) {
-						const evt = events[i].trim();
-						const gst = gestureFromString(evt);
-						if (gst && !this._isEvent(arg)) {
-							this._disconnectGestureObservers(gst);
-						} else {
-							super.removeEventListener(evt, callback, thisArg);
-						}
-					}
-				} else {
-					super.removeEventListener(arg, callback, thisArg);
-				}
-			}
-		} else if (typeof arg === 'number') {
-			this._disconnectGestureObservers(<GestureTypes>arg);
+	public removeEventListener(eventNames: string, callback?: (data: EventData) => void, thisArg?: any) {
+		thisArg = thisArg || undefined;
+
+		// Normalize "ontap" -> "tap"
+		const normalizedName = getEventOrGestureName(eventNames);
+
+		// Coerce "tap" -> GestureTypes.tap
+		// Coerce "loaded" -> undefined
+		const gestureType: GestureTypes | undefined = gestureFromString(normalizedName);
+
+		// If it's a gesture (and this Observable declares e.g. `static tapEvent`)
+		if (gestureType && !this._isEvent(normalizedName)) {
+			this._disconnectGestureObservers(gestureType, callback, thisArg);
+			return;
 		}
+
+		super.removeEventListener(normalizedName, callback, thisArg);
 	}
 
 	public onBackPressed(): boolean {
@@ -379,7 +370,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 			const firstArgument = args[0];
 			const view = firstArgument instanceof ViewCommon ? firstArgument : <ViewCommon>Builder.createViewFromEntry({
 							moduleName: firstArgument,
-					  });
+						});
 
 			return { view, options };
 		}
@@ -428,7 +419,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		this._closeModalCallback = (...originalArgs) => {
 			const cleanupModalViews = () => {
 				const modalIndex = _rootModalViews.indexOf(this);
-				_rootModalViews.splice(modalIndex);
+				_rootModalViews.splice(modalIndex, 1);
 				this._modalParent = null;
 				this._modalContext = null;
 				this._closeModalCallback = null;
@@ -499,12 +490,34 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		return this.constructor && `${name}Event` in this.constructor;
 	}
 
-	private _disconnectGestureObservers(type: GestureTypes): void {
+	private _disconnectGestureObservers(type: GestureTypes, callback?: (data: EventData) => void, thisArg?: any): void {
+		// Largely mirrors the implementation of Observable.innerRemoveEventListener().
+
 		const observers = this.getGestureObservers(type);
-		if (observers) {
-			for (let i = 0; i < observers.length; i++) {
-				observers[i].disconnect();
+		if (!observers) {
+			return;
+		}
+
+		for (let i = 0; i < observers.length; i++) {
+			const observer = observers[i];
+
+			// If we have a `thisArg`, refine on both `callback` and `thisArg`.
+			if (thisArg && (observer.callback !== callback || observer.context !== thisArg)) {
+				continue;
 			}
+
+			// If we don't have a `thisArg`, refine only on `callback`.
+			if (callback && observer.callback !== callback) {
+				continue;
+			}
+
+			observer.disconnect();
+			observers.splice(i, 1);
+			i--;
+		}
+
+		if (!observers.length) {
+			delete this._gestureObservers[type];
 		}
 	}
 
