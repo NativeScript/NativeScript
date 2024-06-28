@@ -8,7 +8,7 @@ import { Trace } from '../trace';
 
 // Types.
 import { path as fsPath, knownFolders } from '../file-system';
-import { isFileOrResourcePath, RESOURCE_PREFIX, layout, releaseNativeObject } from '../utils';
+import { isFileOrResourcePath, RESOURCE_PREFIX, layout, releaseNativeObject, SYSTEM_PREFIX } from '../utils';
 
 import { getScaledDimensions } from './image-source-common';
 
@@ -73,6 +73,27 @@ export class ImageSource implements ImageSourceDefinition {
 		return http.getImage(url);
 	}
 
+	static fromSystemImageSync(name: string): ImageSource {
+		const image = UIImage.systemImageNamed(name);
+
+		return image ? new ImageSource(image) : null;
+	}
+
+	static fromSystemImage(name: string): Promise<ImageSource> {
+		return new Promise<ImageSource>((resolve, reject) => {
+			try {
+				const image = UIImage.systemImageNamed(name);
+				if (image) {
+					resolve(new ImageSource(image));
+				} else {
+					reject(new Error(`Failed to load system icon with name: ${name}`));
+				}
+			} catch (ex) {
+				reject(ex);
+			}
+		});
+	}
+
 	static fromResourceSync(name: string): ImageSource {
 		const nativeSource = (<any>UIImage).tns_safeImageNamed(name) || (<any>UIImage).tns_safeImageNamed(`${name}.jpg`);
 
@@ -126,7 +147,10 @@ export class ImageSource implements ImageSourceDefinition {
 		}
 
 		if (path.indexOf(RESOURCE_PREFIX) === 0) {
-			return ImageSource.fromResourceSync(path.substr(RESOURCE_PREFIX.length));
+			return ImageSource.fromResourceSync(path.slice(RESOURCE_PREFIX.length));
+		}
+		if (path.indexOf(SYSTEM_PREFIX) === 0) {
+			return ImageSource.fromSystemImageSync(path.slice(SYSTEM_PREFIX.length));
 		}
 
 		return ImageSource.fromFileSync(path);
