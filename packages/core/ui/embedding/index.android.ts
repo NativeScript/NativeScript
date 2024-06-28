@@ -9,7 +9,7 @@ declare namespace org {
 }
 
 export function isEmbedded(): boolean {
-	return org.nativescript.Bootstrap.isEmbeddedNativeScript;
+	return org.nativescript?.Bootstrap?.isEmbeddedNativeScript;
 }
 
 let embeddedView: View | undefined;
