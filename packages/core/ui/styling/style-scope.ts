@@ -87,7 +87,13 @@ const pattern = /('|")(.*?)\1/;
 class CSSSource {
 	private _selectors: RuleSet[] = [];
 
-	private constructor(private _ast: SyntaxTree, private _url: string, private _file: string, private _keyframes: KeyframesMap, private _source: string) {
+	private constructor(
+		private _ast: SyntaxTree,
+		private _url: string,
+		private _file: string,
+		private _keyframes: KeyframesMap,
+		private _source: string,
+	) {
 		this.parse();
 	}
 
@@ -391,7 +397,7 @@ if (Application.hasLaunched()) {
 			cssFile: Application.getCssFileName(),
 		},
 		null,
-		null
+		null,
 	);
 } else {
 	global.NativeScriptGlobals.events.on('loadAppCss', loadAppCSS);

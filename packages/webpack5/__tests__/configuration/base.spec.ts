@@ -58,7 +58,7 @@ describe('base configuration', () => {
 					'__jest__/tsconfig.app.json', // ts-loader
 					'__jest__/tsconfig.app.json', // fork-ts-checker
 				]);
-			}
+			},
 		);
 	});
 
@@ -97,7 +97,7 @@ describe('base configuration', () => {
 					'__jest__/tsconfig.json', // ts-loader
 					'__jest__/tsconfig.json', // fork-ts-checker
 				]);
-			}
+			},
 		);
 	});
 
@@ -126,7 +126,7 @@ describe('base configuration', () => {
 					expect(args[0].path).toEqual('__jest__/.env');
 					return args;
 				});
-			}
+			},
 		);
 
 		fsSpy.mockRestore();
@@ -151,7 +151,7 @@ describe('base configuration', () => {
 					expect(args[0].path).toEqual('__jest__/.env.prod');
 					return args;
 				});
-			}
+			},
 		);
 		fsSpy.mockRestore();
 	});
@@ -176,7 +176,7 @@ describe('base configuration', () => {
 					expect(args[0].path).toEqual('__jest__/.env');
 					return args;
 				});
-			}
+			},
 		);
 		fsSpy.mockRestore();
 	});
@@ -226,7 +226,7 @@ describe('base configuration', () => {
 	it('includes inspector_modules on android when @nativescript/core version is >= 8.7.0', () => {
 		const getDependencyVersionSpy = jest.spyOn(
 			dependenciesHelpers,
-			'getDependencyVersion'
+			'getDependencyVersion',
 		);
 		getDependencyVersionSpy.withImplementation(
 			(name) => {
@@ -245,7 +245,7 @@ describe('base configuration', () => {
 
 				expect(entry).toBeDefined();
 				expect(entry.values().length).toBe(1);
-			}
+			},
 		);
 	});
 });
