@@ -379,7 +379,7 @@ export class ActionBar extends ActionBarBase {
 		}
 
 		const color_ = color instanceof Color ? color.ios : color;
-		if (majorVersion >= 15) {
+		if (__VISIONOS__ || majorVersion >= 15) {
 			const appearance = this._getAppearance(navBar);
 			// appearance.configureWithOpaqueBackground();
 			appearance.backgroundColor = color_;
@@ -397,7 +397,7 @@ export class ActionBar extends ActionBarBase {
 		}
 
 		if (page.frame) {
-			page.frame._updateActionBar();
+			page.frame._updateActionBar(page);
 		}
 
 		const navigationItem: UINavigationItem = (<UIViewController>page.ios).navigationItem;

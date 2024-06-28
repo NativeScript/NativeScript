@@ -33,12 +33,6 @@ let fragmentId = -1;
 
 export let moduleLoaded: boolean;
 
-if (global && global.__inspector) {
-	const devtools = require('../../debugger/devtools-elements');
-	devtools.attachDOMInspectorEventCallbacks(global.__inspector);
-	devtools.attachDOMInspectorCommandCallbacks(global.__inspector);
-}
-
 export let attachStateChangeListener: android.view.View.OnAttachStateChangeListener;
 
 function getAttachListener(): android.view.View.OnAttachStateChangeListener {

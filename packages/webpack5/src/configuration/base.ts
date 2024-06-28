@@ -5,18 +5,19 @@ import {
 	HotModuleReplacementPlugin,
 } from 'webpack';
 import Config from 'webpack-chain';
+import { satisfies } from 'semver';
 import { existsSync } from 'fs';
 
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import TerserPlugin from 'terser-webpack-plugin';
 
+import { getProjectFilePath, getProjectTSConfigPath } from '../helpers/project';
+import { getDependencyVersion, hasDependency } from '../helpers/dependencies';
 import { PlatformSuffixPlugin } from '../plugins/PlatformSuffixPlugin';
 import { applyFileReplacements } from '../helpers/fileReplacements';
 import { addCopyRule, applyCopyRules } from '../helpers/copyRules';
 import { WatchStatePlugin } from '../plugins/WatchStatePlugin';
-import { getProjectFilePath, getProjectTSConfigPath } from '../helpers/project';
-import { hasDependency } from '../helpers/dependencies';
 import { applyDotEnvPlugin } from '../helpers/dotEnv';
 import { env as _env, IWebpackEnv } from '../index';
 import { getValue } from '../helpers/config';
@@ -84,7 +85,9 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// when using hidden-source-map, output source maps to the `platforms/{platformName}-sourceMaps` folder
 	if (env.sourceMap === 'hidden-source-map') {
 		const sourceMapAbsolutePath = getProjectFilePath(
-			`./platforms/${platform}-sourceMaps/[file].map[query]`
+			`./${
+				env.buildPath ?? 'platforms'
+			}/${platform}-sourceMaps/[file].map[query]`,
 		);
 		const sourceMapRelativePath = relative(outputPath, sourceMapAbsolutePath);
 		config.output.sourceMapFilename(sourceMapRelativePath);
@@ -131,7 +134,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 	config.watchOptions({
 		ignored: [
-			`${getProjectFilePath('platforms')}/**`,
+			`${getProjectFilePath(env.buildPath ?? 'platforms')}/**`,
 			`${getProjectFilePath(env.appResourcesPath ?? 'App_Resources')}/**`,
 		],
 	});
@@ -204,6 +207,20 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.add(`.${platform}.json`)
 		.add('.json');
 
+	if (platform === 'visionos') {
+		// visionOS allows for both .ios and .visionos extensions
+		const extensions = config.resolve.extensions.values();
+		const newExtensions = [];
+		extensions.forEach((ext) => {
+			newExtensions.push(ext);
+			if (ext.includes('visionos')) {
+				newExtensions.push(ext.replace('visionos', 'ios'));
+			}
+		});
+
+		config.resolve.extensions.clear().merge(newExtensions);
+	}
+
 	// base aliases
 	config.resolve.alias.set('~', getEntryDirPath()).set('@', getEntryDirPath());
 
@@ -223,6 +240,9 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.use('app-css-loader')
 		.loader('app-css-loader')
 		.options({
+			// TODO: allow both visionos and ios to resolve for css
+			// only resolve .ios css on visionOS for now
+			// platform: platform === 'visionos' ? 'ios' : platform,
 			platform,
 		})
 		.end();
@@ -253,7 +273,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	const configFile = tsConfigPath
 		? {
 				configFile: tsConfigPath,
-		  }
+			}
 		: undefined;
 
 	// set up ts support
@@ -322,22 +342,26 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 						// custom resolver to resolve platform extensions in @import statements
 						// ie. @import "foo.css" would import "foo.ios.css" if the platform is ios and it exists
 						resolve(id, baseDir, importOptions) {
-							const ext = extname(id);
-							const platformExt = ext ? `.${platform}${ext}` : '';
+							const extensions =
+								platform === 'visionos' ? [platform, 'ios'] : [platform];
+							for (const platformTarget of extensions) {
+								const ext = extname(id);
+								const platformExt = ext ? `.${platformTarget}${ext}` : '';
 
-							if (!id.includes(platformExt)) {
-								const platformRequest = id.replace(ext, platformExt);
-								const extPath = resolve(baseDir, platformRequest);
+								if (!id.includes(platformExt)) {
+									const platformRequest = id.replace(ext, platformExt);
+									const extPath = resolve(baseDir, platformRequest);
 
-								try {
-									return require.resolve(platformRequest, {
-										paths: [baseDir],
-									});
-								} catch {}
+									try {
+										return require.resolve(platformRequest, {
+											paths: [baseDir],
+										});
+									} catch {}
 
-								if (existsSync(extPath)) {
-									console.log(`resolving "${id}" to "${platformRequest}"`);
-									return extPath;
+									if (existsSync(extPath)) {
+										console.log(`resolving "${id}" to "${platformRequest}"`);
+										return extPath;
+									}
 								}
 							}
 
@@ -428,7 +452,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			 * +-----------------------------------------------------------------------------------------+
 			 */
 			/System.import\(\) is deprecated/,
-		])
+		]),
 	);
 
 	// todo: refine defaults
@@ -445,6 +469,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			__ANDROID__: platform === 'android',
 			__IOS__: platform === 'ios',
 			__VISIONOS__: platform === 'visionos',
+			__APPLE__: platform === 'ios' || platform === 'visionos',
 			/* for compat only */ 'global.isAndroid': platform === 'android',
 			/* for compat only */ 'global.isIOS':
 				platform === 'ios' || platform === 'visionos',
@@ -492,7 +517,11 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 function shouldIncludeInspectorModules(): boolean {
 	const platform = getPlatformName();
-	// todo: check if core modules are external
-	// todo: check if we are testing
+	const coreVersion = getDependencyVersion('@nativescript/core');
+
+	if (coreVersion && satisfies(coreVersion, '>=8.7.0')) {
+		return platform === 'ios' || platform === 'android';
+	}
+
 	return platform === 'ios';
 }

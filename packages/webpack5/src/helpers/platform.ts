@@ -62,7 +62,7 @@ export function getPlatformName(): Platform {
 		return 'ios';
 	}
 
-	if (env?.visionos) {
+	if (env?.visionos || env?.vision) {
 		return 'visionos';
 	}
 
@@ -89,7 +89,7 @@ export function getPlatformName(): Platform {
 		Use --env.platform=<platform> or --env.android, --env.ios, --env.visionos to specify the target platform.
 
 		Defaulting to "ios".
-	`
+	`,
 	);
 
 	return 'ios';
@@ -138,7 +138,7 @@ export function getDistPath() {
 	}
 
 	// fallback to a generic platforms/<platform>/dist folder
-	return `platforms/${getPlatformName()}/dist`;
+	return `${env.buildPath ?? 'platforms'}/${getPlatformName()}/dist`;
 }
 
 /**

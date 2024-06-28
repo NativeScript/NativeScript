@@ -12,7 +12,7 @@
 #include <sys/types.h>
 #include <sys/time.h>
 
-double __tns_uptime() {
+double __tns_uptime(void) {
     pid_t pid = [[NSProcessInfo processInfo] processIdentifier];
     int mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, pid };
     struct kinfo_proc proc;

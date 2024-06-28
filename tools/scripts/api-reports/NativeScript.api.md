@@ -2749,8 +2749,8 @@ export abstract class View extends ViewBase {
     modal: View;
     // (undocumented)
     _modalParent?: View;
-    off(eventNames: string | GestureTypes, callback?: (args: EventData) => void, thisArg?: any);
-    on(eventNames: string | GestureTypes, callback: (args: EventData) => void, thisArg?: any);
+    off(eventNames: string, callback?: (args: EventData) => void, thisArg?: any);
+    on(eventNames: string, callback: (args: EventData) => void, thisArg?: any);
     on(event: "loaded", callback: (args: EventData) => void, thisArg?: any);
     on(event: "unloaded", callback: (args: EventData) => void, thisArg?: any);
     on(event: "androidBackPressed", callback: (args: EventData) => void, thisArg?: any);

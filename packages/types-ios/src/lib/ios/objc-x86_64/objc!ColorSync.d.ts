@@ -1,4 +1,6 @@
 
+declare function ColorSyncAPIVersion(): number;
+
 declare const enum ColorSyncAlphaInfo {
 
 	kColorSyncAlphaNone = 0,

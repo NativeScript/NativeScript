@@ -4,12 +4,13 @@ import { booleanConverter } from '../core/view-base';
 import { CoreTypes } from '../../core-types';
 import { ImageAsset } from '../../image-asset';
 import { ImageSource } from '../../image-source';
-import { isDataURI, isFontIconURI, isFileOrResourcePath, RESOURCE_PREFIX } from '../../utils';
+import { isDataURI, isFontIconURI, isFileOrResourcePath, RESOURCE_PREFIX, SYSTEM_PREFIX } from '../../utils';
 import { Color } from '../../color';
 import { Style } from '../styling/style';
 import { Length } from '../styling/style-properties';
 import { Property, InheritedCssProperty } from '../core/properties';
 import { Trace } from '../../trace';
+import { ImageSymbolEffect, ImageSymbolEffects } from './symbol-effects';
 
 @CSSType('Image')
 export abstract class ImageBase extends View implements ImageDefinition {
@@ -75,12 +76,20 @@ export abstract class ImageBase extends View implements ImageDefinition {
 				}
 			} else if (isFileOrResourcePath(value)) {
 				if (value.indexOf(RESOURCE_PREFIX) === 0) {
-					const resPath = value.substr(RESOURCE_PREFIX.length);
+					const resPath = value.slice(RESOURCE_PREFIX.length);
 					if (sync) {
 						imageLoaded(ImageSource.fromResourceSync(resPath));
 					} else {
 						this.imageSource = null;
 						ImageSource.fromResource(resPath).then(imageLoaded);
+					}
+				} else if (value.indexOf(SYSTEM_PREFIX) === 0) {
+					const sysPath = value.slice(SYSTEM_PREFIX.length);
+					if (sync) {
+						imageLoaded(ImageSource.fromSystemImageSync(sysPath));
+					} else {
+						this.imageSource = null;
+						ImageSource.fromSystemImage(sysPath).then(imageLoaded);
 					}
 				} else {
 					if (sync) {
@@ -108,7 +117,7 @@ export abstract class ImageBase extends View implements ImageDefinition {
 							}
 							Trace.write(err, Trace.categories.Debug);
 						}
-					}
+					},
 				);
 			}
 		} else if (value instanceof ImageSource) {
@@ -153,7 +162,7 @@ isLoadingProperty.register(ImageBase);
 export const stretchProperty = new Property<ImageBase, CoreTypes.ImageStretchType>({
 	name: 'stretch',
 	defaultValue: 'aspectFit',
-	affectsLayout: __IOS__,
+	affectsLayout: __APPLE__,
 });
 stretchProperty.register(ImageBase);
 
@@ -178,3 +187,13 @@ export const decodeWidthProperty = new Property<ImageBase, CoreTypes.LengthType>
 	valueConverter: Length.parse,
 });
 decodeWidthProperty.register(ImageBase);
+
+/**
+ * iOS only
+ */
+export const iosSymbolEffectProperty = new Property<ImageBase, ImageSymbolEffect | ImageSymbolEffects>({
+	name: 'iosSymbolEffect',
+});
+iosSymbolEffectProperty.register(ImageBase);
+
+export { ImageSymbolEffect, ImageSymbolEffects };

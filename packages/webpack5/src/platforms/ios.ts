@@ -2,6 +2,8 @@ import { basename } from "path";
 
 import { INativeScriptPlatform } from "../helpers/platform";
 import { getProjectRootPath } from "../helpers/project";
+import { env } from '../';
+import { getValue } from '../helpers/config';
 
 function sanitizeName(appName: string): string {
 	return appName.split("").filter((c) =>
@@ -9,8 +11,10 @@ function sanitizeName(appName: string): string {
 	).join("");
 }
 function getDistPath() {
-	const appName = sanitizeName(basename(getProjectRootPath()));
-	return `platforms/ios/${appName}/app`;
+	// try projectName from nativescript.config.ts, if not set, use original method
+	const appName = getValue('projectName') ?? sanitizeName(basename(getProjectRootPath()));
+
+	return `${env.buildPath ?? "platforms"}/ios/${appName}/app`;
 }
 
 const iOSPlatform: INativeScriptPlatform = {
