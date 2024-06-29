@@ -16,14 +16,30 @@ class RemovalTrackingGridLayout extends GridLayout {
 	public removedRows = 0;
 	public removedCols = 0;
 
+	// this trick wont work on android anymore as removeRows
+	// is done in one call and does not go through _onRowRemoved
 	public _onRowRemoved(itemSpec: ItemSpec, index: number) {
 		this.removedRows++;
 		super._onRowRemoved(itemSpec, index);
 	}
 
+	// this trick wont work on android anymore as removeColumns
+	// is done in one call and does not go through _onColumnRemoved
 	public _onColumnRemoved(itemSpec: ItemSpec, index: number) {
 		this.removedCols++;
 		super._onColumnRemoved(itemSpec, index);
+	}
+	public removeRows() {
+		if (__ANDROID__) {
+			this.removedRows = this.getRows().length;
+		}
+		super.removeRows();
+	}
+	public removeColumns() {
+		if (__ANDROID__) {
+			this.removedCols = this.getColumns().length;
+		}
+		super.removeColumns();
 	}
 }
 
@@ -39,7 +55,7 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 	public test_item_recycling() {
 		helper.nativeView_recycling_test(
 			() => new Button(),
-			() => new GridLayout()
+			() => new GridLayout(),
 		);
 	}
 
