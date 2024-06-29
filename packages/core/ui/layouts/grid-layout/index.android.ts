@@ -65,8 +65,7 @@ export class GridLayout extends GridLayoutBase {
 
 	public _onRowAdded(itemSpec: ItemSpec) {
 		if (this.nativeViewProtected) {
-			const nativeData = itemSpec.toJSON();
-			this.nativeViewProtected.addRow(nativeData.value, nativeData.type);
+			this.nativeViewProtected.addRowsFromJSON(JSON.stringify(itemSpec.toJSON()));
 		}
 	}
 
@@ -104,8 +103,7 @@ export class GridLayout extends GridLayoutBase {
 
 	public _onColumnAdded(itemSpec: ItemSpec) {
 		if (this.nativeViewProtected) {
-			const nativeData = itemSpec.toJSON();
-			this.nativeViewProtected.addColumn(nativeData.value, nativeData.type);
+			this.nativeViewProtected.addColumnsFromJSON(JSON.stringify(itemSpec.toJSON()));
 		}
 	}
 
