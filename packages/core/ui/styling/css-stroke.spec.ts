@@ -1,5 +1,4 @@
 import { parseCSSStroke } from './css-stroke';
-import { CoreTypes } from '../../core-types';
 import { Length } from './style-properties';
 import { Color } from '../../color';
 

@@ -16,12 +16,12 @@ import { _clearEntry, _clearFragment, _getAnimatedEntries, _reverseTransitions, 
 import { profile } from '../../profiling';
 import { android as androidUtils } from '../../utils/native-helper';
 import type { ExpandedEntry } from './fragment.transitions.android';
-import { ensureFragmentClass, fragmentClass } from './fragment.android';
+import { ensureFragmentClass, fragmentClass } from './fragment';
 import { FragmentCallbacksImplementation } from './callbacks/fragment-callbacks';
 import { ActivityCallbacksImplementation } from './callbacks/activity-callbacks';
 
 export * from './frame-common';
-export { setFragmentClass } from './fragment.android';
+export { setFragmentClass } from './fragment';
 
 const INTENT_EXTRA = 'com.tns.activity';
 const FRAMEID = '_frameId';
