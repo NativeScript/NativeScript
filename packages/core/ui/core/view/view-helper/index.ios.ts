@@ -8,6 +8,7 @@ import { ios as iOSUtils, layout } from '../../../../utils';
 import { Trace } from '../../../../trace';
 
 export * from './view-helper-common';
+export const AndroidHelper = 0;
 
 @NativeClass
 class UILayoutViewController extends UIViewController {

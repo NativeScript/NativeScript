@@ -149,6 +149,14 @@ export class ImageSource implements ImageSourceDefinition {
 		return ImageSource.fromFileSync(path);
 	}
 
+	static fromSystemImageSync(name: string): ImageSource {
+		return ImageSource.fromResourceSync(name);
+	}
+
+	static fromSystemImage(name: string): Promise<ImageSource> {
+		return ImageSource.fromResource(name);
+	}
+
 	static fromDataSync(data: any): ImageSource {
 		const bitmap = android.graphics.BitmapFactory.decodeStream(data);
 
@@ -335,7 +343,7 @@ export class ImageSource implements ImageSourceDefinition {
 							reject();
 						}
 					},
-				})
+				}),
 			);
 		});
 	}
@@ -375,7 +383,7 @@ export class ImageSource implements ImageSourceDefinition {
 							reject();
 						}
 					},
-				})
+				}),
 			);
 		});
 	}
@@ -404,7 +412,7 @@ export class ImageSource implements ImageSourceDefinition {
 							reject();
 						}
 					},
-				})
+				}),
 			);
 		});
 	}

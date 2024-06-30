@@ -734,7 +734,7 @@ function normalizeTransformation({ property, value }: Transformation): Transform
 }
 
 function convertTransformValue(property: string, stringValue: string): TransformationValue {
-	/* eslint-disable prefer-const */
+	// eslint-disable-next-line prefer-const
 	let [x, y, z] = stringValue.split(',').map(parseFloat);
 	if (property === 'translate') {
 		y ??= IDENTITY_TRANSFORMATION.translate.y;
@@ -1239,8 +1239,8 @@ const boxShadowProperty = new CssProperty<Style, ShadowCSSValues>({
 						blurRadius: Length.toDevicePixels(newValue.blurRadius, 0),
 						spreadRadius: Length.toDevicePixels(newValue.spreadRadius, 0),
 						color: newValue.color,
-				  }
-				: null
+					}
+				: null,
 		);
 	},
 	valueConverter: (value) => {

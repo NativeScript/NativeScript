@@ -2,6 +2,7 @@ import { Background } from '../styling/background';
 import { SliderBase, valueProperty, minValueProperty, maxValueProperty } from './slider-common';
 import { colorProperty, backgroundColorProperty, backgroundInternalProperty } from '../styling/style-properties';
 import { Color } from '../../color';
+import { AndroidHelper } from '../core/view';
 
 export * from './slider-common';
 
@@ -117,10 +118,11 @@ export class Slider extends SliderBase {
 		return -1;
 	}
 	[colorProperty.setNative](value: number | Color) {
+		const drawable = this.nativeViewProtected.getThumb();
 		if (value instanceof Color) {
-			this.nativeViewProtected.getThumb().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
+			AndroidHelper.setDrawableColor(value.android, drawable);
 		} else {
-			this.nativeViewProtected.getThumb().clearColorFilter();
+			AndroidHelper.clearDrawableColor(drawable);
 		}
 	}
 
@@ -128,10 +130,11 @@ export class Slider extends SliderBase {
 		return -1;
 	}
 	[backgroundColorProperty.setNative](value: number | Color) {
+		const drawable = this.nativeViewProtected.getProgressDrawable();
 		if (value instanceof Color) {
-			this.nativeViewProtected.getProgressDrawable().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
+			AndroidHelper.setDrawableColor(value.android, drawable);
 		} else {
-			this.nativeViewProtected.getProgressDrawable().clearColorFilter();
+			AndroidHelper.clearDrawableColor(drawable);
 		}
 	}
 

@@ -11,7 +11,7 @@ import { parseEnvFlags } from '../cli/parseEnvFlags';
 
 const defaultConfig = path.resolve(
 	__dirname,
-	'../stubs/default.config.stub.js'
+	'../stubs/default.config.stub.js',
 );
 const tag = `[${green('@nativescript/webpack')}]`;
 
@@ -91,7 +91,7 @@ program
 
 		const webpackCompilationCallback = (
 			err: webpack.WebpackError,
-			stats: webpack.Stats
+			stats: webpack.Stats,
 		) => {
 			if (err) {
 				// Do not keep cache anymore
@@ -116,7 +116,7 @@ program
 							chunks: false,
 							colors: true,
 							errorDetails: env.verbose,
-						})
+						}),
 					);
 				}
 
@@ -127,18 +127,18 @@ program
 							'',
 							'|',
 							`|  The build profile has been written to ${yellow(
-								'webpack.stats.json'
+								'webpack.stats.json',
 							)}`,
 							`|  You can analyse the stats at ${green(
-								'https://webpack.github.io/analyse/'
+								'https://webpack.github.io/analyse/',
 							)}`,
 							'|',
 							'',
-						].join('\n')
+						].join('\n'),
 					);
 					fs.writeFileSync(
 						path.join(process.cwd(), 'webpack.stats.json'),
-						JSON.stringify(stats.toJson())
+						JSON.stringify(stats.toJson()),
 					);
 				}
 			}
@@ -148,15 +148,15 @@ program
 			env.stats && console.log('webpack is watching the files...');
 			compiler.watch(
 				configuration.watchOptions ?? {},
-				webpackCompilationCallback
+				webpackCompilationCallback,
 			);
 		} else {
 			compiler.run((err, status) => {
 				compiler.close((err2) =>
 					webpackCompilationCallback(
 						(err || err2) as webpack.WebpackError,
-						status
-					)
+						status,
+					),
 				);
 			});
 		}

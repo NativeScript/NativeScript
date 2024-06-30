@@ -197,6 +197,12 @@ export interface NativeScriptConfig {
 	previewAppSchema?: string;
 	overridePods?: string;
 	/**
+	 * Custom platform project name.
+	 * By default, the platforms/{platform}/{name} is based on the basename of the project directory.
+	 * You can override that to use a name of your choice by setting this.
+	 */
+	projectName?: string;
+	/**
 	 * Custom webpack config path
 	 * The default is `webpack.config.js` in the root however you can use a custom name and place elsewhere.
 	 */

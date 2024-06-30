@@ -54,7 +54,7 @@ export class ProtocolWrapper {
 				JSON.stringify({
 					method: name,
 					params,
-				})
+				}),
 			);
 		} catch (err) {
 			console.error(err);
@@ -74,7 +74,7 @@ export class ProtocolWrapper {
 					JSON.stringify({
 						id,
 						result,
-					})
+					}),
 				);
 			}
 		} catch (err) {

@@ -31,6 +31,29 @@
   color: white;
 }
 
+.general-sibling--type Button ~ Label {
+  background-color: green;
+  color: white;
+}
+
+.general-sibling--class .test-child ~ .test-child-2 {
+  background-color: yellow;
+}
+
+.general-sibling--attribute Button[data="test-child"] ~ Button[data="test-child-2"] {
+  background-color: blueviolet;
+  color: white;
+}
+
+.general-sibling--pseudo-selector Button.ref ~ Button:disabled {
+  background-color: black;
+  color: white;
+}
+
 .sibling-test-label {
   text-align: center;
+}
+
+.sibling-test-label {
+  margin-top: 8;
 }

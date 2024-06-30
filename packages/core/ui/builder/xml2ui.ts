@@ -58,7 +58,7 @@ export namespace xml2ui {
 					(e, p) => {
 						throw this.error(e, p);
 					},
-					true
+					true,
 				);
 
 				if (isString(value)) {
@@ -296,7 +296,10 @@ export namespace xml2ui {
 			return this._value;
 		}
 
-		constructor(private parent: XmlStateConsumer, private templateProperty: TemplateProperty) {}
+		constructor(
+			private parent: XmlStateConsumer,
+			private templateProperty: TemplateProperty,
+		) {}
 
 		public parse(args: xml.ParserEvent): XmlStateConsumer {
 			if (args.eventType === xml.ParserEventType.StartElement && args.elementName === 'template') {
@@ -351,7 +354,12 @@ export namespace xml2ui {
 		private error: ErrorFormatter;
 		private sourceTracker: SourceTracker;
 
-		constructor(context: any, errorFormat: ErrorFormatter, sourceTracker: SourceTracker, private moduleName?: string) {
+		constructor(
+			context: any,
+			errorFormat: ErrorFormatter,
+			sourceTracker: SourceTracker,
+			private moduleName?: string,
+		) {
 			this.context = context;
 			this.error = errorFormat;
 			this.sourceTracker = sourceTracker;

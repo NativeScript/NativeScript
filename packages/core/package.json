@@ -1,6 +1,6 @@
 {
   "name": "@nativescript/core",
-  "version": "8.7.3",
+  "version": "8.8.0",
   "description": "A JavaScript library providing an easy to use api for interacting with iOS and Android platform APIs.",
   "main": "index",
   "types": "index.d.ts",
@@ -57,6 +57,7 @@
     "@nativescript/hook": "~2.0.0",
     "acorn": "^8.7.0",
     "css-tree": "^1.1.2",
+    "css-what": "^6.1.0",
     "emoji-regex": "^10.2.1",
     "reduce-css-calc": "^2.1.7",
     "tslib": "^2.0.0"

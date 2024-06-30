@@ -82,7 +82,7 @@ class UILabelClickHandlerImpl extends NSObject {
 						location: glyphIndex,
 						length: 1,
 					},
-					textContainer
+					textContainer,
 				);
 
 				// Ensure that an actual glyph was tapped
