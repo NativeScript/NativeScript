@@ -1,5 +1,6 @@
 import { profile } from '../profiling';
-import { View, isEmbedded } from '../ui';
+import { View } from '../ui/core/view';
+import { isEmbedded } from '../ui/embedding';
 import { AndroidActivityCallbacks, NavigationEntry } from '../ui/frame/frame-common';
 import type { AndroidApplication as IAndroidApplication } from './application';
 import { ApplicationCommon } from './application-common';
