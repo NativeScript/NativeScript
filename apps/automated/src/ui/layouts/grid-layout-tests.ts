@@ -366,6 +366,21 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 		TKUnit.assertTrue(this.testView.getMeasuredWidth() < platform.Screen.mainScreen.widthPixels);
 	}
 
+	private getGridLayoutRowActualLength(view: GridLayout, index: number) {
+		if (__ANDROID__) {
+			return Math.round(layoutHelper.dp(view.nativeViewProtected.getRowActualLength(index)));
+		} else {
+			return view.getRows()[index].actualLength;
+		}
+	}
+	private getGridLayoutColumnActualLength(view: GridLayout, index: number) {
+		if (__ANDROID__) {
+			return Math.round(layoutHelper.dp(view.nativeViewProtected.getColumnActualLength(index)));
+		} else {
+			return view.getColumns()[index].actualLength;
+		}
+	}
+
 	public test_measuredWidth_when_not_stretched_two_columns() {
 		this.testView.horizontalAlignment = 'center';
 		this.testView.addColumn(new ItemSpec(layoutHelper.dp(80), 'pixel'));
@@ -379,9 +394,8 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 
 		this.waitUntilTestElementLayoutIsValid();
 
-		var cols = this.testView.getColumns();
-		TKUnit.assertAreClose(cols[0].actualLength, Math.round(layoutHelper.dp(80)), DELTA, 'column 0');
-		TKUnit.assertAreClose(cols[1].actualLength, Math.round(layoutHelper.dp(20)), DELTA, 'column 1');
+		TKUnit.assertAreClose(this.getGridLayoutColumnActualLength(this.testView, 0), Math.round(layoutHelper.dp(80)), DELTA, 'column 0');
+		TKUnit.assertAreClose(this.getGridLayoutColumnActualLength(this.testView, 1), Math.round(layoutHelper.dp(20)), DELTA, 'column 1');
 		TKUnit.assertAreClose(this.testView.getMeasuredWidth(), 100, DELTA, 'measured width');
 	}
 
@@ -408,9 +422,9 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 		this.waitUntilTestElementLayoutIsValid();
 
 		var cols = this.testView.getColumns();
-		TKUnit.assertAreClose(cols[0].actualLength, Math.round(layoutHelper.dp(80)), DELTA, 'column 0');
-		TKUnit.assertAreClose(cols[1].actualLength, Math.round(layoutHelper.dp(40)), DELTA, 'column 1');
-		TKUnit.assertAreClose(cols[2].actualLength, Math.round(layoutHelper.dp(60)), DELTA, 'column 2');
+		TKUnit.assertAreClose(this.getGridLayoutColumnActualLength(this.testView, 0), Math.round(layoutHelper.dp(80)), DELTA, 'column 0');
+		TKUnit.assertAreClose(this.getGridLayoutColumnActualLength(this.testView, 1), Math.round(layoutHelper.dp(40)), DELTA, 'column 1');
+		TKUnit.assertAreClose(this.getGridLayoutColumnActualLength(this.testView, 2), Math.round(layoutHelper.dp(60)), DELTA, 'column 2');
 		TKUnit.assertAreClose(this.testView.getMeasuredWidth(), 180, DELTA, 'measured width');
 	}
 
@@ -500,7 +514,7 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 			for (var c = 0; c < 4; c++) {
 				var btn = <layoutHelper.MyButton>this.testView.getChildAt(i++);
 				if (cols[c].isAbsolute) {
-					width += layoutHelper.dip(cols[c].actualLength);
+					width += layoutHelper.dip(this.getGridLayoutColumnActualLength(this.testView, c));
 				} else {
 					width += btn.getMeasuredWidth();
 				}
@@ -511,7 +525,7 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 			maxWidth = Math.max(maxWidth, width);
 
 			if (rows[r].isAbsolute) {
-				maxHeight += layoutHelper.dip(rows[r].actualLength);
+				maxHeight += layoutHelper.dip(this.getGridLayoutRowActualLength(this.testView, r));
 			} else {
 				maxHeight += height;
 			}
@@ -526,21 +540,19 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 	public test_columnsActualWidth_isCorrect() {
 		this.prepareGridLayout(true);
 
-		var cols = this.testView.getColumns();
-		TKUnit.assertEqual(cols[0].actualLength, Math.round(layoutHelper.dp(50)), 'Star column should be 50px width');
-		TKUnit.assertEqual(cols[1].actualLength, Math.round(layoutHelper.dp(100)), '2*Star column should be 100px width');
-		TKUnit.assertEqual(cols[2].actualLength, Math.round(layoutHelper.dp(50)), 'Absolute column should be 50px width');
-		TKUnit.assertEqual(cols[3].actualLength, Math.round(layoutHelper.dp(100)), 'Auto column should be 100px width');
+		TKUnit.assertEqual(this.getGridLayoutColumnActualLength(this.testView, 0), Math.round(layoutHelper.dp(50)), 'Star column should be 50px width');
+		TKUnit.assertEqual(this.getGridLayoutColumnActualLength(this.testView, 1), Math.round(layoutHelper.dp(100)), '2*Star column should be 100px width');
+		TKUnit.assertEqual(this.getGridLayoutColumnActualLength(this.testView, 2), Math.round(layoutHelper.dp(50)), 'Absolute column should be 50px width');
+		TKUnit.assertEqual(this.getGridLayoutColumnActualLength(this.testView, 3), Math.round(layoutHelper.dp(100)), 'Auto column should be 100px width');
 	}
 
 	public test_rowsActualHeight_isCorrect() {
 		this.prepareGridLayout(true);
 
-		var rows = this.testView.getRows();
-		TKUnit.assertEqual(rows[0].actualLength, Math.round(layoutHelper.dp(50)), 'Star row should be 50px width');
-		TKUnit.assertEqual(rows[1].actualLength, Math.round(layoutHelper.dp(100)), '2*Star row should be 100px width');
-		TKUnit.assertEqual(rows[2].actualLength, Math.round(layoutHelper.dp(50)), 'Absolute row should be 50px width');
-		TKUnit.assertEqual(rows[3].actualLength, Math.round(layoutHelper.dp(100)), 'Auto row should be 100px width');
+		TKUnit.assertEqual(this.getGridLayoutRowActualLength(this.testView, 0), Math.round(layoutHelper.dp(50)), 'Star row should be 50px width');
+		TKUnit.assertEqual(this.getGridLayoutRowActualLength(this.testView, 1), Math.round(layoutHelper.dp(100)), '2*Star row should be 100px width');
+		TKUnit.assertEqual(this.getGridLayoutRowActualLength(this.testView, 2), Math.round(layoutHelper.dp(50)), 'Absolute row should be 50px width');
+		TKUnit.assertEqual(this.getGridLayoutRowActualLength(this.testView, 3), Math.round(layoutHelper.dp(100)), 'Auto row should be 100px width');
 	}
 
 	public test_Measure_and_Layout_Children_withCorrect_size() {
@@ -591,12 +603,10 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 
 		this.waitUntilTestElementLayoutIsValid();
 
-		var cols = this.testView.getColumns();
-
-		TKUnit.assertAreClose(cols[0].actualLength, Math.round(layoutHelper.dp(28)), DELTA, 'Column[0] actual length should be 28');
-		TKUnit.assertAreClose(cols[1].actualLength, Math.round(layoutHelper.dp(27)), DELTA, 'Column[1] actual length should be 27');
-		TKUnit.assertAreClose(cols[2].actualLength, Math.round(layoutHelper.dp(28)), DELTA, 'Column[2] actual length should be 28');
-		TKUnit.assertAreClose(cols[3].actualLength, Math.round(layoutHelper.dp(27)), DELTA, 'Column[3] actual length should be 27');
+		TKUnit.assertAreClose(this.getGridLayoutColumnActualLength(this.testView, 0), Math.round(layoutHelper.dp(28)), DELTA, 'Column[0] actual length should be 28');
+		TKUnit.assertAreClose(this.getGridLayoutColumnActualLength(this.testView, 1), Math.round(layoutHelper.dp(27)), DELTA, 'Column[1] actual length should be 27');
+		TKUnit.assertAreClose(this.getGridLayoutColumnActualLength(this.testView, 2), Math.round(layoutHelper.dp(28)), DELTA, 'Column[2] actual length should be 28');
+		TKUnit.assertAreClose(this.getGridLayoutColumnActualLength(this.testView, 3), Math.round(layoutHelper.dp(27)), DELTA, 'Column[3] actual length should be 27');
 	}
 
 	public test_margins_and_verticalAlignment_center() {
@@ -815,15 +825,13 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 		GridLayout.setRowSpan(btn, 3);
 		this.waitUntilTestElementLayoutIsValid();
 
-		var cols = grid.getColumns();
-		TKUnit.assertAreClose(cols[0].actualLength, layoutHelper.dp(33), DELTA, 'Column[0] actual length should be 67');
-		TKUnit.assertAreClose(cols[1].actualLength, layoutHelper.dp(100), DELTA, 'Column[1] actual length should be 100');
-		TKUnit.assertAreClose(cols[2].actualLength, layoutHelper.dp(67), DELTA, 'Column[2] actual length should be 133');
+		TKUnit.assertAreClose(this.getGridLayoutColumnActualLength(grid, 0), layoutHelper.dp(33), DELTA, 'Column[0] actual length should be 67');
+		TKUnit.assertAreClose(this.getGridLayoutColumnActualLength(grid, 1), layoutHelper.dp(100), DELTA, 'Column[1] actual length should be 100');
+		TKUnit.assertAreClose(this.getGridLayoutColumnActualLength(grid, 2), layoutHelper.dp(67), DELTA, 'Column[2] actual length should be 133');
 
-		var rows = grid.getRows();
-		TKUnit.assertAreClose(rows[0].actualLength, layoutHelper.dp(67), DELTA, 'Row[0] actual length should be 133');
-		TKUnit.assertAreClose(rows[1].actualLength, layoutHelper.dp(100), DELTA, 'Row[1] actual length should be 100');
-		TKUnit.assertAreClose(rows[2].actualLength, layoutHelper.dp(133), DELTA, 'Row[2] actual length should be 267');
+		TKUnit.assertAreClose(this.getGridLayoutRowActualLength(grid, 0), layoutHelper.dp(67), DELTA, 'Row[0] actual length should be 133');
+		TKUnit.assertAreClose(this.getGridLayoutRowActualLength(grid, 1), layoutHelper.dp(100), DELTA, 'Row[1] actual length should be 100');
+		TKUnit.assertAreClose(this.getGridLayoutRowActualLength(grid, 2), layoutHelper.dp(133), DELTA, 'Row[2] actual length should be 267');
 	}
 }
 

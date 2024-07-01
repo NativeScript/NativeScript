@@ -291,6 +291,16 @@ public class GridLayout extends LayoutBase {
 		}
 	}
 
+	/* only used for N tests */
+	public float getRowActualLength(int index) {
+		return this.helper.rows.get(index).rowOrColumn._actualLength;
+	}
+
+	/* only used for N tests */
+	public float getColumnActualLength(int index) {
+		return this.helper.columns.get(index).rowOrColumn._actualLength;
+	}
+
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 		CommonLayoutParams.adjustChildrenLayoutParams(this, widthMeasureSpec, heightMeasureSpec);

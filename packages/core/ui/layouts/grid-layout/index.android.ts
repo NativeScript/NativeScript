@@ -65,12 +65,12 @@ export class GridLayout extends GridLayoutBase {
 
 	public _onRowAdded(itemSpec: ItemSpec) {
 		if (this.nativeViewProtected) {
-			this.nativeViewProtected.addRowsFromJSON(JSON.stringify(itemSpec.toJSON()));
+			this.nativeViewProtected.addRowsFromJSON(JSON.stringify([itemSpec.toJSON()]));
 		}
 	}
 
 	public addRows(itemSpecs: ItemSpec[]) {
-		let jsonArray = [];
+		const jsonArray = [];
 		const nativeView = this.nativeViewProtected;
 		const initialized = !!nativeView;
 		for (let index = 0; index < itemSpecs.length; index++) {
@@ -86,7 +86,7 @@ export class GridLayout extends GridLayoutBase {
 	}
 
 	public addColumns(itemSpecs: ItemSpec[]) {
-		let jsonArray = [];
+		const jsonArray = [];
 		const nativeView = this.nativeViewProtected;
 		const initialized = !!nativeView;
 		for (let index = 0; index < itemSpecs.length; index++) {
@@ -103,7 +103,7 @@ export class GridLayout extends GridLayoutBase {
 
 	public _onColumnAdded(itemSpec: ItemSpec) {
 		if (this.nativeViewProtected) {
-			this.nativeViewProtected.addColumnsFromJSON(JSON.stringify(itemSpec.toJSON()));
+			this.nativeViewProtected.addColumnsFromJSON(JSON.stringify([itemSpec.toJSON()]));
 		}
 	}
 

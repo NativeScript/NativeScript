@@ -308,6 +308,8 @@
                 public addRowsFromJSON(value: string);
                 public addColumnsFromJSON(value: string);
                 public addRowsAndColumnsFromJSON(rows: string, columns: string);
+                public getRowActualLength(index: number): number; // for testing purpose
+                public getColumnActualLength(index: number): number; // for testing purpose
             }
 
             export class FlexboxLayout extends LayoutBase {
