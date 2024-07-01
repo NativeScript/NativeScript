@@ -232,7 +232,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	}
 
 	get rootController() {
-		return this.window.rootViewController;
+		return this.window?.rootViewController;
 	}
 
 	get nativeApp() {

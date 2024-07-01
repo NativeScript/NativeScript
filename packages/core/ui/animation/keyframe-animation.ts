@@ -10,9 +10,12 @@ import { unsetValue } from '../core/properties';
 import { Animation } from '.';
 import { backgroundColorProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, rotateProperty, opacityProperty, rotateXProperty, rotateYProperty, widthProperty, heightProperty } from '../styling/style-properties';
 
-export class Keyframes {
+export interface Keyframes {
 	name: string;
 	keyframes: Array<UnparsedKeyframe>;
+	tag?: string | number;
+	scopedTag?: string;
+	mediaQueryString?: string;
 }
 
 export class UnparsedKeyframe {
@@ -68,6 +71,11 @@ export class KeyframeAnimation {
 	private _target: View;
 
 	public static keyframeAnimationFromInfo(info: KeyframeAnimationInfo): KeyframeAnimation {
+		if (!info?.keyframes?.length) {
+			Trace.write(`No keyframes found for animation '${info.name}'.`, Trace.categories.Animation, Trace.messageType.warn);
+			return null;
+		}
+
 		const length = info.keyframes.length;
 		const animations = new Array<Keyframe>();
 		let startDuration = 0;
@@ -244,7 +252,7 @@ export class KeyframeAnimation {
 					},
 					(error: any) => {
 						Trace.write(typeof error === 'string' ? error : error.message, Trace.categories.Animation, Trace.messageType.warn);
-					}
+					},
 				)
 				.catch((error: any) => {
 					Trace.write(typeof error === 'string' ? error : error.message, Trace.categories.Animation, Trace.messageType.warn);

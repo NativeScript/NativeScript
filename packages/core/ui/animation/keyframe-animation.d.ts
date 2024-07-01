@@ -21,6 +21,9 @@ interface Keyframe {
 export interface Keyframes {
 	name: string;
 	keyframes: Array<UnparsedKeyframe>;
+	tag?: string | number;
+	scopedTag?: string;
+	mediaQueryString?: string;
 }
 
 export interface UnparsedKeyframe {
