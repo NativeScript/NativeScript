@@ -1,7 +1,7 @@
 import * as TKUnit from '../../tk-unit';
 import { StyleScope } from '@nativescript/core/ui/styling/style-scope';
 import * as keyframeAnimation from '@nativescript/core/ui/animation/keyframe-animation';
-import { CoreTypes } from '@nativescript/core';
+import { CoreTypes, Screen } from '@nativescript/core';
 import * as helper from '../../ui-helper';
 import * as stackModule from '@nativescript/core/ui/layouts/stack-layout';
 import * as labelModule from '@nativescript/core/ui/label';
@@ -539,6 +539,35 @@ export function test_LoadAnimationProgrammatically() {
 		TKUnit.assertEqual(animation.keyframes[1].declarations[0].property, 'opacity');
 		TKUnit.assertEqual(animation.keyframes[1].declarations[0].value, 0);
 	});
+}
+
+export function test_LoadMatchingMediaQueryKeyframeAnimation() {
+	const animation = createAnimationFromCSS(
+		`.a { animation-name: mq1; }
+		@media only screen and (max-width: ${Screen.mainScreen.widthDIPs}) {
+			@keyframes mq1 {
+				from { opacity: 0; }
+				to { opacity: 1; }
+			}
+		}`,
+		'a',
+	);
+	TKUnit.assertEqual(animation.keyframes.length, 2);
+	TKUnit.assertEqual(animation.keyframes[1].declarations[0].value, 1);
+}
+
+export function test_IgnoreNonMatchingMediaQueryKeyframe() {
+	const animation = createAnimationFromCSS(
+		`.a { animation-name: mq1; }
+		@media only screen and (max-width: ${Screen.mainScreen.widthDIPs - 1}) {
+			@keyframes mq1 {
+				from { opacity: 0; }
+				to { opacity: 1; }
+			}
+		}`,
+		'a',
+	);
+	TKUnit.assertEqual(animation.keyframes, null);
 }
 
 export function test_ExecuteCSSAnimation() {
