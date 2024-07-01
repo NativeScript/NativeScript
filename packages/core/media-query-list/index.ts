@@ -53,7 +53,7 @@ function checkIfMediaQueryMatches(mediaQueryString: string): boolean {
 		});
 	} catch (err) {
 		matches = false;
-		Trace.write(err, Trace.categories.Style, Trace.messageType.error);
+		Trace.write(err, Trace.categories.MediaQuery, Trace.messageType.error);
 	}
 
 	return matches;
