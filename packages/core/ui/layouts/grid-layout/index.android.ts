@@ -20,32 +20,26 @@ View.prototype[columnProperty.setNative] = makeNativeSetter<number>((lp, value) 
 View.prototype[rowSpanProperty.setNative] = makeNativeSetter<number>((lp, value) => (lp.rowSpan = value));
 View.prototype[columnSpanProperty.setNative] = makeNativeSetter<number>((lp, value) => (lp.columnSpan = value));
 
-function createNativeSpec(itemSpec: ItemSpec): org.nativescript.widgets.ItemSpec {
-	switch (itemSpec.gridUnitType) {
+ItemSpecBase.prototype.toJSON = function () {
+	let result;
+	switch (this.gridUnitType) {
 		case GridUnitType.AUTO:
-			return new org.nativescript.widgets.ItemSpec(itemSpec.value, org.nativescript.widgets.GridUnitType.auto);
-
-		case GridUnitType.STAR:
-			return new org.nativescript.widgets.ItemSpec(itemSpec.value, org.nativescript.widgets.GridUnitType.star);
-
+			result = { type: 0 /* org.nativescript.widgets.GridUnitType.auto */, value: this.value };
+			break;
 		case GridUnitType.PIXEL:
-			return new org.nativescript.widgets.ItemSpec(itemSpec.value * layout.getDisplayDensity(), org.nativescript.widgets.GridUnitType.pixel);
-
+			result = { type: 1 /* org.nativescript.widgets.GridUnitType.pixel */, value: this.value * layout.getDisplayDensity() };
+			break;
+		case GridUnitType.STAR:
+			result = { type: 2 /* org.nativescript.widgets.GridUnitType.star */, value: this.value };
+			break;
 		default:
-			throw new Error('Invalid gridUnitType: ' + itemSpec.gridUnitType);
+			return null;
 	}
-}
+	return result;
+};
 
-export class ItemSpec extends ItemSpecBase {
-	nativeSpec: org.nativescript.widgets.ItemSpec;
-
-	public get actualLength(): number {
-		if (this.nativeSpec) {
-			return Math.round(this.nativeSpec.getActualLength() / layout.getDisplayDensity());
-		}
-
-		return 0;
-	}
+interface ItemSpec extends ItemSpecBase {
+	toJSON(): { value: number; type: number };
 }
 
 export class GridLayout extends GridLayoutBase {
@@ -58,54 +52,86 @@ export class GridLayout extends GridLayoutBase {
 	public initNativeView(): void {
 		super.initNativeView();
 		// Update native GridLayout
-		this.rowsInternal.forEach((itemSpec: ItemSpec, index, rows) => {
-			this._onRowAdded(itemSpec);
-		}, this);
-		this.columnsInternal.forEach((itemSpec: ItemSpec, index, rows) => {
-			this._onColumnAdded(itemSpec);
-		}, this);
+		const jsonRows = JSON.stringify(this.rowsInternal.map((itemSpec: ItemSpec) => itemSpec.toJSON()).filter((j) => !!j));
+		const jsonColumns = JSON.stringify(this.columnsInternal.map((itemSpec: ItemSpec) => itemSpec.toJSON()).filter((j) => !!j));
+		this.nativeViewProtected.addRowsAndColumnsFromJSON(jsonRows, jsonColumns);
 	}
 
 	public resetNativeView() {
 		// Update native GridLayout
-		for (let i = this.rowsInternal.length; i--; i >= 0) {
-			const itemSpec = <ItemSpec>this.rowsInternal[i];
-			this._onRowRemoved(itemSpec, i);
-		}
-
-		for (let i = this.columnsInternal.length; i--; i >= 0) {
-			const itemSpec = <ItemSpec>this.columnsInternal[i];
-			this._onColumnRemoved(itemSpec, i);
-		}
-
+		this.nativeViewProtected.reset();
 		super.resetNativeView();
 	}
 
 	public _onRowAdded(itemSpec: ItemSpec) {
 		if (this.nativeViewProtected) {
-			const nativeSpec = createNativeSpec(itemSpec);
-			itemSpec.nativeSpec = nativeSpec;
-			this.nativeViewProtected.addRow(nativeSpec);
+			this.nativeViewProtected.addRowsFromJSON(JSON.stringify([itemSpec.toJSON()]));
+		}
+	}
+
+	public addRows(itemSpecs: ItemSpec[]) {
+		const jsonArray = [];
+		const nativeView = this.nativeViewProtected;
+		const initialized = !!nativeView;
+		for (let index = 0; index < itemSpecs.length; index++) {
+			const itemSpec = itemSpecs[index];
+			this._addRow(itemSpec);
+			if (initialized) {
+				jsonArray.push(itemSpec.toJSON());
+			}
+		}
+		if (initialized) {
+			nativeView.addRowsFromJSON(JSON.stringify(jsonArray.filter((s) => !!s)));
+		}
+	}
+
+	public addColumns(itemSpecs: ItemSpec[]) {
+		const jsonArray = [];
+		const nativeView = this.nativeViewProtected;
+		const initialized = !!nativeView;
+		for (let index = 0; index < itemSpecs.length; index++) {
+			const itemSpec = itemSpecs[index];
+			this._addColumn(itemSpec);
+			if (initialized) {
+				jsonArray.push(itemSpec.toJSON());
+			}
+		}
+		if (initialized) {
+			nativeView.addColumnsFromJSON(JSON.stringify(jsonArray.filter((s) => !!s)));
 		}
 	}
 
 	public _onColumnAdded(itemSpec: ItemSpec) {
 		if (this.nativeViewProtected) {
-			const nativeSpec = createNativeSpec(itemSpec);
-			itemSpec.nativeSpec = nativeSpec;
-			this.nativeViewProtected.addColumn(nativeSpec);
+			this.nativeViewProtected.addColumnsFromJSON(JSON.stringify([itemSpec.toJSON()]));
+		}
+	}
+
+	public removeColumns() {
+		if (this._cols.length) {
+			if (this.nativeViewProtected) {
+				this.nativeViewProtected.clearColumns();
+			}
+			this._cols.length = 0;
+		}
+	}
+
+	public removeRows() {
+		if (this._rows.length) {
+			if (this.nativeViewProtected) {
+				this.nativeViewProtected.clearRows();
+			}
+			this._rows.length = 0;
 		}
 	}
 
 	public _onRowRemoved(itemSpec: ItemSpec, index: number) {
-		itemSpec.nativeSpec = null;
 		if (this.nativeViewProtected) {
 			this.nativeViewProtected.removeRowAt(index);
 		}
 	}
 
 	public _onColumnRemoved(itemSpec: ItemSpec, index: number) {
-		itemSpec.nativeSpec = null;
 		if (this.nativeViewProtected) {
 			this.nativeViewProtected.removeColumnAt(index);
 		}
