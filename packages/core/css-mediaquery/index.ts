@@ -6,6 +6,7 @@ See the accompanying LICENSE file for terms.
 
 // https://github.com/ericf/css-mediaquery
 
+import { Trace } from '../trace';
 import { Length } from '../ui/styling/style-properties';
 
 // -----------------------------------------------------------------------------
@@ -82,6 +83,7 @@ export function matchQuery(mediaQuery: string, values: MediaQueryEnvironmentPara
 					let numVal: number;
 
 					if (typeof value !== 'number') {
+						Trace.write(`Unknown CSS media query feature property: '${feature.property}' on '${query}'`, Trace.categories.MediaQuery, Trace.messageType.warn);
 						return false;
 					}
 
@@ -94,7 +96,8 @@ export function matchQuery(mediaQuery: string, values: MediaQueryEnvironmentPara
 							break;
 						}
 						default:
-							throw new SyntaxError(`Invalid CSS media query feature property: '${feature.property}' on '${query}'`);
+							Trace.write(`Unknown CSS media query feature property: '${feature.property}' on '${query}'`, Trace.categories.MediaQuery, Trace.messageType.warn);
+							break;
 					}
 
 					switch (feature.modifier) {
