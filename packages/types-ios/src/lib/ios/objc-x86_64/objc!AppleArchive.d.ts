@@ -31,7 +31,7 @@ declare function AAArchiveStreamClose(s: interop.Pointer | interop.Reference<any
 /**
  * @since 14.0
  */
-declare function AAArchiveStreamProcess(istream: interop.Pointer | interop.Reference<any>, ostream: interop.Pointer | interop.Reference<any>, msg_data: interop.Pointer | interop.Reference<any>, msg_proc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: string, p4: interop.Pointer | interop.Reference<any>) => number>, flags: number, n_threads: number): number;
+declare function AAArchiveStreamProcess(istream: interop.Pointer | interop.Reference<any>, ostream: interop.Pointer | interop.Reference<any>, msg_data: interop.Pointer | interop.Reference<any>, msg_proc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>) => number>, flags: number, n_threads: number): number;
 
 /**
  * @since 14.0
@@ -46,7 +46,7 @@ declare function AAArchiveStreamWriteHeader(s: interop.Pointer | interop.Referen
 /**
  * @since 14.0
  */
-declare function AAArchiveStreamWritePathList(s: interop.Pointer | interop.Reference<any>, path_list: interop.Pointer | interop.Reference<any>, key_set: interop.Pointer | interop.Reference<any>, dir: string | interop.Pointer | interop.Reference<any>, msg_data: interop.Pointer | interop.Reference<any>, msg_proc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: string, p4: interop.Pointer | interop.Reference<any>) => number>, flags: number, n_threads: number): number;
+declare function AAArchiveStreamWritePathList(s: interop.Pointer | interop.Reference<any>, path_list: interop.Pointer | interop.Reference<any>, key_set: interop.Pointer | interop.Reference<any>, dir: string | interop.Pointer | interop.Reference<any>, msg_data: interop.Pointer | interop.Reference<any>, msg_proc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>) => number>, flags: number, n_threads: number): number;
 
 /**
  * @since 14.0
@@ -116,7 +116,7 @@ declare function AACompressionOutputStreamOpenExisting(compressed_stream: intero
 /**
  * @since 14.0
  */
-declare function AAConvertArchiveOutputStreamOpen(stream: interop.Pointer | interop.Reference<any>, insert_key_set: interop.Pointer | interop.Reference<any>, remove_key_set: interop.Pointer | interop.Reference<any>, msg_data: interop.Pointer | interop.Reference<any>, msg_proc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: string, p4: interop.Pointer | interop.Reference<any>) => number>, flags: number, n_threads: number): interop.Pointer | interop.Reference<any>;
+declare function AAConvertArchiveOutputStreamOpen(stream: interop.Pointer | interop.Reference<any>, insert_key_set: interop.Pointer | interop.Reference<any>, remove_key_set: interop.Pointer | interop.Reference<any>, msg_data: interop.Pointer | interop.Reference<any>, msg_proc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>) => number>, flags: number, n_threads: number): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 14.0
@@ -196,7 +196,7 @@ declare function AACustomByteStreamSetWriteProc(s: interop.Pointer | interop.Ref
 /**
  * @since 14.0
  */
-declare function AADecodeArchiveInputStreamOpen(stream: interop.Pointer | interop.Reference<any>, msg_data: interop.Pointer | interop.Reference<any>, msg_proc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: string, p4: interop.Pointer | interop.Reference<any>) => number>, flags: number, n_threads: number): interop.Pointer | interop.Reference<any>;
+declare function AADecodeArchiveInputStreamOpen(stream: interop.Pointer | interop.Reference<any>, msg_data: interop.Pointer | interop.Reference<any>, msg_proc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>) => number>, flags: number, n_threads: number): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 14.0
@@ -211,7 +211,7 @@ declare function AADecompressionRandomAccessInputStreamOpen(compressed_stream: i
 /**
  * @since 14.0
  */
-declare function AAEncodeArchiveOutputStreamOpen(stream: interop.Pointer | interop.Reference<any>, msg_data: interop.Pointer | interop.Reference<any>, msg_proc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: string, p4: interop.Pointer | interop.Reference<any>) => number>, flags: number, n_threads: number): interop.Pointer | interop.Reference<any>;
+declare function AAEncodeArchiveOutputStreamOpen(stream: interop.Pointer | interop.Reference<any>, msg_data: interop.Pointer | interop.Reference<any>, msg_proc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>) => number>, flags: number, n_threads: number): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 14.0
@@ -251,7 +251,7 @@ declare function AAEntryACLBlobDestroy(acl: interop.Pointer | interop.Reference<
 /**
  * @since 14.0
  */
-declare function AAEntryACLBlobGetEncodedData(acl: interop.Pointer | interop.Reference<any>): string;
+declare function AAEntryACLBlobGetEncodedData(acl: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 14.0
@@ -372,7 +372,7 @@ declare function AAEntryXATBlobDestroy(xat: interop.Pointer | interop.Reference<
 /**
  * @since 14.0
  */
-declare function AAEntryXATBlobGetEncodedData(xat: interop.Pointer | interop.Reference<any>): string;
+declare function AAEntryXATBlobGetEncodedData(xat: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 14.0
@@ -402,7 +402,7 @@ declare function AAEntryXATBlobSetEntry(xat: interop.Pointer | interop.Reference
 /**
  * @since 14.0
  */
-declare function AAExtractArchiveOutputStreamOpen(dir: string | interop.Pointer | interop.Reference<any>, msg_data: interop.Pointer | interop.Reference<any>, msg_proc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: string, p4: interop.Pointer | interop.Reference<any>) => number>, flags: number, n_threads: number): interop.Pointer | interop.Reference<any>;
+declare function AAExtractArchiveOutputStreamOpen(dir: string | interop.Pointer | interop.Reference<any>, msg_data: interop.Pointer | interop.Reference<any>, msg_proc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>) => number>, flags: number, n_threads: number): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 14.0
@@ -563,7 +563,7 @@ declare function AAHeaderDestroy(header: interop.Pointer | interop.Reference<any
 /**
  * @since 14.0
  */
-declare function AAHeaderGetEncodedData(header: interop.Pointer | interop.Reference<any>): string;
+declare function AAHeaderGetEncodedData(header: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 14.0
@@ -618,7 +618,7 @@ declare function AAHeaderRemoveField(header: interop.Pointer | interop.Reference
 /**
  * @since 14.0
  */
-declare function AAPathListCreateWithDirectoryContents(dir: string | interop.Pointer | interop.Reference<any>, path: string | interop.Pointer | interop.Reference<any>, msg_data: interop.Pointer | interop.Reference<any>, msg_proc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: string, p4: interop.Pointer | interop.Reference<any>) => number>, flags: number, n_threads: number): interop.Pointer | interop.Reference<any>;
+declare function AAPathListCreateWithDirectoryContents(dir: string | interop.Pointer | interop.Reference<any>, path: string | interop.Pointer | interop.Reference<any>, msg_data: interop.Pointer | interop.Reference<any>, msg_proc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>) => number>, flags: number, n_threads: number): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 15.0
@@ -688,7 +688,7 @@ declare function AEAAuthDataDestroy(auth_data: interop.Pointer | interop.Referen
 /**
  * @since 14.5
  */
-declare function AEAAuthDataGetEncodedData(auth_data: interop.Pointer | interop.Reference<any>): string;
+declare function AEAAuthDataGetEncodedData(auth_data: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 14.5

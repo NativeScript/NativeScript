@@ -7,9 +7,9 @@ declare const enum DYLD_BOOL {
 }
 
 interface NSLinkEditErrorHandlers {
-	undefined: interop.FunctionReference<(p1: string) => void>;
+	undefined: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
 	multiple: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<any>>;
-	linkEdit: interop.FunctionReference<(p1: NSLinkEditErrors, p2: number, p3: string, p4: string) => void>;
+	linkEdit: interop.FunctionReference<(p1: NSLinkEditErrors, p2: number, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>) => void>;
 }
 declare var NSLinkEditErrorHandlers: interop.StructType<NSLinkEditErrorHandlers>;
 
@@ -75,11 +75,11 @@ declare function NSVersionOfRunTimeLibrary(libraryName: string | interop.Pointer
  * @deprecated 16.0
  */
 interface NXArchInfo {
-	name: string;
+	name: interop.Pointer | interop.Reference<any>;
 	cputype: number;
 	cpusubtype: number;
 	byteorder: NXByteOrder;
-	description: string;
+	description: interop.Pointer | interop.Reference<any>;
 }
 declare var NXArchInfo: interop.StructType<NXArchInfo>;
 
@@ -286,7 +286,7 @@ declare function _dyld_get_image_header(image_index: number): interop.Pointer | 
 /**
  * @since 2.0
  */
-declare function _dyld_get_image_name(image_index: number): string;
+declare function _dyld_get_image_name(image_index: number): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 2.0
@@ -551,27 +551,27 @@ declare function getsectbynamefromheaderwithswap_64(mhp: interop.Pointer | inter
  * @since 1.0
  * @deprecated 16.0
  */
-declare function getsectdata(segname: string | interop.Pointer | interop.Reference<any>, sectname: string | interop.Pointer | interop.Reference<any>, size: interop.Pointer | interop.Reference<number>): string;
+declare function getsectdata(segname: string | interop.Pointer | interop.Reference<any>, sectname: string | interop.Pointer | interop.Reference<any>, size: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function getsectdatafromFramework(FrameworkName: string | interop.Pointer | interop.Reference<any>, segname: string | interop.Pointer | interop.Reference<any>, sectname: string | interop.Pointer | interop.Reference<any>, size: interop.Pointer | interop.Reference<number>): string;
+declare function getsectdatafromFramework(FrameworkName: string | interop.Pointer | interop.Reference<any>, segname: string | interop.Pointer | interop.Reference<any>, sectname: string | interop.Pointer | interop.Reference<any>, size: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function getsectdatafromheader(mhp: interop.Pointer | interop.Reference<mach_header>, segname: string | interop.Pointer | interop.Reference<any>, sectname: string | interop.Pointer | interop.Reference<any>, size: interop.Pointer | interop.Reference<number>): string;
+declare function getsectdatafromheader(mhp: interop.Pointer | interop.Reference<mach_header>, segname: string | interop.Pointer | interop.Reference<any>, sectname: string | interop.Pointer | interop.Reference<any>, size: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 1.0
  * @deprecated 16.0
  */
-declare function getsectdatafromheader_64(mhp: interop.Pointer | interop.Reference<mach_header_64>, segname: string | interop.Pointer | interop.Reference<any>, sectname: string | interop.Pointer | interop.Reference<any>, size: interop.Pointer | interop.Reference<number>): string;
+declare function getsectdatafromheader_64(mhp: interop.Pointer | interop.Reference<mach_header_64>, segname: string | interop.Pointer | interop.Reference<any>, sectname: string | interop.Pointer | interop.Reference<any>, size: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
 
-declare function getsectiondata(mhp: interop.Pointer | interop.Reference<mach_header_64>, segname: string | interop.Pointer | interop.Reference<any>, sectname: string | interop.Pointer | interop.Reference<any>, size: interop.Pointer | interop.Reference<number>): string;
+declare function getsectiondata(mhp: interop.Pointer | interop.Reference<mach_header_64>, segname: string | interop.Pointer | interop.Reference<any>, sectname: string | interop.Pointer | interop.Reference<any>, size: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 1.0
@@ -579,7 +579,7 @@ declare function getsectiondata(mhp: interop.Pointer | interop.Reference<mach_he
  */
 declare function getsegbyname(segname: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<segment_command_64>;
 
-declare function getsegmentdata(mhp: interop.Pointer | interop.Reference<mach_header_64>, segname: string | interop.Pointer | interop.Reference<any>, size: interop.Pointer | interop.Reference<number>): string;
+declare function getsegmentdata(mhp: interop.Pointer | interop.Reference<mach_header_64>, segname: string | interop.Pointer | interop.Reference<any>, size: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
 
 interface ident_command {
 	cmd: number;
@@ -634,12 +634,12 @@ declare var mach_header_64: interop.StructType<mach_header_64>;
 /**
  * @since 16.0
  */
-declare function macho_arch_name_for_cpu_type(type: number, subtype: number): string;
+declare function macho_arch_name_for_cpu_type(type: number, subtype: number): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 16.0
  */
-declare function macho_arch_name_for_mach_header(mh: interop.Pointer | interop.Reference<mach_header>): string;
+declare function macho_arch_name_for_mach_header(mh: interop.Pointer | interop.Reference<mach_header>): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 16.0

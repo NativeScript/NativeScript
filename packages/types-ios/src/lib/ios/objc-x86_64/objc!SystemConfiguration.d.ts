@@ -50,7 +50,7 @@ declare function SCError(): number;
 /**
  * @since 2.0
  */
-declare function SCErrorString(status: number): string;
+declare function SCErrorString(status: number): interop.Pointer | interop.Reference<any>;
 
 interface SCNetworkConnectionContext {
 	version: number;

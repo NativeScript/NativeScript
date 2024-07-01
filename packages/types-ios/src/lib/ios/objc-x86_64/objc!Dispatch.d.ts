@@ -544,7 +544,7 @@ declare function dispatch_queue_create_with_target(label: string | interop.Point
 /**
  * @since 4.0
  */
-declare function dispatch_queue_get_label(queue: NSObject & OS_dispatch_queue): string;
+declare function dispatch_queue_get_label(queue: NSObject & OS_dispatch_queue): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 8.0

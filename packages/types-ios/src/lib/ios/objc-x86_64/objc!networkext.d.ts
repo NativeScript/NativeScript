@@ -14,7 +14,7 @@ declare function ne_socket_set_attribution(socket: number, attribution: ne_socke
 /**
  * @since 15.0
  */
-declare function ne_socket_set_domains(socket: number, domain_names: interop.Pointer | interop.Reference<string>, domain_count: number): number;
+declare function ne_socket_set_domains(socket: number, domain_names: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, domain_count: number): number;
 
 /**
  * @since 15.0

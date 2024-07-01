@@ -864,7 +864,7 @@ declare function BNNSGraphCompileOptionsGetOutputFD(options: bnns_graph_compile_
 /**
  * @since 18.0
  */
-declare function BNNSGraphCompileOptionsGetOutputPath(options: bnns_graph_compile_options_t): string;
+declare function BNNSGraphCompileOptionsGetOutputPath(options: bnns_graph_compile_options_t): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 18.0
@@ -884,7 +884,7 @@ declare function BNNSGraphCompileOptionsSetGenerateDebugInfo(options: bnns_graph
 /**
  * @since 18.0
  */
-declare function BNNSGraphCompileOptionsSetMessageLogCallback(options: bnns_graph_compile_options_t, log_callback: interop.FunctionReference<(p1: BNNSGraphMessageLevel, p2: string, p3: string, p4: interop.Pointer | interop.Reference<bnns_user_message_data_t>) => void>, additional_logging_arguments: interop.Pointer | interop.Reference<bnns_user_message_data_t>): void;
+declare function BNNSGraphCompileOptionsSetMessageLogCallback(options: bnns_graph_compile_options_t, log_callback: interop.FunctionReference<(p1: BNNSGraphMessageLevel, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<bnns_user_message_data_t>) => void>, additional_logging_arguments: interop.Pointer | interop.Reference<bnns_user_message_data_t>): void;
 
 /**
  * @since 18.0
@@ -959,7 +959,7 @@ declare function BNNSGraphContextSetDynamicShapes(context: bnns_graph_context_t,
 /**
  * @since 18.0
  */
-declare function BNNSGraphContextSetMessageLogCallback(context: bnns_graph_context_t, log_callback_fn: interop.FunctionReference<(p1: BNNSGraphMessageLevel, p2: string, p3: string, p4: interop.Pointer | interop.Reference<bnns_user_message_data_t>) => void>, additional_logging_arguments: interop.Pointer | interop.Reference<bnns_user_message_data_t>): number;
+declare function BNNSGraphContextSetMessageLogCallback(context: bnns_graph_context_t, log_callback_fn: interop.FunctionReference<(p1: BNNSGraphMessageLevel, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<bnns_user_message_data_t>) => void>, additional_logging_arguments: interop.Pointer | interop.Reference<bnns_user_message_data_t>): number;
 
 /**
  * @since 18.0
@@ -989,7 +989,7 @@ declare function BNNSGraphGetArgumentIntents(graph: bnns_graph_t, _function: str
 /**
  * @since 18.0
  */
-declare function BNNSGraphGetArgumentNames(graph: bnns_graph_t, _function: string | interop.Pointer | interop.Reference<any>, argument_names_count: number, argument_names: interop.Pointer | interop.Reference<string>): number;
+declare function BNNSGraphGetArgumentNames(graph: bnns_graph_t, _function: string | interop.Pointer | interop.Reference<any>, argument_names_count: number, argument_names: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 /**
  * @since 18.0
@@ -1004,7 +1004,7 @@ declare function BNNSGraphGetFunctionCount(graph: bnns_graph_t): number;
 /**
  * @since 18.0
  */
-declare function BNNSGraphGetFunctionNames(graph: bnns_graph_t, function_name_count: number, function_names: interop.Pointer | interop.Reference<string>): number;
+declare function BNNSGraphGetFunctionNames(graph: bnns_graph_t, function_name_count: number, function_names: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 /**
  * @since 18.0
@@ -1014,7 +1014,7 @@ declare function BNNSGraphGetInputCount(graph: bnns_graph_t, _function: string |
 /**
  * @since 18.0
  */
-declare function BNNSGraphGetInputNames(graph: bnns_graph_t, _function: string | interop.Pointer | interop.Reference<any>, input_names_count: number, input_names: interop.Pointer | interop.Reference<string>): number;
+declare function BNNSGraphGetInputNames(graph: bnns_graph_t, _function: string | interop.Pointer | interop.Reference<any>, input_names_count: number, input_names: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 /**
  * @since 18.0
@@ -1024,7 +1024,7 @@ declare function BNNSGraphGetOutputCount(graph: bnns_graph_t, _function: string 
 /**
  * @since 18.0
  */
-declare function BNNSGraphGetOutputNames(graph: bnns_graph_t, _function: string | interop.Pointer | interop.Reference<any>, output_names_count: number, output_names: interop.Pointer | interop.Reference<string>): number;
+declare function BNNSGraphGetOutputNames(graph: bnns_graph_t, _function: string | interop.Pointer | interop.Reference<any>, output_names_count: number, output_names: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 declare const enum BNNSGraphMessageLevel {
 
@@ -1362,7 +1362,7 @@ interface BNNSLayerParametersResize {
 declare var BNNSLayerParametersResize: interop.StructType<BNNSLayerParametersResize>;
 
 interface BNNSLayerParametersTensorContraction {
-	operation: string;
+	operation: interop.Pointer | interop.Reference<any>;
 	alpha: number;
 	beta: number;
 	iA_desc: BNNSNDArrayDescriptor;
@@ -1921,7 +1921,7 @@ interface BNNSTensor {
 	stride: interop.Reference<number>;
 	data: interop.Pointer | interop.Reference<any>;
 	data_size_in_bytes: number;
-	name: string;
+	name: interop.Pointer | interop.Reference<any>;
 }
 declare var BNNSTensor: interop.StructType<BNNSTensor>;
 
@@ -2062,7 +2062,7 @@ declare const FFT_RADIX5: number;
  * @since 4.0
  * @deprecated 16.4
  */
-declare function SetBLASParamErrorProc(__ErrorProc: interop.FunctionReference<(p1: string, p2: string, p3: interop.Pointer | interop.Reference<number>, p4: interop.Pointer | interop.Reference<number>) => void>): void;
+declare function SetBLASParamErrorProc(__ErrorProc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<number>, p4: interop.Pointer | interop.Reference<number>) => void>): void;
 
 interface SparseAttributes_t {
 	transpose: boolean;
@@ -2074,11 +2074,11 @@ interface SparseAttributes_t {
 declare var SparseAttributes_t: interop.StructType<SparseAttributes_t>;
 
 interface SparseCGOptions {
-	reportError: interop.FunctionReference<(p1: string) => void>;
+	reportError: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
 	maxIterations: number;
 	atol: number;
 	rtol: number;
-	reportStatus: interop.FunctionReference<(p1: string) => void>;
+	reportStatus: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
 }
 declare var SparseCGOptions: interop.StructType<SparseCGOptions>;
 
@@ -2260,13 +2260,13 @@ declare const enum SparseFactorization_t {
 }
 
 interface SparseGMRESOptions {
-	reportError: interop.FunctionReference<(p1: string) => void>;
+	reportError: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
 	variant: SparseGMRESVariant_t;
 	nvec: number;
 	maxIterations: number;
 	atol: number;
 	rtol: number;
-	reportStatus: interop.FunctionReference<(p1: string) => void>;
+	reportStatus: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
 }
 declare var SparseGMRESOptions: interop.StructType<SparseGMRESOptions>;
 
@@ -2351,7 +2351,7 @@ declare const enum SparseLSMRConvergenceTest_t {
 }
 
 interface SparseLSMROptions {
-	reportError: interop.FunctionReference<(p1: string) => void>;
+	reportError: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
 	lambda: number;
 	nvec: number;
 	convergenceTest: SparseLSMRConvergenceTest_t;
@@ -2360,7 +2360,7 @@ interface SparseLSMROptions {
 	btol: number;
 	conditionLimit: number;
 	maxIterations: number;
-	reportStatus: interop.FunctionReference<(p1: string) => void>;
+	reportStatus: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
 }
 declare var SparseLSMROptions: interop.StructType<SparseLSMROptions>;
 
@@ -2925,7 +2925,7 @@ interface SparseSymbolicFactorOptions {
 	ignoreRowsAndColumns: interop.Pointer | interop.Reference<number>;
 	malloc: interop.FunctionReference<(p1: number) => interop.Pointer | interop.Reference<any>>;
 	free: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
-	reportError: interop.FunctionReference<(p1: string) => void>;
+	reportError: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
 }
 declare var SparseSymbolicFactorOptions: interop.StructType<SparseSymbolicFactorOptions>;
 
@@ -2937,7 +2937,7 @@ declare const enum SparseTriangle_t {
 }
 
 interface _SparseIterativeMethodBaseOptions {
-	reportError: interop.FunctionReference<(p1: string) => void>;
+	reportError: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
 }
 declare var _SparseIterativeMethodBaseOptions: interop.StructType<_SparseIterativeMethodBaseOptions>;
 

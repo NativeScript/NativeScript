@@ -5,13 +5,13 @@ interface Fts5ExtensionApi {
 	xColumnCount: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>;
 	xRowCount: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<number>) => number>;
 	xColumnTotalSize: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<number>) => number>;
-	xTokenize: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number, p4: interop.Pointer | interop.Reference<any>, p5: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: string, p4: number, p5: number, p6: number) => number>) => number>;
+	xTokenize: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: interop.Pointer | interop.Reference<any>, p5: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<any>, p4: number, p5: number, p6: number) => number>) => number>;
 	xPhraseCount: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>;
 	xPhraseSize: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number) => number>;
 	xInstCount: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<number>) => number>;
 	xInst: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<number>, p4: interop.Pointer | interop.Reference<number>, p5: interop.Pointer | interop.Reference<number>) => number>;
 	xRowid: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>;
-	xColumnText: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<string>, p4: interop.Pointer | interop.Reference<number>) => number>;
+	xColumnText: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p4: interop.Pointer | interop.Reference<number>) => number>;
 	xColumnSize: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<number>) => number>;
 	xQueryPhrase: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<any>, p4: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<Fts5ExtensionApi>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => number>) => number>;
 	xSetAuxdata: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>) => number>;
@@ -24,23 +24,23 @@ interface Fts5ExtensionApi {
 declare var Fts5ExtensionApi: interop.StructType<Fts5ExtensionApi>;
 
 interface Fts5PhraseIter {
-	a: string;
-	b: string;
+	a: interop.Pointer | interop.Reference<any>;
+	b: interop.Pointer | interop.Reference<any>;
 }
 declare var Fts5PhraseIter: interop.StructType<Fts5PhraseIter>;
 
 interface fts5_api {
 	iVersion: number;
-	xCreateTokenizer: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<fts5_api>, p2: string, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<fts5_tokenizer>, p5: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>) => number>;
-	xFindTokenizer: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<fts5_api>, p2: string, p3: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p4: interop.Pointer | interop.Reference<fts5_tokenizer>) => number>;
-	xCreateFunction: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<fts5_api>, p2: string, p3: interop.Pointer | interop.Reference<any>, p4: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<Fts5ExtensionApi>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: number, p5: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => void>, p5: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>) => number>;
+	xCreateTokenizer: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<fts5_api>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<fts5_tokenizer>, p5: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>) => number>;
+	xFindTokenizer: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<fts5_api>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p4: interop.Pointer | interop.Reference<fts5_tokenizer>) => number>;
+	xCreateFunction: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<fts5_api>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<Fts5ExtensionApi>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: number, p5: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => void>, p5: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>) => number>;
 }
 declare var fts5_api: interop.StructType<fts5_api>;
 
 interface fts5_tokenizer {
-	xCreate: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<string>, p3: number, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => number>;
+	xCreate: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p3: number, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => number>;
 	xDelete: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
-	xTokenize: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: string, p5: number, p6: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: string, p4: number, p5: number, p6: number) => number>) => number>;
+	xTokenize: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: interop.Pointer | interop.Reference<any>, p5: number, p6: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<any>, p4: number, p5: number, p6: number) => number>) => number>;
 }
 declare var fts5_tokenizer: interop.StructType<fts5_tokenizer>;
 
@@ -61,7 +61,7 @@ declare function sqlite3_auto_extension(xEntryPoint: interop.FunctionReference<(
 /**
  * @since 15.4
  */
-declare function sqlite3_autovacuum_pages(db: interop.Pointer | interop.Reference<any>, p2: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number, p4: number, p5: number) => number>, p3: interop.Pointer | interop.Reference<any>, p4: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): number;
+declare function sqlite3_autovacuum_pages(db: interop.Pointer | interop.Reference<any>, p2: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: number, p5: number) => number>, p3: interop.Pointer | interop.Reference<any>, p4: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): number;
 
 declare function sqlite3_backup_finish(p: interop.Pointer | interop.Reference<any>): number;
 
@@ -89,7 +89,7 @@ declare function sqlite3_bind_parameter_count(p1: interop.Pointer | interop.Refe
 
 declare function sqlite3_bind_parameter_index(p1: interop.Pointer | interop.Reference<any>, zName: string | interop.Pointer | interop.Reference<any>): number;
 
-declare function sqlite3_bind_parameter_name(p1: interop.Pointer | interop.Reference<any>, p2: number): string;
+declare function sqlite3_bind_parameter_name(p1: interop.Pointer | interop.Reference<any>, p2: number): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 12.0
@@ -152,7 +152,7 @@ declare function sqlite3_close(p1: interop.Pointer | interop.Reference<any>): nu
  */
 declare function sqlite3_close_v2(p1: interop.Pointer | interop.Reference<any>): number;
 
-declare function sqlite3_collation_needed(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: string) => void>): number;
+declare function sqlite3_collation_needed(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: interop.Pointer | interop.Reference<any>) => void>): number;
 
 declare function sqlite3_collation_needed16(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: interop.Pointer | interop.Reference<any>) => void>): number;
 
@@ -164,11 +164,11 @@ declare function sqlite3_column_bytes16(p1: interop.Pointer | interop.Reference<
 
 declare function sqlite3_column_count(pStmt: interop.Pointer | interop.Reference<any>): number;
 
-declare function sqlite3_column_database_name(p1: interop.Pointer | interop.Reference<any>, p2: number): string;
+declare function sqlite3_column_database_name(p1: interop.Pointer | interop.Reference<any>, p2: number): interop.Pointer | interop.Reference<any>;
 
 declare function sqlite3_column_database_name16(p1: interop.Pointer | interop.Reference<any>, p2: number): interop.Pointer | interop.Reference<any>;
 
-declare function sqlite3_column_decltype(p1: interop.Pointer | interop.Reference<any>, p2: number): string;
+declare function sqlite3_column_decltype(p1: interop.Pointer | interop.Reference<any>, p2: number): interop.Pointer | interop.Reference<any>;
 
 declare function sqlite3_column_decltype16(p1: interop.Pointer | interop.Reference<any>, p2: number): interop.Pointer | interop.Reference<any>;
 
@@ -178,19 +178,19 @@ declare function sqlite3_column_int(p1: interop.Pointer | interop.Reference<any>
 
 declare function sqlite3_column_int64(p1: interop.Pointer | interop.Reference<any>, iCol: number): number;
 
-declare function sqlite3_column_name(p1: interop.Pointer | interop.Reference<any>, N: number): string;
+declare function sqlite3_column_name(p1: interop.Pointer | interop.Reference<any>, N: number): interop.Pointer | interop.Reference<any>;
 
 declare function sqlite3_column_name16(p1: interop.Pointer | interop.Reference<any>, N: number): interop.Pointer | interop.Reference<any>;
 
-declare function sqlite3_column_origin_name(p1: interop.Pointer | interop.Reference<any>, p2: number): string;
+declare function sqlite3_column_origin_name(p1: interop.Pointer | interop.Reference<any>, p2: number): interop.Pointer | interop.Reference<any>;
 
 declare function sqlite3_column_origin_name16(p1: interop.Pointer | interop.Reference<any>, p2: number): interop.Pointer | interop.Reference<any>;
 
-declare function sqlite3_column_table_name(p1: interop.Pointer | interop.Reference<any>, p2: number): string;
+declare function sqlite3_column_table_name(p1: interop.Pointer | interop.Reference<any>, p2: number): interop.Pointer | interop.Reference<any>;
 
 declare function sqlite3_column_table_name16(p1: interop.Pointer | interop.Reference<any>, p2: number): interop.Pointer | interop.Reference<any>;
 
-declare function sqlite3_column_text(p1: interop.Pointer | interop.Reference<any>, iCol: number): string;
+declare function sqlite3_column_text(p1: interop.Pointer | interop.Reference<any>, iCol: number): interop.Pointer | interop.Reference<any>;
 
 declare function sqlite3_column_text16(p1: interop.Pointer | interop.Reference<any>, iCol: number): interop.Pointer | interop.Reference<any>;
 
@@ -203,7 +203,7 @@ declare function sqlite3_commit_hook(p1: interop.Pointer | interop.Reference<any
 /**
  * @since 5.0
  */
-declare function sqlite3_compileoption_get(N: number): string;
+declare function sqlite3_compileoption_get(N: number): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 5.0
@@ -225,7 +225,7 @@ declare function sqlite3_create_collation_v2(p1: interop.Pointer | interop.Refer
 /**
  * @since 14.0
  */
-declare function sqlite3_create_filename(zDatabase: string | interop.Pointer | interop.Reference<any>, zJournal: string | interop.Pointer | interop.Reference<any>, zWal: string | interop.Pointer | interop.Reference<any>, nParam: number, azParam: interop.Pointer | interop.Reference<string>): string;
+declare function sqlite3_create_filename(zDatabase: string | interop.Pointer | interop.Reference<any>, zJournal: string | interop.Pointer | interop.Reference<any>, zWal: string | interop.Pointer | interop.Reference<any>, nParam: number, azParam: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
 declare function sqlite3_create_function(db: interop.Pointer | interop.Reference<any>, zFunctionName: string | interop.Pointer | interop.Reference<any>, nArg: number, eTextRep: number, pApp: interop.Pointer | interop.Reference<any>, xFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => void>, xStep: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => void>, xFinal: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): number;
 
@@ -250,7 +250,7 @@ declare function sqlite3_data_count(pStmt: interop.Pointer | interop.Reference<a
 /**
  * @since 6.0
  */
-declare var sqlite3_data_directory: string;
+declare var sqlite3_data_directory: interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 14.0
@@ -265,7 +265,7 @@ declare function sqlite3_db_cacheflush(p1: interop.Pointer | interop.Reference<a
 /**
  * @since 6.0
  */
-declare function sqlite3_db_filename(db: interop.Pointer | interop.Reference<any>, zDbName: string | interop.Pointer | interop.Reference<any>): string;
+declare function sqlite3_db_filename(db: interop.Pointer | interop.Reference<any>, zDbName: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function sqlite3_db_handle(p1: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
@@ -274,7 +274,7 @@ declare function sqlite3_db_mutex(p1: interop.Pointer | interop.Reference<any>):
 /**
  * @since 16.0
  */
-declare function sqlite3_db_name(db: interop.Pointer | interop.Reference<any>, N: number): string;
+declare function sqlite3_db_name(db: interop.Pointer | interop.Reference<any>, N: number): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 6.0
@@ -292,7 +292,7 @@ declare function sqlite3_declare_vtab(p1: interop.Pointer | interop.Reference<an
  */
 declare function sqlite3_deserialize(db: interop.Pointer | interop.Reference<any>, zSchema: string | interop.Pointer | interop.Reference<any>, pData: string | interop.Pointer | interop.Reference<any>, szDb: number, szBuf: number, mFlags: number): number;
 
-declare function sqlite3_drop_modules(db: interop.Pointer | interop.Reference<any>, azKeep: interop.Pointer | interop.Reference<string>): number;
+declare function sqlite3_drop_modules(db: interop.Pointer | interop.Reference<any>, azKeep: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 /**
  * @since 3.0
@@ -302,7 +302,7 @@ declare function sqlite3_enable_shared_cache(p1: number): number;
 
 declare function sqlite3_errcode(db: interop.Pointer | interop.Reference<any>): number;
 
-declare function sqlite3_errmsg(p1: interop.Pointer | interop.Reference<any>): string;
+declare function sqlite3_errmsg(p1: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function sqlite3_errmsg16(p1: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
@@ -314,14 +314,14 @@ declare function sqlite3_error_offset(db: interop.Pointer | interop.Reference<an
 /**
  * @since 8.2
  */
-declare function sqlite3_errstr(p1: number): string;
+declare function sqlite3_errstr(p1: number): interop.Pointer | interop.Reference<any>;
 
-declare function sqlite3_exec(p1: interop.Pointer | interop.Reference<any>, sql: string | interop.Pointer | interop.Reference<any>, callback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<string>, p4: interop.Pointer | interop.Reference<string>) => number>, p4: interop.Pointer | interop.Reference<any>, errmsg: interop.Pointer | interop.Reference<string>): number;
+declare function sqlite3_exec(p1: interop.Pointer | interop.Reference<any>, sql: string | interop.Pointer | interop.Reference<any>, callback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => number>, p4: interop.Pointer | interop.Reference<any>, errmsg: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 /**
  * @since 10.0
  */
-declare function sqlite3_expanded_sql(pStmt: interop.Pointer | interop.Reference<any>): string;
+declare function sqlite3_expanded_sql(pStmt: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 3.0
@@ -343,17 +343,17 @@ declare function sqlite3_file_control(p1: interop.Pointer | interop.Reference<an
 /**
  * @since 14.0
  */
-declare function sqlite3_filename_database(p1: string | interop.Pointer | interop.Reference<any>): string;
+declare function sqlite3_filename_database(p1: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 14.0
  */
-declare function sqlite3_filename_journal(p1: string | interop.Pointer | interop.Reference<any>): string;
+declare function sqlite3_filename_journal(p1: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 14.0
  */
-declare function sqlite3_filename_wal(p1: string | interop.Pointer | interop.Reference<any>): string;
+declare function sqlite3_filename_wal(p1: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function sqlite3_finalize(pStmt: interop.Pointer | interop.Reference<any>): number;
 
@@ -364,13 +364,13 @@ declare function sqlite3_free(p1: interop.Pointer | interop.Reference<any>): voi
  */
 declare function sqlite3_free_filename(p1: string | interop.Pointer | interop.Reference<any>): void;
 
-declare function sqlite3_free_table(result: interop.Pointer | interop.Reference<string>): void;
+declare function sqlite3_free_table(result: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): void;
 
 declare function sqlite3_get_autocommit(p1: interop.Pointer | interop.Reference<any>): number;
 
 declare function sqlite3_get_auxdata(p1: interop.Pointer | interop.Reference<any>, N: number): interop.Pointer | interop.Reference<any>;
 
-declare function sqlite3_get_table(db: interop.Pointer | interop.Reference<any>, zSql: string | interop.Pointer | interop.Reference<any>, pazResult: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<string>>, pnRow: interop.Pointer | interop.Reference<number>, pnColumn: interop.Pointer | interop.Reference<number>, pzErrmsg: interop.Pointer | interop.Reference<string>): number;
+declare function sqlite3_get_table(db: interop.Pointer | interop.Reference<any>, zSql: string | interop.Pointer | interop.Reference<any>, pazResult: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>>, pnRow: interop.Pointer | interop.Reference<number>, pnColumn: interop.Pointer | interop.Reference<number>, pzErrmsg: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 /**
  * @since 3.0
@@ -399,7 +399,7 @@ interface sqlite3_index_info {
 	aOrderBy: interop.Pointer | interop.Reference<sqlite3_index_orderby>;
 	aConstraintUsage: interop.Pointer | interop.Reference<sqlite3_index_constraint_usage>;
 	idxNum: number;
-	idxStr: string;
+	idxStr: interop.Pointer | interop.Reference<any>;
 	needToFreeIdxStr: number;
 	orderByConsumed: number;
 	estimatedCost: number;
@@ -460,11 +460,11 @@ declare function sqlite3_keyword_count(): number;
 /**
  * @since 12.0
  */
-declare function sqlite3_keyword_name(p1: number, p2: interop.Pointer | interop.Reference<string>, p3: interop.Pointer | interop.Reference<number>): number;
+declare function sqlite3_keyword_name(p1: number, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p3: interop.Pointer | interop.Reference<number>): number;
 
 declare function sqlite3_last_insert_rowid(p1: interop.Pointer | interop.Reference<any>): number;
 
-declare function sqlite3_libversion(): string;
+declare function sqlite3_libversion(): interop.Pointer | interop.Reference<any>;
 
 declare function sqlite3_libversion_number(): number;
 
@@ -501,14 +501,14 @@ declare function sqlite3_memory_used(): number;
 
 interface sqlite3_module {
 	iVersion: number;
-	xCreate: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: interop.Pointer | interop.Reference<string>, p5: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<sqlite3_vtab>>, p6: interop.Pointer | interop.Reference<string>) => number>;
-	xConnect: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: interop.Pointer | interop.Reference<string>, p5: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<sqlite3_vtab>>, p6: interop.Pointer | interop.Reference<string>) => number>;
+	xCreate: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p5: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<sqlite3_vtab>>, p6: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => number>;
+	xConnect: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p5: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<sqlite3_vtab>>, p6: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => number>;
 	xBestIndex: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vtab>, p2: interop.Pointer | interop.Reference<sqlite3_index_info>) => number>;
 	xDisconnect: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vtab>) => number>;
 	xDestroy: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vtab>) => number>;
 	xOpen: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vtab>, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<sqlite3_vtab_cursor>>) => number>;
 	xClose: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vtab_cursor>) => number>;
-	xFilter: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vtab_cursor>, p2: number, p3: string, p4: number, p5: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => number>;
+	xFilter: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vtab_cursor>, p2: number, p3: interop.Pointer | interop.Reference<any>, p4: number, p5: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => number>;
 	xNext: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vtab_cursor>) => number>;
 	xEof: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vtab_cursor>) => number>;
 	xColumn: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vtab_cursor>, p2: interop.Pointer | interop.Reference<any>, p3: number) => number>;
@@ -518,12 +518,12 @@ interface sqlite3_module {
 	xSync: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vtab>) => number>;
 	xCommit: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vtab>) => number>;
 	xRollback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vtab>) => number>;
-	xFindFunction: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vtab>, p2: number, p3: string, p4: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => void>>, p5: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => number>;
-	xRename: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vtab>, p2: string) => number>;
+	xFindFunction: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vtab>, p2: number, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => void>>, p5: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => number>;
+	xRename: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vtab>, p2: interop.Pointer | interop.Reference<any>) => number>;
 	xSavepoint: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vtab>, p2: number) => number>;
 	xRelease: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vtab>, p2: number) => number>;
 	xRollbackTo: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vtab>, p2: number) => number>;
-	xShadowName: interop.FunctionReference<(p1: string) => number>;
+	xShadowName: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>;
 }
 declare var sqlite3_module: interop.StructType<sqlite3_module>;
 
@@ -560,7 +560,7 @@ declare function sqlite3_next_stmt(pDb: interop.Pointer | interop.Reference<any>
 /**
  * @since 15.0
  */
-declare function sqlite3_normalized_sql(pStmt: interop.Pointer | interop.Reference<any>): string;
+declare function sqlite3_normalized_sql(pStmt: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function sqlite3_open(filename: string | interop.Pointer | interop.Reference<any>, ppDb: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
@@ -612,7 +612,7 @@ interface sqlite3_pcache_page {
 }
 declare var sqlite3_pcache_page: interop.StructType<sqlite3_pcache_page>;
 
-declare function sqlite3_prepare(db: interop.Pointer | interop.Reference<any>, zSql: string | interop.Pointer | interop.Reference<any>, nByte: number, ppStmt: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, pzTail: interop.Pointer | interop.Reference<string>): number;
+declare function sqlite3_prepare(db: interop.Pointer | interop.Reference<any>, zSql: string | interop.Pointer | interop.Reference<any>, nByte: number, ppStmt: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, pzTail: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 declare function sqlite3_prepare16(db: interop.Pointer | interop.Reference<any>, zSql: interop.Pointer | interop.Reference<any>, nByte: number, ppStmt: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, pzTail: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
@@ -623,18 +623,18 @@ declare function sqlite3_prepare16_v2(db: interop.Pointer | interop.Reference<an
  */
 declare function sqlite3_prepare16_v3(db: interop.Pointer | interop.Reference<any>, zSql: interop.Pointer | interop.Reference<any>, nByte: number, prepFlags: number, ppStmt: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, pzTail: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
-declare function sqlite3_prepare_v2(db: interop.Pointer | interop.Reference<any>, zSql: string | interop.Pointer | interop.Reference<any>, nByte: number, ppStmt: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, pzTail: interop.Pointer | interop.Reference<string>): number;
+declare function sqlite3_prepare_v2(db: interop.Pointer | interop.Reference<any>, zSql: string | interop.Pointer | interop.Reference<any>, nByte: number, ppStmt: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, pzTail: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 /**
  * @since 12.0
  */
-declare function sqlite3_prepare_v3(db: interop.Pointer | interop.Reference<any>, zSql: string | interop.Pointer | interop.Reference<any>, nByte: number, prepFlags: number, ppStmt: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, pzTail: interop.Pointer | interop.Reference<string>): number;
+declare function sqlite3_prepare_v3(db: interop.Pointer | interop.Reference<any>, zSql: string | interop.Pointer | interop.Reference<any>, nByte: number, prepFlags: number, ppStmt: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, pzTail: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 /**
  * @since 3.0
  * @deprecated 10.0
  */
-declare function sqlite3_profile(p1: interop.Pointer | interop.Reference<any>, xProfile: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number) => void>, p3: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function sqlite3_profile(p1: interop.Pointer | interop.Reference<any>, xProfile: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number) => void>, p3: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function sqlite3_progress_handler(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>, p4: interop.Pointer | interop.Reference<any>): void;
 
@@ -755,9 +755,9 @@ declare var sqlite3_rtree_query_info: interop.StructType<sqlite3_rtree_query_inf
 /**
  * @since 12.0
  */
-declare function sqlite3_serialize(db: interop.Pointer | interop.Reference<any>, zSchema: string | interop.Pointer | interop.Reference<any>, piSize: interop.Pointer | interop.Reference<number>, mFlags: number): string;
+declare function sqlite3_serialize(db: interop.Pointer | interop.Reference<any>, zSchema: string | interop.Pointer | interop.Reference<any>, piSize: interop.Pointer | interop.Reference<number>, mFlags: number): interop.Pointer | interop.Reference<any>;
 
-declare function sqlite3_set_authorizer(p1: interop.Pointer | interop.Reference<any>, xAuth: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: string, p4: string, p5: string, p6: string) => number>, pUserData: interop.Pointer | interop.Reference<any>): number;
+declare function sqlite3_set_authorizer(p1: interop.Pointer | interop.Reference<any>, xAuth: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>, p5: interop.Pointer | interop.Reference<any>, p6: interop.Pointer | interop.Reference<any>) => number>, pUserData: interop.Pointer | interop.Reference<any>): number;
 
 declare function sqlite3_set_auxdata(p1: interop.Pointer | interop.Reference<any>, N: number, p3: interop.Pointer | interop.Reference<any>, p4: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
 
@@ -811,9 +811,9 @@ declare function sqlite3_soft_heap_limit64(N: number): number;
 /**
  * @since 4.0
  */
-declare function sqlite3_sourceid(): string;
+declare function sqlite3_sourceid(): interop.Pointer | interop.Reference<any>;
 
-declare function sqlite3_sql(pStmt: interop.Pointer | interop.Reference<any>): string;
+declare function sqlite3_sql(pStmt: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function sqlite3_status(op: number, pCurrent: interop.Pointer | interop.Reference<number>, pHighwater: interop.Pointer | interop.Reference<number>, resetFlag: number): number;
 
@@ -884,7 +884,7 @@ declare function sqlite3_str_errcode(p1: interop.Pointer | interop.Reference<any
 /**
  * @since 12.0
  */
-declare function sqlite3_str_finish(p1: interop.Pointer | interop.Reference<any>): string;
+declare function sqlite3_str_finish(p1: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 12.0
@@ -904,7 +904,7 @@ declare function sqlite3_str_reset(p1: interop.Pointer | interop.Reference<any>)
 /**
  * @since 12.0
  */
-declare function sqlite3_str_value(p1: interop.Pointer | interop.Reference<any>): string;
+declare function sqlite3_str_value(p1: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 8.2
@@ -931,9 +931,9 @@ declare function sqlite3_strnicmp(p1: string | interop.Pointer | interop.Referen
  */
 declare function sqlite3_system_errno(p1: interop.Pointer | interop.Reference<any>): number;
 
-declare function sqlite3_table_column_metadata(db: interop.Pointer | interop.Reference<any>, zDbName: string | interop.Pointer | interop.Reference<any>, zTableName: string | interop.Pointer | interop.Reference<any>, zColumnName: string | interop.Pointer | interop.Reference<any>, pzDataType: interop.Pointer | interop.Reference<string>, pzCollSeq: interop.Pointer | interop.Reference<string>, pNotNull: interop.Pointer | interop.Reference<number>, pPrimaryKey: interop.Pointer | interop.Reference<number>, pAutoinc: interop.Pointer | interop.Reference<number>): number;
+declare function sqlite3_table_column_metadata(db: interop.Pointer | interop.Reference<any>, zDbName: string | interop.Pointer | interop.Reference<any>, zTableName: string | interop.Pointer | interop.Reference<any>, zColumnName: string | interop.Pointer | interop.Reference<any>, pzDataType: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, pzCollSeq: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, pNotNull: interop.Pointer | interop.Reference<number>, pPrimaryKey: interop.Pointer | interop.Reference<number>, pAutoinc: interop.Pointer | interop.Reference<number>): number;
 
-declare var sqlite3_temp_directory: string;
+declare var sqlite3_temp_directory: interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 3.0
@@ -954,7 +954,7 @@ declare function sqlite3_total_changes64(p1: interop.Pointer | interop.Reference
  * @since 5.0
  * @deprecated 10.0
  */
-declare function sqlite3_trace(p1: interop.Pointer | interop.Reference<any>, xTrace: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>, p3: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function sqlite3_trace(p1: interop.Pointer | interop.Reference<any>, xTrace: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>, p3: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 10.0
@@ -972,7 +972,7 @@ declare function sqlite3_transfer_bindings(p1: interop.Pointer | interop.Referen
  */
 declare function sqlite3_txn_state(p1: interop.Pointer | interop.Reference<any>, zSchema: string | interop.Pointer | interop.Reference<any>): number;
 
-declare function sqlite3_update_hook(p1: interop.Pointer | interop.Reference<any>, p2: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: string, p4: string, p5: number) => void>, p3: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function sqlite3_update_hook(p1: interop.Pointer | interop.Reference<any>, p2: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>, p5: number) => void>, p3: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 6.0
@@ -987,12 +987,12 @@ declare function sqlite3_uri_int64(p1: string | interop.Pointer | interop.Refere
 /**
  * @since 14.0
  */
-declare function sqlite3_uri_key(z: string | interop.Pointer | interop.Reference<any>, N: number): string;
+declare function sqlite3_uri_key(z: string | interop.Pointer | interop.Reference<any>, N: number): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 5.0
  */
-declare function sqlite3_uri_parameter(z: string | interop.Pointer | interop.Reference<any>, zParam: string | interop.Pointer | interop.Reference<any>): string;
+declare function sqlite3_uri_parameter(z: string | interop.Pointer | interop.Reference<any>, zParam: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function sqlite3_user_data(p1: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
@@ -1045,7 +1045,7 @@ declare function sqlite3_value_pointer(p1: interop.Pointer | interop.Reference<a
  */
 declare function sqlite3_value_subtype(p1: interop.Pointer | interop.Reference<any>): number;
 
-declare function sqlite3_value_text(p1: interop.Pointer | interop.Reference<any>): string;
+declare function sqlite3_value_text(p1: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function sqlite3_value_text16(p1: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
@@ -1062,24 +1062,24 @@ interface sqlite3_vfs {
 	szOsFile: number;
 	mxPathname: number;
 	pNext: interop.Pointer | interop.Reference<sqlite3_vfs>;
-	zName: string;
+	zName: interop.Pointer | interop.Reference<any>;
 	pAppData: interop.Pointer | interop.Reference<any>;
-	xOpen: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vfs>, p2: string, p3: interop.Pointer | interop.Reference<sqlite3_file>, p4: number, p5: interop.Pointer | interop.Reference<number>) => number>;
-	xDelete: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vfs>, p2: string, p3: number) => number>;
-	xAccess: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vfs>, p2: string, p3: number, p4: interop.Pointer | interop.Reference<number>) => number>;
-	xFullPathname: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vfs>, p2: string, p3: number, p4: string) => number>;
-	xDlOpen: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vfs>, p2: string) => interop.Pointer | interop.Reference<any>>;
-	xDlError: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vfs>, p2: number, p3: string) => void>;
-	xDlSym: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vfs>, p2: interop.Pointer | interop.Reference<any>, p3: string) => interop.FunctionReference<() => void>>;
+	xOpen: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vfs>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<sqlite3_file>, p4: number, p5: interop.Pointer | interop.Reference<number>) => number>;
+	xDelete: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vfs>, p2: interop.Pointer | interop.Reference<any>, p3: number) => number>;
+	xAccess: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vfs>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: interop.Pointer | interop.Reference<number>) => number>;
+	xFullPathname: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vfs>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: interop.Pointer | interop.Reference<any>) => number>;
+	xDlOpen: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vfs>, p2: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<any>>;
+	xDlError: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vfs>, p2: number, p3: interop.Pointer | interop.Reference<any>) => void>;
+	xDlSym: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vfs>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => interop.FunctionReference<() => void>>;
 	xDlClose: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vfs>, p2: interop.Pointer | interop.Reference<any>) => void>;
-	xRandomness: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vfs>, p2: number, p3: string) => number>;
+	xRandomness: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vfs>, p2: number, p3: interop.Pointer | interop.Reference<any>) => number>;
 	xSleep: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vfs>, p2: number) => number>;
 	xCurrentTime: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vfs>, p2: interop.Pointer | interop.Reference<number>) => number>;
-	xGetLastError: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vfs>, p2: number, p3: string) => number>;
+	xGetLastError: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vfs>, p2: number, p3: interop.Pointer | interop.Reference<any>) => number>;
 	xCurrentTimeInt64: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vfs>, p2: interop.Pointer | interop.Reference<number>) => number>;
-	xSetSystemCall: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vfs>, p2: string, p3: interop.FunctionReference<() => void>) => number>;
-	xGetSystemCall: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vfs>, p2: string) => interop.FunctionReference<() => void>>;
-	xNextSystemCall: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vfs>, p2: string) => string>;
+	xSetSystemCall: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vfs>, p2: interop.Pointer | interop.Reference<any>, p3: interop.FunctionReference<() => void>) => number>;
+	xGetSystemCall: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vfs>, p2: interop.Pointer | interop.Reference<any>) => interop.FunctionReference<() => void>>;
+	xNextSystemCall: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vfs>, p2: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<any>>;
 }
 declare var sqlite3_vfs: interop.StructType<sqlite3_vfs>;
 
@@ -1092,14 +1092,14 @@ declare function sqlite3_vfs_unregister(p1: interop.Pointer | interop.Reference<
 interface sqlite3_vtab {
 	pModule: interop.Pointer | interop.Reference<sqlite3_module>;
 	nRef: number;
-	zErrMsg: string;
+	zErrMsg: interop.Pointer | interop.Reference<any>;
 }
 declare var sqlite3_vtab: interop.StructType<sqlite3_vtab>;
 
 /**
  * @since 12.0
  */
-declare function sqlite3_vtab_collation(p1: interop.Pointer | interop.Reference<sqlite3_index_info>, p2: number): string;
+declare function sqlite3_vtab_collation(p1: interop.Pointer | interop.Reference<sqlite3_index_info>, p2: number): interop.Pointer | interop.Reference<any>;
 
 interface sqlite3_vtab_cursor {
 	pVtab: interop.Pointer | interop.Reference<sqlite3_vtab>;
@@ -1159,4 +1159,4 @@ declare function sqlite3_wal_checkpoint_v2(db: interop.Pointer | interop.Referen
 /**
  * @since 5.0
  */
-declare function sqlite3_wal_hook(p1: interop.Pointer | interop.Reference<any>, p2: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: string, p4: number) => number>, p3: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function sqlite3_wal_hook(p1: interop.Pointer | interop.Reference<any>, p2: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: number) => number>, p3: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;

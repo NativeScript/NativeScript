@@ -712,13 +712,13 @@ declare function glCreateShaderFunction(type: number): number;
  * @since 5.0
  * @deprecated 12.0
  */
-declare function glCreateShaderProgramvEXT(type: number, count: number, strings: interop.Pointer | interop.Reference<string>): number;
+declare function glCreateShaderProgramvEXT(type: number, count: number, strings: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 /**
  * @since 5.0
  * @deprecated 12.0
  */
-declare function glCreateShaderProgramvEXTFunction(type: number, count: number, strings: interop.Pointer | interop.Reference<string>): number;
+declare function glCreateShaderProgramvEXTFunction(type: number, count: number, strings: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 /**
  * @since 3.0
@@ -1882,21 +1882,21 @@ declare function glGetShaderivFunction(shader: number, pname: number, params: in
  * @since 3.0
  * @deprecated 12.0
  */
-declare function glGetString(name: number): string;
+declare function glGetString(name: number): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 3.0
  * @deprecated 12.0
  */
-declare function glGetStringFunction(name: number): string;
+declare function glGetStringFunction(name: number): interop.Pointer | interop.Reference<any>;
 
-declare function glGetStringFunction2(name: number): string;
+declare function glGetStringFunction2(name: number): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 7.0
  * @deprecated 12.0
  */
-declare function glGetStringi(name: number, index: number): string;
+declare function glGetStringi(name: number, index: number): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 7.0
@@ -1978,7 +1978,7 @@ declare function glGetUniformBlockIndex(program: number, uniformBlockName: strin
  * @since 7.0
  * @deprecated 12.0
  */
-declare function glGetUniformIndices(program: number, uniformCount: number, uniformNames: interop.Pointer | interop.Reference<string>, uniformIndices: interop.Pointer | interop.Reference<number>): void;
+declare function glGetUniformIndices(program: number, uniformCount: number, uniformNames: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, uniformIndices: interop.Pointer | interop.Reference<number>): void;
 
 /**
  * @since 3.0
@@ -3182,13 +3182,13 @@ declare function glShaderBinaryFunction(n: number, shaders: interop.Pointer | in
  * @since 3.0
  * @deprecated 12.0
  */
-declare function glShaderSource(shader: number, count: number, string: interop.Pointer | interop.Reference<string>, length: interop.Pointer | interop.Reference<number>): void;
+declare function glShaderSource(shader: number, count: number, string: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, length: interop.Pointer | interop.Reference<number>): void;
 
 /**
  * @since 3.0
  * @deprecated 12.0
  */
-declare function glShaderSourceFunction(shader: number, count: number, string: interop.Pointer | interop.Reference<string>, length: interop.Pointer | interop.Reference<number>): void;
+declare function glShaderSourceFunction(shader: number, count: number, string: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, length: interop.Pointer | interop.Reference<number>): void;
 
 /**
  * @since 3.0
@@ -3446,7 +3446,7 @@ declare function glTexSubImage3D(target: number, level: number, xoffset: number,
  * @since 7.0
  * @deprecated 12.0
  */
-declare function glTransformFeedbackVaryings(program: number, count: number, varyings: interop.Pointer | interop.Reference<string>, bufferMode: number): void;
+declare function glTransformFeedbackVaryings(program: number, count: number, varyings: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, bufferMode: number): void;
 
 /**
  * @since 2.0

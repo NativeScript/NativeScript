@@ -196,6 +196,16 @@ declare class NSObject implements NSObjectProtocol {
 	 */
 	accessibilityElementsHiddenBlock: () => boolean;
 
+	/**
+	 * @since 18.0
+	 */
+	accessibilityExpandedStatus: UIAccessibilityExpandedStatus;
+
+	/**
+	 * @since 18.0
+	 */
+	accessibilityExpandedStatusBlock: () => UIAccessibilityExpandedStatus;
+
 	accessibilityFrame: CGRect;
 
 	/**
@@ -255,6 +265,16 @@ declare class NSObject implements NSObjectProtocol {
 	accessibilityNavigationStyleBlock: () => UIAccessibilityNavigationStyle;
 
 	/**
+	 * @since 18.0
+	 */
+	accessibilityNextTextNavigationElement: any;
+
+	/**
+	 * @since 18.0
+	 */
+	accessibilityNextTextNavigationElementBlock: () => any;
+
+	/**
 	 * @since 7.0
 	 */
 	accessibilityPath: UIBezierPath;
@@ -268,6 +288,16 @@ declare class NSObject implements NSObjectProtocol {
 	 * @since 17.0
 	 */
 	accessibilityPerformEscapeBlock: () => boolean;
+
+	/**
+	 * @since 18.0
+	 */
+	accessibilityPreviousTextNavigationElement: any;
+
+	/**
+	 * @since 18.0
+	 */
+	accessibilityPreviousTextNavigationElementBlock: () => any;
 
 	/**
 	 * @since 13.0
@@ -445,6 +475,11 @@ declare class NSObject implements NSObjectProtocol {
 	 * @since 4.0
 	 */
 	accessibilityElementIsFocused(): boolean;
+
+	/**
+	 * @since 18.0
+	 */
+	accessibilityHitTestWithEvent(point: CGPoint, event: _UIEvent): any;
 
 	/**
 	 * @since 4.0
@@ -847,7 +882,7 @@ declare function class_getClassVariable(cls: typeof NSObject, name: string | int
 /**
  * @since 2.0
  */
-declare function class_getImageName(cls: typeof NSObject): string;
+declare function class_getImageName(cls: typeof NSObject): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 2.0
@@ -867,7 +902,7 @@ declare function class_getInstanceVariable(cls: typeof NSObject, name: string | 
 /**
  * @since 2.0
  */
-declare function class_getIvarLayout(cls: typeof NSObject): string;
+declare function class_getIvarLayout(cls: typeof NSObject): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 2.0
@@ -882,7 +917,7 @@ declare function class_getMethodImplementation_stret(cls: typeof NSObject, name:
 /**
  * @since 2.0
  */
-declare function class_getName(cls: typeof NSObject): string;
+declare function class_getName(cls: typeof NSObject): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 2.0
@@ -902,7 +937,7 @@ declare function class_getVersion(cls: typeof NSObject): number;
 /**
  * @since 2.0
  */
-declare function class_getWeakIvarLayout(cls: typeof NSObject): string;
+declare function class_getWeakIvarLayout(cls: typeof NSObject): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 2.0
@@ -972,7 +1007,7 @@ declare function imp_removeBlock(anImp: interop.FunctionReference<() => void>): 
 /**
  * @since 2.0
  */
-declare function ivar_getName(v: interop.Pointer | interop.Reference<any>): string;
+declare function ivar_getName(v: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 2.0
@@ -982,17 +1017,17 @@ declare function ivar_getOffset(v: interop.Pointer | interop.Reference<any>): nu
 /**
  * @since 2.0
  */
-declare function ivar_getTypeEncoding(v: interop.Pointer | interop.Reference<any>): string;
+declare function ivar_getTypeEncoding(v: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 2.0
  */
-declare function method_copyArgumentType(m: interop.Pointer | interop.Reference<any>, index: number): string;
+declare function method_copyArgumentType(m: interop.Pointer | interop.Reference<any>, index: number): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 2.0
  */
-declare function method_copyReturnType(m: interop.Pointer | interop.Reference<any>): string;
+declare function method_copyReturnType(m: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 2.0
@@ -1032,7 +1067,7 @@ declare function method_getReturnType(m: interop.Pointer | interop.Reference<any
 /**
  * @since 2.0
  */
-declare function method_getTypeEncoding(m: interop.Pointer | interop.Reference<any>): string;
+declare function method_getTypeEncoding(m: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 2.0
@@ -1095,12 +1130,12 @@ declare function objc_copyClassList(outCount: interop.Pointer | interop.Referenc
 /**
  * @since 2.0
  */
-declare function objc_copyClassNamesForImage(image: string | interop.Pointer | interop.Reference<any>, outCount: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<string>;
+declare function objc_copyClassNamesForImage(image: string | interop.Pointer | interop.Reference<any>, outCount: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>;
 
 /**
  * @since 2.0
  */
-declare function objc_copyImageNames(outCount: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<string>;
+declare function objc_copyImageNames(outCount: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>;
 
 /**
  * @since 2.0
@@ -1194,7 +1229,7 @@ declare function objc_lookUpClass(name: string | interop.Pointer | interop.Refer
 
 interface objc_method_description {
 	name: string;
-	types: string;
+	types: interop.Pointer | interop.Reference<any>;
 }
 declare var objc_method_description: interop.StructType<objc_method_description>;
 
@@ -1234,8 +1269,8 @@ interface objc_object {
 declare var objc_object: interop.StructType<objc_object>;
 
 interface objc_property_attribute_t {
-	name: string;
-	value: string;
+	name: interop.Pointer | interop.Reference<any>;
+	value: interop.Pointer | interop.Reference<any>;
 }
 declare var objc_property_attribute_t: interop.StructType<objc_property_attribute_t>;
 
@@ -1282,17 +1317,17 @@ declare function objc_setForwardHandler(fwd: interop.Pointer | interop.Reference
 /**
  * @since 12.2
  */
-declare function objc_setHook_getClass(newValue: interop.FunctionReference<(p1: string, p2: interop.Pointer | interop.Reference<typeof NSObject>) => boolean>, outOldValue: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: string, p2: interop.Pointer | interop.Reference<typeof NSObject>) => boolean>>): void;
+declare function objc_setHook_getClass(newValue: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<typeof NSObject>) => boolean>, outOldValue: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<typeof NSObject>) => boolean>>): void;
 
 /**
  * @since 12.0
  */
-declare function objc_setHook_getImageName(newValue: interop.FunctionReference<(p1: typeof NSObject, p2: interop.Pointer | interop.Reference<string>) => boolean>, outOldValue: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: typeof NSObject, p2: interop.Pointer | interop.Reference<string>) => boolean>>): void;
+declare function objc_setHook_getImageName(newValue: interop.FunctionReference<(p1: typeof NSObject, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => boolean>, outOldValue: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: typeof NSObject, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => boolean>>): void;
 
 /**
  * @since 14.0
  */
-declare function objc_setHook_lazyClassNamer(newValue: interop.FunctionReference<(p1: typeof NSObject) => string>, oldOutValue: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: typeof NSObject) => string>>): void;
+declare function objc_setHook_lazyClassNamer(newValue: interop.FunctionReference<(p1: typeof NSObject) => interop.Pointer | interop.Reference<any>>, oldOutValue: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: typeof NSObject) => interop.Pointer | interop.Reference<any>>>): void;
 
 /**
  * @since 2.0
@@ -1343,7 +1378,7 @@ declare function object_getClass(obj: any): typeof NSObject;
 /**
  * @since 2.0
  */
-declare function object_getClassName(obj: any): string;
+declare function object_getClassName(obj: any): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 2.0
@@ -1398,17 +1433,17 @@ declare function property_copyAttributeList(property: interop.Pointer | interop.
 /**
  * @since 4.3
  */
-declare function property_copyAttributeValue(property: interop.Pointer | interop.Reference<any>, attributeName: string | interop.Pointer | interop.Reference<any>): string;
+declare function property_copyAttributeValue(property: interop.Pointer | interop.Reference<any>, attributeName: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 2.0
  */
-declare function property_getAttributes(property: interop.Pointer | interop.Reference<any>): string;
+declare function property_getAttributes(property: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 2.0
  */
-declare function property_getName(property: interop.Pointer | interop.Reference<any>): string;
+declare function property_getName(property: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 4.3
@@ -1458,7 +1493,7 @@ declare function protocol_getMethodDescription(proto: any /* Protocol */, aSel: 
 /**
  * @since 2.0
  */
-declare function protocol_getName(proto: any /* Protocol */): string;
+declare function protocol_getName(proto: any /* Protocol */): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 2.0
@@ -1473,7 +1508,7 @@ declare function protocol_isEqual(proto: any /* Protocol */, other: any /* Proto
 /**
  * @since 2.0
  */
-declare function sel_getName(sel: string): string;
+declare function sel_getName(sel: string): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 2.0

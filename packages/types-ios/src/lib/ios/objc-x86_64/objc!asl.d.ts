@@ -47,25 +47,25 @@ declare function asl_create_auxiliary_file(msg: interop.Pointer | interop.Refere
  * @since 8.0
  * @deprecated 10.0
  */
-declare function asl_decode_buffer(_in: string | interop.Pointer | interop.Reference<any>, buf: interop.Pointer | interop.Reference<string>, len: interop.Pointer | interop.Reference<number>): number;
+declare function asl_decode_buffer(_in: string | interop.Pointer | interop.Reference<any>, buf: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, len: interop.Pointer | interop.Reference<number>): number;
 
 /**
  * @since 8.0
  * @deprecated 10.0
  */
-declare function asl_encode_buffer(buf: string | interop.Pointer | interop.Reference<any>, len: number): string;
+declare function asl_encode_buffer(buf: string | interop.Pointer | interop.Reference<any>, len: number): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 8.0
  * @deprecated 10.0
  */
-declare function asl_fetch_key_val_op(msg: interop.Pointer | interop.Reference<any>, n: number, key: interop.Pointer | interop.Reference<string>, val: interop.Pointer | interop.Reference<string>, op: interop.Pointer | interop.Reference<number>): number;
+declare function asl_fetch_key_val_op(msg: interop.Pointer | interop.Reference<any>, n: number, key: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, val: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, op: interop.Pointer | interop.Reference<number>): number;
 
 /**
  * @since 8.0
  * @deprecated 10.0
  */
-declare function asl_format(msg: interop.Pointer | interop.Reference<any>, msg_fmt: string | interop.Pointer | interop.Reference<any>, time_fmt: string | interop.Pointer | interop.Reference<any>, text_encoding: number): string;
+declare function asl_format(msg: interop.Pointer | interop.Reference<any>, msg_fmt: string | interop.Pointer | interop.Reference<any>, time_fmt: string | interop.Pointer | interop.Reference<any>, text_encoding: number): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 2.0
@@ -77,7 +77,7 @@ declare function asl_free(obj: interop.Pointer | interop.Reference<any>): void;
  * @since 2.0
  * @deprecated 10.0
  */
-declare function asl_get(msg: interop.Pointer | interop.Reference<any>, key: string | interop.Pointer | interop.Reference<any>): string;
+declare function asl_get(msg: interop.Pointer | interop.Reference<any>, key: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 8.0
@@ -95,7 +95,7 @@ declare function asl_get_type(obj: interop.Pointer | interop.Reference<any>): nu
  * @since 2.0
  * @deprecated 10.0
  */
-declare function asl_key(msg: interop.Pointer | interop.Reference<any>, n: number): string;
+declare function asl_key(msg: interop.Pointer | interop.Reference<any>, n: number): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 5.0

@@ -269,7 +269,7 @@ declare function alGetSourceiv(sid: number, param: number, values: interop.Point
  * @since 2.0
  * @deprecated 13.0
  */
-declare function alGetString(param: number): string;
+declare function alGetString(param: number): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 2.0
@@ -521,7 +521,7 @@ declare function alcGetProcAddress(device: interop.Pointer | interop.Reference<a
  * @since 2.0
  * @deprecated 13.0
  */
-declare function alcGetString(device: interop.Pointer | interop.Reference<any>, param: number): string;
+declare function alcGetString(device: interop.Pointer | interop.Reference<any>, param: number): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 2.0

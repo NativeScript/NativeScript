@@ -26,7 +26,7 @@ declare function JSClassCreate(definition: interop.Pointer | interop.Reference<J
 interface JSClassDefinition {
 	version: number;
 	attributes: number;
-	className: string;
+	className: interop.Pointer | interop.Reference<any>;
 	parentClass: interop.Pointer | interop.Reference<any>;
 	staticValues: interop.Pointer | interop.Reference<JSStaticValue>;
 	staticFunctions: interop.Pointer | interop.Reference<JSStaticFunction>;
@@ -381,14 +381,14 @@ declare const enum JSRelationCondition {
 }
 
 interface JSStaticFunction {
-	name: string;
+	name: interop.Pointer | interop.Reference<any>;
 	callAsFunction: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: number, p5: interop.Reference<interop.Pointer | interop.Reference<any>>, p6: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => interop.Pointer | interop.Reference<any>>;
 	attributes: number;
 }
 declare var JSStaticFunction: interop.StructType<JSStaticFunction>;
 
 interface JSStaticValue {
-	name: string;
+	name: interop.Pointer | interop.Reference<any>;
 	getProperty: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => interop.Pointer | interop.Reference<any>>;
 	setProperty: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>, p5: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => boolean>;
 	attributes: number;

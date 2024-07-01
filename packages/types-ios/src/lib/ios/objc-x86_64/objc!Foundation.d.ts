@@ -1880,7 +1880,7 @@ declare class NSCoder extends NSObject {
 
 	decodeBoolForKey(key: string): boolean;
 
-	decodeBytesForKeyReturnedLength(key: string, lengthp: interop.Pointer | interop.Reference<number>): string;
+	decodeBytesForKeyReturnedLength(key: string, lengthp: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
 
 	decodeBytesWithReturnedLength(lengthp: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
 
@@ -4880,7 +4880,7 @@ declare class NSFileManager extends NSObject {
 	 */
 	fileSystemAttributesAtPath(path: string): NSDictionary<any, any>;
 
-	fileSystemRepresentationWithPath(path: string): string;
+	fileSystemRepresentationWithPath(path: string): interop.Pointer | interop.Reference<any>;
 
 	/**
 	 * @since 11.0
@@ -5516,7 +5516,7 @@ declare function NSFullUserName(): string;
 
 declare var NSGenericException: string;
 
-declare function NSGetSizeAndAlignment(typePtr: string | interop.Pointer | interop.Reference<any>, sizep: interop.Pointer | interop.Reference<number>, alignp: interop.Pointer | interop.Reference<number>): string;
+declare function NSGetSizeAndAlignment(typePtr: string | interop.Pointer | interop.Reference<any>, sizep: interop.Pointer | interop.Reference<number>, alignp: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
 
 declare function NSGetUncaughtExceptionHandler(): interop.Pointer | interop.Reference<interop.FunctionReference<(p1: NSException) => void>>;
 
@@ -6457,7 +6457,7 @@ declare class NSInputStream extends NSStream {
 	 */
 	constructor(o: { URL: NSURL; });
 
-	getBufferLength(buffer: interop.Pointer | interop.Reference<string>, len: interop.Pointer | interop.Reference<number>): boolean;
+	getBufferLength(buffer: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, len: interop.Pointer | interop.Reference<number>): boolean;
 
 	initWithData(data: NSData): this;
 
@@ -8762,11 +8762,11 @@ declare class NSMethodSignature extends NSObject {
 
 	readonly methodReturnLength: number;
 
-	readonly methodReturnType: string;
+	readonly methodReturnType: interop.Pointer | interop.Reference<any>;
 
 	readonly numberOfArguments: number;
 
-	getArgumentTypeAtIndex(idx: number): string;
+	getArgumentTypeAtIndex(idx: number): interop.Pointer | interop.Reference<any>;
 
 	isOneway(): boolean;
 }
@@ -12927,7 +12927,7 @@ declare class NSString extends NSObject implements CKRecordValue, CNKeyDescripto
 
 	static stringWithUTF8String(nullTerminatedCString: string | interop.Pointer | interop.Reference<any>): NSString;
 
-	readonly UTF8String: string;
+	readonly UTF8String: interop.Pointer | interop.Reference<any>;
 
 	readonly absolutePath: boolean;
 
@@ -12946,7 +12946,7 @@ declare class NSString extends NSObject implements CKRecordValue, CNKeyDescripto
 
 	readonly fastestEncoding: number;
 
-	readonly fileSystemRepresentation: string;
+	readonly fileSystemRepresentation: interop.Pointer | interop.Reference<any>;
 
 	readonly floatValue: number;
 
@@ -13105,7 +13105,7 @@ declare class NSString extends NSObject implements CKRecordValue, CNKeyDescripto
 	 * @since 2.0
 	 * @deprecated 2.0
 	 */
-	cString(): string;
+	cString(): interop.Pointer | interop.Reference<any>;
 
 	/**
 	 * @since 2.0
@@ -13113,7 +13113,7 @@ declare class NSString extends NSObject implements CKRecordValue, CNKeyDescripto
 	 */
 	cStringLength(): number;
 
-	cStringUsingEncoding(encoding: number): string;
+	cStringUsingEncoding(encoding: number): interop.Pointer | interop.Reference<any>;
 
 	canBeConvertedToEncoding(encoding: number): boolean;
 
@@ -13381,7 +13381,7 @@ declare class NSString extends NSObject implements CKRecordValue, CNKeyDescripto
 	 * @since 2.0
 	 * @deprecated 2.0
 	 */
-	lossyCString(): string;
+	lossyCString(): interop.Pointer | interop.Reference<any>;
 
 	/**
 	 * @since 6.0
@@ -14445,7 +14445,7 @@ declare class NSURL extends NSObject implements NSCopying, NSItemProviderReading
 	/**
 	 * @since 7.0
 	 */
-	readonly fileSystemRepresentation: string;
+	readonly fileSystemRepresentation: interop.Pointer | interop.Reference<any>;
 
 	readonly fileURL: boolean;
 
@@ -19342,7 +19342,7 @@ declare class NSValue extends NSObject implements NSCopying, NSSecureCoding {
 
 	readonly nonretainedObjectValue: any;
 
-	readonly objCType: string;
+	readonly objCType: interop.Pointer | interop.Reference<any>;
 
 	readonly pointerValue: interop.Pointer | interop.Reference<any>;
 

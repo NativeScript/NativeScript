@@ -588,13 +588,13 @@ declare function CFDataDeleteBytes(theData: NSData, range: CFRange): void;
  */
 declare function CFDataFind(theData: NSData, dataToFind: NSData, searchRange: CFRange, compareOptions: CFDataSearchFlags): CFRange;
 
-declare function CFDataGetBytePtr(theData: NSData): string;
+declare function CFDataGetBytePtr(theData: NSData): interop.Pointer | interop.Reference<any>;
 
 declare function CFDataGetBytes(theData: NSData, range: CFRange, buffer: string | interop.Pointer | interop.Reference<any>): void;
 
 declare function CFDataGetLength(theData: NSData): number;
 
-declare function CFDataGetMutableBytePtr(theData: NSData): string;
+declare function CFDataGetMutableBytePtr(theData: NSData): interop.Pointer | interop.Reference<any>;
 
 declare function CFDataGetTypeID(): number;
 
@@ -1491,7 +1491,7 @@ declare function CFReadStreamCreateWithBytesNoCopy(alloc: any, bytes: string | i
 
 declare function CFReadStreamCreateWithFile(alloc: any, fileURL: NSURL): NSInputStream;
 
-declare function CFReadStreamGetBuffer(stream: NSInputStream, maxBytesToRead: number, numBytesRead: interop.Pointer | interop.Reference<number>): string;
+declare function CFReadStreamGetBuffer(stream: NSInputStream, maxBytesToRead: number, numBytesRead: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
 
 declare function CFReadStreamGetError(stream: NSInputStream): CFStreamError;
 
@@ -2337,7 +2337,7 @@ declare function CFStringGetBytes(theString: string, range: CFRange, encoding: n
 
 declare function CFStringGetCString(theString: string, buffer: string | interop.Pointer | interop.Reference<any>, bufferSize: number, encoding: number): boolean;
 
-declare function CFStringGetCStringPtr(theString: string, encoding: number): string;
+declare function CFStringGetCStringPtr(theString: string, encoding: number): interop.Pointer | interop.Reference<any>;
 
 declare function CFStringGetCharacterAtIndex(theString: string, idx: number): number;
 
@@ -2379,7 +2379,7 @@ declare function CFStringGetParagraphBounds(string: string, range: CFRange, parB
 
 declare function CFStringGetPascalString(theString: string, buffer: string | interop.Pointer | interop.Reference<any>, bufferSize: number, encoding: number): boolean;
 
-declare function CFStringGetPascalStringPtr(theString: string, encoding: number): string;
+declare function CFStringGetPascalStringPtr(theString: string, encoding: number): interop.Pointer | interop.Reference<any>;
 
 declare function CFStringGetRangeOfComposedCharactersAtIndex(theString: string, theIndex: number): CFRange;
 
@@ -2397,7 +2397,7 @@ interface CFStringInlineBuffer {
 	buffer: interop.Reference<number>;
 	theString: string;
 	directUniCharBuffer: interop.Pointer | interop.Reference<number>;
-	directCStringBuffer: string;
+	directCStringBuffer: interop.Pointer | interop.Reference<any>;
 	rangeToBuffer: CFRange;
 	bufferedRangeStart: number;
 	bufferedRangeEnd: number;

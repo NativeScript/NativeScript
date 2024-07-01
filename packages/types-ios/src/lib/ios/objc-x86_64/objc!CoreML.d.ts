@@ -697,6 +697,11 @@ declare class MLModelAsset extends NSObject {
 	static alloc(): MLModelAsset; // inherited from NSObject
 
 	/**
+	 * @since 18.0
+	 */
+	static modelAssetWithSpecificationDataBlobMappingError(specificationData: NSData, blobMapping: NSDictionary<NSURL, NSData>): MLModelAsset;
+
+	/**
 	 * @since 16.0
 	 */
 	static modelAssetWithSpecificationDataError(specificationData: NSData): MLModelAsset;
@@ -1095,6 +1100,11 @@ declare class MLMultiArray extends NSObject implements NSSecureCoding {
 
 	constructor(o: { shape: NSArray<number> | number[]; dataType: MLMultiArrayDataType; });
 
+	/**
+	 * @since 18.0
+	 */
+	constructor(o: { shape: NSArray<number> | number[]; dataType: MLMultiArrayDataType; strides: NSArray<number> | number[]; });
+
 	encodeWithCoder(coder: NSCoder): void;
 
 	/**
@@ -1118,6 +1128,11 @@ declare class MLMultiArray extends NSObject implements NSSecureCoding {
 
 	initWithShapeDataTypeError(shape: NSArray<number> | number[], dataType: MLMultiArrayDataType): this;
 
+	/**
+	 * @since 18.0
+	 */
+	initWithShapeDataTypeStrides(shape: NSArray<number> | number[], dataType: MLMultiArrayDataType, strides: NSArray<number> | number[]): this;
+
 	objectAtIndexedSubscript(idx: number): number;
 
 	objectForKeyedSubscript(key: NSArray<number> | number[]): number;
@@ -1125,6 +1140,11 @@ declare class MLMultiArray extends NSObject implements NSSecureCoding {
 	setObjectAtIndexedSubscript(obj: number, idx: number): void;
 
 	setObjectForKeyedSubscript(obj: number, key: NSArray<number> | number[]): void;
+
+	/**
+	 * @since 18.0
+	 */
+	transferToMultiArray(destinationMultiArray: MLMultiArray): void;
 }
 
 /**
@@ -1286,6 +1306,11 @@ declare class MLOptimizationHints extends NSObject implements NSCopying, NSSecur
 
 	reshapeFrequency: MLReshapeFrequencyHint;
 
+	/**
+	 * @since 18.0
+	 */
+	specializationStrategy: MLSpecializationStrategy;
+
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
@@ -1442,6 +1467,16 @@ declare class MLSequenceConstraint extends NSObject implements NSSecureCoding {
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
+}
+
+/**
+ * @since 18.0
+ */
+declare const enum MLSpecializationStrategy {
+
+	Default = 0,
+
+	FastPrediction = 1
 }
 
 /**

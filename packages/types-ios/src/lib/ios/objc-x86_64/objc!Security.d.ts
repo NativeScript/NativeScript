@@ -3723,7 +3723,7 @@ declare function sec_protocol_metadata_get_negotiated_ciphersuite(metadata: NSOb
 /**
  * @since 12.0
  */
-declare function sec_protocol_metadata_get_negotiated_protocol(metadata: NSObject & OS_sec_protocol_metadata): string;
+declare function sec_protocol_metadata_get_negotiated_protocol(metadata: NSObject & OS_sec_protocol_metadata): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 12.0
@@ -3744,7 +3744,7 @@ declare function sec_protocol_metadata_get_negotiated_tls_protocol_version(metad
 /**
  * @since 12.0
  */
-declare function sec_protocol_metadata_get_server_name(metadata: NSObject & OS_sec_protocol_metadata): string;
+declare function sec_protocol_metadata_get_server_name(metadata: NSObject & OS_sec_protocol_metadata): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 12.0

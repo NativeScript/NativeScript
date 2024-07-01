@@ -24,40 +24,6 @@ declare class BGAppRefreshTaskRequest extends BGTaskRequest {
 }
 
 /**
- * @since 18.0
- */
-declare class BGContinuedProcessingTask extends BGTask {
-
-	static alloc(): BGContinuedProcessingTask; // inherited from NSObject
-
-	static new(): BGContinuedProcessingTask; // inherited from NSObject
-
-	readonly reason: string;
-
-	readonly title: string;
-
-	updateProgress(progress: NSProgress): void;
-}
-
-/**
- * @since 18.0
- */
-declare class BGContinuedProcessingTaskRequest extends BGTaskRequest {
-
-	static alloc(): BGContinuedProcessingTaskRequest; // inherited from NSObject
-
-	static new(): BGContinuedProcessingTaskRequest; // inherited from NSObject
-
-	reason: string;
-
-	title: string;
-
-	constructor(o: { identifier: string; });
-
-	initWithIdentifier(identifier: string): this;
-}
-
-/**
  * @since 17.0
  */
 declare class BGHealthResearchTask extends BGProcessingTask {

@@ -510,7 +510,7 @@ declare function gss_iter_creds_f(min_stat: interop.Pointer | interop.Reference<
 /**
  * @since 5.0
  */
-declare function gss_krb5_ccache_name(minor_status: interop.Pointer | interop.Reference<number>, name: string | interop.Pointer | interop.Reference<any>, out_name: interop.Pointer | interop.Reference<string>): number;
+declare function gss_krb5_ccache_name(minor_status: interop.Pointer | interop.Reference<number>, name: string | interop.Pointer | interop.Reference<any>, out_name: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 interface gss_krb5_cfx_keydata_t {
 	have_acceptor_subkey: number;

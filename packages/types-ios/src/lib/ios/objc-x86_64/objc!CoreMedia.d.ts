@@ -82,7 +82,7 @@ declare function CMAudioSampleBufferCreateWithPacketDescriptionsAndMakeDataReady
 /**
  * @since 4.0
  */
-declare function CMBlockBufferAccessDataBytes(theBuffer: any, offset: number, length: number, temporaryBlock: interop.Pointer | interop.Reference<any>, returnedPointerOut: interop.Pointer | interop.Reference<string>): number;
+declare function CMBlockBufferAccessDataBytes(theBuffer: any, offset: number, length: number, temporaryBlock: interop.Pointer | interop.Reference<any>, returnedPointerOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 /**
  * @since 4.0
@@ -145,7 +145,7 @@ declare function CMBlockBufferGetDataLength(theBuffer: any): number;
 /**
  * @since 4.0
  */
-declare function CMBlockBufferGetDataPointer(theBuffer: any, offset: number, lengthAtOffsetOut: interop.Pointer | interop.Reference<number>, totalLengthOut: interop.Pointer | interop.Reference<number>, dataPointerOut: interop.Pointer | interop.Reference<string>): number;
+declare function CMBlockBufferGetDataPointer(theBuffer: any, offset: number, lengthAtOffsetOut: interop.Pointer | interop.Reference<number>, totalLengthOut: interop.Pointer | interop.Reference<number>, dataPointerOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 /**
  * @since 4.0
@@ -2053,12 +2053,12 @@ declare function CMVideoFormatDescriptionCreateFromBigEndianImageDescriptionData
 /**
  * @since 7.0
  */
-declare function CMVideoFormatDescriptionCreateFromH264ParameterSets(allocator: any, parameterSetCount: number, parameterSetPointers: interop.Pointer | interop.Reference<string>, parameterSetSizes: interop.Pointer | interop.Reference<number>, NALUnitHeaderLength: number, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMVideoFormatDescriptionCreateFromH264ParameterSets(allocator: any, parameterSetCount: number, parameterSetPointers: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, parameterSetSizes: interop.Pointer | interop.Reference<number>, NALUnitHeaderLength: number, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
 /**
  * @since 11.0
  */
-declare function CMVideoFormatDescriptionCreateFromHEVCParameterSets(allocator: any, parameterSetCount: number, parameterSetPointers: interop.Pointer | interop.Reference<string>, parameterSetSizes: interop.Pointer | interop.Reference<number>, NALUnitHeaderLength: number, extensions: NSDictionary<any, any>, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMVideoFormatDescriptionCreateFromHEVCParameterSets(allocator: any, parameterSetCount: number, parameterSetPointers: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, parameterSetSizes: interop.Pointer | interop.Reference<number>, NALUnitHeaderLength: number, extensions: NSDictionary<any, any>, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
 /**
  * @since 4.0
@@ -2078,12 +2078,12 @@ declare function CMVideoFormatDescriptionGetExtensionKeysCommonWithImageBuffers(
 /**
  * @since 7.0
  */
-declare function CMVideoFormatDescriptionGetH264ParameterSetAtIndex(videoDesc: any, parameterSetIndex: number, parameterSetPointerOut: interop.Pointer | interop.Reference<string>, parameterSetSizeOut: interop.Pointer | interop.Reference<number>, parameterSetCountOut: interop.Pointer | interop.Reference<number>, NALUnitHeaderLengthOut: interop.Pointer | interop.Reference<number>): number;
+declare function CMVideoFormatDescriptionGetH264ParameterSetAtIndex(videoDesc: any, parameterSetIndex: number, parameterSetPointerOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, parameterSetSizeOut: interop.Pointer | interop.Reference<number>, parameterSetCountOut: interop.Pointer | interop.Reference<number>, NALUnitHeaderLengthOut: interop.Pointer | interop.Reference<number>): number;
 
 /**
  * @since 11.0
  */
-declare function CMVideoFormatDescriptionGetHEVCParameterSetAtIndex(videoDesc: any, parameterSetIndex: number, parameterSetPointerOut: interop.Pointer | interop.Reference<string>, parameterSetSizeOut: interop.Pointer | interop.Reference<number>, parameterSetCountOut: interop.Pointer | interop.Reference<number>, NALUnitHeaderLengthOut: interop.Pointer | interop.Reference<number>): number;
+declare function CMVideoFormatDescriptionGetHEVCParameterSetAtIndex(videoDesc: any, parameterSetIndex: number, parameterSetPointerOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, parameterSetSizeOut: interop.Pointer | interop.Reference<number>, parameterSetCountOut: interop.Pointer | interop.Reference<number>, NALUnitHeaderLengthOut: interop.Pointer | interop.Reference<number>): number;
 
 /**
  * @since 4.0

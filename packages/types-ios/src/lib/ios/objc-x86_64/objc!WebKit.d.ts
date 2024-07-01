@@ -53,10 +53,6 @@ declare class WKBackForwardListItem extends NSObject {
 
 	readonly initialURL: NSURL;
 
-	/**
-	 * @since 8.0
-	 * @deprecated 18.0
-	 */
 	readonly title: string;
 }
 
@@ -1252,6 +1248,11 @@ declare class WKWebView extends UIView {
 	 */
 	underPageBackgroundColor: UIColor;
 
+	/**
+	 * @since 18.0
+	 */
+	readonly writingToolsActive: boolean;
+
 	constructor(o: { frame: CGRect; configuration: WKWebViewConfiguration; });
 
 	/**
@@ -1497,6 +1498,11 @@ declare class WKWebViewConfiguration extends NSObject implements NSCopying, NSSe
 
 	selectionGranularity: WKSelectionGranularity;
 
+	/**
+	 * @since 18.0
+	 */
+	supportsAdaptiveImageGlyph: boolean;
+
 	suppressesIncrementalRendering: boolean;
 
 	/**
@@ -1510,6 +1516,11 @@ declare class WKWebViewConfiguration extends NSObject implements NSCopying, NSSe
 	 * @since 9.0
 	 */
 	websiteDataStore: WKWebsiteDataStore;
+
+	/**
+	 * @since 18.0
+	 */
+	writingToolsBehavior: UIWritingToolsBehavior;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 

@@ -2188,7 +2188,7 @@ declare var unw_proc_info_t: interop.StructType<unw_proc_info_t>;
 /**
  * @since 5.0
  */
-declare function unw_regname(p1: interop.Pointer | interop.Reference<unw_cursor_t>, p2: number): string;
+declare function unw_regname(p1: interop.Pointer | interop.Reference<unw_cursor_t>, p2: number): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 5.0

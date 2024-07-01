@@ -476,7 +476,7 @@ declare class AVAudioEngine extends NSObject {
 	 * @since 13.0
 	 * @deprecated 16.0
 	 */
-	connectMIDIToFormatBlock(sourceNode: AVAudioNode, destinationNode: AVAudioNode, format: AVAudioFormat, tapBlock: (p1: number, p2: number, p3: number, p4: string) => number): void;
+	connectMIDIToFormatBlock(sourceNode: AVAudioNode, destinationNode: AVAudioNode, format: AVAudioFormat, tapBlock: (p1: number, p2: number, p3: number, p4: interop.Pointer | interop.Reference<any>) => number): void;
 
 	/**
 	 * @since 16.0
@@ -487,7 +487,7 @@ declare class AVAudioEngine extends NSObject {
 	 * @since 13.0
 	 * @deprecated 16.0
 	 */
-	connectMIDIToNodesFormatBlock(sourceNode: AVAudioNode, destinationNodes: NSArray<AVAudioNode> | AVAudioNode[], format: AVAudioFormat, tapBlock: (p1: number, p2: number, p3: number, p4: string) => number): void;
+	connectMIDIToNodesFormatBlock(sourceNode: AVAudioNode, destinationNodes: NSArray<AVAudioNode> | AVAudioNode[], format: AVAudioFormat, tapBlock: (p1: number, p2: number, p3: number, p4: interop.Pointer | interop.Reference<any>) => number): void;
 
 	/**
 	 * @since 16.0

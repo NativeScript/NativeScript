@@ -108,7 +108,7 @@ declare function CCSymmetricWrappedSize(algorithm: number, rawKeyLen: number): n
  * @since 2.0
  * @deprecated 13.0
  */
-declare function CC_MD2(data: interop.Pointer | interop.Reference<any>, len: number, md: string | interop.Pointer | interop.Reference<any>): string;
+declare function CC_MD2(data: interop.Pointer | interop.Reference<any>, len: number, md: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 interface CC_MD2_CTX {
 	num: number;
@@ -140,7 +140,7 @@ declare function CC_MD2_Update(c: interop.Pointer | interop.Reference<CC_MD2_CTX
  * @since 2.0
  * @deprecated 13.0
  */
-declare function CC_MD4(data: interop.Pointer | interop.Reference<any>, len: number, md: string | interop.Pointer | interop.Reference<any>): string;
+declare function CC_MD4(data: interop.Pointer | interop.Reference<any>, len: number, md: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 interface CC_MD4_CTX {
 	A: number;
@@ -176,7 +176,7 @@ declare function CC_MD4_Update(c: interop.Pointer | interop.Reference<CC_MD4_CTX
  * @since 2.0
  * @deprecated 13.0
  */
-declare function CC_MD5(data: interop.Pointer | interop.Reference<any>, len: number, md: string | interop.Pointer | interop.Reference<any>): string;
+declare function CC_MD5(data: interop.Pointer | interop.Reference<any>, len: number, md: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 interface CC_MD5_CTX {
 	A: number;
@@ -208,7 +208,7 @@ declare function CC_MD5_Init(c: interop.Pointer | interop.Reference<CC_MD5_CTX>)
  */
 declare function CC_MD5_Update(c: interop.Pointer | interop.Reference<CC_MD5_CTX>, data: interop.Pointer | interop.Reference<any>, len: number): number;
 
-declare function CC_SHA1(data: interop.Pointer | interop.Reference<any>, len: number, md: string | interop.Pointer | interop.Reference<any>): string;
+declare function CC_SHA1(data: interop.Pointer | interop.Reference<any>, len: number, md: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 interface CC_SHA1_CTX {
 	h0: number;
@@ -232,7 +232,7 @@ declare function CC_SHA1_Update(c: interop.Pointer | interop.Reference<CC_SHA1_C
 /**
  * @since 2.0
  */
-declare function CC_SHA224(data: interop.Pointer | interop.Reference<any>, len: number, md: string | interop.Pointer | interop.Reference<any>): string;
+declare function CC_SHA224(data: interop.Pointer | interop.Reference<any>, len: number, md: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 2.0
@@ -252,7 +252,7 @@ declare function CC_SHA224_Update(c: interop.Pointer | interop.Reference<CC_SHA2
 /**
  * @since 2.0
  */
-declare function CC_SHA256(data: interop.Pointer | interop.Reference<any>, len: number, md: string | interop.Pointer | interop.Reference<any>): string;
+declare function CC_SHA256(data: interop.Pointer | interop.Reference<any>, len: number, md: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 interface CC_SHA256_CTX {
 	count: interop.Reference<number>;
@@ -279,7 +279,7 @@ declare function CC_SHA256_Update(c: interop.Pointer | interop.Reference<CC_SHA2
 /**
  * @since 2.0
  */
-declare function CC_SHA384(data: interop.Pointer | interop.Reference<any>, len: number, md: string | interop.Pointer | interop.Reference<any>): string;
+declare function CC_SHA384(data: interop.Pointer | interop.Reference<any>, len: number, md: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 2.0
@@ -299,7 +299,7 @@ declare function CC_SHA384_Update(c: interop.Pointer | interop.Reference<CC_SHA5
 /**
  * @since 2.0
  */
-declare function CC_SHA512(data: interop.Pointer | interop.Reference<any>, len: number, md: string | interop.Pointer | interop.Reference<any>): string;
+declare function CC_SHA512(data: interop.Pointer | interop.Reference<any>, len: number, md: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 interface CC_SHA512_CTX {
 	count: interop.Reference<number>;
@@ -326,7 +326,7 @@ declare function CC_SHA512_Update(c: interop.Pointer | interop.Reference<CC_SHA5
 /**
  * @since 5.0
  */
-declare var CCrfc3394_iv: string;
+declare var CCrfc3394_iv: interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 5.0

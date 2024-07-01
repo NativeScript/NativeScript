@@ -10,13 +10,13 @@ declare var OS_xpc_object: {
  * @since 7.0
  * @deprecated 7.0
  */
-declare var XPC_ACTIVITY_REQUIRE_BATTERY_LEVEL: string;
+declare var XPC_ACTIVITY_REQUIRE_BATTERY_LEVEL: interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 7.0
  * @deprecated 7.0
  */
-declare var XPC_ACTIVITY_REQUIRE_HDD_SPINNING: string;
+declare var XPC_ACTIVITY_REQUIRE_HDD_SPINNING: interop.Pointer | interop.Reference<any>;
 
 declare const XPC_ACTIVITY_STATE_CHECK_IN: number;
 
@@ -53,7 +53,7 @@ declare var _xpc_error_connection_invalid: void;
 /**
  * @since 5.0
  */
-declare var _xpc_error_key_description: string;
+declare var _xpc_error_key_description: interop.Pointer | interop.Reference<any>;
 
 declare var _xpc_error_peer_code_signing_requirement: void;
 
@@ -65,7 +65,7 @@ declare var _xpc_error_termination_imminent: void;
 /**
  * @since 5.0
  */
-declare var _xpc_event_key_name: string;
+declare var _xpc_event_key_name: interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 5.0
@@ -222,7 +222,7 @@ declare function xpc_array_get_int64(xarray: NSObject & OS_xpc_object, index: nu
 /**
  * @since 5.0
  */
-declare function xpc_array_get_string(xarray: NSObject & OS_xpc_object, index: number): string;
+declare function xpc_array_get_string(xarray: NSObject & OS_xpc_object, index: number): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 5.0
@@ -232,7 +232,7 @@ declare function xpc_array_get_uint64(xarray: NSObject & OS_xpc_object, index: n
 /**
  * @since 5.0
  */
-declare function xpc_array_get_uuid(xarray: NSObject & OS_xpc_object, index: number): string;
+declare function xpc_array_get_uuid(xarray: NSObject & OS_xpc_object, index: number): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 5.0
@@ -317,7 +317,7 @@ declare function xpc_connection_cancel(connection: NSObject & OS_xpc_object): vo
 /**
  * @since 15.0
  */
-declare function xpc_connection_copy_invalidation_reason(connection: NSObject & OS_xpc_object): string;
+declare function xpc_connection_copy_invalidation_reason(connection: NSObject & OS_xpc_object): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 5.0
@@ -347,7 +347,7 @@ declare function xpc_connection_get_euid(connection: NSObject & OS_xpc_object): 
 /**
  * @since 5.0
  */
-declare function xpc_connection_get_name(connection: NSObject & OS_xpc_object): string;
+declare function xpc_connection_get_name(connection: NSObject & OS_xpc_object): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 5.0
@@ -432,7 +432,7 @@ declare function xpc_copy(object: NSObject & OS_xpc_object): NSObject & OS_xpc_o
 /**
  * @since 5.0
  */
-declare function xpc_copy_description(object: NSObject & OS_xpc_object): string;
+declare function xpc_copy_description(object: NSObject & OS_xpc_object): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 5.0
@@ -474,12 +474,12 @@ declare function xpc_date_create_from_current(): NSObject & OS_xpc_object;
  */
 declare function xpc_date_get_value(xdate: NSObject & OS_xpc_object): number;
 
-declare function xpc_debugger_api_misuse_info(): string;
+declare function xpc_debugger_api_misuse_info(): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 5.0
  */
-declare function xpc_dictionary_apply(xdict: NSObject & OS_xpc_object, applier: (p1: string, p2: NSObject & OS_xpc_object) => boolean): boolean;
+declare function xpc_dictionary_apply(xdict: NSObject & OS_xpc_object, applier: (p1: interop.Pointer | interop.Reference<any>, p2: NSObject & OS_xpc_object) => boolean): boolean;
 
 /**
  * @since 5.0
@@ -489,7 +489,7 @@ declare function xpc_dictionary_copy_mach_send(xdict: NSObject & OS_xpc_object, 
 /**
  * @since 5.0
  */
-declare function xpc_dictionary_create(keys: interop.Pointer | interop.Reference<string>, values: interop.Pointer | interop.Reference<NSObject & OS_xpc_object>, count: number): NSObject & OS_xpc_object;
+declare function xpc_dictionary_create(keys: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, values: interop.Pointer | interop.Reference<NSObject & OS_xpc_object>, count: number): NSObject & OS_xpc_object;
 
 /**
  * @since 5.0
@@ -559,7 +559,7 @@ declare function xpc_dictionary_get_remote_connection(xdict: NSObject & OS_xpc_o
 /**
  * @since 5.0
  */
-declare function xpc_dictionary_get_string(xdict: NSObject & OS_xpc_object, key: string | interop.Pointer | interop.Reference<any>): string;
+declare function xpc_dictionary_get_string(xdict: NSObject & OS_xpc_object, key: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 5.0
@@ -569,7 +569,7 @@ declare function xpc_dictionary_get_uint64(xdict: NSObject & OS_xpc_object, key:
 /**
  * @since 5.0
  */
-declare function xpc_dictionary_get_uuid(xdict: NSObject & OS_xpc_object, key: string | interop.Pointer | interop.Reference<any>): string;
+declare function xpc_dictionary_get_uuid(xdict: NSObject & OS_xpc_object, key: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 5.0
@@ -724,12 +724,12 @@ declare function xpc_string_get_length(xstring: NSObject & OS_xpc_object): numbe
 /**
  * @since 5.0
  */
-declare function xpc_string_get_string_ptr(xstring: NSObject & OS_xpc_object): string;
+declare function xpc_string_get_string_ptr(xstring: NSObject & OS_xpc_object): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 13.0
  */
-declare function xpc_type_get_name(type: interop.Pointer | interop.Reference<any>): string;
+declare function xpc_type_get_name(type: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 5.0
@@ -749,4 +749,4 @@ declare function xpc_uuid_create(uuid: interop.Reference<number>): NSObject & OS
 /**
  * @since 5.0
  */
-declare function xpc_uuid_get_bytes(xuuid: NSObject & OS_xpc_object): string;
+declare function xpc_uuid_get_bytes(xuuid: NSObject & OS_xpc_object): interop.Pointer | interop.Reference<any>;

@@ -41,15 +41,15 @@ declare function MIDIBluetoothDriverActivateAllConnections(): number;
  */
 declare function MIDIBluetoothDriverDisconnect(uuid: string): number;
 
-declare const enum MIDICICategoryBitmap {
+declare const enum MIDICICategoryOptions {
 
-	kMIDICICategoryBitmapProtocolNegotiation = 2,
+	kMIDICICategoryOptionsProtocolNegotiation = 2,
 
-	kMIDICICategoryBitmapProfileConfigurationSupported = 4,
+	kMIDICICategoryOptionsProfileConfigurationSupported = 4,
 
-	kMIDICICategoryBitmapPropertyExchangeSupported = 8,
+	kMIDICICategoryOptionsPropertyExchangeSupported = 8,
 
-	kMIDICICategoryBitmapProcessInquirySupported = 16
+	kMIDICICategoryOptionsProcessInquirySupported = 16
 }
 
 /**
@@ -387,11 +387,6 @@ declare class MIDICIProfileState extends NSObject implements NSSecureCoding {
 	initWithEnabledProfilesDisabledProfiles(enabled: NSArray<MIDICIProfile> | MIDICIProfile[], disabled: NSArray<MIDICIProfile> | MIDICIProfile[]): this;
 }
 
-/**
- * @since 18.0
- */
-declare var MIDICIProfileStateChangedNotification: string;
-
 declare const enum MIDICIProfileType {
 
 	kMIDICIProfileTypeSingleChannel = 1,
@@ -407,6 +402,11 @@ declare const enum MIDICIProfileType {
  * @since 18.0
  */
 declare var MIDICIProfileWasRemovedNotification: string;
+
+/**
+ * @since 18.0
+ */
+declare var MIDICIProfileWasUpdatedNotification: string;
 
 declare const enum MIDICIPropertyExchangeMessageType {
 
@@ -1251,7 +1251,7 @@ declare const enum MIDISysExStatus {
 
 interface MIDISysexSendRequest {
 	destination: number;
-	data: string;
+	data: interop.Pointer | interop.Reference<any>;
 	bytesToSend: number;
 	complete: boolean;
 	reserved: interop.Reference<number>;
@@ -1472,7 +1472,7 @@ declare class MIDIUMPEndpoint extends NSObject {
 
 	readonly productInstanceID: string;
 
-	readonly supportedMIDIProtocols: MIDIUMPProtocolBitmap;
+	readonly supportedMIDIProtocols: MIDIUMPProtocolOptions;
 }
 
 /**
@@ -1497,17 +1497,17 @@ declare var MIDIUMPEndpointObjectKey: string;
 /**
  * @since 18.0
  */
-declare var MIDIUMPEndpointUpdatedNotification: string;
-
-/**
- * @since 18.0
- */
 declare var MIDIUMPEndpointWasAddedNotification: string;
 
 /**
  * @since 18.0
  */
 declare var MIDIUMPEndpointWasRemovedNotification: string;
+
+/**
+ * @since 18.0
+ */
+declare var MIDIUMPEndpointWasUpdatedNotification: string;
 
 /**
  * @since 18.0
@@ -1580,7 +1580,7 @@ declare const enum MIDIUMPFunctionBlockUIHint {
 /**
  * @since 18.0
  */
-declare var MIDIUMPFunctionBlockUpdatedNotification: string;
+declare var MIDIUMPFunctionBlockWasUpdatedNotification: string;
 
 /**
  * @since 18.0
@@ -1621,18 +1621,18 @@ declare class MIDIUMPMutableFunctionBlock extends MIDIUMPFunctionBlock {
 
 	initWithNameDirectionFirstGroupTotalGroupsSpannedMaxSysEx8StreamsMIDI1InfoUIHintIsEnabled(name: string, direction: MIDIUMPFunctionBlockDirection, firstGroup: number, totalGroupsSpanned: number, maxSysEx8Streams: number, MIDI1Info: MIDIUMPFunctionBlockMIDI1Info, UIHint: MIDIUMPFunctionBlockUIHint, isEnabled: boolean): this;
 
-	reconfigureWithFirstGroupDirectionMIDI1InfoUIHintError(newGroup: number, direction: MIDIUMPFunctionBlockDirection, MIDI1Info: MIDIUMPFunctionBlockMIDI1Info, UIHint: MIDIUMPFunctionBlockUIHint): boolean;
+	reconfigureWithFirstGroupDirectionMIDI1InfoUIHintError(firstGroup: number, direction: MIDIUMPFunctionBlockDirection, MIDI1Info: MIDIUMPFunctionBlockMIDI1Info, UIHint: MIDIUMPFunctionBlockUIHint): boolean;
 
 	setEnabledError(isEnabled: boolean): boolean;
 
 	setNameError(name: string): boolean;
 }
 
-declare const enum MIDIUMPProtocolBitmap {
+declare const enum MIDIUMPProtocolOptions {
 
-	kMIDIUMPSupportedProtocolMIDI1 = 1,
+	kMIDIUMPProtocolOptionsMIDI1 = 1,
 
-	kMIDIUMPSupportedProtocolMIDI2 = 2
+	kMIDIUMPProtocolOptionsMIDI2 = 2
 }
 
 declare const enum MIDIUtilityStatus {

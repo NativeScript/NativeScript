@@ -373,6 +373,8 @@ declare class CMHeadphoneMotionManager extends NSObject {
 
 	static new(): CMHeadphoneMotionManager; // inherited from NSObject
 
+	readonly connectionStatusActive: boolean;
+
 	delegate: CMHeadphoneMotionManagerDelegate;
 
 	readonly deviceMotion: CMDeviceMotion;
@@ -381,9 +383,13 @@ declare class CMHeadphoneMotionManager extends NSObject {
 
 	readonly deviceMotionAvailable: boolean;
 
+	startConnectionStatusUpdates(): void;
+
 	startDeviceMotionUpdates(): void;
 
 	startDeviceMotionUpdatesToQueueWithHandler(queue: NSOperationQueue, handler: (p1: CMDeviceMotion, p2: NSError) => void): void;
+
+	stopConnectionStatusUpdates(): void;
 
 	stopDeviceMotionUpdates(): void;
 }

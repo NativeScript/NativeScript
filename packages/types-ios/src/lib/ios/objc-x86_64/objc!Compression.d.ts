@@ -46,9 +46,9 @@ declare const enum compression_status {
 }
 
 interface compression_stream {
-	dst_ptr: string;
+	dst_ptr: interop.Pointer | interop.Reference<any>;
 	dst_size: number;
-	src_ptr: string;
+	src_ptr: interop.Pointer | interop.Reference<any>;
 	src_size: number;
 	state: interop.Pointer | interop.Reference<any>;
 }

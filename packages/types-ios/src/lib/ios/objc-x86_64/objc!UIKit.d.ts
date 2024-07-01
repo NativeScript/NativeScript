@@ -3830,6 +3830,11 @@ declare class UIAccessibilityCustomAction extends NSObject {
 	 */
 	attributedName: NSAttributedString;
 
+	/**
+	 * @since 18.0
+	 */
+	category: string;
+
 	image: UIImage;
 
 	name: string;
@@ -3912,6 +3917,11 @@ declare class UIAccessibilityCustomAction extends NSObject {
 
 	initWithNameTargetSelector(name: string, target: any, selector: string): this;
 }
+
+/**
+ * @since 18.0
+ */
+declare var UIAccessibilityCustomActionCategoryEdit: string;
 
 /**
  * @since 10.0
@@ -4130,6 +4140,18 @@ declare class UIAccessibilityElement extends UIResponder implements UIAccessibil
  * @since 9.0
  */
 declare var UIAccessibilityElementFocusedNotification: string;
+
+/**
+ * @since 18.0
+ */
+declare const enum UIAccessibilityExpandedStatus {
+
+	Unsupported = 0,
+
+	Expanded = 1,
+
+	Collapsed = 2
+}
 
 /**
  * @since 9.0
@@ -4373,6 +4395,9 @@ declare var UIAccessibilityPriorityHigh: string;
  */
 declare var UIAccessibilityPriorityLow: string;
 
+/**
+ * @since 5.0
+ */
 interface UIAccessibilityReadingContent {
 
 	/**
@@ -4385,24 +4410,12 @@ interface UIAccessibilityReadingContent {
 	 */
 	accessibilityAttributedPageContent?(): NSAttributedString;
 
-	/**
-	 * @since 5.0
-	 */
 	accessibilityContentForLineNumber(lineNumber: number): string;
 
-	/**
-	 * @since 5.0
-	 */
 	accessibilityFrameForLineNumber(lineNumber: number): CGRect;
 
-	/**
-	 * @since 5.0
-	 */
 	accessibilityLineNumberForPoint(point: CGPoint): number;
 
-	/**
-	 * @since 5.0
-	 */
 	accessibilityPageContent(): string;
 }
 declare var UIAccessibilityReadingContent: {
@@ -6680,7 +6693,7 @@ declare var UIApplicationLaunchOptionsUserActivityDictionaryKey: string;
  */
 declare var UIApplicationLaunchOptionsUserActivityTypeKey: string;
 
-declare function UIApplicationMain(argc: number, argv: interop.Reference<string>, principalClassName: string, delegateClassName: string): never;
+declare function UIApplicationMain(argc: number, argv: interop.Reference<interop.Pointer | interop.Reference<any>>, principalClassName: string, delegateClassName: string): never;
 
 /**
  * @since 14.5
@@ -41271,7 +41284,9 @@ declare const enum UIWritingToolsAllowedInputOptions {
 
 	RichText = 2,
 
-	Table = 4
+	List = 4,
+
+	Table = 8
 }
 
 /**

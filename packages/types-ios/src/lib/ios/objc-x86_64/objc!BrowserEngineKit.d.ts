@@ -739,11 +739,21 @@ interface BETextInput extends BEResponderEditActions, BETextSelectionDirectionNa
 
 	isPointNearMarkedText(point: CGPoint): boolean;
 
+	/**
+	 * @since 18.0
+	 */
+	keyboardWillDismiss?(): void;
+
 	moveByOffset(offset: number): void;
 
 	moveSelectionAtBoundaryInStorageDirectionCompletionHandler(granularity: UITextGranularity, direction: UITextStorageDirection, completionHandler: () => void): void;
 
 	offsetFromPositionToPosition(from: UITextPosition, toPosition: UITextPosition): number;
+
+	/**
+	 * @since 18.0
+	 */
+	removeTextAlternatives?(): void;
 
 	removeTextPlaceholderWillInsertTextCompletionHandler(placeholder: UITextPlaceholder, willInsertText: boolean, completionHandler: () => void): void;
 

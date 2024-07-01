@@ -76,7 +76,7 @@ declare function get_crc_table(): interop.Pointer | interop.Reference<number>;
 
 interface gzFile_s {
 	have: number;
-	next: string;
+	next: interop.Pointer | interop.Reference<any>;
 	pos: number;
 }
 declare var gzFile_s: interop.StructType<gzFile_s>;
@@ -86,12 +86,12 @@ interface gz_header {
 	time: number;
 	xflags: number;
 	os: number;
-	extra: string;
+	extra: interop.Pointer | interop.Reference<any>;
 	extra_len: number;
 	extra_max: number;
-	name: string;
+	name: interop.Pointer | interop.Reference<any>;
 	name_max: number;
-	comment: string;
+	comment: interop.Pointer | interop.Reference<any>;
 	comm_max: number;
 	hcrc: number;
 	done: number;
@@ -123,7 +123,7 @@ declare function gzdopen(fd: number, mode: string | interop.Pointer | interop.Re
 
 declare function gzeof(file: interop.Pointer | interop.Reference<gzFile_s>): number;
 
-declare function gzerror(file: interop.Pointer | interop.Reference<gzFile_s>, errnum: interop.Pointer | interop.Reference<number>): string;
+declare function gzerror(file: interop.Pointer | interop.Reference<gzFile_s>, errnum: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
 
 declare function gzflush(file: interop.Pointer | interop.Reference<gzFile_s>, flush: number): number;
 
@@ -144,7 +144,7 @@ declare function gzgetc(file: interop.Pointer | interop.Reference<gzFile_s>): nu
  */
 declare function gzgetc_(file: interop.Pointer | interop.Reference<gzFile_s>): number;
 
-declare function gzgets(file: interop.Pointer | interop.Reference<gzFile_s>, buf: string | interop.Pointer | interop.Reference<any>, len: number): string;
+declare function gzgets(file: interop.Pointer | interop.Reference<gzFile_s>, buf: string | interop.Pointer | interop.Reference<any>, len: number): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 5.0
@@ -173,7 +173,7 @@ declare function gzwrite(file: interop.Pointer | interop.Reference<gzFile_s>, bu
 
 declare function inflate(strm: interop.Pointer | interop.Reference<z_stream>, flush: number): number;
 
-declare function inflateBack(strm: interop.Pointer | interop.Reference<z_stream>, _in: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<string>) => number>, in_desc: interop.Pointer | interop.Reference<any>, out: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number) => number>, out_desc: interop.Pointer | interop.Reference<any>): number;
+declare function inflateBack(strm: interop.Pointer | interop.Reference<z_stream>, _in: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => number>, in_desc: interop.Pointer | interop.Reference<any>, out: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number) => number>, out_desc: interop.Pointer | interop.Reference<any>): number;
 
 declare function inflateBackEnd(strm: interop.Pointer | interop.Reference<z_stream>): number;
 
@@ -241,16 +241,16 @@ declare function uncompress(dest: string | interop.Pointer | interop.Reference<a
  */
 declare function uncompress2(dest: string | interop.Pointer | interop.Reference<any>, destLen: interop.Pointer | interop.Reference<number>, source: string | interop.Pointer | interop.Reference<any>, sourceLen: interop.Pointer | interop.Reference<number>): number;
 
-declare function zError(p1: number): string;
+declare function zError(p1: number): interop.Pointer | interop.Reference<any>;
 
 interface z_stream {
-	next_in: string;
+	next_in: interop.Pointer | interop.Reference<any>;
 	avail_in: number;
 	total_in: number;
-	next_out: string;
+	next_out: interop.Pointer | interop.Reference<any>;
 	avail_out: number;
 	total_out: number;
-	msg: string;
+	msg: interop.Pointer | interop.Reference<any>;
 	state: interop.Pointer | interop.Reference<any>;
 	zalloc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number) => interop.Pointer | interop.Reference<any>>;
 	zfree: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>;
@@ -263,4 +263,4 @@ declare var z_stream: interop.StructType<z_stream>;
 
 declare function zlibCompileFlags(): number;
 
-declare function zlibVersion(): string;
+declare function zlibVersion(): interop.Pointer | interop.Reference<any>;

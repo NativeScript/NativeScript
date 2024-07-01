@@ -1622,7 +1622,12 @@ declare function CGImageCreateCopyWithColorSpace(image: any, space: any): any;
 /**
  * @since 18.0
  */
-declare function CGImageCreateWithEDRHeadroom(headroom: number, width: number, height: number, bitsPerComponent: number, bitsPerPixel: number, bytesPerRow: number, space: any, bitmapInfo: CGBitmapInfo, provider: any, decode: interop.Pointer | interop.Reference<number>, shouldInterpolate: boolean, intent: CGColorRenderingIntent): any;
+declare function CGImageCreateCopyWithContentHeadroom(headroom: number, image: any): any;
+
+/**
+ * @since 18.0
+ */
+declare function CGImageCreateWithContentHeadroom(headroom: number, width: number, height: number, bitsPerComponent: number, bitsPerPixel: number, bytesPerRow: number, space: any, bitmapInfo: CGBitmapInfo, provider: any, decode: interop.Pointer | interop.Reference<number>, shouldInterpolate: boolean, intent: CGColorRenderingIntent): any;
 
 /**
  * @since 2.0
@@ -1890,7 +1895,7 @@ declare function CGPDFArrayGetInteger(array: interop.Pointer | interop.Reference
 /**
  * @since 2.0
  */
-declare function CGPDFArrayGetName(array: interop.Pointer | interop.Reference<any>, index: number, value: interop.Pointer | interop.Reference<string>): boolean;
+declare function CGPDFArrayGetName(array: interop.Pointer | interop.Reference<any>, index: number, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
 
 /**
  * @since 2.0
@@ -2010,10 +2015,16 @@ declare function CGPDFContextEndTag(context: any): void;
  */
 declare function CGPDFContextSetDestinationForRect(context: any, name: string, rect: CGRect): void;
 
+declare function CGPDFContextSetIDTree(context: any, IDTreeDictionary: interop.Pointer | interop.Reference<any>): void;
+
 /**
  * @since 11.0
  */
 declare function CGPDFContextSetOutline(context: any, outline: NSDictionary<any, any>): void;
+
+declare function CGPDFContextSetPageTagStructureTree(context: any, pageTagStructureTreeDictionary: NSDictionary<any, any>): void;
+
+declare function CGPDFContextSetParentTree(context: any, parentTreeDictionary: interop.Pointer | interop.Reference<any>): void;
 
 /**
  * @since 2.0
@@ -2032,12 +2043,12 @@ declare const enum CGPDFDataFormat {
 /**
  * @since 12.0
  */
-declare function CGPDFDictionaryApplyBlock(dict: interop.Pointer | interop.Reference<any>, block: (p1: string, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => boolean, info: interop.Pointer | interop.Reference<any>): void;
+declare function CGPDFDictionaryApplyBlock(dict: interop.Pointer | interop.Reference<any>, block: (p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => boolean, info: interop.Pointer | interop.Reference<any>): void;
 
 /**
  * @since 2.0
  */
-declare function CGPDFDictionaryApplyFunction(dict: interop.Pointer | interop.Reference<any>, _function: interop.FunctionReference<(p1: string, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => void>, info: interop.Pointer | interop.Reference<any>): void;
+declare function CGPDFDictionaryApplyFunction(dict: interop.Pointer | interop.Reference<any>, _function: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => void>, info: interop.Pointer | interop.Reference<any>): void;
 
 /**
  * @since 2.0
@@ -2067,7 +2078,7 @@ declare function CGPDFDictionaryGetInteger(dict: interop.Pointer | interop.Refer
 /**
  * @since 2.0
  */
-declare function CGPDFDictionaryGetName(dict: interop.Pointer | interop.Reference<any>, key: string | interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<string>): boolean;
+declare function CGPDFDictionaryGetName(dict: interop.Pointer | interop.Reference<any>, key: string | interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
 
 /**
  * @since 2.0
@@ -2308,7 +2319,7 @@ declare function CGPDFScannerPopInteger(scanner: interop.Pointer | interop.Refer
 /**
  * @since 2.0
  */
-declare function CGPDFScannerPopName(scanner: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<string>): boolean;
+declare function CGPDFScannerPopName(scanner: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
 
 /**
  * @since 2.0
@@ -2370,7 +2381,7 @@ declare function CGPDFStringCopyTextString(string: interop.Pointer | interop.Ref
 /**
  * @since 2.0
  */
-declare function CGPDFStringGetBytePtr(string: interop.Pointer | interop.Reference<any>): string;
+declare function CGPDFStringGetBytePtr(string: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 2.0
@@ -2478,13 +2489,15 @@ declare const enum CGPDFTagType {
 
 	Formula = 701,
 
-	Form = 702
+	Form = 702,
+
+	Object = 800
 }
 
 /**
  * @since 13.0
  */
-declare function CGPDFTagTypeGetName(tagType: CGPDFTagType): string;
+declare function CGPDFTagTypeGetName(tagType: CGPDFTagType): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 2.0
@@ -3090,6 +3103,11 @@ declare var kCGColorSpaceACESCGLinear: string;
 declare var kCGColorSpaceAdobeRGB1998: string;
 
 /**
+ * @since 18.0
+ */
+declare var kCGColorSpaceCoreMedia709: string;
+
+/**
  * @since 9.0
  */
 declare var kCGColorSpaceDCIP3: string;
@@ -3279,6 +3297,11 @@ declare var kCGColorSpaceSRGB: string;
  * @since 14.0
  */
 declare var kCGColorWhite: string;
+
+/**
+ * @since 18.0
+ */
+declare var kCGDefaultHDRImageContentHeadroom: number;
 
 /**
  * @since 18.0

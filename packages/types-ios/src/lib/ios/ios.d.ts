@@ -169,6 +169,7 @@
 /// <reference path="objc-x86_64/objc!_Builtin_stdatomic.d.ts" />
 /// <reference path="objc-x86_64/objc!asl.d.ts" />
 /// <reference path="objc-x86_64/objc!dnssd.d.ts" />
+/// <reference path="objc-x86_64/objc!iAd.d.ts" />
 /// <reference path="objc-x86_64/objc!libkern.d.ts" />
 /// <reference path="objc-x86_64/objc!libunwind.d.ts" />
 /// <reference path="objc-x86_64/objc!libxml2.d.ts" />

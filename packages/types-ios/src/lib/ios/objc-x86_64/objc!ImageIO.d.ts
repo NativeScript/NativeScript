@@ -475,6 +475,41 @@ declare var kCGImageDestinationDateTime: string;
 declare var kCGImageDestinationEmbedThumbnail: string;
 
 /**
+ * @since 18.0
+ */
+declare var kCGImageDestinationEncodeBaseIsSDR: string;
+
+/**
+ * @since 18.0
+ */
+declare var kCGImageDestinationEncodeRequest: string;
+
+/**
+ * @since 18.0
+ */
+declare var kCGImageDestinationEncodeRequestOptions: string;
+
+/**
+ * @since 18.0
+ */
+declare var kCGImageDestinationEncodeToISOGainmap: string;
+
+/**
+ * @since 18.0
+ */
+declare var kCGImageDestinationEncodeToISOHDR: string;
+
+/**
+ * @since 18.0
+ */
+declare var kCGImageDestinationEncodeToSDR: string;
+
+/**
+ * @since 18.0
+ */
+declare var kCGImageDestinationEncodeTonemapMode: string;
+
+/**
  * @since 8.0
  */
 declare var kCGImageDestinationImageMaxPixelSize: string;

@@ -92,6 +92,11 @@ declare class NSFileProviderDomain extends NSObject {
 	readonly replicated: boolean;
 
 	/**
+	 * @since 18.0
+	 */
+	supportsSyncingTrash: boolean;
+
+	/**
 	 * @since 16.0
 	 */
 	testingModes: NSFileProviderDomainTestingModes;

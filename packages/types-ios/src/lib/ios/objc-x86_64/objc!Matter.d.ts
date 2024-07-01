@@ -6091,6 +6091,20 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterRadonConcentrationMeasurementAttributeClusterRevisionID = 65533,
 
+	AttributeIDTypeClusterWiFiNetworkManagementAttributeSSIDID = 1,
+
+	AttributeIDTypeClusterWiFiNetworkManagementAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterWiFiNetworkManagementAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterWiFiNetworkManagementAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterWiFiNetworkManagementAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterWiFiNetworkManagementAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterWiFiNetworkManagementAttributeClusterRevisionID = 65533,
+
 	ClusterWakeOnLanAttributeMACAddressID = 0,
 
 	ClusterWakeOnLanAttributeGeneratedCommandListID = 65528,
@@ -65711,6 +65725,8 @@ declare const enum MTRClusterIDType {
 
 	IDTypeRadonConcentrationMeasurementID = 1071,
 
+	IDTypeWiFiNetworkManagementID = 1105,
+
 	IDTypeWakeOnLANID = 1283,
 
 	IDTypeChannelID = 1284,
@@ -75702,6 +75718,10 @@ declare const enum MTRCommandIDType {
 
 	CommandIDTypeClusterColorControlCommandStepColorTemperatureID = 76,
 
+	CommandIDTypeClusterWiFiNetworkManagementCommandNetworkPassphraseRequestID = 0,
+
+	CommandIDTypeClusterWiFiNetworkManagementCommandNetworkPassphraseResponseID = 1,
+
 	ClusterChannelCommandChangeChannelID = 0,
 
 	ClusterChannelCommandChangeChannelResponseID = 1,
@@ -77323,6 +77343,8 @@ declare class MTRDeviceControllerParameters extends MTRDeviceControllerAbstractP
 
 	shouldAdvertiseOperational: boolean;
 
+	storageBehaviorConfiguration: MTRDeviceStorageBehaviorConfiguration;
+
 	setOTAProviderDelegateQueue(otaProviderDelegate: MTROTAProviderDelegate, queue: NSObject & OS_dispatch_queue): void;
 
 	setOperationalCertificateIssuerQueue(operationalCertificateIssuer: MTROperationalCertificateIssuer, queue: NSObject & OS_dispatch_queue): void;
@@ -77555,6 +77577,37 @@ declare const enum MTRDeviceState {
 	Reachable = 1,
 
 	Unreachable = 2
+}
+
+declare class MTRDeviceStorageBehaviorConfiguration extends NSObject implements NSCopying {
+
+	static alloc(): MTRDeviceStorageBehaviorConfiguration; // inherited from NSObject
+
+	static configurationWithDefaultStorageBehavior(): MTRDeviceStorageBehaviorConfiguration;
+
+	static configurationWithReportToPersistenceDelayTimeReportToPersistenceDelayTimeMaxRecentReportTimesMaxCountTimeBetweenReportsTooShortThresholdTimeBetweenReportsTooShortMinThresholdReportToPersistenceDelayMaxMultiplierDeviceReportingExcessivelyIntervalThreshold(reportToPersistenceDelayTime: number, reportToPersistenceDelayTimeMax: number, recentReportTimesMaxCount: number, timeBetweenReportsTooShortThreshold: number, timeBetweenReportsTooShortMinThreshold: number, reportToPersistenceDelayMaxMultiplier: number, deviceReportingExcessivelyIntervalThreshold: number): MTRDeviceStorageBehaviorConfiguration;
+
+	static configurationWithStorageBehaviorOptimizationDisabled(): MTRDeviceStorageBehaviorConfiguration;
+
+	static new(): MTRDeviceStorageBehaviorConfiguration; // inherited from NSObject
+
+	deviceReportingExcessivelyIntervalThreshold: number;
+
+	disableStorageBehaviorOptimization: boolean;
+
+	recentReportTimesMaxCount: number;
+
+	reportToPersistenceDelayMaxMultiplier: number;
+
+	reportToPersistenceDelayTime: number;
+
+	reportToPersistenceDelayTimeMax: number;
+
+	timeBetweenReportsTooShortMinThreshold: number;
+
+	timeBetweenReportsTooShortThreshold: number;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 /**

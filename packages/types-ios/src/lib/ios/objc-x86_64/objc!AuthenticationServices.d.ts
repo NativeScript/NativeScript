@@ -3446,6 +3446,8 @@ declare class ASSettingsHelper extends NSObject {
 	static openCredentialProviderAppSettingsWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
 
 	static openVerificationCodeAppSettingsWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+
+	static requestCredentialProviderExtensionEnablementWithCompletionHandler(completionHandler: (p1: boolean) => void): void;
 }
 
 /**

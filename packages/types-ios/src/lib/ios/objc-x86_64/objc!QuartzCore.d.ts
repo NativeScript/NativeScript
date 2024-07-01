@@ -668,6 +668,11 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSSecureCoding 
 
 	readonly superlayer: CALayer;
 
+	/**
+	 * @since 18.0
+	 */
+	toneMapMode: string;
+
 	transform: CATransform3D;
 
 	readonly visibleRect: CGRect;
@@ -1218,6 +1223,21 @@ declare class CATiledLayer extends CALayer {
 
 	tileSize: CGSize;
 }
+
+/**
+ * @since 18.0
+ */
+declare var CAToneMapModeAutomatic: string;
+
+/**
+ * @since 18.0
+ */
+declare var CAToneMapModeIfSupported: string;
+
+/**
+ * @since 18.0
+ */
+declare var CAToneMapModeNever: string;
 
 /**
  * @since 2.0

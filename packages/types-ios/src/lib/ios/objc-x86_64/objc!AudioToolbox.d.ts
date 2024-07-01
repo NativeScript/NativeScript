@@ -53,7 +53,7 @@ declare class AUAudioUnit extends NSObject {
 	/**
 	 * @since 11.0
 	 */
-	MIDIOutputEventBlock: (p1: number, p2: number, p3: number, p4: string) => number;
+	MIDIOutputEventBlock: (p1: number, p2: number, p3: number, p4: interop.Pointer | interop.Reference<any>) => number;
 
 	/**
 	 * @since 15.0
@@ -172,7 +172,7 @@ declare class AUAudioUnit extends NSObject {
 	 */
 	readonly running: boolean;
 
-	readonly scheduleMIDIEventBlock: (p1: number, p2: number, p3: number, p4: string) => void;
+	readonly scheduleMIDIEventBlock: (p1: number, p2: number, p3: number, p4: interop.Pointer | interop.Reference<any>) => void;
 
 	/**
 	 * @since 15.0
@@ -722,7 +722,7 @@ declare const enum AUParameterEventType {
 /**
  * @since 6.0
  */
-declare function AUParameterFormatValue(inParameterValue: number, inParameter: interop.Pointer | interop.Reference<AudioUnitParameter>, inTextBuffer: string | interop.Pointer | interop.Reference<any>, inDigits: number): string;
+declare function AUParameterFormatValue(inParameterValue: number, inParameter: interop.Pointer | interop.Reference<AudioUnitParameter>, inTextBuffer: string | interop.Pointer | interop.Reference<any>, inDigits: number): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 9.0
@@ -1625,7 +1625,7 @@ declare function AudioOutputUnitGetHostIcon(au: interop.Pointer | interop.Refere
 interface AudioOutputUnitMIDICallbacks {
 	userData: interop.Pointer | interop.Reference<any>;
 	MIDIEventProc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: number, p5: number) => void>;
-	MIDISysExProc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number) => void>;
+	MIDISysExProc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number) => void>;
 }
 declare var AudioOutputUnitMIDICallbacks: interop.StructType<AudioOutputUnitMIDICallbacks>;
 
@@ -2063,7 +2063,7 @@ declare function AudioUnitExtensionCopyComponentList(extensionIdentifier: string
 declare function AudioUnitExtensionSetComponentList(extensionIdentifier: string, audioComponentInfo: NSArray<any> | any[]): number;
 
 interface AudioUnitExternalBuffer {
-	buffer: string;
+	buffer: interop.Pointer | interop.Reference<any>;
 	size: number;
 }
 declare var AudioUnitExternalBuffer: interop.StructType<AudioUnitExternalBuffer>;
@@ -2658,8 +2658,8 @@ interface HostCallbackInfo {
 	hostUserData: interop.Pointer | interop.Reference<any>;
 	beatAndTempoProc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<number>, p3: interop.Pointer | interop.Reference<number>) => number>;
 	musicalTimeLocationProc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<number>, p3: interop.Pointer | interop.Reference<number>, p4: interop.Pointer | interop.Reference<number>, p5: interop.Pointer | interop.Reference<number>) => number>;
-	transportStateProc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: string, p4: interop.Pointer | interop.Reference<number>, p5: string, p6: interop.Pointer | interop.Reference<number>, p7: interop.Pointer | interop.Reference<number>) => number>;
-	transportStateProc2: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: string, p4: string, p5: interop.Pointer | interop.Reference<number>, p6: string, p7: interop.Pointer | interop.Reference<number>, p8: interop.Pointer | interop.Reference<number>) => number>;
+	transportStateProc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<number>, p5: interop.Pointer | interop.Reference<any>, p6: interop.Pointer | interop.Reference<number>, p7: interop.Pointer | interop.Reference<number>) => number>;
+	transportStateProc2: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>, p5: interop.Pointer | interop.Reference<number>, p6: interop.Pointer | interop.Reference<any>, p7: interop.Pointer | interop.Reference<number>, p8: interop.Pointer | interop.Reference<number>) => number>;
 }
 declare var HostCallbackInfo: interop.StructType<HostCallbackInfo>;
 

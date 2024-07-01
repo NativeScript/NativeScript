@@ -9,7 +9,7 @@
 			"executor": "nx:run-commands",
 			"outputs": ["{workspaceRoot}/dist/packages"],
 			"options": {
-				"commands": ["./tools/scripts/typings-gen.sh latest", "mkdir -p dist/packages/types-ios", "cp -R packages/types-ios/src/* dist/packages/types-ios", "cp packages/types-ios/package.json dist/packages/types-ios", "cp packages/types-ios/README.md dist/packages/types-ios/README.md"],
+				"commands": ["./tools/scripts/typings-gen.sh 8.8.0-next.2024-07-01-9751961008", "mkdir -p dist/packages/types-ios", "cp -R packages/types-ios/src/* dist/packages/types-ios", "cp packages/types-ios/package.json dist/packages/types-ios", "cp packages/types-ios/README.md dist/packages/types-ios/README.md"],
 				"parallel": false
 			}
 		}

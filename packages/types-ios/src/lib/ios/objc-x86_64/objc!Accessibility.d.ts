@@ -441,6 +441,30 @@ declare var AXPrefersNonBlinkingTextInsertionIndicatorDidChangeNotification: str
 /**
  * @since 18.0
  */
+declare class AXRequest extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): AXRequest; // inherited from NSObject
+
+	static new(): AXRequest; // inherited from NSObject
+
+	readonly technology: string;
+
+	static readonly currentRequest: AXRequest;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
+ * @since 18.0
+ */
 declare const enum AXSettingsFeature {
 
 	PersonalVoiceAllowAppsToRequestToUse = 1
@@ -450,3 +474,43 @@ declare const enum AXSettingsFeature {
  * @since 15.0
  */
 declare function AXSupportsBidirectionalAXMFiHearingDeviceStreaming(): boolean;
+
+/**
+ * @since 18.0
+ */
+declare var AXTechnologyAutomation: string;
+
+/**
+ * @since 18.0
+ */
+declare var AXTechnologyFullKeyboardAccess: string;
+
+/**
+ * @since 18.0
+ */
+declare var AXTechnologyHoverText: string;
+
+/**
+ * @since 18.0
+ */
+declare var AXTechnologySpeakScreen: string;
+
+/**
+ * @since 18.0
+ */
+declare var AXTechnologySwitchControl: string;
+
+/**
+ * @since 18.0
+ */
+declare var AXTechnologyVoiceControl: string;
+
+/**
+ * @since 18.0
+ */
+declare var AXTechnologyVoiceOver: string;
+
+/**
+ * @since 18.0
+ */
+declare var AXTechnologyZoom: string;
