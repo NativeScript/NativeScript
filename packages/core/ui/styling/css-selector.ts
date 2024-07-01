@@ -6,6 +6,9 @@ import { isNullOrUndefined } from '../../utils/types';
 
 import * as ReworkCSS from '../../css';
 import { CSSUtils } from '../../css/system-classes';
+import { checkIfMediaQueryMatches } from '../../media-query-list';
+
+export const MEDIA_QUERY_SEPARATOR = '&&';
 
 /**
  * An interface describing the shape of a type on which the selectors may apply.
@@ -779,29 +782,34 @@ export namespace Selector {
 }
 
 export class RuleSet {
-	tag: string | number;
-	scopedTag: string;
-	constructor(
-		public selectors: SelectorCore[],
-		public declarations: Declaration[],
-	) {
+	public selectors: SelectorCore[];
+	public declarations: Declaration[];
+	public mediaQueryString: string;
+	public tag?: string | number;
+	public scopedTag?: string;
+
+	constructor(selectors: SelectorCore[], declarations: Declaration[]) {
+		this.selectors = selectors;
+		this.declarations = declarations;
 		this.selectors.forEach((sel) => (sel.ruleset = this));
 	}
 	public toString(): string {
-		return `${this.selectors.join(', ')} {${this.declarations.map((d, i) => `${i === 0 ? ' ' : ''}${d.property}: ${d.value}`).join('; ')} }`;
+		let desc = `${this.selectors.join(', ')} {${this.declarations.map((d, i) => `${i === 0 ? ' ' : ''}${d.property}: ${d.value}`).join('; ')} }`;
+		if (this.mediaQueryString) {
+			desc = `@media ${this.mediaQueryString} { ${desc} }`;
+		}
+		return desc;
 	}
 	public lookupSort(sorter: LookupSorter): void {
 		this.selectors.forEach((sel) => sel.lookupSort(sorter));
 	}
 }
 
-export function fromAstNodes(astRules: ReworkCSS.Node[]): RuleSet[] {
-	return (<ReworkCSS.Rule[]>astRules.filter(isRule)).map((rule) => {
-		const declarations = rule.declarations.filter(isDeclaration).map(createDeclaration);
-		const selectors = rule.selectors.map(createSelector);
+export function fromAstNode(astRule: ReworkCSS.Rule): RuleSet {
+	const declarations = astRule.declarations.filter(isDeclaration).map(createDeclaration);
+	const selectors = astRule.selectors.map(createSelector);
 
-		return new RuleSet(selectors, declarations);
-	});
+	return new RuleSet(selectors, declarations);
 }
 
 function createDeclaration(decl: ReworkCSS.Declaration): any {
@@ -939,30 +947,43 @@ export function createSelector(sel: string): SimpleSelector | SimpleSelectorSequ
 	}
 }
 
-function isRule(node: ReworkCSS.Node): node is ReworkCSS.Rule {
-	return node.type === 'rule';
-}
 function isDeclaration(node: ReworkCSS.Node): node is ReworkCSS.Declaration {
 	return node.type === 'declaration';
+}
+
+export function matchMediaQueryString(mediaQueryString: string, cachedQueries: string[]): boolean {
+	// It can be a single or multiple queries in case of nested media queries
+	const mediaQueryStrings = mediaQueryString.split(MEDIA_QUERY_SEPARATOR);
+
+	return mediaQueryStrings.every((mq) => {
+		let isMatching: boolean;
+
+		// Query has already been validated
+		if (cachedQueries.includes(mq)) {
+			isMatching = true;
+		} else {
+			isMatching = checkIfMediaQueryMatches(mq);
+			if (isMatching) {
+				cachedQueries.push(mq);
+			}
+		}
+		return isMatching;
+	});
 }
 
 interface SelectorMap {
 	[key: string]: SelectorCore[];
 }
-export class SelectorsMap<T extends Node> implements LookupSorter {
+
+export abstract class SelectorScope<T extends Node> implements LookupSorter {
 	private id: SelectorMap = {};
 	private class: SelectorMap = {};
 	private type: SelectorMap = {};
 	private universal: SelectorCore[] = [];
 
-	private position = 0;
+	public position: number = 0;
 
-	constructor(rulesets: RuleSet[]) {
-		rulesets.forEach((rule) => rule.lookupSort(this));
-	}
-
-	query(node: T): SelectorsMatch<T> {
-		const selectorsMatch = new SelectorsMatch<T>();
+	getSelectorCandidates(node: T) {
 		const { cssClasses, id, cssType } = node;
 		const selectorClasses = [this.universal, this.id[id], this.type[cssType]];
 
@@ -970,11 +991,7 @@ export class SelectorsMap<T extends Node> implements LookupSorter {
 			cssClasses.forEach((c) => selectorClasses.push(this.class[c]));
 		}
 
-		const selectors = selectorClasses.reduce((cur, next) => cur.concat(next || []), []);
-
-		selectorsMatch.selectors = selectors.filter((sel) => sel.accumulateChanges(node, selectorsMatch)).sort((a, b) => a.specificity - b.specificity || a.pos - b.pos);
-
-		return selectorsMatch;
+		return selectorClasses.reduce((cur, next) => cur.concat(next || []), []);
 	}
 
 	sortById(id: string, sel: SelectorCore): void {
@@ -1002,6 +1019,99 @@ export class SelectorsMap<T extends Node> implements LookupSorter {
 		sel.pos = this.position++;
 
 		return sel;
+	}
+}
+
+export class MediaQuerySelectorScope<T extends Node> extends SelectorScope<T> {
+	private _mediaQueryString: string;
+
+	constructor(mediaQueryString: string) {
+		super();
+
+		this._mediaQueryString = mediaQueryString;
+	}
+
+	get mediaQueryString(): string {
+		return this._mediaQueryString;
+	}
+}
+
+export class StyleSheetSelectorScope<T extends Node> extends SelectorScope<T> {
+	private mediaQuerySelectorScopes: MediaQuerySelectorScope<T>[];
+
+	constructor(rulesets: RuleSet[]) {
+		super();
+
+		this.lookupRulesets(rulesets);
+	}
+
+	private createMediaQuerySelectorScope(mediaQueryString: string): MediaQuerySelectorScope<T> {
+		const selectorScope = new MediaQuerySelectorScope(mediaQueryString);
+		selectorScope.position = this.position;
+
+		if (this.mediaQuerySelectorScopes) {
+			this.mediaQuerySelectorScopes.push(selectorScope);
+		} else {
+			this.mediaQuerySelectorScopes = [selectorScope];
+		}
+
+		return selectorScope;
+	}
+
+	private lookupRulesets(rulesets: RuleSet[]) {
+		let lastMediaSelectorScope: MediaQuerySelectorScope<T>;
+
+		for (let i = 0, length = rulesets.length; i < length; i++) {
+			const ruleset = rulesets[i];
+
+			if (lastMediaSelectorScope && lastMediaSelectorScope.mediaQueryString !== ruleset.mediaQueryString) {
+				// Once done with current media query scope, update stylesheet scope position
+				this.position = lastMediaSelectorScope.position;
+				lastMediaSelectorScope = null;
+			}
+
+			if (ruleset.mediaQueryString) {
+				// Create media query selector scope and register selector lookups there
+				if (!lastMediaSelectorScope) {
+					lastMediaSelectorScope = this.createMediaQuerySelectorScope(ruleset.mediaQueryString);
+				}
+
+				ruleset.lookupSort(lastMediaSelectorScope);
+			} else {
+				ruleset.lookupSort(this);
+			}
+		}
+
+		// If reference of last media selector scope is still kept, update stylesheet scope position
+		if (lastMediaSelectorScope) {
+			this.position = lastMediaSelectorScope.position;
+			lastMediaSelectorScope = null;
+		}
+	}
+
+	query(node: T): SelectorsMatch<T> {
+		const selectorsMatch = new SelectorsMatch<T>();
+		const selectors = this.getSelectorCandidates(node);
+
+		// Validate media queries and include their selectors if needed
+		if (this.mediaQuerySelectorScopes) {
+			// Cache media query results to avoid validations of other identical queries
+			const validatedMediaQueries: string[] = [];
+
+			for (let i = 0, length = this.mediaQuerySelectorScopes.length; i < length; i++) {
+				const selectorScope = this.mediaQuerySelectorScopes[i];
+				const isMatchingAllQueries = matchMediaQueryString(selectorScope.mediaQueryString, validatedMediaQueries);
+
+				if (isMatchingAllQueries) {
+					const mediaQuerySelectors = selectorScope.getSelectorCandidates(node);
+					selectors.push(...mediaQuerySelectors);
+				}
+			}
+		}
+
+		selectorsMatch.selectors = selectors.filter((sel) => sel.accumulateChanges(node, selectorsMatch)).sort((a, b) => a.specificity - b.specificity || a.pos - b.pos);
+
+		return selectorsMatch;
 	}
 }
 
@@ -1056,7 +1166,9 @@ export const CSSHelper = {
 	SimpleSelectorSequence,
 	Selector,
 	RuleSet,
-	SelectorsMap,
-	fromAstNodes,
+	SelectorScope,
+	MediaQuerySelectorScope,
+	StyleSheetSelectorScope,
+	fromAstNode,
 	SelectorsMatch,
 };

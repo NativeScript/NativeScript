@@ -1,5 +1,5 @@
 import * as TKUnit from '../../tk-unit';
-import { Application, Button, Label, Page, StackLayout, WrapLayout, TabView, TabViewItem, View, Utils, Color, resolveFileNameFromUrl, removeTaggedAdditionalCSS, addTaggedAdditionalCSS, unsetValue, knownFolders } from '@nativescript/core';
+import { Application, Button, Label, Page, StackLayout, WrapLayout, TabView, TabViewItem, View, Utils, Color, resolveFileNameFromUrl, removeTaggedAdditionalCSS, addTaggedAdditionalCSS, unsetValue, knownFolders, Screen } from '@nativescript/core';
 import * as helper from '../../ui-helper';
 import { _evaluateCssCalcExpression } from '@nativescript/core/ui/core/properties';
 
@@ -462,6 +462,132 @@ export function test_id_and_state_selector() {
 	page.css = '#myButton:pressed { color: red; }';
 
 	testButtonPressedStateIsRed(btn);
+}
+
+export function test_matching_media_query_selector() {
+	let page = helper.getClearCurrentPage();
+	page.style.color = unsetValue;
+	let btnWithId: Button;
+	let btnWithNoId: Button;
+
+	// >> article-using-matching-media-query-selector
+	page.css = `@media only screen and (max-width: ${Screen.mainScreen.widthDIPs}) {
+		Button#myButton {
+			color: red;
+		}
+	}`;
+
+	//// Will be styled
+	btnWithId = new Button();
+	btnWithId.id = 'myButton';
+
+	//// Won't be styled
+	btnWithNoId = new Button();
+	// << article-using-matching-media-query-selector
+
+	const stack = new StackLayout();
+	page.content = stack;
+	stack.addChild(btnWithId);
+	stack.addChild(btnWithNoId);
+
+	helper.assertViewColor(btnWithId, '#FF0000');
+	TKUnit.assert(btnWithNoId.style.color === undefined, 'Color should not have a value');
+}
+
+export function test_non_matching_media_query_selector() {
+	let page = helper.getClearCurrentPage();
+	page.style.color = unsetValue;
+	let btnWithId: Button;
+	let btnWithNoId: Button;
+
+	// >> article-using-non-matching-media-query-selector
+	page.css = `@media only screen and (max-width: ${Screen.mainScreen.widthDIPs - 1}) {
+		Button#myButton {
+			color: red;
+		}
+	}`;
+
+	//// Will be styled
+	btnWithId = new Button();
+	btnWithId.id = 'myButton';
+
+	//// Won't be styled
+	btnWithNoId = new Button();
+	// << article-using-non-matching-media-query-selector
+
+	const stack = new StackLayout();
+	page.content = stack;
+	stack.addChild(btnWithId);
+	stack.addChild(btnWithNoId);
+
+	TKUnit.assert(btnWithId.style.color === undefined, 'Color should not have a value');
+	TKUnit.assert(btnWithNoId.style.color === undefined, 'Color should not have a value');
+}
+
+export function test_matching_nested_media_query_selector() {
+	let page = helper.getClearCurrentPage();
+	page.style.color = unsetValue;
+	let btnWithId: Button;
+	let btnWithNoId: Button;
+
+	// >> article-using-matching-nested-media-query-selector
+	page.css = `
+	@media only screen and (orientation: ${Application.orientation()}) {
+		@media only screen and (max-width: ${Screen.mainScreen.widthDIPs}) {
+			Button#myButton {
+				color: red;
+			}
+		}
+	}`;
+
+	//// Will be styled
+	btnWithId = new Button();
+	btnWithId.id = 'myButton';
+
+	//// Won't be styled
+	btnWithNoId = new Button();
+	// << article-using-matching-nested-media-query-selector
+
+	const stack = new StackLayout();
+	page.content = stack;
+	stack.addChild(btnWithId);
+	stack.addChild(btnWithNoId);
+
+	helper.assertViewColor(btnWithId, '#FF0000');
+	TKUnit.assert(btnWithNoId.style.color === undefined, 'Color should not have a value');
+}
+
+export function test_non_matching_nested_media_query_selector() {
+	let page = helper.getClearCurrentPage();
+	page.style.color = unsetValue;
+	let btnWithId: Button;
+	let btnWithNoId: Button;
+
+	// >> article-using-non-matching-nested-media-query-selector
+	page.css = `
+	@media only screen and (orientation: ${Application.orientation()}) {
+		@media only screen and (max-width: ${Screen.mainScreen.widthDIPs - 1}) {
+			Button#myButton {
+				color: red;
+			}
+		}
+	}`;
+
+	//// Will be styled
+	btnWithId = new Button();
+	btnWithId.id = 'myButton';
+
+	//// Won't be styled
+	btnWithNoId = new Button();
+	// << article-using-non-matching-nested-media-query-selector
+
+	const stack = new StackLayout();
+	page.content = stack;
+	stack.addChild(btnWithId);
+	stack.addChild(btnWithNoId);
+
+	TKUnit.assert(btnWithId.style.color === undefined, 'Color should not have a value');
+	TKUnit.assert(btnWithNoId.style.color === undefined, 'Color should not have a value');
 }
 
 export function test_restore_original_values_when_state_is_changed() {
