@@ -1,6 +1,6 @@
 {
 	"name": "@nativescript/types-minimal",
-	"version": "8.6.1",
+	"version": "8.7.0",
 	"description": "NativeScript 'Minimal' Types for only the latest Android and iOS sdks.",
 	"homepage": "https://nativescript.org",
 	"repository": {

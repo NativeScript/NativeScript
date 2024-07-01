@@ -1,4 +1,4 @@
-import { Observable, EventData, Page, ImageSource, knownFolders, path } from '@nativescript/core';
+import { Observable, EventData, Page, ImageSource, knownFolders, path, ImageSymbolEffects } from '@nativescript/core';
 import { create, ImagePickerMediaType } from '@nativescript/imagepicker';
 
 let page: Page;
@@ -10,6 +10,10 @@ export function navigatingTo(args: EventData) {
 
 export class DemoModel extends Observable {
 	addingPhoto = false;
+	symbolWiggleEffect: ImageSymbolEffects.Wiggle;
+	symbolBounceEffect: ImageSymbolEffects.Bounce;
+	symbolBreathEffect: ImageSymbolEffects.Breathe;
+	symbolRotateEffect: ImageSymbolEffects.Rotate;
 
 	pickImage() {
 		const context = create({
@@ -22,10 +26,11 @@ export class DemoModel extends Observable {
 			.then(() => {
 				return context.present();
 			})
-			.then((selection) => {
-				const imageAsset = selection.length > 0 ? selection[0] : null;
-				if (imageAsset) {
+			.then((selections) => {
+				const selection = selections.length > 0 ? selections[0] : null;
+				if (selection) {
 					this.addingPhoto = true;
+					const imageAsset = selection.asset;
 
 					ImageSource.fromAsset(imageAsset).then(
 						(savedImage) => {
@@ -43,7 +48,7 @@ export class DemoModel extends Observable {
 						},
 						(err) => {
 							this.addingPhoto = false;
-						}
+						},
 					);
 				}
 			})

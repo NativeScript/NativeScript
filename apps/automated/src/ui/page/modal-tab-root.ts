@@ -13,7 +13,7 @@ export function onShownModally(args: ShownModallyData) {
 	TKUnit.assertEqual(hostFrame.currentPage.modal, tabView, 'hostFrame.currentPage.modal should be equal to the tabView instance on tabView.shownModally event handler.');
 
 	// shownModally raised after page.NavigatedTo on iOS
-	if (isIOS) {
+	if (__APPLE__) {
 		args.closeCallback('return value');
 	}
 }

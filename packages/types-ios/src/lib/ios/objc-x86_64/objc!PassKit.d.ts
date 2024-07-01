@@ -709,6 +709,8 @@ declare class PKIdentityElement extends NSObject implements NSCopying {
 
 	static readonly dateOfBirthElement: PKIdentityElement;
 
+	static readonly documentDHSComplianceStatusElement: PKIdentityElement;
+
 	static readonly documentExpirationDateElement: PKIdentityElement;
 
 	static readonly documentIssueDateElement: PKIdentityElement;
@@ -724,6 +726,8 @@ declare class PKIdentityElement extends NSObject implements NSCopying {
 	static readonly issuingAuthorityElement: PKIdentityElement;
 
 	static readonly portraitElement: PKIdentityElement;
+
+	static readonly sexElement: PKIdentityElement;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
@@ -1507,6 +1511,8 @@ declare var PKPaymentNetworkMada: string;
 declare var PKPaymentNetworkMaestro: string;
 
 declare var PKPaymentNetworkMasterCard: string;
+
+declare var PKPaymentNetworkMeeza: string;
 
 declare var PKPaymentNetworkMir: string;
 

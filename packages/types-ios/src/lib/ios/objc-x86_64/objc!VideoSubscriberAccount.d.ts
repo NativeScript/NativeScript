@@ -127,6 +127,21 @@ declare class VSAccountProviderResponse extends NSObject {
 	readonly status: string;
 }
 
+declare class VSAppleSubscription extends NSObject {
+
+	static alloc(): VSAppleSubscription; // inherited from NSObject
+
+	static new(): VSAppleSubscription; // inherited from NSObject
+
+	customerID: string;
+
+	productCodes: NSArray<string>;
+
+	constructor(o: { customerID: string; productCodes: NSArray<string> | string[]; });
+
+	initWithCustomerIDProductCodes(customerID: string, productCodes: NSArray<string> | string[]): this;
+}
+
 declare var VSCheckAccessOptionPrompt: string;
 
 declare const enum VSErrorCode {
@@ -211,6 +226,8 @@ declare class VSUserAccount extends NSObject {
 	accountProviderIdentifier: string;
 
 	accountType: VSUserAccountType;
+
+	appleSubscription: VSAppleSubscription;
 
 	authenticationData: string;
 

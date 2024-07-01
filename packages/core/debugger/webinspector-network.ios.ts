@@ -1,4 +1,4 @@
-import * as inspectorCommandTypes from './InspectorBackendCommands.ios';
+import * as inspectorCommandTypes from './InspectorBackendCommands';
 const inspectorCommands: typeof inspectorCommandTypes = require('./InspectorBackendCommands');
 
 import * as debuggerDomains from '.';
@@ -36,7 +36,10 @@ export class Request {
 	private _data: any;
 	private _mimeType: string;
 
-	constructor(private _networkDomainDebugger: NetworkDomainDebugger, private _requestID: string) {}
+	constructor(
+		private _networkDomainDebugger: NetworkDomainDebugger,
+		private _requestID: string,
+	) {}
 
 	get mimeType(): string {
 		return this._mimeType;

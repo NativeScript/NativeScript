@@ -27,7 +27,7 @@ export class ContentView extends CustomLayoutView implements AddChildFromBuilder
 		}
 
 		this._onContentChanged(oldView, value);
-		if (global.isIOS && oldView !== value) {
+		if (__APPLE__ && oldView !== value) {
 			this.requestLayout();
 		}
 	}

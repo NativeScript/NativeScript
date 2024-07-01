@@ -1,4 +1,5 @@
 import { Color, Button, Utils, CoreTypes } from '@nativescript/core';
+import { AndroidHelper } from '@nativescript/core/ui/core/view';
 
 export function getNativeText(button: Button): string {
 	return button.android.getText();
@@ -19,15 +20,7 @@ export function getNativeColor(button: Button): Color {
 }
 
 export function getNativeBackgroundColor(button: Button): Color {
-	let bg = <any>button.android.getBackground();
-	if (bg instanceof org.nativescript.widgets.BorderDrawable) {
-		return new Color(bg.getBackgroundColor());
-	} else if (bg instanceof android.graphics.drawable.ColorDrawable) {
-		console.log(bg);
-		return new Color(bg.getColor());
-	} else {
-		return new Color(bg.backgroundColor);
-	}
+	return AndroidHelper.getDrawableColor(button.android.getBackground());
 }
 
 export function getNativeTextAlignment(button: Button): string {

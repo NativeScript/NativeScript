@@ -187,6 +187,8 @@ declare class ASAuthorizationAppleIDCredential extends NSObject implements ASAut
 
 	readonly user: string;
 
+	readonly userAgeRange: ASUserAgeRange;
+
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
 	readonly description: string; // inherited from NSObjectProtocol
@@ -511,7 +513,7 @@ declare class ASAuthorizationPlatformPublicKeyCredentialAssertion extends NSObje
 	self(): this;
 }
 
-declare class ASAuthorizationPlatformPublicKeyCredentialAssertionRequest extends ASAuthorizationRequest implements ASAuthorizationPublicKeyCredentialAssertionRequest {
+declare class ASAuthorizationPlatformPublicKeyCredentialAssertionRequest extends ASAuthorizationRequest implements ASAuthorizationPublicKeyCredentialAssertionRequest, ASAuthorizationWebBrowserPlatformPublicKeyCredentialAssertionRequest {
 
 	static alloc(): ASAuthorizationPlatformPublicKeyCredentialAssertionRequest; // inherited from NSObject
 
@@ -523,6 +525,8 @@ declare class ASAuthorizationPlatformPublicKeyCredentialAssertionRequest extends
 
 	challenge: NSData; // inherited from ASAuthorizationPublicKeyCredentialAssertionRequest
 
+	readonly clientData: ASPublicKeyCredentialClientData; // inherited from ASAuthorizationWebBrowserPlatformPublicKeyCredentialAssertionRequest
+
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
 	readonly description: string; // inherited from NSObjectProtocol
@@ -532,6 +536,8 @@ declare class ASAuthorizationPlatformPublicKeyCredentialAssertionRequest extends
 	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
 	relyingPartyIdentifier: string; // inherited from ASAuthorizationPublicKeyCredentialAssertionRequest
+
+	shouldShowHybridTransport: boolean; // inherited from ASAuthorizationWebBrowserPlatformPublicKeyCredentialAssertionRequest
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
@@ -629,7 +635,7 @@ declare class ASAuthorizationPlatformPublicKeyCredentialDescriptor extends NSObj
 	self(): this;
 }
 
-declare class ASAuthorizationPlatformPublicKeyCredentialProvider extends NSObject implements ASAuthorizationProvider {
+declare class ASAuthorizationPlatformPublicKeyCredentialProvider extends NSObject implements ASAuthorizationProvider, ASAuthorizationWebBrowserPlatformPublicKeyCredentialProvider {
 
 	static alloc(): ASAuthorizationPlatformPublicKeyCredentialProvider; // inherited from NSObject
 
@@ -657,7 +663,11 @@ declare class ASAuthorizationPlatformPublicKeyCredentialProvider extends NSObjec
 
 	createCredentialAssertionRequestWithChallenge(challenge: NSData): ASAuthorizationPlatformPublicKeyCredentialAssertionRequest;
 
+	createCredentialAssertionRequestWithClientData(clientData: ASPublicKeyCredentialClientData): ASAuthorizationPlatformPublicKeyCredentialAssertionRequest;
+
 	createCredentialRegistrationRequestWithChallengeNameUserID(challenge: NSData, name: string, userID: NSData): ASAuthorizationPlatformPublicKeyCredentialRegistrationRequest;
+
+	createCredentialRegistrationRequestWithClientDataNameUserID(clientData: ASPublicKeyCredentialClientData, name: string, userID: NSData): ASAuthorizationPlatformPublicKeyCredentialRegistrationRequest;
 
 	initWithRelyingPartyIdentifier(relyingPartyIdentifier: string): this;
 
@@ -741,7 +751,7 @@ declare class ASAuthorizationPlatformPublicKeyCredentialRegistration extends NSO
 	self(): this;
 }
 
-declare class ASAuthorizationPlatformPublicKeyCredentialRegistrationRequest extends ASAuthorizationRequest implements ASAuthorizationPublicKeyCredentialRegistrationRequest {
+declare class ASAuthorizationPlatformPublicKeyCredentialRegistrationRequest extends ASAuthorizationRequest implements ASAuthorizationPublicKeyCredentialRegistrationRequest, ASAuthorizationWebBrowserPlatformPublicKeyCredentialRegistrationRequest {
 
 	static alloc(): ASAuthorizationPlatformPublicKeyCredentialRegistrationRequest; // inherited from NSObject
 
@@ -753,11 +763,15 @@ declare class ASAuthorizationPlatformPublicKeyCredentialRegistrationRequest exte
 
 	challenge: NSData; // inherited from ASAuthorizationPublicKeyCredentialRegistrationRequest
 
+	readonly clientData: ASPublicKeyCredentialClientData; // inherited from ASAuthorizationWebBrowserPlatformPublicKeyCredentialRegistrationRequest
+
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
 	readonly description: string; // inherited from NSObjectProtocol
 
 	displayName: string; // inherited from ASAuthorizationPublicKeyCredentialRegistrationRequest
+
+	excludedCredentials: NSArray<ASAuthorizationPlatformPublicKeyCredentialDescriptor>; // inherited from ASAuthorizationWebBrowserPlatformPublicKeyCredentialRegistrationRequest
 
 	readonly hash: number; // inherited from NSObjectProtocol
 
@@ -1163,7 +1177,7 @@ declare class ASAuthorizationSecurityKeyPublicKeyCredentialAssertion extends NSO
 	self(): this;
 }
 
-declare class ASAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest extends ASAuthorizationRequest implements ASAuthorizationPublicKeyCredentialAssertionRequest {
+declare class ASAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest extends ASAuthorizationRequest implements ASAuthorizationPublicKeyCredentialAssertionRequest, ASAuthorizationWebBrowserSecurityKeyPublicKeyCredentialAssertionRequest {
 
 	static alloc(): ASAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest; // inherited from NSObject
 
@@ -1172,6 +1186,8 @@ declare class ASAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest exte
 	allowedCredentials: NSArray<ASAuthorizationPublicKeyCredentialDescriptor>; // inherited from ASAuthorizationPublicKeyCredentialAssertionRequest
 
 	challenge: NSData; // inherited from ASAuthorizationPublicKeyCredentialAssertionRequest
+
+	readonly clientData: ASPublicKeyCredentialClientData; // inherited from ASAuthorizationWebBrowserSecurityKeyPublicKeyCredentialAssertionRequest
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
@@ -1287,7 +1303,7 @@ declare var ASAuthorizationSecurityKeyPublicKeyCredentialDescriptorTransportNFC:
 
 declare var ASAuthorizationSecurityKeyPublicKeyCredentialDescriptorTransportUSB: string;
 
-declare class ASAuthorizationSecurityKeyPublicKeyCredentialProvider extends NSObject implements ASAuthorizationProvider {
+declare class ASAuthorizationSecurityKeyPublicKeyCredentialProvider extends NSObject implements ASAuthorizationProvider, ASAuthorizationWebBrowserSecurityKeyPublicKeyCredentialProvider {
 
 	static alloc(): ASAuthorizationSecurityKeyPublicKeyCredentialProvider; // inherited from NSObject
 
@@ -1315,7 +1331,11 @@ declare class ASAuthorizationSecurityKeyPublicKeyCredentialProvider extends NSOb
 
 	createCredentialAssertionRequestWithChallenge(challenge: NSData): ASAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest;
 
+	createCredentialAssertionRequestWithClientData(clientData: ASPublicKeyCredentialClientData): ASAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest;
+
 	createCredentialRegistrationRequestWithChallengeDisplayNameNameUserID(challenge: NSData, displayName: string, name: string, userID: NSData): ASAuthorizationSecurityKeyPublicKeyCredentialRegistrationRequest;
+
+	createCredentialRegistrationRequestWithClientDataDisplayNameNameUserID(clientData: ASPublicKeyCredentialClientData, displayName: string, name: string, userID: NSData): ASAuthorizationSecurityKeyPublicKeyCredentialRegistrationRequest;
 
 	initWithRelyingPartyIdentifier(relyingPartyIdentifier: string): this;
 
@@ -1395,7 +1415,7 @@ declare class ASAuthorizationSecurityKeyPublicKeyCredentialRegistration extends 
 	self(): this;
 }
 
-declare class ASAuthorizationSecurityKeyPublicKeyCredentialRegistrationRequest extends ASAuthorizationRequest implements ASAuthorizationPublicKeyCredentialRegistrationRequest {
+declare class ASAuthorizationSecurityKeyPublicKeyCredentialRegistrationRequest extends ASAuthorizationRequest implements ASAuthorizationPublicKeyCredentialRegistrationRequest, ASAuthorizationWebBrowserSecurityKeyPublicKeyCredentialRegistrationRequest {
 
 	static alloc(): ASAuthorizationSecurityKeyPublicKeyCredentialRegistrationRequest; // inherited from NSObject
 
@@ -1410,6 +1430,8 @@ declare class ASAuthorizationSecurityKeyPublicKeyCredentialRegistrationRequest e
 	attestationPreference: string; // inherited from ASAuthorizationPublicKeyCredentialRegistrationRequest
 
 	challenge: NSData; // inherited from ASAuthorizationPublicKeyCredentialRegistrationRequest
+
+	readonly clientData: ASPublicKeyCredentialClientData; // inherited from ASAuthorizationWebBrowserSecurityKeyPublicKeyCredentialRegistrationRequest
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
@@ -1589,6 +1611,71 @@ declare class ASAuthorizationSingleSignOnRequest extends ASAuthorizationOpenIDRe
 	userInterfaceEnabled: boolean;
 }
 
+declare class ASAuthorizationWebBrowserPlatformPublicKeyCredential extends NSObject {
+
+	static alloc(): ASAuthorizationWebBrowserPlatformPublicKeyCredential; // inherited from NSObject
+
+	static new(): ASAuthorizationWebBrowserPlatformPublicKeyCredential; // inherited from NSObject
+
+	readonly credentialID: NSData;
+
+	readonly customTitle: string;
+
+	readonly name: string;
+
+	readonly providerName: string;
+
+	readonly relyingParty: string;
+
+	readonly userHandle: NSData;
+}
+
+interface ASAuthorizationWebBrowserPlatformPublicKeyCredentialAssertionRequest {
+
+	clientData: ASPublicKeyCredentialClientData;
+
+	shouldShowHybridTransport: boolean;
+}
+declare var ASAuthorizationWebBrowserPlatformPublicKeyCredentialAssertionRequest: {
+
+	prototype: ASAuthorizationWebBrowserPlatformPublicKeyCredentialAssertionRequest;
+};
+
+interface ASAuthorizationWebBrowserPlatformPublicKeyCredentialProvider {
+
+	createCredentialAssertionRequestWithClientData(clientData: ASPublicKeyCredentialClientData): ASAuthorizationPlatformPublicKeyCredentialAssertionRequest;
+
+	createCredentialRegistrationRequestWithClientDataNameUserID(clientData: ASPublicKeyCredentialClientData, name: string, userID: NSData): ASAuthorizationPlatformPublicKeyCredentialRegistrationRequest;
+}
+declare var ASAuthorizationWebBrowserPlatformPublicKeyCredentialProvider: {
+
+	prototype: ASAuthorizationWebBrowserPlatformPublicKeyCredentialProvider;
+};
+
+interface ASAuthorizationWebBrowserPlatformPublicKeyCredentialRegistrationRequest {
+
+	clientData: ASPublicKeyCredentialClientData;
+
+	excludedCredentials: NSArray<ASAuthorizationPlatformPublicKeyCredentialDescriptor>;
+}
+declare var ASAuthorizationWebBrowserPlatformPublicKeyCredentialRegistrationRequest: {
+
+	prototype: ASAuthorizationWebBrowserPlatformPublicKeyCredentialRegistrationRequest;
+};
+
+declare class ASAuthorizationWebBrowserPublicKeyCredentialManager extends NSObject {
+
+	static alloc(): ASAuthorizationWebBrowserPublicKeyCredentialManager; // inherited from NSObject
+
+	static new(): ASAuthorizationWebBrowserPublicKeyCredentialManager; // inherited from NSObject
+
+	readonly authorizationStateForPlatformCredentials: ASAuthorizationWebBrowserPublicKeyCredentialManagerAuthorizationState;
+
+	platformCredentialsForRelyingPartyCompletionHandler(relyingParty: string, completionHandler: (p1: NSArray<ASAuthorizationWebBrowserPlatformPublicKeyCredential>) => void): void;
+
+	requestAuthorizationForPublicKeyCredentials(completionHandler: (p1: ASAuthorizationWebBrowserPublicKeyCredentialManagerAuthorizationState) => void): void;
+}
+
 declare const enum ASAuthorizationWebBrowserPublicKeyCredentialManagerAuthorizationState {
 
 	Authorized = 0,
@@ -1597,6 +1684,35 @@ declare const enum ASAuthorizationWebBrowserPublicKeyCredentialManagerAuthorizat
 
 	NotDetermined = 2
 }
+
+interface ASAuthorizationWebBrowserSecurityKeyPublicKeyCredentialAssertionRequest {
+
+	clientData: ASPublicKeyCredentialClientData;
+}
+declare var ASAuthorizationWebBrowserSecurityKeyPublicKeyCredentialAssertionRequest: {
+
+	prototype: ASAuthorizationWebBrowserSecurityKeyPublicKeyCredentialAssertionRequest;
+};
+
+interface ASAuthorizationWebBrowserSecurityKeyPublicKeyCredentialProvider {
+
+	createCredentialAssertionRequestWithClientData(clientData: ASPublicKeyCredentialClientData): ASAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest;
+
+	createCredentialRegistrationRequestWithClientDataDisplayNameNameUserID(clientData: ASPublicKeyCredentialClientData, displayName: string, name: string, userID: NSData): ASAuthorizationSecurityKeyPublicKeyCredentialRegistrationRequest;
+}
+declare var ASAuthorizationWebBrowserSecurityKeyPublicKeyCredentialProvider: {
+
+	prototype: ASAuthorizationWebBrowserSecurityKeyPublicKeyCredentialProvider;
+};
+
+interface ASAuthorizationWebBrowserSecurityKeyPublicKeyCredentialRegistrationRequest {
+
+	clientData: ASPublicKeyCredentialClientData;
+}
+declare var ASAuthorizationWebBrowserSecurityKeyPublicKeyCredentialRegistrationRequest: {
+
+	prototype: ASAuthorizationWebBrowserSecurityKeyPublicKeyCredentialRegistrationRequest;
+};
 
 declare var ASCOSEAlgorithmIdentifierES256: number;
 
@@ -1624,6 +1740,8 @@ declare class ASCredentialIdentityStore extends NSObject {
 	static new(): ASCredentialIdentityStore; // inherited from NSObject
 
 	static readonly sharedStore: ASCredentialIdentityStore;
+
+	getCredentialIdentitiesForServiceCredentialIdentityTypesCompletionHandler(serviceIdentifier: ASCredentialServiceIdentifier, credentialIdentityTypes: ASCredentialIdentityTypes, completionHandler: (p1: NSArray<ASCredentialIdentity>) => void): void;
 
 	getCredentialIdentityStoreStateWithCompletion(completion: (p1: ASCredentialIdentityStoreState) => void): void;
 
@@ -1662,6 +1780,15 @@ declare class ASCredentialIdentityStoreState extends NSObject {
 	readonly enabled: boolean;
 
 	readonly supportsIncrementalUpdates: boolean;
+}
+
+declare const enum ASCredentialIdentityTypes {
+
+	All = 0,
+
+	Password = 1,
+
+	Passkey = 2
 }
 
 declare class ASCredentialProviderExtensionContext extends NSExtensionContext {
@@ -2266,6 +2393,25 @@ declare var ASPublicKeyCredential: {
 	prototype: ASPublicKeyCredential;
 };
 
+declare class ASPublicKeyCredentialClientData extends NSObject {
+
+	static alloc(): ASPublicKeyCredentialClientData; // inherited from NSObject
+
+	static new(): ASPublicKeyCredentialClientData; // inherited from NSObject
+
+	challenge: NSData;
+
+	crossOrigin: ASPublicKeyCredentialClientDataCrossOriginValue;
+
+	origin: string;
+
+	topOrigin: string;
+
+	constructor(o: { challenge: NSData; origin: string; });
+
+	initWithChallengeOrigin(challenge: NSData, origin: string): this;
+}
+
 declare const enum ASPublicKeyCredentialClientDataCrossOriginValue {
 
 	NotSet = 0,
@@ -2284,6 +2430,15 @@ declare class ASSettingsHelper extends NSObject {
 	static openCredentialProviderAppSettingsWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
 
 	static openVerificationCodeAppSettingsWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+}
+
+declare const enum ASUserAgeRange {
+
+	Unknown = 0,
+
+	Child = 1,
+
+	NotChild = 2
 }
 
 declare const enum ASUserDetectionStatus {
@@ -2310,19 +2465,38 @@ declare class ASWebAuthenticationSession extends NSObject {
 
 	static new(): ASWebAuthenticationSession; // inherited from NSObject
 
+	additionalHeaderFields: NSDictionary<string, string>;
+
 	readonly canStart: boolean;
 
 	prefersEphemeralWebBrowserSession: boolean;
 
 	presentationContextProvider: ASWebAuthenticationPresentationContextProviding;
 
+	constructor(o: { URL: NSURL; callback: ASWebAuthenticationSessionCallback; completionHandler: (p1: NSURL, p2: NSError) => void; });
+
 	constructor(o: { URL: NSURL; callbackURLScheme: string; completionHandler: (p1: NSURL, p2: NSError) => void; });
 
 	cancel(): void;
 
+	initWithURLCallbackCompletionHandler(URL: NSURL, callback: ASWebAuthenticationSessionCallback, completionHandler: (p1: NSURL, p2: NSError) => void): this;
+
 	initWithURLCallbackURLSchemeCompletionHandler(URL: NSURL, callbackURLScheme: string, completionHandler: (p1: NSURL, p2: NSError) => void): this;
 
 	start(): boolean;
+}
+
+declare class ASWebAuthenticationSessionCallback extends NSObject {
+
+	static alloc(): ASWebAuthenticationSessionCallback; // inherited from NSObject
+
+	static callbackWithCustomScheme(customScheme: string): ASWebAuthenticationSessionCallback;
+
+	static callbackWithHTTPSHostPath(host: string, path: string): ASWebAuthenticationSessionCallback;
+
+	static new(): ASWebAuthenticationSessionCallback; // inherited from NSObject
+
+	matchesURL(url: NSURL): boolean;
 }
 
 declare const enum ASWebAuthenticationSessionErrorCode {

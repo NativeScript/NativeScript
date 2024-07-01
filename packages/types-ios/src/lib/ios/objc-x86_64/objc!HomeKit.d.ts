@@ -1549,7 +1549,9 @@ declare const enum HMErrorCode {
 
 	FailedToJoinNetwork = 102,
 
-	AccessoryIsSuspended = 103
+	AccessoryIsSuspended = 103,
+
+	PartialCommunicationFailure = 104
 }
 
 declare var HMErrorDomain: string;

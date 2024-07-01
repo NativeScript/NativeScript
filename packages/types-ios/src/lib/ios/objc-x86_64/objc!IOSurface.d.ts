@@ -216,6 +216,24 @@ declare function IOSurfaceLookup(csid: number): IOSurface;
 
 declare function IOSurfaceLookupFromMachPort(port: number): IOSurface;
 
+declare const enum IOSurfaceMemoryLedgerFlags {
+
+	kIOSurfaceMemoryLedgerFlagNoFootprint = 1
+}
+
+declare const enum IOSurfaceMemoryLedgerTags {
+
+	kIOSurfaceMemoryLedgerTagDefault = 1,
+
+	kIOSurfaceMemoryLedgerTagNetwork = 2,
+
+	kIOSurfaceMemoryLedgerTagMedia = 3,
+
+	kIOSurfaceMemoryLedgerTagGraphics = 4,
+
+	kIOSurfaceMemoryLedgerTagNeural = 5
+}
+
 declare var IOSurfacePropertyAllocSizeKey: string;
 
 declare var IOSurfacePropertyKeyAllocSize: string;
@@ -276,6 +294,8 @@ declare const enum IOSurfacePurgeabilityState {
 declare function IOSurfaceRemoveAllValues(buffer: IOSurface): void;
 
 declare function IOSurfaceRemoveValue(buffer: IOSurface, key: string): void;
+
+declare function IOSurfaceSetOwnershipIdentity(buffer: IOSurface, task_id_token: number, newLedgerTag: number, newLedgerOptions: number): number;
 
 declare function IOSurfaceSetPurgeable(buffer: IOSurface, newState: number, oldState: interop.Pointer | interop.Reference<number>): number;
 

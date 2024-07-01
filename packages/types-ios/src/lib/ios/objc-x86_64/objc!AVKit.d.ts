@@ -8,6 +8,81 @@ declare const enum AVAudioSessionRouteSelection {
 	External = 2
 }
 
+declare class AVCaptureEvent extends NSObject {
+
+	static alloc(): AVCaptureEvent; // inherited from NSObject
+
+	static new(): AVCaptureEvent; // inherited from NSObject
+
+	readonly phase: AVCaptureEventPhase;
+}
+
+declare class AVCaptureEventInteraction extends NSObject implements UIInteraction {
+
+	static alloc(): AVCaptureEventInteraction; // inherited from NSObject
+
+	static new(): AVCaptureEventInteraction; // inherited from NSObject
+
+	enabled: boolean;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly view: UIView; // inherited from UIInteraction
+
+	readonly  // inherited from NSObjectProtocol
+
+	constructor(o: { eventHandler: (p1: AVCaptureEvent) => void; });
+
+	constructor(o: { primaryEventHandler: (p1: AVCaptureEvent) => void; secondaryEventHandler: (p1: AVCaptureEvent) => void; });
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	didMoveToView(view: UIView): void;
+
+	initWithEventHandler(handler: (p1: AVCaptureEvent) => void): this;
+
+	initWithPrimaryEventHandlerSecondaryEventHandler(primaryHandler: (p1: AVCaptureEvent) => void, secondaryHandler: (p1: AVCaptureEvent) => void): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+
+	willMoveToView(view: UIView): void;
+}
+
+declare const enum AVCaptureEventPhase {
+
+	Began = 0,
+
+	Ended = 1,
+
+	Cancelled = 2
+}
+
 declare class AVInterstitialTimeRange extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): AVInterstitialTimeRange; // inherited from NSObject

@@ -8,7 +8,7 @@ export function platformCheck(parent?: string) {
 			{
 				get(_, prop) {
 					const propPretty = [parent, prop.toString()].join('.');
-					const hintPlatformCheck = global.isAndroid ? 'global.isIOS' : 'global.isAndroid';
+					const hintPlatformCheck = __ANDROID__ ? '__IOS__' : '__ANDROID__';
 
 					// prettier-ignore
 					const errorMsg = [
@@ -18,7 +18,7 @@ export function platformCheck(parent?: string) {
 
 					throw new Error(errorMsg);
 				},
-			}
+			},
 		);
 	}
 

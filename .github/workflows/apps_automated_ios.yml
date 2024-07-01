@@ -1,0 +1,49 @@
+name: 'apps/automated/ios'
+
+on:
+  push:
+    branches:
+      - main
+      - 'ci/**'
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-ios:
+    runs-on: flyci-macos-14-m2
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.10.0
+
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3'
+
+      - name: Install NativeScript
+        run: |
+          python3 -m pip install --upgrade pip six
+          npm i -g nativescript --ignore-scripts --legacy-peer-deps
+          ns usage-reporting disable
+          ns error-reporting disable
+          ns doctor
+
+      - name: Setup
+        run: npm run setup
+
+      - name: Unit Tests
+        run: npx nx run-many --target=test --configuration=ci --projects=core
+
+      - name: Start iOS Simulator
+        uses: futureware-tech/simulator-action@v3
+
+      - name: Run tests on iOS Simulator
+        run: node tools/scripts/run-automated.js ios

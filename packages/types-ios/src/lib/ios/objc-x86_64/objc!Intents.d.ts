@@ -1624,6 +1624,10 @@ declare var INCarChargingConnectorTypeJ1772: string;
 
 declare var INCarChargingConnectorTypeMennekes: string;
 
+declare var INCarChargingConnectorTypeNACSAC: string;
+
+declare var INCarChargingConnectorTypeNACSDC: string;
+
 declare var INCarChargingConnectorTypeTesla: string;
 
 interface INCarCommandsDomainHandling extends INActivateCarSignalIntentHandling, INGetCarLockStatusIntentHandling, INGetCarPowerLevelStatusIntentHandling, INSetCarLockStatusIntentHandling {

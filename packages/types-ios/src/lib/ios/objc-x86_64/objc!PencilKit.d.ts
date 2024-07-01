@@ -108,7 +108,9 @@ declare const enum PKContentVersion {
 
 	Version2 = 2,
 
-	VersionLatest = 2
+	Version3 = 3,
+
+	VersionLatest = 3
 }
 
 declare class PKDrawing extends NSObject implements NSCopying, NSSecureCoding {

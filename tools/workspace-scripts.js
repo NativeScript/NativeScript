@@ -31,6 +31,10 @@ module.exports = {
           script: 'nx run apps-automated:ios',
           description: '⚆  Run iOS  '
         },
+        visionos: {
+          script: 'nx run apps-automated:vision',
+          description: '⚆  Run visionOS  🥽'
+        },
 				android: {
           script: 'nx run apps-automated:android',
           description: '⚆  Run Android  🤖'
@@ -50,6 +54,10 @@ module.exports = {
           script: 'nx run apps-toolbox:ios',
           description: '⚆  Run iOS  '
         },
+        visionos: {
+          script: 'nx run apps-toolbox:vision',
+          description: '⚆  Run visionOS  🥽'
+        },
 				android: {
           script: 'nx run apps-toolbox:android',
           description: '⚆  Run Android  🤖'
@@ -68,6 +76,10 @@ module.exports = {
 				ios: {
           script: 'nx run apps-ui:ios',
           description: '⚆  Run iOS  '
+        },
+        visionos: {
+          script: 'nx run apps-ui:vision',
+          description: '⚆  Run visionOS  🥽'
         },
 				android: {
           script: 'nx run apps-ui:android',
@@ -107,23 +119,16 @@ module.exports = {
           description: '@nativescript/ui-mobile-base: Build for npm'
         },
 			},
-			// @nativescript/webpack
-			webpack: {
-				build: {
-          script: 'nx run webpack:build',
-          description: '@nativescript/webpack: Build for npm'
-        },
-				test: {
-          script: 'nx run webpack:test',
-          description: '@nativescript/webpack: Unit tests'
-        },
-      },
       // @nativescript/webpack (5)
 			webpack5: {
 				build: {
           script: 'nx run webpack5:build',
           description: '@nativescript/webpack(5): Build for npm'
         },
+				test: {
+					script: 'nx run webpack5:test',
+					description: '@nativescript/webpack(5): Unit tests'
+				},
 			},
     },
     "⚡": {

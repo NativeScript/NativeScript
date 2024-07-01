@@ -5,7 +5,8 @@ jest.mock('@nativescript/core/application', () => null, { virtual: true });
 global.__DEV__ = true;
 global.__ANDROID__ = false;
 global.__IOS__ = true;
-global.__VISIONOS__ = true;
+global.__VISIONOS__ = false;
+global.__APPLE__ = true;
 global.WeakRef.prototype.get = global.WeakRef.prototype.deref;
 global.NativeClass = function () {};
 global.NSTimer = class NSTimer {};
@@ -47,9 +48,11 @@ global.interop = {
 		bool: {},
 	},
 };
-// global.UIApplication = {
-
-// }
+global.UIApplication = {
+	sharedApplication: {
+		statusBarOrientation: 1, // Portrait by default
+	},
+};
 global.UIDevice = {
 	currentDevice: {
 		systemVersion: '13.0',
@@ -58,6 +61,16 @@ global.UIDevice = {
 global.UIScreen = {
 	mainScreen: {
 		scale: 1,
+		bounds: {
+			origin: {
+				x: 0,
+				y: 0,
+			},
+			size: {
+				height: 1000,
+				width: 1000,
+			},
+		},
 	},
 };
 const cgColors = { CGColor: 1 };
