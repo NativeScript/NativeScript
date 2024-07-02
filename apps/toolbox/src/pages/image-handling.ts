@@ -10,7 +10,7 @@ export function navigatingTo(args: EventData) {
 
 export class DemoModel extends Observable {
 	addingPhoto = false;
-	symbolWiggleEffect = ImageSymbolEffects.Scale;
+	symbolWiggleEffect = ImageSymbolEffects.Wiggle;
 	symbolBounceEffect = ImageSymbolEffects.Bounce;
 	symbolBreathEffect = ImageSymbolEffects.Breathe;
 	symbolRotateEffect = ImageSymbolEffects.Rotate;
