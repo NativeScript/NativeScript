@@ -1,62 +1,135 @@
 import '../../globals';
-import { setActivityCallbacks, AndroidActivityCallbacks } from '.';
+import { setActivityCallbacks } from '.';
 import { Application } from '../../application';
+import { isEmbedded } from '../embedding';
 
-/**
- * NOTE: We cannot use NativeClass here because this is used in appComponents in webpack.config
- * Whereby it bypasses the decorator transformation, hence pure es5 style written here
- */
-const superProto = androidx.appcompat.app.AppCompatActivity.prototype;
-(<any>androidx.appcompat.app.AppCompatActivity).extend('com.tns.NativeScriptActivity', {
-	init() {
-		// init must at least be defined
-	},
-	onCreate(savedInstanceState: android.os.Bundle): void {
-		Application.android.init(this.getApplication());
+const EMPTY_FN = () => {};
+declare const com: any;
 
-		// Set isNativeScriptActivity in onCreate.
-		// The JS constructor might not be called because the activity is created from Android.
-		this.isNativeScriptActivity = true;
-		if (!this._callbacks) {
-			setActivityCallbacks(this);
-		}
+if (!isEmbedded()) {
+	/**
+	 * NOTE: We cannot use NativeClass here because this is used in appComponents in webpack.config
+	 * Whereby it bypasses the decorator transformation, hence pure es5 style written here
+	 */
+	const superProto = androidx.appcompat.app.AppCompatActivity.prototype;
+	(<any>androidx.appcompat.app.AppCompatActivity).extend('com.tns.NativeScriptActivity', {
+		init() {
+			// init must at least be defined
+		},
+		onCreate(savedInstanceState: android.os.Bundle): void {
+			Application.android.init(this.getApplication());
 
-		this._callbacks.onCreate(this, savedInstanceState, this.getIntent(), superProto.onCreate);
-	},
+			// Set isNativeScriptActivity in onCreate.
+			// The JS constructor might not be called because the activity is created from Android.
+			this.isNativeScriptActivity = true;
+			if (!this._callbacks) {
+				setActivityCallbacks(this);
+			}
 
-	onNewIntent(intent: android.content.Intent): void {
-		this._callbacks.onNewIntent(this, intent, superProto.setIntent, superProto.onNewIntent);
-	},
+			this._callbacks.onCreate(this, savedInstanceState, this.getIntent(), superProto.onCreate);
+		},
 
-	onSaveInstanceState(outState: android.os.Bundle): void {
-		this._callbacks.onSaveInstanceState(this, outState, superProto.onSaveInstanceState);
-	},
+		onNewIntent(intent: android.content.Intent): void {
+			this._callbacks.onNewIntent(this, intent, superProto.setIntent, superProto.onNewIntent);
+		},
 
-	onStart(): void {
-		this._callbacks.onStart(this, superProto.onStart);
-	},
+		onSaveInstanceState(outState: android.os.Bundle): void {
+			this._callbacks.onSaveInstanceState(this, outState, superProto.onSaveInstanceState);
+		},
 
-	onStop(): void {
-		this._callbacks.onStop(this, superProto.onStop);
-	},
+		onStart(): void {
+			this._callbacks.onStart(this, superProto.onStart);
+		},
 
-	onDestroy(): void {
-		this._callbacks.onDestroy(this, superProto.onDestroy);
-	},
+		onStop(): void {
+			this._callbacks.onStop(this, superProto.onStop);
+		},
 
-	onPostResume(): void {
-		this._callbacks.onPostResume(this, superProto.onPostResume);
-	},
+		onDestroy(): void {
+			this._callbacks.onDestroy(this, superProto.onDestroy);
+		},
 
-	onBackPressed(): void {
-		this._callbacks.onBackPressed(this, superProto.onBackPressed);
-	},
+		onPostResume(): void {
+			this._callbacks.onPostResume(this, superProto.onPostResume);
+		},
 
-	onRequestPermissionsResult(requestCode: number, permissions: Array<string>, grantResults: Array<number>): void {
-		this._callbacks.onRequestPermissionsResult(this, requestCode, permissions, grantResults, undefined /*TODO: Enable if needed*/);
-	},
+		onBackPressed(): void {
+			this._callbacks.onBackPressed(this, superProto.onBackPressed);
+		},
 
-	onActivityResult(requestCode: number, resultCode: number, data: android.content.Intent): void {
-		this._callbacks.onActivityResult(this, requestCode, resultCode, data, superProto.onActivityResult);
-	},
-});
+		onRequestPermissionsResult(requestCode: number, permissions: Array<string>, grantResults: Array<number>): void {
+			this._callbacks.onRequestPermissionsResult(this, requestCode, permissions, grantResults, undefined /*TODO: Enable if needed*/);
+		},
+
+		onActivityResult(requestCode: number, resultCode: number, data: android.content.Intent): void {
+			this._callbacks.onActivityResult(this, requestCode, resultCode, data, superProto.onActivityResult);
+		},
+	});
+} else {
+	const Callbacks = com.tns.embedding.EmbeddableActivityCallbacks.extend({
+		init() {
+			// init must at least be defined
+		},
+		onCreate(savedInstanceState: android.os.Bundle): void {
+			const activity = this.getActivity();
+
+			Application.android.init(activity.getApplication());
+
+			// Set isNativeScriptActivity in onCreate.
+			// The JS constructor might not be called because the activity is created from Android.
+			activity.isNativeScriptActivity = true;
+			if (!activity._callbacks) {
+				setActivityCallbacks(activity);
+			}
+
+			activity._callbacks.onCreate(activity, savedInstanceState, activity.getIntent(), EMPTY_FN);
+		},
+
+		onNewIntent(intent: android.content.Intent): void {
+			const activity = this.getActivity();
+			activity._callbacks.onNewIntent(activity, intent, EMPTY_FN, EMPTY_FN);
+		},
+
+		onSaveInstanceState(outState: android.os.Bundle): void {
+			const activity = this.getActivity();
+			activity._callbacks.onSaveInstanceState(activity, outState, EMPTY_FN);
+		},
+
+		onStart(): void {
+			const activity = this.getActivity();
+			activity._callbacks.onStart(activity, EMPTY_FN);
+		},
+
+		onStop(): void {
+			const activity = this.getActivity();
+			activity._callbacks.onStop(activity, EMPTY_FN);
+		},
+
+		onDestroy(): void {
+			const activity = this.getActivity();
+			activity._callbacks.onDestroy(activity, EMPTY_FN);
+		},
+
+		onPostResume(): void {
+			const activity = this.getActivity();
+			activity._callbacks.onPostResume(activity, EMPTY_FN);
+		},
+
+		onBackPressed(): void {
+			const activity = this.getActivity();
+			activity._callbacks.onBackPressed(activity, EMPTY_FN);
+		},
+
+		onRequestPermissionsResult(requestCode: number, permissions: Array<string>, grantResults: Array<number>): void {
+			const activity = this.getActivity();
+			activity._callbacks.onRequestPermissionsResult(activity, requestCode, permissions, grantResults, undefined /*TODO: Enable if needed*/);
+		},
+
+		onActivityResult(requestCode: number, resultCode: number, data: android.content.Intent): void {
+			const activity = this.getActivity();
+			activity._callbacks.onActivityResult(activity, requestCode, resultCode, data, EMPTY_FN);
+		},
+	});
+
+	com.tns.embedding.CallbacksStore.setActivityCallbacks(new Callbacks());
+}
