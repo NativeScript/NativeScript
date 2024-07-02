@@ -1,4 +1,7 @@
 
+/**
+ * @since 16.0
+ */
 declare class MPAdTimeRange extends NSObject implements NSCopying {
 
 	static alloc(): MPAdTimeRange; // inherited from NSObject
@@ -14,6 +17,9 @@ declare class MPAdTimeRange extends NSObject implements NSCopying {
 	initWithTimeRange(timeRange: CMTimeRange): this;
 }
 
+/**
+ * @since 9.0
+ */
 declare class MPChangeLanguageOptionCommandEvent extends MPRemoteCommandEvent {
 
 	static alloc(): MPChangeLanguageOptionCommandEvent; // inherited from NSObject
@@ -25,6 +31,9 @@ declare class MPChangeLanguageOptionCommandEvent extends MPRemoteCommandEvent {
 	readonly setting: MPChangeLanguageOptionSetting;
 }
 
+/**
+ * @since 9.3
+ */
 declare const enum MPChangeLanguageOptionSetting {
 
 	None = 0,
@@ -34,6 +43,9 @@ declare const enum MPChangeLanguageOptionSetting {
 	Permanent = 2
 }
 
+/**
+ * @since 9.0
+ */
 declare class MPChangePlaybackPositionCommand extends MPRemoteCommand {
 
 	static alloc(): MPChangePlaybackPositionCommand; // inherited from NSObject
@@ -41,6 +53,9 @@ declare class MPChangePlaybackPositionCommand extends MPRemoteCommand {
 	static new(): MPChangePlaybackPositionCommand; // inherited from NSObject
 }
 
+/**
+ * @since 8.0
+ */
 declare class MPChangePlaybackPositionCommandEvent extends MPRemoteCommandEvent {
 
 	static alloc(): MPChangePlaybackPositionCommandEvent; // inherited from NSObject
@@ -50,6 +65,9 @@ declare class MPChangePlaybackPositionCommandEvent extends MPRemoteCommandEvent 
 	readonly positionTime: number;
 }
 
+/**
+ * @since 7.1
+ */
 declare class MPChangePlaybackRateCommand extends MPRemoteCommand {
 
 	static alloc(): MPChangePlaybackRateCommand; // inherited from NSObject
@@ -59,6 +77,9 @@ declare class MPChangePlaybackRateCommand extends MPRemoteCommand {
 	supportedPlaybackRates: NSArray<number>;
 }
 
+/**
+ * @since 7.1
+ */
 declare class MPChangePlaybackRateCommandEvent extends MPRemoteCommandEvent {
 
 	static alloc(): MPChangePlaybackRateCommandEvent; // inherited from NSObject
@@ -68,6 +89,9 @@ declare class MPChangePlaybackRateCommandEvent extends MPRemoteCommandEvent {
 	readonly playbackRate: number;
 }
 
+/**
+ * @since 8.0
+ */
 declare class MPChangeRepeatModeCommand extends MPRemoteCommand {
 
 	static alloc(): MPChangeRepeatModeCommand; // inherited from NSObject
@@ -77,6 +101,9 @@ declare class MPChangeRepeatModeCommand extends MPRemoteCommand {
 	currentRepeatType: MPRepeatType;
 }
 
+/**
+ * @since 8.0
+ */
 declare class MPChangeRepeatModeCommandEvent extends MPRemoteCommandEvent {
 
 	static alloc(): MPChangeRepeatModeCommandEvent; // inherited from NSObject
@@ -88,6 +115,9 @@ declare class MPChangeRepeatModeCommandEvent extends MPRemoteCommandEvent {
 	readonly repeatType: MPRepeatType;
 }
 
+/**
+ * @since 8.0
+ */
 declare class MPChangeShuffleModeCommand extends MPRemoteCommand {
 
 	static alloc(): MPChangeShuffleModeCommand; // inherited from NSObject
@@ -97,6 +127,9 @@ declare class MPChangeShuffleModeCommand extends MPRemoteCommand {
 	currentShuffleType: MPShuffleType;
 }
 
+/**
+ * @since 8.0
+ */
 declare class MPChangeShuffleModeCommandEvent extends MPRemoteCommandEvent {
 
 	static alloc(): MPChangeShuffleModeCommandEvent; // inherited from NSObject
@@ -108,6 +141,9 @@ declare class MPChangeShuffleModeCommandEvent extends MPRemoteCommandEvent {
 	readonly shuffleType: MPShuffleType;
 }
 
+/**
+ * @since 7.1
+ */
 declare class MPContentItem extends NSObject {
 
 	static alloc(): MPContentItem; // inherited from NSObject
@@ -118,6 +154,9 @@ declare class MPContentItem extends NSObject {
 
 	container: boolean;
 
+	/**
+	 * @since 10.0
+	 */
 	explicitContent: boolean;
 
 	readonly identifier: string;
@@ -126,6 +165,9 @@ declare class MPContentItem extends NSObject {
 
 	playbackProgress: number;
 
+	/**
+	 * @since 10.0
+	 */
 	streamingContent: boolean;
 
 	subtitle: string;
@@ -137,6 +179,9 @@ declare class MPContentItem extends NSObject {
 	initWithIdentifier(identifier: string): this;
 }
 
+/**
+ * @since 9.3
+ */
 declare const enum MPErrorCode {
 
 	Unknown = 0,
@@ -156,8 +201,14 @@ declare const enum MPErrorCode {
 	RequestTimedOut = 7
 }
 
+/**
+ * @since 9.3
+ */
 declare var MPErrorDomain: string;
 
+/**
+ * @since 7.1
+ */
 declare class MPFeedbackCommand extends MPRemoteCommand {
 
 	static alloc(): MPFeedbackCommand; // inherited from NSObject
@@ -166,11 +217,17 @@ declare class MPFeedbackCommand extends MPRemoteCommand {
 
 	active: boolean;
 
+	/**
+	 * @since 8.0
+	 */
 	localizedShortTitle: string;
 
 	localizedTitle: string;
 }
 
+/**
+ * @since 7.1
+ */
 declare class MPFeedbackCommandEvent extends MPRemoteCommandEvent {
 
 	static alloc(): MPFeedbackCommandEvent; // inherited from NSObject
@@ -180,26 +237,59 @@ declare class MPFeedbackCommandEvent extends MPRemoteCommandEvent {
 	readonly negative: boolean;
 }
 
+/**
+ * @since 9.0
+ */
 declare var MPLanguageOptionCharacteristicContainsOnlyForcedSubtitles: string;
 
+/**
+ * @since 9.0
+ */
 declare var MPLanguageOptionCharacteristicDescribesMusicAndSound: string;
 
+/**
+ * @since 9.0
+ */
 declare var MPLanguageOptionCharacteristicDescribesVideo: string;
 
+/**
+ * @since 9.0
+ */
 declare var MPLanguageOptionCharacteristicDubbedTranslation: string;
 
+/**
+ * @since 9.0
+ */
 declare var MPLanguageOptionCharacteristicEasyToRead: string;
 
+/**
+ * @since 9.0
+ */
 declare var MPLanguageOptionCharacteristicIsAuxiliaryContent: string;
 
+/**
+ * @since 9.0
+ */
 declare var MPLanguageOptionCharacteristicIsMainProgramContent: string;
 
+/**
+ * @since 9.0
+ */
 declare var MPLanguageOptionCharacteristicLanguageTranslation: string;
 
+/**
+ * @since 9.0
+ */
 declare var MPLanguageOptionCharacteristicTranscribesSpokenDialog: string;
 
+/**
+ * @since 9.0
+ */
 declare var MPLanguageOptionCharacteristicVoiceOverTranslation: string;
 
+/**
+ * @since 4.2
+ */
 declare class MPMediaEntity extends NSObject implements NSSecureCoding {
 
 	static alloc(): MPMediaEntity; // inherited from NSObject
@@ -208,6 +298,9 @@ declare class MPMediaEntity extends NSObject implements NSSecureCoding {
 
 	static new(): MPMediaEntity; // inherited from NSObject
 
+	/**
+	 * @since 7.0
+	 */
 	readonly persistentID: number;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
@@ -216,17 +309,29 @@ declare class MPMediaEntity extends NSObject implements NSSecureCoding {
 
 	encodeWithCoder(coder: NSCoder): void;
 
+	/**
+	 * @since 4.0
+	 */
 	enumerateValuesForPropertiesUsingBlock(properties: NSSet<string>, block: (p1: string, p2: any, p3: interop.Pointer | interop.Reference<boolean>) => void): void;
 
 	initWithCoder(coder: NSCoder): this;
 
+	/**
+	 * @since 8.0
+	 */
 	objectForKeyedSubscript(key: any): any;
 
 	valueForProperty(property: string): any;
 }
 
+/**
+ * @since 4.2
+ */
 declare var MPMediaEntityPropertyPersistentID: string;
 
+/**
+ * @since 3.0
+ */
 declare const enum MPMediaGrouping {
 
 	Title = 0,
@@ -246,93 +351,224 @@ declare const enum MPMediaGrouping {
 	PodcastTitle = 7
 }
 
+/**
+ * @since 3.0
+ */
 declare class MPMediaItem extends MPMediaEntity {
 
 	static alloc(): MPMediaItem; // inherited from NSObject
 
 	static new(): MPMediaItem; // inherited from NSObject
 
+	/**
+	 * @since 4.2
+	 */
 	static persistentIDPropertyForGroupingType(groupingType: MPMediaGrouping): string;
 
+	/**
+	 * @since 4.2
+	 */
 	static titlePropertyForGroupingType(groupingType: MPMediaGrouping): string;
 
+	/**
+	 * @since 7.0
+	 */
 	readonly albumArtist: string;
 
+	/**
+	 * @since 8.0
+	 */
 	readonly albumArtistPersistentID: number;
 
+	/**
+	 * @since 8.0
+	 */
 	readonly albumPersistentID: number;
 
+	/**
+	 * @since 7.0
+	 */
 	readonly albumTitle: string;
 
+	/**
+	 * @since 8.0
+	 */
 	readonly albumTrackCount: number;
 
+	/**
+	 * @since 7.0
+	 */
 	readonly albumTrackNumber: number;
 
+	/**
+	 * @since 7.0
+	 */
 	readonly artist: string;
 
+	/**
+	 * @since 8.0
+	 */
 	readonly artistPersistentID: number;
 
+	/**
+	 * @since 7.0
+	 */
 	readonly artwork: MPMediaItemArtwork;
 
+	/**
+	 * @since 8.0
+	 */
 	readonly assetURL: NSURL;
 
+	/**
+	 * @since 8.0
+	 */
 	readonly beatsPerMinute: number;
 
+	/**
+	 * @since 7.0
+	 */
 	readonly bookmarkTime: number;
 
+	/**
+	 * @since 8.0
+	 */
 	readonly cloudItem: boolean;
 
+	/**
+	 * @since 8.0
+	 */
 	readonly comments: string;
 
+	/**
+	 * @since 8.0
+	 */
 	readonly compilation: boolean;
 
+	/**
+	 * @since 7.0
+	 */
 	readonly composer: string;
 
+	/**
+	 * @since 8.0
+	 */
 	readonly composerPersistentID: number;
 
+	/**
+	 * @since 10.0
+	 */
 	readonly dateAdded: Date;
 
+	/**
+	 * @since 8.0
+	 */
 	readonly discCount: number;
 
+	/**
+	 * @since 7.0
+	 */
 	readonly discNumber: number;
 
+	/**
+	 * @since 10.0
+	 */
 	readonly explicitItem: boolean;
 
+	/**
+	 * @since 7.0
+	 */
 	readonly genre: string;
 
+	/**
+	 * @since 8.0
+	 */
 	readonly genrePersistentID: number;
 
+	/**
+	 * @since 7.0
+	 */
 	readonly lastPlayedDate: Date;
 
+	/**
+	 * @since 8.0
+	 */
 	readonly lyrics: string;
 
+	/**
+	 * @since 7.0
+	 */
 	readonly mediaType: MPMediaType;
 
+	/**
+	 * @since 7.0
+	 */
 	readonly playCount: number;
 
+	/**
+	 * @since 7.0
+	 */
 	readonly playbackDuration: number;
 
+	/**
+	 * @since 10.3
+	 */
 	readonly playbackStoreID: string;
 
+	/**
+	 * @since 8.0
+	 */
 	readonly podcastPersistentID: number;
 
+	/**
+	 * @since 7.0
+	 */
 	readonly podcastTitle: string;
 
+	/**
+	 * @since 10.3
+	 */
 	readonly preorder: boolean;
 
+	/**
+	 * @since 9.2
+	 */
 	readonly protectedAsset: boolean;
 
+	/**
+	 * @since 7.0
+	 */
 	readonly rating: number;
 
+	/**
+	 * @since 7.0
+	 */
 	readonly releaseDate: Date;
 
+	/**
+	 * @since 7.0
+	 */
 	readonly skipCount: number;
 
+	/**
+	 * @since 18.0
+	 */
+	readonly storeCanonicalID: string;
+
+	/**
+	 * @since 7.0
+	 */
 	readonly title: string;
 
+	/**
+	 * @since 8.0
+	 */
 	readonly userGrouping: string;
 }
 
+/**
+ * @since 3.0
+ */
 declare class MPMediaItemArtwork extends NSObject {
 
 	static alloc(): MPMediaItemArtwork; // inherited from NSObject
@@ -341,19 +577,40 @@ declare class MPMediaItemArtwork extends NSObject {
 
 	readonly bounds: CGRect;
 
+	/**
+	 * @since 3.0
+	 * @deprecated 10.0
+	 */
 	readonly imageCropRect: CGRect;
 
+	/**
+	 * @since 10.0
+	 */
 	constructor(o: { boundsSize: CGSize; requestHandler: (p1: CGSize) => UIImage; });
 
+	/**
+	 * @since 5.0
+	 * @deprecated 10.0
+	 */
 	constructor(o: { image: UIImage; });
 
 	imageWithSize(size: CGSize): UIImage;
 
+	/**
+	 * @since 10.0
+	 */
 	initWithBoundsSizeRequestHandler(boundsSize: CGSize, requestHandler: (p1: CGSize) => UIImage): this;
 
+	/**
+	 * @since 5.0
+	 * @deprecated 10.0
+	 */
 	initWithImage(image: UIImage): this;
 }
 
+/**
+ * @since 3.0
+ */
 declare class MPMediaItemCollection extends MPMediaEntity {
 
 	static alloc(): MPMediaItemCollection; // inherited from NSObject
@@ -375,94 +632,225 @@ declare class MPMediaItemCollection extends MPMediaEntity {
 	initWithItems(items: NSArray<MPMediaItem> | MPMediaItem[]): this;
 }
 
+/**
+ * @since 3.0
+ */
 declare var MPMediaItemPropertyAlbumArtist: string;
 
+/**
+ * @since 4.2
+ */
 declare var MPMediaItemPropertyAlbumArtistPersistentID: string;
 
+/**
+ * @since 4.2
+ */
 declare var MPMediaItemPropertyAlbumPersistentID: string;
 
+/**
+ * @since 3.0
+ */
 declare var MPMediaItemPropertyAlbumTitle: string;
 
+/**
+ * @since 3.0
+ */
 declare var MPMediaItemPropertyAlbumTrackCount: string;
 
+/**
+ * @since 3.0
+ */
 declare var MPMediaItemPropertyAlbumTrackNumber: string;
 
+/**
+ * @since 3.0
+ */
 declare var MPMediaItemPropertyArtist: string;
 
+/**
+ * @since 4.2
+ */
 declare var MPMediaItemPropertyArtistPersistentID: string;
 
+/**
+ * @since 3.0
+ */
 declare var MPMediaItemPropertyArtwork: string;
 
+/**
+ * @since 4.0
+ */
 declare var MPMediaItemPropertyAssetURL: string;
 
+/**
+ * @since 4.0
+ */
 declare var MPMediaItemPropertyBeatsPerMinute: string;
 
+/**
+ * @since 6.0
+ */
 declare var MPMediaItemPropertyBookmarkTime: string;
 
+/**
+ * @since 4.0
+ */
 declare var MPMediaItemPropertyComments: string;
 
+/**
+ * @since 3.0
+ */
 declare var MPMediaItemPropertyComposer: string;
 
+/**
+ * @since 4.2
+ */
 declare var MPMediaItemPropertyComposerPersistentID: string;
 
+/**
+ * @since 10.0
+ */
 declare var MPMediaItemPropertyDateAdded: string;
 
+/**
+ * @since 3.0
+ */
 declare var MPMediaItemPropertyDiscCount: string;
 
+/**
+ * @since 3.0
+ */
 declare var MPMediaItemPropertyDiscNumber: string;
 
+/**
+ * @since 3.0
+ */
 declare var MPMediaItemPropertyGenre: string;
 
+/**
+ * @since 4.2
+ */
 declare var MPMediaItemPropertyGenrePersistentID: string;
 
+/**
+ * @since 9.2
+ */
 declare var MPMediaItemPropertyHasProtectedAsset: string;
 
+/**
+ * @since 6.0
+ */
 declare var MPMediaItemPropertyIsCloudItem: string;
 
+/**
+ * @since 3.0
+ */
 declare var MPMediaItemPropertyIsCompilation: string;
 
+/**
+ * @since 7.0
+ */
 declare var MPMediaItemPropertyIsExplicit: string;
 
+/**
+ * @since 14.5
+ */
 declare var MPMediaItemPropertyIsPreorder: string;
 
+/**
+ * @since 3.0
+ */
 declare var MPMediaItemPropertyLastPlayedDate: string;
 
+/**
+ * @since 3.0
+ */
 declare var MPMediaItemPropertyLyrics: string;
 
+/**
+ * @since 3.0
+ */
 declare var MPMediaItemPropertyMediaType: string;
 
+/**
+ * @since 4.2
+ */
 declare var MPMediaItemPropertyPersistentID: string;
 
+/**
+ * @since 3.0
+ */
 declare var MPMediaItemPropertyPlayCount: string;
 
+/**
+ * @since 3.0
+ */
 declare var MPMediaItemPropertyPlaybackDuration: string;
 
+/**
+ * @since 10.3
+ */
 declare var MPMediaItemPropertyPlaybackStoreID: string;
 
+/**
+ * @since 4.2
+ */
 declare var MPMediaItemPropertyPodcastPersistentID: string;
 
+/**
+ * @since 3.0
+ */
 declare var MPMediaItemPropertyPodcastTitle: string;
 
+/**
+ * @since 3.0
+ */
 declare var MPMediaItemPropertyRating: string;
 
+/**
+ * @since 4.0
+ */
 declare var MPMediaItemPropertyReleaseDate: string;
 
+/**
+ * @since 3.0
+ */
 declare var MPMediaItemPropertySkipCount: string;
 
+/**
+ * @since 18.0
+ */
+declare var MPMediaItemPropertyStoreCanonicalId: string;
+
+/**
+ * @since 3.0
+ */
 declare var MPMediaItemPropertyTitle: string;
 
+/**
+ * @since 4.0
+ */
 declare var MPMediaItemPropertyUserGrouping: string;
 
+/**
+ * @since 3.0
+ */
 declare class MPMediaLibrary extends NSObject implements NSSecureCoding {
 
 	static alloc(): MPMediaLibrary; // inherited from NSObject
 
+	/**
+	 * @since 9.3
+	 */
 	static authorizationStatus(): MPMediaLibraryAuthorizationStatus;
 
 	static defaultMediaLibrary(): MPMediaLibrary;
 
 	static new(): MPMediaLibrary; // inherited from NSObject
 
+	/**
+	 * @since 9.3
+	 */
 	static requestAuthorization(completionHandler: (p1: MPMediaLibraryAuthorizationStatus) => void): void;
 
 	readonly lastModifiedDate: Date;
@@ -471,6 +859,9 @@ declare class MPMediaLibrary extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
+	/**
+	 * @since 9.3
+	 */
 	addItemWithProductIDCompletionHandler(productID: string, completionHandler: (p1: NSArray<MPMediaEntity>, p2: NSError) => void): void;
 
 	beginGeneratingLibraryChangeNotifications(): void;
@@ -479,11 +870,17 @@ declare class MPMediaLibrary extends NSObject implements NSSecureCoding {
 
 	endGeneratingLibraryChangeNotifications(): void;
 
+	/**
+	 * @since 9.3
+	 */
 	getPlaylistWithUUIDCreationMetadataCompletionHandler(uuid: NSUUID, creationMetadata: MPMediaPlaylistCreationMetadata, completionHandler: (p1: MPMediaPlaylist, p2: NSError) => void): void;
 
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 9.3
+ */
 declare const enum MPMediaLibraryAuthorizationStatus {
 
 	NotDetermined = 0,
@@ -497,6 +894,9 @@ declare const enum MPMediaLibraryAuthorizationStatus {
 
 declare var MPMediaLibraryDidChangeNotification: string;
 
+/**
+ * @since 3.0
+ */
 declare class MPMediaPickerController extends UIViewController {
 
 	static alloc(): MPMediaPickerController; // inherited from NSObject
@@ -511,8 +911,14 @@ declare class MPMediaPickerController extends UIViewController {
 
 	prompt: string;
 
+	/**
+	 * @since 6.0
+	 */
 	showsCloudItems: boolean;
 
+	/**
+	 * @since 9.2
+	 */
 	showsItemsWithProtectedAssets: boolean;
 
 	constructor(o: { mediaTypes: MPMediaType; });
@@ -531,6 +937,9 @@ declare var MPMediaPickerControllerDelegate: {
 	prototype: MPMediaPickerControllerDelegate;
 };
 
+/**
+ * @since 3.0
+ */
 interface MPMediaPlayback {
 
 	currentPlaybackRate: number;
@@ -558,31 +967,65 @@ declare var MPMediaPlayback: {
 	prototype: MPMediaPlayback;
 };
 
+/**
+ * @since 3.2
+ * @deprecated 9.0
+ */
 declare var MPMediaPlaybackIsPreparedToPlayDidChangeNotification: string;
 
+/**
+ * @since 3.0
+ */
 declare class MPMediaPlaylist extends MPMediaItemCollection {
 
 	static alloc(): MPMediaPlaylist; // inherited from NSObject
 
 	static new(): MPMediaPlaylist; // inherited from NSObject
 
+	/**
+	 * @since 9.3
+	 */
 	readonly authorDisplayName: string;
 
+	/**
+	 * @since 14.0
+	 */
 	readonly cloudGlobalID: string;
 
+	/**
+	 * @since 9.3
+	 */
 	readonly descriptionText: string;
 
+	/**
+	 * @since 7.0
+	 */
 	readonly name: string;
 
+	/**
+	 * @since 7.0
+	 */
 	readonly playlistAttributes: MPMediaPlaylistAttribute;
 
+	/**
+	 * @since 8.0
+	 */
 	readonly seedItems: NSArray<MPMediaItem>;
 
+	/**
+	 * @since 9.3
+	 */
 	addItemWithProductIDCompletionHandler(productID: string, completionHandler: (p1: NSError) => void): void;
 
+	/**
+	 * @since 9.3
+	 */
 	addMediaItemsCompletionHandler(mediaItems: NSArray<MPMediaItem> | MPMediaItem[], completionHandler: (p1: NSError) => void): void;
 }
 
+/**
+ * @since 3.0
+ */
 declare const enum MPMediaPlaylistAttribute {
 
 	None = 0,
@@ -594,6 +1037,9 @@ declare const enum MPMediaPlaylistAttribute {
 	Genius = 4
 }
 
+/**
+ * @since 9.3
+ */
 declare class MPMediaPlaylistCreationMetadata extends NSObject {
 
 	static alloc(): MPMediaPlaylistCreationMetadata; // inherited from NSObject
@@ -611,10 +1057,19 @@ declare class MPMediaPlaylistCreationMetadata extends NSObject {
 	initWithName(name: string): this;
 }
 
+/**
+ * @since 9.3
+ */
 declare var MPMediaPlaylistPropertyAuthorDisplayName: string;
 
+/**
+ * @since 9.0
+ */
 declare var MPMediaPlaylistPropertyCloudGlobalID: string;
 
+/**
+ * @since 9.3
+ */
 declare var MPMediaPlaylistPropertyDescriptionText: string;
 
 declare var MPMediaPlaylistPropertyName: string;
@@ -625,6 +1080,9 @@ declare var MPMediaPlaylistPropertyPlaylistAttributes: string;
 
 declare var MPMediaPlaylistPropertySeedItems: string;
 
+/**
+ * @since 3.0
+ */
 declare class MPMediaPredicate extends NSObject implements NSSecureCoding {
 
 	static alloc(): MPMediaPredicate; // inherited from NSObject
@@ -640,6 +1098,9 @@ declare class MPMediaPredicate extends NSObject implements NSSecureCoding {
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 3.0
+ */
 declare const enum MPMediaPredicateComparison {
 
 	EqualTo = 0,
@@ -647,6 +1108,9 @@ declare const enum MPMediaPredicateComparison {
 	Contains = 1
 }
 
+/**
+ * @since 3.0
+ */
 declare class MPMediaPropertyPredicate extends MPMediaPredicate {
 
 	static alloc(): MPMediaPropertyPredicate; // inherited from NSObject
@@ -664,6 +1128,9 @@ declare class MPMediaPropertyPredicate extends MPMediaPredicate {
 	readonly value: any;
 }
 
+/**
+ * @since 3.0
+ */
 declare class MPMediaQuery extends NSObject implements NSCopying, NSSecureCoding {
 
 	static albumsQuery(): MPMediaQuery;
@@ -688,6 +1155,9 @@ declare class MPMediaQuery extends NSObject implements NSCopying, NSSecureCoding
 
 	static songsQuery(): MPMediaQuery;
 
+	/**
+	 * @since 4.2
+	 */
 	readonly collectionSections: NSArray<MPMediaQuerySection>;
 
 	readonly collections: NSArray<MPMediaItemCollection>;
@@ -696,6 +1166,9 @@ declare class MPMediaQuery extends NSObject implements NSCopying, NSSecureCoding
 
 	groupingType: MPMediaGrouping;
 
+	/**
+	 * @since 4.2
+	 */
 	readonly itemSections: NSArray<MPMediaQuerySection>;
 
 	readonly items: NSArray<MPMediaItem>;
@@ -719,6 +1192,9 @@ declare class MPMediaQuery extends NSObject implements NSCopying, NSSecureCoding
 	removeFilterPredicate(predicate: MPMediaPredicate): void;
 }
 
+/**
+ * @since 4.2
+ */
 declare class MPMediaQuerySection extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): MPMediaQuerySection; // inherited from NSObject
@@ -740,6 +1216,9 @@ declare class MPMediaQuerySection extends NSObject implements NSCopying, NSSecur
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 3.0
+ */
 declare const enum MPMediaType {
 
 	Music = 1,
@@ -769,58 +1248,138 @@ declare const enum MPMediaType {
 	Any = -1
 }
 
+/**
+ * @since 4.3
+ * @deprecated 9.0
+ */
 declare class MPMovieAccessLog extends NSObject implements NSCopying {
 
 	static alloc(): MPMovieAccessLog; // inherited from NSObject
 
 	static new(): MPMovieAccessLog; // inherited from NSObject
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly events: NSArray<any>;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly extendedLogData: NSData;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly extendedLogDataStringEncoding: number;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+/**
+ * @since 4.3
+ * @deprecated 9.0
+ */
 declare class MPMovieAccessLogEvent extends NSObject implements NSCopying {
 
 	static alloc(): MPMovieAccessLogEvent; // inherited from NSObject
 
 	static new(): MPMovieAccessLogEvent; // inherited from NSObject
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly URI: string;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly durationWatched: number;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly indicatedBitrate: number;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly numberOfBytesTransferred: number;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly numberOfDroppedVideoFrames: number;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly numberOfSegmentsDownloaded: number;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly numberOfServerAddressChanges: number;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly numberOfStalls: number;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly observedBitrate: number;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly playbackSessionID: string;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly playbackStartDate: Date;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly playbackStartOffset: number;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly segmentsDownloadedDuration: number;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly serverAddress: string;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+/**
+ * @since 3.2
+ * @deprecated 9.0
+ */
 declare const enum MPMovieControlStyle {
 
 	None = 0,
@@ -832,46 +1391,102 @@ declare const enum MPMovieControlStyle {
 	Default = 1
 }
 
+/**
+ * @since 3.2
+ * @deprecated 9.0
+ */
 declare var MPMovieDurationAvailableNotification: string;
 
+/**
+ * @since 4.3
+ * @deprecated 9.0
+ */
 declare class MPMovieErrorLog extends NSObject implements NSCopying {
 
 	static alloc(): MPMovieErrorLog; // inherited from NSObject
 
 	static new(): MPMovieErrorLog; // inherited from NSObject
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly events: NSArray<any>;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly extendedLogData: NSData;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly extendedLogDataStringEncoding: number;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+/**
+ * @since 4.3
+ * @deprecated 9.0
+ */
 declare class MPMovieErrorLogEvent extends NSObject implements NSCopying {
 
 	static alloc(): MPMovieErrorLogEvent; // inherited from NSObject
 
 	static new(): MPMovieErrorLogEvent; // inherited from NSObject
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly URI: string;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly date: Date;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly errorComment: string;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly errorDomain: string;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly errorStatusCode: number;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly playbackSessionID: string;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly serverAddress: string;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+/**
+ * @since 3.2
+ * @deprecated 9.0
+ */
 declare const enum MPMovieFinishReason {
 
 	PlaybackEnded = 0,
@@ -881,6 +1496,10 @@ declare const enum MPMovieFinishReason {
 	UserExited = 2
 }
 
+/**
+ * @since 3.2
+ * @deprecated 9.0
+ */
 declare const enum MPMovieLoadState {
 
 	Unknown = 0,
@@ -892,6 +1511,10 @@ declare const enum MPMovieLoadState {
 	Stalled = 4
 }
 
+/**
+ * @since 3.2
+ * @deprecated 9.0
+ */
 declare const enum MPMovieMediaTypeMask {
 
 	None = 0,
@@ -901,10 +1524,22 @@ declare const enum MPMovieMediaTypeMask {
 	Audio = 2
 }
 
+/**
+ * @since 3.2
+ * @deprecated 9.0
+ */
 declare var MPMovieMediaTypesAvailableNotification: string;
 
+/**
+ * @since 3.2
+ * @deprecated 9.0
+ */
 declare var MPMovieNaturalSizeAvailableNotification: string;
 
+/**
+ * @since 3.2
+ * @deprecated 9.0
+ */
 declare const enum MPMoviePlaybackState {
 
 	Stopped = 0,
@@ -920,58 +1555,157 @@ declare const enum MPMoviePlaybackState {
 	SeekingBackward = 5
 }
 
+/**
+ * @since 3.2
+ * @deprecated 9.0
+ */
 declare class MPMoviePlayerController extends NSObject implements MPMediaPlayback {
 
 	static alloc(): MPMoviePlayerController; // inherited from NSObject
 
 	static new(): MPMoviePlayerController; // inherited from NSObject
 
+	/**
+	 * @since 4.3
+	 * @deprecated 9.0
+	 */
 	readonly accessLog: MPMovieAccessLog;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly airPlayVideoActive: boolean;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	allowsAirPlay: boolean;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly backgroundView: UIView;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	contentURL: NSURL;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	controlStyle: MPMovieControlStyle;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly duration: number;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	endPlaybackTime: number;
 
+	/**
+	 * @since 4.3
+	 * @deprecated 9.0
+	 */
 	readonly errorLog: MPMovieErrorLog;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	fullscreen: boolean;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	initialPlaybackTime: number;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly loadState: MPMovieLoadState;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly movieMediaTypes: MPMovieMediaTypeMask;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	movieSourceType: MPMovieSourceType;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly naturalSize: CGSize;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly playableDuration: number;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly playbackState: MPMoviePlaybackState;
 
+	/**
+	 * @since 6.0
+	 */
 	readonly readyForDisplay: boolean;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	repeatMode: MPMovieRepeatMode;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	scalingMode: MPMovieScalingMode;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	shouldAutoplay: boolean;
 
+	/**
+	 * @since 4.0
+	 * @deprecated 9.0
+	 */
 	readonly timedMetadata: NSArray<any>;
 
+	/**
+	 * @since 6.0
+	 * @deprecated 9.0
+	 */
 	useApplicationAudioSession: boolean;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly view: UIView;
 
 	currentPlaybackRate: number; // inherited from MPMediaPlayback
@@ -980,16 +1714,28 @@ declare class MPMoviePlayerController extends NSObject implements MPMediaPlaybac
 
 	readonly isPreparedToPlay: boolean; // inherited from MPMediaPlayback
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	constructor(o: { contentURL: NSURL; });
 
 	beginSeekingBackward(): void;
 
 	beginSeekingForward(): void;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	cancelAllThumbnailImageRequests(): void;
 
 	endSeeking(): void;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	initWithContentURL(url: NSURL): this;
 
 	pause(): void;
@@ -998,78 +1744,210 @@ declare class MPMoviePlayerController extends NSObject implements MPMediaPlaybac
 
 	prepareToPlay(): void;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	requestThumbnailImagesAtTimesTimeOption(playbackTimes: NSArray<any> | any[], option: MPMovieTimeOption): void;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	setFullscreenAnimated(fullscreen: boolean, animated: boolean): void;
 
 	stop(): void;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	thumbnailImageAtTimeTimeOption(playbackTime: number, option: MPMovieTimeOption): UIImage;
 }
 
+/**
+ * @since 3.2
+ * @deprecated 9.0
+ */
 declare var MPMoviePlayerDidEnterFullscreenNotification: string;
 
+/**
+ * @since 3.2
+ * @deprecated 9.0
+ */
 declare var MPMoviePlayerDidExitFullscreenNotification: string;
 
+/**
+ * @since 3.2
+ * @deprecated 9.0
+ */
 declare var MPMoviePlayerFullscreenAnimationCurveUserInfoKey: string;
 
+/**
+ * @since 3.2
+ * @deprecated 9.0
+ */
 declare var MPMoviePlayerFullscreenAnimationDurationUserInfoKey: string;
 
+/**
+ * @since 3.2
+ * @deprecated 9.0
+ */
 declare var MPMoviePlayerIsAirPlayVideoActiveDidChangeNotification: string;
 
+/**
+ * @since 3.2
+ * @deprecated 9.0
+ */
 declare var MPMoviePlayerLoadStateDidChangeNotification: string;
 
+/**
+ * @since 3.2
+ * @deprecated 9.0
+ */
 declare var MPMoviePlayerNowPlayingMovieDidChangeNotification: string;
 
+/**
+ * @since 3.2
+ * @deprecated 9.0
+ */
 declare var MPMoviePlayerPlaybackDidFinishNotification: string;
 
+/**
+ * @since 3.2
+ * @deprecated 9.0
+ */
 declare var MPMoviePlayerPlaybackDidFinishReasonUserInfoKey: string;
 
+/**
+ * @since 3.2
+ * @deprecated 9.0
+ */
 declare var MPMoviePlayerPlaybackStateDidChangeNotification: string;
 
+/**
+ * @since 6.0
+ * @deprecated 9.0
+ */
 declare var MPMoviePlayerReadyForDisplayDidChangeNotification: string;
 
+/**
+ * @since 3.2
+ * @deprecated 9.0
+ */
 declare var MPMoviePlayerScalingModeDidChangeNotification: string;
 
+/**
+ * @since 3.2
+ * @deprecated 9.0
+ */
 declare var MPMoviePlayerThumbnailErrorKey: string;
 
+/**
+ * @since 3.2
+ * @deprecated 9.0
+ */
 declare var MPMoviePlayerThumbnailImageKey: string;
 
+/**
+ * @since 3.2
+ * @deprecated 9.0
+ */
 declare var MPMoviePlayerThumbnailImageRequestDidFinishNotification: string;
 
+/**
+ * @since 3.2
+ * @deprecated 9.0
+ */
 declare var MPMoviePlayerThumbnailTimeKey: string;
 
+/**
+ * @since 4.0
+ * @deprecated 9.0
+ */
 declare var MPMoviePlayerTimedMetadataKeyDataType: string;
 
+/**
+ * @since 4.0
+ * @deprecated 9.0
+ */
 declare var MPMoviePlayerTimedMetadataKeyInfo: string;
 
+/**
+ * @since 4.0
+ * @deprecated 9.0
+ */
 declare var MPMoviePlayerTimedMetadataKeyLanguageCode: string;
 
+/**
+ * @since 4.0
+ * @deprecated 9.0
+ */
 declare var MPMoviePlayerTimedMetadataKeyMIMEType: string;
 
+/**
+ * @since 4.0
+ * @deprecated 9.0
+ */
 declare var MPMoviePlayerTimedMetadataKeyName: string;
 
+/**
+ * @since 4.0
+ * @deprecated 9.0
+ */
 declare var MPMoviePlayerTimedMetadataUpdatedNotification: string;
 
+/**
+ * @since 4.0
+ * @deprecated 9.0
+ */
 declare var MPMoviePlayerTimedMetadataUserInfoKey: string;
 
+/**
+ * @since 3.2
+ * @deprecated 9.0
+ */
 declare class MPMoviePlayerViewController extends UIViewController {
 
 	static alloc(): MPMoviePlayerViewController; // inherited from NSObject
 
 	static new(): MPMoviePlayerViewController; // inherited from NSObject
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly moviePlayer: MPMoviePlayerController;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	constructor(o: { contentURL: NSURL; });
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	initWithContentURL(contentURL: NSURL): this;
 }
 
+/**
+ * @since 3.2
+ * @deprecated 9.0
+ */
 declare var MPMoviePlayerWillEnterFullscreenNotification: string;
 
+/**
+ * @since 3.2
+ * @deprecated 9.0
+ */
 declare var MPMoviePlayerWillExitFullscreenNotification: string;
 
+/**
+ * @since 3.2
+ * @deprecated 9.0
+ */
 declare const enum MPMovieRepeatMode {
 
 	None = 0,
@@ -1077,6 +1955,10 @@ declare const enum MPMovieRepeatMode {
 	One = 1
 }
 
+/**
+ * @since 3.2
+ * @deprecated 9.0
+ */
 declare const enum MPMovieScalingMode {
 
 	None = 0,
@@ -1088,6 +1970,10 @@ declare const enum MPMovieScalingMode {
 	Fill = 3
 }
 
+/**
+ * @since 3.2
+ * @deprecated 9.0
+ */
 declare const enum MPMovieSourceType {
 
 	Unknown = 0,
@@ -1097,8 +1983,16 @@ declare const enum MPMovieSourceType {
 	Streaming = 2
 }
 
+/**
+ * @since 3.2
+ * @deprecated 9.0
+ */
 declare var MPMovieSourceTypeAvailableNotification: string;
 
+/**
+ * @since 3.2
+ * @deprecated 9.0
+ */
 declare const enum MPMovieTimeOption {
 
 	NearestKeyFrame = 0,
@@ -1106,6 +2000,9 @@ declare const enum MPMovieTimeOption {
 	Exact = 1
 }
 
+/**
+ * @since 3.0
+ */
 declare const enum MPMusicPlaybackState {
 
 	Stopped = 0,
@@ -1121,6 +2018,9 @@ declare const enum MPMusicPlaybackState {
 	SeekingBackward = 5
 }
 
+/**
+ * @since 10.3
+ */
 declare class MPMusicPlayerApplicationController extends MPMusicPlayerController {
 
 	static alloc(): MPMusicPlayerApplicationController; // inherited from NSObject
@@ -1130,12 +2030,18 @@ declare class MPMusicPlayerApplicationController extends MPMusicPlayerController
 	performQueueTransactionCompletionHandler(queueTransaction: (p1: MPMusicPlayerControllerMutableQueue) => void, completionHandler: (p1: MPMusicPlayerControllerQueue, p2: NSError) => void): void;
 }
 
+/**
+ * @since 3.0
+ */
 declare class MPMusicPlayerController extends NSObject implements MPMediaPlayback {
 
 	static alloc(): MPMusicPlayerController; // inherited from NSObject
 
 	static new(): MPMusicPlayerController; // inherited from NSObject
 
+	/**
+	 * @since 5.0
+	 */
 	readonly indexOfNowPlayingItem: number;
 
 	nowPlayingItem: MPMediaItem;
@@ -1146,15 +2052,26 @@ declare class MPMusicPlayerController extends NSObject implements MPMediaPlaybac
 
 	shuffleMode: MPMusicShuffleMode;
 
+	/**
+	 * @since 3.0
+	 * @deprecated 7.0
+	 */
 	volume: number;
 
 	static readonly applicationMusicPlayer: MPMusicPlayerController;
 
+	/**
+	 * @since 10.3
+	 */
 	static readonly applicationQueuePlayer: MPMusicPlayerApplicationController;
 
+	/**
+	 * @since 3.0
+	 * @deprecated 8.0
+	 */
 	static readonly iPodMusicPlayer: MPMusicPlayerController;
 
-	static readonly systemMusicPlayer: MPMusicPlayerController;
+	static readonly systemMusicPlayer: MPMusicPlayerController & MPSystemMusicPlayerController;
 
 	currentPlaybackRate: number; // inherited from MPMediaPlayback
 
@@ -1162,6 +2079,9 @@ declare class MPMusicPlayerController extends NSObject implements MPMediaPlaybac
 
 	readonly isPreparedToPlay: boolean; // inherited from MPMediaPlayback
 
+	/**
+	 * @since 10.3
+	 */
 	appendQueueDescriptor(descriptor: MPMusicPlayerQueueDescriptor): void;
 
 	beginGeneratingPlaybackNotifications(): void;
@@ -1180,16 +2100,28 @@ declare class MPMusicPlayerController extends NSObject implements MPMediaPlaybac
 
 	prepareToPlay(): void;
 
+	/**
+	 * @since 10.1
+	 */
 	prepareToPlayWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
 
+	/**
+	 * @since 10.3
+	 */
 	prependQueueDescriptor(descriptor: MPMusicPlayerQueueDescriptor): void;
 
+	/**
+	 * @since 10.1
+	 */
 	setQueueWithDescriptor(descriptor: MPMusicPlayerQueueDescriptor): void;
 
 	setQueueWithItemCollection(itemCollection: MPMediaItemCollection): void;
 
 	setQueueWithQuery(query: MPMediaQuery): void;
 
+	/**
+	 * @since 9.3
+	 */
 	setQueueWithStoreIDs(storeIDs: NSArray<string> | string[]): void;
 
 	skipToBeginning(): void;
@@ -1201,6 +2133,9 @@ declare class MPMusicPlayerController extends NSObject implements MPMediaPlaybac
 	stop(): void;
 }
 
+/**
+ * @since 10.3
+ */
 declare class MPMusicPlayerControllerMutableQueue extends MPMusicPlayerControllerQueue {
 
 	static alloc(): MPMusicPlayerControllerMutableQueue; // inherited from NSObject
@@ -1212,10 +2147,19 @@ declare class MPMusicPlayerControllerMutableQueue extends MPMusicPlayerControlle
 	removeItem(item: MPMediaItem): void;
 }
 
+/**
+ * @since 3.0
+ */
 declare var MPMusicPlayerControllerNowPlayingItemDidChangeNotification: string;
 
+/**
+ * @since 3.0
+ */
 declare var MPMusicPlayerControllerPlaybackStateDidChangeNotification: string;
 
+/**
+ * @since 10.3
+ */
 declare class MPMusicPlayerControllerQueue extends NSObject {
 
 	static alloc(): MPMusicPlayerControllerQueue; // inherited from NSObject
@@ -1225,10 +2169,19 @@ declare class MPMusicPlayerControllerQueue extends NSObject {
 	readonly items: NSArray<MPMediaItem>;
 }
 
+/**
+ * @since 10.3
+ */
 declare var MPMusicPlayerControllerQueueDidChangeNotification: string;
 
+/**
+ * @since 3.0
+ */
 declare var MPMusicPlayerControllerVolumeDidChangeNotification: string;
 
+/**
+ * @since 10.1
+ */
 declare class MPMusicPlayerMediaItemQueueDescriptor extends MPMusicPlayerQueueDescriptor {
 
 	static alloc(): MPMusicPlayerMediaItemQueueDescriptor; // inherited from NSObject
@@ -1254,6 +2207,9 @@ declare class MPMusicPlayerMediaItemQueueDescriptor extends MPMusicPlayerQueueDe
 	setStartTimeForItem(startTime: number, mediaItem: MPMediaItem): void;
 }
 
+/**
+ * @since 11.0
+ */
 declare class MPMusicPlayerPlayParameters extends NSObject {
 
 	static alloc(): MPMusicPlayerPlayParameters; // inherited from NSObject
@@ -1267,6 +2223,9 @@ declare class MPMusicPlayerPlayParameters extends NSObject {
 	initWithDictionary(dictionary: NSDictionary<string, any>): this;
 }
 
+/**
+ * @since 11.0
+ */
 declare class MPMusicPlayerPlayParametersQueueDescriptor extends MPMusicPlayerQueueDescriptor {
 
 	static alloc(): MPMusicPlayerPlayParametersQueueDescriptor; // inherited from NSObject
@@ -1286,6 +2245,9 @@ declare class MPMusicPlayerPlayParametersQueueDescriptor extends MPMusicPlayerQu
 	setStartTimeForItemWithPlayParameters(startTime: number, playParameters: MPMusicPlayerPlayParameters): void;
 }
 
+/**
+ * @since 10.1
+ */
 declare class MPMusicPlayerQueueDescriptor extends NSObject {
 
 	static alloc(): MPMusicPlayerQueueDescriptor; // inherited from NSObject
@@ -1293,6 +2255,9 @@ declare class MPMusicPlayerQueueDescriptor extends NSObject {
 	static new(): MPMusicPlayerQueueDescriptor; // inherited from NSObject
 }
 
+/**
+ * @since 10.1
+ */
 declare class MPMusicPlayerStoreQueueDescriptor extends MPMusicPlayerQueueDescriptor {
 
 	static alloc(): MPMusicPlayerStoreQueueDescriptor; // inherited from NSObject
@@ -1312,6 +2277,9 @@ declare class MPMusicPlayerStoreQueueDescriptor extends MPMusicPlayerQueueDescri
 	setStartTimeForItemWithStoreID(startTime: number, storeID: string): void;
 }
 
+/**
+ * @since 3.0
+ */
 declare const enum MPMusicRepeatMode {
 
 	Default = 0,
@@ -1323,6 +2291,9 @@ declare const enum MPMusicRepeatMode {
 	All = 3
 }
 
+/**
+ * @since 3.0
+ */
 declare const enum MPMusicShuffleMode {
 
 	Default = 0,
@@ -1334,6 +2305,9 @@ declare const enum MPMusicShuffleMode {
 	Albums = 3
 }
 
+/**
+ * @since 5.0
+ */
 declare class MPNowPlayingInfoCenter extends NSObject {
 
 	static alloc(): MPNowPlayingInfoCenter; // inherited from NSObject
@@ -1344,11 +2318,20 @@ declare class MPNowPlayingInfoCenter extends NSObject {
 
 	nowPlayingInfo: NSDictionary<string, any>;
 
+	/**
+	 * @since 13.0
+	 */
 	playbackState: MPNowPlayingPlaybackState;
 }
 
+/**
+ * @since 9.3
+ */
 declare var MPNowPlayingInfoCollectionIdentifier: string;
 
+/**
+ * @since 9.0
+ */
 declare class MPNowPlayingInfoLanguageOption extends NSObject {
 
 	static alloc(): MPNowPlayingInfoLanguageOption; // inherited from NSObject
@@ -1374,6 +2357,9 @@ declare class MPNowPlayingInfoLanguageOption extends NSObject {
 	isAutomaticLegibleLanguageOption(): boolean;
 }
 
+/**
+ * @since 9.0
+ */
 declare class MPNowPlayingInfoLanguageOptionGroup extends NSObject {
 
 	static alloc(): MPNowPlayingInfoLanguageOptionGroup; // inherited from NSObject
@@ -1391,6 +2377,9 @@ declare class MPNowPlayingInfoLanguageOptionGroup extends NSObject {
 	initWithLanguageOptionsDefaultLanguageOptionAllowEmptySelection(languageOptions: NSArray<MPNowPlayingInfoLanguageOption> | MPNowPlayingInfoLanguageOption[], defaultLanguageOption: MPNowPlayingInfoLanguageOption, allowEmptySelection: boolean): this;
 }
 
+/**
+ * @since 9.0
+ */
 declare const enum MPNowPlayingInfoLanguageOptionType {
 
 	Audible = 0,
@@ -1398,6 +2387,9 @@ declare const enum MPNowPlayingInfoLanguageOptionType {
 	Legible = 1
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum MPNowPlayingInfoMediaType {
 
 	None = 0,
@@ -1407,44 +2399,114 @@ declare const enum MPNowPlayingInfoMediaType {
 	Video = 2
 }
 
+/**
+ * @since 16.0
+ */
 declare var MPNowPlayingInfoPropertyAdTimeRanges: string;
 
+/**
+ * @since 10.3
+ */
 declare var MPNowPlayingInfoPropertyAssetURL: string;
 
+/**
+ * @since 9.0
+ */
 declare var MPNowPlayingInfoPropertyAvailableLanguageOptions: string;
 
+/**
+ * @since 5.0
+ */
 declare var MPNowPlayingInfoPropertyChapterCount: string;
 
+/**
+ * @since 5.0
+ */
 declare var MPNowPlayingInfoPropertyChapterNumber: string;
 
+/**
+ * @since 16.0
+ */
 declare var MPNowPlayingInfoPropertyCreditsStartTime: string;
 
+/**
+ * @since 9.0
+ */
 declare var MPNowPlayingInfoPropertyCurrentLanguageOptions: string;
 
+/**
+ * @since 11.1
+ */
 declare var MPNowPlayingInfoPropertyCurrentPlaybackDate: string;
 
+/**
+ * @since 8.0
+ */
 declare var MPNowPlayingInfoPropertyDefaultPlaybackRate: string;
 
+/**
+ * @since 5.0
+ */
 declare var MPNowPlayingInfoPropertyElapsedPlaybackTime: string;
 
+/**
+ * @since 18.0
+ */
+declare var MPNowPlayingInfoPropertyExcludeFromSuggestions: string;
+
+/**
+ * @since 10.0
+ */
 declare var MPNowPlayingInfoPropertyExternalContentIdentifier: string;
 
+/**
+ * @since 10.0
+ */
 declare var MPNowPlayingInfoPropertyExternalUserProfileIdentifier: string;
 
+/**
+ * @since 18.0
+ */
+declare var MPNowPlayingInfoPropertyInternationalStandardRecordingCode: string;
+
+/**
+ * @since 10.0
+ */
 declare var MPNowPlayingInfoPropertyIsLiveStream: string;
 
+/**
+ * @since 10.0
+ */
 declare var MPNowPlayingInfoPropertyMediaType: string;
 
+/**
+ * @since 10.0
+ */
 declare var MPNowPlayingInfoPropertyPlaybackProgress: string;
 
+/**
+ * @since 5.0
+ */
 declare var MPNowPlayingInfoPropertyPlaybackQueueCount: string;
 
+/**
+ * @since 5.0
+ */
 declare var MPNowPlayingInfoPropertyPlaybackQueueIndex: string;
 
+/**
+ * @since 5.0
+ */
 declare var MPNowPlayingInfoPropertyPlaybackRate: string;
 
+/**
+ * @since 11.0
+ */
 declare var MPNowPlayingInfoPropertyServiceIdentifier: string;
 
+/**
+ * @since 11.0
+ */
 declare const enum MPNowPlayingPlaybackState {
 
 	Unknown = 0,
@@ -1458,6 +2520,9 @@ declare const enum MPNowPlayingPlaybackState {
 	Interrupted = 4
 }
 
+/**
+ * @since 16.0
+ */
 declare class MPNowPlayingSession extends NSObject {
 
 	static alloc(): MPNowPlayingSession; // inherited from NSObject
@@ -1466,6 +2531,9 @@ declare class MPNowPlayingSession extends NSObject {
 
 	readonly active: boolean;
 
+	/**
+	 * @since 16.0
+	 */
 	automaticallyPublishesNowPlayingInfo: boolean;
 
 	readonly canBecomeActive: boolean;
@@ -1489,6 +2557,9 @@ declare class MPNowPlayingSession extends NSObject {
 	removePlayer(player: AVPlayer): void;
 }
 
+/**
+ * @since 16.0
+ */
 interface MPNowPlayingSessionDelegate extends NSObjectProtocol {
 
 	nowPlayingSessionDidChangeActive?(nowPlayingSession: MPNowPlayingSession): void;
@@ -1500,6 +2571,10 @@ declare var MPNowPlayingSessionDelegate: {
 	prototype: MPNowPlayingSessionDelegate;
 };
 
+/**
+ * @since 7.1
+ * @deprecated 14.0
+ */
 interface MPPlayableContentDataSource extends NSObjectProtocol {
 
 	beginLoadingChildItemsAtIndexPathCompletionHandler?(indexPath: NSIndexPath, completionHandler: (p1: NSError) => void): void;
@@ -1508,6 +2583,10 @@ interface MPPlayableContentDataSource extends NSObjectProtocol {
 
 	contentItemAtIndexPath(indexPath: NSIndexPath): MPContentItem;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 14.0
+	 */
 	contentItemForIdentifierCompletionHandler?(identifier: string, completionHandler: (p1: MPContentItem, p2: NSError) => void): void;
 
 	numberOfChildItemsAtIndexPath(indexPath: NSIndexPath): number;
@@ -1517,14 +2596,34 @@ declare var MPPlayableContentDataSource: {
 	prototype: MPPlayableContentDataSource;
 };
 
+/**
+ * @since 7.1
+ * @deprecated 14.0
+ */
 interface MPPlayableContentDelegate extends NSObjectProtocol {
 
+	/**
+	 * @since 8.4
+	 * @deprecated 14.0
+	 */
 	playableContentManagerDidUpdateContext?(contentManager: MPPlayableContentManager, context: MPPlayableContentManagerContext): void;
 
+	/**
+	 * @since 9.0
+	 * @deprecated 9.3
+	 */
 	playableContentManagerInitializePlaybackQueueWithCompletionHandler?(contentManager: MPPlayableContentManager, completionHandler: (p1: NSError) => void): void;
 
+	/**
+	 * @since 9.3
+	 * @deprecated 12.0
+	 */
 	playableContentManagerInitializePlaybackQueueWithContentItemsCompletionHandler?(contentManager: MPPlayableContentManager, contentItems: NSArray<any> | any[], completionHandler: (p1: NSError) => void): void;
 
+	/**
+	 * @since 7.1
+	 * @deprecated 14.0
+	 */
 	playableContentManagerInitiatePlaybackOfContentItemAtIndexPathCompletionHandler?(contentManager: MPPlayableContentManager, indexPath: NSIndexPath, completionHandler: (p1: NSError) => void): void;
 }
 declare var MPPlayableContentDelegate: {
@@ -1532,6 +2631,10 @@ declare var MPPlayableContentDelegate: {
 	prototype: MPPlayableContentDelegate;
 };
 
+/**
+ * @since 7.1
+ * @deprecated 14.0
+ */
 declare class MPPlayableContentManager extends NSObject {
 
 	static alloc(): MPPlayableContentManager; // inherited from NSObject
@@ -1540,12 +2643,20 @@ declare class MPPlayableContentManager extends NSObject {
 
 	static sharedContentManager(): MPPlayableContentManager;
 
+	/**
+	 * @since 8.4
+	 * @deprecated 14.0
+	 */
 	readonly context: MPPlayableContentManagerContext;
 
 	dataSource: MPPlayableContentDataSource;
 
 	delegate: MPPlayableContentDelegate;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 14.0
+	 */
 	nowPlayingIdentifiers: NSArray<string>;
 
 	beginUpdates(): void;
@@ -1555,12 +2666,20 @@ declare class MPPlayableContentManager extends NSObject {
 	reloadData(): void;
 }
 
+/**
+ * @since 8.4
+ * @deprecated 14.0
+ */
 declare class MPPlayableContentManagerContext extends NSObject {
 
 	static alloc(): MPPlayableContentManagerContext; // inherited from NSObject
 
 	static new(): MPPlayableContentManagerContext; // inherited from NSObject
 
+	/**
+	 * @since 8.4
+	 * @deprecated 9.0
+	 */
 	readonly contentLimitsEnabled: boolean;
 
 	readonly contentLimitsEnforced: boolean;
@@ -1572,6 +2691,9 @@ declare class MPPlayableContentManagerContext extends NSObject {
 	readonly enforcedContentTreeDepth: number;
 }
 
+/**
+ * @since 7.1
+ */
 declare class MPRatingCommand extends MPRemoteCommand {
 
 	static alloc(): MPRatingCommand; // inherited from NSObject
@@ -1583,6 +2705,9 @@ declare class MPRatingCommand extends MPRemoteCommand {
 	minimumRating: number;
 }
 
+/**
+ * @since 7.1
+ */
 declare class MPRatingCommandEvent extends MPRemoteCommandEvent {
 
 	static alloc(): MPRatingCommandEvent; // inherited from NSObject
@@ -1592,6 +2717,9 @@ declare class MPRatingCommandEvent extends MPRemoteCommandEvent {
 	readonly rating: number;
 }
 
+/**
+ * @since 7.1
+ */
 declare class MPRemoteCommand extends NSObject {
 
 	static alloc(): MPRemoteCommand; // inherited from NSObject
@@ -1609,6 +2737,9 @@ declare class MPRemoteCommand extends NSObject {
 	removeTargetAction(target: any, action: string): void;
 }
 
+/**
+ * @since 7.1
+ */
 declare class MPRemoteCommandCenter extends NSObject {
 
 	static alloc(): MPRemoteCommandCenter; // inherited from NSObject
@@ -1619,6 +2750,9 @@ declare class MPRemoteCommandCenter extends NSObject {
 
 	readonly bookmarkCommand: MPFeedbackCommand;
 
+	/**
+	 * @since 9.1
+	 */
 	readonly changePlaybackPositionCommand: MPChangePlaybackPositionCommand;
 
 	readonly changePlaybackRateCommand: MPChangePlaybackRateCommand;
@@ -1627,10 +2761,16 @@ declare class MPRemoteCommandCenter extends NSObject {
 
 	readonly changeShuffleModeCommand: MPChangeShuffleModeCommand;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly disableLanguageOptionCommand: MPRemoteCommand;
 
 	readonly dislikeCommand: MPFeedbackCommand;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly enableLanguageOptionCommand: MPRemoteCommand;
 
 	readonly likeCommand: MPFeedbackCommand;
@@ -1658,6 +2798,9 @@ declare class MPRemoteCommandCenter extends NSObject {
 	readonly togglePlayPauseCommand: MPRemoteCommand;
 }
 
+/**
+ * @since 7.1
+ */
 declare class MPRemoteCommandEvent extends NSObject {
 
 	static alloc(): MPRemoteCommandEvent; // inherited from NSObject
@@ -1669,6 +2812,9 @@ declare class MPRemoteCommandEvent extends NSObject {
 	readonly timestamp: number;
 }
 
+/**
+ * @since 7.1
+ */
 declare const enum MPRemoteCommandHandlerStatus {
 
 	Success = 0,
@@ -1682,6 +2828,9 @@ declare const enum MPRemoteCommandHandlerStatus {
 	CommandFailed = 200
 }
 
+/**
+ * @since 3.0
+ */
 declare const enum MPRepeatType {
 
 	Off = 0,
@@ -1691,6 +2840,9 @@ declare const enum MPRepeatType {
 	All = 2
 }
 
+/**
+ * @since 7.1
+ */
 declare class MPSeekCommandEvent extends MPRemoteCommandEvent {
 
 	static alloc(): MPSeekCommandEvent; // inherited from NSObject
@@ -1700,6 +2852,9 @@ declare class MPSeekCommandEvent extends MPRemoteCommandEvent {
 	readonly type: MPSeekCommandEventType;
 }
 
+/**
+ * @since 7.1
+ */
 declare const enum MPSeekCommandEventType {
 
 	BeginSeeking = 0,
@@ -1707,6 +2862,9 @@ declare const enum MPSeekCommandEventType {
 	EndSeeking = 1
 }
 
+/**
+ * @since 3.0
+ */
 declare const enum MPShuffleType {
 
 	Off = 0,
@@ -1716,6 +2874,9 @@ declare const enum MPShuffleType {
 	Collections = 2
 }
 
+/**
+ * @since 7.1
+ */
 declare class MPSkipIntervalCommand extends MPRemoteCommand {
 
 	static alloc(): MPSkipIntervalCommand; // inherited from NSObject
@@ -1725,6 +2886,9 @@ declare class MPSkipIntervalCommand extends MPRemoteCommand {
 	preferredIntervals: NSArray<number>;
 }
 
+/**
+ * @since 7.1
+ */
 declare class MPSkipIntervalCommandEvent extends MPRemoteCommandEvent {
 
 	static alloc(): MPSkipIntervalCommandEvent; // inherited from NSObject
@@ -1736,6 +2900,9 @@ declare class MPSkipIntervalCommandEvent extends MPRemoteCommandEvent {
 
 interface MPSystemMusicPlayerController extends NSObjectProtocol {
 
+	/**
+	 * @since 11.0
+	 */
 	openToPlayQueueDescriptor(queueDescriptor: MPMusicPlayerQueueDescriptor): void;
 }
 declare var MPSystemMusicPlayerController: {
@@ -1743,55 +2910,130 @@ declare var MPSystemMusicPlayerController: {
 	prototype: MPSystemMusicPlayerController;
 };
 
+/**
+ * @since 4.0
+ * @deprecated 9.0
+ */
 declare class MPTimedMetadata extends NSObject {
 
 	static alloc(): MPTimedMetadata; // inherited from NSObject
 
 	static new(): MPTimedMetadata; // inherited from NSObject
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly allMetadata: NSDictionary<any, any>;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly key: string;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly keyspace: string;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly timestamp: number;
 
+	/**
+	 * @since 3.2
+	 * @deprecated 9.0
+	 */
 	readonly value: any;
 }
 
+/**
+ * @since 2.0
+ * @deprecated 11.3
+ */
 declare function MPVolumeSettingsAlertHide(): void;
 
+/**
+ * @since 2.0
+ * @deprecated 11.3
+ */
 declare function MPVolumeSettingsAlertIsVisible(): boolean;
 
+/**
+ * @since 2.0
+ * @deprecated 11.3
+ */
 declare function MPVolumeSettingsAlertShow(): void;
 
+/**
+ * @since 2.0
+ */
 declare class MPVolumeView extends UIView implements NSCoding {
 
 	static alloc(): MPVolumeView; // inherited from NSObject
 
 	static appearance(): MPVolumeView; // inherited from UIAppearance
 
+	/**
+	 * @since 8.0
+	 */
 	static appearanceForTraitCollection(trait: UITraitCollection): MPVolumeView; // inherited from UIAppearance
 
+	/**
+	 * @since 8.0
+	 * @deprecated 9.0
+	 */
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MPVolumeView; // inherited from UIAppearance
 
+	/**
+	 * @since 9.0
+	 */
 	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MPVolumeView; // inherited from UIAppearance
 
+	/**
+	 * @since 5.0
+	 * @deprecated 9.0
+	 */
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MPVolumeView; // inherited from UIAppearance
 
+	/**
+	 * @since 9.0
+	 */
 	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MPVolumeView; // inherited from UIAppearance
 
 	static new(): MPVolumeView; // inherited from NSObject
 
+	/**
+	 * @since 4.2
+	 * @deprecated 13.0
+	 */
 	showsRouteButton: boolean;
 
+	/**
+	 * @since 4.2
+	 */
 	showsVolumeSlider: boolean;
 
+	/**
+	 * @since 7.0
+	 * @deprecated 17.0
+	 */
 	volumeWarningSliderImage: UIImage;
 
+	/**
+	 * @since 7.0
+	 * @deprecated 13.0
+	 */
 	readonly wirelessRouteActive: boolean;
 
+	/**
+	 * @since 7.0
+	 * @deprecated 13.0
+	 */
 	readonly wirelessRoutesAvailable: boolean;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
@@ -1800,29 +3042,73 @@ declare class MPVolumeView extends UIView implements NSCoding {
 
 	initWithCoder(coder: NSCoder): this;
 
+	/**
+	 * @since 6.0
+	 */
 	maximumVolumeSliderImageForState(state: UIControlState): UIImage;
 
+	/**
+	 * @since 6.0
+	 */
 	minimumVolumeSliderImageForState(state: UIControlState): UIImage;
 
+	/**
+	 * @since 6.0
+	 * @deprecated 13.0
+	 */
 	routeButtonImageForState(state: UIControlState): UIImage;
 
+	/**
+	 * @since 6.0
+	 * @deprecated 13.0
+	 */
 	routeButtonRectForBounds(bounds: CGRect): CGRect;
 
+	/**
+	 * @since 6.0
+	 */
 	setMaximumVolumeSliderImageForState(image: UIImage, state: UIControlState): void;
 
+	/**
+	 * @since 6.0
+	 */
 	setMinimumVolumeSliderImageForState(image: UIImage, state: UIControlState): void;
 
+	/**
+	 * @since 6.0
+	 * @deprecated 13.0
+	 */
 	setRouteButtonImageForState(image: UIImage, state: UIControlState): void;
 
+	/**
+	 * @since 6.0
+	 */
 	setVolumeThumbImageForState(image: UIImage, state: UIControlState): void;
 
+	/**
+	 * @since 6.0
+	 */
 	volumeSliderRectForBounds(bounds: CGRect): CGRect;
 
+	/**
+	 * @since 6.0
+	 */
 	volumeThumbImageForState(state: UIControlState): UIImage;
 
+	/**
+	 * @since 6.0
+	 */
 	volumeThumbRectForBoundsVolumeSliderRectValue(bounds: CGRect, rect: CGRect, value: number): CGRect;
 }
 
+/**
+ * @since 7.0
+ * @deprecated 13.0
+ */
 declare var MPVolumeViewWirelessRouteActiveDidChangeNotification: string;
 
+/**
+ * @since 7.0
+ * @deprecated 13.0
+ */
 declare var MPVolumeViewWirelessRoutesAvailableDidChangeNotification: string;

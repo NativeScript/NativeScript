@@ -1,4 +1,7 @@
 
+/**
+ * @since 11.0
+ */
 declare class FPUIActionExtensionContext extends NSExtensionContext {
 
 	static alloc(): FPUIActionExtensionContext; // inherited from NSObject
@@ -10,6 +13,9 @@ declare class FPUIActionExtensionContext extends NSExtensionContext {
 	completeRequest(): void;
 }
 
+/**
+ * @since 11.0
+ */
 declare class FPUIActionExtensionViewController extends UIViewController {
 
 	static alloc(): FPUIActionExtensionViewController; // inherited from NSObject
@@ -23,8 +29,14 @@ declare class FPUIActionExtensionViewController extends UIViewController {
 	prepareForError(error: NSError): void;
 }
 
+/**
+ * @since 11.0
+ */
 declare var FPUIErrorDomain: string;
 
+/**
+ * @since 11.0
+ */
 declare const enum FPUIExtensionErrorCode {
 
 	UserCancelled = 0,

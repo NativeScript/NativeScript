@@ -1,4 +1,7 @@
 
+/**
+ * @since 10.0
+ */
 declare const enum VSAccountAccessStatus {
 
 	NotDetermined = 0,
@@ -10,6 +13,9 @@ declare const enum VSAccountAccessStatus {
 	Granted = 3
 }
 
+/**
+ * @since 14.2
+ */
 declare class VSAccountApplicationProvider extends NSObject {
 
 	static alloc(): VSAccountApplicationProvider; // inherited from NSObject
@@ -25,6 +31,9 @@ declare class VSAccountApplicationProvider extends NSObject {
 	initWithLocalizedDisplayNameIdentifier(localizedDisplayName: string, identifier: string): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class VSAccountManager extends NSObject {
 
 	static alloc(): VSAccountManager; // inherited from NSObject
@@ -38,6 +47,9 @@ declare class VSAccountManager extends NSObject {
 	enqueueAccountMetadataRequestCompletionHandler(request: VSAccountMetadataRequest, completionHandler: (p1: VSAccountMetadata, p2: NSError) => void): VSAccountManagerResult;
 }
 
+/**
+ * @since 10.0
+ */
 interface VSAccountManagerDelegate extends NSObjectProtocol {
 
 	accountManagerDismissViewController(accountManager: VSAccountManager, viewController: UIViewController): void;
@@ -51,6 +63,9 @@ declare var VSAccountManagerDelegate: {
 	prototype: VSAccountManagerDelegate;
 };
 
+/**
+ * @since 10.0
+ */
 declare class VSAccountManagerResult extends NSObject {
 
 	static alloc(): VSAccountManagerResult; // inherited from NSObject
@@ -60,6 +75,9 @@ declare class VSAccountManagerResult extends NSObject {
 	cancel(): void;
 }
 
+/**
+ * @since 10.0
+ */
 declare class VSAccountMetadata extends NSObject {
 
 	static alloc(): VSAccountMetadata; // inherited from NSObject
@@ -70,6 +88,9 @@ declare class VSAccountMetadata extends NSObject {
 
 	readonly accountProviderIdentifier: string;
 
+	/**
+	 * @since 10.2
+	 */
 	readonly accountProviderResponse: VSAccountProviderResponse;
 
 	readonly authenticationExpirationDate: Date;
@@ -77,20 +98,32 @@ declare class VSAccountMetadata extends NSObject {
 	readonly verificationData: NSData;
 }
 
+/**
+ * @since 10.0
+ */
 declare class VSAccountMetadataRequest extends NSObject {
 
 	static alloc(): VSAccountMetadataRequest; // inherited from NSObject
 
 	static new(): VSAccountMetadataRequest; // inherited from NSObject
 
+	/**
+	 * @since 13.0
+	 */
 	accountProviderAuthenticationToken: string;
 
+	/**
+	 * @since 14.2
+	 */
 	applicationAccountProviders: NSArray<VSAccountApplicationProvider>;
 
 	attributeNames: NSArray<string>;
 
 	channelIdentifier: string;
 
+	/**
+	 * @since 11.0
+	 */
 	featuredAccountProviderIdentifiers: NSArray<string>;
 
 	forceAuthentication: boolean;
@@ -105,15 +138,27 @@ declare class VSAccountMetadataRequest extends NSObject {
 
 	supportedAccountProviderIdentifiers: NSArray<string>;
 
+	/**
+	 * @since 10.2
+	 */
 	supportedAuthenticationSchemes: NSArray<string>;
 
 	verificationToken: string;
 }
 
+/**
+ * @since 13.0
+ */
 declare var VSAccountProviderAuthenticationSchemeAPI: string;
 
+/**
+ * @since 10.2
+ */
 declare var VSAccountProviderAuthenticationSchemeSAML: string;
 
+/**
+ * @since 10.2
+ */
 declare class VSAccountProviderResponse extends NSObject {
 
 	static alloc(): VSAccountProviderResponse; // inherited from NSObject
@@ -127,6 +172,9 @@ declare class VSAccountProviderResponse extends NSObject {
 	readonly status: string;
 }
 
+/**
+ * @since 17.4
+ */
 declare class VSAppleSubscription extends NSObject {
 
 	static alloc(): VSAppleSubscription; // inherited from NSObject
@@ -142,8 +190,14 @@ declare class VSAppleSubscription extends NSObject {
 	initWithCustomerIDProductCodes(customerID: string, productCodes: NSArray<string> | string[]): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare var VSCheckAccessOptionPrompt: string;
 
+/**
+ * @since 10.0
+ */
 declare const enum VSErrorCode {
 
 	AccessNotGranted = 0,
@@ -163,18 +217,39 @@ declare const enum VSErrorCode {
 	Unsupported = 7
 }
 
+/**
+ * @since 10.0
+ */
 declare var VSErrorDomain: string;
 
+/**
+ * @since 10.2
+ */
 declare var VSErrorInfoKeyAccountProviderResponse: string;
 
+/**
+ * @since 10.0
+ */
 declare var VSErrorInfoKeySAMLResponse: string;
 
+/**
+ * @since 10.0
+ */
 declare var VSErrorInfoKeySAMLResponseStatus: string;
 
+/**
+ * @since 10.2
+ */
 declare var VSErrorInfoKeyUnsupportedProviderIdentifier: string;
 
+/**
+ * @since 13.0
+ */
 declare var VSOpenTVProviderSettingsURLString: string;
 
+/**
+ * @since 16.4
+ */
 declare const enum VSOriginatingDeviceCategory {
 
 	Mobile = 0,
@@ -182,6 +257,10 @@ declare const enum VSOriginatingDeviceCategory {
 	Other = 1
 }
 
+/**
+ * @since 11.0
+ * @deprecated 18.0
+ */
 declare class VSSubscription extends NSObject {
 
 	static alloc(): VSSubscription; // inherited from NSObject
@@ -190,6 +269,9 @@ declare class VSSubscription extends NSObject {
 
 	accessLevel: VSSubscriptionAccessLevel;
 
+	/**
+	 * @since 11.3
+	 */
 	billingIdentifier: string;
 
 	expirationDate: Date;
@@ -197,6 +279,10 @@ declare class VSSubscription extends NSObject {
 	tierIdentifiers: NSArray<string>;
 }
 
+/**
+ * @since 11.0
+ * @deprecated 18.0
+ */
 declare const enum VSSubscriptionAccessLevel {
 
 	Unknown = 0,
@@ -206,6 +292,10 @@ declare const enum VSSubscriptionAccessLevel {
 	Paid = 2
 }
 
+/**
+ * @since 11.0
+ * @deprecated 18.0
+ */
 declare class VSSubscriptionRegistrationCenter extends NSObject {
 
 	static alloc(): VSSubscriptionRegistrationCenter; // inherited from NSObject
@@ -217,6 +307,9 @@ declare class VSSubscriptionRegistrationCenter extends NSObject {
 	setCurrentSubscription(currentSubscription: VSSubscription): void;
 }
 
+/**
+ * @since 16.4
+ */
 declare class VSUserAccount extends NSObject {
 
 	static alloc(): VSUserAccount; // inherited from NSObject
@@ -227,6 +320,9 @@ declare class VSUserAccount extends NSObject {
 
 	accountType: VSUserAccountType;
 
+	/**
+	 * @since 17.4
+	 */
 	appleSubscription: VSAppleSubscription;
 
 	authenticationData: string;
@@ -254,6 +350,9 @@ declare class VSUserAccount extends NSObject {
 	initWithAccountTypeUpdateURL(accountType: VSUserAccountType, url: NSURL): this;
 }
 
+/**
+ * @since 16.4
+ */
 declare class VSUserAccountManager extends NSObject {
 
 	static alloc(): VSUserAccountManager; // inherited from NSObject
@@ -267,6 +366,9 @@ declare class VSUserAccountManager extends NSObject {
 	updateUserAccountCompletion(account: VSUserAccount, completion: (p1: NSError) => void): void;
 }
 
+/**
+ * @since 16.4
+ */
 declare const enum VSUserAccountQueryOptions {
 
 	None = 0,
@@ -274,6 +376,9 @@ declare const enum VSUserAccountQueryOptions {
 	AllDevices = 1
 }
 
+/**
+ * @since 16.4
+ */
 declare const enum VSUserAccountType {
 
 	Free = 0,

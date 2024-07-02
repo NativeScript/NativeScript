@@ -1,4 +1,7 @@
 
+/**
+ * @since 7.0
+ */
 declare class MCAdvertiserAssistant extends NSObject {
 
 	static alloc(): MCAdvertiserAssistant; // inherited from NSObject
@@ -33,6 +36,9 @@ declare var MCAdvertiserAssistantDelegate: {
 	prototype: MCAdvertiserAssistantDelegate;
 };
 
+/**
+ * @since 7.0
+ */
 declare class MCBrowserViewController extends UIViewController implements MCNearbyServiceBrowserDelegate {
 
 	static alloc(): MCBrowserViewController; // inherited from NSObject
@@ -111,6 +117,9 @@ declare var MCBrowserViewControllerDelegate: {
 	prototype: MCBrowserViewControllerDelegate;
 };
 
+/**
+ * @since 7.0
+ */
 declare const enum MCEncryptionPreference {
 
 	Optional = 0,
@@ -120,6 +129,9 @@ declare const enum MCEncryptionPreference {
 	None = 2
 }
 
+/**
+ * @since 7.0
+ */
 declare const enum MCErrorCode {
 
 	Unknown = 0,
@@ -139,6 +151,9 @@ declare const enum MCErrorCode {
 
 declare var MCErrorDomain: string;
 
+/**
+ * @since 7.0
+ */
 declare class MCNearbyServiceAdvertiser extends NSObject {
 
 	static alloc(): MCNearbyServiceAdvertiser; // inherited from NSObject
@@ -173,6 +188,9 @@ declare var MCNearbyServiceAdvertiserDelegate: {
 	prototype: MCNearbyServiceAdvertiserDelegate;
 };
 
+/**
+ * @since 7.0
+ */
 declare class MCNearbyServiceBrowser extends NSObject {
 
 	static alloc(): MCNearbyServiceBrowser; // inherited from NSObject
@@ -209,6 +227,9 @@ declare var MCNearbyServiceBrowserDelegate: {
 	prototype: MCNearbyServiceBrowserDelegate;
 };
 
+/**
+ * @since 7.0
+ */
 declare class MCPeerID extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): MCPeerID; // inherited from NSObject
@@ -232,6 +253,9 @@ declare class MCPeerID extends NSObject implements NSCopying, NSSecureCoding {
 	initWithDisplayName(myDisplayName: string): this;
 }
 
+/**
+ * @since 7.0
+ */
 declare class MCSession extends NSObject {
 
 	static alloc(): MCSession; // inherited from NSObject
@@ -290,6 +314,9 @@ declare var MCSessionDelegate: {
 	prototype: MCSessionDelegate;
 };
 
+/**
+ * @since 7.0
+ */
 declare const enum MCSessionSendDataMode {
 
 	Reliable = 0,
@@ -297,6 +324,9 @@ declare const enum MCSessionSendDataMode {
 	Unreliable = 1
 }
 
+/**
+ * @since 7.0
+ */
 declare const enum MCSessionState {
 
 	NotConnected = 0,
@@ -306,6 +336,12 @@ declare const enum MCSessionState {
 	Connected = 2
 }
 
+/**
+ * @since 7.0
+ */
 declare var kMCSessionMaximumNumberOfPeers: number;
 
+/**
+ * @since 7.0
+ */
 declare var kMCSessionMinimumNumberOfPeers: number;

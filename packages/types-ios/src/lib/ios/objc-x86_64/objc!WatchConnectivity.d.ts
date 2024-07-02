@@ -1,4 +1,7 @@
 
+/**
+ * @since 9.0
+ */
 declare const enum WCErrorCode {
 
 	GenericError = 7001,
@@ -40,8 +43,14 @@ declare const enum WCErrorCode {
 	WatchOnlyApp = 7019
 }
 
+/**
+ * @since 9.0
+ */
 declare var WCErrorDomain: string;
 
+/**
+ * @since 9.0
+ */
 declare class WCSession extends NSObject {
 
 	static alloc(): WCSession; // inherited from NSObject
@@ -50,6 +59,9 @@ declare class WCSession extends NSObject {
 
 	static new(): WCSession; // inherited from NSObject
 
+	/**
+	 * @since 9.3
+	 */
 	readonly activationState: WCSessionActivationState;
 
 	readonly applicationContext: NSDictionary<string, any>;
@@ -58,6 +70,9 @@ declare class WCSession extends NSObject {
 
 	delegate: WCSessionDelegate;
 
+	/**
+	 * @since 10.0
+	 */
 	readonly hasContentPending: boolean;
 
 	readonly outstandingFileTransfers: NSArray<WCSessionFileTransfer>;
@@ -70,6 +85,9 @@ declare class WCSession extends NSObject {
 
 	readonly receivedApplicationContext: NSDictionary<string, any>;
 
+	/**
+	 * @since 10.0
+	 */
 	readonly remainingComplicationUserInfoTransfers: number;
 
 	readonly watchAppInstalled: boolean;
@@ -93,6 +111,9 @@ declare class WCSession extends NSObject {
 	updateApplicationContextError(applicationContext: NSDictionary<string, any>): boolean;
 }
 
+/**
+ * @since 9.3
+ */
 declare const enum WCSessionActivationState {
 
 	NotActivated = 0,
@@ -104,10 +125,19 @@ declare const enum WCSessionActivationState {
 
 interface WCSessionDelegate extends NSObjectProtocol {
 
+	/**
+	 * @since 9.3
+	 */
 	sessionActivationDidCompleteWithStateError(session: WCSession, activationState: WCSessionActivationState, error: NSError): void;
 
+	/**
+	 * @since 9.3
+	 */
 	sessionDidBecomeInactive(session: WCSession): void;
 
+	/**
+	 * @since 9.3
+	 */
 	sessionDidDeactivate(session: WCSession): void;
 
 	sessionDidFinishFileTransferError?(session: WCSession, fileTransfer: WCSessionFileTransfer, error: NSError): void;
@@ -137,6 +167,9 @@ declare var WCSessionDelegate: {
 	prototype: WCSessionDelegate;
 };
 
+/**
+ * @since 9.0
+ */
 declare class WCSessionFile extends NSObject {
 
 	static alloc(): WCSessionFile; // inherited from NSObject
@@ -148,6 +181,9 @@ declare class WCSessionFile extends NSObject {
 	readonly metadata: NSDictionary<string, any>;
 }
 
+/**
+ * @since 9.0
+ */
 declare class WCSessionFileTransfer extends NSObject {
 
 	static alloc(): WCSessionFileTransfer; // inherited from NSObject
@@ -156,6 +192,9 @@ declare class WCSessionFileTransfer extends NSObject {
 
 	readonly file: WCSessionFile;
 
+	/**
+	 * @since 12.0
+	 */
 	readonly progress: NSProgress;
 
 	readonly transferring: boolean;
@@ -163,6 +202,9 @@ declare class WCSessionFileTransfer extends NSObject {
 	cancel(): void;
 }
 
+/**
+ * @since 9.0
+ */
 declare class WCSessionUserInfoTransfer extends NSObject implements NSSecureCoding {
 
 	static alloc(): WCSessionUserInfoTransfer; // inherited from NSObject

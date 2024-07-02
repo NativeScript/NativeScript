@@ -1,4 +1,7 @@
 
+/**
+ * @since 13.0
+ */
 interface CHHapticAdvancedPatternPlayer extends CHHapticPatternPlayer {
 
 	completionHandler: (p1: NSError) => void;
@@ -20,10 +23,19 @@ declare var CHHapticAdvancedPatternPlayer: {
 	prototype: CHHapticAdvancedPatternPlayer;
 };
 
+/**
+ * @since 16.0
+ */
 declare var CHHapticAudioResourceKeyLoopEnabled: string;
 
+/**
+ * @since 15.0
+ */
 declare var CHHapticAudioResourceKeyUseVolumeEnvelope: string;
 
+/**
+ * @since 13.0
+ */
 interface CHHapticDeviceCapability {
 
 	supportsAudio: boolean;
@@ -39,6 +51,9 @@ declare var CHHapticDeviceCapability: {
 	prototype: CHHapticDeviceCapability;
 };
 
+/**
+ * @since 13.0
+ */
 declare class CHHapticDynamicParameter extends NSObject {
 
 	static alloc(): CHHapticDynamicParameter; // inherited from NSObject
@@ -56,30 +71,69 @@ declare class CHHapticDynamicParameter extends NSObject {
 	initWithParameterIDValueRelativeTime(parameterID: string, value: number, time: number): this;
 }
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticDynamicParameterIDAudioAttackTimeControl: string;
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticDynamicParameterIDAudioBrightnessControl: string;
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticDynamicParameterIDAudioDecayTimeControl: string;
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticDynamicParameterIDAudioPanControl: string;
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticDynamicParameterIDAudioPitchControl: string;
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticDynamicParameterIDAudioReleaseTimeControl: string;
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticDynamicParameterIDAudioVolumeControl: string;
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticDynamicParameterIDHapticAttackTimeControl: string;
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticDynamicParameterIDHapticDecayTimeControl: string;
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticDynamicParameterIDHapticIntensityControl: string;
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticDynamicParameterIDHapticReleaseTimeControl: string;
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticDynamicParameterIDHapticSharpnessControl: string;
 
+/**
+ * @since 13.0
+ */
 declare class CHHapticEngine extends NSObject {
 
 	static alloc(): CHHapticEngine; // inherited from NSObject
@@ -96,6 +150,9 @@ declare class CHHapticEngine extends NSObject {
 
 	isMutedForHaptics: boolean;
 
+	/**
+	 * @since 16.0
+	 */
 	playsAudioOnly: boolean;
 
 	playsHapticsOnly: boolean;
@@ -157,6 +214,9 @@ declare const enum CHHapticEngineStoppedReason {
 	SystemError = -1
 }
 
+/**
+ * @since 13.0
+ */
 declare const enum CHHapticErrorCode {
 
 	EngineNotRunning = -4805,
@@ -208,6 +268,9 @@ declare const enum CHHapticErrorCode {
 	MemoryError = -4899
 }
 
+/**
+ * @since 13.0
+ */
 declare class CHHapticEvent extends NSObject {
 
 	static alloc(): CHHapticEvent; // inherited from NSObject
@@ -239,6 +302,9 @@ declare class CHHapticEvent extends NSObject {
 	initWithEventTypeParametersRelativeTimeDuration(type: string, eventParams: NSArray<CHHapticEventParameter> | CHHapticEventParameter[], time: number, duration: number): this;
 }
 
+/**
+ * @since 13.0
+ */
 declare class CHHapticEventParameter extends NSObject {
 
 	static alloc(): CHHapticEventParameter; // inherited from NSObject
@@ -254,34 +320,79 @@ declare class CHHapticEventParameter extends NSObject {
 	initWithParameterIDValue(parameterID: string, value: number): this;
 }
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticEventParameterIDAttackTime: string;
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticEventParameterIDAudioBrightness: string;
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticEventParameterIDAudioPan: string;
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticEventParameterIDAudioPitch: string;
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticEventParameterIDAudioVolume: string;
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticEventParameterIDDecayTime: string;
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticEventParameterIDHapticIntensity: string;
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticEventParameterIDHapticSharpness: string;
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticEventParameterIDReleaseTime: string;
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticEventParameterIDSustained: string;
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticEventTypeAudioContinuous: string;
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticEventTypeAudioCustom: string;
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticEventTypeHapticContinuous: string;
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticEventTypeHapticTransient: string;
 
+/**
+ * @since 13.0
+ */
 interface CHHapticParameterAttributes extends NSObjectProtocol {
 
 	defaultValue: number;
@@ -312,6 +423,9 @@ declare class CHHapticParameterCurve extends NSObject {
 	initWithParameterIDControlPointsRelativeTime(parameterID: string, controlPoints: NSArray<CHHapticParameterCurveControlPoint> | CHHapticParameterCurveControlPoint[], relativeTime: number): this;
 }
 
+/**
+ * @since 13.0
+ */
 declare class CHHapticParameterCurveControlPoint extends NSObject {
 
 	static alloc(): CHHapticParameterCurveControlPoint; // inherited from NSObject
@@ -327,6 +441,9 @@ declare class CHHapticParameterCurveControlPoint extends NSObject {
 	initWithRelativeTimeValue(time: number, value: number): this;
 }
 
+/**
+ * @since 13.0
+ */
 declare class CHHapticPattern extends NSObject {
 
 	static alloc(): CHHapticPattern; // inherited from NSObject
@@ -335,6 +452,9 @@ declare class CHHapticPattern extends NSObject {
 
 	readonly duration: number;
 
+	/**
+	 * @since 16.0
+	 */
 	constructor(o: { contentsOfURL: NSURL; });
 
 	constructor(o: { dictionary: NSDictionary<string, any>; });
@@ -345,6 +465,9 @@ declare class CHHapticPattern extends NSObject {
 
 	exportDictionaryAndReturnError(): NSDictionary<string, any>;
 
+	/**
+	 * @since 16.0
+	 */
 	initWithContentsOfURLError(ahapURL: NSURL): this;
 
 	initWithDictionaryError(patternDict: NSDictionary<string, any>): this;
@@ -354,36 +477,84 @@ declare class CHHapticPattern extends NSObject {
 	initWithEventsParametersError(events: NSArray<CHHapticEvent> | CHHapticEvent[], parameters: NSArray<CHHapticDynamicParameter> | CHHapticDynamicParameter[]): this;
 }
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticPatternKeyEvent: string;
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticPatternKeyEventDuration: string;
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticPatternKeyEventParameters: string;
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticPatternKeyEventType: string;
 
+/**
+ * @since 16.0
+ */
 declare var CHHapticPatternKeyEventWaveformLoopEnabled: string;
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticPatternKeyEventWaveformPath: string;
 
+/**
+ * @since 15.0
+ */
 declare var CHHapticPatternKeyEventWaveformUseVolumeEnvelope: string;
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticPatternKeyParameter: string;
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticPatternKeyParameterCurve: string;
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticPatternKeyParameterCurveControlPoints: string;
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticPatternKeyParameterID: string;
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticPatternKeyParameterValue: string;
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticPatternKeyPattern: string;
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticPatternKeyTime: string;
 
+/**
+ * @since 13.0
+ */
 declare var CHHapticPatternKeyVersion: string;
 
+/**
+ * @since 13.0
+ */
 interface CHHapticPatternPlayer extends NSObjectProtocol {
 
 	isMuted: boolean;

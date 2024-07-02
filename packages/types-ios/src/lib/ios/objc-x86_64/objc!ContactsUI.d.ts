@@ -1,4 +1,7 @@
 
+/**
+ * @since 9.0
+ */
 interface CNContactPickerDelegate extends NSObjectProtocol {
 
 	contactPickerDidCancel?(picker: CNContactPickerViewController): void;
@@ -16,6 +19,9 @@ declare var CNContactPickerDelegate: {
 	prototype: CNContactPickerDelegate;
 };
 
+/**
+ * @since 9.0
+ */
 declare class CNContactPickerViewController extends UIViewController {
 
 	static alloc(): CNContactPickerViewController; // inherited from NSObject
@@ -33,6 +39,9 @@ declare class CNContactPickerViewController extends UIViewController {
 	predicateForSelectionOfProperty: NSPredicate;
 }
 
+/**
+ * @since 9.0
+ */
 declare class CNContactViewController extends UIViewController {
 
 	static alloc(): CNContactViewController; // inherited from NSObject
@@ -72,6 +81,9 @@ declare class CNContactViewController extends UIViewController {
 	highlightPropertyWithKeyIdentifier(key: string, identifier: string): void;
 }
 
+/**
+ * @since 9.0
+ */
 interface CNContactViewControllerDelegate extends NSObjectProtocol {
 
 	contactViewControllerDidCompleteWithContact?(viewController: CNContactViewController, contact: CNContact): void;
