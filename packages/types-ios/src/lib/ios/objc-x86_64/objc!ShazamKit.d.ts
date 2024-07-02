@@ -1,4 +1,7 @@
 
+/**
+ * @since 15.0
+ */
 declare class SHCatalog extends NSObject {
 
 	static alloc(): SHCatalog; // inherited from NSObject
@@ -10,16 +13,38 @@ declare class SHCatalog extends NSObject {
 	readonly minimumQuerySignatureDuration: number;
 }
 
+/**
+ * @since 15.0
+ */
 declare class SHCustomCatalog extends SHCatalog {
 
 	static alloc(): SHCustomCatalog; // inherited from NSObject
 
 	static new(): SHCustomCatalog; // inherited from NSObject
 
+	/**
+	 * @since 18.0
+	 */
+	readonly dataRepresentation: NSData;
+
+	/**
+	 * @since 18.0
+	 */
+	constructor(o: { dataRepresentation: NSData; });
+
 	addCustomCatalogFromURLError(customCatalogURL: NSURL): boolean;
 
 	addReferenceSignatureRepresentingMediaItemsError(signature: SHSignature, mediaItems: NSArray<SHMediaItem> | SHMediaItem[]): boolean;
 
+	/**
+	 * @since 18.0
+	 */
+	initWithDataRepresentationError(dataRepresentation: NSData): this;
+
+	/**
+	 * @since 15.0
+	 * @deprecated 18.0
+	 */
 	writeToURLError(destinationURL: NSURL): boolean;
 }
 
@@ -46,8 +71,14 @@ declare const enum SHErrorCode {
 	MediaItemFetchFailed = 600
 }
 
+/**
+ * @since 15.0
+ */
 declare var SHErrorDomain: string;
 
+/**
+ * @since 15.0
+ */
 declare class SHMatch extends NSObject implements NSSecureCoding {
 
 	static alloc(): SHMatch; // inherited from NSObject
@@ -67,6 +98,9 @@ declare class SHMatch extends NSObject implements NSSecureCoding {
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare class SHMatchedMediaItem extends SHMediaItem implements NSSecureCoding {
 
 	static alloc(): SHMatchedMediaItem; // inherited from NSObject
@@ -90,6 +124,9 @@ declare class SHMatchedMediaItem extends SHMediaItem implements NSSecureCoding {
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare class SHMediaItem extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SHMediaItem; // inherited from NSObject
@@ -108,10 +145,16 @@ declare class SHMediaItem extends NSObject implements NSCopying, NSSecureCoding 
 
 	readonly artworkURL: NSURL;
 
+	/**
+	 * @since 17.0
+	 */
 	readonly creationDate: Date;
 
 	readonly explicitContent: boolean;
 
+	/**
+	 * @since 16.0
+	 */
 	readonly frequencySkewRanges: NSArray<SHRange>;
 
 	readonly genres: NSArray<string>;
@@ -122,6 +165,9 @@ declare class SHMediaItem extends NSObject implements NSCopying, NSSecureCoding 
 
 	readonly subtitle: string;
 
+	/**
+	 * @since 16.0
+	 */
 	readonly timeRanges: NSArray<SHRange>;
 
 	readonly title: string;
@@ -145,40 +191,95 @@ declare class SHMediaItem extends NSObject implements NSCopying, NSSecureCoding 
 	valueForProperty(property: string): any;
 }
 
+/**
+ * @since 15.0
+ */
 declare var SHMediaItemAppleMusicID: string;
 
+/**
+ * @since 15.0
+ */
 declare var SHMediaItemAppleMusicURL: string;
 
+/**
+ * @since 15.0
+ */
 declare var SHMediaItemArtist: string;
 
+/**
+ * @since 15.0
+ */
 declare var SHMediaItemArtworkURL: string;
 
+/**
+ * @since 17.0
+ */
 declare var SHMediaItemCreationDate: string;
 
+/**
+ * @since 15.0
+ */
 declare var SHMediaItemExplicitContent: string;
 
+/**
+ * @since 15.0
+ */
 declare var SHMediaItemFrequencySkew: string;
 
+/**
+ * @since 16.0
+ */
 declare var SHMediaItemFrequencySkewRanges: string;
 
+/**
+ * @since 15.0
+ */
 declare var SHMediaItemGenres: string;
 
+/**
+ * @since 15.0
+ */
 declare var SHMediaItemISRC: string;
 
+/**
+ * @since 15.0
+ */
 declare var SHMediaItemMatchOffset: string;
 
+/**
+ * @since 15.0
+ */
 declare var SHMediaItemShazamID: string;
 
+/**
+ * @since 15.0
+ */
 declare var SHMediaItemSubtitle: string;
 
+/**
+ * @since 16.0
+ */
 declare var SHMediaItemTimeRanges: string;
 
+/**
+ * @since 15.0
+ */
 declare var SHMediaItemTitle: string;
 
+/**
+ * @since 15.0
+ */
 declare var SHMediaItemVideoURL: string;
 
+/**
+ * @since 15.0
+ */
 declare var SHMediaItemWebURL: string;
 
+/**
+ * @since 15.0
+ * @deprecated 18.0
+ */
 declare class SHMediaLibrary extends NSObject {
 
 	static alloc(): SHMediaLibrary; // inherited from NSObject
@@ -190,6 +291,9 @@ declare class SHMediaLibrary extends NSObject {
 	addMediaItemsCompletionHandler(mediaItems: NSArray<SHMediaItem> | SHMediaItem[], completionHandler: (p1: NSError) => void): void;
 }
 
+/**
+ * @since 16.0
+ */
 declare class SHRange extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SHRange; // inherited from NSObject
@@ -217,6 +321,9 @@ declare class SHRange extends NSObject implements NSCopying, NSSecureCoding {
 	initWithLowerBoundUpperBound(lowerBound: number, upperBound: number): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare class SHSession extends NSObject {
 
 	static alloc(): SHSession; // inherited from NSObject
@@ -236,6 +343,9 @@ declare class SHSession extends NSObject {
 	matchStreamingBufferAtTime(buffer: AVAudioPCMBuffer, time: AVAudioTime): void;
 }
 
+/**
+ * @since 15.0
+ */
 interface SHSessionDelegate extends NSObjectProtocol {
 
 	sessionDidFindMatch?(session: SHSession, match: SHMatch): void;
@@ -247,6 +357,9 @@ declare var SHSessionDelegate: {
 	prototype: SHSessionDelegate;
 };
 
+/**
+ * @since 15.0
+ */
 declare class SHSignature extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SHSignature; // inherited from NSObject
@@ -274,10 +387,16 @@ declare class SHSignature extends NSObject implements NSCopying, NSSecureCoding 
 	initWithDataRepresentationError(dataRepresentation: NSData): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare class SHSignatureGenerator extends NSObject {
 
 	static alloc(): SHSignatureGenerator; // inherited from NSObject
 
+	/**
+	 * @since 16.0
+	 */
 	static generateSignatureFromAssetCompletionHandler(asset: AVAsset, completionHandler: (p1: SHSignature, p2: NSError) => void): void;
 
 	static new(): SHSignatureGenerator; // inherited from NSObject

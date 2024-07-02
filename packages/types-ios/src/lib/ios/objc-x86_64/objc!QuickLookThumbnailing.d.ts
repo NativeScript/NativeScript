@@ -1,4 +1,7 @@
 
+/**
+ * @since 11.0
+ */
 declare class QLFileThumbnailRequest extends NSObject {
 
 	static alloc(): QLFileThumbnailRequest; // inherited from NSObject
@@ -14,6 +17,9 @@ declare class QLFileThumbnailRequest extends NSObject {
 	readonly scale: number;
 }
 
+/**
+ * @since 13.0
+ */
 declare const enum QLThumbnailError {
 
 	GenerationFailed = 0,
@@ -29,14 +35,23 @@ declare const enum QLThumbnailError {
 	RequestCancelled = 5
 }
 
+/**
+ * @since 13.0
+ */
 declare var QLThumbnailErrorDomain: string;
 
+/**
+ * @since 13.0
+ */
 declare class QLThumbnailGenerationRequest extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): QLThumbnailGenerationRequest; // inherited from NSObject
 
 	static new(): QLThumbnailGenerationRequest; // inherited from NSObject
 
+	/**
+	 * @since 14.0
+	 */
 	contentType: UTType;
 
 	iconMode: boolean;
@@ -64,6 +79,9 @@ declare class QLThumbnailGenerationRequest extends NSObject implements NSCopying
 	initWithFileAtURLSizeScaleRepresentationTypes(url: NSURL, size: CGSize, scale: number, representationTypes: QLThumbnailGenerationRequestRepresentationTypes): this;
 }
 
+/**
+ * @since 13.0
+ */
 declare const enum QLThumbnailGenerationRequestRepresentationTypes {
 
 	Icon = 1,
@@ -75,6 +93,9 @@ declare const enum QLThumbnailGenerationRequestRepresentationTypes {
 	All = -1
 }
 
+/**
+ * @since 13.0
+ */
 declare class QLThumbnailGenerator extends NSObject {
 
 	static alloc(): QLThumbnailGenerator; // inherited from NSObject
@@ -89,9 +110,18 @@ declare class QLThumbnailGenerator extends NSObject {
 
 	generateRepresentationsForRequestUpdateHandler(request: QLThumbnailGenerationRequest, updateHandler: (p1: QLThumbnailRepresentation, p2: QLThumbnailRepresentationType, p3: NSError) => void): void;
 
+	saveBestRepresentationForRequestToFileAtURLAsContentTypeCompletionHandler(request: QLThumbnailGenerationRequest, fileURL: NSURL, contentType: UTType, completionHandler: (p1: NSError) => void): void;
+
+	/**
+	 * @since 14.0
+	 * @deprecated 18.0
+	 */
 	saveBestRepresentationForRequestToFileAtURLWithContentTypeCompletionHandler(request: QLThumbnailGenerationRequest, fileURL: NSURL, contentType: string, completionHandler: (p1: NSError) => void): void;
 }
 
+/**
+ * @since 11.0
+ */
 declare class QLThumbnailProvider extends NSObject {
 
 	static alloc(): QLThumbnailProvider; // inherited from NSObject
@@ -101,6 +131,9 @@ declare class QLThumbnailProvider extends NSObject {
 	provideThumbnailForFileRequestCompletionHandler(request: QLFileThumbnailRequest, handler: (p1: QLThumbnailReply, p2: NSError) => void): void;
 }
 
+/**
+ * @since 11.0
+ */
 declare class QLThumbnailReply extends NSObject {
 
 	static alloc(): QLThumbnailReply; // inherited from NSObject
@@ -113,9 +146,15 @@ declare class QLThumbnailReply extends NSObject {
 
 	static replyWithImageFileURL(fileURL: NSURL): QLThumbnailReply;
 
+	/**
+	 * @since 15.0
+	 */
 	extensionBadge: string;
 }
 
+/**
+ * @since 13.0
+ */
 declare class QLThumbnailRepresentation extends NSObject {
 
 	static alloc(): QLThumbnailRepresentation; // inherited from NSObject
@@ -126,11 +165,17 @@ declare class QLThumbnailRepresentation extends NSObject {
 
 	readonly UIImage: UIImage;
 
+	/**
+	 * @since 15.0
+	 */
 	readonly contentRect: CGRect;
 
 	readonly type: QLThumbnailRepresentationType;
 }
 
+/**
+ * @since 13.0
+ */
 declare const enum QLThumbnailRepresentationType {
 
 	Icon = 0,

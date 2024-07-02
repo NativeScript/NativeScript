@@ -1,4 +1,7 @@
 
+/**
+ * @since 10.0
+ */
 declare class TKBERTLVRecord extends TKTLVRecord {
 
 	static alloc(): TKBERTLVRecord; // inherited from NSObject
@@ -18,6 +21,9 @@ declare class TKBERTLVRecord extends TKTLVRecord {
 	initWithTagValue(tag: number, value: NSData): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class TKCompactTLVRecord extends TKTLVRecord {
 
 	static alloc(): TKCompactTLVRecord; // inherited from NSObject
@@ -58,8 +64,14 @@ declare const enum TKErrorCode {
 	TokenNotFound = -7
 }
 
+/**
+ * @since 9.0
+ */
 declare var TKErrorDomain: string;
 
+/**
+ * @since 10.0
+ */
 declare class TKSimpleTLVRecord extends TKTLVRecord {
 
 	static alloc(): TKSimpleTLVRecord; // inherited from NSObject
@@ -109,8 +121,14 @@ declare class TKSmartCard extends NSObject {
 
 	transmitRequestReply(request: NSData, reply: (p1: NSData, p2: NSError) => void): void;
 
+	/**
+	 * @since 9.0
+	 */
 	userInteractionForSecurePINChangeWithPINFormatAPDUCurrentPINByteOffsetNewPINByteOffset(PINFormat: TKSmartCardPINFormat, APDU: NSData, currentPINByteOffset: number, newPINByteOffset: number): TKSmartCardUserInteractionForSecurePINChange;
 
+	/**
+	 * @since 9.0
+	 */
 	userInteractionForSecurePINVerificationWithPINFormatAPDUPINByteOffset(PINFormat: TKSmartCardPINFormat, APDU: NSData, PINByteOffset: number): TKSmartCardUserInteractionForSecurePINVerification;
 }
 
@@ -284,6 +302,9 @@ declare const enum TKSmartCardSlotState {
 	ValidCard = 4
 }
 
+/**
+ * @since 10.0
+ */
 declare class TKSmartCardToken extends TKToken {
 
 	static alloc(): TKSmartCardToken; // inherited from NSObject
@@ -297,6 +318,9 @@ declare class TKSmartCardToken extends TKToken {
 	initWithSmartCardAIDInstanceIDTokenDriver(smartCard: TKSmartCard, AID: NSData, instanceID: string, tokenDriver: TKSmartCardTokenDriver): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class TKSmartCardTokenDriver extends TKTokenDriver {
 
 	static alloc(): TKSmartCardTokenDriver; // inherited from NSObject
@@ -313,6 +337,9 @@ declare var TKSmartCardTokenDriverDelegate: {
 	prototype: TKSmartCardTokenDriverDelegate;
 };
 
+/**
+ * @since 10.0
+ */
 declare class TKSmartCardTokenSession extends TKTokenSession {
 
 	static alloc(): TKSmartCardTokenSession; // inherited from NSObject
@@ -393,6 +420,9 @@ declare class TKSmartCardUserInteractionForSecurePINVerification extends TKSmart
 	static new(): TKSmartCardUserInteractionForSecurePINVerification; // inherited from NSObject
 }
 
+/**
+ * @since 10.0
+ */
 declare class TKTLVRecord extends NSObject {
 
 	static alloc(): TKTLVRecord; // inherited from NSObject
@@ -410,12 +440,18 @@ declare class TKTLVRecord extends NSObject {
 	readonly value: NSData;
 }
 
+/**
+ * @since 10.0
+ */
 declare class TKToken extends NSObject {
 
 	static alloc(): TKToken; // inherited from NSObject
 
 	static new(): TKToken; // inherited from NSObject
 
+	/**
+	 * @since 14.0
+	 */
 	readonly configuration: TKTokenConfiguration;
 
 	delegate: TKTokenDelegate;
@@ -429,6 +465,9 @@ declare class TKToken extends NSObject {
 	initWithTokenDriverInstanceID(tokenDriver: TKTokenDriver, instanceID: string): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class TKTokenAuthOperation extends NSObject implements NSSecureCoding {
 
 	static alloc(): TKTokenAuthOperation; // inherited from NSObject
@@ -446,6 +485,9 @@ declare class TKTokenAuthOperation extends NSObject implements NSSecureCoding {
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 14.0
+ */
 declare class TKTokenConfiguration extends NSObject {
 
 	static alloc(): TKTokenConfiguration; // inherited from NSObject
@@ -463,6 +505,9 @@ declare class TKTokenConfiguration extends NSObject {
 	keyForObjectIDError(objectID: any): TKTokenKeychainKey;
 }
 
+/**
+ * @since 10.0
+ */
 interface TKTokenDelegate extends NSObjectProtocol {
 
 	tokenCreateSessionWithError(token: TKToken): TKTokenSession;
@@ -474,6 +519,9 @@ declare var TKTokenDelegate: {
 	prototype: TKTokenDelegate;
 };
 
+/**
+ * @since 10.0
+ */
 declare class TKTokenDriver extends NSObject {
 
 	static alloc(): TKTokenDriver; // inherited from NSObject
@@ -483,6 +531,9 @@ declare class TKTokenDriver extends NSObject {
 	delegate: TKTokenDriverDelegate;
 }
 
+/**
+ * @since 14.0
+ */
 declare class TKTokenDriverConfiguration extends NSObject {
 
 	static alloc(): TKTokenDriverConfiguration; // inherited from NSObject
@@ -500,10 +551,16 @@ declare class TKTokenDriverConfiguration extends NSObject {
 	removeTokenConfigurationForTokenInstanceID(instanceID: string): void;
 }
 
+/**
+ * @since 10.0
+ */
 interface TKTokenDriverDelegate extends NSObjectProtocol {
 
 	tokenDriverTerminateToken?(driver: TKTokenDriver, token: TKToken): void;
 
+	/**
+	 * @since 14.0
+	 */
 	tokenDriverTokenForConfigurationError?(driver: TKTokenDriver, configuration: TKTokenConfiguration): TKToken;
 }
 declare var TKTokenDriverDelegate: {
@@ -511,17 +568,23 @@ declare var TKTokenDriverDelegate: {
 	prototype: TKTokenDriverDelegate;
 };
 
+/**
+ * @since 10.0
+ */
 declare class TKTokenKeyAlgorithm extends NSObject {
 
 	static alloc(): TKTokenKeyAlgorithm; // inherited from NSObject
 
 	static new(): TKTokenKeyAlgorithm; // inherited from NSObject
 
-	isAlgorithm(algorithm: any): boolean;
+	isAlgorithm(algorithm: string): boolean;
 
-	supportsAlgorithm(algorithm: any): boolean;
+	supportsAlgorithm(algorithm: string): boolean;
 }
 
+/**
+ * @since 10.0
+ */
 declare class TKTokenKeyExchangeParameters extends NSObject {
 
 	static alloc(): TKTokenKeyExchangeParameters; // inherited from NSObject
@@ -533,6 +596,9 @@ declare class TKTokenKeyExchangeParameters extends NSObject {
 	readonly sharedInfo: NSData;
 }
 
+/**
+ * @since 10.0
+ */
 declare class TKTokenKeychainCertificate extends TKTokenKeychainItem {
 
 	static alloc(): TKTokenKeychainCertificate; // inherited from NSObject
@@ -546,6 +612,9 @@ declare class TKTokenKeychainCertificate extends TKTokenKeychainItem {
 	initWithCertificateObjectID(certificateRef: any, objectID: any): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class TKTokenKeychainContents extends NSObject {
 
 	static alloc(): TKTokenKeychainContents; // inherited from NSObject
@@ -561,6 +630,9 @@ declare class TKTokenKeychainContents extends NSObject {
 	keyForObjectIDError(objectID: any): TKTokenKeychainKey;
 }
 
+/**
+ * @since 10.0
+ */
 declare class TKTokenKeychainItem extends NSObject {
 
 	static alloc(): TKTokenKeychainItem; // inherited from NSObject
@@ -578,6 +650,9 @@ declare class TKTokenKeychainItem extends NSObject {
 	initWithObjectID(objectID: any): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class TKTokenKeychainKey extends TKTokenKeychainItem {
 
 	static alloc(): TKTokenKeychainKey; // inherited from NSObject
@@ -607,6 +682,9 @@ declare class TKTokenKeychainKey extends TKTokenKeychainItem {
 	initWithCertificateObjectID(certificateRef: any, objectID: any): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum TKTokenOperation {
 
 	None = 0,
@@ -620,6 +698,9 @@ declare const enum TKTokenOperation {
 	PerformKeyExchange = 4
 }
 
+/**
+ * @since 10.0
+ */
 declare class TKTokenPasswordAuthOperation extends TKTokenAuthOperation {
 
 	static alloc(): TKTokenPasswordAuthOperation; // inherited from NSObject
@@ -629,6 +710,9 @@ declare class TKTokenPasswordAuthOperation extends TKTokenAuthOperation {
 	password: string;
 }
 
+/**
+ * @since 10.0
+ */
 declare class TKTokenSession extends NSObject {
 
 	static alloc(): TKTokenSession; // inherited from NSObject
@@ -644,6 +728,9 @@ declare class TKTokenSession extends NSObject {
 	initWithToken(token: TKToken): this;
 }
 
+/**
+ * @since 10.0
+ */
 interface TKTokenSessionDelegate extends NSObjectProtocol {
 
 	tokenSessionBeginAuthForOperationConstraintError?(session: TKTokenSession, operation: TKTokenOperation, constraint: any): TKTokenAuthOperation;
@@ -661,6 +748,9 @@ declare var TKTokenSessionDelegate: {
 	prototype: TKTokenSessionDelegate;
 };
 
+/**
+ * @since 10.0
+ */
 declare class TKTokenSmartCardPINAuthOperation extends TKTokenAuthOperation {
 
 	static alloc(): TKTokenSmartCardPINAuthOperation; // inherited from NSObject
@@ -678,6 +768,9 @@ declare class TKTokenSmartCardPINAuthOperation extends TKTokenAuthOperation {
 	smartCard: TKSmartCard;
 }
 
+/**
+ * @since 10.0
+ */
 declare class TKTokenWatcher extends NSObject {
 
 	static alloc(): TKTokenWatcher; // inherited from NSObject
@@ -686,17 +779,34 @@ declare class TKTokenWatcher extends NSObject {
 
 	readonly tokenIDs: NSArray<string>;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 11.0
+	 */
 	constructor(o: { insertionHandler: (p1: string) => void; });
 
 	addRemovalHandlerForTokenID(removalHandler: (p1: string) => void, tokenID: string): void;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 11.0
+	 */
 	initWithInsertionHandler(insertionHandler: (p1: string) => void): this;
 
+	/**
+	 * @since 11.0
+	 */
 	setInsertionHandler(insertionHandler: (p1: string) => void): void;
 
+	/**
+	 * @since 15.0
+	 */
 	tokenInfoForTokenID(tokenID: string): TKTokenWatcherTokenInfo;
 }
 
+/**
+ * @since 15.0
+ */
 declare class TKTokenWatcherTokenInfo extends NSObject {
 
 	static alloc(): TKTokenWatcherTokenInfo; // inherited from NSObject

@@ -1,4 +1,7 @@
 
+/**
+ * @since 14.0
+ */
 declare class MPSGraph extends MPSGraphObject {
 
 	static alloc(): MPSGraph; // inherited from NSObject
@@ -9,40 +12,94 @@ declare class MPSGraph extends MPSGraphObject {
 
 	readonly placeholderTensors: NSArray<MPSGraphTensor>;
 
+	/**
+	 * @since 16.0
+	 */
 	GRUGradientsWithSourceTensorRecurrentWeightSourceGradientZStateOutputFwdInputWeightBiasDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, outputFwd: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, descriptor: MPSGraphGRUDescriptor, name: string): NSArray<MPSGraphTensor>;
 
+	/**
+	 * @since 16.0
+	 */
 	GRUGradientsWithSourceTensorRecurrentWeightSourceGradientZStateOutputFwdInputWeightBiasInitStateDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, outputFwd: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, descriptor: MPSGraphGRUDescriptor, name: string): NSArray<MPSGraphTensor>;
 
+	/**
+	 * @since 16.0
+	 */
 	GRUGradientsWithSourceTensorRecurrentWeightSourceGradientZStateOutputFwdStateGradientInputWeightBiasInitStateMaskSecondaryBiasDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, outputFwd: MPSGraphTensor, stateGradient: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, mask: MPSGraphTensor, secondaryBias: MPSGraphTensor, descriptor: MPSGraphGRUDescriptor, name: string): NSArray<MPSGraphTensor>;
 
+	/**
+	 * @since 16.0
+	 */
 	GRUWithSourceTensorRecurrentWeightInputWeightBiasDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, descriptor: MPSGraphGRUDescriptor, name: string): NSArray<MPSGraphTensor>;
 
+	/**
+	 * @since 16.0
+	 */
 	GRUWithSourceTensorRecurrentWeightInputWeightBiasInitStateDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, descriptor: MPSGraphGRUDescriptor, name: string): NSArray<MPSGraphTensor>;
 
+	/**
+	 * @since 16.0
+	 */
 	GRUWithSourceTensorRecurrentWeightInputWeightBiasInitStateMaskSecondaryBiasDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, mask: MPSGraphTensor, secondaryBias: MPSGraphTensor, descriptor: MPSGraphGRUDescriptor, name: string): NSArray<MPSGraphTensor>;
 
+	/**
+	 * @since 17.0
+	 */
 	HermiteanToRealFFTWithTensorAxesDescriptorName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], descriptor: MPSGraphFFTDescriptor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 17.0
+	 */
 	HermiteanToRealFFTWithTensorAxesTensorDescriptorName(tensor: MPSGraphTensor, axesTensor: MPSGraphTensor, descriptor: MPSGraphFFTDescriptor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	L2NormPooling4DGradientWithGradientTensorSourceTensorDescriptorName(gradient: MPSGraphTensor, source: MPSGraphTensor, descriptor: MPSGraphPooling4DOpDescriptor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	L2NormPooling4DWithSourceTensorDescriptorName(source: MPSGraphTensor, descriptor: MPSGraphPooling4DOpDescriptor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.4
+	 */
 	LSTMGradientsWithSourceTensorRecurrentWeightSourceGradientZStateCellOutputFwdDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, cellOutputFwd: MPSGraphTensor, descriptor: MPSGraphLSTMDescriptor, name: string): NSArray<MPSGraphTensor>;
 
+	/**
+	 * @since 15.4
+	 */
 	LSTMGradientsWithSourceTensorRecurrentWeightSourceGradientZStateCellOutputFwdInputWeightBiasInitStateInitCellDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, cellOutputFwd: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, initCell: MPSGraphTensor, descriptor: MPSGraphLSTMDescriptor, name: string): NSArray<MPSGraphTensor>;
 
+	/**
+	 * @since 15.4
+	 */
 	LSTMGradientsWithSourceTensorRecurrentWeightSourceGradientZStateCellOutputFwdInputWeightBiasInitStateInitCellMaskDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, cellOutputFwd: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, initCell: MPSGraphTensor, mask: MPSGraphTensor, descriptor: MPSGraphLSTMDescriptor, name: string): NSArray<MPSGraphTensor>;
 
+	/**
+	 * @since 15.4
+	 */
 	LSTMGradientsWithSourceTensorRecurrentWeightSourceGradientZStateCellOutputFwdStateGradientCellGradientInputWeightBiasInitStateInitCellMaskPeepholeDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, cellOutputFwd: MPSGraphTensor, stateGradient: MPSGraphTensor, cellGradient: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, initCell: MPSGraphTensor, mask: MPSGraphTensor, peephole: MPSGraphTensor, descriptor: MPSGraphLSTMDescriptor, name: string): NSArray<MPSGraphTensor>;
 
+	/**
+	 * @since 15.4
+	 */
 	LSTMWithSourceTensorRecurrentWeightInitStateInitCellDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, initState: MPSGraphTensor, initCell: MPSGraphTensor, descriptor: MPSGraphLSTMDescriptor, name: string): NSArray<MPSGraphTensor>;
 
+	/**
+	 * @since 15.4
+	 */
 	LSTMWithSourceTensorRecurrentWeightInputWeightBiasInitStateInitCellDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, initCell: MPSGraphTensor, descriptor: MPSGraphLSTMDescriptor, name: string): NSArray<MPSGraphTensor>;
 
+	/**
+	 * @since 15.4
+	 */
 	LSTMWithSourceTensorRecurrentWeightInputWeightBiasInitStateInitCellMaskPeepholeDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, initCell: MPSGraphTensor, mask: MPSGraphTensor, peephole: MPSGraphTensor, descriptor: MPSGraphLSTMDescriptor, name: string): NSArray<MPSGraphTensor>;
 
+	/**
+	 * @since 17.0
+	 */
 	absoluteSquareWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
 	absoluteWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
@@ -59,12 +116,24 @@ declare class MPSGraph extends MPSGraphObject {
 
 	applyStochasticGradientDescentWithLearningRateTensorVariableGradientTensorName(learningRateTensor: MPSGraphTensor, variable: MPSGraphVariableOp, gradientTensor: MPSGraphTensor, name: string): MPSGraphOperation;
 
+	/**
+	 * @since 16.1
+	 */
 	argSortWithTensorAxisDescendingName(tensor: MPSGraphTensor, axis: number, descending: boolean, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.1
+	 */
 	argSortWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.1
+	 */
 	argSortWithTensorAxisTensorDescendingName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, descending: boolean, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.1
+	 */
 	argSortWithTensorAxisTensorName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
 	asinWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
@@ -83,43 +152,99 @@ declare class MPSGraph extends MPSGraphObject {
 
 	avgPooling2DWithSourceTensorDescriptorName(source: MPSGraphTensor, descriptor: MPSGraphPooling2DOpDescriptor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	avgPooling4DGradientWithGradientTensorSourceTensorDescriptorName(gradient: MPSGraphTensor, source: MPSGraphTensor, descriptor: MPSGraphPooling4DOpDescriptor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	avgPooling4DWithSourceTensorDescriptorName(source: MPSGraphTensor, descriptor: MPSGraphPooling4DOpDescriptor, name: string): MPSGraphTensor;
 
 	bandPartWithTensorNumLowerNumUpperName(inputTensor: MPSGraphTensor, numLower: number, numUpper: number, name: string): MPSGraphTensor;
 
 	bandPartWithTensorNumLowerTensorNumUpperTensorName(inputTensor: MPSGraphTensor, numLowerTensor: MPSGraphTensor, numUpperTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.1
+	 */
 	batchToSpaceTensorSpatialAxesBatchAxisBlockDimensionsUsePixelShuffleOrderName(tensor: MPSGraphTensor, spatialAxes: NSArray<number> | number[], batchAxis: number, blockDimensions: NSArray<number> | number[], usePixelShuffleOrder: boolean, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.1
+	 */
 	batchToSpaceTensorSpatialAxesTensorBatchAxisTensorBlockDimensionsTensorUsePixelShuffleOrderName(tensor: MPSGraphTensor, spatialAxesTensor: MPSGraphTensor, batchAxisTensor: MPSGraphTensor, blockDimensionsTensor: MPSGraphTensor, usePixelShuffleOrder: boolean, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.1
+	 */
 	bitwiseANDWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.1
+	 */
 	bitwiseLeftShiftWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.1
+	 */
 	bitwiseNOTWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.1
+	 */
 	bitwiseORWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.1
+	 */
 	bitwisePopulationCountWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.1
+	 */
 	bitwiseRightShiftWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.1
+	 */
 	bitwiseXORWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 17.0
+	 */
 	bottomKWithGradientTensorSourceAxisKName(gradient: MPSGraphTensor, source: MPSGraphTensor, axis: number, k: number, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 17.0
+	 */
 	bottomKWithGradientTensorSourceAxisTensorKTensorName(gradient: MPSGraphTensor, source: MPSGraphTensor, axisTensor: MPSGraphTensor, kTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 17.0
+	 */
 	bottomKWithSourceTensorAxisKName(source: MPSGraphTensor, axis: number, k: number, name: string): NSArray<MPSGraphTensor>;
 
+	/**
+	 * @since 17.0
+	 */
 	bottomKWithSourceTensorAxisTensorKTensorName(source: MPSGraphTensor, axisTensor: MPSGraphTensor, kTensor: MPSGraphTensor, name: string): NSArray<MPSGraphTensor>;
 
+	/**
+	 * @since 15.0
+	 */
 	broadcastTensorToShapeName(tensor: MPSGraphTensor, shape: NSArray<number> | number[], name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	broadcastTensorToShapeTensorName(tensor: MPSGraphTensor, shapeTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+
+	/**
+	 * @since 18.0
+	 */
+	callSymbolNameInputTensorsOutputTypesName(symbolName: string, inputTensors: NSArray<MPSGraphTensor> | MPSGraphTensor[], outputTypes: NSArray<MPSGraphType> | MPSGraphType[], name: string): NSArray<MPSGraphTensor>;
 
 	ceilWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
@@ -127,8 +252,14 @@ declare class MPSGraph extends MPSGraphObject {
 
 	colToImWithSourceTensorOutputShapeDescriptorName(source: MPSGraphTensor, outputShape: NSArray<number> | number[], descriptor: MPSGraphImToColOpDescriptor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	compileWithDeviceFeedsTargetTensorsTargetOperationsCompilationDescriptor(device: MPSGraphDevice, feeds: NSDictionary<MPSGraphTensor, MPSGraphShapedType>, targetTensors: NSArray<MPSGraphTensor> | MPSGraphTensor[], targetOperations: NSArray<MPSGraphOperation> | MPSGraphOperation[], compilationDescriptor: MPSGraphCompilationDescriptor): MPSGraphExecutable;
 
+	/**
+	 * @since 17.0
+	 */
 	complexTensorWithRealTensorImaginaryTensorName(realTensor: MPSGraphTensor, imaginaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
 	concatTensorWithTensorDimensionName(tensor: MPSGraphTensor, tensor2: MPSGraphTensor, dimensionIndex: number, name: string): MPSGraphTensor;
@@ -137,90 +268,192 @@ declare class MPSGraph extends MPSGraphObject {
 
 	concatTensorsDimensionName(tensors: NSArray<MPSGraphTensor> | MPSGraphTensor[], dimensionIndex: number, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 17.0
+	 */
 	conjugateWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 17.0
+	 */
 	constantWithRealPartImaginaryPart(realPart: number, imaginaryPart: number): MPSGraphTensor;
 
 	controlDependencyWithOperationsDependentBlockName(operations: NSArray<MPSGraphOperation> | MPSGraphOperation[], dependentBlock: () => NSArray<MPSGraphTensor>, name: string): NSArray<MPSGraphTensor>;
 
 	convolution2DDataGradientWithIncomingGradientTensorWeightsTensorOutputShapeForwardConvolutionDescriptorName(incomingGradient: MPSGraphTensor, weights: MPSGraphTensor, outputShape: NSArray<number> | number[], forwardConvolutionDescriptor: MPSGraphConvolution2DOpDescriptor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	convolution2DDataGradientWithIncomingGradientTensorWeightsTensorOutputShapeTensorForwardConvolutionDescriptorName(gradient: MPSGraphTensor, weights: MPSGraphTensor, outputShapeTensor: MPSGraphTensor, forwardConvolutionDescriptor: MPSGraphConvolution2DOpDescriptor, name: string): MPSGraphTensor;
 
 	convolution2DWeightsGradientWithIncomingGradientTensorSourceTensorOutputShapeForwardConvolutionDescriptorName(incomingGradient: MPSGraphTensor, source: MPSGraphTensor, outputShape: NSArray<number> | number[], forwardConvolutionDescriptor: MPSGraphConvolution2DOpDescriptor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	convolution2DWeightsGradientWithIncomingGradientTensorSourceTensorOutputShapeTensorForwardConvolutionDescriptorName(gradient: MPSGraphTensor, source: MPSGraphTensor, outputShapeTensor: MPSGraphTensor, forwardConvolutionDescriptor: MPSGraphConvolution2DOpDescriptor, name: string): MPSGraphTensor;
 
 	convolution2DWithSourceTensorWeightsTensorDescriptorName(source: MPSGraphTensor, weights: MPSGraphTensor, descriptor: MPSGraphConvolution2DOpDescriptor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.3
+	 */
 	convolution3DDataGradientWithIncomingGradientTensorWeightsTensorOutputShapeForwardConvolutionDescriptorName(incomingGradient: MPSGraphTensor, weights: MPSGraphTensor, outputShape: NSArray<number> | number[], forwardConvolutionDescriptor: MPSGraphConvolution3DOpDescriptor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.3
+	 */
 	convolution3DDataGradientWithIncomingGradientTensorWeightsTensorOutputShapeTensorForwardConvolutionDescriptorName(gradient: MPSGraphTensor, weights: MPSGraphTensor, outputShapeTensor: MPSGraphTensor, forwardConvolutionDescriptor: MPSGraphConvolution3DOpDescriptor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.3
+	 */
 	convolution3DWeightsGradientWithIncomingGradientTensorSourceTensorOutputShapeForwardConvolutionDescriptorName(incomingGradient: MPSGraphTensor, source: MPSGraphTensor, outputShape: NSArray<number> | number[], forwardConvolutionDescriptor: MPSGraphConvolution3DOpDescriptor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.3
+	 */
 	convolution3DWeightsGradientWithIncomingGradientTensorSourceTensorOutputShapeTensorForwardConvolutionDescriptorName(gradient: MPSGraphTensor, source: MPSGraphTensor, outputShapeTensor: MPSGraphTensor, forwardConvolutionDescriptor: MPSGraphConvolution3DOpDescriptor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.3
+	 */
 	convolution3DWithSourceTensorWeightsTensorDescriptorName(source: MPSGraphTensor, weights: MPSGraphTensor, descriptor: MPSGraphConvolution3DOpDescriptor, name: string): MPSGraphTensor;
 
 	convolutionTranspose2DDataGradientWithIncomingGradientTensorWeightsTensorOutputShapeForwardConvolutionDescriptorName(incomingGradient: MPSGraphTensor, weights: MPSGraphTensor, outputShape: NSArray<number> | number[], forwardConvolutionDescriptor: MPSGraphConvolution2DOpDescriptor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	convolutionTranspose2DDataGradientWithIncomingGradientTensorWeightsTensorOutputShapeTensorForwardConvolutionDescriptorName(incomingGradient: MPSGraphTensor, weights: MPSGraphTensor, outputShape: MPSGraphTensor, forwardConvolutionDescriptor: MPSGraphConvolution2DOpDescriptor, name: string): MPSGraphTensor;
 
 	convolutionTranspose2DWeightsGradientWithIncomingGradientTensorSourceTensorOutputShapeForwardConvolutionDescriptorName(incomingGradientTensor: MPSGraphTensor, source: MPSGraphTensor, outputShape: NSArray<number> | number[], forwardConvolutionDescriptor: MPSGraphConvolution2DOpDescriptor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	convolutionTranspose2DWeightsGradientWithIncomingGradientTensorSourceTensorOutputShapeTensorForwardConvolutionDescriptorName(incomingGradientTensor: MPSGraphTensor, source: MPSGraphTensor, outputShape: MPSGraphTensor, forwardConvolutionDescriptor: MPSGraphConvolution2DOpDescriptor, name: string): MPSGraphTensor;
 
 	convolutionTranspose2DWithSourceTensorWeightsTensorOutputShapeDescriptorName(source: MPSGraphTensor, weights: MPSGraphTensor, outputShape: NSArray<number> | number[], descriptor: MPSGraphConvolution2DOpDescriptor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	convolutionTranspose2DWithSourceTensorWeightsTensorOutputShapeTensorDescriptorName(source: MPSGraphTensor, weights: MPSGraphTensor, outputShape: MPSGraphTensor, descriptor: MPSGraphConvolution2DOpDescriptor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.4
+	 */
 	coordinateAlongAxisTensorWithShapeName(axisTensor: MPSGraphTensor, shape: NSArray<number> | number[], name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.4
+	 */
 	coordinateAlongAxisTensorWithShapeTensorName(axisTensor: MPSGraphTensor, shapeTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.4
+	 */
 	coordinateAlongAxisWithShapeName(axis: number, shape: NSArray<number> | number[], name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.4
+	 */
 	coordinateAlongAxisWithShapeTensorName(axis: number, shapeTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
 	cosWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
 	coshWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.0
+	 */
 	cumulativeMaximumWithTensorAxisExclusiveReverseName(tensor: MPSGraphTensor, axis: number, exclusive: boolean, reverse: boolean, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.0
+	 */
 	cumulativeMaximumWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.0
+	 */
 	cumulativeMaximumWithTensorAxisTensorExclusiveReverseName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, exclusive: boolean, reverse: boolean, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.0
+	 */
 	cumulativeMaximumWithTensorAxisTensorName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.0
+	 */
 	cumulativeMinimumWithTensorAxisExclusiveReverseName(tensor: MPSGraphTensor, axis: number, exclusive: boolean, reverse: boolean, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.0
+	 */
 	cumulativeMinimumWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.0
+	 */
 	cumulativeMinimumWithTensorAxisTensorExclusiveReverseName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, exclusive: boolean, reverse: boolean, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.0
+	 */
 	cumulativeMinimumWithTensorAxisTensorName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.0
+	 */
 	cumulativeProductWithTensorAxisExclusiveReverseName(tensor: MPSGraphTensor, axis: number, exclusive: boolean, reverse: boolean, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.0
+	 */
 	cumulativeProductWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.0
+	 */
 	cumulativeProductWithTensorAxisTensorExclusiveReverseName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, exclusive: boolean, reverse: boolean, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.0
+	 */
 	cumulativeProductWithTensorAxisTensorName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.0
+	 */
 	cumulativeSumWithTensorAxisExclusiveReverseName(tensor: MPSGraphTensor, axis: number, exclusive: boolean, reverse: boolean, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.0
+	 */
 	cumulativeSumWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.0
+	 */
 	cumulativeSumWithTensorAxisTensorExclusiveReverseName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, exclusive: boolean, reverse: boolean, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.0
+	 */
 	cumulativeSumWithTensorAxisTensorName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	depthToSpace2DTensorWidthAxisHeightAxisDepthAxisBlockSizeUsePixelShuffleOrderName(tensor: MPSGraphTensor, widthAxis: number, heightAxis: number, depthAxis: number, blockSize: number, usePixelShuffleOrder: boolean, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	depthToSpace2DTensorWidthAxisTensorHeightAxisTensorDepthAxisTensorBlockSizeUsePixelShuffleOrderName(tensor: MPSGraphTensor, widthAxisTensor: MPSGraphTensor, heightAxisTensor: MPSGraphTensor, depthAxisTensor: MPSGraphTensor, blockSize: number, usePixelShuffleOrder: boolean, name: string): MPSGraphTensor;
 
 	depthwiseConvolution2DDataGradientWithIncomingGradientTensorWeightsTensorOutputShapeDescriptorName(incomingGradient: MPSGraphTensor, weights: MPSGraphTensor, outputShape: NSArray<number> | number[], descriptor: MPSGraphDepthwiseConvolution2DOpDescriptor, name: string): MPSGraphTensor;
@@ -229,11 +462,27 @@ declare class MPSGraph extends MPSGraphObject {
 
 	depthwiseConvolution2DWithSourceTensorWeightsTensorDescriptorName(source: MPSGraphTensor, weights: MPSGraphTensor, descriptor: MPSGraphDepthwiseConvolution2DOpDescriptor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	depthwiseConvolution3DDataGradientWithIncomingGradientTensorWeightsTensorOutputShapeDescriptorName(incomingGradient: MPSGraphTensor, weights: MPSGraphTensor, outputShape: NSArray<number> | number[], descriptor: MPSGraphDepthwiseConvolution3DOpDescriptor, name: string): MPSGraphTensor;
 
 	depthwiseConvolution3DWeightsGradientWithIncomingGradientTensorSourceTensorOutputShapeDescriptorName(incomingGradient: MPSGraphTensor, source: MPSGraphTensor, outputShape: NSArray<number> | number[], descriptor: MPSGraphDepthwiseConvolution3DOpDescriptor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	depthwiseConvolution3DWithSourceTensorWeightsTensorDescriptorName(source: MPSGraphTensor, weights: MPSGraphTensor, descriptor: MPSGraphDepthwiseConvolution3DOpDescriptor, name: string): MPSGraphTensor;
+
+	/**
+	 * @since 18.0
+	 */
+	dequantizeTensorLUTTensorAxisName(tensor: MPSGraphTensor, LUTTensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
+
+	/**
+	 * @since 18.0
+	 */
+	dequantizeTensorLUTTensorName(tensor: MPSGraphTensor, LUTTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
 	divisionNoNaNWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
@@ -247,10 +496,19 @@ declare class MPSGraph extends MPSGraphObject {
 
 	erfWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.4
+	 */
 	expandDimsOfTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.4
+	 */
 	expandDimsOfTensorAxesTensorName(tensor: MPSGraphTensor, axesTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.4
+	 */
 	expandDimsOfTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
 
 	exponentBase10WithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
@@ -259,12 +517,24 @@ declare class MPSGraph extends MPSGraphObject {
 
 	exponentWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 17.0
+	 */
 	fastFourierTransformWithTensorAxesDescriptorName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], descriptor: MPSGraphFFTDescriptor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 17.0
+	 */
 	fastFourierTransformWithTensorAxesTensorDescriptorName(tensor: MPSGraphTensor, axesTensor: MPSGraphTensor, descriptor: MPSGraphFFTDescriptor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	flatten2DTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	flatten2DTensorAxisTensorName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
 	floorModuloWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
@@ -275,8 +545,14 @@ declare class MPSGraph extends MPSGraphObject {
 
 	forLoopWithNumberOfIterationsInitialBodyArgumentsBodyName(numberOfIterations: MPSGraphTensor, initialBodyArguments: NSArray<MPSGraphTensor> | MPSGraphTensor[], body: (p1: MPSGraphTensor, p2: NSArray<MPSGraphTensor>) => NSArray<MPSGraphTensor>, name: string): NSArray<MPSGraphTensor>;
 
+	/**
+	 * @since 15.4
+	 */
 	gatherAlongAxisTensorWithUpdatesTensorIndicesTensorName(axisTensor: MPSGraphTensor, updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.4
+	 */
 	gatherAlongAxisWithUpdatesTensorIndicesTensorName(axis: number, updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
 	gatherNDWithUpdatesTensorIndicesTensorBatchDimensionsName(updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, batchDimensions: number, name: string): MPSGraphTensor;
@@ -295,8 +571,14 @@ declare class MPSGraph extends MPSGraphObject {
 
 	imToColWithSourceTensorDescriptorName(source: MPSGraphTensor, descriptor: MPSGraphImToColOpDescriptor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 17.0
+	 */
 	imaginaryPartOfTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.1
+	 */
 	inverseOfTensorName(inputTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
 	isFiniteWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
@@ -305,10 +587,19 @@ declare class MPSGraph extends MPSGraphObject {
 
 	isNaNWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	leakyReLUGradientWithIncomingGradientSourceTensorAlphaTensorName(gradient: MPSGraphTensor, source: MPSGraphTensor, alphaTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	leakyReLUWithTensorAlphaName(tensor: MPSGraphTensor, alpha: number, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	leakyReLUWithTensorAlphaTensorName(tensor: MPSGraphTensor, alphaTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
 	lessThanOrEqualToWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
@@ -335,32 +626,62 @@ declare class MPSGraph extends MPSGraphObject {
 
 	matrixMultiplicationWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.0
+	 */
 	maxPooling2DGradientWithGradientTensorIndicesTensorOutputShapeDescriptorName(gradient: MPSGraphTensor, indices: MPSGraphTensor, outputShape: NSArray<number> | number[], descriptor: MPSGraphPooling2DOpDescriptor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.0
+	 */
 	maxPooling2DGradientWithGradientTensorIndicesTensorOutputShapeTensorDescriptorName(gradient: MPSGraphTensor, indices: MPSGraphTensor, outputShape: MPSGraphTensor, descriptor: MPSGraphPooling2DOpDescriptor, name: string): MPSGraphTensor;
 
 	maxPooling2DGradientWithGradientTensorSourceTensorDescriptorName(gradient: MPSGraphTensor, source: MPSGraphTensor, descriptor: MPSGraphPooling2DOpDescriptor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.3
+	 */
 	maxPooling2DReturnIndicesWithSourceTensorDescriptorName(source: MPSGraphTensor, descriptor: MPSGraphPooling2DOpDescriptor, name: string): NSArray<MPSGraphTensor>;
 
 	maxPooling2DWithSourceTensorDescriptorName(source: MPSGraphTensor, descriptor: MPSGraphPooling2DOpDescriptor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.0
+	 */
 	maxPooling4DGradientWithGradientTensorIndicesTensorOutputShapeDescriptorName(gradient: MPSGraphTensor, indices: MPSGraphTensor, outputShape: NSArray<number> | number[], descriptor: MPSGraphPooling4DOpDescriptor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.0
+	 */
 	maxPooling4DGradientWithGradientTensorIndicesTensorOutputShapeTensorDescriptorName(gradient: MPSGraphTensor, indices: MPSGraphTensor, outputShape: MPSGraphTensor, descriptor: MPSGraphPooling4DOpDescriptor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	maxPooling4DGradientWithGradientTensorSourceTensorDescriptorName(gradient: MPSGraphTensor, source: MPSGraphTensor, descriptor: MPSGraphPooling4DOpDescriptor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.3
+	 */
 	maxPooling4DReturnIndicesWithSourceTensorDescriptorName(source: MPSGraphTensor, descriptor: MPSGraphPooling4DOpDescriptor, name: string): NSArray<MPSGraphTensor>;
 
+	/**
+	 * @since 15.0
+	 */
 	maxPooling4DWithSourceTensorDescriptorName(source: MPSGraphTensor, descriptor: MPSGraphPooling4DOpDescriptor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	maximumWithNaNPropagationWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
 	maximumWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
 	meanOfTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	minimumWithNaNPropagationWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
 	minimumWithPrimaryTensorSecondaryTensorName(primaryTensor: MPSGraphTensor, secondaryTensor: MPSGraphTensor, name: string): MPSGraphTensor;
@@ -375,6 +696,9 @@ declare class MPSGraph extends MPSGraphObject {
 
 	nonMaximumSuppressionWithBoxesTensorScoresTensorIOUThresholdScoreThresholdPerClassSuppressionCoordinateModeName(boxesTensor: MPSGraphTensor, scoresTensor: MPSGraphTensor, IOUThreshold: number, scoreThreshold: number, perClassSuppression: boolean, coordinateMode: MPSGraphNonMaximumSuppressionCoordinateMode, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 17.0
+	 */
 	nonZeroIndicesOfTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
 	normalizationBetaGradientWithIncomingGradientTensorSourceTensorReductionAxesName(incomingGradientTensor: MPSGraphTensor, sourceTensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string): MPSGraphTensor;
@@ -435,20 +759,41 @@ declare class MPSGraph extends MPSGraphObject {
 
 	readVariableName(variable: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 17.0
+	 */
 	realPartOfTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 17.0
+	 */
 	realToHermiteanFFTWithTensorAxesDescriptorName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], descriptor: MPSGraphFFTDescriptor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 17.0
+	 */
 	realToHermiteanFFTWithTensorAxesTensorDescriptorName(tensor: MPSGraphTensor, axesTensor: MPSGraphTensor, descriptor: MPSGraphFFTDescriptor, name: string): MPSGraphTensor;
 
 	reciprocalWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.3
+	 */
 	reductionAndWithTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.3
+	 */
 	reductionAndWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	reductionArgMaximumWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	reductionArgMinimumWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
 
 	reductionMaximumPropagateNaNWithTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string): MPSGraphTensor;
@@ -467,8 +812,14 @@ declare class MPSGraph extends MPSGraphObject {
 
 	reductionMinimumWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.3
+	 */
 	reductionOrWithTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.3
+	 */
 	reductionOrWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
 
 	reductionProductWithTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string): MPSGraphTensor;
@@ -481,58 +832,130 @@ declare class MPSGraph extends MPSGraphObject {
 
 	reshapeTensorWithShapeName(tensor: MPSGraphTensor, shape: NSArray<number> | number[], name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	reshapeTensorWithShapeTensorName(tensor: MPSGraphTensor, shapeTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.0
+	 */
 	resizeBilinearWithGradientTensorInputCenterResultAlignCornersLayoutName(gradient: MPSGraphTensor, input: MPSGraphTensor, centerResult: boolean, alignCorners: boolean, layout: MPSGraphTensorNamedDataLayout, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.0
+	 */
 	resizeBilinearWithGradientTensorInputScaleOffsetTensorLayoutName(gradient: MPSGraphTensor, input: MPSGraphTensor, scaleOffset: MPSGraphTensor, layout: MPSGraphTensorNamedDataLayout, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 17.0
+	 */
 	resizeBilinearWithGradientTensorInputScaleTensorOffsetTensorName(gradient: MPSGraphTensor, input: MPSGraphTensor, scale: MPSGraphTensor, offset: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.0
+	 */
 	resizeBilinearWithTensorSizeTensorCenterResultAlignCornersLayoutName(imagesTensor: MPSGraphTensor, size: MPSGraphTensor, centerResult: boolean, alignCorners: boolean, layout: MPSGraphTensorNamedDataLayout, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 17.0
+	 */
 	resizeBilinearWithTensorSizeTensorCenterResultAlignCornersName(imagesTensor: MPSGraphTensor, size: MPSGraphTensor, centerResult: boolean, alignCorners: boolean, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.0
+	 */
 	resizeBilinearWithTensorSizeTensorScaleOffsetTensorLayoutName(imagesTensor: MPSGraphTensor, size: MPSGraphTensor, scaleOffset: MPSGraphTensor, layout: MPSGraphTensorNamedDataLayout, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 17.0
+	 */
 	resizeBilinearWithTensorSizeTensorScaleTensorOffsetTensorName(imagesTensor: MPSGraphTensor, size: MPSGraphTensor, scale: MPSGraphTensor, offset: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.0
+	 */
 	resizeNearestWithGradientTensorInputNearestRoundingModeCenterResultAlignCornersLayoutName(gradient: MPSGraphTensor, input: MPSGraphTensor, nearestRoundingMode: MPSGraphResizeNearestRoundingMode, centerResult: boolean, alignCorners: boolean, layout: MPSGraphTensorNamedDataLayout, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.0
+	 */
 	resizeNearestWithGradientTensorInputScaleOffsetTensorNearestRoundingModeLayoutName(gradient: MPSGraphTensor, input: MPSGraphTensor, scaleOffset: MPSGraphTensor, nearestRoundingMode: MPSGraphResizeNearestRoundingMode, layout: MPSGraphTensorNamedDataLayout, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 17.0
+	 */
 	resizeNearestWithGradientTensorInputScaleTensorOffsetTensorNearestRoundingModeName(gradient: MPSGraphTensor, input: MPSGraphTensor, scale: MPSGraphTensor, offset: MPSGraphTensor, nearestRoundingMode: MPSGraphResizeNearestRoundingMode, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.0
+	 */
 	resizeNearestWithTensorSizeTensorNearestRoundingModeCenterResultAlignCornersLayoutName(imagesTensor: MPSGraphTensor, size: MPSGraphTensor, nearestRoundingMode: MPSGraphResizeNearestRoundingMode, centerResult: boolean, alignCorners: boolean, layout: MPSGraphTensorNamedDataLayout, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 17.0
+	 */
 	resizeNearestWithTensorSizeTensorNearestRoundingModeCenterResultAlignCornersName(imagesTensor: MPSGraphTensor, size: MPSGraphTensor, nearestRoundingMode: MPSGraphResizeNearestRoundingMode, centerResult: boolean, alignCorners: boolean, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.0
+	 */
 	resizeNearestWithTensorSizeTensorScaleOffsetTensorNearestRoundingModeLayoutName(imagesTensor: MPSGraphTensor, size: MPSGraphTensor, scaleOffset: MPSGraphTensor, nearestRoundingMode: MPSGraphResizeNearestRoundingMode, layout: MPSGraphTensorNamedDataLayout, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 17.0
+	 */
 	resizeNearestWithTensorSizeTensorScaleTensorOffsetTensorNearestRoundingModeName(imagesTensor: MPSGraphTensor, size: MPSGraphTensor, scale: MPSGraphTensor, offset: MPSGraphTensor, nearestRoundingMode: MPSGraphResizeNearestRoundingMode, name: string): MPSGraphTensor;
 
 	resizeTensorSizeModeCenterResultAlignCornersLayoutName(imagesTensor: MPSGraphTensor, size: NSArray<number> | number[], mode: MPSGraphResizeMode, centerResult: boolean, alignCorners: boolean, layout: MPSGraphTensorNamedDataLayout, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	resizeTensorSizeTensorModeCenterResultAlignCornersLayoutName(imagesTensor: MPSGraphTensor, size: MPSGraphTensor, mode: MPSGraphResizeMode, centerResult: boolean, alignCorners: boolean, layout: MPSGraphTensorNamedDataLayout, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 17.0
+	 */
 	resizeTensorSizeTensorModeCenterResultAlignCornersName(imagesTensor: MPSGraphTensor, size: MPSGraphTensor, mode: MPSGraphResizeMode, centerResult: boolean, alignCorners: boolean, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.0
+	 */
 	resizeTensorSizeTensorScaleOffsetTensorModeLayoutName(imagesTensor: MPSGraphTensor, size: MPSGraphTensor, scaleOffset: MPSGraphTensor, mode: MPSGraphResizeMode, layout: MPSGraphTensorNamedDataLayout, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 17.0
+	 */
 	resizeTensorSizeTensorScaleTensorOffsetTensorModeName(imagesTensor: MPSGraphTensor, size: MPSGraphTensor, scale: MPSGraphTensor, offset: MPSGraphTensor, mode: MPSGraphResizeMode, name: string): MPSGraphTensor;
 
 	resizeWithGradientTensorInputModeCenterResultAlignCornersLayoutName(gradient: MPSGraphTensor, input: MPSGraphTensor, mode: MPSGraphResizeMode, centerResult: boolean, alignCorners: boolean, layout: MPSGraphTensorNamedDataLayout, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.0
+	 */
 	resizeWithGradientTensorInputScaleOffsetTensorModeLayoutName(gradient: MPSGraphTensor, input: MPSGraphTensor, scaleOffset: MPSGraphTensor, mode: MPSGraphResizeMode, layout: MPSGraphTensorNamedDataLayout, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 17.0
+	 */
 	resizeWithGradientTensorInputScaleTensorOffsetTensorModeName(gradient: MPSGraphTensor, input: MPSGraphTensor, scale: MPSGraphTensor, offset: MPSGraphTensor, mode: MPSGraphResizeMode, name: string): MPSGraphTensor;
 
 	reverseSquareRootWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	reverseTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	reverseTensorAxesTensorName(tensor: MPSGraphTensor, axesTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	reverseTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
 	rintWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
@@ -551,30 +974,70 @@ declare class MPSGraph extends MPSGraphObject {
 
 	runWithMTLCommandQueueFeedsTargetTensorsTargetOperations(commandQueue: MTLCommandQueue, feeds: NSDictionary<MPSGraphTensor, MPSGraphTensorData>, targetTensors: NSArray<MPSGraphTensor> | MPSGraphTensor[], targetOperations: NSArray<MPSGraphOperation> | MPSGraphOperation[]): NSDictionary<MPSGraphTensor, MPSGraphTensorData>;
 
+	/**
+	 * @since 16.2
+	 */
 	sampleGridWithSourceTensorCoordinateTensorLayoutNormalizeCoordinatesRelativeCoordinatesAlignCornersPaddingModeNearestRoundingModeConstantValueName(source: MPSGraphTensor, coordinates: MPSGraphTensor, layout: MPSGraphTensorNamedDataLayout, normalizeCoordinates: boolean, relativeCoordinates: boolean, alignCorners: boolean, paddingMode: MPSGraphPaddingMode, nearestRoundingMode: MPSGraphResizeNearestRoundingMode, constantValue: number, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.2
+	 */
 	sampleGridWithSourceTensorCoordinateTensorLayoutNormalizeCoordinatesRelativeCoordinatesAlignCornersPaddingModeSamplingModeConstantValueName(source: MPSGraphTensor, coordinates: MPSGraphTensor, layout: MPSGraphTensorNamedDataLayout, normalizeCoordinates: boolean, relativeCoordinates: boolean, alignCorners: boolean, paddingMode: MPSGraphPaddingMode, samplingMode: MPSGraphResizeMode, constantValue: number, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 18.0
+	 */
+	scaledDotProductAttentionWithQueryTensorKeyTensorValueTensorMaskTensorScaleName(queryTensor: MPSGraphTensor, keyTensor: MPSGraphTensor, valueTensor: MPSGraphTensor, maskTensor: MPSGraphTensor, scale: number, name: string): MPSGraphTensor;
+
+	/**
+	 * @since 18.0
+	 */
+	scaledDotProductAttentionWithQueryTensorKeyTensorValueTensorScaleName(queryTensor: MPSGraphTensor, keyTensor: MPSGraphTensor, valueTensor: MPSGraphTensor, scale: number, name: string): MPSGraphTensor;
+
+	/**
+	 * @since 15.4
+	 */
 	scatterAlongAxisTensorWithDataTensorUpdatesTensorIndicesTensorModeName(axisTensor: MPSGraphTensor, dataTensor: MPSGraphTensor, updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, mode: MPSGraphScatterMode, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.4
+	 */
 	scatterAlongAxisTensorWithUpdatesTensorIndicesTensorShapeModeName(axisTensor: MPSGraphTensor, updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, shape: NSArray<number> | number[], mode: MPSGraphScatterMode, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.4
+	 */
 	scatterAlongAxisWithDataTensorUpdatesTensorIndicesTensorModeName(axis: number, dataTensor: MPSGraphTensor, updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, mode: MPSGraphScatterMode, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.4
+	 */
 	scatterAlongAxisWithUpdatesTensorIndicesTensorShapeModeName(axis: number, updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, shape: NSArray<number> | number[], mode: MPSGraphScatterMode, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	scatterNDWithDataTensorUpdatesTensorIndicesTensorBatchDimensionsModeName(dataTensor: MPSGraphTensor, updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, batchDimensions: number, mode: MPSGraphScatterMode, name: string): MPSGraphTensor;
 
 	scatterNDWithUpdatesTensorIndicesTensorShapeBatchDimensionsModeName(updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, shape: NSArray<number> | number[], batchDimensions: number, mode: MPSGraphScatterMode, name: string): MPSGraphTensor;
 
 	scatterNDWithUpdatesTensorIndicesTensorShapeBatchDimensionsName(updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, shape: NSArray<number> | number[], batchDimensions: number, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	scatterWithDataTensorUpdatesTensorIndicesTensorAxisModeName(dataTensor: MPSGraphTensor, updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, axis: number, mode: MPSGraphScatterMode, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	scatterWithUpdatesTensorIndicesTensorShapeAxisModeName(updatesTensor: MPSGraphTensor, indicesTensor: MPSGraphTensor, shape: NSArray<number> | number[], axis: number, mode: MPSGraphScatterMode, name: string): MPSGraphTensor;
 
 	selectWithPredicateTensorTruePredicateTensorFalsePredicateTensorName(predicateTensor: MPSGraphTensor, truePredicateTensor: MPSGraphTensor, falseSelectTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	shapeOfTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
 	sigmoidGradientWithIncomingGradientSourceTensorName(gradient: MPSGraphTensor, source: MPSGraphTensor, name: string): MPSGraphTensor;
@@ -587,18 +1050,39 @@ declare class MPSGraph extends MPSGraphObject {
 
 	sinWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.4
+	 */
 	singleGateRNNGradientsWithSourceTensorRecurrentWeightSourceGradientZStateInitStateDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, initState: MPSGraphTensor, descriptor: MPSGraphSingleGateRNNDescriptor, name: string): NSArray<MPSGraphTensor>;
 
+	/**
+	 * @since 15.4
+	 */
 	singleGateRNNGradientsWithSourceTensorRecurrentWeightSourceGradientZStateInputWeightBiasInitStateDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, descriptor: MPSGraphSingleGateRNNDescriptor, name: string): NSArray<MPSGraphTensor>;
 
+	/**
+	 * @since 15.4
+	 */
 	singleGateRNNGradientsWithSourceTensorRecurrentWeightSourceGradientZStateInputWeightBiasInitStateMaskDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, mask: MPSGraphTensor, descriptor: MPSGraphSingleGateRNNDescriptor, name: string): NSArray<MPSGraphTensor>;
 
+	/**
+	 * @since 15.4
+	 */
 	singleGateRNNGradientsWithSourceTensorRecurrentWeightSourceGradientZStateStateGradientInputWeightBiasInitStateMaskDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, sourceGradient: MPSGraphTensor, zState: MPSGraphTensor, stateGradient: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, mask: MPSGraphTensor, descriptor: MPSGraphSingleGateRNNDescriptor, name: string): NSArray<MPSGraphTensor>;
 
+	/**
+	 * @since 15.4
+	 */
 	singleGateRNNWithSourceTensorRecurrentWeightInitStateDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, initState: MPSGraphTensor, descriptor: MPSGraphSingleGateRNNDescriptor, name: string): NSArray<MPSGraphTensor>;
 
+	/**
+	 * @since 15.4
+	 */
 	singleGateRNNWithSourceTensorRecurrentWeightInputWeightBiasInitStateDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, descriptor: MPSGraphSingleGateRNNDescriptor, name: string): NSArray<MPSGraphTensor>;
 
+	/**
+	 * @since 15.4
+	 */
 	singleGateRNNWithSourceTensorRecurrentWeightInputWeightBiasInitStateMaskDescriptorName(source: MPSGraphTensor, recurrentWeight: MPSGraphTensor, inputWeight: MPSGraphTensor, bias: MPSGraphTensor, initState: MPSGraphTensor, mask: MPSGraphTensor, descriptor: MPSGraphSingleGateRNNDescriptor, name: string): NSArray<MPSGraphTensor>;
 
 	sinhWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
@@ -613,8 +1097,24 @@ declare class MPSGraph extends MPSGraphObject {
 
 	sliceTensorStartsEndsStridesStartMaskEndMaskSqueezeMaskName(tensor: MPSGraphTensor, starts: NSArray<number> | number[], ends: NSArray<number> | number[], strides: NSArray<number> | number[], startMask: number, endMask: number, squeezeMask: number, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 18.0
+	 */
+	sliceUpdateDataTensorUpdateTensorStartsEndsStridesName(dataTensor: MPSGraphTensor, updateTensor: MPSGraphTensor, starts: NSArray<number> | number[], ends: NSArray<number> | number[], strides: NSArray<number> | number[], name: string): MPSGraphTensor;
+
+	/**
+	 * @since 17.4
+	 */
 	sliceUpdateDataTensorUpdateTensorStartsEndsStridesStartMaskEndMaskSqueezeMaskName(dataTensor: MPSGraphTensor, updateTensor: MPSGraphTensor, starts: NSArray<number> | number[], ends: NSArray<number> | number[], strides: NSArray<number> | number[], startMask: number, endMask: number, squeezeMask: number, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 18.0
+	 */
+	sliceUpdateDataTensorUpdateTensorStartsTensorEndsTensorStridesTensorName(dataTensor: MPSGraphTensor, updateTensor: MPSGraphTensor, startsTensor: MPSGraphTensor, endsTensor: MPSGraphTensor, stridesTensor: MPSGraphTensor, name: string): MPSGraphTensor;
+
+	/**
+	 * @since 17.4
+	 */
 	sliceUpdateDataTensorUpdateTensorStartsTensorEndsTensorStridesTensorStartMaskEndMaskSqueezeMaskName(dataTensor: MPSGraphTensor, updateTensor: MPSGraphTensor, startsTensor: MPSGraphTensor, endsTensor: MPSGraphTensor, stridesTensor: MPSGraphTensor, startMask: number, endMask: number, squeezeMask: number, name: string): MPSGraphTensor;
 
 	softMaxCrossEntropyGradientWithIncomingGradientTensorSourceTensorLabelsTensorAxisReductionTypeName(gradientTensor: MPSGraphTensor, sourceTensor: MPSGraphTensor, labelsTensor: MPSGraphTensor, axis: number, reductionType: MPSGraphLossReductionType, name: string): MPSGraphTensor;
@@ -625,42 +1125,93 @@ declare class MPSGraph extends MPSGraphObject {
 
 	softMaxWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.0
+	 */
 	sortWithTensorAxisDescendingName(tensor: MPSGraphTensor, axis: number, descending: boolean, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.0
+	 */
 	sortWithTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.0
+	 */
 	sortWithTensorAxisTensorDescendingName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, descending: boolean, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.0
+	 */
 	sortWithTensorAxisTensorName(tensor: MPSGraphTensor, axisTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.1
+	 */
 	spaceToBatchTensorSpatialAxesBatchAxisBlockDimensionsUsePixelShuffleOrderName(tensor: MPSGraphTensor, spatialAxes: NSArray<number> | number[], batchAxis: number, blockDimensions: NSArray<number> | number[], usePixelShuffleOrder: boolean, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.1
+	 */
 	spaceToBatchTensorSpatialAxesTensorBatchAxisTensorBlockDimensionsTensorUsePixelShuffleOrderName(tensor: MPSGraphTensor, spatialAxesTensor: MPSGraphTensor, batchAxisTensor: MPSGraphTensor, blockDimensionsTensor: MPSGraphTensor, usePixelShuffleOrder: boolean, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	spaceToDepth2DTensorWidthAxisHeightAxisDepthAxisBlockSizeUsePixelShuffleOrderName(tensor: MPSGraphTensor, widthAxis: number, heightAxis: number, depthAxis: number, blockSize: number, usePixelShuffleOrder: boolean, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	spaceToDepth2DTensorWidthAxisTensorHeightAxisTensorDepthAxisTensorBlockSizeUsePixelShuffleOrderName(tensor: MPSGraphTensor, widthAxisTensor: MPSGraphTensor, heightAxisTensor: MPSGraphTensor, depthAxisTensor: MPSGraphTensor, blockSize: number, usePixelShuffleOrder: boolean, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.0
+	 */
 	sparseTensorWithDescriptorTensorsShapeName(sparseDescriptor: MPSGraphCreateSparseOpDescriptor, inputTensorArray: NSArray<MPSGraphTensor> | MPSGraphTensor[], shape: NSArray<number> | number[], name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.4
+	 */
 	splitTensorNumSplitsAxisName(tensor: MPSGraphTensor, numSplits: number, axis: number, name: string): NSArray<MPSGraphTensor>;
 
+	/**
+	 * @since 15.4
+	 */
 	splitTensorSplitSizesAxisName(tensor: MPSGraphTensor, splitSizes: NSArray<number> | number[], axis: number, name: string): NSArray<MPSGraphTensor>;
 
+	/**
+	 * @since 15.4
+	 */
 	splitTensorSplitSizesTensorAxisName(tensor: MPSGraphTensor, splitSizesTensor: MPSGraphTensor, axis: number, name: string): NSArray<MPSGraphTensor>;
 
 	squareRootWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
 	squareWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.4
+	 */
 	squeezeTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.4
+	 */
 	squeezeTensorAxesTensorName(tensor: MPSGraphTensor, axesTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.4
+	 */
 	squeezeTensorAxisName(tensor: MPSGraphTensor, axis: number, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.4
+	 */
 	squeezeTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 15.4
+	 */
 	stackTensorsAxisName(inputTensors: NSArray<MPSGraphTensor> | MPSGraphTensor[], axis: number, name: string): MPSGraphTensor;
 
 	stencilWithSourceTensorWeightsTensorDescriptorName(source: MPSGraphTensor, weights: MPSGraphTensor, descriptor: MPSGraphStencilOpDescriptor, name: string): MPSGraphTensor;
@@ -677,16 +1228,28 @@ declare class MPSGraph extends MPSGraphObject {
 
 	tileTensorWithMultiplierName(tensor: MPSGraphTensor, multiplier: NSArray<number> | number[], name: string): MPSGraphTensor;
 
+	/**
+	 * @since 17.0
+	 */
 	topKWithGradientTensorSourceAxisKName(gradient: MPSGraphTensor, source: MPSGraphTensor, axis: number, k: number, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 17.0
+	 */
 	topKWithGradientTensorSourceAxisTensorKTensorName(gradient: MPSGraphTensor, source: MPSGraphTensor, axisTensor: MPSGraphTensor, kTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
 	topKWithGradientTensorSourceKName(gradient: MPSGraphTensor, source: MPSGraphTensor, k: number, name: string): MPSGraphTensor;
 
 	topKWithGradientTensorSourceKTensorName(gradient: MPSGraphTensor, source: MPSGraphTensor, kTensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 17.0
+	 */
 	topKWithSourceTensorAxisKName(source: MPSGraphTensor, axis: number, k: number, name: string): NSArray<MPSGraphTensor>;
 
+	/**
+	 * @since 17.0
+	 */
 	topKWithSourceTensorAxisTensorKTensorName(source: MPSGraphTensor, axisTensor: MPSGraphTensor, kTensor: MPSGraphTensor, name: string): NSArray<MPSGraphTensor>;
 
 	topKWithSourceTensorKName(source: MPSGraphTensor, k: number, name: string): NSArray<MPSGraphTensor>;
@@ -695,9 +1258,20 @@ declare class MPSGraph extends MPSGraphObject {
 
 	transposeTensorDimensionWithDimensionName(tensor: MPSGraphTensor, dimensionIndex: number, dimensionIndex2: number, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.0
+	 */
 	transposeTensorPermutationName(tensor: MPSGraphTensor, permutation: NSArray<number> | number[], name: string): MPSGraphTensor;
 
+	/**
+	 * @since 16.0
+	 */
 	truncateWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+
+	/**
+	 * @since 18.0
+	 */
+	variableFromTensorWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
 	varianceOfTensorAxesName(tensor: MPSGraphTensor, axes: NSArray<number> | number[], name: string): MPSGraphTensor;
 
@@ -706,18 +1280,44 @@ declare class MPSGraph extends MPSGraphObject {
 	whileWithInitialInputsBeforeAfterName(initialInputs: NSArray<MPSGraphTensor> | MPSGraphTensor[], before: (p1: NSArray<MPSGraphTensor>, p2: NSMutableArray<MPSGraphTensor>) => MPSGraphTensor, after: (p1: NSArray<MPSGraphTensor>) => NSArray<MPSGraphTensor>, name: string): NSArray<MPSGraphTensor>;
 }
 
+/**
+ * @since 15.0
+ */
 declare class MPSGraphCompilationDescriptor extends MPSGraphObject implements NSCopying {
 
 	static alloc(): MPSGraphCompilationDescriptor; // inherited from NSObject
 
 	static new(): MPSGraphCompilationDescriptor; // inherited from NSObject
 
+	/**
+	 * @since 17.1
+	 */
+	callables: NSDictionary<string, MPSGraphExecutable>;
+
+	/**
+	 * @since 16.0
+	 */
 	compilationCompletionHandler: (p1: MPSGraphExecutable, p2: NSError) => void;
 
+	/**
+	 * @since 16.0
+	 */
+	dispatchQueue: NSObject & OS_dispatch_queue;
+
+	/**
+	 * @since 15.4
+	 */
 	optimizationLevel: MPSGraphOptimization;
 
+	/**
+	 * @since 15.4
+	 * @deprecated 17.0
+	 */
 	optimizationProfile: MPSGraphOptimizationProfile;
 
+	/**
+	 * @since 16.0
+	 */
 	waitForCompilationCompletion: boolean;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
@@ -725,6 +1325,9 @@ declare class MPSGraphCompilationDescriptor extends MPSGraphObject implements NS
 	disableTypeInference(): void;
 }
 
+/**
+ * @since 14.0
+ */
 declare class MPSGraphConvolution2DOpDescriptor extends MPSGraphObject implements NSCopying {
 
 	static alloc(): MPSGraphConvolution2DOpDescriptor; // inherited from NSObject
@@ -764,6 +1367,9 @@ declare class MPSGraphConvolution2DOpDescriptor extends MPSGraphObject implement
 	setExplicitPaddingWithPaddingLeftPaddingRightPaddingTopPaddingBottom(paddingLeft: number, paddingRight: number, paddingTop: number, paddingBottom: number): void;
 }
 
+/**
+ * @since 16.3
+ */
 declare class MPSGraphConvolution3DOpDescriptor extends MPSGraphObject implements NSCopying {
 
 	static alloc(): MPSGraphConvolution3DOpDescriptor; // inherited from NSObject
@@ -811,6 +1417,9 @@ declare class MPSGraphConvolution3DOpDescriptor extends MPSGraphObject implement
 	setExplicitPaddingWithPaddingLeftPaddingRightPaddingTopPaddingBottomPaddingFrontPaddingBack(paddingLeft: number, paddingRight: number, paddingTop: number, paddingBottom: number, paddingFront: number, paddingBack: number): void;
 }
 
+/**
+ * @since 15.0
+ */
 declare class MPSGraphCreateSparseOpDescriptor extends MPSGraphObject implements NSCopying {
 
 	static alloc(): MPSGraphCreateSparseOpDescriptor; // inherited from NSObject
@@ -833,6 +1442,9 @@ declare const enum MPSGraphDeploymentPlatform {
 	VisionOS = 3
 }
 
+/**
+ * @since 14.0
+ */
 declare class MPSGraphDepthwiseConvolution2DOpDescriptor extends MPSGraphObject implements NSCopying {
 
 	static alloc(): MPSGraphDepthwiseConvolution2DOpDescriptor; // inherited from NSObject
@@ -870,6 +1482,9 @@ declare class MPSGraphDepthwiseConvolution2DOpDescriptor extends MPSGraphObject 
 	setExplicitPaddingWithPaddingLeftPaddingRightPaddingTopPaddingBottom(paddingLeft: number, paddingRight: number, paddingTop: number, paddingBottom: number): void;
 }
 
+/**
+ * @since 15.0
+ */
 declare class MPSGraphDepthwiseConvolution3DOpDescriptor extends MPSGraphObject implements NSCopying {
 
 	static alloc(): MPSGraphDepthwiseConvolution3DOpDescriptor; // inherited from NSObject
@@ -893,6 +1508,9 @@ declare class MPSGraphDepthwiseConvolution3DOpDescriptor extends MPSGraphObject 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+/**
+ * @since 14.0
+ */
 declare class MPSGraphDevice extends MPSGraphObject {
 
 	static alloc(): MPSGraphDevice; // inherited from NSObject
@@ -911,6 +1529,9 @@ declare const enum MPSGraphDeviceType {
 	Metal = 0
 }
 
+/**
+ * @since 15.0
+ */
 declare class MPSGraphExecutable extends MPSGraphObject {
 
 	static alloc(): MPSGraphExecutable; // inherited from NSObject
@@ -923,21 +1544,46 @@ declare class MPSGraphExecutable extends MPSGraphObject {
 
 	readonly targetTensors: NSArray<MPSGraphTensor>;
 
+	/**
+	 * @since 18.0
+	 */
+	constructor(o: { coreMLPackageAtURL: NSURL; compilationDescriptor: MPSGraphCompilationDescriptor; });
+
+	/**
+	 * @since 17.0
+	 */
 	constructor(o: { MPSGraphPackageAtURL: NSURL; compilationDescriptor: MPSGraphCompilationDescriptor; });
 
+	/**
+	 * @since 16.3
+	 */
 	getOutputTypesWithDeviceInputTypesCompilationDescriptor(device: MPSGraphDevice, inputTypes: NSArray<MPSGraphType> | MPSGraphType[], compilationDescriptor: MPSGraphCompilationDescriptor): NSArray<MPSGraphShapedType>;
 
+	/**
+	 * @since 18.0
+	 */
+	initWithCoreMLPackageAtURLCompilationDescriptor(coreMLPackageURL: NSURL, compilationDescriptor: MPSGraphCompilationDescriptor): this;
+
+	/**
+	 * @since 17.0
+	 */
 	initWithMPSGraphPackageAtURLCompilationDescriptor(mpsgraphPackageURL: NSURL, compilationDescriptor: MPSGraphCompilationDescriptor): this;
 
 	runAsyncWithMTLCommandQueueInputsArrayResultsArrayExecutionDescriptor(commandQueue: MTLCommandQueue, inputsArray: NSArray<MPSGraphTensorData> | MPSGraphTensorData[], resultsArray: NSArray<MPSGraphTensorData> | MPSGraphTensorData[], executionDescriptor: MPSGraphExecutableExecutionDescriptor): NSArray<MPSGraphTensorData>;
 
 	runWithMTLCommandQueueInputsArrayResultsArrayExecutionDescriptor(commandQueue: MTLCommandQueue, inputsArray: NSArray<MPSGraphTensorData> | MPSGraphTensorData[], resultsArray: NSArray<MPSGraphTensorData> | MPSGraphTensorData[], executionDescriptor: MPSGraphExecutableExecutionDescriptor): NSArray<MPSGraphTensorData>;
 
+	/**
+	 * @since 17.0
+	 */
 	serializeToMPSGraphPackageAtURLDescriptor(url: NSURL, descriptor: MPSGraphExecutableSerializationDescriptor): void;
 
 	specializeWithDeviceInputTypesCompilationDescriptor(device: MPSGraphDevice, inputTypes: NSArray<MPSGraphType> | MPSGraphType[], compilationDescriptor: MPSGraphCompilationDescriptor): void;
 }
 
+/**
+ * @since 15.0
+ */
 declare class MPSGraphExecutableExecutionDescriptor extends MPSGraphObject implements NSCopying {
 
 	static alloc(): MPSGraphExecutableExecutionDescriptor; // inherited from NSObject
@@ -952,11 +1598,20 @@ declare class MPSGraphExecutableExecutionDescriptor extends MPSGraphObject imple
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
+	/**
+	 * @since 16.0
+	 */
 	signalEventAtExecutionEventValue(event: MTLSharedEvent, executionStage: MPSGraphExecutionStage, value: number): void;
 
+	/**
+	 * @since 16.0
+	 */
 	waitForEventValue(event: MTLSharedEvent, value: number): void;
 }
 
+/**
+ * @since 17.0
+ */
 declare class MPSGraphExecutableSerializationDescriptor extends MPSGraphObject {
 
 	static alloc(): MPSGraphExecutableSerializationDescriptor; // inherited from NSObject
@@ -970,12 +1625,18 @@ declare class MPSGraphExecutableSerializationDescriptor extends MPSGraphObject {
 	minimumDeploymentTarget: string;
 }
 
+/**
+ * @since 14.0
+ */
 declare class MPSGraphExecutionDescriptor extends MPSGraphObject {
 
 	static alloc(): MPSGraphExecutionDescriptor; // inherited from NSObject
 
 	static new(): MPSGraphExecutionDescriptor; // inherited from NSObject
 
+	/**
+	 * @since 15.4
+	 */
 	compilationDescriptor: MPSGraphCompilationDescriptor;
 
 	completionHandler: (p1: NSDictionary<MPSGraphTensor, MPSGraphTensorData>, p2: NSError) => void;
@@ -984,8 +1645,14 @@ declare class MPSGraphExecutionDescriptor extends MPSGraphObject {
 
 	waitUntilCompleted: boolean;
 
+	/**
+	 * @since 16.0
+	 */
 	signalEventAtExecutionEventValue(event: MTLSharedEvent, executionStage: MPSGraphExecutionStage, value: number): void;
 
+	/**
+	 * @since 16.0
+	 */
 	waitForEventValue(event: MTLSharedEvent, value: number): void;
 }
 
@@ -994,6 +1661,9 @@ declare const enum MPSGraphExecutionStage {
 	Completed = 0
 }
 
+/**
+ * @since 17.0
+ */
 declare class MPSGraphFFTDescriptor extends MPSGraphObject implements NSCopying {
 
 	static alloc(): MPSGraphFFTDescriptor; // inherited from NSObject
@@ -1020,6 +1690,9 @@ declare const enum MPSGraphFFTScalingMode {
 	Unitary = 2
 }
 
+/**
+ * @since 16.0
+ */
 declare class MPSGraphGRUDescriptor extends MPSGraphObject implements NSCopying {
 
 	static alloc(): MPSGraphGRUDescriptor; // inherited from NSObject
@@ -1049,6 +1722,9 @@ declare class MPSGraphGRUDescriptor extends MPSGraphObject implements NSCopying 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+/**
+ * @since 17.0
+ */
 declare class MPSGraphImToColOpDescriptor extends MPSGraphObject implements NSCopying {
 
 	static alloc(): MPSGraphImToColOpDescriptor; // inherited from NSObject
@@ -1086,6 +1762,9 @@ declare class MPSGraphImToColOpDescriptor extends MPSGraphObject implements NSCo
 	setExplicitPaddingWithPaddingLeftPaddingRightPaddingTopPaddingBottom(paddingLeft: number, paddingRight: number, paddingTop: number, paddingBottom: number): void;
 }
 
+/**
+ * @since 15.4
+ */
 declare class MPSGraphLSTMDescriptor extends MPSGraphObject implements NSCopying {
 
 	static alloc(): MPSGraphLSTMDescriptor; // inherited from NSObject
@@ -1139,6 +1818,9 @@ declare const enum MPSGraphNonMaximumSuppressionCoordinateMode {
 	CentersWidthFirst = 3
 }
 
+/**
+ * @since 17.0
+ */
 declare class MPSGraphObject extends NSObject {
 
 	static alloc(): MPSGraphObject; // inherited from NSObject
@@ -1146,6 +1828,9 @@ declare class MPSGraphObject extends NSObject {
 	static new(): MPSGraphObject; // inherited from NSObject
 }
 
+/**
+ * @since 14.0
+ */
 declare class MPSGraphOperation extends MPSGraphObject implements NSCopying {
 
 	static alloc(): MPSGraphOperation; // inherited from NSObject
@@ -1220,6 +1905,9 @@ declare const enum MPSGraphPaddingStyle {
 	ONNX_SAME_LOWER = 4
 }
 
+/**
+ * @since 14.0
+ */
 declare class MPSGraphPooling2DOpDescriptor extends MPSGraphObject implements NSCopying {
 
 	static alloc(): MPSGraphPooling2DOpDescriptor; // inherited from NSObject
@@ -1230,6 +1918,9 @@ declare class MPSGraphPooling2DOpDescriptor extends MPSGraphObject implements NS
 
 	static new(): MPSGraphPooling2DOpDescriptor; // inherited from NSObject
 
+	/**
+	 * @since 15.0
+	 */
 	ceilMode: boolean;
 
 	dataLayout: MPSGraphTensorNamedDataLayout;
@@ -1238,6 +1929,9 @@ declare class MPSGraphPooling2DOpDescriptor extends MPSGraphObject implements NS
 
 	dilationRateInY: number;
 
+	/**
+	 * @since 15.0
+	 */
 	includeZeroPadToAverage: boolean;
 
 	kernelHeight: number;
@@ -1254,6 +1948,9 @@ declare class MPSGraphPooling2DOpDescriptor extends MPSGraphObject implements NS
 
 	paddingTop: number;
 
+	/**
+	 * @since 15.3
+	 */
 	returnIndicesMode: MPSGraphPoolingReturnIndicesMode;
 
 	strideInX: number;
@@ -1265,6 +1962,9 @@ declare class MPSGraphPooling2DOpDescriptor extends MPSGraphObject implements NS
 	setExplicitPaddingWithPaddingLeftPaddingRightPaddingTopPaddingBottom(paddingLeft: number, paddingRight: number, paddingTop: number, paddingBottom: number): void;
 }
 
+/**
+ * @since 15.0
+ */
 declare class MPSGraphPooling4DOpDescriptor extends MPSGraphObject implements NSCopying {
 
 	static alloc(): MPSGraphPooling4DOpDescriptor; // inherited from NSObject
@@ -1287,6 +1987,9 @@ declare class MPSGraphPooling4DOpDescriptor extends MPSGraphObject implements NS
 
 	paddingValues: NSArray<number>;
 
+	/**
+	 * @since 15.3
+	 */
 	returnIndicesMode: MPSGraphPoolingReturnIndicesMode;
 
 	strides: NSArray<number>;
@@ -1423,6 +2126,9 @@ declare const enum MPSGraphScatterMode {
 	Set = 6
 }
 
+/**
+ * @since 14.0
+ */
 declare class MPSGraphShapedType extends MPSGraphType {
 
 	static alloc(): MPSGraphShapedType; // inherited from NSObject
@@ -1434,6 +2140,9 @@ declare class MPSGraphShapedType extends MPSGraphType {
 	isEqualTo(object: MPSGraphShapedType): boolean;
 }
 
+/**
+ * @since 15.4
+ */
 declare class MPSGraphSingleGateRNNDescriptor extends MPSGraphObject implements NSCopying {
 
 	static alloc(): MPSGraphSingleGateRNNDescriptor; // inherited from NSObject
@@ -1462,6 +2171,9 @@ declare const enum MPSGraphSparseStorageType {
 	CSR = 2
 }
 
+/**
+ * @since 15.0
+ */
 declare class MPSGraphStencilOpDescriptor extends MPSGraphObject implements NSCopying {
 
 	static alloc(): MPSGraphStencilOpDescriptor; // inherited from NSObject
@@ -1495,6 +2207,9 @@ declare class MPSGraphStencilOpDescriptor extends MPSGraphObject implements NSCo
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+/**
+ * @since 14.0
+ */
 declare class MPSGraphTensor extends MPSGraphObject implements NSCopying {
 
 	static alloc(): MPSGraphTensor; // inherited from NSObject
@@ -1508,6 +2223,9 @@ declare class MPSGraphTensor extends MPSGraphObject implements NSCopying {
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+/**
+ * @since 14.0
+ */
 declare class MPSGraphTensorData extends MPSGraphObject {
 
 	static alloc(): MPSGraphTensorData; // inherited from NSObject
@@ -1544,6 +2262,9 @@ declare const enum MPSGraphTensorNamedDataLayout {
 	DHWIO = 10
 }
 
+/**
+ * @since 15.0
+ */
 declare class MPSGraphType extends MPSGraphObject implements NSCopying {
 
 	static alloc(): MPSGraphType; // inherited from NSObject
@@ -1553,6 +2274,9 @@ declare class MPSGraphType extends MPSGraphObject implements NSCopying {
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+/**
+ * @since 14.0
+ */
 declare class MPSGraphVariableOp extends MPSGraphOperation {
 
 	static alloc(): MPSGraphVariableOp; // inherited from NSObject

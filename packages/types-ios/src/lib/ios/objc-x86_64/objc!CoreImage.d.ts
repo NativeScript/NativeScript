@@ -49,6 +49,15 @@ declare var CIAreaAverage: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+interface CIAreaBoundsRed extends CIAreaReductionFilter {
+}
+declare var CIAreaBoundsRed: {
+
+	prototype: CIAreaBoundsRed;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
 interface CIAreaHistogram extends CIAreaReductionFilter {
 
 	count: number;
@@ -148,6 +157,9 @@ declare var CIAreaReductionFilter: {
 
 interface CIAttributedTextImageGenerator extends CIFilterProtocol {
 
+	/**
+	 * @since 16.0
+	 */
 	padding: number;
 
 	scaleFactor: number;
@@ -161,6 +173,9 @@ declare var CIAttributedTextImageGenerator: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+/**
+ * @since 11.0
+ */
 declare class CIAztecCodeDescriptor extends CIBarcodeDescriptor {
 
 	static alloc(): CIAztecCodeDescriptor; // inherited from NSObject
@@ -199,6 +214,9 @@ declare var CIAztecCodeGenerator: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+/**
+ * @since 11.0
+ */
 declare class CIBarcodeDescriptor extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CIBarcodeDescriptor; // inherited from NSObject
@@ -261,14 +279,27 @@ declare var CIBicubicScaleTransform: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+/**
+ * @since 11.0
+ */
 declare class CIBlendKernel extends CIColorKernel {
 
 	static alloc(): CIBlendKernel; // inherited from NSObject
 
+	/**
+	 * @since 11.0
+	 */
 	static kernelWithFunctionNameFromMetalLibraryDataError(name: string, data: NSData): CIBlendKernel; // inherited from CIKernel
 
+	/**
+	 * @since 11.0
+	 */
 	static kernelWithFunctionNameFromMetalLibraryDataOutputPixelFormatError(name: string, data: NSData, format: number): CIBlendKernel; // inherited from CIKernel
 
+	/**
+	 * @since 8.0
+	 * @deprecated 12.0
+	 */
 	static kernelWithString(string: string): CIBlendKernel; // inherited from CIKernel
 
 	static new(): CIBlendKernel; // inherited from NSObject
@@ -357,6 +388,9 @@ declare class CIBlendKernel extends CIColorKernel {
 
 	applyWithForegroundBackground(foreground: CIImage, background: CIImage): CIImage;
 
+	/**
+	 * @since 13.0
+	 */
 	applyWithForegroundBackgroundColorSpace(foreground: CIImage, background: CIImage, colorSpace: any): CIImage;
 }
 
@@ -600,6 +634,9 @@ declare var CICode128BarcodeGenerator: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+/**
+ * @since 5.0
+ */
 declare class CIColor extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CIColor; // inherited from NSObject
@@ -610,8 +647,14 @@ declare class CIColor extends NSObject implements NSCopying, NSSecureCoding {
 
 	static colorWithRedGreenBlueAlpha(r: number, g: number, b: number, a: number): CIColor;
 
+	/**
+	 * @since 10.0
+	 */
 	static colorWithRedGreenBlueAlphaColorSpace(r: number, g: number, b: number, a: number, colorSpace: any): CIColor;
 
+	/**
+	 * @since 10.0
+	 */
 	static colorWithRedGreenBlueColorSpace(r: number, g: number, b: number, colorSpace: any): CIColor;
 
 	static colorWithString(representation: string): CIColor;
@@ -634,24 +677,54 @@ declare class CIColor extends NSObject implements NSCopying, NSSecureCoding {
 
 	readonly stringRepresentation: string;
 
+	/**
+	 * @since 10.0
+	 */
 	static readonly blackColor: CIColor;
 
+	/**
+	 * @since 10.0
+	 */
 	static readonly blueColor: CIColor;
 
+	/**
+	 * @since 10.0
+	 */
 	static readonly clearColor: CIColor;
 
+	/**
+	 * @since 10.0
+	 */
 	static readonly cyanColor: CIColor;
 
+	/**
+	 * @since 10.0
+	 */
 	static readonly grayColor: CIColor;
 
+	/**
+	 * @since 10.0
+	 */
 	static readonly greenColor: CIColor;
 
+	/**
+	 * @since 10.0
+	 */
 	static readonly magentaColor: CIColor;
 
+	/**
+	 * @since 10.0
+	 */
 	static readonly redColor: CIColor;
 
+	/**
+	 * @since 10.0
+	 */
 	static readonly whiteColor: CIColor;
 
+	/**
+	 * @since 10.0
+	 */
 	static readonly yellowColor: CIColor;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
@@ -660,14 +733,26 @@ declare class CIColor extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
+	/**
+	 * @since 5.0
+	 */
 	constructor(o: { color: UIColor; });
 
+	/**
+	 * @since 9.0
+	 */
 	constructor(o: { red: number; green: number; blue: number; });
 
 	constructor(o: { red: number; green: number; blue: number; alpha: number; });
 
+	/**
+	 * @since 10.0
+	 */
 	constructor(o: { red: number; green: number; blue: number; alpha: number; colorSpace: any; });
 
+	/**
+	 * @since 10.0
+	 */
 	constructor(o: { red: number; green: number; blue: number; colorSpace: any; });
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
@@ -678,14 +763,26 @@ declare class CIColor extends NSObject implements NSCopying, NSSecureCoding {
 
 	initWithCoder(coder: NSCoder): this;
 
+	/**
+	 * @since 5.0
+	 */
 	initWithColor(color: UIColor): this;
 
+	/**
+	 * @since 9.0
+	 */
 	initWithRedGreenBlue(r: number, g: number, b: number): this;
 
 	initWithRedGreenBlueAlpha(r: number, g: number, b: number, a: number): this;
 
+	/**
+	 * @since 10.0
+	 */
 	initWithRedGreenBlueAlphaColorSpace(r: number, g: number, b: number, a: number, colorSpace: any): this;
 
+	/**
+	 * @since 10.0
+	 */
 	initWithRedGreenBlueColorSpace(r: number, g: number, b: number, colorSpace: any): this;
 }
 
@@ -757,6 +854,9 @@ interface CIColorCube extends CIFilterProtocol {
 
 	cubeDimension: number;
 
+	/**
+	 * @since 16.0
+	 */
 	extrapolate: boolean;
 
 	inputImage: CIImage;
@@ -776,6 +876,9 @@ interface CIColorCubeWithColorSpace extends CIFilterProtocol {
 
 	cubeDimension: number;
 
+	/**
+	 * @since 16.0
+	 */
 	extrapolate: boolean;
 
 	inputImage: CIImage;
@@ -797,6 +900,9 @@ interface CIColorCubesMixedWithMask extends CIFilterProtocol {
 
 	cubeDimension: number;
 
+	/**
+	 * @since 16.0
+	 */
 	extrapolate: boolean;
 
 	inputImage: CIImage;
@@ -838,14 +944,27 @@ declare var CIColorInvert: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+/**
+ * @since 8.0
+ */
 declare class CIColorKernel extends CIKernel {
 
 	static alloc(): CIColorKernel; // inherited from NSObject
 
+	/**
+	 * @since 11.0
+	 */
 	static kernelWithFunctionNameFromMetalLibraryDataError(name: string, data: NSData): CIColorKernel; // inherited from CIKernel
 
+	/**
+	 * @since 11.0
+	 */
 	static kernelWithFunctionNameFromMetalLibraryDataOutputPixelFormatError(name: string, data: NSData, format: number): CIColorKernel; // inherited from CIKernel
 
+	/**
+	 * @since 8.0
+	 * @deprecated 12.0
+	 */
 	static kernelWithString(string: string): CIColorKernel; // inherited from CIKernel
 
 	static new(): CIColorKernel; // inherited from NSObject
@@ -991,104 +1110,239 @@ declare var CICompositeOperation: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+/**
+ * @since 5.0
+ */
 declare class CIContext extends NSObject {
 
 	static alloc(): CIContext; // inherited from NSObject
 
+	/**
+	 * @since 5.0
+	 */
 	static context(): CIContext;
 
+	/**
+	 * @since 9.0
+	 */
 	static contextWithCGContextOptions(cgctx: any, options: NSDictionary<string, any>): CIContext;
 
+	/**
+	 * @since 5.0
+	 * @deprecated 12.0
+	 */
 	static contextWithEAGLContext(eaglContext: EAGLContext): CIContext;
 
+	/**
+	 * @since 5.0
+	 * @deprecated 12.0
+	 */
 	static contextWithEAGLContextOptions(eaglContext: EAGLContext, options: NSDictionary<string, any>): CIContext;
 
+	/**
+	 * @since 13.0
+	 */
 	static contextWithMTLCommandQueue(commandQueue: MTLCommandQueue): CIContext;
 
+	/**
+	 * @since 13.0
+	 */
 	static contextWithMTLCommandQueueOptions(commandQueue: MTLCommandQueue, options: NSDictionary<string, any>): CIContext;
 
+	/**
+	 * @since 9.0
+	 */
 	static contextWithMTLDevice(device: MTLDevice): CIContext;
 
+	/**
+	 * @since 9.0
+	 */
 	static contextWithMTLDeviceOptions(device: MTLDevice, options: NSDictionary<string, any>): CIContext;
 
+	/**
+	 * @since 5.0
+	 */
 	static contextWithOptions(options: NSDictionary<string, any>): CIContext;
 
 	static new(): CIContext; // inherited from NSObject
 
+	/**
+	 * @since 9.0
+	 */
 	readonly workingColorSpace: any;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly workingFormat: number;
 
+	/**
+	 * @since 5.0
+	 */
 	constructor(o: { options: NSDictionary<string, any>; });
 
+	/**
+	 * @since 15.0
+	 */
 	HEIF10RepresentationOfImageColorSpaceOptionsError(image: CIImage, colorSpace: any, options: NSDictionary<string, any>): NSData;
 
+	/**
+	 * @since 11.0
+	 */
 	HEIFRepresentationOfImageFormatColorSpaceOptions(image: CIImage, format: number, colorSpace: any, options: NSDictionary<string, any>): NSData;
 
+	/**
+	 * @since 10.0
+	 */
 	JPEGRepresentationOfImageColorSpaceOptions(image: CIImage, colorSpace: any, options: NSDictionary<string, any>): NSData;
 
+	/**
+	 * @since 17.0
+	 */
 	OpenEXRRepresentationOfImageOptionsError(image: CIImage, options: NSDictionary<string, any>): NSData;
 
+	/**
+	 * @since 11.0
+	 */
 	PNGRepresentationOfImageFormatColorSpaceOptions(image: CIImage, format: number, colorSpace: any, options: NSDictionary<string, any>): NSData;
 
+	/**
+	 * @since 10.0
+	 */
 	TIFFRepresentationOfImageFormatColorSpaceOptions(image: CIImage, format: number, colorSpace: any, options: NSDictionary<string, any>): NSData;
 
+	/**
+	 * @since 10.0
+	 */
 	clearCaches(): void;
 
 	createCGImageFromRect(image: CIImage, fromRect: CGRect): any;
 
 	createCGImageFromRectFormatColorSpace(image: CIImage, fromRect: CGRect, format: number, colorSpace: any): any;
 
+	/**
+	 * @since 10.0
+	 */
 	createCGImageFromRectFormatColorSpaceDeferred(image: CIImage, fromRect: CGRect, format: number, colorSpace: any, deferred: boolean): any;
 
+	/**
+	 * @since 12.0
+	 */
 	depthBlurEffectFilterForImageDataOptions(data: NSData, options: NSDictionary<any, any>): CIFilter;
 
+	/**
+	 * @since 14.1
+	 */
 	depthBlurEffectFilterForImageDisparityImagePortraitEffectsMatteHairSemanticSegmentationGlassesMatteGainMapOrientationOptions(image: CIImage, disparityImage: CIImage, portraitEffectsMatte: CIImage, hairSemanticSegmentation: CIImage, glassesMatte: CIImage, gainMap: CIImage, orientation: CGImagePropertyOrientation, options: NSDictionary<any, any>): CIFilter;
 
+	/**
+	 * @since 13.0
+	 */
 	depthBlurEffectFilterForImageDisparityImagePortraitEffectsMatteHairSemanticSegmentationOrientationOptions(image: CIImage, disparityImage: CIImage, portraitEffectsMatte: CIImage, hairSemanticSegmentation: CIImage, orientation: CGImagePropertyOrientation, options: NSDictionary<any, any>): CIFilter;
 
+	/**
+	 * @since 12.0
+	 */
 	depthBlurEffectFilterForImageDisparityImagePortraitEffectsMatteOrientationOptions(image: CIImage, disparityImage: CIImage, portraitEffectsMatte: CIImage, orientation: CGImagePropertyOrientation, options: NSDictionary<any, any>): CIFilter;
 
+	/**
+	 * @since 12.0
+	 */
 	depthBlurEffectFilterForImageURLOptions(url: NSURL, options: NSDictionary<any, any>): CIFilter;
 
+	/**
+	 * @since 5.0
+	 * @deprecated 6.0
+	 */
 	drawImageAtPointFromRect(image: CIImage, atPoint: CGPoint, fromRect: CGRect): void;
 
 	drawImageInRectFromRect(image: CIImage, inRect: CGRect, fromRect: CGRect): void;
 
+	/**
+	 * @since 5.0
+	 */
 	initWithOptions(options: NSDictionary<string, any>): this;
 
+	/**
+	 * @since 5.0
+	 */
 	inputImageMaximumSize(): CGSize;
 
+	/**
+	 * @since 5.0
+	 */
 	outputImageMaximumSize(): CGSize;
 
+	/**
+	 * @since 11.0
+	 */
 	prepareRenderFromRectToDestinationAtPointError(image: CIImage, fromRect: CGRect, destination: CIRenderDestination, atPoint: CGPoint): boolean;
 
 	renderToBitmapRowBytesBoundsFormatColorSpace(image: CIImage, data: interop.Pointer | interop.Reference<any>, rowBytes: number, bounds: CGRect, format: number, colorSpace: any): void;
 
+	/**
+	 * @since 5.0
+	 */
 	renderToCVPixelBuffer(image: CIImage, buffer: any): void;
 
+	/**
+	 * @since 5.0
+	 */
 	renderToCVPixelBufferBoundsColorSpace(image: CIImage, buffer: any, bounds: CGRect, colorSpace: any): void;
 
+	/**
+	 * @since 5.0
+	 */
 	renderToIOSurfaceBoundsColorSpace(image: CIImage, surface: IOSurface, bounds: CGRect, colorSpace: any): void;
 
+	/**
+	 * @since 9.0
+	 */
 	renderToMTLTextureCommandBufferBoundsColorSpace(image: CIImage, texture: MTLTexture, commandBuffer: MTLCommandBuffer, bounds: CGRect, colorSpace: any): void;
 
+	/**
+	 * @since 11.0
+	 */
 	startTaskToClearError(destination: CIRenderDestination): CIRenderTask;
 
+	/**
+	 * @since 11.0
+	 */
 	startTaskToRenderFromRectToDestinationAtPointError(image: CIImage, fromRect: CGRect, destination: CIRenderDestination, atPoint: CGPoint): CIRenderTask;
 
+	/**
+	 * @since 11.0
+	 */
 	startTaskToRenderToDestinationError(image: CIImage, destination: CIRenderDestination): CIRenderTask;
 
+	/**
+	 * @since 15.0
+	 */
 	writeHEIF10RepresentationOfImageToURLColorSpaceOptionsError(image: CIImage, url: NSURL, colorSpace: any, options: NSDictionary<string, any>): boolean;
 
+	/**
+	 * @since 11.0
+	 */
 	writeHEIFRepresentationOfImageToURLFormatColorSpaceOptionsError(image: CIImage, url: NSURL, format: number, colorSpace: any, options: NSDictionary<string, any>): boolean;
 
+	/**
+	 * @since 10.0
+	 */
 	writeJPEGRepresentationOfImageToURLColorSpaceOptionsError(image: CIImage, url: NSURL, colorSpace: any, options: NSDictionary<string, any>): boolean;
 
+	/**
+	 * @since 17.0
+	 */
 	writeOpenEXRRepresentationOfImageToURLOptionsError(image: CIImage, url: NSURL, options: NSDictionary<string, any>): boolean;
 
+	/**
+	 * @since 11.0
+	 */
 	writePNGRepresentationOfImageToURLFormatColorSpaceOptionsError(image: CIImage, url: NSURL, format: number, colorSpace: any, options: NSDictionary<string, any>): boolean;
 
+	/**
+	 * @since 10.0
+	 */
 	writeTIFFRepresentationOfImageToURLFormatColorSpaceOptionsError(image: CIImage, url: NSURL, format: number, colorSpace: any, options: NSDictionary<string, any>): boolean;
 }
 
@@ -1171,6 +1425,9 @@ declare var CICrystallize: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+/**
+ * @since 11.0
+ */
 declare class CIDataMatrixCodeDescriptor extends CIBarcodeDescriptor {
 
 	static alloc(): CIDataMatrixCodeDescriptor; // inherited from NSObject
@@ -1241,51 +1498,114 @@ declare var CIDepthToDisparity: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+/**
+ * @since 5.0
+ */
 declare class CIDetector extends NSObject {
 
 	static alloc(): CIDetector; // inherited from NSObject
 
+	/**
+	 * @since 5.0
+	 */
 	static detectorOfTypeContextOptions(type: string, context: CIContext, options: NSDictionary<string, any>): CIDetector;
 
 	static new(): CIDetector; // inherited from NSObject
 
+	/**
+	 * @since 5.0
+	 */
 	featuresInImage(image: CIImage): NSArray<CIFeature>;
 
+	/**
+	 * @since 5.0
+	 */
 	featuresInImageOptions(image: CIImage, options: NSDictionary<string, any>): NSArray<CIFeature>;
 }
 
+/**
+ * @since 5.0
+ */
 declare var CIDetectorAccuracy: string;
 
+/**
+ * @since 5.0
+ */
 declare var CIDetectorAccuracyHigh: string;
 
+/**
+ * @since 5.0
+ */
 declare var CIDetectorAccuracyLow: string;
 
+/**
+ * @since 8.0
+ */
 declare var CIDetectorAspectRatio: string;
 
+/**
+ * @since 7.0
+ */
 declare var CIDetectorEyeBlink: string;
 
+/**
+ * @since 8.0
+ */
 declare var CIDetectorFocalLength: string;
 
+/**
+ * @since 5.0
+ */
 declare var CIDetectorImageOrientation: string;
 
+/**
+ * @since 10.0
+ */
 declare var CIDetectorMaxFeatureCount: string;
 
+/**
+ * @since 6.0
+ */
 declare var CIDetectorMinFeatureSize: string;
 
+/**
+ * @since 9.0
+ */
 declare var CIDetectorNumberOfAngles: string;
 
+/**
+ * @since 9.0
+ */
 declare var CIDetectorReturnSubFeatures: string;
 
+/**
+ * @since 7.0
+ */
 declare var CIDetectorSmile: string;
 
+/**
+ * @since 6.0
+ */
 declare var CIDetectorTracking: string;
 
+/**
+ * @since 5.0
+ */
 declare var CIDetectorTypeFace: string;
 
+/**
+ * @since 8.0
+ */
 declare var CIDetectorTypeQRCode: string;
 
+/**
+ * @since 8.0
+ */
 declare var CIDetectorTypeRectangle: string;
 
+/**
+ * @since 9.0
+ */
 declare var CIDetectorTypeText: string;
 
 interface CIDiscBlur extends CIFilterProtocol {
@@ -1494,6 +1814,9 @@ declare var CIExposureAdjust: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+/**
+ * @since 5.0
+ */
 declare class CIFaceFeature extends CIFeature {
 
 	static alloc(): CIFaceFeature; // inherited from NSObject
@@ -1546,6 +1869,9 @@ declare var CIFalseColor: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+/**
+ * @since 5.0
+ */
 declare class CIFeature extends NSObject {
 
 	static alloc(): CIFeature; // inherited from NSObject
@@ -1565,501 +1891,707 @@ declare var CIFeatureTypeRectangle: string;
 
 declare var CIFeatureTypeText: string;
 
+/**
+ * @since 5.0
+ */
 declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 
-	static CMYKHalftone(): CIFilter;
+	static CMYKHalftone(): CIFilter & CICMYKHalftone;
 
-	static KMeansFilter(): CIFilter;
+	/**
+	 * @since 14.0
+	 */
+	static KMeansFilter(): CIFilter & CIKMeans;
 
-	static LabDeltaE(): CIFilter;
+	static LabDeltaE(): CIFilter & CILabDeltaE;
 
-	static PDF417BarcodeGenerator(): CIFilter;
+	static PDF417BarcodeGenerator(): CIFilter & CIPDF417BarcodeGenerator;
 
-	static QRCodeGenerator(): CIFilter;
+	static QRCodeGenerator(): CIFilter & CIQRCodeGenerator;
 
-	static accordionFoldTransitionFilter(): CIFilter;
+	static accordionFoldTransitionFilter(): CIFilter & CIAccordionFoldTransition;
 
-	static additionCompositingFilter(): CIFilter;
+	static additionCompositingFilter(): CIFilter & CICompositeOperation;
 
-	static affineClampFilter(): CIFilter;
+	static affineClampFilter(): CIFilter & CIAffineClamp;
 
-	static affineTileFilter(): CIFilter;
+	static affineTileFilter(): CIFilter & CIAffineTile;
 
 	static alloc(): CIFilter; // inherited from NSObject
 
-	static areaAverageFilter(): CIFilter;
+	/**
+	 * @since 18.0
+	 */
+	static areaAlphaWeightedHistogramFilter(): CIFilter & CIAreaHistogram;
 
-	static areaHistogramFilter(): CIFilter;
+	/**
+	 * @since 14.0
+	 */
+	static areaAverageFilter(): CIFilter & CIAreaAverage;
 
-	static areaLogarithmicHistogramFilter(): CIFilter;
+	/**
+	 * @since 18.0
+	 */
+	static areaBoundsRedFilter(): CIFilter & CIAreaBoundsRed;
 
-	static areaMaximumAlphaFilter(): CIFilter;
+	/**
+	 * @since 14.0
+	 */
+	static areaHistogramFilter(): CIFilter & CIAreaHistogram;
 
-	static areaMaximumFilter(): CIFilter;
+	/**
+	 * @since 16.0
+	 */
+	static areaLogarithmicHistogramFilter(): CIFilter & CIAreaLogarithmicHistogram;
 
-	static areaMinMaxFilter(): CIFilter;
+	/**
+	 * @since 14.0
+	 */
+	static areaMaximumAlphaFilter(): CIFilter & CIAreaMaximumAlpha;
 
-	static areaMinMaxRedFilter(): CIFilter;
+	/**
+	 * @since 14.0
+	 */
+	static areaMaximumFilter(): CIFilter & CIAreaMaximum;
 
-	static areaMinimumAlphaFilter(): CIFilter;
+	/**
+	 * @since 14.0
+	 */
+	static areaMinMaxFilter(): CIFilter & CIAreaMinMax;
 
-	static areaMinimumFilter(): CIFilter;
+	/**
+	 * @since 14.0
+	 */
+	static areaMinMaxRedFilter(): CIFilter & CIAreaMinMaxRed;
 
-	static attributedTextImageGeneratorFilter(): CIFilter;
+	/**
+	 * @since 14.0
+	 */
+	static areaMinimumAlphaFilter(): CIFilter & CIAreaMinimumAlpha;
 
-	static aztecCodeGeneratorFilter(): CIFilter;
+	/**
+	 * @since 14.0
+	 */
+	static areaMinimumFilter(): CIFilter & CIAreaMinimum;
 
-	static barcodeGeneratorFilter(): CIFilter;
+	static attributedTextImageGeneratorFilter(): CIFilter & CIAttributedTextImageGenerator;
 
-	static barsSwipeTransitionFilter(): CIFilter;
+	static aztecCodeGeneratorFilter(): CIFilter & CIAztecCodeGenerator;
 
-	static bicubicScaleTransformFilter(): CIFilter;
+	static barcodeGeneratorFilter(): CIFilter & CIBarcodeGenerator;
 
-	static blendWithAlphaMaskFilter(): CIFilter;
+	static barsSwipeTransitionFilter(): CIFilter & CIBarsSwipeTransition;
 
-	static blendWithBlueMaskFilter(): CIFilter;
+	static bicubicScaleTransformFilter(): CIFilter & CIBicubicScaleTransform;
 
-	static blendWithMaskFilter(): CIFilter;
+	static blendWithAlphaMaskFilter(): CIFilter & CIBlendWithMask;
 
-	static blendWithRedMaskFilter(): CIFilter;
+	static blendWithBlueMaskFilter(): CIFilter & CIBlendWithMask;
 
-	static bloomFilter(): CIFilter;
+	static blendWithMaskFilter(): CIFilter & CIBlendWithMask;
 
-	static blurredRectangleGeneratorFilter(): CIFilter;
+	static blendWithRedMaskFilter(): CIFilter & CIBlendWithMask;
 
-	static bokehBlurFilter(): CIFilter;
+	static bloomFilter(): CIFilter & CIBloom;
 
-	static boxBlurFilter(): CIFilter;
+	/**
+	 * @since 17.0
+	 */
+	static blurredRectangleGeneratorFilter(): CIFilter & CIBlurredRectangleGenerator;
 
-	static bumpDistortionFilter(): CIFilter;
+	static bokehBlurFilter(): CIFilter & CIBokehBlur;
 
-	static bumpDistortionLinearFilter(): CIFilter;
+	static boxBlurFilter(): CIFilter & CIBoxBlur;
 
-	static cannyEdgeDetectorFilter(): CIFilter;
+	/**
+	 * @since 14.0
+	 */
+	static bumpDistortionFilter(): CIFilter & CIBumpDistortion;
 
-	static checkerboardGeneratorFilter(): CIFilter;
+	/**
+	 * @since 14.0
+	 */
+	static bumpDistortionLinearFilter(): CIFilter & CIBumpDistortionLinear;
 
-	static circleSplashDistortionFilter(): CIFilter;
+	/**
+	 * @since 17.0
+	 */
+	static cannyEdgeDetectorFilter(): CIFilter & CICannyEdgeDetector;
 
-	static circularScreenFilter(): CIFilter;
+	static checkerboardGeneratorFilter(): CIFilter & CICheckerboardGenerator;
 
-	static circularWrapFilter(): CIFilter;
+	/**
+	 * @since 14.0
+	 */
+	static circleSplashDistortionFilter(): CIFilter & CICircleSplashDistortion;
 
-	static code128BarcodeGeneratorFilter(): CIFilter;
+	static circularScreenFilter(): CIFilter & CICircularScreen;
 
-	static colorAbsoluteDifferenceFilter(): CIFilter;
+	/**
+	 * @since 14.0
+	 */
+	static circularWrapFilter(): CIFilter & CICircularWrap;
 
-	static colorBlendModeFilter(): CIFilter;
+	static code128BarcodeGeneratorFilter(): CIFilter & CICode128BarcodeGenerator;
 
-	static colorBurnBlendModeFilter(): CIFilter;
+	/**
+	 * @since 14.0
+	 */
+	static colorAbsoluteDifferenceFilter(): CIFilter & CIColorAbsoluteDifference;
 
-	static colorClampFilter(): CIFilter;
+	static colorBlendModeFilter(): CIFilter & CICompositeOperation;
 
-	static colorControlsFilter(): CIFilter;
+	static colorBurnBlendModeFilter(): CIFilter & CICompositeOperation;
 
-	static colorCrossPolynomialFilter(): CIFilter;
+	static colorClampFilter(): CIFilter & CIColorClamp;
 
-	static colorCubeFilter(): CIFilter;
+	static colorControlsFilter(): CIFilter & CIColorControls;
 
-	static colorCubeWithColorSpaceFilter(): CIFilter;
+	static colorCrossPolynomialFilter(): CIFilter & CIColorCrossPolynomial;
 
-	static colorCubesMixedWithMaskFilter(): CIFilter;
+	static colorCubeFilter(): CIFilter & CIColorCube;
 
-	static colorCurvesFilter(): CIFilter;
+	static colorCubeWithColorSpaceFilter(): CIFilter & CIColorCubeWithColorSpace;
 
-	static colorDodgeBlendModeFilter(): CIFilter;
+	static colorCubesMixedWithMaskFilter(): CIFilter & CIColorCubesMixedWithMask;
 
-	static colorInvertFilter(): CIFilter;
+	static colorCurvesFilter(): CIFilter & CIColorCurves;
 
-	static colorMapFilter(): CIFilter;
+	static colorDodgeBlendModeFilter(): CIFilter & CICompositeOperation;
 
-	static colorMatrixFilter(): CIFilter;
+	static colorInvertFilter(): CIFilter & CIColorInvert;
 
-	static colorMonochromeFilter(): CIFilter;
+	static colorMapFilter(): CIFilter & CIColorMap;
 
-	static colorPolynomialFilter(): CIFilter;
+	static colorMatrixFilter(): CIFilter & CIColorMatrix;
 
-	static colorPosterizeFilter(): CIFilter;
+	static colorMonochromeFilter(): CIFilter & CIColorMonochrome;
 
-	static colorThresholdFilter(): CIFilter;
+	static colorPolynomialFilter(): CIFilter & CIColorPolynomial;
 
-	static colorThresholdOtsuFilter(): CIFilter;
+	static colorPosterizeFilter(): CIFilter & CIColorPosterize;
 
-	static columnAverageFilter(): CIFilter;
+	/**
+	 * @since 14.0
+	 */
+	static colorThresholdFilter(): CIFilter & CIColorThreshold;
 
-	static comicEffectFilter(): CIFilter;
+	/**
+	 * @since 14.0
+	 */
+	static colorThresholdOtsuFilter(): CIFilter & CIColorThresholdOtsu;
 
-	static convertLabToRGBFilter(): CIFilter;
+	/**
+	 * @since 14.0
+	 */
+	static columnAverageFilter(): CIFilter & CIColumnAverage;
 
-	static convertRGBtoLabFilter(): CIFilter;
+	static comicEffectFilter(): CIFilter & CIComicEffect;
 
-	static convolution3X3Filter(): CIFilter;
+	/**
+	 * @since 16.0
+	 */
+	static convertLabToRGBFilter(): CIFilter & CIConvertLab;
 
-	static convolution5X5Filter(): CIFilter;
+	/**
+	 * @since 16.0
+	 */
+	static convertRGBtoLabFilter(): CIFilter & CIConvertLab;
 
-	static convolution7X7Filter(): CIFilter;
+	static convolution3X3Filter(): CIFilter & CIConvolution;
 
-	static convolution9HorizontalFilter(): CIFilter;
+	static convolution5X5Filter(): CIFilter & CIConvolution;
 
-	static convolution9VerticalFilter(): CIFilter;
+	static convolution7X7Filter(): CIFilter & CIConvolution;
 
-	static convolutionRGB3X3Filter(): CIFilter;
+	static convolution9HorizontalFilter(): CIFilter & CIConvolution;
 
-	static convolutionRGB5X5Filter(): CIFilter;
+	static convolution9VerticalFilter(): CIFilter & CIConvolution;
 
-	static convolutionRGB7X7Filter(): CIFilter;
+	/**
+	 * @since 15.0
+	 */
+	static convolutionRGB3X3Filter(): CIFilter & CIConvolution;
 
-	static convolutionRGB9HorizontalFilter(): CIFilter;
+	/**
+	 * @since 15.0
+	 */
+	static convolutionRGB5X5Filter(): CIFilter & CIConvolution;
 
-	static convolutionRGB9VerticalFilter(): CIFilter;
+	/**
+	 * @since 15.0
+	 */
+	static convolutionRGB7X7Filter(): CIFilter & CIConvolution;
 
-	static copyMachineTransitionFilter(): CIFilter;
+	/**
+	 * @since 15.0
+	 */
+	static convolutionRGB9HorizontalFilter(): CIFilter & CIConvolution;
 
-	static coreMLModelFilter(): CIFilter;
+	/**
+	 * @since 15.0
+	 */
+	static convolutionRGB9VerticalFilter(): CIFilter & CIConvolution;
 
-	static crystallizeFilter(): CIFilter;
+	static copyMachineTransitionFilter(): CIFilter & CICopyMachineTransition;
 
-	static darkenBlendModeFilter(): CIFilter;
+	static coreMLModelFilter(): CIFilter & CICoreMLModel;
 
-	static depthOfFieldFilter(): CIFilter;
+	static crystallizeFilter(): CIFilter & CICrystallize;
 
-	static depthToDisparityFilter(): CIFilter;
+	static darkenBlendModeFilter(): CIFilter & CICompositeOperation;
 
-	static differenceBlendModeFilter(): CIFilter;
+	static depthOfFieldFilter(): CIFilter & CIDepthOfField;
 
-	static discBlurFilter(): CIFilter;
+	static depthToDisparityFilter(): CIFilter & CIDepthToDisparity;
 
-	static disintegrateWithMaskTransitionFilter(): CIFilter;
+	static differenceBlendModeFilter(): CIFilter & CICompositeOperation;
 
-	static disparityToDepthFilter(): CIFilter;
+	static discBlurFilter(): CIFilter & CIDiscBlur;
 
-	static displacementDistortionFilter(): CIFilter;
+	static disintegrateWithMaskTransitionFilter(): CIFilter & CIDisintegrateWithMaskTransition;
 
-	static dissolveTransitionFilter(): CIFilter;
+	static disparityToDepthFilter(): CIFilter & CIDisparityToDepth;
 
-	static ditherFilter(): CIFilter;
+	/**
+	 * @since 14.0
+	 */
+	static displacementDistortionFilter(): CIFilter & CIDisplacementDistortion;
 
-	static divideBlendModeFilter(): CIFilter;
+	static dissolveTransitionFilter(): CIFilter & CIDissolveTransition;
 
-	static documentEnhancerFilter(): CIFilter;
+	static ditherFilter(): CIFilter & CIDither;
 
-	static dotScreenFilter(): CIFilter;
+	static divideBlendModeFilter(): CIFilter & CICompositeOperation;
 
-	static drosteFilter(): CIFilter;
+	static documentEnhancerFilter(): CIFilter & CIDocumentEnhancer;
 
-	static edgePreserveUpsampleFilter(): CIFilter;
+	static dotScreenFilter(): CIFilter & CIDotScreen;
 
-	static edgeWorkFilter(): CIFilter;
+	/**
+	 * @since 14.0
+	 */
+	static drosteFilter(): CIFilter & CIDroste;
 
-	static edgesFilter(): CIFilter;
+	static edgePreserveUpsampleFilter(): CIFilter & CIEdgePreserveUpsample;
 
-	static eightfoldReflectedTileFilter(): CIFilter;
+	static edgeWorkFilter(): CIFilter & CIEdgeWork;
 
-	static exclusionBlendModeFilter(): CIFilter;
+	static edgesFilter(): CIFilter & CIEdges;
 
-	static exposureAdjustFilter(): CIFilter;
+	static eightfoldReflectedTileFilter(): CIFilter & CIEightfoldReflectedTile;
 
-	static falseColorFilter(): CIFilter;
+	static exclusionBlendModeFilter(): CIFilter & CICompositeOperation;
 
+	static exposureAdjustFilter(): CIFilter & CIExposureAdjust;
+
+	static falseColorFilter(): CIFilter & CIFalseColor;
+
+	/**
+	 * @since 6.0
+	 * @deprecated 17.0
+	 */
 	static filterArrayFromSerializedXMPInputImageExtentError(xmpData: NSData, extent: CGRect): NSArray<CIFilter>;
 
 	static filterNamesInCategories(categories: NSArray<string> | string[]): NSArray<string>;
 
 	static filterNamesInCategory(category: string): NSArray<string>;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 100000
+	 */
 	static filterWithCVPixelBufferPropertiesOptions(pixelBuffer: any, properties: NSDictionary<any, any>, options: NSDictionary<string, any>): CIFilter;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 100000
+	 */
 	static filterWithImageDataOptions(data: NSData, options: NSDictionary<string, any>): CIFilter;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 100000
+	 */
 	static filterWithImageURLOptions(url: NSURL, options: NSDictionary<string, any>): CIFilter;
 
 	static filterWithName(name: string): CIFilter;
 
 	static filterWithNameKeysAndValues(name: string, key0: any): CIFilter;
 
+	/**
+	 * @since 8.0
+	 */
 	static filterWithNameWithInputParameters(name: string, params: NSDictionary<string, any>): CIFilter;
 
-	static flashTransitionFilter(): CIFilter;
+	static flashTransitionFilter(): CIFilter & CIFlashTransition;
 
-	static fourfoldReflectedTileFilter(): CIFilter;
+	static fourfoldReflectedTileFilter(): CIFilter & CIFourfoldReflectedTile;
 
-	static fourfoldRotatedTileFilter(): CIFilter;
+	static fourfoldRotatedTileFilter(): CIFilter & CIFourfoldRotatedTile;
 
-	static fourfoldTranslatedTileFilter(): CIFilter;
+	static fourfoldTranslatedTileFilter(): CIFilter & CIFourfoldTranslatedTile;
 
-	static gaborGradientsFilter(): CIFilter;
+	static gaborGradientsFilter(): CIFilter & CIGaborGradients;
 
-	static gammaAdjustFilter(): CIFilter;
+	static gammaAdjustFilter(): CIFilter & CIGammaAdjust;
 
-	static gaussianBlurFilter(): CIFilter;
+	static gaussianBlurFilter(): CIFilter & CIGaussianBlur;
 
-	static gaussianGradientFilter(): CIFilter;
+	static gaussianGradientFilter(): CIFilter & CIGaussianGradient;
 
-	static glassDistortionFilter(): CIFilter;
+	/**
+	 * @since 14.0
+	 */
+	static glassDistortionFilter(): CIFilter & CIGlassDistortion;
 
-	static glassLozengeFilter(): CIFilter;
+	/**
+	 * @since 14.0
+	 */
+	static glassLozengeFilter(): CIFilter & CIGlassLozenge;
 
-	static glideReflectedTileFilter(): CIFilter;
+	static glideReflectedTileFilter(): CIFilter & CIGlideReflectedTile;
 
-	static gloomFilter(): CIFilter;
+	static gloomFilter(): CIFilter & CIGloom;
 
-	static hardLightBlendModeFilter(): CIFilter;
+	static hardLightBlendModeFilter(): CIFilter & CICompositeOperation;
 
-	static hatchedScreenFilter(): CIFilter;
+	static hatchedScreenFilter(): CIFilter & CIHatchedScreen;
 
-	static heightFieldFromMaskFilter(): CIFilter;
+	static heightFieldFromMaskFilter(): CIFilter & CIHeightFieldFromMask;
 
-	static hexagonalPixellateFilter(): CIFilter;
+	static hexagonalPixellateFilter(): CIFilter & CIHexagonalPixellate;
 
-	static highlightShadowAdjustFilter(): CIFilter;
+	static highlightShadowAdjustFilter(): CIFilter & CIHighlightShadowAdjust;
 
-	static histogramDisplayFilter(): CIFilter;
+	/**
+	 * @since 14.0
+	 */
+	static histogramDisplayFilter(): CIFilter & CIHistogramDisplay;
 
-	static holeDistortionFilter(): CIFilter;
+	/**
+	 * @since 14.0
+	 */
+	static holeDistortionFilter(): CIFilter & CIHoleDistortion;
 
-	static hueAdjustFilter(): CIFilter;
+	static hueAdjustFilter(): CIFilter & CIHueAdjust;
 
-	static hueBlendModeFilter(): CIFilter;
+	static hueBlendModeFilter(): CIFilter & CICompositeOperation;
 
-	static hueSaturationValueGradientFilter(): CIFilter;
+	static hueSaturationValueGradientFilter(): CIFilter & CIHueSaturationValueGradient;
 
-	static kaleidoscopeFilter(): CIFilter;
+	static kaleidoscopeFilter(): CIFilter & CIKaleidoscope;
 
-	static keystoneCorrectionCombinedFilter(): CIFilter;
+	static keystoneCorrectionCombinedFilter(): CIFilter & CIKeystoneCorrectionCombined;
 
-	static keystoneCorrectionHorizontalFilter(): CIFilter;
+	static keystoneCorrectionHorizontalFilter(): CIFilter & CIKeystoneCorrectionHorizontal;
 
-	static keystoneCorrectionVerticalFilter(): CIFilter;
+	static keystoneCorrectionVerticalFilter(): CIFilter & CIKeystoneCorrectionVertical;
 
-	static lanczosScaleTransformFilter(): CIFilter;
+	static lanczosScaleTransformFilter(): CIFilter & CILanczosScaleTransform;
 
-	static lenticularHaloGeneratorFilter(): CIFilter;
+	static lenticularHaloGeneratorFilter(): CIFilter & CILenticularHaloGenerator;
 
-	static lightTunnelFilter(): CIFilter;
+	/**
+	 * @since 14.0
+	 */
+	static lightTunnelFilter(): CIFilter & CILightTunnel;
 
-	static lightenBlendModeFilter(): CIFilter;
+	static lightenBlendModeFilter(): CIFilter & CICompositeOperation;
 
-	static lineOverlayFilter(): CIFilter;
+	static lineOverlayFilter(): CIFilter & CILineOverlay;
 
-	static lineScreenFilter(): CIFilter;
+	static lineScreenFilter(): CIFilter & CILineScreen;
 
-	static linearBurnBlendModeFilter(): CIFilter;
+	static linearBurnBlendModeFilter(): CIFilter & CICompositeOperation;
 
-	static linearDodgeBlendModeFilter(): CIFilter;
+	static linearDodgeBlendModeFilter(): CIFilter & CICompositeOperation;
 
-	static linearGradientFilter(): CIFilter;
+	static linearGradientFilter(): CIFilter & CILinearGradient;
 
-	static linearLightBlendModeFilter(): CIFilter;
+	/**
+	 * @since 15.0
+	 */
+	static linearLightBlendModeFilter(): CIFilter & CICompositeOperation;
 
-	static linearToSRGBToneCurveFilter(): CIFilter;
+	static linearToSRGBToneCurveFilter(): CIFilter & CILinearToSRGBToneCurve;
 
+	/**
+	 * @since 9.0
+	 */
 	static localizedDescriptionForFilterName(filterName: string): string;
 
+	/**
+	 * @since 9.0
+	 */
 	static localizedNameForCategory(category: string): string;
 
+	/**
+	 * @since 9.0
+	 */
 	static localizedNameForFilterName(filterName: string): string;
 
+	/**
+	 * @since 9.0
+	 */
 	static localizedReferenceDocumentationForFilterName(filterName: string): NSURL;
 
-	static luminosityBlendModeFilter(): CIFilter;
+	static luminosityBlendModeFilter(): CIFilter & CICompositeOperation;
 
-	static maskToAlphaFilter(): CIFilter;
+	static maskToAlphaFilter(): CIFilter & CIMaskToAlpha;
 
-	static maskedVariableBlurFilter(): CIFilter;
+	static maskedVariableBlurFilter(): CIFilter & CIMaskedVariableBlur;
 
-	static maximumComponentFilter(): CIFilter;
+	static maximumComponentFilter(): CIFilter & CIMaximumComponent;
 
-	static maximumCompositingFilter(): CIFilter;
+	static maximumCompositingFilter(): CIFilter & CICompositeOperation;
 
-	static medianFilter(): CIFilter;
+	/**
+	 * @since 18.0
+	 */
+	static maximumScaleTransformFilter(): CIFilter & CIMaximumScaleTransform;
 
-	static meshGeneratorFilter(): CIFilter;
+	static medianFilter(): CIFilter & CIMedian;
 
-	static minimumComponentFilter(): CIFilter;
+	static meshGeneratorFilter(): CIFilter & CIMeshGenerator;
 
-	static minimumCompositingFilter(): CIFilter;
+	static minimumComponentFilter(): CIFilter & CIMinimumComponent;
 
-	static mixFilter(): CIFilter;
+	static minimumCompositingFilter(): CIFilter & CICompositeOperation;
 
-	static modTransitionFilter(): CIFilter;
+	static mixFilter(): CIFilter & CIMix;
 
-	static morphologyGradientFilter(): CIFilter;
+	static modTransitionFilter(): CIFilter & CIModTransition;
 
-	static morphologyMaximumFilter(): CIFilter;
+	static morphologyGradientFilter(): CIFilter & CIMorphologyGradient;
 
-	static morphologyMinimumFilter(): CIFilter;
+	static morphologyMaximumFilter(): CIFilter & CIMorphologyMaximum;
 
-	static morphologyRectangleMaximumFilter(): CIFilter;
+	static morphologyMinimumFilter(): CIFilter & CIMorphologyMinimum;
 
-	static morphologyRectangleMinimumFilter(): CIFilter;
+	static morphologyRectangleMaximumFilter(): CIFilter & CIMorphologyRectangleMaximum;
 
-	static motionBlurFilter(): CIFilter;
+	static morphologyRectangleMinimumFilter(): CIFilter & CIMorphologyRectangleMinimum;
 
-	static multiplyBlendModeFilter(): CIFilter;
+	static motionBlurFilter(): CIFilter & CIMotionBlur;
 
-	static multiplyCompositingFilter(): CIFilter;
+	static multiplyBlendModeFilter(): CIFilter & CICompositeOperation;
+
+	static multiplyCompositingFilter(): CIFilter & CICompositeOperation;
 
 	static new(): CIFilter; // inherited from NSObject
 
-	static ninePartStretchedFilter(): CIFilter;
+	/**
+	 * @since 14.0
+	 */
+	static ninePartStretchedFilter(): CIFilter & CINinePartStretched;
 
-	static ninePartTiledFilter(): CIFilter;
+	/**
+	 * @since 14.0
+	 */
+	static ninePartTiledFilter(): CIFilter & CINinePartTiled;
 
-	static noiseReductionFilter(): CIFilter;
+	static noiseReductionFilter(): CIFilter & CINoiseReduction;
 
-	static opTileFilter(): CIFilter;
+	static opTileFilter(): CIFilter & CIOpTile;
 
-	static overlayBlendModeFilter(): CIFilter;
+	static overlayBlendModeFilter(): CIFilter & CICompositeOperation;
 
-	static pageCurlTransitionFilter(): CIFilter;
+	static pageCurlTransitionFilter(): CIFilter & CIPageCurlTransition;
 
-	static pageCurlWithShadowTransitionFilter(): CIFilter;
+	static pageCurlWithShadowTransitionFilter(): CIFilter & CIPageCurlWithShadowTransition;
 
-	static paletteCentroidFilter(): CIFilter;
+	static paletteCentroidFilter(): CIFilter & CIPaletteCentroid;
 
-	static palettizeFilter(): CIFilter;
+	static palettizeFilter(): CIFilter & CIPalettize;
 
-	static parallelogramTileFilter(): CIFilter;
+	static parallelogramTileFilter(): CIFilter & CIParallelogramTile;
 
-	static personSegmentationFilter(): CIFilter;
+	/**
+	 * @since 15.0
+	 */
+	static personSegmentationFilter(): CIFilter & CIPersonSegmentation;
 
-	static perspectiveCorrectionFilter(): CIFilter;
+	static perspectiveCorrectionFilter(): CIFilter & CIPerspectiveCorrection;
 
-	static perspectiveRotateFilter(): CIFilter;
+	static perspectiveRotateFilter(): CIFilter & CIPerspectiveRotate;
 
-	static perspectiveTileFilter(): CIFilter;
+	static perspectiveTileFilter(): CIFilter & CIPerspectiveTile;
 
-	static perspectiveTransformFilter(): CIFilter;
+	static perspectiveTransformFilter(): CIFilter & CIPerspectiveTransform;
 
-	static perspectiveTransformWithExtentFilter(): CIFilter;
+	static perspectiveTransformWithExtentFilter(): CIFilter & CIPerspectiveTransformWithExtent;
 
-	static photoEffectChromeFilter(): CIFilter;
+	static photoEffectChromeFilter(): CIFilter & CIPhotoEffect;
 
-	static photoEffectFadeFilter(): CIFilter;
+	static photoEffectFadeFilter(): CIFilter & CIPhotoEffect;
 
-	static photoEffectInstantFilter(): CIFilter;
+	static photoEffectInstantFilter(): CIFilter & CIPhotoEffect;
 
-	static photoEffectMonoFilter(): CIFilter;
+	static photoEffectMonoFilter(): CIFilter & CIPhotoEffect;
 
-	static photoEffectNoirFilter(): CIFilter;
+	static photoEffectNoirFilter(): CIFilter & CIPhotoEffect;
 
-	static photoEffectProcessFilter(): CIFilter;
+	static photoEffectProcessFilter(): CIFilter & CIPhotoEffect;
 
-	static photoEffectTonalFilter(): CIFilter;
+	static photoEffectTonalFilter(): CIFilter & CIPhotoEffect;
 
-	static photoEffectTransferFilter(): CIFilter;
+	static photoEffectTransferFilter(): CIFilter & CIPhotoEffect;
 
-	static pinLightBlendModeFilter(): CIFilter;
+	static pinLightBlendModeFilter(): CIFilter & CICompositeOperation;
 
-	static pinchDistortionFilter(): CIFilter;
+	/**
+	 * @since 14.0
+	 */
+	static pinchDistortionFilter(): CIFilter & CIPinchDistortion;
 
-	static pixellateFilter(): CIFilter;
+	static pixellateFilter(): CIFilter & CIPixellate;
 
-	static pointillizeFilter(): CIFilter;
+	static pointillizeFilter(): CIFilter & CIPointillize;
 
-	static radialGradientFilter(): CIFilter;
+	static radialGradientFilter(): CIFilter & CIRadialGradient;
 
-	static randomGeneratorFilter(): CIFilter;
+	static randomGeneratorFilter(): CIFilter & CIRandomGenerator;
 
+	/**
+	 * @since 9.0
+	 */
 	static registerFilterNameConstructorClassAttributes(name: string, anObject: CIFilterConstructor, attributes: NSDictionary<string, any>): void;
 
-	static rippleTransitionFilter(): CIFilter;
+	static rippleTransitionFilter(): CIFilter & CIRippleTransition;
 
-	static roundedRectangleGeneratorFilter(): CIFilter;
+	static roundedRectangleGeneratorFilter(): CIFilter & CIRoundedRectangleGenerator;
 
-	static roundedRectangleStrokeGeneratorFilter(): CIFilter;
+	/**
+	 * @since 17.0
+	 */
+	static roundedRectangleStrokeGeneratorFilter(): CIFilter & CIRoundedRectangleStrokeGenerator;
 
-	static rowAverageFilter(): CIFilter;
+	/**
+	 * @since 14.0
+	 */
+	static rowAverageFilter(): CIFilter & CIRowAverage;
 
-	static sRGBToneCurveToLinearFilter(): CIFilter;
+	static sRGBToneCurveToLinearFilter(): CIFilter & CISRGBToneCurveToLinear;
 
-	static saliencyMapFilter(): CIFilter;
+	static saliencyMapFilter(): CIFilter & CISaliencyMap;
 
-	static saturationBlendModeFilter(): CIFilter;
+	static saturationBlendModeFilter(): CIFilter & CICompositeOperation;
 
-	static screenBlendModeFilter(): CIFilter;
+	static screenBlendModeFilter(): CIFilter & CICompositeOperation;
 
-	static sepiaToneFilter(): CIFilter;
+	static sepiaToneFilter(): CIFilter & CISepiaTone;
 
+	/**
+	 * @since 6.0
+	 * @deprecated 17.0
+	 */
 	static serializedXMPFromFiltersInputImageExtent(filters: NSArray<CIFilter> | CIFilter[], extent: CGRect): NSData;
 
-	static shadedMaterialFilter(): CIFilter;
+	static shadedMaterialFilter(): CIFilter & CIShadedMaterial;
 
-	static sharpenLuminanceFilter(): CIFilter;
+	static sharpenLuminanceFilter(): CIFilter & CISharpenLuminance;
 
-	static sixfoldReflectedTileFilter(): CIFilter;
+	static sixfoldReflectedTileFilter(): CIFilter & CISixfoldReflectedTile;
 
-	static sixfoldRotatedTileFilter(): CIFilter;
+	static sixfoldRotatedTileFilter(): CIFilter & CISixfoldRotatedTile;
 
-	static smoothLinearGradientFilter(): CIFilter;
+	static smoothLinearGradientFilter(): CIFilter & CISmoothLinearGradient;
 
-	static sobelGradientsFilter(): CIFilter;
+	/**
+	 * @since 17.0
+	 */
+	static sobelGradientsFilter(): CIFilter & CISobelGradients;
 
-	static softLightBlendModeFilter(): CIFilter;
+	static softLightBlendModeFilter(): CIFilter & CICompositeOperation;
 
-	static sourceAtopCompositingFilter(): CIFilter;
+	static sourceAtopCompositingFilter(): CIFilter & CICompositeOperation;
 
-	static sourceInCompositingFilter(): CIFilter;
+	static sourceInCompositingFilter(): CIFilter & CICompositeOperation;
 
-	static sourceOutCompositingFilter(): CIFilter;
+	static sourceOutCompositingFilter(): CIFilter & CICompositeOperation;
 
-	static sourceOverCompositingFilter(): CIFilter;
+	static sourceOverCompositingFilter(): CIFilter & CICompositeOperation;
 
-	static spotColorFilter(): CIFilter;
+	static spotColorFilter(): CIFilter & CISpotColor;
 
-	static spotLightFilter(): CIFilter;
+	static spotLightFilter(): CIFilter & CISpotLight;
 
-	static starShineGeneratorFilter(): CIFilter;
+	static starShineGeneratorFilter(): CIFilter & CIStarShineGenerator;
 
-	static straightenFilter(): CIFilter;
+	static straightenFilter(): CIFilter & CIStraighten;
 
-	static stretchCropFilter(): CIFilter;
+	/**
+	 * @since 14.0
+	 */
+	static stretchCropFilter(): CIFilter & CIStretchCrop;
 
-	static stripesGeneratorFilter(): CIFilter;
+	static stripesGeneratorFilter(): CIFilter & CIStripesGenerator;
 
-	static subtractBlendModeFilter(): CIFilter;
+	static subtractBlendModeFilter(): CIFilter & CICompositeOperation;
 
-	static sunbeamsGeneratorFilter(): CIFilter;
+	static sunbeamsGeneratorFilter(): CIFilter & CISunbeamsGenerator;
 
+	/**
+	 * @since 13.0
+	 * @deprecated 100000
+	 */
 	static supportedRawCameraModels(): NSArray<string>;
 
-	static swipeTransitionFilter(): CIFilter;
+	static swipeTransitionFilter(): CIFilter & CISwipeTransition;
 
-	static temperatureAndTintFilter(): CIFilter;
+	static temperatureAndTintFilter(): CIFilter & CITemperatureAndTint;
 
-	static textImageGeneratorFilter(): CIFilter;
+	static textImageGeneratorFilter(): CIFilter & CITextImageGenerator;
 
-	static thermalFilter(): CIFilter;
+	static thermalFilter(): CIFilter & CIThermal;
 
-	static toneCurveFilter(): CIFilter;
+	static toneCurveFilter(): CIFilter & CIToneCurve;
 
-	static torusLensDistortionFilter(): CIFilter;
+	/**
+	 * @since 18.0
+	 */
+	static toneMapHeadroomFilter(): CIFilter & CIToneMapHeadroom;
 
-	static triangleKaleidoscopeFilter(): CIFilter;
+	/**
+	 * @since 14.0
+	 */
+	static torusLensDistortionFilter(): CIFilter & CITorusLensDistortion;
 
-	static triangleTileFilter(): CIFilter;
+	static triangleKaleidoscopeFilter(): CIFilter & CITriangleKaleidoscope;
 
-	static twelvefoldReflectedTileFilter(): CIFilter;
+	static triangleTileFilter(): CIFilter & CITriangleTile;
 
-	static twirlDistortionFilter(): CIFilter;
+	static twelvefoldReflectedTileFilter(): CIFilter & CITwelvefoldReflectedTile;
 
-	static unsharpMaskFilter(): CIFilter;
+	/**
+	 * @since 14.0
+	 */
+	static twirlDistortionFilter(): CIFilter & CITwirlDistortion;
 
-	static vibranceFilter(): CIFilter;
+	static unsharpMaskFilter(): CIFilter & CIUnsharpMask;
 
-	static vignetteEffectFilter(): CIFilter;
+	static vibranceFilter(): CIFilter & CIVibrance;
 
-	static vignetteFilter(): CIFilter;
+	static vignetteEffectFilter(): CIFilter & CIVignetteEffect;
 
-	static vividLightBlendModeFilter(): CIFilter;
+	static vignetteFilter(): CIFilter & CIVignette;
 
-	static vortexDistortionFilter(): CIFilter;
+	/**
+	 * @since 15.0
+	 */
+	static vividLightBlendModeFilter(): CIFilter & CICompositeOperation;
 
-	static whitePointAdjustFilter(): CIFilter;
+	/**
+	 * @since 14.0
+	 */
+	static vortexDistortionFilter(): CIFilter & CIVortexDistortion;
 
-	static xRayFilter(): CIFilter;
+	static whitePointAdjustFilter(): CIFilter & CIWhitePointAdjust;
 
-	static zoomBlurFilter(): CIFilter;
+	static xRayFilter(): CIFilter & CIXRay;
+
+	static zoomBlurFilter(): CIFilter & CIZoomBlur;
 
 	readonly attributes: NSDictionary<string, any>;
 
@@ -2067,6 +2599,9 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 
 	name: string;
 
+	/**
+	 * @since 5.0
+	 */
 	readonly outputImage: CIImage;
 
 	readonly outputKeys: NSArray<string>;
@@ -2083,6 +2618,9 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 
 	setDefaults(): void;
 
+	/**
+	 * @since 10.0
+	 */
 	setName(aString: string): void;
 }
 
@@ -2095,53 +2633,6 @@ declare var CIFilterConstructor: {
 	prototype: CIFilterConstructor;
 };
 
-declare class CIFilterGenerator extends NSObject implements CIFilterConstructor, NSCopying, NSSecureCoding {
-
-	static alloc(): CIFilterGenerator; // inherited from NSObject
-
-	static filterGenerator(): CIFilterGenerator;
-
-	static filterGeneratorWithContentsOfURL(aURL: NSURL): CIFilterGenerator;
-
-	static new(): CIFilterGenerator; // inherited from NSObject
-
-	classAttributes: NSDictionary<any, any>;
-
-	readonly exportedKeys: NSDictionary<any, any>;
-
-	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { contentsOfURL: NSURL; });
-
-	connectObjectWithKeyToObjectWithKey(sourceObject: any, sourceKey: string, targetObject: any, targetKey: string): void;
-
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
-
-	disconnectObjectWithKeyToObjectWithKey(sourceObject: any, sourceKey: string, targetObject: any, targetKey: string): void;
-
-	encodeWithCoder(coder: NSCoder): void;
-
-	exportKeyFromObjectWithName(key: string, targetObject: any, exportedKeyName: string): void;
-
-	filter(): CIFilter;
-
-	filterWithName(name: string): CIFilter;
-
-	initWithCoder(coder: NSCoder): this;
-
-	initWithContentsOfURL(aURL: NSURL): this;
-
-	registerFilterName(name: string): void;
-
-	removeExportedKey(exportedKeyName: string): void;
-
-	setAttributesForExportedKey(attributes: NSDictionary<any, any>, key: string): void;
-
-	writeToURLAtomically(aURL: NSURL, flag: boolean): boolean;
-}
-
 interface CIFilterProtocol {
 
 	outputImage: CIImage;
@@ -2153,6 +2644,9 @@ declare var CIFilterProtocol: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+/**
+ * @since 9.0
+ */
 declare class CIFilterShape extends NSObject implements NSCopying {
 
 	static alloc(): CIFilterShape; // inherited from NSObject
@@ -2529,6 +3023,9 @@ declare var CIHueSaturationValueGradient: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+/**
+ * @since 5.0
+ */
 declare class CIImage extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CIImage; // inherited from NSObject
@@ -2541,14 +3038,29 @@ declare class CIImage extends NSObject implements NSCopying, NSSecureCoding {
 
 	static imageWithCGImageOptions(image: any, options: NSDictionary<string, any>): CIImage;
 
+	/**
+	 * @since 13.0
+	 */
 	static imageWithCGImageSourceIndexOptions(source: any, index: number, dict: NSDictionary<string, any>): CIImage;
 
+	/**
+	 * @since 9.0
+	 */
 	static imageWithCVImageBuffer(imageBuffer: any): CIImage;
 
+	/**
+	 * @since 9.0
+	 */
 	static imageWithCVImageBufferOptions(imageBuffer: any, options: NSDictionary<string, any>): CIImage;
 
+	/**
+	 * @since 5.0
+	 */
 	static imageWithCVPixelBuffer(pixelBuffer: any): CIImage;
 
+	/**
+	 * @since 5.0
+	 */
 	static imageWithCVPixelBufferOptions(pixelBuffer: any, options: NSDictionary<string, any>): CIImage;
 
 	static imageWithColor(color: CIColor): CIImage;
@@ -2561,66 +3073,166 @@ declare class CIImage extends NSObject implements NSCopying, NSSecureCoding {
 
 	static imageWithDataOptions(data: NSData, options: NSDictionary<string, any>): CIImage;
 
+	/**
+	 * @since 11.0
+	 */
 	static imageWithDepthData(data: AVDepthData): CIImage;
 
+	/**
+	 * @since 11.0
+	 */
 	static imageWithDepthDataOptions(data: AVDepthData, options: NSDictionary<string, any>): CIImage;
 
+	/**
+	 * @since 5.0
+	 */
 	static imageWithIOSurface(surface: IOSurface): CIImage;
 
+	/**
+	 * @since 5.0
+	 */
 	static imageWithIOSurfaceOptions(surface: IOSurface, options: NSDictionary<string, any>): CIImage;
 
+	/**
+	 * @since 9.0
+	 */
 	static imageWithImageProviderSizeFormatColorSpaceOptions(p: any, width: number, height: number, f: number, cs: any, options: NSDictionary<string, any>): CIImage;
 
+	/**
+	 * @since 9.0
+	 */
 	static imageWithMTLTextureOptions(texture: MTLTexture, options: NSDictionary<string, any>): CIImage;
 
+	/**
+	 * @since 12.0
+	 */
 	static imageWithPortaitEffectsMatte(matte: AVPortraitEffectsMatte): CIImage;
 
+	/**
+	 * @since 12.0
+	 */
 	static imageWithPortaitEffectsMatteOptions(matte: AVPortraitEffectsMatte, options: NSDictionary<string, any>): CIImage;
 
+	/**
+	 * @since 13.0
+	 */
 	static imageWithSemanticSegmentationMatte(matte: AVSemanticSegmentationMatte): CIImage;
 
+	/**
+	 * @since 13.0
+	 */
 	static imageWithSemanticSegmentationMatteOptions(matte: AVSemanticSegmentationMatte, options: NSDictionary<string, any>): CIImage;
 
+	/**
+	 * @since 6.0
+	 * @deprecated 12.0
+	 */
 	static imageWithTextureSizeFlippedColorSpace(name: number, size: CGSize, flipped: boolean, colorSpace: any): CIImage;
 
 	static new(): CIImage; // inherited from NSObject
 
+	/**
+	 * @since 10.0
+	 */
 	readonly CGImage: any;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly colorSpace: any;
 
+	/**
+	 * @since 18.0
+	 */
+	readonly contentHeadroom: number;
+
+	/**
+	 * @since 11.0
+	 */
 	readonly depthData: AVDepthData;
 
 	readonly extent: CGRect;
 
+	/**
+	 * @since 18.0
+	 */
+	readonly metalTexture: MTLTexture;
+
+	readonly opaque: boolean;
+
+	/**
+	 * @since 10.0
+	 */
 	readonly pixelBuffer: any;
 
+	/**
+	 * @since 12.0
+	 */
 	readonly portraitEffectsMatte: AVPortraitEffectsMatte;
 
+	/**
+	 * @since 5.0
+	 */
 	readonly properties: NSDictionary<string, any>;
 
+	/**
+	 * @since 13.0
+	 */
 	readonly semanticSegmentationMatte: AVSemanticSegmentationMatte;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly url: NSURL;
 
+	/**
+	 * @since 13.0
+	 */
 	static readonly blackImage: CIImage;
 
+	/**
+	 * @since 13.0
+	 */
 	static readonly blueImage: CIImage;
 
+	/**
+	 * @since 13.0
+	 */
 	static readonly clearImage: CIImage;
 
+	/**
+	 * @since 13.0
+	 */
 	static readonly cyanImage: CIImage;
 
+	/**
+	 * @since 13.0
+	 */
 	static readonly grayImage: CIImage;
 
+	/**
+	 * @since 13.0
+	 */
 	static readonly greenImage: CIImage;
 
+	/**
+	 * @since 13.0
+	 */
 	static readonly magentaImage: CIImage;
 
+	/**
+	 * @since 13.0
+	 */
 	static readonly redImage: CIImage;
 
+	/**
+	 * @since 13.0
+	 */
 	static readonly whiteImage: CIImage;
 
+	/**
+	 * @since 13.0
+	 */
 	static readonly yellowImage: CIImage;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
@@ -2631,14 +3243,29 @@ declare class CIImage extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { CGImage: any; options: NSDictionary<string, any>; });
 
+	/**
+	 * @since 13.0
+	 */
 	constructor(o: { CGImageSource: any; index: number; options: NSDictionary<string, any>; });
 
+	/**
+	 * @since 9.0
+	 */
 	constructor(o: { CVImageBuffer: any; });
 
+	/**
+	 * @since 9.0
+	 */
 	constructor(o: { CVImageBuffer: any; options: NSDictionary<string, any>; });
 
+	/**
+	 * @since 5.0
+	 */
 	constructor(o: { CVPixelBuffer: any; });
 
+	/**
+	 * @since 5.0
+	 */
 	constructor(o: { CVPixelBuffer: any; options: NSDictionary<string, any>; });
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
@@ -2653,86 +3280,208 @@ declare class CIImage extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { data: NSData; options: NSDictionary<string, any>; });
 
+	/**
+	 * @since 11.0
+	 */
 	constructor(o: { depthData: AVDepthData; });
 
+	/**
+	 * @since 11.0
+	 */
 	constructor(o: { depthData: AVDepthData; options: NSDictionary<string, any>; });
 
+	/**
+	 * @since 5.0
+	 */
 	constructor(o: { IOSurface: IOSurface; });
 
+	/**
+	 * @since 5.0
+	 */
 	constructor(o: { IOSurface: IOSurface; options: NSDictionary<string, any>; });
 
+	/**
+	 * @since 5.0
+	 */
 	constructor(o: { image: UIImage; });
 
+	/**
+	 * @since 5.0
+	 */
 	constructor(o: { image: UIImage; options: NSDictionary<string, any>; });
 
+	/**
+	 * @since 9.0
+	 */
 	constructor(o: { imageProvider: any; size: number; format: number; colorSpace: number; options: any; });
 
+	/**
+	 * @since 9.0
+	 */
 	constructor(o: { MTLTexture: MTLTexture; options: NSDictionary<string, any>; });
 
+	/**
+	 * @since 11.0
+	 */
 	constructor(o: { portaitEffectsMatte: AVPortraitEffectsMatte; });
 
+	/**
+	 * @since 12.0
+	 */
 	constructor(o: { portaitEffectsMatte: AVPortraitEffectsMatte; options: NSDictionary<string, any>; });
 
+	/**
+	 * @since 13.0
+	 */
 	constructor(o: { semanticSegmentationMatte: AVSemanticSegmentationMatte; });
 
+	/**
+	 * @since 13.0
+	 */
 	constructor(o: { semanticSegmentationMatte: AVSemanticSegmentationMatte; options: NSDictionary<string, any>; });
 
+	/**
+	 * @since 6.0
+	 * @deprecated 12.0
+	 */
 	constructor(o: { texture: number; size: CGSize; flipped: boolean; colorSpace: any; });
 
+	/**
+	 * @since 5.0
+	 */
 	autoAdjustmentFilters(): NSArray<CIFilter>;
 
+	/**
+	 * @since 5.0
+	 */
 	autoAdjustmentFiltersWithOptions(options: NSDictionary<string, any>): NSArray<CIFilter>;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
+	/**
+	 * @since 11.0
+	 */
 	imageByApplyingCGOrientation(orientation: CGImagePropertyOrientation): CIImage;
 
+	/**
+	 * @since 11.0
+	 */
 	imageByApplyingFilter(filterName: string): CIImage;
 
+	/**
+	 * @since 8.0
+	 */
 	imageByApplyingFilterWithInputParameters(filterName: string, params: NSDictionary<string, any>): CIImage;
 
+	/**
+	 * @since 18.0
+	 */
+	imageByApplyingGainMap(gainmap: CIImage): CIImage;
+
+	/**
+	 * @since 18.0
+	 */
+	imageByApplyingGainMapHeadroom(gainmap: CIImage, headroom: number): CIImage;
+
+	/**
+	 * @since 10.0
+	 */
 	imageByApplyingGaussianBlurWithSigma(sigma: number): CIImage;
 
+	/**
+	 * @since 8.0
+	 */
 	imageByApplyingOrientation(orientation: number): CIImage;
 
 	imageByApplyingTransform(matrix: CGAffineTransform): CIImage;
 
+	/**
+	 * @since 10.0
+	 */
 	imageByApplyingTransformHighQualityDownsample(matrix: CGAffineTransform, highQualityDownsample: boolean): CIImage;
 
+	/**
+	 * @since 8.0
+	 */
 	imageByClampingToExtent(): CIImage;
 
+	/**
+	 * @since 10.0
+	 */
 	imageByClampingToRect(rect: CGRect): CIImage;
 
+	/**
+	 * @since 10.0
+	 */
 	imageByColorMatchingColorSpaceToWorkingSpace(colorSpace: any): CIImage;
 
+	/**
+	 * @since 10.0
+	 */
 	imageByColorMatchingWorkingSpaceToColorSpace(colorSpace: any): CIImage;
 
+	/**
+	 * @since 8.0
+	 */
 	imageByCompositingOverImage(dest: CIImage): CIImage;
 
+	/**
+	 * @since 16.0
+	 */
 	imageByConvertingLabToWorkingSpace(): CIImage;
 
+	/**
+	 * @since 16.0
+	 */
 	imageByConvertingWorkingSpaceToLab(): CIImage;
 
 	imageByCroppingToRect(rect: CGRect): CIImage;
 
+	/**
+	 * @since 12.0
+	 */
 	imageByInsertingIntermediate(cache: boolean): CIImage;
 
+	/**
+	 * @since 10.0
+	 */
 	imageByPremultiplyingAlpha(): CIImage;
 
+	/**
+	 * @since 11.0
+	 */
 	imageBySamplingLinear(): CIImage;
 
+	/**
+	 * @since 11.0
+	 */
 	imageBySamplingNearest(): CIImage;
 
+	/**
+	 * @since 10.0
+	 */
 	imageBySettingAlphaOneInExtent(extent: CGRect): CIImage;
 
+	/**
+	 * @since 10.0
+	 */
 	imageBySettingProperties(properties: NSDictionary<any, any>): CIImage;
 
+	/**
+	 * @since 10.0
+	 */
 	imageByUnpremultiplyingAlpha(): CIImage;
 
+	/**
+	 * @since 11.0
+	 */
 	imageTransformForCGOrientation(orientation: CGImagePropertyOrientation): CGAffineTransform;
 
+	/**
+	 * @since 8.0
+	 */
 	imageTransformForOrientation(orientation: number): CGAffineTransform;
 
 	initWithBitmapDataBytesPerRowSizeFormatColorSpace(data: NSData, bytesPerRow: number, size: CGSize, format: number, colorSpace: any): this;
@@ -2741,14 +3490,29 @@ declare class CIImage extends NSObject implements NSCopying, NSSecureCoding {
 
 	initWithCGImageOptions(image: any, options: NSDictionary<string, any>): this;
 
+	/**
+	 * @since 13.0
+	 */
 	initWithCGImageSourceIndexOptions(source: any, index: number, dict: NSDictionary<string, any>): this;
 
+	/**
+	 * @since 9.0
+	 */
 	initWithCVImageBuffer(imageBuffer: any): this;
 
+	/**
+	 * @since 9.0
+	 */
 	initWithCVImageBufferOptions(imageBuffer: any, options: NSDictionary<string, any>): this;
 
+	/**
+	 * @since 5.0
+	 */
 	initWithCVPixelBuffer(pixelBuffer: any): this;
 
+	/**
+	 * @since 5.0
+	 */
 	initWithCVPixelBufferOptions(pixelBuffer: any, options: NSDictionary<string, any>): this;
 
 	initWithCoder(coder: NSCoder): this;
@@ -2763,41 +3527,90 @@ declare class CIImage extends NSObject implements NSCopying, NSSecureCoding {
 
 	initWithDataOptions(data: NSData, options: NSDictionary<string, any>): this;
 
+	/**
+	 * @since 11.0
+	 */
 	initWithDepthData(data: AVDepthData): this;
 
+	/**
+	 * @since 11.0
+	 */
 	initWithDepthDataOptions(data: AVDepthData, options: NSDictionary<string, any>): this;
 
+	/**
+	 * @since 5.0
+	 */
 	initWithIOSurface(surface: IOSurface): this;
 
+	/**
+	 * @since 5.0
+	 */
 	initWithIOSurfaceOptions(surface: IOSurface, options: NSDictionary<string, any>): this;
 
+	/**
+	 * @since 5.0
+	 */
 	initWithImage(image: UIImage): this;
 
+	/**
+	 * @since 5.0
+	 */
 	initWithImageOptions(image: UIImage, options: NSDictionary<string, any>): this;
 
+	/**
+	 * @since 9.0
+	 */
 	initWithImageProviderSizeFormatColorSpaceOptions(p: any, width: number, height: number, f: number, cs: any, options: NSDictionary<string, any>): this;
 
+	/**
+	 * @since 9.0
+	 */
 	initWithMTLTextureOptions(texture: MTLTexture, options: NSDictionary<string, any>): this;
 
+	/**
+	 * @since 11.0
+	 */
 	initWithPortaitEffectsMatte(matte: AVPortraitEffectsMatte): this;
 
+	/**
+	 * @since 12.0
+	 */
 	initWithPortaitEffectsMatteOptions(matte: AVPortraitEffectsMatte, options: NSDictionary<string, any>): this;
 
+	/**
+	 * @since 13.0
+	 */
 	initWithSemanticSegmentationMatte(matte: AVSemanticSegmentationMatte): this;
 
+	/**
+	 * @since 13.0
+	 */
 	initWithSemanticSegmentationMatteOptions(matte: AVSemanticSegmentationMatte, options: NSDictionary<string, any>): this;
 
+	/**
+	 * @since 6.0
+	 * @deprecated 12.0
+	 */
 	initWithTextureSizeFlippedColorSpace(name: number, size: CGSize, flipped: boolean, colorSpace: any): this;
 
+	/**
+	 * @since 6.0
+	 */
 	regionOfInterestForImageInRect(image: CIImage, rect: CGRect): CGRect;
 }
 
+/**
+ * @since 9.0
+ */
 declare class CIImageAccumulator extends NSObject {
 
 	static alloc(): CIImageAccumulator; // inherited from NSObject
 
 	static imageAccumulatorWithExtentFormat(extent: CGRect, format: number): CIImageAccumulator;
 
+	/**
+	 * @since 9.0
+	 */
 	static imageAccumulatorWithExtentFormatColorSpace(extent: CGRect, format: number, colorSpace: any): CIImageAccumulator;
 
 	static new(): CIImageAccumulator; // inherited from NSObject
@@ -2808,6 +3621,9 @@ declare class CIImageAccumulator extends NSObject {
 
 	constructor(o: { extent: CGRect; format: number; });
 
+	/**
+	 * @since 9.0
+	 */
 	constructor(o: { extent: CGRect; format: number; colorSpace: any; });
 
 	clear(): void;
@@ -2816,6 +3632,9 @@ declare class CIImageAccumulator extends NSObject {
 
 	initWithExtentFormat(extent: CGRect, format: number): this;
 
+	/**
+	 * @since 9.0
+	 */
 	initWithExtentFormatColorSpace(extent: CGRect, format: number, colorSpace: any): this;
 
 	setImage(image: CIImage): void;
@@ -2823,12 +3642,18 @@ declare class CIImageAccumulator extends NSObject {
 	setImageDirtyRect(image: CIImage, dirtyRect: CGRect): void;
 }
 
+/**
+ * @since 10.0
+ */
 interface CIImageProcessorInput {
 
 	baseAddress: interop.Pointer | interop.Reference<any>;
 
 	bytesPerRow: number;
 
+	/**
+	 * @since 16.0
+	 */
 	digest: number;
 
 	format: number;
@@ -2839,8 +3664,14 @@ interface CIImageProcessorInput {
 
 	region: CGRect;
 
+	/**
+	 * @since 17.0
+	 */
 	roiTileCount: number;
 
+	/**
+	 * @since 17.0
+	 */
 	roiTileIndex: number;
 
 	surface: IOSurface;
@@ -2850,6 +3681,9 @@ declare var CIImageProcessorInput: {
 	prototype: CIImageProcessorInput;
 };
 
+/**
+ * @since 10.0
+ */
 declare class CIImageProcessorKernel extends NSObject {
 
 	static alloc(): CIImageProcessorKernel; // inherited from NSObject
@@ -2864,21 +3698,33 @@ declare class CIImageProcessorKernel extends NSObject {
 
 	static roiForInputArgumentsOutputRect(input: number, _arguments: NSDictionary<string, any>, outputRect: CGRect): CGRect;
 
+	/**
+	 * @since 17.0
+	 */
 	static roiTileArrayForInputArgumentsOutputRect(input: number, _arguments: NSDictionary<string, any>, outputRect: CGRect): NSArray<CIVector>;
 
 	static readonly outputFormat: number;
 
+	/**
+	 * @since 11.0
+	 */
 	static readonly outputIsOpaque: boolean;
 
 	static readonly synchronizeInputs: boolean;
 }
 
+/**
+ * @since 10.0
+ */
 interface CIImageProcessorOutput {
 
 	baseAddress: interop.Pointer | interop.Reference<any>;
 
 	bytesPerRow: number;
 
+	/**
+	 * @since 16.0
+	 */
 	digest: number;
 
 	format: number;
@@ -2932,28 +3778,60 @@ declare var CIKaleidoscope: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+/**
+ * @since 8.0
+ */
 declare class CIKernel extends NSObject {
 
 	static alloc(): CIKernel; // inherited from NSObject
 
+	/**
+	 * @since 14.0
+	 */
 	static kernelNamesFromMetalLibraryData(data: NSData): NSArray<string>;
 
+	/**
+	 * @since 11.0
+	 */
 	static kernelWithFunctionNameFromMetalLibraryDataError(name: string, data: NSData): CIKernel;
 
+	/**
+	 * @since 11.0
+	 */
 	static kernelWithFunctionNameFromMetalLibraryDataOutputPixelFormatError(name: string, data: NSData, format: number): CIKernel;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 12.0
+	 */
 	static kernelWithString(string: string): CIKernel;
 
+	/**
+	 * @since 15.0
+	 */
 	static kernelsWithMetalStringError(source: string): NSArray<CIKernel>;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 12.0
+	 */
 	static kernelsWithString(string: string): NSArray<CIKernel>;
 
 	static new(): CIKernel; // inherited from NSObject
 
+	/**
+	 * @since 8.0
+	 */
 	readonly name: string;
 
+	/**
+	 * @since 8.0
+	 */
 	applyWithExtentRoiCallbackArguments(extent: CGRect, callback: (p1: number, p2: CGRect) => CGRect, args: NSArray<any> | any[]): CIImage;
 
+	/**
+	 * @since 9.0
+	 */
 	setROISelector(method: string): void;
 }
 
@@ -3161,6 +4039,21 @@ interface CIMaximumComponent extends CIFilterProtocol {
 declare var CIMaximumComponent: {
 
 	prototype: CIMaximumComponent;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
+interface CIMaximumScaleTransform extends CIFilterProtocol {
+
+	aspectRatio: number;
+
+	inputImage: CIImage;
+
+	scale: number;
+}
+declare var CIMaximumScaleTransform: {
+
+	prototype: CIMaximumScaleTransform;
 
 	customAttributes?(): NSDictionary<string, any>;
 };
@@ -3421,6 +4314,9 @@ declare var CIPDF417BarcodeGenerator: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+/**
+ * @since 11.0
+ */
 declare class CIPDF417CodeDescriptor extends CIBarcodeDescriptor {
 
 	static alloc(): CIPDF417CodeDescriptor; // inherited from NSObject
@@ -3617,6 +4513,9 @@ declare var CIPerspectiveTransformWithExtent: {
 
 interface CIPhotoEffect extends CIFilterProtocol {
 
+	/**
+	 * @since 17.0
+	 */
 	extrapolate: boolean;
 
 	inputImage: CIImage;
@@ -3675,6 +4574,9 @@ declare var CIPointillize: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+/**
+ * @since 11.0
+ */
 declare class CIQRCodeDescriptor extends CIBarcodeDescriptor {
 
 	static alloc(): CIQRCodeDescriptor; // inherited from NSObject
@@ -3707,6 +4609,9 @@ declare const enum CIQRCodeErrorCorrectionLevel {
 	H = 72
 }
 
+/**
+ * @since 8.0
+ */
 declare class CIQRCodeFeature extends CIFeature implements NSCopying, NSSecureCoding {
 
 	static alloc(): CIQRCodeFeature; // inherited from NSObject
@@ -3719,6 +4624,9 @@ declare class CIQRCodeFeature extends CIFeature implements NSCopying, NSSecureCo
 
 	readonly messageString: string;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly symbolDescriptor: CIQRCodeDescriptor;
 
 	readonly topLeft: CGPoint;
@@ -3763,6 +4671,9 @@ declare var CIRAWDecoderVersion8DNG: string;
 
 declare var CIRAWDecoderVersionNone: string;
 
+/**
+ * @since 15.0
+ */
 declare class CIRAWFilter extends CIFilter {
 
 	static alloc(): CIRAWFilter; // inherited from NSObject
@@ -3890,6 +4801,9 @@ declare var CIRandomGenerator: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+/**
+ * @since 8.0
+ */
 declare class CIRectangleFeature extends CIFeature {
 
 	static alloc(): CIRectangleFeature; // inherited from NSObject
@@ -3905,6 +4819,9 @@ declare class CIRectangleFeature extends CIFeature {
 	readonly topRight: CGPoint;
 }
 
+/**
+ * @since 11.0
+ */
 declare class CIRenderDestination extends NSObject {
 
 	static alloc(): CIRenderDestination; // inherited from NSObject
@@ -3963,12 +4880,18 @@ declare const enum CIRenderDestinationAlphaMode {
 	Unpremultiplied = 2
 }
 
+/**
+ * @since 11.0
+ */
 declare class CIRenderInfo extends NSObject {
 
 	static alloc(): CIRenderInfo; // inherited from NSObject
 
 	static new(): CIRenderInfo; // inherited from NSObject
 
+	/**
+	 * @since 17.0
+	 */
 	readonly kernelCompileTime: number;
 
 	readonly kernelExecutionTime: number;
@@ -3978,6 +4901,9 @@ declare class CIRenderInfo extends NSObject {
 	readonly pixelsProcessed: number;
 }
 
+/**
+ * @since 11.0
+ */
 declare class CIRenderTask extends NSObject {
 
 	static alloc(): CIRenderTask; // inherited from NSObject
@@ -4069,6 +4995,9 @@ declare var CISaliencyMap: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+/**
+ * @since 9.0
+ */
 declare class CISampler extends NSObject implements NSCopying {
 
 	static alloc(): CISampler; // inherited from NSObject
@@ -4388,6 +5317,9 @@ declare var CITemperatureAndTint: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+/**
+ * @since 9.0
+ */
 declare class CITextFeature extends CIFeature {
 
 	static alloc(): CITextFeature; // inherited from NSObject
@@ -4411,6 +5343,9 @@ interface CITextImageGenerator extends CIFilterProtocol {
 
 	fontSize: number;
 
+	/**
+	 * @since 16.0
+	 */
 	padding: number;
 
 	scaleFactor: number;
@@ -4452,6 +5387,21 @@ interface CIToneCurve extends CIFilterProtocol {
 declare var CIToneCurve: {
 
 	prototype: CIToneCurve;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
+interface CIToneMapHeadroom extends CIFilterProtocol {
+
+	inputImage: CIImage;
+
+	sourceHeadroom: number;
+
+	targetHeadroom: number;
+}
+declare var CIToneMapHeadroom: {
+
+	prototype: CIToneMapHeadroom;
 
 	customAttributes?(): NSDictionary<string, any>;
 };
@@ -4575,16 +5525,28 @@ declare var CIUnsharpMask: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+/**
+ * @since 5.0
+ */
 declare class CIVector extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CIVector; // inherited from NSObject
 
 	static new(): CIVector; // inherited from NSObject
 
+	/**
+	 * @since 5.0
+	 */
 	static vectorWithCGAffineTransform(t: CGAffineTransform): CIVector;
 
+	/**
+	 * @since 5.0
+	 */
 	static vectorWithCGPoint(p: CGPoint): CIVector;
 
+	/**
+	 * @since 5.0
+	 */
 	static vectorWithCGRect(r: CGRect): CIVector;
 
 	static vectorWithString(representation: string): CIVector;
@@ -4599,10 +5561,19 @@ declare class CIVector extends NSObject implements NSCopying, NSSecureCoding {
 
 	static vectorWithXYZW(x: number, y: number, z: number, w: number): CIVector;
 
+	/**
+	 * @since 5.0
+	 */
 	readonly CGAffineTransformValue: CGAffineTransform;
 
+	/**
+	 * @since 5.0
+	 */
 	readonly CGPointValue: CGPoint;
 
+	/**
+	 * @since 5.0
+	 */
 	readonly CGRectValue: CGRect;
 
 	readonly W: number;
@@ -4619,10 +5590,19 @@ declare class CIVector extends NSObject implements NSCopying, NSSecureCoding {
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
+	/**
+	 * @since 5.0
+	 */
 	constructor(o: { CGAffineTransform: CGAffineTransform; });
 
+	/**
+	 * @since 5.0
+	 */
 	constructor(o: { CGPoint: CGPoint; });
 
+	/**
+	 * @since 5.0
+	 */
 	constructor(o: { CGRect: CGRect; });
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
@@ -4643,10 +5623,19 @@ declare class CIVector extends NSObject implements NSCopying, NSSecureCoding {
 
 	encodeWithCoder(coder: NSCoder): void;
 
+	/**
+	 * @since 5.0
+	 */
 	initWithCGAffineTransform(r: CGAffineTransform): this;
 
+	/**
+	 * @since 5.0
+	 */
 	initWithCGPoint(p: CGPoint): this;
 
+	/**
+	 * @since 5.0
+	 */
 	initWithCGRect(r: CGRect): this;
 
 	initWithCoder(coder: NSCoder): this;
@@ -4730,14 +5719,27 @@ declare var CIVortexDistortion: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+/**
+ * @since 8.0
+ */
 declare class CIWarpKernel extends CIKernel {
 
 	static alloc(): CIWarpKernel; // inherited from NSObject
 
+	/**
+	 * @since 11.0
+	 */
 	static kernelWithFunctionNameFromMetalLibraryDataError(name: string, data: NSData): CIWarpKernel; // inherited from CIKernel
 
+	/**
+	 * @since 11.0
+	 */
 	static kernelWithFunctionNameFromMetalLibraryDataOutputPixelFormatError(name: string, data: NSData, format: number): CIWarpKernel; // inherited from CIKernel
 
+	/**
+	 * @since 8.0
+	 * @deprecated 12.0
+	 */
 	static kernelWithString(string: string): CIWarpKernel; // inherited from CIKernel
 
 	static new(): CIWarpKernel; // inherited from NSObject
@@ -4784,18 +5786,31 @@ declare var CIZoomBlur: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+/**
+ * @since 10.0
+ * @deprecated 100000
+ */
 declare var kCIActiveKeys: string;
 
 declare var kCIAttributeClass: string;
 
 declare var kCIAttributeDefault: string;
 
+/**
+ * @since 9.0
+ */
 declare var kCIAttributeDescription: string;
 
 declare var kCIAttributeDisplayName: string;
 
+/**
+ * @since 9.0
+ */
 declare var kCIAttributeFilterAvailable_Mac: string;
 
+/**
+ * @since 9.0
+ */
 declare var kCIAttributeFilterAvailable_iOS: string;
 
 declare var kCIAttributeFilterCategories: string;
@@ -4812,6 +5827,9 @@ declare var kCIAttributeMin: string;
 
 declare var kCIAttributeName: string;
 
+/**
+ * @since 9.0
+ */
 declare var kCIAttributeReferenceDocumentation: string;
 
 declare var kCIAttributeSliderMax: string;
@@ -4824,20 +5842,38 @@ declare var kCIAttributeTypeAngle: string;
 
 declare var kCIAttributeTypeBoolean: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCIAttributeTypeColor: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCIAttributeTypeCount: string;
 
 declare var kCIAttributeTypeDistance: string;
 
+/**
+ * @since 9.0
+ */
 declare var kCIAttributeTypeGradient: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCIAttributeTypeImage: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCIAttributeTypeInteger: string;
 
 declare var kCIAttributeTypeOffset: string;
 
+/**
+ * @since 9.0
+ */
 declare var kCIAttributeTypeOpaqueColor: string;
 
 declare var kCIAttributeTypePosition: string;
@@ -4850,6 +5886,9 @@ declare var kCIAttributeTypeScalar: string;
 
 declare var kCIAttributeTypeTime: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCIAttributeTypeTransform: string;
 
 declare var kCICategoryBlur: string;
@@ -4864,6 +5903,9 @@ declare var kCICategoryCompositeOperation: string;
 
 declare var kCICategoryDistortionEffect: string;
 
+/**
+ * @since 9.0
+ */
 declare var kCICategoryFilterGenerator: string;
 
 declare var kCICategoryGenerator: string;
@@ -4880,6 +5922,9 @@ declare var kCICategoryInterlaced: string;
 
 declare var kCICategoryNonSquarePixels: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCICategoryReduction: string;
 
 declare var kCICategorySharpen: string;
@@ -4894,302 +5939,771 @@ declare var kCICategoryTransition: string;
 
 declare var kCICategoryVideo: string;
 
+/**
+ * @since 13.0
+ */
 declare var kCIContextAllowLowPower: string;
 
+/**
+ * @since 10.0
+ */
 declare var kCIContextCacheIntermediates: string;
 
+/**
+ * @since 9.0
+ */
 declare var kCIContextHighQualityDownsample: string;
 
+/**
+ * @since 17.0
+ */
 declare var kCIContextMemoryLimit: string;
 
+/**
+ * @since 12.0
+ */
 declare var kCIContextName: string;
 
 declare var kCIContextOutputColorSpace: string;
 
+/**
+ * @since 7.0
+ */
 declare var kCIContextOutputPremultiplied: string;
 
+/**
+ * @since 8.0
+ */
 declare var kCIContextPriorityRequestLow: string;
 
 declare var kCIContextUseSoftwareRenderer: string;
 
 declare var kCIContextWorkingColorSpace: string;
 
+/**
+ * @since 8.0
+ */
 declare var kCIContextWorkingFormat: string;
 
+/**
+ * @since 9.0
+ */
 declare var kCIFormatA16: number;
 
+/**
+ * @since 9.0
+ */
 declare var kCIFormatA8: number;
 
+/**
+ * @since 9.0
+ */
 declare var kCIFormatABGR8: number;
 
+/**
+ * @since 6.0
+ */
 declare var kCIFormatARGB8: number;
 
+/**
+ * @since 9.0
+ */
 declare var kCIFormatAf: number;
 
+/**
+ * @since 9.0
+ */
 declare var kCIFormatAh: number;
 
 declare var kCIFormatBGRA8: number;
 
+/**
+ * @since 10.0
+ */
 declare var kCIFormatL16: number;
 
+/**
+ * @since 10.0
+ */
 declare var kCIFormatL8: number;
 
+/**
+ * @since 10.0
+ */
 declare var kCIFormatLA16: number;
 
+/**
+ * @since 10.0
+ */
 declare var kCIFormatLA8: number;
 
+/**
+ * @since 10.0
+ */
 declare var kCIFormatLAf: number;
 
+/**
+ * @since 10.0
+ */
 declare var kCIFormatLAh: number;
 
+/**
+ * @since 10.0
+ */
 declare var kCIFormatLf: number;
 
+/**
+ * @since 10.0
+ */
 declare var kCIFormatLh: number;
 
+/**
+ * @since 9.0
+ */
 declare var kCIFormatR16: number;
 
+/**
+ * @since 9.0
+ */
 declare var kCIFormatR8: number;
 
+/**
+ * @since 9.0
+ */
 declare var kCIFormatRG16: number;
 
+/**
+ * @since 9.0
+ */
 declare var kCIFormatRG8: number;
 
+/**
+ * @since 17.0
+ */
 declare var kCIFormatRGB10: number;
 
+/**
+ * @since 10.0
+ */
 declare var kCIFormatRGBA16: number;
 
 declare var kCIFormatRGBA8: number;
 
+/**
+ * @since 7.0
+ */
 declare var kCIFormatRGBAf: number;
 
+/**
+ * @since 6.0
+ */
 declare var kCIFormatRGBAh: number;
 
+/**
+ * @since 14.2
+ */
 declare var kCIFormatRGBX16: number;
 
+/**
+ * @since 17.0
+ */
 declare var kCIFormatRGBXf: number;
 
+/**
+ * @since 17.0
+ */
 declare var kCIFormatRGBXh: number;
 
+/**
+ * @since 9.0
+ */
 declare var kCIFormatRGf: number;
 
+/**
+ * @since 9.0
+ */
 declare var kCIFormatRGh: number;
 
+/**
+ * @since 9.0
+ */
 declare var kCIFormatRf: number;
 
+/**
+ * @since 9.0
+ */
 declare var kCIFormatRh: number;
 
+/**
+ * @since 11.0
+ */
 declare var kCIImageApplyOrientationProperty: string;
 
+/**
+ * @since 8.0
+ */
 declare var kCIImageAutoAdjustCrop: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCIImageAutoAdjustEnhance: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCIImageAutoAdjustFeatures: string;
 
+/**
+ * @since 8.0
+ */
 declare var kCIImageAutoAdjustLevel: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCIImageAutoAdjustRedEye: string;
 
+/**
+ * @since 11.0
+ */
 declare var kCIImageAuxiliaryDepth: string;
 
+/**
+ * @since 11.0
+ */
 declare var kCIImageAuxiliaryDisparity: string;
 
+/**
+ * @since 14.1
+ */
 declare var kCIImageAuxiliaryHDRGainMap: string;
 
+/**
+ * @since 12.0
+ */
 declare var kCIImageAuxiliaryPortraitEffectsMatte: string;
 
+/**
+ * @since 14.1
+ */
 declare var kCIImageAuxiliarySemanticSegmentationGlassesMatte: string;
 
+/**
+ * @since 13.0
+ */
 declare var kCIImageAuxiliarySemanticSegmentationHairMatte: string;
 
+/**
+ * @since 13.0
+ */
 declare var kCIImageAuxiliarySemanticSegmentationSkinMatte: string;
 
+/**
+ * @since 14.3
+ */
 declare var kCIImageAuxiliarySemanticSegmentationSkyMatte: string;
 
+/**
+ * @since 13.0
+ */
 declare var kCIImageAuxiliarySemanticSegmentationTeethMatte: string;
 
 declare var kCIImageCacheImmediately: string;
 
 declare var kCIImageColorSpace: string;
 
+/**
+ * @since 18.0
+ */
+declare var kCIImageContentHeadroom: string;
+
+/**
+ * @since 17.0
+ */
 declare var kCIImageExpandToHDR: string;
 
+/**
+ * @since 11.0
+ */
 declare var kCIImageNearestSampling: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCIImageProperties: string;
 
+/**
+ * @since 9.0
+ */
 declare var kCIImageProviderTileSize: string;
 
+/**
+ * @since 9.0
+ */
 declare var kCIImageProviderUserInfo: string;
 
+/**
+ * @since 11.0
+ */
 declare var kCIImageRepresentationAVDepthData: string;
 
+/**
+ * @since 12.0
+ */
 declare var kCIImageRepresentationAVPortraitEffectsMatte: string;
 
+/**
+ * @since 13.0
+ */
 declare var kCIImageRepresentationAVSemanticSegmentationMattes: string;
 
+/**
+ * @since 11.0
+ */
 declare var kCIImageRepresentationDepthImage: string;
 
+/**
+ * @since 11.0
+ */
 declare var kCIImageRepresentationDisparityImage: string;
 
+/**
+ * @since 18.0
+ */
+declare var kCIImageRepresentationHDRImage: string;
+
+/**
+ * @since 12.0
+ */
 declare var kCIImageRepresentationPortraitEffectsMatteImage: string;
 
+/**
+ * @since 14.1
+ */
 declare var kCIImageRepresentationSemanticSegmentationGlassesMatteImage: string;
 
+/**
+ * @since 13.0
+ */
 declare var kCIImageRepresentationSemanticSegmentationHairMatteImage: string;
 
+/**
+ * @since 13.0
+ */
 declare var kCIImageRepresentationSemanticSegmentationSkinMatteImage: string;
 
+/**
+ * @since 14.3
+ */
 declare var kCIImageRepresentationSemanticSegmentationSkyMatteImage: string;
 
+/**
+ * @since 13.0
+ */
 declare var kCIImageRepresentationSemanticSegmentationTeethMatteImage: string;
 
+/**
+ * @since 14.1
+ */
 declare var kCIImageToneMapHDRtoSDR: string;
 
+/**
+ * @since 10.0
+ * @deprecated 100000
+ */
 declare var kCIInputAllowDraftModeKey: string;
 
+/**
+ * @since 12.0
+ */
 declare var kCIInputAmountKey: string;
 
+/**
+ * @since 7.0
+ */
 declare var kCIInputAngleKey: string;
 
+/**
+ * @since 7.0
+ */
 declare var kCIInputAspectRatioKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCIInputBackgroundImageKey: string;
 
+/**
+ * @since 10.0
+ * @deprecated 100000
+ */
 declare var kCIInputBaselineExposureKey: string;
 
+/**
+ * @since 9.0
+ */
 declare var kCIInputBiasKey: string;
 
+/**
+ * @since 10.0
+ * @deprecated 100000
+ */
 declare var kCIInputBoostKey: string;
 
+/**
+ * @since 10.0
+ * @deprecated 100000
+ */
 declare var kCIInputBoostShadowAmountKey: string;
 
+/**
+ * @since 7.0
+ */
 declare var kCIInputBrightnessKey: string;
 
+/**
+ * @since 7.0
+ */
 declare var kCIInputCenterKey: string;
 
+/**
+ * @since 7.0
+ */
 declare var kCIInputColorKey: string;
 
+/**
+ * @since 10.0
+ * @deprecated 100000
+ */
 declare var kCIInputColorNoiseReductionAmountKey: string;
 
+/**
+ * @since 7.0
+ */
 declare var kCIInputContrastKey: string;
 
+/**
+ * @since 10.0
+ * @deprecated 100000
+ */
 declare var kCIInputDecoderVersionKey: string;
 
+/**
+ * @since 11.0
+ */
 declare var kCIInputDepthImageKey: string;
 
+/**
+ * @since 10.0
+ * @deprecated 100000
+ */
 declare var kCIInputDisableGamutMapKey: string;
 
+/**
+ * @since 11.0
+ */
 declare var kCIInputDisparityImageKey: string;
 
+/**
+ * @since 7.0
+ */
 declare var kCIInputEVKey: string;
 
+/**
+ * @since 10.0
+ * @deprecated 100000
+ */
 declare var kCIInputEnableChromaticNoiseTrackingKey: string;
 
+/**
+ * @since 12.0
+ * @deprecated 100000
+ */
 declare var kCIInputEnableEDRModeKey: string;
 
+/**
+ * @since 10.0
+ * @deprecated 100000
+ */
 declare var kCIInputEnableSharpeningKey: string;
 
+/**
+ * @since 10.0
+ * @deprecated 100000
+ */
 declare var kCIInputEnableVendorLensCorrectionKey: string;
 
+/**
+ * @since 7.0
+ */
 declare var kCIInputExtentKey: string;
 
+/**
+ * @since 9.0
+ */
 declare var kCIInputGradientImageKey: string;
 
+/**
+ * @since 10.0
+ * @deprecated 100000
+ */
 declare var kCIInputIgnoreImageOrientationKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCIInputImageKey: string;
 
+/**
+ * @since 10.0
+ * @deprecated 100000
+ */
 declare var kCIInputImageOrientationKey: string;
 
+/**
+ * @since 7.0
+ */
 declare var kCIInputIntensityKey: string;
 
+/**
+ * @since 10.0
+ * @deprecated 100000
+ */
 declare var kCIInputLinearSpaceFilter: string;
 
+/**
+ * @since 14.3
+ * @deprecated 100000
+ */
 declare var kCIInputLocalToneMapAmountKey: string;
 
+/**
+ * @since 10.0
+ * @deprecated 100000
+ */
 declare var kCIInputLuminanceNoiseReductionAmountKey: string;
 
+/**
+ * @since 7.0
+ */
 declare var kCIInputMaskImageKey: string;
 
+/**
+ * @since 12.0
+ */
 declare var kCIInputMatteImageKey: string;
 
+/**
+ * @since 11.0
+ * @deprecated 100000
+ */
 declare var kCIInputMoireAmountKey: string;
 
+/**
+ * @since 10.0
+ * @deprecated 100000
+ */
 declare var kCIInputNeutralChromaticityXKey: string;
 
+/**
+ * @since 10.0
+ * @deprecated 100000
+ */
 declare var kCIInputNeutralChromaticityYKey: string;
 
+/**
+ * @since 10.0
+ * @deprecated 100000
+ */
 declare var kCIInputNeutralLocationKey: string;
 
+/**
+ * @since 10.0
+ * @deprecated 100000
+ */
 declare var kCIInputNeutralTemperatureKey: string;
 
+/**
+ * @since 10.0
+ * @deprecated 100000
+ */
 declare var kCIInputNeutralTintKey: string;
 
+/**
+ * @since 10.0
+ * @deprecated 100000
+ */
 declare var kCIInputNoiseReductionAmountKey: string;
 
+/**
+ * @since 10.0
+ * @deprecated 100000
+ */
 declare var kCIInputNoiseReductionContrastAmountKey: string;
 
+/**
+ * @since 10.0
+ * @deprecated 100000
+ */
 declare var kCIInputNoiseReductionDetailAmountKey: string;
 
+/**
+ * @since 10.0
+ * @deprecated 100000
+ */
 declare var kCIInputNoiseReductionSharpnessAmountKey: string;
 
+/**
+ * @since 7.0
+ */
 declare var kCIInputRadiusKey: string;
 
+/**
+ * @since 9.0
+ */
 declare var kCIInputRefractionKey: string;
 
+/**
+ * @since 7.0
+ */
 declare var kCIInputSaturationKey: string;
 
+/**
+ * @since 10.0
+ * @deprecated 100000
+ */
 declare var kCIInputScaleFactorKey: string;
 
+/**
+ * @since 7.0
+ */
 declare var kCIInputScaleKey: string;
 
+/**
+ * @since 9.0
+ */
 declare var kCIInputShadingImageKey: string;
 
+/**
+ * @since 7.0
+ */
 declare var kCIInputSharpnessKey: string;
 
+/**
+ * @since 7.0
+ */
 declare var kCIInputTargetImageKey: string;
 
+/**
+ * @since 7.0
+ */
 declare var kCIInputTimeKey: string;
 
+/**
+ * @since 7.0
+ */
 declare var kCIInputTransformKey: string;
 
+/**
+ * @since 6.0
+ */
 declare var kCIInputVersionKey: string;
 
+/**
+ * @since 9.0
+ */
 declare var kCIInputWeightsKey: string;
 
+/**
+ * @since 7.0
+ */
 declare var kCIInputWidthKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var kCIOutputImageKey: string;
 
+/**
+ * @since 10.0
+ * @deprecated 100000
+ */
 declare var kCIOutputNativeSizeKey: string;
 
+/**
+ * @since 15.0
+ * @deprecated 100000
+ */
 declare var kCIPropertiesKey: string;
 
+/**
+ * @since 9.0
+ */
 declare var kCISamplerAffineMatrix: string;
 
+/**
+ * @since 9.0
+ */
 declare var kCISamplerColorSpace: string;
 
+/**
+ * @since 9.0
+ */
 declare var kCISamplerFilterLinear: string;
 
+/**
+ * @since 9.0
+ */
 declare var kCISamplerFilterMode: string;
 
+/**
+ * @since 9.0
+ */
 declare var kCISamplerFilterNearest: string;
 
+/**
+ * @since 9.0
+ */
 declare var kCISamplerWrapBlack: string;
 
+/**
+ * @since 9.0
+ */
 declare var kCISamplerWrapClamp: string;
 
+/**
+ * @since 9.0
+ */
 declare var kCISamplerWrapMode: string;
 
+/**
+ * @since 10.0
+ * @deprecated 100000
+ */
 declare var kCISupportedDecoderVersionsKey: string;
 
+/**
+ * @since 9.0
+ */
 declare var kCIUIParameterSet: string;
 
+/**
+ * @since 9.0
+ */
 declare var kCIUISetAdvanced: string;
 
+/**
+ * @since 9.0
+ */
 declare var kCIUISetBasic: string;
 
+/**
+ * @since 9.0
+ */
 declare var kCIUISetDevelopment: string;
 
+/**
+ * @since 9.0
+ */
 declare var kCIUISetIntermediate: string;

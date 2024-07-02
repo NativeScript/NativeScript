@@ -6,17 +6,17 @@ interface SVCXPRT {
 	xp_addrlen: number;
 	xp_raddr: sockaddr_in;
 	xp_verf: opaque_auth;
-	xp_p1: string;
-	xp_p2: string;
+	xp_p1: interop.Pointer | interop.Reference<any>;
+	xp_p2: interop.Pointer | interop.Reference<any>;
 }
 declare var SVCXPRT: interop.StructType<SVCXPRT>;
 
 interface XDR {
 	x_op: xdr_op;
 	x_ops: interop.Pointer | interop.Reference<xdr_ops>;
-	x_public: string;
+	x_public: interop.Pointer | interop.Reference<any>;
 	x_private: interop.Pointer | interop.Reference<any>;
-	x_base: string;
+	x_base: interop.Pointer | interop.Reference<any>;
 	x_handy: number;
 }
 declare var XDR: interop.StructType<XDR>;
@@ -68,7 +68,7 @@ declare const enum auth_stat {
 
 interface authunix_parms {
 	aup_time: number;
-	aup_machname: string;
+	aup_machname: interop.Pointer | interop.Reference<any>;
 	aup_uid: number;
 	aup_gid: number;
 	aup_len: number;
@@ -94,9 +94,9 @@ declare function clnt_pcreateerror(p1: string | interop.Pointer | interop.Refere
 
 declare function clnt_perrno(p1: clnt_stat): void;
 
-declare function clnt_spcreateerror(p1: string | interop.Pointer | interop.Reference<any>): string;
+declare function clnt_spcreateerror(p1: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function clnt_sperrno(p1: clnt_stat): string;
+declare function clnt_sperrno(p1: clnt_stat): interop.Pointer | interop.Reference<any>;
 
 declare const enum clnt_stat {
 
@@ -146,13 +146,13 @@ declare const enum msg_type {
 
 interface netobj {
 	n_len: number;
-	n_bytes: string;
+	n_bytes: interop.Pointer | interop.Reference<any>;
 }
 declare var netobj: interop.StructType<netobj>;
 
 interface opaque_auth {
 	oa_flavor: number;
-	oa_base: string;
+	oa_base: interop.Pointer | interop.Reference<any>;
 	oa_length: number;
 }
 declare var opaque_auth: interop.StructType<opaque_auth>;
@@ -191,7 +191,7 @@ interface svc_req {
 	rq_vers: number;
 	rq_proc: number;
 	rq_cred: opaque_auth;
-	rq_clntcred: string;
+	rq_clntcred: interop.Pointer | interop.Reference<any>;
 	rq_xprt: interop.Pointer | interop.Reference<SVCXPRT>;
 }
 declare var svc_req: interop.StructType<svc_req>;
@@ -226,13 +226,13 @@ declare function svcudp_bufcreate(p1: number, p2: number, p3: number): interop.P
 
 declare function svcudp_create(p1: number): interop.Pointer | interop.Reference<SVCXPRT>;
 
-declare function xdr_array(p1: interop.Pointer | interop.Reference<XDR>, p2: interop.Pointer | interop.Reference<string>, p3: interop.Pointer | interop.Reference<number>, p4: number, p5: number, p6: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<XDR>, p2: interop.Pointer | interop.Reference<any>, p3: number) => number>): number;
+declare function xdr_array(p1: interop.Pointer | interop.Reference<XDR>, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p3: interop.Pointer | interop.Reference<number>, p4: number, p5: number, p6: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<XDR>, p2: interop.Pointer | interop.Reference<any>, p3: number) => number>): number;
 
 declare function xdr_authunix_parms(p1: interop.Pointer | interop.Reference<XDR>, p2: interop.Pointer | interop.Reference<authunix_parms>): number;
 
 declare function xdr_bool(p1: interop.Pointer | interop.Reference<XDR>, p2: interop.Pointer | interop.Reference<number>): number;
 
-declare function xdr_bytes(p1: interop.Pointer | interop.Reference<XDR>, p2: interop.Pointer | interop.Reference<string>, p3: interop.Pointer | interop.Reference<number>, p4: number): number;
+declare function xdr_bytes(p1: interop.Pointer | interop.Reference<XDR>, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p3: interop.Pointer | interop.Reference<number>, p4: number): number;
 
 declare function xdr_char(p1: interop.Pointer | interop.Reference<XDR>, p2: string | interop.Pointer | interop.Reference<any>): number;
 
@@ -280,8 +280,8 @@ declare function xdr_opaque(p1: interop.Pointer | interop.Reference<XDR>, p2: st
 interface xdr_ops {
 	x_getlong: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<XDR>, p2: interop.Pointer | interop.Reference<number>) => number>;
 	x_putlong: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<XDR>, p2: interop.Pointer | interop.Reference<number>) => number>;
-	x_getbytes: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<XDR>, p2: string, p3: number) => number>;
-	x_putbytes: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<XDR>, p2: string, p3: number) => number>;
+	x_getbytes: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<XDR>, p2: interop.Pointer | interop.Reference<any>, p3: number) => number>;
+	x_putbytes: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<XDR>, p2: interop.Pointer | interop.Reference<any>, p3: number) => number>;
 	x_getpostn: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<XDR>) => number>;
 	x_setpostn: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<XDR>, p2: number) => number>;
 	x_inline: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<XDR>, p2: number) => interop.Pointer | interop.Reference<number>>;
@@ -290,15 +290,15 @@ interface xdr_ops {
 }
 declare var xdr_ops: interop.StructType<xdr_ops>;
 
-declare function xdr_pointer(p1: interop.Pointer | interop.Reference<XDR>, p2: interop.Pointer | interop.Reference<string>, p3: number, p4: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<XDR>, p2: interop.Pointer | interop.Reference<any>, p3: number) => number>): number;
+declare function xdr_pointer(p1: interop.Pointer | interop.Reference<XDR>, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p3: number, p4: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<XDR>, p2: interop.Pointer | interop.Reference<any>, p3: number) => number>): number;
 
 declare function xdr_quadruple(p1: interop.Pointer | interop.Reference<XDR>, p2: interop.Pointer | interop.Reference<number>): number;
 
-declare function xdr_reference(p1: interop.Pointer | interop.Reference<XDR>, p2: interop.Pointer | interop.Reference<string>, p3: number, p4: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<XDR>, p2: interop.Pointer | interop.Reference<any>, p3: number) => number>): number;
+declare function xdr_reference(p1: interop.Pointer | interop.Reference<XDR>, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p3: number, p4: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<XDR>, p2: interop.Pointer | interop.Reference<any>, p3: number) => number>): number;
 
 declare function xdr_short(p1: interop.Pointer | interop.Reference<XDR>, p2: interop.Pointer | interop.Reference<number>): number;
 
-declare function xdr_string(p1: interop.Pointer | interop.Reference<XDR>, p2: interop.Pointer | interop.Reference<string>, p3: number): number;
+declare function xdr_string(p1: interop.Pointer | interop.Reference<XDR>, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p3: number): number;
 
 declare function xdr_u_char(p1: interop.Pointer | interop.Reference<XDR>, p2: string | interop.Pointer | interop.Reference<any>): number;
 
@@ -324,7 +324,7 @@ declare function xdr_vector(p1: interop.Pointer | interop.Reference<XDR>, p2: st
 
 declare function xdr_void(): number;
 
-declare function xdr_wrapstring(p1: interop.Pointer | interop.Reference<XDR>, p2: interop.Pointer | interop.Reference<string>): number;
+declare function xdr_wrapstring(p1: interop.Pointer | interop.Reference<XDR>, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 declare function xdrmem_create(p1: interop.Pointer | interop.Reference<XDR>, p2: string | interop.Pointer | interop.Reference<any>, p3: number, p4: xdr_op): void;
 

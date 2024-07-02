@@ -1,4 +1,7 @@
 
+/**
+ * @since 11.0
+ */
 declare class SCNAccelerationConstraint extends SCNConstraint {
 
 	static accelerationConstraint(): SCNAccelerationConstraint;
@@ -32,6 +35,9 @@ declare class SCNAction extends NSObject implements NSCopying, NSSecureCoding {
 
 	static group(actions: NSArray<SCNAction> | SCNAction[]): SCNAction;
 
+	/**
+	 * @since 9.0
+	 */
 	static hide(): SCNAction;
 
 	static javaScriptActionWithScriptDuration(script: string, seconds: number): SCNAction;
@@ -44,6 +50,9 @@ declare class SCNAction extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): SCNAction; // inherited from NSObject
 
+	/**
+	 * @since 9.0
+	 */
 	static playAudioSourceWaitForCompletion(source: SCNAudioSource, wait: boolean): SCNAction;
 
 	static removeFromParentNode(): SCNAction;
@@ -64,7 +73,7 @@ declare class SCNAction extends NSObject implements NSCopying, NSSecureCoding {
 
 	static runBlock(block: (p1: SCNNode) => void): SCNAction;
 
-	static runBlockQueue(block: (p1: SCNNode) => void, queue: interop.Pointer | interop.Reference<any>): SCNAction;
+	static runBlockQueue(block: (p1: SCNNode) => void, queue: NSObject & OS_dispatch_queue): SCNAction;
 
 	static scaleByDuration(scale: number, sec: number): SCNAction;
 
@@ -72,6 +81,9 @@ declare class SCNAction extends NSObject implements NSCopying, NSSecureCoding {
 
 	static sequence(actions: NSArray<SCNAction> | SCNAction[]): SCNAction;
 
+	/**
+	 * @since 9.0
+	 */
 	static unhide(): SCNAction;
 
 	static waitForDuration(sec: number): SCNAction;
@@ -99,6 +111,9 @@ declare class SCNAction extends NSObject implements NSCopying, NSSecureCoding {
 	reversedAction(): SCNAction;
 }
 
+/**
+ * @since 8.0
+ */
 declare const enum SCNActionTimingMode {
 
 	Linear = 0,
@@ -141,28 +156,64 @@ interface SCNAnimatable extends NSObjectProtocol {
 
 	addAnimationForKey(animation: SCNAnimationProtocol, key: string): void;
 
+	/**
+	 * @since 11.0
+	 */
 	addAnimationPlayerForKey(player: SCNAnimationPlayer, key: string): void;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	animationForKey(key: string): CAAnimation;
 
+	/**
+	 * @since 11.0
+	 */
 	animationPlayerForKey(key: string): SCNAnimationPlayer;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	isAnimationForKeyPaused(key: string): boolean;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	pauseAnimationForKey(key: string): void;
 
 	removeAllAnimations(): void;
 
+	/**
+	 * @since 15.0
+	 */
 	removeAllAnimationsWithBlendOutDuration(duration: number): void;
 
 	removeAnimationForKey(key: string): void;
 
+	/**
+	 * @since 11.0
+	 */
 	removeAnimationForKeyBlendOutDuration(key: string, duration: number): void;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	removeAnimationForKeyFadeOutDuration(key: string, duration: number): void;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	resumeAnimationForKey(key: string): void;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 11.0
+	 */
 	setSpeedForAnimationKey(speed: number, key: string): void;
 }
 declare var SCNAnimatable: {
@@ -170,6 +221,9 @@ declare var SCNAnimatable: {
 	prototype: SCNAnimatable;
 };
 
+/**
+ * @since 11.0
+ */
 declare class SCNAnimation extends NSObject implements NSCopying, NSSecureCoding, SCNAnimationProtocol {
 
 	static alloc(): SCNAnimation; // inherited from NSObject
@@ -274,6 +328,9 @@ declare class SCNAnimationEvent extends NSObject {
 	static new(): SCNAnimationEvent; // inherited from NSObject
 }
 
+/**
+ * @since 11.0
+ */
 declare class SCNAnimationPlayer extends NSObject implements NSCopying, NSSecureCoding, SCNAnimatable {
 
 	static alloc(): SCNAnimationPlayer; // inherited from NSObject
@@ -310,10 +367,20 @@ declare class SCNAnimationPlayer extends NSObject implements NSCopying, NSSecure
 
 	addAnimationForKey(animation: SCNAnimationProtocol, key: string): void;
 
+	/**
+	 * @since 11.0
+	 */
 	addAnimationPlayerForKey(player: SCNAnimationPlayer, key: string): void;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	animationForKey(key: string): CAAnimation;
 
+	/**
+	 * @since 11.0
+	 */
 	animationPlayerForKey(key: string): SCNAnimationPlayer;
 
 	class(): typeof NSObject;
@@ -326,6 +393,10 @@ declare class SCNAnimationPlayer extends NSObject implements NSCopying, NSSecure
 
 	initWithCoder(coder: NSCoder): this;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	isAnimationForKeyPaused(key: string): boolean;
 
 	isEqual(object: any): boolean;
@@ -334,6 +405,10 @@ declare class SCNAnimationPlayer extends NSObject implements NSCopying, NSSecure
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	pauseAnimationForKey(key: string): void;
 
 	performSelector(aSelector: string): any;
@@ -346,22 +421,40 @@ declare class SCNAnimationPlayer extends NSObject implements NSCopying, NSSecure
 
 	removeAllAnimations(): void;
 
+	/**
+	 * @since 15.0
+	 */
 	removeAllAnimationsWithBlendOutDuration(duration: number): void;
 
 	removeAnimationForKey(key: string): void;
 
+	/**
+	 * @since 11.0
+	 */
 	removeAnimationForKeyBlendOutDuration(key: string, duration: number): void;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	removeAnimationForKeyFadeOutDuration(key: string, duration: number): void;
 
 	respondsToSelector(aSelector: string): boolean;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	resumeAnimationForKey(key: string): void;
 
 	retainCount(): number;
 
 	self(): this;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 11.0
+	 */
 	setSpeedForAnimationKey(speed: number, key: string): void;
 
 	stop(): void;
@@ -385,6 +478,9 @@ declare const enum SCNAntialiasingMode {
 	Multisampling4X = 2
 }
 
+/**
+ * @since 9.0
+ */
 declare class SCNAudioPlayer extends NSObject {
 
 	static alloc(): SCNAudioPlayer; // inherited from NSObject
@@ -412,6 +508,9 @@ declare class SCNAudioPlayer extends NSObject {
 	initWithSource(source: SCNAudioSource): this;
 }
 
+/**
+ * @since 9.0
+ */
 declare class SCNAudioSource extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SCNAudioSource; // inherited from NSObject
@@ -453,6 +552,9 @@ declare class SCNAudioSource extends NSObject implements NSCopying, NSSecureCodi
 	load(): void;
 }
 
+/**
+ * @since 11.0
+ */
 declare class SCNAvoidOccluderConstraint extends SCNConstraint {
 
 	static alloc(): SCNAvoidOccluderConstraint; // inherited from NSObject
@@ -470,6 +572,9 @@ declare class SCNAvoidOccluderConstraint extends SCNConstraint {
 	target: SCNNode;
 }
 
+/**
+ * @since 11.0
+ */
 interface SCNAvoidOccluderConstraintDelegate extends NSObjectProtocol {
 
 	avoidOccluderConstraintDidAvoidOccluderForNode?(constraint: SCNAvoidOccluderConstraint, occluder: SCNNode, node: SCNNode): void;
@@ -492,6 +597,9 @@ declare const enum SCNBillboardAxis {
 	All = 7
 }
 
+/**
+ * @since 9.0
+ */
 declare class SCNBillboardConstraint extends SCNConstraint {
 
 	static alloc(): SCNBillboardConstraint; // inherited from NSObject
@@ -503,6 +611,9 @@ declare class SCNBillboardConstraint extends SCNConstraint {
 	freeAxes: SCNBillboardAxis;
 }
 
+/**
+ * @since 9.0
+ */
 declare const enum SCNBlendMode {
 
 	Alpha = 0,
@@ -541,9 +652,17 @@ declare class SCNBox extends SCNGeometry {
 
 	static geometry(): SCNBox; // inherited from SCNGeometry
 
+	/**
+	 * @since 9.0
+	 */
 	static geometryWithMDLMesh(mdlMesh: MDLMesh): SCNBox; // inherited from SCNGeometry
 
 	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[]): SCNBox; // inherited from SCNGeometry
+
+	/**
+	 * @since 16.0
+	 */
+	static geometryWithSourcesElementsSourceChannels(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[], sourceChannels: NSArray<number> | number[]): SCNBox; // inherited from SCNGeometry
 
 	static new(): SCNBox; // inherited from NSObject
 
@@ -564,6 +683,9 @@ declare class SCNBox extends SCNGeometry {
 	widthSegmentCount: number;
 }
 
+/**
+ * @since 9.0
+ */
 declare const enum SCNBufferFrequency {
 
 	PerFrame = 0,
@@ -588,114 +710,264 @@ declare class SCNCamera extends NSObject implements NSCopying, NSSecureCoding, S
 
 	static camera(): SCNCamera;
 
+	/**
+	 * @since 9.0
+	 */
 	static cameraWithMDLCamera(mdlCamera: MDLCamera): SCNCamera;
 
 	static new(): SCNCamera; // inherited from NSObject
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	aperture: number;
 
+	/**
+	 * @since 11.0
+	 */
 	apertureBladeCount: number;
 
 	automaticallyAdjustsZRange: boolean;
 
+	/**
+	 * @since 10.0
+	 */
 	averageGray: number;
 
+	/**
+	 * @since 10.0
+	 */
 	bloomBlurRadius: number;
 
+	/**
+	 * @since 10.0
+	 */
 	bloomIntensity: number;
 
+	/**
+	 * @since 13.0
+	 */
 	bloomIterationCount: number;
 
+	/**
+	 * @since 13.0
+	 */
 	bloomIterationSpread: number;
 
+	/**
+	 * @since 10.0
+	 */
 	bloomThreshold: number;
 
 	categoryBitMask: number;
 
+	/**
+	 * @since 10.0
+	 */
 	colorFringeIntensity: number;
 
+	/**
+	 * @since 10.0
+	 */
 	colorFringeStrength: number;
 
+	/**
+	 * @since 10.0
+	 */
 	readonly colorGrading: SCNMaterialProperty;
 
+	/**
+	 * @since 10.0
+	 */
 	contrast: number;
 
+	/**
+	 * @since 10.0
+	 */
 	exposureAdaptationBrighteningSpeedFactor: number;
 
+	/**
+	 * @since 10.0
+	 */
 	exposureAdaptationDarkeningSpeedFactor: number;
 
+	/**
+	 * @since 10.0
+	 */
 	exposureOffset: number;
 
+	/**
+	 * @since 11.0
+	 */
 	fStop: number;
 
+	/**
+	 * @since 11.0
+	 */
 	fieldOfView: number;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	focalBlurRadius: number;
 
+	/**
+	 * @since 11.0
+	 */
 	focalBlurSampleCount: number;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	focalDistance: number;
 
+	/**
+	 * @since 11.0
+	 */
 	focalLength: number;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	focalSize: number;
 
+	/**
+	 * @since 11.0
+	 */
 	focusDistance: number;
 
+	/**
+	 * @since 13.0
+	 */
 	grainIntensity: number;
 
+	/**
+	 * @since 13.0
+	 */
 	grainIsColored: boolean;
 
+	/**
+	 * @since 13.0
+	 */
 	grainScale: number;
 
+	/**
+	 * @since 10.0
+	 */
 	maximumExposure: number;
 
+	/**
+	 * @since 10.0
+	 */
 	minimumExposure: number;
 
+	/**
+	 * @since 10.0
+	 */
 	motionBlurIntensity: number;
 
 	name: string;
 
 	orthographicScale: number;
 
+	/**
+	 * @since 11.0
+	 */
 	projectionDirection: SCNCameraProjectionDirection;
 
 	projectionTransform: SCNMatrix4;
 
+	/**
+	 * @since 10.0
+	 */
 	saturation: number;
 
+	/**
+	 * @since 11.0
+	 */
 	screenSpaceAmbientOcclusionBias: number;
 
+	/**
+	 * @since 11.0
+	 */
 	screenSpaceAmbientOcclusionDepthThreshold: number;
 
+	/**
+	 * @since 11.0
+	 */
 	screenSpaceAmbientOcclusionIntensity: number;
 
+	/**
+	 * @since 11.0
+	 */
 	screenSpaceAmbientOcclusionNormalThreshold: number;
 
+	/**
+	 * @since 11.0
+	 */
 	screenSpaceAmbientOcclusionRadius: number;
 
+	/**
+	 * @since 11.0
+	 */
 	sensorHeight: number;
 
 	usesOrthographicProjection: boolean;
 
+	/**
+	 * @since 10.0
+	 */
 	vignettingIntensity: number;
 
+	/**
+	 * @since 10.0
+	 */
 	vignettingPower: number;
 
+	/**
+	 * @since 11.0
+	 */
 	wantsDepthOfField: boolean;
 
+	/**
+	 * @since 10.0
+	 */
 	wantsExposureAdaptation: boolean;
 
+	/**
+	 * @since 10.0
+	 */
 	wantsHDR: boolean;
 
+	/**
+	 * @since 13.0
+	 */
 	whiteBalanceTemperature: number;
 
+	/**
+	 * @since 13.0
+	 */
 	whiteBalanceTint: number;
 
+	/**
+	 * @since 10.0
+	 */
 	whitePoint: number;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	xFov: number;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	yFov: number;
 
 	zFar: number;
@@ -724,10 +996,20 @@ declare class SCNCamera extends NSObject implements NSCopying, NSSecureCoding, S
 
 	addAnimationForKey(animation: SCNAnimationProtocol, key: string): void;
 
+	/**
+	 * @since 11.0
+	 */
 	addAnimationPlayerForKey(player: SCNAnimationPlayer, key: string): void;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	animationForKey(key: string): CAAnimation;
 
+	/**
+	 * @since 11.0
+	 */
 	animationPlayerForKey(key: string): SCNAnimationPlayer;
 
 	class(): typeof NSObject;
@@ -740,6 +1022,10 @@ declare class SCNCamera extends NSObject implements NSCopying, NSSecureCoding, S
 
 	initWithCoder(coder: NSCoder): this;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	isAnimationForKeyPaused(key: string): boolean;
 
 	isEqual(object: any): boolean;
@@ -748,6 +1034,10 @@ declare class SCNCamera extends NSObject implements NSCopying, NSSecureCoding, S
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	pauseAnimationForKey(key: string): void;
 
 	performSelector(aSelector: string): any;
@@ -756,29 +1046,53 @@ declare class SCNCamera extends NSObject implements NSCopying, NSSecureCoding, S
 
 	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 
+	/**
+	 * @since 13.0
+	 */
 	projectionTransformWithViewportSize(viewportSize: CGSize): SCNMatrix4;
 
 	removeAllAnimations(): void;
 
+	/**
+	 * @since 15.0
+	 */
 	removeAllAnimationsWithBlendOutDuration(duration: number): void;
 
 	removeAnimationForKey(key: string): void;
 
+	/**
+	 * @since 11.0
+	 */
 	removeAnimationForKeyBlendOutDuration(key: string, duration: number): void;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	removeAnimationForKeyFadeOutDuration(key: string, duration: number): void;
 
 	respondsToSelector(aSelector: string): boolean;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	resumeAnimationForKey(key: string): void;
 
 	retainCount(): number;
 
 	self(): this;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 11.0
+	 */
 	setSpeedForAnimationKey(speed: number, key: string): void;
 }
 
+/**
+ * @since 11.0
+ */
 interface SCNCameraControlConfiguration extends NSObjectProtocol {
 
 	allowsTranslation: boolean;
@@ -798,6 +1112,9 @@ declare var SCNCameraControlConfiguration: {
 	prototype: SCNCameraControlConfiguration;
 };
 
+/**
+ * @since 11.0
+ */
 declare class SCNCameraController extends NSObject {
 
 	static alloc(): SCNCameraController; // inherited from NSObject
@@ -855,6 +1172,9 @@ declare class SCNCameraController extends NSObject {
 	translateInCameraSpaceByXYZ(deltaX: number, deltaY: number, deltaZ: number): void;
 }
 
+/**
+ * @since 11.0
+ */
 interface SCNCameraControllerDelegate extends NSObjectProtocol {
 
 	cameraInertiaDidEndForController?(cameraController: SCNCameraController): void;
@@ -866,6 +1186,9 @@ declare var SCNCameraControllerDelegate: {
 	prototype: SCNCameraControllerDelegate;
 };
 
+/**
+ * @since 11.0
+ */
 declare const enum SCNCameraProjectionDirection {
 
 	Vertical = 0,
@@ -881,9 +1204,17 @@ declare class SCNCapsule extends SCNGeometry {
 
 	static geometry(): SCNCapsule; // inherited from SCNGeometry
 
+	/**
+	 * @since 9.0
+	 */
 	static geometryWithMDLMesh(mdlMesh: MDLMesh): SCNCapsule; // inherited from SCNGeometry
 
 	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[]): SCNCapsule; // inherited from SCNGeometry
+
+	/**
+	 * @since 16.0
+	 */
+	static geometryWithSourcesElementsSourceChannels(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[], sourceChannels: NSArray<number> | number[]): SCNCapsule; // inherited from SCNGeometry
 
 	static new(): SCNCapsule; // inherited from NSObject
 
@@ -907,6 +1238,9 @@ declare const enum SCNChamferMode {
 	Back = 2
 }
 
+/**
+ * @since 11.0
+ */
 declare const enum SCNColorMask {
 
 	None = 0,
@@ -930,9 +1264,17 @@ declare class SCNCone extends SCNGeometry {
 
 	static geometry(): SCNCone; // inherited from SCNGeometry
 
+	/**
+	 * @since 9.0
+	 */
 	static geometryWithMDLMesh(mdlMesh: MDLMesh): SCNCone; // inherited from SCNGeometry
 
 	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[]): SCNCone; // inherited from SCNGeometry
+
+	/**
+	 * @since 16.0
+	 */
+	static geometryWithSourcesElementsSourceChannels(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[], sourceChannels: NSArray<number> | number[]): SCNCone; // inherited from SCNGeometry
 
 	static new(): SCNCone; // inherited from NSObject
 
@@ -973,6 +1315,9 @@ declare class SCNConstraint extends NSObject implements NSCopying, NSSecureCodin
 
 	enabled: boolean;
 
+	/**
+	 * @since 11.0
+	 */
 	incremental: boolean;
 
 	influenceFactor: number;
@@ -997,10 +1342,20 @@ declare class SCNConstraint extends NSObject implements NSCopying, NSSecureCodin
 
 	addAnimationForKey(animation: SCNAnimationProtocol, key: string): void;
 
+	/**
+	 * @since 11.0
+	 */
 	addAnimationPlayerForKey(player: SCNAnimationPlayer, key: string): void;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	animationForKey(key: string): CAAnimation;
 
+	/**
+	 * @since 11.0
+	 */
 	animationPlayerForKey(key: string): SCNAnimationPlayer;
 
 	class(): typeof NSObject;
@@ -1013,6 +1368,10 @@ declare class SCNConstraint extends NSObject implements NSCopying, NSSecureCodin
 
 	initWithCoder(coder: NSCoder): this;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	isAnimationForKeyPaused(key: string): boolean;
 
 	isEqual(object: any): boolean;
@@ -1021,6 +1380,10 @@ declare class SCNConstraint extends NSObject implements NSCopying, NSSecureCodin
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	pauseAnimationForKey(key: string): void;
 
 	performSelector(aSelector: string): any;
@@ -1031,22 +1394,40 @@ declare class SCNConstraint extends NSObject implements NSCopying, NSSecureCodin
 
 	removeAllAnimations(): void;
 
+	/**
+	 * @since 15.0
+	 */
 	removeAllAnimationsWithBlendOutDuration(duration: number): void;
 
 	removeAnimationForKey(key: string): void;
 
+	/**
+	 * @since 11.0
+	 */
 	removeAnimationForKeyBlendOutDuration(key: string, duration: number): void;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	removeAnimationForKeyFadeOutDuration(key: string, duration: number): void;
 
 	respondsToSelector(aSelector: string): boolean;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	resumeAnimationForKey(key: string): void;
 
 	retainCount(): number;
 
 	self(): this;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 11.0
+	 */
 	setSpeedForAnimationKey(speed: number, key: string): void;
 }
 
@@ -1065,9 +1446,17 @@ declare class SCNCylinder extends SCNGeometry {
 
 	static geometry(): SCNCylinder; // inherited from SCNGeometry
 
+	/**
+	 * @since 9.0
+	 */
 	static geometryWithMDLMesh(mdlMesh: MDLMesh): SCNCylinder; // inherited from SCNGeometry
 
 	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[]): SCNCylinder; // inherited from SCNGeometry
+
+	/**
+	 * @since 16.0
+	 */
+	static geometryWithSourcesElementsSourceChannels(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[], sourceChannels: NSArray<number> | number[]): SCNCylinder; // inherited from SCNGeometry
 
 	static new(): SCNCylinder; // inherited from NSObject
 
@@ -1080,6 +1469,9 @@ declare class SCNCylinder extends SCNGeometry {
 	radius: number;
 }
 
+/**
+ * @since 9.0
+ */
 declare const enum SCNDebugOptions {
 
 	None = 0,
@@ -1109,6 +1501,9 @@ declare const enum SCNDebugOptions {
 
 declare var SCNDetailedErrorsKey: string;
 
+/**
+ * @since 11.0
+ */
 declare class SCNDistanceConstraint extends SCNConstraint {
 
 	static alloc(): SCNDistanceConstraint; // inherited from NSObject
@@ -1128,6 +1523,9 @@ declare var SCNErrorDomain: string;
 
 declare function SCNExportJavaScriptModule(context: JSContext): void;
 
+/**
+ * @since 11.0
+ */
 declare const enum SCNFillMode {
 
 	Fill = 0,
@@ -1152,14 +1550,28 @@ declare class SCNFloor extends SCNGeometry {
 
 	static geometry(): SCNFloor; // inherited from SCNGeometry
 
+	/**
+	 * @since 9.0
+	 */
 	static geometryWithMDLMesh(mdlMesh: MDLMesh): SCNFloor; // inherited from SCNGeometry
 
 	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[]): SCNFloor; // inherited from SCNGeometry
 
+	/**
+	 * @since 16.0
+	 */
+	static geometryWithSourcesElementsSourceChannels(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[], sourceChannels: NSArray<number> | number[]): SCNFloor; // inherited from SCNGeometry
+
 	static new(): SCNFloor; // inherited from NSObject
 
+	/**
+	 * @since 10.0
+	 */
 	length: number;
 
+	/**
+	 * @since 10.0
+	 */
 	reflectionCategoryBitMask: number;
 
 	reflectionFalloffEnd: number;
@@ -1170,6 +1582,9 @@ declare class SCNFloor extends SCNGeometry {
 
 	reflectivity: number;
 
+	/**
+	 * @since 10.0
+	 */
 	width: number;
 }
 
@@ -1179,9 +1594,17 @@ declare class SCNGeometry extends NSObject implements NSCopying, NSSecureCoding,
 
 	static geometry(): SCNGeometry;
 
+	/**
+	 * @since 9.0
+	 */
 	static geometryWithMDLMesh(mdlMesh: MDLMesh): SCNGeometry;
 
 	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[]): SCNGeometry;
+
+	/**
+	 * @since 16.0
+	 */
+	static geometryWithSourcesElementsSourceChannels(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[], sourceChannels: NSArray<number> | number[]): SCNGeometry;
 
 	static new(): SCNGeometry; // inherited from NSObject
 
@@ -1195,6 +1618,11 @@ declare class SCNGeometry extends NSObject implements NSCopying, NSSecureCoding,
 
 	readonly geometryElements: NSArray<SCNGeometryElement>;
 
+	/**
+	 * @since 16.0
+	 */
+	readonly geometrySourceChannels: NSArray<number>;
+
 	readonly geometrySources: NSArray<SCNGeometrySource>;
 
 	levelsOfDetail: NSArray<SCNLevelOfDetail>;
@@ -1205,8 +1633,14 @@ declare class SCNGeometry extends NSObject implements NSCopying, NSSecureCoding,
 
 	subdivisionLevel: number;
 
+	/**
+	 * @since 11.0
+	 */
 	tessellator: SCNGeometryTessellator;
 
+	/**
+	 * @since 11.0
+	 */
 	wantsAdaptiveSubdivision: boolean;
 
 	readonly animationKeys: NSArray<string>; // inherited from SCNAnimatable
@@ -1219,6 +1653,9 @@ declare class SCNGeometry extends NSObject implements NSCopying, NSSecureCoding,
 
 	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
+	/**
+	 * @since 15.0
+	 */
 	minimumLanguageVersion: number; // inherited from SCNShadable
 
 	program: SCNProgram; // inherited from SCNShadable
@@ -1235,10 +1672,20 @@ declare class SCNGeometry extends NSObject implements NSCopying, NSSecureCoding,
 
 	addAnimationForKey(animation: SCNAnimationProtocol, key: string): void;
 
+	/**
+	 * @since 11.0
+	 */
 	addAnimationPlayerForKey(player: SCNAnimationPlayer, key: string): void;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	animationForKey(key: string): CAAnimation;
 
+	/**
+	 * @since 11.0
+	 */
 	animationPlayerForKey(key: string): SCNAnimationPlayer;
 
 	class(): typeof NSObject;
@@ -1265,6 +1712,10 @@ declare class SCNGeometry extends NSObject implements NSCopying, NSSecureCoding,
 
 	insertMaterialAtIndex(material: SCNMaterial, index: number): void;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	isAnimationForKeyPaused(key: string): boolean;
 
 	isEqual(object: any): boolean;
@@ -1275,6 +1726,10 @@ declare class SCNGeometry extends NSObject implements NSCopying, NSSecureCoding,
 
 	materialWithName(name: string): SCNMaterial;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	pauseAnimationForKey(key: string): void;
 
 	performSelector(aSelector: string): any;
@@ -1285,12 +1740,22 @@ declare class SCNGeometry extends NSObject implements NSCopying, NSSecureCoding,
 
 	removeAllAnimations(): void;
 
+	/**
+	 * @since 15.0
+	 */
 	removeAllAnimationsWithBlendOutDuration(duration: number): void;
 
 	removeAnimationForKey(key: string): void;
 
+	/**
+	 * @since 11.0
+	 */
 	removeAnimationForKeyBlendOutDuration(key: string, duration: number): void;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	removeAnimationForKeyFadeOutDuration(key: string, duration: number): void;
 
 	removeMaterialAtIndex(index: number): void;
@@ -1299,6 +1764,10 @@ declare class SCNGeometry extends NSObject implements NSCopying, NSSecureCoding,
 
 	respondsToSelector(aSelector: string): boolean;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	resumeAnimationForKey(key: string): void;
 
 	retainCount(): number;
@@ -1307,6 +1776,10 @@ declare class SCNGeometry extends NSObject implements NSCopying, NSSecureCoding,
 
 	setBoundingBoxMinMax(min: interop.Pointer | interop.Reference<SCNVector3>, max: interop.Pointer | interop.Reference<SCNVector3>): void;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 11.0
+	 */
 	setSpeedForAnimationKey(speed: number, key: string): void;
 }
 
@@ -1314,10 +1787,26 @@ declare class SCNGeometryElement extends NSObject implements NSSecureCoding {
 
 	static alloc(): SCNGeometryElement; // inherited from NSObject
 
+	/**
+	 * @since 14.0
+	 */
 	static geometryElementWithBufferPrimitiveTypePrimitiveCountBytesPerIndex(buffer: MTLBuffer, primitiveType: SCNGeometryPrimitiveType, primitiveCount: number, bytesPerIndex: number): SCNGeometryElement;
+
+	/**
+	 * @since 16.0
+	 */
+	static geometryElementWithBufferPrimitiveTypePrimitiveCountIndicesChannelCountInterleavedIndicesChannelsBytesPerIndex(buffer: MTLBuffer, primitiveType: SCNGeometryPrimitiveType, primitiveCount: number, indicesChannelCount: number, interleavedIndicesChannels: boolean, bytesPerIndex: number): SCNGeometryElement;
 
 	static geometryElementWithDataPrimitiveTypePrimitiveCountBytesPerIndex(data: NSData, primitiveType: SCNGeometryPrimitiveType, primitiveCount: number, bytesPerIndex: number): SCNGeometryElement;
 
+	/**
+	 * @since 16.0
+	 */
+	static geometryElementWithDataPrimitiveTypePrimitiveCountIndicesChannelCountInterleavedIndicesChannelsBytesPerIndex(data: NSData, primitiveType: SCNGeometryPrimitiveType, primitiveCount: number, indicesChannelCount: number, interleavedIndicesChannels: boolean, bytesPerIndex: number): SCNGeometryElement;
+
+	/**
+	 * @since 9.0
+	 */
 	static geometryElementWithMDLSubmesh(mdlSubMesh: MDLSubmesh): SCNGeometryElement;
 
 	static new(): SCNGeometryElement; // inherited from NSObject
@@ -1326,14 +1815,36 @@ declare class SCNGeometryElement extends NSObject implements NSSecureCoding {
 
 	readonly data: NSData;
 
+	/**
+	 * @since 16.0
+	 */
+	readonly indicesChannelCount: number;
+
+	/**
+	 * @since 16.0
+	 */
+	readonly interleavedIndicesChannels: boolean;
+
+	/**
+	 * @since 11.0
+	 */
 	maximumPointScreenSpaceRadius: number;
 
+	/**
+	 * @since 11.0
+	 */
 	minimumPointScreenSpaceRadius: number;
 
+	/**
+	 * @since 11.0
+	 */
 	pointSize: number;
 
 	readonly primitiveCount: number;
 
+	/**
+	 * @since 11.0
+	 */
 	primitiveRange: NSRange;
 
 	readonly primitiveType: SCNGeometryPrimitiveType;
@@ -1364,6 +1875,9 @@ declare class SCNGeometrySource extends NSObject implements NSSecureCoding {
 
 	static alloc(): SCNGeometrySource; // inherited from NSObject
 
+	/**
+	 * @since 9.0
+	 */
 	static geometrySourceWithBufferVertexFormatSemanticVertexCountDataOffsetDataStride(buffer: MTLBuffer, vertexFormat: MTLVertexFormat, semantic: string, vertexCount: number, offset: number, stride: number): SCNGeometrySource;
 
 	static geometrySourceWithDataSemanticVectorCountFloatComponentsComponentsPerVectorBytesPerComponentDataOffsetDataStride(data: NSData, semantic: string, vectorCount: number, floatComponents: boolean, componentsPerVector: number, bytesPerComponent: number, offset: number, stride: number): SCNGeometrySource;
@@ -1411,6 +1925,9 @@ declare var SCNGeometrySourceSemanticEdgeCrease: string;
 
 declare var SCNGeometrySourceSemanticNormal: string;
 
+/**
+ * @since 10.0
+ */
 declare var SCNGeometrySourceSemanticTangent: string;
 
 declare var SCNGeometrySourceSemanticTexcoord: string;
@@ -1419,6 +1936,9 @@ declare var SCNGeometrySourceSemanticVertex: string;
 
 declare var SCNGeometrySourceSemanticVertexCrease: string;
 
+/**
+ * @since 11.0
+ */
 declare class SCNGeometryTessellator extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SCNGeometryTessellator; // inherited from NSObject
@@ -1464,10 +1984,19 @@ declare var SCNHitTestIgnoreChildNodesKey: string;
 
 declare var SCNHitTestIgnoreHiddenNodesKey: string;
 
+/**
+ * @since 10.0
+ */
 declare var SCNHitTestOptionCategoryBitMask: string;
 
+/**
+ * @since 13.0
+ */
 declare var SCNHitTestOptionIgnoreLightArea: string;
 
+/**
+ * @since 11.0
+ */
 declare var SCNHitTestOptionSearchMode: string;
 
 declare class SCNHitTestResult extends NSObject {
@@ -1476,6 +2005,9 @@ declare class SCNHitTestResult extends NSObject {
 
 	static new(): SCNHitTestResult; // inherited from NSObject
 
+	/**
+	 * @since 10.0
+	 */
 	readonly boneNode: SCNNode;
 
 	readonly faceIndex: number;
@@ -1490,14 +2022,29 @@ declare class SCNHitTestResult extends NSObject {
 
 	readonly node: SCNNode;
 
+	/**
+	 * @since 13.0
+	 */
 	readonly simdLocalCoordinates: interop.Reference<number>;
 
+	/**
+	 * @since 13.0
+	 */
 	readonly simdLocalNormal: interop.Reference<number>;
 
+	/**
+	 * @since 13.0
+	 */
 	readonly simdModelTransform: simd_float4x4;
 
+	/**
+	 * @since 13.0
+	 */
 	readonly simdWorldCoordinates: interop.Reference<number>;
 
+	/**
+	 * @since 13.0
+	 */
 	readonly simdWorldNormal: interop.Reference<number>;
 
 	readonly worldCoordinates: SCNVector3;
@@ -1509,6 +2056,9 @@ declare class SCNHitTestResult extends NSObject {
 
 declare var SCNHitTestRootNodeKey: string;
 
+/**
+ * @since 11.0
+ */
 declare const enum SCNHitTestSearchMode {
 
 	Closest = 0,
@@ -1532,8 +2082,14 @@ declare class SCNIKConstraint extends SCNConstraint {
 
 	targetPosition: SCNVector3;
 
+	/**
+	 * @since 9.0
+	 */
 	constructor(o: { chainRootNode: SCNNode; });
 
+	/**
+	 * @since 9.0
+	 */
 	initWithChainRootNode(chainRootNode: SCNNode): this;
 
 	maxAllowedRotationAngleForJoint(node: SCNNode): number;
@@ -1541,6 +2097,9 @@ declare class SCNIKConstraint extends SCNConstraint {
 	setMaxAllowedRotationAngleForJoint(angle: number, node: SCNNode): void;
 }
 
+/**
+ * @since 11.0
+ */
 declare const enum SCNInteractionMode {
 
 	Fly = 0,
@@ -1591,16 +2150,31 @@ declare class SCNLight extends NSObject implements NSCopying, NSSecureCoding, SC
 
 	static light(): SCNLight;
 
+	/**
+	 * @since 9.0
+	 */
 	static lightWithMDLLight(mdlLight: MDLLight): SCNLight;
 
 	static new(): SCNLight; // inherited from NSObject
 
+	/**
+	 * @since 10.0
+	 */
 	IESProfileURL: NSURL;
 
+	/**
+	 * @since 13.0
+	 */
 	areaExtents: interop.Reference<number>;
 
+	/**
+	 * @since 13.0
+	 */
 	areaPolygonVertices: NSArray<NSValue>;
 
+	/**
+	 * @since 13.0
+	 */
 	areaType: SCNLightAreaType;
 
 	attenuationEndDistance: number;
@@ -1609,6 +2183,9 @@ declare class SCNLight extends NSObject implements NSCopying, NSSecureCoding, SC
 
 	attenuationStartDistance: number;
 
+	/**
+	 * @since 11.0
+	 */
 	automaticallyAdjustsShadowProjection: boolean;
 
 	castsShadow: boolean;
@@ -1617,44 +2194,92 @@ declare class SCNLight extends NSObject implements NSCopying, NSSecureCoding, SC
 
 	color: any;
 
+	/**
+	 * @since 13.0
+	 */
 	doubleSided: boolean;
 
+	/**
+	 * @since 13.0
+	 */
 	drawsArea: boolean;
 
+	/**
+	 * @since 11.0
+	 */
 	forcesBackFaceCasters: boolean;
 
 	readonly gobo: SCNMaterialProperty;
 
+	/**
+	 * @since 10.0
+	 */
 	intensity: number;
 
+	/**
+	 * @since 11.0
+	 */
 	maximumShadowDistance: number;
 
 	name: string;
 
 	orthographicScale: number;
 
+	/**
+	 * @since 13.0
+	 */
 	parallaxCenterOffset: interop.Reference<number>;
 
+	/**
+	 * @since 13.0
+	 */
 	parallaxCorrectionEnabled: boolean;
 
+	/**
+	 * @since 13.0
+	 */
 	parallaxExtentsFactor: interop.Reference<number>;
 
+	/**
+	 * @since 12.0
+	 */
 	readonly probeEnvironment: SCNMaterialProperty;
 
+	/**
+	 * @since 13.0
+	 */
 	probeExtents: interop.Reference<number>;
 
+	/**
+	 * @since 13.0
+	 */
 	probeOffset: interop.Reference<number>;
 
+	/**
+	 * @since 13.0
+	 */
 	probeType: SCNLightProbeType;
 
+	/**
+	 * @since 13.0
+	 */
 	probeUpdateType: SCNLightProbeUpdateType;
 
+	/**
+	 * @since 11.0
+	 */
 	sampleDistributedShadowMaps: boolean;
 
 	shadowBias: number;
 
+	/**
+	 * @since 11.0
+	 */
 	shadowCascadeCount: number;
 
+	/**
+	 * @since 11.0
+	 */
 	shadowCascadeSplittingFactor: number;
 
 	shadowColor: any;
@@ -1667,12 +2292,18 @@ declare class SCNLight extends NSObject implements NSCopying, NSSecureCoding, SC
 
 	shadowSampleCount: number;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly sphericalHarmonicsCoefficients: NSData;
 
 	spotInnerAngle: number;
 
 	spotOuterAngle: number;
 
+	/**
+	 * @since 10.0
+	 */
 	temperature: number;
 
 	type: string;
@@ -1703,10 +2334,20 @@ declare class SCNLight extends NSObject implements NSCopying, NSSecureCoding, SC
 
 	addAnimationForKey(animation: SCNAnimationProtocol, key: string): void;
 
+	/**
+	 * @since 11.0
+	 */
 	addAnimationPlayerForKey(player: SCNAnimationPlayer, key: string): void;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	animationForKey(key: string): CAAnimation;
 
+	/**
+	 * @since 11.0
+	 */
 	animationPlayerForKey(key: string): SCNAnimationPlayer;
 
 	class(): typeof NSObject;
@@ -1719,6 +2360,10 @@ declare class SCNLight extends NSObject implements NSCopying, NSSecureCoding, SC
 
 	initWithCoder(coder: NSCoder): this;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	isAnimationForKeyPaused(key: string): boolean;
 
 	isEqual(object: any): boolean;
@@ -1727,6 +2372,10 @@ declare class SCNLight extends NSObject implements NSCopying, NSSecureCoding, SC
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	pauseAnimationForKey(key: string): void;
 
 	performSelector(aSelector: string): any;
@@ -1737,25 +2386,46 @@ declare class SCNLight extends NSObject implements NSCopying, NSSecureCoding, SC
 
 	removeAllAnimations(): void;
 
+	/**
+	 * @since 15.0
+	 */
 	removeAllAnimationsWithBlendOutDuration(duration: number): void;
 
 	removeAnimationForKey(key: string): void;
 
+	/**
+	 * @since 11.0
+	 */
 	removeAnimationForKeyBlendOutDuration(key: string, duration: number): void;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	removeAnimationForKeyFadeOutDuration(key: string, duration: number): void;
 
 	respondsToSelector(aSelector: string): boolean;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	resumeAnimationForKey(key: string): void;
 
 	retainCount(): number;
 
 	self(): this;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 11.0
+	 */
 	setSpeedForAnimationKey(speed: number, key: string): void;
 }
 
+/**
+ * @since 13.0
+ */
 declare const enum SCNLightAreaType {
 
 	Rectangle = 1,
@@ -1763,6 +2433,9 @@ declare const enum SCNLightAreaType {
 	Polygon = 4
 }
 
+/**
+ * @since 13.0
+ */
 declare const enum SCNLightProbeType {
 
 	Irradiance = 0,
@@ -1770,6 +2443,9 @@ declare const enum SCNLightProbeType {
 	Radiance = 1
 }
 
+/**
+ * @since 13.0
+ */
 declare const enum SCNLightProbeUpdateType {
 
 	Never = 0,
@@ -1779,14 +2455,23 @@ declare const enum SCNLightProbeUpdateType {
 
 declare var SCNLightTypeAmbient: string;
 
+/**
+ * @since 13.0
+ */
 declare var SCNLightTypeArea: string;
 
 declare var SCNLightTypeDirectional: string;
 
+/**
+ * @since 10.0
+ */
 declare var SCNLightTypeIES: string;
 
 declare var SCNLightTypeOmni: string;
 
+/**
+ * @since 10.0
+ */
 declare var SCNLightTypeProbe: string;
 
 declare var SCNLightTypeSpot: string;
@@ -1799,8 +2484,14 @@ declare var SCNLightingModelLambert: string;
 
 declare var SCNLightingModelPhong: string;
 
+/**
+ * @since 10.0
+ */
 declare var SCNLightingModelPhysicallyBased: string;
 
+/**
+ * @since 13.0
+ */
 declare var SCNLightingModelShadowOnly: string;
 
 declare class SCNLookAtConstraint extends SCNConstraint {
@@ -1813,14 +2504,26 @@ declare class SCNLookAtConstraint extends SCNConstraint {
 
 	gimbalLockEnabled: boolean;
 
+	/**
+	 * @since 11.0
+	 */
 	localFront: SCNVector3;
 
 	target: SCNNode;
 
+	/**
+	 * @since 11.0
+	 */
 	targetOffset: SCNVector3;
 
+	/**
+	 * @since 11.0
+	 */
 	worldUp: SCNVector3;
 
+	/**
+	 * @since 10.0
+	 */
 	setTarget(target: SCNNode): void;
 }
 
@@ -1830,34 +2533,61 @@ declare class SCNMaterial extends NSObject implements NSCopying, NSSecureCoding,
 
 	static material(): SCNMaterial;
 
+	/**
+	 * @since 9.0
+	 */
 	static materialWithMDLMaterial(mdlMaterial: MDLMaterial): SCNMaterial;
 
 	static new(): SCNMaterial; // inherited from NSObject
 
 	readonly ambient: SCNMaterialProperty;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly ambientOcclusion: SCNMaterialProperty;
 
+	/**
+	 * @since 9.0
+	 */
 	blendMode: SCNBlendMode;
 
+	/**
+	 * @since 13.0
+	 */
 	readonly clearCoat: SCNMaterialProperty;
 
+	/**
+	 * @since 13.0
+	 */
 	readonly clearCoatNormal: SCNMaterialProperty;
 
+	/**
+	 * @since 13.0
+	 */
 	readonly clearCoatRoughness: SCNMaterialProperty;
 
+	/**
+	 * @since 11.0
+	 */
 	colorBufferWriteMask: SCNColorMask;
 
 	cullMode: SCNCullMode;
 
 	readonly diffuse: SCNMaterialProperty;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly displacement: SCNMaterialProperty;
 
 	doubleSided: boolean;
 
 	readonly emission: SCNMaterialProperty;
 
+	/**
+	 * @since 11.0
+	 */
 	fillMode: SCNFillMode;
 
 	fresnelExponent: number;
@@ -1868,6 +2598,9 @@ declare class SCNMaterial extends NSObject implements NSCopying, NSSecureCoding,
 
 	locksAmbientWithDiffuse: boolean;
 
+	/**
+	 * @since 10.0
+	 */
 	readonly metalness: SCNMaterialProperty;
 
 	readonly multiply: SCNMaterialProperty;
@@ -1880,8 +2613,14 @@ declare class SCNMaterial extends NSObject implements NSCopying, NSSecureCoding,
 
 	readonly reflective: SCNMaterialProperty;
 
+	/**
+	 * @since 10.0
+	 */
 	readonly roughness: SCNMaterialProperty;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly selfIllumination: SCNMaterialProperty;
 
 	shininess: number;
@@ -1906,6 +2645,9 @@ declare class SCNMaterial extends NSObject implements NSCopying, NSSecureCoding,
 
 	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
+	/**
+	 * @since 15.0
+	 */
 	minimumLanguageVersion: number; // inherited from SCNShadable
 
 	program: SCNProgram; // inherited from SCNShadable
@@ -1922,10 +2664,20 @@ declare class SCNMaterial extends NSObject implements NSCopying, NSSecureCoding,
 
 	addAnimationForKey(animation: SCNAnimationProtocol, key: string): void;
 
+	/**
+	 * @since 11.0
+	 */
 	addAnimationPlayerForKey(player: SCNAnimationPlayer, key: string): void;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	animationForKey(key: string): CAAnimation;
 
+	/**
+	 * @since 11.0
+	 */
 	animationPlayerForKey(key: string): SCNAnimationPlayer;
 
 	class(): typeof NSObject;
@@ -1942,6 +2694,10 @@ declare class SCNMaterial extends NSObject implements NSCopying, NSSecureCoding,
 
 	initWithCoder(coder: NSCoder): this;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	isAnimationForKeyPaused(key: string): boolean;
 
 	isEqual(object: any): boolean;
@@ -1950,6 +2706,10 @@ declare class SCNMaterial extends NSObject implements NSCopying, NSSecureCoding,
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	pauseAnimationForKey(key: string): void;
 
 	performSelector(aSelector: string): any;
@@ -1960,22 +2720,40 @@ declare class SCNMaterial extends NSObject implements NSCopying, NSSecureCoding,
 
 	removeAllAnimations(): void;
 
+	/**
+	 * @since 15.0
+	 */
 	removeAllAnimationsWithBlendOutDuration(duration: number): void;
 
 	removeAnimationForKey(key: string): void;
 
+	/**
+	 * @since 11.0
+	 */
 	removeAnimationForKeyBlendOutDuration(key: string, duration: number): void;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	removeAnimationForKeyFadeOutDuration(key: string, duration: number): void;
 
 	respondsToSelector(aSelector: string): boolean;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	resumeAnimationForKey(key: string): void;
 
 	retainCount(): number;
 
 	self(): this;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 11.0
+	 */
 	setSpeedForAnimationKey(speed: number, key: string): void;
 }
 
@@ -1987,6 +2765,25 @@ declare class SCNMaterialProperty extends NSObject implements NSSecureCoding, SC
 
 	static new(): SCNMaterialProperty; // inherited from NSObject
 
+	/**
+	 * @since 17.0
+	 */
+	static precomputedLightingEnvironmentContentsWithDataError(data: NSData): any;
+
+	/**
+	 * @since 17.0
+	 */
+	static precomputedLightingEnvironmentContentsWithURLError(url: NSURL): any;
+
+	/**
+	 * @since 17.0
+	 */
+	static precomputedLightingEnvironmentDataForContentsDeviceError(contents: any, device: MTLDevice): NSData;
+
+	/**
+	 * @since 8.0
+	 * @deprecated 10.0
+	 */
 	borderColor: any;
 
 	contents: any;
@@ -2005,6 +2802,9 @@ declare class SCNMaterialProperty extends NSObject implements NSSecureCoding, SC
 
 	mipFilter: SCNFilterMode;
 
+	/**
+	 * @since 11.0
+	 */
 	textureComponents: SCNColorMask;
 
 	wrapS: SCNWrapMode;
@@ -2031,10 +2831,20 @@ declare class SCNMaterialProperty extends NSObject implements NSSecureCoding, SC
 
 	addAnimationForKey(animation: SCNAnimationProtocol, key: string): void;
 
+	/**
+	 * @since 11.0
+	 */
 	addAnimationPlayerForKey(player: SCNAnimationPlayer, key: string): void;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	animationForKey(key: string): CAAnimation;
 
+	/**
+	 * @since 11.0
+	 */
 	animationPlayerForKey(key: string): SCNAnimationPlayer;
 
 	class(): typeof NSObject;
@@ -2045,6 +2855,10 @@ declare class SCNMaterialProperty extends NSObject implements NSSecureCoding, SC
 
 	initWithCoder(coder: NSCoder): this;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	isAnimationForKeyPaused(key: string): boolean;
 
 	isEqual(object: any): boolean;
@@ -2053,6 +2867,10 @@ declare class SCNMaterialProperty extends NSObject implements NSSecureCoding, SC
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	pauseAnimationForKey(key: string): void;
 
 	performSelector(aSelector: string): any;
@@ -2063,22 +2881,40 @@ declare class SCNMaterialProperty extends NSObject implements NSSecureCoding, SC
 
 	removeAllAnimations(): void;
 
+	/**
+	 * @since 15.0
+	 */
 	removeAllAnimationsWithBlendOutDuration(duration: number): void;
 
 	removeAnimationForKey(key: string): void;
 
+	/**
+	 * @since 11.0
+	 */
 	removeAnimationForKeyBlendOutDuration(key: string, duration: number): void;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	removeAnimationForKeyFadeOutDuration(key: string, duration: number): void;
 
 	respondsToSelector(aSelector: string): boolean;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	resumeAnimationForKey(key: string): void;
 
 	retainCount(): number;
 
 	self(): this;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 11.0
+	 */
 	setSpeedForAnimationKey(speed: number, key: string): void;
 }
 
@@ -2134,8 +2970,14 @@ declare class SCNMorpher extends NSObject implements NSSecureCoding, SCNAnimatab
 
 	targets: NSArray<SCNGeometry>;
 
+	/**
+	 * @since 11.0
+	 */
 	unifiesNormals: boolean;
 
+	/**
+	 * @since 11.0
+	 */
 	weights: NSArray<number>;
 
 	readonly animationKeys: NSArray<string>; // inherited from SCNAnimatable
@@ -2158,10 +3000,20 @@ declare class SCNMorpher extends NSObject implements NSSecureCoding, SCNAnimatab
 
 	addAnimationForKey(animation: SCNAnimationProtocol, key: string): void;
 
+	/**
+	 * @since 11.0
+	 */
 	addAnimationPlayerForKey(player: SCNAnimationPlayer, key: string): void;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	animationForKey(key: string): CAAnimation;
 
+	/**
+	 * @since 11.0
+	 */
 	animationPlayerForKey(key: string): SCNAnimationPlayer;
 
 	class(): typeof NSObject;
@@ -2172,6 +3024,10 @@ declare class SCNMorpher extends NSObject implements NSSecureCoding, SCNAnimatab
 
 	initWithCoder(coder: NSCoder): this;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	isAnimationForKeyPaused(key: string): boolean;
 
 	isEqual(object: any): boolean;
@@ -2180,6 +3036,10 @@ declare class SCNMorpher extends NSObject implements NSSecureCoding, SCNAnimatab
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	pauseAnimationForKey(key: string): void;
 
 	performSelector(aSelector: string): any;
@@ -2190,30 +3050,54 @@ declare class SCNMorpher extends NSObject implements NSSecureCoding, SCNAnimatab
 
 	removeAllAnimations(): void;
 
+	/**
+	 * @since 15.0
+	 */
 	removeAllAnimationsWithBlendOutDuration(duration: number): void;
 
 	removeAnimationForKey(key: string): void;
 
+	/**
+	 * @since 11.0
+	 */
 	removeAnimationForKeyBlendOutDuration(key: string, duration: number): void;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	removeAnimationForKeyFadeOutDuration(key: string, duration: number): void;
 
 	respondsToSelector(aSelector: string): boolean;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	resumeAnimationForKey(key: string): void;
 
 	retainCount(): number;
 
 	self(): this;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 11.0
+	 */
 	setSpeedForAnimationKey(speed: number, key: string): void;
 
 	setWeightForTargetAtIndex(weight: number, targetIndex: number): void;
 
+	/**
+	 * @since 11.0
+	 */
 	setWeightForTargetNamed(weight: number, targetName: string): void;
 
 	weightForTargetAtIndex(targetIndex: number): number;
 
+	/**
+	 * @since 11.0
+	 */
 	weightForTargetNamed(targetName: string): number;
 }
 
@@ -2224,6 +3108,9 @@ declare const enum SCNMorpherCalculationMode {
 	Additive = 1
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum SCNMovabilityHint {
 
 	Fixed = 0,
@@ -2241,8 +3128,14 @@ declare class SCNNode extends NSObject implements NSCopying, NSSecureCoding, SCN
 
 	static nodeWithGeometry(geometry: SCNGeometry): SCNNode;
 
+	/**
+	 * @since 9.0
+	 */
 	static nodeWithMDLObject(mdlObject: MDLObject): SCNNode;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly audioPlayers: NSArray<SCNAudioPlayer>;
 
 	camera: SCNCamera;
@@ -2255,12 +3148,18 @@ declare class SCNNode extends NSObject implements NSCopying, NSSecureCoding, SCN
 
 	constraints: NSArray<SCNConstraint>;
 
+	/**
+	 * @since 11.0
+	 */
 	entity: GKEntity;
 
 	eulerAngles: SCNVector3;
 
 	filters: NSArray<CIFilter>;
 
+	/**
+	 * @since 11.0
+	 */
 	focusBehavior: SCNNodeFocusBehavior;
 
 	geometry: SCNGeometry;
@@ -2271,6 +3170,9 @@ declare class SCNNode extends NSObject implements NSCopying, NSSecureCoding, SCN
 
 	morpher: SCNMorpher;
 
+	/**
+	 * @since 10.0
+	 */
 	movabilityHint: SCNMovabilityHint;
 
 	name: string;
@@ -2303,58 +3205,130 @@ declare class SCNNode extends NSObject implements NSCopying, NSSecureCoding, SCN
 
 	scale: SCNVector3;
 
+	/**
+	 * @since 11.0
+	 */
 	simdEulerAngles: interop.Reference<number>;
 
+	/**
+	 * @since 11.0
+	 */
 	simdOrientation: simd_quatf;
 
+	/**
+	 * @since 11.0
+	 */
 	simdPivot: simd_float4x4;
 
+	/**
+	 * @since 11.0
+	 */
 	simdPosition: interop.Reference<number>;
 
+	/**
+	 * @since 11.0
+	 */
 	simdRotation: interop.Reference<number>;
 
+	/**
+	 * @since 11.0
+	 */
 	simdScale: interop.Reference<number>;
 
+	/**
+	 * @since 11.0
+	 */
 	simdTransform: simd_float4x4;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly simdWorldFront: interop.Reference<number>;
 
+	/**
+	 * @since 11.0
+	 */
 	simdWorldOrientation: simd_quatf;
 
+	/**
+	 * @since 11.0
+	 */
 	simdWorldPosition: interop.Reference<number>;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly simdWorldRight: interop.Reference<number>;
 
+	/**
+	 * @since 11.0
+	 */
 	simdWorldTransform: simd_float4x4;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly simdWorldUp: interop.Reference<number>;
 
 	skinner: SCNSkinner;
 
 	transform: SCNMatrix4;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly worldFront: SCNVector3;
 
+	/**
+	 * @since 11.0
+	 */
 	worldOrientation: SCNVector4;
 
+	/**
+	 * @since 11.0
+	 */
 	worldPosition: SCNVector3;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly worldRight: SCNVector3;
 
 	readonly worldTransform: SCNMatrix4;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly worldUp: SCNVector3;
 
+	/**
+	 * @since 11.0
+	 */
 	static readonly localFront: SCNVector3;
 
+	/**
+	 * @since 11.0
+	 */
 	static readonly localRight: SCNVector3;
 
+	/**
+	 * @since 11.0
+	 */
 	static readonly localUp: SCNVector3;
 
+	/**
+	 * @since 11.0
+	 */
 	static readonly simdLocalFront: interop.Reference<number>;
 
+	/**
+	 * @since 11.0
+	 */
 	static readonly simdLocalRight: interop.Reference<number>;
 
+	/**
+	 * @since 11.0
+	 */
 	static readonly simdLocalUp: interop.Reference<number>;
 
 	readonly actionKeys: NSArray<string>; // inherited from SCNActionable
@@ -2367,14 +3341,29 @@ declare class SCNNode extends NSObject implements NSCopying, NSSecureCoding, SCN
 
 	readonly description: string; // inherited from NSObjectProtocol
 
+	/**
+	 * @since 15.0
+	 */
 	readonly focusEffect: UIFocusEffect; // inherited from UIFocusItem
 
+	/**
+	 * @since 14.0
+	 */
 	readonly focusGroupIdentifier: string; // inherited from UIFocusEnvironment
 
+	/**
+	 * @since 15.0
+	 */
 	readonly focusGroupPriority: number; // inherited from UIFocusItem
 
+	/**
+	 * @since 12.0
+	 */
 	readonly focusItemContainer: UIFocusItemContainer; // inherited from UIFocusEnvironment
 
+	/**
+	 * @since 12.0
+	 */
 	readonly frame: CGRect; // inherited from UIFocusItem
 
 	readonly hasActions: boolean; // inherited from SCNActionable
@@ -2383,12 +3372,22 @@ declare class SCNNode extends NSObject implements NSCopying, NSSecureCoding, SCN
 
 	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
+	/**
+	 * @since 15.0
+	 */
 	readonly isTransparentFocusItem: boolean; // inherited from UIFocusItem
 
+	/**
+	 * @since 12.0
+	 */
 	readonly parentFocusEnvironment: UIFocusEnvironment; // inherited from UIFocusEnvironment
 
 	readonly preferredFocusEnvironments: NSArray<UIFocusEnvironment>; // inherited from UIFocusEnvironment
 
+	/**
+	 * @since 9.0
+	 * @deprecated 10.0
+	 */
 	readonly preferredFocusedView: UIView; // inherited from UIFocusEnvironment
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
@@ -2403,16 +3402,29 @@ declare class SCNNode extends NSObject implements NSCopying, NSSecureCoding, SCN
 
 	addAnimationForKey(animation: SCNAnimationProtocol, key: string): void;
 
+	/**
+	 * @since 11.0
+	 */
 	addAnimationPlayerForKey(player: SCNAnimationPlayer, key: string): void;
 
+	/**
+	 * @since 9.0
+	 */
 	addAudioPlayer(player: SCNAudioPlayer): void;
 
 	addChildNode(child: SCNNode): void;
 
 	addParticleSystem(system: SCNParticleSystem): void;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	animationForKey(key: string): CAAnimation;
 
+	/**
+	 * @since 11.0
+	 */
 	animationPlayerForKey(key: string): SCNAnimationPlayer;
 
 	childNodeWithNameRecursively(name: string, recursively: boolean): SCNNode;
@@ -2433,12 +3445,21 @@ declare class SCNNode extends NSObject implements NSCopying, NSSecureCoding, SCN
 
 	convertTransformToNode(transform: SCNMatrix4, node: SCNNode): SCNMatrix4;
 
+	/**
+	 * @since 11.0
+	 */
 	convertVectorFromNode(vector: SCNVector3, node: SCNNode): SCNVector3;
 
+	/**
+	 * @since 11.0
+	 */
 	convertVectorToNode(vector: SCNVector3, node: SCNNode): SCNVector3;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
+	/**
+	 * @since 12.0
+	 */
 	didHintFocusMovement(hint: UIFocusMovementHint): void;
 
 	didUpdateFocusInContextWithAnimationCoordinator(context: UIFocusUpdateContext, coordinator: UIFocusAnimationCoordinator): void;
@@ -2447,6 +3468,9 @@ declare class SCNNode extends NSObject implements NSCopying, NSSecureCoding, SCN
 
 	enumerateChildNodesUsingBlock(block: (p1: SCNNode, p2: interop.Pointer | interop.Reference<boolean>) => void): void;
 
+	/**
+	 * @since 10.0
+	 */
 	enumerateHierarchyUsingBlock(block: (p1: SCNNode, p2: interop.Pointer | interop.Reference<boolean>) => void): void;
 
 	flattenedClone(): this;
@@ -2461,6 +3485,10 @@ declare class SCNNode extends NSObject implements NSCopying, NSSecureCoding, SCN
 
 	insertChildNodeAtIndex(child: SCNNode, index: number): void;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	isAnimationForKeyPaused(key: string): boolean;
 
 	isEqual(object: any): boolean;
@@ -2469,14 +3497,30 @@ declare class SCNNode extends NSObject implements NSCopying, NSSecureCoding, SCN
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
 
+	/**
+	 * @since 11.0
+	 */
 	localRotateBy(rotation: SCNVector4): void;
 
+	/**
+	 * @since 11.0
+	 */
 	localTranslateBy(translation: SCNVector3): void;
 
+	/**
+	 * @since 11.0
+	 */
 	lookAt(worldTarget: SCNVector3): void;
 
+	/**
+	 * @since 11.0
+	 */
 	lookAtUpLocalFront(worldTarget: SCNVector3, worldUp: SCNVector3, localFront: SCNVector3): void;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	pauseAnimationForKey(key: string): void;
 
 	performSelector(aSelector: string): any;
@@ -2491,18 +3535,34 @@ declare class SCNNode extends NSObject implements NSCopying, NSSecureCoding, SCN
 
 	removeAllAnimations(): void;
 
+	/**
+	 * @since 15.0
+	 */
 	removeAllAnimationsWithBlendOutDuration(duration: number): void;
 
+	/**
+	 * @since 9.0
+	 */
 	removeAllAudioPlayers(): void;
 
 	removeAllParticleSystems(): void;
 
 	removeAnimationForKey(key: string): void;
 
+	/**
+	 * @since 11.0
+	 */
 	removeAnimationForKeyBlendOutDuration(key: string, duration: number): void;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	removeAnimationForKeyFadeOutDuration(key: string, duration: number): void;
 
+	/**
+	 * @since 9.0
+	 */
 	removeAudioPlayer(player: SCNAudioPlayer): void;
 
 	removeFromParentNode(): void;
@@ -2513,10 +3573,17 @@ declare class SCNNode extends NSObject implements NSCopying, NSSecureCoding, SCN
 
 	respondsToSelector(aSelector: string): boolean;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	resumeAnimationForKey(key: string): void;
 
 	retainCount(): number;
 
+	/**
+	 * @since 11.0
+	 */
 	rotateByAroundTarget(worldRotation: SCNVector4, worldTarget: SCNVector3): void;
 
 	runAction(action: SCNAction): void;
@@ -2533,37 +3600,80 @@ declare class SCNNode extends NSObject implements NSCopying, NSSecureCoding, SCN
 
 	setNeedsFocusUpdate(): void;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 11.0
+	 */
 	setSpeedForAnimationKey(speed: number, key: string): void;
 
+	/**
+	 * @since 11.0
+	 */
 	setWorldTransform(worldTransform: SCNMatrix4): void;
 
 	shouldUpdateFocusInContext(context: UIFocusUpdateContext): boolean;
 
+	/**
+	 * @since 11.0
+	 */
 	simdConvertPositionFromNode(position: interop.Reference<number>, node: SCNNode): interop.Reference<number>;
 
+	/**
+	 * @since 11.0
+	 */
 	simdConvertPositionToNode(position: interop.Reference<number>, node: SCNNode): interop.Reference<number>;
 
+	/**
+	 * @since 11.0
+	 */
 	simdConvertTransformFromNode(transform: simd_float4x4, node: SCNNode): simd_float4x4;
 
+	/**
+	 * @since 11.0
+	 */
 	simdConvertTransformToNode(transform: simd_float4x4, node: SCNNode): simd_float4x4;
 
+	/**
+	 * @since 11.0
+	 */
 	simdConvertVectorFromNode(vector: interop.Reference<number>, node: SCNNode): interop.Reference<number>;
 
+	/**
+	 * @since 11.0
+	 */
 	simdConvertVectorToNode(vector: interop.Reference<number>, node: SCNNode): interop.Reference<number>;
 
+	/**
+	 * @since 11.0
+	 */
 	simdLocalRotateBy(rotation: simd_quatf): void;
 
+	/**
+	 * @since 11.0
+	 */
 	simdLocalTranslateBy(translation: interop.Reference<number>): void;
 
+	/**
+	 * @since 11.0
+	 */
 	simdLookAt(worldTarget: interop.Reference<number>): void;
 
+	/**
+	 * @since 11.0
+	 */
 	simdLookAtUpLocalFront(worldTarget: interop.Reference<number>, worldUp: interop.Reference<number>, localFront: interop.Reference<number>): void;
 
+	/**
+	 * @since 11.0
+	 */
 	simdRotateByAroundTarget(worldRotation: simd_quatf, worldTarget: interop.Reference<number>): void;
 
 	updateFocusIfNeeded(): void;
 }
 
+/**
+ * @since 11.0
+ */
 declare const enum SCNNodeFocusBehavior {
 
 	None = 0,
@@ -2808,6 +3918,9 @@ declare class SCNParticleSystem extends NSObject implements NSCopying, NSSecureC
 
 	loops: boolean;
 
+	/**
+	 * @since 11.0
+	 */
 	orientationDirection: SCNVector3;
 
 	orientationMode: SCNParticleOrientationMode;
@@ -2840,8 +3953,14 @@ declare class SCNParticleSystem extends NSObject implements NSCopying, NSSecureC
 
 	particleImage: any;
 
+	/**
+	 * @since 11.0
+	 */
 	particleIntensity: number;
 
+	/**
+	 * @since 11.0
+	 */
 	particleIntensityVariation: number;
 
 	particleLifeSpan: number;
@@ -2878,6 +3997,9 @@ declare class SCNParticleSystem extends NSObject implements NSCopying, NSSecureC
 
 	warmupDuration: number;
 
+	/**
+	 * @since 15.0
+	 */
 	writesToDepthBuffer: boolean;
 
 	readonly animationKeys: NSArray<string>; // inherited from SCNAnimatable
@@ -2900,12 +4022,22 @@ declare class SCNParticleSystem extends NSObject implements NSCopying, NSSecureC
 
 	addAnimationForKey(animation: SCNAnimationProtocol, key: string): void;
 
+	/**
+	 * @since 11.0
+	 */
 	addAnimationPlayerForKey(player: SCNAnimationPlayer, key: string): void;
 
 	addModifierForPropertiesAtStageWithBlock(properties: NSArray<string> | string[], stage: SCNParticleModifierStage, block: (p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: interop.Pointer | interop.Reference<number>, p3: number, p4: number, p5: number) => void): void;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	animationForKey(key: string): CAAnimation;
 
+	/**
+	 * @since 11.0
+	 */
 	animationPlayerForKey(key: string): SCNAnimationPlayer;
 
 	class(): typeof NSObject;
@@ -2920,6 +4052,10 @@ declare class SCNParticleSystem extends NSObject implements NSCopying, NSSecureC
 
 	initWithCoder(coder: NSCoder): this;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	isAnimationForKeyPaused(key: string): boolean;
 
 	isEqual(object: any): boolean;
@@ -2928,6 +4064,10 @@ declare class SCNParticleSystem extends NSObject implements NSCopying, NSSecureC
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	pauseAnimationForKey(key: string): void;
 
 	performSelector(aSelector: string): any;
@@ -2938,14 +4078,24 @@ declare class SCNParticleSystem extends NSObject implements NSCopying, NSSecureC
 
 	removeAllAnimations(): void;
 
+	/**
+	 * @since 15.0
+	 */
 	removeAllAnimationsWithBlendOutDuration(duration: number): void;
 
 	removeAllModifiers(): void;
 
 	removeAnimationForKey(key: string): void;
 
+	/**
+	 * @since 11.0
+	 */
 	removeAnimationForKeyBlendOutDuration(key: string, duration: number): void;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	removeAnimationForKeyFadeOutDuration(key: string, duration: number): void;
 
 	removeModifiersOfStage(stage: SCNParticleModifierStage): void;
@@ -2954,12 +4104,20 @@ declare class SCNParticleSystem extends NSObject implements NSCopying, NSSecureC
 
 	respondsToSelector(aSelector: string): boolean;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	resumeAnimationForKey(key: string): void;
 
 	retainCount(): number;
 
 	self(): this;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 11.0
+	 */
 	setSpeedForAnimationKey(speed: number, key: string): void;
 }
 
@@ -3011,12 +4169,18 @@ declare class SCNPhysicsBody extends NSObject implements NSCopying, NSSecureCodi
 
 	static staticBody(): SCNPhysicsBody;
 
+	/**
+	 * @since 9.0
+	 */
 	affectedByGravity: boolean;
 
 	allowsResting: boolean;
 
 	angularDamping: number;
 
+	/**
+	 * @since 12.0
+	 */
 	angularRestingThreshold: number;
 
 	angularVelocity: SCNVector4;
@@ -3025,14 +4189,23 @@ declare class SCNPhysicsBody extends NSObject implements NSCopying, NSSecureCodi
 
 	categoryBitMask: number;
 
+	/**
+	 * @since 12.0
+	 */
 	centerOfMassOffset: SCNVector3;
 
 	charge: number;
 
 	collisionBitMask: number;
 
+	/**
+	 * @since 9.0
+	 */
 	contactTestBitMask: number;
 
+	/**
+	 * @since 12.0
+	 */
 	continuousCollisionDetectionThreshold: number;
 
 	damping: number;
@@ -3041,10 +4214,16 @@ declare class SCNPhysicsBody extends NSObject implements NSCopying, NSSecureCodi
 
 	readonly isResting: boolean;
 
+	/**
+	 * @since 12.0
+	 */
 	linearRestingThreshold: number;
 
 	mass: number;
 
+	/**
+	 * @since 9.0
+	 */
 	momentOfInertia: SCNVector3;
 
 	physicsShape: SCNPhysicsShape;
@@ -3055,6 +4234,9 @@ declare class SCNPhysicsBody extends NSObject implements NSCopying, NSSecureCodi
 
 	type: SCNPhysicsBodyType;
 
+	/**
+	 * @since 9.0
+	 */
 	usesDefaultMomentOfInertia: boolean;
 
 	velocity: SCNVector3;
@@ -3081,6 +4263,9 @@ declare class SCNPhysicsBody extends NSObject implements NSCopying, NSSecureCodi
 
 	resetTransform(): void;
 
+	/**
+	 * @since 12.0
+	 */
 	setResting(resting: boolean): void;
 }
 
@@ -3102,6 +4287,9 @@ declare const enum SCNPhysicsCollisionCategory {
 	All = -1
 }
 
+/**
+ * @since 11.0
+ */
 declare class SCNPhysicsConeTwistJoint extends SCNPhysicsBehavior {
 
 	static alloc(): SCNPhysicsConeTwistJoint; // inherited from NSObject
@@ -3145,6 +4333,9 @@ declare class SCNPhysicsContact extends NSObject {
 
 	readonly penetrationDistance: number;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly sweepTestFraction: number;
 }
 
@@ -3262,10 +4453,19 @@ declare class SCNPhysicsShape extends NSObject implements NSCopying, NSSecureCod
 
 	static shapeWithShapesTransforms(shapes: NSArray<SCNPhysicsShape> | SCNPhysicsShape[], transforms: NSArray<NSValue> | NSValue[]): SCNPhysicsShape;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly options: NSDictionary<string, any>;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly sourceObject: any;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly transforms: NSArray<NSValue>;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
@@ -3281,6 +4481,9 @@ declare class SCNPhysicsShape extends NSObject implements NSCopying, NSSecureCod
 
 declare var SCNPhysicsShapeKeepAsCompoundKey: string;
 
+/**
+ * @since 10.0
+ */
 declare var SCNPhysicsShapeOptionCollisionMargin: string;
 
 declare var SCNPhysicsShapeScaleKey: string;
@@ -3455,9 +4658,17 @@ declare class SCNPlane extends SCNGeometry {
 
 	static geometry(): SCNPlane; // inherited from SCNGeometry
 
+	/**
+	 * @since 9.0
+	 */
 	static geometryWithMDLMesh(mdlMesh: MDLMesh): SCNPlane; // inherited from SCNGeometry
 
 	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[]): SCNPlane; // inherited from SCNGeometry
+
+	/**
+	 * @since 16.0
+	 */
+	static geometryWithSourcesElementsSourceChannels(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[], sourceChannels: NSArray<number> | number[]): SCNPlane; // inherited from SCNGeometry
 
 	static new(): SCNPlane; // inherited from NSObject
 
@@ -3476,10 +4687,19 @@ declare class SCNPlane extends SCNGeometry {
 	widthSegmentCount: number;
 }
 
+/**
+ * @since 9.0
+ */
 declare var SCNPreferLowPowerDeviceKey: string;
 
+/**
+ * @since 9.0
+ */
 declare var SCNPreferredDeviceKey: string;
 
+/**
+ * @since 9.0
+ */
 declare var SCNPreferredRenderingAPIKey: string;
 
 declare class SCNProgram extends NSObject implements NSCopying, NSSecureCoding {
@@ -3492,14 +4712,23 @@ declare class SCNProgram extends NSObject implements NSCopying, NSSecureCoding {
 
 	delegate: SCNProgramDelegate;
 
+	/**
+	 * @since 9.0
+	 */
 	fragmentFunctionName: string;
 
 	fragmentShader: string;
 
+	/**
+	 * @since 9.0
+	 */
 	library: MTLLibrary;
 
 	opaque: boolean;
 
+	/**
+	 * @since 9.0
+	 */
 	vertexFunctionName: string;
 
 	vertexShader: string;
@@ -3512,6 +4741,9 @@ declare class SCNProgram extends NSObject implements NSCopying, NSSecureCoding {
 
 	encodeWithCoder(coder: NSCoder): void;
 
+	/**
+	 * @since 9.0
+	 */
 	handleBindingOfBufferNamedFrequencyUsingBlock(name: string, frequency: SCNBufferFrequency, block: (p1: SCNBufferStream, p2: SCNNode, p3: SCNShadable, p4: SCNRenderer) => void): void;
 
 	initWithCoder(coder: NSCoder): this;
@@ -3542,9 +4774,17 @@ declare class SCNPyramid extends SCNGeometry {
 
 	static geometry(): SCNPyramid; // inherited from SCNGeometry
 
+	/**
+	 * @since 9.0
+	 */
 	static geometryWithMDLMesh(mdlMesh: MDLMesh): SCNPyramid; // inherited from SCNGeometry
 
 	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[]): SCNPyramid; // inherited from SCNGeometry
+
+	/**
+	 * @since 16.0
+	 */
+	static geometryWithSourcesElementsSourceChannels(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[], sourceChannels: NSArray<number> | number[]): SCNPyramid; // inherited from SCNGeometry
 
 	static new(): SCNPyramid; // inherited from NSObject
 
@@ -3563,6 +4803,9 @@ declare class SCNPyramid extends SCNGeometry {
 	widthSegmentCount: number;
 }
 
+/**
+ * @since 9.0
+ */
 declare const enum SCNReferenceLoadingPolicy {
 
 	Immediate = 0,
@@ -3570,6 +4813,9 @@ declare const enum SCNReferenceLoadingPolicy {
 	OnDemand = 1
 }
 
+/**
+ * @since 9.0
+ */
 declare class SCNReferenceNode extends SCNNode {
 
 	static alloc(): SCNReferenceNode; // inherited from NSObject
@@ -3578,6 +4824,9 @@ declare class SCNReferenceNode extends SCNNode {
 
 	static node(): SCNReferenceNode; // inherited from SCNNode
 
+	/**
+	 * @since 9.0
+	 */
 	static nodeWithMDLObject(mdlObject: MDLObject): SCNReferenceNode; // inherited from SCNNode
 
 	static referenceNodeWithURL(referenceURL: NSURL): SCNReferenceNode;
@@ -3605,40 +4854,76 @@ declare class SCNRenderer extends NSObject implements SCNSceneRenderer, SCNTechn
 
 	static rendererWithContextOptions(context: EAGLContext, options: NSDictionary<any, any>): SCNRenderer;
 
+	/**
+	 * @since 9.0
+	 */
 	static rendererWithDeviceOptions(device: MTLDevice, options: NSDictionary<any, any>): SCNRenderer;
 
 	readonly nextFrameTime: number;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly audioEngine: AVAudioEngine; // inherited from SCNSceneRenderer
 
+	/**
+	 * @since 9.0
+	 */
 	readonly audioEnvironmentNode: AVAudioEnvironmentNode; // inherited from SCNSceneRenderer
 
+	/**
+	 * @since 9.0
+	 */
 	audioListener: SCNNode; // inherited from SCNSceneRenderer
 
 	autoenablesDefaultLighting: boolean; // inherited from SCNSceneRenderer
 
+	/**
+	 * @since 9.0
+	 */
 	readonly colorPixelFormat: MTLPixelFormat; // inherited from SCNSceneRenderer
 
+	/**
+	 * @since 9.0
+	 */
 	readonly commandQueue: MTLCommandQueue; // inherited from SCNSceneRenderer
 
 	readonly context: interop.Pointer | interop.Reference<any>; // inherited from SCNSceneRenderer
 
+	/**
+	 * @since 9.0
+	 */
 	readonly currentRenderCommandEncoder: MTLRenderCommandEncoder; // inherited from SCNSceneRenderer
 
+	/**
+	 * @since 9.0
+	 */
 	readonly currentRenderPassDescriptor: MTLRenderPassDescriptor; // inherited from SCNSceneRenderer
 
+	/**
+	 * @since 13.0
+	 */
 	readonly currentViewport: CGRect; // inherited from SCNSceneRenderer
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
+	/**
+	 * @since 9.0
+	 */
 	debugOptions: SCNDebugOptions; // inherited from SCNSceneRenderer
 
 	delegate: SCNSceneRendererDelegate; // inherited from SCNSceneRenderer
 
+	/**
+	 * @since 9.0
+	 */
 	readonly depthPixelFormat: MTLPixelFormat; // inherited from SCNSceneRenderer
 
 	readonly description: string; // inherited from NSObjectProtocol
 
+	/**
+	 * @since 9.0
+	 */
 	readonly device: MTLDevice; // inherited from SCNSceneRenderer
 
 	readonly hash: number; // inherited from NSObjectProtocol
@@ -3655,6 +4940,9 @@ declare class SCNRenderer extends NSObject implements SCNSceneRenderer, SCNTechn
 
 	pointOfView: SCNNode; // inherited from SCNSceneRenderer
 
+	/**
+	 * @since 9.0
+	 */
 	readonly renderingAPI: SCNRenderingAPI; // inherited from SCNSceneRenderer
 
 	scene: SCNScene; // inherited from SCNSceneRenderer
@@ -3663,16 +4951,28 @@ declare class SCNRenderer extends NSObject implements SCNSceneRenderer, SCNTechn
 
 	showsStatistics: boolean; // inherited from SCNSceneRenderer
 
+	/**
+	 * @since 9.0
+	 */
 	readonly stencilPixelFormat: MTLPixelFormat; // inherited from SCNSceneRenderer
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
 	technique: SCNTechnique; // inherited from SCNTechniqueSupport
 
+	/**
+	 * @since 13.0
+	 */
 	temporalAntialiasingEnabled: boolean; // inherited from SCNSceneRenderer
 
+	/**
+	 * @since 13.0
+	 */
 	usesReverseZ: boolean; // inherited from SCNSceneRenderer
 
+	/**
+	 * @since 17.0
+	 */
 	readonly workingColorSpace: any; // inherited from SCNSceneRenderer
 
 	readonly  // inherited from NSObjectProtocol
@@ -3691,6 +4991,9 @@ declare class SCNRenderer extends NSObject implements SCNSceneRenderer, SCNTechn
 
 	isNodeInsideFrustumWithPointOfView(node: SCNNode, pointOfView: SCNNode): boolean;
 
+	/**
+	 * @since 9.0
+	 */
 	nodesInsideFrustumWithPointOfView(pointOfView: SCNNode): NSArray<SCNNode>;
 
 	performSelector(aSelector: string): any;
@@ -3703,16 +5006,29 @@ declare class SCNRenderer extends NSObject implements SCNSceneRenderer, SCNTechn
 
 	prepareObjectsWithCompletionHandler(objects: NSArray<any> | any[], completionHandler: (p1: boolean) => void): void;
 
+	/**
+	 * @since 9.0
+	 */
 	presentSceneWithTransitionIncomingPointOfViewCompletionHandler(scene: SCNScene, transition: SKTransition, pointOfView: SCNNode, completionHandler: () => void): void;
 
 	projectPoint(point: SCNVector3): SCNVector3;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 9.0
+	 */
 	render(): void;
 
 	renderAtTime(time: number): void;
 
+	/**
+	 * @since 9.0
+	 */
 	renderAtTimeViewportCommandBufferPassDescriptor(time: number, viewport: CGRect, commandBuffer: MTLCommandBuffer, renderPassDescriptor: MTLRenderPassDescriptor): void;
 
+	/**
+	 * @since 11.0
+	 */
 	renderWithViewportCommandBufferPassDescriptor(viewport: CGRect, commandBuffer: MTLCommandBuffer, renderPassDescriptor: MTLRenderPassDescriptor): void;
 
 	respondsToSelector(aSelector: string): boolean;
@@ -3721,15 +5037,27 @@ declare class SCNRenderer extends NSObject implements SCNSceneRenderer, SCNTechn
 
 	self(): this;
 
+	/**
+	 * @since 10.0
+	 */
 	snapshotAtTimeWithSizeAntialiasingMode(time: number, size: CGSize, antialiasingMode: SCNAntialiasingMode): UIImage;
 
 	unprojectPoint(point: SCNVector3): SCNVector3;
 
+	/**
+	 * @since 11.0
+	 */
 	updateAtTime(time: number): void;
 
+	/**
+	 * @since 10.0
+	 */
 	updateProbesAtTime(lightProbes: NSArray<SCNNode> | SCNNode[], time: number): void;
 }
 
+/**
+ * @since 9.0
+ */
 declare const enum SCNRenderingAPI {
 
 	Metal = 0,
@@ -3737,6 +5065,9 @@ declare const enum SCNRenderingAPI {
 	OpenGLES2 = 1
 }
 
+/**
+ * @since 11.0
+ */
 declare class SCNReplicatorConstraint extends SCNConstraint {
 
 	static alloc(): SCNReplicatorConstraint; // inherited from NSObject
@@ -3772,6 +5103,9 @@ declare class SCNScene extends NSObject implements GKSceneRootNodeType, NSSecure
 
 	static sceneNamedInDirectoryOptions(name: string, directory: string, options: NSDictionary<string, any>): SCNScene;
 
+	/**
+	 * @since 9.0
+	 */
 	static sceneWithMDLAsset(mdlAsset: MDLAsset): SCNScene;
 
 	static sceneWithURLOptionsError(url: NSURL, options: NSDictionary<string, any>): SCNScene;
@@ -3786,6 +5120,9 @@ declare class SCNScene extends NSObject implements GKSceneRootNodeType, NSSecure
 
 	fogStartDistance: number;
 
+	/**
+	 * @since 10.0
+	 */
 	readonly lightingEnvironment: SCNMaterialProperty;
 
 	readonly particleSystems: NSArray<SCNParticleSystem>;
@@ -3796,12 +5133,24 @@ declare class SCNScene extends NSObject implements GKSceneRootNodeType, NSSecure
 
 	readonly rootNode: SCNNode;
 
+	/**
+	 * @since 13.0
+	 */
 	screenSpaceReflectionMaximumDistance: number;
 
+	/**
+	 * @since 13.0
+	 */
 	screenSpaceReflectionSampleCount: number;
 
+	/**
+	 * @since 13.0
+	 */
 	screenSpaceReflectionStride: number;
 
+	/**
+	 * @since 13.0
+	 */
 	wantsScreenSpaceReflection: boolean;
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
@@ -3856,13 +5205,22 @@ declare class SCNScene extends NSObject implements GKSceneRootNodeType, NSSecure
 
 	setAttributeForKey(attribute: any, key: string): void;
 
+	/**
+	 * @since 10.0
+	 */
 	writeToURLOptionsDelegateProgressHandler(url: NSURL, options: NSDictionary<string, any>, delegate: SCNSceneExportDelegate, progressHandler: (p1: number, p2: NSError, p3: interop.Pointer | interop.Reference<boolean>) => void): boolean;
 }
 
 declare var SCNSceneEndTimeAttributeKey: string;
 
+/**
+ * @since 10.0
+ */
 interface SCNSceneExportDelegate extends NSObjectProtocol {
 
+	/**
+	 * @since 10.0
+	 */
 	writeImageWithSceneDocumentURLOriginalImageURL?(image: UIImage, documentURL: NSURL, originalImageURL: NSURL): NSURL;
 }
 declare var SCNSceneExportDelegate: {
@@ -3876,32 +5234,65 @@ declare var SCNSceneFrameRateAttributeKey: string;
 
 interface SCNSceneRenderer extends NSObjectProtocol {
 
+	/**
+	 * @since 9.0
+	 */
 	audioEngine: AVAudioEngine;
 
+	/**
+	 * @since 9.0
+	 */
 	audioEnvironmentNode: AVAudioEnvironmentNode;
 
+	/**
+	 * @since 9.0
+	 */
 	audioListener: SCNNode;
 
 	autoenablesDefaultLighting: boolean;
 
+	/**
+	 * @since 9.0
+	 */
 	colorPixelFormat: MTLPixelFormat;
 
+	/**
+	 * @since 9.0
+	 */
 	commandQueue: MTLCommandQueue;
 
 	context: interop.Pointer | interop.Reference<any>;
 
+	/**
+	 * @since 9.0
+	 */
 	currentRenderCommandEncoder: MTLRenderCommandEncoder;
 
+	/**
+	 * @since 9.0
+	 */
 	currentRenderPassDescriptor: MTLRenderPassDescriptor;
 
+	/**
+	 * @since 13.0
+	 */
 	currentViewport: CGRect;
 
+	/**
+	 * @since 9.0
+	 */
 	debugOptions: SCNDebugOptions;
 
 	delegate: SCNSceneRendererDelegate;
 
+	/**
+	 * @since 9.0
+	 */
 	depthPixelFormat: MTLPixelFormat;
 
+	/**
+	 * @since 9.0
+	 */
 	device: MTLDevice;
 
 	jitteringEnabled: boolean;
@@ -3914,6 +5305,9 @@ interface SCNSceneRenderer extends NSObjectProtocol {
 
 	pointOfView: SCNNode;
 
+	/**
+	 * @since 9.0
+	 */
 	renderingAPI: SCNRenderingAPI;
 
 	scene: SCNScene;
@@ -3922,24 +5316,42 @@ interface SCNSceneRenderer extends NSObjectProtocol {
 
 	showsStatistics: boolean;
 
+	/**
+	 * @since 9.0
+	 */
 	stencilPixelFormat: MTLPixelFormat;
 
+	/**
+	 * @since 13.0
+	 */
 	temporalAntialiasingEnabled: boolean;
 
+	/**
+	 * @since 13.0
+	 */
 	usesReverseZ: boolean;
 
+	/**
+	 * @since 17.0
+	 */
 	workingColorSpace: any;
 
 	hitTestOptions(point: CGPoint, options: NSDictionary<string, any>): NSArray<SCNHitTestResult>;
 
 	isNodeInsideFrustumWithPointOfView(node: SCNNode, pointOfView: SCNNode): boolean;
 
+	/**
+	 * @since 9.0
+	 */
 	nodesInsideFrustumWithPointOfView(pointOfView: SCNNode): NSArray<SCNNode>;
 
 	prepareObjectShouldAbortBlock(object: any, block: () => boolean): boolean;
 
 	prepareObjectsWithCompletionHandler(objects: NSArray<any> | any[], completionHandler: (p1: boolean) => void): void;
 
+	/**
+	 * @since 9.0
+	 */
 	presentSceneWithTransitionIncomingPointOfViewCompletionHandler(scene: SCNScene, transition: SKTransition, pointOfView: SCNNode, completionHandler: () => void): void;
 
 	projectPoint(point: SCNVector3): SCNVector3;
@@ -3955,6 +5367,9 @@ interface SCNSceneRendererDelegate extends NSObjectProtocol {
 
 	rendererDidApplyAnimationsAtTime?(renderer: SCNSceneRenderer, time: number): void;
 
+	/**
+	 * @since 11.0
+	 */
 	rendererDidApplyConstraintsAtTime?(renderer: SCNSceneRenderer, time: number): void;
 
 	rendererDidRenderSceneAtTime?(renderer: SCNSceneRenderer, scene: SCNScene, time: number): void;
@@ -4037,14 +5452,23 @@ declare var SCNSceneSourceAssetUpAxisKey: string;
 
 declare var SCNSceneSourceCheckConsistencyKey: string;
 
+/**
+ * @since 11.0
+ */
 declare var SCNSceneSourceConvertToYUpKey: string;
 
+/**
+ * @since 11.0
+ */
 declare var SCNSceneSourceConvertUnitsToMetersKey: string;
 
 declare var SCNSceneSourceCreateNormalsIfAbsentKey: string;
 
 declare var SCNSceneSourceFlattenSceneKey: string;
 
+/**
+ * @since 10.0
+ */
 declare var SCNSceneSourceLoadingOptionPreserveOriginalTopology: string;
 
 declare var SCNSceneSourceOverrideAssetURLsKey: string;
@@ -4064,6 +5488,10 @@ declare const enum SCNSceneSourceStatus {
 
 declare var SCNSceneSourceStrictConformanceKey: string;
 
+/**
+ * @since 8.0
+ * @deprecated 11.0
+ */
 declare var SCNSceneSourceUseSafeModeKey: string;
 
 declare var SCNSceneStartTimeAttributeKey: string;
@@ -4072,6 +5500,9 @@ declare var SCNSceneUpAxisAttributeKey: string;
 
 interface SCNShadable extends NSObjectProtocol {
 
+	/**
+	 * @since 15.0
+	 */
 	minimumLanguageVersion?: number;
 
 	program?: SCNProgram;
@@ -4110,9 +5541,17 @@ declare class SCNShape extends SCNGeometry {
 
 	static geometry(): SCNShape; // inherited from SCNGeometry
 
+	/**
+	 * @since 9.0
+	 */
 	static geometryWithMDLMesh(mdlMesh: MDLMesh): SCNShape; // inherited from SCNGeometry
 
 	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[]): SCNShape; // inherited from SCNGeometry
+
+	/**
+	 * @since 16.0
+	 */
+	static geometryWithSourcesElementsSourceChannels(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[], sourceChannels: NSArray<number> | number[]): SCNShape; // inherited from SCNGeometry
 
 	static new(): SCNShape; // inherited from NSObject
 
@@ -4160,6 +5599,9 @@ declare class SCNSkinner extends NSObject implements NSSecureCoding {
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 11.0
+ */
 declare class SCNSliderConstraint extends SCNConstraint {
 
 	static alloc(): SCNSliderConstraint; // inherited from NSObject
@@ -4181,9 +5623,17 @@ declare class SCNSphere extends SCNGeometry {
 
 	static geometry(): SCNSphere; // inherited from SCNGeometry
 
+	/**
+	 * @since 9.0
+	 */
 	static geometryWithMDLMesh(mdlMesh: MDLMesh): SCNSphere; // inherited from SCNGeometry
 
 	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[]): SCNSphere; // inherited from SCNGeometry
+
+	/**
+	 * @since 16.0
+	 */
+	static geometryWithSourcesElementsSourceChannels(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[], sourceChannels: NSArray<number> | number[]): SCNSphere; // inherited from SCNGeometry
 
 	static new(): SCNSphere; // inherited from NSObject
 
@@ -4208,6 +5658,9 @@ declare class SCNTechnique extends NSObject implements NSCopying, NSSecureCoding
 
 	readonly dictionaryRepresentation: NSDictionary<string, any>;
 
+	/**
+	 * @since 12.0
+	 */
 	library: MTLLibrary;
 
 	readonly animationKeys: NSArray<string>; // inherited from SCNAnimatable
@@ -4230,10 +5683,20 @@ declare class SCNTechnique extends NSObject implements NSCopying, NSSecureCoding
 
 	addAnimationForKey(animation: SCNAnimationProtocol, key: string): void;
 
+	/**
+	 * @since 11.0
+	 */
 	addAnimationPlayerForKey(player: SCNAnimationPlayer, key: string): void;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	animationForKey(key: string): CAAnimation;
 
+	/**
+	 * @since 11.0
+	 */
 	animationPlayerForKey(key: string): SCNAnimationPlayer;
 
 	class(): typeof NSObject;
@@ -4248,6 +5711,10 @@ declare class SCNTechnique extends NSObject implements NSCopying, NSSecureCoding
 
 	initWithCoder(coder: NSCoder): this;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	isAnimationForKeyPaused(key: string): boolean;
 
 	isEqual(object: any): boolean;
@@ -4256,8 +5723,15 @@ declare class SCNTechnique extends NSObject implements NSCopying, NSSecureCoding
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
 
+	/**
+	 * @since 9.0
+	 */
 	objectForKeyedSubscript(key: any): any;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	pauseAnimationForKey(key: string): void;
 
 	performSelector(aSelector: string): any;
@@ -4268,24 +5742,45 @@ declare class SCNTechnique extends NSObject implements NSCopying, NSSecureCoding
 
 	removeAllAnimations(): void;
 
+	/**
+	 * @since 15.0
+	 */
 	removeAllAnimationsWithBlendOutDuration(duration: number): void;
 
 	removeAnimationForKey(key: string): void;
 
+	/**
+	 * @since 11.0
+	 */
 	removeAnimationForKeyBlendOutDuration(key: string, duration: number): void;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	removeAnimationForKeyFadeOutDuration(key: string, duration: number): void;
 
 	respondsToSelector(aSelector: string): boolean;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	resumeAnimationForKey(key: string): void;
 
 	retainCount(): number;
 
 	self(): this;
 
+	/**
+	 * @since 9.0
+	 */
 	setObjectForKeyedSubscript(obj: any, key: any): void;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 11.0
+	 */
 	setSpeedForAnimationKey(speed: number, key: string): void;
 }
 
@@ -4298,6 +5793,9 @@ declare var SCNTechniqueSupport: {
 	prototype: SCNTechniqueSupport;
 };
 
+/**
+ * @since 11.0
+ */
 declare const enum SCNTessellationSmoothingMode {
 
 	None = 0,
@@ -4313,9 +5811,17 @@ declare class SCNText extends SCNGeometry {
 
 	static geometry(): SCNText; // inherited from SCNGeometry
 
+	/**
+	 * @since 9.0
+	 */
 	static geometryWithMDLMesh(mdlMesh: MDLMesh): SCNText; // inherited from SCNGeometry
 
 	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[]): SCNText; // inherited from SCNGeometry
+
+	/**
+	 * @since 16.0
+	 */
+	static geometryWithSourcesElementsSourceChannels(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[], sourceChannels: NSArray<number> | number[]): SCNText; // inherited from SCNGeometry
 
 	static new(): SCNText; // inherited from NSObject
 
@@ -4342,6 +5848,9 @@ declare class SCNText extends SCNGeometry {
 	wrapped: boolean;
 }
 
+/**
+ * @since 11.0
+ */
 declare class SCNTimingFunction extends NSObject implements NSSecureCoding {
 
 	static alloc(): SCNTimingFunction; // inherited from NSObject
@@ -4367,9 +5876,17 @@ declare class SCNTorus extends SCNGeometry {
 
 	static geometry(): SCNTorus; // inherited from SCNGeometry
 
+	/**
+	 * @since 9.0
+	 */
 	static geometryWithMDLMesh(mdlMesh: MDLMesh): SCNTorus; // inherited from SCNGeometry
 
 	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[]): SCNTorus; // inherited from SCNGeometry
+
+	/**
+	 * @since 16.0
+	 */
+	static geometryWithSourcesElementsSourceChannels(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[], sourceChannels: NSArray<number> | number[]): SCNTorus; // inherited from SCNGeometry
 
 	static new(): SCNTorus; // inherited from NSObject
 
@@ -4419,8 +5936,14 @@ declare class SCNTransformConstraint extends SCNConstraint {
 
 	static new(): SCNTransformConstraint; // inherited from NSObject
 
+	/**
+	 * @since 11.0
+	 */
 	static orientationConstraintInWorldSpaceWithBlock(world: boolean, block: (p1: SCNNode, p2: SCNVector4) => SCNVector4): SCNTransformConstraint;
 
+	/**
+	 * @since 11.0
+	 */
 	static positionConstraintInWorldSpaceWithBlock(world: boolean, block: (p1: SCNNode, p2: SCNVector3) => SCNVector3): SCNTransformConstraint;
 
 	static transformConstraintInWorldSpaceWithBlock(world: boolean, block: (p1: SCNNode, p2: SCNMatrix4) => SCNMatrix4): SCNTransformConstraint;
@@ -4445,9 +5968,17 @@ declare class SCNTube extends SCNGeometry {
 
 	static geometry(): SCNTube; // inherited from SCNGeometry
 
+	/**
+	 * @since 9.0
+	 */
 	static geometryWithMDLMesh(mdlMesh: MDLMesh): SCNTube; // inherited from SCNGeometry
 
 	static geometryWithSourcesElements(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[]): SCNTube; // inherited from SCNGeometry
+
+	/**
+	 * @since 16.0
+	 */
+	static geometryWithSourcesElementsSourceChannels(sources: NSArray<SCNGeometrySource> | SCNGeometrySource[], elements: NSArray<SCNGeometryElement> | SCNGeometryElement[], sourceChannels: NSArray<number> | number[]): SCNTube; // inherited from SCNGeometry
 
 	static new(): SCNTube; // inherited from NSObject
 
@@ -4493,14 +6024,31 @@ declare class SCNView extends UIView implements SCNSceneRenderer, SCNTechniqueSu
 
 	static appearance(): SCNView; // inherited from UIAppearance
 
+	/**
+	 * @since 8.0
+	 */
 	static appearanceForTraitCollection(trait: UITraitCollection): SCNView; // inherited from UIAppearance
 
+	/**
+	 * @since 8.0
+	 * @deprecated 9.0
+	 */
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): SCNView; // inherited from UIAppearance
 
+	/**
+	 * @since 9.0
+	 */
 	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): SCNView; // inherited from UIAppearance
 
+	/**
+	 * @since 5.0
+	 * @deprecated 9.0
+	 */
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): SCNView; // inherited from UIAppearance
 
+	/**
+	 * @since 9.0
+	 */
 	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): SCNView; // inherited from UIAppearance
 
 	static new(): SCNView; // inherited from NSObject
@@ -4509,46 +6057,89 @@ declare class SCNView extends UIView implements SCNSceneRenderer, SCNTechniqueSu
 
 	antialiasingMode: SCNAntialiasingMode;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly cameraControlConfiguration: SCNCameraControlConfiguration;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly defaultCameraController: SCNCameraController;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 12.0
+	 */
 	eaglContext: EAGLContext;
 
 	preferredFramesPerSecond: number;
 
 	rendersContinuously: boolean;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly audioEngine: AVAudioEngine; // inherited from SCNSceneRenderer
 
+	/**
+	 * @since 9.0
+	 */
 	readonly audioEnvironmentNode: AVAudioEnvironmentNode; // inherited from SCNSceneRenderer
 
+	/**
+	 * @since 9.0
+	 */
 	audioListener: SCNNode; // inherited from SCNSceneRenderer
 
 	autoenablesDefaultLighting: boolean; // inherited from SCNSceneRenderer
 
+	/**
+	 * @since 9.0
+	 */
 	readonly colorPixelFormat: MTLPixelFormat; // inherited from SCNSceneRenderer
 
+	/**
+	 * @since 9.0
+	 */
 	readonly commandQueue: MTLCommandQueue; // inherited from SCNSceneRenderer
 
 	readonly context: interop.Pointer | interop.Reference<any>; // inherited from SCNSceneRenderer
 
+	/**
+	 * @since 9.0
+	 */
 	readonly currentRenderCommandEncoder: MTLRenderCommandEncoder; // inherited from SCNSceneRenderer
 
+	/**
+	 * @since 9.0
+	 */
 	readonly currentRenderPassDescriptor: MTLRenderPassDescriptor; // inherited from SCNSceneRenderer
 
+	/**
+	 * @since 13.0
+	 */
 	readonly currentViewport: CGRect; // inherited from SCNSceneRenderer
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
+	/**
+	 * @since 9.0
+	 */
 	debugOptions: SCNDebugOptions; // inherited from SCNSceneRenderer
 
 	delegate: SCNSceneRendererDelegate; // inherited from SCNSceneRenderer
 
+	/**
+	 * @since 9.0
+	 */
 	readonly depthPixelFormat: MTLPixelFormat; // inherited from SCNSceneRenderer
 
 	readonly description: string; // inherited from NSObjectProtocol
 
+	/**
+	 * @since 9.0
+	 */
 	readonly device: MTLDevice; // inherited from SCNSceneRenderer
 
 	readonly hash: number; // inherited from NSObjectProtocol
@@ -4565,6 +6156,9 @@ declare class SCNView extends UIView implements SCNSceneRenderer, SCNTechniqueSu
 
 	pointOfView: SCNNode; // inherited from SCNSceneRenderer
 
+	/**
+	 * @since 9.0
+	 */
 	readonly renderingAPI: SCNRenderingAPI; // inherited from SCNSceneRenderer
 
 	scene: SCNScene; // inherited from SCNSceneRenderer
@@ -4573,16 +6167,28 @@ declare class SCNView extends UIView implements SCNSceneRenderer, SCNTechniqueSu
 
 	showsStatistics: boolean; // inherited from SCNSceneRenderer
 
+	/**
+	 * @since 9.0
+	 */
 	readonly stencilPixelFormat: MTLPixelFormat; // inherited from SCNSceneRenderer
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
 	technique: SCNTechnique; // inherited from SCNTechniqueSupport
 
+	/**
+	 * @since 13.0
+	 */
 	temporalAntialiasingEnabled: boolean; // inherited from SCNSceneRenderer
 
+	/**
+	 * @since 13.0
+	 */
 	usesReverseZ: boolean; // inherited from SCNSceneRenderer
 
+	/**
+	 * @since 17.0
+	 */
 	readonly workingColorSpace: any; // inherited from SCNSceneRenderer
 
 	readonly  // inherited from NSObjectProtocol
@@ -4605,6 +6211,9 @@ declare class SCNView extends UIView implements SCNSceneRenderer, SCNTechniqueSu
 
 	isNodeInsideFrustumWithPointOfView(node: SCNNode, pointOfView: SCNNode): boolean;
 
+	/**
+	 * @since 9.0
+	 */
 	nodesInsideFrustumWithPointOfView(pointOfView: SCNNode): NSArray<SCNNode>;
 
 	pause(sender: any): void;
@@ -4621,6 +6230,9 @@ declare class SCNView extends UIView implements SCNSceneRenderer, SCNTechniqueSu
 
 	prepareObjectsWithCompletionHandler(objects: NSArray<any> | any[], completionHandler: (p1: boolean) => void): void;
 
+	/**
+	 * @since 9.0
+	 */
 	presentSceneWithTransitionIncomingPointOfViewCompletionHandler(scene: SCNScene, transition: SKTransition, pointOfView: SCNNode, completionHandler: () => void): void;
 
 	projectPoint(point: SCNVector3): SCNVector3;

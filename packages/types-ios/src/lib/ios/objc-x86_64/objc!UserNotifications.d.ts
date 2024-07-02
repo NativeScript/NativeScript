@@ -1,4 +1,7 @@
 
+/**
+ * @since 10.0
+ */
 declare const enum UNAlertStyle {
 
 	None = 0,
@@ -8,8 +11,14 @@ declare const enum UNAlertStyle {
 	Alert = 2
 }
 
+/**
+ * @since 10.0
+ */
 declare var UNAuthorizationOptionNone: UNAuthorizationOptions;
 
+/**
+ * @since 10.0
+ */
 declare const enum UNAuthorizationOptions {
 
 	Badge = 1,
@@ -31,6 +40,9 @@ declare const enum UNAuthorizationOptions {
 	TimeSensitive = 256
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum UNAuthorizationStatus {
 
 	NotDetermined = 0,
@@ -44,6 +56,9 @@ declare const enum UNAuthorizationStatus {
 	Ephemeral = 4
 }
 
+/**
+ * @since 10.0
+ */
 declare class UNCalendarNotificationTrigger extends UNNotificationTrigger {
 
 	static alloc(): UNCalendarNotificationTrigger; // inherited from NSObject
@@ -57,6 +72,9 @@ declare class UNCalendarNotificationTrigger extends UNNotificationTrigger {
 	nextTriggerDate(): Date;
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum UNErrorCode {
 
 	NotificationsNotAllowed = 1,
@@ -84,8 +102,14 @@ declare const enum UNErrorCode {
 	BadgeInputInvalid = 1600
 }
 
+/**
+ * @since 10.0
+ */
 declare var UNErrorDomain: string;
 
+/**
+ * @since 10.0
+ */
 declare class UNLocationNotificationTrigger extends UNNotificationTrigger {
 
 	static alloc(): UNLocationNotificationTrigger; // inherited from NSObject
@@ -97,6 +121,9 @@ declare class UNLocationNotificationTrigger extends UNNotificationTrigger {
 	readonly region: CLRegion;
 }
 
+/**
+ * @since 10.0
+ */
 declare class UNMutableNotificationContent extends UNNotificationContent {
 
 	static alloc(): UNMutableNotificationContent; // inherited from NSObject
@@ -111,22 +138,42 @@ declare class UNMutableNotificationContent extends UNNotificationContent {
 
 	categoryIdentifier: string;
 
+	/**
+	 * @since 16.0
+	 */
 	filterCriteria: string;
 
+	/**
+	 * @since 15.0
+	 */
 	interruptionLevel: UNNotificationInterruptionLevel;
 
 	launchImageName: string;
 
+	/**
+	 * @since 15.0
+	 */
 	relevanceScore: number;
 
 	sound: UNNotificationSound;
 
 	subtitle: string;
 
+	/**
+	 * @since 12.0
+	 * @deprecated 15.0
+	 */
 	summaryArgument: string;
 
+	/**
+	 * @since 12.0
+	 * @deprecated 15.0
+	 */
 	summaryArgumentCount: number;
 
+	/**
+	 * @since 13.0
+	 */
 	targetContentIdentifier: string;
 
 	threadIdentifier: string;
@@ -136,6 +183,9 @@ declare class UNMutableNotificationContent extends UNNotificationContent {
 	userInfo: NSDictionary<any, any>;
 }
 
+/**
+ * @since 10.0
+ */
 declare class UNNotification extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): UNNotification; // inherited from NSObject
@@ -157,16 +207,25 @@ declare class UNNotification extends NSObject implements NSCopying, NSSecureCodi
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class UNNotificationAction extends NSObject implements NSCopying, NSSecureCoding {
 
 	static actionWithIdentifierTitleOptions(identifier: string, title: string, options: UNNotificationActionOptions): UNNotificationAction;
 
+	/**
+	 * @since 15.0
+	 */
 	static actionWithIdentifierTitleOptionsIcon(identifier: string, title: string, options: UNNotificationActionOptions, icon: UNNotificationActionIcon): UNNotificationAction;
 
 	static alloc(): UNNotificationAction; // inherited from NSObject
 
 	static new(): UNNotificationAction; // inherited from NSObject
 
+	/**
+	 * @since 15.0
+	 */
 	readonly icon: UNNotificationActionIcon;
 
 	readonly identifier: string;
@@ -186,6 +245,9 @@ declare class UNNotificationAction extends NSObject implements NSCopying, NSSecu
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare class UNNotificationActionIcon extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): UNNotificationActionIcon; // inherited from NSObject
@@ -207,8 +269,14 @@ declare class UNNotificationActionIcon extends NSObject implements NSCopying, NS
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare var UNNotificationActionOptionNone: UNNotificationActionOptions;
 
+/**
+ * @since 10.0
+ */
 declare const enum UNNotificationActionOptions {
 
 	AuthenticationRequired = 1,
@@ -218,6 +286,9 @@ declare const enum UNNotificationActionOptions {
 	Foreground = 4
 }
 
+/**
+ * @since 10.0
+ */
 declare class UNNotificationAttachment extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): UNNotificationAttachment; // inherited from NSObject
@@ -243,20 +314,87 @@ declare class UNNotificationAttachment extends NSObject implements NSCopying, NS
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare var UNNotificationAttachmentOptionsThumbnailClippingRectKey: string;
 
+/**
+ * @since 10.0
+ */
 declare var UNNotificationAttachmentOptionsThumbnailHiddenKey: string;
 
+/**
+ * @since 10.0
+ */
 declare var UNNotificationAttachmentOptionsThumbnailTimeKey: string;
 
+/**
+ * @since 10.0
+ */
 declare var UNNotificationAttachmentOptionsTypeHintKey: string;
 
+/**
+ * @since 18.0
+ */
+declare class UNNotificationAttributedMessageContext extends NSObject implements UNNotificationContentProviding {
+
+	static alloc(): UNNotificationAttributedMessageContext; // inherited from NSObject
+
+	static contextWithSendMessageIntentAttributedContent(sendMessageIntent: INSendMessageIntent, attributedContent: NSAttributedString): UNNotificationAttributedMessageContext;
+
+	static new(): UNNotificationAttributedMessageContext; // inherited from NSObject
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
+/**
+ * @since 10.0
+ */
 declare class UNNotificationCategory extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): UNNotificationCategory; // inherited from NSObject
 
+	/**
+	 * @since 12.0
+	 */
 	static categoryWithIdentifierActionsIntentIdentifiersHiddenPreviewsBodyPlaceholderCategorySummaryFormatOptions(identifier: string, actions: NSArray<UNNotificationAction> | UNNotificationAction[], intentIdentifiers: NSArray<string> | string[], hiddenPreviewsBodyPlaceholder: string, categorySummaryFormat: string, options: UNNotificationCategoryOptions): UNNotificationCategory;
 
+	/**
+	 * @since 11.0
+	 */
 	static categoryWithIdentifierActionsIntentIdentifiersHiddenPreviewsBodyPlaceholderOptions(identifier: string, actions: NSArray<UNNotificationAction> | UNNotificationAction[], intentIdentifiers: NSArray<string> | string[], hiddenPreviewsBodyPlaceholder: string, options: UNNotificationCategoryOptions): UNNotificationCategory;
 
 	static categoryWithIdentifierActionsIntentIdentifiersOptions(identifier: string, actions: NSArray<UNNotificationAction> | UNNotificationAction[], intentIdentifiers: NSArray<string> | string[], options: UNNotificationCategoryOptions): UNNotificationCategory;
@@ -265,8 +403,14 @@ declare class UNNotificationCategory extends NSObject implements NSCopying, NSSe
 
 	readonly actions: NSArray<UNNotificationAction>;
 
+	/**
+	 * @since 12.0
+	 */
 	readonly categorySummaryFormat: string;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly hiddenPreviewsBodyPlaceholder: string;
 
 	readonly identifier: string;
@@ -286,8 +430,14 @@ declare class UNNotificationCategory extends NSObject implements NSCopying, NSSe
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare var UNNotificationCategoryOptionNone: UNNotificationCategoryOptions;
 
+/**
+ * @since 10.0
+ */
 declare const enum UNNotificationCategoryOptions {
 
 	CustomDismissAction = 1,
@@ -301,6 +451,9 @@ declare const enum UNNotificationCategoryOptions {
 	AllowAnnouncement = 16
 }
 
+/**
+ * @since 10.0
+ */
 declare class UNNotificationContent extends NSObject implements NSCopying, NSMutableCopying, NSSecureCoding {
 
 	static alloc(): UNNotificationContent; // inherited from NSObject
@@ -315,22 +468,42 @@ declare class UNNotificationContent extends NSObject implements NSCopying, NSMut
 
 	readonly categoryIdentifier: string;
 
+	/**
+	 * @since 16.0
+	 */
 	readonly filterCriteria: string;
 
+	/**
+	 * @since 15.0
+	 */
 	readonly interruptionLevel: UNNotificationInterruptionLevel;
 
 	readonly launchImageName: string;
 
+	/**
+	 * @since 15.0
+	 */
 	readonly relevanceScore: number;
 
 	readonly sound: UNNotificationSound;
 
 	readonly subtitle: string;
 
+	/**
+	 * @since 12.0
+	 * @deprecated 15.0
+	 */
 	readonly summaryArgument: string;
 
+	/**
+	 * @since 12.0
+	 * @deprecated 15.0
+	 */
 	readonly summaryArgumentCount: number;
 
+	/**
+	 * @since 13.0
+	 */
 	readonly targetContentIdentifier: string;
 
 	readonly threadIdentifier: string;
@@ -343,6 +516,9 @@ declare class UNNotificationContent extends NSObject implements NSCopying, NSMut
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
+	/**
+	 * @since 15.0
+	 */
 	contentByUpdatingWithProviderError(provider: UNNotificationContentProviding): UNNotificationContent;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
@@ -354,6 +530,9 @@ declare class UNNotificationContent extends NSObject implements NSCopying, NSMut
 	mutableCopyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+/**
+ * @since 15.0
+ */
 interface UNNotificationContentProviding extends NSObjectProtocol {
 }
 declare var UNNotificationContentProviding: {
@@ -361,10 +540,19 @@ declare var UNNotificationContentProviding: {
 	prototype: UNNotificationContentProviding;
 };
 
+/**
+ * @since 10.0
+ */
 declare var UNNotificationDefaultActionIdentifier: string;
 
+/**
+ * @since 10.0
+ */
 declare var UNNotificationDismissActionIdentifier: string;
 
+/**
+ * @since 15.0
+ */
 declare const enum UNNotificationInterruptionLevel {
 
 	Passive = 0,
@@ -376,8 +564,14 @@ declare const enum UNNotificationInterruptionLevel {
 	Critical = 3
 }
 
+/**
+ * @since 10.0
+ */
 declare var UNNotificationPresentationOptionNone: UNNotificationPresentationOptions;
 
+/**
+ * @since 10.0
+ */
 declare const enum UNNotificationPresentationOptions {
 
 	Badge = 1,
@@ -391,6 +585,9 @@ declare const enum UNNotificationPresentationOptions {
 	Banner = 16
 }
 
+/**
+ * @since 10.0
+ */
 declare class UNNotificationRequest extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): UNNotificationRequest; // inherited from NSObject
@@ -416,6 +613,9 @@ declare class UNNotificationRequest extends NSObject implements NSCopying, NSSec
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class UNNotificationResponse extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): UNNotificationResponse; // inherited from NSObject
@@ -426,6 +626,9 @@ declare class UNNotificationResponse extends NSObject implements NSCopying, NSSe
 
 	readonly notification: UNNotification;
 
+	/**
+	 * @since 13.0
+	 */
 	readonly targetScene: UIScene;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
@@ -439,6 +642,9 @@ declare class UNNotificationResponse extends NSObject implements NSCopying, NSSe
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class UNNotificationServiceExtension extends NSObject {
 
 	static alloc(): UNNotificationServiceExtension; // inherited from NSObject
@@ -450,6 +656,9 @@ declare class UNNotificationServiceExtension extends NSObject {
 	serviceExtensionTimeWillExpire(): void;
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum UNNotificationSetting {
 
 	NotSupported = 0,
@@ -459,6 +668,9 @@ declare const enum UNNotificationSetting {
 	Enabled = 2
 }
 
+/**
+ * @since 10.0
+ */
 declare class UNNotificationSettings extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): UNNotificationSettings; // inherited from NSObject
@@ -469,6 +681,9 @@ declare class UNNotificationSettings extends NSObject implements NSCopying, NSSe
 
 	readonly alertStyle: UNAlertStyle;
 
+	/**
+	 * @since 13.0
+	 */
 	readonly announcementSetting: UNNotificationSetting;
 
 	readonly authorizationStatus: UNAuthorizationStatus;
@@ -477,22 +692,40 @@ declare class UNNotificationSettings extends NSObject implements NSCopying, NSSe
 
 	readonly carPlaySetting: UNNotificationSetting;
 
+	/**
+	 * @since 12.0
+	 */
 	readonly criticalAlertSetting: UNNotificationSetting;
 
+	/**
+	 * @since 15.0
+	 */
 	readonly directMessagesSetting: UNNotificationSetting;
 
 	readonly lockScreenSetting: UNNotificationSetting;
 
 	readonly notificationCenterSetting: UNNotificationSetting;
 
+	/**
+	 * @since 12.0
+	 */
 	readonly providesAppNotificationSettings: boolean;
 
+	/**
+	 * @since 15.0
+	 */
 	readonly scheduledDeliverySetting: UNNotificationSetting;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly showPreviewsSetting: UNShowPreviewsSetting;
 
 	readonly soundSetting: UNNotificationSetting;
 
+	/**
+	 * @since 15.0
+	 */
 	readonly timeSensitiveSetting: UNNotificationSetting;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
@@ -506,24 +739,45 @@ declare class UNNotificationSettings extends NSObject implements NSCopying, NSSe
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class UNNotificationSound extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): UNNotificationSound; // inherited from NSObject
 
+	/**
+	 * @since 12.0
+	 */
 	static criticalSoundNamed(name: string): UNNotificationSound;
 
+	/**
+	 * @since 12.0
+	 */
 	static criticalSoundNamedWithAudioVolume(name: string, volume: number): UNNotificationSound;
 
+	/**
+	 * @since 12.0
+	 */
 	static defaultCriticalSoundWithAudioVolume(volume: number): UNNotificationSound;
 
 	static new(): UNNotificationSound; // inherited from NSObject
 
+	/**
+	 * @since 15.2
+	 */
 	static ringtoneSoundNamed(name: string): UNNotificationSound;
 
 	static soundNamed(name: string): UNNotificationSound;
 
+	/**
+	 * @since 12.0
+	 */
 	static readonly defaultCriticalSound: UNNotificationSound;
 
+	/**
+	 * @since 15.2
+	 */
 	static readonly defaultRingtoneSound: UNNotificationSound;
 
 	static readonly defaultSound: UNNotificationSound;
@@ -539,6 +793,9 @@ declare class UNNotificationSound extends NSObject implements NSCopying, NSSecur
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class UNNotificationTrigger extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): UNNotificationTrigger; // inherited from NSObject
@@ -558,6 +815,9 @@ declare class UNNotificationTrigger extends NSObject implements NSCopying, NSSec
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class UNPushNotificationTrigger extends UNNotificationTrigger {
 
 	static alloc(): UNPushNotificationTrigger; // inherited from NSObject
@@ -565,6 +825,9 @@ declare class UNPushNotificationTrigger extends UNNotificationTrigger {
 	static new(): UNPushNotificationTrigger; // inherited from NSObject
 }
 
+/**
+ * @since 11.0
+ */
 declare const enum UNShowPreviewsSetting {
 
 	Always = 0,
@@ -574,12 +837,21 @@ declare const enum UNShowPreviewsSetting {
 	Never = 2
 }
 
+/**
+ * @since 10.0
+ */
 declare class UNTextInputNotificationAction extends UNNotificationAction {
 
 	static actionWithIdentifierTitleOptions(identifier: string, title: string, options: UNNotificationActionOptions): UNTextInputNotificationAction; // inherited from UNNotificationAction
 
+	/**
+	 * @since 15.0
+	 */
 	static actionWithIdentifierTitleOptionsIcon(identifier: string, title: string, options: UNNotificationActionOptions, icon: UNNotificationActionIcon): UNTextInputNotificationAction; // inherited from UNNotificationAction
 
+	/**
+	 * @since 15.0
+	 */
 	static actionWithIdentifierTitleOptionsIconTextInputButtonTitleTextInputPlaceholder(identifier: string, title: string, options: UNNotificationActionOptions, icon: UNNotificationActionIcon, textInputButtonTitle: string, textInputPlaceholder: string): UNTextInputNotificationAction;
 
 	static actionWithIdentifierTitleOptionsTextInputButtonTitleTextInputPlaceholder(identifier: string, title: string, options: UNNotificationActionOptions, textInputButtonTitle: string, textInputPlaceholder: string): UNTextInputNotificationAction;
@@ -593,6 +865,9 @@ declare class UNTextInputNotificationAction extends UNNotificationAction {
 	readonly textInputPlaceholder: string;
 }
 
+/**
+ * @since 10.0
+ */
 declare class UNTextInputNotificationResponse extends UNNotificationResponse {
 
 	static alloc(): UNTextInputNotificationResponse; // inherited from NSObject
@@ -602,6 +877,9 @@ declare class UNTextInputNotificationResponse extends UNNotificationResponse {
 	readonly userText: string;
 }
 
+/**
+ * @since 10.0
+ */
 declare class UNTimeIntervalNotificationTrigger extends UNNotificationTrigger {
 
 	static alloc(): UNTimeIntervalNotificationTrigger; // inherited from NSObject
@@ -615,6 +893,9 @@ declare class UNTimeIntervalNotificationTrigger extends UNNotificationTrigger {
 	nextTriggerDate(): Date;
 }
 
+/**
+ * @since 10.0
+ */
 declare class UNUserNotificationCenter extends NSObject {
 
 	static alloc(): UNUserNotificationCenter; // inherited from NSObject
@@ -647,17 +928,32 @@ declare class UNUserNotificationCenter extends NSObject {
 
 	requestAuthorizationWithOptionsCompletionHandler(options: UNAuthorizationOptions, completionHandler: (p1: boolean, p2: NSError) => void): void;
 
+	/**
+	 * @since 16.0
+	 */
 	setBadgeCountWithCompletionHandler(newBadgeCount: number, completionHandler: (p1: NSError) => void): void;
 
 	setNotificationCategories(categories: NSSet<UNNotificationCategory>): void;
 }
 
+/**
+ * @since 10.0
+ */
 interface UNUserNotificationCenterDelegate extends NSObjectProtocol {
 
+	/**
+	 * @since 10.0
+	 */
 	userNotificationCenterDidReceiveNotificationResponseWithCompletionHandler?(center: UNUserNotificationCenter, response: UNNotificationResponse, completionHandler: () => void): void;
 
+	/**
+	 * @since 12.0
+	 */
 	userNotificationCenterOpenSettingsForNotification?(center: UNUserNotificationCenter, notification: UNNotification): void;
 
+	/**
+	 * @since 10.0
+	 */
 	userNotificationCenterWillPresentNotificationWithCompletionHandler?(center: UNUserNotificationCenter, notification: UNNotification, completionHandler: (p1: UNNotificationPresentationOptions) => void): void;
 }
 declare var UNUserNotificationCenterDelegate: {

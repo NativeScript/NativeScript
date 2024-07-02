@@ -133,4 +133,7 @@ declare function _mm_setcsr(__i: number): void;
 
 declare function _mm_sfence(): void;
 
+/**
+ * @since 3.0
+ */
 declare function posix_memalign(__memptr: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, __alignment: number, __size: number): number;

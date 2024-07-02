@@ -39,6 +39,15 @@ interface BslnFormat2Part {
 }
 declare var BslnFormat2Part: interop.StructType<BslnFormat2Part>;
 
+interface CTAdaptiveImageProviding {
+
+	imageForProposedSizeScaleFactorImageOffsetImageSize(proposedSize: CGSize, scaleFactor: number, outImageOffset: interop.Pointer | interop.Reference<CGPoint>, outImageSize: interop.Pointer | interop.Reference<CGSize>): any;
+}
+declare var CTAdaptiveImageProviding: {
+
+	prototype: CTAdaptiveImageProviding;
+};
+
 declare const enum CTCharacterCollection {
 
 	kCTCharacterCollectionIdentityMapping = 0,
@@ -66,10 +75,19 @@ declare const enum CTCharacterCollection {
 	kCTAdobeKorea1CharacterCollection = 5
 }
 
+/**
+ * @since 15.0
+ */
 declare function CTFontCollectionCopyFontAttribute(collection: any, attributeName: string, options: CTFontCollectionCopyOptions): NSArray<any>;
 
+/**
+ * @since 15.0
+ */
 declare function CTFontCollectionCopyFontAttributes(collection: any, attributeNames: NSSet<any>, options: CTFontCollectionCopyOptions): NSArray<any>;
 
+/**
+ * @since 12.0
+ */
 declare const enum CTFontCollectionCopyOptions {
 
 	kCTFontCollectionCopyDefaultOptions = 0,
@@ -79,110 +97,269 @@ declare const enum CTFontCollectionCopyOptions {
 	kCTFontCollectionCopyStandardSort = 2
 }
 
+/**
+ * @since 3.2
+ */
 declare function CTFontCollectionCreateCopyWithFontDescriptors(original: any, queryDescriptors: NSArray<any> | any[], options: NSDictionary<any, any>): any;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontCollectionCreateFromAvailableFonts(options: NSDictionary<any, any>): any;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontCollectionCreateMatchingFontDescriptors(collection: any): NSArray<any>;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontCollectionCreateMatchingFontDescriptorsSortedWithCallback(collection: any, sortCallback: interop.FunctionReference<(p1: UIFontDescriptor, p2: UIFontDescriptor, p3: interop.Pointer | interop.Reference<any>) => CFComparisonResult>, refCon: interop.Pointer | interop.Reference<any>): NSArray<any>;
 
+/**
+ * @since 12.0
+ */
 declare function CTFontCollectionCreateMatchingFontDescriptorsWithOptions(collection: any, options: NSDictionary<any, any>): NSArray<any>;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontCollectionCreateWithFontDescriptors(queryDescriptors: NSArray<any> | any[], options: NSDictionary<any, any>): any;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontCollectionGetTypeID(): number;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontCopyAttribute(font: UIFont, attribute: string): any;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontCopyAvailableTables(font: UIFont, options: CTFontTableOptions): NSArray<any>;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontCopyCharacterSet(font: UIFont): NSCharacterSet;
 
+/**
+ * @since 6.0
+ */
 declare function CTFontCopyDefaultCascadeListForLanguages(font: UIFont, languagePrefList: NSArray<any> | any[]): NSArray<any>;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontCopyDisplayName(font: UIFont): string;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontCopyFamilyName(font: UIFont): string;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontCopyFeatureSettings(font: UIFont): NSArray<any>;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontCopyFeatures(font: UIFont): NSArray<any>;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontCopyFontDescriptor(font: UIFont): UIFontDescriptor;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontCopyFullName(font: UIFont): string;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontCopyGraphicsFont(font: UIFont, attributes: interop.Pointer | interop.Reference<UIFontDescriptor>): any;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontCopyLocalizedName(font: UIFont, nameKey: string, actualLanguage: interop.Pointer | interop.Reference<string>): string;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontCopyName(font: UIFont, nameKey: string): string;
 
+/**
+ * @since 6.0
+ */
 declare function CTFontCopyNameForGlyph(font: UIFont, glyph: number): string;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontCopyPostScriptName(font: UIFont): string;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontCopySupportedLanguages(font: UIFont): NSArray<any>;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontCopyTable(font: UIFont, table: number, options: CTFontTableOptions): NSData;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontCopyTraits(font: UIFont): NSDictionary<any, any>;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontCopyVariation(font: UIFont): NSDictionary<any, any>;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontCopyVariationAxes(font: UIFont): NSArray<any>;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontCreateCopyWithAttributes(font: UIFont, size: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform>, attributes: UIFontDescriptor): UIFont;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontCreateCopyWithFamily(font: UIFont, size: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform>, family: string): UIFont;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontCreateCopyWithSymbolicTraits(font: UIFont, size: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform>, symTraitValue: CTFontSymbolicTraits, symTraitMask: CTFontSymbolicTraits): UIFont;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontCreateForString(currentFont: UIFont, string: string, range: CFRange): UIFont;
 
+/**
+ * @since 7.0
+ */
 declare function CTFontCreateForStringWithLanguage(currentFont: UIFont, string: string, range: CFRange, language: string): UIFont;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontCreatePathForGlyph(font: UIFont, glyph: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform>): any;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontCreateUIFontForLanguage(uiType: CTFontUIFontType, size: number, language: string): UIFont;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontCreateWithFontDescriptor(descriptor: UIFontDescriptor, size: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform>): UIFont;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontCreateWithFontDescriptorAndOptions(descriptor: UIFontDescriptor, size: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform>, options: CTFontOptions): UIFont;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontCreateWithGraphicsFont(graphicsFont: any, size: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform>, attributes: UIFontDescriptor): UIFont;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontCreateWithName(name: string, size: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform>): UIFont;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontCreateWithNameAndOptions(name: string, size: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform>, options: CTFontOptions): UIFont;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontDescriptorCopyAttribute(descriptor: UIFontDescriptor, attribute: string): any;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontDescriptorCopyAttributes(descriptor: UIFontDescriptor): NSDictionary<any, any>;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontDescriptorCopyLocalizedAttribute(descriptor: UIFontDescriptor, attribute: string, language: interop.Pointer | interop.Reference<string>): any;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontDescriptorCreateCopyWithAttributes(original: UIFontDescriptor, attributes: NSDictionary<any, any>): UIFontDescriptor;
 
+/**
+ * @since 7.0
+ */
 declare function CTFontDescriptorCreateCopyWithFamily(original: UIFontDescriptor, family: string): UIFontDescriptor;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontDescriptorCreateCopyWithFeature(original: UIFontDescriptor, featureTypeIdentifier: number, featureSelectorIdentifier: number): UIFontDescriptor;
 
+/**
+ * @since 7.0
+ */
 declare function CTFontDescriptorCreateCopyWithSymbolicTraits(original: UIFontDescriptor, symTraitValue: CTFontSymbolicTraits, symTraitMask: CTFontSymbolicTraits): UIFontDescriptor;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontDescriptorCreateCopyWithVariation(original: UIFontDescriptor, variationIdentifier: number, variationValue: number): UIFontDescriptor;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontDescriptorCreateMatchingFontDescriptor(descriptor: UIFontDescriptor, mandatoryAttributes: NSSet<any>): UIFontDescriptor;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontDescriptorCreateMatchingFontDescriptors(descriptor: UIFontDescriptor, mandatoryAttributes: NSSet<any>): NSArray<any>;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontDescriptorCreateWithAttributes(attributes: NSDictionary<any, any>): UIFontDescriptor;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontDescriptorCreateWithNameAndSize(name: string, size: number): UIFontDescriptor;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontDescriptorGetTypeID(): number;
 
+/**
+ * @since 6.0
+ */
 declare function CTFontDescriptorMatchFontDescriptorsWithProgressHandler(descriptors: NSArray<any> | any[], mandatoryAttributes: NSSet<any>, progressBlock: (p1: CTFontDescriptorMatchingState, p2: NSDictionary<any, any>) => boolean): boolean;
 
 declare const enum CTFontDescriptorMatchingState {
@@ -206,7 +383,15 @@ declare const enum CTFontDescriptorMatchingState {
 	kCTFontDescriptorMatchingDidFailWithError = 8
 }
 
+/**
+ * @since 4.2
+ */
 declare function CTFontDrawGlyphs(font: UIFont, glyphs: interop.Reference<number>, positions: interop.Reference<CGPoint>, count: number, context: any): void;
+
+/**
+ * @since 18.0
+ */
+declare function CTFontDrawImageFromAdaptiveImageProviderAtPoint(font: UIFont, provider: CTAdaptiveImageProviding, point: CGPoint, context: any): void;
 
 declare const enum CTFontFormat {
 
@@ -223,50 +408,124 @@ declare const enum CTFontFormat {
 	kCTFontFormatBitmap = 5
 }
 
+/**
+ * @since 3.2
+ */
 declare function CTFontGetAdvancesForGlyphs(font: UIFont, orientation: CTFontOrientation, glyphs: interop.Reference<number>, advances: interop.Reference<CGSize>, count: number): number;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontGetAscent(font: UIFont): number;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontGetBoundingBox(font: UIFont): CGRect;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontGetBoundingRectsForGlyphs(font: UIFont, orientation: CTFontOrientation, glyphs: interop.Reference<number>, boundingRects: interop.Reference<CGRect>, count: number): CGRect;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontGetCapHeight(font: UIFont): number;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontGetDescent(font: UIFont): number;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontGetGlyphCount(font: UIFont): number;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontGetGlyphWithName(font: UIFont, glyphName: string): number;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontGetGlyphsForCharacters(font: UIFont, characters: interop.Reference<number>, glyphs: interop.Reference<number>, count: number): boolean;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontGetLeading(font: UIFont): number;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontGetLigatureCaretPositions(font: UIFont, glyph: number, positions: interop.Reference<number>, maxPositions: number): number;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontGetMatrix(font: UIFont): CGAffineTransform;
 
+/**
+ * @since 6.0
+ */
 declare function CTFontGetOpticalBoundsForGlyphs(font: UIFont, glyphs: interop.Reference<number>, boundingRects: interop.Reference<CGRect>, count: number, options: number): CGRect;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontGetSize(font: UIFont): number;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontGetSlantAngle(font: UIFont): number;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontGetStringEncoding(font: UIFont): number;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontGetSymbolicTraits(font: UIFont): CTFontSymbolicTraits;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontGetTypeID(): number;
 
+/**
+ * @since 18.0
+ */
+declare function CTFontGetTypographicBoundsForAdaptiveImageProvider(font: UIFont, provider: CTAdaptiveImageProviding): CGRect;
+
+/**
+ * @since 3.2
+ */
 declare function CTFontGetUnderlinePosition(font: UIFont): number;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontGetUnderlineThickness(font: UIFont): number;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontGetUnitsPerEm(font: UIFont): number;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontGetVerticalTranslationsForGlyphs(font: UIFont, glyphs: interop.Reference<number>, translations: interop.Reference<CGSize>, count: number): void;
 
+/**
+ * @since 3.2
+ */
 declare function CTFontGetXHeight(font: UIFont): number;
 
 declare const enum CTFontManagerAutoActivationSetting {
@@ -280,16 +539,34 @@ declare const enum CTFontManagerAutoActivationSetting {
 	kCTFontManagerAutoActivationPromptUser = 3
 }
 
+/**
+ * @since 10.0
+ */
 declare function CTFontManagerCopyAvailableFontFamilyNames(): NSArray<any>;
 
+/**
+ * @since 10.0
+ */
 declare function CTFontManagerCopyAvailablePostScriptNames(): NSArray<any>;
 
+/**
+ * @since 13.0
+ */
 declare function CTFontManagerCopyRegisteredFontDescriptors(scope: CTFontManagerScope, enabled: boolean): NSArray<any>;
 
+/**
+ * @since 7.0
+ */
 declare function CTFontManagerCreateFontDescriptorFromData(data: NSData): UIFontDescriptor;
 
+/**
+ * @since 11.0
+ */
 declare function CTFontManagerCreateFontDescriptorsFromData(data: NSData): NSArray<any>;
 
+/**
+ * @since 7.0
+ */
 declare function CTFontManagerCreateFontDescriptorsFromURL(fileURL: NSURL): NSArray<any>;
 
 declare const enum CTFontManagerError {
@@ -329,18 +606,41 @@ declare const enum CTFontManagerError {
 	kCTFontManagerErrorUnsupportedScope = 307
 }
 
+/**
+ * @since 13.0
+ */
 declare function CTFontManagerRegisterFontDescriptors(fontDescriptors: NSArray<any> | any[], scope: CTFontManagerScope, enabled: boolean, registrationHandler: (p1: NSArray<any>, p2: boolean) => boolean): void;
 
+/**
+ * @since 13.0
+ */
 declare function CTFontManagerRegisterFontURLs(fontURLs: NSArray<any> | any[], scope: CTFontManagerScope, enabled: boolean, registrationHandler: (p1: NSArray<any>, p2: boolean) => boolean): void;
 
+/**
+ * @since 4.1
+ */
 declare function CTFontManagerRegisterFontsForURL(fontURL: NSURL, scope: CTFontManagerScope, error: interop.Pointer | interop.Reference<NSError>): boolean;
 
+/**
+ * @since 4.1
+ * @deprecated 13.0
+ */
 declare function CTFontManagerRegisterFontsForURLs(fontURLs: NSArray<any> | any[], scope: CTFontManagerScope, errors: interop.Pointer | interop.Reference<NSArray<any>>): boolean;
 
+/**
+ * @since 13.0
+ */
 declare function CTFontManagerRegisterFontsWithAssetNames(fontAssetNames: NSArray<any> | any[], bundle: any, scope: CTFontManagerScope, enabled: boolean, registrationHandler: (p1: NSArray<any>, p2: boolean) => boolean): void;
 
+/**
+ * @since 4.1
+ * @deprecated 18
+ */
 declare function CTFontManagerRegisterGraphicsFont(font: any, error: interop.Pointer | interop.Reference<NSError>): boolean;
 
+/**
+ * @since 13.0
+ */
 declare function CTFontManagerRequestFonts(fontDescriptors: NSArray<any> | any[], completionHandler: (p1: NSArray<any>) => void): void;
 
 declare const enum CTFontManagerScope {
@@ -356,14 +656,31 @@ declare const enum CTFontManagerScope {
 	kCTFontManagerScopeUser = 2
 }
 
+/**
+ * @since 13.0
+ */
 declare function CTFontManagerUnregisterFontDescriptors(fontDescriptors: NSArray<any> | any[], scope: CTFontManagerScope, registrationHandler: (p1: NSArray<any>, p2: boolean) => boolean): void;
 
+/**
+ * @since 13.0
+ */
 declare function CTFontManagerUnregisterFontURLs(fontURLs: NSArray<any> | any[], scope: CTFontManagerScope, registrationHandler: (p1: NSArray<any>, p2: boolean) => boolean): void;
 
+/**
+ * @since 4.1
+ */
 declare function CTFontManagerUnregisterFontsForURL(fontURL: NSURL, scope: CTFontManagerScope, error: interop.Pointer | interop.Reference<NSError>): boolean;
 
+/**
+ * @since 4.1
+ * @deprecated 13.0
+ */
 declare function CTFontManagerUnregisterFontsForURLs(fontURLs: NSArray<any> | any[], scope: CTFontManagerScope, errors: interop.Pointer | interop.Reference<NSArray<any>>): boolean;
 
+/**
+ * @since 4.1
+ * @deprecated 18
+ */
 declare function CTFontManagerUnregisterGraphicsFont(font: any, error: interop.Pointer | interop.Reference<NSError>): boolean;
 
 declare const enum CTFontOptions {
@@ -604,20 +921,44 @@ declare const enum CTFontUIFontType {
 	kCTFontControlContentFontType = 26
 }
 
+/**
+ * @since 3.2
+ */
 declare function CTFrameDraw(frame: any, context: any): void;
 
+/**
+ * @since 3.2
+ */
 declare function CTFrameGetFrameAttributes(frame: any): NSDictionary<any, any>;
 
+/**
+ * @since 3.2
+ */
 declare function CTFrameGetLineOrigins(frame: any, range: CFRange, origins: interop.Reference<CGPoint>): void;
 
+/**
+ * @since 3.2
+ */
 declare function CTFrameGetLines(frame: any): NSArray<any>;
 
+/**
+ * @since 3.2
+ */
 declare function CTFrameGetPath(frame: any): any;
 
+/**
+ * @since 3.2
+ */
 declare function CTFrameGetStringRange(frame: any): CFRange;
 
+/**
+ * @since 3.2
+ */
 declare function CTFrameGetTypeID(): number;
 
+/**
+ * @since 3.2
+ */
 declare function CTFrameGetVisibleStringRange(frame: any): CFRange;
 
 declare const enum CTFramePathFillRule {
@@ -636,34 +977,80 @@ declare const enum CTFrameProgression {
 	kCTFrameProgressionLeftToRight = 2
 }
 
+/**
+ * @since 3.2
+ */
 declare function CTFramesetterCreateFrame(framesetter: any, stringRange: CFRange, path: any, frameAttributes: NSDictionary<any, any>): any;
 
+/**
+ * @since 3.2
+ */
 declare function CTFramesetterCreateWithAttributedString(attrString: NSAttributedString): any;
 
+/**
+ * @since 12.0
+ */
 declare function CTFramesetterCreateWithTypesetter(typesetter: any): any;
 
+/**
+ * @since 3.2
+ */
 declare function CTFramesetterGetTypeID(): number;
 
+/**
+ * @since 3.2
+ */
 declare function CTFramesetterGetTypesetter(framesetter: any): any;
 
+/**
+ * @since 3.2
+ */
 declare function CTFramesetterSuggestFrameSizeWithConstraints(framesetter: any, stringRange: CFRange, frameAttributes: NSDictionary<any, any>, constraints: CGSize, fitRange: interop.Pointer | interop.Reference<CFRange>): CGSize;
 
+/**
+ * @since 3.2
+ * @deprecated 14.0
+ */
 declare function CTGetCoreTextVersion(): number;
 
+/**
+ * @since 3.2
+ */
 declare function CTGlyphInfoCreateWithCharacterIdentifier(cid: number, collection: CTCharacterCollection, baseString: string): any;
 
+/**
+ * @since 3.2
+ */
 declare function CTGlyphInfoCreateWithGlyph(glyph: number, font: UIFont, baseString: string): any;
 
+/**
+ * @since 3.2
+ */
 declare function CTGlyphInfoCreateWithGlyphName(glyphName: string, font: UIFont, baseString: string): any;
 
+/**
+ * @since 3.2
+ */
 declare function CTGlyphInfoGetCharacterCollection(glyphInfo: any): CTCharacterCollection;
 
+/**
+ * @since 3.2
+ */
 declare function CTGlyphInfoGetCharacterIdentifier(glyphInfo: any): number;
 
+/**
+ * @since 13.0
+ */
 declare function CTGlyphInfoGetGlyph(glyphInfo: any): number;
 
+/**
+ * @since 3.2
+ */
 declare function CTGlyphInfoGetGlyphName(glyphInfo: any): string;
 
+/**
+ * @since 3.2
+ */
 declare function CTGlyphInfoGetTypeID(): number;
 
 declare const enum CTLineBoundsOptions {
@@ -696,36 +1083,84 @@ declare const enum CTLineBreakMode {
 	kCTLineBreakByTruncatingMiddle = 5
 }
 
+/**
+ * @since 3.2
+ */
 declare function CTLineCreateJustifiedLine(line: any, justificationFactor: number, justificationWidth: number): any;
 
+/**
+ * @since 3.2
+ */
 declare function CTLineCreateTruncatedLine(line: any, width: number, truncationType: CTLineTruncationType, truncationToken: any): any;
 
+/**
+ * @since 3.2
+ */
 declare function CTLineCreateWithAttributedString(attrString: NSAttributedString): any;
 
+/**
+ * @since 3.2
+ */
 declare function CTLineDraw(line: any, context: any): void;
 
+/**
+ * @since 9.0
+ */
 declare function CTLineEnumerateCaretOffsets(line: any, block: (p1: number, p2: number, p3: boolean, p4: interop.Pointer | interop.Reference<boolean>) => void): void;
 
+/**
+ * @since 6.0
+ */
 declare function CTLineGetBoundsWithOptions(line: any, options: CTLineBoundsOptions): CGRect;
 
+/**
+ * @since 3.2
+ */
 declare function CTLineGetGlyphCount(line: any): number;
 
+/**
+ * @since 3.2
+ */
 declare function CTLineGetGlyphRuns(line: any): NSArray<any>;
 
+/**
+ * @since 3.2
+ */
 declare function CTLineGetImageBounds(line: any, context: any): CGRect;
 
+/**
+ * @since 3.2
+ */
 declare function CTLineGetOffsetForStringIndex(line: any, charIndex: number, secondaryOffset: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 3.2
+ */
 declare function CTLineGetPenOffsetForFlush(line: any, flushFactor: number, flushWidth: number): number;
 
+/**
+ * @since 3.2
+ */
 declare function CTLineGetStringIndexForPosition(line: any, position: CGPoint): number;
 
+/**
+ * @since 3.2
+ */
 declare function CTLineGetStringRange(line: any): CFRange;
 
+/**
+ * @since 3.2
+ */
 declare function CTLineGetTrailingWhitespaceWidth(line: any): number;
 
+/**
+ * @since 3.2
+ */
 declare function CTLineGetTypeID(): number;
 
+/**
+ * @since 3.2
+ */
 declare function CTLineGetTypographicBounds(line: any, ascent: interop.Pointer | interop.Reference<number>, descent: interop.Pointer | interop.Reference<number>, leading: interop.Pointer | interop.Reference<number>): number;
 
 declare const enum CTLineTruncationType {
@@ -737,12 +1172,24 @@ declare const enum CTLineTruncationType {
 	kCTLineTruncationMiddle = 2
 }
 
+/**
+ * @since 3.2
+ */
 declare function CTParagraphStyleCreate(settings: interop.Pointer | interop.Reference<CTParagraphStyleSetting>, settingCount: number): any;
 
+/**
+ * @since 3.2
+ */
 declare function CTParagraphStyleCreateCopy(paragraphStyle: any): any;
 
+/**
+ * @since 3.2
+ */
 declare function CTParagraphStyleGetTypeID(): number;
 
+/**
+ * @since 3.2
+ */
 declare function CTParagraphStyleGetValueForSpecifier(paragraphStyle: any, spec: CTParagraphStyleSpecifier, valueBufferSize: number, valueBuffer: interop.Pointer | interop.Reference<any>): boolean;
 
 interface CTParagraphStyleSetting {
@@ -793,6 +1240,9 @@ declare const enum CTParagraphStyleSpecifier {
 	kCTParagraphStyleSpecifierCount = 18
 }
 
+/**
+ * @since 8.0
+ */
 declare const enum CTRubyAlignment {
 
 	kCTRubyAlignmentInvalid = 255,
@@ -812,22 +1262,49 @@ declare const enum CTRubyAlignment {
 	kCTRubyAlignmentLineEdge = 6
 }
 
+/**
+ * @since 8.0
+ */
 declare function CTRubyAnnotationCreate(alignment: CTRubyAlignment, overhang: CTRubyOverhang, sizeFactor: number, text: interop.Reference<string>): any;
 
+/**
+ * @since 8.0
+ */
 declare function CTRubyAnnotationCreateCopy(rubyAnnotation: any): any;
 
+/**
+ * @since 10.0
+ */
 declare function CTRubyAnnotationCreateWithAttributes(alignment: CTRubyAlignment, overhang: CTRubyOverhang, position: CTRubyPosition, string: string, attributes: NSDictionary<any, any>): any;
 
+/**
+ * @since 8.0
+ */
 declare function CTRubyAnnotationGetAlignment(rubyAnnotation: any): CTRubyAlignment;
 
+/**
+ * @since 8.0
+ */
 declare function CTRubyAnnotationGetOverhang(rubyAnnotation: any): CTRubyOverhang;
 
+/**
+ * @since 8.0
+ */
 declare function CTRubyAnnotationGetSizeFactor(rubyAnnotation: any): number;
 
+/**
+ * @since 8.0
+ */
 declare function CTRubyAnnotationGetTextForPosition(rubyAnnotation: any, position: CTRubyPosition): string;
 
+/**
+ * @since 8.0
+ */
 declare function CTRubyAnnotationGetTypeID(): number;
 
+/**
+ * @since 8.0
+ */
 declare const enum CTRubyOverhang {
 
 	kCTRubyOverhangInvalid = 255,
@@ -841,6 +1318,9 @@ declare const enum CTRubyOverhang {
 	kCTRubyOverhangNone = 3
 }
 
+/**
+ * @since 8.0
+ */
 declare const enum CTRubyPosition {
 
 	kCTRubyPositionBefore = 0,
@@ -863,46 +1343,109 @@ interface CTRunDelegateCallbacks {
 }
 declare var CTRunDelegateCallbacks: interop.StructType<CTRunDelegateCallbacks>;
 
+/**
+ * @since 3.2
+ */
 declare function CTRunDelegateCreate(callbacks: interop.Pointer | interop.Reference<CTRunDelegateCallbacks>, refCon: interop.Pointer | interop.Reference<any>): any;
 
+/**
+ * @since 3.2
+ */
 declare function CTRunDelegateGetRefCon(runDelegate: any): interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 3.2
+ */
 declare function CTRunDelegateGetTypeID(): number;
 
+/**
+ * @since 3.2
+ */
 declare function CTRunDraw(run: any, context: any, range: CFRange): void;
 
+/**
+ * @since 3.2
+ */
 declare function CTRunGetAdvances(run: any, range: CFRange, buffer: interop.Reference<CGSize>): void;
 
+/**
+ * @since 3.2
+ */
 declare function CTRunGetAdvancesPtr(run: any): interop.Pointer | interop.Reference<CGSize>;
 
+/**
+ * @since 3.2
+ */
 declare function CTRunGetAttributes(run: any): NSDictionary<any, any>;
 
+/**
+ * @since 9.0
+ */
 declare function CTRunGetBaseAdvancesAndOrigins(runRef: any, range: CFRange, advancesBuffer: interop.Reference<CGSize>, originsBuffer: interop.Reference<CGPoint>): void;
 
+/**
+ * @since 3.2
+ */
 declare function CTRunGetGlyphCount(run: any): number;
 
+/**
+ * @since 3.2
+ */
 declare function CTRunGetGlyphs(run: any, range: CFRange, buffer: interop.Reference<number>): void;
 
+/**
+ * @since 3.2
+ */
 declare function CTRunGetGlyphsPtr(run: any): interop.Pointer | interop.Reference<number>;
 
+/**
+ * @since 3.2
+ */
 declare function CTRunGetImageBounds(run: any, context: any, range: CFRange): CGRect;
 
+/**
+ * @since 3.2
+ */
 declare function CTRunGetPositions(run: any, range: CFRange, buffer: interop.Reference<CGPoint>): void;
 
+/**
+ * @since 3.2
+ */
 declare function CTRunGetPositionsPtr(run: any): interop.Pointer | interop.Reference<CGPoint>;
 
+/**
+ * @since 3.2
+ */
 declare function CTRunGetStatus(run: any): CTRunStatus;
 
+/**
+ * @since 3.2
+ */
 declare function CTRunGetStringIndices(run: any, range: CFRange, buffer: interop.Reference<number>): void;
 
+/**
+ * @since 3.2
+ */
 declare function CTRunGetStringIndicesPtr(run: any): interop.Pointer | interop.Reference<number>;
 
+/**
+ * @since 3.2
+ */
 declare function CTRunGetStringRange(run: any): CFRange;
 
+/**
+ * @since 3.2
+ */
 declare function CTRunGetTextMatrix(run: any): CGAffineTransform;
 
+/**
+ * @since 3.2
+ */
 declare function CTRunGetTypeID(): number;
 
+/**
+ * @since 3.2
+ */
 declare function CTRunGetTypographicBounds(run: any, range: CFRange, ascent: interop.Pointer | interop.Reference<number>, descent: interop.Pointer | interop.Reference<number>, leading: interop.Pointer | interop.Reference<number>): number;
 
 declare const enum CTRunStatus {
@@ -939,32 +1482,74 @@ declare const enum CTTextAlignment {
 	kCTNaturalTextAlignment = 4
 }
 
+/**
+ * @since 3.2
+ */
 declare function CTTextTabCreate(alignment: CTTextAlignment, location: number, options: NSDictionary<any, any>): any;
 
+/**
+ * @since 3.2
+ */
 declare function CTTextTabGetAlignment(tab: any): CTTextAlignment;
 
+/**
+ * @since 3.2
+ */
 declare function CTTextTabGetLocation(tab: any): number;
 
+/**
+ * @since 3.2
+ */
 declare function CTTextTabGetOptions(tab: any): NSDictionary<any, any>;
 
+/**
+ * @since 3.2
+ */
 declare function CTTextTabGetTypeID(): number;
 
+/**
+ * @since 3.2
+ */
 declare function CTTypesetterCreateLine(typesetter: any, stringRange: CFRange): any;
 
+/**
+ * @since 3.2
+ */
 declare function CTTypesetterCreateLineWithOffset(typesetter: any, stringRange: CFRange, offset: number): any;
 
+/**
+ * @since 3.2
+ */
 declare function CTTypesetterCreateWithAttributedString(string: NSAttributedString): any;
 
+/**
+ * @since 3.2
+ */
 declare function CTTypesetterCreateWithAttributedStringAndOptions(string: NSAttributedString, options: NSDictionary<any, any>): any;
 
+/**
+ * @since 3.2
+ */
 declare function CTTypesetterGetTypeID(): number;
 
+/**
+ * @since 3.2
+ */
 declare function CTTypesetterSuggestClusterBreak(typesetter: any, startIndex: number, width: number): number;
 
+/**
+ * @since 3.2
+ */
 declare function CTTypesetterSuggestClusterBreakWithOffset(typesetter: any, startIndex: number, width: number, offset: number): number;
 
+/**
+ * @since 3.2
+ */
 declare function CTTypesetterSuggestLineBreak(typesetter: any, startIndex: number, width: number): number;
 
+/**
+ * @since 3.2
+ */
 declare function CTTypesetterSuggestLineBreakWithOffset(typesetter: any, startIndex: number, width: number, offset: number): number;
 
 declare const enum CTUnderlineStyle {
@@ -1630,148 +2215,367 @@ declare const kCJKVerticalRomanHBaselineSelector: number;
 
 declare const kCJKVerticalRomanPlacementType: number;
 
+/**
+ * @since 18.0
+ */
+declare var kCTAdaptiveImageProviderAttributeName: string;
+
+/**
+ * @since 10.0
+ */
 declare var kCTBackgroundColorAttributeName: string;
 
+/**
+ * @since 6.0
+ */
 declare var kCTBaselineClassAttributeName: string;
 
+/**
+ * @since 6.0
+ */
 declare var kCTBaselineClassHanging: string;
 
+/**
+ * @since 6.0
+ */
 declare var kCTBaselineClassIdeographicCentered: string;
 
+/**
+ * @since 6.0
+ */
 declare var kCTBaselineClassIdeographicHigh: string;
 
+/**
+ * @since 6.0
+ */
 declare var kCTBaselineClassIdeographicLow: string;
 
+/**
+ * @since 6.0
+ */
 declare var kCTBaselineClassMath: string;
 
+/**
+ * @since 6.0
+ */
 declare var kCTBaselineClassRoman: string;
 
+/**
+ * @since 6.0
+ */
 declare var kCTBaselineInfoAttributeName: string;
 
+/**
+ * @since 11.0
+ */
 declare var kCTBaselineOffsetAttributeName: string;
 
+/**
+ * @since 6.0
+ */
 declare var kCTBaselineOriginalFont: string;
 
+/**
+ * @since 6.0
+ */
 declare var kCTBaselineReferenceFont: string;
 
+/**
+ * @since 6.0
+ */
 declare var kCTBaselineReferenceInfoAttributeName: string;
 
+/**
+ * @since 3.2
+ * @deprecated 9.0
+ */
 declare var kCTCharacterShapeAttributeName: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontAttributeName: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontBaselineAdjustAttribute: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontCascadeListAttribute: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontCharacterSetAttribute: string;
 
 declare const kCTFontClassMaskShift: number;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontCollectionRemoveDuplicatesOption: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontCopyrightNameKey: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontDescriptionNameKey: string;
 
+/**
+ * @since 6.0
+ */
 declare var kCTFontDescriptorMatchingCurrentAssetSize: string;
 
+/**
+ * @since 6.0
+ */
 declare var kCTFontDescriptorMatchingDescriptors: string;
 
+/**
+ * @since 6.0
+ */
 declare var kCTFontDescriptorMatchingError: string;
 
+/**
+ * @since 6.0
+ */
 declare var kCTFontDescriptorMatchingPercentage: string;
 
+/**
+ * @since 6.0
+ */
 declare var kCTFontDescriptorMatchingResult: string;
 
+/**
+ * @since 6.0
+ */
 declare var kCTFontDescriptorMatchingSourceDescriptor: string;
 
+/**
+ * @since 6.0
+ */
 declare var kCTFontDescriptorMatchingTotalAssetSize: string;
 
+/**
+ * @since 6.0
+ */
 declare var kCTFontDescriptorMatchingTotalDownloadedSize: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontDesignerNameKey: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontDesignerURLNameKey: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontDisplayNameAttribute: string;
 
+/**
+ * @since 6.0
+ */
 declare var kCTFontDownloadableAttribute: string;
 
+/**
+ * @since 7.0
+ */
 declare var kCTFontDownloadedAttribute: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontEnabledAttribute: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontFamilyNameAttribute: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontFamilyNameKey: string;
 
+/**
+ * @since 13.0
+ */
 declare var kCTFontFeatureSampleTextKey: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontFeatureSelectorDefaultKey: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontFeatureSelectorIdentifierKey: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontFeatureSelectorNameKey: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontFeatureSelectorSettingKey: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontFeatureSettingsAttribute: string;
 
+/**
+ * @since 13.0
+ */
 declare var kCTFontFeatureTooltipTextKey: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontFeatureTypeExclusiveKey: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontFeatureTypeIdentifierKey: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontFeatureTypeNameKey: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontFeatureTypeSelectorsKey: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontFeaturesAttribute: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontFixedAdvanceAttribute: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontFormatAttribute: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontFullNameKey: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontLanguagesAttribute: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontLicenseNameKey: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontLicenseURLNameKey: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontMacintoshEncodingsAttribute: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontManagerErrorDomain: string;
 
+/**
+ * @since 13.0
+ */
 declare var kCTFontManagerErrorFontAssetNameKey: string;
 
+/**
+ * @since 13.0
+ */
 declare var kCTFontManagerErrorFontDescriptorsKey: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontManagerErrorFontURLsKey: string;
 
+/**
+ * @since 7.0
+ */
 declare var kCTFontManagerRegisteredFontsChangedNotification: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontManufacturerNameKey: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontMatrixAttribute: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontNameAttribute: string;
 
+/**
+ * @since 8.0
+ */
 declare var kCTFontOpenTypeFeatureTag: string;
 
+/**
+ * @since 8.0
+ */
 declare var kCTFontOpenTypeFeatureValue: string;
 
+/**
+ * @since 7.0
+ */
 declare var kCTFontOpticalSizeAttribute: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontOrientationAttribute: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontPostScriptCIDNameKey: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontPostScriptNameKey: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontPriorityAttribute: string;
 
 declare const kCTFontPriorityComputer: number;
@@ -1786,22 +2590,49 @@ declare const kCTFontPrioritySystem: number;
 
 declare const kCTFontPriorityUser: number;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontRegistrationScopeAttribute: string;
 
+/**
+ * @since 13.0
+ */
 declare var kCTFontRegistrationUserInfoAttribute: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontSampleTextNameKey: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontSizeAttribute: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontSlantTrait: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontStyleNameAttribute: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontStyleNameKey: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontSubFamilyNameKey: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontSymbolicTrait: string;
 
 declare const kCTFontTableAcnt: number;
@@ -1952,98 +2783,234 @@ declare const kCTFontTableXref: number;
 
 declare const kCTFontTableZapf: number;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontTrademarkNameKey: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontTraitsAttribute: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontURLAttribute: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontUniqueNameKey: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontVariationAttribute: string;
 
+/**
+ * @since 11.0
+ */
 declare var kCTFontVariationAxesAttribute: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontVariationAxisDefaultValueKey: string;
 
+/**
+ * @since 11.0
+ */
 declare var kCTFontVariationAxisHiddenKey: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontVariationAxisIdentifierKey: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontVariationAxisMaximumValueKey: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontVariationAxisMinimumValueKey: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontVariationAxisNameKey: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontVendorURLNameKey: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontVersionNameKey: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontWeightTrait: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFontWidthTrait: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTForegroundColorAttributeName: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTForegroundColorFromContextAttributeName: string;
 
+/**
+ * @since 4.3
+ */
 declare var kCTFrameClippingPathsAttributeName: string;
 
+/**
+ * @since 4.3
+ */
 declare var kCTFramePathClippingPathAttributeName: string;
 
+/**
+ * @since 4.2
+ */
 declare var kCTFramePathFillRuleAttributeName: string;
 
+/**
+ * @since 4.2
+ */
 declare var kCTFramePathWidthAttributeName: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTFrameProgressionAttributeName: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTGlyphInfoAttributeName: string;
 
+/**
+ * @since 10.0
+ */
 declare var kCTHorizontalInVerticalFormsAttributeName: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTKernAttributeName: string;
 
+/**
+ * @since 7.0
+ */
 declare var kCTLanguageAttributeName: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTLigatureAttributeName: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTParagraphStyleAttributeName: string;
 
+/**
+ * @since 8.0
+ */
 declare var kCTRubyAnnotationAttributeName: string;
 
+/**
+ * @since 10.0
+ */
 declare var kCTRubyAnnotationScaleToFitAttributeName: string;
 
+/**
+ * @since 10.0
+ */
 declare var kCTRubyAnnotationSizeFactorAttributeName: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTRunDelegateAttributeName: string;
 
 declare const kCTRunDelegateCurrentVersion: number;
 
 declare const kCTRunDelegateVersion1: number;
 
+/**
+ * @since 3.2
+ */
 declare var kCTStrokeColorAttributeName: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTStrokeWidthAttributeName: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTSuperscriptAttributeName: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTTabColumnTerminatorsAttributeName: string;
 
+/**
+ * @since 10.0
+ */
 declare var kCTTrackingAttributeName: string;
 
+/**
+ * @since 12.0
+ */
 declare var kCTTypesetterOptionAllowUnboundedLayout: string;
 
+/**
+ * @since 3.2
+ * @deprecated 6.0
+ */
 declare var kCTTypesetterOptionDisableBidiProcessing: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTTypesetterOptionForcedEmbeddingLevel: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTUnderlineColorAttributeName: string;
 
+/**
+ * @since 3.2
+ */
 declare var kCTUnderlineStyleAttributeName: string;
 
+/**
+ * @since 4.3
+ */
 declare var kCTVerticalFormsAttributeName: string;
 
+/**
+ * @since 6.0
+ */
 declare var kCTWritingDirectionAttributeName: string;
 
 declare const kCTWritingDirectionEmbedding: number;

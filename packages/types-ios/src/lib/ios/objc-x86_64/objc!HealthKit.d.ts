@@ -1,4 +1,7 @@
 
+/**
+ * @since 14.0
+ */
 declare const enum HKActivityMoveMode {
 
 	ActiveEnergy = 1,
@@ -6,6 +9,9 @@ declare const enum HKActivityMoveMode {
 	AppleMoveTime = 2
 }
 
+/**
+ * @since 14.0
+ */
 declare class HKActivityMoveModeObject extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): HKActivityMoveModeObject; // inherited from NSObject
@@ -25,6 +31,9 @@ declare class HKActivityMoveModeObject extends NSObject implements NSCopying, NS
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 9.3
+ */
 declare class HKActivitySummary extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): HKActivitySummary; // inherited from NSObject
@@ -35,22 +44,50 @@ declare class HKActivitySummary extends NSObject implements NSCopying, NSSecureC
 
 	activeEnergyBurnedGoal: HKQuantity;
 
+	/**
+	 * @since 14.0
+	 */
 	activityMoveMode: HKActivityMoveMode;
 
 	appleExerciseTime: HKQuantity;
 
+	/**
+	 * @since 9.3
+	 * @deprecated 100000
+	 */
 	appleExerciseTimeGoal: HKQuantity;
 
+	/**
+	 * @since 14.0
+	 */
 	appleMoveTime: HKQuantity;
 
+	/**
+	 * @since 14.0
+	 */
 	appleMoveTimeGoal: HKQuantity;
 
 	appleStandHours: HKQuantity;
 
+	/**
+	 * @since 9.3
+	 * @deprecated 100000
+	 */
 	appleStandHoursGoal: HKQuantity;
 
+	/**
+	 * @since 16.0
+	 */
 	exerciseTimeGoal: HKQuantity;
 
+	/**
+	 * @since 18.0
+	 */
+	paused: boolean;
+
+	/**
+	 * @since 16.0
+	 */
 	standHoursGoal: HKQuantity;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
@@ -66,6 +103,9 @@ declare class HKActivitySummary extends NSObject implements NSCopying, NSSecureC
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 9.3
+ */
 declare class HKActivitySummaryQuery extends HKQuery {
 
 	static alloc(): HKActivitySummaryQuery; // inherited from NSObject
@@ -79,6 +119,9 @@ declare class HKActivitySummaryQuery extends HKQuery {
 	initWithPredicateResultsHandler(predicate: NSPredicate, handler: (p1: HKActivitySummaryQuery, p2: NSArray<HKActivitySummary>, p3: NSError) => void): this;
 }
 
+/**
+ * @since 9.3
+ */
 declare class HKActivitySummaryType extends HKObjectType {
 
 	static alloc(): HKActivitySummaryType; // inherited from NSObject
@@ -86,27 +129,56 @@ declare class HKActivitySummaryType extends HKObjectType {
 	static new(): HKActivitySummaryType; // inherited from NSObject
 }
 
+/**
+ * @since 8.0
+ */
 declare class HKAnchoredObjectQuery extends HKQuery {
 
 	static alloc(): HKAnchoredObjectQuery; // inherited from NSObject
 
 	static new(): HKAnchoredObjectQuery; // inherited from NSObject
 
+	/**
+	 * @since 9.0
+	 */
 	updateHandler: (p1: HKAnchoredObjectQuery, p2: NSArray<HKSample>, p3: NSArray<HKDeletedObject>, p4: HKQueryAnchor, p5: NSError) => void;
 
+	/**
+	 * @since 15.0
+	 */
 	constructor(o: { queryDescriptors: NSArray<HKQueryDescriptor> | HKQueryDescriptor[]; anchor: HKQueryAnchor; limit: number; resultsHandler: (p1: HKAnchoredObjectQuery, p2: NSArray<HKSample>, p3: NSArray<HKDeletedObject>, p4: HKQueryAnchor, p5: NSError) => void; });
 
+	/**
+	 * @since 8.0
+	 * @deprecated 9.0
+	 */
 	constructor(o: { type: HKSampleType; predicate: NSPredicate; anchor: number; limit: number; completionHandler: (p1: HKAnchoredObjectQuery, p2: NSArray<HKSample>, p3: number, p4: NSError) => void; });
 
+	/**
+	 * @since 9.0
+	 */
 	constructor(o: { type: HKSampleType; predicate: NSPredicate; anchor: HKQueryAnchor; limit: number; resultsHandler: (p1: HKAnchoredObjectQuery, p2: NSArray<HKSample>, p3: NSArray<HKDeletedObject>, p4: HKQueryAnchor, p5: NSError) => void; });
 
+	/**
+	 * @since 15.0
+	 */
 	initWithQueryDescriptorsAnchorLimitResultsHandler(queryDescriptors: NSArray<HKQueryDescriptor> | HKQueryDescriptor[], anchor: HKQueryAnchor, limit: number, handler: (p1: HKAnchoredObjectQuery, p2: NSArray<HKSample>, p3: NSArray<HKDeletedObject>, p4: HKQueryAnchor, p5: NSError) => void): this;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 9.0
+	 */
 	initWithTypePredicateAnchorLimitCompletionHandler(type: HKSampleType, predicate: NSPredicate, anchor: number, limit: number, handler: (p1: HKAnchoredObjectQuery, p2: NSArray<HKSample>, p3: number, p4: NSError) => void): this;
 
+	/**
+	 * @since 9.0
+	 */
 	initWithTypePredicateAnchorLimitResultsHandler(type: HKSampleType, predicate: NSPredicate, anchor: HKQueryAnchor, limit: number, handler: (p1: HKAnchoredObjectQuery, p2: NSArray<HKSample>, p3: NSArray<HKDeletedObject>, p4: HKQueryAnchor, p5: NSError) => void): this;
 }
 
+/**
+ * @since 14.0
+ */
 declare const enum HKAppleECGAlgorithmVersion {
 
 	Version1 = 1,
@@ -114,6 +186,9 @@ declare const enum HKAppleECGAlgorithmVersion {
 	Version2 = 2
 }
 
+/**
+ * @since 15.0
+ */
 declare const enum HKAppleWalkingSteadinessClassification {
 
 	OK = 1,
@@ -123,12 +198,24 @@ declare const enum HKAppleWalkingSteadinessClassification {
 	VeryLow = 3
 }
 
+/**
+ * @since 15.0
+ */
 declare function HKAppleWalkingSteadinessClassificationForQuantity(value: HKQuantity, classificationOut: interop.Pointer | interop.Reference<HKAppleWalkingSteadinessClassification>, errorOut: interop.Pointer | interop.Reference<NSError>): boolean;
 
+/**
+ * @since 15.0
+ */
 declare function HKAppleWalkingSteadinessMaximumQuantityForClassification(classification: HKAppleWalkingSteadinessClassification): HKQuantity;
 
+/**
+ * @since 15.0
+ */
 declare function HKAppleWalkingSteadinessMinimumQuantityForClassification(classification: HKAppleWalkingSteadinessClassification): HKQuantity;
 
+/**
+ * @since 16.0
+ */
 declare class HKAttachment extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): HKAttachment; // inherited from NSObject
@@ -158,6 +245,9 @@ declare class HKAttachment extends NSObject implements NSCopying, NSSecureCoding
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 16.0
+ */
 declare class HKAttachmentStore extends NSObject {
 
 	static alloc(): HKAttachmentStore; // inherited from NSObject
@@ -179,6 +269,9 @@ declare class HKAttachmentStore extends NSObject {
 	streamDataForAttachmentDataHandler(attachment: HKAttachment, dataHandler: (p1: NSData, p2: NSError, p3: boolean) => void): NSProgress;
 }
 
+/**
+ * @since 13.0
+ */
 declare class HKAudiogramSample extends HKSample {
 
 	static alloc(): HKAudiogramSample; // inherited from NSObject
@@ -190,6 +283,9 @@ declare class HKAudiogramSample extends HKSample {
 	readonly sensitivityPoints: NSArray<HKAudiogramSensitivityPoint>;
 }
 
+/**
+ * @since 13.0
+ */
 declare class HKAudiogramSampleType extends HKSampleType {
 
 	static alloc(): HKAudiogramSampleType; // inherited from NSObject
@@ -197,7 +293,10 @@ declare class HKAudiogramSampleType extends HKSampleType {
 	static new(): HKAudiogramSampleType; // inherited from NSObject
 }
 
-declare class HKAudiogramSensitivityPoint extends NSObject {
+/**
+ * @since 13.0
+ */
+declare class HKAudiogramSensitivityPoint extends NSObject implements NSSecureCoding {
 
 	static alloc(): HKAudiogramSensitivityPoint; // inherited from NSObject
 
@@ -210,8 +309,19 @@ declare class HKAudiogramSensitivityPoint extends NSObject {
 	readonly leftEarSensitivity: HKQuantity;
 
 	readonly rightEarSensitivity: HKQuantity;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 12.0
+ */
 declare const enum HKAuthorizationRequestStatus {
 
 	Unknown = 0,
@@ -221,6 +331,9 @@ declare const enum HKAuthorizationRequestStatus {
 	Unnecessary = 2
 }
 
+/**
+ * @since 8.0
+ */
 declare const enum HKAuthorizationStatus {
 
 	NotDetermined = 0,
@@ -230,6 +343,9 @@ declare const enum HKAuthorizationStatus {
 	SharingAuthorized = 2
 }
 
+/**
+ * @since 8.0
+ */
 declare const enum HKBiologicalSex {
 
 	NotSet = 0,
@@ -241,6 +357,9 @@ declare const enum HKBiologicalSex {
 	Other = 3
 }
 
+/**
+ * @since 8.0
+ */
 declare class HKBiologicalSexObject extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): HKBiologicalSexObject; // inherited from NSObject
@@ -260,6 +379,9 @@ declare class HKBiologicalSexObject extends NSObject implements NSCopying, NSSec
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 11.0
+ */
 declare const enum HKBloodGlucoseMealTime {
 
 	Preprandial = 1,
@@ -267,6 +389,9 @@ declare const enum HKBloodGlucoseMealTime {
 	Postprandial = 2
 }
 
+/**
+ * @since 8.0
+ */
 declare const enum HKBloodType {
 
 	NotSet = 0,
@@ -288,6 +413,9 @@ declare const enum HKBloodType {
 	ONegative = 8
 }
 
+/**
+ * @since 8.0
+ */
 declare class HKBloodTypeObject extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): HKBloodTypeObject; // inherited from NSObject
@@ -307,6 +435,9 @@ declare class HKBloodTypeObject extends NSObject implements NSCopying, NSSecureC
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 8.0
+ */
 declare const enum HKBodyTemperatureSensorLocation {
 
 	Other = 0,
@@ -334,23 +465,44 @@ declare const enum HKBodyTemperatureSensorLocation {
 	Forehead = 11
 }
 
+/**
+ * @since 11.0
+ */
 declare class HKCDADocument extends NSObject {
 
 	static alloc(): HKCDADocument; // inherited from NSObject
 
 	static new(): HKCDADocument; // inherited from NSObject
 
+	/**
+	 * @since 10.0
+	 */
 	readonly authorName: string;
 
+	/**
+	 * @since 10.0
+	 */
 	readonly custodianName: string;
 
+	/**
+	 * @since 10.0
+	 */
 	readonly documentData: NSData;
 
+	/**
+	 * @since 10.0
+	 */
 	readonly patientName: string;
 
+	/**
+	 * @since 10.0
+	 */
 	readonly title: string;
 }
 
+/**
+ * @since 10.0
+ */
 declare class HKCDADocumentSample extends HKDocumentSample {
 
 	static CDADocumentSampleWithDataStartDateEndDateMetadataValidationError(documentData: NSData, startDate: Date, endDate: Date, metadata: NSDictionary<string, any>): HKCDADocumentSample;
@@ -362,12 +514,18 @@ declare class HKCDADocumentSample extends HKDocumentSample {
 	readonly document: HKCDADocument;
 }
 
+/**
+ * @since 8.0
+ */
 declare class HKCategorySample extends HKSample {
 
 	static alloc(): HKCategorySample; // inherited from NSObject
 
 	static categorySampleWithTypeValueStartDateEndDate(type: HKCategoryType, value: number, startDate: Date, endDate: Date): HKCategorySample;
 
+	/**
+	 * @since 9.0
+	 */
 	static categorySampleWithTypeValueStartDateEndDateDeviceMetadata(type: HKCategoryType, value: number, startDate: Date, endDate: Date, device: HKDevice, metadata: NSDictionary<string, any>): HKCategorySample;
 
 	static categorySampleWithTypeValueStartDateEndDateMetadata(type: HKCategoryType, value: number, startDate: Date, endDate: Date, metadata: NSDictionary<string, any>): HKCategorySample;
@@ -379,6 +537,9 @@ declare class HKCategorySample extends HKSample {
 	readonly value: number;
 }
 
+/**
+ * @since 8.0
+ */
 declare class HKCategoryType extends HKSampleType {
 
 	static alloc(): HKCategoryType; // inherited from NSObject
@@ -386,143 +547,358 @@ declare class HKCategoryType extends HKSampleType {
 	static new(): HKCategoryType; // inherited from NSObject
 }
 
+/**
+ * @since 13.6
+ */
 declare var HKCategoryTypeIdentifierAbdominalCramps: string;
 
+/**
+ * @since 13.6
+ */
 declare var HKCategoryTypeIdentifierAcne: string;
 
+/**
+ * @since 13.6
+ */
 declare var HKCategoryTypeIdentifierAppetiteChanges: string;
 
+/**
+ * @since 9.0
+ */
 declare var HKCategoryTypeIdentifierAppleStandHour: string;
 
+/**
+ * @since 15.0
+ */
 declare var HKCategoryTypeIdentifierAppleWalkingSteadinessEvent: string;
 
+/**
+ * @since 13.0
+ * @deprecated 14.0
+ */
 declare var HKCategoryTypeIdentifierAudioExposureEvent: string;
 
+/**
+ * @since 14.0
+ */
 declare var HKCategoryTypeIdentifierBladderIncontinence: string;
 
+/**
+ * @since 18.0
+ */
+declare var HKCategoryTypeIdentifierBleedingAfterPregnancy: string;
+
+/**
+ * @since 18.0
+ */
+declare var HKCategoryTypeIdentifierBleedingDuringPregnancy: string;
+
+/**
+ * @since 13.6
+ */
 declare var HKCategoryTypeIdentifierBloating: string;
 
+/**
+ * @since 13.6
+ */
 declare var HKCategoryTypeIdentifierBreastPain: string;
 
+/**
+ * @since 9.0
+ */
 declare var HKCategoryTypeIdentifierCervicalMucusQuality: string;
 
+/**
+ * @since 13.6
+ */
 declare var HKCategoryTypeIdentifierChestTightnessOrPain: string;
 
+/**
+ * @since 13.6
+ */
 declare var HKCategoryTypeIdentifierChills: string;
 
+/**
+ * @since 13.6
+ */
 declare var HKCategoryTypeIdentifierConstipation: string;
 
+/**
+ * @since 14.3
+ */
 declare var HKCategoryTypeIdentifierContraceptive: string;
 
+/**
+ * @since 13.6
+ */
 declare var HKCategoryTypeIdentifierCoughing: string;
 
+/**
+ * @since 13.6
+ */
 declare var HKCategoryTypeIdentifierDiarrhea: string;
 
+/**
+ * @since 13.6
+ */
 declare var HKCategoryTypeIdentifierDizziness: string;
 
+/**
+ * @since 14.0
+ */
 declare var HKCategoryTypeIdentifierDrySkin: string;
 
+/**
+ * @since 14.0
+ */
 declare var HKCategoryTypeIdentifierEnvironmentalAudioExposureEvent: string;
 
+/**
+ * @since 13.6
+ */
 declare var HKCategoryTypeIdentifierFainting: string;
 
+/**
+ * @since 13.6
+ */
 declare var HKCategoryTypeIdentifierFatigue: string;
 
+/**
+ * @since 13.6
+ */
 declare var HKCategoryTypeIdentifierFever: string;
 
+/**
+ * @since 13.6
+ */
 declare var HKCategoryTypeIdentifierGeneralizedBodyAche: string;
 
+/**
+ * @since 14.0
+ */
 declare var HKCategoryTypeIdentifierHairLoss: string;
 
+/**
+ * @since 14.0
+ */
 declare var HKCategoryTypeIdentifierHandwashingEvent: string;
 
+/**
+ * @since 13.6
+ */
 declare var HKCategoryTypeIdentifierHeadache: string;
 
+/**
+ * @since 14.2
+ */
 declare var HKCategoryTypeIdentifierHeadphoneAudioExposureEvent: string;
 
+/**
+ * @since 13.6
+ */
 declare var HKCategoryTypeIdentifierHeartburn: string;
 
+/**
+ * @since 12.2
+ */
 declare var HKCategoryTypeIdentifierHighHeartRateEvent: string;
 
+/**
+ * @since 13.6
+ */
 declare var HKCategoryTypeIdentifierHotFlashes: string;
 
+/**
+ * @since 16.0
+ */
 declare var HKCategoryTypeIdentifierInfrequentMenstrualCycles: string;
 
+/**
+ * @since 9.0
+ */
 declare var HKCategoryTypeIdentifierIntermenstrualBleeding: string;
 
+/**
+ * @since 12.2
+ */
 declare var HKCategoryTypeIdentifierIrregularHeartRhythmEvent: string;
 
+/**
+ * @since 16.0
+ */
 declare var HKCategoryTypeIdentifierIrregularMenstrualCycles: string;
 
+/**
+ * @since 14.3
+ */
 declare var HKCategoryTypeIdentifierLactation: string;
 
+/**
+ * @since 13.6
+ */
 declare var HKCategoryTypeIdentifierLossOfSmell: string;
 
+/**
+ * @since 13.6
+ */
 declare var HKCategoryTypeIdentifierLossOfTaste: string;
 
+/**
+ * @since 14.3
+ */
 declare var HKCategoryTypeIdentifierLowCardioFitnessEvent: string;
 
+/**
+ * @since 12.2
+ */
 declare var HKCategoryTypeIdentifierLowHeartRateEvent: string;
 
+/**
+ * @since 13.6
+ */
 declare var HKCategoryTypeIdentifierLowerBackPain: string;
 
+/**
+ * @since 14.0
+ */
 declare var HKCategoryTypeIdentifierMemoryLapse: string;
 
+/**
+ * @since 9.0
+ */
 declare var HKCategoryTypeIdentifierMenstrualFlow: string;
 
+/**
+ * @since 10.0
+ */
 declare var HKCategoryTypeIdentifierMindfulSession: string;
 
+/**
+ * @since 13.6
+ */
 declare var HKCategoryTypeIdentifierMoodChanges: string;
 
+/**
+ * @since 13.6
+ */
 declare var HKCategoryTypeIdentifierNausea: string;
 
+/**
+ * @since 14.0
+ */
 declare var HKCategoryTypeIdentifierNightSweats: string;
 
+/**
+ * @since 9.0
+ */
 declare var HKCategoryTypeIdentifierOvulationTestResult: string;
 
+/**
+ * @since 13.6
+ */
 declare var HKCategoryTypeIdentifierPelvicPain: string;
 
+/**
+ * @since 16.0
+ */
 declare var HKCategoryTypeIdentifierPersistentIntermenstrualBleeding: string;
 
+/**
+ * @since 14.3
+ */
 declare var HKCategoryTypeIdentifierPregnancy: string;
 
+/**
+ * @since 15.0
+ */
 declare var HKCategoryTypeIdentifierPregnancyTestResult: string;
 
+/**
+ * @since 15.0
+ */
 declare var HKCategoryTypeIdentifierProgesteroneTestResult: string;
 
+/**
+ * @since 16.0
+ */
 declare var HKCategoryTypeIdentifierProlongedMenstrualPeriods: string;
 
+/**
+ * @since 13.6
+ */
 declare var HKCategoryTypeIdentifierRapidPoundingOrFlutteringHeartbeat: string;
 
+/**
+ * @since 13.6
+ */
 declare var HKCategoryTypeIdentifierRunnyNose: string;
 
+/**
+ * @since 9.0
+ */
 declare var HKCategoryTypeIdentifierSexualActivity: string;
 
+/**
+ * @since 13.6
+ */
 declare var HKCategoryTypeIdentifierShortnessOfBreath: string;
 
+/**
+ * @since 13.6
+ */
 declare var HKCategoryTypeIdentifierSinusCongestion: string;
 
+/**
+ * @since 13.6
+ */
 declare var HKCategoryTypeIdentifierSkippedHeartbeat: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKCategoryTypeIdentifierSleepAnalysis: string;
 
+/**
+ * @since 13.6
+ */
 declare var HKCategoryTypeIdentifierSleepChanges: string;
 
+/**
+ * @since 13.6
+ */
 declare var HKCategoryTypeIdentifierSoreThroat: string;
 
+/**
+ * @since 13.0
+ */
 declare var HKCategoryTypeIdentifierToothbrushingEvent: string;
 
+/**
+ * @since 14.0
+ */
 declare var HKCategoryTypeIdentifierVaginalDryness: string;
 
+/**
+ * @since 13.6
+ */
 declare var HKCategoryTypeIdentifierVomiting: string;
 
+/**
+ * @since 13.6
+ */
 declare var HKCategoryTypeIdentifierWheezing: string;
 
+/**
+ * @since 9.0
+ */
 declare const enum HKCategoryValue {
 
 	NotApplicable = 0
 }
 
+/**
+ * @since 13.6
+ */
 declare const enum HKCategoryValueAppetiteChanges {
 
 	Unspecified = 0,
@@ -534,6 +910,9 @@ declare const enum HKCategoryValueAppetiteChanges {
 	Increased = 3
 }
 
+/**
+ * @since 9.0
+ */
 declare const enum HKCategoryValueAppleStandHour {
 
 	Stood = 0,
@@ -541,6 +920,9 @@ declare const enum HKCategoryValueAppleStandHour {
 	Idle = 1
 }
 
+/**
+ * @since 15.0
+ */
 declare const enum HKCategoryValueAppleWalkingSteadinessEvent {
 
 	InitialLow = 1,
@@ -552,11 +934,18 @@ declare const enum HKCategoryValueAppleWalkingSteadinessEvent {
 	RepeatVeryLow = 4
 }
 
+/**
+ * @since 13.0
+ * @deprecated 14.0
+ */
 declare const enum HKCategoryValueAudioExposureEvent {
 
 	LoudEnvironment = 1
 }
 
+/**
+ * @since 9.0
+ */
 declare const enum HKCategoryValueCervicalMucusQuality {
 
 	Dry = 1,
@@ -570,6 +959,9 @@ declare const enum HKCategoryValueCervicalMucusQuality {
 	EggWhite = 5
 }
 
+/**
+ * @since 14.3
+ */
 declare const enum HKCategoryValueContraceptive {
 
 	Unspecified = 1,
@@ -587,21 +979,34 @@ declare const enum HKCategoryValueContraceptive {
 	Patch = 7
 }
 
+/**
+ * @since 14.0
+ */
 declare const enum HKCategoryValueEnvironmentalAudioExposureEvent {
 
 	MomentaryLimit = 1
 }
 
+/**
+ * @since 14.2
+ */
 declare const enum HKCategoryValueHeadphoneAudioExposureEvent {
 
 	SevenDayLimit = 1
 }
 
+/**
+ * @since 14.3
+ */
 declare const enum HKCategoryValueLowCardioFitnessEvent {
 
 	LowFitness = 1
 }
 
+/**
+ * @since 9.0
+ * @deprecated 18.0
+ */
 declare const enum HKCategoryValueMenstrualFlow {
 
 	Unspecified = 1,
@@ -615,6 +1020,9 @@ declare const enum HKCategoryValueMenstrualFlow {
 	None = 5
 }
 
+/**
+ * @since 9.0
+ */
 declare const enum HKCategoryValueOvulationTestResult {
 
 	Negative = 1,
@@ -628,6 +1036,9 @@ declare const enum HKCategoryValueOvulationTestResult {
 	EstrogenSurge = 4
 }
 
+/**
+ * @since 15.0
+ */
 declare const enum HKCategoryValuePregnancyTestResult {
 
 	Negative = 1,
@@ -637,6 +1048,9 @@ declare const enum HKCategoryValuePregnancyTestResult {
 	Indeterminate = 3
 }
 
+/**
+ * @since 13.6
+ */
 declare const enum HKCategoryValuePresence {
 
 	Present = 0,
@@ -644,6 +1058,9 @@ declare const enum HKCategoryValuePresence {
 	NotPresent = 1
 }
 
+/**
+ * @since 15.0
+ */
 declare const enum HKCategoryValueProgesteroneTestResult {
 
 	Negative = 1,
@@ -653,6 +1070,9 @@ declare const enum HKCategoryValueProgesteroneTestResult {
 	Indeterminate = 3
 }
 
+/**
+ * @since 13.6
+ */
 declare const enum HKCategoryValueSeverity {
 
 	Unspecified = 0,
@@ -666,6 +1086,9 @@ declare const enum HKCategoryValueSeverity {
 	Severe = 4
 }
 
+/**
+ * @since 8.0
+ */
 declare const enum HKCategoryValueSleepAnalysis {
 
 	InBed = 0,
@@ -683,8 +1106,30 @@ declare const enum HKCategoryValueSleepAnalysis {
 	AsleepREM = 5
 }
 
+/**
+ * @since 16.0
+ */
 declare function HKCategoryValueSleepAnalysisAsleepValues(): NSSet<number>;
 
+/**
+ * @since 18.0
+ */
+declare const enum HKCategoryValueVaginalBleeding {
+
+	Unspecified = 1,
+
+	Light = 2,
+
+	Medium = 3,
+
+	Heavy = 4,
+
+	None = 5
+}
+
+/**
+ * @since 8.0
+ */
 declare class HKCharacteristicType extends HKObjectType {
 
 	static alloc(): HKCharacteristicType; // inherited from NSObject
@@ -692,18 +1137,39 @@ declare class HKCharacteristicType extends HKObjectType {
 	static new(): HKCharacteristicType; // inherited from NSObject
 }
 
+/**
+ * @since 14.0
+ */
 declare var HKCharacteristicTypeIdentifierActivityMoveMode: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKCharacteristicTypeIdentifierBiologicalSex: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKCharacteristicTypeIdentifierBloodType: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKCharacteristicTypeIdentifierDateOfBirth: string;
 
+/**
+ * @since 9.0
+ */
 declare var HKCharacteristicTypeIdentifierFitzpatrickSkinType: string;
 
+/**
+ * @since 10.0
+ */
 declare var HKCharacteristicTypeIdentifierWheelchairUse: string;
 
+/**
+ * @since 12.0
+ */
 declare class HKClinicalRecord extends HKSample implements NSCopying, NSSecureCoding {
 
 	static alloc(): HKClinicalRecord; // inherited from NSObject
@@ -727,6 +1193,9 @@ declare class HKClinicalRecord extends HKSample implements NSCopying, NSSecureCo
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 12.0
+ */
 declare class HKClinicalType extends HKSampleType {
 
 	static alloc(): HKClinicalType; // inherited from NSObject
@@ -734,24 +1203,54 @@ declare class HKClinicalType extends HKSampleType {
 	static new(): HKClinicalType; // inherited from NSObject
 }
 
+/**
+ * @since 12.0
+ */
 declare var HKClinicalTypeIdentifierAllergyRecord: string;
 
+/**
+ * @since 16.4
+ */
 declare var HKClinicalTypeIdentifierClinicalNoteRecord: string;
 
+/**
+ * @since 12.0
+ */
 declare var HKClinicalTypeIdentifierConditionRecord: string;
 
+/**
+ * @since 14.0
+ */
 declare var HKClinicalTypeIdentifierCoverageRecord: string;
 
+/**
+ * @since 12.0
+ */
 declare var HKClinicalTypeIdentifierImmunizationRecord: string;
 
+/**
+ * @since 12.0
+ */
 declare var HKClinicalTypeIdentifierLabResultRecord: string;
 
+/**
+ * @since 12.0
+ */
 declare var HKClinicalTypeIdentifierMedicationRecord: string;
 
+/**
+ * @since 12.0
+ */
 declare var HKClinicalTypeIdentifierProcedureRecord: string;
 
+/**
+ * @since 12.0
+ */
 declare var HKClinicalTypeIdentifierVitalSignRecord: string;
 
+/**
+ * @since 16.0
+ */
 declare class HKContactsLensSpecification extends HKLensSpecification implements NSCopying, NSSecureCoding {
 
 	static alloc(): HKContactsLensSpecification; // inherited from NSObject
@@ -777,6 +1276,9 @@ declare class HKContactsLensSpecification extends HKLensSpecification implements
 	initWithSphereCylinderAxisAddPowerBaseCurveDiameter(sphere: HKQuantity, cylinder: HKQuantity, axis: HKQuantity, addPower: HKQuantity, baseCurve: HKQuantity, diameter: HKQuantity): this;
 }
 
+/**
+ * @since 16.0
+ */
 declare class HKContactsPrescription extends HKVisionPrescription implements NSCopying, NSSecureCoding {
 
 	static alloc(): HKContactsPrescription; // inherited from NSObject
@@ -804,12 +1306,18 @@ declare class HKContactsPrescription extends HKVisionPrescription implements NSC
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 8.0
+ */
 declare class HKCorrelation extends HKSample {
 
 	static alloc(): HKCorrelation; // inherited from NSObject
 
 	static correlationWithTypeStartDateEndDateObjects(correlationType: HKCorrelationType, startDate: Date, endDate: Date, objects: NSSet<HKSample>): HKCorrelation;
 
+	/**
+	 * @since 9.0
+	 */
 	static correlationWithTypeStartDateEndDateObjectsDeviceMetadata(correlationType: HKCorrelationType, startDate: Date, endDate: Date, objects: NSSet<HKSample>, device: HKDevice, metadata: NSDictionary<string, any>): HKCorrelation;
 
 	static correlationWithTypeStartDateEndDateObjectsMetadata(correlationType: HKCorrelationType, startDate: Date, endDate: Date, objects: NSSet<HKSample>, metadata: NSDictionary<string, any>): HKCorrelation;
@@ -823,6 +1331,9 @@ declare class HKCorrelation extends HKSample {
 	objectsForType(objectType: HKObjectType): NSSet<HKSample>;
 }
 
+/**
+ * @since 8.0
+ */
 declare class HKCorrelationQuery extends HKQuery {
 
 	static alloc(): HKCorrelationQuery; // inherited from NSObject
@@ -838,6 +1349,9 @@ declare class HKCorrelationQuery extends HKQuery {
 	initWithTypePredicateSamplePredicatesCompletion(correlationType: HKCorrelationType, predicate: NSPredicate, samplePredicates: NSDictionary<HKSampleType, NSPredicate>, completion: (p1: HKCorrelationQuery, p2: NSArray<HKCorrelation>, p3: NSError) => void): this;
 }
 
+/**
+ * @since 8.0
+ */
 declare class HKCorrelationType extends HKSampleType {
 
 	static alloc(): HKCorrelationType; // inherited from NSObject
@@ -845,10 +1359,19 @@ declare class HKCorrelationType extends HKSampleType {
 	static new(): HKCorrelationType; // inherited from NSObject
 }
 
+/**
+ * @since 8.0
+ */
 declare var HKCorrelationTypeIdentifierBloodPressure: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKCorrelationTypeIdentifierFood: string;
 
+/**
+ * @since 13.0
+ */
 declare class HKCumulativeQuantitySample extends HKQuantitySample {
 
 	static alloc(): HKCumulativeQuantitySample; // inherited from NSObject
@@ -857,6 +1380,9 @@ declare class HKCumulativeQuantitySample extends HKQuantitySample {
 
 	static quantitySampleWithTypeQuantityStartDateEndDate(quantityType: HKQuantityType, quantity: HKQuantity, startDate: Date, endDate: Date): HKCumulativeQuantitySample; // inherited from HKQuantitySample
 
+	/**
+	 * @since 9.0
+	 */
 	static quantitySampleWithTypeQuantityStartDateEndDateDeviceMetadata(quantityType: HKQuantityType, quantity: HKQuantity, startDate: Date, endDate: Date, device: HKDevice, metadata: NSDictionary<string, any>): HKCumulativeQuantitySample; // inherited from HKQuantitySample
 
 	static quantitySampleWithTypeQuantityStartDateEndDateMetadata(quantityType: HKQuantityType, quantity: HKQuantity, startDate: Date, endDate: Date, metadata: NSDictionary<string, any>): HKCumulativeQuantitySample; // inherited from HKQuantitySample
@@ -864,6 +1390,10 @@ declare class HKCumulativeQuantitySample extends HKQuantitySample {
 	readonly sumQuantity: HKQuantity;
 }
 
+/**
+ * @since 12.0
+ * @deprecated 13.0
+ */
 declare class HKCumulativeQuantitySeriesSample extends HKCumulativeQuantitySample {
 
 	static alloc(): HKCumulativeQuantitySeriesSample; // inherited from NSObject
@@ -872,6 +1402,9 @@ declare class HKCumulativeQuantitySeriesSample extends HKCumulativeQuantitySampl
 
 	static quantitySampleWithTypeQuantityStartDateEndDate(quantityType: HKQuantityType, quantity: HKQuantity, startDate: Date, endDate: Date): HKCumulativeQuantitySeriesSample; // inherited from HKQuantitySample
 
+	/**
+	 * @since 9.0
+	 */
 	static quantitySampleWithTypeQuantityStartDateEndDateDeviceMetadata(quantityType: HKQuantityType, quantity: HKQuantity, startDate: Date, endDate: Date, device: HKDevice, metadata: NSDictionary<string, any>): HKCumulativeQuantitySeriesSample; // inherited from HKQuantitySample
 
 	static quantitySampleWithTypeQuantityStartDateEndDateMetadata(quantityType: HKQuantityType, quantity: HKQuantity, startDate: Date, endDate: Date, metadata: NSDictionary<string, any>): HKCumulativeQuantitySeriesSample; // inherited from HKQuantitySample
@@ -879,6 +1412,9 @@ declare class HKCumulativeQuantitySeriesSample extends HKCumulativeQuantitySampl
 	readonly sum: HKQuantity;
 }
 
+/**
+ * @since 17.0
+ */
 declare const enum HKCyclingFunctionalThresholdPowerTestType {
 
 	MaxExercise60Minute = 1,
@@ -890,8 +1426,19 @@ declare const enum HKCyclingFunctionalThresholdPowerTestType {
 	PredictionExercise = 4
 }
 
+/**
+ * @since 13.0
+ */
 declare var HKDataTypeIdentifierHeartbeatSeries: string;
 
+/**
+ * @since 18.0
+ */
+declare var HKDataTypeIdentifierStateOfMind: string;
+
+/**
+ * @since 9.0
+ */
 declare class HKDeletedObject extends NSObject implements NSSecureCoding {
 
 	static alloc(): HKDeletedObject; // inherited from NSObject
@@ -900,6 +1447,9 @@ declare class HKDeletedObject extends NSObject implements NSSecureCoding {
 
 	readonly UUID: NSUUID;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly metadata: NSDictionary<string, any>;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
@@ -911,8 +1461,14 @@ declare class HKDeletedObject extends NSObject implements NSSecureCoding {
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare var HKDetailedCDAValidationErrorKey: string;
 
+/**
+ * @since 9.0
+ */
 declare class HKDevice extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): HKDevice; // inherited from NSObject
@@ -952,6 +1508,9 @@ declare class HKDevice extends NSObject implements NSCopying, NSSecureCoding {
 	initWithNameManufacturerModelHardwareVersionFirmwareVersionSoftwareVersionLocalIdentifierUDIDeviceIdentifier(name: string, manufacturer: string, model: string, hardwareVersion: string, firmwareVersion: string, softwareVersion: string, localIdentifier: string, UDIDeviceIdentifier: string): this;
 }
 
+/**
+ * @since 14.0
+ */
 declare const enum HKDevicePlacementSide {
 
 	Unknown = 0,
@@ -963,22 +1522,49 @@ declare const enum HKDevicePlacementSide {
 	Central = 3
 }
 
+/**
+ * @since 9.0
+ */
 declare var HKDevicePropertyKeyFirmwareVersion: string;
 
+/**
+ * @since 9.0
+ */
 declare var HKDevicePropertyKeyHardwareVersion: string;
 
+/**
+ * @since 9.0
+ */
 declare var HKDevicePropertyKeyLocalIdentifier: string;
 
+/**
+ * @since 9.0
+ */
 declare var HKDevicePropertyKeyManufacturer: string;
 
+/**
+ * @since 9.0
+ */
 declare var HKDevicePropertyKeyModel: string;
 
+/**
+ * @since 9.0
+ */
 declare var HKDevicePropertyKeyName: string;
 
+/**
+ * @since 9.0
+ */
 declare var HKDevicePropertyKeySoftwareVersion: string;
 
+/**
+ * @since 9.0
+ */
 declare var HKDevicePropertyKeyUDIDeviceIdentifier: string;
 
+/**
+ * @since 13.0
+ */
 declare class HKDiscreteQuantitySample extends HKQuantitySample {
 
 	static alloc(): HKDiscreteQuantitySample; // inherited from NSObject
@@ -987,6 +1573,9 @@ declare class HKDiscreteQuantitySample extends HKQuantitySample {
 
 	static quantitySampleWithTypeQuantityStartDateEndDate(quantityType: HKQuantityType, quantity: HKQuantity, startDate: Date, endDate: Date): HKDiscreteQuantitySample; // inherited from HKQuantitySample
 
+	/**
+	 * @since 9.0
+	 */
 	static quantitySampleWithTypeQuantityStartDateEndDateDeviceMetadata(quantityType: HKQuantityType, quantity: HKQuantity, startDate: Date, endDate: Date, device: HKDevice, metadata: NSDictionary<string, any>): HKDiscreteQuantitySample; // inherited from HKQuantitySample
 
 	static quantitySampleWithTypeQuantityStartDateEndDateMetadata(quantityType: HKQuantityType, quantity: HKQuantity, startDate: Date, endDate: Date, metadata: NSDictionary<string, any>): HKDiscreteQuantitySample; // inherited from HKQuantitySample
@@ -1002,6 +1591,9 @@ declare class HKDiscreteQuantitySample extends HKQuantitySample {
 	readonly mostRecentQuantityDateInterval: NSDateInterval;
 }
 
+/**
+ * @since 10.0
+ */
 declare class HKDocumentQuery extends HKQuery {
 
 	static alloc(): HKDocumentQuery; // inherited from NSObject
@@ -1019,6 +1611,9 @@ declare class HKDocumentQuery extends HKQuery {
 	initWithDocumentTypePredicateLimitSortDescriptorsIncludeDocumentDataResultsHandler(documentType: HKDocumentType, predicate: NSPredicate, limit: number, sortDescriptors: NSArray<NSSortDescriptor> | NSSortDescriptor[], includeDocumentData: boolean, resultsHandler: (p1: HKDocumentQuery, p2: NSArray<HKDocumentSample>, p3: boolean, p4: NSError) => void): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class HKDocumentSample extends HKSample {
 
 	static alloc(): HKDocumentSample; // inherited from NSObject
@@ -1028,6 +1623,9 @@ declare class HKDocumentSample extends HKSample {
 	readonly documentType: HKDocumentType;
 }
 
+/**
+ * @since 10.0
+ */
 declare class HKDocumentType extends HKSampleType {
 
 	static alloc(): HKDocumentType; // inherited from NSObject
@@ -1035,8 +1633,14 @@ declare class HKDocumentType extends HKSampleType {
 	static new(): HKDocumentType; // inherited from NSObject
 }
 
+/**
+ * @since 10.0
+ */
 declare var HKDocumentTypeIdentifierCDA: string;
 
+/**
+ * @since 14.0
+ */
 declare class HKElectrocardiogram extends HKSample {
 
 	static alloc(): HKElectrocardiogram; // inherited from NSObject
@@ -1054,6 +1658,9 @@ declare class HKElectrocardiogram extends HKSample {
 	readonly symptomsStatus: HKElectrocardiogramSymptomsStatus;
 }
 
+/**
+ * @since 14.0
+ */
 declare const enum HKElectrocardiogramClassification {
 
 	NotSet = 0,
@@ -1073,11 +1680,17 @@ declare const enum HKElectrocardiogramClassification {
 	Unrecognized = 100
 }
 
+/**
+ * @since 14.0
+ */
 declare const enum HKElectrocardiogramLead {
 
 	AppleWatchSimilarToLeadI = 1
 }
 
+/**
+ * @since 14.0
+ */
 declare class HKElectrocardiogramQuery extends HKQuery {
 
 	static alloc(): HKElectrocardiogramQuery; // inherited from NSObject
@@ -1089,6 +1702,9 @@ declare class HKElectrocardiogramQuery extends HKQuery {
 	initWithElectrocardiogramDataHandler(electrocardiogram: HKElectrocardiogram, dataHandler: (p1: HKElectrocardiogramQuery, p2: HKElectrocardiogramVoltageMeasurement, p3: boolean, p4: NSError) => void): this;
 }
 
+/**
+ * @since 14.0
+ */
 declare const enum HKElectrocardiogramSymptomsStatus {
 
 	NotSet = 0,
@@ -1098,6 +1714,9 @@ declare const enum HKElectrocardiogramSymptomsStatus {
 	Present = 2
 }
 
+/**
+ * @since 14.0
+ */
 declare class HKElectrocardiogramType extends HKSampleType {
 
 	static alloc(): HKElectrocardiogramType; // inherited from NSObject
@@ -1105,6 +1724,9 @@ declare class HKElectrocardiogramType extends HKSampleType {
 	static new(): HKElectrocardiogramType; // inherited from NSObject
 }
 
+/**
+ * @since 14.0
+ */
 declare class HKElectrocardiogramVoltageMeasurement extends NSObject implements NSCopying {
 
 	static alloc(): HKElectrocardiogramVoltageMeasurement; // inherited from NSObject
@@ -1118,6 +1740,9 @@ declare class HKElectrocardiogramVoltageMeasurement extends NSObject implements 
 	quantityForLead(lead: HKElectrocardiogramLead): HKQuantity;
 }
 
+/**
+ * @since 8.0
+ */
 declare const enum HKErrorCode {
 
 	UnknownError = 0,
@@ -1150,23 +1775,43 @@ declare const enum HKErrorCode {
 
 	ErrorDataSizeExceeded = 13,
 
-	ErrorBackgroundWorkoutSessionNotAllowed = 14
+	ErrorBackgroundWorkoutSessionNotAllowed = 14,
+
+	ErrorNotPermissibleForGuestUserMode = 15
 }
 
+/**
+ * @since 8.0
+ */
 declare var HKErrorDomain: string;
 
+/**
+ * @since 14.0
+ */
 declare var HKFHIRReleaseDSTU2: string;
 
+/**
+ * @since 14.0
+ */
 declare var HKFHIRReleaseR4: string;
 
+/**
+ * @since 14.0
+ */
 declare var HKFHIRReleaseUnknown: string;
 
+/**
+ * @since 12.0
+ */
 declare class HKFHIRResource extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): HKFHIRResource; // inherited from NSObject
 
 	static new(): HKFHIRResource; // inherited from NSObject
 
+	/**
+	 * @since 14.0
+	 */
 	readonly FHIRVersion: HKFHIRVersion;
 
 	readonly data: NSData;
@@ -1188,30 +1833,69 @@ declare class HKFHIRResource extends NSObject implements NSCopying, NSSecureCodi
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 12.0
+ */
 declare var HKFHIRResourceTypeAllergyIntolerance: string;
 
+/**
+ * @since 12.0
+ */
 declare var HKFHIRResourceTypeCondition: string;
 
+/**
+ * @since 14.0
+ */
 declare var HKFHIRResourceTypeCoverage: string;
 
+/**
+ * @since 16.4
+ */
 declare var HKFHIRResourceTypeDiagnosticReport: string;
 
+/**
+ * @since 16.4
+ */
 declare var HKFHIRResourceTypeDocumentReference: string;
 
+/**
+ * @since 12.0
+ */
 declare var HKFHIRResourceTypeImmunization: string;
 
+/**
+ * @since 12.0
+ */
 declare var HKFHIRResourceTypeMedicationDispense: string;
 
+/**
+ * @since 12.0
+ */
 declare var HKFHIRResourceTypeMedicationOrder: string;
 
+/**
+ * @since 14.0
+ */
 declare var HKFHIRResourceTypeMedicationRequest: string;
 
+/**
+ * @since 12.0
+ */
 declare var HKFHIRResourceTypeMedicationStatement: string;
 
+/**
+ * @since 12.0
+ */
 declare var HKFHIRResourceTypeObservation: string;
 
+/**
+ * @since 12.0
+ */
 declare var HKFHIRResourceTypeProcedure: string;
 
+/**
+ * @since 14.0
+ */
 declare class HKFHIRVersion extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): HKFHIRVersion; // inherited from NSObject
@@ -1245,6 +1929,9 @@ declare class HKFHIRVersion extends NSObject implements NSCopying, NSSecureCodin
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 9.0
+ */
 declare const enum HKFitzpatrickSkinType {
 
 	NotSet = 0,
@@ -1262,6 +1949,9 @@ declare const enum HKFitzpatrickSkinType {
 	VI = 6
 }
 
+/**
+ * @since 9.0
+ */
 declare class HKFitzpatrickSkinTypeObject extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): HKFitzpatrickSkinTypeObject; // inherited from NSObject
@@ -1281,6 +1971,55 @@ declare class HKFitzpatrickSkinTypeObject extends NSObject implements NSCopying,
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 18.0
+ */
+declare class HKGAD7Assessment extends HKScoredAssessment {
+
+	static alloc(): HKGAD7Assessment; // inherited from NSObject
+
+	static assessmentWithDateAnswers(date: Date, answers: NSArray<number> | number[]): HKGAD7Assessment;
+
+	static assessmentWithDateAnswersMetadata(date: Date, answers: NSArray<number> | number[], metadata: NSDictionary<string, any>): HKGAD7Assessment;
+
+	static new(): HKGAD7Assessment; // inherited from NSObject
+
+	readonly answers: NSArray<number>;
+
+	readonly risk: HKGAD7AssessmentRisk;
+}
+
+/**
+ * @since 18.0
+ */
+declare const enum HKGAD7AssessmentAnswer {
+
+	NotAtAll = 0,
+
+	SeveralDays = 1,
+
+	MoreThanHalfTheDays = 2,
+
+	NearlyEveryDay = 3
+}
+
+/**
+ * @since 18.0
+ */
+declare const enum HKGAD7AssessmentRisk {
+
+	NoneToMinimal = 1,
+
+	Mild = 2,
+
+	Moderate = 3,
+
+	Severe = 4
+}
+
+/**
+ * @since 16.0
+ */
 declare class HKGlassesLensSpecification extends HKLensSpecification implements NSCopying, NSSecureCoding {
 
 	static alloc(): HKGlassesLensSpecification; // inherited from NSObject
@@ -1310,6 +2049,9 @@ declare class HKGlassesLensSpecification extends HKLensSpecification implements 
 	initWithSphereCylinderAxisAddPowerVertexDistancePrismFarPupillaryDistanceNearPupillaryDistance(sphere: HKQuantity, cylinder: HKQuantity, axis: HKQuantity, addPower: HKQuantity, vertexDistance: HKQuantity, prism: HKVisionPrism, farPupillaryDistance: HKQuantity, nearPupillaryDistance: HKQuantity): this;
 }
 
+/**
+ * @since 16.0
+ */
 declare class HKGlassesPrescription extends HKVisionPrescription implements NSCopying, NSSecureCoding {
 
 	static alloc(): HKGlassesPrescription; // inherited from NSObject
@@ -1335,6 +2077,9 @@ declare class HKGlassesPrescription extends HKVisionPrescription implements NSCo
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 8.0
+ */
 declare class HKHealthStore extends NSObject {
 
 	static alloc(): HKHealthStore; // inherited from NSObject
@@ -1343,12 +2088,25 @@ declare class HKHealthStore extends NSObject {
 
 	static new(): HKHealthStore; // inherited from NSObject
 
+	/**
+	 * @since 17.0
+	 */
 	authorizationViewControllerPresenter: UIViewController;
 
+	/**
+	 * @since 17.0
+	 */
 	workoutSessionMirroringStartHandler: (p1: HKWorkoutSession) => void;
 
+	/**
+	 * @since 14.0
+	 */
 	activityMoveModeWithError(): HKActivityMoveModeObject;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 17.0
+	 */
 	addSamplesToWorkoutCompletion(samples: NSArray<HKSample> | HKSample[], workout: HKWorkout, completion: (p1: boolean, p2: NSError) => void): void;
 
 	authorizationStatusForType(type: HKObjectType): HKAuthorizationStatus;
@@ -1357,55 +2115,115 @@ declare class HKHealthStore extends NSObject {
 
 	bloodTypeWithError(): HKBloodTypeObject;
 
+	/**
+	 * @since 10.0
+	 */
 	dateOfBirthComponentsWithError(): NSDateComponents;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 10.0
+	 */
 	dateOfBirthWithError(): Date;
 
 	deleteObjectWithCompletion(object: HKObject, completion: (p1: boolean, p2: NSError) => void): void;
 
+	/**
+	 * @since 9.0
+	 */
 	deleteObjectsOfTypePredicateWithCompletion(objectType: HKObjectType, predicate: NSPredicate, completion: (p1: boolean, p2: number, p3: NSError) => void): void;
 
+	/**
+	 * @since 9.0
+	 */
 	deleteObjectsWithCompletion(objects: NSArray<HKObject> | HKObject[], completion: (p1: boolean, p2: NSError) => void): void;
 
 	disableAllBackgroundDeliveryWithCompletion(completion: (p1: boolean, p2: NSError) => void): void;
 
 	disableBackgroundDeliveryForTypeWithCompletion(type: HKObjectType, completion: (p1: boolean, p2: NSError) => void): void;
 
+	/**
+	 * @since 9.0
+	 */
 	earliestPermittedSampleDate(): Date;
 
 	enableBackgroundDeliveryForTypeFrequencyWithCompletion(type: HKObjectType, frequency: HKUpdateFrequency, completion: (p1: boolean, p2: NSError) => void): void;
 
 	executeQuery(query: HKQuery): void;
 
+	/**
+	 * @since 9.0
+	 */
 	fitzpatrickSkinTypeWithError(): HKFitzpatrickSkinTypeObject;
 
+	/**
+	 * @since 12.0
+	 */
 	getRequestStatusForAuthorizationToShareTypesReadTypesCompletion(typesToShare: NSSet<HKSampleType>, typesToRead: NSSet<HKObjectType>, completion: (p1: HKAuthorizationRequestStatus, p2: NSError) => void): void;
 
+	/**
+	 * @since 9.0
+	 */
 	handleAuthorizationForExtensionWithCompletion(completion: (p1: boolean, p2: NSError) => void): void;
 
+	/**
+	 * @since 8.2
+	 */
 	preferredUnitsForQuantityTypesCompletion(quantityTypes: NSSet<HKQuantityType>, completion: (p1: NSDictionary<HKQuantityType, HKUnit>, p2: NSError) => void): void;
 
+	/**
+	 * @since 15.0
+	 */
 	recalibrateEstimatesForSampleTypeAtDateCompletion(sampleType: HKSampleType, date: Date, completion: (p1: boolean, p2: NSError) => void): void;
+
+	/**
+	 * @since 18.0
+	 */
+	relateWorkoutEffortSampleWithWorkoutActivityCompletion(sample: HKSample, workout: HKWorkout, activity: HKWorkoutActivity, completion: (p1: boolean, p2: NSError) => void): void;
 
 	requestAuthorizationToShareTypesReadTypesCompletion(typesToShare: NSSet<HKSampleType>, typesToRead: NSSet<HKObjectType>, completion: (p1: boolean, p2: NSError) => void): void;
 
+	/**
+	 * @since 16.0
+	 */
 	requestPerObjectReadAuthorizationForTypePredicateCompletion(objectType: HKObjectType, predicate: NSPredicate, completion: (p1: boolean, p2: NSError) => void): void;
 
 	saveObjectWithCompletion(object: HKObject, completion: (p1: boolean, p2: NSError) => void): void;
 
 	saveObjectsWithCompletion(objects: NSArray<HKObject> | HKObject[], completion: (p1: boolean, p2: NSError) => void): void;
 
+	/**
+	 * @since 9.0
+	 * @deprecated 11.0
+	 */
 	splitTotalEnergyStartDateEndDateResultsHandler(totalEnergy: HKQuantity, startDate: Date, endDate: Date, resultsHandler: (p1: HKQuantity, p2: HKQuantity, p3: NSError) => void): void;
 
+	/**
+	 * @since 10.0
+	 */
 	startWatchAppWithWorkoutConfigurationCompletion(workoutConfiguration: HKWorkoutConfiguration, completion: (p1: boolean, p2: NSError) => void): void;
 
 	stopQuery(query: HKQuery): void;
 
+	/**
+	 * @since 12.0
+	 */
 	supportsHealthRecords(): boolean;
 
+	/**
+	 * @since 18.0
+	 */
+	unrelateWorkoutEffortSampleFromWorkoutActivityCompletion(sample: HKSample, workout: HKWorkout, activity: HKWorkoutActivity, completion: (p1: boolean, p2: NSError) => void): void;
+
+	/**
+	 * @since 10.0
+	 */
 	wheelchairUseWithError(): HKWheelchairUseObject;
 }
 
+/**
+ * @since 11.0
+ */
 declare const enum HKHeartRateMotionContext {
 
 	NotSet = 0,
@@ -1415,6 +2233,9 @@ declare const enum HKHeartRateMotionContext {
 	Active = 2
 }
 
+/**
+ * @since 16.0
+ */
 declare const enum HKHeartRateRecoveryTestType {
 
 	MaxExercise = 1,
@@ -1424,6 +2245,9 @@ declare const enum HKHeartRateRecoveryTestType {
 	PredictionNonExercise = 3
 }
 
+/**
+ * @since 8.0
+ */
 declare const enum HKHeartRateSensorLocation {
 
 	Other = 0,
@@ -1441,6 +2265,9 @@ declare const enum HKHeartRateSensorLocation {
 	Foot = 6
 }
 
+/**
+ * @since 13.0
+ */
 declare class HKHeartbeatSeriesBuilder extends HKSeriesBuilder {
 
 	static alloc(): HKHeartbeatSeriesBuilder; // inherited from NSObject
@@ -1460,6 +2287,9 @@ declare class HKHeartbeatSeriesBuilder extends HKSeriesBuilder {
 	initWithHealthStoreDeviceStartDate(healthStore: HKHealthStore, device: HKDevice, startDate: Date): this;
 }
 
+/**
+ * @since 13.0
+ */
 declare class HKHeartbeatSeriesQuery extends HKQuery {
 
 	static alloc(): HKHeartbeatSeriesQuery; // inherited from NSObject
@@ -1471,6 +2301,9 @@ declare class HKHeartbeatSeriesQuery extends HKQuery {
 	initWithHeartbeatSeriesDataHandler(heartbeatSeries: HKHeartbeatSeriesSample, dataHandler: (p1: HKHeartbeatSeriesQuery, p2: number, p3: boolean, p4: boolean, p5: NSError) => void): this;
 }
 
+/**
+ * @since 13.0
+ */
 declare class HKHeartbeatSeriesSample extends HKSeriesSample {
 
 	static alloc(): HKHeartbeatSeriesSample; // inherited from NSObject
@@ -1478,6 +2311,9 @@ declare class HKHeartbeatSeriesSample extends HKSeriesSample {
 	static new(): HKHeartbeatSeriesSample; // inherited from NSObject
 }
 
+/**
+ * @since 11.0
+ */
 declare const enum HKInsulinDeliveryReason {
 
 	Basal = 1,
@@ -1485,6 +2321,9 @@ declare const enum HKInsulinDeliveryReason {
 	Bolus = 2
 }
 
+/**
+ * @since 16.0
+ */
 declare class HKLensSpecification extends NSObject {
 
 	static alloc(): HKLensSpecification; // inherited from NSObject
@@ -1500,146 +2339,359 @@ declare class HKLensSpecification extends NSObject {
 	readonly sphere: HKQuantity;
 }
 
+/**
+ * @since 17.0
+ */
 declare var HKMetadataKeyActivityType: string;
 
+/**
+ * @since 15.0
+ */
 declare var HKMetadataKeyAlgorithmVersion: string;
 
+/**
+ * @since 11.2
+ */
 declare var HKMetadataKeyAlpineSlopeGrade: string;
 
+/**
+ * @since 14.0
+ */
 declare var HKMetadataKeyAppleDeviceCalibrated: string;
 
+/**
+ * @since 14.0
+ */
 declare var HKMetadataKeyAppleECGAlgorithmVersion: string;
 
+/**
+ * @since 17.0
+ */
 declare var HKMetadataKeyAppleFitnessPlusSession: string;
 
+/**
+ * @since 14.2
+ */
 declare var HKMetadataKeyAudioExposureDuration: string;
 
+/**
+ * @since 13.0
+ */
 declare var HKMetadataKeyAudioExposureLevel: string;
 
+/**
+ * @since 13.0
+ */
 declare var HKMetadataKeyAverageMETs: string;
 
+/**
+ * @since 11.2
+ */
 declare var HKMetadataKeyAverageSpeed: string;
 
+/**
+ * @since 14.0
+ */
 declare var HKMetadataKeyBarometricPressure: string;
 
+/**
+ * @since 11.0
+ */
 declare var HKMetadataKeyBloodGlucoseMealTime: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKMetadataKeyBodyTemperatureSensorLocation: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKMetadataKeyCoachedWorkout: string;
 
+/**
+ * @since 12.0
+ */
 declare var HKMetadataKeyCrossTrainerDistance: string;
 
+/**
+ * @since 17.0
+ */
 declare var HKMetadataKeyCyclingFunctionalThresholdPowerTestType: string;
 
+/**
+ * @since 15.0
+ */
 declare var HKMetadataKeyDateOfEarliestDataUsedForEstimate: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKMetadataKeyDeviceManufacturerName: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKMetadataKeyDeviceName: string;
 
+/**
+ * @since 14.0
+ */
 declare var HKMetadataKeyDevicePlacementSide: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKMetadataKeyDeviceSerialNumber: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKMetadataKeyDigitalSignature: string;
 
+/**
+ * @since 11.2
+ */
 declare var HKMetadataKeyElevationAscended: string;
 
+/**
+ * @since 11.2
+ */
 declare var HKMetadataKeyElevationDescended: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKMetadataKeyExternalUUID: string;
 
+/**
+ * @since 12.0
+ */
 declare var HKMetadataKeyFitnessMachineDuration: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKMetadataKeyFoodType: string;
 
+/**
+ * @since 16.0
+ */
 declare var HKMetadataKeyGlassesPrescriptionDescription: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKMetadataKeyGroupFitness: string;
 
+/**
+ * @since 16.4
+ */
 declare var HKMetadataKeyHeadphoneGain: string;
 
+/**
+ * @since 12.2
+ */
 declare var HKMetadataKeyHeartRateEventThreshold: string;
 
+/**
+ * @since 11.0
+ */
 declare var HKMetadataKeyHeartRateMotionContext: string;
 
+/**
+ * @since 16.0
+ */
 declare var HKMetadataKeyHeartRateRecoveryActivityDuration: string;
 
+/**
+ * @since 16.0
+ */
 declare var HKMetadataKeyHeartRateRecoveryActivityType: string;
 
+/**
+ * @since 16.0
+ */
 declare var HKMetadataKeyHeartRateRecoveryMaxObservedRecoveryHeartRate: string;
 
+/**
+ * @since 16.0
+ */
 declare var HKMetadataKeyHeartRateRecoveryTestType: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKMetadataKeyHeartRateSensorLocation: string;
 
+/**
+ * @since 12.0
+ */
 declare var HKMetadataKeyIndoorBikeDistance: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKMetadataKeyIndoorWorkout: string;
 
+/**
+ * @since 11.0
+ */
 declare var HKMetadataKeyInsulinDeliveryReason: string;
 
+/**
+ * @since 10.0
+ */
 declare var HKMetadataKeyLapLength: string;
 
+/**
+ * @since 14.3
+ */
 declare var HKMetadataKeyLowCardioFitnessEventThreshold: string;
 
+/**
+ * @since 17.0
+ */
 declare var HKMetadataKeyMaximumLightIntensity: string;
 
+/**
+ * @since 11.2
+ */
 declare var HKMetadataKeyMaximumSpeed: string;
 
+/**
+ * @since 9.0
+ */
 declare var HKMetadataKeyMenstrualCycleStart: string;
 
+/**
+ * @since 17.0
+ */
 declare var HKMetadataKeyPhysicalEffortEstimationType: string;
 
+/**
+ * @since 16.0
+ */
 declare var HKMetadataKeyQuantityClampedToLowerBound: string;
 
+/**
+ * @since 16.0
+ */
 declare var HKMetadataKeyQuantityClampedToUpperBound: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKMetadataKeyReferenceRangeLowerLimit: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKMetadataKeyReferenceRangeUpperLimit: string;
 
+/**
+ * @since 16.0
+ */
 declare var HKMetadataKeySWOLFScore: string;
 
+/**
+ * @since 16.0
+ */
 declare var HKMetadataKeySessionEstimate: string;
 
+/**
+ * @since 9.0
+ */
 declare var HKMetadataKeySexualActivityProtectionUsed: string;
 
+/**
+ * @since 10.0
+ */
 declare var HKMetadataKeySwimmingLocationType: string;
 
+/**
+ * @since 10.0
+ */
 declare var HKMetadataKeySwimmingStrokeStyle: string;
 
+/**
+ * @since 11.0
+ */
 declare var HKMetadataKeySyncIdentifier: string;
 
+/**
+ * @since 11.0
+ */
 declare var HKMetadataKeySyncVersion: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKMetadataKeyTimeZone: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKMetadataKeyUDIDeviceIdentifier: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKMetadataKeyUDIProductionIdentifier: string;
 
+/**
+ * @since 16.0
+ */
 declare var HKMetadataKeyUserMotionContext: string;
 
+/**
+ * @since 11.0
+ */
 declare var HKMetadataKeyVO2MaxTestType: string;
 
+/**
+ * @since 14.3
+ */
 declare var HKMetadataKeyVO2MaxValue: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKMetadataKeyWasTakenInLab: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKMetadataKeyWasUserEntered: string;
 
+/**
+ * @since 17.0
+ */
 declare var HKMetadataKeyWaterSalinity: string;
 
+/**
+ * @since 10.0
+ */
 declare var HKMetadataKeyWeatherCondition: string;
 
+/**
+ * @since 10.0
+ */
 declare var HKMetadataKeyWeatherHumidity: string;
 
+/**
+ * @since 10.0
+ */
 declare var HKMetadataKeyWeatherTemperature: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKMetadataKeyWorkoutBrandName: string;
 
+/**
+ * @since 8.0
+ */
 declare const enum HKMetricPrefix {
 
 	None = 0,
@@ -1671,6 +2723,9 @@ declare const enum HKMetricPrefix {
 	Tera = 12
 }
 
+/**
+ * @since 8.0
+ */
 declare class HKObject extends NSObject implements NSSecureCoding {
 
 	static alloc(): HKObject; // inherited from NSObject
@@ -1679,12 +2734,22 @@ declare class HKObject extends NSObject implements NSSecureCoding {
 
 	readonly UUID: NSUUID;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly device: HKDevice;
 
 	readonly metadata: NSDictionary<string, any>;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 9.0
+	 */
 	readonly source: HKSource;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly sourceRevision: HKSourceRevision;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
@@ -1698,32 +2763,66 @@ declare class HKObject extends NSObject implements NSSecureCoding {
 
 declare var HKObjectQueryNoLimit: number;
 
+/**
+ * @since 8.0
+ */
 declare class HKObjectType extends NSObject implements NSCopying, NSSecureCoding {
 
+	/**
+	 * @since 9.3
+	 */
 	static activitySummaryType(): HKActivitySummaryType;
 
 	static alloc(): HKObjectType; // inherited from NSObject
 
+	/**
+	 * @since 13.0
+	 */
 	static audiogramSampleType(): HKAudiogramSampleType;
 
 	static categoryTypeForIdentifier(identifier: string): HKCategoryType;
 
 	static characteristicTypeForIdentifier(identifier: string): HKCharacteristicType;
 
+	/**
+	 * @since 12.0
+	 */
 	static clinicalTypeForIdentifier(identifier: string): HKClinicalType;
 
 	static correlationTypeForIdentifier(identifier: string): HKCorrelationType;
 
+	/**
+	 * @since 10.0
+	 */
 	static documentTypeForIdentifier(identifier: string): HKDocumentType;
 
+	/**
+	 * @since 14.0
+	 */
 	static electrocardiogramType(): HKElectrocardiogramType;
 
 	static new(): HKObjectType; // inherited from NSObject
 
 	static quantityTypeForIdentifier(identifier: string): HKQuantityType;
 
+	/**
+	 * @since 18.0
+	 */
+	static scoredAssessmentTypeForIdentifier(identifier: string): HKScoredAssessmentType;
+
+	/**
+	 * @since 11.0
+	 */
 	static seriesTypeForIdentifier(identifier: string): HKSeriesType;
 
+	/**
+	 * @since 18.0
+	 */
+	static stateOfMindType(): HKStateOfMindType;
+
+	/**
+	 * @since 16.0
+	 */
 	static visionPrescriptionType(): HKPrescriptionType;
 
 	static workoutType(): HKWorkoutType;
@@ -1740,24 +2839,89 @@ declare class HKObjectType extends NSObject implements NSCopying, NSSecureCoding
 
 	initWithCoder(coder: NSCoder): this;
 
+	/**
+	 * @since 16.0
+	 */
 	requiresPerObjectAuthorization(): boolean;
 }
 
+/**
+ * @since 8.0
+ */
 declare class HKObserverQuery extends HKQuery {
 
 	static alloc(): HKObserverQuery; // inherited from NSObject
 
 	static new(): HKObserverQuery; // inherited from NSObject
 
+	/**
+	 * @since 15.0
+	 */
 	constructor(o: { queryDescriptors: NSArray<HKQueryDescriptor> | HKQueryDescriptor[]; updateHandler: (p1: HKObserverQuery, p2: NSSet<HKSampleType>, p3: () => void, p4: NSError) => void; });
 
 	constructor(o: { sampleType: HKSampleType; predicate: NSPredicate; updateHandler: (p1: HKObserverQuery, p2: () => void, p3: NSError) => void; });
 
+	/**
+	 * @since 15.0
+	 */
 	initWithQueryDescriptorsUpdateHandler(queryDescriptors: NSArray<HKQueryDescriptor> | HKQueryDescriptor[], updateHandler: (p1: HKObserverQuery, p2: NSSet<HKSampleType>, p3: () => void, p4: NSError) => void): this;
 
 	initWithSampleTypePredicateUpdateHandler(sampleType: HKSampleType, predicate: NSPredicate, updateHandler: (p1: HKObserverQuery, p2: () => void, p3: NSError) => void): this;
 }
 
+/**
+ * @since 18.0
+ */
+declare class HKPHQ9Assessment extends HKScoredAssessment {
+
+	static alloc(): HKPHQ9Assessment; // inherited from NSObject
+
+	static assessmentWithDateAnswers(date: Date, answers: NSArray<number> | number[]): HKPHQ9Assessment;
+
+	static assessmentWithDateAnswersMetadata(date: Date, answers: NSArray<number> | number[], metadata: NSDictionary<string, any>): HKPHQ9Assessment;
+
+	static new(): HKPHQ9Assessment; // inherited from NSObject
+
+	readonly answers: NSArray<number>;
+
+	readonly risk: HKPHQ9AssessmentRisk;
+}
+
+/**
+ * @since 18.0
+ */
+declare const enum HKPHQ9AssessmentAnswer {
+
+	NotAtAll = 0,
+
+	SeveralDays = 1,
+
+	MoreThanHalfTheDays = 2,
+
+	NearlyEveryDay = 3,
+
+	PreferNotToAnswer = 4
+}
+
+/**
+ * @since 18.0
+ */
+declare const enum HKPHQ9AssessmentRisk {
+
+	NoneToMinimal = 1,
+
+	Mild = 2,
+
+	Moderate = 3,
+
+	ModeratelySevere = 4,
+
+	Severe = 5
+}
+
+/**
+ * @since 17.0
+ */
 declare const enum HKPhysicalEffortEstimationType {
 
 	ActivityLookup = 1,
@@ -1765,104 +2929,263 @@ declare const enum HKPhysicalEffortEstimationType {
 	DeviceSensed = 2
 }
 
+/**
+ * @since 13.0
+ */
 declare var HKPredicateKeyPathAverage: string;
 
+/**
+ * @since 14.0
+ */
 declare var HKPredicateKeyPathAverageHeartRate: string;
 
+/**
+ * @since 10.0
+ */
 declare var HKPredicateKeyPathCDAAuthorName: string;
 
+/**
+ * @since 10.0
+ */
 declare var HKPredicateKeyPathCDACustodianName: string;
 
+/**
+ * @since 10.0
+ */
 declare var HKPredicateKeyPathCDAPatientName: string;
 
+/**
+ * @since 10.0
+ */
 declare var HKPredicateKeyPathCDATitle: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKPredicateKeyPathCategoryValue: string;
 
+/**
+ * @since 12.0
+ */
 declare var HKPredicateKeyPathClinicalRecordFHIRResourceIdentifier: string;
 
+/**
+ * @since 12.0
+ */
 declare var HKPredicateKeyPathClinicalRecordFHIRResourceType: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKPredicateKeyPathCorrelation: string;
 
+/**
+ * @since 13.0
+ */
 declare var HKPredicateKeyPathCount: string;
 
+/**
+ * @since 9.3
+ */
 declare var HKPredicateKeyPathDateComponents: string;
 
+/**
+ * @since 9.0
+ */
 declare var HKPredicateKeyPathDevice: string;
 
+/**
+ * @since 14.0
+ */
 declare var HKPredicateKeyPathECGClassification: string;
 
+/**
+ * @since 14.0
+ */
 declare var HKPredicateKeyPathECGSymptomsStatus: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKPredicateKeyPathEndDate: string;
 
+/**
+ * @since 13.0
+ */
 declare var HKPredicateKeyPathMax: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKPredicateKeyPathMetadata: string;
 
+/**
+ * @since 13.0
+ */
 declare var HKPredicateKeyPathMin: string;
 
+/**
+ * @since 13.0
+ */
 declare var HKPredicateKeyPathMostRecent: string;
 
+/**
+ * @since 13.0
+ */
 declare var HKPredicateKeyPathMostRecentDuration: string;
 
+/**
+ * @since 13.0
+ */
 declare var HKPredicateKeyPathMostRecentEndDate: string;
 
+/**
+ * @since 13.0
+ */
 declare var HKPredicateKeyPathMostRecentStartDate: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKPredicateKeyPathQuantity: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKPredicateKeyPathSource: string;
 
+/**
+ * @since 9.0
+ */
 declare var HKPredicateKeyPathSourceRevision: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKPredicateKeyPathStartDate: string;
 
+/**
+ * @since 12.0
+ */
 declare var HKPredicateKeyPathSum: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKPredicateKeyPathUUID: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKPredicateKeyPathWorkout: string;
 
+/**
+ * @since 16.0
+ */
 declare var HKPredicateKeyPathWorkoutActivity: string;
 
+/**
+ * @since 16.0
+ */
 declare var HKPredicateKeyPathWorkoutActivityAverageQuantity: string;
 
+/**
+ * @since 16.0
+ */
 declare var HKPredicateKeyPathWorkoutActivityDuration: string;
 
+/**
+ * @since 16.0
+ */
 declare var HKPredicateKeyPathWorkoutActivityEndDate: string;
 
+/**
+ * @since 16.0
+ */
 declare var HKPredicateKeyPathWorkoutActivityMaximumQuantity: string;
 
+/**
+ * @since 16.0
+ */
 declare var HKPredicateKeyPathWorkoutActivityMinimumQuantity: string;
 
+/**
+ * @since 16.0
+ */
 declare var HKPredicateKeyPathWorkoutActivityStartDate: string;
 
+/**
+ * @since 16.0
+ */
 declare var HKPredicateKeyPathWorkoutActivitySumQuantity: string;
 
+/**
+ * @since 16.0
+ */
 declare var HKPredicateKeyPathWorkoutActivityType: string;
 
+/**
+ * @since 16.0
+ */
 declare var HKPredicateKeyPathWorkoutAverageQuantity: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKPredicateKeyPathWorkoutDuration: string;
 
+/**
+ * @since 18.0
+ */
+declare var HKPredicateKeyPathWorkoutEffortRelationship: string;
+
+/**
+ * @since 16.0
+ */
 declare var HKPredicateKeyPathWorkoutMaximumQuantity: string;
 
+/**
+ * @since 16.0
+ */
 declare var HKPredicateKeyPathWorkoutMinimumQuantity: string;
 
+/**
+ * @since 16.0
+ */
 declare var HKPredicateKeyPathWorkoutSumQuantity: string;
 
+/**
+ * @since 8.0
+ * @deprecated 100000
+ */
 declare var HKPredicateKeyPathWorkoutTotalDistance: string;
 
+/**
+ * @since 8.0
+ * @deprecated 18.0
+ */
 declare var HKPredicateKeyPathWorkoutTotalEnergyBurned: string;
 
+/**
+ * @since 11.0
+ * @deprecated 18.0
+ */
 declare var HKPredicateKeyPathWorkoutTotalFlightsClimbed: string;
 
+/**
+ * @since 10.0
+ * @deprecated 18.0
+ */
 declare var HKPredicateKeyPathWorkoutTotalSwimmingStrokeCount: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKPredicateKeyPathWorkoutType: string;
 
+/**
+ * @since 16.0
+ */
 declare class HKPrescriptionType extends HKSampleType {
 
 	static alloc(): HKPrescriptionType; // inherited from NSObject
@@ -1870,6 +3193,9 @@ declare class HKPrescriptionType extends HKSampleType {
 	static new(): HKPrescriptionType; // inherited from NSObject
 }
 
+/**
+ * @since 16.0
+ */
 declare const enum HKPrismBase {
 
 	None = 0,
@@ -1883,6 +3209,9 @@ declare const enum HKPrismBase {
 	Out = 4
 }
 
+/**
+ * @since 8.0
+ */
 declare class HKQuantity extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): HKQuantity; // inherited from NSObject
@@ -1908,6 +3237,9 @@ declare class HKQuantity extends NSObject implements NSCopying, NSSecureCoding {
 	isCompatibleWithUnit(unit: HKUnit): boolean;
 }
 
+/**
+ * @since 8.0
+ */
 declare const enum HKQuantityAggregationStyle {
 
 	Cumulative = 0,
@@ -1921,6 +3253,9 @@ declare const enum HKQuantityAggregationStyle {
 	DiscreteEquivalentContinuousLevel = 3
 }
 
+/**
+ * @since 8.0
+ */
 declare class HKQuantitySample extends HKSample {
 
 	static alloc(): HKQuantitySample; // inherited from NSObject
@@ -1929,10 +3264,16 @@ declare class HKQuantitySample extends HKSample {
 
 	static quantitySampleWithTypeQuantityStartDateEndDate(quantityType: HKQuantityType, quantity: HKQuantity, startDate: Date, endDate: Date): HKQuantitySample;
 
+	/**
+	 * @since 9.0
+	 */
 	static quantitySampleWithTypeQuantityStartDateEndDateDeviceMetadata(quantityType: HKQuantityType, quantity: HKQuantity, startDate: Date, endDate: Date, device: HKDevice, metadata: NSDictionary<string, any>): HKQuantitySample;
 
 	static quantitySampleWithTypeQuantityStartDateEndDateMetadata(quantityType: HKQuantityType, quantity: HKQuantity, startDate: Date, endDate: Date, metadata: NSDictionary<string, any>): HKQuantitySample;
 
+	/**
+	 * @since 12.0
+	 */
 	readonly count: number;
 
 	readonly quantity: HKQuantity;
@@ -1940,6 +3281,9 @@ declare class HKQuantitySample extends HKSample {
 	readonly quantityType: HKQuantityType;
 }
 
+/**
+ * @since 12.0
+ */
 declare class HKQuantitySeriesSampleBuilder extends NSObject {
 
 	static alloc(): HKQuantitySeriesSampleBuilder; // inherited from NSObject
@@ -1964,28 +3308,57 @@ declare class HKQuantitySeriesSampleBuilder extends NSObject {
 
 	insertQuantityDateError(quantity: HKQuantity, date: Date): boolean;
 
+	/**
+	 * @since 13.0
+	 */
 	insertQuantityDateIntervalError(quantity: HKQuantity, dateInterval: NSDateInterval): boolean;
 }
 
+/**
+ * @since 12.0
+ */
 declare class HKQuantitySeriesSampleQuery extends HKQuery {
 
 	static alloc(): HKQuantitySeriesSampleQuery; // inherited from NSObject
 
 	static new(): HKQuantitySeriesSampleQuery; // inherited from NSObject
 
+	/**
+	 * @since 13.0
+	 */
 	includeSample: boolean;
 
+	/**
+	 * @since 13.0
+	 */
 	orderByQuantitySampleStartDate: boolean;
 
+	/**
+	 * @since 13.0
+	 */
 	constructor(o: { quantityType: HKQuantityType; predicate: NSPredicate; quantityHandler: (p1: HKQuantitySeriesSampleQuery, p2: HKQuantity, p3: NSDateInterval, p4: HKQuantitySample, p5: boolean, p6: NSError) => void; });
 
+	/**
+	 * @since 12.0
+	 * @deprecated 13.0
+	 */
 	constructor(o: { sample: HKQuantitySample; quantityHandler: (p1: HKQuantitySeriesSampleQuery, p2: HKQuantity, p3: Date, p4: boolean, p5: NSError) => void; });
 
+	/**
+	 * @since 13.0
+	 */
 	initWithQuantityTypePredicateQuantityHandler(quantityType: HKQuantityType, predicate: NSPredicate, quantityHandler: (p1: HKQuantitySeriesSampleQuery, p2: HKQuantity, p3: NSDateInterval, p4: HKQuantitySample, p5: boolean, p6: NSError) => void): this;
 
+	/**
+	 * @since 12.0
+	 * @deprecated 13.0
+	 */
 	initWithSampleQuantityHandler(quantitySample: HKQuantitySample, quantityHandler: (p1: HKQuantitySeriesSampleQuery, p2: HKQuantity, p3: Date, p4: boolean, p5: NSError) => void): this;
 }
 
+/**
+ * @since 8.0
+ */
 declare class HKQuantityType extends HKSampleType {
 
 	static alloc(): HKQuantityType; // inherited from NSObject
@@ -1997,262 +3370,670 @@ declare class HKQuantityType extends HKSampleType {
 	isCompatibleWithUnit(unit: HKUnit): boolean;
 }
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierActiveEnergyBurned: string;
 
+/**
+ * @since 9.3
+ */
 declare var HKQuantityTypeIdentifierAppleExerciseTime: string;
 
+/**
+ * @since 14.5
+ */
 declare var HKQuantityTypeIdentifierAppleMoveTime: string;
 
+/**
+ * @since 16.0
+ */
 declare var HKQuantityTypeIdentifierAppleSleepingWristTemperature: string;
 
+/**
+ * @since 13.0
+ */
 declare var HKQuantityTypeIdentifierAppleStandTime: string;
 
+/**
+ * @since 15.0
+ */
 declare var HKQuantityTypeIdentifierAppleWalkingSteadiness: string;
 
+/**
+ * @since 16.0
+ */
 declare var HKQuantityTypeIdentifierAtrialFibrillationBurden: string;
 
+/**
+ * @since 9.0
+ */
 declare var HKQuantityTypeIdentifierBasalBodyTemperature: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierBasalEnergyBurned: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierBloodAlcoholContent: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierBloodGlucose: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierBloodPressureDiastolic: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierBloodPressureSystolic: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierBodyFatPercentage: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierBodyMass: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierBodyMassIndex: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierBodyTemperature: string;
 
+/**
+ * @since 18.0
+ */
+declare var HKQuantityTypeIdentifierCrossCountrySkiingSpeed: string;
+
+/**
+ * @since 17.0
+ */
 declare var HKQuantityTypeIdentifierCyclingCadence: string;
 
+/**
+ * @since 17.0
+ */
 declare var HKQuantityTypeIdentifierCyclingFunctionalThresholdPower: string;
 
+/**
+ * @since 17.0
+ */
 declare var HKQuantityTypeIdentifierCyclingPower: string;
 
+/**
+ * @since 17.0
+ */
 declare var HKQuantityTypeIdentifierCyclingSpeed: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietaryBiotin: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietaryCaffeine: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietaryCalcium: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietaryCarbohydrates: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietaryChloride: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietaryCholesterol: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietaryChromium: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietaryCopper: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietaryEnergyConsumed: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietaryFatMonounsaturated: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietaryFatPolyunsaturated: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietaryFatSaturated: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietaryFatTotal: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietaryFiber: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietaryFolate: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietaryIodine: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietaryIron: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietaryMagnesium: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietaryManganese: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietaryMolybdenum: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietaryNiacin: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietaryPantothenicAcid: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietaryPhosphorus: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietaryPotassium: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietaryProtein: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietaryRiboflavin: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietarySelenium: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietarySodium: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietarySugar: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietaryThiamin: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietaryVitaminA: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietaryVitaminB12: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietaryVitaminB6: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietaryVitaminC: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietaryVitaminD: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietaryVitaminE: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietaryVitaminK: string;
 
+/**
+ * @since 9.0
+ */
 declare var HKQuantityTypeIdentifierDietaryWater: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDietaryZinc: string;
 
+/**
+ * @since 18.0
+ */
+declare var HKQuantityTypeIdentifierDistanceCrossCountrySkiing: string;
+
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDistanceCycling: string;
 
+/**
+ * @since 11.2
+ */
 declare var HKQuantityTypeIdentifierDistanceDownhillSnowSports: string;
 
+/**
+ * @since 18.0
+ */
+declare var HKQuantityTypeIdentifierDistancePaddleSports: string;
+
+/**
+ * @since 18.0
+ */
+declare var HKQuantityTypeIdentifierDistanceRowing: string;
+
+/**
+ * @since 18.0
+ */
+declare var HKQuantityTypeIdentifierDistanceSkatingSports: string;
+
+/**
+ * @since 10.0
+ */
 declare var HKQuantityTypeIdentifierDistanceSwimming: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierDistanceWalkingRunning: string;
 
+/**
+ * @since 10.0
+ */
 declare var HKQuantityTypeIdentifierDistanceWheelchair: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierElectrodermalActivity: string;
 
+/**
+ * @since 13.0
+ */
 declare var HKQuantityTypeIdentifierEnvironmentalAudioExposure: string;
 
+/**
+ * @since 16.0
+ */
 declare var HKQuantityTypeIdentifierEnvironmentalSoundReduction: string;
 
+/**
+ * @since 18.0
+ */
+declare var HKQuantityTypeIdentifierEstimatedWorkoutEffortScore: string;
+
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierFlightsClimbed: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierForcedExpiratoryVolume1: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierForcedVitalCapacity: string;
 
+/**
+ * @since 13.0
+ */
 declare var HKQuantityTypeIdentifierHeadphoneAudioExposure: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierHeartRate: string;
 
+/**
+ * @since 16.0
+ */
 declare var HKQuantityTypeIdentifierHeartRateRecoveryOneMinute: string;
 
+/**
+ * @since 11.0
+ */
 declare var HKQuantityTypeIdentifierHeartRateVariabilitySDNN: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierHeight: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierInhalerUsage: string;
 
+/**
+ * @since 11.0
+ */
 declare var HKQuantityTypeIdentifierInsulinDelivery: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierLeanBodyMass: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierNikeFuel: string;
 
+/**
+ * @since 15.0
+ */
 declare var HKQuantityTypeIdentifierNumberOfAlcoholicBeverages: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierNumberOfTimesFallen: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierOxygenSaturation: string;
 
+/**
+ * @since 18.0
+ */
+declare var HKQuantityTypeIdentifierPaddleSportsSpeed: string;
+
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierPeakExpiratoryFlowRate: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierPeripheralPerfusionIndex: string;
 
+/**
+ * @since 17.0
+ */
 declare var HKQuantityTypeIdentifierPhysicalEffort: string;
 
+/**
+ * @since 10.0
+ */
 declare var HKQuantityTypeIdentifierPushCount: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierRespiratoryRate: string;
 
+/**
+ * @since 11.0
+ */
 declare var HKQuantityTypeIdentifierRestingHeartRate: string;
 
+/**
+ * @since 18.0
+ */
+declare var HKQuantityTypeIdentifierRowingSpeed: string;
+
+/**
+ * @since 16.0
+ */
 declare var HKQuantityTypeIdentifierRunningGroundContactTime: string;
 
+/**
+ * @since 16.0
+ */
 declare var HKQuantityTypeIdentifierRunningPower: string;
 
+/**
+ * @since 16.0
+ */
 declare var HKQuantityTypeIdentifierRunningSpeed: string;
 
+/**
+ * @since 16.0
+ */
 declare var HKQuantityTypeIdentifierRunningStrideLength: string;
 
+/**
+ * @since 16.0
+ */
 declare var HKQuantityTypeIdentifierRunningVerticalOscillation: string;
 
+/**
+ * @since 14.0
+ */
 declare var HKQuantityTypeIdentifierSixMinuteWalkTestDistance: string;
 
+/**
+ * @since 14.0
+ */
 declare var HKQuantityTypeIdentifierStairAscentSpeed: string;
 
+/**
+ * @since 14.0
+ */
 declare var HKQuantityTypeIdentifierStairDescentSpeed: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKQuantityTypeIdentifierStepCount: string;
 
+/**
+ * @since 10.0
+ */
 declare var HKQuantityTypeIdentifierSwimmingStrokeCount: string;
 
+/**
+ * @since 17.0
+ */
 declare var HKQuantityTypeIdentifierTimeInDaylight: string;
 
+/**
+ * @since 9.0
+ */
 declare var HKQuantityTypeIdentifierUVExposure: string;
 
+/**
+ * @since 16.0
+ */
 declare var HKQuantityTypeIdentifierUnderwaterDepth: string;
 
+/**
+ * @since 11.0
+ */
 declare var HKQuantityTypeIdentifierVO2Max: string;
 
+/**
+ * @since 11.0
+ */
 declare var HKQuantityTypeIdentifierWaistCircumference: string;
 
+/**
+ * @since 14.0
+ */
 declare var HKQuantityTypeIdentifierWalkingAsymmetryPercentage: string;
 
+/**
+ * @since 14.0
+ */
 declare var HKQuantityTypeIdentifierWalkingDoubleSupportPercentage: string;
 
+/**
+ * @since 11.0
+ */
 declare var HKQuantityTypeIdentifierWalkingHeartRateAverage: string;
 
+/**
+ * @since 14.0
+ */
 declare var HKQuantityTypeIdentifierWalkingSpeed: string;
 
+/**
+ * @since 14.0
+ */
 declare var HKQuantityTypeIdentifierWalkingStepLength: string;
 
+/**
+ * @since 16.0
+ */
 declare var HKQuantityTypeIdentifierWaterTemperature: string;
 
+/**
+ * @since 18.0
+ */
+declare var HKQuantityTypeIdentifierWorkoutEffortScore: string;
+
+/**
+ * @since 8.0
+ */
 declare class HKQuery extends NSObject {
 
 	static alloc(): HKQuery; // inherited from NSObject
 
 	static new(): HKQuery; // inherited from NSObject
 
+	/**
+	 * @since 9.3
+	 */
 	static predicateForActivitySummariesBetweenStartDateComponentsEndDateComponents(startDateComponents: NSDateComponents, endDateComponents: NSDateComponents): NSPredicate;
 
+	/**
+	 * @since 9.3
+	 */
 	static predicateForActivitySummaryWithDateComponents(dateComponents: NSDateComponents): NSPredicate;
 
 	static predicateForCategorySamplesEqualToValues(values: NSSet<number>): NSPredicate;
 
 	static predicateForCategorySamplesWithOperatorTypeValue(operatorType: NSPredicateOperatorType, value: number): NSPredicate;
 
+	/**
+	 * @since 12.0
+	 */
 	static predicateForClinicalRecordsFromSourceFHIRResourceTypeIdentifier(source: HKSource, resourceType: string, identifier: string): NSPredicate;
 
+	/**
+	 * @since 12.0
+	 */
 	static predicateForClinicalRecordsWithFHIRResourceType(resourceType: string): NSPredicate;
 
+	/**
+	 * @since 14.0
+	 */
 	static predicateForElectrocardiogramsWithClassification(classification: HKElectrocardiogramClassification): NSPredicate;
 
+	/**
+	 * @since 14.0
+	 */
 	static predicateForElectrocardiogramsWithSymptomsStatus(symptomsStatus: HKElectrocardiogramSymptomsStatus): NSPredicate;
 
 	static predicateForObjectWithUUID(UUID: NSUUID): NSPredicate;
 
+	/**
+	 * @since 14.0
+	 */
 	static predicateForObjectsAssociatedWithElectrocardiogram(electrocardiogram: HKElectrocardiogram): NSPredicate;
 
+	/**
+	 * @since 9.0
+	 */
 	static predicateForObjectsFromDevices(devices: NSSet<HKDevice>): NSPredicate;
 
 	static predicateForObjectsFromSource(source: HKSource): NSPredicate;
 
+	/**
+	 * @since 9.0
+	 */
 	static predicateForObjectsFromSourceRevisions(sourceRevisions: NSSet<HKSourceRevision>): NSPredicate;
 
 	static predicateForObjectsFromSources(sources: NSSet<HKSource>): NSPredicate;
 
 	static predicateForObjectsFromWorkout(workout: HKWorkout): NSPredicate;
 
+	/**
+	 * @since 9.0
+	 */
 	static predicateForObjectsWithDevicePropertyAllowedValues(key: string, allowedValues: NSSet<string>): NSPredicate;
 
 	static predicateForObjectsWithMetadataKey(key: string): NSPredicate;
@@ -2269,51 +4050,129 @@ declare class HKQuery extends NSObject {
 
 	static predicateForSamplesWithStartDateEndDateOptions(startDate: Date, endDate: Date, options: HKQueryOptions): NSPredicate;
 
+	static predicateForStatesOfMindWithAssociation(association: HKStateOfMindAssociation): NSPredicate;
+
+	static predicateForStatesOfMindWithKind(kind: HKStateOfMindKind): NSPredicate;
+
+	static predicateForStatesOfMindWithLabel(label: HKStateOfMindLabel): NSPredicate;
+
+	static predicateForStatesOfMindWithValenceOperatorType(valence: number, operatorType: NSPredicateOperatorType): NSPredicate;
+
+	/**
+	 * @since 15.0
+	 */
 	static predicateForVerifiableClinicalRecordsWithRelevantDateWithinDateInterval(dateInterval: NSDateInterval): NSPredicate;
 
+	/**
+	 * @since 16.0
+	 */
 	static predicateForWorkoutActivitiesWithOperatorTypeDuration(operatorType: NSPredicateOperatorType, duration: number): NSPredicate;
 
+	/**
+	 * @since 16.0
+	 */
 	static predicateForWorkoutActivitiesWithOperatorTypeQuantityTypeAverageQuantity(operatorType: NSPredicateOperatorType, quantityType: HKQuantityType, averageQuantity: HKQuantity): NSPredicate;
 
+	/**
+	 * @since 16.0
+	 */
 	static predicateForWorkoutActivitiesWithOperatorTypeQuantityTypeMaximumQuantity(operatorType: NSPredicateOperatorType, quantityType: HKQuantityType, maximumQuantity: HKQuantity): NSPredicate;
 
+	/**
+	 * @since 16.0
+	 */
 	static predicateForWorkoutActivitiesWithOperatorTypeQuantityTypeMinimumQuantity(operatorType: NSPredicateOperatorType, quantityType: HKQuantityType, minimumQuantity: HKQuantity): NSPredicate;
 
+	/**
+	 * @since 16.0
+	 */
 	static predicateForWorkoutActivitiesWithOperatorTypeQuantityTypeSumQuantity(operatorType: NSPredicateOperatorType, quantityType: HKQuantityType, sumQuantity: HKQuantity): NSPredicate;
 
+	/**
+	 * @since 16.0
+	 */
 	static predicateForWorkoutActivitiesWithStartDateEndDateOptions(startDate: Date, endDate: Date, options: HKQueryOptions): NSPredicate;
 
+	/**
+	 * @since 16.0
+	 */
 	static predicateForWorkoutActivitiesWithWorkoutActivityType(workoutActivityType: HKWorkoutActivityType): NSPredicate;
 
+	/**
+	 * @since 18.0
+	 */
+	static predicateForWorkoutEffortSamplesRelatedToWorkoutActivity(workout: HKWorkout, activity: HKWorkoutActivity): NSPredicate;
+
+	/**
+	 * @since 16.0
+	 */
 	static predicateForWorkoutsWithActivityPredicate(activityPredicate: NSPredicate): NSPredicate;
 
 	static predicateForWorkoutsWithOperatorTypeDuration(operatorType: NSPredicateOperatorType, duration: number): NSPredicate;
 
+	/**
+	 * @since 16.0
+	 */
 	static predicateForWorkoutsWithOperatorTypeQuantityTypeAverageQuantity(operatorType: NSPredicateOperatorType, quantityType: HKQuantityType, averageQuantity: HKQuantity): NSPredicate;
 
+	/**
+	 * @since 16.0
+	 */
 	static predicateForWorkoutsWithOperatorTypeQuantityTypeMaximumQuantity(operatorType: NSPredicateOperatorType, quantityType: HKQuantityType, maximumQuantity: HKQuantity): NSPredicate;
 
+	/**
+	 * @since 16.0
+	 */
 	static predicateForWorkoutsWithOperatorTypeQuantityTypeMinimumQuantity(operatorType: NSPredicateOperatorType, quantityType: HKQuantityType, minimumQuantity: HKQuantity): NSPredicate;
 
+	/**
+	 * @since 16.0
+	 */
 	static predicateForWorkoutsWithOperatorTypeQuantityTypeSumQuantity(operatorType: NSPredicateOperatorType, quantityType: HKQuantityType, sumQuantity: HKQuantity): NSPredicate;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 100000
+	 */
 	static predicateForWorkoutsWithOperatorTypeTotalDistance(operatorType: NSPredicateOperatorType, totalDistance: HKQuantity): NSPredicate;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 18.0
+	 */
 	static predicateForWorkoutsWithOperatorTypeTotalEnergyBurned(operatorType: NSPredicateOperatorType, totalEnergyBurned: HKQuantity): NSPredicate;
 
+	/**
+	 * @since 11.0
+	 * @deprecated 18.0
+	 */
 	static predicateForWorkoutsWithOperatorTypeTotalFlightsClimbed(operatorType: NSPredicateOperatorType, totalFlightsClimbed: HKQuantity): NSPredicate;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 18.0
+	 */
 	static predicateForWorkoutsWithOperatorTypeTotalSwimmingStrokeCount(operatorType: NSPredicateOperatorType, totalSwimmingStrokeCount: HKQuantity): NSPredicate;
 
 	static predicateForWorkoutsWithWorkoutActivityType(workoutActivityType: HKWorkoutActivityType): NSPredicate;
 
+	/**
+	 * @since 9.3
+	 */
 	readonly objectType: HKObjectType;
 
 	readonly predicate: NSPredicate;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 9.3
+	 */
 	readonly sampleType: HKSampleType;
 }
 
+/**
+ * @since 9.0
+ */
 declare class HKQueryAnchor extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): HKQueryAnchor; // inherited from NSObject
@@ -2333,6 +4192,9 @@ declare class HKQueryAnchor extends NSObject implements NSCopying, NSSecureCodin
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare class HKQueryDescriptor extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): HKQueryDescriptor; // inherited from NSObject
@@ -2358,6 +4220,9 @@ declare class HKQueryDescriptor extends NSObject implements NSCopying, NSSecureC
 	initWithSampleTypePredicate(sampleType: HKSampleType, predicate: NSPredicate): this;
 }
 
+/**
+ * @since 8.0
+ */
 declare const enum HKQueryOptions {
 
 	None = 0,
@@ -2367,6 +4232,9 @@ declare const enum HKQueryOptions {
 	StrictEndDate = 2
 }
 
+/**
+ * @since 8.0
+ */
 declare class HKSample extends HKObject {
 
 	static alloc(): HKSample; // inherited from NSObject
@@ -2375,6 +4243,9 @@ declare class HKSample extends HKObject {
 
 	readonly endDate: Date;
 
+	/**
+	 * @since 14.3
+	 */
 	readonly hasUndeterminedDuration: boolean;
 
 	readonly sampleType: HKSampleType;
@@ -2382,6 +4253,9 @@ declare class HKSample extends HKObject {
 	readonly startDate: Date;
 }
 
+/**
+ * @since 8.0
+ */
 declare class HKSampleQuery extends HKQuery {
 
 	static alloc(): HKSampleQuery; // inherited from NSObject
@@ -2392,39 +4266,117 @@ declare class HKSampleQuery extends HKQuery {
 
 	readonly sortDescriptors: NSArray<NSSortDescriptor>;
 
+	/**
+	 * @since 15.0
+	 */
 	constructor(o: { queryDescriptors: NSArray<HKQueryDescriptor> | HKQueryDescriptor[]; limit: number; resultsHandler: (p1: HKSampleQuery, p2: NSArray<HKSample>, p3: NSError) => void; });
 
+	/**
+	 * @since 15.0
+	 */
 	constructor(o: { queryDescriptors: NSArray<HKQueryDescriptor> | HKQueryDescriptor[]; limit: number; sortDescriptors: NSArray<NSSortDescriptor> | NSSortDescriptor[]; resultsHandler: (p1: HKSampleQuery, p2: NSArray<HKSample>, p3: NSError) => void; });
 
 	constructor(o: { sampleType: HKSampleType; predicate: NSPredicate; limit: number; sortDescriptors: NSArray<NSSortDescriptor> | NSSortDescriptor[]; resultsHandler: (p1: HKSampleQuery, p2: NSArray<HKSample>, p3: NSError) => void; });
 
+	/**
+	 * @since 15.0
+	 */
 	initWithQueryDescriptorsLimitResultsHandler(queryDescriptors: NSArray<HKQueryDescriptor> | HKQueryDescriptor[], limit: number, resultsHandler: (p1: HKSampleQuery, p2: NSArray<HKSample>, p3: NSError) => void): this;
 
+	/**
+	 * @since 15.0
+	 */
 	initWithQueryDescriptorsLimitSortDescriptorsResultsHandler(queryDescriptors: NSArray<HKQueryDescriptor> | HKQueryDescriptor[], limit: number, sortDescriptors: NSArray<NSSortDescriptor> | NSSortDescriptor[], resultsHandler: (p1: HKSampleQuery, p2: NSArray<HKSample>, p3: NSError) => void): this;
 
 	initWithSampleTypePredicateLimitSortDescriptorsResultsHandler(sampleType: HKSampleType, predicate: NSPredicate, limit: number, sortDescriptors: NSArray<NSSortDescriptor> | NSSortDescriptor[], resultsHandler: (p1: HKSampleQuery, p2: NSArray<HKSample>, p3: NSError) => void): this;
 }
 
+/**
+ * @since 8.0
+ */
 declare var HKSampleSortIdentifierEndDate: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKSampleSortIdentifierStartDate: string;
 
+/**
+ * @since 8.0
+ */
 declare class HKSampleType extends HKObjectType {
 
 	static alloc(): HKSampleType; // inherited from NSObject
 
 	static new(): HKSampleType; // inherited from NSObject
 
+	/**
+	 * @since 15.0
+	 */
 	readonly allowsRecalibrationForEstimates: boolean;
 
+	/**
+	 * @since 13.0
+	 */
 	readonly isMaximumDurationRestricted: boolean;
 
+	/**
+	 * @since 13.0
+	 */
 	readonly isMinimumDurationRestricted: boolean;
 
+	/**
+	 * @since 13.0
+	 */
 	readonly maximumAllowedDuration: number;
 
+	/**
+	 * @since 13.0
+	 */
 	readonly minimumAllowedDuration: number;
 }
+
+/**
+ * @since 18.0
+ */
+declare class HKScoredAssessment extends HKSample implements NSCopying, NSSecureCoding {
+
+	static alloc(): HKScoredAssessment; // inherited from NSObject
+
+	static new(): HKScoredAssessment; // inherited from NSObject
+
+	readonly score: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
+ * @since 18.0
+ */
+declare class HKScoredAssessmentType extends HKSampleType {
+
+	static alloc(): HKScoredAssessmentType; // inherited from NSObject
+
+	static new(): HKScoredAssessmentType; // inherited from NSObject
+}
+
+/**
+ * @since 18.0
+ */
+declare var HKScoredAssessmentTypeIdentifierGAD7: string;
+
+/**
+ * @since 18.0
+ */
+declare var HKScoredAssessmentTypeIdentifierPHQ9: string;
 
 declare class HKSeriesBuilder extends NSObject {
 
@@ -2444,10 +4396,16 @@ declare class HKSeriesSample extends HKSample {
 	readonly count: number;
 }
 
+/**
+ * @since 11.0
+ */
 declare class HKSeriesType extends HKSampleType {
 
 	static alloc(): HKSeriesType; // inherited from NSObject
 
+	/**
+	 * @since 13.0
+	 */
 	static heartbeatSeriesType(): HKSeriesType;
 
 	static new(): HKSeriesType; // inherited from NSObject
@@ -2455,6 +4413,9 @@ declare class HKSeriesType extends HKSampleType {
 	static workoutRouteType(): HKSeriesType;
 }
 
+/**
+ * @since 8.0
+ */
 declare class HKSource extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): HKSource; // inherited from NSObject
@@ -2478,6 +4439,9 @@ declare class HKSource extends NSObject implements NSCopying, NSSecureCoding {
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 8.0
+ */
 declare class HKSourceQuery extends HKQuery {
 
 	static alloc(): HKSourceQuery; // inherited from NSObject
@@ -2489,14 +4453,23 @@ declare class HKSourceQuery extends HKQuery {
 	initWithSampleTypeSamplePredicateCompletionHandler(sampleType: HKSampleType, objectPredicate: NSPredicate, completionHandler: (p1: HKSourceQuery, p2: NSSet<HKSource>, p3: NSError) => void): this;
 }
 
+/**
+ * @since 9.0
+ */
 declare class HKSourceRevision extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): HKSourceRevision; // inherited from NSObject
 
 	static new(): HKSourceRevision; // inherited from NSObject
 
+	/**
+	 * @since 11.0
+	 */
 	readonly operatingSystemVersion: NSOperatingSystemVersion;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly productType: string;
 
 	readonly source: HKSource;
@@ -2509,6 +4482,9 @@ declare class HKSourceRevision extends NSObject implements NSCopying, NSSecureCo
 
 	constructor(o: { source: HKSource; version: string; });
 
+	/**
+	 * @since 11.0
+	 */
 	constructor(o: { source: HKSource; version: string; productType: string; operatingSystemVersion: NSOperatingSystemVersion; });
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
@@ -2519,15 +4495,230 @@ declare class HKSourceRevision extends NSObject implements NSCopying, NSSecureCo
 
 	initWithSourceVersion(source: HKSource, version: string): this;
 
+	/**
+	 * @since 11.0
+	 */
 	initWithSourceVersionProductTypeOperatingSystemVersion(source: HKSource, version: string, productType: string, operatingSystemVersion: NSOperatingSystemVersion): this;
 }
 
+/**
+ * @since 11.0
+ */
 declare var HKSourceRevisionAnyOperatingSystem: NSOperatingSystemVersion;
 
+/**
+ * @since 11.0
+ */
 declare var HKSourceRevisionAnyProductType: string;
 
+/**
+ * @since 11.0
+ */
 declare var HKSourceRevisionAnyVersion: string;
 
+/**
+ * @since 18.0
+ */
+declare class HKStateOfMind extends HKSample implements NSCopying, NSSecureCoding {
+
+	static alloc(): HKStateOfMind; // inherited from NSObject
+
+	static new(): HKStateOfMind; // inherited from NSObject
+
+	static stateOfMindWithDateKindValenceLabelsAssociations(date: Date, kind: HKStateOfMindKind, valence: number, labels: NSArray<number> | number[], associations: NSArray<number> | number[]): HKStateOfMind;
+
+	static stateOfMindWithDateKindValenceLabelsAssociationsMetadata(date: Date, kind: HKStateOfMindKind, valence: number, labels: NSArray<number> | number[], associations: NSArray<number> | number[], metadata: NSDictionary<string, any>): HKStateOfMind;
+
+	readonly associations: NSArray<number>;
+
+	readonly kind: HKStateOfMindKind;
+
+	readonly labels: NSArray<number>;
+
+	readonly valence: number;
+
+	readonly valenceClassification: HKStateOfMindValenceClassification;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
+ * @since 18.0
+ */
+declare const enum HKStateOfMindAssociation {
+
+	Community = 1,
+
+	CurrentEvents = 2,
+
+	Dating = 3,
+
+	Education = 4,
+
+	Family = 5,
+
+	Fitness = 6,
+
+	Friends = 7,
+
+	Health = 8,
+
+	Hobbies = 9,
+
+	Identity = 10,
+
+	Money = 11,
+
+	Partner = 12,
+
+	SelfCare = 13,
+
+	Spirituality = 14,
+
+	Tasks = 15,
+
+	Travel = 16,
+
+	Work = 17,
+
+	Weather = 18
+}
+
+/**
+ * @since 18.0
+ */
+declare const enum HKStateOfMindKind {
+
+	MomentaryEmotion = 1,
+
+	DailyMood = 2
+}
+
+/**
+ * @since 18.0
+ */
+declare const enum HKStateOfMindLabel {
+
+	Amazed = 1,
+
+	Amused = 2,
+
+	Angry = 3,
+
+	Anxious = 4,
+
+	Ashamed = 5,
+
+	Brave = 6,
+
+	Calm = 7,
+
+	Content = 8,
+
+	Disappointed = 9,
+
+	Discouraged = 10,
+
+	Disgusted = 11,
+
+	Embarrassed = 12,
+
+	Excited = 13,
+
+	Frustrated = 14,
+
+	Grateful = 15,
+
+	Guilty = 16,
+
+	Happy = 17,
+
+	Hopeless = 18,
+
+	Irritated = 19,
+
+	Jealous = 20,
+
+	Joyful = 21,
+
+	Lonely = 22,
+
+	Passionate = 23,
+
+	Peaceful = 24,
+
+	Proud = 25,
+
+	Relieved = 26,
+
+	Sad = 27,
+
+	Scared = 28,
+
+	Stressed = 29,
+
+	Surprised = 30,
+
+	Worried = 31,
+
+	Annoyed = 32,
+
+	Confident = 33,
+
+	Drained = 34,
+
+	Hopeful = 35,
+
+	Indifferent = 36,
+
+	Overwhelmed = 37,
+
+	Satisfied = 38
+}
+
+/**
+ * @since 18.0
+ */
+declare class HKStateOfMindType extends HKSampleType {
+
+	static alloc(): HKStateOfMindType; // inherited from NSObject
+
+	static new(): HKStateOfMindType; // inherited from NSObject
+}
+
+/**
+ * @since 18.0
+ */
+declare const enum HKStateOfMindValenceClassification {
+
+	VeryUnpleasant = 1,
+
+	Unpleasant = 2,
+
+	SlightlyUnpleasant = 3,
+
+	Neutral = 4,
+
+	SlightlyPleasant = 5,
+
+	Pleasant = 6,
+
+	VeryPleasant = 7
+}
+
+declare function HKStateOfMindValenceClassificationForValence(valence: number): number;
+
+/**
+ * @since 8.0
+ */
 declare class HKStatistics extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): HKStatistics; // inherited from NSObject
@@ -2552,8 +4743,14 @@ declare class HKStatistics extends NSObject implements NSCopying, NSSecureCoding
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
+	/**
+	 * @since 13.0
+	 */
 	duration(): HKQuantity;
 
+	/**
+	 * @since 13.0
+	 */
 	durationForSource(source: HKSource): HKQuantity;
 
 	encodeWithCoder(coder: NSCoder): void;
@@ -2568,12 +4765,24 @@ declare class HKStatistics extends NSObject implements NSCopying, NSSecureCoding
 
 	minimumQuantityForSource(source: HKSource): HKQuantity;
 
+	/**
+	 * @since 12.0
+	 */
 	mostRecentQuantity(): HKQuantity;
 
+	/**
+	 * @since 12.0
+	 */
 	mostRecentQuantityDateInterval(): NSDateInterval;
 
+	/**
+	 * @since 12.0
+	 */
 	mostRecentQuantityDateIntervalForSource(source: HKSource): NSDateInterval;
 
+	/**
+	 * @since 12.0
+	 */
 	mostRecentQuantityForSource(source: HKSource): HKQuantity;
 
 	sumQuantity(): HKQuantity;
@@ -2581,6 +4790,9 @@ declare class HKStatistics extends NSObject implements NSCopying, NSSecureCoding
 	sumQuantityForSource(source: HKSource): HKQuantity;
 }
 
+/**
+ * @since 8.0
+ */
 declare class HKStatisticsCollection extends NSObject {
 
 	static alloc(): HKStatisticsCollection; // inherited from NSObject
@@ -2596,6 +4808,9 @@ declare class HKStatisticsCollection extends NSObject {
 	statisticsForDate(date: Date): HKStatistics;
 }
 
+/**
+ * @since 8.0
+ */
 declare class HKStatisticsCollectionQuery extends HKQuery {
 
 	static alloc(): HKStatisticsCollectionQuery; // inherited from NSObject
@@ -2617,6 +4832,9 @@ declare class HKStatisticsCollectionQuery extends HKQuery {
 	initWithQuantityTypeQuantitySamplePredicateOptionsAnchorDateIntervalComponents(quantityType: HKQuantityType, quantitySamplePredicate: NSPredicate, options: HKStatisticsOptions, anchorDate: Date, intervalComponents: NSDateComponents): this;
 }
 
+/**
+ * @since 8.0
+ */
 declare const enum HKStatisticsOptions {
 
 	None = 0,
@@ -2638,6 +4856,9 @@ declare const enum HKStatisticsOptions {
 	Duration = 64
 }
 
+/**
+ * @since 8.0
+ */
 declare class HKStatisticsQuery extends HKQuery {
 
 	static alloc(): HKStatisticsQuery; // inherited from NSObject
@@ -2649,6 +4870,9 @@ declare class HKStatisticsQuery extends HKQuery {
 	initWithQuantityTypeQuantitySamplePredicateOptionsCompletionHandler(quantityType: HKQuantityType, quantitySamplePredicate: NSPredicate, options: HKStatisticsOptions, handler: (p1: HKStatisticsQuery, p2: HKStatistics, p3: NSError) => void): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum HKSwimmingStrokeStyle {
 
 	Unknown = 0,
@@ -2666,34 +4890,64 @@ declare const enum HKSwimmingStrokeStyle {
 	Kickboard = 6
 }
 
+/**
+ * @since 8.0
+ */
 declare class HKUnit extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): HKUnit; // inherited from NSObject
 
+	/**
+	 * @since 18.0
+	 */
+	static appleEffortScoreUnit(): HKUnit;
+
 	static atmosphereUnit(): HKUnit;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	static calorieUnit(): HKUnit;
 
 	static centimeterOfWaterUnit(): HKUnit;
 
 	static countUnit(): HKUnit;
 
+	/**
+	 * @since 9.0
+	 */
 	static cupImperialUnit(): HKUnit;
 
+	/**
+	 * @since 9.0
+	 */
 	static cupUSUnit(): HKUnit;
 
 	static dayUnit(): HKUnit;
 
+	/**
+	 * @since 13.0
+	 */
 	static decibelAWeightedSoundPressureLevelUnit(): HKUnit;
 
+	/**
+	 * @since 13.0
+	 */
 	static decibelHearingLevelUnit(): HKUnit;
 
+	/**
+	 * @since 16.0
+	 */
 	static degreeAngleUnit(): HKUnit;
 
 	static degreeCelsiusUnit(): HKUnit;
 
 	static degreeFahrenheitUnit(): HKUnit;
 
+	/**
+	 * @since 16.0
+	 */
 	static diopterUnit(): HKUnit;
 
 	static energyFormatterUnitFromUnit(unit: HKUnit): NSEnergyFormatterUnit;
@@ -2708,16 +4962,28 @@ declare class HKUnit extends NSObject implements NSCopying, NSSecureCoding {
 
 	static gramUnitWithMetricPrefix(prefix: HKMetricPrefix): HKUnit;
 
+	/**
+	 * @since 13.0
+	 */
 	static hertzUnit(): HKUnit;
 
+	/**
+	 * @since 13.0
+	 */
 	static hertzUnitWithMetricPrefix(prefix: HKMetricPrefix): HKUnit;
 
 	static hourUnit(): HKUnit;
 
 	static inchUnit(): HKUnit;
 
+	/**
+	 * @since 14.0
+	 */
 	static inchesOfMercuryUnit(): HKUnit;
 
+	/**
+	 * @since 11.0
+	 */
 	static internationalUnit(): HKUnit;
 
 	static jouleUnit(): HKUnit;
@@ -2728,6 +4994,9 @@ declare class HKUnit extends NSObject implements NSCopying, NSSecureCoding {
 
 	static kilocalorieUnit(): HKUnit;
 
+	/**
+	 * @since 11.0
+	 */
 	static largeCalorieUnit(): HKUnit;
 
 	static lengthFormatterUnitFromUnit(unit: HKUnit): NSLengthFormatterUnit;
@@ -2736,8 +5005,14 @@ declare class HKUnit extends NSObject implements NSCopying, NSSecureCoding {
 
 	static literUnitWithMetricPrefix(prefix: HKMetricPrefix): HKUnit;
 
+	/**
+	 * @since 17.0
+	 */
 	static luxUnit(): HKUnit;
 
+	/**
+	 * @since 17.0
+	 */
 	static luxUnitWithMetricPrefix(prefix: HKMetricPrefix): HKUnit;
 
 	static massFormatterUnitFromUnit(unit: HKUnit): NSMassFormatterUnit;
@@ -2772,10 +5047,19 @@ declare class HKUnit extends NSObject implements NSCopying, NSSecureCoding {
 
 	static poundUnit(): HKUnit;
 
+	/**
+	 * @since 16.0
+	 */
 	static prismDiopterUnit(): HKUnit;
 
+	/**
+	 * @since 16.0
+	 */
 	static radianAngleUnit(): HKUnit;
 
+	/**
+	 * @since 16.0
+	 */
 	static radianAngleUnitWithMetricPrefix(prefix: HKMetricPrefix): HKUnit;
 
 	static secondUnit(): HKUnit;
@@ -2786,6 +5070,9 @@ declare class HKUnit extends NSObject implements NSCopying, NSSecureCoding {
 
 	static siemenUnitWithMetricPrefix(prefix: HKMetricPrefix): HKUnit;
 
+	/**
+	 * @since 11.0
+	 */
 	static smallCalorieUnit(): HKUnit;
 
 	static stoneUnit(): HKUnit;
@@ -2798,14 +5085,29 @@ declare class HKUnit extends NSObject implements NSCopying, NSSecureCoding {
 
 	static unitFromString(string: string): HKUnit;
 
+	/**
+	 * @since 14.0
+	 */
 	static voltUnit(): HKUnit;
 
+	/**
+	 * @since 14.0
+	 */
 	static voltUnitWithMetricPrefix(prefix: HKMetricPrefix): HKUnit;
 
+	/**
+	 * @since 16.0
+	 */
 	static wattUnit(): HKUnit;
 
+	/**
+	 * @since 16.0
+	 */
 	static wattUnitWithMetricPrefix(prefix: HKMetricPrefix): HKUnit;
 
+	/**
+	 * @since 9.0
+	 */
 	static yardUnit(): HKUnit;
 
 	readonly unitString: string;
@@ -2831,6 +5133,9 @@ declare class HKUnit extends NSObject implements NSCopying, NSSecureCoding {
 	unitRaisedToPower(power: number): HKUnit;
 }
 
+/**
+ * @since 8.0
+ */
 declare const enum HKUpdateFrequency {
 
 	Immediate = 1,
@@ -2842,6 +5147,9 @@ declare const enum HKUpdateFrequency {
 	Weekly = 4
 }
 
+/**
+ * @since 16.0
+ */
 declare const enum HKUserMotionContext {
 
 	NotSet = 0,
@@ -2851,8 +5159,14 @@ declare const enum HKUserMotionContext {
 	Active = 2
 }
 
+/**
+ * @since 8.2
+ */
 declare var HKUserPreferencesDidChangeNotification: string;
 
+/**
+ * @since 11.0
+ */
 declare const enum HKVO2MaxTestType {
 
 	MaxExercise = 1,
@@ -2862,14 +5176,24 @@ declare const enum HKVO2MaxTestType {
 	PredictionNonExercise = 3
 }
 
+/**
+ * @since 15.0
+ */
 declare class HKVerifiableClinicalRecord extends HKSample {
 
 	static alloc(): HKVerifiableClinicalRecord; // inherited from NSObject
 
 	static new(): HKVerifiableClinicalRecord; // inherited from NSObject
 
+	/**
+	 * @since 15.0
+	 * @deprecated 15.4
+	 */
 	readonly JWSRepresentation: NSData;
 
+	/**
+	 * @since 15.4
+	 */
 	readonly dataRepresentation: NSData;
 
 	readonly expirationDate: Date;
@@ -2884,19 +5208,37 @@ declare class HKVerifiableClinicalRecord extends HKSample {
 
 	readonly relevantDate: Date;
 
+	/**
+	 * @since 15.4
+	 */
 	readonly sourceType: string;
 
 	readonly subject: HKVerifiableClinicalRecordSubject;
 }
 
+/**
+ * @since 15.4
+ */
 declare var HKVerifiableClinicalRecordCredentialTypeCOVID19: string;
 
+/**
+ * @since 15.4
+ */
 declare var HKVerifiableClinicalRecordCredentialTypeImmunization: string;
 
+/**
+ * @since 15.4
+ */
 declare var HKVerifiableClinicalRecordCredentialTypeLaboratory: string;
 
+/**
+ * @since 15.4
+ */
 declare var HKVerifiableClinicalRecordCredentialTypeRecovery: string;
 
+/**
+ * @since 15.0
+ */
 declare class HKVerifiableClinicalRecordQuery extends HKQuery {
 
 	static alloc(): HKVerifiableClinicalRecordQuery; // inherited from NSObject
@@ -2905,21 +5247,39 @@ declare class HKVerifiableClinicalRecordQuery extends HKQuery {
 
 	readonly recordTypes: NSArray<string>;
 
+	/**
+	 * @since 15.4
+	 */
 	readonly sourceTypes: NSArray<string>;
 
 	constructor(o: { recordTypes: NSArray<string> | string[]; predicate: NSPredicate; resultsHandler: (p1: HKVerifiableClinicalRecordQuery, p2: NSArray<HKVerifiableClinicalRecord>, p3: NSError) => void; });
 
+	/**
+	 * @since 15.4
+	 */
 	constructor(o: { recordTypes: NSArray<string> | string[]; sourceTypes: NSArray<string> | string[]; predicate: NSPredicate; resultsHandler: (p1: HKVerifiableClinicalRecordQuery, p2: NSArray<HKVerifiableClinicalRecord>, p3: NSError) => void; });
 
 	initWithRecordTypesPredicateResultsHandler(recordTypes: NSArray<string> | string[], predicate: NSPredicate, resultsHandler: (p1: HKVerifiableClinicalRecordQuery, p2: NSArray<HKVerifiableClinicalRecord>, p3: NSError) => void): this;
 
+	/**
+	 * @since 15.4
+	 */
 	initWithRecordTypesSourceTypesPredicateResultsHandler(recordTypes: NSArray<string> | string[], sourceTypes: NSArray<string> | string[], predicate: NSPredicate, resultsHandler: (p1: HKVerifiableClinicalRecordQuery, p2: NSArray<HKVerifiableClinicalRecord>, p3: NSError) => void): this;
 }
 
+/**
+ * @since 15.4
+ */
 declare var HKVerifiableClinicalRecordSourceTypeEUDigitalCOVIDCertificate: string;
 
+/**
+ * @since 15.4
+ */
 declare var HKVerifiableClinicalRecordSourceTypeSMARTHealthCard: string;
 
+/**
+ * @since 15.0
+ */
 declare class HKVerifiableClinicalRecordSubject extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): HKVerifiableClinicalRecordSubject; // inherited from NSObject
@@ -2941,6 +5301,9 @@ declare class HKVerifiableClinicalRecordSubject extends NSObject implements NSCo
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 16.0
+ */
 declare const enum HKVisionEye {
 
 	Left = 1,
@@ -2948,6 +5311,9 @@ declare const enum HKVisionEye {
 	Right = 2
 }
 
+/**
+ * @since 16.0
+ */
 declare class HKVisionPrescription extends HKSample implements NSCopying, NSSecureCoding {
 
 	static alloc(): HKVisionPrescription; // inherited from NSObject
@@ -2973,6 +5339,9 @@ declare class HKVisionPrescription extends HKSample implements NSCopying, NSSecu
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 16.0
+ */
 declare const enum HKVisionPrescriptionType {
 
 	Glasses = 1,
@@ -2980,8 +5349,14 @@ declare const enum HKVisionPrescriptionType {
 	Contacts = 2
 }
 
+/**
+ * @since 16.0
+ */
 declare var HKVisionPrescriptionTypeIdentifier: string;
 
+/**
+ * @since 16.0
+ */
 declare class HKVisionPrism extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): HKVisionPrism; // inherited from NSObject
@@ -3021,6 +5396,9 @@ declare class HKVisionPrism extends NSObject implements NSCopying, NSSecureCodin
 	initWithVerticalAmountVerticalBaseHorizontalAmountHorizontalBaseEye(verticalAmount: HKQuantity, verticalBase: HKPrismBase, horizontalAmount: HKQuantity, horizontalBase: HKPrismBase, eye: HKVisionEye): this;
 }
 
+/**
+ * @since 17.0
+ */
 declare const enum HKWaterSalinity {
 
 	FreshWater = 1,
@@ -3028,6 +5406,9 @@ declare const enum HKWaterSalinity {
 	SaltWater = 2
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum HKWeatherCondition {
 
 	None = 0,
@@ -3087,6 +5468,9 @@ declare const enum HKWeatherCondition {
 	Tornado = 27
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum HKWheelchairUse {
 
 	NotSet = 0,
@@ -3096,6 +5480,9 @@ declare const enum HKWheelchairUse {
 	Yes = 2
 }
 
+/**
+ * @since 10.0
+ */
 declare class HKWheelchairUseObject extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): HKWheelchairUseObject; // inherited from NSObject
@@ -3115,47 +5502,106 @@ declare class HKWheelchairUseObject extends NSObject implements NSCopying, NSSec
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 8.0
+ */
 declare class HKWorkout extends HKSample {
 
 	static alloc(): HKWorkout; // inherited from NSObject
 
 	static new(): HKWorkout; // inherited from NSObject
 
+	/**
+	 * @since 8.0
+	 * @deprecated 17.0
+	 */
 	static workoutWithActivityTypeStartDateEndDate(workoutActivityType: HKWorkoutActivityType, startDate: Date, endDate: Date): HKWorkout;
 
+	/**
+	 * @since 9.0
+	 * @deprecated 17.0
+	 */
 	static workoutWithActivityTypeStartDateEndDateDurationTotalEnergyBurnedTotalDistanceDeviceMetadata(workoutActivityType: HKWorkoutActivityType, startDate: Date, endDate: Date, duration: number, totalEnergyBurned: HKQuantity, totalDistance: HKQuantity, device: HKDevice, metadata: NSDictionary<string, any>): HKWorkout;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 17.0
+	 */
 	static workoutWithActivityTypeStartDateEndDateDurationTotalEnergyBurnedTotalDistanceMetadata(workoutActivityType: HKWorkoutActivityType, startDate: Date, endDate: Date, duration: number, totalEnergyBurned: HKQuantity, totalDistance: HKQuantity, metadata: NSDictionary<string, any>): HKWorkout;
 
+	/**
+	 * @since 9.0
+	 * @deprecated 17.0
+	 */
 	static workoutWithActivityTypeStartDateEndDateWorkoutEventsTotalEnergyBurnedTotalDistanceDeviceMetadata(workoutActivityType: HKWorkoutActivityType, startDate: Date, endDate: Date, workoutEvents: NSArray<HKWorkoutEvent> | HKWorkoutEvent[], totalEnergyBurned: HKQuantity, totalDistance: HKQuantity, device: HKDevice, metadata: NSDictionary<string, any>): HKWorkout;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 17.0
+	 */
 	static workoutWithActivityTypeStartDateEndDateWorkoutEventsTotalEnergyBurnedTotalDistanceMetadata(workoutActivityType: HKWorkoutActivityType, startDate: Date, endDate: Date, workoutEvents: NSArray<HKWorkoutEvent> | HKWorkoutEvent[], totalEnergyBurned: HKQuantity, totalDistance: HKQuantity, metadata: NSDictionary<string, any>): HKWorkout;
 
+	/**
+	 * @since 11.0
+	 * @deprecated 17.0
+	 */
 	static workoutWithActivityTypeStartDateEndDateWorkoutEventsTotalEnergyBurnedTotalDistanceTotalFlightsClimbedDeviceMetadata(workoutActivityType: HKWorkoutActivityType, startDate: Date, endDate: Date, workoutEvents: NSArray<HKWorkoutEvent> | HKWorkoutEvent[], totalEnergyBurned: HKQuantity, totalDistance: HKQuantity, totalFlightsClimbed: HKQuantity, device: HKDevice, metadata: NSDictionary<string, any>): HKWorkout;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 17.0
+	 */
 	static workoutWithActivityTypeStartDateEndDateWorkoutEventsTotalEnergyBurnedTotalDistanceTotalSwimmingStrokeCountDeviceMetadata(workoutActivityType: HKWorkoutActivityType, startDate: Date, endDate: Date, workoutEvents: NSArray<HKWorkoutEvent> | HKWorkoutEvent[], totalEnergyBurned: HKQuantity, totalDistance: HKQuantity, totalSwimmingStrokeCount: HKQuantity, device: HKDevice, metadata: NSDictionary<string, any>): HKWorkout;
 
+	/**
+	 * @since 16.0
+	 */
 	readonly allStatistics: NSDictionary<HKQuantityType, HKStatistics>;
 
 	readonly duration: number;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 100000
+	 */
 	readonly totalDistance: HKQuantity;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 18.0
+	 */
 	readonly totalEnergyBurned: HKQuantity;
 
+	/**
+	 * @since 11.0
+	 * @deprecated 18.0
+	 */
 	readonly totalFlightsClimbed: HKQuantity;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 18.0
+	 */
 	readonly totalSwimmingStrokeCount: HKQuantity;
 
+	/**
+	 * @since 16.0
+	 */
 	readonly workoutActivities: NSArray<HKWorkoutActivity>;
 
 	readonly workoutActivityType: HKWorkoutActivityType;
 
 	readonly workoutEvents: NSArray<HKWorkoutEvent>;
 
+	/**
+	 * @since 16.0
+	 */
 	statisticsForType(quantityType: HKQuantityType): HKStatistics;
 }
 
+/**
+ * @since 16.0
+ */
 declare class HKWorkoutActivity extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): HKWorkoutActivity; // inherited from NSObject
@@ -3164,6 +5610,9 @@ declare class HKWorkoutActivity extends NSObject implements NSCopying, NSSecureC
 
 	readonly UUID: NSUUID;
 
+	/**
+	 * @since 16.0
+	 */
 	readonly allStatistics: NSDictionary<HKQuantityType, HKStatistics>;
 
 	readonly duration: number;
@@ -3195,6 +5644,9 @@ declare class HKWorkoutActivity extends NSObject implements NSCopying, NSSecureC
 	statisticsForType(quantityType: HKQuantityType): HKStatistics;
 }
 
+/**
+ * @since 8.0
+ */
 declare const enum HKWorkoutActivityType {
 
 	AmericanFootball = 1,
@@ -3366,12 +5818,18 @@ declare const enum HKWorkoutActivityType {
 	Other = 3000
 }
 
+/**
+ * @since 12.0
+ */
 declare class HKWorkoutBuilder extends NSObject {
 
 	static alloc(): HKWorkoutBuilder; // inherited from NSObject
 
 	static new(): HKWorkoutBuilder; // inherited from NSObject
 
+	/**
+	 * @since 16.0
+	 */
 	readonly allStatistics: NSDictionary<HKQuantityType, HKStatistics>;
 
 	readonly device: HKDevice;
@@ -3382,6 +5840,9 @@ declare class HKWorkoutBuilder extends NSObject {
 
 	readonly startDate: Date;
 
+	/**
+	 * @since 16.0
+	 */
 	readonly workoutActivities: NSArray<HKWorkoutActivity>;
 
 	readonly workoutConfiguration: HKWorkoutConfiguration;
@@ -3394,6 +5855,9 @@ declare class HKWorkoutBuilder extends NSObject {
 
 	addSamplesCompletion(samples: NSArray<HKSample> | HKSample[], completion: (p1: boolean, p2: NSError) => void): void;
 
+	/**
+	 * @since 16.0
+	 */
 	addWorkoutActivityCompletion(workoutActivity: HKWorkoutActivity, completion: (p1: boolean, p2: NSError) => void): void;
 
 	addWorkoutEventsCompletion(workoutEvents: NSArray<HKWorkoutEvent> | HKWorkoutEvent[], completion: (p1: boolean, p2: NSError) => void): void;
@@ -3414,11 +5878,20 @@ declare class HKWorkoutBuilder extends NSObject {
 
 	statisticsForType(quantityType: HKQuantityType): HKStatistics;
 
+	/**
+	 * @since 16.0
+	 */
 	updateActivityWithUUIDAddMedatataCompletion(UUID: NSUUID, metadata: NSDictionary<string, any>, completion: (p1: boolean, p2: NSError) => void): void;
 
+	/**
+	 * @since 16.0
+	 */
 	updateActivityWithUUIDEndDateCompletion(UUID: NSUUID, endDate: Date, completion: (p1: boolean, p2: NSError) => void): void;
 }
 
+/**
+ * @since 10.0
+ */
 declare class HKWorkoutConfiguration extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): HKWorkoutConfiguration; // inherited from NSObject
@@ -3444,22 +5917,96 @@ declare class HKWorkoutConfiguration extends NSObject implements NSCopying, NSSe
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 18.0
+ */
+declare class HKWorkoutEffortRelationship extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): HKWorkoutEffortRelationship; // inherited from NSObject
+
+	static new(): HKWorkoutEffortRelationship; // inherited from NSObject
+
+	readonly activity: HKWorkoutActivity;
+
+	readonly samples: NSArray<HKSample>;
+
+	readonly workout: HKWorkout;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
+ * @since 18.0
+ */
+declare class HKWorkoutEffortRelationshipQuery extends HKQuery {
+
+	static alloc(): HKWorkoutEffortRelationshipQuery; // inherited from NSObject
+
+	static new(): HKWorkoutEffortRelationshipQuery; // inherited from NSObject
+
+	constructor(o: { predicate: NSPredicate; anchor: HKQueryAnchor; options: HKWorkoutEffortRelationshipQueryOptions; resultsHandler: (p1: HKWorkoutEffortRelationshipQuery, p2: NSArray<HKWorkoutEffortRelationship>, p3: HKQueryAnchor, p4: NSError) => void; });
+
+	initWithPredicateAnchorOptionsResultsHandler(predicate: NSPredicate, anchor: HKQueryAnchor, options: HKWorkoutEffortRelationshipQueryOptions, resultsHandler: (p1: HKWorkoutEffortRelationshipQuery, p2: NSArray<HKWorkoutEffortRelationship>, p3: HKQueryAnchor, p4: NSError) => void): this;
+}
+
+/**
+ * @since 18.0
+ */
+declare const enum HKWorkoutEffortRelationshipQueryOptions {
+
+	Default = 0,
+
+	MostRelevant = 1
+}
+
+/**
+ * @since 8.0
+ */
 declare class HKWorkoutEvent extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): HKWorkoutEvent; // inherited from NSObject
 
 	static new(): HKWorkoutEvent; // inherited from NSObject
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	static workoutEventWithTypeDate(type: HKWorkoutEventType, date: Date): HKWorkoutEvent;
 
+	/**
+	 * @since 11.0
+	 */
 	static workoutEventWithTypeDateIntervalMetadata(type: HKWorkoutEventType, dateInterval: NSDateInterval, metadata: NSDictionary<string, any>): HKWorkoutEvent;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 11.0
+	 */
 	static workoutEventWithTypeDateMetadata(type: HKWorkoutEventType, date: Date, metadata: NSDictionary<string, any>): HKWorkoutEvent;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	readonly date: Date;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly dateInterval: NSDateInterval;
 
+	/**
+	 * @since 10.0
+	 */
 	readonly metadata: NSDictionary<string, any>;
 
 	readonly type: HKWorkoutEventType;
@@ -3475,6 +6022,9 @@ declare class HKWorkoutEvent extends NSObject implements NSCopying, NSSecureCodi
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 8.0
+ */
 declare const enum HKWorkoutEventType {
 
 	Pause = 1,
@@ -3494,6 +6044,9 @@ declare const enum HKWorkoutEventType {
 	PauseOrResumeRequest = 8
 }
 
+/**
+ * @since 11.0
+ */
 declare class HKWorkoutRoute extends HKSeriesSample {
 
 	static alloc(): HKWorkoutRoute; // inherited from NSObject
@@ -3501,6 +6054,9 @@ declare class HKWorkoutRoute extends HKSeriesSample {
 	static new(): HKWorkoutRoute; // inherited from NSObject
 }
 
+/**
+ * @since 11.0
+ */
 declare class HKWorkoutRouteBuilder extends HKSeriesBuilder {
 
 	static alloc(): HKWorkoutRouteBuilder; // inherited from NSObject
@@ -3518,6 +6074,9 @@ declare class HKWorkoutRouteBuilder extends HKSeriesBuilder {
 	insertRouteDataCompletion(routeData: NSArray<CLLocation> | CLLocation[], completion: (p1: boolean, p2: NSError) => void): void;
 }
 
+/**
+ * @since 11.0
+ */
 declare class HKWorkoutRouteQuery extends HKQuery {
 
 	static alloc(): HKWorkoutRouteQuery; // inherited from NSObject
@@ -3526,15 +6085,27 @@ declare class HKWorkoutRouteQuery extends HKQuery {
 
 	constructor(o: { route: HKWorkoutRoute; dataHandler: (p1: HKWorkoutRouteQuery, p2: NSArray<CLLocation>, p3: boolean, p4: NSError) => void; });
 
+	/**
+	 * @since 16.0
+	 */
 	constructor(o: { route: HKWorkoutRoute; dateInterval: NSDateInterval; dataHandler: (p1: HKWorkoutRouteQuery, p2: NSArray<CLLocation>, p3: boolean, p4: NSError) => void; });
 
 	initWithRouteDataHandler(workoutRoute: HKWorkoutRoute, dataHandler: (p1: HKWorkoutRouteQuery, p2: NSArray<CLLocation>, p3: boolean, p4: NSError) => void): this;
 
+	/**
+	 * @since 16.0
+	 */
 	initWithRouteDateIntervalDataHandler(workoutRoute: HKWorkoutRoute, dateInterval: NSDateInterval, dataHandler: (p1: HKWorkoutRouteQuery, p2: NSArray<CLLocation>, p3: boolean, p4: NSError) => void): this;
 }
 
+/**
+ * @since 11.0
+ */
 declare var HKWorkoutRouteTypeIdentifier: string;
 
+/**
+ * @since 17.0
+ */
 declare class HKWorkoutSession extends NSObject implements NSSecureCoding {
 
 	static alloc(): HKWorkoutSession; // inherited from NSObject
@@ -3543,6 +6114,9 @@ declare class HKWorkoutSession extends NSObject implements NSSecureCoding {
 
 	readonly activityType: HKWorkoutActivityType;
 
+	/**
+	 * @since 17.0
+	 */
 	readonly currentActivity: HKWorkoutActivity;
 
 	delegate: HKWorkoutSessionDelegate;
@@ -3555,51 +6129,102 @@ declare class HKWorkoutSession extends NSObject implements NSSecureCoding {
 
 	readonly state: HKWorkoutSessionState;
 
+	/**
+	 * @since 17.0
+	 */
 	readonly type: HKWorkoutSessionType;
 
+	/**
+	 * @since 17.0
+	 */
 	readonly workoutConfiguration: HKWorkoutConfiguration;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
+	/**
+	 * @since 17.0
+	 */
 	beginNewActivityWithConfigurationDateMetadata(workoutConfiguration: HKWorkoutConfiguration, date: Date, metadata: NSDictionary<string, any>): void;
 
 	encodeWithCoder(coder: NSCoder): void;
 
+	/**
+	 * @since 17.0
+	 */
 	end(): void;
 
+	/**
+	 * @since 17.0
+	 */
 	endCurrentActivityOnDate(date: Date): void;
 
 	initWithCoder(coder: NSCoder): this;
 
+	/**
+	 * @since 17.0
+	 */
 	pause(): void;
 
+	/**
+	 * @since 17.0
+	 */
 	prepare(): void;
 
+	/**
+	 * @since 17.0
+	 */
 	resume(): void;
 
+	/**
+	 * @since 17.0
+	 */
 	sendDataToRemoteWorkoutSessionCompletion(data: NSData, completion: (p1: boolean, p2: NSError) => void): void;
 
+	/**
+	 * @since 17.0
+	 */
 	startActivityWithDate(date: Date): void;
 
+	/**
+	 * @since 17.0
+	 */
 	stopActivityWithDate(date: Date): void;
 }
 
+/**
+ * @since 17.0
+ */
 interface HKWorkoutSessionDelegate extends NSObjectProtocol {
 
+	/**
+	 * @since 17.0
+	 */
 	workoutSessionDidBeginActivityWithConfigurationDate?(workoutSession: HKWorkoutSession, workoutConfiguration: HKWorkoutConfiguration, date: Date): void;
 
 	workoutSessionDidChangeToStateFromStateDate(workoutSession: HKWorkoutSession, toState: HKWorkoutSessionState, fromState: HKWorkoutSessionState, date: Date): void;
 
+	/**
+	 * @since 17.0
+	 */
 	workoutSessionDidDisconnectFromRemoteDeviceWithError?(workoutSession: HKWorkoutSession, error: NSError): void;
 
+	/**
+	 * @since 17.0
+	 */
 	workoutSessionDidEndActivityWithConfigurationDate?(workoutSession: HKWorkoutSession, workoutConfiguration: HKWorkoutConfiguration, date: Date): void;
 
 	workoutSessionDidFailWithError(workoutSession: HKWorkoutSession, error: NSError): void;
 
+	/**
+	 * @since 10.0
+	 */
 	workoutSessionDidGenerateEvent?(workoutSession: HKWorkoutSession, event: HKWorkoutEvent): void;
 
+	/**
+	 * @since 17.0
+	 */
 	workoutSessionDidReceiveDataFromRemoteWorkoutSession?(workoutSession: HKWorkoutSession, data: NSArray<NSData> | NSData[]): void;
 }
 declare var HKWorkoutSessionDelegate: {
@@ -3607,6 +6232,9 @@ declare var HKWorkoutSessionDelegate: {
 	prototype: HKWorkoutSessionDelegate;
 };
 
+/**
+ * @since 10.0
+ */
 declare const enum HKWorkoutSessionLocationType {
 
 	Unknown = 1,
@@ -3616,6 +6244,9 @@ declare const enum HKWorkoutSessionLocationType {
 	Outdoor = 3
 }
 
+/**
+ * @since 17.0
+ */
 declare const enum HKWorkoutSessionState {
 
 	NotStarted = 1,
@@ -3631,6 +6262,9 @@ declare const enum HKWorkoutSessionState {
 	Stopped = 6
 }
 
+/**
+ * @since 17.0
+ */
 declare const enum HKWorkoutSessionType {
 
 	Primary = 0,
@@ -3638,16 +6272,34 @@ declare const enum HKWorkoutSessionType {
 	Mirrored = 1
 }
 
+/**
+ * @since 8.0
+ */
 declare var HKWorkoutSortIdentifierDuration: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKWorkoutSortIdentifierTotalDistance: string;
 
+/**
+ * @since 8.0
+ */
 declare var HKWorkoutSortIdentifierTotalEnergyBurned: string;
 
+/**
+ * @since 11.0
+ */
 declare var HKWorkoutSortIdentifierTotalFlightsClimbed: string;
 
+/**
+ * @since 10.0
+ */
 declare var HKWorkoutSortIdentifierTotalSwimmingStrokeCount: string;
 
+/**
+ * @since 10.0
+ */
 declare const enum HKWorkoutSwimmingLocationType {
 
 	Unknown = 0,
@@ -3657,6 +6309,9 @@ declare const enum HKWorkoutSwimmingLocationType {
 	OpenWater = 2
 }
 
+/**
+ * @since 8.0
+ */
 declare class HKWorkoutType extends HKSampleType {
 
 	static alloc(): HKWorkoutType; // inherited from NSObject
@@ -3664,4 +6319,7 @@ declare class HKWorkoutType extends HKSampleType {
 	static new(): HKWorkoutType; // inherited from NSObject
 }
 
+/**
+ * @since 8.0
+ */
 declare var HKWorkoutTypeIdentifier: string;

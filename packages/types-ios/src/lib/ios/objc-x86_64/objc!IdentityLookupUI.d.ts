@@ -1,4 +1,7 @@
 
+/**
+ * @since 12.0
+ */
 declare class ILClassificationUIExtensionContext extends NSExtensionContext {
 
 	static alloc(): ILClassificationUIExtensionContext; // inherited from NSObject
@@ -8,6 +11,9 @@ declare class ILClassificationUIExtensionContext extends NSExtensionContext {
 	readyForClassificationResponse: boolean;
 }
 
+/**
+ * @since 12.0
+ */
 declare class ILClassificationUIExtensionViewController extends UIViewController {
 
 	static alloc(): ILClassificationUIExtensionViewController; // inherited from NSObject

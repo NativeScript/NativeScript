@@ -7,9 +7,9 @@ declare const enum DYLD_BOOL {
 }
 
 interface NSLinkEditErrorHandlers {
-	undefined: interop.FunctionReference<(p1: string) => void>;
+	undefined: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
 	multiple: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<any>>;
-	linkEdit: interop.FunctionReference<(p1: NSLinkEditErrors, p2: number, p3: string, p4: string) => void>;
+	linkEdit: interop.FunctionReference<(p1: NSLinkEditErrors, p2: number, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>) => void>;
 }
 declare var NSLinkEditErrorHandlers: interop.StructType<NSLinkEditErrorHandlers>;
 
@@ -60,33 +60,75 @@ declare const enum NSOtherErrorNumbers {
 	InvalidArgs = 4
 }
 
+/**
+ * @since 2.0
+ */
 declare function NSVersionOfLinkTimeLibrary(libraryName: string | interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 2.0
+ */
 declare function NSVersionOfRunTimeLibrary(libraryName: string | interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 interface NXArchInfo {
-	name: string;
+	name: interop.Pointer | interop.Reference<any>;
 	cputype: number;
 	cpusubtype: number;
 	byteorder: NXByteOrder;
-	description: string;
+	description: interop.Pointer | interop.Reference<any>;
 }
 declare var NXArchInfo: interop.StructType<NXArchInfo>;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function NXCombineCpuSubtypes(cputype: number, cpusubtype1: number, cpusubtype2: number): number;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function NXFindBestFatArch(cputype: number, cpusubtype: number, fat_archs: interop.Pointer | interop.Reference<fat_arch>, nfat_archs: number): interop.Pointer | interop.Reference<fat_arch>;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function NXFindBestFatArch_64(cputype: number, cpusubtype: number, fat_archs64: interop.Pointer | interop.Reference<fat_arch_64>, nfat_archs: number): interop.Pointer | interop.Reference<fat_arch_64>;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function NXFreeArchInfo(x: interop.Pointer | interop.Reference<NXArchInfo>): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function NXGetAllArchInfos(): interop.Pointer | interop.Reference<NXArchInfo>;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function NXGetArchInfoFromCpuType(cputype: number, cpusubtype: number): interop.Pointer | interop.Reference<NXArchInfo>;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function NXGetArchInfoFromName(name: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<NXArchInfo>;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function NXGetLocalArchInfo(): interop.Pointer | interop.Reference<NXArchInfo>;
 
 declare const UNWIND_ARM64_DWARF_SECTION_OFFSET: number;
@@ -231,20 +273,44 @@ declare const UNWIND_X86_REG_ESI: number;
 
 declare const UNWIND_X86_REG_NONE: number;
 
+/**
+ * @since 2.0
+ */
 declare function _NSGetExecutablePath(buf: string | interop.Pointer | interop.Reference<any>, bufsize: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 2.0
+ */
 declare function _dyld_get_image_header(image_index: number): interop.Pointer | interop.Reference<mach_header>;
 
-declare function _dyld_get_image_name(image_index: number): string;
+/**
+ * @since 2.0
+ */
+declare function _dyld_get_image_name(image_index: number): interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 2.0
+ */
 declare function _dyld_get_image_vmaddr_slide(image_index: number): number;
 
+/**
+ * @since 2.0
+ */
 declare function _dyld_image_count(): number;
 
+/**
+ * @since 2.0
+ */
 declare function _dyld_register_func_for_add_image(func: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<mach_header>, p2: number) => void>): void;
 
+/**
+ * @since 2.0
+ */
 declare function _dyld_register_func_for_remove_image(func: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<mach_header>, p2: number) => void>): void;
 
+/**
+ * @since 14.0
+ */
 declare function _dyld_shared_cache_contains_path(path: string | interop.Pointer | interop.Reference<any>): boolean;
 
 declare var _mh_bundle_header: mach_header_64;
@@ -255,8 +321,14 @@ declare var _mh_dylinker_header: mach_header_64;
 
 declare var _mh_execute_header: mach_header_64;
 
+/**
+ * @since 8.0
+ */
 declare function _tlv_atexit(termFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>, objAddr: interop.Pointer | interop.Reference<any>): void;
 
+/**
+ * @since 8.0
+ */
 declare function _tlv_bootstrap(): void;
 
 interface build_tool_version {
@@ -431,35 +503,83 @@ interface fat_header {
 }
 declare var fat_header: interop.StructType<fat_header>;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function get_edata(): number;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function get_end(): number;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function get_etext(): number;
 
 declare function getsectbyname(segname: string | interop.Pointer | interop.Reference<any>, sectname: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<section_64>;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function getsectbynamefromheader(mhp: interop.Pointer | interop.Reference<mach_header>, segname: string | interop.Pointer | interop.Reference<any>, sectname: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<section>;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function getsectbynamefromheader_64(mhp: interop.Pointer | interop.Reference<mach_header_64>, segname: string | interop.Pointer | interop.Reference<any>, sectname: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<section_64>;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function getsectbynamefromheaderwithswap(mhp: interop.Pointer | interop.Reference<mach_header>, segname: string | interop.Pointer | interop.Reference<any>, sectname: string | interop.Pointer | interop.Reference<any>, fSwap: number): interop.Pointer | interop.Reference<section>;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function getsectbynamefromheaderwithswap_64(mhp: interop.Pointer | interop.Reference<mach_header_64>, segname: string | interop.Pointer | interop.Reference<any>, sectname: string | interop.Pointer | interop.Reference<any>, fSwap: number): interop.Pointer | interop.Reference<section>;
 
-declare function getsectdata(segname: string | interop.Pointer | interop.Reference<any>, sectname: string | interop.Pointer | interop.Reference<any>, size: interop.Pointer | interop.Reference<number>): string;
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
+declare function getsectdata(segname: string | interop.Pointer | interop.Reference<any>, sectname: string | interop.Pointer | interop.Reference<any>, size: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
 
-declare function getsectdatafromFramework(FrameworkName: string | interop.Pointer | interop.Reference<any>, segname: string | interop.Pointer | interop.Reference<any>, sectname: string | interop.Pointer | interop.Reference<any>, size: interop.Pointer | interop.Reference<number>): string;
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
+declare function getsectdatafromFramework(FrameworkName: string | interop.Pointer | interop.Reference<any>, segname: string | interop.Pointer | interop.Reference<any>, sectname: string | interop.Pointer | interop.Reference<any>, size: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
 
-declare function getsectdatafromheader(mhp: interop.Pointer | interop.Reference<mach_header>, segname: string | interop.Pointer | interop.Reference<any>, sectname: string | interop.Pointer | interop.Reference<any>, size: interop.Pointer | interop.Reference<number>): string;
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
+declare function getsectdatafromheader(mhp: interop.Pointer | interop.Reference<mach_header>, segname: string | interop.Pointer | interop.Reference<any>, sectname: string | interop.Pointer | interop.Reference<any>, size: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
 
-declare function getsectdatafromheader_64(mhp: interop.Pointer | interop.Reference<mach_header_64>, segname: string | interop.Pointer | interop.Reference<any>, sectname: string | interop.Pointer | interop.Reference<any>, size: interop.Pointer | interop.Reference<number>): string;
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
+declare function getsectdatafromheader_64(mhp: interop.Pointer | interop.Reference<mach_header_64>, segname: string | interop.Pointer | interop.Reference<any>, sectname: string | interop.Pointer | interop.Reference<any>, size: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
 
-declare function getsectiondata(mhp: interop.Pointer | interop.Reference<mach_header_64>, segname: string | interop.Pointer | interop.Reference<any>, sectname: string | interop.Pointer | interop.Reference<any>, size: interop.Pointer | interop.Reference<number>): string;
+declare function getsectiondata(mhp: interop.Pointer | interop.Reference<mach_header_64>, segname: string | interop.Pointer | interop.Reference<any>, sectname: string | interop.Pointer | interop.Reference<any>, size: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function getsegbyname(segname: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<segment_command_64>;
 
-declare function getsegmentdata(mhp: interop.Pointer | interop.Reference<mach_header_64>, segname: string | interop.Pointer | interop.Reference<any>, size: interop.Pointer | interop.Reference<number>): string;
+declare function getsegmentdata(mhp: interop.Pointer | interop.Reference<mach_header_64>, segname: string | interop.Pointer | interop.Reference<any>, size: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
 
 interface ident_command {
 	cmd: number;
@@ -511,18 +631,39 @@ interface mach_header_64 {
 }
 declare var mach_header_64: interop.StructType<mach_header_64>;
 
-declare function macho_arch_name_for_cpu_type(type: number, subtype: number): string;
+/**
+ * @since 16.0
+ */
+declare function macho_arch_name_for_cpu_type(type: number, subtype: number): interop.Pointer | interop.Reference<any>;
 
-declare function macho_arch_name_for_mach_header(mh: interop.Pointer | interop.Reference<mach_header>): string;
+/**
+ * @since 16.0
+ */
+declare function macho_arch_name_for_mach_header(mh: interop.Pointer | interop.Reference<mach_header>): interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 16.0
+ */
 declare function macho_best_slice(path: string | interop.Pointer | interop.Reference<any>, bestSlice: (p1: interop.Pointer | interop.Reference<mach_header>, p2: number, p3: number) => void): number;
 
+/**
+ * @since 16.0
+ */
 declare function macho_best_slice_in_fd(fd: number, bestSlice: (p1: interop.Pointer | interop.Reference<mach_header>, p2: number, p3: number) => void): number;
 
+/**
+ * @since 16.0
+ */
 declare function macho_cpu_type_for_arch_name(archName: string | interop.Pointer | interop.Reference<any>, type: interop.Pointer | interop.Reference<number>, subtype: interop.Pointer | interop.Reference<number>): boolean;
 
+/**
+ * @since 16.0
+ */
 declare function macho_for_each_slice(path: string | interop.Pointer | interop.Reference<any>, callback: (p1: interop.Pointer | interop.Reference<mach_header>, p2: number, p3: number, p4: interop.Pointer | interop.Reference<boolean>) => void): number;
 
+/**
+ * @since 16.0
+ */
 declare function macho_for_each_slice_in_fd(fd: number, callback: (p1: interop.Pointer | interop.Reference<mach_header>, p2: number, p3: number, p4: interop.Pointer | interop.Reference<boolean>) => void): number;
 
 interface note_command {
@@ -672,84 +813,244 @@ interface source_version_command {
 }
 declare var source_version_command: interop.StructType<source_version_command>;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_build_tool_version(bt: interop.Pointer | interop.Reference<build_tool_version>, ntools: number, target_byte_sex: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_build_version_command(bv: interop.Pointer | interop.Reference<build_version_command>, target_byte_sex: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_dyld_info_command(ed: interop.Pointer | interop.Reference<dyld_info_command>, target_byte_sex: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_dylib_module(mods: interop.Pointer | interop.Reference<dylib_module>, nmods: number, target_byte_sex: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_dylib_module_64(mods: interop.Pointer | interop.Reference<dylib_module_64>, nmods: number, target_byte_sex: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_dylib_reference(refs: interop.Pointer | interop.Reference<dylib_reference>, nrefs: number, target_byte_sex: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_dylib_table_of_contents(tocs: interop.Pointer | interop.Reference<dylib_table_of_contents>, ntocs: number, target_byte_sex: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_dysymtab_command(dyst: interop.Pointer | interop.Reference<dysymtab_command>, target_byte_sex: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_encryption_command(ec: interop.Pointer | interop.Reference<encryption_info_command>, target_byte_sex: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_encryption_command_64(ec: interop.Pointer | interop.Reference<encryption_info_command_64>, target_byte_sex: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_entry_point_command(ep: interop.Pointer | interop.Reference<entry_point_command>, target_byte_sex: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_fat_arch(fat_archs: interop.Pointer | interop.Reference<fat_arch>, nfat_arch: number, target_byte_order: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_fat_arch_64(fat_archs64: interop.Pointer | interop.Reference<fat_arch_64>, nfat_arch: number, target_byte_order: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_fat_header(fat_header: interop.Pointer | interop.Reference<fat_header>, target_byte_order: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_ident_command(ident: interop.Pointer | interop.Reference<ident_command>, target_byte_order: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_indirect_symbols(indirect_symbols: interop.Pointer | interop.Reference<number>, nindirect_symbols: number, target_byte_sex: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_linkedit_data_command(ld: interop.Pointer | interop.Reference<linkedit_data_command>, target_byte_sex: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_linker_option_command(lo: interop.Pointer | interop.Reference<linker_option_command>, target_byte_sex: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_load_command(lc: interop.Pointer | interop.Reference<load_command>, target_byte_order: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_mach_header(mh: interop.Pointer | interop.Reference<mach_header>, target_byte_order: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_mach_header_64(mh: interop.Pointer | interop.Reference<mach_header_64>, target_byte_order: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_note_command(nc: interop.Pointer | interop.Reference<note_command>, target_byte_sex: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_prebind_cksum_command(cksum_cmd: interop.Pointer | interop.Reference<prebind_cksum_command>, target_byte_sex: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_prebind_cksum_commandFunction(cksum_cmd: interop.Pointer | interop.Reference<prebind_cksum_command>, target_byte_sex: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_relocation_info(relocs: interop.Pointer | interop.Reference<relocation_info>, nrelocs: number, target_byte_order: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_routines_command(r_cmd: interop.Pointer | interop.Reference<routines_command>, target_byte_sex: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_routines_command_64(r_cmd: interop.Pointer | interop.Reference<routines_command_64>, target_byte_sex: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_section(s: interop.Pointer | interop.Reference<section>, nsects: number, target_byte_order: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_section_64(s: interop.Pointer | interop.Reference<section_64>, nsects: number, target_byte_order: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_segment_command(sg: interop.Pointer | interop.Reference<segment_command>, target_byte_order: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_segment_command_64(sg: interop.Pointer | interop.Reference<segment_command_64>, target_byte_order: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_source_version_command(sv: interop.Pointer | interop.Reference<source_version_command>, target_byte_sex: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_symseg_command(ss: interop.Pointer | interop.Reference<symseg_command>, target_byte_order: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_symtab_command(st: interop.Pointer | interop.Reference<symtab_command>, target_byte_order: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_thread_command(ut: interop.Pointer | interop.Reference<thread_command>, target_byte_order: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_twolevel_hint(hints: interop.Pointer | interop.Reference<twolevel_hint>, nhints: number, target_byte_sex: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_twolevel_hints_command(hints_cmd: interop.Pointer | interop.Reference<twolevel_hints_command>, target_byte_sex: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_uuid_command(uuid_cmd: interop.Pointer | interop.Reference<uuid_command>, target_byte_sex: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_uuid_commandFunction(uuid_cmd: interop.Pointer | interop.Reference<uuid_command>, target_byte_sex: NXByteOrder): void;
 
+/**
+ * @since 1.0
+ * @deprecated 16.0
+ */
 declare function swap_version_min_command(ver_cmd: interop.Pointer | interop.Reference<version_min_command>, target_byte_sex: NXByteOrder): void;
 
 interface symseg_command {

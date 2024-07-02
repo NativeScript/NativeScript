@@ -1,18 +1,38 @@
 
+/**
+ * @since 16.0
+ */
 declare class SWAttributionView extends UIView {
 
 	static alloc(): SWAttributionView; // inherited from NSObject
 
 	static appearance(): SWAttributionView; // inherited from UIAppearance
 
+	/**
+	 * @since 8.0
+	 */
 	static appearanceForTraitCollection(trait: UITraitCollection): SWAttributionView; // inherited from UIAppearance
 
+	/**
+	 * @since 8.0
+	 * @deprecated 9.0
+	 */
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): SWAttributionView; // inherited from UIAppearance
 
+	/**
+	 * @since 9.0
+	 */
 	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): SWAttributionView; // inherited from UIAppearance
 
+	/**
+	 * @since 5.0
+	 * @deprecated 9.0
+	 */
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): SWAttributionView; // inherited from UIAppearance
 
+	/**
+	 * @since 9.0
+	 */
 	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): SWAttributionView; // inherited from UIAppearance
 
 	static new(): SWAttributionView; // inherited from NSObject
@@ -34,6 +54,9 @@ declare class SWAttributionView extends UIView {
 	supplementalMenu: UIMenu;
 }
 
+/**
+ * @since 16.0
+ */
 declare const enum SWAttributionViewBackgroundStyle {
 
 	Default = 0,
@@ -43,6 +66,9 @@ declare const enum SWAttributionViewBackgroundStyle {
 	Material = 2
 }
 
+/**
+ * @since 16.0
+ */
 declare const enum SWAttributionViewDisplayContext {
 
 	Summary = 0,
@@ -50,6 +76,9 @@ declare const enum SWAttributionViewDisplayContext {
 	Detail = 1
 }
 
+/**
+ * @since 16.0
+ */
 declare const enum SWAttributionViewHorizontalAlignment {
 
 	Default = 0,
@@ -61,6 +90,9 @@ declare const enum SWAttributionViewHorizontalAlignment {
 	Trailing = 3
 }
 
+/**
+ * @since 16.0
+ */
 declare class SWCollaborationHighlight extends SWHighlight implements NSCopying, NSSecureCoding {
 
 	static alloc(): SWCollaborationHighlight; // inherited from NSObject
@@ -86,22 +118,45 @@ declare class SWCollaborationHighlight extends SWHighlight implements NSCopying,
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 16.0
+ */
 declare var SWCollaborationMetadataTypeIdentifier: string;
 
+/**
+ * @since 16.0
+ */
 declare class SWCollaborationView extends UIView {
 
 	static alloc(): SWCollaborationView; // inherited from NSObject
 
 	static appearance(): SWCollaborationView; // inherited from UIAppearance
 
+	/**
+	 * @since 8.0
+	 */
 	static appearanceForTraitCollection(trait: UITraitCollection): SWCollaborationView; // inherited from UIAppearance
 
+	/**
+	 * @since 8.0
+	 * @deprecated 9.0
+	 */
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): SWCollaborationView; // inherited from UIAppearance
 
+	/**
+	 * @since 9.0
+	 */
 	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): SWCollaborationView; // inherited from UIAppearance
 
+	/**
+	 * @since 5.0
+	 * @deprecated 9.0
+	 */
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): SWCollaborationView; // inherited from UIAppearance
 
+	/**
+	 * @since 9.0
+	 */
 	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): SWCollaborationView; // inherited from UIAppearance
 
 	static new(): SWCollaborationView; // inherited from NSObject
@@ -133,6 +188,9 @@ declare class SWCollaborationView extends UIView {
 	setShowManageButton(showManageButton: boolean): void;
 }
 
+/**
+ * @since 16.0
+ */
 interface SWCollaborationViewDelegate extends NSObjectProtocol {
 
 	collaborationViewDidDismissPopover?(collaborationView: SWCollaborationView): void;
@@ -146,6 +204,9 @@ declare var SWCollaborationViewDelegate: {
 	prototype: SWCollaborationViewDelegate;
 };
 
+/**
+ * @since 16.0
+ */
 declare class SWHighlight extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SWHighlight; // inherited from NSObject
@@ -167,6 +228,9 @@ declare class SWHighlight extends NSObject implements NSCopying, NSSecureCoding 
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 16.0
+ */
 declare class SWHighlightCenter extends NSObject {
 
 	static alloc(): SWHighlightCenter; // inherited from NSObject
@@ -181,16 +245,28 @@ declare class SWHighlightCenter extends NSObject {
 
 	static readonly systemCollaborationSupportAvailable: boolean;
 
+	/**
+	 * @since 16.1
+	 */
 	clearNoticesForHighlight(highlight: SWCollaborationHighlight): void;
 
 	collaborationHighlightForIdentifierError(collaborationIdentifier: string): SWCollaborationHighlight;
 
+	/**
+	 * @since 16.0
+	 */
 	getCollaborationHighlightForURLCompletionHandler(URL: NSURL, completionHandler: (p1: SWCollaborationHighlight, p2: NSError) => void): void;
 
 	getHighlightForURLCompletionHandler(URL: NSURL, completionHandler: (p1: SWHighlight, p2: NSError) => void): void;
 
+	/**
+	 * @since 16.0
+	 */
 	getSignedIdentityProofForCollaborationHighlightUsingDataCompletionHandler(collaborationHighlight: SWCollaborationHighlight, data: NSData, completionHandler: (p1: SWSignedPersonIdentityProof, p2: NSError) => void): void;
 
+	/**
+	 * @since 16.0
+	 */
 	postNoticeForHighlightEvent(event: SWHighlightEvent): void;
 }
 
@@ -203,6 +279,9 @@ declare var SWHighlightCenterDelegate: {
 	prototype: SWHighlightCenterDelegate;
 };
 
+/**
+ * @since 16.0
+ */
 declare const enum SWHighlightCenterErrorCode {
 
 	NoError = 0,
@@ -214,6 +293,9 @@ declare const enum SWHighlightCenterErrorCode {
 	AccessDenied = 3
 }
 
+/**
+ * @since 16.0
+ */
 declare class SWHighlightChangeEvent extends NSObject implements SWHighlightEvent {
 
 	static alloc(): SWHighlightChangeEvent; // inherited from NSObject
@@ -273,6 +355,9 @@ declare class SWHighlightChangeEvent extends NSObject implements SWHighlightEven
 	self(): this;
 }
 
+/**
+ * @since 16.0
+ */
 declare const enum SWHighlightChangeEventTrigger {
 
 	Edit = 1,
@@ -280,6 +365,9 @@ declare const enum SWHighlightChangeEventTrigger {
 	Comment = 2
 }
 
+/**
+ * @since 16.0
+ */
 interface SWHighlightEvent extends NSCopying, NSObjectProtocol, NSSecureCoding {
 
 	highlightURL: NSURL;
@@ -289,6 +377,9 @@ declare var SWHighlightEvent: {
 	prototype: SWHighlightEvent;
 };
 
+/**
+ * @since 16.0
+ */
 declare class SWHighlightMembershipEvent extends NSObject implements SWHighlightEvent {
 
 	static alloc(): SWHighlightMembershipEvent; // inherited from NSObject
@@ -348,6 +439,9 @@ declare class SWHighlightMembershipEvent extends NSObject implements SWHighlight
 	self(): this;
 }
 
+/**
+ * @since 16.0
+ */
 declare const enum SWHighlightMembershipEventTrigger {
 
 	AddedCollaborator = 1,
@@ -355,6 +449,9 @@ declare const enum SWHighlightMembershipEventTrigger {
 	RemovedCollaborator = 2
 }
 
+/**
+ * @since 16.0
+ */
 declare class SWHighlightMentionEvent extends NSObject implements SWHighlightEvent {
 
 	static alloc(): SWHighlightMentionEvent; // inherited from NSObject
@@ -418,6 +515,9 @@ declare class SWHighlightMentionEvent extends NSObject implements SWHighlightEve
 	self(): this;
 }
 
+/**
+ * @since 16.0
+ */
 declare class SWHighlightPersistenceEvent extends NSObject implements SWHighlightEvent {
 
 	static alloc(): SWHighlightPersistenceEvent; // inherited from NSObject
@@ -477,6 +577,9 @@ declare class SWHighlightPersistenceEvent extends NSObject implements SWHighligh
 	self(): this;
 }
 
+/**
+ * @since 16.0
+ */
 declare const enum SWHighlightPersistenceEventTrigger {
 
 	Created = 1,
@@ -488,6 +591,9 @@ declare const enum SWHighlightPersistenceEventTrigger {
 	Moved = 4
 }
 
+/**
+ * @since 16.0
+ */
 declare class SWRemoveParticipantAlertController extends UIViewController {
 
 	static alertControllerWithParticipantHighlight(participant: SWPerson, highlight: SWCollaborationHighlight): SWRemoveParticipantAlertController;

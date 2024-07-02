@@ -1,4 +1,7 @@
 
+/**
+ * @since 17.4
+ */
 interface SFAddToHomeScreenActivityItem extends NSObjectProtocol {
 
 	URL: NSURL;
@@ -6,19 +9,36 @@ interface SFAddToHomeScreenActivityItem extends NSObjectProtocol {
 	iconItemProvider?: NSItemProvider;
 
 	title: string;
+
+	/**
+	 * @since 17.5
+	 */
+	getWebAppManifestWithCompletionHandler?(completionHandler: (p1: BEWebAppManifest) => void): void;
 }
 declare var SFAddToHomeScreenActivityItem: {
 
 	prototype: SFAddToHomeScreenActivityItem;
 };
 
+/**
+ * @since 11.0
+ * @deprecated 12.0
+ */
 declare const enum SFAuthenticationError {
 
 	CanceledLogin = 1
 }
 
+/**
+ * @since 11.0
+ * @deprecated 12.0
+ */
 declare var SFAuthenticationErrorDomain: string;
 
+/**
+ * @since 11.0
+ * @deprecated 12.0
+ */
 declare class SFAuthenticationSession extends NSObject {
 
 	static alloc(): SFAuthenticationSession; // inherited from NSObject
@@ -34,6 +54,10 @@ declare class SFAuthenticationSession extends NSObject {
 	start(): boolean;
 }
 
+/**
+ * @since 9.0
+ * @deprecated 10.0
+ */
 declare const enum SFContentBlockerErrorCode {
 
 	NoExtensionFound = 1,
@@ -43,12 +67,22 @@ declare const enum SFContentBlockerErrorCode {
 	LoadingInterrupted = 3
 }
 
+/**
+ * @since 9.0
+ * @deprecated 10.0
+ */
 declare var SFContentBlockerErrorDomain: string;
 
+/**
+ * @since 9.0
+ */
 declare class SFContentBlockerManager extends NSObject {
 
 	static alloc(): SFContentBlockerManager; // inherited from NSObject
 
+	/**
+	 * @since 10.0
+	 */
 	static getStateOfContentBlockerWithIdentifierCompletionHandler(identifier: string, completionHandler: (p1: SFContentBlockerState, p2: NSError) => void): void;
 
 	static new(): SFContentBlockerManager; // inherited from NSObject
@@ -56,6 +90,9 @@ declare class SFContentBlockerManager extends NSObject {
 	static reloadContentBlockerWithIdentifierCompletionHandler(identifier: string, completionHandler: (p1: NSError) => void): void;
 }
 
+/**
+ * @since 10.0
+ */
 declare class SFContentBlockerState extends NSObject {
 
 	static alloc(): SFContentBlockerState; // inherited from NSObject
@@ -65,6 +102,9 @@ declare class SFContentBlockerState extends NSObject {
 	readonly enabled: boolean;
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum SFErrorCode {
 
 	NoExtensionFound = 1,
@@ -74,43 +114,87 @@ declare const enum SFErrorCode {
 	LoadingInterrupted = 3
 }
 
+/**
+ * @since 10.0
+ */
 declare var SFErrorDomain: string;
 
+/**
+ * @since 15.0
+ */
 declare var SFExtensionMessageKey: string;
 
+/**
+ * @since 17.0
+ */
 declare var SFExtensionProfileKey: string;
 
+/**
+ * @since 9.0
+ */
 declare class SFSafariViewController extends UIViewController {
 
 	static alloc(): SFSafariViewController; // inherited from NSObject
 
 	static new(): SFSafariViewController; // inherited from NSObject
 
+	/**
+	 * @since 15.0
+	 */
 	static prewarmConnectionsToURLs(URLs: NSArray<NSURL> | NSURL[]): SFSafariViewControllerPrewarmingToken;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly configuration: SFSafariViewControllerConfiguration;
 
 	delegate: SFSafariViewControllerDelegate;
 
+	/**
+	 * @since 11.0
+	 */
 	dismissButtonStyle: SFSafariViewControllerDismissButtonStyle;
 
+	/**
+	 * @since 10.0
+	 */
 	preferredBarTintColor: UIColor;
 
+	/**
+	 * @since 10.0
+	 */
 	preferredControlTintColor: UIColor;
 
 	constructor(o: { URL: NSURL; });
 
+	/**
+	 * @since 11.0
+	 */
 	constructor(o: { URL: NSURL; configuration: SFSafariViewControllerConfiguration; });
 
+	/**
+	 * @since 9.0
+	 * @deprecated 11.0
+	 */
 	constructor(o: { URL: NSURL; entersReaderIfAvailable: boolean; });
 
 	initWithURL(URL: NSURL): this;
 
+	/**
+	 * @since 11.0
+	 */
 	initWithURLConfiguration(URL: NSURL, configuration: SFSafariViewControllerConfiguration): this;
 
+	/**
+	 * @since 9.0
+	 * @deprecated 11.0
+	 */
 	initWithURLEntersReaderIfAvailable(URL: NSURL, entersReaderIfAvailable: boolean): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare class SFSafariViewControllerActivityButton extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SFSafariViewControllerActivityButton; // inherited from NSObject
@@ -136,23 +220,35 @@ declare class SFSafariViewControllerActivityButton extends NSObject implements N
 	initWithTemplateImageExtensionIdentifier(templateImage: UIImage, extensionIdentifier: string): this;
 }
 
+/**
+ * @since 11.0
+ */
 declare class SFSafariViewControllerConfiguration extends NSObject implements NSCopying {
 
 	static alloc(): SFSafariViewControllerConfiguration; // inherited from NSObject
 
 	static new(): SFSafariViewControllerConfiguration; // inherited from NSObject
 
+	/**
+	 * @since 15.0
+	 */
 	activityButton: SFSafariViewControllerActivityButton;
 
 	barCollapsingEnabled: boolean;
 
 	entersReaderIfAvailable: boolean;
 
+	/**
+	 * @since 15.2
+	 */
 	eventAttribution: UIEventAttribution;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+/**
+ * @since 16.0
+ */
 declare class SFSafariViewControllerDataStore extends NSObject {
 
 	static alloc(): SFSafariViewControllerDataStore; // inherited from NSObject
@@ -164,6 +260,9 @@ declare class SFSafariViewControllerDataStore extends NSObject {
 	clearWebsiteDataWithCompletionHandler(completion: () => void): void;
 }
 
+/**
+ * @since 9.0
+ */
 interface SFSafariViewControllerDelegate extends NSObjectProtocol {
 
 	safariViewControllerActivityItemsForURLTitle?(controller: SFSafariViewController, URL: NSURL, title: string): NSArray<UIActivity>;
@@ -172,10 +271,19 @@ interface SFSafariViewControllerDelegate extends NSObjectProtocol {
 
 	safariViewControllerDidFinish?(controller: SFSafariViewController): void;
 
+	/**
+	 * @since 11.0
+	 */
 	safariViewControllerExcludedActivityTypesForURLTitle?(controller: SFSafariViewController, URL: NSURL, title: string): NSArray<string>;
 
+	/**
+	 * @since 11.0
+	 */
 	safariViewControllerInitialLoadDidRedirectToURL?(controller: SFSafariViewController, URL: NSURL): void;
 
+	/**
+	 * @since 14.0
+	 */
 	safariViewControllerWillOpenInBrowser?(controller: SFSafariViewController): void;
 }
 declare var SFSafariViewControllerDelegate: {
@@ -183,6 +291,9 @@ declare var SFSafariViewControllerDelegate: {
 	prototype: SFSafariViewControllerDelegate;
 };
 
+/**
+ * @since 11.0
+ */
 declare const enum SFSafariViewControllerDismissButtonStyle {
 
 	Done = 0,
@@ -192,6 +303,9 @@ declare const enum SFSafariViewControllerDismissButtonStyle {
 	Cancel = 2
 }
 
+/**
+ * @since 15.0
+ */
 declare class SFSafariViewControllerPrewarmingToken extends NSObject {
 
 	static alloc(): SFSafariViewControllerPrewarmingToken; // inherited from NSObject
@@ -201,6 +315,9 @@ declare class SFSafariViewControllerPrewarmingToken extends NSObject {
 	invalidate(): void;
 }
 
+/**
+ * @since 7.0
+ */
 declare class SSReadingList extends NSObject {
 
 	static alloc(): SSReadingList; // inherited from NSObject
@@ -214,9 +331,15 @@ declare class SSReadingList extends NSObject {
 	addReadingListItemWithURLTitlePreviewTextError(URL: NSURL, title: string, previewText: string): boolean;
 }
 
+/**
+ * @since 7.0
+ */
 declare const enum SSReadingListErrorCode {
 
 	URLSchemeNotAllowed = 1
 }
 
+/**
+ * @since 7.0
+ */
 declare var SSReadingListErrorDomain: string;

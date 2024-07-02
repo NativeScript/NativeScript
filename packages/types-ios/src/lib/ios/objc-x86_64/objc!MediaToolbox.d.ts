@@ -10,16 +10,34 @@ interface MTAudioProcessingTapCallbacks {
 }
 declare var MTAudioProcessingTapCallbacks: interop.StructType<MTAudioProcessingTapCallbacks>;
 
+/**
+ * @since 6.0
+ */
 declare function MTAudioProcessingTapCreate(allocator: any, callbacks: interop.Pointer | interop.Reference<MTAudioProcessingTapCallbacks>, flags: number, tapOut: interop.Pointer | interop.Reference<any>): number;
 
+/**
+ * @since 6.0
+ */
 declare function MTAudioProcessingTapGetSourceAudio(tap: any, numberFrames: number, bufferListInOut: interop.Pointer | interop.Reference<AudioBufferList>, flagsOut: interop.Pointer | interop.Reference<number>, timeRangeOut: interop.Pointer | interop.Reference<CMTimeRange>, numberFramesOut: interop.Pointer | interop.Reference<number>): number;
 
+/**
+ * @since 6.0
+ */
 declare function MTAudioProcessingTapGetStorage(tap: any): interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 6.0
+ */
 declare function MTAudioProcessingTapGetTypeID(): number;
 
+/**
+ * @since 6.0
+ */
 declare function MTCopyLocalizedNameForMediaSubType(mediaType: number, mediaSubType: number): string;
 
+/**
+ * @since 6.0
+ */
 declare function MTCopyLocalizedNameForMediaType(mediaType: number): string;
 
 declare const kMTAudioProcessingTapCallbacksVersion_0: number;

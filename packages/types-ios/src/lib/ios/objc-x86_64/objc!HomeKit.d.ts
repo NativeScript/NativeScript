@@ -1,4 +1,7 @@
 
+/**
+ * @since 11.2
+ */
 declare class HMAccessControl extends NSObject {
 
 	static alloc(): HMAccessControl; // inherited from NSObject
@@ -6,6 +9,9 @@ declare class HMAccessControl extends NSObject {
 	static new(): HMAccessControl; // inherited from NSObject
 }
 
+/**
+ * @since 8.0
+ */
 declare class HMAccessory extends NSObject {
 
 	static alloc(): HMAccessory; // inherited from NSObject
@@ -16,26 +22,55 @@ declare class HMAccessory extends NSObject {
 
 	readonly bridged: boolean;
 
+	/**
+	 * @since 10.0
+	 */
 	readonly cameraProfiles: NSArray<HMCameraProfile>;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly category: HMAccessoryCategory;
 
 	delegate: HMAccessoryDelegate;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly firmwareVersion: string;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 9.0
+	 */
 	readonly identifier: NSUUID;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 9.0
+	 */
 	readonly identifiersForBridgedAccessories: NSArray<NSUUID>;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly manufacturer: string;
 
+	/**
+	 * @since 16.1
+	 */
 	readonly matterNodeID: number;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly model: string;
 
 	readonly name: string;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly profiles: NSArray<HMAccessoryProfile>;
 
 	readonly reachable: boolean;
@@ -44,10 +79,19 @@ declare class HMAccessory extends NSObject {
 
 	readonly services: NSArray<HMService>;
 
+	/**
+	 * @since 11.3
+	 */
 	readonly supportsIdentify: boolean;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly uniqueIdentifier: NSUUID;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly uniqueIdentifiersForBridgedAccessories: NSArray<NSUUID>;
 
 	identifyWithCompletionHandler(completion: (p1: NSError) => void): void;
@@ -55,6 +99,9 @@ declare class HMAccessory extends NSObject {
 	updateNameCompletionHandler(name: string, completion: (p1: NSError) => void): void;
 }
 
+/**
+ * @since 8.0
+ */
 declare class HMAccessoryBrowser extends NSObject {
 
 	static alloc(): HMAccessoryBrowser; // inherited from NSObject
@@ -70,6 +117,9 @@ declare class HMAccessoryBrowser extends NSObject {
 	stopSearchingForNewAccessories(): void;
 }
 
+/**
+ * @since 8.0
+ */
 interface HMAccessoryBrowserDelegate extends NSObjectProtocol {
 
 	accessoryBrowserDidFindNewAccessory?(browser: HMAccessoryBrowser, accessory: HMAccessory): void;
@@ -81,6 +131,9 @@ declare var HMAccessoryBrowserDelegate: {
 	prototype: HMAccessoryBrowserDelegate;
 };
 
+/**
+ * @since 9.0
+ */
 declare class HMAccessoryCategory extends NSObject {
 
 	static alloc(): HMAccessoryCategory; // inherited from NSObject
@@ -92,66 +145,191 @@ declare class HMAccessoryCategory extends NSObject {
 	readonly localizedDescription: string;
 }
 
+/**
+ * @since 10.2
+ */
 declare var HMAccessoryCategoryTypeAirConditioner: string;
 
+/**
+ * @since 10.2
+ */
 declare var HMAccessoryCategoryTypeAirDehumidifier: string;
 
+/**
+ * @since 10.2
+ */
 declare var HMAccessoryCategoryTypeAirHeater: string;
 
+/**
+ * @since 10.2
+ */
 declare var HMAccessoryCategoryTypeAirHumidifier: string;
 
+/**
+ * @since 18.0
+ */
+declare var HMAccessoryCategoryTypeAirPort: string;
+
+/**
+ * @since 10.2
+ */
 declare var HMAccessoryCategoryTypeAirPurifier: string;
 
+/**
+ * @since 18.0
+ */
+declare var HMAccessoryCategoryTypeAudioReceiver: string;
+
+/**
+ * @since 9.0
+ */
 declare var HMAccessoryCategoryTypeBridge: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMAccessoryCategoryTypeDoor: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMAccessoryCategoryTypeDoorLock: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMAccessoryCategoryTypeFan: string;
 
+/**
+ * @since 11.2
+ */
 declare var HMAccessoryCategoryTypeFaucet: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMAccessoryCategoryTypeGarageDoorOpener: string;
 
+/**
+ * @since 10.0
+ */
 declare var HMAccessoryCategoryTypeIPCamera: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMAccessoryCategoryTypeLightbulb: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMAccessoryCategoryTypeOther: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMAccessoryCategoryTypeOutlet: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMAccessoryCategoryTypeProgrammableSwitch: string;
 
+/**
+ * @since 9.3
+ */
 declare var HMAccessoryCategoryTypeRangeExtender: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMAccessoryCategoryTypeSecuritySystem: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMAccessoryCategoryTypeSensor: string;
 
+/**
+ * @since 11.2
+ */
 declare var HMAccessoryCategoryTypeShowerHead: string;
 
+/**
+ * @since 18.0
+ */
+declare var HMAccessoryCategoryTypeSpeaker: string;
+
+/**
+ * @since 11.2
+ */
 declare var HMAccessoryCategoryTypeSprinkler: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMAccessoryCategoryTypeSwitch: string;
 
+/**
+ * @since 18.0
+ */
+declare var HMAccessoryCategoryTypeTelevision: string;
+
+/**
+ * @since 18.0
+ */
+declare var HMAccessoryCategoryTypeTelevisionSetTopBox: string;
+
+/**
+ * @since 18.0
+ */
+declare var HMAccessoryCategoryTypeTelevisionStreamingStick: string;
+
+/**
+ * @since 9.0
+ */
 declare var HMAccessoryCategoryTypeThermostat: string;
 
+/**
+ * @since 10.0
+ */
 declare var HMAccessoryCategoryTypeVideoDoorbell: string;
 
+/**
+ * @since 18.0
+ */
+declare var HMAccessoryCategoryTypeWiFiRouter: string;
+
+/**
+ * @since 9.0
+ */
 declare var HMAccessoryCategoryTypeWindow: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMAccessoryCategoryTypeWindowCovering: string;
 
+/**
+ * @since 8.0
+ */
 interface HMAccessoryDelegate extends NSObjectProtocol {
 
+	/**
+	 * @since 11.0
+	 */
 	accessoryDidAddProfile?(accessory: HMAccessory, profile: HMAccessoryProfile): void;
 
+	/**
+	 * @since 11.0
+	 */
 	accessoryDidRemoveProfile?(accessory: HMAccessory, profile: HMAccessoryProfile): void;
 
 	accessoryDidUpdateAssociatedServiceTypeForService?(accessory: HMAccessory, service: HMService): void;
 
+	/**
+	 * @since 11.0
+	 */
 	accessoryDidUpdateFirmwareVersion?(accessory: HMAccessory, firmwareVersion: string): void;
 
 	accessoryDidUpdateName?(accessory: HMAccessory): void;
@@ -169,6 +347,9 @@ declare var HMAccessoryDelegate: {
 	prototype: HMAccessoryDelegate;
 };
 
+/**
+ * @since 13.0
+ */
 declare class HMAccessoryOwnershipToken extends NSObject {
 
 	static alloc(): HMAccessoryOwnershipToken; // inherited from NSObject
@@ -180,6 +361,9 @@ declare class HMAccessoryOwnershipToken extends NSObject {
 	initWithData(data: NSData): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class HMAccessoryProfile extends NSObject {
 
 	static alloc(): HMAccessoryProfile; // inherited from NSObject
@@ -193,15 +377,24 @@ declare class HMAccessoryProfile extends NSObject {
 	readonly uniqueIdentifier: NSUUID;
 }
 
+/**
+ * @since 15.0
+ */
 declare class HMAccessorySetupManager extends NSObject {
 
 	static alloc(): HMAccessorySetupManager; // inherited from NSObject
 
 	static new(): HMAccessorySetupManager; // inherited from NSObject
 
+	/**
+	 * @since 15.4
+	 */
 	performAccessorySetupUsingRequestCompletionHandler(request: HMAccessorySetupRequest, completion: (p1: HMAccessorySetupResult, p2: NSError) => void): void;
 }
 
+/**
+ * @since 11.3
+ */
 declare class HMAccessorySetupPayload extends NSObject {
 
 	static alloc(): HMAccessorySetupPayload; // inherited from NSObject
@@ -210,13 +403,22 @@ declare class HMAccessorySetupPayload extends NSObject {
 
 	constructor(o: { URL: NSURL; });
 
+	/**
+	 * @since 13.0
+	 */
 	constructor(o: { URL: NSURL; ownershipToken: HMAccessoryOwnershipToken; });
 
 	initWithURL(setupPayloadURL: NSURL): this;
 
+	/**
+	 * @since 13.0
+	 */
 	initWithURLOwnershipToken(setupPayloadURL: NSURL, ownershipToken: HMAccessoryOwnershipToken): this;
 }
 
+/**
+ * @since 15.4
+ */
 declare class HMAccessorySetupRequest extends NSObject implements NSCopying {
 
 	static alloc(): HMAccessorySetupRequest; // inherited from NSObject
@@ -236,6 +438,9 @@ declare class HMAccessorySetupRequest extends NSObject implements NSCopying {
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+/**
+ * @since 15.4
+ */
 declare class HMAccessorySetupResult extends NSObject implements NSCopying {
 
 	static alloc(): HMAccessorySetupResult; // inherited from NSObject
@@ -249,31 +454,49 @@ declare class HMAccessorySetupResult extends NSObject implements NSCopying {
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+/**
+ * @since 8.0
+ */
 declare class HMAction extends NSObject {
 
 	static alloc(): HMAction; // inherited from NSObject
 
 	static new(): HMAction; // inherited from NSObject
 
+	/**
+	 * @since 9.0
+	 */
 	readonly uniqueIdentifier: NSUUID;
 }
 
+/**
+ * @since 8.0
+ */
 declare class HMActionSet extends NSObject {
 
 	static alloc(): HMActionSet; // inherited from NSObject
 
 	static new(): HMActionSet; // inherited from NSObject
 
+	/**
+	 * @since 9.0
+	 */
 	readonly actionSetType: string;
 
 	readonly actions: NSSet<HMAction>;
 
 	readonly executing: boolean;
 
+	/**
+	 * @since 10.0
+	 */
 	readonly lastExecutionDate: Date;
 
 	readonly name: string;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly uniqueIdentifier: NSUUID;
 
 	addActionCompletionHandler(action: HMAction, completion: (p1: NSError) => void): void;
@@ -283,16 +506,34 @@ declare class HMActionSet extends NSObject {
 	updateNameCompletionHandler(name: string, completion: (p1: NSError) => void): void;
 }
 
+/**
+ * @since 9.0
+ */
 declare var HMActionSetTypeHomeArrival: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMActionSetTypeHomeDeparture: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMActionSetTypeSleep: string;
 
+/**
+ * @since 10.0
+ */
 declare var HMActionSetTypeTriggerOwned: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMActionSetTypeUserDefined: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMActionSetTypeWakeUp: string;
 
 declare class HMAddAccessoryRequest extends NSObject {
@@ -307,6 +548,10 @@ declare class HMAddAccessoryRequest extends NSObject {
 
 	readonly home: HMHome;
 
+	/**
+	 * @since 13.0
+	 * @deprecated 13.0
+	 */
 	readonly requiresOwnershipToken: boolean;
 
 	readonly requiresSetupPayloadURL: boolean;
@@ -316,6 +561,9 @@ declare class HMAddAccessoryRequest extends NSObject {
 	payloadWithURLOwnershipToken(setupPayloadURL: NSURL, ownershipToken: HMAccessoryOwnershipToken): HMAccessorySetupPayload;
 }
 
+/**
+ * @since 11.0
+ */
 declare class HMCalendarEvent extends HMTimeEvent implements NSCopying, NSMutableCopying {
 
 	static alloc(): HMCalendarEvent; // inherited from NSObject
@@ -333,6 +581,9 @@ declare class HMCalendarEvent extends HMTimeEvent implements NSCopying, NSMutabl
 	mutableCopyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+/**
+ * @since 10.0
+ */
 declare class HMCameraAudioControl extends HMCameraControl {
 
 	static alloc(): HMCameraAudioControl; // inherited from NSObject
@@ -353,6 +604,9 @@ declare const enum HMCameraAudioStreamSetting {
 	BidirectionalAudioAllowed = 3
 }
 
+/**
+ * @since 10.0
+ */
 declare class HMCameraControl extends NSObject {
 
 	static alloc(): HMCameraControl; // inherited from NSObject
@@ -360,6 +614,9 @@ declare class HMCameraControl extends NSObject {
 	static new(): HMCameraControl; // inherited from NSObject
 }
 
+/**
+ * @since 10.0
+ */
 declare class HMCameraProfile extends HMAccessoryProfile {
 
 	static alloc(): HMCameraProfile; // inherited from NSObject
@@ -377,6 +634,9 @@ declare class HMCameraProfile extends HMAccessoryProfile {
 	readonly streamControl: HMCameraStreamControl;
 }
 
+/**
+ * @since 10.0
+ */
 declare class HMCameraSettingsControl extends HMCameraControl {
 
 	static alloc(): HMCameraSettingsControl; // inherited from NSObject
@@ -402,6 +662,9 @@ declare class HMCameraSettingsControl extends HMCameraControl {
 	readonly targetVerticalTilt: HMCharacteristic;
 }
 
+/**
+ * @since 10.0
+ */
 declare class HMCameraSnapshot extends HMCameraSource {
 
 	static alloc(): HMCameraSnapshot; // inherited from NSObject
@@ -411,6 +674,9 @@ declare class HMCameraSnapshot extends HMCameraSource {
 	readonly captureDate: Date;
 }
 
+/**
+ * @since 10.0
+ */
 declare class HMCameraSnapshotControl extends HMCameraControl {
 
 	static alloc(): HMCameraSnapshotControl; // inherited from NSObject
@@ -424,6 +690,9 @@ declare class HMCameraSnapshotControl extends HMCameraControl {
 	takeSnapshot(): void;
 }
 
+/**
+ * @since 10.0
+ */
 interface HMCameraSnapshotControlDelegate extends NSObjectProtocol {
 
 	cameraSnapshotControlDidTakeSnapshotError?(cameraSnapshotControl: HMCameraSnapshotControl, snapshot: HMCameraSnapshot, error: NSError): void;
@@ -435,15 +704,24 @@ declare var HMCameraSnapshotControlDelegate: {
 	prototype: HMCameraSnapshotControlDelegate;
 };
 
+/**
+ * @since 10.0
+ */
 declare class HMCameraSource extends NSObject {
 
 	static alloc(): HMCameraSource; // inherited from NSObject
 
 	static new(): HMCameraSource; // inherited from NSObject
 
+	/**
+	 * @since 14.5
+	 */
 	readonly aspectRatio: number;
 }
 
+/**
+ * @since 10.0
+ */
 declare class HMCameraStream extends HMCameraSource {
 
 	static alloc(): HMCameraStream; // inherited from NSObject
@@ -452,11 +730,18 @@ declare class HMCameraStream extends HMCameraSource {
 
 	readonly audioStreamSetting: HMCameraAudioStreamSetting;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 10.0
+	 */
 	setAudioStreamSetting(audioStreamSetting: HMCameraAudioStreamSetting): void;
 
 	updateAudioStreamSettingCompletionHandler(audioStreamSetting: HMCameraAudioStreamSetting, completion: (p1: NSError) => void): void;
 }
 
+/**
+ * @since 10.0
+ */
 declare class HMCameraStreamControl extends HMCameraControl {
 
 	static alloc(): HMCameraStreamControl; // inherited from NSObject
@@ -474,6 +759,9 @@ declare class HMCameraStreamControl extends HMCameraControl {
 	stopStream(): void;
 }
 
+/**
+ * @since 10.0
+ */
 interface HMCameraStreamControlDelegate extends NSObjectProtocol {
 
 	cameraStreamControlDidStartStream?(cameraStreamControl: HMCameraStreamControl): void;
@@ -496,20 +784,40 @@ declare const enum HMCameraStreamState {
 	NotStreaming = 4
 }
 
+/**
+ * @since 10.0
+ */
 declare class HMCameraView extends UIView {
 
 	static alloc(): HMCameraView; // inherited from NSObject
 
 	static appearance(): HMCameraView; // inherited from UIAppearance
 
+	/**
+	 * @since 8.0
+	 */
 	static appearanceForTraitCollection(trait: UITraitCollection): HMCameraView; // inherited from UIAppearance
 
+	/**
+	 * @since 8.0
+	 * @deprecated 9.0
+	 */
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): HMCameraView; // inherited from UIAppearance
 
+	/**
+	 * @since 9.0
+	 */
 	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): HMCameraView; // inherited from UIAppearance
 
+	/**
+	 * @since 5.0
+	 * @deprecated 9.0
+	 */
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): HMCameraView; // inherited from UIAppearance
 
+	/**
+	 * @since 9.0
+	 */
 	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): HMCameraView; // inherited from UIAppearance
 
 	static new(): HMCameraView; // inherited from NSObject
@@ -517,6 +825,9 @@ declare class HMCameraView extends UIView {
 	cameraSource: HMCameraSource;
 }
 
+/**
+ * @since 8.0
+ */
 declare class HMCharacteristic extends NSObject {
 
 	static alloc(): HMCharacteristic; // inherited from NSObject
@@ -525,6 +836,9 @@ declare class HMCharacteristic extends NSObject {
 
 	readonly characteristicType: string;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly localizedDescription: string;
 
 	readonly metadata: HMCharacteristicMetadata;
@@ -535,6 +849,9 @@ declare class HMCharacteristic extends NSObject {
 
 	readonly service: HMService;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly uniqueIdentifier: NSUUID;
 
 	readonly value: any;
@@ -548,6 +865,9 @@ declare class HMCharacteristic extends NSObject {
 	writeValueCompletionHandler(value: any, completion: (p1: NSError) => void): void;
 }
 
+/**
+ * @since 9.0
+ */
 declare class HMCharacteristicEvent<TriggerValueType> extends HMEvent implements NSCopying, NSMutableCopying {
 
 	static alloc<TriggerValueType>(): HMCharacteristicEvent<TriggerValueType>; // inherited from NSObject
@@ -556,21 +876,31 @@ declare class HMCharacteristicEvent<TriggerValueType> extends HMEvent implements
 
 	readonly characteristic: HMCharacteristic;
 
-	readonly triggerValue: TriggerValueType;
+	readonly triggerValue: any;
 
-	constructor(o: { characteristic: HMCharacteristic; triggerValue: TriggerValueType; });
+	constructor(o: { characteristic: HMCharacteristic; triggerValue: any; });
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	initWithCharacteristicTriggerValue(characteristic: HMCharacteristic, triggerValue: TriggerValueType): this;
+	initWithCharacteristicTriggerValue(characteristic: HMCharacteristic, triggerValue: any): this;
 
 	mutableCopyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	updateTriggerValueCompletionHandler(triggerValue: TriggerValueType, completion: (p1: NSError) => void): void;
+	/**
+	 * @since 9.0
+	 * @deprecated 11.0
+	 */
+	updateTriggerValueCompletionHandler(triggerValue: any, completion: (p1: NSError) => void): void;
 }
 
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicKeyPath: string;
 
+/**
+ * @since 8.0
+ */
 declare class HMCharacteristicMetadata extends NSObject {
 
 	static alloc(): HMCharacteristicMetadata; // inherited from NSObject
@@ -591,57 +921,135 @@ declare class HMCharacteristicMetadata extends NSObject {
 
 	readonly units: string;
 
+	/**
+	 * @since 10.0
+	 */
 	readonly validValues: NSArray<number>;
 }
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicMetadataFormatArray: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicMetadataFormatBool: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicMetadataFormatData: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicMetadataFormatDictionary: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicMetadataFormatFloat: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicMetadataFormatInt: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicMetadataFormatString: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicMetadataFormatTLV8: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicMetadataFormatUInt16: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicMetadataFormatUInt32: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicMetadataFormatUInt64: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicMetadataFormatUInt8: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicMetadataUnitsArcDegree: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicMetadataUnitsCelsius: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicMetadataUnitsFahrenheit: string;
 
+/**
+ * @since 9.3
+ */
 declare var HMCharacteristicMetadataUnitsLux: string;
 
+/**
+ * @since 10.0
+ */
 declare var HMCharacteristicMetadataUnitsMicrogramsPerCubicMeter: string;
 
+/**
+ * @since 10.0
+ */
 declare var HMCharacteristicMetadataUnitsPartsPerMillion: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicMetadataUnitsPercentage: string;
 
+/**
+ * @since 8.3
+ */
 declare var HMCharacteristicMetadataUnitsSeconds: string;
 
+/**
+ * @since 9.3
+ */
 declare var HMCharacteristicPropertyHidden: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicPropertyReadable: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicPropertySupportsEventNotification: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicPropertyWritable: string;
 
+/**
+ * @since 11.0
+ */
 declare class HMCharacteristicThresholdRangeEvent extends HMEvent implements NSCopying, NSMutableCopying {
 
 	static alloc(): HMCharacteristicThresholdRangeEvent; // inherited from NSObject
@@ -661,246 +1069,688 @@ declare class HMCharacteristicThresholdRangeEvent extends HMEvent implements NSC
 	mutableCopyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+/**
+ * @since 10.2
+ */
 declare var HMCharacteristicTypeActive: string;
 
+/**
+ * @since 18.0
+ */
+declare var HMCharacteristicTypeActiveIdentifier: string;
+
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicTypeAdminOnlyAccess: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicTypeAirParticulateDensity: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicTypeAirParticulateSize: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicTypeAirQuality: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicTypeAudioFeedback: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicTypeBatteryLevel: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicTypeBrightness: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicTypeCarbonDioxideDetected: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicTypeCarbonDioxideLevel: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicTypeCarbonDioxidePeakLevel: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicTypeCarbonMonoxideDetected: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicTypeCarbonMonoxideLevel: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicTypeCarbonMonoxidePeakLevel: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicTypeChargingState: string;
 
+/**
+ * @since 18.0
+ */
+declare var HMCharacteristicTypeClosedCaptions: string;
+
+/**
+ * @since 11.0
+ */
 declare var HMCharacteristicTypeColorTemperature: string;
 
+/**
+ * @since 18.0
+ */
+declare var HMCharacteristicTypeConfiguredName: string;
+
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicTypeContactState: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicTypeCoolingThreshold: string;
 
+/**
+ * @since 10.2
+ */
 declare var HMCharacteristicTypeCurrentAirPurifierState: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicTypeCurrentDoorState: string;
 
+/**
+ * @since 10.2
+ */
 declare var HMCharacteristicTypeCurrentFanState: string;
 
+/**
+ * @since 10.2
+ */
 declare var HMCharacteristicTypeCurrentHeaterCoolerState: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicTypeCurrentHeatingCooling: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicTypeCurrentHorizontalTilt: string;
 
+/**
+ * @since 10.2
+ */
 declare var HMCharacteristicTypeCurrentHumidifierDehumidifierState: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicTypeCurrentLightLevel: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicTypeCurrentLockMechanismState: string;
 
+/**
+ * @since 18.0
+ */
+declare var HMCharacteristicTypeCurrentMediaState: string;
+
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicTypeCurrentPosition: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicTypeCurrentRelativeHumidity: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicTypeCurrentSecuritySystemState: string;
 
+/**
+ * @since 10.2
+ */
 declare var HMCharacteristicTypeCurrentSlatState: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicTypeCurrentTemperature: string;
 
+/**
+ * @since 10.2
+ */
 declare var HMCharacteristicTypeCurrentTilt: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicTypeCurrentVerticalTilt: string;
 
+/**
+ * @since 18.0
+ */
+declare var HMCharacteristicTypeCurrentVisibilityState: string;
+
+/**
+ * @since 10.2
+ */
 declare var HMCharacteristicTypeDehumidifierThreshold: string;
 
+/**
+ * @since 10.0
+ */
 declare var HMCharacteristicTypeDigitalZoom: string;
 
+/**
+ * @since 10.2
+ */
 declare var HMCharacteristicTypeFilterChangeIndication: string;
 
+/**
+ * @since 10.2
+ */
 declare var HMCharacteristicTypeFilterLifeLevel: string;
 
+/**
+ * @since 10.2
+ */
 declare var HMCharacteristicTypeFilterResetChangeIndication: string;
 
+/**
+ * @since 8.0
+ * @deprecated 11.0
+ */
 declare var HMCharacteristicTypeFirmwareVersion: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicTypeHardwareVersion: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicTypeHeatingThreshold: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicTypeHoldPosition: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicTypeHue: string;
 
+/**
+ * @since 10.2
+ */
 declare var HMCharacteristicTypeHumidifierThreshold: string;
 
+/**
+ * @since 18.0
+ */
+declare var HMCharacteristicTypeIdentifier: string;
+
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicTypeIdentify: string;
 
+/**
+ * @since 10.0
+ */
 declare var HMCharacteristicTypeImageMirroring: string;
 
+/**
+ * @since 10.0
+ */
 declare var HMCharacteristicTypeImageRotation: string;
 
+/**
+ * @since 11.2
+ */
 declare var HMCharacteristicTypeInUse: string;
 
+/**
+ * @since 18.0
+ */
+declare var HMCharacteristicTypeInputDeviceType: string;
+
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicTypeInputEvent: string;
 
+/**
+ * @since 18.0
+ */
+declare var HMCharacteristicTypeInputSourceType: string;
+
+/**
+ * @since 11.2
+ */
 declare var HMCharacteristicTypeIsConfigured: string;
 
+/**
+ * @since 10.3
+ */
 declare var HMCharacteristicTypeLabelIndex: string;
 
+/**
+ * @since 10.3
+ */
 declare var HMCharacteristicTypeLabelNamespace: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicTypeLeakDetected: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicTypeLockManagementAutoSecureTimeout: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicTypeLockManagementControlPoint: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicTypeLockMechanismLastKnownAction: string;
 
+/**
+ * @since 10.2
+ */
 declare var HMCharacteristicTypeLockPhysicalControls: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicTypeLogs: string;
 
+/**
+ * @since 8.0
+ * @deprecated 11.0
+ */
 declare var HMCharacteristicTypeManufacturer: string;
 
+/**
+ * @since 8.0
+ * @deprecated 11.0
+ */
 declare var HMCharacteristicTypeModel: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicTypeMotionDetected: string;
 
+/**
+ * @since 10.0
+ */
 declare var HMCharacteristicTypeMute: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicTypeName: string;
 
+/**
+ * @since 10.0
+ */
 declare var HMCharacteristicTypeNightVision: string;
 
+/**
+ * @since 10.2
+ */
 declare var HMCharacteristicTypeNitrogenDioxideDensity: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicTypeObstructionDetected: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicTypeOccupancyDetected: string;
 
+/**
+ * @since 10.0
+ */
 declare var HMCharacteristicTypeOpticalZoom: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicTypeOutletInUse: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicTypeOutputState: string;
 
+/**
+ * @since 10.2
+ */
 declare var HMCharacteristicTypeOzoneDensity: string;
 
+/**
+ * @since 10.2
+ */
 declare var HMCharacteristicTypePM10Density: string;
 
+/**
+ * @since 10.2
+ */
 declare var HMCharacteristicTypePM2_5Density: string;
 
+/**
+ * @since 18.0
+ */
+declare var HMCharacteristicTypePictureMode: string;
+
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicTypePositionState: string;
 
+/**
+ * @since 18.0
+ */
+declare var HMCharacteristicTypePowerModeSelection: string;
+
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicTypePowerState: string;
 
+/**
+ * @since 11.2
+ */
 declare var HMCharacteristicTypeProgramMode: string;
 
+/**
+ * @since 11.2
+ */
 declare var HMCharacteristicTypeRemainingDuration: string;
 
+/**
+ * @since 18.0
+ */
+declare var HMCharacteristicTypeRemoteKey: string;
+
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicTypeRotationDirection: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicTypeRotationSpeed: string;
 
+/**
+ * @since 18.0
+ */
+declare var HMCharacteristicTypeRouterStatus: string;
+
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicTypeSaturation: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicTypeSecuritySystemAlarmType: string;
 
+/**
+ * @since 10.0
+ */
 declare var HMCharacteristicTypeSelectedStreamConfiguration: string;
 
+/**
+ * @since 8.0
+ * @deprecated 11.0
+ */
 declare var HMCharacteristicTypeSerialNumber: string;
 
+/**
+ * @since 11.2
+ */
 declare var HMCharacteristicTypeSetDuration: string;
 
+/**
+ * @since 10.0
+ */
 declare var HMCharacteristicTypeSetupStreamEndpoint: string;
 
+/**
+ * @since 10.2
+ */
 declare var HMCharacteristicTypeSlatType: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicTypeSmokeDetected: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicTypeSoftwareVersion: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicTypeStatusActive: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicTypeStatusFault: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicTypeStatusJammed: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicTypeStatusLowBattery: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicTypeStatusTampered: string;
 
+/**
+ * @since 10.0
+ */
 declare var HMCharacteristicTypeStreamingStatus: string;
 
+/**
+ * @since 10.2
+ */
 declare var HMCharacteristicTypeSulphurDioxideDensity: string;
 
+/**
+ * @since 10.0
+ */
 declare var HMCharacteristicTypeSupportedAudioStreamConfiguration: string;
 
+/**
+ * @since 10.0
+ */
 declare var HMCharacteristicTypeSupportedRTPConfiguration: string;
 
+/**
+ * @since 10.0
+ */
 declare var HMCharacteristicTypeSupportedVideoStreamConfiguration: string;
 
+/**
+ * @since 10.2
+ */
 declare var HMCharacteristicTypeSwingMode: string;
 
+/**
+ * @since 10.2
+ */
 declare var HMCharacteristicTypeTargetAirPurifierState: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicTypeTargetDoorState: string;
 
+/**
+ * @since 10.2
+ */
 declare var HMCharacteristicTypeTargetFanState: string;
 
+/**
+ * @since 10.2
+ */
 declare var HMCharacteristicTypeTargetHeaterCoolerState: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicTypeTargetHeatingCooling: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicTypeTargetHorizontalTilt: string;
 
+/**
+ * @since 10.2
+ */
 declare var HMCharacteristicTypeTargetHumidifierDehumidifierState: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicTypeTargetLockMechanismState: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicTypeTargetPosition: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicTypeTargetRelativeHumidity: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicTypeTargetSecuritySystemState: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicTypeTargetTemperature: string;
 
+/**
+ * @since 10.2
+ */
 declare var HMCharacteristicTypeTargetTilt: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicTypeTargetVerticalTilt: string;
 
+/**
+ * @since 18.0
+ */
+declare var HMCharacteristicTypeTargetVisibilityState: string;
+
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicTypeTemperatureUnits: string;
 
+/**
+ * @since 11.2
+ */
 declare var HMCharacteristicTypeValveType: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMCharacteristicTypeVersion: string;
 
+/**
+ * @since 10.2
+ */
 declare var HMCharacteristicTypeVolatileOrganicCompoundDensity: string;
 
+/**
+ * @since 10.0
+ */
 declare var HMCharacteristicTypeVolume: string;
 
+/**
+ * @since 18.0
+ */
+declare var HMCharacteristicTypeWANStatusList: string;
+
+/**
+ * @since 10.2
+ */
 declare var HMCharacteristicTypeWaterLevel: string;
 
+/**
+ * @since 18.0
+ */
+declare var HMCharacteristicTypeWiFiSatelliteStatus: string;
+
+/**
+ * @since 10.2
+ */
 declare const enum HMCharacteristicValueActivationState {
 
 	Inactive = 0,
@@ -908,6 +1758,9 @@ declare const enum HMCharacteristicValueActivationState {
 	Active = 1
 }
 
+/**
+ * @since 9.0
+ */
 declare const enum HMCharacteristicValueAirParticulateSize {
 
 	Size2_5 = 0,
@@ -915,6 +1768,9 @@ declare const enum HMCharacteristicValueAirParticulateSize {
 	Size10 = 1
 }
 
+/**
+ * @since 9.0
+ */
 declare const enum HMCharacteristicValueAirQuality {
 
 	Unknown = 0,
@@ -930,6 +1786,9 @@ declare const enum HMCharacteristicValueAirQuality {
 	Poor = 5
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum HMCharacteristicValueBatteryStatus {
 
 	Normal = 0,
@@ -937,6 +1796,9 @@ declare const enum HMCharacteristicValueBatteryStatus {
 	Low = 1
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum HMCharacteristicValueCarbonDioxideDetectionStatus {
 
 	NotDetected = 0,
@@ -944,6 +1806,9 @@ declare const enum HMCharacteristicValueCarbonDioxideDetectionStatus {
 	Detected = 1
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum HMCharacteristicValueCarbonMonoxideDetectionStatus {
 
 	NotDetected = 0,
@@ -951,6 +1816,9 @@ declare const enum HMCharacteristicValueCarbonMonoxideDetectionStatus {
 	Detected = 1
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum HMCharacteristicValueChargingState {
 
 	None = 0,
@@ -960,6 +1828,19 @@ declare const enum HMCharacteristicValueChargingState {
 	NotChargeable = 2
 }
 
+/**
+ * @since 18.0
+ */
+declare const enum HMCharacteristicValueClosedCaptions {
+
+	Disabled = 0,
+
+	Enabled = 1
+}
+
+/**
+ * @since 11.2
+ */
 declare const enum HMCharacteristicValueConfigurationState {
 
 	NotConfigured = 0,
@@ -967,6 +1848,9 @@ declare const enum HMCharacteristicValueConfigurationState {
 	Configured = 1
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum HMCharacteristicValueContactState {
 
 	Detected = 0,
@@ -974,6 +1858,9 @@ declare const enum HMCharacteristicValueContactState {
 	None = 1
 }
 
+/**
+ * @since 10.2
+ */
 declare const enum HMCharacteristicValueCurrentAirPurifierState {
 
 	Inactive = 0,
@@ -983,6 +1870,9 @@ declare const enum HMCharacteristicValueCurrentAirPurifierState {
 	Active = 2
 }
 
+/**
+ * @since 10.2
+ */
 declare const enum HMCharacteristicValueCurrentFanState {
 
 	Inactive = 0,
@@ -992,6 +1882,9 @@ declare const enum HMCharacteristicValueCurrentFanState {
 	Active = 2
 }
 
+/**
+ * @since 10.2
+ */
 declare const enum HMCharacteristicValueCurrentHeaterCoolerState {
 
 	Inactive = 0,
@@ -1003,6 +1896,9 @@ declare const enum HMCharacteristicValueCurrentHeaterCoolerState {
 	Cooling = 3
 }
 
+/**
+ * @since 8.0
+ */
 declare const enum HMCharacteristicValueCurrentHeatingCooling {
 
 	Off = 0,
@@ -1012,6 +1908,9 @@ declare const enum HMCharacteristicValueCurrentHeatingCooling {
 	Cool = 2
 }
 
+/**
+ * @since 10.2
+ */
 declare const enum HMCharacteristicValueCurrentHumidifierDehumidifierState {
 
 	Inactive = 0,
@@ -1023,6 +1922,27 @@ declare const enum HMCharacteristicValueCurrentHumidifierDehumidifierState {
 	Dehumidifying = 3
 }
 
+/**
+ * @since 18.0
+ */
+declare const enum HMCharacteristicValueCurrentMediaState {
+
+	Playing = 0,
+
+	Paused = 1,
+
+	Stopped = 2,
+
+	Unknown = 3,
+
+	Loading = 4,
+
+	Interrupted = 5
+}
+
+/**
+ * @since 9.0
+ */
 declare const enum HMCharacteristicValueCurrentSecuritySystemState {
 
 	StayArm = 0,
@@ -1036,6 +1956,9 @@ declare const enum HMCharacteristicValueCurrentSecuritySystemState {
 	Triggered = 4
 }
 
+/**
+ * @since 10.2
+ */
 declare const enum HMCharacteristicValueCurrentSlatState {
 
 	Stationary = 0,
@@ -1045,6 +1968,23 @@ declare const enum HMCharacteristicValueCurrentSlatState {
 	Oscillating = 2
 }
 
+/**
+ * @since 18.0
+ */
+declare const enum HMCharacteristicValueCurrentVisibilityState {
+
+	Shown = 0,
+
+	Hidden = 1,
+
+	Connected = 2,
+
+	AlwaysShown = 3
+}
+
+/**
+ * @since 8.0
+ */
 declare const enum HMCharacteristicValueDoorState {
 
 	Open = 0,
@@ -1058,6 +1998,9 @@ declare const enum HMCharacteristicValueDoorState {
 	Stopped = 4
 }
 
+/**
+ * @since 10.2
+ */
 declare const enum HMCharacteristicValueFilterChange {
 
 	NotNeeded = 0,
@@ -1065,6 +2008,9 @@ declare const enum HMCharacteristicValueFilterChange {
 	Needed = 1
 }
 
+/**
+ * @since 8.0
+ */
 declare const enum HMCharacteristicValueHeatingCooling {
 
 	Off = 0,
@@ -1076,6 +2022,29 @@ declare const enum HMCharacteristicValueHeatingCooling {
 	Auto = 3
 }
 
+/**
+ * @since 18.0
+ */
+declare const enum HMCharacteristicValueInputDeviceType {
+
+	Other = 0,
+
+	TV = 1,
+
+	Recording = 2,
+
+	Tuner = 3,
+
+	Playback = 4,
+
+	AudioSystem = 5,
+
+	None = 6
+}
+
+/**
+ * @since 10.3
+ */
 declare const enum HMCharacteristicValueInputEvent {
 
 	SinglePress = 0,
@@ -1085,6 +2054,37 @@ declare const enum HMCharacteristicValueInputEvent {
 	LongPress = 2
 }
 
+/**
+ * @since 18.0
+ */
+declare const enum HMCharacteristicValueInputSourceType {
+
+	Other = 0,
+
+	HomeScreen = 1,
+
+	Tuner = 2,
+
+	HDMI = 3,
+
+	CompositeVideo = 4,
+
+	SVideo = 5,
+
+	ComponentVideo = 6,
+
+	DVI = 7,
+
+	AirPlay = 8,
+
+	USB = 9,
+
+	Application = 10
+}
+
+/**
+ * @since 10.0
+ */
 declare const enum HMCharacteristicValueJammedStatus {
 
 	None = 0,
@@ -1092,8 +2092,14 @@ declare const enum HMCharacteristicValueJammedStatus {
 	Jammed = 1
 }
 
+/**
+ * @since 9.0
+ */
 declare var HMCharacteristicValueKeyPath: string;
 
+/**
+ * @since 10.3
+ */
 declare const enum HMCharacteristicValueLabelNamespace {
 
 	Dot = 0,
@@ -1101,6 +2107,9 @@ declare const enum HMCharacteristicValueLabelNamespace {
 	Numeral = 1
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum HMCharacteristicValueLeakStatus {
 
 	None = 0,
@@ -1108,6 +2117,9 @@ declare const enum HMCharacteristicValueLeakStatus {
 	Detected = 1
 }
 
+/**
+ * @since 8.0
+ */
 declare const enum HMCharacteristicValueLockMechanismLastKnownAction {
 
 	SecuredUsingPhysicalMovementInterior = 0,
@@ -1133,6 +2145,9 @@ declare const enum HMCharacteristicValueLockMechanismLastKnownAction {
 	UnsecuredUsingPhysicalMovement = 10
 }
 
+/**
+ * @since 8.0
+ */
 declare const enum HMCharacteristicValueLockMechanismState {
 
 	Unsecured = 0,
@@ -1144,6 +2159,9 @@ declare const enum HMCharacteristicValueLockMechanismState {
 	Unknown = 3
 }
 
+/**
+ * @since 10.2
+ */
 declare const enum HMCharacteristicValueLockPhysicalControlsState {
 
 	NotLocked = 0,
@@ -1151,6 +2169,9 @@ declare const enum HMCharacteristicValueLockPhysicalControlsState {
 	Locked = 1
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum HMCharacteristicValueOccupancyStatus {
 
 	NotOccupied = 0,
@@ -1158,6 +2179,43 @@ declare const enum HMCharacteristicValueOccupancyStatus {
 	Occupied = 1
 }
 
+/**
+ * @since 18.0
+ */
+declare const enum HMCharacteristicValuePictureMode {
+
+	Standard = 0,
+
+	Movie = 1,
+
+	Sport = 2,
+
+	Game = 3,
+
+	Photo = 4,
+
+	Vivid = 5,
+
+	Dark = 6,
+
+	Bright = 7,
+
+	Computer = 8,
+
+	Night = 9,
+
+	Calibrated = 10,
+
+	Custom1 = 11,
+
+	Custom2 = 12,
+
+	Custom3 = 13
+}
+
+/**
+ * @since 9.0
+ */
 declare const enum HMCharacteristicValuePositionState {
 
 	Closing = 0,
@@ -1167,6 +2225,19 @@ declare const enum HMCharacteristicValuePositionState {
 	Stopped = 2
 }
 
+/**
+ * @since 18.0
+ */
+declare const enum HMCharacteristicValuePowerModeSelection {
+
+	Show = 0,
+
+	Hide = 1
+}
+
+/**
+ * @since 11.2
+ */
 declare const enum HMCharacteristicValueProgramMode {
 
 	NotScheduled = 0,
@@ -1176,6 +2247,49 @@ declare const enum HMCharacteristicValueProgramMode {
 	ScheduleOverriddenToManual = 2
 }
 
+/**
+ * @since 18.0
+ */
+declare const enum HMCharacteristicValueRemoteKey {
+
+	Rewind = 0,
+
+	FastForward = 1,
+
+	NextTrack = 2,
+
+	PreviousTrack = 3,
+
+	ArrowUp = 4,
+
+	ArrowDown = 5,
+
+	ArrowLeft = 6,
+
+	ArrowRight = 7,
+
+	Select = 8,
+
+	Back = 9,
+
+	Exit = 10,
+
+	PlayPause = 11,
+
+	Play = 12,
+
+	Pause = 13,
+
+	Menu = 14,
+
+	Info = 15,
+
+	Home = 16
+}
+
+/**
+ * @since 8.0
+ */
 declare const enum HMCharacteristicValueRotationDirection {
 
 	Clockwise = 0,
@@ -1183,6 +2297,19 @@ declare const enum HMCharacteristicValueRotationDirection {
 	CounterClockwise = 1
 }
 
+/**
+ * @since 18.0
+ */
+declare const enum HMCharacteristicValueRouterStatus {
+
+	Ready = 0,
+
+	NotReady = 1
+}
+
+/**
+ * @since 10.0
+ */
 declare const enum HMCharacteristicValueSecuritySystemAlarmType {
 
 	NoAlarm = 0,
@@ -1190,6 +2317,9 @@ declare const enum HMCharacteristicValueSecuritySystemAlarmType {
 	Unknown = 1
 }
 
+/**
+ * @since 10.2
+ */
 declare const enum HMCharacteristicValueSlatType {
 
 	Horizontal = 0,
@@ -1197,6 +2327,9 @@ declare const enum HMCharacteristicValueSlatType {
 	Vertical = 1
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum HMCharacteristicValueSmokeDetectionStatus {
 
 	None = 0,
@@ -1204,6 +2337,9 @@ declare const enum HMCharacteristicValueSmokeDetectionStatus {
 	Detected = 1
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum HMCharacteristicValueStatusFault {
 
 	NoFault = 0,
@@ -1211,6 +2347,9 @@ declare const enum HMCharacteristicValueStatusFault {
 	GeneralFault = 1
 }
 
+/**
+ * @since 10.2
+ */
 declare const enum HMCharacteristicValueSwingMode {
 
 	Disabled = 0,
@@ -1218,6 +2357,9 @@ declare const enum HMCharacteristicValueSwingMode {
 	Enabled = 1
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum HMCharacteristicValueTamperedStatus {
 
 	None = 0,
@@ -1225,6 +2367,9 @@ declare const enum HMCharacteristicValueTamperedStatus {
 	Tampered = 1
 }
 
+/**
+ * @since 10.2
+ */
 declare const enum HMCharacteristicValueTargetAirPurifierState {
 
 	Manual = 0,
@@ -1232,6 +2377,9 @@ declare const enum HMCharacteristicValueTargetAirPurifierState {
 	Automatic = 1
 }
 
+/**
+ * @since 8.0
+ */
 declare const enum HMCharacteristicValueTargetDoorState {
 
 	Open = 0,
@@ -1239,6 +2387,9 @@ declare const enum HMCharacteristicValueTargetDoorState {
 	Closed = 1
 }
 
+/**
+ * @since 10.2
+ */
 declare const enum HMCharacteristicValueTargetFanState {
 
 	Manual = 0,
@@ -1246,6 +2397,9 @@ declare const enum HMCharacteristicValueTargetFanState {
 	Automatic = 1
 }
 
+/**
+ * @since 10.2
+ */
 declare const enum HMCharacteristicValueTargetHeaterCoolerState {
 
 	Automatic = 0,
@@ -1255,6 +2409,9 @@ declare const enum HMCharacteristicValueTargetHeaterCoolerState {
 	Cool = 2
 }
 
+/**
+ * @since 10.2
+ */
 declare const enum HMCharacteristicValueTargetHumidifierDehumidifierState {
 
 	Automatic = 0,
@@ -1264,6 +2421,9 @@ declare const enum HMCharacteristicValueTargetHumidifierDehumidifierState {
 	Dehumidify = 2
 }
 
+/**
+ * @since 8.0
+ */
 declare const enum HMCharacteristicValueTargetLockMechanismState {
 
 	Unsecured = 0,
@@ -1271,6 +2431,9 @@ declare const enum HMCharacteristicValueTargetLockMechanismState {
 	Secured = 1
 }
 
+/**
+ * @since 9.0
+ */
 declare const enum HMCharacteristicValueTargetSecuritySystemState {
 
 	StayArm = 0,
@@ -1282,6 +2445,19 @@ declare const enum HMCharacteristicValueTargetSecuritySystemState {
 	Disarm = 3
 }
 
+/**
+ * @since 18.0
+ */
+declare const enum HMCharacteristicValueTargetVisibilityState {
+
+	Show = 0,
+
+	Hide = 1
+}
+
+/**
+ * @since 8.0
+ */
 declare const enum HMCharacteristicValueTemperatureUnit {
 
 	Celsius = 0,
@@ -1289,6 +2465,9 @@ declare const enum HMCharacteristicValueTemperatureUnit {
 	Fahrenheit = 1
 }
 
+/**
+ * @since 11.2
+ */
 declare const enum HMCharacteristicValueUsageState {
 
 	NotInUse = 0,
@@ -1296,6 +2475,9 @@ declare const enum HMCharacteristicValueUsageState {
 	InUse = 1
 }
 
+/**
+ * @since 11.2
+ */
 declare const enum HMCharacteristicValueValveType {
 
 	GenericValve = 0,
@@ -1307,6 +2489,21 @@ declare const enum HMCharacteristicValueValveType {
 	WaterFaucet = 3
 }
 
+/**
+ * @since 18.0
+ */
+declare const enum HMCharacteristicValueWiFiSatelliteStatus {
+
+	Unknown = 0,
+
+	Connected = 1,
+
+	NotConnected = 2
+}
+
+/**
+ * @since 8.0
+ */
 declare class HMCharacteristicWriteAction<TargetValueType> extends HMAction {
 
 	static alloc<TargetValueType>(): HMCharacteristicWriteAction<TargetValueType>; // inherited from NSObject
@@ -1315,15 +2512,18 @@ declare class HMCharacteristicWriteAction<TargetValueType> extends HMAction {
 
 	readonly characteristic: HMCharacteristic;
 
-	readonly targetValue: TargetValueType;
+	readonly targetValue: any;
 
-	constructor(o: { characteristic: HMCharacteristic; targetValue: TargetValueType; });
+	constructor(o: { characteristic: HMCharacteristic; targetValue: any; });
 
-	initWithCharacteristicTargetValue(characteristic: HMCharacteristic, targetValue: TargetValueType): this;
+	initWithCharacteristicTargetValue(characteristic: HMCharacteristic, targetValue: any): this;
 
-	updateTargetValueCompletionHandler(targetValue: TargetValueType, completion: (p1: NSError) => void): void;
+	updateTargetValueCompletionHandler(targetValue: any, completion: (p1: NSError) => void): void;
 }
 
+/**
+ * @since 11.0
+ */
 declare class HMDurationEvent extends HMTimeEvent implements NSCopying, NSMutableCopying {
 
 	static alloc(): HMDurationEvent; // inherited from NSObject
@@ -1341,6 +2541,9 @@ declare class HMDurationEvent extends HMTimeEvent implements NSCopying, NSMutabl
 	mutableCopyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+/**
+ * @since 8.0
+ */
 declare const enum HMErrorCode {
 
 	UnexpectedError = -1,
@@ -1554,12 +2757,21 @@ declare const enum HMErrorCode {
 	PartialCommunicationFailure = 104
 }
 
+/**
+ * @since 8.0
+ */
 declare var HMErrorDomain: string;
 
+/**
+ * @since 9.0
+ */
 declare class HMEvent extends NSObject {
 
 	static alloc(): HMEvent; // inherited from NSObject
 
+	/**
+	 * @since 11.0
+	 */
 	static isSupportedForHome(home: HMHome): boolean;
 
 	static new(): HMEvent; // inherited from NSObject
@@ -1567,6 +2779,9 @@ declare class HMEvent extends NSObject {
 	readonly uniqueIdentifier: NSUUID;
 }
 
+/**
+ * @since 9.0
+ */
 declare class HMEventTrigger extends HMTrigger {
 
 	static alloc(): HMEventTrigger; // inherited from NSObject
@@ -1575,58 +2790,119 @@ declare class HMEventTrigger extends HMTrigger {
 
 	static predicateForEvaluatingTriggerOccurringAfterDateWithComponents(dateComponents: NSDateComponents): NSPredicate;
 
+	/**
+	 * @since 11.0
+	 */
 	static predicateForEvaluatingTriggerOccurringAfterSignificantEvent(significantEvent: HMSignificantTimeEvent): NSPredicate;
 
+	/**
+	 * @since 9.0
+	 * @deprecated 11.0
+	 */
 	static predicateForEvaluatingTriggerOccurringAfterSignificantEventApplyingOffset(significantEvent: string, offset: NSDateComponents): NSPredicate;
 
 	static predicateForEvaluatingTriggerOccurringBeforeDateWithComponents(dateComponents: NSDateComponents): NSPredicate;
 
+	/**
+	 * @since 11.0
+	 */
 	static predicateForEvaluatingTriggerOccurringBeforeSignificantEvent(significantEvent: HMSignificantTimeEvent): NSPredicate;
 
+	/**
+	 * @since 9.0
+	 * @deprecated 11.0
+	 */
 	static predicateForEvaluatingTriggerOccurringBeforeSignificantEventApplyingOffset(significantEvent: string, offset: NSDateComponents): NSPredicate;
 
+	/**
+	 * @since 11.0
+	 */
 	static predicateForEvaluatingTriggerOccurringBetweenDateWithComponentsSecondDateWithComponents(firstDateComponents: NSDateComponents, secondDateWithComponents: NSDateComponents): NSPredicate;
 
+	/**
+	 * @since 11.0
+	 */
 	static predicateForEvaluatingTriggerOccurringBetweenSignificantEventSecondSignificantEvent(firstSignificantEvent: HMSignificantTimeEvent, secondSignificantEvent: HMSignificantTimeEvent): NSPredicate;
 
 	static predicateForEvaluatingTriggerOccurringOnDateWithComponents(dateComponents: NSDateComponents): NSPredicate;
 
 	static predicateForEvaluatingTriggerWithCharacteristicRelatedByToValue(characteristic: HMCharacteristic, operatorType: NSPredicateOperatorType, value: any): NSPredicate;
 
+	/**
+	 * @since 11.0
+	 */
 	static predicateForEvaluatingTriggerWithPresence(presenceEvent: HMPresenceEvent): NSPredicate;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly endEvents: NSArray<HMEvent>;
 
 	readonly events: NSArray<HMEvent>;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly executeOnce: boolean;
 
 	readonly predicate: NSPredicate;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly recurrences: NSArray<NSDateComponents>;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly triggerActivationState: HMEventTriggerActivationState;
 
+	/**
+	 * @since 11.0
+	 */
 	constructor(o: { name: string; events: NSArray<HMEvent> | HMEvent[]; endEvents: NSArray<HMEvent> | HMEvent[]; recurrences: NSArray<NSDateComponents> | NSDateComponents[]; predicate: NSPredicate; });
 
 	constructor(o: { name: string; events: NSArray<HMEvent> | HMEvent[]; predicate: NSPredicate; });
 
+	/**
+	 * @since 9.0
+	 * @deprecated 11.0
+	 */
 	addEventCompletionHandler(event: HMEvent, completion: (p1: NSError) => void): void;
 
+	/**
+	 * @since 11.0
+	 */
 	initWithNameEventsEndEventsRecurrencesPredicate(name: string, events: NSArray<HMEvent> | HMEvent[], endEvents: NSArray<HMEvent> | HMEvent[], recurrences: NSArray<NSDateComponents> | NSDateComponents[], predicate: NSPredicate): this;
 
 	initWithNameEventsPredicate(name: string, events: NSArray<HMEvent> | HMEvent[], predicate: NSPredicate): this;
 
+	/**
+	 * @since 9.0
+	 * @deprecated 11.0
+	 */
 	removeEventCompletionHandler(event: HMEvent, completion: (p1: NSError) => void): void;
 
+	/**
+	 * @since 11.0
+	 */
 	updateEndEventsCompletionHandler(endEvents: NSArray<HMEvent> | HMEvent[], completion: (p1: NSError) => void): void;
 
+	/**
+	 * @since 11.0
+	 */
 	updateEventsCompletionHandler(events: NSArray<HMEvent> | HMEvent[], completion: (p1: NSError) => void): void;
 
+	/**
+	 * @since 11.0
+	 */
 	updateExecuteOnceCompletionHandler(executeOnce: boolean, completion: (p1: NSError) => void): void;
 
 	updatePredicateCompletionHandler(predicate: NSPredicate, completion: (p1: NSError) => void): void;
 
+	/**
+	 * @since 11.0
+	 */
 	updateRecurrencesCompletionHandler(recurrences: NSArray<NSDateComponents> | NSDateComponents[], completion: (p1: NSError) => void): void;
 }
 
@@ -1643,6 +2919,9 @@ declare const enum HMEventTriggerActivationState {
 	Enabled = 4
 }
 
+/**
+ * @since 8.0
+ */
 declare class HMHome extends NSObject {
 
 	static alloc(): HMHome; // inherited from NSObject
@@ -1653,14 +2932,26 @@ declare class HMHome extends NSObject {
 
 	readonly actionSets: NSArray<HMActionSet>;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly currentUser: HMUser;
 
 	delegate: HMHomeDelegate;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly homeHubState: HMHomeHubState;
 
+	/**
+	 * @since 16.1
+	 */
 	readonly matterControllerID: string;
 
+	/**
+	 * @since 16.1
+	 */
 	readonly matterControllerXPCConnectBlock: () => NSXPCConnection;
 
 	readonly name: string;
@@ -1671,12 +2962,22 @@ declare class HMHome extends NSObject {
 
 	readonly serviceGroups: NSArray<HMServiceGroup>;
 
+	/**
+	 * @since 13.2
+	 */
 	readonly supportsAddingNetworkRouter: boolean;
 
 	readonly triggers: NSArray<HMTrigger>;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly uniqueIdentifier: NSUUID;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 9.0
+	 */
 	readonly users: NSArray<HMUser>;
 
 	readonly zones: NSArray<HMZone>;
@@ -1685,8 +2986,16 @@ declare class HMHome extends NSObject {
 
 	addActionSetWithNameCompletionHandler(actionSetName: string, completion: (p1: HMActionSet, p2: NSError) => void): void;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 15.4
+	 */
 	addAndSetupAccessoriesWithCompletionHandler(completion: (p1: NSError) => void): void;
 
+	/**
+	 * @since 11.3
+	 * @deprecated 15.0
+	 */
 	addAndSetupAccessoriesWithPayloadCompletionHandler(payload: HMAccessorySetupPayload, completion: (p1: NSArray<HMAccessory>, p2: NSError) => void): void;
 
 	addRoomWithNameCompletionHandler(roomName: string, completion: (p1: HMRoom, p2: NSError) => void): void;
@@ -1695,18 +3004,31 @@ declare class HMHome extends NSObject {
 
 	addTriggerCompletionHandler(trigger: HMTrigger, completion: (p1: NSError) => void): void;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 9.0
+	 */
 	addUserWithCompletionHandler(completion: (p1: HMUser, p2: NSError) => void): void;
 
 	addZoneWithNameCompletionHandler(zoneName: string, completion: (p1: HMZone, p2: NSError) => void): void;
 
 	assignAccessoryToRoomCompletionHandler(accessory: HMAccessory, room: HMRoom, completion: (p1: NSError) => void): void;
 
+	/**
+	 * @since 9.0
+	 */
 	builtinActionSetOfType(actionSetType: string): HMActionSet;
 
 	executeActionSetCompletionHandler(actionSet: HMActionSet, completion: (p1: NSError) => void): void;
 
+	/**
+	 * @since 9.0
+	 */
 	homeAccessControlForUser(user: HMUser): HMHomeAccessControl;
 
+	/**
+	 * @since 9.0
+	 */
 	manageUsersWithCompletionHandler(completion: (p1: NSError) => void): void;
 
 	removeAccessoryCompletionHandler(accessory: HMAccessory, completion: (p1: NSError) => void): void;
@@ -1719,6 +3041,10 @@ declare class HMHome extends NSObject {
 
 	removeTriggerCompletionHandler(trigger: HMTrigger, completion: (p1: NSError) => void): void;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 9.0
+	 */
 	removeUserCompletionHandler(user: HMUser, completion: (p1: NSError) => void): void;
 
 	removeZoneCompletionHandler(zone: HMZone, completion: (p1: NSError) => void): void;
@@ -1732,6 +3058,9 @@ declare class HMHome extends NSObject {
 	updateNameCompletionHandler(name: string, completion: (p1: NSError) => void): void;
 }
 
+/**
+ * @since 9.0
+ */
 declare class HMHomeAccessControl extends HMAccessControl {
 
 	static alloc(): HMHomeAccessControl; // inherited from NSObject
@@ -1741,6 +3070,9 @@ declare class HMHomeAccessControl extends HMAccessControl {
 	readonly administrator: boolean;
 }
 
+/**
+ * @since 8.0
+ */
 interface HMHomeDelegate extends NSObjectProtocol {
 
 	homeDidAddAccessory?(home: HMHome, accessory: HMAccessory): void;
@@ -1783,10 +3115,16 @@ interface HMHomeDelegate extends NSObjectProtocol {
 
 	homeDidUnblockAccessory?(home: HMHome, accessory: HMAccessory): void;
 
+	/**
+	 * @since 11.0
+	 */
 	homeDidUpdateAccessControlForCurrentUser?(home: HMHome): void;
 
 	homeDidUpdateActionsForActionSet?(home: HMHome, actionSet: HMActionSet): void;
 
+	/**
+	 * @since 11.0
+	 */
 	homeDidUpdateHomeHubState?(home: HMHome, homeHubState: HMHomeHubState): void;
 
 	homeDidUpdateName?(home: HMHome): void;
@@ -1803,6 +3141,9 @@ interface HMHomeDelegate extends NSObjectProtocol {
 
 	homeDidUpdateRoomForAccessory?(home: HMHome, room: HMRoom, accessory: HMAccessory): void;
 
+	/**
+	 * @since 13.2
+	 */
 	homeDidUpdateSupportedFeatures?(home: HMHome): void;
 
 	homeDidUpdateTrigger?(home: HMHome, trigger: HMTrigger): void;
@@ -1812,6 +3153,9 @@ declare var HMHomeDelegate: {
 	prototype: HMHomeDelegate;
 };
 
+/**
+ * @since 11.0
+ */
 declare const enum HMHomeHubState {
 
 	NotAvailable = 0,
@@ -1821,27 +3165,44 @@ declare const enum HMHomeHubState {
 	Disconnected = 2
 }
 
+/**
+ * @since 8.0
+ */
 declare class HMHomeManager extends NSObject {
 
 	static alloc(): HMHomeManager; // inherited from NSObject
 
 	static new(): HMHomeManager; // inherited from NSObject
 
+	/**
+	 * @since 13.0
+	 */
 	readonly authorizationStatus: HMHomeManagerAuthorizationStatus;
 
 	delegate: HMHomeManagerDelegate;
 
 	readonly homes: NSArray<HMHome>;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 16.1
+	 */
 	readonly primaryHome: HMHome;
 
 	addHomeWithNameCompletionHandler(homeName: string, completion: (p1: HMHome, p2: NSError) => void): void;
 
 	removeHomeCompletionHandler(home: HMHome, completion: (p1: NSError) => void): void;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 16.1
+	 */
 	updatePrimaryHomeCompletionHandler(home: HMHome, completion: (p1: NSError) => void): void;
 }
 
+/**
+ * @since 13.0
+ */
 declare const enum HMHomeManagerAuthorizationStatus {
 
 	Determined = 1,
@@ -1851,6 +3212,9 @@ declare const enum HMHomeManagerAuthorizationStatus {
 	Authorized = 4
 }
 
+/**
+ * @since 8.0
+ */
 interface HMHomeManagerDelegate extends NSObjectProtocol {
 
 	homeManagerDidAddHome?(manager: HMHomeManager, home: HMHome): void;
@@ -1859,6 +3223,9 @@ interface HMHomeManagerDelegate extends NSObjectProtocol {
 
 	homeManagerDidRemoveHome?(manager: HMHomeManager, home: HMHome): void;
 
+	/**
+	 * @since 13.0
+	 */
 	homeManagerDidUpdateAuthorizationStatus?(manager: HMHomeManager, status: HMHomeManagerAuthorizationStatus): void;
 
 	homeManagerDidUpdateHomes?(manager: HMHomeManager): void;
@@ -1870,6 +3237,9 @@ declare var HMHomeManagerDelegate: {
 	prototype: HMHomeManagerDelegate;
 };
 
+/**
+ * @since 9.0
+ */
 declare class HMLocationEvent extends HMEvent implements NSCopying, NSMutableCopying {
 
 	static alloc(): HMLocationEvent; // inherited from NSObject
@@ -1886,9 +3256,16 @@ declare class HMLocationEvent extends HMEvent implements NSCopying, NSMutableCop
 
 	mutableCopyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
+	/**
+	 * @since 9.0
+	 * @deprecated 11.0
+	 */
 	updateRegionCompletionHandler(region: CLRegion, completion: (p1: NSError) => void): void;
 }
 
+/**
+ * @since 11.0
+ */
 declare class HMMutableCalendarEvent extends HMCalendarEvent {
 
 	static alloc(): HMMutableCalendarEvent; // inherited from NSObject
@@ -1898,6 +3275,9 @@ declare class HMMutableCalendarEvent extends HMCalendarEvent {
 	fireDateComponents: NSDateComponents;
 }
 
+/**
+ * @since 11.0
+ */
 declare class HMMutableCharacteristicEvent<TriggerValueType extends NSObject> extends HMCharacteristicEvent<NSObject> {
 
 	static alloc(): any; // inherited from NSObject
@@ -1906,9 +3286,12 @@ declare class HMMutableCharacteristicEvent<TriggerValueType extends NSObject> ex
 
 	characteristic: HMCharacteristic;
 
-	triggerValue: TriggerValueType;
+	triggerValue: any;
 }
 
+/**
+ * @since 11.0
+ */
 declare class HMMutableCharacteristicThresholdRangeEvent extends HMCharacteristicThresholdRangeEvent {
 
 	static alloc(): HMMutableCharacteristicThresholdRangeEvent; // inherited from NSObject
@@ -1920,6 +3303,9 @@ declare class HMMutableCharacteristicThresholdRangeEvent extends HMCharacteristi
 	thresholdRange: HMNumberRange;
 }
 
+/**
+ * @since 11.0
+ */
 declare class HMMutableDurationEvent extends HMDurationEvent {
 
 	static alloc(): HMMutableDurationEvent; // inherited from NSObject
@@ -1929,6 +3315,9 @@ declare class HMMutableDurationEvent extends HMDurationEvent {
 	duration: number;
 }
 
+/**
+ * @since 11.0
+ */
 declare class HMMutableLocationEvent extends HMLocationEvent {
 
 	static alloc(): HMMutableLocationEvent; // inherited from NSObject
@@ -1938,6 +3327,9 @@ declare class HMMutableLocationEvent extends HMLocationEvent {
 	region: CLRegion;
 }
 
+/**
+ * @since 11.0
+ */
 declare class HMMutablePresenceEvent extends HMPresenceEvent {
 
 	static alloc(): HMMutablePresenceEvent; // inherited from NSObject
@@ -1949,6 +3341,9 @@ declare class HMMutablePresenceEvent extends HMPresenceEvent {
 	presenceUserType: HMPresenceEventUserType;
 }
 
+/**
+ * @since 11.0
+ */
 declare class HMMutableSignificantTimeEvent extends HMSignificantTimeEvent {
 
 	static alloc(): HMMutableSignificantTimeEvent; // inherited from NSObject
@@ -1960,6 +3355,9 @@ declare class HMMutableSignificantTimeEvent extends HMSignificantTimeEvent {
 	significantEvent: string;
 }
 
+/**
+ * @since 13.0
+ */
 declare class HMNetworkConfigurationProfile extends HMAccessoryProfile {
 
 	static alloc(): HMNetworkConfigurationProfile; // inherited from NSObject
@@ -1971,6 +3369,9 @@ declare class HMNetworkConfigurationProfile extends HMAccessoryProfile {
 	readonly networkAccessRestricted: boolean;
 }
 
+/**
+ * @since 13.0
+ */
 interface HMNetworkConfigurationProfileDelegate extends NSObjectProtocol {
 
 	profileDidUpdateNetworkAccessMode?(profile: HMNetworkConfigurationProfile): void;
@@ -1980,6 +3381,9 @@ declare var HMNetworkConfigurationProfileDelegate: {
 	prototype: HMNetworkConfigurationProfileDelegate;
 };
 
+/**
+ * @since 11.0
+ */
 declare class HMNumberRange extends NSObject {
 
 	static alloc(): HMNumberRange; // inherited from NSObject
@@ -1997,6 +3401,9 @@ declare class HMNumberRange extends NSObject {
 	readonly minValue: number;
 }
 
+/**
+ * @since 11.0
+ */
 declare class HMPresenceEvent extends HMEvent implements NSCopying, NSMutableCopying {
 
 	static alloc(): HMPresenceEvent; // inherited from NSObject
@@ -2040,8 +3447,14 @@ declare const enum HMPresenceEventUserType {
 	CustomUsers = 3
 }
 
+/**
+ * @since 11.0
+ */
 declare var HMPresenceKeyPath: string;
 
+/**
+ * @since 8.0
+ */
 declare class HMRoom extends NSObject {
 
 	static alloc(): HMRoom; // inherited from NSObject
@@ -2052,11 +3465,17 @@ declare class HMRoom extends NSObject {
 
 	readonly name: string;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly uniqueIdentifier: NSUUID;
 
 	updateNameCompletionHandler(name: string, completion: (p1: NSError) => void): void;
 }
 
+/**
+ * @since 8.0
+ */
 declare class HMService extends NSObject {
 
 	static alloc(): HMService; // inherited from NSObject
@@ -2069,18 +3488,33 @@ declare class HMService extends NSObject {
 
 	readonly characteristics: NSArray<HMCharacteristic>;
 
+	/**
+	 * @since 10.0
+	 */
 	readonly linkedServices: NSArray<HMService>;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly localizedDescription: string;
 
 	readonly name: string;
 
+	/**
+	 * @since 10.0
+	 */
 	readonly primaryService: boolean;
 
 	readonly serviceType: string;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly uniqueIdentifier: NSUUID;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly userInteractive: boolean;
 
 	updateAssociatedServiceTypeCompletionHandler(serviceType: string, completion: (p1: NSError) => void): void;
@@ -2088,6 +3522,9 @@ declare class HMService extends NSObject {
 	updateNameCompletionHandler(name: string, completion: (p1: NSError) => void): void;
 }
 
+/**
+ * @since 8.0
+ */
 declare class HMServiceGroup extends NSObject {
 
 	static alloc(): HMServiceGroup; // inherited from NSObject
@@ -2098,6 +3535,9 @@ declare class HMServiceGroup extends NSObject {
 
 	readonly services: NSArray<HMService>;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly uniqueIdentifier: NSUUID;
 
 	addServiceCompletionHandler(service: HMService, completion: (p1: NSError) => void): void;
@@ -2107,94 +3547,249 @@ declare class HMServiceGroup extends NSObject {
 	updateNameCompletionHandler(name: string, completion: (p1: NSError) => void): void;
 }
 
+/**
+ * @since 8.0
+ */
 declare var HMServiceTypeAccessoryInformation: string;
 
+/**
+ * @since 10.2
+ */
 declare var HMServiceTypeAirPurifier: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMServiceTypeAirQualitySensor: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMServiceTypeBattery: string;
 
+/**
+ * @since 10.0
+ */
 declare var HMServiceTypeCameraControl: string;
 
+/**
+ * @since 10.0
+ */
 declare var HMServiceTypeCameraRTPStreamManagement: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMServiceTypeCarbonDioxideSensor: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMServiceTypeCarbonMonoxideSensor: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMServiceTypeContactSensor: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMServiceTypeDoor: string;
 
+/**
+ * @since 10.0
+ */
 declare var HMServiceTypeDoorbell: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMServiceTypeFan: string;
 
+/**
+ * @since 11.2
+ */
 declare var HMServiceTypeFaucet: string;
 
+/**
+ * @since 10.2
+ */
 declare var HMServiceTypeFilterMaintenance: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMServiceTypeGarageDoorOpener: string;
 
+/**
+ * @since 10.2
+ */
 declare var HMServiceTypeHeaterCooler: string;
 
+/**
+ * @since 10.2
+ */
 declare var HMServiceTypeHumidifierDehumidifier: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMServiceTypeHumiditySensor: string;
 
+/**
+ * @since 18.0
+ */
+declare var HMServiceTypeInputSource: string;
+
+/**
+ * @since 11.2
+ */
 declare var HMServiceTypeIrrigationSystem: string;
 
+/**
+ * @since 10.3
+ */
 declare var HMServiceTypeLabel: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMServiceTypeLeakSensor: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMServiceTypeLightSensor: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMServiceTypeLightbulb: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMServiceTypeLockManagement: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMServiceTypeLockMechanism: string;
 
+/**
+ * @since 10.0
+ */
 declare var HMServiceTypeMicrophone: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMServiceTypeMotionSensor: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMServiceTypeOccupancySensor: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMServiceTypeOutlet: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMServiceTypeSecuritySystem: string;
 
+/**
+ * @since 10.2
+ */
 declare var HMServiceTypeSlats: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMServiceTypeSmokeSensor: string;
 
+/**
+ * @since 10.0
+ */
 declare var HMServiceTypeSpeaker: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMServiceTypeStatefulProgrammableSwitch: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMServiceTypeStatelessProgrammableSwitch: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMServiceTypeSwitch: string;
 
+/**
+ * @since 18.0
+ */
+declare var HMServiceTypeTelevision: string;
+
+/**
+ * @since 9.0
+ */
 declare var HMServiceTypeTemperatureSensor: string;
 
+/**
+ * @since 8.0
+ */
 declare var HMServiceTypeThermostat: string;
 
+/**
+ * @since 11.2
+ */
 declare var HMServiceTypeValve: string;
 
+/**
+ * @since 10.2
+ */
 declare var HMServiceTypeVentilationFan: string;
 
+/**
+ * @since 18.0
+ */
+declare var HMServiceTypeWiFiRouter: string;
+
+/**
+ * @since 18.0
+ */
+declare var HMServiceTypeWiFiSatellite: string;
+
+/**
+ * @since 9.0
+ */
 declare var HMServiceTypeWindow: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMServiceTypeWindowCovering: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMSignificantEventSunrise: string;
 
+/**
+ * @since 9.0
+ */
 declare var HMSignificantEventSunset: string;
 
+/**
+ * @since 11.0
+ */
 declare class HMSignificantTimeEvent extends HMTimeEvent implements NSCopying, NSMutableCopying {
 
 	static alloc(): HMSignificantTimeEvent; // inherited from NSObject
@@ -2214,6 +3809,9 @@ declare class HMSignificantTimeEvent extends HMTimeEvent implements NSCopying, N
 	mutableCopyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+/**
+ * @since 11.0
+ */
 declare class HMTimeEvent extends HMEvent {
 
 	static alloc(): HMTimeEvent; // inherited from NSObject
@@ -2221,6 +3819,9 @@ declare class HMTimeEvent extends HMEvent {
 	static new(): HMTimeEvent; // inherited from NSObject
 }
 
+/**
+ * @since 8.0
+ */
 declare class HMTimerTrigger extends HMTrigger {
 
 	static alloc(): HMTimerTrigger; // inherited from NSObject
@@ -2231,25 +3832,54 @@ declare class HMTimerTrigger extends HMTrigger {
 
 	readonly recurrence: NSDateComponents;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 16.4
+	 */
 	readonly recurrenceCalendar: NSCalendar;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 16.4
+	 */
 	readonly timeZone: NSTimeZone;
 
+	/**
+	 * @since 16.4
+	 */
 	constructor(o: { name: string; fireDate: Date; recurrence: NSDateComponents; });
 
+	/**
+	 * @since 8.0
+	 * @deprecated 16.4
+	 */
 	constructor(o: { name: string; fireDate: Date; timeZone: NSTimeZone; recurrence: NSDateComponents; recurrenceCalendar: NSCalendar; });
 
+	/**
+	 * @since 16.4
+	 */
 	initWithNameFireDateRecurrence(name: string, fireDate: Date, recurrence: NSDateComponents): this;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 16.4
+	 */
 	initWithNameFireDateTimeZoneRecurrenceRecurrenceCalendar(name: string, fireDate: Date, timeZone: NSTimeZone, recurrence: NSDateComponents, recurrenceCalendar: NSCalendar): this;
 
 	updateFireDateCompletionHandler(fireDate: Date, completion: (p1: NSError) => void): void;
 
 	updateRecurrenceCompletionHandler(recurrence: NSDateComponents, completion: (p1: NSError) => void): void;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 16.4
+	 */
 	updateTimeZoneCompletionHandler(timeZone: NSTimeZone, completion: (p1: NSError) => void): void;
 }
 
+/**
+ * @since 8.0
+ */
 declare class HMTrigger extends NSObject {
 
 	static alloc(): HMTrigger; // inherited from NSObject
@@ -2260,10 +3890,17 @@ declare class HMTrigger extends NSObject {
 
 	readonly enabled: boolean;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 17.0
+	 */
 	readonly lastFireDate: Date;
 
 	readonly name: string;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly uniqueIdentifier: NSUUID;
 
 	addActionSetCompletionHandler(actionSet: HMActionSet, completion: (p1: NSError) => void): void;
@@ -2275,6 +3912,9 @@ declare class HMTrigger extends NSObject {
 	updateNameCompletionHandler(name: string, completion: (p1: NSError) => void): void;
 }
 
+/**
+ * @since 8.0
+ */
 declare class HMUser extends NSObject {
 
 	static alloc(): HMUser; // inherited from NSObject
@@ -2283,11 +3923,20 @@ declare class HMUser extends NSObject {
 
 	readonly name: string;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly uniqueIdentifier: NSUUID;
 }
 
+/**
+ * @since 8.0
+ */
 declare var HMUserFailedAccessoriesKey: string;
 
+/**
+ * @since 8.0
+ */
 declare class HMZone extends NSObject {
 
 	static alloc(): HMZone; // inherited from NSObject
@@ -2298,6 +3947,9 @@ declare class HMZone extends NSObject {
 
 	readonly rooms: NSArray<HMRoom>;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly uniqueIdentifier: NSUUID;
 
 	addRoomCompletionHandler(room: HMRoom, completion: (p1: NSError) => void): void;

@@ -1,4 +1,7 @@
 
+/**
+ * @since 13.0
+ */
 declare const enum LPErrorCode {
 
 	Unknown = 1,
@@ -12,8 +15,14 @@ declare const enum LPErrorCode {
 	MetadataFetchNotAllowed = 5
 }
 
+/**
+ * @since 13.0
+ */
 declare var LPErrorDomain: string;
 
+/**
+ * @since 13.0
+ */
 declare class LPLinkMetadata extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): LPLinkMetadata; // inherited from NSObject
@@ -45,20 +54,40 @@ declare class LPLinkMetadata extends NSObject implements NSCopying, NSSecureCodi
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 13.0
+ */
 declare class LPLinkView extends UIView {
 
 	static alloc(): LPLinkView; // inherited from NSObject
 
 	static appearance(): LPLinkView; // inherited from UIAppearance
 
+	/**
+	 * @since 8.0
+	 */
 	static appearanceForTraitCollection(trait: UITraitCollection): LPLinkView; // inherited from UIAppearance
 
+	/**
+	 * @since 8.0
+	 * @deprecated 9.0
+	 */
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): LPLinkView; // inherited from UIAppearance
 
+	/**
+	 * @since 9.0
+	 */
 	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): LPLinkView; // inherited from UIAppearance
 
+	/**
+	 * @since 5.0
+	 * @deprecated 9.0
+	 */
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): LPLinkView; // inherited from UIAppearance
 
+	/**
+	 * @since 9.0
+	 */
 	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): LPLinkView; // inherited from UIAppearance
 
 	static new(): LPLinkView; // inherited from NSObject
@@ -74,6 +103,9 @@ declare class LPLinkView extends UIView {
 	initWithURL(URL: NSURL): this;
 }
 
+/**
+ * @since 13.0
+ */
 declare class LPMetadataProvider extends NSObject {
 
 	static alloc(): LPMetadataProvider; // inherited from NSObject
@@ -86,6 +118,9 @@ declare class LPMetadataProvider extends NSObject {
 
 	cancel(): void;
 
+	/**
+	 * @since 15.0
+	 */
 	startFetchingMetadataForRequestCompletionHandler(request: NSURLRequest, completionHandler: (p1: LPLinkMetadata, p2: NSError) => void): void;
 
 	startFetchingMetadataForURLCompletionHandler(URL: NSURL, completionHandler: (p1: LPLinkMetadata, p2: NSError) => void): void;

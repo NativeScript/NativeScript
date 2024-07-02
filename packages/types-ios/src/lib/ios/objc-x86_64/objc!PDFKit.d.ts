@@ -18,6 +18,9 @@ declare const enum PDFAccessPermissions {
 	AllowsFormFieldEntry = 128
 }
 
+/**
+ * @since 11.0
+ */
 declare class PDFAction extends NSObject implements NSCopying {
 
 	static alloc(): PDFAction; // inherited from NSObject
@@ -29,6 +32,9 @@ declare class PDFAction extends NSObject implements NSCopying {
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+/**
+ * @since 11.0
+ */
 declare class PDFActionGoTo extends PDFAction implements NSCopying {
 
 	static alloc(): PDFActionGoTo; // inherited from NSObject
@@ -44,6 +50,9 @@ declare class PDFActionGoTo extends PDFAction implements NSCopying {
 	initWithDestination(destination: PDFDestination): this;
 }
 
+/**
+ * @since 11.0
+ */
 declare class PDFActionNamed extends PDFAction implements NSCopying {
 
 	static alloc(): PDFActionNamed; // inherited from NSObject
@@ -86,6 +95,9 @@ declare const enum PDFActionNamedName {
 	kPDFActionNamedZoomOut = 11
 }
 
+/**
+ * @since 11.0
+ */
 declare class PDFActionRemoteGoTo extends PDFAction implements NSCopying {
 
 	static alloc(): PDFActionRemoteGoTo; // inherited from NSObject
@@ -105,6 +117,9 @@ declare class PDFActionRemoteGoTo extends PDFAction implements NSCopying {
 	initWithPageIndexAtPointFileURL(pageIndex: number, point: CGPoint, url: NSURL): this;
 }
 
+/**
+ * @since 11.0
+ */
 declare class PDFActionResetForm extends PDFAction implements NSCopying {
 
 	static alloc(): PDFActionResetForm; // inherited from NSObject
@@ -118,6 +133,9 @@ declare class PDFActionResetForm extends PDFAction implements NSCopying {
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+/**
+ * @since 11.0
+ */
 declare class PDFActionURL extends PDFAction implements NSCopying {
 
 	static alloc(): PDFActionURL; // inherited from NSObject
@@ -133,6 +151,9 @@ declare class PDFActionURL extends PDFAction implements NSCopying {
 	initWithURL(url: NSURL): this;
 }
 
+/**
+ * @since 11.0
+ */
 declare class PDFAnnotation extends NSObject implements NSCoding, NSCopying {
 
 	static alloc(): PDFAnnotation; // inherited from NSObject
@@ -145,6 +166,9 @@ declare class PDFAnnotation extends NSObject implements NSCoding, NSCopying {
 
 	URL: NSURL;
 
+	/**
+	 * @since 11.0
+	 */
 	action: PDFAction;
 
 	readonly activatableTextField: boolean;
@@ -153,10 +177,16 @@ declare class PDFAnnotation extends NSObject implements NSCoding, NSCopying {
 
 	allowsToggleToOff: boolean;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly annotationKeyValues: NSDictionary<any, any>;
 
 	backgroundColor: UIColor;
 
+	/**
+	 * @since 11.0
+	 */
 	border: PDFBorder;
 
 	bounds: CGRect;
@@ -169,10 +199,16 @@ declare class PDFAnnotation extends NSObject implements NSCoding, NSCopying {
 
 	choices: NSArray<string>;
 
+	/**
+	 * @since 11.0
+	 */
 	color: UIColor;
 
 	comb: boolean;
 
+	/**
+	 * @since 11.0
+	 */
 	contents: string;
 
 	destination: PDFDestination;
@@ -189,6 +225,9 @@ declare class PDFAnnotation extends NSObject implements NSCoding, NSCopying {
 
 	readonly hasAppearanceStream: boolean;
 
+	/**
+	 * @since 11.0
+	 */
 	highlighted: boolean;
 
 	iconType: PDFTextAnnotationIconType;
@@ -203,6 +242,9 @@ declare class PDFAnnotation extends NSObject implements NSCoding, NSCopying {
 
 	maximumLength: number;
 
+	/**
+	 * @since 11.0
+	 */
 	modificationDate: Date;
 
 	multiline: boolean;
@@ -213,6 +255,9 @@ declare class PDFAnnotation extends NSObject implements NSCoding, NSCopying {
 
 	readonly paths: NSArray<UIBezierPath>;
 
+	/**
+	 * @since 11.0
+	 */
 	popup: PDFAnnotation;
 
 	quadrilateralPoints: NSArray<NSValue>;
@@ -233,6 +278,9 @@ declare class PDFAnnotation extends NSObject implements NSCoding, NSCopying {
 
 	type: string;
 
+	/**
+	 * @since 11.0
+	 */
 	userName: string;
 
 	values: NSArray<string>;
@@ -245,6 +293,9 @@ declare class PDFAnnotation extends NSObject implements NSCoding, NSCopying {
 
 	widgetStringValue: string;
 
+	/**
+	 * @since 11.0
+	 */
 	constructor(o: { bounds: CGRect; forType: string; withProperties: NSDictionary<any, any>; });
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
@@ -253,179 +304,431 @@ declare class PDFAnnotation extends NSObject implements NSCoding, NSCopying {
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
+	/**
+	 * @since 11.0
+	 */
 	drawWithBoxInContext(box: PDFDisplayBox, context: any): void;
 
 	encodeWithCoder(coder: NSCoder): void;
 
+	/**
+	 * @since 11.0
+	 */
 	initWithBoundsForTypeWithProperties(bounds: CGRect, annotationType: string, properties: NSDictionary<any, any>): this;
 
 	initWithCoder(coder: NSCoder): this;
 
 	removeBezierPath(path: UIBezierPath): void;
 
+	/**
+	 * @since 11.0
+	 */
 	removeValueForAnnotationKey(key: string): void;
 
+	/**
+	 * @since 11.0
+	 */
 	setBooleanForAnnotationKey(value: boolean, key: string): boolean;
 
+	/**
+	 * @since 11.0
+	 */
 	setRectForAnnotationKey(value: CGRect, key: string): boolean;
 
+	/**
+	 * @since 11.0
+	 */
 	setValueForAnnotationKey(value: any, key: string): boolean;
 
+	/**
+	 * @since 11.0
+	 */
 	valueForAnnotationKey(key: string): any;
 }
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationHighlightingModeInvert: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationHighlightingModeNone: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationHighlightingModeOutline: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationHighlightingModePush: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyAction: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyAdditionalActions: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyAppearanceDictionary: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyAppearanceState: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyBorder: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyBorderStyle: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyColor: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyContents: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyDate: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyDefaultAppearance: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyDestination: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyFlags: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyHighlightingMode: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyIconName: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyInklist: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyInteriorColor: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyLineEndingStyles: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyLinePoints: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyName: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyOpen: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyPage: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyParent: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyPopup: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyQuadPoints: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyQuadding: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyRect: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeySubtype: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyTextLabel: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyWidgetAppearanceDictionary: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyWidgetBackgroundColor: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyWidgetBorderColor: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyWidgetCaption: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyWidgetDefaultValue: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyWidgetDownCaption: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyWidgetFieldFlags: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyWidgetFieldType: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyWidgetMaxLen: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyWidgetOptions: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyWidgetRolloverCaption: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyWidgetRotation: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyWidgetTextLabelUI: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationKeyWidgetValue: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationLineEndingStyleCircle: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationLineEndingStyleClosedArrow: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationLineEndingStyleDiamond: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationLineEndingStyleNone: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationLineEndingStyleOpenArrow: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationLineEndingStyleSquare: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationSubtypeCircle: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationSubtypeFreeText: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationSubtypeHighlight: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationSubtypeInk: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationSubtypeLine: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationSubtypeLink: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationSubtypePopup: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationSubtypeSquare: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationSubtypeStamp: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationSubtypeStrikeOut: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationSubtypeText: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationSubtypeUnderline: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationSubtypeWidget: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationTextIconTypeComment: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationTextIconTypeHelp: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationTextIconTypeInsert: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationTextIconTypeKey: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationTextIconTypeNewParagraph: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationTextIconTypeNote: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationTextIconTypeParagraph: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationWidgetSubtypeButton: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationWidgetSubtypeChoice: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationWidgetSubtypeSignature: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAnnotationWidgetSubtypeText: string;
 
+/**
+ * @since 11.0
+ */
 declare class PDFAppearanceCharacteristics extends NSObject implements NSCopying {
 
 	static alloc(): PDFAppearanceCharacteristics; // inherited from NSObject
@@ -451,16 +754,34 @@ declare class PDFAppearanceCharacteristics extends NSObject implements NSCopying
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+/**
+ * @since 11.0
+ */
 declare var PDFAppearanceCharacteristicsKeyBackgroundColor: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAppearanceCharacteristicsKeyBorderColor: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAppearanceCharacteristicsKeyCaption: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAppearanceCharacteristicsKeyDownCaption: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAppearanceCharacteristicsKeyRolloverCaption: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFAppearanceCharacteristicsKeyRotation: string;
 
 declare const enum PDFAreaOfInterest {
@@ -488,6 +809,9 @@ declare const enum PDFAreaOfInterest {
 	kPDFAnyArea = 9223372036854775807
 }
 
+/**
+ * @since 11.0
+ */
 declare class PDFBorder extends NSObject implements NSCoding, NSCopying {
 
 	static alloc(): PDFBorder; // inherited from NSObject
@@ -513,10 +837,19 @@ declare class PDFBorder extends NSObject implements NSCoding, NSCopying {
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 11.0
+ */
 declare var PDFBorderKeyDashPattern: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFBorderKeyLineWidth: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFBorderKeyStyle: string;
 
 declare const enum PDFBorderStyle {
@@ -532,6 +865,9 @@ declare const enum PDFBorderStyle {
 	kPDFBorderStyleUnderline = 4
 }
 
+/**
+ * @since 11.0
+ */
 declare class PDFDestination extends NSObject implements NSCopying {
 
 	static alloc(): PDFDestination; // inherited from NSObject
@@ -542,10 +878,16 @@ declare class PDFDestination extends NSObject implements NSCopying {
 
 	readonly point: CGPoint;
 
+	/**
+	 * @since 11.0
+	 */
 	zoom: number;
 
 	constructor(o: { page: PDFPage; atPoint: CGPoint; });
 
+	/**
+	 * @since 11.0
+	 */
 	compare(destination: PDFDestination): NSComparisonResult;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
@@ -584,6 +926,9 @@ declare const enum PDFDisplayMode {
 	kPDFDisplayTwoUpContinuous = 3
 }
 
+/**
+ * @since 11.0
+ */
 declare class PDFDocument extends NSObject implements NSCopying {
 
 	static alloc(): PDFDocument; // inherited from NSObject
@@ -592,18 +937,39 @@ declare class PDFDocument extends NSObject implements NSCopying {
 
 	readonly accessPermissions: PDFAccessPermissions;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly allowsCommenting: boolean;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly allowsContentAccessibility: boolean;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly allowsCopying: boolean;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly allowsDocumentAssembly: boolean;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly allowsDocumentChanges: boolean;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly allowsFormFieldEntry: boolean;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly allowsPrinting: boolean;
 
 	delegate: PDFDocumentDelegate;
@@ -624,12 +990,18 @@ declare class PDFDocument extends NSObject implements NSCopying {
 
 	readonly minorVersion: number;
 
+	/**
+	 * @since 11.0
+	 */
 	outlineRoot: PDFOutline;
 
 	readonly pageClass: typeof NSObject;
 
 	readonly pageCount: number;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly permissionsStatus: PDFDocumentPermissions;
 
 	readonly selectionForEntireDocument: PDFSelection;
@@ -642,6 +1014,9 @@ declare class PDFDocument extends NSObject implements NSCopying {
 
 	beginFindStringWithOptions(string: string, options: NSStringCompareOptions): void;
 
+	/**
+	 * @since 11.0
+	 */
 	beginFindStringsWithOptions(strings: NSArray<string> | string[], options: NSStringCompareOptions): void;
 
 	cancelFindString(): void;
@@ -650,6 +1025,9 @@ declare class PDFDocument extends NSObject implements NSCopying {
 
 	dataRepresentation(): NSData;
 
+	/**
+	 * @since 11.0
+	 */
 	dataRepresentationWithOptions(options: NSDictionary<any, any>): NSData;
 
 	exchangePageAtIndexWithPageAtIndex(indexA: number, indexB: number): void;
@@ -676,6 +1054,11 @@ declare class PDFDocument extends NSObject implements NSCopying {
 
 	selectionFromPageAtPointToPageAtPoint(startPage: PDFPage, startPoint: CGPoint, endPage: PDFPage, endPoint: CGPoint): PDFSelection;
 
+	/**
+	 * @since 18.0
+	 */
+	selectionFromPageAtPointToPageAtPointWithGranularity(startPage: PDFPage, startPoint: CGPoint, endPage: PDFPage, endPoint: CGPoint, granularity: PDFSelectionGranularity): PDFSelection;
+
 	unlockWithPassword(password: string): boolean;
 
 	writeToFile(path: string): boolean;
@@ -687,20 +1070,41 @@ declare class PDFDocument extends NSObject implements NSCopying {
 	writeToURLWithOptions(url: NSURL, options: NSDictionary<string, any>): boolean;
 }
 
+/**
+ * @since 15.0
+ */
 declare var PDFDocumentAccessPermissionsOption: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFDocumentAuthorAttribute: string;
 
+/**
+ * @since 16.0
+ */
 declare var PDFDocumentBurnInAnnotationsOption: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFDocumentCreationDateAttribute: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFDocumentCreatorAttribute: string;
 
 interface PDFDocumentDelegate extends NSObjectProtocol {
 
+	/**
+	 * @since 11.0
+	 */
 	classForAnnotationType?(annotationType: string): typeof NSObject;
 
+	/**
+	 * @since 11.0
+	 */
 	classForPage?(): typeof NSObject;
 
 	didMatchString?(instance: PDFSelection): void;
@@ -722,36 +1126,84 @@ declare var PDFDocumentDelegate: {
 	prototype: PDFDocumentDelegate;
 };
 
+/**
+ * @since 11.0
+ */
 declare var PDFDocumentDidBeginFindNotification: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFDocumentDidBeginPageFindNotification: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFDocumentDidBeginPageWriteNotification: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFDocumentDidBeginWriteNotification: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFDocumentDidEndFindNotification: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFDocumentDidEndPageFindNotification: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFDocumentDidEndPageWriteNotification: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFDocumentDidEndWriteNotification: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFDocumentDidFindMatchNotification: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFDocumentDidUnlockNotification: string;
 
+/**
+ * @since 15.0
+ */
 declare var PDFDocumentFoundSelectionKey: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFDocumentKeywordsAttribute: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFDocumentModificationDateAttribute: string;
 
+/**
+ * @since 16.4
+ */
 declare var PDFDocumentOptimizeImagesForScreenOption: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFDocumentOwnerPasswordOption: string;
 
+/**
+ * @since 15.0
+ */
 declare var PDFDocumentPageIndexKey: string;
 
 declare const enum PDFDocumentPermissions {
@@ -763,16 +1215,34 @@ declare const enum PDFDocumentPermissions {
 	kPDFDocumentPermissionsOwner = 2
 }
 
+/**
+ * @since 11.0
+ */
 declare var PDFDocumentProducerAttribute: string;
 
+/**
+ * @since 16.4
+ */
 declare var PDFDocumentSaveImagesAsJPEGOption: string;
 
+/**
+ * @since 16.0
+ */
 declare var PDFDocumentSaveTextFromOCROption: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFDocumentSubjectAttribute: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFDocumentTitleAttribute: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFDocumentUserPasswordOption: string;
 
 declare const enum PDFInterpolationQuality {
@@ -810,35 +1280,59 @@ declare const enum PDFMarkupType {
 	kPDFMarkupTypeRedact = 3
 }
 
+/**
+ * @since 11.0
+ */
 declare class PDFOutline extends NSObject {
 
 	static alloc(): PDFOutline; // inherited from NSObject
 
 	static new(): PDFOutline; // inherited from NSObject
 
+	/**
+	 * @since 11.0
+	 */
 	action: PDFAction;
 
 	destination: PDFDestination;
 
 	readonly document: PDFDocument;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly index: number;
 
+	/**
+	 * @since 11.0
+	 */
 	isOpen: boolean;
 
 	label: string;
 
 	readonly numberOfChildren: number;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly parent: PDFOutline;
 
 	childAtIndex(index: number): PDFOutline;
 
+	/**
+	 * @since 11.0
+	 */
 	insertChildAtIndex(child: PDFOutline, index: number): void;
 
+	/**
+	 * @since 11.0
+	 */
 	removeFromParent(): void;
 }
 
+/**
+ * @since 11.0
+ */
 declare class PDFPage extends NSObject implements NSCopying {
 
 	static alloc(): PDFPage; // inherited from NSObject
@@ -865,8 +1359,14 @@ declare class PDFPage extends NSObject implements NSCopying {
 
 	readonly string: string;
 
+	/**
+	 * @since 11.0
+	 */
 	constructor(o: { image: UIImage; });
 
+	/**
+	 * @since 16.0
+	 */
 	constructor(o: { image: UIImage; options: NSDictionary<string, any>; });
 
 	addAnnotation(annotation: PDFAnnotation): void;
@@ -881,10 +1381,19 @@ declare class PDFPage extends NSObject implements NSCopying {
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
+	/**
+	 * @since 11.0
+	 */
 	drawWithBoxToContext(box: PDFDisplayBox, context: any): void;
 
+	/**
+	 * @since 11.0
+	 */
 	initWithImage(image: UIImage): this;
 
+	/**
+	 * @since 16.0
+	 */
 	initWithImageOptions(image: UIImage, options: NSDictionary<string, any>): this;
 
 	removeAnnotation(annotation: PDFAnnotation): void;
@@ -901,21 +1410,45 @@ declare class PDFPage extends NSObject implements NSCopying {
 
 	setBoundsForBox(bounds: CGRect, box: PDFDisplayBox): void;
 
+	/**
+	 * @since 11.0
+	 */
 	thumbnailOfSizeForBox(size: CGSize, box: PDFDisplayBox): UIImage;
 
+	/**
+	 * @since 11.0
+	 */
 	transformContextForBox(context: any, box: PDFDisplayBox): void;
 
+	/**
+	 * @since 11.0
+	 */
 	transformForBox(box: PDFDisplayBox): CGAffineTransform;
 }
 
+/**
+ * @since 16.0
+ */
 declare var PDFPageImageInitializationOptionCompressionQuality: string;
 
+/**
+ * @since 16.0
+ */
 declare var PDFPageImageInitializationOptionMediaBox: string;
 
+/**
+ * @since 16.0
+ */
 declare var PDFPageImageInitializationOptionRotation: string;
 
+/**
+ * @since 16.0
+ */
 declare var PDFPageImageInitializationOptionUpscaleIfSmaller: string;
 
+/**
+ * @since 16.0
+ */
 interface PDFPageOverlayViewProvider extends NSObjectProtocol {
 
 	pdfViewOverlayViewForPage(view: PDFView, page: PDFPage): UIView;
@@ -929,6 +1462,9 @@ declare var PDFPageOverlayViewProvider: {
 	prototype: PDFPageOverlayViewProvider;
 };
 
+/**
+ * @since 11.0
+ */
 declare class PDFSelection extends NSObject implements NSCopying {
 
 	static alloc(): PDFSelection; // inherited from NSObject
@@ -937,16 +1473,25 @@ declare class PDFSelection extends NSObject implements NSCopying {
 
 	readonly attributedString: NSAttributedString;
 
+	/**
+	 * @since 11.0
+	 */
 	color: UIColor;
 
 	readonly pages: NSArray<PDFPage>;
 
 	readonly string: string;
 
+	/**
+	 * @since 11.0
+	 */
 	constructor(o: { document: PDFDocument; });
 
 	addSelection(selection: PDFSelection): void;
 
+	/**
+	 * @since 11.0
+	 */
 	addSelections(selections: NSArray<PDFSelection> | PDFSelection[]): void;
 
 	boundsForPage(page: PDFPage): CGRect;
@@ -961,15 +1506,39 @@ declare class PDFSelection extends NSObject implements NSCopying {
 
 	extendSelectionAtStart(precede: number): void;
 
+	/**
+	 * @since 11.0
+	 */
 	extendSelectionForLineBoundaries(): void;
 
+	/**
+	 * @since 11.0
+	 */
 	initWithDocument(document: PDFDocument): this;
 
+	/**
+	 * @since 11.0
+	 */
 	numberOfTextRangesOnPage(page: PDFPage): number;
 
+	/**
+	 * @since 11.0
+	 */
 	rangeAtIndexOnPage(index: number, page: PDFPage): NSRange;
 
+	/**
+	 * @since 11.0
+	 */
 	selectionsByLine(): NSArray<PDFSelection>;
+}
+
+declare const enum PDFSelectionGranularity {
+
+	Character = 0,
+
+	Word = 1,
+
+	Line = 2
 }
 
 declare const enum PDFTextAnnotationIconType {
@@ -996,28 +1565,54 @@ declare const enum PDFThumbnailLayoutMode {
 	Horizontal = 1
 }
 
+/**
+ * @since 11.0
+ */
 declare class PDFThumbnailView extends UIView implements NSCoding {
 
 	static alloc(): PDFThumbnailView; // inherited from NSObject
 
 	static appearance(): PDFThumbnailView; // inherited from UIAppearance
 
+	/**
+	 * @since 8.0
+	 */
 	static appearanceForTraitCollection(trait: UITraitCollection): PDFThumbnailView; // inherited from UIAppearance
 
+	/**
+	 * @since 8.0
+	 * @deprecated 9.0
+	 */
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): PDFThumbnailView; // inherited from UIAppearance
 
+	/**
+	 * @since 9.0
+	 */
 	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): PDFThumbnailView; // inherited from UIAppearance
 
+	/**
+	 * @since 5.0
+	 * @deprecated 9.0
+	 */
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): PDFThumbnailView; // inherited from UIAppearance
 
+	/**
+	 * @since 9.0
+	 */
 	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): PDFThumbnailView; // inherited from UIAppearance
 
 	static new(): PDFThumbnailView; // inherited from NSObject
 
 	PDFView: PDFView;
 
+	/**
+	 * @since 11.0
+	 */
 	contentInset: UIEdgeInsets;
 
+	/**
+	 * @since 11.0
+	 */
 	layoutMode: PDFThumbnailLayoutMode;
 
 	readonly selectedPages: NSArray<PDFPage>;
@@ -1031,22 +1626,45 @@ declare class PDFThumbnailView extends UIView implements NSCoding {
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 11.0
+ */
 declare var PDFThumbnailViewDocumentEditedNotification: string;
 
+/**
+ * @since 11.0
+ */
 declare class PDFView extends UIView implements UIFindInteractionDelegate, UIGestureRecognizerDelegate {
 
 	static alloc(): PDFView; // inherited from NSObject
 
 	static appearance(): PDFView; // inherited from UIAppearance
 
+	/**
+	 * @since 8.0
+	 */
 	static appearanceForTraitCollection(trait: UITraitCollection): PDFView; // inherited from UIAppearance
 
+	/**
+	 * @since 8.0
+	 * @deprecated 9.0
+	 */
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): PDFView; // inherited from UIAppearance
 
+	/**
+	 * @since 9.0
+	 */
 	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): PDFView; // inherited from UIAppearance
 
+	/**
+	 * @since 5.0
+	 * @deprecated 9.0
+	 */
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): PDFView; // inherited from UIAppearance
 
+	/**
+	 * @since 9.0
+	 */
 	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): PDFView; // inherited from UIAppearance
 
 	static new(): PDFView; // inherited from NSObject
@@ -1079,6 +1697,9 @@ declare class PDFView extends UIView implements UIFindInteractionDelegate, UIGes
 
 	displayBox: PDFDisplayBox;
 
+	/**
+	 * @since 11.0
+	 */
 	displayDirection: PDFDisplayDirection;
 
 	displayMode: PDFDisplayMode;
@@ -1087,40 +1708,86 @@ declare class PDFView extends UIView implements UIFindInteractionDelegate, UIGes
 
 	displaysPageBreaks: boolean;
 
+	/**
+	 * @since 11.0
+	 */
 	displaysRTL: boolean;
 
 	document: PDFDocument;
 
 	readonly documentView: UIView;
 
+	/**
+	 * @since 11.0
+	 * @deprecated 18.0
+	 */
 	enableDataDetectors: boolean;
 
+	/**
+	 * @since 16.0
+	 */
 	readonly findInteraction: UIFindInteraction;
 
+	/**
+	 * @since 16.0
+	 */
 	findInteractionEnabled: boolean;
 
+	/**
+	 * @since 11.0
+	 */
 	highlightedSelections: NSArray<PDFSelection>;
 
+	/**
+	 * @since 16.0
+	 */
 	inMarkupMode: boolean;
 
+	/**
+	 * @since 11.0
+	 */
 	interpolationQuality: PDFInterpolationQuality;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly isUsingPageViewController: boolean;
 
+	/**
+	 * @since 11.0
+	 */
 	maxScaleFactor: number;
 
+	/**
+	 * @since 11.0
+	 */
 	minScaleFactor: number;
 
+	/**
+	 * @since 11.0
+	 */
 	pageBreakMargins: UIEdgeInsets;
 
+	/**
+	 * @since 16.0
+	 */
 	pageOverlayViewProvider: PDFPageOverlayViewProvider;
 
+	/**
+	 * @since 12.0
+	 */
 	pageShadowsEnabled: boolean;
 
 	scaleFactor: number;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly scaleFactorForSizeToFit: number;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly visiblePages: NSArray<PDFPage>;
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
@@ -1135,6 +1802,9 @@ declare class PDFView extends UIView implements UIFindInteractionDelegate, UIGes
 
 	readonly  // inherited from NSObjectProtocol
 
+	/**
+	 * @since 11.0
+	 */
 	annotationsChangedOnPage(page: PDFPage): void;
 
 	areaOfInterestForMouse(event: _UIEvent): PDFAreaOfInterest;
@@ -1157,8 +1827,14 @@ declare class PDFView extends UIView implements UIFindInteractionDelegate, UIGes
 
 	copy(): void;
 
+	/**
+	 * @since 11.0
+	 */
 	drawPagePostToContext(page: PDFPage, context: any): void;
 
+	/**
+	 * @since 11.0
+	 */
 	drawPageToContext(page: PDFPage, context: any): void;
 
 	findInteractionDidBeginFindSession(interaction: UIFindInteraction, session: UIFindSession): void;
@@ -1167,10 +1843,16 @@ declare class PDFView extends UIView implements UIFindInteractionDelegate, UIGes
 
 	findInteractionSessionForView(interaction: UIFindInteraction, view: UIView): UIFindSession;
 
+	/**
+	 * @since 7.0
+	 */
 	gestureRecognizerShouldBeRequiredToFailByGestureRecognizer(gestureRecognizer: UIGestureRecognizer, otherGestureRecognizer: UIGestureRecognizer): boolean;
 
 	gestureRecognizerShouldBegin(gestureRecognizer: UIGestureRecognizer): boolean;
 
+	/**
+	 * @since 13.4
+	 */
 	gestureRecognizerShouldReceiveEvent(gestureRecognizer: UIGestureRecognizer, event: _UIEvent): boolean;
 
 	gestureRecognizerShouldReceivePress(gestureRecognizer: UIGestureRecognizer, press: UIPress): boolean;
@@ -1179,6 +1861,9 @@ declare class PDFView extends UIView implements UIFindInteractionDelegate, UIGes
 
 	gestureRecognizerShouldRecognizeSimultaneouslyWithGestureRecognizer(gestureRecognizer: UIGestureRecognizer, otherGestureRecognizer: UIGestureRecognizer): boolean;
 
+	/**
+	 * @since 7.0
+	 */
 	gestureRecognizerShouldRequireFailureOfGestureRecognizer(gestureRecognizer: UIGestureRecognizer, otherGestureRecognizer: UIGestureRecognizer): boolean;
 
 	goBack(sender: any): void;
@@ -1211,6 +1896,9 @@ declare class PDFView extends UIView implements UIFindInteractionDelegate, UIGes
 
 	pageForPointNearest(point: CGPoint, nearest: boolean): PDFPage;
 
+	/**
+	 * @since 11.0
+	 */
 	performAction(action: PDFAction): void;
 
 	performSelector(aSelector: string): any;
@@ -1229,8 +1917,14 @@ declare class PDFView extends UIView implements UIFindInteractionDelegate, UIGes
 
 	self(): this;
 
+	/**
+	 * @since 11.0
+	 */
 	setCurrentSelectionAnimate(selection: PDFSelection, animate: boolean): void;
 
+	/**
+	 * @since 11.0
+	 */
 	usePageViewControllerWithViewOptions(enable: boolean, viewOptions: NSDictionary<any, any>): void;
 
 	zoomIn(sender: any): void;
@@ -1238,24 +1932,51 @@ declare class PDFView extends UIView implements UIFindInteractionDelegate, UIGes
 	zoomOut(sender: any): void;
 }
 
+/**
+ * @since 11.0
+ */
 declare var PDFViewAnnotationHitNotification: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFViewAnnotationWillHitNotification: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFViewChangedHistoryNotification: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFViewCopyPermissionNotification: string;
 
 interface PDFViewDelegate extends NSObjectProtocol {
 
+	/**
+	 * @since 11.0
+	 */
 	PDFViewOpenPDFForRemoteGoToAction?(sender: PDFView, action: PDFActionRemoteGoTo): void;
 
+	/**
+	 * @since 13.0
+	 */
 	PDFViewParentViewController?(): UIViewController;
 
+	/**
+	 * @since 11.0
+	 */
 	PDFViewPerformFind?(sender: PDFView): void;
 
+	/**
+	 * @since 11.0
+	 */
 	PDFViewPerformGoToPage?(sender: PDFView): void;
 
+	/**
+	 * @since 11.0
+	 */
 	PDFViewWillClickOnLinkWithURL?(sender: PDFView, url: NSURL): void;
 }
 declare var PDFViewDelegate: {
@@ -1263,20 +1984,44 @@ declare var PDFViewDelegate: {
 	prototype: PDFViewDelegate;
 };
 
+/**
+ * @since 11.0
+ */
 declare var PDFViewDisplayBoxChangedNotification: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFViewDisplayModeChangedNotification: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFViewDocumentChangedNotification: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFViewPageChangedNotification: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFViewPrintPermissionNotification: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFViewScaleChangedNotification: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFViewSelectionChangedNotification: string;
 
+/**
+ * @since 11.0
+ */
 declare var PDFViewVisiblePagesChangedNotification: string;
 
 declare const enum PDFWidgetCellState {
@@ -1299,4 +2044,7 @@ declare const enum PDFWidgetControlType {
 	kPDFWidgetCheckBoxControl = 2
 }
 
+/**
+ * @since 11.0
+ */
 declare var kPDFDestinationUnspecifiedValue: number;

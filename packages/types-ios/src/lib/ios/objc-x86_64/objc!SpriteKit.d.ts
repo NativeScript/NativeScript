@@ -1,4 +1,7 @@
 
+/**
+ * @since 8.0
+ */
 declare class SK3DNode extends SKNode {
 
 	static alloc(): SK3DNode; // inherited from NSObject
@@ -9,6 +12,9 @@ declare class SK3DNode extends SKNode {
 
 	static nodeWithFileNamed(filename: string): SK3DNode; // inherited from SKNode
 
+	/**
+	 * @since 12.0
+	 */
 	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SK3DNode; // inherited from SKNode
 
 	static nodeWithViewportSize(viewportSize: CGSize): SK3DNode;
@@ -40,66 +46,150 @@ declare class SK3DNode extends SKNode {
 
 declare class SKAction extends NSObject implements NSCopying, NSSecureCoding {
 
+	/**
+	 * @since 9.0
+	 */
 	static actionNamed(name: string): SKAction;
 
+	/**
+	 * @since 9.0
+	 */
 	static actionNamedDuration(name: string, duration: number): SKAction;
 
+	/**
+	 * @since 9.0
+	 */
 	static actionNamedFromURL(name: string, url: NSURL): SKAction;
 
+	/**
+	 * @since 9.0
+	 */
 	static actionNamedFromURLDuration(name: string, url: NSURL, duration: number): SKAction;
 
 	static alloc(): SKAction; // inherited from NSObject
 
+	/**
+	 * @since 9.0
+	 */
 	static animateWithNormalTexturesTimePerFrame(textures: NSArray<SKTexture> | SKTexture[], sec: number): SKAction;
 
+	/**
+	 * @since 9.0
+	 */
 	static animateWithNormalTexturesTimePerFrameResizeRestore(textures: NSArray<SKTexture> | SKTexture[], sec: number, resize: boolean, restore: boolean): SKAction;
 
 	static animateWithTexturesTimePerFrame(textures: NSArray<SKTexture> | SKTexture[], sec: number): SKAction;
 
 	static animateWithTexturesTimePerFrameResizeRestore(textures: NSArray<SKTexture> | SKTexture[], sec: number, resize: boolean, restore: boolean): SKAction;
 
+	/**
+	 * @since 10.0
+	 */
 	static animateWithWarpsTimes(warps: NSArray<SKWarpGeometry> | SKWarpGeometry[], times: NSArray<number> | number[]): SKAction;
 
+	/**
+	 * @since 10.0
+	 */
 	static animateWithWarpsTimesRestore(warps: NSArray<SKWarpGeometry> | SKWarpGeometry[], times: NSArray<number> | number[], restore: boolean): SKAction;
 
+	/**
+	 * @since 9.0
+	 */
 	static applyAngularImpulseDuration(impulse: number, duration: number): SKAction;
 
+	/**
+	 * @since 9.0
+	 */
 	static applyForceAtPointDuration(force: CGVector, point: CGPoint, duration: number): SKAction;
 
+	/**
+	 * @since 9.0
+	 */
 	static applyForceDuration(force: CGVector, duration: number): SKAction;
 
+	/**
+	 * @since 9.0
+	 */
 	static applyImpulseAtPointDuration(impulse: CGVector, point: CGPoint, duration: number): SKAction;
 
+	/**
+	 * @since 9.0
+	 */
 	static applyImpulseDuration(impulse: CGVector, duration: number): SKAction;
 
+	/**
+	 * @since 9.0
+	 */
 	static applyTorqueDuration(torque: number, duration: number): SKAction;
 
+	/**
+	 * @since 9.0
+	 */
 	static changeChargeByDuration(v: number, duration: number): SKAction;
 
+	/**
+	 * @since 9.0
+	 */
 	static changeChargeToDuration(v: number, duration: number): SKAction;
 
+	/**
+	 * @since 9.0
+	 */
 	static changeMassByDuration(v: number, duration: number): SKAction;
 
+	/**
+	 * @since 9.0
+	 */
 	static changeMassToDuration(v: number, duration: number): SKAction;
 
+	/**
+	 * @since 9.0
+	 */
 	static changeObstructionByDuration(v: number, duration: number): SKAction;
 
+	/**
+	 * @since 9.0
+	 */
 	static changeObstructionToDuration(v: number, duration: number): SKAction;
 
+	/**
+	 * @since 9.0
+	 */
 	static changeOcclusionByDuration(v: number, duration: number): SKAction;
 
+	/**
+	 * @since 9.0
+	 */
 	static changeOcclusionToDuration(v: number, duration: number): SKAction;
 
+	/**
+	 * @since 9.0
+	 */
 	static changePlaybackRateByDuration(v: number, duration: number): SKAction;
 
+	/**
+	 * @since 9.0
+	 */
 	static changePlaybackRateToDuration(v: number, duration: number): SKAction;
 
+	/**
+	 * @since 9.0
+	 */
 	static changeReverbByDuration(v: number, duration: number): SKAction;
 
+	/**
+	 * @since 9.0
+	 */
 	static changeReverbToDuration(v: number, duration: number): SKAction;
 
+	/**
+	 * @since 9.0
+	 */
 	static changeVolumeByDuration(v: number, duration: number): SKAction;
 
+	/**
+	 * @since 9.0
+	 */
 	static changeVolumeToDuration(v: number, duration: number): SKAction;
 
 	static colorizeWithColorBlendFactorDuration(colorBlendFactor: number, sec: number): SKAction;
@@ -116,8 +206,14 @@ declare class SKAction extends NSObject implements NSCopying, NSSecureCoding {
 
 	static fadeOutWithDuration(duration: number): SKAction;
 
+	/**
+	 * @since 8.0
+	 */
 	static falloffByDuration(falloff: number, duration: number): SKAction;
 
+	/**
+	 * @since 8.0
+	 */
 	static falloffToDuration(falloff: number, duration: number): SKAction;
 
 	static followPathAsOffsetOrientToPathDuration(path: any, offset: boolean, orient: boolean, duration: number): SKAction;
@@ -130,6 +226,9 @@ declare class SKAction extends NSObject implements NSCopying, NSSecureCoding {
 
 	static group(actions: NSArray<SKAction> | SKAction[]): SKAction;
 
+	/**
+	 * @since 8.0
+	 */
 	static hide(): SKAction;
 
 	static moveByDuration(delta: CGVector, duration: number): SKAction;
@@ -144,20 +243,38 @@ declare class SKAction extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): SKAction; // inherited from NSObject
 
+	/**
+	 * @since 9.0
+	 */
 	static pause(): SKAction;
 
 	static performSelectorOnTarget(selector: string, target: any): SKAction;
 
+	/**
+	 * @since 9.0
+	 */
 	static play(): SKAction;
 
 	static playSoundFileNamedWaitForCompletion(soundFile: string, wait: boolean): SKAction;
 
+	/**
+	 * @since 8.0
+	 */
 	static reachToNodeRootNodeDuration(node: SKNode, root: SKNode, sec: number): SKAction;
 
+	/**
+	 * @since 8.0
+	 */
 	static reachToNodeRootNodeVelocity(node: SKNode, root: SKNode, velocity: number): SKAction;
 
+	/**
+	 * @since 8.0
+	 */
 	static reachToRootNodeDuration(position: CGPoint, root: SKNode, duration: number): SKAction;
 
+	/**
+	 * @since 8.0
+	 */
 	static reachToRootNodeVelocity(position: CGPoint, root: SKNode, velocity: number): SKAction;
 
 	static removeFromParent(): SKAction;
@@ -184,12 +301,15 @@ declare class SKAction extends NSObject implements NSCopying, NSSecureCoding {
 
 	static runBlock(block: () => void): SKAction;
 
-	static runBlockQueue(block: () => void, queue: interop.Pointer | interop.Reference<any>): SKAction;
+	static runBlockQueue(block: () => void, queue: NSObject & OS_dispatch_queue): SKAction;
 
 	static scaleByDuration(scale: number, duration: number): SKAction;
 
 	static scaleToDuration(scale: number, duration: number): SKAction;
 
+	/**
+	 * @since 10.0
+	 */
 	static scaleToSizeDuration(size: CGSize, duration: number): SKAction;
 
 	static scaleXByYDuration(xScale: number, yScale: number, duration: number): SKAction;
@@ -202,40 +322,76 @@ declare class SKAction extends NSObject implements NSCopying, NSSecureCoding {
 
 	static sequence(actions: NSArray<SKAction> | SKAction[]): SKAction;
 
+	/**
+	 * @since 9.0
+	 */
 	static setNormalTexture(texture: SKTexture): SKAction;
 
+	/**
+	 * @since 9.0
+	 */
 	static setNormalTextureResize(texture: SKTexture, resize: boolean): SKAction;
 
+	/**
+	 * @since 7.1
+	 */
 	static setTexture(texture: SKTexture): SKAction;
 
+	/**
+	 * @since 7.1
+	 */
 	static setTextureResize(texture: SKTexture, resize: boolean): SKAction;
 
 	static speedByDuration(speed: number, duration: number): SKAction;
 
 	static speedToDuration(speed: number, duration: number): SKAction;
 
+	/**
+	 * @since 9.0
+	 */
 	static stereoPanByDuration(v: number, duration: number): SKAction;
 
+	/**
+	 * @since 9.0
+	 */
 	static stereoPanToDuration(v: number, duration: number): SKAction;
 
+	/**
+	 * @since 9.0
+	 */
 	static stop(): SKAction;
 
+	/**
+	 * @since 8.0
+	 */
 	static strengthByDuration(strength: number, duration: number): SKAction;
 
+	/**
+	 * @since 8.0
+	 */
 	static strengthToDuration(strength: number, duration: number): SKAction;
 
+	/**
+	 * @since 8.0
+	 */
 	static unhide(): SKAction;
 
 	static waitForDuration(duration: number): SKAction;
 
 	static waitForDurationWithRange(duration: number, durationRange: number): SKAction;
 
+	/**
+	 * @since 10.0
+	 */
 	static warpToDuration(warp: SKWarpGeometry, duration: number): SKAction;
 
 	duration: number;
 
 	speed: number;
 
+	/**
+	 * @since 8.0
+	 */
 	timingFunction: (p1: number) => number;
 
 	timingMode: SKActionTimingMode;
@@ -253,6 +409,9 @@ declare class SKAction extends NSObject implements NSCopying, NSSecureCoding {
 	reversedAction(): SKAction;
 }
 
+/**
+ * @since 7.0
+ */
 declare const enum SKActionTimingMode {
 
 	Linear = 0,
@@ -264,6 +423,9 @@ declare const enum SKActionTimingMode {
 	EaseInEaseOut = 3
 }
 
+/**
+ * @since 9.0
+ */
 declare class SKAttribute extends NSObject implements NSSecureCoding {
 
 	static alloc(): SKAttribute; // inherited from NSObject
@@ -289,6 +451,9 @@ declare class SKAttribute extends NSObject implements NSSecureCoding {
 	initWithNameType(name: string, type: SKAttributeType): this;
 }
 
+/**
+ * @since 9.0
+ */
 declare const enum SKAttributeType {
 
 	None = 0,
@@ -310,6 +475,9 @@ declare const enum SKAttributeType {
 	VectorHalfFloat4 = 8
 }
 
+/**
+ * @since 9.0
+ */
 declare class SKAttributeValue extends NSObject implements NSSecureCoding {
 
 	static alloc(): SKAttributeValue; // inherited from NSObject
@@ -341,6 +509,9 @@ declare class SKAttributeValue extends NSObject implements NSSecureCoding {
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 9.0
+ */
 declare class SKAudioNode extends SKNode implements NSSecureCoding {
 
 	static alloc(): SKAudioNode; // inherited from NSObject
@@ -351,6 +522,9 @@ declare class SKAudioNode extends SKNode implements NSSecureCoding {
 
 	static nodeWithFileNamed(filename: string): SKAudioNode; // inherited from SKNode
 
+	/**
+	 * @since 12.0
+	 */
 	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKAudioNode; // inherited from SKNode
 
 	autoplayLooped: boolean;
@@ -380,6 +554,9 @@ declare class SKAudioNode extends SKNode implements NSSecureCoding {
 	initWithURL(url: NSURL): this;
 }
 
+/**
+ * @since 7.0
+ */
 declare const enum SKBlendMode {
 
 	Alpha = 0,
@@ -399,6 +576,9 @@ declare const enum SKBlendMode {
 	MultiplyAlpha = 7
 }
 
+/**
+ * @since 9.0
+ */
 declare class SKCameraNode extends SKNode {
 
 	static alloc(): SKCameraNode; // inherited from NSObject
@@ -409,6 +589,9 @@ declare class SKCameraNode extends SKNode {
 
 	static nodeWithFileNamed(filename: string): SKCameraNode; // inherited from SKNode
 
+	/**
+	 * @since 12.0
+	 */
 	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKCameraNode; // inherited from SKNode
 
 	containedNodeSet(): NSSet<SKNode>;
@@ -416,6 +599,9 @@ declare class SKCameraNode extends SKNode {
 	containsNode(node: SKNode): boolean;
 }
 
+/**
+ * @since 8.0
+ */
 declare class SKConstraint extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SKConstraint; // inherited from NSObject
@@ -467,6 +653,9 @@ declare class SKCropNode extends SKNode {
 
 	static nodeWithFileNamed(filename: string): SKCropNode; // inherited from SKNode
 
+	/**
+	 * @since 12.0
+	 */
 	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKCropNode; // inherited from SKNode
 
 	maskNode: SKNode;
@@ -482,6 +671,9 @@ declare class SKEffectNode extends SKNode implements SKWarpable {
 
 	static nodeWithFileNamed(filename: string): SKEffectNode; // inherited from SKNode
 
+	/**
+	 * @since 12.0
+	 */
 	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKEffectNode; // inherited from SKNode
 
 	blendMode: SKBlendMode;
@@ -545,6 +737,9 @@ declare class SKEmitterNode extends SKNode {
 
 	static nodeWithFileNamed(filename: string): SKEmitterNode; // inherited from SKNode
 
+	/**
+	 * @since 12.0
+	 */
 	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKEmitterNode; // inherited from SKNode
 
 	emissionAngle: number;
@@ -605,6 +800,9 @@ declare class SKEmitterNode extends SKNode {
 
 	particlePositionRange: CGVector;
 
+	/**
+	 * @since 9.0
+	 */
 	particleRenderOrder: SKParticleRenderOrder;
 
 	particleRotation: number;
@@ -631,8 +829,16 @@ declare class SKEmitterNode extends SKNode {
 
 	particleZPosition: number;
 
+	/**
+	 * @since 7.0
+	 * @deprecated 8.0
+	 */
 	particleZPositionRange: number;
 
+	/**
+	 * @since 7.0
+	 * @deprecated 8.0
+	 */
 	particleZPositionSpeed: number;
 
 	shader: SKShader;
@@ -648,6 +854,9 @@ declare class SKEmitterNode extends SKNode {
 	resetSimulation(): void;
 }
 
+/**
+ * @since 8.0
+ */
 declare class SKFieldNode extends SKNode {
 
 	static alloc(): SKFieldNode; // inherited from NSObject
@@ -668,6 +877,9 @@ declare class SKFieldNode extends SKNode {
 
 	static nodeWithFileNamed(filename: string): SKFieldNode; // inherited from SKNode
 
+	/**
+	 * @since 12.0
+	 */
 	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKFieldNode; // inherited from SKNode
 
 	static noiseFieldWithSmoothnessAnimationSpeed(smoothness: number, speed: number): SKFieldNode;
@@ -765,6 +977,9 @@ declare class SKKeyframeSequence extends NSObject implements NSCopying, NSSecure
 	setKeyframeValueTimeForIndex(value: any, time: number, index: number): void;
 }
 
+/**
+ * @since 7.0
+ */
 declare const enum SKLabelHorizontalAlignmentMode {
 
 	Center = 0,
@@ -778,6 +993,9 @@ declare class SKLabelNode extends SKNode {
 
 	static alloc(): SKLabelNode; // inherited from NSObject
 
+	/**
+	 * @since 11.0
+	 */
 	static labelNodeWithAttributedText(attributedText: NSAttributedString): SKLabelNode;
 
 	static labelNodeWithFontNamed(fontName: string): SKLabelNode;
@@ -790,8 +1008,14 @@ declare class SKLabelNode extends SKNode {
 
 	static nodeWithFileNamed(filename: string): SKLabelNode; // inherited from SKNode
 
+	/**
+	 * @since 12.0
+	 */
 	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKLabelNode; // inherited from SKNode
 
+	/**
+	 * @since 11.0
+	 */
 	attributedText: NSAttributedString;
 
 	blendMode: SKBlendMode;
@@ -808,10 +1032,19 @@ declare class SKLabelNode extends SKNode {
 
 	horizontalAlignmentMode: SKLabelHorizontalAlignmentMode;
 
+	/**
+	 * @since 11.0
+	 */
 	lineBreakMode: NSLineBreakMode;
 
+	/**
+	 * @since 11.0
+	 */
 	numberOfLines: number;
 
+	/**
+	 * @since 11.0
+	 */
 	preferredMaxLayoutWidth: number;
 
 	text: string;
@@ -823,6 +1056,9 @@ declare class SKLabelNode extends SKNode {
 	initWithFontNamed(fontName: string): this;
 }
 
+/**
+ * @since 7.0
+ */
 declare const enum SKLabelVerticalAlignmentMode {
 
 	Baseline = 0,
@@ -834,6 +1070,9 @@ declare const enum SKLabelVerticalAlignmentMode {
 	Bottom = 3
 }
 
+/**
+ * @since 8.0
+ */
 declare class SKLightNode extends SKNode {
 
 	static alloc(): SKLightNode; // inherited from NSObject
@@ -844,6 +1083,9 @@ declare class SKLightNode extends SKNode {
 
 	static nodeWithFileNamed(filename: string): SKLightNode; // inherited from SKNode
 
+	/**
+	 * @since 12.0
+	 */
 	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKLightNode; // inherited from SKNode
 
 	ambientColor: UIColor;
@@ -859,6 +1101,9 @@ declare class SKLightNode extends SKNode {
 	shadowColor: UIColor;
 }
 
+/**
+ * @since 8.0
+ */
 declare class SKMutableTexture extends SKTexture {
 
 	static alloc(): SKMutableTexture; // inherited from NSObject
@@ -867,8 +1112,14 @@ declare class SKMutableTexture extends SKTexture {
 
 	static new(): SKMutableTexture; // inherited from NSObject
 
+	/**
+	 * @since 8.0
+	 */
 	static textureNoiseWithSmoothnessSizeGrayscale(smoothness: number, size: CGSize, grayscale: boolean): SKMutableTexture; // inherited from SKTexture
 
+	/**
+	 * @since 8.0
+	 */
 	static textureVectorNoiseWithSmoothnessSize(smoothness: number, size: CGSize): SKMutableTexture; // inherited from SKTexture
 
 	static textureWithCGImage(image: any): SKMutableTexture; // inherited from SKTexture
@@ -883,6 +1134,9 @@ declare class SKMutableTexture extends SKTexture {
 
 	static textureWithImageNamed(name: string): SKMutableTexture; // inherited from SKTexture
 
+	/**
+	 * @since 10.0
+	 */
 	static textureWithNoiseMap(noiseMap: GKNoiseMap): SKMutableTexture; // inherited from SKTexture
 
 	static textureWithRectInTexture(rect: CGRect, texture: SKTexture): SKMutableTexture; // inherited from SKTexture
@@ -898,7 +1152,7 @@ declare class SKMutableTexture extends SKTexture {
 	modifyPixelDataWithBlock(block: (p1: interop.Pointer | interop.Reference<any>, p2: number) => void): void;
 }
 
-declare class SKNode extends UIResponder implements NSCopying, NSSecureCoding, UIFocusItem {
+declare class SKNode extends UIResponder implements NSCopying, NSSecureCoding, UICoordinateSpace, UIFocusItem, UIFocusItemContainer {
 
 	static alloc(): SKNode; // inherited from NSObject
 
@@ -908,6 +1162,9 @@ declare class SKNode extends UIResponder implements NSCopying, NSSecureCoding, U
 
 	static nodeWithFileNamed(filename: string): SKNode;
 
+	/**
+	 * @since 12.0
+	 */
 	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKNode;
 
 	static obstaclesFromNodeBounds(nodes: NSArray<SKNode> | SKNode[]): NSArray<GKPolygonObstacle>;
@@ -918,14 +1175,24 @@ declare class SKNode extends UIResponder implements NSCopying, NSSecureCoding, U
 
 	alpha: number;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 10.0
+	 */
 	attributeValues: NSDictionary<string, SKAttributeValue>;
 
 	readonly children: NSArray<SKNode>;
 
 	constraints: NSArray<SKConstraint>;
 
+	/**
+	 * @since 10.0
+	 */
 	entity: GKEntity;
 
+	/**
+	 * @since 11.0
+	 */
 	focusBehavior: SKNodeFocusBehavior;
 
 	hidden: boolean;
@@ -958,32 +1225,64 @@ declare class SKNode extends UIResponder implements NSCopying, NSSecureCoding, U
 
 	zRotation: number;
 
+	/**
+	 * @since 8.0
+	 */
+	readonly bounds: CGRect; // inherited from UICoordinateSpace
+
 	readonly canBecomeFocused: boolean; // inherited from UIFocusItem
+
+	readonly coordinateSpace: UICoordinateSpace; // inherited from UIFocusItemContainer
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
 	readonly description: string; // inherited from NSObjectProtocol
 
+	/**
+	 * @since 15.0
+	 */
 	readonly focusEffect: UIFocusEffect; // inherited from UIFocusItem
 
+	/**
+	 * @since 14.0
+	 */
 	readonly focusGroupIdentifier: string; // inherited from UIFocusEnvironment
 
+	/**
+	 * @since 15.0
+	 */
 	readonly focusGroupPriority: number; // inherited from UIFocusItem
 
+	/**
+	 * @since 12.0
+	 */
 	readonly focusItemContainer: UIFocusItemContainer; // inherited from UIFocusEnvironment
 
+	/**
+	 * @since 12.0
+	 */
 	readonly frame: CGRect; // inherited from UIFocusItem
 
 	readonly hash: number; // inherited from NSObjectProtocol
 
 	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
+	/**
+	 * @since 15.0
+	 */
 	readonly isTransparentFocusItem: boolean; // inherited from UIFocusItem
 
+	/**
+	 * @since 12.0
+	 */
 	readonly parentFocusEnvironment: UIFocusEnvironment; // inherited from UIFocusEnvironment
 
 	readonly preferredFocusEnvironments: NSArray<UIFocusEnvironment>; // inherited from UIFocusEnvironment
 
+	/**
+	 * @since 9.0
+	 * @deprecated 10.0
+	 */
 	readonly preferredFocusedView: UIView; // inherited from UIFocusEnvironment
 
 	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
@@ -1008,12 +1307,35 @@ declare class SKNode extends UIResponder implements NSCopying, NSSecureCoding, U
 
 	containsPoint(p: CGPoint): boolean;
 
+	/**
+	 * @since 8.0
+	 */
+	convertPointFromCoordinateSpace(point: CGPoint, coordinateSpace: UICoordinateSpace): CGPoint;
+
 	convertPointFromNode(point: CGPoint, node: SKNode): CGPoint;
+
+	/**
+	 * @since 8.0
+	 */
+	convertPointToCoordinateSpace(point: CGPoint, coordinateSpace: UICoordinateSpace): CGPoint;
 
 	convertPointToNode(point: CGPoint, node: SKNode): CGPoint;
 
+	/**
+	 * @since 8.0
+	 */
+	convertRectFromCoordinateSpace(rect: CGRect, coordinateSpace: UICoordinateSpace): CGRect;
+
+	/**
+	 * @since 8.0
+	 */
+	convertRectToCoordinateSpace(rect: CGRect, coordinateSpace: UICoordinateSpace): CGRect;
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
+	/**
+	 * @since 12.0
+	 */
 	didHintFocusMovement(hint: UIFocusMovementHint): void;
 
 	didUpdateFocusInContextWithAnimationCoordinator(context: UIFocusUpdateContext, coordinator: UIFocusAnimationCoordinator): void;
@@ -1021,6 +1343,8 @@ declare class SKNode extends UIResponder implements NSCopying, NSSecureCoding, U
 	encodeWithCoder(coder: NSCoder): void;
 
 	enumerateChildNodesWithNameUsingBlock(name: string, block: (p1: SKNode, p2: interop.Pointer | interop.Reference<boolean>) => void): void;
+
+	focusItemsInRect(rect: CGRect): NSArray<UIFocusItem>;
 
 	hasActions(): boolean;
 
@@ -1040,12 +1364,18 @@ declare class SKNode extends UIResponder implements NSCopying, NSSecureCoding, U
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
 
+	/**
+	 * @since 9.0
+	 */
 	moveToParent(parent: SKNode): void;
 
 	nodeAtPoint(p: CGPoint): SKNode;
 
 	nodesAtPoint(p: CGPoint): NSArray<SKNode>;
 
+	/**
+	 * @since 8.0
+	 */
 	objectForKeyedSubscript(name: string): NSArray<SKNode>;
 
 	performSelector(aSelector: string): any;
@@ -1080,15 +1410,26 @@ declare class SKNode extends UIResponder implements NSCopying, NSSecureCoding, U
 
 	setScale(scale: number): void;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 10.0
+	 */
 	setValueForAttributeNamed(value: SKAttributeValue, key: string): void;
 
 	shouldUpdateFocusInContext(context: UIFocusUpdateContext): boolean;
 
 	updateFocusIfNeeded(): void;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 10.0
+	 */
 	valueForAttributeNamed(key: string): SKAttributeValue;
 }
 
+/**
+ * @since 11.0
+ */
 declare const enum SKNodeFocusBehavior {
 
 	None = 0,
@@ -1098,6 +1439,9 @@ declare const enum SKNodeFocusBehavior {
 	Focusable = 2
 }
 
+/**
+ * @since 9.0
+ */
 declare const enum SKParticleRenderOrder {
 
 	OldestLast = 0,
@@ -1131,8 +1475,14 @@ declare class SKPhysicsBody extends NSObject implements NSCopying, NSSecureCodin
 
 	static bodyWithRectangleOfSizeCenter(s: CGSize, center: CGPoint): SKPhysicsBody;
 
+	/**
+	 * @since 8.0
+	 */
 	static bodyWithTextureAlphaThresholdSize(texture: SKTexture, alphaThreshold: number, size: CGSize): SKPhysicsBody;
 
+	/**
+	 * @since 8.0
+	 */
 	static bodyWithTextureSize(texture: SKTexture, size: CGSize): SKPhysicsBody;
 
 	static new(): SKPhysicsBody; // inherited from NSObject
@@ -1149,6 +1499,9 @@ declare class SKPhysicsBody extends NSObject implements NSCopying, NSSecureCodin
 
 	categoryBitMask: number;
 
+	/**
+	 * @since 8.0
+	 */
 	charge: number;
 
 	collisionBitMask: number;
@@ -1159,6 +1512,9 @@ declare class SKPhysicsBody extends NSObject implements NSCopying, NSSecureCodin
 
 	dynamic: boolean;
 
+	/**
+	 * @since 8.0
+	 */
 	fieldBitMask: number;
 
 	friction: number;
@@ -1171,6 +1527,9 @@ declare class SKPhysicsBody extends NSObject implements NSCopying, NSSecureCodin
 
 	readonly node: SKNode;
 
+	/**
+	 * @since 8.0
+	 */
 	pinned: boolean;
 
 	resting: boolean;
@@ -1362,9 +1721,15 @@ declare class SKPhysicsWorld extends NSObject implements NSSecureCoding {
 
 	removeJoint(joint: SKPhysicsJoint): void;
 
+	/**
+	 * @since 8.0
+	 */
 	sampleFieldsAt(position: interop.Reference<number>): interop.Reference<number>;
 }
 
+/**
+ * @since 8.0
+ */
 declare class SKRange extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SKRange; // inherited from NSObject
@@ -1402,6 +1767,9 @@ declare class SKRange extends NSObject implements NSCopying, NSSecureCoding {
 	initWithLowerLimitUpperLimit(lower: number, upper: number): this;
 }
 
+/**
+ * @since 8.0
+ */
 declare class SKReachConstraints extends NSObject implements NSSecureCoding {
 
 	static alloc(): SKReachConstraints; // inherited from NSObject
@@ -1425,6 +1793,9 @@ declare class SKReachConstraints extends NSObject implements NSSecureCoding {
 	initWithLowerAngleLimitUpperAngleLimit(lowerAngleLimit: number, upperAngleLimit: number): this;
 }
 
+/**
+ * @since 9.0
+ */
 declare class SKReferenceNode extends SKNode {
 
 	static alloc(): SKReferenceNode; // inherited from NSObject
@@ -1435,6 +1806,9 @@ declare class SKReferenceNode extends SKNode {
 
 	static nodeWithFileNamed(filename: string): SKReferenceNode; // inherited from SKNode
 
+	/**
+	 * @since 12.0
+	 */
 	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKReferenceNode; // inherited from SKNode
 
 	static referenceNodeWithFileNamed(fileName: string): SKReferenceNode;
@@ -1454,6 +1828,9 @@ declare class SKReferenceNode extends SKNode {
 	resolveReferenceNode(): void;
 }
 
+/**
+ * @since 8.0
+ */
 declare class SKRegion extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SKRegion; // inherited from NSObject
@@ -1497,6 +1874,9 @@ declare class SKRegion extends NSObject implements NSCopying, NSSecureCoding {
 	regionByUnionWithRegion(region: SKRegion): this;
 }
 
+/**
+ * @since 11.0
+ */
 declare class SKRenderer extends NSObject {
 
 	static alloc(): SKRenderer; // inherited from NSObject
@@ -1545,20 +1925,35 @@ declare class SKScene extends SKEffectNode implements GKSceneRootNodeType {
 
 	static nodeWithFileNamed(filename: string): SKScene; // inherited from SKNode
 
+	/**
+	 * @since 12.0
+	 */
 	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKScene; // inherited from SKNode
 
 	static sceneWithSize(size: CGSize): SKScene;
 
 	anchorPoint: CGPoint;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly audioEngine: AVAudioEngine;
 
 	backgroundColor: UIColor;
 
+	/**
+	 * @since 9.0
+	 */
 	camera: SKCameraNode;
 
+	/**
+	 * @since 8.0
+	 */
 	delegate: SKSceneDelegate;
 
+	/**
+	 * @since 9.0
+	 */
 	listener: SKNode;
 
 	readonly physicsWorld: SKPhysicsWorld;
@@ -1591,12 +1986,18 @@ declare class SKScene extends SKEffectNode implements GKSceneRootNodeType {
 
 	convertPointToView(point: CGPoint): CGPoint;
 
+	/**
+	 * @since 8.0
+	 */
 	didApplyConstraints(): void;
 
 	didChangeSize(oldSize: CGSize): void;
 
 	didEvaluateActions(): void;
 
+	/**
+	 * @since 8.0
+	 */
 	didFinishUpdate(): void;
 
 	didMoveToView(view: SKView): void;
@@ -1621,6 +2022,9 @@ declare class SKScene extends SKEffectNode implements GKSceneRootNodeType {
 
 	retainCount(): number;
 
+	/**
+	 * @since 10.0
+	 */
 	sceneDidLoad(): void;
 
 	self(): this;
@@ -1630,6 +2034,9 @@ declare class SKScene extends SKEffectNode implements GKSceneRootNodeType {
 	willMoveFromView(view: SKView): void;
 }
 
+/**
+ * @since 8.0
+ */
 interface SKSceneDelegate extends NSObjectProtocol {
 
 	didApplyConstraintsForScene?(scene: SKScene): void;
@@ -1647,6 +2054,9 @@ declare var SKSceneDelegate: {
 	prototype: SKSceneDelegate;
 };
 
+/**
+ * @since 7.0
+ */
 declare const enum SKSceneScaleMode {
 
 	Fill = 0,
@@ -1658,6 +2068,9 @@ declare const enum SKSceneScaleMode {
 	ResizeFill = 3
 }
 
+/**
+ * @since 8.0
+ */
 declare class SKShader extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SKShader; // inherited from NSObject
@@ -1672,6 +2085,9 @@ declare class SKShader extends NSObject implements NSCopying, NSSecureCoding {
 
 	static shaderWithSourceUniforms(source: string, uniforms: NSArray<SKUniform> | SKUniform[]): SKShader;
 
+	/**
+	 * @since 9.0
+	 */
 	attributes: NSArray<SKAttribute>;
 
 	source: string;
@@ -1713,28 +2129,64 @@ declare class SKShapeNode extends SKNode {
 
 	static nodeWithFileNamed(filename: string): SKShapeNode; // inherited from SKNode
 
+	/**
+	 * @since 12.0
+	 */
 	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKShapeNode; // inherited from SKNode
 
+	/**
+	 * @since 8.0
+	 */
 	static shapeNodeWithCircleOfRadius(radius: number): SKShapeNode;
 
+	/**
+	 * @since 8.0
+	 */
 	static shapeNodeWithEllipseInRect(rect: CGRect): SKShapeNode;
 
+	/**
+	 * @since 8.0
+	 */
 	static shapeNodeWithEllipseOfSize(size: CGSize): SKShapeNode;
 
+	/**
+	 * @since 8.0
+	 */
 	static shapeNodeWithPath(path: any): SKShapeNode;
 
+	/**
+	 * @since 8.0
+	 */
 	static shapeNodeWithPathCentered(path: any, centered: boolean): SKShapeNode;
 
+	/**
+	 * @since 8.0
+	 */
 	static shapeNodeWithPointsCount(points: interop.Pointer | interop.Reference<CGPoint>, numPoints: number): SKShapeNode;
 
+	/**
+	 * @since 8.0
+	 */
 	static shapeNodeWithRect(rect: CGRect): SKShapeNode;
 
+	/**
+	 * @since 8.0
+	 */
 	static shapeNodeWithRectCornerRadius(rect: CGRect, cornerRadius: number): SKShapeNode;
 
+	/**
+	 * @since 8.0
+	 */
 	static shapeNodeWithRectOfSize(size: CGSize): SKShapeNode;
 
+	/**
+	 * @since 8.0
+	 */
 	static shapeNodeWithRectOfSizeCornerRadius(size: CGSize, cornerRadius: number): SKShapeNode;
 
+	/**
+	 * @since 8.0
+	 */
 	static shapeNodeWithSplinePointsCount(points: interop.Pointer | interop.Reference<CGPoint>, numPoints: number): SKShapeNode;
 
 	antialiased: boolean;
@@ -1743,8 +2195,14 @@ declare class SKShapeNode extends SKNode {
 
 	fillColor: UIColor;
 
+	/**
+	 * @since 8.0
+	 */
 	fillShader: SKShader;
 
+	/**
+	 * @since 8.0
+	 */
 	fillTexture: SKTexture;
 
 	glowWidth: number;
@@ -1763,8 +2221,14 @@ declare class SKShapeNode extends SKNode {
 
 	strokeColor: UIColor;
 
+	/**
+	 * @since 8.0
+	 */
 	strokeShader: SKShader;
 
+	/**
+	 * @since 8.0
+	 */
 	strokeTexture: SKTexture;
 }
 
@@ -1778,6 +2242,9 @@ declare class SKSpriteNode extends SKNode implements SKWarpable {
 
 	static nodeWithFileNamed(filename: string): SKSpriteNode; // inherited from SKNode
 
+	/**
+	 * @since 12.0
+	 */
 	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKSpriteNode; // inherited from SKNode
 
 	static spriteNodeWithColorSize(color: UIColor, size: CGSize): SKSpriteNode;
@@ -1802,14 +2269,29 @@ declare class SKSpriteNode extends SKNode implements SKWarpable {
 
 	colorBlendFactor: number;
 
+	/**
+	 * @since 8.0
+	 */
 	lightingBitMask: number;
 
+	/**
+	 * @since 8.0
+	 */
 	normalTexture: SKTexture;
 
+	/**
+	 * @since 8.0
+	 */
 	shader: SKShader;
 
+	/**
+	 * @since 8.0
+	 */
 	shadowCastBitMask: number;
 
+	/**
+	 * @since 8.0
+	 */
 	shadowedBitMask: number;
 
 	size: CGSize;
@@ -1868,6 +2350,9 @@ declare class SKSpriteNode extends SKNode implements SKWarpable {
 
 	retainCount(): number;
 
+	/**
+	 * @since 10.0
+	 */
 	scaleToSize(size: CGSize): void;
 
 	self(): this;
@@ -1881,8 +2366,14 @@ declare class SKTexture extends NSObject implements NSCopying, NSSecureCoding {
 
 	static preloadTexturesWithCompletionHandler(textures: NSArray<SKTexture> | SKTexture[], completionHandler: () => void): void;
 
+	/**
+	 * @since 8.0
+	 */
 	static textureNoiseWithSmoothnessSizeGrayscale(smoothness: number, size: CGSize, grayscale: boolean): SKTexture;
 
+	/**
+	 * @since 8.0
+	 */
 	static textureVectorNoiseWithSmoothnessSize(smoothness: number, size: CGSize): SKTexture;
 
 	static textureWithCGImage(image: any): SKTexture;
@@ -1897,6 +2388,9 @@ declare class SKTexture extends NSObject implements NSCopying, NSSecureCoding {
 
 	static textureWithImageNamed(name: string): SKTexture;
 
+	/**
+	 * @since 10.0
+	 */
 	static textureWithNoiseMap(noiseMap: GKNoiseMap): SKTexture;
 
 	static textureWithRectInTexture(rect: CGRect, texture: SKTexture): SKTexture;
@@ -1909,6 +2403,9 @@ declare class SKTexture extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
+	/**
+	 * @since 9.0
+	 */
 	CGImage(): any;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
@@ -1923,8 +2420,14 @@ declare class SKTexture extends NSObject implements NSCopying, NSSecureCoding {
 
 	textureByApplyingCIFilter(filter: CIFilter): this;
 
+	/**
+	 * @since 8.0
+	 */
 	textureByGeneratingNormalMap(): this;
 
+	/**
+	 * @since 8.0
+	 */
 	textureByGeneratingNormalMapWithSmoothnessContrast(smoothness: number, contrast: number): this;
 
 	textureRect(): CGRect;
@@ -1936,10 +2439,16 @@ declare class SKTextureAtlas extends NSObject implements NSSecureCoding {
 
 	static atlasNamed(name: string): SKTextureAtlas;
 
+	/**
+	 * @since 8.0
+	 */
 	static atlasWithDictionary(properties: NSDictionary<string, any>): SKTextureAtlas;
 
 	static new(): SKTextureAtlas; // inherited from NSObject
 
+	/**
+	 * @since 9.0
+	 */
 	static preloadTextureAtlasesNamedWithCompletionHandler(atlasNames: NSArray<string> | string[], completionHandler: (p1: NSError, p2: NSArray<SKTextureAtlas>) => void): void;
 
 	static preloadTextureAtlasesWithCompletionHandler(textureAtlases: NSArray<SKTextureAtlas> | SKTextureAtlas[], completionHandler: () => void): void;
@@ -1959,6 +2468,9 @@ declare class SKTextureAtlas extends NSObject implements NSSecureCoding {
 	textureNamed(name: string): SKTexture;
 }
 
+/**
+ * @since 7.0
+ */
 declare const enum SKTextureFilteringMode {
 
 	Nearest = 0,
@@ -1966,6 +2478,9 @@ declare const enum SKTextureFilteringMode {
 	Linear = 1
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum SKTileAdjacencyMask {
 
 	AdjacencyUp = 1,
@@ -2039,6 +2554,9 @@ declare const enum SKTileAdjacencyMask {
 	AdjacencyUpperLeftCorner = 247
 }
 
+/**
+ * @since 10.0
+ */
 declare class SKTileDefinition extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SKTileDefinition; // inherited from NSObject
@@ -2106,6 +2624,9 @@ declare class SKTileDefinition extends NSObject implements NSCopying, NSSecureCo
 	initWithTexturesSizeTimePerFrame(textures: NSArray<SKTexture> | SKTexture[], size: CGSize, timePerFrame: number): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum SKTileDefinitionRotation {
 
 	Rotation0 = 0,
@@ -2117,6 +2638,9 @@ declare const enum SKTileDefinitionRotation {
 	Rotation270 = 3
 }
 
+/**
+ * @since 10.0
+ */
 declare class SKTileGroup extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SKTileGroup; // inherited from NSObject
@@ -2152,6 +2676,9 @@ declare class SKTileGroup extends NSObject implements NSCopying, NSSecureCoding 
 	initWithTileDefinition(tileDefinition: SKTileDefinition): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class SKTileGroupRule extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SKTileGroupRule; // inherited from NSObject
@@ -2181,6 +2708,9 @@ declare class SKTileGroupRule extends NSObject implements NSCopying, NSSecureCod
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class SKTileMapNode extends SKNode implements NSCopying, NSSecureCoding {
 
 	static alloc(): SKTileMapNode; // inherited from NSObject
@@ -2191,6 +2721,9 @@ declare class SKTileMapNode extends SKNode implements NSCopying, NSSecureCoding 
 
 	static nodeWithFileNamed(filename: string): SKTileMapNode; // inherited from SKNode
 
+	/**
+	 * @since 12.0
+	 */
 	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKTileMapNode; // inherited from SKNode
 
 	static tileMapNodeWithTileSetColumnsRowsTileSize(tileSet: SKTileSet, columns: number, rows: number, tileSize: CGSize): SKTileMapNode;
@@ -2264,6 +2797,9 @@ declare class SKTileMapNode extends SKNode implements NSCopying, NSSecureCoding 
 	tileRowIndexFromPosition(position: CGPoint): number;
 }
 
+/**
+ * @since 10.0
+ */
 declare class SKTileSet extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SKTileSet; // inherited from NSObject
@@ -2307,6 +2843,9 @@ declare class SKTileSet extends NSObject implements NSCopying, NSSecureCoding {
 	initWithTileGroupsTileSetType(tileGroups: NSArray<SKTileGroup> | SKTileGroup[], tileSetType: SKTileSetType): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum SKTileSetType {
 
 	Grid = 0,
@@ -2318,6 +2857,9 @@ declare const enum SKTileSetType {
 	HexagonalPointy = 3
 }
 
+/**
+ * @since 11.0
+ */
 declare class SKTransformNode extends SKNode {
 
 	static alloc(): SKTransformNode; // inherited from NSObject
@@ -2328,6 +2870,9 @@ declare class SKTransformNode extends SKNode {
 
 	static nodeWithFileNamed(filename: string): SKTransformNode; // inherited from SKNode
 
+	/**
+	 * @since 12.0
+	 */
 	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKTransformNode; // inherited from SKNode
 
 	xRotation: number;
@@ -2388,6 +2933,9 @@ declare class SKTransition extends NSObject implements NSCopying {
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+/**
+ * @since 7.0
+ */
 declare const enum SKTransitionDirection {
 
 	Up = 0,
@@ -2399,6 +2947,9 @@ declare const enum SKTransitionDirection {
 	Left = 3
 }
 
+/**
+ * @since 8.0
+ */
 declare class SKUniform extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SKUniform; // inherited from NSObject
@@ -2409,26 +2960,53 @@ declare class SKUniform extends NSObject implements NSCopying, NSSecureCoding {
 
 	static uniformWithNameFloat(name: string, value: number): SKUniform;
 
+	/**
+	 * @since 10.0
+	 */
 	static uniformWithNameMatrixFloat2x2(name: string, value: simd_float2x2): SKUniform;
 
+	/**
+	 * @since 10.0
+	 */
 	static uniformWithNameMatrixFloat3x3(name: string, value: simd_float3x3): SKUniform;
 
+	/**
+	 * @since 10.0
+	 */
 	static uniformWithNameMatrixFloat4x4(name: string, value: simd_float4x4): SKUniform;
 
 	static uniformWithNameTexture(name: string, texture: SKTexture): SKUniform;
 
+	/**
+	 * @since 10.0
+	 */
 	static uniformWithNameVectorFloat2(name: string, value: interop.Reference<number>): SKUniform;
 
+	/**
+	 * @since 10.0
+	 */
 	static uniformWithNameVectorFloat3(name: string, value: interop.Reference<number>): SKUniform;
 
+	/**
+	 * @since 10.0
+	 */
 	static uniformWithNameVectorFloat4(name: string, value: interop.Reference<number>): SKUniform;
 
 	floatValue: number;
 
+	/**
+	 * @since 10.0
+	 */
 	matrixFloat2x2Value: simd_float2x2;
 
+	/**
+	 * @since 10.0
+	 */
 	matrixFloat3x3Value: simd_float3x3;
 
+	/**
+	 * @since 10.0
+	 */
 	matrixFloat4x4Value: simd_float4x4;
 
 	readonly name: string;
@@ -2437,10 +3015,19 @@ declare class SKUniform extends NSObject implements NSCopying, NSSecureCoding {
 
 	readonly uniformType: SKUniformType;
 
+	/**
+	 * @since 10.0
+	 */
 	vectorFloat2Value: interop.Reference<number>;
 
+	/**
+	 * @since 10.0
+	 */
 	vectorFloat3Value: interop.Reference<number>;
 
+	/**
+	 * @since 10.0
+	 */
 	vectorFloat4Value: interop.Reference<number>;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
@@ -2451,18 +3038,36 @@ declare class SKUniform extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { name: string; float: number; });
 
+	/**
+	 * @since 10.0
+	 */
 	constructor(o: { name: string; matrixFloat2x2: simd_float2x2; });
 
+	/**
+	 * @since 10.0
+	 */
 	constructor(o: { name: string; matrixFloat3x3: simd_float3x3; });
 
+	/**
+	 * @since 10.0
+	 */
 	constructor(o: { name: string; matrixFloat4x4: simd_float4x4; });
 
 	constructor(o: { name: string; texture: SKTexture; });
 
+	/**
+	 * @since 10.0
+	 */
 	constructor(o: { name: string; vectorFloat2: interop.Reference<number>; });
 
+	/**
+	 * @since 10.0
+	 */
 	constructor(o: { name: string; vectorFloat3: interop.Reference<number>; });
 
+	/**
+	 * @since 10.0
+	 */
 	constructor(o: { name: string; vectorFloat4: interop.Reference<number>; });
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
@@ -2475,21 +3080,42 @@ declare class SKUniform extends NSObject implements NSCopying, NSSecureCoding {
 
 	initWithNameFloat(name: string, value: number): this;
 
+	/**
+	 * @since 10.0
+	 */
 	initWithNameMatrixFloat2x2(name: string, value: simd_float2x2): this;
 
+	/**
+	 * @since 10.0
+	 */
 	initWithNameMatrixFloat3x3(name: string, value: simd_float3x3): this;
 
+	/**
+	 * @since 10.0
+	 */
 	initWithNameMatrixFloat4x4(name: string, value: simd_float4x4): this;
 
 	initWithNameTexture(name: string, texture: SKTexture): this;
 
+	/**
+	 * @since 10.0
+	 */
 	initWithNameVectorFloat2(name: string, value: interop.Reference<number>): this;
 
+	/**
+	 * @since 10.0
+	 */
 	initWithNameVectorFloat3(name: string, value: interop.Reference<number>): this;
 
+	/**
+	 * @since 10.0
+	 */
 	initWithNameVectorFloat4(name: string, value: interop.Reference<number>): this;
 }
 
+/**
+ * @since 8.0
+ */
 declare const enum SKUniformType {
 
 	None = 0,
@@ -2521,16 +3147,33 @@ declare class SKVideoNode extends SKNode {
 
 	static nodeWithFileNamed(filename: string): SKVideoNode; // inherited from SKNode
 
+	/**
+	 * @since 12.0
+	 */
 	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKVideoNode; // inherited from SKNode
 
 	static videoNodeWithAVPlayer(player: AVPlayer): SKVideoNode;
 
+	/**
+	 * @since 9.0
+	 */
 	static videoNodeWithFileNamed(videoFile: string): SKVideoNode;
 
+	/**
+	 * @since 9.0
+	 */
 	static videoNodeWithURL(videoURL: NSURL): SKVideoNode;
 
+	/**
+	 * @since 7.0
+	 * @deprecated 9.0
+	 */
 	static videoNodeWithVideoFileNamed(videoFile: string): SKVideoNode;
 
+	/**
+	 * @since 7.0
+	 * @deprecated 9.0
+	 */
 	static videoNodeWithVideoURL(videoURL: NSURL): SKVideoNode;
 
 	anchorPoint: CGPoint;
@@ -2539,22 +3182,50 @@ declare class SKVideoNode extends SKNode {
 
 	constructor(o: { AVPlayer: AVPlayer; });
 
+	/**
+	 * @since 8.0
+	 */
 	constructor(o: { fileNamed: string; });
 
+	/**
+	 * @since 8.0
+	 */
 	constructor(o: { URL: NSURL; });
 
+	/**
+	 * @since 7.0
+	 * @deprecated 8.0
+	 */
 	constructor(o: { videoFileNamed: string; });
 
+	/**
+	 * @since 7.0
+	 * @deprecated 8.0
+	 */
 	constructor(o: { videoURL: NSURL; });
 
 	initWithAVPlayer(player: AVPlayer): this;
 
+	/**
+	 * @since 8.0
+	 */
 	initWithFileNamed(videoFile: string): this;
 
+	/**
+	 * @since 8.0
+	 */
 	initWithURL(url: NSURL): this;
 
+	/**
+	 * @since 7.0
+	 * @deprecated 8.0
+	 */
 	initWithVideoFileNamed(videoFile: string): this;
 
+	/**
+	 * @since 7.0
+	 * @deprecated 8.0
+	 */
 	initWithVideoURL(url: NSURL): this;
 
 	pause(): void;
@@ -2568,50 +3239,96 @@ declare class SKView extends UIView {
 
 	static appearance(): SKView; // inherited from UIAppearance
 
+	/**
+	 * @since 8.0
+	 */
 	static appearanceForTraitCollection(trait: UITraitCollection): SKView; // inherited from UIAppearance
 
+	/**
+	 * @since 8.0
+	 * @deprecated 9.0
+	 */
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): SKView; // inherited from UIAppearance
 
+	/**
+	 * @since 9.0
+	 */
 	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): SKView; // inherited from UIAppearance
 
+	/**
+	 * @since 5.0
+	 * @deprecated 9.0
+	 */
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): SKView; // inherited from UIAppearance
 
+	/**
+	 * @since 9.0
+	 */
 	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): SKView; // inherited from UIAppearance
 
 	static new(): SKView; // inherited from NSObject
 
+	/**
+	 * @since 8.0
+	 */
 	allowsTransparency: boolean;
 
 	asynchronous: boolean;
 
-	delegate: NSObject;
+	/**
+	 * @since 10.0
+	 */
+	delegate: NSObject & SKViewDelegate;
 
 	disableDepthStencilBuffer: boolean;
 
+	/**
+	 * @since 7.0
+	 * @deprecated 10.0
+	 */
 	frameInterval: number;
 
 	ignoresSiblingOrder: boolean;
 
 	paused: boolean;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 10.0
+	 */
 	preferredFrameRate: number;
 
+	/**
+	 * @since 10.0
+	 */
 	preferredFramesPerSecond: number;
 
 	readonly scene: SKScene;
 
+	/**
+	 * @since 8.0
+	 */
 	shouldCullNonVisibleNodes: boolean;
 
 	showsDrawCount: boolean;
 
 	showsFPS: boolean;
 
+	/**
+	 * @since 8.0
+	 */
 	showsFields: boolean;
 
 	showsNodeCount: boolean;
 
+	/**
+	 * @since 8.0
+	 */
 	showsPhysics: boolean;
 
+	/**
+	 * @since 8.0
+	 */
 	showsQuadCount: boolean;
 
 	convertPointFromScene(point: CGPoint, scene: SKScene): CGPoint;
@@ -2627,6 +3344,9 @@ declare class SKView extends UIView {
 	textureFromNodeCrop(node: SKNode, crop: CGRect): SKTexture;
 }
 
+/**
+ * @since 10.0
+ */
 interface SKViewDelegate extends NSObjectProtocol {
 
 	viewShouldRenderAtTime?(view: SKView, time: number): boolean;
@@ -2636,6 +3356,9 @@ declare var SKViewDelegate: {
 	prototype: SKViewDelegate;
 };
 
+/**
+ * @since 10.0
+ */
 declare class SKWarpGeometry extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SKWarpGeometry; // inherited from NSObject
@@ -2653,6 +3376,9 @@ declare class SKWarpGeometry extends NSObject implements NSCopying, NSSecureCodi
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class SKWarpGeometryGrid extends SKWarpGeometry implements NSSecureCoding {
 
 	static alloc(): SKWarpGeometryGrid; // inherited from NSObject
@@ -2692,6 +3418,9 @@ declare class SKWarpGeometryGrid extends SKWarpGeometry implements NSSecureCodin
 	sourcePositionAtIndex(index: number): interop.Reference<number>;
 }
 
+/**
+ * @since 10.0
+ */
 interface SKWarpable extends NSObjectProtocol {
 
 	subdivisionLevels: number;

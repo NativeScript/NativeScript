@@ -1,4 +1,7 @@
 
+/**
+ * @since 13.0
+ */
 declare const enum AVAudioSessionRouteSelection {
 
 	None = 0,
@@ -8,6 +11,9 @@ declare const enum AVAudioSessionRouteSelection {
 	External = 2
 }
 
+/**
+ * @since 17.2
+ */
 declare class AVCaptureEvent extends NSObject {
 
 	static alloc(): AVCaptureEvent; // inherited from NSObject
@@ -17,6 +23,9 @@ declare class AVCaptureEvent extends NSObject {
 	readonly phase: AVCaptureEventPhase;
 }
 
+/**
+ * @since 17.2
+ */
 declare class AVCaptureEventInteraction extends NSObject implements UIInteraction {
 
 	static alloc(): AVCaptureEventInteraction; // inherited from NSObject
@@ -74,6 +83,9 @@ declare class AVCaptureEventInteraction extends NSObject implements UIInteractio
 	willMoveToView(view: UIView): void;
 }
 
+/**
+ * @since 17.2
+ */
 declare const enum AVCaptureEventPhase {
 
 	Began = 0,
@@ -83,6 +95,9 @@ declare const enum AVCaptureEventPhase {
 	Cancelled = 2
 }
 
+/**
+ * @since 16.0
+ */
 declare class AVInterstitialTimeRange extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): AVInterstitialTimeRange; // inherited from NSObject
@@ -102,6 +117,9 @@ declare class AVInterstitialTimeRange extends NSObject implements NSCopying, NSS
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 9.0
+ */
 declare const enum AVKitError {
 
 	Unknown = -1000,
@@ -117,8 +135,14 @@ declare const enum AVKitError {
 	RecordingFailed = -1200
 }
 
+/**
+ * @since 9.0
+ */
 declare var AVKitErrorDomain: string;
 
+/**
+ * @since 9.0
+ */
 declare class AVPictureInPictureController extends NSObject {
 
 	static alloc(): AVPictureInPictureController; // inherited from NSObject
@@ -131,8 +155,14 @@ declare class AVPictureInPictureController extends NSObject {
 
 	static pictureInPictureButtonStopImageCompatibleWithTraitCollection(traitCollection: UITraitCollection): UIImage;
 
+	/**
+	 * @since 14.2
+	 */
 	canStartPictureInPictureAutomaticallyFromInline: boolean;
 
+	/**
+	 * @since 15.0
+	 */
 	contentSource: AVPictureInPictureControllerContentSource;
 
 	delegate: AVPictureInPictureControllerDelegate;
@@ -145,20 +175,38 @@ declare class AVPictureInPictureController extends NSObject {
 
 	readonly playerLayer: AVPlayerLayer;
 
+	/**
+	 * @since 14.0
+	 */
 	requiresLinearPlayback: boolean;
 
+	/**
+	 * @since 13.0
+	 */
 	static readonly pictureInPictureButtonStartImage: UIImage;
 
+	/**
+	 * @since 13.0
+	 */
 	static readonly pictureInPictureButtonStopImage: UIImage;
 
+	/**
+	 * @since 15.0
+	 */
 	constructor(o: { contentSource: AVPictureInPictureControllerContentSource; });
 
 	constructor(o: { playerLayer: AVPlayerLayer; });
 
+	/**
+	 * @since 15.0
+	 */
 	initWithContentSource(contentSource: AVPictureInPictureControllerContentSource): this;
 
 	initWithPlayerLayer(playerLayer: AVPlayerLayer): this;
 
+	/**
+	 * @since 15.0
+	 */
 	invalidatePlaybackState(): void;
 
 	startPictureInPicture(): void;
@@ -166,14 +214,23 @@ declare class AVPictureInPictureController extends NSObject {
 	stopPictureInPicture(): void;
 }
 
+/**
+ * @since 15.0
+ */
 declare class AVPictureInPictureControllerContentSource extends NSObject {
 
 	static alloc(): AVPictureInPictureControllerContentSource; // inherited from NSObject
 
 	static new(): AVPictureInPictureControllerContentSource; // inherited from NSObject
 
+	/**
+	 * @since 15.0
+	 */
 	readonly activeVideoCallContentViewController: AVPictureInPictureVideoCallViewController;
 
+	/**
+	 * @since 15.0
+	 */
 	readonly activeVideoCallSourceView: UIView;
 
 	readonly playerLayer: AVPlayerLayer;
@@ -182,12 +239,18 @@ declare class AVPictureInPictureControllerContentSource extends NSObject {
 
 	readonly sampleBufferPlaybackDelegate: AVPictureInPictureSampleBufferPlaybackDelegate;
 
+	/**
+	 * @since 15.0
+	 */
 	constructor(o: { activeVideoCallSourceView: UIView; contentViewController: AVPictureInPictureVideoCallViewController; });
 
 	constructor(o: { playerLayer: AVPlayerLayer; });
 
 	constructor(o: { sampleBufferDisplayLayer: AVSampleBufferDisplayLayer; playbackDelegate: AVPictureInPictureSampleBufferPlaybackDelegate; });
 
+	/**
+	 * @since 15.0
+	 */
 	initWithActiveVideoCallSourceViewContentViewController(sourceView: UIView, contentViewController: AVPictureInPictureVideoCallViewController): this;
 
 	initWithPlayerLayer(playerLayer: AVPlayerLayer): this;
@@ -195,6 +258,9 @@ declare class AVPictureInPictureControllerContentSource extends NSObject {
 	initWithSampleBufferDisplayLayerPlaybackDelegate(sampleBufferDisplayLayer: AVSampleBufferDisplayLayer, playbackDelegate: AVPictureInPictureSampleBufferPlaybackDelegate): this;
 }
 
+/**
+ * @since 9.0
+ */
 interface AVPictureInPictureControllerDelegate extends NSObjectProtocol {
 
 	pictureInPictureControllerDidStartPictureInPicture?(pictureInPictureController: AVPictureInPictureController): void;
@@ -214,6 +280,9 @@ declare var AVPictureInPictureControllerDelegate: {
 	prototype: AVPictureInPictureControllerDelegate;
 };
 
+/**
+ * @since 15.0
+ */
 interface AVPictureInPictureSampleBufferPlaybackDelegate extends NSObjectProtocol {
 
 	pictureInPictureControllerDidTransitionToRenderSize(pictureInPictureController: AVPictureInPictureController, newRenderSize: CMVideoDimensions): void;
@@ -233,6 +302,9 @@ declare var AVPictureInPictureSampleBufferPlaybackDelegate: {
 	prototype: AVPictureInPictureSampleBufferPlaybackDelegate;
 };
 
+/**
+ * @since 15.0
+ */
 declare class AVPictureInPictureVideoCallViewController extends UIViewController {
 
 	static alloc(): AVPictureInPictureVideoCallViewController; // inherited from NSObject
@@ -240,6 +312,9 @@ declare class AVPictureInPictureVideoCallViewController extends UIViewController
 	static new(): AVPictureInPictureVideoCallViewController; // inherited from NSObject
 }
 
+/**
+ * @since 16.0
+ */
 declare class AVPlaybackSpeed extends NSObject {
 
 	static alloc(): AVPlaybackSpeed; // inherited from NSObject
@@ -259,79 +334,166 @@ declare class AVPlaybackSpeed extends NSObject {
 	initWithRateLocalizedName(rate: number, localizedName: string): this;
 }
 
+/**
+ * @since 8.0
+ */
 declare class AVPlayerViewController extends UIViewController {
 
 	static alloc(): AVPlayerViewController; // inherited from NSObject
 
 	static new(): AVPlayerViewController; // inherited from NSObject
 
+	/**
+	 * @since 9.0
+	 */
 	allowsPictureInPicturePlayback: boolean;
 
+	/**
+	 * @since 16.0
+	 */
 	allowsVideoFrameAnalysis: boolean;
 
+	/**
+	 * @since 14.2
+	 */
 	canStartPictureInPictureAutomaticallyFromInline: boolean;
 
 	readonly contentOverlayView: UIView;
 
+	/**
+	 * @since 9.0
+	 */
 	delegate: AVPlayerViewControllerDelegate;
 
+	/**
+	 * @since 11.0
+	 */
 	entersFullScreenWhenPlaybackBegins: boolean;
 
+	/**
+	 * @since 11.0
+	 */
 	exitsFullScreenWhenPlaybackEnds: boolean;
 
+	/**
+	 * @since 9.0
+	 */
 	pixelBufferAttributes: NSDictionary<string, any>;
 
 	player: AVPlayer;
 
 	readonly readyForDisplay: boolean;
 
+	/**
+	 * @since 11.0
+	 */
 	requiresLinearPlayback: boolean;
 
+	/**
+	 * @since 16.0
+	 */
 	readonly selectedSpeed: AVPlaybackSpeed;
 
 	showsPlaybackControls: boolean;
 
+	/**
+	 * @since 13.0
+	 */
 	showsTimecodes: boolean;
 
+	/**
+	 * @since 16.0
+	 */
 	speeds: NSArray<AVPlaybackSpeed>;
 
+	/**
+	 * @since 17.0
+	 */
 	readonly toggleLookupAction: UIAction;
 
+	/**
+	 * @since 10.0
+	 */
 	updatesNowPlayingInfoCenter: boolean;
 
 	readonly videoBounds: CGRect;
 
+	/**
+	 * @since 17.0
+	 */
 	videoFrameAnalysisTypes: AVVideoFrameAnalysisType;
 
 	videoGravity: string;
 
+	/**
+	 * @since 16.0
+	 */
 	selectSpeed(speed: AVPlaybackSpeed): void;
 }
 
+/**
+ * @since 9.0
+ */
 interface AVPlayerViewControllerDelegate extends NSObjectProtocol {
 
+	/**
+	 * @since 16.0
+	 */
 	playerViewControllerDidPresentInterstitialTimeRange?(playerViewController: AVPlayerViewController, interstitial: AVInterstitialTimeRange): void;
 
+	/**
+	 * @since 9.0
+	 */
 	playerViewControllerDidStartPictureInPicture?(playerViewController: AVPlayerViewController): void;
 
+	/**
+	 * @since 9.0
+	 */
 	playerViewControllerDidStopPictureInPicture?(playerViewController: AVPlayerViewController): void;
 
+	/**
+	 * @since 9.0
+	 */
 	playerViewControllerFailedToStartPictureInPictureWithError?(playerViewController: AVPlayerViewController, error: NSError): void;
 
+	/**
+	 * @since 15.0
+	 */
 	playerViewControllerRestoreUserInterfaceForFullScreenExitWithCompletionHandler?(playerViewController: AVPlayerViewController, completionHandler: (p1: boolean) => void): void;
 
+	/**
+	 * @since 9.0
+	 */
 	playerViewControllerRestoreUserInterfaceForPictureInPictureStopWithCompletionHandler?(playerViewController: AVPlayerViewController, completionHandler: (p1: boolean) => void): void;
 
+	/**
+	 * @since 9.0
+	 */
 	playerViewControllerShouldAutomaticallyDismissAtPictureInPictureStart?(playerViewController: AVPlayerViewController): boolean;
 
+	/**
+	 * @since 12.0
+	 */
 	playerViewControllerWillBeginFullScreenPresentationWithAnimationCoordinator?(playerViewController: AVPlayerViewController, coordinator: UIViewControllerTransitionCoordinator): void;
 
+	/**
+	 * @since 12.0
+	 */
 	playerViewControllerWillEndFullScreenPresentationWithAnimationCoordinator?(playerViewController: AVPlayerViewController, coordinator: UIViewControllerTransitionCoordinator): void;
 
+	/**
+	 * @since 16.0
+	 */
 	playerViewControllerWillPresentInterstitialTimeRange?(playerViewController: AVPlayerViewController, interstitial: AVInterstitialTimeRange): void;
 
+	/**
+	 * @since 9.0
+	 */
 	playerViewControllerWillStartPictureInPicture?(playerViewController: AVPlayerViewController): void;
 
+	/**
+	 * @since 9.0
+	 */
 	playerViewControllerWillStopPictureInPicture?(playerViewController: AVPlayerViewController): void;
 }
 declare var AVPlayerViewControllerDelegate: {
@@ -339,33 +501,65 @@ declare var AVPlayerViewControllerDelegate: {
 	prototype: AVPlayerViewControllerDelegate;
 };
 
+/**
+ * @since 11.0
+ */
 declare class AVRoutePickerView extends UIView {
 
 	static alloc(): AVRoutePickerView; // inherited from NSObject
 
 	static appearance(): AVRoutePickerView; // inherited from UIAppearance
 
+	/**
+	 * @since 8.0
+	 */
 	static appearanceForTraitCollection(trait: UITraitCollection): AVRoutePickerView; // inherited from UIAppearance
 
+	/**
+	 * @since 8.0
+	 * @deprecated 9.0
+	 */
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): AVRoutePickerView; // inherited from UIAppearance
 
+	/**
+	 * @since 9.0
+	 */
 	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): AVRoutePickerView; // inherited from UIAppearance
 
+	/**
+	 * @since 5.0
+	 * @deprecated 9.0
+	 */
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): AVRoutePickerView; // inherited from UIAppearance
 
+	/**
+	 * @since 9.0
+	 */
 	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): AVRoutePickerView; // inherited from UIAppearance
 
 	static new(): AVRoutePickerView; // inherited from NSObject
 
+	/**
+	 * @since 11.0
+	 */
 	activeTintColor: UIColor;
 
+	/**
+	 * @since 16.0
+	 */
 	customRoutingController: AVCustomRoutingController;
 
 	delegate: AVRoutePickerViewDelegate;
 
+	/**
+	 * @since 13.0
+	 */
 	prioritizesVideoDevices: boolean;
 }
 
+/**
+ * @since 11.0
+ */
 interface AVRoutePickerViewDelegate extends NSObjectProtocol {
 
 	routePickerViewDidEndPresentingRoutes?(routePickerView: AVRoutePickerView): void;
@@ -377,6 +571,9 @@ declare var AVRoutePickerViewDelegate: {
 	prototype: AVRoutePickerViewDelegate;
 };
 
+/**
+ * @since 17.0
+ */
 declare const enum AVVideoFrameAnalysisType {
 
 	None = 0,

@@ -1,4 +1,7 @@
 
+/**
+ * @since 4.0
+ */
 declare class EKAlarm extends EKObject implements NSCopying {
 
 	static alarmWithAbsoluteDate(date: Date): EKAlarm;
@@ -40,6 +43,9 @@ declare const enum EKAlarmType {
 	Email = 3
 }
 
+/**
+ * @since 6.0
+ */
 declare const enum EKAuthorizationStatus {
 
 	NotDetermined = 0,
@@ -55,28 +61,53 @@ declare const enum EKAuthorizationStatus {
 	Authorized = 3
 }
 
+/**
+ * @since 4.0
+ */
 declare class EKCalendar extends EKObject {
 
 	static alloc(): EKCalendar; // inherited from NSObject
 
+	/**
+	 * @since 6.0
+	 */
 	static calendarForEntityTypeEventStore(entityType: EKEntityType, eventStore: EKEventStore): EKCalendar;
 
+	/**
+	 * @since 4.0
+	 * @deprecated 6.0
+	 */
 	static calendarWithEventStore(eventStore: EKEventStore): EKCalendar;
 
 	static new(): EKCalendar; // inherited from NSObject
 
+	/**
+	 * @since 4.0
+	 */
 	CGColor: any;
 
+	/**
+	 * @since 6.0
+	 */
 	readonly allowedEntityTypes: EKEntityMask;
 
 	readonly allowsContentModifications: boolean;
 
+	/**
+	 * @since 5.0
+	 */
 	readonly calendarIdentifier: string;
 
+	/**
+	 * @since 5.0
+	 */
 	readonly immutable: boolean;
 
 	source: EKSource;
 
+	/**
+	 * @since 5.0
+	 */
 	readonly subscribed: boolean;
 
 	readonly supportedEventAvailabilities: EKCalendarEventAvailabilityMask;
@@ -99,14 +130,24 @@ declare const enum EKCalendarEventAvailabilityMask {
 	Unavailable = 8
 }
 
+/**
+ * @since 5.0
+ */
 declare class EKCalendarItem extends EKObject {
 
 	static alloc(): EKCalendarItem; // inherited from NSObject
 
 	static new(): EKCalendarItem; // inherited from NSObject
 
+	/**
+	 * @since 5.0
+	 */
 	URL: NSURL;
 
+	/**
+	 * @since 5.0
+	 * @deprecated 6.0
+	 */
 	readonly UUID: string;
 
 	alarms: NSArray<EKAlarm>;
@@ -115,18 +156,39 @@ declare class EKCalendarItem extends EKObject {
 
 	calendar: EKCalendar;
 
+	/**
+	 * @since 6.0
+	 */
 	readonly calendarItemExternalIdentifier: string;
 
+	/**
+	 * @since 6.0
+	 */
 	readonly calendarItemIdentifier: string;
 
+	/**
+	 * @since 5.0
+	 */
 	readonly creationDate: Date;
 
+	/**
+	 * @since 5.0
+	 */
 	readonly hasAlarms: boolean;
 
+	/**
+	 * @since 5.0
+	 */
 	readonly hasAttendees: boolean;
 
+	/**
+	 * @since 5.0
+	 */
 	readonly hasNotes: boolean;
 
+	/**
+	 * @since 5.0
+	 */
 	readonly hasRecurrenceRules: boolean;
 
 	readonly lastModifiedDate: Date;
@@ -135,8 +197,14 @@ declare class EKCalendarItem extends EKObject {
 
 	notes: string;
 
+	/**
+	 * @since 5.0
+	 */
 	recurrenceRules: NSArray<EKRecurrenceRule>;
 
+	/**
+	 * @since 5.0
+	 */
 	timeZone: NSTimeZone;
 
 	title: string;
@@ -256,8 +324,14 @@ declare const enum EKErrorCode {
 	Last = 37
 }
 
+/**
+ * @since 4.0
+ */
 declare var EKErrorDomain: string;
 
+/**
+ * @since 4.0
+ */
 declare class EKEvent extends EKCalendarItem {
 
 	static alloc(): EKEvent; // inherited from NSObject
@@ -270,8 +344,15 @@ declare class EKEvent extends EKCalendarItem {
 
 	availability: EKEventAvailability;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly birthdayContactIdentifier: string;
 
+	/**
+	 * @since 5.0
+	 * @deprecated 9.0
+	 */
 	readonly birthdayPersonID: number;
 
 	endDate: Date;
@@ -280,6 +361,9 @@ declare class EKEvent extends EKCalendarItem {
 
 	readonly isDetached: boolean;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly occurrenceDate: Date;
 
 	readonly organizer: EKParticipant;
@@ -288,6 +372,9 @@ declare class EKEvent extends EKCalendarItem {
 
 	readonly status: EKEventStatus;
 
+	/**
+	 * @since 9.0
+	 */
 	structuredLocation: EKStructuredLocation;
 
 	compareStartDateWithEvent(other: EKEvent): NSComparisonResult;
@@ -317,38 +404,78 @@ declare const enum EKEventStatus {
 	Canceled = 3
 }
 
+/**
+ * @since 4.0
+ */
 declare class EKEventStore extends NSObject {
 
 	static alloc(): EKEventStore; // inherited from NSObject
 
+	/**
+	 * @since 6.0
+	 */
 	static authorizationStatusForEntityType(entityType: EKEntityType): EKAuthorizationStatus;
 
 	static new(): EKEventStore; // inherited from NSObject
 
+	/**
+	 * @since 4.0
+	 * @deprecated 6.0
+	 */
 	readonly calendars: NSArray<EKCalendar>;
 
 	readonly defaultCalendarForNewEvents: EKCalendar;
 
+	/**
+	 * @since 12.0
+	 */
 	readonly delegateSources: NSArray<EKSource>;
 
 	readonly eventStoreIdentifier: string;
 
+	/**
+	 * @since 5.0
+	 */
 	readonly sources: NSArray<EKSource>;
 
+	/**
+	 * @since 16.0
+	 */
 	constructor(o: { sources: NSArray<EKSource> | EKSource[]; });
 
+	/**
+	 * @since 6.0
+	 */
 	calendarItemWithIdentifier(identifier: string): EKCalendarItem;
 
+	/**
+	 * @since 6.0
+	 */
 	calendarItemsWithExternalIdentifier(externalIdentifier: string): NSArray<EKCalendarItem>;
 
+	/**
+	 * @since 5.0
+	 */
 	calendarWithIdentifier(identifier: string): EKCalendar;
 
+	/**
+	 * @since 6.0
+	 */
 	calendarsForEntityType(entityType: EKEntityType): NSArray<EKCalendar>;
 
+	/**
+	 * @since 6.0
+	 */
 	cancelFetchRequest(fetchIdentifier: any): void;
 
+	/**
+	 * @since 5.0
+	 */
 	commit(): boolean;
 
+	/**
+	 * @since 6.0
+	 */
 	defaultCalendarForNewReminders(): EKCalendar;
 
 	enumerateEventsMatchingPredicateUsingBlock(predicate: NSPredicate, block: (p1: EKEvent, p2: interop.Pointer | interop.Reference<boolean>) => void): void;
@@ -357,51 +484,118 @@ declare class EKEventStore extends NSObject {
 
 	eventsMatchingPredicate(predicate: NSPredicate): NSArray<EKEvent>;
 
+	/**
+	 * @since 6.0
+	 */
 	fetchRemindersMatchingPredicateCompletion(predicate: NSPredicate, completion: (p1: NSArray<EKReminder>) => void): any;
 
+	/**
+	 * @since 16.0
+	 */
 	initWithSources(sources: NSArray<EKSource> | EKSource[]): this;
 
+	/**
+	 * @since 6.0
+	 */
 	predicateForCompletedRemindersWithCompletionDateStartingEndingCalendars(startDate: Date, endDate: Date, calendars: NSArray<EKCalendar> | EKCalendar[]): NSPredicate;
 
 	predicateForEventsWithStartDateEndDateCalendars(startDate: Date, endDate: Date, calendars: NSArray<EKCalendar> | EKCalendar[]): NSPredicate;
 
+	/**
+	 * @since 6.0
+	 */
 	predicateForIncompleteRemindersWithDueDateStartingEndingCalendars(startDate: Date, endDate: Date, calendars: NSArray<EKCalendar> | EKCalendar[]): NSPredicate;
 
+	/**
+	 * @since 6.0
+	 */
 	predicateForRemindersInCalendars(calendars: NSArray<EKCalendar> | EKCalendar[]): NSPredicate;
 
+	/**
+	 * @since 5.0
+	 */
 	refreshSourcesIfNecessary(): void;
 
+	/**
+	 * @since 5.0
+	 */
 	removeCalendarCommitError(calendar: EKCalendar, commit: boolean): boolean;
 
+	/**
+	 * @since 5.0
+	 */
 	removeEventSpanCommitError(event: EKEvent, span: EKSpan, commit: boolean): boolean;
 
+	/**
+	 * @since 4.0
+	 */
 	removeEventSpanError(event: EKEvent, span: EKSpan): boolean;
 
+	/**
+	 * @since 6.0
+	 */
 	removeReminderCommitError(reminder: EKReminder, commit: boolean): boolean;
 
+	/**
+	 * @since 6.0
+	 * @deprecated 17.0
+	 */
 	requestAccessToEntityTypeCompletion(entityType: EKEntityType, completion: (p1: boolean, p2: NSError) => void): void;
 
+	/**
+	 * @since 17.0
+	 */
 	requestFullAccessToEventsWithCompletion(completion: (p1: boolean, p2: NSError) => void): void;
 
+	/**
+	 * @since 17.0
+	 */
 	requestFullAccessToRemindersWithCompletion(completion: (p1: boolean, p2: NSError) => void): void;
 
+	/**
+	 * @since 17.0
+	 */
 	requestWriteOnlyAccessToEventsWithCompletion(completion: (p1: boolean, p2: NSError) => void): void;
 
+	/**
+	 * @since 5.0
+	 */
 	reset(): void;
 
+	/**
+	 * @since 5.0
+	 */
 	saveCalendarCommitError(calendar: EKCalendar, commit: boolean): boolean;
 
+	/**
+	 * @since 5.0
+	 */
 	saveEventSpanCommitError(event: EKEvent, span: EKSpan, commit: boolean): boolean;
 
+	/**
+	 * @since 4.0
+	 */
 	saveEventSpanError(event: EKEvent, span: EKSpan): boolean;
 
+	/**
+	 * @since 6.0
+	 */
 	saveReminderCommitError(reminder: EKReminder, commit: boolean): boolean;
 
+	/**
+	 * @since 5.0
+	 */
 	sourceWithIdentifier(identifier: string): EKSource;
 }
 
+/**
+ * @since 4.0
+ */
 declare var EKEventStoreChangedNotification: string;
 
+/**
+ * @since 13.0
+ */
 declare class EKObject extends NSObject {
 
 	static alloc(): EKObject; // inherited from NSObject
@@ -419,6 +613,9 @@ declare class EKObject extends NSObject {
 	rollback(): void;
 }
 
+/**
+ * @since 4.0
+ */
 declare class EKParticipant extends EKObject implements NSCopying {
 
 	static alloc(): EKParticipant; // inherited from NSObject
@@ -427,8 +624,14 @@ declare class EKParticipant extends EKObject implements NSCopying {
 
 	readonly URL: NSURL;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly contactPredicate: NSPredicate;
 
+	/**
+	 * @since 6.0
+	 */
 	readonly currentUser: boolean;
 
 	readonly name: string;
@@ -439,6 +642,9 @@ declare class EKParticipant extends EKObject implements NSCopying {
 
 	readonly participantType: EKParticipantType;
 
+	/**
+	 * @since 4.0
+	 */
 	ABRecordWithAddressBook(addressBook: any): any;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
@@ -510,6 +716,9 @@ declare const enum EKParticipantType {
 	Group = 4
 }
 
+/**
+ * @since 4.0
+ */
 declare class EKRecurrenceDayOfWeek extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): EKRecurrenceDayOfWeek; // inherited from NSObject
@@ -539,6 +748,9 @@ declare class EKRecurrenceDayOfWeek extends NSObject implements NSCopying, NSSec
 	initWithDayOfTheWeekWeekNumber(dayOfTheWeek: EKWeekday, weekNumber: number): this;
 }
 
+/**
+ * @since 4.0
+ */
 declare class EKRecurrenceEnd extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): EKRecurrenceEnd; // inherited from NSObject
@@ -575,6 +787,9 @@ declare const enum EKRecurrenceFrequency {
 	Yearly = 3
 }
 
+/**
+ * @since 4.0
+ */
 declare class EKRecurrenceRule extends EKObject implements NSCopying {
 
 	static alloc(): EKRecurrenceRule; // inherited from NSObject
@@ -614,6 +829,9 @@ declare class EKRecurrenceRule extends EKObject implements NSCopying {
 	initRecurrenceWithFrequencyIntervalEnd(type: EKRecurrenceFrequency, interval: number, end: EKRecurrenceEnd): this;
 }
 
+/**
+ * @since 6.0
+ */
 declare class EKReminder extends EKCalendarItem {
 
 	static alloc(): EKReminder; // inherited from NSObject
@@ -644,14 +862,24 @@ declare const enum EKReminderPriority {
 	Low = 9
 }
 
+/**
+ * @since 5.0
+ */
 declare class EKSource extends EKObject {
 
 	static alloc(): EKSource; // inherited from NSObject
 
 	static new(): EKSource; // inherited from NSObject
 
+	/**
+	 * @since 4.0
+	 * @deprecated 6.0
+	 */
 	readonly calendars: NSSet<EKCalendar>;
 
+	/**
+	 * @since 16.0
+	 */
 	readonly isDelegate: boolean;
 
 	readonly sourceIdentifier: string;
@@ -660,6 +888,9 @@ declare class EKSource extends EKObject {
 
 	readonly title: string;
 
+	/**
+	 * @since 6.0
+	 */
 	calendarsForEntityType(entityType: EKEntityType): NSSet<EKCalendar>;
 }
 
@@ -685,10 +916,16 @@ declare const enum EKSpan {
 	FutureEvents = 1
 }
 
+/**
+ * @since 6.0
+ */
 declare class EKStructuredLocation extends EKObject implements NSCopying {
 
 	static alloc(): EKStructuredLocation; // inherited from NSObject
 
+	/**
+	 * @since 9.0
+	 */
 	static locationWithMapItem(mapItem: MKMapItem): EKStructuredLocation;
 
 	static locationWithTitle(title: string): EKStructuredLocation;
@@ -704,6 +941,9 @@ declare class EKStructuredLocation extends EKObject implements NSCopying {
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+/**
+ * @since 15.0
+ */
 declare class EKVirtualConferenceDescriptor extends NSObject {
 
 	static alloc(): EKVirtualConferenceDescriptor; // inherited from NSObject
@@ -721,6 +961,9 @@ declare class EKVirtualConferenceDescriptor extends NSObject {
 	initWithTitleURLDescriptorsConferenceDetails(title: string, URLDescriptors: NSArray<EKVirtualConferenceURLDescriptor> | EKVirtualConferenceURLDescriptor[], conferenceDetails: string): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare class EKVirtualConferenceProvider extends NSObject implements NSExtensionRequestHandling {
 
 	static alloc(): EKVirtualConferenceProvider; // inherited from NSObject
@@ -768,6 +1011,9 @@ declare class EKVirtualConferenceProvider extends NSObject implements NSExtensio
 	self(): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare class EKVirtualConferenceRoomTypeDescriptor extends NSObject {
 
 	static alloc(): EKVirtualConferenceRoomTypeDescriptor; // inherited from NSObject
@@ -783,6 +1029,9 @@ declare class EKVirtualConferenceRoomTypeDescriptor extends NSObject {
 	initWithTitleIdentifier(title: string, identifier: string): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare class EKVirtualConferenceURLDescriptor extends NSObject {
 
 	static alloc(): EKVirtualConferenceURLDescriptor; // inherited from NSObject
