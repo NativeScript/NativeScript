@@ -201,7 +201,8 @@ export class Image extends ImageBase {
 			return;
 		}
 		const symbol = typeof value === 'string' ? ImageSymbolEffect.fromSymbol(value) : value;
-		if (symbol && symbol.effect) {
+		if (symbol?.effect) {
+			console.log('symbol.effect:', symbol.effect);
 			this.nativeViewProtected.addSymbolEffectOptionsAnimatedCompletion(symbol.effect, symbol.options || NSSymbolEffectOptions.optionsWithRepeating(), true, symbol.completion || null);
 		} else {
 			this.nativeViewProtected.removeAllSymbolEffects();

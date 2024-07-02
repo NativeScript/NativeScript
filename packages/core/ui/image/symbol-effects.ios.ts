@@ -1,13 +1,13 @@
 import { SDK_VERSION } from '../../utils/constants';
 import { ImageSymbolEffectCommon, ImageSymbolEffects } from './symbol-effects-common';
-import type { ImageSymbolEffect as ImageSymbolEffectDefinition } from './symbol-effects.d.ts';
+export { ImageSymbolEffects } from './symbol-effects-common';
 
-export const ImageSymbolEffect: typeof ImageSymbolEffectDefinition = class ImageSymbolEffect extends ImageSymbolEffectCommon implements ImageSymbolEffectDefinition {
+export class ImageSymbolEffect extends ImageSymbolEffectCommon {
 	constructor(symbol: NSSymbolEffect) {
 		super();
 		this.effect = symbol;
 	}
-	static fromSymbol(symbol: string): ImageSymbolEffectDefinition | null {
+	static fromSymbol(symbol: string): ImageSymbolEffect | null {
 		if (SDK_VERSION < 17) {
 			return null;
 		}
@@ -92,4 +92,4 @@ export const ImageSymbolEffect: typeof ImageSymbolEffectDefinition = class Image
 
 		return null;
 	}
-};
+}

@@ -10,10 +10,10 @@ export function navigatingTo(args: EventData) {
 
 export class DemoModel extends Observable {
 	addingPhoto = false;
-	symbolWiggleEffect: ImageSymbolEffects.Wiggle;
-	symbolBounceEffect: ImageSymbolEffects.Bounce;
-	symbolBreathEffect: ImageSymbolEffects.Breathe;
-	symbolRotateEffect: ImageSymbolEffects.Rotate;
+	symbolWiggleEffect = ImageSymbolEffects.Scale;
+	symbolBounceEffect = ImageSymbolEffects.Bounce;
+	symbolBreathEffect = ImageSymbolEffects.Breathe;
+	symbolRotateEffect = ImageSymbolEffects.Rotate;
 
 	pickImage() {
 		const context = create({
