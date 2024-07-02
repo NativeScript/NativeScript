@@ -1,9 +1,8 @@
-import { ImageSymbolEffectCommon, ImageSymbolEffects } from './symbol-effects-common';
-import type { ImageSymbolEffect as ImageSymbolEffectDefinition } from './symbol-effects.d.ts';
-export { ImageSymbolEffects };
+import { ImageSymbolEffectCommon } from './symbol-effects-common';
+export { ImageSymbolEffects } from './symbol-effects-common';
 
-export const ImageSymbolEffect: typeof ImageSymbolEffectDefinition = class ImageSymbolEffect extends ImageSymbolEffectCommon implements ImageSymbolEffectDefinition {
-	static fromSymbol(symbol: string): ImageSymbolEffectDefinition {
+export class ImageSymbolEffect extends ImageSymbolEffectCommon {
+	static fromSymbol(symbol: string) {
 		return new ImageSymbolEffect();
 	}
-};
+}

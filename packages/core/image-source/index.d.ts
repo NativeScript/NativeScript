@@ -55,16 +55,22 @@ export class ImageSource {
 	static fromResource(name: string): Promise<ImageSource>;
 
 	/**
+	 * (iOS only) Get system symbol scale
+	 * @param scale symbol scale type
+	 */
+	static iosSymbolScaleFor(scale: iosSymbolScaleType): number;
+
+	/**
 	 * Loads this instance from the specified system image name.
 	 * @param name the name of the system image
 	 */
-	static fromSystemImageSync(name: string): ImageSource;
+	static fromSystemImageSync(name: string, scale?: iosSymbolScaleType): ImageSource;
 
 	/**
 	 * Loads this instance from the specified system image name asynchronously.
 	 * @param name the name of the system image
 	 */
-	static fromSystemImage(name: string): Promise<ImageSource>;
+	static fromSystemImage(name: string, scale?: iosSymbolScaleType): Promise<ImageSource>;
 
 	/**
 	 * Loads this instance from the specified file.
@@ -258,6 +264,12 @@ export class ImageSource {
 	 */
 	resizeAsync(maxSize: number, options?: any): Promise<ImageSource>;
 }
+
+/**
+ * iOS only
+ * SF Symbol scale
+ */
+export type iosSymbolScaleType = 'default' | 'small' | 'medium' | 'large';
 
 /**
  * @deprecated Use ImageSource.fromAsset() instead.
