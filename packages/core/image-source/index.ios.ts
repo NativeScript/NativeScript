@@ -1,5 +1,5 @@
 // Definitions.
-import { ImageSource as ImageSourceDefinition } from '.';
+import { ImageSource as ImageSourceDefinition, iosSymbolScaleType } from '.';
 import { ImageAsset } from '../image-asset';
 import * as httpModule from '../http';
 import { Font } from '../ui/styling/font';
@@ -73,16 +73,39 @@ export class ImageSource implements ImageSourceDefinition {
 		return http.getImage(url);
 	}
 
-	static fromSystemImageSync(name: string): ImageSource {
-		const image = UIImage.systemImageNamed(name);
-
-		return image ? new ImageSource(image) : null;
+	static iosSystemScaleFor(scale: iosSymbolScaleType) {
+		switch (scale) {
+			case 'small':
+				return UIImageSymbolScale.Small;
+			case 'medium':
+				return UIImageSymbolScale.Medium;
+			case 'large':
+				return UIImageSymbolScale.Large;
+			default:
+				return UIImageSymbolScale.Default;
+		}
 	}
 
-	static fromSystemImage(name: string): Promise<ImageSource> {
+	static fromSystemImageSync(name: string, scale?: iosSymbolScaleType): ImageSource {
+		if (scale) {
+			const image = UIImage.systemImageNamedWithConfiguration(name, UIImageSymbolConfiguration.configurationWithScale(ImageSource.iosSystemScaleFor(scale)));
+			return image ? new ImageSource(image) : null;
+		} else {
+			const image = UIImage.systemImageNamed(name);
+
+			return image ? new ImageSource(image) : null;
+		}
+	}
+
+	static fromSystemImage(name: string, scale?: iosSymbolScaleType): Promise<ImageSource> {
 		return new Promise<ImageSource>((resolve, reject) => {
 			try {
-				const image = UIImage.systemImageNamed(name);
+				let image: UIImage;
+				if (scale) {
+					image = UIImage.systemImageNamedWithConfiguration(name, UIImageSymbolConfiguration.configurationWithScale(ImageSource.iosSystemScaleFor(scale)));
+				} else {
+					image = UIImage.systemImageNamed(name);
+				}
 				if (image) {
 					resolve(new ImageSource(image));
 				} else {

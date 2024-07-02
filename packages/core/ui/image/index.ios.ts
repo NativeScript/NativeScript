@@ -194,6 +194,11 @@ export class Image extends ImageBase {
 
 	[srcProperty.setNative](value: string | ImageSource | ImageAsset) {
 		this._createImageSourceFromSrc(value);
+		if (this.iosSymbolScale) {
+			// when applying symbol scale, contentMode must be center
+			// https://stackoverflow.com/a/65787627
+			this.nativeViewProtected.contentMode = UIViewContentMode.Center;
+		}
 	}
 
 	[iosSymbolEffectProperty.setNative](value: ImageSymbolEffect | ImageSymbolEffects) {
@@ -202,7 +207,8 @@ export class Image extends ImageBase {
 		}
 		const symbol = typeof value === 'string' ? ImageSymbolEffect.fromSymbol(value) : value;
 		if (symbol?.effect) {
-			console.log('symbol.effect:', symbol.effect);
+			// Note: https://developer.apple.com/documentation/symbols/symboleffectoptions/4197883-repeating
+			// Will want to move to https://developer.apple.com/documentation/symbols/nssymboleffectoptionsrepeatbehavior?language=objc as fallback once optionsWithRepeating is removed
 			this.nativeViewProtected.addSymbolEffectOptionsAnimatedCompletion(symbol.effect, symbol.options || NSSymbolEffectOptions.optionsWithRepeating(), true, symbol.completion || null);
 		} else {
 			this.nativeViewProtected.removeAllSymbolEffects();

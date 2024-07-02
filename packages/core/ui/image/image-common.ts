@@ -3,7 +3,7 @@ import { View, CSSType } from '../core/view';
 import { booleanConverter } from '../core/view-base';
 import { CoreTypes } from '../../core-types';
 import { ImageAsset } from '../../image-asset';
-import { ImageSource } from '../../image-source';
+import { ImageSource, iosSymbolScaleType } from '../../image-source';
 import { isDataURI, isFontIconURI, isFileOrResourcePath, RESOURCE_PREFIX, SYSTEM_PREFIX } from '../../utils';
 import { Color } from '../../color';
 import { Style } from '../styling/style';
@@ -21,6 +21,7 @@ export abstract class ImageBase extends View implements ImageDefinition {
 	public loadMode: 'sync' | 'async';
 	public decodeWidth: CoreTypes.LengthType;
 	public decodeHeight: CoreTypes.LengthType;
+	public iosSymbolScale: iosSymbolScaleType;
 
 	get tintColor(): Color {
 		return this.style.tintColor;
@@ -86,10 +87,10 @@ export abstract class ImageBase extends View implements ImageDefinition {
 				} else if (value.indexOf(SYSTEM_PREFIX) === 0) {
 					const sysPath = value.slice(SYSTEM_PREFIX.length);
 					if (sync) {
-						imageLoaded(ImageSource.fromSystemImageSync(sysPath));
+						imageLoaded(ImageSource.fromSystemImageSync(sysPath, this.iosSymbolScale));
 					} else {
 						this.imageSource = null;
-						ImageSource.fromSystemImage(sysPath).then(imageLoaded);
+						ImageSource.fromSystemImage(sysPath, this.iosSymbolScale).then(imageLoaded);
 					}
 				} else {
 					if (sync) {
