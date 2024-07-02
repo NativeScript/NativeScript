@@ -197,4 +197,12 @@ export const iosSymbolEffectProperty = new Property<ImageBase, ImageSymbolEffect
 });
 iosSymbolEffectProperty.register(ImageBase);
 
+/**
+ * iOS only
+ */
+export const iosSymbolScaleProperty = new Property<ImageBase, iosSymbolScaleType>({
+	name: 'iosSymbolScale',
+});
+iosSymbolScaleProperty.register(ImageBase);
+
 export { ImageSymbolEffect, ImageSymbolEffects };
