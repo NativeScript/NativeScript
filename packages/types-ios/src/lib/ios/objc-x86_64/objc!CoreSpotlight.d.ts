@@ -1,6 +1,12 @@
 
+/**
+ * @since 15.0
+ */
 declare var CSActionIdentifier: string;
 
+/**
+ * @since 9.0
+ */
 declare class CSCustomAttributeKey extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CSCustomAttributeKey; // inherited from NSObject
@@ -36,6 +42,9 @@ declare class CSCustomAttributeKey extends NSObject implements NSCopying, NSSecu
 	initWithKeyNameSearchableSearchableByDefaultUniqueMultiValued(keyName: string, searchable: boolean, searchableByDefault: boolean, unique: boolean, multiValued: boolean): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare class CSImportExtension extends NSObject implements NSExtensionRequestHandling {
 
 	static alloc(): CSImportExtension; // inherited from NSObject
@@ -81,6 +90,9 @@ declare class CSImportExtension extends NSObject implements NSExtensionRequestHa
 	updateAttributesForFileAtURLError(attributes: CSSearchableItemAttributeSet, contentURL: NSURL): boolean;
 }
 
+/**
+ * @since 9.0
+ */
 declare const enum CSIndexErrorCode {
 
 	UnknownError = -1,
@@ -95,11 +107,19 @@ declare const enum CSIndexErrorCode {
 
 	QuotaExceeded = -1004,
 
-	IndexingUnsupported = -1005
+	IndexingUnsupported = -1005,
+
+	MismatchedClientState = -1006
 }
 
+/**
+ * @since 9.0
+ */
 declare var CSIndexErrorDomain: string;
 
+/**
+ * @since 9.0
+ */
 declare class CSIndexExtensionRequestHandler extends NSObject implements CSSearchableIndexDelegate, NSExtensionRequestHandling {
 
 	static alloc(): CSIndexExtensionRequestHandler; // inherited from NSObject
@@ -124,8 +144,14 @@ declare class CSIndexExtensionRequestHandler extends NSObject implements CSSearc
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
+	/**
+	 * @since 11.0
+	 */
 	dataForSearchableIndexItemIdentifierTypeIdentifierError(searchableIndex: CSSearchableIndex, itemIdentifier: string, typeIdentifier: string): NSData;
 
+	/**
+	 * @since 11.0
+	 */
 	fileURLForSearchableIndexItemIdentifierTypeIdentifierInPlaceError(searchableIndex: CSSearchableIndex, itemIdentifier: string, typeIdentifier: string, inPlace: boolean): NSURL;
 
 	isEqual(object: any): boolean;
@@ -155,6 +181,9 @@ declare class CSIndexExtensionRequestHandler extends NSObject implements CSSearc
 	self(): this;
 }
 
+/**
+ * @since 9.0
+ */
 declare class CSLocalizedString extends NSString {
 
 	static alloc(): CSLocalizedString; // inherited from NSObject
@@ -188,18 +217,39 @@ declare class CSLocalizedString extends NSString {
 	localizedString(): string;
 }
 
+/**
+ * @since 9.0
+ */
 declare var CSMailboxArchive: string;
 
+/**
+ * @since 9.0
+ */
 declare var CSMailboxDrafts: string;
 
+/**
+ * @since 9.0
+ */
 declare var CSMailboxInbox: string;
 
+/**
+ * @since 9.0
+ */
 declare var CSMailboxJunk: string;
 
+/**
+ * @since 9.0
+ */
 declare var CSMailboxSent: string;
 
+/**
+ * @since 9.0
+ */
 declare var CSMailboxTrash: string;
 
+/**
+ * @since 9.0
+ */
 declare class CSPerson extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CSPerson; // inherited from NSObject
@@ -229,8 +279,14 @@ declare class CSPerson extends NSObject implements NSCopying, NSSecureCoding {
 	initWithDisplayNameHandlesHandleIdentifier(displayName: string, handles: NSArray<string> | string[], handleIdentifier: string): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare var CSQueryContinuationActionType: string;
 
+/**
+ * @since 10.0
+ */
 declare class CSSearchQuery extends NSObject {
 
 	static alloc(): CSSearchQuery; // inherited from NSObject
@@ -247,19 +303,36 @@ declare class CSSearchQuery extends NSObject {
 
 	protectionClasses: NSArray<string>;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 16.0
+	 */
 	constructor(o: { queryString: string; attributes: NSArray<string> | string[]; });
 
+	/**
+	 * @since 16.0
+	 */
 	constructor(o: { queryString: string; queryContext: CSSearchQueryContext; });
 
 	cancel(): void;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 16.0
+	 */
 	initWithQueryStringAttributes(queryString: string, attributes: NSArray<string> | string[]): this;
 
+	/**
+	 * @since 16.0
+	 */
 	initWithQueryStringQueryContext(queryString: string, queryContext: CSSearchQueryContext): this;
 
 	start(): void;
 }
 
+/**
+ * @since 10.0
+ */
 declare class CSSearchQueryContext extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CSSearchQueryContext; // inherited from NSObject
@@ -285,6 +358,9 @@ declare class CSSearchQueryContext extends NSObject implements NSCopying, NSSecu
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum CSSearchQueryErrorCode {
 
 	Unknown = -2000,
@@ -296,6 +372,9 @@ declare const enum CSSearchQueryErrorCode {
 	Cancelled = -2003
 }
 
+/**
+ * @since 10.0
+ */
 declare var CSSearchQueryErrorDomain: string;
 
 declare const enum CSSearchQuerySourceOptions {
@@ -305,8 +384,14 @@ declare const enum CSSearchQuerySourceOptions {
 	AllowMail = 1
 }
 
+/**
+ * @since 10.0
+ */
 declare var CSSearchQueryString: string;
 
+/**
+ * @since 9.0
+ */
 declare class CSSearchableIndex extends NSObject {
 
 	static alloc(): CSSearchableIndex; // inherited from NSObject
@@ -333,6 +418,11 @@ declare class CSSearchableIndex extends NSObject {
 
 	endIndexBatchWithClientStateCompletionHandler(clientState: NSData, completionHandler: (p1: NSError) => void): void;
 
+	/**
+	 * @since 18.0
+	 */
+	endIndexBatchWithExpectedClientStateNewClientStateCompletionHandler(expectedClientState: NSData, newClientState: NSData, completionHandler: (p1: NSError) => void): void;
+
 	fetchDataForBundleIdentifierItemIdentifierContentTypeCompletionHandler(bundleIdentifier: string, itemIdentifier: string, contentType: UTType, completionHandler: (p1: NSData, p2: NSError) => void): void;
 
 	fetchLastClientStateWithCompletionHandler(completionHandler: (p1: NSData, p2: NSError) => void): void;
@@ -344,10 +434,19 @@ declare class CSSearchableIndex extends NSObject {
 	initWithNameProtectionClass(name: string, protectionClass: string): this;
 }
 
+/**
+ * @since 9.0
+ */
 interface CSSearchableIndexDelegate extends NSObjectProtocol {
 
+	/**
+	 * @since 11.0
+	 */
 	dataForSearchableIndexItemIdentifierTypeIdentifierError?(searchableIndex: CSSearchableIndex, itemIdentifier: string, typeIdentifier: string): NSData;
 
+	/**
+	 * @since 11.0
+	 */
 	fileURLForSearchableIndexItemIdentifierTypeIdentifierInPlaceError?(searchableIndex: CSSearchableIndex, itemIdentifier: string, typeIdentifier: string, inPlace: boolean): NSURL;
 
 	searchableIndexDidFinishThrottle?(searchableIndex: CSSearchableIndex): void;
@@ -363,6 +462,9 @@ declare var CSSearchableIndexDelegate: {
 	prototype: CSSearchableIndexDelegate;
 };
 
+/**
+ * @since 9.0
+ */
 declare class CSSearchableItem extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CSSearchableItem; // inherited from NSObject
@@ -375,6 +477,11 @@ declare class CSSearchableItem extends NSObject implements NSCopying, NSSecureCo
 
 	expirationDate: Date;
 
+	/**
+	 * @since 9.0
+	 */
+	isUpdate: boolean;
+
 	uniqueIdentifier: string;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
@@ -383,6 +490,9 @@ declare class CSSearchableItem extends NSObject implements NSCopying, NSSecureCo
 
 	constructor(o: { uniqueIdentifier: string; domainIdentifier: string; attributeSet: CSSearchableItemAttributeSet; });
 
+	/**
+	 * @since 16.0
+	 */
 	compareByRank(other: CSSearchableItem): NSComparisonResult;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
@@ -394,10 +504,19 @@ declare class CSSearchableItem extends NSObject implements NSCopying, NSSecureCo
 	initWithUniqueIdentifierDomainIdentifierAttributeSet(uniqueIdentifier: string, domainIdentifier: string, attributeSet: CSSearchableItemAttributeSet): this;
 }
 
+/**
+ * @since 9.0
+ */
 declare var CSSearchableItemActionType: string;
 
+/**
+ * @since 9.0
+ */
 declare var CSSearchableItemActivityIdentifier: string;
 
+/**
+ * @since 9.0
+ */
 declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CSSearchableItemAttributeSet; // inherited from NSObject
@@ -448,6 +567,9 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	acquisitionModel: string;
 
+	/**
+	 * @since 15.0
+	 */
 	actionIdentifiers: NSArray<string>;
 
 	addedDate: Date;
@@ -546,6 +668,9 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	displayName: string;
 
+	/**
+	 * @since 10.0
+	 */
 	domainIdentifier: string;
 
 	downloadedDate: Date;
@@ -690,14 +815,26 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	projects: NSArray<string>;
 
+	/**
+	 * @since 11.0
+	 */
 	providerDataTypeIdentifiers: NSArray<string>;
 
+	/**
+	 * @since 11.0
+	 */
 	providerFileTypeIdentifiers: NSArray<string>;
 
+	/**
+	 * @since 11.0
+	 */
 	providerInPlaceFileTypeIdentifiers: NSArray<string>;
 
 	publishers: NSArray<string>;
 
+	/**
+	 * @since 11.0
+	 */
 	rankingHint: number;
 
 	rating: number;
@@ -726,6 +863,9 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	securityMethod: string;
 
+	/**
+	 * @since 15.0
+	 */
 	sharedItemContentType: UTType;
 
 	speed: number;
@@ -764,16 +904,28 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	totalBitRate: number;
 
+	/**
+	 * @since 11.0
+	 */
 	userCreated: number;
 
+	/**
+	 * @since 11.0
+	 */
 	userCurated: number;
 
+	/**
+	 * @since 11.0
+	 */
 	userOwned: number;
 
 	version: string;
 
 	videoBitRate: number;
 
+	/**
+	 * @since 10.0
+	 */
 	weakRelatedUniqueIdentifier: string;
 
 	whiteBalance: number;
@@ -782,8 +934,15 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
+	/**
+	 * @since 14.0
+	 */
 	constructor(o: { contentType: UTType; });
 
+	/**
+	 * @since 9.0
+	 * @deprecated 100000
+	 */
 	constructor(o: { itemContentType: string; });
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
@@ -792,8 +951,15 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	initWithCoder(coder: NSCoder): this;
 
+	/**
+	 * @since 14.0
+	 */
 	initWithContentType(contentType: UTType): this;
 
+	/**
+	 * @since 9.0
+	 * @deprecated 100000
+	 */
 	initWithItemContentType(itemContentType: string): this;
 
 	setValueForCustomKey(value: NSSecureCoding, key: CSCustomAttributeKey): void;
@@ -801,6 +967,9 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 	valueForCustomKey(key: CSCustomAttributeKey): NSSecureCoding;
 }
 
+/**
+ * @since 16.0
+ */
 declare class CSSuggestion extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CSSuggestion; // inherited from NSObject
@@ -826,6 +995,9 @@ declare class CSSuggestion extends NSObject implements NSCopying, NSSecureCoding
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 16.0
+ */
 declare var CSSuggestionHighlightAttributeName: string;
 
 declare const enum CSSuggestionKind {
@@ -837,11 +1009,33 @@ declare const enum CSSuggestionKind {
 	Default = 2
 }
 
+declare const enum CSUserInteraction {
+
+	Select = 0,
+
+	Default = 0,
+
+	Focus = 1
+}
+
+/**
+ * @since 16.0
+ */
 declare class CSUserQuery extends CSSearchQuery {
 
 	static alloc(): CSUserQuery; // inherited from NSObject
 
 	static new(): CSUserQuery; // inherited from NSObject
+
+	/**
+	 * @since 18.0
+	 */
+	static prepare(): void;
+
+	/**
+	 * @since 18.0
+	 */
+	static prepareProtectionClasses(protectionClasses: NSArray<string> | string[]): void;
 
 	readonly foundSuggestionCount: number;
 
@@ -850,8 +1044,21 @@ declare class CSUserQuery extends CSSearchQuery {
 	constructor(o: { userQueryString: string; userQueryContext: CSUserQueryContext; });
 
 	initWithUserQueryStringUserQueryContext(userQueryString: string, userQueryContext: CSUserQueryContext): this;
+
+	/**
+	 * @since 18.0
+	 */
+	userEngagedWithItemVisibleItemsUserInteractionType(item: CSSearchableItem, visibleItems: NSArray<CSSearchableItem> | CSSearchableItem[], userInteractionType: CSUserInteraction): void;
+
+	/**
+	 * @since 18.0
+	 */
+	userEngagedWithSuggestionVisibleSuggestionsUserInteractionType(suggestion: CSSuggestion, visibleSuggestions: NSArray<CSSuggestion> | CSSuggestion[], userInteractionType: CSUserInteraction): void;
 }
 
+/**
+ * @since 16.0
+ */
 declare class CSUserQueryContext extends CSSearchQueryContext {
 
 	static alloc(): CSUserQueryContext; // inherited from NSObject
@@ -862,7 +1069,17 @@ declare class CSUserQueryContext extends CSSearchQueryContext {
 
 	static userQueryContextWithCurrentSuggestion(currentSuggestion: CSSuggestion): CSUserQueryContext;
 
+	/**
+	 * @since 18.0
+	 */
+	disableSemanticSearch: boolean;
+
 	enableRankedResults: boolean;
+
+	/**
+	 * @since 18.0
+	 */
+	maxRankedResultCount: number;
 
 	maxResultCount: number;
 

@@ -21,7 +21,7 @@ declare function __xmlDeregisterNodeDefaultValue(): interop.Pointer | interop.Re
 
 declare function __xmlDoValidityCheckingDefaultValue(): interop.Pointer | interop.Reference<number>;
 
-declare function __xmlGenericError(): interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>>;
+declare function __xmlGenericError(): interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>>;
 
 declare function __xmlGenericErrorContext(): interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>;
 
@@ -39,15 +39,15 @@ declare function __xmlLoadExtDtdDefaultValue(): interop.Pointer | interop.Refere
 
 declare function __xmlOutputBufferCreateFilename(URI: string | interop.Pointer | interop.Reference<any>, encoder: interop.Pointer | interop.Reference<_xmlCharEncodingHandler>, compression: number): interop.Pointer | interop.Reference<_xmlOutputBuffer>;
 
-declare function __xmlOutputBufferCreateFilenameValue(): interop.Pointer | interop.Reference<interop.FunctionReference<(p1: string, p2: interop.Pointer | interop.Reference<_xmlCharEncodingHandler>, p3: number) => interop.Pointer | interop.Reference<_xmlOutputBuffer>>>;
+declare function __xmlOutputBufferCreateFilenameValue(): interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<_xmlCharEncodingHandler>, p3: number) => interop.Pointer | interop.Reference<_xmlOutputBuffer>>>;
 
 declare function __xmlParserDebugEntities(): interop.Pointer | interop.Reference<number>;
 
 declare function __xmlParserInputBufferCreateFilename(URI: string | interop.Pointer | interop.Reference<any>, enc: xmlCharEncoding): interop.Pointer | interop.Reference<_xmlParserInputBuffer>;
 
-declare function __xmlParserInputBufferCreateFilenameValue(): interop.Pointer | interop.Reference<interop.FunctionReference<(p1: string, p2: xmlCharEncoding) => interop.Pointer | interop.Reference<_xmlParserInputBuffer>>>;
+declare function __xmlParserInputBufferCreateFilenameValue(): interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: xmlCharEncoding) => interop.Pointer | interop.Reference<_xmlParserInputBuffer>>>;
 
-declare function __xmlParserVersion(): interop.Pointer | interop.Reference<string>;
+declare function __xmlParserVersion(): interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>;
 
 declare function __xmlPedanticParserDefaultValue(): interop.Pointer | interop.Reference<number>;
 
@@ -61,10 +61,10 @@ declare function __xmlStructuredErrorContext(): interop.Pointer | interop.Refere
 
 declare function __xmlSubstituteEntitiesDefaultValue(): interop.Pointer | interop.Reference<number>;
 
-declare function __xmlTreeIndentString(): interop.Pointer | interop.Reference<string>;
+declare function __xmlTreeIndentString(): interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>;
 
 interface _htmlElemDesc {
-	name: string;
+	name: interop.Pointer | interop.Reference<any>;
 	startTag: number;
 	endTag: number;
 	saveEndTag: number;
@@ -72,39 +72,42 @@ interface _htmlElemDesc {
 	depr: number;
 	dtd: number;
 	isinline: number;
-	desc: string;
-	subelts: interop.Pointer | interop.Reference<string>;
-	defaultsubelt: string;
-	attrs_opt: interop.Pointer | interop.Reference<string>;
-	attrs_depr: interop.Pointer | interop.Reference<string>;
-	attrs_req: interop.Pointer | interop.Reference<string>;
+	desc: interop.Pointer | interop.Reference<any>;
+	subelts: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>;
+	defaultsubelt: interop.Pointer | interop.Reference<any>;
+	attrs_opt: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>;
+	attrs_depr: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>;
+	attrs_req: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>;
 }
 declare var _htmlElemDesc: interop.StructType<_htmlElemDesc>;
 
 interface _htmlEntityDesc {
 	value: number;
-	name: string;
-	desc: string;
+	name: interop.Pointer | interop.Reference<any>;
+	desc: interop.Pointer | interop.Reference<any>;
 }
 declare var _htmlEntityDesc: interop.StructType<_htmlEntityDesc>;
 
 interface _uconv_t {
 	uconv: interop.Pointer | interop.Reference<any>;
 	utf8: interop.Pointer | interop.Reference<any>;
+	pivot_buf: interop.Reference<number>;
+	pivot_source: interop.Pointer | interop.Reference<number>;
+	pivot_target: interop.Pointer | interop.Reference<number>;
 }
 declare var _uconv_t: interop.StructType<_uconv_t>;
 
 interface _xlinkHandler {
-	simple: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<_xmlNode>, p3: string, p4: string, p5: string) => void>;
-	extended: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<_xmlNode>, p3: number, p4: interop.Pointer | interop.Reference<string>, p5: interop.Pointer | interop.Reference<string>, p6: number, p7: interop.Pointer | interop.Reference<string>, p8: interop.Pointer | interop.Reference<string>, p9: interop.Pointer | interop.Reference<xlinkShow>, p10: interop.Pointer | interop.Reference<xlinkActuate>, p11: number, p12: interop.Pointer | interop.Reference<string>, p13: interop.Pointer | interop.Reference<string>) => void>;
-	set: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<_xmlNode>, p3: number, p4: interop.Pointer | interop.Reference<string>, p5: interop.Pointer | interop.Reference<string>, p6: number, p7: interop.Pointer | interop.Reference<string>, p8: interop.Pointer | interop.Reference<string>) => void>;
+	simple: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<_xmlNode>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>, p5: interop.Pointer | interop.Reference<any>) => void>;
+	extended: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<_xmlNode>, p3: number, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p5: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p6: number, p7: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p8: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p9: interop.Pointer | interop.Reference<xlinkShow>, p10: interop.Pointer | interop.Reference<xlinkActuate>, p11: number, p12: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p13: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => void>;
+	set: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<_xmlNode>, p3: number, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p5: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p6: number, p7: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p8: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => void>;
 }
 declare var _xlinkHandler: interop.StructType<_xlinkHandler>;
 
 interface _xmlAttr {
 	_private: interop.Pointer | interop.Reference<any>;
 	type: xmlElementType;
-	name: string;
+	name: interop.Pointer | interop.Reference<any>;
 	children: interop.Pointer | interop.Reference<_xmlNode>;
 	last: interop.Pointer | interop.Reference<_xmlNode>;
 	parent: interop.Pointer | interop.Reference<_xmlNode>;
@@ -120,7 +123,7 @@ declare var _xmlAttr: interop.StructType<_xmlAttr>;
 interface _xmlAttribute {
 	_private: interop.Pointer | interop.Reference<any>;
 	type: xmlElementType;
-	name: string;
+	name: interop.Pointer | interop.Reference<any>;
 	children: interop.Pointer | interop.Reference<_xmlNode>;
 	last: interop.Pointer | interop.Reference<_xmlNode>;
 	parent: interop.Pointer | interop.Reference<_xmlDtd>;
@@ -130,19 +133,19 @@ interface _xmlAttribute {
 	nexth: interop.Pointer | interop.Reference<_xmlAttribute>;
 	atype: xmlAttributeType;
 	def: xmlAttributeDefault;
-	defaultValue: string;
+	defaultValue: interop.Pointer | interop.Reference<any>;
 	tree: interop.Pointer | interop.Reference<_xmlEnumeration>;
-	prefix: string;
-	elem: string;
+	prefix: interop.Pointer | interop.Reference<any>;
+	elem: interop.Pointer | interop.Reference<any>;
 }
 declare var _xmlAttribute: interop.StructType<_xmlAttribute>;
 
 interface _xmlBuffer {
-	content: string;
+	content: interop.Pointer | interop.Reference<any>;
 	use: number;
 	size: number;
 	alloc: xmlBufferAllocationScheme;
-	contentIO: string;
+	contentIO: interop.Pointer | interop.Reference<any>;
 }
 declare var _xmlBuffer: interop.StructType<_xmlBuffer>;
 
@@ -167,9 +170,9 @@ interface _xmlChSRange {
 declare var _xmlChSRange: interop.StructType<_xmlChSRange>;
 
 interface _xmlCharEncodingHandler {
-	name: string;
-	input: interop.FunctionReference<(p1: string, p2: interop.Pointer | interop.Reference<number>, p3: string, p4: interop.Pointer | interop.Reference<number>) => number>;
-	output: interop.FunctionReference<(p1: string, p2: interop.Pointer | interop.Reference<number>, p3: string, p4: interop.Pointer | interop.Reference<number>) => number>;
+	name: interop.Pointer | interop.Reference<any>;
+	input: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<number>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<number>) => number>;
+	output: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<number>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<number>) => number>;
 	uconv_in: interop.Pointer | interop.Reference<_uconv_t>;
 	uconv_out: interop.Pointer | interop.Reference<_uconv_t>;
 }
@@ -179,14 +182,14 @@ interface _xmlDOMWrapCtxt {
 	_private: interop.Pointer | interop.Reference<any>;
 	type: number;
 	namespaceMap: interop.Pointer | interop.Reference<any>;
-	getNsForNodeFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<_xmlDOMWrapCtxt>, p2: interop.Pointer | interop.Reference<_xmlNode>, p3: string, p4: string) => interop.Pointer | interop.Reference<_xmlNs>>;
+	getNsForNodeFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<_xmlDOMWrapCtxt>, p2: interop.Pointer | interop.Reference<_xmlNode>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<_xmlNs>>;
 }
 declare var _xmlDOMWrapCtxt: interop.StructType<_xmlDOMWrapCtxt>;
 
 interface _xmlDoc {
 	_private: interop.Pointer | interop.Reference<any>;
 	type: xmlElementType;
-	name: string;
+	name: interop.Pointer | interop.Reference<any>;
 	children: interop.Pointer | interop.Reference<_xmlNode>;
 	last: interop.Pointer | interop.Reference<_xmlNode>;
 	parent: interop.Pointer | interop.Reference<_xmlNode>;
@@ -198,11 +201,11 @@ interface _xmlDoc {
 	intSubset: interop.Pointer | interop.Reference<_xmlDtd>;
 	extSubset: interop.Pointer | interop.Reference<_xmlDtd>;
 	oldNs: interop.Pointer | interop.Reference<_xmlNs>;
-	version: string;
-	encoding: string;
+	version: interop.Pointer | interop.Reference<any>;
+	encoding: interop.Pointer | interop.Reference<any>;
 	ids: interop.Pointer | interop.Reference<any>;
 	refs: interop.Pointer | interop.Reference<any>;
-	URL: string;
+	URL: interop.Pointer | interop.Reference<any>;
 	charset: number;
 	dict: interop.Pointer | interop.Reference<any>;
 	psvi: interop.Pointer | interop.Reference<any>;
@@ -214,7 +217,7 @@ declare var _xmlDoc: interop.StructType<_xmlDoc>;
 interface _xmlDtd {
 	_private: interop.Pointer | interop.Reference<any>;
 	type: xmlElementType;
-	name: string;
+	name: interop.Pointer | interop.Reference<any>;
 	children: interop.Pointer | interop.Reference<_xmlNode>;
 	last: interop.Pointer | interop.Reference<_xmlNode>;
 	parent: interop.Pointer | interop.Reference<_xmlDoc>;
@@ -225,8 +228,8 @@ interface _xmlDtd {
 	elements: interop.Pointer | interop.Reference<any>;
 	attributes: interop.Pointer | interop.Reference<any>;
 	entities: interop.Pointer | interop.Reference<any>;
-	ExternalID: string;
-	SystemID: string;
+	ExternalID: interop.Pointer | interop.Reference<any>;
+	SystemID: interop.Pointer | interop.Reference<any>;
 	pentities: interop.Pointer | interop.Reference<any>;
 }
 declare var _xmlDtd: interop.StructType<_xmlDtd>;
@@ -234,7 +237,7 @@ declare var _xmlDtd: interop.StructType<_xmlDtd>;
 interface _xmlElement {
 	_private: interop.Pointer | interop.Reference<any>;
 	type: xmlElementType;
-	name: string;
+	name: interop.Pointer | interop.Reference<any>;
 	children: interop.Pointer | interop.Reference<_xmlNode>;
 	last: interop.Pointer | interop.Reference<_xmlNode>;
 	parent: interop.Pointer | interop.Reference<_xmlDtd>;
@@ -244,7 +247,7 @@ interface _xmlElement {
 	etype: xmlElementTypeVal;
 	content: interop.Pointer | interop.Reference<_xmlElementContent>;
 	attributes: interop.Pointer | interop.Reference<_xmlAttribute>;
-	prefix: string;
+	prefix: interop.Pointer | interop.Reference<any>;
 	contModel: interop.Pointer | interop.Reference<any>;
 }
 declare var _xmlElement: interop.StructType<_xmlElement>;
@@ -252,32 +255,32 @@ declare var _xmlElement: interop.StructType<_xmlElement>;
 interface _xmlElementContent {
 	type: xmlElementContentType;
 	ocur: xmlElementContentOccur;
-	name: string;
+	name: interop.Pointer | interop.Reference<any>;
 	c1: interop.Pointer | interop.Reference<_xmlElementContent>;
 	c2: interop.Pointer | interop.Reference<_xmlElementContent>;
 	parent: interop.Pointer | interop.Reference<_xmlElementContent>;
-	prefix: string;
+	prefix: interop.Pointer | interop.Reference<any>;
 }
 declare var _xmlElementContent: interop.StructType<_xmlElementContent>;
 
 interface _xmlEntity {
 	_private: interop.Pointer | interop.Reference<any>;
 	type: xmlElementType;
-	name: string;
+	name: interop.Pointer | interop.Reference<any>;
 	children: interop.Pointer | interop.Reference<_xmlNode>;
 	last: interop.Pointer | interop.Reference<_xmlNode>;
 	parent: interop.Pointer | interop.Reference<_xmlDtd>;
 	next: interop.Pointer | interop.Reference<_xmlNode>;
 	prev: interop.Pointer | interop.Reference<_xmlNode>;
 	doc: interop.Pointer | interop.Reference<_xmlDoc>;
-	orig: string;
-	content: string;
+	orig: interop.Pointer | interop.Reference<any>;
+	content: interop.Pointer | interop.Reference<any>;
 	length: number;
 	etype: xmlEntityType;
-	ExternalID: string;
-	SystemID: string;
+	ExternalID: interop.Pointer | interop.Reference<any>;
+	SystemID: interop.Pointer | interop.Reference<any>;
 	nexte: interop.Pointer | interop.Reference<_xmlEntity>;
-	URI: string;
+	URI: interop.Pointer | interop.Reference<any>;
 	owner: number;
 	checked: number;
 }
@@ -285,20 +288,20 @@ declare var _xmlEntity: interop.StructType<_xmlEntity>;
 
 interface _xmlEnumeration {
 	next: interop.Pointer | interop.Reference<_xmlEnumeration>;
-	name: string;
+	name: interop.Pointer | interop.Reference<any>;
 }
 declare var _xmlEnumeration: interop.StructType<_xmlEnumeration>;
 
 interface _xmlError {
 	domain: number;
 	code: number;
-	message: string;
+	message: interop.Pointer | interop.Reference<any>;
 	level: xmlErrorLevel;
-	file: string;
+	file: interop.Pointer | interop.Reference<any>;
 	line: number;
-	str1: string;
-	str2: string;
-	str3: string;
+	str1: interop.Pointer | interop.Reference<any>;
+	str2: interop.Pointer | interop.Reference<any>;
+	str3: interop.Pointer | interop.Reference<any>;
 	int1: number;
 	int2: number;
 	ctxt: interop.Pointer | interop.Reference<any>;
@@ -307,16 +310,16 @@ interface _xmlError {
 declare var _xmlError: interop.StructType<_xmlError>;
 
 interface _xmlGlobalState {
-	xmlParserVersion: string;
+	xmlParserVersion: interop.Pointer | interop.Reference<any>;
 	xmlDefaultSAXLocator: _xmlSAXLocator;
 	xmlDefaultSAXHandler: _xmlSAXHandlerV1;
 	docbDefaultSAXHandler: _xmlSAXHandlerV1;
 	htmlDefaultSAXHandler: _xmlSAXHandlerV1;
 	xmlFree: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
 	xmlMalloc: interop.FunctionReference<(p1: number) => interop.Pointer | interop.Reference<any>>;
-	xmlMemStrdup: interop.FunctionReference<(p1: string) => string>;
+	xmlMemStrdup: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<any>>;
 	xmlRealloc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number) => interop.Pointer | interop.Reference<any>>;
-	xmlGenericError: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>;
+	xmlGenericError: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>;
 	xmlStructuredError: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<_xmlError>) => void>;
 	xmlGenericErrorContext: interop.Pointer | interop.Reference<any>;
 	oldXMLWDcompatibility: number;
@@ -332,22 +335,22 @@ interface _xmlGlobalState {
 	xmlPedanticParserDefaultValue: number;
 	xmlSaveNoEmptyTags: number;
 	xmlIndentTreeOutput: number;
-	xmlTreeIndentString: string;
+	xmlTreeIndentString: interop.Pointer | interop.Reference<any>;
 	xmlRegisterNodeDefaultValue: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<_xmlNode>) => void>;
 	xmlDeregisterNodeDefaultValue: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<_xmlNode>) => void>;
 	xmlMallocAtomic: interop.FunctionReference<(p1: number) => interop.Pointer | interop.Reference<any>>;
 	xmlLastError: _xmlError;
-	xmlParserInputBufferCreateFilenameValue: interop.FunctionReference<(p1: string, p2: xmlCharEncoding) => interop.Pointer | interop.Reference<_xmlParserInputBuffer>>;
-	xmlOutputBufferCreateFilenameValue: interop.FunctionReference<(p1: string, p2: interop.Pointer | interop.Reference<_xmlCharEncodingHandler>, p3: number) => interop.Pointer | interop.Reference<_xmlOutputBuffer>>;
+	xmlParserInputBufferCreateFilenameValue: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: xmlCharEncoding) => interop.Pointer | interop.Reference<_xmlParserInputBuffer>>;
+	xmlOutputBufferCreateFilenameValue: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<_xmlCharEncodingHandler>, p3: number) => interop.Pointer | interop.Reference<_xmlOutputBuffer>>;
 	xmlStructuredErrorContext: interop.Pointer | interop.Reference<any>;
 }
 declare var _xmlGlobalState: interop.StructType<_xmlGlobalState>;
 
 interface _xmlID {
 	next: interop.Pointer | interop.Reference<_xmlID>;
-	value: string;
+	value: interop.Pointer | interop.Reference<any>;
 	attr: interop.Pointer | interop.Reference<_xmlAttr>;
-	name: string;
+	name: interop.Pointer | interop.Reference<any>;
 	lineno: number;
 	doc: interop.Pointer | interop.Reference<_xmlDoc>;
 }
@@ -363,7 +366,7 @@ declare var _xmlLocationSet: interop.StructType<_xmlLocationSet>;
 interface _xmlNode {
 	_private: interop.Pointer | interop.Reference<any>;
 	type: xmlElementType;
-	name: string;
+	name: interop.Pointer | interop.Reference<any>;
 	children: interop.Pointer | interop.Reference<_xmlNode>;
 	last: interop.Pointer | interop.Reference<_xmlNode>;
 	parent: interop.Pointer | interop.Reference<_xmlNode>;
@@ -371,7 +374,7 @@ interface _xmlNode {
 	prev: interop.Pointer | interop.Reference<_xmlNode>;
 	doc: interop.Pointer | interop.Reference<_xmlDoc>;
 	ns: interop.Pointer | interop.Reference<_xmlNs>;
-	content: string;
+	content: interop.Pointer | interop.Reference<any>;
 	properties: interop.Pointer | interop.Reference<_xmlAttr>;
 	nsDef: interop.Pointer | interop.Reference<_xmlNs>;
 	psvi: interop.Pointer | interop.Reference<any>;
@@ -388,17 +391,17 @@ interface _xmlNodeSet {
 declare var _xmlNodeSet: interop.StructType<_xmlNodeSet>;
 
 interface _xmlNotation {
-	name: string;
-	PublicID: string;
-	SystemID: string;
+	name: interop.Pointer | interop.Reference<any>;
+	PublicID: interop.Pointer | interop.Reference<any>;
+	SystemID: interop.Pointer | interop.Reference<any>;
 }
 declare var _xmlNotation: interop.StructType<_xmlNotation>;
 
 interface _xmlNs {
 	next: interop.Pointer | interop.Reference<_xmlNs>;
 	type: xmlElementType;
-	href: string;
-	prefix: string;
+	href: interop.Pointer | interop.Reference<any>;
+	prefix: interop.Pointer | interop.Reference<any>;
 	_private: interop.Pointer | interop.Reference<any>;
 	context: interop.Pointer | interop.Reference<_xmlDoc>;
 }
@@ -406,7 +409,7 @@ declare var _xmlNs: interop.StructType<_xmlNs>;
 
 interface _xmlOutputBuffer {
 	context: interop.Pointer | interop.Reference<any>;
-	writecallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number) => number>;
+	writecallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number) => number>;
 	closecallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>;
 	encoder: interop.Pointer | interop.Reference<_xmlCharEncodingHandler>;
 	buffer: interop.Pointer | interop.Reference<any>;
@@ -422,8 +425,8 @@ interface _xmlParserCtxt {
 	myDoc: interop.Pointer | interop.Reference<_xmlDoc>;
 	wellFormed: number;
 	replaceEntities: number;
-	version: string;
-	encoding: string;
+	version: interop.Pointer | interop.Reference<any>;
+	encoding: interop.Pointer | interop.Reference<any>;
 	standalone: number;
 	html: number;
 	input: interop.Pointer | interop.Reference<_xmlParserInput>;
@@ -445,19 +448,19 @@ interface _xmlParserCtxt {
 	vctxt: _xmlValidCtxt;
 	instate: xmlParserInputState;
 	token: number;
-	directory: string;
-	name: string;
+	directory: interop.Pointer | interop.Reference<any>;
+	name: interop.Pointer | interop.Reference<any>;
 	nameNr: number;
 	nameMax: number;
-	nameTab: interop.Pointer | interop.Reference<string>;
+	nameTab: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>;
 	nbChars: number;
 	checkIndex: number;
 	keepBlanks: number;
 	disableSAX: number;
 	inSubset: number;
-	intSubName: string;
-	extSubURI: string;
-	extSubSystem: string;
+	intSubName: interop.Pointer | interop.Reference<any>;
+	extSubURI: interop.Pointer | interop.Reference<any>;
+	extSubSystem: interop.Pointer | interop.Reference<any>;
 	space: interop.Pointer | interop.Reference<number>;
 	spaceNr: number;
 	spaceMax: number;
@@ -475,16 +478,16 @@ interface _xmlParserCtxt {
 	recovery: number;
 	progressive: number;
 	dict: interop.Pointer | interop.Reference<any>;
-	atts: interop.Pointer | interop.Reference<string>;
+	atts: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>;
 	maxatts: number;
 	docdict: number;
-	str_xml: string;
-	str_xmlns: string;
-	str_xml_ns: string;
+	str_xml: interop.Pointer | interop.Reference<any>;
+	str_xmlns: interop.Pointer | interop.Reference<any>;
+	str_xml_ns: interop.Pointer | interop.Reference<any>;
 	sax2: number;
 	nsNr: number;
 	nsMax: number;
-	nsTab: interop.Pointer | interop.Reference<string>;
+	nsTab: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>;
 	attallocs: interop.Pointer | interop.Reference<number>;
 	pushTab: interop.Pointer | interop.Reference<any>;
 	attsDefault: interop.Pointer | interop.Reference<any>;
@@ -511,18 +514,18 @@ declare var _xmlParserCtxt: interop.StructType<_xmlParserCtxt>;
 
 interface _xmlParserInput {
 	buf: interop.Pointer | interop.Reference<_xmlParserInputBuffer>;
-	filename: string;
-	directory: string;
-	base: string;
-	cur: string;
-	end: string;
+	filename: interop.Pointer | interop.Reference<any>;
+	directory: interop.Pointer | interop.Reference<any>;
+	base: interop.Pointer | interop.Reference<any>;
+	cur: interop.Pointer | interop.Reference<any>;
+	end: interop.Pointer | interop.Reference<any>;
 	length: number;
 	line: number;
 	col: number;
 	consumed: number;
-	free: interop.FunctionReference<(p1: string) => void>;
-	encoding: string;
-	version: string;
+	free: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
+	encoding: interop.Pointer | interop.Reference<any>;
+	version: interop.Pointer | interop.Reference<any>;
 	standalone: number;
 	id: number;
 }
@@ -530,7 +533,7 @@ declare var _xmlParserInput: interop.StructType<_xmlParserInput>;
 
 interface _xmlParserInputBuffer {
 	context: interop.Pointer | interop.Reference<any>;
-	readcallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number) => number>;
+	readcallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number) => number>;
 	closecallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>;
 	encoder: interop.Pointer | interop.Reference<_xmlCharEncodingHandler>;
 	buffer: interop.Pointer | interop.Reference<any>;
@@ -559,94 +562,94 @@ declare var _xmlParserNodeInfoSeq: interop.StructType<_xmlParserNodeInfoSeq>;
 
 interface _xmlRef {
 	next: interop.Pointer | interop.Reference<_xmlRef>;
-	value: string;
+	value: interop.Pointer | interop.Reference<any>;
 	attr: interop.Pointer | interop.Reference<_xmlAttr>;
-	name: string;
+	name: interop.Pointer | interop.Reference<any>;
 	lineno: number;
 }
 declare var _xmlRef: interop.StructType<_xmlRef>;
 
 interface _xmlSAXHandler {
-	internalSubset: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: string, p4: string) => void>;
+	internalSubset: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>) => void>;
 	isStandalone: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>;
 	hasInternalSubset: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>;
 	hasExternalSubset: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>;
-	resolveEntity: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: string) => interop.Pointer | interop.Reference<_xmlParserInput>>;
-	getEntity: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => interop.Pointer | interop.Reference<_xmlEntity>>;
-	entityDecl: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number, p4: string, p5: string, p6: string) => void>;
-	notationDecl: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: string, p4: string) => void>;
-	attributeDecl: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: string, p4: number, p5: number, p6: string, p7: interop.Pointer | interop.Reference<_xmlEnumeration>) => void>;
-	elementDecl: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number, p4: interop.Pointer | interop.Reference<_xmlElementContent>) => void>;
-	unparsedEntityDecl: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: string, p4: string, p5: string) => void>;
+	resolveEntity: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<_xmlParserInput>>;
+	getEntity: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<_xmlEntity>>;
+	entityDecl: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: interop.Pointer | interop.Reference<any>, p5: interop.Pointer | interop.Reference<any>, p6: interop.Pointer | interop.Reference<any>) => void>;
+	notationDecl: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>) => void>;
+	attributeDecl: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: number, p5: number, p6: interop.Pointer | interop.Reference<any>, p7: interop.Pointer | interop.Reference<_xmlEnumeration>) => void>;
+	elementDecl: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: interop.Pointer | interop.Reference<_xmlElementContent>) => void>;
+	unparsedEntityDecl: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>, p5: interop.Pointer | interop.Reference<any>) => void>;
 	setDocumentLocator: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<_xmlSAXLocator>) => void>;
 	startDocument: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
 	endDocument: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
-	startElement: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: interop.Pointer | interop.Reference<string>) => void>;
-	endElement: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>;
-	reference: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>;
-	characters: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number) => void>;
-	ignorableWhitespace: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number) => void>;
-	processingInstruction: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: string) => void>;
-	comment: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>;
-	warning: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>;
-	error: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>;
-	fatalError: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>;
-	getParameterEntity: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => interop.Pointer | interop.Reference<_xmlEntity>>;
-	cdataBlock: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number) => void>;
-	externalSubset: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: string, p4: string) => void>;
+	startElement: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => void>;
+	endElement: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>;
+	reference: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>;
+	characters: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number) => void>;
+	ignorableWhitespace: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number) => void>;
+	processingInstruction: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => void>;
+	comment: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>;
+	warning: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>;
+	error: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>;
+	fatalError: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>;
+	getParameterEntity: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<_xmlEntity>>;
+	cdataBlock: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number) => void>;
+	externalSubset: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>) => void>;
 	initialized: number;
 	_private: interop.Pointer | interop.Reference<any>;
-	startElementNs: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: string, p4: string, p5: number, p6: interop.Pointer | interop.Reference<string>, p7: number, p8: number, p9: interop.Pointer | interop.Reference<string>) => void>;
-	endElementNs: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: string, p4: string) => void>;
+	startElementNs: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>, p5: number, p6: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p7: number, p8: number, p9: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => void>;
+	endElementNs: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>) => void>;
 	serror: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<_xmlError>) => void>;
 }
 declare var _xmlSAXHandler: interop.StructType<_xmlSAXHandler>;
 
 interface _xmlSAXHandlerV1 {
-	internalSubset: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: string, p4: string) => void>;
+	internalSubset: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>) => void>;
 	isStandalone: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>;
 	hasInternalSubset: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>;
 	hasExternalSubset: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>;
-	resolveEntity: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: string) => interop.Pointer | interop.Reference<_xmlParserInput>>;
-	getEntity: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => interop.Pointer | interop.Reference<_xmlEntity>>;
-	entityDecl: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number, p4: string, p5: string, p6: string) => void>;
-	notationDecl: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: string, p4: string) => void>;
-	attributeDecl: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: string, p4: number, p5: number, p6: string, p7: interop.Pointer | interop.Reference<_xmlEnumeration>) => void>;
-	elementDecl: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number, p4: interop.Pointer | interop.Reference<_xmlElementContent>) => void>;
-	unparsedEntityDecl: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: string, p4: string, p5: string) => void>;
+	resolveEntity: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<_xmlParserInput>>;
+	getEntity: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<_xmlEntity>>;
+	entityDecl: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: interop.Pointer | interop.Reference<any>, p5: interop.Pointer | interop.Reference<any>, p6: interop.Pointer | interop.Reference<any>) => void>;
+	notationDecl: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>) => void>;
+	attributeDecl: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: number, p5: number, p6: interop.Pointer | interop.Reference<any>, p7: interop.Pointer | interop.Reference<_xmlEnumeration>) => void>;
+	elementDecl: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: interop.Pointer | interop.Reference<_xmlElementContent>) => void>;
+	unparsedEntityDecl: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>, p5: interop.Pointer | interop.Reference<any>) => void>;
 	setDocumentLocator: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<_xmlSAXLocator>) => void>;
 	startDocument: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
 	endDocument: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
-	startElement: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: interop.Pointer | interop.Reference<string>) => void>;
-	endElement: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>;
-	reference: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>;
-	characters: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number) => void>;
-	ignorableWhitespace: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number) => void>;
-	processingInstruction: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: string) => void>;
-	comment: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>;
-	warning: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>;
-	error: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>;
-	fatalError: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>;
-	getParameterEntity: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => interop.Pointer | interop.Reference<_xmlEntity>>;
-	cdataBlock: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number) => void>;
-	externalSubset: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: string, p4: string) => void>;
+	startElement: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => void>;
+	endElement: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>;
+	reference: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>;
+	characters: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number) => void>;
+	ignorableWhitespace: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number) => void>;
+	processingInstruction: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => void>;
+	comment: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>;
+	warning: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>;
+	error: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>;
+	fatalError: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>;
+	getParameterEntity: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<_xmlEntity>>;
+	cdataBlock: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number) => void>;
+	externalSubset: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>) => void>;
 	initialized: number;
 }
 declare var _xmlSAXHandlerV1: interop.StructType<_xmlSAXHandlerV1>;
 
 interface _xmlSAXLocator {
-	getPublicId: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => string>;
-	getSystemId: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => string>;
+	getPublicId: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<any>>;
+	getSystemId: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<any>>;
 	getLineNumber: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>;
 	getColumnNumber: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>;
 }
 declare var _xmlSAXLocator: interop.StructType<_xmlSAXLocator>;
 
 interface _xmlSchema {
-	name: string;
-	targetNamespace: string;
-	version: string;
-	id: string;
+	name: interop.Pointer | interop.Reference<any>;
+	targetNamespace: interop.Pointer | interop.Reference<any>;
+	version: interop.Pointer | interop.Reference<any>;
+	id: interop.Pointer | interop.Reference<any>;
 	doc: interop.Pointer | interop.Reference<_xmlDoc>;
 	annot: interop.Pointer | interop.Reference<_xmlSchemaAnnot>;
 	flags: number;
@@ -676,21 +679,21 @@ declare var _xmlSchemaAnnot: interop.StructType<_xmlSchemaAnnot>;
 interface _xmlSchemaAttribute {
 	type: xmlSchemaTypeType;
 	next: interop.Pointer | interop.Reference<_xmlSchemaAttribute>;
-	name: string;
-	id: string;
-	ref: string;
-	refNs: string;
-	typeName: string;
-	typeNs: string;
+	name: interop.Pointer | interop.Reference<any>;
+	id: interop.Pointer | interop.Reference<any>;
+	ref: interop.Pointer | interop.Reference<any>;
+	refNs: interop.Pointer | interop.Reference<any>;
+	typeName: interop.Pointer | interop.Reference<any>;
+	typeNs: interop.Pointer | interop.Reference<any>;
 	annot: interop.Pointer | interop.Reference<_xmlSchemaAnnot>;
 	base: interop.Pointer | interop.Reference<_xmlSchemaType>;
 	occurs: number;
-	defValue: string;
+	defValue: interop.Pointer | interop.Reference<any>;
 	subtypes: interop.Pointer | interop.Reference<_xmlSchemaType>;
 	node: interop.Pointer | interop.Reference<_xmlNode>;
-	targetNamespace: string;
+	targetNamespace: interop.Pointer | interop.Reference<any>;
 	flags: number;
-	refPrefix: string;
+	refPrefix: interop.Pointer | interop.Reference<any>;
 	defVal: interop.Pointer | interop.Reference<any>;
 	refDecl: interop.Pointer | interop.Reference<_xmlSchemaAttribute>;
 }
@@ -699,18 +702,18 @@ declare var _xmlSchemaAttribute: interop.StructType<_xmlSchemaAttribute>;
 interface _xmlSchemaAttributeGroup {
 	type: xmlSchemaTypeType;
 	next: interop.Pointer | interop.Reference<_xmlSchemaAttribute>;
-	name: string;
-	id: string;
-	ref: string;
-	refNs: string;
+	name: interop.Pointer | interop.Reference<any>;
+	id: interop.Pointer | interop.Reference<any>;
+	ref: interop.Pointer | interop.Reference<any>;
+	refNs: interop.Pointer | interop.Reference<any>;
 	annot: interop.Pointer | interop.Reference<_xmlSchemaAnnot>;
 	attributes: interop.Pointer | interop.Reference<_xmlSchemaAttribute>;
 	node: interop.Pointer | interop.Reference<_xmlNode>;
 	flags: number;
 	attributeWildcard: interop.Pointer | interop.Reference<_xmlSchemaWildcard>;
-	refPrefix: string;
+	refPrefix: interop.Pointer | interop.Reference<any>;
 	refItem: interop.Pointer | interop.Reference<_xmlSchemaAttributeGroup>;
-	targetNamespace: string;
+	targetNamespace: interop.Pointer | interop.Reference<any>;
 	attrUses: interop.Pointer | interop.Reference<any>;
 }
 declare var _xmlSchemaAttributeGroup: interop.StructType<_xmlSchemaAttributeGroup>;
@@ -724,10 +727,10 @@ declare var _xmlSchemaAttributeLink: interop.StructType<_xmlSchemaAttributeLink>
 interface _xmlSchemaElement {
 	type: xmlSchemaTypeType;
 	next: interop.Pointer | interop.Reference<_xmlSchemaType>;
-	name: string;
-	id: string;
-	ref: string;
-	refNs: string;
+	name: interop.Pointer | interop.Reference<any>;
+	id: interop.Pointer | interop.Reference<any>;
+	ref: interop.Pointer | interop.Reference<any>;
+	refNs: interop.Pointer | interop.Reference<any>;
 	annot: interop.Pointer | interop.Reference<_xmlSchemaAnnot>;
 	subtypes: interop.Pointer | interop.Reference<_xmlSchemaType>;
 	attributes: interop.Pointer | interop.Reference<_xmlSchemaAttribute>;
@@ -735,17 +738,17 @@ interface _xmlSchemaElement {
 	minOccurs: number;
 	maxOccurs: number;
 	flags: number;
-	targetNamespace: string;
-	namedType: string;
-	namedTypeNs: string;
-	substGroup: string;
-	substGroupNs: string;
-	scope: string;
-	value: string;
+	targetNamespace: interop.Pointer | interop.Reference<any>;
+	namedType: interop.Pointer | interop.Reference<any>;
+	namedTypeNs: interop.Pointer | interop.Reference<any>;
+	substGroup: interop.Pointer | interop.Reference<any>;
+	substGroupNs: interop.Pointer | interop.Reference<any>;
+	scope: interop.Pointer | interop.Reference<any>;
+	value: interop.Pointer | interop.Reference<any>;
 	refDecl: interop.Pointer | interop.Reference<_xmlSchemaElement>;
 	contModel: interop.Pointer | interop.Reference<any>;
 	contentType: xmlSchemaContentType;
-	refPrefix: string;
+	refPrefix: interop.Pointer | interop.Reference<any>;
 	defVal: interop.Pointer | interop.Reference<any>;
 	idcs: interop.Pointer | interop.Reference<any>;
 }
@@ -754,8 +757,8 @@ declare var _xmlSchemaElement: interop.StructType<_xmlSchemaElement>;
 interface _xmlSchemaFacet {
 	type: xmlSchemaTypeType;
 	next: interop.Pointer | interop.Reference<_xmlSchemaFacet>;
-	value: string;
-	id: string;
+	value: interop.Pointer | interop.Reference<any>;
+	id: interop.Pointer | interop.Reference<any>;
 	annot: interop.Pointer | interop.Reference<_xmlSchemaAnnot>;
 	node: interop.Pointer | interop.Reference<_xmlNode>;
 	fixed: number;
@@ -773,20 +776,20 @@ declare var _xmlSchemaFacetLink: interop.StructType<_xmlSchemaFacetLink>;
 
 interface _xmlSchemaNotation {
 	type: xmlSchemaTypeType;
-	name: string;
+	name: interop.Pointer | interop.Reference<any>;
 	annot: interop.Pointer | interop.Reference<_xmlSchemaAnnot>;
-	identifier: string;
-	targetNamespace: string;
+	identifier: interop.Pointer | interop.Reference<any>;
+	targetNamespace: interop.Pointer | interop.Reference<any>;
 }
 declare var _xmlSchemaNotation: interop.StructType<_xmlSchemaNotation>;
 
 interface _xmlSchemaType {
 	type: xmlSchemaTypeType;
 	next: interop.Pointer | interop.Reference<_xmlSchemaType>;
-	name: string;
-	id: string;
-	ref: string;
-	refNs: string;
+	name: interop.Pointer | interop.Reference<any>;
+	id: interop.Pointer | interop.Reference<any>;
+	ref: interop.Pointer | interop.Reference<any>;
+	refNs: interop.Pointer | interop.Reference<any>;
 	annot: interop.Pointer | interop.Reference<_xmlSchemaAnnot>;
 	subtypes: interop.Pointer | interop.Reference<_xmlSchemaType>;
 	attributes: interop.Pointer | interop.Reference<_xmlSchemaAttribute>;
@@ -795,8 +798,8 @@ interface _xmlSchemaType {
 	maxOccurs: number;
 	flags: number;
 	contentType: xmlSchemaContentType;
-	base: string;
-	baseNs: string;
+	base: interop.Pointer | interop.Reference<any>;
+	baseNs: interop.Pointer | interop.Reference<any>;
 	baseType: interop.Pointer | interop.Reference<_xmlSchemaType>;
 	facets: interop.Pointer | interop.Reference<_xmlSchemaFacet>;
 	redef: interop.Pointer | interop.Reference<_xmlSchemaType>;
@@ -806,10 +809,10 @@ interface _xmlSchemaType {
 	builtInType: number;
 	memberTypes: interop.Pointer | interop.Reference<_xmlSchemaTypeLink>;
 	facetSet: interop.Pointer | interop.Reference<_xmlSchemaFacetLink>;
-	refPrefix: string;
+	refPrefix: interop.Pointer | interop.Reference<any>;
 	contentTypeDef: interop.Pointer | interop.Reference<_xmlSchemaType>;
 	contModel: interop.Pointer | interop.Reference<any>;
-	targetNamespace: string;
+	targetNamespace: interop.Pointer | interop.Reference<any>;
 	attrUses: interop.Pointer | interop.Reference<any>;
 }
 declare var _xmlSchemaType: interop.StructType<_xmlSchemaType>;
@@ -822,7 +825,7 @@ declare var _xmlSchemaTypeLink: interop.StructType<_xmlSchemaTypeLink>;
 
 interface _xmlSchemaWildcard {
 	type: xmlSchemaTypeType;
-	id: string;
+	id: interop.Pointer | interop.Reference<any>;
 	annot: interop.Pointer | interop.Reference<_xmlSchemaAnnot>;
 	node: interop.Pointer | interop.Reference<_xmlNode>;
 	minOccurs: number;
@@ -837,40 +840,40 @@ declare var _xmlSchemaWildcard: interop.StructType<_xmlSchemaWildcard>;
 
 interface _xmlSchemaWildcardNs {
 	next: interop.Pointer | interop.Reference<_xmlSchemaWildcardNs>;
-	value: string;
+	value: interop.Pointer | interop.Reference<any>;
 }
 declare var _xmlSchemaWildcardNs: interop.StructType<_xmlSchemaWildcardNs>;
 
 interface _xmlShellCtxt {
-	filename: string;
+	filename: interop.Pointer | interop.Reference<any>;
 	doc: interop.Pointer | interop.Reference<_xmlDoc>;
 	node: interop.Pointer | interop.Reference<_xmlNode>;
 	pctxt: interop.Pointer | interop.Reference<_xmlXPathContext>;
 	loaded: number;
 	output: interop.Pointer | interop.Reference<FILE>;
-	input: interop.FunctionReference<(p1: string) => string>;
+	input: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<any>>;
 }
 declare var _xmlShellCtxt: interop.StructType<_xmlShellCtxt>;
 
 interface _xmlURI {
-	scheme: string;
-	opaque: string;
-	authority: string;
-	server: string;
-	user: string;
+	scheme: interop.Pointer | interop.Reference<any>;
+	opaque: interop.Pointer | interop.Reference<any>;
+	authority: interop.Pointer | interop.Reference<any>;
+	server: interop.Pointer | interop.Reference<any>;
+	user: interop.Pointer | interop.Reference<any>;
 	port: number;
-	path: string;
-	query: string;
-	fragment: string;
+	path: interop.Pointer | interop.Reference<any>;
+	query: interop.Pointer | interop.Reference<any>;
+	fragment: interop.Pointer | interop.Reference<any>;
 	cleanup: number;
-	query_raw: string;
+	query_raw: interop.Pointer | interop.Reference<any>;
 }
 declare var _xmlURI: interop.StructType<_xmlURI>;
 
 interface _xmlValidCtxt {
 	userData: interop.Pointer | interop.Reference<any>;
-	error: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>;
-	warning: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>;
+	error: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>;
+	warning: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>;
 	node: interop.Pointer | interop.Reference<_xmlNode>;
 	nodeNr: number;
 	nodeMax: number;
@@ -888,7 +891,7 @@ interface _xmlValidCtxt {
 declare var _xmlValidCtxt: interop.StructType<_xmlValidCtxt>;
 
 interface _xmlXPathAxis {
-	name: string;
+	name: interop.Pointer | interop.Reference<any>;
 	func: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<_xmlXPathParserContext>, p2: interop.Pointer | interop.Reference<_xmlXPathObject>) => interop.Pointer | interop.Reference<_xmlXPathObject>>;
 }
 declare var _xmlXPathAxis: interop.StructType<_xmlXPathAxis>;
@@ -917,12 +920,12 @@ interface _xmlXPathContext {
 	here: interop.Pointer | interop.Reference<_xmlNode>;
 	origin: interop.Pointer | interop.Reference<_xmlNode>;
 	nsHash: interop.Pointer | interop.Reference<any>;
-	varLookupFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: string) => interop.Pointer | interop.Reference<_xmlXPathObject>>;
+	varLookupFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<_xmlXPathObject>>;
 	varLookupData: interop.Pointer | interop.Reference<any>;
 	extra: interop.Pointer | interop.Reference<any>;
-	function: string;
-	functionURI: string;
-	funcLookupFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: string) => interop.FunctionReference<(p1: interop.Pointer | interop.Reference<_xmlXPathParserContext>, p2: number) => void>>;
+	function: interop.Pointer | interop.Reference<any>;
+	functionURI: interop.Pointer | interop.Reference<any>;
+	funcLookupFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => interop.FunctionReference<(p1: interop.Pointer | interop.Reference<_xmlXPathParserContext>, p2: number) => void>>;
 	funcLookupData: interop.Pointer | interop.Reference<any>;
 	tmpNsList: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<_xmlNs>>;
 	tmpNsNr: number;
@@ -933,11 +936,14 @@ interface _xmlXPathContext {
 	dict: interop.Pointer | interop.Reference<any>;
 	flags: number;
 	cache: interop.Pointer | interop.Reference<any>;
+	opLimit: number;
+	opCount: number;
+	depth: number;
 }
 declare var _xmlXPathContext: interop.StructType<_xmlXPathContext>;
 
 interface _xmlXPathFunct {
-	name: string;
+	name: interop.Pointer | interop.Reference<any>;
 	func: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<_xmlXPathParserContext>, p2: number) => void>;
 }
 declare var _xmlXPathFunct: interop.StructType<_xmlXPathFunct>;
@@ -947,7 +953,7 @@ interface _xmlXPathObject {
 	nodesetval: interop.Pointer | interop.Reference<_xmlNodeSet>;
 	boolval: number;
 	floatval: number;
-	stringval: string;
+	stringval: interop.Pointer | interop.Reference<any>;
 	user: interop.Pointer | interop.Reference<any>;
 	index: number;
 	user2: interop.Pointer | interop.Reference<any>;
@@ -956,8 +962,8 @@ interface _xmlXPathObject {
 declare var _xmlXPathObject: interop.StructType<_xmlXPathObject>;
 
 interface _xmlXPathParserContext {
-	cur: string;
-	base: string;
+	cur: interop.Pointer | interop.Reference<any>;
+	base: interop.Pointer | interop.Reference<any>;
 	error: number;
 	context: interop.Pointer | interop.Reference<_xmlXPathContext>;
 	value: interop.Pointer | interop.Reference<_xmlXPathObject>;
@@ -972,13 +978,13 @@ interface _xmlXPathParserContext {
 declare var _xmlXPathParserContext: interop.StructType<_xmlXPathParserContext>;
 
 interface _xmlXPathType {
-	name: string;
+	name: interop.Pointer | interop.Reference<any>;
 	func: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<_xmlXPathObject>, p2: number) => number>;
 }
 declare var _xmlXPathType: interop.StructType<_xmlXPathType>;
 
 interface _xmlXPathVariable {
-	name: string;
+	name: interop.Pointer | interop.Reference<any>;
 	value: interop.Pointer | interop.Reference<_xmlXPathObject>;
 }
 declare var _xmlXPathVariable: interop.StructType<_xmlXPathVariable>;
@@ -1017,9 +1023,9 @@ declare function getNamespace(ctx: interop.Pointer | interop.Reference<any>): in
 
 declare function getParameterEntity(ctx: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<_xmlEntity>;
 
-declare function getPublicId(ctx: interop.Pointer | interop.Reference<any>): string;
+declare function getPublicId(ctx: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function getSystemId(ctx: interop.Pointer | interop.Reference<any>): string;
+declare function getSystemId(ctx: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function globalNamespace(ctx: interop.Pointer | interop.Reference<any>, href: string | interop.Pointer | interop.Reference<any>, prefix: string | interop.Pointer | interop.Reference<any>): void;
 
@@ -1043,7 +1049,7 @@ declare function htmlCtxtReadFd(ctxt: interop.Pointer | interop.Reference<_xmlPa
 
 declare function htmlCtxtReadFile(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>, filename: string | interop.Pointer | interop.Reference<any>, encoding: string | interop.Pointer | interop.Reference<any>, options: number): interop.Pointer | interop.Reference<_xmlDoc>;
 
-declare function htmlCtxtReadIO(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>, ioread: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number) => number>, ioclose: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>, ioctx: interop.Pointer | interop.Reference<any>, URL: string | interop.Pointer | interop.Reference<any>, encoding: string | interop.Pointer | interop.Reference<any>, options: number): interop.Pointer | interop.Reference<_xmlDoc>;
+declare function htmlCtxtReadIO(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>, ioread: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number) => number>, ioclose: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>, ioctx: interop.Pointer | interop.Reference<any>, URL: string | interop.Pointer | interop.Reference<any>, encoding: string | interop.Pointer | interop.Reference<any>, options: number): interop.Pointer | interop.Reference<_xmlDoc>;
 
 declare function htmlCtxtReadMemory(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>, buffer: string | interop.Pointer | interop.Reference<any>, size: number, URL: string | interop.Pointer | interop.Reference<any>, encoding: string | interop.Pointer | interop.Reference<any>, options: number): interop.Pointer | interop.Reference<_xmlDoc>;
 
@@ -1059,9 +1065,9 @@ declare function htmlDocContentDumpOutput(buf: interop.Pointer | interop.Referen
 
 declare function htmlDocDump(f: interop.Pointer | interop.Reference<FILE>, cur: interop.Pointer | interop.Reference<_xmlDoc>): number;
 
-declare function htmlDocDumpMemory(cur: interop.Pointer | interop.Reference<_xmlDoc>, mem: interop.Pointer | interop.Reference<string>, size: interop.Pointer | interop.Reference<number>): void;
+declare function htmlDocDumpMemory(cur: interop.Pointer | interop.Reference<_xmlDoc>, mem: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, size: interop.Pointer | interop.Reference<number>): void;
 
-declare function htmlDocDumpMemoryFormat(cur: interop.Pointer | interop.Reference<_xmlDoc>, mem: interop.Pointer | interop.Reference<string>, size: interop.Pointer | interop.Reference<number>, format: number): void;
+declare function htmlDocDumpMemoryFormat(cur: interop.Pointer | interop.Reference<_xmlDoc>, mem: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, size: interop.Pointer | interop.Reference<number>, format: number): void;
 
 declare function htmlElementAllowedHere(p1: interop.Pointer | interop.Reference<_htmlElemDesc>, p2: string | interop.Pointer | interop.Reference<any>): number;
 
@@ -1075,7 +1081,7 @@ declare function htmlEntityValueLookup(value: number): interop.Pointer | interop
 
 declare function htmlFreeParserCtxt(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): void;
 
-declare function htmlGetMetaEncoding(doc: interop.Pointer | interop.Reference<_xmlDoc>): string;
+declare function htmlGetMetaEncoding(doc: interop.Pointer | interop.Reference<_xmlDoc>): interop.Pointer | interop.Reference<any>;
 
 declare function htmlHandleOmittedElem(val: number): number;
 
@@ -1115,7 +1121,7 @@ declare function htmlParseDocument(ctxt: interop.Pointer | interop.Reference<_xm
 
 declare function htmlParseElement(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): void;
 
-declare function htmlParseEntityRef(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>, str: interop.Pointer | interop.Reference<string>): interop.Pointer | interop.Reference<_htmlEntityDesc>;
+declare function htmlParseEntityRef(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>, str: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<_htmlEntityDesc>;
 
 declare function htmlParseFile(filename: string | interop.Pointer | interop.Reference<any>, encoding: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<_xmlDoc>;
 
@@ -1148,7 +1154,7 @@ declare function htmlReadFd(fd: number, URL: string | interop.Pointer | interop.
 
 declare function htmlReadFile(URL: string | interop.Pointer | interop.Reference<any>, encoding: string | interop.Pointer | interop.Reference<any>, options: number): interop.Pointer | interop.Reference<_xmlDoc>;
 
-declare function htmlReadIO(ioread: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number) => number>, ioclose: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>, ioctx: interop.Pointer | interop.Reference<any>, URL: string | interop.Pointer | interop.Reference<any>, encoding: string | interop.Pointer | interop.Reference<any>, options: number): interop.Pointer | interop.Reference<_xmlDoc>;
+declare function htmlReadIO(ioread: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number) => number>, ioclose: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>, ioctx: interop.Pointer | interop.Reference<any>, URL: string | interop.Pointer | interop.Reference<any>, encoding: string | interop.Pointer | interop.Reference<any>, options: number): interop.Pointer | interop.Reference<_xmlDoc>;
 
 declare function htmlReadMemory(buffer: string | interop.Pointer | interop.Reference<any>, size: number, URL: string | interop.Pointer | interop.Reference<any>, encoding: string | interop.Pointer | interop.Reference<any>, options: number): interop.Pointer | interop.Reference<_xmlDoc>;
 
@@ -1181,7 +1187,7 @@ declare function htmlTagLookup(tag: string | interop.Pointer | interop.Reference
 
 declare function ignorableWhitespace(ctx: interop.Pointer | interop.Reference<any>, ch: string | interop.Pointer | interop.Reference<any>, len: number): void;
 
-declare function initGenericErrorDefaultFunc(handler: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>>): void;
+declare function initGenericErrorDefaultFunc(handler: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>>): void;
 
 declare function initdocbDefaultSAXHandler(hdlr: interop.Pointer | interop.Reference<_xmlSAXHandlerV1>): void;
 
@@ -1199,7 +1205,7 @@ declare function isStandalone(ctx: interop.Pointer | interop.Reference<any>): nu
 
 declare function isolat1ToUTF8(out: string | interop.Pointer | interop.Reference<any>, outlen: interop.Pointer | interop.Reference<number>, _in: string | interop.Pointer | interop.Reference<any>, inlen: interop.Pointer | interop.Reference<number>): number;
 
-declare function namePop(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): string;
+declare function namePop(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): interop.Pointer | interop.Reference<any>;
 
 declare function namePush(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>, value: string | interop.Pointer | interop.Reference<any>): number;
 
@@ -1223,7 +1229,7 @@ declare function setNamespace(ctx: interop.Pointer | interop.Reference<any>, nam
 
 declare function startDocument(ctx: interop.Pointer | interop.Reference<any>): void;
 
-declare function startElement(ctx: interop.Pointer | interop.Reference<any>, fullname: string | interop.Pointer | interop.Reference<any>, atts: interop.Pointer | interop.Reference<string>): void;
+declare function startElement(ctx: interop.Pointer | interop.Reference<any>, fullname: string | interop.Pointer | interop.Reference<any>, atts: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): void;
 
 declare function unparsedEntityDecl(ctx: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, publicId: string | interop.Pointer | interop.Reference<any>, systemId: string | interop.Pointer | interop.Reference<any>, notationName: string | interop.Pointer | interop.Reference<any>): void;
 
@@ -1278,13 +1284,13 @@ declare function xmlACatalogDump(catal: interop.Pointer | interop.Reference<any>
 
 declare function xmlACatalogRemove(catal: interop.Pointer | interop.Reference<any>, value: string | interop.Pointer | interop.Reference<any>): number;
 
-declare function xmlACatalogResolve(catal: interop.Pointer | interop.Reference<any>, pubID: string | interop.Pointer | interop.Reference<any>, sysID: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlACatalogResolve(catal: interop.Pointer | interop.Reference<any>, pubID: string | interop.Pointer | interop.Reference<any>, sysID: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlACatalogResolvePublic(catal: interop.Pointer | interop.Reference<any>, pubID: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlACatalogResolvePublic(catal: interop.Pointer | interop.Reference<any>, pubID: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlACatalogResolveSystem(catal: interop.Pointer | interop.Reference<any>, sysID: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlACatalogResolveSystem(catal: interop.Pointer | interop.Reference<any>, sysID: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlACatalogResolveURI(catal: interop.Pointer | interop.Reference<any>, URI: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlACatalogResolveURI(catal: interop.Pointer | interop.Reference<any>, URI: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlAddAttributeDecl(ctxt: interop.Pointer | interop.Reference<_xmlValidCtxt>, dtd: interop.Pointer | interop.Reference<_xmlDtd>, elem: string | interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, ns: string | interop.Pointer | interop.Reference<any>, type: xmlAttributeType, def: xmlAttributeDefault, defaultValue: string | interop.Pointer | interop.Reference<any>, tree: interop.Pointer | interop.Reference<_xmlEnumeration>): interop.Pointer | interop.Reference<_xmlAttribute>;
 
@@ -1386,11 +1392,11 @@ declare function xmlAutomataNewTransition2(am: interop.Pointer | interop.Referen
 
 declare function xmlAutomataSetFinalState(am: interop.Pointer | interop.Reference<any>, state: interop.Pointer | interop.Reference<any>): number;
 
-declare function xmlBoolToText(boolval: number): string;
+declare function xmlBoolToText(boolval: number): interop.Pointer | interop.Reference<any>;
 
-declare function xmlBufContent(buf: interop.Pointer | interop.Reference<any>): string;
+declare function xmlBufContent(buf: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlBufEnd(buf: interop.Pointer | interop.Reference<any>): string;
+declare function xmlBufEnd(buf: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlBufGetNodeContent(buf: interop.Pointer | interop.Reference<any>, cur: interop.Pointer | interop.Reference<_xmlNode>): number;
 
@@ -1423,7 +1429,7 @@ declare function xmlBufferCCat(buf: interop.Pointer | interop.Reference<_xmlBuff
 
 declare function xmlBufferCat(buf: interop.Pointer | interop.Reference<_xmlBuffer>, str: string | interop.Pointer | interop.Reference<any>): number;
 
-declare function xmlBufferContent(buf: interop.Pointer | interop.Reference<_xmlBuffer>): string;
+declare function xmlBufferContent(buf: interop.Pointer | interop.Reference<_xmlBuffer>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlBufferCreate(): interop.Pointer | interop.Reference<_xmlBuffer>;
 
@@ -1431,7 +1437,7 @@ declare function xmlBufferCreateSize(size: number): interop.Pointer | interop.Re
 
 declare function xmlBufferCreateStatic(mem: interop.Pointer | interop.Reference<any>, size: number): interop.Pointer | interop.Reference<_xmlBuffer>;
 
-declare function xmlBufferDetach(buf: interop.Pointer | interop.Reference<_xmlBuffer>): string;
+declare function xmlBufferDetach(buf: interop.Pointer | interop.Reference<_xmlBuffer>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlBufferDump(file: interop.Pointer | interop.Reference<FILE>, buf: interop.Pointer | interop.Reference<_xmlBuffer>): number;
 
@@ -1455,21 +1461,21 @@ declare function xmlBufferWriteChar(buf: interop.Pointer | interop.Reference<_xm
 
 declare function xmlBufferWriteQuotedString(buf: interop.Pointer | interop.Reference<_xmlBuffer>, string: string | interop.Pointer | interop.Reference<any>): void;
 
-declare function xmlBuildQName(ncname: string | interop.Pointer | interop.Reference<any>, prefix: string | interop.Pointer | interop.Reference<any>, memory: string | interop.Pointer | interop.Reference<any>, len: number): string;
+declare function xmlBuildQName(ncname: string | interop.Pointer | interop.Reference<any>, prefix: string | interop.Pointer | interop.Reference<any>, memory: string | interop.Pointer | interop.Reference<any>, len: number): interop.Pointer | interop.Reference<any>;
 
-declare function xmlBuildRelativeURI(URI: string | interop.Pointer | interop.Reference<any>, base: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlBuildRelativeURI(URI: string | interop.Pointer | interop.Reference<any>, base: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlBuildURI(URI: string | interop.Pointer | interop.Reference<any>, base: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlBuildURI(URI: string | interop.Pointer | interop.Reference<any>, base: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlByteConsumed(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): number;
 
-declare function xmlC14NDocDumpMemory(doc: interop.Pointer | interop.Reference<_xmlDoc>, nodes: interop.Pointer | interop.Reference<_xmlNodeSet>, mode: number, inclusive_ns_prefixes: interop.Pointer | interop.Reference<string>, with_comments: number, doc_txt_ptr: interop.Pointer | interop.Reference<string>): number;
+declare function xmlC14NDocDumpMemory(doc: interop.Pointer | interop.Reference<_xmlDoc>, nodes: interop.Pointer | interop.Reference<_xmlNodeSet>, mode: number, inclusive_ns_prefixes: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, with_comments: number, doc_txt_ptr: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
-declare function xmlC14NDocSave(doc: interop.Pointer | interop.Reference<_xmlDoc>, nodes: interop.Pointer | interop.Reference<_xmlNodeSet>, mode: number, inclusive_ns_prefixes: interop.Pointer | interop.Reference<string>, with_comments: number, filename: string | interop.Pointer | interop.Reference<any>, compression: number): number;
+declare function xmlC14NDocSave(doc: interop.Pointer | interop.Reference<_xmlDoc>, nodes: interop.Pointer | interop.Reference<_xmlNodeSet>, mode: number, inclusive_ns_prefixes: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, with_comments: number, filename: string | interop.Pointer | interop.Reference<any>, compression: number): number;
 
-declare function xmlC14NDocSaveTo(doc: interop.Pointer | interop.Reference<_xmlDoc>, nodes: interop.Pointer | interop.Reference<_xmlNodeSet>, mode: number, inclusive_ns_prefixes: interop.Pointer | interop.Reference<string>, with_comments: number, buf: interop.Pointer | interop.Reference<_xmlOutputBuffer>): number;
+declare function xmlC14NDocSaveTo(doc: interop.Pointer | interop.Reference<_xmlDoc>, nodes: interop.Pointer | interop.Reference<_xmlNodeSet>, mode: number, inclusive_ns_prefixes: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, with_comments: number, buf: interop.Pointer | interop.Reference<_xmlOutputBuffer>): number;
 
-declare function xmlC14NExecute(doc: interop.Pointer | interop.Reference<_xmlDoc>, is_visible_callback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<_xmlNode>, p3: interop.Pointer | interop.Reference<_xmlNode>) => number>, user_data: interop.Pointer | interop.Reference<any>, mode: number, inclusive_ns_prefixes: interop.Pointer | interop.Reference<string>, with_comments: number, buf: interop.Pointer | interop.Reference<_xmlOutputBuffer>): number;
+declare function xmlC14NExecute(doc: interop.Pointer | interop.Reference<_xmlDoc>, is_visible_callback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<_xmlNode>, p3: interop.Pointer | interop.Reference<_xmlNode>) => number>, user_data: interop.Pointer | interop.Reference<any>, mode: number, inclusive_ns_prefixes: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, with_comments: number, buf: interop.Pointer | interop.Reference<_xmlOutputBuffer>): number;
 
 declare const enum xmlC14NMode {
 
@@ -1480,7 +1486,7 @@ declare const enum xmlC14NMode {
 	XML_C14N_1_1 = 2
 }
 
-declare function xmlCanonicPath(path: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlCanonicPath(path: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlCatalogAdd(type: string | interop.Pointer | interop.Reference<any>, orig: string | interop.Pointer | interop.Reference<any>, replace: string | interop.Pointer | interop.Reference<any>): number;
 
@@ -1507,15 +1513,15 @@ declare function xmlCatalogFreeLocal(catalogs: interop.Pointer | interop.Referen
 
 declare function xmlCatalogGetDefaults(): xmlCatalogAllow;
 
-declare function xmlCatalogGetPublic(pubID: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlCatalogGetPublic(pubID: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlCatalogGetSystem(sysID: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlCatalogGetSystem(sysID: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlCatalogIsEmpty(catal: interop.Pointer | interop.Reference<any>): number;
 
-declare function xmlCatalogLocalResolve(catalogs: interop.Pointer | interop.Reference<any>, pubID: string | interop.Pointer | interop.Reference<any>, sysID: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlCatalogLocalResolve(catalogs: interop.Pointer | interop.Reference<any>, pubID: string | interop.Pointer | interop.Reference<any>, sysID: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlCatalogLocalResolveURI(catalogs: interop.Pointer | interop.Reference<any>, URI: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlCatalogLocalResolveURI(catalogs: interop.Pointer | interop.Reference<any>, URI: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare const enum xmlCatalogPrefer {
 
@@ -1528,13 +1534,13 @@ declare const enum xmlCatalogPrefer {
 
 declare function xmlCatalogRemove(value: string | interop.Pointer | interop.Reference<any>): number;
 
-declare function xmlCatalogResolve(pubID: string | interop.Pointer | interop.Reference<any>, sysID: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlCatalogResolve(pubID: string | interop.Pointer | interop.Reference<any>, sysID: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlCatalogResolvePublic(pubID: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlCatalogResolvePublic(pubID: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlCatalogResolveSystem(sysID: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlCatalogResolveSystem(sysID: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlCatalogResolveURI(URI: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlCatalogResolveURI(URI: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlCatalogSetDebug(level: number): number;
 
@@ -1603,9 +1609,9 @@ declare const enum xmlCharEncoding {
 
 declare function xmlCharInRange(val: number, group: interop.Pointer | interop.Reference<_xmlChRangeGroup>): number;
 
-declare function xmlCharStrdup(cur: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlCharStrdup(cur: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlCharStrndup(cur: string | interop.Pointer | interop.Reference<any>, len: number): string;
+declare function xmlCharStrndup(cur: string | interop.Pointer | interop.Reference<any>, len: number): interop.Pointer | interop.Reference<any>;
 
 declare function xmlCheckFilename(path: string | interop.Pointer | interop.Reference<any>): number;
 
@@ -1689,7 +1695,7 @@ declare function xmlCreateEnumeration(name: string | interop.Pointer | interop.R
 
 declare function xmlCreateFileParserCtxt(filename: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<_xmlParserCtxt>;
 
-declare function xmlCreateIOParserCtxt(sax: interop.Pointer | interop.Reference<_xmlSAXHandler>, user_data: interop.Pointer | interop.Reference<any>, ioread: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number) => number>, ioclose: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>, ioctx: interop.Pointer | interop.Reference<any>, enc: xmlCharEncoding): interop.Pointer | interop.Reference<_xmlParserCtxt>;
+declare function xmlCreateIOParserCtxt(sax: interop.Pointer | interop.Reference<_xmlSAXHandler>, user_data: interop.Pointer | interop.Reference<any>, ioread: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number) => number>, ioclose: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>, ioctx: interop.Pointer | interop.Reference<any>, enc: xmlCharEncoding): interop.Pointer | interop.Reference<_xmlParserCtxt>;
 
 declare function xmlCreateIntSubset(doc: interop.Pointer | interop.Reference<_xmlDoc>, name: string | interop.Pointer | interop.Reference<any>, ExternalID: string | interop.Pointer | interop.Reference<any>, SystemID: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<_xmlDtd>;
 
@@ -1709,7 +1715,7 @@ declare function xmlCtxtReadFd(ctxt: interop.Pointer | interop.Reference<_xmlPar
 
 declare function xmlCtxtReadFile(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>, filename: string | interop.Pointer | interop.Reference<any>, encoding: string | interop.Pointer | interop.Reference<any>, options: number): interop.Pointer | interop.Reference<_xmlDoc>;
 
-declare function xmlCtxtReadIO(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>, ioread: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number) => number>, ioclose: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>, ioctx: interop.Pointer | interop.Reference<any>, URL: string | interop.Pointer | interop.Reference<any>, encoding: string | interop.Pointer | interop.Reference<any>, options: number): interop.Pointer | interop.Reference<_xmlDoc>;
+declare function xmlCtxtReadIO(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>, ioread: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number) => number>, ioclose: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>, ioctx: interop.Pointer | interop.Reference<any>, URL: string | interop.Pointer | interop.Reference<any>, encoding: string | interop.Pointer | interop.Reference<any>, options: number): interop.Pointer | interop.Reference<_xmlDoc>;
 
 declare function xmlCtxtReadMemory(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>, buffer: string | interop.Pointer | interop.Reference<any>, size: number, URL: string | interop.Pointer | interop.Reference<any>, encoding: string | interop.Pointer | interop.Reference<any>, options: number): interop.Pointer | interop.Reference<_xmlDoc>;
 
@@ -1757,7 +1763,7 @@ declare function xmlDebugDumpOneNode(output: interop.Pointer | interop.Reference
 
 declare function xmlDebugDumpString(output: interop.Pointer | interop.Reference<FILE>, str: string | interop.Pointer | interop.Reference<any>): void;
 
-declare function xmlDecodeEntities(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>, len: number, what: number, end: number, end2: number, end3: number): string;
+declare function xmlDecodeEntities(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>, len: number, what: number, end: number, end2: number, end3: number): interop.Pointer | interop.Reference<any>;
 
 declare function xmlDefaultSAXHandlerInit(): void;
 
@@ -1773,17 +1779,17 @@ declare function xmlDictCreate(): interop.Pointer | interop.Reference<any>;
 
 declare function xmlDictCreateSub(sub: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlDictExists(dict: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, len: number): string;
+declare function xmlDictExists(dict: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, len: number): interop.Pointer | interop.Reference<any>;
 
 declare function xmlDictFree(dict: interop.Pointer | interop.Reference<any>): void;
 
 declare function xmlDictGetUsage(dict: interop.Pointer | interop.Reference<any>): number;
 
-declare function xmlDictLookup(dict: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, len: number): string;
+declare function xmlDictLookup(dict: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, len: number): interop.Pointer | interop.Reference<any>;
 
 declare function xmlDictOwns(dict: interop.Pointer | interop.Reference<any>, str: string | interop.Pointer | interop.Reference<any>): number;
 
-declare function xmlDictQLookup(dict: interop.Pointer | interop.Reference<any>, prefix: string | interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlDictQLookup(dict: interop.Pointer | interop.Reference<any>, prefix: string | interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlDictReference(dict: interop.Pointer | interop.Reference<any>): number;
 
@@ -1797,13 +1803,13 @@ declare function xmlDocCopyNodeList(doc: interop.Pointer | interop.Reference<_xm
 
 declare function xmlDocDump(f: interop.Pointer | interop.Reference<FILE>, cur: interop.Pointer | interop.Reference<_xmlDoc>): number;
 
-declare function xmlDocDumpFormatMemory(cur: interop.Pointer | interop.Reference<_xmlDoc>, mem: interop.Pointer | interop.Reference<string>, size: interop.Pointer | interop.Reference<number>, format: number): void;
+declare function xmlDocDumpFormatMemory(cur: interop.Pointer | interop.Reference<_xmlDoc>, mem: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, size: interop.Pointer | interop.Reference<number>, format: number): void;
 
-declare function xmlDocDumpFormatMemoryEnc(out_doc: interop.Pointer | interop.Reference<_xmlDoc>, doc_txt_ptr: interop.Pointer | interop.Reference<string>, doc_txt_len: interop.Pointer | interop.Reference<number>, txt_encoding: string | interop.Pointer | interop.Reference<any>, format: number): void;
+declare function xmlDocDumpFormatMemoryEnc(out_doc: interop.Pointer | interop.Reference<_xmlDoc>, doc_txt_ptr: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, doc_txt_len: interop.Pointer | interop.Reference<number>, txt_encoding: string | interop.Pointer | interop.Reference<any>, format: number): void;
 
-declare function xmlDocDumpMemory(cur: interop.Pointer | interop.Reference<_xmlDoc>, mem: interop.Pointer | interop.Reference<string>, size: interop.Pointer | interop.Reference<number>): void;
+declare function xmlDocDumpMemory(cur: interop.Pointer | interop.Reference<_xmlDoc>, mem: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, size: interop.Pointer | interop.Reference<number>): void;
 
-declare function xmlDocDumpMemoryEnc(out_doc: interop.Pointer | interop.Reference<_xmlDoc>, doc_txt_ptr: interop.Pointer | interop.Reference<string>, doc_txt_len: interop.Pointer | interop.Reference<number>, txt_encoding: string | interop.Pointer | interop.Reference<any>): void;
+declare function xmlDocDumpMemoryEnc(out_doc: interop.Pointer | interop.Reference<_xmlDoc>, doc_txt_ptr: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, doc_txt_len: interop.Pointer | interop.Reference<number>, txt_encoding: string | interop.Pointer | interop.Reference<any>): void;
 
 declare function xmlDocFormatDump(f: interop.Pointer | interop.Reference<FILE>, cur: interop.Pointer | interop.Reference<_xmlDoc>, format: number): number;
 
@@ -1928,11 +1934,11 @@ declare const enum xmlElementTypeVal {
 	XML_ELEMENT_TYPE_ELEMENT = 4
 }
 
-declare function xmlEncodeEntities(doc: interop.Pointer | interop.Reference<_xmlDoc>, input: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlEncodeEntities(doc: interop.Pointer | interop.Reference<_xmlDoc>, input: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlEncodeEntitiesReentrant(doc: interop.Pointer | interop.Reference<_xmlDoc>, input: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlEncodeEntitiesReentrant(doc: interop.Pointer | interop.Reference<_xmlDoc>, input: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlEncodeSpecialChars(doc: interop.Pointer | interop.Reference<_xmlDoc>, input: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlEncodeSpecialChars(doc: interop.Pointer | interop.Reference<_xmlDoc>, input: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare const enum xmlEntityType {
 
@@ -2172,15 +2178,15 @@ declare function xmlFreeURI(uri: interop.Pointer | interop.Reference<_xmlURI>): 
 
 declare function xmlFreeValidCtxt(p1: interop.Pointer | interop.Reference<_xmlValidCtxt>): void;
 
-declare function xmlGcMemGet(freeFunc: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>>, mallocFunc: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: number) => interop.Pointer | interop.Reference<any>>>, mallocAtomicFunc: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: number) => interop.Pointer | interop.Reference<any>>>, reallocFunc: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number) => interop.Pointer | interop.Reference<any>>>, strdupFunc: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: string) => string>>): number;
+declare function xmlGcMemGet(freeFunc: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>>, mallocFunc: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: number) => interop.Pointer | interop.Reference<any>>>, mallocAtomicFunc: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: number) => interop.Pointer | interop.Reference<any>>>, reallocFunc: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number) => interop.Pointer | interop.Reference<any>>>, strdupFunc: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<any>>>): number;
 
-declare function xmlGcMemSetup(freeFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>, mallocFunc: interop.FunctionReference<(p1: number) => interop.Pointer | interop.Reference<any>>, mallocAtomicFunc: interop.FunctionReference<(p1: number) => interop.Pointer | interop.Reference<any>>, reallocFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number) => interop.Pointer | interop.Reference<any>>, strdupFunc: interop.FunctionReference<(p1: string) => string>): number;
+declare function xmlGcMemSetup(freeFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>, mallocFunc: interop.FunctionReference<(p1: number) => interop.Pointer | interop.Reference<any>>, mallocAtomicFunc: interop.FunctionReference<(p1: number) => interop.Pointer | interop.Reference<any>>, reallocFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number) => interop.Pointer | interop.Reference<any>>, strdupFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<any>>): number;
 
 declare function xmlGetBufferAllocationScheme(): xmlBufferAllocationScheme;
 
 declare function xmlGetCharEncodingHandler(enc: xmlCharEncoding): interop.Pointer | interop.Reference<_xmlCharEncodingHandler>;
 
-declare function xmlGetCharEncodingName(enc: xmlCharEncoding): string;
+declare function xmlGetCharEncodingName(enc: xmlCharEncoding): interop.Pointer | interop.Reference<any>;
 
 declare function xmlGetCompressMode(): number;
 
@@ -2200,13 +2206,13 @@ declare function xmlGetDtdQAttrDesc(dtd: interop.Pointer | interop.Reference<_xm
 
 declare function xmlGetDtdQElementDesc(dtd: interop.Pointer | interop.Reference<_xmlDtd>, name: string | interop.Pointer | interop.Reference<any>, prefix: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<_xmlElement>;
 
-declare function xmlGetEncodingAlias(alias: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlGetEncodingAlias(alias: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlGetExternalEntityLoader(): interop.FunctionReference<(p1: string, p2: string, p3: interop.Pointer | interop.Reference<_xmlParserCtxt>) => interop.Pointer | interop.Reference<_xmlParserInput>>;
+declare function xmlGetExternalEntityLoader(): interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<_xmlParserCtxt>) => interop.Pointer | interop.Reference<_xmlParserInput>>;
 
 declare function xmlGetFeature(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>, name: string | interop.Pointer | interop.Reference<any>, result: interop.Pointer | interop.Reference<any>): number;
 
-declare function xmlGetFeaturesList(len: interop.Pointer | interop.Reference<number>, result: interop.Pointer | interop.Reference<string>): number;
+declare function xmlGetFeaturesList(len: interop.Pointer | interop.Reference<number>, result: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 declare function xmlGetGlobalState(): interop.Pointer | interop.Reference<_xmlGlobalState>;
 
@@ -2220,19 +2226,19 @@ declare function xmlGetLastError(): interop.Pointer | interop.Reference<_xmlErro
 
 declare function xmlGetLineNo(node: interop.Pointer | interop.Reference<_xmlNode>): number;
 
-declare function xmlGetNoNsProp(node: interop.Pointer | interop.Reference<_xmlNode>, name: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlGetNoNsProp(node: interop.Pointer | interop.Reference<_xmlNode>, name: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlGetNodePath(node: interop.Pointer | interop.Reference<_xmlNode>): string;
+declare function xmlGetNodePath(node: interop.Pointer | interop.Reference<_xmlNode>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlGetNsList(doc: interop.Pointer | interop.Reference<_xmlDoc>, node: interop.Pointer | interop.Reference<_xmlNode>): interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<_xmlNs>>;
 
-declare function xmlGetNsProp(node: interop.Pointer | interop.Reference<_xmlNode>, name: string | interop.Pointer | interop.Reference<any>, nameSpace: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlGetNsProp(node: interop.Pointer | interop.Reference<_xmlNode>, name: string | interop.Pointer | interop.Reference<any>, nameSpace: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlGetParameterEntity(doc: interop.Pointer | interop.Reference<_xmlDoc>, name: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<_xmlEntity>;
 
 declare function xmlGetPredefinedEntity(name: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<_xmlEntity>;
 
-declare function xmlGetProp(node: interop.Pointer | interop.Reference<_xmlNode>, name: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlGetProp(node: interop.Pointer | interop.Reference<_xmlNode>, name: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlGetRefs(doc: interop.Pointer | interop.Reference<_xmlDoc>, ID: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
@@ -2254,15 +2260,18 @@ declare function xmlHashAddEntry2(table: interop.Pointer | interop.Reference<any
 
 declare function xmlHashAddEntry3(table: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, name2: string | interop.Pointer | interop.Reference<any>, name3: string | interop.Pointer | interop.Reference<any>, userdata: interop.Pointer | interop.Reference<any>): number;
 
-declare function xmlHashCopy(table: interop.Pointer | interop.Reference<any>, f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
+declare function xmlHashCopy(table: interop.Pointer | interop.Reference<any>, f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlHashCreate(size: number): interop.Pointer | interop.Reference<any>;
 
 declare function xmlHashCreateDict(size: number, dict: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 16.0
+ */
 declare function xmlHashDefaultDeallocator(entry: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>): void;
 
-declare function xmlHashFree(table: interop.Pointer | interop.Reference<any>, f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>): void;
+declare function xmlHashFree(table: interop.Pointer | interop.Reference<any>, f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>): void;
 
 declare function xmlHashLookup(table: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
@@ -2276,27 +2285,27 @@ declare function xmlHashQLookup2(table: interop.Pointer | interop.Reference<any>
 
 declare function xmlHashQLookup3(table: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, prefix: string | interop.Pointer | interop.Reference<any>, name2: string | interop.Pointer | interop.Reference<any>, prefix2: string | interop.Pointer | interop.Reference<any>, name3: string | interop.Pointer | interop.Reference<any>, prefix3: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlHashRemoveEntry(table: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>): number;
+declare function xmlHashRemoveEntry(table: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>): number;
 
-declare function xmlHashRemoveEntry2(table: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, name2: string | interop.Pointer | interop.Reference<any>, f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>): number;
+declare function xmlHashRemoveEntry2(table: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, name2: string | interop.Pointer | interop.Reference<any>, f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>): number;
 
-declare function xmlHashRemoveEntry3(table: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, name2: string | interop.Pointer | interop.Reference<any>, name3: string | interop.Pointer | interop.Reference<any>, f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>): number;
+declare function xmlHashRemoveEntry3(table: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, name2: string | interop.Pointer | interop.Reference<any>, name3: string | interop.Pointer | interop.Reference<any>, f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>): number;
 
-declare function xmlHashScan(table: interop.Pointer | interop.Reference<any>, f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: string) => void>, data: interop.Pointer | interop.Reference<any>): void;
+declare function xmlHashScan(table: interop.Pointer | interop.Reference<any>, f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => void>, data: interop.Pointer | interop.Reference<any>): void;
 
-declare function xmlHashScan3(table: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, name2: string | interop.Pointer | interop.Reference<any>, name3: string | interop.Pointer | interop.Reference<any>, f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: string) => void>, data: interop.Pointer | interop.Reference<any>): void;
+declare function xmlHashScan3(table: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, name2: string | interop.Pointer | interop.Reference<any>, name3: string | interop.Pointer | interop.Reference<any>, f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => void>, data: interop.Pointer | interop.Reference<any>): void;
 
-declare function xmlHashScanFull(table: interop.Pointer | interop.Reference<any>, f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: string, p4: string, p5: string) => void>, data: interop.Pointer | interop.Reference<any>): void;
+declare function xmlHashScanFull(table: interop.Pointer | interop.Reference<any>, f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>, p5: interop.Pointer | interop.Reference<any>) => void>, data: interop.Pointer | interop.Reference<any>): void;
 
-declare function xmlHashScanFull3(table: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, name2: string | interop.Pointer | interop.Reference<any>, name3: string | interop.Pointer | interop.Reference<any>, f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: string, p4: string, p5: string) => void>, data: interop.Pointer | interop.Reference<any>): void;
+declare function xmlHashScanFull3(table: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, name2: string | interop.Pointer | interop.Reference<any>, name3: string | interop.Pointer | interop.Reference<any>, f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>, p5: interop.Pointer | interop.Reference<any>) => void>, data: interop.Pointer | interop.Reference<any>): void;
 
 declare function xmlHashSize(table: interop.Pointer | interop.Reference<any>): number;
 
-declare function xmlHashUpdateEntry(table: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, userdata: interop.Pointer | interop.Reference<any>, f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>): number;
+declare function xmlHashUpdateEntry(table: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, userdata: interop.Pointer | interop.Reference<any>, f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>): number;
 
-declare function xmlHashUpdateEntry2(table: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, name2: string | interop.Pointer | interop.Reference<any>, userdata: interop.Pointer | interop.Reference<any>, f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>): number;
+declare function xmlHashUpdateEntry2(table: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, name2: string | interop.Pointer | interop.Reference<any>, userdata: interop.Pointer | interop.Reference<any>, f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>): number;
 
-declare function xmlHashUpdateEntry3(table: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, name2: string | interop.Pointer | interop.Reference<any>, name3: string | interop.Pointer | interop.Reference<any>, userdata: interop.Pointer | interop.Reference<any>, f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>): number;
+declare function xmlHashUpdateEntry3(table: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, name2: string | interop.Pointer | interop.Reference<any>, name3: string | interop.Pointer | interop.Reference<any>, userdata: interop.Pointer | interop.Reference<any>, f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>): number;
 
 declare function xmlIOFTPClose(context: interop.Pointer | interop.Reference<any>): number;
 
@@ -2474,27 +2483,30 @@ declare function xmlMemDisplayLast(fp: interop.Pointer | interop.Reference<FILE>
 
 declare function xmlMemFree(ptr: interop.Pointer | interop.Reference<any>): void;
 
-declare function xmlMemGet(freeFunc: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>>, mallocFunc: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: number) => interop.Pointer | interop.Reference<any>>>, reallocFunc: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number) => interop.Pointer | interop.Reference<any>>>, strdupFunc: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: string) => string>>): number;
+declare function xmlMemGet(freeFunc: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>>, mallocFunc: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: number) => interop.Pointer | interop.Reference<any>>>, reallocFunc: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number) => interop.Pointer | interop.Reference<any>>>, strdupFunc: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<any>>>): number;
 
 declare function xmlMemMalloc(size: number): interop.Pointer | interop.Reference<any>;
 
 declare function xmlMemRealloc(ptr: interop.Pointer | interop.Reference<any>, size: number): interop.Pointer | interop.Reference<any>;
 
-declare function xmlMemSetup(freeFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>, mallocFunc: interop.FunctionReference<(p1: number) => interop.Pointer | interop.Reference<any>>, reallocFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number) => interop.Pointer | interop.Reference<any>>, strdupFunc: interop.FunctionReference<(p1: string) => string>): number;
+declare function xmlMemSetup(freeFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>, mallocFunc: interop.FunctionReference<(p1: number) => interop.Pointer | interop.Reference<any>>, reallocFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number) => interop.Pointer | interop.Reference<any>>, strdupFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<any>>): number;
 
 declare function xmlMemShow(fp: interop.Pointer | interop.Reference<FILE>, nr: number): void;
 
+/**
+ * @since 17.0
+ */
 declare function xmlMemSize(ptr: interop.Pointer | interop.Reference<any>): number;
 
-declare var xmlMemStrdup: interop.FunctionReference<(p1: string) => string>;
+declare var xmlMemStrdup: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<any>>;
 
-declare function xmlMemStrdupLoc(str: string | interop.Pointer | interop.Reference<any>, file: string | interop.Pointer | interop.Reference<any>, line: number): string;
+declare function xmlMemStrdupLoc(str: string | interop.Pointer | interop.Reference<any>, file: string | interop.Pointer | interop.Reference<any>, line: number): interop.Pointer | interop.Reference<any>;
 
 declare function xmlMemUsed(): number;
 
 declare function xmlMemoryDump(): void;
 
-declare function xmlMemoryStrdup(str: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlMemoryStrdup(str: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlModuleClose(module: interop.Pointer | interop.Reference<any>): number;
 
@@ -2515,11 +2527,11 @@ declare function xmlMutexLock(tok: interop.Pointer | interop.Reference<any>): vo
 
 declare function xmlMutexUnlock(tok: interop.Pointer | interop.Reference<any>): void;
 
-declare function xmlNamespaceParseNCName(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): string;
+declare function xmlNamespaceParseNCName(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlNamespaceParseNSDef(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): string;
+declare function xmlNamespaceParseNSDef(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlNamespaceParseQName(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>, prefix: interop.Pointer | interop.Reference<string>): string;
+declare function xmlNamespaceParseQName(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>, prefix: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlNanoFTPCheckResponse(ctx: interop.Pointer | interop.Reference<any>): number;
 
@@ -2539,7 +2551,7 @@ declare function xmlNanoFTPDele(ctx: interop.Pointer | interop.Reference<any>, f
 
 declare function xmlNanoFTPFreeCtxt(ctx: interop.Pointer | interop.Reference<any>): void;
 
-declare function xmlNanoFTPGet(ctx: interop.Pointer | interop.Reference<any>, callback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number) => void>, userData: interop.Pointer | interop.Reference<any>, filename: string | interop.Pointer | interop.Reference<any>): number;
+declare function xmlNanoFTPGet(ctx: interop.Pointer | interop.Reference<any>, callback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number) => void>, userData: interop.Pointer | interop.Reference<any>, filename: string | interop.Pointer | interop.Reference<any>): number;
 
 declare function xmlNanoFTPGetConnection(ctx: interop.Pointer | interop.Reference<any>): number;
 
@@ -2549,7 +2561,7 @@ declare function xmlNanoFTPGetSocket(ctx: interop.Pointer | interop.Reference<an
 
 declare function xmlNanoFTPInit(): void;
 
-declare function xmlNanoFTPList(ctx: interop.Pointer | interop.Reference<any>, callback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: string, p4: string, p5: string, p6: number, p7: number, p8: number, p9: string, p10: number, p11: number, p12: number) => void>, userData: interop.Pointer | interop.Reference<any>, filename: string | interop.Pointer | interop.Reference<any>): number;
+declare function xmlNanoFTPList(ctx: interop.Pointer | interop.Reference<any>, callback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>, p5: interop.Pointer | interop.Reference<any>, p6: number, p7: number, p8: number, p9: interop.Pointer | interop.Reference<any>, p10: number, p11: number, p12: number) => void>, userData: interop.Pointer | interop.Reference<any>, filename: string | interop.Pointer | interop.Reference<any>): number;
 
 declare function xmlNanoFTPNewCtxt(URL: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
@@ -2565,7 +2577,7 @@ declare function xmlNanoFTPScanProxy(URL: string | interop.Pointer | interop.Ref
 
 declare function xmlNanoFTPUpdateURL(ctx: interop.Pointer | interop.Reference<any>, URL: string | interop.Pointer | interop.Reference<any>): number;
 
-declare function xmlNanoHTTPAuthHeader(ctx: interop.Pointer | interop.Reference<any>): string;
+declare function xmlNanoHTTPAuthHeader(ctx: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlNanoHTTPCleanup(): void;
 
@@ -2573,25 +2585,25 @@ declare function xmlNanoHTTPClose(ctx: interop.Pointer | interop.Reference<any>)
 
 declare function xmlNanoHTTPContentLength(ctx: interop.Pointer | interop.Reference<any>): number;
 
-declare function xmlNanoHTTPEncoding(ctx: interop.Pointer | interop.Reference<any>): string;
+declare function xmlNanoHTTPEncoding(ctx: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlNanoHTTPFetch(URL: string | interop.Pointer | interop.Reference<any>, filename: string | interop.Pointer | interop.Reference<any>, contentType: interop.Pointer | interop.Reference<string>): number;
+declare function xmlNanoHTTPFetch(URL: string | interop.Pointer | interop.Reference<any>, filename: string | interop.Pointer | interop.Reference<any>, contentType: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 declare function xmlNanoHTTPInit(): void;
 
-declare function xmlNanoHTTPMethod(URL: string | interop.Pointer | interop.Reference<any>, method: string | interop.Pointer | interop.Reference<any>, input: string | interop.Pointer | interop.Reference<any>, contentType: interop.Pointer | interop.Reference<string>, headers: string | interop.Pointer | interop.Reference<any>, ilen: number): interop.Pointer | interop.Reference<any>;
+declare function xmlNanoHTTPMethod(URL: string | interop.Pointer | interop.Reference<any>, method: string | interop.Pointer | interop.Reference<any>, input: string | interop.Pointer | interop.Reference<any>, contentType: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, headers: string | interop.Pointer | interop.Reference<any>, ilen: number): interop.Pointer | interop.Reference<any>;
 
-declare function xmlNanoHTTPMethodRedir(URL: string | interop.Pointer | interop.Reference<any>, method: string | interop.Pointer | interop.Reference<any>, input: string | interop.Pointer | interop.Reference<any>, contentType: interop.Pointer | interop.Reference<string>, redir: interop.Pointer | interop.Reference<string>, headers: string | interop.Pointer | interop.Reference<any>, ilen: number): interop.Pointer | interop.Reference<any>;
+declare function xmlNanoHTTPMethodRedir(URL: string | interop.Pointer | interop.Reference<any>, method: string | interop.Pointer | interop.Reference<any>, input: string | interop.Pointer | interop.Reference<any>, contentType: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, redir: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, headers: string | interop.Pointer | interop.Reference<any>, ilen: number): interop.Pointer | interop.Reference<any>;
 
-declare function xmlNanoHTTPMimeType(ctx: interop.Pointer | interop.Reference<any>): string;
+declare function xmlNanoHTTPMimeType(ctx: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlNanoHTTPOpen(URL: string | interop.Pointer | interop.Reference<any>, contentType: interop.Pointer | interop.Reference<string>): interop.Pointer | interop.Reference<any>;
+declare function xmlNanoHTTPOpen(URL: string | interop.Pointer | interop.Reference<any>, contentType: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlNanoHTTPOpenRedir(URL: string | interop.Pointer | interop.Reference<any>, contentType: interop.Pointer | interop.Reference<string>, redir: interop.Pointer | interop.Reference<string>): interop.Pointer | interop.Reference<any>;
+declare function xmlNanoHTTPOpenRedir(URL: string | interop.Pointer | interop.Reference<any>, contentType: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, redir: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlNanoHTTPRead(ctx: interop.Pointer | interop.Reference<any>, dest: interop.Pointer | interop.Reference<any>, len: number): number;
 
-declare function xmlNanoHTTPRedir(ctx: interop.Pointer | interop.Reference<any>): string;
+declare function xmlNanoHTTPRedir(ctx: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlNanoHTTPReturnCode(ctx: interop.Pointer | interop.Reference<any>): number;
 
@@ -2605,7 +2617,7 @@ declare function xmlNewCDataBlock(doc: interop.Pointer | interop.Reference<_xmlD
 
 declare function xmlNewCatalog(sgml: number): interop.Pointer | interop.Reference<any>;
 
-declare function xmlNewCharEncodingHandler(name: string | interop.Pointer | interop.Reference<any>, input: interop.FunctionReference<(p1: string, p2: interop.Pointer | interop.Reference<number>, p3: string, p4: interop.Pointer | interop.Reference<number>) => number>, output: interop.FunctionReference<(p1: string, p2: interop.Pointer | interop.Reference<number>, p3: string, p4: interop.Pointer | interop.Reference<number>) => number>): interop.Pointer | interop.Reference<_xmlCharEncodingHandler>;
+declare function xmlNewCharEncodingHandler(name: string | interop.Pointer | interop.Reference<any>, input: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<number>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<number>) => number>, output: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<number>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<number>) => number>): interop.Pointer | interop.Reference<_xmlCharEncodingHandler>;
 
 declare function xmlNewCharRef(doc: interop.Pointer | interop.Reference<_xmlDoc>, name: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<_xmlNode>;
 
@@ -2715,19 +2727,19 @@ declare function xmlNodeDump(buf: interop.Pointer | interop.Reference<_xmlBuffer
 
 declare function xmlNodeDumpOutput(buf: interop.Pointer | interop.Reference<_xmlOutputBuffer>, doc: interop.Pointer | interop.Reference<_xmlDoc>, cur: interop.Pointer | interop.Reference<_xmlNode>, level: number, format: number, encoding: string | interop.Pointer | interop.Reference<any>): void;
 
-declare function xmlNodeGetBase(doc: interop.Pointer | interop.Reference<_xmlDoc>, cur: interop.Pointer | interop.Reference<_xmlNode>): string;
+declare function xmlNodeGetBase(doc: interop.Pointer | interop.Reference<_xmlDoc>, cur: interop.Pointer | interop.Reference<_xmlNode>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlNodeGetContent(cur: interop.Pointer | interop.Reference<_xmlNode>): string;
+declare function xmlNodeGetContent(cur: interop.Pointer | interop.Reference<_xmlNode>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlNodeGetLang(cur: interop.Pointer | interop.Reference<_xmlNode>): string;
+declare function xmlNodeGetLang(cur: interop.Pointer | interop.Reference<_xmlNode>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlNodeGetSpacePreserve(cur: interop.Pointer | interop.Reference<_xmlNode>): number;
 
 declare function xmlNodeIsText(node: interop.Pointer | interop.Reference<_xmlNode>): number;
 
-declare function xmlNodeListGetRawString(doc: interop.Pointer | interop.Reference<_xmlDoc>, list: interop.Pointer | interop.Reference<_xmlNode>, inLine: number): string;
+declare function xmlNodeListGetRawString(doc: interop.Pointer | interop.Reference<_xmlDoc>, list: interop.Pointer | interop.Reference<_xmlNode>, inLine: number): interop.Pointer | interop.Reference<any>;
 
-declare function xmlNodeListGetString(doc: interop.Pointer | interop.Reference<_xmlDoc>, list: interop.Pointer | interop.Reference<_xmlNode>, inLine: number): string;
+declare function xmlNodeListGetString(doc: interop.Pointer | interop.Reference<_xmlDoc>, list: interop.Pointer | interop.Reference<_xmlNode>, inLine: number): interop.Pointer | interop.Reference<any>;
 
 declare function xmlNodeSetBase(cur: interop.Pointer | interop.Reference<_xmlNode>, uri: string | interop.Pointer | interop.Reference<any>): void;
 
@@ -2743,7 +2755,7 @@ declare function xmlNodeSetSpacePreserve(cur: interop.Pointer | interop.Referenc
 
 declare function xmlNormalizeURIPath(path: string | interop.Pointer | interop.Reference<any>): number;
 
-declare function xmlNormalizeWindowsPath(path: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlNormalizeWindowsPath(path: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlOutputBufferClose(out: interop.Pointer | interop.Reference<_xmlOutputBuffer>): number;
 
@@ -2755,25 +2767,25 @@ declare function xmlOutputBufferCreateFile(file: interop.Pointer | interop.Refer
 
 declare function xmlOutputBufferCreateFilename(URI: string | interop.Pointer | interop.Reference<any>, encoder: interop.Pointer | interop.Reference<_xmlCharEncodingHandler>, compression: number): interop.Pointer | interop.Reference<_xmlOutputBuffer>;
 
-declare function xmlOutputBufferCreateFilenameDefault(func: interop.FunctionReference<(p1: string, p2: interop.Pointer | interop.Reference<_xmlCharEncodingHandler>, p3: number) => interop.Pointer | interop.Reference<_xmlOutputBuffer>>): interop.FunctionReference<(p1: string, p2: interop.Pointer | interop.Reference<_xmlCharEncodingHandler>, p3: number) => interop.Pointer | interop.Reference<_xmlOutputBuffer>>;
+declare function xmlOutputBufferCreateFilenameDefault(func: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<_xmlCharEncodingHandler>, p3: number) => interop.Pointer | interop.Reference<_xmlOutputBuffer>>): interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<_xmlCharEncodingHandler>, p3: number) => interop.Pointer | interop.Reference<_xmlOutputBuffer>>;
 
-declare function xmlOutputBufferCreateIO(iowrite: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number) => number>, ioclose: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>, ioctx: interop.Pointer | interop.Reference<any>, encoder: interop.Pointer | interop.Reference<_xmlCharEncodingHandler>): interop.Pointer | interop.Reference<_xmlOutputBuffer>;
+declare function xmlOutputBufferCreateIO(iowrite: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number) => number>, ioclose: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>, ioctx: interop.Pointer | interop.Reference<any>, encoder: interop.Pointer | interop.Reference<_xmlCharEncodingHandler>): interop.Pointer | interop.Reference<_xmlOutputBuffer>;
 
 declare function xmlOutputBufferFlush(out: interop.Pointer | interop.Reference<_xmlOutputBuffer>): number;
 
-declare function xmlOutputBufferGetContent(out: interop.Pointer | interop.Reference<_xmlOutputBuffer>): string;
+declare function xmlOutputBufferGetContent(out: interop.Pointer | interop.Reference<_xmlOutputBuffer>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlOutputBufferGetSize(out: interop.Pointer | interop.Reference<_xmlOutputBuffer>): number;
 
 declare function xmlOutputBufferWrite(out: interop.Pointer | interop.Reference<_xmlOutputBuffer>, len: number, buf: string | interop.Pointer | interop.Reference<any>): number;
 
-declare function xmlOutputBufferWriteEscape(out: interop.Pointer | interop.Reference<_xmlOutputBuffer>, str: string | interop.Pointer | interop.Reference<any>, escaping: interop.FunctionReference<(p1: string, p2: interop.Pointer | interop.Reference<number>, p3: string, p4: interop.Pointer | interop.Reference<number>) => number>): number;
+declare function xmlOutputBufferWriteEscape(out: interop.Pointer | interop.Reference<_xmlOutputBuffer>, str: string | interop.Pointer | interop.Reference<any>, escaping: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<number>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<number>) => number>): number;
 
 declare function xmlOutputBufferWriteString(out: interop.Pointer | interop.Reference<_xmlOutputBuffer>, str: string | interop.Pointer | interop.Reference<any>): number;
 
-declare function xmlParseAttValue(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): string;
+declare function xmlParseAttValue(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlParseAttribute(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>, value: interop.Pointer | interop.Reference<string>): string;
+declare function xmlParseAttribute(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlParseAttributeListDecl(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): void;
 
@@ -2803,7 +2815,7 @@ declare function xmlParseCtxtExternalEntity(ctx: interop.Pointer | interop.Refer
 
 declare function xmlParseDTD(ExternalID: string | interop.Pointer | interop.Reference<any>, SystemID: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<_xmlDtd>;
 
-declare function xmlParseDefaultDecl(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>, value: interop.Pointer | interop.Reference<string>): number;
+declare function xmlParseDefaultDecl(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 declare function xmlParseDoc(cur: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<_xmlDoc>;
 
@@ -2821,9 +2833,9 @@ declare function xmlParseElementDecl(ctxt: interop.Pointer | interop.Reference<_
 
 declare function xmlParseElementMixedContentDecl(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>, inputchk: number): interop.Pointer | interop.Reference<_xmlElementContent>;
 
-declare function xmlParseEncName(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): string;
+declare function xmlParseEncName(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlParseEncodingDecl(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): string;
+declare function xmlParseEncodingDecl(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlParseEndTag(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): void;
 
@@ -2833,7 +2845,7 @@ declare function xmlParseEntityDecl(ctxt: interop.Pointer | interop.Reference<_x
 
 declare function xmlParseEntityRef(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): interop.Pointer | interop.Reference<_xmlEntity>;
 
-declare function xmlParseEntityValue(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>, orig: interop.Pointer | interop.Reference<string>): string;
+declare function xmlParseEntityValue(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>, orig: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlParseEnumeratedType(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>, tree: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<_xmlEnumeration>>): number;
 
@@ -2843,7 +2855,7 @@ declare function xmlParseExtParsedEnt(ctxt: interop.Pointer | interop.Reference<
 
 declare function xmlParseExternalEntity(doc: interop.Pointer | interop.Reference<_xmlDoc>, sax: interop.Pointer | interop.Reference<_xmlSAXHandler>, user_data: interop.Pointer | interop.Reference<any>, depth: number, URL: string | interop.Pointer | interop.Reference<any>, ID: string | interop.Pointer | interop.Reference<any>, lst: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<_xmlNode>>): number;
 
-declare function xmlParseExternalID(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>, publicID: interop.Pointer | interop.Reference<string>, strict: number): string;
+declare function xmlParseExternalID(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>, publicID: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, strict: number): interop.Pointer | interop.Reference<any>;
 
 declare function xmlParseExternalSubset(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>, ExternalID: string | interop.Pointer | interop.Reference<any>, SystemID: string | interop.Pointer | interop.Reference<any>): void;
 
@@ -2857,11 +2869,11 @@ declare function xmlParseMemory(buffer: string | interop.Pointer | interop.Refer
 
 declare function xmlParseMisc(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): void;
 
-declare function xmlParseName(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): string;
+declare function xmlParseName(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlParseNamespace(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): void;
 
-declare function xmlParseNmtoken(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): string;
+declare function xmlParseNmtoken(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlParseNotationDecl(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): void;
 
@@ -2871,19 +2883,19 @@ declare function xmlParsePEReference(ctxt: interop.Pointer | interop.Reference<_
 
 declare function xmlParsePI(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): void;
 
-declare function xmlParsePITarget(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): string;
+declare function xmlParsePITarget(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlParsePubidLiteral(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): string;
+declare function xmlParsePubidLiteral(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlParseQuotedString(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): string;
+declare function xmlParseQuotedString(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlParseReference(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): void;
 
 declare function xmlParseSDDecl(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): number;
 
-declare function xmlParseStartTag(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): string;
+declare function xmlParseStartTag(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlParseSystemLiteral(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): string;
+declare function xmlParseSystemLiteral(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlParseTextDecl(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): void;
 
@@ -2893,9 +2905,9 @@ declare function xmlParseURIRaw(str: string | interop.Pointer | interop.Referenc
 
 declare function xmlParseURIReference(uri: interop.Pointer | interop.Reference<_xmlURI>, str: string | interop.Pointer | interop.Reference<any>): number;
 
-declare function xmlParseVersionInfo(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): string;
+declare function xmlParseVersionInfo(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlParseVersionNum(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): string;
+declare function xmlParseVersionNum(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlParseXMLDecl(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): void;
 
@@ -4376,7 +4388,7 @@ declare function xmlParserFindNodeInfo(ctxt: interop.Pointer | interop.Reference
 
 declare function xmlParserFindNodeInfoIndex(seq: interop.Pointer | interop.Reference<_xmlParserNodeInfoSeq>, node: interop.Pointer | interop.Reference<_xmlNode>): number;
 
-declare function xmlParserGetDirectory(filename: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlParserGetDirectory(filename: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlParserHandlePEReference(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): void;
 
@@ -4388,9 +4400,9 @@ declare function xmlParserInputBufferCreateFile(file: interop.Pointer | interop.
 
 declare function xmlParserInputBufferCreateFilename(URI: string | interop.Pointer | interop.Reference<any>, enc: xmlCharEncoding): interop.Pointer | interop.Reference<_xmlParserInputBuffer>;
 
-declare function xmlParserInputBufferCreateFilenameDefault(func: interop.FunctionReference<(p1: string, p2: xmlCharEncoding) => interop.Pointer | interop.Reference<_xmlParserInputBuffer>>): interop.FunctionReference<(p1: string, p2: xmlCharEncoding) => interop.Pointer | interop.Reference<_xmlParserInputBuffer>>;
+declare function xmlParserInputBufferCreateFilenameDefault(func: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: xmlCharEncoding) => interop.Pointer | interop.Reference<_xmlParserInputBuffer>>): interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: xmlCharEncoding) => interop.Pointer | interop.Reference<_xmlParserInputBuffer>>;
 
-declare function xmlParserInputBufferCreateIO(ioread: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number) => number>, ioclose: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>, ioctx: interop.Pointer | interop.Reference<any>, enc: xmlCharEncoding): interop.Pointer | interop.Reference<_xmlParserInputBuffer>;
+declare function xmlParserInputBufferCreateIO(ioread: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number) => number>, ioclose: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>, ioctx: interop.Pointer | interop.Reference<any>, enc: xmlCharEncoding): interop.Pointer | interop.Reference<_xmlParserInputBuffer>;
 
 declare function xmlParserInputBufferCreateMem(mem: string | interop.Pointer | interop.Reference<any>, size: number, enc: xmlCharEncoding): interop.Pointer | interop.Reference<_xmlParserInputBuffer>;
 
@@ -4539,7 +4551,7 @@ declare const enum xmlParserSeverities {
 	XML_PARSER_SEVERITY_ERROR = 4
 }
 
-declare function xmlPathToURI(path: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlPathToURI(path: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare const enum xmlPatternFlags {
 
@@ -4564,7 +4576,7 @@ declare function xmlPatternMinDepth(comp: interop.Pointer | interop.Reference<an
 
 declare function xmlPatternStreamable(comp: interop.Pointer | interop.Reference<any>): number;
 
-declare function xmlPatterncompile(pattern: string | interop.Pointer | interop.Reference<any>, dict: interop.Pointer | interop.Reference<any>, flags: number, namespaces: interop.Pointer | interop.Reference<string>): interop.Pointer | interop.Reference<any>;
+declare function xmlPatterncompile(pattern: string | interop.Pointer | interop.Reference<any>, dict: interop.Pointer | interop.Reference<any>, flags: number, namespaces: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlPedanticParserDefault(val: number): number;
 
@@ -4572,6 +4584,9 @@ declare function xmlPopInput(ctxt: interop.Pointer | interop.Reference<_xmlParse
 
 declare function xmlPopInputCallbacks(): number;
 
+/**
+ * @since 16.0
+ */
 declare function xmlPopOutputCallbacks(): number;
 
 declare function xmlPreviousElementSibling(node: interop.Pointer | interop.Reference<_xmlNode>): interop.Pointer | interop.Reference<_xmlNode>;
@@ -4590,7 +4605,7 @@ declare function xmlReadFd(fd: number, URL: string | interop.Pointer | interop.R
 
 declare function xmlReadFile(URL: string | interop.Pointer | interop.Reference<any>, encoding: string | interop.Pointer | interop.Reference<any>, options: number): interop.Pointer | interop.Reference<_xmlDoc>;
 
-declare function xmlReadIO(ioread: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number) => number>, ioclose: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>, ioctx: interop.Pointer | interop.Reference<any>, URL: string | interop.Pointer | interop.Reference<any>, encoding: string | interop.Pointer | interop.Reference<any>, options: number): interop.Pointer | interop.Reference<_xmlDoc>;
+declare function xmlReadIO(ioread: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number) => number>, ioclose: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>, ioctx: interop.Pointer | interop.Reference<any>, URL: string | interop.Pointer | interop.Reference<any>, encoding: string | interop.Pointer | interop.Reference<any>, options: number): interop.Pointer | interop.Reference<_xmlDoc>;
 
 declare function xmlReadMemory(buffer: string | interop.Pointer | interop.Reference<any>, size: number, URL: string | interop.Pointer | interop.Reference<any>, encoding: string | interop.Pointer | interop.Reference<any>, options: number): interop.Pointer | interop.Reference<_xmlDoc>;
 
@@ -4600,7 +4615,7 @@ declare function xmlReaderForFd(fd: number, URL: string | interop.Pointer | inte
 
 declare function xmlReaderForFile(filename: string | interop.Pointer | interop.Reference<any>, encoding: string | interop.Pointer | interop.Reference<any>, options: number): interop.Pointer | interop.Reference<any>;
 
-declare function xmlReaderForIO(ioread: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number) => number>, ioclose: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>, ioctx: interop.Pointer | interop.Reference<any>, URL: string | interop.Pointer | interop.Reference<any>, encoding: string | interop.Pointer | interop.Reference<any>, options: number): interop.Pointer | interop.Reference<any>;
+declare function xmlReaderForIO(ioread: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number) => number>, ioclose: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>, ioctx: interop.Pointer | interop.Reference<any>, URL: string | interop.Pointer | interop.Reference<any>, encoding: string | interop.Pointer | interop.Reference<any>, options: number): interop.Pointer | interop.Reference<any>;
 
 declare function xmlReaderForMemory(buffer: string | interop.Pointer | interop.Reference<any>, size: number, URL: string | interop.Pointer | interop.Reference<any>, encoding: string | interop.Pointer | interop.Reference<any>, options: number): interop.Pointer | interop.Reference<any>;
 
@@ -4610,7 +4625,7 @@ declare function xmlReaderNewFd(reader: interop.Pointer | interop.Reference<any>
 
 declare function xmlReaderNewFile(reader: interop.Pointer | interop.Reference<any>, filename: string | interop.Pointer | interop.Reference<any>, encoding: string | interop.Pointer | interop.Reference<any>, options: number): number;
 
-declare function xmlReaderNewIO(reader: interop.Pointer | interop.Reference<any>, ioread: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number) => number>, ioclose: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>, ioctx: interop.Pointer | interop.Reference<any>, URL: string | interop.Pointer | interop.Reference<any>, encoding: string | interop.Pointer | interop.Reference<any>, options: number): number;
+declare function xmlReaderNewIO(reader: interop.Pointer | interop.Reference<any>, ioread: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number) => number>, ioclose: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>, ioctx: interop.Pointer | interop.Reference<any>, URL: string | interop.Pointer | interop.Reference<any>, encoding: string | interop.Pointer | interop.Reference<any>, options: number): number;
 
 declare function xmlReaderNewMemory(reader: interop.Pointer | interop.Reference<any>, buffer: string | interop.Pointer | interop.Reference<any>, size: number, URL: string | interop.Pointer | interop.Reference<any>, encoding: string | interop.Pointer | interop.Reference<any>, options: number): number;
 
@@ -4669,9 +4684,9 @@ declare function xmlRecoverFile(filename: string | interop.Pointer | interop.Ref
 
 declare function xmlRecoverMemory(buffer: string | interop.Pointer | interop.Reference<any>, size: number): interop.Pointer | interop.Reference<_xmlDoc>;
 
-declare function xmlRegExecErrInfo(exec: interop.Pointer | interop.Reference<any>, string: interop.Pointer | interop.Reference<string>, nbval: interop.Pointer | interop.Reference<number>, nbneg: interop.Pointer | interop.Reference<number>, values: interop.Pointer | interop.Reference<string>, terminal: interop.Pointer | interop.Reference<number>): number;
+declare function xmlRegExecErrInfo(exec: interop.Pointer | interop.Reference<any>, string: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, nbval: interop.Pointer | interop.Reference<number>, nbneg: interop.Pointer | interop.Reference<number>, values: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, terminal: interop.Pointer | interop.Reference<number>): number;
 
-declare function xmlRegExecNextValues(exec: interop.Pointer | interop.Reference<any>, nbval: interop.Pointer | interop.Reference<number>, nbneg: interop.Pointer | interop.Reference<number>, values: interop.Pointer | interop.Reference<string>, terminal: interop.Pointer | interop.Reference<number>): number;
+declare function xmlRegExecNextValues(exec: interop.Pointer | interop.Reference<any>, nbval: interop.Pointer | interop.Reference<number>, nbneg: interop.Pointer | interop.Reference<number>, values: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, terminal: interop.Pointer | interop.Reference<number>): number;
 
 declare function xmlRegExecPushString(exec: interop.Pointer | interop.Reference<any>, value: string | interop.Pointer | interop.Reference<any>, data: interop.Pointer | interop.Reference<any>): number;
 
@@ -4681,7 +4696,7 @@ declare function xmlRegFreeExecCtxt(exec: interop.Pointer | interop.Reference<an
 
 declare function xmlRegFreeRegexp(regexp: interop.Pointer | interop.Reference<any>): void;
 
-declare function xmlRegNewExecCtxt(comp: interop.Pointer | interop.Reference<any>, callback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>) => void>, data: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function xmlRegNewExecCtxt(comp: interop.Pointer | interop.Reference<any>, callback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>) => void>, data: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlRegexpCompile(regexp: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
@@ -4699,11 +4714,11 @@ declare function xmlRegisterDefaultOutputCallbacks(): void;
 
 declare function xmlRegisterHTTPPostCallbacks(): void;
 
-declare function xmlRegisterInputCallbacks(matchFunc: interop.FunctionReference<(p1: string) => number>, openFunc: interop.FunctionReference<(p1: string) => interop.Pointer | interop.Reference<any>>, readFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number) => number>, closeFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>): number;
+declare function xmlRegisterInputCallbacks(matchFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>, openFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<any>>, readFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number) => number>, closeFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>): number;
 
 declare function xmlRegisterNodeDefault(func: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<_xmlNode>) => void>): interop.FunctionReference<(p1: interop.Pointer | interop.Reference<_xmlNode>) => void>;
 
-declare function xmlRegisterOutputCallbacks(matchFunc: interop.FunctionReference<(p1: string) => number>, openFunc: interop.FunctionReference<(p1: string) => interop.Pointer | interop.Reference<any>>, writeFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number) => number>, closeFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>): number;
+declare function xmlRegisterOutputCallbacks(matchFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>, openFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<any>>, writeFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number) => number>, closeFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>): number;
 
 declare function xmlRelaxNGCleanupTypes(): void;
 
@@ -4717,9 +4732,9 @@ declare function xmlRelaxNGFreeParserCtxt(ctxt: interop.Pointer | interop.Refere
 
 declare function xmlRelaxNGFreeValidCtxt(ctxt: interop.Pointer | interop.Reference<any>): void;
 
-declare function xmlRelaxNGGetParserErrors(ctxt: interop.Pointer | interop.Reference<any>, err: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>>, warn: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>>, ctx: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+declare function xmlRelaxNGGetParserErrors(ctxt: interop.Pointer | interop.Reference<any>, err: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>>, warn: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>>, ctx: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
-declare function xmlRelaxNGGetValidErrors(ctxt: interop.Pointer | interop.Reference<any>, err: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>>, warn: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>>, ctx: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+declare function xmlRelaxNGGetValidErrors(ctxt: interop.Pointer | interop.Reference<any>, err: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>>, warn: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>>, ctx: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 declare function xmlRelaxNGInitTypes(): number;
 
@@ -4742,11 +4757,11 @@ declare const enum xmlRelaxNGParserFlag {
 	XML_RELAXNGP_CRNG = 2
 }
 
-declare function xmlRelaxNGSetParserErrors(ctxt: interop.Pointer | interop.Reference<any>, err: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>, warn: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>, ctx: interop.Pointer | interop.Reference<any>): void;
+declare function xmlRelaxNGSetParserErrors(ctxt: interop.Pointer | interop.Reference<any>, err: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>, warn: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>, ctx: interop.Pointer | interop.Reference<any>): void;
 
 declare function xmlRelaxNGSetParserStructuredErrors(ctxt: interop.Pointer | interop.Reference<any>, serror: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<_xmlError>) => void>, ctx: interop.Pointer | interop.Reference<any>): void;
 
-declare function xmlRelaxNGSetValidErrors(ctxt: interop.Pointer | interop.Reference<any>, err: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>, warn: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>, ctx: interop.Pointer | interop.Reference<any>): void;
+declare function xmlRelaxNGSetValidErrors(ctxt: interop.Pointer | interop.Reference<any>, err: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>, warn: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>, ctx: interop.Pointer | interop.Reference<any>): void;
 
 declare function xmlRelaxNGSetValidStructuredErrors(ctxt: interop.Pointer | interop.Reference<any>, serror: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<_xmlError>) => void>, ctx: interop.Pointer | interop.Reference<any>): void;
 
@@ -4885,9 +4900,9 @@ declare function xmlSAX2GetLineNumber(ctx: interop.Pointer | interop.Reference<a
 
 declare function xmlSAX2GetParameterEntity(ctx: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<_xmlEntity>;
 
-declare function xmlSAX2GetPublicId(ctx: interop.Pointer | interop.Reference<any>): string;
+declare function xmlSAX2GetPublicId(ctx: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlSAX2GetSystemId(ctx: interop.Pointer | interop.Reference<any>): string;
+declare function xmlSAX2GetSystemId(ctx: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlSAX2HasExternalSubset(ctx: interop.Pointer | interop.Reference<any>): number;
 
@@ -4917,9 +4932,9 @@ declare function xmlSAX2SetDocumentLocator(ctx: interop.Pointer | interop.Refere
 
 declare function xmlSAX2StartDocument(ctx: interop.Pointer | interop.Reference<any>): void;
 
-declare function xmlSAX2StartElement(ctx: interop.Pointer | interop.Reference<any>, fullname: string | interop.Pointer | interop.Reference<any>, atts: interop.Pointer | interop.Reference<string>): void;
+declare function xmlSAX2StartElement(ctx: interop.Pointer | interop.Reference<any>, fullname: string | interop.Pointer | interop.Reference<any>, atts: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): void;
 
-declare function xmlSAX2StartElementNs(ctx: interop.Pointer | interop.Reference<any>, localname: string | interop.Pointer | interop.Reference<any>, prefix: string | interop.Pointer | interop.Reference<any>, URI: string | interop.Pointer | interop.Reference<any>, nb_namespaces: number, namespaces: interop.Pointer | interop.Reference<string>, nb_attributes: number, nb_defaulted: number, attributes: interop.Pointer | interop.Reference<string>): void;
+declare function xmlSAX2StartElementNs(ctx: interop.Pointer | interop.Reference<any>, localname: string | interop.Pointer | interop.Reference<any>, prefix: string | interop.Pointer | interop.Reference<any>, URI: string | interop.Pointer | interop.Reference<any>, nb_namespaces: number, namespaces: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, nb_attributes: number, nb_defaulted: number, attributes: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): void;
 
 declare function xmlSAX2UnparsedEntityDecl(ctx: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, publicId: string | interop.Pointer | interop.Reference<any>, systemId: string | interop.Pointer | interop.Reference<any>, notationName: string | interop.Pointer | interop.Reference<any>): void;
 
@@ -4982,9 +4997,9 @@ declare const enum xmlSaveOption {
 	XML_SAVE_WSNONSIG = 128
 }
 
-declare function xmlSaveSetAttrEscape(ctxt: interop.Pointer | interop.Reference<any>, escape: interop.FunctionReference<(p1: string, p2: interop.Pointer | interop.Reference<number>, p3: string, p4: interop.Pointer | interop.Reference<number>) => number>): number;
+declare function xmlSaveSetAttrEscape(ctxt: interop.Pointer | interop.Reference<any>, escape: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<number>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<number>) => number>): number;
 
-declare function xmlSaveSetEscape(ctxt: interop.Pointer | interop.Reference<any>, escape: interop.FunctionReference<(p1: string, p2: interop.Pointer | interop.Reference<number>, p3: string, p4: interop.Pointer | interop.Reference<number>) => number>): number;
+declare function xmlSaveSetEscape(ctxt: interop.Pointer | interop.Reference<any>, escape: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<number>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<number>) => number>): number;
 
 declare function xmlSaveToBuffer(buffer: interop.Pointer | interop.Reference<_xmlBuffer>, encoding: string | interop.Pointer | interop.Reference<any>, options: number): interop.Pointer | interop.Reference<any>;
 
@@ -4992,19 +5007,19 @@ declare function xmlSaveToFd(fd: number, encoding: string | interop.Pointer | in
 
 declare function xmlSaveToFilename(filename: string | interop.Pointer | interop.Reference<any>, encoding: string | interop.Pointer | interop.Reference<any>, options: number): interop.Pointer | interop.Reference<any>;
 
-declare function xmlSaveToIO(iowrite: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: number) => number>, ioclose: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>, ioctx: interop.Pointer | interop.Reference<any>, encoding: string | interop.Pointer | interop.Reference<any>, options: number): interop.Pointer | interop.Reference<any>;
+declare function xmlSaveToIO(iowrite: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number) => number>, ioclose: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>, ioctx: interop.Pointer | interop.Reference<any>, encoding: string | interop.Pointer | interop.Reference<any>, options: number): interop.Pointer | interop.Reference<any>;
 
 declare function xmlSaveTree(ctxt: interop.Pointer | interop.Reference<any>, node: interop.Pointer | interop.Reference<_xmlNode>): number;
 
-declare function xmlSaveUri(uri: interop.Pointer | interop.Reference<_xmlURI>): string;
+declare function xmlSaveUri(uri: interop.Pointer | interop.Reference<_xmlURI>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlScanName(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): string;
+declare function xmlScanName(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlSchemaCheckFacet(facet: interop.Pointer | interop.Reference<_xmlSchemaFacet>, typeDecl: interop.Pointer | interop.Reference<_xmlSchemaType>, ctxt: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>): number;
 
 declare function xmlSchemaCleanupTypes(): void;
 
-declare function xmlSchemaCollapseString(value: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlSchemaCollapseString(value: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlSchemaCompareValues(x: interop.Pointer | interop.Reference<any>, y: interop.Pointer | interop.Reference<any>): number;
 
@@ -5051,19 +5066,19 @@ declare function xmlSchemaGetBuiltInListSimpleTypeItemType(type: interop.Pointer
 
 declare function xmlSchemaGetBuiltInType(type: xmlSchemaValType): interop.Pointer | interop.Reference<_xmlSchemaType>;
 
-declare function xmlSchemaGetCanonValue(val: interop.Pointer | interop.Reference<any>, retValue: interop.Pointer | interop.Reference<string>): number;
+declare function xmlSchemaGetCanonValue(val: interop.Pointer | interop.Reference<any>, retValue: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
-declare function xmlSchemaGetCanonValueWhtsp(val: interop.Pointer | interop.Reference<any>, retValue: interop.Pointer | interop.Reference<string>, ws: xmlSchemaWhitespaceValueType): number;
+declare function xmlSchemaGetCanonValueWhtsp(val: interop.Pointer | interop.Reference<any>, retValue: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, ws: xmlSchemaWhitespaceValueType): number;
 
 declare function xmlSchemaGetFacetValueAsULong(facet: interop.Pointer | interop.Reference<_xmlSchemaFacet>): number;
 
-declare function xmlSchemaGetParserErrors(ctxt: interop.Pointer | interop.Reference<any>, err: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>>, warn: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>>, ctx: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+declare function xmlSchemaGetParserErrors(ctxt: interop.Pointer | interop.Reference<any>, err: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>>, warn: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>>, ctx: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 declare function xmlSchemaGetPredefinedType(name: string | interop.Pointer | interop.Reference<any>, ns: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<_xmlSchemaType>;
 
 declare function xmlSchemaGetValType(val: interop.Pointer | interop.Reference<any>): xmlSchemaValType;
 
-declare function xmlSchemaGetValidErrors(ctxt: interop.Pointer | interop.Reference<any>, err: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>>, warn: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>>, ctx: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+declare function xmlSchemaGetValidErrors(ctxt: interop.Pointer | interop.Reference<any>, err: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>>, warn: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>>, ctx: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 declare function xmlSchemaInitTypes(): void;
 
@@ -5093,11 +5108,11 @@ declare function xmlSchemaSAXPlug(ctxt: interop.Pointer | interop.Reference<any>
 
 declare function xmlSchemaSAXUnplug(plug: interop.Pointer | interop.Reference<any>): number;
 
-declare function xmlSchemaSetParserErrors(ctxt: interop.Pointer | interop.Reference<any>, err: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>, warn: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>, ctx: interop.Pointer | interop.Reference<any>): void;
+declare function xmlSchemaSetParserErrors(ctxt: interop.Pointer | interop.Reference<any>, err: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>, warn: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>, ctx: interop.Pointer | interop.Reference<any>): void;
 
 declare function xmlSchemaSetParserStructuredErrors(ctxt: interop.Pointer | interop.Reference<any>, serror: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<_xmlError>) => void>, ctx: interop.Pointer | interop.Reference<any>): void;
 
-declare function xmlSchemaSetValidErrors(ctxt: interop.Pointer | interop.Reference<any>, err: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>, warn: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>, ctx: interop.Pointer | interop.Reference<any>): void;
+declare function xmlSchemaSetValidErrors(ctxt: interop.Pointer | interop.Reference<any>, err: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>, warn: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>, ctx: interop.Pointer | interop.Reference<any>): void;
 
 declare function xmlSchemaSetValidOptions(ctxt: interop.Pointer | interop.Reference<any>, options: number): number;
 
@@ -5371,7 +5386,7 @@ declare function xmlSchemaValidatePredefinedType(type: interop.Pointer | interop
 
 declare function xmlSchemaValidateSetFilename(vctxt: interop.Pointer | interop.Reference<any>, filename: string | interop.Pointer | interop.Reference<any>): void;
 
-declare function xmlSchemaValidateSetLocator(vctxt: interop.Pointer | interop.Reference<any>, f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<string>, p3: interop.Pointer | interop.Reference<number>) => number>, ctxt: interop.Pointer | interop.Reference<any>): void;
+declare function xmlSchemaValidateSetLocator(vctxt: interop.Pointer | interop.Reference<any>, f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p3: interop.Pointer | interop.Reference<number>) => number>, ctxt: interop.Pointer | interop.Reference<any>): void;
 
 declare function xmlSchemaValidateStream(ctxt: interop.Pointer | interop.Reference<any>, input: interop.Pointer | interop.Reference<_xmlParserInputBuffer>, enc: xmlCharEncoding, sax: interop.Pointer | interop.Reference<_xmlSAXHandler>, user_data: interop.Pointer | interop.Reference<any>): number;
 
@@ -5379,11 +5394,11 @@ declare function xmlSchemaValueAppend(prev: interop.Pointer | interop.Reference<
 
 declare function xmlSchemaValueGetAsBoolean(val: interop.Pointer | interop.Reference<any>): number;
 
-declare function xmlSchemaValueGetAsString(val: interop.Pointer | interop.Reference<any>): string;
+declare function xmlSchemaValueGetAsString(val: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlSchemaValueGetNext(cur: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlSchemaWhiteSpaceReplace(value: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlSchemaWhiteSpaceReplace(value: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare const enum xmlSchemaWhitespaceValueType {
 
@@ -5445,11 +5460,11 @@ declare function xmlSetDocCompressMode(doc: interop.Pointer | interop.Reference<
 
 declare function xmlSetEntityReferenceFunc(func: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<_xmlEntity>, p2: interop.Pointer | interop.Reference<_xmlNode>, p3: interop.Pointer | interop.Reference<_xmlNode>) => void>): void;
 
-declare function xmlSetExternalEntityLoader(f: interop.FunctionReference<(p1: string, p2: string, p3: interop.Pointer | interop.Reference<_xmlParserCtxt>) => interop.Pointer | interop.Reference<_xmlParserInput>>): void;
+declare function xmlSetExternalEntityLoader(f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<_xmlParserCtxt>) => interop.Pointer | interop.Reference<_xmlParserInput>>): void;
 
 declare function xmlSetFeature(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>, name: string | interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>): number;
 
-declare function xmlSetGenericErrorFunc(ctx: interop.Pointer | interop.Reference<any>, handler: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>): void;
+declare function xmlSetGenericErrorFunc(ctx: interop.Pointer | interop.Reference<any>, handler: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>): void;
 
 declare function xmlSetListDoc(list: interop.Pointer | interop.Reference<_xmlNode>, doc: interop.Pointer | interop.Reference<_xmlDoc>): void;
 
@@ -5465,7 +5480,7 @@ declare function xmlSetTreeDoc(tree: interop.Pointer | interop.Reference<_xmlNod
 
 declare function xmlSetupParserForBuffer(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>, buffer: string | interop.Pointer | interop.Reference<any>, filename: string | interop.Pointer | interop.Reference<any>): void;
 
-declare function xmlShell(doc: interop.Pointer | interop.Reference<_xmlDoc>, filename: string | interop.Pointer | interop.Reference<any>, input: interop.FunctionReference<(p1: string) => string>, output: interop.Pointer | interop.Reference<FILE>): void;
+declare function xmlShell(doc: interop.Pointer | interop.Reference<_xmlDoc>, filename: string | interop.Pointer | interop.Reference<any>, input: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<any>>, output: interop.Pointer | interop.Reference<FILE>): void;
 
 declare function xmlShellBase(ctxt: interop.Pointer | interop.Reference<_xmlShellCtxt>, arg: string | interop.Pointer | interop.Reference<any>, node: interop.Pointer | interop.Reference<_xmlNode>, node2: interop.Pointer | interop.Reference<_xmlNode>): number;
 
@@ -5497,11 +5512,11 @@ declare function xmlSkipBlankChars(ctxt: interop.Pointer | interop.Reference<_xm
 
 declare function xmlSnprintfElementContent(buf: string | interop.Pointer | interop.Reference<any>, size: number, content: interop.Pointer | interop.Reference<_xmlElementContent>, englob: number): void;
 
-declare function xmlSplitQName(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>, name: string | interop.Pointer | interop.Reference<any>, prefix: interop.Pointer | interop.Reference<string>): string;
+declare function xmlSplitQName(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>, name: string | interop.Pointer | interop.Reference<any>, prefix: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlSplitQName2(name: string | interop.Pointer | interop.Reference<any>, prefix: interop.Pointer | interop.Reference<string>): string;
+declare function xmlSplitQName2(name: string | interop.Pointer | interop.Reference<any>, prefix: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlSplitQName3(name: string | interop.Pointer | interop.Reference<any>, len: interop.Pointer | interop.Reference<number>): string;
+declare function xmlSplitQName3(name: string | interop.Pointer | interop.Reference<any>, len: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlSprintfElementContent(buf: string | interop.Pointer | interop.Reference<any>, content: interop.Pointer | interop.Reference<_xmlElementContent>, englob: number): void;
 
@@ -5513,15 +5528,15 @@ declare function xmlStrQEqual(pref: string | interop.Pointer | interop.Reference
 
 declare function xmlStrcasecmp(str1: string | interop.Pointer | interop.Reference<any>, str2: string | interop.Pointer | interop.Reference<any>): number;
 
-declare function xmlStrcasestr(str: string | interop.Pointer | interop.Reference<any>, val: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlStrcasestr(str: string | interop.Pointer | interop.Reference<any>, val: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlStrcat(cur: string | interop.Pointer | interop.Reference<any>, add: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlStrcat(cur: string | interop.Pointer | interop.Reference<any>, add: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlStrchr(str: string | interop.Pointer | interop.Reference<any>, val: number): string;
+declare function xmlStrchr(str: string | interop.Pointer | interop.Reference<any>, val: number): interop.Pointer | interop.Reference<any>;
 
 declare function xmlStrcmp(str1: string | interop.Pointer | interop.Reference<any>, str2: string | interop.Pointer | interop.Reference<any>): number;
 
-declare function xmlStrdup(cur: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlStrdup(cur: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlStreamPop(stream: interop.Pointer | interop.Reference<any>): number;
 
@@ -5537,11 +5552,11 @@ declare var xmlStringComment: interop.Reference<number>;
 
 declare function xmlStringCurrentChar(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>, cur: string | interop.Pointer | interop.Reference<any>, len: interop.Pointer | interop.Reference<number>): number;
 
-declare function xmlStringDecodeEntities(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>, str: string | interop.Pointer | interop.Reference<any>, what: number, end: number, end2: number, end3: number): string;
+declare function xmlStringDecodeEntities(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>, str: string | interop.Pointer | interop.Reference<any>, what: number, end: number, end2: number, end3: number): interop.Pointer | interop.Reference<any>;
 
 declare function xmlStringGetNodeList(doc: interop.Pointer | interop.Reference<_xmlDoc>, value: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<_xmlNode>;
 
-declare function xmlStringLenDecodeEntities(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>, str: string | interop.Pointer | interop.Reference<any>, len: number, what: number, end: number, end2: number, end3: number): string;
+declare function xmlStringLenDecodeEntities(ctxt: interop.Pointer | interop.Reference<_xmlParserCtxt>, str: string | interop.Pointer | interop.Reference<any>, len: number, what: number, end: number, end2: number, end3: number): interop.Pointer | interop.Reference<any>;
 
 declare function xmlStringLenGetNodeList(doc: interop.Pointer | interop.Reference<_xmlDoc>, value: string | interop.Pointer | interop.Reference<any>, len: number): interop.Pointer | interop.Reference<_xmlNode>;
 
@@ -5553,17 +5568,17 @@ declare function xmlStrlen(str: string | interop.Pointer | interop.Reference<any
 
 declare function xmlStrncasecmp(str1: string | interop.Pointer | interop.Reference<any>, str2: string | interop.Pointer | interop.Reference<any>, len: number): number;
 
-declare function xmlStrncat(cur: string | interop.Pointer | interop.Reference<any>, add: string | interop.Pointer | interop.Reference<any>, len: number): string;
+declare function xmlStrncat(cur: string | interop.Pointer | interop.Reference<any>, add: string | interop.Pointer | interop.Reference<any>, len: number): interop.Pointer | interop.Reference<any>;
 
-declare function xmlStrncatNew(str1: string | interop.Pointer | interop.Reference<any>, str2: string | interop.Pointer | interop.Reference<any>, len: number): string;
+declare function xmlStrncatNew(str1: string | interop.Pointer | interop.Reference<any>, str2: string | interop.Pointer | interop.Reference<any>, len: number): interop.Pointer | interop.Reference<any>;
 
 declare function xmlStrncmp(str1: string | interop.Pointer | interop.Reference<any>, str2: string | interop.Pointer | interop.Reference<any>, len: number): number;
 
-declare function xmlStrndup(cur: string | interop.Pointer | interop.Reference<any>, len: number): string;
+declare function xmlStrndup(cur: string | interop.Pointer | interop.Reference<any>, len: number): interop.Pointer | interop.Reference<any>;
 
-declare function xmlStrstr(str: string | interop.Pointer | interop.Reference<any>, val: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlStrstr(str: string | interop.Pointer | interop.Reference<any>, val: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlStrsub(str: string | interop.Pointer | interop.Reference<any>, start: number, len: number): string;
+declare function xmlStrsub(str: string | interop.Pointer | interop.Reference<any>, start: number, len: number): interop.Pointer | interop.Reference<any>;
 
 declare function xmlSubstituteEntitiesDefault(val: number): number;
 
@@ -5579,31 +5594,31 @@ declare function xmlTextMerge(first: interop.Pointer | interop.Reference<_xmlNod
 
 declare function xmlTextReaderAttributeCount(reader: interop.Pointer | interop.Reference<any>): number;
 
-declare function xmlTextReaderBaseUri(reader: interop.Pointer | interop.Reference<any>): string;
+declare function xmlTextReaderBaseUri(reader: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlTextReaderByteConsumed(reader: interop.Pointer | interop.Reference<any>): number;
 
 declare function xmlTextReaderClose(reader: interop.Pointer | interop.Reference<any>): number;
 
-declare function xmlTextReaderConstBaseUri(reader: interop.Pointer | interop.Reference<any>): string;
+declare function xmlTextReaderConstBaseUri(reader: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlTextReaderConstEncoding(reader: interop.Pointer | interop.Reference<any>): string;
+declare function xmlTextReaderConstEncoding(reader: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlTextReaderConstLocalName(reader: interop.Pointer | interop.Reference<any>): string;
+declare function xmlTextReaderConstLocalName(reader: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlTextReaderConstName(reader: interop.Pointer | interop.Reference<any>): string;
+declare function xmlTextReaderConstName(reader: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlTextReaderConstNamespaceUri(reader: interop.Pointer | interop.Reference<any>): string;
+declare function xmlTextReaderConstNamespaceUri(reader: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlTextReaderConstPrefix(reader: interop.Pointer | interop.Reference<any>): string;
+declare function xmlTextReaderConstPrefix(reader: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlTextReaderConstString(reader: interop.Pointer | interop.Reference<any>, str: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlTextReaderConstString(reader: interop.Pointer | interop.Reference<any>, str: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlTextReaderConstValue(reader: interop.Pointer | interop.Reference<any>): string;
+declare function xmlTextReaderConstValue(reader: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlTextReaderConstXmlLang(reader: interop.Pointer | interop.Reference<any>): string;
+declare function xmlTextReaderConstXmlLang(reader: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlTextReaderConstXmlVersion(reader: interop.Pointer | interop.Reference<any>): string;
+declare function xmlTextReaderConstXmlVersion(reader: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlTextReaderCurrentDoc(reader: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<_xmlDoc>;
 
@@ -5613,13 +5628,13 @@ declare function xmlTextReaderDepth(reader: interop.Pointer | interop.Reference<
 
 declare function xmlTextReaderExpand(reader: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<_xmlNode>;
 
-declare function xmlTextReaderGetAttribute(reader: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlTextReaderGetAttribute(reader: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlTextReaderGetAttributeNo(reader: interop.Pointer | interop.Reference<any>, no: number): string;
+declare function xmlTextReaderGetAttributeNo(reader: interop.Pointer | interop.Reference<any>, no: number): interop.Pointer | interop.Reference<any>;
 
-declare function xmlTextReaderGetAttributeNs(reader: interop.Pointer | interop.Reference<any>, localName: string | interop.Pointer | interop.Reference<any>, namespaceURI: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlTextReaderGetAttributeNs(reader: interop.Pointer | interop.Reference<any>, localName: string | interop.Pointer | interop.Reference<any>, namespaceURI: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlTextReaderGetErrorHandler(reader: interop.Pointer | interop.Reference<any>, f: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: xmlParserSeverities, p4: interop.Pointer | interop.Reference<any>) => void>>, arg: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): void;
+declare function xmlTextReaderGetErrorHandler(reader: interop.Pointer | interop.Reference<any>, f: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: xmlParserSeverities, p4: interop.Pointer | interop.Reference<any>) => void>>, arg: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): void;
 
 declare function xmlTextReaderGetParserColumnNumber(reader: interop.Pointer | interop.Reference<any>): number;
 
@@ -5641,13 +5656,13 @@ declare function xmlTextReaderIsNamespaceDecl(reader: interop.Pointer | interop.
 
 declare function xmlTextReaderIsValid(reader: interop.Pointer | interop.Reference<any>): number;
 
-declare function xmlTextReaderLocalName(reader: interop.Pointer | interop.Reference<any>): string;
+declare function xmlTextReaderLocalName(reader: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlTextReaderLocatorBaseURI(locator: interop.Pointer | interop.Reference<any>): string;
+declare function xmlTextReaderLocatorBaseURI(locator: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlTextReaderLocatorLineNumber(locator: interop.Pointer | interop.Reference<any>): number;
 
-declare function xmlTextReaderLookupNamespace(reader: interop.Pointer | interop.Reference<any>, prefix: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlTextReaderLookupNamespace(reader: interop.Pointer | interop.Reference<any>, prefix: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare const enum xmlTextReaderMode {
 
@@ -5676,9 +5691,9 @@ declare function xmlTextReaderMoveToFirstAttribute(reader: interop.Pointer | int
 
 declare function xmlTextReaderMoveToNextAttribute(reader: interop.Pointer | interop.Reference<any>): number;
 
-declare function xmlTextReaderName(reader: interop.Pointer | interop.Reference<any>): string;
+declare function xmlTextReaderName(reader: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlTextReaderNamespaceUri(reader: interop.Pointer | interop.Reference<any>): string;
+declare function xmlTextReaderNamespaceUri(reader: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlTextReaderNext(reader: interop.Pointer | interop.Reference<any>): number;
 
@@ -5688,11 +5703,11 @@ declare function xmlTextReaderNodeType(reader: interop.Pointer | interop.Referen
 
 declare function xmlTextReaderNormalization(reader: interop.Pointer | interop.Reference<any>): number;
 
-declare function xmlTextReaderPrefix(reader: interop.Pointer | interop.Reference<any>): string;
+declare function xmlTextReaderPrefix(reader: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlTextReaderPreserve(reader: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<_xmlNode>;
 
-declare function xmlTextReaderPreservePattern(reader: interop.Pointer | interop.Reference<any>, pattern: string | interop.Pointer | interop.Reference<any>, namespaces: interop.Pointer | interop.Reference<string>): number;
+declare function xmlTextReaderPreservePattern(reader: interop.Pointer | interop.Reference<any>, pattern: string | interop.Pointer | interop.Reference<any>, namespaces: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 declare function xmlTextReaderQuoteChar(reader: interop.Pointer | interop.Reference<any>): number;
 
@@ -5700,13 +5715,13 @@ declare function xmlTextReaderRead(reader: interop.Pointer | interop.Reference<a
 
 declare function xmlTextReaderReadAttributeValue(reader: interop.Pointer | interop.Reference<any>): number;
 
-declare function xmlTextReaderReadInnerXml(reader: interop.Pointer | interop.Reference<any>): string;
+declare function xmlTextReaderReadInnerXml(reader: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlTextReaderReadOuterXml(reader: interop.Pointer | interop.Reference<any>): string;
+declare function xmlTextReaderReadOuterXml(reader: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlTextReaderReadState(reader: interop.Pointer | interop.Reference<any>): number;
 
-declare function xmlTextReaderReadString(reader: interop.Pointer | interop.Reference<any>): string;
+declare function xmlTextReaderReadString(reader: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlTextReaderRelaxNGSetSchema(reader: interop.Pointer | interop.Reference<any>, schema: interop.Pointer | interop.Reference<any>): number;
 
@@ -5718,7 +5733,7 @@ declare function xmlTextReaderSchemaValidate(reader: interop.Pointer | interop.R
 
 declare function xmlTextReaderSchemaValidateCtxt(reader: interop.Pointer | interop.Reference<any>, ctxt: interop.Pointer | interop.Reference<any>, options: number): number;
 
-declare function xmlTextReaderSetErrorHandler(reader: interop.Pointer | interop.Reference<any>, f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: xmlParserSeverities, p4: interop.Pointer | interop.Reference<any>) => void>, arg: interop.Pointer | interop.Reference<any>): void;
+declare function xmlTextReaderSetErrorHandler(reader: interop.Pointer | interop.Reference<any>, f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: xmlParserSeverities, p4: interop.Pointer | interop.Reference<any>) => void>, arg: interop.Pointer | interop.Reference<any>): void;
 
 declare function xmlTextReaderSetParserProp(reader: interop.Pointer | interop.Reference<any>, prop: number, value: number): number;
 
@@ -5730,9 +5745,9 @@ declare function xmlTextReaderSetup(reader: interop.Pointer | interop.Reference<
 
 declare function xmlTextReaderStandalone(reader: interop.Pointer | interop.Reference<any>): number;
 
-declare function xmlTextReaderValue(reader: interop.Pointer | interop.Reference<any>): string;
+declare function xmlTextReaderValue(reader: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlTextReaderXmlLang(reader: interop.Pointer | interop.Reference<any>): string;
+declare function xmlTextReaderXmlLang(reader: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlTextWriterEndAttribute(writer: interop.Pointer | interop.Reference<any>): number;
 
@@ -5846,11 +5861,11 @@ declare function xmlThrDefLineNumbersDefaultValue(v: number): number;
 
 declare function xmlThrDefLoadExtDtdDefaultValue(v: number): number;
 
-declare function xmlThrDefOutputBufferCreateFilenameDefault(func: interop.FunctionReference<(p1: string, p2: interop.Pointer | interop.Reference<_xmlCharEncodingHandler>, p3: number) => interop.Pointer | interop.Reference<_xmlOutputBuffer>>): interop.FunctionReference<(p1: string, p2: interop.Pointer | interop.Reference<_xmlCharEncodingHandler>, p3: number) => interop.Pointer | interop.Reference<_xmlOutputBuffer>>;
+declare function xmlThrDefOutputBufferCreateFilenameDefault(func: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<_xmlCharEncodingHandler>, p3: number) => interop.Pointer | interop.Reference<_xmlOutputBuffer>>): interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<_xmlCharEncodingHandler>, p3: number) => interop.Pointer | interop.Reference<_xmlOutputBuffer>>;
 
 declare function xmlThrDefParserDebugEntities(v: number): number;
 
-declare function xmlThrDefParserInputBufferCreateFilenameDefault(func: interop.FunctionReference<(p1: string, p2: xmlCharEncoding) => interop.Pointer | interop.Reference<_xmlParserInputBuffer>>): interop.FunctionReference<(p1: string, p2: xmlCharEncoding) => interop.Pointer | interop.Reference<_xmlParserInputBuffer>>;
+declare function xmlThrDefParserInputBufferCreateFilenameDefault(func: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: xmlCharEncoding) => interop.Pointer | interop.Reference<_xmlParserInputBuffer>>): interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: xmlCharEncoding) => interop.Pointer | interop.Reference<_xmlParserInputBuffer>>;
 
 declare function xmlThrDefPedanticParserDefaultValue(v: number): number;
 
@@ -5858,13 +5873,13 @@ declare function xmlThrDefRegisterNodeDefault(func: interop.FunctionReference<(p
 
 declare function xmlThrDefSaveNoEmptyTags(v: number): number;
 
-declare function xmlThrDefSetGenericErrorFunc(ctx: interop.Pointer | interop.Reference<any>, handler: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string) => void>): void;
+declare function xmlThrDefSetGenericErrorFunc(ctx: interop.Pointer | interop.Reference<any>, handler: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>): void;
 
 declare function xmlThrDefSetStructuredErrorFunc(ctx: interop.Pointer | interop.Reference<any>, handler: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<_xmlError>) => void>): void;
 
 declare function xmlThrDefSubstituteEntitiesDefaultValue(v: number): number;
 
-declare function xmlThrDefTreeIndentString(v: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlThrDefTreeIndentString(v: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlUCSIsAegeanNumbers(code: number): number;
 
@@ -6198,11 +6213,11 @@ declare function xmlUCSIsYiSyllables(code: number): number;
 
 declare function xmlUCSIsYijingHexagramSymbols(code: number): number;
 
-declare function xmlURIEscape(str: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlURIEscape(str: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlURIEscapeStr(str: string | interop.Pointer | interop.Reference<any>, list: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlURIEscapeStr(str: string | interop.Pointer | interop.Reference<any>, list: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlURIUnescapeString(str: string | interop.Pointer | interop.Reference<any>, len: number, target: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlURIUnescapeString(str: string | interop.Pointer | interop.Reference<any>, len: number, target: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlUTF8Charcmp(utf1: string | interop.Pointer | interop.Reference<any>, utf2: string | interop.Pointer | interop.Reference<any>): number;
 
@@ -6212,13 +6227,13 @@ declare function xmlUTF8Strlen(utf: string | interop.Pointer | interop.Reference
 
 declare function xmlUTF8Strloc(utf: string | interop.Pointer | interop.Reference<any>, utfchar: string | interop.Pointer | interop.Reference<any>): number;
 
-declare function xmlUTF8Strndup(utf: string | interop.Pointer | interop.Reference<any>, len: number): string;
+declare function xmlUTF8Strndup(utf: string | interop.Pointer | interop.Reference<any>, len: number): interop.Pointer | interop.Reference<any>;
 
-declare function xmlUTF8Strpos(utf: string | interop.Pointer | interop.Reference<any>, pos: number): string;
+declare function xmlUTF8Strpos(utf: string | interop.Pointer | interop.Reference<any>, pos: number): interop.Pointer | interop.Reference<any>;
 
 declare function xmlUTF8Strsize(utf: string | interop.Pointer | interop.Reference<any>, len: number): number;
 
-declare function xmlUTF8Strsub(utf: string | interop.Pointer | interop.Reference<any>, start: number, len: number): string;
+declare function xmlUTF8Strsub(utf: string | interop.Pointer | interop.Reference<any>, start: number, len: number): interop.Pointer | interop.Reference<any>;
 
 declare function xmlUnlinkNode(cur: interop.Pointer | interop.Reference<_xmlNode>): void;
 
@@ -6230,13 +6245,13 @@ declare function xmlUnsetProp(node: interop.Pointer | interop.Reference<_xmlNode
 
 declare function xmlValidBuildContentModel(ctxt: interop.Pointer | interop.Reference<_xmlValidCtxt>, elem: interop.Pointer | interop.Reference<_xmlElement>): number;
 
-declare function xmlValidCtxtNormalizeAttributeValue(ctxt: interop.Pointer | interop.Reference<_xmlValidCtxt>, doc: interop.Pointer | interop.Reference<_xmlDoc>, elem: interop.Pointer | interop.Reference<_xmlNode>, name: string | interop.Pointer | interop.Reference<any>, value: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlValidCtxtNormalizeAttributeValue(ctxt: interop.Pointer | interop.Reference<_xmlValidCtxt>, doc: interop.Pointer | interop.Reference<_xmlDoc>, elem: interop.Pointer | interop.Reference<_xmlNode>, name: string | interop.Pointer | interop.Reference<any>, value: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlValidGetPotentialChildren(ctree: interop.Pointer | interop.Reference<_xmlElementContent>, names: interop.Pointer | interop.Reference<string>, len: interop.Pointer | interop.Reference<number>, max: number): number;
+declare function xmlValidGetPotentialChildren(ctree: interop.Pointer | interop.Reference<_xmlElementContent>, names: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, len: interop.Pointer | interop.Reference<number>, max: number): number;
 
-declare function xmlValidGetValidElements(prev: interop.Pointer | interop.Reference<_xmlNode>, next: interop.Pointer | interop.Reference<_xmlNode>, names: interop.Pointer | interop.Reference<string>, max: number): number;
+declare function xmlValidGetValidElements(prev: interop.Pointer | interop.Reference<_xmlNode>, next: interop.Pointer | interop.Reference<_xmlNode>, names: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, max: number): number;
 
-declare function xmlValidNormalizeAttributeValue(doc: interop.Pointer | interop.Reference<_xmlDoc>, elem: interop.Pointer | interop.Reference<_xmlNode>, name: string | interop.Pointer | interop.Reference<any>, value: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlValidNormalizeAttributeValue(doc: interop.Pointer | interop.Reference<_xmlDoc>, elem: interop.Pointer | interop.Reference<_xmlNode>, name: string | interop.Pointer | interop.Reference<any>, value: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlValidateAttributeDecl(ctxt: interop.Pointer | interop.Reference<_xmlValidCtxt>, doc: interop.Pointer | interop.Reference<_xmlDoc>, attr: interop.Pointer | interop.Reference<_xmlAttribute>): number;
 
@@ -6314,21 +6329,21 @@ declare function xmlXPathBooleanFunction(ctxt: interop.Pointer | interop.Referen
 
 declare function xmlXPathCastBooleanToNumber(val: number): number;
 
-declare function xmlXPathCastBooleanToString(val: number): string;
+declare function xmlXPathCastBooleanToString(val: number): interop.Pointer | interop.Reference<any>;
 
 declare function xmlXPathCastNodeSetToBoolean(ns: interop.Pointer | interop.Reference<_xmlNodeSet>): number;
 
 declare function xmlXPathCastNodeSetToNumber(ns: interop.Pointer | interop.Reference<_xmlNodeSet>): number;
 
-declare function xmlXPathCastNodeSetToString(ns: interop.Pointer | interop.Reference<_xmlNodeSet>): string;
+declare function xmlXPathCastNodeSetToString(ns: interop.Pointer | interop.Reference<_xmlNodeSet>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlXPathCastNodeToNumber(node: interop.Pointer | interop.Reference<_xmlNode>): number;
 
-declare function xmlXPathCastNodeToString(node: interop.Pointer | interop.Reference<_xmlNode>): string;
+declare function xmlXPathCastNodeToString(node: interop.Pointer | interop.Reference<_xmlNode>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlXPathCastNumberToBoolean(val: number): number;
 
-declare function xmlXPathCastNumberToString(val: number): string;
+declare function xmlXPathCastNumberToString(val: number): interop.Pointer | interop.Reference<any>;
 
 declare function xmlXPathCastStringToBoolean(val: string | interop.Pointer | interop.Reference<any>): number;
 
@@ -6338,7 +6353,7 @@ declare function xmlXPathCastToBoolean(val: interop.Pointer | interop.Reference<
 
 declare function xmlXPathCastToNumber(val: interop.Pointer | interop.Reference<_xmlXPathObject>): number;
 
-declare function xmlXPathCastToString(val: interop.Pointer | interop.Reference<_xmlXPathObject>): string;
+declare function xmlXPathCastToString(val: interop.Pointer | interop.Reference<_xmlXPathObject>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlXPathCeilingFunction(ctxt: interop.Pointer | interop.Reference<_xmlXPathParserContext>, nargs: number): void;
 
@@ -6434,7 +6449,11 @@ declare const enum xmlXPathError {
 
 	XPATH_STACK_ERROR = 23,
 
-	XPATH_FORBID_VARIABLE_ERROR = 24
+	XPATH_FORBID_VARIABLE_ERROR = 24,
+
+	XPATH_OP_LIMIT_EXCEEDED = 25,
+
+	XPATH_RECURSION_LIMIT_EXCEEDED = 26
 }
 
 declare function xmlXPathEval(str: string | interop.Pointer | interop.Reference<any>, ctx: interop.Pointer | interop.Reference<_xmlXPathContext>): interop.Pointer | interop.Reference<_xmlXPathObject>;
@@ -6581,7 +6600,7 @@ declare function xmlXPathNotEqualValues(ctxt: interop.Pointer | interop.Referenc
 
 declare function xmlXPathNotFunction(ctxt: interop.Pointer | interop.Reference<_xmlXPathParserContext>, nargs: number): void;
 
-declare function xmlXPathNsLookup(ctxt: interop.Pointer | interop.Reference<_xmlXPathContext>, prefix: string | interop.Pointer | interop.Reference<any>): string;
+declare function xmlXPathNsLookup(ctxt: interop.Pointer | interop.Reference<_xmlXPathContext>, prefix: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlXPathNumberFunction(ctxt: interop.Pointer | interop.Reference<_xmlXPathParserContext>, nargs: number): void;
 
@@ -6614,9 +6633,9 @@ declare function xmlXPathOrderDocElems(doc: interop.Pointer | interop.Reference<
 
 declare var xmlXPathPINF: number;
 
-declare function xmlXPathParseNCName(ctxt: interop.Pointer | interop.Reference<_xmlXPathParserContext>): string;
+declare function xmlXPathParseNCName(ctxt: interop.Pointer | interop.Reference<_xmlXPathParserContext>): interop.Pointer | interop.Reference<any>;
 
-declare function xmlXPathParseName(ctxt: interop.Pointer | interop.Reference<_xmlXPathParserContext>): string;
+declare function xmlXPathParseName(ctxt: interop.Pointer | interop.Reference<_xmlXPathParserContext>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlXPathPopBoolean(ctxt: interop.Pointer | interop.Reference<_xmlXPathParserContext>): number;
 
@@ -6626,7 +6645,7 @@ declare function xmlXPathPopNodeSet(ctxt: interop.Pointer | interop.Reference<_x
 
 declare function xmlXPathPopNumber(ctxt: interop.Pointer | interop.Reference<_xmlXPathParserContext>): number;
 
-declare function xmlXPathPopString(ctxt: interop.Pointer | interop.Reference<_xmlXPathParserContext>): string;
+declare function xmlXPathPopString(ctxt: interop.Pointer | interop.Reference<_xmlXPathParserContext>): interop.Pointer | interop.Reference<any>;
 
 declare function xmlXPathPositionFunction(ctxt: interop.Pointer | interop.Reference<_xmlXPathParserContext>, nargs: number): void;
 
@@ -6634,7 +6653,7 @@ declare function xmlXPathRegisterAllFunctions(ctxt: interop.Pointer | interop.Re
 
 declare function xmlXPathRegisterFunc(ctxt: interop.Pointer | interop.Reference<_xmlXPathContext>, name: string | interop.Pointer | interop.Reference<any>, f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<_xmlXPathParserContext>, p2: number) => void>): number;
 
-declare function xmlXPathRegisterFuncLookup(ctxt: interop.Pointer | interop.Reference<_xmlXPathContext>, f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: string) => interop.FunctionReference<(p1: interop.Pointer | interop.Reference<_xmlXPathParserContext>, p2: number) => void>>, funcCtxt: interop.Pointer | interop.Reference<any>): void;
+declare function xmlXPathRegisterFuncLookup(ctxt: interop.Pointer | interop.Reference<_xmlXPathContext>, f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => interop.FunctionReference<(p1: interop.Pointer | interop.Reference<_xmlXPathParserContext>, p2: number) => void>>, funcCtxt: interop.Pointer | interop.Reference<any>): void;
 
 declare function xmlXPathRegisterFuncNS(ctxt: interop.Pointer | interop.Reference<_xmlXPathContext>, name: string | interop.Pointer | interop.Reference<any>, ns_uri: string | interop.Pointer | interop.Reference<any>, f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<_xmlXPathParserContext>, p2: number) => void>): number;
 
@@ -6642,7 +6661,7 @@ declare function xmlXPathRegisterNs(ctxt: interop.Pointer | interop.Reference<_x
 
 declare function xmlXPathRegisterVariable(ctxt: interop.Pointer | interop.Reference<_xmlXPathContext>, name: string | interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<_xmlXPathObject>): number;
 
-declare function xmlXPathRegisterVariableLookup(ctxt: interop.Pointer | interop.Reference<_xmlXPathContext>, f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: string) => interop.Pointer | interop.Reference<_xmlXPathObject>>, data: interop.Pointer | interop.Reference<any>): void;
+declare function xmlXPathRegisterVariableLookup(ctxt: interop.Pointer | interop.Reference<_xmlXPathContext>, f: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<_xmlXPathObject>>, data: interop.Pointer | interop.Reference<any>): void;
 
 declare function xmlXPathRegisterVariableNS(ctxt: interop.Pointer | interop.Reference<_xmlXPathContext>, name: string | interop.Pointer | interop.Reference<any>, ns_uri: string | interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<_xmlXPathObject>): number;
 
@@ -6700,44 +6719,101 @@ declare function xmlXPathWrapString(val: string | interop.Pointer | interop.Refe
 
 declare function xmlXPatherror(ctxt: interop.Pointer | interop.Reference<_xmlXPathParserContext>, file: string | interop.Pointer | interop.Reference<any>, line: number, no: number): void;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrBuildNodeList(obj: interop.Pointer | interop.Reference<_xmlXPathObject>): interop.Pointer | interop.Reference<_xmlNode>;
 
 declare function xmlXPtrEval(str: string | interop.Pointer | interop.Reference<any>, ctx: interop.Pointer | interop.Reference<_xmlXPathContext>): interop.Pointer | interop.Reference<_xmlXPathObject>;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrEvalRangePredicate(ctxt: interop.Pointer | interop.Reference<_xmlXPathParserContext>): void;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrFreeLocationSet(obj: interop.Pointer | interop.Reference<_xmlLocationSet>): void;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrLocationSetAdd(cur: interop.Pointer | interop.Reference<_xmlLocationSet>, val: interop.Pointer | interop.Reference<_xmlXPathObject>): void;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrLocationSetCreate(val: interop.Pointer | interop.Reference<_xmlXPathObject>): interop.Pointer | interop.Reference<_xmlLocationSet>;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrLocationSetDel(cur: interop.Pointer | interop.Reference<_xmlLocationSet>, val: interop.Pointer | interop.Reference<_xmlXPathObject>): void;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrLocationSetMerge(val1: interop.Pointer | interop.Reference<_xmlLocationSet>, val2: interop.Pointer | interop.Reference<_xmlLocationSet>): interop.Pointer | interop.Reference<_xmlLocationSet>;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrLocationSetRemove(cur: interop.Pointer | interop.Reference<_xmlLocationSet>, val: number): void;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrNewCollapsedRange(start: interop.Pointer | interop.Reference<_xmlNode>): interop.Pointer | interop.Reference<_xmlXPathObject>;
 
 declare function xmlXPtrNewContext(doc: interop.Pointer | interop.Reference<_xmlDoc>, here: interop.Pointer | interop.Reference<_xmlNode>, origin: interop.Pointer | interop.Reference<_xmlNode>): interop.Pointer | interop.Reference<_xmlXPathContext>;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrNewLocationSetNodeSet(set: interop.Pointer | interop.Reference<_xmlNodeSet>): interop.Pointer | interop.Reference<_xmlXPathObject>;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrNewLocationSetNodes(start: interop.Pointer | interop.Reference<_xmlNode>, end: interop.Pointer | interop.Reference<_xmlNode>): interop.Pointer | interop.Reference<_xmlXPathObject>;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrNewRange(start: interop.Pointer | interop.Reference<_xmlNode>, startindex: number, end: interop.Pointer | interop.Reference<_xmlNode>, endindex: number): interop.Pointer | interop.Reference<_xmlXPathObject>;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrNewRangeNodeObject(start: interop.Pointer | interop.Reference<_xmlNode>, end: interop.Pointer | interop.Reference<_xmlXPathObject>): interop.Pointer | interop.Reference<_xmlXPathObject>;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrNewRangeNodePoint(start: interop.Pointer | interop.Reference<_xmlNode>, end: interop.Pointer | interop.Reference<_xmlXPathObject>): interop.Pointer | interop.Reference<_xmlXPathObject>;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrNewRangeNodes(start: interop.Pointer | interop.Reference<_xmlNode>, end: interop.Pointer | interop.Reference<_xmlNode>): interop.Pointer | interop.Reference<_xmlXPathObject>;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrNewRangePointNode(start: interop.Pointer | interop.Reference<_xmlXPathObject>, end: interop.Pointer | interop.Reference<_xmlNode>): interop.Pointer | interop.Reference<_xmlXPathObject>;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrNewRangePoints(start: interop.Pointer | interop.Reference<_xmlXPathObject>, end: interop.Pointer | interop.Reference<_xmlXPathObject>): interop.Pointer | interop.Reference<_xmlXPathObject>;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrRangeToFunction(ctxt: interop.Pointer | interop.Reference<_xmlXPathParserContext>, nargs: number): void;
 
+/**
+ * @deprecated 16.0
+ */
 declare function xmlXPtrWrapLocationSet(val: interop.Pointer | interop.Reference<_xmlLocationSet>): interop.Pointer | interop.Reference<_xmlXPathObject>;

@@ -1,4 +1,7 @@
 
+/**
+ * @since 8.0
+ */
 declare class SLComposeServiceViewController extends UIViewController implements UITextViewDelegate {
 
 	static alloc(): SLComposeServiceViewController; // inherited from NSObject
@@ -67,6 +70,9 @@ declare class SLComposeServiceViewController extends UIViewController implements
 
 	retainCount(): number;
 
+	/**
+	 * @since 11.0
+	 */
 	scrollViewDidChangeAdjustedContentInset(scrollView: UIScrollView): void;
 
 	scrollViewDidEndDecelerating(scrollView: UIScrollView): void;
@@ -81,6 +87,9 @@ declare class SLComposeServiceViewController extends UIViewController implements
 
 	scrollViewDidScrollToTop(scrollView: UIScrollView): void;
 
+	/**
+	 * @since 3.2
+	 */
 	scrollViewDidZoom(scrollView: UIScrollView): void;
 
 	scrollViewShouldScrollToTop(scrollView: UIScrollView): boolean;
@@ -89,8 +98,14 @@ declare class SLComposeServiceViewController extends UIViewController implements
 
 	scrollViewWillBeginDragging(scrollView: UIScrollView): void;
 
+	/**
+	 * @since 3.2
+	 */
 	scrollViewWillBeginZoomingWithView(scrollView: UIScrollView, view: UIView): void;
 
+	/**
+	 * @since 5.0
+	 */
 	scrollViewWillEndDraggingWithVelocityTargetContentOffset(scrollView: UIScrollView, velocity: CGPoint, targetContentOffset: interop.Pointer | interop.Reference<CGPoint>): void;
 
 	self(): this;
@@ -103,10 +118,19 @@ declare class SLComposeServiceViewController extends UIViewController implements
 
 	textViewDidEndEditing(textView: UITextView): void;
 
+	/**
+	 * @since 16.0
+	 */
 	textViewEditMenuForTextInRangeSuggestedActions(textView: UITextView, range: NSRange, suggestedActions: NSArray<UIMenuElement> | UIMenuElement[]): UIMenu;
 
+	/**
+	 * @since 17.0
+	 */
 	textViewMenuConfigurationForTextItemDefaultMenu(textView: UITextView, textItem: UITextItem, defaultMenu: UIMenu): UITextItemMenuConfiguration;
 
+	/**
+	 * @since 17.0
+	 */
 	textViewPrimaryActionForTextItemDefaultAction(textView: UITextView, textItem: UITextItem, defaultAction: UIAction): UIAction;
 
 	textViewShouldBeginEditing(textView: UITextView): boolean;
@@ -115,27 +139,73 @@ declare class SLComposeServiceViewController extends UIViewController implements
 
 	textViewShouldEndEditing(textView: UITextView): boolean;
 
+	/**
+	 * @since 7.0
+	 * @deprecated 10.0
+	 */
 	textViewShouldInteractWithTextAttachmentInRange(textView: UITextView, textAttachment: NSTextAttachment, characterRange: NSRange): boolean;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 17.0
+	 */
 	textViewShouldInteractWithTextAttachmentInRangeInteraction(textView: UITextView, textAttachment: NSTextAttachment, characterRange: NSRange, interaction: UITextItemInteraction): boolean;
 
+	/**
+	 * @since 7.0
+	 * @deprecated 10.0
+	 */
 	textViewShouldInteractWithURLInRange(textView: UITextView, URL: NSURL, characterRange: NSRange): boolean;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 17.0
+	 */
 	textViewShouldInteractWithURLInRangeInteraction(textView: UITextView, URL: NSURL, characterRange: NSRange, interaction: UITextItemInteraction): boolean;
 
+	/**
+	 * @since 17.0
+	 */
 	textViewTextItemMenuWillDisplayForTextItemAnimator(textView: UITextView, textItem: UITextItem, animator: UIContextMenuInteractionAnimating): void;
 
+	/**
+	 * @since 17.0
+	 */
 	textViewTextItemMenuWillEndForTextItemAnimator(textView: UITextView, textItem: UITextItem, animator: UIContextMenuInteractionAnimating): void;
 
+	/**
+	 * @since 16.0
+	 */
 	textViewWillDismissEditMenuWithAnimator(textView: UITextView, animator: UIEditMenuInteractionAnimating): void;
 
+	/**
+	 * @since 16.0
+	 */
 	textViewWillPresentEditMenuWithAnimator(textView: UITextView, animator: UIEditMenuInteractionAnimating): void;
+
+	/**
+	 * @since 18.0
+	 */
+	textViewWritingToolsDidEnd(textView: UITextView): void;
+
+	/**
+	 * @since 18.0
+	 */
+	textViewWritingToolsIgnoredRangesInEnclosingRange(textView: UITextView, enclosingRange: NSRange): NSArray<NSValue>;
+
+	/**
+	 * @since 18.0
+	 */
+	textViewWritingToolsWillBegin(textView: UITextView): void;
 
 	validateContent(): void;
 
 	viewForZoomingInScrollView(scrollView: UIScrollView): UIView;
 }
 
+/**
+ * @since 8.0
+ */
 declare class SLComposeSheetConfigurationItem extends NSObject {
 
 	static alloc(): SLComposeSheetConfigurationItem; // inherited from NSObject
@@ -151,6 +221,9 @@ declare class SLComposeSheetConfigurationItem extends NSObject {
 	valuePending: boolean;
 }
 
+/**
+ * @since 6.0
+ */
 declare class SLComposeViewController extends UIViewController {
 
 	static alloc(): SLComposeViewController; // inherited from NSObject
@@ -183,6 +256,9 @@ declare const enum SLComposeViewControllerResult {
 	Done = 1
 }
 
+/**
+ * @since 6.0
+ */
 declare class SLRequest extends NSObject {
 
 	static alloc(): SLRequest; // inherited from NSObject
@@ -217,12 +293,32 @@ declare const enum SLRequestMethod {
 	PUT = 3
 }
 
+/**
+ * @since 6.0
+ * @deprecated 11.0
+ */
 declare var SLServiceTypeFacebook: string;
 
+/**
+ * @since 6.0
+ * @deprecated 11.0
+ */
 declare var SLServiceTypeLinkedIn: string;
 
+/**
+ * @since 6.0
+ * @deprecated 11.0
+ */
 declare var SLServiceTypeSinaWeibo: string;
 
+/**
+ * @since 6.0
+ * @deprecated 11.0
+ */
 declare var SLServiceTypeTencentWeibo: string;
 
+/**
+ * @since 6.0
+ * @deprecated 11.0
+ */
 declare var SLServiceTypeTwitter: string;

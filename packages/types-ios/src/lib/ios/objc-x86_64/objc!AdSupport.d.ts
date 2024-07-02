@@ -1,4 +1,7 @@
 
+/**
+ * @since 6
+ */
 declare class ASIdentifierManager extends NSObject {
 
 	static alloc(): ASIdentifierManager; // inherited from NSObject
@@ -9,5 +12,9 @@ declare class ASIdentifierManager extends NSObject {
 
 	readonly advertisingIdentifier: NSUUID;
 
+	/**
+	 * @since 6
+	 * @deprecated 14
+	 */
 	readonly advertisingTrackingEnabled: boolean;
 }

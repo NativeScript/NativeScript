@@ -2275,9 +2275,9 @@ declare const U_PARSE_CONTEXT_LEN: number;
 
 declare function u_UCharsToChars(us: interop.Pointer | interop.Reference<number>, cs: string | interop.Pointer | interop.Reference<any>, length: number): void;
 
-declare function u_austrcpy(dst: string | interop.Pointer | interop.Reference<any>, src: interop.Pointer | interop.Reference<number>): string;
+declare function u_austrcpy(dst: string | interop.Pointer | interop.Reference<any>, src: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
 
-declare function u_austrncpy(dst: string | interop.Pointer | interop.Reference<any>, src: interop.Pointer | interop.Reference<number>, n: number): string;
+declare function u_austrncpy(dst: string | interop.Pointer | interop.Reference<any>, src: interop.Pointer | interop.Reference<number>, n: number): interop.Pointer | interop.Reference<any>;
 
 declare function u_charAge(c: number, versionArray: interop.Reference<number>): void;
 
@@ -2299,11 +2299,11 @@ declare function u_countChar32(s: interop.Pointer | interop.Reference<number>, l
 
 declare function u_digit(ch: number, radix: number): number;
 
-declare function u_enumCharNames(start: number, limit: number, fn: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: UCharNameChoice, p4: string, p5: number) => number>>, context: interop.Pointer | interop.Reference<any>, nameChoice: UCharNameChoice, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): void;
+declare function u_enumCharNames(start: number, limit: number, fn: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: UCharNameChoice, p4: interop.Pointer | interop.Reference<any>, p5: number) => number>>, context: interop.Pointer | interop.Reference<any>, nameChoice: UCharNameChoice, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): void;
 
 declare function u_enumCharTypes(enumRange: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: UCharCategory) => number>>, context: interop.Pointer | interop.Reference<any>): void;
 
-declare function u_errorName(code: UErrorCode): string;
+declare function u_errorName(code: UErrorCode): interop.Pointer | interop.Reference<any>;
 
 declare function u_foldCase(c: number, options: number): number;
 
@@ -2315,7 +2315,7 @@ declare function u_getBinaryPropertySet(property: UProperty, pErrorCode: interop
 
 declare function u_getCombiningClass(c: number): number;
 
-declare function u_getDataDirectory(): string;
+declare function u_getDataDirectory(): interop.Pointer | interop.Reference<any>;
 
 declare function u_getFC_NFKC_Closure(c: number, dest: interop.Pointer | interop.Reference<number>, destCapacity: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
 
@@ -2333,13 +2333,13 @@ declare function u_getNumericValue(c: number): number;
 
 declare function u_getPropertyEnum(alias: string | interop.Pointer | interop.Reference<any>): UProperty;
 
-declare function u_getPropertyName(property: UProperty, nameChoice: UPropertyNameChoice): string;
+declare function u_getPropertyName(property: UProperty, nameChoice: UPropertyNameChoice): interop.Pointer | interop.Reference<any>;
 
 declare function u_getPropertyValueEnum(property: UProperty, alias: string | interop.Pointer | interop.Reference<any>): number;
 
-declare function u_getPropertyValueName(property: UProperty, value: number, nameChoice: UPropertyNameChoice): string;
+declare function u_getPropertyValueName(property: UProperty, value: number, nameChoice: UPropertyNameChoice): interop.Pointer | interop.Reference<any>;
 
-declare function u_getTimeZoneFilesDirectory(status: interop.Pointer | interop.Reference<UErrorCode>): string;
+declare function u_getTimeZoneFilesDirectory(status: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<any>;
 
 declare function u_getUnicodeVersion(versionArray: interop.Reference<number>): void;
 
@@ -2457,7 +2457,7 @@ declare function u_strHasMoreChar32Than(s: interop.Pointer | interop.Reference<n
 
 declare function u_strIsWellFormed(s: interop.Pointer | interop.Reference<number>, length: number): number;
 
-declare function u_strToJavaModifiedUTF8(dest: string | interop.Pointer | interop.Reference<any>, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number>, src: interop.Pointer | interop.Reference<number>, srcLength: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): string;
+declare function u_strToJavaModifiedUTF8(dest: string | interop.Pointer | interop.Reference<any>, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number>, src: interop.Pointer | interop.Reference<number>, srcLength: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<any>;
 
 declare function u_strToLower(dest: interop.Pointer | interop.Reference<number>, destCapacity: number, src: interop.Pointer | interop.Reference<number>, srcLength: number, locale: string | interop.Pointer | interop.Reference<any>, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
 
@@ -2467,9 +2467,9 @@ declare function u_strToUTF32(dest: interop.Pointer | interop.Reference<number>,
 
 declare function u_strToUTF32WithSub(dest: interop.Pointer | interop.Reference<number>, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number>, src: interop.Pointer | interop.Reference<number>, srcLength: number, subchar: number, pNumSubstitutions: interop.Pointer | interop.Reference<number>, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<number>;
 
-declare function u_strToUTF8(dest: string | interop.Pointer | interop.Reference<any>, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number>, src: interop.Pointer | interop.Reference<number>, srcLength: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): string;
+declare function u_strToUTF8(dest: string | interop.Pointer | interop.Reference<any>, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number>, src: interop.Pointer | interop.Reference<number>, srcLength: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<any>;
 
-declare function u_strToUTF8WithSub(dest: string | interop.Pointer | interop.Reference<any>, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number>, src: interop.Pointer | interop.Reference<number>, srcLength: number, subchar: number, pNumSubstitutions: interop.Pointer | interop.Reference<number>, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): string;
+declare function u_strToUTF8WithSub(dest: string | interop.Pointer | interop.Reference<any>, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number>, src: interop.Pointer | interop.Reference<number>, srcLength: number, subchar: number, pNumSubstitutions: interop.Pointer | interop.Reference<number>, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<any>;
 
 declare function u_strToUpper(dest: interop.Pointer | interop.Reference<number>, destCapacity: number, src: interop.Pointer | interop.Reference<number>, srcLength: number, locale: string | interop.Pointer | interop.Reference<any>, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
 

@@ -40,6 +40,9 @@ declare const enum CBATTError {
 
 declare var CBATTErrorDomain: string;
 
+/**
+ * @since 6.0
+ */
 declare class CBATTRequest extends NSObject {
 
 	static alloc(): CBATTRequest; // inherited from NSObject
@@ -55,22 +58,34 @@ declare class CBATTRequest extends NSObject {
 	value: NSData;
 }
 
+/**
+ * @since 7.0
+ */
 declare var CBAdvertisementDataIsConnectable: string;
 
 declare var CBAdvertisementDataLocalNameKey: string;
 
 declare var CBAdvertisementDataManufacturerDataKey: string;
 
+/**
+ * @since 6.0
+ */
 declare var CBAdvertisementDataOverflowServiceUUIDsKey: string;
 
 declare var CBAdvertisementDataServiceDataKey: string;
 
 declare var CBAdvertisementDataServiceUUIDsKey: string;
 
+/**
+ * @since 7.0
+ */
 declare var CBAdvertisementDataSolicitedServiceUUIDsKey: string;
 
 declare var CBAdvertisementDataTxPowerLevelKey: string;
 
+/**
+ * @since 8.0
+ */
 declare class CBAttribute extends NSObject {
 
 	static alloc(): CBAttribute; // inherited from NSObject
@@ -80,6 +95,9 @@ declare class CBAttribute extends NSObject {
 	readonly UUID: CBUUID;
 }
 
+/**
+ * @since 6.0
+ */
 declare const enum CBAttributePermissions {
 
 	Readable = 1,
@@ -91,6 +109,9 @@ declare const enum CBAttributePermissions {
 	WriteEncryptionRequired = 8
 }
 
+/**
+ * @since 6.0
+ */
 declare class CBCentral extends CBPeer {
 
 	static alloc(): CBCentral; // inherited from NSObject
@@ -100,34 +121,58 @@ declare class CBCentral extends CBPeer {
 	readonly maximumUpdateValueLength: number;
 }
 
+/**
+ * @since 5.0
+ */
 declare class CBCentralManager extends CBManager {
 
 	static alloc(): CBCentralManager; // inherited from NSObject
 
 	static new(): CBCentralManager; // inherited from NSObject
 
+	/**
+	 * @since 13.0
+	 */
 	static supportsFeatures(features: CBCentralManagerFeature): boolean;
 
 	delegate: CBCentralManagerDelegate;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly isScanning: boolean;
 
-	constructor(o: { delegate: CBCentralManagerDelegate; queue: interop.Pointer | interop.Reference<any>; });
+	constructor(o: { delegate: CBCentralManagerDelegate; queue: NSObject & OS_dispatch_queue; });
 
-	constructor(o: { delegate: CBCentralManagerDelegate; queue: interop.Pointer | interop.Reference<any>; options: NSDictionary<string, any>; });
+	/**
+	 * @since 7.0
+	 */
+	constructor(o: { delegate: CBCentralManagerDelegate; queue: NSObject & OS_dispatch_queue; options: NSDictionary<string, any>; });
 
 	cancelPeripheralConnection(peripheral: CBPeripheral): void;
 
 	connectPeripheralOptions(peripheral: CBPeripheral, options: NSDictionary<string, any>): void;
 
-	initWithDelegateQueue(delegate: CBCentralManagerDelegate, queue: interop.Pointer | interop.Reference<any>): this;
+	initWithDelegateQueue(delegate: CBCentralManagerDelegate, queue: NSObject & OS_dispatch_queue): this;
 
-	initWithDelegateQueueOptions(delegate: CBCentralManagerDelegate, queue: interop.Pointer | interop.Reference<any>, options: NSDictionary<string, any>): this;
+	/**
+	 * @since 7.0
+	 */
+	initWithDelegateQueueOptions(delegate: CBCentralManagerDelegate, queue: NSObject & OS_dispatch_queue, options: NSDictionary<string, any>): this;
 
+	/**
+	 * @since 13.0
+	 */
 	registerForConnectionEventsWithOptions(options: NSDictionary<string, any>): void;
 
+	/**
+	 * @since 7.0
+	 */
 	retrieveConnectedPeripheralsWithServices(serviceUUIDs: NSArray<CBUUID> | CBUUID[]): NSArray<CBPeripheral>;
 
+	/**
+	 * @since 7.0
+	 */
 	retrievePeripheralsWithIdentifiers(identifiers: NSArray<NSUUID> | NSUUID[]): NSArray<CBPeripheral>;
 
 	scanForPeripheralsWithServicesOptions(serviceUUIDs: NSArray<CBUUID> | CBUUID[], options: NSDictionary<string, any>): void;
@@ -137,6 +182,9 @@ declare class CBCentralManager extends CBManager {
 
 interface CBCentralManagerDelegate extends NSObjectProtocol {
 
+	/**
+	 * @since 13.0
+	 */
 	centralManagerConnectionEventDidOccurForPeripheral?(central: CBCentralManager, event: CBConnectionEvent, peripheral: CBPeripheral): void;
 
 	centralManagerDidConnectPeripheral?(central: CBCentralManager, peripheral: CBPeripheral): void;
@@ -149,6 +197,9 @@ interface CBCentralManagerDelegate extends NSObjectProtocol {
 
 	centralManagerDidFailToConnectPeripheralError?(central: CBCentralManager, peripheral: CBPeripheral, error: NSError): void;
 
+	/**
+	 * @since 13.0
+	 */
 	centralManagerDidUpdateANCSAuthorizationForPeripheral?(central: CBCentralManager, peripheral: CBPeripheral): void;
 
 	centralManagerDidUpdateState(central: CBCentralManager): void;
@@ -165,22 +216,47 @@ declare const enum CBCentralManagerFeature {
 	ExtendedScanAndConnect = 1
 }
 
+/**
+ * @since 16.0
+ */
 declare var CBCentralManagerOptionDeviceAccessForMedia: string;
 
+/**
+ * @since 7.0
+ */
 declare var CBCentralManagerOptionRestoreIdentifierKey: string;
 
+/**
+ * @since 7.0
+ */
 declare var CBCentralManagerOptionShowPowerAlertKey: string;
 
+/**
+ * @since 7.0
+ */
 declare var CBCentralManagerRestoredStatePeripheralsKey: string;
 
+/**
+ * @since 7.0
+ */
 declare var CBCentralManagerRestoredStateScanOptionsKey: string;
 
+/**
+ * @since 7.0
+ */
 declare var CBCentralManagerRestoredStateScanServicesKey: string;
 
 declare var CBCentralManagerScanOptionAllowDuplicatesKey: string;
 
+/**
+ * @since 7.0
+ */
 declare var CBCentralManagerScanOptionSolicitedServiceUUIDsKey: string;
 
+/**
+ * @since 5.0
+ * @deprecated 10.0
+ */
 declare const enum CBCentralManagerState {
 
 	Unknown = 0,
@@ -196,6 +272,9 @@ declare const enum CBCentralManagerState {
 	PoweredOn = 5
 }
 
+/**
+ * @since 5.0
+ */
 declare class CBCharacteristic extends CBAttribute {
 
 	static alloc(): CBCharacteristic; // inherited from NSObject
@@ -204,6 +283,10 @@ declare class CBCharacteristic extends CBAttribute {
 
 	readonly descriptors: NSArray<CBDescriptor>;
 
+	/**
+	 * @since 5.0
+	 * @deprecated 8.0
+	 */
 	readonly isBroadcasted: boolean;
 
 	readonly isNotifying: boolean;
@@ -245,18 +328,36 @@ declare const enum CBCharacteristicWriteType {
 	WithoutResponse = 1
 }
 
+/**
+ * @since 17.0
+ */
 declare var CBConnectPeripheralOptionEnableAutoReconnect: string;
 
+/**
+ * @since 13.0
+ */
 declare var CBConnectPeripheralOptionEnableTransportBridgingKey: string;
 
+/**
+ * @since 6.0
+ */
 declare var CBConnectPeripheralOptionNotifyOnConnectionKey: string;
 
 declare var CBConnectPeripheralOptionNotifyOnDisconnectionKey: string;
 
+/**
+ * @since 6.0
+ */
 declare var CBConnectPeripheralOptionNotifyOnNotificationKey: string;
 
+/**
+ * @since 13.0
+ */
 declare var CBConnectPeripheralOptionRequiresANCS: string;
 
+/**
+ * @since 6.0
+ */
 declare var CBConnectPeripheralOptionStartDelayKey: string;
 
 declare const enum CBConnectionEvent {
@@ -266,10 +367,19 @@ declare const enum CBConnectionEvent {
 	PeerConnected = 1
 }
 
+/**
+ * @since 13.0
+ */
 declare var CBConnectionEventMatchingOptionPeripheralUUIDs: string;
 
+/**
+ * @since 13.0
+ */
 declare var CBConnectionEventMatchingOptionServiceUUIDs: string;
 
+/**
+ * @since 5.0
+ */
 declare class CBDescriptor extends CBAttribute {
 
 	static alloc(): CBDescriptor; // inherited from NSObject
@@ -326,6 +436,9 @@ declare const enum CBError {
 
 declare var CBErrorDomain: string;
 
+/**
+ * @since 11.0
+ */
 declare class CBL2CAPChannel extends NSObject {
 
 	static alloc(): CBL2CAPChannel; // inherited from NSObject
@@ -341,19 +454,32 @@ declare class CBL2CAPChannel extends NSObject {
 	readonly peer: CBPeer;
 }
 
+/**
+ * @since 10.0
+ */
 declare class CBManager extends NSObject {
 
 	static alloc(): CBManager; // inherited from NSObject
 
 	static new(): CBManager; // inherited from NSObject
 
+	/**
+	 * @since 13.0
+	 * @deprecated 13.1
+	 */
 	readonly authorization: CBManagerAuthorization;
 
 	readonly state: CBManagerState;
 
+	/**
+	 * @since 13.1
+	 */
 	static readonly authorization: CBManagerAuthorization;
 }
 
+/**
+ * @since 13.0
+ */
 declare const enum CBManagerAuthorization {
 
 	NotDetermined = 0,
@@ -365,6 +491,9 @@ declare const enum CBManagerAuthorization {
 	AllowedAlways = 3
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum CBManagerState {
 
 	Unknown = 0,
@@ -380,6 +509,9 @@ declare const enum CBManagerState {
 	PoweredOn = 5
 }
 
+/**
+ * @since 6.0
+ */
 declare class CBMutableCharacteristic extends CBCharacteristic {
 
 	static alloc(): CBMutableCharacteristic; // inherited from NSObject
@@ -392,26 +524,47 @@ declare class CBMutableCharacteristic extends CBCharacteristic {
 
 	properties: CBCharacteristicProperties;
 
+	/**
+	 * @since 7.0
+	 */
 	readonly subscribedCentrals: NSArray<CBCentral>;
 
 	value: NSData;
 
+	/**
+	 * @since 6.0
+	 */
 	constructor(o: { type: CBUUID; properties: CBCharacteristicProperties; value: NSData; permissions: CBAttributePermissions; });
 
+	/**
+	 * @since 6.0
+	 */
 	initWithTypePropertiesValuePermissions(UUID: CBUUID, properties: CBCharacteristicProperties, value: NSData, permissions: CBAttributePermissions): this;
 }
 
+/**
+ * @since 6.0
+ */
 declare class CBMutableDescriptor extends CBDescriptor {
 
 	static alloc(): CBMutableDescriptor; // inherited from NSObject
 
 	static new(): CBMutableDescriptor; // inherited from NSObject
 
+	/**
+	 * @since 6.0
+	 */
 	constructor(o: { type: CBUUID; value: any; });
 
+	/**
+	 * @since 6.0
+	 */
 	initWithTypeValue(UUID: CBUUID, value: any): this;
 }
 
+/**
+ * @since 6.0
+ */
 declare class CBMutableService extends CBService {
 
 	static alloc(): CBMutableService; // inherited from NSObject
@@ -422,32 +575,57 @@ declare class CBMutableService extends CBService {
 
 	includedServices: NSArray<CBService>;
 
+	/**
+	 * @since 6.0
+	 */
 	constructor(o: { type: CBUUID; primary: boolean; });
 
+	/**
+	 * @since 6.0
+	 */
 	initWithTypePrimary(UUID: CBUUID, isPrimary: boolean): this;
 }
 
+/**
+ * @since 8.0
+ */
 declare class CBPeer extends NSObject implements NSCopying {
 
 	static alloc(): CBPeer; // inherited from NSObject
 
 	static new(): CBPeer; // inherited from NSObject
 
+	/**
+	 * @since 7.0
+	 */
 	readonly identifier: NSUUID;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+/**
+ * @since 5.0
+ */
 declare class CBPeripheral extends CBPeer {
 
 	static alloc(): CBPeripheral; // inherited from NSObject
 
 	static new(): CBPeripheral; // inherited from NSObject
 
+	/**
+	 * @since 5.0
+	 * @deprecated 8.0
+	 */
 	readonly RSSI: number;
 
+	/**
+	 * @since 13.0
+	 */
 	readonly ancsAuthorized: boolean;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly canSendWriteWithoutResponse: boolean;
 
 	delegate: CBPeripheralDelegate;
@@ -466,8 +644,14 @@ declare class CBPeripheral extends CBPeer {
 
 	discoverServices(serviceUUIDs: NSArray<CBUUID> | CBUUID[]): void;
 
+	/**
+	 * @since 9.0
+	 */
 	maximumWriteValueLengthForType(type: CBCharacteristicWriteType): number;
 
+	/**
+	 * @since 11.0
+	 */
 	openL2CAPChannel(PSM: number): void;
 
 	readRSSI(): void;
@@ -493,16 +677,29 @@ interface CBPeripheralDelegate extends NSObjectProtocol {
 
 	peripheralDidDiscoverServices?(peripheral: CBPeripheral, error: NSError): void;
 
+	/**
+	 * @since 7.0
+	 */
 	peripheralDidModifyServices?(peripheral: CBPeripheral, invalidatedServices: NSArray<CBService> | CBService[]): void;
 
 	peripheralDidOpenL2CAPChannelError?(peripheral: CBPeripheral, channel: CBL2CAPChannel, error: NSError): void;
 
+	/**
+	 * @since 8.0
+	 */
 	peripheralDidReadRSSIError?(peripheral: CBPeripheral, RSSI: number, error: NSError): void;
 
+	/**
+	 * @since 6.0
+	 */
 	peripheralDidUpdateName?(peripheral: CBPeripheral): void;
 
 	peripheralDidUpdateNotificationStateForCharacteristicError?(peripheral: CBPeripheral, characteristic: CBCharacteristic, error: NSError): void;
 
+	/**
+	 * @since 5.0
+	 * @deprecated 8.0
+	 */
 	peripheralDidUpdateRSSIError?(peripheral: CBPeripheral, error: NSError): void;
 
 	peripheralDidUpdateValueForCharacteristicError?(peripheral: CBPeripheral, characteristic: CBCharacteristic, error: NSError): void;
@@ -520,10 +717,17 @@ declare var CBPeripheralDelegate: {
 	prototype: CBPeripheralDelegate;
 };
 
+/**
+ * @since 6.0
+ */
 declare class CBPeripheralManager extends CBManager {
 
 	static alloc(): CBPeripheralManager; // inherited from NSObject
 
+	/**
+	 * @since 7.0
+	 * @deprecated 13.0
+	 */
 	static authorizationStatus(): CBPeripheralManagerAuthorizationStatus;
 
 	static new(): CBPeripheralManager; // inherited from NSObject
@@ -532,16 +736,31 @@ declare class CBPeripheralManager extends CBManager {
 
 	readonly isAdvertising: boolean;
 
-	constructor(o: { delegate: CBPeripheralManagerDelegate; queue: interop.Pointer | interop.Reference<any>; });
+	/**
+	 * @since 6.0
+	 */
+	constructor(o: { delegate: CBPeripheralManagerDelegate; queue: NSObject & OS_dispatch_queue; });
 
-	constructor(o: { delegate: CBPeripheralManagerDelegate; queue: interop.Pointer | interop.Reference<any>; options: NSDictionary<string, any>; });
+	/**
+	 * @since 7.0
+	 */
+	constructor(o: { delegate: CBPeripheralManagerDelegate; queue: NSObject & OS_dispatch_queue; options: NSDictionary<string, any>; });
 
 	addService(service: CBMutableService): void;
 
-	initWithDelegateQueue(delegate: CBPeripheralManagerDelegate, queue: interop.Pointer | interop.Reference<any>): this;
+	/**
+	 * @since 6.0
+	 */
+	initWithDelegateQueue(delegate: CBPeripheralManagerDelegate, queue: NSObject & OS_dispatch_queue): this;
 
-	initWithDelegateQueueOptions(delegate: CBPeripheralManagerDelegate, queue: interop.Pointer | interop.Reference<any>, options: NSDictionary<string, any>): this;
+	/**
+	 * @since 7.0
+	 */
+	initWithDelegateQueueOptions(delegate: CBPeripheralManagerDelegate, queue: NSObject & OS_dispatch_queue, options: NSDictionary<string, any>): this;
 
+	/**
+	 * @since 11.0
+	 */
 	publishL2CAPChannelWithEncryption(encryptionRequired: boolean): void;
 
 	removeAllServices(): void;
@@ -556,11 +775,18 @@ declare class CBPeripheralManager extends CBManager {
 
 	stopAdvertising(): void;
 
+	/**
+	 * @since 11.0
+	 */
 	unpublishL2CAPChannel(PSM: number): void;
 
 	updateValueForCharacteristicOnSubscribedCentrals(value: NSData, characteristic: CBMutableCharacteristic, centrals: NSArray<CBCentral> | CBCentral[]): boolean;
 }
 
+/**
+ * @since 7.0
+ * @deprecated 13.0
+ */
 declare const enum CBPeripheralManagerAuthorizationStatus {
 
 	NotDetermined = 0,
@@ -572,6 +798,9 @@ declare const enum CBPeripheralManagerAuthorizationStatus {
 	Authorized = 3
 }
 
+/**
+ * @since 6.0
+ */
 declare const enum CBPeripheralManagerConnectionLatency {
 
 	Low = 0,
@@ -612,14 +841,30 @@ declare var CBPeripheralManagerDelegate: {
 	prototype: CBPeripheralManagerDelegate;
 };
 
+/**
+ * @since 7.0
+ */
 declare var CBPeripheralManagerOptionRestoreIdentifierKey: string;
 
+/**
+ * @since 7.0
+ */
 declare var CBPeripheralManagerOptionShowPowerAlertKey: string;
 
+/**
+ * @since 7.0
+ */
 declare var CBPeripheralManagerRestoredStateAdvertisementDataKey: string;
 
+/**
+ * @since 7.0
+ */
 declare var CBPeripheralManagerRestoredStateServicesKey: string;
 
+/**
+ * @since 6.0
+ * @deprecated 10.0
+ */
 declare const enum CBPeripheralManagerState {
 
 	Unknown = 0,
@@ -635,6 +880,9 @@ declare const enum CBPeripheralManagerState {
 	PoweredOn = 5
 }
 
+/**
+ * @since 7.0
+ */
 declare const enum CBPeripheralState {
 
 	Disconnected = 0,
@@ -646,6 +894,9 @@ declare const enum CBPeripheralState {
 	Disconnecting = 3
 }
 
+/**
+ * @since 5.0
+ */
 declare class CBService extends CBAttribute {
 
 	static alloc(): CBService; // inherited from NSObject
@@ -661,12 +912,22 @@ declare class CBService extends CBAttribute {
 	readonly peripheral: CBPeripheral;
 }
 
+/**
+ * @since 5.0
+ */
 declare class CBUUID extends NSObject implements NSCopying {
 
+	/**
+	 * @since 5.0
+	 * @deprecated 9.0
+	 */
 	static UUIDWithCFUUID(theUUID: any): CBUUID;
 
 	static UUIDWithData(theData: NSData): CBUUID;
 
+	/**
+	 * @since 7.0
+	 */
 	static UUIDWithNSUUID(theUUID: NSUUID): CBUUID;
 
 	static UUIDWithString(theString: string): CBUUID;
@@ -675,6 +936,9 @@ declare class CBUUID extends NSObject implements NSCopying {
 
 	static new(): CBUUID; // inherited from NSObject
 
+	/**
+	 * @since 7.1
+	 */
 	readonly UUIDString: string;
 
 	readonly data: NSData;
@@ -688,12 +952,17 @@ declare var CBUUIDCharacteristicExtendedPropertiesString: string;
 
 declare var CBUUIDCharacteristicFormatString: string;
 
+declare var CBUUIDCharacteristicObservationScheduleString: string;
+
 declare var CBUUIDCharacteristicUserDescriptionString: string;
 
 declare var CBUUIDCharacteristicValidRangeString: string;
 
 declare var CBUUIDClientCharacteristicConfigurationString: string;
 
+/**
+ * @since 11.0
+ */
 declare var CBUUIDL2CAPPSMCharacteristicString: string;
 
 declare var CBUUIDServerCharacteristicConfigurationString: string;

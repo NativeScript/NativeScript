@@ -1,4 +1,7 @@
 
+/**
+ * @since 14.0
+ */
 declare class APActivationPayload extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): APActivationPayload; // inherited from NSObject
@@ -20,6 +23,9 @@ declare class APActivationPayload extends NSObject implements NSCopying, NSSecur
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 14.0
+ */
 declare const enum APActivationPayloadErrorCode {
 
 	Disallowed = 1,
@@ -27,4 +33,7 @@ declare const enum APActivationPayloadErrorCode {
 	DoesNotMatch = 2
 }
 
+/**
+ * @since 14.0
+ */
 declare var APActivationPayloadErrorDomain: string;
